@@ -43,8 +43,6 @@ SDL_INCLUDE_DIR = SDL_ROOT / "include/SDL3"
 SDL_DYNAPI_PROCS_H = SDL_ROOT / "src/dynapi/SDL_dynapi_procs.h"
 SDL_DYNAPI_OVERRIDES_H = SDL_ROOT / "src/dynapi/SDL_dynapi_overrides.h"
 SDL_DYNAPI_SYM = SDL_ROOT / "src/dynapi/SDL_dynapi.sym"
-SDL_ANDROID_C = SDL_ROOT / "src/core/android/SDL_android.c"
-SDL_ANDROID_HID_CPP = SDL_ROOT / "src/hidapi/android/hid.cpp"
 
 full_API = []
 
@@ -322,9 +320,6 @@ def main():
     # Dump API into a json file
     full_API_json()
 
-    # Add all native Android functions to SDL_dynapi.sym
-    write_android_symbols_to_sym()
-
 # Dump API into a json file
 def full_API_json():
     if args.dump:
@@ -458,86 +453,6 @@ def add_dyn_api(proc):
     for line in new_input:
         f.write(line)
     f.close()
-
-
-def extract_symbols_sdl_android_c():
-    sdl_android_c_source = SDL_ANDROID_C.read_text()
-
-    prefix_match = re.search(r"#define SDL_JAVA_PREFIX\s+(?P<prefix>\S+)", sdl_android_c_source)
-    prefix = prefix_match["prefix"]
-
-    wrapper_names = []
-    wrappers = set()
-    for m in re.finditer(r"JNIEXPORT[\s]+(?P<ret>[a-z_]+)[\s]+JNICALL[\s]+(?P<wrapper>SDL_JAVA[A-Z_]+)\((?P<name>[a-zA-Z0-9_]+)\)", sdl_android_c_source, flags=re.M):
-        wrappers.add(m["wrapper"])
-        wrapper_names.append({"wrapper": m["wrapper"], "name": m["name"]})
-
-    wrapper2prefix = {}
-    for wrapper in wrappers:
-        s = re.search(r"#define\s+"+wrapper+r"\([a-z]+\)\s+CONCAT1\(SDL_JAVA_PREFIX,\s*(?P<prefix>[a-zA-Z0-9_]+),\s*function\)", sdl_android_c_source)
-        wrapper2prefix[wrapper] = s["prefix"]
-
-    symbols = set()
-    for wrapper_name in wrapper_names:
-        symbols.add("Java_" + prefix + "_" + wrapper2prefix[wrapper_name["wrapper"]] + "_" + wrapper_name["name"])
-
-    symbols.add("JNI_OnLoad")
-    symbols = list(symbols)
-
-    return symbols
-
-
-def extract_symbols_andoid_sdl_hid_cpp():
-    hid_cpp_source = SDL_ANDROID_HID_CPP.read_text()
-
-    prefix_match = re.search(r"#define SDL_JAVA_PREFIX\s+(?P<prefix>\S+)", hid_cpp_source)
-    prefix = prefix_match["prefix"]
-
-    wrapper_names = []
-    wrappers = set()
-    for m in re.finditer(r"JNIEXPORT[\s]+(?P<ret>[a-z_]+)[\s]+JNICALL[\s]+(?P<wrapper>HID_[A-Z_]+)\((?P<name>[a-zA-Z0-9_]+)\)", hid_cpp_source, flags=re.M):
-        wrappers.add(m["wrapper"])
-        wrapper_names.append({"wrapper": m["wrapper"], "name": m["name"]})
-
-    wrapper2prefix = {}
-    for wrapper in wrappers:
-        s = re.search(r"#define\s+"+wrapper+r"\([a-z]+\)\s+CONCAT1\(SDL_JAVA_PREFIX,\s*(?P<prefix>[a-zA-Z0-9_]+),\s*function\)", hid_cpp_source)
-        wrapper2prefix[wrapper] = s["prefix"]
-
-    symbols = set()
-    for wrapper_name in wrapper_names:
-        symbols.add("Java_" + prefix + "_" + wrapper2prefix[wrapper_name["wrapper"]] + "_" + wrapper_name["name"])
-
-    symbols = list(symbols)
-    symbols.sort()
-
-    return symbols
-
-
-def extract_android_symbols():
-    symbols = extract_symbols_sdl_android_c() + extract_symbols_andoid_sdl_hid_cpp()
-    symbols.sort()
-
-    return symbols
-
-
-def write_android_symbols_to_sym():
-    android_symbols = extract_android_symbols()
-    new_input = []
-    ignore_current = False
-    for line in SDL_DYNAPI_SYM.open():
-        if "Android symbols end here" in line:
-            ignore_current = False
-            for android_symbol in android_symbols:
-                new_input.append("    " + android_symbol + ";\n")
-        if ignore_current:
-            continue
-        if "Android symbols start here" in line:
-            ignore_current = True
-        new_input.append(line)
-    with SDL_DYNAPI_SYM.open("w") as f:
-        for line in new_input:
-            f.write(line)
 
 
 if __name__ == '__main__':
