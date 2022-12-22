@@ -614,78 +614,6 @@ static void BlitRGBtoBGRPixelAlpha(SDL_BlitInfo *info)
     }
 }
 
-#ifdef __3dNOW__
-/* fast (as in MMX with prefetch) ARGB888->(A)RGB888 blending with pixel alpha */
-static void BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo *info)
-{
-    int width = info->dst_w;
-    int height = info->dst_h;
-    Uint32 *srcp = (Uint32 *)info->src;
-    int srcskip = info->src_skip >> 2;
-    Uint32 *dstp = (Uint32 *)info->dst;
-    int dstskip = info->dst_skip >> 2;
-    SDL_PixelFormat *sf = info->src_fmt;
-    Uint32 amask = sf->Amask;
-    Uint32 ashift = sf->Ashift;
-    Uint64 multmask, multmask2;
-
-    __m64 src1, dst1, mm_alpha, mm_zero, mm_alpha2;
-
-    mm_zero = _mm_setzero_si64(); /* 0 -> mm_zero */
-    multmask = 0x00FF;
-    multmask <<= (ashift * 2);
-    multmask2 = 0x00FF00FF00FF00FFULL;
-
-    while (height--) {
-        /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP4({
-        Uint32 alpha;
-
-        _m_prefetch(srcp + 16);
-        _m_prefetch(dstp + 16);
-
-        alpha = *srcp & amask;
-        if (alpha == 0) {
-            /* do nothing */
-        } else if (alpha == amask) {
-            *dstp = *srcp;
-        } else {
-            src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB) */
-            src1 = _mm_unpacklo_pi8(src1, mm_zero); /* 0A0R0G0B -> src1 */
-
-            dst1 = _mm_cvtsi32_si64(*dstp); /* dst(ARGB) -> dst1 (0000ARGB) */
-            dst1 = _mm_unpacklo_pi8(dst1, mm_zero); /* 0A0R0G0B -> dst1 */
-
-            mm_alpha = _mm_cvtsi32_si64(alpha); /* alpha -> mm_alpha (0000000A) */
-            mm_alpha = _mm_srli_si64(mm_alpha, ashift); /* mm_alpha >> ashift -> mm_alpha(0000000A) */
-            mm_alpha = _mm_unpacklo_pi16(mm_alpha, mm_alpha); /* 00000A0A -> mm_alpha */
-            mm_alpha2 = _mm_unpacklo_pi32(mm_alpha, mm_alpha); /* 0A0A0A0A -> mm_alpha2 */
-            mm_alpha = _mm_or_si64(mm_alpha2, *(__m64 *) & multmask);    /* 0F0A0A0A -> mm_alpha */
-            mm_alpha2 = _mm_xor_si64(mm_alpha2, *(__m64 *) & multmask2);    /* 255 - mm_alpha -> mm_alpha */
-
-
-            /* blend */            
-            src1 = _mm_mullo_pi16(src1, mm_alpha);
-            src1 = _mm_srli_pi16(src1, 8);
-            dst1 = _mm_mullo_pi16(dst1, mm_alpha2);
-            dst1 = _mm_srli_pi16(dst1, 8);
-            dst1 = _mm_add_pi16(src1, dst1);
-            dst1 = _mm_packs_pu16(dst1, mm_zero);
-            
-            *dstp = _mm_cvtsi64_si32(dst1); /* dst1 -> pixel */
-        }
-        ++srcp;
-        ++dstp;
-        }, width);
-        /* *INDENT-ON* */ /* clang-format on */
-        srcp += srcskip;
-        dstp += dstskip;
-    }
-    _mm_empty();
-}
-
-#endif /* __3dNOW__ */
-
 /* 16bpp special case for per-surface alpha=50%: blend 2 pixels in parallel */
 
 /* blend a single 16 bit pixel at 50% */
@@ -1401,20 +1329,15 @@ SDL_CalculateBlitA(SDL_Surface *surface)
 
         case 4:
             if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
-#if defined(__MMX__) || defined(__3dNOW__)
+#if defined(__MMX__)
                 if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && sf->Ashift % 8 == 0 && sf->Aloss == 0) {
-#ifdef __3dNOW__
-                    if (SDL_Has3DNow()) {
-                        return BlitRGBtoRGBPixelAlphaMMX3DNOW;
-                    }
-#endif
 #ifdef __MMX__
                     if (SDL_HasMMX()) {
                         return BlitRGBtoRGBPixelAlphaMMX;
                     }
 #endif
                 }
-#endif /* __MMX__ || __3dNOW__ */
+#endif /* __MMX__ */
                 if (sf->Amask == 0xff000000) {
 #if SDL_ARM_NEON_BLITTERS
                     if (SDL_HasNEON()) {

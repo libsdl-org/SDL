@@ -384,7 +384,6 @@ dep_option(SDL_SSE                 "Use SSE assembly routines" ON "SDL_ASSEMBLY;
 dep_option(SDL_SSE2                "Use SSE2 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE3                "Use SSE3 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_MMX                 "Use MMX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
-dep_option(SDL_3DNOW               "Use 3Dnow! MMX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_ALTIVEC             "Use Altivec assembly routines" ON "SDL_ASSEMBLY" OFF)
 dep_option(SDL_ARMSIMD             "Use SIMD assembly blitters on ARM" OFF "SDL_ASSEMBLY;SDL_CPU_ARM32" OFF)
 dep_option(SDL_ARMNEON             "Use NEON assembly blitters on ARM" OFF "SDL_ASSEMBLY;SDL_CPU_ARM32" OFF)
@@ -719,26 +718,6 @@ if(SDL_ASSEMBLY)
       endif()
     endif()
 
-    if(SDL_3DNOW)
-      cmake_push_check_state()
-      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -m3dnow")
-      check_c_source_compiles("
-          #include <mm3dnow.h>
-          #ifndef __3dNOW__
-          #error Assembler CPP flag not enabled
-          #endif
-          int main(int argc, char **argv) {
-            void *p = 0;
-            _m_prefetch(p);
-            return 0;
-          }" CPU_SUPPORTS_3DNOW)
-      cmake_pop_check_state()
-      if(CPU_SUPPORTS_3DNOW)
-        set(HAVE_3DNOW TRUE)
-        list(APPEND EXTRA_CFLAGS "-m3dnow")
-      endif()
-    endif()
-
     if(SDL_SSE)
       cmake_push_check_state()
       set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -msse")
@@ -947,9 +926,6 @@ if(SDL_ASSEMBLY)
     if(SDL_CPU_X86)
       if(SDL_MMX)
         set(HAVE_MMX TRUE)
-      endif()
-      if(SDL_3DNOW)
-        set(HAVE_3DNOW TRUE)
       endif()
     endif()
     if(SDL_SSE)

@@ -102,7 +102,6 @@
 #define SDL_HasRDTSC SDL_HasRDTSC_REAL
 #define SDL_HasAltiVec SDL_HasAltiVec_REAL
 #define SDL_HasMMX SDL_HasMMX_REAL
-#define SDL_Has3DNow SDL_Has3DNow_REAL
 #define SDL_HasSSE SDL_HasSSE_REAL
 #define SDL_HasSSE2 SDL_HasSSE2_REAL
 #define SDL_HasSSE3 SDL_HasSSE3_REAL

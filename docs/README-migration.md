@@ -34,6 +34,8 @@ begin_code.h and close_code.h in the public headers have been renamed to SDL_beg
 
 ## SDL_cpuinfo.h
 
+- SDL_Has3DNow() has been removed; there is no replacement.
+
 The following headers are no longer automatically included, and will need to be included manually:
 - immintrin.h
 - mm3dnow.h

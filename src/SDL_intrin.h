@@ -47,9 +47,6 @@ _m_prefetch(void *__P)
 #ifndef __MMX__
 #define __MMX__
 #endif
-#ifndef __3dNOW__
-#define __3dNOW__
-#endif
 #endif
 #ifndef __SSE__
 #define __SSE__
@@ -90,9 +87,6 @@ _m_prefetch(void *__P)
 #endif
 #endif /* compiler version */
 
-#if defined(__3dNOW__) && !defined(SDL_DISABLE_MM3DNOW_H)
-#include <mm3dnow.h>
-#endif
 #if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX_H)
 #include <lsxintrin.h>
 #define __LSX__

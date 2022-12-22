@@ -86,19 +86,18 @@
 #define CPU_HAS_RDTSC    (1 << 0)
 #define CPU_HAS_ALTIVEC  (1 << 1)
 #define CPU_HAS_MMX      (1 << 2)
-#define CPU_HAS_3DNOW    (1 << 3)
-#define CPU_HAS_SSE      (1 << 4)
-#define CPU_HAS_SSE2     (1 << 5)
-#define CPU_HAS_SSE3     (1 << 6)
-#define CPU_HAS_SSE41    (1 << 7)
-#define CPU_HAS_SSE42    (1 << 8)
-#define CPU_HAS_AVX      (1 << 9)
-#define CPU_HAS_AVX2     (1 << 10)
-#define CPU_HAS_NEON     (1 << 11)
-#define CPU_HAS_AVX512F  (1 << 12)
-#define CPU_HAS_ARM_SIMD (1 << 13)
-#define CPU_HAS_LSX      (1 << 14)
-#define CPU_HAS_LASX     (1 << 15)
+#define CPU_HAS_SSE      (1 << 3)
+#define CPU_HAS_SSE2     (1 << 4)
+#define CPU_HAS_SSE3     (1 << 5)
+#define CPU_HAS_SSE41    (1 << 6)
+#define CPU_HAS_SSE42    (1 << 7)
+#define CPU_HAS_AVX      (1 << 8)
+#define CPU_HAS_AVX2     (1 << 9)
+#define CPU_HAS_NEON     (1 << 10)
+#define CPU_HAS_AVX512F  (1 << 11)
+#define CPU_HAS_ARM_SIMD (1 << 12)
+#define CPU_HAS_LSX      (1 << 13)
+#define CPU_HAS_LASX     (1 << 14)
 
 #define CPU_CFG2      0x2
 #define CPU_CFG2_LSX  (1 << 6)
@@ -517,31 +516,6 @@ static int CPU_readCPUCFG(void)
 #define CPU_haveLASX() (CPU_readCPUCFG() & CPU_CFG2_LASX)
 
 #if defined(__e2k__)
-inline int
-CPU_have3DNow(void)
-{
-#if defined(__3dNOW__)
-    return 1;
-#else
-    return 0;
-#endif
-}
-#else
-static int CPU_have3DNow(void)
-{
-    if (CPU_CPUIDMaxFunction > 0) { /* that is, do we have CPUID at all? */
-        int a, b, c, d;
-        cpuid(0x80000000, a, b, c, d);
-        if (a >= 0x80000001) {
-            cpuid(0x80000001, a, b, c, d);
-            return d & 0x80000000;
-        }
-    }
-    return 0;
-}
-#endif
-
-#if defined(__e2k__)
 #define CPU_haveRDTSC() (0)
 #if defined(__MMX__)
 #define CPU_haveMMX() (1)
@@ -900,10 +874,6 @@ static Uint32 SDL_GetCPUFeatures(void)
             SDL_CPUFeatures |= CPU_HAS_MMX;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 8);
         }
-        if (CPU_have3DNow()) {
-            SDL_CPUFeatures |= CPU_HAS_3DNOW;
-            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 8);
-        }
         if (CPU_haveSSE()) {
             SDL_CPUFeatures |= CPU_HAS_SSE;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
@@ -973,12 +943,6 @@ SDL_bool
 SDL_HasMMX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_MMX);
-}
-
-SDL_bool
-SDL_Has3DNow(void)
-{
-    return CPU_FEATURE_AVAILABLE(CPU_HAS_3DNOW);
 }
 
 SDL_bool
@@ -1228,7 +1192,6 @@ int main()
     printf("RDTSC: %d\n", SDL_HasRDTSC());
     printf("Altivec: %d\n", SDL_HasAltiVec());
     printf("MMX: %d\n", SDL_HasMMX());
-    printf("3DNow: %d\n", SDL_Has3DNow());
     printf("SSE: %d\n", SDL_HasSSE());
     printf("SSE2: %d\n", SDL_HasSSE2());
     printf("SSE3: %d\n", SDL_HasSSE3());
