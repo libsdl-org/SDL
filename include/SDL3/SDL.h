@@ -46,6 +46,7 @@
 #include <SDL3/SDL_haptic.h>
 #include <SDL3/SDL_hidapi.h>
 #include <SDL3/SDL_hints.h>
+#include <SDL3/SDL_init.h>
 #include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
@@ -75,7 +76,7 @@
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_video.h>
-#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_oldnames.h>
 
 #endif /* SDL_h_ */
 
