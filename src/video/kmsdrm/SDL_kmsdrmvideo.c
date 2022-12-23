@@ -1492,7 +1492,7 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
         /* Create the window surfaces with the size we have just chosen.
            Needs the window diverdata in place. */
         ret = KMSDRM_CreateSurfaces(_this, window);
-        if (ret == 0) {
+        if (ret != 0) {
             return SDL_SetError("Can't window GBM/EGL surfaces on window creation.");
         }
     } /* NON-Vulkan block ends. */
