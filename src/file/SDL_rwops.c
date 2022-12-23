@@ -156,19 +156,19 @@ static Sint64 SDLCALL windows_file_seek(SDL_RWops *context, Sint64 offset, int w
     }
 
     /* FIXME: We may be able to satisfy the seek within buffered data */
-    if (whence == RW_SEEK_CUR && context->hidden.windowsio.buffer.left) {
+    if (whence == SDL_RW_SEEK_CUR && context->hidden.windowsio.buffer.left) {
         offset -= (long)context->hidden.windowsio.buffer.left;
     }
     context->hidden.windowsio.buffer.left = 0;
 
     switch (whence) {
-    case RW_SEEK_SET:
+    case SDL_RW_SEEK_SET:
         windowswhence = FILE_BEGIN;
         break;
-    case RW_SEEK_CUR:
+    case SDL_RW_SEEK_CUR:
         windowswhence = FILE_CURRENT;
         break;
-    case RW_SEEK_END:
+    case SDL_RW_SEEK_END:
         windowswhence = FILE_END;
         break;
     default:
@@ -326,13 +326,13 @@ static Sint64 SDLCALL stdio_size(SDL_RWops *context)
 {
     Sint64 pos, size;
 
-    pos = SDL_RWseek(context, 0, RW_SEEK_CUR);
+    pos = SDL_RWseek(context, 0, SDL_RW_SEEK_CUR);
     if (pos < 0) {
         return -1;
     }
-    size = SDL_RWseek(context, 0, RW_SEEK_END);
+    size = SDL_RWseek(context, 0, SDL_RW_SEEK_END);
 
-    SDL_RWseek(context, pos, RW_SEEK_SET);
+    SDL_RWseek(context, pos, SDL_RW_SEEK_SET);
     return size;
 }
 
@@ -341,13 +341,13 @@ static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
     int stdiowhence;
 
     switch (whence) {
-    case RW_SEEK_SET:
+    case SDL_RW_SEEK_SET:
         stdiowhence = SEEK_SET;
         break;
-    case RW_SEEK_CUR:
+    case SDL_RW_SEEK_CUR:
         stdiowhence = SEEK_CUR;
         break;
-    case RW_SEEK_END:
+    case SDL_RW_SEEK_END:
         stdiowhence = SEEK_END;
         break;
     default:
@@ -439,13 +439,13 @@ static Sint64 SDLCALL mem_seek(SDL_RWops *context, Sint64 offset, int whence)
     Uint8 *newpos;
 
     switch (whence) {
-    case RW_SEEK_SET:
+    case SDL_RW_SEEK_SET:
         newpos = context->hidden.mem.base + offset;
         break;
-    case RW_SEEK_CUR:
+    case SDL_RW_SEEK_CUR:
         newpos = context->hidden.mem.here + offset;
         break;
-    case RW_SEEK_END:
+    case SDL_RW_SEEK_END:
         newpos = context->hidden.mem.stop + offset;
         break;
     default:
@@ -742,7 +742,7 @@ SDL_RWseek(SDL_RWops *context, Sint64 offset, int whence)
 Sint64
 SDL_RWtell(SDL_RWops *context)
 {
-    return context->seek(context, 0, RW_SEEK_CUR);
+    return context->seek(context, 0, SDL_RW_SEEK_CUR);
 }
 
 Sint64

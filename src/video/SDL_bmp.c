@@ -332,7 +332,7 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
         /* skip any header bytes we didn't handle... */
         headerSize = (Uint32)(SDL_RWtell(src) - (fp_offset + 14));
         if (biSize > headerSize) {
-            SDL_RWseek(src, (biSize - headerSize), RW_SEEK_CUR);
+            SDL_RWseek(src, (biSize - headerSize), SDL_RW_SEEK_CUR);
         }
     }
     if (biWidth <= 0 || biHeight == 0) {
@@ -440,7 +440,7 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
     /* Load the palette, if any */
     palette = (surface->format)->palette;
     if (palette) {
-        if (SDL_RWseek(src, fp_offset + 14 + biSize, RW_SEEK_SET) < 0) {
+        if (SDL_RWseek(src, fp_offset + 14 + biSize, SDL_RW_SEEK_SET) < 0) {
             SDL_Error(SDL_EFSEEK);
             was_error = SDL_TRUE;
             goto done;
@@ -492,7 +492,7 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
     }
 
     /* Read the surface pixels.  Note that the bmp image is upside down */
-    if (SDL_RWseek(src, fp_offset + bfOffBits, RW_SEEK_SET) < 0) {
+    if (SDL_RWseek(src, fp_offset + bfOffBits, SDL_RW_SEEK_SET) < 0) {
         SDL_Error(SDL_EFSEEK);
         was_error = SDL_TRUE;
         goto done;
@@ -614,7 +614,7 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
 done:
     if (was_error) {
         if (src) {
-            SDL_RWseek(src, fp_offset, RW_SEEK_SET);
+            SDL_RWseek(src, fp_offset, SDL_RW_SEEK_SET);
         }
         SDL_FreeSurface(surface);
         surface = NULL;
@@ -823,11 +823,11 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
 
         /* Write the bitmap offset */
         bfOffBits = (Uint32)(SDL_RWtell(dst) - fp_offset);
-        if (SDL_RWseek(dst, fp_offset + 10, RW_SEEK_SET) < 0) {
+        if (SDL_RWseek(dst, fp_offset + 10, SDL_RW_SEEK_SET) < 0) {
             SDL_Error(SDL_EFSEEK);
         }
         SDL_WriteLE32(dst, bfOffBits);
-        if (SDL_RWseek(dst, fp_offset + bfOffBits, RW_SEEK_SET) < 0) {
+        if (SDL_RWseek(dst, fp_offset + bfOffBits, SDL_RW_SEEK_SET) < 0) {
             SDL_Error(SDL_EFSEEK);
         }
 
@@ -850,11 +850,11 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
 
         /* Write the BMP file size */
         bfSize = (Uint32)(SDL_RWtell(dst) - fp_offset);
-        if (SDL_RWseek(dst, fp_offset + 2, RW_SEEK_SET) < 0) {
+        if (SDL_RWseek(dst, fp_offset + 2, SDL_RW_SEEK_SET) < 0) {
             SDL_Error(SDL_EFSEEK);
         }
         SDL_WriteLE32(dst, bfSize);
-        if (SDL_RWseek(dst, fp_offset + bfSize, RW_SEEK_SET) < 0) {
+        if (SDL_RWseek(dst, fp_offset + bfSize, SDL_RW_SEEK_SET) < 0) {
             SDL_Error(SDL_EFSEEK);
         }
 
