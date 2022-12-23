@@ -2,9 +2,16 @@
 
 This guide provides useful information for migrating applications from SDL 2.0 to SDL 3.0.
 
-We have provided a handy Python script to automate some of this work for you [link to script], and details on the changes are organized by SDL 2.0 header below.
+Details on API changes are organized by SDL 2.0 header below.
+
+We have provided a handy Python script [rename_symbols.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_symbols.py) to rename SDL2 functions to their SDL3 counterparts:
+```sh
+rename_symbols.py --all-symbols source_code_path
+```
 
 SDL headers should now be included as `#include <SDL3/SDL.h>`. Typically that's the only header you'll need in your application unless you are using OpenGL or Vulkan functionality.
+
+The file with your main() function should also include <SDL3/SDL_main.h>, see below in the SDL_main.h section.
 
 CMake users should use this snippet to include SDL support in their project:
 ```
@@ -26,7 +33,7 @@ LDFLAGS += $(shell pkg-config sdl3 --libs)
 
 The SDL3test library has been renamed SDL3_test.
 
-There is no static SDLmain library anymore, it's now header-only, see below in the SDL_main.h section.
+There is no SDLmain library anymore, it's now header-only, see below in the SDL_main.h section.
 
 
 begin_code.h and close_code.h in the public headers have been renamed to SDL_begin_code.h and SDL_close_code.h. These aren't meant to be included directly by applications, but if your application did, please update your `#include` lines.

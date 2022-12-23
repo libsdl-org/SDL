@@ -31,6 +31,9 @@
 /* The new function names are recommended, but if you want to have the
  * old names available while you are in the process of migrating code
  * to SDL3, you can define `SDL_ENABLE_OLD_NAMES` in your project.
+ *
+ * You can use https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_symbols.py to mass rename the symbols defined here in your codebase:
+ *  rename_symbols.py --all-symbols source_code_path
  */
 #ifdef SDL_ENABLE_OLD_NAMES
 
