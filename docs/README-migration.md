@@ -140,6 +140,9 @@ to decide for you.
 
 ## SDL_rwops.h
 
+The RW_SEEK_CUR, RW_SEEK_END and RW_SEEK_SET macros have been renamed SDL_RW_SEEK_CUR, SDL_RW_SEEK_END and SDL_RW_SEEK_SET.
+
+
 SDL_RWread and SDL_RWwrite (and SDL_RWops::read, SDL_RWops::write) have a different function signature in SDL3.
 
 Previously they looked more like stdio:
@@ -190,13 +193,13 @@ stdio_size(SDL_RWops * context)
 {
     Sint64 pos, size;
 
-    pos = SDL_RWseek(context, 0, RW_SEEK_CUR);
+    pos = SDL_RWseek(context, 0, SDL_RW_SEEK_CUR);
     if (pos < 0) {
         return -1;
     }
-    size = SDL_RWseek(context, 0, RW_SEEK_END);
+    size = SDL_RWseek(context, 0, SDL_RW_SEEK_END);
 
-    SDL_RWseek(context, pos, RW_SEEK_SET);
+    SDL_RWseek(context, pos, SDL_RW_SEEK_SET);
     return size;
 }
 
@@ -206,13 +209,13 @@ stdio_seek(SDL_RWops * context, Sint64 offset, int whence)
     int stdiowhence;
 
     switch (whence) {
-    case RW_SEEK_SET:
+    case SDL_RW_SEEK_SET:
         stdiowhence = SEEK_SET;
         break;
-    case RW_SEEK_CUR:
+    case SDL_RW_SEEK_CUR:
         stdiowhence = SEEK_CUR;
         break;
-    case RW_SEEK_END:
+    case SDL_RW_SEEK_END:
         stdiowhence = SEEK_END;
         break;
     default:

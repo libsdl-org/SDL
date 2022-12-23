@@ -58,7 +58,7 @@ typedef struct SDL_RWops
 
     /**
      *  Seek to \c offset relative to \c whence, one of stdio's whence values:
-     *  RW_SEEK_SET, RW_SEEK_CUR, RW_SEEK_END
+     *  SDL_RW_SEEK_SET, SDL_RW_SEEK_CUR, SDL_RW_SEEK_END
      *
      *  \return the final offset in the data stream, or -1 on error.
      */
@@ -332,9 +332,9 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_AllocRW(void);
  */
 extern DECLSPEC void SDLCALL SDL_FreeRW(SDL_RWops * area);
 
-#define RW_SEEK_SET 0       /**< Seek from the beginning of data */
-#define RW_SEEK_CUR 1       /**< Seek relative to current read point */
-#define RW_SEEK_END 2       /**< Seek relative to the end of data */
+#define SDL_RW_SEEK_SET 0       /**< Seek from the beginning of data */
+#define SDL_RW_SEEK_CUR 1       /**< Seek relative to current read point */
+#define SDL_RW_SEEK_END 2       /**< Seek relative to the end of data */
 
 /**
  * Use this function to get the size of the data stream in an SDL_RWops.
@@ -357,9 +357,9 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
  *
  * `whence` may be any of the following values:
  *
- * - `RW_SEEK_SET`: seek from the beginning of data
- * - `RW_SEEK_CUR`: seek relative to current read point
- * - `RW_SEEK_END`: seek relative to the end of data
+ * - `SDL_RW_SEEK_SET`: seek from the beginning of data
+ * - `SDL_RW_SEEK_CUR`: seek relative to current read point
+ * - `SDL_RW_SEEK_END`: seek relative to the end of data
  *
  * If this stream can not seek, it will return -1.
  *
@@ -371,7 +371,7 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
  * \param context a pointer to an SDL_RWops structure
  * \param offset an offset in bytes, relative to **whence** location; can be
  *               negative
- * \param whence any of `RW_SEEK_SET`, `RW_SEEK_CUR`, `RW_SEEK_END`
+ * \param whence any of `SDL_RW_SEEK_SET`, `SDL_RW_SEEK_CUR`, `SDL_RW_SEEK_END`
  * \returns the final offset in the data stream after the seek or -1 on error.
  *
  * \since This function is available since SDL 3.0.0.
@@ -391,7 +391,7 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWseek(SDL_RWops *context,
  * Determine the current read/write offset in an SDL_RWops data stream.
  *
  * SDL_RWtell is actually a wrapper function that calls the SDL_RWops's `seek`
- * method, with an offset of 0 bytes from `RW_SEEK_CUR`, to simplify
+ * method, with an offset of 0 bytes from `SDL_RW_SEEK_CUR`, to simplify
  * application development.
  *
  * Prior to SDL 2.0.10, this function was a macro.

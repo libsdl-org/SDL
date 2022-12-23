@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
     if (7 != rwops->write(rwops, "1234567", 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != rwops->read(rwops, test_buf, 1)) {
@@ -162,10 +162,10 @@ int main(int argc, char *argv[])
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (20 != rwops->seek(rwops, -7, RW_SEEK_END)) {
+    if (20 != rwops->seek(rwops, -7, SDL_RW_SEEK_END)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (7 != rwops->read(rwops, test_buf, 7)) {
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
     if (0 != rwops->read(rwops, test_buf, 1000)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, -27, RW_SEEK_CUR)) {
+    if (0 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (2 != rwops->read(rwops, test_buf, 30)) {
@@ -209,17 +209,17 @@ int main(int argc, char *argv[])
     if (7 != rwops->write(rwops, "1234567", 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (1 != rwops->read(rwops, test_buf, 1)) {
         RWOP_ERR_QUIT(rwops); /* we are in read/write mode */
     }
 
-    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (20 != rwops->seek(rwops, -7, RW_SEEK_END)) {
+    if (20 != rwops->seek(rwops, -7, SDL_RW_SEEK_END)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (7 != rwops->read(rwops, test_buf, 7)) {
@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
     if (0 != rwops->read(rwops, test_buf, 1000)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, -27, RW_SEEK_CUR)) {
+    if (0 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (2 != rwops->read(rwops, test_buf, 30)) {
@@ -260,17 +260,17 @@ int main(int argc, char *argv[])
     if (7 != rwops->write(rwops, "1234567", 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (1 != rwops->read(rwops, test_buf, 1)) {
         RWOP_ERR_QUIT(rwops); /* we are in read/write mode */
     }
 
-    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (20 != rwops->seek(rwops, -7, RW_SEEK_END)) {
+    if (20 != rwops->seek(rwops, -7, SDL_RW_SEEK_END)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (7 != rwops->read(rwops, test_buf, 7)) {
@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
     if (0 != rwops->read(rwops, test_buf, 1000)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, -27, RW_SEEK_CUR)) {
+    if (0 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (2 != rwops->read(rwops, test_buf, 30)) {
@@ -311,18 +311,18 @@ int main(int argc, char *argv[])
     if (7 != rwops->write(rwops, "1234567", 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
 
     if (1 != rwops->read(rwops, test_buf, 1)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
 
-    if (20 + 27 != rwops->seek(rwops, -7, RW_SEEK_END)) {
+    if (20 + 27 != rwops->seek(rwops, -7, SDL_RW_SEEK_END)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (7 != rwops->read(rwops, test_buf, 7)) {
@@ -338,11 +338,11 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(rwops);
     }
 
-    if (27 != rwops->seek(rwops, -27, RW_SEEK_CUR)) {
+    if (27 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
 
-    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (3 != rwops->read(rwops, test_buf, 30)) {
