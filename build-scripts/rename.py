@@ -37,12 +37,14 @@ def main():
         raise Exception("Couldn't find %s in %s" % (args.oldname, header))
 
     # Replace the symbol in source code and documentation
-    for dir in ['src', 'test', 'include', 'docs']:
+    for dir in ['src', 'test', 'include']:
         replace_symbol_recursive(SDL_ROOT / dir, pattern, args.newname)
 
-    add_symbol_to_oldnames(header.name, args.oldname, args.newname)
-    add_symbol_to_migration(header.name, args.type, args.oldname, args.newname)
-    add_symbol_to_whatsnew(args.type, args.oldname, args.newname)
+    if not args.code_only:
+        replace_symbol_recursive(SDL_ROOT / 'docs', pattern, args.newname)
+        add_symbol_to_oldnames(header.name, args.oldname, args.newname)
+        add_symbol_to_migration(header.name, args.type, args.oldname, args.newname)
+        add_symbol_to_whatsnew(args.type, args.oldname, args.newname)
 
 
 def replace_symbol_recursive(path, pattern, replacement):
@@ -218,8 +220,9 @@ def add_symbol_to_whatsnew(symbol_type, oldname, newname):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--code-only', action='store_true')
     parser.add_argument('header');
-    parser.add_argument('type', choices=['function', 'enum']);
+    parser.add_argument('type', choices=['enum', 'function', 'macro', 'structure']);
     parser.add_argument('oldname');
     parser.add_argument('newname');
     args = parser.parse_args()
