@@ -9,7 +9,7 @@ import os
 import pathlib
 import pprint
 import re
-
+from rename_symbols import create_regex_from_replacements, replace_symbols_in_path
 
 SDL_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -33,31 +33,18 @@ def main():
     if not header.exists():
         raise Exception("Couldn't find header %s" % header)
 
-    if not pattern.search(header.read_text()):
+    if not args.skip_header_check and not pattern.search(header.read_text()):
         raise Exception("Couldn't find %s in %s" % (args.oldname, header))
 
     # Replace the symbol in source code and documentation
-    for dir in ['src', 'test', 'include']:
-        replace_symbol_recursive(SDL_ROOT / dir, pattern, args.newname)
+    replacements = { args.oldname: args.newname }
+    regex = create_regex_from_replacements(replacements)
+    for dir in ['src', 'test', 'include', 'docs']:
+        replace_symbols_in_path(SDL_ROOT / dir, regex, replacements)
 
-    if not args.code_only:
-        replace_symbol_recursive(SDL_ROOT / 'docs', pattern, args.newname)
-        add_symbol_to_oldnames(header.name, args.oldname, args.newname)
-        add_symbol_to_migration(header.name, args.type, args.oldname, args.newname)
-        add_symbol_to_whatsnew(args.type, args.oldname, args.newname)
-
-
-def replace_symbol_recursive(path, pattern, replacement):
-    for entry in path.glob("*"):
-        if entry.is_dir():
-            replace_symbol_recursive(entry, pattern, replacement)
-        elif not entry.name.endswith((".bmp", ".cur", ".dat", ".icns", ".png", ".strings", ".swp", ".wav")) and \
-             entry.name != "utf8.txt":
-            print("Processing %s" % entry)
-            with entry.open('r', encoding='UTF-8', newline='') as rfp:
-                contents = pattern.sub(replacement, rfp.read())
-                with entry.open('w', encoding='UTF-8', newline='') as wfp:
-                    wfp.write(contents)
+    add_symbol_to_oldnames(header.name, args.oldname, args.newname)
+    add_symbol_to_migration(header.name, args.type, args.oldname, args.newname)
+    add_symbol_to_whatsnew(args.type, args.oldname, args.newname)
 
 
 def add_line(lines, i, section):
@@ -150,7 +137,7 @@ def add_symbol_to_migration(header, symbol_type, oldname, newname):
     section_added = False
     note = ("The following %ss have been renamed:" % symbol_type)
     note_added = False
-    content = ("* %s -> %s" % (oldname, newname))
+    content = ("* %s => %s" % (oldname, newname))
     content_added = False
     mode = 0
     i = 0
@@ -191,7 +178,7 @@ def add_symbol_to_whatsnew(symbol_type, oldname, newname):
     lines = file.read_text().splitlines()
     note = ("* The following %ss have been renamed:" % symbol_type)
     note_added = False
-    content = ("    * %s -> %s" % (oldname, newname))
+    content = ("    * %s => %s" % (oldname, newname))
     content_added = False
     mode = 0
     i = 0
@@ -220,7 +207,7 @@ def add_symbol_to_whatsnew(symbol_type, oldname, newname):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--code-only', action='store_true')
+    parser.add_argument('--skip-header-check', action='store_true')
     parser.add_argument('header');
     parser.add_argument('type', choices=['enum', 'function', 'macro', 'structure']);
     parser.add_argument('oldname');
