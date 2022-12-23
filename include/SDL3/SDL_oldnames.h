@@ -34,7 +34,25 @@
  */
 #ifdef SDL_ENABLE_OLD_NAMES
 
+/* ##SDL_platform.h */
+#define __IPHONEOS__ __IOS__
+#define __MACOSX__ __MACOS__
+
+/* ##SDL_rwops.h */
+#define RW_SEEK_CUR SDL_RW_SEEK_CUR
+#define RW_SEEK_END SDL_RW_SEEK_END
+#define RW_SEEK_SET SDL_RW_SEEK_SET
+
 #else /* !SDL_ENABLE_OLD_NAMES */
+
+/* ##SDL_platform.h */
+#define __IPHONEOS__ __IPHONEOS___renamed___IOS__
+#define __MACOSX__ __MACOSX___renamed___MACOS__
+
+/* ##SDL_rwops.h */
+#define RW_SEEK_CUR RW_SEEK_CUR_renamed_SDL_RW_SEEK_CUR
+#define RW_SEEK_END RW_SEEK_END_renamed_SDL_RW_SEEK_END
+#define RW_SEEK_SET RW_SEEK_SET_renamed_SDL_RW_SEEK_SET
 
 #endif /* SDL_ENABLE_OLD_NAMES */
 

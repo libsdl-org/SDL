@@ -118,13 +118,13 @@ Furthermore, the different `SDL_*RunApp()` functions (SDL_WinRtRunApp, SDL_GDKRu
 have been unified into just `int SDL_RunApp(int argc, char* argv[], void * reserved)` (which is also
 used by additional platforms that didn't have a SDL_RunApp-like function before).
 
-## SDL_platform.h
-
-The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ has been renamed __IOS__
-
 ## SDL_pixels.h
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
+
+## SDL_platform.h
+
+The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ has been renamed __IOS__
 
 ## SDL_render.h
 
@@ -142,8 +142,10 @@ to decide for you.
 
 ## SDL_rwops.h
 
-The RW_SEEK_CUR, RW_SEEK_END and RW_SEEK_SET macros have been renamed SDL_RW_SEEK_CUR, SDL_RW_SEEK_END and SDL_RW_SEEK_SET.
-
+The following macros have been renamed:
+* RW_SEEK_CUR => SDL_RW_SEEK_CUR
+* RW_SEEK_END => SDL_RW_SEEK_END
+* RW_SEEK_SET => SDL_RW_SEEK_SET
 
 SDL_RWread and SDL_RWwrite (and SDL_RWops::read, SDL_RWops::write) have a different function signature in SDL3.
 

@@ -11,6 +11,10 @@ General:
 * SDL_GetWindowWMInfo() returns a standard int result code instead of SDL_bool, and takes SDL_SYSWM_CURRENT_VERSION as a new third parameter
 * The preprocessor symbol __MACOSX__ has been renamed __MACOS__
 * The preprocessor symbol __IPHONEOS__ has been renamed __IOS__
+* The following macros have been renamed:
+    * RW_SEEK_CUR -> SDL_RW_SEEK_CUR
+    * RW_SEEK_END -> SDL_RW_SEEK_END
+    * RW_SEEK_SET -> SDL_RW_SEEK_SET
 * The following functions have been renamed:
 * Removed the following functions from the API, see docs/README-migration.md for details:
     * SDL_CalculateGammaRamp()
