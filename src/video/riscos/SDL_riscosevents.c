@@ -148,9 +148,9 @@ int RISCOS_InitEvents(_THIS)
     }
 
     status = (_kernel_osbyte(202, 0, 255) & 0xFF);
-    SDL_ToggleModState(KMOD_NUM, (status & (1 << 2)) == 0);
-    SDL_ToggleModState(KMOD_CAPS, (status & (1 << 4)) == 0);
-    SDL_ToggleModState(KMOD_SCROLL, (status & (1 << 1)) != 0);
+    SDL_ToggleModState(SDL_KMOD_NUM, (status & (1 << 2)) == 0);
+    SDL_ToggleModState(SDL_KMOD_CAPS, (status & (1 << 4)) == 0);
+    SDL_ToggleModState(SDL_KMOD_SCROLL, (status & (1 << 1)) != 0);
 
     _kernel_swi(OS_Mouse, &regs, &regs);
     driverdata->last_mouse_buttons = regs.r[2];

@@ -67,40 +67,40 @@ print_modifiers(char **text, size_t *maxlen)
         print_string(text, maxlen, " (none)");
         return;
     }
-    if (mod & KMOD_LSHIFT) {
+    if (mod & SDL_KMOD_LSHIFT) {
         print_string(text, maxlen, " LSHIFT");
     }
-    if (mod & KMOD_RSHIFT) {
+    if (mod & SDL_KMOD_RSHIFT) {
         print_string(text, maxlen, " RSHIFT");
     }
-    if (mod & KMOD_LCTRL) {
+    if (mod & SDL_KMOD_LCTRL) {
         print_string(text, maxlen, " LCTRL");
     }
-    if (mod & KMOD_RCTRL) {
+    if (mod & SDL_KMOD_RCTRL) {
         print_string(text, maxlen, " RCTRL");
     }
-    if (mod & KMOD_LALT) {
+    if (mod & SDL_KMOD_LALT) {
         print_string(text, maxlen, " LALT");
     }
-    if (mod & KMOD_RALT) {
+    if (mod & SDL_KMOD_RALT) {
         print_string(text, maxlen, " RALT");
     }
-    if (mod & KMOD_LGUI) {
+    if (mod & SDL_KMOD_LGUI) {
         print_string(text, maxlen, " LGUI");
     }
-    if (mod & KMOD_RGUI) {
+    if (mod & SDL_KMOD_RGUI) {
         print_string(text, maxlen, " RGUI");
     }
-    if (mod & KMOD_NUM) {
+    if (mod & SDL_KMOD_NUM) {
         print_string(text, maxlen, " NUM");
     }
-    if (mod & KMOD_CAPS) {
+    if (mod & SDL_KMOD_CAPS) {
         print_string(text, maxlen, " CAPS");
     }
-    if (mod & KMOD_MODE) {
+    if (mod & SDL_KMOD_MODE) {
         print_string(text, maxlen, " MODE");
     }
-    if (mod & KMOD_SCROLL) {
+    if (mod & SDL_KMOD_SCROLL) {
         print_string(text, maxlen, " SCROLL");
     }
 }

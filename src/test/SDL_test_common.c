@@ -1797,9 +1797,9 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
         break;
     case SDL_KEYDOWN:
     {
-        SDL_bool withControl = !!(event->key.keysym.mod & KMOD_CTRL);
-        SDL_bool withShift = !!(event->key.keysym.mod & KMOD_SHIFT);
-        SDL_bool withAlt = !!(event->key.keysym.mod & KMOD_ALT);
+        SDL_bool withControl = !!(event->key.keysym.mod & SDL_KMOD_CTRL);
+        SDL_bool withShift = !!(event->key.keysym.mod & SDL_KMOD_SHIFT);
+        SDL_bool withAlt = !!(event->key.keysym.mod & SDL_KMOD_ALT);
 
         switch (event->key.keysym.sym) {
             /* Add hotkeys here */

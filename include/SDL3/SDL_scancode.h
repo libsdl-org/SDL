@@ -336,7 +336,7 @@ typedef enum
 
     SDL_SCANCODE_MODE = 257,    /**< I'm not sure if this is really not covered
                                  *   by any of the above, but since there's a
-                                 *   special KMOD_MODE for it I'm adding it here
+                                 *   special SDL_KMOD_MODE for it I'm adding it here
                                  */
 
     /* @} *//* Usage page 0x07 */
