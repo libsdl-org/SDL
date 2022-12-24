@@ -16,6 +16,7 @@ gen
 Build
 buildbot
 /VERSION.txt
+__pycache__
 
 *.so
 *.so.*
