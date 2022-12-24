@@ -1,20 +1,5 @@
-aclocal.m4
-autom4te*
-config.cache
-config.log
-config.status
-libtool
-Makefile
-Makefile.rules
-sdl3-config
-sdl3-config.cmake
-sdl3-config-version.cmake
-sdl3.pc
-SDL3.spec
-build
-gen
-Build
-buildbot
+build/
+buildbot/
 /VERSION.txt
 __pycache__
 
@@ -168,13 +153,3 @@ test/testvulkan
 test/testwm2
 test/testyuv
 test/torturethread
-
-builddir/
-!build-scripts/
-debian/*.debhelper.log
-debian/*.substvars
-debian/*.tar.gz
-debian/.debhelper/
-debian/files
-debian/libsdl*/
-debian/tmp/
