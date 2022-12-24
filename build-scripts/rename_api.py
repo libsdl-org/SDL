@@ -39,7 +39,7 @@ def main():
     # Replace the symbol in source code and documentation
     replacements = { args.oldname: args.newname }
     regex = create_regex_from_replacements(replacements)
-    for dir in ['src', 'test', 'include', 'docs']:
+    for dir in ["src", "test", "include", "docs", "Xcode-iOS/Demos"]:
         replace_symbols_in_path(SDL_ROOT / dir, regex, replacements)
 
     add_symbol_to_oldnames(header.name, args.oldname, args.newname)
