@@ -28,6 +28,8 @@
 #ifndef SDL_oldnames_h_
 #define SDL_oldnames_h_
 
+#include <SDL3/SDL_platform.h>
+
 /* The new function names are recommended, but if you want to have the
  * old names available while you are in the process of migrating code
  * to SDL3, you can define `SDL_ENABLE_OLD_NAMES` in your project.
@@ -58,8 +60,12 @@
 #define KMOD_SHIFT SDL_KMOD_SHIFT
 
 /* ##SDL_platform.h */
+#ifdef __IOS__
 #define __IPHONEOS__ __IOS__
+#endif
+#ifdef __MACOS__
 #define __MACOSX__ __MACOS__
+#endif
 
 /* ##SDL_rwops.h */
 #define RW_SEEK_CUR SDL_RW_SEEK_CUR
@@ -89,8 +95,12 @@
 #define KMOD_SHIFT KMOD_SHIFT_renamed_SDL_KMOD_SHIFT
 
 /* ##SDL_platform.h */
+#ifdef __IOS__
 #define __IPHONEOS__ __IPHONEOS___renamed___IOS__
+#endif
+#ifdef __MACOS__
 #define __MACOSX__ __MACOSX___renamed___MACOS__
+#endif
 
 /* ##SDL_rwops.h */
 #define RW_SEEK_CUR RW_SEEK_CUR_renamed_SDL_RW_SEEK_CUR
