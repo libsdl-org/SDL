@@ -62,28 +62,28 @@ static Uint32 IBus_ModState(void)
     SDL_Keymod sdl_mods = SDL_GetModState();
 
     /* Not sure about MOD3, MOD4 and HYPER mappings */
-    if (sdl_mods & KMOD_LSHIFT) {
+    if (sdl_mods & SDL_KMOD_LSHIFT) {
         ibus_mods |= IBUS_SHIFT_MASK;
     }
-    if (sdl_mods & KMOD_CAPS) {
+    if (sdl_mods & SDL_KMOD_CAPS) {
         ibus_mods |= IBUS_LOCK_MASK;
     }
-    if (sdl_mods & KMOD_LCTRL) {
+    if (sdl_mods & SDL_KMOD_LCTRL) {
         ibus_mods |= IBUS_CONTROL_MASK;
     }
-    if (sdl_mods & KMOD_LALT) {
+    if (sdl_mods & SDL_KMOD_LALT) {
         ibus_mods |= IBUS_MOD1_MASK;
     }
-    if (sdl_mods & KMOD_NUM) {
+    if (sdl_mods & SDL_KMOD_NUM) {
         ibus_mods |= IBUS_MOD2_MASK;
     }
-    if (sdl_mods & KMOD_MODE) {
+    if (sdl_mods & SDL_KMOD_MODE) {
         ibus_mods |= IBUS_MOD5_MASK;
     }
-    if (sdl_mods & KMOD_LGUI) {
+    if (sdl_mods & SDL_KMOD_LGUI) {
         ibus_mods |= IBUS_SUPER_MASK;
     }
-    if (sdl_mods & KMOD_RGUI) {
+    if (sdl_mods & SDL_KMOD_RGUI) {
         ibus_mods |= IBUS_META_MASK;
     }
 

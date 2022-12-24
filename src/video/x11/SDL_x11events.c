@@ -413,9 +413,9 @@ void X11_ReconcileKeyboardState(_THIS)
 
     /* Sync up the keyboard modifier state */
     if (X11_XQueryPointer(display, DefaultRootWindow(display), &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
-        SDL_ToggleModState(KMOD_CAPS, (mask & LockMask) != 0);
-        SDL_ToggleModState(KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) != 0);
-        SDL_ToggleModState(KMOD_SCROLL, (mask & X11_GetScrollLockModifierMask(_this)) != 0);
+        SDL_ToggleModState(SDL_KMOD_CAPS, (mask & LockMask) != 0);
+        SDL_ToggleModState(SDL_KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) != 0);
+        SDL_ToggleModState(SDL_KMOD_SCROLL, (mask & X11_GetScrollLockModifierMask(_this)) != 0);
     }
 
     keyboardState = SDL_GetKeyboardState(0);

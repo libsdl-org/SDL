@@ -39,39 +39,39 @@ typedef struct
 #define TABLE_SIZE 51           /* size of our table which maps keys and modifiers to font indices */
 
 /* Below is the table that defines the mapping between scancodes and modifiers to indices in the
-   bitmap font.  As an example, then line '{ SDL_SCANCODE_A, 1, KMOD_SHIFT, 33 }' means, map
+   bitmap font.  As an example, then line '{ SDL_SCANCODE_A, 1, SDL_KMOD_SHIFT, 33 }' means, map
    the key A (which has scancode SDL_SCANCODE_A) to index 33 in the font (which is a picture of an A),
-   The '1' means that the mapping is valid even if there are no modifiers, and KMOD_SHIFT means the
+   The '1' means that the mapping is valid even if there are no modifiers, and SDL_KMOD_SHIFT means the
    mapping is also valid if the user is holding shift.
 */
 fontMapping map[TABLE_SIZE] = {
 
-    {SDL_SCANCODE_A, 1, KMOD_SHIFT, 33},        /* A */
-    {SDL_SCANCODE_B, 1, KMOD_SHIFT, 34},        /* B */
-    {SDL_SCANCODE_C, 1, KMOD_SHIFT, 35},        /* C */
-    {SDL_SCANCODE_D, 1, KMOD_SHIFT, 36},        /* D */
-    {SDL_SCANCODE_E, 1, KMOD_SHIFT, 37},        /* E */
-    {SDL_SCANCODE_F, 1, KMOD_SHIFT, 38},        /* F */
-    {SDL_SCANCODE_G, 1, KMOD_SHIFT, 39},        /* G */
-    {SDL_SCANCODE_H, 1, KMOD_SHIFT, 40},        /* H */
-    {SDL_SCANCODE_I, 1, KMOD_SHIFT, 41},        /* I */
-    {SDL_SCANCODE_J, 1, KMOD_SHIFT, 42},        /* J */
-    {SDL_SCANCODE_K, 1, KMOD_SHIFT, 43},        /* K */
-    {SDL_SCANCODE_L, 1, KMOD_SHIFT, 44},        /* L */
-    {SDL_SCANCODE_M, 1, KMOD_SHIFT, 45},        /* M */
-    {SDL_SCANCODE_N, 1, KMOD_SHIFT, 46},        /* N */
-    {SDL_SCANCODE_O, 1, KMOD_SHIFT, 47},        /* O */
-    {SDL_SCANCODE_P, 1, KMOD_SHIFT, 48},        /* P */
-    {SDL_SCANCODE_Q, 1, KMOD_SHIFT, 49},        /* Q */
-    {SDL_SCANCODE_R, 1, KMOD_SHIFT, 50},        /* R */
-    {SDL_SCANCODE_S, 1, KMOD_SHIFT, 51},        /* S */
-    {SDL_SCANCODE_T, 1, KMOD_SHIFT, 52},        /* T */
-    {SDL_SCANCODE_U, 1, KMOD_SHIFT, 53},        /* U */
-    {SDL_SCANCODE_V, 1, KMOD_SHIFT, 54},        /* V */
-    {SDL_SCANCODE_W, 1, KMOD_SHIFT, 55},        /* W */
-    {SDL_SCANCODE_X, 1, KMOD_SHIFT, 56},        /* X */
-    {SDL_SCANCODE_Y, 1, KMOD_SHIFT, 57},        /* Y */
-    {SDL_SCANCODE_Z, 1, KMOD_SHIFT, 58},        /* Z */
+    {SDL_SCANCODE_A, 1, SDL_KMOD_SHIFT, 33},        /* A */
+    {SDL_SCANCODE_B, 1, SDL_KMOD_SHIFT, 34},        /* B */
+    {SDL_SCANCODE_C, 1, SDL_KMOD_SHIFT, 35},        /* C */
+    {SDL_SCANCODE_D, 1, SDL_KMOD_SHIFT, 36},        /* D */
+    {SDL_SCANCODE_E, 1, SDL_KMOD_SHIFT, 37},        /* E */
+    {SDL_SCANCODE_F, 1, SDL_KMOD_SHIFT, 38},        /* F */
+    {SDL_SCANCODE_G, 1, SDL_KMOD_SHIFT, 39},        /* G */
+    {SDL_SCANCODE_H, 1, SDL_KMOD_SHIFT, 40},        /* H */
+    {SDL_SCANCODE_I, 1, SDL_KMOD_SHIFT, 41},        /* I */
+    {SDL_SCANCODE_J, 1, SDL_KMOD_SHIFT, 42},        /* J */
+    {SDL_SCANCODE_K, 1, SDL_KMOD_SHIFT, 43},        /* K */
+    {SDL_SCANCODE_L, 1, SDL_KMOD_SHIFT, 44},        /* L */
+    {SDL_SCANCODE_M, 1, SDL_KMOD_SHIFT, 45},        /* M */
+    {SDL_SCANCODE_N, 1, SDL_KMOD_SHIFT, 46},        /* N */
+    {SDL_SCANCODE_O, 1, SDL_KMOD_SHIFT, 47},        /* O */
+    {SDL_SCANCODE_P, 1, SDL_KMOD_SHIFT, 48},        /* P */
+    {SDL_SCANCODE_Q, 1, SDL_KMOD_SHIFT, 49},        /* Q */
+    {SDL_SCANCODE_R, 1, SDL_KMOD_SHIFT, 50},        /* R */
+    {SDL_SCANCODE_S, 1, SDL_KMOD_SHIFT, 51},        /* S */
+    {SDL_SCANCODE_T, 1, SDL_KMOD_SHIFT, 52},        /* T */
+    {SDL_SCANCODE_U, 1, SDL_KMOD_SHIFT, 53},        /* U */
+    {SDL_SCANCODE_V, 1, SDL_KMOD_SHIFT, 54},        /* V */
+    {SDL_SCANCODE_W, 1, SDL_KMOD_SHIFT, 55},        /* W */
+    {SDL_SCANCODE_X, 1, SDL_KMOD_SHIFT, 56},        /* X */
+    {SDL_SCANCODE_Y, 1, SDL_KMOD_SHIFT, 57},        /* Y */
+    {SDL_SCANCODE_Z, 1, SDL_KMOD_SHIFT, 58},        /* Z */
     {SDL_SCANCODE_0, 1, 0, 16}, /* 0 */
     {SDL_SCANCODE_1, 1, 0, 17}, /* 1 */
     {SDL_SCANCODE_2, 1, 0, 18}, /* 2 */
@@ -83,18 +83,18 @@ fontMapping map[TABLE_SIZE] = {
     {SDL_SCANCODE_8, 1, 0, 24}, /* 8 */
     {SDL_SCANCODE_9, 1, 0, 25}, /* 9 */
     {SDL_SCANCODE_SPACE, 1, 0, 0},      /* ' ' */
-    {SDL_SCANCODE_1, 0, KMOD_SHIFT, 1}, /* ! */
-    {SDL_SCANCODE_SLASH, 0, KMOD_SHIFT, 31},    /* ? */
+    {SDL_SCANCODE_1, 0, SDL_KMOD_SHIFT, 1}, /* ! */
+    {SDL_SCANCODE_SLASH, 0, SDL_KMOD_SHIFT, 31},    /* ? */
     {SDL_SCANCODE_SLASH, 1, 0, 15},     /* / */
     {SDL_SCANCODE_COMMA, 1, 0, 12},     /* , */
     {SDL_SCANCODE_SEMICOLON, 1, 0, 27}, /* ; */
-    {SDL_SCANCODE_SEMICOLON, 0, KMOD_SHIFT, 26},        /* : */
+    {SDL_SCANCODE_SEMICOLON, 0, SDL_KMOD_SHIFT, 26},        /* : */
     {SDL_SCANCODE_PERIOD, 1, 0, 14},    /* . */
     {SDL_SCANCODE_MINUS, 1, 0, 13},     /* - */
-    {SDL_SCANCODE_EQUALS, 0, KMOD_SHIFT, 11},   /* = */
+    {SDL_SCANCODE_EQUALS, 0, SDL_KMOD_SHIFT, 11},   /* = */
     {SDL_SCANCODE_APOSTROPHE, 1, 0, 7}, /* ' */
-    {SDL_SCANCODE_APOSTROPHE, 0, KMOD_SHIFT, 2},        /* " */
-    {SDL_SCANCODE_5, 0, KMOD_SHIFT, 5}, /* % */
+    {SDL_SCANCODE_APOSTROPHE, 0, SDL_KMOD_SHIFT, 2},        /* " */
+    {SDL_SCANCODE_5, 0, SDL_KMOD_SHIFT, 5}, /* % */
 
 };
 

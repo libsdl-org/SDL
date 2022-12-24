@@ -280,19 +280,19 @@ int keyboard_getSetModState(void *arg)
     SDL_Keymod currentState;
     SDL_Keymod newState;
     SDL_Keymod allStates =
-        KMOD_NONE |
-        KMOD_LSHIFT |
-        KMOD_RSHIFT |
-        KMOD_LCTRL |
-        KMOD_RCTRL |
-        KMOD_LALT |
-        KMOD_RALT |
-        KMOD_LGUI |
-        KMOD_RGUI |
-        KMOD_NUM |
-        KMOD_CAPS |
-        KMOD_MODE |
-        KMOD_SCROLL;
+        SDL_KMOD_NONE |
+        SDL_KMOD_LSHIFT |
+        SDL_KMOD_RSHIFT |
+        SDL_KMOD_LCTRL |
+        SDL_KMOD_RCTRL |
+        SDL_KMOD_LALT |
+        SDL_KMOD_RALT |
+        SDL_KMOD_LGUI |
+        SDL_KMOD_RGUI |
+        SDL_KMOD_NUM |
+        SDL_KMOD_CAPS |
+        SDL_KMOD_MODE |
+        SDL_KMOD_SCROLL;
 
     /* Get state, cache for later reset */
     result = SDL_GetModState();

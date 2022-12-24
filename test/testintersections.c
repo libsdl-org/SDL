@@ -232,7 +232,7 @@ void loop()
         case SDL_KEYDOWN:
             switch (event.key.keysym.sym) {
             case 'l':
-                if (event.key.keysym.mod & KMOD_SHIFT) {
+                if (event.key.keysym.mod & SDL_KMOD_SHIFT) {
                     num_lines = 0;
                 } else {
                     add_line(rand() % 640, rand() % 480, rand() % 640,
@@ -240,7 +240,7 @@ void loop()
                 }
                 break;
             case 'r':
-                if (event.key.keysym.mod & KMOD_SHIFT) {
+                if (event.key.keysym.mod & SDL_KMOD_SHIFT) {
                     num_rects = 0;
                 } else {
                     add_rect(rand() % 640, rand() % 480, rand() % 640,

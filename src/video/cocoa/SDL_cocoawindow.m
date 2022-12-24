@@ -868,7 +868,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     {
         const unsigned int newflags = [NSEvent modifierFlags] & NSEventModifierFlagCapsLock;
         _data.videodata.modifierFlags = (_data.videodata.modifierFlags & ~NSEventModifierFlagCapsLock) | newflags;
-        SDL_ToggleModState(KMOD_CAPS, newflags != 0);
+        SDL_ToggleModState(SDL_KMOD_CAPS, newflags != 0);
     }
 }
 
@@ -1131,7 +1131,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     /* Also note that SDL_SendKeyboardKey expects all capslock events to be
        keypresses; it won't toggle the mod state if you send a keyrelease.  */
     const SDL_bool osenabled = ([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE;
-    const SDL_bool sdlenabled = (SDL_GetModState() & KMOD_CAPS) ? SDL_TRUE : SDL_FALSE;
+    const SDL_bool sdlenabled = (SDL_GetModState() & SDL_KMOD_CAPS) ? SDL_TRUE : SDL_FALSE;
     if (osenabled ^ sdlenabled) {
         SDL_SendKeyboardKey(0, SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
         SDL_SendKeyboardKey(0, SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
