@@ -295,6 +295,16 @@ endif()
 # Emscripten, this value must be at its default value.
 set(ORIG_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
 
+# SDL2's version script adds all symbols in an anonymous version tag
+check_linker_flag(C "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym" HAVE_WL_VERSION_SCRIPT)
+if(HAVE_WL_VERSION_SCRIPT)
+  list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
+else()
+  if((LINUX AND LIBC_IS_GLIBC) OR ANDROID)
+    message(FATAL_ERROR "Linker does not support '-Wl,--version-script=xxx.sym'. This is required on the current host platform (${SDL_CMAKE_PLATFORM}).")
+  endif()
+endif()
+
 if(CYGWIN)
   # We build SDL on cygwin without the UNIX emulation layer
   target_include_directories(sdl-build-options INTERFACE "/usr/include/mingw")
@@ -3299,6 +3309,8 @@ if(SDL_SHARED)
   # alias target for in-tree builds
   add_library(SDL2::SDL2 ALIAS SDL2)
   set_target_properties(SDL2 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+  set_target_properties(SDL2 PROPERTIES LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
+  set_target_properties(SDL2 PROPERTIES INTERFACE_LINK_DEPENDS "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym>")
   if(NOT SDL_LIBC)
     if(SDL_CPU_X86)
       # FIXME: should be added for all architectures (missing symbols for ARM)
