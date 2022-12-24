@@ -37,7 +37,10 @@ def main():
         raise Exception("Couldn't find %s in %s" % (args.oldname, header))
 
     # Replace the symbol in source code and documentation
-    replacements = { args.oldname: args.newname }
+    replacements = {
+        args.oldname: args.newname,
+        args.oldname + "_REAL": args.newname + "_REAL"
+    }
     regex = create_regex_from_replacements(replacements)
     for dir in ["src", "test", "include", "docs", "Xcode-iOS/Demos"]:
         replace_symbols_in_path(SDL_ROOT / dir, regex, replacements)
