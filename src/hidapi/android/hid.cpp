@@ -24,6 +24,7 @@
 //
 //          This layer glues the hidapi API to Android's USB and BLE stack.
 
+#include "hid.h"
 
 // Common to stub version and non-stub version of functions
 #include <jni.h>
@@ -1429,3 +1430,15 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceFeatureReport)
 }
 
 #endif /* SDL_HIDAPI_DISABLED */
+
+extern "C"
+    JNINativeMethod HIDDeviceManager_tab[8] = {
+        { "HIDDeviceRegisterCallback", "()V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallback) },
+        { "HIDDeviceReleaseCallback", "()V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceReleaseCallback) },
+        { "HIDDeviceConnected", "(ILjava/lang/String;IILjava/lang/String;ILjava/lang/String;Ljava/lang/String;IIII)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceConnected) },
+        { "HIDDeviceOpenPending", "(I)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenPending) },
+        { "HIDDeviceOpenResult", "(IZ)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenResult) },
+        { "HIDDeviceDisconnected", "(I)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceDisconnected) },
+        { "HIDDeviceInputReport", "(I[B)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceInputReport) },
+        { "HIDDeviceFeatureReport", "(I[B)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceFeatureReport) }
+    };
