@@ -1519,5 +1519,3 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI */
-
-/* vi: set ts=4 sw=4 expandtab: */

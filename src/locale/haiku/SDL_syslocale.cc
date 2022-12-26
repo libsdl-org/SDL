@@ -72,6 +72,3 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         }
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */
-

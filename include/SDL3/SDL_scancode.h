@@ -434,5 +434,3 @@ typedef enum
 } SDL_Scancode;
 
 #endif /* SDL_scancode_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

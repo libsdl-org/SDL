@@ -92,5 +92,3 @@ TryOpenInRomfs(const char *file, const char *mode)
     SDL_free(prefixed_filepath);
     return fp;
 }
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

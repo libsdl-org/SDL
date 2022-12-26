@@ -26,5 +26,3 @@
 extern int RISCOS_InitMouse(_THIS);
 
 #endif /* SDL_riscosmouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

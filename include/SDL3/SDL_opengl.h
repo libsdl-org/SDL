@@ -2121,5 +2121,3 @@ typedef void (APIENTRYP PFNGLMULTITEXCOORD4SVARBPROC) (GLenum target, const GLsh
 #endif /* !__IOS__ */
 
 #endif /* SDL_opengl_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

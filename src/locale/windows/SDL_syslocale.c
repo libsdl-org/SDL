@@ -108,5 +108,3 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         SDL_SYS_GetPreferredLocales_vista(buf, buflen); /* available on Vista and later. */
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

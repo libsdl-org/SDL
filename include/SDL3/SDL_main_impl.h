@@ -198,5 +198,3 @@ int main(int argc, char *argv[])
 #endif /* SDL_MAIN_HANDLED */
 
 #endif /* SDL_main_windows_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

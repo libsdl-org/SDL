@@ -4777,5 +4777,3 @@ void SDL_Metal_GetDrawableSize(SDL_Window *window, int *w, int *h)
         SDL_GetWindowSizeInPixels(window, w, h);
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

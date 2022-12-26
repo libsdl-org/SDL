@@ -450,5 +450,3 @@ void Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
-
-/* vi: set ts=4 sw=4 expandtab: */

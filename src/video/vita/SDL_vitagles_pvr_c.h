@@ -30,5 +30,3 @@ extern SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window);
 extern int VITA_GLES_LoadLibrary(_THIS, const char *path);
 
 #endif /* SDL_vitagles_pvr_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

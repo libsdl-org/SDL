@@ -217,5 +217,3 @@ int SDL_CondWaitTimeoutNS_generic(SDL_cond *_cond, SDL_mutex *mutex, Sint64 time
 
     return retval;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

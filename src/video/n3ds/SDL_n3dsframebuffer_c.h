@@ -29,5 +29,3 @@ int SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *
 void SDL_N3DS_DestroyWindowFramebuffer(_THIS, SDL_Window *window);
 
 #endif /* SDL_n3dsframebuffer_c_h_ */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

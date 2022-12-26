@@ -116,5 +116,3 @@ extern NSImage *Cocoa_CreateImage(SDL_Surface *surface);
 #endif
 
 #endif /* SDL_cocoavideo_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

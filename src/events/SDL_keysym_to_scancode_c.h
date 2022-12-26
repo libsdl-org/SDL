@@ -26,5 +26,3 @@
 extern SDL_Scancode SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode);
 
 #endif /* SDL_keysym_to_scancode_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

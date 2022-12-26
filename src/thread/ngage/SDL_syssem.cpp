@@ -159,5 +159,3 @@ int SDL_SemPost(SDL_sem *sem)
     sema.Signal();
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

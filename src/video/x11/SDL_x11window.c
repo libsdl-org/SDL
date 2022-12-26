@@ -1774,5 +1774,3 @@ int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title)
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -219,5 +219,3 @@ SDL_WAYLAND_SYM(int, libdecor_dispatch, (struct libdecor *, int))
 #undef SDL_WAYLAND_INTERFACE
 
 /* *INDENT-ON* */ /* clang-format on */
-
-/* vi: set ts=4 sw=4 expandtab: */

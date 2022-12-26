@@ -211,5 +211,3 @@ extern HidP_GetData_t SDL_HidP_GetData;
 #endif /* !__WINRT__ */
 
 #endif /* SDL_hid_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

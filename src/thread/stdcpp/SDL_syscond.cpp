@@ -139,5 +139,3 @@ SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
         return SDL_SetError("Unable to wait on a C++ condition variable: code=%d; %s", ex.code(), ex.what());
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

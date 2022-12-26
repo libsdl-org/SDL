@@ -453,5 +453,3 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
 #endif /* __WIN32__ || __WINGDK__ */
 
 #endif /* !SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -57,5 +57,3 @@ extern void SDL_TraverseShapeTree(SDL_ShapeTree *tree, SDL_TraversalFunction fun
 extern void SDL_FreeShapeTree(SDL_ShapeTree **shape_tree);
 
 #endif /* SDL_shape_internals_h_ */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

@@ -4484,5 +4484,3 @@ int SDL_RenderSetVSync(SDL_Renderer *renderer, int vsync)
     }
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

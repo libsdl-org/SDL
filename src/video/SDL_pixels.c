@@ -1142,5 +1142,3 @@ void SDL_FreeBlitMap(SDL_BlitMap *map)
         SDL_free(map);
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

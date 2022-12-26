@@ -423,5 +423,3 @@ AudioBootStrap JACK_bootstrap = {
 };
 
 #endif /* SDL_AUDIO_DRIVER_JACK */
-
-/* vi: set ts=4 sw=4 expandtab: */

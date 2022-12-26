@@ -206,5 +206,3 @@ void SDL_AtomicUnlock(SDL_SpinLock *lock)
     *lock = 0;
 #endif
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

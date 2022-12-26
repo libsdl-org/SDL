@@ -466,5 +466,3 @@ extern DECLSPEC int SDLCALL SDL_ShowCursor(int toggle);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_mouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

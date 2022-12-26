@@ -265,5 +265,3 @@ SDL_bool PSP_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_PSP */
-
-/* vi: set ts=4 sw=4 expandtab: */

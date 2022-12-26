@@ -111,5 +111,3 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
 
     return ret;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

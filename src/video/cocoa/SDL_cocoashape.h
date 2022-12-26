@@ -37,5 +37,3 @@ extern int Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SD
 extern int Cocoa_ResizeWindowShape(SDL_Window *window);
 
 #endif /* SDL_cocoashape_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

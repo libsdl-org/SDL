@@ -34,5 +34,3 @@ struct SDL_PrivateAudioData
 };
 
 #endif /* SDL_haikuaudio_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

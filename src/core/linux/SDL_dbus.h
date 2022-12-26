@@ -97,5 +97,3 @@ extern SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit);
 #endif /* HAVE_DBUS_DBUS_H */
 
 #endif /* SDL_dbus_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

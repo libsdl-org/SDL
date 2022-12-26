@@ -51,5 +51,3 @@ extern int VITA_GLES_SetSwapInterval(_THIS, int interval);
 extern int VITA_GLES_GetSwapInterval(_THIS);
 
 #endif /* SDL_vitagles_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

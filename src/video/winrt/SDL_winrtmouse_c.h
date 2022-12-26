@@ -36,5 +36,3 @@ extern SDL_bool WINRT_UsingRelativeMouseMode;
 #endif
 
 #endif /* SDL_winrtmouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

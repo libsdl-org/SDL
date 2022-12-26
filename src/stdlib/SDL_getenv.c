@@ -298,5 +298,3 @@ int main(int argc, char *argv[])
     return 0;
 }
 #endif /* TEST_MAIN */
-
-/* vi: set ts=4 sw=4 expandtab: */

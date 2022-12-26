@@ -179,5 +179,3 @@ void vita_mem_fragment_usse_free(SceUID uid)
 }
 
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -1484,5 +1484,3 @@ void SDL_ChooseAudioConverters(void)
 
     SDL_assert(converters_chosen == SDL_TRUE);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

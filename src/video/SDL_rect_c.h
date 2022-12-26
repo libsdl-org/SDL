@@ -27,5 +27,3 @@
 extern SDL_bool SDL_GetSpanEnclosingRect(int width, int height, int numrects, const SDL_Rect *rects, SDL_Rect *span);
 
 #endif /* SDL_rect_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

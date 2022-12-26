@@ -147,5 +147,3 @@ SDL_bool VIVANTE_Vulkan_CreateSurface(_THIS,
 }
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

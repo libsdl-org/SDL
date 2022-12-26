@@ -300,5 +300,3 @@ void SDL_ClearHints(void)
         SDL_free(hint);
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -122,5 +122,3 @@ SDL_HasExactlyOneBitSet32(Uint32 x)
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_bits_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

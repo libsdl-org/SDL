@@ -30,5 +30,3 @@ extern int SDL_RLESurface(SDL_Surface *surface);
 extern void SDL_UnRLESurface(SDL_Surface *surface, int recode);
 
 #endif /* SDL_RLEaccel_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

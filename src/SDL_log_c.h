@@ -29,5 +29,3 @@ extern void SDL_LogInit(void);
 extern void SDL_LogQuit(void);
 
 #endif /* SDL_log_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

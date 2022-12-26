@@ -50,5 +50,3 @@ extern void HAIKU_GL_RebootContexts(_THIS);
 #endif /* SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL */
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -1363,5 +1363,3 @@ int SDL_SYS_HapticStopAll(SDL_Haptic *haptic)
 }
 
 #endif /* SDL_HAPTIC_IOKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

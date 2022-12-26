@@ -483,5 +483,3 @@ SDL_SensorDriver SDL_WINDOWS_SensorDriver = {
 };
 
 #endif /* SDL_SENSOR_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

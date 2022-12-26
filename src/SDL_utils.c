@@ -48,5 +48,3 @@ int SDL_powerof2(int x)
 
     return value;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

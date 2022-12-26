@@ -703,5 +703,3 @@ const char *GuessControllerName( int nVID, int nPID )
 }
 
 #undef MAKE_CONTROLLER_ID
-
-/* vi: set ts=4 sw=4 noexpandtab: */

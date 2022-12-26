@@ -140,5 +140,3 @@ int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doe
 }
 
 #endif /* SDL_THREAD_VITA */
-
-/* vi: set ts=4 sw=4 expandtab: */

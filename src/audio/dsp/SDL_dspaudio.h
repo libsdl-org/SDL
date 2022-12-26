@@ -40,4 +40,3 @@ struct SDL_PrivateAudioData
 #define FUDGE_TICKS 10 /* The scheduler overhead ticks per frame */
 
 #endif /* SDL_dspaudio_h_ */
-/* vi: set ts=4 sw=4 expandtab: */

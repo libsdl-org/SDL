@@ -354,5 +354,3 @@ static void Emscripten_SetWindowTitle(_THIS, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
-
-/* vi: set ts=4 sw=4 expandtab: */

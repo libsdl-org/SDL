@@ -391,5 +391,3 @@ void RPI_RestoreWindow(_THIS, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_RPI */
-
-/* vi: set ts=4 sw=4 expandtab: */

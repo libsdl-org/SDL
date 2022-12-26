@@ -47,5 +47,3 @@ typedef struct SDL_joylist_item
 typedef SDL_joylist_item joystick_hwdata;
 
 #endif /* SDL_JOYSTICK_EMSCRIPTEN */
-
-/* vi: set ts=4 sw=4 expandtab: */

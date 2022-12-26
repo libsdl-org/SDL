@@ -79,5 +79,3 @@ extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);
 extern void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle);
 
 #endif /* SDL_keyboard_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

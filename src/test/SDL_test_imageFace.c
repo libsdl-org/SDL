@@ -231,5 +231,3 @@ SDL_Surface *SDLTest_ImageFace()
         SDL_PIXELFORMAT_RGBA32);
     return surface;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

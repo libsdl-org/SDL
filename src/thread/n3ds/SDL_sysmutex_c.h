@@ -31,5 +31,3 @@ struct SDL_mutex
 };
 
 #endif /* SDL_sysmutex_c_h */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

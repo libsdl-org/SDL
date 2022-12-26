@@ -487,5 +487,3 @@ static void SDL_InitDynamicAPI(void)
 }
 
 #endif /* SDL_DYNAMIC_API */
-
-/* vi: set ts=4 sw=4 expandtab: */

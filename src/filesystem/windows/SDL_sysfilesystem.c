@@ -183,5 +183,3 @@ SDL_GetPrefPath(const char *org, const char *app)
     return NULL;
 }
 #endif /* SDL_FILESYSTEM_XBOX */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -26,5 +26,3 @@
 extern int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1);
 
 #endif /* SDL_displayevents_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

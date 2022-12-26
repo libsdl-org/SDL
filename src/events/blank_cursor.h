@@ -29,5 +29,3 @@
 
 static const unsigned char blank_cdata[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 static const unsigned char blank_cmask[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-
-/* vi: set ts=4 sw=4 expandtab: */

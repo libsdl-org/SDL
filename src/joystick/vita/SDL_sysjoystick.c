@@ -394,5 +394,3 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_VITA */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -145,5 +145,3 @@ SDL_HasPrimarySelectionText(void)
 
     return SDL_FALSE;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

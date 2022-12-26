@@ -442,9 +442,6 @@ int main(void)
     }
 
     printf("};\n\n");
-    printf("/* vi: set ts=4 sw=4 expandtab: */\n\n");
 
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

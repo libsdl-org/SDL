@@ -29,5 +29,3 @@
 int SDL_powerof2(int x);
 
 #endif /* SDL_utils_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

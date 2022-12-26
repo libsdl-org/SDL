@@ -63,5 +63,3 @@ void SDLTest_LogError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_test_log_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

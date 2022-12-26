@@ -522,5 +522,3 @@ void SDL_SensorUpdate(void)
 
     SDL_UnlockSensors();
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

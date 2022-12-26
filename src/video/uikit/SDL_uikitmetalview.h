@@ -53,5 +53,3 @@ void UIKit_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
 #endif /* SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
 
 #endif /* SDL_uikitmetalview_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

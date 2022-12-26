@@ -1224,5 +1224,3 @@ static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
 }
 
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */
-
-/* vi: set ts=4 sw=4 expandtab: */

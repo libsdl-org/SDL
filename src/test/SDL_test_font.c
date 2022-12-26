@@ -3487,5 +3487,3 @@ void SDLTest_CleanupTextDrawing(void)
 
     SDLTest_CharTextureCacheList = NULL;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

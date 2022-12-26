@@ -28,5 +28,3 @@
 extern SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value);
 
 #endif /* SDL_hints_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

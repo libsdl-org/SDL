@@ -232,5 +232,3 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverCombined = {
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI */
-
-/* vi: set ts=4 sw=4 expandtab: */

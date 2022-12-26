@@ -267,5 +267,3 @@ int SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
 {
     return SDL_cond_impl_active.WaitTimeoutNS(cond, mutex, timeoutNS);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

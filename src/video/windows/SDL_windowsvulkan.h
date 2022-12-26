@@ -48,5 +48,3 @@ SDL_bool WIN_Vulkan_CreateSurface(_THIS,
 #endif
 
 #endif /* SDL_windowsvulkan_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

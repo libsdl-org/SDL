@@ -200,5 +200,3 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
         info->dst += info->dst_pitch;
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -749,5 +749,3 @@ class SDL_BWin : public BWindow
  *                         buffer provided by DirectConnected() is invalidated.
  */
 #endif /* SDL_BWin_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

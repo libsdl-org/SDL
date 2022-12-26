@@ -48,5 +48,3 @@ extern SDL_EGLSurface Cocoa_GLES_GetEGLSurface(_THIS, SDL_Window *window);
 #endif /* SDL_VIDEO_OPENGL_EGL */
 
 #endif /* SDL_cocoaopengles_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

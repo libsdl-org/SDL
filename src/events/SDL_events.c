@@ -1407,5 +1407,3 @@ void SDL_EventsQuit(void)
     SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
 #endif
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

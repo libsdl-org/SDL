@@ -2687,5 +2687,3 @@ int Android_JNI_OpenURL(const char *url)
 }
 
 #endif /* __ANDROID__ */
-
-/* vi: set ts=4 sw=4 expandtab: */

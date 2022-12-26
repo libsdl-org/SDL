@@ -55,5 +55,3 @@ typedef SDL_joylist_item joystick_hwdata;
 #endif /* SDL_sysjoystick_c_h_ */
 
 #endif /* SDL_JOYSTICK_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

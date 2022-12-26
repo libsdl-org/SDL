@@ -319,5 +319,3 @@ extern "C"
 }                              // extern "C"
 
 #endif /* SDL_JOYSTICK_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

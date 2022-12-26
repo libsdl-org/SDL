@@ -29,5 +29,3 @@ extern int SDL_DUMMY_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SD
 extern void SDL_DUMMY_DestroyWindowFramebuffer(_THIS, SDL_Window *window);
 
 #endif /* SDL_nullframebuffer_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

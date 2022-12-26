@@ -29,5 +29,3 @@ extern int RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay *display,
                                  SDL_DisplayMode *mode);
 
 #endif /* SDL_riscosmodes_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

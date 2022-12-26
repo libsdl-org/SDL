@@ -1075,5 +1075,3 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_IOKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

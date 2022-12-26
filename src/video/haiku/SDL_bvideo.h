@@ -38,5 +38,3 @@ extern void HAIKU_DeleteDevice(_THIS);
 #endif
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

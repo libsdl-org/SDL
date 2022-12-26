@@ -29,5 +29,3 @@ extern void VITA_InitKeyboard(void);
 extern void VITA_PollKeyboard(void);
 
 #endif /* _SDL_vitakeyboard_h */
-
-/* vi: set ts=4 sw=4 expandtab: */

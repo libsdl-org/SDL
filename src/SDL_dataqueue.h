@@ -50,5 +50,3 @@ size_t SDL_CountDataQueue(SDL_DataQueue *queue);
 void *SDL_ReserveSpaceInDataQueue(SDL_DataQueue *queue, const size_t len);
 
 #endif /* SDL_dataqueue_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

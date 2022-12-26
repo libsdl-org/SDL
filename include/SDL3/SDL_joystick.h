@@ -1026,5 +1026,3 @@ extern DECLSPEC SDL_JoystickPowerLevel SDLCALL SDL_JoystickCurrentPowerLevel(SDL
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_joystick_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

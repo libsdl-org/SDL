@@ -363,5 +363,3 @@ HapticPrintSupported(SDL_Haptic *ptr)
         SDL_Log("      status\n");
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

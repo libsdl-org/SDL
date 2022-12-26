@@ -425,5 +425,3 @@ static void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVE
 }
 
 #endif // SDL_AUDIO_DRIVER_WASAPI && defined(__WINRT__)
-
-/* vi: set ts=4 sw=4 expandtab: */

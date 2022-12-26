@@ -38,5 +38,3 @@ extern int OFFSCREEN_CreateWindow(_THIS, SDL_Window *window);
 extern void OFFSCREEN_DestroyWindow(_THIS, SDL_Window *window);
 
 #endif /* _SDL_offscreenwindow */
-
-/* vi: set ts=4 sw=4 expandtab: */

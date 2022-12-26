@@ -157,5 +157,3 @@ int SDL_KMSDRM_LoadSymbols(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */
-
-/* vi: set ts=4 sw=4 expandtab: */

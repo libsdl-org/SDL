@@ -179,5 +179,3 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
 
 #endif /* SDL_waylanddyn_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

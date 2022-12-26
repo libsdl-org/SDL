@@ -203,5 +203,3 @@ int SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
 }
 
 #endif /* SDL_THREAD_VITA */
-
-/* vi: set ts=4 sw=4 expandtab: */

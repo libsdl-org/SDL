@@ -126,7 +126,6 @@ sub close_file {
 
 #endif /* SDL_HAVE_BLIT_AUTO */
 
-/* vi: set ts=4 sw=4 expandtab: */
 __EOF__
     close FILE;
     if ( ! -f $name || system("cmp -s $name $name.new") != 0 ) {

@@ -2439,5 +2439,3 @@ SDL_RenderGetD3D11Device(SDL_Renderer *renderer)
     return device;
 }
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
-
-/* vi: set ts=4 sw=4 expandtab: */

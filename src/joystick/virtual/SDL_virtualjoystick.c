@@ -740,5 +740,3 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_VIRTUAL */
-
-/* vi: set ts=4 sw=4 expandtab: */

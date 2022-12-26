@@ -95,5 +95,3 @@ int main(int argc, char *argv[])
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Total errors: %d\n", errors);
     return errors ? errors + 1 : 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

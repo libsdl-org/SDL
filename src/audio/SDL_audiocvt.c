@@ -1405,5 +1405,3 @@ void SDL_FreeAudioStream(SDL_AudioStream *stream)
         SDL_free(stream);
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

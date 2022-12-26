@@ -46,5 +46,3 @@ extern void Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context);
 extern SDL_EGLSurface Wayland_GLES_GetEGLSurface(_THIS, SDL_Window *window);
 
 #endif /* SDL_waylandopengles_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -113,5 +113,3 @@ SDL_EGL_SwapWindow_impl(X11)
     SDL_EGL_MakeCurrent_impl(X11)
 
 #endif /* SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_OPENGL_EGL */
-
-    /* vi: set ts=4 sw=4 expandtab: */

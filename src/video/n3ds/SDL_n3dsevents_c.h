@@ -27,5 +27,3 @@
 extern void N3DS_PumpEvents(_THIS);
 
 #endif /* SDL_n3dsevents_c_h_ */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

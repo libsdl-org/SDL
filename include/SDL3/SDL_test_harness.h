@@ -130,5 +130,3 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_test_h_arness_h */
-
-/* vi: set ts=4 sw=4 expandtab: */

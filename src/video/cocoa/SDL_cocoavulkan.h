@@ -50,5 +50,3 @@ void Cocoa_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
 #endif
 
 #endif /* SDL_cocoavulkan_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

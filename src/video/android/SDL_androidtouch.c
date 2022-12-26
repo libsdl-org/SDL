@@ -83,5 +83,3 @@ void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_fin
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -139,5 +139,3 @@ void WIN_UnloadXInputDLL(void)
 #ifdef __cplusplus
 }
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -197,5 +197,3 @@ void Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
-
-/* vi: set ts=4 sw=4 expandtab: */

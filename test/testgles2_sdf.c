@@ -788,5 +788,3 @@ int main(int argc, char *argv[])
 }
 
 #endif /* HAVE_OPENGLES2 */
-
-/* vi: set ts=4 sw=4 expandtab: */

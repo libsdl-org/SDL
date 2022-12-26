@@ -563,5 +563,3 @@ void UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect)
 #endif /* SDL_IPHONE_KEYBOARD */
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

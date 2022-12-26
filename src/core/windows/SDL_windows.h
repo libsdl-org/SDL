@@ -157,5 +157,3 @@ extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
 #endif
 
 #endif /* _INCLUDED_WINDOWS_H */
-
-/* vi: set ts=4 sw=4 expandtab: */

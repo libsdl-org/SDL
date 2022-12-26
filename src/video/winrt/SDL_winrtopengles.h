@@ -65,5 +65,3 @@ typedef EGLDisplay(EGLAPIENTRY *eglGetPlatformDisplayEXT_Function)(EGLenum, void
 #endif /* SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL */
 
 #endif /* SDL_winrtopengles_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

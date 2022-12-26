@@ -33,5 +33,3 @@ extern void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect);
 extern void SDL_Fcitx_PumpEvents(void);
 
 #endif /* SDL_fcitx_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

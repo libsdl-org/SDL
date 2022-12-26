@@ -33,5 +33,3 @@ int SDL_SYS_OpenURL(const char *url)
         return status == noErr ? 0 : -1;
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

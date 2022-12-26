@@ -1852,5 +1852,3 @@ SDLTest_TestSuiteReference rectTestSuite = {
     rectTests,
     NULL
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

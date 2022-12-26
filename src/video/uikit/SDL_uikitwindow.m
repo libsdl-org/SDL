@@ -479,5 +479,3 @@ int SDL_iPhoneSetAnimationCallback(SDL_Window *window, int interval, void (*call
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

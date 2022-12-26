@@ -304,5 +304,3 @@ typedef unsigned int uintptr_t;
 #define SDL_FILESYSTEM_WINDOWS  1
 
 #endif /* SDL_build_config_windows_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

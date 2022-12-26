@@ -1450,5 +1450,3 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 = {
 #endif /* SDL_JOYSTICK_HIDAPI_PS5 */
 
 #endif /* SDL_JOYSTICK_HIDAPI */
-
-/* vi: set ts=4 sw=4 expandtab: */

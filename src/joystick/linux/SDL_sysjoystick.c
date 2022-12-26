@@ -2008,5 +2008,3 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_LINUX */
-
-/* vi: set ts=4 sw=4 expandtab: */

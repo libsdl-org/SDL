@@ -251,5 +251,3 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

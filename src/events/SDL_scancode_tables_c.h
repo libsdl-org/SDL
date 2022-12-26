@@ -31,5 +31,3 @@ typedef enum
 
 extern const SDL_Scancode *SDL_GetScancodeTable(SDL_ScancodeTable table, int *num_entries);
 extern SDL_Scancode SDL_GetScancodeFromTable(SDL_ScancodeTable table, int keycode);
-
-/* vi: set ts=4 sw=4 expandtab: */

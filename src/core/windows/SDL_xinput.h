@@ -263,5 +263,3 @@ extern DWORD SDL_XInputVersion; /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
 #define XINPUTGETBATTERYINFORMATION SDL_XInputGetBatteryInformation
 
 #endif /* SDL_xinput_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

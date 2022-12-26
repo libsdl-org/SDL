@@ -90,5 +90,3 @@ SDL_bool HAIKU_HasClipboardText(_THIS) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

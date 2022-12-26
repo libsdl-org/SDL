@@ -144,5 +144,3 @@ void Android_ActivityMutex_Lock_Running(void);
 }
 /* *INDENT-ON* */
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

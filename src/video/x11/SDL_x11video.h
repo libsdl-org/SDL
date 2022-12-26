@@ -159,5 +159,3 @@ typedef struct SDL_VideoData
 extern SDL_bool X11_UseDirectColorVisuals(void);
 
 #endif /* SDL_x11video_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

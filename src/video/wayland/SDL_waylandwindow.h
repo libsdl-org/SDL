@@ -150,5 +150,3 @@ extern void Wayland_InitWin(SDL_VideoData *data);
 extern void Wayland_QuitWin(SDL_VideoData *data);
 
 #endif /* SDL_waylandwindow_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

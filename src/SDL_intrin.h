@@ -113,5 +113,3 @@ _m_prefetch(void *__P)
 #endif /* HAVE_IMMINTRIN_H */
 
 #endif /* SDL_intrin_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -122,5 +122,3 @@ VITA_GL_GetProcAddress(_THIS, const char *proc)
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR */
-
-/* vi: set ts=4 sw=4 expandtab: */

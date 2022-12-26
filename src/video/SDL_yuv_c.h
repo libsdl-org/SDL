@@ -34,5 +34,3 @@ extern int SDL_ConvertPixels_YUV_to_YUV(int width, int height, Uint32 src_format
 extern int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, int *pitch);
 
 #endif /* SDL_yuv_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

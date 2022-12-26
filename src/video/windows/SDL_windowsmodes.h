@@ -48,5 +48,3 @@ extern void WIN_RefreshDisplays(_THIS);
 extern void WIN_QuitModes(_THIS);
 
 #endif /* SDL_windowsmodes_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

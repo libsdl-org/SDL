@@ -43,5 +43,3 @@ double SDL_uclibc_sqrt(double x);
 double SDL_uclibc_tan(double x);
 
 #endif /* math_libm_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

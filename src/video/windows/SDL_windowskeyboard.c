@@ -1740,5 +1740,3 @@ void WIN_ClearComposition(_THIS)
 #endif /* SDL_DISABLE_WINDOWS_IME */
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

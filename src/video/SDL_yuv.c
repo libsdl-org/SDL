@@ -1984,5 +1984,3 @@ int SDL_ConvertPixels_YUV_to_YUV(int width, int height,
     return SDL_SetError("SDL not built with YUV support");
 #endif
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -75,5 +75,3 @@ int main(int argc, char *argv[])
 }
 
 /* end of testpower.c ... */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -55,5 +55,3 @@ extern void SDL_DelTouch(SDL_TouchID id);
 extern void SDL_TouchQuit(void);
 
 #endif /* SDL_touch_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

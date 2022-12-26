@@ -888,5 +888,3 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_USBHID */
-
-/* vi: set ts=4 sw=4 expandtab: */

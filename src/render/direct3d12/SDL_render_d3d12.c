@@ -3078,5 +3078,3 @@ extern "C"
     return device;
 }
 #endif /* defined(__WIN32__) || defined(__GDK__) */
-
-/* vi: set ts=4 sw=4 expandtab: */

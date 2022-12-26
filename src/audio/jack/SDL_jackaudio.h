@@ -37,5 +37,3 @@ struct SDL_PrivateAudioData
 };
 
 #endif /* SDL_jackaudio_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

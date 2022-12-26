@@ -117,5 +117,3 @@ int main(int argc, char *argv[])
     quit(result);
     return result;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

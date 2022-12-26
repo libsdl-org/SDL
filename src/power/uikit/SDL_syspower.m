@@ -104,5 +104,3 @@ SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percent)
 
 #endif /* SDL_POWER_UIKIT */
 #endif /* SDL_POWER_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

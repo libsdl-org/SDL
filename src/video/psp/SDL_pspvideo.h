@@ -86,5 +86,3 @@ void PSP_HideScreenKeyboard(_THIS, SDL_Window *window);
 SDL_bool PSP_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 
 #endif /* SDL_pspvideo_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

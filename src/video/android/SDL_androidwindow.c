@@ -213,5 +213,3 @@ int Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

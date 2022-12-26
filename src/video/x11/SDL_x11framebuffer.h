@@ -32,5 +32,3 @@ extern int X11_UpdateWindowFramebuffer(_THIS, SDL_Window *window,
 extern void X11_DestroyWindowFramebuffer(_THIS, SDL_Window *window);
 
 #endif /* SDL_x11framebuffer_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

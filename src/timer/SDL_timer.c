@@ -600,5 +600,3 @@ void SDL_Delay(Uint32 ms)
 {
     SDL_DelayNS(SDL_MS_TO_NS(ms));
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

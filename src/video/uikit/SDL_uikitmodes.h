@@ -52,5 +52,3 @@ extern void UIKit_QuitModes(_THIS);
 extern int UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 
 #endif /* SDL_uikitmodes_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

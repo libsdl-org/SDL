@@ -48,5 +48,3 @@ void aaudio_PauseDevices(void);
 SDL_bool aaudio_DetectBrokenPlayState(void);
 
 #endif /* _SDL_aaudio_h */
-
-/* vi: set ts=4 sw=4 expandtab: */

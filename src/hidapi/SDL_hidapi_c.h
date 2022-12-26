@@ -31,5 +31,3 @@ extern void SDL_EnableGameCubeAdaptors(void);
 #endif
 
 #endif /* SDL_JOYSTICK_HIDAPI */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

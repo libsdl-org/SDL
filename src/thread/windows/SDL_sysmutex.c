@@ -284,5 +284,3 @@ int SDL_UnlockMutex(SDL_mutex *mutex)
 }
 
 #endif /* SDL_THREAD_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -48,5 +48,3 @@ Uint32 SDL_crc32(Uint32 crc, const void *data, size_t len)
     }
     return crc;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

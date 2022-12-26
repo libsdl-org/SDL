@@ -53,5 +53,3 @@ SDLTest_TestSuiteReference syswmTestSuite = {
     syswmTests,
     NULL
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

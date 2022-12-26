@@ -27,5 +27,3 @@ extern int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
                                int data1, int data2);
 
 #endif /* SDL_windowevents_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

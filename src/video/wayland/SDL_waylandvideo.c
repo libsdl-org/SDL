@@ -1185,5 +1185,3 @@ void Wayland_VideoQuit(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -187,5 +187,3 @@ void VITA_ConvertTouchXYToSDLXY(float *sdl_x, float *sdl_y, int vita_x, int vita
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
-
-/* vi: set ts=4 sw=4 expandtab: */

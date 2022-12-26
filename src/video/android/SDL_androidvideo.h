@@ -46,5 +46,3 @@ extern SDL_sem *Android_PauseSem, *Android_ResumeSem;
 extern SDL_mutex *Android_ActivityMutex;
 
 #endif /* SDL_androidvideo_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

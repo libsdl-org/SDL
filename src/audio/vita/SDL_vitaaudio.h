@@ -42,5 +42,3 @@ struct SDL_PrivateAudioData
 };
 
 #endif /* _SDL_vitaaudio_h */
-
-/* vi: set ts=4 sw=4 expandtab: */

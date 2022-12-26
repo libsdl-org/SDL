@@ -193,5 +193,3 @@ void HAIKU_GL_RebootContexts(_THIS) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL */
-
-/* vi: set ts=4 sw=4 expandtab: */

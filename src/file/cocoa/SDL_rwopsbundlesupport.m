@@ -63,5 +63,3 @@ FILE *SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
 }
 
 #endif /* __APPLE__ */
-
-/* vi: set ts=4 sw=4 expandtab: */

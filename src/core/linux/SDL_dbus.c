@@ -499,5 +499,3 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
     return SDL_TRUE;
 }
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

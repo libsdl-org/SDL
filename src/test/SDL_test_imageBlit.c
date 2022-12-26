@@ -1654,5 +1654,3 @@ SDL_Surface *SDLTest_ImageBlitAlpha()
         SDLTest_imageBlitAlpha.width * SDLTest_imageBlitAlpha.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
     return surface;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

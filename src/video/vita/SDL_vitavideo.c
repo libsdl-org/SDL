@@ -584,5 +584,3 @@ void VITA_PumpEvents(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
-
-/* vi: set ts=4 sw=4 expandtab: */

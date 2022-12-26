@@ -951,5 +951,3 @@ int SDL_LowerSoftStretchNearest(SDL_Surface *s, const SDL_Rect *srcrect,
         return scale_mat_nearest_1(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

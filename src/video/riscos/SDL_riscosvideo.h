@@ -34,5 +34,3 @@ typedef struct SDL_VideoData
 } SDL_VideoData;
 
 #endif /* SDL_riscosvideo_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

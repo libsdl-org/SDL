@@ -42,5 +42,3 @@ extern int Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMod
 extern void Cocoa_QuitModes(_THIS);
 
 #endif /* SDL_cocoamodes_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

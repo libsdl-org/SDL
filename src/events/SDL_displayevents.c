@@ -55,5 +55,3 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
 
     return posted;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

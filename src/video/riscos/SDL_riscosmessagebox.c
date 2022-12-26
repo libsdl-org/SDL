@@ -65,5 +65,3 @@ int RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttoni
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -120,5 +120,3 @@ int SDLTest_Crc32Done(SDLTest_Crc32Context * crcContext);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_test_crc32_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

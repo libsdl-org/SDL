@@ -34,5 +34,3 @@ class NGAGE_Runtime
   public:
     IMPORT_C static void GetScreenInfo(TScreenInfoV01 &screenInfo2);
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

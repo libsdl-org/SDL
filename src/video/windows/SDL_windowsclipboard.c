@@ -151,5 +151,3 @@ void WIN_CheckClipboardUpdate(struct SDL_VideoData *data)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

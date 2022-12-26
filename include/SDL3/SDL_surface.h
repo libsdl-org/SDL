@@ -885,5 +885,3 @@ extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionModeForResol
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_surface_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

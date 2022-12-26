@@ -961,5 +961,3 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_WGI */
-
-/* vi: set ts=4 sw=4 expandtab: */

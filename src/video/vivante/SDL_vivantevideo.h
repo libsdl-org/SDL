@@ -86,5 +86,3 @@ int VIVANTE_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *inf
 void VIVANTE_PumpEvents(_THIS);
 
 #endif /* SDL_vivantevideo_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

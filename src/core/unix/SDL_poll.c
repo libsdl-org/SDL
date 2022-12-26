@@ -93,5 +93,3 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
 
     return result;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

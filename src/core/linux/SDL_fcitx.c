@@ -485,5 +485,3 @@ void SDL_Fcitx_PumpEvents(void)
         usleep(10);
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

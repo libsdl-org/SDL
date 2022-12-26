@@ -790,5 +790,3 @@ int main(int argc, char *argv[])
     SDLTest_CommonQuit(state);
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

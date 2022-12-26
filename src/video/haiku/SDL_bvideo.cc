@@ -311,5 +311,3 @@ int HAIKU_OpenURL(const char *url)
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

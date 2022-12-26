@@ -40,5 +40,3 @@ extern void X11_Xinput2GrabTouch(_THIS, SDL_Window *window);
 extern void X11_Xinput2UngrabTouch(_THIS, SDL_Window *window);
 
 #endif /* SDL_x11xinput2_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

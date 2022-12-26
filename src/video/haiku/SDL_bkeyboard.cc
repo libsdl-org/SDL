@@ -184,5 +184,3 @@ void HAIKU_SetKeyState(int32 bkey, int8 state) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

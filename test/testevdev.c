@@ -1040,5 +1040,3 @@ int main(int argc, char *argv[])
 {
     return run_test() ? 0 : 1;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

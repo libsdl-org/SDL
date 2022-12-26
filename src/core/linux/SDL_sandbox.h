@@ -35,5 +35,3 @@ typedef enum
 SDL_Sandbox SDL_DetectSandbox(void);
 
 #endif /* SDL_SANDBOX_H */
-
-/* vi: set ts=4 sw=4 expandtab: */

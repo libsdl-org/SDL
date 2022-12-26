@@ -190,5 +190,3 @@ extern void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input);
 extern void Wayland_RegisterTimestampListeners(struct SDL_WaylandInput *input);
 
 #endif /* SDL_waylandevents_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

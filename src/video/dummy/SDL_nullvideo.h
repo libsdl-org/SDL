@@ -26,5 +26,3 @@
 #include "../SDL_sysvideo.h"
 
 #endif /* SDL_nullvideo_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

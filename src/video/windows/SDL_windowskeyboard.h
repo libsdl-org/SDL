@@ -38,5 +38,3 @@ extern SDL_bool WIN_IsTextInputShown(_THIS);
 extern SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, struct SDL_VideoData *videodata);
 
 #endif /* SDL_windowskeyboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

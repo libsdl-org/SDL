@@ -340,5 +340,3 @@ static int FindAudioFormat(_THIS)
 }
 
 #endif /* SDL_AUDIO_DRIVER_N3DS */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

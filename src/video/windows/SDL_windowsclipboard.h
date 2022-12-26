@@ -32,5 +32,3 @@ extern SDL_bool WIN_HasClipboardText(_THIS);
 extern void WIN_CheckClipboardUpdate(struct SDL_VideoData *data);
 
 #endif /* SDL_windowsclipboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

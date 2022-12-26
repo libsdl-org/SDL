@@ -61,5 +61,3 @@ void gxm_swap_for_common_dialog(void);
 void gxm_term_for_common_dialog(void);
 
 #endif /* SDL_RENDER_VITA_GXM_TOOLS_H */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -44,5 +44,3 @@ extern int VIVANTE_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext con
 #endif /* SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL */
 
 #endif /* SDL_vivanteopengles_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

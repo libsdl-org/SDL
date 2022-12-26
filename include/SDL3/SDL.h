@@ -79,5 +79,3 @@
 #include <SDL3/SDL_oldnames.h>
 
 #endif /* SDL_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

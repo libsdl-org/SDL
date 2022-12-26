@@ -36,5 +36,3 @@ extern Uint64 SDL_EVDEV_GetEventTimestamp(struct input_event *event);
 #endif /* SDL_INPUT_LINUXEV */
 
 #endif /* SDL_evdev_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

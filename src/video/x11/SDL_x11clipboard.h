@@ -45,5 +45,3 @@ extern Atom X11_GetSDLCutBufferClipboardExternalFormat(Display *display, enum ES
 extern Atom X11_GetSDLCutBufferClipboardInternalFormat(Display *display, enum ESDLX11ClipboardMimeType mime_type);
 
 #endif /* SDL_x11clipboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

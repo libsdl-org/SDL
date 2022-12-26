@@ -232,5 +232,3 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, 
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_test_common_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

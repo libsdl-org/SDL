@@ -677,5 +677,3 @@ void Cocoa_QuitModes(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
-
-/* vi: set ts=4 sw=4 expandtab: */

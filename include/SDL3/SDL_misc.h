@@ -75,5 +75,3 @@ extern DECLSPEC int SDLCALL SDL_OpenURL(const char *url);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_misc_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

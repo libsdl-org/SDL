@@ -154,5 +154,3 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
         dst += dstskip;
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

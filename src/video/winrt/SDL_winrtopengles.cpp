@@ -205,5 +205,3 @@ SDL_EGL_CreateContext_impl(WINRT)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL */
-
-/* vi: set ts=4 sw=4 expandtab: */

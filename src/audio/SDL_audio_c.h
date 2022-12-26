@@ -72,5 +72,3 @@ extern SDL_AudioFilter SDL_Convert_F32_to_U16;
 extern SDL_AudioFilter SDL_Convert_F32_to_S32;
 
 #endif /* SDL_audio_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

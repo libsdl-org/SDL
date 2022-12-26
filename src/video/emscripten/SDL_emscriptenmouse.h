@@ -35,5 +35,3 @@ extern void
 Emscripten_FiniMouse();
 
 #endif /* SDL_emscriptenmouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -1722,5 +1722,3 @@ void SDL_MixAudio(Uint8 *dst, const Uint8 *src, Uint32 len, int volume)
         SDL_MixAudioFormat(dst, src, device->callbackspec.format, len, volume);
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

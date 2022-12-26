@@ -56,5 +56,3 @@ extern void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader);
 extern void GL_DestroyShaderContext(GL_ShaderContext *ctx);
 
 #endif /* SDL_shaders_gl_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

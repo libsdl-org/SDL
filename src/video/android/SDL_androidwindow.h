@@ -48,5 +48,3 @@ typedef struct
 } SDL_WindowData;
 
 #endif /* SDL_androidwindow_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

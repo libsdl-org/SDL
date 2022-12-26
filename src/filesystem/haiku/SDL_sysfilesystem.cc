@@ -102,5 +102,3 @@ SDL_GetPrefPath(const char *org, const char *app)
 }
 
 #endif /* SDL_FILESYSTEM_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

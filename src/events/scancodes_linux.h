@@ -846,5 +846,3 @@ done
 
 
 /* *INDENT-ON* */ /* clang-format on */
-
-/* vi: set ts=4 sw=4 expandtab: */

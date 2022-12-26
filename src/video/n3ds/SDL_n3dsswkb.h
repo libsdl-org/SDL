@@ -34,5 +34,3 @@ void N3DS_StartTextInput(_THIS);
 void N3DS_StopTextInput(_THIS);
 
 #endif /* SDL_n3dskeyboard_h_ */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

@@ -403,5 +403,3 @@ AudioBootStrap EMSCRIPTENAUDIO_bootstrap = {
 };
 
 #endif /* SDL_AUDIO_DRIVER_EMSCRIPTEN */
-
-/* vi: set ts=4 sw=4 expandtab: */

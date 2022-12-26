@@ -2132,5 +2132,3 @@ void SDL_FreeWAV(Uint8 *audio_buf)
 {
     SDL_free(audio_buf);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

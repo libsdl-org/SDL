@@ -45,5 +45,3 @@ extern void HAIKU_DestroyWindow(_THIS, SDL_Window *window);
 extern int HAIKU_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

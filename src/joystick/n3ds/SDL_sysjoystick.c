@@ -279,5 +279,3 @@ SDL_JoystickDriver SDL_N3DS_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_N3DS */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

@@ -602,5 +602,3 @@ void SDL_XINPUT_JoystickQuit(void)
 }
 
 #endif /* SDL_JOYSTICK_XINPUT */
-
-/* vi: set ts=4 sw=4 expandtab: */

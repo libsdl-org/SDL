@@ -303,5 +303,3 @@ void SDL_MemoryBarrierAcquireFunction(void)
 {
     SDL_MemoryBarrierAcquire();
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

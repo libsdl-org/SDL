@@ -22,5 +22,3 @@
 
 /* Stub until we implement threads on this platform */
 typedef int SYS_ThreadHandle;
-
-/* vi: set ts=4 sw=4 expandtab: */

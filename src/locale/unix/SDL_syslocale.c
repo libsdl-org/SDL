@@ -101,5 +101,3 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 
     SDL_small_free(tmp, isstack);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

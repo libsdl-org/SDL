@@ -205,5 +205,3 @@ SDL_SensorDriver SDL_N3DS_SensorDriver = {
 };
 
 #endif /* SDL_SENSOR_N3DS */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -163,5 +163,3 @@
 #define BLUETOOTH_PRODUCT_LUNA_CONTROLLER 0x0419
 
 #endif /* usb_ids_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

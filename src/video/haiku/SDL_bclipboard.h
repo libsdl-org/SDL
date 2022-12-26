@@ -29,5 +29,3 @@ extern char *HAIKU_GetClipboardText(_THIS);
 extern SDL_bool HAIKU_HasClipboardText(_THIS);
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

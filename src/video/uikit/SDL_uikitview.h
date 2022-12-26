@@ -44,5 +44,3 @@
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 
 @end
-
-/* vi: set ts=4 sw=4 expandtab: */

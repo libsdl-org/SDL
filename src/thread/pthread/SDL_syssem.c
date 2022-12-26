@@ -182,4 +182,3 @@ int SDL_SemPost(SDL_sem *sem)
 }
 
 #endif /* __MACOS__ */
-/* vi: set ts=4 sw=4 expandtab: */

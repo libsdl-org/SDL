@@ -41,5 +41,3 @@ extern void
 NGAGE_DestroyWindow(_THIS, SDL_Window *window);
 
 #endif /* _SDL_ngagewindow */
-
-/* vi: set ts=4 sw=4 expandtab: */

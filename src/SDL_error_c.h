@@ -40,5 +40,3 @@ typedef struct SDL_error
 extern SDL_error *SDL_GetErrBuf(void);
 
 #endif /* SDL_error_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

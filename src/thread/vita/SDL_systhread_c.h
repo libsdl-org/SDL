@@ -22,5 +22,3 @@
 #include <psp2/types.h>
 
 typedef SceUID SYS_ThreadHandle;
-
-/* vi: set ts=4 sw=4 expandtab: */

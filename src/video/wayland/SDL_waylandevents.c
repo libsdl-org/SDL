@@ -2838,5 +2838,3 @@ int Wayland_input_ungrab_keyboard(SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -515,5 +515,3 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 @end
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -2466,5 +2466,3 @@ int Cocoa_SetWindowOpacity(_THIS, SDL_Window *window, float opacity)
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
-
-/* vi: set ts=4 sw=4 expandtab: */

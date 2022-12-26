@@ -597,5 +597,3 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, 
 }
 
 #endif /* SDL_INPUT_FBSDKBIO */
-
-/* vi: set ts=4 sw=4 expandtab: */

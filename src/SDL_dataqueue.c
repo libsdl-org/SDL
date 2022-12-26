@@ -325,5 +325,3 @@ SDL_ReserveSpaceInDataQueue(SDL_DataQueue *queue, const size_t len)
     queue->queued_bytes += len;
     return packet->data;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -511,5 +511,3 @@ SDL_Surface *SDLTest_ImagePrimitives()
         SDLTest_imagePrimitives.width * SDLTest_imagePrimitives.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
     return surface;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

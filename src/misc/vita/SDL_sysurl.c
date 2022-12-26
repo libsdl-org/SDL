@@ -39,5 +39,3 @@ int SDL_SYS_OpenURL(const char *url)
     sceAppUtilLaunchWebBrowser(&browser_param);
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

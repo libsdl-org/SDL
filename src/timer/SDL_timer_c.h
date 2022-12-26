@@ -35,5 +35,3 @@ extern int SDL_TimerInit(void);
 extern void SDL_TimerQuit(void);
 
 #endif /* SDL_timer_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

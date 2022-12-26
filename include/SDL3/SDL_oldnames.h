@@ -110,5 +110,3 @@
 #endif /* SDL_ENABLE_OLD_NAMES */
 
 #endif /* SDL_oldnames_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -190,5 +190,3 @@ AudioBootStrap DISKAUDIO_bootstrap = {
 };
 
 #endif /* SDL_AUDIO_DRIVER_DISK */
-
-/* vi: set ts=4 sw=4 expandtab: */

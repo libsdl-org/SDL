@@ -31,5 +31,3 @@ extern void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window);
 extern void Cocoa_SuspendScreenSaver(_THIS);
 
 #endif /* SDL_cocoaevents_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

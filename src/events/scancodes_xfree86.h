@@ -518,5 +518,3 @@ static const SDL_Scancode xvnc_scancode_table[] = {
 #endif /* scancodes_xfree86_h_ */
 
 /* *INDENT-ON* */ /* clang-format on */
-
-/* vi: set ts=4 sw=4 expandtab: */

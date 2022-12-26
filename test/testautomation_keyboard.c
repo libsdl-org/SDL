@@ -700,5 +700,3 @@ SDLTest_TestSuiteReference keyboardTestSuite = {
     keyboardTests,
     NULL
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

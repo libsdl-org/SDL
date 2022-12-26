@@ -501,5 +501,3 @@ void SDL_LogSetOutputFunction(SDL_LogOutputFunction callback, void *userdata)
     SDL_log_function = callback;
     SDL_log_userdata = userdata;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

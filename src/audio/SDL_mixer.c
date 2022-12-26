@@ -338,5 +338,3 @@ void SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         return;
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

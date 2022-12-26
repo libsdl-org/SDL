@@ -461,5 +461,3 @@ int main(int argc, char *argv[])
 
     return status;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

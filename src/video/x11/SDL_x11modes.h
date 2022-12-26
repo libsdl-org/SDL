@@ -70,5 +70,3 @@ extern void X11_HandleXRandREvent(_THIS, const XEvent *xevent);
 #endif
 
 #endif /* SDL_x11modes_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

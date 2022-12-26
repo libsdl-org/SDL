@@ -26,5 +26,3 @@
 FILE *N3DS_FileOpen(const char *file, const char *mode);
 
 #endif /* SDL_rwopsromfs_h_ */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

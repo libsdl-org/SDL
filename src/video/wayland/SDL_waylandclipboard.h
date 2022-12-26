@@ -31,5 +31,3 @@ extern char *Wayland_GetPrimarySelectionText(_THIS);
 extern SDL_bool Wayland_HasPrimarySelectionText(_THIS);
 
 #endif /* SDL_waylandclipboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -176,5 +176,3 @@ Cocoa_GLES_GetEGLSurface(_THIS, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA && SDL_VIDEO_OPENGL_EGL */
-
-/* vi: set ts=4 sw=4 expandtab: */

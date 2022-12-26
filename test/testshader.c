@@ -521,5 +521,3 @@ int main(int argc, char *argv[])
 }
 
 #endif /* HAVE_OPENGL */
-
-/* vi: set ts=4 sw=4 expandtab: */

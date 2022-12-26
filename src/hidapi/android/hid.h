@@ -37,5 +37,3 @@ extern JNINativeMethod HIDDeviceManager_tab[8];
 #endif
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

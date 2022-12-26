@@ -49,5 +49,3 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 #endif
 
 #endif /* SDL_kmsdrm_vulkan_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -195,5 +195,3 @@ void X11_DestroyPointerBarrier(_THIS, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_DRIVER_X11_XFIXES */
-
-/* vi: set ts=4 sw=4 expandtab: */

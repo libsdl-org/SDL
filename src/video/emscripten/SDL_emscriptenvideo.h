@@ -48,5 +48,3 @@ typedef struct SDL_WindowData
 } SDL_WindowData;
 
 #endif /* SDL_emscriptenvideo_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

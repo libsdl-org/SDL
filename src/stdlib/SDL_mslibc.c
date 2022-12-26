@@ -697,5 +697,3 @@ RETZERO:
 #endif /* MSC_VER */
 
 #endif /* !HAVE_LIBC && !SDL_STATIC_LIB */
-
-/* vi: set ts=4 sw=4 expandtab: */

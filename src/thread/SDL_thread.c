@@ -519,5 +519,3 @@ int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Sint32 timeoutMS)
     }
     return SDL_CondWaitTimeoutNS(cond, mutex, timeoutNS);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

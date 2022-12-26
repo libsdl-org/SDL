@@ -2931,5 +2931,3 @@ SDL_Surface *SDLTest_ImageBlitBlendAll()
         SDLTest_imageBlitBlendAll.width * SDLTest_imageBlitBlendAll.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
     return surface;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

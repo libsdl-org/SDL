@@ -51,5 +51,3 @@ extern int SDL_XINPUT_HapticStopAll(SDL_Haptic *haptic);
 #ifdef __cplusplus
 }
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -2248,5 +2248,3 @@ SDL_RenderDriver GLES2_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

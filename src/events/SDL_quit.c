@@ -193,5 +193,3 @@ int SDL_SendQuit(void)
 #endif
     return SDL_SendAppEvent(SDL_QUIT);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

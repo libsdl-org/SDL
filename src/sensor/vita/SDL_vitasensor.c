@@ -202,5 +202,3 @@ SDL_SensorDriver SDL_VITA_SensorDriver = {
 };
 
 #endif /* SDL_SENSOR_VITA */
-
-/* vi: set ts=4 sw=4 expandtab: */

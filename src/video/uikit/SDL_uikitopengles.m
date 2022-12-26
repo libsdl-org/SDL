@@ -234,5 +234,3 @@ void UIKit_GL_RestoreCurrentContext(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

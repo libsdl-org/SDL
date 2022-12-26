@@ -619,5 +619,3 @@ extern DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue)
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_system_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

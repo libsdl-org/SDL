@@ -487,5 +487,3 @@ void WIN_UpdateMouseSystemScale()
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

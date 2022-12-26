@@ -985,5 +985,3 @@ AudioBootStrap ALSA_bootstrap = {
 };
 
 #endif /* SDL_AUDIO_DRIVER_ALSA */
-
-/* vi: set ts=4 sw=4 expandtab: */

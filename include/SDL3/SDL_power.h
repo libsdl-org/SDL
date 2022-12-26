@@ -83,5 +83,3 @@ extern DECLSPEC SDL_PowerState SDLCALL SDL_GetPowerInfo(int *seconds, int *perce
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_power_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

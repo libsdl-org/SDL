@@ -84,5 +84,3 @@ int Android_GLES_LoadLibrary(_THIS, const char *path)
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

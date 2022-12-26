@@ -67,5 +67,3 @@ void N3DS_StopTextInput(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_N3DS */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

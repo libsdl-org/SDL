@@ -174,5 +174,3 @@ SDLTest_TestSuiteReference mainTestSuite = {
     mainTests,
     NULL
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

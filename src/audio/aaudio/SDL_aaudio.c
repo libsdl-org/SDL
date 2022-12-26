@@ -459,5 +459,3 @@ SDL_bool aaudio_DetectBrokenPlayState(void)
 }
 
 #endif /* SDL_AUDIO_DRIVER_AAUDIO */
-
-/* vi: set ts=4 sw=4 expandtab: */

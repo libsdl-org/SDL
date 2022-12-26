@@ -359,5 +359,3 @@ SDL_JoystickDriver SDL_PS2_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_PS2 */
-
-/* vi: set ts=4 sw=4 expandtab: */

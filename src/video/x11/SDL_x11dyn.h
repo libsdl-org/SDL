@@ -103,4 +103,3 @@ extern SDL_DYNX11FN_XGetICValues X11_XGetICValues;
 #endif
 
 #endif /* !defined SDL_x11dyn_h_ */
-/* vi: set ts=4 sw=4 expandtab: */

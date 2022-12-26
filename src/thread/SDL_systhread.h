@@ -75,5 +75,3 @@ SDL_CreateThreadInternal(int(SDLCALL *fn)(void *), const char *name,
 #endif
 
 #endif /* SDL_systhread_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

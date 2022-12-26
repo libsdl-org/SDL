@@ -91,5 +91,3 @@ int VITA_GLES_SwapWindow(_THIS, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR */
-
-/* vi: set ts=4 sw=4 expandtab: */

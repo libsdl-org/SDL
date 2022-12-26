@@ -87,5 +87,3 @@ extern void Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context);
 #endif /* SDL_VIDEO_OPENGL_CGL */
 
 #endif /* SDL_cocoaopengl_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

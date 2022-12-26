@@ -218,5 +218,3 @@ void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
-
-/* vi: set ts=4 sw=4 expandtab: */

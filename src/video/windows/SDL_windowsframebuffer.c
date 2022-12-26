@@ -127,5 +127,3 @@ void WIN_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

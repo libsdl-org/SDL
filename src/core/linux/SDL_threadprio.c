@@ -343,5 +343,3 @@ int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
 }
 
 #endif /* __LINUX__ */
-
-/* vi: set ts=4 sw=4 expandtab: */

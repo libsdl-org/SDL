@@ -34,5 +34,3 @@ int SDL_CondWaitTimeoutNS_generic(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeo
 #endif /* SDL_THREAD_GENERIC_COND_SUFFIX */
 
 #endif /* SDL_syscond_generic_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

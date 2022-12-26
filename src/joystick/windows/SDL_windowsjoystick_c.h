@@ -99,5 +99,3 @@ extern void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device);
 #ifdef __cplusplus
 }
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

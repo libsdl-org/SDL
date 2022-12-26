@@ -54,5 +54,3 @@ int SDL_JoystickSetVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
 #endif /* SDL_JOYSTICK_VIRTUAL */
 
 #endif /* SDL_VIRTUALJOYSTICK_C_H */
-
-/* vi: set ts=4 sw=4 expandtab: */

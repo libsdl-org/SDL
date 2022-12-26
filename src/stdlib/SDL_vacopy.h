@@ -32,5 +32,3 @@
 #elif defined(__GNUC__) && (__GNUC__ < 3)
 #define va_copy(dst, src) __va_copy(dst, src)
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -200,5 +200,3 @@ SDL_bool Wayland_HasPrimarySelectionText(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -26,5 +26,3 @@ struct sensor_hwdata
     ASensorRef asensor;
     ASensorEventQueue *eventqueue;
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -109,5 +109,3 @@ SDL_GetSpanEnclosingRect(int width, int height,
 #define SDL_ENCLOSEPOINTS        SDL_EncloseFPoints
 #define SDL_INTERSECTRECTANDLINE SDL_IntersectFRectAndLine
 #include "SDL_rect_impl.h"
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -96,5 +96,3 @@ unsigned int SDLTest_Random(SDLTest_RandomContext *rndContext)
     }
     return rndContext->x;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

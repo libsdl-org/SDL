@@ -650,5 +650,3 @@ SDLTest_TestSuiteReference rwopsTestSuite = {
     rwopsTests,
     RWopsTearDown
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -79,5 +79,3 @@ extern SDL_bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 extern void WINRT_CycleXAMLThread(void);
 
 #endif // ifdef __cplusplus_winrt
-
-/* vi: set ts=4 sw=4 expandtab: */

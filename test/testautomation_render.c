@@ -1161,5 +1161,3 @@ SDLTest_TestSuiteReference renderTestSuite = {
     renderTests,
     CleanupDestroyRenderer
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

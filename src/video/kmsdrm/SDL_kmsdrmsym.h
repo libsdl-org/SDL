@@ -125,5 +125,3 @@ SDL_KMSDRM_SYM(void,gbm_surface_release_buffer,(struct gbm_surface *surf, struct
 #undef SDL_KMSDRM_SYM_CONST
 
 /* *INDENT-ON* */ /* clang-format on */
-
-/* vi: set ts=4 sw=4 expandtab: */

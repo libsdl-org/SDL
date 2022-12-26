@@ -1421,5 +1421,3 @@ SDL_RenderDriver PSP_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_PSP */
-
-/* vi: set ts=4 sw=4 expandtab: */

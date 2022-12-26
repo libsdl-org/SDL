@@ -51,5 +51,3 @@ extern void KMSDRM_DestroyCursorBO(_THIS, SDL_VideoDisplay *display);
 extern void KMSDRM_InitCursor(void);
 
 #endif /* SDL_KMSDRM_mouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

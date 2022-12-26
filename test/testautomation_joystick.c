@@ -88,5 +88,3 @@ SDLTest_TestSuiteReference joystickTestSuite = {
     joystickTests,
     NULL
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -660,5 +660,3 @@
             pixel += skip;                                             \
         }                                                              \
     } while (0)
-
-/* vi: set ts=4 sw=4 expandtab: */

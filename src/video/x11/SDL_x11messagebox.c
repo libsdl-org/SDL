@@ -854,5 +854,3 @@ int X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 #endif
 }
 #endif /* SDL_VIDEO_DRIVER_X11 */
-
-/* vi: set ts=4 sw=4 expandtab: */

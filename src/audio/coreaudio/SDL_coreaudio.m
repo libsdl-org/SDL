@@ -1304,5 +1304,3 @@ AudioBootStrap COREAUDIO_bootstrap = {
 };
 
 #endif /* SDL_AUDIO_DRIVER_COREAUDIO */
-
-/* vi: set ts=4 sw=4 expandtab: */

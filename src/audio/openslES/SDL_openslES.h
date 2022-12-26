@@ -42,5 +42,3 @@ void openslES_ResumeDevices(void);
 void openslES_PauseDevices(void);
 
 #endif /* _SDL_openslesaudio_h */
-
-/* vi: set ts=4 sw=4 expandtab: */

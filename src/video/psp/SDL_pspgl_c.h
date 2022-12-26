@@ -48,5 +48,3 @@ extern int PSP_GL_SetSwapInterval(_THIS, int interval);
 extern int PSP_GL_GetSwapInterval(_THIS);
 
 #endif /* SDL_pspgl_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

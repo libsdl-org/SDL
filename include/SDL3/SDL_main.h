@@ -305,5 +305,3 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #endif /* SDL_MAIN_HANDLED */
 
 #endif /* SDL_main_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

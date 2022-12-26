@@ -233,5 +233,3 @@ SDL_GetPrefPath(const char *org, const char *app)
 }
 
 #endif /* __WINRT__ */
-
-/* vi: set ts=4 sw=4 expandtab: */

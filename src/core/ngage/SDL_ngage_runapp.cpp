@@ -76,5 +76,3 @@ cleanup:
 }
 
 #endif // __NGAGE__
-
-/* vi: set ts=4 sw=4 expandtab: */

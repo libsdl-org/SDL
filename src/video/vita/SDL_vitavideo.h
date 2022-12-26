@@ -111,5 +111,3 @@ SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 void VITA_PumpEvents(_THIS);
 
 #endif /* _SDL_pspvideo_h */
-
-/* vi: set ts=4 sw=4 expandtab: */

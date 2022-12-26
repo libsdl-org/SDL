@@ -563,5 +563,3 @@ void SDL_UDEV_ReleaseUdevSyms(void)
 }
 
 #endif /* SDL_USE_LIBUDEV */
-
-/* vi: set ts=4 sw=4 expandtab: */

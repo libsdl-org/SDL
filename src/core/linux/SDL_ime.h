@@ -33,5 +33,3 @@ extern void SDL_IME_UpdateTextRect(const SDL_Rect *rect);
 extern void SDL_IME_PumpEvents(void);
 
 #endif /* SDL_ime_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

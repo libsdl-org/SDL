@@ -31,5 +31,3 @@ extern void VITA_PollTouch(void);
 void VITA_ConvertTouchXYToSDLXY(float *sdl_x, float *sdl_y, int vita_x, int vita_y, int port);
 
 #endif /* _SDL_vitatouch_h */
-
-/* vi: set ts=4 sw=4 expandtab: */

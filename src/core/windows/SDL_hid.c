@@ -82,5 +82,3 @@ void WIN_UnloadHIDDLL(void)
 }
 
 #endif /* !__WINRT__ */
-
-/* vi: set ts=4 sw=4 expandtab: */

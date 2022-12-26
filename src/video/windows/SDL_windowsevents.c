@@ -2050,5 +2050,3 @@ void SDL_UnregisterApp()
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

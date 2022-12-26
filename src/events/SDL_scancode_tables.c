@@ -69,5 +69,3 @@ SDL_Scancode SDL_GetScancodeFromTable(SDL_ScancodeTable table, int keycode)
 }
 
 #endif /* SDL_INPUT_LINUXEV || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_X11 */
-
-/* vi: set ts=4 sw=4 expandtab: */

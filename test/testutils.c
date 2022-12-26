@@ -149,5 +149,3 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
     }
     return texture;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

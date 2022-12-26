@@ -99,5 +99,3 @@ SDL_GetPreferredLocales(void)
     }
     return build_locales_from_csv_string(locbuf);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

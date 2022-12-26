@@ -32,5 +32,3 @@ int SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
     return SDL_Generic_SetTLSData(data);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

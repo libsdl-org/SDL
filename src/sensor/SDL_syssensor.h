@@ -102,5 +102,3 @@ extern SDL_SensorDriver SDL_VITA_SensorDriver;
 extern SDL_SensorDriver SDL_N3DS_SensorDriver;
 
 #endif /* SDL_syssensor_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

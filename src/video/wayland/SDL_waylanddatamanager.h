@@ -155,5 +155,3 @@ extern int Wayland_data_device_set_serial(SDL_WaylandDataDevice *device,
 extern int Wayland_primary_selection_device_set_serial(SDL_WaylandPrimarySelectionDevice *device,
                                                        uint32_t serial);
 #endif /* SDL_waylanddatamanager_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

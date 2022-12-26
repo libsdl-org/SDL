@@ -26,5 +26,3 @@
 extern int SDL_SendClipboardUpdate(void);
 
 #endif /* SDL_clipboardevents_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

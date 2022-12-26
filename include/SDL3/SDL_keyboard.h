@@ -349,5 +349,3 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsScreenKeyboardShown(SDL_Window *window);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_keyboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

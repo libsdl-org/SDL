@@ -203,5 +203,3 @@ void ANDROIDAUDIO_ResumeDevices(void) {}
 void ANDROIDAUDIO_PauseDevices(void) {}
 
 #endif /* SDL_AUDIO_DRIVER_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -873,5 +873,3 @@ SDL_WriteBE64(SDL_RWops *dst, Uint64 value)
     const Uint64 swapped = SDL_SwapBE64(value);
     return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

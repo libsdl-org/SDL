@@ -452,5 +452,3 @@ void SDL_QuitGCMouse(void)
 #endif /* ENABLE_GCMOUSE */
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

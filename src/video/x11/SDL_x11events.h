@@ -30,5 +30,3 @@ extern void X11_SuspendScreenSaver(_THIS);
 extern void X11_ReconcileKeyboardState(_THIS);
 
 #endif /* SDL_x11events_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

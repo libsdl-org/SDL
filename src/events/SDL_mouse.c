@@ -1435,5 +1435,3 @@ int SDL_ShowCursor(int toggle)
     }
     return shown;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

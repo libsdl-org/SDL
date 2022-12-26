@@ -1046,5 +1046,3 @@ SDLTest_TestSuiteReference audioTestSuite = {
     audioTests,
     _audioTearDown
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

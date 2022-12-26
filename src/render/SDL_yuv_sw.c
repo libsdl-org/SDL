@@ -401,5 +401,3 @@ void SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture *swdata)
 }
 
 #endif /* SDL_HAVE_YUV */
-
-/* vi: set ts=4 sw=4 expandtab: */

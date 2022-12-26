@@ -72,5 +72,3 @@ struct SDL_PrivateAudioData
 };
 
 #endif /* SDL_coreaudio_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

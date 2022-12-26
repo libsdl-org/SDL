@@ -1057,5 +1057,3 @@ static const float ResamplerFilterDifference[RESAMPLER_FILTER_SIZE] = {
     -0.000001176f, -0.000001149f, -0.000001123f, -0.000001096f, -0.000001070f,
     0.000000000f
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

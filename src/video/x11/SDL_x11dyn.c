@@ -201,5 +201,3 @@ int SDL_X11_LoadSymbols(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -6933,5 +6933,3 @@ void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECO
 }
 
 #endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED  && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
-
-/* vi: set ts=4 sw=4 expandtab: */

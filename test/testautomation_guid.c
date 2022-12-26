@@ -155,5 +155,3 @@ SDLTest_TestSuiteReference guidTestSuite = {
     guidTests,
     NULL
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

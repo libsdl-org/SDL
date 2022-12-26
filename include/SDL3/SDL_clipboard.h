@@ -137,5 +137,3 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_clipboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

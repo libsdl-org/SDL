@@ -79,5 +79,3 @@ Float4X4 MatrixRotationZ(float r);
 #endif
 
 #endif /* (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12) && !SDL_RENDER_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

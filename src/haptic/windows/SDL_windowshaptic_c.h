@@ -93,5 +93,3 @@ extern int SDL_SYS_RemoveHapticDevice(SDL_hapticlist_item *prev, SDL_hapticlist_
 #endif
 
 #endif /* SDL_windowshaptic_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

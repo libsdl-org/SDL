@@ -66,5 +66,3 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 
     sceAppUtilShutdown();
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

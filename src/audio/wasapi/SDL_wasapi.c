@@ -606,5 +606,3 @@ AudioBootStrap WASAPI_bootstrap = {
 };
 
 #endif /* SDL_AUDIO_DRIVER_WASAPI */
-
-/* vi: set ts=4 sw=4 expandtab: */

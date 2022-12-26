@@ -26,5 +26,3 @@
 extern void SDL_AssertionsQuit(void);
 
 #endif /* SDL_assert_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

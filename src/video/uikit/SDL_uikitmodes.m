@@ -578,5 +578,3 @@ void SDL_OnApplicationDidChangeStatusBarOrientation()
 #endif /* !TARGET_OS_TV */
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

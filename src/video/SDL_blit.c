@@ -281,5 +281,3 @@ int SDL_CalculateBlit(SDL_Surface *surface)
 
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

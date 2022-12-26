@@ -123,5 +123,3 @@ void SDL_EnumUnixAudioDevices(const int classic, int (*test)(int))
 }
 
 #endif /* Audio driver selection */
-
-/* vi: set ts=4 sw=4 expandtab: */

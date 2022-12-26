@@ -320,5 +320,3 @@ SDL_X11_SYM(void,XShapeCombineMask,(Display *dpy,Window dest,int dest_kind,int x
 #undef SDL_X11_SYM
 
 /* *INDENT-ON* */ /* clang-format on */
-
-/* vi: set ts=4 sw=4 expandtab: */

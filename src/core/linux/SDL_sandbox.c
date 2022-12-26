@@ -43,5 +43,3 @@ SDL_Sandbox SDL_DetectSandbox(void)
 
     return SDL_SANDBOX_NONE;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

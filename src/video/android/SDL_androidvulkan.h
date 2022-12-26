@@ -48,5 +48,3 @@ SDL_bool Android_Vulkan_CreateSurface(_THIS,
 #endif
 
 #endif /* SDL_androidvulkan_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

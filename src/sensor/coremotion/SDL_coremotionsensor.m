@@ -212,5 +212,3 @@ SDL_SensorDriver SDL_COREMOTION_SensorDriver = {
 };
 
 #endif /* SDL_SENSOR_COREMOTION */
-
-/* vi: set ts=4 sw=4 expandtab: */

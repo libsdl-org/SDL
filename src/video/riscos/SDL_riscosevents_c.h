@@ -31,5 +31,3 @@ extern void RISCOS_PumpEvents(_THIS);
 extern void RISCOS_QuitEvents(_THIS);
 
 #endif /* SDL_riscosevents_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

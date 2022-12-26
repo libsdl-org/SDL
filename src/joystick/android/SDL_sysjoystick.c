@@ -710,5 +710,3 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

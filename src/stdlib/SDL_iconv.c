@@ -855,5 +855,3 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
 
     return string;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

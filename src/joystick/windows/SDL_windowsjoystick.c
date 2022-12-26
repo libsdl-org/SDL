@@ -819,5 +819,3 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver = {
 #endif
 
 #endif /* SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT */
-
-/* vi: set ts=4 sw=4 expandtab: */

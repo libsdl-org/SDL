@@ -294,5 +294,3 @@ int CalculateYUVPitch(Uint32 format, int width)
         return 0;
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -182,5 +182,3 @@ extern int SDL_EGL_SetErrorEx(const char *message, const char *eglFunctionName, 
 #endif /* SDL_VIDEO_OPENGL_EGL */
 
 #endif /* SDL_egl_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

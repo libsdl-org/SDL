@@ -31,5 +31,3 @@
 extern int SDL_IOReady(int fd, int flags, Sint64 timeoutNS);
 
 #endif /* SDL_poll_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

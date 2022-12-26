@@ -1215,5 +1215,3 @@ void gxm_term_for_common_dialog(void)
 }
 
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -44,5 +44,3 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
 #endif
 
 #endif /* SDL_x11vulkan_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

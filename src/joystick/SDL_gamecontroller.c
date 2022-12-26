@@ -3201,5 +3201,3 @@ const char *SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *g
     return NULL;
 #endif
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

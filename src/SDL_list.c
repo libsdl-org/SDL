@@ -84,5 +84,3 @@ void SDL_ListClear(SDL_ListNode **head)
         SDL_free(tmp);
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -54,5 +54,3 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 @end
 
 #endif /* SDL_uikitwindow_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

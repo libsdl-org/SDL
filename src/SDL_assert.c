@@ -445,5 +445,3 @@ SDL_AssertionHandler SDL_GetAssertionHandler(void **userdata)
     }
     return assertion_handler;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

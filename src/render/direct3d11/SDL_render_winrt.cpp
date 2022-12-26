@@ -113,5 +113,3 @@ D3D11_GetCurrentRotation()
 }
 
 #endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -225,5 +225,3 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
 
     return posted;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

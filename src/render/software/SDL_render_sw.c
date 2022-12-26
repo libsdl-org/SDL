@@ -1184,5 +1184,3 @@ SDL_RenderDriver SW_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

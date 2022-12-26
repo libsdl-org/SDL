@@ -222,5 +222,3 @@ extern SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(int device_index,
 #endif
 
 #endif /* SDL_joystick_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

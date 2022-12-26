@@ -3437,5 +3437,3 @@ SDL_CalculateBlitN(SDL_Surface *surface)
 }
 
 #endif /* SDL_HAVE_BLIT_N */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -45,5 +45,3 @@ SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *, int *, int *);
 /* SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);*/
 
 #endif /* SDL_syspower_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

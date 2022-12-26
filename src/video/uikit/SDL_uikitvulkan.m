@@ -268,5 +268,3 @@ void UIKit_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 }
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

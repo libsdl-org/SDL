@@ -146,5 +146,3 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
 }
 
 #endif /* HAVE_LINUX_INPUT_H */
-
-/* vi: set ts=4 sw=4 expandtab: */

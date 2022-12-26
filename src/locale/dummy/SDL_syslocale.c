@@ -27,5 +27,3 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     /* dummy implementation. Caller already zero'd out buffer. */
     SDL_Unsupported();
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

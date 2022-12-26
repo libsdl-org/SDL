@@ -301,5 +301,3 @@ extern DECLSPEC void SDLCALL SDL_SensorUpdate(void);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_sensor_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

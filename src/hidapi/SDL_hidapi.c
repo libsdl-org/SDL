@@ -1645,5 +1645,3 @@ void SDL_EnableGameCubeAdaptors(void)
 #endif /* HAVE_LIBUSB */
 }
 #endif /* HAVE_ENABLE_GAMECUBE_ADAPTORS */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

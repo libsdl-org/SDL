@@ -91,5 +91,3 @@ void SDL_DelayNS(Uint64 ns)
 }
 
 #endif /* SDL_TIMER_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

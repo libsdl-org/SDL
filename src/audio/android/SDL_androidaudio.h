@@ -38,5 +38,3 @@ void ANDROIDAUDIO_ResumeDevices(void);
 void ANDROIDAUDIO_PauseDevices(void);
 
 #endif /* SDL_androidaudio_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

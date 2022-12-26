@@ -61,5 +61,3 @@ SDL_GetPowerInfo_PSP(SDL_PowerState *state, int *seconds,
 
 #endif /* SDL_POWER_PSP */
 #endif /* SDL_POWER_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

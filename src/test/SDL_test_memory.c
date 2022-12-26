@@ -272,5 +272,3 @@ void SDLTest_LogAllocations()
 
     SDL_Log("%s", message);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

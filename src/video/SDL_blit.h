@@ -580,5 +580,3 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 #endif
 
 #endif /* SDL_blit_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

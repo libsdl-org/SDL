@@ -447,5 +447,3 @@ extern DECLSPEC void SDLCALL SDL_hid_ble_scan(SDL_bool active);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_hidapi_h_ */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

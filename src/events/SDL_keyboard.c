@@ -1273,5 +1273,3 @@ SDL_GetKeyFromName(const char *name)
         return SDL_default_keymap[SDL_GetScancodeFromName(name)];
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

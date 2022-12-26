@@ -41,5 +41,3 @@ extern int Emscripten_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
 
 #endif /* SDL_emscriptenopengles_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

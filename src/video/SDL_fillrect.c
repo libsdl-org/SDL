@@ -441,5 +441,3 @@ int SDL_FillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     /* We're done! */
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

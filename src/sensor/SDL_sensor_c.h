@@ -38,5 +38,3 @@ extern void SDL_SensorQuit(void);
 extern int SDL_PrivateSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
 
 #endif /* SDL_sensor_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

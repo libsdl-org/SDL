@@ -71,5 +71,3 @@ typedef struct SDL_mutex_cs
 {
     CRITICAL_SECTION cs;
 } SDL_mutex_cs;
-
-/* vi: set ts=4 sw=4 expandtab: */

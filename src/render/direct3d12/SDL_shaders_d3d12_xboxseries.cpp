@@ -25,5 +25,3 @@
 #error "This is a placeholder Xbox file, as the real one is under NDA. See README-gdk.md for more info."
 
 #endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED && defined(__XBOXSERIES__) */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -194,5 +194,3 @@ extern DECLSPEC SDL_BlendMode SDLCALL SDL_ComposeCustomBlendMode(SDL_BlendFactor
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_blendmode_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

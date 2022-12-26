@@ -110,5 +110,3 @@ typedef struct
 #endif
 
 #endif /* SDL_directx_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

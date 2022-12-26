@@ -329,5 +329,3 @@ SDLTest_TestSuiteReference clipboardTestSuite = {
     clipboardTests,
     NULL
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

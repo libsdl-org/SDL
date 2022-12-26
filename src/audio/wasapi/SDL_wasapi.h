@@ -75,5 +75,3 @@ void WASAPI_PlatformDeleteActivationHandler(void *handler);
 #endif
 
 #endif /* SDL_wasapi_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

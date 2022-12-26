@@ -36,5 +36,3 @@ void OFFSCREEN_PumpEvents(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_OFFSCREEN */
-
-/* vi: set ts=4 sw=4 expandtab: */

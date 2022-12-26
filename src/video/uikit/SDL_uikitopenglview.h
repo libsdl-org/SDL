@@ -60,5 +60,3 @@
 @end
 
 #endif // SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
-
-/* vi: set ts=4 sw=4 expandtab: */

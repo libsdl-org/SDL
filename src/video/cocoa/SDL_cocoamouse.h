@@ -48,5 +48,3 @@ typedef struct
 @end
 
 #endif /* SDL_cocoamouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

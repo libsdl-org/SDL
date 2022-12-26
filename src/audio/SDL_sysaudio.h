@@ -200,5 +200,3 @@ extern AudioBootStrap N3DSAUDIO_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 
 #endif /* SDL_sysaudio_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

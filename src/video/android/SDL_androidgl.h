@@ -29,5 +29,3 @@ int Android_GLES_SwapWindow(_THIS, SDL_Window *window);
 int Android_GLES_LoadLibrary(_THIS, const char *path);
 
 #endif /* SDL_androidgl_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

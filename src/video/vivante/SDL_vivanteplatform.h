@@ -43,5 +43,3 @@ extern void VIVANTE_CleanupPlatform(_THIS);
 #endif /* SDL_VIDEO_DRIVER_VIVANTE */
 
 #endif /* SDL_vivanteplatform_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

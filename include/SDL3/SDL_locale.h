@@ -99,5 +99,3 @@ extern DECLSPEC SDL_Locale * SDLCALL SDL_GetPreferredLocales(void);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* _SDL_locale_h */
-
-/* vi: set ts=4 sw=4 expandtab: */

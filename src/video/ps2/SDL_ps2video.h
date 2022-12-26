@@ -38,5 +38,3 @@
 #pragma GCC diagnostic pop
 
 #endif /* SDL_ps2video_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

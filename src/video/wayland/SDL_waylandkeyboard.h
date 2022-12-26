@@ -39,5 +39,3 @@ extern void Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect);
 extern SDL_bool Wayland_HasScreenKeyboardSupport(_THIS);
 
 #endif /* SDL_waylandkeyboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

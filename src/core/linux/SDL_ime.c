@@ -150,5 +150,3 @@ void SDL_IME_PumpEvents()
         SDL_IME_PumpEvents_Real();
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

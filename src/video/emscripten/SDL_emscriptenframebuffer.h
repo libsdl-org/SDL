@@ -28,5 +28,3 @@ extern int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const S
 extern void Emscripten_DestroyWindowFramebuffer(_THIS, SDL_Window *window);
 
 #endif /* SDL_emscriptenframebuffer_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

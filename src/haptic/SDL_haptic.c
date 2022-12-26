@@ -816,5 +816,3 @@ int SDL_HapticRumbleStop(SDL_Haptic *haptic)
 
     return SDL_HapticStopEffect(haptic, haptic->rumble_id);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

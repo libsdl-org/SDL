@@ -676,5 +676,3 @@ SDL_RenderDriver PS2_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_PS2 */
-
-/* vi: set ts=4 sw=4 expandtab: */

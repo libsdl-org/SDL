@@ -27,5 +27,3 @@ extern SDL_bool UIKit_ShowingMessageBox(void);
 extern int UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

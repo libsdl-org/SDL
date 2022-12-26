@@ -57,5 +57,3 @@ typedef struct joystick_hwdata
 typedef joystick_hwdata SDL_JoystickDeviceItem;
 
 #endif /* SDL_JOYSTICK_IOS_H */
-
-/* vi: set ts=4 sw=4 expandtab: */

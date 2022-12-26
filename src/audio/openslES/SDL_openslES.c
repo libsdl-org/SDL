@@ -770,5 +770,3 @@ void openslES_PauseDevices(void)
 }
 
 #endif /* SDL_AUDIO_DRIVER_OPENSLES */
-
-/* vi: set ts=4 sw=4 expandtab: */

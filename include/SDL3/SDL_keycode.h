@@ -354,5 +354,3 @@ typedef enum
 } SDL_Keymod;
 
 #endif /* SDL_keycode_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

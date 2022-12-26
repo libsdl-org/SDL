@@ -31,5 +31,3 @@ extern void WINRT_QuitGameBar(_THIS);
 #endif
 
 #endif /* SDL_winrtgamebar_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

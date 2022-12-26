@@ -870,5 +870,3 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
     }
     return (SDL_strcmp(SDL_GetError(), "") == 0) ? 0 : -1;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

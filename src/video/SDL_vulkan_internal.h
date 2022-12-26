@@ -88,5 +88,3 @@ typedef int (*PFN_vkEnumerateInstanceExtensionProperties)(void);
 #endif /* SDL_VIDEO_VULKAN */
 
 #endif /* SDL_vulkan_internal_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

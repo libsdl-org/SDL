@@ -2031,5 +2031,3 @@ SDL_JoystickDriver SDL_RAWINPUT_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_RAWINPUT */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -4763,5 +4763,3 @@ static unsigned short *default_key_maps[MAX_NR_KEYMAPS] = {
     NULL,
     NULL,
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

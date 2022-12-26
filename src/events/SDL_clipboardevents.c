@@ -39,5 +39,3 @@ int SDL_SendClipboardUpdate(void)
     }
     return posted;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

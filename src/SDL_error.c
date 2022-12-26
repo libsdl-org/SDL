@@ -120,5 +120,3 @@ SDL_GetErrorMsg(char *errstr, int maxlen)
 
     return errstr;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

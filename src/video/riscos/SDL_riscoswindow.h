@@ -37,5 +37,3 @@ extern void RISCOS_DestroyWindow(_THIS, SDL_Window *window);
 extern int RISCOS_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
 
 #endif /* SDL_riscoswindow_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

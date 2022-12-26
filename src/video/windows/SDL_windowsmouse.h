@@ -32,5 +32,3 @@ extern void WIN_SetCursorPos(int x, int y);
 extern void WIN_UpdateMouseSystemScale();
 
 #endif /* SDL_windowsmouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

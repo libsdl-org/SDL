@@ -898,5 +898,3 @@ Uint64 SDL_EVDEV_GetEventTimestamp(struct input_event *event)
 }
 
 #endif /* SDL_INPUT_LINUXEV */
-
-/* vi: set ts=4 sw=4 expandtab: */

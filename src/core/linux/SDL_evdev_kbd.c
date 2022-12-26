@@ -851,5 +851,3 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
 }
 
 #endif /* SDL_INPUT_LINUXKD */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -1563,5 +1563,3 @@ void SDL_FreeSurface(SDL_Surface *surface)
     }
     SDL_free(surface);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -149,5 +149,3 @@ typedef struct WaveFile
     WaveTruncationHint trunchint;
     WaveFactChunkHint facthint;
 } WaveFile;
-
-/* vi: set ts=4 sw=4 expandtab: */

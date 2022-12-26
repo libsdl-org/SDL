@@ -1956,5 +1956,3 @@ int SDL_vasprintf(char **strp, const char *fmt, va_list ap)
         }
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

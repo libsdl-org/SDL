@@ -524,5 +524,3 @@ void X11_Xinput2UngrabTouch(_THIS, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
-
-/* vi: set ts=4 sw=4 expandtab: */

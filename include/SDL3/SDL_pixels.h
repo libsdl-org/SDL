@@ -617,5 +617,3 @@ extern DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel,
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_pixels_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

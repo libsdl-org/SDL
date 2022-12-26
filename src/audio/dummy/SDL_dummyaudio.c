@@ -58,5 +58,3 @@ static SDL_bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
 AudioBootStrap DUMMYAUDIO_bootstrap = {
     "dummy", "SDL dummy audio driver", DUMMYAUDIO_Init, SDL_TRUE
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

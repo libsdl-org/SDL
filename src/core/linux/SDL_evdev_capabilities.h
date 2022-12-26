@@ -55,5 +55,3 @@ extern int SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MA
 #endif /* HAVE_LINUX_INPUT_H */
 
 #endif /* SDL_evdev_capabilities_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

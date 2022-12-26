@@ -96,5 +96,3 @@ extern DECLSPEC SDL_GUID SDLCALL SDL_GUIDFromString(const char *pchGUID);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_guid_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

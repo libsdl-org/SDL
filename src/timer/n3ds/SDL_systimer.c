@@ -43,5 +43,3 @@ void SDL_DelayNS(Uint64 ns)
 }
 
 #endif /* SDL_TIMER_N3DS */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

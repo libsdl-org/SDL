@@ -382,5 +382,3 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 = {
 #endif /* SDL_JOYSTICK_HIDAPI_XBOX360 */
 
 #endif /* SDL_JOYSTICK_HIDAPI */
-
-/* vi: set ts=4 sw=4 expandtab: */

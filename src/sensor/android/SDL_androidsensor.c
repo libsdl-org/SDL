@@ -200,5 +200,3 @@ SDL_SensorDriver SDL_ANDROID_SensorDriver = {
 };
 
 #endif /* SDL_SENSOR_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

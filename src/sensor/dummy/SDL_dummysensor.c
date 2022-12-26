@@ -91,5 +91,3 @@ SDL_SensorDriver SDL_DUMMY_SensorDriver = {
 };
 
 #endif /* SDL_SENSOR_DUMMY || SDL_SENSOR_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

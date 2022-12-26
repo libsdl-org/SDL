@@ -493,5 +493,3 @@ void SDL_TouchQuit(void)
     SDL_free(SDL_touchDevices);
     SDL_touchDevices = NULL;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -1924,5 +1924,3 @@ SDLTest_TestSuiteReference videoTestSuite = {
     videoTests,
     NULL
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

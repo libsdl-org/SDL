@@ -152,5 +152,3 @@ void SDL_BApp::ClearID(SDL_BWin *bwin) {
 }
 
 #endif /* __HAIKU__ */
-
-/* vi: set ts=4 sw=4 expandtab: */

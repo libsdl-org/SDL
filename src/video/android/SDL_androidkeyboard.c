@@ -372,5 +372,3 @@ void Android_SetTextInputRect(_THIS, const SDL_Rect *rect)
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

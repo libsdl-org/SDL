@@ -35,5 +35,3 @@ extern void WIN_SendWakeupEvent(_THIS, SDL_Window *window);
 extern int WIN_WaitEventTimeout(_THIS, Sint64 timeoutNS);
 
 #endif /* SDL_windowsevents_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

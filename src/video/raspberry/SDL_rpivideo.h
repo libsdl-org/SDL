@@ -92,5 +92,3 @@ int RPI_GLES_SwapWindow(_THIS, SDL_Window *window);
 void RPI_GLES_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* __SDL_RPIVIDEO_H__ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -708,5 +708,3 @@ int Wayland_primary_selection_device_set_serial(SDL_WaylandPrimarySelectionDevic
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
-
-/* vi: set ts=4 sw=4 expandtab: */

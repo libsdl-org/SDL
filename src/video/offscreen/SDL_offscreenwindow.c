@@ -83,5 +83,3 @@ void OFFSCREEN_DestroyWindow(_THIS, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_OFFSCREEN */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -177,5 +177,3 @@ extern SDL_bool WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window *fromWindow, SDL_Win
 #endif /* SDL_VIDEO_OPENGL_WGL */
 
 #endif /* SDL_windowsopengl_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

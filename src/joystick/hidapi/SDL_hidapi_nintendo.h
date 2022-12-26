@@ -44,5 +44,3 @@ typedef enum
     k_eWiiExtensionControllerType_Gamepad = 130,
     k_eWiiExtensionControllerType_WiiUPro = 131,
 } EWiiExtensionControllerType;
-
-/* vi: set ts=4 sw=4 expandtab: */

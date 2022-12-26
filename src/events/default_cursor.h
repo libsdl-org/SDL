@@ -111,5 +111,3 @@ static const unsigned char default_cmask[] = {
 };
 
 #endif /* USE_MACOS_CURSOR */
-
-/* vi: set ts=4 sw=4 expandtab: */

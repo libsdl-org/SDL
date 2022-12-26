@@ -38,5 +38,3 @@ extern void X11_InitMouse(_THIS);
 extern void X11_QuitMouse(_THIS);
 
 #endif /* SDL_x11mouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

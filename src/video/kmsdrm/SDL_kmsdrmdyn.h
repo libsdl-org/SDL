@@ -49,5 +49,3 @@ void SDL_KMSDRM_UnloadSymbols(void);
 #endif
 
 #endif /* SDL_kmsdrmdyn_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

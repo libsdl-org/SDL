@@ -65,5 +65,3 @@ int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
 void SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture *swdata);
 
 #endif /* SDL_yuv_sw_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

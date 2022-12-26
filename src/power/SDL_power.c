@@ -115,5 +115,3 @@ SDL_GetPowerInfo(int *seconds, int *percent)
     *percent = -1;
     return SDL_POWERSTATE_UNKNOWN;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

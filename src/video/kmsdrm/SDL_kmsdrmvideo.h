@@ -151,5 +151,3 @@ int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window);
 void KMSDRM_GLES_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* __SDL_KMSDRMVIDEO_H__ */
-
-/* vi: set ts=4 sw=4 expandtab: */

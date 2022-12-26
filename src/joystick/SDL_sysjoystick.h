@@ -246,5 +246,3 @@ extern SDL_JoystickDriver SDL_N3DS_JoystickDriver;
 #endif
 
 #endif /* SDL_sysjoystick_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

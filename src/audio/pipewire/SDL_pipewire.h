@@ -43,5 +43,3 @@ struct SDL_PrivateAudioData
 };
 
 #endif /* SDL_pipewire_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

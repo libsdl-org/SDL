@@ -415,5 +415,3 @@ SDLTest_TestSuiteReference pixelsTestSuite = {
     pixelsTests,
     NULL
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

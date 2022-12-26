@@ -560,5 +560,3 @@ void Cocoa_QuitMouse(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
-
-/* vi: set ts=4 sw=4 expandtab: */

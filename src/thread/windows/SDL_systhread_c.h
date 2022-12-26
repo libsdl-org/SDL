@@ -28,5 +28,3 @@
 typedef HANDLE SYS_ThreadHandle;
 
 #endif /* SDL_systhread_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

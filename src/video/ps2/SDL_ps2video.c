@@ -127,5 +127,3 @@ VideoBootStrap PS2_bootstrap = {
 };
 
 #endif /* SDL_VIDEO_DRIVER_PS2 */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -184,5 +184,3 @@ SDL_GetPowerInfo_MacOSX(SDL_PowerState *state, int *seconds, int *percent)
 
 #endif /* SDL_POWER_MACOSX */
 #endif /* SDL_POWER_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

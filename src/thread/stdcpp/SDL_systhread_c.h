@@ -22,5 +22,3 @@
 
 /* For a thread handle, use a void pointer to a std::thread */
 typedef void *SYS_ThreadHandle;
-
-/* vi: set ts=4 sw=4 expandtab: */

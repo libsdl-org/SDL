@@ -600,5 +600,3 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverShield = {
 #endif /* SDL_JOYSTICK_HIDAPI_SHIELD */
 
 #endif /* SDL_JOYSTICK_HIDAPI */
-
-/* vi: set ts=4 sw=4 expandtab: */

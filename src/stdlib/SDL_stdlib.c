@@ -664,5 +664,3 @@ int SDL_isblank(int x)
     return ((x) == ' ') || ((x) == '\t');
 }
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

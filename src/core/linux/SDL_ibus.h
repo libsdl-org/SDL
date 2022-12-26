@@ -53,5 +53,3 @@ extern void SDL_IBus_PumpEvents(void);
 #endif /* HAVE_IBUS_IBUS_H */
 
 #endif /* SDL_ibus_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

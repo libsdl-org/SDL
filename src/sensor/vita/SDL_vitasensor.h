@@ -27,5 +27,3 @@ struct sensor_hwdata
     unsigned int last_tick;
     Uint64 sensor_timestamp;
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

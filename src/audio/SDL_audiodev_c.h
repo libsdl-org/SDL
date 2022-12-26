@@ -39,5 +39,3 @@
 extern void SDL_EnumUnixAudioDevices(const int classic, int (*test)(int));
 
 #endif /* SDL_audiodev_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

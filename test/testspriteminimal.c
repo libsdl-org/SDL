@@ -142,5 +142,3 @@ int main(int argc, char *argv[])
 
     return 0; /* to prevent compiler warning */
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

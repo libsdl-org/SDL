@@ -1411,5 +1411,3 @@ int WIN_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

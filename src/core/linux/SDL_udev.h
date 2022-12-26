@@ -110,5 +110,3 @@ extern void SDL_UDEV_ReleaseUdevSyms(void);
 #endif /* HAVE_LIBUDEV_H && HAVE_LINUX_INPUT_H */
 
 #endif /* SDL_udev_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

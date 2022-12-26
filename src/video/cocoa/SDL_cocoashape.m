@@ -127,5 +127,3 @@ int Cocoa_ResizeWindowShape(SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
-
-/* vi: set ts=4 sw=4 expandtab: */

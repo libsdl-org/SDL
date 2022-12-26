@@ -36,5 +36,3 @@ extern SDL_bool X11_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 extern KeySym X11_KeyCodeToSym(_THIS, KeyCode, unsigned char group);
 
 #endif /* SDL_x11keyboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

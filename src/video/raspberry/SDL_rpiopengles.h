@@ -45,5 +45,3 @@ extern void RPI_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *min
 #endif /* SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL */
 
 #endif /* SDL_rpiopengles_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

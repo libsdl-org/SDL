@@ -3047,5 +3047,3 @@ int SDL_PrivateJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_Sens
     }
     return posted;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -57,5 +57,3 @@ SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *percent)
 
 #endif /* SDL_POWER_EMSCRIPTEN */
 #endif /* SDL_POWER_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

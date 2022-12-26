@@ -202,5 +202,3 @@ extern DECLSPEC int SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 time
 #endif
 
 #endif /* SDL_internal_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

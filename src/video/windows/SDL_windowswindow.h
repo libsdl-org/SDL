@@ -114,5 +114,3 @@ extern int WIN_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operati
 #endif
 
 #endif /* SDL_windowswindow_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

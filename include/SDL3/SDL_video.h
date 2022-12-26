@@ -2083,5 +2083,3 @@ extern DECLSPEC void SDLCALL SDL_GL_DeleteContext(SDL_GLContext context);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_video_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

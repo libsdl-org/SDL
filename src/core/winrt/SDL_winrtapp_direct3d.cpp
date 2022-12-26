@@ -770,5 +770,3 @@ void SDL_WinRTApp::OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::In
     */
 }
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

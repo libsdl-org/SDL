@@ -3355,5 +3355,3 @@ SDLTest_TestSuiteReference mathTestSuite = {
     mathTests,
     NULL
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -29,5 +29,3 @@ extern void VITA_InitMouse(void);
 extern void VITA_PollMouse(void);
 
 #endif /* _SDL_vitamouse_h */
-
-/* vi: set ts=4 sw=4 expandtab: */

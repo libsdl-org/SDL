@@ -32,5 +32,3 @@ extern SDL_bool Cocoa_HasClipboardText(_THIS);
 extern void Cocoa_CheckClipboardUpdate(SDL_VideoData *data);
 
 #endif /* SDL_cocoaclipboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

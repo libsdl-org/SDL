@@ -325,5 +325,3 @@ extern int SDL_PrivateUpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect,
 #endif
 
 #endif /* SDL_sysrender_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

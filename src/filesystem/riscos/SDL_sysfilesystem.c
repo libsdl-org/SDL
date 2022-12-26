@@ -202,5 +202,3 @@ SDL_GetPrefPath(const char *org, const char *app)
 }
 
 #endif /* SDL_FILESYSTEM_RISCOS */
-
-/* vi: set ts=4 sw=4 expandtab: */

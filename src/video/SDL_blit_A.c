@@ -1441,5 +1441,3 @@ SDL_CalculateBlitA(SDL_Surface *surface)
 }
 
 #endif /* SDL_HAVE_BLIT_A */
-
-/* vi: set ts=4 sw=4 expandtab: */

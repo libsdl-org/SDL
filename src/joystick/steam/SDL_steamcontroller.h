@@ -35,5 +35,3 @@ void SDL_UpdateSteamController(SDL_Joystick *joystick);
 void SDL_QuitSteamControllers(void);
 
 #endif /* SDL_steamcontroller_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

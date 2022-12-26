@@ -577,5 +577,3 @@ void GL_DestroyShaderContext(GL_ShaderContext *ctx)
 }
 
 #endif /* SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

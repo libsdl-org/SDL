@@ -1589,5 +1589,3 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
 }
 
 #endif /* SDL_HAVE_RLE */
-
-/* vi: set ts=4 sw=4 expandtab: */

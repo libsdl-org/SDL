@@ -163,5 +163,3 @@ static ASCIIKeyInfo SDL_ASCIIKeyInfoTable[] = {
     /* 126 */ { SDL_SCANCODE_GRAVE, SDL_KMOD_SHIFT },        /* plus shift modifier '~' */
     /* 127 */ { SDL_SCANCODE_BACKSPACE, SDL_KMOD_SHIFT }
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

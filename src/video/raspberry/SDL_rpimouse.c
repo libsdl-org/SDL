@@ -373,5 +373,3 @@ static void RPI_MoveCursor(SDL_Cursor *cursor)
 }
 
 #endif /* SDL_VIDEO_DRIVER_RPI */
-
-/* vi: set ts=4 sw=4 expandtab: */

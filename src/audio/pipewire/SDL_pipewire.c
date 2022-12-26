@@ -1380,5 +1380,3 @@ static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
 AudioBootStrap PIPEWIRE_bootstrap = { "pipewire", "Pipewire", PIPEWIRE_Init, SDL_FALSE };
 
 #endif /* SDL_AUDIO_DRIVER_PIPEWIRE */
-
-/* vi: set ts=4 sw=4 expandtab: */

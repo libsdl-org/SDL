@@ -436,5 +436,3 @@ SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
-
-/* vi: set ts=4 sw=4 expandtab: */

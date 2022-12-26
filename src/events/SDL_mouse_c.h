@@ -168,5 +168,3 @@ extern void SDL_ResetMouse(void);
 extern void SDL_MouseQuit(void);
 
 #endif /* SDL_mouse_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

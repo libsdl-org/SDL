@@ -743,5 +743,3 @@ SDL_FORCE_INLINE int _SDL_size_add_overflow_builtin (size_t a,
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_stdinc_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

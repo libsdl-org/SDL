@@ -44,5 +44,3 @@ extern int KMSDRM_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext cont
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */
 
 #endif /* SDL_kmsdrmopengles_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

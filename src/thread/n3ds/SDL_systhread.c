@@ -139,5 +139,3 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
 }
 
 #endif /* SDL_THREAD_N3DS */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

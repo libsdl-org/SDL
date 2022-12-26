@@ -1879,5 +1879,3 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver = {
     IOS_JoystickQuit,
     IOS_JoystickGetGamepadMapping
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

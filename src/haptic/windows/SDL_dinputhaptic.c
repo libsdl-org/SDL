@@ -1252,5 +1252,3 @@ int SDL_DINPUT_HapticStopAll(SDL_Haptic *haptic)
 }
 
 #endif /* SDL_HAPTIC_DINPUT */
-
-/* vi: set ts=4 sw=4 expandtab: */

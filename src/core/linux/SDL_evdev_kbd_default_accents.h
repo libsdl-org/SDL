@@ -280,5 +280,3 @@ static struct kbdiacrs default_accents = {
         { 0x00, 0x00, 0x00 },
     }
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

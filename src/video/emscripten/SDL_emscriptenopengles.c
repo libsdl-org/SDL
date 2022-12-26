@@ -156,5 +156,3 @@ int Emscripten_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context
 }
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
-
-/* vi: set ts=4 sw=4 expandtab: */

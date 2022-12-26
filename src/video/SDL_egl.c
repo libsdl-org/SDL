@@ -1335,5 +1335,3 @@ void SDL_EGL_DestroySurface(_THIS, EGLSurface egl_surface)
 }
 
 #endif /* SDL_VIDEO_OPENGL_EGL */
-
-/* vi: set ts=4 sw=4 expandtab: */

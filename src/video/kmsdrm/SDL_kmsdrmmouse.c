@@ -447,5 +447,3 @@ static void KMSDRM_MoveCursor(SDL_Cursor *cursor)
 }
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */
-
-/* vi: set ts=4 sw=4 expandtab: */

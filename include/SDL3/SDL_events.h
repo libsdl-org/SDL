@@ -1148,5 +1148,3 @@ extern DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_events_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

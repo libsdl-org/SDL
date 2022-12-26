@@ -90,5 +90,3 @@ struct joystick_hwdata
 };
 
 #endif /* SDL_sysjoystick_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
