@@ -675,7 +675,7 @@ macro(CheckGLX)
     check_c_source_compiles("
         #include <GL/glx.h>
         int main(int argc, char** argv) { return 0; }" HAVE_OPENGL_GLX)
-    if(HAVE_OPENGL_GLX)
+    if(HAVE_OPENGL_GLX AND NOT HAVE_ROCKCHIP)
       set(SDL_VIDEO_OPENGL_GLX 1)
     endif()
   endif()
@@ -1111,6 +1111,21 @@ macro(CheckRPI)
       # !!! FIXME: shouldn't be using CMAKE_C_FLAGS, right?
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VIDEO_RPI_INCLUDE_FLAGS} ${VIDEO_RPI_LIBRARY_FLAGS}")
       list(APPEND EXTRA_LDFLAGS ${VIDEO_RPI_LDFLAGS})
+    endif()
+  endif()
+endmacro()
+
+# Requires:
+# - n/a
+macro(CheckROCKCHIP)
+  if(SDL_ROCKCHIP)
+    pkg_check_modules(VIDEO_ROCKCHIP mali)
+    if (VIDEO_ROCKCHIP_FOUND)
+      set(HAVE_ROCKCHIP TRUE)
+    endif()
+    if(SDL_VIDEO AND HAVE_ROCKCHIP)
+      set(HAVE_SDL_VIDEO TRUE)
+      set(SDL_VIDEO_DRIVER_ROCKCHIP 1)
     endif()
   endif()
 endmacro()

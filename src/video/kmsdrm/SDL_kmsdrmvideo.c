@@ -302,7 +302,9 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     return device;
 
 cleanup:
-    SDL_free(device);
+    if (device) {
+    	SDL_free(device);
+    }
 
     if (viddata) {
         SDL_free(viddata);
