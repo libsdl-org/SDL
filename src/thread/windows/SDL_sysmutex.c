@@ -71,20 +71,14 @@ static SDL_mutex *SDL_CreateMutex_srw(void)
 
 static void SDL_DestroyMutex_srw(SDL_mutex *mutex)
 {
-    if (mutex != NULL) {
-        /* There are no kernel allocated resources */
-        SDL_free(mutex);
-    }
+    /* There are no kernel allocated resources */
+    SDL_free(mutex);
 }
 
 static int SDL_LockMutex_srw(SDL_mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
     DWORD this_thread;
-
-    if (mutex == NULL) {
-        return 0;
-    }
 
     this_thread = GetCurrentThreadId();
     if (mutex->owner == this_thread) {
@@ -108,10 +102,6 @@ static int SDL_TryLockMutex_srw(SDL_mutex *_mutex)
     DWORD this_thread;
     int retval = 0;
 
-    if (mutex == NULL) {
-        return 0;
-    }
-
     this_thread = GetCurrentThreadId();
     if (mutex->owner == this_thread) {
         ++mutex->count;
@@ -130,10 +120,6 @@ static int SDL_TryLockMutex_srw(SDL_mutex *_mutex)
 static int SDL_UnlockMutex_srw(SDL_mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
-
-    if (mutex == NULL) {
-        return 0;
-    }
 
     if (mutex->owner == GetCurrentThreadId()) {
         if (--mutex->count == 0) {
@@ -185,19 +171,15 @@ static SDL_mutex *SDL_CreateMutex_cs(void)
 static void SDL_DestroyMutex_cs(SDL_mutex *mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
-    if (mutex != NULL) {
-        DeleteCriticalSection(&mutex->cs);
-        SDL_free(mutex);
-    }
+
+    DeleteCriticalSection(&mutex->cs);
+    SDL_free(mutex);
 }
 
 /* Lock the mutex */
 static int SDL_LockMutex_cs(SDL_mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
-    if (mutex == NULL) {
-        return 0;
-    }
 
     EnterCriticalSection(&mutex->cs);
     return 0;
@@ -208,9 +190,6 @@ static int SDL_TryLockMutex_cs(SDL_mutex *mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     int retval = 0;
-    if (mutex == NULL) {
-        return 0;
-    }
 
     if (TryEnterCriticalSection(&mutex->cs) == 0) {
         retval = SDL_MUTEX_TIMEDOUT;
@@ -222,9 +201,6 @@ static int SDL_TryLockMutex_cs(SDL_mutex *mutex_)
 static int SDL_UnlockMutex_cs(SDL_mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
-    if (mutex == NULL) {
-        return 0;
-    }
 
     LeaveCriticalSection(&mutex->cs);
     return 0;
@@ -277,21 +253,35 @@ SDL_mutex *SDL_CreateMutex(void)
 
 void SDL_DestroyMutex(SDL_mutex *mutex)
 {
-    SDL_mutex_impl_active.Destroy(mutex);
+    if (mutex) {
+        SDL_mutex_impl_active.Destroy(mutex);
+    }
 }
 
 int SDL_LockMutex(SDL_mutex *mutex)
 {
+    if (mutex == NULL) {
+        return 0;
+    }
+
     return SDL_mutex_impl_active.Lock(mutex);
 }
 
 int SDL_TryLockMutex(SDL_mutex *mutex)
 {
+    if (mutex == NULL) {
+        return 0;
+    }
+
     return SDL_mutex_impl_active.TryLock(mutex);
 }
 
 int SDL_UnlockMutex(SDL_mutex *mutex)
 {
+    if (mutex == NULL) {
+        return 0;
+    }
+
     return SDL_mutex_impl_active.Unlock(mutex);
 }
 
