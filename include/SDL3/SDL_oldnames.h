@@ -48,6 +48,7 @@
 #define SDL_FreeAudioStream SDL_DestroyAudioStream
 #define SDL_FreeWAV SDL_free
 #define SDL_NewAudioStream SDL_CreateAudioStream
+#define _SDL_AudioStream SDL_AudioStream
 
 /* ##SDL_joystick.h */
 #define SDL_JoystickAttachVirtual SDL_AttachVirtualJoystick
@@ -222,6 +223,7 @@
 #define SDL_FreeAudioStream SDL_FreeAudioStream_renamed_SDL_DestroyAudioStream
 #define SDL_FreeWAV SDL_FreeWAV_renamed_SDL_free
 #define SDL_NewAudioStream SDL_NewAudioStream_renamed_SDL_CreateAudioStream
+#define _SDL_AudioStream _SDL_AudioStream_renamed_SDL_AudioStream
 
 /* ##SDL_joystick.h */
 #define SDL_JoystickAttachVirtual SDL_JoystickAttachVirtual_renamed_SDL_AttachVirtualJoystick

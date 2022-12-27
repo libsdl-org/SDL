@@ -195,3 +195,5 @@ General:
     * KMOD_RSHIFT => SDL_KMOD_RSHIFT
     * KMOD_SCROLL => SDL_KMOD_SCROLL
     * KMOD_SHIFT => SDL_KMOD_SHIFT
+* The following structures have been renamed:
+    * _SDL_AudioStream => SDL_AudioStream

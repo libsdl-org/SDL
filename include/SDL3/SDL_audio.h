@@ -925,8 +925,7 @@ extern DECLSPEC int SDLCALL SDL_ConvertAudio(SDL_AudioCVT * cvt);
     - You push data as you have it, and pull it when you need it
  */
 /* this is opaque to the outside world. */
-struct _SDL_AudioStream;
-typedef struct _SDL_AudioStream SDL_AudioStream;
+typedef struct SDL_AudioStream SDL_AudioStream;
 
 /**
  * Create a new audio stream.

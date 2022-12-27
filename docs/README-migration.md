@@ -55,6 +55,9 @@ The following functions have been renamed:
 * SDL_FreeAudioStream => SDL_DestroyAudioStream
 * SDL_NewAudioStream => SDL_CreateAudioStream
 
+The following structures have been renamed:
+* _SDL_AudioStream => SDL_AudioStream
+
 ## SDL_cpuinfo.h
 
 SDL_Has3DNow() has been removed; there is no replacement.
