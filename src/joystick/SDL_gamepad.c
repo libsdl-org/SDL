@@ -754,9 +754,12 @@ static ControllerMapping_t *SDL_PrivateMatchControllerMappingForGUID(SDL_Joystic
 
         if (SDL_memcmp(&guid, &mapping_guid, sizeof(guid)) == 0) {
             Uint16 mapping_crc = 0;
-            const char *crc_string = SDL_strstr(mapping->mapping, SDL_GAMEPAD_CRC_FIELD);
-            if (crc_string) {
-                mapping_crc = (Uint16)SDL_strtol(crc_string + SDL_GAMEPAD_CRC_FIELD_SIZE, NULL, 16);
+
+            if (match_crc) {
+                const char *crc_string = SDL_strstr(mapping->mapping, SDL_GAMEPAD_CRC_FIELD);
+                if (crc_string) {
+                    mapping_crc = (Uint16)SDL_strtol(crc_string + SDL_GAMEPAD_CRC_FIELD_SIZE, NULL, 16);
+                }
             }
             if (crc == mapping_crc) {
                 return mapping;
@@ -769,7 +772,7 @@ static ControllerMapping_t *SDL_PrivateMatchControllerMappingForGUID(SDL_Joystic
 /*
  * Helper function to scan the mappings database for a gamepad with the specified GUID
  */
-static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID guid)
+static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool create_mapping)
 {
     ControllerMapping_t *mapping;
     Uint16 vendor, product, crc;
@@ -802,6 +805,10 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
         if (mapping) {
             return mapping;
         }
+    }
+
+    if (!create_mapping) {
+        return NULL;
     }
 
 #if SDL_JOYSTICK_XINPUT
@@ -1274,7 +1281,7 @@ static ControllerMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID,
         }
     }
 
-    pControllerMapping = SDL_PrivateMatchControllerMappingForGUID(jGUID, SDL_TRUE, SDL_TRUE);
+    pControllerMapping = SDL_PrivateGetControllerMappingForGUID(jGUID, SDL_FALSE);
     if (pControllerMapping) {
         /* Only overwrite the mapping if the priority is the same or higher. */
         if (pControllerMapping->priority <= priority) {
@@ -1336,7 +1343,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
 
     SDL_AssertJoysticksLocked();
 
-    mapping = SDL_PrivateGetControllerMappingForGUID(guid);
+    mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_TRUE);
 #ifdef __LINUX__
     if (mapping == NULL && name) {
         if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
@@ -1773,7 +1780,7 @@ char *SDL_GetGamepadMappingForGUID(SDL_JoystickGUID guid)
 
     SDL_LockJoysticks();
     {
-        ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForGUID(guid);
+        ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_TRUE);
         if (mapping) {
             retval = CreateMappingString(mapping, guid);
         } else {
