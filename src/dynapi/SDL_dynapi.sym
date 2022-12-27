@@ -524,8 +524,6 @@ SDL3_0.0.0 {
     SDL_GetPrefPath;
     SDL_GetNumVideoDrivers;
     SDL_GetVideoDriver;
-    SDL_VideoInit;
-    SDL_VideoQuit;
     SDL_GetCurrentVideoDriver;
     SDL_GetNumVideoDisplays;
     SDL_GetDisplayName;

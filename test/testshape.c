@@ -63,7 +63,7 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
-    if (SDL_VideoInit(NULL) == -1) {
+    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not initialize SDL video.");
         exit(-2);
     }
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
                 SDL_FreeSurface(pictures[j].surface);
             }
             SDL_free(pictures);
-            SDL_VideoQuit();
+            SDL_Quit();
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not load surface from named bitmap file: %s", argv[i + 1]);
             exit(-3);
         }
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
             SDL_FreeSurface(pictures[i].surface);
         }
         SDL_free(pictures);
-        SDL_VideoQuit();
+        SDL_Quit();
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create shaped window for SDL_Shape.");
         exit(-4);
     }
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
             SDL_FreeSurface(pictures[i].surface);
         }
         SDL_free(pictures);
-        SDL_VideoQuit();
+        SDL_Quit();
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create rendering context for SDL_Shape window.");
         exit(-5);
     }
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
             SDL_free(pictures);
             SDL_DestroyRenderer(renderer);
             SDL_DestroyWindow(window);
-            SDL_VideoQuit();
+            SDL_Quit();
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create texture for SDL_shape.");
             exit(-6);
         }
@@ -201,8 +201,8 @@ int main(int argc, char **argv)
         SDL_FreeSurface(pictures[i].surface);
     }
     SDL_free(pictures);
-    /* Call SDL_VideoQuit() before quitting. */
-    SDL_VideoQuit();
+    /* Call SDL_Quit() before quitting. */
+    SDL_Quit();
 
     return 0;
 }

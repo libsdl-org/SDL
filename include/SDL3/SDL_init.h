@@ -129,13 +129,6 @@ extern DECLSPEC int SDLCALL SDL_InitSubSystem(Uint32 flags);
 /**
  * Shut down specific SDL subsystems.
  *
- * If you start a subsystem using a call to that subsystem's init function
- * (for example SDL_VideoInit()) instead of SDL_Init() or SDL_InitSubSystem(),
- * SDL_QuitSubSystem() and SDL_WasInit() will not work. You will need to use
- * that subsystem's quit function (SDL_VideoQuit()) directly instead. But
- * generally, you should not be using those functions directly anyhow; use
- * SDL_Init() instead.
- *
  * You still need to call SDL_Quit() even if you close all open subsystems
  * with SDL_QuitSubSystem().
  *
@@ -170,12 +163,6 @@ extern DECLSPEC Uint32 SDLCALL SDL_WasInit(Uint32 flags);
  * You should call this function even if you have already shutdown each
  * initialized subsystem with SDL_QuitSubSystem(). It is safe to call this
  * function even in the case of errors in initialization.
- *
- * If you start a subsystem using a call to that subsystem's init function
- * (for example SDL_VideoInit()) instead of SDL_Init() or SDL_InitSubSystem(),
- * then you must use that subsystem's quit function (SDL_VideoQuit()) to shut
- * it down before calling SDL_Quit(). But generally, you should not be using
- * those functions directly anyhow; use SDL_Init() instead.
  *
  * You can use this function with atexit() to ensure that it is run when your
  * application is shutdown, but it is not wise to do this from a library or

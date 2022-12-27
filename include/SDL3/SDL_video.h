@@ -282,48 +282,6 @@ extern DECLSPEC int SDLCALL SDL_GetNumVideoDrivers(void);
 extern DECLSPEC const char *SDLCALL SDL_GetVideoDriver(int index);
 
 /**
- * Initialize the video subsystem, optionally specifying a video driver.
- *
- * This function initializes the video subsystem, setting up a connection to
- * the window manager, etc, and determines the available display modes and
- * pixel formats, but does not initialize a window or graphics mode.
- *
- * If you use this function and you haven't used the SDL_INIT_VIDEO flag with
- * either SDL_Init() or SDL_InitSubSystem(), you should call SDL_VideoQuit()
- * before calling SDL_Quit().
- *
- * It is safe to call this function multiple times. SDL_VideoInit() will call
- * SDL_VideoQuit() itself if the video subsystem has already been initialized.
- *
- * You can use SDL_GetNumVideoDrivers() and SDL_GetVideoDriver() to find a
- * specific `driver_name`.
- *
- * \param driver_name the name of a video driver to initialize, or NULL for
- *                    the default driver
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetNumVideoDrivers
- * \sa SDL_GetVideoDriver
- * \sa SDL_InitSubSystem
- * \sa SDL_VideoQuit
- */
-extern DECLSPEC int SDLCALL SDL_VideoInit(const char *driver_name);
-
-/**
- * Shut down the video subsystem, if initialized with SDL_VideoInit().
- *
- * This function closes all windows, and restores the original video mode.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_VideoInit
- */
-extern DECLSPEC void SDLCALL SDL_VideoQuit(void);
-
-/**
  * Get the name of the currently initialized video driver.
  *
  * \returns the name of the current video driver or NULL if no driver has been

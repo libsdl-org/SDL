@@ -27,6 +27,7 @@
 #include "SDL_blit.h"
 #include "SDL_pixels_c.h"
 #include "SDL_rect_c.h"
+#include "SDL_video_c.h"
 #include "../events/SDL_events_c.h"
 #include "../timer/SDL_timer_c.h"
 

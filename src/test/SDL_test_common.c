@@ -1071,7 +1071,8 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Log("%s\n", text);
             }
         }
-        if (SDL_VideoInit(state->videodriver) < 0) {
+        SDL_SetHint("SDL_VIDEO_DRIVER", state->videodriver);
+        if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
             SDL_Log("Couldn't initialize video driver: %s\n",
                     SDL_GetError());
             return SDL_FALSE;
@@ -2161,7 +2162,7 @@ void SDLTest_CommonQuit(SDLTest_CommonState *state)
         SDL_free(state->renderers);
     }
     if (state->flags & SDL_INIT_VIDEO) {
-        SDL_VideoQuit();
+        SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
     if (state->flags & SDL_INIT_AUDIO) {
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
