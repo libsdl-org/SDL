@@ -67,7 +67,7 @@ typedef struct _SDL_JoystickSensorInfo
 
 #define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
 
-struct _SDL_Joystick
+struct SDL_Joystick
 {
     const void *magic _guarded;
 
@@ -119,7 +119,7 @@ struct _SDL_Joystick
 
     int ref_count _guarded; /* Reference count for multiple opens */
 
-    struct _SDL_Joystick *next _guarded; /* pointer to next joystick we have allocated */
+    struct SDL_Joystick *next _guarded; /* pointer to next joystick we have allocated */
 };
 
 #undef _guarded

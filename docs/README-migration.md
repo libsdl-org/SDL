@@ -166,6 +166,9 @@ The following functions have been renamed:
 * SDL_JoystickUpdate => SDL_UpdateJoysticks
 * SDL_NumJoysticks => SDL_GetNumJoysticks
 
+The following structures have been renamed:
+* _SDL_Joystick => SDL_Joystick
+
 ## SDL_keycode.h
 
 The following enums have been renamed:

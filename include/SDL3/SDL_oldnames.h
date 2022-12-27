@@ -100,6 +100,7 @@
 #define SDL_JoystickSetVirtualHat SDL_SetJoystickVirtualHat
 #define SDL_JoystickUpdate SDL_UpdateJoysticks
 #define SDL_NumJoysticks SDL_GetNumJoysticks
+#define _SDL_Joystick SDL_Joystick
 
 /* ##SDL_keycode.h */
 #define KMOD_ALT SDL_KMOD_ALT
@@ -274,6 +275,7 @@
 #define SDL_JoystickSetVirtualHat SDL_JoystickSetVirtualHat_renamed_SDL_SetJoystickVirtualHat
 #define SDL_JoystickUpdate SDL_JoystickUpdate_renamed_SDL_UpdateJoysticks
 #define SDL_NumJoysticks SDL_NumJoysticks_renamed_SDL_GetNumJoysticks
+#define _SDL_Joystick _SDL_Joystick_renamed_SDL_Joystick
 
 /* ##SDL_keycode.h */
 #define KMOD_ALT KMOD_ALT_renamed_SDL_KMOD_ALT

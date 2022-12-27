@@ -70,8 +70,7 @@ extern "C" {
 #ifdef SDL_THREAD_SAFETY_ANALYSIS
 extern SDL_mutex *SDL_joystick_lock;
 #endif
-struct _SDL_Joystick;
-typedef struct _SDL_Joystick SDL_Joystick;
+typedef struct SDL_Joystick SDL_Joystick;
 
 /* A structure that encodes the stable unique id for a joystick device */
 typedef SDL_GUID SDL_JoystickGUID;
