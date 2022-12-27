@@ -352,12 +352,12 @@ int surface_testCompleteSurfaceConversion(void *arg)
 
     for (i = 0; i < SDL_arraysize(pixel_formats); ++i) {
         for (j = 0; j < SDL_arraysize(pixel_formats); ++j) {
-            fmt1 = SDL_AllocFormat(pixel_formats[i]);
+            fmt1 = SDL_CreatePixelFormat(pixel_formats[i]);
             SDL_assert(fmt1 != NULL);
             cvt1 = SDL_ConvertSurface(face, fmt1);
             SDL_assert(cvt1 != NULL);
 
-            fmt2 = SDL_AllocFormat(pixel_formats[j]);
+            fmt2 = SDL_CreatePixelFormat(pixel_formats[j]);
             SDL_assert(fmt1 != NULL);
             cvt2 = SDL_ConvertSurface(cvt1, fmt2);
             SDL_assert(cvt2 != NULL);
@@ -376,9 +376,9 @@ int surface_testCompleteSurfaceConversion(void *arg)
             }
 
             SDL_FreeSurface(cvt1);
-            SDL_FreeFormat(fmt1);
+            SDL_DestroyPixelFormat(fmt1);
             SDL_FreeSurface(cvt2);
-            SDL_FreeFormat(fmt2);
+            SDL_DestroyPixelFormat(fmt2);
         }
     }
 

@@ -63,7 +63,7 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void 
 
         bpp = info->bmiHeader.biPlanes * info->bmiHeader.biBitCount;
         masks = (Uint32 *)((Uint8 *)info + info->bmiHeader.biSize);
-        *format = SDL_MasksToPixelFormatEnum(bpp, masks[0], masks[1], masks[2], 0);
+        *format = SDL_GetPixelFormatEnumForMasks(bpp, masks[0], masks[1], masks[2], 0);
     }
     if (*format == SDL_PIXELFORMAT_UNKNOWN) {
         /* We'll use RGB format for now */

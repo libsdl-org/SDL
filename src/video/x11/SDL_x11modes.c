@@ -116,7 +116,7 @@ X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *vinfo)
             }
         }
 
-        return SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, Amask);
+        return SDL_GetPixelFormatEnumForMasks(bpp, Rmask, Gmask, Bmask, Amask);
     }
 
     if (vinfo->class == PseudoColor || vinfo->class == StaticColor) {

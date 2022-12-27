@@ -562,7 +562,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface)
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AllocFormat
+ * \sa SDL_CreatePixelFormat
  * \sa SDL_ConvertSurfaceFormat
  * \sa SDL_CreateSurface
  */
@@ -585,7 +585,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AllocFormat
+ * \sa SDL_CreatePixelFormat
  * \sa SDL_ConvertSurface
  * \sa SDL_CreateSurface
  */

@@ -1436,13 +1436,13 @@ SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
         SDL_Surface *temp = NULL;
 
         /* Set up a destination surface for the texture update */
-        dst_fmt = SDL_AllocFormat(format);
+        dst_fmt = SDL_CreatePixelFormat(format);
         if (dst_fmt == NULL) {
             SDL_DestroyTexture(texture);
             return NULL;
         }
         temp = SDL_ConvertSurface(surface, dst_fmt);
-        SDL_FreeFormat(dst_fmt);
+        SDL_DestroyPixelFormat(dst_fmt);
         if (temp) {
             SDL_UpdateTexture(texture, NULL, temp->pixels, temp->pitch);
             SDL_FreeSurface(temp);

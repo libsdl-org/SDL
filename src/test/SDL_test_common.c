@@ -1143,7 +1143,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Log("DPI: %fx%f\n", hdpi, vdpi);
 
                 SDL_GetDesktopDisplayMode(i, &mode);
-                SDL_PixelFormatEnumToMasks(mode.format, &bpp, &Rmask, &Gmask,
+                SDL_GetMasksForPixelFormatEnum(mode.format, &bpp, &Rmask, &Gmask,
                                            &Bmask, &Amask);
                 SDL_Log("  Current mode: %dx%d@%dHz, %d bits-per-pixel (%s)\n",
                         mode.w, mode.h, mode.refresh_rate, bpp,
@@ -1165,7 +1165,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                     SDL_Log("  Fullscreen video modes:\n");
                     for (j = 0; j < m; ++j) {
                         SDL_GetDisplayMode(i, j, &mode);
-                        SDL_PixelFormatEnumToMasks(mode.format, &bpp, &Rmask,
+                        SDL_GetMasksForPixelFormatEnum(mode.format, &bpp, &Rmask,
                                                    &Gmask, &Bmask, &Amask);
                         SDL_Log("    Mode %d: %dx%d@%dHz, %d bits-per-pixel (%s)\n",
                                 j, mode.w, mode.h, mode.refresh_rate, bpp,

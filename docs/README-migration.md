@@ -221,6 +221,14 @@ used by additional platforms that didn't have a SDL_RunApp-like function before)
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
 
+The following functions have been renamed:
+* SDL_AllocFormat => SDL_CreatePixelFormat
+* SDL_AllocPalette => SDL_CreatePalette
+* SDL_FreeFormat => SDL_DestroyPixelFormat
+* SDL_FreePalette => SDL_DestroyPalette
+* SDL_MasksToPixelFormatEnum => SDL_GetPixelFormatEnumForMasks
+* SDL_PixelFormatEnumToMasks => SDL_GetMasksForPixelFormatEnum
+
 ## SDL_platform.h
 
 The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ has been renamed __IOS__
@@ -419,7 +427,7 @@ You can implement the old functions in your own code easily:
 SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
 {
     return SDL_CreateSurface(width, height,
-            SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask));
+            SDL_GetPixelFormatEnumForMasks(depth, Rmask, Gmask, Bmask, Amask));
 }
 
 SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth, Uint32 format)
@@ -430,7 +438,7 @@ SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height,
 SDL_Surface *SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
 {
     return SDL_CreateSurfaceFrom(pixels, width, height, pitch,
-            SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask));
+            SDL_GetPixelFormatEnumForMasks(depth, Rmask, Gmask, Bmask, Amask));
 }
 
 SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 format)

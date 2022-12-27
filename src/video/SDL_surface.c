@@ -114,7 +114,7 @@ SDL_CreateSurface(int width, int height, Uint32 format)
         return NULL;
     }
 
-    surface->format = SDL_AllocFormat(format);
+    surface->format = SDL_CreatePixelFormat(format);
     if (!surface->format) {
         SDL_FreeSurface(surface);
         return NULL;
@@ -126,7 +126,7 @@ SDL_CreateSurface(int width, int height, Uint32 format)
 
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
         SDL_Palette *palette =
-            SDL_AllocPalette((1 << surface->format->BitsPerPixel));
+            SDL_CreatePalette((1 << surface->format->BitsPerPixel));
         if (palette == NULL) {
             SDL_FreeSurface(surface);
             return NULL;
@@ -141,7 +141,7 @@ SDL_CreateSurface(int width, int height, Uint32 format)
             palette->colors[1].b = 0x00;
         }
         SDL_SetSurfacePalette(surface, palette);
-        SDL_FreePalette(palette);
+        SDL_DestroyPalette(palette);
     }
 
     /* Get the pixels */
@@ -1333,10 +1333,10 @@ SDL_ConvertSurfaceFormat(SDL_Surface *surface, Uint32 pixel_format)
     SDL_PixelFormat *fmt;
     SDL_Surface *convert = NULL;
 
-    fmt = SDL_AllocFormat(pixel_format);
+    fmt = SDL_CreatePixelFormat(pixel_format);
     if (fmt) {
         convert = SDL_ConvertSurface(surface, fmt);
-        SDL_FreeFormat(fmt);
+        SDL_DestroyPixelFormat(fmt);
     }
     return convert;
 }
@@ -1546,7 +1546,7 @@ void SDL_FreeSurface(SDL_Surface *surface)
 #endif
     if (surface->format) {
         SDL_SetSurfacePalette(surface, NULL);
-        SDL_FreeFormat(surface->format);
+        SDL_DestroyPixelFormat(surface->format);
         surface->format = NULL;
     }
     if (surface->flags & SDL_PREALLOC) {
