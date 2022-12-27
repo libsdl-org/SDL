@@ -602,7 +602,7 @@ extern DECLSPEC float SDLCALL SDL_tanf(float x);
 #define SDL_ICONV_EINVAL    (size_t)-4
 
 /* SDL_iconv_* are now always real symbols/types, not macros or inlined. */
-typedef struct _SDL_iconv_t *SDL_iconv_t;
+typedef struct SDL_iconv_data_t *SDL_iconv_t;
 extern DECLSPEC SDL_iconv_t SDLCALL SDL_iconv_open(const char *tocode,
                                                    const char *fromcode);
 extern DECLSPEC int SDLCALL SDL_iconv_close(SDL_iconv_t cd);
