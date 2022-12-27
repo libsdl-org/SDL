@@ -40,16 +40,16 @@
 /* Many gamepads turn the center button into an instantaneous button press */
 #define SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS 250
 
-#define SDL_CONTROLLER_CRC_FIELD           "crc:"
-#define SDL_CONTROLLER_CRC_FIELD_SIZE      4 /* hard-coded for speed */
-#define SDL_CONTROLLER_PLATFORM_FIELD      "platform:"
-#define SDL_CONTROLLER_PLATFORM_FIELD_SIZE SDL_strlen(SDL_CONTROLLER_PLATFORM_FIELD)
-#define SDL_CONTROLLER_HINT_FIELD          "hint:"
-#define SDL_CONTROLLER_HINT_FIELD_SIZE     SDL_strlen(SDL_CONTROLLER_HINT_FIELD)
-#define SDL_CONTROLLER_SDKGE_FIELD         "sdk>=:"
-#define SDL_CONTROLLER_SDKGE_FIELD_SIZE    SDL_strlen(SDL_CONTROLLER_SDKGE_FIELD)
-#define SDL_CONTROLLER_SDKLE_FIELD         "sdk<=:"
-#define SDL_CONTROLLER_SDKLE_FIELD_SIZE    SDL_strlen(SDL_CONTROLLER_SDKLE_FIELD)
+#define SDL_GAMEPAD_CRC_FIELD           "crc:"
+#define SDL_GAMEPAD_CRC_FIELD_SIZE      4 /* hard-coded for speed */
+#define SDL_GAMEPAD_PLATFORM_FIELD      "platform:"
+#define SDL_GAMEPAD_PLATFORM_FIELD_SIZE SDL_strlen(SDL_GAMEPAD_PLATFORM_FIELD)
+#define SDL_GAMEPAD_HINT_FIELD          "hint:"
+#define SDL_GAMEPAD_HINT_FIELD_SIZE     SDL_strlen(SDL_GAMEPAD_HINT_FIELD)
+#define SDL_GAMEPAD_SDKGE_FIELD         "sdk>=:"
+#define SDL_GAMEPAD_SDKGE_FIELD_SIZE    SDL_strlen(SDL_GAMEPAD_SDKGE_FIELD)
+#define SDL_GAMEPAD_SDKLE_FIELD         "sdk<=:"
+#define SDL_GAMEPAD_SDKLE_FIELD_SIZE    SDL_strlen(SDL_GAMEPAD_SDKLE_FIELD)
 
 /* a list of currently opened gamepads */
 static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
@@ -95,9 +95,9 @@ typedef struct
 /* our hard coded list of mapping support */
 typedef enum
 {
-    SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT,
-    SDL_CONTROLLER_MAPPING_PRIORITY_API,
-    SDL_CONTROLLER_MAPPING_PRIORITY_USER,
+    SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT,
+    SDL_GAMEPAD_MAPPING_PRIORITY_API,
+    SDL_GAMEPAD_MAPPING_PRIORITY_USER,
 } SDL_ControllerMappingPriority;
 
 #define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
@@ -550,7 +550,7 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(SDL_JoystickGU
         SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof(mapping_string));
     }
 
-    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
 #endif /* __ANDROID__ */
 
@@ -684,7 +684,7 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         }
     }
 
-    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
 
 /*
@@ -698,7 +698,7 @@ static ControllerMapping_t *SDL_CreateMappingForRAWINPUTController(SDL_JoystickG
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
     SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,guide:b10,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
 
-    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
 
 /*
@@ -716,7 +716,7 @@ static ControllerMapping_t *SDL_CreateMappingForWGIController(SDL_JoystickGUID g
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
     SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:b10,dpdown:b12,dpleft:b13,dpright:b11,leftx:a1,lefty:a0~,rightx:a3,righty:a2~,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
 
-    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
 
 /*
@@ -754,9 +754,9 @@ static ControllerMapping_t *SDL_PrivateMatchControllerMappingForGUID(SDL_Joystic
 
         if (SDL_memcmp(&guid, &mapping_guid, sizeof(guid)) == 0) {
             Uint16 mapping_crc = 0;
-            const char *crc_string = SDL_strstr(mapping->mapping, SDL_CONTROLLER_CRC_FIELD);
+            const char *crc_string = SDL_strstr(mapping->mapping, SDL_GAMEPAD_CRC_FIELD);
             if (crc_string) {
-                mapping_crc = (Uint16)SDL_strtol(crc_string + SDL_CONTROLLER_CRC_FIELD_SIZE, NULL, 16);
+                mapping_crc = (Uint16)SDL_strtol(crc_string + SDL_GAMEPAD_CRC_FIELD_SIZE, NULL, 16);
             }
             if (crc == mapping_crc) {
                 return mapping;
@@ -1248,7 +1248,7 @@ static ControllerMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID,
         /* Make sure the mapping has the CRC */
         char *new_mapping;
         char *crc_end = "";
-        char *crc_string = SDL_strstr(pchMapping, SDL_CONTROLLER_CRC_FIELD);
+        char *crc_string = SDL_strstr(pchMapping, SDL_GAMEPAD_CRC_FIELD);
         if (crc_string) {
             crc_end = SDL_strchr(crc_string, ',');
             if (crc_end) {
@@ -1259,15 +1259,15 @@ static ControllerMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID,
             *crc_string = '\0';
         }
 
-        if (SDL_asprintf(&new_mapping, "%s%s%.4x,%s", pchMapping, SDL_CONTROLLER_CRC_FIELD, crc, crc_end) >= 0) {
+        if (SDL_asprintf(&new_mapping, "%s%s%.4x,%s", pchMapping, SDL_GAMEPAD_CRC_FIELD, crc, crc_end) >= 0) {
             SDL_free(pchMapping);
             pchMapping = new_mapping;
         }
     } else {
         /* Make sure the GUID has the CRC, for matching purposes */
-        char *crc_string = SDL_strstr(pchMapping, SDL_CONTROLLER_CRC_FIELD);
+        char *crc_string = SDL_strstr(pchMapping, SDL_GAMEPAD_CRC_FIELD);
         if (crc_string) {
-            crc = (Uint16)SDL_strtol(crc_string + SDL_CONTROLLER_CRC_FIELD_SIZE, NULL, 16);
+            crc = (Uint16)SDL_strtol(crc_string + SDL_GAMEPAD_CRC_FIELD_SIZE, NULL, 16);
             if (crc) {
                 SDL_SetJoystickGUIDCRC(&jGUID, crc);
             }
@@ -1344,7 +1344,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
             SDL_bool existing;
             mapping = SDL_PrivateAddMappingForGUID(guid,
                                                    "none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-                                                   &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+                                                   &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
         } else if (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box") || SDL_strstr(name, "XBOX")) {
             mapping = s_pXInputMapping;
         }
@@ -1433,7 +1433,7 @@ static ControllerMapping_t *SDL_PrivateGenerateAutomaticControllerMapping(const 
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefttrigger", &raw_map->lefttrigger);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "righttrigger", &raw_map->righttrigger);
 
-    return SDL_PrivateAddMappingForGUID(guid, mapping, &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+    return SDL_PrivateAddMappingForGUID(guid, mapping, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
 
 static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
@@ -1511,9 +1511,9 @@ int SDL_AddGamepadMappingsFromRW(SDL_RWops *rw, int freerw)
         }
 
         /* Extract and verify the platform */
-        tmp = SDL_strstr(line, SDL_CONTROLLER_PLATFORM_FIELD);
+        tmp = SDL_strstr(line, SDL_GAMEPAD_PLATFORM_FIELD);
         if (tmp != NULL) {
-            tmp += SDL_CONTROLLER_PLATFORM_FIELD_SIZE;
+            tmp += SDL_GAMEPAD_PLATFORM_FIELD_SIZE;
             comma = SDL_strchr(tmp, ',');
             if (comma != NULL) {
                 platform_len = comma - tmp + 1;
@@ -1555,13 +1555,13 @@ static int SDL_PrivateGamepadAddMapping(const char *mappingString, SDL_Controlle
     { /* Extract and verify the hint field */
         const char *tmp;
 
-        tmp = SDL_strstr(mappingString, SDL_CONTROLLER_HINT_FIELD);
+        tmp = SDL_strstr(mappingString, SDL_GAMEPAD_HINT_FIELD);
         if (tmp != NULL) {
             SDL_bool default_value, value, negate;
             int len;
             char hint[128];
 
-            tmp += SDL_CONTROLLER_HINT_FIELD_SIZE;
+            tmp += SDL_GAMEPAD_HINT_FIELD_SIZE;
 
             if (*tmp == '!') {
                 negate = SDL_TRUE;
@@ -1597,16 +1597,16 @@ static int SDL_PrivateGamepadAddMapping(const char *mappingString, SDL_Controlle
     { /* Extract and verify the SDK version */
         const char *tmp;
 
-        tmp = SDL_strstr(mappingString, SDL_CONTROLLER_SDKGE_FIELD);
+        tmp = SDL_strstr(mappingString, SDL_GAMEPAD_SDKGE_FIELD);
         if (tmp != NULL) {
-            tmp += SDL_CONTROLLER_SDKGE_FIELD_SIZE;
+            tmp += SDL_GAMEPAD_SDKGE_FIELD_SIZE;
             if (!(SDL_GetAndroidSDKVersion() >= SDL_atoi(tmp))) {
                 return SDL_SetError("SDK version %d < minimum version %d", SDL_GetAndroidSDKVersion(), SDL_atoi(tmp));
             }
         }
-        tmp = SDL_strstr(mappingString, SDL_CONTROLLER_SDKLE_FIELD);
+        tmp = SDL_strstr(mappingString, SDL_GAMEPAD_SDKLE_FIELD);
         if (tmp != NULL) {
-            tmp += SDL_CONTROLLER_SDKLE_FIELD_SIZE;
+            tmp += SDL_GAMEPAD_SDKLE_FIELD_SIZE;
             if (!(SDL_GetAndroidSDKVersion() <= SDL_atoi(tmp))) {
                 return SDL_SetError("SDK version %d > maximum version %d", SDL_GetAndroidSDKVersion(), SDL_atoi(tmp));
             }
@@ -1652,7 +1652,7 @@ int SDL_AddGamepadMapping(const char *mappingString)
 
     SDL_LockJoysticks();
     {
-        retval = SDL_PrivateGamepadAddMapping(mappingString, SDL_CONTROLLER_MAPPING_PRIORITY_API);
+        retval = SDL_PrivateGamepadAddMapping(mappingString, SDL_GAMEPAD_MAPPING_PRIORITY_API);
     }
     SDL_UnlockJoysticks();
 
@@ -1699,12 +1699,12 @@ static char *CreateMappingString(ControllerMapping_t *mapping, SDL_JoystickGUID 
     /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
     needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
 
-    if (!SDL_strstr(mapping->mapping, SDL_CONTROLLER_PLATFORM_FIELD)) {
+    if (!SDL_strstr(mapping->mapping, SDL_GAMEPAD_PLATFORM_FIELD)) {
         /* add memory for ',' + platform:PLATFORM */
         if (mapping->mapping[SDL_strlen(mapping->mapping) - 1] != ',') {
             needed += 1;
         }
-        needed += SDL_CONTROLLER_PLATFORM_FIELD_SIZE + SDL_strlen(platform);
+        needed += SDL_GAMEPAD_PLATFORM_FIELD_SIZE + SDL_strlen(platform);
     }
 
     pMappingString = SDL_malloc(needed);
@@ -1715,18 +1715,18 @@ static char *CreateMappingString(ControllerMapping_t *mapping, SDL_JoystickGUID 
 
     (void)SDL_snprintf(pMappingString, needed, "%s,%s,%s", pchGUID, mapping->name, mapping->mapping);
 
-    if (!SDL_strstr(mapping->mapping, SDL_CONTROLLER_PLATFORM_FIELD)) {
+    if (!SDL_strstr(mapping->mapping, SDL_GAMEPAD_PLATFORM_FIELD)) {
         if (mapping->mapping[SDL_strlen(mapping->mapping) - 1] != ',') {
             SDL_strlcat(pMappingString, ",", needed);
         }
-        SDL_strlcat(pMappingString, SDL_CONTROLLER_PLATFORM_FIELD, needed);
+        SDL_strlcat(pMappingString, SDL_GAMEPAD_PLATFORM_FIELD, needed);
         SDL_strlcat(pMappingString, platform, needed);
     }
 
     /* Make sure multiple platform strings haven't made their way into the mapping */
-    pPlatformString = SDL_strstr(pMappingString, SDL_CONTROLLER_PLATFORM_FIELD);
+    pPlatformString = SDL_strstr(pMappingString, SDL_GAMEPAD_PLATFORM_FIELD);
     if (pPlatformString) {
-        pPlatformString = SDL_strstr(pPlatformString + 1, SDL_CONTROLLER_PLATFORM_FIELD);
+        pPlatformString = SDL_strstr(pPlatformString + 1, SDL_GAMEPAD_PLATFORM_FIELD);
         if (pPlatformString) {
             *pPlatformString = '\0';
         }
@@ -1821,7 +1821,7 @@ static void SDL_LoadGamepadHints()
                 *pchNewLine = '\0';
             }
 
-            SDL_PrivateGamepadAddMapping(pUserMappings, SDL_CONTROLLER_MAPPING_PRIORITY_USER);
+            SDL_PrivateGamepadAddMapping(pUserMappings, SDL_GAMEPAD_MAPPING_PRIORITY_USER);
 
             if (pchNewLine) {
                 pUserMappings = pchNewLine + 1;
@@ -1865,7 +1865,7 @@ int SDL_GamepadInitMappings(void)
 
     pMappingString = s_ControllerMappings[i];
     while (pMappingString) {
-        SDL_PrivateGamepadAddMapping(pMappingString, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+        SDL_PrivateGamepadAddMapping(pMappingString, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 
         i++;
         pMappingString = s_ControllerMappings[i];
