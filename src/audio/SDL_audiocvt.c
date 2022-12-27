@@ -892,7 +892,7 @@ static int SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const void *_inb
     SRC_DATA data;
     int result;
 
-    SDL_assert(inbuf != ((const float *)outbuf)); /* SDL_AudioStreamPut() shouldn't allow in-place resamples. */
+    SDL_assert(inbuf != ((const float *)outbuf)); /* SDL_PutAudioStreamData() shouldn't allow in-place resamples. */
 
     data.data_in = (float *)inbuf; /* Older versions of libsamplerate had a non-const pointer, but didn't write to it */
     data.input_frames = inbuflen / framelen;
@@ -975,7 +975,7 @@ static int SDL_ResampleAudioStream(SDL_AudioStream *stream, const void *_inbuf, 
     const int cpy = SDL_min(inbuflen, paddingbytes);
     int retval;
 
-    SDL_assert(inbuf != ((const float *)outbuf)); /* SDL_AudioStreamPut() shouldn't allow in-place resamples. */
+    SDL_assert(inbuf != ((const float *)outbuf)); /* SDL_PutAudioStreamData() shouldn't allow in-place resamples. */
 
     retval = SDL_ResampleAudio(chans, inrate, outrate, lpadding, rpadding, inbuf, inbuflen, outbuf, outbuflen);
 
@@ -997,7 +997,7 @@ static void SDL_CleanupAudioStreamResampler(SDL_AudioStream *stream)
 }
 
 SDL_AudioStream *
-SDL_NewAudioStream(SDL_AudioFormat src_format,
+SDL_CreateAudioStream(SDL_AudioFormat src_format,
                    Uint8 src_channels,
                    int src_rate,
                    SDL_AudioFormat dst_format,
@@ -1036,7 +1036,7 @@ SDL_NewAudioStream(SDL_AudioFormat src_format,
     retval->resampler_padding = (float *)SDL_calloc(retval->resampler_padding_samples ? retval->resampler_padding_samples : 1, sizeof(float));
 
     if (retval->resampler_padding == NULL) {
-        SDL_FreeAudioStream(retval);
+        SDL_DestroyAudioStream(retval);
         SDL_OutOfMemory();
         return NULL;
     }
@@ -1045,7 +1045,7 @@ SDL_NewAudioStream(SDL_AudioFormat src_format,
     if (retval->staging_buffer_size > 0) {
         retval->staging_buffer = (Uint8 *)SDL_malloc(retval->staging_buffer_size);
         if (retval->staging_buffer == NULL) {
-            SDL_FreeAudioStream(retval);
+            SDL_DestroyAudioStream(retval);
             SDL_OutOfMemory();
             return NULL;
         }
@@ -1055,14 +1055,14 @@ SDL_NewAudioStream(SDL_AudioFormat src_format,
     if (src_rate == dst_rate) {
         retval->cvt_before_resampling.needed = SDL_FALSE;
         if (SDL_BuildAudioCVT(&retval->cvt_after_resampling, src_format, src_channels, dst_rate, dst_format, dst_channels, dst_rate) < 0) {
-            SDL_FreeAudioStream(retval);
+            SDL_DestroyAudioStream(retval);
             return NULL; /* SDL_BuildAudioCVT should have called SDL_SetError. */
         }
     } else {
         /* Don't resample at first. Just get us to Float32 format. */
         /* !!! FIXME: convert to int32 on devices without hardware float. */
         if (SDL_BuildAudioCVT(&retval->cvt_before_resampling, src_format, src_channels, src_rate, AUDIO_F32SYS, pre_resample_channels, src_rate) < 0) {
-            SDL_FreeAudioStream(retval);
+            SDL_DestroyAudioStream(retval);
             return NULL; /* SDL_BuildAudioCVT should have called SDL_SetError. */
         }
 
@@ -1073,7 +1073,7 @@ SDL_NewAudioStream(SDL_AudioFormat src_format,
         if (!retval->resampler_func) {
             retval->resampler_state = SDL_calloc(retval->resampler_padding_samples, sizeof(float));
             if (!retval->resampler_state) {
-                SDL_FreeAudioStream(retval);
+                SDL_DestroyAudioStream(retval);
                 SDL_OutOfMemory();
                 return NULL;
             }
@@ -1085,14 +1085,14 @@ SDL_NewAudioStream(SDL_AudioFormat src_format,
 
         /* Convert us to the final format after resampling. */
         if (SDL_BuildAudioCVT(&retval->cvt_after_resampling, AUDIO_F32SYS, pre_resample_channels, dst_rate, dst_format, dst_channels, dst_rate) < 0) {
-            SDL_FreeAudioStream(retval);
+            SDL_DestroyAudioStream(retval);
             return NULL; /* SDL_BuildAudioCVT should have called SDL_SetError. */
         }
     }
 
     retval->queue = SDL_NewDataQueue(packetlen, (size_t)packetlen * 2);
     if (!retval->queue) {
-        SDL_FreeAudioStream(retval);
+        SDL_DestroyAudioStream(retval);
         return NULL; /* SDL_NewDataQueue should have called SDL_SetError. */
     }
 
@@ -1228,7 +1228,7 @@ static int SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, 
     return buflen ? SDL_WriteToDataQueue(stream->queue, resamplebuf, buflen) : 0;
 }
 
-int SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
+int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
 {
     /* !!! FIXME: several converters can take advantage of SIMD, but only
        !!! FIXME:  if the data is aligned to 16 bytes. EnsureStreamBufferSize()
@@ -1295,7 +1295,7 @@ int SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
     return 0;
 }
 
-int SDL_AudioStreamFlush(SDL_AudioStream *stream)
+int SDL_FlushAudioStream(SDL_AudioStream *stream)
 {
     if (stream == NULL) {
         return SDL_InvalidParamError("stream");
@@ -1349,7 +1349,7 @@ int SDL_AudioStreamFlush(SDL_AudioStream *stream)
 }
 
 /* get converted/resampled data from the stream */
-int SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len)
+int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *buf, int len)
 {
 #if DEBUG_AUDIOSTREAM
     SDL_Log("AUDIOSTREAM: want to get %d converted bytes\n", len);
@@ -1372,12 +1372,12 @@ int SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len)
 }
 
 /* number of converted/resampled bytes available */
-int SDL_AudioStreamAvailable(SDL_AudioStream *stream)
+int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
 {
     return stream ? (int)SDL_CountDataQueue(stream->queue) : 0;
 }
 
-void SDL_AudioStreamClear(SDL_AudioStream *stream)
+void SDL_ClearAudioStream(SDL_AudioStream *stream)
 {
     if (stream == NULL) {
         SDL_InvalidParamError("stream");
@@ -1392,7 +1392,7 @@ void SDL_AudioStreamClear(SDL_AudioStream *stream)
 }
 
 /* dispose of a stream */
-void SDL_FreeAudioStream(SDL_AudioStream *stream)
+void SDL_DestroyAudioStream(SDL_AudioStream *stream)
 {
     if (stream) {
         if (stream->cleanup_resampler_func) {

@@ -40,7 +40,14 @@
 #ifdef SDL_ENABLE_OLD_NAMES
 
 /* ##SDL_audio.h */
+#define SDL_AudioStreamAvailable SDL_GetAudioStreamAvailable
+#define SDL_AudioStreamClear SDL_ClearAudioStream
+#define SDL_AudioStreamFlush SDL_FlushAudioStream
+#define SDL_AudioStreamGet SDL_GetAudioStreamData
+#define SDL_AudioStreamPut SDL_PutAudioStreamData
+#define SDL_FreeAudioStream SDL_DestroyAudioStream
 #define SDL_FreeWAV SDL_free
+#define SDL_NewAudioStream SDL_CreateAudioStream
 
 /* ##SDL_keycode.h */
 #define KMOD_ALT SDL_KMOD_ALT
@@ -78,7 +85,14 @@
 #else /* !SDL_ENABLE_OLD_NAMES */
 
 /* ##SDL_audio.h */
+#define SDL_AudioStreamAvailable SDL_AudioStreamAvailable_renamed_SDL_GetAudioStreamAvailable
+#define SDL_AudioStreamClear SDL_AudioStreamClear_renamed_SDL_ClearAudioStream
+#define SDL_AudioStreamFlush SDL_AudioStreamFlush_renamed_SDL_FlushAudioStream
+#define SDL_AudioStreamGet SDL_AudioStreamGet_renamed_SDL_GetAudioStreamData
+#define SDL_AudioStreamPut SDL_AudioStreamPut_renamed_SDL_PutAudioStreamData
+#define SDL_FreeAudioStream SDL_FreeAudioStream_renamed_SDL_DestroyAudioStream
 #define SDL_FreeWAV SDL_FreeWAV_renamed_SDL_free
+#define SDL_NewAudioStream SDL_NewAudioStream_renamed_SDL_CreateAudioStream
 
 /* ##SDL_keycode.h */
 #define KMOD_ALT KMOD_ALT_renamed_SDL_KMOD_ALT

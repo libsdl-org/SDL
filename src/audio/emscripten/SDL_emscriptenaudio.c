@@ -61,7 +61,7 @@ static void HandleAudioProcess(_THIS)
     /* Only do something if audio is enabled */
     if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
         if (this->stream) {
-            SDL_AudioStreamClear(this->stream);
+            SDL_ClearAudioStream(this->stream);
         }
 
         SDL_memset(this->work_buffer, this->spec.silence, this->spec.size);
@@ -74,16 +74,16 @@ static void HandleAudioProcess(_THIS)
         callback(this->callbackspec.userdata, this->work_buffer, stream_len);
     } else { /* streaming/converting */
         int got;
-        while (SDL_AudioStreamAvailable(this->stream) < ((int)this->spec.size)) {
+        while (SDL_GetAudioStreamAvailable(this->stream) < ((int)this->spec.size)) {
             callback(this->callbackspec.userdata, this->work_buffer, stream_len);
-            if (SDL_AudioStreamPut(this->stream, this->work_buffer, stream_len) == -1) {
-                SDL_AudioStreamClear(this->stream);
+            if (SDL_PutAudioStreamData(this->stream, this->work_buffer, stream_len) == -1) {
+                SDL_ClearAudioStream(this->stream);
                 SDL_AtomicSet(&this->enabled, 0);
                 break;
             }
         }
 
-        got = SDL_AudioStreamGet(this->stream, this->work_buffer, this->spec.size);
+        got = SDL_GetAudioStreamData(this->stream, this->work_buffer, this->spec.size);
         SDL_assert((got < 0) || (got == this->spec.size));
         if (got != this->spec.size) {
             SDL_memset(this->work_buffer, this->spec.silence, this->spec.size);
@@ -100,7 +100,7 @@ static void HandleCaptureProcess(_THIS)
 
     /* Only do something if audio is enabled */
     if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
-        SDL_AudioStreamClear(this->stream);
+        SDL_ClearAudioStream(this->stream);
         return;
     }
 
@@ -133,12 +133,12 @@ static void HandleCaptureProcess(_THIS)
         SDL_assert(this->spec.size == stream_len);
         callback(this->callbackspec.userdata, this->work_buffer, stream_len);
     } else { /* streaming/converting */
-        if (SDL_AudioStreamPut(this->stream, this->work_buffer, this->spec.size) == -1) {
+        if (SDL_PutAudioStreamData(this->stream, this->work_buffer, this->spec.size) == -1) {
             SDL_AtomicSet(&this->enabled, 0);
         }
 
-        while (SDL_AudioStreamAvailable(this->stream) >= stream_len) {
-            const int got = SDL_AudioStreamGet(this->stream, this->work_buffer, stream_len);
+        while (SDL_GetAudioStreamAvailable(this->stream) >= stream_len) {
+            const int got = SDL_GetAudioStreamData(this->stream, this->work_buffer, stream_len);
             SDL_assert((got < 0) || (got == stream_len));
             if (got != stream_len) {
                 SDL_memset(this->work_buffer, this->callbackspec.silence, stream_len);

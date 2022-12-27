@@ -941,14 +941,14 @@ typedef struct _SDL_AudioStream SDL_AudioStream;
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AudioStreamPut
- * \sa SDL_AudioStreamGet
- * \sa SDL_AudioStreamAvailable
- * \sa SDL_AudioStreamFlush
- * \sa SDL_AudioStreamClear
- * \sa SDL_FreeAudioStream
+ * \sa SDL_PutAudioStreamData
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_GetAudioStreamAvailable
+ * \sa SDL_FlushAudioStream
+ * \sa SDL_ClearAudioStream
+ * \sa SDL_DestroyAudioStream
  */
-extern DECLSPEC SDL_AudioStream *SDLCALL SDL_NewAudioStream(SDL_AudioFormat src_format,
+extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(SDL_AudioFormat src_format,
                                                             Uint8 src_channels,
                                                             int src_rate,
                                                             SDL_AudioFormat dst_format,
@@ -965,14 +965,14 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_NewAudioStream(SDL_AudioFormat src_
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_NewAudioStream
- * \sa SDL_AudioStreamGet
- * \sa SDL_AudioStreamAvailable
- * \sa SDL_AudioStreamFlush
- * \sa SDL_AudioStreamClear
- * \sa SDL_FreeAudioStream
+ * \sa SDL_CreateAudioStream
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_GetAudioStreamAvailable
+ * \sa SDL_FlushAudioStream
+ * \sa SDL_ClearAudioStream
+ * \sa SDL_DestroyAudioStream
  */
-extern DECLSPEC int SDLCALL SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len);
+extern DECLSPEC int SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len);
 
 /**
  * Get converted/resampled data from the stream
@@ -984,14 +984,14 @@ extern DECLSPEC int SDLCALL SDL_AudioStreamPut(SDL_AudioStream *stream, const vo
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_NewAudioStream
- * \sa SDL_AudioStreamPut
- * \sa SDL_AudioStreamAvailable
- * \sa SDL_AudioStreamFlush
- * \sa SDL_AudioStreamClear
- * \sa SDL_FreeAudioStream
+ * \sa SDL_CreateAudioStream
+ * \sa SDL_PutAudioStreamData
+ * \sa SDL_GetAudioStreamAvailable
+ * \sa SDL_FlushAudioStream
+ * \sa SDL_ClearAudioStream
+ * \sa SDL_DestroyAudioStream
  */
-extern DECLSPEC int SDLCALL SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len);
+extern DECLSPEC int SDLCALL SDL_GetAudioStreamData(SDL_AudioStream *stream, void *buf, int len);
 
 /**
  * Get the number of converted/resampled bytes available.
@@ -1002,14 +1002,14 @@ extern DECLSPEC int SDLCALL SDL_AudioStreamGet(SDL_AudioStream *stream, void *bu
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_NewAudioStream
- * \sa SDL_AudioStreamPut
- * \sa SDL_AudioStreamGet
- * \sa SDL_AudioStreamFlush
- * \sa SDL_AudioStreamClear
- * \sa SDL_FreeAudioStream
+ * \sa SDL_CreateAudioStream
+ * \sa SDL_PutAudioStreamData
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_FlushAudioStream
+ * \sa SDL_ClearAudioStream
+ * \sa SDL_DestroyAudioStream
  */
-extern DECLSPEC int SDLCALL SDL_AudioStreamAvailable(SDL_AudioStream *stream);
+extern DECLSPEC int SDLCALL SDL_GetAudioStreamAvailable(SDL_AudioStream *stream);
 
 /**
  * Tell the stream that you're done sending data, and anything being buffered
@@ -1021,42 +1021,42 @@ extern DECLSPEC int SDLCALL SDL_AudioStreamAvailable(SDL_AudioStream *stream);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_NewAudioStream
- * \sa SDL_AudioStreamPut
- * \sa SDL_AudioStreamGet
- * \sa SDL_AudioStreamAvailable
- * \sa SDL_AudioStreamClear
- * \sa SDL_FreeAudioStream
+ * \sa SDL_CreateAudioStream
+ * \sa SDL_PutAudioStreamData
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_GetAudioStreamAvailable
+ * \sa SDL_ClearAudioStream
+ * \sa SDL_DestroyAudioStream
  */
-extern DECLSPEC int SDLCALL SDL_AudioStreamFlush(SDL_AudioStream *stream);
+extern DECLSPEC int SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);
 
 /**
  * Clear any pending data in the stream without converting it
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_NewAudioStream
- * \sa SDL_AudioStreamPut
- * \sa SDL_AudioStreamGet
- * \sa SDL_AudioStreamAvailable
- * \sa SDL_AudioStreamFlush
- * \sa SDL_FreeAudioStream
+ * \sa SDL_CreateAudioStream
+ * \sa SDL_PutAudioStreamData
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_GetAudioStreamAvailable
+ * \sa SDL_FlushAudioStream
+ * \sa SDL_DestroyAudioStream
  */
-extern DECLSPEC void SDLCALL SDL_AudioStreamClear(SDL_AudioStream *stream);
+extern DECLSPEC void SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);
 
 /**
  * Free an audio stream
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_NewAudioStream
- * \sa SDL_AudioStreamPut
- * \sa SDL_AudioStreamGet
- * \sa SDL_AudioStreamAvailable
- * \sa SDL_AudioStreamFlush
- * \sa SDL_AudioStreamClear
+ * \sa SDL_CreateAudioStream
+ * \sa SDL_PutAudioStreamData
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_GetAudioStreamAvailable
+ * \sa SDL_FlushAudioStream
+ * \sa SDL_ClearAudioStream
  */
-extern DECLSPEC void SDLCALL SDL_FreeAudioStream(SDL_AudioStream *stream);
+extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
 
 #define SDL_MIX_MAXVOLUME 128
 

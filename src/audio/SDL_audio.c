@@ -689,12 +689,12 @@ static int SDLCALL SDL_RunAudio(void *devicep)
         if (device->stream) {
             /* Stream available audio to device, converting/resampling. */
             /* if this fails...oh well. We'll play silence here. */
-            SDL_AudioStreamPut(device->stream, data, data_len);
+            SDL_PutAudioStreamData(device->stream, data, data_len);
 
-            while (SDL_AudioStreamAvailable(device->stream) >= ((int)device->spec.size)) {
+            while (SDL_GetAudioStreamAvailable(device->stream) >= ((int)device->spec.size)) {
                 int got;
                 data = SDL_AtomicGet(&device->enabled) ? current_audio.impl.GetDeviceBuf(device) : NULL;
-                got = SDL_AudioStreamGet(device->stream, data ? data : device->work_buffer, device->spec.size);
+                got = SDL_GetAudioStreamData(device->stream, data ? data : device->work_buffer, device->spec.size);
                 SDL_assert((got <= 0) || (got == device->spec.size));
 
                 if (data == NULL) { /* device is having issues... */
@@ -763,7 +763,7 @@ static int SDLCALL SDL_CaptureAudio(void *devicep)
         if (SDL_AtomicGet(&device->paused)) {
             SDL_Delay(delay); /* just so we don't cook the CPU. */
             if (device->stream) {
-                SDL_AudioStreamClear(device->stream);
+                SDL_ClearAudioStream(device->stream);
             }
             current_audio.impl.FlushCapture(device); /* dump anything pending. */
             continue;
@@ -805,10 +805,10 @@ static int SDLCALL SDL_CaptureAudio(void *devicep)
 
         if (device->stream) {
             /* if this fails...oh well. */
-            SDL_AudioStreamPut(device->stream, data, data_len);
+            SDL_PutAudioStreamData(device->stream, data, data_len);
 
-            while (SDL_AudioStreamAvailable(device->stream) >= ((int)device->callbackspec.size)) {
-                const int got = SDL_AudioStreamGet(device->stream, device->work_buffer, device->callbackspec.size);
+            while (SDL_GetAudioStreamAvailable(device->stream) >= ((int)device->callbackspec.size)) {
+                const int got = SDL_GetAudioStreamData(device->stream, device->work_buffer, device->callbackspec.size);
                 SDL_assert((got < 0) || (got == device->callbackspec.size));
                 if (got != device->callbackspec.size) {
                     SDL_memset(device->work_buffer, device->spec.silence, device->callbackspec.size);
@@ -1138,7 +1138,7 @@ static void close_audio_device(SDL_AudioDevice *device)
     }
 
     SDL_free(device->work_buffer);
-    SDL_FreeAudioStream(device->stream);
+    SDL_DestroyAudioStream(device->stream);
 
     if (device->id > 0) {
         SDL_AudioDevice *opendev = open_devices[device->id - 1];
@@ -1423,11 +1423,11 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
 
     if (build_stream) {
         if (iscapture) {
-            device->stream = SDL_NewAudioStream(device->spec.format,
+            device->stream = SDL_CreateAudioStream(device->spec.format,
                                                 device->spec.channels, device->spec.freq,
                                                 obtained->format, obtained->channels, obtained->freq);
         } else {
-            device->stream = SDL_NewAudioStream(obtained->format, obtained->channels,
+            device->stream = SDL_CreateAudioStream(obtained->format, obtained->channels,
                                                 obtained->freq, device->spec.format,
                                                 device->spec.channels, device->spec.freq);
         }

@@ -46,6 +46,15 @@ SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_
 
 SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
+The following functions have been renamed:
+* SDL_AudioStreamAvailable => SDL_GetAudioStreamAvailable
+* SDL_AudioStreamClear => SDL_ClearAudioStream
+* SDL_AudioStreamFlush => SDL_FlushAudioStream
+* SDL_AudioStreamGet => SDL_GetAudioStreamData
+* SDL_AudioStreamPut => SDL_PutAudioStreamData
+* SDL_FreeAudioStream => SDL_DestroyAudioStream
+* SDL_NewAudioStream => SDL_CreateAudioStream
+
 ## SDL_cpuinfo.h
 
 SDL_Has3DNow() has been removed; there is no replacement.

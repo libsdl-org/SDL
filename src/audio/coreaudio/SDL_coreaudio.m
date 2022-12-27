@@ -535,20 +535,20 @@ static void outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBuffe
         Uint8 *ptr = (Uint8 *)inBuffer->mAudioData;
 
         while (remaining > 0) {
-            if (SDL_AudioStreamAvailable(this->stream) == 0) {
+            if (SDL_GetAudioStreamAvailable(this->stream) == 0) {
                 /* Generate the data */
                 (*this->callbackspec.callback)(this->callbackspec.userdata,
                                                this->hidden->buffer, this->hidden->bufferSize);
                 this->hidden->bufferOffset = 0;
-                SDL_AudioStreamPut(this->stream, this->hidden->buffer, this->hidden->bufferSize);
+                SDL_PutAudioStreamData(this->stream, this->hidden->buffer, this->hidden->bufferSize);
             }
-            if (SDL_AudioStreamAvailable(this->stream) > 0) {
+            if (SDL_GetAudioStreamAvailable(this->stream) > 0) {
                 int got;
-                UInt32 len = SDL_AudioStreamAvailable(this->stream);
+                UInt32 len = SDL_GetAudioStreamAvailable(this->stream);
                 if (len > remaining) {
                     len = remaining;
                 }
-                got = SDL_AudioStreamGet(this->stream, ptr, len);
+                got = SDL_GetAudioStreamData(this->stream, ptr, len);
                 SDL_assert((got < 0) || (got == len));
                 if (got != len) {
                     SDL_memset(ptr, this->spec.silence, len);

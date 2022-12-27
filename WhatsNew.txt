@@ -17,6 +17,13 @@ General:
     * RW_SEEK_SET -> SDL_RW_SEEK_SET
 * SDL_FreeWAV has been removed and calls can be replaced with SDL_free
 * The following functions have been renamed:
+    * SDL_AudioStreamAvailable => SDL_GetAudioStreamAvailable
+    * SDL_AudioStreamClear => SDL_ClearAudioStream
+    * SDL_AudioStreamFlush => SDL_FlushAudioStream
+    * SDL_AudioStreamGet => SDL_GetAudioStreamData
+    * SDL_AudioStreamPut => SDL_PutAudioStreamData
+    * SDL_FreeAudioStream => SDL_DestroyAudioStream
+    * SDL_NewAudioStream => SDL_CreateAudioStream
 * Removed the following functions from the API, see docs/README-migration.md for details:
     * SDL_AudioInit()
     * SDL_AudioQuit()
