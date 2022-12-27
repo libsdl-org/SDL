@@ -20,8 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#ifndef _SDL_offscreenwindow_h
-#define _SDL_offscreenwindow_h
+#ifndef SDL_offscreenwindow_h
+#define SDL_offscreenwindow_h
 
 #include "SDL_offscreenvideo.h"
 
@@ -37,4 +37,4 @@ typedef struct
 extern int OFFSCREEN_CreateWindow(_THIS, SDL_Window *window);
 extern void OFFSCREEN_DestroyWindow(_THIS, SDL_Window *window);
 
-#endif /* _SDL_offscreenwindow */
+#endif /* SDL_offscreenwindow_h */

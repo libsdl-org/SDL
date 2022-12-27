@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_build_config_emscripten_h_
-#define _SDL_build_config_emscripten_h_
+#ifndef SDL_build_config_emscripten_h
+#define SDL_build_config_emscripten_h
 
 #include <SDL3/SDL_platform.h>
 
@@ -210,4 +210,4 @@
 /* Enable system filesystem support */
 #define SDL_FILESYSTEM_EMSCRIPTEN 1
 
-#endif /* _SDL_build_config_emscripten_h_ */
+#endif /* SDL_build_config_emscripten_h */

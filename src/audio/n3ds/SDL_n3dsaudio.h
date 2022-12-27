@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_n3dsaudio_h_
-#define _SDL_n3dsaudio_h_
+#ifndef SDL_n3dsaudio_h
+#define SDL_n3dsaudio_h
 
 #include <3ds.h>
 
@@ -46,4 +46,4 @@ struct SDL_PrivateAudioData
     SDL_bool isCancelled;
 };
 
-#endif /* _SDL_n3dsaudio_h_ */
+#endif /* SDL_n3dsaudio_h */

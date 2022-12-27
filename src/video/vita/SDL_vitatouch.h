@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_vitatouch_h
-#define _SDL_vitatouch_h
+#ifndef SDL_vitatouch_h
+#define SDL_vitatouch_h
 
 #include "SDL_internal.h"
 
@@ -30,4 +30,4 @@ extern void VITA_QuitTouch(void);
 extern void VITA_PollTouch(void);
 void VITA_ConvertTouchXYToSDLXY(float *sdl_x, float *sdl_y, int vita_x, int vita_y, int port);
 
-#endif /* _SDL_vitatouch_h */
+#endif /* SDL_vitatouch_h */

@@ -26,10 +26,10 @@
  *  after you finish any function and structure declarations in your headers
  */
 
-#ifndef _SDL_begin_code_h
+#ifndef SDL_begin_code_h
 #error SDL_close_code.h included without matching SDL_begin_code.h
 #endif
-#undef _SDL_begin_code_h
+#undef SDL_begin_code_h
 
 /* Reset structure packing at previous byte alignment */
 #if defined(_MSC_VER) || defined(__MWERKS__) || defined(__BORLANDC__)

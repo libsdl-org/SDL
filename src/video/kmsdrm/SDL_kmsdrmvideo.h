@@ -21,8 +21,8 @@
 
 #include "SDL_internal.h"
 
-#ifndef __SDL_KMSDRMVIDEO_H__
-#define __SDL_KMSDRMVIDEO_H__
+#ifndef SDL_kmsdrmvideo_h
+#define SDL_kmsdrmvideo_h
 
 #include "../SDL_sysvideo.h"
 
@@ -150,4 +150,4 @@ int KMSDRM_GLES_GetSwapInterval(_THIS);
 int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window);
 void KMSDRM_GLES_DeleteContext(_THIS, SDL_GLContext context);
 
-#endif /* __SDL_KMSDRMVIDEO_H__ */
+#endif /* SDL_kmsdrmvideo_h */

@@ -21,8 +21,8 @@
 
 #include "SDL_internal.h"
 
-#ifndef _SDL_ngagevideo_h
-#define _SDL_ngagevideo_h
+#ifndef SDL_ngagevideo_h
+#define SDL_ngagevideo_h
 
 #include "../SDL_sysvideo.h"
 
@@ -63,4 +63,4 @@ typedef struct SDL_VideoData
 
 } SDL_VideoData;
 
-#endif /* _SDL_ngagevideo_h */
+#endif /* SDL_ngagevideo_h */
