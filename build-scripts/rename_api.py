@@ -18,7 +18,7 @@ SDL_INCLUDE_DIR = SDL_ROOT / "include/SDL3"
 
 def main():
     if len(args.args) == 0 or (len(args.args) % 2) != 0:
-        print("Usage: %s [-h] [--skip-header-check] header {enum,function,macro,structure,symbol} [old new ...]" % sys.argv[0])
+        print("Usage: %s [-h] [--skip-header-check] header {enum,function,hint,macro,structure,symbol} [old new ...]" % sys.argv[0])
         exit(1)
 
     # Check whether we can still modify the ABI
@@ -229,7 +229,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
     parser.add_argument("--skip-header-check", action="store_true")
     parser.add_argument("header");
-    parser.add_argument("type", choices=["enum", "function", "macro", "structure", "symbol"]);
+    parser.add_argument("type", choices=["enum", "function", "hint", "macro", "structure", "symbol"]);
     parser.add_argument("args", nargs="*")
     args = parser.parse_args()
 

@@ -452,20 +452,20 @@ extern "C" {
 /**
  *  \brief  A variable that lets you manually hint extra gamecontroller db entries.
  *
- *  The variable should be newline delimited rows of gamecontroller config data, see SDL_gamecontroller.h
+ *  The variable should be newline delimited rows of gamecontroller config data, see SDL_gamepad.h
  *
- *  This hint must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
- *  You can update mappings after the system is initialized with SDL_GameControllerMappingForGUID() and SDL_GameControllerAddMapping()
+ *  This hint must be set before calling SDL_Init(SDL_INIT_GAMEPAD)
+ *  You can update mappings after the system is initialized with SDL_GetGamepadMappingForGUID() and SDL_AddGamepadMapping()
  */
 #define SDL_HINT_GAMECONTROLLERCONFIG "SDL_GAMECONTROLLERCONFIG"
 
 /**
  *  \brief  A variable that lets you provide a file with extra gamecontroller db entries.
  *
- *  The file should contain lines of gamecontroller config data, see SDL_gamecontroller.h
+ *  The file should contain lines of gamecontroller config data, see SDL_gamepad.h
  *
- *  This hint must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
- *  You can update mappings after the system is initialized with SDL_GameControllerMappingForGUID() and SDL_GameControllerAddMapping()
+ *  This hint must be set before calling SDL_Init(SDL_INIT_GAMEPAD)
+ *  You can update mappings after the system is initialized with SDL_GetGamepadMappingForGUID() and SDL_AddGamepadMapping()
  */
 #define SDL_HINT_GAMECONTROLLERCONFIG_FILE "SDL_GAMECONTROLLERCONFIG_FILE"
 
@@ -484,7 +484,7 @@ extern "C" {
  *      PS5
  *      SwitchPro
  *
- *  This hint affects what driver is used, and must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
+ *  This hint affects what driver is used, and must be set before calling SDL_Init(SDL_INIT_GAMEPAD)
  */
 #define SDL_HINT_GAMECONTROLLERTYPE "SDL_GAMECONTROLLERTYPE"
 
@@ -676,7 +676,7 @@ extern "C" {
   *    "0"       - Left and right Joy-Con controllers will not be in vertical mode (the default)
   *    "1"       - Left and right Joy-Con controllers will be in vertical mode
   *
-  *  This hint must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
+  *  This hint must be set before calling SDL_Init(SDL_INIT_GAMEPAD)
   */
 #define SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS "SDL_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS"
 

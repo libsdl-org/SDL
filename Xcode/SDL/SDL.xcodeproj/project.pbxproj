@@ -222,7 +222,7 @@
 		A75FCD8723E25AB700529352 /* SDL_steamcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7A523E2513E00DCD162 /* SDL_steamcontroller.h */; };
 		A75FCD8823E25AB700529352 /* scancodes_linux.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93623E2514000DCD162 /* scancodes_linux.h */; };
 		A75FCD8A23E25AB700529352 /* SDL_touch_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93723E2514000DCD162 /* SDL_touch_c.h */; };
-		A75FCD8B23E25AB700529352 /* SDL_gamecontrollerdb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */; };
+		A75FCD8B23E25AB700529352 /* SDL_gamepad_db.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */; };
 		A75FCD8C23E25AB700529352 /* SDL_cocoavulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68F23E2513E00DCD162 /* SDL_cocoavulkan.h */; };
 		A75FCD8D23E25AB700529352 /* gl2platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72523E2513E00DCD162 /* gl2platform.h */; };
 		A75FCD8F23E25AB700529352 /* vk_layer.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72D23E2513E00DCD162 /* vk_layer.h */; };
@@ -312,7 +312,7 @@
 		A75FCE0923E25AB700529352 /* s_scalbn.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A91A23E2514000DCD162 /* s_scalbn.c */; };
 		A75FCE0A23E25AB700529352 /* SDL_timer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DF23E2513D00DCD162 /* SDL_timer.c */; };
 		A75FCE0B23E25AB700529352 /* SDL_blendpoint.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8F023E2514000DCD162 /* SDL_blendpoint.c */; };
-		A75FCE0C23E25AB700529352 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */; };
+		A75FCE0C23E25AB700529352 /* SDL_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */; };
 		A75FCE0D23E25AB700529352 /* SDL_systimer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5E223E2513D00DCD162 /* SDL_systimer.c */; };
 		A75FCE0E23E25AB700529352 /* SDL_uikitclipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A62A23E2513D00DCD162 /* SDL_uikitclipboard.m */; };
 		A75FCE0F23E25AB700529352 /* SDL_render_sw.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8F923E2514000DCD162 /* SDL_render_sw.c */; };
@@ -535,7 +535,7 @@
 		A75FCF4023E25AC700529352 /* SDL_steamcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7A523E2513E00DCD162 /* SDL_steamcontroller.h */; };
 		A75FCF4123E25AC700529352 /* scancodes_linux.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93623E2514000DCD162 /* scancodes_linux.h */; };
 		A75FCF4323E25AC700529352 /* SDL_touch_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93723E2514000DCD162 /* SDL_touch_c.h */; };
-		A75FCF4423E25AC700529352 /* SDL_gamecontrollerdb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */; };
+		A75FCF4423E25AC700529352 /* SDL_gamepad_db.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */; };
 		A75FCF4523E25AC700529352 /* SDL_cocoavulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68F23E2513E00DCD162 /* SDL_cocoavulkan.h */; };
 		A75FCF4623E25AC700529352 /* gl2platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72523E2513E00DCD162 /* gl2platform.h */; };
 		A75FCF4823E25AC700529352 /* vk_layer.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72D23E2513E00DCD162 /* vk_layer.h */; };
@@ -625,7 +625,7 @@
 		A75FCFC223E25AC700529352 /* s_scalbn.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A91A23E2514000DCD162 /* s_scalbn.c */; };
 		A75FCFC323E25AC700529352 /* SDL_timer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DF23E2513D00DCD162 /* SDL_timer.c */; };
 		A75FCFC423E25AC700529352 /* SDL_blendpoint.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8F023E2514000DCD162 /* SDL_blendpoint.c */; };
-		A75FCFC523E25AC700529352 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */; };
+		A75FCFC523E25AC700529352 /* SDL_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */; };
 		A75FCFC623E25AC700529352 /* SDL_systimer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5E223E2513D00DCD162 /* SDL_systimer.c */; };
 		A75FCFC723E25AC700529352 /* SDL_uikitclipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A62A23E2513D00DCD162 /* SDL_uikitclipboard.m */; };
 		A75FCFC823E25AC700529352 /* SDL_render_sw.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8F923E2514000DCD162 /* SDL_render_sw.c */; };
@@ -885,7 +885,7 @@
 		A769B10D23E259AE00872273 /* SDL_sysjoystick.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7CF23E2513E00DCD162 /* SDL_sysjoystick.h */; };
 		A769B10E23E259AE00872273 /* scancodes_linux.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93623E2514000DCD162 /* scancodes_linux.h */; };
 		A769B11023E259AE00872273 /* SDL_touch_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93723E2514000DCD162 /* SDL_touch_c.h */; };
-		A769B11123E259AE00872273 /* SDL_gamecontrollerdb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */; };
+		A769B11123E259AE00872273 /* SDL_gamepad_db.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */; };
 		A769B11223E259AE00872273 /* SDL_cocoavulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68F23E2513E00DCD162 /* SDL_cocoavulkan.h */; };
 		A769B11323E259AE00872273 /* gl2platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72523E2513E00DCD162 /* gl2platform.h */; };
 		A769B11523E259AE00872273 /* vk_layer.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72D23E2513E00DCD162 /* vk_layer.h */; };
@@ -975,7 +975,7 @@
 		A769B19223E259AE00872273 /* s_scalbn.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A91A23E2514000DCD162 /* s_scalbn.c */; };
 		A769B19323E259AE00872273 /* SDL_timer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DF23E2513D00DCD162 /* SDL_timer.c */; };
 		A769B19423E259AE00872273 /* SDL_blendpoint.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8F023E2514000DCD162 /* SDL_blendpoint.c */; };
-		A769B19523E259AE00872273 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */; };
+		A769B19523E259AE00872273 /* SDL_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */; };
 		A769B19623E259AE00872273 /* SDL_systimer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5E223E2513D00DCD162 /* SDL_systimer.c */; };
 		A769B19723E259AE00872273 /* SDL_uikitclipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A62A23E2513D00DCD162 /* SDL_uikitclipboard.m */; };
 		A769B19823E259AE00872273 /* SDL_render_sw.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8F923E2514000DCD162 /* SDL_render_sw.c */; };
@@ -2076,12 +2076,12 @@
 		A7D8B44323E2514300DCD162 /* SDL_sysmutex_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A78823E2513E00DCD162 /* SDL_sysmutex_c.h */; };
 		A7D8B44423E2514300DCD162 /* SDL_sysmutex_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A78823E2513E00DCD162 /* SDL_sysmutex_c.h */; };
 		A7D8B44523E2514300DCD162 /* SDL_sysmutex_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A78823E2513E00DCD162 /* SDL_sysmutex_c.h */; };
-		A7D8B4AC23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */; };
-		A7D8B4AD23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */; };
-		A7D8B4AE23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */; };
-		A7D8B4AF23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */; };
-		A7D8B4B023E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */; };
-		A7D8B4B123E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */; };
+		A7D8B4AC23E2514300DCD162 /* SDL_gamepad_db.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */; };
+		A7D8B4AD23E2514300DCD162 /* SDL_gamepad_db.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */; };
+		A7D8B4AE23E2514300DCD162 /* SDL_gamepad_db.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */; };
+		A7D8B4AF23E2514300DCD162 /* SDL_gamepad_db.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */; };
+		A7D8B4B023E2514300DCD162 /* SDL_gamepad_db.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */; };
+		A7D8B4B123E2514300DCD162 /* SDL_gamepad_db.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */; };
 		A7D8B4B223E2514300DCD162 /* SDL_sysjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7A023E2513E00DCD162 /* SDL_sysjoystick.c */; };
 		A7D8B4B323E2514300DCD162 /* SDL_sysjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7A023E2513E00DCD162 /* SDL_sysjoystick.c */; };
 		A7D8B4B423E2514300DCD162 /* SDL_sysjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7A023E2513E00DCD162 /* SDL_sysjoystick.c */; };
@@ -2100,12 +2100,12 @@
 		A7D8B4DF23E2514300DCD162 /* SDL_joystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7A923E2513E00DCD162 /* SDL_joystick.c */; };
 		A7D8B4E023E2514300DCD162 /* SDL_joystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7A923E2513E00DCD162 /* SDL_joystick.c */; };
 		A7D8B4E123E2514300DCD162 /* SDL_joystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7A923E2513E00DCD162 /* SDL_joystick.c */; };
-		A7D8B4EE23E2514300DCD162 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */; };
-		A7D8B4EF23E2514300DCD162 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */; };
-		A7D8B4F023E2514300DCD162 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */; };
-		A7D8B4F123E2514300DCD162 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */; };
-		A7D8B4F223E2514300DCD162 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */; };
-		A7D8B4F323E2514300DCD162 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */; };
+		A7D8B4EE23E2514300DCD162 /* SDL_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */; };
+		A7D8B4EF23E2514300DCD162 /* SDL_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */; };
+		A7D8B4F023E2514300DCD162 /* SDL_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */; };
+		A7D8B4F123E2514300DCD162 /* SDL_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */; };
+		A7D8B4F223E2514300DCD162 /* SDL_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */; };
+		A7D8B4F323E2514300DCD162 /* SDL_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */; };
 		A7D8B53923E2514300DCD162 /* SDL_hidapi_xbox360.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C223E2513E00DCD162 /* SDL_hidapi_xbox360.c */; };
 		A7D8B53A23E2514300DCD162 /* SDL_hidapi_xbox360.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C223E2513E00DCD162 /* SDL_hidapi_xbox360.c */; };
 		A7D8B53B23E2514300DCD162 /* SDL_hidapi_xbox360.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C223E2513E00DCD162 /* SDL_hidapi_xbox360.c */; };
@@ -3360,10 +3360,10 @@
 		F3F7D9822933074E00816151 /* SDL.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8CF2933074C00816151 /* SDL.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9832933074E00816151 /* SDL.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8CF2933074C00816151 /* SDL.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9842933074E00816151 /* SDL.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8CF2933074C00816151 /* SDL.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F3F7D9852933074E00816151 /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D02933074C00816151 /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F3F7D9862933074E00816151 /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D02933074C00816151 /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F3F7D9872933074E00816151 /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D02933074C00816151 /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F3F7D9882933074E00816151 /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D02933074C00816151 /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F3F7D9852933074E00816151 /* SDL_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D02933074C00816151 /* SDL_gamepad.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F3F7D9862933074E00816151 /* SDL_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D02933074C00816151 /* SDL_gamepad.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F3F7D9872933074E00816151 /* SDL_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D02933074C00816151 /* SDL_gamepad.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F3F7D9882933074E00816151 /* SDL_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D02933074C00816151 /* SDL_gamepad.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9892933074E00816151 /* SDL_guid.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D12933074C00816151 /* SDL_guid.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D98A2933074E00816151 /* SDL_guid.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D12933074C00816151 /* SDL_guid.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D98B2933074E00816151 /* SDL_guid.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8D12933074C00816151 /* SDL_guid.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -3722,12 +3722,12 @@
 		A7D8A78623E2513E00DCD162 /* SDL_systhread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_systhread.c; sourceTree = "<group>"; };
 		A7D8A78723E2513E00DCD162 /* SDL_sysmutex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysmutex.c; sourceTree = "<group>"; };
 		A7D8A78823E2513E00DCD162 /* SDL_sysmutex_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysmutex_c.h; sourceTree = "<group>"; };
-		A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamecontrollerdb.h; sourceTree = "<group>"; };
+		A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamepad_db.h; sourceTree = "<group>"; };
 		A7D8A7A023E2513E00DCD162 /* SDL_sysjoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysjoystick.c; sourceTree = "<group>"; };
 		A7D8A7A523E2513E00DCD162 /* SDL_steamcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_steamcontroller.h; sourceTree = "<group>"; };
 		A7D8A7A723E2513E00DCD162 /* SDL_steamcontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_steamcontroller.c; sourceTree = "<group>"; };
 		A7D8A7A923E2513E00DCD162 /* SDL_joystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_joystick.c; sourceTree = "<group>"; };
-		A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_gamecontroller.c; sourceTree = "<group>"; };
+		A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_gamepad.c; sourceTree = "<group>"; };
 		A7D8A7C223E2513E00DCD162 /* SDL_hidapi_xbox360.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xbox360.c; sourceTree = "<group>"; };
 		A7D8A7C323E2513E00DCD162 /* SDL_hidapi_ps4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps4.c; sourceTree = "<group>"; };
 		A7D8A7C423E2513E00DCD162 /* SDL_hidapijoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapijoystick.c; sourceTree = "<group>"; };
@@ -3945,7 +3945,7 @@
 		F3F7D8CD2933074C00816151 /* SDL_thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_thread.h; path = SDL3/SDL_thread.h; sourceTree = "<group>"; };
 		F3F7D8CE2933074C00816151 /* SDL_blendmode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_blendmode.h; path = SDL3/SDL_blendmode.h; sourceTree = "<group>"; };
 		F3F7D8CF2933074C00816151 /* SDL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL.h; path = SDL3/SDL.h; sourceTree = "<group>"; };
-		F3F7D8D02933074C00816151 /* SDL_gamecontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_gamecontroller.h; path = SDL3/SDL_gamecontroller.h; sourceTree = "<group>"; };
+		F3F7D8D02933074C00816151 /* SDL_gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_gamepad.h; path = SDL3/SDL_gamepad.h; sourceTree = "<group>"; };
 		F3F7D8D12933074C00816151 /* SDL_guid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_guid.h; path = SDL3/SDL_guid.h; sourceTree = "<group>"; };
 		F3F7D8D22933074C00816151 /* SDL_metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_metal.h; path = SDL3/SDL_metal.h; sourceTree = "<group>"; };
 		F3F7D8D32933074C00816151 /* SDL_joystick.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_joystick.h; path = SDL3/SDL_joystick.h; sourceTree = "<group>"; };
@@ -4148,7 +4148,7 @@
 				F3F7D8BC2933074A00816151 /* SDL_error.h */,
 				F3F7D8CB2933074B00816151 /* SDL_events.h */,
 				F3F7D8D62933074C00816151 /* SDL_filesystem.h */,
-				F3F7D8D02933074C00816151 /* SDL_gamecontroller.h */,
+				F3F7D8D02933074C00816151 /* SDL_gamepad.h */,
 				F3F7D8D12933074C00816151 /* SDL_guid.h */,
 				F3F7D8AD2933074900816151 /* SDL_haptic.h */,
 				F3F7D8CA2933074B00816151 /* SDL_hidapi.h */,
@@ -4752,11 +4752,11 @@
 				A7D8A7BE23E2513E00DCD162 /* hidapi */,
 				A7D8A7A123E2513E00DCD162 /* steam */,
 				75E09157241EA924004729E1 /* virtual */,
-				A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */,
+				A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */,
 				A7D8A7A923E2513E00DCD162 /* SDL_joystick.c */,
 				F3820712284F3609004DD584 /* controller_type.c */,
 				A7D8A7D923E2513E00DCD162 /* controller_type.h */,
-				A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */,
+				A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */,
 				A7D8A7D023E2513E00DCD162 /* SDL_joystick_c.h */,
 				A7D8A7CF23E2513E00DCD162 /* SDL_sysjoystick.h */,
 				A7D8A7CB23E2513E00DCD162 /* usb_ids.h */,
@@ -5227,7 +5227,7 @@
 				A75FCD1F23E25AB700529352 /* SDL_egl_c.h in Headers */,
 				A75FCD1923E25AB700529352 /* SDL_error_c.h in Headers */,
 				A75FCD7923E25AB700529352 /* SDL_events_c.h in Headers */,
-				A75FCD8B23E25AB700529352 /* SDL_gamecontrollerdb.h in Headers */,
+				A75FCD8B23E25AB700529352 /* SDL_gamepad_db.h in Headers */,
 				A75FCDDB23E25AB700529352 /* SDL_gles2funcs.h in Headers */,
 				A75FCD0723E25AB700529352 /* SDL_glfuncs.h in Headers */,
 				A75FCD1623E25AB700529352 /* SDL_haptic_c.h in Headers */,
@@ -5392,7 +5392,7 @@
 				A75FCED823E25AC700529352 /* SDL_egl_c.h in Headers */,
 				A75FCED223E25AC700529352 /* SDL_error_c.h in Headers */,
 				A75FCF3223E25AC700529352 /* SDL_events_c.h in Headers */,
-				A75FCF4423E25AC700529352 /* SDL_gamecontrollerdb.h in Headers */,
+				A75FCF4423E25AC700529352 /* SDL_gamepad_db.h in Headers */,
 				A75FCF9423E25AC700529352 /* SDL_gles2funcs.h in Headers */,
 				A75FCEC023E25AC700529352 /* SDL_glfuncs.h in Headers */,
 				A75FCECF23E25AC700529352 /* SDL_haptic_c.h in Headers */,
@@ -5557,7 +5557,7 @@
 				A769B0A623E259AE00872273 /* SDL_egl_c.h in Headers */,
 				A769B0A023E259AE00872273 /* SDL_error_c.h in Headers */,
 				A769B10123E259AE00872273 /* SDL_events_c.h in Headers */,
-				A769B11123E259AE00872273 /* SDL_gamecontrollerdb.h in Headers */,
+				A769B11123E259AE00872273 /* SDL_gamepad_db.h in Headers */,
 				A769B16323E259AE00872273 /* SDL_gles2funcs.h in Headers */,
 				A769B08E23E259AE00872273 /* SDL_glfuncs.h in Headers */,
 				A769B09D23E259AE00872273 /* SDL_haptic_c.h in Headers */,
@@ -5736,8 +5736,8 @@
 				F3F7D9722933074E00816151 /* SDL_events.h in Headers */,
 				A7D8BBA623E2514500DCD162 /* SDL_events_c.h in Headers */,
 				F3F7D99E2933074E00816151 /* SDL_filesystem.h in Headers */,
-				F3F7D9862933074E00816151 /* SDL_gamecontroller.h in Headers */,
-				A7D8B4AD23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */,
+				F3F7D9862933074E00816151 /* SDL_gamepad.h in Headers */,
+				A7D8B4AD23E2514300DCD162 /* SDL_gamepad_db.h in Headers */,
 				A7D8BA5623E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
 				A7D8BA7A23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				F3F7D98A2933074E00816151 /* SDL_guid.h in Headers */,
@@ -5964,8 +5964,8 @@
 				F3F7D9732933074E00816151 /* SDL_events.h in Headers */,
 				A7D8BBA723E2514500DCD162 /* SDL_events_c.h in Headers */,
 				F3F7D99F2933074E00816151 /* SDL_filesystem.h in Headers */,
-				F3F7D9872933074E00816151 /* SDL_gamecontroller.h in Headers */,
-				A7D8B4AE23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */,
+				F3F7D9872933074E00816151 /* SDL_gamepad.h in Headers */,
+				A7D8B4AE23E2514300DCD162 /* SDL_gamepad_db.h in Headers */,
 				A7D8BA5723E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
 				A7D8BA7B23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				F3F7D98B2933074E00816151 /* SDL_guid.h in Headers */,
@@ -6178,7 +6178,7 @@
 				A7D8ABDD23E2514100DCD162 /* SDL_egl_c.h in Headers */,
 				A7D8A96123E2514000DCD162 /* SDL_error_c.h in Headers */,
 				A7D8BBA923E2514500DCD162 /* SDL_events_c.h in Headers */,
-				A7D8B4B023E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */,
+				A7D8B4B023E2514300DCD162 /* SDL_gamepad_db.h in Headers */,
 				A7D8BA5923E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
 				A7D8BA7D23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D8AAC023E2514100DCD162 /* SDL_haptic_c.h in Headers */,
@@ -6357,8 +6357,8 @@
 				F3F7D9712933074E00816151 /* SDL_events.h in Headers */,
 				A7D8BBA523E2514500DCD162 /* SDL_events_c.h in Headers */,
 				F3F7D99D2933074E00816151 /* SDL_filesystem.h in Headers */,
-				F3F7D9852933074E00816151 /* SDL_gamecontroller.h in Headers */,
-				A7D8B4AC23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */,
+				F3F7D9852933074E00816151 /* SDL_gamepad.h in Headers */,
+				A7D8B4AC23E2514300DCD162 /* SDL_gamepad_db.h in Headers */,
 				A7D8BA5523E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
 				A7D8BA7923E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				F3F7D9892933074E00816151 /* SDL_guid.h in Headers */,
@@ -6571,7 +6571,7 @@
 				A7D8ABDC23E2514100DCD162 /* SDL_egl_c.h in Headers */,
 				A7D8A96023E2514000DCD162 /* SDL_error_c.h in Headers */,
 				A7D8BBA823E2514500DCD162 /* SDL_events_c.h in Headers */,
-				A7D8B4AF23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */,
+				A7D8B4AF23E2514300DCD162 /* SDL_gamepad_db.h in Headers */,
 				A7D8BA5823E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
 				A7D8BA7C23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D8AABF23E2514100DCD162 /* SDL_haptic_c.h in Headers */,
@@ -6736,7 +6736,7 @@
 				A7D8ABDE23E2514100DCD162 /* SDL_egl_c.h in Headers */,
 				A7D8A96223E2514000DCD162 /* SDL_error_c.h in Headers */,
 				A7D8BBAA23E2514500DCD162 /* SDL_events_c.h in Headers */,
-				A7D8B4B123E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */,
+				A7D8B4B123E2514300DCD162 /* SDL_gamepad_db.h in Headers */,
 				A7D8BA5A23E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
 				A7D8BA7E23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D8AAC123E2514100DCD162 /* SDL_haptic_c.h in Headers */,
@@ -6872,7 +6872,7 @@
 				F3F7D9382933074E00816151 /* SDL_error.h in Headers */,
 				F3F7D9742933074E00816151 /* SDL_events.h in Headers */,
 				F3F7D9A02933074E00816151 /* SDL_filesystem.h in Headers */,
-				F3F7D9882933074E00816151 /* SDL_gamecontroller.h in Headers */,
+				F3F7D9882933074E00816151 /* SDL_gamepad.h in Headers */,
 				F3F7D98C2933074E00816151 /* SDL_guid.h in Headers */,
 				F3F7D8FC2933074E00816151 /* SDL_haptic.h in Headers */,
 				F3F7D9702933074E00816151 /* SDL_hidapi.h in Headers */,
@@ -7346,7 +7346,7 @@
 				A75FCE0923E25AB700529352 /* s_scalbn.c in Sources */,
 				A75FCE0A23E25AB700529352 /* SDL_timer.c in Sources */,
 				A75FCE0B23E25AB700529352 /* SDL_blendpoint.c in Sources */,
-				A75FCE0C23E25AB700529352 /* SDL_gamecontroller.c in Sources */,
+				A75FCE0C23E25AB700529352 /* SDL_gamepad.c in Sources */,
 				A75FCE0D23E25AB700529352 /* SDL_systimer.c in Sources */,
 				A75FCE0E23E25AB700529352 /* SDL_uikitclipboard.m in Sources */,
 				A75FCE0F23E25AB700529352 /* SDL_render_sw.c in Sources */,
@@ -7541,7 +7541,7 @@
 				A75FCFC223E25AC700529352 /* s_scalbn.c in Sources */,
 				A75FCFC323E25AC700529352 /* SDL_timer.c in Sources */,
 				A75FCFC423E25AC700529352 /* SDL_blendpoint.c in Sources */,
-				A75FCFC523E25AC700529352 /* SDL_gamecontroller.c in Sources */,
+				A75FCFC523E25AC700529352 /* SDL_gamepad.c in Sources */,
 				A75FCFC623E25AC700529352 /* SDL_systimer.c in Sources */,
 				A75FCFC723E25AC700529352 /* SDL_uikitclipboard.m in Sources */,
 				A75FCFC823E25AC700529352 /* SDL_render_sw.c in Sources */,
@@ -7730,7 +7730,7 @@
 				A769B19223E259AE00872273 /* s_scalbn.c in Sources */,
 				A769B19323E259AE00872273 /* SDL_timer.c in Sources */,
 				A769B19423E259AE00872273 /* SDL_blendpoint.c in Sources */,
-				A769B19523E259AE00872273 /* SDL_gamecontroller.c in Sources */,
+				A769B19523E259AE00872273 /* SDL_gamepad.c in Sources */,
 				A769B19623E259AE00872273 /* SDL_systimer.c in Sources */,
 				A769B19723E259AE00872273 /* SDL_uikitclipboard.m in Sources */,
 				A769B19823E259AE00872273 /* SDL_render_sw.c in Sources */,
@@ -7929,7 +7929,7 @@
 				A7D8BABC23E2514400DCD162 /* s_scalbn.c in Sources */,
 				A7D8AB2C23E2514100DCD162 /* SDL_timer.c in Sources */,
 				A7D8B9DE23E2514400DCD162 /* SDL_blendpoint.c in Sources */,
-				A7D8B4EF23E2514300DCD162 /* SDL_gamecontroller.c in Sources */,
+				A7D8B4EF23E2514300DCD162 /* SDL_gamepad.c in Sources */,
 				A7D8AB3823E2514100DCD162 /* SDL_systimer.c in Sources */,
 				A7D8ACAC23E2514100DCD162 /* SDL_uikitclipboard.m in Sources */,
 				A7D8BA1423E2514400DCD162 /* SDL_render_sw.c in Sources */,
@@ -8124,7 +8124,7 @@
 				A7D8BABD23E2514400DCD162 /* s_scalbn.c in Sources */,
 				A7D8AB2D23E2514100DCD162 /* SDL_timer.c in Sources */,
 				A7D8B9DF23E2514400DCD162 /* SDL_blendpoint.c in Sources */,
-				A7D8B4F023E2514300DCD162 /* SDL_gamecontroller.c in Sources */,
+				A7D8B4F023E2514300DCD162 /* SDL_gamepad.c in Sources */,
 				A7D8AB3923E2514100DCD162 /* SDL_systimer.c in Sources */,
 				A7D8ACAD23E2514100DCD162 /* SDL_uikitclipboard.m in Sources */,
 				A7D8BA1523E2514400DCD162 /* SDL_render_sw.c in Sources */,
@@ -8315,7 +8315,7 @@
 				A7D8BABF23E2514400DCD162 /* s_scalbn.c in Sources */,
 				A7D8AB2F23E2514100DCD162 /* SDL_timer.c in Sources */,
 				A7D8B9E123E2514400DCD162 /* SDL_blendpoint.c in Sources */,
-				A7D8B4F223E2514300DCD162 /* SDL_gamecontroller.c in Sources */,
+				A7D8B4F223E2514300DCD162 /* SDL_gamepad.c in Sources */,
 				A7D8AB3B23E2514100DCD162 /* SDL_systimer.c in Sources */,
 				A7D8ACAF23E2514100DCD162 /* SDL_uikitclipboard.m in Sources */,
 				A7D8BA1723E2514400DCD162 /* SDL_render_sw.c in Sources */,
@@ -8520,7 +8520,7 @@
 				A7D8AB2B23E2514100DCD162 /* SDL_timer.c in Sources */,
 				F3D60A8328C16A1900788A3A /* SDL_hidapi_wii.c in Sources */,
 				A7D8B9DD23E2514400DCD162 /* SDL_blendpoint.c in Sources */,
-				A7D8B4EE23E2514300DCD162 /* SDL_gamecontroller.c in Sources */,
+				A7D8B4EE23E2514300DCD162 /* SDL_gamepad.c in Sources */,
 				A7D8AB3723E2514100DCD162 /* SDL_systimer.c in Sources */,
 				A7D8BA1323E2514400DCD162 /* SDL_render_sw.c in Sources */,
 				A7D8B42223E2514300DCD162 /* SDL_syssem.c in Sources */,
@@ -8716,7 +8716,7 @@
 				A7D8BABE23E2514400DCD162 /* s_scalbn.c in Sources */,
 				A7D8AB2E23E2514100DCD162 /* SDL_timer.c in Sources */,
 				A7D8B9E023E2514400DCD162 /* SDL_blendpoint.c in Sources */,
-				A7D8B4F123E2514300DCD162 /* SDL_gamecontroller.c in Sources */,
+				A7D8B4F123E2514300DCD162 /* SDL_gamepad.c in Sources */,
 				A7D8AB3A23E2514100DCD162 /* SDL_systimer.c in Sources */,
 				A7D8BA1623E2514400DCD162 /* SDL_render_sw.c in Sources */,
 				A7D8B42523E2514300DCD162 /* SDL_syssem.c in Sources */,
@@ -8908,7 +8908,7 @@
 				A7D8AB3023E2514100DCD162 /* SDL_timer.c in Sources */,
 				F3D60A8928C16A1900788A3A /* SDL_hidapi_wii.c in Sources */,
 				A7D8B9E223E2514400DCD162 /* SDL_blendpoint.c in Sources */,
-				A7D8B4F323E2514300DCD162 /* SDL_gamecontroller.c in Sources */,
+				A7D8B4F323E2514300DCD162 /* SDL_gamepad.c in Sources */,
 				A7D8AB3C23E2514100DCD162 /* SDL_systimer.c in Sources */,
 				A7D8ACB023E2514100DCD162 /* SDL_uikitclipboard.m in Sources */,
 				A7D8BA1823E2514400DCD162 /* SDL_render_sw.c in Sources */,

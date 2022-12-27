@@ -52,7 +52,7 @@ Here is a rough list of what works, and what doesn't:
     anything outside of the app is not supported.
   * system path retrieval via SDL's filesystem APIs
   * game controllers.  Support is provided via the SDL_Joystick and
-    SDL_GameController APIs, and is backed by Microsoft's XInput API.  Please
+    SDL_Gamepad APIs, and is backed by Microsoft's XInput API.  Please
     note, however, that Windows limits game-controller support in UWP apps to,
     "Xbox compatible controllers" (many controllers that work in Win32 apps,
     do not work in UWP, due to restrictions in UWP itself.) 

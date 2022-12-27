@@ -87,7 +87,7 @@
 		453774A5120915E3002F0F45 /* testshape.c in Sources */ = {isa = PBXBuildFile; fileRef = 453774A4120915E3002F0F45 /* testshape.c */; };
 		66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E88E8A203B778F0004D44E /* testyuv_cvt.c */; };
 		AAF02FFA1F90092700B9A9FB /* SDL_test_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */; };
-		BBFC08D0164C6876003E6A99 /* testgamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = BBFC088E164C6820003E6A99 /* testgamecontroller.c */; };
+		BBFC08D0164C6876003E6A99 /* testgamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = BBFC088E164C6820003E6A99 /* testgamepad.c */; };
 		BEC566B10761D90300A33029 /* checkkeys.c in Sources */ = {isa = PBXBuildFile; fileRef = 092D6D10FFB30A2C7F000001 /* checkkeys.c */; };
 		BEC566CB0761D90300A33029 /* loopwave.c in Sources */ = {isa = PBXBuildFile; fileRef = 083E4872006D84C97F000001 /* loopwave.c */; };
 		BEC567010761D90300A33029 /* testerror.c in Sources */ = {isa = PBXBuildFile; fileRef = 083E4878006D85357F000001 /* testerror.c */; };
@@ -149,13 +149,13 @@
 		DB445EF418184B7000B306B0 /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		DB445EFB18184BB600B306B0 /* testdropfile.c in Sources */ = {isa = PBXBuildFile; fileRef = DB445EFA18184BB600B306B0 /* testdropfile.c */; };
 		DB89958418A19B130092407C /* testhotplug.c in Sources */ = {isa = PBXBuildFile; fileRef = DB89958318A19B130092407C /* testhotplug.c */; };
-		DBEC54EB1A1A8205005B1EAB /* controllermap.c in Sources */ = {isa = PBXBuildFile; fileRef = DBEC54D11A1A811D005B1EAB /* controllermap.c */; };
+		DBEC54EB1A1A8205005B1EAB /* gamepadmap.c in Sources */ = {isa = PBXBuildFile; fileRef = DBEC54D11A1A811D005B1EAB /* gamepadmap.c */; };
 		DBEC54ED1A1A828A005B1EAB /* axis.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D61A1A8145005B1EAB /* axis.bmp */; };
 		DBEC54EE1A1A828D005B1EAB /* button.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D71A1A8145005B1EAB /* button.bmp */; };
-		DBEC54EF1A1A828F005B1EAB /* controllermap.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D81A1A8145005B1EAB /* controllermap.bmp */; };
+		DBEC54EF1A1A828F005B1EAB /* gamepadmap.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D81A1A8145005B1EAB /* gamepadmap.bmp */; };
 		F3C17C6B28E4022A00E1A26D /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		F3C17C7428E40AF000E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
-		F3C17C7628E40BA200E1A26D /* controllermap_back.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = F3C17C7528E40B6B00E1A26D /* controllermap_back.bmp */; };
+		F3C17C7628E40BA200E1A26D /* gamepadmap_back.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = F3C17C7528E40B6B00E1A26D /* gamepadmap_back.bmp */; };
 		F3C17C7728E40BC800E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17C7928E40C6E00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17C7B28E40D4E00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
@@ -176,8 +176,8 @@
 		F3C17D3B28E4252900E1A26D /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
 		F3C17D3C28E4277D00E1A26D /* axis.bmp in Resources */ = {isa = PBXBuildFile; fileRef = DBEC54D61A1A8145005B1EAB /* axis.bmp */; };
 		F3C17D3D28E4277D00E1A26D /* button.bmp in Resources */ = {isa = PBXBuildFile; fileRef = DBEC54D71A1A8145005B1EAB /* button.bmp */; };
-		F3C17D3E28E4277D00E1A26D /* controllermap_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F3C17C7528E40B6B00E1A26D /* controllermap_back.bmp */; };
-		F3C17D3F28E4277D00E1A26D /* controllermap.bmp in Resources */ = {isa = PBXBuildFile; fileRef = DBEC54D81A1A8145005B1EAB /* controllermap.bmp */; };
+		F3C17D3E28E4277D00E1A26D /* gamepadmap_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F3C17C7528E40B6B00E1A26D /* gamepadmap_back.bmp */; };
+		F3C17D3F28E4277D00E1A26D /* gamepadmap.bmp in Resources */ = {isa = PBXBuildFile; fileRef = DBEC54D81A1A8145005B1EAB /* gamepadmap.bmp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -424,7 +424,7 @@
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = BBFC08B7164C6862003E6A99;
-			remoteInfo = testgamecontroller;
+			remoteInfo = testgamepad;
 		};
 		DB166D6F16A1CEAF00A1396C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -666,8 +666,8 @@
 			files = (
 				DBEC54ED1A1A828A005B1EAB /* axis.bmp in CopyFiles */,
 				DBEC54EE1A1A828D005B1EAB /* button.bmp in CopyFiles */,
-				DBEC54EF1A1A828F005B1EAB /* controllermap.bmp in CopyFiles */,
-				F3C17C7628E40BA200E1A26D /* controllermap_back.bmp in CopyFiles */,
+				DBEC54EF1A1A828F005B1EAB /* gamepadmap.bmp in CopyFiles */,
+				F3C17C7628E40BA200E1A26D /* gamepadmap_back.bmp in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -735,8 +735,8 @@
 		453774A4120915E3002F0F45 /* testshape.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testshape.c; sourceTree = "<group>"; };
 		66E88E8A203B778F0004D44E /* testyuv_cvt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testyuv_cvt.c; sourceTree = "<group>"; };
 		AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_memory.c; sourceTree = "<group>"; };
-		BBFC088E164C6820003E6A99 /* testgamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgamecontroller.c; sourceTree = "<group>"; };
-		BBFC08CD164C6862003E6A99 /* testgamecontroller */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testgamecontroller; path = testgamecontroller.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBFC088E164C6820003E6A99 /* testgamepad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgamepad.c; sourceTree = "<group>"; };
+		BBFC08CD164C6862003E6A99 /* testgamepad */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testgamepad; path = testgamepad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BEC566B60761D90300A33029 /* checkkeys */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = checkkeys; path = checkkeys.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BEC566D10761D90300A33029 /* loopwave */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = loopwave; path = loopwave.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BEC567060761D90400A33029 /* testerror */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testerror; path = testerror.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -793,14 +793,14 @@
 		DB89957E18A19ABA0092407C /* testhotplug */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testhotplug; path = testhotplug.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB89958318A19B130092407C /* testhotplug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testhotplug.c; sourceTree = "<group>"; };
 		DBBC552C182831D700F3CA8D /* TestDropFile-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TestDropFile-Info.plist"; sourceTree = SOURCE_ROOT; };
-		DBEC54D11A1A811D005B1EAB /* controllermap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = controllermap.c; sourceTree = "<group>"; };
+		DBEC54D11A1A811D005B1EAB /* gamepadmap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = gamepadmap.c; sourceTree = "<group>"; };
 		DBEC54D61A1A8145005B1EAB /* axis.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = axis.bmp; sourceTree = "<group>"; };
 		DBEC54D71A1A8145005B1EAB /* button.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = button.bmp; sourceTree = "<group>"; };
-		DBEC54D81A1A8145005B1EAB /* controllermap.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = controllermap.bmp; sourceTree = "<group>"; };
-		DBEC54EA1A1A81C3005B1EAB /* controllermap */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = controllermap; path = controllermap.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DBEC54D81A1A8145005B1EAB /* gamepadmap.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = gamepadmap.bmp; sourceTree = "<group>"; };
+		DBEC54EA1A1A81C3005B1EAB /* gamepadmap */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = gamepadmap; path = gamepadmap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3C17C6A28E3FD4400E1A26D /* config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = config.xcconfig; sourceTree = "<group>"; };
 		F3C17C7328E40ADE00E1A26D /* testutils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testutils.c; sourceTree = "<group>"; };
-		F3C17C7528E40B6B00E1A26D /* controllermap_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = controllermap_back.bmp; sourceTree = "<group>"; };
+		F3C17C7528E40B6B00E1A26D /* gamepadmap_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = gamepadmap_back.bmp; sourceTree = "<group>"; };
 		F3C17CD628E416AC00E1A26D /* testgeometry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgeometry.c; sourceTree = "<group>"; };
 		F3C17CDC28E416CF00E1A26D /* testgeometry.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgeometry.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -1175,8 +1175,8 @@
 			children = (
 				DBEC54D61A1A8145005B1EAB /* axis.bmp */,
 				DBEC54D71A1A8145005B1EAB /* button.bmp */,
-				F3C17C7528E40B6B00E1A26D /* controllermap_back.bmp */,
-				DBEC54D81A1A8145005B1EAB /* controllermap.bmp */,
+				F3C17C7528E40B6B00E1A26D /* gamepadmap_back.bmp */,
+				DBEC54D81A1A8145005B1EAB /* gamepadmap.bmp */,
 				00794E5D09D20839003FC8A1 /* icon.bmp */,
 				00794E5E09D20839003FC8A1 /* moose.dat */,
 				00794E5F09D20839003FC8A1 /* picture.xbm */,
@@ -1208,7 +1208,7 @@
 			isa = PBXGroup;
 			children = (
 				092D6D10FFB30A2C7F000001 /* checkkeys.c */,
-				DBEC54D11A1A811D005B1EAB /* controllermap.c */,
+				DBEC54D11A1A811D005B1EAB /* gamepadmap.c */,
 				083E4872006D84C97F000001 /* loopwave.c */,
 				0017958F1074216E00F5D044 /* testatomic.c */,
 				001795B01074222D00F5D044 /* testaudioinfo.c */,
@@ -1218,7 +1218,7 @@
 				083E4878006D85357F000001 /* testerror.c */,
 				002F341709CA1C5B00EBEB88 /* testfile.c */,
 				DB0F48D817CA51D2008798C5 /* testfilesystem.c */,
-				BBFC088E164C6820003E6A99 /* testgamecontroller.c */,
+				BBFC088E164C6820003E6A99 /* testgamepad.c */,
 				F3C17CD628E416AC00E1A26D /* testgeometry.c */,
 				0017972710742FB900F5D044 /* testgl2.c */,
 				DB166CBC16A1C74100A1396C /* testgles.c */,
@@ -1297,7 +1297,7 @@
 				0017991610743F1000F5D044 /* testsprite2 */,
 				0017993810743FB700F5D044 /* testwm2 */,
 				4537749212091504002F0F45 /* testshape */,
-				BBFC08CD164C6862003E6A99 /* testgamecontroller */,
+				BBFC08CD164C6862003E6A99 /* testgamepad */,
 				DB166D7F16A1D12400A1396C /* libSDL_test.a */,
 				DB166DD516A1D36A00A1396C /* testmessage */,
 				DB166DEE16A1D50C00A1396C /* testrelative */,
@@ -1312,7 +1312,7 @@
 				DB0F490117CA5212008798C5 /* testfilesystem */,
 				DB89957E18A19ABA0092407C /* testhotplug */,
 				DB445EF818184B7000B306B0 /* testdropfile.app */,
-				DBEC54EA1A1A81C3005B1EAB /* controllermap */,
+				DBEC54EA1A1A81C3005B1EAB /* gamepadmap */,
 				F3C17CDC28E416CF00E1A26D /* testgeometry.app */,
 			);
 			name = Products;
@@ -1665,9 +1665,9 @@
 			productReference = 4537749212091504002F0F45 /* testshape */;
 			productType = "com.apple.product-type.application";
 		};
-		BBFC08B7164C6862003E6A99 /* testgamecontroller */ = {
+		BBFC08B7164C6862003E6A99 /* testgamepad */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BBFC08CA164C6862003E6A99 /* Build configuration list for PBXNativeTarget "testgamecontroller" */;
+			buildConfigurationList = BBFC08CA164C6862003E6A99 /* Build configuration list for PBXNativeTarget "testgamepad" */;
 			buildPhases = (
 				BBFC08BC164C6862003E6A99 /* Sources */,
 				BBFC08BE164C6862003E6A99 /* Frameworks */,
@@ -1677,9 +1677,9 @@
 			);
 			dependencies = (
 			);
-			name = testgamecontroller;
+			name = testgamepad;
 			productName = testjoystick;
-			productReference = BBFC08CD164C6862003E6A99 /* testgamecontroller */;
+			productReference = BBFC08CD164C6862003E6A99 /* testgamepad */;
 			productType = "com.apple.product-type.application";
 		};
 		BEC566AB0761D90300A33029 /* checkkeys */ = {
@@ -2089,9 +2089,9 @@
 			productReference = DB89957E18A19ABA0092407C /* testhotplug */;
 			productType = "com.apple.product-type.application";
 		};
-		DBEC54D91A1A81C3005B1EAB /* controllermap */ = {
+		DBEC54D91A1A81C3005B1EAB /* gamepadmap */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DBEC54E71A1A81C3005B1EAB /* Build configuration list for PBXNativeTarget "controllermap" */;
+			buildConfigurationList = DBEC54E71A1A81C3005B1EAB /* Build configuration list for PBXNativeTarget "gamepadmap" */;
 			buildPhases = (
 				DBEC54DA1A1A81C3005B1EAB /* Sources */,
 				DBEC54DC1A1A81C3005B1EAB /* Frameworks */,
@@ -2101,9 +2101,9 @@
 			);
 			dependencies = (
 			);
-			name = controllermap;
+			name = gamepadmap;
 			productName = checkkeys;
-			productReference = DBEC54EA1A1A81C3005B1EAB /* controllermap */;
+			productReference = DBEC54EA1A1A81C3005B1EAB /* gamepadmap */;
 			productType = "com.apple.product-type.application";
 		};
 		F3C17CDB28E416CF00E1A26D /* testgeometry */ = {
@@ -2161,7 +2161,7 @@
 				BEC566920761D90300A33029 /* All */,
 				DB166D7E16A1D12400A1396C /* SDL_test */,
 				BEC566AB0761D90300A33029 /* checkkeys */,
-				DBEC54D91A1A81C3005B1EAB /* controllermap */,
+				DBEC54D91A1A81C3005B1EAB /* gamepadmap */,
 				BEC566C50761D90300A33029 /* loopwave */,
 				0017957410741F7900F5D044 /* testatomic */,
 				00179595107421BF00F5D044 /* testaudioinfo */,
@@ -2171,7 +2171,7 @@
 				BEC566FB0761D90300A33029 /* testerror */,
 				002F340109CA1BFF00EBEB88 /* testfile */,
 				DB0F48EF17CA5212008798C5 /* testfilesystem */,
-				BBFC08B7164C6862003E6A99 /* testgamecontroller */,
+				BBFC08B7164C6862003E6A99 /* testgamepad */,
 				F3C17CDB28E416CF00E1A26D /* testgeometry */,
 				0017970910742F3200F5D044 /* testgl2 */,
 				00179730107430D600F5D044 /* testhaptic */,
@@ -2297,8 +2297,8 @@
 			files = (
 				F3C17D3C28E4277D00E1A26D /* axis.bmp in Resources */,
 				F3C17D3D28E4277D00E1A26D /* button.bmp in Resources */,
-				F3C17D3E28E4277D00E1A26D /* controllermap_back.bmp in Resources */,
-				F3C17D3F28E4277D00E1A26D /* controllermap.bmp in Resources */,
+				F3C17D3E28E4277D00E1A26D /* gamepadmap_back.bmp in Resources */,
+				F3C17D3F28E4277D00E1A26D /* gamepadmap.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2485,7 +2485,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BBFC08D0164C6876003E6A99 /* testgamecontroller.c in Sources */,
+				BBFC08D0164C6876003E6A99 /* testgamepad.c in Sources */,
 				F3C17C7928E40C6E00E1A26D /* testutils.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2715,7 +2715,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DBEC54EB1A1A8205005B1EAB /* controllermap.c in Sources */,
+				DBEC54EB1A1A8205005B1EAB /* gamepadmap.c in Sources */,
 				F3C17C7428E40AF000E1A26D /* testutils.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2889,7 +2889,7 @@
 		};
 		DB166D6E16A1CEAA00A1396C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = BBFC08B7164C6862003E6A99 /* testgamecontroller */;
+			target = BBFC08B7164C6862003E6A99 /* testgamepad */;
 			targetProxy = DB166D6D16A1CEAA00A1396C /* PBXContainerItemProxy */;
 		};
 		DB166D7016A1CEAF00A1396C /* PBXTargetDependency */ = {
@@ -3441,14 +3441,14 @@
 		BBFC08CB164C6862003E6A99 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testgamecontroller;
+				PRODUCT_NAME = testgamepad;
 			};
 			name = Debug;
 		};
 		BBFC08CC164C6862003E6A99 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testgamecontroller;
+				PRODUCT_NAME = testgamepad;
 			};
 			name = Release;
 		};
@@ -3661,14 +3661,14 @@
 		DBEC54E81A1A81C3005B1EAB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = controllermap;
+				PRODUCT_NAME = gamepadmap;
 			};
 			name = Debug;
 		};
 		DBEC54E91A1A81C3005B1EAB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = controllermap;
+				PRODUCT_NAME = gamepadmap;
 			};
 			name = Release;
 		};
@@ -3977,7 +3977,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		BBFC08CA164C6862003E6A99 /* Build configuration list for PBXNativeTarget "testgamecontroller" */ = {
+		BBFC08CA164C6862003E6A99 /* Build configuration list for PBXNativeTarget "testgamepad" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BBFC08CB164C6862003E6A99 /* Debug */,
@@ -4112,7 +4112,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		DBEC54E71A1A81C3005B1EAB /* Build configuration list for PBXNativeTarget "controllermap" */ = {
+		DBEC54E71A1A81C3005B1EAB /* Build configuration list for PBXNativeTarget "gamepadmap" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DBEC54E81A1A81C3005B1EAB /* Debug */,

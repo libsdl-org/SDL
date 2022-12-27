@@ -1384,7 +1384,7 @@ static const char *DisplayOrientationName(int orientation)
     }
 }
 
-static const char *ControllerAxisName(const SDL_GameControllerAxis axis)
+static const char *ControllerAxisName(const SDL_GamepadAxis axis)
 {
     switch (axis) {
 #define AXIS_CASE(ax)              \
@@ -1403,7 +1403,7 @@ static const char *ControllerAxisName(const SDL_GameControllerAxis axis)
     }
 }
 
-static const char *ControllerButtonName(const SDL_GameControllerButton button)
+static const char *ControllerButtonName(const SDL_GamepadButton button)
 {
     switch (button) {
 #define BUTTON_CASE(btn)              \
@@ -1606,30 +1606,30 @@ static void SDLTest_PrintEvent(SDL_Event *event)
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": button %d released",
                 event->jbutton.which, event->jbutton.button);
         break;
-    case SDL_CONTROLLERDEVICEADDED:
+    case SDL_GAMEPADADDED:
         SDL_Log("SDL EVENT: Controller index %" SDL_PRIs32 " attached",
                 event->cdevice.which);
         break;
-    case SDL_CONTROLLERDEVICEREMOVED:
+    case SDL_GAMEPADREMOVED:
         SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " removed",
                 event->cdevice.which);
         break;
-    case SDL_CONTROLLERAXISMOTION:
+    case SDL_GAMEPADAXISMOTION:
         SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " axis %d ('%s') value: %d",
                 event->caxis.which,
                 event->caxis.axis,
-                ControllerAxisName((SDL_GameControllerAxis)event->caxis.axis),
+                ControllerAxisName((SDL_GamepadAxis)event->caxis.axis),
                 event->caxis.value);
         break;
-    case SDL_CONTROLLERBUTTONDOWN:
+    case SDL_GAMEPADBUTTONDOWN:
         SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 "button %d ('%s') down",
                 event->cbutton.which, event->cbutton.button,
-                ControllerButtonName((SDL_GameControllerButton)event->cbutton.button));
+                ControllerButtonName((SDL_GamepadButton)event->cbutton.button));
         break;
-    case SDL_CONTROLLERBUTTONUP:
+    case SDL_GAMEPADBUTTONUP:
         SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " button %d ('%s') up",
                 event->cbutton.which, event->cbutton.button,
-                ControllerButtonName((SDL_GameControllerButton)event->cbutton.button));
+                ControllerButtonName((SDL_GamepadButton)event->cbutton.button));
         break;
     case SDL_CLIPBOARDUPDATE:
         SDL_Log("SDL EVENT: Clipboard updated");

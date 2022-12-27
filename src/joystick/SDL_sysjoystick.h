@@ -62,7 +62,7 @@ typedef struct _SDL_JoystickSensorInfo
     SDL_SensorType type;
     SDL_bool enabled;
     float rate;
-    float data[3]; /* If this needs to expand, update SDL_ControllerSensorEvent */
+    float data[3]; /* If this needs to expand, update SDL_GamepadSensorEvent */
 } SDL_JoystickSensorInfo;
 
 #define _guarded SDL_GUARDED_BY(SDL_joystick_lock)

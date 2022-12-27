@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 #
-# Script to sort the game controller database entries in SDL_gamecontroller.c
+# Script to sort the game controller database entries in SDL_gamepad.c
 
 import re
 
 
-filename = "SDL_gamecontrollerdb.h"
+filename = "SDL_gamepad_db.h"
 input = open(filename)
 output = open(f"{filename}.new", "w")
 parsing_controllers = False

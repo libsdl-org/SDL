@@ -73,39 +73,39 @@ static int keycode_to_SDL(int keycode)
     switch (keycode) {
     /* Some gamepad buttons (API 9) */
     case AKEYCODE_BUTTON_A:
-        button = SDL_CONTROLLER_BUTTON_A;
+        button = SDL_GAMEPAD_BUTTON_A;
         break;
     case AKEYCODE_BUTTON_B:
-        button = SDL_CONTROLLER_BUTTON_B;
+        button = SDL_GAMEPAD_BUTTON_B;
         break;
     case AKEYCODE_BUTTON_X:
-        button = SDL_CONTROLLER_BUTTON_X;
+        button = SDL_GAMEPAD_BUTTON_X;
         break;
     case AKEYCODE_BUTTON_Y:
-        button = SDL_CONTROLLER_BUTTON_Y;
+        button = SDL_GAMEPAD_BUTTON_Y;
         break;
     case AKEYCODE_BUTTON_L1:
-        button = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+        button = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER;
         break;
     case AKEYCODE_BUTTON_R1:
-        button = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+        button = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER;
         break;
     case AKEYCODE_BUTTON_THUMBL:
-        button = SDL_CONTROLLER_BUTTON_LEFTSTICK;
+        button = SDL_GAMEPAD_BUTTON_LEFT_STICK;
         break;
     case AKEYCODE_BUTTON_THUMBR:
-        button = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
+        button = SDL_GAMEPAD_BUTTON_RIGHT_STICK;
         break;
     case AKEYCODE_MENU:
     case AKEYCODE_BUTTON_START:
-        button = SDL_CONTROLLER_BUTTON_START;
+        button = SDL_GAMEPAD_BUTTON_START;
         break;
     case AKEYCODE_BACK:
     case AKEYCODE_BUTTON_SELECT:
-        button = SDL_CONTROLLER_BUTTON_BACK;
+        button = SDL_GAMEPAD_BUTTON_BACK;
         break;
     case AKEYCODE_BUTTON_MODE:
-        button = SDL_CONTROLLER_BUTTON_GUIDE;
+        button = SDL_GAMEPAD_BUTTON_GUIDE;
         break;
     case AKEYCODE_BUTTON_L2:
         button = 15;
@@ -122,21 +122,21 @@ static int keycode_to_SDL(int keycode)
 
     /* D-Pad key codes (API 1) */
     case AKEYCODE_DPAD_UP:
-        button = SDL_CONTROLLER_BUTTON_DPAD_UP;
+        button = SDL_GAMEPAD_BUTTON_DPAD_UP;
         break;
     case AKEYCODE_DPAD_DOWN:
-        button = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+        button = SDL_GAMEPAD_BUTTON_DPAD_DOWN;
         break;
     case AKEYCODE_DPAD_LEFT:
-        button = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+        button = SDL_GAMEPAD_BUTTON_DPAD_LEFT;
         break;
     case AKEYCODE_DPAD_RIGHT:
-        button = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+        button = SDL_GAMEPAD_BUTTON_DPAD_RIGHT;
         break;
     case AKEYCODE_DPAD_CENTER:
         /* This is handled better by applications as the A button */
         /*button = 19;*/
-        button = SDL_CONTROLLER_BUTTON_A;
+        button = SDL_GAMEPAD_BUTTON_A;
         break;
 
     /* More gamepad buttons (API 12), these get mapped to 20...35*/
@@ -174,19 +174,19 @@ static int keycode_to_SDL(int keycode)
 static SDL_Scancode button_to_scancode(int button)
 {
     switch (button) {
-    case SDL_CONTROLLER_BUTTON_A:
+    case SDL_GAMEPAD_BUTTON_A:
         return SDL_SCANCODE_RETURN;
-    case SDL_CONTROLLER_BUTTON_B:
+    case SDL_GAMEPAD_BUTTON_B:
         return SDL_SCANCODE_ESCAPE;
-    case SDL_CONTROLLER_BUTTON_BACK:
+    case SDL_GAMEPAD_BUTTON_BACK:
         return SDL_SCANCODE_ESCAPE;
-    case SDL_CONTROLLER_BUTTON_DPAD_UP:
+    case SDL_GAMEPAD_BUTTON_DPAD_UP:
         return SDL_SCANCODE_UP;
-    case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+    case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
         return SDL_SCANCODE_DOWN;
-    case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+    case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
         return SDL_SCANCODE_LEFT;
-    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
         return SDL_SCANCODE_RIGHT;
     }
 
@@ -249,10 +249,10 @@ int Android_OnJoy(int device_id, int axis, float value)
 
 int Android_OnHat(int device_id, int hat_id, int x, int y)
 {
-    const int DPAD_UP_MASK = (1 << SDL_CONTROLLER_BUTTON_DPAD_UP);
-    const int DPAD_DOWN_MASK = (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN);
-    const int DPAD_LEFT_MASK = (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT);
-    const int DPAD_RIGHT_MASK = (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
+    const int DPAD_UP_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_UP);
+    const int DPAD_DOWN_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN);
+    const int DPAD_LEFT_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT);
+    const int DPAD_RIGHT_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
 
     if (x >= -1 && x <= 1 && y >= -1 && y <= 1) {
         SDL_joylist_item *item;
@@ -276,16 +276,16 @@ int Android_OnHat(int device_id, int hat_id, int x, int y)
             dpad_delta = (dpad_state ^ item->dpad_state);
             if (dpad_delta) {
                 if (dpad_delta & DPAD_UP_MASK) {
-                    SDL_PrivateJoystickButton(0, item->joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, (dpad_state & DPAD_UP_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_PrivateJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, (dpad_state & DPAD_UP_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_DOWN_MASK) {
-                    SDL_PrivateJoystickButton(0, item->joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, (dpad_state & DPAD_DOWN_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_PrivateJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, (dpad_state & DPAD_DOWN_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_LEFT_MASK) {
-                    SDL_PrivateJoystickButton(0, item->joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, (dpad_state & DPAD_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_PrivateJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, (dpad_state & DPAD_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_RIGHT_MASK) {
-                    SDL_PrivateJoystickButton(0, item->joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, (dpad_state & DPAD_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_PrivateJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, (dpad_state & DPAD_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 item->dpad_state = dpad_state;
             }
@@ -335,22 +335,22 @@ int Android_AddJoystick(int device_id, const char *name, const char *desc, int v
     axis_mask = 0;
     if (!is_accelerometer) {
         if (naxes >= 2) {
-            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_LEFTX) | (1 << SDL_CONTROLLER_AXIS_LEFTY));
+            axis_mask |= ((1 << SDL_GAMEPAD_AXIS_LEFTX) | (1 << SDL_GAMEPAD_AXIS_LEFTY));
         }
         if (naxes >= 4) {
-            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_RIGHTX) | (1 << SDL_CONTROLLER_AXIS_RIGHTY));
+            axis_mask |= ((1 << SDL_GAMEPAD_AXIS_RIGHTX) | (1 << SDL_GAMEPAD_AXIS_RIGHTY));
         }
         if (naxes >= 6) {
-            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT) | (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+            axis_mask |= ((1 << SDL_GAMEPAD_AXIS_LEFT_TRIGGER) | (1 << SDL_GAMEPAD_AXIS_RIGHT_TRIGGER));
         }
     }
 
     if (nhats > 0) {
         /* Hat is translated into DPAD buttons */
-        button_mask |= ((1 << SDL_CONTROLLER_BUTTON_DPAD_UP) |
-                        (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) |
-                        (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT) |
-                        (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT));
+        button_mask |= ((1 << SDL_GAMEPAD_BUTTON_DPAD_UP) |
+                        (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN) |
+                        (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT) |
+                        (1 << SDL_GAMEPAD_BUTTON_DPAD_RIGHT));
         nhats = 0;
     }
 

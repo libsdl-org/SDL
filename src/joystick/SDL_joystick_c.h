@@ -53,10 +53,10 @@ extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_l
 extern SDL_JoystickID SDL_GetNextJoystickInstanceID(void);
 
 /* Initialization and shutdown functions */
-extern int SDL_GameControllerInitMappings(void);
-extern void SDL_GameControllerQuitMappings(void);
-extern int SDL_GameControllerInit(void);
-extern void SDL_GameControllerQuit(void);
+extern int SDL_GamepadInitMappings(void);
+extern void SDL_GamepadQuitMappings(void);
+extern int SDL_GamepadInit(void);
+extern void SDL_GamepadQuit(void);
 
 /* Function to return the device index for a joystick ID, or -1 if not found */
 extern int SDL_JoystickGetDeviceIndexFromInstanceID(SDL_JoystickID instance_id);
@@ -85,8 +85,8 @@ extern void SDL_SetJoystickGUIDVersion(SDL_JoystickGUID *guid, Uint16 version);
 extern void SDL_SetJoystickGUIDCRC(SDL_JoystickGUID *guid, Uint16 crc);
 
 /* Function to return the type of a controller */
-extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, SDL_bool forUI);
-extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name);
+extern SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, SDL_bool forUI);
+extern SDL_GamepadType SDL_GetGamepadTypeFromGUID(SDL_JoystickGUID guid, const char *name);
 
 /* Function to return whether a joystick is an Xbox One controller */
 extern SDL_bool SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id);
@@ -137,14 +137,14 @@ extern SDL_bool SDL_IsJoystickVIRTUAL(SDL_JoystickGUID guid);
 /* Function to return whether a joystick should be ignored */
 extern SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid);
 
-/* Function to return whether a joystick name and GUID is a game controller  */
-extern SDL_bool SDL_IsGameControllerNameAndGUID(const char *name, SDL_JoystickGUID guid);
+/* Function to return whether a joystick name and GUID is a gamepad  */
+extern SDL_bool SDL_IsGamepadNameAndGUID(const char *name, SDL_JoystickGUID guid);
 
-/* Function to return whether a game controller should be ignored */
-extern SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid);
+/* Function to return whether a gamepad should be ignored */
+extern SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid);
 
-/* Handle delayed guide button on a game controller */
-extern void SDL_GameControllerHandleDelayedGuideButton(SDL_Joystick *joystick);
+/* Handle delayed guide button on a gamepad */
+extern void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick);
 
 /* Internal event queueing functions */
 extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers);

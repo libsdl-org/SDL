@@ -28,7 +28,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{55812185-D13C-4022-9C81-32E0F4A08305}</ProjectGuid>
-    <RootNamespace>testgamecontroller</RootNamespace>
+    <RootNamespace>testgamepad</RootNamespace>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -124,7 +124,7 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <TypeLibraryName>.\Release/testgamecontroller.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Release/testgamepad.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)/../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -147,7 +147,7 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <TypeLibraryName>.\Release/testgamecontroller.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Release/testgamepad.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)/../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -170,7 +170,7 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <TypeLibraryName>.\Release/testgamecontroller.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Release/testgamepad.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)/../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -193,7 +193,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <TypeLibraryName>.\Debug/testgamecontroller.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/testgamepad.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -219,7 +219,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <TypeLibraryName>.\Debug/testgamecontroller.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/testgamepad.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -245,7 +245,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <TypeLibraryName>.\Debug/testgamecontroller.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/testgamepad.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -327,7 +327,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">$(ProjectDir)\%(Filename)%(Extension);%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">$(ProjectDir)\%(Filename)%(Extension);%(Outputs)</Outputs>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\..\test\controllermap.bmp">
+    <CopyFileToFolders Include="..\..\..\test\gamepadmap.bmp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">Copying %(Filename)%(Extension)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.Scarlett.x64'">Copying %(Filename)%(Extension)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">Copying %(Filename)%(Extension)</Message>
@@ -353,7 +353,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">$(ProjectDir)\%(Filename)%(Extension);%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">$(ProjectDir)\%(Filename)%(Extension);%(Outputs)</Outputs>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\..\test\controllermap_back.bmp">
+    <CopyFileToFolders Include="..\..\..\test\gamepadmap_back.bmp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">Copying %(Filename)%(Extension)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.Scarlett.x64'">Copying %(Filename)%(Extension)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">Copying %(Filename)%(Extension)</Message>
@@ -381,7 +381,7 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\test\testgamecontroller.c" />
+    <ClCompile Include="..\..\..\test\testgamepad.c" />
     <ClCompile Include="..\..\..\test\testutils.c" />
   </ItemGroup>
   <ItemGroup>

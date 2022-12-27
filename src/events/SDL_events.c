@@ -165,8 +165,8 @@ static void SDL_LogEvent(const SDL_Event *event)
     if ((SDL_EventLoggingVerbosity < 2) &&
         ((event->type == SDL_MOUSEMOTION) ||
          (event->type == SDL_FINGERMOTION) ||
-         (event->type == SDL_CONTROLLERTOUCHPADMOTION) ||
-         (event->type == SDL_CONTROLLERSENSORUPDATE) ||
+         (event->type == SDL_GAMEPADTOUCHPADMOTION) ||
+         (event->type == SDL_GAMEPADSENSORUPDATE) ||
          (event->type == SDL_SENSORUPDATE))) {
         return;
     }
@@ -362,7 +362,7 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_JOYDEV_EVENT
 
-        SDL_EVENT_CASE(SDL_CONTROLLERAXISMOTION)
+        SDL_EVENT_CASE(SDL_GAMEPADAXISMOTION)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d axis=%u value=%d)",
                            (uint)event->caxis.timestamp, (int)event->caxis.which,
                            (uint)event->caxis.axis, (int)event->caxis.value);
@@ -372,22 +372,22 @@ static void SDL_LogEvent(const SDL_Event *event)
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d button=%u state=%s)", \
                        (uint)event->cbutton.timestamp, (int)event->cbutton.which,               \
                        (uint)event->cbutton.button, event->cbutton.state == SDL_PRESSED ? "pressed" : "released")
-        SDL_EVENT_CASE(SDL_CONTROLLERBUTTONDOWN)
+        SDL_EVENT_CASE(SDL_GAMEPADBUTTONDOWN)
         PRINT_CBUTTON_EVENT(event);
         break;
-        SDL_EVENT_CASE(SDL_CONTROLLERBUTTONUP)
+        SDL_EVENT_CASE(SDL_GAMEPADBUTTONUP)
         PRINT_CBUTTON_EVENT(event);
         break;
 #undef PRINT_CBUTTON_EVENT
 
 #define PRINT_CONTROLLERDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d)", (uint)event->cdevice.timestamp, (int)event->cdevice.which)
-        SDL_EVENT_CASE(SDL_CONTROLLERDEVICEADDED)
+        SDL_EVENT_CASE(SDL_GAMEPADADDED)
         PRINT_CONTROLLERDEV_EVENT(event);
         break;
-        SDL_EVENT_CASE(SDL_CONTROLLERDEVICEREMOVED)
+        SDL_EVENT_CASE(SDL_GAMEPADREMOVED)
         PRINT_CONTROLLERDEV_EVENT(event);
         break;
-        SDL_EVENT_CASE(SDL_CONTROLLERDEVICEREMAPPED)
+        SDL_EVENT_CASE(SDL_GAMEPADDEVICEREMAPPED)
         PRINT_CONTROLLERDEV_EVENT(event);
         break;
 #undef PRINT_CONTROLLERDEV_EVENT
@@ -397,18 +397,18 @@ static void SDL_LogEvent(const SDL_Event *event)
                        (uint)event->ctouchpad.timestamp, (int)event->ctouchpad.which,                                    \
                        (int)event->ctouchpad.touchpad, (int)event->ctouchpad.finger,                                     \
                        event->ctouchpad.x, event->ctouchpad.y, event->ctouchpad.pressure)
-        SDL_EVENT_CASE(SDL_CONTROLLERTOUCHPADDOWN)
+        SDL_EVENT_CASE(SDL_GAMEPADTOUCHPADDOWN)
         PRINT_CTOUCHPAD_EVENT(event);
         break;
-        SDL_EVENT_CASE(SDL_CONTROLLERTOUCHPADUP)
+        SDL_EVENT_CASE(SDL_GAMEPADTOUCHPADUP)
         PRINT_CTOUCHPAD_EVENT(event);
         break;
-        SDL_EVENT_CASE(SDL_CONTROLLERTOUCHPADMOTION)
+        SDL_EVENT_CASE(SDL_GAMEPADTOUCHPADMOTION)
         PRINT_CTOUCHPAD_EVENT(event);
         break;
 #undef PRINT_CTOUCHPAD_EVENT
 
-        SDL_EVENT_CASE(SDL_CONTROLLERSENSORUPDATE)
+        SDL_EVENT_CASE(SDL_GAMEPADSENSORUPDATE)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d sensor=%d data[0]=%f data[1]=%f data[2]=%f)",
                            (uint)event->csensor.timestamp, (int)event->csensor.which, (int)event->csensor.sensor,
                            event->csensor.data[0], event->csensor.data[1], event->csensor.data[2]);

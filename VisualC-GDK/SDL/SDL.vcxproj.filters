@@ -222,7 +222,7 @@
     <ClInclude Include="..\..\include\SDL3\SDL_filesystem.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_gamecontroller.h">
+    <ClInclude Include="..\..\include\SDL3\SDL_gamepad.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_guid.h">
@@ -483,7 +483,7 @@
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h">
       <Filter>haptic</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\joystick\SDL_gamecontrollerdb.h">
+    <ClInclude Include="..\..\src\joystick\SDL_gamepad_db.h">
       <Filter>joystick</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h">
@@ -916,7 +916,7 @@
     <ClCompile Include="..\..\src\joystick\controller_type.c">
       <Filter>joystick</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\joystick\SDL_gamecontroller.c">
+    <ClCompile Include="..\..\src\joystick\SDL_gamepad.c">
       <Filter>joystick</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c">

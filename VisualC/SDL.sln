@@ -38,11 +38,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testsprite2", "tests\testsp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL3_test", "SDL_test\SDL_test.vcxproj", "{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgamecontroller", "tests\testgamecontroller\testgamecontroller.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08305}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgamepad", "tests\testgamepad\testgamepad.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08305}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgles2", "tests\testgles2\testgles2.vcxproj", "{E9558DFE-1961-4DD4-B09B-DD0EEFD5C315}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "controllermap", "tests\controllermap\controllermap.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08306}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gamepadmap", "tests\gamepadmap\gamepadmap.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08306}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testvulkan", "tests\testvulkan\testvulkan.vcxproj", "{0D604DFD-AAB6-442C-9368-F91A344146AB}"
 EndProject

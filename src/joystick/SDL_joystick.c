@@ -309,7 +309,7 @@ int SDL_JoystickInit(void)
 
     SDL_joysticks_initialized = SDL_TRUE;
 
-    SDL_GameControllerInitMappings();
+    SDL_GamepadInitMappings();
 
     /* See if we should allow joystick events while in the background */
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
@@ -548,7 +548,7 @@ SDL_Joystick *SDL_OpenJoystick(int device_index)
         }
     }
 
-    joystick->is_game_controller = SDL_IsGameController(device_index);
+    joystick->is_game_controller = SDL_IsGamepad(device_index);
 
     /* Add joystick to list */
     ++joystick->ref_count;
@@ -1268,7 +1268,7 @@ void SDL_JoystickQuit(void)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
-    SDL_GameControllerQuitMappings();
+    SDL_GamepadQuitMappings();
 
     SDL_joysticks_quitting = SDL_FALSE;
     SDL_joysticks_initialized = SDL_FALSE;
@@ -1358,7 +1358,7 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance)
     if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &driver_device_index)) {
         player_index = driver->GetDevicePlayerIndex(driver_device_index);
     }
-    if (player_index < 0 && SDL_IsGameController(device_index)) {
+    if (player_index < 0 && SDL_IsGamepad(device_index)) {
         player_index = SDL_FindFreePlayerIndex();
     }
     if (player_index >= 0) {
@@ -1408,7 +1408,7 @@ static void UpdateEventsForDeviceRemoval(int device_index, Uint32 type)
         case SDL_JOYDEVICEADDED:
             which = events[i].jdevice.which;
             break;
-        case SDL_CONTROLLERDEVICEADDED:
+        case SDL_GAMEPADADDED:
             which = events[i].cdevice.which;
             break;
         default:
@@ -1427,7 +1427,7 @@ static void UpdateEventsForDeviceRemoval(int device_index, Uint32 type)
             case SDL_JOYDEVICEADDED:
                 --events[i].jdevice.which;
                 break;
-            case SDL_CONTROLLERDEVICEADDED:
+            case SDL_GAMEPADADDED:
                 --events[i].cdevice.which;
                 break;
             default:
@@ -1504,7 +1504,7 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
     }
 
     UpdateEventsForDeviceRemoval(device_index, SDL_JOYDEVICEADDED);
-    UpdateEventsForDeviceRemoval(device_index, SDL_CONTROLLERDEVICEADDED);
+    UpdateEventsForDeviceRemoval(device_index, SDL_GAMEPADADDED);
 #endif /* !SDL_EVENTS_DISABLED */
 
     player_index = SDL_GetPlayerIndexForJoystickID(device_instance);
@@ -1700,7 +1700,7 @@ void SDL_UpdateJoysticks(void)
             joystick->driver->Update(joystick);
 
             if (joystick->delayed_guide_button) {
-                SDL_GameControllerHandleDelayedGuideButton(joystick);
+                SDL_GamepadHandleDelayedGuideButton(joystick);
             }
         }
 
@@ -1892,23 +1892,23 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         name = SDL_strdup(product_name);
     } else if (vendor || product) {
         /* Couldn't find a controller name, try to give it one based on device type */
-        switch (SDL_GetJoystickGameControllerTypeFromVIDPID(vendor, product, NULL, SDL_TRUE)) {
-        case SDL_CONTROLLER_TYPE_XBOX360:
+        switch (SDL_GetGamepadTypeFromVIDPID(vendor, product, NULL, SDL_TRUE)) {
+        case SDL_GAMEPAD_TYPE_XBOX360:
             name = SDL_strdup("Xbox 360 Controller");
             break;
-        case SDL_CONTROLLER_TYPE_XBOXONE:
+        case SDL_GAMEPAD_TYPE_XBOXONE:
             name = SDL_strdup("Xbox One Controller");
             break;
-        case SDL_CONTROLLER_TYPE_PS3:
+        case SDL_GAMEPAD_TYPE_PS3:
             name = SDL_strdup("PS3 Controller");
             break;
-        case SDL_CONTROLLER_TYPE_PS4:
+        case SDL_GAMEPAD_TYPE_PS4:
             name = SDL_strdup("PS4 Controller");
             break;
-        case SDL_CONTROLLER_TYPE_PS5:
+        case SDL_GAMEPAD_TYPE_PS5:
             name = SDL_strdup("DualSense Wireless Controller");
             break;
-        case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
             name = SDL_strdup("Nintendo Switch Pro Controller");
             break;
         default:
@@ -2050,9 +2050,9 @@ void SDL_SetJoystickGUIDCRC(SDL_JoystickGUID *guid, Uint16 crc)
     guid16[1] = SDL_SwapLE16(crc);
 }
 
-SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, SDL_bool forUI)
+SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, SDL_bool forUI)
 {
-    SDL_GameControllerType type = SDL_CONTROLLER_TYPE_UNKNOWN;
+    SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
 
     if (vendor == 0x0000 && product == 0x0000) {
         /* Some devices are only identifiable by their name */
@@ -2061,81 +2061,81 @@ SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor
              SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
              SDL_strcmp(name, "Wireless Gamepad") == 0)) {
             /* HORI or PowerA Switch Pro Controller clone */
-            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+            type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
         }
 
     } else if (vendor == 0x0001 && product == 0x0001) {
-        type = SDL_CONTROLLER_TYPE_UNKNOWN;
+        type = SDL_GAMEPAD_TYPE_UNKNOWN;
 
     } else if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER) {
-        type = SDL_CONTROLLER_TYPE_XBOXONE;
+        type = SDL_GAMEPAD_TYPE_XBOXONE;
 
     } else if ((vendor == USB_VENDOR_AMAZON && product == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
                (vendor == BLUETOOTH_VENDOR_AMAZON && product == BLUETOOTH_PRODUCT_LUNA_CONTROLLER)) {
-        type = SDL_CONTROLLER_TYPE_AMAZON_LUNA;
+        type = SDL_GAMEPAD_TYPE_AMAZON_LUNA;
 
     } else if (vendor == USB_VENDOR_GOOGLE && product == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER) {
-        type = SDL_CONTROLLER_TYPE_GOOGLE_STADIA;
+        type = SDL_GAMEPAD_TYPE_GOOGLE_STADIA;
 
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT) {
-        type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
+        type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
 
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
         if (name && SDL_strstr(name, "NES Controller") != NULL) {
             /* We don't have a type for the Nintendo Online NES Controller */
-            type = SDL_CONTROLLER_TYPE_UNKNOWN;
+            type = SDL_GAMEPAD_TYPE_UNKNOWN;
         } else {
-            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
+            type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         }
 
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
         if (name && SDL_strstr(name, "(L)") != NULL) {
-            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
+            type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
         } else {
-            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
+            type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         }
 
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR) {
-        type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
+        type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
 
     } else if (vendor == USB_VENDOR_NVIDIA &&
                (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103 ||
                 product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104)) {
-        type = SDL_CONTROLLER_TYPE_NVIDIA_SHIELD;
+        type = SDL_GAMEPAD_TYPE_NVIDIA_SHIELD;
 
     } else {
         switch (GuessControllerType(vendor, product)) {
         case k_eControllerType_XBox360Controller:
-            type = SDL_CONTROLLER_TYPE_XBOX360;
+            type = SDL_GAMEPAD_TYPE_XBOX360;
             break;
         case k_eControllerType_XBoxOneController:
-            type = SDL_CONTROLLER_TYPE_XBOXONE;
+            type = SDL_GAMEPAD_TYPE_XBOXONE;
             break;
         case k_eControllerType_PS3Controller:
-            type = SDL_CONTROLLER_TYPE_PS3;
+            type = SDL_GAMEPAD_TYPE_PS3;
             break;
         case k_eControllerType_PS4Controller:
-            type = SDL_CONTROLLER_TYPE_PS4;
+            type = SDL_GAMEPAD_TYPE_PS4;
             break;
         case k_eControllerType_PS5Controller:
-            type = SDL_CONTROLLER_TYPE_PS5;
+            type = SDL_GAMEPAD_TYPE_PS5;
             break;
         case k_eControllerType_XInputPS4Controller:
             if (forUI) {
-                type = SDL_CONTROLLER_TYPE_PS4;
+                type = SDL_GAMEPAD_TYPE_PS4;
             } else {
-                type = SDL_CONTROLLER_TYPE_UNKNOWN;
+                type = SDL_GAMEPAD_TYPE_UNKNOWN;
             }
             break;
         case k_eControllerType_SwitchProController:
         case k_eControllerType_SwitchInputOnlyController:
-            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+            type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
             break;
         case k_eControllerType_XInputSwitchController:
             if (forUI) {
-                type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+                type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
             } else {
-                type = SDL_CONTROLLER_TYPE_UNKNOWN;
+                type = SDL_GAMEPAD_TYPE_UNKNOWN;
             }
             break;
         default:
@@ -2145,24 +2145,24 @@ SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor
     return type;
 }
 
-SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name)
+SDL_GamepadType SDL_GetGamepadTypeFromGUID(SDL_JoystickGUID guid, const char *name)
 {
-    SDL_GameControllerType type;
+    SDL_GamepadType type;
     Uint16 vendor, product;
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
-    type = SDL_GetJoystickGameControllerTypeFromVIDPID(vendor, product, name, SDL_TRUE);
-    if (type == SDL_CONTROLLER_TYPE_UNKNOWN) {
+    type = SDL_GetGamepadTypeFromVIDPID(vendor, product, name, SDL_TRUE);
+    if (type == SDL_GAMEPAD_TYPE_UNKNOWN) {
         if (SDL_IsJoystickXInput(guid)) {
             /* This is probably an Xbox One controller */
-            return SDL_CONTROLLER_TYPE_XBOXONE;
+            return SDL_GAMEPAD_TYPE_XBOXONE;
         }
         if (SDL_IsJoystickVIRTUAL(guid)) {
-            return SDL_CONTROLLER_TYPE_VIRTUAL;
+            return SDL_GAMEPAD_TYPE_VIRTUAL;
         }
 #ifdef SDL_JOYSTICK_HIDAPI
         if (SDL_IsJoystickHIDAPI(guid)) {
-            return HIDAPI_GetGameControllerTypeFromGUID(guid);
+            return HIDAPI_GetGamepadTypeFromGUID(guid);
         }
 #endif /* SDL_JOYSTICK_HIDAPI */
     }
@@ -2674,7 +2674,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         }
     }
 
-    if (SDL_ShouldIgnoreGameController(name, guid)) {
+    if (SDL_ShouldIgnoreGamepad(name, guid)) {
         return SDL_TRUE;
     }
 
@@ -2732,7 +2732,7 @@ SDL_JoystickType SDL_GetJoystickDeviceType(int device_index)
 
     type = SDL_GetJoystickGUIDType(guid);
     if (type == SDL_JOYSTICK_TYPE_UNKNOWN) {
-        if (SDL_IsGameController(device_index)) {
+        if (SDL_IsGamepad(device_index)) {
             type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
         }
     }
@@ -2965,16 +2965,16 @@ int SDL_PrivateJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int to
     }
 
     if (state == finger_info->state) {
-        event_type = SDL_CONTROLLERTOUCHPADMOTION;
+        event_type = SDL_GAMEPADTOUCHPADMOTION;
     } else if (state) {
-        event_type = SDL_CONTROLLERTOUCHPADDOWN;
+        event_type = SDL_GAMEPADTOUCHPADDOWN;
     } else {
-        event_type = SDL_CONTROLLERTOUCHPADUP;
+        event_type = SDL_GAMEPADTOUCHPADUP;
     }
 
     /* We ignore events if we don't have keyboard focus, except for touch release */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if (event_type != SDL_CONTROLLERTOUCHPADUP) {
+        if (event_type != SDL_GAMEPADTOUCHPADUP) {
             return 0;
         }
     }
@@ -3028,9 +3028,9 @@ int SDL_PrivateJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_Sens
 
                 /* Post the event, if desired */
 #if !SDL_EVENTS_DISABLED
-                if (SDL_GetEventState(SDL_CONTROLLERSENSORUPDATE) == SDL_ENABLE) {
+                if (SDL_GetEventState(SDL_GAMEPADSENSORUPDATE) == SDL_ENABLE) {
                     SDL_Event event;
-                    event.type = SDL_CONTROLLERSENSORUPDATE;
+                    event.type = SDL_GAMEPADSENSORUPDATE;
                     event.common.timestamp = timestamp;
                     event.csensor.which = joystick->instance_id;
                     event.csensor.sensor = type;

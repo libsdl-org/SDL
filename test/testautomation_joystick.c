@@ -22,13 +22,13 @@ TestVirtualJoystick(void *arg)
     SDL_Joystick *joystick = NULL;
     int device_index;
 
-    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) == 0, "SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD) == 0, "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
 
     SDL_zero(desc);
     desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
     desc.type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
-    desc.naxes = SDL_CONTROLLER_AXIS_MAX;
-    desc.nbuttons = SDL_CONTROLLER_BUTTON_MAX;
+    desc.naxes = SDL_GAMEPAD_AXIS_MAX;
+    desc.nbuttons = SDL_GAMEPAD_BUTTON_MAX;
     desc.vendor_id = USB_VENDOR_NVIDIA;
     desc.product_id = USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104;
     desc.name = "Virtual NVIDIA SHIELD Controller";
@@ -50,12 +50,12 @@ TestVirtualJoystick(void *arg)
             SDLTest_AssertCheck(SDL_GetNumJoystickHats(joystick) == desc.nhats, "SDL_GetNumJoystickHats()");
             SDLTest_AssertCheck(SDL_GetNumJoystickButtons(joystick) == desc.nbuttons, "SDL_GetNumJoystickButtons()");
 
-            SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_CONTROLLER_BUTTON_A, SDL_PRESSED) == 0, "SDL_SetJoystickVirtualButton(SDL_CONTROLLER_BUTTON_A, SDL_PRESSED)");
+            SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_A, SDL_PRESSED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_A, SDL_PRESSED)");
             SDL_UpdateJoysticks();
-            SDLTest_AssertCheck(SDL_GetJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A) == SDL_PRESSED, "SDL_GetJoystickButton(SDL_CONTROLLER_BUTTON_A) == SDL_PRESSED");
-            SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_CONTROLLER_BUTTON_A, SDL_RELEASED) == 0, "SDL_SetJoystickVirtualButton(SDL_CONTROLLER_BUTTON_A, SDL_RELEASED)");
+            SDLTest_AssertCheck(SDL_GetJoystickButton(joystick, SDL_GAMEPAD_BUTTON_A) == SDL_PRESSED, "SDL_GetJoystickButton(SDL_GAMEPAD_BUTTON_A) == SDL_PRESSED");
+            SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_A, SDL_RELEASED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_A, SDL_RELEASED)");
             SDL_UpdateJoysticks();
-            SDLTest_AssertCheck(SDL_GetJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A) == SDL_RELEASED, "SDL_GetJoystickButton(SDL_CONTROLLER_BUTTON_A) == SDL_RELEASED");
+            SDLTest_AssertCheck(SDL_GetJoystickButton(joystick, SDL_GAMEPAD_BUTTON_A) == SDL_RELEASED, "SDL_GetJoystickButton(SDL_GAMEPAD_BUTTON_A) == SDL_RELEASED");
 
             SDL_CloseJoystick(joystick);
         }
@@ -63,7 +63,7 @@ TestVirtualJoystick(void *arg)
     }
     SDLTest_AssertCheck(!SDL_IsJoystickVirtual(device_index), "!SDL_IsJoystickVirtual()");
 
-    SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
+    SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
 
     return TEST_COMPLETED;
 }

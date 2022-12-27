@@ -375,9 +375,9 @@ typedef struct SDL_VirtualJoystickDesc
     Uint16 product_id;  /**< the USB product ID of this joystick */
     Uint16 padding;     /**< unused */
     Uint32 button_mask; /**< A mask of which buttons are valid for this controller
-                             e.g. (1 << SDL_CONTROLLER_BUTTON_A) */
+                             e.g. (1 << SDL_GAMEPAD_BUTTON_A) */
     Uint32 axis_mask;   /**< A mask of which axes are valid for this controller
-                             e.g. (1 << SDL_CONTROLLER_AXIS_LEFTX) */
+                             e.g. (1 << SDL_GAMEPAD_AXIS_LEFTX) */
     const char *name;   /**< the name of the joystick */
 
     void *userdata;     /**< User data pointer passed to callbacks */
@@ -782,7 +782,7 @@ extern DECLSPEC void SDLCALL SDL_UpdateJoysticks(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GameControllerEventState
+ * \sa SDL_GetGamepadEventState
  */
 extern DECLSPEC int SDLCALL SDL_GetJoystickEventState(int state);
 

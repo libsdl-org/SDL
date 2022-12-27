@@ -173,7 +173,7 @@ int SDL_InitSubSystem(Uint32 flags)
     SDL_DBus_Init();
 #endif
 
-    if ((flags & SDL_INIT_GAMECONTROLLER)) {
+    if ((flags & SDL_INIT_GAMEPAD)) {
         /* game controller implies joystick */
         flags |= SDL_INIT_JOYSTICK;
     }
@@ -275,15 +275,15 @@ int SDL_InitSubSystem(Uint32 flags)
 #endif
     }
 
-    if ((flags & SDL_INIT_GAMECONTROLLER)) {
+    if ((flags & SDL_INIT_GAMEPAD)) {
 #if !SDL_JOYSTICK_DISABLED
-        if (SDL_PrivateShouldInitSubsystem(SDL_INIT_GAMECONTROLLER)) {
-            if (SDL_GameControllerInit() < 0) {
+        if (SDL_PrivateShouldInitSubsystem(SDL_INIT_GAMEPAD)) {
+            if (SDL_GamepadInit() < 0) {
                 goto quit_and_error;
             }
         }
-        SDL_PrivateSubsystemRefCountIncr(SDL_INIT_GAMECONTROLLER);
-        flags_initialized |= SDL_INIT_GAMECONTROLLER;
+        SDL_PrivateSubsystemRefCountIncr(SDL_INIT_GAMEPAD);
+        flags_initialized |= SDL_INIT_GAMEPAD;
 #else
         SDL_SetError("SDL not built with joystick support");
         goto quit_and_error;
@@ -349,14 +349,14 @@ void SDL_QuitSubSystem(Uint32 flags)
 #endif
 
 #if !SDL_JOYSTICK_DISABLED
-    if ((flags & SDL_INIT_GAMECONTROLLER)) {
+    if ((flags & SDL_INIT_GAMEPAD)) {
         /* game controller implies joystick */
         flags |= SDL_INIT_JOYSTICK;
 
-        if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_GAMECONTROLLER)) {
-            SDL_GameControllerQuit();
+        if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_GAMEPAD)) {
+            SDL_GamepadQuit();
         }
-        SDL_PrivateSubsystemRefCountDecr(SDL_INIT_GAMECONTROLLER);
+        SDL_PrivateSubsystemRefCountDecr(SDL_INIT_GAMEPAD);
     }
 
     if ((flags & SDL_INIT_JOYSTICK)) {

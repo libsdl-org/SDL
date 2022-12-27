@@ -9,13 +9,44 @@ General:
 * SDL headers should now be included as `#include <SDL3/SDL.h>`
 * M_PI is no longer defined in SDL_stdinc.h, now the symbols SDL_PI_D (double) and SDL_PI_F (float) are available
 * SDL_GetWindowWMInfo() returns a standard int result code instead of SDL_bool, and takes SDL_SYSWM_CURRENT_VERSION as a new third parameter
+* The following functions have been removed, see docs/README-migration.md for details:
+    * SDL_AudioInit()
+    * SDL_AudioQuit()
+    * SDL_CalculateGammaRamp()
+    * SDL_CreateRGBSurface()
+    * SDL_CreateRGBSurfaceFrom()
+    * SDL_CreateRGBSurfaceWithFormat()
+    * SDL_CreateRGBSurfaceWithFormatFrom()
+    * SDL_GameControllerGetSensorDataWithTimestamp()
+    * SDL_GetRevisionNumber()
+    * SDL_GetWindowBrightness()
+    * SDL_GetWindowGammaRamp()
+    * SDL_RWFromFP()
+    * SDL_SensorGetDataWithTimestamp()
+    * SDL_SetWindowBrightness()
+    * SDL_SetWindowGammaRamp()
+    * SDL_VideoInit()
+    * SDL_VideoQuit()
+* The following hints have been removed, see docs/README-migration.md for details:
+    * SDL_HINT_IDLE_TIMER_DISABLED
+    * SDL_HINT_VIDEO_X11_FORCE_EGL
+    * SDL_HINT_VIDEO_X11_XINERAMA
+    * SDL_HINT_VIDEO_X11_XVIDMODE
+* SDL_FreeWAV has been removed and calls can be replaced with SDL_free
+* Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
+* Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
+* SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
+* Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace the SDL_CreateRGBSurface*(), and can also be used to create YUV surfaces
+* Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
+* Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
+* SDL_GetTicks() now returns a 64-bit value and the tick values should be directly compared instead of using the SDL_TICKS_PASSED macro
+* Added SDL_GetTicksNS() to return the number of nanoseconds since the SDL library initialized
+* Added SDL_DelayNS() to specify a delay in nanoseconds, to the highest precision the system will support
+* The timestamp member of the SDL_Event structure is now in nanoseconds, filled in with the time the event was generated, or the time it was queued if that's not available
+* The `SDL_DISPLAYEVENT_*` and `SDL_WINDOWEVENT_*` events have been moved to top level events
+* Intrinsic headers are no longer included in the public SDL headers
 * The preprocessor symbol __MACOSX__ has been renamed __MACOS__
 * The preprocessor symbol __IPHONEOS__ has been renamed __IOS__
-* The following macros have been renamed:
-    * RW_SEEK_CUR -> SDL_RW_SEEK_CUR
-    * RW_SEEK_END -> SDL_RW_SEEK_END
-    * RW_SEEK_SET -> SDL_RW_SEEK_SET
-* SDL_FreeWAV has been removed and calls can be replaced with SDL_free
 * The following functions have been renamed:
     * SDL_AllocFormat => SDL_CreatePixelFormat
     * SDL_AllocPalette => SDL_CreatePalette
@@ -30,12 +61,69 @@ General:
     * SDL_FreeFormat => SDL_DestroyPixelFormat
     * SDL_FreePalette => SDL_DestroyPalette
     * SDL_FreeSurface => SDL_DestroySurface
+    * SDL_GameControllerAddMapping => SDL_AddGamepadMapping
+    * SDL_GameControllerAddMappingsFromFile => SDL_AddGamepadMappingsFromFile
+    * SDL_GameControllerAddMappingsFromRW => SDL_AddGamepadMappingsFromRW
+    * SDL_GameControllerClose => SDL_CloseGamepad
+    * SDL_GameControllerEventState => SDL_GetGamepadEventState
+    * SDL_GameControllerFromInstanceID => SDL_GetGamepadFromInstanceID
+    * SDL_GameControllerFromPlayerIndex => SDL_GetGamepadFromPlayerIndex
+    * SDL_GameControllerGetAppleSFSymbolsNameForAxis => SDL_GetGamepadAppleSFSymbolsNameForAxis
+    * SDL_GameControllerGetAppleSFSymbolsNameForButton => SDL_GetGamepadAppleSFSymbolsNameForButton
+    * SDL_GameControllerGetAttached => SDL_IsGamepadConnected
+    * SDL_GameControllerGetAxis => SDL_GetGamepadAxis
+    * SDL_GameControllerGetAxisFromString => SDL_GetGamepadAxisFromString
+    * SDL_GameControllerGetBindForAxis => SDL_GetGamepadBindForAxis
+    * SDL_GameControllerGetBindForButton => SDL_GetGamepadBindForButton
+    * SDL_GameControllerGetButton => SDL_GetGamepadButton
+    * SDL_GameControllerGetButtonFromString => SDL_GetGamepadButtonFromString
+    * SDL_GameControllerGetFirmwareVersion => SDL_GetGamepadFirmwareVersion
+    * SDL_GameControllerGetJoystick => SDL_GetGamepadJoystick
+    * SDL_GameControllerGetNumTouchpadFingers => SDL_GetGamepadNumTouchpadFingers
+    * SDL_GameControllerGetNumTouchpads => SDL_GetGamepadNumTouchpads
+    * SDL_GameControllerGetPlayerIndex => SDL_GetGamepadPlayerIndex
+    * SDL_GameControllerGetProduct => SDL_GetGamepadProduct
+    * SDL_GameControllerGetProductVersion => SDL_GetGamepadProductVersion
+    * SDL_GameControllerGetSensorData => SDL_GetGamepadSensorData
+    * SDL_GameControllerGetSensorDataRate => SDL_GetGamepadSensorDataRate
+    * SDL_GameControllerGetSerial => SDL_GetGamepadSerial
+    * SDL_GameControllerGetStringForAxis => SDL_GetGamepadStringForAxis
+    * SDL_GameControllerGetStringForButton => SDL_GetGamepadStringForButton
+    * SDL_GameControllerGetTouchpadFinger => SDL_GetGamepadTouchpadFinger
+    * SDL_GameControllerGetType => SDL_GetGamepadType
+    * SDL_GameControllerGetVendor => SDL_GetGamepadVendor
+    * SDL_GameControllerHasAxis => SDL_GamepadHasAxis
+    * SDL_GameControllerHasButton => SDL_GamepadHasButton
+    * SDL_GameControllerHasLED => SDL_GamepadHasLED
+    * SDL_GameControllerHasRumble => SDL_GamepadHasRumble
+    * SDL_GameControllerHasRumbleTriggers => SDL_GamepadHasRumbleTriggers
+    * SDL_GameControllerHasSensor => SDL_GamepadHasSensor
+    * SDL_GameControllerIsSensorEnabled => SDL_IsGamepadSensorEnabled
+    * SDL_GameControllerMapping => SDL_GetGamepadMapping
+    * SDL_GameControllerMappingForDeviceIndex => SDL_GetGamepadMappingForDeviceIndex
+    * SDL_GameControllerMappingForGUID => SDL_GetGamepadMappingForGUID
+    * SDL_GameControllerMappingForIndex => SDL_GetGamepadMappingForIndex
+    * SDL_GameControllerName => SDL_GetGamepadName
+    * SDL_GameControllerNameForIndex => SDL_GetGamepadNameForIndex
+    * SDL_GameControllerNumMappings => SDL_GetNumGamepadMappings
+    * SDL_GameControllerOpen => SDL_OpenGamepad
+    * SDL_GameControllerPath => SDL_GetGamepadPath
+    * SDL_GameControllerPathForIndex => SDL_GetGamepadPathForIndex
+    * SDL_GameControllerRumble => SDL_RumbleGamepad
+    * SDL_GameControllerRumbleTriggers => SDL_RumbleGamepadTriggers
+    * SDL_GameControllerSendEffect => SDL_SendGamepadEffect
+    * SDL_GameControllerSetLED => SDL_SetGamepadLED
+    * SDL_GameControllerSetPlayerIndex => SDL_SetGamepadPlayerIndex
+    * SDL_GameControllerSetSensorEnabled => SDL_SetGamepadSensorEnabled
+    * SDL_GameControllerTypeForIndex => SDL_GetGamepadTypeForIndex
+    * SDL_GameControllerUpdate => SDL_UpdateGamepads
     * SDL_GetClipRect => SDL_GetSurfaceClipRect
     * SDL_GetColorKey => SDL_GetSurfaceColorKey
     * SDL_GetPointDisplayIndex => SDL_GetDisplayIndexForPoint
     * SDL_GetRectDisplayIndex => SDL_GetDisplayIndexForRect
     * SDL_HasColorKey => SDL_SurfaceHasColorKey
     * SDL_HasSurfaceRLE => SDL_SurfaceHasRLE
+    * SDL_IsGameController => SDL_IsGamepad
     * SDL_JoystickAttachVirtual => SDL_AttachVirtualJoystick
     * SDL_JoystickAttachVirtualEx => SDL_AttachVirtualJoystickEx
     * SDL_JoystickClose => SDL_CloseJoystick
@@ -141,42 +229,20 @@ General:
     * SDL_SetColorKey => SDL_SetSurfaceColorKey
     * SDL_UpperBlit => SDL_BlitSurface
     * SDL_UpperBlitScaled => SDL_BlitSurfaceScaled
-* Removed the following functions from the API, see docs/README-migration.md for details:
-    * SDL_AudioInit()
-    * SDL_AudioQuit()
-    * SDL_CalculateGammaRamp()
-    * SDL_CreateRGBSurface()
-    * SDL_CreateRGBSurfaceFrom()
-    * SDL_CreateRGBSurfaceWithFormat()
-    * SDL_CreateRGBSurfaceWithFormatFrom()
-    * SDL_GameControllerGetSensorDataWithTimestamp()
-    * SDL_GetRevisionNumber()
-    * SDL_GetWindowBrightness()
-    * SDL_GetWindowGammaRamp()
-    * SDL_RWFromFP()
-    * SDL_SensorGetDataWithTimestamp()
-    * SDL_SetWindowBrightness()
-    * SDL_SetWindowGammaRamp()
-    * SDL_VideoInit()
-    * SDL_VideoQuit()
-* Removed the following hints from the API, see docs/README-migration.md for details:
-    * SDL_HINT_IDLE_TIMER_DISABLED
-    * SDL_HINT_VIDEO_X11_FORCE_EGL
-    * SDL_HINT_VIDEO_X11_XINERAMA
-    * SDL_HINT_VIDEO_X11_XVIDMODE
-* Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
-* Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
-* SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
-* Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace the SDL_CreateRGBSurface*(), and can also be used to create YUV surfaces
-* Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
-* Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
-* SDL_GetTicks() now returns a 64-bit value and the tick values should be directly compared instead of using the SDL_TICKS_PASSED macro
-* Added SDL_GetTicksNS() to return the number of nanoseconds since the SDL library initialized
-* Added SDL_DelayNS() to specify a delay in nanoseconds, to the highest precision the system will support
-* The timestamp member of the SDL_Event structure is now in nanoseconds, filled in with the time the event was generated, or the time it was queued if that's not available
-* The `SDL_DISPLAYEVENT_*` and `SDL_WINDOWEVENT_*` events have been moved to top level events
-* Intrinsic headers are no longer included in the public SDL headers
 * The following enums have been renamed:
+    * SDL_GameControllerAxis => SDL_GamepadAxis
+    * SDL_GameControllerBindType => SDL_GamepadBindingType
+    * SDL_GameControllerButton => SDL_GamepadButton
+    * SDL_GameControllerType => SDL_GamepadType
+* The following structures have been renamed:
+    * SDL_ControllerAxisEvent => SDL_GamepadAxisEvent
+    * SDL_ControllerButtonEvent => SDL_GamepadButtonEvent
+    * SDL_ControllerDeviceEvent => SDL_GamepadDeviceEvent
+    * SDL_ControllerSensorEvent => SDL_GamepadSensorEvent
+    * SDL_ControllerTouchpadEvent => SDL_GamepadTouchpadEvent
+    * SDL_GameController => SDL_Gamepad
+    * SDL_GameControllerButtonBind => SDL_GamepadBinding
+* The following symbols have been renamed:
     * KMOD_ALT => SDL_KMOD_ALT
     * KMOD_CAPS => SDL_KMOD_CAPS
     * KMOD_CTRL => SDL_KMOD_CTRL
@@ -195,3 +261,66 @@ General:
     * KMOD_RSHIFT => SDL_KMOD_RSHIFT
     * KMOD_SCROLL => SDL_KMOD_SCROLL
     * KMOD_SHIFT => SDL_KMOD_SHIFT
+    * RW_SEEK_CUR => SDL_RW_SEEK_CUR
+    * RW_SEEK_END => SDL_RW_SEEK_END
+    * RW_SEEK_SET => SDL_RW_SEEK_SET
+    * SDL_CONTROLLERAXISMOTION => SDL_GAMEPADAXISMOTION
+    * SDL_CONTROLLERBUTTONDOWN => SDL_GAMEPADBUTTONDOWN
+    * SDL_CONTROLLERBUTTONUP => SDL_GAMEPADBUTTONUP
+    * SDL_CONTROLLERDEVICEADDED => SDL_GAMEPADADDED
+    * SDL_CONTROLLERDEVICEREMAPPED => SDL_GAMEPADDEVICEREMAPPED
+    * SDL_CONTROLLERDEVICEREMOVED => SDL_GAMEPADREMOVED
+    * SDL_CONTROLLERSENSORUPDATE => SDL_GAMEPADSENSORUPDATE
+    * SDL_CONTROLLERTOUCHPADDOWN => SDL_GAMEPADTOUCHPADDOWN
+    * SDL_CONTROLLERTOUCHPADMOTION => SDL_GAMEPADTOUCHPADMOTION
+    * SDL_CONTROLLERTOUCHPADUP => SDL_GAMEPADTOUCHPADUP
+    * SDL_CONTROLLER_AXIS_INVALID => SDL_GAMEPAD_AXIS_INVALID
+    * SDL_CONTROLLER_AXIS_LEFTX => SDL_GAMEPAD_AXIS_LEFTX
+    * SDL_CONTROLLER_AXIS_LEFTY => SDL_GAMEPAD_AXIS_LEFTY
+    * SDL_CONTROLLER_AXIS_MAX => SDL_GAMEPAD_AXIS_MAX
+    * SDL_CONTROLLER_AXIS_RIGHTX => SDL_GAMEPAD_AXIS_RIGHTX
+    * SDL_CONTROLLER_AXIS_RIGHTY => SDL_GAMEPAD_AXIS_RIGHTY
+    * SDL_CONTROLLER_AXIS_TRIGGERLEFT => SDL_GAMEPAD_AXIS_LEFT_TRIGGER
+    * SDL_CONTROLLER_AXIS_TRIGGERRIGHT => SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+    * SDL_CONTROLLER_BINDTYPE_AXIS => SDL_GAMEPAD_BINDTYPE_AXIS
+    * SDL_CONTROLLER_BINDTYPE_BUTTON => SDL_GAMEPAD_BINDTYPE_BUTTON
+    * SDL_CONTROLLER_BINDTYPE_HAT => SDL_GAMEPAD_BINDTYPE_HAT
+    * SDL_CONTROLLER_BINDTYPE_NONE => SDL_GAMEPAD_BINDTYPE_NONE
+    * SDL_CONTROLLER_BUTTON_A => SDL_GAMEPAD_BUTTON_A
+    * SDL_CONTROLLER_BUTTON_B => SDL_GAMEPAD_BUTTON_B
+    * SDL_CONTROLLER_BUTTON_BACK => SDL_GAMEPAD_BUTTON_BACK
+    * SDL_CONTROLLER_BUTTON_DPAD_DOWN => SDL_GAMEPAD_BUTTON_DPAD_DOWN
+    * SDL_CONTROLLER_BUTTON_DPAD_LEFT => SDL_GAMEPAD_BUTTON_DPAD_LEFT
+    * SDL_CONTROLLER_BUTTON_DPAD_RIGHT => SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+    * SDL_CONTROLLER_BUTTON_DPAD_UP => SDL_GAMEPAD_BUTTON_DPAD_UP
+    * SDL_CONTROLLER_BUTTON_GUIDE => SDL_GAMEPAD_BUTTON_GUIDE
+    * SDL_CONTROLLER_BUTTON_INVALID => SDL_GAMEPAD_BUTTON_INVALID
+    * SDL_CONTROLLER_BUTTON_LEFTSHOULDER => SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+    * SDL_CONTROLLER_BUTTON_LEFTSTICK => SDL_GAMEPAD_BUTTON_LEFT_STICK
+    * SDL_CONTROLLER_BUTTON_MAX => SDL_GAMEPAD_BUTTON_MAX
+    * SDL_INIT_GAMECONTROLLER => SDL_INIT_GAMEPAD
+    * SDL_CONTROLLER_BUTTON_MISC1 => SDL_GAMEPAD_BUTTON_MISC1
+    * SDL_CONTROLLER_BUTTON_PADDLE1 => SDL_GAMEPAD_BUTTON_PADDLE1
+    * SDL_CONTROLLER_BUTTON_PADDLE2 => SDL_GAMEPAD_BUTTON_PADDLE2
+    * SDL_CONTROLLER_BUTTON_PADDLE3 => SDL_GAMEPAD_BUTTON_PADDLE3
+    * SDL_CONTROLLER_BUTTON_PADDLE4 => SDL_GAMEPAD_BUTTON_PADDLE4
+    * SDL_CONTROLLER_BUTTON_RIGHTSHOULDER => SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+    * SDL_CONTROLLER_BUTTON_RIGHTSTICK => SDL_GAMEPAD_BUTTON_RIGHT_STICK
+    * SDL_CONTROLLER_BUTTON_START => SDL_GAMEPAD_BUTTON_START
+    * SDL_CONTROLLER_BUTTON_TOUCHPAD => SDL_GAMEPAD_BUTTON_TOUCHPAD
+    * SDL_CONTROLLER_BUTTON_X => SDL_GAMEPAD_BUTTON_X
+    * SDL_CONTROLLER_BUTTON_Y => SDL_GAMEPAD_BUTTON_Y
+    * SDL_CONTROLLER_TYPE_AMAZON_LUNA => SDL_GAMEPAD_TYPE_AMAZON_LUNA
+    * SDL_CONTROLLER_TYPE_GOOGLE_STADIA => SDL_GAMEPAD_TYPE_GOOGLE_STADIA
+    * SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT => SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT
+    * SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR => SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR
+    * SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT => SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT
+    * SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO => SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO
+    * SDL_CONTROLLER_TYPE_NVIDIA_SHIELD => SDL_GAMEPAD_TYPE_NVIDIA_SHIELD
+    * SDL_CONTROLLER_TYPE_PS3 => SDL_GAMEPAD_TYPE_PS3
+    * SDL_CONTROLLER_TYPE_PS4 => SDL_GAMEPAD_TYPE_PS4
+    * SDL_CONTROLLER_TYPE_PS5 => SDL_GAMEPAD_TYPE_PS5
+    * SDL_CONTROLLER_TYPE_UNKNOWN => SDL_GAMEPAD_TYPE_UNKNOWN
+    * SDL_CONTROLLER_TYPE_VIRTUAL => SDL_GAMEPAD_TYPE_VIRTUAL
+    * SDL_CONTROLLER_TYPE_XBOX360 => SDL_GAMEPAD_TYPE_XBOX360
+    * SDL_CONTROLLER_TYPE_XBOXONE => SDL_GAMEPAD_TYPE_XBOXONE

@@ -239,7 +239,7 @@ static int SetDIerror(const char *function, HRESULT code)
 static SDL_bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *hidPath)
 {
 #ifdef SDL_JOYSTICK_XINPUT
-    SDL_GameControllerType type;
+    SDL_GamepadType type;
 
     /* XInput and RawInput backends will pick up XInput-compatible devices */
     if (!SDL_XINPUT_Enabled()
@@ -256,9 +256,9 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const ch
         return SDL_TRUE;
     }
 
-    type = SDL_GetJoystickGameControllerTypeFromVIDPID(vendor_id, product_id, NULL, SDL_FALSE);
-    if (type == SDL_CONTROLLER_TYPE_XBOX360 ||
-        type == SDL_CONTROLLER_TYPE_XBOXONE ||
+    type = SDL_GetGamepadTypeFromVIDPID(vendor_id, product_id, NULL, SDL_FALSE);
+    if (type == SDL_GAMEPAD_TYPE_XBOX360 ||
+        type == SDL_GAMEPAD_TYPE_XBOXONE ||
         (vendor_id == USB_VENDOR_VALVE && product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
         return SDL_TRUE;
     }
