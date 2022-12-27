@@ -362,7 +362,7 @@
 #define SDL_GetPointDisplayIndex SDL_GetDisplayIndexForPoint
 #define SDL_GetRectDisplayIndex SDL_GetDisplayIndexForRect
 
-#else /* !SDL_ENABLE_OLD_NAMES */
+#elif !defined(SDL_DISABLE_OLD_NAMES)
 
 /* ##SDL_audio.h */
 #define SDL_AudioStreamAvailable SDL_AudioStreamAvailable_renamed_SDL_GetAudioStreamAvailable
