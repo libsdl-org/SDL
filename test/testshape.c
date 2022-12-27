@@ -92,10 +92,10 @@ int main(int argc, char **argv)
 
         format = pictures[i].surface->format;
         if (SDL_ISPIXELFORMAT_ALPHA(format->format)) {
-            pictures[i].mode.mode = ShapeModeBinarizeAlpha;
+            pictures[i].mode.mode = SDL_SHAPETYPE_BINARIZE_ALPHA;
             pictures[i].mode.parameters.binarizationCutoff = 255;
         } else {
-            pictures[i].mode.mode = ShapeModeColorKey;
+            pictures[i].mode.mode = SDL_SHAPETYPE_COLORKEY;
             pictures[i].mode.parameters.colorKey = black;
         }
     }

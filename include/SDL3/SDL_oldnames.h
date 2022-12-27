@@ -72,6 +72,13 @@
 #define RW_SEEK_END SDL_RW_SEEK_END
 #define RW_SEEK_SET SDL_RW_SEEK_SET
 
+/* ##SDL_shape.h */
+#define ShapeModeBinarizeAlpha SDL_SHAPETYPE_BINARIZE_ALPHA
+#define ShapeModeColorKey SDL_SHAPETYPE_COLORKEY
+#define ShapeModeDefault SDL_SHAPETYPE_DEFAULT
+#define ShapeModeReverseBinarizeAlpha SDL_SHAPETYPE_REVERSE_BINARIZE_ALPHA
+#define WindowShapeMode SDL_WindowShapeType
+
 #else /* !SDL_ENABLE_OLD_NAMES */
 
 /* ##SDL_keycode.h */
@@ -106,6 +113,13 @@
 #define RW_SEEK_CUR RW_SEEK_CUR_renamed_SDL_RW_SEEK_CUR
 #define RW_SEEK_END RW_SEEK_END_renamed_SDL_RW_SEEK_END
 #define RW_SEEK_SET RW_SEEK_SET_renamed_SDL_RW_SEEK_SET
+
+/* ##SDL_shape.h */
+#define ShapeModeBinarizeAlpha ShapeModeBinarizeAlpha_renamed_SDL_SHAPETYPE_BINARIZE_ALPHA
+#define ShapeModeColorKey ShapeModeColorKey_renamed_SDL_SHAPETYPE_COLORKEY
+#define ShapeModeDefault ShapeModeDefault_renamed_SDL_SHAPETYPE_DEFAULT
+#define ShapeModeReverseBinarizeAlpha ShapeModeReverseBinarizeAlpha_renamed_SDL_SHAPETYPE_REVERSE_BINARIZE_ALPHA
+#define WindowShapeMode WindowShapeMode_renamed_SDL_WindowShapeType
 
 #endif /* SDL_ENABLE_OLD_NAMES */
 

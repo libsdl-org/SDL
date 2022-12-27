@@ -37,7 +37,7 @@ SDL_CreateShapedWindow(const char *title, unsigned int x, unsigned int y, unsign
         if (result->shaper != NULL) {
             result->shaper->userx = x;
             result->shaper->usery = y;
-            result->shaper->mode.mode = ShapeModeDefault;
+            result->shaper->mode.mode = SDL_SHAPETYPE_DEFAULT;
             result->shaper->mode.parameters.binarizationCutoff = 1;
             result->shaper->hasshape = SDL_FALSE;
             return result;
@@ -98,16 +98,16 @@ void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shape, Uint
             }
             SDL_GetRGBA(pixel_value, shape->format, &r, &g, &b, &alpha);
             switch (mode.mode) {
-            case (ShapeModeDefault):
+            case (SDL_SHAPETYPE_DEFAULT):
                 mask_value = (alpha >= 1 ? 1 : 0);
                 break;
-            case (ShapeModeBinarizeAlpha):
+            case (SDL_SHAPETYPE_BINARIZE_ALPHA):
                 mask_value = (alpha >= mode.parameters.binarizationCutoff ? 1 : 0);
                 break;
-            case (ShapeModeReverseBinarizeAlpha):
+            case (SDL_SHAPETYPE_REVERSE_BINARIZE_ALPHA):
                 mask_value = (alpha <= mode.parameters.binarizationCutoff ? 1 : 0);
                 break;
-            case (ShapeModeColorKey):
+            case (SDL_SHAPETYPE_COLORKEY):
                 key = mode.parameters.colorKey;
                 mask_value = ((key.r != r || key.g != g || key.b != b) ? 1 : 0);
                 break;
@@ -153,16 +153,16 @@ static SDL_ShapeTree *RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode, SD
             }
             SDL_GetRGBA(pixel_value, mask->format, &r, &g, &b, &a);
             switch (mode.mode) {
-            case (ShapeModeDefault):
+            case (SDL_SHAPETYPE_DEFAULT):
                 pixel_opaque = (a >= 1 ? SDL_TRUE : SDL_FALSE);
                 break;
-            case (ShapeModeBinarizeAlpha):
+            case (SDL_SHAPETYPE_BINARIZE_ALPHA):
                 pixel_opaque = (a >= mode.parameters.binarizationCutoff ? SDL_TRUE : SDL_FALSE);
                 break;
-            case (ShapeModeReverseBinarizeAlpha):
+            case (SDL_SHAPETYPE_REVERSE_BINARIZE_ALPHA):
                 pixel_opaque = (a <= mode.parameters.binarizationCutoff ? SDL_TRUE : SDL_FALSE);
                 break;
-            case (ShapeModeColorKey):
+            case (SDL_SHAPETYPE_COLORKEY):
                 key = mode.parameters.colorKey;
                 pixel_opaque = ((key.r != r || key.g != g || key.b != b) ? SDL_TRUE : SDL_FALSE);
                 break;

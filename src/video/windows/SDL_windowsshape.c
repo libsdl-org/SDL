@@ -35,7 +35,7 @@ Win32_CreateShaper(SDL_Window *window)
         return NULL;
     }
     result->window = window;
-    result->mode.mode = ShapeModeDefault;
+    result->mode.mode = SDL_SHAPETYPE_DEFAULT;
     result->mode.parameters.binarizationCutoff = 1;
     result->userx = result->usery = 0;
     result->hasshape = SDL_FALSE;
@@ -80,7 +80,7 @@ int Win32_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_Windo
 
     if ((shaper == NULL) ||
         (shape == NULL) ||
-        ((shape->format->Amask == 0) && (shape_mode->mode != ShapeModeColorKey)) ||
+        ((shape->format->Amask == 0) && (shape_mode->mode != SDL_SHAPETYPE_COLORKEY)) ||
         (shape->w != shaper->window->w) ||
         (shape->h != shaper->window->h)) {
         return SDL_INVALID_SHAPE_ARGUMENT;

@@ -58,7 +58,7 @@ Cocoa_CreateShaper(SDL_Window *window)
         [windata.nswindow setStyleMask:NSWindowStyleMaskBorderless];
 
         result->window = window;
-        result->mode.mode = ShapeModeDefault;
+        result->mode.mode = SDL_SHAPETYPE_DEFAULT;
         result->mode.parameters.binarizationCutoff = 1;
         result->userx = result->usery = 0;
         window->shaper = result;

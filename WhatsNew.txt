@@ -66,3 +66,8 @@ General:
     * KMOD_RSHIFT => SDL_KMOD_RSHIFT
     * KMOD_SCROLL => SDL_KMOD_SCROLL
     * KMOD_SHIFT => SDL_KMOD_SHIFT
+    * ShapeModeBinarizeAlpha => SDL_SHAPETYPE_BINARIZE_ALPHA
+    * ShapeModeColorKey => SDL_SHAPETYPE_COLORKEY
+    * ShapeModeDefault => SDL_SHAPETYPE_DEFAULT
+    * ShapeModeReverseBinarizeAlpha => SDL_SHAPETYPE_REVERSE_BINARIZE_ALPHA
+    * WindowShapeMode => SDL_WindowShapeType

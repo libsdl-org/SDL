@@ -332,6 +332,15 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_SENSORUPDATE events.
 
 
+## SDL_shape.h
+
+The following enums have been renamed:
+* ShapeModeBinarizeAlpha => SDL_SHAPETYPE_BINARIZE_ALPHA
+* ShapeModeColorKey => SDL_SHAPETYPE_COLORKEY
+* ShapeModeDefault => SDL_SHAPETYPE_DEFAULT
+* ShapeModeReverseBinarizeAlpha => SDL_SHAPETYPE_REVERSE_BINARIZE_ALPHA
+* WindowShapeMode => SDL_WindowShapeType
+
 ## SDL_stdinc.h
 
 The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.

@@ -41,7 +41,7 @@ X11_CreateShaper(SDL_Window *window)
             return NULL;
         }
         result->window = window;
-        result->mode.mode = ShapeModeDefault;
+        result->mode.mode = SDL_SHAPETYPE_DEFAULT;
         result->mode.parameters.binarizationCutoff = 1;
         result->userx = result->usery = 0;
         data = SDL_malloc(sizeof(SDL_ShapeData));
