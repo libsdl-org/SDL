@@ -15,11 +15,11 @@ General:
     * RW_SEEK_CUR -> SDL_RW_SEEK_CUR
     * RW_SEEK_END -> SDL_RW_SEEK_END
     * RW_SEEK_SET -> SDL_RW_SEEK_SET
+* SDL_FreeWAV has been removed and calls can be replaced with SDL_free
 * The following functions have been renamed:
-    * SDL_FreeWAV => SDL_free
 * Removed the following functions from the API, see docs/README-migration.md for details:
-    * SDL_AudioInit
-    * SDL_AudioQuit
+    * SDL_AudioInit()
+    * SDL_AudioQuit()
     * SDL_CalculateGammaRamp()
     * SDL_CreateRGBSurface()
     * SDL_CreateRGBSurfaceFrom()

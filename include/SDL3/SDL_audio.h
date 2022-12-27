@@ -311,8 +311,6 @@ extern DECLSPEC const char *SDLCALL SDL_GetAudioDriver(int index);
  *          initialized.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_INIT_AUDIO
  */
 extern DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
 
