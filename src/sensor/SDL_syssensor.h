@@ -28,7 +28,7 @@
 #include "SDL_sensor_c.h"
 
 /* The SDL sensor structure */
-struct _SDL_Sensor
+struct SDL_Sensor
 {
     SDL_SensorID instance_id;   /* Device instance, monotonically increasing from 0 */
     char *name;                 /* Sensor name - system dependent */
@@ -43,7 +43,7 @@ struct _SDL_Sensor
 
     int ref_count; /* Reference count for multiple opens */
 
-    struct _SDL_Sensor *next; /* pointer to next sensor we have allocated */
+    struct SDL_Sensor *next; /* pointer to next sensor we have allocated */
 };
 
 typedef struct _SDL_SensorDriver

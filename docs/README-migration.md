@@ -459,6 +459,9 @@ The following functions have been renamed:
 * SDL_SensorOpen => SDL_OpenSensor
 * SDL_SensorUpdate => SDL_UpdateSensors
 
+The following structures have been renamed:
+* _SDL_Sensor => SDL_Sensor
+
 ## SDL_stdinc.h
 
 The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.

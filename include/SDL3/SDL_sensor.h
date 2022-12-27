@@ -48,8 +48,7 @@ extern "C" {
  *  for sensors, and load appropriate drivers.
  */
 
-struct _SDL_Sensor;
-typedef struct _SDL_Sensor SDL_Sensor;
+typedef struct SDL_Sensor SDL_Sensor;
 
 /**
  * This is a unique ID for a sensor for the time it is connected to the system,
@@ -95,7 +94,7 @@ typedef enum
  * -X ... +X : left ... right
  * -Y ... +Y : bottom ... top
  * -Z ... +Z : farther ... closer
- * 
+ *
  * The axis data is not changed when the phone is rotated.
  *
  * \sa SDL_GetDisplayOrientation()
@@ -120,7 +119,7 @@ typedef enum
  * -X ... +X : left ... right
  * -Y ... +Y : bottom ... top
  * -Z ... +Z : farther ... closer
- * 
+ *
  * The axis data is not changed when the phone or controller is rotated.
  *
  * \sa SDL_GetDisplayOrientation()
