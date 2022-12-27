@@ -2468,7 +2468,7 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
         /* XInput GUID, get the type based on the XInput device subtype */
         switch (guid.data[15]) {
         case 0x01: /* XINPUT_DEVSUBTYPE_GAMEPAD */
-            return SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+            return SDL_JOYSTICK_TYPE_GAMEPAD;
         case 0x02: /* XINPUT_DEVSUBTYPE_WHEEL */
             return SDL_JOYSTICK_TYPE_WHEEL;
         case 0x03: /* XINPUT_DEVSUBTYPE_ARCADE_STICK */
@@ -2524,7 +2524,7 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
 #endif /* SDL_JOYSTICK_HIDAPI */
 
     if (GuessControllerType(vendor, product) != k_eControllerType_UnknownNonSteamController) {
-        return SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
     }
 
     return SDL_JOYSTICK_TYPE_UNKNOWN;
@@ -2735,7 +2735,7 @@ SDL_JoystickType SDL_GetJoystickDeviceType(int device_index)
     type = SDL_GetJoystickGUIDType(guid);
     if (type == SDL_JOYSTICK_TYPE_UNKNOWN) {
         if (SDL_IsGamepad(device_index)) {
-            type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+            type = SDL_JOYSTICK_TYPE_GAMEPAD;
         }
     }
     return type;
@@ -2858,7 +2858,7 @@ SDL_JoystickType SDL_GetJoystickType(SDL_Joystick *joystick)
             CHECK_JOYSTICK_MAGIC(joystick, SDL_JOYSTICK_TYPE_UNKNOWN);
 
             if (joystick->is_game_controller) {
-                type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+                type = SDL_JOYSTICK_TYPE_GAMEPAD;
             }
         }
         SDL_UnlockJoysticks();

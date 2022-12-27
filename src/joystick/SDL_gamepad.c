@@ -142,7 +142,7 @@ struct SDL_Gamepad
 
 #undef _guarded
 
-#define CHECK_GAMECONTROLLER_MAGIC(gamepad, retval)                   \
+#define CHECK_GAMEPAD_MAGIC(gamepad, retval)                   \
     if (!gamepad || gamepad->magic != &gamepad_magic || \
         !SDL_PrivateJoystickValid(gamepad->joystick)) {               \
         SDL_InvalidParamError("gamepad");                             \
@@ -709,7 +709,7 @@ static ControllerMapping_t *SDL_CreateMappingForWGIController(SDL_JoystickGUID g
     SDL_bool existing;
     char mapping_string[1024];
 
-    if (guid.data[15] != SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
+    if (guid.data[15] != SDL_JOYSTICK_TYPE_GAMEPAD) {
         return NULL;
     }
 
@@ -1795,7 +1795,7 @@ char *SDL_GetGamepadMapping(SDL_Gamepad *gamepad)
 
     SDL_LockJoysticks();
     {
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, NULL);
+        CHECK_GAMEPAD_MAGIC(gamepad, NULL);
 
         retval = CreateMappingString(gamepad->mapping, gamepad->joystick->guid);
     }
@@ -2227,7 +2227,7 @@ SDL_bool SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 
     SDL_LockJoysticks();
     {
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, SDL_FALSE);
+        CHECK_GAMEPAD_MAGIC(gamepad, SDL_FALSE);
 
         bind = SDL_GetGamepadBindForAxis(gamepad, axis);
     }
@@ -2247,7 +2247,7 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
     {
         int i;
 
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, 0);
+        CHECK_GAMEPAD_MAGIC(gamepad, 0);
 
         for (i = 0; i < gamepad->num_bindings; ++i) {
             SDL_ExtendedGamepadBind *binding = &gamepad->bindings[i];
@@ -2310,7 +2310,7 @@ SDL_bool SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 
     SDL_LockJoysticks();
     {
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, SDL_FALSE);
+        CHECK_GAMEPAD_MAGIC(gamepad, SDL_FALSE);
 
         bind = SDL_GetGamepadBindForButton(gamepad, button);
     }
@@ -2330,7 +2330,7 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
     {
         int i;
 
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, 0);
+        CHECK_GAMEPAD_MAGIC(gamepad, 0);
 
         for (i = 0; i < gamepad->num_bindings; ++i) {
             SDL_ExtendedGamepadBind *binding = &gamepad->bindings[i];
@@ -2612,7 +2612,7 @@ const char *SDL_GetGamepadName(SDL_Gamepad *gamepad)
 
     SDL_LockJoysticks();
     {
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, NULL);
+        CHECK_GAMEPAD_MAGIC(gamepad, NULL);
 
         if (SDL_strcmp(gamepad->name, "*") == 0) {
             retval = SDL_GetJoystickName(gamepad->joystick);
@@ -2741,7 +2741,7 @@ SDL_Joystick *SDL_GetGamepadJoystick(SDL_Gamepad *gamepad)
 
     SDL_LockJoysticks();
     {
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, NULL);
+        CHECK_GAMEPAD_MAGIC(gamepad, NULL);
 
         joystick = gamepad->joystick;
     }
@@ -2800,7 +2800,7 @@ SDL_GamepadBinding SDL_GetGamepadBindForAxis(SDL_Gamepad *gamepad, SDL_GamepadAx
 
     SDL_LockJoysticks();
     {
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, bind);
+        CHECK_GAMEPAD_MAGIC(gamepad, bind);
 
         if (axis != SDL_GAMEPAD_AXIS_INVALID) {
             int i;
@@ -2838,7 +2838,7 @@ SDL_GamepadBinding SDL_GetGamepadBindForButton(SDL_Gamepad *gamepad, SDL_Gamepad
 
     SDL_LockJoysticks();
     {
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, bind);
+        CHECK_GAMEPAD_MAGIC(gamepad, bind);
 
         if (button != SDL_GAMEPAD_BUTTON_INVALID) {
             int i;
@@ -3171,7 +3171,7 @@ const char *SDL_GetGamepadAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_
 
     SDL_LockJoysticks();
     {
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, NULL);
+        CHECK_GAMEPAD_MAGIC(gamepad, NULL);
 
         retval = IOS_GetAppleSFSymbolsNameForButton(gamepad, button);
     }
@@ -3191,7 +3191,7 @@ const char *SDL_GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_Ga
 
     SDL_LockJoysticks();
     {
-        CHECK_GAMECONTROLLER_MAGIC(gamepad, NULL);
+        CHECK_GAMEPAD_MAGIC(gamepad, NULL);
 
         retval = IOS_GetAppleSFSymbolsNameForAxis(gamepad, axis);
     }

@@ -392,7 +392,7 @@ static void OpenVirtualGamepad()
 
     SDL_zero(desc);
     desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
-    desc.type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+    desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
     desc.naxes = SDL_GAMEPAD_AXIS_MAX;
     desc.nbuttons = SDL_GAMEPAD_BUTTON_MAX;
     desc.SetPlayerIndex = VirtualGamepadSetPlayerIndex;

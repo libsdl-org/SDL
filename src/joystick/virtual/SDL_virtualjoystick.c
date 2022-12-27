@@ -120,7 +120,7 @@ int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
         name = hwdata->desc.name;
     } else {
         switch (hwdata->desc.type) {
-        case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
+        case SDL_JOYSTICK_TYPE_GAMEPAD:
             name = "Virtual Controller";
             break;
         case SDL_JOYSTICK_TYPE_WHEEL:
@@ -154,7 +154,7 @@ int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     }
     hwdata->name = SDL_strdup(name);
 
-    if (hwdata->desc.type == SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
+    if (hwdata->desc.type == SDL_JOYSTICK_TYPE_GAMEPAD) {
         int i, axis;
 
         if (hwdata->desc.button_mask == 0) {
@@ -579,7 +579,7 @@ static SDL_bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadM
     int current_button = 0;
     int current_axis = 0;
 
-    if (hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
+    if (hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMEPAD) {
         return SDL_FALSE;
     }
 

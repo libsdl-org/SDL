@@ -182,6 +182,7 @@
 #define SDL_IsGameController SDL_IsGamepad
 
 /* ##SDL_joystick.h */
+#define SDL_JOYSTICK_TYPE_GAMECONTROLLER SDL_JOYSTICK_TYPE_GAMEPAD
 #define SDL_JoystickAttachVirtual SDL_AttachVirtualJoystick
 #define SDL_JoystickAttachVirtualEx SDL_AttachVirtualJoystickEx
 #define SDL_JoystickClose SDL_CloseJoystick
@@ -506,6 +507,7 @@
 #define SDL_IsGameController SDL_IsGameController_renamed_SDL_IsGamepad
 
 /* ##SDL_joystick.h */
+#define SDL_JOYSTICK_TYPE_GAMECONTROLLER SDL_JOYSTICK_TYPE_GAMECONTROLLER_renamed_SDL_JOYSTICK_TYPE_GAMEPAD
 #define SDL_JoystickAttachVirtual SDL_JoystickAttachVirtual_renamed_SDL_AttachVirtualJoystick
 #define SDL_JoystickAttachVirtualEx SDL_JoystickAttachVirtualEx_renamed_SDL_AttachVirtualJoystickEx
 #define SDL_JoystickClose SDL_JoystickClose_renamed_SDL_CloseJoystick

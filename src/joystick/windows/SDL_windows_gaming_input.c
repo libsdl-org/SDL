@@ -316,7 +316,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             boolean wireless;
 
             if (wgi.gamepad_statics2 && SUCCEEDED(__x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2_FromGameController(wgi.gamepad_statics2, gamecontroller, &gamepad)) && gamepad) {
-                type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+                type = SDL_JOYSTICK_TYPE_GAMEPAD;
                 __x_ABI_CWindows_CGaming_CInput_CIGamepad_Release(gamepad);
             } else if (wgi.arcade_stick_statics2 && SUCCEEDED(__x_ABI_CWindows_CGaming_CInput_CIArcadeStickStatics2_FromGameController(wgi.arcade_stick_statics2, gamecontroller, &arcade_stick)) && arcade_stick) {
                 type = SDL_JOYSTICK_TYPE_ARCADE_STICK;

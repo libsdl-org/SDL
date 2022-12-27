@@ -43,7 +43,7 @@ PrintJoystick(SDL_Joystick *joy)
     SDL_assert(SDL_GetJoystickFromInstanceID(SDL_GetJoystickInstanceID(joy)) == joy);
     SDL_GetJoystickGUIDString(SDL_GetJoystickGUID(joy), guid, sizeof(guid));
     switch (SDL_GetJoystickType(joy)) {
-    case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
+    case SDL_JOYSTICK_TYPE_GAMEPAD:
         type = "Game Controller";
         break;
     case SDL_JOYSTICK_TYPE_WHEEL:

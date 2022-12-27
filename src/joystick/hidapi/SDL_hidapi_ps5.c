@@ -345,7 +345,7 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
     Uint8 data[USB_PACKET_LENGTH * 2];
     int size;
     char serial[18];
-    SDL_JoystickType joystick_type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+    SDL_JoystickType joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
 
     ctx = (SDL_DriverPS5_Context *)SDL_calloc(1, sizeof(*ctx));
     if (ctx == NULL) {
@@ -451,7 +451,7 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
 
         switch (device_type) {
         case 0x00:
-            joystick_type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+            joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
             break;
         case 0x01:
             joystick_type = SDL_JOYSTICK_TYPE_GUITAR;

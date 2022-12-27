@@ -312,6 +312,9 @@ The following functions have been renamed:
 * SDL_JoystickUpdate => SDL_UpdateJoysticks
 * SDL_NumJoysticks => SDL_GetNumJoysticks
 
+The following symbols have been renamed:
+* SDL_JOYSTICK_TYPE_GAMECONTROLLER => SDL_JOYSTICK_TYPE_GAMEPAD
+
 ## SDL_keycode.h
 
 The following symbols have been renamed:
