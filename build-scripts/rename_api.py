@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-
-# WHAT IS THIS?
-#  This script renames symbols in the API, updating SDL_oldnames.h and
-#  adding documentation for the change.
+#
+# This script renames symbols in the API, updating SDL_oldnames.h and
+# adding documentation for the change.
 
 import argparse
 import os
 import pathlib
 import pprint
 import re
+import sys
 from rename_symbols import create_regex_from_replacements, replace_symbols_in_path
 
 SDL_ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -17,12 +17,14 @@ SDL_INCLUDE_DIR = SDL_ROOT / "include/SDL3"
 
 
 def main():
+    if len(args.args) == 0 or (len(args.args) % 2) != 0:
+        print("Usage: %s [-h] [--skip-header-check] header {enum,function,macro,structure,symbol} [old new ...]" % sys.argv[0])
+        exit(1)
+
     # Check whether we can still modify the ABI
     version_header = pathlib.Path( SDL_INCLUDE_DIR / "SDL_version.h" ).read_text()
     if not re.search("SDL_MINOR_VERSION\s+[01]\s", version_header):
         raise Exception("ABI is frozen, symbols cannot be renamed")
-
-    pattern = re.compile(r"\b%s\b" % args.oldname)
 
     # Find the symbol in the headers
     if pathlib.Path(args.header).is_file():
@@ -33,21 +35,36 @@ def main():
     if not header.exists():
         raise Exception("Couldn't find header %s" % header)
 
-    if not args.skip_header_check and not pattern.search(header.read_text()):
-        raise Exception("Couldn't find %s in %s" % (args.oldname, header))
+    header_text = header.read_text()
 
-    # Replace the symbol in source code and documentation
-    replacements = {
-        args.oldname: args.newname,
-        args.oldname + "_REAL": args.newname + "_REAL"
-    }
+    # Replace the symbols in source code
+    replacements = {}
+    i = 0
+    while i < len(args.args):
+        oldname = args.args[i + 0]
+        newname = args.args[i + 1]
+
+        if not args.skip_header_check and not re.search((r"\b%s\b" % oldname), header_text):
+            raise Exception("Couldn't find %s in %s" % (oldname, header))
+
+        replacements[ oldname ] = newname
+        replacements[ oldname + "_REAL" ] = newname + "_REAL"
+        i += 2
+
     regex = create_regex_from_replacements(replacements)
     for dir in ["src", "test", "include", "docs", "Xcode-iOS/Demos"]:
         replace_symbols_in_path(SDL_ROOT / dir, regex, replacements)
 
-    add_symbol_to_oldnames(header.name, args.oldname, args.newname)
-    add_symbol_to_migration(header.name, args.type, args.oldname, args.newname)
-    add_symbol_to_whatsnew(args.type, args.oldname, args.newname)
+    # Replace the symbols in documentation
+    i = 0
+    while i < len(args.args):
+        oldname = args.args[i + 0]
+        newname = args.args[i + 1]
+
+        add_symbol_to_oldnames(header.name, oldname, newname)
+        add_symbol_to_migration(header.name, args.type, oldname, newname)
+        add_symbol_to_whatsnew(args.type, oldname, newname)
+        i += 2
 
 
 def add_line(lines, i, section):
@@ -207,14 +224,13 @@ def add_symbol_to_whatsnew(symbol_type, oldname, newname):
     file.write_text("\r\n".join(lines) + "\r\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--skip-header-check', action='store_true')
-    parser.add_argument('header');
-    parser.add_argument('type', choices=['enum', 'function', 'macro', 'structure']);
-    parser.add_argument('oldname');
-    parser.add_argument('newname');
+    parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
+    parser.add_argument("--skip-header-check", action="store_true")
+    parser.add_argument("header");
+    parser.add_argument("type", choices=["enum", "function", "macro", "structure", "symbol"]);
+    parser.add_argument("args", nargs="*")
     args = parser.parse_args()
 
     try:

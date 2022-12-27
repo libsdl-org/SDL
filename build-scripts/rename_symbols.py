@@ -17,7 +17,7 @@ SDL_INCLUDE_DIR = SDL_ROOT / "include/SDL3"
 def main():
     if args.all_symbols:
         if len(args.args) < 1:
-            print("Usage: %s --all-symbols files_or_directories ...")
+            print("Usage: %s --all-symbols files_or_directories ..." % sys.argv[0])
             exit(1)
 
         replacements = get_all_replacements()
@@ -25,13 +25,16 @@ def main():
 
     else:
         if len(args.args) < 3:
-            print("Usage: %s oldname newname files_or_directories ...")
+            print("Usage: %s oldname newname files_or_directories ..." % sys.argv[0])
             exit(1)
 
         replacements = { args.args[0]: args.args[1] }
         entries = args.args[2:]
 
-    regex = create_regex_from_replacements(replacements)
+    if args.substring:
+        regex = create_substring_regex_from_replacements(replacements)
+    else:
+        regex = create_regex_from_replacements(replacements)
 
     for entry in entries:
         path = pathlib.Path(entry)
@@ -68,11 +71,15 @@ def create_regex_from_replacements(replacements):
     return re.compile(r"\b(%s)\b" % "|".join(map(re.escape, replacements.keys())))
 
 
+def create_substring_regex_from_replacements(replacements):
+    return re.compile(r"(%s)" % "|".join(map(re.escape, replacements.keys())))
+
+
 def replace_symbols_in_file(file, regex, replacements):
     try:
-        with file.open('r', encoding='UTF-8', newline='') as rfp:
+        with file.open("r", encoding="UTF-8", newline="") as rfp:
             contents = regex.sub(lambda mo: replacements[mo.string[mo.start():mo.end()]], rfp.read())
-            with file.open('w', encoding='UTF-8', newline='') as wfp:
+            with file.open("w", encoding="UTF-8", newline="") as wfp:
                 wfp.write(contents)
     except UnicodeDecodeError:
         print("%s is not text, skipping" % file)
@@ -94,11 +101,12 @@ def replace_symbols_in_path(path, regex, replacements):
             replace_symbols_in_file(path, regex, replacements)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--all-symbols', action='store_true')
-    parser.add_argument('args', nargs='*')
+    parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
+    parser.add_argument("--all-symbols", action="store_true")
+    parser.add_argument("--substring", action="store_true")
+    parser.add_argument("args", nargs="*")
     args = parser.parse_args()
 
     try:
