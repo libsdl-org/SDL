@@ -1346,7 +1346,8 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Log("%s\n", text);
             }
         }
-        if (SDL_AudioInit(state->audiodriver) < 0) {
+        SDL_SetHint("SDL_AUDIO_DRIVER", state->audiodriver);
+        if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
             SDL_Log("Couldn't initialize audio driver: %s\n",
                     SDL_GetError());
             return SDL_FALSE;
@@ -2163,7 +2164,7 @@ void SDLTest_CommonQuit(SDLTest_CommonState *state)
         SDL_VideoQuit();
     }
     if (state->flags & SDL_INIT_AUDIO) {
-        SDL_AudioQuit();
+        SDL_QuitSubSystem(SDL_INIT_AUDIO);
     }
     SDL_free(state);
     SDL_Quit();

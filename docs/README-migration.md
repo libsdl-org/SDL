@@ -42,6 +42,9 @@ The vi format comments have been removed from source code. Vim users can use the
 
 ## SDL_audio.h
 
+- SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_AUDIO, which will properly refcount the subsystems.
+  Also the hint SDL_AUDIO_DRIVER can help to choose a specific driver.
+
 The following functions have been renamed:
 * SDL_FreeWAV => SDL_free
 
