@@ -16,6 +16,7 @@ General:
     * RW_SEEK_END -> SDL_RW_SEEK_END
     * RW_SEEK_SET -> SDL_RW_SEEK_SET
 * The following functions have been renamed:
+    * SDL_FreeWAV => SDL_free
 * Removed the following functions from the API, see docs/README-migration.md for details:
     * SDL_CalculateGammaRamp()
     * SDL_CreateRGBSurface()
