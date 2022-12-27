@@ -754,10 +754,10 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
 int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                         SDL_Surface *dst, SDL_Rect *dstrect)
 {
-    return SDL_PrivateUpperBlitScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
 }
 
-int SDL_PrivateUpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect,
+int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                                SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
     double src_x0, src_y0, src_x1, src_y1;
@@ -912,7 +912,7 @@ int SDL_PrivateUpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         return 0;
     }
 
-    return SDL_PrivateLowerBlitScaled(src, &final_src, dst, &final_dst, scaleMode);
+    return SDL_PrivateBlitSurfaceUncheckedScaled(src, &final_src, dst, &final_dst, scaleMode);
 }
 
 /**
@@ -922,10 +922,10 @@ int SDL_PrivateUpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect,
 int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, SDL_Rect *srcrect,
                         SDL_Surface *dst, SDL_Rect *dstrect)
 {
-    return SDL_PrivateLowerBlitScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
 }
 
-int SDL_PrivateLowerBlitScaled(SDL_Surface *src, SDL_Rect *srcrect,
+int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, SDL_Rect *srcrect,
                                SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
     static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |

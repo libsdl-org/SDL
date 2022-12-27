@@ -127,7 +127,7 @@ typedef struct
 } SDL_Mouse;
 
 /* Initialize the mouse subsystem */
-extern int SDL_MouseInit(void);
+extern int SDL_InitMouse(void);
 
 /* Get the mouse state structure */
 SDL_Mouse *SDL_GetMouse(void);
@@ -165,6 +165,6 @@ extern void SDL_ResetMouse(void);
 #endif /* 0 */
 
 /* Shutdown the mouse subsystem */
-extern void SDL_MouseQuit(void);
+extern void SDL_QuitMouse(void);
 
 #endif /* SDL_mouse_c_h_ */

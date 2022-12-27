@@ -162,7 +162,7 @@ static void SDLCALL SDL_MouseRelativeWarpMotionChanged(void *userdata, const cha
 }
 
 /* Public functions */
-int SDL_MouseInit(void)
+int SDL_InitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -868,7 +868,7 @@ int SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID
     return posted;
 }
 
-void SDL_MouseQuit(void)
+void SDL_QuitMouse(void)
 {
     SDL_Cursor *cursor, *next;
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -1049,7 +1049,7 @@ int SDL_WarpMouseGlobal(int x, int y)
     return SDL_Unsupported();
 }
 
-static SDL_bool ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
+static SDL_bool SDL_ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
 {
     if (!mouse->WarpMouse) {
         /* Need this functionality for relative mode warp implementation */
@@ -1071,7 +1071,7 @@ int SDL_SetRelativeMouseMode(SDL_bool enabled)
     /* Set the relative mode */
     if (!enabled && mouse->relative_mode_warp) {
         mouse->relative_mode_warp = SDL_FALSE;
-    } else if (enabled && ShouldUseRelativeModeWarp(mouse)) {
+    } else if (enabled && SDL_ShouldUseRelativeModeWarp(mouse)) {
         mouse->relative_mode_warp = SDL_TRUE;
     } else if (!mouse->SetRelativeMouseMode || mouse->SetRelativeMouseMode(enabled) < 0) {
         if (enabled) {

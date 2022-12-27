@@ -34,7 +34,7 @@ void X11_InitTouch(_THIS)
 
 void X11_QuitTouch(_THIS)
 {
-    SDL_TouchQuit();
+    SDL_QuitTouch();
 }
 
 void X11_ResetTouch(_THIS)

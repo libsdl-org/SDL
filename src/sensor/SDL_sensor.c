@@ -63,7 +63,7 @@ void SDL_UnlockSensors(void) SDL_RELEASE(SDL_sensor_lock)
     SDL_UnlockMutex(SDL_sensor_lock);
 }
 
-int SDL_SensorInit(void)
+int SDL_InitSensors(void)
 {
     int i, status;
 
@@ -290,7 +290,7 @@ SDL_Sensor *SDL_GetSensorFromInstanceID(SDL_SensorID instance_id)
 /*
  * Checks to make sure the sensor is valid.
  */
-static int SDL_PrivateSensorValid(SDL_Sensor *sensor)
+static int SDL_IsSensorValid(SDL_Sensor *sensor)
 {
     int valid;
 
@@ -309,7 +309,7 @@ static int SDL_PrivateSensorValid(SDL_Sensor *sensor)
  */
 const char *SDL_GetSensorName(SDL_Sensor *sensor)
 {
-    if (!SDL_PrivateSensorValid(sensor)) {
+    if (!SDL_IsSensorValid(sensor)) {
         return NULL;
     }
 
@@ -321,7 +321,7 @@ const char *SDL_GetSensorName(SDL_Sensor *sensor)
  */
 SDL_SensorType SDL_GetSensorType(SDL_Sensor *sensor)
 {
-    if (!SDL_PrivateSensorValid(sensor)) {
+    if (!SDL_IsSensorValid(sensor)) {
         return SDL_SENSOR_INVALID;
     }
 
@@ -333,7 +333,7 @@ SDL_SensorType SDL_GetSensorType(SDL_Sensor *sensor)
  */
 int SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
 {
-    if (!SDL_PrivateSensorValid(sensor)) {
+    if (!SDL_IsSensorValid(sensor)) {
         return -1;
     }
 
@@ -345,7 +345,7 @@ int SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
  */
 SDL_SensorID SDL_GetSensorInstanceID(SDL_Sensor *sensor)
 {
-    if (!SDL_PrivateSensorValid(sensor)) {
+    if (!SDL_IsSensorValid(sensor)) {
         return -1;
     }
 
@@ -357,7 +357,7 @@ SDL_SensorID SDL_GetSensorInstanceID(SDL_Sensor *sensor)
  */
 int SDL_GetSensorData(SDL_Sensor *sensor, float *data, int num_values)
 {
-    if (!SDL_PrivateSensorValid(sensor)) {
+    if (!SDL_IsSensorValid(sensor)) {
         return -1;
     }
 
@@ -374,7 +374,7 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
     SDL_Sensor *sensorlist;
     SDL_Sensor *sensorlistprev;
 
-    if (!SDL_PrivateSensorValid(sensor)) {
+    if (!SDL_IsSensorValid(sensor)) {
         return;
     }
 
@@ -418,7 +418,7 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
     SDL_UnlockSensors();
 }
 
-void SDL_SensorQuit(void)
+void SDL_QuitSensors(void)
 {
     int i;
 
@@ -452,7 +452,7 @@ void SDL_SensorQuit(void)
 
 /* These are global for SDL_syssensor.c and SDL_events.c */
 
-int SDL_PrivateSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values)
+int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values)
 {
     int posted;
 

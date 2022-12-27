@@ -424,7 +424,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     /* Make sure we have a valid format that we can convert to whatever WASAPI wants. */
     wasapi_format = WaveFormatToSDLFormat(waveformat);
 
-    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
         if (test_format == wasapi_format) {
             this->spec.format = test_format;
             break;

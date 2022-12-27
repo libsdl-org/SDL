@@ -415,7 +415,7 @@ int SDL_VideoInit(const char *driver_name)
     }
 
 #if !SDL_TIMERS_DISABLED
-    SDL_TicksInit();
+    SDL_InitTicks();
 #endif
 
     /* Start the event loop */
@@ -423,15 +423,15 @@ int SDL_VideoInit(const char *driver_name)
         goto pre_driver_error;
     }
     init_events = SDL_TRUE;
-    if (SDL_KeyboardInit() < 0) {
+    if (SDL_InitKeyboard() < 0) {
         goto pre_driver_error;
     }
     init_keyboard = SDL_TRUE;
-    if (SDL_MouseInit() < 0) {
+    if (SDL_InitMouse() < 0) {
         goto pre_driver_error;
     }
     init_mouse = SDL_TRUE;
-    if (SDL_TouchInit() < 0) {
+    if (SDL_InitTouch() < 0) {
         goto pre_driver_error;
     }
     init_touch = SDL_TRUE;
@@ -529,13 +529,13 @@ int SDL_VideoInit(const char *driver_name)
 pre_driver_error:
     SDL_assert(_this == NULL);
     if (init_touch) {
-        SDL_TouchQuit();
+        SDL_QuitTouch();
     }
     if (init_mouse) {
-        SDL_MouseQuit();
+        SDL_QuitMouse();
     }
     if (init_keyboard) {
-        SDL_KeyboardQuit();
+        SDL_QuitKeyboard();
     }
     if (init_events) {
         SDL_QuitSubSystem(SDL_INIT_EVENTS);
@@ -1091,7 +1091,7 @@ static void SDL_GetClosestPointOnRect(const SDL_Rect *rect, SDL_Point *point)
     }
 }
 
-static int GetRectDisplayIndex(int x, int y, int w, int h)
+static int GetDisplayIndexForRect(int x, int y, int w, int h)
 {
     int i, dist;
     int closest = -1;
@@ -1135,12 +1135,12 @@ static int GetRectDisplayIndex(int x, int y, int w, int h)
 
 int SDL_GetDisplayIndexForPoint(const SDL_Point *point)
 {
-    return GetRectDisplayIndex(point->x, point->y, 1, 1);
+    return GetDisplayIndexForRect(point->x, point->y, 1, 1);
 }
 
 int SDL_GetDisplayIndexForRect(const SDL_Rect *rect)
 {
-    return GetRectDisplayIndex(rect->x, rect->y, rect->w, rect->h);
+    return GetDisplayIndexForRect(rect->x, rect->y, rect->w, rect->h);
 }
 
 int SDL_GetWindowDisplayIndex(SDL_Window *window)
@@ -1177,7 +1177,7 @@ int SDL_GetWindowDisplayIndex(SDL_Window *window)
             return displayIndex;
         }
 
-        displayIndex =  GetRectDisplayIndex(window->x, window->y, window->w, window->h);
+        displayIndex =  GetDisplayIndexForRect(window->x, window->y, window->w, window->h);
 
         /* Find the display containing the window if fullscreen */
         for (i = 0; i < _this->num_displays; ++i) {
@@ -2508,7 +2508,7 @@ void SDL_MaximizeWindow(SDL_Window *window)
     }
 }
 
-static SDL_bool CanMinimizeWindow(SDL_Window *window)
+static SDL_bool SDL_CanMinimizeWindow(SDL_Window *window)
 {
     if (!_this->MinimizeWindow) {
         return SDL_FALSE;
@@ -2524,7 +2524,7 @@ void SDL_MinimizeWindow(SDL_Window *window)
         return;
     }
 
-    if (!CanMinimizeWindow(window)) {
+    if (!SDL_CanMinimizeWindow(window)) {
         return;
     }
 
@@ -3000,7 +3000,7 @@ void SDL_OnWindowFocusGained(SDL_Window *window)
     SDL_UpdateWindowGrab(window);
 }
 
-static SDL_bool ShouldMinimizeOnFocusLoss(SDL_Window *window)
+static SDL_bool SDL_ShouldMinimizeOnFocusLoss(SDL_Window *window)
 {
     const char *hint;
 
@@ -3042,7 +3042,7 @@ void SDL_OnWindowFocusLost(SDL_Window *window)
 {
     SDL_UpdateWindowGrab(window);
 
-    if (ShouldMinimizeOnFocusLoss(window)) {
+    if (SDL_ShouldMinimizeOnFocusLoss(window)) {
         SDL_MinimizeWindow(window);
     }
 }
@@ -3194,9 +3194,9 @@ void SDL_VideoQuit(void)
     }
 
     /* Halt event processing before doing anything else */
-    SDL_TouchQuit();
-    SDL_MouseQuit();
-    SDL_KeyboardQuit();
+    SDL_QuitTouch();
+    SDL_QuitMouse();
+    SDL_QuitKeyboard();
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
 
     SDL_EnableScreenSaver();
@@ -4350,7 +4350,7 @@ int SDL_GetMessageBoxCount(void)
 #endif
 
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_RISCOS
-static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
+static SDL_bool SDL_IsMessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
     SDL_Window *window = messageboxdata->window;
@@ -4415,56 +4415,56 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 #endif
 #if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_WINDOWS) &&
+        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_WINDOWS) &&
         WIN_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #if SDL_VIDEO_DRIVER_WINRT
     if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_WINRT) &&
+        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_WINRT) &&
         WINRT_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #if SDL_VIDEO_DRIVER_COCOA
     if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_COCOA) &&
+        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_COCOA) &&
         Cocoa_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #if SDL_VIDEO_DRIVER_UIKIT
     if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_UIKIT) &&
+        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_UIKIT) &&
         UIKit_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #if SDL_VIDEO_DRIVER_WAYLAND
     if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_WAYLAND) &&
+        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_WAYLAND) &&
         Wayland_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #if SDL_VIDEO_DRIVER_X11
     if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_X11) &&
+        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_X11) &&
         X11_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #if SDL_VIDEO_DRIVER_HAIKU
     if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_HAIKU) &&
+        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_HAIKU) &&
         HAIKU_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #if SDL_VIDEO_DRIVER_RISCOS
     if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_RISCOS) &&
+        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_RISCOS) &&
         RISCOS_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }

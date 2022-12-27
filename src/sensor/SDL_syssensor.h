@@ -80,7 +80,7 @@ typedef struct _SDL_SensorDriver
 
     /* Function to update the state of a sensor - called as a device poll.
      * This function shouldn't update the sensor structure directly,
-     * but instead should call SDL_PrivateSensorUpdate() to deliver events
+     * but instead should call SDL_SendSensorUpdate() to deliver events
      * and update sensor device state.
      */
     void (*Update)(SDL_Sensor *sensor);

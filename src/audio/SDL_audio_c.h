@@ -49,11 +49,11 @@ extern int (*SRC_src_simple)(SRC_DATA *data, int converter_type, int channels);
 #endif
 
 /* Functions to get a list of "close" audio formats */
-extern SDL_AudioFormat SDL_FirstAudioFormat(SDL_AudioFormat format);
-extern SDL_AudioFormat SDL_NextAudioFormat(void);
+extern SDL_AudioFormat SDL_GetFirstAudioFormat(SDL_AudioFormat format);
+extern SDL_AudioFormat SDL_GetNextAudioFormat(void);
 
 /* Function to calculate the size and silence for a SDL_AudioSpec */
-extern Uint8 SDL_SilenceValueForFormat(const SDL_AudioFormat format);
+extern Uint8 SDL_GetSilenceValueForFormat(const SDL_AudioFormat format);
 extern void SDL_CalculateAudioSpec(SDL_AudioSpec *spec);
 
 /* Choose the audio filter functions below */
@@ -82,15 +82,15 @@ extern SDL_AudioFilter SDL_Convert_F32_to_S32;
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  */
-extern int SDL_AudioInit(const char *driver_name);
+extern int SDL_InitAudio(const char *driver_name);
 
 /**
- * Use this function to shut down audio if you initialized it with SDL_AudioInit().
+ * Use this function to shut down audio if you initialized it with SDL_InitAudio().
  *
  * This function is used internally, and should not be used unless you have a
  * specific need to specify the audio driver you want to use. You should
  * normally use SDL_Quit() or SDL_QuitSubSystem().
  */
-extern void SDL_AudioQuit(void);
+extern void SDL_QuitAudio(void);
 
 #endif /* SDL_audio_c_h_ */

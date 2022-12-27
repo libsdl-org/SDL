@@ -527,7 +527,7 @@ static void SDLCALL SDL_BufferQueueDrainCallback(void *userdata, Uint8 *stream, 
     len -= (int)dequeued;
 
     if (len > 0) { /* fill any remaining space in the stream with silence. */
-        SDL_assert(SDL_CountDataQueue(device->buffer_queue) == 0);
+        SDL_assert(SDL_GetDataQueueSize(device->buffer_queue) == 0);
         SDL_memset(stream, device->callbackspec.silence, len);
     }
 }
@@ -602,7 +602,7 @@ SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
     if (device->callbackspec.callback == SDL_BufferQueueDrainCallback ||
         device->callbackspec.callback == SDL_BufferQueueFillCallback) {
         current_audio.impl.LockDevice(device);
-        retval = (Uint32)SDL_CountDataQueue(device->buffer_queue);
+        retval = (Uint32)SDL_GetDataQueueSize(device->buffer_queue);
         current_audio.impl.UnlockDevice(device);
     }
 
@@ -879,13 +879,13 @@ SDL_GetAudioDriver(int index)
     return NULL;
 }
 
-int SDL_AudioInit(const char *driver_name)
+int SDL_InitAudio(const char *driver_name)
 {
     int i;
     SDL_bool initialized = SDL_FALSE, tried_to_init = SDL_FALSE;
 
     if (SDL_GetCurrentAudioDriver()) {
-        SDL_AudioQuit(); /* shutdown driver if already running. */
+        SDL_QuitAudio(); /* shutdown driver if already running. */
     }
 
     SDL_zeroa(open_devices);
@@ -1152,7 +1152,7 @@ static void close_audio_device(SDL_AudioDevice *device)
         current_audio.impl.CloseDevice(device);
     }
 
-    SDL_FreeDataQueue(device->buffer_queue);
+    SDL_DestroyDataQueue(device->buffer_queue);
 
     SDL_free(device);
 }
@@ -1441,7 +1441,7 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
 
     if (device->spec.callback == NULL) { /* use buffer queueing? */
         /* pool a few packets to start. Enough for two callbacks. */
-        device->buffer_queue = SDL_NewDataQueue(SDL_AUDIOBUFFERQUEUE_PACKETLEN, obtained->size * 2);
+        device->buffer_queue = SDL_CreateDataQueue(SDL_AUDIOBUFFERQUEUE_PACKETLEN, obtained->size * 2);
         if (!device->buffer_queue) {
             close_audio_device(device);
             SDL_UnlockMutex(current_audio.detectionLock);
@@ -1609,7 +1609,7 @@ void SDL_CloseAudio(void)
     SDL_CloseAudioDevice(1);
 }
 
-void SDL_AudioQuit(void)
+void SDL_QuitAudio(void)
 {
     SDL_AudioDeviceID i;
 
@@ -1664,7 +1664,7 @@ static SDL_AudioFormat format_list[NUM_FORMATS][NUM_FORMATS] = {
 };
 
 SDL_AudioFormat
-SDL_FirstAudioFormat(SDL_AudioFormat format)
+SDL_GetFirstAudioFormat(SDL_AudioFormat format)
 {
     for (format_idx = 0; format_idx < NUM_FORMATS; ++format_idx) {
         if (format_list[format_idx][0] == format) {
@@ -1672,11 +1672,11 @@ SDL_FirstAudioFormat(SDL_AudioFormat format)
         }
     }
     format_idx_sub = 0;
-    return SDL_NextAudioFormat();
+    return SDL_GetNextAudioFormat();
 }
 
 SDL_AudioFormat
-SDL_NextAudioFormat(void)
+SDL_GetNextAudioFormat(void)
 {
     if ((format_idx == NUM_FORMATS) || (format_idx_sub == NUM_FORMATS)) {
         return 0;
@@ -1684,7 +1684,7 @@ SDL_NextAudioFormat(void)
     return format_list[format_idx][format_idx_sub++];
 }
 
-Uint8 SDL_SilenceValueForFormat(const SDL_AudioFormat format)
+Uint8 SDL_GetSilenceValueForFormat(const SDL_AudioFormat format)
 {
     switch (format) {
     /* !!! FIXME: 0x80 isn't perfect for U16, but we can't fit 0x8000 in a
@@ -1704,7 +1704,7 @@ Uint8 SDL_SilenceValueForFormat(const SDL_AudioFormat format)
 
 void SDL_CalculateAudioSpec(SDL_AudioSpec *spec)
 {
-    spec->silence = SDL_SilenceValueForFormat(spec->format);
+    spec->silence = SDL_GetSilenceValueForFormat(spec->format);
     spec->size = SDL_AUDIO_BITSIZE(spec->format) / 8;
     spec->size *= spec->channels;
     spec->size *= spec->samples;

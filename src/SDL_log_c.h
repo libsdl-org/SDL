@@ -25,7 +25,7 @@
 #ifndef SDL_log_c_h_
 #define SDL_log_c_h_
 
-extern void SDL_LogInit(void);
-extern void SDL_LogQuit(void);
+extern void SDL_InitLog(void);
+extern void SDL_QuitLog(void);
 
 #endif /* SDL_log_c_h_ */

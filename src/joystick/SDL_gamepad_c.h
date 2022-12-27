@@ -27,10 +27,10 @@
 /* Useful functions and variables from SDL_gamepad.c */
 
 /* Initialization and shutdown functions */
-extern int SDL_GamepadInitMappings(void);
-extern void SDL_GamepadQuitMappings(void);
-extern int SDL_GamepadInit(void);
-extern void SDL_GamepadQuit(void);
+extern int SDL_InitGamepadMappings(void);
+extern void SDL_QuitGamepadMappings(void);
+extern int SDL_InitGamepads(void);
+extern void SDL_QuitGamepads(void);
 
 
 /* Function to return whether a joystick name and GUID is a gamepad  */

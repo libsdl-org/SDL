@@ -2442,7 +2442,7 @@ void SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect)
     }
 }
 
-static void RenderGetViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
+static void GetRenderViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
 {
     rect->x = 0.0f;
     rect->y = 0.0f;
@@ -2622,7 +2622,7 @@ int SDL_RenderPointF(SDL_Renderer *renderer, float x, float y)
     return SDL_RenderPointsF(renderer, &fpoint, 1);
 }
 
-static int RenderDrawPointsWithRects(SDL_Renderer *renderer,
+static int RenderPointsWithRects(SDL_Renderer *renderer,
                                      const SDL_Point *points, const int count)
 {
     int retval;
@@ -2678,7 +2678,7 @@ int SDL_RenderPoints(SDL_Renderer *renderer,
 #endif
 
     if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        retval = RenderDrawPointsWithRects(renderer, points, count);
+        retval = RenderPointsWithRects(renderer, points, count);
     } else {
         fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
         if (fpoints == NULL) {
@@ -2696,7 +2696,7 @@ int SDL_RenderPoints(SDL_Renderer *renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-static int RenderDrawPointsWithRectsF(SDL_Renderer *renderer,
+static int RenderPointsWithRectsF(SDL_Renderer *renderer,
                                       const SDL_FPoint *fpoints, const int count)
 {
     int retval;
@@ -2749,7 +2749,7 @@ int SDL_RenderPointsF(SDL_Renderer *renderer,
 #endif
 
     if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        retval = RenderDrawPointsWithRectsF(renderer, points, count);
+        retval = RenderPointsWithRectsF(renderer, points, count);
     } else {
         retval = QueueCmdDrawPoints(renderer, points, count);
     }
@@ -2776,7 +2776,7 @@ int SDL_RenderLineF(SDL_Renderer *renderer, float x1, float y1, float x2, float 
     return SDL_RenderLinesF(renderer, points, 2);
 }
 
-static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_bool draw_last)
+static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_bool draw_last)
 {
     int i, deltax, deltay, numpixels;
     int d, dinc1, dinc2;
@@ -2845,7 +2845,7 @@ static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x
     }
 
     if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        retval = RenderDrawPointsWithRectsF(renderer, points, numpixels);
+        retval = RenderPointsWithRectsF(renderer, points, numpixels);
     } else {
         retval = QueueCmdDrawPoints(renderer, points, numpixels);
     }
@@ -2855,7 +2855,7 @@ static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x
     return retval;
 }
 
-static int RenderDrawLinesWithRectsF(SDL_Renderer *renderer,
+static int RenderLinesWithRectsF(SDL_Renderer *renderer,
                                      const SDL_FPoint *points, const int count)
 {
     const float scale_x = renderer->scale.x;
@@ -2911,7 +2911,7 @@ static int RenderDrawLinesWithRectsF(SDL_Renderer *renderer,
                 frect->x += scale_x;
             }
         } else {
-            retval += RenderDrawLineBresenham(renderer, (int)SDL_roundf(points[i].x), (int)SDL_roundf(points[i].y),
+            retval += RenderLineBresenham(renderer, (int)SDL_roundf(points[i].x), (int)SDL_roundf(points[i].y),
                                               (int)SDL_roundf(points[i + 1].x), (int)SDL_roundf(points[i + 1].y), draw_last);
         }
         drew_line = SDL_TRUE;
@@ -2992,7 +2992,7 @@ int SDL_RenderLinesF(SDL_Renderer *renderer,
 #endif
 
     if (renderer->line_method == SDL_RENDERLINEMETHOD_POINTS) {
-        retval = RenderDrawLinesWithRectsF(renderer, points, count);
+        retval = RenderLinesWithRectsF(renderer, points, count);
     } else if (renderer->line_method == SDL_RENDERLINEMETHOD_GEOMETRY) {
         SDL_bool isstack1;
         SDL_bool isstack2;
@@ -3114,7 +3114,7 @@ int SDL_RenderLinesF(SDL_Renderer *renderer,
         SDL_small_free(indices, isstack2);
 
     } else if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        retval = RenderDrawLinesWithRectsF(renderer, points, count);
+        retval = RenderLinesWithRectsF(renderer, points, count);
     } else {
         retval = QueueCmdDrawLines(renderer, points, count);
     }
@@ -3147,7 +3147,7 @@ int SDL_RenderRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
 
     /* If 'rect' == NULL, then outline the whole surface */
     if (rect == NULL) {
-        RenderGetViewportSize(renderer, &frect);
+        GetRenderViewportSize(renderer, &frect);
         rect = &frect;
     }
 
@@ -3235,7 +3235,7 @@ int SDL_RenderFillRect(SDL_Renderer *renderer, const SDL_Rect *rect)
         frect.w = (float)rect->w;
         frect.h = (float)rect->h;
     } else {
-        RenderGetViewportSize(renderer, &frect);
+        GetRenderViewportSize(renderer, &frect);
     }
     return SDL_RenderFillRectsF(renderer, &frect, 1);
 }
@@ -3248,7 +3248,7 @@ int SDL_RenderFillRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
 
     /* If 'rect' == NULL, then outline the whole surface */
     if (rect == NULL) {
-        RenderGetViewportSize(renderer, &frect);
+        GetRenderViewportSize(renderer, &frect);
         rect = &frect;
     }
     return SDL_RenderFillRectsF(renderer, rect, 1);
@@ -3387,7 +3387,7 @@ int SDL_RenderTextureF(SDL_Renderer *renderer, SDL_Texture *texture,
         }
     }
 
-    RenderGetViewportSize(renderer, &real_dstrect);
+    GetRenderViewportSize(renderer, &real_dstrect);
     if (dstrect) {
         if (!SDL_HasRectIntersectionF(dstrect, &real_dstrect)) {
             return 0;
@@ -3531,7 +3531,7 @@ int SDL_RenderTextureRotatedF(SDL_Renderer *renderer, SDL_Texture *texture,
     if (dstrect) {
         real_dstrect = *dstrect;
     } else {
-        RenderGetViewportSize(renderer, &real_dstrect);
+        GetRenderViewportSize(renderer, &real_dstrect);
     }
 
     if (texture->native) {
@@ -4174,7 +4174,7 @@ int SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
                                       format, pixels, pitch);
 }
 
-static void SDL_RenderSimulateVSync(SDL_Renderer *renderer)
+static void SDL_SimulateRenderVSync(SDL_Renderer *renderer)
 {
     Uint64 now, elapsed;
     const Uint64 interval = renderer->simulate_vsync_interval_ns;
@@ -4221,7 +4221,7 @@ void SDL_RenderPresent(SDL_Renderer *renderer)
 
     if (renderer->simulate_vsync ||
         (!presented && renderer->wanted_vsync)) {
-        SDL_RenderSimulateVSync(renderer);
+        SDL_SimulateRenderVSync(renderer);
     }
 }
 

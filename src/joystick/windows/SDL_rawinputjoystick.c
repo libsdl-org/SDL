@@ -964,7 +964,7 @@ static void RAWINPUT_PostUpdate(void)
             if (ctx->guide_hack) {
                 int guide_button = joystick->nbuttons - 1;
 
-                SDL_PrivateJoystickButton(SDL_GetTicksNS(), guide_button_candidate.joystick, guide_button, SDL_PRESSED);
+                SDL_SendJoystickButton(SDL_GetTicksNS(), guide_button_candidate.joystick, guide_button, SDL_PRESSED);
             }
             guide_button_candidate.last_joystick = guide_button_candidate.joystick;
         }
@@ -974,7 +974,7 @@ static void RAWINPUT_PostUpdate(void)
         if (ctx->guide_hack) {
             int guide_button = joystick->nbuttons - 1;
 
-            SDL_PrivateJoystickButton(SDL_GetTicksNS(), joystick, guide_button, SDL_RELEASED);
+            SDL_SendJoystickButton(SDL_GetTicksNS(), joystick, guide_button, SDL_RELEASED);
         }
         guide_button_candidate.last_joystick = NULL;
     }
@@ -1399,22 +1399,22 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
     };
     Uint64 match_state = ctx->match_state;
     /* Update match_state with button bit, then fall through */
-#define SDL_PrivateJoystickButton(timestamp, joystick, button, state)                  \
+#define SDL_SendJoystickButton(timestamp, joystick, button, state)                  \
     if (button < SDL_arraysize(button_map)) {                               \
         Uint64 button_bit = 1ull << button_map[button];                     \
         match_state = (match_state & ~button_bit) | (button_bit * (state)); \
     }                                                                       \
-    SDL_PrivateJoystickButton(timestamp, joystick, button, state)
+    SDL_SendJoystickButton(timestamp, joystick, button, state)
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
     /* Grab high 4 bits of value, then fall through */
 #define AddAxisToMatchState(axis, value)                                                                    \
     {                                                                                                       \
         match_state = (match_state & ~(0xFull << (4 * axis + 16))) | ((value)&0xF000ull) << (4 * axis + 4); \
     }
-#define SDL_PrivateJoystickAxis(timestamp, joystick, axis, value) \
+#define SDL_SendJoystickAxis(timestamp, joystick, axis, value) \
     if (axis < 4)                                      \
         AddAxisToMatchState(axis, value);              \
-    SDL_PrivateJoystickAxis(timestamp, joystick, axis, value)
+    SDL_SendJoystickAxis(timestamp, joystick, axis, value)
 #endif
 #endif /* SDL_JOYSTICK_RAWINPUT_MATCHING */
 
@@ -1437,14 +1437,14 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
         }
     }
     for (i = 0; i < nbuttons; ++i) {
-        SDL_PrivateJoystickButton(timestamp, joystick, i, (button_mask & (1 << i)) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, i, (button_mask & (1 << i)) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     for (i = 0; i < naxes; ++i) {
         HIDP_DATA *item = GetData(ctx->axis_indices[i], ctx->data, data_length);
         if (item) {
             Sint16 axis = (int)(Uint16)item->RawValue - 0x8000;
-            SDL_PrivateJoystickAxis(timestamp, joystick, i, axis);
+            SDL_SendJoystickAxis(timestamp, joystick, i, axis);
         }
     }
 
@@ -1472,15 +1472,15 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
 #endif
                 hat = hat_states[state];
             }
-            SDL_PrivateJoystickHat(timestamp, joystick, i, hat);
+            SDL_SendJoystickHat(timestamp, joystick, i, hat);
         }
     }
 
-#ifdef SDL_PrivateJoystickButton
-#undef SDL_PrivateJoystickButton
+#ifdef SDL_SendJoystickButton
+#undef SDL_SendJoystickButton
 #endif
-#ifdef SDL_PrivateJoystickAxis
-#undef SDL_PrivateJoystickAxis
+#ifdef SDL_SendJoystickAxis
+#undef SDL_SendJoystickAxis
 #endif
 
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCH_TRIGGERS
@@ -1525,8 +1525,8 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
                 if (!has_trigger_data)
 #endif /* SDL_JOYSTICK_RAWINPUT_MATCH_TRIGGERS */
                 {
-                    SDL_PrivateJoystickAxis(timestamp, joystick, left_trigger, left_value);
-                    SDL_PrivateJoystickAxis(timestamp, joystick, right_trigger, right_value);
+                    SDL_SendJoystickAxis(timestamp, joystick, left_trigger, left_value);
+                    SDL_SendJoystickAxis(timestamp, joystick, right_trigger, right_value);
                 }
             }
         }
@@ -1594,7 +1594,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                 /* It gets left down if we were actually correlated incorrectly and it was released on the WindowsGamingInput
                   device but we didn't get a state packet. */
                 if (ctx->guide_hack) {
-                    SDL_PrivateJoystickButton(0, joystick, guide_button, SDL_RELEASED);
+                    SDL_SendJoystickButton(0, joystick, guide_button, SDL_RELEASED);
                 }
             }
         }
@@ -1690,7 +1690,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                     /* It gets left down if we were actually correlated incorrectly and it was released on the XInput
                       device but we didn't get a state packet. */
                     if (ctx->guide_hack) {
-                        SDL_PrivateJoystickButton(0, joystick, guide_button, SDL_RELEASED);
+                        SDL_SendJoystickButton(0, joystick, guide_button, SDL_RELEASED);
                     }
                 }
             }
@@ -1763,11 +1763,11 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
             }
 
             if (ctx->guide_hack) {
-                SDL_PrivateJoystickButton(timestamp, joystick, guide_button, (xinput_state[ctx->xinput_slot].state.Gamepad.wButtons & XINPUT_GAMEPAD_GUIDE) ? SDL_PRESSED : SDL_RELEASED);
+                SDL_SendJoystickButton(timestamp, joystick, guide_button, (xinput_state[ctx->xinput_slot].state.Gamepad.wButtons & XINPUT_GAMEPAD_GUIDE) ? SDL_PRESSED : SDL_RELEASED);
             }
             if (ctx->trigger_hack) {
-                SDL_PrivateJoystickAxis(timestamp, joystick, left_trigger, ((int)xinput_state[ctx->xinput_slot].state.Gamepad.bLeftTrigger * 257) - 32768);
-                SDL_PrivateJoystickAxis(timestamp, joystick, right_trigger, ((int)xinput_state[ctx->xinput_slot].state.Gamepad.bRightTrigger * 257) - 32768);
+                SDL_SendJoystickAxis(timestamp, joystick, left_trigger, ((int)xinput_state[ctx->xinput_slot].state.Gamepad.bLeftTrigger * 257) - 32768);
+                SDL_SendJoystickAxis(timestamp, joystick, right_trigger, ((int)xinput_state[ctx->xinput_slot].state.Gamepad.bRightTrigger * 257) - 32768);
             }
             has_trigger_data = SDL_TRUE;
 
@@ -1793,7 +1793,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                         break;
                     }
                 }
-                SDL_PrivateJoystickBatteryLevel(joystick, ePowerLevel);
+                SDL_SendJoystickBatteryLevel(joystick, ePowerLevel);
             }
         }
     }
@@ -1814,11 +1814,11 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
             }
 
             if (ctx->guide_hack) {
-                SDL_PrivateJoystickButton(timestamp, joystick, guide_button, (state->Buttons & GamepadButtons_GUIDE) ? SDL_PRESSED : SDL_RELEASED);
+                SDL_SendJoystickButton(timestamp, joystick, guide_button, (state->Buttons & GamepadButtons_GUIDE) ? SDL_PRESSED : SDL_RELEASED);
             }
             if (ctx->trigger_hack) {
-                SDL_PrivateJoystickAxis(timestamp, joystick, left_trigger, ((int)(state->LeftTrigger * SDL_MAX_UINT16)) - 32768);
-                SDL_PrivateJoystickAxis(timestamp, joystick, right_trigger, ((int)(state->RightTrigger * SDL_MAX_UINT16)) - 32768);
+                SDL_SendJoystickAxis(timestamp, joystick, left_trigger, ((int)(state->LeftTrigger * SDL_MAX_UINT16)) - 32768);
+                SDL_SendJoystickAxis(timestamp, joystick, right_trigger, ((int)(state->RightTrigger * SDL_MAX_UINT16)) - 32768);
             }
             has_trigger_data = SDL_TRUE;
         }

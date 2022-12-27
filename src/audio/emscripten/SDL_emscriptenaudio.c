@@ -235,7 +235,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
         return SDL_SetError("Web Audio API is not available!");
     }
 
-    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
         switch (test_format) {
         case AUDIO_F32: /* web audio only supports floats */
             break;

@@ -251,7 +251,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
     }
 
 #define READ_BUTTON(off, flag, button)  \
-    SDL_PrivateJoystickButton(          \
+    SDL_SendJoystickButton(          \
         timestamp,                      \
         joystick,                       \
         RemapButton(ctx, button),       \
@@ -281,7 +281,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
     if (v > ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis])                      \
         ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis] = v;                      \
     axis_value = (Sint16)HIDAPI_RemapVal(v, ctx->min_axis[i * SDL_GAMEPAD_AXIS_MAX + axis], ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
-    SDL_PrivateJoystickAxis(                                                        \
+    SDL_SendJoystickAxis(                                                        \
         timestamp,                                                                  \
         joystick,                                                                   \
         axis, axis_value);
@@ -334,7 +334,7 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
         }
 
 #define READ_BUTTON(off, flag, button)  \
-    SDL_PrivateJoystickButton(          \
+    SDL_SendJoystickButton(          \
         timestamp,                      \
         joystick,                       \
         RemapButton(ctx, button),       \
@@ -363,7 +363,7 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
     if (curSlot[off] > ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis])                   \
         ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis] = curSlot[off];                   \
     axis_value = (Sint16)HIDAPI_RemapVal(curSlot[off], ctx->min_axis[i * SDL_GAMEPAD_AXIS_MAX + axis], ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
-    SDL_PrivateJoystickAxis(                                                                \
+    SDL_SendJoystickAxis(                                                                \
         timestamp,                                                                          \
         joystick,                                                                           \
         axis, axis_value);

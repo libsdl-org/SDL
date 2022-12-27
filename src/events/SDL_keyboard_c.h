@@ -24,7 +24,7 @@
 #define SDL_keyboard_c_h_
 
 /* Initialize the keyboard subsystem */
-extern int SDL_KeyboardInit(void);
+extern int SDL_InitKeyboard(void);
 
 /* Get the default keymap */
 extern void SDL_GetDefaultKeymap(SDL_Keycode *keymap);
@@ -70,7 +70,7 @@ extern int SDL_SendKeyboardText(const char *text);
 extern int SDL_SendEditingText(const char *text, int start, int length);
 
 /* Shutdown the keyboard subsystem */
-extern void SDL_KeyboardQuit(void);
+extern void SDL_QuitKeyboard(void);
 
 /* Convert to UTF-8 */
 extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);

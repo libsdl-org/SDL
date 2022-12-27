@@ -54,7 +54,7 @@ static int ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
         return SDL_OutOfMemory();
     }
 
-    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
         if ((test_format == AUDIO_U8) ||
             (test_format == AUDIO_S16) ||
             (test_format == AUDIO_F32)) {

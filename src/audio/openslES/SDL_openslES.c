@@ -418,7 +418,7 @@ static int openslES_CreatePCMPlayer(_THIS)
     */
     if (SDL_GetAndroidSDKVersion() >= 21) {
         SDL_AudioFormat test_format;
-        for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+        for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
             if (SDL_AUDIO_ISSIGNED(test_format)) {
                 break;
             }

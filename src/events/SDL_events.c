@@ -1374,7 +1374,7 @@ int SDL_SendLocaleChangedEvent(void)
     return SDL_SendAppEvent(SDL_LOCALECHANGED);
 }
 
-int SDL_EventsInit(void)
+int SDL_InitEvents(void)
 {
 #if !SDL_JOYSTICK_DISABLED
     SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
@@ -1389,12 +1389,12 @@ int SDL_EventsInit(void)
         return -1;
     }
 
-    SDL_QuitInit();
+    SDL_InitQuit();
 
     return 0;
 }
 
-void SDL_EventsQuit(void)
+void SDL_QuitEvents(void)
 {
     SDL_QuitQuit();
     SDL_StopEventLoop();

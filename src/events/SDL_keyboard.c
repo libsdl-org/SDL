@@ -664,7 +664,7 @@ SDL_UCS4ToUTF8(Uint32 ch, char *dst)
 }
 
 /* Public functions */
-int SDL_KeyboardInit(void)
+int SDL_InitKeyboard(void)
 {
     /* Set the default keymap */
     SDL_SetKeymap(0, SDL_default_keymap, SDL_NUM_SCANCODES, SDL_FALSE);
@@ -1065,7 +1065,7 @@ int SDL_SendEditingText(const char *text, int start, int length)
     return posted;
 }
 
-void SDL_KeyboardQuit(void)
+void SDL_QuitKeyboard(void)
 {
 }
 

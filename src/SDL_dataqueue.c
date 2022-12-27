@@ -51,7 +51,7 @@ static void SDL_FreeDataQueueList(SDL_DataQueuePacket *packet)
 /* this all expects that you managed thread safety elsewhere. */
 
 SDL_DataQueue *
-SDL_NewDataQueue(const size_t _packetlen, const size_t initialslack)
+SDL_CreateDataQueue(const size_t _packetlen, const size_t initialslack)
 {
     SDL_DataQueue *queue = (SDL_DataQueue *)SDL_malloc(sizeof(SDL_DataQueue));
 
@@ -80,7 +80,7 @@ SDL_NewDataQueue(const size_t _packetlen, const size_t initialslack)
     return queue;
 }
 
-void SDL_FreeDataQueue(SDL_DataQueue *queue)
+void SDL_DestroyDataQueue(SDL_DataQueue *queue)
 {
     if (queue) {
         SDL_FreeDataQueueList(queue->head);
@@ -282,7 +282,7 @@ SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
 }
 
 size_t
-SDL_CountDataQueue(SDL_DataQueue *queue)
+SDL_GetDataQueueSize(SDL_DataQueue *queue)
 {
     return queue ? queue->queued_bytes : 0;
 }

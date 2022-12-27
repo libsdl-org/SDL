@@ -337,7 +337,7 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                 for (i = 0; i < item->nbuttons; i++) {
                     if (item->digitalButton[i] != gamepadState.digitalButton[i]) {
                         buttonState = gamepadState.digitalButton[i] ? SDL_PRESSED : SDL_RELEASED;
-                        SDL_PrivateJoystickButton(timestamp, item->joystick, i, buttonState);
+                        SDL_SendJoystickButton(timestamp, item->joystick, i, buttonState);
                     }
 
                     /* store values to compare them in the next update */
@@ -348,7 +348,7 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                 for (i = 0; i < item->naxes; i++) {
                     if (item->axis[i] != gamepadState.axis[i]) {
                         /* do we need to do conversion? */
-                        SDL_PrivateJoystickAxis(timestamp, item->joystick, i,
+                        SDL_SendJoystickAxis(timestamp, item->joystick, i,
                                                 (Sint16)(32767. * gamepadState.axis[i]));
                     }
 

@@ -236,7 +236,7 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
     prinfo->sample_rate = this->spec.freq;
     prinfo->channels = this->spec.channels;
 
-    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
         switch (test_format) {
         case AUDIO_U8:
             encoding = AUDIO_ENCODING_ULINEAR;

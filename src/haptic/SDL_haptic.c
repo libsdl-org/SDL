@@ -22,7 +22,7 @@
 
 #include "SDL_syshaptic.h"
 #include "SDL_haptic_c.h"
-#include "../joystick/SDL_joystick_c.h" /* For SDL_PrivateJoystickValid */
+#include "../joystick/SDL_joystick_c.h" /* For SDL_IsJoystickValid */
 
 /* Global for SDL_windowshaptic.c */
 #if (defined(SDL_HAPTIC_DINPUT) && SDL_HAPTIC_DINPUT) || (defined(SDL_HAPTIC_XINPUT) && SDL_HAPTIC_XINPUT)
@@ -34,7 +34,7 @@ static SDL_Haptic *SDL_haptics = NULL;
 /*
  * Initializes the Haptic devices.
  */
-int SDL_HapticInit(void)
+int SDL_InitHaptics(void)
 {
     int status;
 
@@ -236,7 +236,7 @@ int SDL_JoystickIsHaptic(SDL_Joystick *joystick)
     SDL_LockJoysticks();
     {
         /* Must be a valid joystick */
-        if (!SDL_PrivateJoystickValid(joystick)) {
+        if (!SDL_IsJoystickValid(joystick)) {
             SDL_UnlockJoysticks();
             return -1;
         }
@@ -273,7 +273,7 @@ SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
     SDL_LockJoysticks();
     {
         /* Must be a valid joystick */
-        if (!SDL_PrivateJoystickValid(joystick)) {
+        if (!SDL_IsJoystickValid(joystick)) {
             SDL_SetError("Haptic: Joystick isn't valid.");
             SDL_UnlockJoysticks();
             return NULL;
@@ -379,7 +379,7 @@ void SDL_HapticClose(SDL_Haptic *haptic)
 /*
  * Cleans up after the subsystem.
  */
-void SDL_HapticQuit(void)
+void SDL_QuitHaptics(void)
 {
     while (SDL_haptics) {
         SDL_HapticClose(SDL_haptics);

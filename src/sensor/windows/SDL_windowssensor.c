@@ -180,7 +180,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                         values[0] = (float)valueX.dblVal * SDL_STANDARD_GRAVITY;
                         values[1] = (float)valueY.dblVal * SDL_STANDARD_GRAVITY;
                         values[2] = (float)valueZ.dblVal * SDL_STANDARD_GRAVITY;
-                        SDL_PrivateSensorUpdate(timestamp, SDL_sensors[i].sensor_opened, sensor_timestamp, values, 3);
+                        SDL_SendSensorUpdate(timestamp, SDL_sensors[i].sensor_opened, sensor_timestamp, values, 3);
                     }
                     break;
                 case SDL_SENSOR_GYRO:
@@ -195,7 +195,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                         values[0] = (float)valueX.dblVal * DEGREES_TO_RADIANS;
                         values[1] = (float)valueY.dblVal * DEGREES_TO_RADIANS;
                         values[2] = (float)valueZ.dblVal * DEGREES_TO_RADIANS;
-                        SDL_PrivateSensorUpdate(timestamp, SDL_sensors[i].sensor_opened, sensor_timestamp, values, 3);
+                        SDL_SendSensorUpdate(timestamp, SDL_sensors[i].sensor_opened, sensor_timestamp, values, 3);
                     }
                     break;
                 default:

@@ -47,12 +47,12 @@ extern int SDL_SendLocaleChangedEvent(void);
 
 extern int SDL_SendQuit(void);
 
-extern int SDL_EventsInit(void);
-extern void SDL_EventsQuit(void);
+extern int SDL_InitEvents(void);
+extern void SDL_QuitEvents(void);
 
 extern void SDL_SendPendingSignalEvents(void);
 
-extern int SDL_QuitInit(void);
+extern int SDL_InitQuit(void);
 extern void SDL_QuitQuit(void);
 
 #endif /* SDL_events_c_h_ */

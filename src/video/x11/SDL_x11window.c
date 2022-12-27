@@ -1183,7 +1183,7 @@ void X11_HideWindow(_THIS, SDL_Window *window)
     }
 }
 
-static void SetWindowActive(_THIS, SDL_Window *window)
+static void X11_SetWindowActive(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_DisplayData *displaydata =
@@ -1218,11 +1218,11 @@ void X11_RaiseWindow(_THIS, SDL_Window *window)
     Display *display = data->videodata->display;
 
     X11_XRaiseWindow(display, data->xwindow);
-    SetWindowActive(_this, window);
+    X11_SetWindowActive(_this, window);
     X11_XFlush(display);
 }
 
-static void SetWindowMaximized(_THIS, SDL_Window *window, SDL_bool maximized)
+static void X11_SetWindowMaximized(_THIS, SDL_Window *window, SDL_bool maximized)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_DisplayData *displaydata =
@@ -1270,7 +1270,7 @@ static void SetWindowMaximized(_THIS, SDL_Window *window, SDL_bool maximized)
 
 void X11_MaximizeWindow(_THIS, SDL_Window *window)
 {
-    SetWindowMaximized(_this, window, SDL_TRUE);
+    X11_SetWindowMaximized(_this, window, SDL_TRUE);
 }
 
 void X11_MinimizeWindow(_THIS, SDL_Window *window)
@@ -1286,9 +1286,9 @@ void X11_MinimizeWindow(_THIS, SDL_Window *window)
 
 void X11_RestoreWindow(_THIS, SDL_Window *window)
 {
-    SetWindowMaximized(_this, window, SDL_FALSE);
+    X11_SetWindowMaximized(_this, window, SDL_FALSE);
     X11_ShowWindow(_this, window);
-    SetWindowActive(_this, window);
+    X11_SetWindowActive(_this, window);
 }
 
 /* This asks the Window Manager to handle fullscreen for us. This is the modern way. */

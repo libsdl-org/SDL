@@ -256,7 +256,7 @@ int SDL_JoystickDetachVirtualInner(int device_index)
     return 0;
 }
 
-int SDL_JoystickSetVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 value)
+int SDL_SetJoystickVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 value)
 {
     joystick_hwdata *hwdata;
 
@@ -279,7 +279,7 @@ int SDL_JoystickSetVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 val
     return 0;
 }
 
-int SDL_JoystickSetVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 value)
+int SDL_SetJoystickVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 value)
 {
     joystick_hwdata *hwdata;
 
@@ -302,7 +302,7 @@ int SDL_JoystickSetVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 
     return 0;
 }
 
-int SDL_JoystickSetVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
+int SDL_SetJoystickVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
 {
     joystick_hwdata *hwdata;
 
@@ -543,13 +543,13 @@ static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
     }
 
     for (i = 0; i < hwdata->desc.naxes; ++i) {
-        SDL_PrivateJoystickAxis(timestamp, joystick, i, hwdata->axes[i]);
+        SDL_SendJoystickAxis(timestamp, joystick, i, hwdata->axes[i]);
     }
     for (i = 0; i < hwdata->desc.nbuttons; ++i) {
-        SDL_PrivateJoystickButton(timestamp, joystick, i, hwdata->buttons[i]);
+        SDL_SendJoystickButton(timestamp, joystick, i, hwdata->buttons[i]);
     }
     for (i = 0; i < hwdata->desc.nhats; ++i) {
-        SDL_PrivateJoystickHat(timestamp, joystick, i, hwdata->hats[i]);
+        SDL_SendJoystickHat(timestamp, joystick, i, hwdata->hats[i]);
     }
 }
 

@@ -36,7 +36,7 @@
 #define UTF8_IsLeadByte(c)     ((c) >= 0xC0 && (c) <= 0xF4)
 #define UTF8_IsTrailingByte(c) ((c) >= 0x80 && (c) <= 0xBF)
 
-static unsigned UTF8_TrailingBytes(unsigned char c)
+static unsigned UTF8_GetTrailingBytes(unsigned char c)
 {
     if (c >= 0xC0 && c <= 0xDF) {
         return 1;
@@ -574,7 +574,7 @@ SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_
         } else if (UTF8_IsTrailingByte(c)) {
             for (i = bytes - 1; i != 0; --i) {
                 c = (unsigned char)src[i];
-                trailing_bytes = UTF8_TrailingBytes(c);
+                trailing_bytes = UTF8_GetTrailingBytes(c);
                 if (trailing_bytes) {
                     if (bytes - i != trailing_bytes + 1) {
                         bytes = i;

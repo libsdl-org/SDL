@@ -797,7 +797,7 @@ static int LINUX_JoystickGetCount(void)
     return numjoysticks;
 }
 
-static SDL_joylist_item *JoystickByDevIndex(int device_index)
+static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
 {
     SDL_joylist_item *item = SDL_joylist;
 
@@ -816,12 +816,12 @@ static SDL_joylist_item *JoystickByDevIndex(int device_index)
 
 static const char *LINUX_JoystickGetDeviceName(int device_index)
 {
-    return JoystickByDevIndex(device_index)->name;
+    return GetJoystickByDevIndex(device_index)->name;
 }
 
 static const char *LINUX_JoystickGetDevicePath(int device_index)
 {
-    return JoystickByDevIndex(device_index)->path;
+    return GetJoystickByDevIndex(device_index)->path;
 }
 
 static int LINUX_JoystickGetDevicePlayerIndex(int device_index)
@@ -835,13 +835,13 @@ static void LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_inde
 
 static SDL_JoystickGUID LINUX_JoystickGetDeviceGUID(int device_index)
 {
-    return JoystickByDevIndex(device_index)->guid;
+    return GetJoystickByDevIndex(device_index)->guid;
 }
 
 /* Function to perform the mapping from device index to the instance id for this index */
 static SDL_JoystickID LINUX_JoystickGetDeviceInstanceID(int device_index)
 {
-    return JoystickByDevIndex(device_index)->device_instance;
+    return GetJoystickByDevIndex(device_index)->device_instance;
 }
 
 static int allocate_hatdata(SDL_Joystick *joystick)
@@ -1155,7 +1155,7 @@ static int PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
  */
 static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    SDL_joylist_item *item = JoystickByDevIndex(device_index);
+    SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
 
     SDL_AssertJoysticksLocked();
 
@@ -1305,7 +1305,7 @@ static void HandleHat(Uint64 timestamp, SDL_Joystick *stick, int hatidx, int axi
     }
     if (value != the_hat->axis[axis]) {
         the_hat->axis[axis] = value;
-        SDL_PrivateJoystickHat(timestamp, stick, hatnum,
+        SDL_SendJoystickHat(timestamp, stick, hatnum,
                                position_map[the_hat->axis[1]][the_hat->axis[0]]);
     }
 }
@@ -1364,7 +1364,7 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
                 SDL_Log("Joystick : Re-read Axis %d (%d) val= %d\n",
                         joystick->hwdata->abs_map[i], i, absinfo.value);
 #endif
-                SDL_PrivateJoystickAxis(timestamp, joystick,
+                SDL_SendJoystickAxis(timestamp, joystick,
                                         joystick->hwdata->abs_map[i],
                                         absinfo.value);
             }
@@ -1395,7 +1395,7 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
                 SDL_Log("Joystick : Re-read Button %d (%d) val= %d\n",
                         joystick->hwdata->key_map[i], i, value);
 #endif
-                SDL_PrivateJoystickButton(timestamp, joystick,
+                SDL_SendJoystickButton(timestamp, joystick,
                                           joystick->hwdata->key_map[i], value);
             }
         }
@@ -1430,7 +1430,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
 
             switch (event->type) {
             case EV_KEY:
-                SDL_PrivateJoystickButton(SDL_EVDEV_GetEventTimestamp(event), joystick,
+                SDL_SendJoystickButton(SDL_EVDEV_GetEventTimestamp(event), joystick,
                                           joystick->hwdata->key_map[code],
                                           event->value);
                 break;
@@ -1451,7 +1451,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                     }
                 default:
                     event->value = AxisCorrect(joystick, code, event->value);
-                    SDL_PrivateJoystickAxis(SDL_EVDEV_GetEventTimestamp(event), joystick,
+                    SDL_SendJoystickAxis(SDL_EVDEV_GetEventTimestamp(event), joystick,
                                             joystick->hwdata->abs_map[code],
                                             event->value);
                     break;
@@ -1501,7 +1501,7 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
             switch (events[i].type) {
             case JS_EVENT_BUTTON:
                 code = joystick->hwdata->key_pam[events[i].number];
-                SDL_PrivateJoystickButton(timestamp, joystick,
+                SDL_SendJoystickButton(timestamp, joystick,
                                           joystick->hwdata->key_map[code],
                                           events[i].value);
                 break;
@@ -1522,7 +1522,7 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
                         break;
                     }
                 default:
-                    SDL_PrivateJoystickAxis(timestamp, joystick,
+                    SDL_SendJoystickAxis(timestamp, joystick,
                                             joystick->hwdata->abs_map[code],
                                             events[i].value);
                     break;
@@ -1609,7 +1609,7 @@ static void LINUX_JoystickQuit(void)
 static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     SDL_Joystick *joystick;
-    SDL_joylist_item *item = JoystickByDevIndex(device_index);
+    SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
     unsigned int mapped;
 
     SDL_AssertJoysticksLocked();

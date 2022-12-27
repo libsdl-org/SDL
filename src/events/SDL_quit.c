@@ -142,7 +142,7 @@ static void SDL_QuitQuit_Internal(void)
 }
 #endif
 
-int SDL_QuitInit(void)
+int SDL_InitQuit(void)
 {
 #ifdef HAVE_SIGNAL_SUPPORT
     if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {

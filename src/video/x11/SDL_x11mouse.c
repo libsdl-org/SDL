@@ -324,7 +324,7 @@ static int X11_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-static void WarpMouseInternal(Window xwindow, const int x, const int y)
+static void X11_WarpMouseInternal(Window xwindow, const int x, const int y)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)SDL_GetVideoDevice()->driverdata;
     Display *display = videodata->display;
@@ -354,16 +354,16 @@ static void X11_WarpMouse(SDL_Window *window, int x, int y)
 #if SDL_VIDEO_DRIVER_X11_XFIXES
     /* If we have no barrier, we need to warp */
     if (data->pointer_barrier_active == SDL_FALSE) {
-        WarpMouseInternal(data->xwindow, x, y);
+        X11_WarpMouseInternal(data->xwindow, x, y);
     }
 #else
-    WarpMouseInternal(data->xwindow, x, y);
+    X11_WarpMouseInternal(data->xwindow, x, y);
 #endif
 }
 
 static int X11_WarpMouseGlobal(int x, int y)
 {
-    WarpMouseInternal(DefaultRootWindow(GetDisplay()), x, y);
+    X11_WarpMouseInternal(DefaultRootWindow(GetDisplay()), x, y);
     return 0;
 }
 

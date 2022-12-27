@@ -1010,40 +1010,40 @@ static void UpdateDINPUTJoystickState_Polled(SDL_Joystick *joystick)
         case AXIS:
             switch (in->ofs) {
             case DIJOFS_X:
-                SDL_PrivateJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lX);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lX);
                 break;
             case DIJOFS_Y:
-                SDL_PrivateJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lY);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lY);
                 break;
             case DIJOFS_Z:
-                SDL_PrivateJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lZ);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lZ);
                 break;
             case DIJOFS_RX:
-                SDL_PrivateJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lRx);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lRx);
                 break;
             case DIJOFS_RY:
-                SDL_PrivateJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lRy);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lRy);
                 break;
             case DIJOFS_RZ:
-                SDL_PrivateJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lRz);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lRz);
                 break;
             case DIJOFS_SLIDER(0):
-                SDL_PrivateJoystickAxis(timestamp, joystick, in->num, (Sint16)state.rglSlider[0]);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.rglSlider[0]);
                 break;
             case DIJOFS_SLIDER(1):
-                SDL_PrivateJoystickAxis(timestamp, joystick, in->num, (Sint16)state.rglSlider[1]);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.rglSlider[1]);
                 break;
             }
             break;
 
         case BUTTON:
-            SDL_PrivateJoystickButton(timestamp, joystick, in->num,
+            SDL_SendJoystickButton(timestamp, joystick, in->num,
                                       (Uint8)(state.rgbButtons[in->ofs - DIJOFS_BUTTON0] ? SDL_PRESSED : SDL_RELEASED));
             break;
         case HAT:
         {
             Uint8 pos = TranslatePOV(state.rgdwPOV[in->ofs - DIJOFS_POV(0)]);
-            SDL_PrivateJoystickHat(timestamp, joystick, in->num, pos);
+            SDL_SendJoystickHat(timestamp, joystick, in->num, pos);
             break;
         }
         }
@@ -1088,16 +1088,16 @@ static void UpdateDINPUTJoystickState_Buffered(SDL_Joystick *joystick)
 
             switch (in->type) {
             case AXIS:
-                SDL_PrivateJoystickAxis(timestamp, joystick, in->num, (Sint16)evtbuf[i].dwData);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)evtbuf[i].dwData);
                 break;
             case BUTTON:
-                SDL_PrivateJoystickButton(timestamp, joystick, in->num,
+                SDL_SendJoystickButton(timestamp, joystick, in->num,
                                           (Uint8)(evtbuf[i].dwData ? SDL_PRESSED : SDL_RELEASED));
                 break;
             case HAT:
             {
                 Uint8 pos = TranslatePOV(evtbuf[i].dwData);
-                SDL_PrivateJoystickHat(timestamp, joystick, in->num, pos);
+                SDL_SendJoystickHat(timestamp, joystick, in->num, pos);
             } break;
             }
         }

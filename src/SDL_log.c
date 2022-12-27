@@ -101,7 +101,7 @@ static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
 };
 #endif /* __ANDROID__ */
 
-void SDL_LogInit(void)
+void SDL_InitLog(void)
 {
     if (log_function_mutex == NULL) {
         /* if this fails we'll try to continue without it. */
@@ -109,7 +109,7 @@ void SDL_LogInit(void)
     }
 }
 
-void SDL_LogQuit(void)
+void SDL_QuitLog(void)
 {
     SDL_LogResetPriorities();
     if (log_function_mutex) {

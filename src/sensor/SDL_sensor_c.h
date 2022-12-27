@@ -31,10 +31,10 @@ struct _SDL_SensorDriver;
 extern SDL_SensorID SDL_GetNextSensorInstanceID(void);
 
 /* Initialization and shutdown functions */
-extern int SDL_SensorInit(void);
-extern void SDL_SensorQuit(void);
+extern int SDL_InitSensors(void);
+extern void SDL_QuitSensors(void);
 
 /* Internal event queueing functions */
-extern int SDL_PrivateSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
+extern int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
 
 #endif /* SDL_sensor_c_h_ */

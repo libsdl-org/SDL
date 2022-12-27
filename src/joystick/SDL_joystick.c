@@ -292,7 +292,7 @@ static void SDLCALL SDL_JoystickAllowBackgroundEventsChanged(void *userdata, con
     }
 }
 
-int SDL_JoystickInit(void)
+int SDL_InitJoysticks(void)
 {
     int i, status;
 
@@ -311,7 +311,7 @@ int SDL_JoystickInit(void)
 
     SDL_joysticks_initialized = SDL_TRUE;
 
-    SDL_GamepadInitMappings();
+    SDL_InitGamepadMappings();
 
     /* See if we should allow joystick events while in the background */
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
@@ -326,7 +326,7 @@ int SDL_JoystickInit(void)
     SDL_UnlockJoysticks();
 
     if (status < 0) {
-        SDL_JoystickQuit();
+        SDL_QuitJoysticks();
     }
 
     return status;
@@ -561,7 +561,7 @@ SDL_Joystick *SDL_OpenJoystick(int device_index)
     /* send initial battery event */
     initial_power_level = joystick->epowerlevel;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
-    SDL_PrivateJoystickBatteryLevel(joystick, initial_power_level);
+    SDL_SendJoystickBatteryLevel(joystick, initial_power_level);
 
     driver->Update(joystick);
 
@@ -648,7 +648,7 @@ int SDL_SetJoystickVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 value)
         CHECK_JOYSTICK_MAGIC(joystick, -1);
 
 #if SDL_JOYSTICK_VIRTUAL
-        retval = SDL_JoystickSetVirtualAxisInner(joystick, axis, value);
+        retval = SDL_SetJoystickVirtualAxisInner(joystick, axis, value);
 #else
         retval = SDL_SetError("SDL not built with virtual-joystick support");
 #endif
@@ -667,7 +667,7 @@ int SDL_SetJoystickVirtualButton(SDL_Joystick *joystick, int button, Uint8 value
         CHECK_JOYSTICK_MAGIC(joystick, -1);
 
 #if SDL_JOYSTICK_VIRTUAL
-        retval = SDL_JoystickSetVirtualButtonInner(joystick, button, value);
+        retval = SDL_SetJoystickVirtualButtonInner(joystick, button, value);
 #else
         retval = SDL_SetError("SDL not built with virtual-joystick support");
 #endif
@@ -686,7 +686,7 @@ int SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value)
         CHECK_JOYSTICK_MAGIC(joystick, -1);
 
 #if SDL_JOYSTICK_VIRTUAL
-        retval = SDL_JoystickSetVirtualHatInner(joystick, hat, value);
+        retval = SDL_SetJoystickVirtualHatInner(joystick, hat, value);
 #else
         retval = SDL_SetError("SDL not built with virtual-joystick support");
 #endif
@@ -699,7 +699,7 @@ int SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value)
 /*
  * Checks to make sure the joystick is valid.
  */
-SDL_bool SDL_PrivateJoystickValid(SDL_Joystick *joystick)
+SDL_bool SDL_IsJoystickValid(SDL_Joystick *joystick)
 {
     SDL_AssertJoysticksLocked();
     return (joystick && joystick->magic == &joystick_magic);
@@ -1238,7 +1238,7 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
     SDL_UnlockJoysticks();
 }
 
-void SDL_JoystickQuit(void)
+void SDL_QuitJoysticks(void)
 {
     int i;
 
@@ -1270,7 +1270,7 @@ void SDL_JoystickQuit(void)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
-    SDL_GamepadQuitMappings();
+    SDL_QuitGamepadMappings();
 
     SDL_joysticks_quitting = SDL_FALSE;
     SDL_joysticks_initialized = SDL_FALSE;
@@ -1452,23 +1452,23 @@ void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
     /* Tell the app that everything is centered/unpressed... */
     for (i = 0; i < joystick->naxes; i++) {
         if (joystick->axes[i].has_initial_value) {
-            SDL_PrivateJoystickAxis(timestamp, joystick, i, joystick->axes[i].zero);
+            SDL_SendJoystickAxis(timestamp, joystick, i, joystick->axes[i].zero);
         }
     }
 
     for (i = 0; i < joystick->nbuttons; i++) {
-        SDL_PrivateJoystickButton(timestamp, joystick, i, SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, i, SDL_RELEASED);
     }
 
     for (i = 0; i < joystick->nhats; i++) {
-        SDL_PrivateJoystickHat(timestamp, joystick, i, SDL_HAT_CENTERED);
+        SDL_SendJoystickHat(timestamp, joystick, i, SDL_HAT_CENTERED);
     }
 
     for (i = 0; i < joystick->ntouchpads; i++) {
         SDL_JoystickTouchpadInfo *touchpad = &joystick->touchpads[i];
 
         for (j = 0; j < touchpad->nfingers; ++j) {
-            SDL_PrivateJoystickTouchpad(timestamp, joystick, i, j, SDL_RELEASED, 0.0f, 0.0f, 0.0f);
+            SDL_SendJoystickTouchpad(timestamp, joystick, i, j, SDL_RELEASED, 0.0f, 0.0f, 0.0f);
         }
     }
 }
@@ -1515,7 +1515,7 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
     }
 }
 
-int SDL_PrivateJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, Sint16 value)
+int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, Sint16 value)
 {
     int posted;
     SDL_JoystickAxisInfo *info;
@@ -1548,7 +1548,7 @@ int SDL_PrivateJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis
         }
         info->sent_initial_value = SDL_TRUE;
         info->sending_initial_value = SDL_TRUE;
-        SDL_PrivateJoystickAxis(timestamp, joystick, axis, info->initial_value);
+        SDL_SendJoystickAxis(timestamp, joystick, axis, info->initial_value);
         info->sending_initial_value = SDL_FALSE;
     }
 
@@ -1582,7 +1582,7 @@ int SDL_PrivateJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis
     return posted;
 }
 
-int SDL_PrivateJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uint8 value)
+int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uint8 value)
 {
     int posted;
 
@@ -1624,7 +1624,7 @@ int SDL_PrivateJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, 
     return posted;
 }
 
-int SDL_PrivateJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 button, Uint8 state)
+int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 button, Uint8 state)
 {
     int posted;
 #if !SDL_EVENTS_DISABLED
@@ -2879,7 +2879,7 @@ SDL_JoystickGUID SDL_GetJoystickGUIDFromString(const char *pchGUID)
 }
 
 /* update the power level for this joystick */
-void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLevel ePowerLevel)
+void SDL_SendJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLevel ePowerLevel)
 {
     SDL_AssertJoysticksLocked();
 
@@ -2915,7 +2915,7 @@ SDL_JoystickPowerLevel SDL_GetJoystickPowerLevel(SDL_Joystick *joystick)
     return retval;
 }
 
-int SDL_PrivateJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure)
+int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure)
 {
     SDL_JoystickTouchpadInfo *touchpad_info;
     SDL_JoystickTouchpadFingerInfo *finger_info;
@@ -3006,7 +3006,7 @@ int SDL_PrivateJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int to
     return posted;
 }
 
-int SDL_PrivateJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values)
+int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values)
 {
     int i;
     int posted = 0;

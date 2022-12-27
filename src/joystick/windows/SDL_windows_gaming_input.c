@@ -850,13 +850,13 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
             /* FIXME: What units are the timestamp we get from GetCurrentReading()? */
             timestamp = SDL_GetTicksNS();
             for (i = 0; i < nbuttons; ++i) {
-                SDL_PrivateJoystickButton(timestamp, joystick, (Uint8)i, buttons[i]);
+                SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, buttons[i]);
             }
             for (i = 0; i < nhats; ++i) {
-                SDL_PrivateJoystickHat(timestamp, joystick, (Uint8)i, ConvertHatValue(hats[i]));
+                SDL_SendJoystickHat(timestamp, joystick, (Uint8)i, ConvertHatValue(hats[i]));
             }
             for (i = 0; i < naxes; ++i) {
-                SDL_PrivateJoystickAxis(timestamp, joystick, (Uint8)i, (Sint16)((int)(axes[i] * 65535) - 32768));
+                SDL_SendJoystickAxis(timestamp, joystick, (Uint8)i, (Sint16)((int)(axes[i] * 65535) - 32768));
             }
         }
     }

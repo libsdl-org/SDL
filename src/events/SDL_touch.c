@@ -39,7 +39,7 @@ static SDL_TouchID track_touchid;
 #endif
 
 /* Public functions */
-int SDL_TouchInit(void)
+int SDL_InitTouch(void)
 {
     return 0;
 }
@@ -481,7 +481,7 @@ void SDL_DelTouch(SDL_TouchID id)
     SDL_touchDevices[index] = SDL_touchDevices[SDL_num_touch];
 }
 
-void SDL_TouchQuit(void)
+void SDL_QuitTouch(void)
 {
     int i;
 

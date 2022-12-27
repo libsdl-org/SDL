@@ -210,11 +210,11 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
 
     /* Axes */
     if (old_x != x) {
-        SDL_PrivateJoystickAxis(timestamp, joystick, 0, analog_map[x]);
+        SDL_SendJoystickAxis(timestamp, joystick, 0, analog_map[x]);
         old_x = x;
     }
     if (old_y != y) {
-        SDL_PrivateJoystickAxis(timestamp, joystick, 1, analog_map[y]);
+        SDL_SendJoystickAxis(timestamp, joystick, 1, analog_map[y]);
         old_y = y;
     }
 
@@ -224,7 +224,7 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     if (changed) {
         for (i = 0; i < SDL_arraysize(button_map); i++) {
             if (changed & button_map[i]) {
-                SDL_PrivateJoystickButton(timestamp,
+                SDL_SendJoystickButton(timestamp,
                     joystick, i,
                     (buttons & button_map[i]) ? SDL_PRESSED : SDL_RELEASED);
             }

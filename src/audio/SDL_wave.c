@@ -2063,7 +2063,7 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
         break;
     }
 
-    spec->silence = SDL_SilenceValueForFormat(spec->format);
+    spec->silence = SDL_GetSilenceValueForFormat(spec->format);
 
     /* Report the end position back to the cleanup code. */
     if (RIFFlengthknown) {

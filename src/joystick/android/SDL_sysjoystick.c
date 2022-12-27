@@ -202,7 +202,7 @@ int Android_OnPadDown(int device_id, int keycode)
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
-            SDL_PrivateJoystickButton(0, item->joystick, button, SDL_PRESSED);
+            SDL_SendJoystickButton(0, item->joystick, button, SDL_PRESSED);
         } else {
             SDL_SendKeyboardKey(0, SDL_PRESSED, button_to_scancode(button));
         }
@@ -221,7 +221,7 @@ int Android_OnPadUp(int device_id, int keycode)
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
-            SDL_PrivateJoystickButton(0, item->joystick, button, SDL_RELEASED);
+            SDL_SendJoystickButton(0, item->joystick, button, SDL_RELEASED);
         } else {
             SDL_SendKeyboardKey(0, SDL_RELEASED, button_to_scancode(button));
         }
@@ -240,7 +240,7 @@ int Android_OnJoy(int device_id, int axis, float value)
     SDL_LockJoysticks();
     item = JoystickByDeviceId(device_id);
     if (item && item->joystick) {
-        SDL_PrivateJoystickAxis(0, item->joystick, axis, (Sint16)(32767. * value));
+        SDL_SendJoystickAxis(0, item->joystick, axis, (Sint16)(32767. * value));
     }
     SDL_UnlockJoysticks();
 
@@ -276,16 +276,16 @@ int Android_OnHat(int device_id, int hat_id, int x, int y)
             dpad_delta = (dpad_state ^ item->dpad_state);
             if (dpad_delta) {
                 if (dpad_delta & DPAD_UP_MASK) {
-                    SDL_PrivateJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, (dpad_state & DPAD_UP_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_SendJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, (dpad_state & DPAD_UP_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_DOWN_MASK) {
-                    SDL_PrivateJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, (dpad_state & DPAD_DOWN_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_SendJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, (dpad_state & DPAD_DOWN_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_LEFT_MASK) {
-                    SDL_PrivateJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, (dpad_state & DPAD_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_SendJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, (dpad_state & DPAD_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_RIGHT_MASK) {
-                    SDL_PrivateJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, (dpad_state & DPAD_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_SendJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, (dpad_state & DPAD_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 item->dpad_state = dpad_state;
             }
@@ -501,7 +501,7 @@ static void ANDROID_JoystickDetect(void)
     }
 }
 
-static SDL_joylist_item *JoystickByDevIndex(int device_index)
+static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
 {
     SDL_joylist_item *item = SDL_joylist;
 
@@ -544,7 +544,7 @@ static SDL_joylist_item *JoystickByDeviceId(int device_id)
 
 static const char *ANDROID_JoystickGetDeviceName(int device_index)
 {
-    return JoystickByDevIndex(device_index)->name;
+    return GetJoystickByDevIndex(device_index)->name;
 }
 
 static const char *ANDROID_JoystickGetDevicePath(int device_index)
@@ -563,17 +563,17 @@ static void ANDROID_JoystickSetDevicePlayerIndex(int device_index, int player_in
 
 static SDL_JoystickGUID ANDROID_JoystickGetDeviceGUID(int device_index)
 {
-    return JoystickByDevIndex(device_index)->guid;
+    return GetJoystickByDevIndex(device_index)->guid;
 }
 
 static SDL_JoystickID ANDROID_JoystickGetDeviceInstanceID(int device_index)
 {
-    return JoystickByDevIndex(device_index)->device_instance;
+    return GetJoystickByDevIndex(device_index)->device_instance;
 }
 
 static int ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    SDL_joylist_item *item = JoystickByDevIndex(device_index);
+    SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
 
     if (item == NULL) {
         return SDL_SetError("No such device");
@@ -646,7 +646,7 @@ static void ANDROID_JoystickUpdate(SDL_Joystick *joystick)
                 }
 
                 value = (Sint16)(values[i] * 32767.0f);
-                SDL_PrivateJoystickAxis(timestamp, item->joystick, i, value);
+                SDL_SendJoystickAxis(timestamp, item->joystick, i, value);
             }
         }
     }

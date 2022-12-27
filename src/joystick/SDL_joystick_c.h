@@ -34,8 +34,8 @@ extern "C" {
 struct SDL_JoystickDriver;
 
 /* Initialization and shutdown functions */
-extern int SDL_JoystickInit(void);
-extern void SDL_JoystickQuit(void);
+extern int SDL_InitJoysticks(void);
+extern void SDL_QuitJoysticks(void);
 
 /* Return whether the joystick system is currently initialized */
 extern SDL_bool SDL_JoysticksInitialized(void);
@@ -137,21 +137,21 @@ extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType 
 extern void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
-extern int SDL_PrivateJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick,
+extern int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick,
                                    Uint8 axis, Sint16 value);
-extern int SDL_PrivateJoystickHat(Uint64 timestamp, SDL_Joystick *joystick,
+extern int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick,
                                   Uint8 hat, Uint8 value);
-extern int SDL_PrivateJoystickButton(Uint64 timestamp, SDL_Joystick *joystick,
+extern int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick,
                                      Uint8 button, Uint8 state);
-extern int SDL_PrivateJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick,
+extern int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick,
                                        int touchpad, int finger, Uint8 state, float x, float y, float pressure);
-extern int SDL_PrivateJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick,
+extern int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick,
                                      SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
-extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick,
+extern void SDL_SendJoystickBatteryLevel(SDL_Joystick *joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);
 
 /* Internal sanity checking functions */
-extern SDL_bool SDL_PrivateJoystickValid(SDL_Joystick *joystick);
+extern SDL_bool SDL_IsJoystickValid(SDL_Joystick *joystick);
 
 typedef enum
 {
