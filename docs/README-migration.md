@@ -44,7 +44,7 @@ The vi format comments have been removed from source code. Vim users can use the
 ## SDL_audio.h
 
 - SDL_AudioInit() and SDL_AudioQuit() are removed. Prefer the SDL_InitSubSytem() and SDL_QuitSubSytem functions, with flags SDL_INIT_AUDIO.
-  Also the hint SDL_AUDIO_DRIVER
+  Also the hint SDL_AUDIO_DRIVER can help to choose a specific driver.
 
 ## SDL_cpuinfo.h
 
