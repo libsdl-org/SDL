@@ -25,8 +25,8 @@
  *  Include file for SDL locale services
  */
 
-#ifndef _SDL_locale_h
-#define _SDL_locale_h
+#ifndef SDL_locale_h
+#define SDL_locale_h
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
@@ -98,4 +98,4 @@ extern DECLSPEC SDL_Locale * SDLCALL SDL_GetPreferredLocales(void);
 #endif
 #include <SDL3/SDL_close_code.h>
 
-#endif /* _SDL_locale_h */
+#endif /* SDL_locale_h */

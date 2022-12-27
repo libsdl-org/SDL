@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_vitakeyboard_h
-#define _SDL_vitakeyboard_h
+#ifndef SDL_vitakeyboard_h
+#define SDL_vitakeyboard_h
 
 #include "SDL_internal.h"
 
@@ -28,4 +28,4 @@
 extern void VITA_InitKeyboard(void);
 extern void VITA_PollKeyboard(void);
 
-#endif /* _SDL_vitakeyboard_h */
+#endif /* SDL_vitakeyboard_h */

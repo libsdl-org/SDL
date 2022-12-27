@@ -28,10 +28,10 @@
  */
 
 /* This shouldn't be nested -- included it around code only. */
-#ifdef _SDL_begin_code_h
+#ifdef SDL_begin_code_h
 #error Nested inclusion of SDL_begin_code.h
 #endif
-#define _SDL_begin_code_h
+#define SDL_begin_code_h
 
 #ifndef SDL_DEPRECATED
 #  if defined(__GNUC__) && (__GNUC__ >= 4)  /* technically, this arrived in gcc 3.1, but oh well. */

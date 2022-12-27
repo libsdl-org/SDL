@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_vitavideo_h
-#define _SDL_vitavideo_h
+#ifndef SDL_vitavideo_h
+#define SDL_vitavideo_h
 
 #include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
@@ -110,4 +110,4 @@ SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 
 void VITA_PumpEvents(_THIS);
 
-#endif /* _SDL_pspvideo_h */
+#endif /* SDL_pspvideo_h */

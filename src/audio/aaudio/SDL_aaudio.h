@@ -20,8 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#ifndef _SDL_aaudio_h
-#define _SDL_aaudio_h
+#ifndef SDL_aaudio_h
+#define SDL_aaudio_h
 
 #include "../SDL_sysaudio.h"
 #include <stdbool.h>
@@ -47,4 +47,4 @@ void aaudio_ResumeDevices(void);
 void aaudio_PauseDevices(void);
 SDL_bool aaudio_DetectBrokenPlayState(void);
 
-#endif /* _SDL_aaudio_h */
+#endif /* SDL_aaudio_h */

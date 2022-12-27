@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_ngagewindow_h
-#define _SDL_ngagewindow_h
+#ifndef SDL_ngagewindow_h
+#define SDL_ngagewindow_h
 
 #include "../SDL_sysvideo.h"
 
@@ -40,4 +40,4 @@ NGAGE_CreateWindow(_THIS, SDL_Window *window);
 extern void
 NGAGE_DestroyWindow(_THIS, SDL_Window *window);
 
-#endif /* _SDL_ngagewindow */
+#endif /* SDL_ngagewindow */
