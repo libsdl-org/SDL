@@ -29,7 +29,7 @@ initializeHappyFaces(SDL_Renderer *renderer)
     int i;
     int w;
     int h;
-    SDL_RenderGetLogicalSize(renderer, &w, &h);
+    SDL_GetRenderLogicalSize(renderer, &w, &h);
 
     for (i = 0; i < NUM_HAPPY_FACES; i++) {
         faces[i].x = randomFloat(0.0f, w - HAPPY_FACE_SIZE);
@@ -48,7 +48,7 @@ render(SDL_Renderer *renderer, double deltaTime)
     int w;
     int h;
 
-    SDL_RenderGetLogicalSize(renderer, &w, &h);
+    SDL_GetRenderLogicalSize(renderer, &w, &h);
 
     /* setup boundaries for happyface bouncing */
     int maxx = w - HAPPY_FACE_SIZE;
@@ -93,7 +93,7 @@ render(SDL_Renderer *renderer, double deltaTime)
         }
         dstRect.x = faces[i].x;
         dstRect.y = faces[i].y;
-        SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
+        SDL_RenderTexture(renderer, texture, &srcRect, &dstRect);
     }
     /* update screen */
     SDL_RenderPresent(renderer);
@@ -149,7 +149,7 @@ main(int argc, char *argv[])
     renderer = SDL_CreateRenderer(window, NULL, 0);
 
     SDL_GetWindowSize(window, &width, &height);
-    SDL_RenderSetLogicalSize(renderer, width, height);
+    SDL_SetRenderLogicalSize(renderer, width, height);
 
     initializeTexture(renderer);
     initializeHappyFaces(renderer);

@@ -247,6 +247,40 @@ which index is the "opengl" or whatnot driver, you can just pass that string dir
 here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you want SDL
 to decide for you.
 
+The following functions have been renamed:
+* SDL_RenderCopy => SDL_RenderTexture
+* SDL_RenderCopyEx => SDL_RenderTextureRotated
+* SDL_RenderCopyExF => SDL_RenderTextureRotatedF
+* SDL_RenderCopyF => SDL_RenderTextureF
+* SDL_RenderDrawLine => SDL_RenderLine
+* SDL_RenderDrawLineF => SDL_RenderLineF
+* SDL_RenderDrawLines => SDL_RenderLines
+* SDL_RenderDrawLinesF => SDL_RenderLinesF
+* SDL_RenderDrawPoint => SDL_RenderPoint
+* SDL_RenderDrawPointF => SDL_RenderPointF
+* SDL_RenderDrawPoints => SDL_RenderPoints
+* SDL_RenderDrawPointsF => SDL_RenderPointsF
+* SDL_RenderDrawRect => SDL_RenderRect
+* SDL_RenderDrawRectF => SDL_RenderRectF
+* SDL_RenderDrawRects => SDL_RenderRects
+* SDL_RenderDrawRectsF => SDL_RenderRectsF
+* SDL_RenderGetClipRect => SDL_GetRenderClipRect
+* SDL_RenderGetIntegerScale => SDL_GetRenderIntegerScale
+* SDL_RenderGetLogicalSize => SDL_GetRenderLogicalSize
+* SDL_RenderGetMetalCommandEncoder => SDL_GetRenderMetalCommandEncoder
+* SDL_RenderGetMetalLayer => SDL_GetRenderMetalLayer
+* SDL_RenderGetScale => SDL_GetRenderScale
+* SDL_RenderGetViewport => SDL_GetRenderViewport
+* SDL_RenderGetWindow => SDL_GetRenderWindow
+* SDL_RenderIsClipEnabled => SDL_IsRenderClipEnabled
+* SDL_RenderSetClipRect => SDL_SetRenderClipRect
+* SDL_RenderSetIntegerScale => SDL_SetRenderIntegerScale
+* SDL_RenderSetLogicalSize => SDL_SetRenderLogicalSize
+* SDL_RenderSetScale => SDL_SetRenderScale
+* SDL_RenderSetVSync => SDL_SetRenderVSync
+* SDL_RenderSetViewport => SDL_SetRenderViewport
+* SDL_RenderTargetSupported => SDL_IsRenderTargetSupported
+
 ## SDL_rwops.h
 
 The following macros have been renamed:

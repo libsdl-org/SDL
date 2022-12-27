@@ -49,7 +49,7 @@ void DrawPoints(SDL_Renderer *renderer)
     SDL_Rect viewport;
 
     /* Query the sizes */
-    SDL_RenderGetViewport(renderer, &viewport);
+    SDL_GetRenderViewport(renderer, &viewport);
 
     for (i = 0; i < num_objects * 4; ++i) {
         /* Cycle the color and alpha, if desired */
@@ -80,7 +80,7 @@ void DrawPoints(SDL_Renderer *renderer)
 
         x = rand() % viewport.w;
         y = rand() % viewport.h;
-        SDL_RenderDrawPoint(renderer, x, y);
+        SDL_RenderPoint(renderer, x, y);
     }
 }
 
@@ -112,18 +112,18 @@ void DrawLines(SDL_Renderer *renderer)
     SDL_Rect viewport;
 
     /* Query the sizes */
-    SDL_RenderGetViewport(renderer, &viewport);
+    SDL_GetRenderViewport(renderer, &viewport);
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
     for (i = 0; i < num_lines; ++i) {
         if (i == -1) {
-            SDL_RenderDrawLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
-            SDL_RenderDrawLine(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
-            SDL_RenderDrawLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
-            SDL_RenderDrawLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
+            SDL_RenderLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
+            SDL_RenderLine(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
+            SDL_RenderLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
+            SDL_RenderLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
         } else {
-            SDL_RenderDrawLine(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
+            SDL_RenderLine(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
         }
     }
 }
@@ -185,7 +185,7 @@ DrawRectLineIntersections(SDL_Renderer *renderer)
             y2 = lines[j].h;
 
             if (SDL_IntersectRectAndLine(&r, &x1, &y1, &x2, &y2)) {
-                SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+                SDL_RenderLine(renderer, x1, y1, x2, y2);
             }
         }
     }

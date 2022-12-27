@@ -46,7 +46,7 @@ void DrawOnViewport(SDL_Renderer *renderer)
     SDL_Rect rect;
 
     /* Set the viewport */
-    SDL_RenderSetViewport(renderer, &viewport);
+    SDL_SetRenderViewport(renderer, &viewport);
 
     /* Draw a gray background */
     SDL_SetRenderDrawColor(renderer, 0x80, 0x80, 0x80, 0xFF);
@@ -54,29 +54,29 @@ void DrawOnViewport(SDL_Renderer *renderer)
 
     /* Test inside points */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawPoint(renderer, viewport.h / 2 + 20, viewport.w / 2);
-    SDL_RenderDrawPoint(renderer, viewport.h / 2 - 20, viewport.w / 2);
-    SDL_RenderDrawPoint(renderer, viewport.h / 2, viewport.w / 2 - 20);
-    SDL_RenderDrawPoint(renderer, viewport.h / 2, viewport.w / 2 + 20);
+    SDL_RenderPoint(renderer, viewport.h / 2 + 20, viewport.w / 2);
+    SDL_RenderPoint(renderer, viewport.h / 2 - 20, viewport.w / 2);
+    SDL_RenderPoint(renderer, viewport.h / 2, viewport.w / 2 - 20);
+    SDL_RenderPoint(renderer, viewport.h / 2, viewport.w / 2 + 20);
 
     /* Test horizontal and vertical lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawLine(renderer, 1, 0, viewport.w - 2, 0);
-    SDL_RenderDrawLine(renderer, 1, viewport.h - 1, viewport.w - 2, viewport.h - 1);
-    SDL_RenderDrawLine(renderer, 0, 1, 0, viewport.h - 2);
-    SDL_RenderDrawLine(renderer, viewport.w - 1, 1, viewport.w - 1, viewport.h - 2);
+    SDL_RenderLine(renderer, 1, 0, viewport.w - 2, 0);
+    SDL_RenderLine(renderer, 1, viewport.h - 1, viewport.w - 2, viewport.h - 1);
+    SDL_RenderLine(renderer, 0, 1, 0, viewport.h - 2);
+    SDL_RenderLine(renderer, viewport.w - 1, 1, viewport.w - 1, viewport.h - 2);
 
     /* Test diagonal lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xFF, 0xFF);
-    SDL_RenderDrawLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
-    SDL_RenderDrawLine(renderer, viewport.w - 1, 0, 0, viewport.h - 1);
+    SDL_RenderLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
+    SDL_RenderLine(renderer, viewport.w - 1, 0, 0, viewport.h - 1);
 
     /* Test outside points */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawPoint(renderer, viewport.h / 2 + viewport.h, viewport.w / 2);
-    SDL_RenderDrawPoint(renderer, viewport.h / 2 - viewport.h, viewport.w / 2);
-    SDL_RenderDrawPoint(renderer, viewport.h / 2, viewport.w / 2 - viewport.w);
-    SDL_RenderDrawPoint(renderer, viewport.h / 2, viewport.w / 2 + viewport.w);
+    SDL_RenderPoint(renderer, viewport.h / 2 + viewport.h, viewport.w / 2);
+    SDL_RenderPoint(renderer, viewport.h / 2 - viewport.h, viewport.w / 2);
+    SDL_RenderPoint(renderer, viewport.h / 2, viewport.w / 2 - viewport.w);
+    SDL_RenderPoint(renderer, viewport.h / 2, viewport.w / 2 + viewport.w);
 
     /* Add a box at the top */
     rect.w = 8;
@@ -89,9 +89,9 @@ void DrawOnViewport(SDL_Renderer *renderer)
     SDL_QueryTexture(sprite, NULL, NULL, &rect.w, &rect.h);
     rect.x = (viewport.w - rect.w) / 2;
     rect.y = (viewport.h - rect.h) / 2;
-    SDL_RenderSetClipRect(renderer, &rect);
-    SDL_RenderCopy(renderer, sprite, NULL, &rect);
-    SDL_RenderSetClipRect(renderer, NULL);
+    SDL_SetRenderClipRect(renderer, &rect);
+    SDL_RenderTexture(renderer, sprite, NULL, &rect);
+    SDL_SetRenderClipRect(renderer, NULL);
 }
 
 void loop()
@@ -129,7 +129,7 @@ void loop()
         /* Update the screen! */
         if (use_target) {
             SDL_SetRenderTarget(state->renderers[i], NULL);
-            SDL_RenderCopy(state->renderers[i], state->targets[i], NULL, NULL);
+            SDL_RenderTexture(state->renderers[i], state->targets[i], NULL, NULL);
             SDL_RenderPresent(state->renderers[i]);
             SDL_SetRenderTarget(state->renderers[i], state->targets[i]);
         } else {

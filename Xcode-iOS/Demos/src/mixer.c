@@ -61,7 +61,7 @@ initializeButtons(SDL_Renderer *renderer)
     SDL_Color downColor = { 191, 191, 221, 255 };       /* color of drum when pressed */
     int renderW, renderH;
 
-    SDL_RenderGetLogicalSize(renderer, &renderW, &renderH);
+    SDL_GetRenderLogicalSize(renderer, &renderW, &renderH);
 
     buttonRect.x = spacing;
     buttonRect.y = spacing;
@@ -287,7 +287,7 @@ main(int argc, char *argv[])
     renderer = SDL_CreateRenderer(window, NULL, 0);
 
     SDL_GetWindowSize(window, &width, &height);
-    SDL_RenderSetLogicalSize(renderer, width, height);
+    SDL_SetRenderLogicalSize(renderer, width, height);
 
     /* initialize the mixer */
     SDL_memset(&mixer, 0, sizeof(mixer));

@@ -33,7 +33,7 @@ void render(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect texture_dimen
     SDL_RenderClear(renderer);
 
     /* Render the texture. */
-    SDL_RenderCopy(renderer, texture, &texture_dimensions, &texture_dimensions);
+    SDL_RenderTexture(renderer, texture, &texture_dimensions, &texture_dimensions);
 
     SDL_RenderPresent(renderer);
 }

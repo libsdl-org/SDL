@@ -682,7 +682,7 @@ void loop(void *arg)
     /* blank screen, set up for drawing this frame. */
     SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(screen);
-    SDL_RenderCopy(screen, showing_front ? background_front : background_back, NULL, NULL);
+    SDL_RenderTexture(screen, showing_front ? background_front : background_back, NULL, NULL);
 
     if (gamecontroller) {
         /* Update visual controller state */
@@ -695,7 +695,7 @@ void loop(void *arg)
                     dst.y = button_positions[i].y;
                     dst.w = BUTTON_SIZE;
                     dst.h = BUTTON_SIZE;
-                    SDL_RenderCopyEx(screen, button_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
+                    SDL_RenderTextureRotated(screen, button_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
                 }
             }
         }
@@ -711,7 +711,7 @@ void loop(void *arg)
                     dst.y = axis_positions[i].y;
                     dst.w = AXIS_SIZE;
                     dst.h = AXIS_SIZE;
-                    SDL_RenderCopyEx(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+                    SDL_RenderTextureRotated(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 } else if (value > deadzone) {
                     const double angle = axis_positions[i].angle + 180.0;
                     SDL_Rect dst;
@@ -719,7 +719,7 @@ void loop(void *arg)
                     dst.y = axis_positions[i].y;
                     dst.w = AXIS_SIZE;
                     dst.h = AXIS_SIZE;
-                    SDL_RenderCopyEx(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+                    SDL_RenderTextureRotated(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 }
             }
         }
@@ -905,7 +905,7 @@ int main(int argc, char *argv[])
     SDL_RenderPresent(screen);
 
     /* scale for platforms that don't give you the window size you asked for. */
-    SDL_RenderSetLogicalSize(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
+    SDL_SetRenderLogicalSize(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE, NULL, NULL);
     background_back = LoadTexture(screen, "controllermap_back.bmp", SDL_FALSE, NULL, NULL);
@@ -921,7 +921,7 @@ int main(int argc, char *argv[])
     SDL_SetTextureColorMod(axis_texture, 10, 255, 21);
 
     /* !!! FIXME: */
-    /*SDL_RenderSetLogicalSize(screen, background->w, background->h);*/
+    /*SDL_SetRenderLogicalSize(screen, background->w, background->h);*/
 
     for (i = 1; i < argc; ++i) {
         if (SDL_strcmp(argv[i], "--virtual") == 0) {

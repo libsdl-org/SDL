@@ -58,7 +58,7 @@ loop()
         SDL_RenderClear(renderer);
 
         /* Wrap the cursor rectangle at the screen edges to keep it visible */
-        SDL_RenderGetViewport(renderer, &viewport);
+        SDL_GetRenderViewport(renderer, &viewport);
         if (rect.x < viewport.x) {
             rect.x += viewport.w;
         }

@@ -93,7 +93,7 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_Rect *position, *velocity;
 
     /* Query the sizes */
-    SDL_RenderGetViewport(renderer, &viewport);
+    SDL_GetRenderViewport(renderer, &viewport);
 
     /* Cycle the color and alpha, if desired */
     if (cycle_color) {
@@ -128,17 +128,17 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 
     /* Test points */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
-    SDL_RenderDrawPoint(renderer, 0, 0);
-    SDL_RenderDrawPoint(renderer, viewport.w - 1, 0);
-    SDL_RenderDrawPoint(renderer, 0, viewport.h - 1);
-    SDL_RenderDrawPoint(renderer, viewport.w - 1, viewport.h - 1);
+    SDL_RenderPoint(renderer, 0, 0);
+    SDL_RenderPoint(renderer, viewport.w - 1, 0);
+    SDL_RenderPoint(renderer, 0, viewport.h - 1);
+    SDL_RenderPoint(renderer, viewport.w - 1, viewport.h - 1);
 
     /* Test horizontal and vertical lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawLine(renderer, 1, 0, viewport.w - 2, 0);
-    SDL_RenderDrawLine(renderer, 1, viewport.h - 1, viewport.w - 2, viewport.h - 1);
-    SDL_RenderDrawLine(renderer, 0, 1, 0, viewport.h - 2);
-    SDL_RenderDrawLine(renderer, viewport.w - 1, 1, viewport.w - 1, viewport.h - 2);
+    SDL_RenderLine(renderer, 1, 0, viewport.w - 2, 0);
+    SDL_RenderLine(renderer, 1, viewport.h - 1, viewport.w - 2, viewport.h - 1);
+    SDL_RenderLine(renderer, 0, 1, 0, viewport.h - 2);
+    SDL_RenderLine(renderer, viewport.w - 1, 1, viewport.w - 1, viewport.h - 2);
 
     /* Test fill and copy */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -178,31 +178,31 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 
         SDL_RenderGeometry(renderer, NULL, verts, 3, NULL, 0);
     }
-    SDL_RenderCopy(renderer, sprite, NULL, &temp);
+    SDL_RenderTexture(renderer, sprite, NULL, &temp);
     temp.x = viewport.w - sprite_w - 1;
     temp.y = 1;
     temp.w = sprite_w;
     temp.h = sprite_h;
     SDL_RenderFillRect(renderer, &temp);
-    SDL_RenderCopy(renderer, sprite, NULL, &temp);
+    SDL_RenderTexture(renderer, sprite, NULL, &temp);
     temp.x = 1;
     temp.y = viewport.h - sprite_h - 1;
     temp.w = sprite_w;
     temp.h = sprite_h;
     SDL_RenderFillRect(renderer, &temp);
-    SDL_RenderCopy(renderer, sprite, NULL, &temp);
+    SDL_RenderTexture(renderer, sprite, NULL, &temp);
     temp.x = viewport.w - sprite_w - 1;
     temp.y = viewport.h - sprite_h - 1;
     temp.w = sprite_w;
     temp.h = sprite_h;
     SDL_RenderFillRect(renderer, &temp);
-    SDL_RenderCopy(renderer, sprite, NULL, &temp);
+    SDL_RenderTexture(renderer, sprite, NULL, &temp);
 
     /* Test diagonal lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawLine(renderer, sprite_w, sprite_h,
+    SDL_RenderLine(renderer, sprite_w, sprite_h,
                        viewport.w - sprite_w - 2, viewport.h - sprite_h - 2);
-    SDL_RenderDrawLine(renderer, viewport.w - sprite_w - 2, sprite_h,
+    SDL_RenderLine(renderer, viewport.w - sprite_w - 2, sprite_h,
                        sprite_w, viewport.h - sprite_h - 2);
 
     /* Conditionally move the sprites, bounce at the wall */
@@ -238,7 +238,7 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
             position = &positions[i];
 
             /* Blit the sprite onto the screen */
-            SDL_RenderCopy(renderer, sprite, NULL, position);
+            SDL_RenderTexture(renderer, sprite, NULL, position);
         }
     } else if (use_rendergeometry == 1) {
         /*

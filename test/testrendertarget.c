@@ -69,7 +69,7 @@ DrawComposite(DrawState *s)
         SDL_SetRenderTarget(s->renderer, B);
         SDL_SetRenderDrawColor(s->renderer, 0x00, 0x00, 0x00, 0x00);
         SDL_RenderFillRect(s->renderer, NULL);
-        SDL_RenderCopy(s->renderer, A, NULL, NULL);
+        SDL_RenderTexture(s->renderer, A, NULL, NULL);
         SDL_RenderReadPixels(s->renderer, NULL, SDL_PIXELFORMAT_ARGB8888, &P, sizeof(P));
 
         SDL_Log("Blended pixel: 0x%8.8" SDL_PRIX32 "\n", P);
@@ -79,7 +79,7 @@ DrawComposite(DrawState *s)
         blend_tested = SDL_TRUE;
     }
 
-    SDL_RenderGetViewport(s->renderer, &viewport);
+    SDL_GetRenderViewport(s->renderer, &viewport);
 
     target = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, viewport.w, viewport.h);
     SDL_SetTextureBlendMode(target, SDL_BLENDMODE_BLEND);
@@ -106,10 +106,10 @@ DrawComposite(DrawState *s)
     s->sprite_rect.x = (viewport.w - s->sprite_rect.w) / 2;
     s->sprite_rect.y = (viewport.h - s->sprite_rect.h) / 2;
 
-    SDL_RenderCopy(s->renderer, s->sprite, NULL, &s->sprite_rect);
+    SDL_RenderTexture(s->renderer, s->sprite, NULL, &s->sprite_rect);
 
     SDL_SetRenderTarget(s->renderer, NULL);
-    SDL_RenderCopy(s->renderer, s->background, NULL, NULL);
+    SDL_RenderTexture(s->renderer, s->background, NULL, NULL);
 
     SDL_SetRenderDrawBlendMode(s->renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(s->renderer, 0xff, 0x00, 0x00, 0x80);
@@ -120,7 +120,7 @@ DrawComposite(DrawState *s)
     SDL_RenderFillRect(s->renderer, &R);
     SDL_SetRenderDrawBlendMode(s->renderer, SDL_BLENDMODE_NONE);
 
-    SDL_RenderCopy(s->renderer, target, NULL, NULL);
+    SDL_RenderTexture(s->renderer, target, NULL, NULL);
     SDL_DestroyTexture(target);
 
     /* Update the screen! */
@@ -134,7 +134,7 @@ Draw(DrawState *s)
     SDL_Rect viewport;
     SDL_Texture *target;
 
-    SDL_RenderGetViewport(s->renderer, &viewport);
+    SDL_GetRenderViewport(s->renderer, &viewport);
 
     target = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, viewport.w, viewport.h);
     if (target == NULL) {
@@ -144,7 +144,7 @@ Draw(DrawState *s)
     SDL_SetRenderTarget(s->renderer, target);
 
     /* Draw the background */
-    SDL_RenderCopy(s->renderer, s->background, NULL, NULL);
+    SDL_RenderTexture(s->renderer, s->background, NULL, NULL);
 
     /* Scale and draw the sprite */
     s->sprite_rect.w += s->scale_direction;
@@ -161,10 +161,10 @@ Draw(DrawState *s)
     s->sprite_rect.x = (viewport.w - s->sprite_rect.w) / 2;
     s->sprite_rect.y = (viewport.h - s->sprite_rect.h) / 2;
 
-    SDL_RenderCopy(s->renderer, s->sprite, NULL, &s->sprite_rect);
+    SDL_RenderTexture(s->renderer, s->sprite, NULL, &s->sprite_rect);
 
     SDL_SetRenderTarget(s->renderer, NULL);
-    SDL_RenderCopy(s->renderer, target, NULL, NULL);
+    SDL_RenderTexture(s->renderer, target, NULL, NULL);
     SDL_DestroyTexture(target);
 
     /* Update the screen! */

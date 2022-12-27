@@ -192,7 +192,7 @@ void MoveSprites(SDL_Renderer *renderer)
             SDL_UpdateTexture(MooseTexture, NULL, MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch);
         }
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, MooseTexture, NULL, &displayrect);
+        SDL_RenderTexture(renderer, MooseTexture, NULL, &displayrect);
         SDL_RenderPresent(renderer);
     } else {
         SDL_Texture *tmp;
@@ -209,7 +209,7 @@ void MoveSprites(SDL_Renderer *renderer)
         }
 
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, tmp, NULL, &displayrect);
+        SDL_RenderTexture(renderer, tmp, NULL, &displayrect);
         SDL_RenderPresent(renderer);
         SDL_DestroyTexture(tmp);
     }
@@ -230,7 +230,7 @@ void loop()
 
         switch (event.type) {
         case SDL_WINDOWEVENT_RESIZED:
-            SDL_RenderSetViewport(renderer, NULL);
+            SDL_SetRenderViewport(renderer, NULL);
             displayrect.w = window_w = event.window.data1;
             displayrect.h = window_h = event.window.data2;
             break;

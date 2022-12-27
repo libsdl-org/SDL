@@ -135,7 +135,7 @@ void
 getPositionForCharNumber(int n, int *x, int *y)
 {
     int renderW, renderH;
-    SDL_RenderGetLogicalSize(renderer, &renderW, &renderH);
+    SDL_GetRenderLogicalSize(renderer, &renderW, &renderH);
 
     int x_padding = 16;         /* padding space on left and right side of screen */
     int y_padding = 32;         /* padding space at top of screen */
@@ -157,7 +157,7 @@ drawGlyph(int glyph, int positionIndex)
     getPositionForCharNumber(positionIndex, &x, &y);
     SDL_Rect srcRect = { GLYPH_SIZE_IMAGE * glyph, 0, GLYPH_SIZE_IMAGE, GLYPH_SIZE_IMAGE };
     SDL_Rect dstRect = { x, y, GLYPH_SIZE_SCREEN, GLYPH_SIZE_SCREEN };
-    SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
+    SDL_RenderTexture(renderer, texture, &srcRect, &dstRect);
 }
 
 /* this function loads our font into an SDL_Texture and returns the SDL_Texture  */
@@ -227,7 +227,7 @@ main(int argc, char *argv[])
     renderer = SDL_CreateRenderer(window, NULL, SDL_RENDERER_PRESENTVSYNC);
 
     SDL_GetWindowSize(window, &width, &height);
-    SDL_RenderSetLogicalSize(renderer, width, height);
+    SDL_SetRenderLogicalSize(renderer, width, height);
 
     /* load up our font */
     loadFont();
@@ -253,7 +253,7 @@ main(int argc, char *argv[])
                 if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
 					width = event.window.data1;
 					height = event.window.data2;
-                    SDL_RenderSetLogicalSize(renderer, width, height);
+                    SDL_SetRenderLogicalSize(renderer, width, height);
 #ifdef TEST_INPUT_RECT
                     textrect.x = 0;
                     textrect.y = height - GLYPH_SIZE_IMAGE;

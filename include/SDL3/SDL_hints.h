@@ -1400,7 +1400,7 @@ extern "C" {
 #define SDL_HINT_RENDER_DRIVER              "SDL_RENDER_DRIVER"
 
 /**
- *  \brief  A variable controlling the scaling policy for SDL_RenderSetLogicalSize.
+ *  \brief  A variable controlling the scaling policy for SDL_SetRenderLogicalSize.
  *
  *  This variable can be set to the following values:
  *    "0" or "letterbox" - Uses letterbox/sidebars to fit the entire rendering on screen

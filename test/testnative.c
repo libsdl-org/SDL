@@ -59,7 +59,7 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_Rect *position, *velocity;
 
     /* Query the sizes */
-    SDL_RenderGetViewport(renderer, &viewport);
+    SDL_GetRenderViewport(renderer, &viewport);
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
 
     /* Draw a gray background */
@@ -82,7 +82,7 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
         }
 
         /* Blit the sprite onto the screen */
-        SDL_RenderCopy(renderer, sprite, NULL, position);
+        SDL_RenderTexture(renderer, sprite, NULL, position);
     }
 
     /* Update the screen! */

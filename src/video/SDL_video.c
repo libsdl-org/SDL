@@ -303,7 +303,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
     *pitch = data->pitch;
 
     /* Make sure we're not double-scaling the viewport */
-    SDL_RenderSetViewport(data->renderer, NULL);
+    SDL_SetRenderViewport(data->renderer, NULL);
 
     return 0;
 }
@@ -331,7 +331,7 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
             return -1;
         }
 
-        if (SDL_RenderCopy(data->renderer, data->texture, NULL, NULL) < 0) {
+        if (SDL_RenderTexture(data->renderer, data->texture, NULL, NULL) < 0) {
             return -1;
         }
 

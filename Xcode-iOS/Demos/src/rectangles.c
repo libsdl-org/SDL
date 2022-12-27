@@ -17,7 +17,7 @@ render(SDL_Renderer *renderer)
     int renderW;
     int renderH;
 
-    SDL_RenderGetLogicalSize(renderer, &renderW, &renderH);
+    SDL_GetRenderLogicalSize(renderer, &renderW, &renderH);
 
     /*  Come up with a random rectangle */
     SDL_Rect rect;
@@ -69,7 +69,7 @@ main(int argc, char *argv[])
     }
 
     SDL_GetWindowSize(window, &windowW, &windowH);
-    SDL_RenderSetLogicalSize(renderer, windowW, windowH);
+    SDL_SetRenderLogicalSize(renderer, windowW, windowH);
 
     /* Fill screen with black */
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

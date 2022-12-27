@@ -51,10 +51,10 @@ void Draw(DrawState *s)
 {
     SDL_Rect viewport;
 
-    SDL_RenderGetViewport(s->renderer, &viewport);
+    SDL_GetRenderViewport(s->renderer, &viewport);
 
     /* Draw the background */
-    SDL_RenderCopy(s->renderer, s->background, NULL, NULL);
+    SDL_RenderTexture(s->renderer, s->background, NULL, NULL);
 
     /* Scale and draw the sprite */
     s->sprite_rect.w += s->scale_direction;
@@ -71,7 +71,7 @@ void Draw(DrawState *s)
     s->sprite_rect.x = (viewport.w - s->sprite_rect.w) / 2;
     s->sprite_rect.y = (viewport.h - s->sprite_rect.h) / 2;
 
-    SDL_RenderCopy(s->renderer, s->sprite, NULL, &s->sprite_rect);
+    SDL_RenderTexture(s->renderer, s->sprite, NULL, &s->sprite_rect);
 
     /* Update the screen! */
     SDL_RenderPresent(s->renderer);

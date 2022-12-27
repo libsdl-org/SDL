@@ -98,13 +98,13 @@ render(SDL_Renderer *renderer, int w, int h, double deltaTime)
     }
 
     /* draw the background */
-    SDL_RenderCopy(renderer, space, NULL, NULL);
+    SDL_RenderTexture(renderer, space, NULL, NULL);
 
     /* draw the ship */
     shipData.rect.x = shipData.x;
     shipData.rect.y = shipData.y;
 
-    SDL_RenderCopy(renderer, ship, NULL, &shipData.rect);
+    SDL_RenderTexture(renderer, ship, NULL, &shipData.rect);
 
     /* update screen */
     SDL_RenderPresent(renderer);
@@ -174,7 +174,7 @@ main(int argc, char *argv[])
     renderer = SDL_CreateRenderer(window, NULL, 0);
     
     SDL_GetWindowSize(window, &w, &h);
-    SDL_RenderSetLogicalSize(renderer, w, h);
+    SDL_SetRenderLogicalSize(renderer, w, h);
 
     /* print out some info about joysticks and try to open accelerometer for use */
     printf("There are %d joysticks available\n", SDL_GetNumJoysticks());

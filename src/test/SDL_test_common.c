@@ -1316,9 +1316,9 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                     return SDL_FALSE;
                 }
                 if (state->logical_w && state->logical_h) {
-                    SDL_RenderSetLogicalSize(state->renderers[i], state->logical_w, state->logical_h);
+                    SDL_SetRenderLogicalSize(state->renderers[i], state->logical_w, state->logical_h);
                 } else if (state->scale != 0.) {
-                    SDL_RenderSetScale(state->renderers[i], state->scale, state->scale);
+                    SDL_SetRenderScale(state->renderers[i], state->scale, state->scale);
                 }
                 if (state->verbose & VERBOSE_RENDER) {
                     SDL_RendererInfo info;
@@ -1710,7 +1710,7 @@ static void SDLTest_ScreenShot(SDL_Renderer *renderer)
         return;
     }
 
-    SDL_RenderGetViewport(renderer, &viewport);
+    SDL_GetRenderViewport(renderer, &viewport);
 
     surface = SDL_CreateSurface(viewport.w, viewport.h, SDL_PIXELFORMAT_BGR24);
 
@@ -1920,15 +1920,15 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                     if (state->renderers[i]) {
                         SDL_Rect clip;
                         SDL_GetWindowSize(state->windows[i], &w, &h);
-                        SDL_RenderGetClipRect(state->renderers[i], &clip);
+                        SDL_GetRenderClipRect(state->renderers[i], &clip);
                         if (SDL_RectEmpty(&clip)) {
                             clip.x = w / 4;
                             clip.y = h / 4;
                             clip.w = w / 2;
                             clip.h = h / 2;
-                            SDL_RenderSetClipRect(state->renderers[i], &clip);
+                            SDL_SetRenderClipRect(state->renderers[i], &clip);
                         } else {
-                            SDL_RenderSetClipRect(state->renderers[i], NULL);
+                            SDL_SetRenderClipRect(state->renderers[i], NULL);
                         }
                     }
                 }
@@ -2218,20 +2218,20 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, in
         textY += lineHeight;
     }
 
-    SDL_RenderGetViewport(renderer, &rect);
-    (void)SDL_snprintf(text, sizeof text, "SDL_RenderGetViewport: %d,%d, %dx%d",
+    SDL_GetRenderViewport(renderer, &rect);
+    (void)SDL_snprintf(text, sizeof text, "SDL_GetRenderViewport: %d,%d, %dx%d",
                        rect.x, rect.y, rect.w, rect.h);
     SDLTest_DrawString(renderer, 0, textY, text);
     textY += lineHeight;
 
-    SDL_RenderGetScale(renderer, &scaleX, &scaleY);
-    (void)SDL_snprintf(text, sizeof text, "SDL_RenderGetScale: %f,%f",
+    SDL_GetRenderScale(renderer, &scaleX, &scaleY);
+    (void)SDL_snprintf(text, sizeof text, "SDL_GetRenderScale: %f,%f",
                        scaleX, scaleY);
     SDLTest_DrawString(renderer, 0, textY, text);
     textY += lineHeight;
 
-    SDL_RenderGetLogicalSize(renderer, &w, &h);
-    (void)SDL_snprintf(text, sizeof text, "SDL_RenderGetLogicalSize: %dx%d", w, h);
+    SDL_GetRenderLogicalSize(renderer, &w, &h);
+    (void)SDL_snprintf(text, sizeof text, "SDL_GetRenderLogicalSize: %dx%d", w, h);
     SDLTest_DrawString(renderer, 0, textY, text);
     textY += lineHeight;
 

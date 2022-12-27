@@ -365,7 +365,7 @@ WatchJoystick(SDL_Joystick *joystick)
     SDL_RaiseWindow(window);
 
     /* scale for platforms that don't give you the window size you asked for. */
-    SDL_RenderSetLogicalSize(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
+    SDL_SetRenderLogicalSize(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     /* Print info about the joystick we are watching */
     name = SDL_GetJoystickName(joystick);
@@ -424,13 +424,13 @@ WatchJoystick(SDL_Joystick *joystick)
         SDL_RenderClear(screen);
         if (s_arrBindingOrder[s_iCurrentBinding] >= SDL_CONTROLLER_BUTTON_PADDLE1 &&
             s_arrBindingOrder[s_iCurrentBinding] <= SDL_CONTROLLER_BUTTON_PADDLE4) {
-            SDL_RenderCopy(screen, background_back, NULL, NULL);
+            SDL_RenderTexture(screen, background_back, NULL, NULL);
         } else {
-            SDL_RenderCopy(screen, background_front, NULL, NULL);
+            SDL_RenderTexture(screen, background_front, NULL, NULL);
         }
         SDL_SetTextureAlphaMod(marker, alpha);
         SDL_SetTextureColorMod(marker, 10, 255, 21);
-        SDL_RenderCopyEx(screen, marker, NULL, &dst, s_arrBindingDisplay[iElement].angle, NULL, SDL_FLIP_NONE);
+        SDL_RenderTextureRotated(screen, marker, NULL, &dst, s_arrBindingDisplay[iElement].angle, NULL, SDL_FLIP_NONE);
         SDL_RenderPresent(screen);
 
         while (SDL_PollEvent(&event) > 0) {

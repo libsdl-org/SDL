@@ -110,7 +110,7 @@ void loop()
             int cx, cy;
 
             /* Query the sizes */
-            SDL_RenderGetViewport(renderer, &viewport);
+            SDL_GetRenderViewport(renderer, &viewport);
             SDL_zeroa(verts);
             cx = viewport.x + viewport.w / 2;
             cy = viewport.y + viewport.h / 2;

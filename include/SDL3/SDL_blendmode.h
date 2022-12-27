@@ -35,7 +35,7 @@ extern "C" {
 #endif
 
 /**
- *  \brief The blend mode used in SDL_RenderCopy() and drawing operations.
+ *  \brief The blend mode used in SDL_RenderTexture() and drawing operations.
  */
 typedef enum
 {

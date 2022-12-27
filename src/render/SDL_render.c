@@ -1057,7 +1057,7 @@ SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
 
     SDL_SetWindowData(window, SDL_WINDOWRENDERDATA, renderer);
 
-    SDL_RenderSetViewport(renderer, NULL);
+    SDL_SetRenderViewport(renderer, NULL);
 
     SDL_AddEventWatch(SDL_RendererEventWatch, renderer);
 
@@ -1103,7 +1103,7 @@ SDL_CreateSoftwareRenderer(SDL_Surface *surface)
         /* Software renderer always uses line method, for speed */
         renderer->line_method = SDL_RENDERLINEMETHOD_LINES;
 
-        SDL_RenderSetViewport(renderer, NULL);
+        SDL_SetRenderViewport(renderer, NULL);
     }
     return renderer;
 #else
@@ -1119,7 +1119,7 @@ SDL_GetRenderer(SDL_Window *window)
 }
 
 SDL_Window *
-SDL_RenderGetWindow(SDL_Renderer *renderer)
+SDL_GetRenderWindow(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
     return renderer->window;
@@ -2141,7 +2141,7 @@ void SDL_UnlockTexture(SDL_Texture *texture)
 }
 
 SDL_bool
-SDL_RenderTargetSupported(SDL_Renderer *renderer)
+SDL_IsRenderTargetSupported(SDL_Renderer *renderer)
 {
     if (renderer == NULL || !renderer->SetRenderTarget) {
         return SDL_FALSE;
@@ -2151,7 +2151,7 @@ SDL_RenderTargetSupported(SDL_Renderer *renderer)
 
 int SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    if (!SDL_RenderTargetSupported(renderer)) {
+    if (!SDL_IsRenderTargetSupported(renderer)) {
         return SDL_Unsupported();
     }
 
@@ -2276,7 +2276,7 @@ static int UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd
     real_aspect = (float)w / h;
 
     /* Clear the scale because we're setting viewport in output coordinates */
-    SDL_RenderSetScale(renderer, 1.0f, 1.0f);
+    SDL_SetRenderScale(renderer, 1.0f, 1.0f);
 
     if (renderer->integer_scale) {
         if (want_aspect > real_aspect) {
@@ -2350,12 +2350,12 @@ static int UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd
     }
 
     /* Set the new scale */
-    SDL_RenderSetScale(renderer, scale, scale);
+    SDL_SetRenderScale(renderer, scale, scale);
 
     return 0;
 }
 
-int SDL_RenderSetLogicalSize(SDL_Renderer *renderer, int w, int h)
+int SDL_SetRenderLogicalSize(SDL_Renderer *renderer, int w, int h)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2363,8 +2363,8 @@ int SDL_RenderSetLogicalSize(SDL_Renderer *renderer, int w, int h)
         /* Clear any previous logical resolution */
         renderer->logical_w = 0;
         renderer->logical_h = 0;
-        SDL_RenderSetViewport(renderer, NULL);
-        SDL_RenderSetScale(renderer, 1.0f, 1.0f);
+        SDL_SetRenderViewport(renderer, NULL);
+        SDL_SetRenderScale(renderer, 1.0f, 1.0f);
         return 0;
     }
 
@@ -2374,7 +2374,7 @@ int SDL_RenderSetLogicalSize(SDL_Renderer *renderer, int w, int h)
     return UpdateLogicalSize(renderer, SDL_TRUE);
 }
 
-void SDL_RenderGetLogicalSize(SDL_Renderer *renderer, int *w, int *h)
+void SDL_GetRenderLogicalSize(SDL_Renderer *renderer, int *w, int *h)
 {
     CHECK_RENDERER_MAGIC(renderer, );
 
@@ -2386,7 +2386,7 @@ void SDL_RenderGetLogicalSize(SDL_Renderer *renderer, int *w, int *h)
     }
 }
 
-int SDL_RenderSetIntegerScale(SDL_Renderer *renderer, SDL_bool enable)
+int SDL_SetRenderIntegerScale(SDL_Renderer *renderer, SDL_bool enable)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2397,14 +2397,14 @@ int SDL_RenderSetIntegerScale(SDL_Renderer *renderer, SDL_bool enable)
 
 SDL_bool
     SDLCALL
-    SDL_RenderGetIntegerScale(SDL_Renderer *renderer)
+    SDL_GetRenderIntegerScale(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, SDL_FALSE);
 
     return renderer->integer_scale;
 }
 
-int SDL_RenderSetViewport(SDL_Renderer *renderer, const SDL_Rect *rect)
+int SDL_SetRenderViewport(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     int retval;
     CHECK_RENDERER_MAGIC(renderer, -1);
@@ -2430,7 +2430,7 @@ int SDL_RenderSetViewport(SDL_Renderer *renderer, const SDL_Rect *rect)
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-void SDL_RenderGetViewport(SDL_Renderer *renderer, SDL_Rect *rect)
+void SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect)
 {
     CHECK_RENDERER_MAGIC(renderer, );
 
@@ -2450,7 +2450,7 @@ static void RenderGetViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
     rect->h = (float)(renderer->viewport.h / renderer->scale.y);
 }
 
-int SDL_RenderSetClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
+int SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     int retval;
     CHECK_RENDERER_MAGIC(renderer, -1)
@@ -2470,7 +2470,7 @@ int SDL_RenderSetClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-void SDL_RenderGetClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
+void SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
 {
     CHECK_RENDERER_MAGIC(renderer, )
 
@@ -2483,13 +2483,13 @@ void SDL_RenderGetClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
 }
 
 SDL_bool
-SDL_RenderIsClipEnabled(SDL_Renderer *renderer)
+SDL_IsRenderClipEnabled(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, SDL_FALSE)
     return renderer->clipping_enabled;
 }
 
-int SDL_RenderSetScale(SDL_Renderer *renderer, float scaleX, float scaleY)
+int SDL_SetRenderScale(SDL_Renderer *renderer, float scaleX, float scaleY)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2498,7 +2498,7 @@ int SDL_RenderSetScale(SDL_Renderer *renderer, float scaleX, float scaleY)
     return 0;
 }
 
-void SDL_RenderGetScale(SDL_Renderer *renderer, float *scaleX, float *scaleY)
+void SDL_GetRenderScale(SDL_Renderer *renderer, float *scaleX, float *scaleY)
 {
     CHECK_RENDERER_MAGIC(renderer, );
 
@@ -2606,20 +2606,20 @@ int SDL_RenderClear(SDL_Renderer *renderer)
 /* !!! FIXME: delete all the duplicate code for the integer versions in 2.1,
    !!! FIXME:  making the floating point versions the only available APIs. */
 
-int SDL_RenderDrawPoint(SDL_Renderer *renderer, int x, int y)
+int SDL_RenderPoint(SDL_Renderer *renderer, int x, int y)
 {
     SDL_FPoint fpoint;
     fpoint.x = (float)x;
     fpoint.y = (float)y;
-    return SDL_RenderDrawPointsF(renderer, &fpoint, 1);
+    return SDL_RenderPointsF(renderer, &fpoint, 1);
 }
 
-int SDL_RenderDrawPointF(SDL_Renderer *renderer, float x, float y)
+int SDL_RenderPointF(SDL_Renderer *renderer, float x, float y)
 {
     SDL_FPoint fpoint;
     fpoint.x = x;
     fpoint.y = y;
-    return SDL_RenderDrawPointsF(renderer, &fpoint, 1);
+    return SDL_RenderPointsF(renderer, &fpoint, 1);
 }
 
 static int RenderDrawPointsWithRects(SDL_Renderer *renderer,
@@ -2653,7 +2653,7 @@ static int RenderDrawPointsWithRects(SDL_Renderer *renderer,
     return retval;
 }
 
-int SDL_RenderDrawPoints(SDL_Renderer *renderer,
+int SDL_RenderPoints(SDL_Renderer *renderer,
                          const SDL_Point *points, int count)
 {
     SDL_FPoint *fpoints;
@@ -2664,7 +2664,7 @@ int SDL_RenderDrawPoints(SDL_Renderer *renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (points == NULL) {
-        return SDL_InvalidParamError("SDL_RenderDrawPoints(): points");
+        return SDL_InvalidParamError("SDL_RenderPoints(): points");
     }
     if (count < 1) {
         return 0;
@@ -2727,7 +2727,7 @@ static int RenderDrawPointsWithRectsF(SDL_Renderer *renderer,
     return retval;
 }
 
-int SDL_RenderDrawPointsF(SDL_Renderer *renderer,
+int SDL_RenderPointsF(SDL_Renderer *renderer,
                           const SDL_FPoint *points, int count)
 {
     int retval;
@@ -2735,7 +2735,7 @@ int SDL_RenderDrawPointsF(SDL_Renderer *renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (points == NULL) {
-        return SDL_InvalidParamError("SDL_RenderDrawPointsF(): points");
+        return SDL_InvalidParamError("SDL_RenderPointsF(): points");
     }
     if (count < 1) {
         return 0;
@@ -2756,24 +2756,24 @@ int SDL_RenderDrawPointsF(SDL_Renderer *renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int SDL_RenderDrawLine(SDL_Renderer *renderer, int x1, int y1, int x2, int y2)
+int SDL_RenderLine(SDL_Renderer *renderer, int x1, int y1, int x2, int y2)
 {
     SDL_FPoint points[2];
     points[0].x = (float)x1;
     points[0].y = (float)y1;
     points[1].x = (float)x2;
     points[1].y = (float)y2;
-    return SDL_RenderDrawLinesF(renderer, points, 2);
+    return SDL_RenderLinesF(renderer, points, 2);
 }
 
-int SDL_RenderDrawLineF(SDL_Renderer *renderer, float x1, float y1, float x2, float y2)
+int SDL_RenderLineF(SDL_Renderer *renderer, float x1, float y1, float x2, float y2)
 {
     SDL_FPoint points[2];
     points[0].x = x1;
     points[0].y = y1;
     points[1].x = x2;
     points[1].y = y2;
-    return SDL_RenderDrawLinesF(renderer, points, 2);
+    return SDL_RenderLinesF(renderer, points, 2);
 }
 
 static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_bool draw_last)
@@ -2929,7 +2929,7 @@ static int RenderDrawLinesWithRectsF(SDL_Renderer *renderer,
     return retval;
 }
 
-int SDL_RenderDrawLines(SDL_Renderer *renderer,
+int SDL_RenderLines(SDL_Renderer *renderer,
                         const SDL_Point *points, int count)
 {
     SDL_FPoint *fpoints;
@@ -2940,7 +2940,7 @@ int SDL_RenderDrawLines(SDL_Renderer *renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (points == NULL) {
-        return SDL_InvalidParamError("SDL_RenderDrawLines(): points");
+        return SDL_InvalidParamError("SDL_RenderLines(): points");
     }
     if (count < 2) {
         return 0;
@@ -2963,14 +2963,14 @@ int SDL_RenderDrawLines(SDL_Renderer *renderer,
         fpoints[i].y = (float)points[i].y;
     }
 
-    retval = SDL_RenderDrawLinesF(renderer, fpoints, count);
+    retval = SDL_RenderLinesF(renderer, fpoints, count);
 
     SDL_small_free(fpoints, isstack);
 
     return retval;
 }
 
-int SDL_RenderDrawLinesF(SDL_Renderer *renderer,
+int SDL_RenderLinesF(SDL_Renderer *renderer,
                          const SDL_FPoint *points, int count)
 {
     int retval = 0;
@@ -2978,7 +2978,7 @@ int SDL_RenderDrawLinesF(SDL_Renderer *renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (points == NULL) {
-        return SDL_InvalidParamError("SDL_RenderDrawLinesF(): points");
+        return SDL_InvalidParamError("SDL_RenderLinesF(): points");
     }
     if (count < 2) {
         return 0;
@@ -3122,7 +3122,7 @@ int SDL_RenderDrawLinesF(SDL_Renderer *renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int SDL_RenderDrawRect(SDL_Renderer *renderer, const SDL_Rect *rect)
+int SDL_RenderRect(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     SDL_FRect frect;
     SDL_FRect *prect = NULL;
@@ -3135,10 +3135,10 @@ int SDL_RenderDrawRect(SDL_Renderer *renderer, const SDL_Rect *rect)
         prect = &frect;
     }
 
-    return SDL_RenderDrawRectF(renderer, prect);
+    return SDL_RenderRectF(renderer, prect);
 }
 
-int SDL_RenderDrawRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
+int SDL_RenderRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
 {
     SDL_FRect frect;
     SDL_FPoint points[5];
@@ -3161,10 +3161,10 @@ int SDL_RenderDrawRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
     points[3].y = rect->y + rect->h - 1;
     points[4].x = rect->x;
     points[4].y = rect->y;
-    return SDL_RenderDrawLinesF(renderer, points, 5);
+    return SDL_RenderLinesF(renderer, points, 5);
 }
 
-int SDL_RenderDrawRects(SDL_Renderer *renderer,
+int SDL_RenderRects(SDL_Renderer *renderer,
                         const SDL_Rect *rects, int count)
 {
     int i;
@@ -3172,7 +3172,7 @@ int SDL_RenderDrawRects(SDL_Renderer *renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (rects == NULL) {
-        return SDL_InvalidParamError("SDL_RenderDrawRects(): rects");
+        return SDL_InvalidParamError("SDL_RenderRects(): rects");
     }
     if (count < 1) {
         return 0;
@@ -3186,14 +3186,14 @@ int SDL_RenderDrawRects(SDL_Renderer *renderer,
 #endif
 
     for (i = 0; i < count; ++i) {
-        if (SDL_RenderDrawRect(renderer, &rects[i]) < 0) {
+        if (SDL_RenderRect(renderer, &rects[i]) < 0) {
             return -1;
         }
     }
     return 0;
 }
 
-int SDL_RenderDrawRectsF(SDL_Renderer *renderer,
+int SDL_RenderRectsF(SDL_Renderer *renderer,
                          const SDL_FRect *rects, int count)
 {
     int i;
@@ -3201,7 +3201,7 @@ int SDL_RenderDrawRectsF(SDL_Renderer *renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (rects == NULL) {
-        return SDL_InvalidParamError("SDL_RenderDrawRectsF(): rects");
+        return SDL_InvalidParamError("SDL_RenderRectsF(): rects");
     }
     if (count < 1) {
         return 0;
@@ -3215,7 +3215,7 @@ int SDL_RenderDrawRectsF(SDL_Renderer *renderer,
 #endif
 
     for (i = 0; i < count; ++i) {
-        if (SDL_RenderDrawRectF(renderer, &rects[i]) < 0) {
+        if (SDL_RenderRectF(renderer, &rects[i]) < 0) {
             return -1;
         }
     }
@@ -3338,7 +3338,7 @@ int SDL_RenderFillRectsF(SDL_Renderer *renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int SDL_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture,
+int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                    const SDL_Rect *srcrect, const SDL_Rect *dstrect)
 {
     SDL_FRect dstfrect;
@@ -3350,10 +3350,10 @@ int SDL_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture,
         dstfrect.h = (float)dstrect->h;
         pdstfrect = &dstfrect;
     }
-    return SDL_RenderCopyF(renderer, texture, srcrect, pdstfrect);
+    return SDL_RenderTextureF(renderer, texture, srcrect, pdstfrect);
 }
 
-int SDL_RenderCopyF(SDL_Renderer *renderer, SDL_Texture *texture,
+int SDL_RenderTextureF(SDL_Renderer *renderer, SDL_Texture *texture,
                     const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
     SDL_Rect real_srcrect;
@@ -3458,7 +3458,7 @@ int SDL_RenderCopyF(SDL_Renderer *renderer, SDL_Texture *texture,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int SDL_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture,
+int SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
                      const SDL_Rect *srcrect, const SDL_Rect *dstrect,
                      const double angle, const SDL_Point *center, const SDL_RendererFlip flip)
 {
@@ -3481,10 +3481,10 @@ int SDL_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture,
         pfcenter = &fcenter;
     }
 
-    return SDL_RenderCopyExF(renderer, texture, srcrect, pdstfrect, angle, pfcenter, flip);
+    return SDL_RenderTextureRotatedF(renderer, texture, srcrect, pdstfrect, angle, pfcenter, flip);
 }
 
-int SDL_RenderCopyExF(SDL_Renderer *renderer, SDL_Texture *texture,
+int SDL_RenderTextureRotatedF(SDL_Renderer *renderer, SDL_Texture *texture,
                       const SDL_Rect *srcrect, const SDL_FRect *dstrect,
                       const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
@@ -3495,7 +3495,7 @@ int SDL_RenderCopyExF(SDL_Renderer *renderer, SDL_Texture *texture,
     int use_rendergeometry;
 
     if (flip == SDL_FLIP_NONE && (int)(angle / 360) == angle / 360) { /* fast path when we don't need rotation or flipping */
-        return SDL_RenderCopyF(renderer, texture, srcrect, dstrect);
+        return SDL_RenderTextureF(renderer, texture, srcrect, dstrect);
     }
 
     CHECK_RENDERER_MAGIC(renderer, -1);
@@ -3941,7 +3941,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 SDL_SetTextureAlphaMod(texture, col0_.a);
                 SDL_SetTextureColorMod(texture, col0_.r, col0_.g, col0_.b);
                 if (s.w > 0 && s.h > 0) {
-                    SDL_RenderCopyF(renderer, texture, &s, &d);
+                    SDL_RenderTextureF(renderer, texture, &s, &d);
                 } else {
                     int flags = 0;
                     if (s.w < 0) {
@@ -3954,7 +3954,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                         s.h *= -1;
                         s.y -= s.h;
                     }
-                    SDL_RenderCopyExF(renderer, texture, &s, &d, 0, NULL, flags);
+                    SDL_RenderTextureRotatedF(renderer, texture, &s, &d, 0, NULL, flags);
                 }
 
 #if DEBUG_SW_RENDER_GEOMETRY
@@ -4350,7 +4350,7 @@ int SDL_GL_UnbindTexture(SDL_Texture *texture)
 }
 
 void *
-SDL_RenderGetMetalLayer(SDL_Renderer *renderer)
+SDL_GetRenderMetalLayer(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
@@ -4362,7 +4362,7 @@ SDL_RenderGetMetalLayer(SDL_Renderer *renderer)
 }
 
 void *
-SDL_RenderGetMetalCommandEncoder(SDL_Renderer *renderer)
+SDL_GetRenderMetalCommandEncoder(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
@@ -4466,7 +4466,7 @@ SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode)
     return (SDL_BlendOperation)(((Uint32)blendMode >> 16) & 0xF);
 }
 
-int SDL_RenderSetVSync(SDL_Renderer *renderer, int vsync)
+int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 

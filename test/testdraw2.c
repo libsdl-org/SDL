@@ -45,7 +45,7 @@ void DrawPoints(SDL_Renderer *renderer)
     SDL_Rect viewport;
 
     /* Query the sizes */
-    SDL_RenderGetViewport(renderer, &viewport);
+    SDL_GetRenderViewport(renderer, &viewport);
 
     for (i = 0; i < num_objects * 4; ++i) {
         /* Cycle the color and alpha, if desired */
@@ -76,7 +76,7 @@ void DrawPoints(SDL_Renderer *renderer)
 
         x = rand() % viewport.w;
         y = rand() % viewport.h;
-        SDL_RenderDrawPoint(renderer, x, y);
+        SDL_RenderPoint(renderer, x, y);
     }
 }
 
@@ -87,7 +87,7 @@ void DrawLines(SDL_Renderer *renderer)
     SDL_Rect viewport;
 
     /* Query the sizes */
-    SDL_RenderGetViewport(renderer, &viewport);
+    SDL_GetRenderViewport(renderer, &viewport);
 
     for (i = 0; i < num_objects; ++i) {
         /* Cycle the color and alpha, if desired */
@@ -117,16 +117,16 @@ void DrawLines(SDL_Renderer *renderer)
                                (Uint8)current_color, (Uint8)current_alpha);
 
         if (i == 0) {
-            SDL_RenderDrawLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
-            SDL_RenderDrawLine(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
-            SDL_RenderDrawLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
-            SDL_RenderDrawLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
+            SDL_RenderLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
+            SDL_RenderLine(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
+            SDL_RenderLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
+            SDL_RenderLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
         } else {
             x1 = (rand() % (viewport.w * 2)) - viewport.w;
             x2 = (rand() % (viewport.w * 2)) - viewport.w;
             y1 = (rand() % (viewport.h * 2)) - viewport.h;
             y2 = (rand() % (viewport.h * 2)) - viewport.h;
-            SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+            SDL_RenderLine(renderer, x1, y1, x2, y2);
         }
     }
 }
@@ -138,7 +138,7 @@ void DrawRects(SDL_Renderer *renderer)
     SDL_Rect viewport;
 
     /* Query the sizes */
-    SDL_RenderGetViewport(renderer, &viewport);
+    SDL_GetRenderViewport(renderer, &viewport);
 
     for (i = 0; i < num_objects / 4; ++i) {
         /* Cycle the color and alpha, if desired */

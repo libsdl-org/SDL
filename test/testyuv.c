@@ -429,7 +429,7 @@ int main(int argc, char **argv)
             }
 
             SDL_RenderClear(renderer);
-            SDL_RenderCopy(renderer, output[current], NULL, NULL);
+            SDL_RenderTexture(renderer, output[current], NULL, NULL);
             SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
             if (current == 0) {
                 SDLTest_DrawString(renderer, 4, 4, titles[current]);

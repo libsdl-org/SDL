@@ -225,7 +225,7 @@ void loop()
             int y = 0;
             SDL_Rect viewport, menurect;
 
-            SDL_RenderGetViewport(renderer, &viewport);
+            SDL_GetRenderViewport(renderer, &viewport);
 
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);

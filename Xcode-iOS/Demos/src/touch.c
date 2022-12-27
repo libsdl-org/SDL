@@ -46,7 +46,7 @@ drawLine(SDL_Renderer *renderer, float startx, float starty, float dx, float dy)
         x += dx_prime;
         y += dy_prime;
         /* draw brush blot */
-        SDL_RenderCopy(renderer, brush, NULL, &dstRect);
+        SDL_RenderTexture(renderer, brush, NULL, &dstRect);
     }
 }
 
@@ -96,7 +96,7 @@ main(int argc, char *argv[])
     renderer = SDL_CreateRenderer(window, NULL, 0);
 
     SDL_GetWindowSize(window, &w, &h);
-    SDL_RenderSetLogicalSize(renderer, w, h);
+    SDL_SetRenderLogicalSize(renderer, w, h);
 
     /* load brush texture */
     initializeTexture(renderer);
@@ -127,7 +127,7 @@ main(int argc, char *argv[])
             }
         }
 
-        SDL_RenderCopy(renderer, target, NULL, NULL);
+        SDL_RenderTexture(renderer, target, NULL, NULL);
         SDL_RenderPresent(renderer);
     }
 
