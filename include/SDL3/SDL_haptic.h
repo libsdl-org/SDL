@@ -137,8 +137,8 @@ extern "C" {
  *  \sa SDL_HapticOpenFromJoystick
  *  \sa SDL_HapticClose
  */
-struct _SDL_Haptic;
-typedef struct _SDL_Haptic SDL_Haptic;
+struct SDL_Haptic;
+typedef struct SDL_Haptic SDL_Haptic;
 
 
 /**

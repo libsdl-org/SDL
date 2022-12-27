@@ -48,8 +48,8 @@ extern "C" {
  *  for sensors, and load appropriate drivers.
  */
 
-struct _SDL_Sensor;
-typedef struct _SDL_Sensor SDL_Sensor;
+struct SDL_Sensor;
+typedef struct SDL_Sensor SDL_Sensor;
 
 /**
  * This is a unique ID for a sensor for the time it is connected to the system,

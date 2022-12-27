@@ -32,7 +32,7 @@ extern "C" {
 #endif
 
 /* The SDL joystick structure */
-typedef struct _SDL_JoystickAxisInfo
+typedef struct SDL_JoystickAxisInfo
 {
     Sint16 initial_value;           /* Initial axis state */
     Sint16 value;                   /* Current axis state */
@@ -43,7 +43,7 @@ typedef struct _SDL_JoystickAxisInfo
     SDL_bool sending_initial_value; /* Whether we are sending the initial axis value */
 } SDL_JoystickAxisInfo;
 
-typedef struct _SDL_JoystickTouchpadFingerInfo
+typedef struct SDL_JoystickTouchpadFingerInfo
 {
     Uint8 state;
     float x;
@@ -51,13 +51,13 @@ typedef struct _SDL_JoystickTouchpadFingerInfo
     float pressure;
 } SDL_JoystickTouchpadFingerInfo;
 
-typedef struct _SDL_JoystickTouchpadInfo
+typedef struct SDL_JoystickTouchpadInfo
 {
     int nfingers;
     SDL_JoystickTouchpadFingerInfo *fingers;
 } SDL_JoystickTouchpadInfo;
 
-typedef struct _SDL_JoystickSensorInfo
+typedef struct SDL_JoystickSensorInfo
 {
     SDL_SensorType type;
     SDL_bool enabled;
@@ -113,7 +113,7 @@ struct _SDL_Joystick
     SDL_bool delayed_guide_button _guarded;      /* SDL_TRUE if this device has the guide button event delayed */
     SDL_JoystickPowerLevel epowerlevel _guarded; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
 
-    struct _SDL_JoystickDriver *driver _guarded;
+    struct SDL_JoystickDriver *driver _guarded;
 
     struct joystick_hwdata *hwdata _guarded; /* Driver dependent information */
 
@@ -138,7 +138,7 @@ struct _SDL_Joystick
 /* Macro to combine a USB vendor ID and product ID into a single Uint32 value */
 #define MAKE_VIDPID(VID, PID) (((Uint32)(VID)) << 16 | (PID))
 
-typedef struct _SDL_JoystickDriver
+typedef struct SDL_JoystickDriver
 {
     /* Function to scan the system for joysticks.
      * Joystick 0 should be the system default joystick.
