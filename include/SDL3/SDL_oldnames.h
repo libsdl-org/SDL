@@ -39,6 +39,9 @@
  */
 #ifdef SDL_ENABLE_OLD_NAMES
 
+/* ##SDL_audio.h */
+#define SDL_FreeWAV SDL_free
+
 /* ##SDL_keycode.h */
 #define KMOD_ALT SDL_KMOD_ALT
 #define KMOD_CAPS SDL_KMOD_CAPS
@@ -73,6 +76,9 @@
 #define RW_SEEK_SET SDL_RW_SEEK_SET
 
 #else /* !SDL_ENABLE_OLD_NAMES */
+
+/* ##SDL_audio.h */
+#define SDL_FreeWAV SDL_FreeWAV_renamed_SDL_free
 
 /* ##SDL_keycode.h */
 #define KMOD_ALT KMOD_ALT_renamed_SDL_KMOD_ALT

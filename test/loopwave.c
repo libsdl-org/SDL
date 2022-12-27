@@ -59,7 +59,7 @@ open_audio()
     device = SDL_OpenAudioDevice(NULL, SDL_FALSE, &wave.spec, NULL, 0);
     if (!device) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
-        SDL_FreeWAV(wave.sound);
+        SDL_free(wave.sound);
         quit(2);
     }
 
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 
     /* Clean up on signal */
     close_audio();
-    SDL_FreeWAV(wave.sound);
+    SDL_free(wave.sound);
     SDL_free(filename);
     SDL_Quit();
     return 0;
