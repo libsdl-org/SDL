@@ -80,7 +80,6 @@
 #define SDL_PauseAudio SDL_PauseAudio_REAL
 #define SDL_PauseAudioDevice SDL_PauseAudioDevice_REAL
 #define SDL_LoadWAV_RW SDL_LoadWAV_RW_REAL
-#define SDL_FreeWAV SDL_FreeWAV_REAL
 #define SDL_BuildAudioCVT SDL_BuildAudioCVT_REAL
 #define SDL_ConvertAudio SDL_ConvertAudio_REAL
 #define SDL_MixAudio SDL_MixAudio_REAL

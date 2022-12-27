@@ -767,7 +767,7 @@ extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev,
  * data in the buffer. The `samples` member is set to a sane default and all
  * others are set to zero.
  *
- * It's necessary to use SDL_FreeWAV() to free the audio data returned in
+ * It's necessary to use SDL_free() to free the audio data returned in
  * `audio_buf` when it is no longer used.
  *
  * Because of the underspecification of the .WAV format, there are many
@@ -819,11 +819,11 @@ extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev,
  *          more information.
  *
  *          When the application is done with the data returned in
- *          `audio_buf`, it should call SDL_FreeWAV() to dispose of it.
+ *          `audio_buf`, it should call SDL_free() to dispose of it.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_FreeWAV
+ * \sa SDL_free
  * \sa SDL_LoadWAV
  */
 extern DECLSPEC SDL_AudioSpec *SDLCALL SDL_LoadWAV_RW(SDL_RWops * src,
@@ -838,23 +838,6 @@ extern DECLSPEC SDL_AudioSpec *SDLCALL SDL_LoadWAV_RW(SDL_RWops * src,
  */
 #define SDL_LoadWAV(file, spec, audio_buf, audio_len) \
     SDL_LoadWAV_RW(SDL_RWFromFile(file, "rb"),1, spec,audio_buf,audio_len)
-
-/**
- * Free data previously allocated with SDL_LoadWAV() or SDL_LoadWAV_RW().
- *
- * After a WAVE file has been opened with SDL_LoadWAV() or SDL_LoadWAV_RW()
- * its data can eventually be freed with SDL_FreeWAV(). It is safe to call
- * this function with a NULL pointer.
- *
- * \param audio_buf a pointer to the buffer created by SDL_LoadWAV() or
- *                  SDL_LoadWAV_RW()
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_LoadWAV
- * \sa SDL_LoadWAV_RW
- */
-extern DECLSPEC void SDLCALL SDL_FreeWAV(Uint8 * audio_buf);
 
 /**
  * Initialize an SDL_AudioCVT structure for conversion.

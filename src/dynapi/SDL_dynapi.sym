@@ -46,7 +46,6 @@ SDL3_0.0.0 {
     SDL_PauseAudio;
     SDL_PauseAudioDevice;
     SDL_LoadWAV_RW;
-    SDL_FreeWAV;
     SDL_BuildAudioCVT;
     SDL_ConvertAudio;
     SDL_NewAudioStream;

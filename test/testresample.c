@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     if (SDL_BuildAudioCVT(&cvt, spec.format, spec.channels, spec.freq,
                           spec.format, cvtchans, cvtfreq) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to build CVT: %s\n", SDL_GetError());
-        SDL_FreeWAV(data);
+        SDL_free(data);
         SDL_Quit();
         return 4;
     }
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     cvt.buf = (Uint8 *)SDL_malloc((size_t)len * cvt.len_mult);
     if (cvt.buf == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory.\n");
-        SDL_FreeWAV(data);
+        SDL_free(data);
         SDL_Quit();
         return 5;
     }
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     if (SDL_ConvertAudio(&cvt) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Conversion failed: %s\n", SDL_GetError());
         SDL_free(cvt.buf);
-        SDL_FreeWAV(data);
+        SDL_free(data);
         SDL_Quit();
         return 6;
     }
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
     if (io == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen('%s') failed: %s\n", argv[2], SDL_GetError());
         SDL_free(cvt.buf);
-        SDL_FreeWAV(data);
+        SDL_free(data);
         SDL_Quit();
         return 7;
     }
@@ -106,13 +106,13 @@ int main(int argc, char **argv)
     if (SDL_RWclose(io) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fclose('%s') failed: %s\n", argv[2], SDL_GetError());
         SDL_free(cvt.buf);
-        SDL_FreeWAV(data);
+        SDL_free(data);
         SDL_Quit();
         return 8;
     } /* if */
 
     SDL_free(cvt.buf);
-    SDL_FreeWAV(data);
+    SDL_free(data);
     SDL_Quit();
     return 0;
 } /* main */

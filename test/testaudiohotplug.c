@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
     /* Clean up on signal */
     /* Quit audio first, then free WAV. This prevents access violations in the audio threads. */
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
-    SDL_FreeWAV(sound);
+    SDL_free(sound);
     SDL_free(filename);
     SDL_Quit();
     return 0;
