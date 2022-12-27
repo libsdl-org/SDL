@@ -40,6 +40,12 @@ begin_code.h and close_code.h in the public headers have been renamed to SDL_beg
 
 The vi format comments have been removed from source code. Vim users can use the [editorconfig plugin](https://github.com/editorconfig/editorconfig-vim) to automatically set tab spacing for the SDL coding style.
 
+
+## SDL_audio.h
+
+- SDL_AudioInit() and SDL_AudioQuit() are removed. Prefer the SDL_InitSubSytem() and SDL_QuitSubSytem functions, with flags SDL_INIT_AUDIO.
+  Also the hint SDL_AUDIO_DRIVER
+
 ## SDL_cpuinfo.h
 
 - SDL_Has3DNow() has been removed; there is no replacement.

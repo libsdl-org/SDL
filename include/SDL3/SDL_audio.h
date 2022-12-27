@@ -299,47 +299,6 @@ extern DECLSPEC const char *SDLCALL SDL_GetAudioDriver(int index);
 /* @} */
 
 /**
- *  \name Initialization and cleanup
- *
- *  \internal These functions are used internally, and should not be used unless
- *            you have a specific need to specify the audio driver you want to
- *            use.  You should normally use SDL_Init() or SDL_InitSubSystem().
- */
-/* @{ */
-
-/**
- * Use this function to initialize a particular audio driver.
- *
- * This function is used internally, and should not be used unless you have a
- * specific need to designate the audio driver you want to use. You should
- * normally use SDL_Init() or SDL_InitSubSystem().
- *
- * \param driver_name the name of the desired audio driver
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_AudioQuit
- */
-extern DECLSPEC int SDLCALL SDL_AudioInit(const char *driver_name);
-
-/**
- * Use this function to shut down audio if you initialized it with
- * SDL_AudioInit().
- *
- * This function is used internally, and should not be used unless you have a
- * specific need to specify the audio driver you want to use. You should
- * normally use SDL_Quit() or SDL_QuitSubSystem().
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_AudioInit
- */
-extern DECLSPEC void SDLCALL SDL_AudioQuit(void);
-/* @} */
-
-/**
  * Get the name of the current audio driver.
  *
  * The returned string points to internal static memory and thus never becomes
@@ -353,7 +312,7 @@ extern DECLSPEC void SDLCALL SDL_AudioQuit(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AudioInit
+ * \sa SDL_INIT_AUDIO
  */
 extern DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
 

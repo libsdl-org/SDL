@@ -71,4 +71,26 @@ extern SDL_AudioFilter SDL_Convert_F32_to_S16;
 extern SDL_AudioFilter SDL_Convert_F32_to_U16;
 extern SDL_AudioFilter SDL_Convert_F32_to_S32;
 
+/**
+ * Use this function to initialize a particular audio driver.
+ *
+ * This function is used internally, and should not be used unless you have a
+ * specific need to designate the audio driver you want to use. You should
+ * normally use SDL_Init() or SDL_InitSubSystem().
+ *
+ * \param driver_name the name of the desired audio driver
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ */
+extern int SDL_AudioInit(const char *driver_name);
+
+/**
+ * Use this function to shut down audio if you initialized it with SDL_AudioInit().
+ *
+ * This function is used internally, and should not be used unless you have a
+ * specific need to specify the audio driver you want to use. You should
+ * normally use SDL_Quit() or SDL_QuitSubSystem().
+ */
+extern void SDL_AudioQuit(void);
+
 #endif /* SDL_audio_c_h_ */

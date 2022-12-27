@@ -17,6 +17,8 @@ General:
     * RW_SEEK_SET -> SDL_RW_SEEK_SET
 * The following functions have been renamed:
 * Removed the following functions from the API, see docs/README-migration.md for details:
+    * SDL_AudioInit
+    * SDL_AudioQuit
     * SDL_CalculateGammaRamp()
     * SDL_CreateRGBSurface()
     * SDL_CreateRGBSurfaceFrom()
