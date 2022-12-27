@@ -475,8 +475,6 @@
 #define SDL_GetRevision SDL_GetRevision_REAL
 #define SDL_GetNumVideoDrivers SDL_GetNumVideoDrivers_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
-#define SDL_VideoInit SDL_VideoInit_REAL
-#define SDL_VideoQuit SDL_VideoQuit_REAL
 #define SDL_GetCurrentVideoDriver SDL_GetCurrentVideoDriver_REAL
 #define SDL_GetNumVideoDisplays SDL_GetNumVideoDisplays_REAL
 #define SDL_GetDisplayName SDL_GetDisplayName_REAL

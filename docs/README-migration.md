@@ -455,3 +455,13 @@ Programs which have access to shaders can implement more robust versions of thos
 Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
 You can instead use 'SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);'
 
+SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_VIDEO_DRIVER hint.
+
+
+
+
+
+
+
+
+

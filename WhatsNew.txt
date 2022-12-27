@@ -40,6 +40,8 @@ General:
     * SDL_SensorGetDataWithTimestamp()
     * SDL_SetWindowBrightness()
     * SDL_SetWindowGammaRamp()
+    * SDL_VideoInit()
+    * SDL_VideoQuit()
 * Removed the following hints from the API, see docs/README-migration.md for details:
     * SDL_HINT_IDLE_TIMER_DISABLED
     * SDL_HINT_VIDEO_X11_FORCE_EGL

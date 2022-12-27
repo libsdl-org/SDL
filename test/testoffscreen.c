@@ -102,7 +102,8 @@ int main(int argc, char *argv[])
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Force the offscreen renderer, if it cannot be created then fail out */
-    if (SDL_VideoInit("offscreen") < 0) {
+    SDL_SetHint("SDL_VIDEO_DRIVER", "offscreen");
+    if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
         SDL_Log("Couldn't initialize the offscreen video driver: %s\n",
                 SDL_GetError());
         return SDL_FALSE;
