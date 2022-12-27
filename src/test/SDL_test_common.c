@@ -1388,15 +1388,15 @@ static const char *ControllerAxisName(const SDL_GamepadAxis axis)
 {
     switch (axis) {
 #define AXIS_CASE(ax)              \
-    case SDL_CONTROLLER_AXIS_##ax: \
+    case SDL_GAMEPAD_AXIS_##ax: \
         return #ax
         AXIS_CASE(INVALID);
         AXIS_CASE(LEFTX);
         AXIS_CASE(LEFTY);
         AXIS_CASE(RIGHTX);
         AXIS_CASE(RIGHTY);
-        AXIS_CASE(TRIGGERLEFT);
-        AXIS_CASE(TRIGGERRIGHT);
+        AXIS_CASE(LEFT_TRIGGER);
+        AXIS_CASE(RIGHT_TRIGGER);
 #undef AXIS_CASE
     default:
         return "???";
@@ -1407,7 +1407,7 @@ static const char *ControllerButtonName(const SDL_GamepadButton button)
 {
     switch (button) {
 #define BUTTON_CASE(btn)              \
-    case SDL_CONTROLLER_BUTTON_##btn: \
+    case SDL_GAMEPAD_BUTTON_##btn: \
         return #btn
         BUTTON_CASE(INVALID);
         BUTTON_CASE(A);
@@ -1417,10 +1417,10 @@ static const char *ControllerButtonName(const SDL_GamepadButton button)
         BUTTON_CASE(BACK);
         BUTTON_CASE(GUIDE);
         BUTTON_CASE(START);
-        BUTTON_CASE(LEFTSTICK);
-        BUTTON_CASE(RIGHTSTICK);
-        BUTTON_CASE(LEFTSHOULDER);
-        BUTTON_CASE(RIGHTSHOULDER);
+        BUTTON_CASE(LEFT_STICK);
+        BUTTON_CASE(RIGHT_STICK);
+        BUTTON_CASE(LEFT_SHOULDER);
+        BUTTON_CASE(RIGHT_SHOULDER);
         BUTTON_CASE(DPAD_UP);
         BUTTON_CASE(DPAD_DOWN);
         BUTTON_CASE(DPAD_LEFT);
