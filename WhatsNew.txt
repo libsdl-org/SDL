@@ -7,43 +7,12 @@ This is a list of major changes in SDL's version history.
 
 General:
 * SDL headers should now be included as `#include <SDL3/SDL.h>`
-* Many functions and symbols have been renamed, see docs/README-migration.md for details
+* Many functions and symbols have changed since SDL 2.0, see the [migration guide](docs/README-migration.md) for details
 * The preprocessor symbol __MACOSX__ has been renamed __MACOS__
 * The preprocessor symbol __IPHONEOS__ has been renamed __IOS__
-* M_PI is no longer defined in SDL_stdinc.h, now the symbols SDL_PI_D (double) and SDL_PI_F (float) are available
-* SDL_GetWindowWMInfo() returns a standard int result code instead of SDL_bool, and takes SDL_SYSWM_CURRENT_VERSION as a new third parameter
-* Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
-* Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
-* Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace the SDL_CreateRGBSurface*(), and can also be used to create YUV surfaces
-* Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
-* Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
+* Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace SDL_CreateRGBSurface*(), and can also be used to create YUV surfaces
 * SDL_GetTicks() now returns a 64-bit value and the tick values should be directly compared instead of using the SDL_TICKS_PASSED macro
 * Added SDL_GetTicksNS() to return the number of nanoseconds since the SDL library initialized
 * Added SDL_DelayNS() to specify a delay in nanoseconds, to the highest precision the system will support
 * The timestamp member of the SDL_Event structure is now in nanoseconds, filled in with the time the event was generated, or the time it was queued if that's not available
-* The `SDL_DISPLAYEVENT_*` and `SDL_WINDOWEVENT_*` events have been moved to top level events
-* Intrinsic headers are no longer included in the public SDL headers
-* The following functions have been removed, see docs/README-migration.md for details:
-    * SDL_AudioInit()
-    * SDL_AudioQuit()
-    * SDL_CalculateGammaRamp()
-    * SDL_CreateRGBSurface()
-    * SDL_CreateRGBSurfaceFrom()
-    * SDL_CreateRGBSurfaceWithFormat()
-    * SDL_CreateRGBSurfaceWithFormatFrom()
-    * SDL_GameControllerGetSensorDataWithTimestamp()
-    * SDL_GetRevisionNumber()
-    * SDL_GetWindowBrightness()
-    * SDL_GetWindowGammaRamp()
-    * SDL_RWFromFP()
-    * SDL_SensorGetDataWithTimestamp()
-    * SDL_SetWindowBrightness()
-    * SDL_SetWindowGammaRamp()
-    * SDL_VideoInit()
-    * SDL_VideoQuit()
-* The following hints have been removed, see docs/README-migration.md for details:
-    * SDL_HINT_IDLE_TIMER_DISABLED
-    * SDL_HINT_VIDEO_X11_FORCE_EGL
-    * SDL_HINT_VIDEO_X11_XINERAMA
-    * SDL_HINT_VIDEO_X11_XVIDMODE
