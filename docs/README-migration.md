@@ -379,6 +379,26 @@ The following functions have been renamed:
 
 The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ has been renamed __IOS__
 
+## SDL_rect.h
+
+The following functions have been renamed:
+* SDL_EncloseFPoints => SDL_GetRectEnclosingPointsF
+* SDL_EnclosePoints => SDL_GetRectEnclosingPoints
+* SDL_FRectEmpty => SDL_IsRectEmptyF
+* SDL_FRectEqualsEpsilon => SDL_AreRectsEqualF
+* SDL_HasIntersection => SDL_HasRectIntersection
+* SDL_HasIntersectionF => SDL_HasRectIntersectionF
+* SDL_IntersectFRect => SDL_GetRectIntersectionF
+* SDL_IntersectFRectAndLine => SDL_GetRectAndLineIntersectionF
+* SDL_IntersectRect => SDL_GetRectIntersection
+* SDL_IntersectRectAndLine => SDL_GetRectAndLineIntersection
+* SDL_PointInFRect => SDL_IsPointInRectF
+* SDL_PointInRect => SDL_IsPointInRect
+* SDL_RectEmpty => SDL_IsRectEmpty
+* SDL_RectEquals => SDL_AreRectsEqual
+* SDL_UnionFRect => SDL_GetRectUnionF
+* SDL_UnionRect => SDL_GetRectUnion
+
 ## SDL_render.h
 
 SDL_GetRenderDriverInfo() has been removed, since most of the information it reported were

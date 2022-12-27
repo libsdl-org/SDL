@@ -607,7 +607,7 @@ SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect)
         surface->clip_rect = full_rect;
         return SDL_TRUE;
     }
-    return SDL_IntersectRect(rect, &full_rect, &surface->clip_rect);
+    return SDL_GetRectIntersection(rect, &full_rect, &surface->clip_rect);
 }
 
 void SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
@@ -896,11 +896,11 @@ int SDL_PrivateUpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         tmp.y = 0;
         tmp.w = src->w;
         tmp.h = src->h;
-        SDL_IntersectRect(&tmp, &final_src, &final_src);
+        SDL_GetRectIntersection(&tmp, &final_src, &final_src);
     }
 
     /* Clip again */
-    SDL_IntersectRect(&dst->clip_rect, &final_dst, &final_dst);
+    SDL_GetRectIntersection(&dst->clip_rect, &final_dst, &final_dst);
 
     if (dstrect) {
         *dstrect = final_dst;

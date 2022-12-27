@@ -567,7 +567,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
             window_rect.y = 0;
             window_rect.w = x_max + 1;
             window_rect.h = y_max + 1;
-            if (SDL_IntersectRect(confine, &window_rect, &mouse_rect)) {
+            if (SDL_GetRectIntersection(confine, &window_rect, &mouse_rect)) {
                 x_min = mouse_rect.x;
                 y_min = mouse_rect.y;
                 x_max = x_min + mouse_rect.w - 1;

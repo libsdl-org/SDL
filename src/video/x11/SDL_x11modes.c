@@ -876,7 +876,7 @@ int X11_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *r
         const long *p = (long *)propdata;
         const SDL_Rect usable = { (int)p[0], (int)p[1], (int)p[2], (int)p[3] };
         retval = 0;
-        if (!SDL_IntersectRect(rect, &usable, rect)) {
+        if (!SDL_GetRectIntersection(rect, &usable, rect)) {
             SDL_zerop(rect);
         }
     }

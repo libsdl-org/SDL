@@ -644,7 +644,7 @@ static void SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
             clip_rect.y = cliprect->y + viewport->y;
             clip_rect.w = cliprect->w;
             clip_rect.h = cliprect->h;
-            SDL_IntersectRect(viewport, &clip_rect, &clip_rect);
+            SDL_GetRectIntersection(viewport, &clip_rect, &clip_rect);
             SDL_SetSurfaceClipRect(surface, &clip_rect);
         } else {
             SDL_SetSurfaceClipRect(surface, drawstate->viewport);

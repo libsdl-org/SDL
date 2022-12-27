@@ -1108,7 +1108,7 @@ static int GetRectDisplayIndex(int x, int y, int w, int h)
             SDL_GetDisplayBounds(i, &display_rect);
 
             /* Check if the window is fully enclosed */
-            if (SDL_EnclosePoints(&center, 1, &display_rect, NULL)) {
+            if (SDL_GetRectEnclosingPoints(&center, 1, &display_rect, NULL)) {
                 return i;
             }
 
@@ -2900,7 +2900,7 @@ SDL_GetWindowMouseRect(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);
 
-    if (SDL_RectEmpty(&window->mouse_rect)) {
+    if (SDL_IsRectEmpty(&window->mouse_rect)) {
         return NULL;
     } else {
         return &window->mouse_rect;

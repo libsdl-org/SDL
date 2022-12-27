@@ -59,7 +59,7 @@ static int SDLCALL SDL_SoftBlit(SDL_Surface *src, SDL_Rect *srcrect,
     }
 
     /* Set up source and destination buffer pointers, and BLIT! */
-    if (okay && !SDL_RectEmpty(srcrect)) {
+    if (okay && !SDL_IsRectEmpty(srcrect)) {
         SDL_BlitFunc RunBlit;
         SDL_BlitInfo *info = &src->map->info;
 

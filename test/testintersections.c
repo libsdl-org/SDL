@@ -184,7 +184,7 @@ DrawRectLineIntersections(SDL_Renderer *renderer)
             x2 = lines[j].w;
             y2 = lines[j].h;
 
-            if (SDL_IntersectRectAndLine(&r, &x1, &y1, &x2, &y2)) {
+            if (SDL_GetRectAndLineIntersection(&r, &x1, &y1, &x2, &y2)) {
                 SDL_RenderLine(renderer, x1, y1, x2, y2);
             }
         }
@@ -201,7 +201,7 @@ DrawRectRectIntersections(SDL_Renderer *renderer)
     for (i = 0; i < num_rects; i++) {
         for (j = i + 1; j < num_rects; j++) {
             SDL_Rect r;
-            if (SDL_IntersectRect(&rects[i], &rects[j], &r)) {
+            if (SDL_GetRectIntersection(&rects[i], &rects[j], &r)) {
                 SDL_RenderFillRect(renderer, &r);
             }
         }

@@ -1303,7 +1303,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
 
             SDL_ShowWindow(state->windows[i]);
 
-            if (!SDL_RectEmpty(&state->confine)) {
+            if (!SDL_IsRectEmpty(&state->confine)) {
                 SDL_SetWindowMouseRect(state->windows[i], &state->confine);
             }
 
@@ -1921,7 +1921,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                         SDL_Rect clip;
                         SDL_GetWindowSize(state->windows[i], &w, &h);
                         SDL_GetRenderClipRect(state->renderers[i], &clip);
-                        if (SDL_RectEmpty(&clip)) {
+                        if (SDL_IsRectEmpty(&clip)) {
                             clip.x = w / 4;
                             clip.y = h / 4;
                             clip.w = w / 2;

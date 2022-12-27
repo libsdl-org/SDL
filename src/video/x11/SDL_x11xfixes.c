@@ -71,7 +71,7 @@ int X11_XfixesIsInitialized()
 
 void X11_SetWindowMouseRect(_THIS, SDL_Window *window)
 {
-    if (SDL_RectEmpty(&window->mouse_rect)) {
+    if (SDL_IsRectEmpty(&window->mouse_rect)) {
         X11_ConfineCursorWithFlags(_this, window, NULL, 0);
     } else {
         if (window->flags & SDL_WINDOW_INPUT_FOCUS) {

@@ -90,22 +90,22 @@ SDL_GetSpanEnclosingRect(int width, int height,
 #define POINTTYPE                SDL_Point
 #define SCALARTYPE               int
 #define COMPUTEOUTCODE           ComputeOutCode
-#define SDL_HASINTERSECTION      SDL_HasIntersection
-#define SDL_INTERSECTRECT        SDL_IntersectRect
-#define SDL_RECTEMPTY            SDL_RectEmpty
-#define SDL_UNIONRECT            SDL_UnionRect
-#define SDL_ENCLOSEPOINTS        SDL_EnclosePoints
-#define SDL_INTERSECTRECTANDLINE SDL_IntersectRectAndLine
+#define SDL_HASINTERSECTION      SDL_HasRectIntersection
+#define SDL_INTERSECTRECT        SDL_GetRectIntersection
+#define SDL_RECTEMPTY            SDL_IsRectEmpty
+#define SDL_UNIONRECT            SDL_GetRectUnion
+#define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPoints
+#define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersection
 #include "SDL_rect_impl.h"
 
 #define RECTTYPE                 SDL_FRect
 #define POINTTYPE                SDL_FPoint
 #define SCALARTYPE               float
 #define COMPUTEOUTCODE           ComputeOutCodeF
-#define SDL_HASINTERSECTION      SDL_HasIntersectionF
-#define SDL_INTERSECTRECT        SDL_IntersectFRect
-#define SDL_RECTEMPTY            SDL_FRectEmpty
-#define SDL_UNIONRECT            SDL_UnionFRect
-#define SDL_ENCLOSEPOINTS        SDL_EncloseFPoints
-#define SDL_INTERSECTRECTANDLINE SDL_IntersectFRectAndLine
+#define SDL_HASINTERSECTION      SDL_HasRectIntersectionF
+#define SDL_INTERSECTRECT        SDL_GetRectIntersectionF
+#define SDL_RECTEMPTY            SDL_IsRectEmptyF
+#define SDL_UNIONRECT            SDL_GetRectUnionF
+#define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPointsF
+#define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersectionF
 #include "SDL_rect_impl.h"

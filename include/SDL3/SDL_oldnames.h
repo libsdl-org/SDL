@@ -269,6 +269,24 @@
 #define __MACOSX__ __MACOS__
 #endif
 
+/* ##SDL_rect.h */
+#define SDL_EncloseFPoints SDL_GetRectEnclosingPointsF
+#define SDL_EnclosePoints SDL_GetRectEnclosingPoints
+#define SDL_FRectEmpty SDL_IsRectEmptyF
+#define SDL_FRectEqualsEpsilon SDL_AreRectsEqualF
+#define SDL_HasIntersection SDL_HasRectIntersection
+#define SDL_HasIntersectionF SDL_HasRectIntersectionF
+#define SDL_IntersectFRect SDL_GetRectIntersectionF
+#define SDL_IntersectFRectAndLine SDL_GetRectAndLineIntersectionF
+#define SDL_IntersectRect SDL_GetRectIntersection
+#define SDL_IntersectRectAndLine SDL_GetRectAndLineIntersection
+#define SDL_PointInFRect SDL_IsPointInRectF
+#define SDL_PointInRect SDL_IsPointInRect
+#define SDL_RectEmpty SDL_IsRectEmpty
+#define SDL_RectEquals SDL_AreRectsEqual
+#define SDL_UnionFRect SDL_GetRectUnionF
+#define SDL_UnionRect SDL_GetRectUnion
+
 /* ##SDL_render.h */
 #define SDL_RenderCopy SDL_RenderTexture
 #define SDL_RenderCopyEx SDL_RenderTextureRotated
@@ -574,6 +592,24 @@
 #ifdef __MACOS__
 #define __MACOSX__ __MACOSX___renamed___MACOS__
 #endif
+
+/* ##SDL_rect.h */
+#define SDL_EncloseFPoints SDL_EncloseFPoints_renamed_SDL_GetRectEnclosingPointsF
+#define SDL_EnclosePoints SDL_EnclosePoints_renamed_SDL_GetRectEnclosingPoints
+#define SDL_FRectEmpty SDL_FRectEmpty_renamed_SDL_IsRectEmptyF
+#define SDL_FRectEqualsEpsilon SDL_FRectEqualsEpsilon_renamed_SDL_AreRectsEqualF
+#define SDL_HasIntersection SDL_HasIntersection_renamed_SDL_HasRectIntersection
+#define SDL_HasIntersectionF SDL_HasIntersectionF_renamed_SDL_HasRectIntersectionF
+#define SDL_IntersectFRect SDL_IntersectFRect_renamed_SDL_GetRectIntersectionF
+#define SDL_IntersectFRectAndLine SDL_IntersectFRectAndLine_renamed_SDL_GetRectAndLineIntersectionF
+#define SDL_IntersectRect SDL_IntersectRect_renamed_SDL_GetRectIntersection
+#define SDL_IntersectRectAndLine SDL_IntersectRectAndLine_renamed_SDL_GetRectAndLineIntersection
+#define SDL_PointInFRect SDL_PointInFRect_renamed_SDL_IsPointInRectF
+#define SDL_PointInRect SDL_PointInRect_renamed_SDL_IsPointInRect
+#define SDL_RectEmpty SDL_RectEmpty_renamed_SDL_IsRectEmpty
+#define SDL_RectEquals SDL_RectEquals_renamed_SDL_AreRectsEqual
+#define SDL_UnionFRect SDL_UnionFRect_renamed_SDL_GetRectUnionF
+#define SDL_UnionRect SDL_UnionRect_renamed_SDL_GetRectUnion
 
 /* ##SDL_render.h */
 #define SDL_RenderCopy SDL_RenderCopy_renamed_SDL_RenderTexture

@@ -1841,7 +1841,7 @@ void Wayland_SetWindowMouseRect(_THIS, SDL_Window *window)
      * Just know that this call lets you confine with a rect, SetWindowGrab
      * lets you confine without a rect.
      */
-    if (SDL_RectEmpty(&window->mouse_rect) && !(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
+    if (SDL_IsRectEmpty(&window->mouse_rect) && !(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
         Wayland_input_unconfine_pointer(data->input, window);
     } else {
         Wayland_input_confine_pointer(data->input, window);
@@ -1854,7 +1854,7 @@ void Wayland_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 
     if (grabbed) {
         Wayland_input_confine_pointer(data->input, window);
-    } else if (SDL_RectEmpty(&window->mouse_rect)) {
+    } else if (SDL_IsRectEmpty(&window->mouse_rect)) {
         Wayland_input_unconfine_pointer(data->input, window);
     }
 }

@@ -120,7 +120,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
         cell_rect.w = text_length * FONT_CHARACTER_SIZE;
         cell_rect.h = lineHeight;
 
-        if (SDL_PointInRect(&mouse_pos, &cell_rect)) {
+        if (SDL_IsPointInRect(&mouse_pos, &cell_rect)) {
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
             /* Update cached mode under the mouse */

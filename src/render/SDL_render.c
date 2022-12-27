@@ -1729,7 +1729,7 @@ int SDL_UpdateTexture(SDL_Texture *texture, const SDL_Rect *rect,
     real_rect.w = texture->w;
     real_rect.h = texture->h;
     if (rect) {
-        if (!SDL_IntersectRect(rect, &real_rect, &real_rect)) {
+        if (!SDL_GetRectIntersection(rect, &real_rect, &real_rect)) {
             return 0;
         }
     }
@@ -1895,7 +1895,7 @@ int SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
     real_rect.w = texture->w;
     real_rect.h = texture->h;
     if (rect) {
-        SDL_IntersectRect(rect, &real_rect, &real_rect);
+        SDL_GetRectIntersection(rect, &real_rect, &real_rect);
     }
 
     if (real_rect.w == 0 || real_rect.h == 0) {
@@ -1955,7 +1955,7 @@ int SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
     real_rect.w = texture->w;
     real_rect.h = texture->h;
     if (rect) {
-        SDL_IntersectRect(rect, &real_rect, &real_rect);
+        SDL_GetRectIntersection(rect, &real_rect, &real_rect);
     }
 
     if (real_rect.w == 0 || real_rect.h == 0) {
@@ -2057,7 +2057,7 @@ int SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
     real_rect.w = texture->w;
     real_rect.h = texture->h;
     if (rect) {
-        SDL_IntersectRect(rect, &real_rect, &real_rect);
+        SDL_GetRectIntersection(rect, &real_rect, &real_rect);
     }
 
     ret = SDL_LockTexture(texture, &real_rect, &pixels, &pitch);
@@ -3382,14 +3382,14 @@ int SDL_RenderTextureF(SDL_Renderer *renderer, SDL_Texture *texture,
     real_srcrect.w = texture->w;
     real_srcrect.h = texture->h;
     if (srcrect) {
-        if (!SDL_IntersectRect(srcrect, &real_srcrect, &real_srcrect)) {
+        if (!SDL_GetRectIntersection(srcrect, &real_srcrect, &real_srcrect)) {
             return 0;
         }
     }
 
     RenderGetViewportSize(renderer, &real_dstrect);
     if (dstrect) {
-        if (!SDL_HasIntersectionF(dstrect, &real_dstrect)) {
+        if (!SDL_HasRectIntersectionF(dstrect, &real_dstrect)) {
             return 0;
         }
         real_dstrect = *dstrect;
@@ -3522,7 +3522,7 @@ int SDL_RenderTextureRotatedF(SDL_Renderer *renderer, SDL_Texture *texture,
     real_srcrect.w = texture->w;
     real_srcrect.h = texture->h;
     if (srcrect) {
-        if (!SDL_IntersectRect(srcrect, &real_srcrect, &real_srcrect)) {
+        if (!SDL_GetRectIntersection(srcrect, &real_srcrect, &real_srcrect)) {
             return 0;
         }
     }
@@ -4158,7 +4158,7 @@ int SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     real_rect.w = (int)SDL_floor(renderer->viewport.w);
     real_rect.h = (int)SDL_floor(renderer->viewport.h);
     if (rect) {
-        if (!SDL_IntersectRect(rect, &real_rect, &real_rect)) {
+        if (!SDL_GetRectIntersection(rect, &real_rect, &real_rect)) {
             return 0;
         }
         if (real_rect.y > rect->y) {

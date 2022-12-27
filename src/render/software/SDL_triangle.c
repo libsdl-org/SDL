@@ -251,14 +251,14 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
         rect.y = 0;
         rect.w = dst->w;
         rect.h = dst->h;
-        SDL_IntersectRect(&dstrect, &rect, &dstrect);
+        SDL_GetRectIntersection(&dstrect, &rect, &dstrect);
     }
 
     {
         /* Clip triangle with surface clip rect */
         SDL_Rect rect;
         SDL_GetSurfaceClipRect(dst, &rect);
-        SDL_IntersectRect(&dstrect, &rect, &dstrect);
+        SDL_GetRectIntersection(&dstrect, &rect, &dstrect);
     }
 
     if (blend != SDL_BLENDMODE_NONE) {
@@ -547,14 +547,14 @@ int SDL_SW_BlitTriangle(
         rect.w = dst->w;
         rect.h = dst->h;
 
-        SDL_IntersectRect(&dstrect, &rect, &dstrect);
+        SDL_GetRectIntersection(&dstrect, &rect, &dstrect);
     }
 
     {
         /* Clip triangle with surface clip rect */
         SDL_Rect rect;
         SDL_GetSurfaceClipRect(dst, &rect);
-        SDL_IntersectRect(&dstrect, &rect, &dstrect);
+        SDL_GetRectIntersection(&dstrect, &rect, &dstrect);
     }
 
     /* Set destination pointer */

@@ -381,7 +381,7 @@ static SDL_bool AdjustCoordinatesForGrab(SDL_Window *window, int x, int y, CGPoi
         window_rect.w = window->w;
         window_rect.h = window->h;
 
-        if (SDL_IntersectRect(&window->mouse_rect, &window_rect, &mouse_rect)) {
+        if (SDL_GetRectIntersection(&window->mouse_rect, &window_rect, &mouse_rect)) {
             int left = window->x + mouse_rect.x;
             int right = left + mouse_rect.w - 1;
             int top = window->y + mouse_rect.y;
@@ -428,16 +428,16 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
             window_rect.h = window->h;
 
             if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
-                SDL_IntersectRect(&window->mouse_rect, &window_rect, &mouse_rect);
+                SDL_GetRectIntersection(&window->mouse_rect, &window_rect, &mouse_rect);
             }
 
             if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0 &&
-                SDL_RectEmpty(&mouse_rect)) {
+                SDL_IsRectEmpty(&mouse_rect)) {
                 SDL_memcpy(&mouse_rect, &window_rect, sizeof(mouse_rect));
             }
         }
 
-        if (SDL_RectEmpty(&mouse_rect)) {
+        if (SDL_IsRectEmpty(&mouse_rect)) {
             nswindow.mouseConfinementRect = NSZeroRect;
         } else {
             NSRect rect;
