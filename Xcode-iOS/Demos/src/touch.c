@@ -63,7 +63,7 @@ initializeTexture(SDL_Renderer *renderer)
     }
     brush =
         SDL_CreateTextureFromSurface(renderer, bmp_surface);
-    SDL_FreeSurface(bmp_surface);
+    SDL_DestroySurface(bmp_surface);
     if (brush == NULL) {
         fatalError("could not create brush texture");
     }

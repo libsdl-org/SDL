@@ -1872,7 +1872,7 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
     /* Tear down the old native window */
     if (window->surface) {
         window->surface->flags &= ~SDL_DONTFREE;
-        SDL_FreeSurface(window->surface);
+        SDL_DestroySurface(window->surface);
         window->surface = NULL;
         window->surface_valid = SDL_FALSE;
     }
@@ -2041,7 +2041,7 @@ void SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
         return;
     }
 
-    SDL_FreeSurface(window->icon);
+    SDL_DestroySurface(window->icon);
 
     /* Convert the icon into ARGB8888 */
     window->icon = SDL_ConvertSurfaceFormat(icon, SDL_PIXELFORMAT_ARGB8888);
@@ -2666,7 +2666,7 @@ SDL_GetWindowSurface(SDL_Window *window)
     if (!window->surface_valid) {
         if (window->surface) {
             window->surface->flags &= ~SDL_DONTFREE;
-            SDL_FreeSurface(window->surface);
+            SDL_DestroySurface(window->surface);
             window->surface = NULL;
         }
         window->surface = SDL_CreateWindowFramebuffer(window);
@@ -3088,7 +3088,7 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     if (window->surface) {
         window->surface->flags &= ~SDL_DONTFREE;
-        SDL_FreeSurface(window->surface);
+        SDL_DestroySurface(window->surface);
         window->surface = NULL;
         window->surface_valid = SDL_FALSE;
     }
@@ -3126,7 +3126,7 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     /* Free memory associated with the window */
     SDL_free(window->title);
-    SDL_FreeSurface(window->icon);
+    SDL_DestroySurface(window->icon);
     while (window->data) {
         SDL_WindowUserData *data = window->data;
 

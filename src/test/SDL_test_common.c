@@ -997,7 +997,7 @@ static SDL_Surface *SDLTest_LoadIcon(const char *file)
 
     if (icon->format->palette) {
         /* Set the colorkey */
-        SDL_SetColorKey(icon, 1, *((Uint8 *)icon->pixels));
+        SDL_SetSurfaceColorKey(icon, 1, *((Uint8 *)icon->pixels));
     }
 
     return icon;
@@ -1297,7 +1297,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Surface *icon = SDLTest_LoadIcon(state->window_icon);
                 if (icon) {
                     SDL_SetWindowIcon(state->windows[i], icon);
-                    SDL_FreeSurface(icon);
+                    SDL_DestroySurface(icon);
                 }
             }
 

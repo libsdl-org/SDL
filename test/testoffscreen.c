@@ -65,7 +65,7 @@ void save_surface_to_bmp()
                        SDL_GetWindowID(window), ++frame_number);
 
     SDL_SaveBMP(surface, file);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 }
 
 void loop()

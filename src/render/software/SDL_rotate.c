@@ -80,8 +80,8 @@ to a situation where the program can segfault.
 static Uint32 get_colorkey(SDL_Surface *src)
 {
     Uint32 key = 0;
-    if (SDL_HasColorKey(src)) {
-        SDL_GetColorKey(src, &key);
+    if (SDL_SurfaceHasColorKey(src)) {
+        SDL_GetSurfaceColorKey(src, &key);
     }
     return key;
 }
@@ -504,8 +504,8 @@ SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int 
         return NULL;
     }
 
-    if (SDL_HasColorKey(src)) {
-        if (SDL_GetColorKey(src, &colorkey) == 0) {
+    if (SDL_SurfaceHasColorKey(src)) {
+        if (SDL_GetSurfaceColorKey(src, &colorkey) == 0) {
             colorKeyAvailable = SDL_TRUE;
         }
     }
@@ -549,8 +549,8 @@ SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int 
 
     if (colorKeyAvailable == SDL_TRUE) {
         /* If available, the colorkey will be used to discard the pixels that are outside of the rotated area. */
-        SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey);
-        SDL_FillRect(rz_dst, NULL, colorkey);
+        SDL_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey);
+        SDL_FillSurfaceRect(rz_dst, NULL, colorkey);
     } else if (blendmode == SDL_BLENDMODE_NONE) {
         blendmode = SDL_BLENDMODE_BLEND;
     } else if (blendmode == SDL_BLENDMODE_MOD || blendmode == SDL_BLENDMODE_MUL) {
@@ -558,12 +558,12 @@ SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int 
          * that the pixels outside the rotated area don't affect the destination surface.
          */
         colorkey = SDL_MapRGBA(rz_dst->format, 255, 255, 255, 0);
-        SDL_FillRect(rz_dst, NULL, colorkey);
+        SDL_FillSurfaceRect(rz_dst, NULL, colorkey);
         /* Setting a white colorkey for the destination surface makes the final blit discard
          * all pixels outside of the rotated area. This doesn't interfere with anything because
          * white pixels are already a no-op and the MOD blend mode does not interact with alpha.
          */
-        SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey);
+        SDL_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey);
     }
 
     SDL_SetSurfaceBlendMode(rz_dst, blendmode);

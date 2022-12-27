@@ -160,7 +160,7 @@
 #endif
 
 /* Run-Length-Encoding
-   - SDL_SetColorKey() called with SDL_RLEACCEL flag */
+   - SDL_SetSurfaceColorKey() called with SDL_RLEACCEL flag */
 #ifndef SDL_HAVE_RLE
 #define SDL_HAVE_RLE !SDL_LEAN_AND_MEAN
 #endif

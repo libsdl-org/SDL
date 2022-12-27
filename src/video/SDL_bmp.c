@@ -616,7 +616,7 @@ done:
         if (src) {
             SDL_RWseek(src, fp_offset, SDL_RW_SEEK_SET);
         }
-        SDL_FreeSurface(surface);
+        SDL_DestroySurface(surface);
         surface = NULL;
     }
     if (freesrc && src) {
@@ -861,7 +861,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
         /* Close it up.. */
         SDL_UnlockSurface(intermediate_surface);
         if (intermediate_surface != surface) {
-            SDL_FreeSurface(intermediate_surface);
+            SDL_DestroySurface(intermediate_surface);
         }
     }
 

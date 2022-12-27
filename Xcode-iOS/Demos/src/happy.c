@@ -113,7 +113,7 @@ initializeTexture(SDL_Renderer *renderer)
         fatalError("could not load bmp");
     }
     /* set white to transparent on the happyface */
-    SDL_SetColorKey(bmp_surface, 1,
+    SDL_SetSurfaceColorKey(bmp_surface, 1,
                     SDL_MapRGB(bmp_surface->format, 255, 255, 255));
 
     /* convert RGBA surface to texture */
@@ -124,7 +124,7 @@ initializeTexture(SDL_Renderer *renderer)
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 
     /* free up allocated memory */
-    SDL_FreeSurface(bmp_surface);
+    SDL_DestroySurface(bmp_surface);
 }
 
 int

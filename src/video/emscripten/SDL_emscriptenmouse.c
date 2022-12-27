@@ -104,7 +104,7 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
     }, surface->w, surface->h, hot_x, hot_y, conv_surf->pixels);
     /* *INDENT-ON* */ /* clang-format on */
 
-    SDL_FreeSurface(conv_surf);
+    SDL_DestroySurface(conv_surf);
 
     return Emscripten_CreateCursorFromString(cursor_url, SDL_TRUE);
 }

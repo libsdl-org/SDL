@@ -350,7 +350,7 @@ SDL_GL_LoadTexture(SDL_Surface *surface, GLfloat *texcoord)
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->pixels);
-    SDL_FreeSurface(image); /* No longer needed */
+    SDL_DestroySurface(image); /* No longer needed */
 
     return texture;
 }
@@ -476,7 +476,7 @@ int main(int argc, char **argv)
         exit(3);
     }
     texture = SDL_GL_LoadTexture(surface, texcoords);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     /* Loop, drawing and checking events */
     InitGL(640, 480);

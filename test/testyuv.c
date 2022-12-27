@@ -204,7 +204,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
 done:
     SDL_free(yuv1);
     SDL_free(yuv2);
-    SDL_FreeSurface(pattern);
+    SDL_DestroySurface(pattern);
     return result;
 }
 

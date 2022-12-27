@@ -3213,7 +3213,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
 
         /* Convert temp surface into texture */
         cache->charTextureCache[ci] = SDL_CreateTextureFromSurface(renderer, character);
-        SDL_FreeSurface(character);
+        SDL_DestroySurface(character);
 
         /*
          * Check pointer

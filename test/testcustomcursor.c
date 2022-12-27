@@ -72,25 +72,25 @@ init_color_cursor(const char *file)
     SDL_Surface *surface = SDL_LoadBMP(file);
     if (surface) {
         if (surface->format->palette) {
-            SDL_SetColorKey(surface, 1, *(Uint8 *)surface->pixels);
+            SDL_SetSurfaceColorKey(surface, 1, *(Uint8 *)surface->pixels);
         } else {
             switch (surface->format->BitsPerPixel) {
             case 15:
-                SDL_SetColorKey(surface, 1, (*(Uint16 *)surface->pixels) & 0x00007FFF);
+                SDL_SetSurfaceColorKey(surface, 1, (*(Uint16 *)surface->pixels) & 0x00007FFF);
                 break;
             case 16:
-                SDL_SetColorKey(surface, 1, *(Uint16 *)surface->pixels);
+                SDL_SetSurfaceColorKey(surface, 1, *(Uint16 *)surface->pixels);
                 break;
             case 24:
-                SDL_SetColorKey(surface, 1, (*(Uint32 *)surface->pixels) & 0x00FFFFFF);
+                SDL_SetSurfaceColorKey(surface, 1, (*(Uint32 *)surface->pixels) & 0x00FFFFFF);
                 break;
             case 32:
-                SDL_SetColorKey(surface, 1, *(Uint32 *)surface->pixels);
+                SDL_SetSurfaceColorKey(surface, 1, *(Uint32 *)surface->pixels);
                 break;
             }
         }
         cursor = SDL_CreateColorCursor(surface, 0, 0);
-        SDL_FreeSurface(surface);
+        SDL_DestroySurface(surface);
     }
     return cursor;
 }

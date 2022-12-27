@@ -171,7 +171,7 @@ quit(int rc)
     SDL_free(RawMooseData);
 
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
-         SDL_FreeSurface(MooseYUVSurfaces[i]);
+         SDL_DestroySurface(MooseYUVSurfaces[i]);
     }
 
     SDLTest_CommonQuit(state);
@@ -472,7 +472,7 @@ int main(int argc, char **argv)
             quit(7);
         }
 
-        SDL_FreeSurface(mooseRGBSurface);
+        SDL_DestroySurface(mooseRGBSurface);
     }
 
     SDL_free(RawMooseData);

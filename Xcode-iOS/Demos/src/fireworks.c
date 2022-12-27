@@ -357,8 +357,8 @@ initializeTexture()
                  GL_RGBA, GL_UNSIGNED_BYTE, bmp_surface_rgba8888->pixels);
 
     /* free bmp surface and converted bmp surface */
-    SDL_FreeSurface(bmp_surface);
-    SDL_FreeSurface(bmp_surface_rgba8888);
+    SDL_DestroySurface(bmp_surface);
+    SDL_DestroySurface(bmp_surface_rgba8888);
 
 }
 

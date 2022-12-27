@@ -191,7 +191,7 @@ int render_testPrimitives(void *arg)
     SDL_RenderPresent(renderer);
 
     /* Clean up. */
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
     return TEST_COMPLETED;
@@ -355,7 +355,7 @@ int render_testPrimitivesBlend(void *arg)
     SDL_RenderPresent(renderer);
 
     /* Clean up. */
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
     return TEST_COMPLETED;
@@ -424,7 +424,7 @@ int render_testBlit(void *arg)
 
     /* Clean up. */
     SDL_DestroyTexture(tface);
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
     return TEST_COMPLETED;
@@ -500,7 +500,7 @@ int render_testBlitColor(void *arg)
 
     /* Clean up. */
     SDL_DestroyTexture(tface);
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
     return TEST_COMPLETED;
@@ -579,7 +579,7 @@ int render_testBlitAlpha(void *arg)
 
     /* Clean up. */
     SDL_DestroyTexture(tface);
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
     return TEST_COMPLETED;
@@ -695,7 +695,7 @@ int render_testBlitBlend(void *arg)
     _compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
     SDL_RenderPresent(renderer);
 
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
     /* Test Blend. */
@@ -706,7 +706,7 @@ int render_testBlitBlend(void *arg)
     _compare(referenceSurface, ALLOWABLE_ERROR_BLENDED);
     SDL_RenderPresent(renderer);
 
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
     /* Test Add. */
@@ -717,7 +717,7 @@ int render_testBlitBlend(void *arg)
     _compare(referenceSurface, ALLOWABLE_ERROR_BLENDED);
     SDL_RenderPresent(renderer);
 
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
     /* Test Mod. */
@@ -728,7 +728,7 @@ int render_testBlitBlend(void *arg)
     _compare(referenceSurface, ALLOWABLE_ERROR_BLENDED);
     SDL_RenderPresent(renderer);
 
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
     /* Clear surface. */
@@ -794,7 +794,7 @@ int render_testBlitBlend(void *arg)
     /* Make current */
     SDL_RenderPresent(renderer);
 
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
     return TEST_COMPLETED;
@@ -941,7 +941,7 @@ _loadTestFace(void)
         SDLTest_LogError("SDL_CreateTextureFromSurface() failed with error: %s", SDL_GetError());
     }
 
-    SDL_FreeSurface(face);
+    SDL_DestroySurface(face);
 
     return tface;
 }
@@ -1042,7 +1042,7 @@ _hasTexAlpha(void)
  * \sa
  * http://wiki.libsdl.org/SDL_RenderReadPixels
  * http://wiki.libsdl.org/SDL_CreateSurfaceFrom
- * http://wiki.libsdl.org/SDL_FreeSurface
+ * http://wiki.libsdl.org/SDL_DestroySurface
  */
 static void
 _compare(SDL_Surface *referenceSurface, int allowable_error)
@@ -1077,7 +1077,7 @@ _compare(SDL_Surface *referenceSurface, int allowable_error)
 
    /* Clean up. */
    SDL_free(pixels);
-   SDL_FreeSurface(testSurface);
+   SDL_DestroySurface(testSurface);
 }
 
 /**

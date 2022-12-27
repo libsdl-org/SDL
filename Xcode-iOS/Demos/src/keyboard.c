@@ -171,7 +171,7 @@ loadFont(void)
         return 0;
     } else {
         /* set the transparent color for the bitmap font (hot pink) */
-        SDL_SetColorKey(surface, 1, SDL_MapRGB(surface->format, 238, 0, 252));
+        SDL_SetSurfaceColorKey(surface, 1, SDL_MapRGB(surface->format, 238, 0, 252));
         /* now we convert the surface to our desired pixel format */
         int format = SDL_PIXELFORMAT_ABGR8888;  /* desired texture format */
 
@@ -186,8 +186,8 @@ loadFont(void)
             /* set blend mode for our texture */
             SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         }
-        SDL_FreeSurface(surface);
-        SDL_FreeSurface(converted);
+        SDL_DestroySurface(surface);
+        SDL_DestroySurface(converted);
         return texture;
     }
 }

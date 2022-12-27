@@ -1348,7 +1348,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
 
     /* See what the best texture format is */
     fmt = surface->format;
-    if (fmt->Amask || SDL_HasColorKey(surface)) {
+    if (fmt->Amask || SDL_SurfaceHasColorKey(surface)) {
         needAlpha = SDL_TRUE;
     } else {
         needAlpha = SDL_FALSE;
@@ -1365,7 +1365,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
 
     /* Try to have the best pixel format for the texture */
     /* No alpha, but a colorkey => promote to alpha */
-    if (!fmt->Amask && SDL_HasColorKey(surface)) {
+    if (!fmt->Amask && SDL_SurfaceHasColorKey(surface)) {
         if (fmt->format == SDL_PIXELFORMAT_RGB888) {
             for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
                 if (renderer->info.texture_formats[i] == SDL_PIXELFORMAT_ARGB8888) {
@@ -1410,7 +1410,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
     }
 
     if (format == surface->format->format) {
-        if (surface->format->Amask && SDL_HasColorKey(surface)) {
+        if (surface->format->Amask && SDL_SurfaceHasColorKey(surface)) {
             /* Surface and Renderer formats are identicals.
              * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
             direct_update = SDL_FALSE;
@@ -1445,7 +1445,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
         SDL_DestroyPixelFormat(dst_fmt);
         if (temp) {
             SDL_UpdateTexture(texture, NULL, temp->pixels, temp->pitch);
-            SDL_FreeSurface(temp);
+            SDL_DestroySurface(temp);
         } else {
             SDL_DestroyTexture(texture);
             return NULL;
@@ -1462,7 +1462,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
         SDL_GetSurfaceAlphaMod(surface, &a);
         SDL_SetTextureAlphaMod(texture, a);
 
-        if (SDL_HasColorKey(surface)) {
+        if (SDL_SurfaceHasColorKey(surface)) {
             /* We converted to a texture with alpha format */
             SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         } else {
@@ -2136,7 +2136,7 @@ void SDL_UnlockTexture(SDL_Texture *texture)
         renderer->UnlockTexture(renderer, texture);
     }
 
-    SDL_FreeSurface(texture->locked_surface);
+    SDL_DestroySurface(texture->locked_surface);
     texture->locked_surface = NULL;
 }
 
@@ -4261,7 +4261,7 @@ void SDL_DestroyTexture(SDL_Texture *texture)
 
     renderer->DestroyTexture(renderer, texture);
 
-    SDL_FreeSurface(texture->locked_surface);
+    SDL_DestroySurface(texture->locked_surface);
     texture->locked_surface = NULL;
 
     SDL_free(texture);

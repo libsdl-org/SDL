@@ -192,6 +192,21 @@
 #define SDL_SensorOpen SDL_OpenSensor
 #define SDL_SensorUpdate SDL_UpdateSensors
 
+/* ##SDL_surface.h */
+#define SDL_FillRect SDL_FillSurfaceRect
+#define SDL_FillRects SDL_FillSurfaceRects
+#define SDL_FreeSurface SDL_DestroySurface
+#define SDL_GetClipRect SDL_GetSurfaceClipRect
+#define SDL_GetColorKey SDL_GetSurfaceColorKey
+#define SDL_HasColorKey SDL_SurfaceHasColorKey
+#define SDL_HasSurfaceRLE SDL_SurfaceHasRLE
+#define SDL_LowerBlit SDL_BlitSurfaceUnchecked
+#define SDL_LowerBlitScaled SDL_BlitSurfaceUncheckedScaled
+#define SDL_SetClipRect SDL_SetSurfaceClipRect
+#define SDL_SetColorKey SDL_SetSurfaceColorKey
+#define SDL_UpperBlit SDL_BlitSurface
+#define SDL_UpperBlitScaled SDL_BlitSurfaceScaled
+
 #else /* !SDL_ENABLE_OLD_NAMES */
 
 /* ##SDL_audio.h */
@@ -346,6 +361,21 @@
 #define SDL_SensorGetType SDL_SensorGetType_renamed_SDL_GetSensorType
 #define SDL_SensorOpen SDL_SensorOpen_renamed_SDL_OpenSensor
 #define SDL_SensorUpdate SDL_SensorUpdate_renamed_SDL_UpdateSensors
+
+/* ##SDL_surface.h */
+#define SDL_FillRect SDL_FillRect_renamed_SDL_FillSurfaceRect
+#define SDL_FillRects SDL_FillRects_renamed_SDL_FillSurfaceRects
+#define SDL_FreeSurface SDL_FreeSurface_renamed_SDL_DestroySurface
+#define SDL_GetClipRect SDL_GetClipRect_renamed_SDL_GetSurfaceClipRect
+#define SDL_GetColorKey SDL_GetColorKey_renamed_SDL_GetSurfaceColorKey
+#define SDL_HasColorKey SDL_HasColorKey_renamed_SDL_SurfaceHasColorKey
+#define SDL_HasSurfaceRLE SDL_HasSurfaceRLE_renamed_SDL_SurfaceHasRLE
+#define SDL_LowerBlit SDL_LowerBlit_renamed_SDL_BlitSurfaceUnchecked
+#define SDL_LowerBlitScaled SDL_LowerBlitScaled_renamed_SDL_BlitSurfaceUncheckedScaled
+#define SDL_SetClipRect SDL_SetClipRect_renamed_SDL_SetSurfaceClipRect
+#define SDL_SetColorKey SDL_SetColorKey_renamed_SDL_SetSurfaceColorKey
+#define SDL_UpperBlit SDL_UpperBlit_renamed_SDL_BlitSurface
+#define SDL_UpperBlitScaled SDL_UpperBlitScaled_renamed_SDL_BlitSurfaceScaled
 
 #endif /* SDL_ENABLE_OLD_NAMES */
 

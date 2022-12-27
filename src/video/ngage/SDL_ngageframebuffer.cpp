@@ -171,7 +171,7 @@ void SDL_NGAGE_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
     SDL_Surface *surface;
 
     surface = (SDL_Surface *)SDL_SetWindowData(window, NGAGE_SURFACE, NULL);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 }
 
 /*****************************************************************************/

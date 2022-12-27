@@ -197,7 +197,7 @@ static SDL_Cursor * HAIKU_CreateCursor(SDL_Surface * surface, int hot_x, int hot
 
 	BBitmap *cursorBitmap = new BBitmap(BRect(0, 0, surface->w - 1, surface->h - 1), B_RGBA32);
 	cursorBitmap->SetBits(converted->pixels, converted->h * converted->pitch, 0, B_RGBA32);
-    SDL_FreeSurface(converted);
+    SDL_DestroySurface(converted);
 
     cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
     if (cursor) {

@@ -56,9 +56,9 @@ void _surfaceSetUp(void *arg)
 
 void _surfaceTearDown(void *arg)
 {
-    SDL_FreeSurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
-    SDL_FreeSurface(testSurface);
+    SDL_DestroySurface(testSurface);
     testSurface = NULL;
 }
 
@@ -73,9 +73,9 @@ void _clearTestSurface()
     /* Clear surface. */
     color = SDL_MapRGBA(testSurface->format, 0, 0, 0, 0);
     SDLTest_AssertPass("Call to SDL_MapRGBA()");
-    ret = SDL_FillRect(testSurface, NULL, color);
-    SDLTest_AssertPass("Call to SDL_FillRect()");
-    SDLTest_AssertCheck(ret == 0, "Verify result from SDL_FillRect, expected: 0, got: %i", ret);
+    ret = SDL_FillSurfaceRect(testSurface, NULL, color);
+    SDLTest_AssertPass("Call to SDL_FillSurfaceRect()");
+    SDLTest_AssertCheck(ret == 0, "Verify result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
 }
 
 /**
@@ -118,9 +118,9 @@ void _testBlitBlendMode(int mode)
     SDLTest_AssertCheck(ret == 0, "Verify result from SDL_SetSurfaceColorMod(), expected: 0, got: %i", ret);
 
     /* Reset color key */
-    ret = SDL_SetColorKey(face, SDL_FALSE, 0);
-    SDLTest_AssertPass("Call to SDL_SetColorKey()");
-    SDLTest_AssertCheck(ret == 0, "Verify result from SDL_SetColorKey(), expected: 0, got: %i", ret);
+    ret = SDL_SetSurfaceColorKey(face, SDL_FALSE, 0);
+    SDLTest_AssertPass("Call to SDL_SetSurfaceColorKey()");
+    SDLTest_AssertCheck(ret == 0, "Verify result from SDL_SetSurfaceColorKey(), expected: 0, got: %i", ret);
 
     /* Clear the test surface */
     _clearTestSurface();
@@ -196,7 +196,7 @@ void _testBlitBlendMode(int mode)
     SDLTest_AssertCheck(checkFailCount4 == 0, "Validate results from calls to SDL_SetSurfaceBlendMode, expected: 0, got: %i", checkFailCount4);
 
     /* Clean up */
-    SDL_FreeSurface(face);
+    SDL_DestroySurface(face);
     face = NULL;
 }
 
@@ -250,9 +250,9 @@ int surface_testSaveLoadBitmap(void *arg)
     unlink(sampleFilename);
 
     /* Clean up */
-    SDL_FreeSurface(face);
+    SDL_DestroySurface(face);
     face = NULL;
-    SDL_FreeSurface(rface);
+    SDL_DestroySurface(rface);
     rface = NULL;
 
     return TEST_COMPLETED;
@@ -275,9 +275,9 @@ int surface_testSurfaceConversion(void *arg)
 
     /* Set transparent pixel as the pixel at (0,0) */
     if (face->format->palette) {
-        ret = SDL_SetColorKey(face, SDL_RLEACCEL, *(Uint8 *)face->pixels);
-        SDLTest_AssertPass("Call to SDL_SetColorKey()");
-        SDLTest_AssertCheck(ret == 0, "Verify result from SDL_SetColorKey, expected: 0, got: %i", ret);
+        ret = SDL_SetSurfaceColorKey(face, SDL_RLEACCEL, *(Uint8 *)face->pixels);
+        SDLTest_AssertPass("Call to SDL_SetSurfaceColorKey()");
+        SDLTest_AssertCheck(ret == 0, "Verify result from SDL_SetSurfaceColorKey, expected: 0, got: %i", ret);
     }
 
     /* Convert to 32 bit to compare. */
@@ -290,9 +290,9 @@ int surface_testSurfaceConversion(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
     /* Clean up. */
-    SDL_FreeSurface(face);
+    SDL_DestroySurface(face);
     face = NULL;
-    SDL_FreeSurface(rface);
+    SDL_DestroySurface(rface);
     rface = NULL;
 
     return TEST_COMPLETED;
@@ -345,9 +345,9 @@ int surface_testCompleteSurfaceConversion(void *arg)
 
     /* Set transparent pixel as the pixel at (0,0) */
     if (face->format->palette) {
-        ret = SDL_SetColorKey(face, SDL_RLEACCEL, *(Uint8 *)face->pixels);
-        SDLTest_AssertPass("Call to SDL_SetColorKey()");
-        SDLTest_AssertCheck(ret == 0, "Verify result from SDL_SetColorKey, expected: 0, got: %i", ret);
+        ret = SDL_SetSurfaceColorKey(face, SDL_RLEACCEL, *(Uint8 *)face->pixels);
+        SDLTest_AssertPass("Call to SDL_SetSurfaceColorKey()");
+        SDLTest_AssertCheck(ret == 0, "Verify result from SDL_SetSurfaceColorKey, expected: 0, got: %i", ret);
     }
 
     for (i = 0; i < SDL_arraysize(pixel_formats); ++i) {
@@ -372,18 +372,18 @@ int surface_testCompleteSurfaceConversion(void *arg)
                 /* Compare surface. */
                 ret = SDLTest_CompareSurfaces(face, final, 0);
                 SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
-                SDL_FreeSurface(final);
+                SDL_DestroySurface(final);
             }
 
-            SDL_FreeSurface(cvt1);
+            SDL_DestroySurface(cvt1);
             SDL_DestroyPixelFormat(fmt1);
-            SDL_FreeSurface(cvt2);
+            SDL_DestroySurface(cvt2);
             SDL_DestroyPixelFormat(fmt2);
         }
     }
 
     /* Clean up. */
-    SDL_FreeSurface(face);
+    SDL_DestroySurface(face);
 
     return TEST_COMPLETED;
 }
@@ -416,7 +416,7 @@ int surface_testBlit(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
     /* Clean up. */
-    SDL_FreeSurface(compareSurface);
+    SDL_DestroySurface(compareSurface);
 
     return TEST_COMPLETED;
 }
@@ -438,7 +438,7 @@ int surface_testBlitColorMod(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
     /* Clean up. */
-    SDL_FreeSurface(compareSurface);
+    SDL_DestroySurface(compareSurface);
 
     return TEST_COMPLETED;
 }
@@ -460,7 +460,7 @@ int surface_testBlitAlphaMod(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
     /* Clean up. */
-    SDL_FreeSurface(compareSurface);
+    SDL_DestroySurface(compareSurface);
 
     return TEST_COMPLETED;
 }
@@ -482,7 +482,7 @@ int surface_testBlitBlendNone(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
     /* Clean up. */
-    SDL_FreeSurface(compareSurface);
+    SDL_DestroySurface(compareSurface);
 
     return TEST_COMPLETED;
 }
@@ -504,7 +504,7 @@ int surface_testBlitBlendBlend(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
     /* Clean up. */
-    SDL_FreeSurface(compareSurface);
+    SDL_DestroySurface(compareSurface);
 
     return TEST_COMPLETED;
 }
@@ -526,7 +526,7 @@ int surface_testBlitBlendAdd(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
     /* Clean up. */
-    SDL_FreeSurface(compareSurface);
+    SDL_DestroySurface(compareSurface);
 
     return TEST_COMPLETED;
 }
@@ -548,7 +548,7 @@ int surface_testBlitBlendMod(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
     /* Clean up. */
-    SDL_FreeSurface(compareSurface);
+    SDL_DestroySurface(compareSurface);
 
     return TEST_COMPLETED;
 }
@@ -571,7 +571,7 @@ int surface_testBlitBlendLoop(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
     /* Clean up. */
-    SDL_FreeSurface(compareSurface);
+    SDL_DestroySurface(compareSurface);
 
     return TEST_COMPLETED;
 }
@@ -628,11 +628,11 @@ int surface_testOverflow(void *arg)
     surface = SDL_CreateSurfaceFrom(buf, 6, 1, 3, SDL_PIXELFORMAT_INDEX4LSB);
     SDLTest_AssertCheck(surface != NULL, "6px * 4 bits per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
     surface = SDL_CreateSurfaceFrom(buf, 6, 1, 3, SDL_PIXELFORMAT_INDEX4LSB);
     SDLTest_AssertCheck(surface != NULL, "6px * 4 bits per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     surface = SDL_CreateSurfaceFrom(buf, 7, 1, 3, SDL_PIXELFORMAT_INDEX4LSB);
     SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
@@ -646,21 +646,21 @@ int surface_testOverflow(void *arg)
     surface = SDL_CreateSurfaceFrom(buf, 7, 1, 4, SDL_PIXELFORMAT_INDEX4LSB);
     SDLTest_AssertCheck(surface != NULL, "7px * 4 bits per px fits in 4 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
     surface = SDL_CreateSurfaceFrom(buf, 7, 1, 4, SDL_PIXELFORMAT_INDEX4LSB);
     SDLTest_AssertCheck(surface != NULL, "7px * 4 bits per px fits in 4 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     /* SDL_PIXELFORMAT_INDEX1* needs 1 byte per 8 pixels. */
     surface = SDL_CreateSurfaceFrom(buf, 16, 1, 2, SDL_PIXELFORMAT_INDEX1LSB);
     SDLTest_AssertCheck(surface != NULL, "16px * 1 bit per px fits in 2 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
     surface = SDL_CreateSurfaceFrom(buf, 16, 1, 2, SDL_PIXELFORMAT_INDEX1LSB);
     SDLTest_AssertCheck(surface != NULL, "16px * 1 bit per px fits in 2 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     surface = SDL_CreateSurfaceFrom(buf, 17, 1, 2, SDL_PIXELFORMAT_INDEX1LSB);
     SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
@@ -674,21 +674,21 @@ int surface_testOverflow(void *arg)
     surface = SDL_CreateSurfaceFrom(buf, 17, 1, 3, SDL_PIXELFORMAT_INDEX1LSB);
     SDLTest_AssertCheck(surface != NULL, "17px * 1 bit per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
     surface = SDL_CreateSurfaceFrom(buf, 17, 1, 3, SDL_PIXELFORMAT_INDEX1LSB);
     SDLTest_AssertCheck(surface != NULL, "17px * 1 bit per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     /* SDL_PIXELFORMAT_INDEX8 and SDL_PIXELFORMAT_RGB332 require 1 byte per pixel. */
     surface = SDL_CreateSurfaceFrom(buf, 5, 1, 5, SDL_PIXELFORMAT_RGB332);
     SDLTest_AssertCheck(surface != NULL, "5px * 8 bits per px fits in 5 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
     surface = SDL_CreateSurfaceFrom(buf, 5, 1, 5, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(surface != NULL, "5px * 8 bits per px fits in 5 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     surface = SDL_CreateSurfaceFrom(buf, 6, 1, 5, SDL_PIXELFORMAT_RGB332);
     SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
@@ -705,11 +705,11 @@ int surface_testOverflow(void *arg)
     surface = SDL_CreateSurfaceFrom(buf, 3, 1, 6, SDL_PIXELFORMAT_RGB555);
     SDLTest_AssertCheck(surface != NULL, "3px * 15 (really 16) bits per px fits in 6 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
     surface = SDL_CreateSurfaceFrom(buf, 3, 1, 6, SDL_PIXELFORMAT_RGB555);
     SDLTest_AssertCheck(surface != NULL, "5px * 15 (really 16) bits per px fits in 6 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     surface = SDL_CreateSurfaceFrom(buf, 4, 1, 6, SDL_PIXELFORMAT_RGB555);
     SDLTest_AssertCheck(surface == NULL, "4px * 15 (really 16) bits per px doesn't fit in 6 bytes");

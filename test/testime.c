@@ -496,7 +496,7 @@ static void _Redraw(int rendererID)
         drawnTextRect.h = textSur->h;
 
         texture = SDL_CreateTextureFromSurface(renderer, textSur);
-        SDL_FreeSurface(textSur);
+        SDL_DestroySurface(textSur);
 
         SDL_RenderTexture(renderer, texture, NULL, &drawnTextRect);
         SDL_DestroyTexture(texture);
@@ -567,7 +567,7 @@ static void _Redraw(int rendererID)
         drawnTextRect.h = textSur->h;
 
         texture = SDL_CreateTextureFromSurface(renderer, textSur);
-        SDL_FreeSurface(textSur);
+        SDL_DestroySurface(textSur);
 
         SDL_RenderTexture(renderer, texture, NULL, &drawnTextRect);
         SDL_DestroyTexture(texture);

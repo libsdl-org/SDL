@@ -36,7 +36,7 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format
     /* Free the old framebuffer surface */
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     surface = data->surface;
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     /* Create a new one */
     SDL_GetWindowSize(window, &w, &h);
@@ -154,7 +154,7 @@ void Emscripten_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
-    SDL_FreeSurface(data->surface);
+    SDL_DestroySurface(data->surface);
     data->surface = NULL;
 }
 

@@ -257,7 +257,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
     {
         /* Clip triangle with surface clip rect */
         SDL_Rect rect;
-        SDL_GetClipRect(dst, &rect);
+        SDL_GetSurfaceClipRect(dst, &rect);
         SDL_IntersectRect(&dstrect, &rect, &dstrect);
     }
 
@@ -278,7 +278,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
 
         if (blend == SDL_BLENDMODE_MOD) {
             Uint32 c = SDL_MapRGBA(tmp->format, 255, 255, 255, 255);
-            SDL_FillRect(tmp, NULL, c);
+            SDL_FillSurfaceRect(tmp, NULL, c);
         }
 
         SDL_SetSurfaceBlendMode(tmp, blend);
@@ -417,7 +417,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
 
     if (tmp) {
         SDL_BlitSurface(tmp, NULL, dst, &dstrect);
-        SDL_FreeSurface(tmp);
+        SDL_DestroySurface(tmp);
     }
 
 end:
@@ -553,7 +553,7 @@ int SDL_SW_BlitTriangle(
     {
         /* Clip triangle with surface clip rect */
         SDL_Rect rect;
-        SDL_GetClipRect(dst, &rect);
+        SDL_GetSurfaceClipRect(dst, &rect);
         SDL_IntersectRect(&dstrect, &rect, &dstrect);
     }
 

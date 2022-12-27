@@ -62,7 +62,7 @@ SDL_FORCE_INLINE void
 FreePreviousWindowFramebuffer(SDL_Window *window)
 {
     SDL_Surface *surface = (SDL_Surface *)SDL_GetWindowData(window, N3DS_SURFACE);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 }
 
 SDL_FORCE_INLINE SDL_Surface *
@@ -135,7 +135,7 @@ void SDL_N3DS_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_Surface *surface;
     surface = (SDL_Surface *)SDL_SetWindowData(window, N3DS_SURFACE, NULL);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 }
 
 #endif /* SDL_VIDEO_DRIVER_N3DS */

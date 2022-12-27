@@ -509,6 +509,21 @@ But if you're migrating your code which uses masks, you probably have a format i
 ```
 
 
+The following functions have been renamed:
+* SDL_FillRect => SDL_FillSurfaceRect
+* SDL_FillRects => SDL_FillSurfaceRects
+* SDL_FreeSurface => SDL_DestroySurface
+* SDL_GetClipRect => SDL_GetSurfaceClipRect
+* SDL_GetColorKey => SDL_GetSurfaceColorKey
+* SDL_HasColorKey => SDL_SurfaceHasColorKey
+* SDL_HasSurfaceRLE => SDL_SurfaceHasRLE
+* SDL_LowerBlit => SDL_BlitSurfaceUnchecked
+* SDL_LowerBlitScaled => SDL_BlitSurfaceUncheckedScaled
+* SDL_SetClipRect => SDL_SetSurfaceClipRect
+* SDL_SetColorKey => SDL_SetSurfaceColorKey
+* SDL_UpperBlit => SDL_BlitSurface
+* SDL_UpperBlitScaled => SDL_BlitSurfaceScaled
+
 ## SDL_syswm.h
 
 This header no longer includes platform specific headers and type definitions, instead allowing you to include the ones appropriate for your use case. You should define one or more of the following to enable the relevant platform-specific support:

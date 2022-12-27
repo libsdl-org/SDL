@@ -232,7 +232,7 @@ int mouse_createFreeColorCursor(void *arg)
     SDLTest_AssertPass("Call to SDL_CreateColorCursor()");
     SDLTest_AssertCheck(cursor != NULL, "Validate result from SDL_CreateColorCursor() is not NULL");
     if (cursor == NULL) {
-        SDL_FreeSurface(face);
+        SDL_DestroySurface(face);
         return TEST_ABORTED;
     }
 
@@ -241,7 +241,7 @@ int mouse_createFreeColorCursor(void *arg)
     SDLTest_AssertPass("Call to SDL_FreeCursor()");
 
     /* Clean up */
-    SDL_FreeSurface(face);
+    SDL_DestroySurface(face);
 
     return TEST_COMPLETED;
 }

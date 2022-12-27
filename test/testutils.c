@@ -109,22 +109,22 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
         /* Set transparent pixel as the pixel at (0,0) */
         if (transparent) {
             if (temp->format->palette) {
-                SDL_SetColorKey(temp, SDL_TRUE, *(Uint8 *)temp->pixels);
+                SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint8 *)temp->pixels);
             } else {
                 switch (temp->format->BitsPerPixel) {
                 case 15:
-                    SDL_SetColorKey(temp, SDL_TRUE,
+                    SDL_SetSurfaceColorKey(temp, SDL_TRUE,
                                     (*(Uint16 *)temp->pixels) & 0x00007FFF);
                     break;
                 case 16:
-                    SDL_SetColorKey(temp, SDL_TRUE, *(Uint16 *)temp->pixels);
+                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint16 *)temp->pixels);
                     break;
                 case 24:
-                    SDL_SetColorKey(temp, SDL_TRUE,
+                    SDL_SetSurfaceColorKey(temp, SDL_TRUE,
                                     (*(Uint32 *)temp->pixels) & 0x00FFFFFF);
                     break;
                 case 32:
-                    SDL_SetColorKey(temp, SDL_TRUE, *(Uint32 *)temp->pixels);
+                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint32 *)temp->pixels);
                     break;
                 }
             }
@@ -143,7 +143,7 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
         }
     }
-    SDL_FreeSurface(temp);
+    SDL_DestroySurface(temp);
     if (path) {
         SDL_free(path);
     }

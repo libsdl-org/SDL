@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         pictures[i].name = argv[i + 1];
         if (pictures[i].surface == NULL) {
             for (j = 0; j < num_pictures; j++) {
-                SDL_FreeSurface(pictures[j].surface);
+                SDL_DestroySurface(pictures[j].surface);
             }
             SDL_free(pictures);
             SDL_Quit();
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
     SDL_SetWindowPosition(window, SHAPED_WINDOW_X, SHAPED_WINDOW_Y);
     if (window == NULL) {
         for (i = 0; i < num_pictures; i++) {
-            SDL_FreeSurface(pictures[i].surface);
+            SDL_DestroySurface(pictures[i].surface);
         }
         SDL_free(pictures);
         SDL_Quit();
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
     if (renderer == NULL) {
         SDL_DestroyWindow(window);
         for (i = 0; i < num_pictures; i++) {
-            SDL_FreeSurface(pictures[i].surface);
+            SDL_DestroySurface(pictures[i].surface);
         }
         SDL_free(pictures);
         SDL_Quit();
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
                 }
             }
             for (i = 0; i < num_pictures; i++) {
-                SDL_FreeSurface(pictures[i].surface);
+                SDL_DestroySurface(pictures[i].surface);
             }
             SDL_free(pictures);
             SDL_DestroyRenderer(renderer);
@@ -198,7 +198,7 @@ int main(int argc, char **argv)
     SDL_DestroyWindow(window);
     /* Free the original surfaces backing the textures. */
     for (i = 0; i < num_pictures; i++) {
-        SDL_FreeSurface(pictures[i].surface);
+        SDL_DestroySurface(pictures[i].surface);
     }
     SDL_free(pictures);
     /* Call SDL_Quit() before quitting. */

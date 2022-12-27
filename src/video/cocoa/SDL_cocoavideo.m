@@ -251,14 +251,14 @@ Cocoa_CreateImage(SDL_Surface *surface)
                                                     bytesPerRow:converted->pitch
                                                    bitsPerPixel:converted->format->BitsPerPixel];
     if (imgrep == nil) {
-        SDL_FreeSurface(converted);
+        SDL_DestroySurface(converted);
         return nil;
     }
 
     /* Copy the pixels */
     pixels = [imgrep bitmapData];
     SDL_memcpy(pixels, converted->pixels, converted->h * converted->pitch);
-    SDL_FreeSurface(converted);
+    SDL_DestroySurface(converted);
 
     /* Premultiply the alpha channel */
     for (i = (surface->h * surface->w); i--;) {

@@ -400,7 +400,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
         } else {
             SDL_SetSurfaceBlendMode(src_clone, SDL_BLENDMODE_NONE);
             retval = SDL_PrivateUpperBlitScaled(src_clone, srcrect, src_scaled, &scale_rect, texture->scaleMode);
-            SDL_FreeSurface(src_clone);
+            SDL_DestroySurface(src_clone);
             src_clone = src_scaled;
             src_scaled = NULL;
         }
@@ -488,14 +488,14 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
                             SDL_SetSurfaceBlendMode(src_rotated_rgb, SDL_BLENDMODE_ADD);
                             /* Renderer scaling, if needed */
                             retval = Blit_to_Screen(src_rotated_rgb, NULL, surface, &tmp_rect, scale_x, scale_y, texture->scaleMode);
-                            SDL_FreeSurface(src_rotated_rgb);
+                            SDL_DestroySurface(src_rotated_rgb);
                         }
                     }
                 }
-                SDL_FreeSurface(mask_rotated);
+                SDL_DestroySurface(mask_rotated);
             }
             if (src_rotated != NULL) {
-                SDL_FreeSurface(src_rotated);
+                SDL_DestroySurface(src_rotated);
             }
         }
     }
@@ -504,10 +504,10 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
         SDL_UnlockSurface(src);
     }
     if (mask != NULL) {
-        SDL_FreeSurface(mask);
+        SDL_DestroySurface(mask);
     }
     if (src_clone != NULL) {
-        SDL_FreeSurface(src_clone);
+        SDL_DestroySurface(src_clone);
     }
     return retval;
 }
@@ -645,9 +645,9 @@ static void SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
             clip_rect.w = cliprect->w;
             clip_rect.h = cliprect->h;
             SDL_IntersectRect(viewport, &clip_rect, &clip_rect);
-            SDL_SetClipRect(surface, &clip_rect);
+            SDL_SetSurfaceClipRect(surface, &clip_rect);
         } else {
-            SDL_SetClipRect(surface, drawstate->viewport);
+            SDL_SetSurfaceClipRect(surface, drawstate->viewport);
         }
         drawstate->surface_cliprect_dirty = SDL_FALSE;
     }
@@ -694,8 +694,8 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
             const Uint8 b = cmd->data.color.b;
             const Uint8 a = cmd->data.color.a;
             /* By definition the clear ignores the clip rect */
-            SDL_SetClipRect(surface, NULL);
-            SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, r, g, b, a));
+            SDL_SetSurfaceClipRect(surface, NULL);
+            SDL_FillSurfaceRect(surface, NULL, SDL_MapRGBA(surface->format, r, g, b, a));
             drawstate.surface_cliprect_dirty = SDL_TRUE;
             break;
         }
@@ -777,7 +777,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
             }
 
             if (blend == SDL_BLENDMODE_NONE) {
-                SDL_FillRects(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
+                SDL_FillSurfaceRects(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
             } else {
                 SDL_BlendFillRects(surface, verts, count, blend, r, g, b, a);
             }
@@ -839,7 +839,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                         SDL_SetSurfaceBlendMode(tmp, blendmode);
 
                         SDL_BlitSurface(tmp, NULL, surface, dstrect);
-                        SDL_FreeSurface(tmp);
+                        SDL_DestroySurface(tmp);
                         /* No need to set back r/g/b/a/blendmode to 'src' since it's done in PrepTextureForCopy() */
                     }
                 } else {
@@ -980,7 +980,7 @@ static void SW_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     SDL_Surface *surface = (SDL_Surface *)texture->driverdata;
 
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 }
 
 static void SW_DestroyRenderer(SDL_Renderer *renderer)

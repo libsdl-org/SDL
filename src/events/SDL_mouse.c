@@ -1247,7 +1247,7 @@ SDL_CreateCursor(const Uint8 *data, const Uint8 *mask,
 
     cursor = SDL_CreateColorCursor(surface, hot_x, hot_y);
 
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     return cursor;
 }
@@ -1290,7 +1290,7 @@ SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
         mouse->cursors = cursor;
     }
 
-    SDL_FreeSurface(temp);
+    SDL_DestroySurface(temp);
 
     return cursor;
 }

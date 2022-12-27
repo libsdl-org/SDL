@@ -342,7 +342,7 @@ int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
 
     /* Make sure we're set up to display in the desired format */
     if (target_format != swdata->target_format && swdata->display) {
-        SDL_FreeSurface(swdata->display);
+        SDL_DestroySurface(swdata->display);
         swdata->display = NULL;
     }
 
@@ -394,8 +394,8 @@ void SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture *swdata)
 {
     if (swdata) {
         SDL_SIMDFree(swdata->pixels);
-        SDL_FreeSurface(swdata->stretch);
-        SDL_FreeSurface(swdata->display);
+        SDL_DestroySurface(swdata->stretch);
+        SDL_DestroySurface(swdata->display);
         SDL_free(swdata);
     }
 }

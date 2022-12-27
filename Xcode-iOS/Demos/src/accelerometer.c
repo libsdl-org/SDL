@@ -123,7 +123,7 @@ initializeTextures(SDL_Renderer *renderer)
         fatalError("could not ship.bmp");
     }
     /* set blue to transparent on the ship */
-    SDL_SetColorKey(bmp_surface, 1,
+    SDL_SetSurfaceColorKey(bmp_surface, 1,
                     SDL_MapRGB(bmp_surface->format, 0, 0, 255));
 
     /* create ship texture from surface */
@@ -137,7 +137,7 @@ initializeTextures(SDL_Renderer *renderer)
     shipData.rect.w = bmp_surface->w;
     shipData.rect.h = bmp_surface->h;
 
-    SDL_FreeSurface(bmp_surface);
+    SDL_DestroySurface(bmp_surface);
 
     /* load the space background */
     bmp_surface = SDL_LoadBMP("space.bmp");
@@ -149,7 +149,7 @@ initializeTextures(SDL_Renderer *renderer)
     if (space == NULL) {
         fatalError("could not create space texture");
     }
-    SDL_FreeSurface(bmp_surface);
+    SDL_DestroySurface(bmp_surface);
 
 }
 
