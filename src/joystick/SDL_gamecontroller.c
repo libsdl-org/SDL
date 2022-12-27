@@ -121,7 +121,7 @@ static char gamecontroller_magic;
 #define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
 
 /* The SDL game controller structure */
-struct _SDL_GameController
+struct SDL_GameController
 {
     const void *magic _guarded;
 
@@ -136,7 +136,7 @@ struct _SDL_GameController
     Uint8 *last_hat_mask _guarded;
     Uint64 guide_button_down _guarded;
 
-    struct _SDL_GameController *next _guarded; /* pointer to next game controller we have allocated */
+    struct SDL_GameController *next _guarded; /* pointer to next game controller we have allocated */
 };
 
 #undef _guarded

@@ -55,8 +55,8 @@ extern "C" {
 /**
  * The gamecontroller structure used to identify an SDL game controller
  */
-struct _SDL_GameController;
-typedef struct _SDL_GameController SDL_GameController;
+struct SDL_GameController;
+typedef struct SDL_GameController SDL_GameController;
 
 typedef enum
 {

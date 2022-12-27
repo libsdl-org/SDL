@@ -93,6 +93,9 @@ The `SDL_WINDOWEVENT_*` events have been moved to top level events, and `SDL_WIN
 
 Removed SDL_GameControllerGetSensorDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_CONTROLLERSENSORUPDATE events.
 
+The following structures have been renamed:
+* _SDL_GameController => SDL_GameController
+
 ## SDL_gesture.h
 
 The gesture API has been removed. There is no replacement planned in SDL3.
