@@ -536,7 +536,7 @@ typedef struct SDL_SensorEvent
     Uint32 type;        /**< ::SDL_SENSORUPDATE */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_SensorID which;       /**< The instance ID of the sensor */
-    float data[6];      /**< Up to 6 values from the sensor - additional values can be queried using SDL_SensorGetData() */
+    float data[6];      /**< Up to 6 values from the sensor - additional values can be queried using SDL_GetSensorData() */
     Uint64 sensor_timestamp; /**< The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock */
 } SDL_SensorEvent;
 

@@ -877,7 +877,7 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
 #if !SDL_SENSOR_DISABLED
     /* Check for sensor state change */
     if (SDL_update_sensors) {
-        SDL_SensorUpdate();
+        SDL_UpdateSensors();
     }
 #endif
 
@@ -1006,7 +1006,7 @@ static SDL_bool SDL_events_need_polling()
 
 #if !SDL_SENSOR_DISABLED
     need_polling = need_polling ||
-                   (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && (SDL_NumSensors() > 0));
+                   (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && (SDL_GetNumSensors() > 0));
 #endif
 
     return need_polling;

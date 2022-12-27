@@ -443,6 +443,22 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_SENSORUPDATE events.
 
 
+The following functions have been renamed:
+* SDL_NumSensors => SDL_GetNumSensors
+* SDL_SensorClose => SDL_CloseSensor
+* SDL_SensorFromInstanceID => SDL_GetSensorFromInstanceID
+* SDL_SensorGetData => SDL_GetSensorData
+* SDL_SensorGetDeviceInstanceID => SDL_GetSensorDeviceInstanceID
+* SDL_SensorGetDeviceName => SDL_GetSensorDeviceName
+* SDL_SensorGetDeviceNonPortableType => SDL_GetSensorDeviceNonPortableType
+* SDL_SensorGetDeviceType => SDL_GetSensorDeviceType
+* SDL_SensorGetInstanceID => SDL_GetSensorInstanceID
+* SDL_SensorGetName => SDL_GetSensorName
+* SDL_SensorGetNonPortableType => SDL_GetSensorNonPortableType
+* SDL_SensorGetType => SDL_GetSensorType
+* SDL_SensorOpen => SDL_OpenSensor
+* SDL_SensorUpdate => SDL_UpdateSensors
+
 ## SDL_stdinc.h
 
 The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.

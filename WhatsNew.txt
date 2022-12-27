@@ -79,6 +79,7 @@ General:
     * SDL_MasksToPixelFormatEnum => SDL_GetPixelFormatEnumForMasks
     * SDL_NewAudioStream => SDL_CreateAudioStream
     * SDL_NumJoysticks => SDL_GetNumJoysticks
+    * SDL_NumSensors => SDL_GetNumSensors
     * SDL_PixelFormatEnumToMasks => SDL_GetMasksForPixelFormatEnum
     * SDL_RenderCopy => SDL_RenderTexture
     * SDL_RenderCopyEx => SDL_RenderTextureRotated
@@ -112,6 +113,19 @@ General:
     * SDL_RenderSetVSync => SDL_SetRenderVSync
     * SDL_RenderSetViewport => SDL_SetRenderViewport
     * SDL_RenderTargetSupported => SDL_IsRenderTargetSupported
+    * SDL_SensorClose => SDL_CloseSensor
+    * SDL_SensorFromInstanceID => SDL_GetSensorFromInstanceID
+    * SDL_SensorGetData => SDL_GetSensorData
+    * SDL_SensorGetDeviceInstanceID => SDL_GetSensorDeviceInstanceID
+    * SDL_SensorGetDeviceName => SDL_GetSensorDeviceName
+    * SDL_SensorGetDeviceNonPortableType => SDL_GetSensorDeviceNonPortableType
+    * SDL_SensorGetDeviceType => SDL_GetSensorDeviceType
+    * SDL_SensorGetInstanceID => SDL_GetSensorInstanceID
+    * SDL_SensorGetName => SDL_GetSensorName
+    * SDL_SensorGetNonPortableType => SDL_GetSensorNonPortableType
+    * SDL_SensorGetType => SDL_GetSensorType
+    * SDL_SensorOpen => SDL_OpenSensor
+    * SDL_SensorUpdate => SDL_UpdateSensors
 * Removed the following functions from the API, see docs/README-migration.md for details:
     * SDL_AudioInit()
     * SDL_AudioQuit()

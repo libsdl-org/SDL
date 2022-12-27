@@ -176,6 +176,22 @@
 #define RW_SEEK_END SDL_RW_SEEK_END
 #define RW_SEEK_SET SDL_RW_SEEK_SET
 
+/* ##SDL_sensor.h */
+#define SDL_NumSensors SDL_GetNumSensors
+#define SDL_SensorClose SDL_CloseSensor
+#define SDL_SensorFromInstanceID SDL_GetSensorFromInstanceID
+#define SDL_SensorGetData SDL_GetSensorData
+#define SDL_SensorGetDeviceInstanceID SDL_GetSensorDeviceInstanceID
+#define SDL_SensorGetDeviceName SDL_GetSensorDeviceName
+#define SDL_SensorGetDeviceNonPortableType SDL_GetSensorDeviceNonPortableType
+#define SDL_SensorGetDeviceType SDL_GetSensorDeviceType
+#define SDL_SensorGetInstanceID SDL_GetSensorInstanceID
+#define SDL_SensorGetName SDL_GetSensorName
+#define SDL_SensorGetNonPortableType SDL_GetSensorNonPortableType
+#define SDL_SensorGetType SDL_GetSensorType
+#define SDL_SensorOpen SDL_OpenSensor
+#define SDL_SensorUpdate SDL_UpdateSensors
+
 #else /* !SDL_ENABLE_OLD_NAMES */
 
 /* ##SDL_audio.h */
@@ -314,6 +330,22 @@
 #define RW_SEEK_CUR RW_SEEK_CUR_renamed_SDL_RW_SEEK_CUR
 #define RW_SEEK_END RW_SEEK_END_renamed_SDL_RW_SEEK_END
 #define RW_SEEK_SET RW_SEEK_SET_renamed_SDL_RW_SEEK_SET
+
+/* ##SDL_sensor.h */
+#define SDL_NumSensors SDL_NumSensors_renamed_SDL_GetNumSensors
+#define SDL_SensorClose SDL_SensorClose_renamed_SDL_CloseSensor
+#define SDL_SensorFromInstanceID SDL_SensorFromInstanceID_renamed_SDL_GetSensorFromInstanceID
+#define SDL_SensorGetData SDL_SensorGetData_renamed_SDL_GetSensorData
+#define SDL_SensorGetDeviceInstanceID SDL_SensorGetDeviceInstanceID_renamed_SDL_GetSensorDeviceInstanceID
+#define SDL_SensorGetDeviceName SDL_SensorGetDeviceName_renamed_SDL_GetSensorDeviceName
+#define SDL_SensorGetDeviceNonPortableType SDL_SensorGetDeviceNonPortableType_renamed_SDL_GetSensorDeviceNonPortableType
+#define SDL_SensorGetDeviceType SDL_SensorGetDeviceType_renamed_SDL_GetSensorDeviceType
+#define SDL_SensorGetInstanceID SDL_SensorGetInstanceID_renamed_SDL_GetSensorInstanceID
+#define SDL_SensorGetName SDL_SensorGetName_renamed_SDL_GetSensorName
+#define SDL_SensorGetNonPortableType SDL_SensorGetNonPortableType_renamed_SDL_GetSensorNonPortableType
+#define SDL_SensorGetType SDL_SensorGetType_renamed_SDL_GetSensorType
+#define SDL_SensorOpen SDL_SensorOpen_renamed_SDL_OpenSensor
+#define SDL_SensorUpdate SDL_SensorUpdate_renamed_SDL_UpdateSensors
 
 #endif /* SDL_ENABLE_OLD_NAMES */
 

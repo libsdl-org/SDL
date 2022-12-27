@@ -308,8 +308,8 @@ extern "C" {
  *
  *  This variable can be set to the following values:
  *
- *    "0"     - You'll call SDL_SensorUpdate() manually
- *    "1"     - SDL will automatically call SDL_SensorUpdate() (default)
+ *    "0"     - You'll call SDL_UpdateSensors() manually
+ *    "1"     - SDL will automatically call SDL_UpdateSensors() (default)
  *
  *  This hint can be toggled on and off at runtime.
  */

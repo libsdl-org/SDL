@@ -150,7 +150,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSensors(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_NumSensors(void);
+extern DECLSPEC int SDLCALL SDL_GetNumSensors(void);
 
 /**
  * Get the implementation dependent name of a sensor.
@@ -160,7 +160,7 @@ extern DECLSPEC int SDLCALL SDL_NumSensors(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC const char *SDLCALL SDL_SensorGetDeviceName(int device_index);
+extern DECLSPEC const char *SDLCALL SDL_GetSensorDeviceName(int device_index);
 
 /**
  * Get the type of a sensor.
@@ -171,7 +171,7 @@ extern DECLSPEC const char *SDLCALL SDL_SensorGetDeviceName(int device_index);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_SensorType SDLCALL SDL_SensorGetDeviceType(int device_index);
+extern DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorDeviceType(int device_index);
 
 /**
  * Get the platform dependent type of a sensor.
@@ -182,7 +182,7 @@ extern DECLSPEC SDL_SensorType SDLCALL SDL_SensorGetDeviceType(int device_index)
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SensorGetDeviceNonPortableType(int device_index);
+extern DECLSPEC int SDLCALL SDL_GetSensorDeviceNonPortableType(int device_index);
 
 /**
  * Get the instance ID of a sensor.
@@ -192,7 +192,7 @@ extern DECLSPEC int SDLCALL SDL_SensorGetDeviceNonPortableType(int device_index)
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_SensorID SDLCALL SDL_SensorGetDeviceInstanceID(int device_index);
+extern DECLSPEC SDL_SensorID SDLCALL SDL_GetSensorDeviceInstanceID(int device_index);
 
 /**
  * Open a sensor for use.
@@ -202,7 +202,7 @@ extern DECLSPEC SDL_SensorID SDLCALL SDL_SensorGetDeviceInstanceID(int device_in
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_Sensor *SDLCALL SDL_SensorOpen(int device_index);
+extern DECLSPEC SDL_Sensor *SDLCALL SDL_OpenSensor(int device_index);
 
 /**
  * Return the SDL_Sensor associated with an instance id.
@@ -212,7 +212,7 @@ extern DECLSPEC SDL_Sensor *SDLCALL SDL_SensorOpen(int device_index);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_Sensor *SDLCALL SDL_SensorFromInstanceID(SDL_SensorID instance_id);
+extern DECLSPEC SDL_Sensor *SDLCALL SDL_GetSensorFromInstanceID(SDL_SensorID instance_id);
 
 /**
  * Get the implementation dependent name of a sensor
@@ -222,7 +222,7 @@ extern DECLSPEC SDL_Sensor *SDLCALL SDL_SensorFromInstanceID(SDL_SensorID instan
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC const char *SDLCALL SDL_SensorGetName(SDL_Sensor *sensor);
+extern DECLSPEC const char *SDLCALL SDL_GetSensorName(SDL_Sensor *sensor);
 
 /**
  * Get the type of a sensor.
@@ -233,7 +233,7 @@ extern DECLSPEC const char *SDLCALL SDL_SensorGetName(SDL_Sensor *sensor);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_SensorType SDLCALL SDL_SensorGetType(SDL_Sensor *sensor);
+extern DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorType(SDL_Sensor *sensor);
 
 /**
  * Get the platform dependent type of a sensor.
@@ -243,7 +243,7 @@ extern DECLSPEC SDL_SensorType SDLCALL SDL_SensorGetType(SDL_Sensor *sensor);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SensorGetNonPortableType(SDL_Sensor *sensor);
+extern DECLSPEC int SDLCALL SDL_GetSensorNonPortableType(SDL_Sensor *sensor);
 
 /**
  * Get the instance ID of a sensor.
@@ -253,7 +253,7 @@ extern DECLSPEC int SDLCALL SDL_SensorGetNonPortableType(SDL_Sensor *sensor);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_SensorID SDLCALL SDL_SensorGetInstanceID(SDL_Sensor *sensor);
+extern DECLSPEC SDL_SensorID SDLCALL SDL_GetSensorInstanceID(SDL_Sensor *sensor);
 
 /**
  * Get the current state of an opened sensor.
@@ -267,16 +267,16 @@ extern DECLSPEC SDL_SensorID SDLCALL SDL_SensorGetInstanceID(SDL_Sensor *sensor)
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SensorGetData(SDL_Sensor *sensor, float *data, int num_values);
+extern DECLSPEC int SDLCALL SDL_GetSensorData(SDL_Sensor *sensor, float *data, int num_values);
 
 /**
- * Close a sensor previously opened with SDL_SensorOpen().
+ * Close a sensor previously opened with SDL_OpenSensor().
  *
  * \param sensor The SDL_Sensor object to close
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_SensorClose(SDL_Sensor *sensor);
+extern DECLSPEC void SDLCALL SDL_CloseSensor(SDL_Sensor *sensor);
 
 /**
  * Update the current state of the open sensors.
@@ -289,7 +289,7 @@ extern DECLSPEC void SDLCALL SDL_SensorClose(SDL_Sensor *sensor);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_SensorUpdate(void);
+extern DECLSPEC void SDLCALL SDL_UpdateSensors(void);
 
 
 /* Ends C function definitions when using C++ */
