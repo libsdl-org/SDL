@@ -112,6 +112,60 @@ The following hints have been removed:
 * Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
 * Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
 
+## SDL_joystick.h
+
+The following functions have been renamed:
+* SDL_JoystickAttachVirtual => SDL_AttachVirtualJoystick
+* SDL_JoystickAttachVirtualEx => SDL_AttachVirtualJoystickEx
+* SDL_JoystickClose => SDL_CloseJoystick
+* SDL_JoystickCurrentPowerLevel => SDL_GetJoystickPowerLevel
+* SDL_JoystickDetachVirtual => SDL_DetachVirtualJoystick
+* SDL_JoystickEventState => SDL_GetJoystickEventState
+* SDL_JoystickFromInstanceID => SDL_GetJoystickFromInstanceID
+* SDL_JoystickFromPlayerIndex => SDL_GetJoystickFromPlayerIndex
+* SDL_JoystickGetAttached => SDL_IsJoystickConnected
+* SDL_JoystickGetAxis => SDL_GetJoystickAxis
+* SDL_JoystickGetAxisInitialState => SDL_GetJoystickAxisInitialState
+* SDL_JoystickGetButton => SDL_GetJoystickButton
+* SDL_JoystickGetDeviceGUID => SDL_GetJoystickDeviceGUID
+* SDL_JoystickGetDeviceInstanceID => SDL_GetJoystickDeviceInstanceID
+* SDL_JoystickGetDevicePlayerIndex => SDL_GetJoystickDevicePlayerIndex
+* SDL_JoystickGetDeviceProduct => SDL_GetJoystickDeviceProduct
+* SDL_JoystickGetDeviceProductVersion => SDL_GetJoystickDeviceProductVersion
+* SDL_JoystickGetDeviceType => SDL_GetJoystickDeviceType
+* SDL_JoystickGetDeviceVendor => SDL_GetJoystickDeviceVendor
+* SDL_JoystickGetFirmwareVersion => SDL_GetJoystickFirmwareVersion
+* SDL_JoystickGetGUID => SDL_GetJoystickGUID
+* SDL_JoystickGetGUIDFromString => SDL_GetJoystickGUIDFromString
+* SDL_JoystickGetGUIDString => SDL_GetJoystickGUIDString
+* SDL_JoystickGetHat => SDL_GetJoystickHat
+* SDL_JoystickGetPlayerIndex => SDL_GetJoystickPlayerIndex
+* SDL_JoystickGetProduct => SDL_GetJoystickProduct
+* SDL_JoystickGetProductVersion => SDL_GetJoystickProductVersion
+* SDL_JoystickGetSerial => SDL_GetJoystickSerial
+* SDL_JoystickGetType => SDL_GetJoystickType
+* SDL_JoystickGetVendor => SDL_GetJoystickVendor
+* SDL_JoystickInstanceID => SDL_GetJoystickInstanceID
+* SDL_JoystickIsVirtual => SDL_IsJoystickVirtual
+* SDL_JoystickName => SDL_GetJoystickName
+* SDL_JoystickNameForIndex => SDL_GetJoystickNameForIndex
+* SDL_JoystickNumAxes => SDL_GetNumJoystickAxes
+* SDL_JoystickNumButtons => SDL_GetNumJoystickButtons
+* SDL_JoystickNumHats => SDL_GetNumJoystickHats
+* SDL_JoystickOpen => SDL_OpenJoystick
+* SDL_JoystickPath => SDL_GetJoystickPath
+* SDL_JoystickPathForIndex => SDL_GetJoystickPathForIndex
+* SDL_JoystickRumble => SDL_RumbleJoystick
+* SDL_JoystickRumbleTriggers => SDL_RumbleJoystickTriggers
+* SDL_JoystickSendEffect => SDL_SendJoystickEffect
+* SDL_JoystickSetLED => SDL_SetJoystickLED
+* SDL_JoystickSetPlayerIndex => SDL_SetJoystickPlayerIndex
+* SDL_JoystickSetVirtualAxis => SDL_SetJoystickVirtualAxis
+* SDL_JoystickSetVirtualButton => SDL_SetJoystickVirtualButton
+* SDL_JoystickSetVirtualHat => SDL_SetJoystickVirtualHat
+* SDL_JoystickUpdate => SDL_UpdateJoysticks
+* SDL_NumJoysticks => SDL_GetNumJoysticks
+
 ## SDL_keycode.h
 
 The following enums have been renamed:

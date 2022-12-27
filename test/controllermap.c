@@ -368,11 +368,11 @@ WatchJoystick(SDL_Joystick *joystick)
     SDL_RenderSetLogicalSize(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     /* Print info about the joystick we are watching */
-    name = SDL_JoystickName(joystick);
-    SDL_Log("Watching joystick %" SDL_PRIs32 ": (%s)\n", SDL_JoystickInstanceID(joystick),
+    name = SDL_GetJoystickName(joystick);
+    SDL_Log("Watching joystick %" SDL_PRIs32 ": (%s)\n", SDL_GetJoystickInstanceID(joystick),
             name ? name : "Unknown Joystick");
     SDL_Log("Joystick has %d axes, %d hats, and %d buttons\n",
-            SDL_JoystickNumAxes(joystick), SDL_JoystickNumHats(joystick), SDL_JoystickNumButtons(joystick));
+            SDL_GetNumJoystickAxes(joystick), SDL_GetNumJoystickHats(joystick), SDL_GetNumJoystickButtons(joystick));
 
     SDL_Log("\n\n\
     ====================================================================================\n\
@@ -383,9 +383,9 @@ WatchJoystick(SDL_Joystick *joystick)
     To exit, press ESC\n\
     ====================================================================================\n");
 
-    nJoystickID = SDL_JoystickInstanceID(joystick);
+    nJoystickID = SDL_GetJoystickInstanceID(joystick);
 
-    s_nNumAxes = SDL_JoystickNumAxes(joystick);
+    s_nNumAxes = SDL_GetNumJoystickAxes(joystick);
     s_arrAxisState = (AxisState *)SDL_calloc(s_nNumAxes, sizeof(*s_arrAxisState));
 
     /* Skip any spurious events at start */
@@ -448,7 +448,7 @@ WatchJoystick(SDL_Joystick *joystick)
                     int nCurrentDistance, nFarthestDistance;
                     if (!pAxisState->m_bMoving) {
                         Sint16 nInitialValue;
-                        pAxisState->m_bMoving = SDL_JoystickGetAxisInitialState(joystick, event.jaxis.axis, &nInitialValue);
+                        pAxisState->m_bMoving = SDL_GetJoystickAxisInitialState(joystick, event.jaxis.axis, &nInitialValue);
                         pAxisState->m_nLastValue = nValue;
                         pAxisState->m_nStartingValue = nInitialValue;
                         pAxisState->m_nFarthestValue = nInitialValue;
@@ -570,14 +570,14 @@ WatchJoystick(SDL_Joystick *joystick)
         }
 
         /* Initialize mapping with GUID and name */
-        guid = SDL_JoystickGetGUID(joystick);
+        guid = SDL_GetJoystickGUID(joystick);
         SDL_GetJoystickGUIDInfo(guid, NULL, NULL, NULL, &crc);
         if (crc) {
             /* Clear the CRC from the GUID for the mapping */
             guid.data[2] = 0;
             guid.data[3] = 0;
         }
-        SDL_JoystickGetGUIDString(guid, mapping, SDL_arraysize(mapping));
+        SDL_GetJoystickGUIDString(guid, mapping, SDL_arraysize(mapping));
         SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
         SDL_strlcat(mapping, trimmed_name, SDL_arraysize(mapping));
         SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
@@ -737,7 +737,7 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    while (!done && SDL_NumJoysticks() == 0) {
+    while (!done && SDL_GetNumJoysticks() == 0) {
         SDL_Event event;
 
         while (SDL_PollEvent(&event) > 0) {
@@ -758,25 +758,25 @@ int main(int argc, char *argv[])
     }
 
     /* Print information about the joysticks */
-    SDL_Log("There are %d joysticks attached\n", SDL_NumJoysticks());
-    for (i = 0; i < SDL_NumJoysticks(); ++i) {
-        name = SDL_JoystickNameForIndex(i);
+    SDL_Log("There are %d joysticks attached\n", SDL_GetNumJoysticks());
+    for (i = 0; i < SDL_GetNumJoysticks(); ++i) {
+        name = SDL_GetJoystickNameForIndex(i);
         SDL_Log("Joystick %d: %s\n", i, name ? name : "Unknown Joystick");
-        joystick = SDL_JoystickOpen(i);
+        joystick = SDL_OpenJoystick(i);
         if (joystick == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_JoystickOpen(%d) failed: %s\n", i,
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_OpenJoystick(%d) failed: %s\n", i,
                          SDL_GetError());
         } else {
             char guid[64];
-            SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick),
+            SDL_GetJoystickGUIDString(SDL_GetJoystickGUID(joystick),
                                       guid, sizeof(guid));
-            SDL_Log("       axes: %d\n", SDL_JoystickNumAxes(joystick));
-            SDL_Log("       hats: %d\n", SDL_JoystickNumHats(joystick));
-            SDL_Log("    buttons: %d\n", SDL_JoystickNumButtons(joystick));
-            SDL_Log("instance id: %" SDL_PRIu32 "\n", SDL_JoystickInstanceID(joystick));
+            SDL_Log("       axes: %d\n", SDL_GetNumJoystickAxes(joystick));
+            SDL_Log("       hats: %d\n", SDL_GetNumJoystickHats(joystick));
+            SDL_Log("    buttons: %d\n", SDL_GetNumJoystickButtons(joystick));
+            SDL_Log("instance id: %" SDL_PRIu32 "\n", SDL_GetJoystickInstanceID(joystick));
             SDL_Log("       guid: %s\n", guid);
-            SDL_Log("    VID/PID: 0x%.4x/0x%.4x\n", SDL_JoystickGetVendor(joystick), SDL_JoystickGetProduct(joystick));
-            SDL_JoystickClose(joystick);
+            SDL_Log("    VID/PID: 0x%.4x/0x%.4x\n", SDL_GetJoystickVendor(joystick), SDL_GetJoystickProduct(joystick));
+            SDL_CloseJoystick(joystick);
         }
     }
 
@@ -787,12 +787,12 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    joystick = SDL_JoystickOpen(joystick_index);
+    joystick = SDL_OpenJoystick(joystick_index);
     if (joystick == NULL) {
         SDL_Log("Couldn't open joystick %d: %s\n", joystick_index, SDL_GetError());
     } else {
         WatchJoystick(joystick);
-        SDL_JoystickClose(joystick);
+        SDL_CloseJoystick(joystick);
     }
 
     SDL_DestroyWindow(window);

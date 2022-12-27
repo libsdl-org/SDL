@@ -158,7 +158,7 @@ static int FindController(SDL_JoystickID controller_id)
     int i;
 
     for (i = 0; i < num_controllers; ++i) {
-        if (controller_id == SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(gamecontrollers[i]))) {
+        if (controller_id == SDL_GetJoystickInstanceID(SDL_GameControllerGetJoystick(gamecontrollers[i]))) {
             return i;
         }
     }
@@ -167,7 +167,7 @@ static int FindController(SDL_JoystickID controller_id)
 
 static void AddController(int device_index, SDL_bool verbose)
 {
-    SDL_JoystickID controller_id = SDL_JoystickGetDeviceInstanceID(device_index);
+    SDL_JoystickID controller_id = SDL_GetJoystickDeviceInstanceID(device_index);
     SDL_GameController *controller;
     SDL_GameController **controllers;
     Uint16 firmware_version;
@@ -181,7 +181,7 @@ static void AddController(int device_index, SDL_bool verbose)
     };
     unsigned int i;
 
-    controller_id = SDL_JoystickGetDeviceInstanceID(device_index);
+    controller_id = SDL_GetJoystickDeviceInstanceID(device_index);
     if (controller_id < 0) {
         SDL_Log("Couldn't get controller ID: %s\n", SDL_GetError());
         return;
@@ -400,11 +400,11 @@ static void OpenVirtualController()
     desc.RumbleTriggers = VirtualControllerRumbleTriggers;
     desc.SetLED = VirtualControllerSetLED;
 
-    virtual_index = SDL_JoystickAttachVirtualEx(&desc);
+    virtual_index = SDL_AttachVirtualJoystickEx(&desc);
     if (virtual_index < 0) {
         SDL_Log("Couldn't open virtual device: %s\n", SDL_GetError());
     } else {
-        virtual_joystick = SDL_JoystickOpen(virtual_index);
+        virtual_joystick = SDL_OpenJoystick(virtual_index);
         if (virtual_joystick == NULL) {
             SDL_Log("Couldn't open virtual device: %s\n", SDL_GetError());
         }
@@ -415,14 +415,14 @@ static void CloseVirtualController()
 {
     int i;
 
-    for (i = SDL_NumJoysticks(); i--;) {
-        if (SDL_JoystickIsVirtual(i)) {
-            SDL_JoystickDetachVirtual(i);
+    for (i = SDL_GetNumJoysticks(); i--;) {
+        if (SDL_IsJoystickVirtual(i)) {
+            SDL_DetachVirtualJoystick(i);
         }
     }
 
     if (virtual_joystick) {
-        SDL_JoystickClose(virtual_joystick);
+        SDL_CloseJoystick(virtual_joystick);
         virtual_joystick = NULL;
     }
 }
@@ -481,7 +481,7 @@ static void VirtualControllerMouseMotion(int x, int y)
             const int MOVING_DISTANCE = 2;
             if (SDL_abs(x - virtual_axis_start_x) >= MOVING_DISTANCE ||
                 SDL_abs(y - virtual_axis_start_y) >= MOVING_DISTANCE) {
-                SDL_JoystickSetVirtualButton(virtual_joystick, virtual_button_active, SDL_RELEASED);
+                SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_RELEASED);
                 virtual_button_active = SDL_CONTROLLER_BUTTON_INVALID;
             }
         }
@@ -493,7 +493,7 @@ static void VirtualControllerMouseMotion(int x, int y)
             int range = (SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN);
             float distance = SDL_clamp(((float)y - virtual_axis_start_y) / AXIS_SIZE, 0.0f, 1.0f);
             Sint16 value = (Sint16)(SDL_JOYSTICK_AXIS_MIN + (distance * range));
-            SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active, value);
+            SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active, value);
         } else {
             float distanceX = SDL_clamp(((float)x - virtual_axis_start_x) / AXIS_SIZE, -1.0f, 1.0f);
             float distanceY = SDL_clamp(((float)y - virtual_axis_start_y) / AXIS_SIZE, -1.0f, 1.0f);
@@ -509,8 +509,8 @@ static void VirtualControllerMouseMotion(int x, int y)
             } else {
                 valueY = (Sint16)(distanceY * -SDL_JOYSTICK_AXIS_MIN);
             }
-            SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active, valueX);
-            SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active + 1, valueY);
+            SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active, valueX);
+            SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active + 1, valueY);
         }
     }
 }
@@ -523,7 +523,7 @@ static void VirtualControllerMouseDown(int x, int y)
     button = FindButtonAtPosition(x, y);
     if (button != SDL_CONTROLLER_BUTTON_INVALID) {
         virtual_button_active = button;
-        SDL_JoystickSetVirtualButton(virtual_joystick, virtual_button_active, SDL_PRESSED);
+        SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_PRESSED);
     }
 
     axis = FindAxisAtPosition(x, y);
@@ -537,17 +537,17 @@ static void VirtualControllerMouseDown(int x, int y)
 static void VirtualControllerMouseUp(int x, int y)
 {
     if (virtual_button_active != SDL_CONTROLLER_BUTTON_INVALID) {
-        SDL_JoystickSetVirtualButton(virtual_joystick, virtual_button_active, SDL_RELEASED);
+        SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_RELEASED);
         virtual_button_active = SDL_CONTROLLER_BUTTON_INVALID;
     }
 
     if (virtual_axis_active != SDL_CONTROLLER_AXIS_INVALID) {
         if (virtual_axis_active == SDL_CONTROLLER_AXIS_TRIGGERLEFT ||
             virtual_axis_active == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
-            SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active, SDL_JOYSTICK_AXIS_MIN);
+            SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active, SDL_JOYSTICK_AXIS_MIN);
         } else {
-            SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active, 0);
-            SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active + 1, 0);
+            SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active, 0);
+            SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active + 1, 0);
         }
         virtual_axis_active = SDL_CONTROLLER_AXIS_INVALID;
     }
@@ -566,7 +566,7 @@ void loop(void *arg)
     while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1) {
         switch (event.type) {
         case SDL_CONTROLLERDEVICEADDED:
-            SDL_Log("Game controller device %d added.\n", (int)SDL_JoystickGetDeviceInstanceID(event.cdevice.which));
+            SDL_Log("Game controller device %d added.\n", (int)SDL_GetJoystickDeviceInstanceID(event.cdevice.which));
             AddController(event.cdevice.which, SDL_TRUE);
             break;
 
@@ -823,12 +823,12 @@ int main(int argc, char *argv[])
     }
 
     /* Print information about the controller */
-    for (i = 0; i < SDL_NumJoysticks(); ++i) {
+    for (i = 0; i < SDL_GetNumJoysticks(); ++i) {
         const char *name;
         const char *path;
         const char *description;
 
-        SDL_JoystickGetGUIDString(SDL_JoystickGetDeviceGUID(i),
+        SDL_GetJoystickGUIDString(SDL_GetJoystickDeviceGUID(i),
                                   guid, sizeof(guid));
 
         if (SDL_IsGameController(i)) {
@@ -874,15 +874,15 @@ int main(int argc, char *argv[])
             }
             AddController(i, SDL_FALSE);
         } else {
-            name = SDL_JoystickNameForIndex(i);
-            path = SDL_JoystickPathForIndex(i);
+            name = SDL_GetJoystickNameForIndex(i);
+            path = SDL_GetJoystickPathForIndex(i);
             description = "Joystick";
         }
         SDL_Log("%s %d: %s%s%s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)\n",
                 description, i, name ? name : "Unknown", path ? ", " : "", path ? path : "", guid,
-                SDL_JoystickGetDeviceVendor(i), SDL_JoystickGetDeviceProduct(i), SDL_JoystickGetDevicePlayerIndex(i));
+                SDL_GetJoystickDeviceVendor(i), SDL_GetJoystickDeviceProduct(i), SDL_GetJoystickDevicePlayerIndex(i));
     }
-    SDL_Log("There are %d game controller(s) attached (%d joystick(s))\n", controller_count, SDL_NumJoysticks());
+    SDL_Log("There are %d game controller(s) attached (%d joystick(s))\n", controller_count, SDL_GetNumJoysticks());
 
     /* Create a window to display controller state */
     window = SDL_CreateWindow("Game Controller Test", SDL_WINDOWPOS_CENTERED,

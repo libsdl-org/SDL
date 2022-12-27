@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     //SDL_CreateWindow("Dummy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 128, 128, 0);
     */
 
-    SDL_Log("There are %d joysticks at startup\n", SDL_NumJoysticks());
+    SDL_Log("There are %d joysticks at startup\n", SDL_GetNumJoysticks());
     if (enable_haptic) {
         SDL_Log("There are %d haptic devices at startup\n", SDL_NumHaptics());
     }
@@ -68,9 +68,9 @@ int main(int argc, char *argv[])
                 if (joystick != NULL) {
                     SDL_Log("Only one joystick supported by this test\n");
                 } else {
-                    joystick = SDL_JoystickOpen(event.jdevice.which);
-                    instance = SDL_JoystickInstanceID(joystick);
-                    SDL_Log("Joy Added  : %" SDL_PRIs32 " : %s\n", event.jdevice.which, SDL_JoystickName(joystick));
+                    joystick = SDL_OpenJoystick(event.jdevice.which);
+                    instance = SDL_GetJoystickInstanceID(joystick);
+                    SDL_Log("Joy Added  : %" SDL_PRIs32 " : %s\n", event.jdevice.which, SDL_GetJoystickName(joystick));
                     if (enable_haptic) {
                         if (SDL_JoystickIsHaptic(joystick)) {
                             haptic = SDL_HapticOpenFromJoystick(joystick);
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
                         SDL_HapticClose(haptic);
                         haptic = NULL;
                     }
-                    SDL_JoystickClose(joystick);
+                    SDL_CloseJoystick(joystick);
                     joystick = NULL;
                 } else {
                     SDL_Log("Unknown joystick diconnected\n");

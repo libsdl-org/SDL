@@ -244,7 +244,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
         return; /* How do we handle this packet? */
     }
 
-    joystick = SDL_JoystickFromInstanceID(ctx->joysticks[i]);
+    joystick = SDL_GetJoystickFromInstanceID(ctx->joysticks[i]);
     if (joystick == NULL) {
         /* Hasn't been opened yet, skip */
         return;
@@ -319,7 +319,7 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
                 ResetAxisRange(ctx, i);
                 HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
             }
-            joystick = SDL_JoystickFromInstanceID(ctx->joysticks[i]);
+            joystick = SDL_GetJoystickFromInstanceID(ctx->joysticks[i]);
 
             /* Hasn't been opened yet, skip */
             if (joystick == NULL) {

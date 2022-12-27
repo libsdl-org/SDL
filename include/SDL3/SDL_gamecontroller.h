@@ -107,7 +107,7 @@ typedef struct SDL_GameControllerButtonBind
  *  To count the number of game controllers in the system for the following:
  *
  *  ```c
- *  int nJoysticks = SDL_NumJoysticks();
+ *  int nJoysticks = SDL_GetNumJoysticks();
  *  int nGameControllers = 0;
  *  for (int i = 0; i < nJoysticks; i++) {
  *      if (SDL_IsGameController(i)) {
@@ -119,7 +119,7 @@ typedef struct SDL_GameControllerButtonBind
  *  Using the SDL_HINT_GAMECONTROLLERCONFIG hint or the SDL_GameControllerAddMapping() you can add support for controllers SDL is unaware of or cause an existing controller to have a different binding. The format is:
  *  guid,name,mappings
  *
- *  Where GUID is the string value from SDL_JoystickGetGUIDString(), name is the human readable string for the device and mappings are controller mappings to joystick ones.
+ *  Where GUID is the string value from SDL_GetJoystickGUIDString(), name is the human readable string for the device and mappings are controller mappings to joystick ones.
  *  Under Windows there is a reserved GUID of "xinput" that covers any XInput devices.
  *  The mapping format for joystick is:
  *      bX - a joystick button, index X
@@ -176,7 +176,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerAddMappingsFromRW(SDL_RWops * rw, 
  * controller to have a different binding.
  *
  * The mapping string has the format "GUID,name,mapping", where GUID is the
- * string value from SDL_JoystickGetGUIDString(), name is the human readable
+ * string value from SDL_GetJoystickGUIDString(), name is the human readable
  * string for the device and mappings are controller mappings to joystick
  * ones. Under Windows there is a reserved GUID of "xinput" that covers all
  * XInput devices. The mapping format for joystick is: {| |bX |a joystick
@@ -230,8 +230,8 @@ extern DECLSPEC char * SDLCALL SDL_GameControllerMappingForIndex(int mapping_ind
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_JoystickGetDeviceGUID
- * \sa SDL_JoystickGetGUID
+ * \sa SDL_GetJoystickDeviceGUID
+ * \sa SDL_GetJoystickGUID
  */
 extern DECLSPEC char * SDLCALL SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid);
 
@@ -258,10 +258,10 @@ extern DECLSPEC char * SDLCALL SDL_GameControllerMapping(SDL_GameController *gam
  * Check if the given joystick is supported by the game controller interface.
  *
  * `joystick_index` is the same as the `device_index` passed to
- * SDL_JoystickOpen().
+ * SDL_OpenJoystick().
  *
  * \param joystick_index the device_index of a device, up to
- *                       SDL_NumJoysticks()
+ *                       SDL_GetNumJoysticks()
  * \returns SDL_TRUE if the given joystick is supported by the game controller
  *          interface, SDL_FALSE if it isn't or it's an invalid index.
  *
@@ -278,10 +278,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsGameController(int joystick_index);
  * This function can be called before any controllers are opened.
  *
  * `joystick_index` is the same as the `device_index` passed to
- * SDL_JoystickOpen().
+ * SDL_OpenJoystick().
  *
  * \param joystick_index the device_index of a device, from zero to
- *                       SDL_NumJoysticks()-1
+ *                       SDL_GetNumJoysticks()-1
  * \returns the implementation-dependent name for the game controller, or NULL
  *          if there is no name or the index is invalid.
  *
@@ -299,10 +299,10 @@ extern DECLSPEC const char *SDLCALL SDL_GameControllerNameForIndex(int joystick_
  * This function can be called before any controllers are opened.
  *
  * `joystick_index` is the same as the `device_index` passed to
- * SDL_JoystickOpen().
+ * SDL_OpenJoystick().
  *
  * \param joystick_index the device_index of a device, from zero to
- *                       SDL_NumJoysticks()-1
+ *                       SDL_GetNumJoysticks()-1
  * \returns the implementation-dependent path for the game controller, or NULL
  *          if there is no path or the index is invalid.
  *
@@ -318,7 +318,7 @@ extern DECLSPEC const char *SDLCALL SDL_GameControllerPathForIndex(int joystick_
  * This can be called before any controllers are opened.
  *
  * \param joystick_index the device_index of a device, from zero to
- *                       SDL_NumJoysticks()-1
+ *                       SDL_GetNumJoysticks()-1
  * \returns the controller type.
  *
  * \since This function is available since SDL 3.0.0.
@@ -331,7 +331,7 @@ extern DECLSPEC SDL_GameControllerType SDLCALL SDL_GameControllerTypeForIndex(in
  * This can be called before any controllers are opened.
  *
  * \param joystick_index the device_index of a device, from zero to
- *                       SDL_NumJoysticks()-1
+ *                       SDL_GetNumJoysticks()-1
  * \returns the mapping string. Must be freed with SDL_free(). Returns NULL if
  *          no mapping is available.
  *
@@ -343,7 +343,7 @@ extern DECLSPEC char *SDLCALL SDL_GameControllerMappingForDeviceIndex(int joysti
  * Open a game controller for use.
  *
  * `joystick_index` is the same as the `device_index` passed to
- * SDL_JoystickOpen().
+ * SDL_OpenJoystick().
  *
  * The index passed as an argument refers to the N'th game controller on the
  * system. This index is not the value which will identify this controller in
@@ -351,7 +351,7 @@ extern DECLSPEC char *SDLCALL SDL_GameControllerMappingForDeviceIndex(int joysti
  * be used there instead.
  *
  * \param joystick_index the device_index of a device, up to
- *                       SDL_NumJoysticks()
+ *                       SDL_GetNumJoysticks()
  * \returns a gamecontroller identifier or NULL if an error occurred; call
  *          SDL_GetError() for more information.
  *
@@ -548,7 +548,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerGetAttached(SDL_GameControlle
  * value).
  *
  * The pointer returned is owned by the SDL_GameController. You should not
- * call SDL_JoystickClose() on it, for example, since doing so will likely
+ * call SDL_CloseJoystick() on it, for example, since doing so will likely
  * cause SDL to crash.
  *
  * \param gamecontroller the game controller object that you want to get a
@@ -575,7 +575,7 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_GameControllerGetJoystick(SDL_GameCont
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_JoystickEventState
+ * \sa SDL_GetJoystickEventState
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerEventState(int state);
 

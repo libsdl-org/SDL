@@ -40,9 +40,9 @@ PrintJoystick(SDL_Joystick *joy)
     const char *type;
     char guid[64];
 
-    SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joy)) == joy);
-    SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joy), guid, sizeof(guid));
-    switch (SDL_JoystickGetType(joy)) {
+    SDL_assert(SDL_GetJoystickFromInstanceID(SDL_GetJoystickInstanceID(joy)) == joy);
+    SDL_GetJoystickGUIDString(SDL_GetJoystickGUID(joy), guid, sizeof(guid));
+    switch (SDL_GetJoystickType(joy)) {
     case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
         type = "Game Controller";
         break;
@@ -75,17 +75,17 @@ PrintJoystick(SDL_Joystick *joy)
         break;
     }
     SDL_Log("Joystick\n");
-    SDL_Log("          name: %s\n", SDL_JoystickName(joy));
+    SDL_Log("          name: %s\n", SDL_GetJoystickName(joy));
     SDL_Log("          type: %s\n", type);
     SDL_Log("           LED: %s\n", SDL_JoystickHasLED(joy) ? "yes" : "no");
     SDL_Log("        rumble: %s\n", SDL_JoystickHasRumble(joy) ? "yes" : "no");
     SDL_Log("trigger rumble: %s\n", SDL_JoystickHasRumbleTriggers(joy) ? "yes" : "no");
-    SDL_Log("          axes: %d\n", SDL_JoystickNumAxes(joy));
-    SDL_Log("          hats: %d\n", SDL_JoystickNumHats(joy));
-    SDL_Log("       buttons: %d\n", SDL_JoystickNumButtons(joy));
-    SDL_Log("   instance id: %" SDL_PRIs32 "\n", SDL_JoystickInstanceID(joy));
+    SDL_Log("          axes: %d\n", SDL_GetNumJoystickAxes(joy));
+    SDL_Log("          hats: %d\n", SDL_GetNumJoystickHats(joy));
+    SDL_Log("       buttons: %d\n", SDL_GetNumJoystickButtons(joy));
+    SDL_Log("   instance id: %" SDL_PRIs32 "\n", SDL_GetJoystickInstanceID(joy));
     SDL_Log("          guid: %s\n", guid);
-    SDL_Log("       VID/PID: 0x%.4x/0x%.4x\n", SDL_JoystickGetVendor(joy), SDL_JoystickGetProduct(joy));
+    SDL_Log("       VID/PID: 0x%.4x/0x%.4x\n", SDL_GetJoystickVendor(joy), SDL_GetJoystickProduct(joy));
 }
 
 static void
@@ -114,7 +114,7 @@ void loop(void *arg)
         case SDL_JOYDEVICEADDED:
             SDL_Log("Joystick device %d added.\n", (int)event.jdevice.which);
             if (joystick == NULL) {
-                joystick = SDL_JoystickOpen(event.jdevice.which);
+                joystick = SDL_OpenJoystick(event.jdevice.which);
                 if (joystick) {
                     PrintJoystick(joystick);
                 } else {
@@ -125,9 +125,9 @@ void loop(void *arg)
 
         case SDL_JOYDEVICEREMOVED:
             SDL_Log("Joystick device %d removed.\n", (int)event.jdevice.which);
-            if (event.jdevice.which == SDL_JoystickInstanceID(joystick)) {
-                SDL_JoystickClose(joystick);
-                joystick = SDL_JoystickOpen(0);
+            if (event.jdevice.which == SDL_GetJoystickInstanceID(joystick)) {
+                SDL_CloseJoystick(joystick);
+                joystick = SDL_OpenJoystick(0);
             }
             break;
 
@@ -161,7 +161,7 @@ void loop(void *arg)
                     event.jbutton.which, event.jbutton.button);
             /* First button triggers a 0.5 second full strength rumble */
             if (event.jbutton.button == 0) {
-                SDL_JoystickRumble(joystick, 0xFFFF, 0xFFFF, 500);
+                SDL_RumbleJoystick(joystick, 0xFFFF, 0xFFFF, 500);
             }
             break;
         case SDL_JOYBUTTONUP:
@@ -198,21 +198,21 @@ void loop(void *arg)
 
         /* Update visual joystick state */
         SDL_SetRenderDrawColor(screen, 0x00, 0xFF, 0x00, SDL_ALPHA_OPAQUE);
-        y = SCREEN_HEIGHT - ((((SDL_JoystickNumButtons(joystick) + (BUTTONS_PER_LINE - 1)) / BUTTONS_PER_LINE) + 1) * 34);
-        for (i = 0; i < SDL_JoystickNumButtons(joystick); ++i) {
+        y = SCREEN_HEIGHT - ((((SDL_GetNumJoystickButtons(joystick) + (BUTTONS_PER_LINE - 1)) / BUTTONS_PER_LINE) + 1) * 34);
+        for (i = 0; i < SDL_GetNumJoystickButtons(joystick); ++i) {
             if ((i % BUTTONS_PER_LINE) == 0) {
                 y += 34;
             }
-            if (SDL_JoystickGetButton(joystick, i) == SDL_PRESSED) {
+            if (SDL_GetJoystickButton(joystick, i) == SDL_PRESSED) {
                 x = 2 + (i % BUTTONS_PER_LINE) * 34;
                 DrawRect(screen, x, y, 32, 32);
             }
         }
 
         SDL_SetRenderDrawColor(screen, 0xFF, 0x00, 0x00, SDL_ALPHA_OPAQUE);
-        for (i = 0; i < SDL_JoystickNumAxes(joystick); ++i) {
+        for (i = 0; i < SDL_GetNumJoystickAxes(joystick); ++i) {
             /* Draw the X/Y axis */
-            x = (((int)SDL_JoystickGetAxis(joystick, i)) + 32768);
+            x = (((int)SDL_GetJoystickAxis(joystick, i)) + 32768);
             x *= SCREEN_WIDTH;
             x /= 65535;
             if (x < 0) {
@@ -221,8 +221,8 @@ void loop(void *arg)
                 x = SCREEN_WIDTH - 16;
             }
             ++i;
-            if (i < SDL_JoystickNumAxes(joystick)) {
-                y = (((int)SDL_JoystickGetAxis(joystick, i)) + 32768);
+            if (i < SDL_GetNumJoystickAxes(joystick)) {
+                y = (((int)SDL_GetJoystickAxis(joystick, i)) + 32768);
             } else {
                 y = 32768;
             }
@@ -238,9 +238,9 @@ void loop(void *arg)
         }
 
         SDL_SetRenderDrawColor(screen, 0x00, 0x00, 0xFF, SDL_ALPHA_OPAQUE);
-        for (i = 0; i < SDL_JoystickNumHats(joystick); ++i) {
+        for (i = 0; i < SDL_GetNumJoystickHats(joystick); ++i) {
             /* Derive the new position */
-            const Uint8 hat_pos = SDL_JoystickGetHat(joystick, i);
+            const Uint8 hat_pos = SDL_GetJoystickHat(joystick, i);
             x = SCREEN_WIDTH / 2;
             y = SCREEN_HEIGHT / 2;
 

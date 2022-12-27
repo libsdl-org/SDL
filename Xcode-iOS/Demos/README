@@ -18,7 +18,7 @@ Happy (happy.c):
 
 Accelerometer (accelerometer.c):
 
-	Uses the iPhone's accelerometer as a joystick device to move a spaceship around the screen.  Note the use of the macro SDL_IPHONE_MAX_GFORCE (normally defined in SDL_config_ios.h) which converts between the Sint16 number returned by SDL_JoystickGetAxis, and the floating point units of g-force reported natively by the iPhone. 
+	Uses the iPhone's accelerometer as a joystick device to move a spaceship around the screen.  Note the use of the macro SDL_IPHONE_MAX_GFORCE (normally defined in SDL_config_ios.h) which converts between the Sint16 number returned by SDL_GetJoystickAxis, and the floating point units of g-force reported natively by the iPhone. 
 
 Touch (touch.c):
 

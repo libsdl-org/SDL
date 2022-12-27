@@ -667,7 +667,7 @@ void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joyst
 
     for (i = 0; i < device->num_joysticks; ++i) {
         if (device->joysticks[i] == joystickID) {
-            SDL_Joystick *joystick = SDL_JoystickFromInstanceID(joystickID);
+            SDL_Joystick *joystick = SDL_GetJoystickFromInstanceID(joystickID);
             if (joystick) {
                 HIDAPI_JoystickClose(joystick);
             }

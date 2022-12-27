@@ -37,8 +37,8 @@ render(SDL_Renderer *renderer, int w, int h, double deltaTime)
     float speed;
 
     /* get joystick (accelerometer) axis values and normalize them */
-    float ax = SDL_JoystickGetAxis(accelerometer, 0);
-    float ay = SDL_JoystickGetAxis(accelerometer, 1);
+    float ax = SDL_GetJoystickAxis(accelerometer, 0);
+    float ay = SDL_GetJoystickAxis(accelerometer, 1);
 
     /* ship screen constraints */
     Uint32 minx = 0.0f;
@@ -177,18 +177,18 @@ main(int argc, char *argv[])
     SDL_RenderSetLogicalSize(renderer, w, h);
 
     /* print out some info about joysticks and try to open accelerometer for use */
-    printf("There are %d joysticks available\n", SDL_NumJoysticks());
-    printf("Default joystick (index 0) is %s\n", SDL_JoystickName(0));
-    accelerometer = SDL_JoystickOpen(0);
+    printf("There are %d joysticks available\n", SDL_GetNumJoysticks());
+    printf("Default joystick (index 0) is %s\n", SDL_GetJoystickName(0));
+    accelerometer = SDL_OpenJoystick(0);
     if (accelerometer == NULL) {
         fatalError("Could not open joystick (accelerometer)");
     }
     printf("joystick number of axis = %d\n",
-           SDL_JoystickNumAxes(accelerometer));
+           SDL_GetNumJoystickAxes(accelerometer));
     printf("joystick number of hats = %d\n",
-           SDL_JoystickNumHats(accelerometer));
+           SDL_GetNumJoystickHats(accelerometer));
     printf("joystick number of buttons = %d\n",
-           SDL_JoystickNumButtons(accelerometer));
+           SDL_GetNumJoystickButtons(accelerometer));
 
     /* load graphics */
     initializeTextures(renderer);

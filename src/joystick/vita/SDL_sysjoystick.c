@@ -226,7 +226,7 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     SceCtrlData *pad = NULL;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    int index = (int)SDL_JoystickInstanceID(joystick);
+    int index = (int)SDL_GetJoystickInstanceID(joystick);
 
     if (index == 0)
         pad = &pad0;
@@ -319,7 +319,7 @@ SDL_JoystickGUID VITA_JoystickGetDeviceGUID(int device_index)
 
 static int VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    int index = (int)SDL_JoystickInstanceID(joystick);
+    int index = (int)SDL_GetJoystickInstanceID(joystick);
     SceCtrlActuator act;
     SDL_zero(act);
 
@@ -344,7 +344,7 @@ static Uint32 VITA_JoystickGetCapabilities(SDL_Joystick *joystick)
 
 static int VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    int index = (int)SDL_JoystickInstanceID(joystick);
+    int index = (int)SDL_GetJoystickInstanceID(joystick);
     if (sceCtrlSetLightBar(ext_port_map[index], red, green, blue) < 0) {
         return SDL_Unsupported();
     }

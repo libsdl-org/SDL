@@ -296,8 +296,8 @@ extern "C" {
  *
  *  This variable can be set to the following values:
  *
- *    "0"     - You'll call SDL_JoystickUpdate() manually
- *    "1"     - SDL will automatically call SDL_JoystickUpdate() (default)
+ *    "0"     - You'll call SDL_UpdateJoysticks() manually
+ *    "1"     - SDL will automatically call SDL_UpdateJoysticks() (default)
  *
  *  This hint can be toggled on and off at runtime.
  */

@@ -102,7 +102,7 @@ static SDL_bool SDL_update_joysticks = SDL_TRUE;
 static void SDL_CalculateShouldUpdateJoysticks(SDL_bool hint_value)
 {
     if (hint_value &&
-        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY))) {
+        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_GetJoystickEventState(SDL_QUERY))) {
         SDL_update_joysticks = SDL_TRUE;
     } else {
         SDL_update_joysticks = SDL_FALSE;
@@ -870,7 +870,7 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
 #if !SDL_JOYSTICK_DISABLED
     /* Check for joystick state change */
     if (SDL_update_joysticks) {
-        SDL_JoystickUpdate();
+        SDL_UpdateJoysticks();
     }
 #endif
 
@@ -1001,7 +1001,7 @@ static SDL_bool SDL_events_need_polling()
     need_polling =
         SDL_WasInit(SDL_INIT_JOYSTICK) &&
         SDL_update_joysticks &&
-        (SDL_NumJoysticks() > 0);
+        (SDL_GetNumJoysticks() > 0);
 #endif
 
 #if !SDL_SENSOR_DISABLED
