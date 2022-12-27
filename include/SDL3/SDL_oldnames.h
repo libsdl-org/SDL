@@ -49,6 +49,9 @@
 #define SDL_FreeWAV SDL_free
 #define SDL_NewAudioStream SDL_CreateAudioStream
 
+/* ##SDL_haptic.h */
+#define _SDL_Haptic SDL_Haptic
+
 /* ##SDL_joystick.h */
 #define SDL_JoystickAttachVirtual SDL_AttachVirtualJoystick
 #define SDL_JoystickAttachVirtualEx SDL_AttachVirtualJoystickEx
@@ -222,6 +225,9 @@
 #define SDL_FreeAudioStream SDL_FreeAudioStream_renamed_SDL_DestroyAudioStream
 #define SDL_FreeWAV SDL_FreeWAV_renamed_SDL_free
 #define SDL_NewAudioStream SDL_NewAudioStream_renamed_SDL_CreateAudioStream
+
+/* ##SDL_haptic.h */
+#define _SDL_Haptic _SDL_Haptic_renamed_SDL_Haptic
 
 /* ##SDL_joystick.h */
 #define SDL_JoystickAttachVirtual SDL_JoystickAttachVirtual_renamed_SDL_AttachVirtualJoystick

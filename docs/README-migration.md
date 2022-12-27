@@ -101,6 +101,11 @@ be dropped into an SDL3 or SDL2 program, to continue to provide this
 functionality to your app and aid migration. That is located in the
 [SDL_gesture GitHub repository](https://github.com/libsdl-org/SDL_gesture).
 
+## SDL_haptic.h
+
+The following structures have been renamed:
+* _SDL_Haptic => SDL_Haptic
+
 ## SDL_hints.h
 
 The following hints have been removed:

@@ -38,7 +38,7 @@ struct haptic_effect
 /*
  * The real SDL_Haptic struct.
  */
-struct _SDL_Haptic
+struct SDL_Haptic
 {
     Uint8 index; /* Stores index it is attached to */
 
@@ -53,7 +53,7 @@ struct _SDL_Haptic
 
     int rumble_id;                  /* ID of rumble effect for simple rumble API. */
     SDL_HapticEffect rumble_effect; /* Rumble effect. */
-    struct _SDL_Haptic *next;       /* pointer to next haptic we have allocated */
+    struct SDL_Haptic *next;       /* pointer to next haptic we have allocated */
 };
 
 /*
