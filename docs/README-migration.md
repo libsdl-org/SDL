@@ -592,3 +592,7 @@ SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_
 
 
 
+The following functions have been renamed:
+* SDL_GetPointDisplayIndex => SDL_GetDisplayIndexForPoint
+* SDL_GetRectDisplayIndex => SDL_GetDisplayIndexForRect
+

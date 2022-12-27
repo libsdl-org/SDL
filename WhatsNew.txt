@@ -32,6 +32,8 @@ General:
     * SDL_FreeSurface => SDL_DestroySurface
     * SDL_GetClipRect => SDL_GetSurfaceClipRect
     * SDL_GetColorKey => SDL_GetSurfaceColorKey
+    * SDL_GetPointDisplayIndex => SDL_GetDisplayIndexForPoint
+    * SDL_GetRectDisplayIndex => SDL_GetDisplayIndexForRect
     * SDL_HasColorKey => SDL_SurfaceHasColorKey
     * SDL_HasSurfaceRLE => SDL_SurfaceHasRLE
     * SDL_JoystickAttachVirtual => SDL_AttachVirtualJoystick

@@ -513,7 +513,7 @@ extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vin
 
 extern void SDL_ToggleDragAndDropSupport(void);
 
-extern int SDL_GetPointDisplayIndex(const SDL_Point *point);
+extern int SDL_GetDisplayIndexForPoint(const SDL_Point *point);
 
 extern int SDL_GL_SwapWindowWithResult(SDL_Window *window);
 

@@ -540,7 +540,7 @@ extern DECLSPEC SDL_DisplayMode * SDLCALL SDL_GetClosestDisplayMode(int displayI
  * \sa SDL_GetDisplayBounds
  * \sa SDL_GetNumVideoDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetPointDisplayIndex(const SDL_Point * point);
+extern DECLSPEC int SDLCALL SDL_GetDisplayIndexForPoint(const SDL_Point * point);
 
 /**
  * Get the index of the display primarily containing a rect
@@ -555,7 +555,7 @@ extern DECLSPEC int SDLCALL SDL_GetPointDisplayIndex(const SDL_Point * point);
  * \sa SDL_GetDisplayBounds
  * \sa SDL_GetNumVideoDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetRectDisplayIndex(const SDL_Rect * rect);
+extern DECLSPEC int SDLCALL SDL_GetDisplayIndexForRect(const SDL_Rect * rect);
 
 /**
  * Get the index of the display associated with a window.

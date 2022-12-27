@@ -610,7 +610,7 @@ void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut)
     }
 
     /* Can't use MonitorFromPoint for this because we currently have SDL coordinates, not pixels */
-    displayIndex = SDL_GetPointDisplayIndex(&point);
+    displayIndex = SDL_GetDisplayIndexForPoint(&point);
 
     if (displayIndex < 0) {
         return;

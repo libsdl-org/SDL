@@ -1133,12 +1133,12 @@ static int GetRectDisplayIndex(int x, int y, int w, int h)
     return closest;
 }
 
-int SDL_GetPointDisplayIndex(const SDL_Point *point)
+int SDL_GetDisplayIndexForPoint(const SDL_Point *point)
 {
     return GetRectDisplayIndex(point->x, point->y, 1, 1);
 }
 
-int SDL_GetRectDisplayIndex(const SDL_Rect *rect)
+int SDL_GetDisplayIndexForRect(const SDL_Rect *rect)
 {
     return GetRectDisplayIndex(rect->x, rect->y, rect->w, rect->h);
 }

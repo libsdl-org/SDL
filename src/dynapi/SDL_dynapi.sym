@@ -536,8 +536,8 @@ SDL3_0.0.0 {
     SDL_GetDesktopDisplayMode;
     SDL_GetCurrentDisplayMode;
     SDL_GetClosestDisplayMode;
-    SDL_GetPointDisplayIndex;
-    SDL_GetRectDisplayIndex;
+    SDL_GetDisplayIndexForPoint;
+    SDL_GetDisplayIndexForRect;
     SDL_GetWindowDisplayIndex;
     SDL_SetWindowDisplayMode;
     SDL_GetWindowDisplayMode;

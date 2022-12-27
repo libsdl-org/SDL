@@ -852,8 +852,8 @@
 #define SDL_GetOriginalMemoryFunctions SDL_GetOriginalMemoryFunctions_REAL
 #define SDL_ResetKeyboard SDL_ResetKeyboard_REAL
 #define SDL_GetDefaultAudioInfo SDL_GetDefaultAudioInfo_REAL
-#define SDL_GetPointDisplayIndex SDL_GetPointDisplayIndex_REAL
-#define SDL_GetRectDisplayIndex SDL_GetRectDisplayIndex_REAL
+#define SDL_GetDisplayIndexForPoint SDL_GetDisplayIndexForPoint_REAL
+#define SDL_GetDisplayIndexForRect SDL_GetDisplayIndexForRect_REAL
 #define SDL_ResetHint SDL_ResetHint_REAL
 #define SDL_crc16 SDL_crc16_REAL
 #define SDL_GetWindowSizeInPixels SDL_GetWindowSizeInPixels_REAL
