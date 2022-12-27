@@ -31,7 +31,7 @@
 extern "C" {
 #endif
 
-struct _SDL_JoystickDriver;
+struct SDL_JoystickDriver;
 
 /* Initialization and shutdown functions */
 extern int SDL_JoystickInit(void);
@@ -176,13 +176,13 @@ typedef enum
     EMappingKind_Hat = 3
 } EMappingKind;
 
-typedef struct _SDL_InputMapping
+typedef struct SDL_InputMapping
 {
     EMappingKind kind;
     Uint8 target;
 } SDL_InputMapping;
 
-typedef struct _SDL_GamepadMapping
+typedef struct SDL_GamepadMapping
 {
     SDL_InputMapping a;
     SDL_InputMapping b;
