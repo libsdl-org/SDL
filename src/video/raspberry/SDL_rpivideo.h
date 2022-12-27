@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_rpivideo_h_
-#define SDL_rpivideo_h_
+#ifndef SDL_rpivideo_h
+#define SDL_rpivideo_h
 
 #include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
@@ -91,4 +91,4 @@ int RPI_GLES_GetSwapInterval(_THIS);
 int RPI_GLES_SwapWindow(_THIS, SDL_Window *window);
 void RPI_GLES_DeleteContext(_THIS, SDL_GLContext context);
 
-#endif /* SDL_rpivideo_h_ */
+#endif /* SDL_rpivideo_h */
