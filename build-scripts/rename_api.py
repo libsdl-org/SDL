@@ -63,7 +63,6 @@ def main():
 
         add_symbol_to_oldnames(header.name, oldname, newname)
         add_symbol_to_migration(header.name, args.type, oldname, newname)
-        add_symbol_to_whatsnew(args.type, oldname, newname)
         i += 2
 
 
@@ -191,37 +190,6 @@ def add_symbol_to_migration(header, symbol_type, oldname, newname):
         i = add_content(lines, i, content, True)
 
     file.write_text("\n".join(lines) + "\n")
-
-
-def add_symbol_to_whatsnew(symbol_type, oldname, newname):
-    file = (SDL_ROOT / "WhatsNew.txt")
-    lines = file.read_text().splitlines()
-    note = ("* The following %ss have been renamed:" % symbol_type)
-    note_added = False
-    content = ("    * %s => %s" % (oldname, newname))
-    content_added = False
-    mode = 0
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-        if not note_added:
-            if note == line:
-                note_added = True
-        elif not content_added:
-            if content == line:
-                content_added = True
-            elif not line.startswith("    *") or content < line:
-                i = add_line(lines, i, content)
-                content_added = True
-        i += 1
-
-    if not note_added:
-        i = add_line(lines, i, note)
-
-    if not content_added:
-        i = add_line(lines, i, content)
-
-    file.write_text("\r\n".join(lines) + "\r\n")
 
 
 if __name__ == "__main__":

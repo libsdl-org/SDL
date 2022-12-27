@@ -4,7 +4,7 @@ This guide provides useful information for migrating applications from SDL 2.0 t
 
 Details on API changes are organized by SDL 2.0 header below.
 
-We have provided a handy Python script [rename_symbols.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_symbols.py) to rename SDL2 functions to their SDL3 counterparts:
+Many functions and symbols have been renamed. We have provided a handy Python script [rename_symbols.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_symbols.py) to rename SDL2 functions to their SDL3 counterparts:
 ```sh
 rename_symbols.py --all-symbols source_code_path
 ```
