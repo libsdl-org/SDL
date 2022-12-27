@@ -483,6 +483,9 @@
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h">
       <Filter>haptic</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\joystick\SDL_gamepad_c.h">
+      <Filter>joystick</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\joystick\SDL_gamepad_db.h">
       <Filter>joystick</Filter>
     </ClInclude>

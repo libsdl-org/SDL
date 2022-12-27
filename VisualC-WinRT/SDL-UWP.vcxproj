@@ -121,6 +121,7 @@
     <ClInclude Include="..\src\haptic\windows\SDL_windowshaptic_c.h" />
     <ClInclude Include="..\src\haptic\windows\SDL_xinputhaptic_c.h" />
     <ClInclude Include="..\src\joystick\controller_type.h" />
+    <ClInclude Include="..\src\joystick\SDL_gamepad_c.h" />
     <ClInclude Include="..\src\joystick\SDL_gamepad_db.h" />
     <ClInclude Include="..\src\joystick\SDL_joystick_c.h" />
     <ClInclude Include="..\src\joystick\SDL_sysjoystick.h" />

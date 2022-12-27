@@ -162,6 +162,9 @@
     <ClInclude Include="..\include\SDL3\SDL_video.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\joystick\SDL_gamepad_c.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\joystick\SDL_gamepad_db.h">
       <Filter>Header Files</Filter>
     </ClInclude>

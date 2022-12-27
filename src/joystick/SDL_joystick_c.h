@@ -52,12 +52,6 @@ extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_l
 /* Function to get the next available joystick instance ID */
 extern SDL_JoystickID SDL_GetNextJoystickInstanceID(void);
 
-/* Initialization and shutdown functions */
-extern int SDL_GamepadInitMappings(void);
-extern void SDL_GamepadQuitMappings(void);
-extern int SDL_GamepadInit(void);
-extern void SDL_GamepadQuit(void);
-
 /* Function to return the device index for a joystick ID, or -1 if not found */
 extern int SDL_JoystickGetDeviceIndexFromInstanceID(SDL_JoystickID instance_id);
 
@@ -136,15 +130,6 @@ extern SDL_bool SDL_IsJoystickVIRTUAL(SDL_JoystickGUID guid);
 
 /* Function to return whether a joystick should be ignored */
 extern SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid);
-
-/* Function to return whether a joystick name and GUID is a gamepad  */
-extern SDL_bool SDL_IsGamepadNameAndGUID(const char *name, SDL_JoystickGUID guid);
-
-/* Function to return whether a gamepad should be ignored */
-extern SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid);
-
-/* Handle delayed guide button on a gamepad */
-extern void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick);
 
 /* Internal event queueing functions */
 extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers);

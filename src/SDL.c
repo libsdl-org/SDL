@@ -41,6 +41,7 @@
 #include "video/SDL_video_c.h"
 #include "events/SDL_events_c.h"
 #include "haptic/SDL_haptic_c.h"
+#include "joystick/SDL_gamepad_c.h"
 #include "joystick/SDL_joystick_c.h"
 #include "sensor/SDL_sensor_c.h"
 

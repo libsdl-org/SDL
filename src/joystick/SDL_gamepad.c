@@ -24,6 +24,7 @@
 
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
+#include "SDL_gamepad_c.h"
 #include "SDL_gamepad_db.h"
 #include "controller_type.h"
 #include "usb_ids.h"

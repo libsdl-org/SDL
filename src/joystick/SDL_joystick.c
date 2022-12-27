@@ -24,6 +24,8 @@
 
 #include "SDL_sysjoystick.h"
 #include "../SDL_hints_c.h"
+#include "SDL_gamepad_c.h"
+#include "SDL_joystick_c.h"
 
 #if !SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
