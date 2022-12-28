@@ -20,7 +20,7 @@ TestVirtualJoystick(void *arg)
 {
     SDL_VirtualJoystickDesc desc;
     SDL_Joystick *joystick = NULL;
-    int device_index;
+    SDL_JoystickID device_id;
 
     SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD) == 0, "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
 
@@ -32,11 +32,11 @@ TestVirtualJoystick(void *arg)
     desc.vendor_id = USB_VENDOR_NVIDIA;
     desc.product_id = USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104;
     desc.name = "Virtual NVIDIA SHIELD Controller";
-    device_index = SDL_AttachVirtualJoystickEx(&desc);
-    SDLTest_AssertCheck(device_index >= 0, "SDL_AttachVirtualJoystickEx()");
-    SDLTest_AssertCheck(SDL_IsJoystickVirtual(device_index), "SDL_IsJoystickVirtual()");
-    if (device_index >= 0) {
-        joystick = SDL_OpenJoystick(device_index);
+    device_id = SDL_AttachVirtualJoystickEx(&desc);
+    SDLTest_AssertCheck(device_id > 0, "SDL_AttachVirtualJoystickEx()");
+    SDLTest_AssertCheck(SDL_IsJoystickVirtual(device_id), "SDL_IsJoystickVirtual()");
+    if (device_id > 0) {
+        joystick = SDL_OpenJoystick(device_id);
         SDLTest_AssertCheck(joystick != NULL, "SDL_OpenJoystick()");
         if (joystick) {
             SDLTest_AssertCheck(SDL_strcmp(SDL_GetJoystickName(joystick), desc.name) == 0, "SDL_GetJoystickName()");
@@ -59,9 +59,9 @@ TestVirtualJoystick(void *arg)
 
             SDL_CloseJoystick(joystick);
         }
-        SDLTest_AssertCheck(SDL_DetachVirtualJoystick(device_index) == 0, "SDL_DetachVirtualJoystick()");
+        SDLTest_AssertCheck(SDL_DetachVirtualJoystick(device_id) == 0, "SDL_DetachVirtualJoystick()");
     }
-    SDLTest_AssertCheck(!SDL_IsJoystickVirtual(device_index), "!SDL_IsJoystickVirtual()");
+    SDLTest_AssertCheck(!SDL_IsJoystickVirtual(device_id), "!SDL_IsJoystickVirtual()");
 
     SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
 

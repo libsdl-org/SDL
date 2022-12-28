@@ -397,7 +397,7 @@ typedef struct SDL_JoyDeviceEvent
 {
     Uint32 type;        /**< ::SDL_JOYDEVICEADDED or ::SDL_JOYDEVICEREMOVED */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_JoystickID which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED event */
+    SDL_JoystickID which;       /**< The joystick instance id */
 } SDL_JoyDeviceEvent;
 
 /**
@@ -450,7 +450,7 @@ typedef struct SDL_GamepadDeviceEvent
 {
     Uint32 type;        /**< ::SDL_GAMEPADADDED, ::SDL_GAMEPADREMOVED, or ::SDL_GAMEPADDEVICEREMAPPED */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_JoystickID which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED or REMAPPED event */
+    SDL_JoystickID which;       /**< The joystick instance id */
 } SDL_GamepadDeviceEvent;
 
 /**

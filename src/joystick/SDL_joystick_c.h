@@ -52,9 +52,6 @@ extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_l
 /* Function to get the next available joystick instance ID */
 extern SDL_JoystickID SDL_GetNextJoystickInstanceID(void);
 
-/* Function to return the device index for a joystick ID, or -1 if not found */
-extern int SDL_JoystickGetDeviceIndexFromInstanceID(SDL_JoystickID instance_id);
-
 /* Function to standardize the name for a controller
    This should be freed with SDL_free() when no longer needed
  */
@@ -134,8 +131,8 @@ extern SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid
 /* Internal event queueing functions */
 extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers);
 extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate);
-extern void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance);
-extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);
+extern void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id);
+extern void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id);
 extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
 extern int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick,
                                    Uint8 axis, Sint16 value);
@@ -198,7 +195,7 @@ typedef struct SDL_GamepadMapping
 } SDL_GamepadMapping;
 
 /* Function to get autodetected gamepad controller mapping from the driver */
-extern SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(int device_index,
+extern SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance_id,
                                                          SDL_GamepadMapping *out);
 
 /* Ends C function definitions when using C++ */

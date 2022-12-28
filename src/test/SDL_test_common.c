@@ -1384,7 +1384,7 @@ static const char *DisplayOrientationName(int orientation)
     }
 }
 
-static const char *ControllerAxisName(const SDL_GamepadAxis axis)
+static const char *GamepadAxisName(const SDL_GamepadAxis axis)
 {
     switch (axis) {
 #define AXIS_CASE(ax)              \
@@ -1403,7 +1403,7 @@ static const char *ControllerAxisName(const SDL_GamepadAxis axis)
     }
 }
 
-static const char *ControllerButtonName(const SDL_GamepadButton button)
+static const char *GamepadButtonName(const SDL_GamepadButton button)
 {
     switch (button) {
 #define BUTTON_CASE(btn)              \
@@ -1556,11 +1556,11 @@ static void SDLTest_PrintEvent(SDL_Event *event)
                 event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
     case SDL_JOYDEVICEADDED:
-        SDL_Log("SDL EVENT: Joystick index %" SDL_PRIs32 " attached",
+        SDL_Log("SDL EVENT: Joystick index %" SDL_PRIu32 " attached",
                 event->jdevice.which);
         break;
     case SDL_JOYDEVICEREMOVED:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 " removed",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " removed",
                 event->jdevice.which);
         break;
     case SDL_JOYHATMOTION:
@@ -1595,41 +1595,41 @@ static void SDLTest_PrintEvent(SDL_Event *event)
             position = "LEFTUP";
             break;
         }
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": hat %d moved to %s",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 ": hat %d moved to %s",
                 event->jhat.which, event->jhat.hat, position);
     } break;
     case SDL_JOYBUTTONDOWN:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": button %d pressed",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 ": button %d pressed",
                 event->jbutton.which, event->jbutton.button);
         break;
     case SDL_JOYBUTTONUP:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": button %d released",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 ": button %d released",
                 event->jbutton.which, event->jbutton.button);
         break;
     case SDL_GAMEPADADDED:
-        SDL_Log("SDL EVENT: Controller index %" SDL_PRIs32 " attached",
+        SDL_Log("SDL EVENT: Gamepad index %" SDL_PRIu32 " attached",
                 event->cdevice.which);
         break;
     case SDL_GAMEPADREMOVED:
-        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " removed",
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " removed",
                 event->cdevice.which);
         break;
     case SDL_GAMEPADAXISMOTION:
-        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " axis %d ('%s') value: %d",
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " axis %d ('%s') value: %d",
                 event->caxis.which,
                 event->caxis.axis,
-                ControllerAxisName((SDL_GamepadAxis)event->caxis.axis),
+                GamepadAxisName((SDL_GamepadAxis)event->caxis.axis),
                 event->caxis.value);
         break;
     case SDL_GAMEPADBUTTONDOWN:
-        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 "button %d ('%s') down",
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 "button %d ('%s') down",
                 event->cbutton.which, event->cbutton.button,
-                ControllerButtonName((SDL_GamepadButton)event->cbutton.button));
+                GamepadButtonName((SDL_GamepadButton)event->cbutton.button));
         break;
     case SDL_GAMEPADBUTTONUP:
-        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " button %d ('%s') up",
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " button %d ('%s') up",
                 event->cbutton.which, event->cbutton.button,
-                ControllerButtonName((SDL_GamepadButton)event->cbutton.button));
+                GamepadButtonName((SDL_GamepadButton)event->cbutton.button));
         break;
     case SDL_CLIPBOARDUPDATE:
         SDL_Log("SDL EVENT: Clipboard updated");

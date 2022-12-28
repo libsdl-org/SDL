@@ -57,8 +57,8 @@ static void HandleSensorEvent(SDL_SensorEvent *event)
 
 int main(int argc, char **argv)
 {
-    int i;
-    int num_sensors, num_opened;
+    SDL_SensorID *sensors;
+    int i, num_sensors, num_opened;
 
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_SENSOR) < 0) {
@@ -66,25 +66,28 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    num_sensors = SDL_GetNumSensors();
+    sensors = SDL_GetSensors(&num_sensors);
     num_opened = 0;
 
     SDL_Log("There are %d sensors available\n", num_sensors);
-    for (i = 0; i < num_sensors; ++i) {
-        SDL_Log("Sensor %" SDL_PRIs32 ": %s, type %s, platform type %d\n",
-                SDL_GetSensorDeviceInstanceID(i),
-                SDL_GetSensorDeviceName(i),
-                GetSensorTypeString(SDL_GetSensorDeviceType(i)),
-                SDL_GetSensorDeviceNonPortableType(i));
+    if (sensors) {
+        for (i = 0; i < num_sensors; ++i) {
+            SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %s, platform type %d\n",
+                    sensors[i],
+                    SDL_GetSensorInstanceName(sensors[i]),
+                    GetSensorTypeString(SDL_GetSensorInstanceType(sensors[i])),
+                    SDL_GetSensorInstanceNonPortableType(sensors[i]));
 
-        if (SDL_GetSensorDeviceType(i) != SDL_SENSOR_UNKNOWN) {
-            SDL_Sensor *sensor = SDL_OpenSensor(i);
-            if (sensor == NULL) {
-                SDL_Log("Couldn't open sensor %" SDL_PRIs32 ": %s\n", SDL_GetSensorDeviceInstanceID(i), SDL_GetError());
-            } else {
-                ++num_opened;
+            if (SDL_GetSensorInstanceType(sensors[i]) != SDL_SENSOR_UNKNOWN) {
+                SDL_Sensor *sensor = SDL_OpenSensor(sensors[i]);
+                if (sensor == NULL) {
+                    SDL_Log("Couldn't open sensor %" SDL_PRIu32 ": %s\n", sensors[i], SDL_GetError());
+                } else {
+                    ++num_opened;
+                }
             }
         }
+        SDL_free(sensors);
     }
     SDL_Log("Opened %d sensors\n", num_opened);
 
