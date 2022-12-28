@@ -3,7 +3,7 @@ name: Build (Emscripten)
 on: [push, pull_request]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 jobs:
