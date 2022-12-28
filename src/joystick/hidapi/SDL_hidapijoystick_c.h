@@ -46,9 +46,9 @@
 #define USB_PACKET_LENGTH 64
 
 /* Forward declaration */
-struct _SDL_HIDAPI_DeviceDriver;
+struct SDL_HIDAPI_DeviceDriver;
 
-typedef struct _SDL_HIDAPI_Device
+typedef struct SDL_HIDAPI_Device
 {
     char *name;
     char *path;
@@ -67,7 +67,7 @@ typedef struct _SDL_HIDAPI_Device
     SDL_JoystickType joystick_type;
     SDL_GamepadType type;
 
-    struct _SDL_HIDAPI_DeviceDriver *driver;
+    struct SDL_HIDAPI_DeviceDriver *driver;
     void *context;
     SDL_mutex *dev_lock;
     SDL_hid_device *dev;
@@ -81,14 +81,14 @@ typedef struct _SDL_HIDAPI_Device
     /* Used to flag that the device is being updated */
     SDL_bool updating;
 
-    struct _SDL_HIDAPI_Device *parent;
+    struct SDL_HIDAPI_Device *parent;
     int num_children;
-    struct _SDL_HIDAPI_Device **children;
+    struct SDL_HIDAPI_Device **children;
 
-    struct _SDL_HIDAPI_Device *next;
+    struct SDL_HIDAPI_Device *next;
 } SDL_HIDAPI_Device;
 
-typedef struct _SDL_HIDAPI_DeviceDriver
+typedef struct SDL_HIDAPI_DeviceDriver
 {
     const char *name;
     SDL_bool enabled;

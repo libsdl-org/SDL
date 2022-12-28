@@ -622,7 +622,7 @@ static void SDLCALL SDL_AppleTVRemoteRotationHintChanged(void *udata, const char
 static int IOS_JoystickInit(void)
 {
 #if defined(__MACOS__)
-#if _SDL_HAS_BUILTIN(__builtin_available)
+#if SDL_HAS_BUILTIN(__builtin_available)
     if (@available(macOS 10.16, *)) {
         /* Continue with initialization on macOS 11+ */
     } else {
