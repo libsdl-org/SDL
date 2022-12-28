@@ -93,7 +93,7 @@ static int SDL_RAWINPUT_numjoysticks = 0;
 
 static void RAWINPUT_JoystickClose(SDL_Joystick *joystick);
 
-typedef struct _SDL_RAWINPUT_Device
+typedef struct SDL_RAWINPUT_Device
 {
     SDL_atomic_t refcount;
     char *name;
@@ -110,7 +110,7 @@ typedef struct _SDL_RAWINPUT_Device
     SDL_Joystick *joystick;
     SDL_JoystickID joystick_id;
 
-    struct _SDL_RAWINPUT_Device *next;
+    struct SDL_RAWINPUT_Device *next;
 } SDL_RAWINPUT_Device;
 
 struct joystick_hwdata
