@@ -59,7 +59,7 @@ static int RISCOS_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-int RISCOS_InitMouse(_THIS)
+int RISCOS_InitMouse(THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 

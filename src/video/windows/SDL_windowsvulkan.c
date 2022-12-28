@@ -36,7 +36,7 @@
 #define SDL_ENABLE_SYSWM_WINDOWS
 #include <SDL3/SDL_syswm.h>
 
-int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
+int WIN_Vulkan_LoadLibrary(THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
@@ -103,7 +103,7 @@ fail:
     return -1;
 }
 
-void WIN_Vulkan_UnloadLibrary(_THIS)
+void WIN_Vulkan_UnloadLibrary(THIS)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -111,7 +111,7 @@ void WIN_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool WIN_Vulkan_GetInstanceExtensions(_THIS,
+SDL_bool WIN_Vulkan_GetInstanceExtensions(THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
@@ -128,7 +128,7 @@ SDL_bool WIN_Vulkan_GetInstanceExtensions(_THIS,
         extensionsForWin32);
 }
 
-SDL_bool WIN_Vulkan_CreateSurface(_THIS,
+SDL_bool WIN_Vulkan_CreateSurface(THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)

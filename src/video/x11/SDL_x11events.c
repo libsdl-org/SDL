@@ -348,7 +348,7 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
 }
 #endif /* SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS */
 
-static unsigned X11_GetNumLockModifierMask(_THIS)
+static unsigned X11_GetNumLockModifierMask(THIS)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     Display *display = viddata->display;
@@ -373,7 +373,7 @@ static unsigned X11_GetNumLockModifierMask(_THIS)
     return num_mask;
 }
 
-static unsigned X11_GetScrollLockModifierMask(_THIS)
+static unsigned X11_GetScrollLockModifierMask(THIS)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     Display *display = viddata->display;
@@ -398,7 +398,7 @@ static unsigned X11_GetScrollLockModifierMask(_THIS)
     return num_mask;
 }
 
-void X11_ReconcileKeyboardState(_THIS)
+void X11_ReconcileKeyboardState(THIS)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     Display *display = viddata->display;
@@ -447,7 +447,7 @@ void X11_ReconcileKeyboardState(_THIS)
     }
 }
 
-static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
+static void X11_DispatchFocusIn(THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
     printf("window %p: Dispatching FocusIn\n", data);
@@ -467,7 +467,7 @@ static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
     }
 }
 
-static void X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
+static void X11_DispatchFocusOut(THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
     printf("window %p: Dispatching FocusOut\n", data);
@@ -505,7 +505,7 @@ static void X11_DispatchUnmapNotify(SDL_WindowData *data)
     SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
 }
 
-static void InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
+static void InitiateWindowMove(THIS, const SDL_WindowData *data, const SDL_Point *point)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_Window *window = data->window;
@@ -530,7 +530,7 @@ static void InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Poin
     X11_XSync(display, 0);
 }
 
-static void InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Point *point, int direction)
+static void InitiateWindowResize(THIS, const SDL_WindowData *data, const SDL_Point *point, int direction)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_Window *window = data->window;
@@ -559,7 +559,7 @@ static void InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Po
     X11_XSync(display, 0);
 }
 
-static SDL_bool ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
+static SDL_bool ProcessHitTest(THIS, const SDL_WindowData *data, const XEvent *xev)
 {
     SDL_Window *window = data->window;
 
@@ -612,7 +612,7 @@ static void X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
     }
 }
 
-static void X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
+static void X11_HandleClipboardEvent(THIS, const XEvent *xevent)
 {
     int i;
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
@@ -754,7 +754,7 @@ static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int
     return result;
 }
 
-static void X11_DispatchEvent(_THIS, XEvent *xevent)
+static void X11_DispatchEvent(THIS, XEvent *xevent)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     Display *display;
@@ -1568,7 +1568,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
     }
 }
 
-static void X11_HandleFocusChanges(_THIS)
+static void X11_HandleFocusChanges(THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     int i;
@@ -1605,7 +1605,7 @@ static SDL_bool X11_PollEvent(Display *display, XEvent *event)
     return SDL_TRUE;
 }
 
-void X11_SendWakeupEvent(_THIS, SDL_Window *window)
+void X11_SendWakeupEvent(THIS, SDL_Window *window)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     Display *req_display = data->request_display;
@@ -1625,7 +1625,7 @@ void X11_SendWakeupEvent(_THIS, SDL_Window *window)
     X11_XFlush(req_display);
 }
 
-int X11_WaitEventTimeout(_THIS, Sint64 timeoutNS)
+int X11_WaitEventTimeout(THIS, Sint64 timeoutNS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     Display *display;
@@ -1675,7 +1675,7 @@ int X11_WaitEventTimeout(_THIS, Sint64 timeoutNS)
     return 1;
 }
 
-void X11_PumpEvents(_THIS)
+void X11_PumpEvents(THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     XEvent xevent;
@@ -1727,7 +1727,7 @@ void X11_PumpEvents(_THIS)
     }
 }
 
-void X11_SuspendScreenSaver(_THIS)
+void X11_SuspendScreenSaver(THIS)
 {
 #if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;

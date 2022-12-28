@@ -73,7 +73,7 @@ int EventUpdate(void *data)
     return 0;
 }
 
-void PSP_PumpEvents(_THIS)
+void PSP_PumpEvents(THIS)
 {
     int i;
     enum PspHprmKeys keys;
@@ -124,7 +124,7 @@ void PSP_PumpEvents(_THIS)
     return;
 }
 
-void PSP_InitOSKeymap(_THIS)
+void PSP_InitOSKeymap(THIS)
 {
 #ifdef PSPIRKEYB
     int i;
@@ -235,7 +235,7 @@ void PSP_InitOSKeymap(_THIS)
 #endif
 }
 
-void PSP_EventInit(_THIS)
+void PSP_EventInit(THIS)
 {
 #ifdef PSPIRKEYB
     int outputmode = PSP_IRKBD_OUTPUT_MODE_SCANCODE;
@@ -259,7 +259,7 @@ void PSP_EventInit(_THIS)
     }
 }
 
-void PSP_EventQuit(_THIS)
+void PSP_EventQuit(THIS)
 {
     running = 0;
     SDL_WaitThread(thread, NULL);

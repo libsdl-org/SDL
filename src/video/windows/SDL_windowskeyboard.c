@@ -49,7 +49,7 @@ static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata);
 #endif
 
 /* Alphabetic scancodes for PC keyboards */
-void WIN_InitKeyboard(_THIS)
+void WIN_InitKeyboard(THIS)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
@@ -153,7 +153,7 @@ void WIN_UpdateKeymap(SDL_bool send_event)
     SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
 }
 
-void WIN_QuitKeyboard(_THIS)
+void WIN_QuitKeyboard(THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
@@ -196,7 +196,7 @@ void WIN_ResetDeadKeys()
     }
 }
 
-void WIN_StartTextInput(_THIS)
+void WIN_StartTextInput(THIS)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_Window *window;
@@ -216,7 +216,7 @@ void WIN_StartTextInput(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void WIN_StopTextInput(_THIS)
+void WIN_StopTextInput(THIS)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_Window *window;
@@ -235,7 +235,7 @@ void WIN_StopTextInput(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
+void WIN_SetTextInputRect(THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     HIMC himc = 0;
@@ -279,11 +279,11 @@ void WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
 
 #ifdef SDL_DISABLE_WINDOWS_IME
 
-void WIN_ClearComposition(_THIS)
+void WIN_ClearComposition(THIS)
 {
 }
 
-SDL_bool WIN_IsTextInputShown(_THIS)
+SDL_bool WIN_IsTextInputShown(THIS)
 {
     return SDL_FALSE;
 }
@@ -1725,13 +1725,13 @@ void IME_Present(SDL_VideoData *videodata)
     /* FIXME: Need to show the IME bitmap */
 }
 
-SDL_bool WIN_IsTextInputShown(_THIS)
+SDL_bool WIN_IsTextInputShown(THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     return IME_IsTextInputShown(videodata);
 }
 
-void WIN_ClearComposition(_THIS)
+void WIN_ClearComposition(THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     IME_ClearComposition(videodata);

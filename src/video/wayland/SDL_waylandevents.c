@@ -338,7 +338,7 @@ static SDL_bool keyboard_repeat_key_is_set(SDL_WaylandKeyboardRepeat *repeat_inf
     return repeat_info->is_initialized && repeat_info->is_key_down && key == repeat_info->key;
 }
 
-void Wayland_SendWakeupEvent(_THIS, SDL_Window *window)
+void Wayland_SendWakeupEvent(THIS, SDL_Window *window)
 {
     SDL_VideoData *d = _this->driverdata;
 
@@ -365,7 +365,7 @@ static int dispatch_queued_events(SDL_VideoData *viddata)
     return ret >= 0 ? 1 : ret;
 }
 
-int Wayland_WaitEventTimeout(_THIS, Sint64 timeoutNS)
+int Wayland_WaitEventTimeout(THIS, Sint64 timeoutNS)
 {
     SDL_VideoData *d = _this->driverdata;
     struct SDL_WaylandInput *input = d->input;
@@ -436,7 +436,7 @@ int Wayland_WaitEventTimeout(_THIS, Sint64 timeoutNS)
     }
 }
 
-void Wayland_PumpEvents(_THIS)
+void Wayland_PumpEvents(THIS)
 {
     SDL_VideoData *d = _this->driverdata;
     struct SDL_WaylandInput *input = d->input;
@@ -1507,7 +1507,7 @@ static const struct zwp_primary_selection_source_v1_listener primary_selection_s
     primary_selection_source_cancelled,
 };
 
-SDL_WaylandDataSource *Wayland_data_source_create(_THIS)
+SDL_WaylandDataSource *Wayland_data_source_create(THIS)
 {
     SDL_WaylandDataSource *data_source = NULL;
     SDL_VideoData *driver_data = NULL;
@@ -1542,7 +1542,7 @@ SDL_WaylandDataSource *Wayland_data_source_create(_THIS)
     return data_source;
 }
 
-SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(_THIS)
+SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(THIS)
 {
     SDL_WaylandPrimarySelectionSource *primary_selection_source = NULL;
     SDL_VideoData *driver_data = NULL;

@@ -56,10 +56,10 @@
 
 @end
 
-SDL_MetalView Cocoa_Metal_CreateView(_THIS, SDL_Window *window);
-void Cocoa_Metal_DestroyView(_THIS, SDL_MetalView view);
-void *Cocoa_Metal_GetLayer(_THIS, SDL_MetalView view);
-void Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
+SDL_MetalView Cocoa_Metal_CreateView(THIS, SDL_Window *window);
+void Cocoa_Metal_DestroyView(THIS, SDL_MetalView view);
+void *Cocoa_Metal_GetLayer(THIS, SDL_MetalView view);
+void Cocoa_Metal_GetDrawableSize(THIS, SDL_Window *window, int *w, int *h);
 
 #endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
 

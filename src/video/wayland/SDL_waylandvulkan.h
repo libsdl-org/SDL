@@ -34,13 +34,13 @@
 
 #if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_WAYLAND
 
-int Wayland_Vulkan_LoadLibrary(_THIS, const char *path);
-void Wayland_Vulkan_UnloadLibrary(_THIS);
-SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
+int Wayland_Vulkan_LoadLibrary(THIS, const char *path);
+void Wayland_Vulkan_UnloadLibrary(THIS);
+SDL_bool Wayland_Vulkan_GetInstanceExtensions(THIS,
                                               SDL_Window *window,
                                               unsigned *count,
                                               const char **names);
-SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
+SDL_bool Wayland_Vulkan_CreateSurface(THIS,
                                       SDL_Window *window,
                                       VkInstance instance,
                                       VkSurfaceKHR *surface);

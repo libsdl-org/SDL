@@ -358,7 +358,7 @@ static Uint32 Cocoa_GetGlobalMouseState(int *x, int *y)
     return retval;
 }
 
-int Cocoa_InitMouse(_THIS)
+int Cocoa_InitMouse(THIS)
 {
     NSPoint location;
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -386,7 +386,7 @@ int Cocoa_InitMouse(_THIS)
     return 0;
 }
 
-static void Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
+static void Cocoa_HandleTitleButtonEvent(THIS, NSEvent *event)
 {
     SDL_Window *window;
     NSWindow *nswindow = [event window];
@@ -419,7 +419,7 @@ static void Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
     }
 }
 
-void Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
+void Cocoa_HandleMouseEvent(THIS, NSEvent *event)
 {
     SDL_Mouse *mouse;
     SDL_MouseData *driverdata;
@@ -548,7 +548,7 @@ void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y)
     DLog("(%g, %g)", x, y);
 }
 
-void Cocoa_QuitMouse(_THIS)
+void Cocoa_QuitMouse(THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse) {

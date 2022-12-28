@@ -23,8 +23,8 @@
 #ifndef SDL_x11touch_h_
 #define SDL_x11touch_h_
 
-extern void X11_InitTouch(_THIS);
-extern void X11_QuitTouch(_THIS);
-extern void X11_ResetTouch(_THIS);
+extern void X11_InitTouch(THIS);
+extern void X11_QuitTouch(THIS);
+extern void X11_ResetTouch(THIS);
 
 #endif /* SDL_x11touch_h_ */

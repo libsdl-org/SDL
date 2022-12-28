@@ -34,12 +34,12 @@ enum ESDLX11ClipboardMimeType
     SDL_X11_CLIPBOARD_MIME_TYPE_MAX
 };
 
-extern int X11_SetClipboardText(_THIS, const char *text);
-extern char *X11_GetClipboardText(_THIS);
-extern SDL_bool X11_HasClipboardText(_THIS);
-extern int X11_SetPrimarySelectionText(_THIS, const char *text);
-extern char *X11_GetPrimarySelectionText(_THIS);
-extern SDL_bool X11_HasPrimarySelectionText(_THIS);
+extern int X11_SetClipboardText(THIS, const char *text);
+extern char *X11_GetClipboardText(THIS);
+extern SDL_bool X11_HasClipboardText(THIS);
+extern int X11_SetPrimarySelectionText(THIS, const char *text);
+extern char *X11_GetPrimarySelectionText(THIS);
+extern SDL_bool X11_HasPrimarySelectionText(THIS);
 extern Atom X11_GetSDLCutBufferClipboardType(Display *display, enum ESDLX11ClipboardMimeType mime_type, Atom selection_type);
 extern Atom X11_GetSDLCutBufferClipboardExternalFormat(Display *display, enum ESDLX11ClipboardMimeType mime_type);
 extern Atom X11_GetSDLCutBufferClipboardInternalFormat(Display *display, enum ESDLX11ClipboardMimeType mime_type);

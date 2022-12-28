@@ -35,7 +35,7 @@
 
 #include <dlfcn.h>
 
-int Android_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int Android_GLES_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)
 {
     if (window && context) {
         return SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *)window->driverdata)->egl_surface, context);
@@ -45,7 +45,7 @@ int Android_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 }
 
 SDL_GLContext
-Android_GLES_CreateContext(_THIS, SDL_Window *window)
+Android_GLES_CreateContext(THIS, SDL_Window *window)
 {
     SDL_GLContext ret;
 
@@ -58,7 +58,7 @@ Android_GLES_CreateContext(_THIS, SDL_Window *window)
     return ret;
 }
 
-int Android_GLES_SwapWindow(_THIS, SDL_Window *window)
+int Android_GLES_SwapWindow(THIS, SDL_Window *window)
 {
     int retval;
 
@@ -78,7 +78,7 @@ int Android_GLES_SwapWindow(_THIS, SDL_Window *window)
     return retval;
 }
 
-int Android_GLES_LoadLibrary(_THIS, const char *path)
+int Android_GLES_LoadLibrary(THIS, const char *path)
 {
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }

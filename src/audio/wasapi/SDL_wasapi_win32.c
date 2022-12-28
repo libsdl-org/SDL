@@ -75,7 +75,7 @@ void WASAPI_PlatformDeinit(void)
     SDL_IMMDevice_Quit();
 }
 
-void WASAPI_PlatformThreadInit(_THIS)
+void WASAPI_PlatformThreadInit(THIS)
 {
     /* this thread uses COM. */
     if (SUCCEEDED(WIN_CoInitialize())) { /* can't report errors, hope it worked! */
@@ -89,7 +89,7 @@ void WASAPI_PlatformThreadInit(_THIS)
     }
 }
 
-void WASAPI_PlatformThreadDeinit(_THIS)
+void WASAPI_PlatformThreadDeinit(THIS)
 {
     /* Set this thread back to normal priority. */
     if (this->hidden->task && pAvRevertMmThreadCharacteristics) {
@@ -103,7 +103,7 @@ void WASAPI_PlatformThreadDeinit(_THIS)
     }
 }
 
-int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
+int WASAPI_ActivateDevice(THIS, const SDL_bool isrecovery)
 {
     IMMDevice *device = NULL;
     HRESULT ret;

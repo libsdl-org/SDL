@@ -43,11 +43,11 @@ typedef struct _KMSDRM_CursorData
 
 } KMSDRM_CursorData;
 
-extern void KMSDRM_InitMouse(_THIS, SDL_VideoDisplay *display);
-extern void KMSDRM_QuitMouse(_THIS);
+extern void KMSDRM_InitMouse(THIS, SDL_VideoDisplay *display);
+extern void KMSDRM_QuitMouse(THIS);
 
 extern void KMSDRM_CreateCursorBO(SDL_VideoDisplay *display);
-extern void KMSDRM_DestroyCursorBO(_THIS, SDL_VideoDisplay *display);
+extern void KMSDRM_DestroyCursorBO(THIS, SDL_VideoDisplay *display);
 extern void KMSDRM_InitCursor(void);
 
 #endif /* SDL_KMSDRM_mouse_h_ */

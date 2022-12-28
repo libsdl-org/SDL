@@ -131,7 +131,7 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 @end
 
 SDL_MetalView
-Cocoa_Metal_CreateView(_THIS, SDL_Window *window)
+Cocoa_Metal_CreateView(THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
@@ -157,7 +157,7 @@ Cocoa_Metal_CreateView(_THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_Metal_DestroyView(_THIS, SDL_MetalView view)
+void Cocoa_Metal_DestroyView(THIS, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_cocoametalview *metalview = CFBridgingRelease(view);
@@ -166,7 +166,7 @@ void Cocoa_Metal_DestroyView(_THIS, SDL_MetalView view)
 }
 
 void *
-Cocoa_Metal_GetLayer(_THIS, SDL_MetalView view)
+Cocoa_Metal_GetLayer(THIS, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_cocoametalview *cocoaview = (__bridge SDL_cocoametalview *)view;
@@ -174,7 +174,7 @@ Cocoa_Metal_GetLayer(_THIS, SDL_MetalView view)
     }
 }
 
-void Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
+void Cocoa_Metal_GetDrawableSize(THIS, SDL_Window *window, int *w, int *h)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;

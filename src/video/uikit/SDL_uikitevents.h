@@ -26,7 +26,7 @@
 #include "../SDL_sysvideo.h"
 
 extern Uint64 UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp);
-extern void UIKit_PumpEvents(_THIS);
+extern void UIKit_PumpEvents(THIS);
 
 extern void SDL_InitGCKeyboard(void);
 extern SDL_bool SDL_HasGCKeyboard(void);

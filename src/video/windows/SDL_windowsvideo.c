@@ -34,8 +34,8 @@
 /* #define HIGHDPI_DEBUG */
 
 /* Initialization/Query functions */
-static int WIN_VideoInit(_THIS);
-static void WIN_VideoQuit(_THIS);
+static int WIN_VideoInit(THIS);
+static void WIN_VideoQuit(THIS);
 
 /* Hints */
 SDL_bool g_WindowsEnableMessageLoop = SDL_TRUE;
@@ -58,7 +58,7 @@ static void SDLCALL UpdateWindowFrameUsableWhileCursorHidden(void *userdata, con
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-static void WIN_SuspendScreenSaver(_THIS)
+static void WIN_SuspendScreenSaver(THIS)
 {
     if (_this->suspend_screensaver) {
         SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
@@ -267,7 +267,7 @@ VideoBootStrap WINDOWS_bootstrap = {
     "windows", "SDL Windows video driver", WIN_CreateDevice
 };
 
-static BOOL WIN_DeclareDPIAwareUnaware(_THIS)
+static BOOL WIN_DeclareDPIAwareUnaware(THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
@@ -282,7 +282,7 @@ static BOOL WIN_DeclareDPIAwareUnaware(_THIS)
     return FALSE;
 }
 
-static BOOL WIN_DeclareDPIAwareSystem(_THIS)
+static BOOL WIN_DeclareDPIAwareSystem(THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
@@ -301,7 +301,7 @@ static BOOL WIN_DeclareDPIAwareSystem(_THIS)
     return FALSE;
 }
 
-static BOOL WIN_DeclareDPIAwarePerMonitor(_THIS)
+static BOOL WIN_DeclareDPIAwarePerMonitor(THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
@@ -320,7 +320,7 @@ static BOOL WIN_DeclareDPIAwarePerMonitor(_THIS)
     return FALSE;
 }
 
-static BOOL WIN_DeclareDPIAwarePerMonitorV2(_THIS)
+static BOOL WIN_DeclareDPIAwarePerMonitorV2(THIS)
 {
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return FALSE;
@@ -359,7 +359,7 @@ static BOOL WIN_DeclareDPIAwarePerMonitorV2(_THIS)
 }
 
 #ifdef HIGHDPI_DEBUG
-static const char *WIN_GetDPIAwareness(_THIS)
+static const char *WIN_GetDPIAwareness(THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
@@ -383,7 +383,7 @@ static const char *WIN_GetDPIAwareness(_THIS)
 }
 #endif
 
-static void WIN_InitDPIAwareness(_THIS)
+static void WIN_InitDPIAwareness(THIS)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_DPI_AWARENESS);
 
@@ -400,7 +400,7 @@ static void WIN_InitDPIAwareness(_THIS)
     }
 }
 
-static void WIN_InitDPIScaling(_THIS)
+static void WIN_InitDPIScaling(THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
@@ -411,7 +411,7 @@ static void WIN_InitDPIScaling(_THIS)
     }
 }
 
-int WIN_VideoInit(_THIS)
+int WIN_VideoInit(THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
@@ -459,7 +459,7 @@ int WIN_VideoInit(_THIS)
     return 0;
 }
 
-void WIN_VideoQuit(_THIS)
+void WIN_VideoQuit(THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     WIN_QuitModes(_this);
@@ -685,7 +685,7 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
 }
 
 SDL_bool
-WIN_IsPerMonitorV2DPIAware(_THIS)
+WIN_IsPerMonitorV2DPIAware(THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;

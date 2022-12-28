@@ -173,7 +173,7 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void JACK_WaitDevice(_THIS)
+static void JACK_WaitDevice(THIS)
 {
     if (SDL_AtomicGet(&this->enabled)) {
         if (SDL_SemWait(this->hidden->iosem) == -1) {
@@ -182,7 +182,7 @@ static void JACK_WaitDevice(_THIS)
     }
 }
 
-static Uint8 *JACK_GetDeviceBuf(_THIS)
+static Uint8 *JACK_GetDeviceBuf(THIS)
 {
     return (Uint8 *)this->hidden->iobuffer;
 }
@@ -213,7 +213,7 @@ static int jackProcessCaptureCallback(jack_nframes_t nframes, void *arg)
     return 0;
 }
 
-static int JACK_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int JACK_CaptureFromDevice(THIS, void *buffer, int buflen)
 {
     SDL_assert(buflen == this->spec.size); /* we always fill a full buffer. */
 
@@ -226,12 +226,12 @@ static int JACK_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return buflen;
 }
 
-static void JACK_FlushCapture(_THIS)
+static void JACK_FlushCapture(THIS)
 {
     SDL_SemWait(this->hidden->iosem);
 }
 
-static void JACK_CloseDevice(_THIS)
+static void JACK_CloseDevice(THIS)
 {
     if (this->hidden->client) {
         JACK_jack_deactivate(this->hidden->client);
@@ -256,7 +256,7 @@ static void JACK_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static int JACK_OpenDevice(_THIS, const char *devname)
+static int JACK_OpenDevice(THIS, const char *devname)
 {
     /* Note that JACK uses "output" for capture devices (they output audio
         data to us) and "input" for playback (we input audio data to them).

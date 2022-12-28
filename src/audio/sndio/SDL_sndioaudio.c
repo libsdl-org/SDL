@@ -149,12 +149,12 @@ static int LoadSNDIOLibrary(void)
 
 #endif /* SDL_AUDIO_DRIVER_SNDIO_DYNAMIC */
 
-static void SNDIO_WaitDevice(_THIS)
+static void SNDIO_WaitDevice(THIS)
 {
     /* no-op; SNDIO_sio_write() blocks if necessary. */
 }
 
-static void SNDIO_PlayDevice(_THIS)
+static void SNDIO_PlayDevice(THIS)
 {
     const int written = SNDIO_sio_write(this->hidden->dev,
                                         this->hidden->mixbuf,
@@ -169,7 +169,7 @@ static void SNDIO_PlayDevice(_THIS)
 #endif
 }
 
-static int SNDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int SNDIO_CaptureFromDevice(THIS, void *buffer, int buflen)
 {
     size_t r;
     int revents;
@@ -193,7 +193,7 @@ static int SNDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return (int)r;
 }
 
-static void SNDIO_FlushCapture(_THIS)
+static void SNDIO_FlushCapture(THIS)
 {
     char buf[512];
 
@@ -202,12 +202,12 @@ static void SNDIO_FlushCapture(_THIS)
     }
 }
 
-static Uint8 *SNDIO_GetDeviceBuf(_THIS)
+static Uint8 *SNDIO_GetDeviceBuf(THIS)
 {
     return this->hidden->mixbuf;
 }
 
-static void SNDIO_CloseDevice(_THIS)
+static void SNDIO_CloseDevice(THIS)
 {
     if (this->hidden->pfd != NULL) {
         SDL_free(this->hidden->pfd);
@@ -220,7 +220,7 @@ static void SNDIO_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static int SNDIO_OpenDevice(_THIS, const char *devname)
+static int SNDIO_OpenDevice(THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
     struct sio_par par;

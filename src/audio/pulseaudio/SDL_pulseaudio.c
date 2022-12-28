@@ -332,7 +332,7 @@ static int ConnectToPulseServer(pa_mainloop **_mainloop, pa_context **_context)
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void PULSEAUDIO_WaitDevice(_THIS)
+static void PULSEAUDIO_WaitDevice(THIS)
 {
     /* this is a no-op; we wait in PULSEAUDIO_PlayDevice now. */
 }
@@ -344,7 +344,7 @@ static void WriteCallback(pa_stream *p, size_t nbytes, void *userdata)
     h->bytes_requested += nbytes;
 }
 
-static void PULSEAUDIO_PlayDevice(_THIS)
+static void PULSEAUDIO_PlayDevice(THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     int available = h->mixlen;
@@ -379,12 +379,12 @@ static void PULSEAUDIO_PlayDevice(_THIS)
     /*printf("PULSEAUDIO PLAYDEVICE END! written=%d\n", written);*/
 }
 
-static Uint8 *PULSEAUDIO_GetDeviceBuf(_THIS)
+static Uint8 *PULSEAUDIO_GetDeviceBuf(THIS)
 {
     return this->hidden->mixbuf;
 }
 
-static int PULSEAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int PULSEAUDIO_CaptureFromDevice(THIS, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     const void *data = NULL;
@@ -432,7 +432,7 @@ static int PULSEAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return -1; /* not enabled? */
 }
 
-static void PULSEAUDIO_FlushCapture(_THIS)
+static void PULSEAUDIO_FlushCapture(THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     const void *data = NULL;
@@ -462,7 +462,7 @@ static void PULSEAUDIO_FlushCapture(_THIS)
     }
 }
 
-static void PULSEAUDIO_CloseDevice(_THIS)
+static void PULSEAUDIO_CloseDevice(THIS)
 {
     if (this->hidden->stream) {
         if (this->hidden->capturebuf != NULL) {
@@ -515,7 +515,7 @@ static SDL_bool FindDeviceName(struct SDL_PrivateAudioData *h, const SDL_bool is
     return h->device_name != NULL;
 }
 
-static int PULSEAUDIO_OpenDevice(_THIS, const char *devname)
+static int PULSEAUDIO_OpenDevice(THIS, const char *devname)
 {
     struct SDL_PrivateAudioData *h = NULL;
     SDL_AudioFormat test_format;

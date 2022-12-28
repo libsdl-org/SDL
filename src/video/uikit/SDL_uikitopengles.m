@@ -52,7 +52,7 @@
 @end
 
 void *
-UIKit_GL_GetProcAddress(_THIS, const char *proc)
+UIKit_GL_GetProcAddress(THIS, const char *proc)
 {
     /* Look through all SO's for the proc symbol.  Here's why:
      * -Looking for the path to the OpenGL Library seems not to work in the iOS Simulator.
@@ -63,7 +63,7 @@ UIKit_GL_GetProcAddress(_THIS, const char *proc)
 /*
   note that SDL_GL_DeleteContext makes it current without passing the window
 */
-int UIKit_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int UIKit_GL_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)
 {
     @autoreleasepool {
         SDLEAGLContext *eaglcontext = (__bridge SDLEAGLContext *)context;
@@ -80,7 +80,7 @@ int UIKit_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     return 0;
 }
 
-void UIKit_GL_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
+void UIKit_GL_GetDrawableSize(THIS, SDL_Window *window, int *w, int *h)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
@@ -99,7 +99,7 @@ void UIKit_GL_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
     }
 }
 
-int UIKit_GL_LoadLibrary(_THIS, const char *path)
+int UIKit_GL_LoadLibrary(THIS, const char *path)
 {
     /* We shouldn't pass a path to this function, since we've already loaded the
      * library. */
@@ -109,7 +109,7 @@ int UIKit_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-int UIKit_GL_SwapWindow(_THIS, SDL_Window *window)
+int UIKit_GL_SwapWindow(THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDLEAGLContext *context = (__bridge SDLEAGLContext *)SDL_GL_GetCurrentContext();
@@ -129,7 +129,7 @@ int UIKit_GL_SwapWindow(_THIS, SDL_Window *window)
 }
 
 SDL_GLContext
-UIKit_GL_CreateContext(_THIS, SDL_Window *window)
+UIKit_GL_CreateContext(THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDLEAGLContext *context = nil;
@@ -206,7 +206,7 @@ UIKit_GL_CreateContext(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
+void UIKit_GL_DeleteContext(THIS, SDL_GLContext context)
 {
     @autoreleasepool {
         /* The context was retained in SDL_GL_CreateContext, so we release it

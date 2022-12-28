@@ -42,7 +42,7 @@
 #define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
-int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
+int Wayland_Vulkan_LoadLibrary(THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
@@ -108,7 +108,7 @@ fail:
     return -1;
 }
 
-void Wayland_Vulkan_UnloadLibrary(_THIS)
+void Wayland_Vulkan_UnloadLibrary(THIS)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -116,7 +116,7 @@ void Wayland_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
+SDL_bool Wayland_Vulkan_GetInstanceExtensions(THIS,
                                               SDL_Window *window,
                                               unsigned *count,
                                               const char **names)
@@ -133,7 +133,7 @@ SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
         extensionsForWayland);
 }
 
-SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
+SDL_bool Wayland_Vulkan_CreateSurface(THIS,
                                       SDL_Window *window,
                                       VkInstance instance,
                                       VkSurfaceKHR *surface)

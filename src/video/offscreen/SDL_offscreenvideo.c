@@ -39,9 +39,9 @@
 #define OFFSCREENVID_DRIVER_NAME "offscreen"
 
 /* Initialization/Query functions */
-static int OFFSCREEN_VideoInit(_THIS);
-static int OFFSCREEN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-static void OFFSCREEN_VideoQuit(_THIS);
+static int OFFSCREEN_VideoInit(THIS);
+static int OFFSCREEN_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+static void OFFSCREEN_VideoQuit(THIS);
 
 /* OFFSCREEN driver bootstrap functions */
 
@@ -96,7 +96,7 @@ VideoBootStrap OFFSCREEN_bootstrap = {
     OFFSCREEN_CreateDevice
 };
 
-int OFFSCREEN_VideoInit(_THIS)
+int OFFSCREEN_VideoInit(THIS)
 {
     SDL_DisplayMode mode;
 
@@ -117,12 +117,12 @@ int OFFSCREEN_VideoInit(_THIS)
     return 0;
 }
 
-static int OFFSCREEN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static int OFFSCREEN_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
-void OFFSCREEN_VideoQuit(_THIS)
+void OFFSCREEN_VideoQuit(THIS)
 {
 }
 

@@ -37,8 +37,8 @@
 
 static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
 
-#define _THIS SDL_UDEV_PrivateData *_this
-static _THIS = NULL;
+#define THIS SDL_UDEV_PrivateData *_this
+static THIS = NULL;
 
 static SDL_bool SDL_UDEV_load_sym(const char *fn, void **addr);
 static int SDL_UDEV_load_syms(void);

@@ -24,7 +24,7 @@
 
 #include "SDL_windowsvideo.h"
 
-int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int WIN_CreateWindowFramebuffer(THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_bool isstack;
@@ -95,7 +95,7 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void 
     return 0;
 }
 
-int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int WIN_UpdateWindowFramebuffer(THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     int i;
@@ -107,7 +107,7 @@ int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects
     return 0;
 }
 
-void WIN_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
+void WIN_DestroyWindowFramebuffer(THIS, SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 

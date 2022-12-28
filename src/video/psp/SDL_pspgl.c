@@ -43,7 +43,7 @@
         }                                      \
     } while (0)
 
-int PSP_GL_LoadLibrary(_THIS, const char *path)
+int PSP_GL_LoadLibrary(THIS, const char *path)
 {
     return 0;
 }
@@ -55,12 +55,12 @@ GLSTUB(glOrtho,(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top,
                     GLdouble zNear, GLdouble zFar))
 */
 void *
-PSP_GL_GetProcAddress(_THIS, const char *proc)
+PSP_GL_GetProcAddress(THIS, const char *proc)
 {
     return eglGetProcAddress(proc);
 }
 
-void PSP_GL_UnloadLibrary(_THIS)
+void PSP_GL_UnloadLibrary(THIS)
 {
     eglTerminate(_this->gl_data->display);
 }
@@ -69,7 +69,7 @@ static EGLint width = 480;
 static EGLint height = 272;
 
 SDL_GLContext
-PSP_GL_CreateContext(_THIS, SDL_Window *window)
+PSP_GL_CreateContext(THIS, SDL_Window *window)
 {
 
     SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;
@@ -131,7 +131,7 @@ PSP_GL_CreateContext(_THIS, SDL_Window *window)
     return context;
 }
 
-int PSP_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int PSP_GL_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)
 {
     if (!eglMakeCurrent(_this->gl_data->display, _this->gl_data->surface,
                         _this->gl_data->surface, _this->gl_data->context)) {
@@ -140,7 +140,7 @@ int PSP_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     return 0;
 }
 
-int PSP_GL_SetSwapInterval(_THIS, int interval)
+int PSP_GL_SetSwapInterval(THIS, int interval)
 {
     EGLBoolean status;
     status = eglSwapInterval(_this->gl_data->display, interval);
@@ -153,12 +153,12 @@ int PSP_GL_SetSwapInterval(_THIS, int interval)
     return SDL_SetError("Unable to set the EGL swap interval");
 }
 
-int PSP_GL_GetSwapInterval(_THIS)
+int PSP_GL_GetSwapInterval(THIS)
 {
     return _this->gl_data->swapinterval;
 }
 
-int PSP_GL_SwapWindow(_THIS, SDL_Window *window)
+int PSP_GL_SwapWindow(THIS, SDL_Window *window)
 {
     if (!eglSwapBuffers(_this->gl_data->display, _this->gl_data->surface)) {
         return SDL_SetError("eglSwapBuffers() failed");
@@ -166,7 +166,7 @@ int PSP_GL_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-void PSP_GL_DeleteContext(_THIS, SDL_GLContext context)
+void PSP_GL_DeleteContext(THIS, SDL_GLContext context)
 {
     SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     EGLBoolean status;

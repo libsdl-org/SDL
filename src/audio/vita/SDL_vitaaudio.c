@@ -39,7 +39,7 @@
 #define SCE_AUDIO_SAMPLE_ALIGN(s) (((s) + 63) & ~63)
 #define SCE_AUDIO_MAX_VOLUME      0x8000
 
-static int VITAAUD_OpenCaptureDevice(_THIS)
+static int VITAAUD_OpenCaptureDevice(THIS)
 {
     this->spec.freq = 16000;
     this->spec.samples = 512;
@@ -56,7 +56,7 @@ static int VITAAUD_OpenCaptureDevice(_THIS)
     return 0;
 }
 
-static int VITAAUD_OpenDevice(_THIS, const char *devname)
+static int VITAAUD_OpenDevice(THIS, const char *devname)
 {
     int format, mixlen, i, port = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
     int vols[2] = { SCE_AUDIO_MAX_VOLUME, SCE_AUDIO_MAX_VOLUME };
@@ -128,7 +128,7 @@ static int VITAAUD_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static void VITAAUD_PlayDevice(_THIS)
+static void VITAAUD_PlayDevice(THIS)
 {
     Uint8 *mixbuf = this->hidden->mixbufs[this->hidden->next_buffer];
 
@@ -138,17 +138,17 @@ static void VITAAUD_PlayDevice(_THIS)
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void VITAAUD_WaitDevice(_THIS)
+static void VITAAUD_WaitDevice(THIS)
 {
     /* Because we block when sending audio, there's no need for this function to do anything. */
 }
 
-static Uint8 *VITAAUD_GetDeviceBuf(_THIS)
+static Uint8 *VITAAUD_GetDeviceBuf(THIS)
 {
     return this->hidden->mixbufs[this->hidden->next_buffer];
 }
 
-static void VITAAUD_CloseDevice(_THIS)
+static void VITAAUD_CloseDevice(THIS)
 {
     if (this->hidden->port >= 0) {
         if (this->iscapture) {
@@ -165,7 +165,7 @@ static void VITAAUD_CloseDevice(_THIS)
     }
 }
 
-static int VITAAUD_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int VITAAUD_CaptureFromDevice(THIS, void *buffer, int buflen)
 {
     int ret;
     SDL_assert(buflen == this->spec.size);
@@ -176,7 +176,7 @@ static int VITAAUD_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return this->spec.size;
 }
 
-static void VITAAUD_ThreadInit(_THIS)
+static void VITAAUD_ThreadInit(THIS)
 {
     /* Increase the priority of this audio thread by 1 to put it
        ahead of other SDL threads. */

@@ -52,7 +52,7 @@ static void WASAPI_DetectDevices(void)
     WASAPI_EnumerateEndpoints();
 }
 
-static SDL_INLINE SDL_bool WasapiFailed(_THIS, const HRESULT err)
+static SDL_INLINE SDL_bool WasapiFailed(THIS, const HRESULT err)
 {
     if (err == S_OK) {
         return SDL_FALSE;
@@ -69,7 +69,7 @@ static SDL_INLINE SDL_bool WasapiFailed(_THIS, const HRESULT err)
     return SDL_TRUE;
 }
 
-static int UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
+static int UpdateAudioStream(THIS, const SDL_AudioSpec *oldspec)
 {
     /* Since WASAPI requires us to handle all audio conversion, and our
        device format might have changed, we might have to add/remove/change
@@ -121,9 +121,9 @@ static int UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
     return 0;
 }
 
-static void ReleaseWasapiDevice(_THIS);
+static void ReleaseWasapiDevice(THIS);
 
-static SDL_bool RecoverWasapiDevice(_THIS)
+static SDL_bool RecoverWasapiDevice(THIS)
 {
     ReleaseWasapiDevice(this); /* dump the lost device's handles. */
 
@@ -146,7 +146,7 @@ static SDL_bool RecoverWasapiDevice(_THIS)
     return SDL_TRUE; /* okay, carry on with new device details! */
 }
 
-static SDL_bool RecoverWasapiIfLost(_THIS)
+static SDL_bool RecoverWasapiIfLost(THIS)
 {
     const int generation = this->hidden->default_device_generation;
     SDL_bool lost = this->hidden->device_lost;
@@ -169,7 +169,7 @@ static SDL_bool RecoverWasapiIfLost(_THIS)
     return lost ? RecoverWasapiDevice(this) : SDL_TRUE;
 }
 
-static Uint8 *WASAPI_GetDeviceBuf(_THIS)
+static Uint8 *WASAPI_GetDeviceBuf(THIS)
 {
     /* get an endpoint buffer from WASAPI. */
     BYTE *buffer = NULL;
@@ -184,7 +184,7 @@ static Uint8 *WASAPI_GetDeviceBuf(_THIS)
     return (Uint8 *)buffer;
 }
 
-static void WASAPI_PlayDevice(_THIS)
+static void WASAPI_PlayDevice(THIS)
 {
     if (this->hidden->render != NULL) { /* definitely activated? */
         /* WasapiFailed() will mark the device for reacquisition or removal elsewhere. */
@@ -192,7 +192,7 @@ static void WASAPI_PlayDevice(_THIS)
     }
 }
 
-static void WASAPI_WaitDevice(_THIS)
+static void WASAPI_WaitDevice(THIS)
 {
     while (RecoverWasapiIfLost(this) && this->hidden->client && this->hidden->event) {
         DWORD waitResult = WaitForSingleObjectEx(this->hidden->event, 200, FALSE);
@@ -219,7 +219,7 @@ static void WASAPI_WaitDevice(_THIS)
     }
 }
 
-static int WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int WASAPI_CaptureFromDevice(THIS, void *buffer, int buflen)
 {
     SDL_AudioStream *stream = this->hidden->capturestream;
     const int avail = SDL_GetAudioStreamAvailable(stream);
@@ -283,7 +283,7 @@ static int WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return -1; /* unrecoverable error. */
 }
 
-static void WASAPI_FlushCapture(_THIS)
+static void WASAPI_FlushCapture(THIS)
 {
     BYTE *ptr = NULL;
     UINT32 frames = 0;
@@ -307,7 +307,7 @@ static void WASAPI_FlushCapture(_THIS)
     SDL_ClearAudioStream(this->hidden->capturestream);
 }
 
-static void ReleaseWasapiDevice(_THIS)
+static void ReleaseWasapiDevice(THIS)
 {
     if (this->hidden->client) {
         IAudioClient_Stop(this->hidden->client);
@@ -346,17 +346,17 @@ static void ReleaseWasapiDevice(_THIS)
     }
 }
 
-static void WASAPI_CloseDevice(_THIS)
+static void WASAPI_CloseDevice(THIS)
 {
     WASAPI_UnrefDevice(this);
 }
 
-void WASAPI_RefDevice(_THIS)
+void WASAPI_RefDevice(THIS)
 {
     SDL_AtomicIncRef(&this->hidden->refcount);
 }
 
-void WASAPI_UnrefDevice(_THIS)
+void WASAPI_UnrefDevice(THIS)
 {
     if (!SDL_AtomicDecRef(&this->hidden->refcount)) {
         return;
@@ -373,7 +373,7 @@ void WASAPI_UnrefDevice(_THIS)
 }
 
 /* This is called once a device is activated, possibly asynchronously. */
-int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
+int WASAPI_PrepDevice(THIS, const SDL_bool updatestream)
 {
     /* !!! FIXME: we could request an exclusive mode stream, which is lower latency;
        !!!  it will write into the kernel's audio buffer directly instead of
@@ -523,7 +523,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     return 0; /* good to go. */
 }
 
-static int WASAPI_OpenDevice(_THIS, const char *devname)
+static int WASAPI_OpenDevice(THIS, const char *devname)
 {
     LPCWSTR devid = (LPCWSTR)this->handle;
 
@@ -561,12 +561,12 @@ static int WASAPI_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static void WASAPI_ThreadInit(_THIS)
+static void WASAPI_ThreadInit(THIS)
 {
     WASAPI_PlatformThreadInit(this);
 }
 
-static void WASAPI_ThreadDeinit(_THIS)
+static void WASAPI_ThreadDeinit(THIS)
 {
     WASAPI_PlatformThreadDeinit(this);
 }

@@ -42,9 +42,9 @@
 #define ANDROID_VID_DRIVER_NAME "Android"
 
 /* Initialization/Query functions */
-static int Android_VideoInit(_THIS);
-static void Android_VideoQuit(_THIS);
-int Android_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
+static int Android_VideoInit(THIS);
+static void Android_VideoQuit(THIS);
+int Android_GetDisplayDPI(THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
 
 #include "../SDL_egl_c.h"
 #define Android_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
@@ -66,7 +66,7 @@ SDL_sem *Android_PauseSem = NULL;
 SDL_sem *Android_ResumeSem = NULL;
 SDL_mutex *Android_ActivityMutex = NULL;
 
-static void Android_SuspendScreenSaver(_THIS)
+static void Android_SuspendScreenSaver(THIS)
 {
     Android_JNI_SuspendScreenSaver(_this->suspend_screensaver);
 }
@@ -166,7 +166,7 @@ VideoBootStrap Android_bootstrap = {
     Android_CreateDevice
 };
 
-int Android_VideoInit(_THIS)
+int Android_VideoInit(THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     int display_index;
@@ -200,13 +200,13 @@ int Android_VideoInit(_THIS)
     return 0;
 }
 
-void Android_VideoQuit(_THIS)
+void Android_VideoQuit(THIS)
 {
     Android_QuitMouse();
     Android_QuitTouch();
 }
 
-int Android_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
+int Android_GetDisplayDPI(THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
 {
     return Android_JNI_GetDisplayDPI(ddpi, hdpi, vdpi);
 }

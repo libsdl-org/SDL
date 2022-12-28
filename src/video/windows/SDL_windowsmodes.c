@@ -33,7 +33,7 @@
 /* #define DEBUG_MODES */
 /* #define HIGHDPI_DEBUG_VERBOSE */
 
-static void WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode)
+static void WIN_UpdateDisplayMode(THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
     HDC hdc;
@@ -159,7 +159,7 @@ static SDL_DisplayOrientation WIN_GetDisplayOrientation(DEVMODE *mode)
     }
 }
 
-static SDL_bool WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *orientation)
+static SDL_bool WIN_GetDisplayMode(THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *orientation)
 {
     SDL_DisplayModeData *data;
     DEVMODE devmode;
@@ -294,7 +294,7 @@ WIN_GetDisplayNameVista_failed:
     return NULL;
 }
 
-static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index, SDL_bool send_event)
+static void WIN_AddDisplay(THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index, SDL_bool send_event)
 {
     int i, index = *display_index;
     SDL_VideoDisplay display;
@@ -412,7 +412,7 @@ static BOOL CALLBACK WIN_AddDisplaysCallback(HMONITOR hMonitor,
     return TRUE;
 }
 
-static void WIN_AddDisplays(_THIS, SDL_bool send_event)
+static void WIN_AddDisplays(THIS, SDL_bool send_event)
 {
     WIN_AddDisplaysData callback_data;
     callback_data.video_device = _this;
@@ -426,7 +426,7 @@ static void WIN_AddDisplays(_THIS, SDL_bool send_event)
     EnumDisplayMonitors(NULL, NULL, WIN_AddDisplaysCallback, (LPARAM)&callback_data);
 }
 
-int WIN_InitModes(_THIS)
+int WIN_InitModes(THIS)
 {
     WIN_AddDisplays(_this, SDL_FALSE);
 
@@ -470,7 +470,7 @@ static void WIN_MonitorInfoToSDL(const SDL_VideoData *videodata, HMONITOR monito
     info->rcWork.bottom = info->rcMonitor.top + MulDiv(info->rcWork.bottom - info->rcMonitor.top, 96, ydpi);
 }
 
-int WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+int WIN_GetDisplayBounds(THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     const SDL_DisplayData *data = (const SDL_DisplayData *)display->driverdata;
     const SDL_VideoData *videodata = (SDL_VideoData *)display->device->driverdata;
@@ -494,7 +494,7 @@ int WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
     return 0;
 }
 
-int WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi_out, float *hdpi_out, float *vdpi_out)
+int WIN_GetDisplayDPI(THIS, SDL_VideoDisplay *display, float *ddpi_out, float *hdpi_out, float *vdpi_out)
 {
     const SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     const SDL_VideoData *videodata = (SDL_VideoData *)display->device->driverdata;
@@ -552,7 +552,7 @@ int WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi_out, float *
     return ddpi != 0.0f ? 0 : SDL_SetError("Couldn't get DPI");
 }
 
-int WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+int WIN_GetDisplayUsableBounds(THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     const SDL_DisplayData *data = (const SDL_DisplayData *)display->driverdata;
     const SDL_VideoData *videodata = (SDL_VideoData *)display->device->driverdata;
@@ -695,7 +695,7 @@ void WIN_ScreenPointToSDL(int *x, int *y)
 #endif
 }
 
-void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+void WIN_GetDisplayModes(THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *data = (SDL_DisplayData *)display->driverdata;
     DWORD i;
@@ -721,7 +721,7 @@ void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 }
 
 #ifdef DEBUG_MODES
-static void WIN_LogMonitor(_THIS, HMONITOR mon)
+static void WIN_LogMonitor(THIS, HMONITOR mon)
 {
     const SDL_VideoData *vid_data = (const SDL_VideoData *)_this->driverdata;
     MONITORINFOEX minfo;
@@ -750,7 +750,7 @@ static void WIN_LogMonitor(_THIS, HMONITOR mon)
 }
 #endif
 
-int WIN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int WIN_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
@@ -811,7 +811,7 @@ int WIN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
     return 0;
 }
 
-void WIN_RefreshDisplays(_THIS)
+void WIN_RefreshDisplays(THIS)
 {
     int i;
 
@@ -836,7 +836,7 @@ void WIN_RefreshDisplays(_THIS)
     }
 }
 
-void WIN_QuitModes(_THIS)
+void WIN_QuitModes(THIS)
 {
     /* All fullscreen windows should have restored modes by now */
 }

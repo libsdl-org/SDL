@@ -921,7 +921,7 @@ static SDL_bool SDL_events_need_periodic_poll()
     return need_periodic_poll;
 }
 
-static int SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event *event, Uint64 start, Sint64 timeoutNS)
+static int SDL_WaitEventTimeout_Device(THIS, SDL_Window *wakeup_window, SDL_Event *event, Uint64 start, Sint64 timeoutNS)
 {
     Sint64 loop_timeoutNS = timeoutNS;
     SDL_bool need_periodic_poll = SDL_events_need_periodic_poll();

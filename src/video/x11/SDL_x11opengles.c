@@ -28,7 +28,7 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-int X11_GLES_LoadLibrary(_THIS, const char *path)
+int X11_GLES_LoadLibrary(THIS, const char *path)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
@@ -56,7 +56,7 @@ int X11_GLES_LoadLibrary(_THIS, const char *path)
 }
 
 XVisualInfo *
-X11_GLES_GetVisual(_THIS, Display *display, int screen)
+X11_GLES_GetVisual(THIS, Display *display, int screen)
 {
 
     XVisualInfo *egl_visualinfo = NULL;
@@ -89,7 +89,7 @@ X11_GLES_GetVisual(_THIS, Display *display, int screen)
 }
 
 SDL_GLContext
-X11_GLES_CreateContext(_THIS, SDL_Window *window)
+X11_GLES_CreateContext(THIS, SDL_Window *window)
 {
     SDL_GLContext context;
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
@@ -103,7 +103,7 @@ X11_GLES_CreateContext(_THIS, SDL_Window *window)
 }
 
 SDL_EGLSurface
-X11_GLES_GetEGLSurface(_THIS, SDL_Window *window)
+X11_GLES_GetEGLSurface(THIS, SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     return data->egl_surface;

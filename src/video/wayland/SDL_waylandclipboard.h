@@ -23,11 +23,11 @@
 #ifndef SDL_waylandclipboard_h_
 #define SDL_waylandclipboard_h_
 
-extern int Wayland_SetClipboardText(_THIS, const char *text);
-extern char *Wayland_GetClipboardText(_THIS);
-extern SDL_bool Wayland_HasClipboardText(_THIS);
-extern int Wayland_SetPrimarySelectionText(_THIS, const char *text);
-extern char *Wayland_GetPrimarySelectionText(_THIS);
-extern SDL_bool Wayland_HasPrimarySelectionText(_THIS);
+extern int Wayland_SetClipboardText(THIS, const char *text);
+extern char *Wayland_GetClipboardText(THIS);
+extern SDL_bool Wayland_HasClipboardText(THIS);
+extern int Wayland_SetPrimarySelectionText(THIS, const char *text);
+extern char *Wayland_GetPrimarySelectionText(THIS);
+extern SDL_bool Wayland_HasPrimarySelectionText(THIS);
 
 #endif /* SDL_waylandclipboard_h_ */

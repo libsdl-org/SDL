@@ -25,7 +25,7 @@
 
 #include "../SDL_sysaudio.h"
 
-#define _THIS SDL_AudioDevice *this
+#define THIS SDL_AudioDevice *this
 
 struct SDL_PrivateAudioData
 {

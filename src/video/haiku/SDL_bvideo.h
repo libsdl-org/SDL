@@ -29,9 +29,9 @@ extern "C" {
 #include "../../core/haiku/SDL_BeApp.h"
 #include "../SDL_sysvideo.h"
 
-extern void HAIKU_VideoQuit(_THIS);
-extern int HAIKU_VideoInit(_THIS);
-extern void HAIKU_DeleteDevice(_THIS);
+extern void HAIKU_VideoQuit(THIS);
+extern int HAIKU_VideoInit(THIS);
+extern void HAIKU_DeleteDevice(THIS);
 
 #ifdef __cplusplus
 }

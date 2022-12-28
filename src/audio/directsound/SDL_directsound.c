@@ -198,7 +198,7 @@ static void DSOUND_DetectDevices(void)
 #endif /* HAVE_MMDEVICEAPI_H*/
 }
 
-static void DSOUND_WaitDevice(_THIS)
+static void DSOUND_WaitDevice(THIS)
 {
     DWORD status = 0;
     DWORD cursor = 0;
@@ -255,7 +255,7 @@ static void DSOUND_WaitDevice(_THIS)
     }
 }
 
-static void DSOUND_PlayDevice(_THIS)
+static void DSOUND_PlayDevice(THIS)
 {
     /* Unlock the buffer, allowing it to play */
     if (this->hidden->locked_buf) {
@@ -265,7 +265,7 @@ static void DSOUND_PlayDevice(_THIS)
     }
 }
 
-static Uint8 *DSOUND_GetDeviceBuf(_THIS)
+static Uint8 *DSOUND_GetDeviceBuf(THIS)
 {
     DWORD cursor = 0;
     DWORD junk = 0;
@@ -322,7 +322,7 @@ static Uint8 *DSOUND_GetDeviceBuf(_THIS)
     return this->hidden->locked_buf;
 }
 
-static int DSOUND_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int DSOUND_CaptureFromDevice(THIS, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     DWORD junk, cursor, ptr1len, ptr2len;
@@ -365,7 +365,7 @@ static int DSOUND_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return ptr1len;
 }
 
-static void DSOUND_FlushCapture(_THIS)
+static void DSOUND_FlushCapture(THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     DWORD junk, cursor;
@@ -374,7 +374,7 @@ static void DSOUND_FlushCapture(_THIS)
     }
 }
 
-static void DSOUND_CloseDevice(_THIS)
+static void DSOUND_CloseDevice(THIS)
 {
     if (this->hidden->mixbuf != NULL) {
         IDirectSoundBuffer_Stop(this->hidden->mixbuf);
@@ -397,7 +397,7 @@ static void DSOUND_CloseDevice(_THIS)
    number of audio chunks available in the created buffer. This is for
    playback devices, not capture.
 */
-static int CreateSecondary(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
+static int CreateSecondary(THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
 {
     LPDIRECTSOUND sndObj = this->hidden->sound;
     LPDIRECTSOUNDBUFFER *sndbuf = &this->hidden->mixbuf;
@@ -439,7 +439,7 @@ static int CreateSecondary(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
    number of audio chunks available in the created buffer. This is for
    capture devices, not playback.
 */
-static int CreateCaptureBuffer(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
+static int CreateCaptureBuffer(THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
 {
     LPDIRECTSOUNDCAPTURE capture = this->hidden->capture;
     LPDIRECTSOUNDCAPTUREBUFFER *capturebuf = &this->hidden->capturebuf;
@@ -478,7 +478,7 @@ static int CreateCaptureBuffer(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
     return 0;
 }
 
-static int DSOUND_OpenDevice(_THIS, const char *devname)
+static int DSOUND_OpenDevice(THIS, const char *devname)
 {
     const DWORD numchunks = 8;
     HRESULT result;

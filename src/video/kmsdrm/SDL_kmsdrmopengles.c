@@ -34,7 +34,7 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-void KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
+void KMSDRM_GLES_DefaultProfileConfig(THIS, int *mask, int *major, int *minor)
 {
     /* if SDL was _also_ built with the Raspberry Pi driver (so we're
        definitely a Pi device) or with the ROCKCHIP video driver
@@ -46,7 +46,7 @@ void KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
 #endif
 }
 
-int KMSDRM_GLES_LoadLibrary(_THIS, const char *path)
+int KMSDRM_GLES_LoadLibrary(THIS, const char *path)
 {
     /* Just pretend you do this here, but don't do it until KMSDRM_CreateWindow(),
        where we do the same library load we would normally do here.
@@ -60,7 +60,7 @@ int KMSDRM_GLES_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void KMSDRM_GLES_UnloadLibrary(_THIS)
+void KMSDRM_GLES_UnloadLibrary(THIS)
 {
     /* As with KMSDRM_GLES_LoadLibrary(), we define our own "dummy" unloading function
        so we manually unload the library whenever we want. */
@@ -68,7 +68,7 @@ void KMSDRM_GLES_UnloadLibrary(_THIS)
 
 SDL_EGL_CreateContext_impl(KMSDRM)
 
-    int KMSDRM_GLES_SetSwapInterval(_THIS, int interval)
+    int KMSDRM_GLES_SetSwapInterval(THIS, int interval)
 {
 
     if (!_this->egl_data) {
@@ -84,7 +84,7 @@ SDL_EGL_CreateContext_impl(KMSDRM)
     return 0;
 }
 
-int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window)
+int KMSDRM_GLES_SwapWindow(THIS, SDL_Window *window)
 {
     SDL_WindowData *windata = ((SDL_WindowData *)window->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayForWindow(window)->driverdata;

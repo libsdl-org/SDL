@@ -43,7 +43,7 @@ void getFBSize(int *width, int *height)
     *height = FB_HEIGHT;
 }
 
-int VITA_GL_LoadLibrary(_THIS, const char *path)
+int VITA_GL_LoadLibrary(THIS, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
     char *override = SDL_getenv("VITA_MODULE_PATH");
@@ -81,7 +81,7 @@ return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }
 
 SDL_GLContext
-VITA_GL_CreateContext(_THIS, SDL_Window *window)
+VITA_GL_CreateContext(THIS, SDL_Window *window)
 {
     char gl_version[3];
     SDL_GLContext context = NULL;
@@ -116,7 +116,7 @@ VITA_GL_CreateContext(_THIS, SDL_Window *window)
 }
 
 void *
-VITA_GL_GetProcAddress(_THIS, const char *proc)
+VITA_GL_GetProcAddress(THIS, const char *proc)
 {
     return gl4es_GetProcAddress(proc);
 }

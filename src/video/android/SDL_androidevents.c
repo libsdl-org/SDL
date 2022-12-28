@@ -105,7 +105,7 @@ static void android_egl_context_backup(SDL_Window *window)
  * No polling necessary
  */
 
-void Android_PumpEvents_Blocking(_THIS)
+void Android_PumpEvents_Blocking(THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
@@ -180,7 +180,7 @@ void Android_PumpEvents_Blocking(_THIS)
     }
 }
 
-void Android_PumpEvents_NonBlocking(_THIS)
+void Android_PumpEvents_NonBlocking(THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     static int backup_context = 0;

@@ -29,22 +29,22 @@
 #include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenopengles.h"
 
-int Emscripten_GLES_LoadLibrary(_THIS, const char *path)
+int Emscripten_GLES_LoadLibrary(THIS, const char *path)
 {
     return 0;
 }
 
-void Emscripten_GLES_UnloadLibrary(_THIS)
+void Emscripten_GLES_UnloadLibrary(THIS)
 {
 }
 
 void *
-Emscripten_GLES_GetProcAddress(_THIS, const char *proc)
+Emscripten_GLES_GetProcAddress(THIS, const char *proc)
 {
     return emscripten_webgl_get_proc_address(proc);
 }
 
-int Emscripten_GLES_SetSwapInterval(_THIS, int interval)
+int Emscripten_GLES_SetSwapInterval(THIS, int interval)
 {
     if (interval < 0) {
         return SDL_SetError("Late swap tearing currently unsupported");
@@ -57,7 +57,7 @@ int Emscripten_GLES_SetSwapInterval(_THIS, int interval)
     return 0;
 }
 
-int Emscripten_GLES_GetSwapInterval(_THIS)
+int Emscripten_GLES_GetSwapInterval(THIS)
 {
     int mode, value;
 
@@ -70,7 +70,7 @@ int Emscripten_GLES_GetSwapInterval(_THIS)
 }
 
 SDL_GLContext
-Emscripten_GLES_CreateContext(_THIS, SDL_Window *window)
+Emscripten_GLES_CreateContext(THIS, SDL_Window *window)
 {
     SDL_WindowData *window_data;
 
@@ -111,7 +111,7 @@ Emscripten_GLES_CreateContext(_THIS, SDL_Window *window)
     return (SDL_GLContext)context;
 }
 
-void Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
+void Emscripten_GLES_DeleteContext(THIS, SDL_GLContext context)
 {
     SDL_Window *window;
 
@@ -128,7 +128,7 @@ void Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
     emscripten_webgl_destroy_context((EMSCRIPTEN_WEBGL_CONTEXT_HANDLE)context);
 }
 
-int Emscripten_GLES_SwapWindow(_THIS, SDL_Window *window)
+int Emscripten_GLES_SwapWindow(THIS, SDL_Window *window)
 {
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* give back control to browser for screen refresh */
@@ -137,7 +137,7 @@ int Emscripten_GLES_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-int Emscripten_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int Emscripten_GLES_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)
 {
     /* it isn't possible to reuse contexts across canvases */
     if (window && context) {

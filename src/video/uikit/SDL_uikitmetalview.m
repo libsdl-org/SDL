@@ -76,7 +76,7 @@
 @end
 
 SDL_MetalView
-UIKit_Metal_CreateView(_THIS, SDL_Window *window)
+UIKit_Metal_CreateView(THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
@@ -105,7 +105,7 @@ UIKit_Metal_CreateView(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
+void UIKit_Metal_DestroyView(THIS, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_uikitmetalview *metalview = CFBridgingRelease(view);
@@ -117,7 +117,7 @@ void UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
 }
 
 void *
-UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
+UIKit_Metal_GetLayer(THIS, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_uikitview *uiview = (__bridge SDL_uikitview *)view;
@@ -125,7 +125,7 @@ UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
     }
 }
 
-void UIKit_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
+void UIKit_Metal_GetDrawableSize(THIS, SDL_Window *window, int *w, int *h)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;

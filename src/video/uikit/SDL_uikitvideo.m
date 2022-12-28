@@ -44,8 +44,8 @@
 @end
 
 /* Initialization/Query functions */
-static int UIKit_VideoInit(_THIS);
-static void UIKit_VideoQuit(_THIS);
+static int UIKit_VideoInit(THIS);
+static void UIKit_VideoQuit(THIS);
 
 /* DUMMY driver bootstrap functions */
 
@@ -146,7 +146,7 @@ VideoBootStrap UIKIT_bootstrap = {
     UIKit_CreateDevice
 };
 
-int UIKit_VideoInit(_THIS)
+int UIKit_VideoInit(THIS)
 {
     _this->gl_config.driver_loaded = 1;
 
@@ -160,7 +160,7 @@ int UIKit_VideoInit(_THIS)
     return 0;
 }
 
-void UIKit_VideoQuit(_THIS)
+void UIKit_VideoQuit(THIS)
 {
     SDL_QuitGCKeyboard();
     SDL_QuitGCMouse();
@@ -168,7 +168,7 @@ void UIKit_VideoQuit(_THIS)
     UIKit_QuitModes(_this);
 }
 
-void UIKit_SuspendScreenSaver(_THIS)
+void UIKit_SuspendScreenSaver(THIS)
 {
     @autoreleasepool {
         UIApplication *app = [UIApplication sharedApplication];

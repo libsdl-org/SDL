@@ -30,7 +30,7 @@
 #include "SDL_riscosvideo.h"
 #include "SDL_riscoswindow.h"
 
-int RISCOS_CreateWindow(_THIS, SDL_Window *window)
+int RISCOS_CreateWindow(THIS, SDL_Window *window)
 {
     SDL_WindowData *driverdata;
 
@@ -49,7 +49,7 @@ int RISCOS_CreateWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-void RISCOS_DestroyWindow(_THIS, SDL_Window *window)
+void RISCOS_DestroyWindow(THIS, SDL_Window *window)
 {
     SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
 
@@ -61,7 +61,7 @@ void RISCOS_DestroyWindow(_THIS, SDL_Window *window)
     window->driverdata = NULL;
 }
 
-int RISCOS_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info)
+int RISCOS_GetWindowWMInfo(THIS, SDL_Window *window, struct SDL_SysWMinfo *info)
 {
     info->subsystem = SDL_SYSWM_RISCOS;
     return 0;

@@ -69,16 +69,16 @@ struct SDL_GLDriverData
 @end
 
 /* OpenGL functions */
-extern int Cocoa_GL_LoadLibrary(_THIS, const char *path);
-extern void *Cocoa_GL_GetProcAddress(_THIS, const char *proc);
-extern void Cocoa_GL_UnloadLibrary(_THIS);
-extern SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window);
-extern int Cocoa_GL_MakeCurrent(_THIS, SDL_Window *window,
+extern int Cocoa_GL_LoadLibrary(THIS, const char *path);
+extern void *Cocoa_GL_GetProcAddress(THIS, const char *proc);
+extern void Cocoa_GL_UnloadLibrary(THIS);
+extern SDL_GLContext Cocoa_GL_CreateContext(THIS, SDL_Window *window);
+extern int Cocoa_GL_MakeCurrent(THIS, SDL_Window *window,
                                 SDL_GLContext context);
-extern int Cocoa_GL_SetSwapInterval(_THIS, int interval);
-extern int Cocoa_GL_GetSwapInterval(_THIS);
-extern int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window);
-extern void Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context);
+extern int Cocoa_GL_SetSwapInterval(THIS, int interval);
+extern int Cocoa_GL_GetSwapInterval(THIS);
+extern int Cocoa_GL_SwapWindow(THIS, SDL_Window *window);
+extern void Cocoa_GL_DeleteContext(THIS, SDL_GLContext context);
 
 #ifdef __clang__
 #pragma clang diagnostic pop
