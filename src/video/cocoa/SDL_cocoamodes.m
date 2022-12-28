@@ -139,7 +139,7 @@ static Uint32 GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
     return pixelformat;
 }
 
-static SDL_bool GetDisplayMode(THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
+static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data;
     bool usableForGUI = CGDisplayModeIsUsableForDesktopGUI(vidmode);
@@ -282,7 +282,7 @@ static const char *Cocoa_GetDisplayName(CGDirectDisplayID displayID)
     return displayName;
 }
 
-void Cocoa_InitModes(THIS)
+void Cocoa_InitModes(_THIS)
 {
     @autoreleasepool {
         CGDisplayErr result;
@@ -367,7 +367,7 @@ void Cocoa_InitModes(THIS)
     }
 }
 
-int Cocoa_GetDisplayBounds(THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+int Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     CGRect cgrect;
@@ -380,7 +380,7 @@ int Cocoa_GetDisplayBounds(THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
     return 0;
 }
 
-int Cocoa_GetDisplayUsableBounds(THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+int Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     const CGDirectDisplayID cgdisplay = displaydata->display;
@@ -412,7 +412,7 @@ int Cocoa_GetDisplayUsableBounds(THIS, SDL_VideoDisplay *display, SDL_Rect *rect
     return 0;
 }
 
-int Cocoa_GetDisplayDPI(THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
+int Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
 {
     @autoreleasepool {
         const float MM_IN_INCH = 25.4f;
@@ -491,7 +491,7 @@ int Cocoa_GetDisplayDPI(THIS, SDL_VideoDisplay *display, float *ddpi, float *hdp
     }
 }
 
-void Cocoa_GetDisplayModes(THIS, SDL_VideoDisplay *display)
+void Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *data = (SDL_DisplayData *)display->driverdata;
     CVDisplayLinkRef link = NULL;
@@ -589,7 +589,7 @@ static CGError SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayMo
     return result;
 }
 
-int Cocoa_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
@@ -654,7 +654,7 @@ ERR_NO_CAPTURE:
     return -1;
 }
 
-void Cocoa_QuitModes(THIS)
+void Cocoa_QuitModes(_THIS)
 {
     int i, j;
 

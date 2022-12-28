@@ -47,9 +47,9 @@ extern "C" {
 #define NGAGEVID_DRIVER_NAME "ngage"
 
 /* Initialization/Query functions */
-static int NGAGE_VideoInit(THIS);
-static int NGAGE_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-static void NGAGE_VideoQuit(THIS);
+static int NGAGE_VideoInit(_THIS);
+static int NGAGE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+static void NGAGE_VideoQuit(_THIS);
 
 /* NGAGE driver bootstrap functions */
 
@@ -143,7 +143,7 @@ VideoBootStrap NGAGE_bootstrap = {
     NGAGE_CreateDevice
 };
 
-int NGAGE_VideoInit(THIS)
+int NGAGE_VideoInit(_THIS)
 {
     SDL_DisplayMode mode;
 
@@ -164,12 +164,12 @@ int NGAGE_VideoInit(THIS)
     return 0;
 }
 
-static int NGAGE_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static int NGAGE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
-void NGAGE_VideoQuit(THIS)
+void NGAGE_VideoQuit(_THIS)
 {
 }
 

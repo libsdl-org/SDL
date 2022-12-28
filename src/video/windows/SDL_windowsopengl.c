@@ -105,7 +105,7 @@ typedef HGLRC(APIENTRYP PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC hDC,
 #define SetPixelFormat       _this->gl_data->wglSetPixelFormat
 #endif
 
-int WIN_GL_LoadLibrary(THIS, const char *path)
+int WIN_GL_LoadLibrary(_THIS, const char *path)
 {
     void *handle;
 
@@ -213,7 +213,7 @@ int WIN_GL_LoadLibrary(THIS, const char *path)
 }
 
 void *
-WIN_GL_GetProcAddress(THIS, const char *proc)
+WIN_GL_GetProcAddress(_THIS, const char *proc)
 {
     void *func;
 
@@ -226,7 +226,7 @@ WIN_GL_GetProcAddress(THIS, const char *proc)
     return func;
 }
 
-void WIN_GL_UnloadLibrary(THIS)
+void WIN_GL_UnloadLibrary(_THIS)
 {
     SDL_UnloadObject(_this->gl_config.dll_handle);
     _this->gl_config.dll_handle = NULL;
@@ -236,7 +236,7 @@ void WIN_GL_UnloadLibrary(THIS)
     _this->gl_data = NULL;
 }
 
-static void WIN_GL_SetupPixelFormat(THIS, PIXELFORMATDESCRIPTOR *pfd)
+static void WIN_GL_SetupPixelFormat(_THIS, PIXELFORMATDESCRIPTOR *pfd)
 {
     SDL_zerop(pfd);
     pfd->nSize = sizeof(*pfd);
@@ -274,7 +274,7 @@ static void WIN_GL_SetupPixelFormat(THIS, PIXELFORMATDESCRIPTOR *pfd)
 /* Choose the closest pixel format that meets or exceeds the target.
    FIXME: Should we weight any particular attribute over any other?
 */
-static int WIN_GL_ChoosePixelFormat(THIS, HDC hdc, PIXELFORMATDESCRIPTOR *target)
+static int WIN_GL_ChoosePixelFormat(_THIS, HDC hdc, PIXELFORMATDESCRIPTOR *target)
 {
     PIXELFORMATDESCRIPTOR pfd;
     int count, index, best = 0;
@@ -410,7 +410,7 @@ static SDL_bool HasExtension(const char *extension, const char *extensions)
     return SDL_FALSE;
 }
 
-void WIN_GL_InitExtensions(THIS)
+void WIN_GL_InitExtensions(_THIS)
 {
     /* *INDENT-OFF* */ /* clang-format off */
     const char *(WINAPI * wglGetExtensionsStringARB)(HDC) = 0;
@@ -517,7 +517,7 @@ void WIN_GL_InitExtensions(THIS)
     WIN_PumpEvents(_this);
 }
 
-static int WIN_GL_ChoosePixelFormatARB(THIS, int *iAttribs, float *fAttribs)
+static int WIN_GL_ChoosePixelFormatARB(_THIS, int *iAttribs, float *fAttribs)
 {
     HWND hwnd;
     HDC hdc;
@@ -558,7 +558,7 @@ static int WIN_GL_ChoosePixelFormatARB(THIS, int *iAttribs, float *fAttribs)
 }
 
 /* actual work of WIN_GL_SetupWindow() happens here. */
-static int WIN_GL_SetupWindowInternal(THIS, SDL_Window *window)
+static int WIN_GL_SetupWindowInternal(_THIS, SDL_Window *window)
 {
     HDC hdc = ((SDL_WindowData *)window->driverdata)->hdc;
     PIXELFORMATDESCRIPTOR pfd;
@@ -677,7 +677,7 @@ static int WIN_GL_SetupWindowInternal(THIS, SDL_Window *window)
     return 0;
 }
 
-int WIN_GL_SetupWindow(THIS, SDL_Window *window)
+int WIN_GL_SetupWindow(_THIS, SDL_Window *window)
 {
     /* The current context is lost in here; save it and reset it. */
     SDL_Window *current_win = SDL_GL_GetCurrentWindow();
@@ -688,7 +688,7 @@ int WIN_GL_SetupWindow(THIS, SDL_Window *window)
 }
 
 SDL_bool
-WIN_GL_UseEGL(THIS)
+WIN_GL_UseEGL(_THIS)
 {
     SDL_assert(_this->gl_data != NULL);
     SDL_assert(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
@@ -697,7 +697,7 @@ WIN_GL_UseEGL(THIS)
 }
 
 SDL_GLContext
-WIN_GL_CreateContext(THIS, SDL_Window *window)
+WIN_GL_CreateContext(_THIS, SDL_Window *window)
 {
     HDC hdc = ((SDL_WindowData *)window->driverdata)->hdc;
     HGLRC context, share_context;
@@ -822,7 +822,7 @@ WIN_GL_CreateContext(THIS, SDL_Window *window)
     return context;
 }
 
-int WIN_GL_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)
+int WIN_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     HDC hdc;
 
@@ -852,7 +852,7 @@ int WIN_GL_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)
     return 0;
 }
 
-int WIN_GL_SetSwapInterval(THIS, int interval)
+int WIN_GL_SetSwapInterval(_THIS, int interval)
 {
     if ((interval < 0) && (!_this->gl_data->HAS_WGL_EXT_swap_control_tear)) {
         return SDL_SetError("Negative swap interval unsupported in this GL");
@@ -866,7 +866,7 @@ int WIN_GL_SetSwapInterval(THIS, int interval)
     return 0;
 }
 
-int WIN_GL_GetSwapInterval(THIS)
+int WIN_GL_GetSwapInterval(_THIS)
 {
     int retval = 0;
     if (_this->gl_data->wglGetSwapIntervalEXT) {
@@ -875,7 +875,7 @@ int WIN_GL_GetSwapInterval(THIS)
     return retval;
 }
 
-int WIN_GL_SwapWindow(THIS, SDL_Window *window)
+int WIN_GL_SwapWindow(_THIS, SDL_Window *window)
 {
     HDC hdc = ((SDL_WindowData *)window->driverdata)->hdc;
 
@@ -885,7 +885,7 @@ int WIN_GL_SwapWindow(THIS, SDL_Window *window)
     return 0;
 }
 
-void WIN_GL_DeleteContext(THIS, SDL_GLContext context)
+void WIN_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     if (!_this->gl_data) {
         return;
@@ -894,7 +894,7 @@ void WIN_GL_DeleteContext(THIS, SDL_GLContext context)
 }
 
 SDL_bool
-WIN_GL_SetPixelFormatFrom(THIS, SDL_Window *fromWindow, SDL_Window *toWindow)
+WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window *fromWindow, SDL_Window *toWindow)
 {
     HDC hfromdc = ((SDL_WindowData *)fromWindow->driverdata)->hdc;
     HDC htodc = ((SDL_WindowData *)toWindow->driverdata)->hdc;

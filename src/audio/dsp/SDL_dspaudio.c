@@ -45,7 +45,7 @@ static void DSP_DetectDevices(void)
     SDL_EnumUnixAudioDevices(0, NULL);
 }
 
-static void DSP_CloseDevice(THIS)
+static void DSP_CloseDevice(_THIS)
 {
     if (this->hidden->audio_fd >= 0) {
         close(this->hidden->audio_fd);
@@ -54,7 +54,7 @@ static void DSP_CloseDevice(THIS)
     SDL_free(this->hidden);
 }
 
-static int DSP_OpenDevice(THIS, const char *devname)
+static int DSP_OpenDevice(_THIS, const char *devname)
 {
     SDL_bool iscapture = this->iscapture;
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
@@ -237,7 +237,7 @@ static int DSP_OpenDevice(THIS, const char *devname)
     return 0;
 }
 
-static void DSP_PlayDevice(THIS)
+static void DSP_PlayDevice(_THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     if (write(h->audio_fd, h->mixbuf, h->mixlen) == -1) {
@@ -249,17 +249,17 @@ static void DSP_PlayDevice(THIS)
 #endif
 }
 
-static Uint8 *DSP_GetDeviceBuf(THIS)
+static Uint8 *DSP_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbuf;
 }
 
-static int DSP_CaptureFromDevice(THIS, void *buffer, int buflen)
+static int DSP_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     return (int)read(this->hidden->audio_fd, buffer, buflen);
 }
 
-static void DSP_FlushCapture(THIS)
+static void DSP_FlushCapture(_THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     audio_buf_info info;

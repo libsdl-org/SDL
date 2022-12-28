@@ -32,7 +32,7 @@
 
 /* The SDL audio driver */
 typedef struct SDL_AudioDevice SDL_AudioDevice;
-#define THIS SDL_AudioDevice *_this
+#define _THIS SDL_AudioDevice *_this
 
 /* Audio targets should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
@@ -63,17 +63,17 @@ extern void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device);
 typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices)(void);
-    int (*OpenDevice)(THIS, const char *devname);
-    void (*ThreadInit)(THIS);   /* Called by audio thread at start */
-    void (*ThreadDeinit)(THIS); /* Called by audio thread at end */
-    void (*WaitDevice)(THIS);
-    void (*PlayDevice)(THIS);
-    Uint8 *(*GetDeviceBuf)(THIS);
-    int (*CaptureFromDevice)(THIS, void *buffer, int buflen);
-    void (*FlushCapture)(THIS);
-    void (*CloseDevice)(THIS);
-    void (*LockDevice)(THIS);
-    void (*UnlockDevice)(THIS);
+    int (*OpenDevice)(_THIS, const char *devname);
+    void (*ThreadInit)(_THIS);   /* Called by audio thread at start */
+    void (*ThreadDeinit)(_THIS); /* Called by audio thread at end */
+    void (*WaitDevice)(_THIS);
+    void (*PlayDevice)(_THIS);
+    Uint8 *(*GetDeviceBuf)(_THIS);
+    int (*CaptureFromDevice)(_THIS, void *buffer, int buflen);
+    void (*FlushCapture)(_THIS);
+    void (*CloseDevice)(_THIS);
+    void (*LockDevice)(_THIS);
+    void (*UnlockDevice)(_THIS);
     void (*FreeDeviceHandle)(void *handle); /**< SDL is done with handle from SDL_AddAudioDevice() */
     void (*Deinitialize)(void);
     int (*GetDefaultAudioInfo)(char **name, SDL_AudioSpec *spec, int iscapture);
@@ -165,7 +165,7 @@ struct SDL_AudioDevice
 
     void *handle;
 };
-#undef THIS
+#undef _THIS
 
 typedef struct AudioBootStrap
 {

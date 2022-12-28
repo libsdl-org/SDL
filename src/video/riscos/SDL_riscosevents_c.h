@@ -26,8 +26,8 @@
 
 #include "SDL_riscosvideo.h"
 
-extern int RISCOS_InitEvents(THIS);
-extern void RISCOS_PumpEvents(THIS);
-extern void RISCOS_QuitEvents(THIS);
+extern int RISCOS_InitEvents(_THIS);
+extern void RISCOS_PumpEvents(_THIS);
+extern void RISCOS_QuitEvents(_THIS);
 
 #endif /* SDL_riscosevents_c_h_ */

@@ -40,7 +40,7 @@ typedef uint32_t xcb_window_t;
 typedef uint32_t xcb_visualid_t;
 */
 
-int X11_Vulkan_LoadLibrary(THIS, const char *path)
+int X11_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     SDL_VideoData *videoData = (SDL_VideoData *)_this->driverdata;
     VkExtensionProperties *extensions = NULL;
@@ -128,7 +128,7 @@ fail:
     return -1;
 }
 
-void X11_Vulkan_UnloadLibrary(THIS)
+void X11_Vulkan_UnloadLibrary(_THIS)
 {
     SDL_VideoData *videoData = (SDL_VideoData *)_this->driverdata;
     if (_this->vulkan_config.loader_handle) {
@@ -140,7 +140,7 @@ void X11_Vulkan_UnloadLibrary(THIS)
     }
 }
 
-SDL_bool X11_Vulkan_GetInstanceExtensions(THIS,
+SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
@@ -167,7 +167,7 @@ SDL_bool X11_Vulkan_GetInstanceExtensions(THIS,
     }
 }
 
-SDL_bool X11_Vulkan_CreateSurface(THIS,
+SDL_bool X11_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)

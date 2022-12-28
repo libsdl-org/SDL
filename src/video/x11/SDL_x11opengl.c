@@ -159,9 +159,9 @@ typedef GLXContext (*PFNGLXCREATECONTEXTATTRIBSARBPROC)(Display *dpy,
 #define GL_UnloadObject SDL_UnloadObject
 #endif
 
-static void X11_GL_InitExtensions(THIS);
+static void X11_GL_InitExtensions(_THIS);
 
-int X11_GL_LoadLibrary(THIS, const char *path)
+int X11_GL_LoadLibrary(_THIS, const char *path)
 {
     Display *display;
     void *handle;
@@ -271,7 +271,7 @@ int X11_GL_LoadLibrary(THIS, const char *path)
 }
 
 void *
-X11_GL_GetProcAddress(THIS, const char *proc)
+X11_GL_GetProcAddress(_THIS, const char *proc)
 {
     if (_this->gl_data->glXGetProcAddress) {
         return _this->gl_data->glXGetProcAddress((const GLubyte *)proc);
@@ -279,7 +279,7 @@ X11_GL_GetProcAddress(THIS, const char *proc)
     return GL_LoadFunction(_this->gl_config.dll_handle, proc);
 }
 
-void X11_GL_UnloadLibrary(THIS)
+void X11_GL_UnloadLibrary(_THIS)
 {
     /* Don't actually unload the library, since it may have registered
      * X11 shutdown hooks, per the notes at:
@@ -334,7 +334,7 @@ static SDL_bool HasExtension(const char *extension, const char *extensions)
     return SDL_FALSE;
 }
 
-static void X11_GL_InitExtensions(THIS)
+static void X11_GL_InitExtensions(_THIS)
 {
     Display *display = ((SDL_VideoData *)_this->driverdata)->display;
     const int screen = DefaultScreen(display);
@@ -485,7 +485,7 @@ static void X11_GL_InitExtensions(THIS)
  *  In case of failure, if that pointer is not NULL, set that pointer to None
  *  and try again.
  */
-static int X11_GL_GetAttributes(THIS, Display *display, int screen, int *attribs, int size, Bool for_FBConfig, int **_pvistypeattr)
+static int X11_GL_GetAttributes(_THIS, Display *display, int screen, int *attribs, int size, Bool for_FBConfig, int **_pvistypeattr)
 {
     int i = 0;
     const int MAX_ATTRIBUTES = 64;
@@ -605,7 +605,7 @@ static int X11_GL_GetAttributes(THIS, Display *display, int screen, int *attribs
 }
 
 XVisualInfo *
-X11_GL_GetVisual(THIS, Display *display, int screen)
+X11_GL_GetVisual(_THIS, Display *display, int screen)
 {
     /* 64 seems nice. */
     int attribs[64];
@@ -677,7 +677,7 @@ static int X11_GL_ErrorHandler(Display *d, XErrorEvent *e)
 }
 
 SDL_bool
-X11_GL_UseEGL(THIS)
+X11_GL_UseEGL(_THIS)
 {
     SDL_assert(_this->gl_data != NULL);
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
@@ -691,7 +691,7 @@ X11_GL_UseEGL(THIS)
 }
 
 SDL_GLContext
-X11_GL_CreateContext(THIS, SDL_Window *window)
+X11_GL_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display = data->videodata->display;
@@ -824,7 +824,7 @@ X11_GL_CreateContext(THIS, SDL_Window *window)
     return context;
 }
 
-int X11_GL_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)
+int X11_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     Display *display = ((SDL_VideoData *)_this->driverdata)->display;
     Window drawable =
@@ -863,7 +863,7 @@ int X11_GL_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)
 */
 
 static int swapinterval = 0;
-int X11_GL_SetSwapInterval(THIS, int interval)
+int X11_GL_SetSwapInterval(_THIS, int interval)
 {
     int status = -1;
 
@@ -911,7 +911,7 @@ int X11_GL_SetSwapInterval(THIS, int interval)
     return status;
 }
 
-int X11_GL_GetSwapInterval(THIS)
+int X11_GL_GetSwapInterval(_THIS)
 {
     if (_this->gl_data->glXSwapIntervalEXT) {
         Display *display = ((SDL_VideoData *)_this->driverdata)->display;
@@ -943,7 +943,7 @@ int X11_GL_GetSwapInterval(THIS)
     }
 }
 
-int X11_GL_SwapWindow(THIS, SDL_Window *window)
+int X11_GL_SwapWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display = data->videodata->display;
@@ -952,7 +952,7 @@ int X11_GL_SwapWindow(THIS, SDL_Window *window)
     return 0;
 }
 
-void X11_GL_DeleteContext(THIS, SDL_GLContext context)
+void X11_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     Display *display = ((SDL_VideoData *)_this->driverdata)->display;
     GLXContext glx_context = (GLXContext)context;

@@ -948,7 +948,7 @@ static void output_callback(void *data)
     struct spa_buffer *spa_buf;
     Uint8 *dst;
 
-    THIS = (SDL_AudioDevice *)data;
+    _THIS = (SDL_AudioDevice *)data;
     struct pw_stream *stream = this->hidden->stream;
 
     /* Shutting down, don't do anything */
@@ -1013,7 +1013,7 @@ static void input_callback(void *data)
     struct pw_buffer *pw_buf;
     struct spa_buffer *spa_buf;
     Uint8 *src;
-    THIS = (SDL_AudioDevice *)data;
+    _THIS = (SDL_AudioDevice *)data;
     struct pw_stream *stream = this->hidden->stream;
 
     /* Shutting down, don't do anything */
@@ -1065,7 +1065,7 @@ static void input_callback(void *data)
 
 static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
 {
-    THIS = data;
+    _THIS = data;
 
     if (this->iscapture == SDL_FALSE) {
         /*
@@ -1095,7 +1095,7 @@ static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
 
 static void stream_state_changed_callback(void *data, enum pw_stream_state old, enum pw_stream_state state, const char *error)
 {
-    THIS = data;
+    _THIS = data;
 
     if (state == PW_STREAM_STATE_STREAMING) {
         this->hidden->stream_init_status |= PW_READY_FLAG_STREAM_READY;
@@ -1115,7 +1115,7 @@ static const struct pw_stream_events stream_input_events = { PW_VERSION_STREAM_E
                                                              .add_buffer = stream_add_buffer_callback,
                                                              .process = input_callback };
 
-static int PIPEWIRE_OpenDevice(THIS, const char *devname)
+static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
 {
     /*
      * NOTE: The PW_STREAM_FLAG_RT_PROCESS flag can be set to call the stream
@@ -1276,7 +1276,7 @@ static int PIPEWIRE_OpenDevice(THIS, const char *devname)
     return 0;
 }
 
-static void PIPEWIRE_CloseDevice(THIS)
+static void PIPEWIRE_CloseDevice(_THIS)
 {
     if (this->hidden->loop) {
         PIPEWIRE_pw_thread_loop_stop(this->hidden->loop);

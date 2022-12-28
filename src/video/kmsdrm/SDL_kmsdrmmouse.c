@@ -63,7 +63,7 @@ static SDL_Cursor *KMSDRM_CreateDefaultCursor(void)
 /* Given a display's driverdata, destroy the cursor BO for it.
    To be called from KMSDRM_DestroyWindow(), as that's where we
    destroy the driverdata for the window's display. */
-void KMSDRM_DestroyCursorBO(THIS, SDL_VideoDisplay *display)
+void KMSDRM_DestroyCursorBO(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
 
@@ -395,7 +395,7 @@ static int KMSDRM_WarpMouseGlobal(int x, int y)
     }
 }
 
-void KMSDRM_InitMouse(THIS, SDL_VideoDisplay *display)
+void KMSDRM_InitMouse(_THIS, SDL_VideoDisplay *display)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
@@ -415,7 +415,7 @@ void KMSDRM_InitMouse(THIS, SDL_VideoDisplay *display)
     }
 }
 
-void KMSDRM_QuitMouse(THIS)
+void KMSDRM_QuitMouse(_THIS)
 {
     /* TODO: ? */
 }

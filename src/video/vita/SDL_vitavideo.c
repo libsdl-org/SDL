@@ -178,7 +178,7 @@ VideoBootStrap VITA_bootstrap = {
 /*****************************************************************************/
 /* SDL Video and Display initialization/handling functions                   */
 /*****************************************************************************/
-int VITA_VideoInit(THIS)
+int VITA_VideoInit(_THIS)
 {
     SDL_VideoDisplay display;
     SDL_DisplayMode current_mode;
@@ -228,22 +228,22 @@ int VITA_VideoInit(THIS)
     return 1;
 }
 
-void VITA_VideoQuit(THIS)
+void VITA_VideoQuit(_THIS)
 {
     VITA_QuitTouch();
 }
 
-void VITA_GetDisplayModes(THIS, SDL_VideoDisplay *display)
+void VITA_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_AddDisplayMode(display, &display->current_mode);
 }
 
-int VITA_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int VITA_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
-int VITA_CreateWindow(THIS, SDL_Window *window)
+int VITA_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *wdata;
 #if defined(SDL_VIDEO_VITA_PVR)
@@ -317,46 +317,46 @@ int VITA_CreateWindow(THIS, SDL_Window *window)
     return 0;
 }
 
-int VITA_CreateWindowFrom(THIS, SDL_Window *window, const void *data)
+int VITA_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 {
     return -1;
 }
 
-void VITA_SetWindowTitle(THIS, SDL_Window *window)
+void VITA_SetWindowTitle(_THIS, SDL_Window *window)
 {
 }
-void VITA_SetWindowIcon(THIS, SDL_Window *window, SDL_Surface *icon)
+void VITA_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
 }
-void VITA_SetWindowPosition(THIS, SDL_Window *window)
+void VITA_SetWindowPosition(_THIS, SDL_Window *window)
 {
 }
-void VITA_SetWindowSize(THIS, SDL_Window *window)
+void VITA_SetWindowSize(_THIS, SDL_Window *window)
 {
 }
-void VITA_ShowWindow(THIS, SDL_Window *window)
+void VITA_ShowWindow(_THIS, SDL_Window *window)
 {
 }
-void VITA_HideWindow(THIS, SDL_Window *window)
+void VITA_HideWindow(_THIS, SDL_Window *window)
 {
 }
-void VITA_RaiseWindow(THIS, SDL_Window *window)
+void VITA_RaiseWindow(_THIS, SDL_Window *window)
 {
 }
-void VITA_MaximizeWindow(THIS, SDL_Window *window)
+void VITA_MaximizeWindow(_THIS, SDL_Window *window)
 {
 }
-void VITA_MinimizeWindow(THIS, SDL_Window *window)
+void VITA_MinimizeWindow(_THIS, SDL_Window *window)
 {
 }
-void VITA_RestoreWindow(THIS, SDL_Window *window)
+void VITA_RestoreWindow(_THIS, SDL_Window *window)
 {
 }
-void VITA_SetWindowGrab(THIS, SDL_Window *window, SDL_bool grabbed)
+void VITA_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 {
 }
 
-void VITA_DestroyWindow(THIS, SDL_Window *window)
+void VITA_DestroyWindow(_THIS, SDL_Window *window)
 {
     //    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     SDL_WindowData *data;
@@ -371,7 +371,7 @@ void VITA_DestroyWindow(THIS, SDL_Window *window)
     Vita_Window = NULL;
 }
 
-SDL_bool VITA_HasScreenKeyboardSupport(THIS)
+SDL_bool VITA_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
 }
@@ -445,7 +445,7 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
 }
 #endif
 
-void VITA_ShowScreenKeyboard(THIS, SDL_Window *window)
+void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     SceInt32 res;
@@ -506,7 +506,7 @@ void VITA_ShowScreenKeyboard(THIS, SDL_Window *window)
     videodata->ime_active = SDL_TRUE;
 }
 
-void VITA_HideScreenKeyboard(THIS, SDL_Window *window)
+void VITA_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
 #if !defined(SDL_VIDEO_VITA_PVR)
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
@@ -527,7 +527,7 @@ void VITA_HideScreenKeyboard(THIS, SDL_Window *window)
 #endif
 }
 
-SDL_bool VITA_IsScreenKeyboardShown(THIS, SDL_Window *window)
+SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
 #if defined(SDL_VIDEO_VITA_PVR)
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
@@ -538,7 +538,7 @@ SDL_bool VITA_IsScreenKeyboardShown(THIS, SDL_Window *window)
 #endif
 }
 
-void VITA_PumpEvents(THIS)
+void VITA_PumpEvents(_THIS)
 {
 #if !defined(SDL_VIDEO_VITA_PVR)
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;

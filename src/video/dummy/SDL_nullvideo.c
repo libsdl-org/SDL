@@ -49,13 +49,13 @@
 #define DUMMYVID_DRIVER_EVDEV_NAME "evdev"
 
 /* Initialization/Query functions */
-static int DUMMY_VideoInit(THIS);
-static int DUMMY_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-static void DUMMY_VideoQuit(THIS);
+static int DUMMY_VideoInit(_THIS);
+static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+static void DUMMY_VideoQuit(_THIS);
 
 #if SDL_INPUT_LINUXEV
 static int evdev = 0;
-static void DUMMY_EVDEV_Poll(THIS);
+static void DUMMY_EVDEV_Poll(_THIS);
 #endif
 
 /* DUMMY driver bootstrap functions */
@@ -130,14 +130,14 @@ VideoBootStrap DUMMY_evdev_bootstrap = {
 void SDL_EVDEV_Init(void);
 void SDL_EVDEV_Poll();
 void SDL_EVDEV_Quit(void);
-static void DUMMY_EVDEV_Poll(THIS)
+static void DUMMY_EVDEV_Poll(_THIS)
 {
     (void)_this;
     SDL_EVDEV_Poll();
 }
 #endif
 
-int DUMMY_VideoInit(THIS)
+int DUMMY_VideoInit(_THIS)
 {
     SDL_DisplayMode mode;
 
@@ -162,12 +162,12 @@ int DUMMY_VideoInit(THIS)
     return 0;
 }
 
-static int DUMMY_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
-void DUMMY_VideoQuit(THIS)
+void DUMMY_VideoQuit(_THIS)
 {
 #if SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();

@@ -280,7 +280,7 @@ static void SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size
 #endif
 }
 
-static int X11_AddXRandRDisplay(THIS, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_bool send_event)
+static int X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_bool send_event)
 {
     Atom EDID = X11_XInternAtom(dpy, "EDID", False);
     XRROutputInfo *output_info;
@@ -388,7 +388,7 @@ static int X11_AddXRandRDisplay(THIS, Display *dpy, int screen, RROutput outputi
     return SDL_AddVideoDisplay(&display, send_event);
 }
 
-static void X11_HandleXRandROutputChange(THIS, const XRROutputChangeNotifyEvent *ev)
+static void X11_HandleXRandROutputChange(_THIS, const XRROutputChangeNotifyEvent *ev)
 {
     const int num_displays = SDL_GetNumVideoDisplays();
     SDL_VideoDisplay *display = NULL;
@@ -440,7 +440,7 @@ static void X11_HandleXRandROutputChange(THIS, const XRROutputChangeNotifyEvent 
     }
 }
 
-void X11_HandleXRandREvent(THIS, const XEvent *xevent)
+void X11_HandleXRandREvent(_THIS, const XEvent *xevent)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     SDL_assert(xevent->type == (videodata->xrandr_event_base + RRNotify));
@@ -454,7 +454,7 @@ void X11_HandleXRandREvent(THIS, const XEvent *xevent)
     }
 }
 
-static int X11_InitModes_XRandR(THIS)
+static int X11_InitModes_XRandR(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     Display *dpy = data->display;
@@ -543,7 +543,7 @@ static int GetXftDPI(Display *dpy)
 /* This is used if there's no better functionality--like XRandR--to use.
    It won't attempt to supply different display modes at all, but it can
    enumerate the current displays and their current sizes. */
-static int X11_InitModes_StdXlib(THIS)
+static int X11_InitModes_StdXlib(_THIS)
 {
     /* !!! FIXME: a lot of copy/paste from X11_InitModes_XRandR in this function. */
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
@@ -631,7 +631,7 @@ static int X11_InitModes_StdXlib(THIS)
     return 0;
 }
 
-int X11_InitModes(THIS)
+int X11_InitModes(_THIS)
 {
     /* XRandR is the One True Modern Way to do this on X11. If this
        fails, we just won't report any display modes except the current
@@ -652,7 +652,7 @@ int X11_InitModes(THIS)
     return X11_InitModes_StdXlib(_this);
 }
 
-void X11_GetDisplayModes(THIS, SDL_VideoDisplay *sdl_display)
+void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
 {
     SDL_DisplayData *data = (SDL_DisplayData *)sdl_display->driverdata;
     SDL_DisplayMode mode;
@@ -730,7 +730,7 @@ static int SDL_XRRSetScreenSizeErrHandler(Display *d, XErrorEvent *e)
 }
 #endif
 
-int X11_SetDisplayMode(THIS, SDL_VideoDisplay *sdl_display, SDL_DisplayMode *mode)
+int X11_SetDisplayMode(_THIS, SDL_VideoDisplay *sdl_display, SDL_DisplayMode *mode)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_DisplayData *data = (SDL_DisplayData *)sdl_display->driverdata;
@@ -819,11 +819,11 @@ int X11_SetDisplayMode(THIS, SDL_VideoDisplay *sdl_display, SDL_DisplayMode *mod
     return 0;
 }
 
-void X11_QuitModes(THIS)
+void X11_QuitModes(_THIS)
 {
 }
 
-int X11_GetDisplayBounds(THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect)
+int X11_GetDisplayBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect)
 {
     SDL_DisplayData *data = (SDL_DisplayData *)sdl_display->driverdata;
 
@@ -835,7 +835,7 @@ int X11_GetDisplayBounds(THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect)
     return 0;
 }
 
-int X11_GetDisplayDPI(THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi)
+int X11_GetDisplayDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi)
 {
     SDL_DisplayData *data = (SDL_DisplayData *)sdl_display->driverdata;
 
@@ -852,7 +852,7 @@ int X11_GetDisplayDPI(THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *h
     return data->ddpi != 0.0f ? 0 : SDL_SetError("Couldn't get DPI");
 }
 
-int X11_GetDisplayUsableBounds(THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect)
+int X11_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     Display *display = data->display;

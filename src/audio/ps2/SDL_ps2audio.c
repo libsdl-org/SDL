@@ -33,7 +33,7 @@
 /* The tag name used by PS2 audio */
 #define PS2AUDIO_DRIVER_NAME "ps2"
 
-static int PS2AUDIO_OpenDevice(THIS, const char *devname)
+static int PS2AUDIO_OpenDevice(_THIS, const char *devname)
 {
     int i, mixlen;
     struct audsrv_fmt_t format;
@@ -101,7 +101,7 @@ static int PS2AUDIO_OpenDevice(THIS, const char *devname)
     return 0;
 }
 
-static void PS2AUDIO_PlayDevice(THIS)
+static void PS2AUDIO_PlayDevice(_THIS)
 {
     uint8_t *mixbuf = this->hidden->mixbufs[this->hidden->next_buffer];
     audsrv_play_audio((char *)mixbuf, this->spec.size);
@@ -110,17 +110,17 @@ static void PS2AUDIO_PlayDevice(THIS)
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void PS2AUDIO_WaitDevice(THIS)
+static void PS2AUDIO_WaitDevice(_THIS)
 {
     audsrv_wait_audio(this->spec.size);
 }
 
-static Uint8 *PS2AUDIO_GetDeviceBuf(THIS)
+static Uint8 *PS2AUDIO_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbufs[this->hidden->next_buffer];
 }
 
-static void PS2AUDIO_CloseDevice(THIS)
+static void PS2AUDIO_CloseDevice(_THIS)
 {
     if (this->hidden->channel >= 0) {
         audsrv_stop_audio();
@@ -133,7 +133,7 @@ static void PS2AUDIO_CloseDevice(THIS)
     }
 }
 
-static void PS2AUDIO_ThreadInit(THIS)
+static void PS2AUDIO_ThreadInit(_THIS)
 {
     /* Increase the priority of this audio thread by 1 to put it
        ahead of other SDL threads. */

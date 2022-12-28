@@ -48,7 +48,7 @@ static void NETBSDAUDIO_DetectDevices(void)
     SDL_EnumUnixAudioDevices(0, NULL);
 }
 
-static void NETBSDAUDIO_Status(THIS)
+static void NETBSDAUDIO_Status(_THIS)
 {
 #ifdef DEBUG_AUDIO
     /* *INDENT-OFF* */ /* clang-format off */
@@ -118,7 +118,7 @@ static void NETBSDAUDIO_Status(THIS)
 #endif /* DEBUG_AUDIO */
 }
 
-static void NETBSDAUDIO_PlayDevice(THIS)
+static void NETBSDAUDIO_PlayDevice(_THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     int written;
@@ -137,12 +137,12 @@ static void NETBSDAUDIO_PlayDevice(THIS)
 #endif
 }
 
-static Uint8 *NETBSDAUDIO_GetDeviceBuf(THIS)
+static Uint8 *NETBSDAUDIO_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbuf;
 }
 
-static int NETBSDAUDIO_CaptureFromDevice(THIS, void *_buffer, int buflen)
+static int NETBSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
 {
     Uint8 *buffer = (Uint8 *)_buffer;
     int br;
@@ -160,7 +160,7 @@ static int NETBSDAUDIO_CaptureFromDevice(THIS, void *_buffer, int buflen)
     return 0;
 }
 
-static void NETBSDAUDIO_FlushCapture(THIS)
+static void NETBSDAUDIO_FlushCapture(_THIS)
 {
     audio_info_t info;
     size_t remain;
@@ -181,7 +181,7 @@ static void NETBSDAUDIO_FlushCapture(THIS)
     }
 }
 
-static void NETBSDAUDIO_CloseDevice(THIS)
+static void NETBSDAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden->audio_fd >= 0) {
         close(this->hidden->audio_fd);
@@ -190,7 +190,7 @@ static void NETBSDAUDIO_CloseDevice(THIS)
     SDL_free(this->hidden);
 }
 
-static int NETBSDAUDIO_OpenDevice(THIS, const char *devname)
+static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_bool iscapture = this->iscapture;
     SDL_AudioFormat test_format;

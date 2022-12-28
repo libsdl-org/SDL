@@ -36,7 +36,7 @@
 #define SDL_ENABLE_SYSWM_ANDROID
 #include <SDL3/SDL_syswm.h>
 
-int Android_Vulkan_LoadLibrary(THIS, const char *path)
+int Android_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
@@ -102,7 +102,7 @@ fail:
     return -1;
 }
 
-void Android_Vulkan_UnloadLibrary(THIS)
+void Android_Vulkan_UnloadLibrary(_THIS)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -110,7 +110,7 @@ void Android_Vulkan_UnloadLibrary(THIS)
     }
 }
 
-SDL_bool Android_Vulkan_GetInstanceExtensions(THIS,
+SDL_bool Android_Vulkan_GetInstanceExtensions(_THIS,
                                               SDL_Window *window,
                                               unsigned *count,
                                               const char **names)
@@ -127,7 +127,7 @@ SDL_bool Android_Vulkan_GetInstanceExtensions(THIS,
         extensionsForAndroid);
 }
 
-SDL_bool Android_Vulkan_CreateSurface(THIS,
+SDL_bool Android_Vulkan_CreateSurface(_THIS,
                                       SDL_Window *window,
                                       VkInstance instance,
                                       VkSurfaceKHR *surface)

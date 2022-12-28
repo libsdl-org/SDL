@@ -20,4 +20,4 @@
 */
 #include "SDL_internal.h"
 
-extern void OFFSCREEN_PumpEvents(THIS);
+extern void OFFSCREEN_PumpEvents(_THIS);

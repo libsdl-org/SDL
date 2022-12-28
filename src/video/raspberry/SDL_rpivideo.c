@@ -185,7 +185,7 @@ static void AddDispManXDisplay(const int display_id)
     SDL_AddVideoDisplay(&display, SDL_FALSE);
 }
 
-int RPI_VideoInit(THIS)
+int RPI_VideoInit(_THIS)
 {
     /* Initialize BCM Host */
     bcm_host_init();
@@ -204,20 +204,20 @@ int RPI_VideoInit(THIS)
     return 1;
 }
 
-void RPI_VideoQuit(THIS)
+void RPI_VideoQuit(_THIS)
 {
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();
 #endif
 }
 
-void RPI_GetDisplayModes(THIS, SDL_VideoDisplay *display)
+void RPI_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     /* Only one display mode available, the current one */
     SDL_AddDisplayMode(display, &display->current_mode);
 }
 
-int RPI_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int RPI_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
@@ -231,7 +231,7 @@ static void RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)
     SDL_UnlockMutex(wdata->vsync_cond_mutex);
 }
 
-int RPI_CreateWindow(THIS, SDL_Window *window)
+int RPI_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *wdata;
     SDL_VideoDisplay *display;
@@ -325,7 +325,7 @@ int RPI_CreateWindow(THIS, SDL_Window *window)
     return 0;
 }
 
-void RPI_DestroyWindow(THIS, SDL_Window *window)
+void RPI_DestroyWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
@@ -354,39 +354,39 @@ void RPI_DestroyWindow(THIS, SDL_Window *window)
     }
 }
 
-int RPI_CreateWindowFrom(THIS, SDL_Window *window, const void *data)
+int RPI_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 {
     return -1;
 }
 
-void RPI_SetWindowTitle(THIS, SDL_Window *window)
+void RPI_SetWindowTitle(_THIS, SDL_Window *window)
 {
 }
-void RPI_SetWindowIcon(THIS, SDL_Window *window, SDL_Surface *icon)
+void RPI_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
 }
-void RPI_SetWindowPosition(THIS, SDL_Window *window)
+void RPI_SetWindowPosition(_THIS, SDL_Window *window)
 {
 }
-void RPI_SetWindowSize(THIS, SDL_Window *window)
+void RPI_SetWindowSize(_THIS, SDL_Window *window)
 {
 }
-void RPI_ShowWindow(THIS, SDL_Window *window)
+void RPI_ShowWindow(_THIS, SDL_Window *window)
 {
 }
-void RPI_HideWindow(THIS, SDL_Window *window)
+void RPI_HideWindow(_THIS, SDL_Window *window)
 {
 }
-void RPI_RaiseWindow(THIS, SDL_Window *window)
+void RPI_RaiseWindow(_THIS, SDL_Window *window)
 {
 }
-void RPI_MaximizeWindow(THIS, SDL_Window *window)
+void RPI_MaximizeWindow(_THIS, SDL_Window *window)
 {
 }
-void RPI_MinimizeWindow(THIS, SDL_Window *window)
+void RPI_MinimizeWindow(_THIS, SDL_Window *window)
 {
 }
-void RPI_RestoreWindow(THIS, SDL_Window *window)
+void RPI_RestoreWindow(_THIS, SDL_Window *window)
 {
 }
 

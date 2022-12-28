@@ -27,7 +27,7 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-int VIVANTE_GLES_LoadLibrary(THIS, const char *path)
+int VIVANTE_GLES_LoadLibrary(_THIS, const char *path)
 {
     SDL_DisplayData *displaydata;
 

@@ -225,7 +225,7 @@ static const char *get_audio_device(void *handle, const int channels)
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void ALSA_WaitDevice(THIS)
+static void ALSA_WaitDevice(_THIS)
 {
 #if SDL_ALSA_NON_BLOCKING
     const snd_pcm_sframes_t needed = (snd_pcm_sframes_t)this->spec.samples;
@@ -314,7 +314,7 @@ CHANNEL_SWIZZLE(SWIZ8)
  * Called right before feeding this->hidden->mixbuf to the hardware. Swizzle
  *  channels from Windows/Mac order to the format alsalib will want.
  */
-static void swizzle_alsa_channels(THIS, void *buffer, Uint32 bufferlen)
+static void swizzle_alsa_channels(_THIS, void *buffer, Uint32 bufferlen)
 {
     switch (this->spec.channels) {
 #define CHANSWIZ(chans)                                                \
@@ -348,12 +348,12 @@ static void swizzle_alsa_channels(THIS, void *buffer, Uint32 bufferlen)
 
 #ifdef SND_CHMAP_API_VERSION
 /* Some devices have the right channel map, no swizzling necessary */
-static void no_swizzle(THIS, void *buffer, Uint32 bufferlen)
+static void no_swizzle(_THIS, void *buffer, Uint32 bufferlen)
 {
 }
 #endif /* SND_CHMAP_API_VERSION */
 
-static void ALSA_PlayDevice(THIS)
+static void ALSA_PlayDevice(_THIS)
 {
     const Uint8 *sample_buf = (const Uint8 *)this->hidden->mixbuf;
     const int frame_size = ((SDL_AUDIO_BITSIZE(this->spec.format)) / 8) *
@@ -395,12 +395,12 @@ static void ALSA_PlayDevice(THIS)
     }
 }
 
-static Uint8 *ALSA_GetDeviceBuf(THIS)
+static Uint8 *ALSA_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbuf;
 }
 
-static int ALSA_CaptureFromDevice(THIS, void *buffer, int buflen)
+static int ALSA_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     Uint8 *sample_buf = (Uint8 *)buffer;
     const int frame_size = ((SDL_AUDIO_BITSIZE(this->spec.format)) / 8) *
@@ -443,12 +443,12 @@ static int ALSA_CaptureFromDevice(THIS, void *buffer, int buflen)
     return (total_frames - frames_left) * frame_size;
 }
 
-static void ALSA_FlushCapture(THIS)
+static void ALSA_FlushCapture(_THIS)
 {
     ALSA_snd_pcm_reset(this->hidden->pcm_handle);
 }
 
-static void ALSA_CloseDevice(THIS)
+static void ALSA_CloseDevice(_THIS)
 {
     if (this->hidden->pcm_handle) {
         /* Wait for the submitted audio to drain
@@ -463,7 +463,7 @@ static void ALSA_CloseDevice(THIS)
     SDL_free(this->hidden);
 }
 
-static int ALSA_set_buffer_size(THIS, snd_pcm_hw_params_t *params)
+static int ALSA_set_buffer_size(_THIS, snd_pcm_hw_params_t *params)
 {
     int status;
     snd_pcm_hw_params_t *hwparams;
@@ -518,7 +518,7 @@ static int ALSA_set_buffer_size(THIS, snd_pcm_hw_params_t *params)
     return 0;
 }
 
-static int ALSA_OpenDevice(THIS, const char *devname)
+static int ALSA_OpenDevice(_THIS, const char *devname)
 {
     int status = 0;
     SDL_bool iscapture = this->iscapture;

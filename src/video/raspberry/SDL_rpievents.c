@@ -33,7 +33,7 @@
 #include "../../core/linux/SDL_evdev.h"
 #endif
 
-void RPI_PumpEvents(THIS)
+void RPI_PumpEvents(_THIS)
 {
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Poll();

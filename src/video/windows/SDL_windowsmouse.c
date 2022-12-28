@@ -353,7 +353,7 @@ static Uint32 WIN_GetGlobalMouseState(int *x, int *y)
     return retval;
 }
 
-void WIN_InitMouse(THIS)
+void WIN_InitMouse(_THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -374,7 +374,7 @@ void WIN_InitMouse(THIS)
     WIN_UpdateMouseSystemScale();
 }
 
-void WIN_QuitMouse(THIS)
+void WIN_QuitMouse(_THIS)
 {
     if (rawInputEnableCount) { /* force RAWINPUT off here. */
         rawInputEnableCount = 1;

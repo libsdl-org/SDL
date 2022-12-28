@@ -369,7 +369,7 @@ UIKit_IsDisplayLandscape(UIScreen *uiscreen)
     }
 }
 
-int UIKit_InitModes(THIS)
+int UIKit_InitModes(_THIS)
 {
     @autoreleasepool {
         for (UIScreen *uiscreen in [UIScreen screens]) {
@@ -387,7 +387,7 @@ int UIKit_InitModes(THIS)
     return 0;
 }
 
-void UIKit_GetDisplayModes(THIS, SDL_VideoDisplay *display)
+void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     @autoreleasepool {
         SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
@@ -431,7 +431,7 @@ void UIKit_GetDisplayModes(THIS, SDL_VideoDisplay *display)
     }
 }
 
-int UIKit_GetDisplayDPI(THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
+int UIKit_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
 {
     @autoreleasepool {
         SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
@@ -451,7 +451,7 @@ int UIKit_GetDisplayDPI(THIS, SDL_VideoDisplay *display, float *ddpi, float *hdp
     return 0;
 }
 
-int UIKit_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     @autoreleasepool {
         SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
@@ -480,7 +480,7 @@ int UIKit_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
     return 0;
 }
 
-int UIKit_GetDisplayUsableBounds(THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+int UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     @autoreleasepool {
         int displayIndex = (int)(display - _this->displays);
@@ -502,7 +502,7 @@ int UIKit_GetDisplayUsableBounds(THIS, SDL_VideoDisplay *display, SDL_Rect *rect
     return 0;
 }
 
-void UIKit_QuitModes(THIS)
+void UIKit_QuitModes(_THIS)
 {
     [SDL_DisplayWatch stop];
 

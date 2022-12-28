@@ -160,12 +160,12 @@ extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool stat
 #endif
 
 /* Convenience functions for reading driver flags */
-static SDL_bool DisableDisplayModeSwitching(THIS)
+static SDL_bool DisableDisplayModeSwitching(_THIS)
 {
     return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_DISPLAY_MODE_SWITCHING);
 }
 
-static SDL_bool DisableUnsetFullscreenOnMinimize(THIS)
+static SDL_bool DisableUnsetFullscreenOnMinimize(_THIS)
 {
     return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE);
 }

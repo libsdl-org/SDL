@@ -63,51 +63,51 @@ extern SDL_Window *Vita_Window;
 /****************************************************************************/
 
 /* Display and window functions */
-int VITA_VideoInit(THIS);
-void VITA_VideoQuit(THIS);
-void VITA_GetDisplayModes(THIS, SDL_VideoDisplay *display);
-int VITA_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int VITA_CreateWindow(THIS, SDL_Window *window);
-int VITA_CreateWindowFrom(THIS, SDL_Window *window, const void *data);
-void VITA_SetWindowTitle(THIS, SDL_Window *window);
-void VITA_SetWindowIcon(THIS, SDL_Window *window, SDL_Surface *icon);
-void VITA_SetWindowPosition(THIS, SDL_Window *window);
-void VITA_SetWindowSize(THIS, SDL_Window *window);
-void VITA_ShowWindow(THIS, SDL_Window *window);
-void VITA_HideWindow(THIS, SDL_Window *window);
-void VITA_RaiseWindow(THIS, SDL_Window *window);
-void VITA_MaximizeWindow(THIS, SDL_Window *window);
-void VITA_MinimizeWindow(THIS, SDL_Window *window);
-void VITA_RestoreWindow(THIS, SDL_Window *window);
-void VITA_SetWindowGrab(THIS, SDL_Window *window, SDL_bool grabbed);
-void VITA_DestroyWindow(THIS, SDL_Window *window);
+int VITA_VideoInit(_THIS);
+void VITA_VideoQuit(_THIS);
+void VITA_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+int VITA_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+int VITA_CreateWindow(_THIS, SDL_Window *window);
+int VITA_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
+void VITA_SetWindowTitle(_THIS, SDL_Window *window);
+void VITA_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon);
+void VITA_SetWindowPosition(_THIS, SDL_Window *window);
+void VITA_SetWindowSize(_THIS, SDL_Window *window);
+void VITA_ShowWindow(_THIS, SDL_Window *window);
+void VITA_HideWindow(_THIS, SDL_Window *window);
+void VITA_RaiseWindow(_THIS, SDL_Window *window);
+void VITA_MaximizeWindow(_THIS, SDL_Window *window);
+void VITA_MinimizeWindow(_THIS, SDL_Window *window);
+void VITA_RestoreWindow(_THIS, SDL_Window *window);
+void VITA_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
+void VITA_DestroyWindow(_THIS, SDL_Window *window);
 
 #if SDL_VIDEO_DRIVER_VITA
 #if defined(SDL_VIDEO_VITA_PVR_OGL)
 /* OpenGL functions */
-int VITA_GL_LoadLibrary(THIS, const char *path);
-SDL_GLContext VITA_GL_CreateContext(THIS, SDL_Window *window);
-void *VITA_GL_GetProcAddress(THIS, const char *proc);
+int VITA_GL_LoadLibrary(_THIS, const char *path);
+SDL_GLContext VITA_GL_CreateContext(_THIS, SDL_Window *window);
+void *VITA_GL_GetProcAddress(_THIS, const char *proc);
 #endif
 
 /* OpenGLES functions */
-int VITA_GLES_LoadLibrary(THIS, const char *path);
-void *VITA_GLES_GetProcAddress(THIS, const char *proc);
-void VITA_GLES_UnloadLibrary(THIS);
-SDL_GLContext VITA_GLES_CreateContext(THIS, SDL_Window *window);
-int VITA_GLES_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context);
-int VITA_GLES_SetSwapInterval(THIS, int interval);
-int VITA_GLES_GetSwapInterval(THIS);
-int VITA_GLES_SwapWindow(THIS, SDL_Window *window);
-void VITA_GLES_DeleteContext(THIS, SDL_GLContext context);
+int VITA_GLES_LoadLibrary(_THIS, const char *path);
+void *VITA_GLES_GetProcAddress(_THIS, const char *proc);
+void VITA_GLES_UnloadLibrary(_THIS);
+SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window);
+int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
+int VITA_GLES_SetSwapInterval(_THIS, int interval);
+int VITA_GLES_GetSwapInterval(_THIS);
+int VITA_GLES_SwapWindow(_THIS, SDL_Window *window);
+void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context);
 #endif
 
 /* VITA on screen keyboard */
-SDL_bool VITA_HasScreenKeyboardSupport(THIS);
-void VITA_ShowScreenKeyboard(THIS, SDL_Window *window);
-void VITA_HideScreenKeyboard(THIS, SDL_Window *window);
-SDL_bool VITA_IsScreenKeyboardShown(THIS, SDL_Window *window);
+SDL_bool VITA_HasScreenKeyboardSupport(_THIS);
+void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window);
+void VITA_HideScreenKeyboard(_THIS, SDL_Window *window);
+SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 
-void VITA_PumpEvents(THIS);
+void VITA_PumpEvents(_THIS);
 
 #endif /* SDL_pspvideo_h */

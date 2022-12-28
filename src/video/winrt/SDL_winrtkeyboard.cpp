@@ -410,7 +410,7 @@ void WINTRT_OnInputPaneHiding(Windows::UI::ViewManagement::InputPane ^ sender, W
     WINRT_InputPaneVisible = false;
 }
 
-void WINTRT_InitialiseInputPaneEvents(THIS)
+void WINTRT_InitialiseInputPaneEvents(_THIS)
 {
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();
@@ -422,12 +422,12 @@ void WINTRT_InitialiseInputPaneEvents(THIS)
     }
 }
 
-SDL_bool WINRT_HasScreenKeyboardSupport(THIS)
+SDL_bool WINRT_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
 }
 
-void WINRT_ShowScreenKeyboard(THIS, SDL_Window *window)
+void WINRT_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();
@@ -436,7 +436,7 @@ void WINRT_ShowScreenKeyboard(THIS, SDL_Window *window)
     }
 }
 
-void WINRT_HideScreenKeyboard(THIS, SDL_Window *window)
+void WINRT_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();
@@ -445,7 +445,7 @@ void WINRT_HideScreenKeyboard(THIS, SDL_Window *window)
     }
 }
 
-SDL_bool WINRT_IsScreenKeyboardShown(THIS, SDL_Window *window)
+SDL_bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();

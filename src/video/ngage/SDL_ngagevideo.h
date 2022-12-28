@@ -32,7 +32,7 @@
 #include <w32std.h>
 #include "bitdraw.h" // CFbsDrawDevice
 
-#define THIS SDL_VideoDevice *_this
+#define _THIS SDL_VideoDevice *_this
 
 typedef struct SDL_VideoData
 {

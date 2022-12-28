@@ -256,7 +256,7 @@ int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
     return SDL_Unsupported();
 }
 
-int WASAPI_ActivateDevice(THIS, const SDL_bool isrecovery)
+int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
 {
     LPCWSTR devid = _this->hidden->devid;
     Platform::String ^ defdevid;
@@ -326,12 +326,12 @@ int WASAPI_ActivateDevice(THIS, const SDL_bool isrecovery)
     return 0;
 }
 
-void WASAPI_PlatformThreadInit(THIS)
+void WASAPI_PlatformThreadInit(_THIS)
 {
     // !!! FIXME: set this thread to "Pro Audio" priority.
 }
 
-void WASAPI_PlatformThreadDeinit(THIS)
+void WASAPI_PlatformThreadDeinit(_THIS)
 {
     // !!! FIXME: set this thread to "Pro Audio" priority.
 }

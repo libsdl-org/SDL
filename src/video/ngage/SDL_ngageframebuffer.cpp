@@ -39,12 +39,12 @@
 static TUint32 NGAGE_HWPalette_256_to_Screen[256];
 
 int GetBpp(TDisplayMode displaymode);
-void DirectUpdate(THIS, int numrects, SDL_Rect *rects);
-void DrawBackground(THIS);
-void DirectDraw(THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer);
-void RedrawWindowL(THIS);
+void DirectUpdate(_THIS, int numrects, SDL_Rect *rects);
+void DrawBackground(_THIS);
+void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer);
+void RedrawWindowL(_THIS);
 
-int SDL_NGAGE_CreateWindowFramebuffer(THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int SDL_NGAGE_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     SDL_Surface *surface;
@@ -143,7 +143,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(THIS, SDL_Window *window, Uint32 *format, 
     return 0;
 }
 
-int SDL_NGAGE_UpdateWindowFramebuffer(THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int SDL_NGAGE_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     static int frame_number;
     SDL_Surface *surface;
@@ -166,7 +166,7 @@ int SDL_NGAGE_UpdateWindowFramebuffer(THIS, SDL_Window *window, const SDL_Rect *
     return 0;
 }
 
-void SDL_NGAGE_DestroyWindowFramebuffer(THIS, SDL_Window *window)
+void SDL_NGAGE_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_Surface *surface;
 
@@ -197,7 +197,7 @@ int GetBpp(TDisplayMode displaymode)
     return TDisplayModeUtils::NumDisplayModeBitsPerPixel(displaymode);
 }
 
-void DrawBackground(THIS)
+void DrawBackground(_THIS)
 {
     SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     /* Draw background */
@@ -206,7 +206,7 @@ void DrawBackground(THIS)
     Mem::FillZ(screenBuffer, phdata->NGAGE_BytesPerScreen);
 }
 
-void DirectDraw(THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
+void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
 {
     SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     SDL_Surface *screen = (SDL_Surface *)SDL_GetWindowData(_this->windows, NGAGE_SURFACE);
@@ -331,7 +331,7 @@ void DirectDraw(THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
     }
 }
 
-void DirectUpdate(THIS, int numrects, SDL_Rect *rects)
+void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
 {
     SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
 
@@ -366,7 +366,7 @@ void DirectUpdate(THIS, int numrects, SDL_Rect *rects)
     }
 }
 
-void RedrawWindowL(THIS)
+void RedrawWindowL(_THIS)
 {
     SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     SDL_Surface *screen = (SDL_Surface *)SDL_GetWindowData(_this->windows, NGAGE_SURFACE);

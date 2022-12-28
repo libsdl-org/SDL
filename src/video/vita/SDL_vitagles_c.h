@@ -38,16 +38,16 @@ typedef struct SDL_GLDriverData
     uint32_t swapinterval;
 } SDL_GLDriverData;
 
-extern void *VITA_GLES_GetProcAddress(THIS, const char *proc);
-extern int VITA_GLES_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context);
-extern void VITA_GLES_SwapBuffers(THIS);
+extern void *VITA_GLES_GetProcAddress(_THIS, const char *proc);
+extern int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
+extern void VITA_GLES_SwapBuffers(_THIS);
 
-extern int VITA_GLES_SwapWindow(THIS, SDL_Window *window);
-extern SDL_GLContext VITA_GLES_CreateContext(THIS, SDL_Window *window);
+extern int VITA_GLES_SwapWindow(_THIS, SDL_Window *window);
+extern SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window);
 
-extern int VITA_GLES_LoadLibrary(THIS, const char *path);
-extern void VITA_GLES_UnloadLibrary(THIS);
-extern int VITA_GLES_SetSwapInterval(THIS, int interval);
-extern int VITA_GLES_GetSwapInterval(THIS);
+extern int VITA_GLES_LoadLibrary(_THIS, const char *path);
+extern void VITA_GLES_UnloadLibrary(_THIS);
+extern int VITA_GLES_SetSwapInterval(_THIS, int interval);
+extern int VITA_GLES_GetSwapInterval(_THIS);
 
 #endif /* SDL_vitagles_c_h_ */

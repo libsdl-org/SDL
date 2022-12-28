@@ -198,7 +198,7 @@ static void *copy_memory(const void *src, size_t size, size_t alloc)
     return dst;
 }
 
-int RISCOS_InitModes(THIS)
+int RISCOS_InitModes(_THIS)
 {
     SDL_DisplayMode mode;
     int *current_mode;
@@ -226,7 +226,7 @@ int RISCOS_InitModes(THIS)
     return SDL_AddBasicVideoDisplay(&mode);
 }
 
-void RISCOS_GetDisplayModes(THIS, SDL_VideoDisplay *display)
+void RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayMode mode;
     _kernel_swi_regs regs;
@@ -281,7 +281,7 @@ void RISCOS_GetDisplayModes(THIS, SDL_VideoDisplay *display)
     SDL_free(block);
 }
 
-int RISCOS_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     const char disable_cursor[] = { 23, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     _kernel_swi_regs regs;

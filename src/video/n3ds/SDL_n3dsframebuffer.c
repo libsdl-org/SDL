@@ -40,7 +40,7 @@ SDL_FORCE_INLINE int GetDestOffset(int x, int y, int dest_width);
 SDL_FORCE_INLINE int GetSourceOffset(int x, int y, int source_width);
 SDL_FORCE_INLINE void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen);
 
-int SDL_N3DS_CreateWindowFramebuffer(THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int SDL_N3DS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_Surface *framebuffer;
 
@@ -73,7 +73,7 @@ CreateNewWindowFramebuffer(SDL_Window *window)
     return SDL_CreateSurface(w, h, FRAMEBUFFER_FORMAT);
 }
 
-int SDL_N3DS_UpdateWindowFramebuffer(THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_WindowData *drv_data = (SDL_WindowData *)window->driverdata;
     SDL_Surface *surface;
@@ -131,7 +131,7 @@ FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen)
     gfxScreenSwapBuffers(screen, false);
 }
 
-void SDL_N3DS_DestroyWindowFramebuffer(THIS, SDL_Window *window)
+void SDL_N3DS_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_Surface *surface;
     surface = (SDL_Surface *)SDL_SetWindowData(window, N3DS_SURFACE, NULL);

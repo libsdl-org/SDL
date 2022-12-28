@@ -331,7 +331,7 @@ static void KMSDRM_FBDestroyCallback(struct gbm_bo *bo, void *data)
 }
 
 KMSDRM_FBInfo *
-KMSDRM_FBFromBO(THIS, struct gbm_bo *bo)
+KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     unsigned w, h;
@@ -383,7 +383,7 @@ static void KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, uns
 }
 
 SDL_bool
-KMSDRM_WaitPageflip(THIS, SDL_WindowData *windata)
+KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata)
 {
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
@@ -501,7 +501,7 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display,
 /*****************************************************************************/
 
 /* Deinitializes the driverdata of the SDL Displays in the SDL display list. */
-static void KMSDRM_DeinitDisplays(THIS)
+static void KMSDRM_DeinitDisplays(_THIS)
 {
 
     SDL_DisplayData *dispdata;
@@ -665,7 +665,7 @@ static SDL_bool KMSDRM_CrtcGetVrr(uint32_t drm_fd, uint32_t crtc_id)
 
 /* Gets a DRM connector, builds an SDL_Display with it, and adds it to the
    list of SDL Displays in _this->displays[]  */
-static void KMSDRM_AddDisplay(THIS, drmModeConnector *connector, drmModeRes *resources)
+static void KMSDRM_AddDisplay(_THIS, drmModeConnector *connector, drmModeRes *resources)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = NULL;
@@ -886,7 +886,7 @@ cleanup:
    closed when we get to the end of this function.
    This is to be called early, in VideoInit(), because it gets us
    the videomode information, which SDL needs immediately after VideoInit(). */
-static int KMSDRM_InitDisplays(THIS)
+static int KMSDRM_InitDisplays(_THIS)
 {
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
@@ -982,7 +982,7 @@ cleanup:
    These things are incompatible with Vulkan, which accesses the same resources
    internally so they must be free when trying to build a Vulkan surface.
 */
-static int KMSDRM_GBMInit(THIS, SDL_DisplayData *dispdata)
+static int KMSDRM_GBMInit(_THIS, SDL_DisplayData *dispdata)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     int ret = 0;
@@ -1005,7 +1005,7 @@ static int KMSDRM_GBMInit(THIS, SDL_DisplayData *dispdata)
 }
 
 /* Deinit the Vulkan-incompatible KMSDRM stuff. */
-static void KMSDRM_GBMDeinit(THIS, SDL_DisplayData *dispdata)
+static void KMSDRM_GBMDeinit(_THIS, SDL_DisplayData *dispdata)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
 
@@ -1025,7 +1025,7 @@ static void KMSDRM_GBMDeinit(THIS, SDL_DisplayData *dispdata)
     viddata->gbm_init = SDL_FALSE;
 }
 
-static void KMSDRM_DestroySurfaces(THIS, SDL_Window *window)
+static void KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
@@ -1131,7 +1131,7 @@ static void KMSDRM_DirtySurfaces(SDL_Window *window)
 
 /* This determines the size of the fb, which comes from the GBM surface
    that we create here. */
-int KMSDRM_CreateSurfaces(THIS, SDL_Window *window)
+int KMSDRM_CreateSurfaces(_THIS, SDL_Window *window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
@@ -1208,7 +1208,7 @@ cleanup:
     return ret;
 }
 
-int KMSDRM_VideoInit(THIS)
+int KMSDRM_VideoInit(_THIS)
 {
     int ret = 0;
 
@@ -1239,7 +1239,7 @@ int KMSDRM_VideoInit(THIS)
 
 /* The driverdata pointers, like dispdata, viddata, windata, etc...
    are freed by SDL internals, so not our job. */
-void KMSDRM_VideoQuit(THIS)
+void KMSDRM_VideoQuit(_THIS)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
 
@@ -1260,7 +1260,7 @@ void KMSDRM_VideoQuit(THIS)
 }
 
 /* Read modes from the connector modes, and store them in display->display_modes. */
-void KMSDRM_GetDisplayModes(THIS, SDL_VideoDisplay *display)
+void KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *dispdata = display->driverdata;
     drmModeConnector *conn = dispdata->connector;
@@ -1286,7 +1286,7 @@ void KMSDRM_GetDisplayModes(THIS, SDL_VideoDisplay *display)
     }
 }
 
-int KMSDRM_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     /* Set the dispdata->mode to the new mode and leave actual modesetting
        pending to be done on SwapWindow() via drmModeSetCrtc() */
@@ -1317,7 +1317,7 @@ int KMSDRM_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode
     return 0;
 }
 
-void KMSDRM_DestroyWindow(THIS, SDL_Window *window)
+void KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayForWindow(window)->driverdata;
@@ -1395,7 +1395,7 @@ void KMSDRM_DestroyWindow(THIS, SDL_Window *window)
 /* reflect it: if it's fullscreen, KMSDRM_SetWindwoFullscreen() will  */
 /* be called by SDL later, and we can manage it there.                */
 /**********************************************************************/
-int KMSDRM_CreateWindow(THIS, SDL_Window *window)
+int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *windata = NULL;
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
@@ -1530,28 +1530,28 @@ int KMSDRM_CreateWindow(THIS, SDL_Window *window)
     return ret;
 }
 
-int KMSDRM_CreateWindowFrom(THIS, SDL_Window *window, const void *data)
+int KMSDRM_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 {
     return -1;
 }
 
-void KMSDRM_SetWindowTitle(THIS, SDL_Window *window)
+void KMSDRM_SetWindowTitle(_THIS, SDL_Window *window)
 {
 }
-void KMSDRM_SetWindowIcon(THIS, SDL_Window *window, SDL_Surface *icon)
+void KMSDRM_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
 }
-void KMSDRM_SetWindowPosition(THIS, SDL_Window *window)
+void KMSDRM_SetWindowPosition(_THIS, SDL_Window *window)
 {
 }
-void KMSDRM_SetWindowSize(THIS, SDL_Window *window)
+void KMSDRM_SetWindowSize(_THIS, SDL_Window *window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     if (!viddata->vulkan_mode) {
         KMSDRM_DirtySurfaces(window);
     }
 }
-void KMSDRM_SetWindowFullscreen(THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+void KMSDRM_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
@@ -1559,29 +1559,29 @@ void KMSDRM_SetWindowFullscreen(THIS, SDL_Window *window, SDL_VideoDisplay *disp
         KMSDRM_DirtySurfaces(window);
     }
 }
-void KMSDRM_ShowWindow(THIS, SDL_Window *window)
+void KMSDRM_ShowWindow(_THIS, SDL_Window *window)
 {
 }
-void KMSDRM_HideWindow(THIS, SDL_Window *window)
+void KMSDRM_HideWindow(_THIS, SDL_Window *window)
 {
 }
-void KMSDRM_RaiseWindow(THIS, SDL_Window *window)
+void KMSDRM_RaiseWindow(_THIS, SDL_Window *window)
 {
 }
-void KMSDRM_MaximizeWindow(THIS, SDL_Window *window)
+void KMSDRM_MaximizeWindow(_THIS, SDL_Window *window)
 {
 }
-void KMSDRM_MinimizeWindow(THIS, SDL_Window *window)
+void KMSDRM_MinimizeWindow(_THIS, SDL_Window *window)
 {
 }
-void KMSDRM_RestoreWindow(THIS, SDL_Window *window)
+void KMSDRM_RestoreWindow(_THIS, SDL_Window *window)
 {
 }
 
 /*****************************************************************************/
 /* SDL Window Manager function                                               */
 /*****************************************************************************/
-int KMSDRM_GetWindowWMInfo(THIS, SDL_Window *window, struct SDL_SysWMinfo *info)
+int KMSDRM_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
 

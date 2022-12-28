@@ -183,7 +183,7 @@
 
 @end
 
-static void HandleModifiers(THIS, unsigned short scancode, unsigned int modifierFlags)
+static void HandleModifiers(_THIS, unsigned short scancode, unsigned int modifierFlags)
 {
     SDL_Scancode code = darwin_scancode_table[scancode];
 
@@ -292,7 +292,7 @@ cleanup:
     CFRelease(key_layout);
 }
 
-void Cocoa_InitKeyboard(THIS)
+void Cocoa_InitKeyboard(_THIS)
 {
     SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
 
@@ -310,7 +310,7 @@ void Cocoa_InitKeyboard(THIS)
     SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) != 0);
 }
 
-void Cocoa_StartTextInput(THIS)
+void Cocoa_StartTextInput(_THIS)
 {
     @autoreleasepool {
         NSView *parentView;
@@ -342,7 +342,7 @@ void Cocoa_StartTextInput(THIS)
     }
 }
 
-void Cocoa_StopTextInput(THIS)
+void Cocoa_StopTextInput(_THIS)
 {
     @autoreleasepool {
         SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
@@ -354,7 +354,7 @@ void Cocoa_StopTextInput(THIS)
     }
 }
 
-void Cocoa_SetTextInputRect(THIS, const SDL_Rect *rect)
+void Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
 
@@ -366,7 +366,7 @@ void Cocoa_SetTextInputRect(THIS, const SDL_Rect *rect)
     [data.fieldEdit setInputRect:rect];
 }
 
-void Cocoa_HandleKeyEvent(THIS, NSEvent *event)
+void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 {
     unsigned short scancode;
     SDL_Scancode code;
@@ -428,7 +428,7 @@ void Cocoa_HandleKeyEvent(THIS, NSEvent *event)
     }
 }
 
-void Cocoa_QuitKeyboard(THIS)
+void Cocoa_QuitKeyboard(_THIS)
 {
 }
 
@@ -442,7 +442,7 @@ typedef enum
 extern CGSConnection _CGSDefaultConnection(void);
 extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
 
-void Cocoa_SetWindowKeyboardGrab(THIS, SDL_Window *window, SDL_bool grabbed)
+void Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 {
 #if SDL_MAC_NO_SANDBOX
     CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);

@@ -37,8 +37,8 @@
 @end
 
 /* Initialization/Query functions */
-static int Cocoa_VideoInit(THIS);
-static void Cocoa_VideoQuit(THIS);
+static int Cocoa_VideoInit(_THIS);
+static void Cocoa_VideoQuit(_THIS);
 
 /* Cocoa driver bootstrap functions */
 
@@ -190,7 +190,7 @@ VideoBootStrap COCOA_bootstrap = {
     Cocoa_CreateDevice
 };
 
-int Cocoa_VideoInit(THIS)
+int Cocoa_VideoInit(_THIS)
 {
     @autoreleasepool {
         SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
@@ -213,7 +213,7 @@ int Cocoa_VideoInit(THIS)
     }
 }
 
-void Cocoa_VideoQuit(THIS)
+void Cocoa_VideoQuit(_THIS)
 {
     @autoreleasepool {
         SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;

@@ -125,32 +125,32 @@ typedef enum SDL_EGL_ExtensionType
     SDL_EGL_CLIENT_EXTENSION
 } SDL_EGL_ExtensionType;
 
-extern SDL_bool SDL_EGL_HasExtension(THIS, SDL_EGL_ExtensionType type, const char *ext);
+extern SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext);
 
-extern int SDL_EGL_GetAttribute(THIS, SDL_GLattr attrib, int *value);
+extern int SDL_EGL_GetAttribute(_THIS, SDL_GLattr attrib, int *value);
 /* SDL_EGL_LoadLibrary can get a display for a specific platform (EGL_PLATFORM_*)
  * or, if 0 is passed, let the implementation decide.
  */
-extern int SDL_EGL_LoadLibraryOnly(THIS, const char *path);
-extern int SDL_EGL_LoadLibrary(THIS, const char *path, NativeDisplayType native_display, EGLenum platform);
-extern void *SDL_EGL_GetProcAddressInternal(THIS, const char *proc);
-extern void SDL_EGL_UnloadLibrary(THIS);
-extern void SDL_EGL_SetRequiredVisualId(THIS, int visual_id);
-extern int SDL_EGL_ChooseConfig(THIS);
-extern int SDL_EGL_SetSwapInterval(THIS, int interval);
-extern int SDL_EGL_GetSwapInterval(THIS);
-extern void SDL_EGL_DeleteContext(THIS, SDL_GLContext context);
-extern EGLSurface *SDL_EGL_CreateSurface(THIS, NativeWindowType nw);
-extern void SDL_EGL_DestroySurface(THIS, EGLSurface egl_surface);
+extern int SDL_EGL_LoadLibraryOnly(_THIS, const char *path);
+extern int SDL_EGL_LoadLibrary(_THIS, const char *path, NativeDisplayType native_display, EGLenum platform);
+extern void *SDL_EGL_GetProcAddressInternal(_THIS, const char *proc);
+extern void SDL_EGL_UnloadLibrary(_THIS);
+extern void SDL_EGL_SetRequiredVisualId(_THIS, int visual_id);
+extern int SDL_EGL_ChooseConfig(_THIS);
+extern int SDL_EGL_SetSwapInterval(_THIS, int interval);
+extern int SDL_EGL_GetSwapInterval(_THIS);
+extern void SDL_EGL_DeleteContext(_THIS, SDL_GLContext context);
+extern EGLSurface *SDL_EGL_CreateSurface(_THIS, NativeWindowType nw);
+extern void SDL_EGL_DestroySurface(_THIS, EGLSurface egl_surface);
 
-extern EGLSurface SDL_EGL_CreateOffscreenSurface(THIS, int width, int height);
+extern EGLSurface SDL_EGL_CreateOffscreenSurface(_THIS, int width, int height);
 /* Assumes that LoadLibraryOnly() has succeeded */
-extern int SDL_EGL_InitializeOffscreen(THIS, int device);
+extern int SDL_EGL_InitializeOffscreen(_THIS, int device);
 
 /* These need to be wrapped to get the surface for the window by the platform GLES implementation */
-extern SDL_GLContext SDL_EGL_CreateContext(THIS, EGLSurface egl_surface);
-extern int SDL_EGL_MakeCurrent(THIS, EGLSurface egl_surface, SDL_GLContext context);
-extern int SDL_EGL_SwapBuffers(THIS, EGLSurface egl_surface);
+extern SDL_GLContext SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface);
+extern int SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context);
+extern int SDL_EGL_SwapBuffers(_THIS, EGLSurface egl_surface);
 
 /* SDL Error-reporting */
 extern int SDL_EGL_SetErrorEx(const char *message, const char *eglFunctionName, EGLint eglErrorCode);
@@ -160,21 +160,21 @@ extern int SDL_EGL_SetErrorEx(const char *message, const char *eglFunctionName, 
 
 #define SDL_EGL_SwapWindow_impl(BACKEND)                                                        \
     int                                                                                         \
-        BACKEND##_GLES_SwapWindow(THIS, SDL_Window *window)                                    \
+        BACKEND##_GLES_SwapWindow(_THIS, SDL_Window *window)                                    \
     {                                                                                           \
         return SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *)window->driverdata)->egl_surface); \
     }
 
 #define SDL_EGL_MakeCurrent_impl(BACKEND)                                                                                          \
     int                                                                                                                            \
-        BACKEND##_GLES_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)                                               \
+        BACKEND##_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)                                               \
     {                                                                                                                              \
         return SDL_EGL_MakeCurrent(_this, window ? ((SDL_WindowData *)window->driverdata)->egl_surface : EGL_NO_SURFACE, context); \
     }
 
 #define SDL_EGL_CreateContext_impl(BACKEND)                                                       \
     SDL_GLContext                                                                                 \
-        BACKEND##_GLES_CreateContext(THIS, SDL_Window *window)                                   \
+        BACKEND##_GLES_CreateContext(_THIS, SDL_Window *window)                                   \
     {                                                                                             \
         return SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface); \
     }

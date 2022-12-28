@@ -40,9 +40,9 @@ extern "C" {
 #include "SDL_ngagevideo.h"
 #include "SDL_ngageevents_c.h"
 
-int HandleWsEvent(THIS, const TWsEvent &aWsEvent);
+int HandleWsEvent(_THIS, const TWsEvent &aWsEvent);
 
-void NGAGE_PumpEvents(THIS)
+void NGAGE_PumpEvents(_THIS)
 {
     SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
 
@@ -63,12 +63,12 @@ void NGAGE_PumpEvents(THIS)
 #include <bautils.h>
 #include <hal.h>
 
-extern void DisableKeyBlocking(THIS);
-extern void RedrawWindowL(THIS);
+extern void DisableKeyBlocking(_THIS);
+extern void RedrawWindowL(_THIS);
 
 TBool isCursorVisible = EFalse;
 
-static SDL_Scancode ConvertScancode(THIS, int key)
+static SDL_Scancode ConvertScancode(_THIS, int key)
 {
     SDL_Keycode keycode;
 
@@ -147,7 +147,7 @@ static SDL_Scancode ConvertScancode(THIS, int key)
     return SDL_GetScancodeFromKey(keycode);
 }
 
-int HandleWsEvent(THIS, const TWsEvent &aWsEvent)
+int HandleWsEvent(_THIS, const TWsEvent &aWsEvent)
 {
     SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     int posted = 0;

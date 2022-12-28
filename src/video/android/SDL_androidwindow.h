@@ -26,14 +26,14 @@
 #include "../../core/android/SDL_android.h"
 #include "../SDL_egl_c.h"
 
-extern int Android_CreateWindow(THIS, SDL_Window *window);
-extern void Android_SetWindowTitle(THIS, SDL_Window *window);
-extern void Android_SetWindowFullscreen(THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
-extern void Android_MinimizeWindow(THIS, SDL_Window *window);
-extern void Android_SetWindowResizable(THIS, SDL_Window *window, SDL_bool resizable);
+extern int Android_CreateWindow(_THIS, SDL_Window *window);
+extern void Android_SetWindowTitle(_THIS, SDL_Window *window);
+extern void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+extern void Android_MinimizeWindow(_THIS, SDL_Window *window);
+extern void Android_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable);
 
-extern void Android_DestroyWindow(THIS, SDL_Window *window);
-extern int Android_GetWindowWMInfo(THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
+extern void Android_DestroyWindow(_THIS, SDL_Window *window);
+extern int Android_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
 extern SDL_Window *Android_Window;
 
 typedef struct

@@ -32,7 +32,7 @@
    !!! FIXME:  true always once pthread support becomes widespread. Revisit this code
    !!! FIXME:  at some point and see what needs to be done for that! */
 
-static void FeedAudioDevice(THIS, const void *buf, const int buflen)
+static void FeedAudioDevice(_THIS, const void *buf, const int buflen)
 {
     const int framelen = (SDL_AUDIO_BITSIZE(this->spec.format) / 8) * this->spec.channels;
     /* *INDENT-OFF* */ /* clang-format off */
@@ -53,7 +53,7 @@ static void FeedAudioDevice(THIS, const void *buf, const int buflen)
 /* *INDENT-ON* */ /* clang-format on */
 }
 
-static void HandleAudioProcess(THIS)
+static void HandleAudioProcess(_THIS)
 {
     SDL_AudioCallback callback = this->callbackspec.callback;
     const int stream_len = this->callbackspec.size;
@@ -93,7 +93,7 @@ static void HandleAudioProcess(THIS)
     FeedAudioDevice(this, this->work_buffer, this->spec.size);
 }
 
-static void HandleCaptureProcess(THIS)
+static void HandleCaptureProcess(_THIS)
 {
     SDL_AudioCallback callback = this->callbackspec.callback;
     const int stream_len = this->callbackspec.size;
@@ -148,7 +148,7 @@ static void HandleCaptureProcess(THIS)
     }
 }
 
-static void EMSCRIPTENAUDIO_CloseDevice(THIS)
+static void EMSCRIPTENAUDIO_CloseDevice(_THIS)
 {
     /* *INDENT-OFF* */ /* clang-format off */
     MAIN_THREAD_EM_ASM({
@@ -196,7 +196,7 @@ static void EMSCRIPTENAUDIO_CloseDevice(THIS)
 #endif
 }
 
-static int EMSCRIPTENAUDIO_OpenDevice(THIS, const char *devname)
+static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
     SDL_bool iscapture = this->iscapture;

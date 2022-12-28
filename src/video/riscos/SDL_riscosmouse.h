@@ -23,6 +23,6 @@
 #ifndef SDL_riscosmouse_h_
 #define SDL_riscosmouse_h_
 
-extern int RISCOS_InitMouse(THIS);
+extern int RISCOS_InitMouse(_THIS);
 
 #endif /* SDL_riscosmouse_h_ */

@@ -26,18 +26,18 @@
 #import "SDL_uikitview.h"
 #import "SDL_uikitviewcontroller.h"
 
-extern int UIKit_CreateWindow(THIS, SDL_Window *window);
-extern void UIKit_SetWindowTitle(THIS, SDL_Window *window);
-extern void UIKit_ShowWindow(THIS, SDL_Window *window);
-extern void UIKit_HideWindow(THIS, SDL_Window *window);
-extern void UIKit_RaiseWindow(THIS, SDL_Window *window);
-extern void UIKit_SetWindowBordered(THIS, SDL_Window *window, SDL_bool bordered);
-extern void UIKit_SetWindowFullscreen(THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
-extern void UIKit_SetWindowMouseGrab(THIS, SDL_Window *window, SDL_bool grabbed);
-extern void UIKit_UpdatePointerLock(THIS, SDL_Window *window);
-extern void UIKit_DestroyWindow(THIS, SDL_Window *window);
-extern void UIKit_GetWindowSizeInPixels(THIS, SDL_Window *window, int *w, int *h);
-extern int UIKit_GetWindowWMInfo(THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
+extern int UIKit_CreateWindow(_THIS, SDL_Window *window);
+extern void UIKit_SetWindowTitle(_THIS, SDL_Window *window);
+extern void UIKit_ShowWindow(_THIS, SDL_Window *window);
+extern void UIKit_HideWindow(_THIS, SDL_Window *window);
+extern void UIKit_RaiseWindow(_THIS, SDL_Window *window);
+extern void UIKit_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered);
+extern void UIKit_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+extern void UIKit_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
+extern void UIKit_UpdatePointerLock(_THIS, SDL_Window *window);
+extern void UIKit_DestroyWindow(_THIS, SDL_Window *window);
+extern void UIKit_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h);
+extern int UIKit_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
 
 extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 

@@ -34,7 +34,7 @@ typedef struct
 
 } OFFSCREEN_Window;
 
-extern int OFFSCREEN_CreateWindow(THIS, SDL_Window *window);
-extern void OFFSCREEN_DestroyWindow(THIS, SDL_Window *window);
+extern int OFFSCREEN_CreateWindow(_THIS, SDL_Window *window);
+extern void OFFSCREEN_DestroyWindow(_THIS, SDL_Window *window);
 
 #endif /* SDL_offscreenwindow_h */

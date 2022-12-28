@@ -323,7 +323,7 @@ static void resume_audio_devices()
     }
 }
 
-static void interruption_begin(THIS)
+static void interruption_begin(_THIS)
 {
     if (this != NULL && this->hidden->audioQueue != NULL) {
         this->hidden->interrupted = SDL_TRUE;
@@ -331,7 +331,7 @@ static void interruption_begin(THIS)
     }
 }
 
-static void interruption_end(THIS)
+static void interruption_end(_THIS)
 {
     if (this != NULL && this->hidden != NULL && this->hidden->audioQueue != NULL && this->hidden->interrupted && AudioQueueStart(this->hidden->audioQueue, NULL) == AVAudioSessionErrorCodeNone) {
         this->hidden->interrupted = SDL_FALSE;
@@ -367,7 +367,7 @@ static void interruption_end(THIS)
 
 @end
 
-static BOOL update_audio_session(THIS, SDL_bool open, SDL_bool allow_playandrecord)
+static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrecord)
 {
     @autoreleasepool {
         AVAudioSession *session = [AVAudioSession sharedInstance];
@@ -672,7 +672,7 @@ static OSStatus default_device_changed(AudioObjectID inObjectID, UInt32 inNumber
 }
 #endif
 
-static void COREAUDIO_CloseDevice(THIS)
+static void COREAUDIO_CloseDevice(_THIS)
 {
     const SDL_bool iscapture = this->iscapture;
     int i;
@@ -734,7 +734,7 @@ static void COREAUDIO_CloseDevice(THIS)
 }
 
 #if MACOSX_COREAUDIO
-static int prepare_device(THIS)
+static int prepare_device(_THIS)
 {
     void *handle = this->handle;
     SDL_bool iscapture = this->iscapture;
@@ -785,7 +785,7 @@ static int prepare_device(THIS)
     return 1;
 }
 
-static int assign_device_to_audioqueue(THIS)
+static int assign_device_to_audioqueue(_THIS)
 {
     const AudioObjectPropertyAddress prop = {
         kAudioDevicePropertyDeviceUID,
@@ -805,7 +805,7 @@ static int assign_device_to_audioqueue(THIS)
 }
 #endif
 
-static int prepare_audioqueue(THIS)
+static int prepare_audioqueue(_THIS)
 {
     const AudioStreamBasicDescription *strdesc = &this->hidden->strdesc;
     const int iscapture = this->iscapture;
@@ -1005,7 +1005,7 @@ static int audioqueue_thread(void *arg)
     return 0;
 }
 
-static int COREAUDIO_OpenDevice(THIS, const char *devname)
+static int COREAUDIO_OpenDevice(_THIS, const char *devname)
 {
     AudioStreamBasicDescription *strdesc;
     SDL_AudioFormat test_format;

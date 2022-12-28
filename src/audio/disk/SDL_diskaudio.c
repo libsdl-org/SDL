@@ -40,12 +40,12 @@
 #define DISKENVR_IODELAY    "SDL_DISKAUDIODELAY"
 
 /* This function waits until it is possible to write a full sound buffer */
-static void DISKAUDIO_WaitDevice(THIS)
+static void DISKAUDIO_WaitDevice(_THIS)
 {
     SDL_Delay(_this->hidden->io_delay);
 }
 
-static void DISKAUDIO_PlayDevice(THIS)
+static void DISKAUDIO_PlayDevice(_THIS)
 {
     const Sint64 written = SDL_RWwrite(_this->hidden->io,
                                        _this->hidden->mixbuf,
@@ -60,12 +60,12 @@ static void DISKAUDIO_PlayDevice(THIS)
 #endif
 }
 
-static Uint8 *DISKAUDIO_GetDeviceBuf(THIS)
+static Uint8 *DISKAUDIO_GetDeviceBuf(_THIS)
 {
     return _this->hidden->mixbuf;
 }
 
-static int DISKAUDIO_CaptureFromDevice(THIS, void *buffer, int buflen)
+static int DISKAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = _this->hidden;
     const int origbuflen = buflen;
@@ -88,12 +88,12 @@ static int DISKAUDIO_CaptureFromDevice(THIS, void *buffer, int buflen)
     return origbuflen;
 }
 
-static void DISKAUDIO_FlushCapture(THIS)
+static void DISKAUDIO_FlushCapture(_THIS)
 {
     /* no op...we don't advance the file pointer or anything. */
 }
 
-static void DISKAUDIO_CloseDevice(THIS)
+static void DISKAUDIO_CloseDevice(_THIS)
 {
     if (_this->hidden->io != NULL) {
         SDL_RWclose(_this->hidden->io);
@@ -113,7 +113,7 @@ static const char *get_filename(const SDL_bool iscapture, const char *devname)
     return devname;
 }
 
-static int DISKAUDIO_OpenDevice(THIS, const char *devname)
+static int DISKAUDIO_OpenDevice(_THIS, const char *devname)
 {
     void *handle = _this->handle;
     /* handle != NULL means "user specified the placeholder name on the fake detected device list" */

@@ -24,8 +24,8 @@
 #ifndef SDL_kmsdrmevents_h_
 #define SDL_kmsdrmevents_h_
 
-extern void KMSDRM_PumpEvents(THIS);
-extern void KMSDRM_EventInit(THIS);
-extern void KMSDRM_EventQuit(THIS);
+extern void KMSDRM_PumpEvents(_THIS);
+extern void KMSDRM_EventInit(_THIS);
+extern void KMSDRM_EventQuit(_THIS);
 
 #endif /* SDL_kmsdrmevents_h_ */

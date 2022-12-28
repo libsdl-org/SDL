@@ -24,6 +24,6 @@
 
 #include "SDL_internal.h"
 
-extern void N3DS_PumpEvents(THIS);
+extern void N3DS_PumpEvents(_THIS);
 
 #endif /* SDL_n3dsevents_c_h_ */

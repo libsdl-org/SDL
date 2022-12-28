@@ -26,18 +26,18 @@
 #include "SDL_androidclipboard.h"
 #include "../../core/android/SDL_android.h"
 
-int Android_SetClipboardText(THIS, const char *text)
+int Android_SetClipboardText(_THIS, const char *text)
 {
     return Android_JNI_SetClipboardText(text);
 }
 
 char *
-Android_GetClipboardText(THIS)
+Android_GetClipboardText(_THIS)
 {
     return Android_JNI_GetClipboardText();
 }
 
-SDL_bool Android_HasClipboardText(THIS)
+SDL_bool Android_HasClipboardText(_THIS)
 {
     return Android_JNI_HasClipboardText();
 }

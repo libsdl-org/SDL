@@ -1609,7 +1609,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 }
 @end
 
-static int SetupWindowData(THIS, SDL_Window *window, NSWindow *nswindow, NSView *nsview, SDL_bool created)
+static int SetupWindowData(_THIS, SDL_Window *window, NSWindow *nswindow, NSView *nsview, SDL_bool created)
 {
     @autoreleasepool {
         SDL_VideoData *videodata = (__bridge SDL_VideoData *)_this->driverdata;
@@ -1703,7 +1703,7 @@ static int SetupWindowData(THIS, SDL_Window *window, NSWindow *nswindow, NSView 
     }
 }
 
-int Cocoa_CreateWindow(THIS, SDL_Window *window)
+int Cocoa_CreateWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_VideoData *videodata = (__bridge SDL_VideoData *)_this->driverdata;
@@ -1828,7 +1828,7 @@ int Cocoa_CreateWindow(THIS, SDL_Window *window)
     }
 }
 
-int Cocoa_CreateWindowFrom(THIS, SDL_Window *window, const void *data)
+int Cocoa_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 {
     @autoreleasepool {
         NSView *nsview = nil;
@@ -1869,7 +1869,7 @@ int Cocoa_CreateWindowFrom(THIS, SDL_Window *window, const void *data)
     }
 }
 
-void Cocoa_SetWindowTitle(THIS, SDL_Window *window)
+void Cocoa_SetWindowTitle(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         const char *title = window->title ? window->title : "";
@@ -1879,7 +1879,7 @@ void Cocoa_SetWindowTitle(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_SetWindowIcon(THIS, SDL_Window *window, SDL_Surface *icon)
+void Cocoa_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
     @autoreleasepool {
         NSImage *nsimage = Cocoa_CreateImage(icon);
@@ -1890,7 +1890,7 @@ void Cocoa_SetWindowIcon(THIS, SDL_Window *window, SDL_Surface *icon)
     }
 }
 
-void Cocoa_SetWindowPosition(THIS, SDL_Window *window)
+void Cocoa_SetWindowPosition(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
@@ -1913,7 +1913,7 @@ void Cocoa_SetWindowPosition(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_SetWindowSize(THIS, SDL_Window *window)
+void Cocoa_SetWindowSize(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
@@ -1940,7 +1940,7 @@ void Cocoa_SetWindowSize(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_SetWindowMinimumSize(THIS, SDL_Window *window)
+void Cocoa_SetWindowMinimumSize(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
@@ -1953,7 +1953,7 @@ void Cocoa_SetWindowMinimumSize(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_SetWindowMaximumSize(THIS, SDL_Window *window)
+void Cocoa_SetWindowMaximumSize(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
@@ -1966,7 +1966,7 @@ void Cocoa_SetWindowMaximumSize(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_GetWindowSizeInPixels(THIS, SDL_Window *window, int *w, int *h)
+void Cocoa_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h)
 {
     @autoreleasepool {
         SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
@@ -1983,7 +1983,7 @@ void Cocoa_GetWindowSizeInPixels(THIS, SDL_Window *window, int *w, int *h)
     }
 }
 
-void Cocoa_ShowWindow(THIS, SDL_Window *window)
+void Cocoa_ShowWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *windowData = ((__bridge SDL_WindowData *)window->driverdata);
@@ -1997,7 +1997,7 @@ void Cocoa_ShowWindow(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_HideWindow(THIS, SDL_Window *window)
+void Cocoa_HideWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         NSWindow *nswindow = ((__bridge SDL_WindowData *)window->driverdata).nswindow;
@@ -2006,7 +2006,7 @@ void Cocoa_HideWindow(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_RaiseWindow(THIS, SDL_Window *window)
+void Cocoa_RaiseWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *windowData = ((__bridge SDL_WindowData *)window->driverdata);
@@ -2024,7 +2024,7 @@ void Cocoa_RaiseWindow(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_MaximizeWindow(THIS, SDL_Window *window)
+void Cocoa_MaximizeWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
@@ -2036,7 +2036,7 @@ void Cocoa_MaximizeWindow(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_MinimizeWindow(THIS, SDL_Window *window)
+void Cocoa_MinimizeWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
@@ -2049,7 +2049,7 @@ void Cocoa_MinimizeWindow(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_RestoreWindow(THIS, SDL_Window *window)
+void Cocoa_RestoreWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         NSWindow *nswindow = ((__bridge SDL_WindowData *)window->driverdata).nswindow;
@@ -2062,7 +2062,7 @@ void Cocoa_RestoreWindow(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_SetWindowBordered(THIS, SDL_Window *window, SDL_bool bordered)
+void Cocoa_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
 {
     @autoreleasepool {
         if (SetWindowStyle(window, GetWindowStyle(window))) {
@@ -2073,7 +2073,7 @@ void Cocoa_SetWindowBordered(THIS, SDL_Window *window, SDL_bool bordered)
     }
 }
 
-void Cocoa_SetWindowResizable(THIS, SDL_Window *window, SDL_bool resizable)
+void Cocoa_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
 {
     @autoreleasepool {
         /* Don't set this if we're in a space!
@@ -2098,7 +2098,7 @@ void Cocoa_SetWindowResizable(THIS, SDL_Window *window, SDL_bool resizable)
     }
 }
 
-void Cocoa_SetWindowAlwaysOnTop(THIS, SDL_Window *window, SDL_bool on_top)
+void Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window *window, SDL_bool on_top)
 {
     @autoreleasepool {
         NSWindow *nswindow = ((__bridge SDL_WindowData *)window->driverdata).nswindow;
@@ -2110,7 +2110,7 @@ void Cocoa_SetWindowAlwaysOnTop(THIS, SDL_Window *window, SDL_bool on_top)
     }
 }
 
-void Cocoa_SetWindowFullscreen(THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+void Cocoa_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
@@ -2200,7 +2200,7 @@ void Cocoa_SetWindowFullscreen(THIS, SDL_Window *window, SDL_VideoDisplay *displ
 }
 
 void *
-Cocoa_GetWindowICCProfile(THIS, SDL_Window *window, size_t *size)
+Cocoa_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
@@ -2237,7 +2237,7 @@ Cocoa_GetWindowICCProfile(THIS, SDL_Window *window, size_t *size)
     }
 }
 
-int Cocoa_GetWindowDisplayIndex(THIS, SDL_Window *window)
+int Cocoa_GetWindowDisplayIndex(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         NSScreen *screen;
@@ -2276,12 +2276,12 @@ int Cocoa_GetWindowDisplayIndex(THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_SetWindowMouseRect(THIS, SDL_Window *window)
+void Cocoa_SetWindowMouseRect(_THIS, SDL_Window *window)
 {
     Cocoa_UpdateClipCursor(window);
 }
 
-void Cocoa_SetWindowMouseGrab(THIS, SDL_Window *window, SDL_bool grabbed)
+void Cocoa_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
@@ -2302,7 +2302,7 @@ void Cocoa_SetWindowMouseGrab(THIS, SDL_Window *window, SDL_bool grabbed)
     }
 }
 
-void Cocoa_DestroyWindow(THIS, SDL_Window *window)
+void Cocoa_DestroyWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowData *data = (SDL_WindowData *)CFBridgingRelease(window->driverdata);
@@ -2340,7 +2340,7 @@ void Cocoa_DestroyWindow(THIS, SDL_Window *window)
     }
 }
 
-int Cocoa_GetWindowWMInfo(THIS, SDL_Window *window, SDL_SysWMinfo *info)
+int Cocoa_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
     @autoreleasepool {
         NSWindow *nswindow = ((__bridge SDL_WindowData *)window->driverdata).nswindow;
@@ -2428,7 +2428,7 @@ void Cocoa_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept)
     }
 }
 
-int Cocoa_FlashWindow(THIS, SDL_Window *window, SDL_FlashOperation operation)
+int Cocoa_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
 {
     @autoreleasepool {
         /* Note that this is app-wide and not window-specific! */
@@ -2456,7 +2456,7 @@ int Cocoa_FlashWindow(THIS, SDL_Window *window, SDL_FlashOperation operation)
     }
 }
 
-int Cocoa_SetWindowOpacity(THIS, SDL_Window *window, float opacity)
+int Cocoa_SetWindowOpacity(_THIS, SDL_Window *window, float opacity)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;

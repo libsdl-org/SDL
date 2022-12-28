@@ -83,7 +83,7 @@ static void FillSound(void *device, void *stream, size_t len,
     SDL_UnlockMutex(audio->mixer_lock);
 }
 
-static void HAIKUAUDIO_CloseDevice(THIS)
+static void HAIKUAUDIO_CloseDevice(_THIS)
 {
     if (_this->hidden->audio_obj) {
         _this->hidden->audio_obj->Stop();
@@ -115,7 +115,7 @@ static inline void UnmaskSignals(sigset_t * omask)
 }
 
 
-static int HAIKUAUDIO_OpenDevice(THIS, const char *devname)
+static int HAIKUAUDIO_OpenDevice(_THIS, const char *devname)
 {
     media_raw_audio_format format;
     SDL_AudioFormat test_format;

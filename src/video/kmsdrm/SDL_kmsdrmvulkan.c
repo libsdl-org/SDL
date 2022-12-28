@@ -43,7 +43,7 @@
 #define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
-int KMSDRM_Vulkan_LoadLibrary(THIS, const char *path)
+int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
@@ -123,7 +123,7 @@ fail:
     return -1;
 }
 
-void KMSDRM_Vulkan_UnloadLibrary(THIS)
+void KMSDRM_Vulkan_UnloadLibrary(_THIS)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -141,7 +141,7 @@ void KMSDRM_Vulkan_UnloadLibrary(THIS)
 /* members of the VkInstanceCreateInfo struct passed to              */
 /* vkCreateInstance().                                               */
 /*********************************************************************/
-SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(THIS,
+SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
                                              SDL_Window *window,
                                              unsigned *count,
                                              const char **names)
@@ -158,7 +158,7 @@ SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(THIS,
         extensionsForKMSDRM);
 }
 
-void KMSDRM_Vulkan_GetDrawableSize(THIS, SDL_Window *window, int *w, int *h)
+void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 {
     if (w) {
         *w = window->w;
@@ -177,7 +177,7 @@ void KMSDRM_Vulkan_GetDrawableSize(THIS, SDL_Window *window, int *w, int *h)
 /* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with              */
 /* VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK. */
 /***********************************************************************/
-SDL_bool KMSDRM_Vulkan_CreateSurface(THIS,
+SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                      SDL_Window *window,
                                      VkInstance instance,
                                      VkSurfaceKHR *surface)

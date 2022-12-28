@@ -38,7 +38,7 @@
 /* The tag name used by PSP audio */
 #define PSPAUDIO_DRIVER_NAME "psp"
 
-static int PSPAUDIO_OpenDevice(THIS, const char *devname)
+static int PSPAUDIO_OpenDevice(_THIS, const char *devname)
 {
     int format, mixlen, i;
 
@@ -99,7 +99,7 @@ static int PSPAUDIO_OpenDevice(THIS, const char *devname)
     return 0;
 }
 
-static void PSPAUDIO_PlayDevice(THIS)
+static void PSPAUDIO_PlayDevice(_THIS)
 {
     if (this->spec.freq != 44100) {
         Uint8 *mixbuf = this->hidden->mixbufs[this->hidden->next_buffer];
@@ -114,17 +114,17 @@ static void PSPAUDIO_PlayDevice(THIS)
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void PSPAUDIO_WaitDevice(THIS)
+static void PSPAUDIO_WaitDevice(_THIS)
 {
     /* Because we block when sending audio, there's no need for this function to do anything. */
 }
 
-static Uint8 *PSPAUDIO_GetDeviceBuf(THIS)
+static Uint8 *PSPAUDIO_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbufs[this->hidden->next_buffer];
 }
 
-static void PSPAUDIO_CloseDevice(THIS)
+static void PSPAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden->channel >= 0) {
         if (this->spec.freq != 44100) {
@@ -141,7 +141,7 @@ static void PSPAUDIO_CloseDevice(THIS)
     }
 }
 
-static void PSPAUDIO_ThreadInit(THIS)
+static void PSPAUDIO_ThreadInit(_THIS)
 {
     /* Increase the priority of this audio thread by 1 to put it
        ahead of other SDL threads. */

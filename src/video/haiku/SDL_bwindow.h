@@ -24,24 +24,24 @@
 
 #include "../SDL_sysvideo.h"
 
-extern int HAIKU_CreateWindow(THIS, SDL_Window *window);
-extern int HAIKU_CreateWindowFrom(THIS, SDL_Window *window, const void *data);
-extern void HAIKU_SetWindowTitle(THIS, SDL_Window *window);
-extern void HAIKU_SetWindowIcon(THIS, SDL_Window *window, SDL_Surface *icon);
-extern void HAIKU_SetWindowPosition(THIS, SDL_Window *window);
-extern void HAIKU_SetWindowSize(THIS, SDL_Window *window);
-extern void HAIKU_SetWindowMinimumSize(THIS, SDL_Window *window);
-extern void HAIKU_ShowWindow(THIS, SDL_Window *window);
-extern void HAIKU_HideWindow(THIS, SDL_Window *window);
-extern void HAIKU_RaiseWindow(THIS, SDL_Window *window);
-extern void HAIKU_MaximizeWindow(THIS, SDL_Window *window);
-extern void HAIKU_MinimizeWindow(THIS, SDL_Window *window);
-extern void HAIKU_RestoreWindow(THIS, SDL_Window *window);
-extern void HAIKU_SetWindowBordered(THIS, SDL_Window *window, SDL_bool bordered);
-extern void HAIKU_SetWindowResizable(THIS, SDL_Window *window, SDL_bool resizable);
-extern void HAIKU_SetWindowFullscreen(THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
-extern void HAIKU_SetWindowMouseGrab(THIS, SDL_Window *window, SDL_bool grabbed);
-extern void HAIKU_DestroyWindow(THIS, SDL_Window *window);
-extern int HAIKU_GetWindowWMInfo(THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
+extern int HAIKU_CreateWindow(_THIS, SDL_Window *window);
+extern int HAIKU_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
+extern void HAIKU_SetWindowTitle(_THIS, SDL_Window *window);
+extern void HAIKU_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon);
+extern void HAIKU_SetWindowPosition(_THIS, SDL_Window *window);
+extern void HAIKU_SetWindowSize(_THIS, SDL_Window *window);
+extern void HAIKU_SetWindowMinimumSize(_THIS, SDL_Window *window);
+extern void HAIKU_ShowWindow(_THIS, SDL_Window *window);
+extern void HAIKU_HideWindow(_THIS, SDL_Window *window);
+extern void HAIKU_RaiseWindow(_THIS, SDL_Window *window);
+extern void HAIKU_MaximizeWindow(_THIS, SDL_Window *window);
+extern void HAIKU_MinimizeWindow(_THIS, SDL_Window *window);
+extern void HAIKU_RestoreWindow(_THIS, SDL_Window *window);
+extern void HAIKU_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered);
+extern void HAIKU_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable);
+extern void HAIKU_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+extern void HAIKU_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
+extern void HAIKU_DestroyWindow(_THIS, SDL_Window *window);
+extern int HAIKU_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
 
 #endif

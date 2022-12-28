@@ -29,7 +29,7 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-int WIN_GLES_LoadLibrary(THIS, const char *path)
+int WIN_GLES_LoadLibrary(_THIS, const char *path)
 {
 
     /* If the profile requested is not GL ES, switch over to WIN_GL functions  */
@@ -61,7 +61,7 @@ int WIN_GLES_LoadLibrary(THIS, const char *path)
 }
 
 SDL_GLContext
-WIN_GLES_CreateContext(THIS, SDL_Window *window)
+WIN_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext context;
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
@@ -94,7 +94,7 @@ WIN_GLES_CreateContext(THIS, SDL_Window *window)
     return context;
 }
 
-void WIN_GLES_DeleteContext(THIS, SDL_GLContext context)
+void WIN_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
     WIN_GLES_UnloadLibrary(_this);
@@ -103,7 +103,7 @@ void WIN_GLES_DeleteContext(THIS, SDL_GLContext context)
 SDL_EGL_SwapWindow_impl(WIN)
     SDL_EGL_MakeCurrent_impl(WIN)
 
-        int WIN_GLES_SetupWindow(THIS, SDL_Window *window)
+        int WIN_GLES_SetupWindow(_THIS, SDL_Window *window)
 {
     /* The current context is lost in here; save it and reset it. */
     SDL_WindowData *windowdata = (SDL_WindowData *)window->driverdata;
@@ -133,7 +133,7 @@ SDL_EGL_SwapWindow_impl(WIN)
 }
 
 EGLSurface
-WIN_GLES_GetEGLSurface(THIS, SDL_Window *window)
+WIN_GLES_GetEGLSurface(_THIS, SDL_Window *window)
 {
     SDL_WindowData *windowdata = (SDL_WindowData *)window->driverdata;
 

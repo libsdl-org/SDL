@@ -138,35 +138,35 @@ typedef enum
 #endif
 @end
 
-extern int Cocoa_CreateWindow(THIS, SDL_Window *window);
-extern int Cocoa_CreateWindowFrom(THIS, SDL_Window *window,
+extern int Cocoa_CreateWindow(_THIS, SDL_Window *window);
+extern int Cocoa_CreateWindowFrom(_THIS, SDL_Window *window,
                                   const void *data);
-extern void Cocoa_SetWindowTitle(THIS, SDL_Window *window);
-extern void Cocoa_SetWindowIcon(THIS, SDL_Window *window, SDL_Surface *icon);
-extern void Cocoa_SetWindowPosition(THIS, SDL_Window *window);
-extern void Cocoa_SetWindowSize(THIS, SDL_Window *window);
-extern void Cocoa_SetWindowMinimumSize(THIS, SDL_Window *window);
-extern void Cocoa_SetWindowMaximumSize(THIS, SDL_Window *window);
-extern void Cocoa_GetWindowSizeInPixels(THIS, SDL_Window *window, int *w, int *h);
-extern int Cocoa_SetWindowOpacity(THIS, SDL_Window *window, float opacity);
-extern void Cocoa_ShowWindow(THIS, SDL_Window *window);
-extern void Cocoa_HideWindow(THIS, SDL_Window *window);
-extern void Cocoa_RaiseWindow(THIS, SDL_Window *window);
-extern void Cocoa_MaximizeWindow(THIS, SDL_Window *window);
-extern void Cocoa_MinimizeWindow(THIS, SDL_Window *window);
-extern void Cocoa_RestoreWindow(THIS, SDL_Window *window);
-extern void Cocoa_SetWindowBordered(THIS, SDL_Window *window, SDL_bool bordered);
-extern void Cocoa_SetWindowResizable(THIS, SDL_Window *window, SDL_bool resizable);
-extern void Cocoa_SetWindowAlwaysOnTop(THIS, SDL_Window *window, SDL_bool on_top);
-extern void Cocoa_SetWindowFullscreen(THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
-extern void *Cocoa_GetWindowICCProfile(THIS, SDL_Window *window, size_t *size);
-extern int Cocoa_GetWindowDisplayIndex(THIS, SDL_Window *window);
-extern void Cocoa_SetWindowMouseRect(THIS, SDL_Window *window);
-extern void Cocoa_SetWindowMouseGrab(THIS, SDL_Window *window, SDL_bool grabbed);
-extern void Cocoa_DestroyWindow(THIS, SDL_Window *window);
-extern int Cocoa_GetWindowWMInfo(THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
+extern void Cocoa_SetWindowTitle(_THIS, SDL_Window *window);
+extern void Cocoa_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon);
+extern void Cocoa_SetWindowPosition(_THIS, SDL_Window *window);
+extern void Cocoa_SetWindowSize(_THIS, SDL_Window *window);
+extern void Cocoa_SetWindowMinimumSize(_THIS, SDL_Window *window);
+extern void Cocoa_SetWindowMaximumSize(_THIS, SDL_Window *window);
+extern void Cocoa_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h);
+extern int Cocoa_SetWindowOpacity(_THIS, SDL_Window *window, float opacity);
+extern void Cocoa_ShowWindow(_THIS, SDL_Window *window);
+extern void Cocoa_HideWindow(_THIS, SDL_Window *window);
+extern void Cocoa_RaiseWindow(_THIS, SDL_Window *window);
+extern void Cocoa_MaximizeWindow(_THIS, SDL_Window *window);
+extern void Cocoa_MinimizeWindow(_THIS, SDL_Window *window);
+extern void Cocoa_RestoreWindow(_THIS, SDL_Window *window);
+extern void Cocoa_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered);
+extern void Cocoa_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable);
+extern void Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window *window, SDL_bool on_top);
+extern void Cocoa_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+extern void *Cocoa_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size);
+extern int Cocoa_GetWindowDisplayIndex(_THIS, SDL_Window *window);
+extern void Cocoa_SetWindowMouseRect(_THIS, SDL_Window *window);
+extern void Cocoa_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
+extern void Cocoa_DestroyWindow(_THIS, SDL_Window *window);
+extern int Cocoa_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
 extern int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern void Cocoa_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
-extern int Cocoa_FlashWindow(THIS, SDL_Window *window, SDL_FlashOperation operation);
+extern int Cocoa_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation);
 
 #endif /* SDL_cocoawindow_h_ */

@@ -138,7 +138,7 @@ void SDL_iPhoneSetEventPump(SDL_bool enabled)
     [lifecycleObserver eventPumpChanged];
 }
 
-void UIKit_PumpEvents(THIS)
+void UIKit_PumpEvents(_THIS)
 {
     if (!UIKit_EventPumpEnabled) {
         return;

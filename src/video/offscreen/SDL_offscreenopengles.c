@@ -28,7 +28,7 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-int OFFSCREEN_GLES_LoadLibrary(THIS, const char *path)
+int OFFSCREEN_GLES_LoadLibrary(_THIS, const char *path)
 {
     int ret = SDL_EGL_LoadLibraryOnly(_this, path);
     if (ret != 0) {
@@ -55,7 +55,7 @@ int OFFSCREEN_GLES_LoadLibrary(THIS, const char *path)
 }
 
 SDL_GLContext
-OFFSCREEN_GLES_CreateContext(THIS, SDL_Window *window)
+OFFSCREEN_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     OFFSCREEN_Window *offscreen_window = window->driverdata;
 
@@ -65,7 +65,7 @@ OFFSCREEN_GLES_CreateContext(THIS, SDL_Window *window)
     return context;
 }
 
-int OFFSCREEN_GLES_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)
+int OFFSCREEN_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     if (window) {
         EGLSurface egl_surface = ((OFFSCREEN_Window *)window->driverdata)->egl_surface;
@@ -75,7 +75,7 @@ int OFFSCREEN_GLES_MakeCurrent(THIS, SDL_Window *window, SDL_GLContext context)
     }
 }
 
-int OFFSCREEN_GLES_SwapWindow(THIS, SDL_Window *window)
+int OFFSCREEN_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
     OFFSCREEN_Window *offscreen_wind = window->driverdata;
 

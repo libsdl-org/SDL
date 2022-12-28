@@ -208,7 +208,7 @@ static void _AddDisplay(BScreen *screen) {
  * Functions called by SDL
  */
 
-int HAIKU_InitModes(THIS) {
+int HAIKU_InitModes(_THIS) {
     BScreen screen;
 
     /* TODO: When Haiku supports multiple display screens, call
@@ -217,13 +217,13 @@ int HAIKU_InitModes(THIS) {
     return 0;
 }
 
-int HAIKU_QuitModes(THIS) {
+int HAIKU_QuitModes(_THIS) {
     /* FIXME: Nothing really needs to be done here at the moment? */
     return 0;
 }
 
 
-int HAIKU_GetDisplayBounds(THIS, SDL_VideoDisplay *display, SDL_Rect *rect) {
+int HAIKU_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect) {
     BScreen bscreen;
     BRect rc = bscreen.Frame();
     rect->x = (int)rc.left;
@@ -233,7 +233,7 @@ int HAIKU_GetDisplayBounds(THIS, SDL_VideoDisplay *display, SDL_Rect *rect) {
     return 0;
 }
 
-void HAIKU_GetDisplayModes(THIS, SDL_VideoDisplay *display) {
+void HAIKU_GetDisplayModes(_THIS, SDL_VideoDisplay *display) {
     /* Get the current screen */
     BScreen bscreen;
 
@@ -258,7 +258,7 @@ void HAIKU_GetDisplayModes(THIS, SDL_VideoDisplay *display) {
 }
 
 
-int HAIKU_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode) {
+int HAIKU_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode) {
     /* Get the current screen */
     BScreen bscreen;
     if (!bscreen.IsValid()) {

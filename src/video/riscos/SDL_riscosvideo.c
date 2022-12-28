@@ -36,8 +36,8 @@
 #define RISCOSVID_DRIVER_NAME "riscos"
 
 /* Initialization/Query functions */
-static int RISCOS_VideoInit(THIS);
-static void RISCOS_VideoQuit(THIS);
+static int RISCOS_VideoInit(_THIS);
+static void RISCOS_VideoQuit(_THIS);
 
 /* RISC OS driver bootstrap functions */
 
@@ -95,7 +95,7 @@ VideoBootStrap RISCOS_bootstrap = {
     RISCOS_CreateDevice
 };
 
-static int RISCOS_VideoInit(THIS)
+static int RISCOS_VideoInit(_THIS)
 {
     if (RISCOS_InitEvents(_this) < 0) {
         return -1;
@@ -113,7 +113,7 @@ static int RISCOS_VideoInit(THIS)
     return 0;
 }
 
-static void RISCOS_VideoQuit(THIS)
+static void RISCOS_VideoQuit(_THIS)
 {
     RISCOS_QuitEvents(_this);
 }

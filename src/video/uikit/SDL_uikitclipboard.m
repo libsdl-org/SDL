@@ -27,7 +27,7 @@
 
 #import <UIKit/UIPasteboard.h>
 
-int UIKit_SetClipboardText(THIS, const char *text)
+int UIKit_SetClipboardText(_THIS, const char *text)
 {
 #if TARGET_OS_TV
     return SDL_SetError("The clipboard is not available on tvOS");
@@ -40,7 +40,7 @@ int UIKit_SetClipboardText(THIS, const char *text)
 }
 
 char *
-UIKit_GetClipboardText(THIS)
+UIKit_GetClipboardText(_THIS)
 {
 #if TARGET_OS_TV
     return SDL_strdup(""); // Unsupported.
@@ -59,7 +59,7 @@ UIKit_GetClipboardText(THIS)
 }
 
 SDL_bool
-UIKit_HasClipboardText(THIS)
+UIKit_HasClipboardText(_THIS)
 {
     @autoreleasepool {
 #if !TARGET_OS_TV
@@ -71,7 +71,7 @@ UIKit_HasClipboardText(THIS)
     }
 }
 
-void UIKit_InitClipboard(THIS)
+void UIKit_InitClipboard(_THIS)
 {
 #if !TARGET_OS_TV
     @autoreleasepool {
@@ -90,7 +90,7 @@ void UIKit_InitClipboard(THIS)
 #endif
 }
 
-void UIKit_QuitClipboard(THIS)
+void UIKit_QuitClipboard(_THIS)
 {
     @autoreleasepool {
         SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;

@@ -189,7 +189,7 @@ static void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
     SDL_SemPost(audiodata->playsem);
 }
 
-static void openslES_DestroyPCMRecorder(THIS)
+static void openslES_DestroyPCMRecorder(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
     SLresult result;
@@ -220,7 +220,7 @@ static void openslES_DestroyPCMRecorder(THIS)
     }
 }
 
-static int openslES_CreatePCMRecorder(THIS)
+static int openslES_CreatePCMRecorder(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
     SLDataFormat_PCM format_pcm;
@@ -366,7 +366,7 @@ static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
     SDL_SemPost(audiodata->playsem);
 }
 
-static void openslES_DestroyPCMPlayer(THIS)
+static void openslES_DestroyPCMPlayer(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
     SLresult result;
@@ -398,7 +398,7 @@ static void openslES_DestroyPCMPlayer(THIS)
     }
 }
 
-static int openslES_CreatePCMPlayer(THIS)
+static int openslES_CreatePCMPlayer(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq;
@@ -587,7 +587,7 @@ failed:
     return -1;
 }
 
-static int openslES_OpenDevice(THIS, const char *devname)
+static int openslES_OpenDevice(_THIS, const char *devname)
 {
     this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, (sizeof *this->hidden));
     if (this->hidden == NULL) {
@@ -618,7 +618,7 @@ static int openslES_OpenDevice(THIS, const char *devname)
     }
 }
 
-static void openslES_WaitDevice(THIS)
+static void openslES_WaitDevice(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
 
@@ -628,7 +628,7 @@ static void openslES_WaitDevice(THIS)
     SDL_SemWait(audiodata->playsem);
 }
 
-static void openslES_PlayDevice(THIS)
+static void openslES_PlayDevice(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
     SLresult result;
@@ -662,7 +662,7 @@ static void openslES_PlayDevice(THIS)
 /* */
 /* okay.. */
 
-static Uint8 *openslES_GetDeviceBuf(THIS)
+static Uint8 *openslES_GetDeviceBuf(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
 
@@ -670,7 +670,7 @@ static Uint8 *openslES_GetDeviceBuf(THIS)
     return audiodata->pmixbuff[audiodata->next_buffer];
 }
 
-static int openslES_CaptureFromDevice(THIS, void *buffer, int buflen)
+static int openslES_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
     SLresult result;
@@ -697,7 +697,7 @@ static int openslES_CaptureFromDevice(THIS, void *buffer, int buflen)
     return this->spec.size;
 }
 
-static void openslES_CloseDevice(THIS)
+static void openslES_CloseDevice(_THIS)
 {
     /* struct SDL_PrivateAudioData *audiodata = this->hidden; */
 

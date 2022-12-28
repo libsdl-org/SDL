@@ -134,7 +134,7 @@ VideoBootStrap PSP_bootstrap = {
 /*****************************************************************************/
 /* SDL Video and Display initialization/handling functions                   */
 /*****************************************************************************/
-int PSP_VideoInit(THIS)
+int PSP_VideoInit(_THIS)
 {
     SDL_VideoDisplay display;
     SDL_DisplayMode current_mode;
@@ -166,15 +166,15 @@ int PSP_VideoInit(THIS)
     return 1;
 }
 
-void PSP_VideoQuit(THIS)
+void PSP_VideoQuit(_THIS)
 {
 }
 
-void PSP_GetDisplayModes(THIS, SDL_VideoDisplay *display)
+void PSP_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
 }
 
-int PSP_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int PSP_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
@@ -190,7 +190,7 @@ int PSP_SetDisplayMode(THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
         }                                      \
     } while (0)
 
-int PSP_CreateWindow(THIS, SDL_Window *window)
+int PSP_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *wdata;
 
@@ -209,57 +209,57 @@ int PSP_CreateWindow(THIS, SDL_Window *window)
     return 0;
 }
 
-int PSP_CreateWindowFrom(THIS, SDL_Window *window, const void *data)
+int PSP_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 {
     return SDL_Unsupported();
 }
 
-void PSP_SetWindowTitle(THIS, SDL_Window *window)
+void PSP_SetWindowTitle(_THIS, SDL_Window *window)
 {
 }
-void PSP_SetWindowIcon(THIS, SDL_Window *window, SDL_Surface *icon)
+void PSP_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
 }
-void PSP_SetWindowPosition(THIS, SDL_Window *window)
+void PSP_SetWindowPosition(_THIS, SDL_Window *window)
 {
 }
-void PSP_SetWindowSize(THIS, SDL_Window *window)
+void PSP_SetWindowSize(_THIS, SDL_Window *window)
 {
 }
-void PSP_ShowWindow(THIS, SDL_Window *window)
+void PSP_ShowWindow(_THIS, SDL_Window *window)
 {
 }
-void PSP_HideWindow(THIS, SDL_Window *window)
+void PSP_HideWindow(_THIS, SDL_Window *window)
 {
 }
-void PSP_RaiseWindow(THIS, SDL_Window *window)
+void PSP_RaiseWindow(_THIS, SDL_Window *window)
 {
 }
-void PSP_MaximizeWindow(THIS, SDL_Window *window)
+void PSP_MaximizeWindow(_THIS, SDL_Window *window)
 {
 }
-void PSP_MinimizeWindow(THIS, SDL_Window *window)
+void PSP_MinimizeWindow(_THIS, SDL_Window *window)
 {
 }
-void PSP_RestoreWindow(THIS, SDL_Window *window)
+void PSP_RestoreWindow(_THIS, SDL_Window *window)
 {
 }
-void PSP_DestroyWindow(THIS, SDL_Window *window)
+void PSP_DestroyWindow(_THIS, SDL_Window *window)
 {
 }
 
 /* TO Write Me */
-SDL_bool PSP_HasScreenKeyboardSupport(THIS)
+SDL_bool PSP_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_FALSE;
 }
-void PSP_ShowScreenKeyboard(THIS, SDL_Window *window)
+void PSP_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
 }
-void PSP_HideScreenKeyboard(THIS, SDL_Window *window)
+void PSP_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
 }
-SDL_bool PSP_IsScreenKeyboardShown(THIS, SDL_Window *window)
+SDL_bool PSP_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     return SDL_FALSE;
 }

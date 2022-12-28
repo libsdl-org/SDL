@@ -25,7 +25,7 @@
 #include "SDL_cocoavideo.h"
 #include "../../events/SDL_clipboardevents_c.h"
 
-int Cocoa_SetClipboardText(THIS, const char *text)
+int Cocoa_SetClipboardText(_THIS, const char *text)
 {
     @autoreleasepool {
         SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
@@ -45,7 +45,7 @@ int Cocoa_SetClipboardText(THIS, const char *text)
 }
 
 char *
-Cocoa_GetClipboardText(THIS)
+Cocoa_GetClipboardText(_THIS)
 {
     @autoreleasepool {
         NSPasteboard *pasteboard;
@@ -75,7 +75,7 @@ Cocoa_GetClipboardText(THIS)
 }
 
 SDL_bool
-Cocoa_HasClipboardText(THIS)
+Cocoa_HasClipboardText(_THIS)
 {
     SDL_bool result = SDL_FALSE;
     char *text = Cocoa_GetClipboardText(_this);

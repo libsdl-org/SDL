@@ -508,12 +508,12 @@ static SDL_uikitviewcontroller *GetWindowViewController(SDL_Window *window)
 }
 
 SDL_bool
-UIKit_HasScreenKeyboardSupport(THIS)
+UIKit_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
 }
 
-void UIKit_ShowScreenKeyboard(THIS, SDL_Window *window)
+void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
@@ -521,7 +521,7 @@ void UIKit_ShowScreenKeyboard(THIS, SDL_Window *window)
     }
 }
 
-void UIKit_HideScreenKeyboard(THIS, SDL_Window *window)
+void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
@@ -530,7 +530,7 @@ void UIKit_HideScreenKeyboard(THIS, SDL_Window *window)
 }
 
 SDL_bool
-UIKit_IsScreenKeyboardShown(THIS, SDL_Window *window)
+UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
@@ -541,7 +541,7 @@ UIKit_IsScreenKeyboardShown(THIS, SDL_Window *window)
     }
 }
 
-void UIKit_SetTextInputRect(THIS, const SDL_Rect *rect)
+void UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     if (!rect) {
         SDL_InvalidParamError("rect");
