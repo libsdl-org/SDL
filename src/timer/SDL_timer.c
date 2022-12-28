@@ -27,7 +27,7 @@
 
 #if !defined(__EMSCRIPTEN__) || !SDL_THREADS_DISABLED
 
-typedef struct _SDL_Timer
+typedef struct SDL_Timer
 {
     int timerID;
     SDL_TimerCallback callback;
@@ -35,14 +35,14 @@ typedef struct _SDL_Timer
     Uint64 interval;
     Uint64 scheduled;
     SDL_atomic_t canceled;
-    struct _SDL_Timer *next;
+    struct SDL_Timer *next;
 } SDL_Timer;
 
-typedef struct _SDL_TimerMap
+typedef struct SDL_TimerMap
 {
     int timerID;
     SDL_Timer *timer;
-    struct _SDL_TimerMap *next;
+    struct SDL_TimerMap *next;
 } SDL_TimerMap;
 
 /* The timers are kept in a sorted list */
@@ -370,14 +370,14 @@ SDL_bool SDL_RemoveTimer(SDL_TimerID id)
 #include <emscripten/emscripten.h>
 #include <emscripten/eventloop.h>
 
-typedef struct _SDL_TimerMap
+typedef struct SDL_TimerMap
 {
     int timerID;
     int timeoutID;
     Uint32 interval;
     SDL_TimerCallback callback;
     void *param;
-    struct _SDL_TimerMap *next;
+    struct SDL_TimerMap *next;
 } SDL_TimerMap;
 
 typedef struct
