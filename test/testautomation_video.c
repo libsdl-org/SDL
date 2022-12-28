@@ -20,7 +20,7 @@ SDL_Window *_createVideoSuiteTestWindow(const char *title)
     y = SDLTest_RandomIntegerInRange(1, 100);
     w = SDLTest_RandomIntegerInRange(320, 1024);
     h = SDLTest_RandomIntegerInRange(320, 768);
-    flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
+    flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
 
     window = SDL_CreateWindow(title, x, y, w, h, flags);
     SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,%d)", x, y, w, h, flags);
@@ -164,7 +164,7 @@ int video_createWindowVariousPositions(void *arg)
 
             w = SDLTest_RandomIntegerInRange(32, 96);
             h = SDLTest_RandomIntegerInRange(32, 96);
-            window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_SHOWN);
+            window = SDL_CreateWindow(title, x, y, w, h, 0);
             SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
             SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 
@@ -220,7 +220,7 @@ int video_createWindowVariousSizes(void *arg)
                 break;
             }
 
-            window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_SHOWN);
+            window = SDL_CreateWindow(title, x, y, w, h, 0);
             SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
             SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 
@@ -266,7 +266,7 @@ int video_createWindowVariousFlags(void *arg)
             flags = SDL_WINDOW_OPENGL;
             break;
         case 3:
-            flags = SDL_WINDOW_SHOWN;
+            flags = 0;
             break;
         case 4:
             flags = SDL_WINDOW_HIDDEN;
@@ -322,7 +322,7 @@ int video_getWindowFlags(void *arg)
     Uint32 actualFlags;
 
     /* Reliable flag set always set in test window */
-    flags = SDL_WINDOW_SHOWN;
+    flags = 0;
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
@@ -1753,7 +1753,7 @@ int video_setWindowCenteredOnDisplay(void *arg)
             expectedX = (expectedDisplayRect.x + ((expectedDisplayRect.w - w) / 2));
             expectedY = (expectedDisplayRect.y + ((expectedDisplayRect.h - h) / 2));
 
-            window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+            window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_ALLOW_HIGHDPI);
             SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
             SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 

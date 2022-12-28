@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
             "Hello SDL",
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
             640, 480,
-            SDL_WINDOW_SHOWN
+            0
     );
     if (window == NULL) {
         fprintf(stderr, "could not create window: %s\n", SDL_GetError());

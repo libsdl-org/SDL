@@ -32,7 +32,7 @@ static const char *video_usage[] = {
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
     "[--resizable]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
-    "[--shown]", "[--hidden]", "[--input-focus]", "[--mouse-focus]",
+    "[--hidden]", "[--input-focus]", "[--mouse-focus]",
     "[--flash-on-focus-loss]", "[--allow-highdpi]", "[--confine-cursor X,Y,W,H]",
     "[--usable-bounds]"
 };
@@ -453,10 +453,6 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
         state->window_flags |= SDL_WINDOW_MAXIMIZED;
         return 1;
     }
-    if (SDL_strcasecmp(argv[index], "--shown") == 0) {
-        state->window_flags |= SDL_WINDOW_SHOWN;
-        return 1;
-    }
     if (SDL_strcasecmp(argv[index], "--hidden") == 0) {
         state->window_flags |= SDL_WINDOW_HIDDEN;
         return 1;
@@ -690,9 +686,6 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
     case SDL_WINDOW_OPENGL:
         SDL_snprintfcat(text, maxlen, "OPENGL");
         break;
-    case SDL_WINDOW_SHOWN:
-        SDL_snprintfcat(text, maxlen, "SHOWN");
-        break;
     case SDL_WINDOW_HIDDEN:
         SDL_snprintfcat(text, maxlen, "HIDDEN");
         break;
@@ -764,7 +757,6 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
     const Uint32 window_flags[] = {
         SDL_WINDOW_FULLSCREEN,
         SDL_WINDOW_OPENGL,
-        SDL_WINDOW_SHOWN,
         SDL_WINDOW_HIDDEN,
         SDL_WINDOW_BORDERLESS,
         SDL_WINDOW_RESIZABLE,
