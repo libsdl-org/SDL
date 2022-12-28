@@ -306,9 +306,9 @@ static int SetupWindowData(_THIS, SDL_Window *window, Window w, BOOL created)
         window->w = attrib.width;
         window->h = attrib.height;
         if (attrib.map_state != IsUnmapped) {
-            window->flags |= SDL_WINDOW_SHOWN;
+            window->flags &= SDL_WINDOW_HIDDEN;
         } else {
-            window->flags &= ~SDL_WINDOW_SHOWN;
+            window->flags |= SDL_WINDOW_HIDDEN;
         }
         data->visual = attrib.visual;
         data->colormap = attrib.colormap;

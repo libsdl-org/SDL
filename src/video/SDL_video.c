@@ -2453,7 +2453,7 @@ void SDL_ShowWindow(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, );
 
-    if (window->flags & SDL_WINDOW_SHOWN) {
+    if (!(window->flags & SDL_WINDOW_HIDDEN)) {
         return;
     }
 
@@ -2467,7 +2467,7 @@ void SDL_HideWindow(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, );
 
-    if (!(window->flags & SDL_WINDOW_SHOWN)) {
+    if (window->flags & SDL_WINDOW_HIDDEN) {
         return;
     }
 
@@ -2485,7 +2485,7 @@ void SDL_RaiseWindow(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, );
 
-    if (!(window->flags & SDL_WINDOW_SHOWN)) {
+    if (window->flags & SDL_WINDOW_HIDDEN) {
         return;
     }
     if (_this->RaiseWindow) {
