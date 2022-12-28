@@ -68,18 +68,18 @@ static SDL_DisabledEventBlock *SDL_disabled_events[256];
 static Uint32 SDL_userevents = SDL_USEREVENT;
 
 /* Private data -- event queue */
-typedef struct _SDL_EventEntry
+typedef struct SDL_EventEntry
 {
     SDL_Event event;
     SDL_SysWMmsg msg;
-    struct _SDL_EventEntry *prev;
-    struct _SDL_EventEntry *next;
+    struct SDL_EventEntry *prev;
+    struct SDL_EventEntry *next;
 } SDL_EventEntry;
 
-typedef struct _SDL_SysWMEntry
+typedef struct SDL_SysWMEntry
 {
     SDL_SysWMmsg msg;
-    struct _SDL_SysWMEntry *next;
+    struct SDL_SysWMEntry *next;
 } SDL_SysWMEntry;
 
 static struct
