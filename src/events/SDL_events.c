@@ -380,17 +380,17 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_CBUTTON_EVENT
 
-#define PRINT_CONTROLLERDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d)", (uint)event->cdevice.timestamp, (int)event->cdevice.which)
+#define PRINT_GAMEPADDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d)", (uint)event->cdevice.timestamp, (int)event->cdevice.which)
         SDL_EVENT_CASE(SDL_GAMEPADADDED)
-        PRINT_CONTROLLERDEV_EVENT(event);
+        PRINT_GAMEPADDEV_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_GAMEPADREMOVED)
-        PRINT_CONTROLLERDEV_EVENT(event);
+        PRINT_GAMEPADDEV_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_GAMEPADDEVICEREMAPPED)
-        PRINT_CONTROLLERDEV_EVENT(event);
+        PRINT_GAMEPADDEV_EVENT(event);
         break;
-#undef PRINT_CONTROLLERDEV_EVENT
+#undef PRINT_GAMEPADDEV_EVENT
 
 #define PRINT_CTOUCHPAD_EVENT(event)                                                                                     \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d touchpad=%d finger=%d x=%f y=%f pressure=%f)", \
@@ -998,15 +998,12 @@ static SDL_bool SDL_events_need_polling()
     SDL_bool need_polling = SDL_FALSE;
 
 #if !SDL_JOYSTICK_DISABLED
-    need_polling =
-        SDL_WasInit(SDL_INIT_JOYSTICK) &&
-        SDL_update_joysticks &&
-        (SDL_GetNumJoysticks() > 0);
+    need_polling = SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks && SDL_HasJoysticks();
 #endif
 
 #if !SDL_SENSOR_DISABLED
     need_polling = need_polling ||
-                   (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && (SDL_GetNumSensors() > 0));
+                   (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && SDL_HasSensors());
 #endif
 
     return need_polling;

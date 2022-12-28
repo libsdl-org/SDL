@@ -141,10 +141,10 @@ static SDL_bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
-    ctx->joysticks[0] = -1;
-    ctx->joysticks[1] = -1;
-    ctx->joysticks[2] = -1;
-    ctx->joysticks[3] = -1;
+    ctx->joysticks[0] = 0;
+    ctx->joysticks[1] = 0;
+    ctx->joysticks[2] = 0;
+    ctx->joysticks[3] = 0;
     ctx->rumble[0] = rumbleMagic;
     ctx->useRumbleBrake = SDL_FALSE;
 
@@ -186,14 +186,14 @@ static SDL_bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
                 ctx->rumbleAllowed[i] = (curSlot[0] & 0x04) != 0 && !ctx->wireless[i];
 
                 if (curSlot[0] & 0x30) { /* 0x10 - Wired, 0x20 - Wireless */
-                    if (ctx->joysticks[i] == -1) {
+                    if (ctx->joysticks[i] == 0) {
                         ResetAxisRange(ctx, i);
                         HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
                     }
                 } else {
-                    if (ctx->joysticks[i] != -1) {
+                    if (ctx->joysticks[i] != 0) {
                         HIDAPI_JoystickDisconnected(device, ctx->joysticks[i]);
-                        ctx->joysticks[i] = -1;
+                        ctx->joysticks[i] = 0;
                     }
                     continue;
                 }
@@ -315,7 +315,7 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
         ctx->rumbleAllowed[i] = (curSlot[0] & 0x04) != 0 && !ctx->wireless[i];
 
         if (curSlot[0] & 0x30) { /* 0x10 - Wired, 0x20 - Wireless */
-            if (ctx->joysticks[i] == -1) {
+            if (ctx->joysticks[i] == 0) {
                 ResetAxisRange(ctx, i);
                 HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
             }
@@ -326,9 +326,9 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
                 continue;
             }
         } else {
-            if (ctx->joysticks[i] != -1) {
+            if (ctx->joysticks[i] != 0) {
                 HIDAPI_JoystickDisconnected(device, ctx->joysticks[i]);
-                ctx->joysticks[i] = -1;
+                ctx->joysticks[i] = 0;
             }
             continue;
         }

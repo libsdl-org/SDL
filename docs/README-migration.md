@@ -112,7 +112,11 @@ The following structures have been renamed:
 
 SDL_gamecontroller.h has been renamed SDL_gamepad.h, and all APIs have been renamed to match.
 
-Removed SDL_GameControllerGetSensorDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_GAMEPADSENSORUPDATE events.
+The SDL_GAMEPADADDED event now provides the joystick instance ID in the `which` member of the cdevice event structure.
+
+The functions SDL_HasGamepads(), SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() have been added to directly query the list of available gamepads.
+
+SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_GAMEPADSENSORUPDATE events.
 
 The following enums have been renamed:
 * SDL_GameControllerAxis => SDL_GamepadAxis
@@ -164,24 +168,26 @@ The following functions have been renamed:
 * SDL_GameControllerHasSensor => SDL_GamepadHasSensor
 * SDL_GameControllerIsSensorEnabled => SDL_IsGamepadSensorEnabled
 * SDL_GameControllerMapping => SDL_GetGamepadMapping
-* SDL_GameControllerMappingForDeviceIndex => SDL_GetGamepadMappingForDeviceIndex
 * SDL_GameControllerMappingForGUID => SDL_GetGamepadMappingForGUID
 * SDL_GameControllerMappingForIndex => SDL_GetGamepadMappingForIndex
 * SDL_GameControllerName => SDL_GetGamepadName
-* SDL_GameControllerNameForIndex => SDL_GetGamepadNameForIndex
 * SDL_GameControllerNumMappings => SDL_GetNumGamepadMappings
 * SDL_GameControllerOpen => SDL_OpenGamepad
 * SDL_GameControllerPath => SDL_GetGamepadPath
-* SDL_GameControllerPathForIndex => SDL_GetGamepadPathForIndex
 * SDL_GameControllerRumble => SDL_RumbleGamepad
 * SDL_GameControllerRumbleTriggers => SDL_RumbleGamepadTriggers
 * SDL_GameControllerSendEffect => SDL_SendGamepadEffect
 * SDL_GameControllerSetLED => SDL_SetGamepadLED
 * SDL_GameControllerSetPlayerIndex => SDL_SetGamepadPlayerIndex
 * SDL_GameControllerSetSensorEnabled => SDL_SetGamepadSensorEnabled
-* SDL_GameControllerTypeForIndex => SDL_GetGamepadTypeForIndex
 * SDL_GameControllerUpdate => SDL_UpdateGamepads
 * SDL_IsGameController => SDL_IsGamepad
+
+The following functions have been removed:
+* SDL_GameControllerNameForIndex() - replaced with SDL_GetGamepadInstanceName()
+* SDL_GameControllerPathForIndex() - replaced with SDL_GetGamepadInstancePath()
+* SDL_GameControllerTypeForIndex() - replaced with SDL_GetGamepadInstanceType()
+* SDL_GameControllerMappingForDeviceIndex() - replaced with SDL_GetGamepadInstanceMapping()
 
 The following symbols have been renamed:
 * SDL_CONTROLLER_AXIS_INVALID => SDL_GAMEPAD_AXIS_INVALID
@@ -260,6 +266,36 @@ The following macros have been renamed:
 
 ## SDL_joystick.h
 
+SDL_JoystickID has changed from Sint32 to Uint32, with an invalid ID being 0.
+
+Rather than iterating over joysticks using device index, there is a new function SDL_GetJoysticks() to get the current list of joysticks, and new functions to get information about joysticks from their instance ID:
+```c
+{
+    if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0) {
+        int i, num_joysticks;
+        SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
+        if (joysticks) {
+            for (i = 0; i < num_joysticks; ++i) {
+                SDL_JoystickID instance_id = joysticks[i];
+                const char *name = SDL_GetJoystickInstanceName(instance_id);
+                const char *path = SDL_GetJoystickInstancePath(instance_id);
+
+                SDL_Log("Joystick %" SDL_PRIu32 ": %s%s%s VID 0x%.4x, PID 0x%.4x\n",
+                        instance_id, name ? name : "Unknown", path ? ", " : "", path ? path : "", SDL_GetJoystickInstanceVendor(instance_id), SDL_GetJoystickInstanceProduct(instance_id));
+            }
+            SDL_free(joysticks);
+        }
+        SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+    }
+}
+```
+
+The SDL_JOYDEVICEADDED event now provides the joystick instance ID in the `which` member of the jdevice event structure.
+
+The functions SDL_HasJoysticks(), SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystickInstancePath(), SDL_GetJoystickInstancePlayerIndex(), SDL_GetJoystickInstanceGUID(), SDL_GetJoystickInstanceVendor(), SDL_GetJoystickInstanceProduct(), SDL_GetJoystickInstanceProductVersion(), and SDL_GetJoystickInstanceType() have been added to directly query the list of available joysticks.
+
+SDL_AttachVirtualJoystick() and SDL_AttachVirtualJoystickEx() now return the joystick instance ID instead of a device index, and return 0 if there was an error.
+
 The following functions have been renamed:
 * SDL_JoystickAttachVirtual => SDL_AttachVirtualJoystick
 * SDL_JoystickAttachVirtualEx => SDL_AttachVirtualJoystickEx
@@ -273,13 +309,6 @@ The following functions have been renamed:
 * SDL_JoystickGetAxis => SDL_GetJoystickAxis
 * SDL_JoystickGetAxisInitialState => SDL_GetJoystickAxisInitialState
 * SDL_JoystickGetButton => SDL_GetJoystickButton
-* SDL_JoystickGetDeviceGUID => SDL_GetJoystickDeviceGUID
-* SDL_JoystickGetDeviceInstanceID => SDL_GetJoystickDeviceInstanceID
-* SDL_JoystickGetDevicePlayerIndex => SDL_GetJoystickDevicePlayerIndex
-* SDL_JoystickGetDeviceProduct => SDL_GetJoystickDeviceProduct
-* SDL_JoystickGetDeviceProductVersion => SDL_GetJoystickDeviceProductVersion
-* SDL_JoystickGetDeviceType => SDL_GetJoystickDeviceType
-* SDL_JoystickGetDeviceVendor => SDL_GetJoystickDeviceVendor
 * SDL_JoystickGetFirmwareVersion => SDL_GetJoystickFirmwareVersion
 * SDL_JoystickGetGUID => SDL_GetJoystickGUID
 * SDL_JoystickGetGUIDFromString => SDL_GetJoystickGUIDFromString
@@ -294,13 +323,11 @@ The following functions have been renamed:
 * SDL_JoystickInstanceID => SDL_GetJoystickInstanceID
 * SDL_JoystickIsVirtual => SDL_IsJoystickVirtual
 * SDL_JoystickName => SDL_GetJoystickName
-* SDL_JoystickNameForIndex => SDL_GetJoystickNameForIndex
 * SDL_JoystickNumAxes => SDL_GetNumJoystickAxes
 * SDL_JoystickNumButtons => SDL_GetNumJoystickButtons
 * SDL_JoystickNumHats => SDL_GetNumJoystickHats
 * SDL_JoystickOpen => SDL_OpenJoystick
 * SDL_JoystickPath => SDL_GetJoystickPath
-* SDL_JoystickPathForIndex => SDL_GetJoystickPathForIndex
 * SDL_JoystickRumble => SDL_RumbleJoystick
 * SDL_JoystickRumbleTriggers => SDL_RumbleJoystickTriggers
 * SDL_JoystickSendEffect => SDL_SendJoystickEffect
@@ -310,11 +337,22 @@ The following functions have been renamed:
 * SDL_JoystickSetVirtualButton => SDL_SetJoystickVirtualButton
 * SDL_JoystickSetVirtualHat => SDL_SetJoystickVirtualHat
 * SDL_JoystickUpdate => SDL_UpdateJoysticks
-* SDL_NumJoysticks => SDL_GetNumJoysticks
 
 The following symbols have been renamed:
 * SDL_JOYSTICK_TYPE_GAMECONTROLLER => SDL_JOYSTICK_TYPE_GAMEPAD
 
+The following functions have been removed:
+* SDL_NumJoysticks - replaced with SDL_HasJoysticks() and SDL_GetJoysticks()
+* SDL_JoystickGetDeviceGUID() - replaced with SDL_GetJoystickInstanceGUID()
+* SDL_JoystickGetDeviceInstanceID()
+* SDL_JoystickGetDevicePlayerIndex() - replaced with SDL_GetJoystickInstancePlayerIndex()
+* SDL_JoystickGetDeviceProduct() - replaced with SDL_GetJoystickInstanceProduct()
+* SDL_JoystickGetDeviceProductVersion() - replaced with SDL_GetJoystickInstanceProductVersion()
+* SDL_JoystickGetDeviceType() - replaced with SDL_GetJoystickInstanceType()
+* SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
+* SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
+* SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
+ 
 ## SDL_keycode.h
 
 The following symbols have been renamed:
@@ -609,18 +647,36 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 
 ## SDL_sensor.h
 
+SDL_SensorID has changed from Sint32 to Uint32, with an invalid ID being 0.
+
+Rather than iterating over sensors using device index, there is a new function SDL_GetSensors() to get the current list of sensors, and new functions to get information about sensors from their instance ID:
+```c
+{
+    if (SDL_InitSubSystem(SDL_INIT_SENSOR) == 0) {
+        int i, num_sensors;
+        SDL_SensorID *sensors = SDL_GetSensors(&num_sensors);
+        if (sensors) {
+            for (i = 0; i < num_sensors; ++i) {
+                SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %d, platform type %d\n",
+                        sensors[i],
+                        SDL_GetSensorInstanceName(sensors[i]),
+                        SDL_GetSensorInstanceType(sensors[i]),
+                        SDL_GetSensorInstanceNonPortableType(sensors[i]));
+            }
+            SDL_free(sensors);
+        }
+        SDL_QuitSubSystem(SDL_INIT_SENSOR);
+    }
+}
+```
+
 Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_SENSORUPDATE events.
 
 
 The following functions have been renamed:
-* SDL_NumSensors => SDL_GetNumSensors
 * SDL_SensorClose => SDL_CloseSensor
 * SDL_SensorFromInstanceID => SDL_GetSensorFromInstanceID
 * SDL_SensorGetData => SDL_GetSensorData
-* SDL_SensorGetDeviceInstanceID => SDL_GetSensorDeviceInstanceID
-* SDL_SensorGetDeviceName => SDL_GetSensorDeviceName
-* SDL_SensorGetDeviceNonPortableType => SDL_GetSensorDeviceNonPortableType
-* SDL_SensorGetDeviceType => SDL_GetSensorDeviceType
 * SDL_SensorGetInstanceID => SDL_GetSensorInstanceID
 * SDL_SensorGetName => SDL_GetSensorName
 * SDL_SensorGetNonPortableType => SDL_GetSensorNonPortableType
@@ -628,6 +684,15 @@ The following functions have been renamed:
 * SDL_SensorOpen => SDL_OpenSensor
 * SDL_SensorUpdate => SDL_UpdateSensors
 
+The following functions have been removed:
+* SDL_LockSensors()
+* SDL_NumSensors - replaced with SDL_HasSensors() and SDL_GetSensors()
+* SDL_SensorGetDeviceInstanceID()
+* SDL_SensorGetDeviceName() - replaced with SDL_GetSensorInstanceName()
+* SDL_SensorGetDeviceNonPortableType() - replaced with SDL_GetSensorInstanceNonPortableType()
+* SDL_SensorGetDeviceType() - replaced with SDL_GetSensorInstanceType()
+* SDL_UnlockSensors()
+ 
 ## SDL_stdinc.h
 
 The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.
