@@ -99,6 +99,7 @@
 #define SDL_CreateWindow SDL_CreateWindow_REAL
 #define SDL_CreateWindowAndRenderer SDL_CreateWindowAndRenderer_REAL
 #define SDL_CreateWindowFrom SDL_CreateWindowFrom_REAL
+#define SDL_CursorVisible SDL_CursorVisible_REAL
 #define SDL_DXGIGetOutputInfo   SDL_DXGIGetOutputInfo_REAL
 #define SDL_DelEventWatch SDL_DelEventWatch_REAL
 #define SDL_DelHintCallback SDL_DelHintCallback_REAL
@@ -127,6 +128,7 @@
 #define SDL_EGL_SetEGLAttributeCallbacks SDL_EGL_SetEGLAttributeCallbacks_REAL
 #define SDL_EnableScreenSaver SDL_EnableScreenSaver_REAL
 #define SDL_Error SDL_Error_REAL
+#define SDL_EventEnabled SDL_EventEnabled_REAL
 #define SDL_FillSurfaceRect SDL_FillSurfaceRect_REAL
 #define SDL_FillSurfaceRects SDL_FillSurfaceRects_REAL
 #define SDL_FilterEvents SDL_FilterEvents_REAL
@@ -158,12 +160,15 @@
 #define SDL_GL_UnloadLibrary SDL_GL_UnloadLibrary_REAL
 #define SDL_GUIDFromString SDL_GUIDFromString_REAL
 #define SDL_GUIDToString SDL_GUIDToString_REAL
+#define SDL_GamepadConnected SDL_GamepadConnected_REAL
+#define SDL_GamepadEventsEnabled SDL_GamepadEventsEnabled_REAL
 #define SDL_GamepadHasAxis SDL_GamepadHasAxis_REAL
 #define SDL_GamepadHasButton SDL_GamepadHasButton_REAL
 #define SDL_GamepadHasLED SDL_GamepadHasLED_REAL
 #define SDL_GamepadHasRumble SDL_GamepadHasRumble_REAL
 #define SDL_GamepadHasRumbleTriggers SDL_GamepadHasRumbleTriggers_REAL
 #define SDL_GamepadHasSensor SDL_GamepadHasSensor_REAL
+#define SDL_GamepadSensorEnabled SDL_GamepadSensorEnabled_REAL
 #define SDL_GetAndroidSDKVersion    SDL_GetAndroidSDKVersion_REAL
 #define SDL_GetAssertionHandler SDL_GetAssertionHandler_REAL
 #define SDL_GetAssertionReport SDL_GetAssertionReport_REAL
@@ -319,6 +324,8 @@
 #define SDL_GetRelativeMouseMode SDL_GetRelativeMouseMode_REAL
 #define SDL_GetRelativeMouseState SDL_GetRelativeMouseState_REAL
 #define SDL_GetRenderClipRect SDL_GetRenderClipRect_REAL
+#define SDL_GetRenderD3D11Device    SDL_GetRenderD3D11Device_REAL
+#define SDL_GetRenderD3D9Device SDL_GetRenderD3D9Device_REAL
 #define SDL_GetRenderDrawBlendMode SDL_GetRenderDrawBlendMode_REAL
 #define SDL_GetRenderDrawColor SDL_GetRenderDrawColor_REAL
 #define SDL_GetRenderDriver SDL_GetRenderDriver_REAL
@@ -445,6 +452,7 @@
 #define SDL_HasSSE42 SDL_HasSSE42_REAL
 #define SDL_HasScreenKeyboardSupport SDL_HasScreenKeyboardSupport_REAL
 #define SDL_HasSensors SDL_HasSensors_REAL
+#define SDL_HideCursor SDL_HideCursor_REAL
 #define SDL_HideWindow SDL_HideWindow_REAL
 #define SDL_Init SDL_Init_REAL
 #define SDL_InitSubSystem SDL_InitSubSystem_REAL
@@ -452,18 +460,11 @@
 #define SDL_IsChromebook    SDL_IsChromebook_REAL
 #define SDL_IsDeXMode   SDL_IsDeXMode_REAL
 #define SDL_IsGamepad SDL_IsGamepad_REAL
-#define SDL_GamepadConnected SDL_GamepadConnected_REAL
-#define SDL_GamepadSensorEnabled SDL_GamepadSensorEnabled_REAL
-#define SDL_JoystickConnected SDL_JoystickConnected_REAL
 #define SDL_IsJoystickVirtual SDL_IsJoystickVirtual_REAL
-#define SDL_RenderClipEnabled SDL_RenderClipEnabled_REAL
-#define SDL_RenderTargetSupported SDL_RenderTargetSupported_REAL
-#define SDL_ScreenKeyboardShown SDL_ScreenKeyboardShown_REAL
-#define SDL_ScreenSaverEnabled SDL_ScreenSaverEnabled_REAL
 #define SDL_IsShapedWindow SDL_IsShapedWindow_REAL
 #define SDL_IsTablet SDL_IsTablet_REAL
-#define SDL_TextInputActive SDL_TextInputActive_REAL
-#define SDL_TextInputShown SDL_TextInputShown_REAL
+#define SDL_JoystickConnected SDL_JoystickConnected_REAL
+#define SDL_JoystickEventsEnabled SDL_JoystickEventsEnabled_REAL
 #define SDL_JoystickHasLED SDL_JoystickHasLED_REAL
 #define SDL_JoystickHasRumble SDL_JoystickHasRumble_REAL
 #define SDL_JoystickHasRumbleTriggers SDL_JoystickHasRumbleTriggers_REAL
@@ -558,6 +559,7 @@
 #define SDL_RegisterEvents SDL_RegisterEvents_REAL
 #define SDL_RemoveTimer SDL_RemoveTimer_REAL
 #define SDL_RenderClear SDL_RenderClear_REAL
+#define SDL_RenderClipEnabled SDL_RenderClipEnabled_REAL
 #define SDL_RenderFillRect SDL_RenderFillRect_REAL
 #define SDL_RenderFillRectF SDL_RenderFillRectF_REAL
 #define SDL_RenderFillRects SDL_RenderFillRects_REAL
@@ -565,9 +567,7 @@
 #define SDL_RenderFlush SDL_RenderFlush_REAL
 #define SDL_RenderGeometry SDL_RenderGeometry_REAL
 #define SDL_RenderGeometryRaw SDL_RenderGeometryRaw_REAL
-#define SDL_GetRenderD3D11Device    SDL_GetRenderD3D11Device_REAL
 #define SDL_RenderGetD3D12Device    SDL_RenderGetD3D12Device_REAL
-#define SDL_GetRenderD3D9Device SDL_GetRenderD3D9Device_REAL
 #define SDL_RenderLine SDL_RenderLine_REAL
 #define SDL_RenderLineF SDL_RenderLineF_REAL
 #define SDL_RenderLines SDL_RenderLines_REAL
@@ -583,6 +583,7 @@
 #define SDL_RenderRectF SDL_RenderRectF_REAL
 #define SDL_RenderRects SDL_RenderRects_REAL
 #define SDL_RenderRectsF SDL_RenderRectsF_REAL
+#define SDL_RenderTargetSupported SDL_RenderTargetSupported_REAL
 #define SDL_RenderTexture SDL_RenderTexture_REAL
 #define SDL_RenderTextureF SDL_RenderTextureF_REAL
 #define SDL_RenderTextureRotated SDL_RenderTextureRotated_REAL
@@ -604,6 +605,8 @@
 #define SDL_SIMDGetAlignment SDL_SIMDGetAlignment_REAL
 #define SDL_SIMDRealloc SDL_SIMDRealloc_REAL
 #define SDL_SaveBMP_RW SDL_SaveBMP_RW_REAL
+#define SDL_ScreenKeyboardShown SDL_ScreenKeyboardShown_REAL
+#define SDL_ScreenSaverEnabled SDL_ScreenSaverEnabled_REAL
 #define SDL_SemPost SDL_SemPost_REAL
 #define SDL_SemTryWait SDL_SemTryWait_REAL
 #define SDL_SemValue SDL_SemValue_REAL
@@ -615,12 +618,15 @@
 #define SDL_SetClipboardText SDL_SetClipboardText_REAL
 #define SDL_SetCursor SDL_SetCursor_REAL
 #define SDL_SetError    SDL_SetError_REAL
+#define SDL_SetEventEnabled SDL_SetEventEnabled_REAL
 #define SDL_SetEventFilter SDL_SetEventFilter_REAL
+#define SDL_SetGamepadEventsEnabled SDL_SetGamepadEventsEnabled_REAL
 #define SDL_SetGamepadLED SDL_SetGamepadLED_REAL
 #define SDL_SetGamepadPlayerIndex SDL_SetGamepadPlayerIndex_REAL
 #define SDL_SetGamepadSensorEnabled SDL_SetGamepadSensorEnabled_REAL
 #define SDL_SetHint SDL_SetHint_REAL
 #define SDL_SetHintWithPriority SDL_SetHintWithPriority_REAL
+#define SDL_SetJoystickEventsEnabled SDL_SetJoystickEventsEnabled_REAL
 #define SDL_SetJoystickLED SDL_SetJoystickLED_REAL
 #define SDL_SetJoystickPlayerIndex SDL_SetJoystickPlayerIndex_REAL
 #define SDL_SetJoystickVirtualAxis SDL_SetJoystickVirtualAxis_REAL
@@ -679,6 +685,7 @@
 #define SDL_SetWindowTitle SDL_SetWindowTitle_REAL
 #define SDL_SetWindowsMessageHook   SDL_SetWindowsMessageHook_REAL
 #define SDL_SetYUVConversionMode SDL_SetYUVConversionMode_REAL
+#define SDL_ShowCursor SDL_ShowCursor_REAL
 #define SDL_ShowMessageBox SDL_ShowMessageBox_REAL
 #define SDL_ShowSimpleMessageBox SDL_ShowSimpleMessageBox_REAL
 #define SDL_ShowWindow SDL_ShowWindow_REAL
@@ -692,6 +699,8 @@
 #define SDL_TLSCreate SDL_TLSCreate_REAL
 #define SDL_TLSGet SDL_TLSGet_REAL
 #define SDL_TLSSet SDL_TLSSet_REAL
+#define SDL_TextInputActive SDL_TextInputActive_REAL
+#define SDL_TextInputShown SDL_TextInputShown_REAL
 #define SDL_ThreadID SDL_ThreadID_REAL
 #define SDL_TryLockMutex SDL_TryLockMutex_REAL
 #define SDL_UnloadObject SDL_UnloadObject_REAL
@@ -878,12 +887,3 @@
 #define SDL_wcsstr SDL_wcsstr_REAL
 
 /* New API symbols are added at the end */
-#define SDL_SetEventEnabled SDL_SetEventEnabled_REAL
-#define SDL_EventEnabled SDL_EventEnabled_REAL
-#define SDL_SetGamepadEventsEnabled SDL_SetGamepadEventsEnabled_REAL
-#define SDL_GamepadEventsEnabled SDL_GamepadEventsEnabled_REAL
-#define SDL_SetJoystickEventsEnabled SDL_SetJoystickEventsEnabled_REAL
-#define SDL_JoystickEventsEnabled SDL_JoystickEventsEnabled_REAL
-#define SDL_ShowCursor SDL_ShowCursor_REAL
-#define SDL_HideCursor SDL_HideCursor_REAL
-#define SDL_CursorVisible SDL_CursorVisible_REAL
