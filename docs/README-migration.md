@@ -46,6 +46,9 @@ SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_
 
 SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
+'SDL_AudioCallback' callback type uses a 'void *' stream parameter
+
+
 The following functions have been renamed:
 * SDL_AudioStreamAvailable => SDL_GetAudioStreamAvailable
 * SDL_AudioStreamClear => SDL_ClearAudioStream

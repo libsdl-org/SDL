@@ -34,8 +34,9 @@ typedef struct
 callback_data cbd[64];
 
 void SDLCALL
-play_through_once(void *arg, Uint8 *stream, int len)
+play_through_once(void *arg, void *stream_param, int len)
 {
+    Uint8 *stream = stream_param;
     callback_data *cbdata = (callback_data *)arg;
     Uint8 *waveptr = sound + cbdata->soundpos;
     int waveleft = soundlen - cbdata->soundpos;

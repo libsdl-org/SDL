@@ -512,11 +512,12 @@ void SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle)
 
 /* buffer queueing support... */
 
-static void SDLCALL SDL_BufferQueueDrainCallback(void *userdata, Uint8 *stream, int len)
+static void SDLCALL SDL_BufferQueueDrainCallback(void *userdata, void *stream_param, int len)
 {
     /* this function always holds the mixer lock before being called. */
     SDL_AudioDevice *device = (SDL_AudioDevice *)userdata;
     size_t dequeued;
+    Uint8 *stream = stream_param;
 
     SDL_assert(device != NULL);     /* this shouldn't ever happen, right?! */
     SDL_assert(!device->iscapture); /* this shouldn't ever happen, right?! */
@@ -532,10 +533,11 @@ static void SDLCALL SDL_BufferQueueDrainCallback(void *userdata, Uint8 *stream, 
     }
 }
 
-static void SDLCALL SDL_BufferQueueFillCallback(void *userdata, Uint8 *stream, int len)
+static void SDLCALL SDL_BufferQueueFillCallback(void *userdata, void *stream_param, int len)
 {
     /* this function always holds the mixer lock before being called. */
     SDL_AudioDevice *device = (SDL_AudioDevice *)userdata;
+    Uint8 *stream = stream_param;
 
     SDL_assert(device != NULL);    /* this shouldn't ever happen, right?! */
     SDL_assert(device->iscapture); /* this shouldn't ever happen, right?! */

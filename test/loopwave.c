@@ -76,9 +76,10 @@ static void reopen_audio()
 #endif
 
 void SDLCALL
-fillerup(void *unused, Uint8 *stream, int len)
+fillerup(void *unused, void *stream_param, int len)
 {
     Uint8 *waveptr;
+    Uint8 *stream = stream_param;
     int waveleft;
 
     /* Set up the pointers */

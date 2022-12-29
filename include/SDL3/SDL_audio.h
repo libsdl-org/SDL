@@ -153,7 +153,7 @@ typedef Uint16 SDL_AudioFormat;
  *
  *  \param userdata An application-specific parameter saved in
  *                  the SDL_AudioSpec structure
- *  \param stream A pointer to the audio data buffer.
+ *  \param stream A pointer to the audio data buffer (variable type).
  *  \param len    The length of that buffer in bytes.
  *
  *  Once the callback returns, the buffer will no longer be valid.
@@ -162,8 +162,7 @@ typedef Uint16 SDL_AudioFormat;
  *  You can choose to avoid callbacks and use SDL_QueueAudio() instead, if
  *  you like. Just open your audio device with a NULL callback.
  */
-typedef void (SDLCALL * SDL_AudioCallback) (void *userdata, Uint8 * stream,
-                                            int len);
+typedef void (SDLCALL * SDL_AudioCallback) (void *userdata, void *stream, int len);
 
 /**
  *  The calculated values in this structure are calculated by SDL_OpenAudio().

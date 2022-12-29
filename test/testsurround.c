@@ -91,7 +91,7 @@ is_lfe_channel(int channel_index, int channel_count)
 }
 
 void SDLCALL
-fill_buffer(void *unused, Uint8 *stream, int len)
+fill_buffer(void *unused, void *stream, int len)
 {
     Sint16 *buffer = (Sint16 *)stream;
     int samples = len / sizeof(Sint16);
