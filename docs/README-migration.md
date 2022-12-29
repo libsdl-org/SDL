@@ -831,9 +831,7 @@ SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_
 
 'SDL_WINDOW_SHOW' flag has been removed. It's activated by default, and can be unactivated by using SDL_WINDOW_HIDDEN
 
-
-
-
+'SDL_DisplayMode.refresh_rate' is now a double-precision floating point.
 
 
 
