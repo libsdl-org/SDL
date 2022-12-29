@@ -109,7 +109,7 @@ struct SDL_Joystick
     Uint64 led_expiration _guarded;
 
     SDL_bool attached _guarded;
-    SDL_bool is_game_controller _guarded;
+    SDL_bool is_gamepad _guarded;
     SDL_bool delayed_guide_button _guarded;      /* SDL_TRUE if this device has the guide button event delayed */
     SDL_JoystickPowerLevel epowerlevel _guarded; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
 

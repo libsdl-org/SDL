@@ -44,7 +44,7 @@ endif()
 set_and_check(SDL3_PREFIX       "${CMAKE_CURRENT_LIST_DIR}/..")
 set_and_check(SDL3_EXEC_PREFIX  "${CMAKE_CURRENT_LIST_DIR}/..")
 set_and_check(SDL3_INCLUDE_DIR  "${SDL3_PREFIX}/include")
-set(SDL3_INCLUDE_DIRS           "${SDL3_INCLUDE_DIR}")
+set(SDL3_INCLUDE_DIRS           "${SDL3_INCLUDE_DIR};${SDL3_INCLUDE_DIR}/SDL3")
 set_and_check(SDL3_BINDIR       "${SDL3_PREFIX}/lib/${_sdl_arch_subdir}")
 set_and_check(SDL3_LIBDIR       "${SDL3_PREFIX}/lib/${_sdl_arch_subdir}")
 

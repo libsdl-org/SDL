@@ -32,7 +32,7 @@ static const char *video_usage[] = {
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
     "[--resizable]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
-    "[--shown]", "[--hidden]", "[--input-focus]", "[--mouse-focus]",
+    "[--hidden]", "[--input-focus]", "[--mouse-focus]",
     "[--flash-on-focus-loss]", "[--allow-highdpi]", "[--confine-cursor X,Y,W,H]",
     "[--usable-bounds]"
 };
@@ -453,10 +453,6 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
         state->window_flags |= SDL_WINDOW_MAXIMIZED;
         return 1;
     }
-    if (SDL_strcasecmp(argv[index], "--shown") == 0) {
-        state->window_flags |= SDL_WINDOW_SHOWN;
-        return 1;
-    }
     if (SDL_strcasecmp(argv[index], "--hidden") == 0) {
         state->window_flags |= SDL_WINDOW_HIDDEN;
         return 1;
@@ -690,9 +686,6 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
     case SDL_WINDOW_OPENGL:
         SDL_snprintfcat(text, maxlen, "OPENGL");
         break;
-    case SDL_WINDOW_SHOWN:
-        SDL_snprintfcat(text, maxlen, "SHOWN");
-        break;
     case SDL_WINDOW_HIDDEN:
         SDL_snprintfcat(text, maxlen, "HIDDEN");
         break;
@@ -764,7 +757,6 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
     const Uint32 window_flags[] = {
         SDL_WINDOW_FULLSCREEN,
         SDL_WINDOW_OPENGL,
-        SDL_WINDOW_SHOWN,
         SDL_WINDOW_HIDDEN,
         SDL_WINDOW_BORDERLESS,
         SDL_WINDOW_RESIZABLE,
@@ -1303,7 +1295,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
 
             SDL_ShowWindow(state->windows[i]);
 
-            if (!SDL_IsRectEmpty(&state->confine)) {
+            if (!SDL_RectEmpty(&state->confine)) {
                 SDL_SetWindowMouseRect(state->windows[i], &state->confine);
             }
 
@@ -1384,7 +1376,7 @@ static const char *DisplayOrientationName(int orientation)
     }
 }
 
-static const char *ControllerAxisName(const SDL_GamepadAxis axis)
+static const char *GamepadAxisName(const SDL_GamepadAxis axis)
 {
     switch (axis) {
 #define AXIS_CASE(ax)              \
@@ -1403,7 +1395,7 @@ static const char *ControllerAxisName(const SDL_GamepadAxis axis)
     }
 }
 
-static const char *ControllerButtonName(const SDL_GamepadButton button)
+static const char *GamepadButtonName(const SDL_GamepadButton button)
 {
     switch (button) {
 #define BUTTON_CASE(btn)              \
@@ -1556,11 +1548,11 @@ static void SDLTest_PrintEvent(SDL_Event *event)
                 event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
     case SDL_JOYDEVICEADDED:
-        SDL_Log("SDL EVENT: Joystick index %" SDL_PRIs32 " attached",
+        SDL_Log("SDL EVENT: Joystick index %" SDL_PRIu32 " attached",
                 event->jdevice.which);
         break;
     case SDL_JOYDEVICEREMOVED:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 " removed",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " removed",
                 event->jdevice.which);
         break;
     case SDL_JOYHATMOTION:
@@ -1595,41 +1587,41 @@ static void SDLTest_PrintEvent(SDL_Event *event)
             position = "LEFTUP";
             break;
         }
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": hat %d moved to %s",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 ": hat %d moved to %s",
                 event->jhat.which, event->jhat.hat, position);
     } break;
     case SDL_JOYBUTTONDOWN:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": button %d pressed",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 ": button %d pressed",
                 event->jbutton.which, event->jbutton.button);
         break;
     case SDL_JOYBUTTONUP:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": button %d released",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 ": button %d released",
                 event->jbutton.which, event->jbutton.button);
         break;
     case SDL_GAMEPADADDED:
-        SDL_Log("SDL EVENT: Controller index %" SDL_PRIs32 " attached",
+        SDL_Log("SDL EVENT: Gamepad index %" SDL_PRIu32 " attached",
                 event->cdevice.which);
         break;
     case SDL_GAMEPADREMOVED:
-        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " removed",
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " removed",
                 event->cdevice.which);
         break;
     case SDL_GAMEPADAXISMOTION:
-        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " axis %d ('%s') value: %d",
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " axis %d ('%s') value: %d",
                 event->caxis.which,
                 event->caxis.axis,
-                ControllerAxisName((SDL_GamepadAxis)event->caxis.axis),
+                GamepadAxisName((SDL_GamepadAxis)event->caxis.axis),
                 event->caxis.value);
         break;
     case SDL_GAMEPADBUTTONDOWN:
-        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 "button %d ('%s') down",
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 "button %d ('%s') down",
                 event->cbutton.which, event->cbutton.button,
-                ControllerButtonName((SDL_GamepadButton)event->cbutton.button));
+                GamepadButtonName((SDL_GamepadButton)event->cbutton.button));
         break;
     case SDL_GAMEPADBUTTONUP:
-        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " button %d ('%s') up",
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " button %d ('%s') up",
                 event->cbutton.which, event->cbutton.button,
-                ControllerButtonName((SDL_GamepadButton)event->cbutton.button));
+                GamepadButtonName((SDL_GamepadButton)event->cbutton.button));
         break;
     case SDL_CLIPBOARDUPDATE:
         SDL_Log("SDL EVENT: Clipboard updated");
@@ -1921,7 +1913,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                         SDL_Rect clip;
                         SDL_GetWindowSize(state->windows[i], &w, &h);
                         SDL_GetRenderClipRect(state->renderers[i], &clip);
-                        if (SDL_IsRectEmpty(&clip)) {
+                        if (SDL_RectEmpty(&clip)) {
                             clip.x = w / 4;
                             clip.y = h / 4;
                             clip.w = w / 2;

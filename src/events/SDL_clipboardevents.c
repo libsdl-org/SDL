@@ -31,7 +31,7 @@ int SDL_SendClipboardUpdate(void)
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(SDL_CLIPBOARDUPDATE) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_CLIPBOARDUPDATE)) {
         SDL_Event event;
         event.type = SDL_CLIPBOARDUPDATE;
         event.common.timestamp = 0;

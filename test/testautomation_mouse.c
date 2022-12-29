@@ -247,24 +247,22 @@ int mouse_createFreeColorCursor(void *arg)
 }
 
 /* Helper that changes cursor visibility */
-static void changeCursorVisibility(int state)
+static void changeCursorVisibility(SDL_bool state)
 {
-    int oldState;
-    int newState;
-    int result;
+    SDL_bool newState;
 
-    oldState = SDL_ShowCursor(SDL_QUERY);
-    SDLTest_AssertPass("Call to SDL_ShowCursor(SDL_QUERY)");
+    if (state) {
+        SDL_ShowCursor();
+    } else {
+        SDL_HideCursor();
+    }
+    SDLTest_AssertPass("Call to %s", state ? "SDL_ShowCursor()" : "SDL_HideCursor()");
 
-    result = SDL_ShowCursor(state);
-    SDLTest_AssertPass("Call to SDL_ShowCursor(%s)", (state == SDL_ENABLE) ? "SDL_ENABLE" : "SDL_DISABLE");
-    SDLTest_AssertCheck(result == oldState, "Validate result from SDL_ShowCursor(%s), expected: %i, got: %i",
-                        (state == SDL_ENABLE) ? "SDL_ENABLE" : "SDL_DISABLE", oldState, result);
-
-    newState = SDL_ShowCursor(SDL_QUERY);
-    SDLTest_AssertPass("Call to SDL_ShowCursor(SDL_QUERY)");
-    SDLTest_AssertCheck(state == newState, "Validate new state, expected: %i, got: %i",
-                        state, newState);
+    newState = SDL_CursorVisible();
+    SDLTest_AssertPass("Call to SDL_CursorVisible()");
+    SDLTest_AssertCheck(state == newState, "Validate new state, expected: %s, got: %s",
+                        state ? "SDL_TRUE" : "SDL_FALSE",
+                        newState ? "SDL_TRUE" : "SDL_FALSE");
 }
 
 /**
@@ -274,23 +272,19 @@ static void changeCursorVisibility(int state)
  */
 int mouse_showCursor(void *arg)
 {
-    int currentState;
+    SDL_bool currentState;
 
     /* Get current state */
-    currentState = SDL_ShowCursor(SDL_QUERY);
-    SDLTest_AssertPass("Call to SDL_ShowCursor(SDL_QUERY)");
-    SDLTest_AssertCheck(currentState == SDL_DISABLE || currentState == SDL_ENABLE,
-                        "Validate result is %i or %i, got: %i", SDL_DISABLE, SDL_ENABLE, currentState);
-    if (currentState == SDL_DISABLE) {
-        /* Show the cursor, then hide it again */
-        changeCursorVisibility(SDL_ENABLE);
-        changeCursorVisibility(SDL_DISABLE);
-    } else if (currentState == SDL_ENABLE) {
+    currentState = SDL_CursorVisible();
+    SDLTest_AssertPass("Call to SDL_CursorVisible()");
+    if (currentState) {
         /* Hide the cursor, then show it again */
-        changeCursorVisibility(SDL_DISABLE);
-        changeCursorVisibility(SDL_ENABLE);
+        changeCursorVisibility(SDL_FALSE);
+        changeCursorVisibility(SDL_TRUE);
     } else {
-        return TEST_ABORTED;
+        /* Show the cursor, then hide it again */
+        changeCursorVisibility(SDL_TRUE);
+        changeCursorVisibility(SDL_FALSE);
     }
 
     return TEST_COMPLETED;

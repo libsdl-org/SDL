@@ -88,7 +88,7 @@ typedef struct IDirect3DDevice9 IDirect3DDevice9;
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC IDirect3DDevice9* SDLCALL SDL_RenderGetD3D9Device(SDL_Renderer * renderer);
+extern DECLSPEC IDirect3DDevice9* SDLCALL SDL_GetRenderD3D9Device(SDL_Renderer * renderer);
 
 typedef struct ID3D11Device ID3D11Device;
 
@@ -104,7 +104,7 @@ typedef struct ID3D11Device ID3D11Device;
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC ID3D11Device* SDLCALL SDL_RenderGetD3D11Device(SDL_Renderer * renderer);
+extern DECLSPEC ID3D11Device* SDLCALL SDL_GetRenderD3D11Device(SDL_Renderer * renderer);
 
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 

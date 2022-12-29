@@ -240,7 +240,7 @@ int SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
     if (rect == NULL) {
         rect = &dst->clip_rect;
         /* Don't attempt to fill if the surface's clip_rect is empty */
-        if (SDL_IsRectEmpty(rect)) {
+        if (SDL_RectEmpty(rect)) {
             return 0;
         }
     }

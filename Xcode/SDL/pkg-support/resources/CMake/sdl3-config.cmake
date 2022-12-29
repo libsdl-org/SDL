@@ -39,7 +39,7 @@ string(REGEX REPLACE "SDL3\\.framework.*" "" SDL3_FRAMEWORK_PARENT_PATH "${CMAKE
 set_and_check(SDL3_PREFIX       "${SDL3_FRAMEWORK_PATH}")
 set_and_check(SDL3_EXEC_PREFIX  "${SDL3_FRAMEWORK_PATH}")
 set_and_check(SDL3_INCLUDE_DIR  "${SDL3_FRAMEWORK_PATH}/Headers")
-set(SDL3_INCLUDE_DIRS           "${SDL3_INCLUDE_DIR};${SDL3_FRAMEWORK_PATH}")
+set(SDL3_INCLUDE_DIRS           "${SDL3_INCLUDE_DIR}")
 set_and_check(SDL3_BINDIR       "${SDL3_FRAMEWORK_PATH}")
 set_and_check(SDL3_LIBDIR       "${SDL3_FRAMEWORK_PATH}")
 

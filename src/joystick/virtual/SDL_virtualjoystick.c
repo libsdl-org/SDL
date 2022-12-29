@@ -30,6 +30,20 @@
 
 static joystick_hwdata *g_VJoys SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 
+static joystick_hwdata *VIRTUAL_HWDataForInstance(SDL_JoystickID instance_id)
+{
+    joystick_hwdata *vjoy;
+
+    SDL_AssertJoysticksLocked();
+
+    for (vjoy = g_VJoys; vjoy; vjoy = vjoy->next) {
+        if (instance_id == vjoy->instance_id) {
+            return vjoy;
+        }
+    }
+    return NULL;
+}
+
 static joystick_hwdata *VIRTUAL_HWDataForIndex(int device_index)
 {
     joystick_hwdata *vjoy;
@@ -91,10 +105,9 @@ static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
     SDL_free(hwdata);
 }
 
-int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
+SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
 {
     joystick_hwdata *hwdata = NULL;
-    int device_index = -1;
     const char *name = NULL;
     int axis_triggerleft = -1;
     int axis_triggerright = -1;
@@ -238,19 +251,15 @@ int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     }
     SDL_PrivateJoystickAdded(hwdata->instance_id);
 
-    /* Return the new virtual-device's index */
-    device_index = SDL_JoystickGetDeviceIndexFromInstanceID(hwdata->instance_id);
-    return device_index;
+    return hwdata->instance_id;
 }
 
-int SDL_JoystickDetachVirtualInner(int device_index)
+int SDL_JoystickDetachVirtualInner(SDL_JoystickID instance_id)
 {
-    SDL_JoystickID instance_id;
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
+    joystick_hwdata *hwdata = VIRTUAL_HWDataForInstance(instance_id);
     if (hwdata == NULL) {
         return SDL_SetError("Virtual joystick data not found");
     }
-    instance_id = hwdata->instance_id;
     VIRTUAL_FreeHWData(hwdata);
     SDL_PrivateJoystickRemoved(instance_id);
     return 0;
@@ -260,7 +269,7 @@ int SDL_SetJoystickVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 val
 {
     joystick_hwdata *hwdata;
 
-    SDL_LockJoysticks();
+    SDL_AssertJoysticksLocked();
 
     if (joystick == NULL || !joystick->hwdata) {
         SDL_UnlockJoysticks();
@@ -275,7 +284,6 @@ int SDL_SetJoystickVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 val
 
     hwdata->axes[axis] = value;
 
-    SDL_UnlockJoysticks();
     return 0;
 }
 
@@ -283,7 +291,7 @@ int SDL_SetJoystickVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 
 {
     joystick_hwdata *hwdata;
 
-    SDL_LockJoysticks();
+    SDL_AssertJoysticksLocked();
 
     if (joystick == NULL || !joystick->hwdata) {
         SDL_UnlockJoysticks();
@@ -298,7 +306,6 @@ int SDL_SetJoystickVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 
 
     hwdata->buttons[button] = value;
 
-    SDL_UnlockJoysticks();
     return 0;
 }
 
@@ -306,7 +313,7 @@ int SDL_SetJoystickVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
 {
     joystick_hwdata *hwdata;
 
-    SDL_LockJoysticks();
+    SDL_AssertJoysticksLocked();
 
     if (joystick == NULL || !joystick->hwdata) {
         SDL_UnlockJoysticks();
@@ -321,7 +328,6 @@ int SDL_SetJoystickVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
 
     hwdata->hats[hat] = value;
 
-    SDL_UnlockJoysticks();
     return 0;
 }
 

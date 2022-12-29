@@ -83,7 +83,7 @@ PrintJoystick(SDL_Joystick *joy)
     SDL_Log("          axes: %d\n", SDL_GetNumJoystickAxes(joy));
     SDL_Log("          hats: %d\n", SDL_GetNumJoystickHats(joy));
     SDL_Log("       buttons: %d\n", SDL_GetNumJoystickButtons(joy));
-    SDL_Log("   instance id: %" SDL_PRIs32 "\n", SDL_GetJoystickInstanceID(joy));
+    SDL_Log("   instance id: %" SDL_PRIu32 "\n", SDL_GetJoystickInstanceID(joy));
     SDL_Log("          guid: %s\n", guid);
     SDL_Log("       VID/PID: 0x%.4x/0x%.4x\n", SDL_GetJoystickVendor(joy), SDL_GetJoystickProduct(joy));
 }
@@ -112,7 +112,7 @@ void loop(void *arg)
         switch (event.type) {
 
         case SDL_JOYDEVICEADDED:
-            SDL_Log("Joystick device %d added.\n", (int)event.jdevice.which);
+            SDL_Log("Joystick device %" SDL_PRIu32 " added.\n", event.jdevice.which);
             if (joystick == NULL) {
                 joystick = SDL_OpenJoystick(event.jdevice.which);
                 if (joystick) {
@@ -124,20 +124,35 @@ void loop(void *arg)
             break;
 
         case SDL_JOYDEVICEREMOVED:
-            SDL_Log("Joystick device %d removed.\n", (int)event.jdevice.which);
+            SDL_Log("Joystick device %" SDL_PRIu32 " removed.\n", event.jdevice.which);
             if (event.jdevice.which == SDL_GetJoystickInstanceID(joystick)) {
+                SDL_JoystickID *joysticks;
+
                 SDL_CloseJoystick(joystick);
-                joystick = SDL_OpenJoystick(0);
+                joystick = NULL;
+
+                joysticks = SDL_GetJoysticks(NULL);
+                if (joysticks) {
+                    if (joysticks[0]) {
+                        joystick = SDL_OpenJoystick(joysticks[0]);
+                        if (joystick) {
+                            PrintJoystick(joystick);
+                        } else {
+                            SDL_Log("Couldn't open joystick: %s\n", SDL_GetError());
+                        }
+                    }
+                    SDL_free(joysticks);
+                }
             }
             break;
 
         case SDL_JOYAXISMOTION:
-            SDL_Log("Joystick %" SDL_PRIs32 " axis %d value: %d\n",
+            SDL_Log("Joystick %" SDL_PRIu32 " axis %d value: %d\n",
                     event.jaxis.which,
                     event.jaxis.axis, event.jaxis.value);
             break;
         case SDL_JOYHATMOTION:
-            SDL_Log("Joystick %" SDL_PRIs32 " hat %d value:",
+            SDL_Log("Joystick %" SDL_PRIu32 " hat %d value:",
                     event.jhat.which, event.jhat.hat);
             if (event.jhat.value == SDL_HAT_CENTERED) {
                 SDL_Log(" centered");
@@ -157,7 +172,7 @@ void loop(void *arg)
             SDL_Log("\n");
             break;
         case SDL_JOYBUTTONDOWN:
-            SDL_Log("Joystick %" SDL_PRIs32 " button %d down\n",
+            SDL_Log("Joystick %" SDL_PRIu32 " button %d down\n",
                     event.jbutton.which, event.jbutton.button);
             /* First button triggers a 0.5 second full strength rumble */
             if (event.jbutton.button == 0) {
@@ -165,7 +180,7 @@ void loop(void *arg)
             }
             break;
         case SDL_JOYBUTTONUP:
-            SDL_Log("Joystick %" SDL_PRIs32 " button %d up\n",
+            SDL_Log("Joystick %" SDL_PRIu32 " button %d up\n",
                     event.jbutton.which, event.jbutton.button);
             break;
         case SDL_KEYDOWN:

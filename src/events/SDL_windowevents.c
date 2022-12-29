@@ -84,18 +84,16 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
     }
     switch (windowevent) {
     case SDL_WINDOWEVENT_SHOWN:
-        if (window->flags & SDL_WINDOW_SHOWN) {
+        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
             return 0;
         }
         window->flags &= ~(SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED);
-        window->flags |= SDL_WINDOW_SHOWN;
         SDL_OnWindowShown(window);
         break;
     case SDL_WINDOWEVENT_HIDDEN:
-        if (!(window->flags & SDL_WINDOW_SHOWN)) {
+        if (window->flags & SDL_WINDOW_HIDDEN) {
             return 0;
         }
-        window->flags &= ~SDL_WINDOW_SHOWN;
         window->flags |= SDL_WINDOW_HIDDEN;
         SDL_OnWindowHidden(window);
         break;
@@ -183,7 +181,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(windowevent) == SDL_ENABLE) {
+    if (SDL_EventEnabled(windowevent)) {
         SDL_Event event;
         event.type = windowevent;
         event.common.timestamp = 0;

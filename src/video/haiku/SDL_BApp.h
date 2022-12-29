@@ -260,7 +260,7 @@ class SDL_BApp : public BApplication
                 be_app->HideCursor();
         } else {
             SDL_SendMouseMotion(0, win, 0, 0, x, y);
-            if (SDL_ShowCursor(-1) && be_app->IsCursorHidden())
+            if (SDL_CursorVisible() && be_app->IsCursorHidden())
                 be_app->ShowCursor();
         }
     }
@@ -311,7 +311,7 @@ class SDL_BApp : public BApplication
         HAIKU_SetKeyState(scancode, state);
         SDL_SendKeyboardKey(0, state, HAIKU_GetScancodeFromBeKey(scancode));
 
-        if (state == SDL_PRESSED && SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
+        if (state == SDL_PRESSED && SDL_EventEnabled(SDL_TEXTINPUT)) {
             const int8 *keyUtf8;
             ssize_t count;
             if (msg->FindData("key-utf8", B_INT8_TYPE, (const void **)&keyUtf8, &count) == B_OK) {

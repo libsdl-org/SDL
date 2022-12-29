@@ -44,7 +44,7 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(displayevent) == SDL_ENABLE) {
+    if (SDL_EventEnabled(displayevent)) {
         SDL_Event event;
         event.type = displayevent;
         event.common.timestamp = 0;

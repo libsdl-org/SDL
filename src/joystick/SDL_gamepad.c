@@ -1443,7 +1443,7 @@ static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *
     return SDL_PrivateAddMappingForGUID(guid, mapping, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
 
-static GamepadMapping_t *SDL_PrivateGetGamepadMapping(int device_index)
+static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id)
 {
     const char *name;
     SDL_JoystickGUID guid;
@@ -1451,19 +1451,14 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMapping(int device_index)
 
     SDL_AssertJoysticksLocked();
 
-    if ((device_index < 0) || (device_index >= SDL_GetNumJoysticks())) {
-        SDL_SetError("There are %d joysticks available", SDL_GetNumJoysticks());
-        return NULL;
-    }
-
-    name = SDL_GetJoystickNameForIndex(device_index);
-    guid = SDL_GetJoystickDeviceGUID(device_index);
+    name = SDL_GetJoystickInstanceName(instance_id);
+    guid = SDL_GetJoystickInstanceGUID(instance_id);
     mapping = SDL_PrivateGetGamepadMappingForNameAndGUID(name, guid);
     if (mapping == NULL) {
         SDL_GamepadMapping raw_map;
 
         SDL_zero(raw_map);
-        if (SDL_PrivateJoystickGetAutoGamepadMapping(device_index, &raw_map)) {
+        if (SDL_PrivateJoystickGetAutoGamepadMapping(instance_id, &raw_map)) {
             mapping = SDL_PrivateGenerateAutomaticGamepadMapping(name, guid, &raw_map);
         }
     }
@@ -1896,37 +1891,78 @@ int SDL_InitGamepadMappings(void)
 int SDL_InitGamepads(void)
 {
     int i;
+    SDL_JoystickID *joysticks;
 
-    /* watch for joy events and fire gamepad ones if needed */
+    /* Watch for joystick events and fire gamepad ones if needed */
     SDL_AddEventWatch(SDL_GamepadEventWatcher, NULL);
 
     /* Send added events for gamepads currently attached */
-    for (i = 0; i < SDL_GetNumJoysticks(); ++i) {
-        if (SDL_IsGamepad(i)) {
-            SDL_Event deviceevent;
-            deviceevent.type = SDL_GAMEPADADDED;
-            deviceevent.common.timestamp = 0;
-            deviceevent.cdevice.which = i;
-            SDL_PushEvent(&deviceevent);
+    joysticks = SDL_GetJoysticks(NULL);
+    if (joysticks) {
+        for (i = 0; joysticks[i]; ++i) {
+            if (SDL_IsGamepad(joysticks[i])) {
+                SDL_Event deviceevent;
+                deviceevent.type = SDL_GAMEPADADDED;
+                deviceevent.common.timestamp = 0;
+                deviceevent.cdevice.which = joysticks[i];
+                SDL_PushEvent(&deviceevent);
+            }
         }
+        SDL_free(joysticks);
     }
 
     return 0;
 }
 
-/*
- * Get the implementation dependent name of a gamepad
- */
-const char *SDL_GetGamepadNameForIndex(int joystick_index)
+SDL_bool SDL_HasGamepads(void)
+{
+    SDL_bool retval = SDL_FALSE;
+    SDL_JoystickID *joysticks = SDL_GetJoysticks(NULL);
+    if (joysticks) {
+        int i;
+        for (i = 0; joysticks[i]; ++i) {
+            if (SDL_IsGamepad(joysticks[i])) {
+                retval = SDL_TRUE;
+                break;
+            }
+        }
+        SDL_free(joysticks);
+    }
+    return retval;
+}
+
+SDL_JoystickID *SDL_GetGamepads(int *count)
+{
+    int num_joysticks = 0;
+    int num_gamepads = 0;
+    SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
+    if (joysticks) {
+        int i;
+        for (i = num_joysticks - 1; i >= 0; --i) {
+            if (SDL_IsGamepad(joysticks[i])) {
+                ++num_gamepads;
+            } else {
+                SDL_memmove(&joysticks[i], &joysticks[i+1], (num_gamepads + 1) * sizeof(joysticks[i]));
+            }
+        }
+        SDL_free(joysticks);
+    }
+    if (count) {
+        *count = num_gamepads;
+    }
+    return joysticks;
+}
+
+const char *SDL_GetGamepadInstanceName(SDL_JoystickID instance_id)
 {
     const char *retval = NULL;
 
     SDL_LockJoysticks();
     {
-        GamepadMapping_t *mapping = SDL_PrivateGetGamepadMapping(joystick_index);
+        GamepadMapping_t *mapping = SDL_PrivateGetGamepadMapping(instance_id);
         if (mapping != NULL) {
             if (SDL_strcmp(mapping->name, "*") == 0) {
-                retval = SDL_GetJoystickNameForIndex(joystick_index);
+                retval = SDL_GetJoystickInstanceName(instance_id);
             } else {
                 retval = mapping->name;
             }
@@ -1937,50 +1973,53 @@ const char *SDL_GetGamepadNameForIndex(int joystick_index)
     return retval;
 }
 
-/*
- * Get the implementation dependent path of a gamepad
- */
-const char *SDL_GetGamepadPathForIndex(int joystick_index)
+const char *SDL_GetGamepadInstancePath(SDL_JoystickID instance_id)
 {
-    const char *retval = NULL;
-
-    SDL_LockJoysticks();
-    {
-        GamepadMapping_t *mapping = SDL_PrivateGetGamepadMapping(joystick_index);
-        if (mapping != NULL) {
-            retval = SDL_GetJoystickPathForIndex(joystick_index);
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return retval;
+    return SDL_GetJoystickInstancePath(instance_id);
 }
 
-/**
- *  Get the type of a gamepad.
- */
-SDL_GamepadType SDL_GetGamepadTypeForIndex(int joystick_index)
+int SDL_GetGamepadInstancePlayerIndex(SDL_JoystickID instance_id)
 {
-    return SDL_GetGamepadTypeFromGUID(SDL_GetJoystickDeviceGUID(joystick_index), SDL_GetJoystickNameForIndex(joystick_index));
+    return SDL_GetJoystickInstancePlayerIndex(instance_id);
 }
 
-/**
- *  Get the mapping of a gamepad.
- *  This can be called before any gamepads are opened.
- *  If no mapping can be found, this function returns NULL.
- */
-char *SDL_GetGamepadMappingForDeviceIndex(int joystick_index)
+SDL_JoystickGUID SDL_GetGamepadInstanceGUID(SDL_JoystickID instance_id)
+{
+    return SDL_GetJoystickInstanceGUID(instance_id);
+}
+
+Uint16 SDL_GetGamepadInstanceVendor(SDL_JoystickID instance_id)
+{
+    return SDL_GetJoystickInstanceVendor(instance_id);
+}
+
+Uint16 SDL_GetGamepadInstanceProduct(SDL_JoystickID instance_id)
+{
+    return SDL_GetJoystickInstanceProduct(instance_id);
+}
+
+Uint16 SDL_GetGamepadInstanceProductVersion(SDL_JoystickID instance_id)
+{
+    return SDL_GetJoystickInstanceProductVersion(instance_id);
+}
+
+SDL_GamepadType SDL_GetGamepadInstanceType(SDL_JoystickID instance_id)
+{
+    return SDL_GetGamepadTypeFromGUID(SDL_GetJoystickInstanceGUID(instance_id), SDL_GetJoystickInstanceName(instance_id));
+}
+
+char *SDL_GetGamepadInstanceMapping(SDL_JoystickID instance_id)
 {
     char *retval = NULL;
 
     SDL_LockJoysticks();
     {
-        GamepadMapping_t *mapping = SDL_PrivateGetGamepadMapping(joystick_index);
+        GamepadMapping_t *mapping = SDL_PrivateGetGamepadMapping(instance_id);
         if (mapping != NULL) {
             SDL_JoystickGUID guid;
             char pchGUID[33];
             size_t needed;
-            guid = SDL_GetJoystickDeviceGUID(joystick_index);
+            guid = SDL_GetJoystickInstanceGUID(instance_id);
             SDL_GetJoystickGUIDString(guid, pchGUID, sizeof(pchGUID));
             /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
             needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
@@ -2019,13 +2058,13 @@ SDL_bool SDL_IsGamepadNameAndGUID(const char *name, SDL_JoystickGUID guid)
 /*
  * Return 1 if the joystick at this device index is a supported gamepad
  */
-SDL_bool SDL_IsGamepad(int joystick_index)
+SDL_bool SDL_IsGamepad(SDL_JoystickID instance_id)
 {
     SDL_bool retval;
 
     SDL_LockJoysticks();
     {
-        if (SDL_PrivateGetGamepadMapping(joystick_index) != NULL) {
+        if (SDL_PrivateGetGamepadMapping(instance_id) != NULL) {
             retval = SDL_TRUE;
         } else {
             retval = SDL_FALSE;
@@ -2129,15 +2168,12 @@ SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid)
 }
 
 /*
- * Open a gamepad for use - the index passed as an argument refers to
- * the N'th gamepad on the system.  This index is the value which will
- * identify this gamepad in future gamepad events.
+ * Open a gamepad for use
  *
  * This function returns a gamepad identifier, or NULL if an error occurred.
  */
-SDL_Gamepad *SDL_OpenGamepad(int joystick_index)
+SDL_Gamepad *SDL_OpenGamepad(SDL_JoystickID instance_id)
 {
-    SDL_JoystickID instance_id;
     SDL_Gamepad *gamepad;
     SDL_Gamepad *gamepadlist;
     GamepadMapping_t *pSupportedGamepad = NULL;
@@ -2146,7 +2182,6 @@ SDL_Gamepad *SDL_OpenGamepad(int joystick_index)
 
     gamepadlist = SDL_gamepads;
     /* If the gamepad is already open, return it */
-    instance_id = SDL_GetJoystickDeviceInstanceID(joystick_index);
     while (gamepadlist != NULL) {
         if (instance_id == gamepadlist->joystick->instance_id) {
             gamepad = gamepadlist;
@@ -2158,9 +2193,9 @@ SDL_Gamepad *SDL_OpenGamepad(int joystick_index)
     }
 
     /* Find a gamepad mapping */
-    pSupportedGamepad = SDL_PrivateGetGamepadMapping(joystick_index);
+    pSupportedGamepad = SDL_PrivateGetGamepadMapping(instance_id);
     if (pSupportedGamepad == NULL) {
-        SDL_SetError("Couldn't find mapping for device (%d)", joystick_index);
+        SDL_SetError("Couldn't find mapping for device (%" SDL_PRIu32 ")", instance_id);
         SDL_UnlockJoysticks();
         return NULL;
     }
@@ -2174,7 +2209,7 @@ SDL_Gamepad *SDL_OpenGamepad(int joystick_index)
     }
     gamepad->magic = &gamepad_magic;
 
-    gamepad->joystick = SDL_OpenJoystick(joystick_index);
+    gamepad->joystick = SDL_OpenJoystick(instance_id);
     if (gamepad->joystick == NULL) {
         SDL_free(gamepad);
         SDL_UnlockJoysticks();
@@ -2537,7 +2572,7 @@ int SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_b
 /*
  *  Query whether sensor data reporting is enabled for a gamepad
  */
-SDL_bool SDL_IsGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
+SDL_bool SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
     SDL_bool retval = SDL_FALSE;
 
@@ -2729,14 +2764,14 @@ const char * SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
  * Return if the gamepad in question is currently attached to the system,
  *  \return 0 if not plugged in, 1 if still present.
  */
-SDL_bool SDL_IsGamepadConnected(SDL_Gamepad *gamepad)
+SDL_bool SDL_GamepadConnected(SDL_Gamepad *gamepad)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
     if (joystick == NULL) {
         return SDL_FALSE;
     }
-    return SDL_IsJoystickConnected(joystick);
+    return SDL_JoystickConnected(joystick);
 }
 
 /*
@@ -3041,7 +3076,7 @@ static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gamep
     /* translate the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
-    if (SDL_GetEventState(SDL_GAMEPADAXISMOTION) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_GAMEPADAXISMOTION)) {
         SDL_Event event;
         event.type = SDL_GAMEPADAXISMOTION;
         event.common.timestamp = timestamp;
@@ -3103,7 +3138,7 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
     /* translate the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
-    if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+    if (SDL_EventEnabled(event.type)) {
         event.common.timestamp = timestamp;
         event.cbutton.which = gamepad->joystick->instance_id;
         event.cbutton.button = button;
@@ -3114,46 +3149,46 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
     return posted;
 }
 
-/*
- * Turn off gamepad events
- */
-int SDL_GetGamepadEventState(int state)
+static const Uint32 SDL_gamepad_event_list[] = {
+    SDL_GAMEPADAXISMOTION,
+    SDL_GAMEPADBUTTONDOWN,
+    SDL_GAMEPADBUTTONUP,
+    SDL_GAMEPADADDED,
+    SDL_GAMEPADREMOVED,
+    SDL_GAMEPADDEVICEREMAPPED,
+    SDL_GAMEPADTOUCHPADDOWN,
+    SDL_GAMEPADTOUCHPADMOTION,
+    SDL_GAMEPADTOUCHPADUP,
+    SDL_GAMEPADSENSORUPDATE,
+};
+
+void SDL_SetGamepadEventsEnabled(SDL_bool enabled)
 {
-#if SDL_EVENTS_DISABLED
-    return SDL_IGNORE;
-#else
-    const Uint32 event_list[] = {
-        SDL_GAMEPADAXISMOTION,
-        SDL_GAMEPADBUTTONDOWN,
-        SDL_GAMEPADBUTTONUP,
-        SDL_GAMEPADADDED,
-        SDL_GAMEPADREMOVED,
-        SDL_GAMEPADDEVICEREMAPPED,
-        SDL_GAMEPADTOUCHPADDOWN,
-        SDL_GAMEPADTOUCHPADMOTION,
-        SDL_GAMEPADTOUCHPADUP,
-        SDL_GAMEPADSENSORUPDATE,
-    };
+#ifndef SDL_EVENTS_DISABLED
     unsigned int i;
 
-    switch (state) {
-    case SDL_QUERY:
-        state = SDL_IGNORE;
-        for (i = 0; i < SDL_arraysize(event_list); ++i) {
-            state = SDL_EventState(event_list[i], SDL_QUERY);
-            if (state == SDL_ENABLE) {
-                break;
-            }
-        }
-        break;
-    default:
-        for (i = 0; i < SDL_arraysize(event_list); ++i) {
-            (void)SDL_EventState(event_list[i], state);
-        }
-        break;
+    for (i = 0; i < SDL_arraysize(SDL_gamepad_event_list); ++i) {
+        SDL_SetEventEnabled(SDL_gamepad_event_list[i], enabled);
     }
-    return state;
+#endif /* !SDL_EVENTS_DISABLED */
+}
+
+SDL_bool SDL_GamepadEventsEnabled(void)
+{
+    SDL_bool enabled = SDL_FALSE;
+
+#ifndef SDL_EVENTS_DISABLED
+    unsigned int i;
+
+    for (i = 0; i < SDL_arraysize(SDL_gamepad_event_list); ++i) {
+        enabled = SDL_EventEnabled(SDL_gamepad_event_list[i]);
+        if (enabled) {
+            break;
+        }
+    }
 #endif /* SDL_EVENTS_DISABLED */
+
+    return enabled;
 }
 
 void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick)

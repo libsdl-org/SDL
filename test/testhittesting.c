@@ -32,7 +32,7 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
     int w, h;
 
     for (i = 0; i < numareas; i++) {
-        if (SDL_IsPointInRect(pt, &areas[i])) {
+        if (SDL_PointInRect(pt, &areas[i])) {
             SDL_Log("HIT-TEST: DRAGGABLE\n");
             return SDL_HITTEST_DRAGGABLE;
         }

@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 
 #if SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED
-#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult and SDL_RecreateWindow */
+#include "../../video/SDL_sysvideo.h" /* For SDL_RecreateWindow */
 #include <SDL3/SDL_opengl.h>
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
@@ -1480,7 +1480,7 @@ static int GL_RenderPresent(SDL_Renderer *renderer)
 {
     GL_ActivateRenderer(renderer);
 
-    return SDL_GL_SwapWindowWithResult(renderer->window);
+    return SDL_GL_SwapWindow(renderer->window);
 }
 
 static void GL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)

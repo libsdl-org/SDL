@@ -3147,7 +3147,9 @@ if(SDL_SHARED)
     PUBLIC
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include/SDL3>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
   )
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
@@ -3180,7 +3182,9 @@ if(SDL_STATIC)
     PUBLIC
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include/SDL3>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
   )
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
@@ -3210,7 +3214,9 @@ if(SDL_TEST)
     PUBLIC
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include/SDL3>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
   )
   target_link_libraries(SDL3_test PRIVATE ${EXTRA_TEST_LIBS})
 endif()

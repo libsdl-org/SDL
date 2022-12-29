@@ -103,7 +103,7 @@ typedef enum
 {
     SDL_WINDOW_FULLSCREEN = 0x00000001,         /**< fullscreen window */
     SDL_WINDOW_OPENGL = 0x00000002,             /**< window usable with OpenGL context */
-    SDL_WINDOW_SHOWN = 0x00000004,              /**< window is visible */
+    /* 0x4 was SDL_WINDOW_SHOWN in SDL2, please reserve this bit for sdl2-compat. */
     SDL_WINDOW_HIDDEN = 0x00000008,             /**< window is not visible */
     SDL_WINDOW_BORDERLESS = 0x00000010,         /**< no window decoration */
     SDL_WINDOW_RESIZABLE = 0x00000020,          /**< window can be resized */
@@ -379,10 +379,10 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rec
  * **WARNING**: This reports the DPI that the hardware reports, and it is not
  * always reliable! It is almost always better to use SDL_GetWindowSize() to
  * find the window size, which might be in logical points instead of pixels,
- * and then SDL_GetWindowSizeInPixels(), SDL_GL_GetDrawableSize(), 
- * SDL_Vulkan_GetDrawableSize(), SDL_Metal_GetDrawableSize(), or 
+ * and then SDL_GetWindowSizeInPixels(), SDL_GL_GetDrawableSize(),
+ * SDL_Vulkan_GetDrawableSize(), SDL_Metal_GetDrawableSize(), or
  * SDL_GetRendererOutputSize(), and compare the two values to get an actual
- * scaling value between the two. We will be rethinking how high-dpi details 
+ * scaling value between the two. We will be rethinking how high-dpi details
  * should be managed in SDL3 to make things more consistent, reliable, and clear.
  *
  * \param displayIndex the index of the display from which DPI information
@@ -656,9 +656,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  * - `SDL_WINDOW_ALLOW_HIGHDPI`: window should be created in high-DPI mode if
  *   supported (>= SDL 2.0.1)
  *
- * `SDL_WINDOW_SHOWN` is ignored by SDL_CreateWindow(). The SDL_Window is
- * implicitly shown if SDL_WINDOW_HIDDEN is not set. `SDL_WINDOW_SHOWN` may be
- * queried later using SDL_GetWindowFlags().
+ * The SDL_Window is implicitly shown if SDL_WINDOW_HIDDEN is not set.
  *
  * On Apple's macOS, you **must** set the NSHighResolutionCapable Info.plist
  * property to YES, otherwise you will not receive a High-DPI OpenGL canvas.
@@ -923,7 +921,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_Window * window, int w,
  * The window size in screen coordinates may differ from the size in pixels,
  * if the window was created with `SDL_WINDOW_ALLOW_HIGHDPI` on a platform
  * with high-dpi support (e.g. iOS or macOS). Use SDL_GetWindowSizeInPixels(),
- * SDL_GL_GetDrawableSize(), SDL_Vulkan_GetDrawableSize(), or 
+ * SDL_GL_GetDrawableSize(), SDL_Vulkan_GetDrawableSize(), or
  * SDL_GetRendererOutputSize() to get the real client area size in pixels.
  *
  * \param window the window to query the width and height from
@@ -1615,7 +1613,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_Window * window);
  * \sa SDL_DisableScreenSaver
  * \sa SDL_EnableScreenSaver
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsScreenSaverEnabled(void);
+extern DECLSPEC SDL_bool SDLCALL SDL_ScreenSaverEnabled(void);
 
 /**
  * Allow the screen to be blanked by a screen saver.
@@ -1623,7 +1621,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsScreenSaverEnabled(void);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DisableScreenSaver
- * \sa SDL_IsScreenSaverEnabled
+ * \sa SDL_ScreenSaverEnabled
  */
 extern DECLSPEC void SDLCALL SDL_EnableScreenSaver(void);
 
@@ -1639,7 +1637,7 @@ extern DECLSPEC void SDLCALL SDL_EnableScreenSaver(void);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_EnableScreenSaver
- * \sa SDL_IsScreenSaverEnabled
+ * \sa SDL_ScreenSaverEnabled
  */
 extern DECLSPEC void SDLCALL SDL_DisableScreenSaver(void);
 
@@ -2016,9 +2014,12 @@ extern DECLSPEC int SDLCALL SDL_GL_GetSwapInterval(void);
  *
  * \param window the window to change
  *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_GL_SwapWindow(SDL_Window * window);
+extern DECLSPEC int SDLCALL SDL_GL_SwapWindow(SDL_Window * window);
 
 /**
  * Delete an OpenGL context.

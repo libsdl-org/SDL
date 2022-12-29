@@ -489,7 +489,7 @@ void WINRT_VideoQuit(_THIS)
     WINRT_QuitMouse(_this);
 }
 
-static const Uint32 WINRT_DetectableFlags = SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_SHOWN | SDL_WINDOW_HIDDEN | SDL_WINDOW_MOUSE_FOCUS;
+static const Uint32 WINRT_DetectableFlags = SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_HIDDEN | SDL_WINDOW_MOUSE_FOCUS;
 
 extern "C" Uint32
 WINRT_DetectWindowFlags(SDL_Window *window)
@@ -541,7 +541,7 @@ WINRT_DetectWindowFlags(SDL_Window *window)
         }
 
         if (data->coreWindow->Visible) {
-            latestFlags |= SDL_WINDOW_SHOWN;
+            latestFlags &= ~SDL_WINDOW_HIDDEN;
         } else {
             latestFlags |= SDL_WINDOW_HIDDEN;
         }
@@ -693,7 +693,7 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
         /* TODO, WinRT: set SDL_Window size, maybe position too, from XAML control */
         window->x = 0;
         window->y = 0;
-        window->flags |= SDL_WINDOW_SHOWN;
+        window->flags &= ~SDL_WINDOW_HIDDEN;
         SDL_SetMouseFocus(NULL);    // TODO: detect this
         SDL_SetKeyboardFocus(NULL); // TODO: detect this
     } else {

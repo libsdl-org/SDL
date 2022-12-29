@@ -120,7 +120,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
         cell_rect.w = text_length * FONT_CHARACTER_SIZE;
         cell_rect.h = lineHeight;
 
-        if (SDL_IsPointInRect(&mouse_pos, &cell_rect)) {
+        if (SDL_PointInRect(&mouse_pos, &cell_rect)) {
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
             /* Update cached mode under the mouse */
@@ -269,8 +269,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-    SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
+    SDL_SetEventEnabled(SDL_DROPFILE, SDL_TRUE);
+    SDL_SetEventEnabled(SDL_DROPTEXT, SDL_TRUE);
 
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];

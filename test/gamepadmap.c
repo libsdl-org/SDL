@@ -704,8 +704,10 @@ int main(int argc, char *argv[])
 {
     const char *name;
     int i;
+    SDL_JoystickID *joysticks;
+    int num_joysticks = 0;
     int joystick_index;
-    SDL_Joystick *joystick;
+    SDL_Joystick *joystick = NULL;
 
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
 
@@ -737,7 +739,7 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    while (!done && SDL_GetNumJoysticks() == 0) {
+    while (!done && !SDL_HasJoysticks()) {
         SDL_Event event;
 
         while (SDL_PollEvent(&event) > 0) {
@@ -758,25 +760,30 @@ int main(int argc, char *argv[])
     }
 
     /* Print information about the joysticks */
-    SDL_Log("There are %d joysticks attached\n", SDL_GetNumJoysticks());
-    for (i = 0; i < SDL_GetNumJoysticks(); ++i) {
-        name = SDL_GetJoystickNameForIndex(i);
-        SDL_Log("Joystick %d: %s\n", i, name ? name : "Unknown Joystick");
-        joystick = SDL_OpenJoystick(i);
-        if (joystick == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_OpenJoystick(%d) failed: %s\n", i,
-                         SDL_GetError());
-        } else {
-            char guid[64];
-            SDL_GetJoystickGUIDString(SDL_GetJoystickGUID(joystick),
-                                      guid, sizeof(guid));
-            SDL_Log("       axes: %d\n", SDL_GetNumJoystickAxes(joystick));
-            SDL_Log("       hats: %d\n", SDL_GetNumJoystickHats(joystick));
-            SDL_Log("    buttons: %d\n", SDL_GetNumJoystickButtons(joystick));
-            SDL_Log("instance id: %" SDL_PRIu32 "\n", SDL_GetJoystickInstanceID(joystick));
-            SDL_Log("       guid: %s\n", guid);
-            SDL_Log("    VID/PID: 0x%.4x/0x%.4x\n", SDL_GetJoystickVendor(joystick), SDL_GetJoystickProduct(joystick));
-            SDL_CloseJoystick(joystick);
+    joysticks = SDL_GetJoysticks(&num_joysticks);
+    if (joysticks) {
+        SDL_Log("There are %d joysticks attached\n", num_joysticks);
+        for (i = 0; joysticks[i]; ++i) {
+            SDL_JoystickID instance_id = joysticks[i];
+
+            name = SDL_GetJoystickInstanceName(instance_id);
+            SDL_Log("Joystick %" SDL_PRIu32 ": %s\n", instance_id, name ? name : "Unknown Joystick");
+            joystick = SDL_OpenJoystick(instance_id);
+            if (joystick == NULL) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_OpenJoystick(%" SDL_PRIu32 ") failed: %s\n", instance_id,
+                             SDL_GetError());
+            } else {
+                char guid[64];
+                SDL_GetJoystickGUIDString(SDL_GetJoystickGUID(joystick),
+                                          guid, sizeof(guid));
+                SDL_Log("       axes: %d\n", SDL_GetNumJoystickAxes(joystick));
+                SDL_Log("       hats: %d\n", SDL_GetNumJoystickHats(joystick));
+                SDL_Log("    buttons: %d\n", SDL_GetNumJoystickButtons(joystick));
+                SDL_Log("instance id: %" SDL_PRIu32 "\n", instance_id);
+                SDL_Log("       guid: %s\n", guid);
+                SDL_Log("    VID/PID: 0x%.4x/0x%.4x\n", SDL_GetJoystickVendor(joystick), SDL_GetJoystickProduct(joystick));
+                SDL_CloseJoystick(joystick);
+            }
         }
     }
 
@@ -787,13 +794,17 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    joystick = SDL_OpenJoystick(joystick_index);
+    if (joysticks && joystick_index < num_joysticks) {
+        joystick = SDL_OpenJoystick(joysticks[joystick_index]);
+    }
     if (joystick == NULL) {
         SDL_Log("Couldn't open joystick %d: %s\n", joystick_index, SDL_GetError());
     } else {
         WatchJoystick(joystick);
         SDL_CloseJoystick(joystick);
     }
+
+    SDL_free(joysticks);
 
     SDL_DestroyWindow(window);
 

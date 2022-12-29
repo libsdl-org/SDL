@@ -110,7 +110,7 @@ struct SDL_Window
 };
 #define FULLSCREEN_VISIBLE(W)                \
     (((W)->flags & SDL_WINDOW_FULLSCREEN) && \
-     ((W)->flags & SDL_WINDOW_SHOWN) &&      \
+     !((W)->flags & SDL_WINDOW_HIDDEN) &&      \
      !((W)->flags & SDL_WINDOW_MINIMIZED))
 
 /*
@@ -514,7 +514,5 @@ extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vin
 extern void SDL_ToggleDragAndDropSupport(void);
 
 extern int SDL_GetDisplayIndexForPoint(const SDL_Point *point);
-
-extern int SDL_GL_SwapWindowWithResult(SDL_Window *window);
 
 #endif /* SDL_sysvideo_h_ */

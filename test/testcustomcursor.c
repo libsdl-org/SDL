@@ -137,7 +137,7 @@ static SDL_Cursor *cursors[1 + SDL_NUM_SYSTEM_CURSORS];
 static SDL_SystemCursor cursor_types[1 + SDL_NUM_SYSTEM_CURSORS];
 static int num_cursors;
 static int current_cursor;
-static int show_cursor;
+static SDL_bool show_cursor;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -214,7 +214,11 @@ void loop()
 
             } else {
                 show_cursor = !show_cursor;
-                SDL_ShowCursor(show_cursor);
+                if (show_cursor) {
+                    SDL_ShowCursor();
+                } else {
+                    SDL_HideCursor();
+                }
             }
         }
     }
@@ -300,7 +304,7 @@ int main(int argc, char *argv[])
         SDL_SetCursor(cursors[0]);
     }
 
-    show_cursor = SDL_ShowCursor(SDL_QUERY);
+    show_cursor = SDL_CursorVisible();
 
     /* Main render loop */
     done = 0;

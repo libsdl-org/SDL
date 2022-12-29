@@ -397,7 +397,7 @@ typedef struct SDL_JoyDeviceEvent
 {
     Uint32 type;        /**< ::SDL_JOYDEVICEADDED or ::SDL_JOYDEVICEREMOVED */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_JoystickID which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED event */
+    SDL_JoystickID which;       /**< The joystick instance id */
 } SDL_JoyDeviceEvent;
 
 /**
@@ -450,7 +450,7 @@ typedef struct SDL_GamepadDeviceEvent
 {
     Uint32 type;        /**< ::SDL_GAMEPADADDED, ::SDL_GAMEPADREMOVED, or ::SDL_GAMEPADDEVICEREMAPPED */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_JoystickID which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED or REMAPPED event */
+    SDL_JoystickID which;       /**< The joystick instance id */
 } SDL_GamepadDeviceEvent;
 
 /**
@@ -516,7 +516,7 @@ typedef struct SDL_TouchFingerEvent
 
 /**
  *  \brief An event used to request a file open by the system (event.drop.*)
- *         This event is enabled by default, you can disable it with SDL_EventState().
+ *         This event is enabled by default, you can disable it with SDL_SetEventEnabled().
  *  \note If this event is enabled, you must free the filename in the event.
  */
 typedef struct SDL_DropEvent
@@ -577,7 +577,7 @@ typedef struct SDL_SysWMmsg SDL_SysWMmsg;
 
 /**
  *  \brief A video driver dependent system event (event.syswm.*)
- *         This event is disabled by default, you can enable it with SDL_EventState()
+ *         This event is disabled by default, you can enable it with SDL_SetEventEnabled()
  *
  *  \note If you want to use this event, you should include SDL_syswm.h.
  */
@@ -969,7 +969,7 @@ typedef int (SDLCALL * SDL_EventFilter) (void *userdata, SDL_Event * event);
  * closed, otherwise the window will remain open if possible.
  *
  * Note: Disabled events never make it to the event filter function; see
- * SDL_EventState().
+ * SDL_SetEventEnabled().
  *
  * Note: If you just want to inspect events without filtering, you should use
  * SDL_AddEventWatch() instead.
@@ -984,7 +984,7 @@ typedef int (SDLCALL * SDL_EventFilter) (void *userdata, SDL_Event * event);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddEventWatch
- * \sa SDL_EventState
+ * \sa SDL_SetEventEnabled
  * \sa SDL_GetEventFilter
  * \sa SDL_PeepEvents
  * \sa SDL_PushEvent
@@ -1074,52 +1074,29 @@ extern DECLSPEC void SDLCALL SDL_DelEventWatch(SDL_EventFilter filter,
 extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter,
                                               void *userdata);
 
-/* @{ */
-#define SDL_QUERY   -1
-#define SDL_IGNORE   0
-#define SDL_DISABLE  0
-#define SDL_ENABLE   1
-
 /**
- * Set or query the state of processing events by type.
- *
- * `state` may be any of the following:
- *
- * - `SDL_QUERY`: returns the current processing state of the specified event
- * - `SDL_IGNORE` (aka `SDL_DISABLE`): the event will automatically be dropped
- *   from the event queue and will not be filtered
- * - `SDL_ENABLE`: the event will be processed normally
+ * Set the state of processing events by type.
  *
  * \param type the type of event; see SDL_EventType for details
- * \param state how to process the event
- * \returns `SDL_DISABLE` or `SDL_ENABLE`, representing the processing state
- *          of the event before this function makes any changes to it.
+ * \param state whether to process the event or not
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetEventState
+ * \sa SDL_IsEventEnabled
  */
-extern DECLSPEC Uint8 SDLCALL SDL_EventState(Uint32 type, int state);
+extern DECLSPEC void SDLCALL SDL_SetEventEnabled(Uint32 type, SDL_bool enabled);
 
 /**
  * Query the state of processing events by type.
  *
- * This is equivalent to calling `SDL_EventState(type, SDL_QUERY)`.
- *
- * In SDL3, this is a proper function, but in SDL2, this was a macro.
- *
  * \param type the type of event; see SDL_EventType for details
- * \returns `SDL_DISABLE` or `SDL_ENABLE`, representing the processing state
- *          of the event before this function makes any changes to it.
+ * \returns SDL_TRUE if the event is being processed, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_EventState
+ * \sa SDL_SetEventEnabled
  */
-extern DECLSPEC Uint8 SDLCALL SDL_GetEventState(Uint32 type);
-
-/* @} */
-
+extern DECLSPEC SDL_bool SDLCALL SDL_EventEnabled(Uint32 type);
 
 /**
  * Allocate a set of user-defined events, and return the beginning event

@@ -432,12 +432,12 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
             }
 
             if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0 &&
-                SDL_IsRectEmpty(&mouse_rect)) {
+                SDL_RectEmpty(&mouse_rect)) {
                 SDL_memcpy(&mouse_rect, &window_rect, sizeof(mouse_rect));
             }
         }
 
-        if (SDL_IsRectEmpty(&mouse_rect)) {
+        if (SDL_RectEmpty(&mouse_rect)) {
             nswindow.mouseConfinementRect = NSZeroRect;
         } else {
             NSRect rect;
@@ -1082,7 +1082,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
         [self windowDidResize:aNotification];
 
         /* FIXME: Why does the window get hidden? */
-        if (window->flags & SDL_WINDOW_SHOWN) {
+        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
             Cocoa_ShowWindow(SDL_GetVideoDevice(), window);
         }
     }
@@ -1645,9 +1645,9 @@ static int SetupWindowData(_THIS, SDL_Window *window, NSWindow *nswindow, NSView
         [data.listener listen:data];
 
         if ([nswindow isVisible]) {
-            window->flags |= SDL_WINDOW_SHOWN;
+            window->flags &= ~SDL_WINDOW_HIDDEN;
         } else {
-            window->flags &= ~SDL_WINDOW_SHOWN;
+            window->flags |= SDL_WINDOW_HIDDEN;
         }
 
         {
