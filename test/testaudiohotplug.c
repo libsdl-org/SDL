@@ -42,10 +42,11 @@ quit(int rc)
 }
 
 void SDLCALL
-fillerup(void *_pos, Uint8 *stream, int len)
+fillerup(void *_pos, void *stream_param, int len)
 {
     Uint32 pos = *((Uint32 *)_pos);
     Uint8 *waveptr;
+    Uint8 *stream = stream_param;
     int waveleft;
 
     /* Set up the pointers */
