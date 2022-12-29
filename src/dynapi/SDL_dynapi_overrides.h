@@ -565,9 +565,9 @@
 #define SDL_RenderFlush SDL_RenderFlush_REAL
 #define SDL_RenderGeometry SDL_RenderGeometry_REAL
 #define SDL_RenderGeometryRaw SDL_RenderGeometryRaw_REAL
-#define SDL_RenderGetD3D11Device    SDL_RenderGetD3D11Device_REAL
+#define SDL_GetRenderD3D11Device    SDL_GetRenderD3D11Device_REAL
 #define SDL_RenderGetD3D12Device    SDL_RenderGetD3D12Device_REAL
-#define SDL_RenderGetD3D9Device SDL_RenderGetD3D9Device_REAL
+#define SDL_GetRenderD3D9Device SDL_GetRenderD3D9Device_REAL
 #define SDL_RenderLine SDL_RenderLine_REAL
 #define SDL_RenderLineF SDL_RenderLineF_REAL
 #define SDL_RenderLines SDL_RenderLines_REAL

@@ -74,8 +74,8 @@ SDL_DYNAPI_PROC(void,SDL_UnregisterApp,(void),(),)
 #if defined(__WIN32__) || defined(__WINGDK__)
 SDL_DYNAPI_PROC(SDL_bool,SDL_DXGIGetOutputInfo,(int a, int *b, int *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_Direct3D9GetAdapterIndex,(int a),(a),return)
-SDL_DYNAPI_PROC(ID3D11Device*,SDL_RenderGetD3D11Device,(SDL_Renderer *a),(a),return)
-SDL_DYNAPI_PROC(IDirect3DDevice9*,SDL_RenderGetD3D9Device,(SDL_Renderer *a),(a),return)
+SDL_DYNAPI_PROC(ID3D11Device*,SDL_GetRenderD3D11Device,(SDL_Renderer *a),(a),return)
+SDL_DYNAPI_PROC(IDirect3DDevice9*,SDL_GetRenderD3D9Device,(SDL_Renderer *a),(a),return)
 #endif
 
 #if defined(__GDK__)

@@ -1738,7 +1738,7 @@ SDL_RenderDriver D3D_RenderDriver = {
 #if defined(__WIN32__) || defined(__WINGDK__)
 /* This function needs to always exist on Windows, for the Dynamic API. */
 IDirect3DDevice9 *
-SDL_RenderGetD3D9Device(SDL_Renderer *renderer)
+SDL_GetRenderD3D9Device(SDL_Renderer *renderer)
 {
     IDirect3DDevice9 *device = NULL;
 

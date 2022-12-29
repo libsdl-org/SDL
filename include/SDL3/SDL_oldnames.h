@@ -341,6 +341,10 @@
 #define SDL_UpperBlit SDL_BlitSurface
 #define SDL_UpperBlitScaled SDL_BlitSurfaceScaled
 
+/* ##SDL_system.h */
+#define SDL_RenderGetD3D11Device SDL_GetRenderD3D11Device
+#define SDL_RenderGetD3D9Device SDL_GetRenderD3D9Device
+
 /* ##SDL_video.h */
 #define SDL_GetPointDisplayIndex SDL_GetDisplayIndexForPoint
 #define SDL_GetRectDisplayIndex SDL_GetDisplayIndexForRect
@@ -655,6 +659,10 @@
 #define SDL_SetColorKey SDL_SetColorKey_renamed_SDL_SetSurfaceColorKey
 #define SDL_UpperBlit SDL_UpperBlit_renamed_SDL_BlitSurface
 #define SDL_UpperBlitScaled SDL_UpperBlitScaled_renamed_SDL_BlitSurfaceScaled
+
+/* ##SDL_system.h */
+#define SDL_RenderGetD3D11Device SDL_RenderGetD3D11Device_renamed_SDL_GetRenderD3D11Device
+#define SDL_RenderGetD3D9Device SDL_RenderGetD3D9Device_renamed_SDL_GetRenderD3D9Device
 
 /* ##SDL_video.h */
 #define SDL_GetPointDisplayIndex SDL_GetPointDisplayIndex_renamed_SDL_GetDisplayIndexForPoint
