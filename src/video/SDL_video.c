@@ -1491,8 +1491,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
 
 static SDL_INLINE SDL_bool IsAcceptingDragAndDrop(void)
 {
-    if ((SDL_GetEventState(SDL_DROPFILE) == SDL_ENABLE) ||
-        (SDL_GetEventState(SDL_DROPTEXT) == SDL_ENABLE)) {
+    if (SDL_EventEnabled(SDL_DROPFILE) || SDL_EventEnabled(SDL_DROPTEXT)) {
         return SDL_TRUE;
     }
     return SDL_FALSE;
@@ -4230,8 +4229,8 @@ void SDL_StartTextInput(void)
     SDL_Window *window;
 
     /* First, enable text events */
-    (void)SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
-    (void)SDL_EventState(SDL_TEXTEDITING, SDL_ENABLE);
+    SDL_SetEventEnabled(SDL_TEXTINPUT, SDL_TRUE);
+    SDL_SetEventEnabled(SDL_TEXTEDITING, SDL_TRUE);
 
     /* Then show the on-screen keyboard, if any */
     window = SDL_GetFocusWindow();
@@ -4265,7 +4264,7 @@ SDL_IsTextInputShown(void)
 SDL_bool
 SDL_IsTextInputActive(void)
 {
-    return SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE;
+    return SDL_EventEnabled(SDL_TEXTINPUT);
 }
 
 void SDL_StopTextInput(void)
@@ -4284,8 +4283,8 @@ void SDL_StopTextInput(void)
     }
 
     /* Finally disable text events */
-    (void)SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
-    (void)SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
+    SDL_SetEventEnabled(SDL_TEXTINPUT, SDL_FALSE);
+    SDL_SetEventEnabled(SDL_TEXTEDITING, SDL_FALSE);
 }
 
 void SDL_SetTextInputRect(const SDL_Rect *rect)
@@ -4368,7 +4367,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     int dummybutton;
     int retval = -1;
     SDL_bool relative_mode;
-    int show_cursor_prev;
+    SDL_bool show_cursor_prev;
     SDL_Window *current_window;
     SDL_MessageBoxData mbdata;
 
@@ -4384,7 +4383,8 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     relative_mode = SDL_GetRelativeMouseMode();
     SDL_UpdateMouseCapture(SDL_FALSE);
     SDL_SetRelativeMouseMode(SDL_FALSE);
-    show_cursor_prev = SDL_ShowCursor(1);
+    show_cursor_prev = SDL_CursorVisible();
+    SDL_ShowCursor();
     SDL_ResetKeyboard();
 
     if (buttonid == NULL) {
@@ -4489,7 +4489,9 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         SDL_RaiseWindow(current_window);
     }
 
-    SDL_ShowCursor(show_cursor_prev);
+    if (!show_cursor_prev) {
+        SDL_HideCursor();
+    }
     SDL_SetRelativeMouseMode(relative_mode);
     SDL_UpdateMouseCapture(SDL_FALSE);
 

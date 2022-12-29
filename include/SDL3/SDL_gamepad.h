@@ -184,7 +184,7 @@ typedef struct SDL_GamepadBinding
 extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mappingString);
 
 /**
- * Load a set of Game Controller mappings from a seekable SDL data stream.
+ * Load a set of gamepad mappings from a seekable SDL data stream.
  *
  * You can call this function several times, if needed, to load different
  * database files.
@@ -256,7 +256,7 @@ extern DECLSPEC char * SDLCALL SDL_GetGamepadMappingForIndex(int mapping_index);
 extern DECLSPEC char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID guid);
 
 /**
- * Get the current mapping of a Game Controller.
+ * Get the current mapping of a gamepad.
  *
  * The returned string must be freed with SDL_free().
  *
@@ -649,24 +649,34 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsGamepadConnected(SDL_Gamepad *gamepad);
 extern DECLSPEC SDL_Joystick *SDLCALL SDL_GetGamepadJoystick(SDL_Gamepad *gamepad);
 
 /**
- * Query or change current state of Game Controller events.
+ * Set the state of gamepad event processing.
  *
  * If gamepad events are disabled, you must call SDL_UpdateGamepads()
  * yourself and check the state of the gamepad when you want gamepad
  * information.
  *
- * Any number can be passed to SDL_GetGamepadEventState(), but only -1, 0,
- * and 1 will have any effect. Other numbers will just be returned.
- *
- * \param state can be one of `SDL_QUERY`, `SDL_IGNORE`, or `SDL_ENABLE`
- * \returns the same value passed to the function, with exception to -1
- *          (SDL_QUERY), which will return the current state.
+ * \param state whether to process gamepad events or not
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetJoystickEventState
+ * \sa SDL_GamepadEventsEnabled
  */
-extern DECLSPEC int SDLCALL SDL_GetGamepadEventState(int state);
+extern DECLSPEC void SDLCALL SDL_SetGamepadEventsEnabled(SDL_bool enabled);
+
+/**
+ * Query the state of gamepad event processing.
+ *
+ * If gamepad events are disabled, you must call SDL_UpdateGamepads()
+ * yourself and check the state of the gamepad when you want gamepad
+ * information.
+ *
+ * \returns SDL_TRUE if gamepad events are being processed, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetGamepadEventsEnabled
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
 
 /**
  * Manually pump gamepad updates if not using the loop.

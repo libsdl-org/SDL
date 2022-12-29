@@ -492,7 +492,7 @@ int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_tim
     /* Post the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
-    if (SDL_GetEventState(SDL_SENSORUPDATE) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_SENSORUPDATE)) {
         SDL_Event event;
         event.type = SDL_SENSORUPDATE;
         event.common.timestamp = timestamp;

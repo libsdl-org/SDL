@@ -127,7 +127,6 @@
 #define SDL_EGL_SetEGLAttributeCallbacks SDL_EGL_SetEGLAttributeCallbacks_REAL
 #define SDL_EnableScreenSaver SDL_EnableScreenSaver_REAL
 #define SDL_Error SDL_Error_REAL
-#define SDL_EventState SDL_EventState_REAL
 #define SDL_FillSurfaceRect SDL_FillSurfaceRect_REAL
 #define SDL_FillSurfaceRects SDL_FillSurfaceRects_REAL
 #define SDL_FilterEvents SDL_FilterEvents_REAL
@@ -199,7 +198,6 @@
 #define SDL_GetError SDL_GetError_REAL
 #define SDL_GetErrorMsg SDL_GetErrorMsg_REAL
 #define SDL_GetEventFilter SDL_GetEventFilter_REAL
-#define SDL_GetEventState SDL_GetEventState_REAL
 #define SDL_GetGamepadAppleSFSymbolsNameForAxis SDL_GetGamepadAppleSFSymbolsNameForAxis_REAL
 #define SDL_GetGamepadAppleSFSymbolsNameForButton SDL_GetGamepadAppleSFSymbolsNameForButton_REAL
 #define SDL_GetGamepadAxis SDL_GetGamepadAxis_REAL
@@ -208,7 +206,6 @@
 #define SDL_GetGamepadBindForButton SDL_GetGamepadBindForButton_REAL
 #define SDL_GetGamepadButton SDL_GetGamepadButton_REAL
 #define SDL_GetGamepadButtonFromString SDL_GetGamepadButtonFromString_REAL
-#define SDL_GetGamepadEventState SDL_GetGamepadEventState_REAL
 #define SDL_GetGamepadFirmwareVersion SDL_GetGamepadFirmwareVersion_REAL
 #define SDL_GetGamepadFromInstanceID SDL_GetGamepadFromInstanceID_REAL
 #define SDL_GetGamepadFromPlayerIndex SDL_GetGamepadFromPlayerIndex_REAL
@@ -248,7 +245,6 @@
 #define SDL_GetJoystickAxis SDL_GetJoystickAxis_REAL
 #define SDL_GetJoystickAxisInitialState SDL_GetJoystickAxisInitialState_REAL
 #define SDL_GetJoystickButton SDL_GetJoystickButton_REAL
-#define SDL_GetJoystickEventState SDL_GetJoystickEventState_REAL
 #define SDL_GetJoystickFirmwareVersion SDL_GetJoystickFirmwareVersion_REAL
 #define SDL_GetJoystickFromInstanceID SDL_GetJoystickFromInstanceID_REAL
 #define SDL_GetJoystickFromPlayerIndex SDL_GetJoystickFromPlayerIndex_REAL
@@ -683,7 +679,6 @@
 #define SDL_SetWindowTitle SDL_SetWindowTitle_REAL
 #define SDL_SetWindowsMessageHook   SDL_SetWindowsMessageHook_REAL
 #define SDL_SetYUVConversionMode SDL_SetYUVConversionMode_REAL
-#define SDL_ShowCursor SDL_ShowCursor_REAL
 #define SDL_ShowMessageBox SDL_ShowMessageBox_REAL
 #define SDL_ShowSimpleMessageBox SDL_ShowSimpleMessageBox_REAL
 #define SDL_ShowWindow SDL_ShowWindow_REAL
@@ -883,3 +878,12 @@
 #define SDL_wcsstr SDL_wcsstr_REAL
 
 /* New API symbols are added at the end */
+#define SDL_SetEventEnabled SDL_SetEventEnabled_REAL
+#define SDL_EventEnabled SDL_EventEnabled_REAL
+#define SDL_SetGamepadEventsEnabled SDL_SetGamepadEventsEnabled_REAL
+#define SDL_GamepadEventsEnabled SDL_GamepadEventsEnabled_REAL
+#define SDL_SetJoystickEventsEnabled SDL_SetJoystickEventsEnabled_REAL
+#define SDL_JoystickEventsEnabled SDL_JoystickEventsEnabled_REAL
+#define SDL_ShowCursor SDL_ShowCursor_REAL
+#define SDL_HideCursor SDL_HideCursor_REAL
+#define SDL_CursorVisible SDL_CursorVisible_REAL
