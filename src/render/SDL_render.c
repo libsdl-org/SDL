@@ -921,7 +921,7 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
         /* Pick a good default refresh rate */
         refresh_rate = 60;
     }
-    renderer->simulate_vsync_interval_ns = (SDL_NS_PER_SECOND / refresh_rate);
+    renderer->simulate_vsync_interval_ns = (Uint64) ((double)SDL_NS_PER_SECOND / refresh_rate);
 }
 #endif /* !SDL_RENDER_DISABLED */
 
