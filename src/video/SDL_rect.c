@@ -101,11 +101,11 @@ SDL_GetSpanEnclosingRect(int width, int height,
 #define RECTTYPE                 SDL_FRect
 #define POINTTYPE                SDL_FPoint
 #define SCALARTYPE               float
-#define COMPUTEOUTCODE           ComputeOutCodeF
-#define SDL_HASINTERSECTION      SDL_HasRectIntersectionF
-#define SDL_INTERSECTRECT        SDL_GetRectIntersectionF
-#define SDL_RECTEMPTY            SDL_RectEmptyF
-#define SDL_UNIONRECT            SDL_GetRectUnionF
-#define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPointsF
-#define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersectionF
+#define COMPUTEOUTCODE           ComputeOutCodeFloat
+#define SDL_HASINTERSECTION      SDL_HasRectIntersectionFloat
+#define SDL_INTERSECTRECT        SDL_GetRectIntersectionFloat
+#define SDL_RECTEMPTY            SDL_RectEmptyFloat
+#define SDL_UNIONRECT            SDL_GetRectUnionFloat
+#define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPointsFloat
+#define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersectionFloat
 #include "SDL_rect_impl.h"

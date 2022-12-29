@@ -2611,15 +2611,15 @@ int SDL_RenderPoint(SDL_Renderer *renderer, int x, int y)
     SDL_FPoint fpoint;
     fpoint.x = (float)x;
     fpoint.y = (float)y;
-    return SDL_RenderPointsF(renderer, &fpoint, 1);
+    return SDL_RenderPointsFloat(renderer, &fpoint, 1);
 }
 
-int SDL_RenderPointF(SDL_Renderer *renderer, float x, float y)
+int SDL_RenderPointFloat(SDL_Renderer *renderer, float x, float y)
 {
     SDL_FPoint fpoint;
     fpoint.x = x;
     fpoint.y = y;
-    return SDL_RenderPointsF(renderer, &fpoint, 1);
+    return SDL_RenderPointsFloat(renderer, &fpoint, 1);
 }
 
 static int RenderPointsWithRects(SDL_Renderer *renderer,
@@ -2727,7 +2727,7 @@ static int RenderPointsWithRectsF(SDL_Renderer *renderer,
     return retval;
 }
 
-int SDL_RenderPointsF(SDL_Renderer *renderer,
+int SDL_RenderPointsFloat(SDL_Renderer *renderer,
                           const SDL_FPoint *points, int count)
 {
     int retval;
@@ -2735,7 +2735,7 @@ int SDL_RenderPointsF(SDL_Renderer *renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (points == NULL) {
-        return SDL_InvalidParamError("SDL_RenderPointsF(): points");
+        return SDL_InvalidParamError("SDL_RenderPointsFloat(): points");
     }
     if (count < 1) {
         return 0;
@@ -2763,17 +2763,17 @@ int SDL_RenderLine(SDL_Renderer *renderer, int x1, int y1, int x2, int y2)
     points[0].y = (float)y1;
     points[1].x = (float)x2;
     points[1].y = (float)y2;
-    return SDL_RenderLinesF(renderer, points, 2);
+    return SDL_RenderLinesFloat(renderer, points, 2);
 }
 
-int SDL_RenderLineF(SDL_Renderer *renderer, float x1, float y1, float x2, float y2)
+int SDL_RenderLineFloat(SDL_Renderer *renderer, float x1, float y1, float x2, float y2)
 {
     SDL_FPoint points[2];
     points[0].x = x1;
     points[0].y = y1;
     points[1].x = x2;
     points[1].y = y2;
-    return SDL_RenderLinesF(renderer, points, 2);
+    return SDL_RenderLinesFloat(renderer, points, 2);
 }
 
 static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_bool draw_last)
@@ -2963,14 +2963,14 @@ int SDL_RenderLines(SDL_Renderer *renderer,
         fpoints[i].y = (float)points[i].y;
     }
 
-    retval = SDL_RenderLinesF(renderer, fpoints, count);
+    retval = SDL_RenderLinesFloat(renderer, fpoints, count);
 
     SDL_small_free(fpoints, isstack);
 
     return retval;
 }
 
-int SDL_RenderLinesF(SDL_Renderer *renderer,
+int SDL_RenderLinesFloat(SDL_Renderer *renderer,
                          const SDL_FPoint *points, int count)
 {
     int retval = 0;
@@ -2978,7 +2978,7 @@ int SDL_RenderLinesF(SDL_Renderer *renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (points == NULL) {
-        return SDL_InvalidParamError("SDL_RenderLinesF(): points");
+        return SDL_InvalidParamError("SDL_RenderLinesFloat(): points");
     }
     if (count < 2) {
         return 0;
@@ -3135,10 +3135,10 @@ int SDL_RenderRect(SDL_Renderer *renderer, const SDL_Rect *rect)
         prect = &frect;
     }
 
-    return SDL_RenderRectF(renderer, prect);
+    return SDL_RenderRectFloat(renderer, prect);
 }
 
-int SDL_RenderRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
+int SDL_RenderRectFloat(SDL_Renderer *renderer, const SDL_FRect *rect)
 {
     SDL_FRect frect;
     SDL_FPoint points[5];
@@ -3161,7 +3161,7 @@ int SDL_RenderRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
     points[3].y = rect->y + rect->h - 1;
     points[4].x = rect->x;
     points[4].y = rect->y;
-    return SDL_RenderLinesF(renderer, points, 5);
+    return SDL_RenderLinesFloat(renderer, points, 5);
 }
 
 int SDL_RenderRects(SDL_Renderer *renderer,
@@ -3193,7 +3193,7 @@ int SDL_RenderRects(SDL_Renderer *renderer,
     return 0;
 }
 
-int SDL_RenderRectsF(SDL_Renderer *renderer,
+int SDL_RenderRectsFloat(SDL_Renderer *renderer,
                          const SDL_FRect *rects, int count)
 {
     int i;
@@ -3201,7 +3201,7 @@ int SDL_RenderRectsF(SDL_Renderer *renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (rects == NULL) {
-        return SDL_InvalidParamError("SDL_RenderRectsF(): rects");
+        return SDL_InvalidParamError("SDL_RenderRectsFloat(): rects");
     }
     if (count < 1) {
         return 0;
@@ -3215,7 +3215,7 @@ int SDL_RenderRectsF(SDL_Renderer *renderer,
 #endif
 
     for (i = 0; i < count; ++i) {
-        if (SDL_RenderRectF(renderer, &rects[i]) < 0) {
+        if (SDL_RenderRectFloat(renderer, &rects[i]) < 0) {
             return -1;
         }
     }
@@ -3237,10 +3237,10 @@ int SDL_RenderFillRect(SDL_Renderer *renderer, const SDL_Rect *rect)
     } else {
         GetRenderViewportSize(renderer, &frect);
     }
-    return SDL_RenderFillRectsF(renderer, &frect, 1);
+    return SDL_RenderFillRectsFloat(renderer, &frect, 1);
 }
 
-int SDL_RenderFillRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
+int SDL_RenderFillRectFloat(SDL_Renderer *renderer, const SDL_FRect *rect)
 {
     SDL_FRect frect;
 
@@ -3251,7 +3251,7 @@ int SDL_RenderFillRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
         GetRenderViewportSize(renderer, &frect);
         rect = &frect;
     }
-    return SDL_RenderFillRectsF(renderer, rect, 1);
+    return SDL_RenderFillRectsFloat(renderer, rect, 1);
 }
 
 int SDL_RenderFillRects(SDL_Renderer *renderer,
@@ -3296,7 +3296,7 @@ int SDL_RenderFillRects(SDL_Renderer *renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int SDL_RenderFillRectsF(SDL_Renderer *renderer,
+int SDL_RenderFillRectsFloat(SDL_Renderer *renderer,
                          const SDL_FRect *rects, int count)
 {
     SDL_FRect *frects;
@@ -3307,7 +3307,7 @@ int SDL_RenderFillRectsF(SDL_Renderer *renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (rects == NULL) {
-        return SDL_InvalidParamError("SDL_RenderFillRectsF(): rects");
+        return SDL_InvalidParamError("SDL_RenderFillRectsFloat(): rects");
     }
     if (count < 1) {
         return 0;
@@ -3350,10 +3350,10 @@ int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         dstfrect.h = (float)dstrect->h;
         pdstfrect = &dstfrect;
     }
-    return SDL_RenderTextureF(renderer, texture, srcrect, pdstfrect);
+    return SDL_RenderTextureFloat(renderer, texture, srcrect, pdstfrect);
 }
 
-int SDL_RenderTextureF(SDL_Renderer *renderer, SDL_Texture *texture,
+int SDL_RenderTextureFloat(SDL_Renderer *renderer, SDL_Texture *texture,
                     const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
     SDL_Rect real_srcrect;
@@ -3389,7 +3389,7 @@ int SDL_RenderTextureF(SDL_Renderer *renderer, SDL_Texture *texture,
 
     GetRenderViewportSize(renderer, &real_dstrect);
     if (dstrect) {
-        if (!SDL_HasRectIntersectionF(dstrect, &real_dstrect)) {
+        if (!SDL_HasRectIntersectionFloat(dstrect, &real_dstrect)) {
             return 0;
         }
         real_dstrect = *dstrect;
@@ -3481,10 +3481,10 @@ int SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
         pfcenter = &fcenter;
     }
 
-    return SDL_RenderTextureRotatedF(renderer, texture, srcrect, pdstfrect, angle, pfcenter, flip);
+    return SDL_RenderTextureRotatedFloat(renderer, texture, srcrect, pdstfrect, angle, pfcenter, flip);
 }
 
-int SDL_RenderTextureRotatedF(SDL_Renderer *renderer, SDL_Texture *texture,
+int SDL_RenderTextureRotatedFloat(SDL_Renderer *renderer, SDL_Texture *texture,
                       const SDL_Rect *srcrect, const SDL_FRect *dstrect,
                       const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
@@ -3495,7 +3495,7 @@ int SDL_RenderTextureRotatedF(SDL_Renderer *renderer, SDL_Texture *texture,
     int use_rendergeometry;
 
     if (flip == SDL_FLIP_NONE && (int)(angle / 360) == angle / 360) { /* fast path when we don't need rotation or flipping */
-        return SDL_RenderTextureF(renderer, texture, srcrect, dstrect);
+        return SDL_RenderTextureFloat(renderer, texture, srcrect, dstrect);
     }
 
     CHECK_RENDERER_MAGIC(renderer, -1);
@@ -3941,7 +3941,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 SDL_SetTextureAlphaMod(texture, col0_.a);
                 SDL_SetTextureColorMod(texture, col0_.r, col0_.g, col0_.b);
                 if (s.w > 0 && s.h > 0) {
-                    SDL_RenderTextureF(renderer, texture, &s, &d);
+                    SDL_RenderTextureFloat(renderer, texture, &s, &d);
                 } else {
                     int flags = 0;
                     if (s.w < 0) {
@@ -3954,7 +3954,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                         s.h *= -1;
                         s.y -= s.h;
                     }
-                    SDL_RenderTextureRotatedF(renderer, texture, &s, &d, 0, NULL, flags);
+                    SDL_RenderTextureRotatedFloat(renderer, texture, &s, &d, 0, NULL, flags);
                 }
 
 #if DEBUG_SW_RENDER_GEOMETRY
@@ -3964,7 +3964,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             } else if (d.w != 0.0f && d.h != 0.0f) { /* Rect, no texture */
                 SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
                 SDL_SetRenderDrawColor(renderer, col0_.r, col0_.g, col0_.b, col0_.a);
-                SDL_RenderFillRectF(renderer, &d);
+                SDL_RenderFillRectFloat(renderer, &d);
 #if DEBUG_SW_RENDER_GEOMETRY
                 SDL_Log("Rect-FILL: RGB %d %d %d - Alpha:%d - texture=%p: dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
                         (void *)texture, d.x, d.y, d.w, d.h);

@@ -401,7 +401,7 @@ static void validateRectEqualsResults(
 }
 
 /* !
- * \brief Private helper to check SDL_RectsEqualF results
+ * \brief Private helper to check SDL_RectsEqualFloat results
  */
 static void validateFRectEqualsResults(
     SDL_bool equals, SDL_bool expectedEquals,
@@ -1633,10 +1633,10 @@ int rect_testRectEqualsParam(void *arg)
 }
 
 /* !
- * \brief Tests SDL_RectsEqualF() with various inputs
+ * \brief Tests SDL_RectsEqualFloat() with various inputs
  *
  * \sa
- * http://wiki.libsdl.org/SDL_RectsEqualF
+ * http://wiki.libsdl.org/SDL_RectsEqualFloat
  */
 int rect_testFRectEquals(void *arg)
 {
@@ -1656,17 +1656,17 @@ int rect_testFRectEquals(void *arg)
     expectedResult = SDL_TRUE;
     rectA = refRectA;
     rectB = refRectB;
-    result = SDL_RectsEqualF(&rectA, &rectB);
+    result = SDL_RectsEqualFloat(&rectA, &rectB);
     validateFRectEqualsResults(result, expectedResult, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
 }
 
 /* !
- * \brief Negative tests against SDL_RectsEqualF() with invalid parameters
+ * \brief Negative tests against SDL_RectsEqualFloat() with invalid parameters
  *
  * \sa
- * http://wiki.libsdl.org/SDL_RectsEqualF
+ * http://wiki.libsdl.org/SDL_RectsEqualFloat
  */
 int rect_testFRectEqualsParam(void *arg)
 {
@@ -1685,11 +1685,11 @@ int rect_testFRectEqualsParam(void *arg)
     rectB.h = SDLTest_RandomFloat();
 
     /* invalid parameter combinations */
-    result = SDL_RectsEqualF(NULL, &rectB);
+    result = SDL_RectsEqualFloat(NULL, &rectB);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
-    result = SDL_RectsEqualF(&rectA, NULL);
+    result = SDL_RectsEqualFloat(&rectA, NULL);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 2nd parameter is NULL");
-    result = SDL_RectsEqualF(NULL, NULL);
+    result = SDL_RectsEqualFloat(NULL, NULL);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st and 2nd parameter are NULL");
 
     return TEST_COMPLETED;
@@ -1823,14 +1823,14 @@ static const SDLTest_TestCaseReference rectTest29 = {
     (SDLTest_TestCaseFp)rect_testRectEqualsParam, "rect_testRectEqualsParam", "Negative tests against SDL_RectsEqual with invalid parameters", TEST_ENABLED
 };
 
-/* SDL_RectsEqualF */
+/* SDL_RectsEqualFloat */
 
 static const SDLTest_TestCaseReference rectTest30 = {
-    (SDLTest_TestCaseFp)rect_testFRectEquals, "rect_testFRectEquals", "Tests SDL_RectsEqualF with various inputs", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testFRectEquals, "rect_testFRectEquals", "Tests SDL_RectsEqualFloat with various inputs", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference rectTest31 = {
-    (SDLTest_TestCaseFp)rect_testFRectEqualsParam, "rect_testFRectEqualsParam", "Negative tests against SDL_RectsEqualF with invalid parameters", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testFRectEqualsParam, "rect_testFRectEqualsParam", "Negative tests against SDL_RectsEqualFloat with invalid parameters", TEST_ENABLED
 };
 
 /* !

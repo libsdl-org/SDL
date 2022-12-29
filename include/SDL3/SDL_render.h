@@ -1486,7 +1486,7 @@ extern DECLSPEC int SDLCALL SDL_RenderTextureRotated(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderPointF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderPointFloat(SDL_Renderer * renderer,
                                                  float x, float y);
 
 /**
@@ -1499,7 +1499,7 @@ extern DECLSPEC int SDLCALL SDL_RenderPointF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderPointsF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderPointsFloat(SDL_Renderer * renderer,
                                                   const SDL_FPoint * points,
                                                   int count);
 
@@ -1515,7 +1515,7 @@ extern DECLSPEC int SDLCALL SDL_RenderPointsF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderLineF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderLineFloat(SDL_Renderer * renderer,
                                                 float x1, float y1, float x2, float y2);
 
 /**
@@ -1529,7 +1529,7 @@ extern DECLSPEC int SDLCALL SDL_RenderLineF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderLinesF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderLinesFloat(SDL_Renderer * renderer,
                                                  const SDL_FPoint * points,
                                                  int count);
 
@@ -1543,7 +1543,7 @@ extern DECLSPEC int SDLCALL SDL_RenderLinesF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderRectF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderRectFloat(SDL_Renderer * renderer,
                                                 const SDL_FRect * rect);
 
 /**
@@ -1557,7 +1557,7 @@ extern DECLSPEC int SDLCALL SDL_RenderRectF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderRectsF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderRectsFloat(SDL_Renderer * renderer,
                                                  const SDL_FRect * rects,
                                                  int count);
 
@@ -1572,7 +1572,7 @@ extern DECLSPEC int SDLCALL SDL_RenderRectsF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderFillRectF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderFillRectFloat(SDL_Renderer * renderer,
                                                 const SDL_FRect * rect);
 
 /**
@@ -1586,7 +1586,7 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRectF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderFillRectsF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderFillRectsFloat(SDL_Renderer * renderer,
                                                  const SDL_FRect * rects,
                                                  int count);
 
@@ -1604,7 +1604,7 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRectsF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderTextureF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderTextureFloat(SDL_Renderer * renderer,
                                             SDL_Texture * texture,
                                             const SDL_Rect * srcrect,
                                             const SDL_FRect * dstrect);
@@ -1630,7 +1630,7 @@ extern DECLSPEC int SDLCALL SDL_RenderTextureF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderTextureRotatedF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderTextureRotatedFloat(SDL_Renderer * renderer,
                                             SDL_Texture * texture,
                                             const SDL_Rect * srcrect,
                                             const SDL_FRect * dstrect,
