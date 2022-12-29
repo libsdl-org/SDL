@@ -5,7 +5,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 
-const char *_HintsEnum[] = {
+const char *HintsEnum[] = {
     SDL_HINT_ACCELEROMETER_AS_JOYSTICK,
     SDL_HINT_FRAMEBUFFER_ACCELERATION,
     SDL_HINT_GAMECONTROLLERCONFIG,
@@ -29,7 +29,7 @@ const char *_HintsEnum[] = {
     SDL_HINT_VIDEO_X11_XRANDR,
     SDL_HINT_XINPUT_ENABLED,
 };
-const char *_HintsVerbose[] = {
+const char *HintsVerbose[] = {
     "SDL_ACCELEROMETER_AS_JOYSTICK",
     "SDL_FRAMEBUFFER_ACCELERATION",
     "SDL_GAMECONTROLLERCONFIG",
@@ -54,9 +54,9 @@ const char *_HintsVerbose[] = {
     "SDL_XINPUT_ENABLED"
 };
 
-SDL_COMPILE_TIME_ASSERT(HintsEnum, SDL_arraysize(_HintsEnum) == SDL_arraysize(_HintsVerbose));
+SDL_COMPILE_TIME_ASSERT(HintsEnum, SDL_arraysize(HintsEnum) == SDL_arraysize(HintsVerbose));
 
-const int _numHintsEnum = SDL_arraysize(_HintsEnum);
+const int numHintsEnum = SDL_arraysize(HintsEnum);
 
 /* Test case functions */
 
@@ -69,11 +69,11 @@ int hints_getHint(void *arg)
     const char *result2;
     int i;
 
-    for (i = 0; i < _numHintsEnum; i++) {
-        result1 = SDL_GetHint(_HintsEnum[i]);
-        SDLTest_AssertPass("Call to SDL_GetHint(%s) - using define definition", (char *)_HintsEnum[i]);
-        result2 = SDL_GetHint(_HintsVerbose[i]);
-        SDLTest_AssertPass("Call to SDL_GetHint(%s) - using string definition", (char *)_HintsVerbose[i]);
+    for (i = 0; i < numHintsEnum; i++) {
+        result1 = SDL_GetHint(HintsEnum[i]);
+        SDLTest_AssertPass("Call to SDL_GetHint(%s) - using define definition", (char *)HintsEnum[i]);
+        result2 = SDL_GetHint(HintsVerbose[i]);
+        SDLTest_AssertPass("Call to SDL_GetHint(%s) - using string definition", (char *)HintsVerbose[i]);
         SDLTest_AssertCheck(
             (result1 == NULL && result2 == NULL) || (SDL_strcmp(result1, result2) == 0),
             "Verify returned values are equal; got: result1='%s' result2='%s",
@@ -105,24 +105,24 @@ int hints_setHint(void *arg)
     /* Create random values to set */
     value = SDLTest_RandomAsciiStringOfSize(10);
 
-    for (i = 0; i < _numHintsEnum; i++) {
+    for (i = 0; i < numHintsEnum; i++) {
         /* Capture current value */
-        originalValue = SDL_GetHint(_HintsEnum[i]);
-        SDLTest_AssertPass("Call to SDL_GetHint(%s)", _HintsEnum[i]);
+        originalValue = SDL_GetHint(HintsEnum[i]);
+        SDLTest_AssertPass("Call to SDL_GetHint(%s)", HintsEnum[i]);
 
         /* Copy the original value, since it will be freed when we set it again */
         originalValue = originalValue ? SDL_strdup(originalValue) : NULL;
 
         /* Set value (twice) */
         for (j = 1; j <= 2; j++) {
-            result = SDL_SetHint(_HintsEnum[i], value);
-            SDLTest_AssertPass("Call to SDL_SetHint(%s, %s) (iteration %i)", _HintsEnum[i], value, j);
+            result = SDL_SetHint(HintsEnum[i], value);
+            SDLTest_AssertPass("Call to SDL_SetHint(%s, %s) (iteration %i)", HintsEnum[i], value, j);
             SDLTest_AssertCheck(
                 result == SDL_TRUE || result == SDL_FALSE,
                 "Verify valid result was returned, got: %i",
                 (int)result);
-            testValue = SDL_GetHint(_HintsEnum[i]);
-            SDLTest_AssertPass("Call to SDL_GetHint(%s) - using string definition", _HintsVerbose[i]);
+            testValue = SDL_GetHint(HintsEnum[i]);
+            SDLTest_AssertPass("Call to SDL_GetHint(%s) - using string definition", HintsVerbose[i]);
             SDLTest_AssertCheck(
                 (SDL_strcmp(value, testValue) == 0),
                 "Verify returned value equals set value; got: testValue='%s' value='%s",
@@ -131,8 +131,8 @@ int hints_setHint(void *arg)
         }
 
         /* Reset original value */
-        result = SDL_SetHint(_HintsEnum[i], originalValue);
-        SDLTest_AssertPass("Call to SDL_SetHint(%s, originalValue)", _HintsEnum[i]);
+        result = SDL_SetHint(HintsEnum[i], originalValue);
+        SDLTest_AssertPass("Call to SDL_SetHint(%s, originalValue)", HintsEnum[i]);
         SDLTest_AssertCheck(
             result == SDL_TRUE || result == SDL_FALSE,
             "Verify valid result was returned, got: %i",

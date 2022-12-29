@@ -16,7 +16,7 @@
  *  compare them directly, so we push it through a function to keep the
  *  compiler quiet.  --ryan.
  */
-static int _compareSizeOfType(size_t sizeoftype, size_t hardcodetype)
+static int compareSizeOfType(size_t sizeoftype, size_t hardcodetype)
 {
     return sizeoftype != hardcodetype;
 }
@@ -30,16 +30,16 @@ int platform_testTypes(void *arg)
 {
     int ret;
 
-    ret = _compareSizeOfType(sizeof(Uint8), 1);
+    ret = compareSizeOfType(sizeof(Uint8), 1);
     SDLTest_AssertCheck(ret == 0, "sizeof(Uint8) = %u, expected  1", (unsigned int)sizeof(Uint8));
 
-    ret = _compareSizeOfType(sizeof(Uint16), 2);
+    ret = compareSizeOfType(sizeof(Uint16), 2);
     SDLTest_AssertCheck(ret == 0, "sizeof(Uint16) = %u, expected 2", (unsigned int)sizeof(Uint16));
 
-    ret = _compareSizeOfType(sizeof(Uint32), 4);
+    ret = compareSizeOfType(sizeof(Uint32), 4);
     SDLTest_AssertCheck(ret == 0, "sizeof(Uint32) = %u, expected 4", (unsigned int)sizeof(Uint32));
 
-    ret = _compareSizeOfType(sizeof(Uint64), 8);
+    ret = compareSizeOfType(sizeof(Uint64), 8);
     SDLTest_AssertCheck(ret == 0, "sizeof(Uint64) = %u, expected 8", (unsigned int)sizeof(Uint64));
 
     return TEST_COMPLETED;

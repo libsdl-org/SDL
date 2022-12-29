@@ -37,7 +37,7 @@ struct SDL_Sensor
 
     float data[16];             /* The current state of the sensor */
 
-    struct _SDL_SensorDriver *driver;
+    struct SDL_SensorDriver *driver;
 
     struct sensor_hwdata *hwdata; /* Driver dependent information */
 
@@ -46,7 +46,7 @@ struct SDL_Sensor
     struct SDL_Sensor *next; /* pointer to next sensor we have allocated */
 };
 
-typedef struct _SDL_SensorDriver
+typedef struct SDL_SensorDriver
 {
     /* Function to scan the system for sensors.
      * sensor 0 should be the system default sensor.

@@ -95,7 +95,7 @@ void RWopsTearDown(void *arg)
  * http://wiki.libsdl.org/SDL_RWseek
  * http://wiki.libsdl.org/SDL_RWread
  */
-void _testGenericRWopsValidations(SDL_RWops *rw, int write)
+static void testGenericRWopsValidations(SDL_RWops *rw, int write)
 {
     char buf[sizeof(RWopsHelloWorldTestString)];
     Sint64 i;
@@ -242,7 +242,7 @@ int rwops_testMem(void)
     SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY, "Verify RWops type is SDL_RWOPS_MEMORY; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_MEMORY, rw->type);
 
     /* Run generic tests */
-    _testGenericRWopsValidations(rw, 1);
+    testGenericRWopsValidations(rw, 1);
 
     /* Close */
     result = SDL_RWclose(rw);
@@ -278,7 +278,7 @@ int rwops_testConstMem(void)
     SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY_RO, "Verify RWops type is SDL_RWOPS_MEMORY_RO; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_MEMORY_RO, rw->type);
 
     /* Run generic tests */
-    _testGenericRWopsValidations(rw, 0);
+    testGenericRWopsValidations(rw, 0);
 
     /* Close handle */
     result = SDL_RWclose(rw);
@@ -326,7 +326,7 @@ int rwops_testFileRead(void)
 #endif
 
     /* Run generic tests */
-    _testGenericRWopsValidations(rw, 0);
+    testGenericRWopsValidations(rw, 0);
 
     /* Close handle */
     result = SDL_RWclose(rw);
@@ -374,7 +374,7 @@ int rwops_testFileWrite(void)
 #endif
 
     /* Run generic tests */
-    _testGenericRWopsValidations(rw, 1);
+    testGenericRWopsValidations(rw, 1);
 
     /* Close handle */
     result = SDL_RWclose(rw);

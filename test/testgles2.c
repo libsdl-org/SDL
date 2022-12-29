@@ -262,7 +262,7 @@ link_program(struct shader_data *data)
 
 /* 3D data. Vertex range -0.5..0.5 in all axes.
  * Z -0.5 is near, 0.5 is far. */
-const float _vertices[] = {
+const float g_vertices[] = {
     /* Front face. */
     /* Bottom left */
     -0.5,
@@ -391,7 +391,7 @@ const float _vertices[] = {
     0.5,
 };
 
-const float _colors[] = {
+const float g_colors[] = {
     /* Front face */
     /* Bottom left */
     1.0, 0.0, 0.0, /* red */
@@ -448,7 +448,7 @@ const float _colors[] = {
     1.0, 0.0, 1.0, /* magenta */
 };
 
-const char *_shader_vert_src =
+const char *g_shader_vert_src =
     " attribute vec4 av4position; "
     " attribute vec3 av3color; "
     " uniform mat4 mvp; "
@@ -458,7 +458,7 @@ const char *_shader_vert_src =
     "    gl_Position = mvp * av4position; "
     " } ";
 
-const char *_shader_frag_src =
+const char *g_shader_frag_src =
     " precision lowp float; "
     " varying vec3 vv3color; "
     " void main() { "
@@ -801,8 +801,8 @@ int main(int argc, char *argv[])
         data->angle_z = 0;
 
         /* Shader Initialization */
-        process_shader(&data->shader_vert, _shader_vert_src, GL_VERTEX_SHADER);
-        process_shader(&data->shader_frag, _shader_frag_src, GL_FRAGMENT_SHADER);
+        process_shader(&data->shader_vert, g_shader_vert_src, GL_VERTEX_SHADER);
+        process_shader(&data->shader_frag, g_shader_frag_src, GL_FRAGMENT_SHADER);
 
         /* Create shader_program (ready to attach shaders) */
         data->shader_program = GL_CHECK(ctx.glCreateProgram());
@@ -827,13 +827,13 @@ int main(int argc, char *argv[])
 
         GL_CHECK(ctx.glGenBuffers(1, &data->position_buffer));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, data->position_buffer));
-        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices), _vertices, GL_STATIC_DRAW));
+        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertices), g_vertices, GL_STATIC_DRAW));
         GL_CHECK(ctx.glVertexAttribPointer(data->attr_position, 3, GL_FLOAT, GL_FALSE, 0, 0));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, 0));
 
         GL_CHECK(ctx.glGenBuffers(1, &data->color_buffer));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, data->color_buffer));
-        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_colors), _colors, GL_STATIC_DRAW));
+        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(g_colors), g_colors, GL_STATIC_DRAW));
         GL_CHECK(ctx.glVertexAttribPointer(data->attr_color, 3, GL_FLOAT, GL_FALSE, 0, 0));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, 0));
 

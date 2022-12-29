@@ -41,7 +41,7 @@
 
 #define DBUS_TIMEOUT 500
 
-typedef struct _FcitxClient
+typedef struct FcitxClient
 {
     SDL_DBusContext *dbus;
 

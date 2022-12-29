@@ -23,7 +23,7 @@
 #ifndef SDL_sensor_c_h_
 #define SDL_sensor_c_h_
 
-struct _SDL_SensorDriver;
+struct SDL_SensorDriver;
 
 /* Useful functions and variables from SDL_sensor.c */
 

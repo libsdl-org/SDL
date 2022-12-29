@@ -29,7 +29,7 @@
 #define MAX_CURSOR_W 512
 #define MAX_CURSOR_H 512
 
-typedef struct _KMSDRM_CursorData
+typedef struct KMSDRM_CursorData
 {
     int hot_x, hot_y;
     int w, h;

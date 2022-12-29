@@ -35,12 +35,12 @@ static SDL_Surface *testSurface = NULL;
 /* Fixture */
 
 /* Create a 32-bit writable surface for blitting tests */
-void _surfaceSetUp(void *arg)
+static void surfaceSetUp(void *arg)
 {
     int result;
     SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
     SDL_BlendMode currentBlendMode;
-    
+
     referenceSurface = SDLTest_ImageBlit(); /* For size info */
     testSurface = SDL_CreateSurface(referenceSurface->w, referenceSurface->h, SDL_PIXELFORMAT_RGBA32);
     SDLTest_AssertCheck(testSurface != NULL, "Check that testSurface is not NULL");
@@ -54,7 +54,7 @@ void _surfaceSetUp(void *arg)
     }
 }
 
-void _surfaceTearDown(void *arg)
+static void surfaceTearDown(void *arg)
 {
     SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
@@ -65,7 +65,7 @@ void _surfaceTearDown(void *arg)
 /**
  * Helper that clears the test surface
  */
-void _clearTestSurface()
+static void clearTestSurface()
 {
     int ret;
     Uint32 color;
@@ -81,7 +81,7 @@ void _clearTestSurface()
 /**
  * Helper that blits in a specific blend mode, -1 for basic blitting, -2 for color mod, -3 for alpha mod, -4 for mixed blend modes.
  */
-void _testBlitBlendMode(int mode)
+static void testBlitBlendMode(int mode)
 {
     int ret;
     int i, j, ni, nj;
@@ -123,7 +123,7 @@ void _testBlitBlendMode(int mode)
     SDLTest_AssertCheck(ret == 0, "Verify result from SDL_SetSurfaceColorKey(), expected: 0, got: %i", ret);
 
     /* Clear the test surface */
-    _clearTestSurface();
+    clearTestSurface();
 
     /* Target rect size */
     rect.w = face->w;
@@ -201,7 +201,7 @@ void _testBlitBlendMode(int mode)
 }
 
 /* Helper to check that a file exists */
-void _AssertFileExist(const char *filename)
+static void AssertFileExist(const char *filename)
 {
     struct stat st;
     int ret = stat(filename, &st);
@@ -235,7 +235,7 @@ int surface_testSaveLoadBitmap(void *arg)
     ret = SDL_SaveBMP(face, sampleFilename);
     SDLTest_AssertPass("Call to SDL_SaveBMP()");
     SDLTest_AssertCheck(ret == 0, "Verify result from SDL_SaveBMP, expected: 0, got: %i", ret);
-    _AssertFileExist(sampleFilename);
+    AssertFileExist(sampleFilename);
 
     /* Load a surface */
     rface = SDL_LoadBMP(sampleFilename);
@@ -408,7 +408,7 @@ int surface_testBlit(void *arg)
     SDL_Surface *compareSurface;
 
     /* Basic blitting */
-    _testBlitBlendMode(-1);
+    testBlitBlendMode(-1);
 
     /* Verify result by comparing surfaces */
     compareSurface = SDLTest_ImageBlit();
@@ -430,7 +430,7 @@ int surface_testBlitColorMod(void *arg)
     SDL_Surface *compareSurface;
 
     /* Basic blitting with color mod */
-    _testBlitBlendMode(-2);
+    testBlitBlendMode(-2);
 
     /* Verify result by comparing surfaces */
     compareSurface = SDLTest_ImageBlitColor();
@@ -452,7 +452,7 @@ int surface_testBlitAlphaMod(void *arg)
     SDL_Surface *compareSurface;
 
     /* Basic blitting with alpha mod */
-    _testBlitBlendMode(-3);
+    testBlitBlendMode(-3);
 
     /* Verify result by comparing surfaces */
     compareSurface = SDLTest_ImageBlitAlpha();
@@ -474,7 +474,7 @@ int surface_testBlitBlendNone(void *arg)
     SDL_Surface *compareSurface;
 
     /* Basic blitting */
-    _testBlitBlendMode(SDL_BLENDMODE_NONE);
+    testBlitBlendMode(SDL_BLENDMODE_NONE);
 
     /* Verify result by comparing surfaces */
     compareSurface = SDLTest_ImageBlitBlendNone();
@@ -496,7 +496,7 @@ int surface_testBlitBlendBlend(void *arg)
     SDL_Surface *compareSurface;
 
     /* Blend blitting */
-    _testBlitBlendMode(SDL_BLENDMODE_BLEND);
+    testBlitBlendMode(SDL_BLENDMODE_BLEND);
 
     /* Verify result by comparing surfaces */
     compareSurface = SDLTest_ImageBlitBlend();
@@ -518,7 +518,7 @@ int surface_testBlitBlendAdd(void *arg)
     SDL_Surface *compareSurface;
 
     /* Add blitting */
-    _testBlitBlendMode(SDL_BLENDMODE_ADD);
+    testBlitBlendMode(SDL_BLENDMODE_ADD);
 
     /* Verify result by comparing surfaces */
     compareSurface = SDLTest_ImageBlitBlendAdd();
@@ -540,7 +540,7 @@ int surface_testBlitBlendMod(void *arg)
     SDL_Surface *compareSurface;
 
     /* Mod blitting */
-    _testBlitBlendMode(SDL_BLENDMODE_MOD);
+    testBlitBlendMode(SDL_BLENDMODE_MOD);
 
     /* Verify result by comparing surfaces */
     compareSurface = SDLTest_ImageBlitBlendMod();
@@ -563,7 +563,7 @@ int surface_testBlitBlendLoop(void *arg)
     SDL_Surface *compareSurface;
 
     /* All blitting modes */
-    _testBlitBlendMode(-4);
+    testBlitBlendMode(-4);
 
     /* Verify result by comparing surfaces */
     compareSurface = SDLTest_ImageBlitBlendAll();
@@ -813,8 +813,8 @@ static const SDLTest_TestCaseReference *surfaceTests[] = {
 /* Surface test suite (global) */
 SDLTest_TestSuiteReference surfaceTestSuite = {
     "Surface",
-    _surfaceSetUp,
+    surfaceSetUp,
     surfaceTests,
-    _surfaceTearDown
+    surfaceTearDown
 
 };

@@ -72,9 +72,9 @@ char *alloca();
  * instead of checking the clang version if possible.
  */
 #ifdef __has_builtin
-#define _SDL_HAS_BUILTIN(x) __has_builtin(x)
+#define SDL_HAS_BUILTIN(x) __has_builtin(x)
 #else
-#define _SDL_HAS_BUILTIN(x) 0
+#define SDL_HAS_BUILTIN(x) 0
 #endif
 
 /**
@@ -694,7 +694,7 @@ SDL_FORCE_INLINE int SDL_size_mul_overflow (size_t a,
     return 0;
 }
 
-#if _SDL_HAS_BUILTIN(__builtin_mul_overflow)
+#if SDL_HAS_BUILTIN(__builtin_mul_overflow)
 /* This needs to be wrapped in an inline rather than being a direct #define,
  * because __builtin_mul_overflow() is type-generic, but we want to be
  * consistent about interpreting a and b as size_t. */
@@ -724,7 +724,7 @@ SDL_FORCE_INLINE int SDL_size_add_overflow (size_t a,
     return 0;
 }
 
-#if _SDL_HAS_BUILTIN(__builtin_add_overflow)
+#if SDL_HAS_BUILTIN(__builtin_add_overflow)
 /* This needs to be wrapped in an inline rather than being a direct #define,
  * the same as the call to __builtin_mul_overflow() above. */
 SDL_FORCE_INLINE int SDL_size_add_overflow_builtin (size_t a,

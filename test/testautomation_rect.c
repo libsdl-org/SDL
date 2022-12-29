@@ -12,7 +12,7 @@
 /* !
  * \brief Private helper to check SDL_GetRectAndLineIntersection results
  */
-void _validateIntersectRectAndLineResults(
+static void validateIntersectRectAndLineResults(
     SDL_bool intersection, SDL_bool expectedIntersection,
     SDL_Rect *rect, SDL_Rect *refRect,
     int x1, int y1, int x2, int y2,
@@ -61,7 +61,7 @@ int rect_testIntersectRectAndLine(void *arg)
     y2 = 15;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0, 15, 31, 15);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0, 15, 31, 15);
 
     x1 = 15;
     y1 = yTop;
@@ -69,7 +69,7 @@ int rect_testIntersectRectAndLine(void *arg)
     y2 = yBottom;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 15, 0, 15, 31);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 15, 0, 15, 31);
 
     x1 = -refRect.w;
     y1 = -refRect.h;
@@ -77,7 +77,7 @@ int rect_testIntersectRectAndLine(void *arg)
     y2 = 2 * refRect.h;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0, 0, 31, 31);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0, 0, 31, 31);
 
     x1 = 2 * refRect.w;
     y1 = 2 * refRect.h;
@@ -85,7 +85,7 @@ int rect_testIntersectRectAndLine(void *arg)
     y2 = -refRect.h;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 31, 31, 0, 0);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 31, 31, 0, 0);
 
     x1 = -1;
     y1 = 32;
@@ -93,7 +93,7 @@ int rect_testIntersectRectAndLine(void *arg)
     y2 = -1;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0, 31, 31, 0);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0, 31, 31, 0);
 
     x1 = 32;
     y1 = -1;
@@ -101,7 +101,7 @@ int rect_testIntersectRectAndLine(void *arg)
     y2 = 32;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 31, 0, 0, 31);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 31, 0, 0, 31);
 
     return TEST_COMPLETED;
 }
@@ -135,7 +135,7 @@ int rect_testIntersectRectAndLineInside(void *arg)
     y2 = y2Ref;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, x1Ref, y1Ref, x2Ref, y2Ref);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, x1Ref, y1Ref, x2Ref, y2Ref);
 
     x1 = x1Ref;
     y1 = y1Ref;
@@ -143,7 +143,7 @@ int rect_testIntersectRectAndLineInside(void *arg)
     y2 = ymax;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, x1Ref, y1Ref, xmax, ymax);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, x1Ref, y1Ref, xmax, ymax);
 
     x1 = xmin;
     y1 = ymin;
@@ -151,7 +151,7 @@ int rect_testIntersectRectAndLineInside(void *arg)
     y2 = y2Ref;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, xmin, ymin, x2Ref, y2Ref);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, xmin, ymin, x2Ref, y2Ref);
 
     x1 = xmin;
     y1 = ymin;
@@ -159,7 +159,7 @@ int rect_testIntersectRectAndLineInside(void *arg)
     y2 = ymax;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, xmin, ymin, xmax, ymax);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, xmin, ymin, xmax, ymax);
 
     x1 = xmin;
     y1 = ymax;
@@ -167,7 +167,7 @@ int rect_testIntersectRectAndLineInside(void *arg)
     y2 = ymin;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, xmin, ymax, xmax, ymin);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, xmin, ymax, xmax, ymin);
 
     return TEST_COMPLETED;
 }
@@ -197,7 +197,7 @@ int rect_testIntersectRectAndLineOutside(void *arg)
     y2 = 31;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, xLeft, 0, xLeft, 31);
+    validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, xLeft, 0, xLeft, 31);
 
     x1 = xRight;
     y1 = 0;
@@ -205,7 +205,7 @@ int rect_testIntersectRectAndLineOutside(void *arg)
     y2 = 31;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, xRight, 0, xRight, 31);
+    validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, xRight, 0, xRight, 31);
 
     x1 = 0;
     y1 = yTop;
@@ -213,7 +213,7 @@ int rect_testIntersectRectAndLineOutside(void *arg)
     y2 = yTop;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, 0, yTop, 31, yTop);
+    validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, 0, yTop, 31, yTop);
 
     x1 = 0;
     y1 = yBottom;
@@ -221,7 +221,7 @@ int rect_testIntersectRectAndLineOutside(void *arg)
     y2 = yBottom;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, 0, yBottom, 31, yBottom);
+    validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, 0, yBottom, 31, yBottom);
 
     return TEST_COMPLETED;
 }
@@ -255,7 +255,7 @@ int rect_testIntersectRectAndLineEmpty(void *arg)
     y2 = y2Ref;
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
-    _validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, x1Ref, y1Ref, x2Ref, y2Ref);
+    validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, x1Ref, y1Ref, x2Ref, y2Ref);
 
     return TEST_COMPLETED;
 }
@@ -297,7 +297,7 @@ int rect_testIntersectRectAndLineParam(void *arg)
 /* !
  * \brief Private helper to check SDL_HasRectIntersection results
  */
-void _validateHasIntersectionResults(
+static void validateHasIntersectionResults(
     SDL_bool intersection, SDL_bool expectedIntersection,
     SDL_Rect *rectA, SDL_Rect *rectB, SDL_Rect *refRectA, SDL_Rect *refRectB)
 {
@@ -320,12 +320,12 @@ void _validateHasIntersectionResults(
 /* !
  * \brief Private helper to check SDL_GetRectIntersection results
  */
-void _validateIntersectRectResults(
+static void validateIntersectRectResults(
     SDL_bool intersection, SDL_bool expectedIntersection,
     SDL_Rect *rectA, SDL_Rect *rectB, SDL_Rect *refRectA, SDL_Rect *refRectB,
     SDL_Rect *result, SDL_Rect *expectedResult)
 {
-    _validateHasIntersectionResults(intersection, expectedIntersection, rectA, rectB, refRectA, refRectB);
+    validateHasIntersectionResults(intersection, expectedIntersection, rectA, rectB, refRectA, refRectB);
     if (result && expectedResult) {
         SDLTest_AssertCheck(result->x == expectedResult->x && result->y == expectedResult->y && result->w == expectedResult->w && result->h == expectedResult->h,
                             "Check that intersection of rectangles A (%d,%d,%d,%d) and B (%d,%d,%d,%d) was correctly calculated, got (%d,%d,%d,%d) expected (%d,%d,%d,%d)",
@@ -339,7 +339,7 @@ void _validateIntersectRectResults(
 /* !
  * \brief Private helper to check SDL_GetRectUnion results
  */
-void _validateUnionRectResults(
+static void validateUnionRectResults(
     SDL_Rect *rectA, SDL_Rect *rectB, SDL_Rect *refRectA, SDL_Rect *refRectB,
     SDL_Rect *result, SDL_Rect *expectedResult)
 {
@@ -362,7 +362,7 @@ void _validateUnionRectResults(
 /* !
  * \brief Private helper to check SDL_RectEmpty results
  */
-void _validateRectEmptyResults(
+static void validateRectEmptyResults(
     SDL_bool empty, SDL_bool expectedEmpty,
     SDL_Rect *rect, SDL_Rect *refRect)
 {
@@ -380,7 +380,7 @@ void _validateRectEmptyResults(
 /* !
  * \brief Private helper to check SDL_RectsEqual results
  */
-void _validateRectEqualsResults(
+static void validateRectEqualsResults(
     SDL_bool equals, SDL_bool expectedEquals,
     SDL_Rect *rectA, SDL_Rect *rectB, SDL_Rect *refRectA, SDL_Rect *refRectB)
 {
@@ -403,7 +403,7 @@ void _validateRectEqualsResults(
 /* !
  * \brief Private helper to check SDL_RectsEqualF results
  */
-void _validateFRectEqualsResults(
+static void validateFRectEqualsResults(
     SDL_bool equals, SDL_bool expectedEquals,
     SDL_FRect *rectA, SDL_FRect *rectB, SDL_FRect *refRectA, SDL_FRect *refRectB)
 {
@@ -449,7 +449,7 @@ int rect_testIntersectRectInside(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &refRectB);
+    validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &refRectB);
 
     return TEST_COMPLETED;
 }
@@ -477,7 +477,7 @@ int rect_testIntersectRectOutside(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
+    validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
 
     return TEST_COMPLETED;
 }
@@ -510,7 +510,7 @@ int rect_testIntersectRectPartial(void *arg)
     expectedResult.w = refRectA.w - refRectB.x;
     expectedResult.h = refRectA.h - refRectB.y;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+    validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
     /* rectB right edge */
     refRectB.x = rectA.w - 1;
@@ -524,7 +524,7 @@ int rect_testIntersectRectPartial(void *arg)
     expectedResult.w = 1;
     expectedResult.h = refRectB.h;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+    validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
     /* rectB left edge */
     refRectB.x = 1 - rectA.w;
@@ -538,7 +538,7 @@ int rect_testIntersectRectPartial(void *arg)
     expectedResult.w = 1;
     expectedResult.h = refRectB.h;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+    validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
     /* rectB bottom edge */
     refRectB.x = rectA.x;
@@ -552,7 +552,7 @@ int rect_testIntersectRectPartial(void *arg)
     expectedResult.w = refRectB.w;
     expectedResult.h = 1;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+    validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
     /* rectB top edge */
     refRectB.x = rectA.x;
@@ -566,7 +566,7 @@ int rect_testIntersectRectPartial(void *arg)
     expectedResult.w = refRectB.w;
     expectedResult.h = 1;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+    validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
     return TEST_COMPLETED;
 }
@@ -595,7 +595,7 @@ int rect_testIntersectRectPoint(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &refRectA);
+    validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &refRectA);
 
     /* non-intersecting pixels cases */
     for (offsetX = -1; offsetX <= 1; offsetX++) {
@@ -610,7 +610,7 @@ int rect_testIntersectRectPoint(void *arg)
                 rectA = refRectA;
                 rectB = refRectB;
                 intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-                _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
+                validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
             }
         }
     }
@@ -647,7 +647,7 @@ int rect_testIntersectRectEmpty(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
+    validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
     empty = SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
@@ -664,7 +664,7 @@ int rect_testIntersectRectEmpty(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
+    validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
     empty = SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
@@ -683,7 +683,7 @@ int rect_testIntersectRectEmpty(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
-    _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
+    validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
     empty = SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
@@ -742,7 +742,7 @@ int rect_testHasIntersectionInside(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
 }
@@ -769,7 +769,7 @@ int rect_testHasIntersectionOutside(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
 }
@@ -796,7 +796,7 @@ int rect_testHasIntersectionPartial(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
     /* rectB right edge */
     refRectB.x = rectA.w - 1;
@@ -806,7 +806,7 @@ int rect_testHasIntersectionPartial(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
     /* rectB left edge */
     refRectB.x = 1 - rectA.w;
@@ -816,7 +816,7 @@ int rect_testHasIntersectionPartial(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
     /* rectB bottom edge */
     refRectB.x = rectA.x;
@@ -826,7 +826,7 @@ int rect_testHasIntersectionPartial(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
     /* rectB top edge */
     refRectB.x = rectA.x;
@@ -836,7 +836,7 @@ int rect_testHasIntersectionPartial(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
 }
@@ -864,7 +864,7 @@ int rect_testHasIntersectionPoint(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
     /* non-intersecting pixels cases */
     for (offsetX = -1; offsetX <= 1; offsetX++) {
@@ -879,7 +879,7 @@ int rect_testHasIntersectionPoint(void *arg)
                 rectA = refRectA;
                 rectB = refRectB;
                 intersection = SDL_HasRectIntersection(&rectA, &rectB);
-                _validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
+                validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
             }
         }
     }
@@ -912,7 +912,7 @@ int rect_testHasIntersectionEmpty(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
 
     /* Rect B empty */
     refRectA.x = SDLTest_RandomIntegerInRange(1, 100);
@@ -925,7 +925,7 @@ int rect_testHasIntersectionEmpty(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
 
     /* Rect A and B empty */
     refRectA.x = SDLTest_RandomIntegerInRange(1, 100);
@@ -940,7 +940,7 @@ int rect_testHasIntersectionEmpty(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     intersection = SDL_HasRectIntersection(&rectA, &rectB);
-    _validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
+    validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
 }
@@ -1303,7 +1303,7 @@ int rect_testUnionRectOutside(void *arg)
                 rectA = refRectA;
                 rectB = refRectB;
                 SDL_GetRectUnion(&rectA, &rectB, &result);
-                _validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+                validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
             }
         }
     }
@@ -1336,7 +1336,7 @@ int rect_testUnionRectOutside(void *arg)
                 rectA = refRectA;
                 rectB = refRectB;
                 SDL_GetRectUnion(&rectA, &rectB, &result);
-                _validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+                validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
             }
         }
     }
@@ -1370,7 +1370,7 @@ int rect_testUnionRectEmpty(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     SDL_GetRectUnion(&rectA, &rectB, &result);
-    _validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+    validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
     /* B empty */
     refRectA.x = SDLTest_RandomIntegerInRange(-1024, 1024);
@@ -1385,7 +1385,7 @@ int rect_testUnionRectEmpty(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     SDL_GetRectUnion(&rectA, &rectB, &result);
-    _validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+    validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
     /* A and B empty */
     refRectA.x = SDLTest_RandomIntegerInRange(-1024, 1024);
@@ -1404,7 +1404,7 @@ int rect_testUnionRectEmpty(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     SDL_GetRectUnion(&rectA, &rectB, &result);
-    _validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+    validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
     return TEST_COMPLETED;
 }
@@ -1431,7 +1431,7 @@ int rect_testUnionRectInside(void *arg)
     expectedResult = refRectA;
     rectA = refRectA;
     SDL_GetRectUnion(&rectA, &rectA, &result);
-    _validateUnionRectResults(&rectA, &rectA, &refRectA, &refRectA, &result, &expectedResult);
+    validateUnionRectResults(&rectA, &rectA, &refRectA, &refRectA, &result, &expectedResult);
 
     /* Union 1x1 somewhere inside */
     refRectA.x = SDLTest_RandomIntegerInRange(-1024, 1024);
@@ -1446,7 +1446,7 @@ int rect_testUnionRectInside(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     SDL_GetRectUnion(&rectA, &rectB, &result);
-    _validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+    validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
     /* Union inside with edges modified */
     for (dx = -1; dx < 2; dx++) {
@@ -1473,7 +1473,7 @@ int rect_testUnionRectInside(void *arg)
                 rectA = refRectA;
                 rectB = refRectB;
                 SDL_GetRectUnion(&rectA, &rectB, &result);
-                _validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
+                validateUnionRectResults(&rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
             }
         }
     }
@@ -1531,7 +1531,7 @@ int rect_testRectEmpty(void *arg)
     expectedResult = SDL_FALSE;
     rect = refRect;
     result = SDL_RectEmpty(&rect);
-    _validateRectEmptyResults(result, expectedResult, &rect, &refRect);
+    validateRectEmptyResults(result, expectedResult, &rect, &refRect);
 
     /* Empty case */
     for (w = -1; w < 2; w++) {
@@ -1544,7 +1544,7 @@ int rect_testRectEmpty(void *arg)
                 expectedResult = SDL_TRUE;
                 rect = refRect;
                 result = SDL_RectEmpty(&rect);
-                _validateRectEmptyResults(result, expectedResult, &rect, &refRect);
+                validateRectEmptyResults(result, expectedResult, &rect, &refRect);
             }
         }
     }
@@ -1594,7 +1594,7 @@ int rect_testRectEquals(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     result = SDL_RectsEqual(&rectA, &rectB);
-    _validateRectEqualsResults(result, expectedResult, &rectA, &rectB, &refRectA, &refRectB);
+    validateRectEqualsResults(result, expectedResult, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
 }
@@ -1657,7 +1657,7 @@ int rect_testFRectEquals(void *arg)
     rectA = refRectA;
     rectB = refRectB;
     result = SDL_RectsEqualF(&rectA, &rectB);
-    _validateFRectEqualsResults(result, expectedResult, &rectA, &rectB, &refRectA, &refRectB);
+    validateFRectEqualsResults(result, expectedResult, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
 }
