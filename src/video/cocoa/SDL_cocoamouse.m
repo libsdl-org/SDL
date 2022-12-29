@@ -236,7 +236,7 @@ static SDL_Window *SDL_FindWindowAtPoint(const int x, const int y)
     SDL_Window *i;
     for (i = SDL_GetVideoDevice()->windows; i; i = i->next) {
         const SDL_Rect r = { i->x, i->y, i->w, i->h };
-        if (SDL_IsPointInRect(&pt, &r)) {
+        if (SDL_PointInRect(&pt, &r)) {
             return i;
         }
     }

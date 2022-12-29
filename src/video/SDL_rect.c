@@ -92,7 +92,7 @@ SDL_GetSpanEnclosingRect(int width, int height,
 #define COMPUTEOUTCODE           ComputeOutCode
 #define SDL_HASINTERSECTION      SDL_HasRectIntersection
 #define SDL_INTERSECTRECT        SDL_GetRectIntersection
-#define SDL_RECTEMPTY            SDL_IsRectEmpty
+#define SDL_RECTEMPTY            SDL_RectEmpty
 #define SDL_UNIONRECT            SDL_GetRectUnion
 #define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPoints
 #define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersection
@@ -104,7 +104,7 @@ SDL_GetSpanEnclosingRect(int width, int height,
 #define COMPUTEOUTCODE           ComputeOutCodeF
 #define SDL_HASINTERSECTION      SDL_HasRectIntersectionF
 #define SDL_INTERSECTRECT        SDL_GetRectIntersectionF
-#define SDL_RECTEMPTY            SDL_IsRectEmptyF
+#define SDL_RECTEMPTY            SDL_RectEmptyF
 #define SDL_UNIONRECT            SDL_GetRectUnionF
 #define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPointsF
 #define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersectionF

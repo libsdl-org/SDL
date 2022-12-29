@@ -769,7 +769,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_Texture * texture);
  *
  * \sa SDL_SetRenderTarget
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsRenderTargetSupported(SDL_Renderer *renderer);
+extern DECLSPEC SDL_bool SDLCALL SDL_RenderTargetSupported(SDL_Renderer *renderer);
 
 /**
  * Set a texture as the current rendering target.
@@ -938,7 +938,7 @@ extern DECLSPEC void SDLCALL SDL_GetRenderViewport(SDL_Renderer * renderer,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRenderClipRect
- * \sa SDL_IsRenderClipEnabled
+ * \sa SDL_RenderClipEnabled
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderClipRect(SDL_Renderer * renderer,
                                                   const SDL_Rect * rect);
@@ -953,7 +953,7 @@ extern DECLSPEC int SDLCALL SDL_SetRenderClipRect(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IsRenderClipEnabled
+ * \sa SDL_RenderClipEnabled
  * \sa SDL_SetRenderClipRect
  */
 extern DECLSPEC void SDLCALL SDL_GetRenderClipRect(SDL_Renderer * renderer,
@@ -971,7 +971,7 @@ extern DECLSPEC void SDLCALL SDL_GetRenderClipRect(SDL_Renderer * renderer,
  * \sa SDL_GetRenderClipRect
  * \sa SDL_SetRenderClipRect
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsRenderClipEnabled(SDL_Renderer * renderer);
+extern DECLSPEC SDL_bool SDLCALL SDL_RenderClipEnabled(SDL_Renderer * renderer);
 
 
 /**

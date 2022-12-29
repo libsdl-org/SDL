@@ -625,7 +625,7 @@ extern DECLSPEC const char * SDLCALL SDL_GetGamepadSerial(SDL_Gamepad *gamepad);
  * \sa SDL_CloseGamepad
  * \sa SDL_OpenGamepad
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsGamepadConnected(SDL_Gamepad *gamepad);
+extern DECLSPEC SDL_bool SDLCALL SDL_GamepadConnected(SDL_Gamepad *gamepad);
 
 /**
  * Get the underlying joystick from a gamepad
@@ -905,7 +905,7 @@ extern DECLSPEC int SDLCALL SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SD
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type);
+extern DECLSPEC SDL_bool SDLCALL SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type);
 
 /**
  * Get the data rate (number of events per second) of a gamepad

@@ -657,7 +657,7 @@ extern DECLSPEC void SDLCALL SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint
  * \sa SDL_CloseJoystick
  * \sa SDL_OpenJoystick
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsJoystickConnected(SDL_Joystick *joystick);
+extern DECLSPEC SDL_bool SDLCALL SDL_JoystickConnected(SDL_Joystick *joystick);
 
 /**
  * Get the instance ID of an opened joystick.

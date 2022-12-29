@@ -1612,7 +1612,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_Window * window);
  * \sa SDL_DisableScreenSaver
  * \sa SDL_EnableScreenSaver
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsScreenSaverEnabled(void);
+extern DECLSPEC SDL_bool SDLCALL SDL_ScreenSaverEnabled(void);
 
 /**
  * Allow the screen to be blanked by a screen saver.
@@ -1620,7 +1620,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsScreenSaverEnabled(void);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DisableScreenSaver
- * \sa SDL_IsScreenSaverEnabled
+ * \sa SDL_ScreenSaverEnabled
  */
 extern DECLSPEC void SDLCALL SDL_EnableScreenSaver(void);
 
@@ -1636,7 +1636,7 @@ extern DECLSPEC void SDLCALL SDL_EnableScreenSaver(void);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_EnableScreenSaver
- * \sa SDL_IsScreenSaverEnabled
+ * \sa SDL_ScreenSaverEnabled
  */
 extern DECLSPEC void SDLCALL SDL_DisableScreenSaver(void);
 

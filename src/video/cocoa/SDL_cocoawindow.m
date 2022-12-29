@@ -432,12 +432,12 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
             }
 
             if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0 &&
-                SDL_IsRectEmpty(&mouse_rect)) {
+                SDL_RectEmpty(&mouse_rect)) {
                 SDL_memcpy(&mouse_rect, &window_rect, sizeof(mouse_rect));
             }
         }
 
-        if (SDL_IsRectEmpty(&mouse_rect)) {
+        if (SDL_RectEmpty(&mouse_rect)) {
             nswindow.mouseConfinementRect = NSZeroRect;
         } else {
             NSRect rect;

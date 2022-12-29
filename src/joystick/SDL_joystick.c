@@ -906,7 +906,7 @@ Uint8 SDL_GetJoystickButton(SDL_Joystick *joystick, int button)
  * Return if the joystick in question is currently attached to the system,
  *  \return SDL_FALSE if not plugged in, SDL_TRUE if still present.
  */
-SDL_bool SDL_IsJoystickConnected(SDL_Joystick *joystick)
+SDL_bool SDL_JoystickConnected(SDL_Joystick *joystick)
 {
     SDL_bool retval;
 

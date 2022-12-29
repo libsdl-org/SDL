@@ -2899,7 +2899,7 @@ SDL_GetWindowMouseRect(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);
 
-    if (SDL_IsRectEmpty(&window->mouse_rect)) {
+    if (SDL_RectEmpty(&window->mouse_rect)) {
         return NULL;
     } else {
         return &window->mouse_rect;
@@ -3148,7 +3148,7 @@ void SDL_DestroyWindow(SDL_Window *window)
 }
 
 SDL_bool
-SDL_IsScreenSaverEnabled()
+SDL_ScreenSaverEnabled()
 {
     if (_this == NULL) {
         return SDL_TRUE;
@@ -4252,7 +4252,7 @@ void SDL_ClearComposition(void)
 }
 
 SDL_bool
-SDL_IsTextInputShown(void)
+SDL_TextInputShown(void)
 {
     if (_this && _this->IsTextInputShown) {
         return _this->IsTextInputShown(_this);
@@ -4262,7 +4262,7 @@ SDL_IsTextInputShown(void)
 }
 
 SDL_bool
-SDL_IsTextInputActive(void)
+SDL_TextInputActive(void)
 {
     return SDL_EventEnabled(SDL_TEXTINPUT);
 }
@@ -4304,7 +4304,7 @@ SDL_HasScreenKeyboardSupport(void)
 }
 
 SDL_bool
-SDL_IsScreenKeyboardShown(SDL_Window *window)
+SDL_ScreenKeyboardShown(SDL_Window *window)
 {
     if (window && _this && _this->IsScreenKeyboardShown) {
         return _this->IsScreenKeyboardShown(_this, window);

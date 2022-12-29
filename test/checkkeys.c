@@ -201,7 +201,7 @@ void loop()
             SDLTest_TextWindowAddText(textwin, "%s", event.text.text);
             break;
         case SDL_FINGERDOWN:
-            if (SDL_IsTextInputActive()) {
+            if (SDL_TextInputActive()) {
                 SDL_Log("Stopping text input\n");
                 SDL_StopTextInput();
             } else {
@@ -214,7 +214,7 @@ void loop()
             if (event.button.button == SDL_BUTTON_LEFT) {
                 done = 1;
             } else {
-                if (SDL_IsTextInputActive()) {
+                if (SDL_TextInputActive()) {
                     SDL_Log("Stopping text input\n");
                     SDL_StopTextInput();
                 } else {

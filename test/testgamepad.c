@@ -440,7 +440,7 @@ static SDL_GamepadButton FindButtonAtPosition(int x, int y)
             rect.y = button_positions[i].y;
             rect.w = BUTTON_SIZE;
             rect.h = BUTTON_SIZE;
-            if (SDL_IsPointInRect(&point, &rect)) {
+            if (SDL_PointInRect(&point, &rect)) {
                 return (SDL_GamepadButton)i;
             }
         }
@@ -463,7 +463,7 @@ static SDL_GamepadAxis FindAxisAtPosition(int x, int y)
             rect.y = axis_positions[i].y;
             rect.w = AXIS_SIZE;
             rect.h = AXIS_SIZE;
-            if (SDL_IsPointInRect(&point, &rect)) {
+            if (SDL_PointInRect(&point, &rect)) {
                 return (SDL_GamepadAxis)i;
             }
         }

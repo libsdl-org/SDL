@@ -140,7 +140,7 @@ The following functions have been renamed:
 * SDL_GameControllerFromPlayerIndex => SDL_GetGamepadFromPlayerIndex
 * SDL_GameControllerGetAppleSFSymbolsNameForAxis => SDL_GetGamepadAppleSFSymbolsNameForAxis
 * SDL_GameControllerGetAppleSFSymbolsNameForButton => SDL_GetGamepadAppleSFSymbolsNameForButton
-* SDL_GameControllerGetAttached => SDL_IsGamepadConnected
+* SDL_GameControllerGetAttached => SDL_GamepadConnected
 * SDL_GameControllerGetAxis => SDL_GetGamepadAxis
 * SDL_GameControllerGetAxisFromString => SDL_GetGamepadAxisFromString
 * SDL_GameControllerGetBindForAxis => SDL_GetGamepadBindForAxis
@@ -168,7 +168,7 @@ The following functions have been renamed:
 * SDL_GameControllerHasRumble => SDL_GamepadHasRumble
 * SDL_GameControllerHasRumbleTriggers => SDL_GamepadHasRumbleTriggers
 * SDL_GameControllerHasSensor => SDL_GamepadHasSensor
-* SDL_GameControllerIsSensorEnabled => SDL_IsGamepadSensorEnabled
+* SDL_GameControllerIsSensorEnabled => SDL_GamepadSensorEnabled
 * SDL_GameControllerMapping => SDL_GetGamepadMapping
 * SDL_GameControllerMappingForGUID => SDL_GetGamepadMappingForGUID
 * SDL_GameControllerMappingForIndex => SDL_GetGamepadMappingForIndex
@@ -307,7 +307,7 @@ The following functions have been renamed:
 * SDL_JoystickDetachVirtual => SDL_DetachVirtualJoystick
 * SDL_JoystickFromInstanceID => SDL_GetJoystickFromInstanceID
 * SDL_JoystickFromPlayerIndex => SDL_GetJoystickFromPlayerIndex
-* SDL_JoystickGetAttached => SDL_IsJoystickConnected
+* SDL_JoystickGetAttached => SDL_JoystickConnected
 * SDL_JoystickGetAxis => SDL_GetJoystickAxis
 * SDL_JoystickGetAxisInitialState => SDL_GetJoystickAxisInitialState
 * SDL_JoystickGetButton => SDL_GetJoystickButton
@@ -432,18 +432,17 @@ The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ 
 The following functions have been renamed:
 * SDL_EncloseFPoints => SDL_GetRectEnclosingPointsF
 * SDL_EnclosePoints => SDL_GetRectEnclosingPoints
-* SDL_FRectEmpty => SDL_IsRectEmptyF
-* SDL_FRectEqualsEpsilon => SDL_AreRectsEqualF
+* SDL_FRectEmpty => SDL_RectEmptyF
+* SDL_FRectEquals => SDL_RectsEqualF
+* SDL_FRectEqualsEpsilon => SDL_RectsEqualEpsilon
 * SDL_HasIntersection => SDL_HasRectIntersection
 * SDL_HasIntersectionF => SDL_HasRectIntersectionF
 * SDL_IntersectFRect => SDL_GetRectIntersectionF
 * SDL_IntersectFRectAndLine => SDL_GetRectAndLineIntersectionF
 * SDL_IntersectRect => SDL_GetRectIntersection
 * SDL_IntersectRectAndLine => SDL_GetRectAndLineIntersection
-* SDL_PointInFRect => SDL_IsPointInRectF
-* SDL_PointInRect => SDL_IsPointInRect
-* SDL_RectEmpty => SDL_IsRectEmpty
-* SDL_RectEquals => SDL_AreRectsEqual
+* SDL_PointInFRect => SDL_PointInRectF
+* SDL_RectEquals => SDL_RectsEqual
 * SDL_UnionFRect => SDL_GetRectUnionF
 * SDL_UnionRect => SDL_GetRectUnion
 
@@ -486,14 +485,13 @@ The following functions have been renamed:
 * SDL_RenderGetScale => SDL_GetRenderScale
 * SDL_RenderGetViewport => SDL_GetRenderViewport
 * SDL_RenderGetWindow => SDL_GetRenderWindow
-* SDL_RenderIsClipEnabled => SDL_IsRenderClipEnabled
+* SDL_RenderIsClipEnabled => SDL_RenderClipEnabled
 * SDL_RenderSetClipRect => SDL_SetRenderClipRect
 * SDL_RenderSetIntegerScale => SDL_SetRenderIntegerScale
 * SDL_RenderSetLogicalSize => SDL_SetRenderLogicalSize
 * SDL_RenderSetScale => SDL_SetRenderScale
 * SDL_RenderSetVSync => SDL_SetRenderVSync
 * SDL_RenderSetViewport => SDL_SetRenderViewport
-* SDL_RenderTargetSupported => SDL_IsRenderTargetSupported
 
 ## SDL_rwops.h
 

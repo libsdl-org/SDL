@@ -148,7 +148,7 @@ void Android_PumpEvents_Blocking(_THIS)
 #endif
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
-            if (SDL_IsTextInputActive()) {
+            if (SDL_TextInputActive()) {
                 Android_StartTextInput(_this); /* Only showTextInput */
             }
         }
@@ -232,7 +232,7 @@ void Android_PumpEvents_NonBlocking(_THIS)
 #endif
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
-            if (SDL_IsTextInputActive()) {
+            if (SDL_TextInputActive()) {
                 Android_StartTextInput(_this); /* Only showTextInput */
             }
         }
