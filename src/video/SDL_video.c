@@ -373,7 +373,11 @@ static int SDLCALL cmpmodes(const void *A, const void *B)
     } else if (SDL_PIXELLAYOUT(a->format) != SDL_PIXELLAYOUT(b->format)) {
         return SDL_PIXELLAYOUT(b->format) - SDL_PIXELLAYOUT(a->format);
     } else if (a->refresh_rate != b->refresh_rate) {
-        return b->refresh_rate - a->refresh_rate;
+        if (a->refresh_rate < b->refresh_rate) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
     return 0;
 }
