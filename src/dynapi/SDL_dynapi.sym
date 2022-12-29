@@ -73,6 +73,7 @@ SDL3_0.0.0 {
     SDL_CreateWindow;
     SDL_CreateWindowAndRenderer;
     SDL_CreateWindowFrom;
+    SDL_CursorVisible;
     SDL_DXGIGetOutputInfo;
     SDL_DelEventWatch;
     SDL_DelHintCallback;
@@ -101,6 +102,7 @@ SDL3_0.0.0 {
     SDL_EGL_SetEGLAttributeCallbacks;
     SDL_EnableScreenSaver;
     SDL_Error;
+    SDL_EventEnabled;
     SDL_FillSurfaceRect;
     SDL_FillSurfaceRects;
     SDL_FilterEvents;
@@ -132,12 +134,15 @@ SDL3_0.0.0 {
     SDL_GL_UnloadLibrary;
     SDL_GUIDFromString;
     SDL_GUIDToString;
+    SDL_GamepadConnected;
+    SDL_GamepadEventsEnabled;
     SDL_GamepadHasAxis;
     SDL_GamepadHasButton;
     SDL_GamepadHasLED;
     SDL_GamepadHasRumble;
     SDL_GamepadHasRumbleTriggers;
     SDL_GamepadHasSensor;
+    SDL_GamepadSensorEnabled;
     SDL_GetAndroidSDKVersion;
     SDL_GetAssertionHandler;
     SDL_GetAssertionReport;
@@ -293,6 +298,8 @@ SDL3_0.0.0 {
     SDL_GetRelativeMouseMode;
     SDL_GetRelativeMouseState;
     SDL_GetRenderClipRect;
+    SDL_GetRenderD3D11Device;
+    SDL_GetRenderD3D9Device;
     SDL_GetRenderDrawBlendMode;
     SDL_GetRenderDrawColor;
     SDL_GetRenderDriver;
@@ -419,6 +426,7 @@ SDL3_0.0.0 {
     SDL_HasSSE;
     SDL_HasScreenKeyboardSupport;
     SDL_HasSensors;
+    SDL_HideCursor;
     SDL_HideWindow;
     SDL_Init;
     SDL_InitSubSystem;
@@ -426,18 +434,11 @@ SDL3_0.0.0 {
     SDL_IsChromebook;
     SDL_IsDeXMode;
     SDL_IsGamepad;
-    SDL_GamepadConnected;
-    SDL_GamepadSensorEnabled;
-    SDL_JoystickConnected;
     SDL_IsJoystickVirtual;
-    SDL_RenderClipEnabled;
-    SDL_RenderTargetSupported;
-    SDL_ScreenKeyboardShown;
-    SDL_ScreenSaverEnabled;
     SDL_IsShapedWindow;
     SDL_IsTablet;
-    SDL_TextInputActive;
-    SDL_TextInputShown;
+    SDL_JoystickConnected;
+    SDL_JoystickEventsEnabled;
     SDL_JoystickHasLED;
     SDL_JoystickHasRumble;
     SDL_JoystickHasRumbleTriggers;
@@ -532,6 +533,7 @@ SDL3_0.0.0 {
     SDL_RegisterEvents;
     SDL_RemoveTimer;
     SDL_RenderClear;
+    SDL_RenderClipEnabled;
     SDL_RenderFillRect;
     SDL_RenderFillRectF;
     SDL_RenderFillRects;
@@ -539,9 +541,7 @@ SDL3_0.0.0 {
     SDL_RenderFlush;
     SDL_RenderGeometry;
     SDL_RenderGeometryRaw;
-    SDL_GetRenderD3D11Device;
     SDL_RenderGetD3D12Device;
-    SDL_GetRenderD3D9Device;
     SDL_RenderLine;
     SDL_RenderLineF;
     SDL_RenderLines;
@@ -557,6 +557,7 @@ SDL3_0.0.0 {
     SDL_RenderRectF;
     SDL_RenderRects;
     SDL_RenderRectsF;
+    SDL_RenderTargetSupported;
     SDL_RenderTexture;
     SDL_RenderTextureF;
     SDL_RenderTextureRotated;
@@ -578,6 +579,8 @@ SDL3_0.0.0 {
     SDL_SIMDGetAlignment;
     SDL_SIMDRealloc;
     SDL_SaveBMP_RW;
+    SDL_ScreenKeyboardShown;
+    SDL_ScreenSaverEnabled;
     SDL_SemPost;
     SDL_SemTryWait;
     SDL_SemValue;
@@ -589,12 +592,15 @@ SDL3_0.0.0 {
     SDL_SetClipboardText;
     SDL_SetCursor;
     SDL_SetError;
+    SDL_SetEventEnabled;
     SDL_SetEventFilter;
+    SDL_SetGamepadEventsEnabled;
     SDL_SetGamepadLED;
     SDL_SetGamepadPlayerIndex;
     SDL_SetGamepadSensorEnabled;
     SDL_SetHint;
     SDL_SetHintWithPriority;
+    SDL_SetJoystickEventsEnabled;
     SDL_SetJoystickLED;
     SDL_SetJoystickPlayerIndex;
     SDL_SetJoystickVirtualAxis;
@@ -653,6 +659,7 @@ SDL3_0.0.0 {
     SDL_SetWindowTitle;
     SDL_SetWindowsMessageHook;
     SDL_SetYUVConversionMode;
+    SDL_ShowCursor;
     SDL_ShowMessageBox;
     SDL_ShowSimpleMessageBox;
     SDL_ShowWindow;
@@ -666,6 +673,8 @@ SDL3_0.0.0 {
     SDL_TLSCreate;
     SDL_TLSGet;
     SDL_TLSSet;
+    SDL_TextInputActive;
+    SDL_TextInputShown;
     SDL_ThreadID;
     SDL_TryLockMutex;
     SDL_UnloadObject;
@@ -850,15 +859,6 @@ SDL3_0.0.0 {
     SDL_wcsncasecmp;
     SDL_wcsncmp;
     SDL_wcsstr;
-    SDL_SetEventEnabled;
-    SDL_EventEnabled;
-    SDL_SetGamepadEventsEnabled;
-    SDL_GamepadEventsEnabled;
-    SDL_SetJoystickEventsEnabled;
-    SDL_JoystickEventsEnabled;
-    SDL_ShowCursor;
-    SDL_HideCursor;
-    SDL_CursorVisible;
     # extra symbols go here (don't modify this line)
   local: *;
 };
