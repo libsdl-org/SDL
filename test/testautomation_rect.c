@@ -360,7 +360,7 @@ void _validateUnionRectResults(
 }
 
 /* !
- * \brief Private helper to check SDL_IsRectEmpty results
+ * \brief Private helper to check SDL_RectEmpty results
  */
 void _validateRectEmptyResults(
     SDL_bool empty, SDL_bool expectedEmpty,
@@ -378,7 +378,7 @@ void _validateRectEmptyResults(
 }
 
 /* !
- * \brief Private helper to check SDL_AreRectsEqual results
+ * \brief Private helper to check SDL_RectsEqual results
  */
 void _validateRectEqualsResults(
     SDL_bool equals, SDL_bool expectedEquals,
@@ -401,7 +401,7 @@ void _validateRectEqualsResults(
 }
 
 /* !
- * \brief Private helper to check SDL_FRectEquals results
+ * \brief Private helper to check SDL_RectsEqualF results
  */
 void _validateFRectEqualsResults(
     SDL_bool equals, SDL_bool expectedEquals,
@@ -648,7 +648,7 @@ int rect_testIntersectRectEmpty(void *arg)
     rectB = refRectB;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
-    empty = SDL_IsRectEmpty(&result);
+    empty = SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
     /* Rect B empty */
@@ -665,7 +665,7 @@ int rect_testIntersectRectEmpty(void *arg)
     rectB = refRectB;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
-    empty = SDL_IsRectEmpty(&result);
+    empty = SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
     /* Rect A and B empty */
@@ -684,7 +684,7 @@ int rect_testIntersectRectEmpty(void *arg)
     rectB = refRectB;
     intersection = SDL_GetRectIntersection(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
-    empty = SDL_IsRectEmpty(&result);
+    empty = SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
     return TEST_COMPLETED;
@@ -1510,10 +1510,10 @@ int rect_testUnionRectParam(void *arg)
 }
 
 /* !
- * \brief Tests SDL_IsRectEmpty() with various inputs
+ * \brief Tests SDL_RectEmpty() with various inputs
  *
  * \sa
- * http://wiki.libsdl.org/SDL_IsRectEmpty
+ * http://wiki.libsdl.org/SDL_RectEmpty
  */
 int rect_testRectEmpty(void *arg)
 {
@@ -1530,7 +1530,7 @@ int rect_testRectEmpty(void *arg)
     refRect.h = SDLTest_RandomIntegerInRange(256, 1024);
     expectedResult = SDL_FALSE;
     rect = refRect;
-    result = SDL_IsRectEmpty(&rect);
+    result = SDL_RectEmpty(&rect);
     _validateRectEmptyResults(result, expectedResult, &rect, &refRect);
 
     /* Empty case */
@@ -1543,7 +1543,7 @@ int rect_testRectEmpty(void *arg)
                 refRect.h = h;
                 expectedResult = SDL_TRUE;
                 rect = refRect;
-                result = SDL_IsRectEmpty(&rect);
+                result = SDL_RectEmpty(&rect);
                 _validateRectEmptyResults(result, expectedResult, &rect, &refRect);
             }
         }
@@ -1553,27 +1553,27 @@ int rect_testRectEmpty(void *arg)
 }
 
 /* !
- * \brief Negative tests against SDL_IsRectEmpty() with invalid parameters
+ * \brief Negative tests against SDL_RectEmpty() with invalid parameters
  *
  * \sa
- * http://wiki.libsdl.org/SDL_IsRectEmpty
+ * http://wiki.libsdl.org/SDL_RectEmpty
  */
 int rect_testRectEmptyParam(void *arg)
 {
     SDL_bool result;
 
     /* invalid parameter combinations */
-    result = SDL_IsRectEmpty(NULL);
+    result = SDL_RectEmpty(NULL);
     SDLTest_AssertCheck(result == SDL_TRUE, "Check that function returns TRUE when 1st parameter is NULL");
 
     return TEST_COMPLETED;
 }
 
 /* !
- * \brief Tests SDL_AreRectsEqual() with various inputs
+ * \brief Tests SDL_RectsEqual() with various inputs
  *
  * \sa
- * http://wiki.libsdl.org/SDL_AreRectsEqual
+ * http://wiki.libsdl.org/SDL_RectsEqual
  */
 int rect_testRectEquals(void *arg)
 {
@@ -1593,17 +1593,17 @@ int rect_testRectEquals(void *arg)
     expectedResult = SDL_TRUE;
     rectA = refRectA;
     rectB = refRectB;
-    result = SDL_AreRectsEqual(&rectA, &rectB);
+    result = SDL_RectsEqual(&rectA, &rectB);
     _validateRectEqualsResults(result, expectedResult, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
 }
 
 /* !
- * \brief Negative tests against SDL_AreRectsEqual() with invalid parameters
+ * \brief Negative tests against SDL_RectsEqual() with invalid parameters
  *
  * \sa
- * http://wiki.libsdl.org/SDL_AreRectsEqual
+ * http://wiki.libsdl.org/SDL_RectsEqual
  */
 int rect_testRectEqualsParam(void *arg)
 {
@@ -1622,21 +1622,21 @@ int rect_testRectEqualsParam(void *arg)
     rectB.h = SDLTest_RandomIntegerInRange(1, 1024);
 
     /* invalid parameter combinations */
-    result = SDL_AreRectsEqual(NULL, &rectB);
+    result = SDL_RectsEqual(NULL, &rectB);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
-    result = SDL_AreRectsEqual(&rectA, NULL);
+    result = SDL_RectsEqual(&rectA, NULL);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 2nd parameter is NULL");
-    result = SDL_AreRectsEqual(NULL, NULL);
+    result = SDL_RectsEqual(NULL, NULL);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st and 2nd parameter are NULL");
 
     return TEST_COMPLETED;
 }
 
 /* !
- * \brief Tests SDL_FRectEquals() with various inputs
+ * \brief Tests SDL_RectsEqualF() with various inputs
  *
  * \sa
- * http://wiki.libsdl.org/SDL_FRectEquals
+ * http://wiki.libsdl.org/SDL_RectsEqualF
  */
 int rect_testFRectEquals(void *arg)
 {
@@ -1656,17 +1656,17 @@ int rect_testFRectEquals(void *arg)
     expectedResult = SDL_TRUE;
     rectA = refRectA;
     rectB = refRectB;
-    result = SDL_FRectEquals(&rectA, &rectB);
+    result = SDL_RectsEqualF(&rectA, &rectB);
     _validateFRectEqualsResults(result, expectedResult, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
 }
 
 /* !
- * \brief Negative tests against SDL_FRectEquals() with invalid parameters
+ * \brief Negative tests against SDL_RectsEqualF() with invalid parameters
  *
  * \sa
- * http://wiki.libsdl.org/SDL_FRectEquals
+ * http://wiki.libsdl.org/SDL_RectsEqualF
  */
 int rect_testFRectEqualsParam(void *arg)
 {
@@ -1685,11 +1685,11 @@ int rect_testFRectEqualsParam(void *arg)
     rectB.h = SDLTest_RandomFloat();
 
     /* invalid parameter combinations */
-    result = SDL_FRectEquals(NULL, &rectB);
+    result = SDL_RectsEqualF(NULL, &rectB);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
-    result = SDL_FRectEquals(&rectA, NULL);
+    result = SDL_RectsEqualF(&rectA, NULL);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 2nd parameter is NULL");
-    result = SDL_FRectEquals(NULL, NULL);
+    result = SDL_RectsEqualF(NULL, NULL);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st and 2nd parameter are NULL");
 
     return TEST_COMPLETED;
@@ -1804,33 +1804,33 @@ static const SDLTest_TestCaseReference rectTest25 = {
     (SDLTest_TestCaseFp)rect_testUnionRectParam, "rect_testUnionRectParam", "Negative tests against SDL_GetRectUnion with invalid parameters", TEST_ENABLED
 };
 
-/* SDL_IsRectEmpty */
+/* SDL_RectEmpty */
 static const SDLTest_TestCaseReference rectTest26 = {
-    (SDLTest_TestCaseFp)rect_testRectEmpty, "rect_testRectEmpty", "Tests SDL_IsRectEmpty with various inputs", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testRectEmpty, "rect_testRectEmpty", "Tests SDL_RectEmpty with various inputs", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference rectTest27 = {
-    (SDLTest_TestCaseFp)rect_testRectEmptyParam, "rect_testRectEmptyParam", "Negative tests against SDL_IsRectEmpty with invalid parameters", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testRectEmptyParam, "rect_testRectEmptyParam", "Negative tests against SDL_RectEmpty with invalid parameters", TEST_ENABLED
 };
 
-/* SDL_AreRectsEqual */
+/* SDL_RectsEqual */
 
 static const SDLTest_TestCaseReference rectTest28 = {
-    (SDLTest_TestCaseFp)rect_testRectEquals, "rect_testRectEquals", "Tests SDL_AreRectsEqual with various inputs", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testRectEquals, "rect_testRectEquals", "Tests SDL_RectsEqual with various inputs", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference rectTest29 = {
-    (SDLTest_TestCaseFp)rect_testRectEqualsParam, "rect_testRectEqualsParam", "Negative tests against SDL_AreRectsEqual with invalid parameters", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testRectEqualsParam, "rect_testRectEqualsParam", "Negative tests against SDL_RectsEqual with invalid parameters", TEST_ENABLED
 };
 
-/* SDL_FRectEquals */
+/* SDL_RectsEqualF */
 
 static const SDLTest_TestCaseReference rectTest30 = {
-    (SDLTest_TestCaseFp)rect_testFRectEquals, "rect_testFRectEquals", "Tests SDL_FRectEquals with various inputs", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testFRectEquals, "rect_testFRectEquals", "Tests SDL_RectsEqualF with various inputs", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference rectTest31 = {
-    (SDLTest_TestCaseFp)rect_testFRectEqualsParam, "rect_testFRectEqualsParam", "Negative tests against SDL_FRectEquals with invalid parameters", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testFRectEqualsParam, "rect_testFRectEqualsParam", "Negative tests against SDL_RectsEqualF with invalid parameters", TEST_ENABLED
 };
 
 /* !

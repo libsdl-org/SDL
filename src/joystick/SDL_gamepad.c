@@ -2572,7 +2572,7 @@ int SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_b
 /*
  *  Query whether sensor data reporting is enabled for a gamepad
  */
-SDL_bool SDL_IsGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
+SDL_bool SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
     SDL_bool retval = SDL_FALSE;
 
@@ -2764,14 +2764,14 @@ const char * SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
  * Return if the gamepad in question is currently attached to the system,
  *  \return 0 if not plugged in, 1 if still present.
  */
-SDL_bool SDL_IsGamepadConnected(SDL_Gamepad *gamepad)
+SDL_bool SDL_GamepadConnected(SDL_Gamepad *gamepad)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
     if (joystick == NULL) {
         return SDL_FALSE;
     }
-    return SDL_IsJoystickConnected(joystick);
+    return SDL_JoystickConnected(joystick);
 }
 
 /*

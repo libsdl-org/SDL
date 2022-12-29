@@ -52,8 +52,8 @@ int video_enableDisableScreensaver(void *arg)
     SDL_bool result;
 
     /* Get current state and proceed according to current state */
-    initialResult = SDL_IsScreenSaverEnabled();
-    SDLTest_AssertPass("Call to SDL_IsScreenSaverEnabled()");
+    initialResult = SDL_ScreenSaverEnabled();
+    SDLTest_AssertPass("Call to SDL_ScreenSaverEnabled()");
     if (initialResult == SDL_TRUE) {
 
         /* Currently enabled: disable first, then enable again */
@@ -61,16 +61,16 @@ int video_enableDisableScreensaver(void *arg)
         /* Disable screensaver and check */
         SDL_DisableScreenSaver();
         SDLTest_AssertPass("Call to SDL_DisableScreenSaver()");
-        result = SDL_IsScreenSaverEnabled();
-        SDLTest_AssertPass("Call to SDL_IsScreenSaverEnabled()");
-        SDLTest_AssertCheck(result == SDL_FALSE, "Verify result from SDL_IsScreenSaverEnabled, expected: %i, got: %i", SDL_FALSE, result);
+        result = SDL_ScreenSaverEnabled();
+        SDLTest_AssertPass("Call to SDL_ScreenSaverEnabled()");
+        SDLTest_AssertCheck(result == SDL_FALSE, "Verify result from SDL_ScreenSaverEnabled, expected: %i, got: %i", SDL_FALSE, result);
 
         /* Enable screensaver and check */
         SDL_EnableScreenSaver();
         SDLTest_AssertPass("Call to SDL_EnableScreenSaver()");
-        result = SDL_IsScreenSaverEnabled();
-        SDLTest_AssertPass("Call to SDL_IsScreenSaverEnabled()");
-        SDLTest_AssertCheck(result == SDL_TRUE, "Verify result from SDL_IsScreenSaverEnabled, expected: %i, got: %i", SDL_TRUE, result);
+        result = SDL_ScreenSaverEnabled();
+        SDLTest_AssertPass("Call to SDL_ScreenSaverEnabled()");
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify result from SDL_ScreenSaverEnabled, expected: %i, got: %i", SDL_TRUE, result);
 
     } else {
 
@@ -79,16 +79,16 @@ int video_enableDisableScreensaver(void *arg)
         /* Enable screensaver and check */
         SDL_EnableScreenSaver();
         SDLTest_AssertPass("Call to SDL_EnableScreenSaver()");
-        result = SDL_IsScreenSaverEnabled();
-        SDLTest_AssertPass("Call to SDL_IsScreenSaverEnabled()");
-        SDLTest_AssertCheck(result == SDL_TRUE, "Verify result from SDL_IsScreenSaverEnabled, expected: %i, got: %i", SDL_TRUE, result);
+        result = SDL_ScreenSaverEnabled();
+        SDLTest_AssertPass("Call to SDL_ScreenSaverEnabled()");
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify result from SDL_ScreenSaverEnabled, expected: %i, got: %i", SDL_TRUE, result);
 
         /* Disable screensaver and check */
         SDL_DisableScreenSaver();
         SDLTest_AssertPass("Call to SDL_DisableScreenSaver()");
-        result = SDL_IsScreenSaverEnabled();
-        SDLTest_AssertPass("Call to SDL_IsScreenSaverEnabled()");
-        SDLTest_AssertCheck(result == SDL_FALSE, "Verify result from SDL_IsScreenSaverEnabled, expected: %i, got: %i", SDL_FALSE, result);
+        result = SDL_ScreenSaverEnabled();
+        SDLTest_AssertPass("Call to SDL_ScreenSaverEnabled()");
+        SDLTest_AssertCheck(result == SDL_FALSE, "Verify result from SDL_ScreenSaverEnabled, expected: %i, got: %i", SDL_FALSE, result);
     }
 
     return TEST_COMPLETED;

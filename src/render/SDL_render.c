@@ -2141,7 +2141,7 @@ void SDL_UnlockTexture(SDL_Texture *texture)
 }
 
 SDL_bool
-SDL_IsRenderTargetSupported(SDL_Renderer *renderer)
+SDL_RenderTargetSupported(SDL_Renderer *renderer)
 {
     if (renderer == NULL || !renderer->SetRenderTarget) {
         return SDL_FALSE;
@@ -2151,7 +2151,7 @@ SDL_IsRenderTargetSupported(SDL_Renderer *renderer)
 
 int SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    if (!SDL_IsRenderTargetSupported(renderer)) {
+    if (!SDL_RenderTargetSupported(renderer)) {
         return SDL_Unsupported();
     }
 
@@ -2483,7 +2483,7 @@ void SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
 }
 
 SDL_bool
-SDL_IsRenderClipEnabled(SDL_Renderer *renderer)
+SDL_RenderClipEnabled(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, SDL_FALSE)
     return renderer->clipping_enabled;

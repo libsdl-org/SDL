@@ -43,7 +43,7 @@ extern "C" {
  * The structure that defines a point (integer)
  *
  * \sa SDL_GetRectEnclosingPoints
- * \sa SDL_IsPointInRect
+ * \sa SDL_PointInRect
  */
 typedef struct SDL_Point
 {
@@ -55,7 +55,7 @@ typedef struct SDL_Point
  * The structure that defines a point (floating point)
  *
  * \sa SDL_GetRectEnclosingPointsF
- * \sa SDL_IsPointInRectF
+ * \sa SDL_PointInRectF
  */
 typedef struct SDL_FPoint
 {
@@ -67,8 +67,8 @@ typedef struct SDL_FPoint
 /**
  * A rectangle, with the origin at the upper left (integer).
  *
- * \sa SDL_IsRectEmpty
- * \sa SDL_AreRectsEqual
+ * \sa SDL_RectEmpty
+ * \sa SDL_RectsEqual
  * \sa SDL_HasRectIntersection
  * \sa SDL_GetRectIntersection
  * \sa SDL_GetRectAndLineIntersection
@@ -85,15 +85,15 @@ typedef struct SDL_Rect
 /**
  * A rectangle, with the origin at the upper left (floating point).
  *
- * \sa SDL_IsRectEmptyF
- * \sa SDL_FRectEquals
- * \sa SDL_AreRectsEqualF
+ * \sa SDL_RectEmptyF
+ * \sa SDL_RectsEqualF
+ * \sa SDL_RectsEqualEpsilon
  * \sa SDL_HasRectIntersectionF
  * \sa SDL_GetRectIntersectionF
  * \sa SDL_GetRectAndLineIntersectionF
  * \sa SDL_GetRectUnionF
  * \sa SDL_GetRectEnclosingPointsF
- * \sa SDL_IsPointInRectF
+ * \sa SDL_PointInRectF
  */
 typedef struct SDL_FRect
 {
@@ -107,7 +107,7 @@ typedef struct SDL_FRect
 /**
  * Returns true if point resides inside a rectangle.
  */
-SDL_FORCE_INLINE SDL_bool SDL_IsPointInRect(const SDL_Point *p, const SDL_Rect *r)
+SDL_FORCE_INLINE SDL_bool SDL_PointInRect(const SDL_Point *p, const SDL_Rect *r)
 {
     return ( (p->x >= r->x) && (p->x < (r->x + r->w)) &&
              (p->y >= r->y) && (p->y < (r->y + r->h)) ) ? SDL_TRUE : SDL_FALSE;
@@ -116,7 +116,7 @@ SDL_FORCE_INLINE SDL_bool SDL_IsPointInRect(const SDL_Point *p, const SDL_Rect *
 /**
  * Returns true if the rectangle has no area.
  */
-SDL_FORCE_INLINE SDL_bool SDL_IsRectEmpty(const SDL_Rect *r)
+SDL_FORCE_INLINE SDL_bool SDL_RectEmpty(const SDL_Rect *r)
 {
     return ((!r) || (r->w <= 0) || (r->h <= 0)) ? SDL_TRUE : SDL_FALSE;
 }
@@ -124,7 +124,7 @@ SDL_FORCE_INLINE SDL_bool SDL_IsRectEmpty(const SDL_Rect *r)
 /**
  * Returns true if the two rectangles are equal.
  */
-SDL_FORCE_INLINE SDL_bool SDL_AreRectsEqual(const SDL_Rect *a, const SDL_Rect *b)
+SDL_FORCE_INLINE SDL_bool SDL_RectsEqual(const SDL_Rect *a, const SDL_Rect *b)
 {
     return (a && b && (a->x == b->x) && (a->y == b->y) &&
             (a->w == b->w) && (a->h == b->h)) ? SDL_TRUE : SDL_FALSE;
@@ -230,7 +230,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetRectAndLineIntersection(const SDL_Rect *
 /**
  * Returns true if point resides inside a rectangle.
  */
-SDL_FORCE_INLINE SDL_bool SDL_IsPointInRectF(const SDL_FPoint *p, const SDL_FRect *r)
+SDL_FORCE_INLINE SDL_bool SDL_PointInRectF(const SDL_FPoint *p, const SDL_FRect *r)
 {
     return ( (p->x >= r->x) && (p->x < (r->x + r->w)) &&
              (p->y >= r->y) && (p->y < (r->y + r->h)) ) ? SDL_TRUE : SDL_FALSE;
@@ -239,7 +239,7 @@ SDL_FORCE_INLINE SDL_bool SDL_IsPointInRectF(const SDL_FPoint *p, const SDL_FRec
 /**
  * Returns true if the rectangle has no area.
  */
-SDL_FORCE_INLINE SDL_bool SDL_IsRectEmptyF(const SDL_FRect *r)
+SDL_FORCE_INLINE SDL_bool SDL_RectEmptyF(const SDL_FRect *r)
 {
     return ((!r) || (r->w <= 0.0f) || (r->h <= 0.0f)) ? SDL_TRUE : SDL_FALSE;
 }
@@ -249,7 +249,7 @@ SDL_FORCE_INLINE SDL_bool SDL_IsRectEmptyF(const SDL_FRect *r)
  *
  * \since This function is available since SDL 2.0.22.
  */
-SDL_FORCE_INLINE SDL_bool SDL_AreRectsEqualF(const SDL_FRect *a, const SDL_FRect *b, const float epsilon)
+SDL_FORCE_INLINE SDL_bool SDL_RectsEqualEpsilon(const SDL_FRect *a, const SDL_FRect *b, const float epsilon)
 {
     return (a && b && ((a == b) ||
             ((SDL_fabsf(a->x - b->x) <= epsilon) &&
@@ -264,9 +264,9 @@ SDL_FORCE_INLINE SDL_bool SDL_AreRectsEqualF(const SDL_FRect *a, const SDL_FRect
  *
  * \since This function is available since SDL 2.0.22.
  */
-SDL_FORCE_INLINE SDL_bool SDL_FRectEquals(const SDL_FRect *a, const SDL_FRect *b)
+SDL_FORCE_INLINE SDL_bool SDL_RectsEqualF(const SDL_FRect *a, const SDL_FRect *b)
 {
-    return SDL_AreRectsEqualF(a, b, SDL_FLT_EPSILON);
+    return SDL_RectsEqualEpsilon(a, b, SDL_FLT_EPSILON);
 }
 
 /**
