@@ -82,12 +82,11 @@ The `timestamp_us` member of the sensor events has been renamed `sensor_timestam
 
 You should set the `event.common.timestamp` field before passing an event to `SDL_PushEvent()`. If the timestamp is 0 it will be filled in with `SDL_GetTicksNS()`.
 
-`SDL_GetEventState` used to be a macro, now it's a real function, but otherwise functions identically.
-
 The `SDL_DISPLAYEVENT_*` events have been moved to top level events, and `SDL_DISPLAYEVENT` has been removed. In general, handling this change just means checking for the individual events instead of first checking for `SDL_DISPLAYEVENT` and then checking for display events. You can compare the event >= `SDL_DISPLAYEVENT_FIRST` and <= `SDL_DISPLAYEVENT_LAST` if you need to see whether it's a display event.
 
 The `SDL_WINDOWEVENT_*` events have been moved to top level events, and `SDL_WINDOWEVENT` has been removed. In general, handling this change just means checking for the individual events instead of first checking for `SDL_WINDOWEVENT` and then checking for window events. You can compare the event >= `SDL_WINDOWEVENT_FIRST` and <= `SDL_WINDOWEVENT_LAST` if you need to see whether it's a window event.
 
+`SDL_QUERY`, `SDL_IGNORE`, `SDL_ENABLE`, and `SDL_DISABLE` have been removed. You can use the functions SDL_SetEventEnabled() and SDL_EventEnabled() to set and query event processing state.
 
 The following symbols have been renamed:
 * SDL_CONTROLLERAXISMOTION => SDL_GAMEPADAXISMOTION
@@ -107,6 +106,10 @@ The following structures have been renamed:
 * SDL_ControllerDeviceEvent => SDL_GamepadDeviceEvent
 * SDL_ControllerSensorEvent => SDL_GamepadSensorEvent
 * SDL_ControllerTouchpadEvent => SDL_GamepadTouchpadEvent
+
+The following functions have been removed:
+* SDL_EventState() - replaced with SDL_SetEventEnabled()
+* SDL_GetEventState() - replaced with SDL_EventEnabled()
 
 ## SDL_gamecontroller.h
 
@@ -133,7 +136,6 @@ The following functions have been renamed:
 * SDL_GameControllerAddMappingsFromFile => SDL_AddGamepadMappingsFromFile
 * SDL_GameControllerAddMappingsFromRW => SDL_AddGamepadMappingsFromRW
 * SDL_GameControllerClose => SDL_CloseGamepad
-* SDL_GameControllerEventState => SDL_GetGamepadEventState
 * SDL_GameControllerFromInstanceID => SDL_GetGamepadFromInstanceID
 * SDL_GameControllerFromPlayerIndex => SDL_GetGamepadFromPlayerIndex
 * SDL_GameControllerGetAppleSFSymbolsNameForAxis => SDL_GetGamepadAppleSFSymbolsNameForAxis
@@ -184,10 +186,11 @@ The following functions have been renamed:
 * SDL_IsGameController => SDL_IsGamepad
 
 The following functions have been removed:
+* SDL_GameControllerEventState - replaced with SDL_SetGamepadEventsEnabled() and SDL_GamepadEventsEnabled()
+* SDL_GameControllerMappingForDeviceIndex() - replaced with SDL_GetGamepadInstanceMapping()
 * SDL_GameControllerNameForIndex() - replaced with SDL_GetGamepadInstanceName()
 * SDL_GameControllerPathForIndex() - replaced with SDL_GetGamepadInstancePath()
 * SDL_GameControllerTypeForIndex() - replaced with SDL_GetGamepadInstanceType()
-* SDL_GameControllerMappingForDeviceIndex() - replaced with SDL_GetGamepadInstanceMapping()
 
 The following symbols have been renamed:
 * SDL_CONTROLLER_AXIS_INVALID => SDL_GAMEPAD_AXIS_INVALID
@@ -302,7 +305,6 @@ The following functions have been renamed:
 * SDL_JoystickClose => SDL_CloseJoystick
 * SDL_JoystickCurrentPowerLevel => SDL_GetJoystickPowerLevel
 * SDL_JoystickDetachVirtual => SDL_DetachVirtualJoystick
-* SDL_JoystickEventState => SDL_GetJoystickEventState
 * SDL_JoystickFromInstanceID => SDL_GetJoystickFromInstanceID
 * SDL_JoystickFromPlayerIndex => SDL_GetJoystickFromPlayerIndex
 * SDL_JoystickGetAttached => SDL_IsJoystickConnected
@@ -342,7 +344,7 @@ The following symbols have been renamed:
 * SDL_JOYSTICK_TYPE_GAMECONTROLLER => SDL_JOYSTICK_TYPE_GAMEPAD
 
 The following functions have been removed:
-* SDL_NumJoysticks - replaced with SDL_HasJoysticks() and SDL_GetJoysticks()
+* SDL_JoystickEventState - replaced with SDL_SetJoystickEventsEnabled() and SDL_JoystickEventsEnabled()
 * SDL_JoystickGetDeviceGUID() - replaced with SDL_GetJoystickInstanceGUID()
 * SDL_JoystickGetDeviceInstanceID()
 * SDL_JoystickGetDevicePlayerIndex() - replaced with SDL_GetJoystickInstancePlayerIndex()
@@ -352,6 +354,7 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
+* SDL_NumJoysticks - replaced with SDL_HasJoysticks() and SDL_GetJoysticks()
  
 ## SDL_keycode.h
 
@@ -403,6 +406,10 @@ See [README-winrt.md](./README-winrt.md) for more details.
 Furthermore, the different `SDL_*RunApp()` functions (SDL_WinRtRunApp, SDL_GDKRunApp, SDL_UIKitRunApp)
 have been unified into just `int SDL_RunApp(int argc, char* argv[], void * reserved)` (which is also
 used by additional platforms that didn't have a SDL_RunApp-like function before).
+
+## SDL_mouse.h
+
+SDL_ShowCursor() has been split into three functions: SDL_ShowCursor(), SDL_HideCursor(), and SDL_CursorVisible()
 
 ## SDL_pixels.h
 

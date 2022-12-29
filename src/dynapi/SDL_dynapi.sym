@@ -101,7 +101,6 @@ SDL3_0.0.0 {
     SDL_EGL_SetEGLAttributeCallbacks;
     SDL_EnableScreenSaver;
     SDL_Error;
-    SDL_EventState;
     SDL_FillSurfaceRect;
     SDL_FillSurfaceRects;
     SDL_FilterEvents;
@@ -173,7 +172,6 @@ SDL3_0.0.0 {
     SDL_GetError;
     SDL_GetErrorMsg;
     SDL_GetEventFilter;
-    SDL_GetEventState;
     SDL_GetGamepadAppleSFSymbolsNameForAxis;
     SDL_GetGamepadAppleSFSymbolsNameForButton;
     SDL_GetGamepadAxis;
@@ -182,7 +180,6 @@ SDL3_0.0.0 {
     SDL_GetGamepadBindForButton;
     SDL_GetGamepadButton;
     SDL_GetGamepadButtonFromString;
-    SDL_GetGamepadEventState;
     SDL_GetGamepadFirmwareVersion;
     SDL_GetGamepadFromInstanceID;
     SDL_GetGamepadFromPlayerIndex;
@@ -222,7 +219,6 @@ SDL3_0.0.0 {
     SDL_GetJoystickAxis;
     SDL_GetJoystickAxisInitialState;
     SDL_GetJoystickButton;
-    SDL_GetJoystickEventState;
     SDL_GetJoystickFirmwareVersion;
     SDL_GetJoystickFromInstanceID;
     SDL_GetJoystickFromPlayerIndex;
@@ -657,7 +653,6 @@ SDL3_0.0.0 {
     SDL_SetWindowTitle;
     SDL_SetWindowsMessageHook;
     SDL_SetYUVConversionMode;
-    SDL_ShowCursor;
     SDL_ShowMessageBox;
     SDL_ShowSimpleMessageBox;
     SDL_ShowWindow;
@@ -855,6 +850,15 @@ SDL3_0.0.0 {
     SDL_wcsncasecmp;
     SDL_wcsncmp;
     SDL_wcsstr;
+    SDL_SetEventEnabled;
+    SDL_EventEnabled;
+    SDL_SetGamepadEventsEnabled;
+    SDL_GamepadEventsEnabled;
+    SDL_SetJoystickEventsEnabled;
+    SDL_JoystickEventsEnabled;
+    SDL_ShowCursor;
+    SDL_HideCursor;
+    SDL_CursorVisible;
     # extra symbols go here (don't modify this line)
   local: *;
 };

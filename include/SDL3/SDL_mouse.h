@@ -318,7 +318,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  *
  * \sa SDL_FreeCursor
  * \sa SDL_SetCursor
- * \sa SDL_ShowCursor
  */
 extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
                                                      const Uint8 * mask,
@@ -370,7 +369,6 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor id);
  *
  * \sa SDL_CreateCursor
  * \sa SDL_GetCursor
- * \sa SDL_ShowCursor
  */
 extern DECLSPEC void SDLCALL SDL_SetCursor(SDL_Cursor * cursor);
 
@@ -419,26 +417,43 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_GetDefaultCursor(void);
 extern DECLSPEC void SDLCALL SDL_FreeCursor(SDL_Cursor * cursor);
 
 /**
- * Toggle whether or not the cursor is shown.
+ * Show the cursor.
  *
- * The cursor starts off displayed but can be turned off. Passing `SDL_ENABLE`
- * displays the cursor and passing `SDL_DISABLE` hides it.
- *
- * The current state of the mouse cursor can be queried by passing
- * `SDL_QUERY`; either `SDL_DISABLE` or `SDL_ENABLE` will be returned.
- *
- * \param toggle `SDL_ENABLE` to show the cursor, `SDL_DISABLE` to hide it,
- *               `SDL_QUERY` to query the current state without changing it.
- * \returns `SDL_ENABLE` if the cursor is shown, or `SDL_DISABLE` if the
- *          cursor is hidden, or a negative error code on failure; call
+ * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateCursor
- * \sa SDL_SetCursor
+ * \sa SDL_CursorVisible
+ * \sa SDL_HideCursor
  */
-extern DECLSPEC int SDLCALL SDL_ShowCursor(int toggle);
+extern DECLSPEC int SDLCALL SDL_ShowCursor(void);
+
+/**
+ * Hide the cursor.
+ *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CursorVisible
+ * \sa SDL_ShowCursor
+ */
+extern DECLSPEC int SDLCALL SDL_HideCursor(void);
+
+/**
+ * Return whether the cursor is currently being shown.
+ *
+ * \returns `SDL_TRUE` if the cursor is being shown, or `SDL_FALSE` if the
+ *          cursor is hidden.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_HideCursor
+ * \sa SDL_ShowCursor
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_CursorVisible(void);
 
 /**
  * Used as a mask when testing buttons in buttonstate.

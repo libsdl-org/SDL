@@ -107,6 +107,9 @@ typedef enum
     SDL_JOYSTICK_POWER_MAX
 } SDL_JoystickPowerLevel;
 
+#define SDL_JOYSTICK_AXIS_MAX   32767
+#define SDL_JOYSTICK_AXIS_MIN   -32768
+
 /* Set max recognized G-force from accelerometer
    See src/joystick/uikit/SDL_sysjoystick.m for notes on why this is needed
  */
@@ -717,44 +720,44 @@ extern DECLSPEC int SDLCALL SDL_GetNumJoystickHats(SDL_Joystick *joystick);
 extern DECLSPEC int SDLCALL SDL_GetNumJoystickButtons(SDL_Joystick *joystick);
 
 /**
+ * Set the state of joystick event processing.
+ *
+ * If joystick events are disabled, you must call SDL_UpdateJoysticks()
+ * yourself and check the state of the joystick when you want joystick
+ * information.
+ *
+ * \param state whether to process joystick events or not
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_JoystickEventsEnabled
+ */
+extern DECLSPEC void SDLCALL SDL_SetJoystickEventsEnabled(SDL_bool enabled);
+
+/**
+ * Query the state of joystick event processing.
+ *
+ * If joystick events are disabled, you must call SDL_UpdateJoysticks()
+ * yourself and check the state of the joystick when you want joystick
+ * information.
+ *
+ * \returns SDL_TRUE if joystick events are being processed, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetJoystickEventsEnabled
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_JoystickEventsEnabled(void);
+
+/**
  * Update the current state of the open joysticks.
  *
  * This is called automatically by the event loop if any joystick events are
  * enabled.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetJoystickEventState
  */
 extern DECLSPEC void SDLCALL SDL_UpdateJoysticks(void);
-
-/**
- * Enable/disable joystick event polling.
- *
- * If joystick events are disabled, you must call SDL_UpdateJoysticks()
- * yourself and manually check the state of the joystick when you want
- * joystick information.
- *
- * It is recommended that you leave joystick event handling enabled.
- *
- * **WARNING**: Calling this function may delete all events currently in SDL's
- * event queue.
- *
- * \param state can be one of `SDL_QUERY`, `SDL_IGNORE`, or `SDL_ENABLE`
- * \returns 1 if enabled, 0 if disabled, or a negative error code on failure;
- *          call SDL_GetError() for more information.
- *
- *          If `state` is `SDL_QUERY` then the current state is returned,
- *          otherwise the new processing state is returned.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetGamepadEventState
- */
-extern DECLSPEC int SDLCALL SDL_GetJoystickEventState(int state);
-
-#define SDL_JOYSTICK_AXIS_MAX   32767
-#define SDL_JOYSTICK_AXIS_MIN   -32768
 
 /**
  * Get the current state of an axis control on a joystick.

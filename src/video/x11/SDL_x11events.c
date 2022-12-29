@@ -334,7 +334,7 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
          * Since event data is only available until XFreeEventData is called,
          * the *only* way for an application to access it is to register an event filter/watcher
          * and do all the processing on the SDL_SYSWMEVENT inside the callback. */
-        if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
+        if (SDL_EventEnabled(SDL_SYSWMEVENT)) {
             SDL_SysWMmsg wmmsg;
 
             wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
@@ -816,7 +816,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
 
     /* Send a SDL_SYSWMEVENT if the application wants them */
-    if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_SYSWMEVENT)) {
         SDL_SysWMmsg wmmsg;
 
         wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
@@ -1078,7 +1078,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
 
 #ifdef SDL_USE_IME
-        if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+        if (SDL_EventEnabled(SDL_TEXTINPUT)) {
             handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
         }
 #endif
@@ -1171,7 +1171,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
                                 xevent->xconfigure.x, xevent->xconfigure.y);
 #ifdef SDL_USE_IME
-            if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+            if (SDL_EventEnabled(SDL_TEXTINPUT)) {
                 /* Update IME candidate list position */
                 SDL_IME_UpdateTextRect(NULL);
             }
@@ -1668,7 +1668,7 @@ int X11_WaitEventTimeout(_THIS, Sint64 timeoutNS)
     X11_DispatchEvent(_this, &xevent);
 
 #ifdef SDL_USE_IME
-    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_TEXTINPUT)) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -1709,7 +1709,7 @@ void X11_PumpEvents(_THIS)
     }
 
 #ifdef SDL_USE_IME
-    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_TEXTINPUT)) {
         SDL_IME_PumpEvents();
     }
 #endif

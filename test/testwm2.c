@@ -269,8 +269,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-    SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
+    SDL_SetEventEnabled(SDL_DROPFILE, SDL_TRUE);
+    SDL_SetEventEnabled(SDL_DROPTEXT, SDL_TRUE);
 
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];

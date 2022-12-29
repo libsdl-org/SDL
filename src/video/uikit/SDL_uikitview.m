@@ -165,7 +165,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 - (UIPointerStyle *)pointerInteraction:(UIPointerInteraction *)interaction styleForRegion:(UIPointerRegion *)region API_AVAILABLE(ios(13.4))
 {
-    if (SDL_ShowCursor(-1)) {
+    if (SDL_CursorVisible()) {
         return nil;
     } else {
         return [UIPointerStyle hiddenPointerStyle];

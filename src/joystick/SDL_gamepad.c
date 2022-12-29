@@ -3076,7 +3076,7 @@ static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gamep
     /* translate the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
-    if (SDL_GetEventState(SDL_GAMEPADAXISMOTION) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_GAMEPADAXISMOTION)) {
         SDL_Event event;
         event.type = SDL_GAMEPADAXISMOTION;
         event.common.timestamp = timestamp;
@@ -3138,7 +3138,7 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
     /* translate the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
-    if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+    if (SDL_EventEnabled(event.type)) {
         event.common.timestamp = timestamp;
         event.cbutton.which = gamepad->joystick->instance_id;
         event.cbutton.button = button;
@@ -3149,46 +3149,46 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
     return posted;
 }
 
-/*
- * Turn off gamepad events
- */
-int SDL_GetGamepadEventState(int state)
+static const Uint32 SDL_gamepad_event_list[] = {
+    SDL_GAMEPADAXISMOTION,
+    SDL_GAMEPADBUTTONDOWN,
+    SDL_GAMEPADBUTTONUP,
+    SDL_GAMEPADADDED,
+    SDL_GAMEPADREMOVED,
+    SDL_GAMEPADDEVICEREMAPPED,
+    SDL_GAMEPADTOUCHPADDOWN,
+    SDL_GAMEPADTOUCHPADMOTION,
+    SDL_GAMEPADTOUCHPADUP,
+    SDL_GAMEPADSENSORUPDATE,
+};
+
+void SDL_SetGamepadEventsEnabled(SDL_bool enabled)
 {
-#if SDL_EVENTS_DISABLED
-    return SDL_IGNORE;
-#else
-    const Uint32 event_list[] = {
-        SDL_GAMEPADAXISMOTION,
-        SDL_GAMEPADBUTTONDOWN,
-        SDL_GAMEPADBUTTONUP,
-        SDL_GAMEPADADDED,
-        SDL_GAMEPADREMOVED,
-        SDL_GAMEPADDEVICEREMAPPED,
-        SDL_GAMEPADTOUCHPADDOWN,
-        SDL_GAMEPADTOUCHPADMOTION,
-        SDL_GAMEPADTOUCHPADUP,
-        SDL_GAMEPADSENSORUPDATE,
-    };
+#ifndef SDL_EVENTS_DISABLED
     unsigned int i;
 
-    switch (state) {
-    case SDL_QUERY:
-        state = SDL_IGNORE;
-        for (i = 0; i < SDL_arraysize(event_list); ++i) {
-            state = SDL_EventState(event_list[i], SDL_QUERY);
-            if (state == SDL_ENABLE) {
-                break;
-            }
-        }
-        break;
-    default:
-        for (i = 0; i < SDL_arraysize(event_list); ++i) {
-            (void)SDL_EventState(event_list[i], state);
-        }
-        break;
+    for (i = 0; i < SDL_arraysize(SDL_gamepad_event_list); ++i) {
+        SDL_SetEventEnabled(SDL_gamepad_event_list[i], enabled);
     }
-    return state;
+#endif /* !SDL_EVENTS_DISABLED */
+}
+
+SDL_bool SDL_GamepadEventsEnabled(void)
+{
+    SDL_bool enabled = SDL_FALSE;
+
+#ifndef SDL_EVENTS_DISABLED
+    unsigned int i;
+
+    for (i = 0; i < SDL_arraysize(SDL_gamepad_event_list); ++i) {
+        enabled = SDL_EventEnabled(SDL_gamepad_event_list[i]);
+        if (enabled) {
+            break;
+        }
+    }
 #endif /* SDL_EVENTS_DISABLED */
+
+    return enabled;
 }
 
 void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick)

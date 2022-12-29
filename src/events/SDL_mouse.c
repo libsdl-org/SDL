@@ -601,7 +601,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(SDL_MOUSEMOTION) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_MOUSEMOTION)) {
         SDL_Event event;
         event.type = SDL_MOUSEMOTION;
         event.common.timestamp = timestamp;
@@ -758,7 +758,7 @@ static int SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(type) == SDL_ENABLE) {
+    if (SDL_EventEnabled(type)) {
         SDL_Event event;
         event.type = type;
         event.common.timestamp = timestamp;
@@ -850,7 +850,7 @@ int SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(SDL_MOUSEWHEEL) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_MOUSEWHEEL)) {
         SDL_Event event;
         event.type = SDL_MOUSEWHEEL;
         event.common.timestamp = timestamp;
@@ -878,7 +878,7 @@ void SDL_QuitMouse(void)
         SDL_UpdateMouseCapture(SDL_TRUE);
     }
     SDL_SetRelativeMouseMode(SDL_FALSE);
-    SDL_ShowCursor(1);
+    SDL_ShowCursor();
 
     cursor = mouse->cursors;
     while (cursor) {
@@ -1413,25 +1413,31 @@ void SDL_FreeCursor(SDL_Cursor *cursor)
     }
 }
 
-int SDL_ShowCursor(int toggle)
+int SDL_ShowCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_bool shown;
 
-    if (mouse == NULL) {
-        return 0;
+    if (!mouse->cursor_shown) {
+        mouse->cursor_shown = SDL_TRUE;
+        SDL_SetCursor(NULL);
     }
+    return 0;
+}
 
-    shown = mouse->cursor_shown;
-    if (toggle >= 0) {
-        if (toggle) {
-            mouse->cursor_shown = SDL_TRUE;
-        } else {
-            mouse->cursor_shown = SDL_FALSE;
-        }
-        if (mouse->cursor_shown != shown) {
-            SDL_SetCursor(NULL);
-        }
+int SDL_HideCursor(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    if (mouse->cursor_shown) {
+        mouse->cursor_shown = SDL_FALSE;
+        SDL_SetCursor(NULL);
     }
-    return shown;
+    return 0;
+}
+
+SDL_bool SDL_CursorVisible(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    return mouse->cursor_shown;
 }

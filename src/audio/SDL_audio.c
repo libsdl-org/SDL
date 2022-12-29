@@ -412,7 +412,7 @@ void SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, SDL_AudioSpe
     const int device_index = iscapture ? add_capture_device(name, spec, handle) : add_output_device(name, spec, handle);
     if (device_index != -1) {
         /* Post the event, if desired */
-        if (SDL_GetEventState(SDL_AUDIODEVICEADDED) == SDL_ENABLE) {
+        if (SDL_EventEnabled(SDL_AUDIODEVICEADDED)) {
             SDL_Event event;
             event.type = SDL_AUDIODEVICEADDED;
             event.common.timestamp = 0;
@@ -443,7 +443,7 @@ void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device)
     current_audio.impl.UnlockDevice(device);
 
     /* Post the event, if desired */
-    if (SDL_GetEventState(SDL_AUDIODEVICEREMOVED) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_AUDIODEVICEREMOVED)) {
         SDL_Event event;
         event.type = SDL_AUDIODEVICEREMOVED;
         event.common.timestamp = 0;
@@ -495,7 +495,7 @@ void SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle)
        Note that opened devices will send the non-zero event in
        SDL_OpenedAudioDeviceDisconnected(). */
     if (!device_was_opened) {
-        if (SDL_GetEventState(SDL_AUDIODEVICEREMOVED) == SDL_ENABLE) {
+        if (SDL_EventEnabled(SDL_AUDIODEVICEREMOVED)) {
             SDL_Event event;
             event.type = SDL_AUDIODEVICEREMOVED;
             event.common.timestamp = 0;

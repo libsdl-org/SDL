@@ -492,7 +492,7 @@ int main(int argc, char **argv)
     displayrect.h = window_h;
 
     /* Ignore key up events, they don't even get filtered */
-    SDL_EventState(SDL_KEYUP, SDL_IGNORE);
+    SDL_SetEventEnabled(SDL_KEYUP, SDL_FALSE);
 
     /* Main render loop */
     frames = 0;

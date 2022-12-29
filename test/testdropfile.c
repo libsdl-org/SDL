@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
         SDL_RenderPresent(renderer);
     }
 
-    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+    SDL_SetEventEnabled(SDL_DROPFILE, SDL_TRUE);
 
     /* Main render loop */
     done = 0;
