@@ -31,7 +31,7 @@
 #define SDL_AddGamepadMappingsFromRW SDL_AddGamepadMappingsFromRW_REAL
 #define SDL_AddHintCallback SDL_AddHintCallback_REAL
 #define SDL_AddTimer SDL_AddTimer_REAL
-#define SDL_AllocRW SDL_AllocRW_REAL
+#define SDL_CreateRW SDL_CreateRW_REAL
 #define SDL_AndroidBackButton   SDL_AndroidBackButton_REAL
 #define SDL_AndroidGetActivity  SDL_AndroidGetActivity_REAL
 #define SDL_AndroidGetExternalStoragePath   SDL_AndroidGetExternalStoragePath_REAL
@@ -136,8 +136,8 @@
 #define SDL_FlushAudioStream SDL_FlushAudioStream_REAL
 #define SDL_FlushEvent SDL_FlushEvent_REAL
 #define SDL_FlushEvents SDL_FlushEvents_REAL
-#define SDL_FreeCursor SDL_FreeCursor_REAL
-#define SDL_FreeRW SDL_FreeRW_REAL
+#define SDL_DestroyCursor SDL_DestroyCursor_REAL
+#define SDL_DestroyRW SDL_DestroyRW_REAL
 #define SDL_GDKGetTaskQueue SDL_GDKGetTaskQueue_REAL
 #define SDL_GDKSuspendComplete  SDL_GDKSuspendComplete_REAL
 #define SDL_GL_BindTexture SDL_GL_BindTexture_REAL

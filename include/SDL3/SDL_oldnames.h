@@ -239,6 +239,9 @@
 #define KMOD_SCROLL SDL_KMOD_SCROLL
 #define KMOD_SHIFT SDL_KMOD_SHIFT
 
+/* ##SDL_mouse.h */
+#define SDL_FreeCursor SDL_DestroyCursor
+
 /* ##SDL_pixels.h */
 #define SDL_AllocFormat SDL_CreatePixelFormat
 #define SDL_AllocPalette SDL_CreatePalette
@@ -309,6 +312,8 @@
 #define RW_SEEK_CUR SDL_RW_SEEK_CUR
 #define RW_SEEK_END SDL_RW_SEEK_END
 #define RW_SEEK_SET SDL_RW_SEEK_SET
+#define SDL_AllocRW SDL_CreateRW
+#define SDL_FreeRW SDL_DestroyRW
 
 /* ##SDL_sensor.h */
 #define SDL_NumSensors SDL_GetNumSensors
@@ -563,6 +568,9 @@
 #define KMOD_SCROLL KMOD_SCROLL_renamed_SDL_KMOD_SCROLL
 #define KMOD_SHIFT KMOD_SHIFT_renamed_SDL_KMOD_SHIFT
 
+/* ##SDL_mouse.h */
+#define SDL_FreeCursor SDL_FreeCursor_renamed_SDL_DestroyCursor
+
 /* ##SDL_pixels.h */
 #define SDL_AllocFormat SDL_AllocFormat_renamed_SDL_CreatePixelFormat
 #define SDL_AllocPalette SDL_AllocPalette_renamed_SDL_CreatePalette
@@ -633,6 +641,8 @@
 #define RW_SEEK_CUR RW_SEEK_CUR_renamed_SDL_RW_SEEK_CUR
 #define RW_SEEK_END RW_SEEK_END_renamed_SDL_RW_SEEK_END
 #define RW_SEEK_SET RW_SEEK_SET_renamed_SDL_RW_SEEK_SET
+#define SDL_AllocRW SDL_AllocRW_renamed_SDL_CreateRW
+#define SDL_FreeRW SDL_FreeRW_renamed_SDL_DestroyRW
 
 /* ##SDL_sensor.h */
 #define SDL_SensorClose SDL_SensorClose_renamed_SDL_CloseSensor
