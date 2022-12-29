@@ -99,7 +99,7 @@ def add_symbol_to_oldnames(header, oldname, newname):
                 content_added = False
             else:
                 raise Exception("add_symbol_to_oldnames(): expected mode 0")
-        elif line == "#else /* !SDL_ENABLE_OLD_NAMES */":
+        elif line == "#elif !defined(SDL_DISABLE_OLD_NAMES)":
             if mode == 1:
                 if not section_added:
                     i = add_line(lines, i, section)
