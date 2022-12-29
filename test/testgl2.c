@@ -209,6 +209,8 @@ int main(int argc, char *argv[])
     int status;
     int dw, dh;
     int swap_interval = 0;
+    int interval = 0;
+    int ret_interval = 0;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -293,7 +295,14 @@ int main(int argc, char *argv[])
 
     SDL_GetCurrentDisplayMode(0, &mode);
     SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
-    SDL_Log("Swap Interval : %d\n", SDL_GL_GetSwapInterval());
+
+    ret_interval = SDL_GL_GetSwapInterval(&interval);
+    if (ret_interval < 0) {
+       SDL_Log("Swap Interval : %d error: %s\n", interval, SDL_GetError());
+    } else {
+       SDL_Log("Swap Interval : %d\n", interval);
+    }
+
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
     SDL_GL_GetDrawableSize(state->windows[0], &dw, &dh);

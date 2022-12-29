@@ -4053,16 +4053,25 @@ int SDL_GL_SetSwapInterval(int interval)
     }
 }
 
-int SDL_GL_GetSwapInterval(void)
+int SDL_GL_GetSwapInterval(int *interval)
 {
+    if (interval == NULL) {
+       return SDL_InvalidParamError("interval");
+    }
+
+    *interval = 0;
+
     if (_this == NULL) {
-        return 0;
+        return SDL_SetError("no video driver");;
     } else if (SDL_GL_GetCurrentContext() == NULL) {
-        return 0;
+        return SDL_SetError("no current context");;
     } else if (_this->GL_GetSwapInterval) {
-        return _this->GL_GetSwapInterval(_this);
-    } else {
+        int val = _this->GL_GetSwapInterval(_this);
+         
+        *interval = val;
         return 0;
+    } else {
+        return SDL_SetError("not implemented");;
     }
 }
 

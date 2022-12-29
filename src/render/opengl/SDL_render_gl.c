@@ -1651,6 +1651,7 @@ static int GL_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     int retval;
+    int interval = 0;
     if (vsync) {
         retval = SDL_GL_SetSwapInterval(1);
     } else {
@@ -1659,7 +1660,13 @@ static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
     if (retval != 0) {
         return retval;
     }
-    if (SDL_GL_GetSwapInterval() > 0) {
+
+    retval = SDL_GL_GetSwapInterval(&interval);
+    if (retval < 0) {
+        return retval;
+    }
+
+    if (interval > 0) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     } else {
         renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
@@ -1804,8 +1811,16 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
     } else {
         SDL_GL_SetSwapInterval(0);
     }
-    if (SDL_GL_GetSwapInterval() > 0) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+
+    {
+        int interval = 0;
+        if (SDL_GL_GetSwapInterval(&interval) < 0) {
+            /* Error */
+        } else {
+            if (interval > 0) {
+                renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+            }
+        }
     }
 
     /* Check for debug output support */

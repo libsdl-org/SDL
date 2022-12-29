@@ -1988,18 +1988,20 @@ extern DECLSPEC int SDLCALL SDL_GL_SetSwapInterval(int interval);
  * Get the swap interval for the current OpenGL context.
  *
  * If the system can't determine the swap interval, or there isn't a valid
- * current context, this function will return 0 as a safe default.
+ * current context, this function will set *interval to 0 as a safe default.
  *
- * \returns 0 if there is no vertical retrace synchronization, 1 if the buffer
+ * \param interval Output interval value. 0 if there is no vertical retrace synchronization, 1 if the buffer
  *          swap is synchronized with the vertical retrace, and -1 if late
- *          swaps happen immediately instead of waiting for the next retrace;
+ *          swaps happen immediately instead of waiting for the next retrace
+ *
+ * \returns 0 on success or -1 error.
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GL_SetSwapInterval
  */
-extern DECLSPEC int SDLCALL SDL_GL_GetSwapInterval(void);
+extern DECLSPEC int SDLCALL SDL_GL_GetSwapInterval(int *interval);
 
 /**
  * Update a window with OpenGL rendering.
