@@ -230,7 +230,7 @@ SDL_DYNAPI_PROC(int,SDL_GL_MakeCurrent,(SDL_Window *a, SDL_GLContext b),(a,b),re
 SDL_DYNAPI_PROC(void,SDL_GL_ResetAttributes,(void),(),)
 SDL_DYNAPI_PROC(int,SDL_GL_SetAttribute,(SDL_GLattr a, int b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GL_SetSwapInterval,(int a),(a),return)
-SDL_DYNAPI_PROC(void,SDL_GL_SwapWindow,(SDL_Window *a),(a),)
+SDL_DYNAPI_PROC(int,SDL_GL_SwapWindow,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GL_UnbindTexture,(SDL_Texture *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_GL_UnloadLibrary,(void),(),)
 SDL_DYNAPI_PROC(SDL_GUID,SDL_GUIDFromString,(const char *a),(a),return)

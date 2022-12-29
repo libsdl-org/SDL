@@ -22,7 +22,7 @@
 
 #if SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED
 
-#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult and SDL_RecreateWindow */
+#include "../../video/SDL_sysvideo.h" /* For SDL_RecreateWindow */
 #include <SDL3/SDL_opengles2.h>
 #include "../SDL_sysrender.h"
 #include "../../video/SDL_blit.h"
@@ -1956,7 +1956,7 @@ static int GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 static int GLES2_RenderPresent(SDL_Renderer *renderer)
 {
     /* Tell the video driver to swap buffers */
-    return SDL_GL_SwapWindowWithResult(renderer->window);
+    return SDL_GL_SwapWindow(renderer->window);
 }
 
 static int GLES2_SetVSync(SDL_Renderer *renderer, const int vsync)

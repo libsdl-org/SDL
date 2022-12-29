@@ -2013,9 +2013,12 @@ extern DECLSPEC int SDLCALL SDL_GL_GetSwapInterval(void);
  *
  * \param window the window to change
  *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_GL_SwapWindow(SDL_Window * window);
+extern DECLSPEC int SDLCALL SDL_GL_SwapWindow(SDL_Window * window);
 
 /**
  * Delete an OpenGL context.
