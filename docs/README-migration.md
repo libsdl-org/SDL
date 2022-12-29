@@ -763,6 +763,12 @@ The following functions have been renamed:
 * SDL_UpperBlit => SDL_BlitSurface
 * SDL_UpperBlitScaled => SDL_BlitSurfaceScaled
 
+## SDL_system.h
+
+The following functions have been renamed:
+* SDL_RenderGetD3D11Device => SDL_GetRenderD3D11Device
+* SDL_RenderGetD3D9Device => SDL_GetRenderD3D9Device
+
 ## SDL_syswm.h
 
 This header no longer includes platform specific headers and type definitions, instead allowing you to include the ones appropriate for your use case. You should define one or more of the following to enable the relevant platform-specific support:
