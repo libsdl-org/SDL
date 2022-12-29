@@ -513,7 +513,7 @@ int video_getWindowDisplayMode(void *arg)
         SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0, got: %d", result);
         SDLTest_AssertCheck(mode.w > 0, "Validate mode.w content; expected: >0, got: %d", mode.w);
         SDLTest_AssertCheck(mode.h > 0, "Validate mode.h content; expected: >0, got: %d", mode.h);
-        SDLTest_AssertCheck(mode.refresh_rate > 0, "Validate mode.refresh_rate content; expected: >0, got: %d", mode.refresh_rate);
+        SDLTest_AssertCheck(mode.refresh_rate > 0, "Validate mode.refresh_rate content; expected: >0, got: %f", mode.refresh_rate);
     }
 
     /* Clean up */

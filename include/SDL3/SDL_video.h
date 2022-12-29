@@ -55,7 +55,7 @@ typedef struct
     Uint32 format;              /**< pixel format */
     int w;                      /**< width, in screen coordinates */
     int h;                      /**< height, in screen coordinates */
-    int refresh_rate;           /**< refresh rate (or zero for unspecified) */
+    double refresh_rate;        /**< refresh rate (or zero for unspecified) */
     void *driverdata;           /**< driver-specific data, initialize to 0 */
 } SDL_DisplayMode;
 

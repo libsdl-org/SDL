@@ -907,8 +907,7 @@ static SDL_RenderLineMethod SDL_GetRenderLineMethod()
 
 static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Window *window)
 {
-    /* FIXME: SDL refresh rate API should return numerator/denominator */
-    int refresh_rate = 0;
+    double refresh_rate = 0;
     int display_index = SDL_GetWindowDisplayIndex(window);
     SDL_DisplayMode mode;
 

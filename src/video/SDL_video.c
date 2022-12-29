@@ -891,7 +891,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
                                                             SDL_DisplayMode *closest)
 {
     Uint32 target_format;
-    int target_refresh_rate;
+    double target_refresh_rate;
     int i;
     SDL_DisplayMode *current, *match;
 
