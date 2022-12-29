@@ -103,6 +103,7 @@ typedef enum
 {
     SDL_WINDOW_FULLSCREEN = 0x00000001,         /**< fullscreen window */
     SDL_WINDOW_OPENGL = 0x00000002,             /**< window usable with OpenGL context */
+    /* 0x4 was SDL_WINDOW_SHOWN in SDL2, please reserve this bit for sdl2-compat. */
     SDL_WINDOW_HIDDEN = 0x00000008,             /**< window is not visible */
     SDL_WINDOW_BORDERLESS = 0x00000010,         /**< no window decoration */
     SDL_WINDOW_RESIZABLE = 0x00000020,          /**< window can be resized */
