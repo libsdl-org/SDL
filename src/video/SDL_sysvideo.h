@@ -515,6 +515,4 @@ extern void SDL_ToggleDragAndDropSupport(void);
 
 extern int SDL_GetDisplayIndexForPoint(const SDL_Point *point);
 
-extern int SDL_GL_SwapWindowWithResult(SDL_Window *window);
-
 #endif /* SDL_sysvideo_h_ */

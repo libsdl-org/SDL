@@ -4066,7 +4066,7 @@ int SDL_GL_GetSwapInterval(void)
     }
 }
 
-int SDL_GL_SwapWindowWithResult(SDL_Window *window)
+int SDL_GL_SwapWindow(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, -1);
 
@@ -4079,11 +4079,6 @@ int SDL_GL_SwapWindowWithResult(SDL_Window *window)
     }
 
     return _this->GL_SwapWindow(_this, window);
-}
-
-void SDL_GL_SwapWindow(SDL_Window *window)
-{
-    SDL_GL_SwapWindowWithResult(window);
 }
 
 void SDL_GL_DeleteContext(SDL_GLContext context)
