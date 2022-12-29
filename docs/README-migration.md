@@ -47,13 +47,13 @@ SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_
 SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
 The following functions have been renamed:
-* SDL_AudioStreamAvailable => SDL_GetAudioStreamAvailable
-* SDL_AudioStreamClear => SDL_ClearAudioStream
-* SDL_AudioStreamFlush => SDL_FlushAudioStream
-* SDL_AudioStreamGet => SDL_GetAudioStreamData
-* SDL_AudioStreamPut => SDL_PutAudioStreamData
-* SDL_FreeAudioStream => SDL_DestroyAudioStream
-* SDL_NewAudioStream => SDL_CreateAudioStream
+* SDL_AudioStreamAvailable() => SDL_GetAudioStreamAvailable()
+* SDL_AudioStreamClear() => SDL_ClearAudioStream()
+* SDL_AudioStreamFlush() => SDL_FlushAudioStream()
+* SDL_AudioStreamGet() => SDL_GetAudioStreamData()
+* SDL_AudioStreamPut() => SDL_PutAudioStreamData()
+* SDL_FreeAudioStream() => SDL_DestroyAudioStream()
+* SDL_NewAudioStream() => SDL_CreateAudioStream()
 
 ## SDL_cpuinfo.h
 
@@ -76,17 +76,17 @@ The following headers are no longer automatically included, and will need to be 
 
 ## SDL_events.h
 
-The `timestamp` member of the `SDL_Event` structure now represents nanoseconds, and is populated with `SDL_GetTicksNS()`
+The timestamp member of the SDL_Event structure now represents nanoseconds, and is populated with SDL_GetTicksNS()
 
-The `timestamp_us` member of the sensor events has been renamed `sensor_timestamp` and now represents nanoseconds. This value is filled in from the hardware, if available, and may not be synchronized with values returned from `SDL_GetTicksNS()`.
+The timestamp_us member of the sensor events has been renamed sensor_timestamp and now represents nanoseconds. This value is filled in from the hardware, if available, and may not be synchronized with values returned from SDL_GetTicksNS().
 
-You should set the `event.common.timestamp` field before passing an event to `SDL_PushEvent()`. If the timestamp is 0 it will be filled in with `SDL_GetTicksNS()`.
+You should set the event.common.timestamp field before passing an event to SDL_PushEvent(). If the timestamp is 0 it will be filled in with SDL_GetTicksNS().
 
-The `SDL_DISPLAYEVENT_*` events have been moved to top level events, and `SDL_DISPLAYEVENT` has been removed. In general, handling this change just means checking for the individual events instead of first checking for `SDL_DISPLAYEVENT` and then checking for display events. You can compare the event >= `SDL_DISPLAYEVENT_FIRST` and <= `SDL_DISPLAYEVENT_LAST` if you need to see whether it's a display event.
+The SDL_DISPLAYEVENT_* events have been moved to top level events, and SDL_DISPLAYEVENT has been removed. In general, handling this change just means checking for the individual events instead of first checking for SDL_DISPLAYEVENT and then checking for display events. You can compare the event >= SDL_DISPLAYEVENT_FIRST and <= SDL_DISPLAYEVENT_LAST if you need to see whether it's a display event.
 
-The `SDL_WINDOWEVENT_*` events have been moved to top level events, and `SDL_WINDOWEVENT` has been removed. In general, handling this change just means checking for the individual events instead of first checking for `SDL_WINDOWEVENT` and then checking for window events. You can compare the event >= `SDL_WINDOWEVENT_FIRST` and <= `SDL_WINDOWEVENT_LAST` if you need to see whether it's a window event.
+The SDL_WINDOWEVENT_* events have been moved to top level events, and SDL_WINDOWEVENT has been removed. In general, handling this change just means checking for the individual events instead of first checking for SDL_WINDOWEVENT and then checking for window events. You can compare the event >= SDL_WINDOWEVENT_FIRST and <= SDL_WINDOWEVENT_LAST if you need to see whether it's a window event.
 
-`SDL_QUERY`, `SDL_IGNORE`, `SDL_ENABLE`, and `SDL_DISABLE` have been removed. You can use the functions SDL_SetEventEnabled() and SDL_EventEnabled() to set and query event processing state.
+SDL_QUERY, SDL_IGNORE, SDL_ENABLE, and SDL_DISABLE have been removed. You can use the functions SDL_SetEventEnabled() and SDL_EventEnabled() to set and query event processing state.
 
 The following symbols have been renamed:
 * SDL_CONTROLLERAXISMOTION => SDL_GAMEPADAXISMOTION
@@ -115,7 +115,7 @@ The following functions have been removed:
 
 SDL_gamecontroller.h has been renamed SDL_gamepad.h, and all APIs have been renamed to match.
 
-The SDL_GAMEPADADDED event now provides the joystick instance ID in the `which` member of the cdevice event structure.
+The SDL_GAMEPADADDED event now provides the joystick instance ID in the which member of the cdevice event structure.
 
 The functions SDL_HasGamepads(), SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() have been added to directly query the list of available gamepads.
 
@@ -132,61 +132,61 @@ The following structures have been renamed:
 * SDL_GameControllerButtonBind => SDL_GamepadBinding
 
 The following functions have been renamed:
-* SDL_GameControllerAddMapping => SDL_AddGamepadMapping
-* SDL_GameControllerAddMappingsFromFile => SDL_AddGamepadMappingsFromFile
-* SDL_GameControllerAddMappingsFromRW => SDL_AddGamepadMappingsFromRW
-* SDL_GameControllerClose => SDL_CloseGamepad
-* SDL_GameControllerFromInstanceID => SDL_GetGamepadFromInstanceID
-* SDL_GameControllerFromPlayerIndex => SDL_GetGamepadFromPlayerIndex
-* SDL_GameControllerGetAppleSFSymbolsNameForAxis => SDL_GetGamepadAppleSFSymbolsNameForAxis
-* SDL_GameControllerGetAppleSFSymbolsNameForButton => SDL_GetGamepadAppleSFSymbolsNameForButton
-* SDL_GameControllerGetAttached => SDL_GamepadConnected
-* SDL_GameControllerGetAxis => SDL_GetGamepadAxis
-* SDL_GameControllerGetAxisFromString => SDL_GetGamepadAxisFromString
-* SDL_GameControllerGetBindForAxis => SDL_GetGamepadBindForAxis
-* SDL_GameControllerGetBindForButton => SDL_GetGamepadBindForButton
-* SDL_GameControllerGetButton => SDL_GetGamepadButton
-* SDL_GameControllerGetButtonFromString => SDL_GetGamepadButtonFromString
-* SDL_GameControllerGetFirmwareVersion => SDL_GetGamepadFirmwareVersion
-* SDL_GameControllerGetJoystick => SDL_GetGamepadJoystick
-* SDL_GameControllerGetNumTouchpadFingers => SDL_GetGamepadNumTouchpadFingers
-* SDL_GameControllerGetNumTouchpads => SDL_GetGamepadNumTouchpads
-* SDL_GameControllerGetPlayerIndex => SDL_GetGamepadPlayerIndex
-* SDL_GameControllerGetProduct => SDL_GetGamepadProduct
-* SDL_GameControllerGetProductVersion => SDL_GetGamepadProductVersion
-* SDL_GameControllerGetSensorData => SDL_GetGamepadSensorData
-* SDL_GameControllerGetSensorDataRate => SDL_GetGamepadSensorDataRate
-* SDL_GameControllerGetSerial => SDL_GetGamepadSerial
-* SDL_GameControllerGetStringForAxis => SDL_GetGamepadStringForAxis
-* SDL_GameControllerGetStringForButton => SDL_GetGamepadStringForButton
-* SDL_GameControllerGetTouchpadFinger => SDL_GetGamepadTouchpadFinger
-* SDL_GameControllerGetType => SDL_GetGamepadType
-* SDL_GameControllerGetVendor => SDL_GetGamepadVendor
-* SDL_GameControllerHasAxis => SDL_GamepadHasAxis
-* SDL_GameControllerHasButton => SDL_GamepadHasButton
-* SDL_GameControllerHasLED => SDL_GamepadHasLED
-* SDL_GameControllerHasRumble => SDL_GamepadHasRumble
-* SDL_GameControllerHasRumbleTriggers => SDL_GamepadHasRumbleTriggers
-* SDL_GameControllerHasSensor => SDL_GamepadHasSensor
-* SDL_GameControllerIsSensorEnabled => SDL_GamepadSensorEnabled
-* SDL_GameControllerMapping => SDL_GetGamepadMapping
-* SDL_GameControllerMappingForGUID => SDL_GetGamepadMappingForGUID
-* SDL_GameControllerMappingForIndex => SDL_GetGamepadMappingForIndex
-* SDL_GameControllerName => SDL_GetGamepadName
-* SDL_GameControllerNumMappings => SDL_GetNumGamepadMappings
-* SDL_GameControllerOpen => SDL_OpenGamepad
-* SDL_GameControllerPath => SDL_GetGamepadPath
-* SDL_GameControllerRumble => SDL_RumbleGamepad
-* SDL_GameControllerRumbleTriggers => SDL_RumbleGamepadTriggers
-* SDL_GameControllerSendEffect => SDL_SendGamepadEffect
-* SDL_GameControllerSetLED => SDL_SetGamepadLED
-* SDL_GameControllerSetPlayerIndex => SDL_SetGamepadPlayerIndex
-* SDL_GameControllerSetSensorEnabled => SDL_SetGamepadSensorEnabled
-* SDL_GameControllerUpdate => SDL_UpdateGamepads
-* SDL_IsGameController => SDL_IsGamepad
+* SDL_GameControllerAddMapping() => SDL_AddGamepadMapping()
+* SDL_GameControllerAddMappingsFromFile() => SDL_AddGamepadMappingsFromFile()
+* SDL_GameControllerAddMappingsFromRW() => SDL_AddGamepadMappingsFromRW()
+* SDL_GameControllerClose() => SDL_CloseGamepad()
+* SDL_GameControllerFromInstanceID() => SDL_GetGamepadFromInstanceID()
+* SDL_GameControllerFromPlayerIndex() => SDL_GetGamepadFromPlayerIndex()
+* SDL_GameControllerGetAppleSFSymbolsNameForAxis() => SDL_GetGamepadAppleSFSymbolsNameForAxis()
+* SDL_GameControllerGetAppleSFSymbolsNameForButton() => SDL_GetGamepadAppleSFSymbolsNameForButton()
+* SDL_GameControllerGetAttached() => SDL_GamepadConnected()
+* SDL_GameControllerGetAxis() => SDL_GetGamepadAxis()
+* SDL_GameControllerGetAxisFromString() => SDL_GetGamepadAxisFromString()
+* SDL_GameControllerGetBindForAxis() => SDL_GetGamepadBindForAxis()
+* SDL_GameControllerGetBindForButton() => SDL_GetGamepadBindForButton()
+* SDL_GameControllerGetButton() => SDL_GetGamepadButton()
+* SDL_GameControllerGetButtonFromString() => SDL_GetGamepadButtonFromString()
+* SDL_GameControllerGetFirmwareVersion() => SDL_GetGamepadFirmwareVersion()
+* SDL_GameControllerGetJoystick() => SDL_GetGamepadJoystick()
+* SDL_GameControllerGetNumTouchpadFingers() => SDL_GetGamepadNumTouchpadFingers()
+* SDL_GameControllerGetNumTouchpads() => SDL_GetGamepadNumTouchpads()
+* SDL_GameControllerGetPlayerIndex() => SDL_GetGamepadPlayerIndex()
+* SDL_GameControllerGetProduct() => SDL_GetGamepadProduct()
+* SDL_GameControllerGetProductVersion() => SDL_GetGamepadProductVersion()
+* SDL_GameControllerGetSensorData() => SDL_GetGamepadSensorData()
+* SDL_GameControllerGetSensorDataRate() => SDL_GetGamepadSensorDataRate()
+* SDL_GameControllerGetSerial() => SDL_GetGamepadSerial()
+* SDL_GameControllerGetStringForAxis() => SDL_GetGamepadStringForAxis()
+* SDL_GameControllerGetStringForButton() => SDL_GetGamepadStringForButton()
+* SDL_GameControllerGetTouchpadFinger() => SDL_GetGamepadTouchpadFinger()
+* SDL_GameControllerGetType() => SDL_GetGamepadType()
+* SDL_GameControllerGetVendor() => SDL_GetGamepadVendor()
+* SDL_GameControllerHasAxis() => SDL_GamepadHasAxis()
+* SDL_GameControllerHasButton() => SDL_GamepadHasButton()
+* SDL_GameControllerHasLED() => SDL_GamepadHasLED()
+* SDL_GameControllerHasRumble() => SDL_GamepadHasRumble()
+* SDL_GameControllerHasRumbleTriggers() => SDL_GamepadHasRumbleTriggers()
+* SDL_GameControllerHasSensor() => SDL_GamepadHasSensor()
+* SDL_GameControllerIsSensorEnabled() => SDL_GamepadSensorEnabled()
+* SDL_GameControllerMapping() => SDL_GetGamepadMapping()
+* SDL_GameControllerMappingForGUID() => SDL_GetGamepadMappingForGUID()
+* SDL_GameControllerMappingForIndex() => SDL_GetGamepadMappingForIndex()
+* SDL_GameControllerName() => SDL_GetGamepadName()
+* SDL_GameControllerNumMappings() => SDL_GetNumGamepadMappings()
+* SDL_GameControllerOpen() => SDL_OpenGamepad()
+* SDL_GameControllerPath() => SDL_GetGamepadPath()
+* SDL_GameControllerRumble() => SDL_RumbleGamepad()
+* SDL_GameControllerRumbleTriggers() => SDL_RumbleGamepadTriggers()
+* SDL_GameControllerSendEffect() => SDL_SendGamepadEffect()
+* SDL_GameControllerSetLED() => SDL_SetGamepadLED()
+* SDL_GameControllerSetPlayerIndex() => SDL_SetGamepadPlayerIndex()
+* SDL_GameControllerSetSensorEnabled() => SDL_SetGamepadSensorEnabled()
+* SDL_GameControllerUpdate() => SDL_UpdateGamepads()
+* SDL_IsGameController() => SDL_IsGamepad()
 
 The following functions have been removed:
-* SDL_GameControllerEventState - replaced with SDL_SetGamepadEventsEnabled() and SDL_GamepadEventsEnabled()
+* SDL_GameControllerEventState() - replaced with SDL_SetGamepadEventsEnabled() and SDL_GamepadEventsEnabled()
 * SDL_GameControllerMappingForDeviceIndex() - replaced with SDL_GetGamepadInstanceMapping()
 * SDL_GameControllerNameForIndex() - replaced with SDL_GetGamepadInstanceName()
 * SDL_GameControllerPathForIndex() - replaced with SDL_GetGamepadInstancePath()
@@ -259,12 +259,12 @@ The following hints have been removed:
 * SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
 * SDL_HINT_VIDEO_X11_XVIDMODE (Xvidmode no longer supported by the X11 backend)
 
-* Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
-* Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
+* Renamed hints SDL_HINT_VIDEODRIVER and SDL_HINT_AUDIODRIVER to SDL_HINT_VIDEO_DRIVER and SDL_HINT_AUDIO_DRIVER
+* Renamed environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER
 
 ## SDL_init.h
 
-The following macros have been renamed:
+The following symbols have been renamed:
 * SDL_INIT_GAMECONTROLLER => SDL_INIT_GAMEPAD
 
 ## SDL_joystick.h
@@ -300,51 +300,51 @@ The functions SDL_HasJoysticks(), SDL_GetJoysticks(), SDL_GetJoystickInstanceNam
 SDL_AttachVirtualJoystick() and SDL_AttachVirtualJoystickEx() now return the joystick instance ID instead of a device index, and return 0 if there was an error.
 
 The following functions have been renamed:
-* SDL_JoystickAttachVirtual => SDL_AttachVirtualJoystick
-* SDL_JoystickAttachVirtualEx => SDL_AttachVirtualJoystickEx
-* SDL_JoystickClose => SDL_CloseJoystick
-* SDL_JoystickCurrentPowerLevel => SDL_GetJoystickPowerLevel
-* SDL_JoystickDetachVirtual => SDL_DetachVirtualJoystick
-* SDL_JoystickFromInstanceID => SDL_GetJoystickFromInstanceID
-* SDL_JoystickFromPlayerIndex => SDL_GetJoystickFromPlayerIndex
-* SDL_JoystickGetAttached => SDL_JoystickConnected
-* SDL_JoystickGetAxis => SDL_GetJoystickAxis
-* SDL_JoystickGetAxisInitialState => SDL_GetJoystickAxisInitialState
-* SDL_JoystickGetButton => SDL_GetJoystickButton
-* SDL_JoystickGetFirmwareVersion => SDL_GetJoystickFirmwareVersion
-* SDL_JoystickGetGUID => SDL_GetJoystickGUID
-* SDL_JoystickGetGUIDFromString => SDL_GetJoystickGUIDFromString
-* SDL_JoystickGetGUIDString => SDL_GetJoystickGUIDString
-* SDL_JoystickGetHat => SDL_GetJoystickHat
-* SDL_JoystickGetPlayerIndex => SDL_GetJoystickPlayerIndex
-* SDL_JoystickGetProduct => SDL_GetJoystickProduct
-* SDL_JoystickGetProductVersion => SDL_GetJoystickProductVersion
-* SDL_JoystickGetSerial => SDL_GetJoystickSerial
-* SDL_JoystickGetType => SDL_GetJoystickType
-* SDL_JoystickGetVendor => SDL_GetJoystickVendor
-* SDL_JoystickInstanceID => SDL_GetJoystickInstanceID
-* SDL_JoystickIsVirtual => SDL_IsJoystickVirtual
-* SDL_JoystickName => SDL_GetJoystickName
-* SDL_JoystickNumAxes => SDL_GetNumJoystickAxes
-* SDL_JoystickNumButtons => SDL_GetNumJoystickButtons
-* SDL_JoystickNumHats => SDL_GetNumJoystickHats
-* SDL_JoystickOpen => SDL_OpenJoystick
-* SDL_JoystickPath => SDL_GetJoystickPath
-* SDL_JoystickRumble => SDL_RumbleJoystick
-* SDL_JoystickRumbleTriggers => SDL_RumbleJoystickTriggers
-* SDL_JoystickSendEffect => SDL_SendJoystickEffect
-* SDL_JoystickSetLED => SDL_SetJoystickLED
-* SDL_JoystickSetPlayerIndex => SDL_SetJoystickPlayerIndex
-* SDL_JoystickSetVirtualAxis => SDL_SetJoystickVirtualAxis
-* SDL_JoystickSetVirtualButton => SDL_SetJoystickVirtualButton
-* SDL_JoystickSetVirtualHat => SDL_SetJoystickVirtualHat
-* SDL_JoystickUpdate => SDL_UpdateJoysticks
+* SDL_JoystickAttachVirtual() => SDL_AttachVirtualJoystick()
+* SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystickEx()
+* SDL_JoystickClose() => SDL_CloseJoystick()
+* SDL_JoystickCurrentPowerLevel() => SDL_GetJoystickPowerLevel()
+* SDL_JoystickDetachVirtual() => SDL_DetachVirtualJoystick()
+* SDL_JoystickFromInstanceID() => SDL_GetJoystickFromInstanceID()
+* SDL_JoystickFromPlayerIndex() => SDL_GetJoystickFromPlayerIndex()
+* SDL_JoystickGetAttached() => SDL_JoystickConnected()
+* SDL_JoystickGetAxis() => SDL_GetJoystickAxis()
+* SDL_JoystickGetAxisInitialState() => SDL_GetJoystickAxisInitialState()
+* SDL_JoystickGetButton() => SDL_GetJoystickButton()
+* SDL_JoystickGetFirmwareVersion() => SDL_GetJoystickFirmwareVersion()
+* SDL_JoystickGetGUID() => SDL_GetJoystickGUID()
+* SDL_JoystickGetGUIDFromString() => SDL_GetJoystickGUIDFromString()
+* SDL_JoystickGetGUIDString() => SDL_GetJoystickGUIDString()
+* SDL_JoystickGetHat() => SDL_GetJoystickHat()
+* SDL_JoystickGetPlayerIndex() => SDL_GetJoystickPlayerIndex()
+* SDL_JoystickGetProduct() => SDL_GetJoystickProduct()
+* SDL_JoystickGetProductVersion() => SDL_GetJoystickProductVersion()
+* SDL_JoystickGetSerial() => SDL_GetJoystickSerial()
+* SDL_JoystickGetType() => SDL_GetJoystickType()
+* SDL_JoystickGetVendor() => SDL_GetJoystickVendor()
+* SDL_JoystickInstanceID() => SDL_GetJoystickInstanceID()
+* SDL_JoystickIsVirtual() => SDL_IsJoystickVirtual()
+* SDL_JoystickName() => SDL_GetJoystickName()
+* SDL_JoystickNumAxes() => SDL_GetNumJoystickAxes()
+* SDL_JoystickNumButtons() => SDL_GetNumJoystickButtons()
+* SDL_JoystickNumHats() => SDL_GetNumJoystickHats()
+* SDL_JoystickOpen() => SDL_OpenJoystick()
+* SDL_JoystickPath() => SDL_GetJoystickPath()
+* SDL_JoystickRumble() => SDL_RumbleJoystick()
+* SDL_JoystickRumbleTriggers() => SDL_RumbleJoystickTriggers()
+* SDL_JoystickSendEffect() => SDL_SendJoystickEffect()
+* SDL_JoystickSetLED() => SDL_SetJoystickLED()
+* SDL_JoystickSetPlayerIndex() => SDL_SetJoystickPlayerIndex()
+* SDL_JoystickSetVirtualAxis() => SDL_SetJoystickVirtualAxis()
+* SDL_JoystickSetVirtualButton() => SDL_SetJoystickVirtualButton()
+* SDL_JoystickSetVirtualHat() => SDL_SetJoystickVirtualHat()
+* SDL_JoystickUpdate() => SDL_UpdateJoysticks()
 
 The following symbols have been renamed:
 * SDL_JOYSTICK_TYPE_GAMECONTROLLER => SDL_JOYSTICK_TYPE_GAMEPAD
 
 The following functions have been removed:
-* SDL_JoystickEventState - replaced with SDL_SetJoystickEventsEnabled() and SDL_JoystickEventsEnabled()
+* SDL_JoystickEventState() - replaced with SDL_SetJoystickEventsEnabled() and SDL_JoystickEventsEnabled()
 * SDL_JoystickGetDeviceGUID() - replaced with SDL_GetJoystickInstanceGUID()
 * SDL_JoystickGetDeviceInstanceID()
 * SDL_JoystickGetDevicePlayerIndex() - replaced with SDL_GetJoystickInstancePlayerIndex()
@@ -387,11 +387,11 @@ Using it is really simple: Just `#include <SDL3/SDL_main.h>` in the source file 
 `int main(int argc, char* argv[])` function.
 
 The rest happens automatically: If your target platform needs the SDL_main functionality,
-your `main` function will be renamed to `SDL_main` (with a macro, just like in SDL2),
+your main function will be renamed to SDL_main (with a macro, just like in SDL2),
 and the real main-function will be implemented by inline code from SDL_main.h - and if your target
 platform doesn't need it, nothing happens.  
 Like in SDL2, if you want to handle the platform-specific main yourself instead of using the SDL_main magic,
-you can `#define SDL_MAIN_HANDLED` before `#include <SDL3/SDL_main.h>` - don't forget to call `SDL_SetMainReady()`!
+you can `#define SDL_MAIN_HANDLED` before `#include <SDL3/SDL_main.h>` - don't forget to call SDL_SetMainReady()
 
 If you need SDL_main.h in another source file (that doesn't implement main()), you also need to
 `#define SDL_MAIN_HANDLED` there, to avoid that multiple main functions are generated by SDL_main.h
@@ -403,7 +403,7 @@ source file that just contains `#include <SDL3/SDL_main.h>` and compile that wit
 in mind that the source file with your standard main also needs that include!
 See [README-winrt.md](./README-winrt.md) for more details.
 
-Furthermore, the different `SDL_*RunApp()` functions (SDL_WinRtRunApp, SDL_GDKRunApp, SDL_UIKitRunApp)
+Furthermore, the different SDL_*RunApp() functions (SDL_WinRtRunApp, SDL_GDKRunApp, SDL_UIKitRunApp)
 have been unified into just `int SDL_RunApp(int argc, char* argv[], void * reserved)` (which is also
 used by additional platforms that didn't have a SDL_RunApp-like function before).
 
@@ -416,12 +416,12 @@ SDL_ShowCursor() has been split into three functions: SDL_ShowCursor(), SDL_Hide
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
 
 The following functions have been renamed:
-* SDL_AllocFormat => SDL_CreatePixelFormat
-* SDL_AllocPalette => SDL_CreatePalette
-* SDL_FreeFormat => SDL_DestroyPixelFormat
-* SDL_FreePalette => SDL_DestroyPalette
-* SDL_MasksToPixelFormatEnum => SDL_GetPixelFormatEnumForMasks
-* SDL_PixelFormatEnumToMasks => SDL_GetMasksForPixelFormatEnum
+* SDL_AllocFormat() => SDL_CreatePixelFormat()
+* SDL_AllocPalette() => SDL_CreatePalette()
+* SDL_FreeFormat() => SDL_DestroyPixelFormat()
+* SDL_FreePalette() => SDL_DestroyPalette()
+* SDL_MasksToPixelFormatEnum() => SDL_GetPixelFormatEnumForMasks()
+* SDL_PixelFormatEnumToMasks() => SDL_GetMasksForPixelFormatEnum()
 
 ## SDL_platform.h
 
@@ -430,21 +430,21 @@ The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ 
 ## SDL_rect.h
 
 The following functions have been renamed:
-* SDL_EncloseFPoints => SDL_GetRectEnclosingPointsF
-* SDL_EnclosePoints => SDL_GetRectEnclosingPoints
-* SDL_FRectEmpty => SDL_RectEmptyF
-* SDL_FRectEquals => SDL_RectsEqualF
-* SDL_FRectEqualsEpsilon => SDL_RectsEqualEpsilon
-* SDL_HasIntersection => SDL_HasRectIntersection
-* SDL_HasIntersectionF => SDL_HasRectIntersectionF
-* SDL_IntersectFRect => SDL_GetRectIntersectionF
-* SDL_IntersectFRectAndLine => SDL_GetRectAndLineIntersectionF
-* SDL_IntersectRect => SDL_GetRectIntersection
-* SDL_IntersectRectAndLine => SDL_GetRectAndLineIntersection
-* SDL_PointInFRect => SDL_PointInRectF
-* SDL_RectEquals => SDL_RectsEqual
-* SDL_UnionFRect => SDL_GetRectUnionF
-* SDL_UnionRect => SDL_GetRectUnion
+* SDL_EncloseFPoints() => SDL_GetRectEnclosingPointsF()
+* SDL_EnclosePoints() => SDL_GetRectEnclosingPoints()
+* SDL_FRectEmpty() => SDL_RectEmptyF()
+* SDL_FRectEquals() => SDL_RectsEqualF()
+* SDL_FRectEqualsEpsilon() => SDL_RectsEqualEpsilon()
+* SDL_HasIntersection() => SDL_HasRectIntersection()
+* SDL_HasIntersectionF() => SDL_HasRectIntersectionF()
+* SDL_IntersectFRect() => SDL_GetRectIntersectionF()
+* SDL_IntersectFRectAndLine() => SDL_GetRectAndLineIntersectionF()
+* SDL_IntersectRect() => SDL_GetRectIntersection()
+* SDL_IntersectRectAndLine() => SDL_GetRectAndLineIntersection()
+* SDL_PointInFRect() => SDL_PointInRectF()
+* SDL_RectEquals() => SDL_RectsEqual()
+* SDL_UnionFRect() => SDL_GetRectUnionF()
+* SDL_UnionRect() => SDL_GetRectUnion()
 
 ## SDL_render.h
 
@@ -461,41 +461,41 @@ here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you w
 to decide for you.
 
 The following functions have been renamed:
-* SDL_RenderCopy => SDL_RenderTexture
-* SDL_RenderCopyEx => SDL_RenderTextureRotated
-* SDL_RenderCopyExF => SDL_RenderTextureRotatedF
-* SDL_RenderCopyF => SDL_RenderTextureF
-* SDL_RenderDrawLine => SDL_RenderLine
-* SDL_RenderDrawLineF => SDL_RenderLineF
-* SDL_RenderDrawLines => SDL_RenderLines
-* SDL_RenderDrawLinesF => SDL_RenderLinesF
-* SDL_RenderDrawPoint => SDL_RenderPoint
-* SDL_RenderDrawPointF => SDL_RenderPointF
-* SDL_RenderDrawPoints => SDL_RenderPoints
-* SDL_RenderDrawPointsF => SDL_RenderPointsF
-* SDL_RenderDrawRect => SDL_RenderRect
-* SDL_RenderDrawRectF => SDL_RenderRectF
-* SDL_RenderDrawRects => SDL_RenderRects
-* SDL_RenderDrawRectsF => SDL_RenderRectsF
-* SDL_RenderGetClipRect => SDL_GetRenderClipRect
-* SDL_RenderGetIntegerScale => SDL_GetRenderIntegerScale
-* SDL_RenderGetLogicalSize => SDL_GetRenderLogicalSize
-* SDL_RenderGetMetalCommandEncoder => SDL_GetRenderMetalCommandEncoder
-* SDL_RenderGetMetalLayer => SDL_GetRenderMetalLayer
-* SDL_RenderGetScale => SDL_GetRenderScale
-* SDL_RenderGetViewport => SDL_GetRenderViewport
-* SDL_RenderGetWindow => SDL_GetRenderWindow
-* SDL_RenderIsClipEnabled => SDL_RenderClipEnabled
-* SDL_RenderSetClipRect => SDL_SetRenderClipRect
-* SDL_RenderSetIntegerScale => SDL_SetRenderIntegerScale
-* SDL_RenderSetLogicalSize => SDL_SetRenderLogicalSize
-* SDL_RenderSetScale => SDL_SetRenderScale
-* SDL_RenderSetVSync => SDL_SetRenderVSync
-* SDL_RenderSetViewport => SDL_SetRenderViewport
+* SDL_RenderCopy() => SDL_RenderTexture()
+* SDL_RenderCopyEx() => SDL_RenderTextureRotated()
+* SDL_RenderCopyExF() => SDL_RenderTextureRotatedF()
+* SDL_RenderCopyF() => SDL_RenderTextureF()
+* SDL_RenderDrawLine() => SDL_RenderLine()
+* SDL_RenderDrawLineF() => SDL_RenderLineF()
+* SDL_RenderDrawLines() => SDL_RenderLines()
+* SDL_RenderDrawLinesF() => SDL_RenderLinesF()
+* SDL_RenderDrawPoint() => SDL_RenderPoint()
+* SDL_RenderDrawPointF() => SDL_RenderPointF()
+* SDL_RenderDrawPoints() => SDL_RenderPoints()
+* SDL_RenderDrawPointsF() => SDL_RenderPointsF()
+* SDL_RenderDrawRect() => SDL_RenderRect()
+* SDL_RenderDrawRectF() => SDL_RenderRectF()
+* SDL_RenderDrawRects() => SDL_RenderRects()
+* SDL_RenderDrawRectsF() => SDL_RenderRectsF()
+* SDL_RenderGetClipRect() => SDL_GetRenderClipRect()
+* SDL_RenderGetIntegerScale() => SDL_GetRenderIntegerScale()
+* SDL_RenderGetLogicalSize() => SDL_GetRenderLogicalSize()
+* SDL_RenderGetMetalCommandEncoder() => SDL_GetRenderMetalCommandEncoder()
+* SDL_RenderGetMetalLayer() => SDL_GetRenderMetalLayer()
+* SDL_RenderGetScale() => SDL_GetRenderScale()
+* SDL_RenderGetViewport() => SDL_GetRenderViewport()
+* SDL_RenderGetWindow() => SDL_GetRenderWindow()
+* SDL_RenderIsClipEnabled() => SDL_RenderClipEnabled()
+* SDL_RenderSetClipRect() => SDL_SetRenderClipRect()
+* SDL_RenderSetIntegerScale() => SDL_SetRenderIntegerScale()
+* SDL_RenderSetLogicalSize() => SDL_SetRenderLogicalSize()
+* SDL_RenderSetScale() => SDL_SetRenderScale()
+* SDL_RenderSetVSync() => SDL_SetRenderVSync()
+* SDL_RenderSetViewport() => SDL_SetRenderViewport()
 
 ## SDL_rwops.h
 
-The following macros have been renamed:
+The following symbols have been renamed:
 * RW_SEEK_CUR => SDL_RW_SEEK_CUR
 * RW_SEEK_END => SDL_RW_SEEK_END
 * RW_SEEK_SET => SDL_RW_SEEK_SET
@@ -514,9 +514,7 @@ But now they look more like POSIX:
 Sint64 SDL_RWread(SDL_RWops *context, void *ptr, Sint64 size);
 ```
 
-Previously they tried to read/write `size` objects of `maxnum` bytes each. Now they try to read/write `size` bytes, which solves
-concerns about what should happen to the file pointer if only a fraction of an object could be read, etc. The return value is
-different, too. For reading:
+Previously they tried to read/write `size` objects of `maxnum` bytes each. Now they try to read/write `size` bytes, which solves concerns about what should happen to the file pointer if only a fraction of an object could be read, etc. The return value is different, too. For reading:
 
 - SDL_RWread returns the number of bytes read, which will be less than requested on error or EOF.
 - If there was an error but some bytes were read, it will return the number of bytes read.
@@ -679,19 +677,19 @@ Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor 
 
 
 The following functions have been renamed:
-* SDL_SensorClose => SDL_CloseSensor
-* SDL_SensorFromInstanceID => SDL_GetSensorFromInstanceID
-* SDL_SensorGetData => SDL_GetSensorData
-* SDL_SensorGetInstanceID => SDL_GetSensorInstanceID
-* SDL_SensorGetName => SDL_GetSensorName
-* SDL_SensorGetNonPortableType => SDL_GetSensorNonPortableType
-* SDL_SensorGetType => SDL_GetSensorType
-* SDL_SensorOpen => SDL_OpenSensor
-* SDL_SensorUpdate => SDL_UpdateSensors
+* SDL_SensorClose() => SDL_CloseSensor()
+* SDL_SensorFromInstanceID() => SDL_GetSensorFromInstanceID()
+* SDL_SensorGetData() => SDL_GetSensorData()
+* SDL_SensorGetInstanceID() => SDL_GetSensorInstanceID()
+* SDL_SensorGetName() => SDL_GetSensorName()
+* SDL_SensorGetNonPortableType() => SDL_GetSensorNonPortableType()
+* SDL_SensorGetType() => SDL_GetSensorType()
+* SDL_SensorOpen() => SDL_OpenSensor()
+* SDL_SensorUpdate() => SDL_UpdateSensors()
 
 The following functions have been removed:
 * SDL_LockSensors()
-* SDL_NumSensors - replaced with SDL_HasSensors() and SDL_GetSensors()
+* SDL_NumSensors() - replaced with SDL_HasSensors() and SDL_GetSensors()
 * SDL_SensorGetDeviceInstanceID()
 * SDL_SensorGetDeviceName() - replaced with SDL_GetSensorInstanceName()
 * SDL_SensorGetDeviceNonPortableType() - replaced with SDL_GetSensorInstanceNonPortableType()
@@ -749,25 +747,25 @@ But if you're migrating your code which uses masks, you probably have a format i
 
 
 The following functions have been renamed:
-* SDL_FillRect => SDL_FillSurfaceRect
-* SDL_FillRects => SDL_FillSurfaceRects
-* SDL_FreeSurface => SDL_DestroySurface
-* SDL_GetClipRect => SDL_GetSurfaceClipRect
-* SDL_GetColorKey => SDL_GetSurfaceColorKey
-* SDL_HasColorKey => SDL_SurfaceHasColorKey
-* SDL_HasSurfaceRLE => SDL_SurfaceHasRLE
-* SDL_LowerBlit => SDL_BlitSurfaceUnchecked
-* SDL_LowerBlitScaled => SDL_BlitSurfaceUncheckedScaled
-* SDL_SetClipRect => SDL_SetSurfaceClipRect
-* SDL_SetColorKey => SDL_SetSurfaceColorKey
-* SDL_UpperBlit => SDL_BlitSurface
-* SDL_UpperBlitScaled => SDL_BlitSurfaceScaled
+* SDL_FillRect() => SDL_FillSurfaceRect()
+* SDL_FillRects() => SDL_FillSurfaceRects()
+* SDL_FreeSurface() => SDL_DestroySurface()
+* SDL_GetClipRect() => SDL_GetSurfaceClipRect()
+* SDL_GetColorKey() => SDL_GetSurfaceColorKey()
+* SDL_HasColorKey() => SDL_SurfaceHasColorKey()
+* SDL_HasSurfaceRLE() => SDL_SurfaceHasRLE()
+* SDL_LowerBlit() => SDL_BlitSurfaceUnchecked()
+* SDL_LowerBlitScaled() => SDL_BlitSurfaceUncheckedScaled()
+* SDL_SetClipRect() => SDL_SetSurfaceClipRect()
+* SDL_SetColorKey() => SDL_SetSurfaceColorKey()
+* SDL_UpperBlit() => SDL_BlitSurface()
+* SDL_UpperBlitScaled() => SDL_BlitSurfaceScaled()
 
 ## SDL_system.h
 
 The following functions have been renamed:
-* SDL_RenderGetD3D11Device => SDL_GetRenderD3D11Device
-* SDL_RenderGetD3D9Device => SDL_GetRenderD3D9Device
+* SDL_RenderGetD3D11Device() => SDL_GetRenderD3D11Device()
+* SDL_RenderGetD3D9Device() => SDL_GetRenderD3D9Device()
 
 ## SDL_syswm.h
 
@@ -781,16 +779,16 @@ This header no longer includes platform specific headers and type definitions, i
 * SDL_ENABLE_SYSWM_WINDOWS
 * SDL_ENABLE_SYSWM_X11
 
-The structures in this file are versioned separately from the rest of SDL, allowing better backwards compatibility and limited forwards compatibility with your application. Instead of calling `SDL_VERSION(&info.version)` before calling SDL_GetWindowWMInfo(), you pass the version in explicitly as `SDL_SYSWM_CURRENT_VERSION` so SDL knows what fields you expect to be filled out.
+The structures in this file are versioned separately from the rest of SDL, allowing better backwards compatibility and limited forwards compatibility with your application. Instead of calling `SDL_VERSION(&info.version)` before calling SDL_GetWindowWMInfo(), you pass the version in explicitly as SDL_SYSWM_CURRENT_VERSION so SDL knows what fields you expect to be filled out.
 
 ### SDL_GetWindowWMInfo
 
-This function now returns a standard int result instead of SDL_bool, returning 0 if the function succeeds or a negative error code if there was an error. You should also pass `SDL_SYSWM_CURRENT_VERSION` as the new third version parameter. The version member of the info structure will be filled in with the version of data that is returned, the minimum of the version you requested and the version supported by the runtime SDL library.
+This function now returns a standard int result instead of SDL_bool, returning 0 if the function succeeds or a negative error code if there was an error. You should also pass SDL_SYSWM_CURRENT_VERSION as the new third version parameter. The version member of the info structure will be filled in with the version of data that is returned, the minimum of the version you requested and the version supported by the runtime SDL library.
 
 
 ## SDL_timer.h
 
-SDL_GetTicks() now returns a 64-bit value. Instead of using the `SDL_TICKS_PASSED` macro, you can directly compare tick values, e.g.
+SDL_GetTicks() now returns a 64-bit value. Instead of using the SDL_TICKS_PASSED macro, you can directly compare tick values, e.g.
 ```c
 Uint32 deadline = SDL_GetTicks() + 1000;
 ...
@@ -842,6 +840,6 @@ SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_
 
 
 The following functions have been renamed:
-* SDL_GetPointDisplayIndex => SDL_GetDisplayIndexForPoint
-* SDL_GetRectDisplayIndex => SDL_GetDisplayIndexForRect
+* SDL_GetPointDisplayIndex() => SDL_GetDisplayIndexForPoint()
+* SDL_GetRectDisplayIndex() => SDL_GetDisplayIndexForRect()
 
