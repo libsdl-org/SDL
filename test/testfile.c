@@ -52,7 +52,7 @@ rwops_error_quit(unsigned line, SDL_RWops *rwops)
 {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testfile.c(%d): failed\n", line);
     if (rwops) {
-        rwops->close(rwops); /* This calls SDL_FreeRW(rwops); */
+        rwops->close(rwops); /* This calls SDL_DestroyRW(rwops); */
     }
     cleanup();
     exit(1); /* quit with rwops error (test failed) */

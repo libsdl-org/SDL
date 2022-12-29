@@ -317,7 +317,7 @@ int main(int argc, char *argv[])
 #endif
 
     for (i = 0; i < num_cursors; ++i) {
-        SDL_FreeCursor(cursors[i]);
+        SDL_DestroyCursor(cursors[i]);
     }
     quit(0);
 

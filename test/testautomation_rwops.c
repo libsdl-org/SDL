@@ -387,15 +387,15 @@ int rwops_testFileWrite(void)
 /**
  * @brief Tests alloc and free RW context.
  *
- * \sa http://wiki.libsdl.org/SDL_AllocRW
- * \sa http://wiki.libsdl.org/SDL_FreeRW
+ * \sa http://wiki.libsdl.org/SDL_CreateRW
+ * \sa http://wiki.libsdl.org/SDL_DestroyRW
  */
 int rwops_testAllocFree(void)
 {
     /* Allocate context */
-    SDL_RWops *rw = SDL_AllocRW();
-    SDLTest_AssertPass("Call to SDL_AllocRW() succeeded");
-    SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_AllocRW() is not NULL");
+    SDL_RWops *rw = SDL_CreateRW();
+    SDLTest_AssertPass("Call to SDL_CreateRW() succeeded");
+    SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_CreateRW() is not NULL");
     if (rw == NULL) {
         return TEST_ABORTED;
     }
@@ -406,8 +406,8 @@ int rwops_testAllocFree(void)
         "Verify RWops type is SDL_RWOPS_UNKNOWN; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_UNKNOWN, rw->type);
 
     /* Free context again */
-    SDL_FreeRW(rw);
-    SDLTest_AssertPass("Call to SDL_FreeRW() succeeded");
+    SDL_DestroyRW(rw);
+    SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
 
     return TEST_COMPLETED;
 }

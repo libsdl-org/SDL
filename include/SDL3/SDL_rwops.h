@@ -291,26 +291,26 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromConstMem(const void *mem,
  * read/write a common data source, you should use the built-in
  * implementations in SDL, like SDL_RWFromFile() or SDL_RWFromMem(), etc.
  *
- * You must free the returned pointer with SDL_FreeRW(). Depending on your
+ * You must free the returned pointer with SDL_DestroyRW(). Depending on your
  * operating system and compiler, there may be a difference between the
  * malloc() and free() your program uses and the versions SDL calls
  * internally. Trying to mix the two can cause crashing such as segmentation
  * faults. Since all SDL_RWops must free themselves when their **close**
  * method is called, all SDL_RWops must be allocated through this function, so
- * they can all be freed correctly with SDL_FreeRW().
+ * they can all be freed correctly with SDL_DestroyRW().
  *
  * \returns a pointer to the allocated memory on success, or NULL on failure;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_FreeRW
+ * \sa SDL_DestroyRW
  */
-extern DECLSPEC SDL_RWops *SDLCALL SDL_AllocRW(void);
+extern DECLSPEC SDL_RWops *SDLCALL SDL_CreateRW(void);
 
 /**
  * Use this function to free an SDL_RWops structure allocated by
- * SDL_AllocRW().
+ * SDL_CreateRW().
  *
  * Applications do not need to use this function unless they are providing
  * their own SDL_RWops implementation. If you just need a SDL_RWops to
@@ -319,18 +319,18 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_AllocRW(void);
  * call the **close** method on those SDL_RWops pointers when you are done
  * with them.
  *
- * Only use SDL_FreeRW() on pointers returned by SDL_AllocRW(). The pointer is
+ * Only use SDL_DestroyRW() on pointers returned by SDL_CreateRW(). The pointer is
  * invalid as soon as this function returns. Any extra memory allocated during
- * creation of the SDL_RWops is not freed by SDL_FreeRW(); the programmer must
+ * creation of the SDL_RWops is not freed by SDL_DestroyRW(); the programmer must
  * be responsible for managing that memory in their **close** method.
  *
  * \param area the SDL_RWops structure to be freed
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AllocRW
+ * \sa SDL_CreateRW
  */
-extern DECLSPEC void SDLCALL SDL_FreeRW(SDL_RWops * area);
+extern DECLSPEC void SDLCALL SDL_DestroyRW(SDL_RWops * area);
 
 #define SDL_RW_SEEK_SET 0       /**< Seek from the beginning of data */
 #define SDL_RW_SEEK_CUR 1       /**< Seek relative to current read point */
@@ -494,7 +494,7 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWwrite(SDL_RWops *context,
  *
  * SDL_RWclose() closes and cleans up the SDL_RWops stream. It releases any
  * resources used by the stream and frees the SDL_RWops itself with
- * SDL_FreeRW(). This returns 0 on success, or -1 if the stream failed to
+ * SDL_DestroyRW(). This returns 0 on success, or -1 if the stream failed to
  * flush to its output (e.g. to disk).
  *
  * Note that if this fails to flush the stream to disk, this function reports

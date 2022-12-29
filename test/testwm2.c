@@ -199,7 +199,7 @@ void loop()
             }
             if (updateCursor) {
                 SDL_Log("Changing cursor to \"%s\"", cursorNames[system_cursor]);
-                SDL_FreeCursor(cursor);
+                SDL_DestroyCursor(cursor);
                 cursor = SDL_CreateSystemCursor((SDL_SystemCursor)system_cursor);
                 SDL_SetCursor(cursor);
             }
@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
         loop();
     }
 #endif
-    SDL_FreeCursor(cursor);
+    SDL_DestroyCursor(cursor);
 
     quit(0);
     /* keep the compiler happy ... */

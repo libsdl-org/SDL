@@ -883,7 +883,7 @@ void SDL_QuitMouse(void)
     cursor = mouse->cursors;
     while (cursor) {
         next = cursor->next;
-        SDL_FreeCursor(cursor);
+        SDL_DestroyCursor(cursor);
         cursor = next;
     }
     mouse->cursors = NULL;
@@ -1380,7 +1380,7 @@ SDL_GetDefaultCursor(void)
     return mouse->def_cursor;
 }
 
-void SDL_FreeCursor(SDL_Cursor *cursor)
+void SDL_DestroyCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Cursor *curr, *prev;

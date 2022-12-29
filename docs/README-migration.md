@@ -411,6 +411,9 @@ used by additional platforms that didn't have a SDL_RunApp-like function before)
 
 SDL_ShowCursor() has been split into three functions: SDL_ShowCursor(), SDL_HideCursor(), and SDL_CursorVisible()
 
+The following functions have been renamed:
+* SDL_FreeCursor() => SDL_DestroyCursor()
+
 ## SDL_pixels.h
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
@@ -624,7 +627,7 @@ stdio_close(SDL_RWops * context)
                 status = SDL_Error(SDL_EFWRITE);
             }
         }
-        SDL_FreeRW(context);
+        SDL_DestroyRW(context);
     }
     return status;
 }
@@ -634,7 +637,7 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 {
     SDL_RWops *rwops = NULL;
 
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops != NULL) {
         rwops->size = stdio_size;
         rwops->seek = stdio_seek;
@@ -649,6 +652,10 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 }
 ```
 
+
+The following functions have been renamed:
+* SDL_AllocRW() => SDL_CreateRW()
+* SDL_FreeRW() => SDL_DestroyRW()
 
 ## SDL_sensor.h
 

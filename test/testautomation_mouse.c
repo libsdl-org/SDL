@@ -185,10 +185,10 @@ static SDL_Cursor *initArrowCursor(const char *image[])
 }
 
 /**
- * @brief Check call to SDL_CreateCursor and SDL_FreeCursor
+ * @brief Check call to SDL_CreateCursor and SDL_DestroyCursor
  *
  * @sa http://wiki.libsdl.org/SDL_CreateCursor
- * @sa http://wiki.libsdl.org/SDL_FreeCursor
+ * @sa http://wiki.libsdl.org/SDL_DestroyCursor
  */
 int mouse_createFreeCursor(void *arg)
 {
@@ -203,17 +203,17 @@ int mouse_createFreeCursor(void *arg)
     }
 
     /* Free cursor again */
-    SDL_FreeCursor(cursor);
-    SDLTest_AssertPass("Call to SDL_FreeCursor()");
+    SDL_DestroyCursor(cursor);
+    SDLTest_AssertPass("Call to SDL_DestroyCursor()");
 
     return TEST_COMPLETED;
 }
 
 /**
- * @brief Check call to SDL_CreateColorCursor and SDL_FreeCursor
+ * @brief Check call to SDL_CreateColorCursor and SDL_DestroyCursor
  *
  * @sa http://wiki.libsdl.org/SDL_CreateColorCursor
- * @sa http://wiki.libsdl.org/SDL_FreeCursor
+ * @sa http://wiki.libsdl.org/SDL_DestroyCursor
  */
 int mouse_createFreeColorCursor(void *arg)
 {
@@ -237,8 +237,8 @@ int mouse_createFreeColorCursor(void *arg)
     }
 
     /* Free cursor again */
-    SDL_FreeCursor(cursor);
-    SDLTest_AssertPass("Call to SDL_FreeCursor()");
+    SDL_DestroyCursor(cursor);
+    SDLTest_AssertPass("Call to SDL_DestroyCursor()");
 
     /* Clean up */
     SDL_DestroySurface(face);
@@ -316,8 +316,8 @@ int mouse_setCursor(void *arg)
     SDLTest_AssertPass("Call to SDL_SetCursor(NULL)");
 
     /* Free cursor again */
-    SDL_FreeCursor(cursor);
-    SDLTest_AssertPass("Call to SDL_FreeCursor()");
+    SDL_DestroyCursor(cursor);
+    SDLTest_AssertPass("Call to SDL_DestroyCursor()");
 
     return TEST_COMPLETED;
 }
@@ -597,7 +597,7 @@ static const SDLTest_TestCaseReference mouseTest2 = {
 };
 
 static const SDLTest_TestCaseReference mouseTest3 = {
-    (SDLTest_TestCaseFp)mouse_createFreeCursor, "mouse_createFreeCursor", "Check call to SDL_CreateCursor and SDL_FreeCursor", TEST_ENABLED
+    (SDLTest_TestCaseFp)mouse_createFreeCursor, "mouse_createFreeCursor", "Check call to SDL_CreateCursor and SDL_DestroyCursor", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTest4 = {
@@ -621,7 +621,7 @@ static const SDLTest_TestCaseReference mouseTest8 = {
 };
 
 static const SDLTest_TestCaseReference mouseTest9 = {
-    (SDLTest_TestCaseFp)mouse_createFreeColorCursor, "mouse_createFreeColorCursor", "Check call to SDL_CreateColorCursor and SDL_FreeCursor", TEST_ENABLED
+    (SDLTest_TestCaseFp)mouse_createFreeColorCursor, "mouse_createFreeColorCursor", "Check call to SDL_CreateColorCursor and SDL_DestroyCursor", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTest10 = {

@@ -276,7 +276,7 @@ static int SDLCALL windows_file_close(SDL_RWops *context)
         }
         SDL_free(context->hidden.windowsio.buffer.data);
         context->hidden.windowsio.buffer.data = NULL;
-        SDL_FreeRW(context);
+        SDL_DestroyRW(context);
     }
     return 0;
 }
@@ -403,7 +403,7 @@ static int SDLCALL stdio_close(SDL_RWops *context)
                 status = SDL_Error(SDL_EFWRITE);
             }
         }
-        SDL_FreeRW(context);
+        SDL_DestroyRW(context);
     }
     return status;
 }
@@ -412,7 +412,7 @@ static SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
 {
     SDL_RWops *rwops = NULL;
 
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops != NULL) {
         rwops->size = stdio_size;
         rwops->seek = stdio_seek;
@@ -493,7 +493,7 @@ mem_writeconst(SDL_RWops *context, const void *ptr, Sint64 size)
 static int SDLCALL mem_close(SDL_RWops *context)
 {
     if (context) {
-        SDL_FreeRW(context);
+        SDL_DestroyRW(context);
     }
     return 0;
 }
@@ -536,13 +536,13 @@ SDL_RWFromFile(const char *file, const char *mode)
 #endif /* HAVE_STDIO_H */
 
     /* Try to open the file from the asset system */
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops == NULL) {
-        return NULL; /* SDL_SetError already setup by SDL_AllocRW() */
+        return NULL; /* SDL_SetError already setup by SDL_CreateRW() */
     }
 
     if (Android_JNI_FileOpen(rwops, file, mode) < 0) {
-        SDL_FreeRW(rwops);
+        SDL_DestroyRW(rwops);
         return NULL;
     }
     rwops->size = Android_JNI_FileSize;
@@ -553,13 +553,13 @@ SDL_RWFromFile(const char *file, const char *mode)
     rwops->type = SDL_RWOPS_JNIFILE;
 
 #elif defined(__WIN32__) || defined(__GDK__)
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops == NULL) {
-        return NULL; /* SDL_SetError already setup by SDL_AllocRW() */
+        return NULL; /* SDL_SetError already setup by SDL_CreateRW() */
     }
 
     if (windows_file_open(rwops, file, mode) < 0) {
-        SDL_FreeRW(rwops);
+        SDL_DestroyRW(rwops);
         return NULL;
     }
     rwops->size = windows_file_size;
@@ -606,7 +606,7 @@ SDL_RWFromMem(void *mem, int size)
         return rwops;
     }
 
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops != NULL) {
         rwops->size = mem_size;
         rwops->seek = mem_seek;
@@ -634,7 +634,7 @@ SDL_RWFromConstMem(const void *mem, int size)
         return rwops;
     }
 
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops != NULL) {
         rwops->size = mem_size;
         rwops->seek = mem_seek;
@@ -650,7 +650,7 @@ SDL_RWFromConstMem(const void *mem, int size)
 }
 
 SDL_RWops *
-SDL_AllocRW(void)
+SDL_CreateRW(void)
 {
     SDL_RWops *area;
 
@@ -663,7 +663,7 @@ SDL_AllocRW(void)
     return area;
 }
 
-void SDL_FreeRW(SDL_RWops *area)
+void SDL_DestroyRW(SDL_RWops *area)
 {
     SDL_free(area);
 }

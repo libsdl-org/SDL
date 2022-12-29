@@ -5,7 +5,7 @@ SDL3_0.0.0 {
     SDL_AddGamepadMappingsFromRW;
     SDL_AddHintCallback;
     SDL_AddTimer;
-    SDL_AllocRW;
+    SDL_CreateRW;
     SDL_AndroidBackButton;
     SDL_AndroidGetActivity;
     SDL_AndroidGetExternalStoragePath;
@@ -110,8 +110,8 @@ SDL3_0.0.0 {
     SDL_FlushAudioStream;
     SDL_FlushEvent;
     SDL_FlushEvents;
-    SDL_FreeCursor;
-    SDL_FreeRW;
+    SDL_DestroyCursor;
+    SDL_DestroyRW;
     SDL_GDKGetTaskQueue;
     SDL_GDKSuspendComplete;
     SDL_GL_BindTexture;
