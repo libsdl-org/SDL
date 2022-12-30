@@ -56,40 +56,29 @@ extern "C" {
 
 typedef struct HINSTANCE__ * HINSTANCE;
 typedef char* LPSTR;
+typedef wchar_t* PWSTR;
 
-#ifndef __GDK__ /* this is only needed for Win32 */
+/* The VC++ compiler needs main/wmain defined, but not for GDK */
+#if defined(_MSC_VER) && !defined(__GDK__)
 
-#if defined(_MSC_VER)
-/* The VC++ compiler needs main/wmain defined */
-# define console_ansi_main main
-# if defined(UNICODE) && UNICODE
-#  define console_wmain wmain
-# endif
-#endif
-
+/* This is where execution begins [console apps] */
 #if defined( UNICODE ) && UNICODE
-/* This is where execution begins [console apps, unicode] */
-int
-console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
-{
-    return SDL_RunApp(0, NULL, SDL_main, NULL);
-}
-
+int wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 #else /* ANSI */
-
-/* This is where execution begins [console apps, ansi] */
-int
-console_ansi_main(int argc, char *argv[])
+int main(int argc, char *argv[])
+#endif
 {
     return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
-#endif /* UNICODE/ANSI */
 
-#endif /* not __GDK__ */
+#endif /* _MSC_VER && ! __GDK__ */
 
 /* This is where execution begins [windowed apps and GDK] */
-int WINAPI
-WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
+#if defined( UNICODE ) && UNICODE
+int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrev, PWSTR szCmdLine, int sw)
+#else /* ANSI */
+int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
+#endif
 {
     return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
