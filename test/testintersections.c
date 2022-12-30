@@ -39,7 +39,7 @@ static int current_alpha = 255;
 static int current_color = 255;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 
-int mouse_begin_x = -1, mouse_begin_y = -1;
+float mouse_begin_x = -1.0f, mouse_begin_y = -1.0f;
 int done;
 
 void DrawPoints(SDL_Renderer *renderer)
@@ -86,9 +86,9 @@ void DrawPoints(SDL_Renderer *renderer)
 
 #define MAX_LINES 16
 int num_lines = 0;
-SDL_Rect lines[MAX_LINES];
+SDL_FRect lines[MAX_LINES];
 static int
-add_line(int x1, int y1, int x2, int y2)
+add_line(float x1, float y1, float x2, float y2)
 {
     if (num_lines >= MAX_LINES) {
         return 0;
@@ -97,7 +97,7 @@ add_line(int x1, int y1, int x2, int y2)
         return 0;
     }
 
-    SDL_Log("adding line (%d, %d), (%d, %d)\n", x1, y1, x2, y2);
+    SDL_Log("adding line (%g, %g), (%g, %g)\n", x1, y1, x2, y2);
     lines[num_lines].x = x1;
     lines[num_lines].y = y1;
     lines[num_lines].w = x2;
@@ -123,16 +123,16 @@ void DrawLines(SDL_Renderer *renderer)
             SDL_RenderLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
             SDL_RenderLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
         } else {
-            SDL_RenderLine(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
+            SDL_RenderLineFloat(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
         }
     }
 }
 
 #define MAX_RECTS 16
 int num_rects = 0;
-SDL_Rect rects[MAX_RECTS];
+SDL_FRect rects[MAX_RECTS];
 static int
-add_rect(int x1, int y1, int x2, int y2)
+add_rect(float x1, float y1, float x2, float y2)
 {
     if (num_rects >= MAX_RECTS) {
         return 0;
@@ -142,13 +142,13 @@ add_rect(int x1, int y1, int x2, int y2)
     }
 
     if (x1 > x2) {
-        SWAP(int, x1, x2);
+        SWAP(float, x1, x2);
     }
     if (y1 > y2) {
-        SWAP(int, y1, y2);
+        SWAP(float, y1, y2);
     }
 
-    SDL_Log("adding rect (%d, %d), (%d, %d) [%dx%d]\n", x1, y1, x2, y2,
+    SDL_Log("adding rect (%g, %g), (%g, %g) [%gx%g]\n", x1, y1, x2, y2,
             x2 - x1, y2 - y1);
 
     rects[num_rects].x = x1;
@@ -163,7 +163,7 @@ static void
 DrawRects(SDL_Renderer *renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 127, 0, 255);
-    SDL_RenderFillRects(renderer, rects, num_rects);
+    SDL_RenderFillRectsFloat(renderer, rects, num_rects);
 }
 
 static void
@@ -175,8 +175,8 @@ DrawRectLineIntersections(SDL_Renderer *renderer)
 
     for (i = 0; i < num_rects; i++) {
         for (j = 0; j < num_lines; j++) {
-            int x1, y1, x2, y2;
-            SDL_Rect r;
+            float x1, y1, x2, y2;
+            SDL_FRect r;
 
             r = rects[i];
             x1 = lines[j].x;
@@ -184,8 +184,8 @@ DrawRectLineIntersections(SDL_Renderer *renderer)
             x2 = lines[j].w;
             y2 = lines[j].h;
 
-            if (SDL_GetRectAndLineIntersection(&r, &x1, &y1, &x2, &y2)) {
-                SDL_RenderLine(renderer, x1, y1, x2, y2);
+            if (SDL_GetRectAndLineIntersectionFloat(&r, &x1, &y1, &x2, &y2)) {
+                SDL_RenderLineFloat(renderer, x1, y1, x2, y2);
             }
         }
     }
@@ -200,9 +200,9 @@ DrawRectRectIntersections(SDL_Renderer *renderer)
 
     for (i = 0; i < num_rects; i++) {
         for (j = i + 1; j < num_rects; j++) {
-            SDL_Rect r;
-            if (SDL_GetRectIntersection(&rects[i], &rects[j], &r)) {
-                SDL_RenderFillRect(renderer, &r);
+            SDL_FRect r;
+            if (SDL_GetRectIntersectionFloat(&rects[i], &rects[j], &r)) {
+                SDL_RenderFillRectFloat(renderer, &r);
             }
         }
     }
@@ -235,16 +235,22 @@ void loop()
                 if (event.key.keysym.mod & SDL_KMOD_SHIFT) {
                     num_lines = 0;
                 } else {
-                    add_line(rand() % 640, rand() % 480, rand() % 640,
-                             rand() % 480);
+                    add_line(
+                        (float)(rand() % 640),
+                        (float)(rand() % 480),
+                        (float)(rand() % 640),
+                        (float)(rand() % 480));
                 }
                 break;
             case 'r':
                 if (event.key.keysym.mod & SDL_KMOD_SHIFT) {
                     num_rects = 0;
                 } else {
-                    add_rect(rand() % 640, rand() % 480, rand() % 640,
-                             rand() % 480);
+                    add_rect(
+                        (float)(rand() % 640),
+                        (float)(rand() % 480),
+                        (float)(rand() % 640),
+                        (float)(rand() % 480));
                 }
                 break;
             }

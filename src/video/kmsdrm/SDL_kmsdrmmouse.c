@@ -37,8 +37,6 @@ static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_
 static int KMSDRM_ShowCursor(SDL_Cursor *cursor);
 static void KMSDRM_MoveCursor(SDL_Cursor *cursor);
 static void KMSDRM_FreeCursor(SDL_Cursor *cursor);
-static void KMSDRM_WarpMouse(SDL_Window *window, int x, int y);
-static int KMSDRM_WarpMouseGlobal(int x, int y);
 
 /**************************************************************************************/
 /* BEFORE CODING ANYTHING MOUSE/CURSOR RELATED, REMEMBER THIS.                        */
@@ -354,15 +352,7 @@ static int KMSDRM_ShowCursor(SDL_Cursor *cursor)
     return ret;
 }
 
-/* Warp the mouse to (x,y) */
-static void KMSDRM_WarpMouse(SDL_Window *window, int x, int y)
-{
-    /* Only one global/fullscreen window is supported */
-    KMSDRM_WarpMouseGlobal(x, y);
-}
-
-/* Warp the mouse to (x,y) */
-static int KMSDRM_WarpMouseGlobal(int x, int y)
+static int KMSDRM_WarpMouseGlobal(float x, float y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -378,7 +368,7 @@ static int KMSDRM_WarpMouseGlobal(int x, int y)
         if (dispdata->cursor_bo) {
             int ret = 0;
 
-            ret = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, x, y);
+            ret = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, (int)x, (int)y);
 
             if (ret) {
                 SDL_SetError("drmModeMoveCursor() failed.");
@@ -393,6 +383,12 @@ static int KMSDRM_WarpMouseGlobal(int x, int y)
     } else {
         return SDL_SetError("No mouse or current cursor.");
     }
+}
+
+static void KMSDRM_WarpMouse(SDL_Window *window, float x, float y)
+{
+    /* Only one global/fullscreen window is supported */
+    KMSDRM_WarpMouseGlobal(x, y);
 }
 
 void KMSDRM_InitMouse(_THIS, SDL_VideoDisplay *display)

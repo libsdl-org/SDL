@@ -277,7 +277,7 @@ void WIN_SetCursorPos(int x, int y)
     }
 }
 
-static void WIN_WarpMouse(SDL_Window *window, int x, int y)
+static void WIN_WarpMouse(SDL_Window *window, float x, float y)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
@@ -288,8 +288,7 @@ static void WIN_WarpMouse(SDL_Window *window, int x, int y)
         return;
     }
 
-    pt.x = x;
-    pt.y = y;
+    WIN_ClientPointFromSDLFloat(window, x, y, &pt.x, &pt.y);
     ClientToScreen(hwnd, &pt);
     WIN_SetCursorPos(pt.x, pt.y);
 
@@ -297,13 +296,11 @@ static void WIN_WarpMouse(SDL_Window *window, int x, int y)
     SDL_SendMouseMotion(0, window, SDL_GetMouse()->mouseID, 0, x, y);
 }
 
-static int WIN_WarpMouseGlobal(int x, int y)
+static int WIN_WarpMouseGlobal(float x, float y)
 {
     POINT pt;
 
-    WIN_ScreenPointFromSDL(&x, &y, NULL);
-    pt.x = x;
-    pt.y = y;
+    WIN_ScreenPointFromSDLFloat(x, y, &pt.x, &pt.y, NULL);
     SetCursorPos(pt.x, pt.y);
     return 0;
 }
@@ -333,16 +330,14 @@ static int WIN_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 WIN_GetGlobalMouseState(int *x, int *y)
+static Uint32 WIN_GetGlobalMouseState(float *x, float *y)
 {
     Uint32 retval = 0;
     POINT pt = { 0, 0 };
     SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
 
     GetCursorPos(&pt);
-    *x = (int)pt.x;
-    *y = (int)pt.y;
-    WIN_ScreenPointToSDL(x, y);
+    WIN_ScreenPointToSDLFloat(pt.x, pt.y, x, y);
 
     retval |= GetAsyncKeyState(!swapButtons ? VK_LBUTTON : VK_RBUTTON) & 0x8000 ? SDL_BUTTON_LMASK : 0;
     retval |= GetAsyncKeyState(!swapButtons ? VK_RBUTTON : VK_LBUTTON) & 0x8000 ? SDL_BUTTON_RMASK : 0;

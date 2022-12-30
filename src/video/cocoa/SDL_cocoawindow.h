@@ -53,7 +53,7 @@ typedef enum
     PendingWindowOperation pendingWindowOperation;
     BOOL isMoving;
     NSInteger focusClickPending;
-    int pendingWindowWarpX, pendingWindowWarpY;
+    float pendingWindowWarpX, pendingWindowWarpY;
     BOOL isDragAreaRunning;
 }
 
@@ -71,7 +71,7 @@ typedef enum
 - (BOOL)isMovingOrFocusClickPending;
 - (void)setFocusClickPending:(NSInteger)button;
 - (void)clearFocusClickPending:(NSInteger)button;
-- (void)setPendingMoveX:(int)x Y:(int)y;
+- (void)setPendingMoveX:(float)x Y:(float)y;
 - (void)windowDidFinishMoving;
 - (void)onMovingOrFocusClickPendingStateCleared;
 

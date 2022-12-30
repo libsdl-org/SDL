@@ -932,7 +932,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
 
         if (!mouse->relative_mode) {
-            SDL_SendMouseMotion(0, data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, 0, 0, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
         /* We ungrab in LeaveNotify, so we may need to grab again here */
@@ -954,7 +954,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         }
 #endif
         if (!SDL_GetMouse()->relative_mode) {
-            SDL_SendMouseMotion(0, data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, 0, 0, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
         if (xevent->xcrossing.mode != NotifyGrab &&
@@ -1311,7 +1311,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             printf("window %p: X11 motion: %d,%d\n", data, xevent->xmotion.x, xevent->xmotion.y);
 #endif
 
-            SDL_SendMouseMotion(0, data->window, 0, 0, xevent->xmotion.x, xevent->xmotion.y);
+            SDL_SendMouseMotion(0, data->window, 0, 0, (float)xevent->xmotion.x, (float)xevent->xmotion.y);
         }
     } break;
 

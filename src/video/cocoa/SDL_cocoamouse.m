@@ -230,13 +230,13 @@ static int Cocoa_ShowCursor(SDL_Cursor *cursor)
     }
 }
 
-static SDL_Window *SDL_FindWindowAtPoint(const int x, const int y)
+static SDL_Window *SDL_FindWindowAtPoint(const float x, const float y)
 {
-    const SDL_Point pt = { x, y };
+    const SDL_FPoint pt = { x, y };
     SDL_Window *i;
     for (i = SDL_GetVideoDevice()->windows; i; i = i->next) {
-        const SDL_Rect r = { i->x, i->y, i->w, i->h };
-        if (SDL_PointInRect(&pt, &r)) {
+        const SDL_FRect r = { (float)i->x, (float)i->y, (float)i->w, (float)i->h };
+        if (SDL_PointInRectFloat(&pt, &r)) {
             return i;
         }
     }
@@ -244,7 +244,7 @@ static SDL_Window *SDL_FindWindowAtPoint(const int x, const int y)
     return NULL;
 }
 
-static int Cocoa_WarpMouseGlobal(int x, int y)
+static int Cocoa_WarpMouseGlobal(float x, float y)
 {
     CGPoint point;
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -256,7 +256,7 @@ static int Cocoa_WarpMouseGlobal(int x, int y)
             return 0;
         }
     }
-    point = CGPointMake((float)x, (float)y);
+    point = CGPointMake(x, y);
 
     Cocoa_HandleMouseWarp(point.x, point.y);
 
@@ -285,7 +285,7 @@ static int Cocoa_WarpMouseGlobal(int x, int y)
     return 0;
 }
 
-static void Cocoa_WarpMouse(SDL_Window *window, int x, int y)
+static void Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 {
     Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
 }
@@ -340,14 +340,14 @@ static int Cocoa_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 Cocoa_GetGlobalMouseState(int *x, int *y)
+static Uint32 Cocoa_GetGlobalMouseState(float *x, float *y)
 {
     const NSUInteger cocoaButtons = [NSEvent pressedMouseButtons];
     const NSPoint cocoaLocation = [NSEvent mouseLocation];
     Uint32 retval = 0;
 
-    *x = (int)cocoaLocation.x;
-    *y = (int)(CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);
+    *x = cocoaLocation.x;
+    *y = (CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);
 
     retval |= (cocoaButtons & (1 << 0)) ? SDL_BUTTON_LMASK : 0;
     retval |= (cocoaButtons & (1 << 1)) ? SDL_BUTTON_RMASK : 0;
@@ -495,7 +495,7 @@ void Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
 
-    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, 1, (int)deltaX, (int)deltaY);
+    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, 1, deltaX, deltaY);
 }
 
 void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)

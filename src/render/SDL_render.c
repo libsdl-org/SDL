@@ -759,21 +759,15 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
             SDL_FPoint scale;
             GetWindowViewportValues(renderer, &logical_w, &logical_h, &viewport, &scale);
             if (logical_w) {
-                event->motion.x -= (int)(viewport.x * renderer->dpi_scale.x);
-                event->motion.y -= (int)(viewport.y * renderer->dpi_scale.y);
-                event->motion.x = (int)(event->motion.x / (scale.x * renderer->dpi_scale.x));
-                event->motion.y = (int)(event->motion.y / (scale.y * renderer->dpi_scale.y));
-                if (event->motion.xrel != 0 && renderer->relative_scaling) {
-                    float rel = renderer->xrel + event->motion.xrel / (scale.x * renderer->dpi_scale.x);
-                    float truncated = SDL_truncf(rel);
-                    renderer->xrel = rel - truncated;
-                    event->motion.xrel = (Sint32)truncated;
+                event->motion.x -= (float)(viewport.x * renderer->dpi_scale.x);
+                event->motion.y -= (float)(viewport.y * renderer->dpi_scale.y);
+                event->motion.x /= (scale.x * renderer->dpi_scale.x);
+                event->motion.y /= (scale.y * renderer->dpi_scale.y);
+                if (event->motion.xrel != 0.0f && renderer->relative_scaling) {
+                    event->motion.xrel /= (scale.x * renderer->dpi_scale.x);
                 }
-                if (event->motion.yrel != 0 && renderer->relative_scaling) {
-                    float rel = renderer->yrel + event->motion.yrel / (scale.y * renderer->dpi_scale.y);
-                    float truncated = SDL_truncf(rel);
-                    renderer->yrel = rel - truncated;
-                    event->motion.yrel = (Sint32)truncated;
+                if (event->motion.yrel != 0.0f && renderer->relative_scaling) {
+                    event->motion.yrel /= (scale.y * renderer->dpi_scale.y);
                 }
             }
         }
@@ -786,10 +780,24 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
             SDL_FPoint scale;
             GetWindowViewportValues(renderer, &logical_w, &logical_h, &viewport, &scale);
             if (logical_w) {
-                event->button.x -= (int)(viewport.x * renderer->dpi_scale.x);
-                event->button.y -= (int)(viewport.y * renderer->dpi_scale.y);
-                event->button.x = (int)(event->button.x / (scale.x * renderer->dpi_scale.x));
-                event->button.y = (int)(event->button.y / (scale.y * renderer->dpi_scale.y));
+                event->button.x -= (float)(viewport.x * renderer->dpi_scale.x);
+                event->button.y -= (float)(viewport.y * renderer->dpi_scale.y);
+                event->button.x /= (scale.x * renderer->dpi_scale.x);
+                event->button.y /= (scale.y * renderer->dpi_scale.y);
+            }
+        }
+    } else if (event->type == SDL_MOUSEWHEEL) {
+        SDL_Window *window = SDL_GetWindowFromID(event->button.windowID);
+        if (window == renderer->window) {
+            int logical_w, logical_h;
+            SDL_DRect viewport;
+            SDL_FPoint scale;
+            GetWindowViewportValues(renderer, &logical_w, &logical_h, &viewport, &scale);
+            if (logical_w) {
+                event->wheel.mouseX -= (float)(viewport.x * renderer->dpi_scale.x);
+                event->wheel.mouseY -= (float)(viewport.y * renderer->dpi_scale.y);
+                event->wheel.mouseX /= (scale.x * renderer->dpi_scale.x);
+                event->wheel.mouseY /= (scale.y * renderer->dpi_scale.y);
             }
         }
     } else if (event->type == SDL_FINGERDOWN ||
@@ -2510,14 +2518,14 @@ void SDL_GetRenderScale(SDL_Renderer *renderer, float *scaleX, float *scaleY)
     }
 }
 
-void SDL_RenderWindowToLogical(SDL_Renderer *renderer, int windowX, int windowY, float *logicalX, float *logicalY)
+void SDL_RenderWindowToLogical(SDL_Renderer *renderer, float windowX, float windowY, float *logicalX, float *logicalY)
 {
     float window_physical_x, window_physical_y;
 
     CHECK_RENDERER_MAGIC(renderer, );
 
-    window_physical_x = ((float)windowX) / renderer->dpi_scale.x;
-    window_physical_y = ((float)windowY) / renderer->dpi_scale.y;
+    window_physical_x = (windowX / renderer->dpi_scale.x);
+    window_physical_y = (windowY / renderer->dpi_scale.y);
 
     if (logicalX) {
         *logicalX = (float)((window_physical_x - renderer->viewport.x) / renderer->scale.x);
@@ -2527,7 +2535,7 @@ void SDL_RenderWindowToLogical(SDL_Renderer *renderer, int windowX, int windowY,
     }
 }
 
-void SDL_RenderLogicalToWindow(SDL_Renderer *renderer, float logicalX, float logicalY, int *windowX, int *windowY)
+void SDL_RenderLogicalToWindow(SDL_Renderer *renderer, float logicalX, float logicalY, float *windowX, float *windowY)
 {
     float window_physical_x, window_physical_y;
 
@@ -2537,10 +2545,10 @@ void SDL_RenderLogicalToWindow(SDL_Renderer *renderer, float logicalX, float log
     window_physical_y = (float)((logicalY * renderer->scale.y) + renderer->viewport.y);
 
     if (windowX) {
-        *windowX = (int)(window_physical_x * renderer->dpi_scale.x);
+        *windowX = (window_physical_x * renderer->dpi_scale.x);
     }
     if (windowY) {
-        *windowY = (int)(window_physical_y * renderer->dpi_scale.y);
+        *windowY = (window_physical_y * renderer->dpi_scale.y);
     }
 }
 

@@ -249,10 +249,6 @@ struct SDL_Renderer
     /* List of triangle indices to draw rects */
     int rect_index_order[6];
 
-    /* Remainder from scaled relative motion */
-    float xrel;
-    float yrel;
-
     /* The list of textures */
     SDL_Texture *textures;
     SDL_Texture *target;

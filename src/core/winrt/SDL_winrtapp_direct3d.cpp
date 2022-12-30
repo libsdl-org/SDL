@@ -547,7 +547,7 @@ void SDL_WinRTApp::OnWindowActivated(CoreWindow ^ sender, WindowActivatedEventAr
              */
 #if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION >= NTDDI_WINBLUE)
             Point cursorPos = WINRT_TransformCursorPosition(window, sender->PointerPosition, TransformToSDLWindowSize);
-            SDL_SendMouseMotion(0, window, 0, 0, (int)cursorPos.X, (int)cursorPos.Y);
+            SDL_SendMouseMotion(0, window, 0, 0, cursorPos.X, cursorPos.Y);
 #endif
 
             /* TODO, WinRT: see if the Win32 bugfix from https://hg.libsdl.org/SDL/rev/d278747da408 needs to be applied (on window activation) */

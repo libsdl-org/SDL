@@ -149,7 +149,7 @@ static const Uint32 fps_check_delay = 5000;
 
 SDL_Surface *MooseYUVSurfaces[MOOSEFRAMES_COUNT];
 SDL_Texture *MooseTexture = NULL;
-SDL_Rect displayrect;
+SDL_FRect displayrect;
 int window_w;
 int window_h;
 int paused = 0;
@@ -192,7 +192,7 @@ void MoveSprites(SDL_Renderer *renderer)
             SDL_UpdateTexture(MooseTexture, NULL, MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch);
         }
         SDL_RenderClear(renderer);
-        SDL_RenderTexture(renderer, MooseTexture, NULL, &displayrect);
+        SDL_RenderTextureFloat(renderer, MooseTexture, NULL, &displayrect);
         SDL_RenderPresent(renderer);
     } else {
         SDL_Texture *tmp;
@@ -209,7 +209,7 @@ void MoveSprites(SDL_Renderer *renderer)
         }
 
         SDL_RenderClear(renderer);
-        SDL_RenderTexture(renderer, tmp, NULL, &displayrect);
+        SDL_RenderTextureFloat(renderer, tmp, NULL, &displayrect);
         SDL_RenderPresent(renderer);
         SDL_DestroyTexture(tmp);
     }
@@ -231,8 +231,10 @@ void loop()
         switch (event.type) {
         case SDL_WINDOWEVENT_RESIZED:
             SDL_SetRenderViewport(renderer, NULL);
-            displayrect.w = window_w = event.window.data1;
-            displayrect.h = window_h = event.window.data2;
+            window_w = event.window.data1;
+            window_h = event.window.data2;
+            displayrect.w = (float)window_w;
+            displayrect.h = (float)window_h;
             break;
         case SDL_MOUSEBUTTONDOWN:
             displayrect.x = event.button.x - window_w / 2;
@@ -488,8 +490,8 @@ int main(int argc, char **argv)
 
     displayrect.x = 0;
     displayrect.y = 0;
-    displayrect.w = window_w;
-    displayrect.h = window_h;
+    displayrect.w = (float)window_w;
+    displayrect.h = (float)window_h;
 
     /* Ignore key up events, they don't even get filtered */
     SDL_SetEventEnabled(SDL_KEYUP, SDL_FALSE);

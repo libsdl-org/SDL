@@ -324,7 +324,7 @@ static int X11_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-static void X11_WarpMouseInternal(Window xwindow, const int x, const int y)
+static void X11_WarpMouseInternal(Window xwindow, float x, float y)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)SDL_GetVideoDevice()->driverdata;
     Display *display = videodata->display;
@@ -337,17 +337,17 @@ static void X11_WarpMouseInternal(Window xwindow, const int x, const int y)
         X11_XIGetClientPointer(display, None, &deviceid);
     }
     if (deviceid != 0) {
-        X11_XIWarpPointer(display, deviceid, None, xwindow, 0.0, 0.0, 0, 0, (double)x, (double)y);
+        X11_XIWarpPointer(display, deviceid, None, xwindow, 0.0, 0.0, 0, 0, x, y);
     } else
 #endif
     {
-        X11_XWarpPointer(display, None, xwindow, 0, 0, 0, 0, x, y);
+        X11_XWarpPointer(display, None, xwindow, 0, 0, 0, 0, (int)x, (int)y);
     }
     X11_XSync(display, False);
     videodata->global_mouse_changed = SDL_TRUE;
 }
 
-static void X11_WarpMouse(SDL_Window *window, int x, int y)
+static void X11_WarpMouse(SDL_Window *window, float x, float y)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
@@ -361,7 +361,7 @@ static void X11_WarpMouse(SDL_Window *window, int x, int y)
 #endif
 }
 
-static int X11_WarpMouseGlobal(int x, int y)
+static int X11_WarpMouseGlobal(float x, float y)
 {
     X11_WarpMouseInternal(DefaultRootWindow(GetDisplay()), x, y);
     return 0;
@@ -405,7 +405,7 @@ static int X11_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 X11_GetGlobalMouseState(int *x, int *y)
+static Uint32 X11_GetGlobalMouseState(float *x, float *y)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)SDL_GetVideoDevice()->driverdata;
     Display *display = GetDisplay();
@@ -452,8 +452,8 @@ static Uint32 X11_GetGlobalMouseState(int *x, int *y)
 
     SDL_assert(!videodata->global_mouse_changed); /* The pointer wasn't on any X11 screen?! */
 
-    *x = videodata->global_mouse_position.x;
-    *y = videodata->global_mouse_position.y;
+    *x = (float)videodata->global_mouse_position.x;
+    *y = (float)videodata->global_mouse_position.y;
     return videodata->global_mouse_buttons;
 }
 

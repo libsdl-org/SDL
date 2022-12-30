@@ -26,6 +26,8 @@
 #error SDL for macOS must be built with a 10.7 SDK or above.
 #endif /* MAC_OS_X_VERSION_MAX_ALLOWED < 1070 */
 
+#include <float.h>              /* For FLT_MAX */
+
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -170,7 +172,7 @@
         NSArray *array;
         NSPoint point;
         SDL_Mouse *mouse;
-        int x, y;
+        float x, y;
 
         if (desiredType == nil) {
             return NO; /* can't accept anything that's being dropped here. */
@@ -187,9 +189,9 @@
         /* Code addon to update the mouse location */
         point = [sender draggingLocation];
         mouse = SDL_GetMouse();
-        x = (int)point.x;
-        y = (int)(sdlwindow->h - point.y);
-        if (x >= 0 && x < sdlwindow->w && y >= 0 && y < sdlwindow->h) {
+        x = point.x;
+        y = (sdlwindow->h - point.y);
+        if (x >= 0.0f && x < (float)sdlwindow->w && y >= 0.0f && y < (float)sdlwindow->h) {
             SDL_SendMouseMotion(0, sdlwindow, mouse->mouseID, 0, x, y);
         }
         /* Code addon to update the mouse location */
@@ -370,7 +372,7 @@ static SDL_bool ShouldAdjustCoordinatesForGrab(SDL_Window *window)
     return SDL_FALSE;
 }
 
-static SDL_bool AdjustCoordinatesForGrab(SDL_Window *window, int x, int y, CGPoint *adjusted)
+static SDL_bool AdjustCoordinatesForGrab(SDL_Window *window, float x, float y, CGPoint *adjusted)
 {
     if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
         SDL_Rect window_rect;
@@ -382,10 +384,10 @@ static SDL_bool AdjustCoordinatesForGrab(SDL_Window *window, int x, int y, CGPoi
         window_rect.h = window->h;
 
         if (SDL_GetRectIntersection(&window->mouse_rect, &window_rect, &mouse_rect)) {
-            int left = window->x + mouse_rect.x;
-            int right = left + mouse_rect.w - 1;
-            int top = window->y + mouse_rect.y;
-            int bottom = top + mouse_rect.h - 1;
+            float left = (float)window->x + mouse_rect.x;
+            float right = left + mouse_rect.w - 1;
+            float top = (float)window->y + mouse_rect.y;
+            float bottom = top + mouse_rect.h - 1;
             if (x < left || x > right || y < top || y > bottom) {
                 adjusted->x = SDL_clamp(x, left, right);
                 adjusted->y = SDL_clamp(y, top, bottom);
@@ -396,10 +398,10 @@ static SDL_bool AdjustCoordinatesForGrab(SDL_Window *window, int x, int y, CGPoi
     }
 
     if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) {
-        int left = window->x;
-        int right = left + window->w - 1;
-        int top = window->y;
-        int bottom = top + window->h - 1;
+        float left = (float)window->x;
+        float right = left + window->w - 1;
+        float top = (float)window->y;
+        float bottom = top + window->h - 1;
         if (x < left || x > right || y < top || y > bottom) {
             adjusted->x = SDL_clamp(x, left, right);
             adjusted->y = SDL_clamp(y, top, bottom);
@@ -450,7 +452,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     } else {
         /* Move the cursor to the nearest point in the window */
         if (ShouldAdjustCoordinatesForGrab(window)) {
-            int x, y;
+            float x, y;
             CGPoint cgpoint;
 
             SDL_GetGlobalMouseState(&x, &y);
@@ -479,7 +481,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     pendingWindowOperation = PENDING_OPERATION_NONE;
     isMoving = NO;
     isDragAreaRunning = NO;
-    pendingWindowWarpX = pendingWindowWarpY = INT_MAX;
+    pendingWindowWarpX = pendingWindowWarpY = FLT_MAX;
 
     center = [NSNotificationCenter defaultCenter];
 
@@ -672,7 +674,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     }
 }
 
-- (void)setPendingMoveX:(int)x Y:(int)y
+- (void)setPendingMoveX:(float)x Y:(float)y
 {
     pendingWindowWarpX = x;
     pendingWindowWarpY = y;
@@ -690,14 +692,14 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 {
     if (![self isMovingOrFocusClickPending]) {
         SDL_Mouse *mouse = SDL_GetMouse();
-        if (pendingWindowWarpX != INT_MAX && pendingWindowWarpY != INT_MAX) {
+        if (pendingWindowWarpX != FLT_MAX && pendingWindowWarpY != FLT_MAX) {
             mouse->WarpMouseGlobal(pendingWindowWarpX, pendingWindowWarpY);
-            pendingWindowWarpX = pendingWindowWarpY = INT_MAX;
+            pendingWindowWarpX = pendingWindowWarpY = FLT_MAX;
         }
         if (mouse->relative_mode && !mouse->relative_mode_warp && mouse->focus == _data.window) {
             /* Move the cursor to the nearest point in the window */
             {
-                int x, y;
+                float x, y;
                 CGPoint cgpoint;
 
                 SDL_GetMouseState(&x, &y);
@@ -731,7 +733,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 - (void)windowWillMove:(NSNotification *)aNotification
 {
     if ([_data.nswindow isKindOfClass:[SDLWindow class]]) {
-        pendingWindowWarpX = pendingWindowWarpY = INT_MAX;
+        pendingWindowWarpX = pendingWindowWarpY = FLT_MAX;
         isMoving = YES;
     }
 }
@@ -848,13 +850,13 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     /* If we just gained focus we need the updated mouse position */
     if (!mouse->relative_mode) {
         NSPoint point;
-        int x, y;
+        float x, y;
 
         point = [_data.nswindow mouseLocationOutsideOfEventStream];
-        x = (int)point.x;
-        y = (int)(window->h - point.y);
+        x = point.x;
+        y = (window->h - point.y);
 
-        if (x >= 0 && x < window->w && y >= 0 && y < window->h) {
+        if (x >= 0.0f && x < (float)window->w && y >= 0.0f && y < (float)window->h) {
             SDL_SendMouseMotion(0, window, mouse->mouseID, 0, x, y);
         }
     }
@@ -1317,7 +1319,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_MouseID mouseID;
     NSPoint point;
-    int x, y;
+    float x, y;
     SDL_Window *window;
 
     if (!mouse) {
@@ -1337,8 +1339,8 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     }
 
     point = [theEvent locationInWindow];
-    x = (int)point.x;
-    y = (int)(window->h - point.y);
+    x = point.x;
+    y = (window->h - point.y);
 
     if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_13_2) {
         /* Mouse grab is taken care of by the confinement rect */

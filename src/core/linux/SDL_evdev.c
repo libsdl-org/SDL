@@ -448,7 +448,7 @@ void SDL_EVDEV_Poll(void)
                     case SYN_REPORT:
                         /* Send mouse axis changes together to ensure consistency and reduce event processing overhead */
                         if (item->mouse_x != 0 || item->mouse_y != 0) {
-                            SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, item->mouse_x, item->mouse_y);
+                            SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, (float)item->mouse_x, (float)item->mouse_y);
                             item->mouse_x = item->mouse_y = 0;
                         }
                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
