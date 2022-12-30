@@ -72,6 +72,11 @@
 /* Weston uses a ratio of 10 units per scroll tick */
 #define WAYLAND_WHEEL_AXIS_UNIT 10
 
+/* xkbcommon as of 1.4.1 doesn't have a name macro for the mode key */
+#ifndef XKB_MOD_NAME_MODE
+#define XKB_MOD_NAME_MODE "Mod5"
+#endif
+
 struct SDL_WaylandTouchPoint
 {
     SDL_TouchID id;
@@ -274,7 +279,7 @@ static SDL_bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, U
     while (elapsed >= repeat_info->next_repeat_ns) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
             const Uint64 timestamp = repeat_info->wl_press_time_ns + repeat_info->next_repeat_ns;
-            SDL_SendKeyboardKey(Wayland_GetEventTimestamp(timestamp), SDL_PRESSED, repeat_info->scancode);
+            SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetEventTimestamp(timestamp), SDL_PRESSED, repeat_info->scancode);
         }
         if (repeat_info->text[0]) {
             SDL_SendKeyboardText(repeat_info->text);
@@ -1000,7 +1005,13 @@ static void Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, vo
 
         if (!keycode) {
             const SDL_Scancode sc = SDL_GetScancodeFromKeySym(syms[0], key);
-            keycode = SDL_GetDefaultKeyFromScancode(sc);
+
+            /* Note: The default SDL keymap always sets this to right alt instead of AltGr/Mode, so handle it separately. */
+            if (syms[0] != XKB_KEY_ISO_Level3_Shift) {
+                keycode = SDL_GetDefaultKeyFromScancode(sc);
+            } else {
+                keycode = SDLK_MODE;
+            }
         }
 
         if (keycode) {
@@ -1071,6 +1082,7 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     input->xkb.idx_ctrl = 1 << GET_MOD_INDEX(CTRL);
     input->xkb.idx_alt = 1 << GET_MOD_INDEX(ALT);
     input->xkb.idx_gui = 1 << GET_MOD_INDEX(LOGO);
+    input->xkb.idx_mode = 1 << GET_MOD_INDEX(MODE);
     input->xkb.idx_num = 1 << GET_MOD_INDEX(NUM);
     input->xkb.idx_caps = 1 << GET_MOD_INDEX(CAPS);
 #undef GET_MOD_INDEX
@@ -1154,6 +1166,161 @@ static SDL_Scancode Wayland_get_scancode_from_key(struct SDL_WaylandInput *input
     return scancode;
 }
 
+static void Wayland_ReconcileModifiers(struct SDL_WaylandInput *input)
+{
+    /* Handle pressed modifiers for virtual keyboards that may not send keystrokes. */
+    if (input->keyboard_is_virtual) {
+        if (input->xkb.wl_pressed_modifiers & input->xkb.idx_shift) {
+            input->pressed_modifiers |= SDL_KMOD_SHIFT;
+        } else {
+            input->pressed_modifiers &= ~SDL_KMOD_SHIFT;
+        }
+
+        if (input->xkb.wl_pressed_modifiers & input->xkb.idx_ctrl) {
+            input->pressed_modifiers |= SDL_KMOD_CTRL;
+        } else {
+            input->pressed_modifiers &= ~SDL_KMOD_CTRL;
+        }
+
+        if (input->xkb.wl_pressed_modifiers & input->xkb.idx_alt) {
+            input->pressed_modifiers |= SDL_KMOD_ALT;
+        } else {
+            input->pressed_modifiers &= ~SDL_KMOD_ALT;
+        }
+
+        if (input->xkb.wl_pressed_modifiers & input->xkb.idx_gui) {
+            input->pressed_modifiers |= SDL_KMOD_GUI;
+        } else {
+            input->pressed_modifiers &= ~SDL_KMOD_GUI;
+        }
+
+        if (input->xkb.wl_pressed_modifiers & input->xkb.idx_mode) {
+            input->pressed_modifiers |= SDL_KMOD_MODE;
+        } else {
+            input->pressed_modifiers &= ~SDL_KMOD_MODE;
+        }
+    }
+
+    /*
+     * If a latch or lock was activated by a keypress, the latch/lock will
+     * be tied to the specific left/right key that initiated it. Otherwise,
+     * the ambiguous left/right combo is used.
+     *
+     * The modifier will remain active until the latch/lock is released by
+     * the system.
+     */
+    if (input->xkb.wl_locked_modifiers & input->xkb.idx_shift) {
+        if (input->pressed_modifiers & SDL_KMOD_SHIFT) {
+            input->locked_modifiers &= ~SDL_KMOD_SHIFT;
+            input->locked_modifiers |= (input->pressed_modifiers & SDL_KMOD_SHIFT);
+        } else if (!(input->locked_modifiers & SDL_KMOD_SHIFT)) {
+            input->locked_modifiers |= SDL_KMOD_SHIFT;
+        }
+    } else {
+        input->locked_modifiers &= ~SDL_KMOD_SHIFT;
+    }
+
+    if (input->xkb.wl_locked_modifiers & input->xkb.idx_ctrl) {
+        if (input->pressed_modifiers & SDL_KMOD_CTRL) {
+            input->locked_modifiers &= ~SDL_KMOD_CTRL;
+            input->locked_modifiers |= (input->pressed_modifiers & SDL_KMOD_CTRL);
+        } else if (!(input->locked_modifiers & SDL_KMOD_CTRL)) {
+            input->locked_modifiers |= SDL_KMOD_CTRL;
+        }
+    } else {
+        input->locked_modifiers &= ~SDL_KMOD_CTRL;
+    }
+
+    if (input->xkb.wl_locked_modifiers & input->xkb.idx_alt) {
+        if (input->pressed_modifiers & SDL_KMOD_ALT) {
+            input->locked_modifiers &= ~SDL_KMOD_ALT;
+            input->locked_modifiers |= (input->pressed_modifiers & SDL_KMOD_ALT);
+        } else if (!(input->locked_modifiers & SDL_KMOD_ALT)) {
+            input->locked_modifiers |= SDL_KMOD_ALT;
+        }
+    } else {
+        input->locked_modifiers &= ~SDL_KMOD_ALT;
+    }
+
+    if (input->xkb.wl_locked_modifiers & input->xkb.idx_gui) {
+        if (input->pressed_modifiers & SDL_KMOD_GUI) {
+            input->locked_modifiers &= ~SDL_KMOD_GUI;
+            input->locked_modifiers |= (input->pressed_modifiers & SDL_KMOD_GUI);
+        } else if (!(input->locked_modifiers & SDL_KMOD_GUI)) {
+            input->locked_modifiers |= SDL_KMOD_GUI;
+        }
+    } else {
+        input->locked_modifiers &= ~SDL_KMOD_GUI;
+    }
+
+    if (input->xkb.wl_locked_modifiers & input->xkb.idx_mode) {
+        input->locked_modifiers |= SDL_KMOD_MODE;
+    } else {
+        input->locked_modifiers &= ~SDL_KMOD_MODE;
+    }
+
+    /* Capslock and Numlock can only be locked, not pressed. */
+    if (input->xkb.wl_locked_modifiers & input->xkb.idx_caps) {
+        input->locked_modifiers |= SDL_KMOD_CAPS;
+    } else {
+        input->locked_modifiers &= ~SDL_KMOD_CAPS;
+    }
+
+    if (input->xkb.wl_locked_modifiers & input->xkb.idx_num) {
+        input->locked_modifiers |= SDL_KMOD_NUM;
+    } else {
+        input->locked_modifiers &= ~SDL_KMOD_NUM;
+    }
+
+    SDL_SetModState(input->pressed_modifiers | input->locked_modifiers);
+}
+
+static void Wayland_HandleModifierKeys(struct SDL_WaylandInput *input, SDL_Scancode scancode, SDL_bool pressed)
+{
+    const SDL_KeyCode keycode = SDL_GetKeyFromScancode(scancode);
+    SDL_Keymod mod;
+
+    switch (keycode) {
+    case SDLK_LSHIFT:
+        mod = SDL_KMOD_LSHIFT;
+        break;
+    case SDLK_RSHIFT:
+        mod = SDL_KMOD_RSHIFT;
+        break;
+    case SDLK_LCTRL:
+        mod = SDL_KMOD_LCTRL;
+        break;
+    case SDLK_RCTRL:
+        mod = SDL_KMOD_RCTRL;
+        break;
+    case SDLK_LALT:
+        mod = SDL_KMOD_LALT;
+        break;
+    case SDLK_RALT:
+        mod = SDL_KMOD_RALT;
+        break;
+    case SDLK_LGUI:
+        mod = SDL_KMOD_LGUI;
+        break;
+    case SDLK_RGUI:
+        mod = SDL_KMOD_RGUI;
+        break;
+    case SDLK_MODE:
+        mod = SDL_KMOD_MODE;
+        break;
+    default:
+        return;
+    }
+
+    if (pressed) {
+        input->pressed_modifiers |= mod;
+    } else {
+        input->pressed_modifiers &= ~mod;
+    }
+
+    Wayland_ReconcileModifiers(input);
+}
+
 static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
                                   uint32_t serial, struct wl_surface *surface,
                                   struct wl_array *keys)
@@ -1197,7 +1364,9 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         case SDLK_RALT:
         case SDLK_LGUI:
         case SDLK_RGUI:
-            SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
+        case SDLK_MODE:
+            Wayland_HandleModifierKeys(input, scancode, SDL_TRUE);
+            SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_PRESSED, scancode);
             break;
         default:
             break;
@@ -1225,6 +1394,9 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 
     /* This will release any keys still pressed */
     SDL_SetKeyboardFocus(NULL);
+
+    /* Clear the pressed modifiers. */
+    input->pressed_modifiers = SDL_KMOD_NONE;
 
 #ifdef SDL_USE_IME
     if (!input->text_input) {
@@ -1313,7 +1485,8 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
     if (!handled_by_ime) {
         scancode = Wayland_get_scancode_from_key(input, key + 8);
-        SDL_SendKeyboardKey(Wayland_GetKeyboardTimestamp(input, time), state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
+        Wayland_HandleModifierKeys(input, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
+        SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetKeyboardTimestamp(input, time), state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
     }
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
@@ -1337,21 +1510,14 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 {
     struct SDL_WaylandInput *input = data;
     Wayland_Keymap keymap;
-    const uint32_t modstate = (mods_depressed | mods_latched | mods_locked);
 
     WAYLAND_xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
                                   mods_locked, 0, 0, group);
 
-    SDL_ToggleModState(SDL_KMOD_NUM, modstate & input->xkb.idx_num);
-    SDL_ToggleModState(SDL_KMOD_CAPS, modstate & input->xkb.idx_caps);
+    input->xkb.wl_pressed_modifiers = mods_depressed;
+    input->xkb.wl_locked_modifiers = mods_latched | mods_locked;
 
-    /* Toggle the modifier states for virtual keyboards, as they may not send key presses. */
-    if (input->keyboard_is_virtual) {
-        SDL_ToggleModState(SDL_KMOD_SHIFT, modstate & input->xkb.idx_shift);
-        SDL_ToggleModState(SDL_KMOD_CTRL, modstate & input->xkb.idx_ctrl);
-        SDL_ToggleModState(SDL_KMOD_ALT, modstate & input->xkb.idx_alt);
-        SDL_ToggleModState(SDL_KMOD_GUI, modstate & input->xkb.idx_gui);
-    }
+    Wayland_ReconcileModifiers(input);
 
     /* If a key is repeating, update the text to apply the modifier. */
     if (keyboard_repeat_is_set(&input->keyboard_repeat)) {
