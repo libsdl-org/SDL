@@ -260,19 +260,19 @@ int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_W
                 if (window) {
                     if (down) {
                         if (finger_touching == SDL_FALSE) {
-                            int pos_x = (int)(x * (float)window->w);
-                            int pos_y = (int)(y * (float)window->h);
+                            float pos_x = (x * (float)window->w);
+                            float pos_y = (y * (float)window->h);
                             if (pos_x < 0) {
                                 pos_x = 0;
                             }
-                            if (pos_x > window->w - 1) {
-                                pos_x = window->w - 1;
+                            if (pos_x > (float)(window->w - 1)) {
+                                pos_x = (float)(window->w - 1);
                             }
-                            if (pos_y < 0) {
-                                pos_y = 0;
+                            if (pos_y < 0.0f) {
+                                pos_y = 0.0f;
                             }
-                            if (pos_y > window->h - 1) {
-                                pos_y = window->h - 1;
+                            if (pos_y > (float)(window->h - 1)) {
+                                pos_y = (float)(window->h - 1);
                             }
                             SDL_SendMouseMotion(timestamp, window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
                             SDL_SendMouseButton(timestamp, window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
@@ -384,19 +384,19 @@ int SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid,
             if (id != SDL_MOUSE_TOUCHID) {
                 if (window) {
                     if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
-                        int pos_x = (int)(x * (float)window->w);
-                        int pos_y = (int)(y * (float)window->h);
-                        if (pos_x < 0) {
-                            pos_x = 0;
+                        float pos_x = (x * (float)window->w);
+                        float pos_y = (y * (float)window->h);
+                        if (pos_x < 0.0f) {
+                            pos_x = 0.0f;
                         }
-                        if (pos_x > window->w - 1) {
-                            pos_x = window->w - 1;
+                        if (pos_x > (float)(window->w - 1)) {
+                            pos_x = (float)(window->w - 1);
                         }
-                        if (pos_y < 0) {
-                            pos_y = 0;
+                        if (pos_y < 0.0f) {
+                            pos_y = 0.0f;
                         }
-                        if (pos_y > window->h - 1) {
-                            pos_y = window->h - 1;
+                        if (pos_y > (float)(window->h - 1)) {
+                            pos_y = (float)(window->h - 1);
                         }
                         SDL_SendMouseMotion(timestamp, window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
                     }

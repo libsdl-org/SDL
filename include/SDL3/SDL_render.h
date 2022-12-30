@@ -1034,10 +1034,10 @@ extern DECLSPEC void SDLCALL SDL_GetRenderScale(SDL_Renderer * renderer,
  * \sa SDL_GetRenderLogicalSize
  * \sa SDL_SetRenderLogicalSize
  */
-extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer * renderer, 
-                                                            int windowX, int windowY, 
-                                                            float *logicalX, float *logicalY);
-                                                  
+extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer *renderer,
+                                                       float windowX, float windowY,
+                                                       float *logicalX, float *logicalY);
+
 
 /**
  * Get real coordinates of point in window when given logical coordinates of
@@ -1060,9 +1060,9 @@ extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer * renderer,
  * \sa SDL_GetRenderLogicalSize
  * \sa SDL_SetRenderLogicalSize
  */
-extern DECLSPEC void SDLCALL SDL_RenderLogicalToWindow(SDL_Renderer * renderer, 
-                                                            float logicalX, float logicalY,
-                                                            int *windowX, int *windowY);
+extern DECLSPEC void SDLCALL SDL_RenderLogicalToWindow(SDL_Renderer *renderer,
+                                                       float logicalX, float logicalY,
+                                                       float *windowX, float *windowY);
 
 /**
  * Set the color used for drawing operations (Rect, Line and Clear).

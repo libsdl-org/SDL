@@ -95,8 +95,8 @@ static SDL_Gamepad **gamepads;
 static int num_gamepads = 0;
 static SDL_Joystick *virtual_joystick = NULL;
 static SDL_GamepadAxis virtual_axis_active = SDL_GAMEPAD_AXIS_INVALID;
-static int virtual_axis_start_x;
-static int virtual_axis_start_y;
+static float virtual_axis_start_x;
+static float virtual_axis_start_y;
 static SDL_GamepadButton virtual_button_active = SDL_GAMEPAD_BUTTON_INVALID;
 
 static void UpdateWindowTitle()
@@ -424,9 +424,9 @@ static void CloseVirtualGamepad()
     }
 }
 
-static SDL_GamepadButton FindButtonAtPosition(int x, int y)
+static SDL_GamepadButton FindButtonAtPosition(float x, float y)
 {
-    SDL_Point point;
+    SDL_FPoint point;
     int i;
     SDL_bool showing_front = ShowingFront();
 
@@ -435,12 +435,12 @@ static SDL_GamepadButton FindButtonAtPosition(int x, int y)
     for (i = 0; i < SDL_GAMEPAD_BUTTON_TOUCHPAD; ++i) {
         SDL_bool on_front = (i < SDL_GAMEPAD_BUTTON_PADDLE1 || i > SDL_GAMEPAD_BUTTON_PADDLE4);
         if (on_front == showing_front) {
-            SDL_Rect rect;
-            rect.x = button_positions[i].x;
-            rect.y = button_positions[i].y;
-            rect.w = BUTTON_SIZE;
-            rect.h = BUTTON_SIZE;
-            if (SDL_PointInRect(&point, &rect)) {
+            SDL_FRect rect;
+            rect.x = (float)button_positions[i].x;
+            rect.y = (float)button_positions[i].y;
+            rect.w = (float)BUTTON_SIZE;
+            rect.h = (float)BUTTON_SIZE;
+            if (SDL_PointInRectFloat(&point, &rect)) {
                 return (SDL_GamepadButton)i;
             }
         }
@@ -448,9 +448,9 @@ static SDL_GamepadButton FindButtonAtPosition(int x, int y)
     return SDL_GAMEPAD_BUTTON_INVALID;
 }
 
-static SDL_GamepadAxis FindAxisAtPosition(int x, int y)
+static SDL_GamepadAxis FindAxisAtPosition(float x, float y)
 {
-    SDL_Point point;
+    SDL_FPoint point;
     int i;
     SDL_bool showing_front = ShowingFront();
 
@@ -458,12 +458,12 @@ static SDL_GamepadAxis FindAxisAtPosition(int x, int y)
     point.y = y;
     for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
         if (showing_front) {
-            SDL_Rect rect;
-            rect.x = axis_positions[i].x;
-            rect.y = axis_positions[i].y;
-            rect.w = AXIS_SIZE;
-            rect.h = AXIS_SIZE;
-            if (SDL_PointInRect(&point, &rect)) {
+            SDL_FRect rect;
+            rect.x = (float)axis_positions[i].x;
+            rect.y = (float)axis_positions[i].y;
+            rect.w = (float)AXIS_SIZE;
+            rect.h = (float)AXIS_SIZE;
+            if (SDL_PointInRectFloat(&point, &rect)) {
                 return (SDL_GamepadAxis)i;
             }
         }
@@ -471,13 +471,13 @@ static SDL_GamepadAxis FindAxisAtPosition(int x, int y)
     return SDL_GAMEPAD_AXIS_INVALID;
 }
 
-static void VirtualGamepadMouseMotion(int x, int y)
+static void VirtualGamepadMouseMotion(float x, float y)
 {
     if (virtual_button_active != SDL_GAMEPAD_BUTTON_INVALID) {
         if (virtual_axis_active != SDL_GAMEPAD_AXIS_INVALID) {
-            const int MOVING_DISTANCE = 2;
-            if (SDL_abs(x - virtual_axis_start_x) >= MOVING_DISTANCE ||
-                SDL_abs(y - virtual_axis_start_y) >= MOVING_DISTANCE) {
+            const float MOVING_DISTANCE = 2.0f;
+            if (SDL_fabs(x - virtual_axis_start_x) >= MOVING_DISTANCE ||
+                SDL_fabs(y - virtual_axis_start_y) >= MOVING_DISTANCE) {
                 SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_RELEASED);
                 virtual_button_active = SDL_GAMEPAD_BUTTON_INVALID;
             }
@@ -488,12 +488,12 @@ static void VirtualGamepadMouseMotion(int x, int y)
         if (virtual_axis_active == SDL_GAMEPAD_AXIS_LEFT_TRIGGER ||
             virtual_axis_active == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
             int range = (SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN);
-            float distance = SDL_clamp(((float)y - virtual_axis_start_y) / AXIS_SIZE, 0.0f, 1.0f);
+            float distance = SDL_clamp((y - virtual_axis_start_y) / AXIS_SIZE, 0.0f, 1.0f);
             Sint16 value = (Sint16)(SDL_JOYSTICK_AXIS_MIN + (distance * range));
             SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active, value);
         } else {
-            float distanceX = SDL_clamp(((float)x - virtual_axis_start_x) / AXIS_SIZE, -1.0f, 1.0f);
-            float distanceY = SDL_clamp(((float)y - virtual_axis_start_y) / AXIS_SIZE, -1.0f, 1.0f);
+            float distanceX = SDL_clamp((x - virtual_axis_start_x) / AXIS_SIZE, -1.0f, 1.0f);
+            float distanceY = SDL_clamp((y - virtual_axis_start_y) / AXIS_SIZE, -1.0f, 1.0f);
             Sint16 valueX, valueY;
 
             if (distanceX >= 0) {
@@ -512,7 +512,7 @@ static void VirtualGamepadMouseMotion(int x, int y)
     }
 }
 
-static void VirtualGamepadMouseDown(int x, int y)
+static void VirtualGamepadMouseDown(float x, float y)
 {
     SDL_GamepadButton button;
     SDL_GamepadAxis axis;
@@ -531,7 +531,7 @@ static void VirtualGamepadMouseDown(int x, int y)
     }
 }
 
-static void VirtualGamepadMouseUp(int x, int y)
+static void VirtualGamepadMouseUp(float x, float y)
 {
     if (virtual_button_active != SDL_GAMEPAD_BUTTON_INVALID) {
         SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_RELEASED);

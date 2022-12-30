@@ -37,7 +37,7 @@ typedef struct
 
 typedef struct
 {
-    int last_x, last_y;
+    float last_x, last_y;
     Uint64 last_timestamp;
     Uint8 click_count;
 } SDL_MouseClickState;
@@ -60,10 +60,10 @@ typedef struct
     void (*FreeCursor)(SDL_Cursor *cursor);
 
     /* Warp the mouse to (x,y) within a window */
-    void (*WarpMouse)(SDL_Window *window, int x, int y);
+    void (*WarpMouse)(SDL_Window *window, float x, float y);
 
     /* Warp the mouse to (x,y) in screen space */
-    int (*WarpMouseGlobal)(int x, int y);
+    int (*WarpMouseGlobal)(float x, float y);
 
     /* Set relative mode */
     int (*SetRelativeMouseMode)(SDL_bool enabled);
@@ -72,18 +72,16 @@ typedef struct
     int (*CaptureMouse)(SDL_Window *window);
 
     /* Get absolute mouse coordinates. (x) and (y) are never NULL and set to zero before call. */
-    Uint32 (*GetGlobalMouseState)(int *x, int *y);
+    Uint32 (*GetGlobalMouseState)(float *x, float *y);
 
     /* Data common to all mice */
     SDL_MouseID mouseID;
     SDL_Window *focus;
-    int x;
-    int y;
-    int xdelta;
-    int ydelta;
-    int last_x, last_y; /* the last reported x and y coordinates */
-    float accumulated_wheel_x;
-    float accumulated_wheel_y;
+    float x;
+    float y;
+    float xdelta;
+    float ydelta;
+    float last_x, last_y; /* the last reported x and y coordinates */
     SDL_bool has_position;
     SDL_bool relative_mode;
     SDL_bool relative_mode_warp;
@@ -95,8 +93,6 @@ typedef struct
     SDL_bool enable_relative_system_scale;
     int num_system_scale_values;
     float *system_scale_values;
-    float scale_accum_x;
-    float scale_accum_y;
     Uint32 double_click_time;
     int double_click_radius;
     SDL_bool touch_mouse_events;
@@ -145,7 +141,7 @@ extern int SDL_UpdateMouseCapture(SDL_bool force_release);
 extern int SDL_SetMouseSystemScale(int num_values, const float *values);
 
 /* Send a mouse motion event */
-extern int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, int relative, int x, int y);
+extern int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, int relative, float x, float y);
 
 /* Send a mouse button event */
 extern int SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button);
@@ -157,7 +153,7 @@ extern int SDL_SendMouseButtonClicks(Uint64 timestamp, SDL_Window *window, SDL_M
 extern int SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction);
 
 /* Warp the mouse within the window, potentially overriding relative mode */
-extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ignore_relative_mode);
+extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, SDL_bool ignore_relative_mode);
 
 /* TODO RECONNECT: Set mouse state to "zero" */
 #if 0

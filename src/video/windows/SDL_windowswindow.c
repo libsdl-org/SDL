@@ -1357,6 +1357,20 @@ void WIN_ClientPointToSDL(const SDL_Window *window, int *x, int *y)
     *y = MulDiv(*y, 96, data->scaling_dpi);
 }
 
+void WIN_ClientPointToSDLFloat(const SDL_Window *window, LONG x, LONG y, float *xOut, float *yOut)
+{
+    const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
+    const SDL_VideoData *videodata = data->videodata;
+
+    if (videodata->dpi_scaling_enabled) {
+        *xOut = (float)(x * 96) / data->scaling_dpi;
+        *yOut = (float)(y * 96) / data->scaling_dpi;
+    } else {
+        *xOut = (float)x;
+        *yOut = (float)y;
+    }
+}
+
 /**
  * Convert a point in the client area from DPI-scaled points to pixels.
  *
@@ -1373,6 +1387,20 @@ void WIN_ClientPointFromSDL(const SDL_Window *window, int *x, int *y)
 
     *x = MulDiv(*x, data->scaling_dpi, 96);
     *y = MulDiv(*y, data->scaling_dpi, 96);
+}
+
+void WIN_ClientPointFromSDLFloat(const SDL_Window *window, float x, float y, LONG *xOut, LONG *yOut)
+{
+    const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
+    const SDL_VideoData *videodata = data->videodata;
+
+    if (videodata->dpi_scaling_enabled) {
+        *xOut = (LONG)SDL_roundf((x * data->scaling_dpi) / 96.0f);
+        *yOut = (LONG)SDL_roundf((y * data->scaling_dpi) / 96.0f);
+    } else {
+        *xOut = (LONG)SDL_roundf(x);
+        *yOut = (LONG)SDL_roundf(y);
+    }
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)

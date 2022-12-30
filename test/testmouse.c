@@ -33,7 +33,7 @@ typedef struct _Object
 {
     struct _Object *next;
 
-    int x1, y1, x2, y2;
+    float x1, y1, x2, y2;
     Uint8 r, g, b;
 
     SDL_bool isRect;
@@ -56,7 +56,7 @@ void DrawObject(SDL_Renderer *renderer, Object *object)
     SDL_SetRenderDrawColor(renderer, object->r, object->g, object->b, 255);
 
     if (object->isRect) {
-        SDL_Rect rect;
+        SDL_FRect rect;
 
         if (object->x1 > object->x2) {
             rect.x = object->x2;
@@ -74,10 +74,9 @@ void DrawObject(SDL_Renderer *renderer, Object *object)
             rect.h = object->y2 - object->y1;
         }
 
-        /* SDL_RenderRect(renderer, &rect); */
-        SDL_RenderFillRect(renderer, &rect);
+        SDL_RenderFillRectFloat(renderer, &rect);
     } else {
-        SDL_RenderLine(renderer, object->x1, object->y1, object->x2, object->y2);
+        SDL_RenderLineFloat(renderer, object->x1, object->y1, object->x2, object->y2);
     }
 }
 
@@ -113,20 +112,18 @@ void loop(void *arg)
         switch (event.type) {
         case SDL_MOUSEWHEEL:
             if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
-                event.wheel.preciseX *= -1.0f;
-                event.wheel.preciseY *= -1.0f;
                 event.wheel.x *= -1;
                 event.wheel.y *= -1;
             }
-            if (event.wheel.preciseX != 0.0f) {
+            if (event.wheel.x != 0.0f) {
                 wheel_x_active = SDL_TRUE;
                 /* "positive to the right and negative to the left"  */
-                wheel_x += event.wheel.preciseX * 10.0f;
+                wheel_x += event.wheel.x * 10.0f;
             }
-            if (event.wheel.preciseY != 0.0f) {
+            if (event.wheel.x != 0.0f) {
                 wheel_y_active = SDL_TRUE;
                 /* "positive away from the user and negative towards the user" */
-                wheel_y -= event.wheel.preciseY * 10.0f;
+                wheel_y -= event.wheel.x * 10.0f;
             }
             break;
 
@@ -229,10 +226,10 @@ void loop(void *arg)
     /* Mouse wheel */
     SDL_SetRenderDrawColor(renderer, 0, 255, 128, 255);
     if (wheel_x_active) {
-        SDL_RenderLine(renderer, (int)wheel_x, 0, (int)wheel_x, SCREEN_HEIGHT);
+        SDL_RenderLineFloat(renderer, wheel_x, 0.0f, wheel_x, (float)SCREEN_HEIGHT);
     }
     if (wheel_y_active) {
-        SDL_RenderLine(renderer, 0, (int)wheel_y, SCREEN_WIDTH, (int)wheel_y);
+        SDL_RenderLineFloat(renderer, 0.0f, wheel_y, (float)SCREEN_WIDTH, wheel_y);
     }
 
     /* Objects from mouse clicks */

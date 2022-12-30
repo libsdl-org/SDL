@@ -1528,23 +1528,23 @@ static void SDLTest_PrintEvent(SDL_Event *event)
         SDL_Log("SDL EVENT: Keymap changed");
         break;
     case SDL_MOUSEMOTION:
-        SDL_Log("SDL EVENT: Mouse: moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (%" SDL_PRIs32 ",%" SDL_PRIs32 ") in window %" SDL_PRIu32,
+        SDL_Log("SDL EVENT: Mouse: moved to %g,%g (%g,%g) in window %" SDL_PRIu32,
                 event->motion.x, event->motion.y,
                 event->motion.xrel, event->motion.yrel,
                 event->motion.windowID);
         break;
     case SDL_MOUSEBUTTONDOWN:
-        SDL_Log("SDL EVENT: Mouse: button %d pressed at %" SDL_PRIs32 ",%" SDL_PRIs32 " with click count %d in window %" SDL_PRIu32,
+        SDL_Log("SDL EVENT: Mouse: button %d pressed at %g,%g with click count %d in window %" SDL_PRIu32,
                 event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);
         break;
     case SDL_MOUSEBUTTONUP:
-        SDL_Log("SDL EVENT: Mouse: button %d released at %" SDL_PRIs32 ",%" SDL_PRIs32 " with click count %d in window %" SDL_PRIu32,
+        SDL_Log("SDL EVENT: Mouse: button %d released at %g,%g with click count %d in window %" SDL_PRIu32,
                 event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);
         break;
     case SDL_MOUSEWHEEL:
-        SDL_Log("SDL EVENT: Mouse: wheel scrolled %" SDL_PRIs32 " in x and %" SDL_PRIs32 " in y (reversed: %" SDL_PRIu32 ") in window %" SDL_PRIu32,
+        SDL_Log("SDL EVENT: Mouse: wheel scrolled %g in x and %g in y (reversed: %" SDL_PRIu32 ") in window %" SDL_PRIu32,
                 event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
     case SDL_JOYDEVICEADDED:
@@ -2067,9 +2067,9 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
         case SDLK_a:
             if (withControl) {
                 /* Ctrl-A reports absolute mouse position. */
-                int x, y;
+                float x, y;
                 const Uint32 mask = SDL_GetGlobalMouseState(&x, &y);
-                SDL_Log("ABSOLUTE MOUSE: (%d, %d)%s%s%s%s%s\n", x, y,
+                SDL_Log("ABSOLUTE MOUSE: (%g, %g)%s%s%s%s%s\n", x, y,
                         (mask & SDL_BUTTON_LMASK) ? " [LBUTTON]" : "",
                         (mask & SDL_BUTTON_MMASK) ? " [MBUTTON]" : "",
                         (mask & SDL_BUTTON_RMASK) ? " [RBUTTON]" : "",
@@ -2101,7 +2101,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
             char message[256];
             SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
 
-            (void)SDL_snprintf(message, sizeof message, "(%" SDL_PRIs32 ", %" SDL_PRIs32 "), rel (%" SDL_PRIs32 ", %" SDL_PRIs32 ")\n",
+            (void)SDL_snprintf(message, sizeof message, "(%g, %g), rel (%g, %g)\n",
                                lastEvent.x, lastEvent.y, lastEvent.xrel, lastEvent.yrel);
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Last mouse position", message, window);
             break;
@@ -2170,6 +2170,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, in
     int textY = 0;
     const int lineHeight = 10;
     int x, y, w, h;
+    float fx, fy;
     SDL_Rect rect;
     SDL_DisplayMode mode;
     float ddpi, hdpi, vdpi;
@@ -2314,14 +2315,14 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, in
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
 
-    flags = SDL_GetMouseState(&x, &y);
-    (void)SDL_snprintf(text, sizeof text, "SDL_GetMouseState: %d,%d ", x, y);
+    flags = SDL_GetMouseState(&fx, &fy);
+    (void)SDL_snprintf(text, sizeof text, "SDL_GetMouseState: %g,%g ", fx, fy);
     SDLTest_PrintButtonMask(text, sizeof text, flags);
     SDLTest_DrawString(renderer, 0, textY, text);
     textY += lineHeight;
 
-    flags = SDL_GetGlobalMouseState(&x, &y);
-    (void)SDL_snprintf(text, sizeof text, "SDL_GetGlobalMouseState: %d,%d ", x, y);
+    flags = SDL_GetGlobalMouseState(&fx, &fy);
+    (void)SDL_snprintf(text, sizeof text, "SDL_GetGlobalMouseState: %g,%g ", fx, fy);
     SDLTest_PrintButtonMask(text, sizeof text, flags);
     SDLTest_DrawString(renderer, 0, textY, text);
     textY += lineHeight;

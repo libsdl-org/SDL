@@ -204,11 +204,6 @@ static int Emscripten_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-static void Emscripten_WarpMouse(SDL_Window *window, int x, int y)
-{
-    SDL_Unsupported();
-}
-
 static int Emscripten_SetRelativeMouseMode(SDL_bool enabled)
 {
     SDL_Window *window;
@@ -241,7 +236,6 @@ void Emscripten_InitMouse()
     mouse->CreateCursor = Emscripten_CreateCursor;
     mouse->ShowCursor = Emscripten_ShowCursor;
     mouse->FreeCursor = Emscripten_FreeCursor;
-    mouse->WarpMouse = Emscripten_WarpMouse;
     mouse->CreateSystemCursor = Emscripten_CreateSystemCursor;
     mouse->SetRelativeMouseMode = Emscripten_SetRelativeMouseMode;
 

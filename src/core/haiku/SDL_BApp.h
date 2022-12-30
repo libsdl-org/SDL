@@ -254,12 +254,12 @@ class SDL_BApp : public BApplication
             SDL_GetWindowPosition(win, &winPosX, &winPosY);
             int dx = x - (winWidth / 2);
             int dy = y - (winHeight / 2);
-            SDL_SendMouseMotion(0, win, 0, SDL_GetMouse()->relative_mode, dx, dy);
+            SDL_SendMouseMotion(0, win, 0, SDL_GetMouse()->relative_mode, (float)dx, (float)dy);
             set_mouse_position((winPosX + winWidth / 2), (winPosY + winHeight / 2));
             if (!be_app->IsCursorHidden())
                 be_app->HideCursor();
         } else {
-            SDL_SendMouseMotion(0, win, 0, 0, x, y);
+            SDL_SendMouseMotion(0, win, 0, 0, (float)x, (float)y);
             if (SDL_CursorVisible() && be_app->IsCursorHidden())
                 be_app->ShowCursor();
         }

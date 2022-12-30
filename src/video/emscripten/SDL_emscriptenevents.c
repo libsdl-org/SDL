@@ -613,8 +613,7 @@ static EM_BOOL Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEv
 {
     SDL_WindowData *window_data = userData;
     const int isPointerLocked = window_data->has_pointer_lock;
-    int mx, my;
-    static double residualx = 0, residualy = 0;
+    float mx, my;
 
     /* rescale (in case canvas is being scaled)*/
     double client_w, client_h, xscale, yscale;
@@ -623,16 +622,11 @@ static EM_BOOL Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEv
     yscale = window_data->window->h / client_h;
 
     if (isPointerLocked) {
-        residualx += mouseEvent->movementX * xscale;
-        residualy += mouseEvent->movementY * yscale;
-        /* Let slow sub-pixel motion accumulate. Don't lose it. */
-        mx = residualx;
-        residualx -= mx;
-        my = residualy;
-        residualy -= my;
+        mx = (float)(mouseEvent->movementX * xscale);
+        my = (float)(mouseEvent->movementY * yscale);
     } else {
-        mx = mouseEvent->targetX * xscale;
-        my = mouseEvent->targetY * yscale;
+        mx = (float)(mouseEvent->targetX * xscale);
+        my = (float)(mouseEvent->targetY * yscale);
     }
 
     SDL_SendMouseMotion(0, window_data->window, 0, isPointerLocked, mx, my);
@@ -687,16 +681,16 @@ static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseE
 {
     SDL_WindowData *window_data = userData;
 
-    int mx = mouseEvent->targetX, my = mouseEvent->targetY;
     const int isPointerLocked = window_data->has_pointer_lock;
 
     if (!isPointerLocked) {
         /* rescale (in case canvas is being scaled)*/
+        float mx, my;
         double client_w, client_h;
         emscripten_get_element_css_size(window_data->canvas_id, &client_w, &client_h);
 
-        mx = mx * (window_data->window->w / client_w);
-        my = my * (window_data->window->h / client_h);
+        mx = (float)(mouseEvent->targetX * (window_data->window->w / client_w));
+        my = (float)(mouseEvent->targetY * (window_data->window->h / client_h));
         SDL_SendMouseMotion(0, window_data->window, 0, isPointerLocked, mx, my);
     }
 

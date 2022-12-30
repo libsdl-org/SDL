@@ -110,9 +110,6 @@ struct SDL_WaylandInput
 
     uint32_t buttons_pressed;
 
-    double dx_frac;
-    double dy_frac;
-
     struct
     {
         struct xkb_keymap *keymap;

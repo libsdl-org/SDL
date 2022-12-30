@@ -253,7 +253,7 @@ void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::Poin
             SDL_SendMouseButton(0, window, 0, pressed, button);
         }
 
-        SDL_SendMouseMotion(0, window, 0, 0, (int)windowPoint.X, (int)windowPoint.Y);
+        SDL_SendMouseMotion(0, window, 0, 0, windowPoint.X, windowPoint.Y);
     } else {
         SDL_SendTouchMotion(0,
             WINRT_TouchID,
@@ -390,8 +390,8 @@ void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::M
         window,
         0,
         1,
-        SDL_lroundf(mouseDeltaInSDLWindowCoords.X),
-        SDL_lroundf(mouseDeltaInSDLWindowCoords.Y));
+        mouseDeltaInSDLWindowCoords.X,
+        mouseDeltaInSDLWindowCoords.Y);
 }
 
 #endif // SDL_VIDEO_DRIVER_WINRT

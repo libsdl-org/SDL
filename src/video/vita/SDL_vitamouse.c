@@ -74,7 +74,7 @@ void VITA_PollMouse(void)
                 prev_buttons = m_reports[i].buttons;
 
                 if (m_reports[i].rel_x || m_reports[i].rel_y) {
-                    SDL_SendMouseMotion(0, Vita_Window, 0, 1, m_reports[i].rel_x, m_reports[i].rel_y);
+                    SDL_SendMouseMotion(0, Vita_Window, 0, 1, (float)m_reports[i].rel_x, (float)m_reports[i].rel_y);
                 }
             }
         }

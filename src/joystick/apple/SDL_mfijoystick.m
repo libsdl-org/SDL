@@ -921,7 +921,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 for (id key in controller.physicalInputProfile.axes) {
                     GCControllerAxisInput *axis = controller.physicalInputProfile.axes[key];
                     if (axis.value != 0.0f)
-                        NSLog(@"Axis %@ = %.2f\n", key, axis.value);
+                        NSLog(@"Axis %@ = %g\n", key, axis.value);
                 }
             }
         }

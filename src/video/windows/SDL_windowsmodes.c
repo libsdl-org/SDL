@@ -586,38 +586,46 @@ int WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
  */
 void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut)
 {
+    POINT pt = { 0, 0 };
+    WIN_ScreenPointFromSDLFloat((float)*x, (float)*y, &pt.x, &pt.y, dpiOut);
+    *x = pt.x;
+    *y = pt.y;
+}
+
+void WIN_ScreenPointFromSDLFloat(float x, float y, LONG *xOut, LONG *yOut, int *dpiOut)
+{
     const SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
     const SDL_VideoData *videodata;
     int displayIndex;
     SDL_Rect bounds;
     float ddpi, hdpi, vdpi;
-    int x_sdl, y_sdl;
     SDL_Point point;
-    point.x = *x;
-    point.y = *y;
+
+    point.x = (int)x;
+    point.y = (int)y;
 
     if (dpiOut) {
         *dpiOut = 96;
     }
 
     if (videodevice == NULL || !videodevice->driverdata) {
-        return;
+        goto passthrough;
     }
 
     videodata = (SDL_VideoData *)videodevice->driverdata;
     if (!videodata->dpi_scaling_enabled) {
-        return;
+        goto passthrough;
     }
 
     /* Can't use MonitorFromPoint for this because we currently have SDL coordinates, not pixels */
     displayIndex = SDL_GetDisplayIndexForPoint(&point);
 
     if (displayIndex < 0) {
-        return;
+        goto passthrough;
     }
 
     if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) < 0) {
-        return;
+        goto passthrough;
     }
 
     if (dpiOut) {
@@ -625,15 +633,18 @@ void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut)
     }
 
     /* Undo the DPI-scaling within the monitor bounds to convert back to pixels */
-    x_sdl = *x;
-    y_sdl = *y;
-    *x = bounds.x + MulDiv(x_sdl - bounds.x, (int)ddpi, 96);
-    *y = bounds.y + MulDiv(y_sdl - bounds.y, (int)ddpi, 96);
+    *xOut = bounds.x + SDL_lroundf(((x - bounds.x) * ddpi) / 96.0f);
+    *yOut = bounds.y + SDL_lroundf(((y - bounds.y) * ddpi) / 96.0f);
 
 #ifdef HIGHDPI_DEBUG_VERBOSE
-    SDL_Log("WIN_ScreenPointFromSDL: (%d, %d) points -> (%d x %d) pixels, using %d DPI monitor",
-            x_sdl, y_sdl, *x, *y, (int)ddpi);
+    SDL_Log("WIN_ScreenPointFromSDL: (%g, %g) points -> (%d x %d) pixels, using %g DPI monitor",
+            x, y, *xOut, *yOut, ddpi);
 #endif
+    return;
+
+passthrough:
+    *xOut = SDL_lroundf(x);
+    *yOut = SDL_lroundf(y);
 }
 
 /**
@@ -644,6 +655,14 @@ void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut)
  */
 void WIN_ScreenPointToSDL(int *x, int *y)
 {
+    SDL_FPoint pt;
+    WIN_ScreenPointToSDLFloat(*x, *y, &pt.x, &pt.y);
+    *x = SDL_lroundf(pt.x);
+    *y = SDL_lroundf(pt.y);
+}
+
+void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut)
+{
     const SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
     const SDL_VideoData *videodata;
     POINT point;
@@ -651,7 +670,6 @@ void WIN_ScreenPointToSDL(int *x, int *y)
     int i, displayIndex;
     SDL_Rect bounds;
     float ddpi, hdpi, vdpi;
-    int x_pixels, y_pixels;
 
     if (videodevice == NULL || !videodevice->driverdata) {
         return;
@@ -659,11 +677,13 @@ void WIN_ScreenPointToSDL(int *x, int *y)
 
     videodata = (SDL_VideoData *)videodevice->driverdata;
     if (!videodata->dpi_scaling_enabled) {
+        *xOut = (float)x;
+        *yOut = (float)y;
         return;
     }
 
-    point.x = *x;
-    point.y = *y;
+    point.x = x;
+    point.y = y;
     monitor = MonitorFromPoint(point, MONITOR_DEFAULTTONEAREST);
 
     /* Search for the corresponding SDL monitor */
@@ -684,14 +704,12 @@ void WIN_ScreenPointToSDL(int *x, int *y)
     }
 
     /* Convert the point's offset within the monitor from pixels to DPI-scaled points */
-    x_pixels = *x;
-    y_pixels = *y;
-    *x = bounds.x + MulDiv(x_pixels - bounds.x, 96, (int)ddpi);
-    *y = bounds.y + MulDiv(y_pixels - bounds.y, 96, (int)ddpi);
+    *xOut = (float)bounds.x + ((float)(x - bounds.x) * 96.0f) / ddpi;
+    *yOut = (float)bounds.y + ((float)(y - bounds.y) * 96.0f) / ddpi;
 
 #ifdef HIGHDPI_DEBUG_VERBOSE
-    SDL_Log("WIN_ScreenPointToSDL: (%d, %d) pixels -> (%d x %d) points, using %d DPI monitor",
-            x_pixels, y_pixels, *x, *y, (int)ddpi);
+    SDL_Log("WIN_ScreenPointToSDL: (%d, %d) pixels -> (%g x %g) points, using %g DPI monitor",
+            x, y, *xOut, *yOut, ddpi);
 #endif
 }
 

@@ -1304,7 +1304,7 @@ SDL_GetWindowPixelFormat(SDL_Window *window)
 
 static void SDL_RestoreMousePosition(SDL_Window *window)
 {
-    int x, y;
+    float x, y;
 
     if (window == SDL_GetMouseFocus()) {
         SDL_GetMouseState(&x, &y);
@@ -2992,7 +2992,7 @@ void SDL_OnWindowFocusGained(SDL_Window *window)
     if (mouse && mouse->relative_mode) {
         SDL_SetMouseFocus(window);
         if (mouse->relative_mode_warp) {
-            SDL_PerformWarpMouseInWindow(window, window->w / 2, window->h / 2, SDL_TRUE);
+            SDL_PerformWarpMouseInWindow(window, (float)window->w / 2.0f, (float)window->h / 2.0f, SDL_TRUE);
         }
     }
 

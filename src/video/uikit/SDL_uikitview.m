@@ -158,7 +158,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         point.x -= origin.x;
         point.y -= origin.y;
 
-        SDL_SendMouseMotion(0, sdlwindow, 0, 0, (int)point.x, (int)point.y);
+        SDL_SendMouseMotion(0, sdlwindow, 0, 0, point.x, point.y);
     }
     return [UIPointerRegion regionWithRect:self.bounds identifier:nil];
 }
