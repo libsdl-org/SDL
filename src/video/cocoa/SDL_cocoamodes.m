@@ -265,7 +265,7 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
 
     /* see GetDisplayModeRefreshRate() */
     {
-        mode->refresh_rate_numerator = refreshRate;
+        mode->refresh_rate_numerator = refreshrate;
         mode->refresh_rate_denominator = 1;
         if (link != NULL) {
             CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
