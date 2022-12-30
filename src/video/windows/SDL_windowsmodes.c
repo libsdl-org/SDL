@@ -181,7 +181,8 @@ static SDL_bool WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_D
     mode->format = SDL_PIXELFORMAT_UNKNOWN;
     mode->w = data->DeviceMode.dmPelsWidth;
     mode->h = data->DeviceMode.dmPelsHeight;
-    mode->refresh_rate = data->DeviceMode.dmDisplayFrequency;
+    mode->refresh_rate_numerator = data->DeviceMode.dmDisplayFrequency;
+    mode->refresh_rate_denominator = 1;
 
     /* Fill in the mode information */
     WIN_UpdateDisplayMode(_this, deviceName, index, mode);

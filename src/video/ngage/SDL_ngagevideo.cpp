@@ -151,7 +151,8 @@ int NGAGE_VideoInit(_THIS)
     mode.format = SDL_PIXELFORMAT_RGB444;
     mode.w = 176;
     mode.h = 208;
-    mode.refresh_rate = 0;
+    mode.refresh_rate_numerator = 0;
+    mode.refresh_rate_denominator = 1;
     mode.driverdata = NULL;
     if (SDL_AddBasicVideoDisplay(&mode) < 0) {
         return -1;

@@ -262,7 +262,8 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
     mode->format = format;
     mode->w = width;
     mode->h = height;
-    mode->refresh_rate = refreshrate;
+    mode->refresh_rate_numerator = refreshrate;
+    mode->refresh_rate_denominator = 1;
     mode->driverdata = data;
     return SDL_TRUE;
 }

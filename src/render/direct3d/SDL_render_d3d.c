@@ -300,7 +300,13 @@ static int D3D_ActivateRenderer(SDL_Renderer *renderer)
             SDL_GetWindowDisplayMode(window, &fullscreen_mode);
             data->pparams.Windowed = FALSE;
             data->pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
-            data->pparams.FullScreen_RefreshRateInHz = fullscreen_mode.refresh_rate;
+            {
+                int rr = 0;
+                if (fullscreen_mode.refresh_rate_denominator) {
+                    rr = fullscreen_mode.refresh_rate_numerator / fullscreen_mode.refresh_rate_denominator;
+                }
+                data->pparams.FullScreen_RefreshRateInHz = rr;
+            }
         } else {
             data->pparams.Windowed = TRUE;
             data->pparams.BackBufferFormat = D3DFMT_UNKNOWN;

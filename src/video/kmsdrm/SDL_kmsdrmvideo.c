@@ -483,7 +483,8 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display,
     target.w = width;
     target.h = height;
     target.format = 0; /* Will use the default mode format. */
-    target.refresh_rate = refresh_rate;
+    target.refresh_rate_numerator = refresh_rate;
+    target.refresh_rate_denominator = 1;
     target.driverdata = 0; /* Initialize to 0 */
 
     if (!SDL_GetClosestDisplayMode(SDL_atoi(display->name), &target, &closest)) {
@@ -852,7 +853,8 @@ static void KMSDRM_AddDisplay(_THIS, drmModeConnector *connector, drmModeRes *re
     display.driverdata = dispdata;
     display.desktop_mode.w = dispdata->mode.hdisplay;
     display.desktop_mode.h = dispdata->mode.vdisplay;
-    display.desktop_mode.refresh_rate = dispdata->mode.vrefresh;
+    display.desktop_mode.refresh_rate_numerator = dispdata->mode.vrefresh;
+    display.desktop_mode.refresh_rate_denominator = 1;
     display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
     display.desktop_mode.driverdata = modedata;
     display.current_mode = display.desktop_mode;
@@ -1163,7 +1165,8 @@ int KMSDRM_CreateSurfaces(_THIS, SDL_Window *window)
 
     display->current_mode.w = dispdata->mode.hdisplay;
     display->current_mode.h = dispdata->mode.vdisplay;
-    display->current_mode.refresh_rate = dispdata->mode.vrefresh;
+    display->current_mode.refresh_rate_numerator = dispdata->mode.vrefresh;
+    display->current_mode.refresh_rate_denominator = 1;
     display->current_mode.format = SDL_PIXELFORMAT_ARGB8888;
 
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
@@ -1276,7 +1279,8 @@ void KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 
         mode.w = conn->modes[i].hdisplay;
         mode.h = conn->modes[i].vdisplay;
-        mode.refresh_rate = conn->modes[i].vrefresh;
+        mode.refresh_rate_numerator = conn->modes[i].vrefresh;
+        mode.refresh_rate_denominator = 1;
         mode.format = SDL_PIXELFORMAT_ARGB8888;
         mode.driverdata = modedata;
 

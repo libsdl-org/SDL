@@ -358,6 +358,13 @@ static void SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window *window
     SDL_free(data);
 }
 
+static double get_refresh_rate(const SDL_DisplayMode *dm) {
+    if (dm->refresh_rate_denominator) {
+        return (double) dm->refresh_rate_numerator / (double) dm->refresh_rate_denominator;
+    }
+    return 0.0;
+}
+
 static int SDLCALL cmpmodes(const void *A, const void *B)
 {
     const SDL_DisplayMode *a = (const SDL_DisplayMode *)A;
@@ -372,10 +379,19 @@ static int SDLCALL cmpmodes(const void *A, const void *B)
         return SDL_BITSPERPIXEL(b->format) - SDL_BITSPERPIXEL(a->format);
     } else if (SDL_PIXELLAYOUT(a->format) != SDL_PIXELLAYOUT(b->format)) {
         return SDL_PIXELLAYOUT(b->format) - SDL_PIXELLAYOUT(a->format);
-    } else if (a->refresh_rate != b->refresh_rate) {
-        return b->refresh_rate - a->refresh_rate;
     }
-    return 0;
+
+    {
+        double a_rr = get_refresh_rate(a);
+        double b_rr = get_refresh_rate(b);
+
+        if (a_rr < b_rr) {
+            return -1;
+        } else if (a_rr > b_rr) {
+            return 1;
+        }
+        return 0;
+    }
 }
 
 static int SDL_UninitializedVideo()
@@ -891,7 +907,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
                                                             SDL_DisplayMode *closest)
 {
     Uint32 target_format;
-    int target_refresh_rate;
+    double target_refresh_rate;
     int i;
     SDL_DisplayMode *current, *match;
 
@@ -908,10 +924,10 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
     }
 
     /* Default to the desktop refresh rate */
-    if (mode->refresh_rate) {
-        target_refresh_rate = mode->refresh_rate;
+    if (mode->refresh_rate_numerator) {
+        target_refresh_rate = get_refresh_rate(mode);
     } else {
-        target_refresh_rate = display->desktop_mode.refresh_rate;
+        target_refresh_rate = get_refresh_rate(&display->desktop_mode);
     }
 
     match = NULL;
@@ -947,11 +963,17 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
             }
             continue;
         }
-        if (current->refresh_rate != match->refresh_rate) {
-            /* Sorted highest refresh to lowest */
-            if (current->refresh_rate >= target_refresh_rate) {
-                match = current;
+
+        {
+            double c_rr = get_refresh_rate(current);
+            double m_rr = get_refresh_rate(match);
+            if (c_rr != m_rr) {
+                /* Sorted highest refresh to lowest */
+                if (c_rr >= target_refresh_rate) {
+                    match = current;
+                }
             }
+
         }
     }
     if (match) {
@@ -967,10 +989,12 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
             closest->w = mode->w;
             closest->h = mode->h;
         }
-        if (match->refresh_rate) {
-            closest->refresh_rate = match->refresh_rate;
+        if (match->refresh_rate_numerator) {
+            closest->refresh_rate_numerator = match->refresh_rate_numerator;
+            closest->refresh_rate_denominator = match->refresh_rate_denominator;
         } else {
-            closest->refresh_rate = mode->refresh_rate;
+            closest->refresh_rate_numerator = mode->refresh_rate_numerator;
+            closest->refresh_rate_denominator = mode->refresh_rate_denominator;
         }
         closest->driverdata = match->driverdata;
 
@@ -1029,8 +1053,9 @@ static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, const SDL_Dis
         if (!display_mode.h) {
             display_mode.h = display->current_mode.h;
         }
-        if (!display_mode.refresh_rate) {
-            display_mode.refresh_rate = display->current_mode.refresh_rate;
+        if (!display_mode.refresh_rate_numerator) {
+            display_mode.refresh_rate_numerator = display->current_mode.refresh_rate_numerator;
+            display_mode.refresh_rate_denominator = display->current_mode.refresh_rate_denominator;
         }
 
         /* Get a good video mode, the closest one possible */

@@ -220,10 +220,11 @@ static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRC
                 mode->w = info->width;
                 mode->h = info->height;
             }
-            mode->refresh_rate = CalculateXRandRRefreshRate(info);
+            mode->refresh_rate_numerator = CalculateXRandRRefreshRate(info);
+            mode->refresh_rate_denominator = 1;
             ((SDL_DisplayModeData *)mode->driverdata)->xrandr_mode = modeID;
 #ifdef X11MODES_DEBUG
-            printf("XRandR mode %d: %dx%d@%dHz\n", (int)modeID, mode->w, mode->h, mode->refresh_rate);
+            printf("XRandR mode %d: %dx%d@(%d / %d)Hz\n", (int)modeID, mode->w, mode->h, mode->refresh_rate_numerator, mode->refresh_rate_denominator);
 #endif
             return SDL_TRUE;
         }
@@ -574,7 +575,8 @@ static int X11_InitModes_StdXlib(_THIS)
     mode.w = WidthOfScreen(screen);
     mode.h = HeightOfScreen(screen);
     mode.format = pixelformat;
-    mode.refresh_rate = 0; /* don't know it, sorry. */
+    mode.refresh_rate_numerator = 0;
+    mode.refresh_rate_denominator = 1; /* don't know it, sorry. */
 
     displaydata = (SDL_DisplayData *)SDL_calloc(1, sizeof(*displaydata));
     if (displaydata == NULL) {

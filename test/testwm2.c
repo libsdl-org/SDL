@@ -107,8 +107,8 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
             return;
         }
 
-        (void)SDL_snprintf(text, sizeof text, "%d: %dx%d@%dHz",
-                           i, mode.w, mode.h, mode.refresh_rate);
+        (void)SDL_snprintf(text, sizeof text, "%d: %dx%d@(%d / %d)Hz",
+                           i, mode.w, mode.h, mode.refresh_rate_numerator, mode.refresh_rate_denominator);
 
         /* Update column width */
         text_length = (int)SDL_strlen(text);
