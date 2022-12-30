@@ -1914,23 +1914,6 @@ int SDL_InitGamepads(void)
     return 0;
 }
 
-SDL_bool SDL_HasGamepads(void)
-{
-    SDL_bool retval = SDL_FALSE;
-    SDL_JoystickID *joysticks = SDL_GetJoysticks(NULL);
-    if (joysticks) {
-        int i;
-        for (i = 0; joysticks[i]; ++i) {
-            if (SDL_IsGamepad(joysticks[i])) {
-                retval = SDL_TRUE;
-                break;
-            }
-        }
-        SDL_free(joysticks);
-    }
-    return retval;
-}
-
 SDL_JoystickID *SDL_GetGamepads(int *count)
 {
     int num_joysticks = 0;

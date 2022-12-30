@@ -51,7 +51,6 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 static SDL_mutex *SDL_sensor_lock = NULL; /* This needs to support recursive locks */
 static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
 static SDL_atomic_t SDL_last_sensor_instance_id SDL_GUARDED_BY(SDL_sensor_lock);
-static SDL_bool SDL_updating_sensor SDL_GUARDED_BY(SDL_sensor_lock) = SDL_FALSE;
 
 void SDL_LockSensors(void) SDL_ACQUIRE(SDL_sensor_lock)
 {
@@ -87,19 +86,21 @@ int SDL_InitSensors(void)
     return status;
 }
 
-SDL_bool SDL_HasSensors(void)
+SDL_bool SDL_SensorsOpened(void)
 {
-    int i;
-    SDL_bool retval = SDL_FALSE;
+    SDL_bool opened;
+
     SDL_LockSensors();
-    for (i = 0; i < SDL_arraysize(SDL_sensor_drivers); ++i) {
-        if (SDL_sensor_drivers[i]->GetCount() > 0) {
-            retval = SDL_TRUE;
-            break;
+    {
+        if (SDL_sensors != NULL) {
+            opened = SDL_TRUE;
+        } else {
+            opened = SDL_FALSE;
         }
     }
     SDL_UnlockSensors();
-    return retval;
+
+    return opened;
 }
 
 SDL_SensorID *SDL_GetSensors(int *count)
@@ -413,11 +414,6 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
         return;
     }
 
-    if (SDL_updating_sensor) {
-        SDL_UnlockSensors();
-        return;
-    }
-
     sensor->driver->Close(sensor);
     sensor->hwdata = NULL;
 
@@ -450,9 +446,6 @@ void SDL_QuitSensors(void)
     int i;
 
     SDL_LockSensors();
-
-    /* Make sure we're not getting called in the middle of updating sensors */
-    SDL_assert(!SDL_updating_sensor);
 
     /* Stop the event polling */
     while (SDL_sensors) {
@@ -510,7 +503,7 @@ int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_tim
 void SDL_UpdateSensors(void)
 {
     int i;
-    SDL_Sensor *sensor, *next;
+    SDL_Sensor *sensor;
 
     if (!SDL_WasInit(SDL_INIT_SENSOR)) {
         return;
@@ -518,26 +511,8 @@ void SDL_UpdateSensors(void)
 
     SDL_LockSensors();
 
-    if (SDL_updating_sensor) {
-        /* The sensors are already being updated */
-        SDL_UnlockSensors();
-        return;
-    }
-
-    SDL_updating_sensor = SDL_TRUE;
-
     for (sensor = SDL_sensors; sensor; sensor = sensor->next) {
         sensor->driver->Update(sensor);
-    }
-
-    SDL_updating_sensor = SDL_FALSE;
-
-    /* If any sensors were closed while updating, free them here */
-    for (sensor = SDL_sensors; sensor; sensor = next) {
-        next = sensor->next;
-        if (sensor->ref_count <= 0) {
-            SDL_CloseSensor(sensor);
-        }
     }
 
     /* this needs to happen AFTER walking the sensor list above, so that any

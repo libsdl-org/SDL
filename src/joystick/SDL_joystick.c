@@ -332,19 +332,21 @@ int SDL_InitJoysticks(void)
     return status;
 }
 
-SDL_bool SDL_HasJoysticks(void)
+SDL_bool SDL_JoysticksOpened(void)
 {
-    int i;
-    SDL_bool retval = SDL_FALSE;
+    SDL_bool opened;
+
     SDL_LockJoysticks();
-    for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
-        if (SDL_joystick_drivers[i]->GetCount() > 0) {
-            retval = SDL_TRUE;
-            break;
+    {
+        if (SDL_joysticks != NULL) {
+            opened = SDL_TRUE;
+        } else {
+            opened = SDL_FALSE;
         }
     }
     SDL_UnlockJoysticks();
-    return retval;
+
+    return opened;
 }
 
 SDL_JoystickID *SDL_GetJoysticks(int *count)

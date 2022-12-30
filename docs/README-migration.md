@@ -117,7 +117,7 @@ SDL_gamecontroller.h has been renamed SDL_gamepad.h, and all APIs have been rena
 
 The SDL_GAMEPADADDED event now provides the joystick instance ID in the which member of the cdevice event structure.
 
-The functions SDL_HasGamepads(), SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() have been added to directly query the list of available gamepads.
+The functions SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() have been added to directly query the list of available gamepads.
 
 SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_GAMEPADSENSORUPDATE events.
 
@@ -295,7 +295,7 @@ Rather than iterating over joysticks using device index, there is a new function
 
 The SDL_JOYDEVICEADDED event now provides the joystick instance ID in the `which` member of the jdevice event structure.
 
-The functions SDL_HasJoysticks(), SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystickInstancePath(), SDL_GetJoystickInstancePlayerIndex(), SDL_GetJoystickInstanceGUID(), SDL_GetJoystickInstanceVendor(), SDL_GetJoystickInstanceProduct(), SDL_GetJoystickInstanceProductVersion(), and SDL_GetJoystickInstanceType() have been added to directly query the list of available joysticks.
+The functions SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystickInstancePath(), SDL_GetJoystickInstancePlayerIndex(), SDL_GetJoystickInstanceGUID(), SDL_GetJoystickInstanceVendor(), SDL_GetJoystickInstanceProduct(), SDL_GetJoystickInstanceProductVersion(), and SDL_GetJoystickInstanceType() have been added to directly query the list of available joysticks.
 
 SDL_AttachVirtualJoystick() and SDL_AttachVirtualJoystickEx() now return the joystick instance ID instead of a device index, and return 0 if there was an error.
 
@@ -354,7 +354,7 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
-* SDL_NumJoysticks - replaced with SDL_HasJoysticks() and SDL_GetJoysticks()
+* SDL_NumJoysticks - replaced with SDL_GetJoysticks()
  
 ## SDL_keycode.h
 
@@ -698,7 +698,7 @@ The following functions have been renamed:
 
 The following functions have been removed:
 * SDL_LockSensors()
-* SDL_NumSensors() - replaced with SDL_HasSensors() and SDL_GetSensors()
+* SDL_NumSensors() - replaced with SDL_GetSensors()
 * SDL_SensorGetDeviceInstanceID()
 * SDL_SensorGetDeviceName() - replaced with SDL_GetSensorInstanceName()
 * SDL_SensorGetDeviceNonPortableType() - replaced with SDL_GetSensorInstanceNonPortableType()
