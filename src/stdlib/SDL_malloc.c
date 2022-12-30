@@ -3582,9 +3582,14 @@ static void internal_malloc_stats(mstate m) {
       }
     }
     POSTACTION(m); /* drop lock */
+#ifndef LACKS_STDIO_H
     fprintf(stderr, "max system bytes = %10lu\n", (unsigned long)(maxfp));
     fprintf(stderr, "system bytes     = %10lu\n", (unsigned long)(fp));
     fprintf(stderr, "in use bytes     = %10lu\n", (unsigned long)(used));
+#else
+    (void)used;
+    (void)maxfp;
+#endif
   }
 }
 #endif /* NO_MALLOC_STATS */
