@@ -964,6 +964,9 @@
     <ClCompile Include="..\..\src\libm\s_floor.c">
       <Filter>libm</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libm\s_modf.c">
+      <Filter>libm</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libm\s_scalbn.c">
       <Filter>libm</Filter>
     </ClCompile>

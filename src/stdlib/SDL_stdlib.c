@@ -323,6 +323,28 @@ float SDL_log10f(float x)
 }
 
 double
+SDL_modf(double x, double *y)
+{
+#if defined(HAVE_MODF)
+    return modf(x, y);
+#else
+    return SDL_uclibc_modf(x, y);
+#endif
+}
+
+float SDL_modff(float x, float *y)
+{
+#if defined(HAVE_MODFF)
+    return modff(x, y);
+#else
+    double double_result, double_y;
+    double_result = SDL_modf((double)x, &double_y);
+    *y = (float)double_y;
+    return (float)double_result;
+#endif
+}
+
+double
 SDL_pow(double x, double y)
 {
 #if defined(HAVE_POW)

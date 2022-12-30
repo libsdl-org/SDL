@@ -887,3 +887,5 @@
 #define SDL_wcsstr SDL_wcsstr_REAL
 
 /* New API symbols are added at the end */
+#define SDL_modf SDL_modf_REAL
+#define SDL_modff SDL_modff_REAL

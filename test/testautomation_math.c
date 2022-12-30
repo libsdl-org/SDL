@@ -1272,6 +1272,24 @@ log10_regularCases(void *args)
     return helper_dtod_inexact("Log10", SDL_log10, regular_cases, SDL_arraysize(regular_cases));
 }
 
+/* SDL_modf tests functions */
+
+static int
+modf_baseCases(void *args)
+{
+    double fractional, integral;
+
+    fractional = SDL_modf(1.25, &integral);
+    SDLTest_AssertCheck(integral == 1.0,
+                        "modf(%f), expected integral %f, got %f",
+                        1.25, 1.0, integral);
+    SDLTest_AssertCheck(fractional == 0.25,
+                        "modf(%f), expected fractional %f, got %f",
+                        1.25, 0.25, fractional);
+
+    return TEST_COMPLETED;
+}
+
 /* SDL_pow tests functions */
 
 /* Tests with positive and negative infinities as exponents */
@@ -3004,6 +3022,13 @@ static const SDLTest_TestCaseReference log10TestRegular = {
     "Checks a set of regular values", TEST_ENABLED
 };
 
+/* SDL_modf test cases */
+
+static const SDLTest_TestCaseReference modfTestBase = {
+    (SDLTest_TestCaseFp)modf_baseCases, "modf_baseCases",
+    "Checks the base cases", TEST_ENABLED
+};
+
 /* SDL_pow test cases */
 
 static const SDLTest_TestCaseReference powTestExpInf1 = {
@@ -3314,6 +3339,8 @@ static const SDLTest_TestCaseReference *mathTests[] = {
 
     &log10TestLimit, &log10TestNan,
     &log10TestBase, &log10TestRegular,
+
+    &modfTestBase,
 
     &powTestExpInf1, &powTestExpInf2, &powTestExpInf3,
     &powTestBaseInf1, &powTestBaseInf2,
