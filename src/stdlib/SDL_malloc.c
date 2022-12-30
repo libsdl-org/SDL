@@ -577,7 +577,9 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #endif /* _WIN32_WCE */
 #endif  /* WIN32 */
 #ifdef WIN32
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #include <tchar.h>
 #define HAVE_MMAP 1
@@ -589,6 +591,7 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define LACKS_STRINGS_H
 #define LACKS_SYS_TYPES_H
 #define LACKS_ERRNO_H
+#define LACKS_FCNTL_H
 #define LACKS_SCHED_H
 #ifndef MALLOC_FAILURE_ACTION
 #define MALLOC_FAILURE_ACTION
