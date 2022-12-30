@@ -435,8 +435,6 @@
 #define SDL_HasClipboardText SDL_HasClipboardText_REAL
 #define SDL_HasEvent SDL_HasEvent_REAL
 #define SDL_HasEvents SDL_HasEvents_REAL
-#define SDL_HasGamepads SDL_HasGamepads_REAL
-#define SDL_HasJoysticks SDL_HasJoysticks_REAL
 #define SDL_HasLASX SDL_HasLASX_REAL
 #define SDL_HasLSX SDL_HasLSX_REAL
 #define SDL_HasMMX SDL_HasMMX_REAL
@@ -451,7 +449,6 @@
 #define SDL_HasSSE41 SDL_HasSSE41_REAL
 #define SDL_HasSSE42 SDL_HasSSE42_REAL
 #define SDL_HasScreenKeyboardSupport SDL_HasScreenKeyboardSupport_REAL
-#define SDL_HasSensors SDL_HasSensors_REAL
 #define SDL_HideCursor SDL_HideCursor_REAL
 #define SDL_HideWindow SDL_HideWindow_REAL
 #define SDL_Init SDL_Init_REAL

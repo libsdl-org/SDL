@@ -409,8 +409,6 @@ SDL3_0.0.0 {
     SDL_HasClipboardText;
     SDL_HasEvent;
     SDL_HasEvents;
-    SDL_HasGamepads;
-    SDL_HasJoysticks;
     SDL_HasLASX;
     SDL_HasLSX;
     SDL_HasMMX;
@@ -425,7 +423,6 @@ SDL3_0.0.0 {
     SDL_HasSSE42;
     SDL_HasSSE;
     SDL_HasScreenKeyboardSupport;
-    SDL_HasSensors;
     SDL_HideCursor;
     SDL_HideWindow;
     SDL_Init;

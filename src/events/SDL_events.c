@@ -28,6 +28,9 @@
 #if !SDL_JOYSTICK_DISABLED
 #include "../joystick/SDL_joystick_c.h"
 #endif
+#if !SDL_SENSOR_DISABLED
+#include "../sensor/SDL_sensor_c.h"
+#endif
 #include "../video/SDL_sysvideo.h"
 #include <SDL3/SDL_syswm.h>
 
@@ -99,19 +102,9 @@ static struct
 
 static SDL_bool SDL_update_joysticks = SDL_TRUE;
 
-static void SDL_CalculateShouldUpdateJoysticks(SDL_bool hint_value)
-{
-    if (hint_value &&
-        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventsEnabled())) {
-        SDL_update_joysticks = SDL_TRUE;
-    } else {
-        SDL_update_joysticks = SDL_FALSE;
-    }
-}
-
 static void SDLCALL SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_CalculateShouldUpdateJoysticks(SDL_GetStringBoolean(hint, SDL_TRUE));
+    SDL_update_joysticks = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
 #endif /* !SDL_JOYSTICK_DISABLED */
@@ -120,19 +113,9 @@ static void SDLCALL SDL_AutoUpdateJoysticksChanged(void *userdata, const char *n
 
 static SDL_bool SDL_update_sensors = SDL_TRUE;
 
-static void SDL_CalculateShouldUpdateSensors(SDL_bool hint_value)
-{
-    if (hint_value &&
-        !SDL_disabled_events[SDL_SENSORUPDATE >> 8]) {
-        SDL_update_sensors = SDL_TRUE;
-    } else {
-        SDL_update_sensors = SDL_FALSE;
-    }
-}
-
 static void SDLCALL SDL_AutoUpdateSensorsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_CalculateShouldUpdateSensors(SDL_GetStringBoolean(hint, SDL_TRUE));
+    SDL_update_sensors = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
 #endif /* !SDL_SENSOR_DISABLED */
@@ -908,13 +891,7 @@ static SDL_bool SDL_events_need_periodic_poll()
     SDL_bool need_periodic_poll = SDL_FALSE;
 
 #if !SDL_JOYSTICK_DISABLED
-    need_periodic_poll =
-        SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks;
-#endif
-
-#if !SDL_SENSOR_DISABLED
-    need_periodic_poll = need_periodic_poll ||
-                         (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors);
+    need_periodic_poll = SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks;
 #endif
 
     return need_periodic_poll;
@@ -997,12 +974,12 @@ static SDL_bool SDL_events_need_polling()
     SDL_bool need_polling = SDL_FALSE;
 
 #if !SDL_JOYSTICK_DISABLED
-    need_polling = SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks && SDL_HasJoysticks();
+    need_polling = SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks && SDL_JoysticksOpened();
 #endif
 
 #if !SDL_SENSOR_DISABLED
     need_polling = need_polling ||
-                   (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && SDL_HasSensors());
+                   (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && SDL_SensorsOpened());
 #endif
 
     return need_polling;
@@ -1292,13 +1269,6 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
                 SDL_FlushEvent(type);
             }
         }
-
-#if !SDL_JOYSTICK_DISABLED
-        SDL_CalculateShouldUpdateJoysticks(SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_TRUE));
-#endif
-#if !SDL_SENSOR_DISABLED
-        SDL_CalculateShouldUpdateSensors(SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_TRUE));
-#endif
 
         /* turn off drag'n'drop support if we've disabled the events.
            This might change some UI details at the OS level. */

@@ -129,17 +129,6 @@ typedef enum
 /* Function prototypes */
 
 /**
- * Return whether there are sensors connected
- *
- * \returns SDL_TRUE if there are sensors connected, SDL_FALSE otherwise.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetSensors
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasSensors(void);
-
-/**
  * Get a list of currently connected sensors.
  *
  * \param count a pointer filled in with the number of sensors returned

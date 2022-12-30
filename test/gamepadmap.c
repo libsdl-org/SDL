@@ -700,12 +700,28 @@ WatchJoystick(SDL_Joystick *joystick)
     SDL_DestroyRenderer(screen);
 }
 
+static SDL_bool HasJoysticks()
+{
+    int num_joysticks = 0;
+    SDL_JoystickID *joysticks;
+
+    joysticks = SDL_GetJoysticks(&num_joysticks);
+    if (joysticks) {
+        SDL_free(joysticks);
+    }
+    if (num_joysticks > 0) {
+        return SDL_TRUE;
+    } else {
+        return SDL_FALSE;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     const char *name;
     int i;
-    SDL_JoystickID *joysticks;
     int num_joysticks = 0;
+    SDL_JoystickID *joysticks;
     int joystick_index;
     SDL_Joystick *joystick = NULL;
 
@@ -739,7 +755,7 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    while (!done && !SDL_HasJoysticks()) {
+    while (!done && !HasJoysticks()) {
         SDL_Event event;
 
         while (SDL_PollEvent(&event) > 0) {
@@ -796,10 +812,11 @@ int main(int argc, char *argv[])
     }
     if (joysticks && joystick_index < num_joysticks) {
         joystick = SDL_OpenJoystick(joysticks[joystick_index]);
+        if (joystick == NULL) {
+            SDL_Log("Couldn't open joystick %d: %s\n", joystick_index, SDL_GetError());
+        }
     }
-    if (joystick == NULL) {
-        SDL_Log("Couldn't open joystick %d: %s\n", joystick_index, SDL_GetError());
-    } else {
+    if (joystick != NULL) {
         WatchJoystick(joystick);
         SDL_CloseJoystick(joystick);
     }

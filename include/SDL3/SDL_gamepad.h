@@ -275,17 +275,6 @@ extern DECLSPEC char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID gui
 extern DECLSPEC char * SDLCALL SDL_GetGamepadMapping(SDL_Gamepad *gamepad);
 
 /**
- * Return whether there are gamepads connected
- *
- * \returns SDL_TRUE if there are gamepads connected, SDL_FALSE otherwise.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetGamepads
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasGamepads(void);
-
-/**
  * Get a list of currently connected gamepads.
  *
  * \param count a pointer filled in with the number of gamepads returned
