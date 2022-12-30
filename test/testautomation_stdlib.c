@@ -153,6 +153,18 @@ int stdlib_snprintf(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
     SDLTest_AssertCheck(result == 6, "Check result value, expected: 6, got: %d", result);
 
+    result = SDL_snprintf(text, sizeof(text), "%g", 100.0);
+    expected = "100";
+    SDLTest_AssertPass("Call to SDL_snprintf(\"%%g\", 100.0)");
+    SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
+    SDLTest_AssertCheck(result == 3, "Check result value, expected: 3, got: %d", result);
+
+    result = SDL_snprintf(text, sizeof(text), "%g", 100.75);
+    expected = "100.75";
+    SDLTest_AssertPass("Call to SDL_snprintf(\"%%g\", 100.75)");
+    SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
+    SDLTest_AssertCheck(result == 6, "Check result value, expected: 6, got: %d", result);
+
     size = 64;
     result = SDL_snprintf(text, sizeof(text), "%zu %s", size, "test");
     expected = "64 test";

@@ -1675,6 +1675,29 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
     return length;
 }
 
+static size_t
+SDL_TrimTrailingFractionalZeroes(char *text, size_t start, size_t length)
+{
+    size_t i, j;
+
+    for (i = start; i < length; ++i) {
+        if (text[i] == '.' || text[i] == ',') {
+            for (j = length - 1; j > i; --j) {
+                if (text[j] == '0') {
+                    --length;
+                } else {
+                    break;
+                }
+            }
+            if (j == i) {
+                --length;
+            }
+            break;
+        }
+    }
+    return length;
+}
+
 /* NOLINTNEXTLINE(readability-non-const-parameter) */
 int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
 {
@@ -1856,6 +1879,14 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *f
                     length += SDL_PrintFloat(TEXT_AND_LEN_ARGS, &info, va_arg(ap, double));
                     done = SDL_TRUE;
                     break;
+                case 'g':
+                {
+                    size_t starting_length = length;
+                    length += SDL_PrintFloat(TEXT_AND_LEN_ARGS, &info, va_arg(ap, double));
+                    length = SDL_TrimTrailingFractionalZeroes(text, starting_length, length);
+                    done = SDL_TRUE;
+                    break;
+                }
                 case 'S':
                 {
                     /* In practice this is used on Windows for WCHAR strings */
