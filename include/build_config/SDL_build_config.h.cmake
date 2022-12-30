@@ -58,7 +58,7 @@
 #cmakedefine HAVE_ICONV_H 1
 #cmakedefine HAVE_INTTYPES_H 1
 #cmakedefine HAVE_LIMITS_H 1
-//#cmakedefine HAVE_MALLOC_H 1
+#cmakedefine HAVE_MALLOC_H 1
 #cmakedefine HAVE_MATH_H 1
 #cmakedefine HAVE_MEMORY_H 1
 #cmakedefine HAVE_SIGNAL_H 1
@@ -77,7 +77,7 @@
 
 /* C library functions */
 #cmakedefine HAVE_DLOPEN 1
-//#cmakedefine HAVE_MALLOC 1
+#cmakedefine HAVE_MALLOC 1
 #cmakedefine HAVE_CALLOC 1
 #cmakedefine HAVE_REALLOC 1
 #cmakedefine HAVE_FREE 1

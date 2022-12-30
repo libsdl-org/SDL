@@ -33,7 +33,6 @@
 #define LACKS_STDLIB_H
 #define ABORT
 #define USE_LOCKS 1
-#define USE_RECURSIVE_LOCKS 0
 #define USE_DL_PREFIX
 
 /*
