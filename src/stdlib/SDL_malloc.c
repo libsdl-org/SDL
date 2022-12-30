@@ -25,9 +25,9 @@
 #ifndef HAVE_MALLOC
 
 #define FORCEINLINE SDL_INLINE
+#define NO_MALLOC_STATS 1
 
 #define LACKS_SYS_TYPES_H
-#define LACKS_STDIO_H
 #define LACKS_STRINGS_H
 #define LACKS_STRING_H
 #define LACKS_STDLIB_H
@@ -3585,14 +3585,9 @@ static void internal_malloc_stats(mstate m) {
       }
     }
     POSTACTION(m); /* drop lock */
-#ifndef LACKS_STDIO_H
     fprintf(stderr, "max system bytes = %10lu\n", (unsigned long)(maxfp));
     fprintf(stderr, "system bytes     = %10lu\n", (unsigned long)(fp));
     fprintf(stderr, "in use bytes     = %10lu\n", (unsigned long)(used));
-#else
-    (void)used;
-    (void)maxfp;
-#endif
   }
 }
 #endif /* NO_MALLOC_STATS */
