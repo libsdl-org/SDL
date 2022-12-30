@@ -23,6 +23,9 @@
 /* This file contains portable memory management functions for SDL */
 
 #ifndef HAVE_MALLOC
+
+#define FORCEINLINE SDL_INLINE
+
 #define LACKS_SYS_TYPES_H
 #define LACKS_STDIO_H
 #define LACKS_STRINGS_H
