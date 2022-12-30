@@ -171,6 +171,8 @@
 #cmakedefine HAVE_LOG10F 1
 #cmakedefine HAVE_LROUND 1
 #cmakedefine HAVE_LROUNDF 1
+#cmakedefine HAVE_MODF 1
+#cmakedefine HAVE_MODFF 1
 #cmakedefine HAVE_POW 1
 #cmakedefine HAVE_POWF 1
 #cmakedefine HAVE_ROUND 1

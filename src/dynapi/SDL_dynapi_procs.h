@@ -932,3 +932,5 @@ SDL_DYNAPI_PROC(int,SDL_wcsncmp,(const wchar_t *a, const wchar_t *b, size_t c),(
 SDL_DYNAPI_PROC(wchar_t*,SDL_wcsstr,(const wchar_t *a, const wchar_t *b),(a,b),return)
 
 /* New API symbols are added at the end */
+SDL_DYNAPI_PROC(double,SDL_modf,(double a, double *b),(a,b),return)
+SDL_DYNAPI_PROC(float,SDL_modff,(float a, float *b),(a,b),return)

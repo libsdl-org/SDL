@@ -27,16 +27,17 @@
 /* Math routines from uClibc: http://www.uclibc.org */
 
 double SDL_uclibc_atan(double x);
-double SDL_uclibc_atan2(double y, double x);    
-double SDL_uclibc_copysign(double x, double y);       
-double SDL_uclibc_cos(double x);         
+double SDL_uclibc_atan2(double y, double x);
+double SDL_uclibc_copysign(double x, double y);
+double SDL_uclibc_cos(double x);
 double SDL_uclibc_exp(double x);
-double SDL_uclibc_fabs(double x);        
+double SDL_uclibc_fabs(double x);
 double SDL_uclibc_floor(double x);
 double SDL_uclibc_fmod(double x, double y);
 double SDL_uclibc_log(double x);
 double SDL_uclibc_log10(double x);
-double SDL_uclibc_pow(double x, double y);    
+double SDL_uclibc_modf(double x, double *y);
+double SDL_uclibc_pow(double x, double y);
 double SDL_uclibc_scalbn(double x, int n);
 double SDL_uclibc_sin(double x);
 double SDL_uclibc_sqrt(double x);

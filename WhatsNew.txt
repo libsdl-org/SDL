@@ -19,3 +19,4 @@ General:
 * Added SDL_GetTicksNS() to return the number of nanoseconds since the SDL library initialized
 * Added SDL_DelayNS() to specify a delay in nanoseconds, to the highest precision the system will support
 * The timestamp member of the SDL_Event structure is now in nanoseconds, filled in with the time the event was generated, or the time it was queued if that's not available
+* Added SDL_modf() and SDL_modff() to separate the whole and fractional portions of a floating point number
