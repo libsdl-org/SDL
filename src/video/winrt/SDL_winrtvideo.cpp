@@ -256,8 +256,8 @@ static void WINRT_DXGIModeToSDLDisplayMode(const DXGI_MODE_DESC *dxgiMode, SDL_D
     SDL_zerop(sdlMode);
     sdlMode->w = dxgiMode->Width;
     sdlMode->h = dxgiMode->Height;
-    sdlMode->refresh_rate_numerator = dxgiMode->RefreshRate.Numerator / dxgiMode->RefreshRate.Denominator;
-    sdlMode->refresh_rate_denominator = 1;
+    sdlMode->refresh_rate_numerator = dxgiMode->RefreshRate.Numerator;
+    sdlMode->refresh_rate_denominator = dxgiMode->RefreshRate.Denominator;
     sdlMode->format = D3D11_DXGIFormatToSDLPixelFormat(dxgiMode->Format);
 }
 
