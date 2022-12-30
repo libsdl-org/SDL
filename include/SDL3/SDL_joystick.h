@@ -726,7 +726,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumJoystickButtons(SDL_Joystick *joystick);
  * yourself and check the state of the joystick when you want joystick
  * information.
  *
- * \param state whether to process joystick events or not
+ * \param enabled whether to process joystick events or not
  *
  * \since This function is available since SDL 3.0.0.
  *

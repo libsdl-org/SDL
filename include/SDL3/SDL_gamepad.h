@@ -655,7 +655,7 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_GetGamepadJoystick(SDL_Gamepad *gamepa
  * yourself and check the state of the gamepad when you want gamepad
  * information.
  *
- * \param state whether to process gamepad events or not
+ * \param enabled whether to process gamepad events or not
  *
  * \since This function is available since SDL 3.0.0.
  *
