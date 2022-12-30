@@ -361,7 +361,7 @@ SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 #include <windows.h>
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
-    HANDLE lib = LoadLibraryA(fname);
+    HMODULE lib = LoadLibraryA(fname);
     void *retval = NULL;
     if (lib) {
         retval = GetProcAddress(lib, sym);
