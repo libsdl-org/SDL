@@ -128,8 +128,8 @@ int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         Uint64 max_wait;
 
         if (sdldisplay->current_mode.refresh_rate_denominator && sdldisplay->current_mode.refresh_rate_numerator) {
-            int rr = sdldisplay->current_mode.refresh_rate_numerator / sdldisplay->current_mode.refresh_rate_denominator;
-            max_wait = SDL_GetTicksNS() + (SDL_NS_PER_SECOND * 10) / rr;
+            double rr = (double) sdldisplay->current_mode.refresh_rate_numerator / (double) sdldisplay->current_mode.refresh_rate_denominator;
+            max_wait = SDL_GetTicksNS() + (Uint64)((double) (SDL_NS_PER_SECOND * 10) / rr);
         } else {
             max_wait = SDL_GetTicksNS() + SDL_NS_PER_SECOND;
         }
