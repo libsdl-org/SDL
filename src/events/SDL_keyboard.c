@@ -30,8 +30,14 @@
 
 /* Global keyboard information */
 
-#define KEYBOARD_HARDWARE    0x01
-#define KEYBOARD_AUTORELEASE 0x02
+typedef enum
+{
+    KEYBOARD_HARDWARE = 0x01,
+    KEYBOARD_AUTORELEASE = 0x02,
+    KEYBOARD_IGNOREMODIFIERS = 0x04
+} SDL_KeyboardFlags;
+
+#define KEYBOARD_SOURCE_MASK (KEYBOARD_HARDWARE | KEYBOARD_AUTORELEASE)
 
 typedef struct SDL_Keyboard SDL_Keyboard;
 
@@ -789,13 +795,14 @@ void SDL_SetKeyboardFocus(SDL_Window *window)
     }
 }
 
-static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint8 source, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
+static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, SDL_KeyboardFlags flags, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
     SDL_Keymod modifier;
     Uint32 type;
     Uint8 repeat = SDL_FALSE;
+    const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
 
     if (scancode == SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
         return 0;
@@ -848,55 +855,57 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint8 source, Uint8 sta
     }
 
     /* Update modifiers state if applicable */
-    switch (keycode) {
-    case SDLK_LCTRL:
-        modifier = SDL_KMOD_LCTRL;
-        break;
-    case SDLK_RCTRL:
-        modifier = SDL_KMOD_RCTRL;
-        break;
-    case SDLK_LSHIFT:
-        modifier = SDL_KMOD_LSHIFT;
-        break;
-    case SDLK_RSHIFT:
-        modifier = SDL_KMOD_RSHIFT;
-        break;
-    case SDLK_LALT:
-        modifier = SDL_KMOD_LALT;
-        break;
-    case SDLK_RALT:
-        modifier = SDL_KMOD_RALT;
-        break;
-    case SDLK_LGUI:
-        modifier = SDL_KMOD_LGUI;
-        break;
-    case SDLK_RGUI:
-        modifier = SDL_KMOD_RGUI;
-        break;
-    case SDLK_MODE:
-        modifier = SDL_KMOD_MODE;
-        break;
-    default:
-        modifier = SDL_KMOD_NONE;
-        break;
-    }
-    if (SDL_KEYDOWN == type) {
+    if (!(flags & KEYBOARD_IGNOREMODIFIERS)) {
         switch (keycode) {
-        case SDLK_NUMLOCKCLEAR:
-            keyboard->modstate ^= SDL_KMOD_NUM;
+        case SDLK_LCTRL:
+            modifier = SDL_KMOD_LCTRL;
             break;
-        case SDLK_CAPSLOCK:
-            keyboard->modstate ^= SDL_KMOD_CAPS;
+        case SDLK_RCTRL:
+            modifier = SDL_KMOD_RCTRL;
             break;
-        case SDLK_SCROLLLOCK:
-            keyboard->modstate ^= SDL_KMOD_SCROLL;
+        case SDLK_LSHIFT:
+            modifier = SDL_KMOD_LSHIFT;
+            break;
+        case SDLK_RSHIFT:
+            modifier = SDL_KMOD_RSHIFT;
+            break;
+        case SDLK_LALT:
+            modifier = SDL_KMOD_LALT;
+            break;
+        case SDLK_RALT:
+            modifier = SDL_KMOD_RALT;
+            break;
+        case SDLK_LGUI:
+            modifier = SDL_KMOD_LGUI;
+            break;
+        case SDLK_RGUI:
+            modifier = SDL_KMOD_RGUI;
+            break;
+        case SDLK_MODE:
+            modifier = SDL_KMOD_MODE;
             break;
         default:
-            keyboard->modstate |= modifier;
+            modifier = SDL_KMOD_NONE;
             break;
         }
-    } else {
-        keyboard->modstate &= ~modifier;
+        if (SDL_KEYDOWN == type) {
+            switch (keycode) {
+            case SDLK_NUMLOCKCLEAR:
+                keyboard->modstate ^= SDL_KMOD_NUM;
+                break;
+            case SDLK_CAPSLOCK:
+                keyboard->modstate ^= SDL_KMOD_CAPS;
+                break;
+            case SDLK_SCROLLLOCK:
+                keyboard->modstate ^= SDL_KMOD_SCROLL;
+                break;
+            default:
+                keyboard->modstate |= modifier;
+                break;
+            }
+        } else {
+            keyboard->modstate &= ~modifier;
+        }
     }
 
     /* Post the event, if desired */
@@ -971,6 +980,11 @@ int SDL_SendKeyboardKeyAndKeycode(Uint64 timestamp, Uint8 state, SDL_Scancode sc
 int SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode)
 {
     return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_AUTORELEASE, SDL_PRESSED, scancode, SDLK_UNKNOWN);
+}
+
+int SDL_SendKeyboardKeyIgnoreModifiers(Uint64 timestamp, Uint8 state, SDL_Scancode scancode)
+{
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE | KEYBOARD_IGNOREMODIFIERS, state, scancode, SDLK_UNKNOWN);
 }
 
 void SDL_ReleaseAutoReleaseKeys(void)
