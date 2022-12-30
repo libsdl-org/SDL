@@ -301,11 +301,11 @@ static int D3D_ActivateRenderer(SDL_Renderer *renderer)
             data->pparams.Windowed = FALSE;
             data->pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
             {
-                int rr = 0;
+                double rr = 0;
                 if (fullscreen_mode.refresh_rate_denominator) {
-                    rr = fullscreen_mode.refresh_rate_numerator / fullscreen_mode.refresh_rate_denominator;
+                    rr = (double) fullscreen_mode.refresh_rate_numerator / (double) fullscreen_mode.refresh_rate_denominator;
                 }
-                data->pparams.FullScreen_RefreshRateInHz = rr;
+                data->pparams.FullScreen_RefreshRateInHz = (int) rr;
             }
         } else {
             data->pparams.Windowed = TRUE;
@@ -1634,11 +1634,11 @@ D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
         pparams.Windowed = FALSE;
         pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
         {
-            int rr = 0;
+            double rr = 0;
             if (fullscreen_mode.refresh_rate_denominator) {
-                rr = fullscreen_mode.refresh_rate_numerator / fullscreen_mode.refresh_rate_denominator;
+                rr = (double) fullscreen_mode.refresh_rate_numerator / (double) fullscreen_mode.refresh_rate_denominator;
             }
-            pparams.FullScreen_RefreshRateInHz = rr;
+            pparams.FullScreen_RefreshRateInHz = (int) rr;
         }
     } else {
         pparams.Windowed = TRUE;
