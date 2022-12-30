@@ -1633,7 +1633,13 @@ D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     if (window_flags & SDL_WINDOW_FULLSCREEN && (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
         pparams.Windowed = FALSE;
         pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
-        pparams.FullScreen_RefreshRateInHz = fullscreen_mode.refresh_rate;
+        {
+            int rr = 0;
+            if (fullscreen_mode.refresh_rate_denominator) {
+                rr = fullscreen_mode.refresh_rate_numerator / fullscreen_mode.refresh_rate_denominator;
+            }
+            pparams.FullScreen_RefreshRateInHz = rr;
+        }
     } else {
         pparams.Windowed = TRUE;
         pparams.BackBufferFormat = D3DFMT_UNKNOWN;
