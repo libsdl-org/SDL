@@ -99,7 +99,7 @@ int render_testPrimitives(void *arg)
 {
     int ret;
     int x, y;
-    SDL_Rect rect;
+    SDL_FRect rect;
     SDL_Surface *referenceSurface = NULL;
     int checkFailCount1;
     int checkFailCount2;
@@ -111,10 +111,10 @@ int render_testPrimitives(void *arg)
     SDLTest_AssertCheck(hasDrawColor(), "_hasDrawColor");
 
     /* Draw a rectangle. */
-    rect.x = 40;
-    rect.y = 0;
-    rect.w = 40;
-    rect.h = 80;
+    rect.x = 40.0f;
+    rect.y = 0.0f;
+    rect.w = 40.0f;
+    rect.h = 80.0f;
 
     ret = SDL_SetRenderDrawColor(renderer, 13, 73, 200, SDL_ALPHA_OPAQUE);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
@@ -123,10 +123,10 @@ int render_testPrimitives(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
 
     /* Draw a rectangle. */
-    rect.x = 10;
-    rect.y = 10;
-    rect.w = 60;
-    rect.h = 40;
+    rect.x = 10.0f;
+    rect.y = 10.0f;
+    rect.w = 60.0f;
+    rect.h = 40.0f;
     ret = SDL_SetRenderDrawColor(renderer, 200, 0, 100, SDL_ALPHA_OPAQUE);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
 
@@ -146,7 +146,7 @@ int render_testPrimitives(void *arg)
                 checkFailCount1++;
             }
 
-            ret = SDL_RenderPoint(renderer, x, y);
+            ret = SDL_RenderPoint(renderer, (float)x, (float)y);
             if (ret != 0) {
                 checkFailCount2++;
             }
@@ -159,28 +159,28 @@ int render_testPrimitives(void *arg)
     ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor");
 
-    ret = SDL_RenderLine(renderer, 0, 30, TESTRENDER_SCREEN_W, 30);
+    ret = SDL_RenderLine(renderer, 0.0f, 30.0f, (float)TESTRENDER_SCREEN_W, 30.0f);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
 
     ret = SDL_SetRenderDrawColor(renderer, 55, 55, 5, SDL_ALPHA_OPAQUE);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
 
-    ret = SDL_RenderLine(renderer, 40, 30, 40, 60);
+    ret = SDL_RenderLine(renderer, 40.0f, 30.0f, 40.0f, 60.0f);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
 
     ret = SDL_SetRenderDrawColor(renderer, 5, 105, 105, SDL_ALPHA_OPAQUE);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
 
-    ret = SDL_RenderLine(renderer, 0, 0, 29, 29);
+    ret = SDL_RenderLine(renderer, 0.0f, 0.0f, 29.0f, 29.0f);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
 
-    ret = SDL_RenderLine(renderer, 29, 30, 0, 59);
+    ret = SDL_RenderLine(renderer, 29.0f, 30.0f, 0.0f, 59.0f);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
 
-    ret = SDL_RenderLine(renderer, 79, 0, 50, 29);
+    ret = SDL_RenderLine(renderer, 79.0f, 0.0f, 50.0f, 29.0f);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
 
-    ret = SDL_RenderLine(renderer, 79, 59, 50, 30);
+    ret = SDL_RenderLine(renderer, 79.0f, 59.0f, 50.0f, 30.0f);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
 
     /* See if it's the same. */
@@ -209,7 +209,7 @@ int render_testPrimitivesBlend(void *arg)
 {
     int ret;
     int i, j;
-    SDL_Rect rect;
+    SDL_FRect rect;
     SDL_Surface *referenceSurface = NULL;
     int checkFailCount1;
     int checkFailCount2;
@@ -232,10 +232,10 @@ int render_testPrimitivesBlend(void *arg)
     ret = SDL_RenderFillRect(renderer, NULL);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
 
-    rect.x = 10;
-    rect.y = 25;
-    rect.w = 40;
-    rect.h = 25;
+    rect.x = 10.0f;
+    rect.y = 25.0f;
+    rect.w = 40.0f;
+    rect.h = 25.0f;
     ret = SDL_SetRenderDrawColor(renderer, 240, 10, 10, 75);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
 
@@ -245,10 +245,10 @@ int render_testPrimitivesBlend(void *arg)
     ret = SDL_RenderFillRect(renderer, &rect);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
 
-    rect.x = 30;
-    rect.y = 40;
-    rect.w = 45;
-    rect.h = 15;
+    rect.x = 30.0f;
+    rect.y = 40.0f;
+    rect.w = 45.0f;
+    rect.h = 15.0f;
     ret = SDL_SetRenderDrawColor(renderer, 10, 240, 10, 100);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
 
@@ -258,10 +258,10 @@ int render_testPrimitivesBlend(void *arg)
     ret = SDL_RenderFillRect(renderer, &rect);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
 
-    rect.x = 25;
-    rect.y = 25;
-    rect.w = 25;
-    rect.h = 25;
+    rect.x = 25.0f;
+    rect.y = 25.0f;
+    rect.w = 25.0f;
+    rect.h = 25.0f;
     ret = SDL_SetRenderDrawColor(renderer, 10, 10, 240, 125);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
 
@@ -287,7 +287,7 @@ int render_testPrimitivesBlend(void *arg)
             checkFailCount2++;
         }
 
-        ret = SDL_RenderLine(renderer, 0, 0, i, 59);
+        ret = SDL_RenderLine(renderer, 0.0f, 0.0f, (float)i, 59.0f);
         if (ret != 0) {
             checkFailCount3++;
         }
@@ -311,7 +311,7 @@ int render_testPrimitivesBlend(void *arg)
             checkFailCount2++;
         }
 
-        ret = SDL_RenderLine(renderer, 0, 0, 79, i);
+        ret = SDL_RenderLine(renderer, 0.0f, 0.0f, 79.0f, (float)i);
         if (ret != 0) {
             checkFailCount3++;
         }
@@ -337,7 +337,7 @@ int render_testPrimitivesBlend(void *arg)
                 checkFailCount2++;
             }
 
-            ret = SDL_RenderPoint(renderer, i, j);
+            ret = SDL_RenderPoint(renderer, (float)i, (float)j);
             if (ret != 0) {
                 checkFailCount3++;
             }
@@ -371,7 +371,7 @@ int render_testPrimitivesBlend(void *arg)
 int render_testBlit(void *arg)
 {
     int ret;
-    SDL_Rect rect;
+    SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
     Uint32 tformat;
@@ -395,8 +395,8 @@ int render_testBlit(void *arg)
     /* Constant values. */
     ret = SDL_QueryTexture(tface, &tformat, &taccess, &tw, &th);
     SDLTest_AssertCheck(ret == 0, "Verify result from SDL_QueryTexture, expected 0, got %i", ret);
-    rect.w = tw;
-    rect.h = th;
+    rect.w = (float)tw;
+    rect.h = (float)th;
     ni = TESTRENDER_SCREEN_W - tw;
     nj = TESTRENDER_SCREEN_H - th;
 
@@ -405,8 +405,8 @@ int render_testBlit(void *arg)
     for (j = 0; j <= nj; j += 4) {
         for (i = 0; i <= ni; i += 4) {
             /* Blitting. */
-            rect.x = i;
-            rect.y = j;
+            rect.x = (float)i;
+            rect.y = (float)j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount1++;
@@ -441,7 +441,7 @@ int render_testBlit(void *arg)
 int render_testBlitColor(void *arg)
 {
     int ret;
-    SDL_Rect rect;
+    SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
     Uint32 tformat;
@@ -463,8 +463,8 @@ int render_testBlitColor(void *arg)
     /* Constant values. */
     ret = SDL_QueryTexture(tface, &tformat, &taccess, &tw, &th);
     SDLTest_AssertCheck(ret == 0, "Verify result from SDL_QueryTexture, expected 0, got %i", ret);
-    rect.w = tw;
-    rect.h = th;
+    rect.w = (float)tw;
+    rect.h = (float)th;
     ni = TESTRENDER_SCREEN_W - tw;
     nj = TESTRENDER_SCREEN_H - th;
 
@@ -480,8 +480,8 @@ int render_testBlitColor(void *arg)
             }
 
             /* Blitting. */
-            rect.x = i;
-            rect.y = j;
+            rect.x = (float)i;
+            rect.y = (float)j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount2++;
@@ -517,7 +517,7 @@ int render_testBlitColor(void *arg)
 int render_testBlitAlpha(void *arg)
 {
     int ret;
-    SDL_Rect rect;
+    SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
     Uint32 tformat;
@@ -542,8 +542,8 @@ int render_testBlitAlpha(void *arg)
     /* Constant values. */
     ret = SDL_QueryTexture(tface, &tformat, &taccess, &tw, &th);
     SDLTest_AssertCheck(ret == 0, "Verify result from SDL_QueryTexture, expected 0, got %i", ret);
-    rect.w = tw;
-    rect.h = th;
+    rect.w = (float)tw;
+    rect.h = (float)th;
     ni = TESTRENDER_SCREEN_W - tw;
     nj = TESTRENDER_SCREEN_H - th;
 
@@ -559,8 +559,8 @@ int render_testBlitAlpha(void *arg)
             }
 
             /* Blitting. */
-            rect.x = i;
-            rect.y = j;
+            rect.x = (float)i;
+            rect.y = (float)j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount2++;
@@ -601,7 +601,7 @@ testBlitBlendMode(SDL_Texture *tface, int mode)
     Uint32 tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
-    SDL_Rect rect;
+    SDL_FRect rect;
     int checkFailCount1;
     int checkFailCount2;
 
@@ -611,8 +611,8 @@ testBlitBlendMode(SDL_Texture *tface, int mode)
     /* Constant values. */
     ret = SDL_QueryTexture(tface, &tformat, &taccess, &tw, &th);
     SDLTest_AssertCheck(ret == 0, "Verify result from SDL_QueryTexture, expected 0, got %i", ret);
-    rect.w = tw;
-    rect.h = th;
+    rect.w = (float)tw;
+    rect.h = (float)th;
     ni = TESTRENDER_SCREEN_W - tw;
     nj = TESTRENDER_SCREEN_H - th;
 
@@ -628,8 +628,8 @@ testBlitBlendMode(SDL_Texture *tface, int mode)
             }
 
             /* Blitting. */
-            rect.x = i;
-            rect.y = j;
+            rect.x = (float)i;
+            rect.y = (float)j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount2++;
@@ -652,7 +652,7 @@ testBlitBlendMode(SDL_Texture *tface, int mode)
 int render_testBlitBlend(void *arg)
 {
     int ret;
-    SDL_Rect rect;
+    SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
     Uint32 tformat;
@@ -678,8 +678,8 @@ int render_testBlitBlend(void *arg)
     /* Constant values. */
     ret = SDL_QueryTexture(tface, &tformat, &taccess, &tw, &th);
     SDLTest_AssertCheck(ret == 0, "Verify result from SDL_QueryTexture, expected 0, got %i", ret);
-    rect.w = tw;
-    rect.h = th;
+    rect.w = (float)tw;
+    rect.h = (float)th;
     ni = TESTRENDER_SCREEN_W - tw;
     nj = TESTRENDER_SCREEN_H - th;
 
@@ -771,8 +771,8 @@ int render_testBlitBlend(void *arg)
             }
 
             /* Blitting. */
-            rect.x = i;
-            rect.y = j;
+            rect.x = (float)i;
+            rect.y = (float)j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount4++;

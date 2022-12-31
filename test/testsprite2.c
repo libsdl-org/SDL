@@ -34,9 +34,9 @@ static SDL_bool cycle_alpha;
 static int cycle_direction = 1;
 static int current_alpha = 0;
 static int current_color = 0;
-static SDL_Rect *positions;
-static SDL_Rect *velocities;
-static int sprite_w, sprite_h;
+static SDL_FRect *positions;
+static SDL_FRect *velocities;
+static float sprite_w, sprite_h;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
 static Uint64 next_fps_check;
 static Uint32 frames;
@@ -67,11 +67,13 @@ quit(int rc)
 
 int LoadSprite(const char *file)
 {
-    int i;
+    int i, w, h;
 
     for (i = 0; i < state->num_windows; ++i) {
         /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
-        sprites[i] = LoadTexture(state->renderers[i], file, SDL_TRUE, &sprite_w, &sprite_h);
+        sprites[i] = LoadTexture(state->renderers[i], file, SDL_TRUE, &w, &h);
+        sprite_w = (float)w;
+        sprite_h = (float)h;
         if (!sprites[i]) {
             return -1;
         }
@@ -89,8 +91,9 @@ int LoadSprite(const char *file)
 void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
     int i;
-    SDL_Rect viewport, temp;
-    SDL_Rect *position, *velocity;
+    SDL_Rect viewport;
+    SDL_FRect temp;
+    SDL_FRect *position, *velocity;
 
     /* Query the sizes */
     SDL_GetRenderViewport(renderer, &viewport);
@@ -128,22 +131,22 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 
     /* Test points */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
-    SDL_RenderPoint(renderer, 0, 0);
-    SDL_RenderPoint(renderer, viewport.w - 1, 0);
-    SDL_RenderPoint(renderer, 0, viewport.h - 1);
-    SDL_RenderPoint(renderer, viewport.w - 1, viewport.h - 1);
+    SDL_RenderPoint(renderer, 0.0f, 0.0f);
+    SDL_RenderPoint(renderer, (float)(viewport.w - 1), 0.0f);
+    SDL_RenderPoint(renderer, 0.0f, (float)(viewport.h - 1));
+    SDL_RenderPoint(renderer, (float)(viewport.w - 1), (float)(viewport.h - 1));
 
     /* Test horizontal and vertical lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-    SDL_RenderLine(renderer, 1, 0, viewport.w - 2, 0);
-    SDL_RenderLine(renderer, 1, viewport.h - 1, viewport.w - 2, viewport.h - 1);
-    SDL_RenderLine(renderer, 0, 1, 0, viewport.h - 2);
-    SDL_RenderLine(renderer, viewport.w - 1, 1, viewport.w - 1, viewport.h - 2);
+    SDL_RenderLine(renderer, 1.0f, 0.0f, (float)(viewport.w - 2), 0.0f);
+    SDL_RenderLine(renderer, 1.0f, (float)(viewport.h - 1), (float)(viewport.w - 2), (float)(viewport.h - 1));
+    SDL_RenderLine(renderer, 0.0f, 1.0f, 0.0f, (float)(viewport.h - 2));
+    SDL_RenderLine(renderer, (float)(viewport.w - 1), 1.0f, (float)(viewport.w - 1), (float)(viewport.h - 2));
 
     /* Test fill and copy */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    temp.x = 1;
-    temp.y = 1;
+    temp.x = 1.0f;
+    temp.y = 1.0f;
     temp.w = sprite_w;
     temp.h = sprite_h;
     if (use_rendergeometry == 0) {
@@ -158,34 +161,34 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
         color.b = 0xFF;
         color.a = 0xFF;
 
-        verts[0].position.x = (float)temp.x;
-        verts[0].position.y = (float)temp.y;
+        verts[0].position.x = temp.x;
+        verts[0].position.y = temp.y;
         verts[0].color = color;
 
-        verts[1].position.x = (float)temp.x + temp.w;
-        verts[1].position.y = (float)temp.y;
+        verts[1].position.x = temp.x + temp.w;
+        verts[1].position.y = temp.y;
         verts[1].color = color;
 
-        verts[2].position.x = (float)temp.x + temp.w;
-        verts[2].position.y = (float)temp.y + temp.h;
+        verts[2].position.x = temp.x + temp.w;
+        verts[2].position.y = temp.y + temp.h;
         verts[2].color = color;
 
         SDL_RenderGeometry(renderer, NULL, verts, 3, NULL, 0);
 
-        verts[1].position.x = (float)temp.x;
-        verts[1].position.y = (float)temp.y + temp.h;
+        verts[1].position.x = temp.x;
+        verts[1].position.y = temp.y + temp.h;
         verts[1].color = color;
 
         SDL_RenderGeometry(renderer, NULL, verts, 3, NULL, 0);
     }
     SDL_RenderTexture(renderer, sprite, NULL, &temp);
     temp.x = viewport.w - sprite_w - 1;
-    temp.y = 1;
+    temp.y = 1.0f;
     temp.w = sprite_w;
     temp.h = sprite_h;
     SDL_RenderFillRect(renderer, &temp);
     SDL_RenderTexture(renderer, sprite, NULL, &temp);
-    temp.x = 1;
+    temp.x = 1.0f;
     temp.y = viewport.h - sprite_h - 1;
     temp.w = sprite_w;
     temp.h = sprite_h;
@@ -258,43 +261,43 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
             for (i = 0; i < num_sprites; ++i) {
                 position = &positions[i];
                 /* 0 */
-                verts->position.x = (float)position->x;
-                verts->position.y = (float)position->y;
+                verts->position.x = position->x;
+                verts->position.y = position->y;
                 verts->color = color;
                 verts->tex_coord.x = 0.0f;
                 verts->tex_coord.y = 0.0f;
                 verts++;
                 /* 1 */
-                verts->position.x = (float)position->x + position->w;
-                verts->position.y = (float)position->y;
+                verts->position.x = position->x + position->w;
+                verts->position.y = position->y;
                 verts->color = color;
                 verts->tex_coord.x = 1.0f;
                 verts->tex_coord.y = 0.0f;
                 verts++;
                 /* 2 */
-                verts->position.x = (float)position->x + position->w;
-                verts->position.y = (float)position->y + position->h;
+                verts->position.x = position->x + position->w;
+                verts->position.y = position->y + position->h;
                 verts->color = color;
                 verts->tex_coord.x = 1.0f;
                 verts->tex_coord.y = 1.0f;
                 verts++;
                 /* 0 */
-                verts->position.x = (float)position->x;
-                verts->position.y = (float)position->y;
+                verts->position.x = position->x;
+                verts->position.y = position->y;
                 verts->color = color;
                 verts->tex_coord.x = 0.0f;
                 verts->tex_coord.y = 0.0f;
                 verts++;
                 /* 2 */
-                verts->position.x = (float)position->x + position->w;
-                verts->position.y = (float)position->y + position->h;
+                verts->position.x = position->x + position->w;
+                verts->position.y = position->y + position->h;
                 verts->color = color;
                 verts->tex_coord.x = 1.0f;
                 verts->tex_coord.y = 1.0f;
                 verts++;
                 /* 3 */
-                verts->position.x = (float)position->x;
-                verts->position.y = (float)position->y + position->h;
+                verts->position.x = position->x;
+                verts->position.y = position->y + position->h;
                 verts->color = color;
                 verts->tex_coord.x = 0.0f;
                 verts->tex_coord.y = 1.0f;
@@ -329,36 +332,36 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
             for (i = 0; i < num_sprites; ++i) {
                 position = &positions[i];
                 /* 0 */
-                verts->position.x = (float)position->x;
-                verts->position.y = (float)position->y;
+                verts->position.x = position->x;
+                verts->position.y = position->y;
                 verts->color = color;
                 verts->tex_coord.x = 0.0f;
                 verts->tex_coord.y = 0.0f;
                 verts++;
                 /* 1 */
-                verts->position.x = (float)position->x + position->w;
-                verts->position.y = (float)position->y;
+                verts->position.x = position->x + position->w;
+                verts->position.y = position->y;
                 verts->color = color;
                 verts->tex_coord.x = 1.0f;
                 verts->tex_coord.y = 0.0f;
                 verts++;
                 /* 2 */
-                verts->position.x = (float)position->x + position->w / 2.0f;
-                verts->position.y = (float)position->y + position->h / 2.0f;
+                verts->position.x = position->x + position->w / 2.0f;
+                verts->position.y = position->y + position->h / 2.0f;
                 verts->color = color;
                 verts->tex_coord.x = 0.5f;
                 verts->tex_coord.y = 0.5f;
                 verts++;
                 /* 3 */
-                verts->position.x = (float)position->x;
-                verts->position.y = (float)position->y + position->h;
+                verts->position.x = position->x;
+                verts->position.y = position->y + position->h;
                 verts->color = color;
                 verts->tex_coord.x = 0.0f;
                 verts->tex_coord.y = 1.0f;
                 verts++;
                 /* 4 */
-                verts->position.x = (float)position->x + position->w;
-                verts->position.y = (float)position->y + position->h;
+                verts->position.x = position->x + position->w;
+                verts->position.y = position->y + position->h;
                 verts->color = color;
                 verts->tex_coord.x = 1.0f;
                 verts->tex_coord.y = 1.0f;
@@ -540,8 +543,8 @@ int main(int argc, char *argv[])
     }
 
     /* Allocate memory for the sprite info */
-    positions = (SDL_Rect *)SDL_malloc(num_sprites * sizeof(SDL_Rect));
-    velocities = (SDL_Rect *)SDL_malloc(num_sprites * sizeof(SDL_Rect));
+    positions = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*positions));
+    velocities = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*velocities));
     if (positions == NULL || velocities == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
@@ -557,15 +560,15 @@ int main(int argc, char *argv[])
     }
     SDLTest_FuzzerInit(seed);
     for (i = 0; i < num_sprites; ++i) {
-        positions[i].x = SDLTest_RandomIntegerInRange(0, state->window_w - sprite_w);
-        positions[i].y = SDLTest_RandomIntegerInRange(0, state->window_h - sprite_h);
+        positions[i].x = (float)SDLTest_RandomIntegerInRange(0, (int)(state->window_w - sprite_w));
+        positions[i].y = (float)SDLTest_RandomIntegerInRange(0, (int)(state->window_h - sprite_h));
         positions[i].w = sprite_w;
         positions[i].h = sprite_h;
         velocities[i].x = 0;
         velocities[i].y = 0;
         while (!velocities[i].x && !velocities[i].y) {
-            velocities[i].x = SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
-            velocities[i].y = SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
+            velocities[i].x = (float)SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
+            velocities[i].y = (float)SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
         }
     }
 

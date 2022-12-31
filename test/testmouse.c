@@ -74,9 +74,9 @@ void DrawObject(SDL_Renderer *renderer, Object *object)
             rect.h = object->y2 - object->y1;
         }
 
-        SDL_RenderFillRectFloat(renderer, &rect);
+        SDL_RenderFillRect(renderer, &rect);
     } else {
-        SDL_RenderLineFloat(renderer, object->x1, object->y1, object->x2, object->y2);
+        SDL_RenderLine(renderer, object->x1, object->y1, object->x2, object->y2);
     }
 }
 
@@ -226,10 +226,10 @@ void loop(void *arg)
     /* Mouse wheel */
     SDL_SetRenderDrawColor(renderer, 0, 255, 128, 255);
     if (wheel_x_active) {
-        SDL_RenderLineFloat(renderer, wheel_x, 0.0f, wheel_x, (float)SCREEN_HEIGHT);
+        SDL_RenderLine(renderer, wheel_x, 0.0f, wheel_x, (float)SCREEN_HEIGHT);
     }
     if (wheel_y_active) {
-        SDL_RenderLineFloat(renderer, 0.0f, wheel_y, (float)SCREEN_WIDTH, wheel_y);
+        SDL_RenderLine(renderer, 0.0f, wheel_y, (float)SCREEN_WIDTH, wheel_y);
     }
 
     /* Objects from mouse clicks */

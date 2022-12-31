@@ -192,7 +192,7 @@ void MoveSprites(SDL_Renderer *renderer)
             SDL_UpdateTexture(MooseTexture, NULL, MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch);
         }
         SDL_RenderClear(renderer);
-        SDL_RenderTextureFloat(renderer, MooseTexture, NULL, &displayrect);
+        SDL_RenderTexture(renderer, MooseTexture, NULL, &displayrect);
         SDL_RenderPresent(renderer);
     } else {
         SDL_Texture *tmp;
@@ -209,7 +209,7 @@ void MoveSprites(SDL_Renderer *renderer)
         }
 
         SDL_RenderClear(renderer);
-        SDL_RenderTextureFloat(renderer, tmp, NULL, &displayrect);
+        SDL_RenderTexture(renderer, tmp, NULL, &displayrect);
         SDL_RenderPresent(renderer);
         SDL_DestroyTexture(tmp);
     }

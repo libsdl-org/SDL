@@ -41,7 +41,7 @@ int done;
 void DrawPoints(SDL_Renderer *renderer)
 {
     int i;
-    int x, y;
+    float x, y;
     SDL_Rect viewport;
 
     /* Query the sizes */
@@ -74,8 +74,8 @@ void DrawPoints(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
                                (Uint8)current_color, (Uint8)current_alpha);
 
-        x = rand() % viewport.w;
-        y = rand() % viewport.h;
+        x = (float)(rand() % viewport.w);
+        y = (float)(rand() % viewport.h);
         SDL_RenderPoint(renderer, x, y);
     }
 }
@@ -83,7 +83,7 @@ void DrawPoints(SDL_Renderer *renderer)
 void DrawLines(SDL_Renderer *renderer)
 {
     int i;
-    int x1, y1, x2, y2;
+    float x1, y1, x2, y2;
     SDL_Rect viewport;
 
     /* Query the sizes */
@@ -117,15 +117,15 @@ void DrawLines(SDL_Renderer *renderer)
                                (Uint8)current_color, (Uint8)current_alpha);
 
         if (i == 0) {
-            SDL_RenderLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
-            SDL_RenderLine(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
-            SDL_RenderLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
-            SDL_RenderLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
+            SDL_RenderLine(renderer, 0.0f, 0.0f, (float)(viewport.w - 1), (float)(viewport.h - 1));
+            SDL_RenderLine(renderer, 0.0f, (float)(viewport.h - 1), (float)(viewport.w - 1), 0.0f);
+            SDL_RenderLine(renderer, 0.0f, (float)(viewport.h / 2), (float)(viewport.w - 1), (float)(viewport.h / 2));
+            SDL_RenderLine(renderer, (float)(viewport.w / 2), 0.0f, (float)(viewport.w / 2), (float)(viewport.h - 1));
         } else {
-            x1 = (rand() % (viewport.w * 2)) - viewport.w;
-            x2 = (rand() % (viewport.w * 2)) - viewport.w;
-            y1 = (rand() % (viewport.h * 2)) - viewport.h;
-            y2 = (rand() % (viewport.h * 2)) - viewport.h;
+            x1 = (float)((rand() % (viewport.w * 2)) - viewport.w);
+            x2 = (float)((rand() % (viewport.w * 2)) - viewport.w);
+            y1 = (float)((rand() % (viewport.h * 2)) - viewport.h);
+            y2 = (float)((rand() % (viewport.h * 2)) - viewport.h);
             SDL_RenderLine(renderer, x1, y1, x2, y2);
         }
     }
@@ -134,7 +134,7 @@ void DrawLines(SDL_Renderer *renderer)
 void DrawRects(SDL_Renderer *renderer)
 {
     int i;
-    SDL_Rect rect;
+    SDL_FRect rect;
     SDL_Rect viewport;
 
     /* Query the sizes */
@@ -167,10 +167,10 @@ void DrawRects(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
                                (Uint8)current_color, (Uint8)current_alpha);
 
-        rect.w = rand() % (viewport.h / 2);
-        rect.h = rand() % (viewport.h / 2);
-        rect.x = (rand() % (viewport.w * 2) - viewport.w) - (rect.w / 2);
-        rect.y = (rand() % (viewport.h * 2) - viewport.h) - (rect.h / 2);
+        rect.w = (float)(rand() % (viewport.h / 2));
+        rect.h = (float)(rand() % (viewport.h / 2));
+        rect.x = (float)((rand() % (viewport.w * 2) - viewport.w) - (rect.w / 2));
+        rect.y = (float)((rand() % (viewport.h * 2) - viewport.h) - (rect.h / 2));
         SDL_RenderFillRect(renderer, &rect);
     }
 }

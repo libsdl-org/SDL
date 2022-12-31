@@ -45,7 +45,7 @@ int done;
 void DrawPoints(SDL_Renderer *renderer)
 {
     int i;
-    int x, y;
+    float x, y;
     SDL_Rect viewport;
 
     /* Query the sizes */
@@ -78,8 +78,8 @@ void DrawPoints(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
                                (Uint8)current_color, (Uint8)current_alpha);
 
-        x = rand() % viewport.w;
-        y = rand() % viewport.h;
+        x = (float)(rand() % viewport.w);
+        y = (float)(rand() % viewport.h);
         SDL_RenderPoint(renderer, x, y);
     }
 }
@@ -118,12 +118,12 @@ void DrawLines(SDL_Renderer *renderer)
 
     for (i = 0; i < num_lines; ++i) {
         if (i == -1) {
-            SDL_RenderLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
-            SDL_RenderLine(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
-            SDL_RenderLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
-            SDL_RenderLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
+            SDL_RenderLine(renderer, 0.0f, 0.0f, (float)(viewport.w - 1), (float)(viewport.h - 1));
+            SDL_RenderLine(renderer, 0.0f, (float)(viewport.h - 1), (float)(viewport.w - 1), 0.0f);
+            SDL_RenderLine(renderer, 0.0f, (float)(viewport.h / 2), (float)(viewport.w - 1), (float)(viewport.h / 2));
+            SDL_RenderLine(renderer, (float)(viewport.w / 2), 0.0f, (float)(viewport.w / 2), (float)(viewport.h - 1));
         } else {
-            SDL_RenderLineFloat(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
+            SDL_RenderLine(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
         }
     }
 }
@@ -163,7 +163,7 @@ static void
 DrawRects(SDL_Renderer *renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 127, 0, 255);
-    SDL_RenderFillRectsFloat(renderer, rects, num_rects);
+    SDL_RenderFillRects(renderer, rects, num_rects);
 }
 
 static void
@@ -185,7 +185,7 @@ DrawRectLineIntersections(SDL_Renderer *renderer)
             y2 = lines[j].h;
 
             if (SDL_GetRectAndLineIntersectionFloat(&r, &x1, &y1, &x2, &y2)) {
-                SDL_RenderLineFloat(renderer, x1, y1, x2, y2);
+                SDL_RenderLine(renderer, x1, y1, x2, y2);
             }
         }
     }
@@ -202,7 +202,7 @@ DrawRectRectIntersections(SDL_Renderer *renderer)
         for (j = i + 1; j < num_rects; j++) {
             SDL_FRect r;
             if (SDL_GetRectIntersectionFloat(&rects[i], &rects[j], &r)) {
-                SDL_RenderFillRectFloat(renderer, &r);
+                SDL_RenderFillRect(renderer, &r);
             }
         }
     }

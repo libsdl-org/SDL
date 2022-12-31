@@ -33,18 +33,18 @@ static unsigned int max_frames = 200;
 
 void draw()
 {
-    SDL_Rect Rect;
+    SDL_FRect rect;
 
     SDL_SetRenderDrawColor(renderer, 0x10, 0x9A, 0xCE, 0xFF);
     SDL_RenderClear(renderer);
 
     /* Grow based on the frame just to show a difference per frame of the region */
-    Rect.x = 0;
-    Rect.y = 0;
-    Rect.w = (frame_number * 2) % width;
-    Rect.h = (frame_number * 2) % height;
+    rect.x = 0.0f;
+    rect.y = 0.0f;
+    rect.w = (float)((frame_number * 2) % width);
+    rect.h = (float)((frame_number * 2) % height);
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x10, 0x21, 0xFF);
-    SDL_RenderFillRect(renderer, &Rect);
+    SDL_RenderFillRect(renderer, &rect);
 
     SDL_RenderPresent(renderer);
 }

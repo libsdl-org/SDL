@@ -91,11 +91,11 @@ PrintJoystick(SDL_Joystick *joy)
 static void
 DrawRect(SDL_Renderer *r, const int x, const int y, const int w, const int h)
 {
-    SDL_Rect area;
-    area.x = x;
-    area.y = y;
-    area.w = w;
-    area.h = h;
+    SDL_FRect area;
+    area.x = (float)x;
+    area.y = (float)y;
+    area.w = (float)w;
+    area.h = (float)h;
     SDL_RenderFillRect(r, &area);
 }
 
