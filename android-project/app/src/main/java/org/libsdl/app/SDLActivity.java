@@ -52,6 +52,9 @@ import android.widget.Toast;
 
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Arrays;
 
 
 /**
@@ -968,20 +971,22 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         int orientation_landscape = -1;
         int orientation_portrait = -1;
 
+        Set<String> hint_parts = new HashSet<String>(Arrays.asList(hint.split(" ")));
+
         /* If set, hint "explicitly controls which UI orientations are allowed". */
-        if (hint.contains("LandscapeRight") && hint.contains("LandscapeLeft")) {
+        if (hint_parts.contains("LandscapeRight") && hint_parts.contains("LandscapeLeft")) {
             orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-        } else if (hint.contains("LandscapeRight")) {
+        } else if (hint_parts.contains("LandscapeLeft")) {
             orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-        } else if (hint.contains("LandscapeLeft")) {
+        } else if (hint_parts.contains("LandscapeRight")) {
             orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
         }
 
-        if (hint.contains("Portrait") && hint.contains("PortraitUpsideDown")) {
+        if (hint_parts.contains("Portrait") && hint_parts.contains("PortraitUpsideDown")) {
             orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
-        } else if (hint.contains("Portrait")) {
+        } else if (hint_parts.contains("Portrait")) {
             orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        } else if (hint.contains("PortraitUpsideDown")) {
+        } else if (hint_parts.contains("PortraitUpsideDown")) {
             orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
         }
 
