@@ -38,7 +38,7 @@ static NativeWindowFactory *factories[] = {
 };
 static NativeWindowFactory *factory = NULL;
 static void *native_window;
-static SDL_Rect *positions, *velocities;
+static SDL_FRect *positions, *velocities;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -56,7 +56,7 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     int sprite_w, sprite_h;
     int i;
     SDL_Rect viewport;
-    SDL_Rect *position, *velocity;
+    SDL_FRect *position, *velocity;
 
     /* Query the sizes */
     SDL_GetRenderViewport(renderer, &viewport);
@@ -154,23 +154,23 @@ int main(int argc, char *argv[])
     /* Allocate memory for the sprite info */
     SDL_GetWindowSize(window, &window_w, &window_h);
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
-    positions = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
-    velocities = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
+    positions = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*positions));
+    velocities = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*velocities));
     if (positions == NULL || velocities == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }
     srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = rand() % (window_w - sprite_w);
-        positions[i].y = rand() % (window_h - sprite_h);
-        positions[i].w = sprite_w;
-        positions[i].h = sprite_h;
-        velocities[i].x = 0;
-        velocities[i].y = 0;
+        positions[i].x = (float)(rand() % (window_w - sprite_w));
+        positions[i].y = (float)(rand() % (window_h - sprite_h));
+        positions[i].w = (float)sprite_w;
+        positions[i].h = (float)sprite_h;
+        velocities[i].x = 0.0f;
+        velocities[i].y = 0.0f;
         while (!velocities[i].x && !velocities[i].y) {
-            velocities[i].x = (rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED;
-            velocities[i].y = (rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED;
+            velocities[i].x = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+            velocities[i].y = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
         }
     }
 

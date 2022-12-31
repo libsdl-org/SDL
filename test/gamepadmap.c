@@ -353,7 +353,8 @@ WatchJoystick(SDL_Joystick *joystick)
     SDL_Texture *background_front, *background_back, *button, *axis, *marker = NULL;
     const char *name = NULL;
     SDL_Event event;
-    SDL_Rect dst;
+    SDL_FRect dst;
+    int texture_w, texture_h;
     Uint8 alpha = 200, alpha_step = -1;
     Uint64 alpha_ticks = 0;
     SDL_JoystickID nJoystickID;
@@ -405,9 +406,11 @@ WatchJoystick(SDL_Joystick *joystick)
             break;
         }
 
-        dst.x = s_arrBindingDisplay[iElement].x;
-        dst.y = s_arrBindingDisplay[iElement].y;
-        SDL_QueryTexture(marker, NULL, NULL, &dst.w, &dst.h);
+        SDL_QueryTexture(marker, NULL, NULL, &texture_w, &texture_h);
+        dst.x = (float)s_arrBindingDisplay[iElement].x;
+        dst.y = (float)s_arrBindingDisplay[iElement].y;
+        dst.w = (float)texture_w;
+        dst.h = (float)texture_h;
 
         if (SDL_GetTicks() >= (alpha_ticks + 5)) {
             alpha_ticks = SDL_GetTicks();

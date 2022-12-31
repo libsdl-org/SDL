@@ -21,6 +21,11 @@ const SDL_Rect drag_areas[] = {
     { 200, 70, 100, 100 },
     { 400, 90, 100, 100 }
 };
+const SDL_FRect render_areas[] = {
+    { 20.0f, 20.0f, 100.0f, 100.0f },
+    { 200.0f, 70.0f, 100.0f, 100.0f },
+    { 400.0f, 90.0f, 100.0f, 100.0f }
+};
 
 static const SDL_Rect *areas = drag_areas;
 static int numareas = SDL_arraysize(drag_areas);
@@ -92,7 +97,7 @@ int main(int argc, char **argv)
         SDL_SetRenderDrawColor(renderer, 0, 0, 127, 255);
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderFillRects(renderer, areas, SDL_arraysize(drag_areas));
+        SDL_RenderFillRects(renderer, render_areas, SDL_arraysize(render_areas));
         SDL_RenderPresent(renderer);
 
         while (SDL_PollEvent(&e)) {

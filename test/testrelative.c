@@ -25,15 +25,15 @@
 static SDLTest_CommonState *state;
 static int i, done;
 static float mouseX, mouseY;
-static SDL_Rect rect;
+static SDL_FRect rect;
 static SDL_Event event;
 
 static void
 DrawRects(SDL_Renderer *renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    rect.x = (int)mouseX;
-    rect.y = (int)mouseY;
+    rect.x = mouseX;
+    rect.y = mouseY;
     SDL_RenderFillRect(renderer, &rect);
 }
 

@@ -687,11 +687,11 @@ void loop(void *arg)
             if (SDL_GetGamepadButton(gamepad, (SDL_GamepadButton)i) == SDL_PRESSED) {
                 SDL_bool on_front = (i < SDL_GAMEPAD_BUTTON_PADDLE1 || i > SDL_GAMEPAD_BUTTON_PADDLE4);
                 if (on_front == showing_front) {
-                    SDL_Rect dst;
-                    dst.x = button_positions[i].x;
-                    dst.y = button_positions[i].y;
-                    dst.w = BUTTON_SIZE;
-                    dst.h = BUTTON_SIZE;
+                    SDL_FRect dst;
+                    dst.x = (float)button_positions[i].x;
+                    dst.y = (float)button_positions[i].y;
+                    dst.w = (float)BUTTON_SIZE;
+                    dst.h = (float)BUTTON_SIZE;
                     SDL_RenderTextureRotated(screen, button_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
                 }
             }
@@ -703,19 +703,19 @@ void loop(void *arg)
                 const Sint16 value = SDL_GetGamepadAxis(gamepad, (SDL_GamepadAxis)(i));
                 if (value < -deadzone) {
                     const double angle = axis_positions[i].angle;
-                    SDL_Rect dst;
-                    dst.x = axis_positions[i].x;
-                    dst.y = axis_positions[i].y;
-                    dst.w = AXIS_SIZE;
-                    dst.h = AXIS_SIZE;
+                    SDL_FRect dst;
+                    dst.x = (float)axis_positions[i].x;
+                    dst.y = (float)axis_positions[i].y;
+                    dst.w = (float)AXIS_SIZE;
+                    dst.h = (float)AXIS_SIZE;
                     SDL_RenderTextureRotated(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 } else if (value > deadzone) {
                     const double angle = axis_positions[i].angle + 180.0;
-                    SDL_Rect dst;
-                    dst.x = axis_positions[i].x;
-                    dst.y = axis_positions[i].y;
-                    dst.w = AXIS_SIZE;
-                    dst.h = AXIS_SIZE;
+                    SDL_FRect dst;
+                    dst.x = (float)axis_positions[i].x;
+                    dst.y = (float)axis_positions[i].y;
+                    dst.w = (float)AXIS_SIZE;
+                    dst.h = (float)AXIS_SIZE;
                     SDL_RenderTextureRotated(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 }
             }

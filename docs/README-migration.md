@@ -472,24 +472,16 @@ to decide for you.
 SDL_RenderWindowToLogical() and SDL_RenderLogicalToWindow() take floating point coordinates in both directions.
 
 The following functions have been renamed:
-* SDL_RenderCopy() => SDL_RenderTexture()
-* SDL_RenderCopyEx() => SDL_RenderTextureRotated()
-* SDL_RenderCopyExF() => SDL_RenderTextureRotatedFloat()
-* SDL_RenderCopyF() => SDL_RenderTextureFloat()
-* SDL_RenderDrawLine() => SDL_RenderLine()
-* SDL_RenderDrawLineF() => SDL_RenderLineFloat()
-* SDL_RenderDrawLines() => SDL_RenderLines()
-* SDL_RenderDrawLinesF() => SDL_RenderLinesFloat()
-* SDL_RenderDrawPoint() => SDL_RenderPoint()
-* SDL_RenderDrawPointF() => SDL_RenderPointFloat()
-* SDL_RenderDrawPoints() => SDL_RenderPoints()
-* SDL_RenderDrawPointsF() => SDL_RenderPointsFloat()
-* SDL_RenderDrawRect() => SDL_RenderRect()
-* SDL_RenderDrawRectF() => SDL_RenderRectFloat()
-* SDL_RenderDrawRects() => SDL_RenderRects()
-* SDL_RenderDrawRectsF() => SDL_RenderRectsFloat()
-* SDL_RenderFillRectF() => SDL_RenderFillRectFloat()
-* SDL_RenderFillRectsF() => SDL_RenderFillRectsFloat()
+* SDL_RenderCopyExF() => SDL_RenderTextureRotated()
+* SDL_RenderCopyF() => SDL_RenderTexture()
+* SDL_RenderDrawLineF() => SDL_RenderLine()
+* SDL_RenderDrawLinesF() => SDL_RenderLines()
+* SDL_RenderDrawPointF() => SDL_RenderPoint()
+* SDL_RenderDrawPointsF() => SDL_RenderPoints()
+* SDL_RenderDrawRectF() => SDL_RenderRect()
+* SDL_RenderDrawRectsF() => SDL_RenderRects()
+* SDL_RenderFillRectF() => SDL_RenderFillRect()
+* SDL_RenderFillRectsF() => SDL_RenderFillRects()
 * SDL_RenderGetClipRect() => SDL_GetRenderClipRect()
 * SDL_RenderGetIntegerScale() => SDL_GetRenderIntegerScale()
 * SDL_RenderGetLogicalSize() => SDL_GetRenderLogicalSize()
@@ -505,6 +497,18 @@ The following functions have been renamed:
 * SDL_RenderSetScale() => SDL_SetRenderScale()
 * SDL_RenderSetVSync() => SDL_SetRenderVSync()
 * SDL_RenderSetViewport() => SDL_SetRenderViewport()
+
+The following functions have been removed:
+* SDL_RenderCopy()
+* SDL_RenderCopyEx()
+* SDL_RenderDrawLine()
+* SDL_RenderDrawLines()
+* SDL_RenderDrawPoint()
+* SDL_RenderDrawPoints()
+* SDL_RenderDrawRect()
+* SDL_RenderDrawRects()
+* SDL_RenderFillRect()
+* SDL_RenderFillRects()
 
 ## SDL_rwops.h
 
