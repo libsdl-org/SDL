@@ -150,7 +150,7 @@ void SDL_SYS_SetupThread(const char *name)
     if (name != NULL) {
 #ifndef __WINRT__ /* !!! FIXME: There's no LoadLibrary() in WinRT; don't know if SetThreadDescription is available there at all at the moment. */
         static pfnSetThreadDescription pSetThreadDescription = NULL;
-        static HMODULE kernel32 = 0;
+        static HMODULE kernel32 = NULL;
 
         if (!kernel32) {
             kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
