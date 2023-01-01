@@ -225,7 +225,7 @@ static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRC
             }
             ((SDL_DisplayModeData *)mode->driverdata)->xrandr_mode = modeID;
 #ifdef X11MODES_DEBUG
-            printf("XRandR mode %d: %dx%d@(%d / %d)Hz\n", (int)modeID, mode->w, mode->h, mode->refresh_rate_numerator, mode->refresh_rate_denominator);
+            printf("XRandR mode %d: %dx%d@%gHz\n", (int)modeID, mode->w, mode->h, (double)mode->refresh_rate_numerator / mode->refresh_rate_denominator);
 #endif
             return SDL_TRUE;
         }
