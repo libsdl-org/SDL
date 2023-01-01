@@ -884,3 +884,4 @@
 /* New API symbols are added at the end */
 #define SDL_modf SDL_modf_REAL
 #define SDL_modff SDL_modff_REAL
+#define SDL_GetRenderVSync SDL_GetRenderVSync_REAL
