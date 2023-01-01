@@ -971,9 +971,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         /* If set, hint "explicitly controls which UI orientations are allowed". */
         if (hint.contains("LandscapeRight") && hint.contains("LandscapeLeft")) {
             orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-        } else if (hint.contains("LandscapeRight")) {
-            orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
         } else if (hint.contains("LandscapeLeft")) {
+            orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+        } else if (hint.contains("LandscapeRight")) {
             orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
         }
 
