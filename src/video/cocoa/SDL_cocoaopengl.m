@@ -467,11 +467,16 @@ int Cocoa_GL_SetSwapInterval(_THIS, int interval)
     }
 }
 
-int Cocoa_GL_GetSwapInterval(_THIS)
+int Cocoa_GL_GetSwapInterval(_THIS, int *interval)
 {
     @autoreleasepool {
         SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)SDL_GL_GetCurrentContext();
-        return nscontext ? SDL_AtomicGet(&nscontext->swapIntervalSetting) : 0;
+        if (nscontext) {
+            *interval = SDL_AtomicGet(&nscontext->swapIntervalSetting);
+            return 0;
+        } else {
+            return -1;
+        }
     }
 }
 

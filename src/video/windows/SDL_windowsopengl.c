@@ -866,13 +866,14 @@ int WIN_GL_SetSwapInterval(_THIS, int interval)
     return 0;
 }
 
-int WIN_GL_GetSwapInterval(_THIS)
+int WIN_GL_GetSwapInterval(_THIS, int *interval)
 {
-    int retval = 0;
     if (_this->gl_data->wglGetSwapIntervalEXT) {
-        retval = _this->gl_data->wglGetSwapIntervalEXT();
+        *interval = _this->gl_data->wglGetSwapIntervalEXT();
+        return 0;
+    } else {
+        return -1;
     }
-    return retval;
 }
 
 int WIN_GL_SwapWindow(_THIS, SDL_Window *window)

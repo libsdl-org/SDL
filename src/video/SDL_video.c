@@ -4066,10 +4066,7 @@ int SDL_GL_GetSwapInterval(int *interval)
     } else if (SDL_GL_GetCurrentContext() == NULL) {
         return SDL_SetError("no current context");;
     } else if (_this->GL_GetSwapInterval) {
-        int val = _this->GL_GetSwapInterval(_this);
-         
-        *interval = val;
-        return 0;
+        return _this->GL_GetSwapInterval(_this, interval);
     } else {
         return SDL_SetError("not implemented");;
     }

@@ -885,7 +885,8 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
          * it has the wrong value cached. To work around it, we just run a no-op
          * update to the current value.
          */
-        int currentInterval = X11_GL_GetSwapInterval(_this);
+        int currentInterval = 0;
+        X11_GL_GetSwapInterval(_this, &currentInterval);
         _this->gl_data->glXSwapIntervalEXT(display, drawable, currentInterval);
         _this->gl_data->glXSwapIntervalEXT(display, drawable, interval);
 
@@ -911,7 +912,7 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
     return status;
 }
 
-int X11_GL_GetSwapInterval(_THIS)
+int X11_GL_GetSwapInterval(_THIS, int *interval)
 {
     if (_this->gl_data->glXSwapIntervalEXT) {
         Display *display = ((SDL_VideoData *)_this->driverdata)->display;
@@ -920,7 +921,7 @@ int X11_GL_GetSwapInterval(_THIS)
                                                    ->driverdata;
         Window drawable = windowdata->xwindow;
         unsigned int allow_late_swap_tearing = 0;
-        unsigned int interval = 0;
+        unsigned int val = 0;
 
         if (_this->gl_data->HAS_GLX_EXT_swap_control_tear) {
             _this->gl_data->glXQueryDrawable(display, drawable,
@@ -929,17 +930,21 @@ int X11_GL_GetSwapInterval(_THIS)
         }
 
         _this->gl_data->glXQueryDrawable(display, drawable,
-                                         GLX_SWAP_INTERVAL_EXT, &interval);
+                                         GLX_SWAP_INTERVAL_EXT, &val);
 
-        if ((allow_late_swap_tearing) && (interval > 0)) {
-            return -((int)interval);
+        if ((allow_late_swap_tearing) && (val > 0)) {
+            *interval = -((int)val);
+            return 0;
         }
 
-        return (int)interval;
+        *interval = (int)val;
+        return 0;
     } else if (_this->gl_data->glXGetSwapIntervalMESA) {
-        return _this->gl_data->glXGetSwapIntervalMESA();
+        *interval = _this->gl_data->glXGetSwapIntervalMESA();
+        return 0;
     } else {
-        return swapinterval;
+        *interval = swapinterval;
+        return 0;
     }
 }
 

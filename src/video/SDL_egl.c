@@ -1180,14 +1180,14 @@ int SDL_EGL_SetSwapInterval(_THIS, int interval)
     return SDL_EGL_SetError("Unable to set the EGL swap interval", "eglSwapInterval");
 }
 
-int SDL_EGL_GetSwapInterval(_THIS)
+int SDL_EGL_GetSwapInterval(_THIS, int *interval)
 {
     if (!_this->egl_data) {
-        SDL_SetError("EGL not initialized");
-        return 0;
+        return SDL_SetError("EGL not initialized");
     }
 
-    return _this->egl_data->egl_swapinterval;
+    *interval = _this->egl_data->egl_swapinterval;
+    return 0;
 }
 
 int SDL_EGL_SwapBuffers(_THIS, EGLSurface egl_surface)
