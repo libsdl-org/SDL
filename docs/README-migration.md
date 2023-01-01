@@ -838,6 +838,7 @@ SDL_SetWindowBrightness and SDL_SetWindowGammaRamp have been removed from the AP
 
 Programs which have access to shaders can implement more robust versions of those functions using custom shader code rendered as a post-process effect.
 
+'SDL_GL_GetSwapInterval()' takes 'interval' as an output parameter and returns -1 on error.
 
 Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
 You can instead use 'SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);'
