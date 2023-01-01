@@ -25,6 +25,7 @@
 #include "SDL_sysrender.h"
 #include "software/SDL_render_sw_c.h"
 #include "../video/SDL_pixels_c.h"
+#include "../video/SDL_video_c.h"
 
 #if defined(__ANDROID__)
 #include "../core/android/SDL_android.h"
@@ -4483,6 +4484,14 @@ int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
     }
 
     renderer->wanted_vsync = vsync ? SDL_TRUE : SDL_FALSE;
+
+    /* for the software renderer, forward eventually the call to the WindowTexture renderer */
+    if (renderer->info.flags & SDL_RENDERER_SOFTWARE) {
+        if (SDL_SetWindowTextureVSync(renderer->window, vsync) == 0) {
+            renderer->simulate_vsync = SDL_FALSE;
+            return 0;
+        }
+    }
 
     if (!renderer->SetVSync ||
         renderer->SetVSync(renderer, vsync) < 0) {

@@ -55,4 +55,6 @@ extern int SDL_VideoInit(const char *driver_name);
  */
 extern void SDL_VideoQuit(void);
 
+extern int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync);
+
 #endif /* SDL_video_c_h_ */
