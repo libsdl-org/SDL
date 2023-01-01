@@ -358,6 +358,20 @@ static void SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window *window
     SDL_free(data);
 }
 
+int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync)
+{
+    SDL_WindowTextureData *data;
+
+    data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
+    if (data == NULL) {
+        return -1;
+    }
+    if (data->renderer == NULL ) {
+        return -1;
+    }
+    return SDL_SetRenderVSync(data->renderer, vsync);
+}
+
 static int SDLCALL cmpmodes(const void *A, const void *B)
 {
     const SDL_DisplayMode *a = (const SDL_DisplayMode *)A;
