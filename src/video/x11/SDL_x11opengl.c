@@ -940,7 +940,11 @@ int X11_GL_GetSwapInterval(_THIS, int *interval)
         *interval = (int)val;
         return 0;
     } else if (_this->gl_data->glXGetSwapIntervalMESA) {
-        *interval = _this->gl_data->glXGetSwapIntervalMESA();
+        int val = _this->gl_data->glXGetSwapIntervalMESA();
+        if (val == GLX_BAD_CONTEXT) {
+            return SDL_SetError("GLX_BAD_CONTEXT");
+        }
+        *interval = val;
         return 0;
     } else {
         *interval = swapinterval;
