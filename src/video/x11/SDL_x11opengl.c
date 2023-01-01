@@ -922,7 +922,6 @@ int X11_GL_GetSwapInterval(_THIS, int *interval)
         Window drawable = windowdata->xwindow;
         unsigned int allow_late_swap_tearing = 0;
         unsigned int val = 0;
-        int ret;
 
         if (_this->gl_data->HAS_GLX_EXT_swap_control_tear) {
             _this->gl_data->glXQueryDrawable(display, drawable,
@@ -930,12 +929,8 @@ int X11_GL_GetSwapInterval(_THIS, int *interval)
                                              &allow_late_swap_tearing);
         }
 
-        ret = _this->gl_data->glXQueryDrawable(display, drawable,
+        _this->gl_data->glXQueryDrawable(display, drawable,
                                          GLX_SWAP_INTERVAL_EXT, &val);
-
-        if (ret == GLXBadDrawable) {
-            return SDL_SetErrorr("GLXBadDrawable");
-        }
 
         if ((allow_late_swap_tearing) && (val > 0)) {
             *interval = -((int)val);
@@ -945,11 +940,7 @@ int X11_GL_GetSwapInterval(_THIS, int *interval)
         *interval = (int)val;
         return 0;
     } else if (_this->gl_data->glXGetSwapIntervalMESA) {
-        int val = _this->gl_data->glXGetSwapIntervalMESA();
-        if (val == GLX_BAD_CONTEXT) {
-            return SDL_SetError("GLX_BAD_CONTEXT");
-        }
-        *interval = val;
+        *interval = _this->gl_data->glXGetSwapIntervalMESA();
         return 0;
     } else {
         *interval = swapinterval;
