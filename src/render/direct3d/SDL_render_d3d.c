@@ -302,8 +302,8 @@ static int D3D_ActivateRenderer(SDL_Renderer *renderer)
             data->pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
             {
                 double rr = 0;
-                if (fullscreen_mode.refresh_rate_denominator) {
-                    rr = (double) fullscreen_mode.refresh_rate_numerator / (double) fullscreen_mode.refresh_rate_denominator;
+                if (fullscreen_mode.refresh_rate.denominator) {
+                    rr = (double) fullscreen_mode.refresh_rate.numerator / (double) fullscreen_mode.refresh_rate.denominator;
                 }
                 data->pparams.FullScreen_RefreshRateInHz = (int) rr;
             }
@@ -1635,8 +1635,8 @@ D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
         pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
         {
             double rr = 0;
-            if (fullscreen_mode.refresh_rate_denominator) {
-                rr = (double) fullscreen_mode.refresh_rate_numerator / (double) fullscreen_mode.refresh_rate_denominator;
+            if (fullscreen_mode.refresh_rate.denominator) {
+                rr = (double) fullscreen_mode.refresh_rate.numerator / (double) fullscreen_mode.refresh_rate.denominator;
             }
             pparams.FullScreen_RefreshRateInHz = (int) rr;
         }

@@ -209,8 +209,8 @@ int VITA_VideoInit(_THIS)
     }
 #endif
 
-    current_mode.refresh_rate_numerator = 60;
-    current_mode.refresh_rate_denominator = 1;
+    current_mode.refresh_rate.numerator = 60;
+    current_mode.refresh_rate.denominator = 1;
     /* 32 bpp for default */
     current_mode.format = SDL_PIXELFORMAT_ABGR8888;
 

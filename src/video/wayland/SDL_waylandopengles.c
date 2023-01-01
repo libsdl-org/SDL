@@ -127,8 +127,8 @@ int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         /* ~10 frames (or 1 sec), so we'll progress even if throttled to zero. */
         Uint64 max_wait;
 
-        if (sdldisplay->current_mode.refresh_rate_denominator && sdldisplay->current_mode.refresh_rate_numerator) {
-            double rr = (double) sdldisplay->current_mode.refresh_rate_numerator / (double) sdldisplay->current_mode.refresh_rate_denominator;
+        if (sdldisplay->current_mode.refresh_rate.denominator && sdldisplay->current_mode.refresh_rate.numerator) {
+            double rr = (double) sdldisplay->current_mode.refresh_rate.numerator / (double) sdldisplay->current_mode.refresh_rate.denominator;
             max_wait = SDL_GetTicksNS() + (Uint64)((double) (SDL_NS_PER_SECOND * 10) / rr);
         } else {
             max_wait = SDL_GetTicksNS() + SDL_NS_PER_SECOND;

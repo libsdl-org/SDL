@@ -571,8 +571,8 @@ static void display_handle_done(void *data,
         native_mode.h = driverdata->native_height;
     }
     /* mHz to Hz */
-    native_mode.refresh_rate_numerator = driverdata->refresh;
-    native_mode.refresh_rate_denominator = 1000;
+    native_mode.refresh_rate.numerator = driverdata->refresh;
+    native_mode.refresh_rate.denominator = 1000;
     native_mode.driverdata = driverdata->output;
 
     /* The scaled desktop mode */
@@ -595,8 +595,8 @@ static void display_handle_done(void *data,
         desktop_mode.h = driverdata->width;
     }
     /* mHz to Hz */
-    desktop_mode.refresh_rate_numerator = driverdata->refresh;
-    desktop_mode.refresh_rate_denominator = 1000;
+    desktop_mode.refresh_rate.numerator = driverdata->refresh;
+    desktop_mode.refresh_rate.denominator = 1000;
     desktop_mode.driverdata = driverdata->output;
 
     /*

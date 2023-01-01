@@ -26,7 +26,7 @@ print_mode(const char *prefix, const SDL_DisplayMode *mode)
 
     SDL_Log("%s: fmt=%s w=%d h=%d refresh=%gHz\n",
             prefix, SDL_GetPixelFormatName(mode->format),
-            mode->w, mode->h, (double)mode->refresh_rate_numerator / mode->refresh_rate_denominator);
+            mode->w, mode->h, (double) mode->refresh_rate.numerator / mode->refresh_rate.denominator);
 }
 
 int main(int argc, char *argv[])

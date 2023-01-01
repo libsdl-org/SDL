@@ -430,8 +430,8 @@ int video_getClosestDisplayModeCurrentResolution(void *arg)
         for (variation = 0; variation < 8; variation++) {
             /* Vary constraints on other query parameters */
             target.format = (variation & 1) ? current.format : 0;
-            target.refresh_rate_numerator = (variation & 2) ? current.refresh_rate_numerator : 0;
-            target.refresh_rate_denominator = 1;
+            target.refresh_rate.numerator = (variation & 2) ? current.refresh_rate.numerator : 0;
+            target.refresh_rate.denominator = 1;
             target.driverdata = (variation & 4) ? current.driverdata : 0;
 
             /* Make call */
@@ -477,8 +477,8 @@ int video_getClosestDisplayModeRandomResolution(void *arg)
             target.w = (variation & 1) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
             target.h = (variation & 2) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
             target.format = (variation & 4) ? SDLTest_RandomIntegerInRange(1, 10) : 0;
-            target.refresh_rate_numerator = (variation & 8) ? SDLTest_RandomIntegerInRange(25, 120) : 0;
-            target.refresh_rate_denominator = 1;
+            target.refresh_rate.numerator = (variation & 8) ? SDLTest_RandomIntegerInRange(25, 120) : 0;
+            target.refresh_rate.denominator = 1;
             target.driverdata = 0;
 
             /* Make call; may or may not find anything, so don't validate any further */
@@ -505,8 +505,8 @@ int video_getWindowDisplayMode(void *arg)
     /* Invalidate part of the mode content so we can check values later */
     mode.w = -1;
     mode.h = -1;
-    mode.refresh_rate_numerator = -1;
-    mode.refresh_rate_denominator = 1;
+    mode.refresh_rate.numerator = -1;
+    mode.refresh_rate.denominator = 1;
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
@@ -516,7 +516,7 @@ int video_getWindowDisplayMode(void *arg)
         SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0, got: %d", result);
         SDLTest_AssertCheck(mode.w > 0, "Validate mode.w content; expected: >0, got: %d", mode.w);
         SDLTest_AssertCheck(mode.h > 0, "Validate mode.h content; expected: >0, got: %d", mode.h);
-        SDLTest_AssertCheck(mode.refresh_rate_numerator > 0, "Validate mode.refresh_rate_numerator content; expected: >0, got: %d", mode.refresh_rate_numerator);
+        SDLTest_AssertCheck(mode.refresh_rate.numerator > 0, "Validate mode.refresh_rate_numerator content; expected: >0, got: %d", mode.refresh_rate.numerator);
     }
 
     /* Clean up */

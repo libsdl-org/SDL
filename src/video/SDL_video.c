@@ -359,8 +359,8 @@ static void SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window *window
 }
 
 static double get_refresh_rate(const SDL_DisplayMode *dm) {
-    if (dm->refresh_rate_denominator) {
-        return (double) dm->refresh_rate_numerator / (double) dm->refresh_rate_denominator;
+    if (dm->refresh_rate.denominator) {
+        return (double) dm->refresh_rate.numerator / (double) dm->refresh_rate.denominator;
     }
     return 0.0;
 }
@@ -924,7 +924,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
     }
 
     /* Default to the desktop refresh rate */
-    if (mode->refresh_rate_numerator) {
+    if (mode->refresh_rate.numerator) {
         target_refresh_rate = get_refresh_rate(mode);
     } else {
         target_refresh_rate = get_refresh_rate(&display->desktop_mode);
@@ -989,12 +989,12 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
             closest->w = mode->w;
             closest->h = mode->h;
         }
-        if (match->refresh_rate_numerator) {
-            closest->refresh_rate_numerator = match->refresh_rate_numerator;
-            closest->refresh_rate_denominator = match->refresh_rate_denominator;
+        if (match->refresh_rate.numerator) {
+            closest->refresh_rate.numerator = match->refresh_rate.numerator;
+            closest->refresh_rate.denominator = match->refresh_rate.denominator;
         } else {
-            closest->refresh_rate_numerator = mode->refresh_rate_numerator;
-            closest->refresh_rate_denominator = mode->refresh_rate_denominator;
+            closest->refresh_rate.numerator = mode->refresh_rate.numerator;
+            closest->refresh_rate.denominator = mode->refresh_rate.denominator;
         }
         closest->driverdata = match->driverdata;
 
@@ -1053,9 +1053,9 @@ static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, const SDL_Dis
         if (!display_mode.h) {
             display_mode.h = display->current_mode.h;
         }
-        if (!display_mode.refresh_rate_numerator) {
-            display_mode.refresh_rate_numerator = display->current_mode.refresh_rate_numerator;
-            display_mode.refresh_rate_denominator = display->current_mode.refresh_rate_denominator;
+        if (!display_mode.refresh_rate.numerator) {
+            display_mode.refresh_rate.numerator = display->current_mode.refresh_rate.numerator;
+            display_mode.refresh_rate.denominator = display->current_mode.refresh_rate.denominator;
         }
 
         /* Get a good video mode, the closest one possible */

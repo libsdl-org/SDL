@@ -386,8 +386,8 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
            display mode refresh rate, but Vulkan expects higher precision. */
         {
             double rr = 0.0;
-            if (window->fullscreen_mode.refresh_rate_denominator) {
-                rr = (double) window->fullscreen_mode.refresh_rate_numerator / (double) window->fullscreen_mode.refresh_rate_denominator;
+            if (window->fullscreen_mode.refresh_rate.denominator) {
+                rr = (double) window->fullscreen_mode.refresh_rate.numerator / (double) window->fullscreen_mode.refresh_rate.denominator;
             }
             new_mode_parameters.refreshRate = rr * 1000;
         }

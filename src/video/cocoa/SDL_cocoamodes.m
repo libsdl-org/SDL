@@ -265,13 +265,13 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
 
     /* see GetDisplayModeRefreshRate() */
     {
-        mode->refresh_rate_numerator = refreshrate;
-        mode->refresh_rate_denominator = 1;
+        mode->refresh_rate.numerator = refreshrate;
+        mode->refresh_rate.denominator = 1;
         if (link != NULL) {
             CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
             if ((time.flags & kCVTimeIsIndefinite) == 0 && time.timeValue != 0) {
-                mode->refresh_rate_numerator = time.timeScale;
-                mode->refresh_rate_denominator = time.timeValue;
+                mode->refresh_rate.numerator = time.timeScale;
+                mode->refresh_rate.denominator = time.timeValue;
             }
         }
     }

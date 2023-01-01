@@ -923,8 +923,8 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
         display_index = 0;
     }
     if (SDL_GetDesktopDisplayMode(display_index, &mode) == 0) {
-        if (mode.refresh_rate_denominator) {
-            refresh_rate = (double) mode.refresh_rate_numerator / (double) mode.refresh_rate_denominator;
+        if (mode.refresh_rate.denominator) {
+            refresh_rate = (double) mode.refresh_rate.numerator / (double) mode.refresh_rate.denominator;
         }
     }
     if (!refresh_rate) {
