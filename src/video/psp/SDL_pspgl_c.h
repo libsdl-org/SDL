@@ -45,6 +45,6 @@ extern SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window *window);
 extern int PSP_GL_LoadLibrary(_THIS, const char *path);
 extern void PSP_GL_UnloadLibrary(_THIS);
 extern int PSP_GL_SetSwapInterval(_THIS, int interval);
-extern int PSP_GL_GetSwapInterval(_THIS);
+extern int PSP_GL_GetSwapInterval(_THIS, int *interval);
 
 #endif /* SDL_pspgl_c_h_ */
