@@ -4492,3 +4492,13 @@ int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
     }
     return 0;
 }
+
+int SDL_GetRenderVSync(SDL_Renderer *renderer, int *vsync)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    if (vsync == NULL) {
+        return SDL_InvalidParamError("vsync");
+    }
+    *vsync = renderer->wanted_vsync;
+    return 0;
+}
