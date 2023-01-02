@@ -156,7 +156,7 @@ static int VIVANTE_AddVideoDisplays(_THIS)
         break;
     }
     /* FIXME: How do we query refresh rate? */
-    current_mode.refresh_rate = 60;
+    current_mode.refresh_rate = 60.0f;
 
     SDL_zero(display);
     display.name = VIVANTE_GetDisplayName(_this);

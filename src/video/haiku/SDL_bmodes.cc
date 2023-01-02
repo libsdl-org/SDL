@@ -169,7 +169,7 @@ static void _BDisplayModeToSdlDisplayMode(display_mode *bmode,
         SDL_DisplayMode *mode) {
     mode->w = bmode->virtual_width;
     mode->h = bmode->virtual_height;
-    mode->refresh_rate = (int)get_refresh_rate(*bmode);
+    mode->refresh_rate = get_refresh_rate(*bmode);
 
 #if WRAP_BMODE
     SDL_DisplayModeData *data = (SDL_DisplayModeData*)SDL_calloc(1,

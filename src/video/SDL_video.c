@@ -373,7 +373,7 @@ static int SDLCALL cmpmodes(const void *A, const void *B)
     } else if (SDL_PIXELLAYOUT(a->format) != SDL_PIXELLAYOUT(b->format)) {
         return SDL_PIXELLAYOUT(b->format) - SDL_PIXELLAYOUT(a->format);
     } else if (a->refresh_rate != b->refresh_rate) {
-        return b->refresh_rate - a->refresh_rate;
+        return (int)(b->refresh_rate * 100) - (int)(a->refresh_rate * 100);
     }
     return 0;
 }
@@ -891,7 +891,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
                                                             SDL_DisplayMode *closest)
 {
     Uint32 target_format;
-    int target_refresh_rate;
+    float target_refresh_rate;
     int i;
     SDL_DisplayMode *current, *match;
 

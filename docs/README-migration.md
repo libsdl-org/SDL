@@ -834,28 +834,21 @@ SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in S
 
 ## SDL_video.h
 
+SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_VIDEO_DRIVER hint.
+
+'SDL_WINDOW_SHOW' flag has been removed. Windows are shown by default and can be created hidden by using the SDL_WINDOW_HIDDEN flag.
+
+The refresh rate in SDL_DisplayMode is now a float.
+
 SDL_SetWindowBrightness and SDL_SetWindowGammaRamp have been removed from the API, because they interact poorly with modern operating systems and aren't able to limit their effects to the SDL window.
 
 Programs which have access to shaders can implement more robust versions of those functions using custom shader code rendered as a post-process effect.
 
-'SDL_GL_GetSwapInterval()' takes 'interval' as an output parameter and returns -1 on error.
+Removed SDL_GL_CONTEXT_EGL from OpenGL configuration attributes. You can instead use `SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);`
 
-Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
-You can instead use 'SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);'
+SDL_GL_SwapWindow() returns 0 if the function succeeds or a negative error code if there was an error.
 
-'SDL_GL_SwapWindow()' returns an error code.
-
-SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_VIDEO_DRIVER hint.
-
-'SDL_WINDOW_SHOW' flag has been removed. It's activated by default, and can be unactivated by using SDL_WINDOW_HIDDEN
-
-
-
-
-
-
-
-
+SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
 The following functions have been renamed:
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayIndexForPoint()
