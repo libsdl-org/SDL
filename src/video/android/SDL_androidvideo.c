@@ -61,7 +61,7 @@ int Android_SurfaceHeight = 0;
 static int Android_DeviceWidth = 0;
 static int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; /* Default SurfaceView format, in case this is queried before being filled */
-static int Android_ScreenRate = 0;
+static float Android_ScreenRate = 0;
 SDL_sem *Android_PauseSem = NULL;
 SDL_sem *Android_ResumeSem = NULL;
 SDL_mutex *Android_ActivityMutex = NULL;
@@ -180,7 +180,8 @@ int Android_VideoInit(_THIS)
     mode.format = Android_ScreenFormat;
     mode.w = Android_DeviceWidth;
     mode.h = Android_DeviceHeight;
-    mode.refresh_rate = Android_ScreenRate;
+    mode.refresh_rate.numerator = (int) (Android_ScreenRate * 1000.0);
+    mode.refresh_rate.denominator = 1000;
     mode.driverdata = NULL;
 
     display_index = SDL_AddBasicVideoDisplay(&mode);
@@ -217,7 +218,7 @@ void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int device
     Android_SurfaceHeight = surfaceHeight;
     Android_DeviceWidth = deviceWidth;
     Android_DeviceHeight = deviceHeight;
-    Android_ScreenRate = (int)rate;
+    Android_ScreenRate = rate;
 }
 
 static Uint32 format_to_pixelFormat(int format)
@@ -275,7 +276,8 @@ void Android_SendResize(SDL_Window *window)
         display->desktop_mode.format = Android_ScreenFormat;
         display->desktop_mode.w = Android_DeviceWidth;
         display->desktop_mode.h = Android_DeviceHeight;
-        display->desktop_mode.refresh_rate = Android_ScreenRate;
+        display->desktop_mode.refresh_rate.numerator = Android_ScreenRate;
+        display->desktop_mode.refresh_rate.denominator = 1;
     }
 
     if (window) {
@@ -285,7 +287,8 @@ void Android_SendResize(SDL_Window *window)
         display->display_modes[0].format = Android_ScreenFormat;
         display->display_modes[0].w = Android_DeviceWidth;
         display->display_modes[0].h = Android_DeviceHeight;
-        display->display_modes[0].refresh_rate = Android_ScreenRate;
+        display->display_modes->refresh_rate.numerator = Android_ScreenRate;
+        display->display_modes->refresh_rate.denominator = 1;
         display->current_mode = display->display_modes[0];
 
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, Android_SurfaceWidth, Android_SurfaceHeight);

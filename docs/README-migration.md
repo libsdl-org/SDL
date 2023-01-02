@@ -840,6 +840,8 @@ Programs which have access to shaders can implement more robust versions of thos
 
 'SDL_GL_GetSwapInterval()' takes 'interval' as an output parameter and returns -1 on error.
 
+'SDL_DisplayMode.refresh_rate' is exposed as a SDL_RefreshRate (with 'refresh_rate.numerator' and 'refresh_rate.denominator')
+
 Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
 You can instead use 'SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);'
 

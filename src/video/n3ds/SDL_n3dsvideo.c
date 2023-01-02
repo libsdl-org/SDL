@@ -120,7 +120,8 @@ AddN3DSDisplay(gfxScreen_t screen)
 
     mode.w = (screen == GFX_TOP) ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_BOTTOM;
     mode.h = GSP_SCREEN_WIDTH;
-    mode.refresh_rate = 60;
+    mode.refresh_rate.numerator = 60;
+    mode.refresh_rate.denominator = 1;
     mode.format = FRAMEBUFFER_FORMAT;
     mode.driverdata = NULL;
 

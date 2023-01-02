@@ -430,7 +430,8 @@ int WIN_VideoInit(_THIS)
 
         SDL_zero(current_mode);
         D3D12_XBOX_GetResolution(&current_mode.w, &current_mode.h);
-        current_mode.refresh_rate = 60;
+        current_mode.refresh_rate.numerator = 60;
+        current_mode.refresh_rate.denominator = 1;
         current_mode.format = SDL_PIXELFORMAT_ARGB8888;
 
         SDL_zero(display);

@@ -270,7 +270,8 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
     }
 
     mode.format = SDL_PIXELFORMAT_ABGR8888;
-    mode.refresh_rate = (int)UIKit_GetDisplayModeRefreshRate(uiscreen);
+    mode.refresh_rate.numerator = (int)UIKit_GetDisplayModeRefreshRate(uiscreen);
+    mode.refresh_rate.denominator = 1;
     mode.w = w;
     mode.h = h;
 
@@ -315,7 +316,8 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
 
     mode.format = SDL_PIXELFORMAT_ABGR8888;
-    mode.refresh_rate = (int)UIKit_GetDisplayModeRefreshRate(uiscreen);
+    mode.refresh_rate.numerator = (int)UIKit_GetDisplayModeRefreshRate(uiscreen);
+    mode.refresh_rate.denominator = 1;
     mode.w = (int)size.width;
     mode.h = (int)size.height;
 

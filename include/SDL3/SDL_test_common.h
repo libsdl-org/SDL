@@ -78,7 +78,7 @@ typedef struct
     int logical_h;
     float scale;
     int depth;
-    int refresh_rate;
+    double refresh_rate;
     int num_windows;
     SDL_Window **windows;
 

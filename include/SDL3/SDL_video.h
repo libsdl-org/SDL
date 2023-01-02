@@ -40,6 +40,16 @@ extern "C" {
 #endif
 
 /**
+ *  \brief  The structure that defines a refresh rate, which can be calculated
+ *  as 'numerator / denominator'
+ */
+typedef struct
+{
+    Uint32 numerator;       /**< Numerator */
+    Uint32 denominator;     /**< Denominator */
+} SDL_RefreshRate;
+
+/**
  *  \brief  The structure that defines a display mode
  *
  *  \sa SDL_GetNumDisplayModes()
@@ -52,11 +62,11 @@ extern "C" {
  */
 typedef struct
 {
-    Uint32 format;              /**< pixel format */
-    int w;                      /**< width, in screen coordinates */
-    int h;                      /**< height, in screen coordinates */
-    int refresh_rate;           /**< refresh rate (or zero for unspecified) */
-    void *driverdata;           /**< driver-specific data, initialize to 0 */
+    Uint32 format;                  /**< pixel format */
+    int w;                          /**< width, in screen coordinates */
+    int h;                          /**< height, in screen coordinates */
+    SDL_RefreshRate refresh_rate;   /**< refresh rate (or zero for unspecified) */
+    void *driverdata;               /**< driver-specific data, initialize to 0 */
 } SDL_DisplayMode;
 
 /**

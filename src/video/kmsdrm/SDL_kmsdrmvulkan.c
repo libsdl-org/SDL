@@ -384,7 +384,13 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         new_mode_parameters.visibleRegion.height = window->h;
         /* SDL (and DRM, if we look at drmModeModeInfo vrefresh) uses plain integer Hz for
            display mode refresh rate, but Vulkan expects higher precision. */
-        new_mode_parameters.refreshRate = window->fullscreen_mode.refresh_rate * 1000;
+        {
+            double rr = 0.0;
+            if (window->fullscreen_mode.refresh_rate.denominator) {
+                rr = (double) window->fullscreen_mode.refresh_rate.numerator / (double) window->fullscreen_mode.refresh_rate.denominator;
+            }
+            new_mode_parameters.refreshRate = rr * 1000;
+        }
 
         SDL_zero(display_mode_create_info);
         display_mode_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR;
