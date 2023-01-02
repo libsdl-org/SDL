@@ -192,9 +192,12 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 #define XRANDR_ROTATION_LEFT  (1 << 1)
 #define XRANDR_ROTATION_RIGHT (1 << 3)
 
-static int CalculateXRandRRefreshRate(const XRRModeInfo *info)
+static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
 {
-    return (info->hTotal && info->vTotal) ? SDL_round(((double)info->dotClock / (double)(info->hTotal * info->vTotal))) : 0;
+    if (info->hTotal && info->vTotal) {
+        return ((100 * info->dotClock) / (info->hTotal * info->vTotal)) / 100.0f;
+    }
+    return 0.0f;
 }
 
 static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,

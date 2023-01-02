@@ -144,7 +144,7 @@ int PSP_VideoInit(_THIS)
     current_mode.w = 480;
     current_mode.h = 272;
 
-    current_mode.refresh_rate = 60;
+    current_mode.refresh_rate = 60.0f;
     /* 32 bpp for default */
     current_mode.format = SDL_PIXELFORMAT_ABGR8888;
     current_mode.driverdata = NULL;

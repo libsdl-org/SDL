@@ -256,7 +256,7 @@ static void WINRT_DXGIModeToSDLDisplayMode(const DXGI_MODE_DESC *dxgiMode, SDL_D
     SDL_zerop(sdlMode);
     sdlMode->w = dxgiMode->Width;
     sdlMode->h = dxgiMode->Height;
-    sdlMode->refresh_rate = dxgiMode->RefreshRate.Numerator / dxgiMode->RefreshRate.Denominator;
+    sdlMode->refresh_rate = (((100 * dxgiMode->RefreshRate.Numerator) / dxgiMode->RefreshRate.Denominator) / 100.0f);
     sdlMode->format = D3D11_DXGIFormatToSDLPixelFormat(dxgiMode->Format);
 }
 
@@ -307,7 +307,7 @@ static int WINRT_AddDisplaysForOutput(_THIS, IDXGIAdapter1 *dxgiAdapter1, int ou
         mode.w = (dxgiOutputDesc.DesktopCoordinates.right - dxgiOutputDesc.DesktopCoordinates.left);
         mode.h = (dxgiOutputDesc.DesktopCoordinates.bottom - dxgiOutputDesc.DesktopCoordinates.top);
         mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
-        mode.refresh_rate = 0; /* Display mode is unknown, so just fill in zero, as specified by SDL's header files */
+        mode.refresh_rate = 0.0f; /* Display mode is unknown, so just fill in zero, as specified by SDL's header files */
         display.desktop_mode = mode;
         display.current_mode = mode;
         if (!SDL_AddDisplayMode(&display, &mode)) {
@@ -427,7 +427,7 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
 #endif
 
                 mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
-                mode.refresh_rate = 0; /* Display mode is unknown, so just fill in zero, as specified by SDL's header files */
+                mode.refresh_rate = 0.0f; /* Display mode is unknown, so just fill in zero, as specified by SDL's header files */
                 display.desktop_mode = mode;
                 display.current_mode = mode;
                 bool error = SDL_AddDisplayMode(&display, &mode) < 0 ||

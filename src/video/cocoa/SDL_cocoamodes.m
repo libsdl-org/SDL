@@ -83,19 +83,19 @@ static int CG_SetError(const char *prefix, CGDisplayErr result)
     return SDL_SetError("%s: %s", prefix, error);
 }
 
-static int GetDisplayModeRefreshRate(CGDisplayModeRef vidmode, CVDisplayLinkRef link)
+static float GetDisplayModeRefreshRate(CGDisplayModeRef vidmode, CVDisplayLinkRef link)
 {
-    int refreshRate = (int)(CGDisplayModeGetRefreshRate(vidmode) + 0.5);
+    double refreshRate = CGDisplayModeGetRefreshRate(vidmode);
 
     /* CGDisplayModeGetRefreshRate can return 0 (eg for built-in displays). */
     if (refreshRate == 0 && link != NULL) {
         CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
         if ((time.flags & kCVTimeIsIndefinite) == 0 && time.timeValue != 0) {
-            refreshRate = (int)((time.timeScale / (double)time.timeValue) + 0.5);
+            refreshRate = (double)time.timeScale / time.timeValue;
         }
     }
 
-    return refreshRate;
+    return (int)(refreshRate * 100) / 100.0f;
 }
 
 static SDL_bool HasValidDisplayModeFlags(CGDisplayModeRef vidmode)
@@ -146,7 +146,7 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
     int width = (int)CGDisplayModeGetWidth(vidmode);
     int height = (int)CGDisplayModeGetHeight(vidmode);
     uint32_t ioflags = CGDisplayModeGetIOFlags(vidmode);
-    int refreshrate = GetDisplayModeRefreshRate(vidmode, link);
+    float refreshrate = GetDisplayModeRefreshRate(vidmode, link);
     Uint32 format = GetDisplayModePixelFormat(vidmode);
     bool interlaced = (ioflags & kDisplayModeInterlacedFlag) != 0;
     CFMutableArrayRef modes;
@@ -179,7 +179,8 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
         int i;
 
         for (i = 0; i < modescount; i++) {
-            int otherW, otherH, otherpixelW, otherpixelH, otherrefresh;
+            int otherW, otherH, otherpixelW, otherpixelH;
+            float otherrefresh;
             Uint32 otherformat;
             bool otherGUI;
             CGDisplayModeRef othermode = (CGDisplayModeRef)CFArrayGetValueAtIndex(modelist, i);
