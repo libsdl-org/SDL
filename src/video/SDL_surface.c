@@ -96,8 +96,8 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
     }
 
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
-	SDL_SetError("invalid format");
-	return NULL;
+        SDL_SetError("invalid format");
+        return NULL;
     } else {
         pitch = SDL_CalculatePitch(format, width, SDL_FALSE);
         if (pitch > SDL_MAX_SINT32) {
@@ -277,7 +277,7 @@ SDL_CreateRGBSurfaceWithFormatFrom(void *pixels,
     }
 
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
-	SDL_SetError("invalid format");
+        SDL_SetError("invalid format");
         return NULL;
     } else {
         minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
