@@ -39,13 +39,15 @@ SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
 /*
  * Calculate the pad-aligned scanline width of a surface.
  * Return SDL_SIZE_MAX on overflow.
+ *
+ * for FOURCC, use SDL_CalculateYUVSize()
  */
 static size_t
 SDL_CalculatePitch(Uint32 format, size_t width, SDL_bool minimal)
 {
     size_t pitch;
 
-    if (SDL_ISPIXELFORMAT_FOURCC(format) || SDL_BITSPERPIXEL(format) >= 8) {
+    if (SDL_BITSPERPIXEL(format) >= 8) {
         if (SDL_size_mul_overflow(width, SDL_BYTESPERPIXEL(format), &pitch)) {
             return SDL_SIZE_MAX;
         }
@@ -93,11 +95,16 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
         return NULL;
     }
 
-    pitch = SDL_CalculatePitch(format, width, SDL_FALSE);
-    if (pitch > SDL_MAX_SINT32) {
-        /* Overflow... */
-        SDL_OutOfMemory();
+    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+        SDL_SetError("invalid format");
         return NULL;
+    } else {
+        pitch = SDL_CalculatePitch(format, width, SDL_FALSE);
+        if (pitch > SDL_MAX_SINT32) {
+            /* Overflow... */
+            SDL_OutOfMemory();
+            return NULL;
+        }
     }
 
     /* Allocate the surface */
@@ -269,7 +276,12 @@ SDL_CreateRGBSurfaceWithFormatFrom(void *pixels,
         return NULL;
     }
 
-    minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
+    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+        SDL_SetError("invalid format");
+        return NULL;
+    } else {
+        minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
+    }
 
     if (pitch < 0 || (pitch > 0 && ((size_t)pitch) < minimalPitch)) {
         SDL_InvalidParamError("pitch");
