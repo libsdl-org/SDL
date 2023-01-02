@@ -277,7 +277,7 @@ static SDL_bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID
     }
 
     /* Move any existing joystick to another slot */
-    if (existing_instance >= 0) {
+    if (existing_instance > 0) {
         SDL_SetJoystickIDForPlayerIndex(SDL_FindFreePlayerIndex(), existing_instance);
     }
     return SDL_TRUE;
