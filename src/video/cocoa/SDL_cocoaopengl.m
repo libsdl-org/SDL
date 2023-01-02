@@ -475,6 +475,7 @@ int Cocoa_GL_GetSwapInterval(_THIS, int *interval)
             *interval = SDL_AtomicGet(&nscontext->swapIntervalSetting);
             return 0;
         } else {
+            SDL_SetError("no OpenGL context");
             return -1;
         }
     }
