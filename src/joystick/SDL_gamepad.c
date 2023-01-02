@@ -1928,7 +1928,6 @@ SDL_JoystickID *SDL_GetGamepads(int *count)
                 SDL_memmove(&joysticks[i], &joysticks[i+1], (num_gamepads + 1) * sizeof(joysticks[i]));
             }
         }
-        SDL_free(joysticks);
     }
     if (count) {
         *count = num_gamepads;
