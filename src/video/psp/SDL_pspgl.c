@@ -153,9 +153,10 @@ int PSP_GL_SetSwapInterval(_THIS, int interval)
     return SDL_SetError("Unable to set the EGL swap interval");
 }
 
-int PSP_GL_GetSwapInterval(_THIS)
+int PSP_GL_GetSwapInterval(_THIS, int *interval)
 {
-    return _this->gl_data->swapinterval;
+    *interval = _this->gl_data->swapinterval;
+    return 0;
 }
 
 int PSP_GL_SwapWindow(_THIS, SDL_Window *window)

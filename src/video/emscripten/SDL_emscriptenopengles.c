@@ -57,16 +57,19 @@ int Emscripten_GLES_SetSwapInterval(_THIS, int interval)
     return 0;
 }
 
-int Emscripten_GLES_GetSwapInterval(_THIS)
+int Emscripten_GLES_GetSwapInterval(_THIS, int *interval)
 {
     int mode, value;
 
     emscripten_get_main_loop_timing(&mode, &value);
 
-    if (mode == EM_TIMING_RAF)
-        return value;
-
-    return 0;
+    if (mode == EM_TIMING_RAF) {
+        *interval = value;
+        return 0;
+    } else {
+        *interval = 0;
+        return 0;
+    }
 }
 
 SDL_GLContext

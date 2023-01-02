@@ -92,14 +92,14 @@ int Wayland_GLES_SetSwapInterval(_THIS, int interval)
     return 0;
 }
 
-int Wayland_GLES_GetSwapInterval(_THIS)
+int Wayland_GLES_GetSwapInterval(_THIS, int *interval)
 {
     if (!_this->egl_data) {
-        SDL_SetError("EGL not initialized");
-        return 0;
+        return SDL_SetError("EGL not initialized");
     }
 
-    return _this->egl_data->egl_swapinterval;
+    *interval =_this->egl_data->egl_swapinterval;
+    return 0;
 }
 
 int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
