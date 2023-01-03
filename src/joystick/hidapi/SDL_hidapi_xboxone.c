@@ -700,7 +700,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             }
         } else if (size == 64) {
             if (ctx->last_state[46] != data[46]) {
-                SDL_PrivateJoystickButton(joystick, SDL_GAMEPAD_BUTTON_MISC1, (data[46] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+                SDL_SendJoystickButton(joystick, SDL_GAMEPAD_BUTTON_MISC1, (data[46] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
             }
         }
     }

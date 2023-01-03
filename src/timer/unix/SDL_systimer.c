@@ -158,8 +158,8 @@ void SDL_DelayNS(Uint64 ns)
 
     /* Set the timeout interval */
 #if HAVE_NANOSLEEP
-    remaining.tv_sec = (ns / SDL_NS_PER_SECOND);
-    remaining.tv_nsec = (ns % SDL_NS_PER_SECOND);
+    remaining.tv_sec = (time_t)(ns / SDL_NS_PER_SECOND);
+    remaining.tv_nsec = (long)(ns % SDL_NS_PER_SECOND);
 #else
     then = SDL_GetTicksNS();
 #endif

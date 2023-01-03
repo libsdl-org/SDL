@@ -922,7 +922,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
     }
 
     /* Default to the desktop refresh rate */
-    if (mode->refresh_rate) {
+    if (mode->refresh_rate > 0.0f) {
         target_refresh_rate = mode->refresh_rate;
     } else {
         target_refresh_rate = display->desktop_mode.refresh_rate;
@@ -981,7 +981,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
             closest->w = mode->w;
             closest->h = mode->h;
         }
-        if (match->refresh_rate) {
+        if (match->refresh_rate > 0.0f) {
             closest->refresh_rate = match->refresh_rate;
         } else {
             closest->refresh_rate = mode->refresh_rate;
@@ -1043,7 +1043,7 @@ static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, const SDL_Dis
         if (!display_mode.h) {
             display_mode.h = display->current_mode.h;
         }
-        if (!display_mode.refresh_rate) {
+        if (display_mode.refresh_rate == 0.0f) {
             display_mode.refresh_rate = display->current_mode.refresh_rate;
         }
 

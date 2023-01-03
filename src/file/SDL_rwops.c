@@ -375,7 +375,7 @@ stdio_read(SDL_RWops *context, void *ptr, Sint64 size)
 {
     size_t nread;
 
-    nread = fread(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
+    nread = fread(ptr, 1, (size_t)size, (FILE *)context->hidden.stdio.fp);
     if (nread == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
         return SDL_Error(SDL_EFREAD);
     }
@@ -387,7 +387,7 @@ stdio_write(SDL_RWops *context, const void *ptr, Sint64 size)
 {
     size_t nwrote;
 
-    nwrote = fwrite(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
+    nwrote = fwrite(ptr, 1, (size_t)size, (FILE *)context->hidden.stdio.fp);
     if (nwrote == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
         return SDL_Error(SDL_EFWRITE);
     }

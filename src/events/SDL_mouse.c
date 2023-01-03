@@ -508,7 +508,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
         mouse->x = x;
         mouse->y = y;
         mouse->has_position = SDL_TRUE;
-    } else if (!xrel && !yrel) { /* Drop events that don't change state */
+    } else if (xrel == 0.0f && yrel == 0.0f) { /* Drop events that don't change state */
 #ifdef DEBUG_MOUSE
         SDL_Log("Mouse event didn't change state - dropped!\n");
 #endif
