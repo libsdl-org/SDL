@@ -62,8 +62,6 @@ LOCAL_SRC_FILES := \
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES
 LOCAL_CFLAGS += \
 	-Wall -Wextra \
-	-Wdocumentation \
-	-Wdocumentation-unknown-command \
 	-Wmissing-prototypes \
 	-Wunreachable-code-break \
 	-Wunneeded-internal-declaration \
