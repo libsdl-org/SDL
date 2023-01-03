@@ -501,9 +501,7 @@ WatchJoystick(SDL_Joystick *joystick)
                     }
                 }
                 break;
-            case SDL_JOYBALLMOTION:
-                break;
-            case SDL_JOYBUTTONDOWN:
+            case SDL_JOYBUTTONUP:
                 if (event.jbutton.which == nJoystickID) {
                     SDL_GameControllerExtendedBind binding;
 
@@ -546,10 +544,10 @@ WatchJoystick(SDL_Joystick *joystick)
 
         SDL_Delay(15);
 
-        /* Wait 100 ms for joystick events to stop coming in,
+        /* Wait 30 ms for joystick events to stop coming in,
            in case a controller sends multiple events for a single control (e.g. axis and button for trigger)
         */
-        if (s_unPendingAdvanceTime && SDL_GetTicks() - s_unPendingAdvanceTime >= 100) {
+        if (s_unPendingAdvanceTime && SDL_GetTicks() - s_unPendingAdvanceTime >= 30) {
             SetCurrentBinding(s_iCurrentBinding + 1);
         }
     }
