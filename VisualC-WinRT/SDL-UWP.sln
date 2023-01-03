@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.33027.164
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL3-UWP", "SDL-UWP.vcxproj", "{89E9B32E-A86A-47C3-A948-D2B1622925CE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestDraw2", "TestDraw2\TestDraw2.vcxproj", "{95943BBE-F378-4068-A3FD-DAE1B8309B6E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdraw", "testdraw\testdraw.vcxproj", "{95943BBE-F378-4068-A3FD-DAE1B8309B6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

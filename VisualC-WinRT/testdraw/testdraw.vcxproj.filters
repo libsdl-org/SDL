@@ -42,7 +42,7 @@
     <ClCompile Include="..\..\test\main.cpp">
       <Filter>Content</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test\testdraw2.c">
+    <ClCompile Include="..\..\test\testdraw.c">
       <Filter>Content</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\test\SDL_test_assert.c">
