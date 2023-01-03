@@ -239,6 +239,7 @@ void loop()
             menurect.h = viewport.h - y;
             draw_modes_menu(window, renderer, menurect);
 
+            SDL_Delay(16);
             SDL_RenderPresent(renderer);
         }
     }
