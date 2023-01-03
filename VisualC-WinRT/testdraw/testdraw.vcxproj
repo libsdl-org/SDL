@@ -37,7 +37,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{95943bbe-f378-4068-a3fd-dae1b8309b6e}</ProjectGuid>
     <Keyword>DirectXApp</Keyword>
-    <RootNamespace>TestDraw2</RootNamespace>
+    <RootNamespace>testdraw</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
@@ -310,7 +310,7 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\test\testdraw2.c">
+    <ClCompile Include="..\..\test\testdraw.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">false</CompileAsWinRT>
