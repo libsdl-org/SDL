@@ -1621,44 +1621,97 @@ SDL_PrintUnsignedLongLong(char *text, size_t maxlen, SDL_FormatInfo *info, Uint6
 }
 
 static size_t
-SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
+SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg, SDL_bool g)
 {
+    char num[327];
     size_t length = 0;
+    size_t integer_length;
+    int precision = info->precision;
 
     /* This isn't especially accurate, but hey, it's easy. :) */
-    unsigned long value;
+    Uint64 value;
 
     if (arg < 0) {
-        if (length < maxlen) {
-            text[length] = '-';
-        }
-        ++length;
+        num[length++] = '-';
         arg = -arg;
     } else if (info->force_sign) {
-        if (length < maxlen) {
-            text[length] = '+';
-        }
-        ++length;
+        num[length++] = '+';
     }
-    value = (unsigned long)arg;
-    length += SDL_PrintUnsignedLong(TEXT_AND_LEN_ARGS, NULL, value);
+    value = (Uint64)arg;
+    integer_length = SDL_PrintUnsignedLongLong(&num[length], sizeof(num) - length, NULL, value);
+    length += integer_length;
     arg -= value;
-    if (info->precision < 0) {
-        info->precision = 6;
+    if (precision < 0) {
+        precision = 6;
     }
-    if (info->force_type || info->precision > 0) {
-        int mult = 10;
-        if (length < maxlen) {
-            text[length] = '.';
+    if (g) {
+        /* The precision includes the integer portion */
+        precision -= SDL_min((int)integer_length, precision);
+    }
+    if (info->force_type || precision > 0) {
+        const char decimal_separator = '.';
+        double integer_value;
+
+        SDL_assert(length < sizeof(num));
+        num[length++] = decimal_separator;
+        while (precision > 1) {
+            arg *= 10.0;
+            arg = SDL_modf(arg, &integer_value);
+            SDL_assert(length < sizeof(num));
+            num[length++] = '0' + (int)integer_value;
+            --precision;
         }
-        ++length;
-        while (info->precision-- > 0) {
-            value = (unsigned long)(arg * mult);
-            length += SDL_PrintUnsignedLong(TEXT_AND_LEN_ARGS, NULL, value);
-            arg -= (double)value / mult;
-            mult *= 10;
+        if (precision == 1) {
+            arg *= 10.0;
+            integer_value = SDL_round(arg);
+            if (integer_value == 10.0) {
+                /* Carry the one... */
+                size_t i;
+
+                for (i = length; i--; ) {
+                    if (num[i] == decimal_separator) {
+                        continue;
+                    }
+                    if (num[i] == '9') {
+                        num[i] = '0';
+                    } else {
+                        ++num[i];
+                        break;
+                    }
+                }
+                if (i == 0 || num[i] == '-' || num[i] == '+') {
+                    SDL_memmove(&num[i+1], &num[i], length - i);
+                    num[i] = '1';
+                    ++length;
+                }
+                SDL_assert(length < sizeof(num));
+                num[length++] = '0';
+            } else {
+                SDL_assert(length < sizeof(num));
+                num[length++] = '0' + (int)integer_value;
+            }
+        }
+
+        if (g) {
+            /* Trim trailing zeroes and decimal separator */
+            size_t i;
+
+            for (i = length - 1; num[i] != decimal_separator; --i) {
+                if (num[i] == '0') {
+                    --length;
+                } else {
+                    break;
+                }
+            }
+            if (num[i] == decimal_separator) {
+                --length;
+            }
         }
     }
+    num[length] = '\0';
+
+    info->precision = -1;
+    length = SDL_PrintString(text, maxlen, info, num);
 
     if (info->width > 0 && (size_t)info->width > length) {
         const char fill = info->pad_zeroes ? '0' : ' ';
@@ -1670,30 +1723,6 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
         SDL_memmove(&text[filllen], text, movelen);
         SDL_memset(text, fill, filllen);
         length += width;
-    }
-
-    return length;
-}
-
-static size_t
-SDL_TrimTrailingFractionalZeroes(char *text, size_t start, size_t length)
-{
-    size_t i, j;
-
-    for (i = start; i < length; ++i) {
-        if (text[i] == '.' || text[i] == ',') {
-            for (j = length - 1; j > i; --j) {
-                if (text[j] == '0') {
-                    --length;
-                } else {
-                    break;
-                }
-            }
-            if (j == i) {
-                --length;
-            }
-            break;
-        }
     }
     return length;
 }
@@ -1876,17 +1905,13 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *f
                     done = SDL_TRUE;
                     break;
                 case 'f':
-                    length += SDL_PrintFloat(TEXT_AND_LEN_ARGS, &info, va_arg(ap, double));
+                    length += SDL_PrintFloat(TEXT_AND_LEN_ARGS, &info, va_arg(ap, double), SDL_FALSE);
                     done = SDL_TRUE;
                     break;
                 case 'g':
-                {
-                    size_t starting_length = length;
-                    length += SDL_PrintFloat(TEXT_AND_LEN_ARGS, &info, va_arg(ap, double));
-                    length = SDL_TrimTrailingFractionalZeroes(text, starting_length, length);
+                    length += SDL_PrintFloat(TEXT_AND_LEN_ARGS, &info, va_arg(ap, double), SDL_TRUE);
                     done = SDL_TRUE;
                     break;
-                }
                 case 'S':
                 {
                     /* In practice this is used on Windows for WCHAR strings */
