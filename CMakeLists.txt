@@ -580,6 +580,28 @@ if(USE_GCC OR USE_CLANG)
     list(APPEND EXTRA_CFLAGS "-Wdeclaration-after-statement")
   endif()
 
+  check_c_compiler_flag(-Wdocumentation HAVE_GCC_WDOCUMENTATION)
+  if(HAVE_GCC_WDOCUMENTATION)
+    if(SDL_WERROR)
+      check_c_compiler_flag(-Werror=documentation HAVE_GCC_WERROR_DOCUMENTATION)
+      if(HAVE_GCC_WERROR_DOCUMENTATION)
+        list(APPEND EXTRA_CFLAGS "-Werror=documentation")
+      endif()
+    endif()
+    list(APPEND EXTRA_CFLAGS "-Wdocumentation")
+  endif()
+
+  check_c_compiler_flag(-Wdocumentation-unknown-command HAVE_GCC_WDOCUMENTATION_UNKNOWN_COMMAND)
+  if(HAVE_GCC_WDOCUMENTATION_UNKNOWN_COMMAND)
+    if(SDL_WERROR)
+      check_c_compiler_flag(-Werror=documentation-unknown-command HAVE_GCC_WERROR_DOCUMENTATION_UNKNOWN_COMMAND)
+      if(HAVE_GCC_WERROR_DOCUMENTATION_UNKNOWN_COMMAND)
+        list(APPEND EXTRA_CFLAGS "-Werror=documentation-unknown-command")
+      endif()
+    endif()
+    list(APPEND EXTRA_CFLAGS "-Wdocumentation-unknown-command")
+  endif()
+
   if(DEPENDENCY_TRACKING)
     check_c_source_compiles("
         #if !defined(__GNUC__) || __GNUC__ < 3
