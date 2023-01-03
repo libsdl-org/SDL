@@ -1077,7 +1077,7 @@ extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter,
  * Set the state of processing events by type.
  *
  * \param type the type of event; see SDL_EventType for details
- * \param state whether to process the event or not
+ * \param enabled whether to process the event or not
  *
  * \since This function is available since SDL 3.0.0.
  *
