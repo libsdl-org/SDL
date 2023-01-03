@@ -153,17 +153,46 @@ int stdlib_snprintf(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
     SDLTest_AssertCheck(result == 6, "Check result value, expected: 6, got: %d", result);
 
-    result = SDL_snprintf(text, sizeof(text), "%g", 100.0);
-    expected = "100";
-    SDLTest_AssertPass("Call to SDL_snprintf(\"%%g\", 100.0)");
-    SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-    SDLTest_AssertCheck(result == 3, "Check result value, expected: 3, got: %d", result);
+    {
+        static struct
+        {
+            float value;
+            const char *expected_f;
+            const char *expected_g;
+        } f_and_g_test_cases[] = {
+            { 100.0f, "100.000000", "100" },
+            { -100.0f, "-100.000000", "-100" },
+            { 100.75f, "100.750000", "100.75" },
+            { -100.75f, "-100.750000", "-100.75" },
+            { ((100 * 60 * 1000) / 1001) / 100.0f, "59.939999", "59.94" },
+            { -((100 * 60 * 1000) / 1001) / 100.0f, "-59.939999", "-59.94" },
+            { ((100 * 120 * 1000) / 1001) / 100.0f, "119.879997", "119.88" },
+            { -((100 * 120 * 1000) / 1001) / 100.0f, "-119.879997", "-119.88" },
+            { 9.9999999f, "10.000000", "10" },
+            { -9.9999999f, "-10.000000", "-10" },
+        };
+        int i;
 
-    result = SDL_snprintf(text, sizeof(text), "%g", 100.75);
-    expected = "100.75";
-    SDLTest_AssertPass("Call to SDL_snprintf(\"%%g\", 100.75)");
-    SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-    SDLTest_AssertCheck(result == 6, "Check result value, expected: 6, got: %d", result);
+        for (i = 0; i < SDL_arraysize(f_and_g_test_cases); ++i) {
+            float value = f_and_g_test_cases[i].value;
+
+            result = SDL_snprintf(text, sizeof(text), "%f", value);
+            predicted = SDL_snprintf(NULL, 0, "%f", value);
+            expected = f_and_g_test_cases[i].expected_f;
+            SDLTest_AssertPass("Call to SDL_snprintf(\"%%f\", %g)", value);
+            SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
+            SDLTest_AssertCheck(result == SDL_strlen(expected), "Check result value, expected: %d, got: %d", SDL_strlen(expected), result);
+            SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
+
+            result = SDL_snprintf(text, sizeof(text), "%g", value);
+            predicted = SDL_snprintf(NULL, 0, "%g", value);
+            expected = f_and_g_test_cases[i].expected_g;
+            SDLTest_AssertPass("Call to SDL_snprintf(\"%%g\", %g)", value);
+            SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
+            SDLTest_AssertCheck(result == SDL_strlen(expected), "Check result value, expected: %d, got: %d", SDL_strlen(expected), result);
+            SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
+        }
+    }
 
     size = 64;
     result = SDL_snprintf(text, sizeof(text), "%zu %s", size, "test");
