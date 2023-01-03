@@ -75,6 +75,7 @@ typedef struct
     uint32_t drag_serial;
     SDL_WaylandDataOffer *drag_offer;
     SDL_WaylandDataOffer *selection_offer;
+    SDL_Window *dnd_window;
 
     /* Clipboard and Primary Selection */
     uint32_t selection_serial;
