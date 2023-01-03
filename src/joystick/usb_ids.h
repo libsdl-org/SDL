@@ -107,6 +107,7 @@
 #define USB_PRODUCT_SONY_DS4_STRIKEPAD                    0x05c5
 #define USB_PRODUCT_SONY_DS5                              0x0ce6
 #define USB_PRODUCT_SONY_DS5_EDGE                         0x0df2
+#define USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO               0xd012
 #define USB_PRODUCT_VICTRIX_FS_PRO_V2                     0x0207
 #define USB_PRODUCT_XBOX360_XUSB_CONTROLLER               0x02a1 /* XUSB driver software PID */
 #define USB_PRODUCT_XBOX360_WIRED_CONTROLLER              0x028e

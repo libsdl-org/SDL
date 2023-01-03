@@ -186,6 +186,7 @@ static SDL_GameControllerType SDL_GetJoystickGameControllerProtocol(const char *
         interface_protocol == XBONE_IFACE_PROTOCOL) {
 
         static const int SUPPORTED_VENDORS[] = {
+            0x044f, /* Thrustmaster */
             0x045e, /* Microsoft */
             0x0738, /* Mad Catz */
             0x0e6f, /* PDP */
