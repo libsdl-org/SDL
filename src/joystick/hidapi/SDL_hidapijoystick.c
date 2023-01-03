@@ -103,15 +103,15 @@ void HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size)
     char *buffer;
     size_t length = SDL_strlen(prefix) + 11 * (USB_PACKET_LENGTH / 8) + (5 * USB_PACKET_LENGTH * 2) + 1 + 1;
     int start = 0, amount = size;
+    size_t current_len;
 
     buffer = (char *)SDL_malloc(length);
-    (void)SDL_snprintf(buffer, length, prefix, size);
+    current_len = SDL_snprintf(buffer, length, prefix, size);
     for (i = start; i < start + amount; ++i) {
-        size_t current_len = SDL_strlen(buffer);
         if ((i % 8) == 0) {
-            (void)SDL_snprintf(&buffer[current_len], length - current_len, "\n%.2d:      ", i);
+            current_len += SDL_snprintf(&buffer[current_len], length - current_len, "\n%.2d:      ", i);
         }
-        (void)SDL_snprintf(&buffer[current_len], length - current_len, " 0x%.2x", data[i]);
+        current_len += SDL_snprintf(&buffer[current_len], length - current_len, " 0x%.2x", data[i]);
     }
     SDL_strlcat(buffer, "\n", length);
     SDL_Log("%s", buffer);
