@@ -450,6 +450,7 @@ SDL3_0.0.0 {
     SDL_LoadWAV_RW;
     SDL_LockAudio;
     SDL_LockAudioDevice;
+    SDL_LockJoysticks;
     SDL_LockMutex;
     SDL_LockSurface;
     SDL_LockTexture;
@@ -666,6 +667,7 @@ SDL3_0.0.0 {
     SDL_UnloadObject;
     SDL_UnlockAudio;
     SDL_UnlockAudioDevice;
+    SDL_UnlockJoysticks;
     SDL_UnlockMutex;
     SDL_UnlockSurface;
     SDL_UnlockTexture;

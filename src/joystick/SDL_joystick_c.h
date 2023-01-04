@@ -43,16 +43,6 @@ extern SDL_bool SDL_JoysticksInitialized(void);
 /* Return whether the joystick system is shutting down */
 extern SDL_bool SDL_JoysticksQuitting(void);
 
-#ifdef SDL_THREAD_SAFETY_ANALYSIS
-extern SDL_mutex *SDL_joystick_lock;
-#endif
-
-/* Locking for atomic access to the joystick API */
-extern void SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystick_lock);
-
-/* Unlocking for atomic access to the joystick API */
-extern void SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_joystick_lock);
-
 /* Return whether the joysticks are currently locked */
 extern SDL_bool SDL_JoysticksLocked(void);
 

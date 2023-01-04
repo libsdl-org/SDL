@@ -476,6 +476,7 @@
 #define SDL_LoadWAV_RW SDL_LoadWAV_RW_REAL
 #define SDL_LockAudio SDL_LockAudio_REAL
 #define SDL_LockAudioDevice SDL_LockAudioDevice_REAL
+#define SDL_LockJoysticks SDL_LockJoysticks_REAL
 #define SDL_LockMutex SDL_LockMutex_REAL
 #define SDL_LockSurface SDL_LockSurface_REAL
 #define SDL_LockTexture SDL_LockTexture_REAL
@@ -692,6 +693,7 @@
 #define SDL_UnloadObject SDL_UnloadObject_REAL
 #define SDL_UnlockAudio SDL_UnlockAudio_REAL
 #define SDL_UnlockAudioDevice SDL_UnlockAudioDevice_REAL
+#define SDL_UnlockJoysticks SDL_UnlockJoysticks_REAL
 #define SDL_UnlockMutex SDL_UnlockMutex_REAL
 #define SDL_UnlockSurface SDL_UnlockSurface_REAL
 #define SDL_UnlockTexture SDL_UnlockTexture_REAL

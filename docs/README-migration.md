@@ -349,7 +349,6 @@ The following symbols have been renamed:
 * SDL_JOYSTICK_TYPE_GAMECONTROLLER => SDL_JOYSTICK_TYPE_GAMEPAD
 
 The following functions have been removed:
-* SDL_LockJoysticks()
 * SDL_JoystickEventState() - replaced with SDL_SetJoystickEventsEnabled() and SDL_JoystickEventsEnabled()
 * SDL_JoystickGetDeviceGUID() - replaced with SDL_GetJoystickInstanceGUID()
 * SDL_JoystickGetDeviceInstanceID()
@@ -360,8 +359,7 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
-* SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
-* SDL_UnlockJoysticks()
+* SDL_NumJoysticks - replaced with SDL_GetJoysticks()
  
 ## SDL_keycode.h
 

@@ -64,6 +64,9 @@ extern "C" {
 /**
  * The joystick structure used to identify an SDL joystick
  */
+#ifdef SDL_THREAD_SAFETY_ANALYSIS
+extern SDL_mutex *SDL_joystick_lock;
+#endif
 struct SDL_Joystick;
 typedef struct SDL_Joystick SDL_Joystick;
 
@@ -114,6 +117,24 @@ typedef enum
 
 
 /* Function prototypes */
+
+/**
+ * Locking for atomic access to the joystick API
+ *
+ * The SDL joystick functions are thread-safe, however you can lock the joysticks
+ * while processing to guarantee that the joystick list won't change and joystick
+ * and gamepad events will not be delivered.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystick_lock);
+
+/**
+ * Unlocking for atomic access to the joystick API
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_joystick_lock);
 
 /**
  * Get a list of currently connected joysticks.
