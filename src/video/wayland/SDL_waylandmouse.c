@@ -273,6 +273,14 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
         return SDL_FALSE;
     }
 
+    /* Fallback to the default cursor if the chosen one wasn't found */
+    if (!cursor) {
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "left_ptr");
+        if (!cursor) {
+            return SDL_FALSE;
+        }
+    }
+
     /* ... Set the cursor data, finally. */
     cdata->buffer = WAYLAND_wl_cursor_image_get_buffer(cursor->images[0]);
     cdata->hot_x = cursor->images[0]->hotspot_x;
