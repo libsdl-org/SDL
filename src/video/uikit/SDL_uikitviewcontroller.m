@@ -64,6 +64,17 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 }
 #endif
 
+@implementation SDLUITextField : UITextField
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{
+	if (action == @selector(paste:)) {
+		return NO;
+	}
+
+	return [super canPerformAction:action withSender:sender];
+}
+@end
+
 @implementation SDL_uikitviewcontroller {
     CADisplayLink *displayLink;
     int animationInterval;
@@ -71,7 +82,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     void *animationCallbackParam;
 
 #ifdef SDL_IPHONE_KEYBOARD
-    UITextField *textField;
+    SDLUITextField *textField;
     BOOL hardwareKeyboard;
     BOOL showingKeyboard;
     BOOL hidingKeyboard;
@@ -259,7 +270,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 - (void)initKeyboard
 {
     obligateForBackspace = @"                                                                "; /* 64 space */
-    textField = [[UITextField alloc] initWithFrame:CGRectZero];
+    textField = [[SDLUITextField alloc] initWithFrame:CGRectZero];
     textField.delegate = self;
     /* placeholder so there is something to delete! */
     textField.text = obligateForBackspace;
