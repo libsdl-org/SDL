@@ -78,11 +78,15 @@ def create_substring_regex_from_replacements(replacements):
 def replace_symbols_in_file(file, regex, replacements):
     try:
         with file.open("r", encoding="UTF-8", newline="") as rfp:
-            contents = regex.sub(lambda mo: replacements[mo.string[mo.start():mo.end()]], rfp.read())
-            with file.open("w", encoding="UTF-8", newline="") as wfp:
-                wfp.write(contents)
+            original = rfp.read()
+            contents = regex.sub(lambda mo: replacements[mo.string[mo.start():mo.end()]], original)
+            if contents != original:
+                with file.open("w", encoding="UTF-8", newline="") as wfp:
+                    wfp.write(contents)
     except UnicodeDecodeError:
         print("%s is not text, skipping" % file)
+    except Exception as err:
+        print("%s" % err)
 
 
 def replace_symbols_in_dir(path, regex, replacements):
