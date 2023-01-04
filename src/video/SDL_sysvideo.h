@@ -69,7 +69,7 @@ typedef struct SDL_WindowUserData
 struct SDL_Window
 {
     const void *magic;
-    Uint32 id;
+    SDL_WindowID id;
     char *title;
     SDL_Surface *icon;
     int x, y;
@@ -349,7 +349,7 @@ struct SDL_VideoDevice
     SDL_Window *windows;
     SDL_Window *grabbed_window;
     Uint8 window_magic;
-    Uint32 next_object_id;
+    SDL_WindowID next_object_id;
     char *clipboard_text;
     char *primary_selection_text;
     SDL_bool setting_display_mode;

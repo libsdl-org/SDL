@@ -230,7 +230,7 @@ typedef struct SDL_WindowEvent
 {
     Uint32 type;        /**< ::SDL_WINDOWEVENT_* */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;    /**< The associated window */
+    SDL_WindowID windowID;/**< The associated window */
     Sint32 data1;       /**< event dependent data */
     Sint32 data2;       /**< event dependent data */
 } SDL_WindowEvent;
@@ -242,7 +242,7 @@ typedef struct SDL_KeyboardEvent
 {
     Uint32 type;        /**< ::SDL_KEYDOWN or ::SDL_KEYUP */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;    /**< The window with keyboard focus, if any */
+    SDL_WindowID windowID;/**< The window with keyboard focus, if any */
     Uint8 state;        /**< ::SDL_PRESSED or ::SDL_RELEASED */
     Uint8 repeat;       /**< Non-zero if this is a key repeat */
     Uint8 padding2;
@@ -258,7 +258,7 @@ typedef struct SDL_TextEditingEvent
 {
     Uint32 type;                                /**< ::SDL_TEXTEDITING */
     Uint64 timestamp;                           /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;                            /**< The window with keyboard focus, if any */
+    SDL_WindowID windowID;                        /**< The window with keyboard focus, if any */
     char text[SDL_TEXTEDITINGEVENT_TEXT_SIZE];  /**< The editing text */
     Sint32 start;                               /**< The start cursor of selected editing text */
     Sint32 length;                              /**< The length of selected editing text */
@@ -272,7 +272,7 @@ typedef struct SDL_TextEditingExtEvent
 {
     Uint32 type;                                /**< ::SDL_TEXTEDITING_EXT */
     Uint64 timestamp;                           /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;                            /**< The window with keyboard focus, if any */
+    SDL_WindowID windowID;                        /**< The window with keyboard focus, if any */
     char* text;                                 /**< The editing text, which should be freed with SDL_free(), and will not be NULL */
     Sint32 start;                               /**< The start cursor of selected editing text */
     Sint32 length;                              /**< The length of selected editing text */
@@ -286,7 +286,7 @@ typedef struct SDL_TextInputEvent
 {
     Uint32 type;                              /**< ::SDL_TEXTINPUT */
     Uint64 timestamp;                         /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;                          /**< The window with keyboard focus, if any */
+    SDL_WindowID windowID;                      /**< The window with keyboard focus, if any */
     char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];  /**< The input text */
 } SDL_TextInputEvent;
 
@@ -297,7 +297,7 @@ typedef struct SDL_MouseMotionEvent
 {
     Uint32 type;        /**< ::SDL_MOUSEMOTION */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;    /**< The window with mouse focus, if any */
+    SDL_WindowID windowID;/**< The window with mouse focus, if any */
     SDL_MouseID which;  /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     Uint32 state;       /**< The current button state */
     float x;            /**< X coordinate, relative to window */
@@ -313,7 +313,7 @@ typedef struct SDL_MouseButtonEvent
 {
     Uint32 type;        /**< ::SDL_MOUSEBUTTONDOWN or ::SDL_MOUSEBUTTONUP */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;    /**< The window with mouse focus, if any */
+    SDL_WindowID windowID;/**< The window with mouse focus, if any */
     SDL_MouseID which;  /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     Uint8 button;       /**< The mouse button index */
     Uint8 state;        /**< ::SDL_PRESSED or ::SDL_RELEASED */
@@ -330,7 +330,7 @@ typedef struct SDL_MouseWheelEvent
 {
     Uint32 type;        /**< ::SDL_MOUSEWHEEL */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;    /**< The window with mouse focus, if any */
+    SDL_WindowID windowID;/**< The window with mouse focus, if any */
     SDL_MouseID which;  /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     float x;            /**< The amount scrolled horizontally, positive to the right and negative to the left */
     float y;            /**< The amount scrolled vertically, positive away from the user and negative toward the user */
@@ -509,7 +509,7 @@ typedef struct SDL_TouchFingerEvent
     float dx;           /**< Normalized in the range -1...1 */
     float dy;           /**< Normalized in the range -1...1 */
     float pressure;     /**< Normalized in the range 0...1 */
-    Uint32 windowID;    /**< The window underneath the finger, if any */
+    SDL_WindowID windowID;/**< The window underneath the finger, if any */
 } SDL_TouchFingerEvent;
 
 
@@ -523,7 +523,7 @@ typedef struct SDL_DropEvent
     Uint32 type;        /**< ::SDL_DROPBEGIN or ::SDL_DROPFILE or ::SDL_DROPTEXT or ::SDL_DROPCOMPLETE */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     char *file;         /**< The file name, which should be freed with SDL_free(), is NULL on begin/complete */
-    Uint32 windowID;    /**< The window that was dropped on, if any */
+    SDL_WindowID windowID;/**< The window that was dropped on, if any */
 } SDL_DropEvent;
 
 
@@ -564,7 +564,7 @@ typedef struct SDL_UserEvent
 {
     Uint32 type;        /**< ::SDL_USEREVENT through ::SDL_LASTEVENT-1 */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;    /**< The associated window if any */
+    SDL_WindowID windowID;/**< The associated window if any */
     Sint32 code;        /**< User defined event code */
     void *data1;        /**< User defined data pointer */
     void *data2;        /**< User defined data pointer */

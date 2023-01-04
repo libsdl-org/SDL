@@ -858,3 +858,5 @@ The following functions have been renamed:
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayIndexForPoint()
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayIndexForRect()
 
+SDL_Window id type is named SDL_WindowID
+
