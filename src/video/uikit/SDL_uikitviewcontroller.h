@@ -31,6 +31,10 @@
 #define SDLRootViewController UIViewController
 #endif
 
+@interface SDLUITextField : UITextField
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
+@end
+
 #if SDL_IPHONE_KEYBOARD
 @interface SDL_uikitviewcontroller : SDLRootViewController <UITextFieldDelegate>
 #else
