@@ -55,14 +55,21 @@ def get_all_replacements():
                 mode = 1
             else:
                 raise Exception("get_all_replacements(): expected mode 0")
-        elif line == "#else /* !SDL_ENABLE_OLD_NAMES */":
+        elif line == "#elif !defined(SDL_DISABLE_OLD_NAMES)":
             if mode == 1:
                 mode = 2
             else:
                 raise Exception("get_all_replacements(): expected mode 1")
+        elif line == "#endif /* SDL_ENABLE_OLD_NAMES */":
+            if mode == 2:
+                mode = 3
+            else:
+                raise Exception("add_symbol_to_oldnames(): expected mode 2")
         elif mode == 1 and line.startswith("#define "):
             words = line.split()
             replacements[words[1]] = words[2]
+            # In case things are accidentally renamed to the "X_renamed_Y" symbol
+            #replacements[words[1] + "_renamed_" + words[2]] = words[2]
 
     return replacements
 
