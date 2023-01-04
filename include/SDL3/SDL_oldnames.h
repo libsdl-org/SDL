@@ -219,6 +219,11 @@
 #define SDL_JoystickUpdate SDL_UpdateJoysticks
 #define SDL_NumJoysticks SDL_GetNumJoysticks
 
+/* ##SDL_keyboard.h */
+#define SDL_IsScreenKeyboardShown SDL_ScreenKeyboardShown
+#define SDL_IsTextInputActive SDL_TextInputActive
+#define SDL_IsTextInputShown SDL_TextInputShown
+
 /* ##SDL_keycode.h */
 #define KMOD_ALT SDL_KMOD_ALT
 #define KMOD_CAPS SDL_KMOD_CAPS
@@ -525,6 +530,11 @@
 #define SDL_JoystickSetVirtualButton SDL_JoystickSetVirtualButton_renamed_SDL_SetJoystickVirtualButton
 #define SDL_JoystickSetVirtualHat SDL_JoystickSetVirtualHat_renamed_SDL_SetJoystickVirtualHat
 #define SDL_JoystickUpdate SDL_JoystickUpdate_renamed_SDL_UpdateJoysticks
+
+/* ##SDL_keyboard.h */
+#define SDL_IsScreenKeyboardShown SDL_IsScreenKeyboardShown_renamed_SDL_ScreenKeyboardShown
+#define SDL_IsTextInputActive SDL_IsTextInputActive_renamed_SDL_TextInputActive
+#define SDL_IsTextInputShown SDL_IsTextInputShown_renamed_SDL_TextInputShown
 
 /* ##SDL_keycode.h */
 #define KMOD_ALT KMOD_ALT_renamed_SDL_KMOD_ALT

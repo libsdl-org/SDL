@@ -361,6 +361,13 @@ The following functions have been removed:
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
 * SDL_NumJoysticks - replaced with SDL_GetJoysticks()
  
+## SDL_keyboard.h
+
+The following functions have been renamed:
+* SDL_IsScreenKeyboardShown() => SDL_ScreenKeyboardShown()
+* SDL_IsTextInputActive() => SDL_TextInputActive()
+* SDL_IsTextInputShown() => SDL_TextInputShown()
+
 ## SDL_keycode.h
 
 The following symbols have been renamed:
