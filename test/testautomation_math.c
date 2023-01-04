@@ -62,10 +62,10 @@ typedef double(SDLCALL *dd_to_d_func)(double, double);
  * \brief Runs all the cases on a given function with a signature double -> double.
  * The result is expected to be exact.
  *
- * \param func_name, a printable name for the tested function.
- * \param func, the function to call.
- * \param cases, an array of all the cases.
- * \param cases_size, the size of the cases array.
+ * \param func_name a printable name for the tested function.
+ * \param func the function to call.
+ * \param cases an array of all the cases.
+ * \param cases_size the size of the cases array.
  */
 static int
 helper_dtod(const char *func_name, d_to_d_func func,
@@ -88,10 +88,10 @@ helper_dtod(const char *func_name, d_to_d_func func,
  * \brief Runs all the cases on a given function with a signature double -> double.
  * Checks if the result between expected +/- EPSILON.
  *
- * \param func_name, a printable name for the tested function.
- * \param func, the function to call.
- * \param cases, an array of all the cases.
- * \param cases_size, the size of the cases array.
+ * \param func_name a printable name for the tested function.
+ * \param func the function to call.
+ * \param cases an array of all the cases.
+ * \param cases_size the size of the cases array.
  */
 static int
 helper_dtod_inexact(const char *func_name, d_to_d_func func,
@@ -117,10 +117,10 @@ helper_dtod_inexact(const char *func_name, d_to_d_func func,
  * \brief Runs all the cases on a given function with a signature
  * (double, double) -> double. The result is expected to be exact.
  *
- * \param func_name, a printable name for the tested function.
- * \param func, the function to call.
- * \param cases, an array of all the cases.
- * \param cases_size, the size of the cases array.
+ * \param func_name a printable name for the tested function.
+ * \param func the function to call.
+ * \param cases an array of all the cases.
+ * \param cases_size the size of the cases array.
  */
 static int
 helper_ddtod(const char *func_name, dd_to_d_func func,
@@ -143,10 +143,10 @@ helper_ddtod(const char *func_name, dd_to_d_func func,
  * \brief Runs all the cases on a given function with a signature
  * (double, double) -> double. Checks if the result between expected +/- EPSILON.
  *
- * \param func_name, a printable name for the tested function.
- * \param func, the function to call.
- * \param cases, an array of all the cases.
- * \param cases_size, the size of the cases array.
+ * \param func_name a printable name for the tested function.
+ * \param func the function to call.
+ * \param cases an array of all the cases.
+ * \param cases_size the size of the cases array.
  */
 static int
 helper_ddtod_inexact(const char *func_name, dd_to_d_func func,
@@ -174,8 +174,8 @@ helper_ddtod_inexact(const char *func_name, dd_to_d_func func,
  * This function is only meant to test functions that returns the input value if it is
  * integral: f(x) -> x for x in N.
  *
- * \param func_name, a printable name for the tested function.
- * \param func, the function to call.
+ * \param func_name a printable name for the tested function.
+ * \param func the function to call.
  */
 static int
 helper_range(const char *func_name, d_to_d_func func)
