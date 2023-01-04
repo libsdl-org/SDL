@@ -39,6 +39,9 @@
 extern "C" {
 #endif
 
+
+typedef Uint32 SDL_WindowID;
+
 /**
  *  \brief  The structure that defines a display mode
  *
@@ -743,7 +746,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowFrom(const void *data);
  *
  * \sa SDL_GetWindowFromID
  */
-extern DECLSPEC Uint32 SDLCALL SDL_GetWindowID(SDL_Window * window);
+extern DECLSPEC SDL_WindowID SDLCALL SDL_GetWindowID(SDL_Window * window);
 
 /**
  * Get a window from a stored ID.
@@ -759,7 +762,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowID(SDL_Window * window);
  *
  * \sa SDL_GetWindowID
  */
-extern DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromID(Uint32 id);
+extern DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromID(SDL_WindowID id);
 
 /**
  * Get the window flags.

@@ -1990,7 +1990,7 @@ SDL_HasWindows(void)
     return _this && _this->windows != NULL;
 }
 
-Uint32
+SDL_WindowID
 SDL_GetWindowID(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, 0);
@@ -1999,7 +1999,7 @@ SDL_GetWindowID(SDL_Window *window)
 }
 
 SDL_Window *
-SDL_GetWindowFromID(Uint32 id)
+SDL_GetWindowFromID(SDL_WindowID id)
 {
     SDL_Window *window;
 
