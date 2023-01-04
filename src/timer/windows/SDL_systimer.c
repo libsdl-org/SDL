@@ -73,7 +73,7 @@ void SDL_DelayNS(Uint64 ns)
 #endif
 
     {
-        const Uint64 max_delay = 0xffffffff * SDL_NS_PER_MS;
+        const Uint64 max_delay = 0xffffffffLLU * SDL_NS_PER_MS;
         if (ns > max_delay) {
             ns = max_delay;
         }
