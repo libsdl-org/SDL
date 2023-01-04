@@ -31,7 +31,6 @@
     NSWindow *nswindow;
 }
 - (id)initWithParentWindow:(SDL_Window *)window;
-- (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 @end
 
 @implementation SDLMessageBoxPresenter
@@ -55,30 +54,16 @@
 - (void)showAlert:(NSAlert *)alert
 {
     if (nswindow) {
-        if ([alert respondsToSelector:@selector(beginSheetModalForWindow:completionHandler:)]) {
-            [alert beginSheetModalForWindow:nswindow
-                          completionHandler:^(NSModalResponse returnCode) {
-                            [NSApp stopModalWithCode:returnCode];
-                          }];
-        } else {
-            [alert beginSheetModalForWindow:nswindow
-                              modalDelegate:self
-                             didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
-                                contextInfo:nil];
-        }
+        [alert beginSheetModalForWindow:nswindow
+                      completionHandler:^(NSModalResponse returnCode) {
+                        [NSApp stopModalWithCode:returnCode];
+                      }];
         clicked = [NSApp runModalForWindow:nswindow];
         nswindow = nil;
     } else {
         clicked = [alert runModal];
     }
 }
-
-- (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-    clicked = returnCode;
-    [NSApp stopModalWithCode:returnCode];
-}
-
 @end
 
 static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid, int *returnValue)
