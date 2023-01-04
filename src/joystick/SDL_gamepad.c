@@ -1215,7 +1215,7 @@ static void SDL_PrivateRefreshGamepadMapping(GamepadMapping_t *pGamepadMapping)
             {
                 SDL_Event event;
 
-                event.type = SDL_GAMEPADDEVICEREMAPPED;
+                event.type = SDL_GAMEPADREMAPPED;
                 event.common.timestamp = 0;
                 event.cdevice.which = gamepad->joystick->instance_id;
                 SDL_PushEvent(&event);
@@ -3137,7 +3137,7 @@ static const Uint32 SDL_gamepad_event_list[] = {
     SDL_GAMEPADBUTTONUP,
     SDL_GAMEPADADDED,
     SDL_GAMEPADREMOVED,
-    SDL_GAMEPADDEVICEREMAPPED,
+    SDL_GAMEPADREMAPPED,
     SDL_GAMEPADTOUCHPADDOWN,
     SDL_GAMEPADTOUCHPADMOTION,
     SDL_GAMEPADTOUCHPADUP,

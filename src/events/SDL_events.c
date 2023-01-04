@@ -369,7 +369,7 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_GAMEPADREMOVED)
         PRINT_GAMEPADDEV_EVENT(event);
         break;
-        SDL_EVENT_CASE(SDL_GAMEPADDEVICEREMAPPED)
+        SDL_EVENT_CASE(SDL_GAMEPADREMAPPED)
         PRINT_GAMEPADDEV_EVENT(event);
         break;
 #undef PRINT_GAMEPADDEV_EVENT
