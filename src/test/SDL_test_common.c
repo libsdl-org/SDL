@@ -2164,10 +2164,10 @@ void SDLTest_CommonQuit(SDLTest_CommonState *state)
     SDLTest_LogAllocations();
 }
 
-void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, int *usedHeight)
+void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, float *usedHeight)
 {
     char text[1024];
-    int textY = 0;
+    float textY = 0.0f;
     const int lineHeight = 10;
     int x, y, w, h;
     float fx, fy;
@@ -2182,135 +2182,135 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, in
     /* Video */
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDLTest_DrawString(renderer, 0, textY, "-- Video --");
+    SDLTest_DrawString(renderer, 0.0f, textY, "-- Video --");
     textY += lineHeight;
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
 
     (void)SDL_snprintf(text, sizeof text, "SDL_GetCurrentVideoDriver: %s", SDL_GetCurrentVideoDriver());
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     /* Renderer */
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDLTest_DrawString(renderer, 0, textY, "-- Renderer --");
+    SDLTest_DrawString(renderer, 0.0f, textY, "-- Renderer --");
     textY += lineHeight;
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
 
     if (0 == SDL_GetRendererInfo(renderer, &info)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetRendererInfo: name: %s", info.name);
-        SDLTest_DrawString(renderer, 0, textY, text);
+        SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     if (0 == SDL_GetRendererOutputSize(renderer, &w, &h)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetRendererOutputSize: %dx%d", w, h);
-        SDLTest_DrawString(renderer, 0, textY, text);
+        SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     SDL_GetRenderViewport(renderer, &rect);
     (void)SDL_snprintf(text, sizeof text, "SDL_GetRenderViewport: %d,%d, %dx%d",
                        rect.x, rect.y, rect.w, rect.h);
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     SDL_GetRenderScale(renderer, &scaleX, &scaleY);
     (void)SDL_snprintf(text, sizeof text, "SDL_GetRenderScale: %f,%f",
                        scaleX, scaleY);
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     SDL_GetRenderLogicalSize(renderer, &w, &h);
     (void)SDL_snprintf(text, sizeof text, "SDL_GetRenderLogicalSize: %dx%d", w, h);
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     /* Window */
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDLTest_DrawString(renderer, 0, textY, "-- Window --");
+    SDLTest_DrawString(renderer, 0.0f, textY, "-- Window --");
     textY += lineHeight;
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
 
     SDL_GetWindowPosition(window, &x, &y);
     (void)SDL_snprintf(text, sizeof text, "SDL_GetWindowPosition: %d,%d", x, y);
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     SDL_GetWindowSize(window, &w, &h);
     (void)SDL_snprintf(text, sizeof text, "SDL_GetWindowSize: %dx%d", w, h);
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     (void)SDL_snprintf(text, sizeof text, "SDL_GetWindowFlags: ");
     SDLTest_PrintWindowFlags(text, sizeof text, SDL_GetWindowFlags(window));
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     if (0 == SDL_GetWindowDisplayMode(window, &mode)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetWindowDisplayMode: %dx%d@%gHz (%s)",
                            mode.w, mode.h, mode.refresh_rate, SDL_GetPixelFormatName(mode.format));
-        SDLTest_DrawString(renderer, 0, textY, text);
+        SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     /* Display */
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDLTest_DrawString(renderer, 0, textY, "-- Display --");
+    SDLTest_DrawString(renderer, 0.0f, textY, "-- Display --");
     textY += lineHeight;
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
 
     (void)SDL_snprintf(text, sizeof text, "SDL_GetWindowDisplayIndex: %d", windowDisplayIndex);
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayName: %s", SDL_GetDisplayName(windowDisplayIndex));
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     if (0 == SDL_GetDisplayBounds(windowDisplayIndex, &rect)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayBounds: %d,%d, %dx%d",
                            rect.x, rect.y, rect.w, rect.h);
-        SDLTest_DrawString(renderer, 0, textY, text);
+        SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     if (0 == SDL_GetCurrentDisplayMode(windowDisplayIndex, &mode)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetCurrentDisplayMode: %dx%d@%gHz (%s)",
                            mode.w, mode.h, mode.refresh_rate, SDL_GetPixelFormatName(mode.format));
-        SDLTest_DrawString(renderer, 0, textY, text);
+        SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     if (0 == SDL_GetDesktopDisplayMode(windowDisplayIndex, &mode)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetDesktopDisplayMode: %dx%d@%gHz (%s)",
                            mode.w, mode.h, mode.refresh_rate, SDL_GetPixelFormatName(mode.format));
-        SDLTest_DrawString(renderer, 0, textY, text);
+        SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     if (0 == SDL_GetDisplayDPI(windowDisplayIndex, &ddpi, &hdpi, &vdpi)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayDPI: ddpi: %f, hdpi: %f, vdpi: %f",
                            ddpi, hdpi, vdpi);
-        SDLTest_DrawString(renderer, 0, textY, text);
+        SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayOrientation: ");
     SDLTest_PrintDisplayOrientation(text, sizeof text, SDL_GetDisplayOrientation(windowDisplayIndex));
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     /* Mouse */
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDLTest_DrawString(renderer, 0, textY, "-- Mouse --");
+    SDLTest_DrawString(renderer, 0.0f, textY, "-- Mouse --");
     textY += lineHeight;
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
@@ -2318,13 +2318,13 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, in
     flags = SDL_GetMouseState(&fx, &fy);
     (void)SDL_snprintf(text, sizeof text, "SDL_GetMouseState: %g,%g ", fx, fy);
     SDLTest_PrintButtonMask(text, sizeof text, flags);
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     flags = SDL_GetGlobalMouseState(&fx, &fy);
     (void)SDL_snprintf(text, sizeof text, "SDL_GetGlobalMouseState: %g,%g ", fx, fy);
     SDLTest_PrintButtonMask(text, sizeof text, flags);
-    SDLTest_DrawString(renderer, 0, textY, text);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     if (usedHeight) {

@@ -51,7 +51,7 @@ extern "C" {
  *
  *  \returns 0 on success, -1 on failure.
  */
-int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c);
+int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c);
 
 /**
  *  \brief Draw a UTF-8 string in the currently set font.
@@ -65,14 +65,14 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c);
  *
  *  \returns 0 on success, -1 on failure.
  */
-int SDLTest_DrawString(SDL_Renderer *renderer, int x, int y, const char *s);
+int SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s);
 
 /**
  *  \brief Data used for multi-line text output
  */
 typedef struct SDLTest_TextWindow
 {
-    SDL_Rect rect;
+    SDL_FRect rect;
     int current;
     int numlines;
     char **lines;
@@ -90,7 +90,7 @@ typedef struct SDLTest_TextWindow
  *
  *  \since This function is available since SDL 2.24.0
  */
-SDLTest_TextWindow *SDLTest_TextWindowCreate(int x, int y, int w, int h);
+SDLTest_TextWindow *SDLTest_TextWindowCreate(float x, float y, float w, float h);
 
 /**
  *  \brief Display a multi-line text output window

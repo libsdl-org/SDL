@@ -52,7 +52,7 @@ quit(int rc)
 
 /* Draws the modes menu, and stores the mode index under the mouse in highlighted_mode */
 static void
-draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
+draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
 {
     SDL_DisplayMode mode;
     char text[1024];
@@ -62,8 +62,8 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
     int i;
     int column_chars = 0;
     int text_length;
-    int x, y;
-    int table_top;
+    float x, y;
+    float table_top;
     SDL_FPoint mouse_pos = { -1.0f, -1.0f };
 
     /* Get mouse position */
@@ -78,7 +78,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
         mouse_pos.y = logical_y;
     }
 
-    x = 0;
+    x = 0.0f;
     y = viewport.y;
 
     y += lineHeight;
@@ -115,8 +115,8 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
         column_chars = SDL_max(column_chars, text_length);
 
         /* Check if under mouse */
-        cell_rect.x = (float)x;
-        cell_rect.y = (float)y;
+        cell_rect.x = x;
+        cell_rect.y = y;
         cell_rect.w = (float)(text_length * FONT_CHARACTER_SIZE);
         cell_rect.h = (float)lineHeight;
 
@@ -134,7 +134,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
         SDLTest_DrawString(renderer, x, y, text);
         y += lineHeight;
 
-        if (y + lineHeight > (viewport.y + viewport.h)) {
+        if ((y + lineHeight) > (viewport.y + viewport.h)) {
             /* Advance to next column */
             x += (column_chars + 1) * FONT_CHARACTER_SIZE;
             y = table_top;
@@ -222,8 +222,9 @@ void loop()
         SDL_Window *window = state->windows[i];
         SDL_Renderer *renderer = state->renderers[i];
         if (window != NULL && renderer != NULL) {
-            int y = 0;
-            SDL_Rect viewport, menurect;
+            float y = 0.0f;
+            SDL_Rect viewport;
+            SDL_FRect menurect;
 
             SDL_GetRenderViewport(renderer, &viewport);
 
@@ -233,10 +234,10 @@ void loop()
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             SDLTest_CommonDrawWindowInfo(renderer, state->windows[i], &y);
 
-            menurect.x = 0;
+            menurect.x = 0.0f;
             menurect.y = y;
-            menurect.w = viewport.w;
-            menurect.h = viewport.h - y;
+            menurect.w = (float)viewport.w;
+            menurect.h = (float)viewport.h - y;
             draw_modes_menu(window, renderer, menurect);
 
             SDL_Delay(16);

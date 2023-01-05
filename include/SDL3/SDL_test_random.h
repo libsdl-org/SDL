@@ -78,8 +78,7 @@ extern "C" {
  *  \param ci         integer that defines the random sequence
  *
  */
- void SDLTest_RandomInit(SDLTest_RandomContext * rndContext, unsigned int xi,
-                  unsigned int ci);
+ void SDLTest_RandomInit(SDLTest_RandomContext *rndContext, unsigned int xi, unsigned int ci);
 
 /**
  *  \brief Initialize random number generator based on current system time.
