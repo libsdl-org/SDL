@@ -849,6 +849,8 @@ SDL3_0.0.0 {
     SDL_modf;
     SDL_modff;
     SDL_GetRenderVSync;
+    SDL_aligned_alloc;
+    SDL_aligned_free;
     # extra symbols go here (don't modify this line)
   local: *;
 };

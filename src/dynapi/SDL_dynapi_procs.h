@@ -922,3 +922,5 @@ SDL_DYNAPI_PROC(wchar_t*,SDL_wcsstr,(const wchar_t *a, const wchar_t *b),(a,b),r
 SDL_DYNAPI_PROC(double,SDL_modf,(double a, double *b),(a,b),return)
 SDL_DYNAPI_PROC(float,SDL_modff,(float a, float *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderVSync,(SDL_Renderer *a, int *b),(a,b),return)
+SDL_DYNAPI_PROC(void*,SDL_aligned_alloc,(size_t a, size_t b),(a,b),return)
+SDL_DYNAPI_PROC(void,SDL_aligned_free,(void *a),(a),)

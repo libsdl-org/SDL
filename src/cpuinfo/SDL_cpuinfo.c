@@ -1099,13 +1099,26 @@ SDL_SIMDAlloc(const size_t len)
 {
     const size_t alignment = SDL_SIMDGetAlignment();
     const size_t padding = (alignment - (len % alignment)) % alignment;
+    size_t to_allocate;
+
+    /* Check for overflow */
+    if (SDL_size_add_overflow(len, padding, &to_allocate)) {
+        return NULL;
+    }
+
+    return SDL_aligned_alloc(alignment, to_allocate);
+}
+
+void *
+SDL_aligned_alloc(size_t alignment, size_t size)
+{
     Uint8 *retval = NULL;
     Uint8 *ptr;
     size_t to_allocate;
 
-    /* alignment + padding + sizeof (void *) is bounded (a few hundred
-     * bytes max), so no need to check for overflow within that argument */
-    if (SDL_size_add_overflow(len, alignment + padding + sizeof(void *), &to_allocate)) {
+    /* Check for overflow */
+    if (SDL_size_add_overflow(size, alignment, &to_allocate) ||
+        SDL_size_add_overflow(to_allocate, sizeof (void *), &to_allocate)) {
         return NULL;
     }
 
@@ -1170,6 +1183,12 @@ SDL_SIMDRealloc(void *mem, const size_t len)
     /* Actually store the allocated pointer, finally. */
     *(((void **)retval) - 1) = ptr;
     return retval;
+}
+
+void
+SDL_aligned_free(void *ptr)
+{
+    SDL_SIMDFree(ptr);
 }
 
 void SDL_SIMDFree(void *ptr)

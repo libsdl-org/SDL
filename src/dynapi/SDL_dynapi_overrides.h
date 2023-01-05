@@ -877,3 +877,5 @@
 #define SDL_modf SDL_modf_REAL
 #define SDL_modff SDL_modff_REAL
 #define SDL_GetRenderVSync SDL_GetRenderVSync_REAL
+#define SDL_aligned_alloc SDL_aligned_alloc_REAL
+#define SDL_aligned_free SDL_aligned_free_REAL

@@ -457,6 +457,27 @@ extern DECLSPEC void * SDLCALL SDL_SIMDRealloc(void *mem, const size_t len);
  */
 extern DECLSPEC void SDLCALL SDL_SIMDFree(void *ptr);
 
+/**
+ * Allocate aligned memory with explicit 'alignment' parameter.
+ * \param alignment alignment requirement
+ * \param size The size, in bytes, of the block to allocate.
+ * \returns a pointer to the newly-allocated block, NULL if out of memory.
+ *
+ * \sa SDL_aligned_free
+ */
+extern DECLSPEC void * SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
+
+/**
+ * Deallocate memory obtained from SDL_aligned_alloc
+ *
+ * \param ptr The pointer, returned from SDL_aligned_alloc, to
+ *            deallocate. NULL is a legal no-op.
+ *
+ *
+ * \sa SDL_aligned_alloc
+ */
+extern DECLSPEC void SDLCALL SDL_aligned_free(void *ptr);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
