@@ -545,22 +545,21 @@ SDL_RWread() previously returned 0 at end of file or other error. Now it returns
 
 Code that used to look like this:
 ```
-    if (!SDL_RWread(context, ptr, size, 1)) {
-        ... handle error
-    }
+size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
+{
+    return (size_t)SDL_RWread(stream, ptr, size, nitems);
+}
 ```
 should be changed to:
 ```
-    if (SDL_RWread(context, ptr, size) != size) {
-        ... handle error
+size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
+{
+    Sint64 amount = SDL_RWread(stream, ptr, size * nitems); 
+    if (amount <= 0) {
+        return 0;
     }
-```
-or, if you're using a custom non-blocking context or are handling variable size data:
-```
-    Sint64 amount = SDL_RWread(context, ptr, maxsize);
-    if (amount < 0) {
-        ... handle error
-    }
+    return (size_t)(amount / size);
+}
 ```
 
 Similarly, SDL_RWwrite() can return -2 for data not ready in the case of a non-blocking context. There is currently no way to create a non-blocking context, we have simply defined the semantic for your own custom SDL_RWops object.
