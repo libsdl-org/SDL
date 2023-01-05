@@ -64,7 +64,6 @@
 #define SDL_ClearError SDL_ClearError_REAL
 #define SDL_ClearHints SDL_ClearHints_REAL
 #define SDL_ClearQueuedAudio SDL_ClearQueuedAudio_REAL
-#define SDL_CloseAudio SDL_CloseAudio_REAL
 #define SDL_CloseAudioDevice SDL_CloseAudioDevice_REAL
 #define SDL_CloseGamepad SDL_CloseGamepad_REAL
 #define SDL_CloseJoystick SDL_CloseJoystick_REAL
@@ -176,7 +175,6 @@
 #define SDL_GetAudioDeviceSpec SDL_GetAudioDeviceSpec_REAL
 #define SDL_GetAudioDeviceStatus SDL_GetAudioDeviceStatus_REAL
 #define SDL_GetAudioDriver SDL_GetAudioDriver_REAL
-#define SDL_GetAudioStatus SDL_GetAudioStatus_REAL
 #define SDL_GetAudioStreamAvailable SDL_GetAudioStreamAvailable_REAL
 #define SDL_GetAudioStreamData SDL_GetAudioStreamData_REAL
 #define SDL_GetBasePath SDL_GetBasePath_REAL
@@ -474,7 +472,6 @@
 #define SDL_LoadFunction SDL_LoadFunction_REAL
 #define SDL_LoadObject SDL_LoadObject_REAL
 #define SDL_LoadWAV_RW SDL_LoadWAV_RW_REAL
-#define SDL_LockAudio SDL_LockAudio_REAL
 #define SDL_LockAudioDevice SDL_LockAudioDevice_REAL
 #define SDL_LockJoysticks SDL_LockJoysticks_REAL
 #define SDL_LockMutex SDL_LockMutex_REAL
@@ -506,7 +503,6 @@
 #define SDL_Metal_GetDrawableSize SDL_Metal_GetDrawableSize_REAL
 #define SDL_Metal_GetLayer SDL_Metal_GetLayer_REAL
 #define SDL_MinimizeWindow SDL_MinimizeWindow_REAL
-#define SDL_MixAudio SDL_MixAudio_REAL
 #define SDL_MixAudioFormat SDL_MixAudioFormat_REAL
 #define SDL_MouseIsHaptic SDL_MouseIsHaptic_REAL
 #define SDL_NumHaptics SDL_NumHaptics_REAL
@@ -517,13 +513,11 @@
 #define SDL_OnApplicationWillEnterForeground SDL_OnApplicationWillEnterForeground_REAL
 #define SDL_OnApplicationWillResignActive SDL_OnApplicationWillResignActive_REAL
 #define SDL_OnApplicationWillTerminate SDL_OnApplicationWillTerminate_REAL
-#define SDL_OpenAudio SDL_OpenAudio_REAL
 #define SDL_OpenAudioDevice SDL_OpenAudioDevice_REAL
 #define SDL_OpenGamepad SDL_OpenGamepad_REAL
 #define SDL_OpenJoystick SDL_OpenJoystick_REAL
 #define SDL_OpenSensor SDL_OpenSensor_REAL
 #define SDL_OpenURL SDL_OpenURL_REAL
-#define SDL_PauseAudio SDL_PauseAudio_REAL
 #define SDL_PauseAudioDevice SDL_PauseAudioDevice_REAL
 #define SDL_PeepEvents SDL_PeepEvents_REAL
 #define SDL_PollEvent SDL_PollEvent_REAL
@@ -691,7 +685,6 @@
 #define SDL_ThreadID SDL_ThreadID_REAL
 #define SDL_TryLockMutex SDL_TryLockMutex_REAL
 #define SDL_UnloadObject SDL_UnloadObject_REAL
-#define SDL_UnlockAudio SDL_UnlockAudio_REAL
 #define SDL_UnlockAudioDevice SDL_UnlockAudioDevice_REAL
 #define SDL_UnlockJoysticks SDL_UnlockJoysticks_REAL
 #define SDL_UnlockMutex SDL_UnlockMutex_REAL

@@ -92,6 +92,7 @@ typedef struct
     /* Audio info */
     const char *audiodriver;
     SDL_AudioSpec audiospec;
+    SDL_AudioDeviceID audio_id;
 
     /* GL settings */
     int gl_red_size;

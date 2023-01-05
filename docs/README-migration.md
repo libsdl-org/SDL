@@ -58,6 +58,18 @@ The following functions have been renamed:
 * SDL_FreeAudioStream() => SDL_DestroyAudioStream()
 * SDL_NewAudioStream() => SDL_CreateAudioStream()
 
+
+The following functions have been removed:
+* SDL_OpenAudio()
+* SDL_CloseAudio()
+* SDL_PauseAudio()
+* SDL_GetAudioStatus()
+* SDL_LockAudio()
+* SDL_UnlockAudio()
+* SDL_MixAudio()
+
+Use the SDL_AudioDevice functions instead.
+
 ## SDL_cpuinfo.h
 
 SDL_Has3DNow() has been removed; there is no replacement.

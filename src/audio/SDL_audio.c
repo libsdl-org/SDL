@@ -1492,40 +1492,6 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
     return device->id;
 }
 
-int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained)
-{
-    SDL_AudioDeviceID id = 0;
-
-    /* Start up the audio driver, if necessary. This is legacy behaviour! */
-    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
-        if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
-            return -1;
-        }
-    }
-
-    /* SDL_OpenAudio() is legacy and can only act on Device ID #1. */
-    if (open_devices[0] != NULL) {
-        return SDL_SetError("Audio device is already opened");
-    }
-
-    if (obtained) {
-        id = open_audio_device(NULL, 0, desired, obtained,
-                               SDL_AUDIO_ALLOW_ANY_CHANGE, 1);
-    } else {
-        SDL_AudioSpec _obtained;
-        SDL_zero(_obtained);
-        id = open_audio_device(NULL, 0, desired, &_obtained, 0, 1);
-        /* On successful open, copy calculated values into 'desired'. */
-        if (id > 0) {
-            desired->size = _obtained.size;
-            desired->silence = _obtained.silence;
-        }
-    }
-
-    SDL_assert((id == 0) || (id == 1));
-    return (id == 0) ? -1 : 0;
-}
-
 SDL_AudioDeviceID
 SDL_OpenAudioDevice(const char *device, int iscapture,
                     const SDL_AudioSpec *desired, SDL_AudioSpec *obtained,
@@ -1550,12 +1516,6 @@ SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
     return status;
 }
 
-SDL_AudioStatus
-SDL_GetAudioStatus(void)
-{
-    return SDL_GetAudioDeviceStatus(1);
-}
-
 void SDL_PauseAudioDevice(SDL_AudioDeviceID devid, int pause_on)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
@@ -1564,11 +1524,6 @@ void SDL_PauseAudioDevice(SDL_AudioDeviceID devid, int pause_on)
         SDL_AtomicSet(&device->paused, pause_on ? 1 : 0);
         current_audio.impl.UnlockDevice(device);
     }
-}
-
-void SDL_PauseAudio(int pause_on)
-{
-    SDL_PauseAudioDevice(1, pause_on);
 }
 
 void SDL_LockAudioDevice(SDL_AudioDeviceID devid)
@@ -1580,11 +1535,6 @@ void SDL_LockAudioDevice(SDL_AudioDeviceID devid)
     }
 }
 
-void SDL_LockAudio(void)
-{
-    SDL_LockAudioDevice(1);
-}
-
 void SDL_UnlockAudioDevice(SDL_AudioDeviceID devid)
 {
     /* Obtain a lock on the mixing buffers */
@@ -1594,19 +1544,9 @@ void SDL_UnlockAudioDevice(SDL_AudioDeviceID devid)
     }
 }
 
-void SDL_UnlockAudio(void)
-{
-    SDL_UnlockAudioDevice(1);
-}
-
 void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
 {
     close_audio_device(get_audio_device(devid));
-}
-
-void SDL_CloseAudio(void)
-{
-    SDL_CloseAudioDevice(1);
 }
 
 void SDL_QuitAudio(void)
@@ -1710,15 +1650,3 @@ void SDL_CalculateAudioSpec(SDL_AudioSpec *spec)
     spec->size *= spec->samples;
 }
 
-/*
- * Moved here from SDL_mixer.c, since it relies on internals of an opened
- *  audio device (and is deprecated, by the way!).
- */
-void SDL_MixAudio(Uint8 *dst, const Uint8 *src, Uint32 len, int volume)
-{
-    /* Mix the user-level audio format */
-    SDL_AudioDevice *device = get_audio_device(1);
-    if (device != NULL) {
-        SDL_MixAudioFormat(dst, src, device->callbackspec.format, len, volume);
-    }
-}

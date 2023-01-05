@@ -1350,7 +1350,8 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                     SDL_GetCurrentAudioDriver());
         }
 
-        if (SDL_OpenAudio(&state->audiospec, NULL) < 0) {
+        state->audio_id = SDL_OpenAudioDevice(NULL, 0, &state->audiospec, NULL, 0);
+        if (state->audio_id <= 0) {
             SDL_Log("Couldn't open audio: %s\n", SDL_GetError());
             return SDL_FALSE;
         }
