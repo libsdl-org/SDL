@@ -4,22 +4,22 @@ Originally posted on Ryan's Google+ account.
 
 Background:
 
-- The Steam Runtime has (at least in theory) a really kick-ass build of SDL2, 
-  but developers are shipping their own SDL2 with individual Steam games. 
-  These games might stop getting updates, but a newer SDL2 might be needed later. 
+- The Steam Runtime has (at least in theory) a really kick-ass build of SDL, 
+  but developers are shipping their own SDL with individual Steam games. 
+  These games might stop getting updates, but a newer SDL might be needed later. 
   Certainly we'll always be fixing bugs in SDL, even if a new video target isn't 
   ever needed, and these fixes won't make it to a game shipping its own SDL.
-- Even if we replace the SDL2 in those games with a compatible one, that is to 
+- Even if we replace the SDL in those games with a compatible one, that is to 
   say, edit a developer's Steam depot (yuck!), there are developers that are 
-  statically linking SDL2 that we can't do this for. We can't even force the 
-  dynamic loader to ignore their SDL2 in this case, of course.
-- If you don't ship an SDL2 with the game in some form, people that disabled the
+  statically linking SDL that we can't do this for. We can't even force the 
+  dynamic loader to ignore their SDL in this case, of course.
+- If you don't ship an SDL with the game in some form, people that disabled the
   Steam Runtime, or just tried to run the game from the command line instead of 
   Steam might find themselves unable to run the game, due to a missing dependency.
 - If you want to ship on non-Steam platforms like GOG or Humble Bundle, or target
-  generic Linux boxes that may or may not have SDL2 installed, you have to ship 
+  generic Linux boxes that may or may not have SDL installed, you have to ship 
   the library or risk a total failure to launch. So now, you might have to have 
-  a non-Steam build plus a Steam build (that is, one with and one without SDL2 
+  a non-Steam build plus a Steam build (that is, one with and one without SDL 
   included), which is inconvenient if you could have had one universal build 
   that works everywhere.
 - We like the zlib license, but the biggest complaint from the open source 
@@ -65,8 +65,8 @@ system's dynamic loader was supposed to do for us? Yes, but now we've got this
 level of indirection, we can do things like this:
 
 ```bash
-export SDL_DYNAMIC_API=/my/actual/libSDL-2.0.so.0
-./MyGameThatIsStaticallyLinkedToSDL2
+export SDL_DYNAMIC_API=/my/actual/libSDL3.so.0
+./MyGameThatIsStaticallyLinkedToSDL
 ```
 
 And now, this game that is statically linked to SDL, can still be overridden 
@@ -108,7 +108,7 @@ the jump table, and the size, in bytes, of the table.
 Now, we've got policy here: this table's layout never changes; new stuff gets 
 added to the end. Therefore SDL_DYNAPI_entry() knows that it can provide all 
 the needed functions if tablesize <= sizeof its own jump table. If tablesize is
-bigger (say, SDL 2.0.4 is trying to load SDL 2.0.3), then we know to abort, but
+bigger (say, SDL 3.0.4 is trying to load SDL 3.0.3), then we know to abort, but
 if it's smaller, we know we can provide the entire API that the caller needs.
 
 The version variable is a failsafe switch. 

@@ -18,14 +18,23 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_x11mouse_h_
 #define SDL_x11mouse_h_
+
+typedef struct SDL_XInput2DeviceInfo
+{
+    int device_id;
+    SDL_bool relative[2];
+    double minval[2];
+    double maxval[2];
+    double prev_coords[2];
+    Time prev_time;
+    struct SDL_XInput2DeviceInfo *next;
+} SDL_XInput2DeviceInfo;
 
 extern void X11_InitMouse(_THIS);
 extern void X11_QuitMouse(_THIS);
 
 #endif /* SDL_x11mouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

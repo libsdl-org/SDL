@@ -18,9 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
+#include "SDL_internal.h"
 
 /* For a thread handle, use a void pointer to a std::thread */
-typedef void * SYS_ThreadHandle;
-
-/* vi: set ts=4 sw=4 expandtab: */
+typedef void *SYS_ThreadHandle;

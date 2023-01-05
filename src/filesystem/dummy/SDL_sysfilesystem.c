@@ -18,15 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if defined(SDL_FILESYSTEM_DUMMY) || defined(SDL_FILESYSTEM_DISABLED)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
-
-#include "SDL_error.h"
-#include "SDL_filesystem.h"
 
 char *
 SDL_GetBasePath(void)
@@ -43,5 +40,3 @@ SDL_GetPrefPath(const char *org, const char *app)
 }
 
 #endif /* SDL_FILESYSTEM_DUMMY || SDL_FILESYSTEM_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

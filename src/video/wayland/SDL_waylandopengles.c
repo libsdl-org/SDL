@@ -18,11 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL
 
-#include "SDL_timer.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_windowevents_c.h"
@@ -35,12 +34,12 @@
 
 /* EGL implementation of SDL OpenGL ES support */
 
-int
-Wayland_GLES_LoadLibrary(_THIS, const char *path) {
+int Wayland_GLES_LoadLibrary(_THIS, const char *path)
+{
     int ret;
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
-    ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
+    ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
 
     Wayland_PumpEvents(_this);
     WAYLAND_wl_display_flush(data->display);
@@ -48,13 +47,11 @@ Wayland_GLES_LoadLibrary(_THIS, const char *path) {
     return ret;
 }
 
-
-SDL_GLContext
-Wayland_GLES_CreateContext(_THIS, SDL_Window * window)
+SDL_GLContext Wayland_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext context;
-    context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
-    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
+    context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);
+    WAYLAND_wl_display_flush(((SDL_VideoData *)_this->driverdata)->display);
 
     return context;
 }
@@ -73,13 +70,12 @@ Wayland_GLES_CreateContext(_THIS, SDL_Window * window)
    libretro, Wayland, probably others...it feels like we're eventually going to have
    to give in with a future SDL API revision, since we can bend the other APIs to
    this style, but this style is much harder to bend the other way.  :/ */
-int
-Wayland_GLES_SetSwapInterval(_THIS, int interval)
+int Wayland_GLES_SetSwapInterval(_THIS, int interval)
 {
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
     }
-    
+
     /* technically, this is _all_ adaptive vsync (-1), because we can't
        actually wait for the _next_ vsync if you set 1, but things that
        request 1 probably won't care _that_ much. I hope. No matter what
@@ -96,21 +92,19 @@ Wayland_GLES_SetSwapInterval(_THIS, int interval)
     return 0;
 }
 
-int
-Wayland_GLES_GetSwapInterval(_THIS)
+int Wayland_GLES_GetSwapInterval(_THIS, int *interval)
 {
     if (!_this->egl_data) {
-        SDL_SetError("EGL not initialized");
-        return 0;
+        return SDL_SetError("EGL not initialized");
     }
 
-    return _this->egl_data->egl_swapinterval;
+    *interval =_this->egl_data->egl_swapinterval;
+    return 0;
 }
 
-int
-Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
+int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     const int swap_interval = _this->egl_data->egl_swapinterval;
 
     /* For windows that we know are hidden, skip swaps entirely, if we don't do
@@ -131,25 +125,24 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         struct wl_display *display = videodata->display;
         SDL_VideoDisplay *sdldisplay = SDL_GetDisplayForWindow(window);
         /* ~10 frames (or 1 sec), so we'll progress even if throttled to zero. */
-        const Uint32 max_wait = SDL_GetTicks() + (sdldisplay->current_mode.refresh_rate ?
-                                                  (10000 / sdldisplay->current_mode.refresh_rate) : 1000);
+        const Uint64 max_wait = SDL_GetTicksNS() + (sdldisplay->current_mode.refresh_rate ? ((SDL_NS_PER_SECOND * 10 * 100) / (int)(sdldisplay->current_mode.refresh_rate * 100)) : SDL_NS_PER_SECOND);
         while (SDL_AtomicGet(&data->swap_interval_ready) == 0) {
-            Uint32 now;
+            Uint64 now;
 
             WAYLAND_wl_display_flush(display);
 
             /* wl_display_prepare_read_queue() will return -1 if the event queue is not empty.
              * If the event queue is empty, it will prepare us for our SDL_IOReady() call. */
-            if (WAYLAND_wl_display_prepare_read_queue(display, data->frame_event_queue) != 0) {
+            if (WAYLAND_wl_display_prepare_read_queue(display, data->gles_swap_frame_event_queue) != 0) {
                 /* We have some pending events. Check if the frame callback happened. */
-                WAYLAND_wl_display_dispatch_queue_pending(display, data->frame_event_queue);
+                WAYLAND_wl_display_dispatch_queue_pending(display, data->gles_swap_frame_event_queue);
                 continue;
             }
 
             /* Beyond this point, we must either call wl_display_cancel_read() or wl_display_read_events() */
 
-            now = SDL_GetTicks();
-            if (SDL_TICKS_PASSED(now, max_wait)) {
+            now = SDL_GetTicksNS();
+            if (now >= max_wait) {
                 /* Timeout expired. Cancel the read. */
                 WAYLAND_wl_display_cancel_read(display);
                 break;
@@ -163,7 +156,7 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
             /* We have events. Read and dispatch them. */
             WAYLAND_wl_display_read_events(display);
-            WAYLAND_wl_display_dispatch_queue_pending(display, data->frame_event_queue);
+            WAYLAND_wl_display_dispatch_queue_pending(display, data->gles_swap_frame_event_queue);
         }
         SDL_AtomicSet(&data->swap_interval_ready, 0);
     }
@@ -173,54 +166,39 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
     }
 
-    WAYLAND_wl_display_flush( data->waylandData->display );
+    WAYLAND_wl_display_flush(data->waylandData->display);
 
     return 0;
 }
 
-int
-Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
+int Wayland_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     int ret;
 
     if (window && context) {
-        ret = SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *) window->driverdata)->egl_surface, context);
-    }
-    else {
+        ret = SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *)window->driverdata)->egl_surface, context);
+    } else {
         ret = SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
 
-    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
+    WAYLAND_wl_display_flush(((SDL_VideoData *)_this->driverdata)->display);
 
-    _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0);  /* see comments on Wayland_GLES_SetSwapInterval. */
+    _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0); /* see comments on Wayland_GLES_SetSwapInterval. */
 
     return ret;
 }
 
-void
-Wayland_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
-{
-    SDL_WindowData *data;
-    if (window->driverdata) {
-        data = (SDL_WindowData *) window->driverdata;
-
-        if (w) {
-            *w = data->drawable_width;
-        }
-
-        if (h) {
-            *h = data->drawable_height;
-        }
-    }
-}
-
-void
-Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
+void Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
-    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
+    WAYLAND_wl_display_flush(((SDL_VideoData *)_this->driverdata)->display);
+}
+
+EGLSurface Wayland_GLES_GetEGLSurface(_THIS, SDL_Window *window)
+{
+    SDL_WindowData *windowdata = (SDL_WindowData *)window->driverdata;
+
+    return windowdata->egl_surface;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL */
-
-/* vi: set ts=4 sw=4 expandtab: */

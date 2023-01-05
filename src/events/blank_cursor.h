@@ -22,12 +22,10 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * A default blank 8x8 cursor                                                */
 
-#define BLANK_CWIDTH    8
-#define BLANK_CHEIGHT   8
-#define BLANK_CHOTX 0
-#define BLANK_CHOTY 0
+#define BLANK_CWIDTH  8
+#define BLANK_CHEIGHT 8
+#define BLANK_CHOTX   0
+#define BLANK_CHOTY   0
 
 static const unsigned char blank_cdata[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 static const unsigned char blank_cmask[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-
-/* vi: set ts=4 sw=4 expandtab: */

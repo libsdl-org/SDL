@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_LOADSO_DLOPEN
 
@@ -27,8 +27,6 @@
 
 #include <stdio.h>
 #include <dlfcn.h>
-
-#include "SDL_loadso.h"
 
 #if SDL_VIDEO_DRIVER_UIKIT
 #include "../../video/uikit/SDL_uikitvideo.h"
@@ -47,12 +45,12 @@ SDL_LoadObject(const char *sofile)
     }
 #endif
 
-    handle = dlopen(sofile, RTLD_NOW|RTLD_LOCAL);
+    handle = dlopen(sofile, RTLD_NOW | RTLD_LOCAL);
     loaderror = dlerror();
     if (handle == NULL) {
         SDL_SetError("Failed loading %s: %s", sofile, loaderror);
     }
-    return (handle);
+    return handle;
 }
 
 void *
@@ -60,24 +58,23 @@ SDL_LoadFunction(void *handle, const char *name)
 {
     void *symbol = dlsym(handle, name);
     if (symbol == NULL) {
-        /* append an underscore for platforms that need that. */
+        /* prepend an underscore for platforms that need that. */
         SDL_bool isstack;
-        size_t len = 1 + SDL_strlen(name) + 1;
-        char *_name = SDL_small_alloc(char, len, &isstack);
+        size_t len = SDL_strlen(name) + 1;
+        char *_name = SDL_small_alloc(char, len + 1, &isstack);
         _name[0] = '_';
-        SDL_strlcpy(&_name[1], name, len);
+        SDL_memcpy(&_name[1], name, len);
         symbol = dlsym(handle, _name);
         SDL_small_free(_name, isstack);
         if (symbol == NULL) {
             SDL_SetError("Failed loading %s: %s", name,
-                         (const char *) dlerror());
+                         (const char *)dlerror());
         }
     }
-    return (symbol);
+    return symbol;
 }
 
-void
-SDL_UnloadObject(void *handle)
+void SDL_UnloadObject(void *handle)
 {
     if (handle != NULL) {
         dlclose(handle);
@@ -85,5 +82,3 @@ SDL_UnloadObject(void *handle)
 }
 
 #endif /* SDL_LOADSO_DLOPEN */
-
-/* vi: set ts=4 sw=4 expandtab: */

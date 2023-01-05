@@ -18,12 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_x11video_h_
 #define SDL_x11video_h_
-
-#include "SDL_keycode.h"
 
 #include "../SDL_sysvideo.h"
 
@@ -73,7 +71,7 @@ typedef struct SDL_VideoData
     char *classname;
     pid_t pid;
     XIM im;
-    Uint32 screensaver_activity;
+    Uint64 screensaver_activity;
     int numwindows;
     SDL_WindowData **windowlist;
     int windowlistlength;
@@ -126,13 +124,17 @@ typedef struct SDL_VideoData
     SDL_Scancode key_layout[256];
     SDL_bool selection_waiting;
 
-    SDL_bool broken_pointer_grab;  /* true if XGrabPointer seems unreliable. */
+    SDL_bool broken_pointer_grab; /* true if XGrabPointer seems unreliable. */
 
-    Uint32 last_mode_change_deadline;
+    Uint64 last_mode_change_deadline;
 
     SDL_bool global_mouse_changed;
     SDL_Point global_mouse_position;
     Uint32 global_mouse_buttons;
+
+    SDL_XInput2DeviceInfo *mouse_device_info;
+
+    int xrandr_event_base;
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     XkbDescPtr xkb;
@@ -140,7 +142,7 @@ typedef struct SDL_VideoData
     int xkb_event;
 
     KeyCode filter_code;
-    Time    filter_time;
+    Time filter_time;
 
 #if SDL_VIDEO_VULKAN
     /* Vulkan variables only valid if _this->vulkan_config.loader_handle is not NULL */
@@ -148,10 +150,12 @@ typedef struct SDL_VideoData
     PFN_XGetXCBConnection vulkan_XGetXCBConnection;
 #endif
 
+    /* Used to interact with the on-screen keyboard */
+    SDL_bool is_steam_deck;
+    SDL_bool steam_keyboard_open;
+
 } SDL_VideoData;
 
 extern SDL_bool X11_UseDirectColorVisuals(void);
 
 #endif /* SDL_x11video_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

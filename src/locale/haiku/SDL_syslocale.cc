@@ -23,7 +23,7 @@
 #include <LocaleRoster.h>
 #include <TypeConstants.h>
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "../SDL_syslocale.h"
 
 void
@@ -72,6 +72,3 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         }
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */
-

@@ -18,10 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
-extern int VITA_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch);
-extern int VITA_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects);
-extern void VITA_DestroyWindowFramebuffer(_THIS, SDL_Window * window);
-
-/* vi: set ts=4 sw=4 expandtab: */
+extern int VITA_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch);
+extern int VITA_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects);
+extern void VITA_DestroyWindowFramebuffer(_THIS, SDL_Window *window);

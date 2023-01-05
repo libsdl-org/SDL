@@ -18,14 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
 #include "../SDL_sysurl.h"
 
 #include <string.h>
 #include <psp2/apputil.h>
 
-int
-SDL_SYS_OpenURL(const char *url)
+int SDL_SYS_OpenURL(const char *url)
 {
     SceAppUtilInitParam init_param;
     SceAppUtilBootParam boot_param;
@@ -39,6 +39,3 @@ SDL_SYS_OpenURL(const char *url)
     sceAppUtilLaunchWebBrowser(&browser_param);
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */
-

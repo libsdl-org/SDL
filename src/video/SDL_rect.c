@@ -18,16 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
-#include "SDL_rect.h"
 #include "SDL_rect_c.h"
 
 /* There's no float version of this at the moment, because it's not a public API
    and internally we only need the int version. */
 SDL_bool
 SDL_GetSpanEnclosingRect(int width, int height,
-                         int numrects, const SDL_Rect * rects, SDL_Rect *span)
+                         int numrects, const SDL_Rect *rects, SDL_Rect *span)
 {
     int i;
     int span_y1, span_y2;
@@ -39,10 +38,10 @@ SDL_GetSpanEnclosingRect(int width, int height,
     } else if (height < 1) {
         SDL_InvalidParamError("height");
         return SDL_FALSE;
-    } else if (!rects) {
+    } else if (rects == NULL) {
         SDL_InvalidParamError("rects");
         return SDL_FALSE;
-    } else if (!span) {
+    } else if (span == NULL) {
         SDL_InvalidParamError("span");
         return SDL_FALSE;
     } else if (numrects < 1) {
@@ -80,7 +79,6 @@ SDL_GetSpanEnclosingRect(int width, int height,
     return SDL_FALSE;
 }
 
-
 /* For use with the Cohen-Sutherland algorithm for line clipping, in SDL_rect_impl.h */
 #define CODE_BOTTOM 1
 #define CODE_TOP    2
@@ -88,28 +86,26 @@ SDL_GetSpanEnclosingRect(int width, int height,
 #define CODE_RIGHT  8
 
 /* Same code twice, for float and int versions... */
-#define RECTTYPE SDL_Rect
-#define POINTTYPE SDL_Point
-#define SCALARTYPE int
-#define COMPUTEOUTCODE ComputeOutCode
-#define SDL_HASINTERSECTION SDL_HasIntersection
-#define SDL_INTERSECTRECT SDL_IntersectRect
-#define SDL_RECTEMPTY SDL_RectEmpty
-#define SDL_UNIONRECT SDL_UnionRect
-#define SDL_ENCLOSEPOINTS SDL_EnclosePoints
-#define SDL_INTERSECTRECTANDLINE SDL_IntersectRectAndLine
+#define RECTTYPE                 SDL_Rect
+#define POINTTYPE                SDL_Point
+#define SCALARTYPE               int
+#define COMPUTEOUTCODE           ComputeOutCode
+#define SDL_HASINTERSECTION      SDL_HasRectIntersection
+#define SDL_INTERSECTRECT        SDL_GetRectIntersection
+#define SDL_RECTEMPTY            SDL_RectEmpty
+#define SDL_UNIONRECT            SDL_GetRectUnion
+#define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPoints
+#define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersection
 #include "SDL_rect_impl.h"
 
-#define RECTTYPE SDL_FRect
-#define POINTTYPE SDL_FPoint
-#define SCALARTYPE float
-#define COMPUTEOUTCODE ComputeOutCodeF
-#define SDL_HASINTERSECTION SDL_HasIntersectionF
-#define SDL_INTERSECTRECT SDL_IntersectFRect
-#define SDL_RECTEMPTY SDL_FRectEmpty
-#define SDL_UNIONRECT SDL_UnionFRect
-#define SDL_ENCLOSEPOINTS SDL_EncloseFPoints
-#define SDL_INTERSECTRECTANDLINE SDL_IntersectFRectAndLine
+#define RECTTYPE                 SDL_FRect
+#define POINTTYPE                SDL_FPoint
+#define SCALARTYPE               float
+#define COMPUTEOUTCODE           ComputeOutCodeFloat
+#define SDL_HASINTERSECTION      SDL_HasRectIntersectionFloat
+#define SDL_INTERSECTRECT        SDL_GetRectIntersectionFloat
+#define SDL_RECTEMPTY            SDL_RectEmptyFloat
+#define SDL_UNIONRECT            SDL_GetRectUnionFloat
+#define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPointsFloat
+#define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersectionFloat
 #include "SDL_rect_impl.h"
-
-/* vi: set ts=4 sw=4 expandtab: */

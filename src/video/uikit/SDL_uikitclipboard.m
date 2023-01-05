@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_UIKIT
 
@@ -27,8 +27,7 @@
 
 #import <UIKit/UIPasteboard.h>
 
-int
-UIKit_SetClipboardText(_THIS, const char *text)
+int UIKit_SetClipboardText(_THIS, const char *text)
 {
 #if TARGET_OS_TV
     return SDL_SetError("The clipboard is not available on tvOS");
@@ -72,31 +71,29 @@ UIKit_HasClipboardText(_THIS)
     }
 }
 
-void
-UIKit_InitClipboard(_THIS)
+void UIKit_InitClipboard(_THIS)
 {
 #if !TARGET_OS_TV
     @autoreleasepool {
-        SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
+        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
         id observer = [center addObserverForName:UIPasteboardChangedNotification
-                                         object:nil
-                                          queue:nil
-                                     usingBlock:^(NSNotification *note) {
-                                         SDL_SendClipboardUpdate();
-                                     }];
+                                          object:nil
+                                           queue:nil
+                                      usingBlock:^(NSNotification *note) {
+                                        SDL_SendClipboardUpdate();
+                                      }];
 
         data.pasteboardObserver = observer;
     }
 #endif
 }
 
-void
-UIKit_QuitClipboard(_THIS)
+void UIKit_QuitClipboard(_THIS)
 {
     @autoreleasepool {
-        SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
+        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
 
         if (data.pasteboardObserver != nil) {
             [[NSNotificationCenter defaultCenter] removeObserver:data.pasteboardObserver];
@@ -107,5 +104,3 @@ UIKit_QuitClipboard(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

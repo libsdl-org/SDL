@@ -18,18 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
-#include "SDL_video.h"
 #include "SDL_blit.h"
 #include "SDL_blit_slow.h"
 
-#define FORMAT_ALPHA      0
-#define FORMAT_NO_ALPHA  -1
-#define FORMAT_2101010    1
-#define FORMAT_HAS_ALPHA(format)        format == 0
-#define FORMAT_HAS_NO_ALPHA(format)     format < 0
-static int SDL_INLINE detect_format(SDL_PixelFormat *pf) {
+#define FORMAT_ALPHA                0
+#define FORMAT_NO_ALPHA             (-1)
+#define FORMAT_2101010              1
+#define FORMAT_HAS_ALPHA(format)    format == 0
+#define FORMAT_HAS_NO_ALPHA(format) format < 0
+static int SDL_INLINE detect_format(SDL_PixelFormat *pf)
+{
     if (pf->format == SDL_PIXELFORMAT_ARGB2101010) {
         return FORMAT_2101010;
     } else if (pf->Amask) {
@@ -42,8 +42,7 @@ static int SDL_INLINE detect_format(SDL_PixelFormat *pf) {
 /* The ONE TRUE BLITTER
  * This puppy has to handle all the unoptimized cases - yes, it's slow.
  */
-void
-SDL_Blit_Slow(SDL_BlitInfo * info)
+void SDL_Blit_Slow(SDL_BlitInfo *info)
 {
     const int flags = info->flags;
     const Uint32 modulateR = info->r;
@@ -98,7 +97,7 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                 /* srcpixel isn't set for 24 bpp */
                 if (srcbpp == 3) {
                     srcpixel = (srcR << src_fmt->Rshift) |
-                        (srcG << src_fmt->Gshift) | (srcB << src_fmt->Bshift);
+                               (srcG << src_fmt->Gshift) | (srcB << src_fmt->Bshift);
                 }
                 if ((srcpixel & rgbmask) == ckey) {
                     posx += incx;
@@ -148,14 +147,17 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR;
-                if (dstR > 255)
+                if (dstR > 255) {
                     dstR = 255;
+                }
                 dstG = srcG + dstG;
-                if (dstG > 255)
+                if (dstG > 255) {
                     dstG = 255;
+                }
                 dstB = srcB + dstB;
-                if (dstB > 255)
+                if (dstB > 255) {
                     dstB = 255;
+                }
                 break;
             case SDL_COPY_MOD:
                 dstR = (srcR * dstR) / 255;
@@ -164,17 +166,21 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                 break;
             case SDL_COPY_MUL:
                 dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255;
-                if (dstR > 255)
+                if (dstR > 255) {
                     dstR = 255;
+                }
                 dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255;
-                if (dstG > 255)
+                if (dstG > 255) {
                     dstG = 255;
+                }
                 dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255;
-                if (dstB > 255)
+                if (dstB > 255) {
                     dstB = 255;
+                }
                 dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255;
-                if (dstA > 255)
+                if (dstA > 255) {
                     dstA = 255;
+                }
                 break;
             }
             if (FORMAT_HAS_ALPHA(dstfmt_val)) {
@@ -194,5 +200,3 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
         info->dst += info->dst_pitch;
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

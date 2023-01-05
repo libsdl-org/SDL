@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_FILESYSTEM_ANDROID
 
@@ -26,11 +26,6 @@
 /* System dependent filesystem routines                                */
 
 #include <unistd.h>
-
-#include "SDL_error.h"
-#include "SDL_filesystem.h"
-#include "SDL_system.h"
-
 
 char *
 SDL_GetBasePath(void)
@@ -45,9 +40,9 @@ SDL_GetPrefPath(const char *org, const char *app)
 {
     const char *path = SDL_AndroidGetInternalStoragePath();
     if (path) {
-        size_t pathlen = SDL_strlen(path)+2;
+        size_t pathlen = SDL_strlen(path) + 2;
         char *fullpath = (char *)SDL_malloc(pathlen);
-        if (!fullpath) {
+        if (fullpath == NULL) {
             SDL_OutOfMemory();
             return NULL;
         }
@@ -58,5 +53,3 @@ SDL_GetPrefPath(const char *org, const char *app)
 }
 
 #endif /* SDL_FILESYSTEM_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -1,3 +1,4 @@
+#include "SDL_internal.h"
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
@@ -128,7 +129,6 @@
 #include "math_libm.h"
 #include "math_private.h"
 
-#include "SDL_assert.h"
 
 static const int init_jk[] = {2,3,4,6}; /* initial value for jk */
 

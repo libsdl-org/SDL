@@ -10,7 +10,8 @@
   freely.
 */
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 int main(int argc, char **argv)
 {
@@ -23,7 +24,7 @@ int main(int argc, char **argv)
 
     total = SDL_GetNumVideoDisplays();
     for (i = 0; i < total; i++) {
-        SDL_Rect bounds = { -1,-1,-1,-1 }, usable = { -1,-1,-1,-1 };
+        SDL_Rect bounds = { -1, -1, -1, -1 }, usable = { -1, -1, -1, -1 };
         SDL_GetDisplayBounds(i, &bounds);
         SDL_GetDisplayUsableBounds(i, &usable);
         SDL_Log("Display #%d ('%s'): bounds={(%d,%d),%dx%d}, usable={(%d,%d),%dx%d}",
@@ -35,6 +36,3 @@ int main(int argc, char **argv)
     SDL_Quit();
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */
-

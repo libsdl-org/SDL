@@ -19,8 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
-#include "SDL_events.h"
+#include "SDL_internal.h"
 #include <sys/time.h>
 #include <dev/wscons/wsconsio.h>
 #include <unistd.h>
@@ -35,16 +34,21 @@ typedef struct SDL_WSCONS_mouse_input_data
     int fd;
 } SDL_WSCONS_mouse_input_data;
 
-SDL_WSCONS_mouse_input_data* SDL_WSCONS_Init_Mouse()
+SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse()
 {
 #ifdef WSMOUSEIO_SETVERSION
     int version = WSMOUSE_EVENT_VERSION;
 #endif
-    SDL_WSCONS_mouse_input_data* mouseInputData = SDL_calloc(1, sizeof(SDL_WSCONS_mouse_input_data));
+    SDL_WSCONS_mouse_input_data *mouseInputData = SDL_calloc(1, sizeof(SDL_WSCONS_mouse_input_data));
 
-    if (!mouseInputData) return NULL;
-    mouseInputData->fd = open("/dev/wsmouse",O_RDWR | O_NONBLOCK | O_CLOEXEC);
-    if (mouseInputData->fd == -1) {free(mouseInputData); return NULL; }
+    if (mouseInputData == NULL) {
+        return NULL;
+    }
+    mouseInputData->fd = open("/dev/wsmouse", O_RDWR | O_NONBLOCK | O_CLOEXEC);
+    if (mouseInputData->fd == -1) {
+        free(mouseInputData);
+        return NULL;
+    }
 #ifdef WSMOUSEIO_SETMODE
     ioctl(mouseInputData->fd, WSMOUSEIO_SETMODE, WSMOUSE_COMPAT);
 #endif
@@ -54,81 +58,76 @@ SDL_WSCONS_mouse_input_data* SDL_WSCONS_Init_Mouse()
     return mouseInputData;
 }
 
-void updateMouse(SDL_WSCONS_mouse_input_data* inputData)
+void updateMouse(SDL_WSCONS_mouse_input_data *inputData)
 {
     struct wscons_event events[64];
     int type;
-    int n,i;
-    SDL_Mouse* mouse = SDL_GetMouse();
+    int n, i;
+    SDL_Mouse *mouse = SDL_GetMouse();
 
-    if ((n = read(inputData->fd, events, sizeof(events))) > 0)
-    {
+    if ((n = read(inputData->fd, events, sizeof(events))) > 0) {
         n /= sizeof(struct wscons_event);
-        for (i = 0; i < n; i++)
-        {
+        for (i = 0; i < n; i++) {
             type = events[i].type;
-            switch(type)
-            {
+            switch (type) {
             case WSCONS_EVENT_MOUSE_DOWN:
-                {
-                    switch (events[i].value)
-                    {
-                    case 0: /* Left Mouse Button. */
-                        SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_LEFT);
-                        break;
-                    case 1: /* Middle Mouse Button. */
-                        SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_MIDDLE);
-                        break;
-                    case 2: /* Right Mouse Button. */
-                        SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_RIGHT);
-                        break;
-                    }
+            {
+                switch (events[i].value) {
+                case 0: /* Left Mouse Button. */
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_LEFT);
+                    break;
+                case 1: /* Middle Mouse Button. */
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_MIDDLE);
+                    break;
+                case 2: /* Right Mouse Button. */
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_RIGHT);
+                    break;
                 }
-                break;
+            } break;
             case WSCONS_EVENT_MOUSE_UP:
-                {
-                    switch (events[i].value)
-                    {
-                    case 0: /* Left Mouse Button. */
-                        SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_LEFT);
-                        break;
-                    case 1: /* Middle Mouse Button. */
-                        SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_MIDDLE);
-                        break;
-                    case 2: /* Right Mouse Button. */
-                        SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_RIGHT);
-                        break;
-                    }
+            {
+                switch (events[i].value) {
+                case 0: /* Left Mouse Button. */
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_LEFT);
+                    break;
+                case 1: /* Middle Mouse Button. */
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_MIDDLE);
+                    break;
+                case 2: /* Right Mouse Button. */
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_RIGHT);
+                    break;
                 }
-                break;
+            } break;
             case WSCONS_EVENT_MOUSE_DELTA_X:
-                {
-                    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, events[i].value, 0);
-                    break;
-                }
+            {
+                SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, (float)events[i].value, 0.0f);
+                break;
+            }
             case WSCONS_EVENT_MOUSE_DELTA_Y:
-                {
-                    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, 0, -events[i].value);
-                    break;
-                }
+            {
+                SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, 0.0f, -(float)events[i].value);
+                break;
+            }
             case WSCONS_EVENT_MOUSE_DELTA_W:
-                {
-                    SDL_SendMouseWheel(mouse->focus, mouse->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
-                    break;
-                }
+            {
+                SDL_SendMouseWheel(0, mouse->focus, mouse->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
+                break;
+            }
             case WSCONS_EVENT_MOUSE_DELTA_Z:
-                {
-                    SDL_SendMouseWheel(mouse->focus, mouse->mouseID, 0, -events[i].value, SDL_MOUSEWHEEL_NORMAL);
-                    break;
-                }
+            {
+                SDL_SendMouseWheel(0, mouse->focus, mouse->mouseID, 0, -events[i].value, SDL_MOUSEWHEEL_NORMAL);
+                break;
+            }
             }
         }
     }
 }
 
-void SDL_WSCONS_Quit_Mouse(SDL_WSCONS_mouse_input_data* inputData)
+void SDL_WSCONS_Quit_Mouse(SDL_WSCONS_mouse_input_data *inputData)
 {
-    if (!inputData) return;
+    if (inputData == NULL) {
+        return;
+    }
     close(inputData->fd);
     free(inputData);
 }

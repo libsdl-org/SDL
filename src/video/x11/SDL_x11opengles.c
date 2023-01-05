@@ -18,26 +18,24 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_OPENGL_EGL
 
-#include "SDL_hints.h"
 #include "SDL_x11video.h"
 #include "SDL_x11opengles.h"
 #include "SDL_x11opengl.h"
 
 /* EGL implementation of SDL OpenGL support */
 
-int
-X11_GLES_LoadLibrary(_THIS, const char *path)
+int X11_GLES_LoadLibrary(_THIS, const char *path)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     /* If the profile requested is not GL ES, switch over to X11_GL functions  */
     if ((_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) &&
-        !SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) {
-        #if SDL_VIDEO_OPENGL_GLX
+        !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
+#if SDL_VIDEO_OPENGL_GLX
         X11_GLES_UnloadLibrary(_this);
         _this->GL_LoadLibrary = X11_GL_LoadLibrary;
         _this->GL_GetProcAddress = X11_GL_GetProcAddress;
@@ -49,18 +47,18 @@ X11_GLES_LoadLibrary(_THIS, const char *path)
         _this->GL_SwapWindow = X11_GL_SwapWindow;
         _this->GL_DeleteContext = X11_GL_DeleteContext;
         return X11_GL_LoadLibrary(_this, path);
-        #else
+#else
         return SDL_SetError("SDL not configured with OpenGL/GLX support");
-        #endif
+#endif
     }
-    
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
+
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
 }
 
 XVisualInfo *
-X11_GLES_GetVisual(_THIS, Display * display, int screen)
+X11_GLES_GetVisual(_THIS, Display *display, int screen)
 {
-   
+
     XVisualInfo *egl_visualinfo = NULL;
     EGLint visual_id;
     XVisualInfo vi_in;
@@ -74,12 +72,13 @@ X11_GLES_GetVisual(_THIS, Display * display, int screen)
     if (_this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
                                             _this->egl_data->egl_config,
                                             EGL_NATIVE_VISUAL_ID,
-                                            &visual_id) == EGL_FALSE || !visual_id) {
+                                            &visual_id) == EGL_FALSE ||
+        !visual_id) {
         /* Use the default visual when all else fails */
         vi_in.screen = screen;
         egl_visualinfo = X11_XGetVisualInfo(display,
-                                        VisualScreenMask,
-                                        &vi_in, &out_count);
+                                            VisualScreenMask,
+                                            &vi_in, &out_count);
     } else {
         vi_in.screen = screen;
         vi_in.visualid = visual_id;
@@ -90,10 +89,10 @@ X11_GLES_GetVisual(_THIS, Display * display, int screen)
 }
 
 SDL_GLContext
-X11_GLES_CreateContext(_THIS, SDL_Window * window)
+X11_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext context;
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display = data->videodata->display;
 
     X11_XSync(display, False);
@@ -103,9 +102,14 @@ X11_GLES_CreateContext(_THIS, SDL_Window * window)
     return context;
 }
 
+SDL_EGLSurface
+X11_GLES_GetEGLSurface(_THIS, SDL_Window *window)
+{
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    return data->egl_surface;
+}
+
 SDL_EGL_SwapWindow_impl(X11)
-SDL_EGL_MakeCurrent_impl(X11)
+    SDL_EGL_MakeCurrent_impl(X11)
 
 #endif /* SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_OPENGL_EGL */
-
-/* vi: set ts=4 sw=4 expandtab: */

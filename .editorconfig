@@ -1,0 +1,65 @@
+# For format see editorconfig.org
+# Copyright 2022 Collabora Ltd.
+# SPDX-License-Identifier: Zlib
+
+root = true
+
+[*.{c,cg,cpp,gradle,h,java,m,metal,pl,py,S,sh,txt}]
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{html,js,json,m4,yml,yaml,vcxproj,vcxproj.filters}]
+indent_size = 2
+indent_style = space
+
+[*.xml]
+indent_size = 4
+indent_style = space
+
+[{CMakeLists.txt,cmake/*.cmake}]
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[{cmake/cmake_uninstall.cmake.in,test/CMakeLists.txt,cmake/SDL3Config.cmake.in}]
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[{Makefile.*,*.mk,*.sln,*.pbxproj,*.plist}]
+indent_size = 8
+indent_style = tab
+tab_width = 8
+
+[src/joystick/controller_type.*]
+indent_style = tab
+
+[src/joystick/hidapi/steam/*.h]
+indent_style = tab
+
+[src/libm/*.c]
+indent_style = tab
+
+[src/test/SDL_test_{crc32,md5,random}.c]
+indent_size = 2
+indent_style = space
+
+[src/video/yuv2rgb/*.{c,h}]
+indent_style = tab
+
+[wayland-protocols/*.xml]
+indent_size = 2
+indent_style = space
+
+[*.{markdown,md}]
+indent_size = 4
+indent_style = space
+# Markdown syntax treats tabs as 4 spaces
+tab_width = 4
+
+[{*.bat,*.rc}]
+end_of_line = crlf

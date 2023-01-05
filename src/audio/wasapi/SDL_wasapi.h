@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_wasapi_h_
 #define SDL_wasapi_h_
@@ -55,21 +55,16 @@ struct SDL_PrivateAudioData
     SDL_atomic_t just_activated;
 };
 
-/* these increment as default devices change. Opened default devices pick up changes in their threads. */
-extern SDL_atomic_t WASAPI_DefaultPlaybackGeneration;
-extern SDL_atomic_t WASAPI_DefaultCaptureGeneration;
-
 /* win32 and winrt implementations call into these. */
 int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream);
 void WASAPI_RefDevice(_THIS);
 void WASAPI_UnrefDevice(_THIS);
-void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid);
-void WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid);
 
 /* These are functions that are implemented differently for Windows vs WinRT. */
 int WASAPI_PlatformInit(void);
 void WASAPI_PlatformDeinit(void);
 void WASAPI_EnumerateEndpoints(void);
+int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture);
 int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery);
 void WASAPI_PlatformThreadInit(_THIS);
 void WASAPI_PlatformThreadDeinit(_THIS);
@@ -80,5 +75,3 @@ void WASAPI_PlatformDeleteActivationHandler(void *handler);
 #endif
 
 #endif /* SDL_wasapi_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

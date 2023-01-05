@@ -18,37 +18,43 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* Window event handling code for SDL */
 
-#include "SDL_events.h"
 #include "SDL_events_c.h"
 #include "SDL_mouse_c.h"
-#include "SDL_hints.h"
 
-static int SDLCALL
-RemovePendingSizeChangedAndResizedEvents(void * userdata, SDL_Event *event)
+typedef struct RemovePendingSizeChangedAndResizedEvents_Data
 {
-    SDL_Event *new_event = (SDL_Event *)userdata;
+    const SDL_Event *new_event;
+    SDL_bool saw_resized;
+} RemovePendingSizeChangedAndResizedEvents_Data;
 
-    if (event->type == SDL_WINDOWEVENT &&
-        (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED ||
-         event->window.event == SDL_WINDOWEVENT_RESIZED) &&
+static int SDLCALL RemovePendingSizeChangedAndResizedEvents(void *_userdata, SDL_Event *event)
+{
+    RemovePendingSizeChangedAndResizedEvents_Data *userdata = (RemovePendingSizeChangedAndResizedEvents_Data *)_userdata;
+    const SDL_Event *new_event = userdata->new_event;
+
+    if ((event->type == SDL_WINDOWEVENT_SIZE_CHANGED ||
+         event->type == SDL_WINDOWEVENT_RESIZED) &&
         event->window.windowID == new_event->window.windowID) {
+
+        if (event->type == SDL_WINDOWEVENT_RESIZED) {
+            userdata->saw_resized = SDL_TRUE;
+        }
+
         /* We're about to post a new size event, drop the old one */
         return 0;
     }
     return 1;
 }
 
-static int SDLCALL
-RemovePendingMoveEvents(void * userdata, SDL_Event *event)
+static int SDLCALL RemovePendingMoveEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
-    if (event->type == SDL_WINDOWEVENT &&
-        event->window.event == SDL_WINDOWEVENT_MOVED &&
+    if (event->type == SDL_WINDOWEVENT_MOVED &&
         event->window.windowID == new_event->window.windowID) {
         /* We're about to post a new move event, drop the old one */
         return 0;
@@ -56,13 +62,11 @@ RemovePendingMoveEvents(void * userdata, SDL_Event *event)
     return 1;
 }
 
-static int SDLCALL
-RemovePendingExposedEvents(void * userdata, SDL_Event *event)
+static int SDLCALL RemovePendingExposedEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
-    if (event->type == SDL_WINDOWEVENT &&
-        event->window.event == SDL_WINDOWEVENT_EXPOSED &&
+    if (event->type == SDL_WINDOWEVENT_EXPOSED &&
         event->window.windowID == new_event->window.windowID) {
         /* We're about to post a new exposed event, drop the old one */
         return 0;
@@ -70,29 +74,26 @@ RemovePendingExposedEvents(void * userdata, SDL_Event *event)
     return 1;
 }
 
-int
-SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
-                    int data2)
+int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
+                        int data1, int data2)
 {
     int posted;
 
-    if (!window) {
+    if (window == NULL) {
         return 0;
     }
     switch (windowevent) {
     case SDL_WINDOWEVENT_SHOWN:
-        if (window->flags & SDL_WINDOW_SHOWN) {
+        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
             return 0;
         }
         window->flags &= ~(SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED);
-        window->flags |= SDL_WINDOW_SHOWN;
         SDL_OnWindowShown(window);
         break;
     case SDL_WINDOWEVENT_HIDDEN:
-        if (!(window->flags & SDL_WINDOW_SHOWN)) {
+        if (window->flags & SDL_WINDOW_HIDDEN) {
             return 0;
         }
-        window->flags &= ~SDL_WINDOW_SHOWN;
         window->flags |= SDL_WINDOW_HIDDEN;
         SDL_OnWindowHidden(window);
         break;
@@ -174,21 +175,34 @@ SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
         SDL_OnWindowFocusLost(window);
         break;
+    default:
+        break;
     }
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE) {
+    if (SDL_EventEnabled(windowevent)) {
         SDL_Event event;
-        event.type = SDL_WINDOWEVENT;
-        event.window.event = windowevent;
+        event.type = windowevent;
+        event.common.timestamp = 0;
         event.window.data1 = data1;
         event.window.data2 = data2;
         event.window.windowID = window->id;
 
         /* Fixes queue overflow with resize events that aren't processed */
         if (windowevent == SDL_WINDOWEVENT_SIZE_CHANGED) {
-            SDL_FilterEvents(RemovePendingSizeChangedAndResizedEvents, &event);
+            /* !!! FIXME: in SDL3, let's make RESIZED/SIZE_CHANGED into one event with a flag to distinguish between them, and remove all this tapdancing. */
+            RemovePendingSizeChangedAndResizedEvents_Data userdata;
+            userdata.new_event = &event;
+            userdata.saw_resized = SDL_FALSE;
+            SDL_FilterEvents(RemovePendingSizeChangedAndResizedEvents, &userdata);
+            if (userdata.saw_resized) { /* if there was a pending resize, make sure one at the new dimensions remains. */
+                event.type = SDL_WINDOWEVENT_RESIZED;
+                if (SDL_PushEvent(&event) <= 0) {
+                    return 0; /* oh well. */
+                }
+                event.type = SDL_WINDOWEVENT_SIZE_CHANGED; /* then push the actual event next. */
+            }
         }
         if (windowevent == SDL_WINDOWEVENT_MOVED) {
             SDL_FilterEvents(RemovePendingMoveEvents, &event);
@@ -200,14 +214,12 @@ SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
     }
 
     if (windowevent == SDL_WINDOWEVENT_CLOSE) {
-        if ( !window->prev && !window->next ) {
+        if (!window->prev && !window->next) {
             if (SDL_GetHintBoolean(SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE, SDL_TRUE)) {
-                SDL_SendQuit();  /* This is the last window in the list so send the SDL_QUIT event */
+                SDL_SendQuit(); /* This is the last window in the list so send the SDL_QUIT event */
             }
         }
     }
 
-    return (posted);
+    return posted;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

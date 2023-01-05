@@ -18,12 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "SDL_steamcontroller.h"
-
 
 void SDL_InitSteamControllers(SteamControllerConnectedCallback_t connectedCallback,
                               SteamControllerDisconnectedCallback_t disconnectedCallback)
@@ -48,5 +47,3 @@ void SDL_UpdateSteamController(SDL_Joystick *joystick)
 void SDL_QuitSteamControllers(void)
 {
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

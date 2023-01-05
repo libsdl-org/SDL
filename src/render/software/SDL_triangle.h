@@ -22,21 +22,19 @@
 #ifndef SDL_triangle_h_
 #define SDL_triangle_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 extern int SDL_SW_FillTriangle(SDL_Surface *dst,
-        SDL_Point *d0, SDL_Point *d1, SDL_Point *d2,
-        SDL_BlendMode blend, SDL_Color c0, SDL_Color c1, SDL_Color c2);
+                               SDL_Point *d0, SDL_Point *d1, SDL_Point *d2,
+                               SDL_BlendMode blend, SDL_Color c0, SDL_Color c1, SDL_Color c2);
 
 extern int SDL_SW_BlitTriangle(
-        SDL_Surface *src,
-        SDL_Point *s0, SDL_Point *s1, SDL_Point *s2,
-        SDL_Surface *dst,
-        SDL_Point *d0, SDL_Point *d1, SDL_Point *d2,
-        SDL_Color c0, SDL_Color c1, SDL_Color c2);
+    SDL_Surface *src,
+    SDL_Point *s0, SDL_Point *s1, SDL_Point *s2,
+    SDL_Surface *dst,
+    SDL_Point *d0, SDL_Point *d1, SDL_Point *d2,
+    SDL_Color c0, SDL_Color c1, SDL_Color c2);
 
 extern void trianglepoint_2_fixedpoint(SDL_Point *a);
 
 #endif /* SDL_triangle_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

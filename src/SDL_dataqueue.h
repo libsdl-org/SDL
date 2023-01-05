@@ -26,13 +26,13 @@
 struct SDL_DataQueue;
 typedef struct SDL_DataQueue SDL_DataQueue;
 
-SDL_DataQueue *SDL_NewDataQueue(const size_t packetlen, const size_t initialslack);
-void SDL_FreeDataQueue(SDL_DataQueue *queue);
+SDL_DataQueue *SDL_CreateDataQueue(const size_t packetlen, const size_t initialslack);
+void SDL_DestroyDataQueue(SDL_DataQueue *queue);
 void SDL_ClearDataQueue(SDL_DataQueue *queue, const size_t slack);
 int SDL_WriteToDataQueue(SDL_DataQueue *queue, const void *data, const size_t len);
 size_t SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *buf, const size_t len);
 size_t SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *buf, const size_t len);
-size_t SDL_CountDataQueue(SDL_DataQueue *queue);
+size_t SDL_GetDataQueueSize(SDL_DataQueue *queue);
 
 /* this sets a section of the data queue aside (possibly allocating memory for it)
    as if it's been written to, but returns a pointer to that space. You may write
@@ -41,7 +41,7 @@ size_t SDL_CountDataQueue(SDL_DataQueue *queue);
    be in flight at the same time. There is no thread safety.
    If there isn't an existing block of memory that can contain the reserved
    space, one will be allocated for it. You can not (currently) allocate
-   a space larger than the packetlen requested in SDL_NewDataQueue.
+   a space larger than the packetlen requested in SDL_CreateDataQueue.
    Returned buffer is uninitialized.
    This lets you avoid an extra copy in some cases, but it's safer to use
    SDL_WriteToDataQueue() unless you know what you're doing.
@@ -50,6 +50,3 @@ size_t SDL_CountDataQueue(SDL_DataQueue *queue);
 void *SDL_ReserveSpaceInDataQueue(SDL_DataQueue *queue, const size_t len);
 
 #endif /* SDL_dataqueue_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
-

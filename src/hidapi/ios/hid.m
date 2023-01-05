@@ -18,11 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if !SDL_HIDAPI_DISABLED
 
-#include "SDL_hints.h"
 
 #define hid_init                        PLATFORM_hid_init
 #define hid_exit                        PLATFORM_hid_exit
@@ -836,7 +835,18 @@ int HID_API_EXPORT hid_set_nonblocking(hid_device *dev, int nonblock)
 struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 { @autoreleasepool {
 	struct hid_device_info *root = NULL;
-	
+	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
+
+	/* See if there are any devices we should skip in enumeration */
+	if (hint) {
+		char vendor_match[16], product_match[16];
+		SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", VALVE_USB_VID);
+		SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", VALVE_USB_VID, D0G_BLE2_PID);
+		if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
+			return NULL;
+		}
+	}
+
 	if ( ( vendor_id == 0 && product_id == 0 ) ||
 		 ( vendor_id == VALVE_USB_VID && product_id == D0G_BLE2_PID ) )
 	{

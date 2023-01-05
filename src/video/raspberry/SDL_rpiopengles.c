@@ -18,9 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
-
-#include "SDL_hints.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL
 
@@ -29,22 +27,21 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-void
-RPI_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
+void RPI_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
 {
     *mask = SDL_GL_CONTEXT_PROFILE_ES;
     *major = 2;
     *minor = 0;
 }
 
-int
-RPI_GLES_LoadLibrary(_THIS, const char *path) {
+int RPI_GLES_LoadLibrary(_THIS, const char *path)
+{
     return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
 }
 
-int
-RPI_GLES_SwapWindow(_THIS, SDL_Window * window) {
-    SDL_WindowData *wdata = ((SDL_WindowData *) window->driverdata);
+int RPI_GLES_SwapWindow(_THIS, SDL_Window *window)
+{
+    SDL_WindowData *wdata = ((SDL_WindowData *)window->driverdata);
 
     if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, wdata->egl_surface))) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed.");
@@ -52,7 +49,7 @@ RPI_GLES_SwapWindow(_THIS, SDL_Window * window) {
     }
 
     /* Wait immediately for vsync (as if we only had two buffers), for low input-lag scenarios.
-     * Run your SDL2 program with "SDL_RPI_DOUBLE_BUFFER=1 <program_name>" to enable this. */
+     * Run your SDL program with "SDL_RPI_DOUBLE_BUFFER=1 <program_name>" to enable this. */
     if (wdata->double_buffer) {
         SDL_LockMutex(wdata->vsync_cond_mutex);
         SDL_CondWait(wdata->vsync_cond, wdata->vsync_cond_mutex);
@@ -63,9 +60,6 @@ RPI_GLES_SwapWindow(_THIS, SDL_Window * window) {
 }
 
 SDL_EGL_CreateContext_impl(RPI)
-SDL_EGL_MakeCurrent_impl(RPI)
+    SDL_EGL_MakeCurrent_impl(RPI)
 
 #endif /* SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL */
-
-/* vi: set ts=4 sw=4 expandtab: */
-

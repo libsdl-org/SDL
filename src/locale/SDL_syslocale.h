@@ -18,11 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
+#include "SDL_internal.h"
 
 /* This is the system specific header for the SDL locale API */
-
-#include "SDL_locale.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,5 +31,3 @@ extern void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen);
 #ifdef __cplusplus
 }
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -19,20 +19,19 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "../SDL_syslocale.h"
 
-static void
-normalize_locale_str(char *dst, char *str, size_t buflen)
+static void normalize_locale_str(char *dst, char *str, size_t buflen)
 {
     char *ptr;
 
-    ptr = SDL_strchr(str, '.');  /* chop off encoding if specified. */
+    ptr = SDL_strchr(str, '.'); /* chop off encoding if specified. */
     if (ptr != NULL) {
         *ptr = '\0';
     }
 
-    ptr = SDL_strchr(str, '@');  /* chop off extra bits if specified. */
+    ptr = SDL_strchr(str, '@'); /* chop off extra bits if specified. */
     if (ptr != NULL) {
         *ptr = '\0';
     }
@@ -44,14 +43,13 @@ normalize_locale_str(char *dst, char *str, size_t buflen)
 
     if (*str) {
         if (*dst) {
-            SDL_strlcat(dst, ",", buflen);  /* SDL has these split by commas */
+            SDL_strlcat(dst, ",", buflen); /* SDL has these split by commas */
         }
         SDL_strlcat(dst, str, buflen);
     }
 }
 
-static void
-normalize_locales(char *dst, char *src, size_t buflen)
+static void normalize_locales(char *dst, char *src, size_t buflen)
 {
     char *ptr;
 
@@ -64,8 +62,7 @@ normalize_locales(char *dst, char *src, size_t buflen)
     normalize_locale_str(dst, src, buflen);
 }
 
-void
-SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     /* !!! FIXME: should we be using setlocale()? Or some D-Bus thing? */
     SDL_bool isstack;
@@ -74,7 +71,7 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 
     SDL_assert(buflen > 0);
     tmp = SDL_small_alloc(char, buflen, &isstack);
-    if (!tmp) {
+    if (tmp == NULL) {
         SDL_OutOfMemory();
         return;
     }
@@ -104,6 +101,3 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 
     SDL_small_free(tmp, isstack);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */
-

@@ -18,17 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_DUMMY
 
 #include "../SDL_sysvideo.h"
 #include "SDL_nullframebuffer_c.h"
 
+#define DUMMY_SURFACE "_SDL_DummySurface"
 
-#define DUMMY_SURFACE   "_SDL_DummySurface"
-
-int SDL_DUMMY_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
+int SDL_DUMMY_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
     const Uint32 surface_format = SDL_PIXELFORMAT_RGB888;
@@ -39,8 +38,8 @@ int SDL_DUMMY_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * forma
 
     /* Create a new one */
     SDL_GetWindowSize(window, &w, &h);
-    surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, surface_format);
-    if (!surface) {
+    surface = SDL_CreateSurface(w, h, surface_format);
+    if (surface == NULL) {
         return -1;
     }
 
@@ -52,34 +51,32 @@ int SDL_DUMMY_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * forma
     return 0;
 }
 
-int SDL_DUMMY_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
+int SDL_DUMMY_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     static int frame_number;
     SDL_Surface *surface;
 
-    surface = (SDL_Surface *) SDL_GetWindowData(window, DUMMY_SURFACE);
-    if (!surface) {
+    surface = (SDL_Surface *)SDL_GetWindowData(window, DUMMY_SURFACE);
+    if (surface == NULL) {
         return SDL_SetError("Couldn't find dummy surface for window");
     }
 
     /* Send the data to the display */
     if (SDL_getenv("SDL_VIDEO_DUMMY_SAVE_FRAMES")) {
         char file[128];
-        SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIu32 "-%8.8d.bmp",
-                     SDL_GetWindowID(window), ++frame_number);
+        (void)SDL_snprintf(file, sizeof file, "SDL_window%" SDL_PRIu32 "-%8.8d.bmp",
+                           SDL_GetWindowID(window), ++frame_number);
         SDL_SaveBMP(surface, file);
     }
     return 0;
 }
 
-void SDL_DUMMY_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
+void SDL_DUMMY_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_Surface *surface;
 
-    surface = (SDL_Surface *) SDL_SetWindowData(window, DUMMY_SURFACE, NULL);
-    SDL_FreeSurface(surface);
+    surface = (SDL_Surface *)SDL_SetWindowData(window, DUMMY_SURFACE, NULL);
+    SDL_DestroySurface(surface);
 }
 
 #endif /* SDL_VIDEO_DRIVER_DUMMY */
-
-/* vi: set ts=4 sw=4 expandtab: */

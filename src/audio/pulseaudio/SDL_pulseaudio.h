@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_pulseaudio_h_
 #define SDL_pulseaudio_h_
@@ -43,12 +43,10 @@ struct SDL_PrivateAudioData
     Uint8 *mixbuf;
     int mixlen;
 
-    int bytes_requested;  /* bytes of data the hardware wants _now_. */
+    int bytes_requested; /* bytes of data the hardware wants _now_. */
 
     const Uint8 *capturebuf;
     int capturelen;
 };
 
 #endif /* SDL_pulseaudio_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

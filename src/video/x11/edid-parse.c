@@ -21,8 +21,7 @@
  */
 
 /* Author: Soren Sandmann <sandmann@redhat.com> */
-#include "../../SDL_internal.h"
-#include "SDL_stdinc.h"
+#include "SDL_internal.h"
 
 #include "edid.h"
 #include <stdlib.h>
@@ -623,7 +622,7 @@ dump_monitor_info (MonitorInfo *info)
 	case RGB: s = "rgb"; break;
 	case OTHER_COLOR: s = "other color"; break;
 	default: s = "unknown"; break;
-	};
+	}
 	
 	printf ("Color: %s\n", s);
     }

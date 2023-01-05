@@ -18,7 +18,6 @@
 #define _MATH_PRIVATE_H_
 
 /* #include <endian.h> */
-#include "SDL_endian.h"
 /* #include <sys/types.h> */
 
 #define _IEEE_LIBM
@@ -27,7 +26,7 @@
 #define libm_hidden_def(x)
 #define strong_alias(x, y)
 
-#if !defined(__HAIKU__) && !defined(__PSP__) /* already defined in a system header. */
+#if !defined(__HAIKU__) && !defined(__PSP__) && !defined(__3DS__) && !defined(__PS2__) /* already defined in a system header. */
 typedef unsigned int u_int32_t;
 #endif
 
@@ -41,6 +40,7 @@ typedef unsigned int u_int32_t;
 #define __ieee754_fmod  SDL_uclibc_fmod
 #define __ieee754_log   SDL_uclibc_log
 #define __ieee754_log10 SDL_uclibc_log10
+#define modf            SDL_uclibc_modf
 #define __ieee754_pow   SDL_uclibc_pow
 #define scalbln         SDL_uclibc_scalbln
 #define scalbn          SDL_uclibc_scalbn

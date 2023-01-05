@@ -18,13 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_androidvideo_h_
 #define SDL_androidvideo_h_
 
-#include "SDL_mutex.h"
-#include "SDL_rect.h"
 #include "../SDL_sysvideo.h"
 
 /* Called by the JNI layer when the screen changes size or format */
@@ -37,9 +35,9 @@ extern void Android_SendResize(SDL_Window *window);
 typedef struct SDL_VideoData
 {
     SDL_Rect textRect;
-    int      isPaused;
-    int      isPausing;
-    int      pauseAudio;
+    int isPaused;
+    int isPausing;
+    int pauseAudio;
 } SDL_VideoData;
 
 extern int Android_SurfaceWidth;
@@ -48,5 +46,3 @@ extern SDL_sem *Android_PauseSem, *Android_ResumeSem;
 extern SDL_mutex *Android_ActivityMutex;
 
 #endif /* SDL_androidvideo_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

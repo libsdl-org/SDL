@@ -18,11 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_RISCOS
 
 #include "../SDL_sysvideo.h"
+#include "../../events/SDL_mouse_c.h"
 
 #include "SDL_riscosvideo.h"
 #include "SDL_riscosmodes.h"
@@ -30,7 +31,8 @@
 #include <kernel.h>
 #include <swis.h>
 
-enum {
+enum
+{
     MODE_FLAG_565 = 1 << 7,
 
     MODE_FLAG_COLOUR_SPACE = 0xF << 12,
@@ -41,7 +43,8 @@ enum {
     MODE_FLAG_ARGB = MODE_FLAG_TRGB | MODE_FLAG_ABGR
 };
 
-static const struct {
+static const struct
+{
     SDL_PixelFormatEnum pixel_format;
     int modeflags, ncolour, log2bpp;
 } mode_to_pixelformat[] = {
@@ -49,33 +52,32 @@ static const struct {
     /* { SDL_PIXELFORMAT_INDEX2LSB, 0, 3, 1 }, */
     /* { SDL_PIXELFORMAT_INDEX4LSB, 0, 15, 2 }, */
     /* { SDL_PIXELFORMAT_INDEX8,    MODE_FLAG_565, 255, 3 }, */
-    { SDL_PIXELFORMAT_XBGR1555,  MODE_FLAG_TBGR, 65535, 4 },
-    { SDL_PIXELFORMAT_XRGB1555,  MODE_FLAG_TRGB, 65535, 4 },
-    { SDL_PIXELFORMAT_ABGR1555,  MODE_FLAG_ABGR, 65535, 4 },
-    { SDL_PIXELFORMAT_ARGB1555,  MODE_FLAG_ARGB, 65535, 4 },
-    { SDL_PIXELFORMAT_XBGR4444,  MODE_FLAG_TBGR, 4095, 4 },
-    { SDL_PIXELFORMAT_XRGB4444,  MODE_FLAG_TRGB, 4095, 4 },
-    { SDL_PIXELFORMAT_ABGR4444,  MODE_FLAG_ABGR, 4095, 4 },
-    { SDL_PIXELFORMAT_ARGB4444,  MODE_FLAG_ARGB, 4095, 4 },
-    { SDL_PIXELFORMAT_BGR565,    MODE_FLAG_TBGR | MODE_FLAG_565, 65535, 4 },
-    { SDL_PIXELFORMAT_RGB565,    MODE_FLAG_TRGB | MODE_FLAG_565, 65535, 4 },
-    { SDL_PIXELFORMAT_BGR24,     MODE_FLAG_TBGR, 16777215, 6 },
-    { SDL_PIXELFORMAT_RGB24,     MODE_FLAG_TRGB, 16777215, 6 },
-    { SDL_PIXELFORMAT_XBGR8888,  MODE_FLAG_TBGR, -1, 5 },
-    { SDL_PIXELFORMAT_XRGB8888,  MODE_FLAG_TRGB, -1, 5 },
-    { SDL_PIXELFORMAT_ABGR8888,  MODE_FLAG_ABGR, -1, 5 },
-    { SDL_PIXELFORMAT_ARGB8888,  MODE_FLAG_ARGB, -1, 5 }
+    { SDL_PIXELFORMAT_XBGR1555, MODE_FLAG_TBGR, 65535, 4 },
+    { SDL_PIXELFORMAT_XRGB1555, MODE_FLAG_TRGB, 65535, 4 },
+    { SDL_PIXELFORMAT_ABGR1555, MODE_FLAG_ABGR, 65535, 4 },
+    { SDL_PIXELFORMAT_ARGB1555, MODE_FLAG_ARGB, 65535, 4 },
+    { SDL_PIXELFORMAT_XBGR4444, MODE_FLAG_TBGR, 4095, 4 },
+    { SDL_PIXELFORMAT_XRGB4444, MODE_FLAG_TRGB, 4095, 4 },
+    { SDL_PIXELFORMAT_ABGR4444, MODE_FLAG_ABGR, 4095, 4 },
+    { SDL_PIXELFORMAT_ARGB4444, MODE_FLAG_ARGB, 4095, 4 },
+    { SDL_PIXELFORMAT_BGR565, MODE_FLAG_TBGR | MODE_FLAG_565, 65535, 4 },
+    { SDL_PIXELFORMAT_RGB565, MODE_FLAG_TRGB | MODE_FLAG_565, 65535, 4 },
+    { SDL_PIXELFORMAT_BGR24, MODE_FLAG_TBGR, 16777215, 6 },
+    { SDL_PIXELFORMAT_RGB24, MODE_FLAG_TRGB, 16777215, 6 },
+    { SDL_PIXELFORMAT_XBGR8888, MODE_FLAG_TBGR, -1, 5 },
+    { SDL_PIXELFORMAT_XRGB8888, MODE_FLAG_TRGB, -1, 5 },
+    { SDL_PIXELFORMAT_ABGR8888, MODE_FLAG_ABGR, -1, 5 },
+    { SDL_PIXELFORMAT_ARGB8888, MODE_FLAG_ARGB, -1, 5 }
 };
 
-static SDL_PixelFormatEnum
-RISCOS_ModeToPixelFormat(int ncolour, int modeflags, int log2bpp)
+static SDL_PixelFormatEnum RISCOS_ModeToPixelFormat(int ncolour, int modeflags, int log2bpp)
 {
     int i;
 
     for (i = 0; i < SDL_arraysize(mode_to_pixelformat); i++) {
         if (log2bpp == mode_to_pixelformat[i].log2bpp &&
-           (ncolour == mode_to_pixelformat[i].ncolour || ncolour == 0) &&
-           (modeflags & (MODE_FLAG_565 | MODE_FLAG_COLOUR_SPACE)) == mode_to_pixelformat[i].modeflags) {
+            (ncolour == mode_to_pixelformat[i].ncolour || ncolour == 0) &&
+            (modeflags & (MODE_FLAG_565 | MODE_FLAG_COLOUR_SPACE)) == mode_to_pixelformat[i].modeflags) {
             return mode_to_pixelformat[i].pixel_format;
         }
     }
@@ -87,7 +89,7 @@ static size_t
 measure_mode_block(const int *block)
 {
     size_t blockSize = ((block[0] & 0xFF) == 3) ? 7 : 5;
-    while(block[blockSize] != -1) {
+    while (block[blockSize] != -1) {
         blockSize += 2;
     }
     blockSize++;
@@ -95,8 +97,7 @@ measure_mode_block(const int *block)
     return blockSize * 4;
 }
 
-static int
-read_mode_variable(int *block, int var)
+static int read_mode_variable(int *block, int var)
 {
     _kernel_swi_regs regs;
     regs.r[0] = (int)block;
@@ -105,8 +106,7 @@ read_mode_variable(int *block, int var)
     return regs.r[2];
 }
 
-static SDL_bool
-read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
+static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
 {
     int xres, yres, ncolour, modeflags, log2bpp, rate;
 
@@ -139,13 +139,12 @@ read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
     mode->w = xres;
     mode->h = yres;
     mode->format = RISCOS_ModeToPixelFormat(ncolour, modeflags, log2bpp);
-    mode->refresh_rate = rate;
+    mode->refresh_rate = (float)rate;
 
     return SDL_TRUE;
 }
 
-static void *
-convert_mode_block(const int *block)
+static void *convert_mode_block(const int *block)
 {
     int xres, yres, log2bpp, rate, ncolour = 0, modeflags = 0;
     size_t pos = 0;
@@ -168,7 +167,7 @@ convert_mode_block(const int *block)
     }
 
     dst = SDL_malloc(40);
-    if (!dst) {
+    if (dst == NULL) {
         return NULL;
     }
 
@@ -190,8 +189,7 @@ convert_mode_block(const int *block)
     return dst;
 }
 
-static void *
-copy_memory(const void *src, size_t size, size_t alloc)
+static void *copy_memory(const void *src, size_t size, size_t alloc)
 {
     void *dst = SDL_malloc(alloc);
     if (dst) {
@@ -200,8 +198,7 @@ copy_memory(const void *src, size_t size, size_t alloc)
     return dst;
 }
 
-int
-RISCOS_InitModes(_THIS)
+int RISCOS_InitModes(_THIS)
 {
     SDL_DisplayMode mode;
     int *current_mode;
@@ -229,8 +226,7 @@ RISCOS_InitModes(_THIS)
     return SDL_AddBasicVideoDisplay(&mode);
 }
 
-void
-RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
+void RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayMode mode;
     _kernel_swi_regs regs;
@@ -248,7 +244,7 @@ RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     }
 
     block = SDL_malloc(-regs.r[7]);
-    if (!block) {
+    if (block == NULL) {
         SDL_OutOfMemory();
         return;
     }
@@ -267,8 +263,9 @@ RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             continue;
         }
 
-        if (mode.format == SDL_PIXELFORMAT_UNKNOWN)
+        if (mode.format == SDL_PIXELFORMAT_UNKNOWN) {
             continue;
+        }
 
         mode.driverdata = convert_mode_block(pos + 4);
         if (!mode.driverdata) {
@@ -284,8 +281,7 @@ RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     SDL_free(block);
 }
 
-int
-RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+int RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     const char disable_cursor[] = { 23, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     _kernel_swi_regs regs;
@@ -304,12 +300,10 @@ RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         _kernel_oswrch(disable_cursor[i]);
     }
 
-    /* Turn the mouse pointer on */
-    /* _kernel_osbyte(106, 1, 0); */
+    /* Update cursor visibility, since it may have been disabled by the mode change. */
+    SDL_SetCursor(NULL);
 
     return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */
-
-/* vi: set ts=4 sw=4 expandtab: */

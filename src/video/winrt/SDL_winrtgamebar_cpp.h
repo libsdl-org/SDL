@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_winrtgamebar_h_
 #define SDL_winrtgamebar_h_
@@ -31,5 +31,3 @@ extern void WINRT_QuitGameBar(_THIS);
 #endif
 
 #endif /* SDL_winrtgamebar_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

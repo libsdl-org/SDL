@@ -74,11 +74,12 @@ kaiser_and_sinc(float *table, float *diffs, const int tablelen, const double bet
 {
     const int lenm1 = tablelen - 1;
     const int lenm1div2 = lenm1 / 2;
+    const double bessel_beta = bessel(beta);
     int i;
 
     table[0] = 1.0f;
     for (i = 1; i < tablelen; i++) {
-        const double kaiser = bessel(beta * sqrt(1.0 - pow(((i - lenm1) / 2.0) / lenm1div2, 2.0))) / bessel(beta);
+        const double kaiser = bessel(beta * sqrt(1.0 - pow(((i - lenm1) / 2.0) / lenm1div2, 2.0))) / bessel_beta;
         table[tablelen - i] = (float) kaiser;
     }
 
@@ -153,10 +154,6 @@ int main(void)
         printf("%s%.9ff", ((i % 5) == 4) ? ",\n    " : ", ", ResamplerFilterDifference[i+1]);
     }
     printf("\n};\n\n");
-    printf("/* vi: set ts=4 sw=4 expandtab: */\n\n");
 
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */
-

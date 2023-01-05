@@ -19,22 +19,21 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_windowsshape_h_
 #define SDL_windowsshape_h_
 
-#include "SDL_video.h"
-#include "SDL_shape.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_shape_internals.h"
 
-typedef struct {
+typedef struct
+{
     SDL_ShapeTree *mask_tree;
 } SDL_ShapeData;
 
-extern SDL_WindowShaper* Win32_CreateShaper(SDL_Window * window);
-extern int Win32_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode);
+extern SDL_WindowShaper *Win32_CreateShaper(SDL_Window *window);
+extern int Win32_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode);
 extern int Win32_ResizeWindowShape(SDL_Window *window);
 
 #endif /* SDL_windowsshape_h_ */

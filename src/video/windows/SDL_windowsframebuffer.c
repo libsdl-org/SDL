@@ -18,15 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #include "SDL_windowsvideo.h"
 
-int WIN_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
+int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_bool isstack;
     size_t size;
     LPBITMAPINFO info;
@@ -41,7 +41,7 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, voi
     }
 
     /* Find out the format of the screen */
-    size = sizeof(BITMAPINFOHEADER) + 256 * sizeof (RGBQUAD);
+    size = sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD);
     info = (LPBITMAPINFO)SDL_small_alloc(Uint8, size, &isstack);
     if (!info) {
         return SDL_OutOfMemory();
@@ -62,11 +62,10 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, voi
         Uint32 *masks;
 
         bpp = info->bmiHeader.biPlanes * info->bmiHeader.biBitCount;
-        masks = (Uint32*)((Uint8*)info + info->bmiHeader.biSize);
-        *format = SDL_MasksToPixelFormatEnum(bpp, masks[0], masks[1], masks[2], 0);
+        masks = (Uint32 *)((Uint8 *)info + info->bmiHeader.biSize);
+        *format = SDL_GetPixelFormatEnumForMasks(bpp, masks[0], masks[1], masks[2], 0);
     }
-    if (*format == SDL_PIXELFORMAT_UNKNOWN)
-    {
+    if (*format == SDL_PIXELFORMAT_UNKNOWN) {
         /* We'll use RGB format for now */
         *format = SDL_PIXELFORMAT_RGB888;
 
@@ -81,8 +80,8 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, voi
     /* Fill in the size information */
     *pitch = (((window->w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
     info->bmiHeader.biWidth = window->w;
-    info->bmiHeader.biHeight = -window->h;  /* negative for topdown bitmap */
-    info->bmiHeader.biSizeImage = window->h * (*pitch);
+    info->bmiHeader.biHeight = -window->h; /* negative for topdown bitmap */
+    info->bmiHeader.biSizeImage = (DWORD)window->h * (*pitch);
 
     data->mdc = CreateCompatibleDC(data->hdc);
     data->hbm = CreateDIBSection(data->hdc, info, DIB_RGB_COLORS, pixels, NULL, 0);
@@ -96,9 +95,9 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, voi
     return 0;
 }
 
-int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
+int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     int i;
 
     for (i = 0; i < numrects; ++i) {
@@ -108,11 +107,11 @@ int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rec
     return 0;
 }
 
-void WIN_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
+void WIN_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
-    if (!data) {
+    if (data == NULL) {
         /* The window wasn't fully initialized */
         return;
     }
@@ -128,5 +127,3 @@ void WIN_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

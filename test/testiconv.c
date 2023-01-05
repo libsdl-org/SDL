@@ -10,24 +10,29 @@
   freely.
 */
 
+/* quiet windows compiler warnings */
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include "testutils.h"
 
 static size_t
 widelen(char *data)
 {
     size_t len = 0;
-    Uint32 *p = (Uint32 *) data;
+    Uint32 *p = (Uint32 *)data;
     while (*p++) {
         ++len;
     }
     return len;
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     const char *formats[] = {
         "UTF8",
@@ -44,7 +49,7 @@ main(int argc, char *argv[])
         "UCS-4",
     };
 
-    char * fname;
+    char *fname;
     char buffer[BUFSIZ];
     char *ucs4;
     char *test[2];
@@ -57,9 +62,9 @@ main(int argc, char *argv[])
 
     fname = GetResourceFilename(argc > 1 ? argv[1] : NULL, "utf8.txt");
     file = fopen(fname, "rb");
-    if (!file) {
+    if (file == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to open %s\n", fname);
-        return (1);
+        return 1;
     }
     SDL_free(fname);
 
@@ -82,9 +87,11 @@ main(int argc, char *argv[])
         }
         test[0] = SDL_iconv_string("UTF-8", "UCS-4", ucs4, len);
         SDL_free(ucs4);
-        fputs(test[0], stdout);
+        (void)fputs(test[0], stdout);
         SDL_free(test[0]);
     }
-    fclose(file);
-    return (errors ? errors + 1 : 0);
+    (void)fclose(file);
+
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Total errors: %d\n", errors);
+    return errors ? errors + 1 : 0;
 }

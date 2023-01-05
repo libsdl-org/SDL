@@ -18,15 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_emscriptenframebuffer_h_
 #define SDL_emscriptenframebuffer_h_
 
-extern int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch);
-extern int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects);
-extern void Emscripten_DestroyWindowFramebuffer(_THIS, SDL_Window * window);
+extern int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch);
+extern int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects);
+extern void Emscripten_DestroyWindowFramebuffer(_THIS, SDL_Window *window);
 
 #endif /* SDL_emscriptenframebuffer_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -18,15 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* An implementation of condition variables using semaphores and mutexes */
 /*
    This implementation borrows heavily from the BeOS condition variable
    implementation, written by Christopher Tate and Owen Smith.  Thanks!
  */
-
-#include "SDL_thread.h"
 
 #include "../generic/SDL_syscond_c.h"
 
@@ -39,8 +37,7 @@
 #define SDL_DestroyCond_generic     SDL_DestroyCond
 #define SDL_CondSignal_generic      SDL_CondSignal
 #define SDL_CondBroadcast_generic   SDL_CondBroadcast
-#define SDL_CondWait_generic        SDL_CondWait
-#define SDL_CondWaitTimeout_generic SDL_CondWaitTimeout
+#define SDL_CondWaitTimeoutNS_generic SDL_CondWaitTimeoutNS
 #endif
 
 typedef struct SDL_cond_generic
@@ -58,7 +55,7 @@ SDL_CreateCond_generic(void)
 {
     SDL_cond_generic *cond;
 
-    cond = (SDL_cond_generic *) SDL_malloc(sizeof(SDL_cond_generic));
+    cond = (SDL_cond_generic *)SDL_malloc(sizeof(SDL_cond_generic));
     if (cond) {
         cond->lock = SDL_CreateMutex();
         cond->wait_sem = SDL_CreateSemaphore(0);
@@ -75,8 +72,7 @@ SDL_CreateCond_generic(void)
 }
 
 /* Destroy a condition variable */
-void
-SDL_DestroyCond_generic(SDL_cond * _cond)
+void SDL_DestroyCond_generic(SDL_cond *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (cond) {
@@ -94,11 +90,10 @@ SDL_DestroyCond_generic(SDL_cond * _cond)
 }
 
 /* Restart one of the threads that are waiting on the condition variable */
-int
-SDL_CondSignal_generic(SDL_cond * _cond)
+int SDL_CondSignal_generic(SDL_cond *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -119,11 +114,10 @@ SDL_CondSignal_generic(SDL_cond * _cond)
 }
 
 /* Restart all threads that are waiting on the condition variable */
-int
-SDL_CondBroadcast_generic(SDL_cond * _cond)
+int SDL_CondBroadcast_generic(SDL_cond *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -153,7 +147,7 @@ SDL_CondBroadcast_generic(SDL_cond * _cond)
     return 0;
 }
 
-/* Wait on the condition variable for at most 'ms' milliseconds.
+/* Wait on the condition variable for at most 'timeoutNS' nanoseconds.
    The mutex must be locked before entering this function!
    The mutex is unlocked during the wait, and locked again after the wait.
 
@@ -174,13 +168,12 @@ Thread B:
     SDL_CondSignal(cond);
     SDL_UnlockMutex(lock);
  */
-int
-SDL_CondWaitTimeout_generic(SDL_cond * _cond, SDL_mutex * mutex, Uint32 ms)
+int SDL_CondWaitTimeoutNS_generic(SDL_cond *_cond, SDL_mutex *mutex, Sint64 timeoutNS)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     int retval;
 
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -196,11 +189,7 @@ SDL_CondWaitTimeout_generic(SDL_cond * _cond, SDL_mutex * mutex, Uint32 ms)
     SDL_UnlockMutex(mutex);
 
     /* Wait for a signal */
-    if (ms == SDL_MUTEX_MAXWAIT) {
-        retval = SDL_SemWait(cond->wait_sem);
-    } else {
-        retval = SDL_SemWaitTimeout(cond->wait_sem, ms);
-    }
+    retval = SDL_SemWaitTimeoutNS(cond->wait_sem, timeoutNS);
 
     /* Let the signaler know we have completed the wait, otherwise
        the signaler can race ahead and get the condition semaphore
@@ -228,12 +217,3 @@ SDL_CondWaitTimeout_generic(SDL_cond * _cond, SDL_mutex * mutex, Uint32 ms)
 
     return retval;
 }
-
-/* Wait on the condition variable forever */
-int
-SDL_CondWait_generic(SDL_cond * cond, SDL_mutex * mutex)
-{
-    return SDL_CondWaitTimeout_generic(cond, mutex, SDL_MUTEX_MAXWAIT);
-}
-
-/* vi: set ts=4 sw=4 expandtab: */

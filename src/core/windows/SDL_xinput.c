@@ -18,12 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "SDL_xinput.h"
 
-
-#ifdef HAVE_XINPUT_H
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 XInputGetState_t SDL_XInputGetState = NULL;
 XInputSetState_t SDL_XInputSetState = NULL;
@@ -31,14 +33,12 @@ XInputGetCapabilities_t SDL_XInputGetCapabilities = NULL;
 XInputGetBatteryInformation_t SDL_XInputGetBatteryInformation = NULL;
 DWORD SDL_XInputVersion = 0;
 
-static HANDLE s_pXInputDLL = 0;
+static HMODULE s_pXInputDLL = NULL;
 static int s_XInputDLLRefCount = 0;
 
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
 
-#ifdef __WINRT__
-
-int
-WIN_LoadXInputDLL(void)
+int WIN_LoadXInputDLL(void)
 {
     /* Getting handles to system dlls (via LoadLibrary and its variants) is not
      * supported on WinRT, thus, pointers to XInput's functions can't be
@@ -63,22 +63,20 @@ WIN_LoadXInputDLL(void)
     return 0;
 }
 
-void
-WIN_UnloadXInputDLL(void)
+void WIN_UnloadXInputDLL(void)
 {
 }
 
-#else /* !__WINRT__ */
+#else /* !(defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)) */
 
-int
-WIN_LoadXInputDLL(void)
+int WIN_LoadXInputDLL(void)
 {
     DWORD version = 0;
 
     if (s_pXInputDLL) {
         SDL_assert(s_XInputDLLRefCount > 0);
         s_XInputDLLRefCount++;
-        return 0;  /* already loaded */
+        return 0; /* already loaded */
     }
 
     /* NOTE: Don't load XinputUap.dll
@@ -86,10 +84,10 @@ WIN_LoadXInputDLL(void)
      * limitations of that API (no devices at startup, no background input, etc.)
      */
     version = (1 << 16) | 4;
-    s_pXInputDLL = LoadLibrary(TEXT("XInput1_4.dll"));  /* 1.4 Ships with Windows 8. */
+    s_pXInputDLL = LoadLibrary(TEXT("XInput1_4.dll")); /* 1.4 Ships with Windows 8. */
     if (!s_pXInputDLL) {
         version = (1 << 16) | 3;
-        s_pXInputDLL = LoadLibrary(TEXT("XInput1_3.dll"));  /* 1.3 can be installed as a redistributable component. */
+        s_pXInputDLL = LoadLibrary(TEXT("XInput1_3.dll")); /* 1.3 can be installed as a redistributable component. */
     }
     if (!s_pXInputDLL) {
         s_pXInputDLL = LoadLibrary(TEXT("bin\\XInput1_3.dll"));
@@ -107,14 +105,14 @@ WIN_LoadXInputDLL(void)
     s_XInputDLLRefCount = 1;
 
     /* 100 is the ordinal for _XInputGetStateEx, which returns the same struct as XinputGetState, but with extra data in wButtons for the guide button, we think... */
-    SDL_XInputGetState = (XInputGetState_t)GetProcAddress((HMODULE)s_pXInputDLL, (LPCSTR)100);
-    if (!SDL_XInputGetState) {
-        SDL_XInputGetState = (XInputGetState_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetState");
+    SDL_XInputGetState = (XInputGetState_t)GetProcAddress(s_pXInputDLL, (LPCSTR)100);
+    if (SDL_XInputGetState == NULL) {
+        SDL_XInputGetState = (XInputGetState_t)GetProcAddress(s_pXInputDLL, "XInputGetState");
     }
-    SDL_XInputSetState = (XInputSetState_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputSetState");
-    SDL_XInputGetCapabilities = (XInputGetCapabilities_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetCapabilities");
-    SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)GetProcAddress( (HMODULE)s_pXInputDLL, "XInputGetBatteryInformation" );
-    if (!SDL_XInputGetState || !SDL_XInputSetState || !SDL_XInputGetCapabilities) {
+    SDL_XInputSetState = (XInputSetState_t)GetProcAddress(s_pXInputDLL, "XInputSetState");
+    SDL_XInputGetCapabilities = (XInputGetCapabilities_t)GetProcAddress(s_pXInputDLL, "XInputGetCapabilities");
+    SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)GetProcAddress(s_pXInputDLL, "XInputGetBatteryInformation");
+    if (SDL_XInputGetState == NULL || SDL_XInputSetState == NULL || SDL_XInputGetCapabilities == NULL) {
         WIN_UnloadXInputDLL();
         return -1;
     }
@@ -122,8 +120,7 @@ WIN_LoadXInputDLL(void)
     return 0;
 }
 
-void
-WIN_UnloadXInputDLL(void)
+void WIN_UnloadXInputDLL(void)
 {
     if (s_pXInputDLL) {
         SDL_assert(s_XInputDLLRefCount > 0);
@@ -137,6 +134,8 @@ WIN_UnloadXInputDLL(void)
 }
 
 #endif /* __WINRT__ */
-#endif /* HAVE_XINPUT_H */
 
-/* vi: set ts=4 sw=4 expandtab: */
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif

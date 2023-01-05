@@ -25,7 +25,7 @@
    - Apple USB keyboard driver source <http://darwinsource.opendarwin.org/10.4.6.ppc/IOHIDFamily-172.8/IOHIDFamily/Cosmo_USB2ADB.c>
    - experimentation on various ADB and USB ISO keyboards and one ADB ANSI keyboard
 */
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 static const SDL_Scancode darwin_scancode_table[] = {
     /*   0 */   SDL_SCANCODE_A,
     /*   1 */   SDL_SCANCODE_S,
@@ -156,4 +156,4 @@ static const SDL_Scancode darwin_scancode_table[] = {
     /* 126 */   SDL_SCANCODE_UP,
     /* 127 */   SDL_SCANCODE_POWER
 };
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */

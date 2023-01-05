@@ -18,12 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_riscosdefs_h_
 #define SDL_riscosdefs_h_
 
-typedef struct sprite_area {
+typedef struct sprite_area
+{
     int size;  /*  +0 */
     int count; /*  +4 */
     int start; /*  +8 */
@@ -32,7 +33,8 @@ typedef struct sprite_area {
 
 SDL_COMPILE_TIME_ASSERT(sprite_area, sizeof(sprite_area) == 16);
 
-typedef struct sprite_header {
+typedef struct sprite_header
+{
     int next;         /*  +0 */
     char name[12];    /*  +4 */
     int width;        /* +16 */
@@ -47,5 +49,3 @@ typedef struct sprite_header {
 SDL_COMPILE_TIME_ASSERT(sprite_header, sizeof(sprite_header) == 44);
 
 #endif /* SDL_riscosdefs_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

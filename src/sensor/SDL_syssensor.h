@@ -18,37 +18,35 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
 #ifndef SDL_syssensor_c_h_
 #define SDL_syssensor_c_h_
 
-#include "SDL_config.h"
-
 /* This is the system specific header for the SDL sensor API */
 
-#include "SDL_sensor.h"
 #include "SDL_sensor_c.h"
 
 /* The SDL sensor structure */
-struct _SDL_Sensor
+struct SDL_Sensor
 {
-    SDL_SensorID instance_id;       /* Device instance, monotonically increasing from 0 */
-    char *name;                     /* Sensor name - system dependent */
-    SDL_SensorType type;            /* Type of the sensor */
-    int non_portable_type;          /* Platform dependent type of the sensor */
+    SDL_SensorID instance_id;   /* Device instance, monotonically increasing from 0 */
+    char *name;                 /* Sensor name - system dependent */
+    SDL_SensorType type;        /* Type of the sensor */
+    int non_portable_type;      /* Platform dependent type of the sensor */
 
-    float data[16];                 /* The current state of the sensor */
+    float data[16];             /* The current state of the sensor */
 
-    struct _SDL_SensorDriver *driver;
+    struct SDL_SensorDriver *driver;
 
-    struct sensor_hwdata *hwdata;   /* Driver dependent information */
+    struct sensor_hwdata *hwdata; /* Driver dependent information */
 
-    int ref_count;                  /* Reference count for multiple opens */
+    int ref_count; /* Reference count for multiple opens */
 
-    struct _SDL_Sensor *next;       /* pointer to next sensor we have allocated */
+    struct SDL_Sensor *next; /* pointer to next sensor we have allocated */
 };
 
-typedef struct _SDL_SensorDriver
+typedef struct SDL_SensorDriver
 {
     /* Function to scan the system for sensors.
      * sensor 0 should be the system default sensor.
@@ -78,17 +76,17 @@ typedef struct _SDL_SensorDriver
        The sensor to open is specified by the device index.
        It returns 0, or -1 if there is an error.
      */
-    int (*Open)(SDL_Sensor * sensor, int device_index);
+    int (*Open)(SDL_Sensor *sensor, int device_index);
 
     /* Function to update the state of a sensor - called as a device poll.
      * This function shouldn't update the sensor structure directly,
-     * but instead should call SDL_PrivateSensorUpdate() to deliver events
+     * but instead should call SDL_SendSensorUpdate() to deliver events
      * and update sensor device state.
      */
-    void (*Update)(SDL_Sensor * sensor);
+    void (*Update)(SDL_Sensor *sensor);
 
     /* Function to close a sensor after use */
-    void (*Close)(SDL_Sensor * sensor);
+    void (*Close)(SDL_Sensor *sensor);
 
     /* Function to perform any system-specific sensor related cleanup */
     void (*Quit)(void);
@@ -101,7 +99,6 @@ extern SDL_SensorDriver SDL_COREMOTION_SensorDriver;
 extern SDL_SensorDriver SDL_WINDOWS_SensorDriver;
 extern SDL_SensorDriver SDL_DUMMY_SensorDriver;
 extern SDL_SensorDriver SDL_VITA_SensorDriver;
+extern SDL_SensorDriver SDL_N3DS_SensorDriver;
 
 #endif /* SDL_syssensor_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

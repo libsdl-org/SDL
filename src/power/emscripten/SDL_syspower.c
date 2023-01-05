@@ -18,14 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
 #if SDL_POWER_EMSCRIPTEN
 
 #include <emscripten/html5.h>
-
-#include "SDL_power.h"
 
 SDL_bool
 SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *percent)
@@ -33,8 +31,9 @@ SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *percent)
     EmscriptenBatteryEvent batteryState;
     int haveBattery = 0;
 
-    if (emscripten_get_battery_status(&batteryState) == EMSCRIPTEN_RESULT_NOT_SUPPORTED)
+    if (emscripten_get_battery_status(&batteryState) == EMSCRIPTEN_RESULT_NOT_SUPPORTED) {
         return SDL_FALSE;
+    }
 
     haveBattery = batteryState.level != 1.0 || !batteryState.charging || batteryState.chargingTime != 0.0;
 
@@ -58,5 +57,3 @@ SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *percent)
 
 #endif /* SDL_POWER_EMSCRIPTEN */
 #endif /* SDL_POWER_DISABLED */
-
-/* vi: set ts=4 sw=4 expandtab: */

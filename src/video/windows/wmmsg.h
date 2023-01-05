@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#define MAX_WMMSG   (sizeof(wmtab)/sizeof(wmtab[0]))
+#define MAX_WMMSG (sizeof(wmtab) / sizeof(wmtab[0]))
 
 const char *wmtab[] = {
     "WM_NULL",
@@ -762,7 +762,7 @@ const char *wmtab[] = {
     "UNKNOWN (737)",
     "UNKNOWN (738)",
     "UNKNOWN (739)",
-    "UNKNOWN (740)",
+    "WM_GETDPISCALEDSIZE",
     "UNKNOWN (741)",
     "UNKNOWN (742)",
     "UNKNOWN (743)",
@@ -1048,5 +1048,3 @@ const char *wmtab[] = {
     "UNKNOWN (1023)",
     "WM_USER"
 };
-
-/* vi: set ts=4 sw=4 expandtab: */

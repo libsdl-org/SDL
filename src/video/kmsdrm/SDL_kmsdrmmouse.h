@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_KMSDRM_mouse_h_
 #define SDL_KMSDRM_mouse_h_
@@ -29,14 +29,14 @@
 #define MAX_CURSOR_W 512
 #define MAX_CURSOR_H 512
 
-typedef struct _KMSDRM_CursorData
+typedef struct KMSDRM_CursorData
 {
-    int            hot_x, hot_y;
-    int            w, h;
+    int hot_x, hot_y;
+    int w, h;
 
     /* The buffer where we store the mouse bitmap ready to be used.
        We get it ready and filled in CreateCursor(), and copy it
-       to a GBM BO in ShowCursor().*/     
+       to a GBM BO in ShowCursor().*/
     uint32_t *buffer;
     size_t buffer_size;
     size_t buffer_pitch;
@@ -51,5 +51,3 @@ extern void KMSDRM_DestroyCursorBO(_THIS, SDL_VideoDisplay *display);
 extern void KMSDRM_InitCursor(void);
 
 #endif /* SDL_KMSDRM_mouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

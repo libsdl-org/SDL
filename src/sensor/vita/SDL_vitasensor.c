@@ -18,13 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-#include "SDL_config.h"
+#include "SDL_internal.h"
 
 #if defined(SDL_SENSOR_VITA)
 
-#include "SDL_error.h"
-#include "SDL_sensor.h"
 #include "SDL_vitasensor.h"
 #include "../SDL_syssensor.h"
 #include <psp2/motion.h>
@@ -42,8 +39,7 @@ typedef struct
 static SDL_VitaSensor *SDL_sensors;
 static int SDL_sensors_count;
 
-static int
-SDL_VITA_SensorInit(void)
+static int SDL_VITA_SensorInit(void)
 {
     sceMotionReset();
     sceMotionStartSampling();
@@ -55,7 +51,7 @@ SDL_VITA_SensorInit(void)
     SDL_sensors_count = 2;
 
     SDL_sensors = (SDL_VitaSensor *)SDL_calloc(SDL_sensors_count, sizeof(*SDL_sensors));
-    if (!SDL_sensors) {
+    if (SDL_sensors == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -67,36 +63,32 @@ SDL_VITA_SensorInit(void)
     return 0;
 }
 
-static int
-SDL_VITA_SensorGetCount(void)
+static int SDL_VITA_SensorGetCount(void)
 {
     return SDL_sensors_count;
 }
 
-static void
-SDL_VITA_SensorDetect(void)
+static void SDL_VITA_SensorDetect(void)
 {
 }
 
-static const char *
-SDL_VITA_SensorGetDeviceName(int device_index)
+static const char *SDL_VITA_SensorGetDeviceName(int device_index)
 {
     if (device_index < SDL_sensors_count) {
         switch (SDL_sensors[device_index].type) {
-            case SDL_SENSOR_ACCEL:
-                return "Accelerometer";
-            case SDL_SENSOR_GYRO:
-                return "Gyro";
-            default:
-                return "Unknown";
+        case SDL_SENSOR_ACCEL:
+            return "Accelerometer";
+        case SDL_SENSOR_GYRO:
+            return "Gyro";
+        default:
+            return "Unknown";
         }
     }
 
     return NULL;
 }
 
-static SDL_SensorType
-SDL_VITA_SensorGetDeviceType(int device_index)
+static SDL_SensorType SDL_VITA_SensorGetDeviceType(int device_index)
 {
     if (device_index < SDL_sensors_count) {
         return SDL_sensors[device_index].type;
@@ -105,8 +97,7 @@ SDL_VITA_SensorGetDeviceType(int device_index)
     return SDL_SENSOR_INVALID;
 }
 
-static int
-SDL_VITA_SensorGetDeviceNonPortableType(int device_index)
+static int SDL_VITA_SensorGetDeviceNonPortableType(int device_index)
 {
     if (device_index < SDL_sensors_count) {
         return SDL_sensors[device_index].type;
@@ -114,8 +105,7 @@ SDL_VITA_SensorGetDeviceNonPortableType(int device_index)
     return -1;
 }
 
-static SDL_SensorID
-SDL_VITA_SensorGetDeviceInstanceID(int device_index)
+static SDL_SensorID SDL_VITA_SensorGetDeviceInstanceID(int device_index)
 {
     if (device_index < SDL_sensors_count) {
         return SDL_sensors[device_index].instance_id;
@@ -123,8 +113,7 @@ SDL_VITA_SensorGetDeviceInstanceID(int device_index)
     return -1;
 }
 
-static int
-SDL_VITA_SensorOpen(SDL_Sensor *sensor, int device_index)
+static int SDL_VITA_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     struct sensor_hwdata *hwdata;
 
@@ -137,70 +126,68 @@ SDL_VITA_SensorOpen(SDL_Sensor *sensor, int device_index)
     return 0;
 }
 
-static void
-SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
+static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
 {
     int err = 0;
     SceMotionSensorState motionState[SCE_MOTION_MAX_NUM_STATES];
-    SDL_memset(motionState, 0, sizeof(motionState));
+    Uint64 timestamp = SDL_GetTicksNS();
 
+    SDL_zero(motionState);
     err = sceMotionGetSensorState(motionState, SCE_MOTION_MAX_NUM_STATES);
-    if (err != 0)
-    {
+    if (err != 0) {
         return;
     }
 
-    for (int i = 0; i < SCE_MOTION_MAX_NUM_STATES; i++)
-    {
-        if (sensor->hwdata->counter < motionState[i].counter)
-        {
+    for (int i = 0; i < SCE_MOTION_MAX_NUM_STATES; i++) {
+        if (sensor->hwdata->counter < motionState[i].counter) {
+            unsigned int tick = motionState[i].timestamp;
+            unsigned int delta;
+
             sensor->hwdata->counter = motionState[i].counter;
-            switch (sensor->type)
+
+            if (sensor->hwdata->last_tick > tick) {
+                SDL_COMPILE_TIME_ASSERT(tick, sizeof(tick) == sizeof(Uint32));
+                delta = (SDL_MAX_UINT32 - sensor->hwdata->last_tick + tick + 1);
+            } else {
+                delta = (tick - sensor->hwdata->last_tick);
+            }
+            sensor->hwdata->sensor_timestamp += SDL_US_TO_NS(delta);
+            sensor->hwdata->last_tick = tick;
+
+            switch (sensor->type) {
+            case SDL_SENSOR_ACCEL:
             {
-                case SDL_SENSOR_ACCEL:
-                {
-                    float data[3];
-                    data[0] = motionState[i].accelerometer.x * SDL_STANDARD_GRAVITY;
-                    data[1] = motionState[i].accelerometer.y * SDL_STANDARD_GRAVITY;
-                    data[2] = motionState[i].accelerometer.z * SDL_STANDARD_GRAVITY;
-                    if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
-                       SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
-                       SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
-                    }
-                }
-                break;
-                case SDL_SENSOR_GYRO:
-                {
-                    float data[3];
-                    data[0] = motionState[i].gyro.x;
-                    data[1] = motionState[i].gyro.y;
-                    data[2] = motionState[i].gyro.z;
-                    if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
-                       SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
-                       SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
-                    }
-                }
-                break;
-                default:
+                float data[3];
+                data[0] = motionState[i].accelerometer.x * SDL_STANDARD_GRAVITY;
+                data[1] = motionState[i].accelerometer.y * SDL_STANDARD_GRAVITY;
+                data[2] = motionState[i].accelerometer.z * SDL_STANDARD_GRAVITY;
+                SDL_SendSensorUpdate(timestamp, sensor, sensor->hwdata->sensor_timestamp, data, SDL_arraysize(data));
+            } break;
+            case SDL_SENSOR_GYRO:
+            {
+                float data[3];
+                data[0] = motionState[i].gyro.x;
+                data[1] = motionState[i].gyro.y;
+                data[2] = motionState[i].gyro.z;
+                SDL_SendSensorUpdate(timestamp, sensor, sensor->hwdata->sensor_timestamp, data, SDL_arraysize(data));
+            } break;
+            default:
                 break;
             }
         }
     }
 }
 
-static void
-SDL_VITA_SensorClose(SDL_Sensor *sensor)
+static void SDL_VITA_SensorClose(SDL_Sensor *sensor)
 {
 }
 
-static void
-SDL_VITA_SensorQuit(void)
+static void SDL_VITA_SensorQuit(void)
 {
     sceMotionStopSampling();
 }
 
-SDL_SensorDriver SDL_VITA_SensorDriver =
-{
+SDL_SensorDriver SDL_VITA_SensorDriver = {
     SDL_VITA_SensorInit,
     SDL_VITA_SensorGetCount,
     SDL_VITA_SensorDetect,
@@ -215,5 +202,3 @@ SDL_SensorDriver SDL_VITA_SensorDriver =
 };
 
 #endif /* SDL_SENSOR_VITA */
-
-/* vi: set ts=4 sw=4 expandtab: */

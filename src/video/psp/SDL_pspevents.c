@@ -18,20 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_PSP
 
 /* Being a null driver, there's no event stream. We just define stubs for
    most of the API. */
 
-#include "SDL.h"
-#include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_pspvideo.h"
 #include "SDL_pspevents_c.h"
-#include "SDL_keyboard.h"
 #include "../../thread/SDL_systhread.h"
 #include <psphprm.h>
 #include <pspthreadman.h>
@@ -40,7 +38,7 @@
 #include <pspirkeyb.h>
 #include <pspirkeyb_rawkeys.h>
 
-#define IRKBD_CONFIG_FILE     NULL    /* this will take ms0:/seplugins/pspirkeyb.ini */
+#define IRKBD_CONFIG_FILE NULL /* this will take ms0:/seplugins/pspirkeyb.ini */
 
 static int irkbd_ready = 0;
 static SDL_Keycode keymap[256];
@@ -50,28 +48,29 @@ static enum PspHprmKeys hprm = 0;
 static SDL_sem *event_sem = NULL;
 static SDL_Thread *thread = NULL;
 static int running = 0;
-static struct {
+static struct
+{
     enum PspHprmKeys id;
     SDL_Keycode sym;
 } keymap_psp[] = {
     { PSP_HPRM_PLAYPAUSE, SDLK_F10 },
-    { PSP_HPRM_FORWARD,   SDLK_F11 },
-    { PSP_HPRM_BACK,      SDLK_F12 },
-    { PSP_HPRM_VOL_UP,    SDLK_F13 },
-    { PSP_HPRM_VOL_DOWN,  SDLK_F14 },
-    { PSP_HPRM_HOLD,      SDLK_F15 }
+    { PSP_HPRM_FORWARD, SDLK_F11 },
+    { PSP_HPRM_BACK, SDLK_F12 },
+    { PSP_HPRM_VOL_UP, SDLK_F13 },
+    { PSP_HPRM_VOL_DOWN, SDLK_F14 },
+    { PSP_HPRM_HOLD, SDLK_F15 }
 };
 
 int EventUpdate(void *data)
 {
     while (running) {
-                SDL_SemWait(event_sem);
-                                sceHprmPeekCurrentKey(&hprm);
-                SDL_SemPost(event_sem);
-                /* Delay 1/60th of a second */
-                sceKernelDelayThread(1000000 / 60);
-        }
-        return 0;
+        SDL_SemWait(event_sem);
+        sceHprmPeekCurrentKey((u32 *)&hprm);
+        SDL_SemPost(event_sem);
+        /* Delay 1/60th of a second */
+        sceKernelDelayThread(1000000 / 60);
+    }
+    return 0;
 }
 
 void PSP_PumpEvents(_THIS)
@@ -80,7 +79,6 @@ void PSP_PumpEvents(_THIS)
     enum PspHprmKeys keys;
     enum PspHprmKeys changed;
     static enum PspHprmKeys old_keys = 0;
-    SDL_Keysym sym;
 
     SDL_SemWait(event_sem);
     keys = hprm;
@@ -89,44 +87,33 @@ void PSP_PumpEvents(_THIS)
     /* HPRM Keyboard */
     changed = old_keys ^ keys;
     old_keys = keys;
-    if(changed) {
-        for(i=0; i<sizeof(keymap_psp)/sizeof(keymap_psp[0]); i++) {
-            if(changed & keymap_psp[i].id) {
-                sym.scancode = keymap_psp[i].id;
-                sym.sym = keymap_psp[i].sym;
-
-                /* out of date
-                SDL_PrivateKeyboard((keys & keymap_psp[i].id) ?
-                            SDL_PRESSED : SDL_RELEASED,
-                            &sym);
-        */
-                SDL_SendKeyboardKey((keys & keymap_psp[i].id) ?
-                                    SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap_psp[i].sym));
+    if (changed) {
+        for (i = 0; i < sizeof(keymap_psp) / sizeof(keymap_psp[0]); i++) {
+            if (changed & keymap_psp[i].id) {
+                SDL_SendKeyboardKey(0, (keys & keymap_psp[i].id) ? SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap_psp[i].sym));
             }
         }
     }
 
 #ifdef PSPIRKEYB
     if (irkbd_ready) {
-            unsigned char buffer[255];
+        unsigned char buffer[255];
         int i, length, count;
         SIrKeybScanCodeData *scanData;
 
-            if(pspIrKeybReadinput(buffer, &length) >= 0) {
-                if((length % sizeof(SIrKeybScanCodeData)) == 0){
-                    count = length / sizeof(SIrKeybScanCodeData);
-                    for( i=0; i < count; i++ ) {
-                unsigned char raw, pressed;
-                        scanData=(SIrKeybScanCodeData*) buffer+i;
-                        raw = scanData->raw;
-                        pressed = scanData->pressed;
-                sym.scancode = raw;
-                sym.sym = keymap[raw];
-                /* not tested */
-                /* SDL_PrivateKeyboard(pressed?SDL_PRESSED:SDL_RELEASED, &sym); */
-                SDL_SendKeyboardKey((keys & keymap_psp[i].id) ?
-                                    SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap[raw]));
-
+        if (pspIrKeybReadinput(buffer, &length) >= 0) {
+            if ((length % sizeof(SIrKeybScanCodeData)) == 0) {
+                count = length / sizeof(SIrKeybScanCodeData);
+                for (i = 0; i < count; i++) {
+                    unsigned char raw, pressed;
+                    scanData = (SIrKeybScanCodeData *)buffer + i;
+                    raw = scanData->raw;
+                    pressed = scanData->pressed;
+                    sym.scancode = raw;
+                    sym.sym = keymap[raw];
+                    /* not tested */
+                    /* SDL_PrivateKeyboard(pressed?SDL_PRESSED:SDL_RELEASED, &sym); */
+                    SDL_SendKeyboardKey(0, (keys & keymap_psp[i].id) ? SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap[raw]));
                 }
             }
         }
@@ -141,8 +128,9 @@ void PSP_InitOSKeymap(_THIS)
 {
 #ifdef PSPIRKEYB
     int i;
-    for (i=0; i<SDL_TABLESIZE(keymap); ++i)
+    for (i = 0; i < SDL_TABLESIZE(keymap); ++i) {
         keymap[i] = SDLK_UNKNOWN;
+    }
 
     keymap[KEY_ESC] = SDLK_ESCAPE;
 
@@ -253,19 +241,19 @@ void PSP_EventInit(_THIS)
     int outputmode = PSP_IRKBD_OUTPUT_MODE_SCANCODE;
     int ret = pspIrKeybInit(IRKBD_CONFIG_FILE, 0);
     if (ret == PSP_IRKBD_RESULT_OK) {
-            pspIrKeybOutputMode(outputmode);
+        pspIrKeybOutputMode(outputmode);
         irkbd_ready = 1;
     } else {
         irkbd_ready = 0;
     }
 #endif
     /* Start thread to read data */
-    if((event_sem =  SDL_CreateSemaphore(1)) == NULL) {
+    if ((event_sem = SDL_CreateSemaphore(1)) == NULL) {
         SDL_SetError("Can't create input semaphore");
         return;
     }
     running = 1;
-    if((thread = SDL_CreateThreadInternal(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
+    if ((thread = SDL_CreateThreadInternal(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
         SDL_SetError("Can't create input thread");
         return;
     }
@@ -278,7 +266,7 @@ void PSP_EventQuit(_THIS)
     SDL_DestroySemaphore(event_sem);
 #ifdef PSPIRKEYB
     if (irkbd_ready) {
-            pspIrKeybFinish();
+        pspIrKeybFinish();
         irkbd_ready = 0;
     }
 #endif
@@ -287,5 +275,3 @@ void PSP_EventQuit(_THIS)
 /* end of SDL_pspevents.c ... */
 
 #endif /* SDL_VIDEO_DRIVER_PSP */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -21,8 +21,11 @@
 #ifndef SDL_uikitevents_h_
 #define SDL_uikitevents_h_
 
+#import <UIKit/UIKit.h>
+
 #include "../SDL_sysvideo.h"
 
+extern Uint64 UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp);
 extern void UIKit_PumpEvents(_THIS);
 
 extern void SDL_InitGCKeyboard(void);
@@ -35,5 +38,3 @@ extern SDL_bool SDL_GCMouseRelativeMode(void);
 extern void SDL_QuitGCMouse(void);
 
 #endif /* SDL_uikitevents_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

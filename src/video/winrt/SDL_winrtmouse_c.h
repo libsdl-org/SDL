@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_winrtmouse_h_
 #define SDL_winrtmouse_h_
@@ -36,5 +36,3 @@ extern SDL_bool WINRT_UsingRelativeMouseMode;
 #endif
 
 #endif /* SDL_winrtmouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

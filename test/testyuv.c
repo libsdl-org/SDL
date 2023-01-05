@@ -9,41 +9,34 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "SDL.h"
-#include "SDL_test_font.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test_font.h>
 #include "testyuv_cvt.h"
 
-
 /* 422 (YUY2, etc) formats are the largest */
-#define MAX_YUV_SURFACE_SIZE(W, H, P)  (H*4*(W+P+1)/2)
-
+#define MAX_YUV_SURFACE_SIZE(W, H, P) (H * 4 * (W + P + 1) / 2)
 
 /* Return true if the YUV format is packed pixels */
 static SDL_bool is_packed_yuv_format(Uint32 format)
 {
-    return (format == SDL_PIXELFORMAT_YUY2 ||
-            format == SDL_PIXELFORMAT_UYVY ||
-            format == SDL_PIXELFORMAT_YVYU);
+    return format == SDL_PIXELFORMAT_YUY2 || format == SDL_PIXELFORMAT_UYVY || format == SDL_PIXELFORMAT_YVYU;
 }
 
 /* Create a surface with a good pattern for verifying YUV conversion */
 static SDL_Surface *generate_test_pattern(int pattern_size)
 {
-    SDL_Surface *pattern = SDL_CreateRGBSurfaceWithFormat(0, pattern_size, pattern_size, 0, SDL_PIXELFORMAT_RGB24);
+    SDL_Surface *pattern = SDL_CreateSurface(pattern_size, pattern_size, SDL_PIXELFORMAT_RGB24);
 
     if (pattern) {
         int i, x, y;
         Uint8 *p, c;
-        const int thickness = 2;    /* Important so 2x2 blocks of color are the same, to avoid Cr/Cb interpolation over pixels */
+        const int thickness = 2; /* Important so 2x2 blocks of color are the same, to avoid Cr/Cb interpolation over pixels */
 
         /* R, G, B in alternating horizontal bands */
         for (y = 0; y < pattern->h; y += thickness) {
             for (i = 0; i < thickness; ++i) {
-                p = (Uint8 *)pattern->pixels + (y + i) * pattern->pitch + ((y/thickness) % 3);
+                p = (Uint8 *)pattern->pixels + (y + i) * pattern->pitch + ((y / thickness) % 3);
                 for (x = 0; x < pattern->w; ++x) {
                     *p = 0xFF;
                     p += 3;
@@ -53,9 +46,9 @@ static SDL_Surface *generate_test_pattern(int pattern_size)
 
         /* Black and white in alternating vertical bands */
         c = 0xFF;
-        for (x = 1*thickness; x < pattern->w; x += 2*thickness) {
+        for (x = 1 * thickness; x < pattern->w; x += 2 * thickness) {
             for (i = 0; i < thickness; ++i) {
-                p = (Uint8 *)pattern->pixels + (x + i)*3;
+                p = (Uint8 *)pattern->pixels + (x + i) * 3;
                 for (y = 0; y < pattern->h; ++y) {
                     SDL_memset(p, c, 3);
                     p += pattern->pitch;
@@ -79,7 +72,7 @@ static SDL_bool verify_yuv_data(Uint32 format, const Uint8 *yuv, int yuv_pitch, 
     SDL_bool result = SDL_FALSE;
 
     rgb = (Uint8 *)SDL_malloc(size);
-    if (!rgb) {
+    if (rgb == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory");
         return SDL_FALSE;
     }
@@ -129,8 +122,8 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
     Uint8 *yuv2 = (Uint8 *)SDL_malloc(yuv_len);
     int yuv1_pitch, yuv2_pitch;
     int result = -1;
-    
-    if (!pattern || !yuv1 || !yuv2) {
+
+    if (pattern == NULL || yuv1 == NULL || yuv2 == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't allocate test surfaces");
         goto done;
     }
@@ -206,20 +199,19 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
         }
     }
 
-
     result = 0;
 
 done:
     SDL_free(yuv1);
     SDL_free(yuv2);
-    SDL_FreeSurface(pattern);
+    SDL_DestroySurface(pattern);
     return result;
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
-    struct {
+    struct
+    {
         SDL_bool enable_intrinsics;
         int pattern_size;
         int extra_pitch;
@@ -263,7 +255,8 @@ main(int argc, char **argv)
     int current = 0;
     int pitch;
     Uint8 *raw_yuv;
-    Uint32 then, now, i, iterations = 100;
+    Uint64 then, now;
+    Uint32 i, iterations = 100;
     SDL_bool should_run_automated_tests = SDL_FALSE;
 
     while (argv[arg] && *argv[arg] == '-') {
@@ -315,10 +308,10 @@ main(int argc, char **argv)
     /* Run automated tests */
     if (should_run_automated_tests) {
         for (i = 0; i < SDL_arraysize(automated_test_params); ++i) {
-            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Running automated test, pattern size %d, extra pitch %d, intrinsics %s\n", 
-                automated_test_params[i].pattern_size,
-                automated_test_params[i].extra_pitch,
-                automated_test_params[i].enable_intrinsics ? "enabled" : "disabled");
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Running automated test, pattern size %d, extra pitch %d, intrinsics %s\n",
+                        automated_test_params[i].pattern_size,
+                        automated_test_params[i].extra_pitch,
+                        automated_test_params[i].enable_intrinsics ? "enabled" : "disabled");
             if (run_automated_tests(automated_test_params[i].pattern_size, automated_test_params[i].extra_pitch) < 0) {
                 return 2;
             }
@@ -331,43 +324,43 @@ main(int argc, char **argv)
     } else {
         filename = "testyuv.bmp";
     }
-    original = SDL_ConvertSurfaceFormat(SDL_LoadBMP(filename), SDL_PIXELFORMAT_RGB24, 0);
-    if (!original) {
+    original = SDL_ConvertSurfaceFormat(SDL_LoadBMP(filename), SDL_PIXELFORMAT_RGB24);
+    if (original == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         return 3;
     }
 
     raw_yuv = SDL_calloc(1, MAX_YUV_SURFACE_SIZE(original->w, original->h, 0));
     ConvertRGBtoYUV(yuv_format, original->pixels, original->pitch, raw_yuv, original->w, original->h,
-        SDL_GetYUVConversionModeForResolution(original->w, original->h),
-        0, 100);
+                    SDL_GetYUVConversionModeForResolution(original->w, original->h),
+                    0, 100);
     pitch = CalculateYUVPitch(yuv_format, original->w);
 
-    converted = SDL_CreateRGBSurfaceWithFormat(0, original->w, original->h, 0, rgb_format);
-    if (!converted) {
+    converted = SDL_CreateSurface(original->w, original->h, rgb_format);
+    if (converted == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create converted surface: %s\n", SDL_GetError());
         return 3;
     }
 
     then = SDL_GetTicks();
-    for ( i = 0; i < iterations; ++i ) {
+    for (i = 0; i < iterations; ++i) {
         SDL_ConvertPixels(original->w, original->h, yuv_format, raw_yuv, pitch, rgb_format, converted->pixels, converted->pitch);
     }
     now = SDL_GetTicks();
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%d iterations in %d ms, %.2fms each\n", iterations, (now - then), (float)(now - then)/iterations);
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%" SDL_PRIu32 " iterations in %" SDL_PRIu64 " ms, %.2fms each\n", iterations, (now - then), (float)(now - then) / iterations);
 
     window = SDL_CreateWindow("YUV test",
                               SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED,
                               original->w, original->h,
                               0);
-    if (!window) {
+    if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return 4;
     }
 
-    renderer = SDL_CreateRenderer(window, -1, 0);
-    if (!renderer) {
+    renderer = SDL_CreateRenderer(window, NULL, 0);
+    if (renderer == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         return 4;
     }
@@ -380,7 +373,7 @@ main(int argc, char **argv)
         return 5;
     }
     SDL_UpdateTexture(output[2], NULL, raw_yuv, pitch);
-    
+
     yuv_name = SDL_GetPixelFormatName(yuv_format);
     if (SDL_strncmp(yuv_name, "SDL_PIXELFORMAT_", 16) == 0) {
         yuv_name += 16;
@@ -401,9 +394,9 @@ main(int argc, char **argv)
         break;
     }
 
-    { int done = 0;
-        while ( !done )
-        {
+    {
+        int done = 0;
+        while (!done) {
             SDL_Event event;
             while (SDL_PollEvent(&event) > 0) {
                 if (event.type == SDL_QUIT) {
@@ -419,7 +412,7 @@ main(int argc, char **argv)
                     }
                 }
                 if (event.type == SDL_MOUSEBUTTONDOWN) {
-                    if (event.button.x < (original->w/2)) {
+                    if (event.button.x < (original->w / 2)) {
                         --current;
                     } else {
                         ++current;
@@ -436,12 +429,12 @@ main(int argc, char **argv)
             }
 
             SDL_RenderClear(renderer);
-            SDL_RenderCopy(renderer, output[current], NULL, NULL);
+            SDL_RenderTexture(renderer, output[current], NULL, NULL);
             SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
             if (current == 0) {
                 SDLTest_DrawString(renderer, 4, 4, titles[current]);
             } else {
-                SDL_snprintf(title, sizeof(title), "%s %s %s", titles[current], yuv_name, yuv_mode);
+                (void)SDL_snprintf(title, sizeof title, "%s %s %s", titles[current], yuv_name, yuv_mode);
                 SDLTest_DrawString(renderer, 4, 4, title);
             }
             SDL_RenderPresent(renderer);
@@ -451,5 +444,3 @@ main(int argc, char **argv)
     SDL_Quit();
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

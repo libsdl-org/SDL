@@ -18,12 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef __WINRT__
 
 #include "SDL_hid.h"
-
 
 HidD_GetString_t SDL_HidD_GetManufacturerString;
 HidD_GetString_t SDL_HidD_GetProductString;
@@ -36,14 +35,12 @@ HidP_GetData_t SDL_HidP_GetData;
 static HMODULE s_pHIDDLL = 0;
 static int s_HIDDLLRefCount = 0;
 
-
-int
-WIN_LoadHIDDLL(void)
+int WIN_LoadHIDDLL(void)
 {
     if (s_pHIDDLL) {
         SDL_assert(s_HIDDLLRefCount > 0);
         s_HIDDLLRefCount++;
-        return 0;  /* already loaded */
+        return 0; /* already loaded */
     }
 
     s_pHIDDLL = LoadLibrary(TEXT("hid.dll"));
@@ -61,9 +58,9 @@ WIN_LoadHIDDLL(void)
     SDL_HidP_GetValueCaps = (HidP_GetValueCaps_t)GetProcAddress(s_pHIDDLL, "HidP_GetValueCaps");
     SDL_HidP_MaxDataListLength = (HidP_MaxDataListLength_t)GetProcAddress(s_pHIDDLL, "HidP_MaxDataListLength");
     SDL_HidP_GetData = (HidP_GetData_t)GetProcAddress(s_pHIDDLL, "HidP_GetData");
-    if (!SDL_HidD_GetManufacturerString || !SDL_HidD_GetProductString ||
-        !SDL_HidP_GetCaps || !SDL_HidP_GetButtonCaps ||
-        !SDL_HidP_GetValueCaps || !SDL_HidP_MaxDataListLength || !SDL_HidP_GetData) {
+    if (SDL_HidD_GetManufacturerString == NULL || SDL_HidD_GetProductString == NULL ||
+        SDL_HidP_GetCaps == NULL || SDL_HidP_GetButtonCaps == NULL ||
+        SDL_HidP_GetValueCaps == NULL || SDL_HidP_MaxDataListLength == NULL || SDL_HidP_GetData == NULL) {
         WIN_UnloadHIDDLL();
         return -1;
     }
@@ -71,8 +68,7 @@ WIN_LoadHIDDLL(void)
     return 0;
 }
 
-void
-WIN_UnloadHIDDLL(void)
+void WIN_UnloadHIDDLL(void)
 {
     if (s_pHIDDLL) {
         SDL_assert(s_HIDDLLRefCount > 0);
@@ -86,5 +82,3 @@ WIN_UnloadHIDDLL(void)
 }
 
 #endif /* !__WINRT__ */
-
-/* vi: set ts=4 sw=4 expandtab: */

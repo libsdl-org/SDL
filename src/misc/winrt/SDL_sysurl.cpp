@@ -18,12 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
 #include "../SDL_sysurl.h"
 #include "../../core/windows/SDL_windows.h"
 
-int
-SDL_SYS_OpenURL(const char *url)
+int SDL_SYS_OpenURL(const char *url)
 {
     WCHAR *wurl = WIN_UTF8ToStringW(url);
     if (!wurl) {
@@ -34,8 +34,5 @@ SDL_SYS_OpenURL(const char *url)
 
     auto uri = ref new Windows::Foundation::Uri(strurl);
     Windows::System::Launcher::LaunchUriAsync(uri);
-    return 0;  // oh well, we're not waiting on an async task here.
+    return 0; // oh well, we're not waiting on an async task here.
 }
-
-/* vi: set ts=4 sw=4 expandtab: */
-

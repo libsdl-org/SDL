@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL
 
@@ -28,7 +28,7 @@
 #include <KernelKit.h>
 #include <OpenGLKit.h>
 #include "SDL_BWin.h"
-#include "../../main/haiku/SDL_BApp.h"
+#include "../../core/haiku/SDL_BApp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,11 +36,11 @@ extern "C" {
 
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
-    return ((SDL_BWin*)(window->driverdata));
+    return (SDL_BWin *)(window->driverdata);
 }
 
 static SDL_INLINE SDL_BApp *_GetBeApp() {
-    return ((SDL_BApp*)be_app);
+    return (SDL_BApp *)be_app;
 }
 
 /* Passing a NULL path means load pointers from the application */
@@ -51,7 +51,7 @@ int HAIKU_GL_LoadLibrary(_THIS, const char *path)
             int32 cookie = 0;
     while (get_next_image_info(0, &cookie, &info) == B_OK) {
         void *location = NULL;
-        if( get_image_symbol(info.id, "glBegin", B_SYMBOL_TYPE_ANY,
+        if ( get_image_symbol(info.id, "glBegin", B_SYMBOL_TYPE_ANY,
                 &location) == B_OK) {
 
             _this->gl_config.dll_handle = (void *) (addr_t) info.id;
@@ -94,8 +94,7 @@ int HAIKU_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context) {
     // printf("HAIKU_GL_MakeCurrent(%llx), win = %llx, thread = %d\n", (uint64)context, (uint64)window, find_thread(NULL));
     if (glView != NULL) {
         if ((glView->Window() == NULL) || (window == NULL) || (_ToBeWin(window)->GetGLView() != glView)) {
-            SDL_SetError("MakeCurrent failed");
-            return -1;
+            return SDL_SetError("MakeCurrent failed");
         }
     }
     _GetBeApp()->SetCurrentContext(glView);
@@ -160,9 +159,8 @@ int HAIKU_GL_SetSwapInterval(_THIS, int interval) {
     return SDL_Unsupported();
 }
 
-int HAIKU_GL_GetSwapInterval(_THIS) {
-    /* TODO: Implement this, if necessary? */
-    return 0;
+int HAIKU_GL_GetSwapInterval(_THIS, int *interval) {
+    return SDL_Unsupported();
 }
 
 
@@ -176,9 +174,9 @@ void HAIKU_GL_UnloadLibrary(_THIS) {
    currently in use. */
 void HAIKU_GL_RebootContexts(_THIS) {
     SDL_Window *window = _this->windows;
-    while(window) {
+    while (window) {
         SDL_BWin *bwin = _ToBeWin(window);
-        if(bwin->GetGLView()) {
+        if (bwin->GetGLView()) {
             bwin->LockLooper();
             bwin->RemoveGLView();
             bwin->CreateGLView(bwin->GetGLType());
@@ -194,5 +192,3 @@ void HAIKU_GL_RebootContexts(_THIS) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL */
-
-/* vi: set ts=4 sw=4 expandtab: */

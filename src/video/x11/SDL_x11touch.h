@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_x11touch_h_
 #define SDL_x11touch_h_
@@ -28,5 +28,3 @@ extern void X11_QuitTouch(_THIS);
 extern void X11_ResetTouch(_THIS);
 
 #endif /* SDL_x11touch_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

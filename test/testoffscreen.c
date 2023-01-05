@@ -13,16 +13,15 @@
 /* Simple program: picks the offscreen backend and renders each frame to a bmp */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <time.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL.h"
-#include "SDL_stdinc.h"
-#include "SDL_opengl.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_opengl.h>
 
 static SDL_Renderer *renderer = NULL;
 static SDL_Window *window = NULL;
@@ -30,58 +29,53 @@ static int done = SDL_FALSE;
 static int frame_number = 0;
 static int width = 640;
 static int height = 480;
-static int max_frames = 200;
+static unsigned int max_frames = 200;
 
-void
-draw()
+void draw()
 {
-    SDL_Rect Rect;
+    SDL_FRect rect;
 
     SDL_SetRenderDrawColor(renderer, 0x10, 0x9A, 0xCE, 0xFF);
     SDL_RenderClear(renderer);
 
     /* Grow based on the frame just to show a difference per frame of the region */
-    Rect.x = 0;
-    Rect.y = 0;
-    Rect.w = (frame_number * 2) % width;
-    Rect.h = (frame_number * 2) % height;
+    rect.x = 0.0f;
+    rect.y = 0.0f;
+    rect.w = (float)((frame_number * 2) % width);
+    rect.h = (float)((frame_number * 2) % height);
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x10, 0x21, 0xFF);
-    SDL_RenderFillRect(renderer, &Rect);
+    SDL_RenderFillRect(renderer, &rect);
 
     SDL_RenderPresent(renderer);
 }
 
-void
-save_surface_to_bmp()
+void save_surface_to_bmp()
 {
     SDL_Surface* surface;
-    Uint32 r_mask, g_mask, b_mask, a_mask;
     Uint32 pixel_format;
     char file[128];
-    int bbp;
 
     pixel_format = SDL_GetWindowPixelFormat(window);
-    SDL_PixelFormatEnumToMasks(pixel_format, &bbp, &r_mask, &g_mask, &b_mask, &a_mask);
 
-    surface = SDL_CreateRGBSurface(0, width, height, bbp, r_mask, g_mask, b_mask, a_mask);
-    SDL_RenderReadPixels(renderer, NULL, pixel_format, (void*)surface->pixels, surface->pitch);
+    surface = SDL_CreateSurface(width, height, pixel_format);
 
-    SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
-        SDL_GetWindowID(window), ++frame_number);
+    SDL_RenderReadPixels(renderer, NULL, pixel_format, surface->pixels, surface->pitch);
+
+    (void)SDL_snprintf(file, sizeof file, "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
+                       SDL_GetWindowID(window), ++frame_number);
 
     SDL_SaveBMP(surface, file);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 }
 
-void
-loop()
+void loop()
 {
     SDL_Event event;
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-            case SDL_QUIT:
+        case SDL_QUIT:
             done = SDL_TRUE;
             break;
         }
@@ -97,37 +91,40 @@ loop()
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    Uint32 then, now, frames;
+#ifndef __EMSCRIPTEN__
+    Uint64 then, now;
+    Uint32 frames;
+#endif
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Force the offscreen renderer, if it cannot be created then fail out */
-    if (SDL_VideoInit("offscreen") < 0) {
+    SDL_SetHint("SDL_VIDEO_DRIVER", "offscreen");
+    if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
         SDL_Log("Couldn't initialize the offscreen video driver: %s\n",
-            SDL_GetError());
+                SDL_GetError());
         return SDL_FALSE;
     }
 
-	/* If OPENGL fails to init it will fallback to using a framebuffer for rendering */
+    /* If OPENGL fails to init it will fallback to using a framebuffer for rendering */
     window = SDL_CreateWindow("Offscreen Test",
-                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                 width, height, 0);
+                              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                              width, height, 0);
 
-    if (!window) {
+    if (window == NULL) {
         SDL_Log("Couldn't create window: %s\n",
-            SDL_GetError());
+                SDL_GetError());
         return SDL_FALSE;
     }
 
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, NULL, 0);
 
-    if (!renderer) {
+    if (renderer == NULL) {
         SDL_Log("Couldn't create renderer: %s\n",
-            SDL_GetError());
+                SDL_GetError());
         return SDL_FALSE;
     }
 
@@ -135,12 +132,14 @@ main(int argc, char *argv[])
 
     srand((unsigned int)time(NULL));
 
+#ifndef __EMSCRIPTEN__
     /* Main render loop */
     frames = 0;
     then = SDL_GetTicks();
     done = 0;
+#endif
 
-    SDL_Log("Rendering %i frames offscreen\n", max_frames);
+    SDL_Log("Rendering %u frames offscreen\n", max_frames);
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
@@ -153,8 +152,8 @@ main(int argc, char *argv[])
         if (frames % (max_frames / 10) == 0) {
             now = SDL_GetTicks();
             if (now > then) {
-                double fps = ((double) frames * 1000) / (now - then);
-                SDL_Log("Frames remaining: %i rendering at %2.2f frames per second\n", max_frames - frames, fps);
+                double fps = ((double)frames * 1000) / (now - then);
+                SDL_Log("Frames remaining: %" SDL_PRIu32 " rendering at %2.2f frames per second\n", max_frames - frames, fps);
             }
         }
     }
@@ -166,5 +165,3 @@ main(int argc, char *argv[])
 
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

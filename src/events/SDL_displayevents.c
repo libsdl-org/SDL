@@ -18,20 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* Display event handling code for SDL */
 
-#include "SDL_events.h"
 #include "SDL_events_c.h"
 
-
-int
-SDL_SendDisplayEvent(SDL_VideoDisplay *display, Uint8 displayevent, int data1)
+int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1)
 {
     int posted;
 
-    if (!display) {
+    if (display == NULL) {
         return 0;
     }
     switch (displayevent) {
@@ -41,20 +38,20 @@ SDL_SendDisplayEvent(SDL_VideoDisplay *display, Uint8 displayevent, int data1)
         }
         display->orientation = (SDL_DisplayOrientation)data1;
         break;
+    default:
+        break;
     }
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(SDL_DISPLAYEVENT) == SDL_ENABLE) {
+    if (SDL_EventEnabled(displayevent)) {
         SDL_Event event;
-        event.type = SDL_DISPLAYEVENT;
-        event.display.event = displayevent;
+        event.type = displayevent;
+        event.common.timestamp = 0;
         event.display.display = SDL_GetIndexOfDisplay(display);
         event.display.data1 = data1;
         posted = (SDL_PushEvent(&event) > 0);
     }
 
-    return (posted);
+    return posted;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

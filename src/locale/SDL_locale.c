@@ -19,22 +19,20 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 #include "SDL_syslocale.h"
-#include "SDL_hints.h"
 
-static SDL_Locale *
-build_locales_from_csv_string(char *csv)
+static SDL_Locale *build_locales_from_csv_string(char *csv)
 {
-    size_t num_locales = 1;  /* at least one */
+    size_t num_locales = 1; /* at least one */
     size_t slen;
     size_t alloclen;
     char *ptr;
     SDL_Locale *loc;
     SDL_Locale *retval;
 
-    if (!csv || !csv[0]) {
-        return NULL;  /* nothing to report */
+    if (csv == NULL || !csv[0]) {
+        return NULL; /* nothing to report */
     }
 
     for (ptr = csv; *ptr; ptr++) {
@@ -43,21 +41,24 @@ build_locales_from_csv_string(char *csv)
         }
     }
 
-    num_locales++;  /* one more for terminator */
+    num_locales++; /* one more for terminator */
 
-    slen = ((size_t) (ptr - csv)) + 1;  /* SDL_strlen(csv) + 1 */
-    alloclen = slen + (num_locales * sizeof (SDL_Locale));
+    slen = ((size_t)(ptr - csv)) + 1; /* SDL_strlen(csv) + 1 */
+    alloclen = slen + (num_locales * sizeof(SDL_Locale));
 
-    loc = retval = (SDL_Locale *) SDL_calloc(1, alloclen);
-    if (!retval) {
+    loc = retval = (SDL_Locale *)SDL_calloc(1, alloclen);
+    if (retval == NULL) {
         SDL_OutOfMemory();
-        return NULL;  /* oh well */
+        return NULL; /* oh well */
     }
-    ptr = (char *) (retval + num_locales);
+    ptr = (char *)(retval + num_locales);
     SDL_strlcpy(ptr, csv, slen);
 
-    while (SDL_TRUE) {  /* parse out the string */
-        while (*ptr == ' ') ptr++;  /* skip whitespace. */
+    while (SDL_TRUE) { /* parse out the string */
+        while (*ptr == ' ') {
+            ptr++; /* skip whitespace. */
+        }
+
         if (*ptr == '\0') {
             break;
         }
@@ -68,7 +69,7 @@ build_locales_from_csv_string(char *csv)
                 *(ptr++) = '\0';
                 loc->country = ptr;
             } else if (ch == ' ') {
-                *(ptr++) = '\0';  /* trim ending whitespace and keep going. */
+                *(ptr++) = '\0'; /* trim ending whitespace and keep going. */
             } else if (ch == ',') {
                 *(ptr++) = '\0';
                 loc++;
@@ -77,7 +78,7 @@ build_locales_from_csv_string(char *csv)
                 loc++;
                 break;
             } else {
-                ptr++;  /* just keep going, still a valid string */
+                ptr++; /* just keep going, still a valid string */
             }
         }
     }
@@ -88,16 +89,13 @@ build_locales_from_csv_string(char *csv)
 SDL_Locale *
 SDL_GetPreferredLocales(void)
 {
-    char locbuf[128];  /* enough for 21 "xx_YY," language strings. */
+    char locbuf[128]; /* enough for 21 "xx_YY," language strings. */
     const char *hint = SDL_GetHint(SDL_HINT_PREFERRED_LOCALES);
     if (hint) {
-        SDL_strlcpy(locbuf, hint, sizeof (locbuf));
+        SDL_strlcpy(locbuf, hint, sizeof(locbuf));
     } else {
         SDL_zeroa(locbuf);
-        SDL_SYS_GetPreferredLocales(locbuf, sizeof (locbuf));
+        SDL_SYS_GetPreferredLocales(locbuf, sizeof(locbuf));
     }
     return build_locales_from_csv_string(locbuf);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */
-

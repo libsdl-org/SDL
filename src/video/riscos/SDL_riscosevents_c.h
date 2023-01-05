@@ -22,7 +22,7 @@
 #ifndef SDL_riscosevents_c_h_
 #define SDL_riscosevents_c_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "SDL_riscosvideo.h"
 
@@ -31,5 +31,3 @@ extern void RISCOS_PumpEvents(_THIS);
 extern void RISCOS_QuitEvents(_THIS);
 
 #endif /* SDL_riscosevents_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

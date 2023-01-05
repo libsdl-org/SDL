@@ -18,19 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
 #include "../SDL_sysurl.h"
 
 #import <UIKit/UIKit.h>
 
-int
-SDL_SYS_OpenURL(const char *url)
-{ @autoreleasepool {
+int SDL_SYS_OpenURL(const char *url)
+{
+    @autoreleasepool {
 
-    NSString *nsstr = [NSString stringWithUTF8String:url];
-    NSURL *nsurl = [NSURL URLWithString:nsstr];
-    return [[UIApplication sharedApplication] openURL:nsurl] ? 0 : -1;
-}}
-
-/* vi: set ts=4 sw=4 expandtab: */
-
+        NSString *nsstr = [NSString stringWithUTF8String:url];
+        NSURL *nsurl = [NSURL URLWithString:nsstr];
+        return [[UIApplication sharedApplication] openURL:nsurl] ? 0 : -1;
+    }
+}

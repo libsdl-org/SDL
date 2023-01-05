@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_windowsmouse_h_
 #define SDL_windowsmouse_h_
@@ -29,7 +29,6 @@ extern HCURSOR SDL_cursor;
 extern void WIN_InitMouse(_THIS);
 extern void WIN_QuitMouse(_THIS);
 extern void WIN_SetCursorPos(int x, int y);
+extern void WIN_UpdateMouseSystemScale();
 
 #endif /* SDL_windowsmouse_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

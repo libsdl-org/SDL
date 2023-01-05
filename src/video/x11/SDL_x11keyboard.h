@@ -18,19 +18,21 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_x11keyboard_h_
 #define SDL_x11keyboard_h_
 
 extern int X11_InitKeyboard(_THIS);
-extern void X11_UpdateKeymap(_THIS);
+extern void X11_UpdateKeymap(_THIS, SDL_bool send_event);
 extern void X11_QuitKeyboard(_THIS);
 extern void X11_StartTextInput(_THIS);
 extern void X11_StopTextInput(_THIS);
-extern void X11_SetTextInputRect(_THIS, SDL_Rect *rect);
+extern void X11_SetTextInputRect(_THIS, const SDL_Rect *rect);
+extern SDL_bool X11_HasScreenKeyboardSupport(_THIS);
+extern void X11_ShowScreenKeyboard(_THIS, SDL_Window *window);
+extern void X11_HideScreenKeyboard(_THIS, SDL_Window *window);
+extern SDL_bool X11_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 extern KeySym X11_KeyCodeToSym(_THIS, KeyCode, unsigned char group);
 
 #endif /* SDL_x11keyboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

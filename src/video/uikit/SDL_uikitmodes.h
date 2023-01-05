@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_uikitmodes_h_
 #define SDL_uikitmodes_h_
@@ -27,16 +27,16 @@
 
 @interface SDL_DisplayData : NSObject
 
-- (instancetype)initWithScreen:(UIScreen*)screen;
+- (instancetype)initWithScreen:(UIScreen *)screen;
 
-@property (nonatomic, strong) UIScreen *uiscreen;
-@property (nonatomic) float screenDPI;
+@property(nonatomic, strong) UIScreen *uiscreen;
+@property(nonatomic) float screenDPI;
 
 @end
 
 @interface SDL_DisplayModeData : NSObject
 
-@property (nonatomic, strong) UIScreenMode *uiscreenmode;
+@property(nonatomic, strong) UIScreenMode *uiscreenmode;
 
 @end
 
@@ -45,12 +45,10 @@ extern SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen);
 extern int UIKit_InitModes(_THIS);
 extern int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event);
 extern void UIKit_DelDisplay(UIScreen *uiscreen);
-extern void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display);
-extern int UIKit_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi);
-extern int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
+extern void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+extern int UIKit_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
+extern int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void UIKit_QuitModes(_THIS);
-extern int UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect);
+extern int UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 
 #endif /* SDL_uikitmodes_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

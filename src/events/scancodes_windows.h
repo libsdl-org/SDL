@@ -18,12 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../include/SDL_scancode.h"
+#include "SDL_internal.h"
 
 /* Windows scancode to SDL scancode mapping table */
 /* derived from Microsoft scan code document, http://download.microsoft.com/download/1/6/1/161ba512-40e2-4cc9-843a-923143f3456c/scancode.doc */
 
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 static const SDL_Scancode windows_scancode_table[] = 
 { 
 	/*	0						1							2							3							4						5							6							7 */
@@ -52,4 +52,4 @@ static const SDL_Scancode windows_scancode_table[] =
 	SDL_SCANCODE_INTERNATIONAL2,		SDL_SCANCODE_UNKNOWN,		SDL_SCANCODE_UNKNOWN,		SDL_SCANCODE_INTERNATIONAL1,		SDL_SCANCODE_UNKNOWN,	SDL_SCANCODE_UNKNOWN,		SDL_SCANCODE_UNKNOWN,		SDL_SCANCODE_UNKNOWN,	/* 7 */
 	SDL_SCANCODE_UNKNOWN,		SDL_SCANCODE_INTERNATIONAL4,		SDL_SCANCODE_UNKNOWN,		SDL_SCANCODE_INTERNATIONAL5,		SDL_SCANCODE_UNKNOWN,	SDL_SCANCODE_INTERNATIONAL3,		SDL_SCANCODE_UNKNOWN,		SDL_SCANCODE_UNKNOWN	/* 7 */
 };
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */

@@ -22,7 +22,7 @@
 #ifndef SDL_steamcontroller_h_
 #define SDL_steamcontroller_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 typedef SDL_bool (*SteamControllerConnectedCallback_t)(const char *name, SDL_JoystickGUID guid, int *device_instance);
 typedef void (*SteamControllerDisconnectedCallback_t)(int device_instance);
@@ -35,5 +35,3 @@ void SDL_UpdateSteamController(SDL_Joystick *joystick);
 void SDL_QuitSteamControllers(void);
 
 #endif /* SDL_steamcontroller_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

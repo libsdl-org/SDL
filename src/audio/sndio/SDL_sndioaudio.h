@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_sndioaudio_h_
 #define SDL_sndioaudio_h_
@@ -29,7 +29,7 @@
 #include "../SDL_sysaudio.h"
 
 /* Hidden "this" pointer for the audio functions */
-#define _THIS   SDL_AudioDevice *this
+#define _THIS SDL_AudioDevice *this
 
 struct SDL_PrivateAudioData
 {
@@ -45,5 +45,3 @@ struct SDL_PrivateAudioData
 };
 
 #endif /* SDL_sndioaudio_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -19,13 +19,15 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
-#include "SDL_mouse.h"
+#include "SDL_internal.h"
 #include "SDL_waylandvideo.h"
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
 extern void Wayland_InitMouse(void);
 extern void Wayland_FiniMouse(SDL_VideoData *data);
+#if 0  /* TODO RECONNECT: See waylandvideo.c for more information! */
+extern void Wayland_RecreateCursors(void);
+#endif /* 0 */
 
 #endif

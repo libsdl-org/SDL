@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_THREAD_WINDOWS
 
@@ -31,36 +31,27 @@
  *   Faster due to significantly less context switches.
  *   Requires Windows 8 or newer.
  * which are chosen at runtime.
-*/
+ */
 
 #include "../../core/windows/SDL_windows.h"
 
-#include "SDL_hints.h"
-#include "SDL_thread.h"
-#include "SDL_timer.h"
-
-typedef SDL_sem * (*pfnSDL_CreateSemaphore)(Uint32);
+typedef SDL_sem *(*pfnSDL_CreateSemaphore)(Uint32);
 typedef void (*pfnSDL_DestroySemaphore)(SDL_sem *);
-typedef int (*pfnSDL_SemWaitTimeout)(SDL_sem *, Uint32);
-typedef int (*pfnSDL_SemTryWait)(SDL_sem *);
-typedef int (*pfnSDL_SemWait)(SDL_sem *);
+typedef int (*pfnSDL_SemWaitTimeoutNS)(SDL_sem *, Sint64);
 typedef Uint32 (*pfnSDL_SemValue)(SDL_sem *);
 typedef int (*pfnSDL_SemPost)(SDL_sem *);
 
 typedef struct SDL_semaphore_impl_t
 {
-    pfnSDL_CreateSemaphore  Create;
+    pfnSDL_CreateSemaphore Create;
     pfnSDL_DestroySemaphore Destroy;
-    pfnSDL_SemWaitTimeout   WaitTimeout;
-    pfnSDL_SemTryWait       TryWait;
-    pfnSDL_SemWait          Wait;
-    pfnSDL_SemValue         Value;
-    pfnSDL_SemPost          Post;
+    pfnSDL_SemWaitTimeoutNS WaitTimeoutNS;
+    pfnSDL_SemValue Value;
+    pfnSDL_SemPost Post;
 } SDL_sem_impl_t;
 
 /* Implementation will be chosen at runtime based on available Kernel features */
-static SDL_sem_impl_t SDL_sem_impl_active = {0};
-
+static SDL_sem_impl_t SDL_sem_impl_active = { 0 };
 
 /**
  * Atomic + WaitOnAddress implementation
@@ -70,7 +61,7 @@ static SDL_sem_impl_t SDL_sem_impl_active = {0};
 /* https://www.microsoft.com/en-us/download/details.aspx?id=47328 */
 
 #if (HAVE_WINAPIFAMILY_H) && defined(WINAPI_FAMILY_PHONE_APP)
-#define SDL_WINAPI_FAMILY_PHONE (WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP)
+#define SDL_WINAPI_FAMILY_PHONE (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
 #else
 #define SDL_WINAPI_FAMILY_PHONE 0
 #endif
@@ -78,10 +69,10 @@ static SDL_sem_impl_t SDL_sem_impl_active = {0};
 #if !SDL_WINAPI_FAMILY_PHONE
 #if __WINRT__
 /* Functions are guaranteed to be available */
-#define pWaitOnAddress WaitOnAddress
+#define pWaitOnAddress       WaitOnAddress
 #define pWakeByAddressSingle WakeByAddressSingle
 #else
-typedef BOOL(WINAPI *pfnWaitOnAddress)(volatile VOID*, PVOID, SIZE_T, DWORD);
+typedef BOOL(WINAPI *pfnWaitOnAddress)(volatile VOID *, PVOID, SIZE_T, DWORD);
 typedef VOID(WINAPI *pfnWakeByAddressSingle)(PVOID);
 
 static pfnWaitOnAddress pWaitOnAddress = NULL;
@@ -93,13 +84,12 @@ typedef struct SDL_semaphore_atom
     LONG count;
 } SDL_sem_atom;
 
-static SDL_sem *
-SDL_CreateSemaphore_atom(Uint32 initial_value)
+static SDL_sem *SDL_CreateSemaphore_atom(Uint32 initial_value)
 {
     SDL_sem_atom *sem;
 
-    sem = (SDL_sem_atom *) SDL_malloc(sizeof(*sem));
-    if (sem) {
+    sem = (SDL_sem_atom *)SDL_malloc(sizeof(*sem));
+    if (sem != NULL) {
         sem->count = initial_value;
     } else {
         SDL_OutOfMemory();
@@ -107,92 +97,67 @@ SDL_CreateSemaphore_atom(Uint32 initial_value)
     return (SDL_sem *)sem;
 }
 
-static void
-SDL_DestroySemaphore_atom(SDL_sem * sem)
+static void SDL_DestroySemaphore_atom(SDL_sem *sem)
 {
-    if (sem) {
+    if (sem != NULL) {
         SDL_free(sem);
     }
 }
 
-static int
-SDL_SemTryWait_atom(SDL_sem * _sem)
+static int SDL_SemWaitTimeoutNS_atom(SDL_sem *_sem, Sint64 timeoutNS)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
     LONG count;
+    Uint64 now;
+    Uint64 deadline;
+    DWORD timeout_eff;
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
-    count = sem->count;
-    if (count == 0) {
-        return SDL_MUTEX_TIMEDOUT;
-    }
-
-    if (InterlockedCompareExchange(&sem->count, count - 1, count) == count) {
-        return 0;
-    }
-
-    return SDL_MUTEX_TIMEDOUT;
-}
-
-static int
-SDL_SemWait_atom(SDL_sem * _sem)
-{
-    SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
-    LONG count;
-
-    if (!sem) {
-        return SDL_InvalidParamError("sem");
-    }
-
-    for (;;) {
+    if (timeoutNS == 0) {
         count = sem->count;
-        while (count == 0) {
-            if (pWaitOnAddress(&sem->count, &count, sizeof(sem->count), INFINITE) == FALSE) {
-                return SDL_SetError("WaitOnAddress() failed");
-            }
-            count = sem->count;
+        if (count == 0) {
+            return SDL_MUTEX_TIMEDOUT;
         }
 
         if (InterlockedCompareExchange(&sem->count, count - 1, count) == count) {
             return 0;
         }
+
+        return SDL_MUTEX_TIMEDOUT;
     }
-}
+    if (timeoutNS < 0) {
+        for (;;) {
+            count = sem->count;
+            while (count == 0) {
+                if (pWaitOnAddress(&sem->count, &count, sizeof(sem->count), INFINITE) == FALSE) {
+                    return SDL_SetError("WaitOnAddress() failed");
+                }
+                count = sem->count;
+            }
 
-static int
-SDL_SemWaitTimeout_atom(SDL_sem * _sem, Uint32 timeout)
-{
-    SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
-    LONG count;
-    Uint32 now;
-    Uint32 deadline;
-    DWORD timeout_eff;
-
-    if (timeout == SDL_MUTEX_MAXWAIT) {
-        return SDL_SemWait_atom(_sem);
-    }
-
-    if (!sem) {
-        return SDL_InvalidParamError("sem");
+            if (InterlockedCompareExchange(&sem->count, count - 1, count) == count) {
+                return 0;
+            }
+        }
     }
 
     /**
      * WaitOnAddress is subject to spurious and stolen wakeups so we
      * need to recalculate the effective timeout before every wait
      */
-    now = SDL_GetTicks();
-    deadline = now + (DWORD) timeout;
+    now = SDL_GetTicksNS();
+    deadline = now + timeoutNS;
 
     for (;;) {
         count = sem->count;
         /* If no semaphore is available we need to wait */
         while (count == 0) {
-            now = SDL_GetTicks();
+            now = SDL_GetTicksNS();
             if (deadline > now) {
-                timeout_eff = deadline - now;
+                timeout_eff = (DWORD)SDL_NS_TO_MS(deadline - now);
             } else {
                 return SDL_MUTEX_TIMEDOUT;
             }
@@ -213,12 +178,11 @@ SDL_SemWaitTimeout_atom(SDL_sem * _sem, Uint32 timeout)
     }
 }
 
-static Uint32
-SDL_SemValue_atom(SDL_sem * _sem)
+static Uint32 SDL_SemValue_atom(SDL_sem *_sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
-    if (!sem) {
+    if (sem == NULL) {
         SDL_InvalidParamError("sem");
         return 0;
     }
@@ -226,12 +190,11 @@ SDL_SemValue_atom(SDL_sem * _sem)
     return (Uint32)sem->count;
 }
 
-static int
-SDL_SemPost_atom(SDL_sem * _sem)
+static int SDL_SemPost_atom(SDL_sem *_sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -241,18 +204,14 @@ SDL_SemPost_atom(SDL_sem * _sem)
     return 0;
 }
 
-static const SDL_sem_impl_t SDL_sem_impl_atom =
-{
+static const SDL_sem_impl_t SDL_sem_impl_atom = {
     &SDL_CreateSemaphore_atom,
     &SDL_DestroySemaphore_atom,
-    &SDL_SemWaitTimeout_atom,
-    &SDL_SemTryWait_atom,
-    &SDL_SemWait_atom,
+    &SDL_SemWaitTimeoutNS_atom,
     &SDL_SemValue_atom,
     &SDL_SemPost_atom,
 };
 #endif /* !SDL_WINAPI_FAMILY_PHONE */
-
 
 /**
  * Fallback Semaphore implementation using Kernel Semaphores
@@ -265,14 +224,13 @@ typedef struct SDL_semaphore_kern
 } SDL_sem_kern;
 
 /* Create a semaphore */
-static SDL_sem *
-SDL_CreateSemaphore_kern(Uint32 initial_value)
+static SDL_sem *SDL_CreateSemaphore_kern(Uint32 initial_value)
 {
     SDL_sem_kern *sem;
 
     /* Allocate sem memory */
-    sem = (SDL_sem_kern *) SDL_malloc(sizeof(*sem));
-    if (sem) {
+    sem = (SDL_sem_kern *)SDL_malloc(sizeof(*sem));
+    if (sem != NULL) {
         /* Create the semaphore, with max value 32K */
 #if __WINRT__
         sem->id = CreateSemaphoreEx(NULL, initial_value, 32 * 1024, NULL, 0, SEMAPHORE_ALL_ACCESS);
@@ -292,11 +250,10 @@ SDL_CreateSemaphore_kern(Uint32 initial_value)
 }
 
 /* Free the semaphore */
-static void
-SDL_DestroySemaphore_kern(SDL_sem * _sem)
+static void SDL_DestroySemaphore_kern(SDL_sem *_sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
-    if (sem) {
+    if (sem != NULL) {
         if (sem->id) {
             CloseHandle(sem->id);
             sem->id = 0;
@@ -305,21 +262,20 @@ SDL_DestroySemaphore_kern(SDL_sem * _sem)
     }
 }
 
-static int
-SDL_SemWaitTimeout_kern(SDL_sem * _sem, Uint32 timeout)
+static int SDL_SemWaitTimeoutNS_kern(SDL_sem *_sem, Sint64 timeoutNS)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
     int retval;
     DWORD dwMilliseconds;
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
-    if (timeout == SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS < 0) {
         dwMilliseconds = INFINITE;
     } else {
-        dwMilliseconds = (DWORD) timeout;
+        dwMilliseconds = (DWORD)SDL_NS_TO_MS(timeoutNS);
     }
     switch (WaitForSingleObjectEx(sem->id, dwMilliseconds, FALSE)) {
     case WAIT_OBJECT_0:
@@ -336,35 +292,21 @@ SDL_SemWaitTimeout_kern(SDL_sem * _sem, Uint32 timeout)
     return retval;
 }
 
-static int
-SDL_SemTryWait_kern(SDL_sem * sem)
-{
-    return SDL_SemWaitTimeout_kern(sem, 0);
-}
-
-static int
-SDL_SemWait_kern(SDL_sem * sem)
-{
-    return SDL_SemWaitTimeout_kern(sem, SDL_MUTEX_MAXWAIT);
-}
-
 /* Returns the current count of the semaphore */
-static Uint32
-SDL_SemValue_kern(SDL_sem * _sem)
+static Uint32 SDL_SemValue_kern(SDL_sem *_sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
-    if (!sem) {
+    if (sem == NULL) {
         SDL_InvalidParamError("sem");
         return 0;
     }
     return (Uint32)sem->count;
 }
 
-static int
-SDL_SemPost_kern(SDL_sem * _sem)
+static int SDL_SemPost_kern(SDL_sem *_sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
     /* Increase the counter in the first place, because
@@ -374,23 +316,19 @@ SDL_SemPost_kern(SDL_sem * _sem)
      */
     InterlockedIncrement(&sem->count);
     if (ReleaseSemaphore(sem->id, 1, NULL) == FALSE) {
-        InterlockedDecrement(&sem->count);      /* restore */
+        InterlockedDecrement(&sem->count); /* restore */
         return SDL_SetError("ReleaseSemaphore() failed");
     }
     return 0;
 }
 
-static const SDL_sem_impl_t SDL_sem_impl_kern =
-{
+static const SDL_sem_impl_t SDL_sem_impl_kern = {
     &SDL_CreateSemaphore_kern,
     &SDL_DestroySemaphore_kern,
-    &SDL_SemWaitTimeout_kern,
-    &SDL_SemTryWait_kern,
-    &SDL_SemWait_kern,
+    &SDL_SemWaitTimeoutNS_kern,
     &SDL_SemValue_kern,
     &SDL_SemPost_kern,
 };
-
 
 /**
  * Runtime selection and redirection
@@ -401,7 +339,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
 {
     if (SDL_sem_impl_active.Create == NULL) {
         /* Default to fallback implementation */
-        const SDL_sem_impl_t * impl = &SDL_sem_impl_kern;
+        const SDL_sem_impl_t *impl = &SDL_sem_impl_kern;
 
 #if !SDL_WINAPI_FAMILY_PHONE
         if (!SDL_GetHintBoolean(SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL, SDL_FALSE)) {
@@ -418,10 +356,10 @@ SDL_CreateSemaphore(Uint32 initial_value)
             HMODULE synch120 = GetModuleHandle(TEXT("api-ms-win-core-synch-l1-2-0.dll"));
             if (synch120) {
                 /* Try to load required functions provided by Win 8 or newer */
-                pWaitOnAddress = (pfnWaitOnAddress) GetProcAddress(synch120, "WaitOnAddress");
-                pWakeByAddressSingle = (pfnWakeByAddressSingle) GetProcAddress(synch120, "WakeByAddressSingle");
+                pWaitOnAddress = (pfnWaitOnAddress)GetProcAddress(synch120, "WaitOnAddress");
+                pWakeByAddressSingle = (pfnWakeByAddressSingle)GetProcAddress(synch120, "WakeByAddressSingle");
 
-                if(pWaitOnAddress && pWakeByAddressSingle) {
+                if (pWaitOnAddress && pWakeByAddressSingle) {
                     impl = &SDL_sem_impl_atom;
                 }
             }
@@ -430,47 +368,30 @@ SDL_CreateSemaphore(Uint32 initial_value)
 #endif
 
         /* Copy instead of using pointer to save one level of indirection */
-        SDL_memcpy(&SDL_sem_impl_active, impl, sizeof(SDL_sem_impl_active));
+        SDL_copyp(&SDL_sem_impl_active, impl);
     }
     return SDL_sem_impl_active.Create(initial_value);
 }
 
-void
-SDL_DestroySemaphore(SDL_sem * sem)
+void SDL_DestroySemaphore(SDL_sem *sem)
 {
     SDL_sem_impl_active.Destroy(sem);
 }
 
-int
-SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
+int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
-    return SDL_sem_impl_active.WaitTimeout(sem, timeout);
-}
-
-int
-SDL_SemTryWait(SDL_sem * sem)
-{
-    return SDL_sem_impl_active.TryWait(sem);
-}
-
-int
-SDL_SemWait(SDL_sem * sem)
-{
-    return SDL_sem_impl_active.Wait(sem);
+    return SDL_sem_impl_active.WaitTimeoutNS(sem, timeoutNS);
 }
 
 Uint32
-SDL_SemValue(SDL_sem * sem)
+SDL_SemValue(SDL_sem *sem)
 {
     return SDL_sem_impl_active.Value(sem);
 }
 
-int
-SDL_SemPost(SDL_sem * sem)
+int SDL_SemPost(SDL_sem *sem)
 {
     return SDL_sem_impl_active.Post(sem);
 }
 
 #endif /* SDL_THREAD_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

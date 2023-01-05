@@ -188,13 +188,7 @@
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\..\SDLmain\SDLmain.vcxproj">
-      <Project>{da956fd3-e142-46f2-9dd5-c78bebb56b7a}</Project>
-      <Private>false</Private>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\..\SDLtest\SDLtest.vcxproj">
+    <ProjectReference Include="..\..\SDL_test\SDL_test.vcxproj">
       <Project>{da956fd3-e143-46f2-9fe5-c77bebc56b1a}</Project>
       <Private>false</Private>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
@@ -206,9 +200,12 @@
     <ClCompile Include="..\..\..\test\testautomation_audio.c" />
     <ClCompile Include="..\..\..\test\testautomation_clipboard.c" />
     <ClCompile Include="..\..\..\test\testautomation_events.c" />
+    <ClCompile Include="..\..\..\test\testautomation_guid.c" />
     <ClCompile Include="..\..\..\test\testautomation_hints.c" />
+    <ClCompile Include="..\..\..\test\testautomation_joystick.c" />
     <ClCompile Include="..\..\..\test\testautomation_keyboard.c" />
     <ClCompile Include="..\..\..\test\testautomation_main.c" />
+    <ClCompile Include="..\..\..\test\testautomation_math.c" />
     <ClCompile Include="..\..\..\test\testautomation_mouse.c" />
     <ClCompile Include="..\..\..\test\testautomation_pixels.c" />
     <ClCompile Include="..\..\..\test\testautomation_platform.c" />

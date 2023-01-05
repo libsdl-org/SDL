@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_HAIKU
 
@@ -29,8 +29,6 @@
 extern "C" {
 #endif
 
-#include "SDL_events.h"
-#include "SDL_keycode.h"
 
 #include "SDL_bkeyboard.h"
 
@@ -42,11 +40,11 @@ static SDL_Scancode keymap[KEYMAP_SIZE];
 static int8 keystate[KEYMAP_SIZE];
 
 void HAIKU_InitOSKeymap(void) {
-        for( uint i = 0; i < SDL_TABLESIZE(keymap); ++i ) {
+        for ( uint i = 0; i < SDL_TABLESIZE(keymap); ++i ) {
             keymap[i] = SDL_SCANCODE_UNKNOWN;
         }
 
-        for( uint i = 0; i < KEYMAP_SIZE; ++i ) {
+        for ( uint i = 0; i < KEYMAP_SIZE; ++i ) {
             keystate[i] = SDL_RELEASED;
         }
 
@@ -160,7 +158,7 @@ void HAIKU_InitOSKeymap(void) {
 }
 
 SDL_Scancode HAIKU_GetScancodeFromBeKey(int32 bkey) {
-    if(bkey > 0 && bkey < (int32)SDL_TABLESIZE(keymap)) {
+    if (bkey > 0 && bkey < (int32)SDL_TABLESIZE(keymap)) {
         return keymap[bkey];
     } else {
         return SDL_SCANCODE_UNKNOWN;
@@ -168,7 +166,7 @@ SDL_Scancode HAIKU_GetScancodeFromBeKey(int32 bkey) {
 }
 
 int8 HAIKU_GetKeyState(int32 bkey) {
-    if(bkey > 0 && bkey < KEYMAP_SIZE) {
+    if (bkey > 0 && bkey < KEYMAP_SIZE) {
         return keystate[bkey];
     } else {
         return SDL_RELEASED;
@@ -176,7 +174,7 @@ int8 HAIKU_GetKeyState(int32 bkey) {
 }
 
 void HAIKU_SetKeyState(int32 bkey, int8 state) {
-    if(bkey > 0 && bkey < KEYMAP_SIZE) {
+    if (bkey > 0 && bkey < KEYMAP_SIZE) {
         keystate[bkey] = state;
     }
 }
@@ -186,5 +184,3 @@ void HAIKU_SetKeyState(int32 bkey, int8 state) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

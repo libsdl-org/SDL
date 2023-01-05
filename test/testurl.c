@@ -9,7 +9,18 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include "SDL.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+
+static void tryOpenURL(const char *url)
+{
+    SDL_Log("Opening '%s' ...", url);
+    if (SDL_OpenURL(url) == 0) {
+        SDL_Log("  success!");
+    } else {
+        SDL_Log("  failed! %s", SDL_GetError());
+    }
+}
 
 int main(int argc, char **argv)
 {
@@ -19,18 +30,14 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    for (i = 1; i < argc; i++) {
-        const char *url = argv[i];
-        SDL_Log("Opening '%s' ...", url);
-        if (SDL_OpenURL(url) == 0) {
-            SDL_Log("  success!");
-        } else {
-            SDL_Log("  failed! %s", SDL_GetError());
+    if (argc > 1) {
+        for (i = 1; i < argc; i++) {
+            tryOpenURL(argv[i]);
         }
+    } else {
+        tryOpenURL("https://libsdl.org/");
     }
 
     SDL_Quit();
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

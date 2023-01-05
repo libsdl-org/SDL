@@ -18,14 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_coreaudio_h_
 #define SDL_coreaudio_h_
 
 #include "../SDL_sysaudio.h"
 
-#if !defined(__IPHONEOS__)
+#if !defined(__IOS__)
 #define MACOSX_COREAUDIO 1
 #endif
 
@@ -39,8 +39,16 @@
 #include <AudioToolbox/AudioToolbox.h>
 #include <AudioUnit/AudioUnit.h>
 
+/* Things named "Master" were renamed to "Main" in macOS 12.0's SDK. */
+#if MACOSX_COREAUDIO
+#include <AvailabilityMacros.h>
+#ifndef MAC_OS_VERSION_12_0
+#define kAudioObjectPropertyElementMain kAudioObjectPropertyElementMaster
+#endif
+#endif
+
 /* Hidden "this" pointer for the audio functions */
-#define _THIS   SDL_AudioDevice *this
+#define _THIS SDL_AudioDevice *this
 
 struct SDL_PrivateAudioData
 {
@@ -54,7 +62,6 @@ struct SDL_PrivateAudioData
     AudioStreamBasicDescription strdesc;
     SDL_sem *ready_semaphore;
     char *thread_error;
-    SDL_atomic_t shutdown;
 #if MACOSX_COREAUDIO
     AudioDeviceID deviceID;
     SDL_atomic_t device_change_flag;
@@ -65,5 +72,3 @@ struct SDL_PrivateAudioData
 };
 
 #endif /* SDL_coreaudio_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -18,21 +18,28 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_xinput_h_
 #define SDL_xinput_h_
 
-#ifdef HAVE_XINPUT_H
-
 #include "SDL_windows.h"
+
+#ifdef HAVE_XINPUT_H
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+/* Xbox supports an XInput wrapper which is a C++-only header... */
+#include <XInputOnGameInput.h>
+using namespace XInputOnGameInput;
+#else
 #include <xinput.h>
+#endif
+#endif /* HAVE_XINPUT_H */
 
 #ifndef XUSER_MAX_COUNT
 #define XUSER_MAX_COUNT 4
 #endif
 #ifndef XUSER_INDEX_ANY
-#define XUSER_INDEX_ANY     0x000000FF
+#define XUSER_INDEX_ANY 0x000000FF
 #endif
 #ifndef XINPUT_CAPS_FFB_SUPPORTED
 #define XINPUT_CAPS_FFB_SUPPORTED 0x0001
@@ -72,31 +79,86 @@
 #define XINPUT_DEVSUBTYPE_ARCADE_PAD 0x13
 #endif
 
+#ifndef XINPUT_FLAG_GAMEPAD
+#define XINPUT_FLAG_GAMEPAD 0x01
+#endif
+
+#ifndef XINPUT_GAMEPAD_DPAD_UP
+#define XINPUT_GAMEPAD_DPAD_UP 0x0001
+#endif
+#ifndef XINPUT_GAMEPAD_DPAD_DOWN
+#define XINPUT_GAMEPAD_DPAD_DOWN 0x0002
+#endif
+#ifndef XINPUT_GAMEPAD_DPAD_LEFT
+#define XINPUT_GAMEPAD_DPAD_LEFT 0x0004
+#endif
+#ifndef XINPUT_GAMEPAD_DPAD_RIGHT
+#define XINPUT_GAMEPAD_DPAD_RIGHT 0x0008
+#endif
+#ifndef XINPUT_GAMEPAD_START
+#define XINPUT_GAMEPAD_START 0x0010
+#endif
+#ifndef XINPUT_GAMEPAD_BACK
+#define XINPUT_GAMEPAD_BACK 0x0020
+#endif
+#ifndef XINPUT_GAMEPAD_LEFT_THUMB
+#define XINPUT_GAMEPAD_LEFT_THUMB 0x0040
+#endif
+#ifndef XINPUT_GAMEPAD_RIGHT_THUMB
+#define XINPUT_GAMEPAD_RIGHT_THUMB 0x0080
+#endif
+#ifndef XINPUT_GAMEPAD_LEFT_SHOULDER
+#define XINPUT_GAMEPAD_LEFT_SHOULDER 0x0100
+#endif
+#ifndef XINPUT_GAMEPAD_RIGHT_SHOULDER
+#define XINPUT_GAMEPAD_RIGHT_SHOULDER 0x0200
+#endif
+#ifndef XINPUT_GAMEPAD_A
+#define XINPUT_GAMEPAD_A 0x1000
+#endif
+#ifndef XINPUT_GAMEPAD_B
+#define XINPUT_GAMEPAD_B 0x2000
+#endif
+#ifndef XINPUT_GAMEPAD_X
+#define XINPUT_GAMEPAD_X 0x4000
+#endif
+#ifndef XINPUT_GAMEPAD_Y
+#define XINPUT_GAMEPAD_Y 0x8000
+#endif
+
 #ifndef XINPUT_GAMEPAD_GUIDE
 #define XINPUT_GAMEPAD_GUIDE 0x0400
 #endif
 
 #ifndef BATTERY_DEVTYPE_GAMEPAD
-#define BATTERY_DEVTYPE_GAMEPAD         0x00
-#endif
-#ifndef BATTERY_TYPE_WIRED
-#define BATTERY_TYPE_WIRED              0x01
+#define BATTERY_DEVTYPE_GAMEPAD 0x00
 #endif
 
+#ifndef BATTERY_TYPE_DISCONNECTED
+#define BATTERY_TYPE_DISCONNECTED 0x00
+#endif
+#ifndef BATTERY_TYPE_WIRED
+#define BATTERY_TYPE_WIRED 0x01
+#endif
 #ifndef BATTERY_TYPE_UNKNOWN
-#define BATTERY_TYPE_UNKNOWN            0xFF
+#define BATTERY_TYPE_UNKNOWN 0xFF
 #endif
 #ifndef BATTERY_LEVEL_EMPTY
-#define BATTERY_LEVEL_EMPTY             0x00
+#define BATTERY_LEVEL_EMPTY 0x00
 #endif
 #ifndef BATTERY_LEVEL_LOW
-#define BATTERY_LEVEL_LOW               0x01
+#define BATTERY_LEVEL_LOW 0x01
 #endif
 #ifndef BATTERY_LEVEL_MEDIUM
-#define BATTERY_LEVEL_MEDIUM            0x02
+#define BATTERY_LEVEL_MEDIUM 0x02
 #endif
 #ifndef BATTERY_LEVEL_FULL
-#define BATTERY_LEVEL_FULL              0x03
+#define BATTERY_LEVEL_FULL 0x03
+#endif
+
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /* typedef's for XInput structs we use */
@@ -129,32 +191,57 @@ typedef struct
     BYTE BatteryLevel;
 } XINPUT_BATTERY_INFORMATION_EX;
 
+#ifndef HAVE_XINPUT_H
+
+typedef struct
+{
+    WORD wButtons;
+    BYTE bLeftTrigger;
+    BYTE bRightTrigger;
+    SHORT sThumbLX;
+    SHORT sThumbLY;
+    SHORT sThumbRX;
+    SHORT sThumbRY;
+} XINPUT_GAMEPAD;
+
+typedef struct
+{
+    WORD wLeftMotorSpeed;
+    WORD wRightMotorSpeed;
+} XINPUT_VIBRATION;
+
+typedef struct
+{
+    BYTE Type;
+    BYTE SubType;
+    WORD Flags;
+    XINPUT_GAMEPAD Gamepad;
+    XINPUT_VIBRATION Vibration;
+} XINPUT_CAPABILITIES;
+
+#endif /* HAVE_XINPUT_H */
+
 /* Forward decl's for XInput API's we load dynamically and use if available */
-typedef DWORD (WINAPI *XInputGetState_t)
-    (
-    DWORD         dwUserIndex,  /* [in] Index of the gamer associated with the device */
-    XINPUT_STATE_EX* pState     /* [out] Receives the current state */
-    );
+typedef DWORD(WINAPI *XInputGetState_t)(
+    DWORD dwUserIndex,      /* [in] Index of the gamer associated with the device */
+    XINPUT_STATE_EX *pState /* [out] Receives the current state */
+);
 
-typedef DWORD (WINAPI *XInputSetState_t)
-    (
-    DWORD             dwUserIndex,  /* [in] Index of the gamer associated with the device */
-    XINPUT_VIBRATION* pVibration    /* [in, out] The vibration information to send to the controller */
-    );
+typedef DWORD(WINAPI *XInputSetState_t)(
+    DWORD dwUserIndex,           /* [in] Index of the gamer associated with the device */
+    XINPUT_VIBRATION *pVibration /* [in, out] The vibration information to send to the controller */
+);
 
-typedef DWORD (WINAPI *XInputGetCapabilities_t)
-    (
-    DWORD                dwUserIndex,   /* [in] Index of the gamer associated with the device */
-    DWORD                dwFlags,       /* [in] Input flags that identify the device type */
-    XINPUT_CAPABILITIES* pCapabilities  /* [out] Receives the capabilities */
-    );
+typedef DWORD(WINAPI *XInputGetCapabilities_t)(
+    DWORD dwUserIndex,                 /* [in] Index of the gamer associated with the device */
+    DWORD dwFlags,                     /* [in] Input flags that identify the device type */
+    XINPUT_CAPABILITIES *pCapabilities /* [out] Receives the capabilities */
+);
 
-typedef DWORD (WINAPI *XInputGetBatteryInformation_t)
-    (
-    DWORD                         dwUserIndex,
-    BYTE                          devType,
-    XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation
-    );
+typedef DWORD(WINAPI *XInputGetBatteryInformation_t)(
+    DWORD dwUserIndex,
+    BYTE devType,
+    XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation);
 
 extern int WIN_LoadXInputDLL(void);
 extern void WIN_UnloadXInputDLL(void);
@@ -163,15 +250,16 @@ extern XInputGetState_t SDL_XInputGetState;
 extern XInputSetState_t SDL_XInputSetState;
 extern XInputGetCapabilities_t SDL_XInputGetCapabilities;
 extern XInputGetBatteryInformation_t SDL_XInputGetBatteryInformation;
-extern DWORD SDL_XInputVersion;  /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
+extern DWORD SDL_XInputVersion; /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
 
-#define XINPUTGETSTATE          SDL_XInputGetState
-#define XINPUTSETSTATE          SDL_XInputSetState
-#define XINPUTGETCAPABILITIES   SDL_XInputGetCapabilities
-#define XINPUTGETBATTERYINFORMATION   SDL_XInputGetBatteryInformation
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
-#endif /* HAVE_XINPUT_H */
+#define XINPUTGETSTATE              SDL_XInputGetState
+#define XINPUTSETSTATE              SDL_XInputSetState
+#define XINPUTGETCAPABILITIES       SDL_XInputGetCapabilities
+#define XINPUTGETBATTERYINFORMATION SDL_XInputGetBatteryInformation
 
 #endif /* SDL_xinput_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

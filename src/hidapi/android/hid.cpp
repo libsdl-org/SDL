@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2021 Valve Corporation
+  Copyright (C) 2022 Valve Corporation
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,12 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 // Purpose: A wrapper implementing "HID" API for Android
 //
 //          This layer glues the hidapi API to Android's USB and BLE stack.
 
+#include "hid.h"
 
 // Common to stub version and non-stub version of functions
 #include <jni.h>
@@ -50,7 +51,6 @@
 
 #if !SDL_HIDAPI_DISABLED
 
-#include "SDL_hints.h"
 #include "../../core/android/SDL_android.h"
 
 #define hid_init                        PLATFORM_hid_init
@@ -1085,12 +1085,25 @@ int hid_init(void)
 struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
 	struct hid_device_info *root = NULL;
+	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
+
 	hid_mutex_guard l( &g_DevicesMutex );
 	for ( hid_device_ref<CHIDDevice> pDevice = g_Devices; pDevice; pDevice = pDevice->next )
 	{
 		const hid_device_info *info = pDevice->GetDeviceInfo();
-		if ( ( vendor_id == 0 && product_id == 0 ) ||
-			 ( vendor_id == info->vendor_id && product_id == info->product_id ) )
+
+		/* See if there are any devices we should skip in enumeration */
+		if (hint) {
+			char vendor_match[16], product_match[16];
+			SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", info->vendor_id);
+			SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", info->vendor_id, info->product_id);
+			if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
+				continue;
+			}
+		}
+
+		if ( ( vendor_id == 0x0 || info->vendor_id == vendor_id ) &&
+		     ( product_id == 0x0 || info->product_id == product_id ) )
 		{
 			hid_device_info *dev = CopyHIDDeviceInfo( info );
 			dev->next = root;
@@ -1416,3 +1429,15 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceFeatureReport)
 }
 
 #endif /* SDL_HIDAPI_DISABLED */
+
+extern "C"
+JNINativeMethod HIDDeviceManager_tab[8] = {
+        { "HIDDeviceRegisterCallback", "()V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallback) },
+        { "HIDDeviceReleaseCallback", "()V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceReleaseCallback) },
+        { "HIDDeviceConnected", "(ILjava/lang/String;IILjava/lang/String;ILjava/lang/String;Ljava/lang/String;IIII)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceConnected) },
+        { "HIDDeviceOpenPending", "(I)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenPending) },
+        { "HIDDeviceOpenResult", "(IZ)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenResult) },
+        { "HIDDeviceDisconnected", "(I)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceDisconnected) },
+        { "HIDDeviceInputReport", "(I[B)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceInputReport) },
+        { "HIDDeviceFeatureReport", "(I[B)V", (void*)HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceFeatureReport) }
+};

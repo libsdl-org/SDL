@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #include "SDL_windowsvideo.h"
 #include "../../events/SDL_displayevents_c.h"
@@ -31,30 +31,39 @@
 #endif
 
 /* #define DEBUG_MODES */
+/* #define HIGHDPI_DEBUG_VERBOSE */
 
-static void
-WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode)
+static void WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode)
 {
-    SDL_DisplayModeData *data = (SDL_DisplayModeData *) mode->driverdata;
+    SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
     HDC hdc;
 
     data->DeviceMode.dmFields =
         (DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY |
          DM_DISPLAYFLAGS);
 
-    if (index == ENUM_CURRENT_SETTINGS
-        && (hdc = CreateDC(deviceName, NULL, NULL, NULL)) != NULL) {
+    /* NOLINTNEXTLINE(bugprone-assignment-in-if-condition): No simple way to extract the assignment */
+    if (index == ENUM_CURRENT_SETTINGS && (hdc = CreateDC(deviceName, NULL, NULL, NULL)) != NULL) {
         char bmi_data[sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD)];
         LPBITMAPINFO bmi;
         HBITMAP hbm;
-        int logical_width = GetDeviceCaps( hdc, HORZRES );
-        int logical_height = GetDeviceCaps( hdc, VERTRES );
+        int logical_width = GetDeviceCaps(hdc, HORZRES);
+        int logical_height = GetDeviceCaps(hdc, VERTRES);
 
+        /* High-DPI notes:
+
+           If DPI-unaware:
+             - GetDeviceCaps( hdc, HORZRES ) will return the monitor width in points.
+             - DeviceMode.dmPelsWidth is actual pixels (unlike almost all other Windows API's,
+               it's not virtualized when DPI unaware).
+
+           If DPI-aware:
+            - GetDeviceCaps( hdc, HORZRES ) will return pixels, same as DeviceMode.dmPelsWidth */
         mode->w = logical_width;
         mode->h = logical_height;
-        
+
         SDL_zeroa(bmi_data);
-        bmi = (LPBITMAPINFO) bmi_data;
+        bmi = (LPBITMAPINFO)bmi_data;
         bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 
         hbm = CreateCompatibleBitmap(hdc, 1, 1);
@@ -63,7 +72,7 @@ WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * 
         DeleteObject(hbm);
         DeleteDC(hdc);
         if (bmi->bmiHeader.biCompression == BI_BITFIELDS) {
-            switch (*(Uint32 *) bmi->bmiColors) {
+            switch (*(Uint32 *)bmi->bmiColors) {
             case 0x00FF0000:
                 mode->format = SDL_PIXELFORMAT_RGB888;
                 break;
@@ -109,8 +118,7 @@ WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * 
     }
 }
 
-static SDL_DisplayOrientation
-WIN_GetDisplayOrientation(DEVMODE *mode)
+static SDL_DisplayOrientation WIN_GetDisplayOrientation(DEVMODE *mode)
 {
     int width = mode->dmPelsWidth;
     int height = mode->dmPelsHeight;
@@ -151,8 +159,20 @@ WIN_GetDisplayOrientation(DEVMODE *mode)
     }
 }
 
-static SDL_bool
-WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode, SDL_DisplayOrientation *orientation)
+static float WIN_GetRefreshRate(DEVMODE *mode)
+{
+    /* We're not currently using DXGI to query display modes, so fake NTSC timings */
+    switch (mode->dmDisplayFrequency) {
+    case 119:
+    case 59:
+    case 29:
+        return ((100 * (mode->dmDisplayFrequency + 1) * 1000) / 1001) / 100.0f;
+    default:
+        return (float)mode->dmDisplayFrequency;
+    }
+}
+
+static SDL_bool WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *orientation)
 {
     SDL_DisplayModeData *data;
     DEVMODE devmode;
@@ -163,8 +183,8 @@ WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mod
         return SDL_FALSE;
     }
 
-    data = (SDL_DisplayModeData *) SDL_malloc(sizeof(*data));
-    if (!data) {
+    data = (SDL_DisplayModeData *)SDL_malloc(sizeof(*data));
+    if (data == NULL) {
         return SDL_FALSE;
     }
 
@@ -174,7 +194,7 @@ WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mod
     mode->format = SDL_PIXELFORMAT_UNKNOWN;
     mode->w = data->DeviceMode.dmPelsWidth;
     mode->h = data->DeviceMode.dmPelsHeight;
-    mode->refresh_rate = data->DeviceMode.dmDisplayFrequency;
+    mode->refresh_rate = WIN_GetRefreshRate(&data->DeviceMode);
 
     /* Fill in the mode information */
     WIN_UpdateDisplayMode(_this, deviceName, index, mode);
@@ -186,79 +206,208 @@ WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mod
     return SDL_TRUE;
 }
 
-static SDL_bool
-WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool send_event)
+/* The win32 API calls in this function require Windows Vista or later. */
+/* *INDENT-OFF* */ /* clang-format off */
+typedef LONG (WINAPI *SDL_WIN32PROC_GetDisplayConfigBufferSizes)(UINT32 flags, UINT32* numPathArrayElements, UINT32* numModeInfoArrayElements);
+typedef LONG (WINAPI *SDL_WIN32PROC_QueryDisplayConfig)(UINT32 flags, UINT32* numPathArrayElements, DISPLAYCONFIG_PATH_INFO* pathArray, UINT32* numModeInfoArrayElements, DISPLAYCONFIG_MODE_INFO* modeInfoArray, DISPLAYCONFIG_TOPOLOGY_ID* currentTopologyId);
+typedef LONG (WINAPI *SDL_WIN32PROC_DisplayConfigGetDeviceInfo)(DISPLAYCONFIG_DEVICE_INFO_HEADER* requestPacket);
+/* *INDENT-ON* */ /* clang-format on */
+
+static char *WIN_GetDisplayNameVista(const WCHAR *deviceName)
 {
-    int i;
+    void *dll;
+    SDL_WIN32PROC_GetDisplayConfigBufferSizes pGetDisplayConfigBufferSizes;
+    SDL_WIN32PROC_QueryDisplayConfig pQueryDisplayConfig;
+    SDL_WIN32PROC_DisplayConfigGetDeviceInfo pDisplayConfigGetDeviceInfo;
+    DISPLAYCONFIG_PATH_INFO *paths = NULL;
+    DISPLAYCONFIG_MODE_INFO *modes = NULL;
+    char *retval = NULL;
+    UINT32 pathCount = 0;
+    UINT32 modeCount = 0;
+    UINT32 i;
+    LONG rc;
+
+    dll = SDL_LoadObject("USER32.DLL");
+    if (dll == NULL) {
+        return NULL;
+    }
+
+    pGetDisplayConfigBufferSizes = (SDL_WIN32PROC_GetDisplayConfigBufferSizes)SDL_LoadFunction(dll, "GetDisplayConfigBufferSizes");
+    pQueryDisplayConfig = (SDL_WIN32PROC_QueryDisplayConfig)SDL_LoadFunction(dll, "QueryDisplayConfig");
+    pDisplayConfigGetDeviceInfo = (SDL_WIN32PROC_DisplayConfigGetDeviceInfo)SDL_LoadFunction(dll, "DisplayConfigGetDeviceInfo");
+
+    if (pGetDisplayConfigBufferSizes == NULL || pQueryDisplayConfig == NULL || pDisplayConfigGetDeviceInfo == NULL) {
+        goto WIN_GetDisplayNameVista_failed;
+    }
+
+    do {
+        rc = pGetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &pathCount, &modeCount);
+        if (rc != ERROR_SUCCESS) {
+            goto WIN_GetDisplayNameVista_failed;
+        }
+
+        SDL_free(paths);
+        SDL_free(modes);
+
+        paths = (DISPLAYCONFIG_PATH_INFO *)SDL_malloc(sizeof(DISPLAYCONFIG_PATH_INFO) * pathCount);
+        modes = (DISPLAYCONFIG_MODE_INFO *)SDL_malloc(sizeof(DISPLAYCONFIG_MODE_INFO) * modeCount);
+        if ((paths == NULL) || (modes == NULL)) {
+            goto WIN_GetDisplayNameVista_failed;
+        }
+
+        rc = pQueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &pathCount, paths, &modeCount, modes, 0);
+    } while (rc == ERROR_INSUFFICIENT_BUFFER);
+
+    if (rc == ERROR_SUCCESS) {
+        for (i = 0; i < pathCount; i++) {
+            DISPLAYCONFIG_SOURCE_DEVICE_NAME sourceName;
+            DISPLAYCONFIG_TARGET_DEVICE_NAME targetName;
+
+            SDL_zero(sourceName);
+            sourceName.header.adapterId = paths[i].targetInfo.adapterId;
+            sourceName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+            sourceName.header.size = sizeof(sourceName);
+            sourceName.header.id = paths[i].sourceInfo.id;
+            rc = pDisplayConfigGetDeviceInfo(&sourceName.header);
+            if (rc != ERROR_SUCCESS) {
+                break;
+            } else if (SDL_wcscmp(deviceName, sourceName.viewGdiDeviceName) != 0) {
+                continue;
+            }
+
+            SDL_zero(targetName);
+            targetName.header.adapterId = paths[i].targetInfo.adapterId;
+            targetName.header.id = paths[i].targetInfo.id;
+            targetName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+            targetName.header.size = sizeof(targetName);
+            rc = pDisplayConfigGetDeviceInfo(&targetName.header);
+            if (rc == ERROR_SUCCESS) {
+                retval = WIN_StringToUTF8W(targetName.monitorFriendlyDeviceName);
+                /* if we got an empty string, treat it as failure so we'll fallback
+                   to getting the generic name. */
+                if (retval && (*retval == '\0')) {
+                    SDL_free(retval);
+                    retval = NULL;
+                }
+            }
+            break;
+        }
+    }
+
+    SDL_free(paths);
+    SDL_free(modes);
+    SDL_UnloadObject(dll);
+    return retval;
+
+WIN_GetDisplayNameVista_failed:
+    SDL_free(retval);
+    SDL_free(paths);
+    SDL_free(modes);
+    SDL_UnloadObject(dll);
+    return NULL;
+}
+
+static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index, SDL_bool send_event)
+{
+    int i, index = *display_index;
     SDL_VideoDisplay display;
     SDL_DisplayData *displaydata;
     SDL_DisplayMode mode;
     SDL_DisplayOrientation orientation;
-    DISPLAY_DEVICEW device;
 
 #ifdef DEBUG_MODES
     SDL_Log("Display: %s\n", WIN_StringToUTF8W(info->szDevice));
 #endif
 
     if (!WIN_GetDisplayMode(_this, info->szDevice, ENUM_CURRENT_SETTINGS, &mode, &orientation)) {
-        return SDL_FALSE;
+        return;
     }
 
     // Prevent adding duplicate displays. Do this after we know the display is
     // ready to be added to allow any displays that we can't fully query to be
     // removed
-    for(i = 0; i < _this->num_displays; ++i) {
+    for (i = 0; i < _this->num_displays; ++i) {
         SDL_DisplayData *driverdata = (SDL_DisplayData *)_this->displays[i].driverdata;
         if (SDL_wcscmp(driverdata->DeviceName, info->szDevice) == 0) {
+            SDL_bool moved = (index != i);
+
+            if (moved) {
+                SDL_VideoDisplay tmp;
+
+                SDL_assert(index < _this->num_displays);
+                SDL_memcpy(&tmp, &_this->displays[index], sizeof(tmp));
+                SDL_memcpy(&_this->displays[index], &_this->displays[i], sizeof(tmp));
+                SDL_memcpy(&_this->displays[i], &tmp, sizeof(tmp));
+                i = index;
+            }
+
             driverdata->MonitorHandle = hMonitor;
             driverdata->IsValid = SDL_TRUE;
 
             if (!_this->setting_display_mode) {
+                SDL_Rect bounds;
+
                 SDL_ResetDisplayModes(i);
                 SDL_SetCurrentDisplayMode(&_this->displays[i], &mode);
                 SDL_SetDesktopDisplayMode(&_this->displays[i], &mode);
+                if (WIN_GetDisplayBounds(_this, &_this->displays[i], &bounds) == 0) {
+                    if (SDL_memcmp(&driverdata->bounds, &bounds, sizeof(bounds)) != 0 || moved) {
+                        SDL_SendDisplayEvent(&_this->displays[i], SDL_DISPLAYEVENT_MOVED, 0);
+                    }
+                }
                 SDL_SendDisplayEvent(&_this->displays[i], SDL_DISPLAYEVENT_ORIENTATION, orientation);
             }
-            return SDL_FALSE;
+            goto done;
         }
     }
 
-    displaydata = (SDL_DisplayData *) SDL_malloc(sizeof(*displaydata));
-    if (!displaydata) {
-        return SDL_FALSE;
+    displaydata = (SDL_DisplayData *)SDL_calloc(1, sizeof(*displaydata));
+    if (displaydata == NULL) {
+        return;
     }
-    SDL_memcpy(displaydata->DeviceName, info->szDevice,
-               sizeof(displaydata->DeviceName));
+    SDL_memcpy(displaydata->DeviceName, info->szDevice, sizeof(displaydata->DeviceName));
     displaydata->MonitorHandle = hMonitor;
     displaydata->IsValid = SDL_TRUE;
 
     SDL_zero(display);
-    device.cb = sizeof(device);
-    if (EnumDisplayDevicesW(info->szDevice, 0, &device, 0)) {
-        display.name = WIN_StringToUTF8W(device.DeviceString);
+    display.name = WIN_GetDisplayNameVista(info->szDevice);
+    if (display.name == NULL) {
+        DISPLAY_DEVICEW device;
+        SDL_zero(device);
+        device.cb = sizeof(device);
+        if (EnumDisplayDevicesW(info->szDevice, 0, &device, 0)) {
+            display.name = WIN_StringToUTF8W(device.DeviceString);
+        }
     }
+
     display.desktop_mode = mode;
     display.current_mode = mode;
     display.orientation = orientation;
+    display.device = _this;
     display.driverdata = displaydata;
-    SDL_AddVideoDisplay(&display, send_event);
+    WIN_GetDisplayBounds(_this, &display, &displaydata->bounds);
+    index = SDL_AddVideoDisplay(&display, send_event);
+    SDL_assert(index == *display_index);
     SDL_free(display.name);
-    return SDL_TRUE;
+
+done:
+    *display_index += 1;
 }
 
-typedef struct _WIN_AddDisplaysData {
+typedef struct _WIN_AddDisplaysData
+{
     SDL_VideoDevice *video_device;
+    int display_index;
     SDL_bool send_event;
     SDL_bool want_primary;
 } WIN_AddDisplaysData;
 
-static BOOL CALLBACK
-WIN_AddDisplaysCallback(HMONITOR hMonitor,
-                        HDC      hdcMonitor,
-                        LPRECT   lprcMonitor,
-                        LPARAM   dwData)
+static BOOL CALLBACK WIN_AddDisplaysCallback(HMONITOR hMonitor,
+                                             HDC hdcMonitor,
+                                             LPRECT lprcMonitor,
+                                             LPARAM dwData)
 {
-    WIN_AddDisplaysData *data = (WIN_AddDisplaysData*)dwData;
+    WIN_AddDisplaysData *data = (WIN_AddDisplaysData *)dwData;
     MONITORINFOEXW info;
 
     SDL_zero(info);
@@ -268,7 +417,7 @@ WIN_AddDisplaysCallback(HMONITOR hMonitor,
         const SDL_bool is_primary = ((info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY);
 
         if (is_primary == data->want_primary) {
-            WIN_AddDisplay(data->video_device, hMonitor, &info, data->send_event);
+            WIN_AddDisplay(data->video_device, hMonitor, &info, &data->display_index, data->send_event);
         }
     }
 
@@ -276,11 +425,11 @@ WIN_AddDisplaysCallback(HMONITOR hMonitor,
     return TRUE;
 }
 
-static void
-WIN_AddDisplays(_THIS, SDL_bool send_event)
+static void WIN_AddDisplays(_THIS, SDL_bool send_event)
 {
     WIN_AddDisplaysData callback_data;
     callback_data.video_device = _this;
+    callback_data.display_index = 0;
     callback_data.send_event = send_event;
 
     callback_data.want_primary = SDL_TRUE;
@@ -290,8 +439,7 @@ WIN_AddDisplays(_THIS, SDL_bool send_event)
     EnumDisplayMonitors(NULL, NULL, WIN_AddDisplaysCallback, (LPARAM)&callback_data);
 }
 
-int
-WIN_InitModes(_THIS)
+int WIN_InitModes(_THIS)
 {
     WIN_AddDisplays(_this, SDL_FALSE);
 
@@ -301,10 +449,44 @@ WIN_InitModes(_THIS)
     return 0;
 }
 
-int
-WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
+/**
+ * Convert the monitor rect and work rect from pixels to the SDL coordinate system (monitor origins are in pixels,
+ * monitor size in DPI-scaled points).
+ *
+ * No-op if DPI scaling is not enabled.
+ */
+static void WIN_MonitorInfoToSDL(const SDL_VideoData *videodata, HMONITOR monitor, MONITORINFO *info)
+{
+    UINT xdpi, ydpi;
+
+    if (!videodata->dpi_scaling_enabled) {
+        return;
+    }
+
+    /* Check for Windows < 8.1*/
+    if (!videodata->GetDpiForMonitor) {
+        return;
+    }
+    if (videodata->GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &xdpi, &ydpi) != S_OK) {
+        /* Shouldn't happen? */
+        return;
+    }
+
+    /* Convert monitor size to points, leaving the monitor position in pixels */
+    info->rcMonitor.right = info->rcMonitor.left + MulDiv(info->rcMonitor.right - info->rcMonitor.left, 96, xdpi);
+    info->rcMonitor.bottom = info->rcMonitor.top + MulDiv(info->rcMonitor.bottom - info->rcMonitor.top, 96, ydpi);
+
+    /* Convert monitor work rect to points */
+    info->rcWork.left = info->rcMonitor.left + MulDiv(info->rcWork.left - info->rcMonitor.left, 96, xdpi);
+    info->rcWork.right = info->rcMonitor.left + MulDiv(info->rcWork.right - info->rcMonitor.left, 96, xdpi);
+    info->rcWork.top = info->rcMonitor.top + MulDiv(info->rcWork.top - info->rcMonitor.top, 96, ydpi);
+    info->rcWork.bottom = info->rcMonitor.top + MulDiv(info->rcWork.bottom - info->rcMonitor.top, 96, ydpi);
+}
+
+int WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     const SDL_DisplayData *data = (const SDL_DisplayData *)display->driverdata;
+    const SDL_VideoData *videodata = (SDL_VideoData *)display->device->driverdata;
     MONITORINFO minfo;
     BOOL rc;
 
@@ -316,6 +498,7 @@ WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
         return SDL_SetError("Couldn't find monitor data");
     }
 
+    WIN_MonitorInfoToSDL(videodata, data->MonitorHandle, &minfo);
     rect->x = minfo.rcMonitor.left;
     rect->y = minfo.rcMonitor.top;
     rect->w = minfo.rcMonitor.right - minfo.rcMonitor.left;
@@ -324,13 +507,12 @@ WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
     return 0;
 }
 
-int
-WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi_out, float * hdpi_out, float * vdpi_out)
+int WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi_out, float *hdpi_out, float *vdpi_out)
 {
     const SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     const SDL_VideoData *videodata = (SDL_VideoData *)display->device->driverdata;
     float hdpi = 0, vdpi = 0, ddpi = 0;
-    
+
     if (videodata->GetDpiForMonitor) {
         UINT hdpi_uint, vdpi_uint;
         // Windows 8.1+ codepath
@@ -383,10 +565,10 @@ WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi_out, float * h
     return ddpi != 0.0f ? 0 : SDL_SetError("Couldn't get DPI");
 }
 
-int
-WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
+int WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     const SDL_DisplayData *data = (const SDL_DisplayData *)display->driverdata;
+    const SDL_VideoData *videodata = (SDL_VideoData *)display->device->driverdata;
     MONITORINFO minfo;
     BOOL rc;
 
@@ -398,6 +580,7 @@ WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
         return SDL_SetError("Couldn't find monitor data");
     }
 
+    WIN_MonitorInfoToSDL(videodata, data->MonitorHandle, &minfo);
     rect->x = minfo.rcWork.left;
     rect->y = minfo.rcWork.top;
     rect->w = minfo.rcWork.right - minfo.rcWork.left;
@@ -406,14 +589,150 @@ WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
     return 0;
 }
 
-void
-WIN_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
+/**
+ * Convert a point from the SDL coordinate system (monitor origins are in pixels,
+ * offset within a monitor in DPI-scaled points) to Windows virtual screen coordinates (pixels).
+ *
+ * No-op if DPI scaling is not enabled (returns 96 dpi).
+ *
+ * Returns the DPI of the monitor that was closest to x, y and used for the conversion.
+ */
+void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut)
 {
-    SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
+    POINT pt = { 0, 0 };
+    WIN_ScreenPointFromSDLFloat((float)*x, (float)*y, &pt.x, &pt.y, dpiOut);
+    *x = pt.x;
+    *y = pt.y;
+}
+
+void WIN_ScreenPointFromSDLFloat(float x, float y, LONG *xOut, LONG *yOut, int *dpiOut)
+{
+    const SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
+    const SDL_VideoData *videodata;
+    int displayIndex;
+    SDL_Rect bounds;
+    float ddpi, hdpi, vdpi;
+    SDL_Point point;
+
+    point.x = (int)x;
+    point.y = (int)y;
+
+    if (dpiOut) {
+        *dpiOut = 96;
+    }
+
+    if (videodevice == NULL || !videodevice->driverdata) {
+        goto passthrough;
+    }
+
+    videodata = (SDL_VideoData *)videodevice->driverdata;
+    if (!videodata->dpi_scaling_enabled) {
+        goto passthrough;
+    }
+
+    /* Can't use MonitorFromPoint for this because we currently have SDL coordinates, not pixels */
+    displayIndex = SDL_GetDisplayIndexForPoint(&point);
+
+    if (displayIndex < 0) {
+        goto passthrough;
+    }
+
+    if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) < 0) {
+        goto passthrough;
+    }
+
+    if (dpiOut) {
+        *dpiOut = (int)ddpi;
+    }
+
+    /* Undo the DPI-scaling within the monitor bounds to convert back to pixels */
+    *xOut = bounds.x + SDL_lroundf(((x - bounds.x) * ddpi) / 96.0f);
+    *yOut = bounds.y + SDL_lroundf(((y - bounds.y) * ddpi) / 96.0f);
+
+#ifdef HIGHDPI_DEBUG_VERBOSE
+    SDL_Log("WIN_ScreenPointFromSDL: (%g, %g) points -> (%d x %d) pixels, using %g DPI monitor",
+            x, y, *xOut, *yOut, ddpi);
+#endif
+    return;
+
+passthrough:
+    *xOut = SDL_lroundf(x);
+    *yOut = SDL_lroundf(y);
+}
+
+/**
+ * Convert a point from Windows virtual screen coordinates (pixels) to the SDL
+ * coordinate system (monitor origins are in pixels, offset within a monitor in DPI-scaled points).
+ *
+ * No-op if DPI scaling is not enabled.
+ */
+void WIN_ScreenPointToSDL(int *x, int *y)
+{
+    SDL_FPoint pt;
+    WIN_ScreenPointToSDLFloat(*x, *y, &pt.x, &pt.y);
+    *x = SDL_lroundf(pt.x);
+    *y = SDL_lroundf(pt.y);
+}
+
+void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut)
+{
+    const SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
+    const SDL_VideoData *videodata;
+    POINT point;
+    HMONITOR monitor;
+    int i, displayIndex;
+    SDL_Rect bounds;
+    float ddpi, hdpi, vdpi;
+
+    if (videodevice == NULL || !videodevice->driverdata) {
+        return;
+    }
+
+    videodata = (SDL_VideoData *)videodevice->driverdata;
+    if (!videodata->dpi_scaling_enabled) {
+        *xOut = (float)x;
+        *yOut = (float)y;
+        return;
+    }
+
+    point.x = x;
+    point.y = y;
+    monitor = MonitorFromPoint(point, MONITOR_DEFAULTTONEAREST);
+
+    /* Search for the corresponding SDL monitor */
+    displayIndex = -1;
+    for (i = 0; i < videodevice->num_displays; ++i) {
+        SDL_DisplayData *driverdata = (SDL_DisplayData *)videodevice->displays[i].driverdata;
+        if (driverdata->MonitorHandle == monitor) {
+            displayIndex = i;
+        }
+    }
+    if (displayIndex == -1) {
+        return;
+    }
+
+    /* Get SDL display properties */
+    if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) < 0) {
+        return;
+    }
+
+    /* Convert the point's offset within the monitor from pixels to DPI-scaled points */
+    *xOut = (float)bounds.x + ((float)(x - bounds.x) * 96.0f) / ddpi;
+    *yOut = (float)bounds.y + ((float)(y - bounds.y) * 96.0f) / ddpi;
+
+#ifdef HIGHDPI_DEBUG_VERBOSE
+    SDL_Log("WIN_ScreenPointToSDL: (%d, %d) pixels -> (%g x %g) points, using %g DPI monitor",
+            x, y, *xOut, *yOut, ddpi);
+#endif
+}
+
+void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+{
+    SDL_DisplayData *data = (SDL_DisplayData *)display->driverdata;
     DWORD i;
     SDL_DisplayMode mode;
 
-    for (i = 0; ; ++i) {
+    for (i = 0;; ++i) {
         if (!WIN_GetDisplayMode(_this, data->DeviceName, i, &mode, NULL)) {
             break;
         }
@@ -432,16 +751,66 @@ WIN_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     }
 }
 
-int
-WIN_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+#ifdef DEBUG_MODES
+static void WIN_LogMonitor(_THIS, HMONITOR mon)
 {
-    SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
-    SDL_DisplayModeData *data = (SDL_DisplayModeData *) mode->driverdata;
+    const SDL_VideoData *vid_data = (const SDL_VideoData *)_this->driverdata;
+    MONITORINFOEX minfo;
+    UINT xdpi = 0, ydpi = 0;
+    char *name_utf8;
+
+    if (vid_data->GetDpiForMonitor) {
+        vid_data->GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &xdpi, &ydpi);
+    }
+
+    SDL_zero(minfo);
+    minfo.cbSize = sizeof(minfo);
+    GetMonitorInfo(mon, (LPMONITORINFO)&minfo);
+
+    name_utf8 = WIN_StringToUTF8(minfo.szDevice);
+
+    SDL_Log("WIN_LogMonitor: monitor \"%s\": dpi: %d windows screen coordinates: %d, %d, %dx%d",
+            name_utf8,
+            xdpi,
+            minfo.rcMonitor.left,
+            minfo.rcMonitor.top,
+            minfo.rcMonitor.right - minfo.rcMonitor.left,
+            minfo.rcMonitor.bottom - minfo.rcMonitor.top);
+
+    SDL_free(name_utf8);
+}
+#endif
+
+int WIN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+{
+    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
     LONG status;
 
+#ifdef DEBUG_MODES
+    SDL_Log("WIN_SetDisplayMode: monitor state before mode change:");
+    WIN_LogMonitor(_this, displaydata->MonitorHandle);
+#endif
+
+    /* High-DPI notes:
+
+       - ChangeDisplaySettingsEx always takes pixels.
+       - e.g. if the display is set to 2880x1800 with 200% scaling in Display Settings
+         - calling ChangeDisplaySettingsEx with a dmPelsWidth/Height other than 2880x1800 will
+           change the monitor DPI to 96. (100% scaling)
+         - calling ChangeDisplaySettingsEx with a dmPelsWidth/Height of 2880x1800 (or a NULL DEVMODE*) will
+           reset the monitor DPI to 192. (200% scaling)
+
+       NOTE: these are temporary changes in DPI, not modifications to the Control Panel setting. */
     if (mode->driverdata == display->desktop_mode.driverdata) {
+#ifdef DEBUG_MODES
+        SDL_Log("WIN_SetDisplayMode: resetting to original resolution");
+#endif
         status = ChangeDisplaySettingsExW(displaydata->DeviceName, NULL, NULL, CDS_FULLSCREEN, NULL);
     } else {
+#ifdef DEBUG_MODES
+        SDL_Log("WIN_SetDisplayMode: changing to %dx%d pixels", data->DeviceMode.dmPelsWidth, data->DeviceMode.dmPelsHeight);
+#endif
         status = ChangeDisplaySettingsExW(displaydata->DeviceName, &data->DeviceMode, NULL, CDS_FULLSCREEN, NULL);
     }
     if (status != DISP_CHANGE_SUCCESSFUL) {
@@ -462,13 +831,18 @@ WIN_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         }
         return SDL_SetError("ChangeDisplaySettingsEx() failed: %s", reason);
     }
+
+#ifdef DEBUG_MODES
+    SDL_Log("WIN_SetDisplayMode: monitor state after mode change:");
+    WIN_LogMonitor(_this, displaydata->MonitorHandle);
+#endif
+
     EnumDisplaySettingsW(displaydata->DeviceName, ENUM_CURRENT_SETTINGS, &data->DeviceMode);
     WIN_UpdateDisplayMode(_this, displaydata->DeviceName, ENUM_CURRENT_SETTINGS, mode);
     return 0;
 }
 
-void
-WIN_RefreshDisplays(_THIS)
+void WIN_RefreshDisplays(_THIS)
 {
     int i;
 
@@ -493,12 +867,9 @@ WIN_RefreshDisplays(_THIS)
     }
 }
 
-void
-WIN_QuitModes(_THIS)
+void WIN_QuitModes(_THIS)
 {
     /* All fullscreen windows should have restored modes by now */
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */

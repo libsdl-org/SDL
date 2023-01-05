@@ -24,7 +24,7 @@
  * SDL_x11vulkan.h.
  */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_waylandvulkan_h_
 #define SDL_waylandvulkan_h_
@@ -37,17 +37,14 @@
 int Wayland_Vulkan_LoadLibrary(_THIS, const char *path);
 void Wayland_Vulkan_UnloadLibrary(_THIS);
 SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
-                                          SDL_Window *window,
-                                          unsigned *count,
-                                          const char **names);
-void Wayland_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
+                                              SDL_Window *window,
+                                              unsigned *count,
+                                              const char **names);
 SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
-                                  SDL_Window *window,
-                                  VkInstance instance,
-                                  VkSurfaceKHR *surface);
+                                      SDL_Window *window,
+                                      VkInstance instance,
+                                      VkSurfaceKHR *surface);
 
 #endif
 
 #endif /* SDL_waylandvulkan_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -18,21 +18,19 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_cocoakeyboard_h_
 #define SDL_cocoakeyboard_h_
 
 extern void Cocoa_InitKeyboard(_THIS);
-extern void Cocoa_HandleKeyEvent(_THIS, NSEvent * event);
+extern void Cocoa_HandleKeyEvent(_THIS, NSEvent *event);
 extern void Cocoa_QuitKeyboard(_THIS);
 
 extern void Cocoa_StartTextInput(_THIS);
 extern void Cocoa_StopTextInput(_THIS);
-extern void Cocoa_SetTextInputRect(_THIS, SDL_Rect *rect);
+extern void Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect);
 
-extern void Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
+extern void Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
 
 #endif /* SDL_cocoakeyboard_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

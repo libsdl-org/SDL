@@ -14,6 +14,8 @@
 
 #ifdef TEST_NATIVE_X11
 
+#include <X11/Xlib.h>
+
 static void *CreateWindowX11(int w, int h);
 static void DestroyWindowX11(void *window);
 
@@ -38,14 +40,14 @@ CreateWindowX11(int w, int h)
         XMapRaised(dpy, window);
         XSync(dpy, False);
     }
-    return (void *) window;
+    return (void *)window;
 }
 
 static void
 DestroyWindowX11(void *window)
 {
     if (dpy) {
-        XDestroyWindow(dpy, (Window) window);
+        XDestroyWindow(dpy, (Window)window);
         XCloseDisplay(dpy);
     }
 }

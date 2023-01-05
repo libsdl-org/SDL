@@ -18,61 +18,53 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_RISCOS
 
-#include "SDL_version.h"
-#include "SDL_syswm.h"
 #include "../SDL_sysvideo.h"
+#include "../../events/SDL_mouse_c.h"
+
+#include <SDL3/SDL_syswm.h>
 
 #include "SDL_riscosvideo.h"
 #include "SDL_riscoswindow.h"
 
-int
-RISCOS_CreateWindow(_THIS, SDL_Window * window)
+int RISCOS_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *driverdata;
 
-    driverdata = (SDL_WindowData *) SDL_calloc(1, sizeof(*driverdata));
-    if (!driverdata) {
+    driverdata = (SDL_WindowData *)SDL_calloc(1, sizeof(*driverdata));
+    if (driverdata == NULL) {
         return SDL_OutOfMemory();
     }
     driverdata->window = window;
 
     window->flags |= SDL_WINDOW_FULLSCREEN;
 
+    SDL_SetMouseFocus(window);
+
     /* All done! */
     window->driverdata = driverdata;
     return 0;
 }
 
-void
-RISCOS_DestroyWindow(_THIS, SDL_Window * window)
+void RISCOS_DestroyWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *driverdata = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
 
-    if (!driverdata)
+    if (driverdata == NULL) {
         return;
+    }
 
     SDL_free(driverdata);
     window->driverdata = NULL;
 }
 
-SDL_bool
-RISCOS_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
+int RISCOS_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info)
 {
-    if (info->version.major == SDL_MAJOR_VERSION &&
-        info->version.minor == SDL_MINOR_VERSION) {
-        info->subsystem = SDL_SYSWM_RISCOS;
-        return SDL_TRUE;
-    } else {
-        SDL_SetError("Application not compiled with SDL %d.%d",
-                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
-        return SDL_FALSE;
-    }
+    info->subsystem = SDL_SYSWM_RISCOS;
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */
-
-/* vi: set ts=4 sw=4 expandtab: */

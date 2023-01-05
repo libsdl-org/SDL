@@ -18,14 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_netbsdaudio_h_
 #define SDL_netbsdaudio_h_
 
 #include "../SDL_sysaudio.h"
 
-#define _THIS   SDL_AudioDevice *this
+#define _THIS SDL_AudioDevice *this
 
 struct SDL_PrivateAudioData
 {
@@ -41,8 +41,6 @@ struct SDL_PrivateAudioData
     float next_frame;
 };
 
-#define FUDGE_TICKS 10      /* The scheduler overhead ticks per frame */
+#define FUDGE_TICKS 10 /* The scheduler overhead ticks per frame */
 
 #endif /* SDL_netbsdaudio_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

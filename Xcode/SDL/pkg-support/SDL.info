@@ -1,6 +1,6 @@
-Title SDL 2.0.0
+Title SDL 3.0.0
 Version 1
-Description SDL Library for Mac OS X (http://www.libsdl.org)
+Description SDL Library for macOS (http://www.libsdl.org)
 DefaultLocation /Library/Frameworks
 Diskname (null)
 DeleteWarning 

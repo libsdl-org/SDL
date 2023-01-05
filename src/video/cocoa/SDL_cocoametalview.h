@@ -21,10 +21,10 @@
 /*
  * @author Mark Callow, www.edgewise-consulting.com.
  *
- * Thanks to Alex Szpakowski, @slime73 on GitHub, for his gist showing
- * how to add a CAMetalLayer backed view.
+ * Thanks to @slime73 on GitHub for their gist showing how to add a CAMetalLayer
+ * backed view.
  */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_cocoametalview_h_
 #define SDL_cocoametalview_h_
@@ -39,7 +39,6 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
-
 @interface SDL_cocoametalview : NSView
 
 - (instancetype)initWithFrame:(NSRect)frame
@@ -50,21 +49,18 @@
 - (NSView *)hitTest:(NSPoint)point;
 
 /* Override superclass tag so this class can set it. */
-@property (assign, readonly) NSInteger tag;
+@property(assign, readonly) NSInteger tag;
 
-@property (nonatomic) BOOL highDPI;
-@property (nonatomic) Uint32 sdlWindowID;
+@property(nonatomic) BOOL highDPI;
+@property(nonatomic) Uint32 sdlWindowID;
 
 @end
 
-SDL_MetalView Cocoa_Metal_CreateView(_THIS, SDL_Window * window);
+SDL_MetalView Cocoa_Metal_CreateView(_THIS, SDL_Window *window);
 void Cocoa_Metal_DestroyView(_THIS, SDL_MetalView view);
 void *Cocoa_Metal_GetLayer(_THIS, SDL_MetalView view);
-void Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h);
+void Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
 
 #endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
 
 #endif /* SDL_cocoametalview_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
-

@@ -18,12 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_thread_c_h_
 #define SDL_thread_c_h_
-
-#include "SDL_thread.h"
 
 /* Need the definitions of SYS_ThreadHandle */
 #if SDL_THREADS_DISABLED
@@ -32,14 +30,16 @@
 #include "pthread/SDL_systhread_c.h"
 #elif SDL_THREAD_WINDOWS
 #include "windows/SDL_systhread_c.h"
+#elif SDL_THREAD_PS2
+#include "ps2/SDL_systhread_c.h"
 #elif SDL_THREAD_PSP
 #include "psp/SDL_systhread_c.h"
 #elif SDL_THREAD_VITA
 #include "vita/SDL_systhread_c.h"
+#elif SDL_THREAD_N3DS
+#include "n3ds/SDL_systhread_c.h"
 #elif SDL_THREAD_STDCPP
 #include "stdcpp/SDL_systhread_c.h"
-#elif SDL_THREAD_OS2
-#include "os2/SDL_systhread_c.h"
 #elif SDL_THREAD_NGAGE
 #include "ngage/SDL_systhread_c.h"
 #else
@@ -62,25 +62,27 @@ struct SDL_Thread
     SDL_threadID threadid;
     SYS_ThreadHandle handle;
     int status;
-    SDL_atomic_t state;  /* SDL_THREAD_STATE_* */
+    SDL_atomic_t state; /* SDL_THREAD_STATE_* */
     SDL_error errbuf;
     char *name;
-    size_t stacksize;  /* 0 for default, >0 for user-specified stack size. */
-    int (SDLCALL * userfunc) (void *);
+    size_t stacksize; /* 0 for default, >0 for user-specified stack size. */
+    int(SDLCALL *userfunc)(void *);
     void *userdata;
     void *data;
-    void *endfunc;  /* only used on some platforms. */
+    void *endfunc; /* only used on some platforms. */
 };
 
 /* This is the function called to run a thread */
 extern void SDL_RunThread(SDL_Thread *thread);
 
 /* This is the system-independent thread local storage structure */
-typedef struct {
+typedef struct
+{
     unsigned int limit;
-    struct {
+    struct
+    {
         void *data;
-        void (SDLCALL *destructor)(void*);
+        void(SDLCALL *destructor)(void *);
     } array[1];
 } SDL_TLSData;
 
@@ -100,5 +102,3 @@ extern SDL_TLSData *SDL_Generic_GetTLSData(void);
 extern int SDL_Generic_SetTLSData(SDL_TLSData *data);
 
 #endif /* SDL_thread_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

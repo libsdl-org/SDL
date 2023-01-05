@@ -19,19 +19,17 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_udev_h_
 #define SDL_udev_h_
 
-#if HAVE_LIBUDEV_H
+#if HAVE_LIBUDEV_H && HAVE_LINUX_INPUT_H
 
 #ifndef SDL_USE_LIBUDEV
 #define SDL_USE_LIBUDEV 1
 #endif
 
-#include "SDL_loadso.h"
-#include "SDL_events.h"
 #include <libudev.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -48,12 +46,14 @@ typedef enum
 
 typedef void (*SDL_UDEV_Callback)(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
 
-typedef struct SDL_UDEV_CallbackList {
+typedef struct SDL_UDEV_CallbackList
+{
     SDL_UDEV_Callback callback;
     struct SDL_UDEV_CallbackList *next;
 } SDL_UDEV_CallbackList;
 
-typedef struct SDL_UDEV_Symbols {
+typedef struct SDL_UDEV_Symbols
+{
     const char *(*udev_device_get_action)(struct udev_device *);
     const char *(*udev_device_get_devnode)(struct udev_device *);
     const char *(*udev_device_get_subsystem)(struct udev_device *);
@@ -78,8 +78,8 @@ typedef struct SDL_UDEV_Symbols {
     void (*udev_monitor_unref)(struct udev_monitor *);
     struct udev *(*udev_new)(void);
     void (*udev_unref)(struct udev *);
-    struct udev_device * (*udev_device_new_from_devnum)(struct udev *udev, char type, dev_t devnum);
-    dev_t (*udev_device_get_devnum) (struct udev_device *udev_device);
+    struct udev_device *(*udev_device_new_from_devnum)(struct udev *udev, char type, dev_t devnum);
+    dev_t (*udev_device_get_devnum)(struct udev_device *udev_device);
 } SDL_UDEV_Symbols;
 
 typedef struct SDL_UDEV_PrivateData
@@ -90,7 +90,7 @@ typedef struct SDL_UDEV_PrivateData
     struct udev_monitor *udev_mon;
     int ref_count;
     SDL_UDEV_CallbackList *first, *last;
-    
+
     /* Function pointers */
     SDL_UDEV_Symbols syms;
 } SDL_UDEV_PrivateData;
@@ -107,9 +107,6 @@ extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);
 extern const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void);
 extern void SDL_UDEV_ReleaseUdevSyms(void);
 
-
-#endif /* HAVE_LIBUDEV_H */
+#endif /* HAVE_LIBUDEV_H && HAVE_LINUX_INPUT_H */
 
 #endif /* SDL_udev_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

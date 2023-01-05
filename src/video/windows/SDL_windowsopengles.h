@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_winopengles_h_
 #define SDL_winopengles_h_
@@ -29,21 +29,20 @@
 #include "../SDL_egl_c.h"
 
 /* OpenGLES functions */
-#define WIN_GLES_GetAttribute SDL_EGL_GetAttribute
-#define WIN_GLES_GetProcAddress SDL_EGL_GetProcAddress
-#define WIN_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
+#define WIN_GLES_GetAttribute    SDL_EGL_GetAttribute
+#define WIN_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
+#define WIN_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define WIN_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 #define WIN_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 
 extern int WIN_GLES_LoadLibrary(_THIS, const char *path);
-extern SDL_GLContext WIN_GLES_CreateContext(_THIS, SDL_Window * window);
-extern int WIN_GLES_SwapWindow(_THIS, SDL_Window * window);
-extern int WIN_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+extern SDL_GLContext WIN_GLES_CreateContext(_THIS, SDL_Window *window);
+extern int WIN_GLES_SwapWindow(_THIS, SDL_Window *window);
+extern int WIN_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 extern void WIN_GLES_DeleteContext(_THIS, SDL_GLContext context);
-extern int WIN_GLES_SetupWindow(_THIS, SDL_Window * window);
+extern int WIN_GLES_SetupWindow(_THIS, SDL_Window *window);
+extern SDL_EGLSurface WIN_GLES_GetEGLSurface(_THIS, SDL_Window *window);
 
 #endif /* SDL_VIDEO_OPENGL_EGL */
 
 #endif /* SDL_winopengles_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

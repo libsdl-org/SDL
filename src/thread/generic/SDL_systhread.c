@@ -18,28 +18,24 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* Thread management routines for SDL */
 
-#include "SDL_thread.h"
 #include "../SDL_systhread.h"
 
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-int
-SDL_SYS_CreateThread(SDL_Thread * thread,
-                     pfnSDL_CurrentBeginThread pfnBeginThread,
-                     pfnSDL_CurrentEndThread pfnEndThread)
+int SDL_SYS_CreateThread(SDL_Thread *thread,
+                         pfnSDL_CurrentBeginThread pfnBeginThread,
+                         pfnSDL_CurrentEndThread pfnEndThread)
 #else
-int
-SDL_SYS_CreateThread(SDL_Thread * thread)
+int SDL_SYS_CreateThread(SDL_Thread *thread)
 #endif /* SDL_PASSED_BEGINTHREAD_ENDTHREAD */
 {
     return SDL_SetError("Threads are not supported on this platform");
 }
 
-void
-SDL_SYS_SetupThread(const char *name)
+void SDL_SYS_SetupThread(const char *name)
 {
     return;
 }
@@ -47,25 +43,20 @@ SDL_SYS_SetupThread(const char *name)
 SDL_threadID
 SDL_ThreadID(void)
 {
-    return (0);
+    return 0;
 }
 
-int
-SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-    return (0);
+    return 0;
 }
 
-void
-SDL_SYS_WaitThread(SDL_Thread * thread)
+void SDL_SYS_WaitThread(SDL_Thread *thread)
 {
     return;
 }
 
-void
-SDL_SYS_DetachThread(SDL_Thread * thread)
+void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
     return;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

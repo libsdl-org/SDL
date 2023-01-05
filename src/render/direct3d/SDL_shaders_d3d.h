@@ -18,11 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* D3D9 shader implementation */
 
-typedef enum {
+typedef enum
+{
     SHADER_YUV_JPEG,
     SHADER_YUV_BT601,
     SHADER_YUV_BT709,
@@ -30,5 +31,3 @@ typedef enum {
 } D3D9_Shader;
 
 extern HRESULT D3D9_CreatePixelShader(IDirect3DDevice9 *d3dDevice, D3D9_Shader shader, IDirect3DPixelShader9 **pixelShader);
-
-/* vi: set ts=4 sw=4 expandtab: */

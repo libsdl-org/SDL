@@ -19,9 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "../SDL_thread_c.h"
-
 
 SDL_TLSData *
 SDL_SYS_GetTLSData(void)
@@ -29,10 +28,7 @@ SDL_SYS_GetTLSData(void)
     return SDL_Generic_GetTLSData();
 }
 
-int
-SDL_SYS_SetTLSData(SDL_TLSData *data)
+int SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
     return SDL_Generic_SetTLSData(data);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

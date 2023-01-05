@@ -1,7 +1,6 @@
-# Mac OS X (aka macOS).
+# macOS
 
-These instructions are for people using Apple's Mac OS X (pronounced
-"ten"), which in newer versions is just referred to as "macOS".
+These instructions are for people using Apple's macOS.
 
 From the developer's point of view, macOS is a sort of hybrid Mac and
 Unix system, and you have the option of using either traditional
@@ -9,54 +8,38 @@ command line tools or Apple's IDE Xcode.
 
 # Command Line Build
 
-To build SDL using the command line, use the standard configure and make
-process:
+To build SDL using the command line, use the CMake build script:
 
 ```bash
 mkdir build
 cd build
-../configure
-make
-sudo make install
-```
-
-CMake is also known to work, although it continues to be a work in progress:
-
-```bash
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make
-sudo make install
+cmake ..
+cmake --build .
+sudo cmake --install .
 ```
 
 
 You can also build SDL as a Universal library (a single binary for both
-64-bit Intel and ARM architectures), by using the build-scripts/clang-fat.sh
-script.
+64-bit Intel and ARM architectures):
 
 ```bash
 mkdir build
 cd build
-CC=$PWD/../build-scripts/clang-fat.sh ../configure
-make
-sudo make install
+cmake .. "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+cmake --build .
+sudo cmake --install .
 ```
 
-This script builds SDL with 10.7 ABI compatibility on 64-bit Intel and 11.0
-ABI compatibility on ARM64 architectures.  For best compatibility you
-should compile your application the same way.
-
-Please note that building SDL requires at least Xcode 4.6 and the 10.7 SDK.
+Please note that building SDL requires at least Xcode 6 and the 10.9 SDK.
 PowerPC support for macOS has been officially dropped as of SDL 2.0.2.
-32-bit Intel and macOS 10.6 runtime support has been officially dropped as
+32-bit Intel and macOS 10.8 runtime support has been officially dropped as
 of SDL 2.24.0.
 
 To use the library once it's built, you essential have two possibilities:
 use the traditional autoconf/automake/make method, or use Xcode.
 
 
-# Caveats for using SDL with Mac OS X
+# Caveats for using SDL with macOS
 
 If you register your own NSApplicationDelegate (using [NSApp setDelegate:]),
 SDL will not register its own. This means that SDL will not terminate using
@@ -93,11 +76,11 @@ NSApplicationDelegate implementation:
 
 # Using the Simple DirectMedia Layer with a traditional Makefile
 
-An existing autoconf/automake build system for your SDL app has good chances
-to work almost unchanged on macOS. However, to produce a "real" Mac binary
-that you can distribute to users, you need to put the generated binary into a
-so called "bundle", which is basically a fancy folder with a name like
-"MyCoolGame.app".
+An existing build system for your SDL app has good chances to work almost
+unchanged on macOS, as long as you link with the SDL framework. However,
+to produce a "real" Mac binary that you can distribute to users, you need
+to put the generated binary into a so called "bundle", which is basically
+a fancy folder with a name like "MyCoolGame.app".
 
 To get this build automatically, add something like the following rule to
 your Makefile.am:
@@ -140,24 +123,8 @@ But beware! That is only part of the story! With the above, you end up with
 a barebones .app bundle, which is double-clickable from the Finder. But
 there are some more things you should do before shipping your product...
 
-1. The bundle right now probably is dynamically linked against SDL. That
-   means that when you copy it to another computer, *it will not run*,
-   unless you also install SDL on that other computer. A good solution
-   for this dilemma is to static link against SDL. On OS X, you can
-   achieve that by linking against the libraries listed by
-
-   ```bash
-   sdl-config --static-libs
-   ```
-
-   instead of those listed by
-
-   ```bash
-   sdl-config --libs
-   ```
-
-   Depending on how exactly SDL is integrated into your build systems, the
-   way to achieve that varies, so I won't describe it here in detail
+1. You'll need to copy the SDL framework into the Contents/Frameworks
+   folder in your bundle, so it is included along with your application.
 
 2. Add an 'Info.plist' to your application. That is a special XML file which
    contains some meta-information about your application (like some copyright

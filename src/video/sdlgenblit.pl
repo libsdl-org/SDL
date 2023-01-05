@@ -110,11 +110,11 @@ sub open_file {
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_HAVE_BLIT_AUTO
 
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 
 __EOF__
 }
@@ -122,11 +122,10 @@ __EOF__
 sub close_file {
     my $name = shift;
     print FILE <<__EOF__;
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */
 
 #endif /* SDL_HAVE_BLIT_AUTO */
 
-/* vi: set ts=4 sw=4 expandtab: */
 __EOF__
     close FILE;
     if ( ! -f $name || system("cmp -s $name $name.new") != 0 ) {
@@ -594,7 +593,6 @@ sub output_copyfunc_h
 sub output_copyinc
 {
     print FILE <<__EOF__;
-#include "SDL_video.h"
 #include "SDL_blit.h"
 #include "SDL_blit_auto.h"
 

@@ -18,14 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
-#if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
-#define SDL_DISABLE_ANALYZE_MACROS 1
-#endif
-
-#include "../SDL_internal.h"
-
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -33,9 +28,7 @@
 #include "../core/android/SDL_android.h"
 #endif
 
-#include "SDL_stdinc.h"
-
-#if defined(__WIN32__) && (!defined(HAVE_SETENV) || !defined(HAVE_GETENV))
+#if (defined(__WIN32__) || defined(__WINGDK__)) && (!defined(HAVE_SETENV) || !defined(HAVE_GETENV))
 /* Note this isn't thread-safe! */
 static char *SDL_envmem = NULL; /* Ugh, memory leak */
 static size_t SDL_envmemlen = 0;
@@ -44,28 +37,26 @@ static size_t SDL_envmemlen = 0;
 /* Put a variable into the environment */
 /* Note: Name may not contain a '=' character. (Reference: http://www.unix.com/man-page/Linux/3/setenv/) */
 #if defined(HAVE_SETENV)
-int
-SDL_setenv(const char *name, const char *value, int overwrite)
+int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     /* Input validation */
-    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
-        return (-1);
+    if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
+        return -1;
     }
-    
+
     return setenv(name, value, overwrite);
 }
-#elif defined(__WIN32__)
-int
-SDL_setenv(const char *name, const char *value, int overwrite)
+#elif defined(__WIN32__) || defined(__WINGDK__)
+int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     /* Input validation */
-    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
-        return (-1);
+    if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
+        return -1;
     }
-    
+
     if (!overwrite) {
         if (GetEnvironmentVariableA(name, NULL, 0) > 0) {
-            return 0;  /* asked not to overwrite existing value. */
+            return 0; /* asked not to overwrite existing value. */
         }
     }
     if (!SetEnvironmentVariableA(name, *value ? value : NULL)) {
@@ -75,39 +66,37 @@ SDL_setenv(const char *name, const char *value, int overwrite)
 }
 /* We have a real environment table, but no real setenv? Fake it w/ putenv. */
 #elif (defined(HAVE_GETENV) && defined(HAVE_PUTENV) && !defined(HAVE_SETENV))
-int
-SDL_setenv(const char *name, const char *value, int overwrite)
+int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     size_t len;
     char *new_variable;
 
     /* Input validation */
-    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
-        return (-1);
+    if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
+        return -1;
     }
-    
+
     if (getenv(name) != NULL) {
         if (overwrite) {
             unsetenv(name);
         } else {
-            return 0;  /* leave the existing one there. */
+            return 0; /* leave the existing one there. */
         }
     }
 
     /* This leaks. Sorry. Get a better OS so we don't have to do this. */
     len = SDL_strlen(name) + SDL_strlen(value) + 2;
-    new_variable = (char *) SDL_malloc(len);
-    if (!new_variable) {
-        return (-1);
+    new_variable = (char *)SDL_malloc(len);
+    if (new_variable == NULL) {
+        return -1;
     }
 
     SDL_snprintf(new_variable, len, "%s=%s", name, value);
     return putenv(new_variable);
 }
 #else /* roll our own */
-static char **SDL_env = (char **) 0;
-int
-SDL_setenv(const char *name, const char *value, int overwrite)
+static char **SDL_env = (char **)0;
+int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     int added;
     size_t len, i;
@@ -115,8 +104,8 @@ SDL_setenv(const char *name, const char *value, int overwrite)
     char *new_variable;
 
     /* Input validation */
-    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
-        return (-1);
+    if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
+        return -1;
     }
 
     /* See if it already exists */
@@ -126,9 +115,9 @@ SDL_setenv(const char *name, const char *value, int overwrite)
 
     /* Allocate memory for the variable */
     len = SDL_strlen(name) + SDL_strlen(value) + 2;
-    new_variable = (char *) SDL_malloc(len);
-    if (!new_variable) {
-        return (-1);
+    new_variable = (char *)SDL_malloc(len);
+    if (new_variable == NULL) {
+        return -1;
     }
 
     SDL_snprintf(new_variable, len, "%s=%s", name, value);
@@ -160,13 +149,13 @@ SDL_setenv(const char *name, const char *value, int overwrite)
         if (new_env) {
             SDL_env = new_env;
             SDL_env[i++] = new_variable;
-            SDL_env[i++] = (char *) 0;
+            SDL_env[i++] = (char *)0;
             added = 1;
         } else {
             SDL_free(new_variable);
         }
     }
-    return (added ? 0 : -1);
+    return added ? 0 : -1;
 }
 #endif
 
@@ -181,36 +170,36 @@ SDL_getenv(const char *name)
 #endif
 
     /* Input validation */
-    if (!name || *name == '\0') {
+    if (name == NULL || *name == '\0') {
         return NULL;
     }
 
     return getenv(name);
 }
-#elif defined(__WIN32__)
+#elif defined(__WIN32__) || defined(__WINGDK__)
 char *
 SDL_getenv(const char *name)
 {
     size_t bufferlen;
 
     /* Input validation */
-    if (!name || *name == '\0') {
+    if (name == NULL || *name == '\0') {
         return NULL;
     }
-    
+
     bufferlen =
-        GetEnvironmentVariableA(name, SDL_envmem, (DWORD) SDL_envmemlen);
+        GetEnvironmentVariableA(name, SDL_envmem, (DWORD)SDL_envmemlen);
     if (bufferlen == 0) {
         return NULL;
     }
     if (bufferlen > SDL_envmemlen) {
-        char *newmem = (char *) SDL_realloc(SDL_envmem, bufferlen);
+        char *newmem = (char *)SDL_realloc(SDL_envmem, bufferlen);
         if (newmem == NULL) {
             return NULL;
         }
         SDL_envmem = newmem;
         SDL_envmemlen = bufferlen;
-        GetEnvironmentVariableA(name, SDL_envmem, (DWORD) SDL_envmemlen);
+        GetEnvironmentVariableA(name, SDL_envmem, (DWORD)SDL_envmemlen);
     }
     return SDL_envmem;
 }
@@ -222,14 +211,14 @@ SDL_getenv(const char *name)
     char *value;
 
     /* Input validation */
-    if (!name || *name == '\0') {
+    if (name == NULL || *name == '\0') {
         return NULL;
     }
-    
-    value = (char *) 0;
+
+    value = (char *)0;
     if (SDL_env) {
         len = SDL_strlen(name);
-        for (i = 0; SDL_env[i] && !value; ++i) {
+        for (i = 0; SDL_env[i] && value == NULL; ++i) {
             if ((SDL_strncmp(SDL_env[i], name, len) == 0) &&
                 (SDL_env[i][len] == '=')) {
                 value = &SDL_env[i][len + 1];
@@ -240,12 +229,10 @@ SDL_getenv(const char *name)
 }
 #endif
 
-
 #ifdef TEST_MAIN
 #include <stdio.h>
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char *value;
 
@@ -308,8 +295,6 @@ main(int argc, char *argv[])
     } else {
         printf("failed\n");
     }
-    return (0);
+    return 0;
 }
 #endif /* TEST_MAIN */
-
-/* vi: set ts=4 sw=4 expandtab: */

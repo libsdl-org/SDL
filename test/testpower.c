@@ -11,8 +11,8 @@
 */
 /* Simple test of power subsystem. */
 
-#include <stdio.h>
-#include "SDL.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 static void
 report_power(void)
@@ -54,14 +54,11 @@ report_power(void)
     if (seconds == -1) {
         SDL_Log("Time left: unknown\n");
     } else {
-        SDL_Log("Time left: %d minutes, %d seconds\n", (int) (seconds / 60),
-                (int) (seconds % 60));
+        SDL_Log("Time left: %d minutes, %d seconds\n", seconds / 60, seconds % 60);
     }
 }
 
-
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);

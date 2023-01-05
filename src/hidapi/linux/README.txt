@@ -39,7 +39,7 @@ Bugs (hidraw implementation only):
 -----------------------------------
 On Kernel versions < 2.6.34, if your device uses numbered reports, an extra
 byte will be returned at the beginning of all reports returned from read()
-for hidraw devices. This is worked around in the libary. No action should be
+for hidraw devices. This is worked around in the library. No action should be
 necessary in the client library.
 
 On Kernel versions < 2.6.35, reports will only be sent using a Set_Report

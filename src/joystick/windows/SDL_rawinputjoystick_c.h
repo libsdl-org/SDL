@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "../../core/windows/SDL_windows.h"
 
 /* Return true if the RawInput driver is enabled */
@@ -33,6 +33,3 @@ extern void RAWINPUT_UnregisterNotifications();
 
 /* Returns 0 if message was handled */
 extern LRESULT CALLBACK RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-
-/* vi: set ts=4 sw=4 expandtab: */

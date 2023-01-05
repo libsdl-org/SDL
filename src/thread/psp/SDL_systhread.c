@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_THREAD_PSP
 
@@ -27,17 +27,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "SDL_error.h"
-#include "SDL_thread.h"
 #include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
 #include <pspkerneltypes.h>
 #include <pspthreadman.h>
 
-
 static int ThreadEntry(SceSize args, void *argp)
 {
-    SDL_RunThread(*(SDL_Thread **) argp);
+    SDL_RunThread(*(SDL_Thread **)argp);
     return 0;
 }
 
@@ -53,8 +50,8 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
     }
 
     thread->handle = sceKernelCreateThread(thread->name, ThreadEntry,
-                           priority, thread->stacksize ? ((int) thread->stacksize) : 0x8000,
-                           PSP_THREAD_ATTR_VFPU, NULL);
+                                           priority, thread->stacksize ? ((int)thread->stacksize) : 0x8000,
+                                           PSP_THREAD_ATTR_VFPU, NULL);
     if (thread->handle < 0) {
         return SDL_SetError("sceKernelCreateThread() failed");
     }
@@ -70,7 +67,7 @@ void SDL_SYS_SetupThread(const char *name)
 
 SDL_threadID SDL_ThreadID(void)
 {
-    return (SDL_threadID) sceKernelGetThreadId();
+    return (SDL_threadID)sceKernelGetThreadId();
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)
@@ -104,8 +101,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         value = 50;
     }
 
-    return sceKernelChangeThreadPriority(sceKernelGetThreadId(),value);
-
+    return sceKernelChangeThreadPriority(sceKernelGetThreadId(), value);
 }
 
 #endif /* SDL_THREAD_PSP */

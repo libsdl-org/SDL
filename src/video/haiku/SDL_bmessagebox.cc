@@ -20,14 +20,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_HAIKU
 
-#include "SDL_messagebox.h"
 
 /* For application signature. */
-#include "../../main/haiku/SDL_BeApp.h"
+#include "../../core/haiku/SDL_BeApp.h"
 
 #include <Alert.h>
 #include <Application.h>
@@ -131,25 +130,20 @@ class HAIKU_SDL_MessageBox : public BAlert
 	void
 	ParseSdlMessageBoxData(const SDL_MessageBoxData *aMessageBoxData)
 	{
-		if (aMessageBoxData == NULL)
-		{
+		if (aMessageBoxData == NULL) {
 			SetTitle(HAIKU_SDL_DefTitle);
 			SetMessageText(HAIKU_SDL_DefMessage);
 			AddButton(HAIKU_SDL_DefButton);
 			return;
 		}
 
-		if (aMessageBoxData->numbuttons <= 0)
-		{
+		if (aMessageBoxData->numbuttons <= 0) {
 			AddButton(HAIKU_SDL_DefButton);
-		}
-		else
-		{
+		} else {
 			AddSdlButtons(aMessageBoxData->buttons, aMessageBoxData->numbuttons);
 		}
 
-		if (aMessageBoxData->colorScheme != NULL)
-		{
+		if (aMessageBoxData->colorScheme != NULL) {
 			fCustomColorScheme = true;
 			ApplyAndParseColorScheme(aMessageBoxData->colorScheme);
 		}
@@ -179,11 +173,9 @@ class HAIKU_SDL_MessageBox : public BAlert
 	                const SDL_MessageBoxColor *aTextColor,
 	                const SDL_MessageBoxColor *aSelectedColor)
 	{
-		if (fCustomColorScheme)
-		{
+		if (fCustomColorScheme) {
 			int32 countButtons = CountButtons();
-			for (int i = 0; i < countButtons; ++i)
-			{
+			for (int i = 0; i < countButtons; ++i) {
 				ButtonAt(i)->SetViewColor(ConvertColorType(aBorderColor));
 				ButtonAt(i)->SetLowColor(ConvertColorType(aBackgroundColor));
 
@@ -218,15 +210,12 @@ class HAIKU_SDL_MessageBox : public BAlert
 		BString message = aMessage;
 		int32 length = message.CountChars();
 
-		for (int i = 0, c = 0; i < length; ++i)
-		{
+		for (int i = 0, c = 0; i < length; ++i) {
 			c++;
-			if (*(message.CharAt(i)) == '\n')
-			{
+			if (*(message.CharAt(i)) == '\n') {
 				c = 0;
 			}
-			if (c > final)
-			{
+			if (c > final) {
 				final = c;
 			}
 		}
@@ -238,20 +227,17 @@ class HAIKU_SDL_MessageBox : public BAlert
 	SetMessageText(const char *aMessage)
 	{
 		fThereIsLongLine = CheckLongLines(aMessage);
-		if (fThereIsLongLine)
-		{
+		if (fThereIsLongLine) {
 			fMessageBoxTextView->SetWordWrap(true);
 		}
 
 		rgb_color textColor = ui_color(B_PANEL_TEXT_COLOR);
-		if (fCustomColorScheme)
-		{
+		if (fCustomColorScheme) {
 			textColor = fTextColor;
 		}
 
 		/*
-		if (fNoTitledWindow)
-		{
+		if (fNoTitledWindow) {
 			fMessageBoxTextView->SetFontAndColor(be_bold_font);
 			fMessageBoxTextView->Insert(fTitle);
 			fMessageBoxTextView->Insert("\n\n");
@@ -269,16 +255,14 @@ class HAIKU_SDL_MessageBox : public BAlert
 	void
 	AddSdlButtons(const SDL_MessageBoxButtonData *aButtons, int aNumButtons)
 	{
-		for (int i = 0; i < aNumButtons; ++i)
-		{
+		for (int i = 0; i < aNumButtons; ++i) {
 			fButtons.push_back(&aButtons[i]);
 		}
 
 		std::sort(fButtons.begin(), fButtons.end(), &HAIKU_SDL_MessageBox::SortButtonsPredicate);
 
 		size_t countButtons = fButtons.size();
-		for (size_t i = 0; i < countButtons; ++i)
-		{
+		for (size_t i = 0; i < countButtons; ++i) {
 			switch (fButtons[i]->flags)
 			{
 				case SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT:
@@ -309,7 +293,7 @@ public:
 		  fComputedMessageBoxWidth(0.0f),
 		  fCloseButton(G_CLOSE_BUTTON_ID), fDefaultButton(G_DEFAULT_BUTTON_ID),
 		  fCustomColorScheme(false), fThereIsLongLine(false),
-		  HAIKU_SDL_DefTitle("SDL2 MessageBox"),
+		  HAIKU_SDL_DefTitle("SDL MessageBox"),
 		  HAIKU_SDL_DefMessage("Some information has been lost."),
 		  HAIKU_SDL_DefButton("OK")
 	{
@@ -342,12 +326,9 @@ protected:
 	virtual void
 	FrameResized(float aNewWidth, float aNewHeight)
 	{
-		if (fComputedMessageBoxWidth > aNewWidth)
-		{
+		if (fComputedMessageBoxWidth > aNewWidth) {
 			ResizeTo(fComputedMessageBoxWidth, aNewHeight);
-		}
-		else
-		{
+		} else {
 			BAlert::FrameResized(aNewWidth, aNewHeight);
 		}
 	}
@@ -375,38 +356,32 @@ HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 	// "You need a valid BApplication object before interacting with the app_server."
 	// "2 BApplication objects were created. Only one is allowed."
 	BApplication *application = NULL;
-	if (be_app == NULL)
-	{
+	if (be_app == NULL) {
 		application = new(std::nothrow) BApplication(signature);
-		if (application == NULL)
-		{
+		if (application == NULL) {
 			return SDL_SetError("Cannot create the BApplication object. Lack of memory?");
 		}
 	}
 
 	HAIKU_SDL_MessageBox *SDL_MessageBox = new(std::nothrow) HAIKU_SDL_MessageBox(messageboxdata);
-	if (SDL_MessageBox == NULL)
-	{
+	if (SDL_MessageBox == NULL) {
 		return SDL_SetError("Cannot create the HAIKU_SDL_MessageBox (BAlert inheritor) object. Lack of memory?");
 	}
 	const int closeButton = SDL_MessageBox->GetCloseButtonId();
 	int pushedButton = SDL_MessageBox->Go();
 
 	// The close button is equivalent to pressing Escape.
-	if (closeButton != G_CLOSE_BUTTON_ID && pushedButton == G_CLOSE_BUTTON_ID)
-	{
+	if (closeButton != G_CLOSE_BUTTON_ID && pushedButton == G_CLOSE_BUTTON_ID) {
 		pushedButton = closeButton;
 	}
 
 	// It's deleted by itself after the "Go()" method was executed.
 	/*
-	if (messageBox != NULL)
-	{
+	if (messageBox != NULL) {
 		delete messageBox;
 	}
 	*/
-	if (application != NULL)
-	{
+	if (application != NULL) {
 		delete application;
 	}
 
@@ -421,5 +396,3 @@ HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

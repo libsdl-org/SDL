@@ -6,14 +6,11 @@ http://trederia.blogspot.de/2017/03/building-sdl2-for-android-with-visual.html
 
 The rest of this README covers the Android gradle style build process.
 
-If you are using the older ant build process, it is no longer officially
-supported, but you can use the "android-project-ant" directory as a template.
-
 
 Requirements
 ================================================================================
 
-Android SDK (version 26 or later)
+Android SDK (version 31 or later)
 https://developer.android.com/sdk/index.html
 
 Android NDK r15c or later
@@ -86,8 +83,8 @@ If you already have a project that uses CMake, the instructions change somewhat:
 2. Edit "<project>/app/build.gradle" to comment out or remove sections containing ndk-build
    and uncomment the cmake sections. Add arguments to the CMake invocation as needed.
 3. Edit "<project>/app/jni/CMakeLists.txt" to include your project (it defaults to
-   adding the "src" subdirectory). Note that you'll have SDL2, SDL2main and SDL2-static
-   as targets in your project, so you should have "target_link_libraries(yourgame SDL2 SDL2main)"
+   adding the "src" subdirectory). Note that you'll have SDL3 and SDL3-static
+   as targets in your project, so you should have "target_link_libraries(yourgame SDL3)"
    in your CMakeLists.txt file. Also be aware that you should use add_library() instead of
    add_executable() for the target containing your "main" function.
 
@@ -369,7 +366,7 @@ Valgrind has support for Android out of the box, just grab code using:
 
 ... and follow the instructions in the file README.android to build it.
 
-One thing I needed to do on Mac OS X was change the path to the toolchain,
+One thing I needed to do on macOS was change the path to the toolchain,
 and add ranlib to the environment variables:
 export RANLIB=$NDKROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-ranlib
 
@@ -414,10 +411,10 @@ Graphics debugging
 ================================================================================
 
 If you are developing on a compatible Tegra-based tablet, NVidia provides
-Tegra Graphics Debugger at their website. Because SDL2 dynamically loads EGL
+Tegra Graphics Debugger at their website. Because SDL3 dynamically loads EGL
 and GLES libraries, you must follow their instructions for installing the
 interposer library on a rooted device. The non-rooted instructions are not
-compatible with applications that use SDL2 for video.
+compatible with applications that use SDL3 for video.
 
 The Tegra Graphics Debugger is available from NVidia here:
 https://developer.nvidia.com/tegra-graphics-debugger

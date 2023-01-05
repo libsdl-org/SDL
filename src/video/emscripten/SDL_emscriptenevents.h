@@ -19,7 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-
 #ifndef SDL_emscriptenevents_h_
 #define SDL_emscriptenevents_h_
 
@@ -35,6 +34,3 @@ extern EM_BOOL
 Emscripten_HandleCanvasResize(int eventType, const void *reserved, void *userData);
 
 #endif /* SDL_emscriptenevents_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
-

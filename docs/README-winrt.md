@@ -5,47 +5,21 @@ This port allows SDL applications to run on Microsoft's platforms that require
 use of "Windows Runtime", aka. "WinRT", APIs.  Microsoft may, in some cases,
 refer to them as either "Windows Store", or for Windows 10, "UWP" apps.
 
-Some of the operating systems that include WinRT, are:
-
-* Windows 10, via its Universal Windows Platform (UWP) APIs
-* Windows 8.x
-* Windows RT 8.x (aka. Windows 8.x for ARM processors)
-* Windows Phone 8.x
+In the past, SDL has supported Windows RT 8.x, Windows Phone, etc, but in
+modern times this port is focused on UWP apps, which run on Windows 10,
+and modern Xbox consoles.
 
 
 Requirements
 ------------
 
-* Microsoft Visual C++ (aka Visual Studio), either 2017, 2015, 2013, or 2012
+* Microsoft Visual C++ (aka Visual Studio) 2019.
   - Free, "Community" or "Express" editions may be used, so long as they
-    include  support for either "Windows Store" or "Windows Phone" apps.
+    include support for either "Windows Store" or "Windows Phone" apps.
     "Express" versions marked as supporting "Windows Desktop" development
     typically do not include support for creating WinRT apps, to note.
     (The "Community" editions of Visual C++ do, however, support both
     desktop/Win32 and WinRT development).
-  - Visual Studio 2017 can be used, however it is recommended that you install
-    the Visual C++ 2015 build tools.  These build tools can be installed
-    using VS 2017's installer.  Be sure to also install the workload for
-    "Universal Windows Platform development", its optional component, the
-    "C++ Universal Windows Platform tools", and for UWP / Windows 10
-    development, the "Windows 10 SDK (10.0.10240.0)".  Please note that
-    targeting UWP / Windows 10 apps from development machine(s) running
-    earlier versions of Windows, such as Windows 7, is not always supported
-    by Visual Studio, and you may get error(s) when attempting to do so.
-  - Visual C++ 2012 can only build apps that target versions 8.0 of Windows,
-    or  Windows Phone.  8.0-targeted apps will run on devices running 8.1
-    editions of Windows, however they will not be able to take advantage of
-    8.1-specific features.
-  - Visual C++ 2013 cannot create app projects that target Windows 8.0.
-    Visual C++ 2013 Update 4, can create app projects for Windows Phone 8.0,
-    Windows Phone 8.1, and Windows 8.1, but not Windows 8.0.  An optional
-    Visual Studio add-in, "Tools for Maintaining Store apps for Windows 8",
-    allows Visual C++ 2013 to load and build Windows 8.0 projects that were
-    created with Visual C++ 2012, so long as Visual C++ 2012 is installed
-    on the same machine.  More details on targeting different versions of
-    Windows can found at the following web pages:
-      - [Develop apps by using Visual Studio 2013](http://msdn.microsoft.com/en-us/library/windows/apps/br211384.aspx)
-      - [To add the Tools for Maintaining Store apps for Windows 8](http://msdn.microsoft.com/en-us/library/windows/apps/dn263114.aspx#AddMaintenanceTools)
 * A valid Microsoft account - This requirement is not imposed by SDL, but
   rather by Microsoft's Visual C++ toolchain.  This is required to launch or 
   debug apps.
@@ -57,7 +31,7 @@ Status
 Here is a rough list of what works, and what doesn't:
 
 * What works:
-  * compilation via Visual C++ 2012 through 2015
+  * compilation via Visual C++ 2019.
   * compile-time platform detection for SDL programs.  The C/C++ #define,
     `__WINRT__`, will be set to 1 (by SDL) when compiling for WinRT.
   * GPU-accelerated 2D rendering, via SDL_Renderer.
@@ -78,7 +52,7 @@ Here is a rough list of what works, and what doesn't:
     anything outside of the app is not supported.
   * system path retrieval via SDL's filesystem APIs
   * game controllers.  Support is provided via the SDL_Joystick and
-    SDL_GameController APIs, and is backed by Microsoft's XInput API.  Please
+    SDL_Gamepad APIs, and is backed by Microsoft's XInput API.  Please
     note, however, that Windows limits game-controller support in UWP apps to,
     "Xbox compatible controllers" (many controllers that work in Win32 apps,
     do not work in UWP, due to restrictions in UWP itself.) 
@@ -97,10 +71,9 @@ Here is a rough list of what works, and what doesn't:
     well as many keys with documented hardware scancodes.  Converting
     SDL_Scancodes to or from SDL_Keycodes may not work, due to missing APIs
     (MapVirtualKey()) in Microsoft's Windows Store / UWP APIs.
-  * SDLmain.  WinRT uses a different signature for each app's main() function.
-    SDL-based apps that use this port must compile in SDL_winrt_main_NonXAML.cpp
-    (in `SDL\src\main\winrt\`) directly in order for their C-style main()
-    functions to be called.
+  * SDL_main.  WinRT uses a different signature for each app's main() function
+    and requires it to be implemented in C++, so SDL_main.h must be #include'd
+    in a C++ source file, that also must be compiled with /ZW.
 
 * What doesn't work:
   * compilation with anything other than Visual C++
@@ -234,13 +207,8 @@ To set this up for SDL/WinRT, you'll need to run through the following steps:
    "Solution Explorer")
 2. right click on your app's solution.
 3. navigate to "Add", then to "Existing Project..."
-4. find SDL/WinRT's Visual C++ project file and open it.  Different project
-   files exist for different WinRT platforms.  All of them are in SDL's
-   source distribution, in the following directories:
-    * `VisualC-WinRT/UWP_VS2015/`        - for Windows 10 / UWP apps
-    * `VisualC-WinRT/WinPhone81_VS2013/` - for Windows Phone 8.1 apps
-    * `VisualC-WinRT/WinRT80_VS2012/`    - for Windows 8.0 apps
-    * `VisualC-WinRT/WinRT81_VS2013/`    - for Windows 8.1 apps
+4. find SDL/WinRT's Visual C++ project file and open it, in the `VisualC-WinRT`
+   directory.
 5. once the project has been added, right-click on your app's project and
    select, "References..."
 6. click on the button titled, "Add New Reference..."
@@ -271,7 +239,9 @@ To change these settings:
 2. choose "Properties"
 3. in the drop-down box next to "Configuration", choose, "All Configurations"
 4. in the drop-down box next to "Platform", choose, "All Platforms"
-5. in the left-hand list, expand the "C/C++" section
+5. in the left-hand list, expand the "C/C++" section  
+   **Note:** If you don't see this section, you may have to add a .c or .cpp
+   Source file to the Project first.
 6. select "General"
 7. edit the "Additional Include Directories" setting, and add a path to SDL's
    "include" directory
@@ -302,23 +272,28 @@ To include these files for C/C++ projects:
    navigate to "Add", then choose "Existing Item...".
 2. navigate to the directory containing SDL's source code, then into its
    subdirectory, 'src/main/winrt/'.  Select, then add, the following files:
-   - `SDL_winrt_main_NonXAML.cpp`
-   - `SDL2-WinRTResources.rc`
-   - `SDL2-WinRTResource_BlankCursor.cur`
-3. right-click on the file `SDL_winrt_main_NonXAML.cpp` (as listed in your
-   project), then click on "Properties...".
-4. in the drop-down box next to "Configuration", choose, "All Configurations"
-5. in the drop-down box next to "Platform", choose, "All Platforms"
-6. in the left-hand list, click on "C/C++"
-7. change the setting for "Consume Windows Runtime Extension" to "Yes (/ZW)".
-8. click the OK button.  This will close the dialog.
+   - `SDL3-WinRTResources.rc`
+   - `SDL3-WinRTResource_BlankCursor.cur`
+3. For the next step you need a C++ source file.
+   - If your standard main() function is implemented in a **C++** source file,
+     use that file.
+   - If your standard main() function is implemented in a **plain C** source file,
+     create an empty .cpp source file (e.g. `main.cpp`) that only contains the line
+     `#include <SDL3/SDL_main.h>` and use that file instead.
+4. Right click on the C++ source file from step 3 (as listed in your project),
+   then click on "Properties...".
+5. in the drop-down box next to "Configuration", choose, "All Configurations"
+6. in the drop-down box next to "Platform", choose, "All Platforms"
+7. in the left-hand list, click on "C/C++"
+8. change the setting for "Consume Windows Runtime Extension" to "Yes (/ZW)".
+9. click the OK button.  This will close the dialog.
 
 **NOTE: C++/CX compilation is currently required in at least one file of your 
 app's project.  This is to make sure that Visual C++'s linker builds a 'Windows 
 Metadata' file (.winmd) for your app.  Not doing so can lead to build errors.**
 
-For non-C++ projects, you will need to call SDL_WinRTRunApp from your language's
-main function, and generate SDL2-WinRTResources.res manually by using `rc` via
+For non-C++ projects, you will need to call SDL_RunApp from your language's
+main function, and generate SDL3-WinRTResources.res manually by using `rc` via
 the Developer Command Prompt and including it as a <Win32Resource> within the
 first <PropertyGroup> block in your Visual Studio project file.
 
@@ -353,7 +328,8 @@ your project, and open the file in Visual C++'s text editor.
 7. Copy and paste the following code into the new file, then save it.
 
 ```c
-#include <SDL.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
     
 int main(int argc, char **argv)
 {

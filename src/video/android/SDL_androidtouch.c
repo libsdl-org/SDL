@@ -18,26 +18,24 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_ANDROID
 
 #include <android/log.h>
 
-#include "SDL_hints.h"
-#include "SDL_events.h"
 #include "SDL_androidtouch.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../core/android/SDL_android.h"
 
 #define ACTION_DOWN 0
-#define ACTION_UP 1
+#define ACTION_UP   1
 #define ACTION_MOVE 2
 /* #define ACTION_CANCEL 3 */
 /* #define ACTION_OUTSIDE 4 */
 #define ACTION_POINTER_DOWN 5
-#define ACTION_POINTER_UP 6
+#define ACTION_POINTER_UP   6
 
 void Android_InitTouch(void)
 {
@@ -54,7 +52,7 @@ void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_fin
     SDL_TouchID touchDeviceId = 0;
     SDL_FingerID fingerId = 0;
 
-    if (!window) {
+    if (window == NULL) {
         return;
     }
 
@@ -65,25 +63,23 @@ void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_fin
 
     fingerId = (SDL_FingerID)pointer_finger_id_in;
     switch (action) {
-        case ACTION_DOWN:
-        case ACTION_POINTER_DOWN:
-            SDL_SendTouch(touchDeviceId, fingerId, window, SDL_TRUE, x, y, p);
-            break;
+    case ACTION_DOWN:
+    case ACTION_POINTER_DOWN:
+        SDL_SendTouch(0, touchDeviceId, fingerId, window, SDL_TRUE, x, y, p);
+        break;
 
-        case ACTION_MOVE:
-            SDL_SendTouchMotion(touchDeviceId, fingerId, window, x, y, p);
-            break;
+    case ACTION_MOVE:
+        SDL_SendTouchMotion(0, touchDeviceId, fingerId, window, x, y, p);
+        break;
 
-        case ACTION_UP:
-        case ACTION_POINTER_UP:
-            SDL_SendTouch(touchDeviceId, fingerId, window, SDL_FALSE, x, y, p);
-            break;
+    case ACTION_UP:
+    case ACTION_POINTER_UP:
+        SDL_SendTouch(0, touchDeviceId, fingerId, window, SDL_FALSE, x, y, p);
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */

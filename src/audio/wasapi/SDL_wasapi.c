@@ -18,25 +18,23 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_AUDIO_DRIVER_WASAPI
 
 #include "../../core/windows/SDL_windows.h"
-#include "SDL_audio.h"
-#include "SDL_timer.h"
+#include "../../core/windows/SDL_immdevice.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 
 #define COBJMACROS
-#include <mmdeviceapi.h>
 #include <audioclient.h>
 
 #include "SDL_wasapi.h"
 
 /* These constants aren't available in older SDKs */
 #ifndef AUDCLNT_STREAMFLAGS_RATEADJUST
-#define AUDCLNT_STREAMFLAGS_RATEADJUST  0x00100000
+#define AUDCLNT_STREAMFLAGS_RATEADJUST 0x00100000
 #endif
 #ifndef AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY
 #define AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY 0x08000000
@@ -45,118 +43,16 @@
 #define AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM 0x80000000
 #endif
 
-/* these increment as default devices change. Opened default devices pick up changes in their threads. */
-SDL_atomic_t WASAPI_DefaultPlaybackGeneration;
-SDL_atomic_t WASAPI_DefaultCaptureGeneration;
-
-/* This is a list of device id strings we have inflight, so we have consistent pointers to the same device. */
-typedef struct DevIdList
-{
-    WCHAR *str;
-    struct DevIdList *next;
-} DevIdList;
-
-static DevIdList *deviceid_list = NULL;
-
 /* Some GUIDs we need to know without linking to libraries that aren't available before Vista. */
-static const IID SDL_IID_IAudioRenderClient = { 0xf294acfc, 0x3146, 0x4483,{ 0xa7, 0xbf, 0xad, 0xdc, 0xa7, 0xc2, 0x60, 0xe2 } };
-static const IID SDL_IID_IAudioCaptureClient = { 0xc8adbd64, 0xe71e, 0x48a0,{ 0xa4, 0xde, 0x18, 0x5c, 0x39, 0x5c, 0xd3, 0x17 } };
-static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
-static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
+static const IID SDL_IID_IAudioRenderClient = { 0xf294acfc, 0x3146, 0x4483, { 0xa7, 0xbf, 0xad, 0xdc, 0xa7, 0xc2, 0x60, 0xe2 } };
+static const IID SDL_IID_IAudioCaptureClient = { 0xc8adbd64, 0xe71e, 0x48a0, { 0xa4, 0xde, 0x18, 0x5c, 0x39, 0x5c, 0xd3, 0x17 } };
 
-
-void
-WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
-{
-    DevIdList *i;
-    DevIdList *next;
-    DevIdList *prev = NULL;
-    for (i = deviceid_list; i; i = next) {
-        next = i->next;
-        if (SDL_wcscmp(i->str, devid) == 0) {
-            if (prev) {
-                prev->next = next;
-            } else {
-                deviceid_list = next;
-            }
-            SDL_RemoveAudioDevice(iscapture, i->str);
-            SDL_free(i->str);
-            SDL_free(i);
-        }
-        prev = i;
-    }
-}
-
-static SDL_AudioFormat
-WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
-{
-    if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
-        return AUDIO_F32SYS;
-    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
-        return AUDIO_S16SYS;
-    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
-        return AUDIO_S32SYS;
-    } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
-        const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *) waveformat;
-        if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return AUDIO_F32SYS;
-        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
-            return AUDIO_S16SYS;
-        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return AUDIO_S32SYS;
-        }
-    }
-    return 0;
-}
-
-void
-WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid)
-{
-    DevIdList *devidlist;
-    SDL_AudioSpec spec;
-
-    /* You can have multiple endpoints on a device that are mutually exclusive ("Speakers" vs "Line Out" or whatever).
-       In a perfect world, things that are unplugged won't be in this collection. The only gotcha is probably for
-       phones and tablets, where you might have an internal speaker and a headphone jack and expect both to be
-       available and switch automatically. (!!! FIXME...?) */
-
-    /* see if we already have this one. */
-    for (devidlist = deviceid_list; devidlist; devidlist = devidlist->next) {
-        if (SDL_wcscmp(devidlist->str, devid) == 0) {
-            return;  /* we already have this. */
-        }
-    }
-
-    devidlist = (DevIdList *) SDL_malloc(sizeof (*devidlist));
-    if (!devidlist) {
-        return;  /* oh well. */
-    }
-
-    devid = SDL_wcsdup(devid);
-    if (!devid) {
-        SDL_free(devidlist);
-        return;  /* oh well. */
-    }
-
-    devidlist->str = (WCHAR *) devid;
-    devidlist->next = deviceid_list;
-    deviceid_list = devidlist;
-
-    SDL_zero(spec);
-    spec.channels = (Uint8)fmt->Format.nChannels;
-    spec.freq = fmt->Format.nSamplesPerSec;
-    spec.format = WaveFormatToSDLFormat((WAVEFORMATEX *) fmt);
-    SDL_AddAudioDevice(iscapture, devname, &spec, (void *) devid);
-}
-
-static void
-WASAPI_DetectDevices(void)
+static void WASAPI_DetectDevices(void)
 {
     WASAPI_EnumerateEndpoints();
 }
 
-static SDL_INLINE SDL_bool
-WasapiFailed(_THIS, const HRESULT err)
+static SDL_INLINE SDL_bool WasapiFailed(_THIS, const HRESULT err)
 {
     if (err == S_OK) {
         return SDL_FALSE;
@@ -173,49 +69,48 @@ WasapiFailed(_THIS, const HRESULT err)
     return SDL_TRUE;
 }
 
-static int
-UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
+static int UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
 {
     /* Since WASAPI requires us to handle all audio conversion, and our
        device format might have changed, we might have to add/remove/change
        the audio stream that the higher level uses to convert data, so
        SDL keeps firing the callback as if nothing happened here. */
 
-    if ( (this->callbackspec.channels == this->spec.channels) &&
-         (this->callbackspec.format == this->spec.format) &&
-         (this->callbackspec.freq == this->spec.freq) &&
-         (this->callbackspec.samples == this->spec.samples) ) {
+    if ((this->callbackspec.channels == this->spec.channels) &&
+        (this->callbackspec.format == this->spec.format) &&
+        (this->callbackspec.freq == this->spec.freq) &&
+        (this->callbackspec.samples == this->spec.samples)) {
         /* no need to buffer/convert in an AudioStream! */
-        SDL_FreeAudioStream(this->stream);
+        SDL_DestroyAudioStream(this->stream);
         this->stream = NULL;
-    } else if ( (oldspec->channels == this->spec.channels) &&
-         (oldspec->format == this->spec.format) &&
-         (oldspec->freq == this->spec.freq) ) {
+    } else if ((oldspec->channels == this->spec.channels) &&
+               (oldspec->format == this->spec.format) &&
+               (oldspec->freq == this->spec.freq)) {
         /* The existing audio stream is okay to keep using. */
     } else {
         /* replace the audiostream for new format */
-        SDL_FreeAudioStream(this->stream);
+        SDL_DestroyAudioStream(this->stream);
         if (this->iscapture) {
-            this->stream = SDL_NewAudioStream(this->spec.format,
-                                this->spec.channels, this->spec.freq,
-                                this->callbackspec.format,
-                                this->callbackspec.channels,
-                                this->callbackspec.freq);
+            this->stream = SDL_CreateAudioStream(this->spec.format,
+                                              this->spec.channels, this->spec.freq,
+                                              this->callbackspec.format,
+                                              this->callbackspec.channels,
+                                              this->callbackspec.freq);
         } else {
-            this->stream = SDL_NewAudioStream(this->callbackspec.format,
-                                this->callbackspec.channels,
-                                this->callbackspec.freq, this->spec.format,
-                                this->spec.channels, this->spec.freq);
+            this->stream = SDL_CreateAudioStream(this->callbackspec.format,
+                                              this->callbackspec.channels,
+                                              this->callbackspec.freq, this->spec.format,
+                                              this->spec.channels, this->spec.freq);
         }
 
         if (!this->stream) {
-            return -1; /* SDL_NewAudioStream should have called SDL_SetError. */
+            return -1; /* SDL_CreateAudioStream should have called SDL_SetError. */
         }
     }
 
     /* make sure our scratch buffer can cover the new device spec. */
     if (this->spec.size > this->work_buffer_len) {
-        Uint8 *ptr = (Uint8 *) SDL_realloc(this->work_buffer, this->spec.size);
+        Uint8 *ptr = (Uint8 *)SDL_realloc(this->work_buffer, this->spec.size);
         if (ptr == NULL) {
             return SDL_OutOfMemory();
         }
@@ -226,16 +121,14 @@ UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
     return 0;
 }
 
-
 static void ReleaseWasapiDevice(_THIS);
 
-static SDL_bool
-RecoverWasapiDevice(_THIS)
+static SDL_bool RecoverWasapiDevice(_THIS)
 {
-    ReleaseWasapiDevice(this);  /* dump the lost device's handles. */
+    ReleaseWasapiDevice(this); /* dump the lost device's handles. */
 
     if (this->hidden->default_device_generation) {
-        this->hidden->default_device_generation = SDL_AtomicGet(this->iscapture ?  &WASAPI_DefaultCaptureGeneration : &WASAPI_DefaultPlaybackGeneration);
+        this->hidden->default_device_generation = SDL_AtomicGet(this->iscapture ? &SDL_IMMDevice_DefaultCaptureGeneration : &SDL_IMMDevice_DefaultPlaybackGeneration);
     }
 
     /* this can fail for lots of reasons, but the most likely is we had a
@@ -250,26 +143,25 @@ RecoverWasapiDevice(_THIS)
 
     this->hidden->device_lost = SDL_FALSE;
 
-    return SDL_TRUE;  /* okay, carry on with new device details! */
+    return SDL_TRUE; /* okay, carry on with new device details! */
 }
 
-static SDL_bool
-RecoverWasapiIfLost(_THIS)
+static SDL_bool RecoverWasapiIfLost(_THIS)
 {
     const int generation = this->hidden->default_device_generation;
     SDL_bool lost = this->hidden->device_lost;
 
     if (!SDL_AtomicGet(&this->enabled)) {
-        return SDL_FALSE;  /* already failed. */
+        return SDL_FALSE; /* already failed. */
     }
 
     if (!this->hidden->client) {
-        return SDL_TRUE;  /* still waiting for activation. */
+        return SDL_TRUE; /* still waiting for activation. */
     }
 
     if (!lost && (generation > 0)) { /* is a default device? */
-        const int newgen = SDL_AtomicGet(this->iscapture ? &WASAPI_DefaultCaptureGeneration : &WASAPI_DefaultPlaybackGeneration);
-        if (generation != newgen) {  /* the desired default device was changed, jump over to it. */
+        const int newgen = SDL_AtomicGet(this->iscapture ? &SDL_IMMDevice_DefaultCaptureGeneration : &SDL_IMMDevice_DefaultPlaybackGeneration);
+        if (generation != newgen) { /* the desired default device was changed, jump over to it. */
             lost = SDL_TRUE;
         }
     }
@@ -277,33 +169,30 @@ RecoverWasapiIfLost(_THIS)
     return lost ? RecoverWasapiDevice(this) : SDL_TRUE;
 }
 
-static Uint8 *
-WASAPI_GetDeviceBuf(_THIS)
+static Uint8 *WASAPI_GetDeviceBuf(_THIS)
 {
     /* get an endpoint buffer from WASAPI. */
     BYTE *buffer = NULL;
 
     while (RecoverWasapiIfLost(this) && this->hidden->render) {
         if (!WasapiFailed(this, IAudioRenderClient_GetBuffer(this->hidden->render, this->spec.samples, &buffer))) {
-            return (Uint8 *) buffer;
+            return (Uint8 *)buffer;
         }
         SDL_assert(buffer == NULL);
     }
 
-    return (Uint8 *) buffer;
+    return (Uint8 *)buffer;
 }
 
-static void
-WASAPI_PlayDevice(_THIS)
+static void WASAPI_PlayDevice(_THIS)
 {
-    if (this->hidden->render != NULL) {  /* definitely activated? */
+    if (this->hidden->render != NULL) { /* definitely activated? */
         /* WasapiFailed() will mark the device for reacquisition or removal elsewhere. */
         WasapiFailed(this, IAudioRenderClient_ReleaseBuffer(this->hidden->render, this->spec.samples, 0));
     }
 }
 
-static void
-WASAPI_WaitDevice(_THIS)
+static void WASAPI_WaitDevice(_THIS)
 {
     while (RecoverWasapiIfLost(this) && this->hidden->client && this->hidden->event) {
         DWORD waitResult = WaitForSingleObjectEx(this->hidden->event, 200, FALSE);
@@ -330,14 +219,13 @@ WASAPI_WaitDevice(_THIS)
     }
 }
 
-static int
-WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     SDL_AudioStream *stream = this->hidden->capturestream;
-    const int avail = SDL_AudioStreamAvailable(stream);
+    const int avail = SDL_GetAudioStreamAvailable(stream);
     if (avail > 0) {
         const int cpy = SDL_min(buflen, avail);
-        SDL_AudioStreamGet(stream, buffer, cpy);
+        SDL_GetAudioStreamData(stream, buffer, cpy);
         return cpy;
     }
 
@@ -363,7 +251,7 @@ WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
         if ((ret == AUDCLNT_S_BUFFER_EMPTY) || !frames) {
             WASAPI_WaitDevice(this);
         } else if (ret == S_OK) {
-            const int total = ((int) frames) * this->hidden->framesize;
+            const int total = ((int)frames) * this->hidden->framesize;
             const int cpy = SDL_min(buflen, total);
             const int leftover = total - cpy;
             const SDL_bool silent = (flags & AUDCLNT_BUFFERFLAGS_SILENT) ? SDL_TRUE : SDL_FALSE;
@@ -373,15 +261,15 @@ WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
             } else {
                 SDL_memcpy(buffer, ptr, cpy);
             }
-            
+
             if (leftover > 0) {
                 ptr += cpy;
                 if (silent) {
-                    SDL_memset(ptr, this->spec.silence, leftover);  /* I guess this is safe? */
+                    SDL_memset(ptr, this->spec.silence, leftover); /* I guess this is safe? */
                 }
 
-                if (SDL_AudioStreamPut(stream, ptr, leftover) == -1) {
-                    return -1;  /* uhoh, out of memory, etc. Kill device.  :( */
+                if (SDL_PutAudioStreamData(stream, ptr, leftover) == -1) {
+                    return -1; /* uhoh, out of memory, etc. Kill device.  :( */
                 }
             }
 
@@ -392,36 +280,34 @@ WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
         }
     }
 
-    return -1;  /* unrecoverable error. */
+    return -1; /* unrecoverable error. */
 }
 
-static void
-WASAPI_FlushCapture(_THIS)
+static void WASAPI_FlushCapture(_THIS)
 {
     BYTE *ptr = NULL;
     UINT32 frames = 0;
     DWORD flags = 0;
 
     if (!this->hidden->capture) {
-        return;  /* not activated yet? */
+        return; /* not activated yet? */
     }
 
     /* just read until we stop getting packets, throwing them away. */
     while (SDL_TRUE) {
         const HRESULT ret = IAudioCaptureClient_GetBuffer(this->hidden->capture, &ptr, &frames, &flags, NULL, NULL);
         if (ret == AUDCLNT_S_BUFFER_EMPTY) {
-            break;  /* no more buffered data; we're done. */
+            break; /* no more buffered data; we're done. */
         } else if (WasapiFailed(this, ret)) {
-            break;  /* failed for some other reason, abort. */
+            break; /* failed for some other reason, abort. */
         } else if (WasapiFailed(this, IAudioCaptureClient_ReleaseBuffer(this->hidden->capture, frames))) {
-            break;  /* something broke. */
+            break; /* something broke. */
         }
     }
-    SDL_AudioStreamClear(this->hidden->capturestream);
+    SDL_ClearAudioStream(this->hidden->capturestream);
 }
 
-static void
-ReleaseWasapiDevice(_THIS)
+static void ReleaseWasapiDevice(_THIS)
 {
     if (this->hidden->client) {
         IAudioClient_Stop(this->hidden->client);
@@ -445,7 +331,7 @@ ReleaseWasapiDevice(_THIS)
     }
 
     if (this->hidden->capturestream) {
-        SDL_FreeAudioStream(this->hidden->capturestream);
+        SDL_DestroyAudioStream(this->hidden->capturestream);
         this->hidden->capturestream = NULL;
     }
 
@@ -460,20 +346,17 @@ ReleaseWasapiDevice(_THIS)
     }
 }
 
-static void
-WASAPI_CloseDevice(_THIS)
+static void WASAPI_CloseDevice(_THIS)
 {
     WASAPI_UnrefDevice(this);
 }
 
-void
-WASAPI_RefDevice(_THIS)
+void WASAPI_RefDevice(_THIS)
 {
     SDL_AtomicIncRef(&this->hidden->refcount);
 }
 
-void
-WASAPI_UnrefDevice(_THIS)
+void WASAPI_UnrefDevice(_THIS)
 {
     if (!SDL_AtomicDecRef(&this->hidden->refcount)) {
         return;
@@ -490,8 +373,7 @@ WASAPI_UnrefDevice(_THIS)
 }
 
 /* This is called once a device is activated, possibly asynchronously. */
-int
-WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
+int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 {
     /* !!! FIXME: we could request an exclusive mode stream, which is lower latency;
        !!!  it will write into the kernel's audio buffer directly instead of
@@ -506,7 +388,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
        !!!  do in any case. */
     const SDL_AudioSpec oldspec = this->spec;
     const AUDCLNT_SHAREMODE sharemode = AUDCLNT_SHAREMODE_SHARED;
-    UINT32 bufsize = 0;  /* this is in sample frames, not samples, not bytes. */
+    UINT32 bufsize = 0; /* this is in sample frames, not samples, not bytes. */
     REFERENCE_TIME default_period = 0;
     IAudioClient *client = this->hidden->client;
     IAudioRenderClient *render = NULL;
@@ -519,7 +401,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 
     SDL_assert(client != NULL);
 
-#ifdef __WINRT__  /* CreateEventEx() arrived in Vista, so we need an #ifdef for XP. */
+#if defined(__WINRT__) || defined(__GDK__) /* CreateEventEx() arrived in Vista, so we need an #ifdef for XP. */
     this->hidden->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
 #else
     this->hidden->event = CreateEventW(NULL, 0, 0, NULL);
@@ -537,12 +419,12 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     SDL_assert(waveformat != NULL);
     this->hidden->waveformat = waveformat;
 
-    this->spec.channels = (Uint8) waveformat->nChannels;
+    this->spec.channels = (Uint8)waveformat->nChannels;
 
     /* Make sure we have a valid format that we can convert to whatever WASAPI wants. */
     wasapi_format = WaveFormatToSDLFormat(waveformat);
 
-    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
         if (test_format == wasapi_format) {
             this->spec.format = test_format;
             break;
@@ -558,7 +440,10 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
         return WIN_SetErrorFromHRESULT("WASAPI can't determine minimum device period", ret);
     }
 
-#if 1  /* we're getting reports that WASAPI's resampler introduces distortions, so it's disabled for now. --ryan. */
+    /* we've gotten reports that WASAPI's resampler introduces distortions, but in the short term
+       it fixes some other WASAPI-specific quirks we haven't quite tracked down.
+       Refer to bug #6326 for the immediate concern. */
+#if 0
     this->spec.freq = waveformat->nSamplesPerSec;  /* force sampling rate so our resampler kicks in, if necessary. */
 #else
     /* favor WASAPI's resampler over our own */
@@ -599,12 +484,12 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     this->hidden->framesize = (SDL_AUDIO_BITSIZE(this->spec.format) / 8) * this->spec.channels;
 
     if (this->iscapture) {
-        this->hidden->capturestream = SDL_NewAudioStream(this->spec.format, this->spec.channels, this->spec.freq, this->spec.format, this->spec.channels, this->spec.freq);
+        this->hidden->capturestream = SDL_CreateAudioStream(this->spec.format, this->spec.channels, this->spec.freq, this->spec.format, this->spec.channels, this->spec.freq);
         if (!this->hidden->capturestream) {
-            return -1;  /* already set SDL_Error */
+            return -1; /* already set SDL_Error */
         }
 
-        ret = IAudioClient_GetService(client, &SDL_IID_IAudioCaptureClient, (void**) &capture);
+        ret = IAudioClient_GetService(client, &SDL_IID_IAudioCaptureClient, (void **)&capture);
         if (FAILED(ret)) {
             return WIN_SetErrorFromHRESULT("WASAPI can't get capture client service", ret);
         }
@@ -616,9 +501,9 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
             return WIN_SetErrorFromHRESULT("WASAPI can't start capture", ret);
         }
 
-        WASAPI_FlushCapture(this);  /* MSDN says you should flush capture endpoint right after startup. */
+        WASAPI_FlushCapture(this); /* MSDN says you should flush capture endpoint right after startup. */
     } else {
-        ret = IAudioClient_GetService(client, &SDL_IID_IAudioRenderClient, (void**) &render);
+        ret = IAudioClient_GetService(client, &SDL_IID_IAudioRenderClient, (void **)&render);
         if (FAILED(ret)) {
             return WIN_SetErrorFromHRESULT("WASAPI can't get render client service", ret);
         }
@@ -635,14 +520,12 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
         return UpdateAudioStream(this, &oldspec);
     }
 
-    return 0;  /* good to go. */
+    return 0; /* good to go. */
 }
 
-
-static int
-WASAPI_OpenDevice(_THIS, const char *devname)
+static int WASAPI_OpenDevice(_THIS, const char *devname)
 {
-    LPCWSTR devid = (LPCWSTR) this->handle;
+    LPCWSTR devid = (LPCWSTR)this->handle;
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -652,10 +535,10 @@ WASAPI_OpenDevice(_THIS, const char *devname)
     }
     SDL_zerop(this->hidden);
 
-    WASAPI_RefDevice(this);   /* so CloseDevice() will unref to zero. */
+    WASAPI_RefDevice(this); /* so CloseDevice() will unref to zero. */
 
-    if (!devid) {  /* is default device? */
-        this->hidden->default_device_generation = SDL_AtomicGet(this->iscapture ? &WASAPI_DefaultCaptureGeneration : &WASAPI_DefaultPlaybackGeneration);
+    if (!devid) { /* is default device? */
+        this->hidden->default_device_generation = SDL_AtomicGet(this->iscapture ? &SDL_IMMDevice_DefaultCaptureGeneration : &SDL_IMMDevice_DefaultPlaybackGeneration);
     } else {
         this->hidden->devid = SDL_wcsdup(devid);
         if (!this->hidden->devid) {
@@ -664,7 +547,7 @@ WASAPI_OpenDevice(_THIS, const char *devname)
     }
 
     if (WASAPI_ActivateDevice(this, SDL_FALSE) == -1) {
-        return -1;  /* already set error. */
+        return -1; /* already set error. */
     }
 
     /* Ready, but waiting for async device activation.
@@ -678,40 +561,23 @@ WASAPI_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static void
-WASAPI_ThreadInit(_THIS)
+static void WASAPI_ThreadInit(_THIS)
 {
     WASAPI_PlatformThreadInit(this);
 }
 
-static void
-WASAPI_ThreadDeinit(_THIS)
+static void WASAPI_ThreadDeinit(_THIS)
 {
     WASAPI_PlatformThreadDeinit(this);
 }
 
-static void
-WASAPI_Deinitialize(void)
+static void WASAPI_Deinitialize(void)
 {
-    DevIdList *devidlist;
-    DevIdList *next;
-
     WASAPI_PlatformDeinit();
-
-    for (devidlist = deviceid_list; devidlist; devidlist = next) {
-        next = devidlist->next;
-        SDL_free(devidlist->str);
-        SDL_free(devidlist);
-    }
-    deviceid_list = NULL;
 }
 
-static SDL_bool
-WASAPI_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool WASAPI_Init(SDL_AudioDriverImpl *impl)
 {
-    SDL_AtomicSet(&WASAPI_DefaultPlaybackGeneration, 1);
-    SDL_AtomicSet(&WASAPI_DefaultCaptureGeneration, 1);
-
     if (WASAPI_PlatformInit() == -1) {
         return SDL_FALSE;
     }
@@ -728,15 +594,15 @@ WASAPI_Init(SDL_AudioDriverImpl * impl)
     impl->FlushCapture = WASAPI_FlushCapture;
     impl->CloseDevice = WASAPI_CloseDevice;
     impl->Deinitialize = WASAPI_Deinitialize;
+    impl->GetDefaultAudioInfo = WASAPI_GetDefaultAudioInfo;
     impl->HasCaptureSupport = SDL_TRUE;
+    impl->SupportsNonPow2Samples = SDL_TRUE;
 
-    return SDL_TRUE;   /* this audio target is available. */
+    return SDL_TRUE; /* this audio target is available. */
 }
 
 AudioBootStrap WASAPI_bootstrap = {
     "wasapi", "WASAPI", WASAPI_Init, SDL_FALSE
 };
 
-#endif  /* SDL_AUDIO_DRIVER_WASAPI */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif /* SDL_AUDIO_DRIVER_WASAPI */

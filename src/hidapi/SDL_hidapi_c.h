@@ -18,11 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
 #define HAVE_ENABLE_GAMECUBE_ADAPTORS
 #endif
 
@@ -31,5 +31,3 @@ extern void SDL_EnableGameCubeAdaptors(void);
 #endif
 
 #endif /* SDL_JOYSTICK_HIDAPI */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */

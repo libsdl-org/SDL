@@ -19,27 +19,26 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_vitaaudio_h
-#define _SDL_vitaaudio_h
+#ifndef SDL_vitaaudio_h
+#define SDL_vitaaudio_h
 
 #include "../SDL_sysaudio.h"
 
 /* Hidden "this" pointer for the audio functions */
-#define _THIS   SDL_AudioDevice *this
+#define _THIS SDL_AudioDevice *this
 
 #define NUM_BUFFERS 2
 
-struct SDL_PrivateAudioData {
+struct SDL_PrivateAudioData
+{
     /* The hardware input/output port. */
-    int     port;
+    int port;
     /* The raw allocated mixing buffer. */
-    Uint8   *rawbuf;
+    Uint8 *rawbuf;
     /* Individual mixing buffers. */
-    Uint8   *mixbufs[NUM_BUFFERS];
+    Uint8 *mixbufs[NUM_BUFFERS];
     /* Index of the next available mixing buffer. */
-    int     next_buffer;
+    int next_buffer;
 };
 
-#endif /* _SDL_vitaaudio_h */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif /* SDL_vitaaudio_h */

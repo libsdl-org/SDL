@@ -18,12 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include <errno.h>
 #include <pthread.h>
-
-#include "SDL_thread.h"
 
 #if !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX && \
     !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
@@ -46,7 +44,7 @@ SDL_CreateMutex(void)
     pthread_mutexattr_t attr;
 
     /* Allocate the structure */
-    mutex = (SDL_mutex *) SDL_calloc(1, sizeof(*mutex));
+    mutex = (SDL_mutex *)SDL_calloc(1, sizeof(*mutex));
     if (mutex) {
         pthread_mutexattr_init(&attr);
 #if SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
@@ -64,11 +62,10 @@ SDL_CreateMutex(void)
     } else {
         SDL_OutOfMemory();
     }
-    return (mutex);
+    return mutex;
 }
 
-void
-SDL_DestroyMutex(SDL_mutex * mutex)
+void SDL_DestroyMutex(SDL_mutex *mutex)
 {
     if (mutex) {
         pthread_mutex_destroy(&mutex->id);
@@ -77,15 +74,14 @@ SDL_DestroyMutex(SDL_mutex * mutex)
 }
 
 /* Lock the mutex */
-int
-SDL_LockMutex(SDL_mutex * mutex)
+int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
 #if FAKE_RECURSIVE_MUTEX
     pthread_t this_thread;
 #endif
 
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
 #if FAKE_RECURSIVE_MUTEX
@@ -112,8 +108,7 @@ SDL_LockMutex(SDL_mutex * mutex)
     return 0;
 }
 
-int
-SDL_TryLockMutex(SDL_mutex * mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
     int retval;
     int result;
@@ -122,7 +117,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
 #endif
 
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     retval = 0;
@@ -158,11 +153,10 @@ SDL_TryLockMutex(SDL_mutex * mutex)
     return retval;
 }
 
-int
-SDL_UnlockMutex(SDL_mutex * mutex)
+int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
 #if FAKE_RECURSIVE_MUTEX
@@ -191,5 +185,3 @@ SDL_UnlockMutex(SDL_mutex * mutex)
 
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

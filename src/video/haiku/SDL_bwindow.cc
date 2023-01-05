@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_HAIKU
 #include "../SDL_sysvideo.h"
@@ -26,7 +26,7 @@
 #include "SDL_BWin.h"
 #include <new>
 
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 /* Define a path to window's BWIN data */
 #ifdef __cplusplus
@@ -34,11 +34,11 @@ extern "C" {
 #endif
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
-    return ((SDL_BWin*)(window->driverdata));
+    return (SDL_BWin *)(window->driverdata);
 }
 
 static SDL_INLINE SDL_BApp *_GetBeApp() {
-    return ((SDL_BApp*)be_app);
+    return (SDL_BApp *)be_app;
 }
 
 static int _InitWindow(_THIS, SDL_Window *window) {
@@ -52,23 +52,24 @@ static int _InitWindow(_THIS, SDL_Window *window) {
         window->y + window->h - 1
     );
     
-    if(window->flags & SDL_WINDOW_FULLSCREEN) {
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         /* TODO: Add support for this flag */
         printf(__FILE__": %d!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",__LINE__);
     }
-    if(window->flags & SDL_WINDOW_OPENGL) {
+    if (window->flags & SDL_WINDOW_OPENGL) {
         /* TODO: Add support for this flag */
     }
-    if(!(window->flags & SDL_WINDOW_RESIZABLE)) {
+    if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
         flags |= B_NOT_RESIZABLE | B_NOT_ZOOMABLE;
     }
-    if(window->flags & SDL_WINDOW_BORDERLESS) {
+    if (window->flags & SDL_WINDOW_BORDERLESS) {
         look = B_NO_BORDER_WINDOW_LOOK;
     }
 
     SDL_BWin *bwin = new(std::nothrow) SDL_BWin(bounds, look, flags);
-    if(bwin == NULL)
+    if (bwin == NULL) {
         return -1;
+    }
 
     window->driverdata = bwin;
     int32 winID = _GetBeApp()->GetID(window);
@@ -90,8 +91,9 @@ int HAIKU_CreateWindow(_THIS, SDL_Window *window) {
 int HAIKU_CreateWindowFrom(_THIS, SDL_Window * window, const void *data) {
 
     SDL_BWin *otherBWin = (SDL_BWin*)data;
-    if(!otherBWin->LockLooper())
+    if (!otherBWin->LockLooper()) {
         return -1;
+    }
     
     /* Create the new window and initialize its members */
     window->x = (int)otherBWin->Frame().left;
@@ -100,7 +102,7 @@ int HAIKU_CreateWindowFrom(_THIS, SDL_Window * window, const void *data) {
     window->h = (int)otherBWin->Frame().Height();
     
     /* Set SDL flags */
-    if(!(otherBWin->Flags() & B_NOT_RESIZABLE)) {
+    if (!(otherBWin->Flags() & B_NOT_RESIZABLE)) {
         window->flags |= SDL_WINDOW_RESIZABLE;
     }
     
@@ -194,18 +196,8 @@ void HAIKU_SetWindowFullscreen(_THIS, SDL_Window * window,
     
 }
 
-int HAIKU_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp) {
-    /* FIXME: Not Haiku supported */
-    return -1;
-}
 
-int HAIKU_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp) {
-    /* FIXME: Not Haiku supported */
-    return -1;
-}
-
-
-void HAIKU_SetWindowMinimumSize(_THIS, SDL_Window * window){
+void HAIKU_SetWindowMinimumSize(_THIS, SDL_Window * window) {
     BMessage msg(BWIN_MINIMUM_SIZE_WINDOW);
     msg.AddInt32("window-w", window->w -1);
     msg.AddInt32("window-h", window->h -1);
@@ -223,22 +215,11 @@ void HAIKU_DestroyWindow(_THIS, SDL_Window * window) {
     window->driverdata = NULL;
 }
 
-SDL_bool HAIKU_GetWindowWMInfo(_THIS, SDL_Window * window,
-                                    struct SDL_SysWMinfo *info) {
-    /* FIXME: What is the point of this? What information should be included? */
-	if (info->version.major == SDL_MAJOR_VERSION &&
-	    info->version.minor == SDL_MINOR_VERSION) {
-	    info->subsystem = SDL_SYSWM_HAIKU;
-	    return SDL_TRUE;
-	} else {
-	    SDL_SetError("Application not compiled with SDL %d.%d",
-	                 SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
-	    return SDL_FALSE;
-	}
+int HAIKU_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info)
+{
+    info->subsystem = SDL_SYSWM_HAIKU;
+    return 0;
 }
-
-
-
 
  
 #ifdef __cplusplus
@@ -246,5 +227,3 @@ SDL_bool HAIKU_GetWindowWMInfo(_THIS, SDL_Window * window,
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -18,13 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "../../core/windows/SDL_windows.h"
 
-#include "SDL_mutex.h"
-
-typedef SDL_mutex * (*pfnSDL_CreateMutex)(void);
+typedef SDL_mutex *(*pfnSDL_CreateMutex)(void);
 typedef int (*pfnSDL_LockMutex)(SDL_mutex *);
 typedef int (*pfnSDL_TryLockMutex)(SDL_mutex *);
 typedef int (*pfnSDL_UnlockMutex)(SDL_mutex *);
@@ -39,21 +37,24 @@ typedef enum
 
 typedef struct SDL_mutex_impl_t
 {
-    pfnSDL_CreateMutex  Create;
+    pfnSDL_CreateMutex Create;
     pfnSDL_DestroyMutex Destroy;
-    pfnSDL_LockMutex    Lock;
+    pfnSDL_LockMutex Lock;
     pfnSDL_TryLockMutex TryLock;
-    pfnSDL_UnlockMutex  Unlock;
+    pfnSDL_UnlockMutex Unlock;
     /* Needed by SDL_cond: */
-    SDL_MutexType       Type;
+    SDL_MutexType Type;
 } SDL_mutex_impl_t;
 
 extern SDL_mutex_impl_t SDL_mutex_impl_active;
 
-
 #ifndef SRWLOCK_INIT
-#define SRWLOCK_INIT {0}
-typedef struct _SRWLOCK {
+#define SRWLOCK_INIT \
+    {                \
+        0            \
+    }
+typedef struct _SRWLOCK
+{
     PVOID Ptr;
 } SRWLOCK, *PSRWLOCK;
 #endif
@@ -70,5 +71,3 @@ typedef struct SDL_mutex_cs
 {
     CRITICAL_SECTION cs;
 } SDL_mutex_cs;
-
-/* vi: set ts=4 sw=4 expandtab: */

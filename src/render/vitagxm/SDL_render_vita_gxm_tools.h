@@ -22,9 +22,8 @@
 #ifndef SDL_RENDER_VITA_GXM_TOOLS_H
 #define SDL_RENDER_VITA_GXM_TOOLS_H
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
-#include "SDL_hints.h"
 #include "../SDL_sysrender.h"
 
 #include <psp2/kernel/processmgr.h>
@@ -36,8 +35,7 @@
 
 #include "SDL_render_vita_gxm_types.h"
 
-void
-init_orthographic_matrix(float *m, float left, float right, float bottom, float top, float near, float far);
+void init_orthographic_matrix(float *m, float left, float right, float bottom, float top, float near, float far);
 
 void *pool_malloc(VITA_GXM_RenderData *data, unsigned int size);
 void *pool_memalign(VITA_GXM_RenderData *data, unsigned int size, unsigned int alignment);
@@ -63,5 +61,3 @@ void gxm_swap_for_common_dialog(void);
 void gxm_term_for_common_dialog(void);
 
 #endif /* SDL_RENDER_VITA_GXM_TOOLS_H */
-
-/* vi: set ts=4 sw=4 expandtab: */

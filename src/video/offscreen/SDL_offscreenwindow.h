@@ -18,29 +18,23 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
-#ifndef _SDL_offscreenwindow_h
-#define _SDL_offscreenwindow_h
-
-#include "../SDL_sysvideo.h"
-#include "SDL_syswm.h"
+#ifndef SDL_offscreenwindow_h
+#define SDL_offscreenwindow_h
 
 #include "SDL_offscreenvideo.h"
 
-typedef struct {
-    SDL_Window* sdl_window;
+typedef struct
+{
+    SDL_Window *sdl_window;
+#if SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
+#endif
 
 } OFFSCREEN_Window;
 
+extern int OFFSCREEN_CreateWindow(_THIS, SDL_Window *window);
+extern void OFFSCREEN_DestroyWindow(_THIS, SDL_Window *window);
 
-extern int
-OFFSCREEN_CreateWindow(_THIS, SDL_Window* window);
-
-extern void
-OFFSCREEN_DestroyWindow(_THIS, SDL_Window* window);
-
-#endif /* _SDL_offscreenwindow */
-
-/* vi: set ts=4 sw=4 expandtab: */
-
+#endif /* SDL_offscreenwindow_h */
