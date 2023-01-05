@@ -38,7 +38,6 @@ SDL3_0.0.0 {
     SDL_ClearError;
     SDL_ClearHints;
     SDL_ClearQueuedAudio;
-    SDL_CloseAudio;
     SDL_CloseAudioDevice;
     SDL_CloseGamepad;
     SDL_CloseJoystick;
@@ -150,7 +149,6 @@ SDL3_0.0.0 {
     SDL_GetAudioDeviceSpec;
     SDL_GetAudioDeviceStatus;
     SDL_GetAudioDriver;
-    SDL_GetAudioStatus;
     SDL_GetAudioStreamAvailable;
     SDL_GetAudioStreamData;
     SDL_GetBasePath;
@@ -448,7 +446,6 @@ SDL3_0.0.0 {
     SDL_LoadFunction;
     SDL_LoadObject;
     SDL_LoadWAV_RW;
-    SDL_LockAudio;
     SDL_LockAudioDevice;
     SDL_LockJoysticks;
     SDL_LockMutex;
@@ -480,7 +477,6 @@ SDL3_0.0.0 {
     SDL_Metal_GetDrawableSize;
     SDL_Metal_GetLayer;
     SDL_MinimizeWindow;
-    SDL_MixAudio;
     SDL_MixAudioFormat;
     SDL_MouseIsHaptic;
     SDL_NumHaptics;
@@ -491,13 +487,11 @@ SDL3_0.0.0 {
     SDL_OnApplicationWillEnterForeground;
     SDL_OnApplicationWillResignActive;
     SDL_OnApplicationWillTerminate;
-    SDL_OpenAudio;
     SDL_OpenAudioDevice;
     SDL_OpenGamepad;
     SDL_OpenJoystick;
     SDL_OpenSensor;
     SDL_OpenURL;
-    SDL_PauseAudio;
     SDL_PauseAudioDevice;
     SDL_PeepEvents;
     SDL_PollEvent;
@@ -665,7 +659,6 @@ SDL3_0.0.0 {
     SDL_ThreadID;
     SDL_TryLockMutex;
     SDL_UnloadObject;
-    SDL_UnlockAudio;
     SDL_UnlockAudioDevice;
     SDL_UnlockJoysticks;
     SDL_UnlockMutex;
