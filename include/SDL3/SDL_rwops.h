@@ -434,7 +434,7 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWtell(SDL_RWops *context);
  * \param context a pointer to an SDL_RWops structure
  * \param ptr a pointer to a buffer to read data into
  * \param size the number of bytes to read from the data source.
- * \returns the number of bytes read, or 0 at end of file, or -1 on error.
+ * \returns the number of bytes read, 0 at end of file, -1 on error, and -2 for data not ready with a non-blocking context.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -445,8 +445,7 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWtell(SDL_RWops *context);
  * \sa SDL_RWseek
  * \sa SDL_RWwrite
  */
-extern DECLSPEC Sint64 SDLCALL SDL_RWread(SDL_RWops *context,
-                                          void *ptr, Sint64 size);
+extern DECLSPEC Sint64 SDLCALL SDL_RWread(SDL_RWops *context, void *ptr, Sint64 size);
 
 /**
  * Write to an SDL_RWops data stream.
