@@ -30,8 +30,8 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_platform.h>
 #include <SDL3/SDL_video.h>
-#include <SDL3/SDL_version.h>
 
 /**
  *  \brief SDL_syswm.h
@@ -40,22 +40,146 @@
  *  which contains window-manager specific information and arrives whenever
  *  an unhandled window event occurs.  This event is ignored by default, but
  *  you can enable it with SDL_SetEventEnabled().
- *
- *  As of SDL 3.0, this file no longer includes the platform specific headers
- *  and types. You should include the headers you need and define one or more
- *  of the following for the subsystems you're working with:
- *
- *      SDL_ENABLE_SYSWM_ANDROID
- *      SDL_ENABLE_SYSWM_COCOA
- *      SDL_ENABLE_SYSWM_KMSDRM
- *      SDL_ENABLE_SYSWM_UIKIT
- *      SDL_ENABLE_SYSWM_VIVANTE
- *      SDL_ENABLE_SYSWM_WAYLAND
- *      SDL_ENABLE_SYSWM_WINDOWS
- *      SDL_ENABLE_SYSWM_WINRT
- *      SDL_ENABLE_SYSWM_X11
  */
-struct SDL_SysWMinfo;
+
+/**
+ *  The available subsystems based on platform
+ */
+#if !defined(SDL_DISABLE_SYSWM_PLATFORMS)
+
+#ifndef SDL_DISABLE_SYSWM_ANDROID
+#ifdef __ANDROID__
+#define SDL_ENABLE_SYSWM_ANDROID
+#endif
+#endif /* !SDL_DISABLE_SYSWM_ANDROID */
+
+#ifndef SDL_DISABLE_SYSWM_COCOA
+#ifdef __MACOS__
+#define SDL_ENABLE_SYSWM_COCOA
+#endif
+#endif /* !SDL_DISABLE_SYSWM_COCOA */
+
+#ifndef SDL_DISABLE_SYSWM_HAIKU
+#ifdef __HAIKU__
+#define SDL_ENABLE_SYSWM_HAIKU
+#endif
+#endif /* !SDL_DISABLE_SYSWM_HAIKU */
+
+#ifndef SDL_DISABLE_SYSWM_KMSDRM
+#if defined(__LINUX__) || defined(__FREEBSD__) || defined(__OPENBSD__)
+#define SDL_ENABLE_SYSWM_KMSDRM
+#endif
+#endif /* !SDL_DISABLE_SYSWM_KMSDRM */
+
+#ifndef SDL_DISABLE_SYSWM_RISCOS
+#ifdef __RISCOS__
+#define SDL_ENABLE_SYSWM_RISCOS
+#endif
+#endif /* !SDL_DISABLE_SYSWM_RISCOS */
+
+#ifndef SDL_DISABLE_SYSWM_UIKIT
+#if defined(__IOS__) || defined(__TVOS__)
+#define SDL_ENABLE_SYSWM_UIKIT
+#endif
+#endif /* !SDL_DISABLE_SYSWM_UIKIT */
+
+#ifndef SDL_DISABLE_SYSWM_VIVANTE
+/* Not enabled by default */
+#endif /* !SDL_DISABLE_SYSWM_VIVANTE */
+
+#ifndef SDL_DISABLE_SYSWM_WAYLAND
+#if defined(__LINUX__) || defined(__FREEBSD__)
+#define SDL_ENABLE_SYSWM_WAYLAND
+#endif
+#endif /* !SDL_DISABLE_SYSWM_WAYLAND */
+
+#ifndef SDL_DISABLE_SYSWM_WINDOWS
+#ifdef __WIN32__
+#define SDL_ENABLE_SYSWM_WINDOWS
+#endif
+#endif /* !SDL_DISABLE_SYSWM_WINDOWS */
+
+#ifndef SDL_DISABLE_SYSWM_WINRT
+#ifdef __WINRT__
+#define SDL_ENABLE_SYSWM_WINRT
+#endif
+#endif /* !SDL_DISABLE_SYSWM_WINRT */
+
+#ifndef SDL_DISABLE_SYSWM_X11
+#if defined(__unix__) && !defined(__WIN32__) && !defined(__ANDROID__)
+#define SDL_ENABLE_SYSWM_X11
+#endif
+#endif /* !SDL_DISABLE_SYSWM_X11 */
+
+#endif /* !SDL_DISABLE_SYSWM_PLATFORMS */
+
+/**
+ *  Forward declaration of types used by subsystems
+ */
+#ifndef SDL_DISABLE_SYSWM_TYPES
+
+#if defined(SDL_ENABLE_SYSWM_ANDROID) && !defined(SDL_DISABLE_SYSWM_ANDROID_TYPES)
+typedef struct ANativeWindow ANativeWindow;
+typedef void *EGLSurface;
+#endif /* SDL_ENABLE_SYSWM_ANDROID */
+
+#if defined(SDL_ENABLE_SYSWM_COCOA) && !defined(SDL_DISABLE_SYSWM_COCOA_TYPES)
+#ifdef __OBJC__
+@class NSWindow;
+#else
+typedef struct _NSWindow NSWindow;
+#endif
+#endif /* SDL_ENABLE_SYSWM_COCOA */
+
+#if defined(SDL_ENABLE_SYSWM_KMSDRM) && !defined(SDL_DISABLE_SYSWM_KMSDRM_TYPES)
+struct gbm_device;
+#endif /* SDL_ENABLE_SYSWM_KMSDRM */
+
+#if defined(SDL_ENABLE_SYSWM_UIKIT) && !defined(SDL_DISABLE_SYSWM_UIKIT_TYPES)
+#ifdef __OBJC__
+#include <UIKit/UIKit.h>
+#else
+typedef struct _UIWindow UIWindow;
+typedef struct _UIViewController UIViewController;
+#endif
+typedef Uint32 GLuint;
+#endif /* SDL_ENABLE_SYSWM_UIKIT */
+
+#if defined(SDL_ENABLE_SYSWM_VIVANTE) && !defined(SDL_DISABLE_SYSWM_VIVANTE_TYPES)
+#include <SDL3/SDL_egl.h>
+#endif /* SDL_ENABLE_SYSWM_VIVANTE */
+
+#if defined(SDL_ENABLE_SYSWM_WAYLAND) && !defined(SDL_DISABLE_SYSWM_WAYLAND_TYPES)
+struct wl_display;
+struct wl_egl_window;
+struct wl_surface;
+struct xdg_popup;
+struct xdg_positioner;
+struct xdg_surface;
+struct xdg_toplevel;
+#endif /* SDL_ENABLE_SYSWM_WAYLAND */
+
+#if defined(SDL_ENABLE_SYSWM_WINDOWS) && !defined(SDL_DISABLE_SYSWM_WINDOWS_TYPES)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX   /* don't define min() and max(). */
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif /* SDL_ENABLE_SYSWM_WINDOWS */
+
+#if defined(SDL_ENABLE_SYSWM_WINRT) && !defined(SDL_DISABLE_SYSWM_WINRT_TYPES)
+#include <Inspectable.h>
+#endif /* SDL_ENABLE_SYSWM_WINRT */
+
+#if defined(SDL_ENABLE_SYSWM_X11) && !defined(SDL_DISABLE_SYSWM_X11_TYPES)
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#endif /* SDL_ENABLE_SYSWM_X11 */
+
+#endif /* !SDL_DISABLE_SYSWM_TYPES */
+
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -72,7 +196,6 @@ extern "C" {
 #define SDL_METALVIEW_TAG 255
 
 
-#if !defined(SDL_PROTOTYPES_ONLY)
 /**
  *  These are the various supported windowing subsystems
  */
@@ -234,8 +357,6 @@ struct SDL_SysWMinfo
     } info;
 };
 SDL_COMPILE_TIME_ASSERT(SDL_SysWMinfo_size, sizeof(struct SDL_SysWMinfo) == SDL_SYSWM_CURRENT_INFO_SIZE);
-
-#endif /* SDL_PROTOTYPES_ONLY */
 
 typedef struct SDL_SysWMinfo SDL_SysWMinfo;
 

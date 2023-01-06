@@ -813,16 +813,6 @@ The following functions have been renamed:
 
 ## SDL_syswm.h
 
-This header no longer includes platform specific headers and type definitions, instead allowing you to include the ones appropriate for your use case. You should define one or more of the following to enable the relevant platform-specific support:
-* SDL_ENABLE_SYSWM_ANDROID
-* SDL_ENABLE_SYSWM_COCOA
-* SDL_ENABLE_SYSWM_KMSDRM
-* SDL_ENABLE_SYSWM_UIKIT
-* SDL_ENABLE_SYSWM_VIVANTE
-* SDL_ENABLE_SYSWM_WAYLAND
-* SDL_ENABLE_SYSWM_WINDOWS
-* SDL_ENABLE_SYSWM_X11
-
 The structures in this file are versioned separately from the rest of SDL, allowing better backwards compatibility and limited forwards compatibility with your application. Instead of calling `SDL_VERSION(&info.version)` before calling SDL_GetWindowWMInfo(), you pass the version in explicitly as SDL_SYSWM_CURRENT_VERSION so SDL knows what fields you expect to be filled out.
 
 ### SDL_GetWindowWMInfo
