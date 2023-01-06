@@ -1516,12 +1516,22 @@ SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
     return status;
 }
 
-void SDL_PauseAudioDevice(SDL_AudioDeviceID devid, int pause_on)
+void SDL_PauseAudioDevice(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
     if (device) {
         current_audio.impl.LockDevice(device);
-        SDL_AtomicSet(&device->paused, pause_on ? 1 : 0);
+        SDL_AtomicSet(&device->paused, 1);
+        current_audio.impl.UnlockDevice(device);
+    }
+}
+
+void SDL_PlayAudioDevice(SDL_AudioDeviceID devid)
+{
+    SDL_AudioDevice *device = get_audio_device(devid);
+    if (device) {
+        current_audio.impl.LockDevice(device);
+        SDL_AtomicSet(&device->paused, 0);
         current_audio.impl.UnlockDevice(device);
     }
 }

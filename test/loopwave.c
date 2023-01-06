@@ -64,7 +64,7 @@ open_audio()
     }
 
     /* Let the audio run */
-    SDL_PauseAudioDevice(device, SDL_FALSE);
+    SDL_PlayAudioDevice(device);
 }
 
 #ifndef __EMSCRIPTEN__

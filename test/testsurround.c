@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
         total_channels = spec.channels;
         active_channel = 0;
 
-        SDL_PauseAudioDevice(dev, 0);
+        SDL_PlayAudioDevice(dev);
 
         for (j = 0; j < total_channels; j++) {
             int sine_freq = is_lfe_channel(j, total_channels) ? LFE_SINE_FREQ_HZ : SINE_FREQ_HZ;
