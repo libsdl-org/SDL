@@ -21,3 +21,4 @@ General:
 * The timestamp member of the SDL_Event structure is now in nanoseconds, filled in with the time the event was generated, or the time it was queued if that's not available
 * Added SDL_modf() and SDL_modff() to separate the whole and fractional portions of a floating point number
 * Added SDL_GetRenderVSync() to get vsync of the given renderer
+* Added SDL_PlayAudioDevice() to start audio playback

@@ -466,7 +466,7 @@ extern DECLSPEC int SDLCALL SDL_GetDefaultAudioInfo(char **name,
  * diskaudio driver.
  *
  * An opened audio device starts out paused, and should be enabled for playing
- * by calling SDL_PauseAudioDevice(devid, 0) when you are ready for your audio
+ * by calling SDL_PlayAudioDevice(devid) when you are ready for your audio
  * callback function to be called. Since the audio driver may modify the
  * requested size of the audio buffer, you should allocate any local mixing
  * buffers after you open the audio device.
@@ -554,6 +554,7 @@ extern DECLSPEC int SDLCALL SDL_GetDefaultAudioInfo(char **name,
  * \sa SDL_CloseAudioDevice
  * \sa SDL_GetAudioDeviceName
  * \sa SDL_LockAudioDevice
+ * \sa SDL_PlayAudioDevice
  * \sa SDL_PauseAudioDevice
  * \sa SDL_UnlockAudioDevice
  */
@@ -588,41 +589,56 @@ typedef enum
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_PlayAudioDevice
  * \sa SDL_PauseAudioDevice
  */
 extern DECLSPEC SDL_AudioStatus SDLCALL SDL_GetAudioDeviceStatus(SDL_AudioDeviceID dev);
 /* @} *//* Audio State */
 
 /**
- * Use this function to pause and unpause audio playback on a specified
- * device.
+ * Use this function to play audio on a specified device.
  *
- * This function pauses and unpauses the audio callback processing for a given
- * device. Newly-opened audio devices start in the paused state, so you must
- * call this function with **pause_on**=0 after opening the specified audio
+ * Newly-opened audio devices start in the paused state, so you must
+ * call this function after opening the specified audio
  * device to start playing sound. This allows you to safely initialize data
  * for your callback function after opening the audio device. Silence will be
  * written to the audio device while paused, and the audio callback is
  * guaranteed to not be called. Pausing one device does not prevent other
  * unpaused devices from running their callbacks.
  *
- * Pausing state does not stack; even if you pause a device several times, a
- * single unpause will start the device playing again, and vice versa. This is
- * different from how SDL_LockAudioDevice() works.
+ * \param dev a device opened by SDL_OpenAudioDevice()
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_LockAudioDevice
+ * \sa SDL_PauseAudioDevice
+ */
+extern DECLSPEC void SDLCALL SDL_PlayAudioDevice(SDL_AudioDeviceID dev);
+
+
+
+/**
+ * Use this function to pause audio playback on a specified device.
+ *
+ * This function pauses the audio callback processing for a given
+ * device.  Silence will be written to the audio device while paused, and
+ * the audio callback is guaranteed to not be called.
+ * Pausing one device does not prevent other unpaused devices from running
+ * their callbacks.
  *
  * If you just need to protect a few variables from race conditions vs your
  * callback, you shouldn't pause the audio device, as it will lead to dropouts
  * in the audio playback. Instead, you should use SDL_LockAudioDevice().
  *
  * \param dev a device opened by SDL_OpenAudioDevice()
- * \param pause_on non-zero to pause, 0 to unpause
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LockAudioDevice
+ * \sa SDL_PlayAudioDevice
  */
-extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev,
-                                                  int pause_on);
+extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
+
 
 /**
  * Load the audio data of a WAVE file into memory.

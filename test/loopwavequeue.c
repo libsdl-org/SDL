@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
     /*static x[99999]; SDL_QueueAudio(1, x, sizeof (x));*/
 
     /* Let the audio run */
-    SDL_PauseAudioDevice(g_audio_id, 0);
+    SDL_PlayAudioDevice(g_audio_id);
 
     done = 0;
 

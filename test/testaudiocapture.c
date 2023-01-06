@@ -40,13 +40,13 @@ loop()
             }
         } else if (e.type == SDL_MOUSEBUTTONDOWN) {
             if (e.button.button == 1) {
-                SDL_PauseAudioDevice(devid_out, SDL_TRUE);
-                SDL_PauseAudioDevice(devid_in, SDL_FALSE);
+                SDL_PauseAudioDevice(devid_out);
+                SDL_PlayAudioDevice(devid_in);
             }
         } else if (e.type == SDL_MOUSEBUTTONUP) {
             if (e.button.button == 1) {
-                SDL_PauseAudioDevice(devid_in, SDL_TRUE);
-                SDL_PauseAudioDevice(devid_out, SDL_FALSE);
+                SDL_PauseAudioDevice(devid_in);
+                SDL_PlayAudioDevice(devid_out);
             }
         }
     }
@@ -62,9 +62,9 @@ loop()
     if (please_quit) {
         /* stop playing back, quit. */
         SDL_Log("Shutting down.\n");
-        SDL_PauseAudioDevice(devid_in, 1);
+        SDL_PauseAudioDevice(devid_in);
         SDL_CloseAudioDevice(devid_in);
-        SDL_PauseAudioDevice(devid_out, 1);
+        SDL_PauseAudioDevice(devid_out);
         SDL_CloseAudioDevice(devid_out);
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);

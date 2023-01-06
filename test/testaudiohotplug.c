@@ -110,7 +110,7 @@ iteration()
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open '%s': %s\n", name, SDL_GetError());
                 } else {
                     SDL_Log("Opened '%s' as %u\n", name, (unsigned int)dev);
-                    SDL_PauseAudioDevice(dev, 0);
+                    SDL_PlayAudioDevice(dev);
                 }
             }
         } else if (e.type == SDL_AUDIODEVICEREMOVED) {

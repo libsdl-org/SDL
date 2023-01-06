@@ -47,6 +47,8 @@ The vi format comments have been removed from source code. Vim users can use the
 
 SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
 
+SDL_PauseAudioDevice() is only used to pause audio playback. Use SDL_PlayAudioDevice() to start playing audio.
+
 SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
 The following functions have been renamed:

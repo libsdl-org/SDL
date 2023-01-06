@@ -224,6 +224,7 @@ int audio_initOpenCloseQuitAudio()
  * \brief Pause and unpause audio
  *
  * \sa https://wiki.libsdl.org/SDL_PauseAudioDevice
+ * \sa https://wiki.libsdl.org/SDL_PlayAudioDevice
  */
 int audio_pauseUnpauseAudio()
 {
@@ -298,8 +299,8 @@ int audio_pauseUnpauseAudio()
                 /* Un-pause audio to start playing (maybe multiple times) */
                 pause_on = 0;
                 for (k = 0; k <= j; k++) {
-                    SDL_PauseAudioDevice(g_audio_id, pause_on);
-                    SDLTest_AssertPass("Call to SDL_PauseAudioDevice(g_audio_id, %d), call %d", pause_on, k + 1);
+                    SDL_PlayAudioDevice(g_audio_id);
+                    SDLTest_AssertPass("Call to SDL_PlayAudioDevice(g_audio_id), call %d", k + 1);
                 }
 
                 /* Wait for callback */
@@ -314,8 +315,13 @@ int audio_pauseUnpauseAudio()
                 /* Pause audio to stop playing (maybe multiple times) */
                 for (k = 0; k <= j; k++) {
                     pause_on = (k == 0) ? 1 : SDLTest_RandomIntegerInRange(99, 9999);
-                    SDL_PauseAudioDevice(g_audio_id, pause_on);
-                    SDLTest_AssertPass("Call to SDL_PauseAudioDevice(g_audio_id, %d), call %d", pause_on, k + 1);
+                    if (pause_on) {
+                        SDL_PauseAudioDevice(g_audio_id);
+                        SDLTest_AssertPass("Call to SDL_PauseAudioDevice(g_audio_id), call %d", k + 1);
+                    } else {
+                        SDL_PlayAudioDevice(g_audio_id);
+                        SDLTest_AssertPass("Call to SDL_PlayAudioDevice(g_audio_id), call %d", k + 1);
+                    }
                 }
 
                 /* Ensure callback is not called again */
