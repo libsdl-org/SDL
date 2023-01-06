@@ -3,4 +3,3 @@
 #else
 #define SDL_REVISION ""
 #endif
-#define SDL_REVISION_NUMBER 0
