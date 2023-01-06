@@ -807,6 +807,8 @@ macro(CheckPTHREAD)
     elseif(EMSCRIPTEN)
       set(PTHREAD_CFLAGS "-D_REENTRANT -pthread")
       set(PTHREAD_LDFLAGS "-pthread")
+    elseif(QNX)
+      # pthread support is baked in
     else()
       set(PTHREAD_CFLAGS "-D_REENTRANT")
       set(PTHREAD_LDFLAGS "-lpthread")
