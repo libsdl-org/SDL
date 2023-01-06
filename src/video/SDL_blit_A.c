@@ -658,9 +658,19 @@ static void BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo *info)
     Uint32 ashift = sf->Ashift;
     Uint64 multmask, multmask2;
 
-    __m64 src1, dst1, mm_alpha, mm_zero, mm_alpha2;
+    __m64 src1, dst1, mm_alpha, mm_zero, mm_alpha2, mm_one_alpha;
 
     mm_zero = _mm_setzero_si64(); /* 0 -> mm_zero */
+    if (amask == 0xFF000000) { /* 1 in the alpha channel -> mm_one_alpha */
+        mm_one_alpha = _mm_set_pi16(1, 0, 0, 0);
+    } else if (amask == 0x00FF0000) {
+        mm_one_alpha = _mm_set_pi16(0, 1, 0, 0);
+    } else if (amask == 0x0000FF00) {
+        mm_one_alpha = _mm_set_pi16(0, 0, 1, 0);
+    } else {
+        mm_one_alpha = _mm_set_pi16(0, 0, 0, 1);
+    }
+
     multmask = 0x00FF;
     multmask <<= (ashift * 2);
     multmask2 = 0x00FF00FF00FF00FFULL;
@@ -692,6 +702,24 @@ static void BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo *info)
             mm_alpha = _mm_or_si64(mm_alpha2, *(__m64 *) & multmask);    /* 0F0A0A0A -> mm_alpha */
             mm_alpha2 = _mm_xor_si64(mm_alpha2, *(__m64 *) & multmask2);    /* 255 - mm_alpha -> mm_alpha */
 
+            /*
+                Alpha blending is:
+                    dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
+                    dstA = srcA + (dstA * (1-srcA)) *
+
+                Here, 'src1' is:
+                    srcRGB * srcA
+                    srcA
+                And 'dst1' is:
+                    dstRGB * (1-srcA)
+                    dstA * (1-srcA)
+                so that *dstp is 'src1 + dst1'
+
+                src1 is computed using mullo_pi16: (X * mask) >> 8, but is approximate for srcA ((srcA * 255) >> 8).
+
+                need to a 1 to get an exact result: (srcA * 256) >> 8 == srcA
+             */
+            mm_alpha = _mm_add_pi16(mm_alpha, mm_one_alpha);
 
             /* blend */
             src1 = _mm_mullo_pi16(src1, mm_alpha);
