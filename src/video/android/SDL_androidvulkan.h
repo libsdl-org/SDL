@@ -37,7 +37,6 @@
 int Android_Vulkan_LoadLibrary(_THIS, const char *path);
 void Android_Vulkan_UnloadLibrary(_THIS);
 SDL_bool Android_Vulkan_GetInstanceExtensions(_THIS,
-                                              SDL_Window *window,
                                               unsigned *count,
                                               const char **names);
 SDL_bool Android_Vulkan_CreateSurface(_THIS,

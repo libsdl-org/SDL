@@ -754,7 +754,7 @@ SDL_DYNAPI_PROC(int,SDL_UpdateWindowSurfaceRects,(SDL_Window *a, const SDL_Rect 
 SDL_DYNAPI_PROC(int,SDL_UpdateYUVTexture,(SDL_Texture *a, const SDL_Rect *b, const Uint8 *c, int d, const Uint8 *e, int f, const Uint8 *g, int h),(a,b,c,d,e,f,g,h),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_Vulkan_CreateSurface,(SDL_Window *a, VkInstance b, VkSurfaceKHR *c),(a,b,c),return)
 SDL_DYNAPI_PROC(void,SDL_Vulkan_GetDrawableSize,(SDL_Window *a, int *b, int *c),(a,b,c),)
-SDL_DYNAPI_PROC(SDL_bool,SDL_Vulkan_GetInstanceExtensions,(SDL_Window *a, unsigned int *b, const char **c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_Vulkan_GetInstanceExtensions,(unsigned int *a, const char **b),(a,b),return)
 SDL_DYNAPI_PROC(void*,SDL_Vulkan_GetVkGetInstanceProcAddr,(void),(),return)
 SDL_DYNAPI_PROC(int,SDL_Vulkan_LoadLibrary,(const char *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_Vulkan_UnloadLibrary,(void),(),)
