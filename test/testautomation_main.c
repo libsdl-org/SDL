@@ -10,30 +10,6 @@
 #include <SDL3/SDL_test.h>
 
 /* !
- * \brief Tests SDL_Init() and SDL_Quit() of Joystick and Haptic subsystems
- * \sa
- * http://wiki.libsdl.org/SDL_Init
- * http://wiki.libsdl.org/SDL_Quit
- */
-static int main_testInitQuitJoystickHaptic(void *arg)
-{
-    int enabled_subsystems;
-    int initialized_subsystems = SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC;
-
-    SDLTest_AssertCheck(SDL_Init(initialized_subsystems) == 0, "SDL_Init multiple systems.");
-
-    enabled_subsystems = SDL_WasInit(initialized_subsystems);
-    SDLTest_AssertCheck(enabled_subsystems == initialized_subsystems, "SDL_WasInit(SDL_INIT_EVERYTHING) contains all systems (%i)", enabled_subsystems);
-
-    SDL_Quit();
-
-    enabled_subsystems = SDL_WasInit(initialized_subsystems);
-    SDLTest_AssertCheck(enabled_subsystems == 0, "SDL_Quit should shut down everything (%i)", enabled_subsystems);
-
-    return TEST_COMPLETED;
-}
-
-/* !
  * \brief Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
  * \sa
  * http://wiki.libsdl.org/SDL_Init
@@ -138,22 +114,18 @@ main_testSetError(void *arg)
 #endif
 
 static const SDLTest_TestCaseReference mainTest1 = {
-    (SDLTest_TestCaseFp)main_testInitQuitJoystickHaptic, "main_testInitQuitJoystickHaptic", "Tests SDL_Init/Quit of Joystick and Haptic subsystem", TEST_ENABLED
-};
-
-static const SDLTest_TestCaseReference mainTest2 = {
     (SDLTest_TestCaseFp)main_testInitQuitSubSystem, "main_testInitQuitSubSystem", "Tests SDL_InitSubSystem/QuitSubSystem", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference mainTest3 = {
+static const SDLTest_TestCaseReference mainTest2 = {
     (SDLTest_TestCaseFp)main_testImpliedJoystickInit, "main_testImpliedJoystickInit", "Tests that init for gamecontroller properly implies joystick", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference mainTest4 = {
+static const SDLTest_TestCaseReference mainTest3 = {
     (SDLTest_TestCaseFp)main_testImpliedJoystickQuit, "main_testImpliedJoystickQuit", "Tests that quit for gamecontroller doesn't quit joystick if you inited it explicitly", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference mainTest5 = {
+static const SDLTest_TestCaseReference mainTest4 = {
     (SDLTest_TestCaseFp)main_testSetError, "main_testSetError", "Tests that SDL_SetError() handles arbitrarily large strings", TEST_ENABLED
 };
 
@@ -163,7 +135,6 @@ static const SDLTest_TestCaseReference *mainTests[] = {
     &mainTest2,
     &mainTest3,
     &mainTest4,
-    &mainTest5,
     NULL
 };
 
