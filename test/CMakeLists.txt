@@ -94,6 +94,10 @@ macro(add_sdl_test_executable TARGET)
     if(OPENGL_FOUND)
         target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
     endif()
+
+    if(TARGET sdl-global-options)
+        target_link_libraries(${TARGET} PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
+    endif()
 endmacro()
 
 check_include_file(signal.h HAVE_SIGNAL_H)
@@ -305,7 +309,7 @@ if(N3DS)
     foreach(APP ${SDL_TEST_EXECUTABLES})
         get_target_property(TARGET_BINARY_DIR ${APP} BINARY_DIR)
         set(SMDH_FILE "${TARGET_BINARY_DIR}/${APP}.smdh")
-        ctr_generate_smdh("${SMDH_FILE}" 
+        ctr_generate_smdh("${SMDH_FILE}"
             NAME "SDL-${APP}"
             DESCRIPTION "SDL3 Test suite"
             AUTHOR "SDL3 Contributors"
