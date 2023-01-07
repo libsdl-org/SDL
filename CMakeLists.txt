@@ -1946,7 +1946,7 @@ elseif(WINDOWS)
 
   file(GLOB VERSION_SOURCES ${SDL3_SOURCE_DIR}/src/core/windows/*.rc)
   if(MINGW OR CYGWIN)
-    list(INSERT SDL_PC_LIBS 0 "-lmingw32" "-mwindows")
+    list(APPEND SDL_PC_LIBS "-mwindows")
   endif()
 
 elseif(APPLE)
