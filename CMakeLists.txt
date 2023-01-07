@@ -621,9 +621,10 @@ if(USE_GCC OR USE_CLANG)
     endif()
     cmake_pop_check_state()
 
-    # FIXME: use generator expression instead of appending to EXTRA_LDFLAGS_BUILD
-    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${SDL_DYLIB_COMPAT_VERSION}")
-    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-current_version,${SDL_DYLIB_CURRENT_VERSION}")
+    if(CMAKE_VERSION VERSION_LESS "3.6")
+      list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${SDL_DYLIB_COMPAT_VERSION}")
+      list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-current_version,${SDL_DYLIB_CURRENT_VERSION}")
+    endif()
   elseif(NOT OPENBSD)
     cmake_push_check_state()
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Wl,--no-undefined")
@@ -3124,7 +3125,14 @@ if(SDL_SHARED)
   endif()
   if(APPLE)
     set_target_properties(SDL3 PROPERTIES
-      MACOSX_RPATH 1)
+      MACOSX_RPATH 1
+    )
+    if(NOT CMAKE_VERSION VERSION_LESS "3.6")
+      set_target_properties(SDL3 PROPERTIES
+        SOVERSION "${SDL_DYLIB_COMPAT_VERSION}" # SOVERSION corresponds to compatibility version
+        VERSION "${SDL_DYLIB_CURRENT_VERSION}"  # VERSION corresponds to the current version
+      )
+    endif()
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL3 PROPERTIES
       VERSION "${SDL_SO_VERSION}"
