@@ -130,6 +130,9 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  * Get the names of the Vulkan instance extensions needed to create a surface
  * with SDL_Vulkan_CreateSurface.
  *
+ * This should be called after either calling SDL_Vulkan_LoadLibrary() or
+ * creating an SDL_Window with the `SDL_WINDOW_VULKAN` flag.
+ *
  * If `pNames` is NULL, then the number of required Vulkan instance extensions
  * is returned in `pCount`. Otherwise, `pCount` must point to a variable set
  * to the number of elements in the `pNames` array, and on return the variable
