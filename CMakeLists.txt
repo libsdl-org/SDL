@@ -612,18 +612,6 @@ if(USE_GCC OR USE_CLANG)
     endif()
   endif()
 
-  cmake_push_check_state()
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -fvisibility=hidden -Werror")
-  check_c_source_compiles("
-      #if !defined(__GNUC__) || __GNUC__ < 4
-      #error SDL only uses visibility attributes in GCC 4 or newer
-      #endif
-      int main(int argc, char **argv) { return 0; }" HAVE_GCC_FVISIBILITY)
-  cmake_pop_check_state()
-  if(HAVE_GCC_FVISIBILITY)
-    list(APPEND EXTRA_CFLAGS "-fvisibility=hidden")
-  endif()
-
   check_c_compiler_flag(-Wshadow HAVE_GCC_WSHADOW)
   if(HAVE_GCC_WSHADOW)
     list(APPEND EXTRA_CFLAGS "-Wshadow")
@@ -3126,9 +3114,14 @@ if(SDL_SHARED)
   add_library(SDL3 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
   # alias target for in-tree builds
   add_library(SDL3::SDL3 ALIAS SDL3)
-  set_target_properties(SDL3 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-  set_target_properties(SDL3 PROPERTIES LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
-  set_target_properties(SDL3 PROPERTIES INTERFACE_LINK_DEPENDS "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym>")
+  set_target_properties(SDL3 PROPERTIES
+    C_VISIBILITY_PRESET "hidden"
+    CXX_VISIBILITY_PRESET "hidden"
+    OBJC_VISIBILITY_PRESET "hidden"
+    POSITION_INDEPENDENT_CODE TRUE
+    LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym"
+    INTERFACE_LINK_DEPENDS "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym>"
+  )
   if(NOT SDL_LIBC)
     if(MSVC AND SDL_CPU_X86)
       # FIXME: should be added for all architectures (missing symbols for ARM)
