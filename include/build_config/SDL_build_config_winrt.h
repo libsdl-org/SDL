@@ -23,7 +23,7 @@
 #define SDL_build_config_winrt_h_
 #define SDL_build_config_h_
 
-#include <SDL3/SDL_platform.h>
+#include <SDL3/SDL_platform_defines.h>
 
 /* Make sure the Windows SDK's NTDDI_VERSION macro gets defined.  This is used
    by SDL to determine which version of the Windows SDK is being used.

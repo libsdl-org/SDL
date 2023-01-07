@@ -60,7 +60,7 @@
 #define SDL_atomic_h_
 
 #include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_platform.h>
+#include <SDL3/SDL_platform_defines.h>
 
 #include <SDL3/SDL_begin_code.h>
 
