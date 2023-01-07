@@ -20,6 +20,9 @@ set(PKGCONFIG_DEPENDS)
 # The sdl-build-options interface library collects all PRIVATE build options for the SDL libraries
 add_library(sdl-build-options INTERFACE)
 
+# The sdl-shared-build-options interface library collects all PRIVATE build options for the SDL shared librariy
+add_library(sdl-shared-build-options INTERFACE)
+
 # The sdl-global-options interface library collects all PRIVATE build options for the SDL libraries + test + ...
 add_library(sdl-global-options INTERFACE)
 
@@ -268,7 +271,7 @@ endif()
 
 check_linker_flag(C "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym" HAVE_WL_VERSION_SCRIPT)
 if(HAVE_WL_VERSION_SCRIPT)
-  list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
+  target_link_libraries(sdl-shared-build-options INTERFACE "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
 else()
   if((LINUX AND LIBC_IS_GLIBC) OR ANDROID)
     message(FATAL_ERROR "Linker does not support '-Wl,--version-script=xxx.sym'. This is required on the current host platform (${SDL_CMAKE_PLATFORM}).")
@@ -284,8 +287,7 @@ if(CYGWIN)
     HAVE_GCC_NO_CYGWIN)
   cmake_pop_check_state()
   if(HAVE_GCC_NO_CYGWIN)
-    list(APPEND EXTRA_LDFLAGS_BUILD "-mno-cygwin")
-    list(APPEND SDL_PC_LIBS "-mno-cygwin")
+    target_link_libraries(sdl-shared-build-options INTERFACE "-mno-cygwin")
   endif()
   list(APPEND SDL_PC_CFLAGS "-I/usr/include/mingw")
 endif()
@@ -622,8 +624,8 @@ if(USE_GCC OR USE_CLANG)
     cmake_pop_check_state()
 
     if(CMAKE_VERSION VERSION_LESS "3.6")
-      list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${SDL_DYLIB_COMPAT_VERSION}")
-      list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-current_version,${SDL_DYLIB_CURRENT_VERSION}")
+      target_link_libraries(sdl-shared-build-options INTERFACE "-Wl,-compatibility_version,${SDL_DYLIB_COMPAT_VERSION}")
+      target_link_libraries(sdl-shared-build-options INTERFACE "-Wl,-current_version,${SDL_DYLIB_CURRENT_VERSION}")
     endif()
   elseif(NOT OPENBSD)
     cmake_push_check_state()
@@ -631,7 +633,7 @@ if(USE_GCC OR USE_CLANG)
     check_c_compiler_flag("" HAVE_NO_UNDEFINED)
     cmake_pop_check_state()
     if(HAVE_NO_UNDEFINED AND NOT (USE_CLANG AND WINDOWS))
-      list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,--no-undefined")
+      target_link_libraries(sdl-shared-build-options INTERFACE "-Wl,--no-undefined")
     endif()
   endif()
 
@@ -662,7 +664,7 @@ if(MSVC)
 
   # CET support was added in VS 16.7
   if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
-    list(APPEND EXTRA_LDFLAGS_BUILD "-CETCOMPAT")
+    target_link_libraries(sdl-shared-build-options INTERFACE "-CETCOMPAT")
   endif()
 endif()
 
@@ -3014,6 +3016,10 @@ get_property(INFO_CHECKS TARGET sdl-global-options PROPERTY INTERFACE_COMPILE_OP
 list(REMOVE_DUPLICATES INFO_CHECKS)
 listtostr(INFO_CHECKS INFO_CHECKS)
 
+get_property(INFO_SHARED_LDFLAGS TARGET sdl-shared-build-options PROPERTY INTERFACE_LINK_LIBRARIES)
+list(REMOVE_DUPLICATES INFO_SHARED_LDFLAGS)
+listtostr(INFO_SHARED_LDFLAGS INFO_SHARED_LDFLAGS)
+
 ##### Info output #####
 message(STATUS "")
 message(STATUS "SDL3 was configured with the following options:")
@@ -3047,7 +3053,7 @@ endif()
 message(STATUS " EXTRA DEFS:    ${INFO_DEFS}")
 message(STATUS " EXTRA CFLAGS:  ${INFO_CFLAGS} ${INFO_CHECKS}")
 message(STATUS " EXTRA INCDIRS: ${INFO_INCDIRS}")
-message(STATUS " EXTRA_LDFLAGS: ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD}")
+message(STATUS " EXTRA_LDFLAGS: ${EXTRA_LDFLAGS} ${INFO_SHARED_LDFLAGS}")
 message(STATUS " EXTRA_LIBS:    ${EXTRA_LIBS}")
 message(STATUS "")
 message(STATUS " Build Shared Library: ${SDL_SHARED}")
@@ -3153,7 +3159,7 @@ if(SDL_SHARED)
     set_target_properties(SDL3 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
   endif()
   # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for EXTRA_LDFLAGS
-  target_link_libraries(SDL3 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD} ${CMAKE_DEPENDS})
+  target_link_libraries(SDL3 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${CMAKE_DEPENDS})
   target_include_directories(SDL3
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
@@ -3167,6 +3173,7 @@ if(SDL_SHARED)
   )
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
+  target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-shared-build-options>)
   target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
   if(MINGW OR CYGWIN)
     if(NOT CMAKE_VERSION VERSION_LESS "3.13")
