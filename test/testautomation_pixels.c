@@ -88,14 +88,13 @@ const char *g_AllFormatsVerbose[] = {
     "SDL_PIXELFORMAT_YVYU",
     "SDL_PIXELFORMAT_NV12",
     "SDL_PIXELFORMAT_NV21"
-
 };
 
 /* Definition of some invalid formats for negative tests */
 const int g_numInvalidPixelFormats = 2;
 static Uint32 g_invalidPixelFormats[] = {
-    0xfffffffe,
-    0xffffffff
+    SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_1010102 + 1, 32, 4),
+    SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_1010102 + 2, 32, 4)
 };
 const char *g_invalidPixelFormatsVerbose[] = {
     "SDL_PIXELFORMAT_UNKNOWN",
@@ -114,7 +113,7 @@ int pixels_allocFreeFormat(void *arg)
 {
     const char *unknownFormat = "SDL_PIXELFORMAT_UNKNOWN";
     const char *expectedError = "Parameter 'format' is invalid";
-    const char *expectedError2 = "Parameter 'pixel_format' is invalid";
+    const char *expectedError2 = "Unknown pixel format";
     const char *error;
     int i;
     Uint32 format;
