@@ -208,8 +208,6 @@ add_sdl_test_executable(gamepadmap NEEDS_RESOURCES TESTUTILS gamepadmap.c)
 add_sdl_test_executable(testvulkan testvulkan.c)
 add_sdl_test_executable(testoffscreen testoffscreen.c)
 
-cmake_push_check_state()
-
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
 if(HAVE_WFORMAT_OVERFLOW)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_OVERFLOW)
@@ -220,12 +218,16 @@ if(HAVE_WFORMAT)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT)
 endif()
 
+cmake_push_check_state()
+if(HAVE_WFORMAT)
+    # Some compilers ignore -Wformat-extra-args without -Wformat
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Wformat")
+endif()
 check_c_compiler_flag(-Wformat-extra-args HAVE_WFORMAT_EXTRA_ARGS)
+cmake_pop_check_state()
 if(HAVE_WFORMAT_EXTRA_ARGS)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_EXTRA_ARGS)
 endif()
-
-cmake_pop_check_state()
 
 if(SDL_DUMMYAUDIO)
   list(APPEND SDL_TESTS_NONINTERACTIVE
