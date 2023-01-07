@@ -141,7 +141,6 @@ void X11_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
-                                          SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
 {

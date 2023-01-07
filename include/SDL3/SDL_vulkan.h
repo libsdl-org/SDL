@@ -59,9 +59,6 @@ typedef VkSurfaceKHR SDL_vulkanSurface; /* for compatibility with Tizen */
 
 /**
  *  \name Vulkan support functions
- *
- *  \note SDL_Vulkan_GetInstanceExtensions & SDL_Vulkan_CreateSurface API
- *        is compatable with Tizen's implementation of Vulkan in SDL.
  */
 /* @{ */
 
@@ -142,11 +139,6 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  * required extensions, SDL_FALSE will be returned instead of SDL_TRUE, to
  * indicate that not all the required extensions were returned.
  *
- * The `window` parameter is currently needed to be valid as of SDL 2.0.8,
- * however, this parameter will likely be removed in future releases
- *
- * \param window A window for which the required Vulkan instance extensions
- *               should be retrieved (will be deprecated in a future release)
  * \param pCount A pointer to an unsigned int corresponding to the number of
  *               extensions to be returned
  * \param pNames NULL or a pointer to an array to be filled with required
@@ -157,8 +149,7 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *
  * \sa SDL_Vulkan_CreateSurface
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(SDL_Window *window,
-                                                                  unsigned int *pCount,
+extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(unsigned int *pCount,
                                                                   const char **pNames);
 
 /**

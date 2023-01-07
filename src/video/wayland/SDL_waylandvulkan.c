@@ -117,7 +117,6 @@ void Wayland_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
-                                              SDL_Window *window,
                                               unsigned *count,
                                               const char **names)
 {

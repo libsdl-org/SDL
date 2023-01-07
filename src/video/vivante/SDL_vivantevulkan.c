@@ -118,7 +118,6 @@ void VIVANTE_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
-                                              SDL_Window *window,
                                               unsigned *count,
                                               const char **names)
 {
