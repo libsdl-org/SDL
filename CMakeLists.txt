@@ -11,16 +11,16 @@ else()
   set(SDL3_SUBPROJECT ON)
 endif()
 
-set(EXTRA_LIBS)
-set(EXTRA_LDFLAGS)
+set(SDL_EXTRA_LIBS)
+set(SDL_EXTRA_LDFLAGS)
 
-set(CMAKE_DEPENDS)
-set(PKGCONFIG_DEPENDS)
+set(SDL_CMAKE_DEPENDS)
+set(SDL_PC_PRIVATE_REQUIRES)
 
 # The sdl-build-options interface library collects all PRIVATE build options for the SDL libraries
 add_library(sdl-build-options INTERFACE)
 
-# The sdl-shared-build-options interface library collects all PRIVATE build options for the SDL shared librariy
+# The sdl-shared-build-options interface library collects all PRIVATE build options for the SDL shared library
 add_library(sdl-shared-build-options INTERFACE)
 
 # The sdl-global-options interface library collects all PRIVATE build options for the SDL libraries + test + ...
@@ -1034,14 +1034,14 @@ if(SDL_LIBC)
     if(HAVE_LIBM)
       cmake_pop_check_state()
       if(NOT VITA)
-        list(APPEND EXTRA_LIBS m)
+        list(APPEND SDL_EXTRA_LIBS m)
       endif()
     endif()
 
     if(SDL_SYSTEM_ICONV)
       check_library_exists(iconv iconv_open "" HAVE_LIBICONV)
       if(HAVE_LIBICONV)
-        list(APPEND EXTRA_LIBS iconv)
+        list(APPEND SDL_EXTRA_LIBS iconv)
         set(HAVE_ICONV 1)
         set(HAVE_SYSTEM_ICONV TRUE)
       else()
@@ -1187,7 +1187,7 @@ if(ANDROID)
     file(GLOB OPENSLES_AUDIO_SOURCES ${SDL3_SOURCE_DIR}/src/audio/openslES/*.c)
     list(APPEND SOURCE_FILES ${OPENSLES_AUDIO_SOURCES})
 
-    list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} OpenSLES)
+    list(APPEND SDL_EXTRA_LIBS ${ANDROID_DL_LIBRARY} OpenSLES)
 
     set(SDL_AUDIO_DRIVER_AAUDIO 1)
     file(GLOB AAUDIO_AUDIO_SOURCES ${SDL3_SOURCE_DIR}/src/audio/aaudio/*.c)
@@ -1254,7 +1254,7 @@ if(ANDROID)
     # Core stuff
     # find_library(ANDROID_DL_LIBRARY dl)
     # FIXME failing dlopen https://github.com/android-ndk/ndk/issues/929
-    list(APPEND EXTRA_LIBS dl log android)
+    list(APPEND SDL_EXTRA_LIBS dl log android)
     target_compile_definitions(sdl-build-options INTERFACE "GL_GLEXT_PROTOTYPES")
 
     #enable gles
@@ -1265,7 +1265,7 @@ if(ANDROID)
       set(SDL_VIDEO_OPENGL_ES2 1)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
 
-      list(APPEND EXTRA_LIBS GLESv1_CM GLESv2)
+      list(APPEND SDL_EXTRA_LIBS GLESv1_CM GLESv2)
     endif()
 
     if(SDL_VULKAN)
@@ -1504,7 +1504,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
         if(INOTIFY_FOUND)
           set(HAVE_INOTIFY 1)
           target_include_directories(sdl-build-options INTERFACE "${INOTIFY_INCLUDE_DIRS}")
-          list(APPEND EXTRA_LIBS ${INOTIFY_LIBRARIES})
+          list(APPEND SDL_EXTRA_LIBS ${INOTIFY_LIBRARIES})
         endif()
       endif()
 
@@ -1576,7 +1576,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
   if(SDL_CLOCK_GETTIME)
     check_library_exists(rt clock_gettime "" FOUND_CLOCK_GETTIME_LIBRT)
     if(FOUND_CLOCK_GETTIME_LIBRT)
-      list(APPEND EXTRA_LIBS rt)
+      list(APPEND SDL_EXTRA_LIBS rt)
       set(HAVE_CLOCK_GETTIME 1)
     else()
       check_library_exists(c clock_gettime "" FOUND_CLOCK_GETTIME_LIBC)
@@ -1851,11 +1851,11 @@ elseif(WINDOWS)
 
   # Libraries for Win32 native and MinGW
   if(NOT WINDOWS_STORE)
-    list(APPEND EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32)
+    list(APPEND SDL_EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32)
   endif()
 
   if(WINDOWS_STORE)
-    list(APPEND EXTRA_LIBS
+    list(APPEND SDL_EXTRA_LIBS
       -nodefaultlib:vccorlib$<$<CONFIG:Debug>:d>
       -nodefaultlib:msvcrt$<$<CONFIG:Debug>:d>
       vccorlib$<$<CONFIG:Debug>:d>.lib
@@ -1914,7 +1914,7 @@ elseif(WINDOWS)
     endif()
     if(HAVE_DINPUT_H)
       set(SDL_JOYSTICK_DINPUT 1)
-      list(APPEND EXTRA_LIBS dinput8)
+      list(APPEND SDL_EXTRA_LIBS dinput8)
     endif()
     if(HAVE_XINPUT_H)
       if(NOT WINDOWS_STORE)
@@ -2163,71 +2163,71 @@ elseif(APPLE)
 
   # Actually load the frameworks at the end so we don't duplicate include.
   if(SDL_FRAMEWORK_COREVIDEO)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,CoreVideo")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,CoreVideo")
   endif()
   if(SDL_FRAMEWORK_COCOA)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,Cocoa")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,Cocoa")
   endif()
   if(SDL_FRAMEWORK_IOKIT)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,IOKit")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,IOKit")
   endif()
   if(SDL_FRAMEWORK_FF)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,ForceFeedback")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,ForceFeedback")
   endif()
   if(SDL_FRAMEWORK_CARBON)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,Carbon")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,Carbon")
   endif()
   if(SDL_FRAMEWORK_COREAUDIO)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,CoreAudio")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,CoreAudio")
   endif()
   if(SDL_FRAMEWORK_AUDIOTOOLBOX)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,AudioToolbox")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,AudioToolbox")
   endif()
   if(SDL_FRAMEWORK_AVFOUNDATION)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,AVFoundation")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,AVFoundation")
   endif()
   if(SDL_FRAMEWORK_COREBLUETOOTH)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,CoreBluetooth")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,CoreBluetooth")
   endif()
   if(SDL_FRAMEWORK_COREGRAPHICS)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,CoreGraphics")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,CoreGraphics")
   endif()
   if(SDL_FRAMEWORK_COREMOTION)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,CoreMotion")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,CoreMotion")
   endif()
   if(SDL_FRAMEWORK_FOUNDATION)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,Foundation")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,Foundation")
   endif()
   if(SDL_FRAMEWORK_GAMECONTROLLER)
     find_library(GAMECONTROLLER GameController)
     if(GAMECONTROLLER)
-      list(APPEND EXTRA_LDFLAGS "-Wl,-weak_framework,GameController")
+      list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-weak_framework,GameController")
     endif()
   endif()
   if(SDL_FRAMEWORK_METAL)
     if(IOS OR TVOS)
-      list(APPEND EXTRA_LDFLAGS "-Wl,-framework,Metal")
+      list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,Metal")
     else()
-      list(APPEND EXTRA_LDFLAGS "-Wl,-weak_framework,Metal")
+      list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-weak_framework,Metal")
     endif()
   endif()
   if(SDL_FRAMEWORK_OPENGLES)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,OpenGLES")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,OpenGLES")
   endif()
   if(SDL_FRAMEWORK_QUARTZCORE)
     if(IOS OR TVOS)
-      list(APPEND EXTRA_LDFLAGS "-Wl,-framework,QuartzCore")
+      list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,QuartzCore")
     else()
-      list(APPEND EXTRA_LDFLAGS "-Wl,-weak_framework,QuartzCore")
+      list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-weak_framework,QuartzCore")
     endif()
   endif()
   if(SDL_FRAMEWORK_UIKIT)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-framework,UIKit")
+    list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-framework,UIKit")
   endif()
   if(SDL_FRAMEWORK_COREHAPTICS)
     find_library(COREHAPTICS CoreHaptics)
     if(COREHAPTICS)
-      list(APPEND EXTRA_LDFLAGS "-Wl,-weak_framework,CoreHaptics")
+      list(APPEND SDL_EXTRA_LDFLAGS "-Wl,-weak_framework,CoreHaptics")
     endif()
   endif()
 
@@ -2265,7 +2265,7 @@ elseif(HAIKU)
       set(SDL_VIDEO_OPENGL 1)
       set(SDL_VIDEO_OPENGL_HAIKU 1)
       set(SDL_VIDEO_RENDER_OGL 1)
-      list(APPEND EXTRA_LIBS GL)
+      list(APPEND SDL_EXTRA_LIBS GL)
       set(HAVE_OPENGL TRUE)
     endif()
   endif()
@@ -2301,7 +2301,7 @@ elseif(HAIKU)
   list(APPEND SOURCE_FILES ${HAIKU_CORE_SOURCES})
 
   CheckPTHREAD()
-  list(APPEND EXTRA_LIBS root be media game device textencoding)
+  list(APPEND SDL_EXTRA_LIBS root be media game device textencoding)
 
 elseif(RISCOS)
   if(SDL_MISC)
@@ -2419,7 +2419,7 @@ elseif(VITA)
 
       if(HAVE_PIGS_IN_BLANKET_H)
         set(SDL_VIDEO_OPENGL_ES2 1)
-        list(APPEND EXTRA_LIBS
+        list(APPEND SDL_EXTRA_LIBS
           pib
         )
         set(HAVE_VIDEO_VITA_PIB ON)
@@ -2440,7 +2440,7 @@ elseif(VITA)
         set(SDL_VIDEO_OPENGL_ES2 1)
         set(SDL_VIDEO_RENDER_OGL_ES2 1)
 
-        list(APPEND EXTRA_LIBS
+        list(APPEND SDL_EXTRA_LIBS
           libgpu_es4_ext_stub_weak
           libIMGEGL_stub_weak
         )
@@ -2452,7 +2452,7 @@ elseif(VITA)
           set(HAVE_OPENGL TRUE)
           set(SDL_VIDEO_OPENGL 1)
           set(SDL_VIDEO_RENDER_OGL 1)
-          list(APPEND EXTRA_LIBS libGL_stub)
+          list(APPEND SDL_EXTRA_LIBS libGL_stub)
           set(SDL_VIDEO_VITA_PVR_OGL 1)
         endif()
 
@@ -2463,7 +2463,7 @@ elseif(VITA)
 
     set(SDL_VIDEO_RENDER_VITA_GXM 1)
 
-    list(APPEND EXTRA_LIBS
+    list(APPEND SDL_EXTRA_LIBS
       SceGxm_stub
       SceDisplay_stub
       SceCtrl_stub
@@ -2484,7 +2484,7 @@ elseif(VITA)
       m
     )
     if(HAVE_VITA_PIB)
-        list(PREPEND EXTRA_LIBS
+        list(PREPEND SDL_EXTRA_LIBS
           pib
           libScePiglet_stub
           SceShaccCg_stub
@@ -2492,7 +2492,7 @@ elseif(VITA)
         )
     endif()
     if(HAVE_VITA_PVR)
-        list(PREPEND EXTRA_LIBS
+        list(PREPEND SDL_EXTRA_LIBS
           SceIme_stub
         )
     endif()
@@ -2564,7 +2564,7 @@ elseif(PSP)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
 
-  list(APPEND EXTRA_LIBS
+  list(APPEND SDL_EXTRA_LIBS
       GL
       pspvram
       pspaudio
@@ -2623,7 +2623,7 @@ elseif(PS2)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
 
-  list(APPEND EXTRA_LIBS
+  list(APPEND SDL_EXTRA_LIBS
     patches
     gskit
     dmakit
@@ -2823,11 +2823,11 @@ file(GENERATE
     INPUT "${SDL3_BINARY_DIR}/SDL_build_config.h.intermediate")
 
 # Prepare the flags and remove duplicates
-if(EXTRA_LDFLAGS)
-  list(REMOVE_DUPLICATES EXTRA_LDFLAGS)
+if(SDL_EXTRA_LDFLAGS)
+  list(REMOVE_DUPLICATES SDL_EXTRA_LDFLAGS)
 endif()
-if(EXTRA_LIBS)
-  list(REMOVE_DUPLICATES EXTRA_LIBS)
+if(SDL_EXTRA_LIBS)
+  list(REMOVE_DUPLICATES SDL_EXTRA_LIBS)
 endif()
 if(EXTRA_CFLAGS)
   list(REMOVE_DUPLICATES EXTRA_CFLAGS)
@@ -2895,12 +2895,13 @@ else()
 endif()
 
 # Clean up the different lists
-listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
-set(SDL_PC_STATIC_LIBS ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
+listtostr(SDL_EXTRA_LIBS EXTRA_LIBS_L "-l")
+set(SDL_PC_STATIC_LIBS ${SDL_EXTRA_LDFLAGS} ${EXTRA_LIBS_L})
 list(REMOVE_DUPLICATES SDL_PC_STATIC_LIBS)
 listtostr(SDL_PC_STATIC_LIBS SDL_PC_STATIC_LIBS)
 listtostr(SDL_PC_LIBS SDL_PC_LIBS)
 listtostr(SDL_PC_CFLAGS SDL_PC_CFLAGS)
+listtostr(SDL_PC_PRIVATE_REQUIRES SDL_PC_PRIVATE_REQUIRES)
 string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_PC_STATIC_LIBS "${SDL_PC_STATIC_LIBS}")
 if(NOT SDL_SHARED)
   string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_PC_LIBS "${SDL_PC_LIBS}")
@@ -3015,9 +3016,13 @@ get_property(INFO_CHECKS TARGET sdl-global-options PROPERTY INTERFACE_COMPILE_OP
 list(REMOVE_DUPLICATES INFO_CHECKS)
 listtostr(INFO_CHECKS INFO_CHECKS)
 
+listtostr(SDL_EXTRA_LDFLAGS INFO_EXTRA_LDFLAGS)
+
 get_property(INFO_SHARED_LDFLAGS TARGET sdl-shared-build-options PROPERTY INTERFACE_LINK_LIBRARIES)
 list(REMOVE_DUPLICATES INFO_SHARED_LDFLAGS)
 listtostr(INFO_SHARED_LDFLAGS INFO_SHARED_LDFLAGS)
+
+listtostr(SDL_EXTRA_LIBS INFO_EXTRA_LIBS)
 
 ##### Info output #####
 message(STATUS "")
@@ -3052,8 +3057,8 @@ endif()
 message(STATUS " EXTRA DEFS:    ${INFO_DEFS}")
 message(STATUS " EXTRA CFLAGS:  ${INFO_CFLAGS} ${INFO_CHECKS}")
 message(STATUS " EXTRA INCDIRS: ${INFO_INCDIRS}")
-message(STATUS " EXTRA_LDFLAGS: ${EXTRA_LDFLAGS} ${INFO_SHARED_LDFLAGS}")
-message(STATUS " EXTRA_LIBS:    ${EXTRA_LIBS}")
+message(STATUS " EXTRA LDFLAGS: ${INFO_SHARED_LDFLAGS} ${INFO_EXTRA_LDFLAGS}")
+message(STATUS " EXTRA LIBS:    ${INFO_EXTRA_LIBS}")
 message(STATUS "")
 message(STATUS " Build Shared Library: ${SDL_SHARED}")
 message(STATUS " Build Static Library: ${SDL_STATIC}")
@@ -3157,8 +3162,8 @@ if(SDL_SHARED)
     endif()
     set_target_properties(SDL3 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
   endif()
-  # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for EXTRA_LDFLAGS
-  target_link_libraries(SDL3 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${CMAKE_DEPENDS})
+  # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for SDL_EXTRA_LDFLAGS
+  target_link_libraries(SDL3 PRIVATE ${SDL_EXTRA_LIBS} ${SDL_EXTRA_LDFLAGS} ${SDL_CMAKE_DEPENDS})
   target_include_directories(SDL3
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
@@ -3196,7 +3201,7 @@ if(SDL_STATIC)
     POSITION_INDEPENDENT_CODE "${SDL_STATIC_PIC}"
   )
   target_compile_definitions(SDL3-static PRIVATE SDL_STATIC_LIB)
-  target_link_libraries(SDL3-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${CMAKE_DEPENDS})
+  target_link_libraries(SDL3-static PRIVATE ${SDL_EXTRA_LIBS} ${SDL_EXTRA_LDFLAGS} ${SDL_CMAKE_DEPENDS})
   target_include_directories(SDL3-static
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
