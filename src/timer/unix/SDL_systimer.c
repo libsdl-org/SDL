@@ -179,7 +179,7 @@ void SDL_DelayNS(Uint64 ns)
             break;
         }
         ns -= elapsed;
-        tv.tv_sec = (ns / SDL_NS_PER_SECOND)
+        tv.tv_sec = (ns / SDL_NS_PER_SECOND);
         tv.tv_usec = SDL_NS_TO_US(ns % SDL_NS_PER_SECOND);
 
         was_error = select(0, NULL, NULL, NULL, &tv);
