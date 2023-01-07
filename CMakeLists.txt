@@ -26,7 +26,7 @@ set(PKGCONFIG_DEPENDS)
 add_library(sdl-build-options INTERFACE)
 
 if(WINDOWS_STORE)
-  target_compile_definitions(sdl-build-options INTERFACE "-DSDL_BUILDING_WINRT=1")
+  target_compile_definitions(sdl-build-options INTERFACE "SDL_BUILDING_WINRT=1")
   target_compile_options(sdl-build-options INTERFACE "-ZW")
 endif()
 
@@ -299,7 +299,7 @@ if(CYGWIN)
 endif()
 
 # General includes
-target_compile_definitions(sdl-build-options INTERFACE "-DUSING_GENERATED_CONFIG_H")
+target_compile_definitions(sdl-build-options INTERFACE "USING_GENERATED_CONFIG_H")
 target_include_directories(sdl-build-options
   INTERFACE
     "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>"
@@ -525,11 +525,11 @@ endif()
 set(HAVE_ASSERTIONS ${SDL_ASSERTIONS})
 
 if(NOT SDL_BACKGROUNDING_SIGNAL STREQUAL "OFF")
-  target_compile_definitions(sdl-build-options INTERFACE "-DSDL_BACKGROUNDING_SIGNAL=${SDL_BACKGROUNDING_SIGNAL}")
+  target_compile_definitions(sdl-build-options INTERFACE "SDL_BACKGROUNDING_SIGNAL=${SDL_BACKGROUNDING_SIGNAL}")
 endif()
 
 if(NOT SDL_FOREGROUNDING_SIGNAL STREQUAL "OFF")
-  target_compile_definitions(sdl-build-options INTERFACE "-DSDL_FOREGROUNDING_SIGNAL=${SDL_FOREGROUNDING_SIGNAL}")
+  target_compile_definitions(sdl-build-options INTERFACE "SDL_FOREGROUNDING_SIGNAL=${SDL_FOREGROUNDING_SIGNAL}")
 endif()
 
 # Compiler option evaluation
@@ -679,9 +679,9 @@ if(USE_GCC OR USE_CLANG)
   endif()
 endif()
 if(MSVC)
-  target_compile_definitions(sdl-build-options INTERFACE "-D_CRT_SECURE_NO_DEPRECATE")
-  target_compile_definitions(sdl-build-options INTERFACE "-D_CRT_NONSTDC_NO_DEPRECATE")
-  target_compile_definitions(sdl-build-options INTERFACE "-D_CRT_SECURE_NO_WARNINGS")
+  target_compile_definitions(sdl-build-options INTERFACE "_CRT_SECURE_NO_DEPRECATE")
+  target_compile_definitions(sdl-build-options INTERFACE "_CRT_NONSTDC_NO_DEPRECATE")
+  target_compile_definitions(sdl-build-options INTERFACE "_CRT_SECURE_NO_WARNINGS")
 
   # CET support was added in VS 16.7
   if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
@@ -1276,7 +1276,7 @@ if(ANDROID)
     # find_library(ANDROID_DL_LIBRARY dl)
     # FIXME failing dlopen https://github.com/android-ndk/ndk/issues/929
     list(APPEND EXTRA_LIBS dl log android)
-    target_compile_definitions(sdl-build-options INTERFACE "-DGL_GLEXT_PROTOTYPES")
+    target_compile_definitions(sdl-build-options INTERFACE "GL_GLEXT_PROTOTYPES")
 
     #enable gles
     if(SDL_OPENGLES)
@@ -2458,7 +2458,7 @@ elseif(VITA)
     if(VIDEO_VITA_PVR)
       check_include_file(gpu_es4/psp2_pvr_hint.h HAVE_PVR_H)
       if(HAVE_PVR_H)
-        target_compile_definitions(sdl-build-options INTERFACE "-D__psp2__")
+        target_compile_definitions(sdl-build-options INTERFACE "__psp2__")
         check_include_file(gl4esinit.h HAVE_GL4ES_H)
         set(SDL_VIDEO_OPENGL_EGL 1)
         set(HAVE_OPENGLES TRUE)
@@ -2537,7 +2537,7 @@ elseif(VITA)
 #  set_property(SOURCE ${SDL3_SOURCE_DIR}/src/video/arm/pixman-arm-simd-asm.S PROPERTY LANGUAGE C)
 #  set_property(SOURCE ${SDL3_SOURCE_DIR}/src/video/arm/pixman-arm-neon-asm.S PROPERTY LANGUAGE C)
 
-  target_compile_definitions(sdl-build-options INTERFACE "-D__VITA__")
+  target_compile_definitions(sdl-build-options INTERFACE "__VITA__")
 
 #  CheckPTHREAD()
 
