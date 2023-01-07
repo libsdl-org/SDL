@@ -1585,11 +1585,6 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     endif()
   endif()
 
-  check_include_file(linux/version.h HAVE_LINUX_VERSION_H)
-  if(HAVE_LINUX_VERSION_H)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_LINUX_VERSION_H")
-  endif()
-
   if(SDL_MISC)
     file(GLOB MISC_SOURCES ${SDL3_SOURCE_DIR}/src/misc/unix/*.c)
     list(APPEND SOURCE_FILES ${MISC_SOURCES})
