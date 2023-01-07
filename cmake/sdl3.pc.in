@@ -10,5 +10,5 @@ Description: Simple DirectMedia Layer is a cross-platform multimedia library des
 Version: @SDL_VERSION@
 Requires.private: @PKGCONFIG_DEPENDS@
 Conflicts:
-Libs: -L${libdir} @SDL_RLD_FLAGS@ @SDL_LIBS@ @PKGCONFIG_LIBS_PRIV@ @SDL_STATIC_LIBS@
-Cflags: -I${includedir} -I${includedir}/SDL3 @SDL_CFLAGS@
+Libs: -L${libdir} @SDL_RLD_FLAGS@ @SDL_PC_LIBS@ @PKGCONFIG_LIBS_PRIV@ @SDL_STATIC_LIBS@
+Cflags: -I${includedir} -I${includedir}/SDL3 @SDL_PC_CFLAGS@
