@@ -108,6 +108,9 @@
     <ClInclude Include="..\include\SDL3\SDL_platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\SDL3\SDL_platform_defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\SDL3\SDL_power.h">
       <Filter>Header Files</Filter>
     </ClInclude>

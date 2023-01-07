@@ -29,7 +29,7 @@
  */
 
 /* General platform specific identifiers */
-#include <SDL3/SDL_platform.h>
+#include <SDL3/SDL_platform_defines.h>
 
 /* C language features */
 #cmakedefine const @HAVE_CONST@

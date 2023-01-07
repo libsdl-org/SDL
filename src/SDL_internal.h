@@ -49,16 +49,19 @@
         SDL_free(ptr);               \
     }
 
+#include "build_config/SDL_build_config.h"
+
 #include "dynapi/SDL_dynapi.h"
 
 #if SDL_DYNAMIC_API
 #include "dynapi/SDL_dynapi_overrides.h"
 /* force DECLSPEC off...it's all internal symbols now.
    These will have actual #defines during SDL_dynapi.c only */
+#ifdef DECLSPEC
+#undef DECLSPEC
+#endif
 #define DECLSPEC
 #endif
-
-#include "build_config/SDL_build_config.h"
 
 #ifdef __APPLE__
 #ifndef _DARWIN_C_SOURCE

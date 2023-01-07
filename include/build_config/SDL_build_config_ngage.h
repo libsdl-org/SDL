@@ -23,7 +23,7 @@
 #define SDL_build_config_ngage_h_
 #define SDL_build_config_h_
 
-#include <SDL3/SDL_platform.h>
+#include <SDL3/SDL_platform_defines.h>
 
 typedef signed char        int8_t;
 typedef unsigned char      uint8_t;

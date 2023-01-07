@@ -23,7 +23,7 @@
 #define SDL_build_config_wingdk_h_
 #define SDL_build_config_h_
 
-#include <SDL3/SDL_platform.h>
+#include <SDL3/SDL_platform_defines.h>
 
 /* Windows GDK does not need Windows SDK version checks because it requires
  * a recent version of the Windows 10 SDK. */

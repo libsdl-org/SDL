@@ -300,6 +300,9 @@
     <ClInclude Include="..\..\include\SDL3\SDL_platform.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_platform_defines.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_power.h">
       <Filter>API Headers</Filter>
     </ClInclude>

@@ -28,7 +28,7 @@
 #ifndef SDL_oldnames_h_
 #define SDL_oldnames_h_
 
-#include <SDL3/SDL_platform.h>
+#include <SDL3/SDL_platform_defines.h>
 
 /* The new function names are recommended, but if you want to have the
  * old names available while you are in the process of migrating code
