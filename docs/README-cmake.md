@@ -15,6 +15,7 @@ The CMake build system is supported on the following platforms:
 * Playstation 2
 * Playstation Vita
 * Nintendo 3DS
+* QNX 7.x/8.x
 
 ## Building SDL
 
@@ -179,3 +180,8 @@ To use, set the following CMake variables when running CMake's configuration sta
     cmake ~/sdl -DCMAKE_SYSTEM_NAME=tvOS -DCMAKE_OSX_SYSROOT=appletvos -DCMAKE_OSX_ARCHITECTURES=arm64`
     ```
 
+- for QNX/aarch64, using the latest, installed SDK:
+
+    ```cmake
+    cmake ~/sdl -DCMAKE_TOOLCHAIN_FILE=~/sdl/build-scripts/cmake-toolchain-qnx-aarch64le.cmake -DSDL_X11=0
+    ```
