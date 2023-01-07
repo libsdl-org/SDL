@@ -301,10 +301,13 @@ target_include_directories(sdl-build-options
 )
 # Note: The clang toolset for Visual Studio does not support the '-idirafter' option.
 if(USE_GCC OR (USE_CLANG AND NOT MSVC_CLANG))
-  # !!! FIXME: do we _need_ to mess with CMAKE_C_FLAGS here?
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -idirafter \"${SDL3_SOURCE_DIR}/src/video/khronos\"")
+  if(CMAKE_VERSION VERSION_LESS 3.12)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -idirafter \"${SDL3_SOURCE_DIR}/src/video/khronos\"")
+  else()
+    target_compile_options(sdl-global-options INTERFACE "SHELL:-idirafter \"${SDL3_SOURCE_DIR}/src/video/khronos\"")
+  endif()
 else()
-  target_include_directories(sdl-build-options INTERFACE "${SDL3_SOURCE_DIR}/src/video/khronos")
+  target_include_directories(sdl-global-options INTERFACE "${SDL3_SOURCE_DIR}/src/video/khronos")
 endif()
 
 # All these ENABLED_BY_DEFAULT vars will default to ON if not specified, so
