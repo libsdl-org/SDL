@@ -119,17 +119,12 @@ check_cpu_architecture(arm64 SDL_CPU_ARM64)
 check_cpu_architecture(loongarch64 SDL_CPU_LOONGARCH64)
 
 # Check for 64 or 32 bit
-set(SIZEOF_VOIDP ${CMAKE_SIZEOF_VOID_P})
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(ARCH_64 TRUE)
   set(PROCESSOR_ARCH "x64")
 else()
   set(ARCH_64 FALSE)
   set(PROCESSOR_ARCH "x86")
-endif()
-set(LIBNAME SDL3)
-if(NOT LIBTYPE)
-  set(LIBTYPE SHARED)
 endif()
 
 # Get the platform
