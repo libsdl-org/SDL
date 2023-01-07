@@ -1057,6 +1057,7 @@ if(SDL_LIBC)
     check_library_exists(m pow "" HAVE_LIBM)
     if(HAVE_LIBM)
       cmake_push_check_state()
+      list(APPEND CMAKE_REQUIRED_LIBRARIES m)
       foreach(_FN
               atan atan2 atanf atan2f ceil ceilf copysign copysignf cos cosf
               exp expf fabs fabsf floor floorf fmod fmodf log logf log10 log10f
