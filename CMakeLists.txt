@@ -2896,13 +2896,12 @@ endif()
 
 # Clean up the different lists
 listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
-set(SDL_STATIC_LIBS ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
-list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
-listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
-set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
+set(SDL_PC_STATIC_LIBS ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
+list(REMOVE_DUPLICATES SDL_PC_STATIC_LIBS)
+listtostr(SDL_PC_STATIC_LIBS SDL_PC_STATIC_LIBS)
 listtostr(SDL_PC_LIBS SDL_PC_LIBS)
 listtostr(SDL_PC_CFLAGS SDL_PC_CFLAGS)
-string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_STATIC_LIBS "${SDL_STATIC_LIBS}")
+string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_PC_STATIC_LIBS "${SDL_PC_STATIC_LIBS}")
 if(NOT SDL_SHARED)
   string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_PC_LIBS "${SDL_PC_LIBS}")
 endif()
@@ -2913,7 +2912,7 @@ endif()
 
 # message(STATUS "SDL_PC_CFLAGS:   ${SDL_PC_CFLAGS}")
 # message(STATUS "SDL_PC_LIBS:     ${SDL_PC_LIBS}")
-# message(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
+# message(STATUS "SDL_PC_STATIC_LIBS: ${SDL_PC_STATIC_LIBS}")
 
 configure_file(cmake/sdl3.pc.in sdl3.pc @ONLY)
 
