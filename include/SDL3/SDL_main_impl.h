@@ -68,6 +68,8 @@ int wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 int main(int argc, char *argv[])
 #endif
 {
+    (void)argc;
+    (void)argv;
     return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
 
@@ -80,6 +82,10 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrev, PWSTR szCmdLine, int sw)
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 #endif
 {
+    (void)hInst;
+    (void)hPrev;
+    (void)szCmdLine;
+    (void)sw;
     return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
 
