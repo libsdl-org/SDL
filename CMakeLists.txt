@@ -263,8 +263,8 @@ if(MSVC)
 endif()
 
 # Those are used for pkg-config so sdl3.pc is created correctly.
-set(SDL_LIBS "-lSDL3")
-set(SDL_CFLAGS )
+set(SDL_PC_LIBS "-lSDL3")
+set(SDL_PC_CFLAGS )
 
 # When building shared lib for Windows with MinGW,
 # avoid the DLL having a "lib" prefix
@@ -291,9 +291,9 @@ if(CYGWIN)
   cmake_pop_check_state()
   if(HAVE_GCC_NO_CYGWIN)
     list(APPEND EXTRA_LDFLAGS_BUILD "-mno-cygwin")
-    list(APPEND SDL_LIBS "-mno-cygwin")
+    list(APPEND SDL_PC_LIBS "-mno-cygwin")
   endif()
-  list(APPEND SDL_CFLAGS "-I/usr/include/mingw")
+  list(APPEND SDL_PC_CFLAGS "-I/usr/include/mingw")
 endif()
 
 # General includes
@@ -1953,7 +1953,7 @@ elseif(WINDOWS)
 
   file(GLOB VERSION_SOURCES ${SDL3_SOURCE_DIR}/src/core/windows/*.rc)
   if(MINGW OR CYGWIN)
-    list(INSERT SDL_LIBS 0 "-lmingw32" "-mwindows")
+    list(INSERT SDL_PC_LIBS 0 "-lmingw32" "-mwindows")
   endif()
 
 elseif(APPLE)
@@ -2916,21 +2916,20 @@ set(SDL_STATIC_LIBS ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
 list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
 listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
 set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
-listtostr(SDL_LIBS _SDL_LIBS)
-set(SDL_LIBS ${_SDL_LIBS})
-listtostr(SDL_CFLAGS _SDL_CFLAGS "")
-set(SDL_CFLAGS ${_SDL_CFLAGS})
+listtostr(SDL_PC_LIBS SDL_PC_LIBS)
+listtostr(SDL_PC_CFLAGS SDL_PC_CFLAGS)
 string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_STATIC_LIBS "${SDL_STATIC_LIBS}")
 if(NOT SDL_SHARED)
-  string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_LIBS "${SDL_LIBS}")
+  string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_PC_LIBS "${SDL_PC_LIBS}")
 endif()
 
 if(SDL_STATIC AND SDL_SHARED AND NOT sdl_static_libname STREQUAL "SDL3")
   message(STATUS "\"pkg-config --static --libs sdl3\" will return invalid information")
 endif()
 
-# MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
-# MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
+# message(STATUS "SDL_PC_CFLAGS:   ${SDL_PC_CFLAGS}")
+# message(STATUS "SDL_PC_LIBS:     ${SDL_PC_LIBS}")
+# message(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
 
 configure_file(cmake/sdl3.pc.in sdl3.pc @ONLY)
 

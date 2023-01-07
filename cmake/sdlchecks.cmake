@@ -661,7 +661,7 @@ macro(CheckVivante)
         find_library(VIVANTE_VDK_LIBRARY VDK REQUIRED)
         list(APPEND EXTRA_LIBS ${VIVANTE_LIBRARY} ${VIVANTE_VDK_LIBRARY})
       else()
-        list(APPEND SDL_CFLAGS -DLINUX -DEGL_API_FB)
+        list(APPEND SDL_PC_CFLAGS -DLINUX -DEGL_API_FB)
         list(APPEND EXTRA_LIBS EGL)
       endif(HAVE_VIVANTE_VDK)
     endif()
@@ -808,7 +808,7 @@ macro(CheckPTHREAD)
       set(SDL_THREAD_PTHREAD 1)
       target_compile_options(sdl-build-options INTERFACE ${PTHREAD_CFLAGS})
       list(APPEND EXTRA_LDFLAGS ${PTHREAD_LDFLAGS})
-      list(APPEND SDL_CFLAGS ${PTHREAD_CFLAGS})
+      list(APPEND SDL_PC_CFLAGS ${PTHREAD_CFLAGS})
 
       check_c_source_compiles("
         #define _GNU_SOURCE 1
