@@ -509,7 +509,7 @@ SDL_GetPixelFormatEnumForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask
 }
 
 static SDL_PixelFormat *formats;
-static SDL_SpinLock formats_lock = 0;
+static SDL_SpinLock formats_lock = SDL_SPINLOCK_INITIALIZER;
 
 SDL_PixelFormat *
 SDL_CreatePixelFormat(Uint32 pixel_format)

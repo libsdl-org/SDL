@@ -64,6 +64,10 @@
 
 #include <SDL3/SDL_begin_code.h>
 
+#if SDL_SPINLOCK_IS_PTHREAD_MUTEX
+#include <pthread.h>
+#endif
+
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -86,7 +90,13 @@ extern "C" {
  */
 /* @{ */
 
+#if SDL_SPINLOCK_IS_PTHREAD_MUTEX
+typedef pthread_mutex_t SDL_SpinLock;
+#define SDL_SPINLOCK_INITIALIZER PTHREAD_MUTEX_INITIALIZER
+#else
 typedef int SDL_SpinLock;
+#define SDL_SPINLOCK_INITIALIZER 0
+#endif
 
 /**
  * Try to lock a spin lock by setting it to a non-zero value.

@@ -326,7 +326,7 @@ SDL_ReportAssertion(SDL_AssertData *data, const char *func, const char *file,
     static int assertion_running = 0;
 
 #ifndef SDL_THREADS_DISABLED
-    static SDL_SpinLock spinlock = 0;
+    static SDL_SpinLock spinlock = SDL_SPINLOCK_INITIALIZER;
     SDL_AtomicLock(&spinlock);
     if (assertion_mutex == NULL) { /* never called SDL_Init()? */
         assertion_mutex = SDL_CreateMutex();

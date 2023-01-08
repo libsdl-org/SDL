@@ -472,7 +472,7 @@ static void SDL_InitDynamicAPI(void)
    SDL_ATOMIC_DISABLED, which we can't do here, so in such a
    configuration, you're on your own. */
 #if !SDL_ATOMIC_DISABLED
-    static SDL_SpinLock lock = 0;
+    static SDL_SpinLock lock = SDL_SPINLOCK_INITIALIZER;
     SDL_AtomicLock_REAL(&lock);
 #endif
 

@@ -518,6 +518,9 @@
 #cmakedefine SDL_VIDEO_VITA_PVR @SDL_VIDEO_VITA_PVR@
 #cmakedefine SDL_VIDEO_VITA_PVR_OGL @SDL_VIDEO_VITA_PVR_OGL@
 
+#cmakedefine SDL_SPINLOCK_IS_PTHREAD_MUTEX @SDL_SPINLOCK_IS_PTHREAD_MUTEX@
+
+
 #if !defined(HAVE_STDINT_H) && !defined(_STDINT_H_)
 /* Most everything except Visual Studio 2008 and earlier has stdint.h now */
 #if defined(_MSC_VER) && (_MSC_VER < 1600)
