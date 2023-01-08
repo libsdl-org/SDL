@@ -1620,6 +1620,9 @@ int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 butto
         return 0;
     }
 
+    /* Update internal joystick state */
+    joystick->buttons[button] = state;
+
     /* We ignore events if we don't have keyboard focus, except for button
      * release. */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
@@ -1627,9 +1630,6 @@ int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 butto
             return 0;
         }
     }
-
-    /* Update internal joystick state */
-    joystick->buttons[button] = state;
 
     /* Post the event, if desired */
     posted = 0;
