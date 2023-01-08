@@ -848,7 +848,7 @@ If you were using this macro for other things besides SDL ticks values, you can 
 
 ## SDL_version.h
 
-SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in SDL 2.0
+SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in SDL 2.0.
 
 
 ## SDL_video.h
@@ -874,4 +874,9 @@ The following functions have been renamed:
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayIndexForRect()
 
 SDL_Window id type is named SDL_WindowID
+
+
+## SDL_vulkan.h
+
+SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter.
 
