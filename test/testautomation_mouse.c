@@ -42,26 +42,26 @@ int mouse_getMouseState(void *arg)
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x pointer is not NULL */
-    x = FLT_MIN;
+    x = -FLT_MAX;
     state = SDL_GetMouseState(&x, NULL);
     SDLTest_AssertPass("Call to SDL_GetMouseState(&x, NULL)");
-    SDLTest_AssertCheck(x > FLT_MIN, "Validate that value of x is > FLT_MIN, got: %g", x);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where y pointer is not NULL */
-    y = FLT_MIN;
+    y = -FLT_MAX;
     state = SDL_GetMouseState(NULL, &y);
     SDLTest_AssertPass("Call to SDL_GetMouseState(NULL, &y)");
-    SDLTest_AssertCheck(y > FLT_MIN, "Validate that value of y is > FLT_MIN, got: %g", y);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x and y pointer is not NULL */
-    x = FLT_MIN;
-    y = FLT_MIN;
+    x = -FLT_MAX;
+    y = -FLT_MAX;
     state = SDL_GetMouseState(&x, &y);
     SDLTest_AssertPass("Call to SDL_GetMouseState(&x, &y)");
-    SDLTest_AssertCheck(x > FLT_MIN, "Validate that value of x is > FLT_MIN, got: %g", x);
-    SDLTest_AssertCheck(y > FLT_MIN, "Validate that value of y is > FLT_MIN, got: %g", y);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     return TEST_COMPLETED;
@@ -87,26 +87,26 @@ int mouse_getRelativeMouseState(void *arg)
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x pointer is not NULL */
-    x = FLT_MIN;
+    x = -FLT_MAX;
     state = SDL_GetRelativeMouseState(&x, NULL);
     SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(&x, NULL)");
-    SDLTest_AssertCheck(x > FLT_MIN, "Validate that value of x is > FLT_MIN, got: %g", x);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where y pointer is not NULL */
-    y = FLT_MIN;
+    y = -FLT_MAX;
     state = SDL_GetRelativeMouseState(NULL, &y);
     SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(NULL, &y)");
-    SDLTest_AssertCheck(y > FLT_MIN, "Validate that value of y is > FLT_MIN, got: %g", y);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x and y pointer is not NULL */
-    x = FLT_MIN;
-    y = FLT_MIN;
+    x = -FLT_MAX;
+    y = -FLT_MAX;
     state = SDL_GetRelativeMouseState(&x, &y);
     SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(&x, &y)");
-    SDLTest_AssertCheck(x > FLT_MIN, "Validate that value of x is > FLT_MIN, got: %g", x);
-    SDLTest_AssertCheck(y > FLT_MIN, "Validate that value of y is > FLT_MIN, got: %g", y);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     return TEST_COMPLETED;
@@ -574,14 +574,14 @@ int mouse_getGlobalMouseState(void *arg)
     float y;
     Uint32 state;
 
-    x = FLT_MIN;
-    y = FLT_MIN;
+    x = -FLT_MAX;
+    y = -FLT_MAX;
 
     /* Get current cursor */
     state = SDL_GetGlobalMouseState(&x, &y);
     SDLTest_AssertPass("Call to SDL_GetGlobalMouseState()");
-    SDLTest_AssertCheck(x > FLT_MIN, "Validate that value of x is > FLT_MIN, got: %.f", x);
-    SDLTest_AssertCheck(y > FLT_MIN, "Validate that value of y is > FLT_MIN, got: %.f", y);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %.f", x);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %.f", y);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     return TEST_COMPLETED;
