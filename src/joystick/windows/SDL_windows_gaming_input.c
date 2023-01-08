@@ -414,7 +414,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
     SDL_LockJoysticks();
 
     /* Can we get delayed calls to InvokeRemoved() after WGI_JoystickQuit()? */
-    if (SDL_JoysticksQuitting() || !SDL_JoysticksInitialized()) {
+    if (!SDL_JoysticksInitialized()) {
         SDL_UnlockJoysticks();
         return S_OK;
     }
