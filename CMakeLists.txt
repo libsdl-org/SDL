@@ -79,7 +79,7 @@ include(${SDL3_SOURCE_DIR}/cmake/CheckCPUArchitecture.cmake)
 # with large inode numbers
 check_symbol_exists("__GLIBC__" "stdlib.h" LIBC_IS_GLIBC)
 if (LIBC_IS_GLIBC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
-    target_compile_definitions(sdl-build-options "_FILE_OFFSET_BITS=64")
+    target_compile_definitions(sdl-build-options INTERFACE "_FILE_OFFSET_BITS=64")
 endif()
 
 # See docs/release_checklist.md
