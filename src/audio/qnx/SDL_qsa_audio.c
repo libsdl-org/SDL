@@ -316,7 +316,7 @@ QSA_OpenDevice(_THIS, const char *devname)
     /* can't use format as SND_PCM_SFMT_U8 = 0 in qsa */
     found = 0;
 
-    for (test_format = SDL_FirstAudioFormat(this->spec.format); !found;) {
+    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); !found;) {
         /* if match found set format to equivalent QSA format */
         switch (test_format) {
         case AUDIO_U8:
@@ -386,7 +386,7 @@ QSA_OpenDevice(_THIS, const char *devname)
         }
 
         if (!found) {
-            test_format = SDL_NextAudioFormat();
+            test_format = SDL_GetNextAudioFormat();
         }
     }
 
