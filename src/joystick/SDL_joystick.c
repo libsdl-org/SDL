@@ -1517,6 +1517,9 @@ int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, S
         info->sending_initial_value = SDL_FALSE;
     }
 
+    /* Update internal joystick state */
+    info->value = value;
+
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
@@ -1527,9 +1530,6 @@ int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, S
             return 0;
         }
     }
-
-    /* Update internal joystick state */
-    info->value = value;
 
     /* Post the event, if desired */
     posted = 0;
@@ -1561,6 +1561,9 @@ int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uin
         return 0;
     }
 
+    /* Update internal joystick state */
+    joystick->hats[hat] = value;
+
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
@@ -1569,9 +1572,6 @@ int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uin
             return 0;
         }
     }
-
-    /* Update internal joystick state */
-    joystick->hats[hat] = value;
 
     /* Post the event, if desired */
     posted = 0;
@@ -2921,18 +2921,18 @@ int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touch
         event_type = SDL_GAMEPADTOUCHPADUP;
     }
 
+    /* Update internal joystick state */
+    finger_info->state = state;
+    finger_info->x = x;
+    finger_info->y = y;
+    finger_info->pressure = pressure;
+
     /* We ignore events if we don't have keyboard focus, except for touch release */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
         if (event_type != SDL_GAMEPADTOUCHPADUP) {
             return 0;
         }
     }
-
-    /* Update internal joystick state */
-    finger_info->state = state;
-    finger_info->x = x;
-    finger_info->y = y;
-    finger_info->pressure = pressure;
 
     /* Post the event, if desired */
     posted = 0;
@@ -2957,13 +2957,12 @@ int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorT
 {
     int i;
     int posted = 0;
+    int ignore;
 
     SDL_AssertJoysticksLocked();
 
     /* We ignore events if we don't have keyboard focus */
-    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        return 0;
-    }
+    ignore = SDL_PrivateJoystickShouldIgnoreEvent();
 
     for (i = 0; i < joystick->nsensors; ++i) {
         SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
@@ -2977,7 +2976,7 @@ int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorT
 
                 /* Post the event, if desired */
 #if !SDL_EVENTS_DISABLED
-                if (SDL_EventEnabled(SDL_GAMEPADSENSORUPDATE)) {
+                if (ignore == 0 && SDL_EventEnabled(SDL_GAMEPADSENSORUPDATE)) {
                     SDL_Event event;
                     event.type = SDL_GAMEPADSENSORUPDATE;
                     event.common.timestamp = timestamp;
