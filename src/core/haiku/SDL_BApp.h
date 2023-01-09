@@ -89,7 +89,6 @@ class SDL_BApp : public BApplication
 
     virtual void RefsReceived(BMessage *message)
     {
-        char filePath[512];
         entry_ref entryRef;
         for (int32 i = 0; message->FindRef("refs", i, &entryRef) == B_OK; i++) {
             BPath referencePath = BPath(&entryRef);
