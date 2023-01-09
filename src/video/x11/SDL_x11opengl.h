@@ -27,6 +27,8 @@
 #include <SDL3/SDL_opengl.h>
 #include <GL/glx.h>
 
+typedef void (*__GLXextFuncPtr)(void);
+
 struct SDL_GLDriverData
 {
     int errorBase, eventBase;
@@ -49,7 +51,7 @@ struct SDL_GLDriverData
     } es_profile_max_supported_version;
 
     Bool (*glXQueryExtension)(Display *, int *, int *);
-    void *(*glXGetProcAddress)(const GLubyte *);
+    __GLXextFuncPtr (*glXGetProcAddress)(const GLubyte *);
     XVisualInfo *(*glXChooseVisual)(Display *, int, int *);
     GLXContext (*glXCreateContext)(Display *, XVisualInfo *, GLXContext, Bool);
     GLXContext (*glXCreateContextAttribsARB)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
@@ -67,7 +69,7 @@ struct SDL_GLDriverData
 
 /* OpenGL functions */
 extern int X11_GL_LoadLibrary(_THIS, const char *path);
-extern void *X11_GL_GetProcAddress(_THIS, const char *proc);
+extern SDL_FunctionPointer X11_GL_GetProcAddress(_THIS, const char *proc);
 extern void X11_GL_UnloadLibrary(_THIS);
 extern SDL_bool X11_GL_UseEGL(_THIS);
 extern XVisualInfo *X11_GL_GetVisual(_THIS, Display *display, int screen);

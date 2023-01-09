@@ -38,8 +38,7 @@ void Emscripten_GLES_UnloadLibrary(_THIS)
 {
 }
 
-void *
-Emscripten_GLES_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer Emscripten_GLES_GetProcAddress(_THIS, const char *proc)
 {
     return emscripten_webgl_get_proc_address(proc);
 }
@@ -72,8 +71,7 @@ int Emscripten_GLES_GetSwapInterval(_THIS, int *interval)
     }
 }
 
-SDL_GLContext
-Emscripten_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext Emscripten_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_WindowData *window_data;
 

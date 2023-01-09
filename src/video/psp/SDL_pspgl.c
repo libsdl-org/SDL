@@ -54,8 +54,7 @@ int PSP_GL_LoadLibrary(_THIS, const char *path)
 GLSTUB(glOrtho,(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top,
                     GLdouble zNear, GLdouble zFar))
 */
-void *
-PSP_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer PSP_GL_GetProcAddress(_THIS, const char *proc)
 {
     return eglGetProcAddress(proc);
 }
@@ -68,8 +67,7 @@ void PSP_GL_UnloadLibrary(_THIS)
 static EGLint width = 480;
 static EGLint height = 272;
 
-SDL_GLContext
-PSP_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window *window)
 {
 
     SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;

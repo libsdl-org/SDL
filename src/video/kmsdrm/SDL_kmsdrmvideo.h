@@ -141,7 +141,7 @@ int KMSDRM_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info
 
 /* OpenGL/OpenGL ES functions */
 int KMSDRM_GLES_LoadLibrary(_THIS, const char *path);
-void *KMSDRM_GLES_GetProcAddress(_THIS, const char *proc);
+SDL_FunctionPointer KMSDRM_GLES_GetProcAddress(_THIS, const char *proc);
 void KMSDRM_GLES_UnloadLibrary(_THIS);
 SDL_GLContext KMSDRM_GLES_CreateContext(_THIS, SDL_Window *window);
 int KMSDRM_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);

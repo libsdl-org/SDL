@@ -70,7 +70,7 @@ void PSP_DestroyWindow(_THIS, SDL_Window *window);
 
 /* OpenGL/OpenGL ES functions */
 int PSP_GL_LoadLibrary(_THIS, const char *path);
-void *PSP_GL_GetProcAddress(_THIS, const char *proc);
+SDL_FunctionPointer PSP_GL_GetProcAddress(_THIS, const char *proc);
 void PSP_GL_UnloadLibrary(_THIS);
 SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window *window);
 int PSP_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);

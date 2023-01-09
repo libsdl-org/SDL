@@ -32,8 +32,7 @@
 #include "../../video/uikit/SDL_uikitvideo.h"
 #endif
 
-void *
-SDL_LoadObject(const char *sofile)
+void *SDL_LoadObject(const char *sofile)
 {
     void *handle;
     const char *loaderror;
@@ -53,8 +52,7 @@ SDL_LoadObject(const char *sofile)
     return handle;
 }
 
-void *
-SDL_LoadFunction(void *handle, const char *name)
+SDL_FunctionPointer SDL_LoadFunction(void *handle, const char *name)
 {
     void *symbol = dlsym(handle, name);
     if (symbol == NULL) {

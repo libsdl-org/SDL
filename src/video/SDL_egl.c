@@ -115,20 +115,24 @@
 #define EGL_PLATFORM_DEVICE_EXT 0x0
 #endif
 
+#if SDL_VIDEO_OPENGL
+typedef void (APIENTRY* PFNGLGETINTEGERVPROC) (GLenum pname, GLint * params);
+#endif
+
 #if defined(SDL_VIDEO_STATIC_ANGLE) || defined(SDL_VIDEO_DRIVER_VITA)
-#define LOAD_FUNC(NAME) \
-    _this->egl_data->NAME = (void *)NAME;
+#define LOAD_FUNC(TYPE, NAME) \
+    _this->egl_data->NAME = NAME;
 #else
-#define LOAD_FUNC(NAME)                                                               \
-    _this->egl_data->NAME = SDL_LoadFunction(_this->egl_data->egl_dll_handle, #NAME); \
+#define LOAD_FUNC(TYPE, NAME)                                                               \
+    _this->egl_data->NAME = (TYPE)SDL_LoadFunction(_this->egl_data->egl_dll_handle, #NAME); \
     if (!_this->egl_data->NAME) {                                                     \
         return SDL_SetError("Could not retrieve EGL function " #NAME);                \
     }
 #endif
 
 /* it is allowed to not have some of the EGL extensions on start - attempts to use them will fail later. */
-#define LOAD_FUNC_EGLEXT(NAME) \
-    _this->egl_data->NAME = _this->egl_data->eglGetProcAddress(#NAME);
+#define LOAD_FUNC_EGLEXT(TYPE, NAME) \
+    _this->egl_data->NAME = (TYPE)_this->egl_data->eglGetProcAddress(#NAME);
 
 static const char *SDL_EGL_GetErrorName(EGLint eglErrorCode)
 {
@@ -241,10 +245,9 @@ SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext
     return SDL_FALSE;
 }
 
-void *
-SDL_EGL_GetProcAddressInternal(_THIS, const char *proc)
+SDL_FunctionPointer SDL_EGL_GetProcAddressInternal(_THIS, const char *proc)
 {
-    void *retval = NULL;
+    SDL_FunctionPointer retval = NULL;
     if (_this->egl_data != NULL) {
         const Uint32 eglver = (((Uint32)_this->egl_data->egl_version_major) << 16) | ((Uint32)_this->egl_data->egl_version_minor);
         const SDL_bool is_egl_15_or_later = eglver >= ((((Uint32)1) << 16) | 5);
@@ -424,34 +427,33 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 #endif
 
     /* Load new function pointers */
-    LOAD_FUNC(eglGetDisplay);
-    LOAD_FUNC(eglInitialize);
-    LOAD_FUNC(eglTerminate);
-    LOAD_FUNC(eglGetProcAddress);
-    LOAD_FUNC(eglChooseConfig);
-    LOAD_FUNC(eglGetConfigAttrib);
-    LOAD_FUNC(eglCreateContext);
-    LOAD_FUNC(eglDestroyContext);
-    LOAD_FUNC(eglCreatePbufferSurface);
-    LOAD_FUNC(eglCreateWindowSurface);
-    LOAD_FUNC(eglDestroySurface);
-    LOAD_FUNC(eglMakeCurrent);
-    LOAD_FUNC(eglSwapBuffers);
-    LOAD_FUNC(eglSwapInterval);
-    LOAD_FUNC(eglWaitNative);
-    LOAD_FUNC(eglWaitGL);
-    LOAD_FUNC(eglBindAPI);
-    LOAD_FUNC(eglQueryAPI);
-    LOAD_FUNC(eglQueryString);
-    LOAD_FUNC(eglGetError);
-    LOAD_FUNC_EGLEXT(eglQueryDevicesEXT);
-    LOAD_FUNC_EGLEXT(eglGetPlatformDisplayEXT);
+    LOAD_FUNC(PFNEGLGETDISPLAYPROC, eglGetDisplay);
+    LOAD_FUNC(PFNEGLINITIALIZEPROC, eglInitialize);
+    LOAD_FUNC(PFNEGLTERMINATEPROC, eglTerminate);
+    LOAD_FUNC(PFNEGLGETPROCADDRESSPROC, eglGetProcAddress);
+    LOAD_FUNC(PFNEGLCHOOSECONFIGPROC, eglChooseConfig);
+    LOAD_FUNC(PFNEGLCREATECONTEXTPROC, eglCreateContext);
+    LOAD_FUNC(PFNEGLDESTROYCONTEXTPROC, eglDestroyContext);
+    LOAD_FUNC(PFNEGLCREATEPBUFFERSURFACEPROC, eglCreatePbufferSurface);
+    LOAD_FUNC(PFNEGLCREATEWINDOWSURFACEPROC, eglCreateWindowSurface);
+    LOAD_FUNC(PFNEGLDESTROYSURFACEPROC, eglDestroySurface);
+    LOAD_FUNC(PFNEGLMAKECURRENTPROC, eglMakeCurrent);
+    LOAD_FUNC(PFNEGLSWAPBUFFERSPROC, eglSwapBuffers);
+    LOAD_FUNC(PFNEGLSWAPINTERVALPROC, eglSwapInterval);
+    LOAD_FUNC(PFNEGLQUERYSTRINGPROC, eglQueryString);
+    LOAD_FUNC(PFNEGLGETCONFIGATTRIBPROC, eglGetConfigAttrib);
+    LOAD_FUNC(PFNEGLWAITNATIVEPROC, eglWaitNative);
+    LOAD_FUNC(PFNEGLWAITGLPROC, eglWaitGL);
+    LOAD_FUNC(PFNEGLBINDAPIPROC, eglBindAPI);
+    LOAD_FUNC(PFNEGLGETERRORPROC, eglGetError);
+    LOAD_FUNC_EGLEXT(PFNEGLQUERYDEVICESEXTPROC, eglQueryDevicesEXT);
+    LOAD_FUNC_EGLEXT(PFNEGLGETPLATFORMDISPLAYEXTPROC, eglGetPlatformDisplayEXT);
     /* Atomic functions */
-    LOAD_FUNC_EGLEXT(eglCreateSyncKHR);
-    LOAD_FUNC_EGLEXT(eglDestroySyncKHR);
-    LOAD_FUNC_EGLEXT(eglDupNativeFenceFDANDROID);
-    LOAD_FUNC_EGLEXT(eglWaitSyncKHR);
-    LOAD_FUNC_EGLEXT(eglClientWaitSyncKHR);
+    LOAD_FUNC_EGLEXT(PFNEGLCREATESYNCKHRPROC, eglCreateSyncKHR);
+    LOAD_FUNC_EGLEXT(PFNEGLDESTROYSYNCKHRPROC, eglDestroySyncKHR);
+    LOAD_FUNC_EGLEXT(PFNEGLDUPNATIVEFENCEFDANDROIDPROC, eglDupNativeFenceFDANDROID);
+    LOAD_FUNC_EGLEXT(PFNEGLWAITSYNCKHRPROC, eglWaitSyncKHR);
+    LOAD_FUNC_EGLEXT(PFNEGLCLIENTWAITSYNCKHRPROC, eglClientWaitSyncKHR);
     /* Atomic functions end */
 
     if (path) {
@@ -519,7 +521,7 @@ int SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_di
         SDL_EGL_GetVersion(_this);
 
         if (_this->egl_data->egl_version_major == 1 && _this->egl_data->egl_version_minor == 5) {
-            LOAD_FUNC(eglGetPlatformDisplay);
+            LOAD_FUNC(PFNEGLGETPLATFORMDISPLAYPROC, eglGetPlatformDisplay);
         }
 
         if (_this->egl_data->eglGetPlatformDisplay) {
@@ -535,7 +537,7 @@ int SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_di
             _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, (void *)(uintptr_t)native_display, attribs);
         } else {
             if (SDL_EGL_HasExtension(_this, SDL_EGL_CLIENT_EXTENSION, "EGL_EXT_platform_base")) {
-                _this->egl_data->eglGetPlatformDisplayEXT = SDL_EGL_GetProcAddressInternal(_this, "eglGetPlatformDisplayEXT");
+                _this->egl_data->eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC)SDL_EGL_GetProcAddressInternal(_this, "eglGetPlatformDisplayEXT");
                 if (_this->egl_data->eglGetPlatformDisplayEXT) {
                     _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplayEXT(platform, (void *)(uintptr_t)native_display, NULL);
                 }
@@ -1103,8 +1105,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
 #if SDL_VIDEO_OPENGL && !defined(SDL_VIDEO_DRIVER_VITA)
         } else {
             /* Desktop OpenGL supports it by default from version 3.0 on. */
-            void(APIENTRY * glGetIntegervFunc)(GLenum pname, GLint * params);
-            glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
+             PFNGLGETINTEGERVPROC glGetIntegervFunc = (PFNGLGETINTEGERVPROC)SDL_GL_GetProcAddress("glGetIntegerv");
             if (glGetIntegervFunc) {
                 GLint v = 0;
                 glGetIntegervFunc(GL_MAJOR_VERSION, &v);

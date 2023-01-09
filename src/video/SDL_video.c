@@ -402,8 +402,7 @@ int SDL_GetNumVideoDrivers(void)
     return SDL_arraysize(bootstrap) - 1;
 }
 
-const char *
-SDL_GetVideoDriver(int index)
+const char *SDL_GetVideoDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumVideoDrivers()) {
         return bootstrap[index]->name;
@@ -557,8 +556,7 @@ pre_driver_error:
     return -1;
 }
 
-const char *
-SDL_GetCurrentVideoDriver()
+const char *SDL_GetCurrentVideoDriver()
 {
     if (_this == NULL) {
         SDL_UninitializedVideo();
@@ -567,14 +565,12 @@ SDL_GetCurrentVideoDriver()
     return _this->name;
 }
 
-SDL_VideoDevice *
-SDL_GetVideoDevice(void)
+SDL_VideoDevice *SDL_GetVideoDevice(void)
 {
     return _this;
 }
 
-SDL_bool
-SDL_OnVideoThread()
+SDL_bool SDL_OnVideoThread()
 {
     return (_this && SDL_ThreadID() == _this->thread) ? SDL_TRUE : SDL_FALSE;
 }
@@ -662,22 +658,19 @@ int SDL_GetIndexOfDisplay(SDL_VideoDisplay *display)
     return 0;
 }
 
-void *
-SDL_GetDisplayDriverData(int displayIndex)
+void *SDL_GetDisplayDriverData(int displayIndex)
 {
     CHECK_DISPLAY_INDEX(displayIndex, NULL);
 
     return _this->displays[displayIndex].driverdata;
 }
 
-SDL_bool
-SDL_IsVideoContextExternal(void)
+SDL_bool SDL_IsVideoContextExternal(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, SDL_FALSE);
 }
 
-const char *
-SDL_GetDisplayName(int displayIndex)
+const char *SDL_GetDisplayName(int displayIndex)
 {
     CHECK_DISPLAY_INDEX(displayIndex, NULL);
 
@@ -766,8 +759,7 @@ int SDL_GetDisplayDPI(int displayIndex, float *ddpi, float *hdpi, float *vdpi)
     return -1;
 }
 
-SDL_DisplayOrientation
-SDL_GetDisplayOrientation(int displayIndex)
+SDL_DisplayOrientation SDL_GetDisplayOrientation(int displayIndex)
 {
     SDL_VideoDisplay *display;
 
@@ -777,8 +769,7 @@ SDL_GetDisplayOrientation(int displayIndex)
     return display->orientation;
 }
 
-SDL_bool
-SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
+SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
     SDL_DisplayMode *modes;
     int i, nmodes;
@@ -1006,10 +997,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
     return NULL;
 }
 
-SDL_DisplayMode *
-SDL_GetClosestDisplayMode(int displayIndex,
-                          const SDL_DisplayMode *mode,
-                          SDL_DisplayMode *closest)
+SDL_DisplayMode *SDL_GetClosestDisplayMode(int displayIndex, const SDL_DisplayMode *mode, SDL_DisplayMode *closest)
 {
     SDL_VideoDisplay *display;
 
@@ -1075,8 +1063,7 @@ static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, const SDL_Dis
     return 0;
 }
 
-SDL_VideoDisplay *
-SDL_GetDisplay(int displayIndex)
+SDL_VideoDisplay *SDL_GetDisplay(int displayIndex)
 {
     CHECK_DISPLAY_INDEX(displayIndex, NULL);
 
@@ -1220,8 +1207,7 @@ int SDL_GetWindowDisplayIndex(SDL_Window *window)
     }
 }
 
-SDL_VideoDisplay *
-SDL_GetDisplayForWindow(SDL_Window *window)
+SDL_VideoDisplay *SDL_GetDisplayForWindow(SDL_Window *window)
 {
     int displayIndex = SDL_GetWindowDisplayIndex(window);
     if (displayIndex >= 0) {
@@ -1295,8 +1281,7 @@ int SDL_GetWindowDisplayMode(SDL_Window *window, SDL_DisplayMode *mode)
     return 0;
 }
 
-void *
-SDL_GetWindowICCProfile(SDL_Window *window, size_t *size)
+void *SDL_GetWindowICCProfile(SDL_Window *window, size_t *size)
 {
     if (!_this->GetWindowICCProfile) {
         SDL_Unsupported();
@@ -1305,8 +1290,7 @@ SDL_GetWindowICCProfile(SDL_Window *window, size_t *size)
     return _this->GetWindowICCProfile(_this, window, size);
 }
 
-Uint32
-SDL_GetWindowPixelFormat(SDL_Window *window)
+Uint32 SDL_GetWindowPixelFormat(SDL_Window *window)
 {
     SDL_VideoDisplay *display;
 
@@ -1574,8 +1558,7 @@ static int SDL_DllNotSupported(const char *name)
     return SDL_SetError("No dynamic %s support in current SDL video driver (%s)", name, _this->name);
 }
 
-SDL_Window *
-SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
+SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
     SDL_Window *window;
     Uint32 type_flags, graphics_flags;
@@ -1775,8 +1758,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     return window;
 }
 
-SDL_Window *
-SDL_CreateWindowFrom(const void *data)
+SDL_Window *SDL_CreateWindowFrom(const void *data)
 {
     SDL_Window *window;
     Uint32 flags = SDL_WINDOW_FOREIGN;
@@ -1984,22 +1966,19 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
     return 0;
 }
 
-SDL_bool
-SDL_HasWindows(void)
+SDL_bool SDL_HasWindows(void)
 {
     return _this && _this->windows != NULL;
 }
 
-SDL_WindowID
-SDL_GetWindowID(SDL_Window *window)
+SDL_WindowID SDL_GetWindowID(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, 0);
 
     return window->id;
 }
 
-SDL_Window *
-SDL_GetWindowFromID(SDL_WindowID id)
+SDL_Window *SDL_GetWindowFromID(SDL_WindowID id)
 {
     SDL_Window *window;
 
@@ -2014,8 +1993,7 @@ SDL_GetWindowFromID(SDL_WindowID id)
     return NULL;
 }
 
-Uint32
-SDL_GetWindowFlags(SDL_Window *window)
+Uint32 SDL_GetWindowFlags(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, 0);
 
@@ -2038,8 +2016,7 @@ void SDL_SetWindowTitle(SDL_Window *window, const char *title)
     }
 }
 
-const char *
-SDL_GetWindowTitle(SDL_Window *window)
+const char *SDL_GetWindowTitle(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, "");
 
@@ -2067,8 +2044,7 @@ void SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
     }
 }
 
-void *
-SDL_SetWindowData(SDL_Window *window, const char *name, void *userdata)
+void *SDL_SetWindowData(SDL_Window *window, const char *name, void *userdata)
 {
     SDL_WindowUserData *prev, *data;
 
@@ -2114,8 +2090,7 @@ SDL_SetWindowData(SDL_Window *window, const char *name, void *userdata)
     return NULL;
 }
 
-void *
-SDL_GetWindowData(SDL_Window *window, const char *name)
+void *SDL_GetWindowData(SDL_Window *window, const char *name)
 {
     SDL_WindowUserData *data;
 
@@ -2671,8 +2646,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
     return SDL_CreateSurfaceFrom(pixels, window->w, window->h, pitch, format);
 }
 
-SDL_Surface *
-SDL_GetWindowSurface(SDL_Window *window)
+SDL_Surface *SDL_GetWindowSurface(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);
 
@@ -2861,28 +2835,24 @@ void SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed)
     SDL_UpdateWindowGrab(window);
 }
 
-SDL_bool
-SDL_GetWindowGrab(SDL_Window *window)
+SDL_bool SDL_GetWindowGrab(SDL_Window *window)
 {
     return SDL_GetWindowKeyboardGrab(window) || SDL_GetWindowMouseGrab(window);
 }
 
-SDL_bool
-SDL_GetWindowKeyboardGrab(SDL_Window *window)
+SDL_bool SDL_GetWindowKeyboardGrab(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
     return window == _this->grabbed_window && ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0);
 }
 
-SDL_bool
-SDL_GetWindowMouseGrab(SDL_Window *window)
+SDL_bool SDL_GetWindowMouseGrab(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
     return window == _this->grabbed_window && ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0);
 }
 
-SDL_Window *
-SDL_GetGrabbedWindow(void)
+SDL_Window *SDL_GetGrabbedWindow(void)
 {
     if (_this->grabbed_window &&
         (_this->grabbed_window->flags & (SDL_WINDOW_MOUSE_GRABBED | SDL_WINDOW_KEYBOARD_GRABBED)) != 0) {
@@ -2908,8 +2878,7 @@ int SDL_SetWindowMouseRect(SDL_Window *window, const SDL_Rect *rect)
     return 0;
 }
 
-const SDL_Rect *
-SDL_GetWindowMouseRect(SDL_Window *window)
+const SDL_Rect *SDL_GetWindowMouseRect(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);
 
@@ -3062,8 +3031,7 @@ void SDL_OnWindowFocusLost(SDL_Window *window)
 
 /* !!! FIXME: is this different than SDL_GetKeyboardFocus()?
    !!! FIXME:  Also, SDL_GetKeyboardFocus() is O(1), this isn't. */
-SDL_Window *
-SDL_GetFocusWindow(void)
+SDL_Window *SDL_GetFocusWindow(void)
 {
     SDL_Window *window;
 
@@ -3161,8 +3129,7 @@ void SDL_DestroyWindow(SDL_Window *window)
     SDL_free(window);
 }
 
-SDL_bool
-SDL_ScreenSaverEnabled()
+SDL_bool SDL_ScreenSaverEnabled()
 {
     if (_this == NULL) {
         return SDL_TRUE;
@@ -3270,8 +3237,7 @@ int SDL_GL_LoadLibrary(const char *path)
     return retval;
 }
 
-void *
-SDL_GL_GetProcAddress(const char *proc)
+SDL_FunctionPointer SDL_GL_GetProcAddress(const char *proc)
 {
     void *func;
 
@@ -3292,8 +3258,7 @@ SDL_GL_GetProcAddress(const char *proc)
     return func;
 }
 
-void *
-SDL_EGL_GetProcAddress(const char *proc)
+SDL_FunctionPointer SDL_EGL_GetProcAddress(const char *proc)
 {
 #if SDL_VIDEO_OPENGL_EGL
     void *func;
@@ -3334,17 +3299,23 @@ void SDL_GL_UnloadLibrary(void)
 }
 
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+typedef GLenum (APIENTRY* PFNGLGETERRORPROC) (void);
+typedef void (APIENTRY* PFNGLGETINTEGERVPROC) (GLenum pname, GLint * params);
+typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGPROC) (GLenum name);
+#if !SDL_VIDEO_OPENGL
+typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
+#endif
+
 static SDL_INLINE SDL_bool isAtLeastGL3(const char *verstr)
 {
     return verstr && (SDL_atoi(verstr) >= 3);
 }
-#endif
+#endif /* SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 */
 
-SDL_bool
-SDL_GL_ExtensionSupported(const char *extension)
+SDL_bool SDL_GL_ExtensionSupported(const char *extension)
 {
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
-    const GLubyte *(APIENTRY * glGetStringFunc)(GLenum);
+    PFNGLGETSTRINGPROC glGetStringFunc;
     const char *extensions;
     const char *start;
     const char *where, *terminator;
@@ -3362,19 +3333,19 @@ SDL_GL_ExtensionSupported(const char *extension)
 
     /* Lookup the available extensions */
 
-    glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
+    glGetStringFunc = (PFNGLGETSTRINGPROC)SDL_GL_GetProcAddress("glGetString");
     if (glGetStringFunc == NULL) {
         return SDL_FALSE;
     }
 
     if (isAtLeastGL3((const char *)glGetStringFunc(GL_VERSION))) {
-        const GLubyte *(APIENTRY * glGetStringiFunc)(GLenum, GLuint);
-        void(APIENTRY * glGetIntegervFunc)(GLenum pname, GLint * params);
+        PFNGLGETSTRINGIPROC glGetStringiFunc;
+        PFNGLGETINTEGERVPROC glGetIntegervFunc;
         GLint num_exts = 0;
         GLint i;
 
-        glGetStringiFunc = SDL_GL_GetProcAddress("glGetStringi");
-        glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
+        glGetStringiFunc = (PFNGLGETSTRINGIPROC)SDL_GL_GetProcAddress("glGetStringi");
+        glGetIntegervFunc = (PFNGLGETINTEGERVPROC)SDL_GL_GetProcAddress("glGetIntegerv");
         if ((glGetStringiFunc == NULL) || (glGetIntegervFunc == NULL)) {
             return SDL_FALSE;
         }
@@ -3650,7 +3621,7 @@ int SDL_GL_SetAttribute(SDL_GLattr attr, int value)
 int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 {
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
-    GLenum(APIENTRY * glGetErrorFunc)(void);
+    PFNGLGETERRORPROC glGetErrorFunc;
     GLenum attrib = 0;
     GLenum error = 0;
 
@@ -3661,8 +3632,8 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
      * the function itself doesn't exist prior to OpenGL 3 and OpenGL ES 2.
      */
 #if SDL_VIDEO_OPENGL
-    const GLubyte *(APIENTRY * glGetStringFunc)(GLenum name);
-    void(APIENTRY * glGetFramebufferAttachmentParameterivFunc)(GLenum target, GLenum attachment, GLenum pname, GLint * params);
+    PFNGLGETSTRINGPROC glGetStringFunc;
+    PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC glGetFramebufferAttachmentParameterivFunc;
     GLenum attachment = GL_BACK_LEFT;
     GLenum attachmentattrib = 0;
 #endif
@@ -3844,7 +3815,7 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     }
 
 #if SDL_VIDEO_OPENGL
-    glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
+    glGetStringFunc = (PFNGLGETSTRINGPROC)SDL_GL_GetProcAddress("glGetString");
     if (glGetStringFunc == NULL) {
         return -1;
     }
@@ -3852,13 +3823,13 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     if (attachmentattrib && isAtLeastGL3((const char *)glGetStringFunc(GL_VERSION))) {
         /* glGetFramebufferAttachmentParameteriv needs to operate on the window framebuffer for this, so bind FBO 0 if necessary. */
         GLint current_fbo = 0;
-        void(APIENTRY * glGetIntegervFunc)(GLenum pname, GLint * params) = SDL_GL_GetProcAddress("glGetIntegerv");
-        void(APIENTRY * glBindFramebufferFunc)(GLenum target, GLuint fbo) = SDL_GL_GetProcAddress("glBindFramebuffer");
+        PFNGLGETINTEGERVPROC glGetIntegervFunc = (PFNGLGETINTEGERVPROC) SDL_GL_GetProcAddress("glGetIntegerv");
+        PFNGLBINDFRAMEBUFFERPROC glBindFramebufferFunc = (PFNGLBINDFRAMEBUFFERPROC)SDL_GL_GetProcAddress("glBindFramebuffer");
         if (glGetIntegervFunc && glBindFramebufferFunc) {
             glGetIntegervFunc(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
         }
 
-        glGetFramebufferAttachmentParameterivFunc = SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
+        glGetFramebufferAttachmentParameterivFunc = (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC)SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
         if (glGetFramebufferAttachmentParameterivFunc) {
             if (glBindFramebufferFunc && (current_fbo != 0)) {
                 glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, 0);
@@ -3873,8 +3844,7 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     } else
 #endif
     {
-        void(APIENTRY * glGetIntegervFunc)(GLenum pname, GLint * params);
-        glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
+        PFNGLGETINTEGERVPROC glGetIntegervFunc = (PFNGLGETINTEGERVPROC)SDL_GL_GetProcAddress("glGetIntegerv");
         if (glGetIntegervFunc) {
             glGetIntegervFunc(attrib, (GLint *)value);
         } else {
@@ -3882,7 +3852,7 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         }
     }
 
-    glGetErrorFunc = SDL_GL_GetProcAddress("glGetError");
+    glGetErrorFunc = (PFNGLGETERRORPROC)SDL_GL_GetProcAddress("glGetError");
     if (glGetErrorFunc == NULL) {
         return -1;
     }
@@ -3904,8 +3874,7 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 
 #define NOT_AN_OPENGL_WINDOW "The specified window isn't an OpenGL window"
 
-SDL_GLContext
-SDL_GL_CreateContext(SDL_Window *window)
+SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
 {
     SDL_GLContext ctx = NULL;
     CHECK_WINDOW_MAGIC(window, NULL);
@@ -3963,8 +3932,7 @@ int SDL_GL_MakeCurrent(SDL_Window *window, SDL_GLContext context)
     return retval;
 }
 
-SDL_Window *
-SDL_GL_GetCurrentWindow(void)
+SDL_Window *SDL_GL_GetCurrentWindow(void)
 {
     if (_this == NULL) {
         SDL_UninitializedVideo();
@@ -3973,8 +3941,7 @@ SDL_GL_GetCurrentWindow(void)
     return (SDL_Window *)SDL_TLSGet(_this->current_glwin_tls);
 }
 
-SDL_GLContext
-SDL_GL_GetCurrentContext(void)
+SDL_GLContext SDL_GL_GetCurrentContext(void)
 {
     if (_this == NULL) {
         SDL_UninitializedVideo();
@@ -3983,8 +3950,7 @@ SDL_GL_GetCurrentContext(void)
     return (SDL_GLContext)SDL_TLSGet(_this->current_glctx_tls);
 }
 
-SDL_EGLDisplay
-SDL_EGL_GetCurrentEGLDisplay(void)
+SDL_EGLDisplay SDL_EGL_GetCurrentEGLDisplay(void)
 {
 #if SDL_VIDEO_OPENGL_EGL
     if (!_this) {
@@ -4002,8 +3968,7 @@ SDL_EGL_GetCurrentEGLDisplay(void)
 #endif
 }
 
-SDL_EGLConfig
-SDL_EGL_GetCurrentEGLConfig(void)
+SDL_EGLConfig SDL_EGL_GetCurrentEGLConfig(void)
 {
 #if SDL_VIDEO_OPENGL_EGL
     if (!_this) {
@@ -4021,8 +3986,7 @@ SDL_EGL_GetCurrentEGLConfig(void)
 #endif
 }
 
-SDL_EGLConfig
-SDL_EGL_GetWindowEGLSurface(SDL_Window *window)
+SDL_EGLConfig SDL_EGL_GetWindowEGLSurface(SDL_Window *window)
 {
 #if SDL_VIDEO_OPENGL_EGL
     if (!_this) {
@@ -4183,8 +4147,7 @@ static void CreateMaskFromColorKeyOrAlpha(SDL_Surface * icon, Uint8 * mask, int 
 /*
  * Sets the window manager icon for the display window.
  */
-void
-SDL_WM_SetIcon(SDL_Surface * icon, Uint8 * mask)
+void SDL_WM_SetIcon(SDL_Surface * icon, Uint8 * mask)
 {
     if (icon && _this->SetIcon) {
         /* Generate a mask if necessary, and create the icon! */
@@ -4266,8 +4229,7 @@ void SDL_ClearComposition(void)
     }
 }
 
-SDL_bool
-SDL_TextInputShown(void)
+SDL_bool SDL_TextInputShown(void)
 {
     if (_this && _this->IsTextInputShown) {
         return _this->IsTextInputShown(_this);
@@ -4276,8 +4238,7 @@ SDL_TextInputShown(void)
     return SDL_FALSE;
 }
 
-SDL_bool
-SDL_TextInputActive(void)
+SDL_bool SDL_TextInputActive(void)
 {
     return SDL_EventEnabled(SDL_TEXTINPUT);
 }
@@ -4309,8 +4270,7 @@ void SDL_SetTextInputRect(const SDL_Rect *rect)
     }
 }
 
-SDL_bool
-SDL_HasScreenKeyboardSupport(void)
+SDL_bool SDL_HasScreenKeyboardSupport(void)
 {
     if (_this && _this->HasScreenKeyboardSupport) {
         return _this->HasScreenKeyboardSupport(_this);
@@ -4318,8 +4278,7 @@ SDL_HasScreenKeyboardSupport(void)
     return SDL_FALSE;
 }
 
-SDL_bool
-SDL_ScreenKeyboardShown(SDL_Window *window)
+SDL_bool SDL_ScreenKeyboardShown(SDL_Window *window)
 {
     if (window && _this && _this->IsScreenKeyboardShown) {
         return _this->IsScreenKeyboardShown(_this, window);
@@ -4552,8 +4511,7 @@ int SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *messag
 #endif
 }
 
-SDL_bool
-SDL_ShouldAllowTopmost(void)
+SDL_bool SDL_ShouldAllowTopmost(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_ALLOW_TOPMOST, SDL_TRUE);
 }
@@ -4658,7 +4616,7 @@ int SDL_Vulkan_LoadLibrary(const char *path)
     return retval;
 }
 
-void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
+SDL_FunctionPointer SDL_Vulkan_GetVkGetInstanceProcAddr(void)
 {
     if (_this == NULL) {
         SDL_UninitializedVideo();
@@ -4668,7 +4626,7 @@ void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
         SDL_SetError("No Vulkan loader has been loaded");
         return NULL;
     }
-    return _this->vulkan_config.vkGetInstanceProcAddr;
+    return (SDL_FunctionPointer)_this->vulkan_config.vkGetInstanceProcAddr;
 }
 
 void SDL_Vulkan_UnloadLibrary(void)
@@ -4732,8 +4690,7 @@ void SDL_Vulkan_GetDrawableSize(SDL_Window *window, int *w, int *h)
     }
 }
 
-SDL_MetalView
-SDL_Metal_CreateView(SDL_Window *window)
+SDL_MetalView SDL_Metal_CreateView(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);
 
@@ -4760,8 +4717,7 @@ void SDL_Metal_DestroyView(SDL_MetalView view)
     }
 }
 
-void *
-SDL_Metal_GetLayer(SDL_MetalView view)
+void *SDL_Metal_GetLayer(SDL_MetalView view)
 {
     if (_this && _this->Metal_GetLayer) {
         if (view) {
