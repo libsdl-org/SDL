@@ -1,5 +1,5 @@
 /*
-Copyright 1997-2022 Sam Lantinga
+Copyright 1997-2023 Sam Lantinga
 Copyright 2022 Collabora Ltd.
 SPDX-License-Identifier: Zlib
 */
