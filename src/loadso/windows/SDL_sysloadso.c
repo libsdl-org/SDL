@@ -27,8 +27,7 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-void *
-SDL_LoadObject(const char *sofile)
+void *SDL_LoadObject(const char *sofile)
 {
     void *handle;
     LPTSTR tstr;
@@ -59,8 +58,7 @@ SDL_LoadObject(const char *sofile)
     return handle;
 }
 
-void *
-SDL_LoadFunction(void *handle, const char *name)
+SDL_FunctionPointer SDL_LoadFunction(void *handle, const char *name)
 {
     void *symbol = (void *)GetProcAddress((HMODULE)handle, name);
     if (symbol == NULL) {

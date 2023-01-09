@@ -64,8 +64,7 @@ int VITA_GLES_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void *
-VITA_GLES_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer VITA_GLES_GetProcAddress(_THIS, const char *proc)
 {
     return eglGetProcAddress(proc);
 }
@@ -78,8 +77,7 @@ void VITA_GLES_UnloadLibrary(_THIS)
 static EGLint width = 960;
 static EGLint height = 544;
 
-SDL_GLContext
-VITA_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window)
 {
 
     SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;

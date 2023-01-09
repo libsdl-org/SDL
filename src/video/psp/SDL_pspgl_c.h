@@ -35,7 +35,7 @@ typedef struct SDL_GLDriverData
     uint32_t swapinterval;
 } SDL_GLDriverData;
 
-extern void *PSP_GL_GetProcAddress(_THIS, const char *proc);
+extern SDL_FunctionPointer PSP_GL_GetProcAddress(_THIS, const char *proc);
 extern int PSP_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 extern void PSP_GL_SwapBuffers(_THIS);
 

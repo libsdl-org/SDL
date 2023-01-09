@@ -264,7 +264,7 @@ struct SDL_VideoDevice
      * OpenGL support
      */
     int (*GL_LoadLibrary)(_THIS, const char *path);
-    void *(*GL_GetProcAddress)(_THIS, const char *proc);
+    SDL_FunctionPointer (*GL_GetProcAddress)(_THIS, const char *proc);
     void (*GL_UnloadLibrary)(_THIS);
     SDL_GLContext (*GL_CreateContext)(_THIS, SDL_Window *window);
     int (*GL_MakeCurrent)(_THIS, SDL_Window *window, SDL_GLContext context);

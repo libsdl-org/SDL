@@ -76,7 +76,7 @@ struct SDL_GLDriverData
     } es_profile_max_supported_version;
 
     /* *INDENT-OFF* */ /* clang-format off */
-    void *(WINAPI *wglGetProcAddress)(const char *proc);
+    PROC (WINAPI *wglGetProcAddress)(const char *proc);
     HGLRC (WINAPI *wglCreateContext)(HDC hdc);
     BOOL (WINAPI *wglDeleteContext)(HGLRC hglrc);
     BOOL (WINAPI *wglMakeCurrent)(HDC hdc, HGLRC hglrc);
@@ -103,7 +103,7 @@ struct SDL_GLDriverData
 
 /* OpenGL functions */
 extern int WIN_GL_LoadLibrary(_THIS, const char *path);
-extern void *WIN_GL_GetProcAddress(_THIS, const char *proc);
+extern SDL_FunctionPointer WIN_GL_GetProcAddress(_THIS, const char *proc);
 extern void WIN_GL_UnloadLibrary(_THIS);
 extern SDL_bool WIN_GL_UseEGL(_THIS);
 extern int WIN_GL_SetupWindow(_THIS, SDL_Window *window);

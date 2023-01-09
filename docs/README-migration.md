@@ -406,6 +406,10 @@ The following symbols have been renamed:
 * KMOD_SCROLL => SDL_KMOD_SCROLL
 * KMOD_SHIFT => SDL_KMOD_SHIFT
 
+## SDL_loadso.h
+
+SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
+
 ## SDL_main.h
 
 SDL3 doesn't have a static libSDLmain to link against anymore.  
@@ -867,6 +871,8 @@ Programs which have access to shaders can implement more robust versions of thos
 
 Removed SDL_GL_CONTEXT_EGL from OpenGL configuration attributes. You can instead use `SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);`
 
+SDL_GL_GetProcAddress() and SDL_EGL_GetProcAddress() now return `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
+
 SDL_GL_SwapWindow() returns 0 if the function succeeds or a negative error code if there was an error.
 
 SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
@@ -881,4 +887,6 @@ SDL_Window id type is named SDL_WindowID
 ## SDL_vulkan.h
 
 SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter.
+
+SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to PFN_vkGetInstanceProcAddr.
 

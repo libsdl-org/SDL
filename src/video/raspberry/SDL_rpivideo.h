@@ -82,7 +82,7 @@ void RPI_DestroyWindow(_THIS, SDL_Window *window);
 
 /* OpenGL/OpenGL ES functions */
 int RPI_GLES_LoadLibrary(_THIS, const char *path);
-void *RPI_GLES_GetProcAddress(_THIS, const char *proc);
+SDL_FunctionPointer RPI_GLES_GetProcAddress(_THIS, const char *proc);
 void RPI_GLES_UnloadLibrary(_THIS);
 SDL_GLContext RPI_GLES_CreateContext(_THIS, SDL_Window *window);
 int RPI_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);

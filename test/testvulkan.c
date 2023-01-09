@@ -192,7 +192,7 @@ static void quit(int rc)
 
 static void loadGlobalFunctions(void)
 {
-    vkGetInstanceProcAddr = SDL_Vulkan_GetVkGetInstanceProcAddr();
+    vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr();
     if (!vkGetInstanceProcAddr) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "SDL_Vulkan_GetVkGetInstanceProcAddr(): %s\n",

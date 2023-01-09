@@ -45,7 +45,7 @@ static int LoadContext(GL_Context *data)
 #else
 #define SDL_PROC(ret, func, params)                                                         \
     do {                                                                                    \
-        data->func = SDL_GL_GetProcAddress(#func);                                          \
+        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                                          \
         if (!data->func) {                                                                  \
             return SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
         }                                                                                   \
