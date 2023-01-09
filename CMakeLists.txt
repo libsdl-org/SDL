@@ -847,33 +847,33 @@ if(SDL_ASSEMBLY)
     if(SDL_LSX)
       cmake_push_check_state()
       list(APPEND CMAKE_REQUIRED_FLAGS "-mlsx")
-      check_c_source_compiles([[
+      check_c_source_compiles("
           #ifndef __loongarch_sx
           #error Assembler CPP flag not enabled
           #endif
-        ]] CPU_HAS_LSX)
+          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_LSX)
       check_include_file("lsxintrin.h" HAVE_LSXINTRIN_H)
       cmake_pop_check_state()
 
-      if(CPU_HAS_LSX AND HAVE_LSXINTRIN_H)
+      if(CPU_SUPPORTS_LSX AND HAVE_LSXINTRIN_H)
         list(APPEND EXTRA_CFLAGS "-mlsx")
-        set(HAS_LSX TRUE)
+        set(HAVE_LSX TRUE)
       endif()
     endif()
 
     if(SDL_LASX)
       cmake_push_check_state()
       list(APPEND CMAKE_REQUIRED_FLAGS "-mlasx")
-      check_c_source_compiles([[
+      check_c_source_compiles("
           #ifndef __loongarch_asx
           #error Assembler CPP flag not enabled
           #endif
-        ]] CPU_HAS_LASX)
+          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_LASX)
       check_include_file("lasxintrin.h" HAVE_LASXINTRIN_H)
       cmake_pop_check_state()
-      if(CPU_HAS_LASX AND HAVE_LASXINTRIN_H)
+      if(CPU_SUPPORTS_LASX AND HAVE_LASXINTRIN_H)
         list(APPEND EXTRA_CFLAGS "-mlasx")
-        set(HAS_LASX TRUE)
+        set(HAVE_LASX TRUE)
       endif()
     endif()
 
