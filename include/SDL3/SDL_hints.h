@@ -2525,14 +2525,16 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  * \param callback An SDL_HintCallback function that will be called when the
  *                 hint value changes
  * \param userdata a pointer to pass to the callback function
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DelHintCallback
  */
-extern DECLSPEC void SDLCALL SDL_AddHintCallback(const char *name,
-                                                 SDL_HintCallback callback,
-                                                 void *userdata);
+extern DECLSPEC int SDLCALL SDL_AddHintCallback(const char *name,
+                                                SDL_HintCallback callback,
+                                                void *userdata);
 
 /**
  * Remove a function watching a particular hint.

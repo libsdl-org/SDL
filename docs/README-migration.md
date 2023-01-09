@@ -272,6 +272,8 @@ functionality to your app and aid migration. That is located in the
 
 ## SDL_hints.h
 
+SDL_AddHintCallback() now returns a standard int result instead of void, returning 0 if the function succeeds or a negative error code if there was an error.
+
 The following hints have been removed:
 * SDL_HINT_IDLE_TIMER_DISABLED (use SDL_DisableScreenSaver instead)
 * SDL_HINT_VIDEO_X11_FORCE_EGL (use SDL_HINT_VIDEO_FORCE_EGL instead)
