@@ -104,11 +104,7 @@ set(SDL_DYLIB_COMPAT_VERSION "${SDL_DYLIB_COMPAT_VERSION_MAJOR}.${SDL_DYLIB_COMP
 
 #message("SDL_SO_VERSION=${SDL_SO_VERSION} SDL_DYLIB_CURRENT_VERSION=${SDL_DYLIB_CURRENT_VERSION} SDL_DYLIB_COMPAT_VERSION=${SDL_DYLIB_COMPAT_VERSION}")
 
-check_cpu_architecture(x86 SDL_CPU_X86)
-check_cpu_architecture(x64 SDL_CPU_X64)
-check_cpu_architecture(arm32 SDL_CPU_ARM32)
-check_cpu_architecture(arm64 SDL_CPU_ARM64)
-check_cpu_architecture(loongarch64 SDL_CPU_LOONGARCH64)
+SDL_DetectCPUArchitecture()
 
 # Check for 64 or 32 bit
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
