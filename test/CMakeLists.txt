@@ -351,8 +351,8 @@ if(APPLE)
         foreach(CURRENT_TARGET ${SDL_TEST_EXECUTABLES})
             set_target_properties("${CURRENT_TARGET}" PROPERTIES
                 MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
-                MACOSX_BUNDLE_BUNDLE_VERSION "${SDL_VERSION}"
-                MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL_VERSION}"
+                MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
+                MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
             )
         endforeach()
     endif()
