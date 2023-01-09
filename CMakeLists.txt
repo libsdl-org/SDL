@@ -44,16 +44,6 @@ if(POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW)
 endif()
 
-# !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
-# !!! FIXME:  for the SDL shared library (so you get an
-# !!! FIXME:  install_name ("soname") of "@rpath/libSDL-whatever.dylib"
-# !!! FIXME:  instead of "/usr/local/lib/libSDL-whatever.dylib"), but I'm
-# !!! FIXME:  punting for now and leaving the existing behavior. Until this
-# !!! FIXME:  properly resolved, this line silences a warning in CMake 3.0+.
-# !!! FIXME:  remove it and this comment entirely once the problem is
-# !!! FIXME:  properly resolved.
-#cmake_policy(SET CMP0042 OLD)
-
 include(CheckLibraryExists)
 include(CheckIncludeFile)
 include(CheckLanguage)
@@ -3117,7 +3107,7 @@ if(SDL_SHARED)
   endif()
   if(APPLE)
     set_target_properties(SDL3 PROPERTIES
-      MACOSX_RPATH 1
+      MACOSX_RPATH TRUE
     )
     if(NOT CMAKE_VERSION VERSION_LESS "3.6")
       set_target_properties(SDL3 PROPERTIES
