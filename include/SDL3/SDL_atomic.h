@@ -78,6 +78,11 @@ extern "C" {
  * minimize the code executed inside an atomic lock and never do
  * expensive things like API or system calls while holding them.
  *
+ * They are also vulnerable to starvation if the thread holding
+ * the lock is lower priority than other threads and doesn't get
+ * scheduled. In general you should use mutexes instead, since
+ * in general they have better performance and contention behavior.
+ *
  * The atomic locks are not safe to lock recursively.
  *
  * Porting Note:
