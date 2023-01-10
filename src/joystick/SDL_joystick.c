@@ -283,15 +283,6 @@ static SDL_bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID
     return SDL_TRUE;
 }
 
-static void SDLCALL SDL_JoystickAllowBackgroundEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    if (SDL_GetStringBoolean(hint, SDL_FALSE)) {
-        SDL_joystick_allows_background_events = SDL_TRUE;
-    } else {
-        SDL_joystick_allows_background_events = SDL_FALSE;
-    }
-}
-
 int SDL_InitJoysticks(void)
 {
     int i, status;
@@ -314,8 +305,7 @@ int SDL_InitJoysticks(void)
     SDL_InitGamepadMappings();
 
     /* See if we should allow joystick events while in the background */
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
-                        SDL_JoystickAllowBackgroundEventsChanged, NULL);
+    SDL_RegisterBoolHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, &SDL_joystick_allows_background_events, SDL_FALSE);
 
     status = -1;
     for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
@@ -1302,9 +1292,6 @@ void SDL_QuitJoysticks(void)
 #if !SDL_EVENTS_DISABLED
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
 #endif
-
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
-                        SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
     SDL_QuitGamepadMappings();
 

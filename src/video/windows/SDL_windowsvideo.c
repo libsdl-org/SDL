@@ -42,21 +42,6 @@ SDL_bool g_WindowsEnableMessageLoop = SDL_TRUE;
 SDL_bool g_WindowsEnableMenuMnemonics = SDL_FALSE;
 SDL_bool g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
 
-static void SDLCALL UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
-{
-    g_WindowsEnableMessageLoop = SDL_GetStringBoolean(newValue, SDL_TRUE);
-}
-
-static void SDLCALL UpdateWindowsEnableMenuMnemonics(void *userdata, const char *name, const char *oldValue, const char *newValue)
-{
-    g_WindowsEnableMenuMnemonics = SDL_GetStringBoolean(newValue, SDL_FALSE);
-}
-
-static void SDLCALL UpdateWindowFrameUsableWhileCursorHidden(void *userdata, const char *name, const char *oldValue, const char *newValue)
-{
-    g_WindowFrameUsableWhileCursorHidden = SDL_GetStringBoolean(newValue, SDL_TRUE);
-}
-
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static void WIN_SuspendScreenSaver(_THIS)
 {
@@ -448,9 +433,9 @@ int WIN_VideoInit(_THIS)
     WIN_InitMouse(_this);
 #endif
 
-    SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
-    SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
-    SDL_AddHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
+    SDL_RegisterBoolHint(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, &g_WindowsEnableMessageLoop, SDL_TRUE);
+    SDL_RegisterBoolHint(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, &g_WindowsEnableMenuMnemonics, SDL_FALSE);
+    SDL_RegisterBoolHint(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, &g_WindowFrameUsableWhileCursorHidden, SDL_TRUE);
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     data->_SDL_WAKEUP = RegisterWindowMessageA("_SDL_WAKEUP");

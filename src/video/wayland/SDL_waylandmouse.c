@@ -541,8 +541,8 @@ static void Wayland_WarpMouse(SDL_Window *window, float x, float y)
 
     if (input->cursor_visible == SDL_TRUE) {
         SDL_Unsupported();
-    } else if (input->warp_emulation_prohibited) {
-        SDL_Unsupported();
+    } else if (!input->warp_emulation_allowed) {
+        SDL_Unsupported();   /* !!! FIXME: this should probably not use SDL_Unsupported, which usually means something hasn't been or can't be implemented. */
     } else {
         if (!d->relative_mouse_mode) {
             Wayland_input_lock_pointer(input);
@@ -566,18 +566,11 @@ static int Wayland_SetRelativeMouseMode(SDL_bool enabled)
          * also be emulating it using repeated mouse warps, so disable
          * mouse warp emulation by default.
          */
-        data->input->warp_emulation_prohibited = SDL_TRUE;
+        data->input->warp_emulation_allowed = SDL_FALSE;
         return Wayland_input_lock_pointer(data->input);
     } else {
         return Wayland_input_unlock_pointer(data->input);
     }
-}
-
-static void SDLCALL Wayland_EmulateMouseWarpChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)userdata;
-
-    input->warp_emulation_prohibited = !SDL_GetStringBoolean(hint, !input->warp_emulation_prohibited);
 }
 
 #if 0  /* TODO RECONNECT: See waylandvideo.c for more information! */
@@ -656,8 +649,7 @@ void Wayland_InitMouse(void)
 
     SDL_SetDefaultCursor(Wayland_CreateDefaultCursor());
 
-    SDL_AddHintCallback(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP,
-                        Wayland_EmulateMouseWarpChanged, input);
+    SDL_RegisterBoolHint(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP, &input->warp_emulation_allowed, SDL_TRUE);
 }
 
 void Wayland_FiniMouse(SDL_VideoData *data)
@@ -671,8 +663,7 @@ void Wayland_FiniMouse(SDL_VideoData *data)
     SDL_free(data->cursor_themes);
     data->cursor_themes = NULL;
 
-    SDL_DelHintCallback(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP,
-                        Wayland_EmulateMouseWarpChanged, input);
+    SDL_UnregisterBoolHint(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP, &input->warp_emulation_allowed);
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
