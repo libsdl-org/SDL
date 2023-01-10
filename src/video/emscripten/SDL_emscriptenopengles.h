@@ -30,7 +30,7 @@
 /* OpenGLES functions */
 extern int Emscripten_GLES_LoadLibrary(_THIS, const char *path);
 extern void Emscripten_GLES_UnloadLibrary(_THIS);
-extern void *Emscripten_GLES_GetProcAddress(_THIS, const char *proc);
+extern SDL_FunctionPointer Emscripten_GLES_GetProcAddress(_THIS, const char *proc);
 extern int Emscripten_GLES_SetSwapInterval(_THIS, int interval);
 extern int Emscripten_GLES_GetSwapInterval(_THIS, int *interval);
 extern SDL_GLContext Emscripten_GLES_CreateContext(_THIS, SDL_Window *window);

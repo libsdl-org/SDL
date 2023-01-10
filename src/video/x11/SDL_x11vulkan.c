@@ -114,7 +114,7 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
             goto fail;
         }
         videoData->vulkan_XGetXCBConnection =
-            SDL_LoadFunction(videoData->vulkan_xlib_xcb_library, "XGetXCBConnection");
+            (PFN_XGetXCBConnection)SDL_LoadFunction(videoData->vulkan_xlib_xcb_library, "XGetXCBConnection");
         if (!videoData->vulkan_XGetXCBConnection) {
             SDL_UnloadObject(videoData->vulkan_xlib_xcb_library);
             goto fail;

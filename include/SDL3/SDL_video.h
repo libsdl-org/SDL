@@ -1723,7 +1723,7 @@ extern DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
  * \sa SDL_GL_LoadLibrary
  * \sa SDL_GL_UnloadLibrary
  */
-extern DECLSPEC void *SDLCALL SDL_GL_GetProcAddress(const char *proc);
+extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_GL_GetProcAddress(const char *proc);
 
 /**
  * Get an EGL library function by name.
@@ -1740,7 +1740,7 @@ extern DECLSPEC void *SDLCALL SDL_GL_GetProcAddress(const char *proc);
  *
  * \sa SDL_GL_GetCurrentEGLDisplay
  */
-extern DECLSPEC void *SDLCALL SDL_EGL_GetProcAddress(const char *proc);
+extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_EGL_GetProcAddress(const char *proc);
 
 /**
  * Unload the OpenGL library previously loaded by SDL_GL_LoadLibrary().

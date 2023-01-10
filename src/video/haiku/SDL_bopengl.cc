@@ -63,7 +63,7 @@ int HAIKU_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void *HAIKU_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer HAIKU_GL_GetProcAddress(_THIS, const char *proc)
 {
     if (_this->gl_config.dll_handle != NULL) {
         void *location = NULL;

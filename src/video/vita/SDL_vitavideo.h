@@ -87,12 +87,12 @@ void VITA_DestroyWindow(_THIS, SDL_Window *window);
 /* OpenGL functions */
 int VITA_GL_LoadLibrary(_THIS, const char *path);
 SDL_GLContext VITA_GL_CreateContext(_THIS, SDL_Window *window);
-void *VITA_GL_GetProcAddress(_THIS, const char *proc);
+SDL_FunctionPointer VITA_GL_GetProcAddress(_THIS, const char *proc);
 #endif
 
 /* OpenGLES functions */
 int VITA_GLES_LoadLibrary(_THIS, const char *path);
-void *VITA_GLES_GetProcAddress(_THIS, const char *proc);
+SDL_FunctionPointer VITA_GLES_GetProcAddress(_THIS, const char *proc);
 void VITA_GLES_UnloadLibrary(_THIS);
 SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window);
 int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);

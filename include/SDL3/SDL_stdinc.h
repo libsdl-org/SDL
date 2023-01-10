@@ -738,6 +738,13 @@ SDL_FORCE_INLINE int SDL_size_add_overflow_builtin (size_t a,
 #define SDL_size_add_overflow(a, b, ret) (SDL_size_add_overflow_builtin(a, b, ret))
 #endif
 
+/* This is a generic function pointer which should be cast to the type you expect */
+#ifdef SDL_FUNCTION_POINTER_IS_VOID_POINTER
+typedef void *SDL_FunctionPointer;
+#else
+typedef void (*SDL_FunctionPointer)(void);
+#endif
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
