@@ -195,27 +195,24 @@ SDL_GetHintBoolean(const char *name, SDL_bool default_value)
     return SDL_GetStringBoolean(hint, default_value);
 }
 
-void SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
+int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
     SDL_Hint *hint;
     SDL_HintWatch *entry;
     const char *value;
 
     if (name == NULL || !*name) {
-        SDL_InvalidParamError("name");
-        return;
+        return SDL_InvalidParamError("name");
     }
     if (!callback) {
-        SDL_InvalidParamError("callback");
-        return;
+        return SDL_InvalidParamError("callback");
     }
 
     SDL_DelHintCallback(name, callback, userdata);
 
     entry = (SDL_HintWatch *)SDL_malloc(sizeof(*entry));
     if (entry == NULL) {
-        SDL_OutOfMemory();
-        return;
+        return SDL_OutOfMemory();
     }
     entry->callback = callback;
     entry->userdata = userdata;
@@ -229,16 +226,14 @@ void SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *user
         /* Need to add a hint entry for this watcher */
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
         if (hint == NULL) {
-            SDL_OutOfMemory();
             SDL_free(entry);
-            return;
+            return SDL_OutOfMemory();
         }
         hint->name = SDL_strdup(name);
         if (!hint->name) {
             SDL_free(entry);
             SDL_free(hint);
-            SDL_OutOfMemory();
-            return;
+            return SDL_OutOfMemory();
         }
         hint->value = NULL;
         hint->priority = SDL_HINT_DEFAULT;
@@ -254,6 +249,7 @@ void SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *user
     /* Now call it with the current value */
     value = SDL_GetHint(name);
     callback(userdata, name, value, value);
+    return 0;
 }
 
 void SDL_DelHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
