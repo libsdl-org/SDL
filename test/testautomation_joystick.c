@@ -24,6 +24,8 @@ TestVirtualJoystick(void *arg)
 
     SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD) == 0, "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
 
+    SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+
     SDL_zero(desc);
     desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
     desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
@@ -54,6 +56,7 @@ TestVirtualJoystick(void *arg)
             SDL_UpdateJoysticks();
             SDLTest_AssertCheck(SDL_GetJoystickButton(joystick, SDL_GAMEPAD_BUTTON_A) == SDL_PRESSED, "SDL_GetJoystickButton(SDL_GAMEPAD_BUTTON_A) == SDL_PRESSED");
             SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_A, SDL_RELEASED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_A, SDL_RELEASED)");
+
             SDL_UpdateJoysticks();
             SDLTest_AssertCheck(SDL_GetJoystickButton(joystick, SDL_GAMEPAD_BUTTON_A) == SDL_RELEASED, "SDL_GetJoystickButton(SDL_GAMEPAD_BUTTON_A) == SDL_RELEASED");
 
@@ -62,6 +65,8 @@ TestVirtualJoystick(void *arg)
         SDLTest_AssertCheck(SDL_DetachVirtualJoystick(device_id) == 0, "SDL_DetachVirtualJoystick()");
     }
     SDLTest_AssertCheck(!SDL_IsJoystickVirtual(device_id), "!SDL_IsJoystickVirtual()");
+
+    SDL_ResetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS);
 
     SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
 
