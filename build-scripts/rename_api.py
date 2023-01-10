@@ -14,6 +14,7 @@ from rename_symbols import create_regex_from_replacements, replace_symbols_in_pa
 SDL_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 SDL_INCLUDE_DIR = SDL_ROOT / "include/SDL3"
+SDL_BUILD_SCRIPTS = SDL_ROOT / "build-scripts"
 
 
 def main():
@@ -63,6 +64,7 @@ def main():
 
         add_symbol_to_oldnames(header.name, oldname, newname)
         add_symbol_to_migration(header.name, args.type, oldname, newname)
+        add_symbol_to_coccinelle(args.type, oldname, newname)
         i += 2
 
 
@@ -81,6 +83,18 @@ def add_content(lines, i, content, add_trailing_line):
     if add_trailing_line:
         i = add_line(lines, i, "")
     return i
+
+
+def add_symbol_to_coccinelle(symbol_type, oldname, newname):
+    file = open(SDL_BUILD_SCRIPTS / "SDL_migration.cocci", "a")
+    # Append-adds at last
+    file.write("@@\n")
+    file.write("@@\n")
+    file.write("- %s\n" % oldname)
+    file.write("+ %s\n" % newname)
+    if symbol_type == "function":
+        file.write("  (...)\n")
+    file.close()
 
 
 def add_symbol_to_oldnames(header, oldname, newname):
