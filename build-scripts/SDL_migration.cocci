@@ -46,13 +46,29 @@
 expression e;
 @@
 (
-- SDL_PauseAudioDevice(1, e)
+- SDL_PauseAudioDevice(e, 1)
 + SDL_PauseAudioDevice(e)
 |
-- SDL_PauseAudioDevice(0, e)
+- SDL_PauseAudioDevice(e, SDL_TRUE)
++ SDL_PauseAudioDevice(e)
+|
+- SDL_PauseAudioDevice(e, 0)
++ SDL_PlayAudioDevice(e)
+|
+- SDL_PauseAudioDevice(e, SDL_FALSE)
 + SDL_PlayAudioDevice(e)
 )
 
+@@
+expression e, pause_on;
+statement S;
+@@
+- SDL_PauseAudioDevice(e, pause_on);
++ if (pause_on) {
++    SDL_PauseAudioDevice(e);
++ } else {
++    SDL_PlayAudioDevice(e);
++ }
 
 
 // Remove SDL_WINDOW_SHOWN
