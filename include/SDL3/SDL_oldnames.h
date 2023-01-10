@@ -656,6 +656,9 @@
 #define SDL_RenderGetD3D11Device SDL_RenderGetD3D11Device_renamed_SDL_GetRenderD3D11Device
 #define SDL_RenderGetD3D9Device SDL_RenderGetD3D9Device_renamed_SDL_GetRenderD3D9Device
 
+/* ##SDL_timer.h */
+#define SDL_GetTicks64 SDL_GetTicks64_renamed_SDL_GetTicks
+
 /* ##SDL_video.h */
 #define SDL_GetPointDisplayIndex SDL_GetPointDisplayIndex_renamed_SDL_GetDisplayIndexForPoint
 #define SDL_GetRectDisplayIndex SDL_GetRectDisplayIndex_renamed_SDL_GetDisplayIndexForRect
