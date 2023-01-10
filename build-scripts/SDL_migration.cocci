@@ -1,44 +1,34 @@
 //
+// This is a coccinelle semantic patch to ease migration of your project from SDL2 to SDL3.
 //
-// This is a coccinelle semantic patch (https://github.com/coccinelle/coccinelle)
-// to ease migration of your project, from SDL2 to SDL3.
+// It generates a patch that you can apply to your project to build for SDL3. It does not
+// handle conceptual API changes, but it automates API name changes and function parameter
+// transformations.
 //
-// It generates a 'diff' of your SDL2 project, that you can apply
-// to build for SDL3.
-// 
+// To install (native Ubuntu or using WSL on Windows):
+//	sudo apt install coccinelle
 //
-// install:
-// $> apt-get install coccinelle
-//
-// apply the semantic patch to generate a diff file:
-// $> spatch --sp-file path/to/SDL_migration.cocci . > your_diff.txt
+// Apply the semantic patch to generate a patch file:
+//	cd path/to/your/code
+//	spatch --sp-file path/to/SDL_migration.cocci . >patch.txt
 //
 // A few options:
 //   --c++=11            to parse cpp file
 //   --max-width 200     to increase line witdth of generated source
 //
-// patch you project (make a copy before..):
-// $> patch -p1 < your_diff.txt
-//
+// Apply the patch to your project:
+//	patch -p1 <patch.txt
 //
 //
 // #############
-// What it does ? 
-// - all function renaming (without parameter change) as in SDL_oldnames.h
-// - remove SDL_WINDOW_SHOWN
-// - migrate SDL_CreateRGB* and SDL_ConvertSurface* functions
-//
-// #############
-// In very short, a patch is composed of two sub-blocks, like
+// In very short, a semantic patch is composed of two sub-blocks, like
 //
 // @@
 // declaration
 // @@
 // rule / transformation
 // 
-// So this file, is a set of many patches, mostly independant.
-// it can be incremented by inserting new patches as SDL3 api evolves.
-//
+// So this file is a set of many semantic patches, mostly independant.
 
 
 // SDL_PauseAudioDevice / SDL_PlayAudioDevice
