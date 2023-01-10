@@ -1822,6 +1822,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     # specifier (on purpose), but SDL expects "(null)". Use the built-in
     # implementation.
     set (HAVE_VSNPRINTF 0)
+    set (USE_POSIX_SPAWN 1)
   endif()
 elseif(WINDOWS)
   find_program(WINDRES windres)
