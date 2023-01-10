@@ -23,6 +23,7 @@ if(EMSCRIPTEN OR N3DS OR PS2 OR PSP OR RISCOS OR VITA)
 endif()
 
 option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" ${SDL_TESTS_LINK_SHARED_DEFAULT})
+set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
 
 if(SDL_TESTS_LINK_SHARED)
     set(sdl_name_component SDL3)
@@ -362,17 +363,19 @@ set(TESTS_ENVIRONMENT
     SDL_VIDEO_DRIVER=dummy
 )
 
+function(sdl_set_test_timeout TEST TIMEOUT)
+    math(EXPR TIMEOUT "${TIMEOUT}*${SDL_TESTS_TIMEOUT_MULTIPLIER}")
+    set_tests_properties(${test} PROPERTIES TIMEOUT "${TIMEOUT}")
+endfunction()
+
 foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
     add_test(
         NAME ${TESTCASE}
         COMMAND ${TESTCASE}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
-    set_tests_properties(${TESTCASE}
-        PROPERTIES
-            ENVIRONMENT "${TESTS_ENVIRONMENT}"
-            TIMEOUT 10
-    )
+    set_tests_properties(${TESTCASE} PROPERTIES ENVIRONMENT "${TESTS_ENVIRONMENT}")
+    sdl_set_test_timeout(${TESTCASE} 10)
     if(SDL_INSTALL_TESTS)
         set(exe ${TESTCASE})
         set(installedtestsdir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL3")
@@ -384,8 +387,8 @@ foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
     endif()
 endforeach()
 
-set_tests_properties(testthread PROPERTIES TIMEOUT 40)
-set_tests_properties(testtimer PROPERTIES TIMEOUT 60)
+sdl_set_test_timeout(testthread 40)
+sdl_set_test_timeout(testtimer 60)
 
 if(SDL_INSTALL_TESTS)
     if(RISCOS)
