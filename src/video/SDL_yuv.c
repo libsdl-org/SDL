@@ -22,7 +22,6 @@
 
 #include "SDL_pixels_c.h"
 #include "SDL_yuv_c.h"
-#include "../SDL_intrin.h"
 
 #include "yuv2rgb/yuv_rgb.h"
 

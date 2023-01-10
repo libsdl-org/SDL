@@ -21,7 +21,6 @@
 #include "SDL_internal.h"
 
 #include "SDL_blit.h"
-#include "../SDL_intrin.h"
 
 #ifdef __SSE__
 /* *INDENT-OFF* */ /* clang-format off */

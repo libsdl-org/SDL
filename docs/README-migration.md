@@ -77,24 +77,11 @@ Use the SDL_AudioDevice functions instead.
 
 ## SDL_cpuinfo.h
 
+The intrinsics headers (mmintrin.h, etc.) have been moved to `<SDL3/SDL_intrin.h>` and are no longer automatically included in SDL.h.
+
 SDL_Has3DNow() has been removed; there is no replacement.
 
 SDL_SIMDAlloc(), SDL_SIMDRealloc(), and SDL_SIMDFree() have been removed. You can use SDL_aligned_alloc() and SDL_aligned_free() with SDL_SIMDGetAlignment() to get the same functionality.
-
-The following headers are no longer automatically included, and will need to be included manually:
-- immintrin.h
-- mm3dnow.h
-- mmintrin.h
-- xmmintrin.h
-- emmintrin.h
-- pmmintrin.h
-- arm_neon.h
-- arm64_neon.h
-- armintr.h
-- arm64intr.h
-- altivec.h
-- lsxintrin.h
-- lasxintrin.h
 
 ## SDL_events.h
 
