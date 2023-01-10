@@ -1517,7 +1517,7 @@ METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
         [mtltexture getBytes:temp_pixels bytesPerRow:temp_pitch fromRegion:mtlregion mipmapLevel:0];
 
         temp_format = (mtltexture.pixelFormat == MTLPixelFormatBGRA8Unorm) ? SDL_PIXELFORMAT_ARGB8888 : SDL_PIXELFORMAT_ABGR8888;
-        status = SDL_ConvertPixels(rect->w, rect->h, temp_format, temp_pixels, temp_pitch, pixel_format, pixels, pitch);
+        status = SDL_ConvertPixels(rect->w, rect->h, temp_format, temp_pixels, (int)temp_pitch, pixel_format, pixels, pitch);
         SDL_free(temp_pixels);
         return status;
     }
