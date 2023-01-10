@@ -47,7 +47,6 @@ typedef struct SDL_Hint
 
 static SDL_Hint *SDL_hints;
 
-/* !!! FIXME: should we set the SDL error string in here for failures? */
 SDL_bool
 SDL_SetHintWithPriority(const char *name, const char *value,
                         SDL_HintPriority priority)
@@ -57,17 +56,20 @@ SDL_SetHintWithPriority(const char *name, const char *value,
     SDL_HintWatch *entry;
 
     if (name == NULL) {
+        SDL_InvalidParamError("name");
         return SDL_FALSE;
     }
 
     env = SDL_getenv(name);
     if (env && priority < SDL_HINT_OVERRIDE) {
+        SDL_SetError("higher priority hint already in place");
         return SDL_FALSE;
     }
 
     for (hint = SDL_hints; hint; hint = hint->next) {
         if (SDL_strcmp(name, hint->name) == 0) {
             if (priority < hint->priority) {
+                SDL_SetError("higher priority hint already in place");
                 return SDL_FALSE;
             }
             if (hint->value != value &&
@@ -89,10 +91,27 @@ SDL_SetHintWithPriority(const char *name, const char *value,
     /* Couldn't find the hint, add a new one */
     hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
     if (hint == NULL) {
+        SDL_OutOfMemory();
         return SDL_FALSE;
     }
     hint->name = SDL_strdup(name);
-    hint->value = value ? SDL_strdup(value) : NULL;
+    if (hint->name == NULL) {
+        SDL_free(hint);
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
+
+    hint->value = NULL;
+    if (value != NULL) {
+        hint->value = SDL_strdup(value);
+        if (hint->value == NULL) {
+            SDL_free(hint->name);
+            SDL_free(hint);
+            SDL_OutOfMemory();
+            return SDL_FALSE;
+        }
+    }
+
     hint->priority = priority;
     hint->callbacks = NULL;
     hint->next = SDL_hints;
