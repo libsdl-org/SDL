@@ -41,6 +41,20 @@
 //
 
 
+// SDL_PauseAudioDevice / SDL_PlayAudioDevice
+@@
+expression e;
+@@
+(
+- SDL_PauseAudioDevice(1, e)
++ SDL_PauseAudioDevice(e)
+|
+- SDL_PauseAudioDevice(0, e)
++ SDL_PlayAudioDevice(e)
+)
+
+
+
 // Remove SDL_WINDOW_SHOWN
 @@
 expression e;
