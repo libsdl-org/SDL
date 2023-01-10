@@ -63,3 +63,6 @@ tab_width = 4
 
 [{*.bat,*.rc}]
 end_of_line = crlf
+
+[*.cocci]'
+insert_final_newline = true
