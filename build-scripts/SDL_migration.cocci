@@ -61,7 +61,6 @@ expression e;
 
 @@
 expression e, pause_on;
-statement S;
 @@
 - SDL_PauseAudioDevice(e, pause_on);
 + if (pause_on) {
