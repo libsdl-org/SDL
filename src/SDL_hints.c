@@ -24,6 +24,10 @@
 
 /* Assuming there aren't many hints set and they aren't being queried in
    critical performance paths, we'll just use linked lists here.
+   !!! FIXME: there are like 400+ places we lookup hints in SDL...maybe
+   !!! FIXME: a small hashtable isn't the worst idea. When the GPU API
+   !!! FIXME: branch merges, there will be an SDL_HashTable we can
+   !!! FIXME: plug in here.
  */
 typedef struct SDL_HintWatch
 {
@@ -43,6 +47,7 @@ typedef struct SDL_Hint
 
 static SDL_Hint *SDL_hints;
 
+/* !!! FIXME: should we set the SDL error string in here for failures? */
 SDL_bool
 SDL_SetHintWithPriority(const char *name, const char *value,
                         SDL_HintPriority priority)
@@ -296,3 +301,77 @@ void SDL_ClearHints(void)
         SDL_free(hint);
     }
 }
+
+
+static void SDLCALL UpdateRegisteredIntHintCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    *((int *) userdata) = newValue ? SDL_atoi(newValue) : 0;
+}
+
+SDL_bool SDL_RegisterIntHint(const char *name, int *addr, int default_value)
+{
+    char defaultstr[64];
+    SDL_snprintf(defaultstr, sizeof (defaultstr), "%d", default_value);
+    (void) SDL_SetHintWithPriority(name, defaultstr, SDL_HINT_DEFAULT);  /* carry on even if this fails. */
+    return SDL_AddHintCallback(name, UpdateRegisteredIntHintCallback, addr);
+}
+
+void SDL_UnregisterIntHint(const char *name, int *addr)
+{
+    SDL_DelHintCallback(name, UpdateRegisteredIntHintCallback, addr);
+}
+
+
+static void SDLCALL UpdateRegisteredFloatHintCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    *((float *) userdata) = newValue ? SDL_atof(newValue) : 0.0f;
+}
+
+SDL_bool SDL_RegisterFloatHint(const char *name, float *addr, float default_value)
+{
+    char defaultstr[64];
+    SDL_snprintf(defaultstr, sizeof (defaultstr), "%f", default_value);
+    (void) SDL_SetHintWithPriority(name, defaultstr, SDL_HINT_DEFAULT);  /* carry on even if this fails. */
+    return SDL_AddHintCallback(name, UpdateRegisteredFloatHintCallback, addr);
+}
+
+void SDL_UnregisterFloatHint(const char *name, float *addr)
+{
+    SDL_DelHintCallback(name, UpdateRegisteredFloatHintCallback, addr);
+}
+
+
+static void SDLCALL UpdateRegisteredBoolHintCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    *((SDL_bool *) userdata) = SDL_GetStringBoolean(newValue, SDL_FALSE);
+}
+
+SDL_bool SDL_RegisterBoolHint(const char *name, SDL_bool *addr, SDL_bool default_value)
+{
+    (void) SDL_SetHintWithPriority(name, default_value ? "1" : "0", SDL_HINT_DEFAULT);  /* carry on even if this fails. */
+    return SDL_AddHintCallback(name, UpdateRegisteredBoolHintCallback, addr);
+
+}
+
+void SDL_UnregisterBoolHint(const char *name, SDL_bool *addr)
+{
+    SDL_DelHintCallback(name, UpdateRegisteredBoolHintCallback, addr);
+}
+
+
+static void SDLCALL UpdateRegisteredStringHintCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    *((const char **) userdata) = newValue;
+}
+
+SDL_bool SDL_RegisterStringHint(const char *name, const char **addr, const char *default_value)
+{
+    (void) SDL_SetHintWithPriority(name, default_value, SDL_HINT_DEFAULT);  /* carry on even if this fails. */
+    return SDL_AddHintCallback(name, UpdateRegisteredStringHintCallback, addr);
+}
+
+void SDL_UnregisterStringHint(const char *name, const char **addr)
+{
+    SDL_DelHintCallback(name, UpdateRegisteredStringHintCallback, addr);
+}
+
