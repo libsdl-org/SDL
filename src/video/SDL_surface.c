@@ -165,7 +165,7 @@ SDL_CreateSurface(int width, int height, Uint32 format)
             }
         }
 
-        surface->pixels = SDL_SIMDAlloc(size);
+        surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
         if (!surface->pixels) {
             SDL_DestroySurface(surface);
             SDL_OutOfMemory();
@@ -1553,7 +1553,7 @@ void SDL_DestroySurface(SDL_Surface *surface)
         /* Don't free */
     } else if (surface->flags & SDL_SIMD_ALIGNED) {
         /* Free aligned */
-        SDL_SIMDFree(surface->pixels);
+        SDL_aligned_free(surface->pixels);
     } else {
         /* Normal */
         SDL_free(surface->pixels);

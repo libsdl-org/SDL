@@ -63,7 +63,7 @@ SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
             SDL_OutOfMemory();
             return NULL;
         }
-        swdata->pixels = (Uint8 *)SDL_SIMDAlloc(dst_size);
+        swdata->pixels = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), dst_size);
         if (!swdata->pixels) {
             SDL_SW_DestroyYUVTexture(swdata);
             SDL_OutOfMemory();
@@ -394,7 +394,7 @@ int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
 void SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture *swdata)
 {
     if (swdata) {
-        SDL_SIMDFree(swdata->pixels);
+        SDL_aligned_free(swdata->pixels);
         SDL_DestroySurface(swdata->stretch);
         SDL_DestroySurface(swdata->display);
         SDL_free(swdata);

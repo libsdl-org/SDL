@@ -581,10 +581,7 @@
 #define SDL_RumbleJoystick SDL_RumbleJoystick_REAL
 #define SDL_RumbleJoystickTriggers SDL_RumbleJoystickTriggers_REAL
 #define SDL_RunApp SDL_RunApp_REAL
-#define SDL_SIMDAlloc SDL_SIMDAlloc_REAL
-#define SDL_SIMDFree SDL_SIMDFree_REAL
 #define SDL_SIMDGetAlignment SDL_SIMDGetAlignment_REAL
-#define SDL_SIMDRealloc SDL_SIMDRealloc_REAL
 #define SDL_SaveBMP_RW SDL_SaveBMP_RW_REAL
 #define SDL_ScreenKeyboardShown SDL_ScreenKeyboardShown_REAL
 #define SDL_ScreenSaverEnabled SDL_ScreenSaverEnabled_REAL
@@ -871,3 +868,5 @@
 #define SDL_modff SDL_modff_REAL
 #define SDL_GetRenderVSync SDL_GetRenderVSync_REAL
 #define SDL_PlayAudioDevice SDL_PlayAudioDevice_REAL
+#define SDL_aligned_alloc SDL_aligned_alloc_REAL
+#define SDL_aligned_free SDL_aligned_free_REAL
