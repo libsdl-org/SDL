@@ -1314,18 +1314,13 @@ void SDL_QuitJoysticks(void)
     SDL_UnlockJoysticks();
 }
 
-static SDL_bool SDL_PrivateJoystickShouldIgnoreEvent(SDL_Joystick *joystick)
+static SDL_bool SDL_PrivateJoystickShouldIgnoreEvent()
 {
     if (SDL_joystick_allows_background_events) {
         return SDL_FALSE;
     }
 
     if (SDL_HasWindows() && SDL_GetKeyboardFocus() == NULL) {
-        if (SDL_IsJoystickVIRTUAL(joystick->guid)) {
-            /* Always allow events for virtual controllers, they're not affected by focus */
-            return SDL_FALSE;
-        }
-
         /* We have windows but we don't have focus, ignore the event. */
         return SDL_TRUE;
     }
@@ -1525,7 +1520,7 @@ int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, S
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
-    if (SDL_PrivateJoystickShouldIgnoreEvent(joystick)) {
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
         if (info->sending_initial_value ||
             (value > info->zero && value >= info->value) ||
             (value < info->zero && value <= info->value)) {
@@ -1569,7 +1564,7 @@ int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uin
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
-    if (SDL_PrivateJoystickShouldIgnoreEvent(joystick)) {
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
         if (value != SDL_HAT_CENTERED) {
             return 0;
         }
@@ -1627,7 +1622,7 @@ int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 butto
 
     /* We ignore events if we don't have keyboard focus, except for button
      * release. */
-    if (SDL_PrivateJoystickShouldIgnoreEvent(joystick)) {
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
         if (state == SDL_PRESSED) {
             return 0;
         }
@@ -2927,7 +2922,7 @@ int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touch
     }
 
     /* We ignore events if we don't have keyboard focus, except for touch release */
-    if (SDL_PrivateJoystickShouldIgnoreEvent(joystick)) {
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
         if (event_type != SDL_GAMEPADTOUCHPADUP) {
             return 0;
         }
@@ -2966,7 +2961,7 @@ int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorT
     SDL_AssertJoysticksLocked();
 
     /* We ignore events if we don't have keyboard focus */
-    if (SDL_PrivateJoystickShouldIgnoreEvent(joystick)) {
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
         return 0;
     }
 
