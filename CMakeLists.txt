@@ -1817,6 +1817,12 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     set(HAVE_RPATH TRUE)
   endif()
 
+  if(QNX)
+    # QNX's *printf() family generates a SIGSEGV if NULL is passed for a string
+    # specifier (on purpose), but SDL expects "(null)". Use the built-in
+    # implementation.
+    set (HAVE_VSNPRINTF 0)
+  endif()
 elseif(WINDOWS)
   find_program(WINDRES windres)
 
