@@ -422,6 +422,34 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                    SDL_free_func free_func);
 
 /**
+ * Allocate memory aligned to a specific value
+ *
+ * If `alignment` is less than the size of `void *`, then it will be increased to match that.
+ *
+ * The returned memory address will be a multiple of the alignment value, and the amount of memory allocated will be a multiple of the alignment value.
+ *
+ * The memory returned by this function must be freed with SDL_aligned_free()
+ *
+ * \param alignment the alignment requested
+ * \param size the size to allocate
+ * \returns a pointer to the aligned memory
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_aligned_free
+ */
+extern DECLSPEC SDL_MALLOC void *SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
+
+/**
+ * Free memory allocated by SDL_aligned_alloc()
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_aligned_alloc
+ */
+extern DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
+
+/**
  * Get the number of outstanding (unfreed) allocations
  *
  * \since This function is available since SDL 3.0.0.

@@ -1215,7 +1215,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
     /* Now that we have it encoded, release the original pixels */
     if (!(surface->flags & SDL_PREALLOC)) {
         if (surface->flags & SDL_SIMD_ALIGNED) {
-            SDL_SIMDFree(surface->pixels);
+            SDL_aligned_free(surface->pixels);
             surface->flags &= ~SDL_SIMD_ALIGNED;
         } else {
             SDL_free(surface->pixels);
@@ -1382,7 +1382,7 @@ static int RLEColorkeySurface(SDL_Surface *surface)
     /* Now that we have it encoded, release the original pixels */
     if (!(surface->flags & SDL_PREALLOC)) {
         if (surface->flags & SDL_SIMD_ALIGNED) {
-            SDL_SIMDFree(surface->pixels);
+            SDL_aligned_free(surface->pixels);
             surface->flags &= ~SDL_SIMD_ALIGNED;
         } else {
             SDL_free(surface->pixels);
@@ -1482,6 +1482,7 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
                          RLEDestFormat *, SDL_PixelFormat *);
     int w = surface->w;
     int bpp = df->BytesPerPixel;
+    size_t size;
 
     if (bpp == 2) {
         uncopy_opaque = uncopy_opaque_16;
@@ -1490,7 +1491,11 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
         uncopy_opaque = uncopy_transl = uncopy_32;
     }
 
-    surface->pixels = SDL_SIMDAlloc((size_t)surface->h * surface->pitch);
+    if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
+        return SDL_FALSE;
+    }
+
+    surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
     if (surface->pixels == NULL) {
         return SDL_FALSE;
     }
@@ -1554,9 +1559,15 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
         if (recode && !(surface->flags & SDL_PREALLOC)) {
             if (surface->map->info.flags & SDL_COPY_RLE_COLORKEY) {
                 SDL_Rect full;
+                size_t size;
 
                 /* re-create the original surface */
-                surface->pixels = SDL_SIMDAlloc((size_t)surface->h * surface->pitch);
+                if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
+                    /* Memory corruption? */
+                    surface->flags |= SDL_RLEACCEL;
+                    return;
+                }
+                surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
                 if (surface->pixels == NULL) {
                     /* Oh crap... */
                     surface->flags |= SDL_RLEACCEL;
