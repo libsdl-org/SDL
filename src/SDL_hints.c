@@ -324,7 +324,7 @@ void SDL_UnregisterIntHint(const char *name, int *addr)
 
 static void SDLCALL UpdateRegisteredFloatHintCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
-    *((float *) userdata) = newValue ? SDL_atof(newValue) : 0.0f;
+    *((float *) userdata) = newValue ? ((float) SDL_atof(newValue)) : 0.0f;
 }
 
 SDL_bool SDL_RegisterFloatHint(const char *name, float *addr, float default_value)
