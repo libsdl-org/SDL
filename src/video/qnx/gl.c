@@ -154,7 +154,7 @@ glLoadLibrary(_THIS, const char *name)
  * @param   proc    Function name
  * @return  Function address
  */
-void *
+SDL_FunctionPointer
 glGetProcAddress(_THIS, const char *proc)
 {
     return eglGetProcAddress(proc);
