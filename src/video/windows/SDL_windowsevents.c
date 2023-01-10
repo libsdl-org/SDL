@@ -121,7 +121,7 @@ static void WIN_SetMessageTick(DWORD tick)
     if (message_tick) {
         if (tick < message_tick && timestamp_offset) {
             /* The tick counter rolled over, bump our offset */
-            timestamp_offset += SDL_MS_TO_NS(0x100000000LLU);
+            timestamp_offset += SDL_MS_TO_NS(0x100000000LL);
         }
     }
     message_tick = tick;
