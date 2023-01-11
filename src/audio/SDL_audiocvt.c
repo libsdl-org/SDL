@@ -25,7 +25,6 @@
 #include "SDL_audio_c.h"
 
 #include "../SDL_dataqueue.h"
-#include "../SDL_intrin.h"
 
 #define DEBUG_AUDIOSTREAM 0
 
