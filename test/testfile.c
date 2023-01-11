@@ -10,7 +10,7 @@
   freely.
 */
 
-/* sanity tests on SDL_rwops.c (usefull for alternative implementations of stdio rwops) */
+/* sanity tests on SDL_rwops.c (useful for alternative implementations of stdio rwops) */
 
 /* quiet windows compiler warnings */
 #if defined(_MSC_VER) && !defined(_CRT_NONSTDC_NO_WARNINGS)
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
     if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->read(rwops, test_buf, 1)) {
+    if (-1 != rwops->read(rwops, test_buf, 1)) {
         RWOP_ERR_QUIT(rwops); /* we are in write only mode */
     }
 
@@ -183,13 +183,13 @@ int main(int argc, char *argv[])
     if (0 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (2 != rwops->read(rwops, test_buf, 30)) {
+    if (27 != rwops->read(rwops, test_buf, 30)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->write(rwops, test_buf, 1)) {
+    if (-1 != rwops->write(rwops, test_buf, 1)) {
         RWOP_ERR_QUIT(rwops); /* readonly mode */
     }
 
@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
     if (0 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (2 != rwops->read(rwops, test_buf, 30)) {
+    if (27 != rwops->read(rwops, test_buf, 30)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
     if (0 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (2 != rwops->read(rwops, test_buf, 30)) {
+    if (27 != rwops->read(rwops, test_buf, 30)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
@@ -345,7 +345,7 @@ int main(int argc, char *argv[])
     if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (3 != rwops->read(rwops, test_buf, 30)) {
+    if (30 != rwops->read(rwops, test_buf, 30)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "123456789012345678901234567123", 30) != 0) {
