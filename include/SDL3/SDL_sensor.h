@@ -223,7 +223,7 @@ extern DECLSPEC int SDLCALL SDL_GetSensorNonPortableType(SDL_Sensor *sensor);
  * Get the instance ID of a sensor.
  *
  * \param sensor The SDL_Sensor object to inspect
- * \returns the sensor instance ID, or -1 if `sensor` is NULL.
+ * \returns the sensor instance ID, or 0 if `sensor` is NULL.
  *
  * \since This function is available since SDL 3.0.0.
  */
