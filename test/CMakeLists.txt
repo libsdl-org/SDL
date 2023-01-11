@@ -139,7 +139,7 @@ if(LINUX AND TARGET sdl-build-options)
     target_include_directories(testevdev BEFORE PRIVATE ${SDL3_SOURCE_DIR}/src)
 endif()
 
-add_sdl_test_executable(testfile testfile.c)
+add_sdl_test_executable(testfile NONINTERACTIVE testfile.c)
 add_sdl_test_executable(testgamepad NEEDS_RESOURCES TESTUTILS testgamepad.c)
 add_sdl_test_executable(testgeometry TESTUTILS testgeometry.c)
 add_sdl_test_executable(testgl testgl.c)
