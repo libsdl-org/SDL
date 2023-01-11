@@ -540,30 +540,30 @@ SDL_CreateRenderer(e1,
 - SDL_CONTROLLERTOUCHPADUP
 + SDL_GAMEPADTOUCHPADUP
 @@
+typedef SDL_ControllerAxisEvent, SDL_GamepadAxisEvent;
 @@
 - SDL_ControllerAxisEvent
 + SDL_GamepadAxisEvent
-  (...)
 @@
+typedef SDL_ControllerButtonEvent, SDL_GamepadButtonEvent;
 @@
 - SDL_ControllerButtonEvent
 + SDL_GamepadButtonEvent
-  (...)
 @@
+typedef SDL_ControllerDeviceEvent, SDL_GamepadDeviceEvent;
 @@
 - SDL_ControllerDeviceEvent
 + SDL_GamepadDeviceEvent
-  (...)
 @@
+typedef SDL_ControllerSensorEvent, SDL_GamepadSensorEvent;
 @@
 - SDL_ControllerSensorEvent
 + SDL_GamepadSensorEvent
-  (...)
 @@
+typedef SDL_ControllerTouchpadEvent, SDL_GamepadTouchpadEvent;
 @@
 - SDL_ControllerTouchpadEvent
 + SDL_GamepadTouchpadEvent
-  (...)
 @@
 @@
 - SDL_CONTROLLER_AXIS_INVALID
@@ -761,10 +761,10 @@ SDL_CreateRenderer(e1,
 - SDL_CONTROLLER_TYPE_XBOXONE
 + SDL_GAMEPAD_TYPE_XBOXONE
 @@
+typedef SDL_GameController, SDL_Gamepad;
 @@
 - SDL_GameController
 + SDL_Gamepad
-  (...)
 @@
 @@
 - SDL_GameControllerAddMapping
@@ -781,25 +781,25 @@ SDL_CreateRenderer(e1,
 + SDL_AddGamepadMappingsFromRW
   (...)
 @@
+typedef SDL_GameControllerAxis, SDL_GamepadAxis;
 @@
 - SDL_GameControllerAxis
 + SDL_GamepadAxis
-  (...)
 @@
+typedef SDL_GameControllerBindType, SDL_GamepadBindingType;
 @@
 - SDL_GameControllerBindType
 + SDL_GamepadBindingType
-  (...)
 @@
+typedef SDL_GameControllerButton, SDL_GamepadButton;
 @@
 - SDL_GameControllerButton
 + SDL_GamepadButton
-  (...)
 @@
+typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 @@
 - SDL_GameControllerButtonBind
 + SDL_GamepadBinding
-  (...)
 @@
 @@
 - SDL_GameControllerClose
