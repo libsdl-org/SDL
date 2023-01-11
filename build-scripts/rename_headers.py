@@ -12,7 +12,7 @@ def main():
         ( re.compile(r"(?:[\"<])(?:SDL2/)?SDL_gamecontroller.h(?:[\">])"), r"<SDL3/SDL_gamepad.h>" ),
         ( re.compile(r"(?:[\"<])(?:SDL2/)?begin_code.h(?:[\">])"), r"<SDL3/SDL_begin_code.h>" ),
         ( re.compile(r"(?:[\"<])(?:SDL2/)?close_code.h(?:[\">])"), r"<SDL3/SDL_close_code.h>" ),
-        ( re.compile(r"(?:[\"<])(?:SDL2/)?(SDL[_a-z]*\.h)(?:[\">])"), r"<SDL3/\1>" )
+        ( re.compile(r"(?:[\"<])(?:SDL2/)?(SDL[_a-z0-9]*\.h)(?:[\">])"), r"<SDL3/\1>" )
     ]
     for entry in args.args:
         path = pathlib.Path(entry)
