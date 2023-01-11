@@ -88,12 +88,34 @@ def add_content(lines, i, content, add_trailing_line):
 def add_symbol_to_coccinelle(symbol_type, oldname, newname):
     file = open(SDL_BUILD_SCRIPTS / "SDL_migration.cocci", "a")
     # Append-adds at last
-    file.write("@@\n")
-    file.write("@@\n")
-    file.write("- %s\n" % oldname)
-    file.write("+ %s\n" % newname)
+
     if symbol_type == "function":
+        file.write("@@\n")
+        file.write("@@\n")
+        file.write("- %s\n" % oldname)
+        file.write("+ %s\n" % newname)
         file.write("  (...)\n")
+
+    if symbol_type == "symbol":
+        file.write("@@\n")
+        file.write("@@\n")
+        file.write("- %s\n" % oldname)
+        file.write("+ %s\n" % newname)
+
+    # double check ?
+    if symbol_type == "hint":
+        file.write("@@\n")
+        file.write("@@\n")
+        file.write("- %s\n" % oldname)
+        file.write("+ %s\n" % newname)
+
+    if symbol_type == "enum" or symbol_type == "structure":
+        file.write("@@\n")
+        file.write("typedef %s, %s;\n" % (oldname, newname))
+        file.write("@@\n")
+        file.write("- %s\n" % oldname)
+        file.write("+ %s\n" % newname)
+
     file.close()
 
 
