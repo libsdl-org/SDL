@@ -652,8 +652,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickConnected(SDL_Joystick *joystick);
  * Get the instance ID of an opened joystick.
  *
  * \param joystick an SDL_Joystick structure containing joystick information
- * \returns the instance ID of the specified joystick on success or a negative
- *          error code on failure; call SDL_GetError() for more information.
+ * \returns the instance ID of the specified joystick on success or 0 on
+ *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

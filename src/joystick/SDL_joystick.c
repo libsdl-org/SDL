@@ -932,7 +932,7 @@ SDL_JoystickID SDL_GetJoystickInstanceID(SDL_Joystick *joystick)
 
     SDL_LockJoysticks();
     {
-        CHECK_JOYSTICK_MAGIC(joystick, -1);
+        CHECK_JOYSTICK_MAGIC(joystick, 0);
 
         retval = joystick->instance_id;
     }
