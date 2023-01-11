@@ -40,6 +40,7 @@ typedef struct SDL_Hint
 {
     char *name;
     char *value;
+    char *default_value;
     SDL_HintPriority priority;
     SDL_HintWatch *callbacks;
     struct SDL_Hint *next;
@@ -47,9 +48,9 @@ typedef struct SDL_Hint
 
 static SDL_Hint *SDL_hints;
 
-SDL_bool
-SDL_SetHintWithPriority(const char *name, const char *value,
-                        SDL_HintPriority priority)
+static SDL_bool
+SDL_SetHintWithPriorityAndDefault(const char *name, const char *value,
+                                  SDL_HintPriority priority, SDL_bool isdeflt)
 {
     const char *env;
     SDL_Hint *hint;
@@ -61,14 +62,30 @@ SDL_SetHintWithPriority(const char *name, const char *value,
     }
 
     env = SDL_getenv(name);
-    if (env && priority < SDL_HINT_OVERRIDE) {
+    if (!isdeflt && env && priority < SDL_HINT_OVERRIDE) {  /* early out */
         SDL_SetError("higher priority hint already in place");
         return SDL_FALSE;
     }
 
     for (hint = SDL_hints; hint; hint = hint->next) {
         if (SDL_strcmp(name, hint->name) == 0) {
-            if (priority < hint->priority) {
+            if (isdeflt) {   /* make sure this gets set, in case we made this variable without a default originally. */
+                char *newval = NULL;
+                if (value) {
+                    newval = SDL_strdup(value);
+                    if (newval == NULL) {
+                        SDL_OutOfMemory();
+                        return SDL_FALSE;
+                    }
+                }
+                SDL_free(hint->default_value);  /* you probably shouldn't double-set a default, though! */
+                hint->default_value = newval;
+            }
+
+            if (env && priority < SDL_HINT_OVERRIDE) {
+                SDL_SetError("higher priority hint already in place");
+                return SDL_FALSE;
+            } else if (priority < hint->priority) {
                 SDL_SetError("higher priority hint already in place");
                 return SDL_FALSE;
             }
@@ -80,8 +97,10 @@ SDL_SetHintWithPriority(const char *name, const char *value,
                     entry->callback(entry->userdata, name, hint->value, value);
                     entry = next;
                 }
-                SDL_free(hint->value);
-                hint->value = value ? SDL_strdup(value) : NULL;
+                if (hint->value != hint->default_value) {
+                    SDL_free(hint->value);
+                }
+                hint->value = value ? SDL_strdup(value) : hint->default_value;
             }
             hint->priority = priority;
             return SDL_TRUE;
@@ -112,6 +131,7 @@ SDL_SetHintWithPriority(const char *name, const char *value,
         }
     }
 
+    hint->default_value = isdeflt ? hint->value : NULL;
     hint->priority = priority;
     hint->callbacks = NULL;
     hint->next = SDL_hints;
@@ -120,9 +140,16 @@ SDL_SetHintWithPriority(const char *name, const char *value,
 }
 
 SDL_bool
+SDL_SetHintWithPriority(const char *name, const char *value,
+                        SDL_HintPriority priority)
+{
+    return SDL_SetHintWithPriorityAndDefault(name, value, priority, SDL_FALSE);
+}
+
+SDL_bool
 SDL_ResetHint(const char *name)
 {
-    const char *env;
+    const char *origenv;
     SDL_Hint *hint;
     SDL_HintWatch *entry;
 
@@ -130,9 +157,11 @@ SDL_ResetHint(const char *name)
         return SDL_FALSE;
     }
 
-    env = SDL_getenv(name);
+    origenv = SDL_getenv(name);
+
     for (hint = SDL_hints; hint; hint = hint->next) {
         if (SDL_strcmp(name, hint->name) == 0) {
+            const char *env = origenv ? origenv : hint->default_value;
             if ((env == NULL && hint->value != NULL) ||
                 (env != NULL && hint->value == NULL) ||
                 (env != NULL && SDL_strcmp(env, hint->value) != 0)) {
@@ -143,8 +172,10 @@ SDL_ResetHint(const char *name)
                     entry = next;
                 }
             }
-            SDL_free(hint->value);
-            hint->value = NULL;
+            if (hint->value != hint->default_value) {
+                SDL_free(hint->value);
+                hint->value = hint->default_value;
+            }
             hint->priority = SDL_HINT_DEFAULT;
             return SDL_TRUE;
         }
@@ -160,6 +191,10 @@ void SDL_ResetHints(void)
 
     for (hint = SDL_hints; hint; hint = hint->next) {
         env = SDL_getenv(hint->name);
+        if (!env) {
+            env = hint->default_value;
+        }
+
         if ((env == NULL && hint->value != NULL) ||
             (env != NULL && hint->value == NULL) ||
             (env != NULL && SDL_strcmp(env, hint->value) != 0)) {
@@ -170,8 +205,10 @@ void SDL_ResetHints(void)
                 entry = next;
             }
         }
-        SDL_free(hint->value);
-        hint->value = NULL;
+        if (hint->value != hint->default_value) {
+            SDL_free(hint->value);
+            hint->value = hint->default_value;
+        }
         hint->priority = SDL_HINT_DEFAULT;
     }
 }
@@ -259,6 +296,7 @@ int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userd
             SDL_free(hint);
             return SDL_OutOfMemory();
         }
+        hint->default_value = NULL;
         hint->value = NULL;
         hint->priority = SDL_HINT_DEFAULT;
         hint->callbacks = NULL;
@@ -312,6 +350,11 @@ void SDL_ClearHints(void)
 
         SDL_free(hint->name);
         SDL_free(hint->value);
+
+        if (hint->value != hint->default_value) {
+            SDL_free(hint->default_value);
+        }
+
         for (entry = hint->callbacks; entry;) {
             SDL_HintWatch *freeable = entry;
             entry = entry->next;
@@ -331,7 +374,7 @@ SDL_bool SDL_RegisterIntHint(const char *name, int *addr, int default_value)
 {
     char defaultstr[64];
     SDL_snprintf(defaultstr, sizeof (defaultstr), "%d", default_value);
-    (void) SDL_SetHintWithPriority(name, defaultstr, SDL_HINT_DEFAULT);  /* carry on even if this fails. */
+    (void) SDL_SetHintWithPriorityAndDefault(name, defaultstr, SDL_HINT_DEFAULT, SDL_TRUE);  /* carry on even if this fails. */
     return SDL_AddHintCallback(name, UpdateRegisteredIntHintCallback, addr);
 }
 
@@ -350,7 +393,7 @@ SDL_bool SDL_RegisterFloatHint(const char *name, float *addr, float default_valu
 {
     char defaultstr[64];
     SDL_snprintf(defaultstr, sizeof (defaultstr), "%f", default_value);
-    (void) SDL_SetHintWithPriority(name, defaultstr, SDL_HINT_DEFAULT);  /* carry on even if this fails. */
+    (void) SDL_SetHintWithPriorityAndDefault(name, defaultstr, SDL_HINT_DEFAULT, SDL_TRUE);  /* carry on even if this fails. */
     return SDL_AddHintCallback(name, UpdateRegisteredFloatHintCallback, addr);
 }
 
@@ -367,7 +410,7 @@ static void SDLCALL UpdateRegisteredBoolHintCallback(void *userdata, const char 
 
 SDL_bool SDL_RegisterBoolHint(const char *name, SDL_bool *addr, SDL_bool default_value)
 {
-    (void) SDL_SetHintWithPriority(name, default_value ? "1" : "0", SDL_HINT_DEFAULT);  /* carry on even if this fails. */
+    (void) SDL_SetHintWithPriorityAndDefault(name, default_value ? "1" : "0", SDL_HINT_DEFAULT, SDL_TRUE);  /* carry on even if this fails. */
     return SDL_AddHintCallback(name, UpdateRegisteredBoolHintCallback, addr);
 
 }
@@ -385,7 +428,7 @@ static void SDLCALL UpdateRegisteredStringHintCallback(void *userdata, const cha
 
 SDL_bool SDL_RegisterStringHint(const char *name, const char **addr, const char *default_value)
 {
-    (void) SDL_SetHintWithPriority(name, default_value, SDL_HINT_DEFAULT);  /* carry on even if this fails. */
+    (void) SDL_SetHintWithPriorityAndDefault(name, default_value, SDL_HINT_DEFAULT, SDL_TRUE);  /* carry on even if this fails. */
     return SDL_AddHintCallback(name, UpdateRegisteredStringHintCallback, addr);
 }
 
