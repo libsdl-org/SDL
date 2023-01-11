@@ -131,8 +131,6 @@ case "$ref_minor" in
 esac
 
 ref="${major}.${minor}.0
-${major}.${minor}.0
-${major}.${minor}.0
 ${major}.${minor}.0"
 
 if [ "$ref" = "$dylib_compat" ]; then
@@ -155,8 +153,6 @@ case "$ref_minor" in
 esac
 
 ref="${major}.${minor}.0
-${major}.${minor}.0
-${major}.${minor}.0
 ${major}.${minor}.0"
 
 if [ "$ref" = "$dylib_cur" ]; then
