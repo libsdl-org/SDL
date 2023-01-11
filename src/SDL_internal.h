@@ -28,14 +28,7 @@
 
 /* Need this so Linux systems define fseek64o, ftell64o and off64_t */
 #ifndef _LARGEFILE64_SOURCE
-#ifndef __QNX__
-#define _LARGEFILE64_SOURCE
-#else
-/* QNX expects either _LARGEFILE64_SOURCE to be defined as a value or not at
-   all.
-   As the comment above says _LARGEFILE64_SOURCE is for Linux, should it be
-   defined only if __LINUX__ is defined? */
-#endif
+#define _LARGEFILE64_SOURCE 1
 #endif
 
 /* This is for a variable-length array at the end of a struct:
