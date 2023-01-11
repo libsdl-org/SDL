@@ -217,7 +217,6 @@
 #define SDL_JoystickSetVirtualButton SDL_SetJoystickVirtualButton
 #define SDL_JoystickSetVirtualHat SDL_SetJoystickVirtualHat
 #define SDL_JoystickUpdate SDL_UpdateJoysticks
-#define SDL_NumJoysticks SDL_GetNumJoysticks
 
 /* ##SDL_keyboard.h */
 #define SDL_IsScreenKeyboardShown SDL_ScreenKeyboardShown
@@ -315,7 +314,6 @@
 #define SDL_FreeRW SDL_DestroyRW
 
 /* ##SDL_sensor.h */
-#define SDL_NumSensors SDL_GetNumSensors
 #define SDL_SensorClose SDL_CloseSensor
 #define SDL_SensorFromInstanceID SDL_GetSensorFromInstanceID
 #define SDL_SensorGetData SDL_GetSensorData
