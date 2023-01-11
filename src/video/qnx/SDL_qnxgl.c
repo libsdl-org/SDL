@@ -20,7 +20,7 @@
 */
 
 #include "../../SDL_internal.h"
-#include "sdl_qnx.h"
+#include "SDL_qnx.h"
 
 static EGLDisplay   egl_disp;
 

@@ -23,7 +23,7 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "SDL3/SDL_scancode.h"
 #include "SDL3/SDL_events.h"
-#include "sdl_qnx.h"
+#include "SDL_qnx.h"
 #include <sys/keycodes.h>
 
 /**

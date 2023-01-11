@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
-#include "sdl_qnx.h"
+#include "SDL_qnx.h"
 
 static screen_context_t context;
 static screen_event_t   event;
