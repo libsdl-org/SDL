@@ -321,8 +321,11 @@ static int VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
 {
     int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
     SceCtrlActuator act;
-    SDL_zero(act);
 
+    if (index < 0 || index > 3) {
+        return -1;
+    }
+    SDL_zero(act);
     act.small = high_frequency_rumble / 256;
     act.large = low_frequency_rumble / 256;
     if (sceCtrlSetActuator(ext_port_map[index], &act) < 0) {
@@ -345,6 +348,9 @@ static Uint32 VITA_JoystickGetCapabilities(SDL_Joystick *joystick)
 static int VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
+    if (index < 0 || index > 3) {
+        return -1;
+    }
     if (sceCtrlSetLightBar(ext_port_map[index], red, green, blue) < 0) {
         return SDL_Unsupported();
     }
