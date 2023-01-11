@@ -20,7 +20,7 @@
 */
 
 /**
- *  \file SDL_cpuinfo.h
+ *  \file SDL_intrin.h
  *
  *  Header file for CPU intrinsics for SDL
  */
