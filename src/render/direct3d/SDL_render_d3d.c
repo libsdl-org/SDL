@@ -28,7 +28,6 @@
 #include "../SDL_d3dmath.h"
 #include "../../video/windows/SDL_windowsvideo.h"
 
-#define SDL_ENABLE_SYSWM_WINDOWS
 #include <SDL3/SDL_syswm.h>
 
 #if SDL_VIDEO_RENDER_D3D

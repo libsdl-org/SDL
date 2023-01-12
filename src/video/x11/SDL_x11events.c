@@ -37,7 +37,6 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 
-#define SDL_ENABLE_SYSWM_X11
 #include <SDL3/SDL_syswm.h>
 
 #include <stdio.h>

@@ -38,7 +38,6 @@
 /* Dropfile support */
 #include <shellapi.h>
 
-#define SDL_ENABLE_SYSWM_WINDOWS
 #include <SDL3/SDL_syswm.h>
 
 /* Windows CE compatibility */

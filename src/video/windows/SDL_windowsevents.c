@@ -29,7 +29,6 @@
 #include "../../events/SDL_touch_c.h"
 #include "../../events/scancodes_windows.h"
 
-#define SDL_ENABLE_SYSWM_WINDOWS
 #include <SDL3/SDL_syswm.h>
 
 /* Dropfile support */

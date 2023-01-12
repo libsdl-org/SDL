@@ -31,11 +31,9 @@
 #ifdef SDL_VIDEO_DRIVER_COCOA
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSView.h>
-#define SDL_ENABLE_SYSWM_COCOA
 #endif
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #import <UIKit/UIKit.h>
-#define SDL_ENABLE_SYSWM_UIKIT
 #endif
 #include <SDL3/SDL_syswm.h>
 

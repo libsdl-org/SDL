@@ -38,7 +38,6 @@
 #include "SDL_x11opengles.h"
 #endif
 
-#define SDL_ENABLE_SYSWM_X11
 #include <SDL3/SDL_syswm.h>
 
 #define _NET_WM_STATE_REMOVE 0l

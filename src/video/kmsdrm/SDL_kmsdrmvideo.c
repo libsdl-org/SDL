@@ -35,7 +35,6 @@
 #include "../../core/openbsd/SDL_wscons.h"
 #endif
 
-#define SDL_ENABLE_SYSWM_KMSDRM
 #include <SDL3/SDL_syswm.h>
 
 /* KMS/DRM declarations */
