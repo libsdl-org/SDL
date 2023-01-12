@@ -1079,41 +1079,41 @@ int SDL_hid_init(void)
         if (libusb_ctx.libhandle != NULL) {
             SDL_bool loaded = SDL_TRUE;
 #ifdef SDL_LIBUSB_DYNAMIC
-#define LOAD_LIBUSB_SYMBOL(func)                                                        \
-    if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) { \
-        loaded = SDL_FALSE;                                                             \
+#define LOAD_LIBUSB_SYMBOL(type, func)                                                        \
+    if (!(libusb_ctx.func = (type)SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) { \
+        loaded = SDL_FALSE;                                                                   \
     }
 #else
 #define LOAD_LIBUSB_SYMBOL(func) \
     libusb_ctx.func = libusb_##func;
 #endif
-            LOAD_LIBUSB_SYMBOL(init)
-            LOAD_LIBUSB_SYMBOL(exit)
-            LOAD_LIBUSB_SYMBOL(get_device_list)
-            LOAD_LIBUSB_SYMBOL(free_device_list)
-            LOAD_LIBUSB_SYMBOL(get_device_descriptor)
-            LOAD_LIBUSB_SYMBOL(get_active_config_descriptor)
-            LOAD_LIBUSB_SYMBOL(get_config_descriptor)
-            LOAD_LIBUSB_SYMBOL(free_config_descriptor)
-            LOAD_LIBUSB_SYMBOL(get_bus_number)
-            LOAD_LIBUSB_SYMBOL(get_device_address)
-            LOAD_LIBUSB_SYMBOL(open)
-            LOAD_LIBUSB_SYMBOL(close)
-            LOAD_LIBUSB_SYMBOL(claim_interface)
-            LOAD_LIBUSB_SYMBOL(release_interface)
-            LOAD_LIBUSB_SYMBOL(kernel_driver_active)
-            LOAD_LIBUSB_SYMBOL(detach_kernel_driver)
-            LOAD_LIBUSB_SYMBOL(attach_kernel_driver)
-            LOAD_LIBUSB_SYMBOL(set_interface_alt_setting)
-            LOAD_LIBUSB_SYMBOL(alloc_transfer)
-            LOAD_LIBUSB_SYMBOL(submit_transfer)
-            LOAD_LIBUSB_SYMBOL(cancel_transfer)
-            LOAD_LIBUSB_SYMBOL(free_transfer)
-            LOAD_LIBUSB_SYMBOL(control_transfer)
-            LOAD_LIBUSB_SYMBOL(interrupt_transfer)
-            LOAD_LIBUSB_SYMBOL(handle_events)
-            LOAD_LIBUSB_SYMBOL(handle_events_completed)
-            LOAD_LIBUSB_SYMBOL(error_name)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context **), init)
+            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(libusb_context *), exit)
+            LOAD_LIBUSB_SYMBOL(ssize_t (LIBUSB_CALL *)(libusb_context *, libusb_device ***), get_device_list)
+            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(libusb_device **, int), free_device_list)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *, struct libusb_device_descriptor *), get_device_descriptor)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *, struct libusb_config_descriptor **), get_active_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *, uint8_t, struct libusb_config_descriptor **), get_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(struct libusb_config_descriptor *), free_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(uint8_t (LIBUSB_CALL *)(libusb_device *), get_bus_number)
+            LOAD_LIBUSB_SYMBOL(uint8_t (LIBUSB_CALL *)(libusb_device *), get_device_address)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *, libusb_device_handle **), open)
+            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(libusb_device_handle *), close)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), claim_interface)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), release_interface)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), kernel_driver_active)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), detach_kernel_driver)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), attach_kernel_driver)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int, int), set_interface_alt_setting)
+            LOAD_LIBUSB_SYMBOL(struct libusb_transfer * (LIBUSB_CALL *)(int), alloc_transfer)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(struct libusb_transfer *), submit_transfer)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(struct libusb_transfer *), cancel_transfer)
+            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(struct libusb_transfer *), free_transfer)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, uint8_t, uint8_t, uint16_t, uint16_t, unsigned char *, uint16_t, unsigned int), control_transfer)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, unsigned char, unsigned char *, int, int *, unsigned int), interrupt_transfer)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context *), handle_events)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context *, int *), handle_events_completed)
+            LOAD_LIBUSB_SYMBOL(const char * (LIBUSB_CALL *)(int), error_name)
 #undef LOAD_LIBUSB_SYMBOL
 
             if (!loaded) {
