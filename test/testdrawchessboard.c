@@ -47,6 +47,12 @@ void DrawChessBoard()
             rect.y = (float)(row * rect.h);
             x = x + 2;
             SDL_RenderFillRect(renderer, &rect);
+
+            /* Draw a red diagonal line through the upper left rectangle */
+            if (column == 0 && row == 0) {
+                SDL_SetRenderDrawColor(renderer, 0xFF, 0, 0, 0xFF);
+                SDL_RenderLine(renderer, 0, 0, rect.w, rect.h);
+            }
         }
     }
 }
@@ -97,6 +103,9 @@ int main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
+    /* Enable highdpi scaling on Windows */
+    SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
+
     /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init fail : %s\n", SDL_GetError());
@@ -104,7 +113,7 @@ int main(int argc, char *argv[])
     }
 
     /* Create window and renderer for given surface */
-    window = SDL_CreateWindow("Chess Board", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Chess Board", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s\n", SDL_GetError());
         return 1;
