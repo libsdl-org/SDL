@@ -24,7 +24,7 @@
  *
  *  This is a simple file to encapsulate the EGL API headers.
  */
-#if !defined(_MSC_VER) && !defined(__ANDROID__) && !defined(SDL_USE_BUILTIN_OPENGL_DEFINITIONS)
+#ifdef SDL_USE_SYSTEM_EGL_HEADERS
 
 #if defined(__vita__) || defined(__psp2__)
 #include <psp2/types.h>
@@ -33,7 +33,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#else /* _MSC_VER */
+#else /* !SDL_USE_SYSTEM_EGL_HEADERS */
 
 /* EGL headers for Visual Studio */
 
@@ -2349,4 +2349,4 @@ EGLAPI struct wl_buffer *EGLAPIENTRY eglCreateWaylandBufferFromImageWL (EGLDispl
 
 #endif /* __eglext_h_ */
 
-#endif /* _MSC_VER */
+#endif /* SDL_USE_SYSTEM_EGL_HEADERS */
