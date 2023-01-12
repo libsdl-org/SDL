@@ -703,10 +703,22 @@ SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
         }
 
         size_read = SDL_RWread(src, (char *)data + size_total, size - size_total);
+        if (size_read > 0) {
+            size_total += size_read;
+            continue;
+        }
         if (size_read == 0) {
+            /* End of file */
             break;
         }
-        size_total += size_read;
+        if (size_read == -2) {
+            /* Non-blocking I/O, should we wait here? */
+        }
+
+        /* Read error */
+        SDL_free(data);
+        data = NULL;
+        goto done;
     }
 
     if (datasize) {
