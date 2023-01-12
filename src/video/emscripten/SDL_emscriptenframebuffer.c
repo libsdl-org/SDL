@@ -39,7 +39,7 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format
     SDL_DestroySurface(surface);
 
     /* Create a new one */
-    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     surface = SDL_CreateSurface(w, h, surface_format);
     if (surface == NULL) {

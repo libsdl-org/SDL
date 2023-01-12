@@ -69,7 +69,7 @@ SDL_FORCE_INLINE SDL_Surface *
 CreateNewWindowFramebuffer(SDL_Window *window)
 {
     int w, h;
-    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSizeInPixels(window, &w, &h);
     return SDL_CreateSurface(w, h, FRAMEBUFFER_FORMAT);
 }
 
