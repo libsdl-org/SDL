@@ -31,6 +31,62 @@
 // So this file is a set of many semantic patches, mostly independant.
 
 
+@@
+expression e;
+@@
+- SDL_JoystickGetDevicePlayerIndex(e)
++ /* FIXME MIGRATION: check for valid instance */
++ SDL_GetJoystickInstancePlayerIndex(GetJoystickInstanceFromIndex(e))
+
+@@
+expression e;
+@@
+- SDL_JoystickIsVirtual(e)
++ /* FIXME MIGRATION: check for valid instance */
++ SDL_IsJoystickVirtual(GetJoystickInstanceFromIndex(e))
+
+@@
+expression e;
+@@
+- SDL_JoystickPathForIndex(e)
++ /* FIXME MIGRATION: check for valid instance */
++ SDL_GetJoystickInstancePath(GetJoystickInstanceFromIndex(e))
+
+@@
+expression e;
+@@
+- SDL_IsGameController(e)
++ /* FIXME MIGRATION: check for valid instance */
++ SDL_IsGamepad(GetJoystickInstanceFromIndex(e))
+
+@@
+expression e;
+@@
+- SDL_GameControllerMappingForDeviceIndex(e)
++ /* FIXME MIGRATION: check for valid instance */
++ SDL_GetGamepadInstanceMapping(GetJoystickInstanceFromIndex(e))
+
+@@
+expression e;
+@@
+- SDL_GameControllerNameForIndex(e)
++ /* FIXME MIGRATION: check for valid instance */
++ SDL_GetGamepadInstanceName(GetJoystickInstanceFromIndex(e))
+
+@@
+expression e;
+@@
+- SDL_GameControllerPathForIndex(e)
++ /* FIXME MIGRATION: check for valid instance */
++ SDL_GetGamepadInstancePath(GetJoystickInstanceFromIndex(e))
+
+@@
+expression e;
+@@
+- SDL_GameControllerTypeForIndex(e)
++ /* FIXME MIGRATION: check for valid instance */
++ SDL_GetGamepadInstanceType(GetJoystickInstanceFromIndex(e))
+
 
 // SDL_Has3DNow() has been removed; there is no replacement.
 @@
@@ -1096,11 +1152,6 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
   (...)
 @@
 @@
-- SDL_GameControllerMappingForDeviceIndex
-+ SDL_GetGamepadMappingForDeviceIndex
-  (...)
-@@
-@@
 - SDL_GameControllerMappingForGUID
 + SDL_GetGamepadMappingForGUID
   (...)
@@ -1173,11 +1224,6 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 @@
 - SDL_INIT_GAMECONTROLLER
 + SDL_INIT_GAMEPAD
-@@
-@@
-- SDL_IsGameController
-+ SDL_IsGamepad
-  (...)
 @@
 @@
 - SDL_JOYSTICK_TYPE_GAMECONTROLLER
@@ -1296,11 +1342,6 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 @@
 - SDL_JoystickInstanceID
 + SDL_GetJoystickInstanceID
-  (...)
-@@
-@@
-- SDL_JoystickIsVirtual
-+ SDL_IsJoystickVirtual
   (...)
 @@
 @@
