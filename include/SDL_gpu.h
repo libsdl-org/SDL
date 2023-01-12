@@ -31,7 +31,8 @@
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
 
-#include "begin_code.h"
+#include "SDL_begin_code.h"
+
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -794,7 +795,8 @@ void SDL_GpuDestroyFenceCycle(SDL_GpuFenceCycle *cycle);
 #ifdef __cplusplus
 }
 #endif
-#include "close_code.h"
+
+#include "SDL_close_code.h"
 
 #endif /* SDL_gpu_h_ */
 
