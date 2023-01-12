@@ -31,6 +31,31 @@
 // So this file is a set of many semantic patches, mostly independant.
 
 
+// SDL_EventState() - replaced with SDL_SetEventEnabled()
+@@
+expression e1;
+@@
+(
+- SDL_EventState(e1, SDL_IGNORE)
++ SDL_SetEventEnabled(e1, SDL_FALSE)
+|
+- SDL_EventState(e1, SDL_DISABLE)
++ SDL_SetEventEnabled(e1, SDL_FALSE)
+|
+- SDL_EventState(e1, SDL_ENABLE)
++ SDL_SetEventEnabled(e1, SDL_TRUE)
+|
+- SDL_EventState(e1, SDL_QUERY)
++ SDL_EventEnabled(e1)
+)
+
+// SDL_GetEventState() - replaced with SDL_EventEnabled()
+@@
+expression e1;
+@@
+- SDL_GetEventState(e1)
++ SDL_EventEnabled(e1)
+
 @@
 expression e;
 @@
