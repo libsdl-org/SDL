@@ -31,6 +31,62 @@
 // So this file is a set of many semantic patches, mostly independant.
 
 
+@ rule_audio_open @
+expression e1, e2;
+@@
+- SDL_OpenAudio(e1, e2)
++ (g_audio_id = SDL_OpenAudioDevice(NULL, 0, e1, e2, 0)) > 0 ? 0 : -1
+
+@ depends on rule_audio_open @
+@@
+{
++ /* FIXME MIGRATION: maybe move this to a global scope ? */
++ SDL_AudioDeviceID g_audio_id = -1;
+...
+SDL_OpenAudioDevice(...)
+...
+}
+
+@@
+@@
+- SDL_LockAudio()
++ SDL_LockAudioDevice(g_audio_id)
+
+@@
+@@
+- SDL_UnlockAudio()
++ SDL_UnlockAudioDevice(g_audio_id)
+
+@@
+@@
+- SDL_CloseAudio(void)
++ SDL_CloseAudioDevice(g_audio_id)
+
+@@
+expression e;
+@@
+- SDL_PauseAudio(e)
++ e == SDL_TRUE ? SDL_PauseAudioDevice(g_audio_id) : SDL_PlayAudioDevice(g_audio_id)
+
+@@
+@@
+- SDL_GetAudioStatus()
++ SDL_GetAudioDeviceStatus(g_audio_id)
+
+@@
+@@
+- SDL_GetQueuedAudioSize(1)
++ SDL_GetQueuedAudioSize(g_audio_id)
+
+@@
+expression e1, e2;
+@@
+- SDL_QueueAudio(1, e1, e2)
++ SDL_QueueAudio(g_audio_id, e1, e2)
+
+
+
+
 // SDL_EventState() - replaced with SDL_SetEventEnabled()
 @@
 expression e1;
