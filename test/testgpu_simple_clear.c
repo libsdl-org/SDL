@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     int done;
     SDL_DisplayMode mode;
     SDL_Event event;
-    Uint32 then, now, frames;
+    Uint64 then, now, frames;
     SDL_GpuTextureDescription texdesc;
     int dw, dh;
 
