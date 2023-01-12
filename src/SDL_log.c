@@ -65,6 +65,11 @@ static SDL_LogOutputFunction SDL_log_function = SDL_LogOutput;
 static void *SDL_log_userdata = NULL;
 static SDL_mutex *log_function_mutex = NULL;
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
 static const char *SDL_priority_prefixes[SDL_NUM_LOG_PRIORITIES] = {
     NULL,
     "VERBOSE",
@@ -74,6 +79,10 @@ static const char *SDL_priority_prefixes[SDL_NUM_LOG_PRIORITIES] = {
     "ERROR",
     "CRITICAL"
 };
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #ifdef __ANDROID__
 static const char *SDL_category_prefixes[] = {
