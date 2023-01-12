@@ -1781,7 +1781,7 @@ void Wayland_RestoreWindow(_THIS, SDL_Window *window)
             xdg_toplevel_unset_maximized(wind->shell_surface.xdg.roleobj.toplevel);
         }
 
-    WAYLAND_wl_display_flush(viddata->display);
+    WAYLAND_wl_display_roundtrip(viddata->display);
 }
 
 void Wayland_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
@@ -1860,7 +1860,7 @@ void Wayland_MaximizeWindow(_THIS, SDL_Window *window)
         xdg_toplevel_set_maximized(wind->shell_surface.xdg.roleobj.toplevel);
     }
 
-    WAYLAND_wl_display_flush(viddata->display);
+    WAYLAND_wl_display_roundtrip(viddata->display);
 }
 
 void Wayland_MinimizeWindow(_THIS, SDL_Window *window)
