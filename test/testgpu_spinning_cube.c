@@ -20,7 +20,6 @@
 
 #include "SDL_test_common.h"
 #include "SDL_gpu.h"
-#include "SDL_gpu_compiler.h"
 
 typedef struct RenderState
 {
@@ -365,6 +364,7 @@ static SDL_GpuShader *load_shader(const char *label, const char *src, const char
     SDL_GpuShader *retval = NULL;
     Uint8 *bytecode = NULL;
     Uint32 bytecodelen = 0;
+    /* !!! FIXME: this is broken right now, we need to compile this with the external tools and just keep the binary embedded in here. */
     if (SDL_GpuCompileShader(src, -1, type, "main", &bytecode, &bytecodelen) == -1) {
         SDL_Log("Failed to compile %s shader: %s", type, SDL_GetError());
         quit(2);

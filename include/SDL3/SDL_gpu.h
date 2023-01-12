@@ -243,7 +243,7 @@ SDL_GpuTexture *SDL_GpuCreateTexture(SDL_GpuDevice *device, const SDL_GpuTexture
 void SDL_GpuDestroyTexture(SDL_GpuTexture *texture);
 int SDL_GpuGetTextureDescription(SDL_GpuTexture *texture, SDL_GpuTextureDescription *desc);
 
-/* compiling shaders is a different (and optional at runtime) piece, in SDL_gpu_compiler.h */
+/* compiling shaders is a different (and optional at runtime) piece, in github.com/libsdl-org/SDL_shader_tools */
 typedef struct SDL_GpuShader SDL_GpuShader;
 SDL_GpuShader *SDL_GpuCreateShader(const char *label, SDL_GpuDevice *device, const Uint8 *bytecode, const Uint32 bytecodelen);  /* !!! FIXME: bytecode type enum? */
 /* !!! FIXME: add a query for platform/gpu specific blob that can be fed back next time for faster load times? */
