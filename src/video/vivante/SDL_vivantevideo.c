@@ -184,20 +184,20 @@ int VIVANTE_VideoInit(_THIS)
             return -1;
         }
     }
-#define LOAD_FUNC(NAME)                                               \
-    videodata->NAME = SDL_LoadFunction(videodata->egl_handle, #NAME); \
-    if (!videodata->NAME)                                             \
+#define LOAD_FUNC(TYPE, NAME)                                               \
+    videodata->NAME = (TYPE)SDL_LoadFunction(videodata->egl_handle, #NAME); \
+    if (!videodata->NAME)                                                   \
         return -1;
 
-    LOAD_FUNC(fbGetDisplay);
-    LOAD_FUNC(fbGetDisplayByIndex);
-    LOAD_FUNC(fbGetDisplayGeometry);
-    LOAD_FUNC(fbGetDisplayInfo);
-    LOAD_FUNC(fbDestroyDisplay);
-    LOAD_FUNC(fbCreateWindow);
-    LOAD_FUNC(fbGetWindowGeometry);
-    LOAD_FUNC(fbGetWindowInfo);
-    LOAD_FUNC(fbDestroyWindow);
+    LOAD_FUNC(EGLNativeDisplayType (EGLAPIENTRY *)(void *), fbGetDisplay);
+    LOAD_FUNC(EGLNativeDisplayType (EGLAPIENTRY *)(int), fbGetDisplayByIndex);
+    LOAD_FUNC(void (EGLAPIENTRY *)(EGLNativeDisplayType, int *, int *), fbGetDisplayGeometry);
+    LOAD_FUNC(void (EGLAPIENTRY *)(EGLNativeDisplayType, int *, int *, unsigned long *, int *, int *), fbGetDisplayInfo);
+    LOAD_FUNC(void (EGLAPIENTRY *)(EGLNativeDisplayType), fbDestroyDisplay);
+    LOAD_FUNC(EGLNativeWindowType (EGLAPIENTRY *)(EGLNativeDisplayType, int, int, int, int), fbCreateWindow);
+    LOAD_FUNC(void (EGLAPIENTRY *)(EGLNativeWindowType, int *, int *, int *, int *), fbGetWindowGeometry);
+    LOAD_FUNC(void (EGLAPIENTRY *)(EGLNativeWindowType, int *, int *, int *, int *, int *, unsigned int *), fbGetWindowInfo);
+    LOAD_FUNC(void (EGLAPIENTRY *)(EGLNativeWindowType), fbDestroyWindow);
 #endif
 
     if (VIVANTE_SetupPlatform(_this) < 0) {
@@ -359,22 +359,15 @@ void VIVANTE_HideWindow(_THIS, SDL_Window *window)
 /*****************************************************************************/
 /* SDL Window Manager function                                               */
 /*****************************************************************************/
-SDL_bool
-VIVANTE_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info)
+int VIVANTE_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverData(0);
 
-    if (info->version.major == SDL_MAJOR_VERSION) {
-        info->subsystem = SDL_SYSWM_VIVANTE;
-        info->info.vivante.display = displaydata->native_display;
-        info->info.vivante.window = data->native_window;
-        return SDL_TRUE;
-    } else {
-        SDL_SetError("Application not compiled with SDL %d",
-                     SDL_MAJOR_VERSION);
-        return SDL_FALSE;
-    }
+    info->subsystem = SDL_SYSWM_VIVANTE;
+    info->info.vivante.display = displaydata->native_display;
+    info->info.vivante.window = data->native_window;
+    return 0;
 }
 
 /*****************************************************************************/
