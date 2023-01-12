@@ -32,7 +32,6 @@
 #include "SDL_kmsdrmdyn.h"
 #include "SDL_kmsdrmvulkan.h"
 
-#define SDL_ENABLE_SYSWM_KMSDRM
 #include <SDL3/SDL_syswm.h>
 
 #include <sys/ioctl.h>

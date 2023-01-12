@@ -33,7 +33,6 @@
 
 #include "SDL_androidvulkan.h"
 
-#define SDL_ENABLE_SYSWM_ANDROID
 #include <SDL3/SDL_syswm.h>
 
 int Android_Vulkan_LoadLibrary(_THIS, const char *path)

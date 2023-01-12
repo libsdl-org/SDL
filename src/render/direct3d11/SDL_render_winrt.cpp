@@ -39,7 +39,6 @@ using namespace Windows::Graphics::Display;
 
 #include <DXGI.h>
 
-#define SDL_ENABLE_SYSWM_WINRT
 #include <SDL3/SDL_syswm.h>
 
 #include "SDL_render_winrt.h"

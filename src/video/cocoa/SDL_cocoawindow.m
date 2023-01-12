@@ -41,7 +41,6 @@
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoaopengles.h"
 
-#define SDL_ENABLE_SYSWM_COCOA
 #include <SDL3/SDL_syswm.h>
 
 /* #define DEBUG_COCOAWINDOW */

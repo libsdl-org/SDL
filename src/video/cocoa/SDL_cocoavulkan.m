@@ -33,7 +33,6 @@
 #include "SDL_cocoametalview.h"
 #include "SDL_cocoavulkan.h"
 
-#define SDL_ENABLE_SYSWM_COCOA
 #include <SDL3/SDL_syswm.h>
 
 #include <dlfcn.h>

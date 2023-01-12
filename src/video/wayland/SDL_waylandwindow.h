@@ -27,7 +27,6 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_touch_c.h"
 
-#define SDL_ENABLE_SYSWM_WAYLAND
 #include <SDL3/SDL_syswm.h>
 
 #include "SDL_waylandvideo.h"
