@@ -38,13 +38,6 @@
 extern "C" {
 #endif
 
-#ifndef SDL_SUPPRESS_GPU_API_UNSTABLE_WARNING
-#warning The SDL GPU API is still in development. Expect things to change!
-#warning DO NOT SHIP BUILDS OF SDL TO THE PUBLIC WITH THIS CODE IN IT.
-#warning DO NOT SHIP _ANYTHING_ THAT USES THIS API.
-#warning This warning will be removed when the API stabilizes.
-#endif
-
 /* !!! FIXME: this all needs formal (and significantly more robust) documentation. */
 
 /*
