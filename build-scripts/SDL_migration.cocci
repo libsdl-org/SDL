@@ -31,6 +31,52 @@
 // So this file is a set of many semantic patches, mostly independant.
 
 
+
+// SDL_Has3DNow() has been removed; there is no replacement.
+@@
+@@
++ /* FIXME MIGRATION: SDL_Has3DNow() has been removed; there is no replacement. */ 0
+- SDL_Has3DNow()
+
+// SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
+@@
+@@
++ /* FIXME MIGRATION: no longer support by the X11 backend */ NULL
+- SDL_HINT_VIDEO_X11_XINERAMA
+
+// SDL_HINT_VIDEO_X11_XVIDMODE (Xvidmode no longer supported by the X11 backend)
+@@
+@@
++ /* FIXME MIGRATION: no longer support by the X11 backend */ NULL
+- SDL_HINT_VIDEO_X11_XVIDMODE
+
+// SDL_HINT_VIDEO_X11_FORCE_EGL (use SDL_HINT_VIDEO_FORCE_EGL instead)
+@@
+@@
+- SDL_HINT_VIDEO_X11_FORCE_EGL
++ SDL_HINT_VIDEO_FORCE_EGL
+
+@@
+@@
+- SDL_HINT_AUDIODRIVER
++ SDL_HINT_AUDIO_DRIVER
+
+@@
+@@
+- SDL_HINT_VIDEODRIVER
++ SDL_HINT_VIDEO_DRIVER
+
+@@
+@@
+- M_PI
++ SDL_PI_D
+
+// SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in SDL 2.0.
+@@
+@@
++ /* FIXME MIGRATION: SDL_GetRevisionNumber() removed */ 0
+- SDL_GetRevisionNumber()
+
 // SDL_RWread
 @@
 expression e1, e2, e3, e4;
