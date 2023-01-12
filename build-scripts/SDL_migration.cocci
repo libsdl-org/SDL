@@ -215,7 +215,7 @@ expression e;
 - SDL_GetRevisionNumber()
 
 // SDL_RWread
-@@
+@ rule_rwread @
 expression e1, e2, e3, e4;
 identifier i;
 @@
@@ -237,7 +237,7 @@ identifier i;
 )
 
 // SDL_RWwrite
-@@
+@ rule_rwwrite @
 expression e1, e2, e3, e4;
 identifier i;
 @@
@@ -255,6 +255,17 @@ identifier i;
    SDL_RWwrite(e1, e2,
 -  e3, e4)
 +  e3 * e4)
+)
+
+@ depends on rule_rwread || rule_rwwrite @
+expression e;
+@@
+(
+- e * 1
++ e
+|
+- e / 1
++ e
 )
 
 // SDL_SIMDAlloc(), SDL_SIMDFree() have been removed.
