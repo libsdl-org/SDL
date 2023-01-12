@@ -374,7 +374,7 @@ int SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
 SDL_SensorID SDL_GetSensorInstanceID(SDL_Sensor *sensor)
 {
     if (!SDL_IsSensorValid(sensor)) {
-        return -1;
+        return 0;
     }
 
     return sensor->instance_id;
