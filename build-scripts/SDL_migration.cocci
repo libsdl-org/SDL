@@ -27,10 +27,52 @@
 // declaration
 // @@
 // rule / transformation
-// 
+//
 // So this file is a set of many semantic patches, mostly independant.
 
 
+// SDL_RWread
+@@
+expression e1, e2, e3, e4;
+identifier i;
+@@
+(
+   i = SDL_RWread(e1, e2,
+-  e3, e4);
++  e3 * e4);
++  i = (i <= 0) ? 0 : i / e3;
+|
+   SDL_RWread(e1, e2,
+-  e3, e4);
++  e3 * e4);
+|
++  /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+   SDL_RWread(e1, e2,
+-  e3, e4)
++  e3 * e4)
+
+)
+
+// SDL_RWwrite
+@@
+expression e1, e2, e3, e4;
+identifier i;
+@@
+(
+   i = SDL_RWwrite(e1, e2,
+-  e3, e4);
++  e3 * e4);
++  i = (i <= 0) ? 0 : i / e3;
+|
+   SDL_RWwrite(e1, e2,
+-  e3, e4);
++  e3 * e4);
+|
++  /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWwrite() */
+   SDL_RWwrite(e1, e2,
+-  e3, e4)
++  e3 * e4)
+)
 
 // SDL_SIMDAlloc(), SDL_SIMDFree() have been removed.
 @@
@@ -99,7 +141,7 @@ expression e;
 - SDL_WINDOW_SHOWN | e
 + e
 |
-- SDL_WINDOW_SHOWN 
+- SDL_WINDOW_SHOWN
 + 0
 )
 
@@ -108,7 +150,7 @@ expression e;
 // Remove parameter from SDL_ConvertSurface
 expression e1, e2, e3;
 @@
-SDL_ConvertSurface(e1, e2 
+SDL_ConvertSurface(e1, e2
 - ,e3)
 + )
 
