@@ -68,8 +68,8 @@ static void render(SDL_Window *window)
     color_desc.texture = SDL_GetGpuBackbuffer(gpuDevice, window);
     color_desc.color_init = SDL_GPUPASSINIT_CLEAR;
     color_desc.clear_red = (float)(0.5 + 0.5 * SDL_sin(currentTime));
-    color_desc.clear_green = (float)(0.5 + 0.5 * SDL_sin(currentTime + M_PI * 2 / 3));
-    color_desc.clear_blue = (float)(0.5 + 0.5 * SDL_sin(currentTime + M_PI * 4 / 3));
+    color_desc.clear_green = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 2 / 3));
+    color_desc.clear_blue = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 4 / 3));
     color_desc.clear_alpha = 1.0f;
 
     pass = SDL_StartGpuRenderPass("just-clear-the-screen render pass", cmd, 1, &color_desc, NULL, NULL);
