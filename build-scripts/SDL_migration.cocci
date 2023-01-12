@@ -31,6 +31,21 @@
 // So this file is a set of many semantic patches, mostly independant.
 
 
+
+// SDL_SIMDAlloc(), SDL_SIMDFree() have been removed.
+@@
+expression e1;
+@@
+- SDL_SIMDAlloc(e1)
++ SDL_aligned_alloc(SDL_SIMDGetAlignment(), e1)
+
+@@
+expression e1;
+@@
+- SDL_SIMDFree(
++ SDL_aligned_free(
+  e1)
+
 // SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter.
 @@
 expression e1, e2, e3;
@@ -42,7 +57,6 @@ expression e1, e2, e3;
 // SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to PFN_vkGetInstanceProcAddr.
 @@
 typedef PFN_vkGetInstanceProcAddr;
-expression e1, e2, e3;
 @@
 + (PFN_vkGetInstanceProcAddr)
   SDL_Vulkan_GetVkGetInstanceProcAddr()
