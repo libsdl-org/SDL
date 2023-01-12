@@ -58,8 +58,6 @@ int Android_CreateWindow(_THIS, SDL_Window *window)
     window->w = Android_SurfaceWidth;
     window->h = Android_SurfaceHeight;
 
-    window->flags &= ~SDL_WINDOW_HIDDEN;
-
     /* One window, it always has focus */
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
