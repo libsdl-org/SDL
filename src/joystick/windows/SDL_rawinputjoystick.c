@@ -1396,6 +1396,7 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
         (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN) | (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT),
         (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT),
         (1 << SDL_GAMEPAD_BUTTON_DPAD_UP) | (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT),
+        0,
     };
     Uint64 match_state = ctx->match_state;
     /* Update match_state with button bit, then fall through */
