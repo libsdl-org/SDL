@@ -47,17 +47,17 @@ static void shutdownGpu(void)
         int i;
         for (i = 0; i < state->num_windows; i++) {
             WindowState *winstate = &window_states[i];
-            SDL_GpuDestroyTextureCycle(winstate->texcycle_depth);
-            SDL_GpuDestroyCpuBufferCycle(winstate->cpubufcycle_uniforms);
-            SDL_GpuDestroyBufferCycle(winstate->gpubufcycle_uniforms);
+            SDL_DestroyGpuTextureCycle(winstate->texcycle_depth);
+            SDL_DestroyGpuCpuBufferCycle(winstate->cpubufcycle_uniforms);
+            SDL_DestroyGpuBufferCycle(winstate->gpubufcycle_uniforms);
         }
         SDL_free(window_states);
         window_states = NULL;
     }
 
-    SDL_GpuDestroyBuffer(render_state.gpubuf_static);
-    SDL_GpuDestroyPipeline(render_state.pipeline);
-    SDL_GpuDestroyDevice(gpu_device);
+    SDL_DestroyGpuBuffer(render_state.gpubuf_static);
+    SDL_DestroyGpuPipeline(render_state.pipeline);
+    SDL_DestroyGpuDevice(gpu_device);
 
     SDL_zero(render_state);
     gpu_device = NULL;
@@ -252,12 +252,12 @@ static void
 Render(SDL_Window *window, const int windownum)
 {
     WindowState *winstate = &window_states[windownum];
-    SDL_GpuTexture *backbuffer = SDL_GpuGetBackbuffer(gpu_device, window);
+    SDL_GpuTexture *backbuffer = SDL_GetGpuBackbuffer(gpu_device, window);
     SDL_GpuColorAttachmentDescription color_attachment;
     SDL_GpuDepthAttachmentDescription depth_attachment;
     SDL_GpuTexture **depth_texture_ptr;
-    SDL_GpuCpuBuffer *cpubuf_uniforms = SDL_GpuNextCpuBufferCycle(winstate->cpubufcycle_uniforms);
-    SDL_GpuBuffer *gpubuf_uniforms = SDL_GpuNextBufferCycle(winstate->gpubufcycle_uniforms);
+    SDL_GpuCpuBuffer *cpubuf_uniforms = SDL_GetNextCpuBufferCycle(winstate->cpubufcycle_uniforms);
+    SDL_GpuBuffer *gpubuf_uniforms = SDL_GetNextGpuBufferCycle(winstate->gpubufcycle_uniforms);
     SDL_GpuTextureDescription texdesc;
     float matrix_rotate[16], matrix_modelview[16], matrix_perspective[16];
     Uint32 drawablew, drawableh;
@@ -271,7 +271,7 @@ Render(SDL_Window *window, const int windownum)
         return;
     }
 
-    SDL_GpuGetTextureDescription(backbuffer, &texdesc);
+    SDL_GetGpuTextureDescription(backbuffer, &texdesc);
     drawablew = texdesc.width;
     drawableh = texdesc.height;
 
@@ -293,8 +293,8 @@ Render(SDL_Window *window, const int windownum)
 
     perspective_matrix(45.0f, (float)drawablew/drawableh, 0.01f, 100.0f, matrix_perspective);
 
-    multiply_matrix(matrix_perspective, matrix_modelview, (float *) SDL_GpuLockCpuBuffer(cpubuf_uniforms, NULL));
-    SDL_GpuUnlockCpuBuffer(cpubuf_uniforms);
+    multiply_matrix(matrix_perspective, matrix_modelview, (float *) SDL_LockCpuBuffer(cpubuf_uniforms, NULL));
+    SDL_UnlockCpuBuffer(cpubuf_uniforms);
 
     winstate->angle_x += 3;
     winstate->angle_y += 2;
@@ -308,20 +308,20 @@ Render(SDL_Window *window, const int windownum)
     if(winstate->angle_z < 0) winstate->angle_z += 360;
 
     /* Copy the new uniform data to the GPU */
-    cmd = SDL_GpuCreateCommandBuffer("Render new frame", gpu_device);
+    cmd = SDL_CreateGpuCommandBuffer("Render new frame", gpu_device);
     if (!cmd) {
         SDL_Log("Failed to create command buffer: %s\n", SDL_GetError());
         quit(2);
     }
 
-    blit = SDL_GpuStartBlitPass("Copy mvp matrix to GPU pass", cmd);
+    blit = SDL_StartGpuBlitPass("Copy mvp matrix to GPU pass", cmd);
     if (!blit) {
         SDL_Log("Failed to create blit pass: %s\n", SDL_GetError());
         quit(2);
     }
 
-    SDL_GpuCopyBufferCpuToGpu(blit, cpubuf_uniforms, 0, gpubuf_uniforms, 0, sizeof (float) * 16);
-    SDL_GpuEndBlitPass(blit);
+    SDL_CopyGpuBufferToCpu(blit, cpubuf_uniforms, 0, gpubuf_uniforms, 0, sizeof (float) * 16);
+    SDL_EndGpuBlitPass(blit);
 
     SDL_zero(color_attachment);
     color_attachment.texture = backbuffer;
@@ -330,8 +330,8 @@ Render(SDL_Window *window, const int windownum)
 
     /* resize the depth texture if the window size changed */
     SDL_snprintf(label, sizeof (label), "Depth buffer for window #%d", windownum);
-    depth_texture_ptr = SDL_GpuNextTexturePtrCycle(winstate->texcycle_depth);
-    if (SDL_GpuMatchingDepthTexture(label, gpu_device, color_attachment.texture, depth_texture_ptr) == NULL) {
+    depth_texture_ptr = SDL_GetNextGpuTexturePtrInCycle(winstate->texcycle_depth);
+    if (SDL_MatchingGpuDepthTexture(label, gpu_device, color_attachment.texture, depth_texture_ptr) == NULL) {
         SDL_Log("Failed to prepare depth buffer for window #%d: %s\n", windownum, SDL_GetError());
         quit(2);
     }
@@ -345,17 +345,17 @@ Render(SDL_Window *window, const int windownum)
     /* Draw the cube! */
 
     /* !!! FIXME: does viewport/scissor default to the texture size? Because that would be nice. */
-    render = SDL_GpuStartRenderPass("Spinning cube render pass", cmd, 1, &color_attachment, &depth_attachment, NULL);
-    SDL_GpuSetRenderPassPipeline(render, render_state.pipeline);
-    SDL_GpuSetRenderPassViewport(render, 0.0, 0.0, (double) drawablew, (double) drawableh, 0.0, 1.0);  /* !!! FIXME near and far are wrong */
-    SDL_GpuSetRenderPassScissor(render, 0.0, 0.0, (double) drawablew, (double) drawableh);
-    SDL_GpuSetRenderPassVertexBuffer(render, render_state.gpubuf_static, 0, 0);
-    SDL_GpuSetRenderPassVertexBuffer(render, gpubuf_uniforms, 0, 1);
+    render = SDL_StartGpuRenderPass("Spinning cube render pass", cmd, 1, &color_attachment, &depth_attachment, NULL);
+    SDL_SetGpuRenderPassPipeline(render, render_state.pipeline);
+    SDL_SetGpuRenderPassViewport(render, 0.0, 0.0, (double) drawablew, (double) drawableh, 0.0, 1.0);  /* !!! FIXME near and far are wrong */
+    SDL_SetGpuRenderPassScissor(render, 0.0, 0.0, (double) drawablew, (double) drawableh);
+    SDL_SetGpuRenderPassVertexBuffer(render, render_state.gpubuf_static, 0, 0);
+    SDL_SetGpuRenderPassVertexBuffer(render, gpubuf_uniforms, 0, 1);
     SDL_GpuDraw(render, 0, SDL_arraysize(vertex_data));
-    SDL_GpuEndRenderPass(render);
+    SDL_EndGpuRenderPass(render);
 
     /* push work to the GPU and tell it to present to the window when done. */
-    SDL_GpuSubmitCommandBuffer(cmd, NULL);
+    SDL_SubmitGpuCommandBuffer(cmd, NULL);
     SDL_GpuPresent(gpu_device, window, 1);
 }
 
@@ -365,11 +365,11 @@ static SDL_GpuShader *load_shader(const char *label, const char *src, const char
     Uint8 *bytecode = NULL;
     Uint32 bytecodelen = 0;
     /* !!! FIXME: this is broken right now, we need to compile this with the external tools and just keep the binary embedded in here. */
-    if (SDL_GpuCompileShader(src, -1, type, "main", &bytecode, &bytecodelen) == -1) {
+    if (SDL_CompileGpuShader(src, -1, type, "main", &bytecode, &bytecodelen) == -1) {
         SDL_Log("Failed to compile %s shader: %s", type, SDL_GetError());
         quit(2);
     }
-    retval = SDL_GpuCreateShader(label, gpu_device, bytecode, bytecodelen);
+    retval = SDL_CreateGpuShader(label, gpu_device, bytecode, bytecodelen);
     if (!retval) {
         SDL_Log("Failed to load %s shader bytecode: %s", type, SDL_GetError());
         quit(2);
@@ -393,17 +393,17 @@ init_render_state(void)
 
     #define CHECK_CREATE(var, thing) { if (!(var)) { SDL_Log("Failed to create %s: %s\n", thing, SDL_GetError()); quit(2); } }
 
-    gpu_device = SDL_GpuCreateDevice("The GPU device", NULL);
+    gpu_device = SDL_CreateGpuDevice("The GPU device", NULL);
     CHECK_CREATE(gpu_device, "GPU device");
 
     vertex_shader = load_shader("Spinning cube vertex shader", shader_vert_src, "vertex_main");
     fragment_shader = load_shader("Spinning cube fragment shader", shader_frag_src, "fragment_main");
 
     /* We just need to upload the static data once. */
-    render_state.gpubuf_static = SDL_GpuCreateAndInitBuffer("Static vertex data GPU buffer", gpu_device, sizeof (vertex_data), vertex_data);
+    render_state.gpubuf_static = SDL_CreateAndInitGpuBuffer("Static vertex data GPU buffer", gpu_device, sizeof (vertex_data), vertex_data);
     CHECK_CREATE(render_state.gpubuf_static, "static vertex GPU buffer");
 
-    SDL_GpuDefaultPipelineDescription(&pipelinedesc);
+    SDL_GetDefaultGpuPipelineDescription(&pipelinedesc);
     pipelinedesc.label = "The spinning cube pipeline";
     pipelinedesc.primitive = SDL_GPUPRIM_TRIANGLESTRIP;
     pipelinedesc.vertex_shader = vertex_shader;
@@ -417,15 +417,15 @@ init_render_state(void)
     pipelinedesc.color_attachments[0].blending_enabled = SDL_FALSE;
     pipelinedesc.depth_format = SDL_GPUPIXELFMT_Depth24_Stencil8;
 
-    render_state.pipeline = SDL_GpuCreatePipeline(gpu_device, &pipelinedesc);
+    render_state.pipeline = SDL_CreateGpuPipeline(gpu_device, &pipelinedesc);
     if (!render_state.pipeline) {
         SDL_Log("Failed to create render pipeline: %s\n", SDL_GetError());
         quit(2);
     }
 
     /* These are reference-counted; once the pipeline is created, you don't need to keep these. */
-    SDL_GpuDestroyShader(vertex_shader);
-    SDL_GpuDestroyShader(fragment_shader);
+    SDL_DestroyGpuShader(vertex_shader);
+    SDL_DestroyGpuShader(fragment_shader);
 
     window_states = (WindowState *) SDL_calloc(state->num_windows, sizeof (WindowState));
     if (!window_states) {
@@ -440,15 +440,15 @@ init_render_state(void)
         char label[32];
 
         SDL_snprintf(label, sizeof (label), "Window #%d uniform staging buffer", i);
-        winstate->cpubufcycle_uniforms = SDL_GpuCreateCpuBufferCycle(label, gpu_device, sizeof (float) * 16, NULL, 3);
+        winstate->cpubufcycle_uniforms = SDL_CreateCpuBufferCycle(label, gpu_device, sizeof (float) * 16, NULL, 3);
         CHECK_CREATE(winstate->cpubufcycle_uniforms, label);
 
         SDL_snprintf(label, sizeof (label), "Window #%d uniform GPU buffer", i);
-        winstate->gpubufcycle_uniforms = SDL_GpuCreateBufferCycle(label, gpu_device, sizeof (float) * 16, 3);
+        winstate->gpubufcycle_uniforms = SDL_CreateGpuBufferCycle(label, gpu_device, sizeof (float) * 16, 3);
         CHECK_CREATE(winstate->gpubufcycle_uniforms, label);
 
         SDL_snprintf(label, sizeof (label), "Window #%d depth texture", i);  /* NULL texdesc, so we'll build them as we need them. */
-        winstate->texcycle_depth = SDL_GpuCreateTextureCycle(label, gpu_device, NULL, 3);
+        winstate->texcycle_depth = SDL_CreateGpuTextureCycle(label, gpu_device, NULL, 3);
         CHECK_CREATE(winstate->texcycle_depth, label);
 
         /* make each window different */

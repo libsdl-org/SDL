@@ -24,7 +24,7 @@ SDL_GpuDevice *gpuDevice = NULL;
 
 static void shutdownGpu(void)
 {
-    SDL_GpuDestroyDevice(gpuDevice);
+    SDL_DestroyGpuDevice(gpuDevice);
     gpuDevice = NULL;
 }
 
@@ -38,7 +38,7 @@ static void quit(int rc)
 
 static void initGpu(void)
 {
-    gpuDevice = SDL_GpuCreateDevice("The GPU device", NULL);
+    gpuDevice = SDL_CreateGpuDevice("The GPU device", NULL);
     if (!gpuDevice) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create GPU device: %s", SDL_GetError());
         quit(2);
@@ -56,32 +56,32 @@ static void render(SDL_Window *window)
         return;
     }
 
-    cmd = SDL_GpuCreateCommandBuffer("empty command buffer", gpuDevice);
+    cmd = SDL_CreateGpuCommandBuffer("empty command buffer", gpuDevice);
     if (!cmd) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GpuCreateCommandBuffer(): %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateGpuCommandBuffer(): %s\n", SDL_GetError());
         quit(2);
     }
 
     currentTime = (double)SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency();
 
     SDL_zero(color_desc);
-    color_desc.texture = SDL_GpuGetBackbuffer(gpuDevice, window);
+    color_desc.texture = SDL_GetGpuBackbuffer(gpuDevice, window);
     color_desc.color_init = SDL_GPUPASSINIT_CLEAR;
     color_desc.clear_red = (float)(0.5 + 0.5 * SDL_sin(currentTime));
     color_desc.clear_green = (float)(0.5 + 0.5 * SDL_sin(currentTime + M_PI * 2 / 3));
     color_desc.clear_blue = (float)(0.5 + 0.5 * SDL_sin(currentTime + M_PI * 4 / 3));
     color_desc.clear_alpha = 1.0f;
 
-    pass = SDL_GpuStartRenderPass("just-clear-the-screen render pass", cmd, 1, &color_desc, NULL, NULL);
+    pass = SDL_StartGpuRenderPass("just-clear-the-screen render pass", cmd, 1, &color_desc, NULL, NULL);
     if (!pass) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GpuStartRenderPass(): %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_StartGpuRenderPass(): %s\n", SDL_GetError());
         quit(2);
     }
 
-    SDL_GpuEndRenderPass(pass);
+    SDL_EndGpuRenderPass(pass);
 
     /* literally nothing to do, we just start a pass to say "clear the framebuffer to this color," present, and we're done. */
-    SDL_GpuSubmitCommandBuffer(cmd, NULL);
+    SDL_SubmitGpuCommandBuffer(cmd, NULL);
     SDL_GpuPresent(gpuDevice, window, 1);
 }
 
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
     SDL_Log("Screen BPP    : %d\n", SDL_BITSPERPIXEL(mode.format));
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
-    SDL_GpuGetTextureDescription(SDL_GpuGetBackbuffer(gpuDevice, state->windows[0]), &texdesc);  /* !!! FIXME: probably shouldn't do this. */
+    SDL_GetGpuTextureDescription(SDL_GetGpuBackbuffer(gpuDevice, state->windows[0]), &texdesc);  /* !!! FIXME: probably shouldn't do this. */
     SDL_Log("Draw Size     : %d,%d\n", (int) texdesc.width, (int) texdesc.height);
 
     /* Main render loop */

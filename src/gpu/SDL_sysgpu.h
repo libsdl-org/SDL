@@ -28,7 +28,7 @@
 #include "../SDL_hashtable.h"
 
 
-struct SDL_GpuCpuBuffer
+struct SDL_CpuBuffer
 {
     SDL_GpuDevice *device;
     const char *label;
@@ -115,10 +115,10 @@ struct SDL_GpuDevice
     /* !!! FIXME: we need an UnclaimWindow for when the device (or window!) is being destroyed */
     int (*ClaimWindow)(SDL_GpuDevice *device, SDL_Window *window);
 
-    int (*CreateCpuBuffer)(SDL_GpuCpuBuffer *buffer, const void *data);
-    void (*DestroyCpuBuffer)(SDL_GpuCpuBuffer *buffer);
-    void *(*LockCpuBuffer)(SDL_GpuCpuBuffer *buffer);
-    int (*UnlockCpuBuffer)(SDL_GpuCpuBuffer *buffer);
+    int (*CreateCpuBuffer)(SDL_CpuBuffer *buffer, const void *data);
+    void (*DestroyCpuBuffer)(SDL_CpuBuffer *buffer);
+    void *(*LockCpuBuffer)(SDL_CpuBuffer *buffer);
+    int (*UnlockCpuBuffer)(SDL_CpuBuffer *buffer);
 
     int (*CreateBuffer)(SDL_GpuBuffer *buffer);
     void (*DestroyBuffer)(SDL_GpuBuffer *buffer);
@@ -159,8 +159,8 @@ struct SDL_GpuDevice
     int (*CopyBetweenTextures)(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel, Uint32 srcx, Uint32 srcy, Uint32 srcz, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel, Uint32 dstx, Uint32 dsty, Uint32 dstz);
     int (*FillBuffer)(SDL_GpuBlitPass *pass, SDL_GpuBuffer *buffer, Uint32 offset, Uint32 length, Uint8 value);
     int (*GenerateMipmaps)(SDL_GpuBlitPass *pass, SDL_GpuTexture *texture);
-    int (*CopyBufferCpuToGpu)(SDL_GpuBlitPass *pass, SDL_GpuCpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
-    int (*CopyBufferGpuToCpu)(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuCpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
+    int (*CopyBufferCpuToGpu)(SDL_GpuBlitPass *pass, SDL_CpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
+    int (*CopyBufferGpuToCpu)(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_CpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
     int (*CopyBufferGpuToGpu)(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
     int (*CopyFromBufferToTexture)(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, Uint32 srcpitch, Uint32 srcimgpitch, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel, Uint32 dstx, Uint32 dsty, Uint32 dstz);
     int (*CopyFromTextureToBuffer)(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel, Uint32 srcx, Uint32 srcy, Uint32 srcz, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 dstpitch, Uint32 dstimgpitch);

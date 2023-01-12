@@ -30,7 +30,7 @@ static void DUMMY_GpuDestroyDevice(SDL_GpuDevice *device) { /* no-op */ }
 
 static int DUMMY_GpuClaimWindow(SDL_GpuDevice *device, SDL_Window *window) { return 0; }
 
-static int DUMMY_GpuCreateCpuBuffer(SDL_GpuCpuBuffer *buffer, const void *data)
+static int DUMMY_GpuCreateCpuBuffer(SDL_CpuBuffer *buffer, const void *data)
 {
     /* have to save off buffer data so we can provide it for locking, etc. */
     buffer->driverdata = SDL_calloc(1, buffer->buflen);
@@ -43,19 +43,19 @@ static int DUMMY_GpuCreateCpuBuffer(SDL_GpuCpuBuffer *buffer, const void *data)
     return 0;
 }
 
-static void DUMMY_GpuDestroyCpuBuffer(SDL_GpuCpuBuffer *buffer)
+static void DUMMY_GpuDestroyCpuBuffer(SDL_CpuBuffer *buffer)
 {
     SDL_free(buffer->driverdata);
 }
 
-static void *DUMMY_GpuLockCpuBuffer(SDL_GpuCpuBuffer *buffer)
+static void *DUMMY_GpuLockCpuBuffer(SDL_CpuBuffer *buffer)
 {
     return buffer->driverdata;
 }
 
 /* we could get fancier and manage imaginary GPU buffers and textures, but I don't think it's worth it atm. */
 
-static int DUMMY_GpuUnlockCpuBuffer(SDL_GpuCpuBuffer *buffer) { return 0; }
+static int DUMMY_GpuUnlockCpuBuffer(SDL_CpuBuffer *buffer) { return 0; }
 static int DUMMY_GpuCreateBuffer(SDL_GpuBuffer *buffer) { return 0; }
 static void DUMMY_GpuDestroyBuffer(SDL_GpuBuffer *buffer) {}
 static int DUMMY_GpuCreateTexture(SDL_GpuTexture *texture) { return 0; }
@@ -87,8 +87,8 @@ static int DUMMY_GpuStartBlitPass(SDL_GpuBlitPass *pass) { return 0; }
 static int DUMMY_GpuCopyBetweenTextures(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel, Uint32 srcx, Uint32 srcy, Uint32 srcz, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel, Uint32 dstx, Uint32 dsty, Uint32 dstz) { return 0; }
 static int DUMMY_GpuFillBuffer(SDL_GpuBlitPass *pass, SDL_GpuBuffer *buffer, Uint32 offset, Uint32 length, Uint8 value) { return 0; }
 static int DUMMY_GpuGenerateMipmaps(SDL_GpuBlitPass *pass, SDL_GpuTexture *texture) { return 0; }
-static int DUMMY_GpuCopyBufferCpuToGpu(SDL_GpuBlitPass *pass, SDL_GpuCpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length) { return 0; }
-static int DUMMY_GpuCopyBufferGpuToCpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuCpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length) { return 0; }
+static int DUMMY_GpuCopyBufferCpuToGpu(SDL_GpuBlitPass *pass, SDL_CpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length) { return 0; }
+static int DUMMY_GpuCopyBufferGpuToCpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_CpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length) { return 0; }
 static int DUMMY_GpuCopyBufferGpuToGpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length) { return 0; }
 static int DUMMY_GpuCopyFromBufferToTexture(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, Uint32 srcpitch, Uint32 srcimgpitch, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel, Uint32 dstx, Uint32 dsty, Uint32 dstz) { return 0; }
 static int DUMMY_GpuCopyFromTextureToBuffer(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel, Uint32 srcx, Uint32 srcy, Uint32 srcz, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 dstpitch, Uint32 dstimgpitch) { return 0; }

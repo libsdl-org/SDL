@@ -553,7 +553,7 @@ METAL_GpuClaimWindow(SDL_GpuDevice *device, SDL_Window *window)
 }
 
 static int
-METAL_GpuCreateCpuBuffer(SDL_GpuCpuBuffer *buffer, const void *data)
+METAL_GpuCreateCpuBuffer(SDL_CpuBuffer *buffer, const void *data)
 {
     METAL_GpuDeviceData *devdata = (__bridge METAL_GpuDeviceData *) buffer->device->driverdata;
     METAL_GpuBufferData *bufferdata;
@@ -583,13 +583,13 @@ METAL_GpuCreateCpuBuffer(SDL_GpuCpuBuffer *buffer, const void *data)
 }
 
 static void
-METAL_GpuDestroyCpuBuffer(SDL_GpuCpuBuffer *buffer)
+METAL_GpuDestroyCpuBuffer(SDL_CpuBuffer *buffer)
 {
     CFBridgingRelease(buffer->driverdata);
 }
 
 static void *
-METAL_GpuLockCpuBuffer(SDL_GpuCpuBuffer *buffer)
+METAL_GpuLockCpuBuffer(SDL_CpuBuffer *buffer)
 {
     METAL_GpuBufferData *bufdata = (__bridge METAL_GpuBufferData *) buffer->driverdata;
     void *retval = [bufdata.mtlbuffer contents];
@@ -598,7 +598,7 @@ METAL_GpuLockCpuBuffer(SDL_GpuCpuBuffer *buffer)
 }
 
 static int
-METAL_GpuUnlockCpuBuffer(SDL_GpuCpuBuffer *buffer)
+METAL_GpuUnlockCpuBuffer(SDL_CpuBuffer *buffer)
 {
     return 0;
 }
@@ -1316,13 +1316,13 @@ BlitPassCopyBetweenBuffers(SDL_GpuBlitPass *pass, void *_srcbufdata, Uint32 srco
 }
 
 static int
-METAL_GpuCopyBufferCpuToGpu(SDL_GpuBlitPass *pass, SDL_GpuCpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length)
+METAL_GpuCopyBufferCpuToGpu(SDL_GpuBlitPass *pass, SDL_CpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length)
 {
     return BlitPassCopyBetweenBuffers(pass, srcbuf->driverdata, srcoffset, dstbuf->driverdata, dstoffset, length);
 }
 
 static int
-METAL_GpuCopyBufferGpuToCpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuCpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length)
+METAL_GpuCopyBufferGpuToCpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_CpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length)
 {
     return BlitPassCopyBetweenBuffers(pass, srcbuf->driverdata, srcoffset, dstbuf->driverdata, dstoffset, length);
 }

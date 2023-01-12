@@ -159,23 +159,23 @@ extern "C" {
  * The list of drivers is static and based on what was compiled into SDL; it
  * does not change between calls to these functions.
  */
-Uint32 SDL_GpuGetNumDrivers(void);
-const char *SDL_GpuGetDriverName(Uint32 index);
+int SDL_GetNumGpuDrivers(void);
+const char *SDL_GetGpuDriver(int index);
 
 /* !!! FIXME: Enumerate physical devices. Right now this API doesn't allow it. */
 
 typedef struct SDL_GpuDevice SDL_GpuDevice;
-SDL_GpuDevice *SDL_GpuCreateDevice(const char *label, const char *driver);  /* `label` is for debugging, not a specific device name to access. */
-void SDL_GpuDestroyDevice(SDL_GpuDevice *device);
+SDL_GpuDevice *SDL_CreateGpuDevice(const char *label, const char *driver);  /* `label` is for debugging, not a specific device name to access. */
+void SDL_DestroyGpuDevice(SDL_GpuDevice *device);
 
 /* !!! FIXME: device caps */
 
 /* CPU buffers live in RAM and can be accessed by the CPU. */
-typedef struct SDL_GpuCpuBuffer SDL_GpuCpuBuffer;
-SDL_GpuCpuBuffer *SDL_GpuCreateCpuBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data);
-void SDL_GpuDestroyCpuBuffer(SDL_GpuCpuBuffer *buffer);
-void *SDL_GpuLockCpuBuffer(SDL_GpuCpuBuffer *buffer, Uint32 *_buflen);
-int SDL_GpuUnlockCpuBuffer(SDL_GpuCpuBuffer *buffer);
+typedef struct SDL_CpuBuffer SDL_CpuBuffer;
+SDL_CpuBuffer *SDL_CreateCpuBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data);
+void SDL_DestroyCpuBuffer(SDL_CpuBuffer *buffer);
+void *SDL_LockCpuBuffer(SDL_CpuBuffer *buffer, Uint32 *_buflen);
+int SDL_UnlockCpuBuffer(SDL_CpuBuffer *buffer);
 
 /*
  * GPU buffers live in GPU-specific memory and can not be accessed by the CPU.
@@ -187,8 +187,8 @@ int SDL_GpuUnlockCpuBuffer(SDL_GpuCpuBuffer *buffer);
  *  upload is complete: SDL_GpuCreateAndInitBuffer
  */
 typedef struct SDL_GpuBuffer SDL_GpuBuffer;
-SDL_GpuBuffer *SDL_GpuCreateBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen);
-void SDL_GpuDestroyBuffer(SDL_GpuBuffer *buffer);
+SDL_GpuBuffer *SDL_CreateGpuBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen);
+void SDL_DestroyGpuBuffer(SDL_GpuBuffer *buffer);
 
 
 typedef enum SDL_GpuTextureType
@@ -239,15 +239,15 @@ typedef struct SDL_GpuTextureDescription
 } SDL_GpuTextureDescription;
 
 typedef struct SDL_GpuTexture SDL_GpuTexture;
-SDL_GpuTexture *SDL_GpuCreateTexture(SDL_GpuDevice *device, const SDL_GpuTextureDescription *desc);
-void SDL_GpuDestroyTexture(SDL_GpuTexture *texture);
-int SDL_GpuGetTextureDescription(SDL_GpuTexture *texture, SDL_GpuTextureDescription *desc);
+SDL_GpuTexture *SDL_CreateGpuTexture(SDL_GpuDevice *device, const SDL_GpuTextureDescription *desc);
+void SDL_DestroyGpuTexture(SDL_GpuTexture *texture);
+int SDL_GetGpuTextureDescription(SDL_GpuTexture *texture, SDL_GpuTextureDescription *desc);
 
 /* compiling shaders is a different (and optional at runtime) piece, in github.com/libsdl-org/SDL_shader_tools */
 typedef struct SDL_GpuShader SDL_GpuShader;
-SDL_GpuShader *SDL_GpuCreateShader(const char *label, SDL_GpuDevice *device, const Uint8 *bytecode, const Uint32 bytecodelen);  /* !!! FIXME: bytecode type enum? */
+SDL_GpuShader *SDL_CreateGpuShader(const char *label, SDL_GpuDevice *device, const Uint8 *bytecode, const Uint32 bytecodelen);  /* !!! FIXME: bytecode type enum? */
 /* !!! FIXME: add a query for platform/gpu specific blob that can be fed back next time for faster load times? */
-void SDL_GpuDestroyShader(SDL_GpuShader *shader);
+void SDL_DestroyGpuShader(SDL_GpuShader *shader);
 
 
 /* PRECOOKED STATE OBJECTS... */
@@ -443,14 +443,14 @@ typedef struct SDL_GpuPipelineDescription
 } SDL_GpuPipelineDescription;
 
 typedef struct SDL_GpuPipeline SDL_GpuPipeline;
-SDL_GpuPipeline *SDL_GpuCreatePipeline(SDL_GpuDevice *device, const SDL_GpuPipelineDescription *desc);
-void SDL_GpuDestroyPipeline(SDL_GpuPipeline *pipeline);
+SDL_GpuPipeline *SDL_CreateGpuPipeline(SDL_GpuDevice *device, const SDL_GpuPipelineDescription *desc);
+void SDL_DestroyGpuPipeline(SDL_GpuPipeline *pipeline);
 
 /* these make it easier to set up a Pipeline description; set the defaults (or
    start with an existing pipeline's state) then change what you like.
    Note that the `label` and shader fields are read-only; do not modify or free them! */
-void SDL_GpuDefaultPipelineDescription(SDL_GpuPipelineDescription *desc);
-int SDL_GpuGetPipelineDescription(SDL_GpuPipeline *pipeline, SDL_GpuPipelineDescription *desc);
+void SDL_GetDefaultGpuPipelineDescription(SDL_GpuPipelineDescription *desc);
+int SDL_GetGpuPipelineDescription(SDL_GpuPipeline *pipeline, SDL_GpuPipelineDescription *desc);
 
 
 
@@ -498,8 +498,8 @@ typedef struct SDL_GpuSamplerDescription
 } SDL_GpuSamplerDescription;
 
 typedef struct SDL_GpuSampler SDL_GpuSampler;
-SDL_GpuSampler *SDL_GpuCreateSampler(SDL_GpuDevice *device, const SDL_GpuSamplerDescription *desc);
-void SDL_GpuDestroySampler(SDL_GpuSampler *sampler);
+SDL_GpuSampler *SDL_CreateGpuSampler(SDL_GpuDevice *device, const SDL_GpuSamplerDescription *desc);
+void SDL_DestroyGpuSampler(SDL_GpuSampler *sampler);
 
 
 
@@ -518,15 +518,15 @@ void SDL_GpuDestroySampler(SDL_GpuSampler *sampler);
  *  will be destroyed when their owning cache is destroyed.
  *
  * Thread safety: each type of cache (pipeline, sampler) has its own internal
- *  mutex, which it locks during SDL_GpuGetCached* calls. It is not safe to
- *  call SDL_GpuDestroyStateCache while that cache is being used by another
+ *  mutex, which it locks during SDL_GetCachedGpu* calls. It is not safe to
+ *  call SDL_DestroyGpuStateCache while that cache is being used by another
  *  thread.
  */
 typedef struct SDL_GpuStateCache SDL_GpuStateCache;
-SDL_GpuStateCache *SDL_GpuCreateStateCache(const char *label, SDL_GpuDevice *device);
-SDL_GpuPipeline *SDL_GpuGetCachedPipeline(SDL_GpuStateCache *cache, const SDL_GpuPipelineDescription *desc);
-SDL_GpuSampler *SDL_GpuGetCachedSampler(SDL_GpuStateCache *cache, const SDL_GpuSamplerDescription *desc);
-void SDL_GpuDestroyStateCache(SDL_GpuStateCache *cache);
+SDL_GpuStateCache *SDL_CreateGpuStateCache(const char *label, SDL_GpuDevice *device);
+SDL_GpuPipeline *SDL_GetCachedGpuPipeline(SDL_GpuStateCache *cache, const SDL_GpuPipelineDescription *desc);
+SDL_GpuSampler *SDL_GetCachedGpuSampler(SDL_GpuStateCache *cache, const SDL_GpuSamplerDescription *desc);
+void SDL_DestroyGpuStateCache(SDL_GpuStateCache *cache);
 
 // !!! FIXME: read/write state caches to disk?
 
@@ -546,7 +546,7 @@ void SDL_GpuDestroyStateCache(SDL_GpuStateCache *cache);
  *   etc) into the same command buffer.
  */
 typedef struct SDL_GpuCommandBuffer SDL_GpuCommandBuffer;
-SDL_GpuCommandBuffer *SDL_GpuCreateCommandBuffer(const char *label, SDL_GpuDevice *device);
+SDL_GpuCommandBuffer *SDL_CreateGpuCommandBuffer(const char *label, SDL_GpuDevice *device);
 
 /* !!! FIXME: push/pop debug groups? */
 
@@ -586,7 +586,7 @@ typedef struct SDL_GpuStencilAttachmentDescription
 
 /* start encoding a render pass to a command buffer. You can only encode one type of pass to a command buffer at a time. End this pass to start encoding another. */
 typedef struct SDL_GpuRenderPass SDL_GpuRenderPass;
-SDL_GpuRenderPass *SDL_GpuStartRenderPass(const char *label, SDL_GpuCommandBuffer *cmdbuf,
+SDL_GpuRenderPass *SDL_StartGpuRenderPass(const char *label, SDL_GpuCommandBuffer *cmdbuf,
                             Uint32 num_color_attachments,
                             const SDL_GpuColorAttachmentDescription *color_attachments,
                             const SDL_GpuDepthAttachmentDescription *depth_attachment,
@@ -601,19 +601,19 @@ SDL_GpuRenderPass *SDL_GpuStartRenderPass(const char *label, SDL_GpuCommandBuffe
  *   was set to at the time. Try not to encode redundant state changes into a render pass
  *   as they will take resources to do nothing.
  */
-int SDL_GpuSetRenderPassPipeline(SDL_GpuRenderPass *pass, SDL_GpuPipeline *pipeline);
+int SDL_SetGpuRenderPassPipeline(SDL_GpuRenderPass *pass, SDL_GpuPipeline *pipeline);
 
-int SDL_GpuSetRenderPassViewport(SDL_GpuRenderPass *pass, const double x, const double y, const double width, const double height, const double znear, const double zfar);
-int SDL_GpuSetRenderPassScissor(SDL_GpuRenderPass *pass, const Uint32 x, const Uint32 y, const Uint32 width, const Uint32 height);
-int SDL_GpuSetRenderPassBlendConstant(SDL_GpuRenderPass *pass, const double red, const double green, const double blue, const double alpha);
+int SDL_SetGpuRenderPassViewport(SDL_GpuRenderPass *pass, const double x, const double y, const double width, const double height, const double znear, const double zfar);
+int SDL_SetGpuRenderPassScissor(SDL_GpuRenderPass *pass, const Uint32 x, const Uint32 y, const Uint32 width, const Uint32 height);
+int SDL_SetGpuRenderPassBlendConstant(SDL_GpuRenderPass *pass, const double red, const double green, const double blue, const double alpha);
 
-int SDL_GpuSetRenderPassVertexBuffer(SDL_GpuRenderPass *pass, SDL_GpuBuffer *buffer, const Uint32 offset, const Uint32 index);
-int SDL_GpuSetRenderPassVertexSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler *sampler, const Uint32 index);
-int SDL_GpuSetRenderPassVertexTexture(SDL_GpuRenderPass *pass, SDL_GpuTexture *texture, const Uint32 index);
+int SDL_SetGpuRenderPassVertexBuffer(SDL_GpuRenderPass *pass, SDL_GpuBuffer *buffer, const Uint32 offset, const Uint32 index);
+int SDL_SetGpuRenderPassVertexSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler *sampler, const Uint32 index);
+int SDL_SetGpuRenderPassVertexTexture(SDL_GpuRenderPass *pass, SDL_GpuTexture *texture, const Uint32 index);
 
-int SDL_GpuSetRenderPassFragmentBuffer(SDL_GpuRenderPass *pass, SDL_GpuBuffer *buffer, const Uint32 offset, const Uint32 index);
-int SDL_GpuSetRenderPassFragmentSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler *sampler, const Uint32 index);
-int SDL_GpuSetRenderPassFragmentTexture(SDL_GpuRenderPass *pass, SDL_GpuTexture *texture, const Uint32 index);
+int SDL_SetGpuRenderPassFragmentBuffer(SDL_GpuRenderPass *pass, SDL_GpuBuffer *buffer, const Uint32 offset, const Uint32 index);
+int SDL_SetGpuRenderPassFragmentSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler *sampler, const Uint32 index);
+int SDL_SetGpuRenderPassFragmentTexture(SDL_GpuRenderPass *pass, SDL_GpuTexture *texture, const Uint32 index);
 
 
 /* Drawing! */
@@ -630,38 +630,38 @@ int SDL_GpuDrawInstanced(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 ve
 int SDL_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_vertex, Uint32 base_instance);
 
 /* Done encoding this render pass into the command buffer. You can now commit the command buffer or start a new render (or whatever) pass. This `pass` pointer becomes invalid. */
-int SDL_GpuEndRenderPass(SDL_GpuRenderPass *pass);
+int SDL_EndGpuRenderPass(SDL_GpuRenderPass *pass);
 
 /* start encoding a blit pass to a command buffer. You can only encode one type of pass to a command buffer at a time.  End this pass to start encoding another. */
 typedef struct SDL_GpuBlitPass SDL_GpuBlitPass;
-SDL_GpuBlitPass *SDL_GpuStartBlitPass(const char *label, SDL_GpuCommandBuffer *cmdbuf);
-int SDL_GpuCopyBetweenTextures(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel,
+SDL_GpuBlitPass *SDL_StartGpuBlitPass(const char *label, SDL_GpuCommandBuffer *cmdbuf);
+int SDL_CopyBetweenGpuTextures(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel,
                                  Uint32 srcx, Uint32 srcy, Uint32 srcz,
                                  Uint32 srcw, Uint32 srch, Uint32 srcdepth,
                                  SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel,
                                  Uint32 dstx, Uint32 dsty, Uint32 dstz);
 
-int SDL_GpuFillBuffer(SDL_GpuBlitPass *pass, SDL_GpuBuffer *buffer, Uint32 offset, Uint32 length, Uint8 value);
+int SDL_FillGpuBuffer(SDL_GpuBlitPass *pass, SDL_GpuBuffer *buffer, Uint32 offset, Uint32 length, Uint8 value);
 
-int SDL_GpuGenerateMipmaps(SDL_GpuBlitPass *pass, SDL_GpuTexture *texture);
+int SDL_GenerateGpuMipmaps(SDL_GpuBlitPass *pass, SDL_GpuTexture *texture);
 
-int SDL_GpuCopyBufferCpuToGpu(SDL_GpuBlitPass *pass, SDL_GpuCpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
-int SDL_GpuCopyBufferGpuToCpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuCpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
-int SDL_GpuCopyBufferGpuToGpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
+int SDL_CopyCpuBufferToGpu(SDL_GpuBlitPass *pass, SDL_CpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
+int SDL_CopyGpuBufferToCpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_CpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
+int SDL_CopyBetweenGpuBuffers(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
 
-int SDL_GpuCopyFromBufferToTexture(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset,
+int SDL_CopyGpuBufferToGpuTexture(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset,
                                      Uint32 srcpitch, Uint32 srcimgpitch,
                                      Uint32 srcw, Uint32 srch, Uint32 srcdepth,
                                      SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel,
                                      Uint32 dstx, Uint32 dsty, Uint32 dstz);
 
-int SDL_GpuCopyFromTextureToBuffer(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel,
+int SDL_CopyGpuTextureToGpuBuffer(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel,
                                      Uint32 srcx, Uint32 srcy, Uint32 srcz,
                                      Uint32 srcw, Uint32 srch, Uint32 srcdepth,
                                      SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 dstpitch, Uint32 dstimgpitch);
 
 /* Done encoding this blit pass into the command buffer. You can now commit the command buffer or start a new render (or whatever) pass. This `pass` pointer becomes invalid. */
-int SDL_GpuEndBlitPass(SDL_GpuBlitPass *pass);
+int SDL_EndGpuBlitPass(SDL_GpuBlitPass *pass);
 
 
 /*
@@ -672,11 +672,11 @@ int SDL_GpuEndBlitPass(SDL_GpuBlitPass *pass);
  *  and if it's safe to touch resources that are no longer in-flight.
  */
 typedef struct SDL_GpuFence SDL_GpuFence;
-SDL_GpuFence *SDL_GpuCreateFence(const char *label, SDL_GpuDevice *device);
-void SDL_GpuDestroyFence(SDL_GpuFence *fence);
-int SDL_GpuQueryFence(SDL_GpuFence *fence);
-int SDL_GpuResetFence(SDL_GpuFence *fence);
-int SDL_GpuWaitFence(SDL_GpuFence *fence);
+SDL_GpuFence *SDL_CreateGpuFence(const char *label, SDL_GpuDevice *device);
+void SDL_DestroyGpuFence(SDL_GpuFence *fence);
+int SDL_QueryGpuFence(SDL_GpuFence *fence);
+int SDL_ResetGpuFence(SDL_GpuFence *fence);
+int SDL_WaitGpuFence(SDL_GpuFence *fence);
 
 
 /*
@@ -684,16 +684,16 @@ int SDL_GpuWaitFence(SDL_GpuFence *fence);
  * Command buffers are executed in the order they are submitted, and the commands in those buffers are executed in the order they were encoded.
  * Once a command buffer is submitted, its pointer becomes invalid. Create a new one for the next set of commands.
  */
-int SDL_GpuSubmitCommandBuffer(SDL_GpuCommandBuffer *cmdbuf, SDL_GpuFence *fence);
+int SDL_SubmitGpuCommandBuffer(SDL_GpuCommandBuffer *cmdbuf, SDL_GpuFence *fence);
 
 /* If for some reason you've started encoding command buffers and decide _not_ to submit them to the GPU, you can
    abandon them, freeing their resources. This can be useful if something unrelated fails halfway through buffer encoding. */
-void SDL_GpuAbandonCommandBuffer(SDL_GpuCommandBuffer *buffer);
+void SDL_AbandonGpuCommandBuffer(SDL_GpuCommandBuffer *buffer);
 
 /*
  * Get a texture that can be used for rendering to an SDL window. The SDL_Window
  * may be destroyed and recreated internally on first use if incompatible with
- * the SDL_GpuDevice! As such, it does not need to be created with
+ * the SDL_GpuDevice! As such, it should not be created with
  * SDL_WINDOW_OPENGL or _VULKAN, etc, as this API will take care of it.
  *
  * SDL_Windows can not be used with more than one GPU device at a time (even if
@@ -726,7 +726,7 @@ void SDL_GpuAbandonCommandBuffer(SDL_GpuCommandBuffer *buffer);
  * pixels at any time. A render pass with SDL_GPUPASSINIT_LOAD will not be
  * meaningful for this texture until you've initialized it in some form.
  */
-SDL_GpuTexture *SDL_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window);
+SDL_GpuTexture *SDL_GetGpuBackbuffer(SDL_GpuDevice *device, SDL_Window *window);
 
 /* Present a window's current backbuffer to the display. This will take the current SDL_GpuTexture returned by SDL_GpuGetBackbuffer
  * and queue it for presentation. The presentation request is queued after any submitted command buffers, so you should call this
@@ -735,9 +735,9 @@ SDL_GpuTexture *SDL_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window);
  *
  * As soon as this call completes, the backbuffer is considered "in-flight."
  *
- * While the backbuffer is in-flight, the next call to SDL_GpuGetBackbuffer will return a different
+ * While the backbuffer is in-flight, the next call to SDL_GetGpuBackbuffer will return a different
  * texture and/or block. Do not use this backbuffer again after requesting presentation with it, as its pointer becomes
- * invalid; you should request a new one from SDL_GpuGetBackbuffer for future rendering. Note that presenting a window
+ * invalid; you should request a new one from SDL_GetGpuBackbuffer for future rendering. Note that presenting a window
  * with vsync will not block here, as this just queues the request.
  *
  * You should call this once per frame after rendering to a new backbuffer. If you haven't rendered to a backbuffer
@@ -751,13 +751,14 @@ int SDL_GpuPresent(SDL_GpuDevice *device, SDL_Window *window, int swapinterval);
 /* This makes a GPU buffer, and uploads data to it. This is not a fast call! But it removes a bunch of boilerplate code if you
    just want to blast data to a GPU buffer. This will submit a command buffer with a blit pass to the device and wait for
    it to complete. Returns NULL on error, the new GPU buffer otherwise. */
-SDL_GpuBuffer *SDL_GpuCreateAndInitBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data);
+SDL_GpuBuffer *SDL_CreateAndInitGpuBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data);
 
 /* Make sure your depth texture matches the window's backbuffer dimensions, if you don't care about managing the depth buffer yourself.
  * This assumes the depth texture is not still in-flight from a previous frame! If the depth texture needs to be resized, previous contents
  * will be lost.
  */
-SDL_GpuTexture *SDL_GpuMatchingDepthTexture(const char *label, SDL_GpuDevice *device, SDL_GpuTexture *backbuffer, SDL_GpuTexture **depth);
+/* !!! FIXME: decide if this is a good name for this function */
+SDL_GpuTexture *SDL_MatchingGpuDepthTexture(const char *label, SDL_GpuDevice *device, SDL_GpuTexture *backbuffer, SDL_GpuTexture **depth);
 
 /* Since you need to leave a buffer untouched until the GPU is done with it, you often need to keep several buffers of uniforms
    that you cycle through as the GPU processes prior frames. If you don't want to manage this yourself, you can use a buffer cycle
@@ -766,30 +767,30 @@ SDL_GpuTexture *SDL_GpuMatchingDepthTexture(const char *label, SDL_GpuDevice *de
    The "Ptr" version gives you the address of the item in the cycle, in case you need to rebuild it: for example, if you have a
    cycle of depth textures and the window gets resized, you'd use the Ptr version to destroy and recreate the object in the cycle.
    In normal use, you want the non-Ptr version, though. */
-typedef struct SDL_GpuCpuBufferCycle SDL_GpuCpuBufferCycle;
-SDL_GpuCpuBufferCycle *SDL_GpuCreateCpuBufferCycle(const char *label, SDL_GpuDevice *device, const Uint32 bufsize, const void *data, const Uint32 numbuffers);
-SDL_GpuCpuBuffer *SDL_GpuNextCpuBufferCycle(SDL_GpuCpuBufferCycle *cycle);
-SDL_GpuCpuBuffer **SDL_GpuNextCpuBufferPtrCycle(SDL_GpuCpuBufferCycle *cycle);
-void SDL_GpuDestroyCpuBufferCycle(SDL_GpuCpuBufferCycle *cycle);
+typedef struct SDL_CpuBufferCycle SDL_CpuBufferCycle;
+SDL_CpuBufferCycle *SDL_CreateCpuBufferCycle(const char *label, SDL_GpuDevice *device, const Uint32 bufsize, const void *data, const Uint32 numbuffers);
+SDL_CpuBuffer *SDL_GetNextCpuBufferInCycle(SDL_CpuBufferCycle *cycle);
+SDL_CpuBuffer **SDL_GetNextCpuBufferPtrInCycle(SDL_CpuBufferCycle *cycle);
+void SDL_DestroyCpuBufferCycle(SDL_CpuBufferCycle *cycle);
 
 typedef struct SDL_GpuBufferCycle SDL_GpuBufferCycle;
-SDL_GpuBufferCycle *SDL_GpuCreateBufferCycle(const char *label, SDL_GpuDevice *device, const Uint32 bufsize, const Uint32 numbuffers);
-SDL_GpuBuffer *SDL_GpuNextBufferCycle(SDL_GpuBufferCycle *cycle);
-SDL_GpuBuffer **SDL_GpuNextBufferPtrCycle(SDL_GpuBufferCycle *cycle);
-void SDL_GpuDestroyBufferCycle(SDL_GpuBufferCycle *cycle);
+SDL_GpuBufferCycle *SDL_CreateGpuBufferCycle(const char *label, SDL_GpuDevice *device, const Uint32 bufsize, const Uint32 numbuffers);
+SDL_GpuBuffer *SDL_GetNextGpuBufferInCycle(SDL_GpuBufferCycle *cycle);
+SDL_GpuBuffer **SDL_GetNextGpuBufferPtrInCycle(SDL_GpuBufferCycle *cycle);
+void SDL_DestroyGpuBufferCycle(SDL_GpuBufferCycle *cycle);
 
-/* if the texdesc is NULL, you will get a cycle of NULL textures that you can create later with SDL_GpuNextTexturePtrCycle */
+/* if the texdesc is NULL, you will get a cycle of NULL textures that you can create later with SDL_GetNextGpuTexturePtrInCycle */
 typedef struct SDL_GpuTextureCycle SDL_GpuTextureCycle;
-SDL_GpuTextureCycle *SDL_GpuCreateTextureCycle(const char *label, SDL_GpuDevice *device, const SDL_GpuTextureDescription *texdesc, const Uint32 numtextures);
-SDL_GpuTexture *SDL_GpuNextTextureCycle(SDL_GpuTextureCycle *cycle);
-SDL_GpuTexture **SDL_GpuNextTexturePtrCycle(SDL_GpuTextureCycle *cycle);
-void SDL_GpuDestroyTextureCycle(SDL_GpuTextureCycle *cycle);
+SDL_GpuTextureCycle *SDL_CreateGpuTextureCycle(const char *label, SDL_GpuDevice *device, const SDL_GpuTextureDescription *texdesc, const Uint32 numtextures);
+SDL_GpuTexture *SDL_GetNextGpuTextureInCycle(SDL_GpuTextureCycle *cycle);
+SDL_GpuTexture **SDL_GetNextGpuTexturePtrInCycle(SDL_GpuTextureCycle *cycle);
+void SDL_DestroyGpuTextureCycle(SDL_GpuTextureCycle *cycle);
 
 typedef struct SDL_GpuFenceCycle SDL_GpuFenceCycle;
-SDL_GpuFenceCycle *SDL_GpuCreateFenceCycle(const char *label, SDL_GpuDevice *device, const Uint32 numfences);
-SDL_GpuFence *SDL_GpuNextFenceCycle(SDL_GpuFenceCycle *cycle);
-SDL_GpuFence **SDL_GpuNextFencePtrCycle(SDL_GpuFenceCycle *cycle);
-void SDL_GpuDestroyFenceCycle(SDL_GpuFenceCycle *cycle);
+SDL_GpuFenceCycle *SDL_CreateGpuFenceCycle(const char *label, SDL_GpuDevice *device, const Uint32 numfences);
+SDL_GpuFence *SDL_GetNextGpuFenceInCycle(SDL_GpuFenceCycle *cycle);
+SDL_GpuFence **SDL_GetNextGpuFencePtrInCycle(SDL_GpuFenceCycle *cycle);
+void SDL_DestroyGpuFenceCycle(SDL_GpuFenceCycle *cycle);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
