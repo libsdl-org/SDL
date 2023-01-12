@@ -31,6 +31,23 @@
 // So this file is a set of many semantic patches, mostly independant.
 
 
+// SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter.
+@@
+expression e1, e2, e3;
+@@
+  SDL_Vulkan_GetInstanceExtensions(
+- e1,
+  e2, e3)
+
+// SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to PFN_vkGetInstanceProcAddr.
+@@
+typedef PFN_vkGetInstanceProcAddr;
+expression e1, e2, e3;
+@@
++ (PFN_vkGetInstanceProcAddr)
+  SDL_Vulkan_GetVkGetInstanceProcAddr()
+
+
 // SDL_PauseAudioDevice / SDL_PlayAudioDevice
 @@
 expression e;
