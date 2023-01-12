@@ -39,6 +39,9 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, vo
     _kernel_swi_regs regs;
     SDL_DisplayMode mode;
     int size;
+    int w, h;
+
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     /* Free the old framebuffer surface */
     RISCOS_DestroyWindowFramebuffer(_this, window);
@@ -54,10 +57,10 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, vo
     }
 
     /* Calculate pitch */
-    *pitch = (((window->w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
+    *pitch = (((w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
 
     /* Allocate the sprite area */
-    size = sizeof(sprite_area) + sizeof(sprite_header) + ((*pitch) * window->h);
+    size = sizeof(sprite_area) + sizeof(sprite_header) + ((*pitch) * h);
     driverdata->fb_area = SDL_malloc(size);
     if (!driverdata->fb_area) {
         return SDL_OutOfMemory();
@@ -73,8 +76,8 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, vo
     regs.r[1] = (int)driverdata->fb_area;
     regs.r[2] = (int)sprite_name;
     regs.r[3] = 0;
-    regs.r[4] = window->w;
-    regs.r[5] = window->h;
+    regs.r[4] = w;
+    regs.r[5] = h;
     regs.r[6] = sprite_mode;
     error = _kernel_swi(OS_SpriteOp, &regs, &regs);
     if (error != NULL) {
