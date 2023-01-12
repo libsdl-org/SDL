@@ -219,6 +219,9 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
     SDL_RendererInfo info;
     SDL_WindowTextureData *data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
     int i;
+    int w, h;
+
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     if (data == NULL) {
         SDL_Renderer *renderer = NULL;
@@ -301,7 +304,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
 
     data->texture = SDL_CreateTexture(data->renderer, *format,
                                       SDL_TEXTUREACCESS_STREAMING,
-                                      window->w, window->h);
+                                      w, h);
     if (!data->texture) {
         /* codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_WINDOWTEXTUREDATA and not leaked here. */
         return -1; /* NOLINT(clang-analyzer-unix.Malloc) */
@@ -309,11 +312,11 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
 
     /* Create framebuffer data */
     data->bytes_per_pixel = SDL_BYTESPERPIXEL(*format);
-    data->pitch = (((window->w * data->bytes_per_pixel) + 3) & ~3);
+    data->pitch = (((w * data->bytes_per_pixel) + 3) & ~3);
 
     {
         /* Make static analysis happy about potential SDL_malloc(0) calls. */
-        const size_t allocsize = (size_t)window->h * data->pitch;
+        const size_t allocsize = (size_t)h * data->pitch;
         data->pixels = SDL_malloc((allocsize > 0) ? allocsize : 1);
         if (!data->pixels) {
             return SDL_OutOfMemory();
@@ -337,6 +340,9 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
     SDL_WindowTextureData *data;
     SDL_Rect rect;
     void *src;
+    int w, h;
+
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
     if (data == NULL || !data->texture) {
@@ -344,7 +350,7 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
     }
 
     /* Update a single rect that contains subrects for best DMA performance */
-    if (SDL_GetSpanEnclosingRect(window->w, window->h, numrects, rects, &rect)) {
+    if (SDL_GetSpanEnclosingRect(w, h, numrects, rects, &rect)) {
         src = (void *)((Uint8 *)data->pixels +
                        rect.y * data->pitch +
                        rect.x * data->bytes_per_pixel);
@@ -2584,6 +2590,9 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
     SDL_bool created_framebuffer = SDL_FALSE;
+    int w, h;
+
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     /* This will switch the video backend from using a software surface to
        using a GPU texture through the 2D render API, if we think this would
@@ -2662,7 +2671,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
         return NULL;
     }
 
-    return SDL_CreateRGBSurfaceFrom(pixels, window->w, window->h, bpp, pitch, Rmask, Gmask, Bmask, Amask);
+    return SDL_CreateRGBSurfaceFrom(pixels, w, h, bpp, pitch, Rmask, Gmask, Bmask, Amask);
 }
 
 SDL_bool SDL_HasWindowSurface(SDL_Window *window)
@@ -2695,8 +2704,8 @@ int SDL_UpdateWindowSurface(SDL_Window *window)
 
     full_rect.x = 0;
     full_rect.y = 0;
-    full_rect.w = window->w;
-    full_rect.h = window->h;
+    SDL_GetWindowSizeInPixels(window, &full_rect.w, &full_rect.h);
+
     return SDL_UpdateWindowSurfaceRects(window, &full_rect, 1);
 }
 

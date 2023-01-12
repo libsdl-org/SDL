@@ -31,6 +31,9 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void 
     size_t size;
     LPBITMAPINFO info;
     HBITMAP hbm;
+    int w, h;
+
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     /* Free the old framebuffer surface */
     if (data->mdc) {
@@ -78,10 +81,10 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void 
     }
 
     /* Fill in the size information */
-    *pitch = (((window->w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
-    info->bmiHeader.biWidth = window->w;
-    info->bmiHeader.biHeight = -window->h; /* negative for topdown bitmap */
-    info->bmiHeader.biSizeImage = (DWORD)window->h * (*pitch);
+    *pitch = (((w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
+    info->bmiHeader.biWidth = w;
+    info->bmiHeader.biHeight = -h; /* negative for topdown bitmap */
+    info->bmiHeader.biSizeImage = (DWORD)h * (*pitch);
 
     data->mdc = CreateCompatibleDC(data->hdc);
     data->hbm = CreateDIBSection(data->hdc, info, DIB_RGB_COLORS, pixels, NULL, 0);

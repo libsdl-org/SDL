@@ -54,6 +54,9 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
     Display *display = data->videodata->display;
     XGCValues gcv;
     XVisualInfo vinfo;
+    int w, h;
+
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     /* Free the old framebuffer surface */
     X11_DestroyWindowFramebuffer(_this, window);
@@ -76,14 +79,14 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
     }
 
     /* Calculate pitch */
-    *pitch = (((window->w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
+    *pitch = (((w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
 
     /* Create the actual image */
 #ifndef NO_SHARED_MEMORY
     if (have_mitshm(display)) {
         XShmSegmentInfo *shminfo = &data->shminfo;
 
-        shminfo->shmid = shmget(IPC_PRIVATE, (size_t)window->h * (*pitch), IPC_CREAT | 0777);
+        shminfo->shmid = shmget(IPC_PRIVATE, (size_t)h * (*pitch), IPC_CREAT | 0777);
         if (shminfo->shmid >= 0) {
             shminfo->shmaddr = (char *)shmat(shminfo->shmid, 0, 0);
             shminfo->readOnly = False;
@@ -107,7 +110,7 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
             data->ximage = X11_XShmCreateImage(display, data->visual,
                                                vinfo.depth, ZPixmap,
                                                shminfo->shmaddr, shminfo,
-                                               window->w, window->h);
+                                               w, h);
             if (!data->ximage) {
                 X11_XShmDetach(display, shminfo);
                 X11_XSync(display, False);
@@ -123,14 +126,14 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
     }
 #endif /* not NO_SHARED_MEMORY */
 
-    *pixels = SDL_malloc((size_t)window->h * (*pitch));
+    *pixels = SDL_malloc((size_t)h * (*pitch));
     if (*pixels == NULL) {
         return SDL_OutOfMemory();
     }
 
     data->ximage = X11_XCreateImage(display, data->visual,
                                     vinfo.depth, ZPixmap, 0, (char *)(*pixels),
-                                    window->w, window->h, 32, 0);
+                                    w, h, 32, 0);
     if (!data->ximage) {
         SDL_free(*pixels);
         return SDL_SetError("Couldn't create XImage");
@@ -146,6 +149,10 @@ int X11_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects
     Display *display = data->videodata->display;
     int i;
     int x, y, w, h;
+    int window_w, window_h;
+
+    SDL_GetWindowSizeInPixels(window, &window_w, &window_h);
+
 #ifndef NO_SHARED_MEMORY
     if (data->use_mitshm) {
         for (i = 0; i < numrects; ++i) {
@@ -166,11 +173,11 @@ int X11_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects
                 y += h;
                 h += rects[i].y;
             }
-            if (x + w > window->w) {
-                w = window->w - x;
+            if (x + w > window_w) {
+                w = window_w - x;
             }
-            if (y + h > window->h) {
-                h = window->h - y;
+            if (y + h > window_h) {
+                h = window_h - y;
             }
 
             X11_XShmPutImage(display, data->xwindow, data->gc, data->ximage,
@@ -197,11 +204,11 @@ int X11_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects
                 y += h;
                 h += rects[i].y;
             }
-            if (x + w > window->w) {
-                w = window->w - x;
+            if (x + w > window_w) {
+                w = window_w - x;
             }
-            if (y + h > window->h) {
-                h = window->h - y;
+            if (y + h > window_h) {
+                h = window_h - y;
             }
 
             X11_XPutImage(display, data->xwindow, data->gc, data->ximage,
