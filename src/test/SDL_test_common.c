@@ -1063,7 +1063,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Log("%s\n", text);
             }
         }
-        SDL_SetHint("SDL_VIDEO_DRIVER", state->videodriver);
+        SDL_SetHint(SDL_HINT_VIDEO_DRIVER, state->videodriver);
         if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
             SDL_Log("Couldn't initialize video driver: %s\n",
                     SDL_GetError());
@@ -1339,7 +1339,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Log("%s\n", text);
             }
         }
-        SDL_SetHint("SDL_AUDIO_DRIVER", state->audiodriver);
+        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, state->audiodriver);
         if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
             SDL_Log("Couldn't initialize audio driver: %s\n",
                     SDL_GetError());
