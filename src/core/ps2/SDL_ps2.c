@@ -34,9 +34,7 @@
 #include <sifrpc.h>
 #include <iopcontrol.h>
 #include <sbv_patches.h>
-#include <ps2_fileXio_driver.h>
-#include <ps2_memcard_driver.h>
-#include <ps2_usb_driver.h>
+#include <ps2_filesystem_driver.h>
 
 __attribute__((weak)) void reset_IOP()
 {
@@ -58,29 +56,12 @@ static void prepare_IOP()
 
 static void init_drivers()
 {
-    init_memcard_driver(true);
-    init_usb_driver(true);
+	init_ps2_filesystem_driver();
 }
 
 static void deinit_drivers()
 {
-    deinit_usb_driver(true);
-    deinit_memcard_driver(true);
-}
-
-static void waitUntilDeviceIsReady(char *path)
-{
-    struct stat buffer;
-    int ret = -1;
-    int retries = 50;
-
-    while (ret != 0 && retries > 0) {
-        ret = stat(path, &buffer);
-        /* Wait until the device is ready */
-        nopdelay();
-
-        retries--;
-    }
+	deinit_ps2_filesystem_driver();
 }
 
 DECLSPEC int
@@ -92,9 +73,6 @@ SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 
     prepare_IOP();
     init_drivers();
-
-    getcwd(cwd, sizeof(cwd));
-    waitUntilDeviceIsReady(cwd);
 
     SDL_SetMainReady();
 
