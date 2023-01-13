@@ -421,7 +421,7 @@ static void HandlePendingRemovals(void)
     }
 }
 
-static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, int *device_instance)
+static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, SDL_JoystickID *device_instance)
 {
     SDL_joylist_item *item;
 
@@ -456,7 +456,7 @@ static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickG
     return SDL_TRUE;
 }
 
-static void SteamControllerDisconnectedCallback(int device_instance)
+static void SteamControllerDisconnectedCallback(SDL_JoystickID device_instance)
 {
     SDL_joylist_item *item;
     SDL_joylist_item *prev = NULL;
