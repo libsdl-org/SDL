@@ -26,9 +26,7 @@
 #include "../SDL_sysvideo.h"
 
 #include <bcm_host.h>
-#include "GLES/gl.h"
-#include "EGL/egl.h"
-#include "EGL/eglext.h"
+#include <SDL3/SDL_egl.h>
 
 typedef struct SDL_VideoData
 {
