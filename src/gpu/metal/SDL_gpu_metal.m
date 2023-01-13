@@ -468,28 +468,27 @@ IndexTypeToMetal(const SDL_GpuIndexType typ)
 }
 
 
-static SDL_MetalView
-GetWindowView(SDL_Window *window)
+static SDL_MetalView GetWindowView(SDL_Window *window)
 {
     SDL_SysWMinfo info;
 
-    SDL_VERSION(&info.version);
-    if (SDL_GetWindowWMInfo(window, &info)) {
-#ifdef __MACOSX__
+    if (SDL_GetWindowWMInfo(window, &info, SDL_SYSWM_CURRENT_VERSION) == 0) {
+#ifdef SDL_ENABLE_SYSWM_COCOA
         if (info.subsystem == SDL_SYSWM_COCOA) {
             NSView *view = info.info.cocoa.window.contentView;
             if (view.subviews.count > 0) {
                 view = view.subviews[0];
                 if (view.tag == SDL_METALVIEW_TAG) {
-                    return (SDL_MetalView) CFBridgingRetain(view);
+                    return (SDL_MetalView)CFBridgingRetain(view);
                 }
             }
         }
-#else
+#endif
+#ifdef SDL_ENABLE_SYSWM_UIKIT
         if (info.subsystem == SDL_SYSWM_UIKIT) {
             UIView *view = info.info.uikit.window.rootViewController.view;
             if (view.tag == SDL_METALVIEW_TAG) {
-                return (SDL_MetalView) CFBridgingRetain(view);
+                return (SDL_MetalView)CFBridgingRetain(view);
             }
         }
 #endif
