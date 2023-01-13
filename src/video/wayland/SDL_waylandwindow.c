@@ -1699,10 +1699,6 @@ void Wayland_RestoreWindow(_THIS, SDL_Window *window)
         return;
     }
 
-    if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
-            return;
-    }
-
     /* Set this flag now even if we never actually maximized, eventually
      * ShowWindow will take care of it along with the other window state.
      */
