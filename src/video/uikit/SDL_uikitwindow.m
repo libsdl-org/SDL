@@ -34,7 +34,6 @@
 #include "SDL_uikitview.h"
 #include "SDL_uikitopenglview.h"
 
-#define SDL_ENABLE_SYSWM_UIKIT
 #include <SDL3/SDL_syswm.h>
 
 #include <Foundation/Foundation.h>

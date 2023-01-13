@@ -30,7 +30,6 @@
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 
-#define SDL_ENABLE_SYSWM_WINDOWS
 #include <SDL3/SDL_syswm.h>
 
 #include <d3d11_1.h>

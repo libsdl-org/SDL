@@ -28,7 +28,6 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 #include "../../video/x11/SDL_x11video.h"
-#define SDL_ENABLE_SYSWM_X11
 #endif
 #include <SDL3/SDL_syswm.h>
 
