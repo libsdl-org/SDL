@@ -1084,7 +1084,7 @@ int SDL_hid_init(void)
         loaded = SDL_FALSE;                                                                   \
     }
 #else
-#define LOAD_LIBUSB_SYMBOL(func) \
+#define LOAD_LIBUSB_SYMBOL(type, func) \
     libusb_ctx.func = libusb_##func;
 #endif
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context **), init)
