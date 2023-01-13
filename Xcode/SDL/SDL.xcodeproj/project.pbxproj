@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		F3B38CEC296F63B6005DA6D3 /* xcFramework */ = {
+		F3B38CEC296F63B6005DA6D3 /* SDL.xcframework */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = F3B38CED296F63B6005DA6D3 /* Build configuration list for PBXAggregateTarget "xcFramework" */;
+			buildConfigurationList = F3B38CED296F63B6005DA6D3 /* Build configuration list for PBXAggregateTarget "SDL.xcframework" */;
 			buildPhases = (
 				F3B38CF0296F63D1005DA6D3 /* ShellScript */,
 			);
 			dependencies = (
 			);
-			name = xcFramework;
+			name = SDL.xcframework;
 			productName = xcFramework;
 		};
 /* End PBXAggregateTarget section */
@@ -7073,7 +7073,7 @@
 				A75FCCFB23E25AB700529352 /* Shared Library-iOS */,
 				A75FCEB423E25AC700529352 /* Shared Library-tvOS */,
 				BECDF6BB0761BA81005FE872 /* Standard DMG */,
-				F3B38CEC296F63B6005DA6D3 /* xcFramework */,
+				F3B38CEC296F63B6005DA6D3 /* SDL.xcframework */,
 			);
 		};
 /* End PBXProject section */
@@ -8945,7 +8945,7 @@
 /* Begin PBXTargetDependency section */
 		F3B38CF4296F6C8D005DA6D3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = F3B38CEC296F63B6005DA6D3 /* xcFramework */;
+			target = F3B38CEC296F63B6005DA6D3 /* SDL.xcframework */;
 			targetProxy = F3B38CF3296F6C8D005DA6D3 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -9417,7 +9417,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		F3B38CED296F63B6005DA6D3 /* Build configuration list for PBXAggregateTarget "xcFramework" */ = {
+		F3B38CED296F63B6005DA6D3 /* Build configuration list for PBXAggregateTarget "SDL.xcframework" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F3B38CEE296F63B6005DA6D3 /* Debug */,
