@@ -73,7 +73,8 @@ typedef struct SDL_RWops
      *  signed so you definitely cannot overflow the return value on a
      *  successful run with enormous amounts of data.
      *
-     *  \return the number of objects read, or 0 on end of file, or -1 on error.
+     *  \return the number of objects read, or 0 on end of file, -1 on error,
+     *          and -2 for data not ready with a non-blocking context.
      */
     Sint64 (SDLCALL * read) (struct SDL_RWops * context, void *ptr,
                              Sint64 size);
@@ -88,7 +89,8 @@ typedef struct SDL_RWops
      *  successful run with enormous amounts of data.
      *
      *  \return the number of bytes written, which might be less than \c size,
-     *          and -1 on error.
+     *          -1 on error and -2 for a non-blocking contexts signifying
+     *          try again later.
      */
     Sint64 (SDLCALL * write) (struct SDL_RWops * context, const void *ptr,
                               Sint64 size);
