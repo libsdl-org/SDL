@@ -127,10 +127,6 @@ void HAIKU_SetWindowTitle(_THIS, SDL_Window * window) {
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon) {
-    /* FIXME: Icons not supported by Haiku */
-}
-
 void HAIKU_SetWindowPosition(_THIS, SDL_Window * window) {
     BMessage msg(BWIN_MOVE_WINDOW);
     msg.AddInt32("window-x", window->x);

@@ -124,7 +124,6 @@ int KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mod
 int KMSDRM_CreateWindow(_THIS, SDL_Window *window);
 int KMSDRM_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
 void KMSDRM_SetWindowTitle(_THIS, SDL_Window *window);
-void KMSDRM_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon);
 void KMSDRM_SetWindowPosition(_THIS, SDL_Window *window);
 void KMSDRM_SetWindowSize(_THIS, SDL_Window *window);
 void KMSDRM_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *_display, SDL_bool fullscreen);

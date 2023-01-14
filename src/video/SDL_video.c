@@ -2060,7 +2060,7 @@ int SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
     CHECK_WINDOW_MAGIC(window, -1);
 
     if (icon == NULL) {
-        return 0;
+        return SDL_InvalidParamError("icon");
     }
 
     SDL_DestroySurface(window->icon);
@@ -2071,10 +2071,11 @@ int SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
         return -1;
     }
 
-    if (_this->SetWindowIcon) {
-        _this->SetWindowIcon(_this, window, window->icon);
+    if (!_this->SetWindowIcon) {
+        return SDL_Unsupported();
     }
-    return 0;
+
+    return _this->SetWindowIcon(_this, window, window->icon);
 }
 
 void *SDL_SetWindowData(SDL_Window *window, const char *name, void *userdata)

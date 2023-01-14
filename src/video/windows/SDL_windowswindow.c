@@ -628,8 +628,9 @@ void WIN_SetWindowTitle(_THIS, SDL_Window *window)
 #endif
 }
 
-void WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
+int WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
+    int retVal = 0;
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     HWND hwnd = window->driverdata->hwnd;
     HICON hicon = NULL;
@@ -677,12 +678,20 @@ void WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 
     SDL_small_free(icon_bmp, isstack);
 
+    if (hicon == NULL) {
+        SDL_SetError("SetWindowIcon() failed, error %08X", (unsigned int)GetLastError());
+        retVal = -1;
+    }
+
     /* Set the icon for the window */
     SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
 
     /* Set the icon in the task manager (should we do this?) */
     SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+#else
+    retVal = SDL_Unsupported();
 #endif
+    return retVal;
 }
 
 void WIN_SetWindowPosition(_THIS, SDL_Window *window)

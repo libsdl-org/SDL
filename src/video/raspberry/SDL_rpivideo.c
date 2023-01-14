@@ -105,7 +105,6 @@ static SDL_VideoDevice *RPI_Create()
     device->CreateSDLWindow = RPI_CreateWindow;
     device->CreateSDLWindowFrom = RPI_CreateWindowFrom;
     device->SetWindowTitle = RPI_SetWindowTitle;
-    device->SetWindowIcon = RPI_SetWindowIcon;
     device->SetWindowPosition = RPI_SetWindowPosition;
     device->SetWindowSize = RPI_SetWindowSize;
     device->ShowWindow = RPI_ShowWindow;
@@ -348,9 +347,6 @@ int RPI_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 }
 
 void RPI_SetWindowTitle(_THIS, SDL_Window *window)
-{
-}
-void RPI_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
 }
 void RPI_SetWindowPosition(_THIS, SDL_Window *window)
