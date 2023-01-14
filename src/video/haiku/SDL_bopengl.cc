@@ -72,7 +72,7 @@ SDL_FunctionPointer HAIKU_GL_GetProcAddress(_THIS, const char *proc)
             get_image_symbol((image_id) (addr_t) _this->gl_config.dll_handle,
                               proc, B_SYMBOL_TYPE_ANY,
                               &location)) == B_OK) {
-            return location;
+            return (SDL_FunctionPointer)location;
         } else {
                 SDL_SetError("Couldn't find OpenGL symbol");
                 return NULL;
