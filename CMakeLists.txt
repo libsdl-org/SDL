@@ -2892,37 +2892,6 @@ else()
   set(sdl_static_libname "SDL3")
 endif()
 
-# Clean up variables for sdl3.pc
-
-if(SDL_SHARED)
-  set(PKGCONFIG_LIBS_PRIV "\nLibs.private:")
-else()
-  set(PKGCONFIG_LIBS_PRIV "")
-endif()
-
-# Clean up the different lists
-listtostr(SDL_EXTRA_LIBS EXTRA_LIBS_L "-l")
-set(SDL_PC_STATIC_LIBS ${SDL_EXTRA_LDFLAGS} ${EXTRA_LIBS_L})
-list(REMOVE_DUPLICATES SDL_PC_STATIC_LIBS)
-listtostr(SDL_PC_STATIC_LIBS SDL_PC_STATIC_LIBS)
-listtostr(SDL_PC_LIBS SDL_PC_LIBS)
-listtostr(SDL_PC_CFLAGS SDL_PC_CFLAGS)
-listtostr(SDL_PC_PRIVATE_REQUIRES SDL_PC_PRIVATE_REQUIRES)
-string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_PC_STATIC_LIBS "${SDL_PC_STATIC_LIBS}")
-if(NOT SDL_SHARED)
-  string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_PC_LIBS "${SDL_PC_LIBS}")
-endif()
-
-if(SDL_STATIC AND SDL_SHARED AND NOT sdl_static_libname STREQUAL "SDL3")
-  message(STATUS "\"pkg-config --static --libs sdl3\" will return invalid information")
-endif()
-
-# message(STATUS "SDL_PC_CFLAGS:   ${SDL_PC_CFLAGS}")
-# message(STATUS "SDL_PC_LIBS:     ${SDL_PC_LIBS}")
-# message(STATUS "SDL_PC_STATIC_LIBS: ${SDL_PC_STATIC_LIBS}")
-
-configure_file(cmake/sdl3.pc.in sdl3.pc @ONLY)
-
 macro(check_add_debug_flag FLAG SUFFIX)
     check_c_compiler_flag(${FLAG} HAS_C_FLAG_${SUFFIX})
     if (HAS_C_FLAG_${SUFFIX})
@@ -3269,13 +3238,20 @@ if(NOT SDL3_DISABLE_INSTALL)
   endif()
   set(SDL_INSTALL_CMAKEDIR_ROOT "${SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT}" CACHE STRING "Root folder where to install SDL3Config.cmake related files (SDL3 subfolder for MSVC projects)")
 
+  if(FREEBSD)
+    # FreeBSD uses ${PREFIX}/libdata/pkgconfig
+    set(SDL_PKGCONFIG_INSTALLDIR "libdata/pkgconfig")
+  else()
+    set(SDL_PKGCONFIG_INSTALLDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+  endif()
+
   if(WINDOWS AND NOT MINGW)
     set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}")
     set(LICENSES_PREFIX "licenses/SDL3")
   else()
     set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}/SDL3")
     set(LICENSES_PREFIX "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
-  endif ()
+  endif()
 
   ##### Installation targets #####
 
@@ -3300,7 +3276,44 @@ if(NOT SDL3_DISABLE_INSTALL)
       RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
   endif()
 
-  ##### Export files #####
+  ##### sdl3.pc #####
+
+  # Clean up variables for sdl3.pc
+  if(SDL_SHARED)
+    set(PKGCONFIG_LIBS_PRIV "\nLibs.private:")
+  else()
+    set(PKGCONFIG_LIBS_PRIV "")
+  endif()
+
+  # Clean up the different lists
+  listtostr(SDL_EXTRA_LIBS EXTRA_LIBS_L "-l")
+  set(SDL_PC_STATIC_LIBS ${SDL_EXTRA_LDFLAGS} ${EXTRA_LIBS_L})
+  list(REMOVE_DUPLICATES SDL_PC_STATIC_LIBS)
+  listtostr(SDL_PC_STATIC_LIBS SDL_PC_STATIC_LIBS)
+  listtostr(SDL_PC_LIBS SDL_PC_LIBS)
+  listtostr(SDL_PC_CFLAGS SDL_PC_CFLAGS)
+  listtostr(SDL_PC_PRIVATE_REQUIRES SDL_PC_PRIVATE_REQUIRES)
+  string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_PC_STATIC_LIBS "${SDL_PC_STATIC_LIBS}")
+  if(NOT SDL_SHARED)
+    string(REGEX REPLACE "-lSDL3( |$)" "-l${sdl_static_libname} " SDL_PC_LIBS "${SDL_PC_LIBS}")
+  endif()
+
+  if(SDL_STATIC AND SDL_SHARED AND NOT sdl_static_libname STREQUAL "SDL3")
+    message(STATUS "\"pkg-config --static --libs sdl3\" will return invalid information")
+  endif()
+
+  file(RELATIVE_PATH SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG "${CMAKE_INSTALL_PREFIX}/${SDL_PKGCONFIG_INSTALLDIR}" "${CMAKE_INSTALL_PREFIX}")
+  string(REGEX REPLACE "[/]+$" "" SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG "${SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG}")
+  set(SDL_PKGCONFIG_PREFIX "\${pcfiledir}/${SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG}")
+
+  # message(STATUS "SDL_PC_CFLAGS:   ${SDL_PC_CFLAGS}")
+  # message(STATUS "SDL_PC_LIBS:     ${SDL_PC_LIBS}")
+  # message(STATUS "SDL_PC_STATIC_LIBS: ${SDL_PC_STATIC_LIBS}")
+
+  configure_file(cmake/sdl3.pc.in sdl3.pc @ONLY)
+  install(FILES ${SDL3_BINARY_DIR}/sdl3.pc DESTINATION "${SDL_PKGCONFIG_INSTALLDIR}")
+
+  ##### CMake Export files #####
 
   include(CMakePackageConfigHelpers)
   configure_package_config_file(cmake/SDL3Config.cmake.in SDL3Config.cmake
@@ -3371,13 +3384,6 @@ if(NOT SDL3_DISABLE_INSTALL)
   endif()
 
   install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")
-  if(FREEBSD)
-    # FreeBSD uses ${PREFIX}/libdata/pkgconfig
-    install(FILES ${SDL3_BINARY_DIR}/sdl3.pc DESTINATION "libdata/pkgconfig")
-  else()
-    install(FILES ${SDL3_BINARY_DIR}/sdl3.pc
-            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-  endif()
 endif()
 
 ##### Uninstall target #####
