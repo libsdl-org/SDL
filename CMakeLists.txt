@@ -2721,6 +2721,13 @@ elseif(N3DS)
   else()
     message_error("SDL_FILE must be enabled to build on N3DS")
   endif()
+
+  foreach(lib ${CMAKE_C_STANDARD_LIBRARIES})
+    if(lib MATCHES "^-l")
+      string(SUBSTRING "${lib}" 2 -1 lib)
+    endif()
+    list(APPEND SDL_EXTRA_LIBS ${lib})
+  endforeach()
 endif()
 
 if(HAVE_VULKAN AND NOT SDL_LOADSO)

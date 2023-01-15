@@ -42,5 +42,14 @@ jobs:
             -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
             -DCMAKE_BUILD_TYPE=Release
           cmake --build cmake_config_build --verbose
-      # Not running test_pkgconfig.sh and test_sdlconfig.sh
-      # as invoking the compiler manually is not supported
+      - name: Extract CC/CXX/CFLAGS/CXXFLAGS from CMake toolchain
+        run: |
+          cmake -S .github/cmake -B /tmp/cmake_extract \
+            -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DVAR_PATH=/tmp/n3ds_env.txt
+          cat /tmp/n3ds_env.txt >> $GITHUB_ENV
+      - name: Verify sdl3.pc
+        run: |
+          export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
+          cmake/test/test_pkgconfig.sh

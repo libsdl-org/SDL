@@ -43,6 +43,6 @@ jobs:
     - name: Verify sdl3.pc
       run: |
         export CC=psp-gcc
+        export LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
-        export EXTRA_LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         cmake/test/test_pkgconfig.sh
