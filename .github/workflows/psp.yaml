@@ -39,12 +39,12 @@ jobs:
     - name: Verify sdl2-config
       run: |
         export CC=psp-gcc
+        export LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         export PATH=${{ env.SDL2_DIR }}/bin:$PATH
-        export EXTRA_LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         cmake/test/test_sdlconfig.sh
     - name: Verify sdl2.pc
       run: |
         export CC=psp-gcc
+        export LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
-        export EXTRA_LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         cmake/test/test_pkgconfig.sh
