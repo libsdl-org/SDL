@@ -50,13 +50,13 @@ jobs:
     - name: Verify sdl2-config
       run: |
         export CC=mips64r5900el-ps2-elf-gcc
+        export LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
         export PATH=${{ env.SDL2_DIR }}/bin:$PATH
-        export EXTRA_LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
         cmake/test/test_sdlconfig.sh
     - name: Verify sdl2.pc
       run: |
         export CC=mips64r5900el-ps2-elf-gcc
-        export EXTRA_LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
+        export LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
         export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh
     
