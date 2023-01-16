@@ -54,6 +54,8 @@ SDL_PauseAudioDevice() is only used to pause audio playback. Use SDL_PlayAudioDe
 
 SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
+SDL_AudioCVT interface is removed, SDL_AudioStream can be used instead.
+
 The following functions have been renamed:
 * SDL_AudioStreamAvailable() => SDL_GetAudioStreamAvailable()
 * SDL_AudioStreamClear() => SDL_ClearAudioStream()
@@ -65,6 +67,8 @@ The following functions have been renamed:
 
 
 The following functions have been removed:
+* SDL_ConvertAudio()
+* SDL_BuildAudioCVT()
 * SDL_OpenAudio()
 * SDL_CloseAudio()
 * SDL_PauseAudio()
