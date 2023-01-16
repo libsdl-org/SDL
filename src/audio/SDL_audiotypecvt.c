@@ -21,6 +21,7 @@
 #include "SDL_internal.h"
 
 #include "SDL_audio_c.h"
+#include "SDL_audiocvt_c.h"
 
 #ifdef __ARM_NEON
 #define HAVE_NEON_INTRINSICS 1

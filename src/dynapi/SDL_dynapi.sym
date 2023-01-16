@@ -32,7 +32,6 @@ SDL3_0.0.0 {
     SDL_BlitSurfaceScaled;
     SDL_BlitSurfaceUnchecked;
     SDL_BlitSurfaceUncheckedScaled;
-    SDL_BuildAudioCVT;
     SDL_CaptureMouse;
     SDL_ClearAudioStream;
     SDL_ClearComposition;
@@ -48,7 +47,6 @@ SDL3_0.0.0 {
     SDL_CondSignal;
     SDL_CondWait;
     SDL_CondWaitTimeout;
-    SDL_ConvertAudio;
     SDL_ConvertPixels;
     SDL_ConvertSurface;
     SDL_ConvertSurfaceFormat;
