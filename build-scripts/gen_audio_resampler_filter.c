@@ -84,7 +84,7 @@ kaiser_and_sinc(float *table, float *diffs, const int tablelen, const double bet
     }
 
     for (i = 1; i < tablelen; i++) {
-        const float x = (((float) i) / ((float) RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) * SDL_PI_F;
+        const float x = (((float) i) / ((float) RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) * ((float) M_PI);
         table[i] *= sinf(x) / x;
         diffs[i - 1] = table[i] - table[i - 1];
     }
