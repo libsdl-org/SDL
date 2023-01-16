@@ -16,7 +16,8 @@
 int main(int argc, char **argv)
 {
     SDL_AudioSpec spec;
-    SDL_AudioCVT cvt;
+    SDL_AudioStream *stream;
+    Uint8 *dst_buf = NULL;
     Uint32 len = 0;
     Uint8 *data = NULL;
     int cvtfreq = 0;
@@ -25,6 +26,8 @@ int main(int argc, char **argv)
     int blockalign = 0;
     int avgbytes = 0;
     SDL_RWops *io = NULL;
+    int src_samplesize, dst_samplesize;
+    int src_len, dst_len, real_dst_len;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -48,40 +51,65 @@ int main(int argc, char **argv)
         return 3;
     }
 
-    if (SDL_BuildAudioCVT(&cvt, spec.format, spec.channels, spec.freq,
-                          spec.format, cvtchans, cvtfreq) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to build CVT: %s\n", SDL_GetError());
+
+    stream = SDL_CreateAudioStream(spec.format, spec.channels, spec.freq,
+                                   spec.format, cvtchans, cvtfreq);
+    if (stream == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to build audio stream: %s\n", SDL_GetError());
         SDL_free(data);
         SDL_Quit();
         return 4;
     }
 
-    cvt.len = len;
-    cvt.buf = (Uint8 *)SDL_malloc((size_t)len * cvt.len_mult);
-    if (cvt.buf == NULL) {
+    src_samplesize = (SDL_AUDIO_BITSIZE(spec.format) / 8) * spec.channels;
+    dst_samplesize = (SDL_AUDIO_BITSIZE(spec.format) / 8) * cvtchans;
+
+
+    src_len = len & ~(src_samplesize - 1);
+    dst_len = dst_samplesize * (src_len / src_samplesize);
+    if (spec.freq < cvtfreq) {
+        const double mult = ((double)cvtfreq) / ((double)spec.freq);
+        dst_len *= (int) SDL_ceil(mult);
+    }
+
+    dst_len = dst_len & ~(dst_samplesize - 1);
+    dst_buf = (Uint8 *)SDL_malloc(dst_len);
+    if (dst_buf == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory.\n");
         SDL_free(data);
         SDL_Quit();
         return 5;
     }
-    SDL_memcpy(cvt.buf, data, len);
 
-    if (SDL_ConvertAudio(&cvt) == -1) {
+    /* Run the audio converter */
+    if (SDL_PutAudioStreamData(stream, data, src_len) < 0 ||
+        SDL_FlushAudioStream(stream) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Conversion failed: %s\n", SDL_GetError());
-        SDL_free(cvt.buf);
+        SDL_free(dst_buf);
         SDL_free(data);
         SDL_Quit();
         return 6;
+
     }
+
+    real_dst_len = SDL_GetAudioStreamData(stream, dst_buf, dst_len);
+    if (real_dst_len < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Conversion failed: %s\n", SDL_GetError());
+        SDL_free(dst_buf);
+        SDL_free(data);
+        SDL_Quit();
+        return 7;
+    }
+    dst_len = real_dst_len;
 
     /* write out a WAV header... */
     io = SDL_RWFromFile(argv[2], "wb");
     if (io == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen('%s') failed: %s\n", argv[2], SDL_GetError());
-        SDL_free(cvt.buf);
+        SDL_free(dst_buf);
         SDL_free(data);
         SDL_Quit();
-        return 7;
+        return 8;
     }
 
     bitsize = SDL_AUDIO_BITSIZE(spec.format);
@@ -89,7 +117,7 @@ int main(int argc, char **argv)
     avgbytes = cvtfreq * blockalign;
 
     SDL_WriteLE32(io, 0x46464952); /* RIFF */
-    SDL_WriteLE32(io, cvt.len_cvt + 36);
+    SDL_WriteLE32(io, dst_len + 36);
     SDL_WriteLE32(io, 0x45564157);                             /* WAVE */
     SDL_WriteLE32(io, 0x20746D66);                             /* fmt */
     SDL_WriteLE32(io, 16);                                     /* chunk size */
@@ -100,18 +128,18 @@ int main(int argc, char **argv)
     SDL_WriteLE16(io, blockalign);                             /* block align */
     SDL_WriteLE16(io, bitsize);                                /* significant bits per sample */
     SDL_WriteLE32(io, 0x61746164);                             /* data */
-    SDL_WriteLE32(io, cvt.len_cvt);                            /* size */
-    SDL_RWwrite(io, cvt.buf, cvt.len_cvt);
+    SDL_WriteLE32(io, dst_len);                                /* size */
+    SDL_RWwrite(io, dst_buf, dst_len);
 
     if (SDL_RWclose(io) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fclose('%s') failed: %s\n", argv[2], SDL_GetError());
-        SDL_free(cvt.buf);
+        SDL_free(dst_buf);
         SDL_free(data);
         SDL_Quit();
-        return 8;
+        return 9;
     } /* if */
 
-    SDL_free(cvt.buf);
+    SDL_free(dst_buf);
     SDL_free(data);
     SDL_Quit();
     return 0;
