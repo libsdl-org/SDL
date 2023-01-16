@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     char *filter = NULL;
     int i, done;
     SDL_Event event;
+    int list = 0;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
@@ -74,15 +75,33 @@ int main(int argc, char *argv[])
                     filter = SDL_strdup(argv[i + 1]);
                     consumed = 2;
                 }
+            } else if (SDL_strcasecmp(argv[i], "--list") == 0) {
+                consumed = 1;
+                list = 1;
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--iterations #]", "[--execKey #]", "[--seed string]", "[--filter suite_name|test_name]", NULL };
+            static const char *options[] = { "[--iterations #]", "[--execKey #]", "[--seed string]", "[--filter suite_name|test_name]", "[--list]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             quit(1);
         }
 
         i += consumed;
+    }
+
+    /* List all suites. */
+    if (list) {
+        int suiteCounter;
+        for (suiteCounter = 0; testSuites[suiteCounter]; ++suiteCounter) {
+            int testCounter;
+            SDLTest_TestSuiteReference *testSuite = testSuites[suiteCounter];
+            SDL_Log("Test suite: %s", testSuite->name);
+            for (testCounter = 0; testSuite->testCases[testCounter]; ++testCounter) {
+                const SDLTest_TestCaseReference *testCase = testSuite->testCases[testCounter];
+                SDL_Log("      test: %s", testCase->name);
+            }
+        }
+        return 0;
     }
 
     /* Initialize common state */
