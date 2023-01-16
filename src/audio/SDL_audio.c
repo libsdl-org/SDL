@@ -160,6 +160,8 @@ static SDL_bool LoadLibSampleRate(void)
         SRC_converter = SRC_SINC_MEDIUM_QUALITY;
     } else if (*hint == '3' || SDL_strcasecmp(hint, "best") == 0) {
         SRC_converter = SRC_SINC_BEST_QUALITY;
+    } else if (*hint == '4' || SDL_strcasecmp(hint, "linear") == 0) {
+        SRC_converter = SRC_LINEAR;
     } else {
         return SDL_FALSE; /* treat it like "default", don't load anything. */
     }
