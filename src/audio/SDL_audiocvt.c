@@ -1011,6 +1011,16 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
     Uint8 pre_resample_channels;
     SDL_AudioStream *retval;
 
+    if (src_channels == 0) {
+        SDL_InvalidParamError("src_channels");
+        return NULL;
+    }
+
+    if (dst_channels == 0) {
+        SDL_InvalidParamError("dst_channels");
+        return NULL;
+    }
+
     retval = (SDL_AudioStream *)SDL_calloc(1, sizeof(SDL_AudioStream));
     if (retval == NULL) {
         SDL_OutOfMemory();
