@@ -57,7 +57,6 @@
 #define SDL_BlitSurfaceScaled SDL_BlitSurfaceScaled_REAL
 #define SDL_BlitSurfaceUnchecked SDL_BlitSurfaceUnchecked_REAL
 #define SDL_BlitSurfaceUncheckedScaled SDL_BlitSurfaceUncheckedScaled_REAL
-#define SDL_BuildAudioCVT SDL_BuildAudioCVT_REAL
 #define SDL_CaptureMouse SDL_CaptureMouse_REAL
 #define SDL_ClearAudioStream SDL_ClearAudioStream_REAL
 #define SDL_ClearComposition SDL_ClearComposition_REAL
@@ -73,7 +72,6 @@
 #define SDL_CondSignal SDL_CondSignal_REAL
 #define SDL_CondWait SDL_CondWait_REAL
 #define SDL_CondWaitTimeout SDL_CondWaitTimeout_REAL
-#define SDL_ConvertAudio SDL_ConvertAudio_REAL
 #define SDL_ConvertPixels SDL_ConvertPixels_REAL
 #define SDL_ConvertSurface SDL_ConvertSurface_REAL
 #define SDL_ConvertSurfaceFormat SDL_ConvertSurfaceFormat_REAL
