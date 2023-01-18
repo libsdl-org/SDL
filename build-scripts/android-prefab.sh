@@ -61,7 +61,7 @@ build_cmake_projects() {
             -DSDL_STATIC=ON \
             -DSDL_STATIC_PIC=ON \
             -DSDL_TEST=ON \
-            -DSDL3_DISABLE_INSTALL=OFF \
+            -DSDL_DISABLE_INSTALL=OFF \
             -DCMAKE_INSTALL_PREFIX="${build_root}/build_${android_abi}/prefix" \
             -DCMAKE_INSTALL_INCLUDEDIR=include \
             -DCMAKE_INSTALL_LIBDIR=lib \
