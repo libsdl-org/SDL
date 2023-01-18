@@ -356,8 +356,8 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
 endforeach()
 
 # Allow some projects to be built conditionally.
-set_option(SDL3_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
-set_option(SDL3_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
+set_option(SDL_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
+set_option(SDL_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
 
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
 #set_option(SDL_DEPENDENCY_TRACKING "Use gcc -MMD -MT dependency tracking" ON)
@@ -3216,7 +3216,7 @@ if(SDL_TEST)
   target_link_libraries(SDL3_test PRIVATE ${EXTRA_TEST_LIBS})
 endif()
 
-if(NOT SDL3_DISABLE_INSTALL)
+if(NOT SDL_DISABLE_INSTALL)
 
   ##### Configure installation folders #####
 
@@ -3376,7 +3376,7 @@ endif()
 
 ##### Uninstall target #####
 
-if(NOT SDL3_DISABLE_UNINSTALL)
+if(NOT SDL_DISABLE_UNINSTALL)
   if(NOT TARGET uninstall)
     configure_file(cmake/cmake_uninstall.cmake.in cmake_uninstall.cmake IMMEDIATE @ONLY)
 

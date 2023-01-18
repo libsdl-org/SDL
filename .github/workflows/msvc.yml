@@ -48,7 +48,7 @@ jobs:
         -DSDL_TESTS=ON `
         -DSDL_INSTALL_TESTS=ON `
         -DSDL_VENDOR_INFO="Github Workflow" `
-        -DSDL3_DISABLE_INSTALL=OFF `
+        -DSDL_DISABLE_INSTALL=OFF `
         ${{ matrix.platform.flags }} `
         -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build (CMake)
