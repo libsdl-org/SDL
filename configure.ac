@@ -1787,6 +1787,14 @@ dnl See if libdecor is available
                     else
                         EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DECOR_LIBS"
                     fi
+
+                    saved_cflags=$CFLAGS
+                    CFLAGS="$CFLAGS $DECOR_CFLAGS"
+                    AC_CHECK_DECLS([libdecor_frame_get_min_content_size, libdecor_frame_get_max_content_size], [libdecor_get_min_max=yes], [ ], [[#include <libdecor.h>]])
+                    if test x$libdecor_get_min_max = xyes; then
+                        AC_DEFINE(SDL_HAVE_LIBDECOR_GET_MIN_MAX, 1, [ ])
+                    fi
+                    CFLAGS="$saved_cflags"
                 fi
             fi
         fi
