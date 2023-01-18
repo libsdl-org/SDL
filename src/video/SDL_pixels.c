@@ -519,7 +519,7 @@ SDL_CreatePixelFormat(Uint32 pixel_format)
     SDL_AtomicLock(&formats_lock);
 
     /* Look it up in our list of previously allocated formats */
-    for (format = formats; format; format = format->next) {
+    for (format = formats; format && (format != INVALID_HANDLE_VALUE); format = format->next) {
         if (pixel_format == format->format) {
             ++format->refcount;
             SDL_AtomicUnlock(&formats_lock);
