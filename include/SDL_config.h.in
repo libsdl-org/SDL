@@ -491,4 +491,7 @@
 /* Enable dynamic libsamplerate support */
 #undef SDL_LIBSAMPLERATE_DYNAMIC
 
+/* Libdecor get min/max content size functions */
+#undef SDL_HAVE_LIBDECOR_GET_MIN_MAX
+
 #endif /* SDL_config_h_ */
