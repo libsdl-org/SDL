@@ -283,11 +283,10 @@ extern DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickInstanceType(SDL_Joystic
 extern DECLSPEC SDL_Joystick *SDLCALL SDL_OpenJoystick(SDL_JoystickID instance_id);
 
 /**
- * Get the SDL_Joystick associated with an instance ID.
+ * Get the SDL_Joystick associated with an instance ID, if it has been opened.
  *
  * \param instance_id the instance ID to get the SDL_Joystick for
- * \returns an SDL_Joystick on success or NULL on failure; call SDL_GetError()
- *          for more information.
+ * \returns an SDL_Joystick on success or NULL on failure or if it hasn't been opened yet; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

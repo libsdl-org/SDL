@@ -446,11 +446,10 @@ extern DECLSPEC char *SDLCALL SDL_GetGamepadInstanceMapping(SDL_JoystickID insta
 extern DECLSPEC SDL_Gamepad *SDLCALL SDL_OpenGamepad(SDL_JoystickID instance_id);
 
 /**
- * Get the SDL_Gamepad associated with a joystick instance ID.
+ * Get the SDL_Gamepad associated with a joystick instance ID, if it has been opened.
  *
  * \param instance_id the joystick instance ID of the gamepad
- * \returns an SDL_Gamepad on success or NULL on failure; call
- *          SDL_GetError() for more information.
+ * \returns an SDL_Gamepad on success or NULL on failure or if it hasn't been opened yet; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
