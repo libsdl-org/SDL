@@ -272,7 +272,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
 
     device->free = Wayland_DeleteDevice;
 
-    device->quirk_flags = VIDEO_DEVICE_QUIRK_DISABLE_DISPLAY_MODE_SWITCHING |
+    device->quirk_flags = VIDEO_DEVICE_QUIRK_MODE_SWITCHING_EMULATED |
                           VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE;
 
     return device;
