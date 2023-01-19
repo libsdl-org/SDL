@@ -25,6 +25,7 @@
 #include "../SDL_sysvideo.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandevents_c.h"
+#include "../../events/SDL_keyboard_c.h"
 #include "text-input-unstable-v3-client-protocol.h"
 
 int Wayland_InitKeyboard(_THIS)
@@ -35,6 +36,7 @@ int Wayland_InitKeyboard(_THIS)
         SDL_IME_Init();
     }
 #endif
+    SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
 
     return 0;
 }
