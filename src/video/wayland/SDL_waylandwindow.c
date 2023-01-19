@@ -1035,36 +1035,9 @@ static void update_scale_factor(SDL_WindowData *window)
 static void Wayland_move_window(SDL_Window *window,
                                 SDL_WaylandOutputData *driverdata)
 {
-    SDL_WindowData *wind = (SDL_WindowData *)window->driverdata;
-    SDL_VideoDisplay *display;
-    SDL_bool fs_display_changed = SDL_FALSE;
-    int i, j;
-    const int numdisplays = SDL_GetNumVideoDisplays();
+    int i, numdisplays = SDL_GetNumVideoDisplays();
     for (i = 0; i < numdisplays; i += 1) {
-        display = SDL_GetDisplay(i);
-        if (display->driverdata == driverdata) {
-            SDL_Rect bounds;
-
-            /* If the window is fullscreen and not on the target display, move it. */
-            if ((window->flags & SDL_WINDOW_FULLSCREEN) && display->fullscreen_window != window) {
-                /* If the target display already has a fullscreen window, minimize it. */
-                if (display->fullscreen_window) {
-                    SDL_MinimizeWindow(display->fullscreen_window);
-                }
-
-                /* Find the window and move it to the target display. */
-                for (j = 0; j < numdisplays; ++j) {
-                    SDL_VideoDisplay *v = SDL_GetDisplay(j);
-
-                    if (v->fullscreen_window == window) {
-                        v->fullscreen_window = NULL;
-                    }
-                }
-
-                display->fullscreen_window = window;
-                fs_display_changed = SDL_TRUE;
-            }
-
+        if (SDL_GetDisplay(i)->driverdata == driverdata) {
             /* We want to send a very very specific combination here:
              *
              * 1. A coordinate that tells the application what display we're on
@@ -1084,19 +1057,9 @@ static void Wayland_move_window(SDL_Window *window,
              *
              * -flibit
              */
+            SDL_Rect bounds;
             SDL_GetDisplayBounds(i, &bounds);
             SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, bounds.x, bounds.y);
-
-            /*
-             * If the fullscreen output was changed, and we have bad dimensions from
-             * the compositor, commit with the dimensions of the new display.
-             */
-            if (fs_display_changed &&
-                (!wind->fs_output_width || !wind->fs_output_height)) {
-                ConfigureWindowGeometry(window);
-                CommitLibdecorFrame(window);
-            }
-
             break;
         }
     }
