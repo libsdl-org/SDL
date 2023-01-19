@@ -160,9 +160,9 @@ extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool stat
 #endif
 
 /* Convenience functions for reading driver flags */
-static SDL_bool DisableDisplayModeSwitching(_THIS)
+static SDL_bool ModeSwitchingEmulated(_THIS)
 {
-    return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_DISPLAY_MODE_SWITCHING);
+    return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_MODE_SWITCHING_EMULATED);
 }
 
 static SDL_bool DisableUnsetFullscreenOnMinimize(_THIS)
@@ -1019,8 +1019,8 @@ static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, const SDL_Dis
     SDL_DisplayMode current_mode;
     int result;
 
-    /* Mode switching disabled via driver quirk flag, nothing to do and cannot fail. */
-    if (DisableDisplayModeSwitching(_this)) {
+    /* Mode switching set as emulated via driver quirk flag, nothing to do and cannot fail. */
+    if (ModeSwitchingEmulated(_this)) {
         return 0;
     }
 
@@ -2929,7 +2929,12 @@ void SDL_OnWindowDisplayChanged(SDL_Window *window)
             SDL_UpdateFullscreenMode(window, SDL_TRUE);
         }
 
-        if (SDL_GetDisplayBounds(window->display_index, &rect) == 0) {
+        /*
+         * If mode switching is being emulated, the display bounds don't necessarily reflect the
+         * emulated mode dimensions since the window is just being scaled.
+         */
+        if (!ModeSwitchingEmulated(_this) &&
+            SDL_GetDisplayBounds(window->display_index, &rect) == 0) {
             int old_w = window->w;
             int old_h = window->h;
             window->x = rect.x;
@@ -3050,7 +3055,7 @@ static SDL_bool SDL_ShouldMinimizeOnFocusLoss(SDL_Window *window)
     hint = SDL_GetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS);
     if (hint == NULL || !*hint || SDL_strcasecmp(hint, "auto") == 0) {
         if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP ||
-            DisableDisplayModeSwitching(_this) == SDL_TRUE) {
+            ModeSwitchingEmulated(_this) == SDL_TRUE) {
             return SDL_FALSE;
         } else {
             return SDL_TRUE;
