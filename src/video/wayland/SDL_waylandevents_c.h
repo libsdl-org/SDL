@@ -21,8 +21,11 @@
 
 #include "SDL_internal.h"
 
+
 #ifndef SDL_waylandevents_h_
 #define SDL_waylandevents_h_
+
+#include "../../events/SDL_mouse_c.h"
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
@@ -151,6 +154,7 @@ struct SDL_WaylandInput
 
         /* Event timestamp in nanoseconds */
         Uint64 timestamp_ns;
+        SDL_MouseWheelDirection direction;
     } pointer_curr_axis_info;
 
     SDL_WaylandKeyboardRepeat keyboard_repeat;
