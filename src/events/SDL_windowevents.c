@@ -175,6 +175,10 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
         SDL_OnWindowFocusLost(window);
         break;
+    case SDL_WINDOWEVENT_DISPLAY_CHANGED:
+        SDL_assert(data1 == window->display_index);
+        SDL_OnWindowDisplayChanged(window);
+        break;
     default:
         break;
     }

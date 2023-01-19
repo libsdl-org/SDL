@@ -504,6 +504,7 @@ extern void SDL_OnWindowEnter(SDL_Window *window);
 extern void SDL_OnWindowLeave(SDL_Window *window);
 extern void SDL_OnWindowFocusGained(SDL_Window *window);
 extern void SDL_OnWindowFocusLost(SDL_Window *window);
+extern void SDL_OnWindowDisplayChanged(SDL_Window *window);
 extern void SDL_UpdateWindowGrab(SDL_Window *window);
 extern SDL_Window *SDL_GetFocusWindow(void);
 

@@ -1266,6 +1266,18 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED, x, y);
 
+        // Moving the window from one display to another can change the size of the window (in the handling of SDL_WINDOWEVENT_MOVED), so we need to re-query the bounds
+        if (GetClientRect(hwnd, &rect)) {
+            ClientToScreen(hwnd, (LPPOINT)&rect);
+            ClientToScreen(hwnd, (LPPOINT)&rect + 1);
+
+            WIN_UpdateClipCursor(data->window);
+
+            x = rect.left;
+            y = rect.top;
+            WIN_ScreenPointToSDL(&x, &y);
+        }
+
         /* Convert client area width/height from pixels to dpi-scaled points */
         w = rect.right - rect.left;
         h = rect.bottom - rect.top;

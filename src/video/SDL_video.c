@@ -2919,6 +2919,36 @@ void SDL_OnWindowHidden(SDL_Window *window)
     SDL_UpdateFullscreenMode(window, SDL_FALSE);
 }
 
+void SDL_OnWindowDisplayChanged(SDL_Window *window)
+{
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        SDL_Rect rect;
+
+        if (FULLSCREEN_VISIBLE(window) && (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+            window->last_fullscreen_flags = 0;
+            SDL_UpdateFullscreenMode(window, SDL_TRUE);
+        }
+
+        if (SDL_GetDisplayBounds(window->display_index, &rect) == 0) {
+            int old_w = window->w;
+            int old_h = window->h;
+            window->x = rect.x;
+            window->y = rect.y;
+            window->w = rect.w;
+            window->h = rect.h;
+            window->fullscreen_mode.w = rect.w;
+            window->fullscreen_mode.h = rect.h;
+            if (_this->SetWindowSize) {
+                _this->SetWindowSize(_this, window);
+            }
+
+            if (window->w != old_w || window->h != old_h) {
+                SDL_OnWindowResized(window);
+            }
+        }
+    }
+}
+
 void SDL_OnWindowResized(SDL_Window *window)
 {
     int display_index = SDL_GetWindowDisplayIndex(window);
