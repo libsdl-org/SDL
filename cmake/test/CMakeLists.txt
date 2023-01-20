@@ -27,6 +27,10 @@ add_feature_info("TEST_SHARED" TEST_SHARED "Test linking with shared library")
 option(TEST_STATIC "Test linking to static SDL3 library" ON)
 add_feature_info("TEST_STATIC" TEST_STATIC "Test linking with static library")
 
+find_package(SDL3 REQUIRED CONFIG COMPONENTS headers)
+add_library(headers_test OBJECT inc_sdl_slash.c inc_sdl_noslash.c)
+target_link_libraries(headers_test PRIVATE SDL3::headers)
+
 if(TEST_SHARED)
     find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3)
     add_executable(gui-shared WIN32 main_gui.c)
@@ -43,10 +47,6 @@ if(TEST_SHARED)
     target_compile_definitions(sharedlib-shared PRIVATE "EXPORT_HEADER=\"${CMAKE_CURRENT_BINARY_DIR}/sharedlib-shared_export.h\"")
     set_target_properties(sharedlib-shared PROPERTIES C_VISIBILITY_PRESET "hidden")
 
-    add_executable(gui-shared-vars WIN32 main_gui.c)
-    target_link_libraries(gui-shared-vars PRIVATE ${SDL3_LIBRARIES})
-    target_include_directories(gui-shared-vars PRIVATE ${SDL3_INCLUDE_DIRS})
-
     add_executable(cli-shared main_cli.c)
     target_link_libraries(cli-shared PRIVATE SDL3::SDL3)
     if(WIN32)
@@ -54,17 +54,6 @@ if(TEST_SHARED)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "$<TARGET_FILE_DIR:cli-shared>"
         )
     endif()
-
-    add_executable(cli-shared-vars main_cli.c)
-    target_link_libraries(cli-shared-vars PRIVATE ${SDL3_LIBRARIES})
-    target_include_directories(cli-shared-vars PRIVATE ${SDL3_INCLUDE_DIRS})
-
-    add_library(sharedlib-shared-vars SHARED main_lib.c)
-    target_link_libraries(sharedlib-shared-vars PRIVATE ${SDL3_LIBRARIES})
-    target_include_directories(sharedlib-shared-vars PRIVATE ${SDL3_INCLUDE_DIRS})
-    generate_export_header(sharedlib-shared-vars EXPORT_MACRO_NAME MYLIBRARY_EXPORT)
-    target_compile_definitions(sharedlib-shared-vars PRIVATE "EXPORT_HEADER=\"${CMAKE_CURRENT_BINARY_DIR}/sharedlib-shared-vars_export.h\"")
-    set_target_properties(sharedlib-shared-vars PROPERTIES C_VISIBILITY_PRESET "hidden")
 endif()
 
 if(TEST_STATIC)
@@ -81,24 +70,6 @@ if(TEST_STATIC)
         set_target_properties(sharedlib-static PROPERTIES C_VISIBILITY_PRESET "hidden")
     endif()
 
-    add_executable(gui-static-vars WIN32 main_gui.c)
-    target_link_libraries(gui-static-vars PRIVATE ${SDL3_STATIC_LIBRARIES})
-    target_include_directories(gui-static-vars PRIVATE ${SDL3_INCLUDE_DIRS})
-
-    add_executable(cli-static main_cli.c)
-    target_link_libraries(cli-static PRIVATE SDL3::SDL3-static)
-
-    add_executable(cli-static-vars main_cli.c)
-    target_link_libraries(cli-static-vars PRIVATE ${SDL3_STATIC_LIBRARIES})
-    target_include_directories(cli-static-vars PRIVATE ${SDL3_INCLUDE_DIRS})
-
 endif()
-
-message(STATUS "SDL3_PREFIX:            ${SDL3_PREFIX}")
-message(STATUS "SDL3_INCLUDE_DIR:       ${SDL3_INCLUDE_DIR}")
-message(STATUS "SDL3_INCLUDE_DIRS:      ${SDL3_INCLUDE_DIRS}")
-message(STATUS "SDL3_LIBRARIES:         ${SDL3_LIBRARIES}")
-message(STATUS "SDL3_STATIC_LIBRARIES:  ${SDL3_STATIC_LIBRARIES}")
-message(STATUS "SDL3TEST_LIBRARY:       ${SDL3TEST_LIBRARY}")
 
 feature_summary(WHAT ALL)
