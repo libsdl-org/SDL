@@ -653,6 +653,13 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     Sint16 axis;
     Uint64 timestamp = SDL_GetTicksNS();
 
+    /* Enable paddles on the Xbox Elite controller when connected over USB */
+    if (ctx->has_paddles && !ctx->has_unmapped_state && size == 50) {
+        Uint8 packet[] = { 0x4d, 0x00, 0x00, 0x02, 0x07, 0x00 };
+
+        SDL_HIDAPI_SendRumble(ctx->device, packet, sizeof(packet));
+    }
+
     if (ctx->last_state[4] != data[4]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (data[4] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, (data[4] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
@@ -808,6 +815,9 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, ~axis);
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+
+    /* We don't have the unmapped state for this packet */
+    ctx->has_unmapped_state = SDL_FALSE;
 }
 
 static void HIDAPI_DriverXboxOne_HandleStatusPacket(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
