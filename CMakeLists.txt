@@ -3075,9 +3075,32 @@ endif()
 # Disable precompiled headers on SDL_dynapi.c to avoid applying dynapi overrides
 set_source_files_properties(src/dynapi/SDL_dynapi.c PROPERTIES SKIP_PRECOMPILE_HEADERS 1)
 
+add_library(SDL3_headers INTERFACE)
+add_library(SDL3::headers ALIAS SDL3_headers)
+set_target_properties(SDL3_headers PROPERTIES
+  EXPORT_NAME "headers"
+)
+target_include_directories(SDL3_headers
+  INTERFACE
+    "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
+    "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include/SDL3>"
+)
+if(SDL_FRAMEWORK)
+  target_include_directories(SDL3_headers
+    INTERFACE
+      "$<INSTALL_INTERFACE:SDL3.framework/Headers>"
+  )
+else()
+  target_include_directories(SDL3_headers
+    INTERFACE
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
+  )
+endif()
+
 if(SDL_SHARED)
   add_library(SDL3 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
-  # alias target for in-tree builds
   add_library(SDL3::SDL3 ALIAS SDL3)
   set_target_properties(SDL3 PROPERTIES
     POSITION_INDEPENDENT_CODE TRUE
@@ -3132,13 +3155,8 @@ if(SDL_SHARED)
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
-    PUBLIC
-      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
-      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
-      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include/SDL3>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
   )
+  target_link_libraries(SDL3 PUBLIC $<TARGET_NAME:SDL3::headers>)
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-shared-build-options>)
@@ -3158,7 +3176,6 @@ endif()
 
 if(SDL_STATIC)
   add_library(SDL3-static STATIC ${SOURCE_FILES})
-  # alias target for in-tree builds
   add_library(SDL3::SDL3-static ALIAS SDL3-static)
   set_target_properties(SDL3-static PROPERTIES
     OUTPUT_NAME "${sdl_static_libname}"
@@ -3170,13 +3187,8 @@ if(SDL_STATIC)
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
-    PUBLIC
-      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
-      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
-      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include/SDL3>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
   )
+  target_link_libraries(SDL3-static PUBLIC $<TARGET_NAME:SDL3::headers>)
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   target_link_libraries(SDL3-static PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
@@ -3206,13 +3218,8 @@ if(SDL_TEST)
   target_include_directories(SDL3_test
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
-    PUBLIC
-      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
-      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
-      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include/SDL3>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
   )
+  target_link_libraries(SDL3_test PUBLIC $<TARGET_NAME:SDL3::headers>)
   target_link_libraries(SDL3_test PRIVATE ${EXTRA_TEST_LIBS})
 endif()
 
@@ -3243,6 +3250,8 @@ if(NOT SDL_DISABLE_INSTALL)
   endif()
 
   ##### Installation targets #####
+
+  install(TARGETS SDL3_headers EXPORT SDL3headersTargets)
 
   if(SDL_SHARED)
     install(TARGETS SDL3 EXPORT SDL3Targets
@@ -3311,6 +3320,12 @@ if(NOT SDL_DISABLE_INSTALL)
   )
   write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/SDL3ConfigVersion.cmake"
     COMPATIBILITY AnyNewerVersion
+  )
+
+  install(EXPORT SDL3headersTargets
+    FILE SDL3headersTargets.cmake
+    NAMESPACE SDL3::
+    DESTINATION "${SDL_INSTALL_CMAKEDIR}"
   )
 
   if(SDL_SHARED)
