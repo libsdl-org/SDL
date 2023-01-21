@@ -308,7 +308,7 @@ typedef struct SDL_Palette
 {
     int ncolors;
     SDL_Color *colors;
-    Uint32 version;
+    int version;
     int refcount;
 } SDL_Palette;
 
