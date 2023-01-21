@@ -27,9 +27,9 @@ add_feature_info("TEST_SHARED" TEST_SHARED "Test linking with shared library")
 option(TEST_STATIC "Test linking to static SDL3 library" ON)
 add_feature_info("TEST_STATIC" TEST_STATIC "Test linking with static library")
 
-find_package(SDL3 REQUIRED CONFIG COMPONENTS headers)
+find_package(SDL3 REQUIRED CONFIG COMPONENTS Headers)
 add_library(headers_test OBJECT inc_sdl_slash.c inc_sdl_noslash.c)
-target_link_libraries(headers_test PRIVATE SDL3::headers)
+target_link_libraries(headers_test PRIVATE SDL3::Headers)
 
 if(TEST_SHARED)
     find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3)

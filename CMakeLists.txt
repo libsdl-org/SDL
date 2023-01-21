@@ -3096,24 +3096,24 @@ if(SDL_FRAMEWORK)
   list(APPEND SOURCE_FILES ${SDL_FRAMEWORK_RESOURCES})
 endif()
 
-add_library(SDL3_headers INTERFACE)
-add_library(SDL3::headers ALIAS SDL3_headers)
-set_target_properties(SDL3_headers PROPERTIES
-  EXPORT_NAME "headers"
+add_library(SDL3_Headers INTERFACE)
+add_library(SDL3::Headers ALIAS SDL3_Headers)
+set_target_properties(SDL3_Headers PROPERTIES
+  EXPORT_NAME "Headers"
 )
-target_include_directories(SDL3_headers
+target_include_directories(SDL3_Headers
   INTERFACE
     "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
     "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
     "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include/SDL3>"
 )
 if(SDL_FRAMEWORK)
-  target_include_directories(SDL3_headers
+  target_include_directories(SDL3_Headers
     INTERFACE
       "$<INSTALL_INTERFACE:SDL3.framework/Headers>"
   )
 else()
-  target_include_directories(SDL3_headers
+  target_include_directories(SDL3_Headers
     INTERFACE
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
@@ -3186,7 +3186,7 @@ if(SDL_SHARED)
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
   )
-  target_link_libraries(SDL3 PUBLIC $<TARGET_NAME:SDL3::headers>)
+  target_link_libraries(SDL3 PUBLIC $<TARGET_NAME:SDL3::Headers>)
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-shared-build-options>)
@@ -3230,7 +3230,7 @@ if(SDL_STATIC)
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
   )
-  target_link_libraries(SDL3-static PUBLIC $<TARGET_NAME:SDL3::headers>)
+  target_link_libraries(SDL3-static PUBLIC $<TARGET_NAME:SDL3::Headers>)
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   target_link_libraries(SDL3-static PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
@@ -3273,7 +3273,7 @@ if(SDL_TEST)
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
   )
-  target_link_libraries(SDL3_test PUBLIC $<TARGET_NAME:SDL3::headers>)
+  target_link_libraries(SDL3_test PUBLIC $<TARGET_NAME:SDL3::Headers>)
   target_link_libraries(SDL3_test PRIVATE ${EXTRA_TEST_LIBS})
 endif()
 
@@ -3314,7 +3314,7 @@ if(NOT SDL_DISABLE_INSTALL)
 
   ##### Installation targets #####
 
-  install(TARGETS SDL3_headers EXPORT SDL3headersTargets)
+  install(TARGETS SDL3_Headers EXPORT SDL3headersTargets)
 
   if(SDL_SHARED)
     install(TARGETS SDL3 EXPORT SDL3Targets

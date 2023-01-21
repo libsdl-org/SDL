@@ -50,14 +50,14 @@ set(SDL3TEST_LIBRARY    SDL3::SDL3_test)
 # All targets are created, even when some might not be requested though COMPONENTS.
 # This is done for compatibility with CMake generated SDL3-target.cmake files.
 
-if(NOT TARGET SDL3::headers)
-    add_library(SDL3::headers INTERFACE IMPORTED)
+if(NOT TARGET SDL3::Headers)
+    add_library(SDL3::Headers INTERFACE IMPORTED)
     set_target_properties(SDL3::SDL3
         PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${_sdl3_include_dirs}"
     )
 endif()
-set(SDL3_headers_FOUND TRUE)
+set(SDL3_Headers_FOUND TRUE)
 unset(_sdl3_include_dirs)
 
 set(_sdl3_library     "${SDL3_LIBDIR}/SDL3.lib")
@@ -67,7 +67,7 @@ if(EXISTS "${_sdl3_library}" AND EXISTS "${_sdl3_dll_library}")
         add_library(SDL3::SDL3 SHARED IMPORTED)
         set_target_properties(SDL3::SDL3
             PROPERTIES
-                INTERFACE_LINK_LIBRARIES "SDL3::headers"
+                INTERFACE_LINK_LIBRARIES "SDL3::Headers"
                 IMPORTED_IMPLIB "${_sdl3_library}"
                 IMPORTED_LOCATION "${_sdl3_dll_library}"
                 COMPATIBLE_INTERFACE_BOOL "SDL3_SHARED"
@@ -87,7 +87,7 @@ if(EXISTS "${_sdl3test_library}")
         add_library(SDL3::SDL3_test STATIC IMPORTED)
         set_target_properties(SDL3::SDL3_test
             PROPERTIES
-                INTERFACE_LINK_LIBRARIES "SDL3::headers"
+                INTERFACE_LINK_LIBRARIES "SDL3::Headers"
                 IMPORTED_LOCATION "${_sdl3test_library}"
         )
     endif()
