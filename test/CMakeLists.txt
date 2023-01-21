@@ -13,11 +13,6 @@ include(CMakePushCheckState)
 include(GNUInstallDirs)
 
 set(SDL_TESTS_LINK_SHARED_DEFAULT ON)
-if(WINDOWS)
-    # Avoid missing dll error by linking to static SDL library,
-    # alternatively, copy dll to build directory in a post build event.
-    set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
-endif()
 if(EMSCRIPTEN OR N3DS OR PS2 OR PSP OR RISCOS OR VITA)
     set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
 endif()
@@ -361,6 +356,7 @@ endif()
 set(TESTS_ENVIRONMENT
     SDL_AUDIO_DRIVER=dummy
     SDL_VIDEO_DRIVER=dummy
+    PATH=$<TARGET_FILE_DIR:SDL3::${sdl_name_component}>
 )
 
 function(sdl_set_test_timeout TEST TIMEOUT)
