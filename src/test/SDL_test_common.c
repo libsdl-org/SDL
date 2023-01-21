@@ -962,7 +962,7 @@ static void SDLTest_PrintRenderer(SDL_RendererInfo *info)
     SDL_Log("%s\n", text);
 
     (void)SDL_snprintf(text, sizeof text, "    Texture formats (%" SDL_PRIu32 "): ", info->num_texture_formats);
-    for (i = 0; i < (int)info->num_texture_formats; ++i) {
+    for (i = 0; i < info->num_texture_formats; ++i) {
         if (i > 0) {
             SDL_snprintfcat(text, sizeof text, ", ");
         }
