@@ -44,15 +44,15 @@ set(SDL3_LIBRARIES "SDL3::SDL3")
 # All targets are created, even when some might not be requested though COMPONENTS.
 # This is done for compatibility with CMake generated SDL3-target.cmake files.
 
-if(NOT TARGET SDL3::headers)
-    add_library(SDL3::headers INTERFACE IMPORTED)
-    set_target_properties(SDL3::headers
+if(NOT TARGET SDL3::Headers)
+    add_library(SDL3::Headers INTERFACE IMPORTED)
+    set_target_properties(SDL3::Headers
         PROPERTIES
             INTERFACE_COMPILE_OPTIONS "SHELL:-F \"${_sdl3_framework_parent_path}\""
             INTERFACE_INCLUDE_DIRECTORIES "${_sdl3_include_dirs}"
     )
 endif()
-set(SDL3_headers_FOUND TRUE)
+set(SDL3_Headers_FOUND TRUE)
 unset(_sdl3_include_dirs)
 
 if(NOT TARGET SDL3::SDL3)
@@ -60,7 +60,7 @@ if(NOT TARGET SDL3::SDL3)
     set_target_properties(SDL3::SDL3
         PROPERTIES
             FRAMEWORK "TRUE"
-            INTERFACE_LINK_LIBRARIES "SDL3::headers"
+            INTERFACE_LINK_LIBRARIES "SDL3::Headers"
             IMPORTED_LOCATION "${_sdl3_framework_path}/SDL3"
             IMPORTED_SONAME "${_sdl3_framework_path}/SDL3"
             COMPATIBLE_INTERFACE_BOOL "SDL3_SHARED"
