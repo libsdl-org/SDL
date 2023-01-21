@@ -443,9 +443,12 @@ option(SDL_SHARED "Build a shared version of the library" ${SDL_SHARED_ENABLED_B
 option(SDL_STATIC "Build a static version of the library" ${SDL_STATIC_ENABLED_BY_DEFAULT})
 option(SDL_TEST   "Build the SDL3_test library" ${SDL_TEST_ENABLED_BY_DEFAULT})
 
+# Apple Frameworks NEED a (shared) SDL3.framework for `#include <SDL3/xxx.h>` to work
+cmake_dependent_option(SDL_FRAMEWORK "Build SDL libraries as Apple Framework" OFF "SDL_SHARED;APPLE" OFF)
+
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" "${CMAKE_POSITION_INDEPENDENT_CODE}" "SDL_STATIC" OFF)
 dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST OFF)
-set_option(SDL_INSTALL_TESTS   "Install test-cases" OFF)
+dep_option(SDL_INSTALL_TESTS   "Install test-cases" OFF "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" OFF)
 
 set(HAVE_STATIC_PIC "${SDL_STATIC_PIC}")
 
@@ -2866,11 +2869,18 @@ endif()
 set(SDL_REVISION "SDL-${SDL_REVISION_CENTER}${SDL_REVISION_SUFFIX}")
 
 execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${SDL3_BINARY_DIR}/include/SDL3")
-configure_file("${SDL3_SOURCE_DIR}/include/build_config/SDL_revision.h.cmake"
-  "${SDL3_BINARY_DIR}/include/SDL3/SDL_revision.h")
+configure_file(include/build_config/SDL_revision.h.cmake include/SDL3/SDL_revision.h @ONLY)
+list(APPEND SDL3_INCLUDE_FILES "${SDL3_BINARY_DIR}/include/SDL3/SDL_revision.h")
 
-if(CMAKE_STATIC_LIBRARY_PREFIX STREQUAL "" AND CMAKE_STATIC_LIBRARY_SUFFIX STREQUAL ".lib")
-  # Avoid conflict between the dll import library and the static library
+if(SDL_FRAMEWORK)
+  # With Apple frameworks, headers in the PUBLIC_HEADER property also need to be added as sources
+  list(APPEND SDL3_INCLUDE_FILES ${SDL3_TEST_INCLUDE_FILES})
+  list(APPEND SOURCE_FILES ${SDL3_INCLUDE_FILES})
+endif()
+
+if((CMAKE_STATIC_LIBRARY_PREFIX STREQUAL "" AND CMAKE_STATIC_LIBRARY_SUFFIX STREQUAL ".lib") OR SDL_FRAMEWORK)
+  # - Avoid conflict between the dll import library and the static library
+  # - Create SDL3-static Apple Framework
   set(sdl_static_libname "SDL3-static")
 else()
   set(sdl_static_libname "SDL3")
@@ -3023,7 +3033,10 @@ message(STATUS "")
 message(STATUS " Build Shared Library: ${SDL_SHARED}")
 message(STATUS " Build Static Library: ${SDL_STATIC}")
 if(SDL_STATIC)
-    message(STATUS " Build Static Library with Position Independent Code: ${SDL_STATIC_PIC}")
+  message(STATUS " Build Static Library with Position Independent Code: ${SDL_STATIC_PIC}")
+endif()
+if(APPLE)
+  message(STATUS " Build libraries as Apple Framework: ${SDL_FRAMEWORK}")
 endif()
 message(STATUS "")
 if(UNIX)
@@ -3075,6 +3088,14 @@ endif()
 # Disable precompiled headers on SDL_dynapi.c to avoid applying dynapi overrides
 set_source_files_properties(src/dynapi/SDL_dynapi.c PROPERTIES SKIP_PRECOMPILE_HEADERS 1)
 
+set(SDL_FRAMEWORK_RESOURCES
+  Xcode/SDL/pkg-support/resources/ReadMe.txt
+  LICENSE.txt
+)
+if(SDL_FRAMEWORK)
+  list(APPEND SOURCE_FILES ${SDL_FRAMEWORK_RESOURCES})
+endif()
+
 add_library(SDL3_headers INTERFACE)
 add_library(SDL3::headers ALIAS SDL3_headers)
 set_target_properties(SDL3_headers PROPERTIES
@@ -3123,7 +3144,16 @@ if(SDL_SHARED)
   if(APPLE)
     set_target_properties(SDL3 PROPERTIES
       MACOSX_RPATH TRUE
+      FRAMEWORK "${SDL_FRAMEWORK}"
     )
+    if(SDL_FRAMEWORK)
+      set_target_properties(SDL3 PROPERTIES
+        PUBLIC_HEADER "${SDL3_INCLUDE_FILES}"
+        FRAMEWORK_VERSION "A"
+        MACOSX_FRAMEWORK_IDENTIFIER "org.libsdl.SDL3"
+        RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
+      )
+    endif()
     if(NOT CMAKE_VERSION VERSION_LESS "3.6")
       set_target_properties(SDL3 PROPERTIES
         SOVERSION "${SDL_DYLIB_COMPAT_VERSION}" # SOVERSION corresponds to compatibility version
@@ -3181,6 +3211,18 @@ if(SDL_STATIC)
     OUTPUT_NAME "${sdl_static_libname}"
     POSITION_INDEPENDENT_CODE "${SDL_STATIC_PIC}"
   )
+  if(APPLE)
+    set_target_properties(SDL3-static PROPERTIES
+      FRAMEWORK "${SDL_FRAMEWORK}"
+    )
+    if(SDL_FRAMEWORK)
+      set_target_properties(SDL3-static PROPERTIES
+        FRAMEWORK_VERSION "A"
+        MACOSX_FRAMEWORK_IDENTIFIER "org.libsdl.SDL3-static"
+        RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
+      )
+    endif()
+  endif()
   target_compile_definitions(SDL3-static PRIVATE SDL_STATIC_LIB)
   target_link_libraries(SDL3-static PRIVATE ${SDL_EXTRA_LIBS} ${SDL_EXTRA_LDFLAGS} ${SDL_CMAKE_DEPENDS})
   target_include_directories(SDL3-static
@@ -3215,6 +3257,18 @@ if(SDL_TEST)
   target_link_libraries(SDL3_test PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
   set_target_properties(SDL3_test PROPERTIES
       EXPORT_NAME SDL3_test)
+  if(APPLE)
+    set_target_properties(SDL3_test PROPERTIES
+      FRAMEWORK "${SDL_FRAMEWORK}"
+    )
+    if(SDL_FRAMEWORK)
+      set_target_properties(SDL3_test PROPERTIES
+        FRAMEWORK_VERSION "A"
+        MACOSX_FRAMEWORK_IDENTIFIER "org.libsdl.SDL3_test"
+        RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
+      )
+    endif()
+  endif()
   target_include_directories(SDL3_test
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
@@ -3244,9 +3298,18 @@ if(NOT SDL_DISABLE_INSTALL)
   if(WINDOWS AND NOT MINGW)
     set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}")
     set(LICENSES_PREFIX "licenses/SDL3")
+    set(RESOURCES_PREFIX ".")
+    set(PUBLIC_HEADER_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/SDL3")
+  elseif(SDL_FRAMEWORK)
+    set(SDL_INSTALL_CMAKEDIR "SDL3.framework/Resources/CMake")
+    set(LICENSES_PREFIX "Resources")
+    set(RESOURCES_PREFIX "Resources")
+    set(PUBLIC_HEADER_PREFIX "Headers")
   else()
     set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}/SDL3")
     set(LICENSES_PREFIX "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
+    set(RESOURCES_PREFIX ".")
+    set(PUBLIC_HEADER_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/SDL3")
   endif()
 
   ##### Installation targets #####
@@ -3257,21 +3320,27 @@ if(NOT SDL_DISABLE_INSTALL)
     install(TARGETS SDL3 EXPORT SDL3Targets
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+      FRAMEWORK DESTINATION "."
+      PUBLIC_HEADER DESTINATION "${PUBLIC_HEADER_PREFIX}"
+      RESOURCE DESTINATION "${RESOURCES_PREFIX}"
+    )
   endif()
 
   if(SDL_STATIC)
     install(TARGETS SDL3-static EXPORT SDL3staticTargets
-      LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+      FRAMEWORK DESTINATION "."
+      RESOURCE DESTINATION "${RESOURCES_PREFIX}"
+    )
   endif()
 
   if(SDL_TEST)
     install(TARGETS SDL3_test EXPORT SDL3testTargets
-      LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+      FRAMEWORK DESTINATION "."
+      RESOURCE DESTINATION "${RESOURCES_PREFIX}"
+    )
   endif()
 
   ##### sdl3.pc #####
@@ -3309,46 +3378,68 @@ if(NOT SDL_DISABLE_INSTALL)
   # message(STATUS "SDL_PC_STATIC_LIBS: ${SDL_PC_STATIC_LIBS}")
 
   configure_file(cmake/sdl3.pc.in sdl3.pc @ONLY)
-  install(FILES ${SDL3_BINARY_DIR}/sdl3.pc DESTINATION "${SDL_PKGCONFIG_INSTALLDIR}")
+  if(NOT SDL_FRAMEWORK)
+    install(FILES ${SDL3_BINARY_DIR}/sdl3.pc DESTINATION "${SDL_PKGCONFIG_INSTALLDIR}")
+  endif()
 
   ##### CMake Export files #####
 
   include(CMakePackageConfigHelpers)
   configure_package_config_file(cmake/SDL3Config.cmake.in SDL3Config.cmake
-    PATH_VARS CMAKE_INSTALL_PREFIX CMAKE_INSTALL_FULL_BINDIR CMAKE_INSTALL_FULL_INCLUDEDIR CMAKE_INSTALL_FULL_LIBDIR
+    PATH_VARS CMAKE_INSTALL_PREFIX
     INSTALL_DESTINATION "${SDL_INSTALL_CMAKEDIR}"
   )
   write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/SDL3ConfigVersion.cmake"
     COMPATIBILITY AnyNewerVersion
   )
 
+  if(SDL_FRAMEWORK)
+    set(SDL_SDL_INSTALL_CMAKEDIR "SDL3.framework/Resources/CMake")
+
+    # Install SDL3*Config.cmake files in SDL3*.framework/Resources/CMake
+    set(SDL_SDLstatic_INSTALL_CMAKEDIR "SDL3-static.framework/Resources/CMake")
+    set(SDL_SDLstatic_INSTALL_CMAKEFILE "SDL3-staticConfig.cmake")
+
+    set(SDL_SDLtest_INSTALL_CMAKEDIR "SDL3_test.framework/Resources/CMake")
+    set(SDL_SDLtest_INSTALL_CMAKEFILE "SDL3_testConfig.cmake")
+  else()
+    set(SDL_SDL_INSTALL_CMAKEDIR ${SDL_INSTALL_CMAKEDIR})
+
+    # Install SDL3*Targets.cmake files in lib/cmake/SDL3
+    set(SDL_SDLstatic_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
+    set(SDL_SDLstatic_INSTALL_CMAKEFILE "SDL3staticTargets.cmake")
+
+    set(SDL_SDLtest_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
+    set(SDL_SDLtest_INSTALL_CMAKEFILE "SDL3_testTargets.cmake")
+  endif()
+
   install(EXPORT SDL3headersTargets
-    FILE SDL3headersTargets.cmake
+    FILE "SDL3headersTargets.cmake"
     NAMESPACE SDL3::
-    DESTINATION "${SDL_INSTALL_CMAKEDIR}"
+    DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
   )
 
   if(SDL_SHARED)
     install(EXPORT SDL3Targets
-      FILE SDL3Targets.cmake
+      FILE "SDL3Targets.cmake"
       NAMESPACE SDL3::
-      DESTINATION "${SDL_INSTALL_CMAKEDIR}"
+      DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
     )
   endif()
 
   if(SDL_STATIC)
     install(EXPORT SDL3staticTargets
-      FILE SDL3staticTargets.cmake
+      FILE "${SDL_SDLstatic_INSTALL_CMAKEFILE}"
       NAMESPACE SDL3::
-      DESTINATION "${SDL_INSTALL_CMAKEDIR}"
+      DESTINATION "${SDL_SDLstatic_INSTALL_CMAKEDIR}"
     )
   endif()
 
   if(SDL_TEST)
     install(EXPORT SDL3testTargets
-      FILE SDL3testTargets.cmake
+      FILE "${SDL_SDLtest_INSTALL_CMAKEFILE}"
       NAMESPACE SDL3::
-      DESTINATION "${SDL_INSTALL_CMAKEDIR}"
+      DESTINATION "${SDL_SDLtest_INSTALL_CMAKEDIR}"
     )
   endif()
 
@@ -3357,24 +3448,25 @@ if(NOT SDL_DISABLE_INSTALL)
       ${CMAKE_CURRENT_BINARY_DIR}/SDL3Config.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/SDL3ConfigVersion.cmake
       ${SDL3_SOURCE_DIR}/cmake/sdlfind.cmake
-    DESTINATION "${SDL_INSTALL_CMAKEDIR}"
+    DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
     COMPONENT Devel
   )
 
-  install(
-    FILES
-      ${SDL3_INCLUDE_FILES}
-      "${SDL3_BINARY_DIR}/include/SDL3/SDL_revision.h"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3
-  )
-  if(SDL_TEST)
+  if(NOT SDL_FRAMEWORK)
     install(
-      FILES ${SDL3_TEST_INCLUDE_FILES}
+      FILES
+        ${SDL3_INCLUDE_FILES}
       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3
     )
-  endif()
+    if(SDL_TEST)
+      install(
+        FILES ${SDL3_TEST_INCLUDE_FILES}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3
+      )
+    endif()
 
-  install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")
+    install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")
+  endif()
 endif()
 
 ##### Uninstall target #####
