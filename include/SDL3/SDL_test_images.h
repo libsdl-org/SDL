@@ -50,7 +50,7 @@ extern "C" {
 typedef struct SDLTest_SurfaceImage_s {
   int width;
   int height;
-  unsigned int bytes_per_pixel; /* 3:RGB, 4:RGBA */
+  int bytes_per_pixel; /* 3:RGB, 4:RGBA */
   const char *pixel_data;
 } SDLTest_SurfaceImage_t;
 
