@@ -173,7 +173,7 @@ SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(int *userCount,
                                                  const char *const *names)
 {
     if (userNames) {
-        unsigned i;
+        int i;
 
         if (*userCount < nameCount) {
             SDL_SetError("Output array for SDL_Vulkan_GetInstanceExtensions needs to be at least %d big", nameCount);
