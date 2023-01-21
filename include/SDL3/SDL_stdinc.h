@@ -80,7 +80,7 @@ char *alloca();
 /**
  *  The number of elements in an array.
  */
-#define SDL_arraysize(array)    (sizeof(array)/sizeof(array[0]))
+#define SDL_arraysize(array)    ((int)(sizeof(array)/sizeof(array[0])))
 #define SDL_TABLESIZE(table)    SDL_arraysize(table)
 
 /**
