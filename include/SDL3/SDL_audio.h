@@ -181,9 +181,9 @@ typedef struct SDL_AudioSpec
 {
     int freq;                   /**< DSP frequency -- samples per second */
     SDL_AudioFormat format;     /**< Audio data format */
-    Uint8 channels;             /**< Number of channels: 1 mono, 2 stereo */
+    Sint8 channels;             /**< Number of channels: 1 mono, 2 stereo */
     Uint8 silence;              /**< Audio buffer silence value (calculated) */
-    Uint16 samples;             /**< Audio buffer size in sample FRAMES (total samples divided by channel count) */
+    Sint16 samples;             /**< Audio buffer size in sample FRAMES (total samples divided by channel count) */
     Uint16 padding;             /**< Necessary for some compile environments */
     Uint32 size;                /**< Audio buffer size in bytes (calculated) */
     SDL_AudioCallback callback; /**< Callback that feeds the audio device (NULL to use SDL_QueueAudio()). */
