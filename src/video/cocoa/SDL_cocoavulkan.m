@@ -164,7 +164,7 @@ void Cocoa_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
-                                            unsigned *count,
+                                            int *count,
                                             const char **names)
 {
     static const char *const extensionsForCocoa[] = {

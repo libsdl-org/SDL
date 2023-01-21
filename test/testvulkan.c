@@ -220,7 +220,7 @@ static void createInstance(void)
     VkApplicationInfo appInfo = { 0 };
     VkInstanceCreateInfo instanceCreateInfo = { 0 };
     const char **extensions = NULL;
-    unsigned extensionCount = 0;
+    int extensionCount = 0;
     VkResult result;
 
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;

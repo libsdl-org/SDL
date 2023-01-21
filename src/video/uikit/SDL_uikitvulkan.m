@@ -170,7 +170,7 @@ void UIKit_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool UIKit_Vulkan_GetInstanceExtensions(_THIS,
-                                            unsigned *count,
+                                            int *count,
                                             const char **names)
 {
     static const char *const extensionsForUIKit[] = {
