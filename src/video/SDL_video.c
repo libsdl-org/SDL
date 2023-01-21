@@ -4689,7 +4689,7 @@ void SDL_Vulkan_UnloadLibrary(void)
     }
 }
 
-SDL_bool SDL_Vulkan_GetInstanceExtensions(unsigned *count, const char **names)
+SDL_bool SDL_Vulkan_GetInstanceExtensions(int *count, const char **names)
 {
     if (count == NULL) {
         SDL_InvalidParamError("count");

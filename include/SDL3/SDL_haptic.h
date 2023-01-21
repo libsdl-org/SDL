@@ -1024,7 +1024,7 @@ extern DECLSPEC int SDLCALL SDL_HapticNumEffectsPlaying(SDL_Haptic * haptic);
  * \sa SDL_HapticEffectSupported
  * \sa SDL_HapticNumEffects
  */
-extern DECLSPEC unsigned int SDLCALL SDL_HapticQuery(SDL_Haptic * haptic);
+extern DECLSPEC int SDLCALL SDL_HapticQuery(SDL_Haptic * haptic);
 
 
 /**

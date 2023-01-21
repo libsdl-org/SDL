@@ -24,7 +24,7 @@
 #include "SDL_shape_internals.h"
 
 SDL_Window *
-SDL_CreateShapedWindow(const char *title, unsigned int x, unsigned int y, unsigned int w, unsigned int h, Uint32 flags)
+SDL_CreateShapedWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
     SDL_Window *result = NULL;
     result = SDL_CreateWindow(title, -1000, -1000, w, h, (flags | SDL_WINDOW_BORDERLESS) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE));
