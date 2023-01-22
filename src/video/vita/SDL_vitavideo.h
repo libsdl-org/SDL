@@ -97,7 +97,7 @@ void VITA_GLES_UnloadLibrary(_THIS);
 SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window);
 int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 int VITA_GLES_SetSwapInterval(_THIS, int interval);
-int VITA_GLES_GetSwapInterval(_THIS);
+int VITA_GLES_GetSwapInterval(_THIS, int *interval);
 int VITA_GLES_SwapWindow(_THIS, SDL_Window *window);
 void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context);
 #endif

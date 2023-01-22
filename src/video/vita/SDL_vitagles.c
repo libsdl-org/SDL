@@ -177,9 +177,10 @@ int VITA_GLES_SetSwapInterval(_THIS, int interval)
     return SDL_SetError("Unable to set the EGL swap interval");
 }
 
-int VITA_GLES_GetSwapInterval(_THIS)
+int VITA_GLES_GetSwapInterval(_THIS, int *interval)
 {
-    return _this->gl_data->swapinterval;
+    *interval = _this->gl_data->swapinterval;
+    return 0;
 }
 
 int VITA_GLES_SwapWindow(_THIS, SDL_Window *window)
