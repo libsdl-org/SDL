@@ -716,13 +716,20 @@ expression e1, e2, e3, e4, e5, e6, e7, e8, e9;
 @@
 // SDL_CreateRenderer:
 // 2nd argument changed from int (default=-1) to const char* (default=NULL)
-expression e1, e2;
+expression e1, e2, e3;
 @@
-SDL_CreateRenderer(e1,
-- -1
-+ NULL
-, e2)
 
+(
+
+-SDL_CreateRenderer(e1, -1, e3)
++SDL_CreateRenderer(e1, NULL, e3)
+
+|
+
+-SDL_CreateRenderer(e1, e2, e3)
++SDL_CreateRenderer(e1, SDL_GetRenderDriver(e2), e3)
+
+)
 
 // Renaming of SDL_oldnames.h
 
