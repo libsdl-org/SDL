@@ -252,11 +252,6 @@ static void PSP_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture
     psp_texture->filter = guScaleMode;
 }
 
-static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    return 0;
-}
-
 static int PSP_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     return 0; /* nothing to do in this backend. */
@@ -703,7 +698,6 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     renderer->LockTexture = PSP_LockTexture;
     renderer->UnlockTexture = PSP_UnlockTexture;
     renderer->SetTextureScaleMode = PSP_SetTextureScaleMode;
-    renderer->SetRenderTarget = PSP_SetRenderTarget;
     renderer->QueueSetViewport = PSP_QueueSetViewport;
     renderer->QueueSetDrawColor = PSP_QueueSetViewport;
     renderer->QueueDrawPoints = PSP_QueueDrawPoints;
