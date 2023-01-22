@@ -1323,6 +1323,10 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 @@
 - SDL_INIT_GAMECONTROLLER
 + SDL_INIT_GAMEPAD
+@ rule_init_noparachute @
+@@
+- SDL_INIT_NOPARACHUTE
++ 0
 @@
 @@
 - SDL_JOYSTICK_TYPE_GAMECONTROLLER
@@ -1996,3 +2000,8 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 - SDL_GetRectDisplayIndex
 + SDL_GetDisplayIndexForRect
   (...)
+@ depends on rule_init_noparachute @
+expression e;
+@@
+- e | 0
++ e
