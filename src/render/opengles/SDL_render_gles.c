@@ -97,6 +97,7 @@ typedef struct
     SDL_bool GL_OES_blend_func_separate_supported;
     SDL_bool GL_OES_blend_equation_separate_supported;
     SDL_bool GL_OES_blend_subtract_supported;
+    SDL_bool GL_EXT_blend_minmax_supported;
 
     GLES_DrawStateCache drawstate;
 } GLES_RenderData;
@@ -263,6 +264,10 @@ static GLenum GetBlendEquation(SDL_BlendOperation operation)
         return GL_FUNC_SUBTRACT_OES;
     case SDL_BLENDOPERATION_REV_SUBTRACT:
         return GL_FUNC_REVERSE_SUBTRACT_OES;
+    case SDL_BLENDOPERATION_MINIMUM:
+        return GL_MIN_EXT;
+    case SDL_BLENDOPERATION_MAXIMUM:
+        return GL_MAX_EXT;
     default:
         return GL_INVALID_ENUM;
     }
@@ -293,6 +298,12 @@ static SDL_bool GLES_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode ble
         return SDL_FALSE;
     }
     if (colorOperation != SDL_BLENDOPERATION_ADD && !data->GL_OES_blend_subtract_supported) {
+        return SDL_FALSE;
+    }
+    if (colorOperation == SDL_BLENDOPERATION_MINIMUM && !data->GL_EXT_blend_minmax_supported) {
+        return SDL_FALSE;
+    }
+    if (colorOperation == SDL_BLENDOPERATION_MAXIMUM && !data->GL_EXT_blend_minmax_supported) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
@@ -1160,6 +1171,9 @@ static SDL_Renderer *GLES_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
     if (SDL_GL_ExtensionSupported("GL_OES_blend_subtract")) {
         data->GL_OES_blend_subtract_supported = SDL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_EXT_blend_minmax")) {
+        data->GL_EXT_blend_minmax_supported = SDL_TRUE;
     }
 
     /* Set up parameters for rendering */
