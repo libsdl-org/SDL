@@ -132,6 +132,20 @@ static int PixelFormatToPSPFMT(Uint32 format)
     }
 }
 
+static int calculatePitchForTextureFormat(int width, int format)
+{
+    switch (format) {
+    case GU_PSM_5650:
+    case GU_PSM_5551:
+    case GU_PSM_4444:
+        return (width + 7) & ~7;
+    case GU_PSM_8888:
+        return (width + 3) & ~3;
+    default:
+        return width;
+    }
+}
+
 /* Return next power of 2 */
 static int TextureNextPow2(unsigned int w)
 {
@@ -159,11 +173,11 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return SDL_OutOfMemory();
     }
 
-    psp_tex->width = texture->w;
+    psp_tex->format = PixelFormatToPSPFMT(texture->format);
+    psp_tex->width = calculatePitchForTextureFormat(texture->w, psp_tex->format);
     psp_tex->height = texture->h;
     psp_tex->textureWidth = TextureNextPow2(texture->w);
     psp_tex->textureHeight = TextureNextPow2(texture->h);
-    psp_tex->format = PixelFormatToPSPFMT(texture->format);
     psp_tex->data = SDL_calloc(1, getMemorySize(psp_tex->width, psp_tex->height, psp_tex->format));
 
     if (!psp_tex->data) {
@@ -468,7 +482,7 @@ static int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Render
         sceGuEnable(GU_TEXTURE_2D);
         sceGuTexMode(psp_tex->format, 0, 0, GU_FALSE);
         sceGuTexFilter(psp_tex->filter, psp_tex->filter);
-        sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, psp_tex->textureWidth, psp_tex->data);
+        sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, psp_tex->width, psp_tex->data);
         sceGuDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF | GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
         sceGuDisable(GU_TEXTURE_2D);
     } else {
