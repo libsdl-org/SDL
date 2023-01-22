@@ -1324,6 +1324,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
 {
     SDL_VideoDisplay *display;
     SDL_Window *other;
+    int retval = 0;
 
     CHECK_WINDOW_MAGIC(window, -1);
 
@@ -1468,6 +1469,9 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
 
                 window->last_fullscreen_flags = window->flags;
                 return 0;
+            } else {
+                /* Failed to find a matching mode, return an error after restoring windowed mode. */
+                retval = -1;
             }
         }
     }
@@ -1487,7 +1491,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
     SDL_RestoreMousePosition(window);
 
     window->last_fullscreen_flags = window->flags;
-    return 0;
+    return retval;
 }
 
 #define CREATE_FLAGS \
