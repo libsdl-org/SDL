@@ -284,6 +284,9 @@ The following hints have been removed:
 The following symbols have been renamed:
 * SDL_INIT_GAMECONTROLLER => SDL_INIT_GAMEPAD
 
+The following symbols have been removed:
+* SDL_INIT_NOPARACHUTE
+
 ## SDL_joystick.h
 
 SDL_JoystickID has changed from Sint32 to Uint32, with an invalid ID being 0.

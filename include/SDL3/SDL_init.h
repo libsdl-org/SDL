@@ -53,7 +53,6 @@ extern "C" {
 #define SDL_INIT_GAMEPAD        0x00002000u  /**< SDL_INIT_GAMEPAD implies SDL_INIT_JOYSTICK */
 #define SDL_INIT_EVENTS         0x00004000u
 #define SDL_INIT_SENSOR         0x00008000u
-#define SDL_INIT_NOPARACHUTE    0x00100000u  /**< compatibility; this flag is ignored. */
 #define SDL_INIT_EVERYTHING ( \
                 SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | \
                 SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR \
@@ -89,7 +88,6 @@ extern "C" {
  *   initializes the joystick subsystem
  * - `SDL_INIT_EVENTS`: events subsystem
  * - `SDL_INIT_EVERYTHING`: all of the above subsystems
- * - `SDL_INIT_NOPARACHUTE`: compatibility; this flag is ignored
  *
  * Subsystem initialization is ref-counted, you must call SDL_QuitSubSystem()
  * for each SDL_InitSubSystem() to correctly shutdown a subsystem manually (or
@@ -147,8 +145,6 @@ extern DECLSPEC void SDLCALL SDL_QuitSubSystem(Uint32 flags);
  * \param flags any of the flags used by SDL_Init(); see SDL_Init for details.
  * \returns a mask of all initialized subsystems if `flags` is 0, otherwise it
  *          returns the initialization status of the specified subsystems.
- *
- *          The return value does not include SDL_INIT_NOPARACHUTE.
  *
  * \since This function is available since SDL 3.0.0.
  *
