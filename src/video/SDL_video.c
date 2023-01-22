@@ -2930,7 +2930,12 @@ void SDL_OnWindowDisplayChanged(SDL_Window *window)
 
         if (FULLSCREEN_VISIBLE(window) && (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
             window->last_fullscreen_flags = 0;
-            SDL_UpdateFullscreenMode(window, SDL_TRUE);
+
+            if (SDL_UpdateFullscreenMode(window, SDL_TRUE) != 0) {
+                /* Something went wrong and the window is no longer fullscreen. */
+                window->flags &= ~FULLSCREEN_MASK;
+                return;
+            }
         }
 
         /*
