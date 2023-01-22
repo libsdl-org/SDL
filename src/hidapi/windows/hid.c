@@ -346,13 +346,14 @@ int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
         { 0x1532, 0x010B },  /* Razer Arctosa Gaming keyboard */
         { 0x045E, 0x0822 },  /* Microsoft Precision Mouse */
         { 0x0D8C, 0x0014 },  /* Sharkoon Skiller SGH2 headset */
+        { 0x1CCF, 0x0000 },  /* All Konami Amusement Devices */
 
         /* Turns into an Android controller when enumerated... */
         { 0x0738, 0x2217 }   /* SPEEDLINK COMPETITION PRO */
     };
 
     for (i = 0; i < (sizeof(known_bad)/sizeof(known_bad[0])); i++) {
-        if ((vendor_id == known_bad[i].vid) && (product_id == known_bad[i].pid)) {
+        if ((vendor_id == known_bad[i].vid) && (product_id == known_bad[i].pid || known_bad[i].pid == 0x0000)) {
             return 1;
         }
     }
