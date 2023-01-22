@@ -16,7 +16,7 @@
 int main(int argc, char **argv)
 {
     SDL_AudioSpec spec;
-    SDL_AudioStream *stream;
+    SDL_AudioStream *stream = NULL;
     Uint8 *dst_buf = NULL;
     Uint32 len = 0;
     Uint8 *data = NULL;
@@ -28,13 +28,15 @@ int main(int argc, char **argv)
     SDL_RWops *io = NULL;
     int src_samplesize, dst_samplesize;
     int src_len, dst_len, real_dst_len;
+    int ret = 0;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (argc != 5) {
         SDL_Log("USAGE: %s in.wav out.wav newfreq newchans\n", argv[0]);
-        return 1;
+        ret = 1;
+        goto end;
     }
 
     cvtfreq = SDL_atoi(argv[3]);
@@ -42,23 +44,22 @@ int main(int argc, char **argv)
 
     if (SDL_Init(SDL_INIT_AUDIO) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
-        return 2;
+        ret = 2;
+        goto end;
     }
 
     if (SDL_LoadWAV(argv[1], &spec, &data, &len) == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to load %s: %s\n", argv[1], SDL_GetError());
-        SDL_Quit();
-        return 3;
+        ret = 3;
+        goto end;
     }
 
 
-    stream = SDL_CreateAudioStream(spec.format, spec.channels, spec.freq,
-                                   spec.format, cvtchans, cvtfreq);
+    stream = SDL_CreateAudioStream(spec.format, spec.channels, spec.freq, spec.format, cvtchans, cvtfreq);
     if (stream == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to build audio stream: %s\n", SDL_GetError());
-        SDL_free(data);
-        SDL_Quit();
-        return 4;
+        ret = 4;
+        goto end;
     }
 
     src_samplesize = (SDL_AUDIO_BITSIZE(spec.format) / 8) * spec.channels;
@@ -76,29 +77,23 @@ int main(int argc, char **argv)
     dst_buf = (Uint8 *)SDL_malloc(dst_len);
     if (dst_buf == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory.\n");
-        SDL_free(data);
-        SDL_Quit();
-        return 5;
+        ret = 5;
+        goto end;
     }
 
     /* Run the audio converter */
     if (SDL_PutAudioStreamData(stream, data, src_len) < 0 ||
         SDL_FlushAudioStream(stream) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Conversion failed: %s\n", SDL_GetError());
-        SDL_free(dst_buf);
-        SDL_free(data);
-        SDL_Quit();
-        return 6;
-
+        ret = 6;
+        goto end;
     }
 
     real_dst_len = SDL_GetAudioStreamData(stream, dst_buf, dst_len);
     if (real_dst_len < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Conversion failed: %s\n", SDL_GetError());
-        SDL_free(dst_buf);
-        SDL_free(data);
-        SDL_Quit();
-        return 7;
+        ret = 7;
+        goto end;
     }
     dst_len = real_dst_len;
 
@@ -106,10 +101,8 @@ int main(int argc, char **argv)
     io = SDL_RWFromFile(argv[2], "wb");
     if (io == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen('%s') failed: %s\n", argv[2], SDL_GetError());
-        SDL_free(dst_buf);
-        SDL_free(data);
-        SDL_Quit();
-        return 8;
+        ret = 8;
+        goto end;
     }
 
     bitsize = SDL_AUDIO_BITSIZE(spec.format);
@@ -133,16 +126,14 @@ int main(int argc, char **argv)
 
     if (SDL_RWclose(io) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fclose('%s') failed: %s\n", argv[2], SDL_GetError());
-        SDL_free(dst_buf);
-        SDL_free(data);
-        SDL_Quit();
-        return 9;
-    } /* if */
+        ret = 9;
+        goto end;
+    }
 
+end:
     SDL_free(dst_buf);
     SDL_free(data);
+    SDL_DestroyAudioStream(stream);
     SDL_Quit();
-    return 0;
-} /* main */
-
-/* end of testresample.c ... */
+    return ret;
+}
