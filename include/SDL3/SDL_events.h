@@ -473,11 +473,10 @@ typedef struct SDL_GamepadTouchpadEvent
 typedef struct SDL_GamepadSensorEvent
 {
     Uint32 type;        /**< ::SDL_GAMEPADSENSORUPDATE */
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    Uint64 timestamp;   /**< In nanoseconds, populated using timestamp of the sensor (not necessary synchronized with the synchronized clock) or SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
     Sint32 sensor;      /**< The type of the sensor, one of the values of ::SDL_SensorType */
     float data[3];      /**< Up to 3 values from the sensor, as defined in SDL_sensor.h */
-    Uint64 sensor_timestamp; /**< The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock */
 } SDL_GamepadSensorEvent;
 
 /**
@@ -533,10 +532,9 @@ typedef struct SDL_DropEvent
 typedef struct SDL_SensorEvent
 {
     Uint32 type;        /**< ::SDL_SENSORUPDATE */
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    Uint64 timestamp;   /**< In nanoseconds, populated using timestamp of the sensor (not necessary synchronized with the synchronized clock) or SDL_GetTicksNS() */
     SDL_SensorID which;       /**< The instance ID of the sensor */
     float data[6];      /**< Up to 6 values from the sensor - additional values can be queried using SDL_GetSensorData() */
-    Uint64 sensor_timestamp; /**< The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock */
 } SDL_SensorEvent;
 
 /**

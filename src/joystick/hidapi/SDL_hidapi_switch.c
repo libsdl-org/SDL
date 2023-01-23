@@ -1799,7 +1799,7 @@ SendSensorUpdate(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch_Cont
         data[0] = -tmp;
     }
 
-    SDL_SendJoystickSensor(timestamp, joystick, type, sensor_timestamp, data, 3);
+    SDL_SendJoystickSensor(joystick, type, sensor_timestamp, data, 3);
 }
 
 static void HandleCombinedControllerStateL(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchStatePacket_t *packet)

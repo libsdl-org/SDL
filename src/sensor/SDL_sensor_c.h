@@ -41,6 +41,6 @@ extern void SDL_UnlockSensors(void);
 extern SDL_bool SDL_SensorsOpened(void);
 
 /* Internal event queueing functions */
-extern int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
+extern int SDL_SendSensorUpdate(SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
 
 #endif /* SDL_sensor_c_h_ */

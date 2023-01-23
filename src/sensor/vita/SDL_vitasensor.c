@@ -130,7 +130,6 @@ static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
 {
     int err = 0;
     SceMotionSensorState motionState[SCE_MOTION_MAX_NUM_STATES];
-    Uint64 timestamp = SDL_GetTicksNS();
 
     SDL_zero(motionState);
     err = sceMotionGetSensorState(motionState, SCE_MOTION_MAX_NUM_STATES);
@@ -161,7 +160,7 @@ static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
                 data[0] = motionState[i].accelerometer.x * SDL_STANDARD_GRAVITY;
                 data[1] = motionState[i].accelerometer.y * SDL_STANDARD_GRAVITY;
                 data[2] = motionState[i].accelerometer.z * SDL_STANDARD_GRAVITY;
-                SDL_SendSensorUpdate(timestamp, sensor, sensor->hwdata->sensor_timestamp, data, SDL_arraysize(data));
+                SDL_SendSensorUpdate(sensor, sensor->hwdata->sensor_timestamp, data, SDL_arraysize(data));
             } break;
             case SDL_SENSOR_GYRO:
             {
@@ -169,7 +168,7 @@ static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
                 data[0] = motionState[i].gyro.x;
                 data[1] = motionState[i].gyro.y;
                 data[2] = motionState[i].gyro.z;
-                SDL_SendSensorUpdate(timestamp, sensor, sensor->hwdata->sensor_timestamp, data, SDL_arraysize(data));
+                SDL_SendSensorUpdate(sensor, sensor->hwdata->sensor_timestamp, data, SDL_arraysize(data));
             } break;
             default:
                 break;

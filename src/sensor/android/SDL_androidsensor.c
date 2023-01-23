@@ -161,7 +161,7 @@ static void SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)
     if (ALooper_pollAll(0, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
         SDL_zero(event);
         while (ASensorEventQueue_getEvents(sensor->hwdata->eventqueue, &event, 1) > 0) {
-            SDL_SendSensorUpdate(timestamp, sensor, timestamp, event.data, SDL_arraysize(event.data));
+            SDL_SendSensorUpdate(sensor, timestamp, event.data, SDL_arraysize(event.data));
         }
     }
 }

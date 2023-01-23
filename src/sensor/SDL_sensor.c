@@ -472,7 +472,7 @@ void SDL_QuitSensors(void)
 
 /* These are global for SDL_syssensor.c and SDL_events.c */
 
-int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values)
+int SDL_SendSensorUpdate(SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values)
 {
     int posted;
 
@@ -488,12 +488,11 @@ int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_tim
     if (SDL_EventEnabled(SDL_SENSORUPDATE)) {
         SDL_Event event;
         event.type = SDL_SENSORUPDATE;
-        event.common.timestamp = timestamp;
+        event.common.timestamp = sensor_timestamp;
         event.sensor.which = sensor->instance_id;
         num_values = SDL_min(num_values, SDL_arraysize(event.sensor.data));
         SDL_memset(event.sensor.data, 0, sizeof(event.sensor.data));
         SDL_memcpy(event.sensor.data, data, num_values * sizeof(*data));
-        event.sensor.sensor_timestamp = sensor_timestamp;
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */

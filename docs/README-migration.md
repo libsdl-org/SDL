@@ -115,7 +115,7 @@ SDL_SIMDAlloc(), SDL_SIMDRealloc(), and SDL_SIMDFree() have been removed. You ca
 
 The timestamp member of the SDL_Event structure now represents nanoseconds, and is populated with SDL_GetTicksNS()
 
-The timestamp_us member of the sensor events has been renamed sensor_timestamp and now represents nanoseconds. This value is filled in from the hardware, if available, and may not be synchronized with values returned from SDL_GetTicksNS().
+For sensor events, the timestamp_us member is now the timestamp member, and represents nanoseconds. This value is filled in from the hardware, if available, and may not be synchronized with values returned from SDL_GetTicksNS().
 
 You should set the event.common.timestamp field before passing an event to SDL_PushEvent(). If the timestamp is 0 it will be filled in with SDL_GetTicksNS().
 
@@ -158,7 +158,7 @@ The SDL_GAMEPADADDED event now provides the joystick instance ID in the which me
 
 The functions SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() have been added to directly query the list of available gamepads.
 
-SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_GAMEPADSENSORUPDATE events.
+SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the timestamp member of SDL_GAMEPADSENSORUPDATE events.
 
 The following enums have been renamed:
 * SDL_GameControllerAxis => SDL_GamepadAxis
@@ -748,7 +748,7 @@ Rather than iterating over sensors using device index, there is a new function S
 }
 ```
 
-Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_SENSORUPDATE events.
+Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor data, you should use the timestamp member of SDL_SENSORUPDATE events.
 
 
 The following functions have been renamed:

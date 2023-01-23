@@ -145,7 +145,7 @@ extern int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick,
                                      Uint8 button, Uint8 state);
 extern int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick,
                                        int touchpad, int finger, Uint8 state, float x, float y, float pressure);
-extern int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick,
+extern int SDL_SendJoystickSensor(SDL_Joystick *joystick,
                                      SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
 extern void SDL_SendJoystickBatteryLevel(SDL_Joystick *joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);
