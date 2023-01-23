@@ -143,7 +143,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnStateChanged(ISensorEvents 
 static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *This, ISensor *pSensor, ISensorDataReport *pNewData)
 {
     int i;
-    Uint64 timestamp = SDL_GetTicks();
+    Uint64 timestamp = SDL_GetTicksNS();
 
     SDL_LockSensors();
     for (i = 0; i < SDL_num_sensors; ++i) {
