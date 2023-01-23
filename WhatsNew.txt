@@ -24,3 +24,4 @@ General:
 * Added SDL_aligned_alloc() and SDL_aligned_free() to allocate and free memory with a given alignment
 * Added SDL_GetRenderVSync() to get vsync of the given renderer
 * Added SDL_PlayAudioDevice() to start audio playback
+* Added SDL_ConvertAudioSamples() to convert audio samples from one format to another

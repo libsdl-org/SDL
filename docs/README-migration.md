@@ -54,29 +54,28 @@ SDL_PauseAudioDevice() is only used to pause audio playback. Use SDL_PlayAudioDe
 
 SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
-SDL_AudioCVT interface is removed, SDL_AudioStream can be used instead.
+SDL_AudioCVT interface is removed, SDL_AudioStream interface or SDL_ConvertAudioSamples() helper function can be used.
 
 Code that used to look like this:
 ```c
     SDL_AudioCVT cvt;
-    SDL_BuildAudioCVT(&cvt, spec.format, spec.channels, spec.freq, spec.format, cvtchans, cvtfreq);
-    cvt.len = len;
-    cvt.buf = (Uint8 *) SDL_malloc(len * cvt.len_mult);
-    SDL_memcpy(cvt.buf, data, len);
+    SDL_BuildAudioCVT(&cvt, src_format, src_channels, src_rate, dst_format, dst_channels, dst_rate);
+    cvt.len = src_len;
+    cvt.buf = (Uint8 *) SDL_malloc(src_len * cvt.len_mult);
+    SDL_memcpy(cvt.buf, src_data, src_len);
     SDL_ConvertAudio(&cvt);
     do_something(cvt.buf, cvt.len_cvt);
 ```
 should be changed to:
 ```c
-    SDL_AudioStream *stream = SDL_CreateAudioStream(spec.format, spec.channels, spec.freq, spec.format, cvtchans, cvtfreq);
-    int src_samplesize = (SDL_AUDIO_BITSIZE(spec.format) / 8) * spec.channels;
-    int src_len = len & ~(src_samplesize - 1); // need to be rounded to samplesize
-    SDL_PutAudioStreamData(stream, data, src_len);
-    SDL_FlushAudioStream(stream);
-    int dst_len = expected_dst_len & ~(dst_samplesize - 1); // need to be rounded to samplesize
-    Uint8 *dst_buf = (Uint8 *)SDL_malloc(dst_len);
-    int real_dst_len = SDL_GetAudioStreamData(stream, dst_buf, dst_len);
-    do_something(dst_buf, real_dst_len);
+    Uint8 *dst_data = NULL;
+    int dst_len = 0;
+    if (SDL_ConvertAudioSamples(src_format, src_channels, src_rate, src_len, src_data
+                                dst_format, dst_channels, dst_rate, &dst_len, &dst_data) < 0) {
+        /* error */
+    }
+    do_something(dst_data, dst_len);
+    SDL_free(dst_data);
 ```
 
 
