@@ -26,8 +26,7 @@ int main(int argc, char **argv)
     int blockalign = 0;
     int avgbytes = 0;
     SDL_RWops *io = NULL;
-    int src_samplesize, dst_samplesize;
-    int src_len, dst_len, real_dst_len;
+    int dst_len;
     int ret = 0;
 
     /* Enable standard application logging */
@@ -54,54 +53,18 @@ int main(int argc, char **argv)
         goto end;
     }
 
-
-    stream = SDL_CreateAudioStream(spec.format, spec.channels, spec.freq, spec.format, cvtchans, cvtfreq);
-    if (stream == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to build audio stream: %s\n", SDL_GetError());
+    if (SDL_ConvertAudioSamples(spec.format, spec.channels, spec.freq, len, data,
+                           spec.format, cvtchans, cvtfreq, &dst_len, &dst_buf) < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to convert samples: %s\n", SDL_GetError());
         ret = 4;
         goto end;
     }
-
-    src_samplesize = (SDL_AUDIO_BITSIZE(spec.format) / 8) * spec.channels;
-    dst_samplesize = (SDL_AUDIO_BITSIZE(spec.format) / 8) * cvtchans;
-
-
-    src_len = len & ~(src_samplesize - 1);
-    dst_len = dst_samplesize * (src_len / src_samplesize);
-    if (spec.freq < cvtfreq) {
-        const double mult = ((double)cvtfreq) / ((double)spec.freq);
-        dst_len *= (int) SDL_ceil(mult);
-    }
-
-    dst_len = dst_len & ~(dst_samplesize - 1);
-    dst_buf = (Uint8 *)SDL_malloc(dst_len);
-    if (dst_buf == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory.\n");
-        ret = 5;
-        goto end;
-    }
-
-    /* Run the audio converter */
-    if (SDL_PutAudioStreamData(stream, data, src_len) < 0 ||
-        SDL_FlushAudioStream(stream) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Conversion failed: %s\n", SDL_GetError());
-        ret = 6;
-        goto end;
-    }
-
-    real_dst_len = SDL_GetAudioStreamData(stream, dst_buf, dst_len);
-    if (real_dst_len < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Conversion failed: %s\n", SDL_GetError());
-        ret = 7;
-        goto end;
-    }
-    dst_len = real_dst_len;
 
     /* write out a WAV header... */
     io = SDL_RWFromFile(argv[2], "wb");
     if (io == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen('%s') failed: %s\n", argv[2], SDL_GetError());
-        ret = 8;
+        ret = 5;
         goto end;
     }
 
@@ -126,7 +89,7 @@ int main(int argc, char **argv)
 
     if (SDL_RWclose(io) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fclose('%s') failed: %s\n", argv[2], SDL_GetError());
-        ret = 9;
+        ret = 6;
         goto end;
     }
 

@@ -1113,6 +1113,37 @@ extern DECLSPEC void SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
  */
 extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
 
+/**
+ * Convert some audio data of one format to another format.
+ *
+ * \param src_format The format of the source audio
+ * \param src_channels The number of channels of the source audio
+ * \param src_rate The sampling rate of the source audio
+ * \param src_len  The len of src_data
+ * \param src_data The audio data to be converted
+ * \param dst_format The format of the desired audio output
+ * \param dst_channels The number of channels of the desired audio output
+ * \param dst_rate The sampling rate of the desired audio output
+ * \param dst_len  Will be filled with the len of dst_data
+ * \param dst_data Will be filled with a pointer to converted audio data, which should be freed with SDL_free().
+ *
+ * \returns 0 on success or a negative error code on failure. On error, *dst_data will be NULL and so not allocated.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateAudioStream
+ */
+extern DECLSPEC int SDLCALL SDL_ConvertAudioSamples(SDL_AudioFormat src_format,
+                                                    Uint8 src_channels,
+                                                    int src_rate,
+                                                    int src_len,
+                                                    Uint8 *src_data,
+                                                    SDL_AudioFormat dst_format,
+                                                    Uint8 dst_channels,
+                                                    int dst_rate,
+                                                    int *dst_len,
+                                                    Uint8 **dst_data);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

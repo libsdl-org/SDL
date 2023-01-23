@@ -868,3 +868,4 @@
 #define SDL_PlayAudioDevice SDL_PlayAudioDevice_REAL
 #define SDL_aligned_alloc SDL_aligned_alloc_REAL
 #define SDL_aligned_free SDL_aligned_free_REAL
+#define SDL_ConvertAudioSamples SDL_ConvertAudioSamples_REAL
