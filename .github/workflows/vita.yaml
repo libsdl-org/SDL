@@ -8,19 +8,61 @@ defaults:
 
 jobs:
   vita:
+    name: ${{ matrix.platform.name }}
     runs-on: ubuntu-latest
     container: 
       image: vitasdk/vitasdk:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - { name: GLES (pib),                    os: windows-latest, pib: true }
+          - { name: GLES (PVR_PSP2 + gl4es4vita),  os: windows-latest, pvr: true }
     steps:
     - uses: actions/checkout@v3
     - name: Install build requirements
       run: |
         apk update 
         apk add cmake ninja pkgconf bash
+
+    - name: Configure PVR_PSP2 (GLES)
+      if: ${{ !!matrix.platform.pvr }}
+      run: |
+        pvr_psp2_version=3.9
+
+        # Configure PVR_PSP2 headers
+        wget https://github.com/GrapheneCt/PVR_PSP2/archive/refs/tags/v$pvr_psp2_version.zip -P/tmp
+        unzip /tmp/v$pvr_psp2_version.zip -d/tmp
+        cp -r /tmp/PVR_PSP2-$pvr_psp2_version/include/* ${VITASDK}/arm-vita-eabi/include
+        rm /tmp/v$pvr_psp2_version.zip
+
+        # Configure PVR_PSP2 stub libraries
+        wget https://github.com/GrapheneCt/PVR_PSP2/releases/download/v$pvr_psp2_version/vitasdk_stubs.zip -P/tmp
+        unzip /tmp/vitasdk_stubs.zip -d/tmp/pvr_psp2_stubs
+        find /tmp/pvr_psp2_stubs -type f -name "*.a" -exec cp {} ${VITASDK}/arm-vita-eabi/lib \;
+        rm /tmp/vitasdk_stubs.zip
+        rm -rf /tmp/pvr_psp2_stubs
+
+    - name: Configure gl4es4vita (OpenGL)
+      if: ${{ !!matrix.platform.pvr }}
+      run: |
+        gl4es4vita_version=1.1.4
+
+        # Configure gl4es4vita headers
+        wget https://github.com/SonicMastr/gl4es4vita/releases/download/v$gl4es4vita_version-vita/include.zip -P/tmp
+        unzip -o /tmp/include.zip -d${VITASDK}/arm-vita-eabi/include
+        rm /tmp/include.zip
+
+        # Configure gl4es4vita stub libraries
+        wget https://github.com/SonicMastr/gl4es4vita/releases/download/v$gl4es4vita_version-vita/vitasdk_stubs.zip -P/tmp
+        unzip /tmp/vitasdk_stubs.zip -d${VITASDK}/arm-vita-eabi/lib
+
     - name: Configure CMake
       run: |
         cmake -S . -B build -G Ninja \
           -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake \
+          -DVIDEO_VITA_PIB=${{ !!matrix.platform.pib }} \
+          -DVIDEO_VITA_PVR=${{ !!matrix.platform.pvr }} \
           -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
