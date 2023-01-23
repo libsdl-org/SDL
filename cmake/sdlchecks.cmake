@@ -1,6 +1,3 @@
-include(CMakeParseArguments)
-include(${SDL3_SOURCE_DIR}/cmake/sdlfind.cmake)
-
 macro(FindLibraryAndSONAME _LIB)
   cmake_parse_arguments(FLAS "" "" "LIBDIRS" ${ARGN})
 
