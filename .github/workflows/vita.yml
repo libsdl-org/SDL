@@ -13,13 +13,13 @@ defaults:
 jobs:
   vita:
     runs-on: ubuntu-latest
-    container: 
+    container:
       image: vitasdk/vitasdk:latest
     steps:
     - uses: actions/checkout@v3
     - name: Install build requirements
       run: |
-        apk update 
+        apk update
         apk add cmake ninja pkgconf bash
     - name: Configure CMake
       run: |
