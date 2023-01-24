@@ -26,6 +26,7 @@ jobs:
       if: ${{ contains(matrix.platform.name, 'CMake') }}
       run: |
         cmake -S . -B build -G Ninja \
+          -Wdeprecated -Wdev -Werror \
           -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake \
           -DRISCOS:BOOL=ON \
           -DSDL_GCC_ATOMICS=OFF \

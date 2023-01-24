@@ -20,6 +20,7 @@ jobs:
       - name: Configure CMake
         run: |
           cmake -S . -B build -G Ninja \
+            -Wdeprecated -Wdev -Werror \
             -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
             -DSDL_WERROR=ON \
             -DSDL_TESTS=ON \

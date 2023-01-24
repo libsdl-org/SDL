@@ -68,6 +68,7 @@ jobs:
     - name: Configure CMake
       run: |
         cmake -S . -B build -G Ninja \
+          -Wdeprecated -Wdev -Werror \
           -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake \
           -DVIDEO_VITA_PIB=${{ !!matrix.platform.pib }} \
           -DVIDEO_VITA_PVR=${{ !!matrix.platform.pvr }} \

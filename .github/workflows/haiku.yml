@@ -26,6 +26,7 @@ jobs:
         tar -cf - ./ | vmshell tar -xf - -C ./src/
     - name: Configure (CMake)
       run: vmshell cmake -S src -B build -GNinja \
+        -Wdeprecated -Wdev -Werror \
         -DSDL_TESTS=ON \
         -DSDL_WERROR=ON \
         -DSDL_INSTALL_TESTS=ON \
