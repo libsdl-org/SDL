@@ -46,6 +46,7 @@ jobs:
     - name: Verify CMake configuration files
       run: |
         cmake -S cmake/test -B cmake_config_build -G Ninja \
+          -Wdeprecated -Wdev -Werror \
           -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake \
           -DTEST_SHARED=FALSE \
           -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \

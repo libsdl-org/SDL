@@ -36,7 +36,8 @@ jobs:
       - name: Configure (CMake)
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
-          cmake -B build \
+          cmake -S . -B build \
+            -Wdeprecated -Wdev -Werror \
             -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
             -DSDL_WERROR=ON \
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
