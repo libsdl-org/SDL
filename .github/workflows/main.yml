@@ -70,6 +70,7 @@ jobs:
     - name: Configure (CMake)
       run: |
         cmake -S . -B build -G Ninja \
+          -Wdeprecated -Wdev -Werror \
           -DSDL_TESTS=ON \
           -DSDL_WERROR=ON \
           -DSDL_INSTALL_TESTS=ON \

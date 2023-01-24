@@ -44,6 +44,7 @@ jobs:
           """))
     - name: Configure (CMake)
       run: cmake -S build -B build `
+        -Wdeprecated -Wdev -Werror `
         -DSDL_WERROR=${{ !matrix.platform.nowerror }} `
         -DSDL_TESTS=ON `
         -DSDL_INSTALL_TESTS=ON `

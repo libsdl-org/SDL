@@ -21,6 +21,7 @@ jobs:
       - name: Configure CMake
         run: |
           emcmake cmake -S . -B build \
+            -Wdeprecated -Wdev -Werror \
             -DSDL_WERROR=ON \
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \

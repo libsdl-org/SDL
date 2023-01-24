@@ -49,6 +49,7 @@ jobs:
 
         run: |
           cmake -S . -B build -GNinja \
+            -Wdeprecated -Wdev -Werror \
             -DSDL_CHECK_REQUIRED_INCLUDES="/usr/local/include" \
             -DSDL_CHECK_REQUIRED_LINK_OPTIONS="-L/usr/local/lib"
           cmake --build build --verbose -- -j`sysctl -n hw.ncpu`

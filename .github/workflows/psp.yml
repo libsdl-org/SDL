@@ -19,6 +19,7 @@ jobs:
     - name: Configure CMake
       run: |
         cmake -S . -B build \
+          -Wdeprecated -Wdev -Werror \
           -DCMAKE_TOOLCHAIN_FILE=$PSPDEV/psp/share/pspdev.cmake \
           -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
