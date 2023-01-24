@@ -104,7 +104,7 @@ typedef enum
  * \sa SDL_SetMainReady
  * \sa SDL_WasInit
  */
-extern DECLSPEC int SDLCALL SDL_Init(SDL_InitFlags flags);
+extern DECLSPEC int SDLCALL SDL_Init(Uint32 flags);
 
 /**
  * Compatibility function to initialize the SDL library.
@@ -121,7 +121,7 @@ extern DECLSPEC int SDLCALL SDL_Init(SDL_InitFlags flags);
  * \sa SDL_Quit
  * \sa SDL_QuitSubSystem
  */
-extern DECLSPEC int SDLCALL SDL_InitSubSystem(SDL_InitFlags flags);
+extern DECLSPEC int SDLCALL SDL_InitSubSystem(Uint32 flags);
 
 /**
  * Shut down specific SDL subsystems.
@@ -136,7 +136,7 @@ extern DECLSPEC int SDLCALL SDL_InitSubSystem(SDL_InitFlags flags);
  * \sa SDL_InitSubSystem
  * \sa SDL_Quit
  */
-extern DECLSPEC void SDLCALL SDL_QuitSubSystem(SDL_InitFlags flags);
+extern DECLSPEC void SDLCALL SDL_QuitSubSystem(Uint32 flags);
 
 /**
  * Get a mask of the specified subsystems which are currently initialized.
@@ -150,7 +150,7 @@ extern DECLSPEC void SDLCALL SDL_QuitSubSystem(SDL_InitFlags flags);
  * \sa SDL_Init
  * \sa SDL_InitSubSystem
  */
-extern DECLSPEC SDL_InitFlags SDLCALL SDL_WasInit(SDL_InitFlags flags);
+extern DECLSPEC Uint32 SDLCALL SDL_WasInit(Uint32 flags);
 
 /**
  * Clean up all initialized subsystems.
