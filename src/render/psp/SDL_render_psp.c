@@ -47,6 +47,7 @@ typedef struct PSP_Texture
     unsigned int textureWidth;  /**< Texture width (power of two). */
     unsigned int textureHeight; /**< Texture height (power of two). */
     unsigned int format;        /**< Image format - one of ::pgePixelFormat. */
+    unsigned int size;          /**< Image size in bytes. */
     unsigned int filter;        /**< Image filter - one of GU_NEAREST or GU_LINEAR. */
     unsigned int pitch;
 } PSP_Texture;
@@ -179,7 +180,8 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     psp_tex->height = texture->h;
     psp_tex->textureWidth = calculateNextPow2(texture->w);
     psp_tex->textureHeight = calculateNextPow2(texture->h);
-    psp_tex->data = SDL_calloc(1, getMemorySize(psp_tex->width, psp_tex->height, psp_tex->format));
+    psp_tex->size = getMemorySize(psp_tex->width, psp_tex->height, psp_tex->format);
+    psp_tex->data = SDL_calloc(1, psp_tex->size);
 
     if (!psp_tex->data) {
         SDL_free(psp_tex);
@@ -209,7 +211,7 @@ static void PSP_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     PSP_Texture *psp_texture = (PSP_Texture *)texture->driverdata;
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
 
-    sceKernelDcacheWritebackAll();
+    sceKernelDcacheWritebackRange(psp_texture->data, psp_texture->size);
 }
 
 static int PSP_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -478,10 +480,10 @@ static int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Render
         const VertTCV *verts = (VertTCV *)(vertices + cmd->data.draw.first);
         PSP_Texture *psp_tex = (PSP_Texture *)cmd->data.draw.texture->driverdata;
 
-        sceGuEnable(GU_TEXTURE_2D);
         sceGuTexMode(psp_tex->format, 0, 0, GU_FALSE);
-        sceGuTexFilter(psp_tex->filter, psp_tex->filter);
         sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, psp_tex->width, psp_tex->data);
+        sceGuTexFilter(psp_tex->filter, psp_tex->filter);
+        sceGuEnable(GU_TEXTURE_2D);
         sceGuDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF | GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
         sceGuDisable(GU_TEXTURE_2D);
     } else {
@@ -518,6 +520,18 @@ int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *
 
 static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
+    /* note that before the renderer interface change, this would do extrememly small
+       batches with sceGuGetMemory()--a few vertices at a time--and it's not clear that
+       this won't fail if you try to push 100,000 draw calls in a single batch.
+       I don't know what the limits on PSP hardware are. It might be useful to have
+       rendering backends report a reasonable maximum, so the higher level can flush
+       if we appear to be exceeding that. */
+    Uint8 *gpumem = (Uint8 *)sceGuGetMemory(vertsize);
+    if (gpumem == NULL) {
+        return SDL_SetError("Couldn't obtain a %d-byte vertex buffer!", (int)vertsize);
+    }
+    SDL_memcpy(gpumem, vertices, vertsize);
+
     while (cmd) {
         switch (cmd->command) {
         case SDL_RENDERCMD_SETVIEWPORT:
@@ -543,12 +557,12 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         }
         case SDL_RENDERCMD_DRAW_POINTS:
         {
-            PSP_RenderPoints(renderer, vertices, cmd);
+            PSP_RenderPoints(renderer, gpumem, cmd);
             break;
         }
         case SDL_RENDERCMD_DRAW_LINES:
         {
-            PSP_RenderLines(renderer, vertices, cmd);
+            PSP_RenderLines(renderer, gpumem, cmd);
             break;
         }
         case SDL_RENDERCMD_FILL_RECTS: /* unused */
@@ -559,7 +573,7 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             break;
         case SDL_RENDERCMD_GEOMETRY:
         {
-            PSP_RenderGeometry(renderer, vertices, cmd);
+            PSP_RenderGeometry(renderer, gpumem, cmd);
             break;
         }
         case SDL_RENDERCMD_NO_OP:
