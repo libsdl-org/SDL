@@ -844,7 +844,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_Gam
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetGamepadNumTouchpads(SDL_Gamepad *gamepad);
+extern DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpads(SDL_Gamepad *gamepad);
 
 /**
  * Get the number of supported simultaneous fingers on a touchpad on a game
@@ -852,7 +852,7 @@ extern DECLSPEC int SDLCALL SDL_GetGamepadNumTouchpads(SDL_Gamepad *gamepad);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetGamepadNumTouchpadFingers(SDL_Gamepad *gamepad, int touchpad);
+extern DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *gamepad, int touchpad);
 
 /**
  * Get the current state of a finger on a touchpad on a gamepad.

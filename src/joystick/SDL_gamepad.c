@@ -2396,7 +2396,7 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 /**
  *  Get the number of touchpads on a gamepad.
  */
-int SDL_GetGamepadNumTouchpads(SDL_Gamepad *gamepad)
+int SDL_GetNumGamepadTouchpads(SDL_Gamepad *gamepad)
 {
     int retval = 0;
 
@@ -2415,7 +2415,7 @@ int SDL_GetGamepadNumTouchpads(SDL_Gamepad *gamepad)
 /**
  *  Get the number of supported simultaneous fingers on a touchpad on a gamepad.
  */
-int SDL_GetGamepadNumTouchpadFingers(SDL_Gamepad *gamepad, int touchpad)
+int SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *gamepad, int touchpad)
 {
     int retval = 0;
 

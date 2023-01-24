@@ -199,8 +199,8 @@ SDL3_0.0.0 {
     SDL_GetGamepadMappingForGUID;
     SDL_GetGamepadMappingForIndex;
     SDL_GetGamepadName;
-    SDL_GetGamepadNumTouchpadFingers;
-    SDL_GetGamepadNumTouchpads;
+    SDL_GetNumGamepadTouchpadFingers;
+    SDL_GetNumGamepadTouchpads;
     SDL_GetGamepadPath;
     SDL_GetGamepadPlayerIndex;
     SDL_GetGamepadProduct;
