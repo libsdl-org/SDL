@@ -39,25 +39,24 @@ extern "C" {
 /* As of version 0.5, SDL is loaded dynamically into the application */
 
 /**
- *  \name SDL_INIT_*
- *
- *  These are the flags which may be passed to SDL_Init().  You should
- *  specify the subsystems which you will be using in your application.
+ * These are the flags which may be passed to SDL_Init().  You should
+ * specify the subsystems which you will be using in your application.
  */
-/* @{ */
-#define SDL_INIT_TIMER          0x00000001u
-#define SDL_INIT_AUDIO          0x00000010u
-#define SDL_INIT_VIDEO          0x00000020u  /**< SDL_INIT_VIDEO implies SDL_INIT_EVENTS */
-#define SDL_INIT_JOYSTICK       0x00000200u  /**< SDL_INIT_JOYSTICK implies SDL_INIT_EVENTS */
-#define SDL_INIT_HAPTIC         0x00001000u
-#define SDL_INIT_GAMEPAD        0x00002000u  /**< SDL_INIT_GAMEPAD implies SDL_INIT_JOYSTICK */
-#define SDL_INIT_EVENTS         0x00004000u
-#define SDL_INIT_SENSOR         0x00008000u
+typedef enum
+{
+    SDL_INIT_TIMER        = 0x00000001,
+    SDL_INIT_AUDIO        = 0x00000010,
+    SDL_INIT_VIDEO        = 0x00000020,  /**< `SDL_INIT_VIDEO` implies `SDL_INIT_EVENTS` */
+    SDL_INIT_JOYSTICK     = 0x00000200,  /**< `SDL_INIT_JOYSTICK` implies `SDL_INIT_EVENTS` */
+    SDL_INIT_HAPTIC       = 0x00001000,
+    SDL_INIT_GAMEPAD      = 0x00002000,  /**< `SDL_INIT_GAMEPAD` implies `SDL_INIT_JOYSTICK` */
+    SDL_INIT_EVENTS       = 0x00004000,
+    SDL_INIT_SENSOR       = 0x00008000
+} SDL_InitFlags;
 #define SDL_INIT_EVERYTHING ( \
                 SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | \
                 SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR \
             )
-/* @} */
 
 /**
  * Initialize the SDL library.
@@ -105,7 +104,7 @@ extern "C" {
  * \sa SDL_SetMainReady
  * \sa SDL_WasInit
  */
-extern DECLSPEC int SDLCALL SDL_Init(Uint32 flags);
+extern DECLSPEC int SDLCALL SDL_Init(SDL_InitFlags flags);
 
 /**
  * Compatibility function to initialize the SDL library.
@@ -122,7 +121,7 @@ extern DECLSPEC int SDLCALL SDL_Init(Uint32 flags);
  * \sa SDL_Quit
  * \sa SDL_QuitSubSystem
  */
-extern DECLSPEC int SDLCALL SDL_InitSubSystem(Uint32 flags);
+extern DECLSPEC int SDLCALL SDL_InitSubSystem(SDL_InitFlags flags);
 
 /**
  * Shut down specific SDL subsystems.
@@ -137,7 +136,7 @@ extern DECLSPEC int SDLCALL SDL_InitSubSystem(Uint32 flags);
  * \sa SDL_InitSubSystem
  * \sa SDL_Quit
  */
-extern DECLSPEC void SDLCALL SDL_QuitSubSystem(Uint32 flags);
+extern DECLSPEC void SDLCALL SDL_QuitSubSystem(SDL_InitFlags flags);
 
 /**
  * Get a mask of the specified subsystems which are currently initialized.
@@ -151,7 +150,7 @@ extern DECLSPEC void SDLCALL SDL_QuitSubSystem(Uint32 flags);
  * \sa SDL_Init
  * \sa SDL_InitSubSystem
  */
-extern DECLSPEC Uint32 SDLCALL SDL_WasInit(Uint32 flags);
+extern DECLSPEC SDL_InitFlags SDLCALL SDL_WasInit(SDL_InitFlags flags);
 
 /**
  * Clean up all initialized subsystems.
