@@ -399,10 +399,10 @@ int main(int argc, char **argv)
         while (!done) {
             SDL_Event event;
             while (SDL_PollEvent(&event) > 0) {
-                if (event.type == SDL_QUIT) {
+                if (event.type == SDL_EVENT_QUIT) {
                     done = 1;
                 }
-                if (event.type == SDL_KEYDOWN) {
+                if (event.type == SDL_EVENT_KEY_DOWN) {
                     if (event.key.keysym.sym == SDLK_ESCAPE) {
                         done = 1;
                     } else if (event.key.keysym.sym == SDLK_LEFT) {
@@ -411,7 +411,7 @@ int main(int argc, char **argv)
                         ++current;
                     }
                 }
-                if (event.type == SDL_MOUSEBUTTONDOWN) {
+                if (event.type == SDL_EVENT_MOUSE_BUTTONDOWN) {
                     if (event.button.x < (original->w / 2)) {
                         --current;
                     } else {

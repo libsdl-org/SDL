@@ -331,7 +331,7 @@ static void D3D_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
 
-    if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED) {
+    if (event->type == SDL_EVENT_WINDOW_SIZE_CHANGED) {
         data->updateSize = SDL_TRUE;
     }
 }
@@ -1518,7 +1518,7 @@ static int D3D_Reset(SDL_Renderer *renderer)
     /* Let the application know that render targets were reset */
     {
         SDL_Event event;
-        event.type = SDL_RENDER_TARGETS_RESET;
+        event.type = SDL_EVENT_RENDER_TARGETS_RESET;
         event.common.timestamp = 0;
         SDL_PushEvent(&event);
     }

@@ -75,7 +75,7 @@ void loop()
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
         }

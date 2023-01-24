@@ -352,10 +352,10 @@ static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info,
                 SDL_SetDesktopDisplayMode(&_this->displays[i], &mode);
                 if (WIN_GetDisplayBounds(_this, &_this->displays[i], &bounds) == 0) {
                     if (SDL_memcmp(&driverdata->bounds, &bounds, sizeof(bounds)) != 0 || moved) {
-                        SDL_SendDisplayEvent(&_this->displays[i], SDL_DISPLAYEVENT_MOVED, 0);
+                        SDL_SendDisplayEvent(&_this->displays[i], SDL_EVENT_DISPLAY_MOVED, 0);
                     }
                 }
-                SDL_SendDisplayEvent(&_this->displays[i], SDL_DISPLAYEVENT_ORIENTATION, orientation);
+                SDL_SendDisplayEvent(&_this->displays[i], SDL_EVENT_DISPLAY_ORIENTATION, orientation);
             }
             goto done;
         }

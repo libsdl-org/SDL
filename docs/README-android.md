@@ -195,20 +195,20 @@ app can continue to operate as it was.
 
 However, there's a chance (on older hardware, or on systems under heavy load),
 where the GL context can not be restored. In that case you have to listen for
-a specific message (SDL_RENDER_DEVICE_RESET) and restore your textures
+a specific message (SDL_EVENT_RENDER_DEVICE_RESET) and restore your textures
 manually or quit the app.
 
 You should not use the SDL renderer API while the app going in background:
-- SDL_APP_WILLENTERBACKGROUND:
+- SDL_EVENT_WILL_ENTER_BACKGROUND:
     after you read this message, GL context gets backed-up and you should not
     use the SDL renderer API.
 
     When this event is received, you have to set the render target to NULL, if you're using it.
     (eg call SDL_SetRenderTarget(renderer, NULL))
 
-- SDL_APP_DIDENTERFOREGROUND:
+- SDL_EVENT_DID_ENTER_FOREGROUND:
    GL context is restored, and the SDL renderer API is available (unless you
-   receive SDL_RENDER_DEVICE_RESET).
+   receive SDL_EVENT_RENDER_DEVICE_RESET).
 
 Mouse / Touch events
 ================================================================================
@@ -456,12 +456,12 @@ Two legitimate ways:
 Activity by calling Activity.finish().
 
 - Android OS can decide to terminate your application by calling onDestroy()
-(see Activity life cycle). Your application will receive a SDL_QUIT event you 
+(see Activity life cycle). Your application will receive an SDL_EVENT_QUIT you 
 can handle to save things and quit.
 
 Don't call exit() as it stops the activity badly.
 
-NB: "Back button" can be handled as a SDL_KEYDOWN/UP events, with Keycode
+NB: "Back button" can be handled as a SDL_EVENT_KEY_DOWN/UP events, with Keycode
 SDLK_AC_BACK, for any purpose.
 
 Known issues

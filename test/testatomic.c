@@ -495,7 +495,7 @@ static int SDLCALL FIFO_Writer(void *_data)
     int i;
     SDL_Event event;
 
-    event.type = SDL_USEREVENT;
+    event.type = SDL_EVENT_USER;
     event.user.windowID = 0;
     event.user.code = 0;
     event.user.data1 = data;

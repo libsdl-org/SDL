@@ -44,7 +44,7 @@ use the traditional autoconf/automake/make method, or use Xcode.
 If you register your own NSApplicationDelegate (using [NSApp setDelegate:]),
 SDL will not register its own. This means that SDL will not terminate using
 SDL_Quit if it receives a termination request, it will terminate like a
-normal app, and it will not send a SDL_DROPFILE when you request to open a
+normal app, and it will not send a SDL_EVENT_DROP_FILE when you request to open a
 file with the app. To solve these issues, put the following code in your
 NSApplicationDelegate implementation:
 
@@ -52,9 +52,9 @@ NSApplicationDelegate implementation:
 ```objc
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    if (SDL_GetEventState(SDL_QUIT) == SDL_ENABLE) {
+    if (SDL_GetEventState(SDL_EVENT_QUIT) == SDL_ENABLE) {
         SDL_Event event;
-        event.type = SDL_QUIT;
+        event.type = SDL_EVENT_QUIT;
         SDL_PushEvent(&event);
     }
     
@@ -63,9 +63,9 @@ NSApplicationDelegate implementation:
     
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
 {
-    if (SDL_GetEventState(SDL_DROPFILE) == SDL_ENABLE) {
+    if (SDL_GetEventState(SDL_EVENT_DROP_FILE) == SDL_ENABLE) {
         SDL_Event event;
-        event.type = SDL_DROPFILE;
+        event.type = SDL_EVENT_DROP_FILE;
         event.drop.file = SDL_strdup([filename UTF8String]);
         return (SDL_PushEvent(&event) > 0);
     }

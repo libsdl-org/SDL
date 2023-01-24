@@ -349,7 +349,7 @@ int main(int argc, char **argv)
     
     while (keep_going) {
         while (SDL_PollEvent(&evt)) {
-            if ((evt.type == SDL_KEYDOWN) && (evt.key.keysym.sym == SDLK_ESCAPE)) {
+            if ((evt.type == SDL_EVENT_KEY_DOWN) && (evt.key.keysym.sym == SDLK_ESCAPE)) {
                 keep_going = SDL_FALSE;
             } 
         }

@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
         }
 
         while (SDL_WaitEvent(&event)) {
-            if (event.type == SDL_QUIT || event.type == SDL_KEYUP) {
+            if (event.type == SDL_EVENT_QUIT || event.type == SDL_EVENT_KEY_UP) {
                 break;
             }
         }

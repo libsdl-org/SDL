@@ -560,26 +560,26 @@ void loop(void *arg)
     SDL_PumpEvents();
 
     /* Process all currently pending events */
-    while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1) {
+    while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) == 1) {
         switch (event.type) {
-        case SDL_GAMEPADADDED:
+        case SDL_EVENT_GAMEPAD_ADDED:
             SDL_Log("Gamepad device %" SDL_PRIu32 " added.\n", event.cdevice.which);
             AddGamepad(event.cdevice.which, SDL_TRUE);
             break;
 
-        case SDL_GAMEPADREMOVED:
+        case SDL_EVENT_GAMEPAD_REMOVED:
             SDL_Log("Gamepad device %" SDL_PRIu32 " removed.\n", event.cdevice.which);
             DelGamepad(event.cdevice.which);
             break;
 
-        case SDL_GAMEPADTOUCHPADDOWN:
-        case SDL_GAMEPADTOUCHPADMOTION:
-        case SDL_GAMEPADTOUCHPADUP:
+        case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
+        case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
+        case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
             SDL_Log("Gamepad %" SDL_PRIu32 " touchpad %" SDL_PRIs32 " finger %" SDL_PRIs32 " %s %.2f, %.2f, %.2f\n",
                     event.ctouchpad.which,
                     event.ctouchpad.touchpad,
                     event.ctouchpad.finger,
-                    (event.type == SDL_GAMEPADTOUCHPADDOWN ? "pressed at" : (event.type == SDL_GAMEPADTOUCHPADUP ? "released at" : "moved to")),
+                    (event.type == SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN ? "pressed at" : (event.type == SDL_EVENT_GAMEPAD_TOUCHPAD_UP ? "released at" : "moved to")),
                     event.ctouchpad.x,
                     event.ctouchpad.y,
                     event.ctouchpad.pressure);
@@ -587,7 +587,7 @@ void loop(void *arg)
 
 #define VERBOSE_SENSORS
 #ifdef VERBOSE_SENSORS
-        case SDL_GAMEPADSENSORUPDATE:
+        case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
             SDL_Log("Gamepad %" SDL_PRIu32 " sensor %s: %.2f, %.2f, %.2f (%" SDL_PRIu64 ")\n",
                     event.csensor.which,
                     GetSensorName((SDL_SensorType)event.csensor.sensor),
@@ -600,7 +600,7 @@ void loop(void *arg)
 
 #define VERBOSE_AXES
 #ifdef VERBOSE_AXES
-        case SDL_GAMEPADAXISMOTION:
+        case SDL_EVENT_GAMEPAD_AXIS_MOTION:
             if (event.caxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.caxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
                 SetGamepad(event.caxis.which);
             }
@@ -608,44 +608,44 @@ void loop(void *arg)
             break;
 #endif /* VERBOSE_AXES */
 
-        case SDL_GAMEPADBUTTONDOWN:
-        case SDL_GAMEPADBUTTONUP:
-            if (event.type == SDL_GAMEPADBUTTONDOWN) {
+        case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+        case SDL_EVENT_GAMEPAD_BUTTON_UP:
+            if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
                 SetGamepad(event.cbutton.which);
             }
             SDL_Log("Gamepad %" SDL_PRIu32 " button %s %s\n", event.cbutton.which, SDL_GetGamepadStringForButton((SDL_GamepadButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
 
             /* Cycle PS5 trigger effects when the microphone button is pressed */
-            if (event.type == SDL_GAMEPADBUTTONDOWN &&
+            if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN &&
                 event.cbutton.button == SDL_GAMEPAD_BUTTON_MISC1 &&
                 SDL_GetGamepadType(gamepad) == SDL_GAMEPAD_TYPE_PS5) {
                 CyclePS5TriggerEffect();
             }
             break;
 
-        case SDL_JOYBATTERYUPDATED:
+        case SDL_EVENT_JOYSTICK_BATTERY_UPDATED:
             SDL_Log("Gamepad %" SDL_PRIu32 " battery state changed to %s\n", event.jbattery.which, power_level_strings[event.jbattery.level + 1]);
             break;
 
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTONDOWN:
             if (virtual_joystick) {
                 VirtualGamepadMouseDown(event.button.x, event.button.y);
             }
             break;
 
-        case SDL_MOUSEBUTTONUP:
+        case SDL_EVENT_MOUSE_BUTTONUP:
             if (virtual_joystick) {
                 VirtualGamepadMouseUp(event.button.x, event.button.y);
             }
             break;
 
-        case SDL_MOUSEMOTION:
+        case SDL_EVENT_MOUSE_MOTION:
             if (virtual_joystick) {
                 VirtualGamepadMouseMotion(event.motion.x, event.motion.y);
             }
             break;
 
-        case SDL_KEYDOWN:
+        case SDL_EVENT_KEY_DOWN:
             if (event.key.keysym.sym >= SDLK_0 && event.key.keysym.sym <= SDLK_9) {
                 if (gamepad) {
                     int player_index = (event.key.keysym.sym - SDLK_0);
@@ -666,7 +666,7 @@ void loop(void *arg)
                 break;
             }
             SDL_FALLTHROUGH;
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
         default:

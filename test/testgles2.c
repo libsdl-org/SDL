@@ -567,7 +567,7 @@ loop_threaded()
 
     /* Wait for events */
     while (SDL_WaitEvent(&event) && !done) {
-        if (event.type == SDL_WINDOWEVENT_CLOSE) {
+        if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
             SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
             if (window) {
                 for (i = 0; i < state->num_windows; ++i) {

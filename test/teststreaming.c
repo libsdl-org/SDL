@@ -100,12 +100,12 @@ void loop()
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_KEYDOWN:
+        case SDL_EVENT_KEY_DOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE) {
                 done = SDL_TRUE;
             }
             break;
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
         }

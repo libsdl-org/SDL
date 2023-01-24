@@ -39,7 +39,7 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
 
         if (need_begin) {
             SDL_zero(event);
-            event.type = SDL_DROPBEGIN;
+            event.type = SDL_EVENT_DROP_BEGIN;
             event.common.timestamp = 0;
             event.drop.windowID = window ? window->id : 0;
             posted = (SDL_PushEvent(&event) > 0);
@@ -60,7 +60,7 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
         event.drop.windowID = window ? window->id : 0;
         posted = (SDL_PushEvent(&event) > 0);
 
-        if (posted && (evtype == SDL_DROPCOMPLETE)) {
+        if (posted && (evtype == SDL_EVENT_DROP_COMPLETE)) {
             if (window) {
                 window->is_dropping = SDL_FALSE;
             } else {
@@ -73,15 +73,15 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
 
 int SDL_SendDropFile(SDL_Window *window, const char *file)
 {
-    return SDL_SendDrop(window, SDL_DROPFILE, file);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_FILE, file);
 }
 
 int SDL_SendDropText(SDL_Window *window, const char *text)
 {
-    return SDL_SendDrop(window, SDL_DROPTEXT, text);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_TEXT, text);
 }
 
 int SDL_SendDropComplete(SDL_Window *window)
 {
-    return SDL_SendDrop(window, SDL_DROPCOMPLETE, NULL);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_COMPLETE, NULL);
 }

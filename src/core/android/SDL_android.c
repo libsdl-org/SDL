@@ -902,7 +902,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
 
     if (Android_Window) {
         SDL_VideoDisplay *display = SDL_GetDisplay(0);
-        SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
@@ -1192,7 +1192,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
     JNIEnv *env, jclass cls)
 {
-    SDL_SendAppEvent(SDL_APP_LOWMEMORY);
+    SDL_SendAppEvent(SDL_EVENT_LOW_MEMORY);
 }
 
 /* Locale
@@ -1200,7 +1200,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeLocaleChanged)(
     JNIEnv *env, jclass cls)
 {
-    SDL_SendAppEvent(SDL_LOCALECHANGED);
+    SDL_SendAppEvent(SDL_EVENT_LOCALE_CHANGED);
 }
 
 /* Send Quit event to "SDLThread" thread */
@@ -1208,17 +1208,17 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
     JNIEnv *env, jclass cls)
 {
     /* Discard previous events. The user should have handled state storage
-     * in SDL_APP_WILLENTERBACKGROUND. After nativeSendQuit() is called, no
-     * events other than SDL_QUIT and SDL_APP_TERMINATING should fire */
-    SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
-    /* Inject a SDL_QUIT event */
+     * in SDL_EVENT_WILL_ENTER_BACKGROUND. After nativeSendQuit() is called, no
+     * events other than SDL_EVENT_QUIT and SDL_EVENT_TERMINATING should fire */
+    SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
+    /* Inject a SDL_EVENT_QUIT event */
     SDL_SendQuit();
-    SDL_SendAppEvent(SDL_APP_TERMINATING);
+    SDL_SendAppEvent(SDL_EVENT_TERMINATING);
     /* Robustness: clear any pending Pause */
     while (SDL_SemTryWait(Android_PauseSem) == 0) {
         /* empty */
     }
-    /* Resume the event loop so that the app can catch SDL_QUIT which
+    /* Resume the event loop so that the app can catch SDL_EVENT_QUIT which
      * should now be the top event in the event queue. */
     SDL_SemPost(Android_ResumeSem);
 }
@@ -1285,7 +1285,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
 
     if (Android_Window) {
         __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeFocusChanged()");
-        SDL_SendWindowEvent(Android_Window, (hasFocus ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST), 0, 0);
+        SDL_SendWindowEvent(Android_Window, (hasFocus ? SDL_EVENT_WINDOW_FOCUS_GAINED : SDL_EVENT_WINDOW_FOCUS_LOST), 0, 0);
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
@@ -2625,7 +2625,7 @@ int Android_JNI_GetLocale(char *buf, size_t buflen)
 
     SDL_assert(buflen > 6);
 
-    /* Need to re-create the asset manager if locale has changed (SDL_LOCALECHANGED) */
+    /* Need to re-create the asset manager if locale has changed (SDL_EVENT_LOCALE_CHANGED) */
     Internal_Android_Destroy_AssetManager();
 
     if (asset_manager == NULL) {

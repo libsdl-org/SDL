@@ -319,9 +319,9 @@ int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_W
         }
 
         posted = 0;
-        if (SDL_EventEnabled(SDL_FINGERDOWN)) {
+        if (SDL_EventEnabled(SDL_EVENT_FINGER_DOWN)) {
             SDL_Event event;
-            event.type = SDL_FINGERDOWN;
+            event.type = SDL_EVENT_FINGER_DOWN;
             event.common.timestamp = timestamp;
             event.tfinger.touchId = id;
             event.tfinger.fingerId = fingerid;
@@ -340,9 +340,9 @@ int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_W
         }
 
         posted = 0;
-        if (SDL_EventEnabled(SDL_FINGERUP)) {
+        if (SDL_EventEnabled(SDL_EVENT_FINGER_UP)) {
             SDL_Event event;
-            event.type = SDL_FINGERUP;
+            event.type = SDL_EVENT_FINGER_UP;
             event.common.timestamp = timestamp;
             event.tfinger.touchId = id;
             event.tfinger.fingerId = fingerid;
@@ -437,9 +437,9 @@ int SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid,
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_EventEnabled(SDL_FINGERMOTION)) {
+    if (SDL_EventEnabled(SDL_EVENT_FINGER_MOTION)) {
         SDL_Event event;
-        event.type = SDL_FINGERMOTION;
+        event.type = SDL_EVENT_FINGER_MOTION;
         event.common.timestamp = timestamp;
         event.tfinger.touchId = id;
         event.tfinger.fingerId = fingerid;

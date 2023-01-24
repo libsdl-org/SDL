@@ -279,7 +279,7 @@ void Android_SendResize(SDL_Window *window)
     }
 
     if (window) {
-        /* Force the current mode to match the resize otherwise the SDL_WINDOWEVENT_RESTORED event
+        /* Force the current mode to match the resize otherwise the SDL_EVENT_WINDOW_RESTORED event
          * will fall back to the old mode */
         SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
         display->display_modes[0].format = Android_ScreenFormat;
@@ -288,7 +288,7 @@ void Android_SendResize(SDL_Window *window)
         display->display_modes[0].refresh_rate = Android_ScreenRate;
         display->current_mode = display->display_modes[0];
 
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, Android_SurfaceWidth, Android_SurfaceHeight);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, Android_SurfaceWidth, Android_SurfaceHeight);
     }
 }
 

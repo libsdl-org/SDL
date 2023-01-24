@@ -1001,7 +1001,7 @@ void WIN_UpdateWindowICCProfile(SDL_Window *window, SDL_bool send_event)
                     }
                     data->ICMFileName = SDL_wcsdup(fileName);
                     if (send_event) {
-                        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_ICCPROF_CHANGED, 0, 0);
                     }
                 }
             }

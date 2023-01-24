@@ -147,7 +147,7 @@ void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *di
         }
 
         if (old_w != new_w || old_h != new_h) {
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, new_w, new_h);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, new_w, new_h);
         }
     }
 

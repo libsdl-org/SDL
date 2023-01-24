@@ -67,19 +67,19 @@ int main(int argc, char *argv[])
         SDL_RenderPresent(renderer);
     }
 
-    SDL_SetEventEnabled(SDL_DROPFILE, SDL_TRUE);
+    SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
 
     /* Main render loop */
     done = 0;
     while (!done) {
         /* Check for events */
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_DROPBEGIN) {
+            if (event.type == SDL_EVENT_DROP_BEGIN) {
                 SDL_Log("Drop beginning on window %u", (unsigned int)event.drop.windowID);
-            } else if (event.type == SDL_DROPCOMPLETE) {
+            } else if (event.type == SDL_EVENT_DROP_COMPLETE) {
                 SDL_Log("Drop complete on window %u", (unsigned int)event.drop.windowID);
-            } else if ((event.type == SDL_DROPFILE) || (event.type == SDL_DROPTEXT)) {
-                const char *typestr = (event.type == SDL_DROPFILE) ? "File" : "Text";
+            } else if ((event.type == SDL_EVENT_DROP_FILE) || (event.type == SDL_EVENT_DROP_TEXT)) {
+                const char *typestr = (event.type == SDL_EVENT_DROP_FILE) ? "File" : "Text";
                 char *dropped_filedir = event.drop.file;
                 SDL_Log("%s dropped on window %u: %s", typestr, (unsigned int)event.drop.windowID, dropped_filedir);
                 /* Normally you'd have to do this, but this is freed in SDLTest_CommonEvent() */

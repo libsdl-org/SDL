@@ -329,11 +329,11 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
     if (X11_XGetEventData(videodata->display, cookie)) {
         X11_HandleXinput2Event(videodata, cookie);
 
-        /* Send a SDL_SYSWMEVENT if the application wants them.
+        /* Send a SDL_EVENT_SYSWM if the application wants them.
          * Since event data is only available until XFreeEventData is called,
          * the *only* way for an application to access it is to register an event filter/watcher
-         * and do all the processing on the SDL_SYSWMEVENT inside the callback. */
-        if (SDL_EventEnabled(SDL_SYSWMEVENT)) {
+         * and do all the processing on the SDL_EVENT_SYSWM inside the callback. */
+        if (SDL_EventEnabled(SDL_EVENT_SYSWM)) {
             SDL_SysWMmsg wmmsg;
 
             wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
@@ -491,8 +491,8 @@ static void X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
 static void X11_DispatchMapNotify(SDL_WindowData *data)
 {
     SDL_Window *window = data->window;
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_SHOWN, 0, 0);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
     if (!(window->flags & SDL_WINDOW_HIDDEN) && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         SDL_UpdateWindowGrab(window);
     }
@@ -500,8 +500,8 @@ static void X11_DispatchMapNotify(SDL_WindowData *data)
 
 static void X11_DispatchUnmapNotify(SDL_WindowData *data)
 {
-    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIDDEN, 0, 0);
-    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
+    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
 }
 
 static void InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
@@ -814,8 +814,8 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
     }
 #endif
 
-    /* Send a SDL_SYSWMEVENT if the application wants them */
-    if (SDL_EventEnabled(SDL_SYSWMEVENT)) {
+    /* Send a SDL_EVENT_SYSWM if the application wants them */
+    if (SDL_EventEnabled(SDL_EVENT_SYSWM)) {
         SDL_SysWMmsg wmmsg;
 
         wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
@@ -878,12 +878,12 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
                         X11_XGetWindowAttributes(display, data->xwindow, &attrib);
                         screennum = X11_XScreenNumberOfScreen(attrib.screen);
                         if (screennum == 0 && SDL_strcmp(name_of_atom, "_ICC_PROFILE") == 0) {
-                            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_ICCPROF_CHANGED, 0, 0);
                         } else if (SDL_strncmp(name_of_atom, "_ICC_PROFILE_", sizeof("_ICC_PROFILE_") - 1) == 0 && SDL_strlen(name_of_atom) > sizeof("_ICC_PROFILE_") - 1) {
                             int iccscreennum = SDL_atoi(&name_of_atom[sizeof("_ICC_PROFILE_") - 1]);
 
                             if (screennum == iccscreennum) {
-                                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_ICCPROF_CHANGED, 0, 0);
                             }
                         }
                     }
@@ -1077,7 +1077,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
 
 #ifdef SDL_USE_IME
-        if (SDL_EventEnabled(SDL_TEXTINPUT)) {
+        if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
             handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
         }
 #endif
@@ -1167,10 +1167,10 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 
         if (xevent->xconfigure.x != data->last_xconfigure.x ||
             xevent->xconfigure.y != data->last_xconfigure.y) {
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED,
                                 xevent->xconfigure.x, xevent->xconfigure.y);
 #ifdef SDL_USE_IME
-            if (SDL_EventEnabled(SDL_TEXTINPUT)) {
+            if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
                 /* Update IME candidate list position */
                 SDL_IME_UpdateTextRect(NULL);
             }
@@ -1178,7 +1178,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         }
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
             xevent->xconfigure.height != data->last_xconfigure.height) {
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED,
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
                                 xevent->xconfigure.width,
                                 xevent->xconfigure.height);
         }
@@ -1279,7 +1279,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: WM_DELETE_WINDOW\n", data);
 #endif
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
             break;
         } else if ((xevent->xclient.message_type == videodata->WM_PROTOCOLS) &&
                    (xevent->xclient.format == 32) &&
@@ -1288,7 +1288,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: WM_TAKE_FOCUS\n", data);
 #endif
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_TAKE_FOCUS, 0, 0);
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_TAKE_FOCUS, 0, 0);
             break;
         }
     } break;
@@ -1299,7 +1299,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
         printf("window %p: Expose (count = %d)\n", data, xevent->xexpose.count);
 #endif
-        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
     } break;
 
     case MotionNotify:
@@ -1327,7 +1327,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             int button = xevent->xbutton.button;
             if (button == Button1) {
                 if (ProcessHitTest(_this, data, xevent)) {
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
+                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
                     break; /* don't pass this event on to app. */
                 }
             } else if (button > 7) {
@@ -1474,9 +1474,9 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 
             if (changed & SDL_WINDOW_MAXIMIZED) {
                 if (flags & SDL_WINDOW_MAXIMIZED) {
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
                 } else {
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
                 }
             }
         } else if (xevent->xproperty.atom == videodata->XKLAVIER_STATE) {
@@ -1656,7 +1656,7 @@ int X11_WaitEventTimeout(_THIS, Sint64 timeoutNS)
 
             if (errno == EINTR) {
                 /* If the wait was interrupted by a signal, we may have generated a
-                 * SDL_QUIT event. Let the caller know to call SDL_PumpEvents(). */
+                 * SDL_EVENT_QUIT event. Let the caller know to call SDL_PumpEvents(). */
                 return 1;
             } else {
                 return err;
@@ -1667,7 +1667,7 @@ int X11_WaitEventTimeout(_THIS, Sint64 timeoutNS)
     X11_DispatchEvent(_this, &xevent);
 
 #ifdef SDL_USE_IME
-    if (SDL_EventEnabled(SDL_TEXTINPUT)) {
+    if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -1708,7 +1708,7 @@ void X11_PumpEvents(_THIS)
     }
 
 #ifdef SDL_USE_IME
-    if (SDL_EventEnabled(SDL_TEXTINPUT)) {
+    if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
         SDL_IME_PumpEvents();
     }
 #endif

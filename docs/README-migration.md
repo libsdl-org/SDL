@@ -121,23 +121,66 @@ You should set the event.common.timestamp field before passing an event to SDL_P
 
 Mouse events use floating point values for mouse coordinates and relative motion values. You can get sub-pixel motion depending on the platform and display scaling.
 
-The SDL_DISPLAYEVENT_* events have been moved to top level events, and SDL_DISPLAYEVENT has been removed. In general, handling this change just means checking for the individual events instead of first checking for SDL_DISPLAYEVENT and then checking for display events. You can compare the event >= SDL_DISPLAYEVENT_FIRST and <= SDL_DISPLAYEVENT_LAST if you need to see whether it's a display event.
+The SDL_DISPLAYEVENT_* events have been moved to top level events, and SDL_DISPLAYEVENT has been removed. In general, handling this change just means checking for the individual events instead of first checking for SDL_DISPLAYEVENT and then checking for display events. You can compare the event >= SDL_EVENT_DISPLAY_FIRST and <= SDL_EVENT_DISPLAY_LAST if you need to see whether it's a display event.
 
-The SDL_WINDOWEVENT_* events have been moved to top level events, and SDL_WINDOWEVENT has been removed. In general, handling this change just means checking for the individual events instead of first checking for SDL_WINDOWEVENT and then checking for window events. You can compare the event >= SDL_WINDOWEVENT_FIRST and <= SDL_WINDOWEVENT_LAST if you need to see whether it's a window event.
+The SDL_WINDOWEVENT_* events have been moved to top level events, and SDL_WINDOWEVENT has been removed. In general, handling this change just means checking for the individual events instead of first checking for SDL_WINDOWEVENT and then checking for window events. You can compare the event >= SDL_EVENT_WINDOW_FIRST and <= SDL_EVENT_WINDOW_LAST if you need to see whether it's a window event.
 
 SDL_QUERY, SDL_IGNORE, SDL_ENABLE, and SDL_DISABLE have been removed. You can use the functions SDL_SetEventEnabled() and SDL_EventEnabled() to set and query event processing state.
 
 The following symbols have been renamed:
-* SDL_CONTROLLERAXISMOTION => SDL_GAMEPADAXISMOTION
-* SDL_CONTROLLERBUTTONDOWN => SDL_GAMEPADBUTTONDOWN
-* SDL_CONTROLLERBUTTONUP => SDL_GAMEPADBUTTONUP
-* SDL_CONTROLLERDEVICEADDED => SDL_GAMEPADADDED
-* SDL_CONTROLLERDEVICEREMAPPED => SDL_GAMEPADREMAPPED
-* SDL_CONTROLLERDEVICEREMOVED => SDL_GAMEPADREMOVED
-* SDL_CONTROLLERSENSORUPDATE => SDL_GAMEPADSENSORUPDATE
-* SDL_CONTROLLERTOUCHPADDOWN => SDL_GAMEPADTOUCHPADDOWN
-* SDL_CONTROLLERTOUCHPADMOTION => SDL_GAMEPADTOUCHPADMOTION
-* SDL_CONTROLLERTOUCHPADUP => SDL_GAMEPADTOUCHPADUP
+* SDL_APP_DIDENTERBACKGROUND => SDL_EVENT_DID_ENTER_BACKGROUND
+* SDL_APP_DIDENTERFOREGROUND => SDL_EVENT_DID_ENTER_FOREGROUND
+* SDL_APP_LOWMEMORY => SDL_EVENT_LOW_MEMORY
+* SDL_APP_TERMINATING => SDL_EVENT_TERMINATING
+* SDL_APP_WILLENTERBACKGROUND => SDL_EVENT_WILL_ENTER_BACKGROUND
+* SDL_APP_WILLENTERFOREGROUND => SDL_EVENT_WILL_ENTER_FOREGROUND
+* SDL_AUDIODEVICEADDED => SDL_EVENT_AUDIO_DEVICE_ADDED
+* SDL_AUDIODEVICEREMOVED => SDL_EVENT_AUDIO_DEVICE_REMOVED
+* SDL_CLIPBOARDUPDATE => SDL_EVENT_CLIPBOARD_UPDATE
+* SDL_CONTROLLERAXISMOTION => SDL_EVENT_GAMEPAD_AXIS_MOTION
+* SDL_CONTROLLERBUTTONDOWN => SDL_EVENT_GAMEPAD_BUTTON_DOWN
+* SDL_CONTROLLERBUTTONUP => SDL_EVENT_GAMEPAD_BUTTON_UP
+* SDL_CONTROLLERDEVICEADDED => SDL_EVENT_GAMEPAD_ADDED
+* SDL_CONTROLLERDEVICEREMAPPED => SDL_EVENT_GAMEPAD_REMAPPED
+* SDL_CONTROLLERDEVICEREMOVED => SDL_EVENT_GAMEPAD_REMOVED
+* SDL_CONTROLLERSENSORUPDATE => SDL_EVENT_GAMEPAD_SENSOR_UPDATE
+* SDL_CONTROLLERTOUCHPADDOWN => SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN
+* SDL_CONTROLLERTOUCHPADMOTION => SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION
+* SDL_CONTROLLERTOUCHPADUP => SDL_EVENT_GAMEPAD_TOUCHPAD_UP
+* SDL_DROPBEGIN => SDL_EVENT_DROP_BEGIN
+* SDL_DROPCOMPLETE => SDL_EVENT_DROP_COMPLETE
+* SDL_DROPFILE => SDL_EVENT_DROP_FILE
+* SDL_DROPTEXT => SDL_EVENT_DROP_TEXT
+* SDL_FINGERDOWN => SDL_EVENT_FINGER_DOWN
+* SDL_FINGERMOTION => SDL_EVENT_FINGER_MOTION
+* SDL_FINGERUP => SDL_EVENT_FINGER_UP
+* SDL_FIRSTEVENT => SDL_EVENT_FIRST
+* SDL_JOYAXISMOTION => SDL_EVENT_JOYSTICK_AXIS_MOTION
+* SDL_JOYBATTERYUPDATED => SDL_EVENT_JOYSTICK_BATTERY_UPDATED
+* SDL_JOYBUTTONDOWN => SDL_EVENT_JOYSTICK_BUTTON_DOWN
+* SDL_JOYBUTTONUP => SDL_EVENT_JOYSTICK_BUTTON_UP
+* SDL_JOYDEVICEADDED => SDL_EVENT_JOYSTICK_ADDED
+* SDL_JOYDEVICEREMOVED => SDL_EVENT_JOYSTICK_REMOVED
+* SDL_JOYHATMOTION => SDL_EVENT_JOYSTICK_HAT_MOTION
+* SDL_KEYDOWN => SDL_EVENT_KEY_DOWN
+* SDL_KEYMAPCHANGED => SDL_EVENT_KEYMAP_CHANGED
+* SDL_KEYUP => SDL_EVENT_KEY_UP
+* SDL_LASTEVENT => SDL_EVENT_LAST
+* SDL_LOCALECHANGED => SDL_EVENT_LOCALECHANGED
+* SDL_MOUSEBUTTONDOWN => SDL_EVENT_MOUSE_BUTTONDOWN
+* SDL_MOUSEBUTTONUP => SDL_EVENT_MOUSE_BUTTONUP
+* SDL_MOUSEMOTION => SDL_EVENT_MOUSE_MOTION
+* SDL_MOUSEWHEEL => SDL_EVENT_MOUSE_WHEEL
+* SDL_POLLSENTINEL => SDL_EVENT_POLL_SENTINEL
+* SDL_QUIT => SDL_EVENT_QUIT
+* SDL_RENDER_DEVICE_RESET => SDL_EVENT_RENDER_DEVICE_RESET
+* SDL_RENDER_TARGETS_RESET => SDL_EVENT_RENDER_TARGETS_RESET
+* SDL_SENSORUPDATE => SDL_EVENT_SENSOR_UPDATE
+* SDL_SYSWMEVENT => SDL_EVENT_SYSWM
+* SDL_TEXTEDITING => SDL_EVENT_TEXT_EDITING
+* SDL_TEXTEDITING_EXT => SDL_EVENT_TEXTEDITING_EXT
+* SDL_TEXTINPUT => SDL_EVENT_TEXT_INPUT
+* SDL_USEREVENT => SDL_EVENT_USER
 
 The following structures have been renamed:
 * SDL_ControllerAxisEvent => SDL_GamepadAxisEvent
@@ -154,11 +197,11 @@ The following functions have been removed:
 
 SDL_gamecontroller.h has been renamed SDL_gamepad.h, and all APIs have been renamed to match.
 
-The SDL_GAMEPADADDED event now provides the joystick instance ID in the which member of the cdevice event structure.
+The SDL_EVENT_GAMEPAD_ADDED event now provides the joystick instance ID in the which member of the cdevice event structure.
 
 The functions SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() have been added to directly query the list of available gamepads.
 
-SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_GAMEPADSENSORUPDATE events.
+SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_EVENT_GAMEPAD_SENSOR_UPDATE events.
 
 The following enums have been renamed:
 * SDL_GameControllerAxis => SDL_GamepadAxis
@@ -337,7 +380,7 @@ Rather than iterating over joysticks using device index, there is a new function
 }
 ```
 
-The SDL_JOYDEVICEADDED event now provides the joystick instance ID in the `which` member of the jdevice event structure.
+The SDL_EVENT_JOYSTICK_ADDED event now provides the joystick instance ID in the `which` member of the jdevice event structure.
 
 The functions SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystickInstancePath(), SDL_GetJoystickInstancePlayerIndex(), SDL_GetJoystickInstanceGUID(), SDL_GetJoystickInstanceVendor(), SDL_GetJoystickInstanceProduct(), SDL_GetJoystickInstanceProductVersion(), and SDL_GetJoystickInstanceType() have been added to directly query the list of available joysticks.
 
@@ -482,6 +525,30 @@ The following functions have been renamed:
 * SDL_FreePalette() => SDL_DestroyPalette()
 * SDL_MasksToPixelFormatEnum() => SDL_GetPixelFormatEnumForMasks()
 * SDL_PixelFormatEnumToMasks() => SDL_GetMasksForPixelFormatEnum()
+
+The following symbols have been renamed:
+* SDL_DISPLAYEVENT_DISCONNECTED => SDL_EVENT_DISPLAY_DISCONNECTED
+* SDL_DISPLAYEVENT_MOVED => SDL_EVENT_DISPLAY_MOVED
+* SDL_DISPLAYEVENT_ORIENTATION => SDL_EVENT_DISPLAY_ORIENTATION
+* SDL_WINDOWEVENT_CLOSE => SDL_EVENT_WINDOW_CLOSE
+* SDL_WINDOWEVENT_DISPLAY_CHANGED => SDL_EVENT_WINDOW_DISPLAY_CHANGED
+* SDL_WINDOWEVENT_ENTER => SDL_EVENT_WINDOW_ENTER
+* SDL_WINDOWEVENT_EXPOSED => SDL_EVENT_WINDOW_EXPOSED
+* SDL_WINDOWEVENT_FOCUS_GAINED => SDL_EVENT_WINDOW_FOCUS_GAINED
+* SDL_WINDOWEVENT_FOCUS_LOST => SDL_EVENT_WINDOW_FOCUS_LOST
+* SDL_WINDOWEVENT_HIDDEN => SDL_EVENT_WINDOW_HIDDEN
+* SDL_WINDOWEVENT_HIT_TEST => SDL_EVENT_WINDOW_HIT_TEST
+* SDL_WINDOWEVENT_ICCPROF_CHANGED => SDL_EVENT_WINDOW_ICCPROF_CHANGED
+* SDL_WINDOWEVENT_LEAVE => SDL_EVENT_WINDOW_LEAVE
+* SDL_WINDOWEVENT_MAXIMIZED => SDL_EVENT_WINDOW_MAXIMIZED
+* SDL_WINDOWEVENT_MINIMIZED => SDL_EVENT_WINDOW_MINIMIZED
+* SDL_WINDOWEVENT_MOVED => SDL_EVENT_WINDOW_MOVED
+* SDL_WINDOWEVENT_RESIZED => SDL_EVENT_WINDOW_RESIZED
+* SDL_WINDOWEVENT_RESTORED => SDL_EVENT_WINDOW_RESTORED
+* SDL_WINDOWEVENT_SHOWN => SDL_EVENT_WINDOW_SHOWN
+* SDL_WINDOWEVENT_SIZE_CHANGED => SDL_EVENT_WINDOW_SIZE_CHANGED
+* SDL_WINDOWEVENT_TAKE_FOCUS => SDL_EVENT_WINDOW_TAKE_FOCUS
+
 
 ## SDL_platform.h
 
@@ -748,7 +815,7 @@ Rather than iterating over sensors using device index, there is a new function S
 }
 ```
 
-Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_SENSORUPDATE events.
+Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_EVENT_SENSOR_UPDATE events.
 
 
 The following functions have been renamed:

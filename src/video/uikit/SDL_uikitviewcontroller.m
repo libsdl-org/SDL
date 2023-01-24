@@ -201,7 +201,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     int w = (int)size.width;
     int h = (int)size.height;
 
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, w, h);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
 }
 
 #if !TARGET_OS_TV

@@ -104,19 +104,19 @@ int main(int argc, char **argv)
             nothing_to_do = 0;
 
             switch (e.type) {
-            case SDL_MOUSEBUTTONDOWN:
+            case SDL_EVENT_MOUSE_BUTTONDOWN:
                 SDL_Log("button down!\n");
                 break;
 
-            case SDL_MOUSEBUTTONUP:
+            case SDL_EVENT_MOUSE_BUTTONUP:
                 SDL_Log("button up!\n");
                 break;
 
-            case SDL_WINDOWEVENT_MOVED:
+            case SDL_EVENT_WINDOW_MOVED:
                 SDL_Log("Window event moved to (%d, %d)!\n", (int)e.window.data1, (int)e.window.data2);
                 break;
 
-            case SDL_KEYDOWN:
+            case SDL_EVENT_KEY_DOWN:
                 if (e.key.keysym.sym == SDLK_ESCAPE) {
                     done = 1;
                 } else if (e.key.keysym.sym == SDLK_x) {
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
                 }
                 break;
 
-            case SDL_QUIT:
+            case SDL_EVENT_QUIT:
                 done = 1;
                 break;
             }

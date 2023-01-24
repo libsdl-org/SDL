@@ -70,7 +70,7 @@ void loop()
     /* Check for events */
     while (SDL_PollEvent(&event)) {
 
-        if (event.type == SDL_MOUSEMOTION) {
+        if (event.type == SDL_EVENT_MOUSE_MOTION) {
             if (event.motion.state) {
                 float xrel, yrel;
                 int window_w, window_h;

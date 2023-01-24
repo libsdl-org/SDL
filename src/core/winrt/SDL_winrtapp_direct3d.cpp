@@ -145,17 +145,17 @@ static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identify
 
             const Uint32 latestFlags = WINRT_DetectWindowFlags(window);
             if (latestFlags & SDL_WINDOW_MAXIMIZED) {
-                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+                SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
             } else {
-                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+                SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
             }
 
             WINRT_UpdateWindowFlags(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 
             /* The window can move during a resize event, such as when maximizing
                or resizing from a corner */
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, x, y);
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, w, h);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
         }
     }
 }
@@ -237,7 +237,7 @@ void SDL_WinRTApp::OnOrientationChanged(Object ^ sender)
         SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
         int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
         int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
-        SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_SIZE_CHANGED, w, h);
+        SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_SIZE_CHANGED, w, h);
     }
 #endif
 }
@@ -370,18 +370,18 @@ bool SDL_WinRTApp::ShouldWaitForAppResumeEvents()
 
     /* Don't wait until the window-hide events finish processing.
      * Do note that if an app-suspend event is sent (as indicated
-     * by SDL_APP_WILLENTERBACKGROUND and SDL_APP_DIDENTERBACKGROUND
+     * by SDL_EVENT_WILL_ENTER_BACKGROUND and SDL_EVENT_DID_ENTER_BACKGROUND
      * events), then this code may be a moot point, as WinRT's
      * own event pump (aka ProcessEvents()) will pause regardless
      * of what we do here.  This happens on Windows Phone 8, to note.
      * Windows 8.x apps, on the other hand, may get a chance to run
      * these.
      */
-    if (IsSDLWindowEventPending(SDL_WINDOWEVENT_HIDDEN)) {
+    if (IsSDLWindowEventPending(SDL_EVENT_WINDOW_HIDDEN)) {
         return false;
-    } else if (IsSDLWindowEventPending(SDL_WINDOWEVENT_FOCUS_LOST)) {
+    } else if (IsSDLWindowEventPending(SDL_EVENT_WINDOW_FOCUS_LOST)) {
         return false;
-    } else if (IsSDLWindowEventPending(SDL_WINDOWEVENT_MINIMIZED)) {
+    } else if (IsSDLWindowEventPending(SDL_EVENT_WINDOW_MINIMIZED)) {
         return false;
     }
 
@@ -490,17 +490,17 @@ void SDL_WinRTApp::OnVisibilityChanged(CoreWindow ^ sender, VisibilityChangedEve
         SDL_bool wasSDLWindowSurfaceValid = WINRT_GlobalSDLWindow->surface_valid;
         Uint32 latestWindowFlags = WINRT_DetectWindowFlags(WINRT_GlobalSDLWindow);
         if (args->Visible) {
-            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_SHOWN, 0, 0);
-            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_FOCUS_GAINED, 0, 0);
             if (latestWindowFlags & SDL_WINDOW_MAXIMIZED) {
-                SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+                SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
             } else {
-                SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_RESTORED, 0, 0);
+                SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_RESTORED, 0, 0);
             }
         } else {
-            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_HIDDEN, 0, 0);
-            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
-            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
         }
 
         // HACK: Prevent SDL's window-hide handling code, which currently
@@ -531,7 +531,7 @@ void SDL_WinRTApp::OnWindowActivated(CoreWindow ^ sender, WindowActivatedEventAr
     SDL_Window *window = WINRT_GlobalSDLWindow;
     if (window) {
         if (args->WindowActivationState != CoreWindowActivationState::Deactivated) {
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_SHOWN, 0, 0);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
             if (SDL_GetKeyboardFocus() != window) {
                 SDL_SetKeyboardFocus(window);
             }
@@ -597,12 +597,12 @@ void SDL_WinRTApp::OnSuspending(Platform::Object ^ sender, SuspendingEventArgs ^
 
     // ... but first, let the app know it's about to go to the background.
     // The separation of events may be important, given that the deferral
-    // runs in a separate thread.  This'll make SDL_APP_WILLENTERBACKGROUND
+    // runs in a separate thread.  This'll make SDL_EVENT_WILL_ENTER_BACKGROUND
     // the only event among the two that runs in the main thread.  Given
     // that a few WinRT operations can only be done from the main thread
     // (things that access the WinRT CoreWindow are one example of this),
     // this could be important.
-    SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
+    SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_BACKGROUND);
 
     SuspendingDeferral ^ deferral = args->SuspendingOperation->GetDeferral();
     create_task([this, deferral]() {
@@ -613,7 +613,7 @@ void SDL_WinRTApp::OnSuspending(Platform::Object ^ sender, SuspendingEventArgs ^
         // event queue won't get received until the WinRT app is resumed.
         // SDL_AddEventWatch() may be used to receive app-suspend events on
         // WinRT.
-        SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
+        SDL_SendAppEvent(SDL_EVENT_DID_ENTER_BACKGROUND);
 
         // Let the Direct3D 11 renderer prepare for the app to be backgrounded.
         // This is necessary for Windows 8.1, possibly elsewhere in the future.
@@ -636,13 +636,13 @@ void SDL_WinRTApp::OnResuming(Platform::Object ^ sender, Platform::Object ^ args
     // Restore any data or state that was unloaded on suspend. By default, data
     // and state are persisted when resuming from suspend. Note that these events
     // do not occur if the app was previously terminated.
-    SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
-    SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
+    SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_FOREGROUND);
+    SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
 }
 
 void SDL_WinRTApp::OnExiting(Platform::Object ^ sender, Platform::Object ^ args)
 {
-    SDL_SendAppEvent(SDL_APP_TERMINATING);
+    SDL_SendAppEvent(SDL_EVENT_TERMINATING);
 }
 
 static void WINRT_LogPointerEvent(const char *header, Windows::UI::Core::PointerEventArgs ^ args, Windows::Foundation::Point transformedPoint)
