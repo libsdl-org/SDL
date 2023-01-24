@@ -2485,6 +2485,9 @@ elseif(VITA)
         set(SDL_VIDEO_OPENGL_ES2 1)
         list(APPEND EXTRA_LIBS
           pib
+          libScePiglet_stub_weak
+          taihen_stub_weak
+          SceShaccCg_stub_weak
         )
         set(HAVE_VIDEO_VITA_PIB ON)
         set(SDL_VIDEO_VITA_PIB 1)
@@ -2551,19 +2554,6 @@ elseif(VITA)
       SceProcessmgr_stub
       m
     )
-    if(HAVE_VITA_PIB)
-        list(PREPEND EXTRA_LIBS
-          pib
-          libScePiglet_stub
-          SceShaccCg_stub
-          taihen_stub
-        )
-    endif()
-    if(HAVE_VITA_PVR)
-        list(PREPEND EXTRA_LIBS
-          SceIme_stub
-        )
-    endif()
   endif()
 
   set(HAVE_ARMSIMD TRUE)
