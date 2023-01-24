@@ -154,7 +154,7 @@ void loop()
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
-        if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (event.type == SDL_EVENT_MOUSE_BUTTONDOWN) {
             if (event.button.button == SDL_BUTTON_LEFT) {
                 if (num_cursors == 0) {
                     continue;

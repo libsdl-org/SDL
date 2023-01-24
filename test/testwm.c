@@ -151,7 +151,7 @@ void loop()
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
 
-        if (event.type == SDL_WINDOWEVENT_RESIZED) {
+        if (event.type == SDL_EVENT_WINDOW_RESIZED) {
             SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
             if (window) {
                 SDL_Log("Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32 "\n",
@@ -160,7 +160,7 @@ void loop()
                         event.window.data2);
             }
         }
-        if (event.type == SDL_WINDOWEVENT_MOVED) {
+        if (event.type == SDL_EVENT_WINDOW_MOVED) {
             SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
             if (window) {
                 SDL_Log("Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (display %s)\n",
@@ -170,18 +170,18 @@ void loop()
                         SDL_GetDisplayName(SDL_GetWindowDisplayIndex(window)));
             }
         }
-        if (event.type == SDL_WINDOWEVENT_FOCUS_LOST) {
+        if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
             relative_mode = SDL_GetRelativeMouseMode();
             if (relative_mode) {
                 SDL_SetRelativeMouseMode(SDL_FALSE);
             }
         }
-        if (event.type == SDL_WINDOWEVENT_FOCUS_GAINED) {
+        if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
             if (relative_mode) {
                 SDL_SetRelativeMouseMode(SDL_TRUE);
             }
         }
-        if (event.type == SDL_KEYUP) {
+        if (event.type == SDL_EVENT_KEY_UP) {
             SDL_bool updateCursor = SDL_FALSE;
 
             if (event.key.keysym.sym == SDLK_LEFT) {
@@ -204,7 +204,7 @@ void loop()
                 SDL_SetCursor(cursor);
             }
         }
-        if (event.type == SDL_MOUSEBUTTONUP) {
+        if (event.type == SDL_EVENT_MOUSE_BUTTONUP) {
             SDL_Window *window = SDL_GetMouseFocus();
             if (highlighted_mode != -1 && window != NULL) {
                 const int display_index = SDL_GetWindowDisplayIndex(window);
@@ -271,8 +271,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_SetEventEnabled(SDL_DROPFILE, SDL_TRUE);
-    SDL_SetEventEnabled(SDL_DROPTEXT, SDL_TRUE);
+    SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
+    SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_TRUE);
 
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];

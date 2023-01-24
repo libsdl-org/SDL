@@ -716,8 +716,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     SDL_WindowData *data;
     LRESULT returnCode = -1;
 
-    /* Send a SDL_SYSWMEVENT if the application wants them */
-    if (SDL_EventEnabled(SDL_SYSWMEVENT)) {
+    /* Send a SDL_EVENT_SYSWM if the application wants them */
+    if (SDL_EventEnabled(SDL_EVENT_SYSWM)) {
         SDL_SysWMmsg wmmsg;
 
         wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
@@ -764,9 +764,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_SHOWWINDOW:
     {
         if (wParam) {
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
         } else {
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIDDEN, 0, 0);
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
         }
     } break;
 
@@ -1027,7 +1027,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (keyboardState[SDL_SCANCODE_LALT] == SDL_PRESSED || keyboardState[SDL_SCANCODE_RALT] == SDL_PRESSED) {
             /* ALT+F4: Close window */
             if (code == SDL_SCANCODE_F4 && ShouldGenerateWindowCloseOnAltF4()) {
-                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
             }
         }
 
@@ -1264,9 +1264,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         y = rect.top;
         WIN_ScreenPointToSDL(&x, &y);
 
-        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED, x, y);
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
 
-        // Moving the window from one display to another can change the size of the window (in the handling of SDL_WINDOWEVENT_MOVED), so we need to re-query the bounds
+        // Moving the window from one display to another can change the size of the window (in the handling of SDL_EVENT_WINDOW_MOVED), so we need to re-query the bounds
         if (GetClientRect(hwnd, &rect)) {
             ClientToScreen(hwnd, (LPPOINT)&rect);
             ClientToScreen(hwnd, (LPPOINT)&rect + 1);
@@ -1283,7 +1283,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         h = rect.bottom - rect.top;
         WIN_ClientPointToSDL(data->window, &w, &h);
 
-        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED, w, h);
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
 
 #ifdef HIGHDPI_DEBUG
         SDL_Log("WM_WINDOWPOSCHANGED: Windows client rect (pixels): (%d, %d) (%d x %d)\tSDL client rect (points): (%d, %d) (%d x %d) cached dpi %d, windows reported dpi %d",
@@ -1305,17 +1305,17 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         switch (wParam) {
         case SIZE_MAXIMIZED:
             SDL_SendWindowEvent(data->window,
-                                SDL_WINDOWEVENT_RESTORED, 0, 0);
+                                SDL_EVENT_WINDOW_RESTORED, 0, 0);
             SDL_SendWindowEvent(data->window,
-                                SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+                                SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
             break;
         case SIZE_MINIMIZED:
             SDL_SendWindowEvent(data->window,
-                                SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+                                SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
             break;
         case SIZE_RESTORED:
             SDL_SendWindowEvent(data->window,
-                                SDL_WINDOWEVENT_RESTORED, 0, 0);
+                                SDL_EVENT_WINDOW_RESTORED, 0, 0);
             break;
         default:
             break;
@@ -1342,7 +1342,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         RECT rect;
         if (GetUpdateRect(hwnd, &rect, FALSE)) {
             ValidateRect(hwnd, NULL);
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
         }
     }
         returnCode = 0;
@@ -1382,7 +1382,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_CLOSE:
     {
-        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
     }
         returnCode = 0;
         break;
@@ -1523,7 +1523,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 switch (rc) {
 #define POST_HIT_TEST(ret)                                                 \
     {                                                                      \
-        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0); \
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0); \
         return ret;                                                        \
     }
                 case SDL_HITTEST_DRAGGABLE:
@@ -1652,7 +1652,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     /* Update the cached DPI value for this window */
                     data->scaling_dpi = newDPI;
 
-                    /* Send a SDL_WINDOWEVENT_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
+                    /* Send a SDL_EVENT_WINDOW_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
                        Renderers need to get this to know that the framebuffer size changed.
 
                        We clear the window size to force the event to be delivered, but what we really
@@ -1661,7 +1661,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                      */
                     data->window->w = 0;
                     data->window->h = 0;
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SIZE_CHANGED, data->window->w, data->window->h);
+                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_SIZE_CHANGED, data->window->w, data->window->h);
                 }
 
 #ifdef HIGHDPI_DEBUG
@@ -1725,9 +1725,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 /* Update the cached DPI value for this window */
                 data->scaling_dpi = newDPI;
 
-                /* Send a SDL_WINDOWEVENT_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
+                /* Send a SDL_EVENT_WINDOW_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
                    Renderers need to get this to know that the framebuffer size changed. */
-                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SIZE_CHANGED, data->window->w, data->window->h);
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_SIZE_CHANGED, data->window->w, data->window->h);
             }
 
             return 0;

@@ -1231,7 +1231,7 @@ D3D12_HandleDeviceLost(SDL_Renderer *renderer)
     /* Let the application know that the device has been reset */
     {
         SDL_Event event;
-        event.type = SDL_RENDER_DEVICE_RESET;
+        event.type = SDL_EVENT_RENDER_DEVICE_RESET;
         event.common.timestamp = 0;
         SDL_PushEvent(&event);
     }
@@ -1376,7 +1376,7 @@ static HRESULT D3D12_UpdateForWindowSizeChange(SDL_Renderer *renderer)
 
 static void D3D12_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
-    if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED) {
+    if (event->type == SDL_EVENT_WINDOW_SIZE_CHANGED) {
         D3D12_UpdateForWindowSizeChange(renderer);
     }
 }

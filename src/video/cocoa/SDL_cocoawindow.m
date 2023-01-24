@@ -534,9 +534,9 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     if (object == _data.nswindow && [keyPath isEqualToString:@"visible"]) {
         int newVisibility = [[change objectForKey:@"new"] intValue];
         if (newVisibility) {
-            SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_SHOWN, 0, 0);
+            SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
         } else {
-            SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_HIDDEN, 0, 0);
+            SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
         }
     }
 }
@@ -553,9 +553,9 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     observingVisible = YES;
     if (wasVisible != isVisible) {
         if (isVisible) {
-            SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_SHOWN, 0, 0);
+            SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
         } else {
-            SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_HIDDEN, 0, 0);
+            SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
         }
 
         wasVisible = isVisible;
@@ -720,13 +720,13 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 
 - (BOOL)windowShouldClose:(id)sender
 {
-    SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+    SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
     return NO;
 }
 
 - (void)windowDidExpose:(NSNotification *)aNotification
 {
-    SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+    SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
 }
 
 - (void)windowWillMove:(NSNotification *)aNotification
@@ -771,7 +771,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 
     ScheduleContextUpdates(_data);
 
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, x, y);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
 }
 
 - (void)windowDidResize:(NSNotification *)aNotification
@@ -808,14 +808,14 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 
     /* The window can move during a resize event, such as when maximizing
        or resizing from a corner */
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, x, y);
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, w, h);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
 
     zoomed = [nswindow isZoomed];
     if (!zoomed) {
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
     } else if (zoomed) {
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
     }
 }
 
@@ -825,12 +825,12 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
         focusClickPending = 0;
         [self onMovingOrFocusClickPendingStateCleared];
     }
-    SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+    SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
 }
 
 - (void)windowDidDeminiaturize:(NSNotification *)aNotification
 {
-    SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+    SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)aNotification
@@ -913,7 +913,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 
 - (void)windowDidChangeScreenProfile:(NSNotification *)aNotification
 {
-    SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+    SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_ICCPROF_CHANGED, 0, 0);
 }
 
 - (void)windowDidChangeScreen:(NSNotification *)aNotification
@@ -1227,7 +1227,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     }
 
     if ([self processHitTest:theEvent]) {
-        SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
+        SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
         return; /* dragging, drop event. */
     }
 
@@ -1276,7 +1276,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     }
 
     if ([self processHitTest:theEvent]) {
-        SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
+        SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
         return; /* stopped dragging, drop event. */
     }
 
@@ -1329,7 +1329,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     window = _data.window;
 
     if ([self processHitTest:theEvent]) {
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
         return; /* dragging, drop event. */
     }
 
@@ -1553,7 +1553,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
         self.layer.backgroundColor = CGColorGetConstantColor(kCGColorBlack);
     }
 
-    SDL_SendWindowEvent(_sdlWindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+    SDL_SendWindowEvent(_sdlWindow, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
 }
 
 - (BOOL)wantsUpdateLayer
@@ -1569,7 +1569,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
        only gets called for window creation and other extraordinary events. */
     self.layer.backgroundColor = CGColorGetConstantColor(kCGColorBlack);
     ScheduleContextUpdates((__bridge SDL_WindowData *)_sdlWindow->driverdata);
-    SDL_SendWindowEvent(_sdlWindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+    SDL_SendWindowEvent(_sdlWindow, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent

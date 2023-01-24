@@ -35,7 +35,7 @@ void N3DS_PumpEvents(_THIS)
 
     if (!aptMainLoop()) {
         SDL_Event ev;
-        ev.type = SDL_QUIT;
+        ev.type = SDL_EVENT_QUIT;
         ev.common.timestamp = 0;
         SDL_PushEvent(&ev);
         return;

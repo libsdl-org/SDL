@@ -1147,7 +1147,7 @@ static void KMSDRM_DirtySurfaces(SDL_Window *window)
        or SetWindowFullscreen, send a fake event for now since the actual
        recreation is deferred */
     KMSDRM_GetModeToSet(window, &mode);
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode.hdisplay, mode.vdisplay);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, mode.hdisplay, mode.vdisplay);
 }
 
 /* This determines the size of the fb, which comes from the GBM surface
@@ -1211,7 +1211,7 @@ int KMSDRM_CreateSurfaces(_THIS, SDL_Window *window)
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
     ret = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
 
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED,
                         dispdata->mode.hdisplay, dispdata->mode.vdisplay);
 
     windata->egl_surface_dirty = SDL_FALSE;
@@ -1543,7 +1543,7 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
     SDL_SetKeyboardFocus(window);
 
     /* Tell the app that the window has moved to top-left. */
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, 0, 0);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, 0, 0);
 
     /* Allocated windata will be freed in KMSDRM_DestroyWindow,
        and KMSDRM_DestroyWindow() will be called by SDL_CreateWindow()

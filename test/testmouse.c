@@ -110,7 +110,7 @@ void loop(void *arg)
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_MOUSEWHEEL:
+        case SDL_EVENT_MOUSE_WHEEL:
             if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
                 event.wheel.x *= -1;
                 event.wheel.y *= -1;
@@ -127,7 +127,7 @@ void loop(void *arg)
             }
             break;
 
-        case SDL_MOUSEMOTION:
+        case SDL_EVENT_MOUSE_MOTION:
             if (active == NULL) {
                 break;
             }
@@ -136,7 +136,7 @@ void loop(void *arg)
             active->y2 = event.motion.y;
             break;
 
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTONDOWN:
             if (active == NULL) {
                 active = SDL_calloc(1, sizeof(*active));
                 active->x1 = active->x2 = event.button.x;
@@ -170,7 +170,7 @@ void loop(void *arg)
             }
             break;
 
-        case SDL_MOUSEBUTTONUP:
+        case SDL_EVENT_MOUSE_BUTTONUP:
             if (active == NULL) {
                 break;
             }
@@ -199,8 +199,8 @@ void loop(void *arg)
             }
             break;
 
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
+        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_UP:
             switch (event.key.keysym.sym) {
             case SDLK_LSHIFT:
                 isRect = (event.key.state == SDL_PRESSED);
@@ -211,7 +211,7 @@ void loop(void *arg)
             }
             break;
 
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
 

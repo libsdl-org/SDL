@@ -1125,7 +1125,7 @@ int main(int argc, char **argv)
             /* Need to destroy the swapchain before the window created
              * by SDL.
              */
-            if (event.type == SDL_WINDOWEVENT_CLOSE) {
+            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
                 destroySwapchainAndSwapchainSpecificStuff(SDL_TRUE);
             }
             SDLTest_CommonEvent(state, &event, &done);

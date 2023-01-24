@@ -180,11 +180,11 @@ int main(int argc, char *argv[])
         /* Check for events */
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
-            case SDL_WINDOWEVENT_EXPOSED:
+            case SDL_EVENT_WINDOW_EXPOSED:
                 SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
                 SDL_RenderClear(renderer);
                 break;
-            case SDL_QUIT:
+            case SDL_EVENT_QUIT:
                 done = 1;
                 break;
             default:

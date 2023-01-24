@@ -101,14 +101,14 @@ int main(int argc, char **argv)
             SDL_PumpEvents();
 
             /* Process all currently pending events */
-            while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1) {
+            while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) == 1) {
                 switch (event.type) {
-                case SDL_SENSORUPDATE:
+                case SDL_EVENT_SENSOR_UPDATE:
                     HandleSensorEvent(&event.sensor);
                     break;
-                case SDL_MOUSEBUTTONUP:
-                case SDL_KEYUP:
-                case SDL_QUIT:
+                case SDL_EVENT_MOUSE_BUTTONUP:
+                case SDL_EVENT_KEY_UP:
+                case SDL_EVENT_QUIT:
                     done = SDL_TRUE;
                     break;
                 default:

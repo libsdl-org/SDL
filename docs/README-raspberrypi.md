@@ -127,7 +127,7 @@ Text Input API support
 
 The Text Input API is supported, with translation of scan codes done via the
 kernel symbol tables. For this to work, SDL needs access to a valid console.
-If you notice there's no SDL_TEXTINPUT message being emitted, double check that
+If you notice there's no SDL_EVENT_TEXT_INPUT message being emitted, double check that
 your app has read access to one of the following:
     
 * /proc/self/fd/0

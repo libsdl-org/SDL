@@ -217,11 +217,11 @@ void loop()
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
         switch (event.type) {
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTONDOWN:
             mouse_begin_x = event.button.x;
             mouse_begin_y = event.button.y;
             break;
-        case SDL_MOUSEBUTTONUP:
+        case SDL_EVENT_MOUSE_BUTTONUP:
             if (event.button.button == 3) {
                 add_line(mouse_begin_x, mouse_begin_y, event.button.x, event.button.y);
             }
@@ -229,7 +229,7 @@ void loop()
                 add_rect(mouse_begin_x, mouse_begin_y, event.button.x, event.button.y);
             }
             break;
-        case SDL_KEYDOWN:
+        case SDL_EVENT_KEY_DOWN:
             switch (event.key.keysym.sym) {
             case 'l':
                 if (event.key.keysym.mod & SDL_KMOD_SHIFT) {

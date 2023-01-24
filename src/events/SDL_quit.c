@@ -191,5 +191,5 @@ int SDL_SendQuit(void)
 #ifdef HAVE_SIGNAL_SUPPORT
     send_quit_pending = SDL_FALSE;
 #endif
-    return SDL_SendAppEvent(SDL_QUIT);
+    return SDL_SendAppEvent(SDL_EVENT_QUIT);
 }

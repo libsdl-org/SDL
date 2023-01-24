@@ -1427,136 +1427,136 @@ static const char *GamepadButtonName(const SDL_GamepadButton button)
 static void SDLTest_PrintEvent(SDL_Event *event)
 {
     switch (event->type) {
-    case SDL_DISPLAYEVENT_CONNECTED:
+    case SDL_EVENT_DISPLAY_CONNECTED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
                 event->display.display);
         break;
-    case SDL_DISPLAYEVENT_MOVED:
+    case SDL_EVENT_DISPLAY_MOVED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed position",
                 event->display.display);
         break;
-    case SDL_DISPLAYEVENT_ORIENTATION:
+    case SDL_EVENT_DISPLAY_ORIENTATION:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed orientation to %s",
                 event->display.display, DisplayOrientationName(event->display.data1));
         break;
-    case SDL_DISPLAYEVENT_DISCONNECTED:
+    case SDL_EVENT_DISPLAY_DISCONNECTED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " disconnected",
                 event->display.display);
         break;
-    case SDL_WINDOWEVENT_SHOWN:
+    case SDL_EVENT_WINDOW_SHOWN:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " shown", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_HIDDEN:
+    case SDL_EVENT_WINDOW_HIDDEN:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " hidden", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_EXPOSED:
+    case SDL_EVENT_WINDOW_EXPOSED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " exposed", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_MOVED:
+    case SDL_EVENT_WINDOW_MOVED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32,
                 event->window.windowID, event->window.data1, event->window.data2);
         break;
-    case SDL_WINDOWEVENT_RESIZED:
+    case SDL_EVENT_WINDOW_RESIZED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32,
                 event->window.windowID, event->window.data1, event->window.data2);
         break;
-    case SDL_WINDOWEVENT_SIZE_CHANGED:
+    case SDL_EVENT_WINDOW_SIZE_CHANGED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed size to %" SDL_PRIs32 "x%" SDL_PRIs32,
                 event->window.windowID, event->window.data1, event->window.data2);
         break;
-    case SDL_WINDOWEVENT_MINIMIZED:
+    case SDL_EVENT_WINDOW_MINIMIZED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " minimized", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_MAXIMIZED:
+    case SDL_EVENT_WINDOW_MAXIMIZED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " maximized", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_RESTORED:
+    case SDL_EVENT_WINDOW_RESTORED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " restored", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_ENTER:
+    case SDL_EVENT_WINDOW_MOUSE_ENTER:
         SDL_Log("SDL EVENT: Mouse entered window %" SDL_PRIu32 "",
                 event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_LEAVE:
+    case SDL_EVENT_WINDOW_MOUSE_LEAVE:
         SDL_Log("SDL EVENT: Mouse left window %" SDL_PRIu32 "", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_FOCUS_GAINED:
+    case SDL_EVENT_WINDOW_FOCUS_GAINED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " gained keyboard focus",
                 event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_FOCUS_LOST:
+    case SDL_EVENT_WINDOW_FOCUS_LOST:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " lost keyboard focus",
                 event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_CLOSE:
+    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " closed", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_TAKE_FOCUS:
+    case SDL_EVENT_WINDOW_TAKE_FOCUS:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " take focus", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_HIT_TEST:
+    case SDL_EVENT_WINDOW_HIT_TEST:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " hit test", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_ICCPROF_CHANGED:
+    case SDL_EVENT_WINDOW_ICCPROF_CHANGED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " ICC profile changed", event->window.windowID);
         break;
-    case SDL_WINDOWEVENT_DISPLAY_CHANGED:
+    case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %" SDL_PRIs32 "", event->window.windowID, event->window.data1);
         break;
-    case SDL_KEYDOWN:
+    case SDL_EVENT_KEY_DOWN:
         SDL_Log("SDL EVENT: Keyboard: key pressed  in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s",
                 event->key.windowID,
                 event->key.keysym.scancode,
                 SDL_GetScancodeName(event->key.keysym.scancode),
                 event->key.keysym.sym, SDL_GetKeyName(event->key.keysym.sym));
         break;
-    case SDL_KEYUP:
+    case SDL_EVENT_KEY_UP:
         SDL_Log("SDL EVENT: Keyboard: key released in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s",
                 event->key.windowID,
                 event->key.keysym.scancode,
                 SDL_GetScancodeName(event->key.keysym.scancode),
                 event->key.keysym.sym, SDL_GetKeyName(event->key.keysym.sym));
         break;
-    case SDL_TEXTEDITING:
+    case SDL_EVENT_TEXT_EDITING:
         SDL_Log("SDL EVENT: Keyboard: text editing \"%s\" in window %" SDL_PRIu32,
                 event->edit.text, event->edit.windowID);
         break;
-    case SDL_TEXTINPUT:
+    case SDL_EVENT_TEXT_INPUT:
         SDL_Log("SDL EVENT: Keyboard: text input \"%s\" in window %" SDL_PRIu32,
                 event->text.text, event->text.windowID);
         break;
-    case SDL_KEYMAPCHANGED:
+    case SDL_EVENT_KEYMAP_CHANGED:
         SDL_Log("SDL EVENT: Keymap changed");
         break;
-    case SDL_MOUSEMOTION:
+    case SDL_EVENT_MOUSE_MOTION:
         SDL_Log("SDL EVENT: Mouse: moved to %g,%g (%g,%g) in window %" SDL_PRIu32,
                 event->motion.x, event->motion.y,
                 event->motion.xrel, event->motion.yrel,
                 event->motion.windowID);
         break;
-    case SDL_MOUSEBUTTONDOWN:
+    case SDL_EVENT_MOUSE_BUTTONDOWN:
         SDL_Log("SDL EVENT: Mouse: button %d pressed at %g,%g with click count %d in window %" SDL_PRIu32,
                 event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);
         break;
-    case SDL_MOUSEBUTTONUP:
+    case SDL_EVENT_MOUSE_BUTTONUP:
         SDL_Log("SDL EVENT: Mouse: button %d released at %g,%g with click count %d in window %" SDL_PRIu32,
                 event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);
         break;
-    case SDL_MOUSEWHEEL:
+    case SDL_EVENT_MOUSE_WHEEL:
         SDL_Log("SDL EVENT: Mouse: wheel scrolled %g in x and %g in y (reversed: %" SDL_PRIu32 ") in window %" SDL_PRIu32,
                 event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
-    case SDL_JOYDEVICEADDED:
+    case SDL_EVENT_JOYSTICK_ADDED:
         SDL_Log("SDL EVENT: Joystick index %" SDL_PRIu32 " attached",
                 event->jdevice.which);
         break;
-    case SDL_JOYDEVICEREMOVED:
+    case SDL_EVENT_JOYSTICK_REMOVED:
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " removed",
                 event->jdevice.which);
         break;
-    case SDL_JOYHATMOTION:
+    case SDL_EVENT_JOYSTICK_HAT_MOTION:
     {
         const char *position = "UNKNOWN";
         switch (event->jhat.value) {
@@ -1591,101 +1591,101 @@ static void SDLTest_PrintEvent(SDL_Event *event)
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 ": hat %d moved to %s",
                 event->jhat.which, event->jhat.hat, position);
     } break;
-    case SDL_JOYBUTTONDOWN:
+    case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 ": button %d pressed",
                 event->jbutton.which, event->jbutton.button);
         break;
-    case SDL_JOYBUTTONUP:
+    case SDL_EVENT_JOYSTICK_BUTTON_UP:
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 ": button %d released",
                 event->jbutton.which, event->jbutton.button);
         break;
-    case SDL_GAMEPADADDED:
+    case SDL_EVENT_GAMEPAD_ADDED:
         SDL_Log("SDL EVENT: Gamepad index %" SDL_PRIu32 " attached",
                 event->cdevice.which);
         break;
-    case SDL_GAMEPADREMOVED:
+    case SDL_EVENT_GAMEPAD_REMOVED:
         SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " removed",
                 event->cdevice.which);
         break;
-    case SDL_GAMEPADAXISMOTION:
+    case SDL_EVENT_GAMEPAD_AXIS_MOTION:
         SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " axis %d ('%s') value: %d",
                 event->caxis.which,
                 event->caxis.axis,
                 GamepadAxisName((SDL_GamepadAxis)event->caxis.axis),
                 event->caxis.value);
         break;
-    case SDL_GAMEPADBUTTONDOWN:
+    case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
         SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 "button %d ('%s') down",
                 event->cbutton.which, event->cbutton.button,
                 GamepadButtonName((SDL_GamepadButton)event->cbutton.button));
         break;
-    case SDL_GAMEPADBUTTONUP:
+    case SDL_EVENT_GAMEPAD_BUTTON_UP:
         SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " button %d ('%s') up",
                 event->cbutton.which, event->cbutton.button,
                 GamepadButtonName((SDL_GamepadButton)event->cbutton.button));
         break;
-    case SDL_CLIPBOARDUPDATE:
+    case SDL_EVENT_CLIPBOARD_UPDATE:
         SDL_Log("SDL EVENT: Clipboard updated");
         break;
 
-    case SDL_FINGERMOTION:
+    case SDL_EVENT_FINGER_MOTION:
         SDL_Log("SDL EVENT: Finger: motion touch=%ld, finger=%ld, x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
                 (long)event->tfinger.touchId,
                 (long)event->tfinger.fingerId,
                 event->tfinger.x, event->tfinger.y,
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;
-    case SDL_FINGERDOWN:
-    case SDL_FINGERUP:
+    case SDL_EVENT_FINGER_DOWN:
+    case SDL_EVENT_FINGER_UP:
         SDL_Log("SDL EVENT: Finger: %s touch=%ld, finger=%ld, x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
-                (event->type == SDL_FINGERDOWN) ? "down" : "up",
+                (event->type == SDL_EVENT_FINGER_DOWN) ? "down" : "up",
                 (long)event->tfinger.touchId,
                 (long)event->tfinger.fingerId,
                 event->tfinger.x, event->tfinger.y,
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;
 
-    case SDL_RENDER_DEVICE_RESET:
+    case SDL_EVENT_RENDER_DEVICE_RESET:
         SDL_Log("SDL EVENT: render device reset");
         break;
-    case SDL_RENDER_TARGETS_RESET:
+    case SDL_EVENT_RENDER_TARGETS_RESET:
         SDL_Log("SDL EVENT: render targets reset");
         break;
 
-    case SDL_APP_TERMINATING:
+    case SDL_EVENT_TERMINATING:
         SDL_Log("SDL EVENT: App terminating");
         break;
-    case SDL_APP_LOWMEMORY:
+    case SDL_EVENT_LOW_MEMORY:
         SDL_Log("SDL EVENT: App running low on memory");
         break;
-    case SDL_APP_WILLENTERBACKGROUND:
+    case SDL_EVENT_WILL_ENTER_BACKGROUND:
         SDL_Log("SDL EVENT: App will enter the background");
         break;
-    case SDL_APP_DIDENTERBACKGROUND:
+    case SDL_EVENT_DID_ENTER_BACKGROUND:
         SDL_Log("SDL EVENT: App entered the background");
         break;
-    case SDL_APP_WILLENTERFOREGROUND:
+    case SDL_EVENT_WILL_ENTER_FOREGROUND:
         SDL_Log("SDL EVENT: App will enter the foreground");
         break;
-    case SDL_APP_DIDENTERFOREGROUND:
+    case SDL_EVENT_DID_ENTER_FOREGROUND:
         SDL_Log("SDL EVENT: App entered the foreground");
         break;
-    case SDL_DROPBEGIN:
+    case SDL_EVENT_DROP_BEGIN:
         SDL_Log("SDL EVENT: Drag and drop beginning");
         break;
-    case SDL_DROPFILE:
+    case SDL_EVENT_DROP_FILE:
         SDL_Log("SDL EVENT: Drag and drop file: '%s'", event->drop.file);
         break;
-    case SDL_DROPTEXT:
+    case SDL_EVENT_DROP_TEXT:
         SDL_Log("SDL EVENT: Drag and drop text: '%s'", event->drop.file);
         break;
-    case SDL_DROPCOMPLETE:
+    case SDL_EVENT_DROP_COMPLETE:
         SDL_Log("SDL EVENT: Drag and drop ending");
         break;
-    case SDL_QUIT:
+    case SDL_EVENT_QUIT:
         SDL_Log("SDL EVENT: Quit requested");
         break;
-    case SDL_USEREVENT:
+    case SDL_EVENT_USER:
         SDL_Log("SDL EVENT: User event %" SDL_PRIs32, event->user.code);
         break;
     default:
@@ -1753,15 +1753,15 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
     static SDL_MouseMotionEvent lastEvent;
 
     if (state->verbose & VERBOSE_EVENT) {
-        if (((event->type != SDL_MOUSEMOTION) &&
-             (event->type != SDL_FINGERMOTION)) ||
+        if (((event->type != SDL_EVENT_MOUSE_MOTION) &&
+             (event->type != SDL_EVENT_FINGER_MOTION)) ||
             ((state->verbose & VERBOSE_MOTION) != 0)) {
             SDLTest_PrintEvent(event);
         }
     }
 
     switch (event->type) {
-    case SDL_WINDOWEVENT_CLOSE:
+    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
     {
         SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
         if (window) {
@@ -1782,7 +1782,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
             }
         }
     } break;
-    case SDL_WINDOWEVENT_FOCUS_LOST:
+    case SDL_EVENT_WINDOW_FOCUS_LOST:
         if (state->flash_on_focus_loss) {
             SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
             if (window) {
@@ -1790,7 +1790,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
             }
         }
         break;
-    case SDL_KEYDOWN:
+    case SDL_EVENT_KEY_DOWN:
     {
         SDL_bool withControl = !!(event->key.keysym.mod & SDL_KMOD_CTRL);
         SDL_bool withShift = !!(event->key.keysym.mod & SDL_KMOD_SHIFT);
@@ -2112,15 +2112,15 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
         }
         break;
     }
-    case SDL_QUIT:
+    case SDL_EVENT_QUIT:
         *done = 1;
         break;
-    case SDL_MOUSEMOTION:
+    case SDL_EVENT_MOUSE_MOTION:
         lastEvent = event->motion;
         break;
 
-    case SDL_DROPFILE:
-    case SDL_DROPTEXT:
+    case SDL_EVENT_DROP_FILE:
+    case SDL_EVENT_DROP_TEXT:
         SDL_free(event->drop.file);
         break;
     }

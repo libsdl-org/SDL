@@ -32,18 +32,18 @@ loop()
     SDL_Event e;
 
     while (SDL_PollEvent(&e)) {
-        if (e.type == SDL_QUIT) {
+        if (e.type == SDL_EVENT_QUIT) {
             please_quit = SDL_TRUE;
-        } else if (e.type == SDL_KEYDOWN) {
+        } else if (e.type == SDL_EVENT_KEY_DOWN) {
             if (e.key.keysym.sym == SDLK_ESCAPE) {
                 please_quit = SDL_TRUE;
             }
-        } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+        } else if (e.type == SDL_EVENT_MOUSE_BUTTONDOWN) {
             if (e.button.button == 1) {
                 SDL_PauseAudioDevice(devid_out);
                 SDL_PlayAudioDevice(devid_in);
             }
-        } else if (e.type == SDL_MOUSEBUTTONUP) {
+        } else if (e.type == SDL_EVENT_MOUSE_BUTTONUP) {
             if (e.button.button == 1) {
                 SDL_PauseAudioDevice(devid_in);
                 SDL_PlayAudioDevice(devid_out);

@@ -379,7 +379,7 @@ int Wayland_WaitEventTimeout(_THIS, Sint64 timeoutNS)
     WAYLAND_wl_display_flush(d->display);
 
 #ifdef SDL_USE_IME
-    if (d->text_input_manager == NULL && SDL_EventEnabled(SDL_TEXTINPUT)) {
+    if (d->text_input_manager == NULL && SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -429,7 +429,7 @@ int Wayland_WaitEventTimeout(_THIS, Sint64 timeoutNS)
 
             if (errno == EINTR) {
                 /* If the wait was interrupted by a signal, we may have generated a
-                 * SDL_QUIT event. Let the caller know to call SDL_PumpEvents(). */
+                 * SDL_EVENT_QUIT event. Let the caller know to call SDL_PumpEvents(). */
                 return 1;
             } else {
                 return err;
@@ -448,7 +448,7 @@ void Wayland_PumpEvents(_THIS)
     int err;
 
 #ifdef SDL_USE_IME
-    if (d->text_input_manager == NULL && SDL_EventEnabled(SDL_TEXTINPUT)) {
+    if (d->text_input_manager == NULL && SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
         SDL_IME_PumpEvents();
     }
 #endif

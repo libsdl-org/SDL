@@ -235,7 +235,7 @@ static int Emscripten_CreateWindow(_THIS, SDL_Window *window)
         scaled_w = css_w * wdata->pixel_ratio;
         scaled_h = css_h * wdata->pixel_ratio;
 
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, css_w, css_h);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, css_w, css_h);
     }
     emscripten_set_canvas_element_size(wdata->canvas_id, scaled_w, scaled_h);
 

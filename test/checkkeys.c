@@ -173,10 +173,10 @@ void loop()
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
+        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_UP:
             PrintKey(&event.key.keysym, (event.key.state == SDL_PRESSED) ? SDL_TRUE : SDL_FALSE, (event.key.repeat) ? SDL_TRUE : SDL_FALSE);
-            if (event.type == SDL_KEYDOWN) {
+            if (event.type == SDL_EVENT_KEY_DOWN) {
                 switch (event.key.keysym.sym) {
                 case SDLK_BACKSPACE:
                     SDLTest_TextWindowAddText(textwin, "\b");
@@ -189,18 +189,18 @@ void loop()
                 }
             }
             break;
-        case SDL_TEXTEDITING:
+        case SDL_EVENT_TEXT_EDITING:
             PrintText("EDIT", event.edit.text);
             break;
-        case SDL_TEXTEDITING_EXT:
+        case SDL_EVENT_TEXTEDITING_EXT:
             PrintText("EDIT_EXT", event.editExt.text);
             SDL_free(event.editExt.text);
             break;
-        case SDL_TEXTINPUT:
+        case SDL_EVENT_TEXT_INPUT:
             PrintText("INPUT", event.text.text);
             SDLTest_TextWindowAddText(textwin, "%s", event.text.text);
             break;
-        case SDL_FINGERDOWN:
+        case SDL_EVENT_FINGER_DOWN:
             if (SDL_TextInputActive()) {
                 SDL_Log("Stopping text input\n");
                 SDL_StopTextInput();
@@ -209,7 +209,7 @@ void loop()
                 SDL_StartTextInput();
             }
             break;
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTONDOWN:
             /* Left button quits the app, other buttons toggles text input */
             if (event.button.button == SDL_BUTTON_LEFT) {
                 done = 1;
@@ -223,7 +223,7 @@ void loop()
                 }
             }
             break;
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             done = 1;
             break;
         default:

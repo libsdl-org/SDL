@@ -572,7 +572,7 @@ void SDL_OnApplicationDidChangeStatusBarOrientation()
         default:
             break;
         }
-        SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
     }
 }
 #endif /* !TARGET_OS_TV */

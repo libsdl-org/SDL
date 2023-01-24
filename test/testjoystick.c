@@ -111,7 +111,7 @@ void loop(void *arg)
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
 
-        case SDL_JOYDEVICEADDED:
+        case SDL_EVENT_JOYSTICK_ADDED:
             SDL_Log("Joystick device %" SDL_PRIu32 " added.\n", event.jdevice.which);
             if (joystick == NULL) {
                 joystick = SDL_OpenJoystick(event.jdevice.which);
@@ -123,7 +123,7 @@ void loop(void *arg)
             }
             break;
 
-        case SDL_JOYDEVICEREMOVED:
+        case SDL_EVENT_JOYSTICK_REMOVED:
             SDL_Log("Joystick device %" SDL_PRIu32 " removed.\n", event.jdevice.which);
             if (event.jdevice.which == SDL_GetJoystickInstanceID(joystick)) {
                 SDL_JoystickID *joysticks;
@@ -146,12 +146,12 @@ void loop(void *arg)
             }
             break;
 
-        case SDL_JOYAXISMOTION:
+        case SDL_EVENT_JOYSTICK_AXIS_MOTION:
             SDL_Log("Joystick %" SDL_PRIu32 " axis %d value: %d\n",
                     event.jaxis.which,
                     event.jaxis.axis, event.jaxis.value);
             break;
-        case SDL_JOYHATMOTION:
+        case SDL_EVENT_JOYSTICK_HAT_MOTION:
             SDL_Log("Joystick %" SDL_PRIu32 " hat %d value:",
                     event.jhat.which, event.jhat.hat);
             if (event.jhat.value == SDL_HAT_CENTERED) {
@@ -171,7 +171,7 @@ void loop(void *arg)
             }
             SDL_Log("\n");
             break;
-        case SDL_JOYBUTTONDOWN:
+        case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
             SDL_Log("Joystick %" SDL_PRIu32 " button %d down\n",
                     event.jbutton.which, event.jbutton.button);
             /* First button triggers a 0.5 second full strength rumble */
@@ -179,11 +179,11 @@ void loop(void *arg)
                 SDL_RumbleJoystick(joystick, 0xFFFF, 0xFFFF, 500);
             }
             break;
-        case SDL_JOYBUTTONUP:
+        case SDL_EVENT_JOYSTICK_BUTTON_UP:
             SDL_Log("Joystick %" SDL_PRIu32 " button %d up\n",
                     event.jbutton.which, event.jbutton.button);
             break;
-        case SDL_KEYDOWN:
+        case SDL_EVENT_KEY_DOWN:
             /* Press the L key to lag for 3 seconds, to see what happens
                 when SDL doesn't service the event loop quickly. */
             if (event.key.keysym.sym == SDLK_l) {
@@ -197,9 +197,9 @@ void loop(void *arg)
                 break;
             }
             SDL_FALLTHROUGH;
-        case SDL_FINGERDOWN:
-        case SDL_MOUSEBUTTONDOWN:
-        case SDL_QUIT:
+        case SDL_EVENT_FINGER_DOWN:
+        case SDL_EVENT_MOUSE_BUTTONDOWN:
+        case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
         default:

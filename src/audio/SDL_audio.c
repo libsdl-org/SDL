@@ -414,9 +414,9 @@ void SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, SDL_AudioSpe
     const int device_index = iscapture ? add_capture_device(name, spec, handle) : add_output_device(name, spec, handle);
     if (device_index != -1) {
         /* Post the event, if desired */
-        if (SDL_EventEnabled(SDL_AUDIODEVICEADDED)) {
+        if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_ADDED)) {
             SDL_Event event;
-            event.type = SDL_AUDIODEVICEADDED;
+            event.type = SDL_EVENT_AUDIO_DEVICE_ADDED;
             event.common.timestamp = 0;
             event.adevice.which = device_index;
             event.adevice.iscapture = iscapture;
@@ -445,9 +445,9 @@ void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device)
     current_audio.impl.UnlockDevice(device);
 
     /* Post the event, if desired */
-    if (SDL_EventEnabled(SDL_AUDIODEVICEREMOVED)) {
+    if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_REMOVED)) {
         SDL_Event event;
-        event.type = SDL_AUDIODEVICEREMOVED;
+        event.type = SDL_EVENT_AUDIO_DEVICE_REMOVED;
         event.common.timestamp = 0;
         event.adevice.which = device->id;
         event.adevice.iscapture = device->iscapture ? 1 : 0;
@@ -491,15 +491,15 @@ void SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle)
     }
 
     /* Devices that aren't opened, as of 2.24.0, will post an
-       SDL_AUDIODEVICEREMOVED event with the `which` field set to zero.
+       SDL_EVENT_AUDIO_DEVICE_REMOVED event with the `which` field set to zero.
        Apps can use this to decide if they need to refresh a list of
        available devices instead of closing an opened one.
        Note that opened devices will send the non-zero event in
        SDL_OpenedAudioDeviceDisconnected(). */
     if (!device_was_opened) {
-        if (SDL_EventEnabled(SDL_AUDIODEVICEREMOVED)) {
+        if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_REMOVED)) {
             SDL_Event event;
-            event.type = SDL_AUDIODEVICEREMOVED;
+            event.type = SDL_EVENT_AUDIO_DEVICE_REMOVED;
             event.common.timestamp = 0;
             event.adevice.which = 0;
             event.adevice.iscapture = iscapture ? 1 : 0;

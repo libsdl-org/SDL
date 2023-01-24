@@ -33,7 +33,7 @@
 
 /* as a courtesy to iOS apps, we don't try to draw when in the background, as
 that will crash the app. However, these apps _should_ have used
-SDL_AddEventWatch to catch SDL_APP_WILLENTERBACKGROUND events and stopped
+SDL_AddEventWatch to catch SDL_EVENT_WILL_ENTER_BACKGROUND events and stopped
 drawing themselves. Other platforms still draw, as the compositor can use it,
 and more importantly: drawing to render targets isn't lost. But I still think
 this should probably be removed at some point in the future.  --ryan. */
@@ -672,7 +672,7 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
 {
     SDL_Renderer *renderer = (SDL_Renderer *)userdata;
 
-    if (event->type >= SDL_WINDOWEVENT_FIRST && event->type <= SDL_WINDOWEVENT_LAST) {
+    if (event->type >= SDL_EVENT_WINDOW_FIRST && event->type <= SDL_EVENT_WINDOW_LAST) {
         SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
         if (window == renderer->window) {
             if (renderer->WindowEvent) {
@@ -683,8 +683,8 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
              * window display changes as well! If the new display has a new DPI,
              * we need to update the viewport for the new window/drawable ratio.
              */
-            if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED ||
-                event->type == SDL_WINDOWEVENT_DISPLAY_CHANGED) {
+            if (event->type == SDL_EVENT_WINDOW_SIZE_CHANGED ||
+                event->type == SDL_EVENT_WINDOW_DISPLAY_CHANGED) {
                 /* Make sure we're operating on the default render target */
                 SDL_Texture *saved_target = SDL_GetRenderTarget(renderer);
                 if (saved_target) {
@@ -737,22 +737,22 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 if (saved_target) {
                     SDL_SetRenderTarget(renderer, saved_target);
                 }
-            } else if (event->type == SDL_WINDOWEVENT_HIDDEN) {
+            } else if (event->type == SDL_EVENT_WINDOW_HIDDEN) {
                 renderer->hidden = SDL_TRUE;
-            } else if (event->type == SDL_WINDOWEVENT_SHOWN) {
+            } else if (event->type == SDL_EVENT_WINDOW_SHOWN) {
                 if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)) {
                     renderer->hidden = SDL_FALSE;
                 }
-            } else if (event->type == SDL_WINDOWEVENT_MINIMIZED) {
+            } else if (event->type == SDL_EVENT_WINDOW_MINIMIZED) {
                 renderer->hidden = SDL_TRUE;
-            } else if (event->type == SDL_WINDOWEVENT_RESTORED ||
-                       event->type == SDL_WINDOWEVENT_MAXIMIZED) {
+            } else if (event->type == SDL_EVENT_WINDOW_RESTORED ||
+                       event->type == SDL_EVENT_WINDOW_MAXIMIZED) {
                 if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_HIDDEN)) {
                     renderer->hidden = SDL_FALSE;
                 }
             }
         }
-    } else if (event->type == SDL_MOUSEMOTION) {
+    } else if (event->type == SDL_EVENT_MOUSE_MOTION) {
         SDL_Window *window = SDL_GetWindowFromID(event->motion.windowID);
         if (window == renderer->window) {
             int logical_w, logical_h;
@@ -772,8 +772,8 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 }
             }
         }
-    } else if (event->type == SDL_MOUSEBUTTONDOWN ||
-               event->type == SDL_MOUSEBUTTONUP) {
+    } else if (event->type == SDL_EVENT_MOUSE_BUTTONDOWN ||
+               event->type == SDL_EVENT_MOUSE_BUTTONUP) {
         SDL_Window *window = SDL_GetWindowFromID(event->button.windowID);
         if (window == renderer->window) {
             int logical_w, logical_h;
@@ -787,7 +787,7 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 event->button.y /= (scale.y * renderer->dpi_scale.y);
             }
         }
-    } else if (event->type == SDL_MOUSEWHEEL) {
+    } else if (event->type == SDL_EVENT_MOUSE_WHEEL) {
         SDL_Window *window = SDL_GetWindowFromID(event->button.windowID);
         if (window == renderer->window) {
             int logical_w, logical_h;
@@ -801,9 +801,9 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 event->wheel.mouseY /= (scale.y * renderer->dpi_scale.y);
             }
         }
-    } else if (event->type == SDL_FINGERDOWN ||
-               event->type == SDL_FINGERUP ||
-               event->type == SDL_FINGERMOTION) {
+    } else if (event->type == SDL_EVENT_FINGER_DOWN ||
+               event->type == SDL_EVENT_FINGER_UP ||
+               event->type == SDL_EVENT_FINGER_MOTION) {
         int logical_w, logical_h;
         float physical_w, physical_h;
         SDL_DRect viewport;

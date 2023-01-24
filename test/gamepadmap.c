@@ -438,12 +438,12 @@ WatchJoystick(SDL_Joystick *joystick)
 
         while (SDL_PollEvent(&event) > 0) {
             switch (event.type) {
-            case SDL_JOYDEVICEREMOVED:
+            case SDL_EVENT_JOYSTICK_REMOVED:
                 if (event.jaxis.which == nJoystickID) {
                     done = SDL_TRUE;
                 }
                 break;
-            case SDL_JOYAXISMOTION:
+            case SDL_EVENT_JOYSTICK_AXIS_MOTION:
                 if (event.jaxis.which == nJoystickID) {
                     const int MAX_ALLOWED_JITTER = SDL_JOYSTICK_AXIS_MAX / 80; /* ShanWan PS3 gamepad needed 96 */
                     AxisState *pAxisState = &s_arrAxisState[event.jaxis.axis];
@@ -484,7 +484,7 @@ WatchJoystick(SDL_Joystick *joystick)
                     }
                 }
                 break;
-            case SDL_JOYHATMOTION:
+            case SDL_EVENT_JOYSTICK_HAT_MOTION:
                 if (event.jhat.which == nJoystickID) {
                     if (event.jhat.value != SDL_HAT_CENTERED) {
                         SDL_GameControllerExtendedBind binding;
@@ -501,7 +501,7 @@ WatchJoystick(SDL_Joystick *joystick)
                     }
                 }
                 break;
-            case SDL_JOYBUTTONUP:
+            case SDL_EVENT_JOYSTICK_BUTTON_UP:
                 if (event.jbutton.which == nJoystickID) {
                     SDL_GameControllerExtendedBind binding;
 
@@ -515,12 +515,12 @@ WatchJoystick(SDL_Joystick *joystick)
                     ConfigureBinding(&binding);
                 }
                 break;
-            case SDL_FINGERDOWN:
-            case SDL_MOUSEBUTTONDOWN:
+            case SDL_EVENT_FINGER_DOWN:
+            case SDL_EVENT_MOUSE_BUTTONDOWN:
                 /* Skip this step */
                 SetCurrentBinding(s_iCurrentBinding + 1);
                 break;
-            case SDL_KEYDOWN:
+            case SDL_EVENT_KEY_DOWN:
                 if (event.key.keysym.sym == SDLK_BACKSPACE || event.key.keysym.sym == SDLK_AC_BACK) {
                     SetCurrentBinding(s_iCurrentBinding - 1);
                     break;
@@ -534,7 +534,7 @@ WatchJoystick(SDL_Joystick *joystick)
                     break;
                 }
                 SDL_FALLTHROUGH;
-            case SDL_QUIT:
+            case SDL_EVENT_QUIT:
                 done = SDL_TRUE;
                 break;
             default:
@@ -763,12 +763,12 @@ int main(int argc, char *argv[])
 
         while (SDL_PollEvent(&event) > 0) {
             switch (event.type) {
-            case SDL_KEYDOWN:
+            case SDL_EVENT_KEY_DOWN:
                 if ((event.key.keysym.sym != SDLK_ESCAPE)) {
                     break;
                 }
                 SDL_FALLTHROUGH;
-            case SDL_QUIT:
+            case SDL_EVENT_QUIT:
                 done = SDL_TRUE;
                 break;
             default:

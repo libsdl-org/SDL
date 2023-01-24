@@ -290,14 +290,14 @@ void SDL_SetMouseFocus(SDL_Window *window)
 
     /* See if the current window has lost focus */
     if (mouse->focus) {
-        SDL_SendWindowEvent(mouse->focus, SDL_WINDOWEVENT_LEAVE, 0, 0);
+        SDL_SendWindowEvent(mouse->focus, SDL_EVENT_WINDOW_MOUSE_LEAVE, 0, 0);
     }
 
     mouse->focus = window;
     mouse->has_position = SDL_FALSE;
 
     if (mouse->focus) {
-        SDL_SendWindowEvent(mouse->focus, SDL_WINDOWEVENT_ENTER, 0, 0);
+        SDL_SendWindowEvent(mouse->focus, SDL_EVENT_WINDOW_MOUSE_ENTER, 0, 0);
     }
 
     /* Update cursor visibility */
@@ -579,9 +579,9 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_EventEnabled(SDL_MOUSEMOTION)) {
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION)) {
         SDL_Event event;
-        event.type = SDL_MOUSEMOTION;
+        event.type = SDL_EVENT_MOUSE_MOTION;
         event.common.timestamp = timestamp;
         event.motion.windowID = mouse->focus ? mouse->focus->id : 0;
         event.motion.which = mouseID;
@@ -687,11 +687,11 @@ static int SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_
     /* Figure out which event to perform */
     switch (state) {
     case SDL_PRESSED:
-        type = SDL_MOUSEBUTTONDOWN;
+        type = SDL_EVENT_MOUSE_BUTTONDOWN;
         buttonstate |= SDL_BUTTON(button);
         break;
     case SDL_RELEASED:
-        type = SDL_MOUSEBUTTONUP;
+        type = SDL_EVENT_MOUSE_BUTTONUP;
         buttonstate &= ~SDL_BUTTON(button);
         break;
     default:
@@ -789,9 +789,9 @@ int SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_EventEnabled(SDL_MOUSEWHEEL)) {
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_WHEEL)) {
         SDL_Event event;
-        event.type = SDL_MOUSEWHEEL;
+        event.type = SDL_EVENT_MOUSE_WHEEL;
         event.common.timestamp = timestamp;
         event.wheel.windowID = mouse->focus ? mouse->focus->id : 0;
         event.wheel.which = mouseID;
@@ -1053,7 +1053,7 @@ int SDL_SetRelativeMouseMode(SDL_bool enabled)
     }
 
     /* Flush pending mouse motion - ideally we would pump events, but that's not always safe */
-    SDL_FlushEvent(SDL_MOUSEMOTION);
+    SDL_FlushEvent(SDL_EVENT_MOUSE_MOTION);
 
     return 0;
 }

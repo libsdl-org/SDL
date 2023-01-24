@@ -387,7 +387,7 @@ int main(int argc, char *argv[])
         ++frames;
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
-            if (event.type == SDL_KEYDOWN) {
+            if (event.type == SDL_EVENT_KEY_DOWN) {
                 if (event.key.keysym.sym == SDLK_o) {
                     swap_interval--;
                     update_swap_interval = SDL_TRUE;

@@ -63,7 +63,7 @@ void loop()
     while (SDL_PollEvent(&e)) {
 
         /* Re-create when window has been resized */
-        if (e.type == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        if (e.type == SDL_EVENT_WINDOW_SIZE_CHANGED) {
 
             SDL_DestroyRenderer(renderer);
 
@@ -74,7 +74,7 @@ void loop()
             SDL_RenderClear(renderer);
         }
 
-        if (e.type == SDL_QUIT) {
+        if (e.type == SDL_EVENT_QUIT) {
             done = 1;
 #ifdef __EMSCRIPTEN__
             emscripten_cancel_main_loop();
@@ -82,7 +82,7 @@ void loop()
             return;
         }
 
-        if ((e.type == SDL_KEYDOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
+        if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
             done = 1;
 #ifdef __EMSCRIPTEN__
             emscripten_cancel_main_loop();

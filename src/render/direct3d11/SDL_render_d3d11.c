@@ -873,7 +873,7 @@ D3D11_HandleDeviceLost(SDL_Renderer *renderer)
     /* Let the application know that the device has been reset */
     {
         SDL_Event event;
-        event.type = SDL_RENDER_DEVICE_RESET;
+        event.type = SDL_EVENT_RENDER_DEVICE_RESET;
         event.common.timestamp = 0;
         SDL_PushEvent(&event);
     }
@@ -1028,7 +1028,7 @@ void D3D11_Trim(SDL_Renderer *renderer)
 
 static void D3D11_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
-    if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED) {
+    if (event->type == SDL_EVENT_WINDOW_SIZE_CHANGED) {
         D3D11_UpdateForWindowSizeChange(renderer);
     }
 }

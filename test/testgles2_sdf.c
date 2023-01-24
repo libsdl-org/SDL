@@ -331,7 +331,7 @@ void loop()
     ++frames;
     while (SDL_PollEvent(&event) && !done) {
         switch (event.type) {
-        case SDL_KEYDOWN:
+        case SDL_EVENT_KEY_DOWN:
         {
             const int sym = event.key.keysym.sym;
 
@@ -355,7 +355,7 @@ void loop()
             break;
         }
 
-        case SDL_WINDOWEVENT_RESIZED:
+        case SDL_EVENT_WINDOW_RESIZED:
             for (i = 0; i < state->num_windows; ++i) {
                 if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
                     int w, h;
