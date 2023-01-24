@@ -45,7 +45,10 @@ extern "C" {
  * specify the subsystems which you will be using in your application.
  *
  * \sa SDL_Init
+ * \sa SDL_Quit
  * \sa SDL_InitSubSystem
+ * \sa SDL_QuitSubSystem
+ * \sa SDL_WasInit
  */
 typedef enum
 {
