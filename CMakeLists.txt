@@ -2440,6 +2440,9 @@ elseif(VITA)
         set(SDL_VIDEO_OPENGL_ES2 1)
         list(APPEND SDL_EXTRA_LIBS
           pib
+          libScePiglet_stub_weak
+          taihen_stub_weak
+          SceShaccCg_stub_weak
         )
         set(HAVE_VIDEO_VITA_PIB ON)
         set(SDL_VIDEO_VITA_PIB 1)
