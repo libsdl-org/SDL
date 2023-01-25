@@ -62,6 +62,7 @@ static int Android_DeviceWidth = 0;
 static int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; /* Default SurfaceView format, in case this is queried before being filled */
 static float Android_ScreenRate = 0.0f;
+static float Android_ScreenDensity = 1.0f;
 SDL_sem *Android_PauseSem = NULL;
 SDL_sem *Android_ResumeSem = NULL;
 SDL_mutex *Android_ActivityMutex = NULL;
@@ -213,13 +214,14 @@ int Android_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi,
     return Android_JNI_GetDisplayPhysicalDPI(ddpi, hdpi, vdpi);
 }
 
-void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float rate)
+void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float density, float rate)
 {
     Android_SurfaceWidth = surfaceWidth;
     Android_SurfaceHeight = surfaceHeight;
     Android_DeviceWidth = deviceWidth;
     Android_DeviceHeight = deviceHeight;
     Android_ScreenRate = rate;
+    Android_ScreenDensity = density;
 }
 
 static Uint32 format_to_pixelFormat(int format)
