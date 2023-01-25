@@ -1733,6 +1733,11 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 2.0.0.
  *
+ * \threadsafety You may only call this function on the main thread. If
+ *               this happens to work on a background thread on any given
+ *               platform or backend, it's purely by luck and you should
+ *               not rely on it to work next time.
+ *
  * \sa SDL_RenderClear
  * \sa SDL_RenderDrawLine
  * \sa SDL_RenderDrawLines
