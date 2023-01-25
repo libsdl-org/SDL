@@ -637,7 +637,7 @@ void WIN_ScreenPointFromSDLFloat(float x, float y, LONG *xOut, LONG *yOut, int *
         goto passthrough;
     }
 
-    if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) < 0) {
+    if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayPhysicalDPI(displayIndex, &ddpi, &hdpi, &vdpi) < 0) {
         goto passthrough;
     }
 
@@ -712,7 +712,7 @@ void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut)
     }
 
     /* Get SDL display properties */
-    if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) < 0) {
+    if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayPhysicalDPI(displayIndex, &ddpi, &hdpi, &vdpi) < 0) {
         return;
     }
 

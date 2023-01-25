@@ -412,6 +412,7 @@
 #define SDL_GetTicks64 SDL_GetTicks
 
 /* ##SDL_video.h */
+#define SDL_GetDisplayDPI SDL_GetDisplayPhysicalDPI
 #define SDL_GetPointDisplayIndex SDL_GetDisplayIndexForPoint
 #define SDL_GetRectDisplayIndex SDL_GetDisplayIndexForRect
 
@@ -791,6 +792,7 @@
 #define SDL_GetTicks64 SDL_GetTicks64_renamed_SDL_GetTicks
 
 /* ##SDL_video.h */
+#define SDL_GetDisplayDPI SDL_GetDisplayDPI_renamed_SDL_GetDisplayPhysicalDPI
 #define SDL_GetPointDisplayIndex SDL_GetPointDisplayIndex_renamed_SDL_GetDisplayIndexForPoint
 #define SDL_GetRectDisplayIndex SDL_GetRectDisplayIndex_renamed_SDL_GetDisplayIndexForRect
 
