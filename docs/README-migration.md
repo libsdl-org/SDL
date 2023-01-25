@@ -950,7 +950,9 @@ SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in S
 
 SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_VIDEO_DRIVER hint.
 
-'SDL_WINDOW_SHOW' flag has been removed. Windows are shown by default and can be created hidden by using the SDL_WINDOW_HIDDEN flag.
+The SDL_WINDOW_SHOWN flag has been removed. Windows are shown by default and can be created hidden by using the SDL_WINDOW_HIDDEN flag.
+
+The SDL_WINDOW_ALLOW_HIGHDPI flag has been removed. Windows are automatically high DPI aware and their coordinates are in screen space, which may differ from physical pixels on displays using display scaling.
 
 The refresh rate in SDL_DisplayMode is now a float.
 
