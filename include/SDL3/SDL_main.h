@@ -267,7 +267,7 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 /**
  * Callback from the application to let the suspend continue.
  *
- * \since This function is available since SDL 2.28.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 

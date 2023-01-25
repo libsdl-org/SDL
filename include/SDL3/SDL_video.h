@@ -661,8 +661,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * On Apple's macOS, you **must** set the NSHighResolutionCapable Info.plist
  * property to YES, otherwise you will not receive a High-DPI OpenGL canvas.
  *
- *  The window size in pixels may differ from its size in screen coordinates
- * if the window is on a high density display (one with an OS scaling factor).
+ * The window size in pixels may differ from its size in screen coordinates if
+ * the window is on a high density display (one with an OS scaling factor).
  * Use SDL_GetWindowSize() to query the client area's size in screen
  * coordinates, and SDL_GetWindowSizeInPixels() or SDL_GetRendererOutputSize()
  * to query the drawable size in pixels. Note that the drawable size can vary
