@@ -1753,7 +1753,7 @@ int video_setWindowCenteredOnDisplay(void *arg)
             expectedX = (expectedDisplayRect.x + ((expectedDisplayRect.w - w) / 2));
             expectedY = (expectedDisplayRect.y + ((expectedDisplayRect.h - h) / 2));
 
-            window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_ALLOW_HIGHDPI);
+            window = SDL_CreateWindow(title, x, y, w, h, 0);
             SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
             SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 

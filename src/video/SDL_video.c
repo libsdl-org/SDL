@@ -1650,13 +1650,8 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
         }
     }
 
-    /* Unless the user has specified the high-DPI disabling hint, respect the
-     * SDL_WINDOW_ALLOW_HIGHDPI flag.
-     */
-    if (flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_HIGHDPI_DISABLED, SDL_FALSE)) {
-            flags &= ~SDL_WINDOW_ALLOW_HIGHDPI;
-        }
+    if (!SDL_GetHintBoolean("SDL_VIDEO_HIGHDPI_DISABLED", SDL_FALSE)) {
+        flags |= SDL_WINDOW_ALLOW_HIGHDPI;
     }
 
     window = (SDL_Window *)SDL_calloc(1, sizeof(*window));
@@ -3353,7 +3348,7 @@ void SDL_GL_UnloadLibrary(void)
 
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
 typedef GLenum (APIENTRY* PFNGLGETERRORPROC) (void);
-typedef void (APIENTRY* PFNGLGETINTEGERVPROC) (GLenum pname, GLint * params);
+typedef void (APIENTRY* PFNGLGETINTEGERVPROC) (GLenum pname, GLint *params);
 typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGPROC) (GLenum name);
 #if !SDL_VIDEO_OPENGL
 typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
@@ -4136,7 +4131,7 @@ void SDL_GL_DeleteContext(SDL_GLContext context)
  * Utility function used by SDL_WM_SetIcon(); flags & 1 for color key, flags
  * & 2 for alpha channel.
  */
-static void CreateMaskFromColorKeyOrAlpha(SDL_Surface * icon, Uint8 * mask, int flags)
+static void CreateMaskFromColorKeyOrAlpha(SDL_Surface *icon, Uint8 *mask, int flags)
 {
     int x, y;
     Uint32 colorkey;
@@ -4200,7 +4195,7 @@ static void CreateMaskFromColorKeyOrAlpha(SDL_Surface * icon, Uint8 * mask, int 
 /*
  * Sets the window manager icon for the display window.
  */
-void SDL_WM_SetIcon(SDL_Surface * icon, Uint8 * mask)
+void SDL_WM_SetIcon(SDL_Surface *icon, Uint8 *mask)
 {
     if (icon && _this->SetIcon) {
         /* Generate a mask if necessary, and create the icon! */
