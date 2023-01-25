@@ -122,7 +122,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 mDisplay.getRealMetrics( realMetrics );
                 nDeviceWidth = realMetrics.widthPixels;
                 nDeviceHeight = realMetrics.heightPixels;
-                density = realMetrics.density;
+				// Use densityDpi instead of density to more closely match what the UI scale is
+                density = realMetrics.densityDpi / 160;
             }
         } catch(Exception ignored) {
         }
