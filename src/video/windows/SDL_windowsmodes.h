@@ -43,7 +43,7 @@ extern void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut);
 extern void WIN_ScreenPointFromSDLFloat(float x, float y, LONG *xOut, LONG *yOut, int *dpiOut);
 extern void WIN_ScreenPointToSDL(int *x, int *y);
 extern void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut);
-extern int WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
+extern int WIN_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
 extern void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
 extern int WIN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void WIN_RefreshDisplays(_THIS);

@@ -156,7 +156,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->RefreshDisplays = WIN_RefreshDisplays;
     device->GetDisplayBounds = WIN_GetDisplayBounds;
     device->GetDisplayUsableBounds = WIN_GetDisplayUsableBounds;
-    device->GetDisplayDPI = WIN_GetDisplayDPI;
+    device->GetDisplayPhysicalDPI = WIN_GetDisplayPhysicalDPI;
     device->GetDisplayModes = WIN_GetDisplayModes;
     device->SetDisplayMode = WIN_SetDisplayMode;
 #endif
