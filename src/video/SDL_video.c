@@ -2395,7 +2395,15 @@ void SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
     if (_this->GetWindowSizeInPixels) {
         _this->GetWindowSizeInPixels(_this, window, w, h);
     } else {
+        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+
         SDL_GetWindowSize(window, w, h);
+
+        if (display)
+        {
+            *w = (int)SDL_ceilf(*w * display->current_mode.display_scale);
+            *h = (int)SDL_ceilf(*h * display->current_mode.display_scale);
+        }
     }
 }
 
