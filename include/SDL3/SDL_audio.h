@@ -407,8 +407,8 @@ extern DECLSPEC int SDLCALL SDL_GetDefaultAudioInfo(char **name,
  * Open a specific audio device.
  *
  * Passing in a `device` name of NULL requests the most reasonable default.
- * The `device` name is a UTF-8 string reported by SDL_GetAudioDeviceName(), but
- * some drivers allow arbitrary and driver-specific strings, such as a
+ * The `device` name is a UTF-8 string reported by SDL_GetAudioDeviceName(),
+ * but some drivers allow arbitrary and driver-specific strings, such as a
  * hostname/IP address for a remote audio server, or a filename in the
  * diskaudio driver.
  *
@@ -545,13 +545,13 @@ extern DECLSPEC SDL_AudioStatus SDLCALL SDL_GetAudioDeviceStatus(SDL_AudioDevice
 /**
  * Use this function to play audio on a specified device.
  *
- * Newly-opened audio devices start in the paused state, so you must
- * call this function after opening the specified audio
- * device to start playing sound. This allows you to safely initialize data
- * for your callback function after opening the audio device. Silence will be
- * written to the audio device while paused, and the audio callback is
- * guaranteed to not be called. Pausing one device does not prevent other
- * unpaused devices from running their callbacks.
+ * Newly-opened audio devices start in the paused state, so you must call this
+ * function after opening the specified audio device to start playing sound.
+ * This allows you to safely initialize data for your callback function after
+ * opening the audio device. Silence will be written to the audio device while
+ * paused, and the audio callback is guaranteed to not be called. Pausing one
+ * device does not prevent other unpaused devices from running their
+ * callbacks.
  *
  * \param dev a device opened by SDL_OpenAudioDevice()
  *
@@ -567,11 +567,10 @@ extern DECLSPEC void SDLCALL SDL_PlayAudioDevice(SDL_AudioDeviceID dev);
 /**
  * Use this function to pause audio playback on a specified device.
  *
- * This function pauses the audio callback processing for a given
- * device.  Silence will be written to the audio device while paused, and
- * the audio callback is guaranteed to not be called.
- * Pausing one device does not prevent other unpaused devices from running
- * their callbacks.
+ * This function pauses the audio callback processing for a given device.
+ * Silence will be written to the audio device while paused, and the audio
+ * callback is guaranteed to not be called. Pausing one device does not
+ * prevent other unpaused devices from running their callbacks.
  *
  * If you just need to protect a few variables from race conditions vs your
  * callback, you shouldn't pause the audio device, as it will lead to dropouts
@@ -1119,15 +1118,16 @@ extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
  * \param src_format The format of the source audio
  * \param src_channels The number of channels of the source audio
  * \param src_rate The sampling rate of the source audio
- * \param src_len  The len of src_data
+ * \param src_len The len of src_data
  * \param src_data The audio data to be converted
  * \param dst_format The format of the desired audio output
  * \param dst_channels The number of channels of the desired audio output
  * \param dst_rate The sampling rate of the desired audio output
- * \param dst_len  Will be filled with the len of dst_data
- * \param dst_data Will be filled with a pointer to converted audio data, which should be freed with SDL_free().
- *
- * \returns 0 on success or a negative error code on failure. On error, *dst_data will be NULL and so not allocated.
+ * \param dst_len Will be filled with the len of dst_data
+ * \param dst_data Will be filled with a pointer to converted audio data,
+ *                 which should be freed with SDL_free().
+ * \returns 0 on success or a negative error code on failure. On error,
+ *          *dst_data will be NULL and so not allocated.
  *
  * \since This function is available since SDL 3.0.0.
  *

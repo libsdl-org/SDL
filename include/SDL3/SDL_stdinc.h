@@ -424,9 +424,11 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 /**
  * Allocate memory aligned to a specific value
  *
- * If `alignment` is less than the size of `void *`, then it will be increased to match that.
+ * If `alignment` is less than the size of `void *`, then it will be increased
+ * to match that.
  *
- * The returned memory address will be a multiple of the alignment value, and the amount of memory allocated will be a multiple of the alignment value.
+ * The returned memory address will be a multiple of the alignment value, and
+ * the amount of memory allocated will be a multiple of the alignment value.
  *
  * The memory returned by this function must be freed with SDL_aligned_free()
  *

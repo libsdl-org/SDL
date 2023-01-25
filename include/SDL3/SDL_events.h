@@ -879,8 +879,8 @@ extern DECLSPEC int SDLCALL SDL_WaitEvent(SDL_Event *event);
  * As this function may implicitly call SDL_PumpEvents(), you can only call
  * this function in the thread that initialized the video subsystem.
  *
- * The timeout is not guaranteed, the actual wait time could be longer
- * due to system scheduling.
+ * The timeout is not guaranteed, the actual wait time could be longer due to
+ * system scheduling.
  *
  * \param event the SDL_Event structure to be filled in with the next event
  *              from the queue, or NULL

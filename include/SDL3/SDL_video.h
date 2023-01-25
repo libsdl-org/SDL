@@ -339,7 +339,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetDisplayName(int displayIndex);
 extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(int displayIndex, SDL_Rect *rect);
 
 /**
- * Get the usable desktop area represented by a display, in screen coordinates.
+ * Get the usable desktop area represented by a display, in screen
+ * coordinates.
  *
  * The primary display (`displayIndex` zero) is always located at 0,0.
  *
@@ -385,7 +386,8 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rec
  * SDL_Vulkan_GetDrawableSize(), SDL_Metal_GetDrawableSize(), or
  * SDL_GetRendererOutputSize(), and compare the two values to get an actual
  * scaling value between the two. We will be rethinking how high-dpi details
- * should be managed in SDL3 to make things more consistent, reliable, and clear.
+ * should be managed in SDL3 to make things more consistent, reliable, and
+ * clear.
  *
  * \param displayIndex the index of the display from which DPI information
  *                     should be queried
@@ -659,13 +661,13 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * On Apple's macOS, you **must** set the NSHighResolutionCapable Info.plist
  * property to YES, otherwise you will not receive a High-DPI OpenGL canvas.
  *
- * The window size in pixels may differ from its size in screen coordinates if
- * the window is on a high density display (one with an OS scaling factor).
- * Use SDL_GetWindowSize() to query the client area's size in screen coordinates,
- * and SDL_GetWindowSizeInPixels() or SDL_GetRendererOutputSize() to query the
- * drawable size in pixels. Note that the drawable size can vary after the window
- * is created and should be queried again when the window is resized or moved
- * between displays.
+ *  The window size in pixels may differ from its size in screen coordinates
+ * if the window is on a high density display (one with an OS scaling factor).
+ * Use SDL_GetWindowSize() to query the client area's size in screen
+ * coordinates, and SDL_GetWindowSizeInPixels() or SDL_GetRendererOutputSize()
+ * to query the drawable size in pixels. Note that the drawable size can vary
+ * after the window is created and should be queried again when the window is
+ * resized or moved between displays.
  *
  * If the window is set fullscreen, the width and height parameters `w` and
  * `h` will not be used. However, invalid size parameters (e.g. too large) may
@@ -844,8 +846,10 @@ extern DECLSPEC void *SDLCALL SDL_GetWindowData(SDL_Window *window, const char *
  * Set the position of a window, in screen coordinates.
  *
  * \param window the window to reposition
- * \param x the x coordinate of the window, or `SDL_WINDOWPOS_CENTERED` or `SDL_WINDOWPOS_UNDEFINED`
- * \param y the y coordinate of the window, or `SDL_WINDOWPOS_CENTERED` or `SDL_WINDOWPOS_UNDEFINED`
+ * \param x the x coordinate of the window, or `SDL_WINDOWPOS_CENTERED` or
+ *          `SDL_WINDOWPOS_UNDEFINED`
+ * \param y the y coordinate of the window, or `SDL_WINDOWPOS_CENTERED` or
+ *          `SDL_WINDOWPOS_UNDEFINED`
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -916,8 +920,8 @@ extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h)
 extern DECLSPEC void SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, int *h);
 
 /**
- * Get the size of a window's borders (decorations) around the client area,
- * in screen coordinates.
+ * Get the size of a window's borders (decorations) around the client area, in
+ * screen coordinates.
  *
  * Note: If this function fails (returns -1), the size values will be
  * initialized to 0, 0, 0, 0 (if a non-NULL pointer is provided), as if the
@@ -1938,12 +1942,12 @@ extern DECLSPEC int SDLCALL SDL_GL_SetSwapInterval(int interval);
  * If the system can't determine the swap interval, or there isn't a valid
  * current context, this function will set *interval to 0 as a safe default.
  *
- * \param interval Output interval value. 0 if there is no vertical retrace synchronization, 1 if the buffer
- *          swap is synchronized with the vertical retrace, and -1 if late
- *          swaps happen immediately instead of waiting for the next retrace
- *
- * \returns 0 on success or -1 error.
- *          call SDL_GetError() for more information.
+ * \param interval Output interval value. 0 if there is no vertical retrace
+ *                 synchronization, 1 if the buffer swap is synchronized with
+ *                 the vertical retrace, and -1 if late swaps happen
+ *                 immediately instead of waiting for the next retrace
+ * \returns 0 on success or -1 error. call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1962,7 +1966,6 @@ extern DECLSPEC int SDLCALL SDL_GL_GetSwapInterval(int *interval);
  * extra.
  *
  * \param window the window to change
- *
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

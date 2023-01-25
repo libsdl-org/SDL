@@ -91,8 +91,8 @@ typedef enum
  * - `SDL_INIT_JOYSTICK`: joystick subsystem; automatically initializes the
  *   events subsystem
  * - `SDL_INIT_HAPTIC`: haptic (force feedback) subsystem
- * - `SDL_INIT_GAMEPAD`: gamepad subsystem; automatically
- *   initializes the joystick subsystem
+ * - `SDL_INIT_GAMEPAD`: gamepad subsystem; automatically initializes the
+ *   joystick subsystem
  * - `SDL_INIT_EVENTS`: events subsystem
  * - `SDL_INIT_EVERYTHING`: all of the above subsystems
  *

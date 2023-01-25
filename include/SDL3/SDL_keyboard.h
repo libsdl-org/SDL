@@ -247,9 +247,9 @@ extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
  * Start accepting Unicode text input events.
  *
  * This function will start accepting Unicode text input events in the focused
- * SDL window, and start emitting SDL_TextInputEvent (SDL_EVENT_TEXT_INPUT) and
- * SDL_TextEditingEvent (SDL_EVENT_TEXT_EDITING) events. Please use this function in
- * pair with SDL_StopTextInput().
+ * SDL window, and start emitting SDL_TextInputEvent (SDL_EVENT_TEXT_INPUT)
+ * and SDL_TextEditingEvent (SDL_EVENT_TEXT_EDITING) events. Please use this
+ * function in pair with SDL_StopTextInput().
  *
  * On some platforms using this function activates the screen keyboard.
  *
