@@ -1124,13 +1124,13 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
 
                 SDL_Log("Bounds: %dx%d at %d,%d\n", bounds.w, bounds.h, bounds.x, bounds.y);
                 SDL_Log("Usable bounds: %dx%d at %d,%d\n", usablebounds.w, usablebounds.h, usablebounds.x, usablebounds.y);
-                SDL_Log("DPI: %fx%f\n", hdpi, vdpi);
+                SDL_Log("DPI: %gx%g\n", hdpi, vdpi);
 
                 SDL_GetDesktopDisplayMode(i, &mode);
                 SDL_GetMasksForPixelFormatEnum(mode.format, &bpp, &Rmask, &Gmask,
                                            &Bmask, &Amask);
-                SDL_Log("  Current mode: %dx%d@%gHz, %d bits-per-pixel (%s)\n",
-                        mode.w, mode.h, mode.refresh_rate, bpp,
+                SDL_Log("  Current mode: %dx%d@%gHz, %d%% scale, %d bits-per-pixel (%s)\n",
+                        mode.w, mode.h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), bpp,
                         SDL_GetPixelFormatName(mode.format));
                 if (Rmask || Gmask || Bmask) {
                     SDL_Log("      Red Mask   = 0x%.8" SDL_PRIx32 "\n", Rmask);
@@ -1151,8 +1151,8 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                         SDL_GetDisplayMode(i, j, &mode);
                         SDL_GetMasksForPixelFormatEnum(mode.format, &bpp, &Rmask,
                                                    &Gmask, &Bmask, &Amask);
-                        SDL_Log("    Mode %d: %dx%d@%gHz, %d bits-per-pixel (%s)\n",
-                                j, mode.w, mode.h, mode.refresh_rate, bpp,
+                        SDL_Log("    Mode %d: %dx%d@%gHz, %d%% scale, %d bits-per-pixel (%s)\n",
+                                j, mode.w, mode.h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), bpp,
                                 SDL_GetPixelFormatName(mode.format));
                         if (Rmask || Gmask || Bmask) {
                             SDL_Log("        Red Mask   = 0x%.8" SDL_PRIx32 "\n",
@@ -2245,8 +2245,8 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     textY += lineHeight;
 
     if (0 == SDL_GetWindowDisplayMode(window, &mode)) {
-        (void)SDL_snprintf(text, sizeof text, "SDL_GetWindowDisplayMode: %dx%d@%gHz (%s)",
-                           mode.w, mode.h, mode.refresh_rate, SDL_GetPixelFormatName(mode.format));
+        (void)SDL_snprintf(text, sizeof text, "SDL_GetWindowDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
+                           mode.w, mode.h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
@@ -2275,21 +2275,21 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     }
 
     if (0 == SDL_GetCurrentDisplayMode(windowDisplayIndex, &mode)) {
-        (void)SDL_snprintf(text, sizeof text, "SDL_GetCurrentDisplayMode: %dx%d@%gHz (%s)",
-                           mode.w, mode.h, mode.refresh_rate, SDL_GetPixelFormatName(mode.format));
+        (void)SDL_snprintf(text, sizeof text, "SDL_GetCurrentDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
+                           mode.w, mode.h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     if (0 == SDL_GetDesktopDisplayMode(windowDisplayIndex, &mode)) {
-        (void)SDL_snprintf(text, sizeof text, "SDL_GetDesktopDisplayMode: %dx%d@%gHz (%s)",
-                           mode.w, mode.h, mode.refresh_rate, SDL_GetPixelFormatName(mode.format));
+        (void)SDL_snprintf(text, sizeof text, "SDL_GetDesktopDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
+                           mode.w, mode.h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     if (0 == SDL_GetDisplayPhysicalDPI(windowDisplayIndex, &ddpi, &hdpi, &vdpi)) {
-        (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayPhysicalDPI: ddpi: %f, hdpi: %f, vdpi: %f",
+        (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayPhysicalDPI: ddpi: %g, hdpi: %g, vdpi: %g",
                            ddpi, hdpi, vdpi);
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;

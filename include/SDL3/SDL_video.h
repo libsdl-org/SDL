@@ -56,8 +56,9 @@ typedef Uint32 SDL_WindowID;
 typedef struct
 {
     Uint32 format;              /**< pixel format */
-    int w;                      /**< width, in screen coordinates */
-    int h;                      /**< height, in screen coordinates */
+    int w;                      /**< width in pixels */
+    int h;                      /**< height in pixels */
+    float display_scale;        /**< scale converting screen coordinates to pixels (e.g. a 3840x2160 mode with 1.5 scale would have a screen size of 2560x1440) */
     float refresh_rate;         /**< refresh rate (or zero for unspecified) */
     void *driverdata;           /**< driver-specific data, initialize to 0 */
 } SDL_DisplayMode;
@@ -322,7 +323,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumVideoDisplays(void);
 extern DECLSPEC const char *SDLCALL SDL_GetDisplayName(int displayIndex);
 
 /**
- * Get the desktop area represented by a display.
+ * Get the desktop area represented by a display, in screen coordinates.
  *
  * The primary display (`displayIndex` zero) is always located at 0,0.
  *
@@ -338,7 +339,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetDisplayName(int displayIndex);
 extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(int displayIndex, SDL_Rect *rect);
 
 /**
- * Get the usable desktop area represented by a display.
+ * Get the usable desktop area represented by a display, in screen coordinates.
  *
  * The primary display (`displayIndex` zero) is always located at 0,0.
  *
@@ -440,6 +441,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumDisplayModes(int displayIndex);
  *
  * - width -> largest to smallest
  * - height -> largest to smallest
+ * - display_scale -> smallest to largest
  * - bits per pixel -> more colors to fewer colors
  * - packed pixel layout -> largest to smallest
  * - refresh rate -> highest to lowest

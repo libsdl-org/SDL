@@ -263,16 +263,17 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
                                       UIScreen *uiscreen, UIScreenMode *uiscreenmode)
 {
     SDL_DisplayMode mode;
-    SDL_zero(mode);
 
+    SDL_zero(mode);
     if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
     }
 
-    mode.format = SDL_PIXELFORMAT_ABGR8888;
-    mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
     mode.w = w;
     mode.h = h;
+    mode.display_scale = uiscreen.scale;
+    mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     if (SDL_AddDisplayMode(display, &mode)) {
         return 0;
@@ -282,8 +283,8 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
     }
 }
 
-static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h, UIScreen *uiscreen,
-                                UIScreenMode *uiscreenmode, SDL_bool addRotation)
+static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h,
+                                UIScreen *uiscreen, UIScreenMode *uiscreenmode, SDL_bool addRotation)
 {
     if (UIKit_AddSingleDisplayMode(display, w, h, uiscreen, uiscreenmode) < 0) {
         return -1;
@@ -302,10 +303,9 @@ static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h, UIScree
 int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 {
     UIScreenMode *uiscreenmode = uiscreen.currentMode;
-    CGSize size = uiscreen.bounds.size;
+    CGSize size = uiscreenmode.size;
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
-    SDL_zero(mode);
 
     /* Make sure the width/height are oriented correctly */
     if (UIKit_IsDisplayLandscape(uiscreen) != (size.width > size.height)) {
@@ -314,10 +314,12 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
         size.height = height;
     }
 
-    mode.format = SDL_PIXELFORMAT_ABGR8888;
-    mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
+    SDL_zero(mode);
     mode.w = (int)size.width;
     mode.h = (int)size.height;
+    mode.display_scale = uiscreen.scale;
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
+    mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
 
     if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
@@ -394,7 +396,6 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 
         SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
         SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
-        CGFloat scale = data.uiscreen.scale;
         NSArray *availableModes = nil;
 
 #if TARGET_OS_TV
@@ -405,19 +406,8 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 #endif
 
         for (UIScreenMode *uimode in availableModes) {
-            /* The size of a UIScreenMode is in pixels, but we deal exclusively
-             * in points (except in SDL_GL_GetDrawableSize.)
-             *
-             * For devices such as iPhone 6/7/8 Plus, the UIScreenMode reported
-             * by iOS is not in physical pixels of the display, but rather the
-             * point size times the scale.  For example, on iOS 12.2 on iPhone 8
-             * Plus the uimode.size is 1242x2208 and the uiscreen.scale is 3
-             * thus this will give the size in points which is 414x736. The code
-             * used to use the nativeScale, assuming UIScreenMode returned raw
-             * physical pixels (as suggested by its documentation, but in
-             * practice it is returning the retina pixels). */
-            int w = (int)(uimode.size.width / scale);
-            int h = (int)(uimode.size.height / scale);
+            int w = uimode.size.width;
+            int h = uimode.size.height;
 
             /* Make sure the width/height are oriented correctly */
             if (isLandscape != (w > h)) {

@@ -140,19 +140,16 @@ int PSP_VideoInit(_THIS)
     SDL_DisplayMode current_mode;
 
     SDL_zero(current_mode);
-
     current_mode.w = 480;
     current_mode.h = 272;
-
     current_mode.refresh_rate = 60.0f;
+
     /* 32 bpp for default */
     current_mode.format = SDL_PIXELFORMAT_ABGR8888;
-    current_mode.driverdata = NULL;
 
     SDL_zero(display);
     display.desktop_mode = current_mode;
     display.current_mode = current_mode;
-    display.driverdata = NULL;
 
     SDL_AddDisplayMode(&display, &current_mode);
 

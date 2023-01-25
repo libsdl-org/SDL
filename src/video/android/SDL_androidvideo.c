@@ -177,9 +177,11 @@ int Android_VideoInit(_THIS)
     videodata->isPausing = SDL_FALSE;
     videodata->pauseAudio = SDL_GetHintBoolean(SDL_HINT_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO, SDL_TRUE);
 
+    SDL_zero(mode);
     mode.format = Android_ScreenFormat;
     mode.w = Android_DeviceWidth;
     mode.h = Android_DeviceHeight;
+    mode.display_scale = 1.0f; /* FIXME */
     mode.refresh_rate = Android_ScreenRate;
     mode.driverdata = NULL;
 

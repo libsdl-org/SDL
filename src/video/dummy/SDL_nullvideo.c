@@ -146,8 +146,6 @@ int DUMMY_VideoInit(_THIS)
     mode.format = SDL_PIXELFORMAT_RGB888;
     mode.w = 1024;
     mode.h = 768;
-    mode.refresh_rate = 0.0f;
-    mode.driverdata = NULL;
     if (SDL_AddBasicVideoDisplay(&mode) < 0) {
         return -1;
     }

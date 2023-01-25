@@ -127,11 +127,10 @@ int Emscripten_VideoInit(_THIS)
     SDL_DisplayMode mode;
 
     /* Use a fake 32-bpp desktop mode */
+    SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
     emscripten_get_screen_size(&mode.w, &mode.h);
 
-    mode.refresh_rate = 0.0f;
-    mode.driverdata = NULL;
     if (SDL_AddBasicVideoDisplay(&mode) < 0) {
         return -1;
     }

@@ -145,6 +145,8 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
     bool usableForGUI = CGDisplayModeIsUsableForDesktopGUI(vidmode);
     int width = (int)CGDisplayModeGetWidth(vidmode);
     int height = (int)CGDisplayModeGetHeight(vidmode);
+    int pixelW = width;
+    int pixelH = height;
     uint32_t ioflags = CGDisplayModeGetIOFlags(vidmode);
     float refreshrate = GetDisplayModeRefreshRate(vidmode, link);
     Uint32 format = GetDisplayModePixelFormat(vidmode);
@@ -164,17 +166,17 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
     modes = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
     CFArrayAppendValue(modes, vidmode);
 
-    /* If a list of possible diplay modes is passed in, use it to filter out
+    /* If a list of possible display modes is passed in, use it to filter out
      * modes that have duplicate sizes. We don't just rely on SDL's higher level
      * duplicate filtering because this code can choose what properties are
      * prefered, and it can add CGDisplayModes to the DisplayModeData's list of
      * modes to try (see comment below for why that's necessary).
      * CGDisplayModeGetPixelWidth and friends are only available in 10.8+. */
 #ifdef MAC_OS_X_VERSION_10_8
-    if (modelist != NULL && floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_7) {
-        int pixelW = (int)CGDisplayModeGetPixelWidth(vidmode);
-        int pixelH = (int)CGDisplayModeGetPixelHeight(vidmode);
+    pixelW = (int)CGDisplayModeGetPixelWidth(vidmode);
+    pixelH = (int)CGDisplayModeGetPixelHeight(vidmode);
 
+    if (modelist != NULL && floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_7) {
         CFIndex modescount = CFArrayGetCount(modelist);
         int i;
 
@@ -254,6 +256,7 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
     }
 #endif
 
+    SDL_zerop(mode);
     data = (SDL_DisplayModeData *)SDL_malloc(sizeof(*data));
     if (!data) {
         CFRelease(modes);
@@ -261,8 +264,9 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
     }
     data->modes = modes;
     mode->format = format;
-    mode->w = width;
-    mode->h = height;
+    mode->w = pixelW;
+    mode->h = pixelH;
+    mode->display_scale = (float)pixelW / width;
     mode->refresh_rate = refreshrate;
     mode->driverdata = data;
     return SDL_TRUE;

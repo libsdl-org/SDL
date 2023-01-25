@@ -382,12 +382,16 @@ static int SDLCALL cmpmodes(const void *A, const void *B)
 {
     const SDL_DisplayMode *a = (const SDL_DisplayMode *)A;
     const SDL_DisplayMode *b = (const SDL_DisplayMode *)B;
+    float a_display_scale = (a->display_scale == 0.0f) ? 1.0f : a->display_scale;
+    float b_display_scale = (b->display_scale == 0.0f) ? 1.0f : b->display_scale;
     if (a == b) {
         return 0;
     } else if (a->w != b->w) {
         return b->w - a->w;
     } else if (a->h != b->h) {
         return b->h - a->h;
+    } else if (a_display_scale != b_display_scale) {
+        return (int)(a_display_scale * 100) - (int)(b_display_scale * 100);
     } else if (SDL_BITSPERPIXEL(a->format) != SDL_BITSPERPIXEL(b->format)) {
         return SDL_BITSPERPIXEL(b->format) - SDL_BITSPERPIXEL(a->format);
     } else if (SDL_PIXELLAYOUT(a->format) != SDL_PIXELLAYOUT(b->format)) {
@@ -588,6 +592,9 @@ int SDL_AddBasicVideoDisplay(const SDL_DisplayMode *desktop_mode)
     SDL_zero(display);
     if (desktop_mode) {
         display.desktop_mode = *desktop_mode;
+        if (display.desktop_mode.display_scale == 0.0f) {
+            display.desktop_mode.display_scale = 1.0f;
+        }
     }
     display.current_mode = display.desktop_mode;
 
@@ -617,6 +624,12 @@ int SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send_event)
             displays[index].name = SDL_strdup(name);
         }
 
+        if (displays[index].desktop_mode.display_scale == 0.0f) {
+            displays[index].desktop_mode.display_scale = 1.0f;
+        }
+        if (displays[index].current_mode.display_scale == 0.0f) {
+            displays[index].current_mode.display_scale = 1.0f;
+        }
         if (send_event) {
             SDL_SendDisplayEvent(&_this->displays[index], SDL_EVENT_DISPLAY_CONNECTED, 0);
         }
@@ -709,8 +722,8 @@ int SDL_GetDisplayBounds(int displayIndex, SDL_Rect *rect)
         SDL_GetDisplayBounds(displayIndex - 1, rect);
         rect->x += rect->w;
     }
-    rect->w = display->current_mode.w;
-    rect->h = display->current_mode.h;
+    rect->w = (int)(display->current_mode.w / display->current_mode.display_scale);
+    rect->h = (int)(display->current_mode.h / display->current_mode.display_scale);
     return 0;
 }
 
@@ -791,9 +804,7 @@ SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mo
 
     /* Go ahead and add the new mode */
     if (nmodes == display->max_display_modes) {
-        modes =
-            SDL_realloc(modes,
-                        (display->max_display_modes + 32) * sizeof(*modes));
+        modes = SDL_realloc(modes, (display->max_display_modes + 32) * sizeof(*modes));
         if (modes == NULL) {
             return SDL_FALSE;
         }
@@ -801,6 +812,9 @@ SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mo
         display->max_display_modes += 32;
     }
     modes[nmodes] = *mode;
+    if (modes[nmodes].display_scale == 0.0f) {
+        modes[nmodes].display_scale = 1.0f;
+    }
     display->num_display_modes++;
 
     /* Re-sort video modes */
@@ -813,11 +827,17 @@ SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mo
 void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
     SDL_memcpy(&display->current_mode, mode, sizeof(*mode));
+    if (display->current_mode.display_scale == 0.0f) {
+        display->current_mode.display_scale = 1.0f;
+    }
 }
 
 void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
     SDL_memcpy(&display->desktop_mode, mode, sizeof(*mode));
+    if (display->desktop_mode.display_scale == 0.0f) {
+        display->desktop_mode.display_scale = 1.0f;
+    }
 }
 
 static int SDL_GetNumDisplayModesForDisplay(SDL_VideoDisplay *display)
@@ -902,6 +922,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
                                                             SDL_DisplayMode *closest)
 {
     Uint32 target_format;
+    float target_display_scale;
     float target_refresh_rate;
     int i;
     SDL_DisplayMode *current, *match;
@@ -916,6 +937,13 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
         target_format = mode->format;
     } else {
         target_format = display->desktop_mode.format;
+    }
+
+    /* Default to 1.0 scale */
+    if (mode->display_scale > 0.0f) {
+        target_display_scale = mode->display_scale;
+    } else {
+        target_display_scale = 1.0f;
     }
 
     /* Default to the desktop refresh rate */
@@ -962,6 +990,14 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
             /* Sorted highest refresh to lowest */
             if (current->refresh_rate >= target_refresh_rate) {
                 match = current;
+                continue;
+            }
+        }
+        if (current->display_scale != match->display_scale) {
+            /* Sorted lowest display scale to highest */
+            if (current->display_scale <= target_display_scale) {
+                match = current;
+                continue;
             }
         }
     }
@@ -978,6 +1014,8 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
             closest->w = mode->w;
             closest->h = mode->h;
         }
+        closest->display_scale = mode->display_scale;
+
         if (match->refresh_rate > 0.0f) {
             closest->refresh_rate = match->refresh_rate;
         } else {
