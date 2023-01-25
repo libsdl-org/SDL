@@ -570,6 +570,7 @@ static void display_handle_done(void *data,
         native_mode.w = driverdata->native_width;
         native_mode.h = driverdata->native_height;
     }
+    native_mode.display_scale = 1.0f; /* FIXME */
     native_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
     native_mode.driverdata = driverdata->output;
 

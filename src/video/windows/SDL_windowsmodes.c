@@ -47,20 +47,6 @@ static void WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_Di
         char bmi_data[sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD)];
         LPBITMAPINFO bmi;
         HBITMAP hbm;
-        int logical_width = GetDeviceCaps(hdc, HORZRES);
-        int logical_height = GetDeviceCaps(hdc, VERTRES);
-
-        /* High-DPI notes:
-
-           If DPI-unaware:
-             - GetDeviceCaps( hdc, HORZRES ) will return the monitor width in points.
-             - DeviceMode.dmPelsWidth is actual pixels (unlike almost all other Windows API's,
-               it's not virtualized when DPI unaware).
-
-           If DPI-aware:
-            - GetDeviceCaps( hdc, HORZRES ) will return pixels, same as DeviceMode.dmPelsWidth */
-        mode->w = logical_width;
-        mode->h = logical_height;
 
         SDL_zeroa(bmi_data);
         bmi = (LPBITMAPINFO)bmi_data;
@@ -172,8 +158,9 @@ static float WIN_GetRefreshRate(DEVMODE *mode)
     }
 }
 
-static SDL_bool WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *orientation)
+static SDL_bool WIN_GetDisplayMode(_THIS, HMONITOR hMonitor, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *orientation)
 {
+    const SDL_VideoData *videodata = (const SDL_VideoData *)_this->driverdata;
     SDL_DisplayModeData *data;
     DEVMODE devmode;
 
@@ -188,6 +175,7 @@ static SDL_bool WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_D
         return SDL_FALSE;
     }
 
+    SDL_zerop(mode);
     mode->driverdata = data;
     data->DeviceMode = devmode;
 
@@ -195,6 +183,13 @@ static SDL_bool WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_D
     mode->w = data->DeviceMode.dmPelsWidth;
     mode->h = data->DeviceMode.dmPelsHeight;
     mode->refresh_rate = WIN_GetRefreshRate(&data->DeviceMode);
+
+    if (index == ENUM_CURRENT_SETTINGS && videodata->GetDpiForMonitor) {
+        UINT hdpi_uint, vdpi_uint;
+        if (videodata->GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &hdpi_uint, &vdpi_uint) == S_OK) {
+            mode->display_scale = (float)hdpi_uint / 96;
+        }
+    }
 
     /* Fill in the mode information */
     WIN_UpdateDisplayMode(_this, deviceName, index, mode);
@@ -319,7 +314,7 @@ static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info,
     SDL_Log("Display: %s\n", WIN_StringToUTF8W(info->szDevice));
 #endif
 
-    if (!WIN_GetDisplayMode(_this, info->szDevice, ENUM_CURRENT_SETTINGS, &mode, &orientation)) {
+    if (!WIN_GetDisplayMode(_this, hMonitor, info->szDevice, ENUM_CURRENT_SETTINGS, &mode, &orientation)) {
         return;
     }
 
@@ -733,7 +728,7 @@ void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     SDL_DisplayMode mode;
 
     for (i = 0;; ++i) {
-        if (!WIN_GetDisplayMode(_this, data->DeviceName, i, &mode, NULL)) {
+        if (!WIN_GetDisplayMode(_this, data->MonitorHandle, data->DeviceName, i, &mode, NULL)) {
             break;
         }
         if (SDL_ISPIXELFORMAT_INDEXED(mode.format)) {

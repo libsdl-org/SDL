@@ -136,6 +136,7 @@ static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool exte
         modeflags = read_mode_variable(block, 0);
     }
 
+    SDL_zerop(mode);
     mode->w = xres;
     mode->h = yres;
     mode->format = RISCOS_ModeToPixelFormat(ncolour, modeflags, log2bpp);

@@ -166,10 +166,9 @@ static void AddDispManXDisplay(const int display_id)
     current_mode.w = modeinfo.width;
     current_mode.h = modeinfo.height;
     current_mode.refresh_rate = RPI_GetRefreshRate();
+
     /* 32 bpp for default */
     current_mode.format = SDL_PIXELFORMAT_ABGR8888;
-
-    current_mode.driverdata = NULL;
 
     SDL_zero(display);
     display.desktop_mode = current_mode;

@@ -577,7 +577,6 @@ static int X11_InitModes_StdXlib(_THIS)
     mode.w = WidthOfScreen(screen);
     mode.h = HeightOfScreen(screen);
     mode.format = pixelformat;
-    mode.refresh_rate = 0; /* don't know it, sorry. */
 
     displaydata = (SDL_DisplayData *)SDL_calloc(1, sizeof(*displaydata));
     if (displaydata == NULL) {
@@ -666,8 +665,8 @@ void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
      * we have to use the same format for all windows and all display modes.
      * (or support recreating the window with a new visual behind the scenes)
      */
+    SDL_zero(mode);
     mode.format = sdl_display->current_mode.format;
-    mode.driverdata = NULL;
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     if (data->use_xrandr) {

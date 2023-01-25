@@ -148,11 +148,10 @@ int NGAGE_VideoInit(_THIS)
     SDL_DisplayMode mode;
 
     /* Use 12-bpp desktop mode */
+    SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB444;
     mode.w = 176;
     mode.h = 208;
-    mode.refresh_rate = 0.0f;
-    mode.driverdata = NULL;
     if (SDL_AddBasicVideoDisplay(&mode) < 0) {
         return -1;
     }

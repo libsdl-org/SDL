@@ -210,15 +210,13 @@ int VITA_VideoInit(_THIS)
 #endif
 
     current_mode.refresh_rate = 60.0f;
+
     /* 32 bpp for default */
     current_mode.format = SDL_PIXELFORMAT_ABGR8888;
-
-    current_mode.driverdata = NULL;
 
     SDL_zero(display);
     display.desktop_mode = current_mode;
     display.current_mode = current_mode;
-    display.driverdata = NULL;
 
     SDL_AddVideoDisplay(&display, SDL_FALSE);
     VITA_InitTouch();

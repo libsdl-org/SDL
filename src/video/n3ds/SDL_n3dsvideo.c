@@ -122,7 +122,6 @@ AddN3DSDisplay(gfxScreen_t screen)
     mode.h = GSP_SCREEN_WIDTH;
     mode.refresh_rate = 60.0f;
     mode.format = FRAMEBUFFER_FORMAT;
-    mode.driverdata = NULL;
 
     display.name = (screen == GFX_TOP) ? "N3DS top screen" : "N3DS bottom screen";
     display.desktop_mode = mode;
