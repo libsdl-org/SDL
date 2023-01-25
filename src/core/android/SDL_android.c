@@ -74,7 +74,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     JNIEnv *env, jclass jcls,
     jint surfaceWidth, jint surfaceHeight,
-    jint deviceWidth, jint deviceHeight, jfloat rate);
+    jint deviceWidth, jint deviceHeight, jfloat density, jfloat rate);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
     JNIEnv *env, jclass cls);
@@ -168,7 +168,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "nativeSetupJNI", "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
     { "nativeRunMain", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
     { "onNativeDropFile", "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
-    { "nativeSetScreenResolution", "(IIIIF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
+    { "nativeSetScreenResolution", "(IIIIFF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
     { "onNativeResize", "()V", SDL_JAVA_INTERFACE(onNativeResize) },
     { "onNativeSurfaceCreated", "()V", SDL_JAVA_INTERFACE(onNativeSurfaceCreated) },
     { "onNativeSurfaceChanged", "()V", SDL_JAVA_INTERFACE(onNativeSurfaceChanged) },
@@ -870,11 +870,11 @@ retry:
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     JNIEnv *env, jclass jcls,
     jint surfaceWidth, jint surfaceHeight,
-    jint deviceWidth, jint deviceHeight, jfloat rate)
+    jint deviceWidth, jint deviceHeight, jfloat density, jfloat rate)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, rate);
+    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, density, rate);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
