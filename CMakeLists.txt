@@ -587,7 +587,12 @@ if(USE_GCC OR USE_CLANG)
         target_compile_options(sdl-global-options INTERFACE "-Werror=documentation")
       endif()
     endif()
-    target_compile_options(sdl-global-options INTERFACE "-Wdocumentation;-fcomment-block-commands=threadsafety")
+    target_compile_options(sdl-global-options INTERFACE "-Wdocumentation")
+
+    check_c_compiler_flag(-fcomment-block-commands=threadsafety HAVE_GCC_COMMENT_BLOCK_COMMANDS)
+    if(HAVE_GCC_COMMENT_BLOCK_COMMANDS)
+      target_compile_options(sdl-global-options INTERFACE "-fcomment-block-commands=threadsafety")
+    endif()
   endif()
 
   if(DEPENDENCY_TRACKING)
