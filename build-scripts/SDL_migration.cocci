@@ -2321,3 +2321,8 @@ expression e;
 @@
 - SDL_LASTEVENT
 + SDL_EVENT_LAST
+@@
+@@
+- SDL_GetDisplayDPI
++ SDL_GetDisplayPhysicalDPI
+  (...)
