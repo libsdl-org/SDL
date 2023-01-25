@@ -81,7 +81,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->VideoQuit = Cocoa_VideoQuit;
         device->GetDisplayBounds = Cocoa_GetDisplayBounds;
         device->GetDisplayUsableBounds = Cocoa_GetDisplayUsableBounds;
-        device->GetDisplayDPI = Cocoa_GetDisplayDPI;
+        device->GetDisplayPhysicalDPI = Cocoa_GetDisplayPhysicalDPI;
         device->GetDisplayModes = Cocoa_GetDisplayModes;
         device->SetDisplayMode = Cocoa_SetDisplayMode;
         device->PumpEvents = Cocoa_PumpEvents;

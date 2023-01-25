@@ -413,7 +413,7 @@ int Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rec
     return 0;
 }
 
-int Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
+int Cocoa_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
 {
     @autoreleasepool {
         const float MM_IN_INCH = 25.4f;

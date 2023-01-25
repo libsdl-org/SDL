@@ -754,8 +754,8 @@ int SDL_GetDisplayPhysicalDPI(int displayIndex, float *ddpi, float *hdpi, float 
 
     display = &_this->displays[displayIndex];
 
-    if (_this->GetDisplayDPI) {
-        if (_this->GetDisplayDPI(_this, display, ddpi, hdpi, vdpi) == 0) {
+    if (_this->GetDisplayPhysicalDPI) {
+        if (_this->GetDisplayPhysicalDPI(_this, display, ddpi, hdpi, vdpi) == 0) {
             return 0;
         }
     } else {

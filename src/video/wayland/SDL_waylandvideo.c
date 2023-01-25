@@ -68,7 +68,7 @@ static int Wayland_VideoInit(_THIS);
 
 static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 
-static int Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi);
+static int Wayland_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi);
 
 static void Wayland_VideoQuit(_THIS);
 
@@ -208,7 +208,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->VideoInit = Wayland_VideoInit;
     device->VideoQuit = Wayland_VideoQuit;
     device->GetDisplayBounds = Wayland_GetDisplayBounds;
-    device->GetDisplayDPI = Wayland_GetDisplayDPI;
+    device->GetDisplayPhysicalDPI = Wayland_GetDisplayPhysicalDPI;
     device->GetWindowWMInfo = Wayland_GetWindowWMInfo;
     device->SuspendScreenSaver = Wayland_SuspendScreenSaver;
 
@@ -972,7 +972,7 @@ static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *
     return 0;
 }
 
-static int Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi)
+static int Wayland_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi)
 {
     SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *)sdl_display->driverdata;
 
