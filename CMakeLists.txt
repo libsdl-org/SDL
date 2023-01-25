@@ -623,7 +623,11 @@ if(USE_GCC OR USE_CLANG)
       #if !defined(__GNUC__) || __GNUC__ < 4
       #error SDL only uses visibility attributes in GCC 4 or newer
       #endif
-      int main(int argc, char **argv) { return 0; }" HAVE_GCC_FVISIBILITY)
+      __attribute__((visibility(\"default\"))) int foo(void);
+      __attribute__((visibility(\"hidden\")))  int bar(void);
+      int foo(void) { return 0; }
+      int bar(void) { return 1; }
+      int main(void) { return 0; }" HAVE_GCC_FVISIBILITY)
   cmake_pop_check_state()
 
   check_c_compiler_flag(-Wshadow HAVE_GCC_WSHADOW)
