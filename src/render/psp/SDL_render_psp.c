@@ -30,16 +30,24 @@
 #include "SDL_render_psp.h"
 
 static unsigned int __attribute__((aligned(16))) list[262144];
+
+typedef struct
+{
+    uint8_t shade;        /**< GU_FLAT or GU_SMOOTH */
+    uint8_t mode;        /**< GU_ADD, GU_SUBTRACT, GU_REVERSE_SUBTRACT, GU_MIN, GU_MAX */
+} PSP_BlendInfo;
+
 typedef struct
 {
     void *frontbuffer;         /**< main screen buffer */
     void *backbuffer;          /**< buffer presented to display */
     uint64_t drawColor;
+    PSP_BlendInfo blendInfo;   /**< current blend info */
     uint8_t vsync; /* 0 (Disabled), 1 (Enabled), 2 (Dynamic) */
     SDL_bool vblank_not_reached; /**< whether vblank wasn't reached */
 } PSP_RenderData;
 
-typedef struct PSP_Texture
+typedef struct
 {
     void *data;                 /**< Image data. */
     unsigned int width;         /**< Image width. */
@@ -428,44 +436,56 @@ static int PSP_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     return 0;
 }
 
-static void PSP_SetBlendMode(PSP_RenderData *data, int blendMode)
+static void PSP_SetBlendMode(PSP_RenderData *data, PSP_BlendInfo blendInfo)
 {
-    switch (blendMode) {
-    case SDL_BLENDMODE_NONE:
-    {
-        sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
-        sceGuDisable(GU_BLEND);
-        break;
-    }
-    case SDL_BLENDMODE_BLEND:
-    {
-        sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-        sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
-        sceGuEnable(GU_BLEND);
-        break;
-    }
-    case SDL_BLENDMODE_ADD:
-    {
-        sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-        sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_FIX, 0, 0x00FFFFFF);
-        sceGuEnable(GU_BLEND);
-        break;
-    }
-    case SDL_BLENDMODE_MOD:
-    {
-        sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-        sceGuBlendFunc(GU_ADD, GU_FIX, GU_SRC_COLOR, 0, 0);
-        sceGuEnable(GU_BLEND);
-        break;
-    }
-    case SDL_BLENDMODE_MUL:
-    {
-        sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+    // Update the blend mode if necessary
+    if (data->blendInfo.mode != blendInfo.mode) {
+        switch (blendInfo.mode) {
+        case SDL_BLENDMODE_NONE:
+        {
+            sceGuShadeModel(GU_SMOOTH);
+            sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
+            sceGuDisable(GU_BLEND);
+            break;
+        }
+        case SDL_BLENDMODE_BLEND:
+        {
+            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+            sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
+            sceGuEnable(GU_BLEND);
+            break;
+        }
+        case SDL_BLENDMODE_ADD:
+        {
+            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+            sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_FIX, 0, 0x00FFFFFF);
+            sceGuEnable(GU_BLEND);
+            break;
+        }
+        case SDL_BLENDMODE_MOD:
+        {
+            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+            sceGuBlendFunc(GU_ADD, GU_FIX, GU_SRC_COLOR, 0, 0);
+            sceGuEnable(GU_BLEND);
+            break;
+        }
+        case SDL_BLENDMODE_MUL:
+        {
+            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
             /* FIXME SDL_BLENDMODE_MUL is simplified, and dstA is in fact un-changed.*/
-        sceGuBlendFunc(GU_ADD, GU_DST_COLOR, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
-        sceGuEnable(GU_BLEND);
-        break;
+            sceGuBlendFunc(GU_ADD, GU_DST_COLOR, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
+            sceGuEnable(GU_BLEND);
+            break;
+        }
+        }
+        
+        data->blendInfo.mode = blendInfo.mode;
     }
+
+    // Update shade model if needed
+    if (data->blendInfo.shade != blendInfo.shade) {
+        sceGuShadeModel(blendInfo.shade);
+        data->blendInfo.shade = blendInfo.shade;
     }
 }
 
@@ -473,8 +493,12 @@ static int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Render
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     const size_t count = cmd->data.draw.count;
+    PSP_BlendInfo blendInfo = {
+        .mode = cmd->data.draw.blend,
+        .shade = GU_SMOOTH
+    };
 
-    PSP_SetBlendMode(data, cmd->data.draw.blend);
+    PSP_SetBlendMode(data, blendInfo);
 
     if (cmd->data.draw.texture) {
         const VertTCV *verts = (VertTCV *)(vertices + cmd->data.draw.first);
@@ -499,8 +523,12 @@ int PSP_RenderLines(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *c
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     const size_t count = cmd->data.draw.count;
     const VertV *verts = (VertV *)(vertices + cmd->data.draw.first);
+    const PSP_BlendInfo blendInfo = {
+        .mode = cmd->data.draw.blend,
+        .shade = GU_FLAT
+    };
 
-    PSP_SetBlendMode(data, cmd->data.draw.blend);
+    PSP_SetBlendMode(data, blendInfo);
     sceGuDrawArray(GU_LINES, GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
 
     return 0;
@@ -511,8 +539,12 @@ int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     const size_t count = cmd->data.draw.count;
     const VertV *verts = (VertV *)(vertices + cmd->data.draw.first);
+    const PSP_BlendInfo blendInfo = {
+        .mode = cmd->data.draw.blend,
+        .shade = GU_FLAT
+    };
 
-    PSP_SetBlendMode(data, cmd->data.draw.blend);
+    PSP_SetBlendMode(data, blendInfo);
     sceGuDrawArray(GU_POINTS, GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
 
     return 0;
