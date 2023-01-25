@@ -93,7 +93,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->DestroyWindow = UIKit_DestroyWindow;
         device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
         device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;
-        device->GetDisplayDPI = UIKit_GetDisplayDPI;
+        device->GetDisplayPhysicalDPI = UIKit_GetDisplayPhysicalDPI;
         device->GetWindowSizeInPixels = UIKit_GetWindowSizeInPixels;
 
 #if SDL_IPHONE_KEYBOARD

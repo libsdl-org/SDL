@@ -164,7 +164,7 @@ SDL3_0.0.0 {
     SDL_GetDefaultCursor;
     SDL_GetDesktopDisplayMode;
     SDL_GetDisplayBounds;
-    SDL_GetDisplayDPI;
+    SDL_GetDisplayPhysicalDPI;
     SDL_GetDisplayIndexForPoint;
     SDL_GetDisplayIndexForRect;
     SDL_GetDisplayMode;

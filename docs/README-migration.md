@@ -967,6 +967,7 @@ SDL_GL_SwapWindow() returns 0 if the function succeeds or a negative error code 
 SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
 The following functions have been renamed:
+* SDL_GetDisplayDPI() => SDL_GetDisplayPhysicalDPI()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayIndexForPoint()
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayIndexForRect()
 

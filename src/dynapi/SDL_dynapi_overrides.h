@@ -189,7 +189,7 @@
 #define SDL_GetDefaultCursor SDL_GetDefaultCursor_REAL
 #define SDL_GetDesktopDisplayMode SDL_GetDesktopDisplayMode_REAL
 #define SDL_GetDisplayBounds SDL_GetDisplayBounds_REAL
-#define SDL_GetDisplayDPI SDL_GetDisplayDPI_REAL
+#define SDL_GetDisplayPhysicalDPI SDL_GetDisplayPhysicalDPI_REAL
 #define SDL_GetDisplayIndexForPoint SDL_GetDisplayIndexForPoint_REAL
 #define SDL_GetDisplayIndexForRect SDL_GetDisplayIndexForRect_REAL
 #define SDL_GetDisplayMode SDL_GetDisplayMode_REAL

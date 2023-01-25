@@ -401,7 +401,7 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rec
  *
  * \sa SDL_GetNumVideoDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetDisplayDPI(int displayIndex, float *ddpi, float *hdpi, float *vdpi);
+extern DECLSPEC int SDLCALL SDL_GetDisplayPhysicalDPI(int displayIndex, float *ddpi, float *hdpi, float *vdpi);
 
 /**
  * Get the orientation of a display.

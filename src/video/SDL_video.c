@@ -746,7 +746,7 @@ int SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect *rect)
     return SDL_GetDisplayBounds(displayIndex, rect);
 }
 
-int SDL_GetDisplayDPI(int displayIndex, float *ddpi, float *hdpi, float *vdpi)
+int SDL_GetDisplayPhysicalDPI(int displayIndex, float *ddpi, float *hdpi, float *vdpi)
 {
     SDL_VideoDisplay *display;
 
@@ -754,8 +754,8 @@ int SDL_GetDisplayDPI(int displayIndex, float *ddpi, float *hdpi, float *vdpi)
 
     display = &_this->displays[displayIndex];
 
-    if (_this->GetDisplayDPI) {
-        if (_this->GetDisplayDPI(_this, display, ddpi, hdpi, vdpi) == 0) {
+    if (_this->GetDisplayPhysicalDPI) {
+        if (_this->GetDisplayPhysicalDPI(_this, display, ddpi, hdpi, vdpi) == 0) {
             return 0;
         }
     } else {
