@@ -251,10 +251,6 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
         state->num_windows = 1;
         return 1;
     }
-    if (SDL_strcasecmp(argv[index], "--allow-highdpi") == 0) {
-        state->window_flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-        return 1;
-    }
     if (SDL_strcasecmp(argv[index], "--windows") == 0) {
         ++index;
         if (!argv[index] || !SDL_isdigit((unsigned char)*argv[index])) {
@@ -716,9 +712,6 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
     case SDL_WINDOW_FOREIGN:
         SDL_snprintfcat(text, maxlen, "FOREIGN");
         break;
-    case SDL_WINDOW_ALLOW_HIGHDPI:
-        SDL_snprintfcat(text, maxlen, "ALLOW_HIGHDPI");
-        break;
     case SDL_WINDOW_MOUSE_CAPTURE:
         SDL_snprintfcat(text, maxlen, "MOUSE_CAPTURE");
         break;
@@ -767,7 +760,6 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
         SDL_WINDOW_MOUSE_FOCUS,
         SDL_WINDOW_FULLSCREEN_DESKTOP,
         SDL_WINDOW_FOREIGN,
-        SDL_WINDOW_ALLOW_HIGHDPI,
         SDL_WINDOW_MOUSE_CAPTURE,
         SDL_WINDOW_ALWAYS_ON_TOP,
         SDL_WINDOW_SKIP_TASKBAR,
