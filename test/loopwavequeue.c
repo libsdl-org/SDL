@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     /* Initialize fillerup() variables */
     g_audio_id = SDL_OpenAudioDevice(NULL, 0, &wave.spec, NULL, 0);
 
-    if (g_audio_id <= 0) {
+    if (!g_audio_id) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
         SDL_free(wave.sound);
         quit(2);
