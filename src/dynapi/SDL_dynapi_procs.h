@@ -263,7 +263,7 @@ SDL_DYNAPI_PROC(int,SDL_GetDefaultAudioInfo,(char **a, SDL_AudioSpec *b, int c),
 SDL_DYNAPI_PROC(SDL_Cursor*,SDL_GetDefaultCursor,(void),(),return)
 SDL_DYNAPI_PROC(int,SDL_GetDesktopDisplayMode,(int a, SDL_DisplayMode *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetDisplayBounds,(int a, SDL_Rect *b),(a,b),return)
-SDL_DYNAPI_PROC(int,SDL_GetDisplayPhysicalDPI,(int a, float *b, float *c, float *d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_GetDisplayPhysicalDPI,(int a, float *b, float *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_GetDisplayIndexForPoint,(const SDL_Point *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetDisplayIndexForRect,(const SDL_Rect *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetDisplayMode,(int a, int b, SDL_DisplayMode *c),(a,b,c),return)

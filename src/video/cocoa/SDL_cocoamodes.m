@@ -417,7 +417,7 @@ int Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rec
     return 0;
 }
 
-int Cocoa_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
+int Cocoa_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *hdpi, float *vdpi)
 {
     @autoreleasepool {
         const float MM_IN_INCH = 25.4f;
@@ -482,15 +482,8 @@ int Cocoa_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, f
             const int pixelWidth = displayNativeSize.width;
             const int pixelHeight = displayNativeSize.height;
 
-            if (ddpi) {
-                *ddpi = (SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH));
-            }
-            if (hdpi) {
-                *hdpi = (pixelWidth * MM_IN_INCH / displaySize.width);
-            }
-            if (vdpi) {
-                *vdpi = (pixelHeight * MM_IN_INCH / displaySize.height);
-            }
+            *hdpi = (pixelWidth * MM_IN_INCH / displaySize.width);
+            *vdpi = (pixelHeight * MM_IN_INCH / displaySize.height);
         }
         return 0;
     }

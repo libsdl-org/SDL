@@ -1650,7 +1650,7 @@ SDL_DisplayOrientation Android_JNI_GetDisplayOrientation(void)
     return displayOrientation;
 }
 
-int Android_JNI_GetDisplayPhysicalDPI(float *ddpi, float *xdpi, float *ydpi)
+int Android_JNI_GetDisplayPhysicalDPI(float *xdpi, float *ydpi)
 {
     JNIEnv *env = Android_JNI_GetEnv();
 
@@ -1659,24 +1659,15 @@ int Android_JNI_GetDisplayPhysicalDPI(float *ddpi, float *xdpi, float *ydpi)
 
     jfieldID fidXdpi = (*env)->GetFieldID(env, jDisplayClass, "xdpi", "F");
     jfieldID fidYdpi = (*env)->GetFieldID(env, jDisplayClass, "ydpi", "F");
-    jfieldID fidDdpi = (*env)->GetFieldID(env, jDisplayClass, "densityDpi", "I");
 
     float nativeXdpi = (*env)->GetFloatField(env, jDisplayObj, fidXdpi);
     float nativeYdpi = (*env)->GetFloatField(env, jDisplayObj, fidYdpi);
-    int nativeDdpi = (*env)->GetIntField(env, jDisplayObj, fidDdpi);
 
     (*env)->DeleteLocalRef(env, jDisplayObj);
     (*env)->DeleteLocalRef(env, jDisplayClass);
 
-    if (ddpi) {
-        *ddpi = (float)nativeDdpi;
-    }
-    if (xdpi) {
-        *xdpi = nativeXdpi;
-    }
-    if (ydpi) {
-        *ydpi = nativeYdpi;
-    }
+    *xdpi = nativeXdpi;
+    *ydpi = nativeYdpi;
 
     return 0;
 }

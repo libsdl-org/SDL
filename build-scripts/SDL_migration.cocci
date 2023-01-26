@@ -2326,3 +2326,9 @@ expression e;
 - SDL_GetDisplayDPI
 + SDL_GetDisplayPhysicalDPI
   (...)
+@@
+expression e1, e2, e3, e4;
+@@
+SDL_GetDisplayPhysicalDPI(e1,
+- e2,
+  e3, e4)

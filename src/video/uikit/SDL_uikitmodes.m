@@ -421,23 +421,14 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     }
 }
 
-int UIKit_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
+int UIKit_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *hdpi, float *vdpi)
 {
     @autoreleasepool {
         SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
         float dpi = data.screenDPI;
-
-        if (ddpi) {
-            *ddpi = dpi * (float)SDL_sqrt(2.0);
-        }
-        if (hdpi) {
-            *hdpi = dpi;
-        }
-        if (vdpi) {
-            *vdpi = dpi;
-        }
+        *hdpi = dpi;
+        *vdpi = dpi;
     }
-
     return 0;
 }
 

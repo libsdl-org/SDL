@@ -759,23 +759,39 @@ int SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect *rect)
     return SDL_GetDisplayBounds(displayIndex, rect);
 }
 
-int SDL_GetDisplayPhysicalDPI(int displayIndex, float *ddpi, float *hdpi, float *vdpi)
+int SDL_GetDisplayPhysicalDPI(int displayIndex, float *hdpi, float *vdpi)
 {
     SDL_VideoDisplay *display;
+    float h = 0.0f, v = 0.0f;
 
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
     display = &_this->displays[displayIndex];
 
-    if (_this->GetDisplayPhysicalDPI) {
-        if (_this->GetDisplayPhysicalDPI(_this, display, ddpi, hdpi, vdpi) == 0) {
-            return 0;
-        }
-    } else {
+    if (_this->GetDisplayPhysicalDPI == NULL) {
         return SDL_Unsupported();
     }
 
-    return -1;
+    if (_this->GetDisplayPhysicalDPI(_this, display, &h, &v) < 0) {
+       goto error;
+    }
+
+    if (h == 0.0f || v == 0.0f) {
+       goto error;
+    }
+
+    if (hdpi) {
+       *hdpi = h;
+    }
+
+    if (vdpi) {
+       *vdpi = v;
+    }
+
+    return 0;
+
+error:
+    return SDL_SetError("Couldn't get DPI");;
 }
 
 SDL_DisplayOrientation SDL_GetDisplayOrientation(int displayIndex)
@@ -4630,16 +4646,6 @@ int SDL_SetWindowHitTest(SDL_Window *window, SDL_HitTest callback, void *callbac
     window->hit_test_data = callback_data;
 
     return 0;
-}
-
-float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
-{
-    float den2 = hinches * hinches + vinches * vinches;
-    if (den2 <= 0.0f) {
-        return 0.0f;
-    }
-
-    return (float)(SDL_sqrt((double)hpix * (double)hpix + (double)vpix * (double)vpix) / SDL_sqrt((double)den2));
 }
 
 /*

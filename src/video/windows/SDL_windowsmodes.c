@@ -502,11 +502,11 @@ int WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
     return 0;
 }
 
-int WIN_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi_out, float *hdpi_out, float *vdpi_out)
+int WIN_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *hdpi_out, float *vdpi_out)
 {
     const SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     const SDL_VideoData *videodata = (SDL_VideoData *)display->device->driverdata;
-    float hdpi = 0, vdpi = 0, ddpi = 0;
+    float hdpi = 0, vdpi = 0;
 
     if (videodata->GetDpiForMonitor) {
         UINT hdpi_uint, vdpi_uint;
@@ -515,15 +515,13 @@ int WIN_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi_out,
             // GetDpiForMonitor docs promise to return the same hdpi/vdpi
             hdpi = (float)hdpi_uint;
             vdpi = (float)hdpi_uint;
-            ddpi = (float)hdpi_uint;
         } else {
             return SDL_SetError("GetDpiForMonitor failed");
         }
     } else {
         // Window 8.0 and below: same DPI for all monitors.
         HDC hdc;
-        int hdpi_int, vdpi_int, hpoints, vpoints, hpix, vpix;
-        float hinches, vinches;
+        int hdpi_int, vdpi_int;
 
         hdc = GetDC(NULL);
         if (hdc == NULL) {
@@ -533,31 +531,13 @@ int WIN_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi_out,
         vdpi_int = GetDeviceCaps(hdc, LOGPIXELSY);
         ReleaseDC(NULL, hdc);
 
-        hpoints = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-        vpoints = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-
-        hpix = MulDiv(hpoints, hdpi_int, 96);
-        vpix = MulDiv(vpoints, vdpi_int, 96);
-
-        hinches = (float)hpoints / 96.0f;
-        vinches = (float)vpoints / 96.0f;
-
         hdpi = (float)hdpi_int;
         vdpi = (float)vdpi_int;
-        ddpi = SDL_ComputeDiagonalDPI(hpix, vpix, hinches, vinches);
     }
 
-    if (ddpi_out) {
-        *ddpi_out = ddpi;
-    }
-    if (hdpi_out) {
-        *hdpi_out = hdpi;
-    }
-    if (vdpi_out) {
-        *vdpi_out = vdpi;
-    }
-
-    return ddpi != 0.0f ? 0 : SDL_SetError("Couldn't get DPI");
+    *hdpi_out = hdpi;
+    *vdpi_out = vdpi;
+    return 0;
 }
 
 int WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
@@ -632,8 +612,16 @@ void WIN_ScreenPointFromSDLFloat(float x, float y, LONG *xOut, LONG *yOut, int *
         goto passthrough;
     }
 
-    if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayPhysicalDPI(displayIndex, &ddpi, &hdpi, &vdpi) < 0) {
+    if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayPhysicalDPI(displayIndex, &hdpi, &vdpi) < 0) {
         goto passthrough;
+    }
+
+    {
+        float diagonal_dot;
+        float diagonal_inch;
+        diagonal_dot = SDL_sqrtf((float)bounds.w * (float)bounds.w + (float)bounds.h * (float)bounds.h);
+        diagonal_inch = SDL_sqrtf(((float)bounds.w / hdpi) * ((float)bounds.w / hdpi) + ((float)bounds.h / vdpi) * ((float)bounds.h / vdpi));
+        ddpi = diagonal_dot / diagonal_inch;
     }
 
     if (dpiOut) {
@@ -707,8 +695,16 @@ void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut)
     }
 
     /* Get SDL display properties */
-    if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayPhysicalDPI(displayIndex, &ddpi, &hdpi, &vdpi) < 0) {
+    if (SDL_GetDisplayBounds(displayIndex, &bounds) < 0 || SDL_GetDisplayPhysicalDPI(displayIndex, &hdpi, &vdpi) < 0) {
         return;
+    }
+
+    {
+        float diagonal_dot;
+        float diagonal_inch;
+        diagonal_dot = SDL_sqrtf((float)bounds.w * (float)bounds.w + (float)bounds.h * (float)bounds.h);
+        diagonal_inch = SDL_sqrtf(((float)bounds.w / hdpi) * ((float)bounds.w / hdpi) + ((float)bounds.h / vdpi) * ((float)bounds.h / vdpi));
+        ddpi = diagonal_dot / diagonal_inch;
     }
 
     /* Convert the point's offset within the monitor from pixels to DPI-scaled points */

@@ -39,7 +39,7 @@ static int Emscripten_VideoInit(_THIS);
 static int Emscripten_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void Emscripten_VideoQuit(_THIS);
 static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
-static int Emscripten_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
+static int Emscripten_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *hdpi, float *vdpi);
 
 static int Emscripten_CreateWindow(_THIS, SDL_Window *window);
 static void Emscripten_SetWindowSize(_THIS, SDL_Window *window);
@@ -169,22 +169,15 @@ static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, S
     return 0;
 }
 
-static int Emscripten_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi_out, float *hdpi_out, float *vdpi_out)
+static int Emscripten_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *hdpi_out, float *vdpi_out)
 {
     const float dpi_reference = 96.0f;
     float dpi;
 
     dpi = (float)emscripten_get_device_pixel_ratio() * dpi_reference;
 
-    if (ddpi_out) {
-        *ddpi_out = dpi;
-    }
-    if (hdpi_out) {
-        *hdpi_out = dpi;
-    }
-    if (vdpi_out) {
-        *vdpi_out = dpi;
-    }
+    *hdpi_out = dpi;
+    *vdpi_out = dpi;
 
     return 0;
 }

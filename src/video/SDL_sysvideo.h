@@ -196,7 +196,7 @@ struct SDL_VideoDevice
     /*
      * Get the dots/pixels-per-inch of a display
      */
-    int (*GetDisplayPhysicalDPI)(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
+    int (*GetDisplayPhysicalDPI)(_THIS, SDL_VideoDisplay *display, float *hdpi, float *vdpi);
 
     /*
      * Get a list of the available display modes for a display.
@@ -509,8 +509,6 @@ extern void SDL_UpdateWindowGrab(SDL_Window *window);
 extern SDL_Window *SDL_GetFocusWindow(void);
 
 extern SDL_bool SDL_ShouldAllowTopmost(void);
-
-extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches);
 
 extern void SDL_ToggleDragAndDropSupport(void);
 

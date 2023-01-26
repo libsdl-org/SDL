@@ -371,9 +371,9 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(int displayIndex, SDL_Rect *rec
 extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect *rect);
 
 /**
- * Get the dots/pixels-per-inch for a display.
+ * Get the physical dots/pixels-per-inch for a display.
  *
- * Diagonal, horizontal and vertical DPI can all be optionally returned if the
+ * Horizontal and vertical DPI can all be optionally returned if the
  * appropriate parameter is non-NULL.
  *
  * A failure of this function usually means that either no DPI information is
@@ -391,8 +391,6 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rec
  *
  * \param displayIndex the index of the display from which DPI information
  *                     should be queried
- * \param ddpi a pointer filled in with the diagonal DPI of the display; may
- *             be NULL
  * \param hdpi a pointer filled in with the horizontal DPI of the display; may
  *             be NULL
  * \param vdpi a pointer filled in with the vertical DPI of the display; may
@@ -404,7 +402,7 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rec
  *
  * \sa SDL_GetNumVideoDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetDisplayPhysicalDPI(int displayIndex, float *ddpi, float *hdpi, float *vdpi);
+extern DECLSPEC int SDLCALL SDL_GetDisplayPhysicalDPI(int displayIndex, float *hdpi, float *vdpi);
 
 /**
  * Get the orientation of a display.

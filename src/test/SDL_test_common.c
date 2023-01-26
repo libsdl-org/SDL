@@ -1120,7 +1120,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_zero(usablebounds);
                 SDL_GetDisplayUsableBounds(i, &usablebounds);
 
-                SDL_GetDisplayPhysicalDPI(i, NULL, &hdpi, &vdpi);
+                SDL_GetDisplayPhysicalDPI(i, &hdpi, &vdpi);
 
                 SDL_Log("Bounds: %dx%d at %d,%d\n", bounds.w, bounds.h, bounds.x, bounds.y);
                 SDL_Log("Usable bounds: %dx%d at %d,%d\n", usablebounds.w, usablebounds.h, usablebounds.x, usablebounds.y);
@@ -2166,7 +2166,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     float fx, fy;
     SDL_Rect rect;
     SDL_DisplayMode mode;
-    float ddpi, hdpi, vdpi;
+    float hdpi, vdpi;
     float scaleX, scaleY;
     Uint32 flags;
     const int windowDisplayIndex = SDL_GetWindowDisplayIndex(window);
@@ -2288,9 +2288,8 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
         textY += lineHeight;
     }
 
-    if (0 == SDL_GetDisplayPhysicalDPI(windowDisplayIndex, &ddpi, &hdpi, &vdpi)) {
-        (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayPhysicalDPI: ddpi: %g, hdpi: %g, vdpi: %g",
-                           ddpi, hdpi, vdpi);
+    if (0 == SDL_GetDisplayPhysicalDPI(windowDisplayIndex, &hdpi, &vdpi)) {
+        (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayPhysicalDPI: hdpi: %g, vdpi: %g", hdpi, vdpi);
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }

@@ -113,7 +113,7 @@ struct SDL_WaylandOutputData
     int x, y, width, height, refresh, transform;
     SDL_DisplayOrientation orientation;
     int physical_width, physical_height;
-    float ddpi, hdpi, vdpi;
+    float hdpi, vdpi;
     SDL_bool has_logical_position, has_logical_size;
     int index;
     SDL_VideoDisplay placeholder;
