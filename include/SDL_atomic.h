@@ -250,7 +250,7 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
     #define SDL_CPUPauseInstruction() __yield()
 #elif defined(__WATCOMC__) && defined(__386__)
     extern __inline void SDL_CPUPauseInstruction(void);
-    #pragma aux SDL_CPUPauseInstruction = ".686" "pause"
+    #pragma aux SDL_CPUPauseInstruction = ".686p" ".xmm2" "pause"
 #else
     #define SDL_CPUPauseInstruction()
 #endif
