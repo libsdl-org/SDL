@@ -650,23 +650,6 @@ static void display_handle_done(void *data,
                                                   ((float)driverdata->physical_height) / 25.4f);
     }
 
-    if (driverdata->index > -1) {
-        dpy = SDL_GetDisplay(driverdata->index);
-    } else {
-        dpy = &driverdata->placeholder;
-    }
-
-    SDL_AddDisplayMode(dpy, &desktop_mode);
-    SDL_SetCurrentDisplayMode(dpy, &desktop_mode);
-    SDL_SetDesktopDisplayMode(dpy, &desktop_mode);
-
-    /* Add emulated modes if wp_viewporter is supported and mode emulation is enabled. */
-    if (video->viewporter && mode_emulation_enabled) {
-        const SDL_bool rot_90 = ((driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0) ||
-                                (driverdata->width < driverdata->height);
-        AddEmulatedModes(dpy, rot_90);
-    }
-
     if (driverdata->index == -1) {
         /* First time getting display info, create the VideoDisplay */
         SDL_bool send_event = driverdata->videodata->initializing ? SDL_FALSE : SDL_TRUE;
