@@ -391,7 +391,7 @@ static int SDLCALL cmpmodes(const void *A, const void *B)
     } else if (a->h != b->h) {
         return b->h - a->h;
     } else if (a_display_scale != b_display_scale) {
-        return (int)(a_display_scale * 100) - (int)(b_display_scale * 100);
+        return (int)(b_display_scale * 100) - (int)(a_display_scale * 100);
     } else if (SDL_BITSPERPIXEL(a->format) != SDL_BITSPERPIXEL(b->format)) {
         return SDL_BITSPERPIXEL(b->format) - SDL_BITSPERPIXEL(a->format);
     } else if (SDL_PIXELLAYOUT(a->format) != SDL_PIXELLAYOUT(b->format)) {
