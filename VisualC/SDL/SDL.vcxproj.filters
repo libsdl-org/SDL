@@ -363,9 +363,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_test_harness.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_images.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_test_log.h">
       <Filter>API Headers</Filter>
     </ClInclude>

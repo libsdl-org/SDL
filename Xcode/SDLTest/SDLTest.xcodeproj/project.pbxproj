@@ -108,11 +108,6 @@
 		DB166D9716A1D1A500A1396C /* SDL_test_font.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8816A1D1A500A1396C /* SDL_test_font.c */; };
 		DB166D9816A1D1A500A1396C /* SDL_test_fuzzer.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8916A1D1A500A1396C /* SDL_test_fuzzer.c */; };
 		DB166D9916A1D1A500A1396C /* SDL_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8A16A1D1A500A1396C /* SDL_test_harness.c */; };
-		DB166D9A16A1D1A500A1396C /* SDL_test_imageBlit.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8B16A1D1A500A1396C /* SDL_test_imageBlit.c */; };
-		DB166D9B16A1D1A500A1396C /* SDL_test_imageBlitBlend.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8C16A1D1A500A1396C /* SDL_test_imageBlitBlend.c */; };
-		DB166D9C16A1D1A500A1396C /* SDL_test_imageFace.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8D16A1D1A500A1396C /* SDL_test_imageFace.c */; };
-		DB166D9D16A1D1A500A1396C /* SDL_test_imagePrimitives.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8E16A1D1A500A1396C /* SDL_test_imagePrimitives.c */; };
-		DB166D9E16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8F16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c */; };
 		DB166D9F16A1D1A500A1396C /* SDL_test_log.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9016A1D1A500A1396C /* SDL_test_log.c */; };
 		DB166DA016A1D1A500A1396C /* SDL_test_md5.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9116A1D1A500A1396C /* SDL_test_md5.c */; };
 		DB166DA116A1D1A500A1396C /* SDL_test_random.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9216A1D1A500A1396C /* SDL_test_random.c */; };
@@ -770,11 +765,6 @@
 		DB166D8816A1D1A500A1396C /* SDL_test_font.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_font.c; sourceTree = "<group>"; };
 		DB166D8916A1D1A500A1396C /* SDL_test_fuzzer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_fuzzer.c; sourceTree = "<group>"; };
 		DB166D8A16A1D1A500A1396C /* SDL_test_harness.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_harness.c; sourceTree = "<group>"; };
-		DB166D8B16A1D1A500A1396C /* SDL_test_imageBlit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_imageBlit.c; sourceTree = "<group>"; };
-		DB166D8C16A1D1A500A1396C /* SDL_test_imageBlitBlend.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_imageBlitBlend.c; sourceTree = "<group>"; };
-		DB166D8D16A1D1A500A1396C /* SDL_test_imageFace.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_imageFace.c; sourceTree = "<group>"; };
-		DB166D8E16A1D1A500A1396C /* SDL_test_imagePrimitives.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_imagePrimitives.c; sourceTree = "<group>"; };
-		DB166D8F16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_imagePrimitivesBlend.c; sourceTree = "<group>"; };
 		DB166D9016A1D1A500A1396C /* SDL_test_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_log.c; sourceTree = "<group>"; };
 		DB166D9116A1D1A500A1396C /* SDL_test_md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_md5.c; sourceTree = "<group>"; };
 		DB166D9216A1D1A500A1396C /* SDL_test_random.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_random.c; sourceTree = "<group>"; };
@@ -1328,11 +1318,6 @@
 				DB166D8816A1D1A500A1396C /* SDL_test_font.c */,
 				DB166D8916A1D1A500A1396C /* SDL_test_fuzzer.c */,
 				DB166D8A16A1D1A500A1396C /* SDL_test_harness.c */,
-				DB166D8B16A1D1A500A1396C /* SDL_test_imageBlit.c */,
-				DB166D8C16A1D1A500A1396C /* SDL_test_imageBlitBlend.c */,
-				DB166D8D16A1D1A500A1396C /* SDL_test_imageFace.c */,
-				DB166D8E16A1D1A500A1396C /* SDL_test_imagePrimitives.c */,
-				DB166D8F16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c */,
 				DB166D9016A1D1A500A1396C /* SDL_test_log.c */,
 				DB166D9116A1D1A500A1396C /* SDL_test_md5.c */,
 				AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */,
@@ -2606,11 +2591,6 @@
 				DB166D9716A1D1A500A1396C /* SDL_test_font.c in Sources */,
 				DB166D9816A1D1A500A1396C /* SDL_test_fuzzer.c in Sources */,
 				DB166D9916A1D1A500A1396C /* SDL_test_harness.c in Sources */,
-				DB166D9A16A1D1A500A1396C /* SDL_test_imageBlit.c in Sources */,
-				DB166D9B16A1D1A500A1396C /* SDL_test_imageBlitBlend.c in Sources */,
-				DB166D9C16A1D1A500A1396C /* SDL_test_imageFace.c in Sources */,
-				DB166D9D16A1D1A500A1396C /* SDL_test_imagePrimitives.c in Sources */,
-				DB166D9E16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c in Sources */,
 				DB166D9F16A1D1A500A1396C /* SDL_test_log.c in Sources */,
 				DB166DA016A1D1A500A1396C /* SDL_test_md5.c in Sources */,
 				AAF02FFA1F90092700B9A9FB /* SDL_test_memory.c in Sources */,
