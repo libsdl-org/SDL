@@ -1014,7 +1014,13 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
             closest->w = mode->w;
             closest->h = mode->h;
         }
-        closest->display_scale = mode->display_scale;
+        if (match->display_scale > 0.0f) {
+            closest->display_scale = match->display_scale;
+        } else if (mode->display_scale > 0.0f) {
+            closest->display_scale = mode->display_scale;
+        } else {
+            closest->display_scale = 1.0f;
+        }
 
         if (match->refresh_rate > 0.0f) {
             closest->refresh_rate = match->refresh_rate;
