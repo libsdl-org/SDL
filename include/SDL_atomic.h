@@ -249,9 +249,8 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 #elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
     #define SDL_CPUPauseInstruction() __yield()
 #elif defined(__WATCOMC__) && defined(__386__)
-    /* watcom assembler rejects PAUSE if CPU < i686, and it refuses REP NOP as an invalid combination. Hardcode the bytes.  */
     extern __inline void SDL_CPUPauseInstruction(void);
-    #pragma aux SDL_CPUPauseInstruction = "db 0f3h,90h"
+    #pragma aux SDL_CPUPauseInstruction = ".686p" ".xmm2" "pause"
 #else
     #define SDL_CPUPauseInstruction()
 #endif
