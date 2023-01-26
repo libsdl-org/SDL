@@ -419,6 +419,7 @@ static void AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
 
     for (i = 0; i < SDL_arraysize(mode_list); ++i) {
         mode = *dpy->display_modes;
+        mode.display_scale = 1.0f;
 
         if (rot_90) {
             mode.w = mode_list[i].h;
@@ -570,7 +571,7 @@ static void display_handle_done(void *data,
         native_mode.w = driverdata->native_width;
         native_mode.h = driverdata->native_height;
     }
-    native_mode.display_scale = 1.0f; /* FIXME */
+    native_mode.display_scale = 1.0f;
     native_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
     native_mode.driverdata = driverdata->output;
 
@@ -579,7 +580,9 @@ static void display_handle_done(void *data,
     desktop_mode.format = SDL_PIXELFORMAT_RGB888;
 
     if (driverdata->has_logical_size) { /* If xdg-output is present, calculate the true scale of the desktop */
-        driverdata->scale_factor = (float)native_mode.w / (float)driverdata->width;
+        if (video->viewporter) {
+            driverdata->scale_factor = (float)native_mode.w / (float)driverdata->width;
+        }
     } else { /* Scale the desktop coordinates, if xdg-output isn't present */
         driverdata->width /= driverdata->scale_factor;
         driverdata->height /= driverdata->scale_factor;
@@ -593,19 +596,41 @@ static void display_handle_done(void *data,
         desktop_mode.w = driverdata->height;
         desktop_mode.h = driverdata->width;
     }
+    desktop_mode.display_scale = driverdata->scale_factor;
     desktop_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
     desktop_mode.driverdata = driverdata->output;
 
-    /*
-     * The native display mode is only exposed separately from the desktop size if the
-     * desktop is scaled and the wp_viewporter protocol is supported.
-     */
-    if (driverdata->scale_factor > 1.0f && video->viewporter != NULL) {
-        if (driverdata->index > -1) {
-            SDL_AddDisplayMode(SDL_GetDisplay(driverdata->index), &native_mode);
+    if (driverdata->index > -1) {
+        dpy = SDL_GetDisplay(driverdata->index);
+    } else {
+        dpy = &driverdata->placeholder;
+    }
+
+    /* Set the desktop display mode. */
+    SDL_AddDisplayMode(dpy, &desktop_mode);
+    SDL_SetCurrentDisplayMode(dpy, &desktop_mode);
+    SDL_SetDesktopDisplayMode(dpy, &desktop_mode);
+
+    /* If the desktop is scaled... */
+    if (driverdata->scale_factor > 1.0f) {
+        /* ...expose the native resolution if viewports are available... */
+        if (video->viewporter != NULL) {
+            SDL_AddDisplayMode(dpy, &native_mode);
         } else {
-            SDL_AddDisplayMode(&driverdata->placeholder, &native_mode);
+            /* ...if not, expose the integer scale desktop modes down to 1.0. */
+            int i;
+            for (i = (int)driverdata->scale_factor - 1; i > 0; --i) {
+                desktop_mode.display_scale = (float)i;
+                SDL_AddDisplayMode(dpy, &desktop_mode);
+            }
         }
+    }
+
+    /* Add emulated modes if wp_viewporter is supported and mode emulation is enabled. */
+    if (video->viewporter && mode_emulation_enabled) {
+        const SDL_bool rot_90 = ((driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0) ||
+                                (driverdata->width < driverdata->height);
+        AddEmulatedModes(dpy, rot_90);
     }
 
     /* Calculate the display DPI */
