@@ -13,6 +13,10 @@
 
 
 #define RENDER_COMPARE_FORMAT SDL_PIXELFORMAT_ARGB8888
+#define RENDER_COLOR_CLEAR  0x00000000
+#define RENDER_COLOR_BLACK  0xFF000000
+#define RENDER_COLOR_WHITE  0xFFFFFFFF
+#define RENDER_COLOR_GREEN  0xFF00FF00
 
 #define ALLOWABLE_ERROR_OPAQUE  0
 #define ALLOWABLE_ERROR_BLENDED 64
@@ -586,8 +590,6 @@ int render_testBlitAlpha(void *arg)
     return TEST_COMPLETED;
 }
 
-/* Helper functions */
-
 /**
  * @brief Tests a blend mode.
  *
@@ -800,6 +802,53 @@ int render_testBlitBlend(void *arg)
 
     return TEST_COMPLETED;
 }
+
+/**
+ * @brief Test viewport
+ */
+int render_testViewport(void *arg)
+{
+    int ret;
+	SDL_Surface *referenceSurface;
+	SDL_Rect viewport;
+
+	viewport.x = TESTRENDER_SCREEN_W / 3;
+	viewport.y = TESTRENDER_SCREEN_H / 3;
+	viewport.w = TESTRENDER_SCREEN_W / 2;
+	viewport.h = TESTRENDER_SCREEN_H / 2;
+
+	/* Create expected result */
+	referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
+	ret = SDL_FillSurfaceRect(referenceSurface, NULL, RENDER_COLOR_CLEAR);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
+	ret = SDL_FillSurfaceRect(referenceSurface, &viewport, RENDER_COLOR_GREEN);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
+    
+    /* Clear surface. */
+    clearScreen();
+
+	/* Set the viewport and do a fill operation */
+	ret = SDL_SetRenderViewport(renderer, &viewport);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
+    ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
+	ret = SDL_RenderFillRect(renderer, NULL);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
+    ret = SDL_SetRenderViewport(renderer, NULL);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
+
+    /* Check to see if final image matches. */
+    compare(referenceSurface, ALLOWABLE_ERROR_BLENDED);
+
+    /* Make current */
+    SDL_RenderPresent(renderer);
+
+    SDL_DestroySurface(referenceSurface);
+
+    return TEST_COMPLETED;
+}
+
+/* Helper functions */
 
 /**
  * @brief Checks to see if functionality is supported. Helper function.
@@ -1106,6 +1155,10 @@ clearScreen(void)
 
     /* Make current */
     SDL_RenderPresent(renderer);
+    
+    /* Clear screen. */
+    ret = SDL_RenderClear(renderer);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderClear, expected: 0, got: %i", ret);
 
     /* Set defaults. */
     ret = SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
@@ -1151,9 +1204,13 @@ static const SDLTest_TestCaseReference renderTest7 = {
     (SDLTest_TestCaseFp)render_testBlitBlend, "render_testBlitBlend", "Tests blitting with blending", TEST_DISABLED
 };
 
+static const SDLTest_TestCaseReference renderTest8 = {
+    (SDLTest_TestCaseFp)render_testViewport, "render_testViewport", "Tests viewport", TEST_ENABLED
+};
+
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
-    &renderTest1, &renderTest2, &renderTest3, &renderTest4, &renderTest5, &renderTest6, &renderTest7, NULL
+    &renderTest1, &renderTest2, &renderTest3, &renderTest4, &renderTest5, &renderTest6, &renderTest7, &renderTest8, NULL
 };
 
 /* Render test suite (global) */
