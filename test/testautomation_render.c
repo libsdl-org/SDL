@@ -13,9 +13,7 @@
 
 
 #define RENDER_COMPARE_FORMAT SDL_PIXELFORMAT_ARGB8888
-#define RENDER_COLOR_CLEAR  0x00000000
-#define RENDER_COLOR_BLACK  0xFF000000
-#define RENDER_COLOR_WHITE  0xFFFFFFFF
+#define RENDER_COLOR_CLEAR  0xFF000000
 #define RENDER_COLOR_GREEN  0xFF00FF00
 
 #define ALLOWABLE_ERROR_OPAQUE  0
@@ -838,7 +836,83 @@ int render_testViewport(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
 
     /* Check to see if final image matches. */
-    compare(referenceSurface, ALLOWABLE_ERROR_BLENDED);
+    compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+    /* Make current */
+    SDL_RenderPresent(renderer);
+
+    SDL_DestroySurface(referenceSurface);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * @brief Test logical size
+ */
+int render_testLogicalSize(void *arg)
+{
+    int ret;
+	SDL_Surface *referenceSurface;
+	SDL_Rect viewport;
+    SDL_FRect rect;
+    int w, h;
+    const int factor = 2;
+
+	viewport.x = ((TESTRENDER_SCREEN_W / 4) / factor) * factor;
+	viewport.y = ((TESTRENDER_SCREEN_H / 4) / factor) * factor;
+	viewport.w = ((TESTRENDER_SCREEN_W / 2) / factor) * factor;
+	viewport.h = ((TESTRENDER_SCREEN_H / 2) / factor) * factor;
+
+	/* Create expected result */
+	referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
+	ret = SDL_FillSurfaceRect(referenceSurface, NULL, RENDER_COLOR_CLEAR);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
+	ret = SDL_FillSurfaceRect(referenceSurface, &viewport, RENDER_COLOR_GREEN);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
+    
+    /* Clear surface. */
+    clearScreen();
+
+	/* Set the logical size and do a fill operation */
+	ret = SDL_GetRendererOutputSize(renderer, &w, &h);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_GetRendererOutputSize, expected: 0, got: %i", ret);
+	ret = SDL_SetRenderLogicalSize(renderer, w / factor, h / factor);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
+    ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
+    rect.x = (float)viewport.x / factor;
+    rect.y = (float)viewport.y / factor;
+    rect.w = (float)viewport.w / factor;
+    rect.h = (float)viewport.h / factor;
+    ret = SDL_RenderFillRect(renderer, &rect);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
+
+    /* Check to see if final image matches. */
+    compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+    /* Clear surface. */
+    clearScreen();
+
+	/* Set the logical size and viewport and do a fill operation */
+	ret = SDL_GetRendererOutputSize(renderer, &w, &h);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_GetRendererOutputSize, expected: 0, got: %i", ret);
+	ret = SDL_SetRenderLogicalSize(renderer, w / factor, h / factor);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
+	viewport.x = (TESTRENDER_SCREEN_W / 4) / factor;
+	viewport.y = (TESTRENDER_SCREEN_H / 4) / factor;
+	viewport.w = (TESTRENDER_SCREEN_W / 2) / factor;
+	viewport.h = (TESTRENDER_SCREEN_H / 2) / factor;
+	ret = SDL_SetRenderViewport(renderer, &viewport);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
+    ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
+	ret = SDL_RenderFillRect(renderer, NULL);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
+    ret = SDL_SetRenderViewport(renderer, NULL);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
+
+    /* Check to see if final image matches. */
+    compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
 
     /* Make current */
     SDL_RenderPresent(renderer);
@@ -1208,9 +1282,15 @@ static const SDLTest_TestCaseReference renderTest8 = {
     (SDLTest_TestCaseFp)render_testViewport, "render_testViewport", "Tests viewport", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTest9 = {
+    (SDLTest_TestCaseFp)render_testLogicalSize, "render_testLogicalSize", "Tests logical size", TEST_ENABLED
+};
+
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
-    &renderTest1, &renderTest2, &renderTest3, &renderTest4, &renderTest5, &renderTest6, &renderTest7, &renderTest8, NULL
+    &renderTest1, &renderTest2, &renderTest3, &renderTest4,
+	&renderTest5, &renderTest6, &renderTest7, &renderTest8,
+	&renderTest9, NULL
 };
 
 /* Render test suite (global) */
