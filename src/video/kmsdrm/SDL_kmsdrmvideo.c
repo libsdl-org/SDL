@@ -502,8 +502,8 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display,
     drmModeModeInfo *drm_mode;
 
     SDL_zero(target);
-    target.pixel_w = (int)width;
-    target.pixel_h = (int)height;
+    target.screen_w = (int)width;
+    target.screen_h = (int)height;
     target.refresh_rate = (int)refresh_rate;
 
     if (!SDL_GetClosestDisplayMode(SDL_atoi(display->name), &target, &closest)) {
@@ -1298,8 +1298,8 @@ void KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
         }
 
         SDL_zero(mode);
-        mode.w = conn->modes[i].hdisplay;
-        mode.h = conn->modes[i].vdisplay;
+        mode.pixel_w = conn->modes[i].hdisplay;
+        mode.pixel_h = conn->modes[i].vdisplay;
         mode.refresh_rate = CalculateRefreshRate(&conn->modes[i]);
         mode.format = SDL_PIXELFORMAT_ARGB8888;
         mode.driverdata = modedata;
