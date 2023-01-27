@@ -62,8 +62,8 @@ static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height,
 
     int fs_width, fs_height;
     int buf_width, buf_height;
-    const int output_width = wind->fs_output_width ? wind->fs_output_width : output->width;
-    const int output_height = wind->fs_output_height ? wind->fs_output_height : output->height;
+    const int output_width = wind->fs_output_width ? wind->fs_output_width : output->screen_width;
+    const int output_height = wind->fs_output_height ? wind->fs_output_height : output->screen_height;
 
     /*
      * Fullscreen desktop mandates a desktop sized window, so that's what applications will get.
@@ -76,24 +76,24 @@ static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height,
 
         /* If the application is DPI aware, we can expose the true backbuffer size */
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-            buf_width = output->native_width;
-            buf_height = output->native_height;
+            buf_width = output->pixel_width;
+            buf_height = output->pixel_height;
         } else {
             buf_width = fs_width;
             buf_height = fs_height;
         }
     } else {
         /* If a mode was set, use it, otherwise use the native resolution. */
-        if (window->fullscreen_mode.w != 0 && window->fullscreen_mode.h != 0) {
-            fs_width = window->fullscreen_mode.w;
-            fs_height = window->fullscreen_mode.h;
-            buf_width = (int)SDL_lroundf((float)fs_width * window->fullscreen_mode.display_scale);
-            buf_height = (int)SDL_lroundf((float)fs_height * window->fullscreen_mode.display_scale);
+        if (window->fullscreen_mode.pixel_w != 0 && window->fullscreen_mode.pixel_h != 0) {
+            fs_width = window->fullscreen_mode.screen_w;
+            fs_height = window->fullscreen_mode.screen_h;
+            buf_width = window->fullscreen_mode.pixel_w;
+            buf_height = window->fullscreen_mode.pixel_h;
         } else {
-            fs_width = disp->display_modes[0].w;
-            fs_height = disp->display_modes[0].h;
-            buf_width = (int)SDL_lroundf((float)fs_width * disp->display_modes[0].display_scale);
-            buf_height = (int)SDL_lroundf((float)fs_width * disp->display_modes[0].display_scale);
+            fs_width = disp->display_modes[0].screen_w;
+            fs_height = disp->display_modes[0].screen_h;
+            buf_width = disp->display_modes[0].pixel_w;
+            buf_height = disp->display_modes[0].pixel_h;
         }
     }
 
@@ -129,21 +129,23 @@ static SDL_bool WindowNeedsViewport(SDL_Window *window)
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *video = wind->waylandData;
     SDL_WaylandOutputData *output = ((SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata);
+    const int output_width = wind->fs_output_width ? wind->fs_output_width : output->screen_width;
+    const int output_height = wind->fs_output_height ? wind->fs_output_height : output->screen_height;
     int fs_width, fs_height;
 
     /*
      * A viewport is only required when scaling is enabled and:
+     *  - The surface scale is fractional.
      *  - A fullscreen mode is being emulated and the mode does not match the logical desktop dimensions.
-     *  - The desktop uses fractional scaling and the high-DPI flag is set.
      */
     if (video->viewporter != NULL) {
-        if (FullscreenModeEmulation(window)) {
+        if (SurfaceScaleIsFractional(window)) {
+            return SDL_TRUE;
+        } else if (FullscreenModeEmulation(window)) {
             GetFullScreenDimensions(window, &fs_width, &fs_height, NULL, NULL);
-            if (fs_width != output->width || fs_height != output->height) {
+            if (fs_width != output_width || fs_height != output_height) {
                 return SDL_TRUE;
             }
-        } else if (SurfaceScaleIsFractional(window) && (window->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
-            return SDL_TRUE;
         }
     }
 
@@ -225,8 +227,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 
     if (FullscreenModeEmulation(window)) {
         int fs_width, fs_height;
-        const int output_width = data->fs_output_width ? data->fs_output_width : output->width;
-        const int output_height = data->fs_output_height ? data->fs_output_height : output->height;
+        const int output_width = data->fs_output_width ? data->fs_output_width : output->screen_width;
+        const int output_height = data->fs_output_height ? data->fs_output_height : output->screen_height;
 
         window_size_changed = data->window_width != output_width || data->window_height != output_height;
 
@@ -238,14 +240,21 @@ static void ConfigureWindowGeometry(SDL_Window *window)
                 wl_surface_set_buffer_scale(data->surface, 1);
                 SetDrawSurfaceViewport(window, data->drawable_width, data->drawable_height,
                                        output_width, output_height);
+
+                data->window_width = output_width;
+                data->window_height = output_height;
+
+                data->pointer_scale_x = (float)fs_width / (float)output_width;
+                data->pointer_scale_y = (float)fs_height / (float)output_height;
             } else {
                 wl_surface_set_buffer_scale(data->surface, (int32_t)window->fullscreen_mode.display_scale);
-            }
-            data->window_width = output_width;
-            data->window_height = output_height;
 
-            data->pointer_scale_x = (float)fs_width / (float)output_width;
-            data->pointer_scale_y = (float)fs_height / (float)output_height;
+                data->window_width = fs_width;
+                data->window_height = fs_height;
+
+                data->pointer_scale_x = 1.0f;
+                data->pointer_scale_y = 1.0f;
+            }
         }
     } else {
         window_size_changed = data->window_width != window->w || data->window_height != window->h;
@@ -444,13 +453,13 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
              * otherwise, fall back to SDL_WINDOW_FULLSCREEN_DESKTOP.
              */
             if (!wind->fullscreen_flags) {
-                if (window->fullscreen_mode.w && window->fullscreen_mode.h) {
+                if (window->fullscreen_mode.pixel_w && window->fullscreen_mode.pixel_h) {
                     wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN;
                 } else {
                     wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
                 }
             } else if (wind->fullscreen_flags != SDL_WINDOW_FULLSCREEN_DESKTOP &&
-                       (!window->fullscreen_mode.w || !window->fullscreen_mode.h)) {
+                       (!window->fullscreen_mode.pixel_w || !window->fullscreen_mode.pixel_h)) {
                 wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
             }
 

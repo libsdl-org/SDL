@@ -109,8 +109,8 @@ struct SDL_WaylandOutputData
     struct zxdg_output_v1 *xdg_output;
     uint32_t registry_id;
     float scale_factor;
-    int native_width, native_height;
-    int x, y, width, height, refresh, transform;
+    int pixel_width, pixel_height;
+    int x, y, screen_width, screen_height, refresh, transform;
     SDL_DisplayOrientation orientation;
     int physical_width, physical_height;
     float ddpi, hdpi, vdpi;
