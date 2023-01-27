@@ -1499,11 +1499,13 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
                      */
 
                     /* This is also unnecessary on Win32 (WIN_SetWindowFullscreen calls SetWindowPos,
-                     * WM_WINDOWPOSCHANGED will send SDL_EVENT_WINDOW_RESIZED). Also, on Windows with DPI scaling enabled,
-                     * we're keeping modes in pixels, but window sizes in dpi-scaled points, so this would be a unit mismatch.
+                     * WM_WINDOWPOSCHANGED will send SDL_EVENT_WINDOW_RESIZED).
                      */
+
+                    /* The new fullscreen window size must be sent in screen coordinates, not pixels. */
                     SDL_SendWindowEvent(other, SDL_EVENT_WINDOW_RESIZED,
-                                        fullscreen_mode.w, fullscreen_mode.h);
+                                        (int)(fullscreen_mode.w / fullscreen_mode.display_scale),
+                                        (int)(fullscreen_mode.h / fullscreen_mode.display_scale));
 #endif
                 } else {
                     SDL_OnWindowResized(other);
