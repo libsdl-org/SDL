@@ -143,10 +143,10 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
 {
     SDL_DisplayModeData *data;
     bool usableForGUI = CGDisplayModeIsUsableForDesktopGUI(vidmode);
-    int width = (int)CGDisplayModeGetWidth(vidmode);
-    int height = (int)CGDisplayModeGetHeight(vidmode);
-    int pixelW = width;
-    int pixelH = height;
+    size_t width = CGDisplayModeGetWidth(vidmode);
+    size_t height = CGDisplayModeGetHeight(vidmode);
+    size_t pixelW = width;
+    size_t pixelH = height;
     uint32_t ioflags = CGDisplayModeGetIOFlags(vidmode);
     float refreshrate = GetDisplayModeRefreshRate(vidmode, link);
     Uint32 format = GetDisplayModePixelFormat(vidmode);
@@ -173,15 +173,15 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
      * modes to try (see comment below for why that's necessary).
      * CGDisplayModeGetPixelWidth and friends are only available in 10.8+. */
 #ifdef MAC_OS_X_VERSION_10_8
-    pixelW = (int)CGDisplayModeGetPixelWidth(vidmode);
-    pixelH = (int)CGDisplayModeGetPixelHeight(vidmode);
+    pixelW = CGDisplayModeGetPixelWidth(vidmode);
+    pixelH = CGDisplayModeGetPixelHeight(vidmode);
 
     if (modelist != NULL && floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_7) {
         CFIndex modescount = CFArrayGetCount(modelist);
         int i;
 
         for (i = 0; i < modescount; i++) {
-            int otherW, otherH, otherpixelW, otherpixelH;
+            size_t otherW, otherH, otherpixelW, otherpixelH;
             float otherrefresh;
             Uint32 otherformat;
             bool otherGUI;
@@ -196,10 +196,10 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
                 continue;
             }
 
-            otherW = (int)CGDisplayModeGetWidth(othermode);
-            otherH = (int)CGDisplayModeGetHeight(othermode);
-            otherpixelW = (int)CGDisplayModeGetPixelWidth(othermode);
-            otherpixelH = (int)CGDisplayModeGetPixelHeight(othermode);
+            otherW = CGDisplayModeGetWidth(othermode);
+            otherH = CGDisplayModeGetHeight(othermode);
+            otherpixelW = CGDisplayModeGetPixelWidth(othermode);
+            otherpixelH = CGDisplayModeGetPixelHeight(othermode);
             otherrefresh = GetDisplayModeRefreshRate(othermode, link);
             otherformat = GetDisplayModePixelFormat(othermode);
             otherGUI = CGDisplayModeIsUsableForDesktopGUI(othermode);
@@ -264,9 +264,10 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
     }
     data->modes = modes;
     mode->format = format;
-    mode->w = pixelW;
-    mode->h = pixelH;
-    mode->display_scale = (float)pixelW / width;
+    mode->pixel_w = (int)pixelW;
+    mode->pixel_h = (int)pixelH;
+    mode->screen_w = (int)width;
+    mode->screen_h = (int)height;
     mode->refresh_rate = refreshrate;
     mode->driverdata = data;
     return SDL_TRUE;

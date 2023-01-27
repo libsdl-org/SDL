@@ -217,11 +217,11 @@ static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRC
             }
 
             if (rotation & (XRANDR_ROTATION_LEFT | XRANDR_ROTATION_RIGHT)) {
-                mode->w = info->height;
-                mode->h = info->width;
+                mode->pixel_w = info->height;
+                mode->pixel_h = info->width;
             } else {
-                mode->w = info->width;
-                mode->h = info->height;
+                mode->pixel_w = info->width;
+                mode->pixel_h = info->height;
             }
             mode->refresh_rate = CalculateXRandRRefreshRate(info);
             ((SDL_DisplayModeData *)mode->driverdata)->xrandr_mode = modeID;
@@ -343,8 +343,8 @@ static int X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput output
 
     SDL_zero(mode);
     modeID = crtc->mode;
-    mode.w = crtc->width;
-    mode.h = crtc->height;
+    mode.pixel_w = crtc->width;
+    mode.pixel_h = crtc->height;
     mode.format = pixelformat;
 
     display_x = crtc->x;
@@ -369,9 +369,9 @@ static int X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput output
     displaydata->screen = screen;
     displaydata->visual = vinfo.visual;
     displaydata->depth = vinfo.depth;
-    displaydata->hdpi = display_mm_width ? (((float)mode.w) * 25.4f / display_mm_width) : 0.0f;
-    displaydata->vdpi = display_mm_height ? (((float)mode.h) * 25.4f / display_mm_height) : 0.0f;
-    displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.w, mode.h, ((float)display_mm_width) / 25.4f, ((float)display_mm_height) / 25.4f);
+    displaydata->hdpi = display_mm_width ? (((float)mode.pixel_w) * 25.4f / display_mm_width) : 0.0f;
+    displaydata->vdpi = display_mm_height ? (((float)mode.pixel_h) * 25.4f / display_mm_height) : 0.0f;
+    displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.pixel_w, mode.pixel_h, ((float)display_mm_width) / 25.4f, ((float)display_mm_height) / 25.4f);
     displaydata->scanline_pad = scanline_pad;
     displaydata->x = display_x;
     displaydata->y = display_y;
@@ -574,8 +574,8 @@ static int X11_InitModes_StdXlib(_THIS)
     }
 
     SDL_zero(mode);
-    mode.w = WidthOfScreen(screen);
-    mode.h = HeightOfScreen(screen);
+    mode.pixel_w = WidthOfScreen(screen);
+    mode.pixel_h = HeightOfScreen(screen);
     mode.format = pixelformat;
 
     displaydata = (SDL_DisplayData *)SDL_calloc(1, sizeof(*displaydata));
@@ -596,9 +596,9 @@ static int X11_InitModes_StdXlib(_THIS)
     displaydata->screen = default_screen;
     displaydata->visual = vinfo.visual;
     displaydata->depth = vinfo.depth;
-    displaydata->hdpi = display_mm_width ? (((float)mode.w) * 25.4f / display_mm_width) : 0.0f;
-    displaydata->vdpi = display_mm_height ? (((float)mode.h) * 25.4f / display_mm_height) : 0.0f;
-    displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.w, mode.h, ((float)display_mm_width) / 25.4f, ((float)display_mm_height) / 25.4f);
+    displaydata->hdpi = display_mm_width ? (((float)mode.pixel_w) * 25.4f / display_mm_width) : 0.0f;
+    displaydata->vdpi = display_mm_height ? (((float)mode.pixel_h) * 25.4f / display_mm_height) : 0.0f;
+    displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.pixel_w, mode.pixel_h, ((float)display_mm_width) / 25.4f, ((float)display_mm_height) / 25.4f);
 
     xft_dpi = GetXftDPI(dpy);
     if (xft_dpi > 0) {
@@ -783,8 +783,8 @@ int X11_SetDisplayMode(_THIS, SDL_VideoDisplay *sdl_display, SDL_DisplayMode *mo
             goto ungrabServer;
         }
 
-        mm_width = mode->w * DisplayWidthMM(display, data->screen) / DisplayWidth(display, data->screen);
-        mm_height = mode->h * DisplayHeightMM(display, data->screen) / DisplayHeight(display, data->screen);
+        mm_width = mode->pixel_w * DisplayWidthMM(display, data->screen) / DisplayWidth(display, data->screen);
+        mm_height = mode->pixel_h * DisplayHeightMM(display, data->screen) / DisplayHeight(display, data->screen);
 
         /* !!! FIXME: this can get into a problem scenario when a window is
            bigger than a physical monitor in a configuration where one screen
@@ -795,7 +795,7 @@ int X11_SetDisplayMode(_THIS, SDL_VideoDisplay *sdl_display, SDL_DisplayMode *mo
            crashing */
         X11_XSync(display, False);
         PreXRRSetScreenSizeErrorHandler = X11_XSetErrorHandler(SDL_XRRSetScreenSizeErrHandler);
-        X11_XRRSetScreenSize(display, RootWindow(display, data->screen), mode->w, mode->h, mm_width, mm_height);
+        X11_XRRSetScreenSize(display, RootWindow(display, data->screen), mode->pixel_w, mode->pixel_h, mm_width, mm_height);
         X11_XSync(display, False);
         X11_XSetErrorHandler(PreXRRSetScreenSizeErrorHandler);
 
@@ -831,8 +831,8 @@ int X11_GetDisplayBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect)
 
     rect->x = data->x;
     rect->y = data->y;
-    rect->w = sdl_display->current_mode.w;
-    rect->h = sdl_display->current_mode.h;
+    rect->w = sdl_display->current_mode.screen_w;
+    rect->h = sdl_display->current_mode.screen_h;
 
     return 0;
 }

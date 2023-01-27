@@ -269,8 +269,8 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
         return -1;
     }
 
-    mode.w = w;
-    mode.h = h;
+    mode.pixel_w = w;
+    mode.pixel_h = h;
     mode.display_scale = uiscreen.scale;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
     mode.format = SDL_PIXELFORMAT_ABGR8888;
@@ -315,8 +315,8 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
 
     SDL_zero(mode);
-    mode.w = (int)size.width;
-    mode.h = (int)size.height;
+    mode.pixel_w = (int)size.width;
+    mode.pixel_h = (int)size.height;
     mode.display_scale = uiscreen.scale;
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
@@ -455,11 +455,11 @@ int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode
             /* [UIApplication setStatusBarOrientation:] no longer works reliably
              * in recent iOS versions, so we can't rotate the screen when setting
              * the display mode. */
-            if (mode->w > mode->h) {
+            if (mode->pixel_w > mode->pixel_h) {
                 if (!UIKit_IsDisplayLandscape(data.uiscreen)) {
                     return SDL_SetError("Screen orientation does not match display mode size");
                 }
-            } else if (mode->w < mode->h) {
+            } else if (mode->pixel_w < mode->pixel_h) {
                 if (UIKit_IsDisplayLandscape(data.uiscreen)) {
                     return SDL_SetError("Screen orientation does not match display mode size");
                 }
@@ -531,17 +531,23 @@ void SDL_OnApplicationDidChangeStatusBarOrientation()
          * orientation so that updating a window's fullscreen state to
          * SDL_WINDOW_FULLSCREEN_DESKTOP keeps the window dimensions in the
          * correct orientation. */
-        if (isLandscape != (desktopmode->w > desktopmode->h)) {
-            int height = desktopmode->w;
-            desktopmode->w = desktopmode->h;
-            desktopmode->h = height;
+        if (isLandscape != (desktopmode->pixel_w > desktopmode->pixel_h)) {
+            int height = desktopmode->pixel_w;
+            desktopmode->pixel_w = desktopmode->pixel_h;
+            desktopmode->pixel_h = height;
+            height = desktopmode->screen_w;
+            desktopmode->screen_w = desktopmode->screen_h;
+            desktopmode->screen_h = height;
         }
 
         /* Same deal with the current mode + SDL_GetCurrentDisplayMode. */
-        if (isLandscape != (currentmode->w > currentmode->h)) {
-            int height = currentmode->w;
-            currentmode->w = currentmode->h;
-            currentmode->h = height;
+        if (isLandscape != (currentmode->pixel_w > currentmode->pixel_h)) {
+            int height = currentmode->pixel_w;
+            currentmode->pixel_w = currentmode->pixel_h;
+            currentmode->pixel_h = height;
+            height = currentmode->screen_w;
+            currentmode->screen_w = currentmode->screen_h;
+            currentmode->screen_h = height;
         }
 
         switch ([UIApplication sharedApplication].statusBarOrientation) {

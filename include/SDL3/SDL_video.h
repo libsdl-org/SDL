@@ -56,9 +56,11 @@ typedef Uint32 SDL_WindowID;
 typedef struct
 {
     Uint32 format;              /**< pixel format */
-    int w;                      /**< width in pixels */
-    int h;                      /**< height in pixels */
-    float display_scale;        /**< scale converting screen coordinates to pixels (e.g. a 3840x2160 mode with 1.5 scale would have a screen size of 2560x1440) */
+    int pixel_w;                /**< width in pixels (used for creating back buffers) */
+    int pixel_h;                /**< height in pixels (used for creating back buffers) */
+    int screen_w;               /**< width in screen coordinates (used for creating windows) */
+    int screen_h;               /**< height in screen coordinates (used for creating windows) */
+    float display_scale;        /**< scale converting screen coordinates to pixels (e.g. a 2560x1440 screen size mode with 1.5 scale would have 3840x2160 pixels) */
     float refresh_rate;         /**< refresh rate (or zero for unspecified) */
     void *driverdata;           /**< driver-specific data, initialize to 0 */
 } SDL_DisplayMode;

@@ -382,16 +382,16 @@ static int SDLCALL cmpmodes(const void *A, const void *B)
 {
     const SDL_DisplayMode *a = (const SDL_DisplayMode *)A;
     const SDL_DisplayMode *b = (const SDL_DisplayMode *)B;
-    float a_display_scale = (a->display_scale == 0.0f) ? 1.0f : a->display_scale;
-    float b_display_scale = (b->display_scale == 0.0f) ? 1.0f : b->display_scale;
     if (a == b) {
         return 0;
-    } else if (a->w != b->w) {
-        return b->w - a->w;
-    } else if (a->h != b->h) {
-        return b->h - a->h;
-    } else if (a_display_scale != b_display_scale) {
-        return (int)(a_display_scale * 100) - (int)(b_display_scale * 100);
+    } else if (a->screen_w != b->screen_w) {
+        return b->screen_w - a->screen_w;
+    } else if (a->screen_h != b->screen_h) {
+        return b->screen_h - a->screen_h;
+    } else if (a->pixel_w != b->pixel_w) {
+        return b->pixel_w - a->pixel_w;
+    } else if (a->pixel_h != b->pixel_h) {
+        return b->pixel_h - a->pixel_h;
     } else if (SDL_BITSPERPIXEL(a->format) != SDL_BITSPERPIXEL(b->format)) {
         return SDL_BITSPERPIXEL(b->format) - SDL_BITSPERPIXEL(a->format);
     } else if (SDL_PIXELLAYOUT(a->format) != SDL_PIXELLAYOUT(b->format)) {
@@ -585,6 +585,40 @@ SDL_bool SDL_OnVideoThread()
     return (_this && SDL_ThreadID() == _this->thread) ? SDL_TRUE : SDL_FALSE;
 }
 
+static void SDL_FinalizeDisplayMode(SDL_DisplayMode *mode)
+{
+    /* Make sure all the fields are set up correctly */
+    if (mode->display_scale <= 0.0f) {
+        if (mode->screen_w == 0 && mode->screen_h == 0) {
+            mode->screen_w = mode->pixel_w;
+            mode->screen_h = mode->pixel_h;
+        }
+        if (mode->pixel_w == 0 && mode->pixel_h == 0) {
+            mode->pixel_w = mode->screen_w;
+            mode->pixel_h = mode->screen_h;
+        }
+        if (mode->screen_w > 0) {
+            mode->display_scale = (float)mode->pixel_w / mode->screen_w;
+        }
+    } else {
+        if (mode->screen_w == 0 && mode->screen_h == 0) {
+            mode->screen_w = (int)SDL_floorf(mode->pixel_w / mode->display_scale);
+            mode->screen_h = (int)SDL_floorf(mode->pixel_h / mode->display_scale);
+        }
+        if (mode->pixel_w == 0 && mode->pixel_h == 0) {
+            mode->pixel_w = (int)SDL_ceilf(mode->screen_w * mode->display_scale);
+            mode->pixel_h = (int)SDL_ceilf(mode->screen_h * mode->display_scale);
+        }
+    }
+
+    /* Make sure the screen width, pixel width, and display scale all match */
+    if (mode->display_scale != 0.0f) {
+        SDL_assert(mode->display_scale > 0.0f);
+        SDL_assert(SDL_fabsf(mode->screen_w - (mode->pixel_w / mode->display_scale)) < 1.0f);
+        SDL_assert(SDL_fabsf(mode->screen_h - (mode->pixel_h / mode->display_scale)) < 1.0f);
+    }
+}
+
 int SDL_AddBasicVideoDisplay(const SDL_DisplayMode *desktop_mode)
 {
     SDL_VideoDisplay display;
@@ -592,9 +626,7 @@ int SDL_AddBasicVideoDisplay(const SDL_DisplayMode *desktop_mode)
     SDL_zero(display);
     if (desktop_mode) {
         display.desktop_mode = *desktop_mode;
-        if (display.desktop_mode.display_scale == 0.0f) {
-            display.desktop_mode.display_scale = 1.0f;
-        }
+        SDL_FinalizeDisplayMode(&display.desktop_mode);
     }
     display.current_mode = display.desktop_mode;
 
@@ -624,12 +656,9 @@ int SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send_event)
             displays[index].name = SDL_strdup(name);
         }
 
-        if (displays[index].desktop_mode.display_scale == 0.0f) {
-            displays[index].desktop_mode.display_scale = 1.0f;
-        }
-        if (displays[index].current_mode.display_scale == 0.0f) {
-            displays[index].current_mode.display_scale = 1.0f;
-        }
+        SDL_FinalizeDisplayMode(&displays[index].desktop_mode);
+        SDL_FinalizeDisplayMode(&displays[index].current_mode);
+
         if (send_event) {
             SDL_SendDisplayEvent(&_this->displays[index], SDL_EVENT_DISPLAY_CONNECTED, 0);
         }
@@ -722,8 +751,8 @@ int SDL_GetDisplayBounds(int displayIndex, SDL_Rect *rect)
         SDL_GetDisplayBounds(displayIndex - 1, rect);
         rect->x += rect->w;
     }
-    rect->w = (int)(display->current_mode.w / display->current_mode.display_scale);
-    rect->h = (int)(display->current_mode.h / display->current_mode.display_scale);
+    rect->w = display->current_mode.screen_w;
+    rect->h = display->current_mode.screen_h;
     return 0;
 }
 
@@ -812,9 +841,7 @@ SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mo
         display->max_display_modes += 32;
     }
     modes[nmodes] = *mode;
-    if (modes[nmodes].display_scale == 0.0f) {
-        modes[nmodes].display_scale = 1.0f;
-    }
+    SDL_FinalizeDisplayMode(&modes[nmodes]);
     display->num_display_modes++;
 
     /* Re-sort video modes */
@@ -827,17 +854,13 @@ SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mo
 void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
     SDL_memcpy(&display->current_mode, mode, sizeof(*mode));
-    if (display->current_mode.display_scale == 0.0f) {
-        display->current_mode.display_scale = 1.0f;
-    }
+    SDL_FinalizeDisplayMode(&display->current_mode);
 }
 
 void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
     SDL_memcpy(&display->desktop_mode, mode, sizeof(*mode));
-    if (display->desktop_mode.display_scale == 0.0f) {
-        display->desktop_mode.display_scale = 1.0f;
-    }
+    SDL_FinalizeDisplayMode(&display->desktop_mode);
 }
 
 static int SDL_GetNumDisplayModesForDisplay(SDL_VideoDisplay *display)
@@ -922,9 +945,9 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
                                                             SDL_DisplayMode *closest)
 {
     Uint32 target_format;
-    float target_display_scale;
     float target_refresh_rate;
     int i;
+    SDL_DisplayMode requested_mode;
     SDL_DisplayMode *current, *match;
 
     if (mode == NULL || closest == NULL) {
@@ -932,18 +955,16 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
         return NULL;
     }
 
+    /* Make sure all the fields are filled out in the requested mode */
+    requested_mode = *mode;
+    SDL_FinalizeDisplayMode(&requested_mode);
+    mode = &requested_mode;
+
     /* Default to the desktop format */
     if (mode->format) {
         target_format = mode->format;
     } else {
         target_format = display->desktop_mode.format;
-    }
-
-    /* Default to 1.0 scale */
-    if (mode->display_scale > 0.0f) {
-        target_display_scale = mode->display_scale;
-    } else {
-        target_display_scale = 1.0f;
     }
 
     /* Default to the desktop refresh rate */
@@ -957,12 +978,12 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
     for (i = 0; i < SDL_GetNumDisplayModesForDisplay(display); ++i) {
         current = &display->display_modes[i];
 
-        if (current->w && (current->w < mode->w)) {
+        if (current->pixel_w && (current->pixel_w < mode->pixel_w)) {
             /* Out of sorted modes large enough here */
             break;
         }
-        if (current->h && (current->h < mode->h)) {
-            if (current->w && (current->w == mode->w)) {
+        if (current->pixel_h && (current->pixel_h < mode->pixel_h)) {
+            if (current->pixel_w && (current->pixel_w == mode->pixel_w)) {
                 /* Out of sorted modes large enough here */
                 break;
             }
@@ -971,7 +992,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
                modes may still follow. */
             continue;
         }
-        if (match == NULL || current->w < match->w || current->h < match->h) {
+        if (match == NULL || current->pixel_w < match->pixel_w || current->pixel_h < match->pixel_h) {
             match = current;
             continue;
         }
@@ -993,35 +1014,29 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
                 continue;
             }
         }
-        if (current->display_scale != match->display_scale) {
-            /* Sorted lowest display scale to highest */
-            if (current->display_scale <= target_display_scale) {
-                match = current;
-                continue;
-            }
-        }
     }
+
     if (match) {
+        SDL_zerop(closest);
         if (match->format) {
             closest->format = match->format;
         } else {
             closest->format = mode->format;
         }
-        if (match->w && match->h) {
-            closest->w = match->w;
-            closest->h = match->h;
+        if (match->screen_w && match->screen_h) {
+            closest->screen_w = match->screen_w;
+            closest->screen_h = match->screen_h;
         } else {
-            closest->w = mode->w;
-            closest->h = mode->h;
+            closest->screen_w = mode->screen_w;
+            closest->screen_h = mode->screen_h;
         }
-        if (match->display_scale > 0.0f) {
-            closest->display_scale = match->display_scale;
-        } else if (mode->display_scale > 0.0f) {
-            closest->display_scale = mode->display_scale;
+        if (match->pixel_w && match->pixel_h) {
+            closest->pixel_w = match->pixel_w;
+            closest->pixel_h = match->pixel_h;
         } else {
-            closest->display_scale = 1.0f;
+            closest->pixel_w = mode->pixel_w;
+            closest->pixel_h = mode->pixel_h;
         }
-
         if (match->refresh_rate > 0.0f) {
             closest->refresh_rate = match->refresh_rate;
         } else {
@@ -1029,19 +1044,17 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
         }
         closest->driverdata = match->driverdata;
 
-        /*
-         * Pick some reasonable defaults if the app and driver don't
-         * care
-         */
+        /* Pick some reasonable defaults if the app and driver don't care */
         if (!closest->format) {
             closest->format = SDL_PIXELFORMAT_RGB888;
         }
-        if (!closest->w) {
-            closest->w = 640;
+        if (!closest->screen_w) {
+            closest->screen_w = 640;
         }
-        if (!closest->h) {
-            closest->h = 480;
+        if (!closest->screen_h) {
+            closest->screen_h = 480;
         }
+        SDL_FinalizeDisplayMode(closest);
         return closest;
     }
     return NULL;
@@ -1075,11 +1088,17 @@ static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, const SDL_Dis
         if (!display_mode.format) {
             display_mode.format = display->current_mode.format;
         }
-        if (!display_mode.w) {
-            display_mode.w = display->current_mode.w;
+        if (!display_mode.pixel_w) {
+            display_mode.pixel_w = display->current_mode.pixel_w;
         }
-        if (!display_mode.h) {
-            display_mode.h = display->current_mode.h;
+        if (!display_mode.pixel_h) {
+            display_mode.pixel_h = display->current_mode.pixel_h;
+        }
+        if (!display_mode.screen_w) {
+            display_mode.screen_w = display->current_mode.screen_w;
+        }
+        if (!display_mode.screen_h) {
+            display_mode.screen_h = display->current_mode.screen_h;
         }
         if (display_mode.refresh_rate == 0.0f) {
             display_mode.refresh_rate = display->current_mode.refresh_rate;
@@ -1087,7 +1106,9 @@ static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, const SDL_Dis
 
         /* Get a good video mode, the closest one possible */
         if (!SDL_GetClosestDisplayModeForDisplay(display, &display_mode, &display_mode)) {
-            return SDL_SetError("No video mode large enough for %dx%d", display_mode.w, display_mode.h);
+            return SDL_SetError("No video mode large enough for %dx%d (%dx%d)",
+                                display_mode.pixel_w, display_mode.pixel_h,
+                                display_mode.screen_w, display_mode.screen_h);
         }
     } else {
         display_mode = display->desktop_mode;
@@ -1284,11 +1305,11 @@ int SDL_SetWindowDisplayMode(SDL_Window *window, const SDL_DisplayMode *mode)
 #ifndef __ANDROID__
                 /* Android may not resize the window to exactly what our fullscreen mode is, especially on
                  * windowed Android environments like the Chromebook or Samsung DeX.  Given this, we shouldn't
-                 * use fullscreen_mode.w and fullscreen_mode.h, but rather get our current native size.  As such,
+                 * use fullscreen_mode.screen_w and fullscreen_mode.screen_h, but rather get our current native size.  As such,
                  * Android's SetWindowFullscreen will generate the window event for us with the proper final size.
                  */
-                SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, fullscreen_mode.w, fullscreen_mode.h);
-#endif
+                SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, fullscreen_mode.screen_w, fullscreen_mode.screen_h);
+#endif /* !__ANDROID__ */
             }
         }
     }
@@ -1307,11 +1328,11 @@ int SDL_GetWindowDisplayMode(SDL_Window *window, SDL_DisplayMode *mode)
     }
 
     fullscreen_mode = window->fullscreen_mode;
-    if (!fullscreen_mode.w) {
-        fullscreen_mode.w = window->windowed.w;
+    if (!fullscreen_mode.screen_w) {
+        fullscreen_mode.screen_w = window->windowed.w;
     }
-    if (!fullscreen_mode.h) {
-        fullscreen_mode.h = window->windowed.h;
+    if (!fullscreen_mode.screen_h) {
+        fullscreen_mode.screen_h = window->windowed.h;
     }
 
     display = SDL_GetDisplayForWindow(window);
@@ -1469,7 +1490,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
             if (SDL_GetWindowDisplayMode(other, &fullscreen_mode) == 0) {
                 SDL_bool resized = SDL_TRUE;
 
-                if (other->w == fullscreen_mode.w && other->h == fullscreen_mode.h) {
+                if (other->w == fullscreen_mode.screen_w && other->h == fullscreen_mode.screen_h) {
                     resized = SDL_FALSE;
                 }
 
@@ -1501,11 +1522,8 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
                     /* This is also unnecessary on Win32 (WIN_SetWindowFullscreen calls SetWindowPos,
                      * WM_WINDOWPOSCHANGED will send SDL_EVENT_WINDOW_RESIZED).
                      */
-
-                    /* The new fullscreen window size must be sent in screen coordinates, not pixels. */
                     SDL_SendWindowEvent(other, SDL_EVENT_WINDOW_RESIZED,
-                                        (int)(fullscreen_mode.w / fullscreen_mode.display_scale),
-                                        (int)(fullscreen_mode.h / fullscreen_mode.display_scale));
+                                        fullscreen_mode.screen_w, fullscreen_mode.screen_h);
 #endif
                 } else {
                     SDL_OnWindowResized(other);
@@ -1745,15 +1763,15 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
         if ((flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP && (bounds.w != w || bounds.h != h)) {
             SDL_DisplayMode fullscreen_mode, closest_mode;
             SDL_zero(fullscreen_mode);
-            fullscreen_mode.w = w;
-            fullscreen_mode.h = h;
+            fullscreen_mode.screen_w = w;
+            fullscreen_mode.screen_h = h;
             if (SDL_GetClosestDisplayModeForDisplay(display, &fullscreen_mode, &closest_mode) != NULL) {
-                bounds.w = closest_mode.w;
-                bounds.h = closest_mode.h;
+                bounds.w = closest_mode.screen_w;
+                bounds.h = closest_mode.screen_h;
             }
         }
-        window->fullscreen_mode.w = bounds.w;
-        window->fullscreen_mode.h = bounds.h;
+        window->fullscreen_mode.screen_w = bounds.w;
+        window->fullscreen_mode.screen_h = bounds.h;
         window->x = bounds.x;
         window->y = bounds.y;
         window->w = bounds.w;
@@ -2409,8 +2427,16 @@ void SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 
         if (display)
         {
-            *w = (int)SDL_ceilf(*w * display->current_mode.display_scale);
-            *h = (int)SDL_ceilf(*h * display->current_mode.display_scale);
+            if (*w == display->current_mode.screen_w) {
+                *w = display->current_mode.pixel_w;
+            } else {
+                *w = (int)SDL_ceilf(*w * display->current_mode.display_scale);
+            }
+            if (*h == display->current_mode.screen_h) {
+                *h = display->current_mode.pixel_h;
+            } else {
+                *h = (int)SDL_ceilf(*h * display->current_mode.display_scale);
+            }
         }
     }
 }
@@ -2999,8 +3025,8 @@ void SDL_OnWindowDisplayChanged(SDL_Window *window)
             window->y = rect.y;
             window->w = rect.w;
             window->h = rect.h;
-            window->fullscreen_mode.w = rect.w;
-            window->fullscreen_mode.h = rect.h;
+            window->fullscreen_mode.screen_w = rect.w;
+            window->fullscreen_mode.screen_h = rect.h;
             if (_this->SetWindowSize) {
                 _this->SetWindowSize(_this, window);
             }

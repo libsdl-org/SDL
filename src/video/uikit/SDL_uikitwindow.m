@@ -177,7 +177,7 @@ int UIKit_CreateWindow(_THIS, SDL_Window *window)
             const SDL_DisplayMode *bestmode = NULL;
             for (i = display->num_display_modes; i >= 0; i--) {
                 const SDL_DisplayMode *mode = &display->display_modes[i];
-                if ((mode->w >= window->w) && (mode->h >= window->h)) {
+                if ((mode->screen_w >= window->w) && (mode->screen_h >= window->h)) {
                     bestmode = mode;
                 }
             }

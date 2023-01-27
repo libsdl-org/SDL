@@ -137,8 +137,8 @@ static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool exte
     }
 
     SDL_zerop(mode);
-    mode->w = xres;
-    mode->h = yres;
+    mode->pixel_w = xres;
+    mode->pixel_h = yres;
     mode->format = RISCOS_ModeToPixelFormat(ncolour, modeflags, log2bpp);
     mode->refresh_rate = (float)rate;
 

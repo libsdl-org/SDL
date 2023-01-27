@@ -253,8 +253,8 @@ extern "C" Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat);
 static void WINRT_DXGIModeToSDLDisplayMode(const DXGI_MODE_DESC *dxgiMode, SDL_DisplayMode *sdlMode)
 {
     SDL_zerop(sdlMode);
-    sdlMode->w = dxgiMode->Width;
-    sdlMode->h = dxgiMode->Height;
+    sdlMode->pixel_w = dxgiMode->Width;
+    sdlMode->pixel_h = dxgiMode->Height;
     sdlMode->refresh_rate = (((100 * dxgiMode->RefreshRate.Numerator) / dxgiMode->RefreshRate.Denominator) / 100.0f);
     sdlMode->format = D3D11_DXGIFormatToSDLPixelFormat(dxgiMode->Format);
 }
@@ -303,10 +303,9 @@ static int WINRT_AddDisplaysForOutput(_THIS, IDXGIAdapter1 *dxgiAdapter1, int ou
         SDL_DisplayMode mode;
         SDL_zero(mode);
         display.name = SDL_strdup("Windows Simulator / Terminal Services Display");
-        mode.w = (dxgiOutputDesc.DesktopCoordinates.right - dxgiOutputDesc.DesktopCoordinates.left);
-        mode.h = (dxgiOutputDesc.DesktopCoordinates.bottom - dxgiOutputDesc.DesktopCoordinates.top);
+        mode.pixel_w = (dxgiOutputDesc.DesktopCoordinates.right - dxgiOutputDesc.DesktopCoordinates.left);
+        mode.pixel_h = (dxgiOutputDesc.DesktopCoordinates.bottom - dxgiOutputDesc.DesktopCoordinates.top);
         mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
-        mode.refresh_rate = 0.0f; /* Display mode is unknown, so just fill in zero, as specified by SDL's header files */
         display.desktop_mode = mode;
         display.current_mode = mode;
         if (!SDL_AddDisplayMode(&display, &mode)) {
@@ -415,18 +414,23 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
                 */
 
 #if (NTDDI_VERSION >= NTDDI_WIN10) || (SDL_WINRT_USE_APPLICATIONVIEW && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-                mode.w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
-                mode.h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
+                mode.pixel_w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
+                mode.pixel_h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
+                mode.screen_w = appView->VisibleBounds.Width;
+                mode.screen_h = appView->VisibleBounds.Height;
+                mode.display_scale = WINRT_DISPLAY_PROPERTY(LogicalDpi) / 96.0f;
 #else
                 /* On platform(s) that do not support VisibleBounds, such as Windows 8.1,
                    fall back to CoreWindow's Bounds property.
                 */
-                mode.w = WINRT_DIPS_TO_PHYSICAL_PIXELS(coreWin->Bounds.Width);
-                mode.h = WINRT_DIPS_TO_PHYSICAL_PIXELS(coreWin->Bounds.Height);
+                mode.pixel_w = WINRT_DIPS_TO_PHYSICAL_PIXELS(coreWin->Bounds.Width);
+                mode.pixel_h = WINRT_DIPS_TO_PHYSICAL_PIXELS(coreWin->Bounds.Height);
+                mode.screen_w = coreWin->Bounds.Width;
+                mode.screen_h = coreWin->Bounds.Height;
+                mode.display_scale = WINRT_DISPLAY_PROPERTY(LogicalDpi) / 96.0f;
 #endif
 
                 mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
-                mode.refresh_rate = 0.0f; /* Display mode is unknown, so just fill in zero, as specified by SDL's header files */
                 display.desktop_mode = mode;
                 display.current_mode = mode;
                 bool error = SDL_AddDisplayMode(&display, &mode) < 0 ||
@@ -532,7 +536,7 @@ WINRT_DetectWindowFlags(SDL_Window *window)
             }
 #endif
 
-            if (display->desktop_mode.w != w || display->desktop_mode.h != h) {
+            if (display->desktop_mode.pixel_w != w || display->desktop_mode.pixel_h != h) {
                 latestFlags |= SDL_WINDOW_MAXIMIZED;
             } else {
                 latestFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -701,12 +705,12 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
            user choice of various things.  For now, just adapt the SDL_Window to
            whatever Windows set-up as the native-window's geometry.
         */
-        window->x = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Left);
-        window->y = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Top);
+        window->x = (int)SDL_lroundf(data->coreWindow->Bounds.Left);
+        window->y = (int)SDL_lroundf(data->coreWindow->Bounds.Top);
 #if NTDDI_VERSION < NTDDI_WIN10
         /* On WinRT 8.x / pre-Win10, just use the size we were given. */
-        window->w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
-        window->h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
+        window->w = (int)SDL_floorf(data->coreWindow->Bounds.Width);
+        window->h = (int)SDL_floorf(data->coreWindow->Bounds.Height);
 #else
         /* On Windows 10, we occasionally get control over window size.  For windowed
            mode apps, try this.
@@ -721,8 +725,8 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
             /* We either weren't able to set the window size, or a request for
                fullscreen was made.  Get window-size info from the OS.
             */
-            window->w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
-            window->h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
+            window->w = (int)SDL_floorf(data->coreWindow->Bounds.Width);
+            window->h = (int)SDL_floorf(data->coreWindow->Bounds.Height);
         }
 #endif
 

@@ -423,19 +423,14 @@ int WIN_VideoInit(_THIS)
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     /* For Xbox, we just need to create the single display */
     {
-        SDL_VideoDisplay display;
-        SDL_DisplayMode current_mode;
+        SDL_DisplayMode mode;
 
-        SDL_zero(current_mode);
-        D3D12_XBOX_GetResolution(&current_mode.w, &current_mode.h);
-        current_mode.refresh_rate = 60.0f;
-        current_mode.format = SDL_PIXELFORMAT_ARGB8888;
+        SDL_zero(mode);
+        D3D12_XBOX_GetResolution(&mode.pixel_w, &mode.pixel_h);
+        mode.refresh_rate = 60.0f;
+        mode.format = SDL_PIXELFORMAT_ARGB8888;
 
-        SDL_zero(display);
-        display.desktop_mode = current_mode;
-        display.current_mode = current_mode;
-
-        SDL_AddVideoDisplay(&display, SDL_FALSE);
+        SDL_AddBasicVideoDisplay(&mode);
     }
 #else /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     if (WIN_InitModes(_this) < 0) {

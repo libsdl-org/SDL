@@ -65,23 +65,17 @@ static int PS2_CreateWindow(_THIS, SDL_Window *window)
 
 static int PS2_VideoInit(_THIS)
 {
-    SDL_VideoDisplay display;
-    SDL_DisplayMode current_mode;
+    SDL_DisplayMode mode;
 
-    SDL_zero(current_mode);
-    current_mode.w = 640;
-    current_mode.h = 480;
-    current_mode.refresh_rate = 60.0f;
+    SDL_zero(mode);
+    mode.pixel_w = 640;
+    mode.pixel_h = 480;
+    mode.refresh_rate = 60.0f;
 
     /* 32 bpp for default */
-    current_mode.format = SDL_PIXELFORMAT_ABGR8888;
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
 
-    SDL_zero(display);
-    display.desktop_mode = current_mode;
-    display.current_mode = current_mode;
-    SDL_AddDisplayMode(&display, &current_mode);
-
-    SDL_AddVideoDisplay(&display, SDL_FALSE);
+    SDL_AddBasicVideoDisplay(&mode);
 
     return 1;
 }

@@ -422,17 +422,17 @@ static void AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
         mode.display_scale = 1.0f;
 
         if (rot_90) {
-            mode.w = mode_list[i].h;
-            mode.h = mode_list[i].w;
+            mode.pixel_w = mode_list[i].h;
+            mode.pixel_h = mode_list[i].w;
         } else {
-            mode.w = mode_list[i].w;
-            mode.h = mode_list[i].h;
+            mode.pixel_w = mode_list[i].w;
+            mode.pixel_h = mode_list[i].h;
         }
 
         /* Only add modes that are smaller than the native mode. */
-        if ((mode.w < native_width && mode.h < native_height) ||
-            (mode.w < native_width && mode.h == native_height) ||
-            (mode.w == native_width && mode.h < native_height)) {
+        if ((mode.pixel_w < native_width && mode.pixel_h < native_height) ||
+            (mode.pixel_w < native_width && mode.pixel_h == native_height) ||
+            (mode.pixel_w == native_width && mode.pixel_h < native_height)) {
             SDL_AddDisplayMode(dpy, &mode);
         }
     }
@@ -565,11 +565,11 @@ static void display_handle_done(void *data,
     native_mode.format = SDL_PIXELFORMAT_RGB888;
 
     if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-        native_mode.w = driverdata->native_height;
-        native_mode.h = driverdata->native_width;
+        native_mode.pixel_w = driverdata->native_height;
+        native_mode.pixel_h = driverdata->native_width;
     } else {
-        native_mode.w = driverdata->native_width;
-        native_mode.h = driverdata->native_height;
+        native_mode.pixel_w = driverdata->native_width;
+        native_mode.pixel_h = driverdata->native_height;
     }
     native_mode.display_scale = 1.0f;
     native_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
@@ -590,11 +590,11 @@ static void display_handle_done(void *data,
 
     /* xdg-output dimensions are already transformed, so no need to rotate. */
     if (driverdata->has_logical_size || !(driverdata->transform & WL_OUTPUT_TRANSFORM_90)) {
-        desktop_mode.w = driverdata->width;
-        desktop_mode.h = driverdata->height;
+        desktop_mode.pixel_w = driverdata->width;
+        desktop_mode.pixel_h = driverdata->height;
     } else {
-        desktop_mode.w = driverdata->height;
-        desktop_mode.h = driverdata->width;
+        desktop_mode.pixel_w = driverdata->height;
+        desktop_mode.pixel_h = driverdata->width;
     }
     desktop_mode.display_scale = driverdata->scale_factor;
     desktop_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
@@ -976,8 +976,8 @@ static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *
     SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *)display->driverdata;
     rect->x = driverdata->x;
     rect->y = driverdata->y;
-    rect->w = display->current_mode.w;
-    rect->h = display->current_mode.h;
+    rect->w = display->current_mode.screen_w;
+    rect->h = display->current_mode.screen_h;
     return 0;
 }
 

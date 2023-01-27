@@ -1130,7 +1130,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_GetMasksForPixelFormatEnum(mode.format, &bpp, &Rmask, &Gmask,
                                            &Bmask, &Amask);
                 SDL_Log("  Current mode: %dx%d@%gHz, %d%% scale, %d bits-per-pixel (%s)\n",
-                        mode.w, mode.h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), bpp,
+                        mode.pixel_w, mode.pixel_h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), bpp,
                         SDL_GetPixelFormatName(mode.format));
                 if (Rmask || Gmask || Bmask) {
                     SDL_Log("      Red Mask   = 0x%.8" SDL_PRIx32 "\n", Rmask);
@@ -1152,7 +1152,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                         SDL_GetMasksForPixelFormatEnum(mode.format, &bpp, &Rmask,
                                                    &Gmask, &Bmask, &Amask);
                         SDL_Log("    Mode %d: %dx%d@%gHz, %d%% scale, %d bits-per-pixel (%s)\n",
-                                j, mode.w, mode.h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), bpp,
+                                j, mode.pixel_w, mode.pixel_h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), bpp,
                                 SDL_GetPixelFormatName(mode.format));
                         if (Rmask || Gmask || Bmask) {
                             SDL_Log("        Red Mask   = 0x%.8" SDL_PRIx32 "\n",
@@ -2246,7 +2246,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
 
     if (0 == SDL_GetWindowDisplayMode(window, &mode)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetWindowDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
-                           mode.w, mode.h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
+                           mode.pixel_w, mode.pixel_h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
@@ -2276,14 +2276,14 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
 
     if (0 == SDL_GetCurrentDisplayMode(windowDisplayIndex, &mode)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetCurrentDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
-                           mode.w, mode.h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
+                           mode.pixel_w, mode.pixel_h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     if (0 == SDL_GetDesktopDisplayMode(windowDisplayIndex, &mode)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetDesktopDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
-                           mode.w, mode.h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
+                           mode.pixel_w, mode.pixel_h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }

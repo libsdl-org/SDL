@@ -180,8 +180,8 @@ int Android_VideoInit(_THIS)
 
     SDL_zero(mode);
     mode.format = Android_ScreenFormat;
-    mode.w = Android_DeviceWidth;
-    mode.h = Android_DeviceHeight;
+    mode.pixel_w = Android_DeviceWidth;
+    mode.pixel_h = Android_DeviceHeight;
     mode.display_scale = Android_ScreenDensity;
     mode.refresh_rate = Android_ScreenRate;
     mode.driverdata = NULL;
@@ -276,11 +276,15 @@ void Android_SendResize(SDL_Window *window)
     SDL_VideoDevice *device = SDL_GetVideoDevice();
     if (device && device->num_displays > 0) {
         SDL_VideoDisplay *display = &device->displays[0];
-        display->desktop_mode.format = Android_ScreenFormat;
-        display->desktop_mode.w = Android_DeviceWidth;
-        display->desktop_mode.h = Android_DeviceHeight;
-        display->desktop_mode.display_scale = Android_ScreenDensity;
-        display->desktop_mode.refresh_rate = Android_ScreenRate;
+        SDL_DisplayMode desktop_mode;
+
+        SDL_zero(desktop_mode);
+        desktop_mode.format = Android_ScreenFormat;
+        desktop_mode.pixel_w = Android_DeviceWidth;
+        desktop_mode.pixel_h = Android_DeviceHeight;
+        desktop_mode.display_scale = Android_ScreenDensity;
+        desktop_mode.refresh_rate = Android_ScreenRate;
+        SDL_SetDesktopDisplayMode(display, &desktop_mode);
     }
 
     if (window) {
@@ -288,15 +292,17 @@ void Android_SendResize(SDL_Window *window)
          * will fall back to the old mode */
         int w, h;
         SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-        display->display_modes[0].format = Android_ScreenFormat;
-        display->display_modes[0].w = Android_DeviceWidth;
-        display->display_modes[0].h = Android_DeviceHeight;
-        display->display_modes[0].display_scale = Android_ScreenDensity;
-        display->display_modes[0].refresh_rate = Android_ScreenRate;
-        display->current_mode = display->display_modes[0];
+        SDL_DisplayMode current_mode;
 
-        w = (int)SDL_ceilf(Android_SurfaceWidth / Android_ScreenDensity);
-        h = (int)SDL_ceilf(Android_SurfaceHeight / Android_ScreenDensity);
+        current_mode.format = Android_ScreenFormat;
+        current_mode.pixel_w = Android_DeviceWidth;
+        current_mode.pixel_h = Android_DeviceHeight;
+        current_mode.display_scale = Android_ScreenDensity;
+        current_mode.refresh_rate = Android_ScreenRate;
+        SDL_SetCurrentDisplayMode(display, &current_mode);
+
+        w = (int)SDL_floorf(Android_SurfaceWidth / Android_ScreenDensity);
+        h = (int)SDL_floorf(Android_SurfaceHeight / Android_ScreenDensity);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
     }
 }
