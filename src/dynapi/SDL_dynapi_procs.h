@@ -485,7 +485,7 @@ SDL_DYNAPI_PROC(SDL_Haptic*,SDL_HapticOpenFromJoystick,(SDL_Joystick *a),(a),ret
 SDL_DYNAPI_PROC(SDL_Haptic*,SDL_HapticOpenFromMouse,(void),(),return)
 SDL_DYNAPI_PROC(int,SDL_HapticOpened,(int a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_HapticPause,(SDL_Haptic *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_HapticQuery,(SDL_Haptic *a),(a),return)
+SDL_DYNAPI_PROC(unsigned int,SDL_HapticQuery,(SDL_Haptic *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_HapticRumbleInit,(SDL_Haptic *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_HapticRumblePlay,(SDL_Haptic *a, float b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_HapticRumbleStop,(SDL_Haptic *a),(a),return)
