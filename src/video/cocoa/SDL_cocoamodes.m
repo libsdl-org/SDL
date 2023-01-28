@@ -204,14 +204,6 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
             otherformat = GetDisplayModePixelFormat(othermode);
             otherGUI = CGDisplayModeIsUsableForDesktopGUI(othermode);
 
-            /* Ignore this mode if it's low-dpi (@1x) and we have a high-dpi
-             * mode in the list with the same size in points.
-             */
-            if (width == pixelW && height == pixelH && width == otherW && height == otherH && refreshrate == otherrefresh && format == otherformat && (otherpixelW != otherW || otherpixelH != otherH)) {
-                CFRelease(modes);
-                return SDL_FALSE;
-            }
-
             /* Ignore this mode if it's interlaced and there's a non-interlaced
              * mode in the list with the same properties.
              */
