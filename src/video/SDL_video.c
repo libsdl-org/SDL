@@ -3079,6 +3079,10 @@ void SDL_OnWindowMinimized(SDL_Window *window)
     }
 }
 
+void SDL_OnWindowMaximized(SDL_Window *window)
+{
+}
+
 void SDL_OnWindowRestored(SDL_Window *window)
 {
     /*
