@@ -260,12 +260,12 @@ static int calculateBestSliceSizeForTexture(SDL_Texture *texture, SliceSize *uvS
 static void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, SliceSize *sliceSize,
                          const SDL_Rect *srcrect, const SDL_FRect *dstrect) {
     int i, j;
-    float dstrectSlizeWidth = dstrect->w / dimensions->width;
-    float dstrectSlizeHeight = dstrect->h / dimensions->height;
     int remainingWidth = srcrect->w % sliceSize->width;
     int remainingHeight = srcrect->h % sliceSize->height;
     int hasRemainingWidth = remainingWidth > 0;
     int hasRemainingHeight = remainingHeight > 0;
+    float dstrectRateWidth = (float)(abs(dstrect->w - dimensions->width)) / (float)(abs(srcrect->w - dimensions->width));
+    float dstrectRateHeight = (float)(abs(dstrect->h - dimensions->height)) / (float)(abs(srcrect->h - dimensions->height));
 
     int verticesCount = dimensions->width * dimensions->height * 2;
     for (i = 0; i < dimensions->width; i++) {
@@ -273,24 +273,26 @@ static void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, SliceSiz
             uint8_t currentIndex = (i * dimensions->height + j) * 2;
             vertices[currentIndex].u = srcrect->x + i * sliceSize->width;
             vertices[currentIndex].v = srcrect->y + j * sliceSize->height;
-            vertices[currentIndex].x = dstrect->x + i * dstrectSlizeWidth;
-            vertices[currentIndex].y = dstrect->y + j * dstrectSlizeHeight;
+            vertices[currentIndex].x = dstrect->x + i * sliceSize->width * dstrectRateWidth;
+            vertices[currentIndex].y = dstrect->y + j * sliceSize->height * dstrectRateHeight;
             vertices[currentIndex].z = 0;
 
             if (i == dimensions->width - 1 && hasRemainingWidth) {
                 vertices[currentIndex + 1].u = srcrect->x + i * sliceSize->width + remainingWidth;
+                vertices[currentIndex + 1].x = dstrect->x + i * (sliceSize->width * dstrectRateWidth) + remainingWidth * dstrectRateWidth;
             } else {
                 vertices[currentIndex + 1].u = (srcrect->x + (i +1) * sliceSize->width);
+                vertices[currentIndex + 1].x = dstrect->x + (i + 1) * sliceSize->width * dstrectRateWidth;
             }
             
             if (j == dimensions->height - 1 && hasRemainingHeight) {
                 vertices[currentIndex + 1].v = srcrect->y + j * sliceSize->height + remainingHeight;
+                vertices[currentIndex + 1].y = dstrect->y + j * sliceSize->height * dstrectRateHeight + remainingHeight * dstrectRateHeight;
             } else {
                 vertices[currentIndex + 1].v = (srcrect->y + (j + 1) * sliceSize->height);
+                vertices[currentIndex + 1].y = dstrect->y + (j + 1) * sliceSize->height * dstrectRateHeight;
             }
 
-            vertices[currentIndex + 1].x = dstrect->x + (i + 1) * dstrectSlizeWidth;
-            vertices[currentIndex + 1].y = dstrect->y + (j + 1) * dstrectSlizeHeight;
             vertices[currentIndex + 1].z = 0;
         }
     }
@@ -518,8 +520,8 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
     // We need to split in slices because we have a texture bigger than 64 pixel width
     if (texture) {
         SliceSize sliceSize, sliceDimension, uvSize;
-        uvSize.width = abs(u1) - abs(u0);
-        uvSize.height = abs(v1) - abs(v0);
+        uvSize.width = abs(u1 - u0);
+        uvSize.height = abs(v1 - v0);
         if (calculateBestSliceSizeForTexture(texture, &uvSize, &sliceSize, &sliceDimension))
             return -1;
         
