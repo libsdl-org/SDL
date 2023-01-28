@@ -251,10 +251,49 @@ static int calculateBestSliceSizeForTexture(SDL_Texture *texture, SliceSize *uvS
     
     sliceSize->width = foundSlizeSize->width;
     sliceSize->height = foundSlizeSize->height;
-    sliceDimension->width = ((texture->w % foundSlizeSize->width == 0) ? 0 : 1) + (texture->w / foundSlizeSize->width);
-    sliceDimension->height = ((texture->h % foundSlizeSize->height == 0) ? 0 : 1) + (texture->h / foundSlizeSize->height);
+    sliceDimension->width = ((uvSize->width % foundSlizeSize->width == 0) ? 0 : 1) + (uvSize->width / foundSlizeSize->width);
+    sliceDimension->height = ((uvSize->height % foundSlizeSize->height == 0) ? 0 : 1) + (uvSize->height / foundSlizeSize->height);
 
     return 0;
+}
+
+static void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, SliceSize *sliceSize,
+                         const SDL_Rect *srcrect, const SDL_FRect *dstrect) {
+    int i, j;
+    float dstrectSlizeWidth = dstrect->w / dimensions->width;
+    float dstrectSlizeHeight = dstrect->h / dimensions->height;
+    int remainingWidth = srcrect->w % sliceSize->width;
+    int remainingHeight = srcrect->h % sliceSize->height;
+    int hasRemainingWidth = remainingWidth > 0;
+    int hasRemainingHeight = remainingHeight > 0;
+
+    int verticesCount = dimensions->width * dimensions->height * 2;
+    for (i = 0; i < dimensions->width; i++) {
+        for (j = 0; j < dimensions->height; j++) {
+            uint8_t currentIndex = (i * dimensions->height + j) * 2;
+            vertices[currentIndex].u = srcrect->x + i * sliceSize->width;
+            vertices[currentIndex].v = srcrect->y + j * sliceSize->height;
+            vertices[currentIndex].x = dstrect->x + i * dstrectSlizeWidth;
+            vertices[currentIndex].y = dstrect->y + j * dstrectSlizeHeight;
+            vertices[currentIndex].z = 0;
+
+            if (i == dimensions->width - 1 && hasRemainingWidth) {
+                vertices[currentIndex + 1].u = srcrect->x + i * sliceSize->width + remainingWidth;
+            } else {
+                vertices[currentIndex + 1].u = (srcrect->x + (i +1) * sliceSize->width);
+            }
+            
+            if (j == dimensions->height - 1 && hasRemainingHeight) {
+                vertices[currentIndex + 1].v = srcrect->y + j * sliceSize->height + remainingHeight;
+            } else {
+                vertices[currentIndex + 1].v = (srcrect->y + (j + 1) * sliceSize->height);
+            }
+
+            vertices[currentIndex + 1].x = dstrect->x + (i + 1) * dstrectSlizeWidth;
+            vertices[currentIndex + 1].y = dstrect->y + (j + 1) * dstrectSlizeHeight;
+            vertices[currentIndex + 1].z = 0;
+        }
+    }
 }
 
 static void PSP_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
@@ -461,6 +500,60 @@ static int PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     return 0;
 }
 
+static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+                         const SDL_Rect *srcrect, const SDL_FRect *dstrect)
+{
+    VertTV *verts;
+    uint8_t verticesCount;
+    const float x = dstrect->x;
+    const float y = dstrect->y;
+    const float width = dstrect->w;
+    const float height = dstrect->h;
+
+    const float u0 = srcrect->x;
+    const float v0 = srcrect->y;
+    const float u1 = srcrect->x + srcrect->w;
+    const float v1 = srcrect->y + srcrect->h;
+
+    // We need to split in slices because we have a texture bigger than 64 pixel width
+    if (texture) {
+        SliceSize sliceSize, sliceDimension, uvSize;
+        uvSize.width = abs(u1) - abs(u0);
+        uvSize.height = abs(v1) - abs(v0);
+        if (calculateBestSliceSizeForTexture(texture, &uvSize, &sliceSize, &sliceDimension))
+            return -1;
+        
+        verticesCount = sliceDimension.width * sliceDimension.height * 2;
+        verts = (VertTV *)SDL_AllocateRenderVertices(renderer, verticesCount * sizeof(VertTV), 4, &cmd->data.draw.first);
+        if (verts == NULL)
+            return -1;
+        
+        fillSpriteVertices(verts, &sliceDimension, &sliceSize, srcrect, dstrect);
+    } else {
+        // We don't need to split in slices because we don't have a texture
+        verticesCount = 2;
+        verts = (VertTV *)SDL_AllocateRenderVertices(renderer, verticesCount * sizeof(VertTV), 4, &cmd->data.draw.first);
+        if (verts == NULL)
+            return -1;
+
+        verts[0].u = u0;
+        verts[0].v = v0;
+        verts[0].x = x;
+        verts[0].y = y;
+        verts[0].z = 0;
+
+        verts[1].u = u1;
+        verts[1].v = v1;
+        verts[1].x = x + width;
+        verts[1].y = y + height;
+        verts[1].z = 0;
+    }
+
+    cmd->data.draw.count = verticesCount;
+
+    return 0;
+}
+
 static int PSP_RenderSetViewPort(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
@@ -636,6 +729,34 @@ int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *
     return 0;
 }
 
+int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
+{
+    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
+    const size_t count = cmd->data.draw.count;
+    const VertTV *verts = (VertTV *)(vertices + cmd->data.draw.first);
+    PSP_BlendInfo blendInfo = {
+        .mode = cmd->data.draw.blend,
+        .shade = GU_FLAT
+    };
+
+    PSP_SetBlendMode(data, blendInfo);
+
+    if (cmd->data.draw.texture) {
+        PSP_Texture *psp_tex = (PSP_Texture *)cmd->data.draw.texture->driverdata;
+
+        sceGuTexMode(psp_tex->format, 0, 0, GU_FALSE);
+        sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, psp_tex->width, psp_tex->data);
+        sceGuTexFilter(psp_tex->filter, psp_tex->filter);
+        sceGuEnable(GU_TEXTURE_2D);
+        sceGuDrawArray(GU_SPRITES, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
+        sceGuDisable(GU_TEXTURE_2D);
+    } else {
+        sceGuDrawArray(GU_SPRITES, GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
+    }
+
+    return 0;   
+}
+
 static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     /* note that before the renderer interface change, this would do extrememly small
@@ -685,8 +806,11 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         }
         case SDL_RENDERCMD_FILL_RECTS: /* unused */
             break;
-        case SDL_RENDERCMD_COPY: /* unused */
+        case SDL_RENDERCMD_COPY:
+        {
+            PSP_RenderCopy(renderer, gpumem, cmd);
             break;
+        }
         case SDL_RENDERCMD_COPY_EX: /* unused */
             break;
         case SDL_RENDERCMD_GEOMETRY:
@@ -845,6 +969,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     renderer->QueueDrawPoints = PSP_QueueDrawPoints;
     renderer->QueueDrawLines = PSP_QueueDrawPoints;
     renderer->QueueGeometry = PSP_QueueGeometry;
+    renderer->QueueCopy = PSP_QueueCopy;
     renderer->RunCommandQueue = PSP_RunCommandQueue;
     renderer->RenderReadPixels = PSP_RenderReadPixels;
     renderer->RenderPresent = PSP_RenderPresent;
