@@ -212,7 +212,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (BOOL)prefersStatusBarHidden
 {
-    BOOL hidden = (window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS)) != 0;
+    BOOL hidden = (window->flags & (SDL_WINDOW_FULLSCREEN_MASK | SDL_WINDOW_BORDERLESS)) != 0;
     return hidden;
 }
 
@@ -236,7 +236,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     }
 
     /* By default, fullscreen and borderless windows get all screen gestures */
-    if ((window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS)) != 0) {
+    if ((window->flags & (SDL_WINDOW_FULLSCREEN_MASK | SDL_WINDOW_BORDERLESS)) != 0) {
         return UIRectEdgeAll;
     } else {
         return UIRectEdgeNone;

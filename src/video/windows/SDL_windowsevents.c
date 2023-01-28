@@ -1491,7 +1491,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_NCCALCSIZE:
     {
         Uint32 window_flags = SDL_GetWindowFlags(data->window);
-        if (wParam == TRUE && (window_flags & SDL_WINDOW_BORDERLESS) && !(window_flags & SDL_WINDOW_FULLSCREEN)) {
+        if (wParam == TRUE && (window_flags & SDL_WINDOW_BORDERLESS) != 0 && (window_flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
             /* When borderless, need to tell windows that the size of the non-client area is 0 */
             if (!(window_flags & SDL_WINDOW_RESIZABLE)) {
                 int w, h;

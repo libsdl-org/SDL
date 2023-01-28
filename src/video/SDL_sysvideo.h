@@ -108,10 +108,10 @@ struct SDL_Window
     SDL_Window *prev;
     SDL_Window *next;
 };
-#define FULLSCREEN_VISIBLE(W)                \
-    (((W)->flags & SDL_WINDOW_FULLSCREEN) && \
-     !((W)->flags & SDL_WINDOW_HIDDEN) &&      \
-     !((W)->flags & SDL_WINDOW_MINIMIZED))
+#define SDL_WINDOW_FULLSCREEN_VISIBLE(W)        \
+    ((((W)->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) &&   \
+     (((W)->flags & SDL_WINDOW_HIDDEN) == 0) && \
+     (((W)->flags & SDL_WINDOW_MINIMIZED) == 0))
 
 /*
  * Define the SDL display structure.

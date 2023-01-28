@@ -2326,3 +2326,7 @@ expression e;
 - SDL_GetDisplayDPI
 + SDL_GetDisplayPhysicalDPI
   (...)
+@@
+@@
+- SDL_WINDOW_FULLSCREEN
++ SDL_WINDOW_FULLSCREEN_EXCLUSIVE

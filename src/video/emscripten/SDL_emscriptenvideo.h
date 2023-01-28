@@ -41,7 +41,7 @@ typedef struct SDL_WindowData
 
     SDL_bool external_size;
 
-    int requested_fullscreen_mode;
+    Uint32 fullscreen_mode_flags;
     SDL_bool fullscreen_resize;
 
     SDL_bool has_pointer_lock;

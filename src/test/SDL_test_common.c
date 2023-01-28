@@ -242,7 +242,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--fullscreen") == 0) {
-        state->window_flags |= SDL_WINDOW_FULLSCREEN;
+        state->window_flags |= SDL_WINDOW_FULLSCREEN_EXCLUSIVE;
         state->num_windows = 1;
         return 1;
     }
@@ -256,7 +256,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
         if (!argv[index] || !SDL_isdigit((unsigned char)*argv[index])) {
             return -1;
         }
-        if (!(state->window_flags & SDL_WINDOW_FULLSCREEN)) {
+        if ((state->window_flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
             state->num_windows = SDL_atoi(argv[index]);
         }
         return 2;
@@ -676,8 +676,8 @@ static void SDLTest_PrintDisplayOrientation(char *text, size_t maxlen, SDL_Displ
 static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
 {
     switch (flag) {
-    case SDL_WINDOW_FULLSCREEN:
-        SDL_snprintfcat(text, maxlen, "FULLSCREEN");
+    case SDL_WINDOW_FULLSCREEN_EXCLUSIVE:
+        SDL_snprintfcat(text, maxlen, "FULLSCREEN_EXCLUSIVE");
         break;
     case SDL_WINDOW_OPENGL:
         SDL_snprintfcat(text, maxlen, "OPENGL");
@@ -748,7 +748,7 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
 static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
 {
     const Uint32 window_flags[] = {
-        SDL_WINDOW_FULLSCREEN,
+        SDL_WINDOW_FULLSCREEN_EXCLUSIVE,
         SDL_WINDOW_OPENGL,
         SDL_WINDOW_HIDDEN,
         SDL_WINDOW_BORDERLESS,
@@ -1730,13 +1730,13 @@ static void FullscreenTo(int index, int windowId)
     SDL_GetDisplayBounds(index, &rect);
 
     flags = SDL_GetWindowFlags(window);
-    if (flags & SDL_WINDOW_FULLSCREEN) {
+    if ((flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
         SDL_SetWindowFullscreen(window, 0);
         SDL_Delay(15);
     }
 
     SDL_SetWindowPosition(window, rect.x, rect.y);
-    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_EXCLUSIVE);
 }
 
 void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done)
@@ -2015,10 +2015,10 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
                     Uint32 flags = SDL_GetWindowFlags(window);
-                    if (flags & SDL_WINDOW_FULLSCREEN) {
-                        SDL_SetWindowFullscreen(window, SDL_FALSE);
+                    if ((flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+                        SDL_SetWindowFullscreen(window, 0);
                     } else {
-                        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+                        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_EXCLUSIVE);
                     }
                 }
             } else if (withAlt) {
@@ -2026,8 +2026,8 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
                     Uint32 flags = SDL_GetWindowFlags(window);
-                    if (flags & SDL_WINDOW_FULLSCREEN) {
-                        SDL_SetWindowFullscreen(window, SDL_FALSE);
+                    if ((flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+                        SDL_SetWindowFullscreen(window, 0);
                     } else {
                         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
                     }
@@ -2037,8 +2037,8 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
                     Uint32 flags = SDL_GetWindowFlags(window);
-                    if ((flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
-                        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+                    if ((flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
+                        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_EXCLUSIVE);
                     } else {
                         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
                     }

@@ -253,7 +253,7 @@ int video_createWindowVariousFlags(void *arg)
         switch (fVariation) {
         default:
         case 0:
-            flags = SDL_WINDOW_FULLSCREEN;
+            flags = SDL_WINDOW_FULLSCREEN_EXCLUSIVE;
             /* Skip - blanks screen; comment out next line to run test */
             continue;
             break;

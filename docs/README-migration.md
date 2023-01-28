@@ -977,6 +977,7 @@ The following functions have been renamed:
 
 SDL_Window id type is named SDL_WindowID
 
+SDL_WINDOW_FULLSCREEN has been renamed SDL_WINDOW_FULLSCREEN_EXCLUSIVE, and SDL_WINDOW_FULLSCREEN_DESKTOP no longer includes the old SDL_WINDOW_FULLSCREEN flag. You can use `(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_MASK) != 0` if you want to check for either state.
 
 ## SDL_vulkan.h
 

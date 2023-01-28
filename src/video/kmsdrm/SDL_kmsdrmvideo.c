@@ -1117,7 +1117,7 @@ static void KMSDRM_GetModeToSet(SDL_Window *window, drmModeModeInfo *out_mode)
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_EXCLUSIVE) != 0) {
         *out_mode = dispdata->fullscreen_mode;
     } else {
         drmModeModeInfo *mode;

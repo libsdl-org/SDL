@@ -133,26 +133,26 @@ void X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
        If we did, this would indicate to the window manager that we don't
        actually want to be mapped during X11_XMapRaised(), which would be bad.
      *
-    if (flags & SDL_WINDOW_HIDDEN) {
+    if ((flags & SDL_WINDOW_HIDDEN) != 0) {
         atoms[count++] = _NET_WM_STATE_HIDDEN;
     }
     */
 
-    if (flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+    if ((flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0) {
         atoms[count++] = _NET_WM_STATE_ABOVE;
     }
-    if (flags & SDL_WINDOW_SKIP_TASKBAR) {
+    if ((flags & SDL_WINDOW_SKIP_TASKBAR) != 0) {
         atoms[count++] = _NET_WM_STATE_SKIP_TASKBAR;
         atoms[count++] = _NET_WM_STATE_SKIP_PAGER;
     }
-    if (flags & SDL_WINDOW_INPUT_FOCUS) {
+    if ((flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
         atoms[count++] = _NET_WM_STATE_FOCUSED;
     }
-    if (flags & SDL_WINDOW_MAXIMIZED) {
+    if ((flags & SDL_WINDOW_MAXIMIZED) != 0) {
         atoms[count++] = _NET_WM_STATE_MAXIMIZED_VERT;
         atoms[count++] = _NET_WM_STATE_MAXIMIZED_HORZ;
     }
-    if (flags & SDL_WINDOW_FULLSCREEN) {
+    if ((flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
         atoms[count++] = _NET_WM_STATE_FULLSCREEN;
     }
 
@@ -207,7 +207,13 @@ X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow)
         }
 
         if (fullscreen == 1) {
-            flags |= SDL_WINDOW_FULLSCREEN;
+            if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+                /* Pick whatever state the window expects */
+                flags |= (window->flags & SDL_WINDOW_FULLSCREEN_MASK);
+            } else {
+                /* Assume we're fullscreen desktop */
+                flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+            }
         }
 
         if (maximized == 3) {
@@ -1236,7 +1242,7 @@ static void X11_SetWindowMaximized(_THIS, SDL_Window *window, SDL_bool maximized
     } else {
         window->flags &= ~SDL_WINDOW_MAXIMIZED;
 
-        if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+        if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
             /* Fullscreen windows are maximized on some window managers,
                and this is functional behavior, so don't remove that state
                now, we'll take care of it when we leave fullscreen mode.
@@ -1417,9 +1423,11 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
 
         flags = window->flags;
         if (fullscreen) {
-            flags |= SDL_WINDOW_FULLSCREEN;
+            if ((flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
+                flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+            }
         } else {
-            flags &= ~SDL_WINDOW_FULLSCREEN;
+            flags &= ~SDL_WINDOW_FULLSCREEN_MASK;
         }
         X11_SetNetWMState(_this, data->xwindow, flags);
     }

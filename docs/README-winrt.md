@@ -343,7 +343,7 @@ int main(int argc, char **argv)
         return 1;
     } else if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {
         return 1;
-    } else if (SDL_CreateWindowAndRenderer(mode.w, mode.h, SDL_WINDOW_FULLSCREEN, &window, &renderer) != 0) {
+    } else if (SDL_CreateWindowAndRenderer(mode.w, mode.h, SDL_WINDOW_FULLSCREEN_EXCLUSIVE, &window, &renderer) != 0) {
         return 1;
     }
     

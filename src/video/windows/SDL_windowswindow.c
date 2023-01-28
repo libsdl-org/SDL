@@ -73,27 +73,27 @@ static DWORD GetWindowStyle(SDL_Window *window)
 {
     DWORD style = 0;
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
         style |= STYLE_FULLSCREEN;
     } else {
-        if (window->flags & SDL_WINDOW_BORDERLESS) {
+        if ((window->flags & SDL_WINDOW_BORDERLESS) != 0) {
             style |= STYLE_BORDERLESS_WINDOWED;
         } else {
             style |= STYLE_NORMAL;
         }
 
-        if (window->flags & SDL_WINDOW_RESIZABLE) {
+        if ((window->flags & SDL_WINDOW_RESIZABLE) != 0) {
             /* You can have a borderless resizable window, but Windows doesn't always draw it correctly,
                see https://bugzilla.libsdl.org/show_bug.cgi?id=4466
              */
-            if (!(window->flags & SDL_WINDOW_BORDERLESS) ||
+            if ((window->flags & SDL_WINDOW_BORDERLESS) == 0 ||
                 SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", SDL_FALSE)) {
                 style |= STYLE_RESIZABLE;
             }
         }
 
         /* Need to set initialize minimize style, or when we call ShowWindow with WS_MINIMIZE it will activate a random window */
-        if (window->flags & SDL_WINDOW_MINIMIZED) {
+        if ((window->flags & SDL_WINDOW_MINIMIZED) != 0) {
             style |= WS_MINIMIZE;
         }
     }
@@ -908,7 +908,7 @@ void WIN_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *displa
     int x, y;
     int w, h;
 
-    if (!fullscreen && (window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0) {
+    if (!fullscreen && (window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
         /* Resizing the window on hide causes problems restoring it in Wine, and it's unnecessary.
          * Also, Windows would preview the minimized window with the wrong size.
          */
