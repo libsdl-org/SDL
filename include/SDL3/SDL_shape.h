@@ -56,7 +56,7 @@ extern "C" {
  * \param h The height of the window.
  * \param flags The flags for the window, a mask of SDL_WINDOW_BORDERLESS with
  *              any of the following: ::SDL_WINDOW_OPENGL,
- *              ::SDL_WINDOW_INPUT_GRABBED, ::SDL_WINDOW_HIDDEN,
+ *              ::SDL_WINDOW_MOUSE_GRABBED, ::SDL_WINDOW_HIDDEN,
  *              ::SDL_WINDOW_RESIZABLE, ::SDL_WINDOW_MAXIMIZED,
  *              ::SDL_WINDOW_MINIMIZED, ::SDL_WINDOW_BORDERLESS is always set,
  *              and ::SDL_WINDOW_FULLSCREEN_MASK is always unset.

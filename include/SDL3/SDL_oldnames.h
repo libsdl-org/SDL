@@ -416,6 +416,7 @@
 #define SDL_GetPointDisplayIndex SDL_GetDisplayIndexForPoint
 #define SDL_GetRectDisplayIndex SDL_GetDisplayIndexForRect
 #define SDL_WINDOW_FULLSCREEN SDL_WINDOW_FULLSCREEN_EXCLUSIVE
+#define SDL_WINDOW_INPUT_GRABBED SDL_WINDOW_MOUSE_GRABBED
 
 #elif !defined(SDL_DISABLE_OLD_NAMES)
 
@@ -797,6 +798,7 @@
 #define SDL_GetPointDisplayIndex SDL_GetPointDisplayIndex_renamed_SDL_GetDisplayIndexForPoint
 #define SDL_GetRectDisplayIndex SDL_GetRectDisplayIndex_renamed_SDL_GetDisplayIndexForRect
 #define SDL_WINDOW_FULLSCREEN SDL_WINDOW_FULLSCREEN_renamed_SDL_WINDOW_FULLSCREEN_EXCLUSIVE
+#define SDL_WINDOW_INPUT_GRABBED SDL_WINDOW_INPUT_GRABBED_renamed_SDL_WINDOW_MOUSE_GRABBED
 
 #endif /* SDL_ENABLE_OLD_NAMES */
 

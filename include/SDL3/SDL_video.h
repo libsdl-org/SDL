@@ -131,7 +131,6 @@ typedef enum
     SDL_WINDOW_VULKAN               = 0x10000000,   /**< window usable for Vulkan surface */
     SDL_WINDOW_METAL                = 0x20000000,   /**< window usable for Metal view */
 
-    SDL_WINDOW_INPUT_GRABBED = SDL_WINDOW_MOUSE_GRABBED /**< equivalent to SDL_WINDOW_MOUSE_GRABBED for compatibility */
 } SDL_WindowFlags;
 
 #define SDL_WINDOW_FULLSCREEN_MASK  (SDL_WINDOW_FULLSCREEN_EXCLUSIVE | SDL_WINDOW_FULLSCREEN_DESKTOP)
@@ -658,7 +657,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * - `SDL_WINDOW_RESIZABLE`: window can be resized
  * - `SDL_WINDOW_MINIMIZED`: window is minimized
  * - `SDL_WINDOW_MAXIMIZED`: window is maximized
- * - `SDL_WINDOW_INPUT_GRABBED`: window has grabbed input focus
+ * - `SDL_WINDOW_MOUSE_GRABBED`: window has grabbed mouse focus
  *
  * The SDL_Window is implicitly shown if SDL_WINDOW_HIDDEN is not set.
  *
