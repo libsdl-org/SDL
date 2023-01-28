@@ -46,6 +46,9 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
     if (window == NULL) {
         return 0;
     }
+    if (window->is_destroying) {
+        return 0;
+    }
     switch (windowevent) {
     case SDL_EVENT_WINDOW_SHOWN:
         if (!(window->flags & SDL_WINDOW_HIDDEN)) {

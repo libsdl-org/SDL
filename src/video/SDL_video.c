@@ -3001,10 +3001,6 @@ void SDL_CheckWindowDisplayChanged(SDL_Window *window)
 {
     int display_index;
 
-    if (window->is_destroying) {
-        return;
-    }
-
     display_index = SDL_GetWindowDisplayIndex(window);
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DISPLAY_CHANGED, display_index, 0);
 }
