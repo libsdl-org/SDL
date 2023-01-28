@@ -84,7 +84,7 @@ SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window *window)
     EGLCHK(display = eglGetDisplay(0));
     EGLCHK(eglInitialize(display, NULL, NULL));
     wdata->uses_gles = SDL_TRUE;
-    window->flags |= SDL_WINDOW_FULLSCREEN;
+    window->flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 
     /* Setup the config based on SDL's current values. */
     i = 0;

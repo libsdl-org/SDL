@@ -33,8 +33,6 @@
 #include "SDL_emscriptenevents.h"
 #include "SDL_emscriptenvideo.h"
 
-#define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)
-
 /*
 .keyCode to SDL keycode
 https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
@@ -838,11 +836,11 @@ static EM_BOOL Emscripten_HandleFullscreenChange(int eventType, const Emscripten
     SDL_VideoDisplay *display;
 
     if (fullscreenChangeEvent->isFullscreen) {
-        window_data->window->flags |= window_data->requested_fullscreen_mode;
+        window_data->window->flags |= window_data->fullscreen_mode_flags;
 
-        window_data->requested_fullscreen_mode = 0;
+        window_data->fullscreen_mode_flags = 0;
     } else {
-        window_data->window->flags &= ~FULLSCREEN_MASK;
+        window_data->window->flags &= ~SDL_WINDOW_FULLSCREEN_MASK;
 
         /* reset fullscreen window if the browser left fullscreen */
         display = SDL_GetDisplayForWindow(window_data->window);
@@ -868,7 +866,7 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
         }
     }
 
-    if (!(window_data->window->flags & FULLSCREEN_MASK)) {
+    if ((window_data->window->flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
         /* this will only work if the canvas size is set through css */
         if (window_data->window->flags & SDL_WINDOW_RESIZABLE) {
             double w = window_data->window->w;

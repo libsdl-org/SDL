@@ -88,7 +88,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
     SDLTest_DrawString(renderer, x, y, text);
     y += lineHeight;
 
-    SDL_strlcpy(text, "Press Ctrl+Enter to toggle SDL_WINDOW_FULLSCREEN", sizeof text);
+    SDL_strlcpy(text, "Press Ctrl+Enter to toggle SDL_WINDOW_FULLSCREEN_EXCLUSIVE", sizeof text);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDLTest_DrawString(renderer, x, y, text);
     y += lineHeight;

@@ -294,7 +294,7 @@ static int D3D_ActivateRenderer(SDL_Renderer *renderer)
         SDL_GetWindowSizeInPixels(window, &w, &h);
         data->pparams.BackBufferWidth = w;
         data->pparams.BackBufferHeight = h;
-        if (window_flags & SDL_WINDOW_FULLSCREEN && (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        if ((window_flags & SDL_WINDOW_FULLSCREEN_EXCLUSIVE) != 0) {
             SDL_DisplayMode fullscreen_mode;
             SDL_GetWindowDisplayMode(window, &fullscreen_mode);
             data->pparams.Windowed = FALSE;
@@ -1623,7 +1623,7 @@ D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     pparams.BackBufferCount = 1;
     pparams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 
-    if (window_flags & SDL_WINDOW_FULLSCREEN && (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+    if ((window_flags & SDL_WINDOW_FULLSCREEN_EXCLUSIVE) != 0) {
         pparams.Windowed = FALSE;
         pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
         pparams.FullScreen_RefreshRateInHz = (UINT)SDL_ceilf(fullscreen_mode.refresh_rate);

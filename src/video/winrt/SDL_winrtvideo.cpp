@@ -492,7 +492,7 @@ void WINRT_VideoQuit(_THIS)
     WINRT_QuitMouse(_this);
 }
 
-static const Uint32 WINRT_DetectableFlags = SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_HIDDEN | SDL_WINDOW_MOUSE_FOCUS;
+static const Uint32 WINRT_DetectableFlags = SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN_MASK | SDL_WINDOW_HIDDEN | SDL_WINDOW_MOUSE_FOCUS;
 
 extern "C" Uint32
 WINRT_DetectWindowFlags(SDL_Window *window)
@@ -568,7 +568,7 @@ void WINRT_UpdateWindowFlags(SDL_Window *window, Uint32 mask)
     mask &= WINRT_DetectableFlags;
     if (window) {
         Uint32 apply = WINRT_DetectWindowFlags(window);
-        if ((apply & mask) & SDL_WINDOW_FULLSCREEN) {
+        if (((apply & mask) & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
             window->last_fullscreen_flags = window->flags; // seems necessary to programmatically un-fullscreen, via SDL APIs
         }
         window->flags = (window->flags & ~mask) | (apply & mask);
@@ -716,9 +716,8 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
            mode apps, try this.
         */
         bool didSetSize = false;
-        if (!(requestedFlags & SDL_WINDOW_FULLSCREEN)) {
-            const Windows::Foundation::Size size(WINRT_PHYSICAL_PIXELS_TO_DIPS(window->w),
-                                                 WINRT_PHYSICAL_PIXELS_TO_DIPS(window->h));
+        if ((requestedFlags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
+            const Windows::Foundation::Size size(window->w, window->h);
             didSetSize = data->appView->TryResizeView(size);
         }
         if (!didSetSize) {
@@ -755,8 +754,7 @@ void WINRT_SetWindowSize(_THIS, SDL_Window *window)
 {
 #if NTDDI_VERSION >= NTDDI_WIN10
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-    const Windows::Foundation::Size size(WINRT_PHYSICAL_PIXELS_TO_DIPS(window->w),
-                                         WINRT_PHYSICAL_PIXELS_TO_DIPS(window->h));
+    const Windows::Foundation::Size size(window->w, window->h);
     data->appView->TryResizeView(size); // TODO, WinRT: return failure (to caller?) from TryResizeView()
 #endif
 }

@@ -59,7 +59,7 @@ extern "C" {
  *              ::SDL_WINDOW_INPUT_GRABBED, ::SDL_WINDOW_HIDDEN,
  *              ::SDL_WINDOW_RESIZABLE, ::SDL_WINDOW_MAXIMIZED,
  *              ::SDL_WINDOW_MINIMIZED, ::SDL_WINDOW_BORDERLESS is always set,
- *              and ::SDL_WINDOW_FULLSCREEN is always unset.
+ *              and ::SDL_WINDOW_FULLSCREEN_MASK is always unset.
  * \return the window created, or NULL if window creation failed.
  *
  * \since This function is available since SDL 3.0.0.

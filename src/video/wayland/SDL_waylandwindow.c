@@ -44,7 +44,6 @@
 #include <libdecor.h>
 #endif
 
-#define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)
 
 SDL_FORCE_INLINE SDL_bool FloatEqual(float a, float b)
 {
@@ -70,7 +69,7 @@ static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height,
      * If the application is DPI aware, it will need to handle the transformations between the
      * differently sized window and backbuffer spaces on its own.
      */
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
         fs_width = output_width;
         fs_height = output_height;
 
@@ -113,8 +112,7 @@ static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height,
 
 SDL_FORCE_INLINE SDL_bool FullscreenModeEmulation(SDL_Window *window)
 {
-    return (window->flags & SDL_WINDOW_FULLSCREEN) &&
-           ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP);
+    return ((window->flags & SDL_WINDOW_FULLSCREEN_EXCLUSIVE) != 0);
 }
 
 SDL_bool SurfaceScaleIsFractional(SDL_Window *window)
@@ -330,12 +328,12 @@ static void SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
         return;
     }
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_EXCLUSIVE) != 0) {
         min_width = 0;
         min_height = 0;
         max_width = 0;
         max_height = 0;
-    } else if (window->flags & SDL_WINDOW_RESIZABLE) {
+    } else if ((window->flags & SDL_WINDOW_RESIZABLE) != 0) {
         min_width = window->min_w;
         min_height = window->min_h;
         max_width = window->max_w;
@@ -443,18 +441,18 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
     SDL_WindowData *wind = (SDL_WindowData *)window->driverdata;
 
     if (fullscreen) {
-        if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
             /*
              * If the window was never previously made full screen, check if a particular
-             * fullscreen mode has been set for the window. If one is found, use SDL_WINDOW_FULLSCREEN,
+             * fullscreen mode has been set for the window. If one is found, use SDL_WINDOW_FULLSCREEN_EXCLUSIVE,
              * otherwise, use SDL_WINDOW_FULLSCREEN_DESKTOP.
              *
-             * If the previous flag was SDL_WINDOW_FULLSCREEN, make sure a mode is still set,
+             * If the previous flag was SDL_WINDOW_FULLSCREEN_EXCLUSIVE, make sure a mode is still set,
              * otherwise, fall back to SDL_WINDOW_FULLSCREEN_DESKTOP.
              */
             if (!wind->fullscreen_flags) {
                 if (window->fullscreen_mode.pixel_w && window->fullscreen_mode.pixel_h) {
-                    wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN;
+                    wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN_EXCLUSIVE;
                 } else {
                     wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
                 }
@@ -472,7 +470,7 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
     } else {
         /* Don't change the fullscreen flags if the window is hidden or being hidden. */
         if (!window->is_hiding && !(window->flags & SDL_WINDOW_HIDDEN)) {
-            if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
                 wind->is_fullscreen = SDL_FALSE;
 
                 wind->in_fullscreen_transition = SDL_TRUE;
@@ -1672,7 +1670,7 @@ void Wayland_SetWindowFullscreen(_THIS, SDL_Window *window,
 
     /* Save the last fullscreen flags for future requests by the compositor. */
     if (fullscreen) {
-        wind->fullscreen_flags = window->flags & FULLSCREEN_MASK;
+        wind->fullscreen_flags = (window->flags & SDL_WINDOW_FULLSCREEN_MASK);
     }
 
     /* Don't send redundant fullscreen set/unset events. */
