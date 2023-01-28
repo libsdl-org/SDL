@@ -271,7 +271,7 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
 
     mode.pixel_w = w;
     mode.pixel_h = h;
-    mode.display_scale = uiscreen.scale;
+    mode.display_scale = uiscreen.nativeScale;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
@@ -300,10 +300,32 @@ static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h,
     return 0;
 }
 
+static CGSize GetUIScreenModePixelSize(UIScreen *uiscreen, UIScreenMode *mode)
+{
+    /* For devices such as iPhone 6/7/8 Plus, the UIScreenMode reported by iOS
+     * isn't the physical pixels of the display, but rather the point size times
+     * the scale. For example, on iOS 12.2 on iPhone 8 Plus the physical pixel
+     * resolution is 1080x1920, the size reported by mode.size is 1242x2208,
+     * the size in points is 414x736, the scale property is 3.0, and the
+     * nativeScale property is ~2.6087 (ie 1920.0 / 736.0). So we need a bit of
+     * math to convert from retina pixels (point size multiplied by scale) to
+     * real pixels.
+     * Note that the iOS Simulator doesn't have this behavior for those devices.
+     * https://github.com/libsdl-org/SDL/issues/3220
+     */
+    CGSize size = mode.size;
+    CGFloat scale = uiscreen.nativeScale / uiscreen.scale;
+
+    size.width = SDL_round(size.width * scale);
+    size.height = SDL_round(size.height * scale);
+
+    return size;
+}
+
 int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 {
     UIScreenMode *uiscreenmode = uiscreen.currentMode;
-    CGSize size = uiscreenmode.size;
+    CGSize size = GetUIScreenModePixelSize(uiscreen, uiscreenmode);
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
 
@@ -406,8 +428,9 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 #endif
 
         for (UIScreenMode *uimode in availableModes) {
-            int w = uimode.size.width;
-            int h = uimode.size.height;
+            CGSize size = GetUIScreenModePixelSize(data.uiscreen, uimode);
+            int w = size.width;
+            int h = size.height;
 
             /* Make sure the width/height are oriented correctly */
             if (isLandscape != (w > h)) {
