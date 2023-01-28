@@ -683,8 +683,8 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
              * window display changes as well! If the new display has a new DPI,
              * we need to update the viewport for the new window/drawable ratio.
              */
-            if (event->type == SDL_EVENT_WINDOW_SIZE_CHANGED ||
-                event->type == SDL_EVENT_WINDOW_DISPLAY_CHANGED) {
+            if (event->type == SDL_EVENT_WINDOW_RESIZED ||
+                event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
                 /* Make sure we're operating on the default render target */
                 SDL_Texture *saved_target = SDL_GetRenderTarget(renderer);
                 if (saved_target) {

@@ -237,7 +237,7 @@ void SDL_WinRTApp::OnOrientationChanged(Object ^ sender)
         SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
         int w = (int)SDL_floorf(data->coreWindow->Bounds.Width);
         int h = (int)SDL_floorf(data->coreWindow->Bounds.Height);
-        SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_SIZE_CHANGED, w, h);
+        SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_RESIZED, w, h);
     }
 #endif
 }

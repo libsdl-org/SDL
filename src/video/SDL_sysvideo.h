@@ -76,6 +76,7 @@ struct SDL_Window
     int w, h;
     int min_w, min_h;
     int max_w, max_h;
+    int last_pixel_w, last_pixel_h;
     Uint32 flags;
     Uint32 last_fullscreen_flags;
     Uint32 display_index;
@@ -498,6 +499,8 @@ extern void SDL_OnWindowShown(SDL_Window *window);
 extern void SDL_OnWindowHidden(SDL_Window *window);
 extern void SDL_OnWindowMoved(SDL_Window *window);
 extern void SDL_OnWindowResized(SDL_Window *window);
+extern void SDL_CheckWindowPixelSizeChanged(SDL_Window *window);
+extern void SDL_OnWindowPixelSizeChanged(SDL_Window *window);
 extern void SDL_OnWindowMinimized(SDL_Window *window);
 extern void SDL_OnWindowRestored(SDL_Window *window);
 extern void SDL_OnWindowEnter(SDL_Window *window);

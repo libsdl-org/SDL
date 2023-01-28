@@ -324,7 +324,7 @@ static void GL_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
      * changed behind our backs. x/y changes might seem weird but viewport
      * resets have been observed on macOS at minimum!
      */
-    if (event->type == SDL_EVENT_WINDOW_SIZE_CHANGED ||
+    if (event->type == SDL_EVENT_WINDOW_RESIZED ||
         event->type == SDL_EVENT_WINDOW_MOVED) {
         GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
         data->drawstate.viewport_dirty = SDL_TRUE;
