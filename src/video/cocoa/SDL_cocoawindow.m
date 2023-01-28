@@ -22,9 +22,9 @@
 
 #if SDL_VIDEO_DRIVER_COCOA
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
-#error SDL for macOS must be built with a 10.7 SDK or above.
-#endif /* MAC_OS_X_VERSION_MAX_ALLOWED < 1070 */
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 1090
+#error SDL for macOS must be built with a 10.9 SDK or above.
+#endif /* MAC_OS_X_VERSION_MAX_ALLOWED < 1090 */
 
 #include <float.h>              /* For FLT_MAX */
 
