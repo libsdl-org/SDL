@@ -331,7 +331,7 @@ static void D3D_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
 
-    if (event->type == SDL_EVENT_WINDOW_SIZE_CHANGED) {
+    if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         data->updateSize = SDL_TRUE;
     }
 }

@@ -2311,7 +2311,6 @@ void SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
             } else {
                 window->flags &= ~SDL_WINDOW_ALWAYS_ON_TOP;
             }
-
             _this->SetWindowAlwaysOnTop(_this, window, (SDL_bool)want);
         }
     }
@@ -2353,16 +2352,8 @@ void SDL_SetWindowSize(SDL_Window *window, int w, int h)
             SDL_UpdateFullscreenMode(window, SDL_TRUE);
         }
     } else {
-        int old_w = window->w;
-        int old_h = window->h;
-        window->w = w;
-        window->h = h;
         if (_this->SetWindowSize) {
             _this->SetWindowSize(_this, window);
-        }
-        if (window->w != old_w || window->h != old_h) {
-            /* We didn't get a SDL_EVENT_WINDOW_RESIZED event (by design) */
-            SDL_OnWindowResized(window);
         }
     }
 }
@@ -3006,20 +2997,33 @@ void SDL_OnWindowHidden(SDL_Window *window)
     SDL_UpdateFullscreenMode(window, SDL_FALSE);
 }
 
+void SDL_CheckWindowDisplayChanged(SDL_Window *window)
+{
+    int display_index;
+
+    if (window->is_destroying) {
+        return;
+    }
+
+    display_index = SDL_GetWindowDisplayIndex(window);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DISPLAY_CHANGED, display_index, 0);
+}
+
 void SDL_OnWindowDisplayChanged(SDL_Window *window)
 {
     if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
-        SDL_Rect rect;
-
         if (SDL_WINDOW_FULLSCREEN_VISIBLE(window) && (window->flags & SDL_WINDOW_FULLSCREEN_EXCLUSIVE) != 0) {
             window->last_fullscreen_flags = 0;
 
             if (SDL_UpdateFullscreenMode(window, SDL_TRUE) != 0) {
                 /* Something went wrong and the window is no longer fullscreen. */
-                window->flags &= ~SDL_WINDOW_FULLSCREEN_MASK;
-                return;
+                window->flags &= ~SDL_WINDOW_FULLSCREEN_EXCLUSIVE;
             }
         }
+    }
+
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+        SDL_Rect rect;
 
         /*
          * If mode switching is being emulated, the display bounds don't necessarily reflect the
@@ -3044,31 +3048,32 @@ void SDL_OnWindowDisplayChanged(SDL_Window *window)
             }
         }
     }
-}
 
-void SDL_OnWindowResized(SDL_Window *window)
-{
-    int display_index = SDL_GetWindowDisplayIndex(window);
-    window->surface_valid = SDL_FALSE;
-
-    if (!window->is_destroying) {
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SIZE_CHANGED, window->w, window->h);
-
-        if (display_index != window->display_index && display_index != -1) {
-            window->display_index = display_index;
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DISPLAY_CHANGED, window->display_index, 0);
-        }
-    }
+    SDL_CheckWindowPixelSizeChanged(window);
 }
 
 void SDL_OnWindowMoved(SDL_Window *window)
 {
-    int display_index = SDL_GetWindowDisplayIndex(window);
+    SDL_CheckWindowDisplayChanged(window);
+}
 
-    if (!window->is_destroying && display_index != window->display_index && display_index != -1) {
-        window->display_index = display_index;
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DISPLAY_CHANGED, window->display_index, 0);
-    }
+void SDL_OnWindowResized(SDL_Window *window)
+{
+    SDL_CheckWindowDisplayChanged(window);
+    SDL_CheckWindowPixelSizeChanged(window);
+}
+
+void SDL_CheckWindowPixelSizeChanged(SDL_Window *window)
+{
+    int pixel_w = 0, pixel_h = 0;
+
+    SDL_GetWindowSizeInPixels(window, &pixel_w, &pixel_h);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED, pixel_w, pixel_h);
+}
+
+void SDL_OnWindowPixelSizeChanged(SDL_Window *window)
+{
+    window->surface_valid = SDL_FALSE;
 }
 
 void SDL_OnWindowMinimized(SDL_Window *window)

@@ -25,50 +25,14 @@
 #include "SDL_events_c.h"
 #include "SDL_mouse_c.h"
 
-typedef struct RemovePendingSizeChangedAndResizedEvents_Data
-{
-    const SDL_Event *new_event;
-    SDL_bool saw_resized;
-} RemovePendingSizeChangedAndResizedEvents_Data;
 
-static int SDLCALL RemovePendingSizeChangedAndResizedEvents(void *_userdata, SDL_Event *event)
-{
-    RemovePendingSizeChangedAndResizedEvents_Data *userdata = (RemovePendingSizeChangedAndResizedEvents_Data *)_userdata;
-    const SDL_Event *new_event = userdata->new_event;
-
-    if ((event->type == SDL_EVENT_WINDOW_SIZE_CHANGED ||
-         event->type == SDL_EVENT_WINDOW_RESIZED) &&
-        event->window.windowID == new_event->window.windowID) {
-
-        if (event->type == SDL_EVENT_WINDOW_RESIZED) {
-            userdata->saw_resized = SDL_TRUE;
-        }
-
-        /* We're about to post a new size event, drop the old one */
-        return 0;
-    }
-    return 1;
-}
-
-static int SDLCALL RemovePendingMoveEvents(void *userdata, SDL_Event *event)
+static int SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
-    if (event->type == SDL_EVENT_WINDOW_MOVED &&
+    if (event->type == new_event->type &&
         event->window.windowID == new_event->window.windowID) {
         /* We're about to post a new move event, drop the old one */
-        return 0;
-    }
-    return 1;
-}
-
-static int SDLCALL RemovePendingExposedEvents(void *userdata, SDL_Event *event)
-{
-    SDL_Event *new_event = (SDL_Event *)userdata;
-
-    if (event->type == SDL_EVENT_WINDOW_EXPOSED &&
-        event->window.windowID == new_event->window.windowID) {
-        /* We're about to post a new exposed event, drop the old one */
         return 0;
     }
     return 1;
@@ -119,11 +83,20 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
             window->windowed.h = data2;
         }
         if (data1 == window->w && data2 == window->h) {
+            SDL_CheckWindowPixelSizeChanged(window);
             return 0;
         }
         window->w = data1;
         window->h = data2;
         SDL_OnWindowResized(window);
+        break;
+    case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+        if (data1 == window->last_pixel_w && data2 == window->last_pixel_h) {
+            return 0;
+        }
+        window->last_pixel_w = data1;
+        window->last_pixel_h = data2;
+        SDL_OnWindowPixelSizeChanged(window);
         break;
     case SDL_EVENT_WINDOW_MINIMIZED:
         if (window->flags & SDL_WINDOW_MINIMIZED) {
@@ -176,7 +149,10 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         SDL_OnWindowFocusLost(window);
         break;
     case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-        SDL_assert(data1 == window->display_index);
+        if (data1 < 0 || data1 == window->display_index) {
+            return 0;
+        }
+        window->display_index = data1;
         SDL_OnWindowDisplayChanged(window);
         break;
     default:
@@ -193,26 +169,12 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         event.window.data2 = data2;
         event.window.windowID = window->id;
 
-        /* Fixes queue overflow with resize events that aren't processed */
-        if (windowevent == SDL_EVENT_WINDOW_SIZE_CHANGED) {
-            /* !!! FIXME: in SDL3, let's make RESIZED/SIZE_CHANGED into one event with a flag to distinguish between them, and remove all this tapdancing. */
-            RemovePendingSizeChangedAndResizedEvents_Data userdata;
-            userdata.new_event = &event;
-            userdata.saw_resized = SDL_FALSE;
-            SDL_FilterEvents(RemovePendingSizeChangedAndResizedEvents, &userdata);
-            if (userdata.saw_resized) { /* if there was a pending resize, make sure one at the new dimensions remains. */
-                event.type = SDL_EVENT_WINDOW_RESIZED;
-                if (SDL_PushEvent(&event) <= 0) {
-                    return 0; /* oh well. */
-                }
-                event.type = SDL_EVENT_WINDOW_SIZE_CHANGED; /* then push the actual event next. */
-            }
-        }
-        if (windowevent == SDL_EVENT_WINDOW_MOVED) {
-            SDL_FilterEvents(RemovePendingMoveEvents, &event);
-        }
-        if (windowevent == SDL_EVENT_WINDOW_EXPOSED) {
-            SDL_FilterEvents(RemovePendingExposedEvents, &event);
+        /* Fixes queue overflow with move/resize events that aren't processed */
+        if (windowevent == SDL_EVENT_WINDOW_MOVED ||
+            windowevent == SDL_EVENT_WINDOW_RESIZED ||
+            windowevent == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED ||
+            windowevent == SDL_EVENT_WINDOW_EXPOSED) {
+            SDL_FilterEvents(RemoveSupercededWindowEvents, &event);
         }
         posted = (SDL_PushEvent(&event) > 0);
     }
