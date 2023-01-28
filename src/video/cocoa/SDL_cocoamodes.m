@@ -170,13 +170,11 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
      * modes that have duplicate sizes. We don't just rely on SDL's higher level
      * duplicate filtering because this code can choose what properties are
      * prefered, and it can add CGDisplayModes to the DisplayModeData's list of
-     * modes to try (see comment below for why that's necessary).
-     * CGDisplayModeGetPixelWidth and friends are only available in 10.8+. */
-#ifdef MAC_OS_X_VERSION_10_8
+     * modes to try (see comment below for why that's necessary). */
     pixelW = CGDisplayModeGetPixelWidth(vidmode);
     pixelH = CGDisplayModeGetPixelHeight(vidmode);
 
-    if (modelist != NULL && floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_7) {
+    if (modelist != NULL) {
         CFIndex modescount = CFArrayGetCount(modelist);
         int i;
 
@@ -246,7 +244,6 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
             }
         }
     }
-#endif
 
     SDL_zerop(mode);
     data = (SDL_DisplayModeData *)SDL_malloc(sizeof(*data));
@@ -418,7 +415,6 @@ int Cocoa_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, f
         SDL_DisplayData *data = (SDL_DisplayData *)display->driverdata;
 
         /* we need the backingScaleFactor for Retina displays, which is only exposed through NSScreen, not CGDisplay, afaik, so find our screen... */
-        CGFloat scaleFactor = 1.0f;
         NSArray *screens = [NSScreen screens];
         NSSize displayNativeSize;
         displayNativeSize.width = (int)CGDisplayPixelsWide(data->display);
@@ -427,46 +423,35 @@ int Cocoa_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, f
         for (NSScreen *screen in screens) {
             const CGDirectDisplayID dpyid = (const CGDirectDisplayID)[[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
             if (dpyid == data->display) {
-#ifdef MAC_OS_X_VERSION_10_8
                 /* Neither CGDisplayScreenSize(description's NSScreenNumber) nor [NSScreen backingScaleFactor] can calculate the correct dpi in macOS. E.g. backingScaleFactor is always 2 in all display modes for rMBP 16" */
-                if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_7) {
-                    CFStringRef dmKeys[1] = { kCGDisplayShowDuplicateLowResolutionModes };
-                    CFBooleanRef dmValues[1] = { kCFBooleanTrue };
-                    CFDictionaryRef dmOptions = CFDictionaryCreate(kCFAllocatorDefault, (const void **)dmKeys, (const void **)dmValues, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-                    CFArrayRef allDisplayModes = CGDisplayCopyAllDisplayModes(dpyid, dmOptions);
-                    CFIndex n = CFArrayGetCount(allDisplayModes);
-                    for (CFIndex i = 0; i < n; ++i) {
-                        CGDisplayModeRef m = (CGDisplayModeRef)CFArrayGetValueAtIndex(allDisplayModes, i);
-                        CGFloat width = CGDisplayModeGetPixelWidth(m);
-                        CGFloat height = CGDisplayModeGetPixelHeight(m);
-                        CGFloat HiDPIWidth = CGDisplayModeGetWidth(m);
+                CFStringRef dmKeys[1] = { kCGDisplayShowDuplicateLowResolutionModes };
+                CFBooleanRef dmValues[1] = { kCFBooleanTrue };
+                CFDictionaryRef dmOptions = CFDictionaryCreate(kCFAllocatorDefault, (const void **)dmKeys, (const void **)dmValues, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+                CFArrayRef allDisplayModes = CGDisplayCopyAllDisplayModes(dpyid, dmOptions);
+                CFIndex n = CFArrayGetCount(allDisplayModes);
+                for (CFIndex i = 0; i < n; ++i) {
+                    CGDisplayModeRef m = (CGDisplayModeRef)CFArrayGetValueAtIndex(allDisplayModes, i);
+                    CGFloat width = CGDisplayModeGetPixelWidth(m);
+                    CGFloat height = CGDisplayModeGetPixelHeight(m);
+                    CGFloat HiDPIWidth = CGDisplayModeGetWidth(m);
 
-                        // Only check 1x mode
-                        if (width == HiDPIWidth) {
-                            if (CGDisplayModeGetIOFlags(m) & kDisplayModeNativeFlag) {
-                                displayNativeSize.width = width;
-                                displayNativeSize.height = height;
-                                break;
-                            }
+                    // Only check 1x mode
+                    if (width == HiDPIWidth) {
+                        if (CGDisplayModeGetIOFlags(m) & kDisplayModeNativeFlag) {
+                            displayNativeSize.width = width;
+                            displayNativeSize.height = height;
+                            break;
+                        }
 
-                            // Get the largest size even if kDisplayModeNativeFlag is not present e.g. iMac 27-Inch with 5K Retina
-                            if (width > displayNativeSize.width) {
-                                displayNativeSize.width = width;
-                                displayNativeSize.height = height;
-                            }
+                        // Get the largest size even if kDisplayModeNativeFlag is not present e.g. iMac 27-Inch with 5K Retina
+                        if (width > displayNativeSize.width) {
+                            displayNativeSize.width = width;
+                            displayNativeSize.height = height;
                         }
                     }
-                    CFRelease(allDisplayModes);
-                    CFRelease(dmOptions);
-                } else
-#endif
-                {
-                    // fallback for 10.7
-                    scaleFactor = [screen backingScaleFactor];
-                    displayNativeSize.width = displayNativeSize.width * scaleFactor;
-                    displayNativeSize.height = displayNativeSize.height * scaleFactor;
-                    break;
                 }
+                CFRelease(allDisplayModes);
+                CFRelease(dmOptions);
             }
         }
 
@@ -497,6 +482,8 @@ void Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     SDL_DisplayMode desktopmode;
     CFArrayRef modes;
     CFDictionaryRef dict = NULL;
+    const CFStringRef dictkeys[] = { kCGDisplayShowDuplicateLowResolutionModes };
+    const CFBooleanRef dictvalues[] = { kCFBooleanTrue };
 
     CVDisplayLinkCreateWithCGDisplay(data->display, &link);
 
@@ -528,18 +515,13 @@ void Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
      * the content of the screen to move up, which this setting avoids:
      * https://bugzilla.libsdl.org/show_bug.cgi?id=4822
      */
-#ifdef MAC_OS_X_VERSION_10_8
-    if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_7) {
-        const CFStringRef dictkeys[] = { kCGDisplayShowDuplicateLowResolutionModes };
-        const CFBooleanRef dictvalues[] = { kCFBooleanTrue };
-        dict = CFDictionaryCreate(NULL,
-                                  (const void **)dictkeys,
-                                  (const void **)dictvalues,
-                                  1,
-                                  &kCFCopyStringDictionaryKeyCallBacks,
-                                  &kCFTypeDictionaryValueCallBacks);
-    }
-#endif
+
+    dict = CFDictionaryCreate(NULL,
+                              (const void **)dictkeys,
+                              (const void **)dictvalues,
+                              1,
+                              &kCFCopyStringDictionaryKeyCallBacks,
+                              &kCFTypeDictionaryValueCallBacks);
 
     modes = CGDisplayCopyAllDisplayModes(data->display, dict);
 
