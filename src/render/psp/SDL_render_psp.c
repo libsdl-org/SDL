@@ -63,20 +63,52 @@ typedef struct
 typedef struct
 {
     float x, y, z;
-} VertV;
+} __attribute__ ((packed)) VertV;
 
 typedef struct
 {
     SDL_Color col;
     float x, y, z;
-} VertCV;
+} __attribute__ ((packed)) VertCV;
 
 typedef struct
 {
     float u, v;
     SDL_Color col;
     float x, y, z;
-} VertTCV;
+} __attribute__ ((packed)) VertTCV;
+
+typedef struct
+{
+    float u, v;
+    float x, y, z;
+} __attribute__ ((packed)) VertTV;
+
+typedef struct
+{
+    int width;
+    int height;
+} SliceSize;
+
+typedef enum
+{
+    SLICE_PIXEL_BITS_32,
+    SLICE_PIXEL_BITS_16,
+    SLICE_PIXEL_BITS_COUNT
+}  SlicePixelBits;
+
+#define SLICE_VALUES_COUNT 3
+typedef struct
+{
+    SlicePixelBits pixelBits;
+    SliceSize sizes[SLICE_VALUES_COUNT];
+    SliceSize condition; 
+} SliceInfo;
+
+static SliceInfo sliceInfo[SLICE_PIXEL_BITS_COUNT] = {
+    { SLICE_PIXEL_BITS_32, { { 128, 16 }, { 64, 32 }, { 32, 64 } }, { 32, 16 } },
+    { SLICE_PIXEL_BITS_16, { { 128, 32 }, { 64, 64 }, { 32, 128 } }, { 32, 32 } }
+};
 
 int SDL_PSP_RenderGetProp(SDL_Renderer *r, enum SDL_PSP_RenderProps which, void** out)
 {
@@ -169,6 +201,60 @@ static int calculateNextPow2(int value)
         i <<= 1;
     }
     return i;
+}
+
+static int calculateBestSliceSizeForTexture(SDL_Texture *texture, SliceSize *uvSize, SliceSize *sliceSize, SliceSize *sliceDimension) {
+    int i;
+    uint8_t horizontalSlices, verticalSlices;
+    int pixelBits = 0;
+    int pixelSize = SDL_BYTESPERPIXEL(texture->format);
+    SliceInfo *sliceInfoPtr = NULL;
+    SliceSize *foundSlizeSize = NULL;
+
+    switch (pixelSize) {
+        case 4:
+            sliceInfoPtr = &sliceInfo[SLICE_PIXEL_BITS_32];
+            break;
+        case 2:
+            sliceInfoPtr = &sliceInfo[SLICE_PIXEL_BITS_16];
+            break;
+        default:
+            return -1;
+    }
+
+    if (sliceInfoPtr->condition.width > uvSize->width && sliceInfoPtr->condition.height > uvSize->height) {
+        sliceSize->width = uvSize->width;
+        sliceSize->height = uvSize->height;
+        sliceDimension->width = 1;
+        sliceDimension->height = 1;
+        return 0;
+    }
+
+    if (uvSize->width >= uvSize->height) {
+        for (i = 0; i < SLICE_VALUES_COUNT; i++) {
+            if (uvSize->width >= sliceInfoPtr->sizes[i].width) {
+                foundSlizeSize = &sliceInfoPtr->sizes[i];
+                break;
+            }
+        }
+    } else {
+        for (i = SLICE_VALUES_COUNT - 1; i >= 0; i--) {
+            if (uvSize->height >= sliceInfoPtr->sizes[i].height) {
+                foundSlizeSize = &sliceInfoPtr->sizes[i];
+                break;
+            }
+        }
+    }
+
+    if (foundSlizeSize == NULL)
+        return -1;
+    
+    sliceSize->width = foundSlizeSize->width;
+    sliceSize->height = foundSlizeSize->height;
+    sliceDimension->width = ((texture->w % foundSlizeSize->width == 0) ? 0 : 1) + (texture->w / foundSlizeSize->width);
+    sliceDimension->height = ((texture->h % foundSlizeSize->height == 0) ? 0 : 1) + (texture->h / foundSlizeSize->height);
+
+    return 0;
 }
 
 static void PSP_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
