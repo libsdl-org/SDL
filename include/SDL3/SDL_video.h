@@ -647,7 +647,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  *
  * `flags` may be any of the following OR'd together:
  *
- * - `SDL_WINDOW_FULLSCREEN_EXCLUSIVE`: fullscreen window, switching display mode to the closest fullscreen resolution
+ * - `SDL_WINDOW_FULLSCREEN_EXCLUSIVE`: fullscreen window, switching display
+ *   mode to the closest fullscreen resolution
  * - `SDL_WINDOW_FULLSCREEN_DESKTOP`: fullscreen window at desktop resolution
  * - `SDL_WINDOW_OPENGL`: window usable with an OpenGL context
  * - `SDL_WINDOW_VULKAN`: window usable with a Vulkan instance
@@ -1158,12 +1159,13 @@ extern DECLSPEC void SDLCALL SDL_RestoreWindow(SDL_Window *window);
 /**
  * Set a window's fullscreen state.
  *
- * `flags` may be `SDL_WINDOW_FULLSCREEN_EXCLUSIVE`, for "real" fullscreen with a
- * videomode change; `SDL_WINDOW_FULLSCREEN_DESKTOP` for "fake" fullscreen
- * that takes the size of the desktop; and 0 for windowed mode.
+ * `flags` may be `SDL_WINDOW_FULLSCREEN_EXCLUSIVE`, for "real" fullscreen
+ * with a videomode change; `SDL_WINDOW_FULLSCREEN_DESKTOP` for "fake"
+ * fullscreen that takes the size of the desktop; and 0 for windowed mode.
  *
  * \param window the window to change
- * \param flags `SDL_WINDOW_FULLSCREEN_EXCLUSIVE`, `SDL_WINDOW_FULLSCREEN_DESKTOP` or 0
+ * \param flags `SDL_WINDOW_FULLSCREEN_EXCLUSIVE`,
+ *              `SDL_WINDOW_FULLSCREEN_DESKTOP` or 0
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
