@@ -1051,6 +1051,11 @@ SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
             SDL_GetWindowSize(renderer->window, &window_w, &window_h);
             renderer->dpi_scale.x = (float)window_w / output_w;
             renderer->dpi_scale.y = (float)window_h / output_h;
+
+            /* Virtually expose the same size as the window */
+            if (output_w != window_w || output_h != window_h) {
+                SDL_SetRenderLogicalSize(renderer, window_w, window_h);
+            }
         }
     }
 
