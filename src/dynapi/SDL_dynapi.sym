@@ -32,7 +32,6 @@ SDL3_0.0.0 {
     SDL_BlitSurfaceScaled;
     SDL_BlitSurfaceUnchecked;
     SDL_BlitSurfaceUncheckedScaled;
-    SDL_BuildAudioCVT;
     SDL_CaptureMouse;
     SDL_ClearAudioStream;
     SDL_ClearComposition;
@@ -48,7 +47,6 @@ SDL3_0.0.0 {
     SDL_CondSignal;
     SDL_CondWait;
     SDL_CondWaitTimeout;
-    SDL_ConvertAudio;
     SDL_ConvertPixels;
     SDL_ConvertSurface;
     SDL_ConvertSurfaceFormat;
@@ -121,7 +119,6 @@ SDL3_0.0.0 {
     SDL_GL_GetAttribute;
     SDL_GL_GetCurrentContext;
     SDL_GL_GetCurrentWindow;
-    SDL_GL_GetDrawableSize;
     SDL_GL_GetProcAddress;
     SDL_GL_GetSwapInterval;
     SDL_GL_LoadLibrary;
@@ -166,7 +163,7 @@ SDL3_0.0.0 {
     SDL_GetDefaultCursor;
     SDL_GetDesktopDisplayMode;
     SDL_GetDisplayBounds;
-    SDL_GetDisplayDPI;
+    SDL_GetDisplayPhysicalDPI;
     SDL_GetDisplayIndexForPoint;
     SDL_GetDisplayIndexForRect;
     SDL_GetDisplayMode;
@@ -201,8 +198,8 @@ SDL3_0.0.0 {
     SDL_GetGamepadMappingForGUID;
     SDL_GetGamepadMappingForIndex;
     SDL_GetGamepadName;
-    SDL_GetGamepadNumTouchpadFingers;
-    SDL_GetGamepadNumTouchpads;
+    SDL_GetNumGamepadTouchpadFingers;
+    SDL_GetNumGamepadTouchpads;
     SDL_GetGamepadPath;
     SDL_GetGamepadPlayerIndex;
     SDL_GetGamepadProduct;
@@ -475,7 +472,6 @@ SDL3_0.0.0 {
     SDL_MemoryBarrierReleaseFunction;
     SDL_Metal_CreateView;
     SDL_Metal_DestroyView;
-    SDL_Metal_GetDrawableSize;
     SDL_Metal_GetLayer;
     SDL_MinimizeWindow;
     SDL_MixAudioFormat;
@@ -672,7 +668,6 @@ SDL3_0.0.0 {
     SDL_UpdateWindowSurfaceRects;
     SDL_UpdateYUVTexture;
     SDL_Vulkan_CreateSurface;
-    SDL_Vulkan_GetDrawableSize;
     SDL_Vulkan_GetInstanceExtensions;
     SDL_Vulkan_GetVkGetInstanceProcAddr;
     SDL_Vulkan_LoadLibrary;
@@ -843,6 +838,7 @@ SDL3_0.0.0 {
     SDL_PlayAudioDevice;
     SDL_aligned_alloc;
     SDL_aligned_free;
+    SDL_ConvertAudioSamples;
     # extra symbols go here (don't modify this line)
   local: *;
 };

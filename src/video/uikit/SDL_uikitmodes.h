@@ -46,7 +46,7 @@ extern int UIKit_InitModes(_THIS);
 extern int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event);
 extern void UIKit_DelDisplay(UIScreen *uiscreen);
 extern void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
-extern int UIKit_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
+extern int UIKit_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
 extern int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void UIKit_QuitModes(_THIS);
 extern int UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);

@@ -217,12 +217,11 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, U
 /**
  * Create a 2D rendering context for a window.
  *
- * If you want a specific renderer, you can specify its name here. A list
- * of available renderers can be obtained by calling SDL_GetRenderDriver
- * multiple times, with indices from 0 to SDL_GetNumRenderDrivers()-1. If
- * you don't need a specific renderer, specify NULL and SDL will attempt
- * to chooes the best option for you, based on what is available on the
- * user's system.
+ * If you want a specific renderer, you can specify its name here. A list of
+ * available renderers can be obtained by calling SDL_GetRenderDriver multiple
+ * times, with indices from 0 to SDL_GetNumRenderDrivers()-1. If you don't
+ * need a specific renderer, specify NULL and SDL will attempt to chooes the
+ * best option for you, based on what is available on the user's system.
  *
  * \param window the window where rendering is displayed
  * \param name the name of the rendering driver to initialize, or NULL to
@@ -1377,9 +1376,9 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer *renderer,
  * Update the screen with any rendering performed since the previous call.
  *
  * SDL's rendering functions operate on a backbuffer; that is, calling a
- * rendering function such as SDL_RenderLine() does not directly put a
- * line on the screen, but rather updates the backbuffer. As such, you compose
- * your entire scene and *present* the composed backbuffer to the screen as a
+ * rendering function such as SDL_RenderLine() does not directly put a line on
+ * the screen, but rather updates the backbuffer. As such, you compose your
+ * entire scene and *present* the composed backbuffer to the screen as a
  * complete picture.
  *
  * Therefore, when using SDL's rendering API, one does all drawing intended
@@ -1393,6 +1392,8 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer *renderer,
  * pixel.
  *
  * \param renderer the rendering context
+ *
+ * \threadsafety You may only call this function on the main thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1575,7 +1576,8 @@ extern DECLSPEC int SDLCALL SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync
  * Get VSync of the given renderer.
  *
  * \param renderer The renderer to toggle
- * \param vsync an int filled with 1 for on, 0 for off. All other values are reserved
+ * \param vsync an int filled with 1 for on, 0 for off. All other values are
+ *              reserved
  * \returns a 0 int on success, or non-zero on failure
  *
  * \since This function is available since SDL 3.0.0.

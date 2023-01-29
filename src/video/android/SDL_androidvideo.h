@@ -26,7 +26,7 @@
 #include "../SDL_sysvideo.h"
 
 /* Called by the JNI layer when the screen changes size or format */
-extern void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float rate);
+extern void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float density, float rate);
 extern void Android_SetFormat(int format_wanted, int format_got);
 extern void Android_SendResize(SDL_Window *window);
 
@@ -42,6 +42,7 @@ typedef struct SDL_VideoData
 
 extern int Android_SurfaceWidth;
 extern int Android_SurfaceHeight;
+extern float Android_ScreenDensity;
 extern SDL_sem *Android_PauseSem, *Android_ResumeSem;
 extern SDL_mutex *Android_ActivityMutex;
 

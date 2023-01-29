@@ -219,6 +219,9 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
         return;
     }
 
+    x /= Android_ScreenDensity;
+    y /= Android_ScreenDensity;
+
     switch (action) {
     case ACTION_DOWN:
         changes = state & ~last_state;

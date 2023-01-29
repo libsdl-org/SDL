@@ -156,7 +156,7 @@ static void SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)
     int events;
     ASensorEvent event;
     struct android_poll_source *source;
-    Uint64 timestamp = SDL_GetTicks();
+    Uint64 timestamp = SDL_GetTicksNS();
 
     if (ALooper_pollAll(0, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
         SDL_zero(event);

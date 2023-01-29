@@ -156,17 +156,6 @@ SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
         extensionsForKMSDRM);
 }
 
-void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    if (w) {
-        *w = window->w;
-    }
-
-    if (h) {
-        *h = window->h;
-    }
-}
-
 /***********************************************************************/
 /* First thing to know is that we don't call vkCreateInstance() here.  */
 /* Instead, programs using SDL and Vulkan create their Vulkan instance */

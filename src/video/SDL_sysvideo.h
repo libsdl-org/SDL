@@ -76,6 +76,7 @@ struct SDL_Window
     int w, h;
     int min_w, min_h;
     int max_w, max_h;
+    int last_pixel_w, last_pixel_h;
     Uint32 flags;
     Uint32 last_fullscreen_flags;
     Uint32 display_index;
@@ -108,10 +109,10 @@ struct SDL_Window
     SDL_Window *prev;
     SDL_Window *next;
 };
-#define FULLSCREEN_VISIBLE(W)                \
-    (((W)->flags & SDL_WINDOW_FULLSCREEN) && \
-     !((W)->flags & SDL_WINDOW_HIDDEN) &&      \
-     !((W)->flags & SDL_WINDOW_MINIMIZED))
+#define SDL_WINDOW_FULLSCREEN_VISIBLE(W)        \
+    ((((W)->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) &&   \
+     (((W)->flags & SDL_WINDOW_HIDDEN) == 0) && \
+     (((W)->flags & SDL_WINDOW_MINIMIZED) == 0))
 
 /*
  * Define the SDL display structure.
@@ -196,7 +197,7 @@ struct SDL_VideoDevice
     /*
      * Get the dots/pixels-per-inch of a display
      */
-    int (*GetDisplayDPI)(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
+    int (*GetDisplayPhysicalDPI)(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
 
     /*
      * Get a list of the available display modes for a display.
@@ -268,7 +269,6 @@ struct SDL_VideoDevice
     void (*GL_UnloadLibrary)(_THIS);
     SDL_GLContext (*GL_CreateContext)(_THIS, SDL_Window *window);
     int (*GL_MakeCurrent)(_THIS, SDL_Window *window, SDL_GLContext context);
-    void (*GL_GetDrawableSize)(_THIS, SDL_Window *window, int *w, int *h);
     SDL_EGLSurface (*GL_GetEGLSurface)(_THIS, SDL_Window *window);
     int (*GL_SetSwapInterval)(_THIS, int interval);
     int (*GL_GetSwapInterval)(_THIS, int *interval);
@@ -284,7 +284,6 @@ struct SDL_VideoDevice
     void (*Vulkan_UnloadLibrary)(_THIS);
     SDL_bool (*Vulkan_GetInstanceExtensions)(_THIS, int *count, const char **names);
     SDL_bool (*Vulkan_CreateSurface)(_THIS, SDL_Window *window, VkInstance instance, VkSurfaceKHR *surface);
-    void (*Vulkan_GetDrawableSize)(_THIS, SDL_Window *window, int *w, int *h);
 
     /* * * */
     /*
@@ -293,7 +292,6 @@ struct SDL_VideoDevice
     SDL_MetalView (*Metal_CreateView)(_THIS, SDL_Window *window);
     void (*Metal_DestroyView)(_THIS, SDL_MetalView view);
     void *(*Metal_GetLayer)(_THIS, SDL_MetalView view);
-    void (*Metal_GetDrawableSize)(_THIS, SDL_Window *window, int *w, int *h);
 
     /* * * */
     /*
@@ -498,7 +496,10 @@ extern void SDL_OnWindowShown(SDL_Window *window);
 extern void SDL_OnWindowHidden(SDL_Window *window);
 extern void SDL_OnWindowMoved(SDL_Window *window);
 extern void SDL_OnWindowResized(SDL_Window *window);
+extern void SDL_CheckWindowPixelSizeChanged(SDL_Window *window);
+extern void SDL_OnWindowPixelSizeChanged(SDL_Window *window);
 extern void SDL_OnWindowMinimized(SDL_Window *window);
+extern void SDL_OnWindowMaximized(SDL_Window *window);
 extern void SDL_OnWindowRestored(SDL_Window *window);
 extern void SDL_OnWindowEnter(SDL_Window *window);
 extern void SDL_OnWindowLeave(SDL_Window *window);
@@ -515,5 +516,8 @@ extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vin
 extern void SDL_ToggleDragAndDropSupport(void);
 
 extern int SDL_GetDisplayIndexForPoint(const SDL_Point *point);
+
+/* This has been moved out of the public API, but is still available for now */
+#define SDL_WINDOW_ALLOW_HIGHDPI    0x00002000
 
 #endif /* SDL_sysvideo_h_ */

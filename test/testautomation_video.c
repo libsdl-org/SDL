@@ -253,7 +253,7 @@ int video_createWindowVariousFlags(void *arg)
         switch (fVariation) {
         default:
         case 0:
-            flags = SDL_WINDOW_FULLSCREEN;
+            flags = SDL_WINDOW_FULLSCREEN_EXCLUSIVE;
             /* Skip - blanks screen; comment out next line to run test */
             continue;
             break;
@@ -425,8 +425,9 @@ int video_getClosestDisplayModeCurrentResolution(void *arg)
         }
 
         /* Set the desired resolution equals to current resolution */
-        target.w = current.w;
-        target.h = current.h;
+        SDL_zero(target);
+        target.pixel_w = current.pixel_w;
+        target.pixel_h = current.pixel_h;
         for (variation = 0; variation < 8; variation++) {
             /* Vary constraints on other query parameters */
             target.format = (variation & 1) ? current.format : 0;
@@ -439,11 +440,11 @@ int video_getClosestDisplayModeCurrentResolution(void *arg)
             SDLTest_Assert(dResult != NULL, "Verify returned value is not NULL");
 
             /* Check that one gets the current resolution back again */
-            SDLTest_AssertCheck(closest.w == current.w, "Verify returned width matches current width; expected: %d, got: %d", current.w, closest.w);
-            SDLTest_AssertCheck(closest.h == current.h, "Verify returned height matches current height; expected: %d, got: %d", current.h, closest.h);
+            SDLTest_AssertCheck(closest.pixel_w == current.pixel_w, "Verify returned width matches current width; expected: %d, got: %d", current.pixel_w, closest.pixel_w);
+            SDLTest_AssertCheck(closest.pixel_h == current.pixel_h, "Verify returned height matches current height; expected: %d, got: %d", current.pixel_h, closest.pixel_h);
             /* NOLINTBEGIN(clang-analyzer-core.NullDereference): Checked earlier for NULL */
-            SDLTest_AssertCheck(closest.w == dResult->w, "Verify return value matches assigned value; expected: %d, got: %d", closest.w, dResult->w);
-            SDLTest_AssertCheck(closest.h == dResult->h, "Verify return value matches assigned value; expected: %d, got: %d", closest.h, dResult->h);
+            SDLTest_AssertCheck(closest.pixel_w == dResult->pixel_w, "Verify return value matches assigned value; expected: %d, got: %d", closest.pixel_w, dResult->pixel_w);
+            SDLTest_AssertCheck(closest.pixel_h == dResult->pixel_h, "Verify return value matches assigned value; expected: %d, got: %d", closest.pixel_h, dResult->pixel_h);
             /* NOLINTEND(clang-analyzer-core.NullDereference) */
         }
     }
@@ -473,11 +474,11 @@ int video_getClosestDisplayModeRandomResolution(void *arg)
         for (variation = 0; variation < 16; variation++) {
 
             /* Set random constraints */
-            target.w = (variation & 1) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
-            target.h = (variation & 2) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
+            SDL_zero(target);
+            target.pixel_w = (variation & 1) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
+            target.pixel_h = (variation & 2) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
             target.format = (variation & 4) ? SDLTest_RandomIntegerInRange(1, 10) : 0;
             target.refresh_rate = (variation & 8) ? (float)SDLTest_RandomIntegerInRange(25, 120) : 0.0f;
-            target.driverdata = 0;
 
             /* Make call; may or may not find anything, so don't validate any further */
             SDL_GetClosestDisplayMode(i, &target, &closest);
@@ -501,8 +502,8 @@ int video_getWindowDisplayMode(void *arg)
     int result;
 
     /* Invalidate part of the mode content so we can check values later */
-    mode.w = -1;
-    mode.h = -1;
+    mode.pixel_w = -1;
+    mode.pixel_h = -1;
     mode.refresh_rate = -1.0f;
 
     /* Call against new test window */
@@ -511,8 +512,8 @@ int video_getWindowDisplayMode(void *arg)
         result = SDL_GetWindowDisplayMode(window, &mode);
         SDLTest_AssertPass("Call to SDL_GetWindowDisplayMode()");
         SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0, got: %d", result);
-        SDLTest_AssertCheck(mode.w > 0, "Validate mode.w content; expected: >0, got: %d", mode.w);
-        SDLTest_AssertCheck(mode.h > 0, "Validate mode.h content; expected: >0, got: %d", mode.h);
+        SDLTest_AssertCheck(mode.pixel_w > 0, "Validate mode.w content; expected: >0, got: %d", mode.pixel_w);
+        SDLTest_AssertCheck(mode.pixel_h > 0, "Validate mode.h content; expected: >0, got: %d", mode.pixel_h);
         SDLTest_AssertCheck(mode.refresh_rate > 0.0f, "Validate mode.refresh_rate content; expected: >0, got: %g", mode.refresh_rate);
     }
 
@@ -1753,7 +1754,7 @@ int video_setWindowCenteredOnDisplay(void *arg)
             expectedX = (expectedDisplayRect.x + ((expectedDisplayRect.w - w) / 2));
             expectedY = (expectedDisplayRect.y + ((expectedDisplayRect.h - h) / 2));
 
-            window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_ALLOW_HIGHDPI);
+            window = SDL_CreateWindow(title, x, y, w, h, 0);
             SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
             SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 

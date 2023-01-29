@@ -157,7 +157,7 @@ SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppStateChangeNotification handler");
             if (quiesced) {
                 ResetEvent(plmSuspendComplete);
-                SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
+                SDL_SendAppEvent(SDL_EVENT_DID_ENTER_BACKGROUND);
 
                 // To defer suspension, we must wait to exit this callback.
                 // IMPORTANT: The app must call SDL_GDKSuspendComplete() to release this lock.
@@ -165,7 +165,7 @@ SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
 
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppStateChangeNotification handler: plmSuspendComplete event signaled.");
             } else {
-                SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
+                SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_FOREGROUND);
             }
         };
         if (RegisterAppStateChangeNotification(rascn, NULL, &hPLM)) {

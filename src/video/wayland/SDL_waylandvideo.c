@@ -68,7 +68,7 @@ static int Wayland_VideoInit(_THIS);
 
 static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 
-static int Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi);
+static int Wayland_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi);
 
 static void Wayland_VideoQuit(_THIS);
 
@@ -208,7 +208,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->VideoInit = Wayland_VideoInit;
     device->VideoQuit = Wayland_VideoQuit;
     device->GetDisplayBounds = Wayland_GetDisplayBounds;
-    device->GetDisplayDPI = Wayland_GetDisplayDPI;
+    device->GetDisplayPhysicalDPI = Wayland_GetDisplayPhysicalDPI;
     device->GetWindowWMInfo = Wayland_GetWindowWMInfo;
     device->SuspendScreenSaver = Wayland_SuspendScreenSaver;
 
@@ -298,7 +298,7 @@ static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xd
 {
     SDL_WaylandOutputData *driverdata = data;
 
-    if (driverdata->width != 0 && driverdata->height != 0) {
+    if (driverdata->screen_width != 0 && driverdata->screen_height != 0) {
         /* FIXME: GNOME has a bug where the logical size does not account for
          * scale, resulting in bogus viewport sizes.
          *
@@ -307,7 +307,7 @@ static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xd
          * detected otherwise), then override if necessary.
          * -flibit
          */
-        const float scale = (float)driverdata->width / (float)width;
+        const float scale = (float)driverdata->screen_width / (float)width;
         if ((scale == 1.0f) && (driverdata->scale_factor != 1.0f)) {
             SDL_LogWarn(
                 SDL_LOG_CATEGORY_VIDEO,
@@ -316,8 +316,8 @@ static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xd
         }
     }
 
-    driverdata->width = width;
-    driverdata->height = height;
+    driverdata->screen_width = width;
+    driverdata->screen_height = height;
     driverdata->has_logical_size = SDL_TRUE;
 }
 
@@ -414,24 +414,28 @@ static void AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
 
     int i;
     SDL_DisplayMode mode;
-    const int native_width = dpy->display_modes->w;
-    const int native_height = dpy->display_modes->h;
+    const int native_width = dpy->display_modes->pixel_w;
+    const int native_height = dpy->display_modes->pixel_h;
 
     for (i = 0; i < SDL_arraysize(mode_list); ++i) {
-        mode = *dpy->display_modes;
+        SDL_zero(mode);
+        mode.format = dpy->display_modes->format;
+        mode.display_scale = 1.0f;
+        mode.refresh_rate = dpy->display_modes->refresh_rate;
+        mode.driverdata = dpy->display_modes->driverdata;
 
         if (rot_90) {
-            mode.w = mode_list[i].h;
-            mode.h = mode_list[i].w;
+            mode.pixel_w = mode_list[i].h;
+            mode.pixel_h = mode_list[i].w;
         } else {
-            mode.w = mode_list[i].w;
-            mode.h = mode_list[i].h;
+            mode.pixel_w = mode_list[i].w;
+            mode.pixel_h = mode_list[i].h;
         }
 
         /* Only add modes that are smaller than the native mode. */
-        if ((mode.w < native_width && mode.h < native_height) ||
-            (mode.w < native_width && mode.h == native_height) ||
-            (mode.w == native_width && mode.h < native_height)) {
+        if ((mode.pixel_w < native_width && mode.pixel_h < native_height) ||
+            (mode.pixel_w < native_width && mode.pixel_h == native_height) ||
+            (mode.pixel_w == native_width && mode.pixel_h < native_height)) {
             SDL_AddDisplayMode(dpy, &mode);
         }
     }
@@ -520,16 +524,16 @@ static void display_handle_mode(void *data,
     SDL_WaylandOutputData *driverdata = data;
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
-        driverdata->native_width = width;
-        driverdata->native_height = height;
+        driverdata->pixel_width = width;
+        driverdata->pixel_height = height;
 
         /*
          * Don't rotate this yet, wl-output coordinates are transformed in
          * handle_done and xdg-output coordinates are pre-transformed.
          */
         if (!driverdata->has_logical_size) {
-            driverdata->width = width;
-            driverdata->height = height;
+            driverdata->screen_width = width;
+            driverdata->screen_height = height;
         }
 
         driverdata->refresh = refresh;
@@ -564,12 +568,13 @@ static void display_handle_done(void *data,
     native_mode.format = SDL_PIXELFORMAT_RGB888;
 
     if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-        native_mode.w = driverdata->native_height;
-        native_mode.h = driverdata->native_width;
+        native_mode.pixel_w = driverdata->pixel_height;
+        native_mode.pixel_h = driverdata->pixel_width;
     } else {
-        native_mode.w = driverdata->native_width;
-        native_mode.h = driverdata->native_height;
+        native_mode.pixel_w = driverdata->pixel_width;
+        native_mode.pixel_h = driverdata->pixel_height;
     }
+    native_mode.display_scale = 1.0f;
     native_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
     native_mode.driverdata = driverdata->output;
 
@@ -578,51 +583,25 @@ static void display_handle_done(void *data,
     desktop_mode.format = SDL_PIXELFORMAT_RGB888;
 
     if (driverdata->has_logical_size) { /* If xdg-output is present, calculate the true scale of the desktop */
-        driverdata->scale_factor = (float)native_mode.w / (float)driverdata->width;
+        if (video->viewporter) {
+            driverdata->scale_factor = (float)native_mode.pixel_w / (float)driverdata->screen_width;
+        }
     } else { /* Scale the desktop coordinates, if xdg-output isn't present */
-        driverdata->width /= driverdata->scale_factor;
-        driverdata->height /= driverdata->scale_factor;
+        driverdata->screen_width /= driverdata->scale_factor;
+        driverdata->screen_height /= driverdata->scale_factor;
     }
 
     /* xdg-output dimensions are already transformed, so no need to rotate. */
     if (driverdata->has_logical_size || !(driverdata->transform & WL_OUTPUT_TRANSFORM_90)) {
-        desktop_mode.w = driverdata->width;
-        desktop_mode.h = driverdata->height;
+        desktop_mode.pixel_w = driverdata->pixel_width;
+        desktop_mode.pixel_h = driverdata->pixel_height;
     } else {
-        desktop_mode.w = driverdata->height;
-        desktop_mode.h = driverdata->width;
+        desktop_mode.pixel_w = driverdata->pixel_height;
+        desktop_mode.pixel_h = driverdata->pixel_width;
     }
+    desktop_mode.display_scale = driverdata->scale_factor;
     desktop_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
     desktop_mode.driverdata = driverdata->output;
-
-    /*
-     * The native display mode is only exposed separately from the desktop size if the
-     * desktop is scaled and the wp_viewporter protocol is supported.
-     */
-    if (driverdata->scale_factor > 1.0f && video->viewporter != NULL) {
-        if (driverdata->index > -1) {
-            SDL_AddDisplayMode(SDL_GetDisplay(driverdata->index), &native_mode);
-        } else {
-            SDL_AddDisplayMode(&driverdata->placeholder, &native_mode);
-        }
-    }
-
-    /* Calculate the display DPI */
-    if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-        driverdata->hdpi = driverdata->physical_height ? (((float)driverdata->height) * 25.4f / driverdata->physical_height) : 0.0f;
-        driverdata->vdpi = driverdata->physical_width ? (((float)driverdata->width) * 25.4f / driverdata->physical_width) : 0.0f;
-        driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->height,
-                                                  driverdata->width,
-                                                  ((float)driverdata->physical_height) / 25.4f,
-                                                  ((float)driverdata->physical_width) / 25.4f);
-    } else {
-        driverdata->hdpi = driverdata->physical_width ? (((float)driverdata->width) * 25.4f / driverdata->physical_width) : 0.0f;
-        driverdata->vdpi = driverdata->physical_height ? (((float)driverdata->height) * 25.4f / driverdata->physical_height) : 0.0f;
-        driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->width,
-                                                  driverdata->height,
-                                                  ((float)driverdata->physical_width) / 25.4f,
-                                                  ((float)driverdata->physical_height) / 25.4f);
-    }
 
     if (driverdata->index > -1) {
         dpy = SDL_GetDisplay(driverdata->index);
@@ -630,15 +609,53 @@ static void display_handle_done(void *data,
         dpy = &driverdata->placeholder;
     }
 
+    /* Set the desktop display mode. */
     SDL_AddDisplayMode(dpy, &desktop_mode);
     SDL_SetCurrentDisplayMode(dpy, &desktop_mode);
     SDL_SetDesktopDisplayMode(dpy, &desktop_mode);
 
+    /* If the desktop is scaled... */
+    if (driverdata->scale_factor > 1.0f) {
+        /* ...expose the native resolution if viewports are available... */
+        if (video->viewporter != NULL) {
+            SDL_AddDisplayMode(dpy, &native_mode);
+        } else {
+            /* ...if not, expose some smaller, integer scaled resolutions. */
+            int i;
+            const int base_pixel_w = desktop_mode.pixel_w / (int)desktop_mode.display_scale;
+            const int base_pixel_h = desktop_mode.pixel_h / (int)desktop_mode.display_scale;
+            for (i = 1; i < (int)desktop_mode.display_scale; ++i) {
+                desktop_mode.pixel_w = base_pixel_w * i;
+                desktop_mode.pixel_h = base_pixel_h * i;
+                desktop_mode.display_scale = (float)i;
+
+                SDL_AddDisplayMode(dpy, &desktop_mode);
+            }
+        }
+    }
+
     /* Add emulated modes if wp_viewporter is supported and mode emulation is enabled. */
     if (video->viewporter && mode_emulation_enabled) {
         const SDL_bool rot_90 = ((driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0) ||
-                                (driverdata->width < driverdata->height);
+                                (driverdata->screen_width < driverdata->screen_height);
         AddEmulatedModes(dpy, rot_90);
+    }
+
+    /* Calculate the display DPI */
+    if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
+        driverdata->hdpi = driverdata->physical_height ? (((float)driverdata->pixel_height) * 25.4f / driverdata->physical_height) : 0.0f;
+        driverdata->vdpi = driverdata->physical_width ? (((float)driverdata->pixel_width) * 25.4f / driverdata->physical_width) : 0.0f;
+        driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->pixel_height,
+                                                  driverdata->pixel_width,
+                                                  ((float)driverdata->physical_height) / 25.4f,
+                                                  ((float)driverdata->physical_width) / 25.4f);
+    } else {
+        driverdata->hdpi = driverdata->physical_width ? (((float)driverdata->pixel_width) * 25.4f / driverdata->physical_width) : 0.0f;
+        driverdata->vdpi = driverdata->physical_height ? (((float)driverdata->pixel_height) * 25.4f / driverdata->physical_height) : 0.0f;
+        driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->pixel_width,
+                                                  driverdata->pixel_height,
+                                                  ((float)driverdata->physical_width) / 25.4f,
+                                                  ((float)driverdata->physical_height) / 25.4f);
     }
 
     if (driverdata->index == -1) {
@@ -650,7 +667,7 @@ static void display_handle_done(void *data,
         SDL_free(driverdata->placeholder.name);
         SDL_zero(driverdata->placeholder);
     } else {
-        SDL_SendDisplayEvent(dpy, SDL_DISPLAYEVENT_ORIENTATION, driverdata->orientation);
+        SDL_SendDisplayEvent(dpy, SDL_EVENT_DISPLAY_ORIENTATION, driverdata->orientation);
     }
 }
 
@@ -967,12 +984,12 @@ static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *
     SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *)display->driverdata;
     rect->x = driverdata->x;
     rect->y = driverdata->y;
-    rect->w = display->current_mode.w;
-    rect->h = display->current_mode.h;
+    rect->w = display->current_mode.screen_w;
+    rect->h = display->current_mode.screen_h;
     return 0;
 }
 
-static int Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi)
+static int Wayland_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi)
 {
     SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *)sdl_display->driverdata;
 

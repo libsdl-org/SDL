@@ -39,26 +39,32 @@ extern "C" {
 /* As of version 0.5, SDL is loaded dynamically into the application */
 
 /**
- *  \name SDL_INIT_*
+ *   \brief Initialization flags for SDL_Init and/or SDL_InitSubSystem
  *
- *  These are the flags which may be passed to SDL_Init().  You should
- *  specify the subsystems which you will be using in your application.
+ * These are the flags which may be passed to SDL_Init().  You should
+ * specify the subsystems which you will be using in your application.
+ *
+ * \sa SDL_Init
+ * \sa SDL_Quit
+ * \sa SDL_InitSubSystem
+ * \sa SDL_QuitSubSystem
+ * \sa SDL_WasInit
  */
-/* @{ */
-#define SDL_INIT_TIMER          0x00000001u
-#define SDL_INIT_AUDIO          0x00000010u
-#define SDL_INIT_VIDEO          0x00000020u  /**< SDL_INIT_VIDEO implies SDL_INIT_EVENTS */
-#define SDL_INIT_JOYSTICK       0x00000200u  /**< SDL_INIT_JOYSTICK implies SDL_INIT_EVENTS */
-#define SDL_INIT_HAPTIC         0x00001000u
-#define SDL_INIT_GAMEPAD        0x00002000u  /**< SDL_INIT_GAMEPAD implies SDL_INIT_JOYSTICK */
-#define SDL_INIT_EVENTS         0x00004000u
-#define SDL_INIT_SENSOR         0x00008000u
-#define SDL_INIT_NOPARACHUTE    0x00100000u  /**< compatibility; this flag is ignored. */
+typedef enum
+{
+    SDL_INIT_TIMER        = 0x00000001,
+    SDL_INIT_AUDIO        = 0x00000010,
+    SDL_INIT_VIDEO        = 0x00000020,  /**< `SDL_INIT_VIDEO` implies `SDL_INIT_EVENTS` */
+    SDL_INIT_JOYSTICK     = 0x00000200,  /**< `SDL_INIT_JOYSTICK` implies `SDL_INIT_EVENTS` */
+    SDL_INIT_HAPTIC       = 0x00001000,
+    SDL_INIT_GAMEPAD      = 0x00002000,  /**< `SDL_INIT_GAMEPAD` implies `SDL_INIT_JOYSTICK` */
+    SDL_INIT_EVENTS       = 0x00004000,
+    SDL_INIT_SENSOR       = 0x00008000
+} SDL_InitFlags;
 #define SDL_INIT_EVERYTHING ( \
                 SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | \
                 SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR \
             )
-/* @} */
 
 /**
  * Initialize the SDL library.
@@ -85,11 +91,10 @@ extern "C" {
  * - `SDL_INIT_JOYSTICK`: joystick subsystem; automatically initializes the
  *   events subsystem
  * - `SDL_INIT_HAPTIC`: haptic (force feedback) subsystem
- * - `SDL_INIT_GAMEPAD`: gamepad subsystem; automatically
- *   initializes the joystick subsystem
+ * - `SDL_INIT_GAMEPAD`: gamepad subsystem; automatically initializes the
+ *   joystick subsystem
  * - `SDL_INIT_EVENTS`: events subsystem
  * - `SDL_INIT_EVERYTHING`: all of the above subsystems
- * - `SDL_INIT_NOPARACHUTE`: compatibility; this flag is ignored
  *
  * Subsystem initialization is ref-counted, you must call SDL_QuitSubSystem()
  * for each SDL_InitSubSystem() to correctly shutdown a subsystem manually (or
@@ -147,8 +152,6 @@ extern DECLSPEC void SDLCALL SDL_QuitSubSystem(Uint32 flags);
  * \param flags any of the flags used by SDL_Init(); see SDL_Init for details.
  * \returns a mask of all initialized subsystems if `flags` is 0, otherwise it
  *          returns the initialization status of the specified subsystems.
- *
- *          The return value does not include SDL_INIT_NOPARACHUTE.
  *
  * \since This function is available since SDL 3.0.0.
  *

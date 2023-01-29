@@ -4,7 +4,7 @@
 
 root = true
 
-[*.{c,cg,cpp,gradle,h,java,m,metal,pl,py,S,sh,txt}]
+[*.{c,cc,cg,cpp,gradle,h,java,m,metal,pl,py,S,sh,txt}]
 indent_size = 4
 indent_style = space
 insert_final_newline = true
@@ -13,6 +13,7 @@ trim_trailing_whitespace = true
 [*.{html,js,json,m4,yml,yaml,vcxproj,vcxproj.filters}]
 indent_size = 2
 indent_style = space
+trim_tailing_whitespace = true
 
 [*.xml]
 indent_size = 4

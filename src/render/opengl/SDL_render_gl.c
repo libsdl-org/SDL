@@ -324,8 +324,8 @@ static void GL_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
      * changed behind our backs. x/y changes might seem weird but viewport
      * resets have been observed on macOS at minimum!
      */
-    if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED ||
-        event->type == SDL_WINDOWEVENT_MOVED) {
+    if (event->type == SDL_EVENT_WINDOW_RESIZED ||
+        event->type == SDL_EVENT_WINDOW_MOVED) {
         GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
         data->drawstate.viewport_dirty = SDL_TRUE;
     }
@@ -333,7 +333,7 @@ static void GL_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 
 static int GL_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
 {
-    SDL_GL_GetDrawableSize(renderer->window, w, h);
+    SDL_GetWindowSizeInPixels(renderer->window, w, h);
     return 0;
 }
 
@@ -374,6 +374,10 @@ static GLenum GetBlendEquation(SDL_BlendOperation operation)
         return GL_FUNC_SUBTRACT;
     case SDL_BLENDOPERATION_REV_SUBTRACT:
         return GL_FUNC_REVERSE_SUBTRACT;
+    case SDL_BLENDOPERATION_MINIMUM:
+        return GL_MIN;
+    case SDL_BLENDOPERATION_MAXIMUM:
+        return GL_MAX;
     default:
         return GL_INVALID_ENUM;
     }
@@ -1180,7 +1184,7 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
     data->drawstate.target = renderer->target;
     if (!data->drawstate.target) {
         int w, h;
-        SDL_GL_GetDrawableSize(renderer->window, &w, &h);
+        SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
         if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
             data->drawstate.viewport_dirty = SDL_TRUE; // if the window dimensions changed, invalidate the current viewport, etc.
             data->drawstate.cliprect_dirty = SDL_TRUE;

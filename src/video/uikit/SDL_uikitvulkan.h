@@ -44,8 +44,6 @@ SDL_bool UIKit_Vulkan_CreateSurface(_THIS,
                                     VkInstance instance,
                                     VkSurfaceKHR *surface);
 
-void UIKit_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
-
 #endif
 
 #endif /* SDL_uikitvulkan_h_ */

@@ -34,10 +34,10 @@
 #define MAX_PATH 256 // vita limits are somehow wrong
 
 /* Defaults */
-int FB_WIDTH = 960;
-int FB_HEIGHT = 544;
+static int FB_WIDTH = 960;
+static int FB_HEIGHT = 544;
 
-void getFBSize(int *width, int *height)
+static void getFBSize(int *width, int *height)
 {
     *width = FB_WIDTH;
     *height = FB_HEIGHT;
@@ -51,33 +51,33 @@ int VITA_GL_LoadLibrary(_THIS, const char *path)
     char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (skip_init == NULL) // we don't care about actual value {
+    if (skip_init == NULL) { // we don't care about actual value
         if (override != NULL) {
             default_path = override;
         }
 
-    sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
-    sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
+        sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
+        sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
 
-    SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libGL.suprx");
-    sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
+        SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libGL.suprx");
+        sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
 
-    SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libgpu_es4_ext.suprx");
-    sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
+        SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libgpu_es4_ext.suprx");
+        sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
 
-    SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libIMGEGL.suprx");
-    sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
+        SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libIMGEGL.suprx");
+        sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
 
-    PVRSRVInitializeAppHint(&hint);
+        PVRSRVInitializeAppHint(&hint);
 
-    SDL_snprintf(hint.szGLES1, MAX_PATH, "%s/%s", default_path, "libGLESv1_CM.suprx");
-    SDL_snprintf(hint.szGLES2, MAX_PATH, "%s/%s", default_path, "libGLESv2.suprx");
-    SDL_snprintf(hint.szWindowSystem, MAX_PATH, "%s/%s", default_path, "libpvrPSP2_WSEGL.suprx");
+        SDL_snprintf(hint.szGLES1, MAX_PATH, "%s/%s", default_path, "libGLESv1_CM.suprx");
+        SDL_snprintf(hint.szGLES2, MAX_PATH, "%s/%s", default_path, "libGLESv2.suprx");
+        SDL_snprintf(hint.szWindowSystem, MAX_PATH, "%s/%s", default_path, "libpvrPSP2_WSEGL.suprx");
 
-    PVRSRVCreateVirtualAppHint(&hint);
-}
+        PVRSRVCreateVirtualAppHint(&hint);
+    }
 
-return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }
 
 SDL_GLContext
@@ -115,7 +115,7 @@ VITA_GL_CreateContext(_THIS, SDL_Window *window)
     return context;
 }
 
-void *
+SDL_FunctionPointer
 VITA_GL_GetProcAddress(_THIS, const char *proc)
 {
     return gl4es_GetProcAddress(proc);

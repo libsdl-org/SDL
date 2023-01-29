@@ -354,7 +354,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_test_font.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_fuzzer.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_harness.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_test_images.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_log.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_md5.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h" />

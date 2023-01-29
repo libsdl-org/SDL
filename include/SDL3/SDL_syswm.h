@@ -36,7 +36,7 @@
 /**
  *  \brief SDL_syswm.h
  *
- *  Your application has access to a special type of event ::SDL_SYSWMEVENT,
+ *  Your application has access to a special type of event ::SDL_EVENT_SYSWM,
  *  which contains window-manager specific information and arrives whenever
  *  an unhandled window event occurs.  This event is ignored by default, but
  *  you can enable it with SDL_SetEventEnabled().

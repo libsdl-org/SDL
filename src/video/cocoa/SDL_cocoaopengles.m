@@ -114,26 +114,6 @@ int Cocoa_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     }
 }
 
-void Cocoa_GLES_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    @autoreleasepool {
-        SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
-        NSView *contentView = windata.nswindow.contentView;
-        CALayer *layer = [contentView layer];
-
-        int width = layer.bounds.size.width * layer.contentsScale;
-        int height = layer.bounds.size.height * layer.contentsScale;
-
-        if (w) {
-            *w = width;
-        }
-
-        if (h) {
-            *h = height;
-        }
-    }
-}
-
 int Cocoa_GLES_SetupWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {

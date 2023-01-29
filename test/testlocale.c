@@ -47,10 +47,10 @@ int main(int argc, char **argv)
             while (keep_going) {
                 SDL_Event e;
                 while (SDL_PollEvent(&e)) {
-                    if (e.type == SDL_QUIT) {
+                    if (e.type == SDL_EVENT_QUIT) {
                         keep_going = SDL_FALSE;
-                    } else if (e.type == SDL_LOCALECHANGED) {
-                        SDL_Log("Saw SDL_LOCALECHANGED event!");
+                    } else if (e.type == SDL_EVENT_LOCALE_CHANGED) {
+                        SDL_Log("Saw SDL_EVENT_LOCALE_CHANGED event!");
                         log_locales();
                     }
                 }

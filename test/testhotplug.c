@@ -63,10 +63,10 @@ int main(int argc, char *argv[])
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
-            case SDL_QUIT:
+            case SDL_EVENT_QUIT:
                 keepGoing = SDL_FALSE;
                 break;
-            case SDL_JOYDEVICEADDED:
+            case SDL_EVENT_JOYSTICK_ADDED:
                 if (joystick != NULL) {
                     SDL_Log("Only one joystick supported by this test\n");
                 } else {
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
                     }
                 }
                 break;
-            case SDL_JOYDEVICEREMOVED:
+            case SDL_EVENT_JOYSTICK_REMOVED:
                 if (instance == event.jdevice.which) {
                     SDL_Log("Joy Removed: %" SDL_PRIs32 "\n", event.jdevice.which);
                     instance = 0;
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
                     SDL_Log("Unknown joystick diconnected\n");
                 }
                 break;
-            case SDL_JOYAXISMOTION:
+            case SDL_EVENT_JOYSTICK_AXIS_MOTION:
                 /*
                 //                    SDL_Log("Axis Move: %d\n", event.jaxis.axis);
                 */
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
                     SDL_HapticRumblePlay(haptic, 0.25, 250);
                 }
                 break;
-            case SDL_JOYBUTTONDOWN:
+            case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
                 SDL_Log("Button Press: %d\n", event.jbutton.button);
                 if (enable_haptic && haptic) {
                     SDL_HapticRumblePlay(haptic, 0.25, 250);
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
                     keepGoing = SDL_FALSE;
                 }
                 break;
-            case SDL_JOYBUTTONUP:
+            case SDL_EVENT_JOYSTICK_BUTTON_UP:
                 SDL_Log("Button Release: %d\n", event.jbutton.button);
                 break;
             }

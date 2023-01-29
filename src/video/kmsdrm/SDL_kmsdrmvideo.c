@@ -314,7 +314,6 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     device->Vulkan_UnloadLibrary = KMSDRM_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = KMSDRM_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = KMSDRM_Vulkan_CreateSurface;
-    device->Vulkan_GetDrawableSize = KMSDRM_Vulkan_GetDrawableSize;
 #endif
 
     device->PumpEvents = KMSDRM_PumpEvents;
@@ -501,11 +500,10 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display,
     SDL_DisplayMode target, closest;
     drmModeModeInfo *drm_mode;
 
-    target.w = width;
-    target.h = height;
-    target.format = 0; /* Will use the default mode format. */
-    target.refresh_rate = refresh_rate;
-    target.driverdata = 0; /* Initialize to 0 */
+    SDL_zero(target);
+    target.screen_w = (int)width;
+    target.screen_h = (int)height;
+    target.refresh_rate = (int)refresh_rate;
 
     if (!SDL_GetClosestDisplayMode(SDL_atoi(display->name), &target, &closest)) {
         return NULL;
@@ -871,8 +869,8 @@ static void KMSDRM_AddDisplay(_THIS, drmModeConnector *connector, drmModeRes *re
     modedata->mode_index = mode_index;
 
     display.driverdata = dispdata;
-    display.desktop_mode.w = dispdata->mode.hdisplay;
-    display.desktop_mode.h = dispdata->mode.vdisplay;
+    display.desktop_mode.pixel_w = dispdata->mode.hdisplay;
+    display.desktop_mode.pixel_h = dispdata->mode.vdisplay;
     display.desktop_mode.refresh_rate = CalculateRefreshRate(&dispdata->mode);
     display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
     display.desktop_mode.driverdata = modedata;
@@ -1118,7 +1116,7 @@ static void KMSDRM_GetModeToSet(SDL_Window *window, drmModeModeInfo *out_mode)
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_EXCLUSIVE) != 0) {
         *out_mode = dispdata->fullscreen_mode;
     } else {
         drmModeModeInfo *mode;
@@ -1147,7 +1145,7 @@ static void KMSDRM_DirtySurfaces(SDL_Window *window)
        or SetWindowFullscreen, send a fake event for now since the actual
        recreation is deferred */
     KMSDRM_GetModeToSet(window, &mode);
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode.hdisplay, mode.vdisplay);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, mode.hdisplay, mode.vdisplay);
 }
 
 /* This determines the size of the fb, which comes from the GBM surface
@@ -1158,6 +1156,7 @@ int KMSDRM_CreateSurfaces(_THIS, SDL_Window *window)
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayMode current_mode;
 
     uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
     uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
@@ -1182,10 +1181,12 @@ int KMSDRM_CreateSurfaces(_THIS, SDL_Window *window)
        mode that's set in sync with what SDL_video.c thinks is set */
     KMSDRM_GetModeToSet(window, &dispdata->mode);
 
-    display->current_mode.w = dispdata->mode.hdisplay;
-    display->current_mode.h = dispdata->mode.vdisplay;
-    display->current_mode.refresh_rate = CalculateRefreshRate(&dispdata->mode);
-    display->current_mode.format = SDL_PIXELFORMAT_ARGB8888;
+    SDL_zero(current_mode);
+    current_mode.pixel_w = dispdata->mode.hdisplay;
+    current_mode.pixel_h = dispdata->mode.vdisplay;
+    current_mode.refresh_rate = CalculateRefreshRate(&dispdata->mode);
+    current_mode.format = SDL_PIXELFORMAT_ARGB8888;
+    SDL_SetCurrentDisplayMode(display, &current_mode);
 
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
                                             dispdata->mode.hdisplay, dispdata->mode.vdisplay,
@@ -1211,7 +1212,7 @@ int KMSDRM_CreateSurfaces(_THIS, SDL_Window *window)
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
     ret = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
 
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED,
                         dispdata->mode.hdisplay, dispdata->mode.vdisplay);
 
     windata->egl_surface_dirty = SDL_FALSE;
@@ -1295,8 +1296,9 @@ void KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
             modedata->mode_index = i;
         }
 
-        mode.w = conn->modes[i].hdisplay;
-        mode.h = conn->modes[i].vdisplay;
+        SDL_zero(mode);
+        mode.pixel_w = conn->modes[i].hdisplay;
+        mode.pixel_h = conn->modes[i].vdisplay;
         mode.refresh_rate = CalculateRefreshRate(&conn->modes[i]);
         mode.format = SDL_PIXELFORMAT_ARGB8888;
         mode.driverdata = modedata;
@@ -1543,7 +1545,7 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
     SDL_SetKeyboardFocus(window);
 
     /* Tell the app that the window has moved to top-left. */
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, 0, 0);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, 0, 0);
 
     /* Allocated windata will be freed in KMSDRM_DestroyWindow,
        and KMSDRM_DestroyWindow() will be called by SDL_CreateWindow()

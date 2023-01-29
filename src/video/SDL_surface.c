@@ -203,7 +203,6 @@ SDL_CreateSurfaceFrom(void *pixels,
                       Uint32 format)
 {
     SDL_Surface *surface;
-    size_t minimalPitch;
 
     if (width < 0) {
         SDL_InvalidParamError("width");
@@ -215,20 +214,26 @@ SDL_CreateSurfaceFrom(void *pixels,
         return NULL;
     }
 
-    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
-        int p;
-        if (SDL_CalculateYUVSize(format, width, height, NULL, &p) < 0) {
+    if (pitch == 0 && pixels == NULL) {
+        /* The application will fill these in later with valid values */
+    } else {
+        size_t minimalPitch;
+
+        if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+            int p;
+            if (SDL_CalculateYUVSize(format, width, height, NULL, &p) < 0) {
+                SDL_InvalidParamError("pitch");
+                return NULL;
+            }
+            minimalPitch = p;
+        } else {
+            minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
+        }
+
+        if (pitch < 0 || (size_t)pitch < minimalPitch) {
             SDL_InvalidParamError("pitch");
             return NULL;
         }
-        minimalPitch = p;
-    } else {
-        minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
-    }
-
-    if (pitch < 0 || (pitch > 0 && ((size_t)pitch) < minimalPitch)) {
-        SDL_InvalidParamError("pitch");
-        return NULL;
     }
 
     surface = SDL_CreateSurface(0, 0, format);

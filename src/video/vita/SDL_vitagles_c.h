@@ -48,6 +48,6 @@ extern SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window);
 extern int VITA_GLES_LoadLibrary(_THIS, const char *path);
 extern void VITA_GLES_UnloadLibrary(_THIS);
 extern int VITA_GLES_SetSwapInterval(_THIS, int interval);
-extern int VITA_GLES_GetSwapInterval(_THIS);
+extern int VITA_GLES_GetSwapInterval(_THIS, int *interval);
 
 #endif /* SDL_vitagles_c_h_ */

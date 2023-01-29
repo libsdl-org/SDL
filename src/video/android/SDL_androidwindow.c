@@ -54,8 +54,8 @@ int Android_CreateWindow(_THIS, SDL_Window *window)
     /* Adjust the window data to match the screen */
     window->x = 0;
     window->y = 0;
-    window->w = Android_SurfaceWidth;
-    window->h = Android_SurfaceHeight;
+    window->w = (int)SDL_ceilf(Android_SurfaceWidth / Android_ScreenDensity);
+    window->h = (int)SDL_ceilf(Android_SurfaceHeight / Android_ScreenDensity);
 
     /* One window, it always has focus */
     SDL_SetMouseFocus(window);
@@ -139,15 +139,15 @@ void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *di
         old_w = window->w;
         old_h = window->h;
 
-        new_w = ANativeWindow_getWidth(data->native_window);
-        new_h = ANativeWindow_getHeight(data->native_window);
+        new_w = (int)SDL_ceilf(ANativeWindow_getWidth(data->native_window) / Android_ScreenDensity);
+        new_h = (int)SDL_ceilf(ANativeWindow_getHeight(data->native_window) / Android_ScreenDensity);
 
         if (new_w < 0 || new_h < 0) {
             SDL_SetError("ANativeWindow_getWidth/Height() fails");
         }
 
         if (old_w != new_w || old_h != new_h) {
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, new_w, new_h);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, new_w, new_h);
         }
     }
 

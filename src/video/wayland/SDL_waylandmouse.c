@@ -194,7 +194,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     focusdata = focus->driverdata;
 
     /* Cursors use integer scaling. */
-    *scale = SDL_ceilf(focusdata->scale_factor);
+    *scale = SDL_ceilf(focusdata->windowed_scale_factor);
     size *= *scale;
     for (i = 0; i < vdata->num_cursor_themes; i += 1) {
         if (vdata->cursor_themes[i].size == size) {

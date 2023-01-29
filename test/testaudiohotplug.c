@@ -84,13 +84,13 @@ iteration()
     SDL_Event e;
     SDL_AudioDeviceID dev;
     while (SDL_PollEvent(&e)) {
-        if (e.type == SDL_QUIT) {
+        if (e.type == SDL_EVENT_QUIT) {
             done = 1;
-        } else if (e.type == SDL_KEYUP) {
+        } else if (e.type == SDL_EVENT_KEY_UP) {
             if (e.key.keysym.sym == SDLK_ESCAPE) {
                 done = 1;
             }
-        } else if (e.type == SDL_AUDIODEVICEADDED) {
+        } else if (e.type == SDL_EVENT_AUDIO_DEVICE_ADDED) {
             int index = e.adevice.which;
             int iscapture = e.adevice.iscapture;
             const char *name = SDL_GetAudioDeviceName(index, iscapture);
@@ -113,7 +113,7 @@ iteration()
                     SDL_PlayAudioDevice(dev);
                 }
             }
-        } else if (e.type == SDL_AUDIODEVICEREMOVED) {
+        } else if (e.type == SDL_EVENT_AUDIO_DEVICE_REMOVED) {
             dev = (SDL_AudioDeviceID)e.adevice.which;
             SDL_Log("%s device %u removed.\n", devtypestr(e.adevice.iscapture), (unsigned int)dev);
             SDL_CloseAudioDevice(dev);

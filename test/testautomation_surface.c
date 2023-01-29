@@ -19,6 +19,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_images.h"
 
 /* ================= Test Case Implementation ================== */
 
@@ -621,6 +622,14 @@ int surface_testOverflow(void *arg)
     SDLTest_AssertCheck(surface == NULL, "Should detect negative pitch");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateSurfaceFrom(buf, 1, 1, 0, SDL_PIXELFORMAT_RGBA8888);
+    SDLTest_AssertCheck(surface == NULL, "Should detect zero pitch");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateSurfaceFrom(NULL, 1, 1, 0, SDL_PIXELFORMAT_RGBA8888);
+    SDLTest_AssertCheck(surface != NULL, "Allow zero pitch for partially set up surfaces: %s",
+                        surface != NULL ? "(success)" : SDL_GetError());
+    SDL_DestroySurface(surface);
 
     /* Less than 1 byte per pixel: the pitch can legitimately be less than
      * the width, but it must be enough to hold the appropriate number of

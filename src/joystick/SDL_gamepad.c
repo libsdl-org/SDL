@@ -378,7 +378,7 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
     SDL_Gamepad *gamepad;
 
     switch (event->type) {
-    case SDL_JOYAXISMOTION:
+    case SDL_EVENT_JOYSTICK_AXIS_MOTION:
     {
         SDL_AssertJoysticksLocked();
 
@@ -389,8 +389,8 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
             }
         }
     } break;
-    case SDL_JOYBUTTONDOWN:
-    case SDL_JOYBUTTONUP:
+    case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+    case SDL_EVENT_JOYSTICK_BUTTON_UP:
     {
         SDL_AssertJoysticksLocked();
 
@@ -401,7 +401,7 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
             }
         }
     } break;
-    case SDL_JOYHATMOTION:
+    case SDL_EVENT_JOYSTICK_HAT_MOTION:
     {
         SDL_AssertJoysticksLocked();
 
@@ -412,18 +412,18 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
             }
         }
     } break;
-    case SDL_JOYDEVICEADDED:
+    case SDL_EVENT_JOYSTICK_ADDED:
     {
         if (SDL_IsGamepad(event->jdevice.which)) {
             SDL_Event deviceevent;
 
-            deviceevent.type = SDL_GAMEPADADDED;
+            deviceevent.type = SDL_EVENT_GAMEPAD_ADDED;
             deviceevent.common.timestamp = 0;
             deviceevent.cdevice.which = event->jdevice.which;
             SDL_PushEvent(&deviceevent);
         }
     } break;
-    case SDL_JOYDEVICEREMOVED:
+    case SDL_EVENT_JOYSTICK_REMOVED:
     {
         SDL_AssertJoysticksLocked();
 
@@ -438,7 +438,7 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
         {
             SDL_Event deviceevent;
 
-            deviceevent.type = SDL_GAMEPADREMOVED;
+            deviceevent.type = SDL_EVENT_GAMEPAD_REMOVED;
             deviceevent.common.timestamp = 0;
             deviceevent.cdevice.which = event->jdevice.which;
             SDL_PushEvent(&deviceevent);
@@ -1215,7 +1215,7 @@ static void SDL_PrivateRefreshGamepadMapping(GamepadMapping_t *pGamepadMapping)
             {
                 SDL_Event event;
 
-                event.type = SDL_GAMEPADREMAPPED;
+                event.type = SDL_EVENT_GAMEPAD_REMAPPED;
                 event.common.timestamp = 0;
                 event.cdevice.which = gamepad->joystick->instance_id;
                 SDL_PushEvent(&event);
@@ -1902,7 +1902,7 @@ int SDL_InitGamepads(void)
         for (i = 0; joysticks[i]; ++i) {
             if (SDL_IsGamepad(joysticks[i])) {
                 SDL_Event deviceevent;
-                deviceevent.type = SDL_GAMEPADADDED;
+                deviceevent.type = SDL_EVENT_GAMEPAD_ADDED;
                 deviceevent.common.timestamp = 0;
                 deviceevent.cdevice.which = joysticks[i];
                 SDL_PushEvent(&deviceevent);
@@ -2396,7 +2396,7 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 /**
  *  Get the number of touchpads on a gamepad.
  */
-int SDL_GetGamepadNumTouchpads(SDL_Gamepad *gamepad)
+int SDL_GetNumGamepadTouchpads(SDL_Gamepad *gamepad)
 {
     int retval = 0;
 
@@ -2415,7 +2415,7 @@ int SDL_GetGamepadNumTouchpads(SDL_Gamepad *gamepad)
 /**
  *  Get the number of supported simultaneous fingers on a touchpad on a gamepad.
  */
-int SDL_GetGamepadNumTouchpadFingers(SDL_Gamepad *gamepad, int touchpad)
+int SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *gamepad, int touchpad)
 {
     int retval = 0;
 
@@ -3058,9 +3058,9 @@ static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gamep
     /* translate the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
-    if (SDL_EventEnabled(SDL_GAMEPADAXISMOTION)) {
+    if (SDL_EventEnabled(SDL_EVENT_GAMEPAD_AXIS_MOTION)) {
         SDL_Event event;
-        event.type = SDL_GAMEPADAXISMOTION;
+        event.type = SDL_EVENT_GAMEPAD_AXIS_MOTION;
         event.common.timestamp = timestamp;
         event.caxis.which = gamepad->joystick->instance_id;
         event.caxis.axis = axis;
@@ -3088,10 +3088,10 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
 
     switch (state) {
     case SDL_PRESSED:
-        event.type = SDL_GAMEPADBUTTONDOWN;
+        event.type = SDL_EVENT_GAMEPAD_BUTTON_DOWN;
         break;
     case SDL_RELEASED:
-        event.type = SDL_GAMEPADBUTTONUP;
+        event.type = SDL_EVENT_GAMEPAD_BUTTON_UP;
         break;
     default:
         /* Invalid state -- bail */
@@ -3132,16 +3132,16 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
 }
 
 static const Uint32 SDL_gamepad_event_list[] = {
-    SDL_GAMEPADAXISMOTION,
-    SDL_GAMEPADBUTTONDOWN,
-    SDL_GAMEPADBUTTONUP,
-    SDL_GAMEPADADDED,
-    SDL_GAMEPADREMOVED,
-    SDL_GAMEPADREMAPPED,
-    SDL_GAMEPADTOUCHPADDOWN,
-    SDL_GAMEPADTOUCHPADMOTION,
-    SDL_GAMEPADTOUCHPADUP,
-    SDL_GAMEPADSENSORUPDATE,
+    SDL_EVENT_GAMEPAD_AXIS_MOTION,
+    SDL_EVENT_GAMEPAD_BUTTON_DOWN,
+    SDL_EVENT_GAMEPAD_BUTTON_UP,
+    SDL_EVENT_GAMEPAD_ADDED,
+    SDL_EVENT_GAMEPAD_REMOVED,
+    SDL_EVENT_GAMEPAD_REMAPPED,
+    SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN,
+    SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION,
+    SDL_EVENT_GAMEPAD_TOUCHPAD_UP,
+    SDL_EVENT_GAMEPAD_SENSOR_UPDATE,
 };
 
 void SDL_SetGamepadEventsEnabled(SDL_bool enabled)

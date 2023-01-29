@@ -111,11 +111,13 @@ extern DECLSPEC int SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
  * This should be called after either calling SDL_Vulkan_LoadLibrary() or
  * creating an SDL_Window with the `SDL_WINDOW_VULKAN` flag.
  *
- * The actual type of the returned function pointer is PFN_vkGetInstanceProcAddr,
- * but that isn't available because the Vulkan headers are not included here. You
- * should cast the return value of this function to that type, e.g.
+ * The actual type of the returned function pointer is
+ * PFN_vkGetInstanceProcAddr, but that isn't available because the Vulkan
+ * headers are not included here. You should cast the return value of this
+ * function to that type, e.g.
  *
- *  `vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr();`
+ * `vkGetInstanceProcAddr =
+ * (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr();`
  *
  * \returns the function pointer for `vkGetInstanceProcAddr` or NULL on error.
  *
@@ -177,32 +179,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(int *pCount,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Vulkan_GetInstanceExtensions
- * \sa SDL_Vulkan_GetDrawableSize
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
                                                           VkInstance instance,
                                                           VkSurfaceKHR* surface);
-
-/**
- * Get the size of the window's underlying drawable dimensions in pixels.
- *
- * This may differ from SDL_GetWindowSize() if we're rendering to a high-DPI
- * drawable, i.e. the window was created with `SDL_WINDOW_ALLOW_HIGHDPI` on a
- * platform with high-DPI support (Apple calls this "Retina"), and not
- * disabled by the `SDL_HINT_VIDEO_HIGHDPI_DISABLED` hint.
- *
- * \param window an SDL_Window for which the size is to be queried
- * \param w Pointer to the variable to write the width to or NULL
- * \param h Pointer to the variable to write the height to or NULL
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetWindowSize
- * \sa SDL_CreateWindow
- * \sa SDL_Vulkan_CreateSurface
- */
-extern DECLSPEC void SDLCALL SDL_Vulkan_GetDrawableSize(SDL_Window * window,
-                                                        int *w, int *h);
 
 /* @} *//* Vulkan support functions */
 

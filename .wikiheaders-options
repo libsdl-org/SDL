@@ -1,6 +1,6 @@
 projectfullname = SDL
 projectshortname = SDL
-incsubdir = include
+incsubdir = include/SDL3
 wikisubdir =
 apiprefixregex = (SDL_|SDLK_|KMOD_|AUDIO_)
 mainincludefname = SDL.h
@@ -13,4 +13,4 @@ projecturl = https://libsdl.org/
 wikiurl = https://wiki.libsdl.org
 bugreporturl = https://github.com/libsdl-org/sdlwiki/issues/new
 warn_about_missing = 0
-wikipreamble = (This is the documentation for SDL3, which is under heavy development and the API is changing! SDL2 is the current stable version!)
+wikipreamble = (This is the documentation for SDL3, which is under heavy development and the API is changing! [SDL2](https://wiki.libsdl.org/SDL2/) is the current stable version!)

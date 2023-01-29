@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Setup dependencies
       run: |
-        apk update 
+        apk update
         apk add cmake gmp mpc1 mpfr4 ninja pkgconf make git
 
     # To be removed once ps2_drivers is part of PS2DEV
@@ -57,7 +57,7 @@ jobs:
         export LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
         export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh
-    
+
     - name: Get short SHA
       id: slug
       run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"

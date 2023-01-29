@@ -177,7 +177,7 @@ int UIKit_CreateWindow(_THIS, SDL_Window *window)
             const SDL_DisplayMode *bestmode = NULL;
             for (i = display->num_display_modes; i >= 0; i--) {
                 const SDL_DisplayMode *mode = &display->display_modes[i];
-                if ((mode->w >= window->w) && (mode->h >= window->h)) {
+                if ((mode->screen_w >= window->w) && (mode->screen_h >= window->h)) {
                     bestmode = mode;
                 }
             }
@@ -194,7 +194,7 @@ int UIKit_CreateWindow(_THIS, SDL_Window *window)
         }
 
         if (data.uiscreen == [UIScreen mainScreen]) {
-            if (window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS)) {
+            if (window->flags & (SDL_WINDOW_FULLSCREEN_MASK | SDL_WINDOW_BORDERLESS)) {
                 [UIApplication sharedApplication].statusBarHidden = YES;
             } else {
                 [UIApplication sharedApplication].statusBarHidden = NO;
@@ -267,7 +267,7 @@ static void UIKit_UpdateWindowBorder(_THIS, SDL_Window *window)
 
 #if !TARGET_OS_TV
     if (data.uiwindow.screen == [UIScreen mainScreen]) {
-        if (window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS)) {
+        if (window->flags & (SDL_WINDOW_FULLSCREEN_MASK | SDL_WINDOW_BORDERLESS)) {
             [UIApplication sharedApplication].statusBarHidden = YES;
         } else {
             [UIApplication sharedApplication].statusBarHidden = NO;

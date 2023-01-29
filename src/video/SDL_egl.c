@@ -32,6 +32,9 @@
 #if SDL_VIDEO_DRIVER_RPI
 #include <unistd.h>
 #endif
+#if SDL_VIDEO_VITA_PVR_OGL
+#include <GLES2/gl2.h>
+#endif
 
 #include "SDL_sysvideo.h"
 #include "SDL_egl_c.h"

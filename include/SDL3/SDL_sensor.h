@@ -132,7 +132,9 @@ typedef enum
  * Get a list of currently connected sensors.
  *
  * \param count a pointer filled in with the number of sensors returned
- * \returns a 0 terminated array of sensor instance IDs which should be freed with SDL_free(), or NULL on error; call SDL_GetError() for more details.
+ * \returns a 0 terminated array of sensor instance IDs which should be freed
+ *          with SDL_free(), or NULL on error; call SDL_GetError() for more
+ *          details.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -152,7 +154,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetSensorInstanceName(SDL_SensorID insta
  * Get the type of a sensor.
  *
  * \param instance_id the sensor instance ID
- * \returns the SDL_SensorType, or `SDL_SENSOR_INVALID` if `instance_id` is not valid
+ * \returns the SDL_SensorType, or `SDL_SENSOR_INVALID` if `instance_id` is
+ *          not valid
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -162,7 +165,8 @@ extern DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorInstanceType(SDL_SensorID in
  * Get the platform dependent type of a sensor.
  *
  * \param instance_id the sensor instance ID
- * \returns the sensor platform dependent type, or -1 if `instance_id` is not valid
+ * \returns the sensor platform dependent type, or -1 if `instance_id` is not
+ *          valid
  *
  * \since This function is available since SDL 3.0.0.
  */

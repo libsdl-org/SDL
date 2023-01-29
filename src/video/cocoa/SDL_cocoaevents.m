@@ -25,13 +25,6 @@
 #include "SDL_cocoavideo.h"
 #include "../../events/SDL_events_c.h"
 
-/* This define was added in the 10.9 SDK. */
-#ifndef kIOPMAssertPreventUserIdleDisplaySleep
-#define kIOPMAssertPreventUserIdleDisplaySleep kIOPMAssertionTypePreventUserIdleDisplaySleep
-#endif
-#ifndef NSAppKitVersionNumber10_8
-#define NSAppKitVersionNumber10_8 1187
-#endif
 #ifndef MAC_OS_X_VERSION_10_12
 #define NSEventTypeApplicationDefined NSApplicationDefined
 #endif
@@ -331,14 +324,10 @@ static NSString *GetApplicationName(void)
 
 static bool LoadMainMenuNibIfAvailable(void)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
     NSDictionary *infoDict;
     NSString *mainNibFileName;
     bool success = false;
 
-    if (floor(NSAppKitVersionNumber) < NSAppKitVersionNumber10_8) {
-        return false;
-    }
     infoDict = [[NSBundle mainBundle] infoDictionary];
     if (infoDict) {
         mainNibFileName = [infoDict valueForKey:@"NSMainNibFile"];
@@ -349,9 +338,6 @@ static bool LoadMainMenuNibIfAvailable(void)
     }
 
     return success;
-#else
-    return false;
-#endif
 }
 
 static void CreateApplicationMenus(void)

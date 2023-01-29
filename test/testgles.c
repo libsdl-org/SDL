@@ -283,7 +283,7 @@ int main(int argc, char *argv[])
         /* Check for events */
         ++frames;
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_WINDOWEVENT_RESIZED) {
+            if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                 for (i = 0; i < state->num_windows; ++i) {
                     if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
                         status = SDL_GL_MakeCurrent(state->windows[i], context[i]);

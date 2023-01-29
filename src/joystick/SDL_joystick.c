@@ -1403,7 +1403,7 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
     {
         SDL_Event event;
 
-        event.type = SDL_JOYDEVICEADDED;
+        event.type = SDL_EVENT_JOYSTICK_ADDED;
         event.common.timestamp = 0;
 
         if (SDL_EventEnabled(event.type)) {
@@ -1465,7 +1465,7 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id)
     }
 
 #if !SDL_EVENTS_DISABLED
-    event.type = SDL_JOYDEVICEREMOVED;
+    event.type = SDL_EVENT_JOYSTICK_REMOVED;
     event.common.timestamp = 0;
 
     if (SDL_EventEnabled(event.type)) {
@@ -1534,9 +1534,9 @@ int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, S
     /* Post the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
-    if (SDL_EventEnabled(SDL_JOYAXISMOTION)) {
+    if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_AXIS_MOTION)) {
         SDL_Event event;
-        event.type = SDL_JOYAXISMOTION;
+        event.type = SDL_EVENT_JOYSTICK_AXIS_MOTION;
         event.common.timestamp = timestamp;
         event.jaxis.which = joystick->instance_id;
         event.jaxis.axis = axis;
@@ -1576,9 +1576,9 @@ int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uin
     /* Post the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
-    if (SDL_EventEnabled(SDL_JOYHATMOTION)) {
+    if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_HAT_MOTION)) {
         SDL_Event event;
-        event.type = SDL_JOYHATMOTION;
+        event.type = SDL_EVENT_JOYSTICK_HAT_MOTION;
         event.common.timestamp = timestamp;
         event.jhat.which = joystick->instance_id;
         event.jhat.hat = hat;
@@ -1599,10 +1599,10 @@ int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 butto
 
     switch (state) {
     case SDL_PRESSED:
-        event.type = SDL_JOYBUTTONDOWN;
+        event.type = SDL_EVENT_JOYSTICK_BUTTON_DOWN;
         break;
     case SDL_RELEASED:
-        event.type = SDL_JOYBUTTONUP;
+        event.type = SDL_EVENT_JOYSTICK_BUTTON_UP;
         break;
     default:
         /* Invalid state -- bail */
@@ -1701,13 +1701,13 @@ void SDL_UpdateJoysticks(void)
 }
 
 static const Uint32 SDL_joystick_event_list[] = {
-    SDL_JOYAXISMOTION,
-    SDL_JOYHATMOTION,
-    SDL_JOYBUTTONDOWN,
-    SDL_JOYBUTTONUP,
-    SDL_JOYDEVICEADDED,
-    SDL_JOYDEVICEREMOVED,
-    SDL_JOYBATTERYUPDATED
+    SDL_EVENT_JOYSTICK_AXIS_MOTION,
+    SDL_EVENT_JOYSTICK_HAT_MOTION,
+    SDL_EVENT_JOYSTICK_BUTTON_DOWN,
+    SDL_EVENT_JOYSTICK_BUTTON_UP,
+    SDL_EVENT_JOYSTICK_ADDED,
+    SDL_EVENT_JOYSTICK_REMOVED,
+    SDL_EVENT_JOYSTICK_BATTERY_UPDATED
 };
 
 void SDL_SetJoystickEventsEnabled(SDL_bool enabled)
@@ -2833,9 +2833,9 @@ void SDL_SendJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLevel
     SDL_assert(joystick->ref_count); /* make sure we are calling this only for update, not for initialization */
     if (ePowerLevel != joystick->epowerlevel) {
 #if !SDL_EVENTS_DISABLED
-        if (SDL_EventEnabled(SDL_JOYBATTERYUPDATED)) {
+        if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_BATTERY_UPDATED)) {
             SDL_Event event;
-            event.type = SDL_JOYBATTERYUPDATED;
+            event.type = SDL_EVENT_JOYSTICK_BATTERY_UPDATED;
             event.common.timestamp = 0;
             event.jbattery.which = joystick->instance_id;
             event.jbattery.level = ePowerLevel;
@@ -2914,16 +2914,16 @@ int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touch
     }
 
     if (state == finger_info->state) {
-        event_type = SDL_GAMEPADTOUCHPADMOTION;
+        event_type = SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION;
     } else if (state) {
-        event_type = SDL_GAMEPADTOUCHPADDOWN;
+        event_type = SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN;
     } else {
-        event_type = SDL_GAMEPADTOUCHPADUP;
+        event_type = SDL_EVENT_GAMEPAD_TOUCHPAD_UP;
     }
 
     /* We ignore events if we don't have keyboard focus, except for touch release */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if (event_type != SDL_GAMEPADTOUCHPADUP) {
+        if (event_type != SDL_EVENT_GAMEPAD_TOUCHPAD_UP) {
             return 0;
         }
     }
@@ -2977,9 +2977,9 @@ int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorT
 
                 /* Post the event, if desired */
 #if !SDL_EVENTS_DISABLED
-                if (SDL_EventEnabled(SDL_GAMEPADSENSORUPDATE)) {
+                if (SDL_EventEnabled(SDL_EVENT_GAMEPAD_SENSOR_UPDATE)) {
                     SDL_Event event;
-                    event.type = SDL_GAMEPADSENSORUPDATE;
+                    event.type = SDL_EVENT_GAMEPAD_SENSOR_UPDATE;
                     event.common.timestamp = timestamp;
                     event.csensor.which = joystick->instance_id;
                     event.csensor.sensor = type;

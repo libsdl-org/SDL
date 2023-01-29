@@ -92,7 +92,7 @@ extern "C" {
  * By default this hint is not set and the APK expansion files are not searched.
  */
 #define SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION"
- 
+
 /**
  * \brief Android APK expansion patch file version. Should be a string number like "1", "2" etc.
  *
@@ -132,13 +132,13 @@ extern "C" {
  * \brief A variable to control whether we trap the Android back button to handle it manually.
  *        This is necessary for the right mouse button to work on some Android devices, or
  *        to be able to trap the back button for use in your code reliably.  If set to true,
- *        the back button will show up as an SDL_KEYDOWN / SDL_KEYUP pair with a keycode of 
+ *        the back button will show up as an SDL_EVENT_KEY_DOWN / SDL_EVENT_KEY_UP pair with a keycode of
  *        SDL_SCANCODE_AC_BACK.
  *
  * The variable can be set to the following values:
  *   "0"       - Back button will be handled as usual for system. (default)
  *   "1"       - Back button will be trapped, allowing you to handle the key press
- *               manually.  (This will also let right mouse click work on systems 
+ *               manually.  (This will also let right mouse click work on systems
  *               where the right mouse button functions as back.)
  *
  * The value of this hint is used at runtime, so it can be changed at any time.
@@ -147,7 +147,7 @@ extern "C" {
 
 /**
  *  \brief Specify an application name.
- * 
+ *
  * This hint lets you specify the application name sent to the OS when
  * required. For example, this will often appear in volume control applets for
  * audio streams, and in lists of applications which are inhibiting the
@@ -516,7 +516,7 @@ extern "C" {
 
 /**
  *  \brief  If set, game controller face buttons report their values according to their labels instead of their positional layout.
- * 
+ *
  *  For example, on Nintendo Switch controllers, normally you'd get:
  *
  *      (Y)
@@ -557,13 +557,13 @@ extern "C" {
 #define SDL_HINT_HIDAPI_IGNORE_DEVICES "SDL_HIDAPI_IGNORE_DEVICES"
 
 /**
- * \brief A variable to control whether certain IMEs should handle text editing internally instead of sending SDL_TEXTEDITING events.
+ * \brief A variable to control whether certain IMEs should handle text editing internally instead of sending SDL_EVENT_TEXT_EDITING events.
  *
  * The variable can be set to the following values:
- *   "0"       - SDL_TEXTEDITING events are sent, and it is the application's
- *               responsibility to render the text from these events and 
+ *   "0"       - SDL_EVENT_TEXT_EDITING events are sent, and it is the application's
+ *               responsibility to render the text from these events and
  *               differentiate it somehow from committed text. (default)
- *   "1"       - If supported by the IME then SDL_TEXTEDITING events are not sent, 
+ *   "1"       - If supported by the IME then SDL_EVENT_TEXT_EDITING events are not sent,
  *               and text that is being composed will be rendered in its own UI.
  */
 #define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
@@ -1147,10 +1147,10 @@ extern "C" {
  *  \brief  A variable controlling whether relative mouse motion is affected by renderer scaling
  *
  *  This variable can be set to the following values:
- *    "0"       - Relative motion is unaffected by DPI or renderer's logical size
- *    "1"       - Relative motion is scaled according to DPI scaling and logical size
+ *    "0"       - Relative motion is unaffected by display scale or renderer's logical size
+ *    "1"       - Relative motion is scaled according to display scale scaling and logical size
  *
- *  By default relative mouse deltas are affected by DPI and renderer scaling
+ *  By default relative mouse deltas are affected by display scale and renderer scaling
  */
 #define SDL_HINT_MOUSE_RELATIVE_SCALING "SDL_MOUSE_RELATIVE_SCALING"
 
@@ -1211,7 +1211,7 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *   "0"       - SDL will install a SIGINT and SIGTERM handler, and when it
- *               catches a signal, convert it into an SDL_QUIT event.
+ *               catches a signal, convert it into an SDL_EVENT_QUIT event.
  *   "1"       - SDL will not install a signal handler at all.
  */
 #define SDL_HINT_NO_SIGNAL_HANDLERS   "SDL_NO_SIGNAL_HANDLERS"
@@ -1279,7 +1279,7 @@ extern "C" {
  *
  *  If set, this will be favored over anything the OS might report for the
  *  user's preferred locales. Changing this hint at runtime will not generate
- *  a SDL_LOCALECHANGED event (but if you can change the hint, you can push
+ *  a SDL_EVENT_LOCALE_CHANGED event (but if you can change the hint, you can push
  *  your own event, if you want).
  *
  *  The format of this hint is a comma-separated list of language and locale,
@@ -1487,7 +1487,7 @@ extern "C" {
  * disabled. You should use a string that describes what your program is doing
  * (and, therefore, why the screensaver is disabled).  For example, "Playing a
  * game" or "Watching a video".
- * 
+ *
  * Setting this to "" or leaving it unset will have SDL use a reasonable
  * default: "Playing a game" or something similar.
  *
@@ -1501,13 +1501,13 @@ extern "C" {
  *  On some platforms, like Linux, a realtime priority thread may be subject to restrictions
  *  that require special handling by the application. This hint exists to let SDL know that
  *  the app is prepared to handle said restrictions.
- * 
+ *
  *  On Linux, SDL will apply the following configuration to any thread that becomes realtime:
  *   * The SCHED_RESET_ON_FORK bit will be set on the scheduling policy,
  *   * An RLIMIT_RTTIME budget will be configured to the rtkit specified limit.
  *     * Exceeding this limit will result in the kernel sending SIGKILL to the app,
  *     * Refer to the man pages for more information.
- * 
+ *
  *  This variable can be set to the following values:
  *    "0"       - default platform specific behaviour
  *    "1"       - Force SDL_THREAD_PRIORITY_TIME_CRITICAL to a realtime scheduling policy
@@ -1595,7 +1595,7 @@ extern "C" {
 #define SDL_HINT_TV_REMOTE_AS_JOYSTICK "SDL_TV_REMOTE_AS_JOYSTICK"
 
 /**
- *  \brief  A variable controlling whether the screensaver is enabled. 
+ *  \brief  A variable controlling whether the screensaver is enabled.
  *
  *  This variable can be set to the following values:
  *    "0"       - Disable screensaver
@@ -1608,7 +1608,7 @@ extern "C" {
 /**
  * \brief Tell the video driver that we only want a double buffer.
  *
- * By default, most lowlevel 2D APIs will use a triple buffer scheme that 
+ * By default, most lowlevel 2D APIs will use a triple buffer scheme that
  * wastes no CPU time on waiting for vsync after issuing a flip, but
  * introduces a frame of latency. On the other hand, using a double buffer
  * scheme instead is recommended for cases where low latency is an important
@@ -1661,11 +1661,6 @@ extern "C" {
  * an externally managed OpenGL context or attaching a Vulkan surface to the window.
  */
 #define SDL_HINT_VIDEO_EXTERNAL_CONTEXT    "SDL_VIDEO_EXTERNAL_CONTEXT"
-
-/**
- *  \brief If set to 1, then do not allow high-DPI windows. ("Retina" on Mac and iOS)
- */
-#define SDL_HINT_VIDEO_HIGHDPI_DISABLED "SDL_VIDEO_HIGHDPI_DISABLED"
 
 /**
  *  \brief  A variable that dictates policy for fullscreen Spaces on macOS.
@@ -1751,9 +1746,9 @@ extern "C" {
 
 /**
 *  \brief  A variable that is the address of another SDL_Window* (as a hex string formatted with "%p").
-*  
+*
 *  If this hint is set before SDL_CreateWindowFrom() and the SDL_Window* it is set to has
-*  SDL_WINDOW_OPENGL set (and running on WGL only, currently), then two things will occur on the newly 
+*  SDL_WINDOW_OPENGL set (and running on WGL only, currently), then two things will occur on the newly
 *  created SDL_Window:
 *
 *  1. Its pixel format will be set to the same pixel format as this SDL_Window.  This is
@@ -1820,13 +1815,13 @@ extern "C" {
 
 /**
  * \brief A variable controlling whether the X11 _NET_WM_BYPASS_COMPOSITOR hint should be used.
- * 
+ *
  * This variable can be set to the following values:
  * "0" - Disable _NET_WM_BYPASS_COMPOSITOR
  * "1" - Enable _NET_WM_BYPASS_COMPOSITOR
- * 
+ *
  * By default SDL will use _NET_WM_BYPASS_COMPOSITOR
- * 
+ *
  */
 #define SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR "SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR"
 
@@ -1964,7 +1959,7 @@ extern "C" {
 #define SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS "SDL_WINDOWS_ENABLE_MENU_MNEMONICS"
 
 /**
- *  \brief  A variable controlling whether the windows message loop is processed by SDL 
+ *  \brief  A variable controlling whether the windows message loop is processed by SDL
  *
  *  This variable can be set to the following values:
  *    "0"       - The window message loop is not run
@@ -2005,7 +2000,7 @@ extern "C" {
 #define SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL "SDL_WINDOWS_FORCE_SEMAPHORE_KERNEL"
 
 /**
- * \brief A variable to specify custom icon resource id from RC file on Windows platform 
+ * \brief A variable to specify custom icon resource id from RC file on Windows platform
  */
 #define SDL_HINT_WINDOWS_INTRESOURCE_ICON       "SDL_WINDOWS_INTRESOURCE_ICON"
 #define SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL "SDL_WINDOWS_INTRESOURCE_ICON_SMALL"
@@ -2040,58 +2035,7 @@ extern "C" {
 #define SDL_HINT_WINDOWS_USE_D3D9EX "SDL_WINDOWS_USE_D3D9EX"
 
 /**
- * \brief Controls whether SDL will declare the process to be DPI aware.
- *
- *  This hint must be set before initializing the video subsystem.
- *
- *  The main purpose of declaring DPI awareness is to disable OS bitmap scaling of SDL windows on monitors with 
- *  a DPI scale factor.
- * 
- *  This hint is equivalent to requesting DPI awareness via external means (e.g. calling SetProcessDpiAwarenessContext)
- *  and does not cause SDL to use a virtualized coordinate system, so it will generally give you 1 SDL coordinate = 1 pixel
- *  even on high-DPI displays.
- * 
- *  For more information, see:
- *  https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
- * 
- *  This variable can be set to the following values:
- *    ""             - Do not change the DPI awareness (default).
- *    "unaware"      - Declare the process as DPI unaware. (Windows 8.1 and later).
- *    "system"       - Request system DPI awareness. (Vista and later).
- *    "permonitor"   - Request per-monitor DPI awareness. (Windows 8.1 and later).
- *    "permonitorv2" - Request per-monitor V2 DPI awareness. (Windows 10, version 1607 and later).
- *                     The most visible difference from "permonitor" is that window title bar will be scaled
- *                     to the visually correct size when dragging between monitors with different scale factors.
- *                     This is the preferred DPI awareness level.
- *
- * If the requested DPI awareness is not available on the currently running OS, SDL will try to request the best
- * available match.
- */
-#define SDL_HINT_WINDOWS_DPI_AWARENESS "SDL_WINDOWS_DPI_AWARENESS"
-
-/**
- * \brief Uses DPI-scaled points as the SDL coordinate system on Windows.
- * 
- *  This changes the SDL coordinate system units to be DPI-scaled points, rather than pixels everywhere.
- *  This means windows will be appropriately sized, even when created on high-DPI displays with scaling.
- * 
- *  e.g. requesting a 640x480 window from SDL, on a display with 125% scaling in Windows display settings,
- *  will create a window with an 800x600 client area (in pixels).
- *
- *  Setting this to "1" implicitly requests process DPI awareness (setting SDL_WINDOWS_DPI_AWARENESS is unnecessary),
- *  and forces SDL_WINDOW_ALLOW_HIGHDPI on all windows.
- * 
- *  This variable can be set to the following values:
- *    "0"       - SDL coordinates equal Windows coordinates. No automatic window resizing when dragging
- *                between monitors with different scale factors (unless this is performed by
- *                Windows itself, which is the case when the process is DPI unaware).
- *    "1"       - SDL coordinates are in DPI-scaled points. Automatically resize windows as needed on
- *                displays with non-100% scale factors.
- */
-#define SDL_HINT_WINDOWS_DPI_SCALING "SDL_WINDOWS_DPI_SCALING"
-
-/**
- *  \brief  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden 
+ *  \brief  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden
  *
  *  This variable can be set to the following values:
  *    "0"       - The window frame is not interactive when the cursor is hidden (no move, resize, etc)
@@ -2102,7 +2046,7 @@ extern "C" {
 #define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN    "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
 
 /**
-*  \brief  A variable controlling whether the window is activated when the SDL_ShowWindow function is called 
+*  \brief  A variable controlling whether the window is activated when the SDL_ShowWindow function is called
 *
 *  This variable can be set to the following values:
 *    "0"       - The window is activated when the SDL_ShowWindow function is called
@@ -2138,8 +2082,8 @@ extern "C" {
  *  the app).
  *
  *  SDL registers its own back-button-press callback with the Windows Phone
- *  OS.  This callback will emit a pair of SDL key-press events (SDL_KEYDOWN
- *  and SDL_KEYUP), each with a scancode of SDL_SCANCODE_AC_BACK, after which
+ *  OS.  This callback will emit a pair of SDL key-press events (SDL_EVENT_KEY_DOWN
+ *  and SDL_EVENT_KEY_UP), each with a scancode of SDL_SCANCODE_AC_BACK, after which
  *  it will check the contents of the hint, SDL_HINT_WINRT_HANDLE_BACK_BUTTON.
  *  If the hint's value is set to "1", the back button event's Handled
  *  property will get set to 'true'.  If the hint's value is set to something
@@ -2152,8 +2096,8 @@ extern "C" {
  *
  *  In order to get notified when a back button is pressed, SDL apps should
  *  register a callback function with SDL_AddEventWatch(), and have it listen
- *  for SDL_KEYDOWN events that have a scancode of SDL_SCANCODE_AC_BACK.
- *  (Alternatively, SDL_KEYUP events can be listened-for.  Listening for
+ *  for SDL_EVENT_KEY_DOWN events that have a scancode of SDL_SCANCODE_AC_BACK.
+ *  (Alternatively, SDL_EVENT_KEY_UP events can be listened-for.  Listening for
  *  either event type is suitable.)  Any value of SDL_HINT_WINRT_HANDLE_BACK_BUTTON
  *  set by such a callback, will be applied to the OS' current
  *  back-button-press event.
@@ -2290,26 +2234,26 @@ extern "C" {
 #define SDL_HINT_X11_WINDOW_TYPE "SDL_X11_WINDOW_TYPE"
 
 /**
- *  \brief  A variable that decides whether to send SDL_QUIT when closing the final window.
+ *  \brief  A variable that decides whether to send SDL_EVENT_QUIT when closing the final window.
  *
- *  By default, SDL sends an SDL_QUIT event when there is only one window
- *  and it receives an SDL_WINDOWEVENT_CLOSE event, under the assumption most
+ *  By default, SDL sends an SDL_EVENT_QUIT event when there is only one window
+ *  and it receives an SDL_EVENT_WINDOW_CLOSE_REQUESTED event, under the assumption most
  *  apps would also take the loss of this window as a signal to terminate the
  *  program.
  *
  *  However, it's not unreasonable in some cases to have the program continue
  *  to live on, perhaps to create new windows later.
  *
- *  Changing this hint to "0" will cause SDL to not send an SDL_QUIT event
+ *  Changing this hint to "0" will cause SDL to not send an SDL_EVENT_QUIT event
  *  when the final window is requesting to close. Note that in this case,
- *  there are still other legitimate reasons one might get an SDL_QUIT
+ *  there are still other legitimate reasons one might get an SDL_EVENT_QUIT
  *  event: choosing "Quit" from the macOS menu bar, sending a SIGINT (ctrl-c)
  *  on Unix, etc.
  *
  *  The default value is "1".  This hint can be changed at any time.
  *
  *  This hint is available since SDL 2.0.22. Before then, you always get
- *  an SDL_QUIT event when closing the final window.
+ *  an SDL_EVENT_QUIT event when closing the final window.
  */
 #define SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE "SDL_QUIT_ON_LAST_WINDOW_CLOSE"
 

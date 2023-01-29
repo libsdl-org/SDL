@@ -168,14 +168,14 @@ int main(int argc, char **argv)
     SDL_SetWindowShape(window, pictures[current_picture].surface, &pictures[current_picture].mode);
     while (should_exit == 0) {
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_KEYDOWN) {
+            if (event.type == SDL_EVENT_KEY_DOWN) {
                 button_down = 1;
                 if (event.key.keysym.sym == SDLK_ESCAPE) {
                     should_exit = 1;
                     break;
                 }
             }
-            if (button_down && event.type == SDL_KEYUP) {
+            if (button_down && event.type == SDL_EVENT_KEY_UP) {
                 button_down = 0;
                 current_picture += 1;
                 if (current_picture >= num_pictures) {
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
                 SDL_SetWindowSize(window, texture_dimensions.w, texture_dimensions.h);
                 SDL_SetWindowShape(window, pictures[current_picture].surface, &pictures[current_picture].mode);
             }
-            if (event.type == SDL_QUIT) {
+            if (event.type == SDL_EVENT_QUIT) {
                 should_exit = 1;
                 break;
             }

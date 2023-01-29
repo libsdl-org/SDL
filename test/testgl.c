@@ -305,7 +305,7 @@ int main(int argc, char *argv[])
 
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
-    SDL_GL_GetDrawableSize(state->windows[0], &dw, &dh);
+    SDL_GetWindowSizeInPixels(state->windows[0], &dw, &dh);
     SDL_Log("Draw Size     : %d,%d\n", dw, dh);
     SDL_Log("\n");
     SDL_Log("Vendor        : %s\n", ctx.glGetString(GL_VENDOR));
@@ -387,7 +387,7 @@ int main(int argc, char *argv[])
         ++frames;
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
-            if (event.type == SDL_KEYDOWN) {
+            if (event.type == SDL_EVENT_KEY_DOWN) {
                 if (event.key.keysym.sym == SDLK_o) {
                     swap_interval--;
                     update_swap_interval = SDL_TRUE;
@@ -411,7 +411,7 @@ int main(int argc, char *argv[])
             if (update_swap_interval) {
                 SDL_GL_SetSwapInterval(swap_interval);
             }
-            SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+            SDL_GetWindowSizeInPixels(state->windows[i], &w, &h);
             ctx.glViewport(0, 0, w, h);
             Render();
             SDL_GL_SwapWindow(state->windows[i]);

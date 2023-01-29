@@ -229,24 +229,24 @@ void loop()
         SDLTest_CommonEvent(state, &event, &done);
 
         switch (event.type) {
-        case SDL_WINDOWEVENT_RESIZED:
+        case SDL_EVENT_WINDOW_RESIZED:
             SDL_SetRenderViewport(renderer, NULL);
             window_w = event.window.data1;
             window_h = event.window.data2;
             displayrect.w = (float)window_w;
             displayrect.h = (float)window_h;
             break;
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTONDOWN:
             displayrect.x = event.button.x - window_w / 2;
             displayrect.y = event.button.y - window_h / 2;
             break;
-        case SDL_MOUSEMOTION:
+        case SDL_EVENT_MOUSE_MOTION:
             if (event.motion.state) {
                 displayrect.x = event.motion.x - window_w / 2;
                 displayrect.y = event.motion.y - window_h / 2;
             }
             break;
-        case SDL_KEYDOWN:
+        case SDL_EVENT_KEY_DOWN:
             if (event.key.keysym.sym == SDLK_SPACE) {
                 paused = !paused;
                 break;
@@ -494,7 +494,7 @@ int main(int argc, char **argv)
     displayrect.h = (float)window_h;
 
     /* Ignore key up events, they don't even get filtered */
-    SDL_SetEventEnabled(SDL_KEYUP, SDL_FALSE);
+    SDL_SetEventEnabled(SDL_EVENT_KEY_UP, SDL_FALSE);
 
     /* Main render loop */
     frames = 0;

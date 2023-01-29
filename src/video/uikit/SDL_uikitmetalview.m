@@ -124,25 +124,4 @@ UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
     }
 }
 
-void UIKit_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-        SDL_uikitview *view = (SDL_uikitview *)data.uiwindow.rootViewController.view;
-        SDL_uikitmetalview *metalview = [view viewWithTag:SDL_METALVIEW_TAG];
-        if (metalview) {
-            CAMetalLayer *layer = (CAMetalLayer *)metalview.layer;
-            assert(layer != NULL);
-            if (w) {
-                *w = layer.drawableSize.width;
-            }
-            if (h) {
-                *h = layer.drawableSize.height;
-            }
-        } else {
-            SDL_GetWindowSize(window, w, h);
-        }
-    }
-}
-
 #endif /* SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */

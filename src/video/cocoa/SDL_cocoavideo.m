@@ -81,7 +81,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->VideoQuit = Cocoa_VideoQuit;
         device->GetDisplayBounds = Cocoa_GetDisplayBounds;
         device->GetDisplayUsableBounds = Cocoa_GetDisplayUsableBounds;
-        device->GetDisplayDPI = Cocoa_GetDisplayDPI;
+        device->GetDisplayPhysicalDPI = Cocoa_GetDisplayPhysicalDPI;
         device->GetDisplayModes = Cocoa_GetDisplayModes;
         device->SetDisplayMode = Cocoa_SetDisplayMode;
         device->PumpEvents = Cocoa_PumpEvents;
@@ -145,7 +145,6 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             device->GL_UnloadLibrary = Cocoa_GLES_UnloadLibrary;
             device->GL_CreateContext = Cocoa_GLES_CreateContext;
             device->GL_MakeCurrent = Cocoa_GLES_MakeCurrent;
-            device->GL_GetDrawableSize = Cocoa_GLES_GetDrawableSize;
             device->GL_SetSwapInterval = Cocoa_GLES_SetSwapInterval;
             device->GL_GetSwapInterval = Cocoa_GLES_GetSwapInterval;
             device->GL_SwapWindow = Cocoa_GLES_SwapWindow;
@@ -161,14 +160,12 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->Vulkan_UnloadLibrary = Cocoa_Vulkan_UnloadLibrary;
         device->Vulkan_GetInstanceExtensions = Cocoa_Vulkan_GetInstanceExtensions;
         device->Vulkan_CreateSurface = Cocoa_Vulkan_CreateSurface;
-        device->Vulkan_GetDrawableSize = Cocoa_Vulkan_GetDrawableSize;
 #endif
 
 #if SDL_VIDEO_METAL
         device->Metal_CreateView = Cocoa_Metal_CreateView;
         device->Metal_DestroyView = Cocoa_Metal_DestroyView;
         device->Metal_GetLayer = Cocoa_Metal_GetLayer;
-        device->Metal_GetDrawableSize = Cocoa_Metal_GetDrawableSize;
 #endif
 
         device->StartTextInput = Cocoa_StartTextInput;

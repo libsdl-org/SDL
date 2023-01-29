@@ -44,7 +44,7 @@ loop()
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
         switch (event.type) {
-        case SDL_MOUSEMOTION:
+        case SDL_EVENT_MOUSE_MOTION:
         {
             mouseX += event.motion.xrel;
             mouseY += event.motion.yrel;

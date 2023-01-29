@@ -62,8 +62,8 @@ void loop()
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
 
-        /* Re-create when window has been resized */
-        if (e.type == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        /* Re-create when window surface has been resized */
+        if (e.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
 
             SDL_DestroyRenderer(renderer);
 
@@ -74,7 +74,7 @@ void loop()
             SDL_RenderClear(renderer);
         }
 
-        if (e.type == SDL_QUIT) {
+        if (e.type == SDL_EVENT_QUIT) {
             done = 1;
 #ifdef __EMSCRIPTEN__
             emscripten_cancel_main_loop();
@@ -82,7 +82,7 @@ void loop()
             return;
         }
 
-        if ((e.type == SDL_KEYDOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
+        if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
             done = 1;
 #ifdef __EMSCRIPTEN__
             emscripten_cancel_main_loop();
@@ -103,9 +103,6 @@ int main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    /* Enable highdpi scaling on Windows */
-    SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
-
     /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init fail : %s\n", SDL_GetError());
@@ -113,7 +110,7 @@ int main(int argc, char *argv[])
     }
 
     /* Create window and renderer for given surface */
-    window = SDL_CreateWindow("Chess Board", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    window = SDL_CreateWindow("Chess Board", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s\n", SDL_GetError());
         return 1;

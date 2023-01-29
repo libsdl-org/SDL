@@ -6,6 +6,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_images.h"
 
 /* ================= Test Case Implementation ================== */
 

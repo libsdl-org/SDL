@@ -44,7 +44,7 @@ extern SDL_bool Android_JNI_IsScreenKeyboardShown(void);
 extern ANativeWindow *Android_JNI_GetNativeWindow(void);
 
 extern SDL_DisplayOrientation Android_JNI_GetDisplayOrientation(void);
-extern int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi);
+extern int Android_JNI_GetDisplayPhysicalDPI(float *ddpi, float *xdpi, float *ydpi);
 
 /* Audio support */
 extern void Android_DetectDevices(void);

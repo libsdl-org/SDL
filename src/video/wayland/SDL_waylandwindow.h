@@ -103,7 +103,7 @@ typedef struct
     SDL_WaylandOutputData **outputs;
     int num_outputs;
 
-    float scale_factor;
+    float windowed_scale_factor;
     float pointer_scale_x;
     float pointer_scale_y;
     int drawable_width, drawable_height;

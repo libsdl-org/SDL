@@ -263,16 +263,17 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
                                       UIScreen *uiscreen, UIScreenMode *uiscreenmode)
 {
     SDL_DisplayMode mode;
-    SDL_zero(mode);
 
+    SDL_zero(mode);
     if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
     }
 
-    mode.format = SDL_PIXELFORMAT_ABGR8888;
+    mode.pixel_w = w;
+    mode.pixel_h = h;
+    mode.display_scale = uiscreen.nativeScale;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
-    mode.w = w;
-    mode.h = h;
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     if (SDL_AddDisplayMode(display, &mode)) {
         return 0;
@@ -282,8 +283,8 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
     }
 }
 
-static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h, UIScreen *uiscreen,
-                                UIScreenMode *uiscreenmode, SDL_bool addRotation)
+static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h,
+                                UIScreen *uiscreen, UIScreenMode *uiscreenmode, SDL_bool addRotation)
 {
     if (UIKit_AddSingleDisplayMode(display, w, h, uiscreen, uiscreenmode) < 0) {
         return -1;
@@ -299,13 +300,34 @@ static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h, UIScree
     return 0;
 }
 
+static CGSize GetUIScreenModePixelSize(UIScreen *uiscreen, UIScreenMode *mode)
+{
+    /* For devices such as iPhone 6/7/8 Plus, the UIScreenMode reported by iOS
+     * isn't the physical pixels of the display, but rather the point size times
+     * the scale. For example, on iOS 12.2 on iPhone 8 Plus the physical pixel
+     * resolution is 1080x1920, the size reported by mode.size is 1242x2208,
+     * the size in points is 414x736, the scale property is 3.0, and the
+     * nativeScale property is ~2.6087 (ie 1920.0 / 736.0). So we need a bit of
+     * math to convert from retina pixels (point size multiplied by scale) to
+     * real pixels.
+     * Note that the iOS Simulator doesn't have this behavior for those devices.
+     * https://github.com/libsdl-org/SDL/issues/3220
+     */
+    CGSize size = mode.size;
+    CGFloat scale = uiscreen.nativeScale / uiscreen.scale;
+
+    size.width = SDL_round(size.width * scale);
+    size.height = SDL_round(size.height * scale);
+
+    return size;
+}
+
 int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 {
     UIScreenMode *uiscreenmode = uiscreen.currentMode;
-    CGSize size = uiscreen.bounds.size;
+    CGSize size = GetUIScreenModePixelSize(uiscreen, uiscreenmode);
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
-    SDL_zero(mode);
 
     /* Make sure the width/height are oriented correctly */
     if (UIKit_IsDisplayLandscape(uiscreen) != (size.width > size.height)) {
@@ -314,10 +336,12 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
         size.height = height;
     }
 
+    SDL_zero(mode);
+    mode.pixel_w = (int)size.width;
+    mode.pixel_h = (int)size.height;
+    mode.display_scale = uiscreen.nativeScale;
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
-    mode.w = (int)size.width;
-    mode.h = (int)size.height;
 
     if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
@@ -394,7 +418,6 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 
         SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
         SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
-        CGFloat scale = data.uiscreen.scale;
         NSArray *availableModes = nil;
 
 #if TARGET_OS_TV
@@ -405,19 +428,9 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 #endif
 
         for (UIScreenMode *uimode in availableModes) {
-            /* The size of a UIScreenMode is in pixels, but we deal exclusively
-             * in points (except in SDL_GL_GetDrawableSize.)
-             *
-             * For devices such as iPhone 6/7/8 Plus, the UIScreenMode reported
-             * by iOS is not in physical pixels of the display, but rather the
-             * point size times the scale.  For example, on iOS 12.2 on iPhone 8
-             * Plus the uimode.size is 1242x2208 and the uiscreen.scale is 3
-             * thus this will give the size in points which is 414x736. The code
-             * used to use the nativeScale, assuming UIScreenMode returned raw
-             * physical pixels (as suggested by its documentation, but in
-             * practice it is returning the retina pixels). */
-            int w = (int)(uimode.size.width / scale);
-            int h = (int)(uimode.size.height / scale);
+            CGSize size = GetUIScreenModePixelSize(data.uiscreen, uimode);
+            int w = size.width;
+            int h = size.height;
 
             /* Make sure the width/height are oriented correctly */
             if (isLandscape != (w > h)) {
@@ -431,7 +444,7 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     }
 }
 
-int UIKit_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
+int UIKit_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
 {
     @autoreleasepool {
         SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
@@ -465,11 +478,11 @@ int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode
             /* [UIApplication setStatusBarOrientation:] no longer works reliably
              * in recent iOS versions, so we can't rotate the screen when setting
              * the display mode. */
-            if (mode->w > mode->h) {
+            if (mode->pixel_w > mode->pixel_h) {
                 if (!UIKit_IsDisplayLandscape(data.uiscreen)) {
                     return SDL_SetError("Screen orientation does not match display mode size");
                 }
-            } else if (mode->w < mode->h) {
+            } else if (mode->pixel_w < mode->pixel_h) {
                 if (UIKit_IsDisplayLandscape(data.uiscreen)) {
                     return SDL_SetError("Screen orientation does not match display mode size");
                 }
@@ -541,17 +554,23 @@ void SDL_OnApplicationDidChangeStatusBarOrientation()
          * orientation so that updating a window's fullscreen state to
          * SDL_WINDOW_FULLSCREEN_DESKTOP keeps the window dimensions in the
          * correct orientation. */
-        if (isLandscape != (desktopmode->w > desktopmode->h)) {
-            int height = desktopmode->w;
-            desktopmode->w = desktopmode->h;
-            desktopmode->h = height;
+        if (isLandscape != (desktopmode->pixel_w > desktopmode->pixel_h)) {
+            int height = desktopmode->pixel_w;
+            desktopmode->pixel_w = desktopmode->pixel_h;
+            desktopmode->pixel_h = height;
+            height = desktopmode->screen_w;
+            desktopmode->screen_w = desktopmode->screen_h;
+            desktopmode->screen_h = height;
         }
 
         /* Same deal with the current mode + SDL_GetCurrentDisplayMode. */
-        if (isLandscape != (currentmode->w > currentmode->h)) {
-            int height = currentmode->w;
-            currentmode->w = currentmode->h;
-            currentmode->h = height;
+        if (isLandscape != (currentmode->pixel_w > currentmode->pixel_h)) {
+            int height = currentmode->pixel_w;
+            currentmode->pixel_w = currentmode->pixel_h;
+            currentmode->pixel_h = height;
+            height = currentmode->screen_w;
+            currentmode->screen_w = currentmode->screen_h;
+            currentmode->screen_h = height;
         }
 
         switch ([UIApplication sharedApplication].statusBarOrientation) {
@@ -572,7 +591,7 @@ void SDL_OnApplicationDidChangeStatusBarOrientation()
         default:
             break;
         }
-        SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
     }
 }
 #endif /* !TARGET_OS_TV */

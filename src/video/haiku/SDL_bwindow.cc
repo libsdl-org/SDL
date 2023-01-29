@@ -52,7 +52,7 @@ static int _InitWindow(_THIS, SDL_Window *window) {
         window->y + window->h - 1
     );
     
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
         /* TODO: Add support for this flag */
         printf(__FILE__": %d!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",__LINE__);
     }

@@ -38,7 +38,6 @@
 #include <SDL3/SDL_test_font.h>
 #include <SDL3/SDL_test_fuzzer.h>
 #include <SDL3/SDL_test_harness.h>
-#include <SDL3/SDL_test_images.h>
 #include <SDL3/SDL_test_log.h>
 #include <SDL3/SDL_test_md5.h>
 #include <SDL3/SDL_test_memory.h>

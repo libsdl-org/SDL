@@ -24,9 +24,9 @@ print_mode(const char *prefix, const SDL_DisplayMode *mode)
         return;
     }
 
-    SDL_Log("%s: fmt=%s w=%d h=%d refresh=%gHz\n",
+    SDL_Log("%s: fmt=%s w=%d h=%d scale=%d%% refresh=%gHz\n",
             prefix, SDL_GetPixelFormatName(mode->format),
-            mode->w, mode->h, mode->refresh_rate);
+            mode->pixel_w, mode->pixel_h, (int)(mode->display_scale * 100.0f), mode->refresh_rate);
 }
 
 int main(int argc, char *argv[])
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
         SDL_GetDisplayBounds(dpy, &rect);
         SDL_Log("%d: \"%s\" (%dx%d, (%d, %d)), %d modes.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, num_modes);
 
-        if (SDL_GetDisplayDPI(dpy, &ddpi, &hdpi, &vdpi) == -1) {
+        if (SDL_GetDisplayPhysicalDPI(dpy, &ddpi, &hdpi, &vdpi) == -1) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DPI: failed to query (%s)\n", SDL_GetError());
         } else {
             SDL_Log("    DPI: ddpi=%f; hdpi=%f; vdpi=%f\n", ddpi, hdpi, vdpi);

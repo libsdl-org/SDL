@@ -156,7 +156,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->RefreshDisplays = WIN_RefreshDisplays;
     device->GetDisplayBounds = WIN_GetDisplayBounds;
     device->GetDisplayUsableBounds = WIN_GetDisplayUsableBounds;
-    device->GetDisplayDPI = WIN_GetDisplayDPI;
+    device->GetDisplayPhysicalDPI = WIN_GetDisplayPhysicalDPI;
     device->GetDisplayModes = WIN_GetDisplayModes;
     device->SetDisplayMode = WIN_SetDisplayMode;
 #endif
@@ -385,18 +385,16 @@ static const char *WIN_GetDPIAwareness(_THIS)
 
 static void WIN_InitDPIAwareness(_THIS)
 {
-    const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_DPI_AWARENESS);
+    const char *hint = SDL_GetHint("SDL_WINDOWS_DPI_AWARENESS");
 
-    if (hint != NULL) {
-        if (SDL_strcmp(hint, "permonitorv2") == 0) {
-            WIN_DeclareDPIAwarePerMonitorV2(_this);
-        } else if (SDL_strcmp(hint, "permonitor") == 0) {
-            WIN_DeclareDPIAwarePerMonitor(_this);
-        } else if (SDL_strcmp(hint, "system") == 0) {
-            WIN_DeclareDPIAwareSystem(_this);
-        } else if (SDL_strcmp(hint, "unaware") == 0) {
-            WIN_DeclareDPIAwareUnaware(_this);
-        }
+    if (hint == NULL || SDL_strcmp(hint, "permonitorv2") == 0) {
+        WIN_DeclareDPIAwarePerMonitorV2(_this);
+    } else if (SDL_strcmp(hint, "permonitor") == 0) {
+        WIN_DeclareDPIAwarePerMonitor(_this);
+    } else if (SDL_strcmp(hint, "system") == 0) {
+        WIN_DeclareDPIAwareSystem(_this);
+    } else if (SDL_strcmp(hint, "unaware") == 0) {
+        WIN_DeclareDPIAwareUnaware(_this);
     }
 }
 
@@ -404,7 +402,7 @@ static void WIN_InitDPIScaling(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
-    if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_DPI_SCALING, SDL_FALSE)) {
+    if (SDL_GetHintBoolean("SDL_WINDOWS_DPI_SCALING", SDL_TRUE)) {
         WIN_DeclareDPIAwarePerMonitorV2(_this);
 
         data->dpi_scaling_enabled = SDL_TRUE;
@@ -425,19 +423,14 @@ int WIN_VideoInit(_THIS)
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     /* For Xbox, we just need to create the single display */
     {
-        SDL_VideoDisplay display;
-        SDL_DisplayMode current_mode;
+        SDL_DisplayMode mode;
 
-        SDL_zero(current_mode);
-        D3D12_XBOX_GetResolution(&current_mode.w, &current_mode.h);
-        current_mode.refresh_rate = 60.0f;
-        current_mode.format = SDL_PIXELFORMAT_ARGB8888;
+        SDL_zero(mode);
+        D3D12_XBOX_GetResolution(&mode.pixel_w, &mode.pixel_h);
+        mode.refresh_rate = 60.0f;
+        mode.format = SDL_PIXELFORMAT_ARGB8888;
 
-        SDL_zero(display);
-        display.desktop_mode = current_mode;
-        display.current_mode = current_mode;
-
-        SDL_AddVideoDisplay(&display, SDL_FALSE);
+        SDL_AddBasicVideoDisplay(&mode);
     }
 #else /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     if (WIN_InitModes(_this) < 0) {

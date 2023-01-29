@@ -415,6 +415,7 @@ my @standard_wiki_sections = (
     'Function Parameters',
     'Return Value',
     'Remarks',
+    'Thread Safety',
     'Version',
     'Code Examples',
     'Related Functions'
@@ -729,6 +730,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $remarks = %$sectionsref{'Remarks'};
         my $params = %$sectionsref{'Function Parameters'};
         my $returns = %$sectionsref{'Return Value'};
+        my $threadsafety = %$sectionsref{'Thread Safety'};
         my $version = %$sectionsref{'Version'};
         my $related = %$sectionsref{'Related Functions'};
         my $deprecated = %$sectionsref{'Deprecated'};
@@ -816,6 +818,21 @@ if ($copy_direction == 1) {  # --copy-to-headers
             my @desclines = split /\n/, $r;
             my $firstline = shift @desclines;
             $str .= "$retstr $firstline\n";
+            foreach (@desclines) {
+                $str .= "${whitespace}$_\n";
+            }
+        }
+
+        if (defined $threadsafety) {
+            # !!! FIXME: lots of code duplication in all of these.
+            $str .= "\n" if $addblank; $addblank = 1;
+            my $v = dewikify($wikitype, $threadsafety);
+            my $whitespacelen = length("\\threadsafety") + 1;
+            my $whitespace = ' ' x $whitespacelen;
+            $v = wordwrap($v, -$whitespacelen);
+            my @desclines = split /\n/, $v;
+            my $firstline = shift @desclines;
+            $str .= "\\threadsafety $firstline\n";
             foreach (@desclines) {
                 $str .= "${whitespace}$_\n";
             }
@@ -1047,6 +1064,21 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 }
                 $desc =~ s/[\s\n]+\Z//ms;
                 $sections{'Version'} = wordwrap(wikify($wikitype, $desc)) . "\n";
+            } elsif ($l =~ /\A\\threadsafety\s+(.*)\Z/) {
+                my $desc = $1;
+                while (@doxygenlines) {
+                    my $subline = $doxygenlines[0];
+                    $subline =~ s/\A\s*//;
+                    last if $subline =~ /\A\\/;  # some sort of doxygen command, assume we're past this thing.
+                    shift @doxygenlines;  # dump this line from the array; we're using it.
+                    if ($subline eq '') {  # empty line, make sure it keeps the newline char.
+                        $desc .= "\n";
+                    } else {
+                        $desc .= " $subline";
+                    }
+                }
+                $desc =~ s/[\s\n]+\Z//ms;
+                $sections{'Thread Safety'} = wordwrap(wikify($wikitype, $desc)) . "\n";
             } elsif ($l =~ /\A\\sa\s+(.*)\Z/) {
                 my $sa = $1;
                 $sa =~ s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
@@ -1137,10 +1169,11 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $$sectionsref{'[footer]'} = $footer;
 
         if (defined $wikipreamble) {
+            my $wikified_preamble = wikify($wikitype, $wikipreamble);
             if ($wikitype eq 'mediawiki') {
-                print FH "====== $wikipreamble ======\n";
+                print FH "====== $wikified_preamble ======\n";
             } elsif ($wikitype eq 'md') {
-                print FH "###### $wikipreamble\n";
+                print FH "###### $wikified_preamble\n";
             } else { die("Unexpected wikitype '$wikitype'\n"); }
         }
 
@@ -1239,6 +1272,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $params = %$sectionsref{'Function Parameters'};
         my $returns = %$sectionsref{'Return Value'};
         my $version = %$sectionsref{'Version'};
+        my $threadsafety = %$sectionsref{'Thread Safety'};
         my $related = %$sectionsref{'Related Functions'};
         my $examples = %$sectionsref{'Code Examples'};
         my $deprecated = %$sectionsref{'Deprecated'};
@@ -1344,6 +1378,11 @@ if ($copy_direction == 1) {  # --copy-to-headers
             $dewikify_manpage_code_indent = 0;
             $str .= dewikify($wikitype, $examples) . "\n";
             $dewikify_manpage_code_indent = 1;
+        }
+
+        if (defined $threadsafety) {
+            $str .= ".SH THREAD SAFETY\n";
+            $str .= dewikify($wikitype, $threadsafety) . "\n";
         }
 
         if (defined $version) {
