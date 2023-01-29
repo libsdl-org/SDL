@@ -279,7 +279,7 @@ void WIN_SetCursorPos(int x, int y)
 
 static void WIN_WarpMouse(SDL_Window *window, float x, float y)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
     POINT pt;
 
@@ -313,13 +313,13 @@ static int WIN_SetRelativeMouseMode(SDL_bool enabled)
 static int WIN_CaptureMouse(SDL_Window *window)
 {
     if (window) {
-        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         SetCapture(data->hwnd);
     } else {
         SDL_Window *focus_window = SDL_GetMouseFocus();
 
         if (focus_window) {
-            SDL_WindowData *data = (SDL_WindowData *)focus_window->driverdata;
+            SDL_WindowData *data = focus_window->driverdata;
             if (!data->mouse_tracked) {
                 SDL_SetMouseFocus(NULL);
             }

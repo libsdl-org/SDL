@@ -871,7 +871,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
     /* If we have a parent window, get the Instance and HWND for them
      * so that our little dialog gets exclusive focus at all times. */
     if (messageboxdata->window) {
-        ParentWindow = ((SDL_WindowData *)messageboxdata->window->driverdata)->hwnd;
+        ParentWindow = messageboxdata->window->driverdata->hwnd;
     }
 
     result = DialogBoxIndirectParam(NULL, (DLGTEMPLATE *)dialog->lpDialog, ParentWindow, MessageBoxDialogProc, (LPARAM)messageboxdata);
@@ -952,7 +952,7 @@ int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     /* If we have a parent window, get the Instance and HWND for them
        so that our little dialog gets exclusive focus at all times. */
     if (messageboxdata->window) {
-        ParentWindow = ((SDL_WindowData *)messageboxdata->window->driverdata)->hwnd;
+        ParentWindow = messageboxdata->window->driverdata->hwnd;
     }
 
     wmessage = WIN_UTF8ToStringW(messageboxdata->message);

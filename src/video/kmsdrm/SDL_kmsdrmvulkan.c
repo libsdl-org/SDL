@@ -201,7 +201,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     SDL_bool plane_supports_display = SDL_FALSE;
 
     /* Get the display index from the display being used by the window. */
-    int display_index = SDL_atoi(SDL_GetDisplayForWindow(window)->name);
+    int display_index = SDL_GetDisplayIndex(SDL_GetDisplayForWindow(window));
     int i, j;
 
     /* Get the function pointers for the functions we will use. */

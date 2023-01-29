@@ -1104,7 +1104,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    SDL_GetCurrentDisplayMode(0, &mode);
+    SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode);
     SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);

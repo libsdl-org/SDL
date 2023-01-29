@@ -107,7 +107,6 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
     RPI_CursorData *curdata;
     VC_RECT_T src_rect, dst_rect;
     SDL_Mouse *mouse;
-    SDL_VideoDisplay *display;
     SDL_DisplayData *data;
     VC_DISPMANX_ALPHA_T alpha = { DISPMANX_FLAGS_ALPHA_FROM_SOURCE /* flags */, 255 /*opacity 0->255*/, 0 /* mask */ };
     uint32_t layer = SDL_RPI_MOUSELAYER;
@@ -147,12 +146,7 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
         return -1;
     }
 
-    display = SDL_GetDisplayForWindow(mouse->focus);
-    if (display == NULL) {
-        return -1;
-    }
-
-    data = (SDL_DisplayData *)display->driverdata;
+    data = SDL_GetDisplayDriverDataForWindow(mouse->focus);
     if (data == NULL) {
         return -1;
     }

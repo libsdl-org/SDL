@@ -216,7 +216,7 @@ static int Emscripten_SetRelativeMouseMode(SDL_bool enabled)
             return -1;
         }
 
-        window_data = (SDL_WindowData *)window->driverdata;
+        window_data = window->driverdata;
 
         if (emscripten_request_pointerlock(window_data->canvas_id, 1) >= EMSCRIPTEN_RESULT_SUCCESS) {
             return 0;

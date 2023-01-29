@@ -28,7 +28,7 @@
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
 
-typedef struct SDL_WindowData
+struct SDL_WindowData
 {
     SDL_Window *window;
     SDL_Surface *surface;
@@ -45,6 +45,6 @@ typedef struct SDL_WindowData
     SDL_bool fullscreen_resize;
 
     SDL_bool has_pointer_lock;
-} SDL_WindowData;
+};
 
 #endif /* SDL_emscriptenvideo_h_ */

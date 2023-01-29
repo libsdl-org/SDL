@@ -901,7 +901,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
     displayOrientation = (SDL_DisplayOrientation)orientation;
 
     if (Android_Window) {
-        SDL_VideoDisplay *display = SDL_GetDisplay(0);
+        SDL_VideoDisplay *display = SDL_GetVideoDisplay(SDL_GetPrimaryDisplay());
         SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
     }
 
@@ -1034,7 +1034,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, j
     SDL_LockMutex(Android_ActivityMutex);
 
     if (Android_Window) {
-        SDL_WindowData *data = (SDL_WindowData *)Android_Window->driverdata;
+        SDL_WindowData *data = Android_Window->driverdata;
 
         data->native_window = Android_JNI_GetNativeWindow();
         if (data->native_window == NULL) {
@@ -1053,7 +1053,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 #if SDL_VIDEO_OPENGL_EGL
     if (Android_Window) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        SDL_WindowData *data = (SDL_WindowData *)Android_Window->driverdata;
+        SDL_WindowData *data = Android_Window->driverdata;
 
         /* If the surface has been previously destroyed by onNativeSurfaceDestroyed, recreate it here */
         if (data->egl_surface == EGL_NO_SURFACE) {
@@ -1078,7 +1078,7 @@ retry:
 
     if (Android_Window) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        SDL_WindowData *data = (SDL_WindowData *)Android_Window->driverdata;
+        SDL_WindowData *data = Android_Window->driverdata;
 
         /* Wait for Main thread being paused and context un-activated to release 'egl_surface' */
         if (!data->backup_done) {

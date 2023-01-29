@@ -55,7 +55,7 @@ static void NGAGE_VideoQuit(_THIS);
 
 static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)device->driverdata;
+    SDL_VideoData *phdata = device->driverdata;
 
     if (phdata) {
         /* Free Epoc resources */

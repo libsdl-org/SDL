@@ -52,7 +52,7 @@ static void UIKit_VideoQuit(_THIS);
 static void UIKit_DeleteDevice(SDL_VideoDevice *device)
 {
     @autoreleasepool {
-        CFRelease(device->driverdata);
+        device->driverdata = nil;
         SDL_free(device);
     }
 }
@@ -73,7 +73,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
             return (0);
         }
 
-        device->driverdata = (void *)CFBridgingRetain(data);
+        device->driverdata = data;
 
         /* Set the function pointers */
         device->VideoInit = UIKit_VideoInit;
@@ -184,7 +184,7 @@ UIKit_IsSystemVersionAtLeast(double version)
 CGRect
 UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
-    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     CGRect frame = screen.bounds;
 
     /* Use the UIWindow bounds instead of the UIScreen bounds, when possible.
@@ -225,7 +225,7 @@ void UIKit_ForceUpdateHomeIndicator()
     /* Force the main SDL window to re-evaluate home indicator state */
     SDL_Window *focus = SDL_GetFocusWindow();
     if (focus) {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)focus->driverdata;
+        SDL_WindowData *data = focus->driverdata;
         if (data != nil) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability-new"

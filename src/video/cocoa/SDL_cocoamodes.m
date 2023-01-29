@@ -364,7 +364,7 @@ void Cocoa_InitModes(_THIS)
 
 int Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
-    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayData *displaydata = display->driverdata;
     CGRect cgrect;
 
     cgrect = CGDisplayBounds(displaydata->display);
@@ -377,7 +377,7 @@ int Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 
 int Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
-    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayData *displaydata = display->driverdata;
     const CGDirectDisplayID cgdisplay = displaydata->display;
     NSArray *screens = [NSScreen screens];
     NSScreen *screen = nil;
@@ -412,7 +412,7 @@ int Cocoa_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, f
     @autoreleasepool {
         const float MM_IN_INCH = 25.4f;
 
-        SDL_DisplayData *data = (SDL_DisplayData *)display->driverdata;
+        SDL_DisplayData *data = display->driverdata;
 
         /* we need the backingScaleFactor for Retina displays, which is only exposed through NSScreen, not CGDisplay, afaik, so find our screen... */
         NSArray *screens = [NSScreen screens];
@@ -476,7 +476,7 @@ int Cocoa_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, f
 
 void Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
-    SDL_DisplayData *data = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayData *data = display->driverdata;
     CVDisplayLinkRef link = NULL;
     CGDisplayModeRef desktopmoderef;
     SDL_DisplayMode desktopmode;
@@ -571,7 +571,7 @@ static CGError SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayMo
 
 int Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayData *displaydata = display->driverdata;
     SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
     CGDisplayFadeReservationToken fade_token = kCGDisplayFadeReservationInvalidToken;
     CGError result;

@@ -74,7 +74,7 @@ void NGAGE_DestroyWindow(_THIS, SDL_Window *window)
 
 void DisableKeyBlocking(_THIS)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     TRawEvent event;
 
     event.Set((TRawEvent::TType) /*EDisableKeyBlock*/ 51);
@@ -83,7 +83,7 @@ void DisableKeyBlocking(_THIS)
 
 void ConstructWindowL(_THIS)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     TInt error;
 
     error = phdata->NGAGE_WsSession.Connect();

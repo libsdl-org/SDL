@@ -80,7 +80,7 @@ static EGLint height = 544;
 SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window)
 {
 
-    SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *wdata = window->driverdata;
 
     EGLint attribs[32];
     EGLDisplay display;
@@ -193,7 +193,7 @@ int VITA_GLES_SwapWindow(_THIS, SDL_Window *window)
 
 void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     EGLBoolean status;
 
     if (phdata->egl_initialized != SDL_TRUE) {

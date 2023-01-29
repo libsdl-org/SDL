@@ -57,8 +57,8 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
     SDL_DisplayMode mode;
     char text[1024];
     const int lineHeight = 10;
-    const int display_index = SDL_GetWindowDisplayIndex(window);
-    const int num_modes = SDL_GetNumDisplayModes(display_index);
+    const SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
+    const int num_modes = SDL_GetNumDisplayModes(displayID);
     int i;
     int column_chars = 0;
     int text_length;
@@ -103,7 +103,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
     for (i = 0; i < num_modes; ++i) {
         SDL_FRect cell_rect;
 
-        if (0 != SDL_GetDisplayMode(display_index, i, &mode)) {
+        if (0 != SDL_GetDisplayMode(displayID, i, &mode)) {
             return;
         }
 
@@ -167,7 +167,7 @@ void loop()
                         event.window.windowID,
                         event.window.data1,
                         event.window.data2,
-                        SDL_GetDisplayName(SDL_GetWindowDisplayIndex(window)));
+                        SDL_GetDisplayName(SDL_GetDisplayForWindow(window)));
             }
         }
         if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
@@ -207,9 +207,9 @@ void loop()
         if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             SDL_Window *window = SDL_GetMouseFocus();
             if (highlighted_mode != -1 && window != NULL) {
-                const int display_index = SDL_GetWindowDisplayIndex(window);
+                SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
                 SDL_DisplayMode mode;
-                if (0 != SDL_GetDisplayMode(display_index, highlighted_mode, &mode)) {
+                if (0 != SDL_GetDisplayMode(displayID, highlighted_mode, &mode)) {
                     SDL_Log("Couldn't get display mode");
                 } else {
                     SDL_SetWindowDisplayMode(window, &mode);

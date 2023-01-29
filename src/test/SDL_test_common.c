@@ -1099,6 +1099,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
         }
 
         if (state->verbose & VERBOSE_MODES) {
+            SDL_DisplayID *displays;
             SDL_Rect bounds, usablebounds;
             float hdpi = 0;
             float vdpi = 0;
@@ -1109,24 +1110,25 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
             int adapterIndex = 0;
             int outputIndex = 0;
 #endif
-            n = SDL_GetNumVideoDisplays();
+            displays = SDL_GetDisplays(&n);
             SDL_Log("Number of displays: %d\n", n);
             for (i = 0; i < n; ++i) {
-                SDL_Log("Display %d: %s\n", i, SDL_GetDisplayName(i));
+                SDL_DisplayID displayID = displays[i];
+                SDL_Log("Display %" SDL_PRIu32 ": %s\n", displayID, SDL_GetDisplayName(displayID));
 
                 SDL_zero(bounds);
-                SDL_GetDisplayBounds(i, &bounds);
+                SDL_GetDisplayBounds(displayID, &bounds);
 
                 SDL_zero(usablebounds);
-                SDL_GetDisplayUsableBounds(i, &usablebounds);
+                SDL_GetDisplayUsableBounds(displayID, &usablebounds);
 
-                SDL_GetDisplayPhysicalDPI(i, NULL, &hdpi, &vdpi);
+                SDL_GetDisplayPhysicalDPI(displayID, NULL, &hdpi, &vdpi);
 
                 SDL_Log("Bounds: %dx%d at %d,%d\n", bounds.w, bounds.h, bounds.x, bounds.y);
                 SDL_Log("Usable bounds: %dx%d at %d,%d\n", usablebounds.w, usablebounds.h, usablebounds.x, usablebounds.y);
                 SDL_Log("DPI: %gx%g\n", hdpi, vdpi);
 
-                SDL_GetDesktopDisplayMode(i, &mode);
+                SDL_GetDesktopDisplayMode(displayID, &mode);
                 SDL_GetMasksForPixelFormatEnum(mode.format, &bpp, &Rmask, &Gmask,
                                            &Bmask, &Amask);
                 SDL_Log("  Current mode: %dx%d@%gHz, %d%% scale, %d bits-per-pixel (%s)\n",
@@ -1142,13 +1144,13 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 }
 
                 /* Print available fullscreen video modes */
-                m = SDL_GetNumDisplayModes(i);
+                m = SDL_GetNumDisplayModes(displayID);
                 if (m == 0) {
                     SDL_Log("No available fullscreen video modes\n");
                 } else {
                     SDL_Log("  Fullscreen video modes:\n");
                     for (j = 0; j < m; ++j) {
-                        SDL_GetDisplayMode(i, j, &mode);
+                        SDL_GetDisplayMode(displayID, j, &mode);
                         SDL_GetMasksForPixelFormatEnum(mode.format, &bpp, &Rmask,
                                                    &Gmask, &Bmask, &Amask);
                         SDL_Log("    Mode %d: %dx%d@%gHz, %d%% scale, %d bits-per-pixel (%s)\n",
@@ -1170,14 +1172,15 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
 
 #if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
                 /* Print the D3D9 adapter index */
-                adapterIndex = SDL_Direct3D9GetAdapterIndex(i);
+                adapterIndex = SDL_Direct3D9GetAdapterIndex(displayID);
                 SDL_Log("D3D9 Adapter Index: %d", adapterIndex);
 
                 /* Print the DXGI adapter and output indices */
-                SDL_DXGIGetOutputInfo(i, &adapterIndex, &outputIndex);
+                SDL_DXGIGetOutputInfo(displayID, &adapterIndex, &outputIndex);
                 SDL_Log("DXGI Adapter Index: %d  Output Index: %d", adapterIndex, outputIndex);
 #endif
             }
+            SDL_free(displays);
         }
 
         if (state->verbose & VERBOSE_RENDER) {
@@ -1236,7 +1239,14 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
 
             /* !!! FIXME: hack to make --usable-bounds work for now. */
             if ((r.x == -1) && (r.y == -1) && (r.w == -1) && (r.h == -1)) {
-                SDL_GetDisplayUsableBounds(state->display, &r);
+                int num_displays;
+                SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+                if (displays && state->display < num_displays) {
+                    SDL_GetDisplayUsableBounds(displays[state->display], &r);
+                } else {
+                    SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &r);
+                }
+                SDL_free(displays);
             }
 
             if (state->num_windows > 1) {
@@ -1421,19 +1431,19 @@ static void SDLTest_PrintEvent(SDL_Event *event)
     switch (event->type) {
     case SDL_EVENT_DISPLAY_CONNECTED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
-                event->display.display);
+                event->display.displayID);
         break;
     case SDL_EVENT_DISPLAY_MOVED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed position",
-                event->display.display);
+                event->display.displayID);
         break;
     case SDL_EVENT_DISPLAY_ORIENTATION:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed orientation to %s",
-                event->display.display, DisplayOrientationName(event->display.data1));
+                event->display.displayID, DisplayOrientationName(event->display.data1));
         break;
     case SDL_EVENT_DISPLAY_DISCONNECTED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " disconnected",
-                event->display.display);
+                event->display.displayID);
         break;
     case SDL_EVENT_WINDOW_SHOWN:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " shown", event->window.windowID);
@@ -1720,23 +1730,29 @@ static void SDLTest_ScreenShot(SDL_Renderer *renderer)
 
 static void FullscreenTo(int index, int windowId)
 {
+    int num_displays;
+    SDL_DisplayID *displays;
+    SDL_Window *window;
     Uint32 flags;
     struct SDL_Rect rect = { 0, 0, 0, 0 };
-    SDL_Window *window = SDL_GetWindowFromID(windowId);
-    if (window == NULL) {
-        return;
+
+    displays = SDL_GetDisplays(&num_displays);
+    if (displays && index < num_displays) {
+        window = SDL_GetWindowFromID(windowId);
+        if (window) {
+            SDL_GetDisplayBounds(displays[index], &rect);
+
+            flags = SDL_GetWindowFlags(window);
+            if ((flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+                SDL_SetWindowFullscreen(window, 0);
+                SDL_Delay(15);
+            }
+
+            SDL_SetWindowPosition(window, rect.x, rect.y);
+            SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_EXCLUSIVE);
+        }
     }
-
-    SDL_GetDisplayBounds(index, &rect);
-
-    flags = SDL_GetWindowFlags(window);
-    if ((flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
-        SDL_SetWindowFullscreen(window, 0);
-        SDL_Delay(15);
-    }
-
-    SDL_SetWindowPosition(window, rect.x, rect.y);
-    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_EXCLUSIVE);
+    SDL_free(displays);
 }
 
 void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done)
@@ -1831,20 +1847,31 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 /* Alt-Up/Down/Left/Right switches between displays */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    int currentIndex = SDL_GetWindowDisplayIndex(window);
-                    int numDisplays = SDL_GetNumVideoDisplays();
+                    int num_displays;
+                    SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+                    if (displays) {
+                        SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
+                        int current_index = -1;
 
-                    if (currentIndex >= 0 && numDisplays >= 1) {
-                        int dest;
-                        if (event->key.keysym.sym == SDLK_UP || event->key.keysym.sym == SDLK_LEFT) {
-                            dest = (currentIndex + numDisplays - 1) % numDisplays;
-                        } else {
-                            dest = (currentIndex + numDisplays + 1) % numDisplays;
+                        for (i = 0; i < num_displays; ++i) {
+                            if (displayID == displays[i]) {
+                                current_index = i;
+                                break;
+                            }
                         }
-                        SDL_Log("Centering on display %d\n", dest);
-                        SDL_SetWindowPosition(window,
-                                              SDL_WINDOWPOS_CENTERED_DISPLAY(dest),
-                                              SDL_WINDOWPOS_CENTERED_DISPLAY(dest));
+                        if (current_index >= 0) {
+                            SDL_DisplayID dest;
+                            if (event->key.keysym.sym == SDLK_UP || event->key.keysym.sym == SDLK_LEFT) {
+                                dest = displays[(current_index + num_displays - 1) % num_displays];
+                            } else {
+                                dest = displays[(current_index + num_displays + 1) % num_displays];
+                            }
+                            SDL_Log("Centering on display (%" SDL_PRIu32 ")\n", dest);
+                            SDL_SetWindowPosition(window,
+                                                  SDL_WINDOWPOS_CENTERED_DISPLAY(dest),
+                                                  SDL_WINDOWPOS_CENTERED_DISPLAY(dest));
+                        }
+                        SDL_free(displays);
                     }
                 }
             }
@@ -2169,7 +2196,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     float ddpi, hdpi, vdpi;
     float scaleX, scaleY;
     Uint32 flags;
-    const int windowDisplayIndex = SDL_GetWindowDisplayIndex(window);
+    SDL_DisplayID windowDisplayID = SDL_GetDisplayForWindow(window);
     SDL_RendererInfo info;
 
     /* Video */
@@ -2259,36 +2286,36 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
 
-    (void)SDL_snprintf(text, sizeof text, "SDL_GetWindowDisplayIndex: %d", windowDisplayIndex);
+    (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayForWindow: %" SDL_PRIu32 "", windowDisplayID);
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
-    (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayName: %s", SDL_GetDisplayName(windowDisplayIndex));
+    (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayName: %s", SDL_GetDisplayName(windowDisplayID));
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
-    if (0 == SDL_GetDisplayBounds(windowDisplayIndex, &rect)) {
+    if (0 == SDL_GetDisplayBounds(windowDisplayID, &rect)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayBounds: %d,%d, %dx%d",
                            rect.x, rect.y, rect.w, rect.h);
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
-    if (0 == SDL_GetCurrentDisplayMode(windowDisplayIndex, &mode)) {
+    if (0 == SDL_GetCurrentDisplayMode(windowDisplayID, &mode)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetCurrentDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
                            mode.pixel_w, mode.pixel_h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
-    if (0 == SDL_GetDesktopDisplayMode(windowDisplayIndex, &mode)) {
+    if (0 == SDL_GetDesktopDisplayMode(windowDisplayID, &mode)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetDesktopDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
                            mode.pixel_w, mode.pixel_h, mode.refresh_rate, (int)(mode.display_scale * 100.0f), SDL_GetPixelFormatName(mode.format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
-    if (0 == SDL_GetDisplayPhysicalDPI(windowDisplayIndex, &ddpi, &hdpi, &vdpi)) {
+    if (0 == SDL_GetDisplayPhysicalDPI(windowDisplayID, &ddpi, &hdpi, &vdpi)) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayPhysicalDPI: ddpi: %g, hdpi: %g, vdpi: %g",
                            ddpi, hdpi, vdpi);
         SDLTest_DrawString(renderer, 0.0f, textY, text);
@@ -2296,7 +2323,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     }
 
     (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayOrientation: ");
-    SDLTest_PrintDisplayOrientation(text, sizeof text, SDL_GetDisplayOrientation(windowDisplayIndex));
+    SDLTest_PrintDisplayOrientation(text, sizeof text, SDL_GetDisplayOrientation(windowDisplayID));
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 

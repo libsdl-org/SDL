@@ -56,13 +56,8 @@ SDL_Window *Vita_Window;
 
 static void VITA_Destroy(SDL_VideoDevice *device)
 {
-    /*    SDL_VideoData *phdata = (SDL_VideoData *) device->driverdata; */
-
     SDL_free(device->driverdata);
     SDL_free(device);
-    //    if (device->driverdata != NULL) {
-    //        device->driverdata = NULL;
-    //    }
 }
 
 static SDL_VideoDevice *VITA_Create()
@@ -352,7 +347,6 @@ void VITA_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 
 void VITA_DestroyWindow(_THIS, SDL_Window *window)
 {
-    //    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     SDL_WindowData *data;
 
     data = window->driverdata;
@@ -441,7 +435,7 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
 
 void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
     SceInt32 res;
 
 #if defined(SDL_VIDEO_VITA_PVR)
@@ -503,7 +497,7 @@ void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
 void VITA_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
 #if !defined(SDL_VIDEO_VITA_PVR)
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
 
     SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
 
@@ -524,7 +518,7 @@ void VITA_HideScreenKeyboard(_THIS, SDL_Window *window)
 SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
 #if defined(SDL_VIDEO_VITA_PVR)
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
     return videodata->ime_active;
 #else
     SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
@@ -535,7 +529,7 @@ SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 void VITA_PumpEvents(_THIS)
 {
 #if !defined(SDL_VIDEO_VITA_PVR)
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
 #endif
 
     if (_this->suspend_screensaver) {

@@ -26,7 +26,7 @@
 
 int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     SDL_bool isstack;
     size_t size;
     LPBITMAPINFO info;
@@ -100,7 +100,7 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void 
 
 int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     int i;
 
     for (i = 0; i < numrects; ++i) {
@@ -112,7 +112,7 @@ int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects
 
 void WIN_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
 
     if (data == NULL) {
         /* The window wasn't fully initialized */

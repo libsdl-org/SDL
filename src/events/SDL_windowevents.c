@@ -141,10 +141,10 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
         break;
     case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-        if (data1 < 0 || data1 == window->display_index) {
+        if (data1 == 0 || (SDL_DisplayID)data1 == window->displayID) {
             return 0;
         }
-        window->display_index = data1;
+        window->displayID = (SDL_DisplayID)data1;
         break;
     default:
         break;

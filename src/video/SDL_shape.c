@@ -273,32 +273,24 @@ int SDL_SetWindowShape(SDL_Window *window, SDL_Surface *shape, SDL_WindowShapeMo
     result = _this->shape_driver.SetWindowShape(window->shaper, shape, shape_mode);
     window->shaper->hasshape = SDL_TRUE;
     if (window->shaper->userx != 0 && window->shaper->usery != 0) {
+        SDL_DisplayID displayID = 0;
         int x = window->shaper->userx;
         int y = window->shaper->usery;
 
-        if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISUNDEFINED(y) ||
-            SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
-            int displayIndex;
+        if (!displayID) {
+            displayID = SDL_GetDisplayForWindowCoordinate(x);
+        }
+        if (!displayID) {
+            displayID = SDL_GetDisplayForWindowCoordinate(y);
+        }
+        if (displayID) {
             SDL_Rect bounds;
-
+            SDL_GetDisplayBounds(displayID, &bounds);
             if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
-                displayIndex = (x & 0xFFFF);
-                if (displayIndex >= _this->num_displays) {
-                    displayIndex = 0;
-                }
-            } else {
-                displayIndex = (y & 0xFFFF);
-                if (displayIndex >= _this->num_displays) {
-                    displayIndex = 0;
-                }
-            }
-
-            SDL_GetDisplayBounds(displayIndex, &bounds);
-            if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
-                window->x = bounds.x + (bounds.w - window->w) / 2;
+                x = bounds.x + (bounds.w - window->w) / 2;
             }
             if (SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) {
-                window->y = bounds.y + (bounds.h - window->h) / 2;
+                y = bounds.y + (bounds.h - window->h) / 2;
             }
         }
         SDL_SetWindowPosition(window, x, y);
