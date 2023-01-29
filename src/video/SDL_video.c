@@ -4148,17 +4148,6 @@ SDL_EGLConfig SDL_EGL_GetWindowEGLSurface(SDL_Window *window)
 #endif
 }
 
-void SDL_GL_GetDrawableSize(SDL_Window *window, int *w, int *h)
-{
-    CHECK_WINDOW_MAGIC(window, );
-
-    if (_this->GL_GetDrawableSize) {
-        _this->GL_GetDrawableSize(_this, window, w, h);
-    } else {
-        SDL_GetWindowSizeInPixels(window, w, h);
-    }
-}
-
 int SDL_GL_SetSwapInterval(int interval)
 {
     if (_this == NULL) {
@@ -4820,17 +4809,6 @@ SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
     return _this->Vulkan_CreateSurface(_this, window, instance, surface);
 }
 
-void SDL_Vulkan_GetDrawableSize(SDL_Window *window, int *w, int *h)
-{
-    CHECK_WINDOW_MAGIC(window, );
-
-    if (_this->Vulkan_GetDrawableSize) {
-        _this->Vulkan_GetDrawableSize(_this, window, w, h);
-    } else {
-        SDL_GetWindowSizeInPixels(window, w, h);
-    }
-}
-
 SDL_MetalView SDL_Metal_CreateView(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);
@@ -4870,16 +4848,5 @@ void *SDL_Metal_GetLayer(SDL_MetalView view)
     } else {
         SDL_SetError("Metal is not supported.");
         return NULL;
-    }
-}
-
-void SDL_Metal_GetDrawableSize(SDL_Window *window, int *w, int *h)
-{
-    CHECK_WINDOW_MAGIC(window, );
-
-    if (_this->Metal_GetDrawableSize) {
-        _this->Metal_GetDrawableSize(_this, window, w, h);
-    } else {
-        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }

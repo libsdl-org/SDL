@@ -385,12 +385,10 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rec
  * **WARNING**: This reports the DPI that the hardware reports, and it is not
  * always reliable! It is almost always better to use SDL_GetWindowSize() to
  * find the window size, which might be in logical points instead of pixels,
- * and then SDL_GetWindowSizeInPixels(), SDL_GL_GetDrawableSize(),
- * SDL_Vulkan_GetDrawableSize(), SDL_Metal_GetDrawableSize(), or
- * SDL_GetRendererOutputSize(), and compare the two values to get an actual
- * scaling value between the two. We will be rethinking how high-dpi details
- * should be managed in SDL3 to make things more consistent, reliable, and
- * clear.
+ * and then SDL_GetWindowSizeInPixels() or SDL_GetRendererOutputSize(), and
+ * compare the two values to get an actual scaling value between the two. We
+ * will be rethinking how high-dpi details should be managed in SDL3 to make
+ * things more consistent, reliable, and clear.
  *
  * \param displayIndex the index of the display from which DPI information
  *                     should be queried
@@ -905,8 +903,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h)
  *
  * The window size in screen coordinates may differ from the size in pixels if
  * the window is on a high density display (one with an OS scaling factor).
- * Use SDL_GetWindowSizeInPixels(), SDL_GL_GetDrawableSize(),
- * SDL_Vulkan_GetDrawableSize(), or SDL_GetRendererOutputSize() to get the
+ * Use SDL_GetWindowSizeInPixels() or SDL_GetRendererOutputSize() to get the
  * real client area size in pixels.
  *
  * \param window the window to query the width and height from
@@ -916,8 +913,6 @@ extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h)
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetWindowSizeInPixels
- * \sa SDL_GL_GetDrawableSize
- * \sa SDL_Vulkan_GetDrawableSize
  * \sa SDL_GetRendererOutputSize
  * \sa SDL_SetWindowSize
  */
@@ -1894,23 +1889,6 @@ extern DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowEGLSurface(SDL_Window *w
 extern DECLSPEC void SDLCALL SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
                                                               SDL_EGLIntArrayCallback surfaceAttribCallback,
                                                               SDL_EGLIntArrayCallback contextAttribCallback);
-
-/**
- * Get the size of a window's underlying drawable in pixels.
- *
- * This returns info useful for calling glViewport().
- *
- * \param window the window from which the drawable size should be queried
- * \param w a pointer to variable for storing the width in pixels, may be NULL
- * \param h a pointer to variable for storing the height in pixels, may be
- *          NULL
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreateWindow
- * \sa SDL_GetWindowSize
- */
-extern DECLSPEC void SDLCALL SDL_GL_GetDrawableSize(SDL_Window *window, int *w, int *h);
 
 /**
  * Set the swap interval for the current OpenGL context.

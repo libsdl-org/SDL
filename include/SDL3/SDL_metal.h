@@ -86,22 +86,6 @@ extern DECLSPEC void SDLCALL SDL_Metal_DestroyView(SDL_MetalView view);
  */
 extern DECLSPEC void *SDLCALL SDL_Metal_GetLayer(SDL_MetalView view);
 
-/**
- * Get the size of a window's underlying drawable in pixels (for use with
- * setting viewport, scissor & etc).
- *
- * \param window SDL_Window from which the drawable size should be queried
- * \param w Pointer to variable for storing the width in pixels, may be NULL
- * \param h Pointer to variable for storing the height in pixels, may be NULL
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetWindowSize
- * \sa SDL_CreateWindow
- */
-extern DECLSPEC void SDLCALL SDL_Metal_GetDrawableSize(SDL_Window* window, int *w,
-                                                       int *h);
-
 /* @} *//* Metal support functions */
 
 /* Ends C function definitions when using C++ */

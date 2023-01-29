@@ -48,9 +48,9 @@ creating your window to enable high-dpi support.
 When high-dpi support is enabled, SDL_GetWindowSize() and display mode sizes
 will still be in "screen coordinates" rather than pixels, but the window will
 have a much greater pixel density when the device supports it, and the
-SDL_GL_GetDrawableSize() or SDL_GetRendererOutputSize() functions (depending on
-whether raw OpenGL or the SDL_Render API is used) can be queried to determine
-the size in pixels of the drawable screen framebuffer.
+SDL_GetWindowSizeInPixels() or SDL_GetRendererOutputSize() functions (depending
+on whether the SDL_Render API is used) can be queried to determine the size in
+pixels of the drawable screen framebuffer.
 
 Some OpenGL ES functions such as glViewport expect sizes in pixels rather than
 sizes in screen coordinates. When doing 2D rendering with OpenGL ES, an

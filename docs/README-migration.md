@@ -508,6 +508,10 @@ Furthermore, the different SDL_*RunApp() functions (SDL_WinRtRunApp, SDL_GDKRunA
 have been unified into just `int SDL_RunApp(int argc, char* argv[], void * reserved)` (which is also
 used by additional platforms that didn't have a SDL_RunApp-like function before).
 
+## SDL_metal.h
+
+SDL_Metal_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
+
 ## SDL_mouse.h
 
 SDL_ShowCursor() has been split into three functions: SDL_ShowCursor(), SDL_HideCursor(), and SDL_CursorVisible()
@@ -974,6 +978,8 @@ SDL_GL_SwapWindow() returns 0 if the function succeeds or a negative error code 
 
 SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
+SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
+
 The following functions have been renamed:
 * SDL_GetDisplayDPI() => SDL_GetDisplayPhysicalDPI()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayIndexForPoint()
@@ -991,4 +997,6 @@ The following symbols have been renamed:
 SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter.
 
 SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to PFN_vkGetInstanceProcAddr.
+
+SDL_Vulkan_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
 

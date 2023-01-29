@@ -79,25 +79,6 @@ int UIKit_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     return 0;
 }
 
-void UIKit_GL_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-        UIView *view = data.viewcontroller.view;
-        if ([view isKindOfClass:[SDL_uikitopenglview class]]) {
-            SDL_uikitopenglview *glview = (SDL_uikitopenglview *)view;
-            if (w) {
-                *w = glview.backingWidth;
-            }
-            if (h) {
-                *h = glview.backingHeight;
-            }
-        } else {
-            SDL_GetWindowSize(window, w, h);
-        }
-    }
-}
-
 int UIKit_GL_LoadLibrary(_THIS, const char *path)
 {
     /* We shouldn't pass a path to this function, since we've already loaded the

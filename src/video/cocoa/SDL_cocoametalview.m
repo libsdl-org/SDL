@@ -173,26 +173,4 @@ Cocoa_Metal_GetLayer(_THIS, SDL_MetalView view)
     }
 }
 
-void Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-        NSView *contentView = data.sdlContentView;
-        SDL_cocoametalview *metalview = [contentView viewWithTag:SDL_METALVIEW_TAG];
-        if (metalview) {
-            CAMetalLayer *layer = (CAMetalLayer *)metalview.layer;
-            SDL_assert(layer != NULL);
-            if (w) {
-                *w = layer.drawableSize.width;
-            }
-            if (h) {
-                *h = layer.drawableSize.height;
-            }
-        } else {
-            /* Fall back to the viewport size. */
-            SDL_GetWindowSizeInPixels(window, w, h);
-        }
-    }
-}
-
 #endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
