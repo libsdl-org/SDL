@@ -144,7 +144,6 @@
 #define SDL_GL_GetAttribute SDL_GL_GetAttribute_REAL
 #define SDL_GL_GetCurrentContext SDL_GL_GetCurrentContext_REAL
 #define SDL_GL_GetCurrentWindow SDL_GL_GetCurrentWindow_REAL
-#define SDL_GL_GetDrawableSize SDL_GL_GetDrawableSize_REAL
 #define SDL_GL_GetProcAddress SDL_GL_GetProcAddress_REAL
 #define SDL_GL_GetSwapInterval SDL_GL_GetSwapInterval_REAL
 #define SDL_GL_LoadLibrary SDL_GL_LoadLibrary_REAL
@@ -498,7 +497,6 @@
 #define SDL_MemoryBarrierReleaseFunction SDL_MemoryBarrierReleaseFunction_REAL
 #define SDL_Metal_CreateView SDL_Metal_CreateView_REAL
 #define SDL_Metal_DestroyView SDL_Metal_DestroyView_REAL
-#define SDL_Metal_GetDrawableSize SDL_Metal_GetDrawableSize_REAL
 #define SDL_Metal_GetLayer SDL_Metal_GetLayer_REAL
 #define SDL_MinimizeWindow SDL_MinimizeWindow_REAL
 #define SDL_MixAudioFormat SDL_MixAudioFormat_REAL
@@ -695,7 +693,6 @@
 #define SDL_UpdateWindowSurfaceRects SDL_UpdateWindowSurfaceRects_REAL
 #define SDL_UpdateYUVTexture SDL_UpdateYUVTexture_REAL
 #define SDL_Vulkan_CreateSurface SDL_Vulkan_CreateSurface_REAL
-#define SDL_Vulkan_GetDrawableSize SDL_Vulkan_GetDrawableSize_REAL
 #define SDL_Vulkan_GetInstanceExtensions SDL_Vulkan_GetInstanceExtensions_REAL
 #define SDL_Vulkan_GetVkGetInstanceProcAddr SDL_Vulkan_GetVkGetInstanceProcAddr_REAL
 #define SDL_Vulkan_LoadLibrary SDL_Vulkan_LoadLibrary_REAL

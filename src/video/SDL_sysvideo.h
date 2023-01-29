@@ -269,7 +269,6 @@ struct SDL_VideoDevice
     void (*GL_UnloadLibrary)(_THIS);
     SDL_GLContext (*GL_CreateContext)(_THIS, SDL_Window *window);
     int (*GL_MakeCurrent)(_THIS, SDL_Window *window, SDL_GLContext context);
-    void (*GL_GetDrawableSize)(_THIS, SDL_Window *window, int *w, int *h);
     SDL_EGLSurface (*GL_GetEGLSurface)(_THIS, SDL_Window *window);
     int (*GL_SetSwapInterval)(_THIS, int interval);
     int (*GL_GetSwapInterval)(_THIS, int *interval);
@@ -285,7 +284,6 @@ struct SDL_VideoDevice
     void (*Vulkan_UnloadLibrary)(_THIS);
     SDL_bool (*Vulkan_GetInstanceExtensions)(_THIS, unsigned *count, const char **names);
     SDL_bool (*Vulkan_CreateSurface)(_THIS, SDL_Window *window, VkInstance instance, VkSurfaceKHR *surface);
-    void (*Vulkan_GetDrawableSize)(_THIS, SDL_Window *window, int *w, int *h);
 
     /* * * */
     /*
@@ -294,7 +292,6 @@ struct SDL_VideoDevice
     SDL_MetalView (*Metal_CreateView)(_THIS, SDL_Window *window);
     void (*Metal_DestroyView)(_THIS, SDL_MetalView view);
     void *(*Metal_GetLayer)(_THIS, SDL_MetalView view);
-    void (*Metal_GetDrawableSize)(_THIS, SDL_Window *window, int *w, int *h);
 
     /* * * */
     /*

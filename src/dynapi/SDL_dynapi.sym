@@ -119,7 +119,6 @@ SDL3_0.0.0 {
     SDL_GL_GetAttribute;
     SDL_GL_GetCurrentContext;
     SDL_GL_GetCurrentWindow;
-    SDL_GL_GetDrawableSize;
     SDL_GL_GetProcAddress;
     SDL_GL_GetSwapInterval;
     SDL_GL_LoadLibrary;
@@ -473,7 +472,6 @@ SDL3_0.0.0 {
     SDL_MemoryBarrierReleaseFunction;
     SDL_Metal_CreateView;
     SDL_Metal_DestroyView;
-    SDL_Metal_GetDrawableSize;
     SDL_Metal_GetLayer;
     SDL_MinimizeWindow;
     SDL_MixAudioFormat;
@@ -670,7 +668,6 @@ SDL3_0.0.0 {
     SDL_UpdateWindowSurfaceRects;
     SDL_UpdateYUVTexture;
     SDL_Vulkan_CreateSurface;
-    SDL_Vulkan_GetDrawableSize;
     SDL_Vulkan_GetInstanceExtensions;
     SDL_Vulkan_GetVkGetInstanceProcAddr;
     SDL_Vulkan_LoadLibrary;

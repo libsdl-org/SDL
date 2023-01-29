@@ -301,11 +301,6 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
     return SDL_TRUE;
 }
 
-void Cocoa_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    Cocoa_Metal_GetDrawableSize(_this, window, w, h);
-}
-
 #endif
 
 /* vim: set ts=4 sw=4 expandtab: */
