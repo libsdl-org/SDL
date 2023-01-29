@@ -51,7 +51,7 @@ int RISCOS_CreateWindow(_THIS, SDL_Window *window)
 
 void RISCOS_DestroyWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *driverdata = window->driverdata;
 
     if (driverdata == NULL) {
         return;

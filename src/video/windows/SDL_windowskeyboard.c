@@ -52,7 +52,7 @@ static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata);
 void WIN_InitKeyboard(_THIS)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     data->ime_com_initialized = SDL_FALSE;
     data->ime_threadmgr = 0;
@@ -155,7 +155,7 @@ void WIN_UpdateKeymap(SDL_bool send_event)
 
 void WIN_QuitKeyboard(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     IME_Quit(data);
@@ -207,8 +207,8 @@ void WIN_StartTextInput(_THIS)
 #ifndef SDL_DISABLE_WINDOWS_IME
     window = SDL_GetKeyboardFocus();
     if (window) {
-        HWND hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
-        SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+        HWND hwnd = window->driverdata->hwnd;
+        SDL_VideoData *videodata = _this->driverdata;
         SDL_GetWindowSize(window, &videodata->ime_winwidth, &videodata->ime_winheight);
         IME_Init(videodata, hwnd);
         IME_Enable(videodata, hwnd);
@@ -227,8 +227,8 @@ void WIN_StopTextInput(_THIS)
 #ifndef SDL_DISABLE_WINDOWS_IME
     window = SDL_GetKeyboardFocus();
     if (window) {
-        HWND hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
-        SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+        HWND hwnd = window->driverdata->hwnd;
+        SDL_VideoData *videodata = _this->driverdata;
         IME_Init(videodata, hwnd);
         IME_Disable(videodata, hwnd);
     }
@@ -237,7 +237,7 @@ void WIN_StopTextInput(_THIS)
 
 void WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
     HIMC himc = 0;
 
     if (rect == NULL) {
@@ -1727,13 +1727,13 @@ void IME_Present(SDL_VideoData *videodata)
 
 SDL_bool WIN_IsTextInputShown(_THIS)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
     return IME_IsTextInputShown(videodata);
 }
 
 void WIN_ClearComposition(_THIS)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
     IME_ClearComposition(videodata);
 }
 

@@ -444,7 +444,7 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
-* SDL_NumJoysticks - replaced with SDL_GetJoysticks()
+* SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
  
 ## SDL_keyboard.h
 
@@ -958,6 +958,28 @@ SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in S
 
 SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_VIDEO_DRIVER hint.
 
+Rather than iterating over displays using display index, there is a new function SDL_GetDisplays() to get the current list of displays, and functions which used to take a display index now take SDL_DisplayID, with an invalid ID being 0.
+```c
+{
+    if (SDL_InitSubSystem(SDL_INIT_VIDEO) == 0) {
+        int i, num_displays;
+        SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+        if (displays) {
+            for (i = 0; i < num_displays; ++i) {
+                SDL_DisplayID instance_id = displays[i];
+                const char *name = SDL_GetDisplayName(instance_id);
+
+                SDL_Log("Display %" SDL_PRIu32 ": %s\n", instance_id, name ? name : "Unknown");
+            }
+            SDL_free(displays);
+        }
+        SDL_QuitSubSystem(SDL_INIT_VIDEO);
+    }
+}
+```
+
+The SDL_WINDOWPOS_UNDEFINED_DISPLAY() and SDL_WINDOWPOS_CENTERED_DISPLAY() macros take a display ID instead of display index. The display ID 0 has a special meaning in this case, and is used to indicate the primary display.
+
 The SDL_WINDOW_SHOWN flag has been removed. Windows are shown by default and can be created hidden by using the SDL_WINDOW_HIDDEN flag.
 
 The SDL_WINDOW_ALLOW_HIGHDPI flag has been removed. Windows are automatically high DPI aware and their coordinates are in screen space, which may differ from physical pixels on displays using display scaling.
@@ -982,8 +1004,12 @@ SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be us
 
 The following functions have been renamed:
 * SDL_GetDisplayDPI() => SDL_GetDisplayPhysicalDPI()
-* SDL_GetPointDisplayIndex() => SDL_GetDisplayIndexForPoint()
-* SDL_GetRectDisplayIndex() => SDL_GetDisplayIndexForRect()
+* SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()
+* SDL_GetRectDisplayIndex() => SDL_GetDisplayForRect()
+* SDL_GetWindowDisplayIndex() => SDL_GetDisplayForWindow()
+
+The following functions have been removed:
+* SDL_GetNumVideoDisplays() - replaced with SDL_GetDisplays()
 
 SDL_Window id type is named SDL_WindowID
 

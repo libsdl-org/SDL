@@ -915,15 +915,15 @@ static SDL_RenderLineMethod SDL_GetRenderLineMethod()
 
 static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Window *window)
 {
-    int display_index = SDL_GetWindowDisplayIndex(window);
+    SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
     SDL_DisplayMode mode;
     float refresh_rate;
     int num, den;
 
-    if (display_index < 0) {
-        display_index = 0;
+    if (displayID == 0) {
+        displayID = SDL_GetPrimaryDisplay();
     }
-    if (SDL_GetDesktopDisplayMode(display_index, &mode) == 0 && mode.refresh_rate > 0.0f) {
+    if (SDL_GetDesktopDisplayMode(displayID, &mode) == 0 && mode.refresh_rate > 0.0f) {
         refresh_rate = mode.refresh_rate;
     } else {
         /* Pick a good default refresh rate */

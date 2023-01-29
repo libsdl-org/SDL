@@ -133,7 +133,7 @@ SDL_MetalView
 Cocoa_Metal_CreateView(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         NSView *view = data.nswindow.contentView;
         BOOL highDPI = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
         Uint32 windowID = SDL_GetWindowID(window);

@@ -267,7 +267,7 @@ static void Emscripten_SetWindowSize(_THIS, SDL_Window *window)
     SDL_WindowData *data;
 
     if (window->driverdata) {
-        data = (SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
         /* update pixel ratio */
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
@@ -285,7 +285,7 @@ static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, 
 {
     SDL_WindowData *data;
     if (window->driverdata) {
-        data = (SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
         *w = window->w * data->pixel_ratio;
         *h = window->h * data->pixel_ratio;
     }
@@ -296,7 +296,7 @@ static void Emscripten_DestroyWindow(_THIS, SDL_Window *window)
     SDL_WindowData *data;
 
     if (window->driverdata) {
-        data = (SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
 
         Emscripten_UnregisterEventHandlers(data);
 
@@ -313,7 +313,7 @@ static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoD
 {
     SDL_WindowData *data;
     if (window->driverdata) {
-        data = (SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
 
         if (fullscreen) {
             EmscriptenFullscreenStrategy strategy;

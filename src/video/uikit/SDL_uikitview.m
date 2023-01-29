@@ -103,7 +103,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     /* Remove ourself from the old window. */
     if (sdlwindow) {
         SDL_uikitview *view = nil;
-        data = (__bridge SDL_WindowData *)sdlwindow->driverdata;
+        data = sdlwindow->driverdata;
 
         [data.views removeObject:self];
 
@@ -122,7 +122,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     /* Add ourself to the new window. */
     if (window) {
-        data = (__bridge SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
 
         /* Make sure the SDL window has a strong reference to this view. */
         [data.views addObject:self];

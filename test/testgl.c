@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
         swap_interval = 0;
     }
 
-    SDL_GetCurrentDisplayMode(0, &mode);
+    SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode);
     SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
 
     ret_interval = SDL_GL_GetSwapInterval(&interval);

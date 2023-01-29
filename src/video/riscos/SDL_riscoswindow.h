@@ -25,12 +25,12 @@
 
 #include "SDL_riscosdefs.h"
 
-typedef struct
+struct SDL_WindowData
 {
     SDL_Window *window;
     sprite_area *fb_area;
     sprite_header *fb_sprite;
-} SDL_WindowData;
+};
 
 extern int RISCOS_CreateWindow(_THIS, SDL_Window *window);
 extern void RISCOS_DestroyWindow(_THIS, SDL_Window *window);

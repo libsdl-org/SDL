@@ -31,21 +31,16 @@
 #include <psp2/ime_dialog.h>
 #include <psp2/sysmodule.h>
 
-typedef struct SDL_VideoData
+struct SDL_VideoData
 {
     SDL_bool egl_initialized; /* OpenGL device initialization status */
     uint32_t egl_refcount;    /* OpenGL reference count              */
 
     SceWChar16 ime_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
     SDL_bool ime_active;
-} SDL_VideoData;
+};
 
-typedef struct SDL_DisplayData
-{
-
-} SDL_DisplayData;
-
-typedef struct SDL_WindowData
+struct SDL_WindowData
 {
     SDL_bool uses_gles;
     SceUID buffer_uid;
@@ -54,7 +49,7 @@ typedef struct SDL_WindowData
     EGLSurface egl_surface;
     EGLContext egl_context;
 #endif
-} SDL_WindowData;
+};
 
 extern SDL_Window *Vita_Window;
 

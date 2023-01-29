@@ -189,8 +189,8 @@
 #define SDL_GetDesktopDisplayMode SDL_GetDesktopDisplayMode_REAL
 #define SDL_GetDisplayBounds SDL_GetDisplayBounds_REAL
 #define SDL_GetDisplayPhysicalDPI SDL_GetDisplayPhysicalDPI_REAL
-#define SDL_GetDisplayIndexForPoint SDL_GetDisplayIndexForPoint_REAL
-#define SDL_GetDisplayIndexForRect SDL_GetDisplayIndexForRect_REAL
+#define SDL_GetDisplayForPoint SDL_GetDisplayForPoint_REAL
+#define SDL_GetDisplayForRect SDL_GetDisplayForRect_REAL
 #define SDL_GetDisplayMode SDL_GetDisplayMode_REAL
 #define SDL_GetDisplayName SDL_GetDisplayName_REAL
 #define SDL_GetDisplayOrientation SDL_GetDisplayOrientation_REAL
@@ -293,7 +293,6 @@
 #define SDL_GetNumRenderDrivers SDL_GetNumRenderDrivers_REAL
 #define SDL_GetNumTouchDevices SDL_GetNumTouchDevices_REAL
 #define SDL_GetNumTouchFingers SDL_GetNumTouchFingers_REAL
-#define SDL_GetNumVideoDisplays SDL_GetNumVideoDisplays_REAL
 #define SDL_GetNumVideoDrivers SDL_GetNumVideoDrivers_REAL
 #define SDL_GetOriginalMemoryFunctions SDL_GetOriginalMemoryFunctions_REAL
 #define SDL_GetPerformanceCounter SDL_GetPerformanceCounter_REAL
@@ -373,7 +372,7 @@
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
 #define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL
 #define SDL_GetWindowData SDL_GetWindowData_REAL
-#define SDL_GetWindowDisplayIndex SDL_GetWindowDisplayIndex_REAL
+#define SDL_GetDisplayForWindow SDL_GetDisplayForWindow_REAL
 #define SDL_GetWindowDisplayMode SDL_GetWindowDisplayMode_REAL
 #define SDL_GetWindowFlags SDL_GetWindowFlags_REAL
 #define SDL_GetWindowFromID SDL_GetWindowFromID_REAL
@@ -866,3 +865,5 @@
 #define SDL_aligned_alloc SDL_aligned_alloc_REAL
 #define SDL_aligned_free SDL_aligned_free_REAL
 #define SDL_ConvertAudioSamples SDL_ConvertAudioSamples_REAL
+#define SDL_GetDisplays SDL_GetDisplays_REAL
+#define SDL_GetPrimaryDisplay SDL_GetPrimaryDisplay_REAL

@@ -26,10 +26,11 @@
 #include <3ds.h>
 
 #include "../SDL_sysvideo.h"
-typedef struct SDL_WindowData
+
+struct SDL_WindowData
 {
     gfxScreen_t screen; /**< Keeps track of which N3DS screen is targetted */
-} SDL_WindowData;
+};
 
 #define FRAMEBUFFER_FORMAT SDL_PIXELFORMAT_RGBA8888
 

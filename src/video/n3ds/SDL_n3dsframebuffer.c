@@ -75,7 +75,7 @@ CreateNewWindowFramebuffer(SDL_Window *window)
 
 int SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_WindowData *drv_data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *drv_data = window->driverdata;
     SDL_Surface *surface;
     u16 width, height;
     u32 *framebuffer;

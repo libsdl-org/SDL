@@ -94,7 +94,7 @@ SDL_Window *WINRT_GlobalSDLWindow = NULL;
 static void WINRT_DeleteDevice(SDL_VideoDevice *device)
 {
     if (device->driverdata) {
-        SDL_VideoData *video_data = (SDL_VideoData *)device->driverdata;
+        SDL_VideoData *video_data = device->driverdata;
         if (video_data->winrtEglWindow) {
             video_data->winrtEglWindow->Release();
         }
@@ -229,7 +229,7 @@ static void SDLCALL WINRT_SetDisplayOrientationsPreference(void *userdata, const
 
 int WINRT_VideoInit(_THIS)
 {
-    SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *driverdata = _this->driverdata;
     if (WINRT_InitModes(_this) < 0) {
         return -1;
     }
@@ -483,7 +483,7 @@ static int WINRT_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMod
 
 void WINRT_VideoQuit(_THIS)
 {
-    SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *driverdata = _this->driverdata;
     if (driverdata && driverdata->displayRequest) {
         driverdata->displayRequest->Release();
         driverdata->displayRequest = NULL;
@@ -498,7 +498,7 @@ extern "C" Uint32
 WINRT_DetectWindowFlags(SDL_Window *window)
 {
     Uint32 latestFlags = 0;
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     bool is_fullscreen = false;
 
 #if SDL_WINRT_USE_APPLICATIONVIEW
@@ -511,7 +511,7 @@ WINRT_DetectWindowFlags(SDL_Window *window)
 
     if (data->coreWindow.Get()) {
         if (is_fullscreen) {
-            SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+            SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
             int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
             int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
 
@@ -638,7 +638,7 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
         data->egl_surface = EGL_NO_SURFACE;
     } else {
         /* OpenGL ES 2 was reuqested.  Set up an EGL surface. */
-        SDL_VideoData *video_data = (SDL_VideoData *)_this->driverdata;
+        SDL_VideoData *video_data = _this->driverdata;
 
         /* Call SDL_EGL_ChooseConfig and eglCreateWindowSurface directly,
          * rather than via SDL_EGL_CreateSurface, as older versions of
@@ -753,7 +753,7 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
 void WINRT_SetWindowSize(_THIS, SDL_Window *window)
 {
 #if NTDDI_VERSION >= NTDDI_WIN10
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     const Windows::Foundation::Size size(window->w, window->h);
     data->appView->TryResizeView(size); // TODO, WinRT: return failure (to caller?) from TryResizeView()
 #endif
@@ -762,7 +762,7 @@ void WINRT_SetWindowSize(_THIS, SDL_Window *window)
 void WINRT_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
 #if NTDDI_VERSION >= NTDDI_WIN10
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     bool isWindowActive = WINRT_IsCoreWindowActive(data->coreWindow.Get());
     if (isWindowActive) {
         if (fullscreen) {
@@ -780,7 +780,7 @@ void WINRT_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *disp
 
 void WINRT_DestroyWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
 
     if (WINRT_GlobalSDLWindow == window) {
         WINRT_GlobalSDLWindow = NULL;
@@ -796,7 +796,7 @@ void WINRT_DestroyWindow(_THIS, SDL_Window *window)
 
 int WINRT_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
 
     info->subsystem = SDL_SYSWM_WINRT;
     info->info.winrt.window = reinterpret_cast<IInspectable *>(data->coreWindow.Get());
@@ -849,7 +849,7 @@ done:
 
 void WINRT_SuspendScreenSaver(_THIS)
 {
-    SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *driverdata = _this->driverdata;
     if (driverdata && driverdata->displayRequest) {
         ABI::Windows::System::Display::IDisplayRequest *displayRequest = (ABI::Windows::System::Display::IDisplayRequest *)driverdata->displayRequest;
         if (_this->suspend_screensaver) {

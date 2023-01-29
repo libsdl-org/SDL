@@ -31,6 +31,34 @@ typedef struct SDL_WindowShaper SDL_WindowShaper;
 typedef struct SDL_ShapeDriver SDL_ShapeDriver;
 typedef struct SDL_VideoDisplay SDL_VideoDisplay;
 typedef struct SDL_VideoDevice SDL_VideoDevice;
+#if defined(SDL_VIDEO_DRIVER_COCOA)
+#ifdef __OBJC__
+@class SDL_VideoData;
+@class SDL_WindowData;
+#else
+typedef struct _SDL_VideoData SDL_VideoData;
+typedef struct _SDL_WindowData SDL_WindowData;
+#endif
+typedef struct SDL_DisplayData SDL_DisplayData;
+typedef struct SDL_DisplayModeData SDL_DisplayModeData;
+#elif defined(SDL_VIDEO_DRIVER_UIKIT)
+#ifdef __OBJC__
+@class SDL_VideoData;
+@class SDL_WindowData;
+@class SDL_DisplayData;
+@class SDL_DisplayModeData;
+#else
+typedef struct _SDL_VideoData SDL_VideoData;
+typedef struct _SDL_WindowData SDL_WindowData;
+typedef struct _SDL_DisplayData SDL_DisplayData;
+typedef struct _SDL_DisplayModeData SDL_DisplayModeData;
+#endif
+#else
+typedef struct SDL_VideoData SDL_VideoData;
+typedef struct SDL_DisplayData SDL_DisplayData;
+typedef struct SDL_DisplayModeData SDL_DisplayModeData;
+typedef struct SDL_WindowData SDL_WindowData;
+#endif /* SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT */
 
 /* Define the SDL window-shaper structure */
 struct SDL_WindowShaper
@@ -79,7 +107,7 @@ struct SDL_Window
     int last_pixel_w, last_pixel_h;
     Uint32 flags;
     Uint32 last_fullscreen_flags;
-    Uint32 display_index;
+    SDL_DisplayID displayID;
 
     /* Stored position and size for windowed mode */
     SDL_Rect windowed;
@@ -104,7 +132,7 @@ struct SDL_Window
 
     SDL_WindowUserData *data;
 
-    void *driverdata;
+    SDL_WindowData *driverdata;
 
     SDL_Window *prev;
     SDL_Window *next;
@@ -120,6 +148,7 @@ struct SDL_Window
  */
 struct SDL_VideoDisplay
 {
+    SDL_DisplayID id;
     char *name;
     int max_display_modes;
     int num_display_modes;
@@ -132,7 +161,7 @@ struct SDL_VideoDisplay
 
     SDL_VideoDevice *device;
 
-    void *driverdata;
+    SDL_DisplayData *driverdata;
 };
 
 /* Forward declaration */
@@ -240,7 +269,7 @@ struct SDL_VideoDevice
     void (*SetWindowAlwaysOnTop)(_THIS, SDL_Window *window, SDL_bool on_top);
     void (*SetWindowFullscreen)(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
     void *(*GetWindowICCProfile)(_THIS, SDL_Window *window, size_t *size);
-    int (*GetWindowDisplayIndex)(_THIS, SDL_Window *window);
+    SDL_DisplayID (*GetDisplayForWindow)(_THIS, SDL_Window *window);
     void (*SetWindowMouseRect)(_THIS, SDL_Window *window);
     void (*SetWindowMouseGrab)(_THIS, SDL_Window *window, SDL_bool grabbed);
     void (*SetWindowKeyboardGrab)(_THIS, SDL_Window *window, SDL_bool grabbed);
@@ -422,7 +451,7 @@ struct SDL_VideoDevice
 
     /* * * */
     /* Data private to this driver */
-    void *driverdata;
+    SDL_VideoData *driverdata;
     struct SDL_GLDriverData *gl_data;
 
 #if SDL_VIDEO_OPENGL_EGL
@@ -473,18 +502,20 @@ extern VideoBootStrap NGAGE_bootstrap;
 /* Use SDL_OnVideoThread() sparingly, to avoid regressions in use cases that currently happen to work */
 extern SDL_bool SDL_OnVideoThread(void);
 extern SDL_VideoDevice *SDL_GetVideoDevice(void);
-extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode *desktop_mode);
-extern int SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send_event);
-extern void SDL_DelVideoDisplay(int index);
+extern SDL_bool SDL_IsVideoContextExternal(void);
+extern SDL_DisplayID SDL_AddBasicVideoDisplay(const SDL_DisplayMode *desktop_mode);
+extern SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send_event);
+extern void SDL_DelVideoDisplay(SDL_DisplayID display);
 extern SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
 extern void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
 extern void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
-extern void SDL_ResetDisplayModes(int displayIndex);
-extern int SDL_GetIndexOfDisplay(SDL_VideoDisplay *display);
-extern SDL_VideoDisplay *SDL_GetDisplay(int displayIndex);
-extern SDL_VideoDisplay *SDL_GetDisplayForWindow(SDL_Window *window);
-extern void *SDL_GetDisplayDriverData(int displayIndex);
-extern SDL_bool SDL_IsVideoContextExternal(void);
+extern void SDL_ResetDisplayModes(SDL_VideoDisplay *display);
+extern SDL_VideoDisplay *SDL_GetVideoDisplay(SDL_DisplayID display);
+extern SDL_VideoDisplay *SDL_GetVideoDisplayForWindow(SDL_Window *window);
+extern int SDL_GetDisplayIndex(SDL_DisplayID displayID);
+extern SDL_DisplayData *SDL_GetDisplayDriverData(SDL_DisplayID display);
+extern SDL_DisplayData *SDL_GetDisplayDriverDataForWindow(SDL_Window *window);
+extern SDL_DisplayID SDL_GetDisplayForWindowCoordinate(int coordinate);
 extern int SDL_GetMessageBoxCount(void);
 
 extern void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor);
@@ -514,8 +545,6 @@ extern SDL_bool SDL_ShouldAllowTopmost(void);
 extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches);
 
 extern void SDL_ToggleDragAndDropSupport(void);
-
-extern int SDL_GetDisplayIndexForPoint(const SDL_Point *point);
 
 /* This has been moved out of the public API, but is still available for now */
 #define SDL_WINDOW_ALLOW_HIGHDPI    0x00002000

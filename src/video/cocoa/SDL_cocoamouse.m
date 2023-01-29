@@ -219,7 +219,7 @@ static int Cocoa_ShowCursor(SDL_Cursor *cursor)
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
         for (; window != NULL; window = window->next) {
-            SDL_WindowData *driverdata = (__bridge SDL_WindowData *)window->driverdata;
+            SDL_WindowData *driverdata = window->driverdata;
             if (driverdata) {
                 [driverdata.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
                                                       withObject:[driverdata.nswindow contentView]
@@ -249,7 +249,7 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
     CGPoint point;
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse->focus) {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)mouse->focus->driverdata;
+        SDL_WindowData *data = mouse->focus->driverdata;
         if ([data.listener isMovingOrFocusClickPending]) {
             DLog("Postponing warp, window being moved or focused.");
             [data.listener setPendingMoveX:x Y:y];
@@ -317,7 +317,7 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the non-relative mode when the window finishes being moved,
      * if it is being moved right now.
      */
-    data = (__bridge SDL_WindowData *)window->driverdata;
+    data = window->driverdata;
     if ([data.listener isMovingOrFocusClickPending]) {
         return 0;
     }
@@ -398,7 +398,7 @@ static void Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
     }
 
     for (window = _this->windows; window; window = window->next) {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         if (data && data.nswindow == nswindow) {
             switch ([event type]) {
             case NSEventTypeLeftMouseDown:

@@ -57,7 +57,7 @@ int OFFSCREEN_GLES_LoadLibrary(_THIS, const char *path)
 SDL_GLContext
 OFFSCREEN_GLES_CreateContext(_THIS, SDL_Window *window)
 {
-    OFFSCREEN_Window *offscreen_window = window->driverdata;
+    SDL_WindowData *offscreen_window = window->driverdata;
 
     SDL_GLContext context;
     context = SDL_EGL_CreateContext(_this, offscreen_window->egl_surface);
@@ -68,7 +68,7 @@ OFFSCREEN_GLES_CreateContext(_THIS, SDL_Window *window)
 int OFFSCREEN_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     if (window) {
-        EGLSurface egl_surface = ((OFFSCREEN_Window *)window->driverdata)->egl_surface;
+        EGLSurface egl_surface = window->driverdata->egl_surface;
         return SDL_EGL_MakeCurrent(_this, egl_surface, context);
     } else {
         return SDL_EGL_MakeCurrent(_this, NULL, NULL);
@@ -77,7 +77,7 @@ int OFFSCREEN_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 
 int OFFSCREEN_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
-    OFFSCREEN_Window *offscreen_wind = window->driverdata;
+    SDL_WindowData *offscreen_wind = window->driverdata;
 
     return SDL_EGL_SwapBuffers(_this, offscreen_wind->egl_surface);
 }

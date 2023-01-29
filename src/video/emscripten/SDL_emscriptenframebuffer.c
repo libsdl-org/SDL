@@ -34,7 +34,7 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format
     int w, h;
 
     /* Free the old framebuffer surface */
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     surface = data->surface;
     SDL_DestroySurface(surface);
 
@@ -58,7 +58,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect
 {
     SDL_Surface *surface;
 
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     surface = data->surface;
     if (surface == NULL) {
         return SDL_SetError("Couldn't find framebuffer surface for window");
@@ -152,7 +152,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect
 
 void Emscripten_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
 
     SDL_DestroySurface(data->surface);
     data->surface = NULL;

@@ -72,7 +72,7 @@ static void android_egl_context_restore(SDL_Window *window)
 {
     if (window) {
         SDL_Event event;
-        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         if (SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context) < 0) {
             /* The context is no longer valid, create a new one */
             data->egl_context = (EGLContext)SDL_GL_CreateContext(window);
@@ -89,7 +89,7 @@ static void android_egl_context_backup(SDL_Window *window)
 {
     if (window) {
         /* Keep a copy of the EGL Context so we can try to restore it when we resume */
-        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         data->egl_context = SDL_GL_GetCurrentContext();
         /* We need to do this so the EGLSurface can be freed */
         SDL_GL_MakeCurrent(window, NULL);
@@ -107,7 +107,7 @@ static void android_egl_context_backup(SDL_Window *window)
 
 void Android_PumpEvents_Blocking(_THIS)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
 
     if (videodata->isPaused) {
         SDL_bool isContextExternal = SDL_IsVideoContextExternal();
@@ -182,7 +182,7 @@ void Android_PumpEvents_Blocking(_THIS)
 
 void Android_PumpEvents_NonBlocking(_THIS)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
     static int backup_context = 0;
 
     if (videodata->isPaused) {

@@ -67,8 +67,7 @@ static void display_handle_done(void *data, struct wl_output *output);
 static int Wayland_VideoInit(_THIS);
 
 static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
-
-static int Wayland_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi);
+static int Wayland_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
 
 static void Wayland_VideoQuit(_THIS);
 
@@ -151,7 +150,7 @@ SDL_bool SDL_WAYLAND_own_output(struct wl_output *output)
 
 static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *data = (SDL_VideoData *)device->driverdata;
+    SDL_VideoData *data = device->driverdata;
     if (data->display) {
         WAYLAND_wl_display_flush(data->display);
         WAYLAND_wl_display_disconnect(data->display);
@@ -286,7 +285,7 @@ VideoBootStrap Wayland_bootstrap = {
 static void xdg_output_handle_logical_position(void *data, struct zxdg_output_v1 *xdg_output,
                                                int32_t x, int32_t y)
 {
-    SDL_WaylandOutputData *driverdata = data;
+    SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
 
     driverdata->x = x;
     driverdata->y = y;
@@ -296,7 +295,7 @@ static void xdg_output_handle_logical_position(void *data, struct zxdg_output_v1
 static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xdg_output,
                                            int32_t width, int32_t height)
 {
-    SDL_WaylandOutputData *driverdata = data;
+    SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
 
     if (driverdata->screen_width != 0 && driverdata->screen_height != 0) {
         /* FIXME: GNOME has a bug where the logical size does not account for
@@ -323,7 +322,7 @@ static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xd
 
 static void xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output)
 {
-    SDL_WaylandOutputData *driverdata = data;
+    SDL_DisplayData *driverdata = (void *)data;
 
     /*
      * xdg-output.done events are deprecated and only apply below version 3 of the protocol.
@@ -342,9 +341,9 @@ static void xdg_output_handle_name(void *data, struct zxdg_output_v1 *xdg_output
 static void xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg_output,
                                           const char *description)
 {
-    SDL_WaylandOutputData *driverdata = data;
+    SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
 
-    if (driverdata->index == -1) {
+    if (driverdata->display == 0) {
         /* xdg-output descriptions, if available, supersede wl-output model names. */
         if (driverdata->placeholder.name != NULL) {
             SDL_free(driverdata->placeholder.name);
@@ -452,19 +451,19 @@ static void display_handle_geometry(void *data,
                                     int transform)
 
 {
-    SDL_WaylandOutputData *driverdata = data;
+    SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
     SDL_VideoDisplay *display;
     int i;
 
     if (driverdata->wl_output_done_count) {
         /* Clear the wl_output ref so Reset doesn't free it */
-        display = SDL_GetDisplay(driverdata->index);
-        for (i = 0; i < display->num_display_modes; i += 1) {
+        display = SDL_GetVideoDisplay(driverdata->display);
+        for (i = 0; i < display->num_display_modes; ++i) {
             display->display_modes[i].driverdata = NULL;
         }
 
         /* Okay, now it's safe to reset */
-        SDL_ResetDisplayModes(driverdata->index);
+        SDL_ResetDisplayModes(display);
 
         /* The display has officially started over. */
         driverdata->wl_output_done_count = 0;
@@ -479,7 +478,7 @@ static void display_handle_geometry(void *data,
     driverdata->physical_height = physical_height;
 
     /* The output name is only set if xdg-output hasn't provided a description. */
-    if (driverdata->index == -1 && driverdata->placeholder.name == NULL) {
+    if (driverdata->display == 0 && driverdata->placeholder.name == NULL) {
         driverdata->placeholder.name = SDL_strdup(model);
     }
 
@@ -521,7 +520,7 @@ static void display_handle_mode(void *data,
                                 int height,
                                 int refresh)
 {
-    SDL_WaylandOutputData *driverdata = data;
+    SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
         driverdata->pixel_width = width;
@@ -543,7 +542,7 @@ static void display_handle_mode(void *data,
 static void display_handle_done(void *data,
                                 struct wl_output *output)
 {
-    SDL_WaylandOutputData *driverdata = data;
+    SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
     SDL_VideoData *video = driverdata->videodata;
     SDL_DisplayMode native_mode, desktop_mode;
     SDL_VideoDisplay *dpy;
@@ -603,8 +602,8 @@ static void display_handle_done(void *data,
     desktop_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
     desktop_mode.driverdata = driverdata->output;
 
-    if (driverdata->index > -1) {
-        dpy = SDL_GetDisplay(driverdata->index);
+    if (driverdata->display > 0) {
+        dpy = SDL_GetVideoDisplay(driverdata->display);
     } else {
         dpy = &driverdata->placeholder;
     }
@@ -658,12 +657,12 @@ static void display_handle_done(void *data,
                                                   ((float)driverdata->physical_height) / 25.4f);
     }
 
-    if (driverdata->index == -1) {
+    if (driverdata->display == 0) {
         /* First time getting display info, create the VideoDisplay */
         SDL_bool send_event = driverdata->videodata->initializing ? SDL_FALSE : SDL_TRUE;
         driverdata->placeholder.orientation = driverdata->orientation;
         driverdata->placeholder.driverdata = driverdata;
-        driverdata->index = SDL_AddVideoDisplay(&driverdata->placeholder, send_event);
+        driverdata->display = SDL_AddVideoDisplay(&driverdata->placeholder, send_event);
         SDL_free(driverdata->placeholder.name);
         SDL_zero(driverdata->placeholder);
     } else {
@@ -675,7 +674,7 @@ static void display_handle_scale(void *data,
                                  struct wl_output *output,
                                  int32_t factor)
 {
-    SDL_WaylandOutputData *driverdata = data;
+    SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
     driverdata->scale_factor = factor;
 }
 
@@ -689,35 +688,33 @@ static const struct wl_output_listener output_listener = {
 static void Wayland_add_display(SDL_VideoData *d, uint32_t id)
 {
     struct wl_output *output;
-    SDL_WaylandOutputData *data;
+    SDL_DisplayData *data;
 
     output = wl_registry_bind(d->registry, id, &wl_output_interface, 2);
     if (output == NULL) {
         SDL_SetError("Failed to retrieve output.");
         return;
     }
-    data = SDL_malloc(sizeof *data);
-    SDL_zerop(data);
+    data = (SDL_DisplayData *)SDL_calloc(1, sizeof(*data));
     data->videodata = d;
     data->output = output;
     data->registry_id = id;
     data->scale_factor = 1.0f;
-    data->index = -1;
 
     wl_output_add_listener(output, &output_listener, data);
     SDL_WAYLAND_register_output(output);
 
     /* Keep a list of outputs for deferred xdg-output initialization. */
     if (d->output_list != NULL) {
-        SDL_WaylandOutputData *node = d->output_list;
+        SDL_DisplayData *node = d->output_list;
 
         while (node->next != NULL) {
             node = node->next;
         }
 
-        node->next = (struct SDL_WaylandOutputData *)data;
+        node->next = data;
     } else {
-        d->output_list = (struct SDL_WaylandOutputData *)data;
+        d->output_list = data;
     }
 
     if (data->videodata->xdg_output_manager) {
@@ -728,51 +725,46 @@ static void Wayland_add_display(SDL_VideoData *d, uint32_t id)
 
 static void Wayland_free_display(SDL_VideoData *d, uint32_t id)
 {
-    int num_displays = SDL_GetNumVideoDisplays();
+    SDL_DisplayID *displays;
     SDL_VideoDisplay *display;
-    SDL_WaylandOutputData *data;
+    SDL_DisplayData *data;
     int i;
 
-    for (i = 0; i < num_displays; i += 1) {
-        display = SDL_GetDisplay(i);
-        data = (SDL_WaylandOutputData *)display->driverdata;
-        if (data->registry_id == id) {
-            if (d->output_list != NULL) {
-                SDL_WaylandOutputData *node = d->output_list;
-                if (node == data) {
-                    d->output_list = node->next;
-                } else {
-                    while (node->next != data && node->next != NULL) {
-                        node = node->next;
-                    }
-                    if (node->next != NULL) {
-                        node->next = node->next->next;
+    displays = SDL_GetDisplays(NULL);
+    if (displays) {
+        for (i = 0; displays[i]; ++i) {
+            display = SDL_GetVideoDisplay(displays[i]);
+            data = display->driverdata;
+            if (data->registry_id == id) {
+                if (d->output_list != NULL) {
+                    SDL_DisplayData *node = d->output_list;
+                    if (node == data) {
+                        d->output_list = node->next;
+                    } else {
+                        while (node->next != data && node->next != NULL) {
+                            node = node->next;
+                        }
+                        if (node->next != NULL) {
+                            node->next = node->next->next;
+                        }
                     }
                 }
+                SDL_DelVideoDisplay(displays[i]);
+                if (data->xdg_output) {
+                    zxdg_output_v1_destroy(data->xdg_output);
+                }
+                wl_output_destroy(data->output);
+                SDL_free(data);
+                break;
             }
-            SDL_DelVideoDisplay(i);
-            if (data->xdg_output) {
-                zxdg_output_v1_destroy(data->xdg_output);
-            }
-            wl_output_destroy(data->output);
-            SDL_free(data);
-
-            /* Update the index for all remaining displays */
-            num_displays -= 1;
-            for (; i < num_displays; i += 1) {
-                display = SDL_GetDisplay(i);
-                data = (SDL_WaylandOutputData *)display->driverdata;
-                data->index -= 1;
-            }
-
-            return;
         }
+        SDL_free(displays);
     }
 }
 
 static void Wayland_init_xdg_output(SDL_VideoData *d)
 {
-    SDL_WaylandOutputData *node;
+    SDL_DisplayData *node;
     for (node = d->output_list; node != NULL; node = node->next) {
         node->xdg_output = zxdg_output_manager_v1_get_xdg_output(node->videodata->xdg_output_manager, node->output);
         zxdg_output_v1_add_listener(node->xdg_output, &xdg_output_listener, node);
@@ -941,7 +933,7 @@ SDL_bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
 
 int Wayland_VideoInit(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     data->xkb_context = WAYLAND_xkb_context_new(0);
     if (!data->xkb_context) {
@@ -981,7 +973,7 @@ int Wayland_VideoInit(_THIS)
 
 static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
-    SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *)display->driverdata;
+    SDL_DisplayData *driverdata = display->driverdata;
     rect->x = driverdata->x;
     rect->y = driverdata->y;
     rect->w = display->current_mode.screen_w;
@@ -989,9 +981,9 @@ static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *
     return 0;
 }
 
-static int Wayland_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi)
+static int Wayland_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
 {
-    SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *)sdl_display->driverdata;
+    SDL_DisplayData *driverdata = display->driverdata;
 
     if (ddpi) {
         *ddpi = driverdata->ddpi;
@@ -1017,11 +1009,11 @@ static void Wayland_VideoCleanup(_THIS)
     for (i = _this->num_displays - 1; i >= 0; --i) {
         SDL_VideoDisplay *display = &_this->displays[i];
 
-        if (((SDL_WaylandOutputData *)display->driverdata)->xdg_output) {
-            zxdg_output_v1_destroy(((SDL_WaylandOutputData *)display->driverdata)->xdg_output);
+        if (display->driverdata->xdg_output) {
+            zxdg_output_v1_destroy(display->driverdata->xdg_output);
         }
 
-        wl_output_destroy(((SDL_WaylandOutputData *)display->driverdata)->output);
+        wl_output_destroy(display->driverdata->output);
         SDL_free(display->driverdata);
         display->driverdata = NULL;
 

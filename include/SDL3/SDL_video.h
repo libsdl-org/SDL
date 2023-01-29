@@ -40,6 +40,7 @@ extern "C" {
 #endif
 
 
+typedef Uint32 SDL_DisplayID;
 typedef Uint32 SDL_WindowID;
 
 /**
@@ -300,52 +301,60 @@ extern DECLSPEC const char *SDLCALL SDL_GetVideoDriver(int index);
 extern DECLSPEC const char *SDLCALL SDL_GetCurrentVideoDriver(void);
 
 /**
- * Get the number of available video displays.
+ * Get a list of currently connected displays.
  *
- * \returns a number >= 1 or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \param count a pointer filled in with the number of displays returned
+ * \returns a 0 terminated array of display instance IDs which should be
+ *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          more details.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_DisplayID *SDLCALL SDL_GetDisplays(int *count);
+
+/**
+ * Return the primary display.
+ *
+ * \returns the instance ID of the primary display on success or 0 on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetDisplayBounds
+ * \sa SDL_GetDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetNumVideoDisplays(void);
+extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
 
 /**
  * Get the name of a display in UTF-8 encoding.
  *
- * \param displayIndex the index of display from which the name should be
- *                     queried
- * \returns the name of a display or NULL for an invalid display index or
- *          failure; call SDL_GetError() for more information.
+ * \param displayID the instance ID of the display to query
+ * \returns the name of a display or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetNumVideoDisplays
+ * \sa SDL_GetDisplays
  */
-extern DECLSPEC const char *SDLCALL SDL_GetDisplayName(int displayIndex);
+extern DECLSPEC const char *SDLCALL SDL_GetDisplayName(SDL_DisplayID displayID);
 
 /**
  * Get the desktop area represented by a display, in screen coordinates.
  *
- * The primary display (`displayIndex` zero) is always located at 0,0.
+ * The primary display is always located at (0,0).
  *
- * \param displayIndex the index of the display to query
+ * \param displayID the instance ID of the display to query
  * \param rect the SDL_Rect structure filled in with the display bounds
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetNumVideoDisplays
+ * \sa SDL_GetDisplayUsableBounds
+ * \sa SDL_GetDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(int displayIndex, SDL_Rect *rect);
+extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(SDL_DisplayID displayID, SDL_Rect *rect);
 
 /**
  * Get the usable desktop area represented by a display, in screen
  * coordinates.
- *
- * The primary display (`displayIndex` zero) is always located at 0,0.
  *
  * This is the same area as SDL_GetDisplayBounds() reports, but with portions
  * reserved by the system removed. For example, on Apple's macOS, this
@@ -355,13 +364,7 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(int displayIndex, SDL_Rect *rec
  * so these are good guidelines for the maximum space available to a
  * non-fullscreen window.
  *
- * The parameter `rect` is ignored if it is NULL.
- *
- * This function also returns -1 if the parameter `displayIndex` is out of
- * range.
- *
- * \param displayIndex the index of the display to query the usable bounds
- *                     from
+ * \param displayID the instance ID of the display to query
  * \param rect the SDL_Rect structure filled in with the display bounds
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -369,18 +372,15 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(int displayIndex, SDL_Rect *rec
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetDisplayBounds
- * \sa SDL_GetNumVideoDisplays
+ * \sa SDL_GetDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect *rect);
+extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect);
 
 /**
  * Get the dots/pixels-per-inch for a display.
  *
  * Diagonal, horizontal and vertical DPI can all be optionally returned if the
  * appropriate parameter is non-NULL.
- *
- * A failure of this function usually means that either no DPI information is
- * available or the `displayIndex` is out of range.
  *
  * **WARNING**: This reports the DPI that the hardware reports, and it is not
  * always reliable! It is almost always better to use SDL_GetWindowSize() to
@@ -390,8 +390,7 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rec
  * will be rethinking how high-dpi details should be managed in SDL3 to make
  * things more consistent, reliable, and clear.
  *
- * \param displayIndex the index of the display from which DPI information
- *                     should be queried
+ * \param displayID the instance ID of the display to query
  * \param ddpi a pointer filled in with the diagonal DPI of the display; may
  *             be NULL
  * \param hdpi a pointer filled in with the horizontal DPI of the display; may
@@ -403,53 +402,51 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rec
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetNumVideoDisplays
+ * \sa SDL_GetDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetDisplayPhysicalDPI(int displayIndex, float *ddpi, float *hdpi, float *vdpi);
+extern DECLSPEC int SDLCALL SDL_GetDisplayPhysicalDPI(SDL_DisplayID displayID, float *ddpi, float *hdpi, float *vdpi);
 
 /**
  * Get the orientation of a display.
  *
- * \param displayIndex the index of the display to query
+ * \param displayID the instance ID of the display to query
  * \returns The SDL_DisplayOrientation enum value of the display, or
  *          `SDL_ORIENTATION_UNKNOWN` if it isn't available.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetNumVideoDisplays
+ * \sa SDL_GetDisplays
  */
-extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayOrientation(int displayIndex);
+extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayOrientation(SDL_DisplayID displayID);
 
 /**
  * Get the number of available display modes.
  *
- * The `displayIndex` needs to be in the range from 0 to
- * SDL_GetNumVideoDisplays() - 1.
- *
- * \param displayIndex the index of the display to query
+ * \param displayID the instance ID of the display to query
  * \returns a number >= 1 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetDisplayMode
- * \sa SDL_GetNumVideoDisplays
+ * \sa SDL_GetDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetNumDisplayModes(int displayIndex);
+extern DECLSPEC int SDLCALL SDL_GetNumDisplayModes(SDL_DisplayID displayID);
 
 /**
  * Get information about a specific display mode.
  *
  * The display modes are sorted in this priority:
  *
- * - width -> largest to smallest
- * - height -> largest to smallest
- * - display_scale -> smallest to largest
+ * - screen_w -> largest to smallest
+ * - screen_h -> largest to smallest
+ * - pixel_w -> largest to smallest
+ * - pixel_h -> largest to smallest
  * - bits per pixel -> more colors to fewer colors
  * - packed pixel layout -> largest to smallest
  * - refresh rate -> highest to lowest
  *
- * \param displayIndex the index of the display to query
+ * \param displayID the instance ID of the display to query
  * \param modeIndex the index of the display mode to query
  * \param mode an SDL_DisplayMode structure filled in with the mode at
  *             `modeIndex`
@@ -460,7 +457,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumDisplayModes(int displayIndex);
  *
  * \sa SDL_GetNumDisplayModes
  */
-extern DECLSPEC int SDLCALL SDL_GetDisplayMode(int displayIndex, int modeIndex, SDL_DisplayMode *mode);
+extern DECLSPEC int SDLCALL SDL_GetDisplayMode(SDL_DisplayID displayID, int modeIndex, SDL_DisplayMode *mode);
 
 /**
  * Get information about the desktop's display mode.
@@ -470,7 +467,7 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayMode(int displayIndex, int modeIndex, 
  * function will return the previous native display mode, and not the current
  * display mode.
  *
- * \param displayIndex the index of the display to query
+ * \param displayID the instance ID of the display to query
  * \param mode an SDL_DisplayMode structure filled in with the current display
  *             mode
  * \returns 0 on success or a negative error code on failure; call
@@ -482,7 +479,7 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayMode(int displayIndex, int modeIndex, 
  * \sa SDL_GetDisplayMode
  * \sa SDL_SetWindowDisplayMode
  */
-extern DECLSPEC int SDLCALL SDL_GetDesktopDisplayMode(int displayIndex, SDL_DisplayMode *mode);
+extern DECLSPEC int SDLCALL SDL_GetDesktopDisplayMode(SDL_DisplayID displayID, SDL_DisplayMode *mode);
 
 /**
  * Get information about the current display mode.
@@ -492,7 +489,7 @@ extern DECLSPEC int SDLCALL SDL_GetDesktopDisplayMode(int displayIndex, SDL_Disp
  * function will return the current display mode, and not the previous native
  * display mode.
  *
- * \param displayIndex the index of the display to query
+ * \param displayID the instance ID of the display to query
  * \param mode an SDL_DisplayMode structure filled in with the current display
  *             mode
  * \returns 0 on success or a negative error code on failure; call
@@ -502,11 +499,10 @@ extern DECLSPEC int SDLCALL SDL_GetDesktopDisplayMode(int displayIndex, SDL_Disp
  *
  * \sa SDL_GetDesktopDisplayMode
  * \sa SDL_GetDisplayMode
- * \sa SDL_GetNumVideoDisplays
+ * \sa SDL_GetDisplays
  * \sa SDL_SetWindowDisplayMode
  */
-extern DECLSPEC int SDLCALL SDL_GetCurrentDisplayMode(int displayIndex, SDL_DisplayMode *mode);
-
+extern DECLSPEC int SDLCALL SDL_GetCurrentDisplayMode(SDL_DisplayID displayID, SDL_DisplayMode *mode);
 
 /**
  * Get the closest match to the requested display mode.
@@ -518,9 +514,9 @@ extern DECLSPEC int SDLCALL SDL_GetCurrentDisplayMode(int displayIndex, SDL_Disp
  * and finally checking the refresh rate. If all the available modes are too
  * small, then NULL is returned.
  *
- * \param displayIndex the index of the display to query
+ * \param displayID the instance ID of the display to query
  * \param mode an SDL_DisplayMode structure containing the desired display
- *             mode
+ *             mode, should be zero initialized
  * \param closest an SDL_DisplayMode structure filled in with the closest
  *                match of the available display modes
  * \returns the passed in value `closest` or NULL if no matching video mode
@@ -531,51 +527,48 @@ extern DECLSPEC int SDLCALL SDL_GetCurrentDisplayMode(int displayIndex, SDL_Disp
  * \sa SDL_GetDisplayMode
  * \sa SDL_GetNumDisplayModes
  */
-extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode(int displayIndex, const SDL_DisplayMode *mode, SDL_DisplayMode *closest);
+extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode(SDL_DisplayID displayID, const SDL_DisplayMode *mode, SDL_DisplayMode *closest);
 
 /**
- * Get the index of the display containing a point
+ * Get the display containing a point
  *
  * \param point the point to query
- * \returns the index of the display containing the point or a negative error
- *          code on failure; call SDL_GetError() for more information.
+ * \returns the instance ID of the display containing the point or 0 on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetDisplayBounds
- * \sa SDL_GetNumVideoDisplays
+ * \sa SDL_GetDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetDisplayIndexForPoint(const SDL_Point *point);
+extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForPoint(const SDL_Point *point);
 
 /**
- * Get the index of the display primarily containing a rect
+ * Get the display primarily containing a rect
  *
  * \param rect the rect to query
- * \returns the index of the display entirely containing the rect or closest
- *          to the center of the rect on success or a negative error code on
- *          failure; call SDL_GetError() for more information.
+ * \returns the instance ID of the display entirely containing the rect or closest
+ *          to the center of the rect on success or 0 on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetDisplayBounds
- * \sa SDL_GetNumVideoDisplays
+ * \sa SDL_GetDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetDisplayIndexForRect(const SDL_Rect *rect);
+extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForRect(const SDL_Rect *rect);
 
 /**
- * Get the index of the display associated with a window.
+ * Get the display associated with a window.
  *
  * \param window the window to query
- * \returns the index of the display containing the center of the window on
- *          success or a negative error code on failure; call SDL_GetError()
- *          for more information.
+ * \returns the instance ID of the display containing the center of the window on
+ *          success or 0 on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetDisplayBounds
- * \sa SDL_GetNumVideoDisplays
+ * \sa SDL_GetDisplays
  */
-extern DECLSPEC int SDLCALL SDL_GetWindowDisplayIndex(SDL_Window *window);
+extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForWindow(SDL_Window *window);
 
 /**
  * Set the display mode to use when a window is visible at fullscreen.

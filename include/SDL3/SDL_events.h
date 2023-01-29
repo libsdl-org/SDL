@@ -215,7 +215,7 @@ typedef struct SDL_DisplayEvent
 {
     Uint32 type;        /**< ::SDL_DISPLAYEVENT_* */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 display;     /**< The associated display index */
+    SDL_DisplayID displayID;/**< The associated display */
     Sint32 data1;       /**< event dependent data */
 } SDL_DisplayEvent;
 

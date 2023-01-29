@@ -75,7 +75,7 @@ void UIKit_InitClipboard(_THIS)
 {
 #if !TARGET_OS_TV
     @autoreleasepool {
-        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
+        SDL_VideoData *data = _this->driverdata;
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
         id observer = [center addObserverForName:UIPasteboardChangedNotification
@@ -93,7 +93,7 @@ void UIKit_InitClipboard(_THIS)
 void UIKit_QuitClipboard(_THIS)
 {
     @autoreleasepool {
-        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
+        SDL_VideoData *data = _this->driverdata;
 
         if (data.pasteboardObserver != nil) {
             [[NSNotificationCenter defaultCenter] removeObserver:data.pasteboardObserver];

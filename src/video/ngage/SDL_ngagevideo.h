@@ -34,7 +34,7 @@
 
 #define _THIS SDL_VideoDevice *_this
 
-typedef struct SDL_VideoData
+struct SDL_VideoData
 {
     /* Epoc window server info */
     RWsSession NGAGE_WsSession;
@@ -61,6 +61,6 @@ typedef struct SDL_VideoData
 
     CFbsBitGc::TGraphicsOrientation NGAGE_ScreenOrientation;
 
-} SDL_VideoData;
+};
 
 #endif /* SDL_ngagevideo_h */

@@ -1557,7 +1557,7 @@ D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     Uint32 window_flags;
     int w, h;
     SDL_DisplayMode fullscreen_mode;
-    int displayIndex;
+    SDL_DisplayID displayID;
 
     if (SDL_GetWindowWMInfo(window, &windowinfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
         windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
@@ -1639,8 +1639,8 @@ D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
 
     /* Get the adapter for the display that the window is on */
-    displayIndex = SDL_GetWindowDisplayIndex(window);
-    data->adapter = SDL_Direct3D9GetAdapterIndex(displayIndex);
+    displayID = SDL_GetDisplayForWindow(window);
+    data->adapter = SDL_Direct3D9GetAdapterIndex(displayID);
 
     IDirect3D9_GetDeviceCaps(data->d3d, data->adapter, D3DDEVTYPE_HAL, &caps);
 
