@@ -19,15 +19,15 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows (mingw32),        os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, artifact: 'mingw32'}
-        - { name: Windows (mingw64),        os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64, artifact: 'mingw64' }
-        - { name: Windows (clang32),        os: windows-latest, shell: 'msys2 {0}', msystem: clang32, msys-env: mingw-w64-clang-i686, artifact: 'clang32' }
-        - { name: Windows (clang64),        os: windows-latest, shell: 'msys2 {0}', msystem: clang64, msys-env: mingw-w64-clang-x86_64, artifact: 'clang64' }
-        - { name: Windows (ucrt64),         os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64, artifact: 'ucrt64' }
-        - { name: Ubuntu 20.04,             os: ubuntu-20.04,   shell: sh, artifact: 'ubuntu20.04' }
-        - { name: Ubuntu 22.04,             os: ubuntu-22.04,   shell: sh, artifact: 'ubuntu22.04' }
-        - { name: MacOS (Framework),  os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DSDL_FRAMEWORK=ON', skip_test_pkgconfig: true, artifact: 'macos-framework' }
-        - { name: MacOS (GNU prefix), os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64"', artifact: 'macos-gnu' }
+        - { name: Windows (mingw32),        os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, artifact: 'SDL-mingw32' }
+        - { name: Windows (mingw64),        os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64, artifact: 'SDL-mingw64' }
+        - { name: Windows (clang32),        os: windows-latest, shell: 'msys2 {0}', msystem: clang32, msys-env: mingw-w64-clang-i686, artifact: 'SDL-msys2-clang32' }
+        - { name: Windows (clang64),        os: windows-latest, shell: 'msys2 {0}', msystem: clang64, msys-env: mingw-w64-clang-x86_64, artifact: 'SDL-msys2-clang64' }
+        - { name: Windows (ucrt64),         os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64, artifact: 'SDL-msys2-ucrt64' }
+        - { name: Ubuntu 20.04,             os: ubuntu-20.04,   shell: sh, artifact: 'SDL-ubuntu20.04' }
+        - { name: Ubuntu 22.04,             os: ubuntu-22.04,   shell: sh, artifact: 'SDL-ubuntu22.04' }
+        - { name: MacOS (Framework),  os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DSDL_FRAMEWORK=ON', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework' }
+        - { name: MacOS (GNU prefix), os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64"', artifact: 'SDL-macos-gnu' }
 
     steps:
     - name: Set up MSYS2
@@ -95,6 +95,9 @@ jobs:
         set -eu
         cmake --install build/ --config Release
         ( cd cmake_prefix; find . ) | LC_ALL=C sort -u
+    - name: Package (CPack)
+      run: |
+        cmake --build build/ --config Release --target package
     - name: Verify CMake configuration files
       run: |
         cmake -S cmake/test -B cmake_config_build -G Ninja \
@@ -110,5 +113,6 @@ jobs:
         cmake/test/test_pkgconfig.sh
     - uses: actions/upload-artifact@v3
       with:
+        if-no-files-found: error
         name: ${{ matrix.platform.artifact }}
-        path: cmake_prefix/
+        path: build/dist/SDL3*
