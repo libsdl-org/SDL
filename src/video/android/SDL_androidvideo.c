@@ -169,8 +169,8 @@ VideoBootStrap Android_bootstrap = {
 
 int Android_VideoInit(_THIS)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
-    int display_index;
+    SDL_VideoData *videodata = _this->driverdata;
+    SDL_DisplayID displayID;
     SDL_VideoDisplay *display;
     SDL_DisplayMode mode;
 
@@ -186,11 +186,11 @@ int Android_VideoInit(_THIS)
     mode.refresh_rate = Android_ScreenRate;
     mode.driverdata = NULL;
 
-    display_index = SDL_AddBasicVideoDisplay(&mode);
-    if (display_index < 0) {
+    displayID = SDL_AddBasicVideoDisplay(&mode);
+    if (displayID == 0) {
         return -1;
     }
-    display = SDL_GetDisplay(display_index);
+    display = SDL_GetVideoDisplay(displayID);
     display->orientation = Android_JNI_GetDisplayOrientation();
 
     SDL_AddDisplayMode(&_this->displays[0], &mode);
@@ -291,7 +291,7 @@ void Android_SendResize(SDL_Window *window)
         /* Force the current mode to match the resize otherwise the SDL_EVENT_WINDOW_RESTORED event
          * will fall back to the old mode */
         int w, h;
-        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
         SDL_DisplayMode current_mode;
 
         current_mode.format = Android_ScreenFormat;

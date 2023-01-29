@@ -1993,12 +1993,12 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 @@
 @@
 - SDL_GetPointDisplayIndex
-+ SDL_GetDisplayIndexForPoint
++ SDL_GetDisplayForPoint
   (...)
 @@
 @@
 - SDL_GetRectDisplayIndex
-+ SDL_GetDisplayIndexForRect
++ SDL_GetDisplayForRect
   (...)
 @ depends on rule_init_noparachute @
 expression e;
@@ -2354,3 +2354,8 @@ SDL_DisplayMode e;
 - e.h
 + e.screen_h
 )
+@@
+@@
+- SDL_GetWindowDisplayIndex
++ SDL_GetDisplayForWindow
+  (...)

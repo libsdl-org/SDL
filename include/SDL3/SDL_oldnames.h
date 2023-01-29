@@ -413,8 +413,9 @@
 
 /* ##SDL_video.h */
 #define SDL_GetDisplayDPI SDL_GetDisplayPhysicalDPI
-#define SDL_GetPointDisplayIndex SDL_GetDisplayIndexForPoint
-#define SDL_GetRectDisplayIndex SDL_GetDisplayIndexForRect
+#define SDL_GetPointDisplayIndex SDL_GetDisplayForPoint
+#define SDL_GetRectDisplayIndex SDL_GetDisplayForRect
+#define SDL_GetWindowDisplayIndex SDL_GetDisplayForWindow
 #define SDL_WINDOW_FULLSCREEN SDL_WINDOW_FULLSCREEN_EXCLUSIVE
 #define SDL_WINDOW_INPUT_GRABBED SDL_WINDOW_MOUSE_GRABBED
 
@@ -795,8 +796,9 @@
 
 /* ##SDL_video.h */
 #define SDL_GetDisplayDPI SDL_GetDisplayDPI_renamed_SDL_GetDisplayPhysicalDPI
-#define SDL_GetPointDisplayIndex SDL_GetPointDisplayIndex_renamed_SDL_GetDisplayIndexForPoint
-#define SDL_GetRectDisplayIndex SDL_GetRectDisplayIndex_renamed_SDL_GetDisplayIndexForRect
+#define SDL_GetPointDisplayIndex SDL_GetPointDisplayIndex_renamed_SDL_GetDisplayForPoint
+#define SDL_GetRectDisplayIndex SDL_GetRectDisplayIndex_renamed_SDL_GetDisplayForRect
+#define SDL_GetWindowDisplayIndex SDL_GetWindowDisplayIndex_renamed_SDL_GetDisplayForWindow
 #define SDL_WINDOW_FULLSCREEN SDL_WINDOW_FULLSCREEN_renamed_SDL_WINDOW_FULLSCREEN_EXCLUSIVE
 #define SDL_WINDOW_INPUT_GRABBED SDL_WINDOW_INPUT_GRABBED_renamed_SDL_WINDOW_MOUSE_GRABBED
 

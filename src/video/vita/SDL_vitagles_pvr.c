@@ -40,8 +40,8 @@ int VITA_GLES_LoadLibrary(_THIS, const char *path)
     char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (skip_init == NULL) { // we don't care about actual value 
-    
+    if (skip_init == NULL) { // we don't care about actual value
+
         if (override != NULL) {
             default_path = override;
         }
@@ -70,13 +70,13 @@ int VITA_GLES_LoadLibrary(_THIS, const char *path)
 SDL_GLContext
 VITA_GLES_CreateContext(_THIS, SDL_Window *window)
 {
-    return SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);
+    return SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
 }
 
 int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     if (window && context) {
-        return SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *)window->driverdata)->egl_surface, context);
+        return SDL_EGL_MakeCurrent(_this, window->driverdata->egl_surface, context);
     } else {
         return SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
@@ -84,11 +84,11 @@ int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 
 int VITA_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
     if (videodata->ime_active) {
         sceImeUpdate();
     }
-    return SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);
+    return SDL_EGL_SwapBuffers(_this, window->driverdata->egl_surface);
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR */

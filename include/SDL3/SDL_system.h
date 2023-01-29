@@ -42,7 +42,7 @@ extern "C" {
 
 /* Platform specific functions for Windows */
 #if defined(__WIN32__) || defined(__GDK__)
-	
+
 typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsigned int message, Uint64 wParam, Sint64 lParam);
 
 /**
@@ -60,19 +60,18 @@ extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook ca
 #if defined(__WIN32__) || defined(__WINGDK__)
 
 /**
- * Get the D3D9 adapter index that matches the specified display index.
+ * Get the D3D9 adapter index that matches the specified display.
  *
  * The returned adapter index can be passed to `IDirect3D9::CreateDevice` and
  * controls on which monitor a full screen application will appear.
  *
- * \param displayIndex the display index for which to get the D3D9 adapter
- *                     index
+ * \param displayID the instance of the display to query
  * \returns the D3D9 adapter index on success or a negative error code on
  *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex( int displayIndex );
+extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
 
 typedef struct IDirect3DDevice9 IDirect3DDevice9;
 
@@ -131,16 +130,13 @@ extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* ren
 #if defined(__WIN32__) || defined(__WINGDK__)
 
 /**
- * Get the DXGI Adapter and Output indices for the specified display index.
+ * Get the DXGI Adapter and Output indices for the specified display.
  *
  * The DXGI Adapter and Output indices can be passed to `EnumAdapters` and
  * `EnumOutputs` respectively to get the objects required to create a DX10 or
  * DX11 device and swap chain.
  *
- * Before SDL 2.0.4 this function did not return a value. Since SDL 2.0.4 it
- * returns an SDL_bool.
- *
- * \param displayIndex the display index for which to get both indices
+ * \param displayID the instance of the display to query
  * \param adapterIndex a pointer to be filled in with the adapter index
  * \param outputIndex a pointer to be filled in with the output index
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
@@ -148,7 +144,7 @@ extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* ren
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo( int displayIndex, int *adapterIndex, int *outputIndex );
+extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
@@ -182,9 +178,9 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int prio
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
- 
+
 #endif /* __LINUX__ */
-	
+
 /* Platform specific functions for iOS */
 #ifdef __IOS__
 

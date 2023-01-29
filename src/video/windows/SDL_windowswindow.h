@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-typedef struct
+struct SDL_WindowData
 {
     SDL_Window *window;
     HWND hwnd;
@@ -72,7 +72,7 @@ typedef struct
      * between dpi-scaled points and pixels. Only used if videodata->dpi_scaling_enabled.
      */
     int scaling_dpi;
-} SDL_WindowData;
+};
 
 extern int WIN_CreateWindow(_THIS, SDL_Window *window);
 extern int WIN_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);

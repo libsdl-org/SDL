@@ -358,7 +358,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
         return SDL_OutOfMemory();
     }
 
-    display.driverdata = (void *)CFBridgingRetain(data);
+    display.driverdata = data;
     SDL_AddVideoDisplay(&display, send_event);
 
     return 0;
@@ -366,16 +366,22 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 
 void UIKit_DelDisplay(UIScreen *uiscreen)
 {
+    SDL_DisplayID *displays;
     int i;
 
-    for (i = 0; i < SDL_GetNumVideoDisplays(); ++i) {
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *)SDL_GetDisplayDriverData(i);
+    displays = SDL_GetDisplays(NULL);
+    if (displays) {
+        for (i = 0; displays[i]; ++i) {
+            SDL_VideoDisplay *display = SDL_GetVideoDisplay(displays[i]);
+            SDL_DisplayData *data = display->driverdata;
 
-        if (data && data.uiscreen == uiscreen) {
-            CFRelease(SDL_GetDisplayDriverData(i));
-            SDL_DelVideoDisplay(i);
-            return;
+            if (data && data.uiscreen == uiscreen) {
+                display->driverdata = nil;
+                SDL_DelVideoDisplay(displays[i]);
+                return;
+            }
         }
+        SDL_free(displays);
     }
 }
 
@@ -414,7 +420,7 @@ int UIKit_InitModes(_THIS)
 void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     @autoreleasepool {
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
+        SDL_DisplayData *data = display->driverdata;
 
         SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
         SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
@@ -447,7 +453,7 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 int UIKit_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
 {
     @autoreleasepool {
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
+        SDL_DisplayData *data = display->driverdata;
         float dpi = data.screenDPI;
 
         if (ddpi) {
@@ -467,7 +473,7 @@ int UIKit_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, f
 int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     @autoreleasepool {
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
+        SDL_DisplayData *data = display->driverdata;
 
 #if !TARGET_OS_TV
         SDL_DisplayModeData *modedata = (__bridge SDL_DisplayModeData *)mode->driverdata;
@@ -496,13 +502,12 @@ int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode
 int UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     @autoreleasepool {
-        int displayIndex = (int)(display - _this->displays);
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
+        SDL_DisplayData *data = display->driverdata;
         CGRect frame = data.uiscreen.bounds;
 
         /* the default function iterates displays to make a fake offset,
          as if all the displays were side-by-side, which is fine for iOS. */
-        if (SDL_GetDisplayBounds(displayIndex, rect) < 0) {
+        if (SDL_GetDisplayBounds(display->id, rect) < 0) {
             return -1;
         }
 
@@ -531,9 +536,8 @@ void UIKit_QuitModes(_THIS)
                 UIKit_FreeDisplayModeData(mode);
             }
 
-            if (display->driverdata != NULL) {
-                CFRelease(display->driverdata);
-                display->driverdata = NULL;
+            if (display->driverdata) {
+                display->driverdata = nil;
             }
         }
     }
@@ -543,7 +547,7 @@ void UIKit_QuitModes(_THIS)
 void SDL_OnApplicationDidChangeStatusBarOrientation()
 {
     BOOL isLandscape = UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
-    SDL_VideoDisplay *display = SDL_GetDisplay(0);
+    SDL_VideoDisplay *display = SDL_GetVideoDisplay(SDL_GetPrimaryDisplay());
 
     if (display) {
         SDL_DisplayMode *desktopmode = &display->desktop_mode;

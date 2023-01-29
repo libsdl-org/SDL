@@ -432,16 +432,15 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
 #endif /* __WIN32__ || __GDK__ */
 
 #if defined(__WIN32__) || defined(__WINGDK__)
-int SDL_Direct3D9GetAdapterIndex(int displayIndex)
+int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 {
-    (void)displayIndex;
+    (void)displayID;
     return 0; /* D3DADAPTER_DEFAULT */
 }
 
-SDL_bool
-SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
+SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
-    (void)displayIndex;
+    (void)displayID;
     if (adapterIndex) {
         *adapterIndex = -1;
     }

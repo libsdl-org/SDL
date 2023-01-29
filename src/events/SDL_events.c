@@ -217,7 +217,7 @@ static void SDL_LogEvent(const SDL_Event *event)
     case x:                                    \
         SDL_strlcpy(name, #x, sizeof(name));   \
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u display=%u event=%s data1=%d)", \
-                           (uint)event->display.timestamp, (uint)event->display.display, name, (int)event->display.data1); \
+                           (uint)event->display.timestamp, (uint)event->display.displayID, name, (int)event->display.data1); \
         break
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_ORIENTATION);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_CONNECTED);

@@ -113,7 +113,7 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window *window)
     @autoreleasepool {
         SDLEAGLContext *context = nil;
         SDL_uikitopenglview *view;
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
         EAGLSharegroup *sharegroup = nil;
         CGFloat scale = 1.0;

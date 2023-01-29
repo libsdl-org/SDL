@@ -70,7 +70,7 @@ static EGLint height = 272;
 SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window *window)
 {
 
-    SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *wdata = window->driverdata;
 
     EGLint attribs[32];
     EGLDisplay display;
@@ -167,7 +167,7 @@ int PSP_GL_SwapWindow(_THIS, SDL_Window *window)
 
 void PSP_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     EGLBoolean status;
 
     if (phdata->egl_initialized != SDL_TRUE) {

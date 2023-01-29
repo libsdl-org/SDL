@@ -48,7 +48,7 @@ static void Cocoa_DeleteDevice(SDL_VideoDevice *device)
         if (device->wakeup_lock) {
             SDL_DestroyMutex(device->wakeup_lock);
         }
-        CFBridgingRelease(device->driverdata);
+        device->driverdata = nil;
         SDL_free(device);
     }
 }
@@ -73,7 +73,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             SDL_free(device);
             return NULL;
         }
-        device->driverdata = (void *)CFBridgingRetain(data);
+        device->driverdata = data;
         device->wakeup_lock = SDL_CreateMutex();
 
         /* Set the function pointers */
@@ -110,7 +110,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->SetWindowAlwaysOnTop = Cocoa_SetWindowAlwaysOnTop;
         device->SetWindowFullscreen = Cocoa_SetWindowFullscreen;
         device->GetWindowICCProfile = Cocoa_GetWindowICCProfile;
-        device->GetWindowDisplayIndex = Cocoa_GetWindowDisplayIndex;
+        device->GetDisplayForWindow = Cocoa_GetDisplayForWindow;
         device->SetWindowMouseRect = Cocoa_SetWindowMouseRect;
         device->SetWindowMouseGrab = Cocoa_SetWindowMouseGrab;
         device->SetWindowKeyboardGrab = Cocoa_SetWindowKeyboardGrab;
@@ -190,7 +190,7 @@ VideoBootStrap COCOA_bootstrap = {
 int Cocoa_VideoInit(_THIS)
 {
     @autoreleasepool {
-        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
+        SDL_VideoData *data = _this->driverdata;
 
         Cocoa_InitModes(_this);
         Cocoa_InitKeyboard(_this);
@@ -213,7 +213,7 @@ int Cocoa_VideoInit(_THIS)
 void Cocoa_VideoQuit(_THIS)
 {
     @autoreleasepool {
-        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
+        SDL_VideoData *data = _this->driverdata;
         Cocoa_QuitModes(_this);
         Cocoa_QuitKeyboard(_this);
         Cocoa_QuitMouse(_this);

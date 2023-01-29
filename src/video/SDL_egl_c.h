@@ -148,24 +148,21 @@ extern int SDL_EGL_SetErrorEx(const char *message, const char *eglFunctionName, 
 /* A few of useful macros */
 
 #define SDL_EGL_SwapWindow_impl(BACKEND)                                                        \
-    int                                                                                         \
-        BACKEND##_GLES_SwapWindow(_THIS, SDL_Window *window)                                    \
+    int BACKEND##_GLES_SwapWindow(_THIS, SDL_Window *window)                                    \
     {                                                                                           \
-        return SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *)window->driverdata)->egl_surface); \
+        return SDL_EGL_SwapBuffers(_this, window->driverdata->egl_surface);                     \
     }
 
 #define SDL_EGL_MakeCurrent_impl(BACKEND)                                                                                          \
-    int                                                                                                                            \
-        BACKEND##_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)                                               \
+    int BACKEND##_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)                                               \
     {                                                                                                                              \
-        return SDL_EGL_MakeCurrent(_this, window ? ((SDL_WindowData *)window->driverdata)->egl_surface : EGL_NO_SURFACE, context); \
+        return SDL_EGL_MakeCurrent(_this, window ? window->driverdata->egl_surface : EGL_NO_SURFACE, context); \
     }
 
-#define SDL_EGL_CreateContext_impl(BACKEND)                                                       \
-    SDL_GLContext                                                                                 \
-        BACKEND##_GLES_CreateContext(_THIS, SDL_Window *window)                                   \
-    {                                                                                             \
-        return SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface); \
+#define SDL_EGL_CreateContext_impl(BACKEND)                                                     \
+    SDL_GLContext BACKEND##_GLES_CreateContext(_THIS, SDL_Window *window)                       \
+    {                                                                                           \
+        return SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);                   \
     }
 
 #endif /* SDL_VIDEO_OPENGL_EGL */

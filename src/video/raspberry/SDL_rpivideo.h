@@ -28,17 +28,17 @@
 #include <bcm_host.h>
 #include <SDL3/SDL_egl.h>
 
-typedef struct SDL_VideoData
+struct SDL_VideoData
 {
     uint32_t egl_refcount; /* OpenGL ES reference count              */
-} SDL_VideoData;
+};
 
-typedef struct SDL_DisplayData
+struct SDL_DisplayData
 {
     DISPMANX_DISPLAY_HANDLE_T dispman_display;
-} SDL_DisplayData;
+};
 
-typedef struct SDL_WindowData
+struct SDL_WindowData
 {
     EGL_DISPMANX_WINDOW_T dispman_window;
 #if SDL_VIDEO_OPENGL_EGL
@@ -49,8 +49,7 @@ typedef struct SDL_WindowData
     SDL_cond *vsync_cond;
     SDL_mutex *vsync_cond_mutex;
     SDL_bool double_buffer;
-
-} SDL_WindowData;
+};
 
 #define SDL_RPI_VIDEOLAYER 10000 /* High enough so to occlude everything */
 #define SDL_RPI_MOUSELAYER SDL_RPI_VIDEOLAYER + 1

@@ -160,7 +160,7 @@ extern void Cocoa_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizab
 extern void Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window *window, SDL_bool on_top);
 extern void Cocoa_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
 extern void *Cocoa_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size);
-extern int Cocoa_GetWindowDisplayIndex(_THIS, SDL_Window *window);
+extern SDL_DisplayID Cocoa_GetDisplayForWindow(_THIS, SDL_Window *window);
 extern void Cocoa_SetWindowMouseRect(_THIS, SDL_Window *window);
 extern void Cocoa_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
 extern void Cocoa_DestroyWindow(_THIS, SDL_Window *window);
