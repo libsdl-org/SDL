@@ -316,10 +316,10 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     psp_tex->textureWidth = calculateNextPow2(texture->w);
     psp_tex->textureHeight = calculateNextPow2(texture->h);
     psp_tex->size = getMemorySize(psp_tex->width, psp_tex->height, psp_tex->format);
-    psp_tex->data = SDL_calloc(1, psp_tex->size);
+    psp_tex->data = vramalloc(psp_tex->size);
 
     if (!psp_tex->data) {
-        SDL_free(psp_tex);
+        vfree(psp_tex);
         return SDL_OutOfMemory();
     }
 
@@ -869,7 +869,7 @@ static void PSP_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return;
     }
 
-    SDL_free(psp_texture->data);
+    vfree(psp_texture->data);
     SDL_free(psp_texture);
     texture->driverdata = NULL;
 }
