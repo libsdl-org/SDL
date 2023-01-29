@@ -104,6 +104,8 @@ set(SDL_DYLIB_COMPAT_VERSION "${SDL_DYLIB_COMPAT_VERSION_MAJOR}.${SDL_DYLIB_COMP
 
 #message("SDL_SO_VERSION=${SDL_SO_VERSION} SDL_DYLIB_CURRENT_VERSION=${SDL_DYLIB_CURRENT_VERSION} SDL_DYLIB_COMPAT_VERSION=${SDL_DYLIB_COMPAT_VERSION}")
 
+set(SDL_FRAMEWORK_VERSION "A")
+
 SDL_DetectCPUArchitecture()
 
 # Check for 64 or 32 bit
@@ -357,6 +359,7 @@ endforeach()
 
 # Allow some projects to be built conditionally.
 set_option(SDL_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
+cmake_dependent_option(SDL_DISABLE_INSTALL_CPACK "Create binary SDL3 archive using CPack" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL" OFF)
 set_option(SDL_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
 
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
@@ -3149,7 +3152,7 @@ if(SDL_SHARED)
     if(SDL_FRAMEWORK)
       set_target_properties(SDL3 PROPERTIES
         PUBLIC_HEADER "${SDL3_INCLUDE_FILES}"
-        FRAMEWORK_VERSION "A"
+        FRAMEWORK_VERSION "${SDL_FRAMEWORK_VERSION}"
         MACOSX_FRAMEWORK_IDENTIFIER "org.libsdl.SDL3"
         RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
       )
@@ -3217,7 +3220,7 @@ if(SDL_STATIC)
     )
     if(SDL_FRAMEWORK)
       set_target_properties(SDL3-static PROPERTIES
-        FRAMEWORK_VERSION "A"
+        FRAMEWORK_VERSION "${SDL_FRAMEWORK_VERSION}"
         MACOSX_FRAMEWORK_IDENTIFIER "org.libsdl.SDL3-static"
         RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
       )
@@ -3263,7 +3266,7 @@ if(SDL_TEST)
     )
     if(SDL_FRAMEWORK)
       set_target_properties(SDL3_test PROPERTIES
-        FRAMEWORK_VERSION "A"
+        FRAMEWORK_VERSION "${SDL_FRAMEWORK_VERSION}"
         MACOSX_FRAMEWORK_IDENTIFIER "org.libsdl.SDL3_test"
         RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
       )
@@ -3297,50 +3300,46 @@ if(NOT SDL_DISABLE_INSTALL)
 
   if(WINDOWS AND NOT MINGW)
     set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}")
-    set(LICENSES_PREFIX "licenses/SDL3")
-    set(RESOURCES_PREFIX ".")
-    set(PUBLIC_HEADER_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/SDL3")
+    set(SDL_INSTALL_LICENSEDIR "licenses/SDL3")
+    set(SDL_INSTALL_HEADERSDIR "${CMAKE_INSTALL_INCLUDEDIR}/SDL3")
   elseif(SDL_FRAMEWORK)
-    set(SDL_INSTALL_CMAKEDIR "SDL3.framework/Resources/CMake")
-    set(LICENSES_PREFIX "Resources")
-    set(RESOURCES_PREFIX "Resources")
-    set(PUBLIC_HEADER_PREFIX "Headers")
+    set(SDL_INSTALL_CMAKEDIR "SDL3.framework/Versions/${SDL_FRAMEWORK_VERSION}/Resources/CMake")
+    set(SDL_INSTALL_LICENSEDIR "Resources")
+    set(SDL_INSTALL_HEADERSDIR "Headers")
   else()
     set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}/SDL3")
-    set(LICENSES_PREFIX "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
-    set(RESOURCES_PREFIX ".")
-    set(PUBLIC_HEADER_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/SDL3")
+    set(SDL_INSTALL_LICENSEDIR "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
+    set(SDL_INSTALL_HEADERSDIR "${CMAKE_INSTALL_INCLUDEDIR}/SDL3")
   endif()
 
-  ##### Installation targets #####
+  if(SDL_FRAMEWORK)
+    set(SDL_SDL_INSTALL_RESOURCEDIR "SDL3.framework/Resources")
+    set(SDL_SDL_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_RESOURCEDIR}/CMake")
+    set(SDL_SDL_INSTALL_REAL_RESOURCEDIR "SDL3.framework/Versions/${SDL_FRAMEWORK_VERSION}/Resources")
+    set(SDL_SDL_INSTALL_REAL_CMAKEDIR "${SDL_SDL_INSTALL_REAL_RESOURCEDIR}/CMake")
 
-  install(TARGETS SDL3_Headers EXPORT SDL3headersTargets)
+    # - Install other SDL3*Config.cmake files in SDL3*.framework/Resources/CMake
+    # - The *_RELATIVE_CMAKEDIR variables are the symlinked folders visible from outside
+    set(SDL_SDLstatic_INSTALL_RESOURCEDIR "SDL3-static.framework/Resources")
+    set(SDL_SDLstatic_INSTALL_CMAKEDIR "${SDL_SDLstatic_INSTALL_RESOURCEDIR}/CMake")
+    set(SDL_SDLstatic_INSTALL_CMAKEFILENAME "SDL3-staticConfig.cmake")
 
-  if(SDL_SHARED)
-    install(TARGETS SDL3 EXPORT SDL3Targets
-      LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-      FRAMEWORK DESTINATION "."
-      PUBLIC_HEADER DESTINATION "${PUBLIC_HEADER_PREFIX}"
-      RESOURCE DESTINATION "${RESOURCES_PREFIX}"
-    )
-  endif()
+    set(SDL_SDLtest_INSTALL_RESOURCEDIR "SDL3_test.framework/Resources")
+    set(SDL_SDLtest_INSTALL_CMAKEDIR "${SDL_SDLtest_INSTALL_RESOURCEDIR}/CMake")
+    set(SDL_SDLtest_INSTALL_CMAKEFILENAME "SDL3_testConfig.cmake")
+  else()
+    set(SDL_SDL_INSTALL_RESOURCEDIR ".")
+    set(SDL_SDL_INSTALL_CMAKEDIR ${SDL_INSTALL_CMAKEDIR})
+    set(SDL_SDL_INSTALL_REAL_CMAKEDIR ${SDL_INSTALL_CMAKEDIR})
 
-  if(SDL_STATIC)
-    install(TARGETS SDL3-static EXPORT SDL3staticTargets
-      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-      FRAMEWORK DESTINATION "."
-      RESOURCE DESTINATION "${RESOURCES_PREFIX}"
-    )
-  endif()
+    # Install SDL3*Targets.cmake files in lib/cmake/SDL3
+    set(SDL_SDLstatic_INSTALL_RESOURCEDIR ".")
+    set(SDL_SDLstatic_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
+    set(SDL_SDLstatic_INSTALL_CMAKEFILENAME "SDL3staticTargets.cmake")
 
-  if(SDL_TEST)
-    install(TARGETS SDL3_test EXPORT SDL3testTargets
-      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-      FRAMEWORK DESTINATION "."
-      RESOURCE DESTINATION "${RESOURCES_PREFIX}"
-    )
+    set(SDL_SDLtest_INSTALL_RESOURCEDIR ".")
+    set(SDL_SDLtest_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
+    set(SDL_SDLtest_INSTALL_CMAKEFILENAME "SDL3_testTargets.cmake")
   endif()
 
   ##### sdl3.pc #####
@@ -3382,36 +3381,47 @@ if(NOT SDL_DISABLE_INSTALL)
     install(FILES ${SDL3_BINARY_DIR}/sdl3.pc DESTINATION "${SDL_PKGCONFIG_INSTALLDIR}")
   endif()
 
+  ##### Installation targets #####()
+
+  install(TARGETS SDL3_Headers EXPORT SDL3headersTargets)
+
+  if(SDL_SHARED)
+    install(TARGETS SDL3 EXPORT SDL3Targets
+      PUBLIC_HEADER DESTINATION "${SDL_INSTALL_HEADERSDIR}"
+      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+      FRAMEWORK DESTINATION "."
+      RESOURCE DESTINATION "${SDL_SDL_INSTALL_RESOURCEDIR}"
+    )
+  endif()
+
+  if(SDL_STATIC)
+    install(TARGETS SDL3-static EXPORT SDL3staticTargets
+      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      FRAMEWORK DESTINATION "."
+      RESOURCE DESTINATION "${SDL_SDLstatic_INSTALL_RESOURCEDIR}"
+    )
+  endif()
+
+  if(SDL_TEST)
+    install(TARGETS SDL3_test EXPORT SDL3testTargets
+      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      FRAMEWORK DESTINATION "."
+      RESOURCE DESTINATION "${SDL_SDLtest_INSTALL_RESOURCEDIR}"
+    )
+  endif()
+
   ##### CMake Export files #####
 
   include(CMakePackageConfigHelpers)
   configure_package_config_file(cmake/SDL3Config.cmake.in SDL3Config.cmake
     PATH_VARS CMAKE_INSTALL_PREFIX
-    INSTALL_DESTINATION "${SDL_INSTALL_CMAKEDIR}"
+    INSTALL_DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
   )
   write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/SDL3ConfigVersion.cmake"
     COMPATIBILITY AnyNewerVersion
   )
-
-  if(SDL_FRAMEWORK)
-    set(SDL_SDL_INSTALL_CMAKEDIR "SDL3.framework/Resources/CMake")
-
-    # Install SDL3*Config.cmake files in SDL3*.framework/Resources/CMake
-    set(SDL_SDLstatic_INSTALL_CMAKEDIR "SDL3-static.framework/Resources/CMake")
-    set(SDL_SDLstatic_INSTALL_CMAKEFILE "SDL3-staticConfig.cmake")
-
-    set(SDL_SDLtest_INSTALL_CMAKEDIR "SDL3_test.framework/Resources/CMake")
-    set(SDL_SDLtest_INSTALL_CMAKEFILE "SDL3_testConfig.cmake")
-  else()
-    set(SDL_SDL_INSTALL_CMAKEDIR ${SDL_INSTALL_CMAKEDIR})
-
-    # Install SDL3*Targets.cmake files in lib/cmake/SDL3
-    set(SDL_SDLstatic_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
-    set(SDL_SDLstatic_INSTALL_CMAKEFILE "SDL3staticTargets.cmake")
-
-    set(SDL_SDLtest_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
-    set(SDL_SDLtest_INSTALL_CMAKEFILE "SDL3_testTargets.cmake")
-  endif()
 
   install(EXPORT SDL3headersTargets
     FILE "SDL3headersTargets.cmake"
@@ -3429,7 +3439,7 @@ if(NOT SDL_DISABLE_INSTALL)
 
   if(SDL_STATIC)
     install(EXPORT SDL3staticTargets
-      FILE "${SDL_SDLstatic_INSTALL_CMAKEFILE}"
+      FILE "${SDL_SDLstatic_INSTALL_CMAKEFILENAME}"
       NAMESPACE SDL3::
       DESTINATION "${SDL_SDLstatic_INSTALL_CMAKEDIR}"
     )
@@ -3437,35 +3447,46 @@ if(NOT SDL_DISABLE_INSTALL)
 
   if(SDL_TEST)
     install(EXPORT SDL3testTargets
-      FILE "${SDL_SDLtest_INSTALL_CMAKEFILE}"
+      FILE "${SDL_SDLtest_INSTALL_CMAKEFILENAME}"
       NAMESPACE SDL3::
       DESTINATION "${SDL_SDLtest_INSTALL_CMAKEDIR}"
     )
   endif()
 
-  install(
-    FILES
+  install(FILES
       ${CMAKE_CURRENT_BINARY_DIR}/SDL3Config.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/SDL3ConfigVersion.cmake
       ${SDL3_SOURCE_DIR}/cmake/sdlfind.cmake
-    DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
-    COMPONENT Devel
+    DESTINATION "${SDL_SDL_INSTALL_REAL_CMAKEDIR}"
   )
 
   if(NOT SDL_FRAMEWORK)
-    install(
-      FILES
-        ${SDL3_INCLUDE_FILES}
-      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3
+    install(FILES ${SDL3_INCLUDE_FILES}
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SDL3"
     )
     if(SDL_TEST)
-      install(
-        FILES ${SDL3_TEST_INCLUDE_FILES}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3
+      install(FILES ${SDL3_TEST_INCLUDE_FILES}
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SDL3"
       )
     endif()
 
-    install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")
+    install(FILES "LICENSE.txt" DESTINATION "${SDL_INSTALL_LICENSEDIR}")
+  endif()
+
+  if(NOT SDL_DISABLE_INSTALL_CPACK)
+    if(SDL_FRAMEWORK)
+      set(CPACK_GENERATOR "DragNDrop")
+    elseif(MSVC)
+      set(CPACK_GENERATOR "ZIP")
+    else()
+      set(CPACK_GENERATOR "TGZ")
+    endif()
+    configure_file(cmake/CPackProjectConfig.cmake.in CPackProjectConfig.cmake @ONLY)
+    set(CPACK_PROJECT_CONFIG_FILE "${SDL3_BINARY_DIR}/CPackProjectConfig.cmake")
+    # CPACK_SOURCE_PACKAGE_FILE_NAME must end with "-src" (so we can block creating a source archive)
+    set(CPACK_SOURCE_PACKAGE_FILE_NAME "SDL${PROJECT_VERSION_MAJOR}-${PROJECT_VERSION}-src")
+    set(CPACK_PACKAGE_DIRECTORY "${CMAKE_BINARY_DIR}/dist")
+    include(CPack)
   endif()
 endif()
 
