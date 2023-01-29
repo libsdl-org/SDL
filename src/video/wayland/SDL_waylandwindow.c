@@ -2016,19 +2016,14 @@ static void Wayland_HandleResize(SDL_Window *window, int width, int height)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     const int old_w = window->w, old_h = window->h;
-    const int old_drawable_width = data->drawable_width;
-    const int old_drawable_height = data->drawable_height;
 
     /* Update the window geometry. */
     window->w = width;
     window->h = height;
     ConfigureWindowGeometry(window);
 
-    if (data->needs_resize_event ||
-        old_w != width || old_h != height ||
-        old_drawable_width != data->drawable_width || old_drawable_height != data->drawable_height) {
-        /* We may have already updated window w/h (or only adjusted scale factor),
-         * so we must override the deduplication logic in the video core */
+    if (data->needs_resize_event || old_w != width || old_h != height) {
+        /* We have already updated window w/h, so we must override the deduplication logic in the video core */
         window->w = 0;
         window->h = 0;
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, width, height);
@@ -2036,6 +2031,9 @@ static void Wayland_HandleResize(SDL_Window *window, int width, int height)
         window->h = height;
         data->needs_resize_event = SDL_FALSE;
     }
+
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED,
+                        data->drawable_width, data->drawable_height);
 }
 
 void Wayland_SetWindowMinimumSize(_THIS, SDL_Window *window)
