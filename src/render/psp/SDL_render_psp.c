@@ -921,14 +921,14 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     sceKernelDcacheWritebackAll();
 
     /* Specific GU init */
-    bufferSize = getMemorySize(PSP_FRAME_BUFFER_WIDTH, PSP_SCREEN_HEIGHT, GU_PSM_8888);
+    bufferSize = getMemorySize(PSP_FRAME_BUFFER_WIDTH, PSP_SCREEN_HEIGHT, GU_PSM_4444);
     doublebuffer = vramalloc(bufferSize * 2);
     data->backbuffer = doublebuffer;
     data->frontbuffer = ((uint8_t *)doublebuffer) + bufferSize;
 
     sceGuInit();
     sceGuStart(GU_DIRECT, list);
-    sceGuDrawBuffer(GU_PSM_8888, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
+    sceGuDrawBuffer(GU_PSM_4444, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
     sceGuDispBuffer(PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
 	
     sceGuOffset(2048 - (PSP_SCREEN_WIDTH >> 1), 2048 - (PSP_SCREEN_HEIGHT >> 1));
