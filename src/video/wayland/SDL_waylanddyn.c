@@ -153,7 +153,7 @@ int SDL_WAYLAND_LoadSymbols(void)
 #define SDL_WAYLAND_INTERFACE(iface)        WAYLAND_##iface = (struct wl_interface *)WAYLAND_GetSym(#iface, thismod, SDL_TRUE);
 #include "SDL_waylandsym.h"
 
-        if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT) {
+        if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT && SDL_WAYLAND_HAVE_WAYLAND_EGL) {
             /* all required symbols loaded. */
             SDL_ClearError();
         } else {
