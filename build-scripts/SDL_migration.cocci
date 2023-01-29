@@ -2334,3 +2334,23 @@ expression e;
 @@
 - SDL_WINDOW_INPUT_GRABBED
 + SDL_WINDOW_MOUSE_GRABBED
+@@
+SDL_DisplayMode *e;
+@@
+(
+- e->w
++ e->screen_w
+|
+- e->h
++ e->screen_h
+)
+@@
+SDL_DisplayMode e;
+@@
+(
+- e.w
++ e.screen_w
+|
+- e.h
++ e.screen_h
+)
