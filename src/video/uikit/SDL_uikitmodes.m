@@ -339,7 +339,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     SDL_zero(mode);
     mode.pixel_w = (int)size.width;
     mode.pixel_h = (int)size.height;
-    mode.display_scale = uiscreen.scale;
+    mode.display_scale = uiscreen.nativeScale;
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
 
