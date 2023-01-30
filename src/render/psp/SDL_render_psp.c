@@ -138,7 +138,7 @@ static void psp_on_vblank(u32 sub, PSP_RenderData *data)
     }
 }
 
-static unsigned int getMemorySize(unsigned int width, unsigned int height, unsigned int psm)
+static inline unsigned int getMemorySize(unsigned int width, unsigned int height, unsigned int psm)
 {
 	switch (psm)
 	{
@@ -163,7 +163,7 @@ static unsigned int getMemorySize(unsigned int width, unsigned int height, unsig
 	}
 }
 
-static int pixelFormatToPSPFMT(Uint32 format)
+static inline int pixelFormatToPSPFMT(Uint32 format)
 {
     switch (format) {
     case SDL_PIXELFORMAT_BGR565:
@@ -179,7 +179,7 @@ static int pixelFormatToPSPFMT(Uint32 format)
     }
 }
 
-static int calculatePitchForTextureFormat(int width, int format)
+static inline int calculatePitchForTextureFormat(int width, int format)
 {
     switch (format) {
     case GU_PSM_5650:
@@ -194,7 +194,7 @@ static int calculatePitchForTextureFormat(int width, int format)
 }
 
 /* Return next power of 2 */
-static int calculateNextPow2(int value)
+static inline int calculateNextPow2(int value)
 {
     int i = 1;
     while (i < value) {
@@ -203,7 +203,7 @@ static int calculateNextPow2(int value)
     return i;
 }
 
-static int calculateBestSliceSizeForTexture(SDL_Texture *texture, SliceSize *uvSize, SliceSize *sliceSize, SliceSize *sliceDimension) {
+static inline int calculateBestSliceSizeForTexture(SDL_Texture *texture, SliceSize *uvSize, SliceSize *sliceSize, SliceSize *sliceDimension) {
     int i;
     uint8_t horizontalSlices, verticalSlices;
     int pixelBits = 0;
@@ -257,7 +257,7 @@ static int calculateBestSliceSizeForTexture(SDL_Texture *texture, SliceSize *uvS
     return 0;
 }
 
-static void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, SliceSize *sliceSize,
+static inline void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, SliceSize *sliceSize,
                          const SDL_Rect *srcrect, const SDL_FRect *dstrect) {
     int i, j;
     int remainingWidth = srcrect->w % sliceSize->width;
@@ -580,55 +580,6 @@ static int PSP_RenderSetViewPort(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     return 0;
 }
 
-static int PSP_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
-{
-    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
-
-    const SDL_Rect *rect = &cmd->data.cliprect.rect;
-
-    if (cmd->data.cliprect.enabled) {
-        sceGuEnable(GU_SCISSOR_TEST);
-        sceGuScissor(rect->x, rect->y, rect->w, rect->h);
-    } else {
-        sceGuDisable(GU_SCISSOR_TEST);
-    }
-
-    return 0;
-}
-
-static int PSP_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
-{
-    uint8_t colorR, colorG, colorB, colorA;
-
-    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
-
-    colorR = cmd->data.color.r;
-    colorG = cmd->data.color.g;
-    colorB = cmd->data.color.b;
-    colorA = cmd->data.color.a;
-    sceGuColor(GU_RGBA(colorR, colorG, colorB, colorA));
-
-    return 0;
-}
-
-static int PSP_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
-{
-    uint8_t colorR, colorG, colorB, colorA;
-
-    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
-
-    colorR = cmd->data.color.r;
-    colorG = cmd->data.color.g;
-    colorB = cmd->data.color.b;
-    colorA = cmd->data.color.a;
-
-    sceGuClearColor(GU_RGBA(colorR, colorG, colorB, colorA));
-    sceGuClearDepth(0);
-    sceGuClear(GU_COLOR_BUFFER_BIT|GU_DEPTH_BUFFER_BIT);
-
-    return 0;
-}
-
 static void PSP_SetBlendMode(PSP_RenderData *data, PSP_BlendInfo blendInfo)
 {
     // Update the blend mode if necessary
@@ -682,7 +633,56 @@ static void PSP_SetBlendMode(PSP_RenderData *data, PSP_BlendInfo blendInfo)
     }
 }
 
-static int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
+static inline int PSP_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+{
+    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
+
+    const SDL_Rect *rect = &cmd->data.cliprect.rect;
+
+    if (cmd->data.cliprect.enabled) {
+        sceGuEnable(GU_SCISSOR_TEST);
+        sceGuScissor(rect->x, rect->y, rect->w, rect->h);
+    } else {
+        sceGuDisable(GU_SCISSOR_TEST);
+    }
+
+    return 0;
+}
+
+static inline int PSP_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+{
+    uint8_t colorR, colorG, colorB, colorA;
+
+    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
+
+    colorR = cmd->data.color.r;
+    colorG = cmd->data.color.g;
+    colorB = cmd->data.color.b;
+    colorA = cmd->data.color.a;
+    sceGuColor(GU_RGBA(colorR, colorG, colorB, colorA));
+
+    return 0;
+}
+
+static inline int PSP_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+{
+    uint8_t colorR, colorG, colorB, colorA;
+
+    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
+
+    colorR = cmd->data.color.r;
+    colorG = cmd->data.color.g;
+    colorB = cmd->data.color.b;
+    colorA = cmd->data.color.a;
+
+    sceGuClearColor(GU_RGBA(colorR, colorG, colorB, colorA));
+    sceGuClearDepth(0);
+    sceGuClear(GU_COLOR_BUFFER_BIT|GU_DEPTH_BUFFER_BIT);
+
+    return 0;
+}
+
+static inline int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     const size_t count = cmd->data.draw.count;
@@ -711,7 +711,7 @@ static int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Render
     return 0;
 }
 
-int PSP_RenderLines(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
+static inline int PSP_RenderLines(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     const size_t count = cmd->data.draw.count;
@@ -727,7 +727,7 @@ int PSP_RenderLines(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *c
     return 0;
 }
 
-int PSP_RenderFillRects(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
+static inline int PSP_RenderFillRects(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     const size_t count = cmd->data.draw.count;
@@ -744,7 +744,7 @@ int PSP_RenderFillRects(SDL_Renderer *renderer, void *vertices, SDL_RenderComman
 }
 
 
-int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
+static inline int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     const size_t count = cmd->data.draw.count;
@@ -760,7 +760,7 @@ int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *
     return 0;
 }
 
-int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
+static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     const size_t count = cmd->data.draw.count;
