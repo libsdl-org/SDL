@@ -104,8 +104,8 @@ typedef enum
     SDL_EVENT_WINDOW_EXPOSED,           /**< Window has been exposed and should be redrawn */
     SDL_EVENT_WINDOW_MOVED,             /**< Window has been moved to data1, data2 */
     SDL_EVENT_WINDOW_RESIZED,           /**< Window has been resized to data1xdata2 */
-    /* 0x207 was SDL_EVENT_WINDOW_SIZE_CHANGED, reserve the number for sdl2-compat */
-    SDL_EVENT_WINDOW_MINIMIZED = 0x208, /**< Window has been minimized */
+    SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED,/**< The pixel size of the window has changed to data1xdata2 */
+    SDL_EVENT_WINDOW_MINIMIZED,         /**< Window has been minimized */
     SDL_EVENT_WINDOW_MAXIMIZED,         /**< Window has been maximized */
     SDL_EVENT_WINDOW_RESTORED,          /**< Window has been restored to normal size and position */
     SDL_EVENT_WINDOW_MOUSE_ENTER,       /**< Window has gained mouse focus */
@@ -117,9 +117,8 @@ typedef enum
     SDL_EVENT_WINDOW_HIT_TEST,          /**< Window had a hit test that wasn't SDL_HITTEST_NORMAL */
     SDL_EVENT_WINDOW_ICCPROF_CHANGED,   /**< The ICC profile of the window's display has changed */
     SDL_EVENT_WINDOW_DISPLAY_CHANGED,   /**< Window has been moved to display data1 */
-    SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED,/**< The pixel size of the window has changed to data1xdata2 */
     SDL_EVENT_WINDOW_FIRST = SDL_EVENT_WINDOW_SHOWN,
-    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED,
+    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_DISPLAY_CHANGED,
 
     /* Keyboard events */
     SDL_EVENT_KEY_DOWN        = 0x300, /**< Key pressed */
