@@ -161,7 +161,9 @@ static int VIVANTE_AddVideoDisplays(_THIS)
     display.desktop_mode = mode;
     display.current_mode = mode;
     display.driverdata = data;
-    SDL_AddVideoDisplay(&display, SDL_FALSE);
+    if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
+        return -1;
+    }
     return 0;
 }
 

@@ -102,8 +102,7 @@ static int N3DS_VideoInit(_THIS)
     return 0;
 }
 
-SDL_FORCE_INLINE void
-AddN3DSDisplay(gfxScreen_t screen)
+static void AddN3DSDisplay(gfxScreen_t screen)
 {
     SDL_DisplayMode mode;
     SDL_VideoDisplay display;

@@ -855,9 +855,10 @@ void WIN_RefreshDisplays(_THIS)
     // Delete any entries still marked as invalid, iterate
     // in reverse as each delete takes effect immediately
     for (i = _this->num_displays - 1; i >= 0; --i) {
-        SDL_DisplayData *driverdata = _this->displays[i].driverdata;
+        SDL_VideoDisplay *display = &_this->displays[i];
+        SDL_DisplayData *driverdata = display->driverdata;
         if (driverdata->IsValid == SDL_FALSE) {
-            SDL_DelVideoDisplay(i);
+            SDL_DelVideoDisplay(display->id);
         }
     }
 }

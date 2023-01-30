@@ -152,7 +152,7 @@ int NGAGE_VideoInit(_THIS)
     mode.format = SDL_PIXELFORMAT_RGB444;
     mode.pixel_w = 176;
     mode.pixel_h = 208;
-    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
+    if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
 

@@ -879,7 +879,10 @@ static void KMSDRM_AddDisplay(_THIS, drmModeConnector *connector, drmModeRes *re
     display.current_mode = display.desktop_mode;
 
     /* Add the display to the list of SDL displays. */
-    SDL_AddVideoDisplay(&display, SDL_FALSE);
+    if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
+        ret = -1;
+        goto cleanup;
+    }
 
 cleanup:
     if (encoder) {

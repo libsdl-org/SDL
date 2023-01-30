@@ -1021,7 +1021,7 @@ static void Wayland_VideoCleanup(_THIS)
             display->display_modes[j].driverdata = NULL;
         }
         display->desktop_mode.driverdata = NULL;
-        SDL_DelVideoDisplay(i);
+        SDL_DelVideoDisplay(display->id);
     }
     data->output_list = NULL;
 
