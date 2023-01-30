@@ -394,7 +394,7 @@ static int SDLCALL cmpmodes(const void *A, const void *B)
     return 0;
 }
 
-static int SDL_UninitializedVideo()
+static int SDL_UninitializedVideo(void)
 {
     return SDL_SetError("Video subsystem has not been initialized");
 }
@@ -558,7 +558,7 @@ pre_driver_error:
     return -1;
 }
 
-const char *SDL_GetCurrentVideoDriver()
+const char *SDL_GetCurrentVideoDriver(void)
 {
     if (_this == NULL) {
         SDL_UninitializedVideo();
@@ -577,7 +577,7 @@ SDL_bool SDL_IsVideoContextExternal(void)
     return SDL_GetHintBoolean(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, SDL_FALSE);
 }
 
-SDL_bool SDL_OnVideoThread()
+SDL_bool SDL_OnVideoThread(void)
 {
     return (_this && SDL_ThreadID() == _this->thread) ? SDL_TRUE : SDL_FALSE;
 }
@@ -1256,7 +1256,8 @@ SDL_DisplayID SDL_GetDisplayForWindowCoordinate(int coordinate)
     if (SDL_WINDOWPOS_ISUNDEFINED(coordinate) ||
         SDL_WINDOWPOS_ISCENTERED(coordinate)) {
         displayID = (coordinate & 0xFFFF);
-        if (SDL_GetDisplayIndex(displayID) < 0) {
+        /* 0 or invalid */
+        if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
             displayID = SDL_GetPrimaryDisplay();
         }
     }
