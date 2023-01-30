@@ -658,10 +658,10 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
             emscripten_request_pointerlock(window_data->canvas_id, 0); /* try to regrab lost pointer lock. */
         }
         sdl_button_state = SDL_PRESSED;
-        sdl_event_type = SDL_EVENT_MOUSE_BUTTONDOWN;
+        sdl_event_type = SDL_EVENT_MOUSE_BUTTON_DOWN;
     } else {
         sdl_button_state = SDL_RELEASED;
-        sdl_event_type = SDL_EVENT_MOUSE_BUTTONUP;
+        sdl_event_type = SDL_EVENT_MOUSE_BUTTON_UP;
     }
     SDL_SendMouseButton(0, window_data->window, 0, sdl_button_state, sdl_button);
 

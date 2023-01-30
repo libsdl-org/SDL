@@ -204,7 +204,7 @@ void loop()
                 SDL_SetCursor(cursor);
             }
         }
-        if (event.type == SDL_EVENT_MOUSE_BUTTONUP) {
+        if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             SDL_Window *window = SDL_GetMouseFocus();
             if (highlighted_mode != -1 && window != NULL) {
                 const int display_index = SDL_GetWindowDisplayIndex(window);

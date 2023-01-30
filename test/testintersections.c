@@ -217,11 +217,11 @@ void loop()
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
         switch (event.type) {
-        case SDL_EVENT_MOUSE_BUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             mouse_begin_x = event.button.x;
             mouse_begin_y = event.button.y;
             break;
-        case SDL_EVENT_MOUSE_BUTTONUP:
+        case SDL_EVENT_MOUSE_BUTTON_UP:
             if (event.button.button == 3) {
                 add_line(mouse_begin_x, mouse_begin_y, event.button.x, event.button.y);
             }

@@ -687,11 +687,11 @@ static int SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_
     /* Figure out which event to perform */
     switch (state) {
     case SDL_PRESSED:
-        type = SDL_EVENT_MOUSE_BUTTONDOWN;
+        type = SDL_EVENT_MOUSE_BUTTON_DOWN;
         buttonstate |= SDL_BUTTON(button);
         break;
     case SDL_RELEASED:
-        type = SDL_EVENT_MOUSE_BUTTONUP;
+        type = SDL_EVENT_MOUSE_BUTTON_UP;
         buttonstate &= ~SDL_BUTTON(button);
         break;
     default:

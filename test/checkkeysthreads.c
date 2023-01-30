@@ -184,7 +184,7 @@ void loop()
         case SDL_EVENT_TEXT_INPUT:
             PrintText("INPUT", event.text.text);
             break;
-        case SDL_EVENT_MOUSE_BUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             /* Left button quits the app, other buttons toggles text input */
             (void)fprintf(stderr, "mouse button down button: %d (LEFT=%d)\n", event.button.button, SDL_BUTTON_LEFT);
             (void)fflush(stderr);

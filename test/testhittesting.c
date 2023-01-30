@@ -104,11 +104,11 @@ int main(int argc, char **argv)
             nothing_to_do = 0;
 
             switch (e.type) {
-            case SDL_EVENT_MOUSE_BUTTONDOWN:
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 SDL_Log("button down!\n");
                 break;
 
-            case SDL_EVENT_MOUSE_BUTTONUP:
+            case SDL_EVENT_MOUSE_BUTTON_UP:
                 SDL_Log("button up!\n");
                 break;
 
