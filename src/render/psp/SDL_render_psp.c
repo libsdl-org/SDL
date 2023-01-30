@@ -545,39 +545,23 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
     const float u1 = srcrect->x + srcrect->w;
     const float v1 = srcrect->y + srcrect->h;
 
-    // We need to split in slices because we have a texture bigger than 64 pixel width
-    if (texture) {
-        SliceSize sliceSize, sliceDimension, uvSize;
-        uvSize.width = abs(u1 - u0);
-        uvSize.height = abs(v1 - v0);
-        if (calculateBestSliceSizeForTexture(texture, &uvSize, &sliceSize, &sliceDimension))
-            return -1;
-        
-        verticesCount = sliceDimension.width * sliceDimension.height * 2;
-        verts = (VertTV *)SDL_AllocateRenderVertices(renderer, verticesCount * sizeof(VertTV), 4, &cmd->data.draw.first);
-        if (verts == NULL)
-            return -1;
-        
-        fillSpriteVertices(verts, &sliceDimension, &sliceSize, srcrect, dstrect);
-    } else {
-        // We don't need to split in slices because we don't have a texture
-        verticesCount = 2;
-        verts = (VertTV *)SDL_AllocateRenderVertices(renderer, verticesCount * sizeof(VertTV), 4, &cmd->data.draw.first);
-        if (verts == NULL)
-            return -1;
+    SliceSize sliceSize, sliceDimension, uvSize;
 
-        verts[0].u = u0;
-        verts[0].v = v0;
-        verts[0].x = x;
-        verts[0].y = y;
-        verts[0].z = 0;
+    // In this function texture must be created
+    if (!texture)
+        return -1;
 
-        verts[1].u = u1;
-        verts[1].v = v1;
-        verts[1].x = x + width;
-        verts[1].y = y + height;
-        verts[1].z = 0;
-    }
+    uvSize.width = abs(u1 - u0);
+    uvSize.height = abs(v1 - v0);
+    if (calculateBestSliceSizeForTexture(texture, &uvSize, &sliceSize, &sliceDimension))
+        return -1;
+    
+    verticesCount = sliceDimension.width * sliceDimension.height * 2;
+    verts = (VertTV *)SDL_AllocateRenderVertices(renderer, verticesCount * sizeof(VertTV), 4, &cmd->data.draw.first);
+    if (verts == NULL)
+        return -1;
+    
+    fillSpriteVertices(verts, &sliceDimension, &sliceSize, srcrect, dstrect);
 
     cmd->data.draw.count = verticesCount;
 
@@ -788,18 +772,14 @@ int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cm
 
     PSP_SetBlendMode(data, blendInfo);
 
-    if (cmd->data.draw.texture) {
-        PSP_Texture *psp_tex = (PSP_Texture *)cmd->data.draw.texture->driverdata;
+    PSP_Texture *psp_tex = (PSP_Texture *)cmd->data.draw.texture->driverdata;
 
-        sceGuTexMode(psp_tex->format, 0, 0, GU_FALSE);
-        sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, psp_tex->width, psp_tex->data);
-        sceGuTexFilter(psp_tex->filter, psp_tex->filter);
-        sceGuEnable(GU_TEXTURE_2D);
-        sceGuDrawArray(GU_SPRITES, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
-        sceGuDisable(GU_TEXTURE_2D);
-    } else {
-        sceGuDrawArray(GU_SPRITES, GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
-    }
+    sceGuTexMode(psp_tex->format, 0, 0, GU_FALSE);
+    sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, psp_tex->width, psp_tex->data);
+    sceGuTexFilter(psp_tex->filter, psp_tex->filter);
+    sceGuEnable(GU_TEXTURE_2D);
+    sceGuDrawArray(GU_SPRITES, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
+    sceGuDisable(GU_TEXTURE_2D);
 
     return 0;   
 }
