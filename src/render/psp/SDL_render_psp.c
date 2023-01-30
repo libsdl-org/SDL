@@ -502,6 +502,34 @@ static int PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     return 0;
 }
 
+static int PSP_QueueFillRects(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FRect *rects, int count)
+{
+    VertV *verts = (VertV *)SDL_AllocateRenderVertices(renderer, count * 2 * sizeof(VertV), 4, &cmd->data.draw.first);
+    int i;
+
+    if (verts == NULL) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+    for (i = 0; i < count; i++, rects++) {
+        verts->x = rects->x;
+        verts->y = rects->y;
+        verts->z = 0.0f;
+        verts++;
+
+        verts->x = rects->x + rects->w;
+        verts->y = rects->y + rects->h;
+        verts->z = 0.0f;
+        verts++;
+    }
+
+    // Update the vertex count
+    cmd->data.draw.count = count * 2;
+
+    return 0;
+}
+
 static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                          const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
@@ -715,6 +743,23 @@ int PSP_RenderLines(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *c
     return 0;
 }
 
+int PSP_RenderFillRects(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
+{
+    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
+    const size_t count = cmd->data.draw.count;
+    const VertV *verts = (VertV *)(vertices + cmd->data.draw.first);
+    const PSP_BlendInfo blendInfo = {
+        .mode = cmd->data.draw.blend,
+        .shade = GU_FLAT
+    };
+
+    PSP_SetBlendMode(data, blendInfo);
+    sceGuDrawArray(GU_SPRITES, GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
+
+    return 0;
+}
+
+
 int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
@@ -806,8 +851,11 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             PSP_RenderLines(renderer, gpumem, cmd);
             break;
         }
-        case SDL_RENDERCMD_FILL_RECTS: /* unused */
+        case SDL_RENDERCMD_FILL_RECTS:
+        {
+            PSP_RenderFillRects(renderer, gpumem, cmd);
             break;
+        }
         case SDL_RENDERCMD_COPY:
         {
             PSP_RenderCopy(renderer, gpumem, cmd);
@@ -971,6 +1019,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     renderer->QueueDrawPoints = PSP_QueueDrawPoints;
     renderer->QueueDrawLines = PSP_QueueDrawPoints;
     renderer->QueueGeometry = PSP_QueueGeometry;
+    renderer->QueueFillRects = PSP_QueueFillRects;
     renderer->QueueCopy = PSP_QueueCopy;
     renderer->RunCommandQueue = PSP_RunCommandQueue;
     renderer->RenderReadPixels = PSP_RenderReadPixels;
