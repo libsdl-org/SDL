@@ -516,7 +516,7 @@ WatchJoystick(SDL_Joystick *joystick)
                 }
                 break;
             case SDL_EVENT_FINGER_DOWN:
-            case SDL_EVENT_MOUSE_BUTTONDOWN:
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 /* Skip this step */
                 SetCurrentBinding(s_iCurrentBinding + 1);
                 break;

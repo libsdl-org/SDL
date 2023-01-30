@@ -1526,12 +1526,12 @@ static void SDLTest_PrintEvent(SDL_Event *event)
                 event->motion.xrel, event->motion.yrel,
                 event->motion.windowID);
         break;
-    case SDL_EVENT_MOUSE_BUTTONDOWN:
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
         SDL_Log("SDL EVENT: Mouse: button %d pressed at %g,%g with click count %d in window %" SDL_PRIu32,
                 event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);
         break;
-    case SDL_EVENT_MOUSE_BUTTONUP:
+    case SDL_EVENT_MOUSE_BUTTON_UP:
         SDL_Log("SDL EVENT: Mouse: button %d released at %g,%g with click count %d in window %" SDL_PRIu32,
                 event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);

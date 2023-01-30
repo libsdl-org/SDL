@@ -198,7 +198,7 @@ void loop(void *arg)
             }
             SDL_FALLTHROUGH;
         case SDL_EVENT_FINGER_DOWN:
-        case SDL_EVENT_MOUSE_BUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
         case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;

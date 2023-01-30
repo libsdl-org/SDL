@@ -296,10 +296,10 @@ static void SDL_LogEvent(const SDL_Event *event)
                        (uint)event->button.which, (uint)event->button.button,                                                   \
                        event->button.state == SDL_PRESSED ? "pressed" : "released",                                             \
                        (uint)event->button.clicks, event->button.x, event->button.y)
-        SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTONDOWN)
+        SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTON_DOWN)
         PRINT_MBUTTON_EVENT(event);
         break;
-        SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTONUP)
+        SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTON_UP)
         PRINT_MBUTTON_EVENT(event);
         break;
 #undef PRINT_MBUTTON_EVENT
