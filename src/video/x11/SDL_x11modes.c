@@ -388,7 +388,10 @@ static int X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput output
     display.desktop_mode = mode;
     display.current_mode = mode;
     display.driverdata = displaydata;
-    return SDL_AddVideoDisplay(&display, send_event);
+    if (SDL_AddVideoDisplay(&display, send_event) == 0) {
+        return -1;
+    }
+    return 0;
 }
 
 static void X11_HandleXRandROutputChange(_THIS, const XRROutputChangeNotifyEvent *ev)
@@ -628,8 +631,9 @@ static int X11_InitModes_StdXlib(_THIS)
     display.desktop_mode = mode;
     display.current_mode = mode;
     display.driverdata = displaydata;
-    SDL_AddVideoDisplay(&display, SDL_TRUE);
-
+    if (SDL_AddVideoDisplay(&display, SDL_TRUE) == 0) {
+        return -1;
+    }
     return 0;
 }
 

@@ -359,8 +359,9 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
 
     display.driverdata = data;
-    SDL_AddVideoDisplay(&display, send_event);
-
+    if (SDL_AddVideoDisplay(&display, send_event) == 0) {
+        return -1;
+    }
     return 0;
 }
 

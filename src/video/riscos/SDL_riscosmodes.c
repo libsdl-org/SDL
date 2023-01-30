@@ -224,7 +224,10 @@ int RISCOS_InitModes(_THIS)
         return SDL_OutOfMemory();
     }
 
-    return SDL_AddBasicVideoDisplay(&mode);
+    if (SDL_AddBasicVideoDisplay(&mode) == 0) {
+        return -1;
+    }
+    return 0;
 }
 
 void RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)

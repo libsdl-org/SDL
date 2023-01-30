@@ -154,9 +154,10 @@ int PSP_VideoInit(_THIS)
     mode.format = SDL_PIXELFORMAT_BGR565;
     SDL_AddDisplayMode(&display, &mode);
 
-    SDL_AddVideoDisplay(&display, SDL_FALSE);
-
-    return 1;
+    if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
+        return -1;
+    }
+    return 0;
 }
 
 void PSP_VideoQuit(_THIS)

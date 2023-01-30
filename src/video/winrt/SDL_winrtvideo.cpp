@@ -347,7 +347,7 @@ static int WINRT_AddDisplaysForOutput(_THIS, IDXGIAdapter1 *dxgiAdapter1, int ou
         }
     }
 
-    if (SDL_AddVideoDisplay(&display, SDL_FALSE) < 0) {
+    if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
         goto done;
     }
 
@@ -434,7 +434,7 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
                 display.desktop_mode = mode;
                 display.current_mode = mode;
                 bool error = SDL_AddDisplayMode(&display, &mode) < 0 ||
-                             SDL_AddVideoDisplay(&display, SDL_FALSE) < 0;
+                             SDL_AddVideoDisplay(&display, SDL_FALSE) == 0;
                 if (display.name) {
                     SDL_free(display.name);
                 }

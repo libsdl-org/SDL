@@ -132,7 +132,7 @@ int Emscripten_VideoInit(_THIS)
     emscripten_get_screen_size(&mode.screen_w, &mode.screen_h);
     mode.display_scale = emscripten_get_device_pixel_ratio();
 
-    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
+    if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
 
