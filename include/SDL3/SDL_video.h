@@ -304,9 +304,9 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentVideoDriver(void);
  * Get a list of currently connected displays.
  *
  * \param count a pointer filled in with the number of displays returned
- * \returns a 0 terminated array of display instance IDs which should be
- *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
- *          more details.
+ * \returns a 0 terminated array of display instance IDs which should be freed
+ *          with SDL_free(), or NULL on error; call SDL_GetError() for more
+ *          details.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -315,7 +315,8 @@ extern DECLSPEC SDL_DisplayID *SDLCALL SDL_GetDisplays(int *count);
 /**
  * Return the primary display.
  *
- * \returns the instance ID of the primary display on success or 0 on failure; call SDL_GetError() for more information.
+ * \returns the instance ID of the primary display on success or 0 on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -327,7 +328,8 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
  * Get the name of a display in UTF-8 encoding.
  *
  * \param displayID the instance ID of the display to query
- * \returns the name of a display or NULL on failure; call SDL_GetError() for more information.
+ * \returns the name of a display or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -533,7 +535,8 @@ extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode(SDL_DisplayID
  * Get the display containing a point
  *
  * \param point the point to query
- * \returns the instance ID of the display containing the point or 0 on failure; call SDL_GetError() for more information.
+ * \returns the instance ID of the display containing the point or 0 on
+ *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -546,8 +549,9 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForPoint(const SDL_Point *po
  * Get the display primarily containing a rect
  *
  * \param rect the rect to query
- * \returns the instance ID of the display entirely containing the rect or closest
- *          to the center of the rect on success or 0 on failure; call SDL_GetError() for more information.
+ * \returns the instance ID of the display entirely containing the rect or
+ *          closest to the center of the rect on success or 0 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -560,8 +564,9 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForRect(const SDL_Rect *rect
  * Get the display associated with a window.
  *
  * \param window the window to query
- * \returns the instance ID of the display containing the center of the window on
- *          success or 0 on failure; call SDL_GetError() for more information.
+ * \returns the instance ID of the display containing the center of the window
+ *          on success or 0 on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
