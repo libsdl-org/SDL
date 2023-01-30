@@ -20,6 +20,9 @@ jobs:
     - name: Setup Haiku dependencies
       run: |
         vmshell pkgman install -y cmd:cmake cmd:gcc cmd:ld cmd:ninja cmd:pkg_config haiku_devel devel:libgl devel:libglu
+    - name: Restart VM
+      run: |
+        sv force-restart qemu; timeout 600 vmshell exit 0
     - uses: actions/checkout@v3
     - name: Copy project to VM
       run: |
