@@ -133,8 +133,8 @@ typedef enum
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
-    SDL_EVENT_MOUSE_BUTTONDOWN,        /**< Mouse button pressed */
-    SDL_EVENT_MOUSE_BUTTONUP,          /**< Mouse button released */
+    SDL_EVENT_MOUSE_BUTTON_DOWN,       /**< Mouse button pressed */
+    SDL_EVENT_MOUSE_BUTTON_UP,         /**< Mouse button released */
     SDL_EVENT_MOUSE_WHEEL,             /**< Mouse wheel motion */
 
     /* Joystick events */
@@ -307,7 +307,7 @@ typedef struct SDL_MouseMotionEvent
  */
 typedef struct SDL_MouseButtonEvent
 {
-    Uint32 type;        /**< ::SDL_EVENT_MOUSE_BUTTONDOWN or ::SDL_EVENT_MOUSE_BUTTONUP */
+    Uint32 type;        /**< ::SDL_EVENT_MOUSE_BUTTON_DOWN or ::SDL_EVENT_MOUSE_BUTTON_UP */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;/**< The window with mouse focus, if any */
     SDL_MouseID which;  /**< The mouse instance id, or SDL_TOUCH_MOUSEID */

@@ -136,7 +136,7 @@ void loop(void *arg)
             active->y2 = event.motion.y;
             break;
 
-        case SDL_EVENT_MOUSE_BUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             if (active == NULL) {
                 active = SDL_calloc(1, sizeof(*active));
                 active->x1 = active->x2 = event.button.x;
@@ -170,7 +170,7 @@ void loop(void *arg)
             }
             break;
 
-        case SDL_EVENT_MOUSE_BUTTONUP:
+        case SDL_EVENT_MOUSE_BUTTON_UP:
             if (active == NULL) {
                 break;
             }

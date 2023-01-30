@@ -106,7 +106,7 @@ int main(int argc, char **argv)
                 case SDL_EVENT_SENSOR_UPDATE:
                     HandleSensorEvent(&event.sensor);
                     break;
-                case SDL_EVENT_MOUSE_BUTTONUP:
+                case SDL_EVENT_MOUSE_BUTTON_UP:
                 case SDL_EVENT_KEY_UP:
                 case SDL_EVENT_QUIT:
                     done = SDL_TRUE;

@@ -772,8 +772,8 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 }
             }
         }
-    } else if (event->type == SDL_EVENT_MOUSE_BUTTONDOWN ||
-               event->type == SDL_EVENT_MOUSE_BUTTONUP) {
+    } else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+               event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
         SDL_Window *window = SDL_GetWindowFromID(event->button.windowID);
         if (window == renderer->window) {
             int logical_w, logical_h;

@@ -411,7 +411,7 @@ int main(int argc, char **argv)
                         ++current;
                     }
                 }
-                if (event.type == SDL_EVENT_MOUSE_BUTTONDOWN) {
+                if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
                     if (event.button.x < (original->w / 2)) {
                         --current;
                     } else {
