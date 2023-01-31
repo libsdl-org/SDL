@@ -197,10 +197,10 @@ static inline int calculateBestSliceSizeForSprite(SDL_Renderer *renderer, const 
     case GU_PSM_5650:
     case GU_PSM_5551:
     case GU_PSM_4444:
-        sliceSize->width = 64;
+        sliceSize->width = dstrect->w > 64 ? 64: dstrect->w;
         break;
     case GU_PSM_8888:
-        sliceSize->width = 32;
+        sliceSize->width = dstrect->w > 32 ? 32: dstrect->w;
         break;
     default:
         return -1;
