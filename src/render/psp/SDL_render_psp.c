@@ -24,10 +24,13 @@
 
 #include "../SDL_sysrender.h"
 #include "SDL_hints.h"
+#include "SDL_render_psp.h"
 
 #include <pspgu.h>
 #include <pspintrman.h>
-#include "SDL_render_psp.h"
+#include <vram.h>
+#include <psputils.h>
+#include <pspdisplay.h>
 
 static unsigned int __attribute__((aligned(16))) list[262144];
 
@@ -41,6 +44,7 @@ typedef struct
 {
     void *frontbuffer;         /**< main screen buffer */
     void *backbuffer;          /**< buffer presented to display */
+    uint8_t drawBufferFormat;  /**< GU_PSM_8888 or GU_PSM_5650 or GU_PSM_4444 */
     uint64_t drawColor;
     PSP_BlendInfo blendInfo;   /**< current blend info */
     uint8_t vsync; /* 0 (Disabled), 1 (Enabled), 2 (Dynamic) */
@@ -90,25 +94,6 @@ typedef struct
     int height;
 } SliceSize;
 
-typedef enum
-{
-    SLICE_PIXEL_BITS_32,
-    SLICE_PIXEL_BITS_16,
-    SLICE_PIXEL_BITS_COUNT
-}  SlicePixelBits;
-
-#define SLICE_VALUES_COUNT 3
-typedef struct
-{
-    SlicePixelBits pixelBits;
-    SliceSize sizes[SLICE_VALUES_COUNT];
-    SliceSize condition; 
-} SliceInfo;
-
-static SliceInfo sliceInfo[SLICE_PIXEL_BITS_COUNT] = {
-    { SLICE_PIXEL_BITS_32, { { 128, 16 }, { 64, 32 }, { 32, 64 } }, { 32, 16 } },
-    { SLICE_PIXEL_BITS_16, { { 128, 32 }, { 64, 64 }, { 32, 128 } }, { 32, 32 } }
-};
 
 int SDL_PSP_RenderGetProp(SDL_Renderer *r, enum SDL_PSP_RenderProps which, void** out)
 {
@@ -127,7 +112,6 @@ int SDL_PSP_RenderGetProp(SDL_Renderer *r, enum SDL_PSP_RenderProps which, void*
     }
     return -1;
 }
-
 static int vsync_sema_id = 0;
 
 /* PRIVATE METHODS */
@@ -203,56 +187,28 @@ static inline int calculateNextPow2(int value)
     return i;
 }
 
-static inline int calculateBestSliceSizeForTexture(SDL_Texture *texture, SliceSize *uvSize, SliceSize *sliceSize, SliceSize *sliceDimension) {
-    int i;
-    uint8_t horizontalSlices, verticalSlices;
-    int pixelBits = 0;
-    int pixelSize = SDL_BYTESPERPIXEL(texture->format);
-    SliceInfo *sliceInfoPtr = NULL;
-    SliceSize *foundSlizeSize = NULL;
+static inline int calculateBestSliceSizeForSprite(SDL_Renderer *renderer, const SDL_FRect *dstrect, SliceSize *sliceSize, SliceSize *sliceDimension) {
+    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
 
-    switch (pixelSize) {
-        case 4:
-            sliceInfoPtr = &sliceInfo[SLICE_PIXEL_BITS_32];
-            break;
-        case 2:
-            sliceInfoPtr = &sliceInfo[SLICE_PIXEL_BITS_16];
-            break;
-        default:
-            return -1;
-    }
+    // We split in blocks of (64 x destiny height) when 16 bits per color
+    // or (32 x destiny height) when 32 bits per color
 
-    if (sliceInfoPtr->condition.width > uvSize->width && sliceInfoPtr->condition.height > uvSize->height) {
-        sliceSize->width = uvSize->width;
-        sliceSize->height = uvSize->height;
-        sliceDimension->width = 1;
-        sliceDimension->height = 1;
-        return 0;
-    }
-
-    if (uvSize->width >= uvSize->height) {
-        for (i = 0; i < SLICE_VALUES_COUNT; i++) {
-            if (uvSize->width >= sliceInfoPtr->sizes[i].width) {
-                foundSlizeSize = &sliceInfoPtr->sizes[i];
-                break;
-            }
-        }
-    } else {
-        for (i = SLICE_VALUES_COUNT - 1; i >= 0; i--) {
-            if (uvSize->height >= sliceInfoPtr->sizes[i].height) {
-                foundSlizeSize = &sliceInfoPtr->sizes[i];
-                break;
-            }
-        }
-    }
-
-    if (foundSlizeSize == NULL)
+    switch (data->drawBufferFormat) {
+    case GU_PSM_5650:
+    case GU_PSM_5551:
+    case GU_PSM_4444:
+        sliceSize->width = 64;
+        break;
+    case GU_PSM_8888:
+        sliceSize->width = 32;
+        break;
+    default:
         return -1;
+    }
+    sliceSize->height = dstrect->h;
     
-    sliceSize->width = foundSlizeSize->width;
-    sliceSize->height = foundSlizeSize->height;
-    sliceDimension->width = ((uvSize->width % foundSlizeSize->width == 0) ? 0 : 1) + (uvSize->width / foundSlizeSize->width);
-    sliceDimension->height = ((uvSize->height % foundSlizeSize->height == 0) ? 0 : 1) + (uvSize->height / foundSlizeSize->height);
+    sliceDimension->width = SDL_ceilf(dstrect->w / sliceSize->width);
+    sliceDimension->height = SDL_ceilf(dstrect->h / sliceSize->height);
 
     return 0;
 }
@@ -260,37 +216,40 @@ static inline int calculateBestSliceSizeForTexture(SDL_Texture *texture, SliceSi
 static inline void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, SliceSize *sliceSize,
                          const SDL_Rect *srcrect, const SDL_FRect *dstrect) {
     int i, j;
-    int remainingWidth = srcrect->w % sliceSize->width;
-    int remainingHeight = srcrect->h % sliceSize->height;
+    int remainingWidth = (int)dstrect->w % sliceSize->width;
+    int remainingHeight = (int)dstrect->h % sliceSize->height;
     int hasRemainingWidth = remainingWidth > 0;
     int hasRemainingHeight = remainingHeight > 0;
-    float dstrectRateWidth = (float)(abs(dstrect->w - dimensions->width)) / (float)(abs(srcrect->w - dimensions->width));
-    float dstrectRateHeight = (float)(abs(dstrect->h - dimensions->height)) / (float)(abs(srcrect->h - dimensions->height));
+    float srcrectRateWidth =  (float)(abs(srcrect->w - dimensions->width)) / (float)(abs(dstrect->w - dimensions->width));
+    float srcrectRateHeight = (float)(abs(srcrect->h - dimensions->height)) / (float)(abs(dstrect->h - dimensions->height));
+    float srcWidth = sliceSize->width * srcrectRateWidth;
+    float srcHeight = sliceSize->height * srcrectRateHeight;
+    float remainingSrcWidth = remainingWidth * srcrectRateWidth;
+    float remainingSrcHeight = remainingHeight * srcrectRateHeight;
 
-    int verticesCount = dimensions->width * dimensions->height * 2;
     for (i = 0; i < dimensions->width; i++) {
         for (j = 0; j < dimensions->height; j++) {
             uint8_t currentIndex = (i * dimensions->height + j) * 2;
-            vertices[currentIndex].u = srcrect->x + i * sliceSize->width;
-            vertices[currentIndex].v = srcrect->y + j * sliceSize->height;
-            vertices[currentIndex].x = dstrect->x + i * sliceSize->width * dstrectRateWidth;
-            vertices[currentIndex].y = dstrect->y + j * sliceSize->height * dstrectRateHeight;
+            vertices[currentIndex].u = srcrect->x + i * srcWidth;
+            vertices[currentIndex].v = srcrect->y + j * srcHeight;
+            vertices[currentIndex].x = dstrect->x + i * sliceSize->width;
+            vertices[currentIndex].y = dstrect->y + j * sliceSize->height;
             vertices[currentIndex].z = 0;
 
             if (i == dimensions->width - 1 && hasRemainingWidth) {
-                vertices[currentIndex + 1].u = srcrect->x + i * sliceSize->width + remainingWidth;
-                vertices[currentIndex + 1].x = dstrect->x + i * (sliceSize->width * dstrectRateWidth) + remainingWidth * dstrectRateWidth;
+                vertices[currentIndex + 1].u = vertices[currentIndex].u + remainingSrcWidth;
+                vertices[currentIndex + 1].x = vertices[currentIndex].x + remainingWidth;
             } else {
-                vertices[currentIndex + 1].u = (srcrect->x + (i +1) * sliceSize->width);
-                vertices[currentIndex + 1].x = dstrect->x + (i + 1) * sliceSize->width * dstrectRateWidth;
+                vertices[currentIndex + 1].u = vertices[currentIndex].u + srcWidth;
+                vertices[currentIndex + 1].x = vertices[currentIndex].x + sliceSize->width;
             }
             
             if (j == dimensions->height - 1 && hasRemainingHeight) {
-                vertices[currentIndex + 1].v = srcrect->y + j * sliceSize->height + remainingHeight;
-                vertices[currentIndex + 1].y = dstrect->y + j * sliceSize->height * dstrectRateHeight + remainingHeight * dstrectRateHeight;
+                vertices[currentIndex + 1].v = vertices[currentIndex].v + remainingSrcHeight;
+                vertices[currentIndex + 1].y = vertices[currentIndex].y + remainingHeight;
             } else {
-                vertices[currentIndex + 1].v = (srcrect->y + (j + 1) * sliceSize->height);
-                vertices[currentIndex + 1].y = dstrect->y + (j + 1) * sliceSize->height * dstrectRateHeight;
+                vertices[currentIndex + 1].v = vertices[currentIndex].v + srcHeight;
+                vertices[currentIndex + 1].y = vertices[currentIndex].y + sliceSize->height;
             }
 
             vertices[currentIndex + 1].z = 0;
@@ -344,7 +303,6 @@ static int PSP_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 static void PSP_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     PSP_Texture *psp_texture = (PSP_Texture *)texture->driverdata;
-    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
 
     sceKernelDcacheWritebackRange(psp_texture->data, psp_texture->size);
 }
@@ -396,7 +354,6 @@ static int PSP_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
 static int PSP_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     VertV *verts = (VertV *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertV), 4, &cmd->data.draw.first);
     int i;
 
@@ -422,7 +379,6 @@ static int PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
 {
     int i;
     int count = indices ? num_indices : num_vertices;
-    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
 
     cmd->data.draw.count = count;
     size_indices = indices ? size_indices : 0;
@@ -535,25 +491,14 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
 {
     VertTV *verts;
     uint8_t verticesCount;
-    const float x = dstrect->x;
-    const float y = dstrect->y;
-    const float width = dstrect->w;
-    const float height = dstrect->h;
 
-    const float u0 = srcrect->x;
-    const float v0 = srcrect->y;
-    const float u1 = srcrect->x + srcrect->w;
-    const float v1 = srcrect->y + srcrect->h;
-
-    SliceSize sliceSize, sliceDimension, uvSize;
+    SliceSize sliceSize, sliceDimension;
 
     // In this function texture must be created
     if (!texture)
         return -1;
 
-    uvSize.width = abs(u1 - u0);
-    uvSize.height = abs(v1 - v0);
-    if (calculateBestSliceSizeForTexture(texture, &uvSize, &sliceSize, &sliceDimension))
+    if (calculateBestSliceSizeForSprite(renderer, dstrect, &sliceSize, &sliceDimension))
         return -1;
     
     verticesCount = sliceDimension.width * sliceDimension.height * 2;
@@ -570,7 +515,6 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
 
 static int PSP_RenderSetViewPort(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     const SDL_Rect *viewport = &cmd->data.viewport.rect;
 
     sceGuOffset(2048 - (viewport->w >> 1), 2048 - (viewport->h >> 1));
@@ -635,8 +579,6 @@ static void PSP_SetBlendMode(PSP_RenderData *data, PSP_BlendInfo blendInfo)
 
 static inline int PSP_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
-
     const SDL_Rect *rect = &cmd->data.cliprect.rect;
 
     if (cmd->data.cliprect.enabled) {
@@ -653,8 +595,6 @@ static inline int PSP_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderComma
 {
     uint8_t colorR, colorG, colorB, colorA;
 
-    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
-
     colorR = cmd->data.color.r;
     colorG = cmd->data.color.g;
     colorB = cmd->data.color.b;
@@ -667,8 +607,6 @@ static inline int PSP_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderComma
 static inline int PSP_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     uint8_t colorR, colorG, colorB, colorA;
-
-    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
 
     colorR = cmd->data.color.r;
     colorG = cmd->data.color.g;
@@ -763,6 +701,7 @@ static inline int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_R
 static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
+    PSP_Texture *psp_tex = (PSP_Texture *)cmd->data.draw.texture->driverdata;
     const size_t count = cmd->data.draw.count;
     const VertTV *verts = (VertTV *)(vertices + cmd->data.draw.first);
     PSP_BlendInfo blendInfo = {
@@ -771,8 +710,6 @@ static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_Ren
     };
 
     PSP_SetBlendMode(data, blendInfo);
-
-    PSP_Texture *psp_tex = (PSP_Texture *)cmd->data.draw.texture->driverdata;
 
     sceGuTexMode(psp_tex->format, 0, 0, GU_FALSE);
     sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, psp_tex->width, psp_tex->data);
@@ -948,15 +885,18 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     // flush cache so that no stray data remains
     sceKernelDcacheWritebackAll();
 
+    // Forcing for now using GU_PSM_4444
+    data->drawBufferFormat = GU_PSM_4444;
+
     /* Specific GU init */
-    bufferSize = getMemorySize(PSP_FRAME_BUFFER_WIDTH, PSP_SCREEN_HEIGHT, GU_PSM_4444);
+    bufferSize = getMemorySize(PSP_FRAME_BUFFER_WIDTH, PSP_SCREEN_HEIGHT, data->drawBufferFormat);
     doublebuffer = vramalloc(bufferSize * 2);
     data->backbuffer = doublebuffer;
     data->frontbuffer = ((uint8_t *)doublebuffer) + bufferSize;
 
     sceGuInit();
     sceGuStart(GU_DIRECT, list);
-    sceGuDrawBuffer(GU_PSM_4444, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
+    sceGuDrawBuffer(data->drawBufferFormat, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
     sceGuDispBuffer(PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
 	
     sceGuOffset(2048 - (PSP_SCREEN_WIDTH >> 1), 2048 - (PSP_SCREEN_HEIGHT >> 1));
