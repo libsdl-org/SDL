@@ -3339,7 +3339,7 @@ if(NOT SDL_DISABLE_INSTALL)
 
     set(SDL_SDLtest_INSTALL_RESOURCEDIR ".")
     set(SDL_SDLtest_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
-    set(SDL_SDLtest_INSTALL_CMAKEFILENAME "SDL3_testTargets.cmake")
+    set(SDL_SDLtest_INSTALL_CMAKEFILENAME "SDL3testTargets.cmake")
   endif()
 
   ##### sdl3.pc #####

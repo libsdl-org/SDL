@@ -27,6 +27,9 @@ add_feature_info("TEST_SHARED" TEST_SHARED "Test linking with shared library")
 option(TEST_STATIC "Test linking to static SDL3 library" ON)
 add_feature_info("TEST_STATIC" TEST_STATIC "Test linking with static library")
 
+option(TEST_TEST "Test linking to SDL3_test library" ON)
+add_feature_info("TEST_TEST" TEST_STATIC "Test linking to SDL test library")
+
 find_package(SDL3 REQUIRED CONFIG COMPONENTS Headers)
 add_library(headers_test OBJECT inc_sdl_slash.c inc_sdl_noslash.c)
 target_link_libraries(headers_test PRIVATE SDL3::Headers)
@@ -54,6 +57,11 @@ if(TEST_SHARED)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "$<TARGET_FILE_DIR:cli-shared>"
         )
     endif()
+
+    if(TEST_TEST)
+        add_executable(sdltest-shared sdltest.c)
+        target_link_libraries(sdltest-shared PRIVATE SDL3::SDL3_test SDL3::SDL3)
+    endif()
 endif()
 
 if(TEST_STATIC)
@@ -70,6 +78,10 @@ if(TEST_STATIC)
         set_target_properties(sharedlib-static PROPERTIES C_VISIBILITY_PRESET "hidden")
     endif()
 
+    if(TEST_TEST)
+        add_executable(sdltest-static sdltest.c)
+        target_link_libraries(sdltest-static PRIVATE SDL3::SDL3_test SDL3::SDL3-static)
+    endif()
 endif()
 
 feature_summary(WHAT ALL)
