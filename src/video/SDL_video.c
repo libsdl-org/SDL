@@ -1215,7 +1215,7 @@ static SDL_DisplayID GetDisplayForRect(int x, int y, int w, int h)
 
             /* Check if the window is fully enclosed */
             if (SDL_GetRectEnclosingPoints(&center, 1, &display_rect, NULL)) {
-                return i;
+                return display->id;
             }
 
             /* Snap window center to the display rect */
