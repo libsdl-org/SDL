@@ -209,7 +209,7 @@ void loop()
                 SDL_StartTextInput();
             }
             break;
-        case SDL_EVENT_MOUSE_BUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             /* Left button quits the app, other buttons toggles text input */
             if (event.button.button == SDL_BUTTON_LEFT) {
                 done = 1;

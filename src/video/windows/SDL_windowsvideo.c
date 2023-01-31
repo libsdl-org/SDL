@@ -76,7 +76,7 @@ extern void D3D12_XBOX_GetResolution(Uint32 *width, Uint32 *height);
 
 static void WIN_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *data = (SDL_VideoData *)device->driverdata;
+    SDL_VideoData *data = device->driverdata;
 
     SDL_UnregisterApp();
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
@@ -104,7 +104,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device) {
-        data = (struct SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
+        data = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     } else {
         data = NULL;
     }
@@ -270,7 +270,7 @@ VideoBootStrap WINDOWS_bootstrap = {
 static BOOL WIN_DeclareDPIAwareUnaware(_THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     if (data->SetProcessDpiAwarenessContext) {
         return data->SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
@@ -285,7 +285,7 @@ static BOOL WIN_DeclareDPIAwareUnaware(_THIS)
 static BOOL WIN_DeclareDPIAwareSystem(_THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     if (data->SetProcessDpiAwarenessContext) {
         /* Windows 10, version 1607 */
@@ -304,7 +304,7 @@ static BOOL WIN_DeclareDPIAwareSystem(_THIS)
 static BOOL WIN_DeclareDPIAwarePerMonitor(_THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     if (data->SetProcessDpiAwarenessContext) {
         /* Windows 10, version 1607 */
@@ -325,7 +325,7 @@ static BOOL WIN_DeclareDPIAwarePerMonitorV2(_THIS)
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return FALSE;
 #else
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     /* Declare DPI aware (may have been done in external code or a manifest, as well) */
     if (data->SetProcessDpiAwarenessContext) {
@@ -361,7 +361,7 @@ static BOOL WIN_DeclareDPIAwarePerMonitorV2(_THIS)
 #ifdef HIGHDPI_DEBUG
 static const char *WIN_GetDPIAwareness(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     if (data->GetThreadDpiAwarenessContext && data->AreDpiAwarenessContextsEqual) {
         DPI_AWARENESS_CONTEXT context = data->GetThreadDpiAwarenessContext();
@@ -400,7 +400,7 @@ static void WIN_InitDPIAwareness(_THIS)
 
 static void WIN_InitDPIScaling(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     if (SDL_GetHintBoolean("SDL_WINDOWS_DPI_SCALING", SDL_TRUE)) {
         WIN_DeclareDPIAwarePerMonitorV2(_this);
@@ -411,7 +411,7 @@ static void WIN_InitDPIScaling(_THIS)
 
 int WIN_VideoInit(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     WIN_InitDPIAwareness(_this);
     WIN_InitDPIScaling(_this);
@@ -423,19 +423,14 @@ int WIN_VideoInit(_THIS)
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     /* For Xbox, we just need to create the single display */
     {
-        SDL_VideoDisplay display;
-        SDL_DisplayMode current_mode;
+        SDL_DisplayMode mode;
 
-        SDL_zero(current_mode);
-        D3D12_XBOX_GetResolution(&current_mode.w, &current_mode.h);
-        current_mode.refresh_rate = 60.0f;
-        current_mode.format = SDL_PIXELFORMAT_ARGB8888;
+        SDL_zero(mode);
+        D3D12_XBOX_GetResolution(&mode.pixel_w, &mode.pixel_h);
+        mode.refresh_rate = 60.0f;
+        mode.format = SDL_PIXELFORMAT_ARGB8888;
 
-        SDL_zero(display);
-        display.desktop_mode = current_mode;
-        display.current_mode = current_mode;
-
-        SDL_AddVideoDisplay(&display, SDL_FALSE);
+        SDL_AddBasicVideoDisplay(&mode);
     }
 #else /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     if (WIN_InitModes(_this) < 0) {
@@ -530,7 +525,7 @@ D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
     return SDL_FALSE;
 }
 
-int SDL_Direct3D9GetAdapterIndex(int displayIndex)
+int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 {
     void *pD3DDLL;
     IDirect3D9 *pD3D;
@@ -538,7 +533,7 @@ int SDL_Direct3D9GetAdapterIndex(int displayIndex)
         SDL_SetError("Unable to create Direct3D interface");
         return D3DADAPTER_DEFAULT;
     } else {
-        SDL_DisplayData *pData = (SDL_DisplayData *)SDL_GetDisplayDriverData(displayIndex);
+        SDL_DisplayData *pData = SDL_GetDisplayDriverData(displayID);
         int adapterIndex = D3DADAPTER_DEFAULT;
 
         if (pData == NULL) {
@@ -604,8 +599,7 @@ static SDL_bool DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
 }
 #endif
 
-SDL_bool
-SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
+SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
 #if !HAVE_DXGI_H
     if (adapterIndex) {
@@ -617,7 +611,7 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
     SDL_SetError("SDL was compiled without DXGI support due to missing dxgi.h header");
     return SDL_FALSE;
 #else
-    SDL_DisplayData *pData = (SDL_DisplayData *)SDL_GetDisplayDriverData(displayIndex);
+    SDL_DisplayData *pData = SDL_GetDisplayDriverData(displayID);
     void *pDXGIDLL;
     char *displayName;
     int nAdapter, nOutput;
@@ -686,7 +680,7 @@ SDL_bool
 WIN_IsPerMonitorV2DPIAware(_THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     if (data->AreDpiAwarenessContextsEqual && data->GetThreadDpiAwarenessContext) {
         /* Windows 10, version 1607 */

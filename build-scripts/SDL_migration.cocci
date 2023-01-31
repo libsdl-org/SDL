@@ -1993,12 +1993,12 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 @@
 @@
 - SDL_GetPointDisplayIndex
-+ SDL_GetDisplayIndexForPoint
++ SDL_GetDisplayForPoint
   (...)
 @@
 @@
 - SDL_GetRectDisplayIndex
-+ SDL_GetDisplayIndexForRect
++ SDL_GetDisplayForRect
   (...)
 @ depends on rule_init_noparachute @
 expression e;
@@ -2180,11 +2180,11 @@ expression e;
 @@
 @@
 - SDL_MOUSEBUTTONDOWN
-+ SDL_EVENT_MOUSE_BUTTONDOWN
++ SDL_EVENT_MOUSE_BUTTON_DOWN
 @@
 @@
 - SDL_MOUSEBUTTONUP
-+ SDL_EVENT_MOUSE_BUTTONUP
++ SDL_EVENT_MOUSE_BUTTON_UP
 @@
 @@
 - SDL_MOUSEWHEEL
@@ -2332,3 +2332,35 @@ expression e1, e2, e3, e4;
 SDL_GetDisplayPhysicalDPI(e1,
 - e2,
   e3, e4)
+@@
+- SDL_WINDOW_FULLSCREEN
++ SDL_WINDOW_FULLSCREEN_EXCLUSIVE
+@@
+@@
+- SDL_WINDOW_INPUT_GRABBED
++ SDL_WINDOW_MOUSE_GRABBED
+@@
+SDL_DisplayMode *e;
+@@
+(
+- e->w
++ e->screen_w
+|
+- e->h
++ e->screen_h
+)
+@@
+SDL_DisplayMode e;
+@@
+(
+- e.w
++ e.screen_w
+|
+- e.h
++ e.screen_h
+)
+@@
+@@
+- SDL_GetWindowDisplayIndex
++ SDL_GetDisplayForWindow
+  (...)

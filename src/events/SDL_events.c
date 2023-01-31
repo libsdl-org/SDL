@@ -217,7 +217,7 @@ static void SDL_LogEvent(const SDL_Event *event)
     case x:                                    \
         SDL_strlcpy(name, #x, sizeof(name));   \
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u display=%u event=%s data1=%d)", \
-                           (uint)event->display.timestamp, (uint)event->display.display, name, (int)event->display.data1); \
+                           (uint)event->display.timestamp, (uint)event->display.displayID, name, (int)event->display.data1); \
         break
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_ORIENTATION);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_CONNECTED);
@@ -236,7 +236,6 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_EXPOSED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_MOVED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_RESIZED);
-        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_SIZE_CHANGED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_MINIMIZED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_MAXIMIZED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_RESTORED);
@@ -249,6 +248,7 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_HIT_TEST);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_ICCPROF_CHANGED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DISPLAY_CHANGED);
+        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
 #undef SDL_WINDOWEVENT_CASE
 
         SDL_EVENT_CASE(SDL_EVENT_SYSWM)
@@ -296,10 +296,10 @@ static void SDL_LogEvent(const SDL_Event *event)
                        (uint)event->button.which, (uint)event->button.button,                                                   \
                        event->button.state == SDL_PRESSED ? "pressed" : "released",                                             \
                        (uint)event->button.clicks, event->button.x, event->button.y)
-        SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTONDOWN)
+        SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTON_DOWN)
         PRINT_MBUTTON_EVENT(event);
         break;
-        SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTONUP)
+        SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTON_UP)
         PRINT_MBUTTON_EVENT(event);
         break;
 #undef PRINT_MBUTTON_EVENT

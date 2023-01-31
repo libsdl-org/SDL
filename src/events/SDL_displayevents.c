@@ -48,7 +48,7 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
         SDL_Event event;
         event.type = displayevent;
         event.common.timestamp = 0;
-        event.display.display = SDL_GetIndexOfDisplay(display);
+        event.display.displayID = display->id;
         event.display.data1 = data1;
         posted = (SDL_PushEvent(&event) > 0);
     }

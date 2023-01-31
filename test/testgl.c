@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
         swap_interval = 0;
     }
 
-    SDL_GetCurrentDisplayMode(0, &mode);
+    SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode);
     SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
 
     ret_interval = SDL_GL_GetSwapInterval(&interval);
@@ -305,7 +305,7 @@ int main(int argc, char *argv[])
 
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
-    SDL_GL_GetDrawableSize(state->windows[0], &dw, &dh);
+    SDL_GetWindowSizeInPixels(state->windows[0], &dw, &dh);
     SDL_Log("Draw Size     : %d,%d\n", dw, dh);
     SDL_Log("\n");
     SDL_Log("Vendor        : %s\n", ctx.glGetString(GL_VENDOR));
@@ -411,7 +411,7 @@ int main(int argc, char *argv[])
             if (update_swap_interval) {
                 SDL_GL_SetSwapInterval(swap_interval);
             }
-            SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+            SDL_GetWindowSizeInPixels(state->windows[i], &w, &h);
             ctx.glViewport(0, 0, w, h);
             Render();
             SDL_GL_SwapWindow(state->windows[i]);

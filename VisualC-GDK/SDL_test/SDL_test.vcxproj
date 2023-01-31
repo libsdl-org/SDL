@@ -198,11 +198,6 @@
     <ClCompile Include="..\..\src\test\SDL_test_font.c" />
     <ClCompile Include="..\..\src\test\SDL_test_fuzzer.c" />
     <ClCompile Include="..\..\src\test\SDL_test_harness.c" />
-    <ClCompile Include="..\..\src\test\SDL_test_imageBlit.c" />
-    <ClCompile Include="..\..\src\test\SDL_test_imageBlitBlend.c" />
-    <ClCompile Include="..\..\src\test\SDL_test_imageFace.c" />
-    <ClCompile Include="..\..\src\test\SDL_test_imagePrimitives.c" />
-    <ClCompile Include="..\..\src\test\SDL_test_imagePrimitivesBlend.c" />
     <ClCompile Include="..\..\src\test\SDL_test_log.c" />
     <ClCompile Include="..\..\src\test\SDL_test_md5.c" />
     <ClCompile Include="..\..\src\test\SDL_test_memory.c" />

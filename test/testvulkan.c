@@ -649,10 +649,10 @@ static SDL_bool createSwapchain(void)
     }
 
     // get size
-    SDL_Vulkan_GetDrawableSize(vulkanContext->window, &w, &h);
+    SDL_GetWindowSizeInPixels(vulkanContext->window, &w, &h);
 
     // Clamp the size to the allowable image extent.
-    // SDL_Vulkan_GetDrawableSize()'s result it not always in this range (bug #3287)
+    // SDL_GetWindowSizeInPixels()'s result it not always in this range (bug #3287)
     vulkanContext->swapchainSize.width = SDL_clamp((uint32_t)w,
                                                    vulkanContext->surfaceCapabilities.minImageExtent.width,
                                                    vulkanContext->surfaceCapabilities.maxImageExtent.width);
@@ -1070,7 +1070,7 @@ static SDL_bool render(void)
                      getVulkanResultString(result));
         quit(2);
     }
-    SDL_Vulkan_GetDrawableSize(vulkanContext->window, &w, &h);
+    SDL_GetWindowSizeInPixels(vulkanContext->window, &w, &h);
     if (w != (int)vulkanContext->swapchainSize.width || h != (int)vulkanContext->swapchainSize.height) {
         return createNewSwapchainAndSwapchainSpecificStuff();
     }
@@ -1104,11 +1104,11 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    SDL_GetCurrentDisplayMode(0, &mode);
+    SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode);
     SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
-    SDL_Vulkan_GetDrawableSize(state->windows[0], &dw, &dh);
+    SDL_GetWindowSizeInPixels(state->windows[0], &dw, &dh);
     SDL_Log("Draw Size     : %d,%d\n", dw, dh);
     SDL_Log("\n");
 

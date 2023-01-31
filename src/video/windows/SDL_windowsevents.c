@@ -483,7 +483,7 @@ static void WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
 
 static void WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
     SDL_bool had_focus = (SDL_GetKeyboardFocus() == window) ? SDL_TRUE : SDL_FALSE;
     SDL_bool has_focus = (GetForegroundWindow() == hwnd) ? SDL_TRUE : SDL_FALSE;
@@ -636,7 +636,7 @@ static SDL_WindowData *WIN_GetWindowDataFromHWND(HWND hwnd)
 
     if (_this) {
         for (window = _this->windows; window; window = window->next) {
-            SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+            SDL_WindowData *data = window->driverdata;
             if (data && data->hwnd == hwnd) {
                 return data;
             }
@@ -1241,7 +1241,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         RECT rect;
         int x, y;
         int w, h;
-        int display_index = data->window->display_index;
+        SDL_DisplayID displayID = data->window->displayID;
 
         if (data->initializing || data->in_border_change) {
             break;
@@ -1294,7 +1294,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         /* Forces a WM_PAINT event */
         InvalidateRect(hwnd, NULL, FALSE);
 
-        if (data->window->display_index != display_index) {
+        if (data->window->displayID != displayID) {
             /* Display changed, check ICC profile */
             WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
         }
@@ -1491,7 +1491,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_NCCALCSIZE:
     {
         Uint32 window_flags = SDL_GetWindowFlags(data->window);
-        if (wParam == TRUE && (window_flags & SDL_WINDOW_BORDERLESS) && !(window_flags & SDL_WINDOW_FULLSCREEN)) {
+        if (wParam == TRUE && (window_flags & SDL_WINDOW_BORDERLESS) != 0 && (window_flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
             /* When borderless, need to tell windows that the size of the non-client area is 0 */
             if (!(window_flags & SDL_WINDOW_RESIZABLE)) {
                 int w, h;
@@ -1652,16 +1652,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     /* Update the cached DPI value for this window */
                     data->scaling_dpi = newDPI;
 
-                    /* Send a SDL_EVENT_WINDOW_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
-                       Renderers need to get this to know that the framebuffer size changed.
-
-                       We clear the window size to force the event to be delivered, but what we really
-                       want for SDL3 is a new event to notify that the DPI changed and then watch for
-                       that in the renderer directly.
-                     */
-                    data->window->w = 0;
-                    data->window->h = 0;
-                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_SIZE_CHANGED, data->window->w, data->window->h);
+                    SDL_CheckWindowPixelSizeChanged(data->window);
                 }
 
 #ifdef HIGHDPI_DEBUG
@@ -1725,9 +1716,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 /* Update the cached DPI value for this window */
                 data->scaling_dpi = newDPI;
 
-                /* Send a SDL_EVENT_WINDOW_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
-                   Renderers need to get this to know that the framebuffer size changed. */
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_SIZE_CHANGED, data->window->w, data->window->h);
+                SDL_CheckWindowPixelSizeChanged(data->window);
             }
 
             return 0;
@@ -1763,7 +1752,7 @@ static void WIN_UpdateClipCursorForWindows()
 
     if (_this) {
         for (window = _this->windows; window; window = window->next) {
-            SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+            SDL_WindowData *data = window->driverdata;
             if (data) {
                 if (data->skip_update_clipcursor) {
                     data->skip_update_clipcursor = SDL_FALSE;
@@ -1781,7 +1770,7 @@ static void WIN_UpdateMouseCapture()
     SDL_Window *focusWindow = SDL_GetKeyboardFocus();
 
     if (focusWindow && (focusWindow->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
-        SDL_WindowData *data = (SDL_WindowData *)focusWindow->driverdata;
+        SDL_WindowData *data = focusWindow->driverdata;
 
         if (!data->mouse_tracked) {
             POINT cursorPos;
@@ -1851,7 +1840,7 @@ int WIN_WaitEventTimeout(_THIS, Sint64 timeoutNS)
 
 void WIN_SendWakeupEvent(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     PostMessage(data->hwnd, data->videodata->_SDL_WAKEUP, 0, 0);
 }
 

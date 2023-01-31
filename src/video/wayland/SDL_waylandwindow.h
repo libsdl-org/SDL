@@ -33,7 +33,7 @@
 
 struct SDL_WaylandInput;
 
-typedef struct
+struct SDL_WindowData
 {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
@@ -100,10 +100,10 @@ typedef struct
     struct qt_extended_surface *extended_surface;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-    SDL_WaylandOutputData **outputs;
+    SDL_DisplayData **outputs;
     int num_outputs;
 
-    float scale_factor;
+    float windowed_scale_factor;
     float pointer_scale_x;
     float pointer_scale_y;
     int drawable_width, drawable_height;
@@ -117,7 +117,7 @@ typedef struct
     SDL_bool is_fullscreen;
     SDL_bool in_fullscreen_transition;
     Uint32 fullscreen_flags;
-} SDL_WindowData;
+};
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);
 extern void Wayland_HideWindow(_THIS, SDL_Window *window);

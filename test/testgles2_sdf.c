@@ -365,7 +365,7 @@ void loop()
                         break;
                     }
                     /* Change view port to the new window dimensions */
-                    SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+                    SDL_GetWindowSizeInPixels(state->windows[i], &w, &h);
                     ctx.glViewport(0, 0, w, h);
                     state->window_w = event.window.data1;
                     state->window_h = event.window.data2;
@@ -396,7 +396,7 @@ void loop()
         int w, h;
         SDL_Rect rs, rd;
 
-        SDL_GL_GetDrawableSize(state->windows[0], &w, &h);
+        SDL_GetWindowSizeInPixels(state->windows[0], &w, &h);
 
         rs.x = 0;
         rs.y = 0;
@@ -602,7 +602,7 @@ int main(int argc, char *argv[])
         SDL_GL_SetSwapInterval(0);
     }
 
-    SDL_GetCurrentDisplayMode(0, &mode);
+    SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode);
     SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
     SDL_Log("\n");
     SDL_Log("Vendor     : %s\n", ctx.glGetString(GL_VENDOR));
@@ -700,7 +700,7 @@ int main(int argc, char *argv[])
             GL_CHECK(ctx.glTexSubImage2D(g_texture_type, 0, 0 /* xoffset */, 0 /* yoffset */, g_surf_sdf->w, g_surf_sdf->h, format, type, g_surf_sdf->pixels));
         }
 
-        SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+        SDL_GetWindowSizeInPixels(state->windows[i], &w, &h);
         ctx.glViewport(0, 0, w, h);
 
         data = &datas[i];

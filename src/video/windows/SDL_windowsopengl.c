@@ -561,7 +561,7 @@ static int WIN_GL_ChoosePixelFormatARB(_THIS, int *iAttribs, float *fAttribs)
 /* actual work of WIN_GL_SetupWindow() happens here. */
 static int WIN_GL_SetupWindowInternal(_THIS, SDL_Window *window)
 {
-    HDC hdc = ((SDL_WindowData *)window->driverdata)->hdc;
+    HDC hdc = window->driverdata->hdc;
     PIXELFORMATDESCRIPTOR pfd;
     int pixel_format = 0;
     int iAttribs[64];
@@ -698,7 +698,7 @@ SDL_bool WIN_GL_UseEGL(_THIS)
 
 SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window *window)
 {
-    HDC hdc = ((SDL_WindowData *)window->driverdata)->hdc;
+    HDC hdc = window->driverdata->hdc;
     HGLRC context, share_context;
 
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && WIN_GL_UseEGL(_this)) {
@@ -844,7 +844,7 @@ int WIN_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
         }
     }
 
-    hdc = ((SDL_WindowData *)window->driverdata)->hdc;
+    hdc = window->driverdata->hdc;
     if (!_this->gl_data->wglMakeCurrent(hdc, (HGLRC)context)) {
         return WIN_SetError("wglMakeCurrent()");
     }
@@ -877,7 +877,7 @@ int WIN_GL_GetSwapInterval(_THIS, int *interval)
 
 int WIN_GL_SwapWindow(_THIS, SDL_Window *window)
 {
-    HDC hdc = ((SDL_WindowData *)window->driverdata)->hdc;
+    HDC hdc = window->driverdata->hdc;
 
     if (!SwapBuffers(hdc)) {
         return WIN_SetError("SwapBuffers()");
@@ -895,8 +895,8 @@ void WIN_GL_DeleteContext(_THIS, SDL_GLContext context)
 
 SDL_bool WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window *fromWindow, SDL_Window *toWindow)
 {
-    HDC hfromdc = ((SDL_WindowData *)fromWindow->driverdata)->hdc;
-    HDC htodc = ((SDL_WindowData *)toWindow->driverdata)->hdc;
+    HDC hfromdc = fromWindow->driverdata->hdc;
+    HDC htodc = toWindow->driverdata->hdc;
     BOOL result;
 
     /* get the pixel format of the fromWindow */

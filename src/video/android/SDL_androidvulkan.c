@@ -130,7 +130,7 @@ SDL_bool Android_Vulkan_CreateSurface(_THIS,
                                       VkInstance instance,
                                       VkSurfaceKHR *surface)
 {
-    SDL_WindowData *windowData = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *windowData = window->driverdata;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateAndroidSurfaceKHR vkCreateAndroidSurfaceKHR =

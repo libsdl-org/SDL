@@ -38,12 +38,12 @@ loop()
             if (e.key.keysym.sym == SDLK_ESCAPE) {
                 please_quit = SDL_TRUE;
             }
-        } else if (e.type == SDL_EVENT_MOUSE_BUTTONDOWN) {
+        } else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
             if (e.button.button == 1) {
                 SDL_PauseAudioDevice(devid_out);
                 SDL_PlayAudioDevice(devid_in);
             }
-        } else if (e.type == SDL_EVENT_MOUSE_BUTTONUP) {
+        } else if (e.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             if (e.button.button == 1) {
                 SDL_PauseAudioDevice(devid_in);
                 SDL_PlayAudioDevice(devid_out);

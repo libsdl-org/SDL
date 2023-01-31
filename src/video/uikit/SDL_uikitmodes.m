@@ -269,9 +269,9 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
         return -1;
     }
 
-    mode.w = w;
-    mode.h = h;
-    mode.display_scale = uiscreen.scale;
+    mode.pixel_w = w;
+    mode.pixel_h = h;
+    mode.display_scale = uiscreen.nativeScale;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
@@ -300,10 +300,32 @@ static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h,
     return 0;
 }
 
+static CGSize GetUIScreenModePixelSize(UIScreen *uiscreen, UIScreenMode *mode)
+{
+    /* For devices such as iPhone 6/7/8 Plus, the UIScreenMode reported by iOS
+     * isn't the physical pixels of the display, but rather the point size times
+     * the scale. For example, on iOS 12.2 on iPhone 8 Plus the physical pixel
+     * resolution is 1080x1920, the size reported by mode.size is 1242x2208,
+     * the size in points is 414x736, the scale property is 3.0, and the
+     * nativeScale property is ~2.6087 (ie 1920.0 / 736.0). So we need a bit of
+     * math to convert from retina pixels (point size multiplied by scale) to
+     * real pixels.
+     * Note that the iOS Simulator doesn't have this behavior for those devices.
+     * https://github.com/libsdl-org/SDL/issues/3220
+     */
+    CGSize size = mode.size;
+    CGFloat scale = uiscreen.nativeScale / uiscreen.scale;
+
+    size.width = SDL_round(size.width * scale);
+    size.height = SDL_round(size.height * scale);
+
+    return size;
+}
+
 int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 {
     UIScreenMode *uiscreenmode = uiscreen.currentMode;
-    CGSize size = uiscreenmode.size;
+    CGSize size = GetUIScreenModePixelSize(uiscreen, uiscreenmode);
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
 
@@ -315,9 +337,9 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
 
     SDL_zero(mode);
-    mode.w = (int)size.width;
-    mode.h = (int)size.height;
-    mode.display_scale = uiscreen.scale;
+    mode.pixel_w = (int)size.width;
+    mode.pixel_h = (int)size.height;
+    mode.display_scale = uiscreen.nativeScale;
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
 
@@ -336,24 +358,31 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
         return SDL_OutOfMemory();
     }
 
-    display.driverdata = (void *)CFBridgingRetain(data);
-    SDL_AddVideoDisplay(&display, send_event);
-
+    display.driverdata = data;
+    if (SDL_AddVideoDisplay(&display, send_event) == 0) {
+        return -1;
+    }
     return 0;
 }
 
 void UIKit_DelDisplay(UIScreen *uiscreen)
 {
+    SDL_DisplayID *displays;
     int i;
 
-    for (i = 0; i < SDL_GetNumVideoDisplays(); ++i) {
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *)SDL_GetDisplayDriverData(i);
+    displays = SDL_GetDisplays(NULL);
+    if (displays) {
+        for (i = 0; displays[i]; ++i) {
+            SDL_VideoDisplay *display = SDL_GetVideoDisplay(displays[i]);
+            SDL_DisplayData *data = display->driverdata;
 
-        if (data && data.uiscreen == uiscreen) {
-            CFRelease(SDL_GetDisplayDriverData(i));
-            SDL_DelVideoDisplay(i);
-            return;
+            if (data && data.uiscreen == uiscreen) {
+                display->driverdata = nil;
+                SDL_DelVideoDisplay(displays[i]);
+                return;
+            }
         }
+        SDL_free(displays);
     }
 }
 
@@ -392,7 +421,7 @@ int UIKit_InitModes(_THIS)
 void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     @autoreleasepool {
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
+        SDL_DisplayData *data = display->driverdata;
 
         SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
         SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
@@ -406,8 +435,9 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 #endif
 
         for (UIScreenMode *uimode in availableModes) {
-            int w = uimode.size.width;
-            int h = uimode.size.height;
+            CGSize size = GetUIScreenModePixelSize(data.uiscreen, uimode);
+            int w = size.width;
+            int h = size.height;
 
             /* Make sure the width/height are oriented correctly */
             if (isLandscape != (w > h)) {
@@ -424,7 +454,7 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 int UIKit_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *hdpi, float *vdpi)
 {
     @autoreleasepool {
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
+        SDL_DisplayData *data = display->driverdata;
         float dpi = data.screenDPI;
         *hdpi = dpi;
         *vdpi = dpi;
@@ -435,7 +465,7 @@ int UIKit_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *hdpi, f
 int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     @autoreleasepool {
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
+        SDL_DisplayData *data = display->driverdata;
 
 #if !TARGET_OS_TV
         SDL_DisplayModeData *modedata = (__bridge SDL_DisplayModeData *)mode->driverdata;
@@ -446,11 +476,11 @@ int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode
             /* [UIApplication setStatusBarOrientation:] no longer works reliably
              * in recent iOS versions, so we can't rotate the screen when setting
              * the display mode. */
-            if (mode->w > mode->h) {
+            if (mode->pixel_w > mode->pixel_h) {
                 if (!UIKit_IsDisplayLandscape(data.uiscreen)) {
                     return SDL_SetError("Screen orientation does not match display mode size");
                 }
-            } else if (mode->w < mode->h) {
+            } else if (mode->pixel_w < mode->pixel_h) {
                 if (UIKit_IsDisplayLandscape(data.uiscreen)) {
                     return SDL_SetError("Screen orientation does not match display mode size");
                 }
@@ -464,13 +494,12 @@ int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode
 int UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     @autoreleasepool {
-        int displayIndex = (int)(display - _this->displays);
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *)display->driverdata;
+        SDL_DisplayData *data = display->driverdata;
         CGRect frame = data.uiscreen.bounds;
 
         /* the default function iterates displays to make a fake offset,
          as if all the displays were side-by-side, which is fine for iOS. */
-        if (SDL_GetDisplayBounds(displayIndex, rect) < 0) {
+        if (SDL_GetDisplayBounds(display->id, rect) < 0) {
             return -1;
         }
 
@@ -499,9 +528,8 @@ void UIKit_QuitModes(_THIS)
                 UIKit_FreeDisplayModeData(mode);
             }
 
-            if (display->driverdata != NULL) {
-                CFRelease(display->driverdata);
-                display->driverdata = NULL;
+            if (display->driverdata) {
+                display->driverdata = nil;
             }
         }
     }
@@ -511,7 +539,7 @@ void UIKit_QuitModes(_THIS)
 void SDL_OnApplicationDidChangeStatusBarOrientation()
 {
     BOOL isLandscape = UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
-    SDL_VideoDisplay *display = SDL_GetDisplay(0);
+    SDL_VideoDisplay *display = SDL_GetVideoDisplay(SDL_GetPrimaryDisplay());
 
     if (display) {
         SDL_DisplayMode *desktopmode = &display->desktop_mode;
@@ -522,17 +550,23 @@ void SDL_OnApplicationDidChangeStatusBarOrientation()
          * orientation so that updating a window's fullscreen state to
          * SDL_WINDOW_FULLSCREEN_DESKTOP keeps the window dimensions in the
          * correct orientation. */
-        if (isLandscape != (desktopmode->w > desktopmode->h)) {
-            int height = desktopmode->w;
-            desktopmode->w = desktopmode->h;
-            desktopmode->h = height;
+        if (isLandscape != (desktopmode->pixel_w > desktopmode->pixel_h)) {
+            int height = desktopmode->pixel_w;
+            desktopmode->pixel_w = desktopmode->pixel_h;
+            desktopmode->pixel_h = height;
+            height = desktopmode->screen_w;
+            desktopmode->screen_w = desktopmode->screen_h;
+            desktopmode->screen_h = height;
         }
 
         /* Same deal with the current mode + SDL_GetCurrentDisplayMode. */
-        if (isLandscape != (currentmode->w > currentmode->h)) {
-            int height = currentmode->w;
-            currentmode->w = currentmode->h;
-            currentmode->h = height;
+        if (isLandscape != (currentmode->pixel_w > currentmode->pixel_h)) {
+            int height = currentmode->pixel_w;
+            currentmode->pixel_w = currentmode->pixel_h;
+            currentmode->pixel_h = height;
+            height = currentmode->screen_w;
+            currentmode->screen_w = currentmode->screen_h;
+            currentmode->screen_h = height;
         }
 
         switch ([UIApplication sharedApplication].statusBarOrientation) {

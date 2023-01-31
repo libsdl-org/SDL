@@ -539,7 +539,7 @@ render_window(int index)
         return;
     }
 
-    SDL_GL_GetDrawableSize(state->windows[index], &w, &h);
+    SDL_GetWindowSizeInPixels(state->windows[index], &w, &h);
     Render(w, h, &datas[index]);
     SDL_GL_SwapWindow(state->windows[index]);
     ++frames;
@@ -714,7 +714,7 @@ int main(int argc, char *argv[])
         SDL_GL_SetSwapInterval(0);
     }
 
-    SDL_GetCurrentDisplayMode(0, &mode);
+    SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode);
     SDL_Log("Threaded  : %s\n", threaded ? "yes" : "no");
     SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
     SDL_Log("\n");
@@ -792,7 +792,7 @@ int main(int argc, char *argv[])
             /* Continue for next window */
             continue;
         }
-        SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+        SDL_GetWindowSizeInPixels(state->windows[i], &w, &h);
         ctx.glViewport(0, 0, w, h);
 
         data = &datas[i];

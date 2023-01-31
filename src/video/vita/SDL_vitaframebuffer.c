@@ -65,7 +65,7 @@ void vita_gpu_free(SceUID uid)
 
 int VITA_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     SceDisplayFrameBuf framebuf;
 
     *format = SDL_PIXELFORMAT_ABGR8888;
@@ -101,7 +101,7 @@ int VITA_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rect
 
 void VITA_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
 
     if (data == NULL) {
         /* The window wasn't fully initialized */

@@ -98,30 +98,25 @@ typedef enum
 
     /* Window events */
     /* 0x200 was SDL_WINDOWEVENT, reserve the number for sdl2-compat */
-    SDL_EVENT_SYSWM     = 0x201,     /**< System specific event */
-    SDL_EVENT_WINDOW_SHOWN,          /**< Window has been shown */
-    SDL_EVENT_WINDOW_HIDDEN,         /**< Window has been hidden */
-    SDL_EVENT_WINDOW_EXPOSED,        /**< Window has been exposed and should be
-                                         redrawn */
-    SDL_EVENT_WINDOW_MOVED,          /**< Window has been moved to data1, data2
-                                     */
-    SDL_EVENT_WINDOW_RESIZED,        /**< Window has been resized to data1xdata2 */
-    SDL_EVENT_WINDOW_SIZE_CHANGED,   /**< The window size has changed, either as
-                                         a result of an API call or through the
-                                         system or user changing the window size. */
-    SDL_EVENT_WINDOW_MINIMIZED,      /**< Window has been minimized */
-    SDL_EVENT_WINDOW_MAXIMIZED,      /**< Window has been maximized */
-    SDL_EVENT_WINDOW_RESTORED,       /**< Window has been restored to normal size
-                                         and position */
-    SDL_EVENT_WINDOW_MOUSE_ENTER,          /**< Window has gained mouse focus */
-    SDL_EVENT_WINDOW_MOUSE_LEAVE,          /**< Window has lost mouse focus */
-    SDL_EVENT_WINDOW_FOCUS_GAINED,   /**< Window has gained keyboard focus */
-    SDL_EVENT_WINDOW_FOCUS_LOST,     /**< Window has lost keyboard focus */
-    SDL_EVENT_WINDOW_CLOSE_REQUESTED,          /**< The window manager requests that the window be closed */
-    SDL_EVENT_WINDOW_TAKE_FOCUS,     /**< Window is being offered a focus (should SetWindowInputFocus() on itself or a subwindow, or ignore) */
-    SDL_EVENT_WINDOW_HIT_TEST,       /**< Window had a hit test that wasn't SDL_HITTEST_NORMAL. */
-    SDL_EVENT_WINDOW_ICCPROF_CHANGED,/**< The ICC profile of the window's display has changed. */
-    SDL_EVENT_WINDOW_DISPLAY_CHANGED,/**< Window has been moved to display data1. */
+    SDL_EVENT_SYSWM     = 0x201,        /**< System specific event */
+    SDL_EVENT_WINDOW_SHOWN,             /**< Window has been shown */
+    SDL_EVENT_WINDOW_HIDDEN,            /**< Window has been hidden */
+    SDL_EVENT_WINDOW_EXPOSED,           /**< Window has been exposed and should be redrawn */
+    SDL_EVENT_WINDOW_MOVED,             /**< Window has been moved to data1, data2 */
+    SDL_EVENT_WINDOW_RESIZED,           /**< Window has been resized to data1xdata2 */
+    SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED,/**< The pixel size of the window has changed to data1xdata2 */
+    SDL_EVENT_WINDOW_MINIMIZED,         /**< Window has been minimized */
+    SDL_EVENT_WINDOW_MAXIMIZED,         /**< Window has been maximized */
+    SDL_EVENT_WINDOW_RESTORED,          /**< Window has been restored to normal size and position */
+    SDL_EVENT_WINDOW_MOUSE_ENTER,       /**< Window has gained mouse focus */
+    SDL_EVENT_WINDOW_MOUSE_LEAVE,       /**< Window has lost mouse focus */
+    SDL_EVENT_WINDOW_FOCUS_GAINED,      /**< Window has gained keyboard focus */
+    SDL_EVENT_WINDOW_FOCUS_LOST,        /**< Window has lost keyboard focus */
+    SDL_EVENT_WINDOW_CLOSE_REQUESTED,   /**< The window manager requests that the window be closed */
+    SDL_EVENT_WINDOW_TAKE_FOCUS,        /**< Window is being offered a focus (should SetWindowInputFocus() on itself or a subwindow, or ignore) */
+    SDL_EVENT_WINDOW_HIT_TEST,          /**< Window had a hit test that wasn't SDL_HITTEST_NORMAL */
+    SDL_EVENT_WINDOW_ICCPROF_CHANGED,   /**< The ICC profile of the window's display has changed */
+    SDL_EVENT_WINDOW_DISPLAY_CHANGED,   /**< Window has been moved to display data1 */
     SDL_EVENT_WINDOW_FIRST = SDL_EVENT_WINDOW_SHOWN,
     SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_DISPLAY_CHANGED,
 
@@ -137,8 +132,8 @@ typedef enum
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
-    SDL_EVENT_MOUSE_BUTTONDOWN,        /**< Mouse button pressed */
-    SDL_EVENT_MOUSE_BUTTONUP,          /**< Mouse button released */
+    SDL_EVENT_MOUSE_BUTTON_DOWN,       /**< Mouse button pressed */
+    SDL_EVENT_MOUSE_BUTTON_UP,         /**< Mouse button released */
     SDL_EVENT_MOUSE_WHEEL,             /**< Mouse wheel motion */
 
     /* Joystick events */
@@ -219,7 +214,7 @@ typedef struct SDL_DisplayEvent
 {
     Uint32 type;        /**< ::SDL_DISPLAYEVENT_* */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 display;     /**< The associated display index */
+    SDL_DisplayID displayID;/**< The associated display */
     Sint32 data1;       /**< event dependent data */
 } SDL_DisplayEvent;
 
@@ -311,7 +306,7 @@ typedef struct SDL_MouseMotionEvent
  */
 typedef struct SDL_MouseButtonEvent
 {
-    Uint32 type;        /**< ::SDL_EVENT_MOUSE_BUTTONDOWN or ::SDL_EVENT_MOUSE_BUTTONUP */
+    Uint32 type;        /**< ::SDL_EVENT_MOUSE_BUTTON_DOWN or ::SDL_EVENT_MOUSE_BUTTON_UP */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;/**< The window with mouse focus, if any */
     SDL_MouseID which;  /**< The mouse instance id, or SDL_TOUCH_MOUSEID */

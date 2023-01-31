@@ -350,7 +350,7 @@ Android_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 
 void Android_StartTextInput(_THIS)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
     Android_JNI_ShowTextInput(&videodata->textRect);
 }
 
@@ -361,7 +361,7 @@ void Android_StopTextInput(_THIS)
 
 void Android_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
 
     if (rect == NULL) {
         SDL_InvalidParamError("rect");

@@ -137,8 +137,8 @@ static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool exte
     }
 
     SDL_zerop(mode);
-    mode->w = xres;
-    mode->h = yres;
+    mode->pixel_w = xres;
+    mode->pixel_h = yres;
     mode->format = RISCOS_ModeToPixelFormat(ncolour, modeflags, log2bpp);
     mode->refresh_rate = (float)rate;
 
@@ -224,7 +224,10 @@ int RISCOS_InitModes(_THIS)
         return SDL_OutOfMemory();
     }
 
-    return SDL_AddBasicVideoDisplay(&mode);
+    if (SDL_AddBasicVideoDisplay(&mode) == 0) {
+        return -1;
+    }
+    return 0;
 }
 
 void RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)

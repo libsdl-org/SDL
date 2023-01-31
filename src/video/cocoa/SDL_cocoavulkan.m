@@ -262,7 +262,7 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
 
     if (window->flags & SDL_WINDOW_FOREIGN) {
         @autoreleasepool {
-            SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+            SDL_WindowData *data = window->driverdata;
             if (![data.sdlContentView.layer isKindOfClass:[CAMetalLayer class]]) {
                 [data.sdlContentView setLayer:[CAMetalLayer layer]];
             }
@@ -299,11 +299,6 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
     }
 
     return SDL_TRUE;
-}
-
-void Cocoa_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    Cocoa_Metal_GetDrawableSize(_this, window, w, h);
 }
 
 #endif

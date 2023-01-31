@@ -1169,10 +1169,11 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $$sectionsref{'[footer]'} = $footer;
 
         if (defined $wikipreamble) {
+            my $wikified_preamble = wikify($wikitype, $wikipreamble);
             if ($wikitype eq 'mediawiki') {
-                print FH "====== $wikipreamble ======\n";
+                print FH "====== $wikified_preamble ======\n";
             } elsif ($wikitype eq 'md') {
-                print FH "###### $wikipreamble\n";
+                print FH "###### $wikified_preamble\n";
             } else { die("Unexpected wikitype '$wikitype'\n"); }
         }
 

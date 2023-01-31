@@ -232,7 +232,7 @@ int X11_GL_LoadLibrary(_THIS, const char *path)
         return SDL_SetError("Could not retrieve OpenGL functions");
     }
 
-    display = ((SDL_VideoData *)_this->driverdata)->display;
+    display = _this->driverdata->display;
     if (!_this->gl_data->glXQueryExtension(display, &_this->gl_data->errorBase, &_this->gl_data->eventBase)) {
         return SDL_SetError("GLX is not supported");
     }
@@ -335,7 +335,7 @@ static SDL_bool HasExtension(const char *extension, const char *extensions)
 
 static void X11_GL_InitExtensions(_THIS)
 {
-    Display *display = ((SDL_VideoData *)_this->driverdata)->display;
+    Display *display = _this->driverdata->display;
     const int screen = DefaultScreen(display);
     XVisualInfo *vinfo = NULL;
     Window w = 0;
@@ -689,10 +689,9 @@ SDL_bool X11_GL_UseEGL(_THIS)
 
 SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
-    int screen =
-        ((SDL_DisplayData *)SDL_GetDisplayForWindow(window)->driverdata)->screen;
+    int screen = SDL_GetDisplayDriverDataForWindow(window)->screen;
     XWindowAttributes xattr;
     XVisualInfo v, *vinfo;
     int n;
@@ -822,9 +821,9 @@ SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window *window)
 
 int X11_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
-    Display *display = ((SDL_VideoData *)_this->driverdata)->display;
+    Display *display = _this->driverdata->display;
     Window drawable =
-        (context ? ((SDL_WindowData *)window->driverdata)->xwindow : None);
+        (context ? window->driverdata->xwindow : None);
     GLXContext glx_context = (GLXContext)context;
     int rc;
 
@@ -866,10 +865,8 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
     if ((interval < 0) && (!_this->gl_data->HAS_GLX_EXT_swap_control_tear)) {
         SDL_SetError("Negative swap interval unsupported in this GL");
     } else if (_this->gl_data->glXSwapIntervalEXT) {
-        Display *display = ((SDL_VideoData *)_this->driverdata)->display;
-        const SDL_WindowData *windowdata = (SDL_WindowData *)
-                                               SDL_GL_GetCurrentWindow()
-                                                   ->driverdata;
+        Display *display = _this->driverdata->display;
+        const SDL_WindowData *windowdata = SDL_GL_GetCurrentWindow()->driverdata;
 
         Window drawable = windowdata->xwindow;
 
@@ -911,10 +908,8 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
 int X11_GL_GetSwapInterval(_THIS, int *interval)
 {
     if (_this->gl_data->glXSwapIntervalEXT) {
-        Display *display = ((SDL_VideoData *)_this->driverdata)->display;
-        const SDL_WindowData *windowdata = (SDL_WindowData *)
-                                               SDL_GL_GetCurrentWindow()
-                                                   ->driverdata;
+        Display *display = _this->driverdata->display;
+        const SDL_WindowData *windowdata = SDL_GL_GetCurrentWindow()->driverdata;
         Window drawable = windowdata->xwindow;
         unsigned int allow_late_swap_tearing = 0;
         unsigned int val = 0;
@@ -950,7 +945,7 @@ int X11_GL_GetSwapInterval(_THIS, int *interval)
 
 int X11_GL_SwapWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
 
     _this->gl_data->glXSwapBuffers(display, data->xwindow);
@@ -959,7 +954,7 @@ int X11_GL_SwapWindow(_THIS, SDL_Window *window)
 
 void X11_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
-    Display *display = ((SDL_VideoData *)_this->driverdata)->display;
+    Display *display = _this->driverdata->display;
     GLXContext glx_context = (GLXContext)context;
 
     if (!_this->gl_data) {

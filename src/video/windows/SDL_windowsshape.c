@@ -95,7 +95,7 @@ int Win32_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_Windo
     SDL_TraverseShapeTree(data->mask_tree, &CombineRectRegions, &mask_region);
     SDL_assert(mask_region != NULL);
 
-    SetWindowRgn(((SDL_WindowData *)(shaper->window->driverdata))->hwnd, mask_region, TRUE);
+    SetWindowRgn(shaper->window->driverdata->hwnd, mask_region, TRUE);
 
     return 0;
 }

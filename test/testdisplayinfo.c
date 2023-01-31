@@ -24,15 +24,16 @@ print_mode(const char *prefix, const SDL_DisplayMode *mode)
         return;
     }
 
-    SDL_Log("%s: fmt=%s w=%d h=%d refresh=%gHz\n",
+    SDL_Log("%s: fmt=%s w=%d h=%d scale=%d%% refresh=%gHz\n",
             prefix, SDL_GetPixelFormatName(mode->format),
-            mode->w, mode->h, mode->refresh_rate);
+            mode->pixel_w, mode->pixel_h, (int)(mode->display_scale * 100.0f), mode->refresh_rate);
 }
 
 int main(int argc, char *argv[])
 {
+    SDL_DisplayID *displays;
     SDL_DisplayMode mode;
-    int num_displays, dpy;
+    int num_displays, i;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -44,18 +45,19 @@ int main(int argc, char *argv[])
     }
 
     SDL_Log("Using video target '%s'.\n", SDL_GetCurrentVideoDriver());
-    num_displays = SDL_GetNumVideoDisplays();
+    displays = SDL_GetDisplays(&num_displays);
 
     SDL_Log("See %d displays.\n", num_displays);
 
-    for (dpy = 0; dpy < num_displays; dpy++) {
+    for (i = 0; i < num_displays; i++) {
+        SDL_DisplayID dpy = displays[i];
         const int num_modes = SDL_GetNumDisplayModes(dpy);
         SDL_Rect rect = { 0, 0, 0, 0 };
         float hdpi, vdpi;
         int m;
 
         SDL_GetDisplayBounds(dpy, &rect);
-        SDL_Log("%d: \"%s\" (%dx%d, (%d, %d)), %d modes.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, num_modes);
+        SDL_Log("%" SDL_PRIu32 ": \"%s\" (%dx%d, (%d, %d)), %d modes.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, num_modes);
 
         if (SDL_GetDisplayPhysicalDPI(dpy, &hdpi, &vdpi) == -1) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DPI: failed to query (%s)\n", SDL_GetError());
@@ -87,6 +89,7 @@ int main(int argc, char *argv[])
 
         SDL_Log("\n");
     }
+    SDL_free(displays);
 
     SDL_Quit();
     return 0;

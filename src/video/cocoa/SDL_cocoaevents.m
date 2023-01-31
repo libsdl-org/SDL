@@ -25,13 +25,6 @@
 #include "SDL_cocoavideo.h"
 #include "../../events/SDL_events_c.h"
 
-/* This define was added in the 10.9 SDK. */
-#ifndef kIOPMAssertPreventUserIdleDisplaySleep
-#define kIOPMAssertPreventUserIdleDisplaySleep kIOPMAssertionTypePreventUserIdleDisplaySleep
-#endif
-#ifndef NSAppKitVersionNumber10_8
-#define NSAppKitVersionNumber10_8 1187
-#endif
 #ifndef MAC_OS_X_VERSION_10_12
 #define NSEventTypeApplicationDefined NSApplicationDefined
 #endif
@@ -42,7 +35,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     SDL_VideoDevice *device = SDL_GetVideoDevice();
     if (device && device->windows) {
         for (sdlwindow = device->windows; sdlwindow; sdlwindow = sdlwindow->next) {
-            NSWindow *nswindow = ((__bridge SDL_WindowData *)sdlwindow->driverdata).nswindow;
+            NSWindow *nswindow = sdlwindow->driverdata.nswindow;
             if (win == nswindow) {
                 return sdlwindow;
             }
@@ -331,14 +324,10 @@ static NSString *GetApplicationName(void)
 
 static bool LoadMainMenuNibIfAvailable(void)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
     NSDictionary *infoDict;
     NSString *mainNibFileName;
     bool success = false;
 
-    if (floor(NSAppKitVersionNumber) < NSAppKitVersionNumber10_8) {
-        return false;
-    }
     infoDict = [[NSBundle mainBundle] infoDictionary];
     if (infoDict) {
         mainNibFileName = [infoDict valueForKey:@"NSMainNibFile"];
@@ -349,9 +338,6 @@ static bool LoadMainMenuNibIfAvailable(void)
     }
 
     return success;
-#else
-    return false;
-#endif
 }
 
 static void CreateApplicationMenus(void)
@@ -571,7 +557,7 @@ void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
                                             location:NSMakePoint(0, 0)
                                        modifierFlags:0
                                            timestamp:0.0
-                                        windowNumber:((__bridge SDL_WindowData *)window->driverdata).window_number
+                                        windowNumber:window->driverdata.window_number
                                              context:nil
                                              subtype:0
                                                data1:0
@@ -584,7 +570,7 @@ void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
 void Cocoa_SuspendScreenSaver(_THIS)
 {
     @autoreleasepool {
-        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
+        SDL_VideoData *data = _this->driverdata;
 
         if (data.screensaver_assertion) {
             IOPMAssertionRelease(data.screensaver_assertion);

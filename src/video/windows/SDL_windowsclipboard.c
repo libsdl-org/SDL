@@ -39,14 +39,14 @@ static HWND GetWindowHandle(_THIS)
 
     window = _this->windows;
     if (window) {
-        return ((SDL_WindowData *)window->driverdata)->hwnd;
+        return window->driverdata->hwnd;
     }
     return NULL;
 }
 
 int WIN_SetClipboardText(_THIS, const char *text)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
     int result = 0;
 
     if (OpenClipboard(GetWindowHandle(_this))) {

@@ -16,22 +16,26 @@ jobs:
       run: |
         apk update
         apk add cmake gmp mpc1 mpfr4 make pkgconf
-    - name: Configure CMake
+    - name: Configure (CMake)
       run: |
         cmake -S . -B build \
+          -Wdeprecated -Wdev -Werror \
           -DCMAKE_TOOLCHAIN_FILE=$PSPDEV/psp/share/pspdev.cmake \
           -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX=prefix
-    - name: Build
+    - name: Build (CMake)
       run: cmake --build build --config Release --verbose
-    - name: Install
+    - name: Install (CMake)
       run: |
         echo "SDL3_DIR=$(pwd)/prefix" >> $GITHUB_ENV
         cmake --install build --config Release
         ( cd prefix; find ) | LC_ALL=C sort -u
+    - name: Package (CPack)
+      run: |
+        cmake --build build/ --config Release --target package
     - name: Verify CMake configuration files
       run: |
         cmake -S cmake/test -B cmake_config_build \
@@ -46,3 +50,8 @@ jobs:
         export LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh
+    - uses: actions/upload-artifact@v3
+      with:
+        if-no-files-found: error
+        name: SDL-psp
+        path: build/dist/SDL3*

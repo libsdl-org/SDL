@@ -32,13 +32,13 @@ extern void Android_SendResize(SDL_Window *window);
 
 /* Private display data */
 
-typedef struct SDL_VideoData
+struct SDL_VideoData
 {
     SDL_Rect textRect;
     int isPaused;
     int isPausing;
     int pauseAudio;
-} SDL_VideoData;
+};
 
 extern int Android_SurfaceWidth;
 extern int Android_SurfaceHeight;

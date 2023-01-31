@@ -18,22 +18,28 @@ jobs:
       run: |
         container-init & timeout 600 vmshell exit 0
     - name: Setup Haiku dependencies
-      run: vmshell pkgman install -y cmd:cmake cmd:gcc cmd:ld cmd:ninja cmd:pkg_config haiku_devel devel:libgl devel:libglu
+      run: |
+        vmshell pkgman install -y cmd:cmake cmd:gcc cmd:ld cmd:ninja cmd:pkg_config haiku_devel devel:libgl devel:libglu
+    - name: Restart VM
+      run: |
+        sv force-restart qemu; timeout 600 vmshell exit 0
     - uses: actions/checkout@v3
     - name: Copy project to VM
       run: |
         vmshell mkdir ./src/
         tar -cf - ./ | vmshell tar -xf - -C ./src/
     - name: Configure (CMake)
-      run: vmshell cmake -S src -B build -GNinja \
-        -DSDL_TESTS=ON \
-        -DSDL_WERROR=ON \
-        -DSDL_INSTALL_TESTS=ON \
-        -DSDL_VENDOR_INFO=Github_Workflow \
-        -DCMAKE_INSTALL_PREFIX=cmake_prefix \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
-        -DSDL_TESTS_TIMEOUT_MULTIPLIER=10
+      run: |
+        vmshell cmake -S src -B build -GNinja \
+          -Wdeprecated -Wdev -Werror \
+          -DSDL_TESTS=ON \
+          -DSDL_WERROR=ON \
+          -DSDL_INSTALL_TESTS=ON \
+          -DSDL_VENDOR_INFO=Github_Workflow \
+          -DCMAKE_INSTALL_PREFIX=cmake_prefix \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
+          -DSDL_TESTS_TIMEOUT_MULTIPLIER=10
     - name: Build (CMake)
       run: |
         vmshell cmake --build ./build/ --config Release --verbose --parallel
@@ -43,6 +49,9 @@ jobs:
     - name: Install (CMake)
       run: |
         vmshell cmake --install ./build/ --config Release
+    - name: Package (CPack)
+      run: |
+        vmshell cmake --build build/ --config Release --target package
     - name: Verify CMake configuration files
       run: |
         vmshell cmake -S ./src/cmake/test -B cmake_config_build -G Ninja \
@@ -52,3 +61,11 @@ jobs:
     - name: Verify sdl3.pc
       run: |
         vmshell CC=c++ PKG_CONFIG_PATH=\$PWD/cmake_prefix/lib/pkgconfig src/cmake/test/test_pkgconfig.sh
+    - name: Copy package from VM
+      run: |
+        vmshell tar -cf - build/dist/ | tar -xf - -C ./
+    - uses: actions/upload-artifact@v3
+      with:
+        if-no-files-found: error
+        name: SDL-haiku
+        path: build/dist/SDL3*

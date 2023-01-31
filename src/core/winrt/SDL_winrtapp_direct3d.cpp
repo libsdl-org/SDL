@@ -114,12 +114,12 @@ static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identify
     if (coreWindow) {
         if (WINRT_GlobalSDLWindow) {
             SDL_Window *window = WINRT_GlobalSDLWindow;
-            SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+            SDL_WindowData *data = window->driverdata;
 
-            int x = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Left);
-            int y = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Top);
-            int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
-            int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
+            int x = (int)SDL_lroundf(data->coreWindow->Bounds.Left);
+            int y = (int)SDL_lroundf(data->coreWindow->Bounds.Top);
+            int w = (int)SDL_floorf(data->coreWindow->Bounds.Width);
+            int h = (int)SDL_floorf(data->coreWindow->Bounds.Height);
 
 #if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) && (NTDDI_VERSION == NTDDI_WIN8)
             /* WinPhone 8.0 always keeps its native window size in portrait,
@@ -150,7 +150,7 @@ static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identify
                 SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
             }
 
-            WINRT_UpdateWindowFlags(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+            WINRT_UpdateWindowFlags(window, SDL_WINDOW_FULLSCREEN_MASK);
 
             /* The window can move during a resize event, such as when maximizing
                or resizing from a corner */
@@ -234,10 +234,10 @@ void SDL_WinRTApp::OnOrientationChanged(Object ^ sender)
     // TODO, WinRT: do more extensive research into why orientation changes on Win 8.x don't need D3D changes, or if they might, in some cases
     SDL_Window *window = WINRT_GlobalSDLWindow;
     if (window) {
-        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-        int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
-        int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
-        SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_SIZE_CHANGED, w, h);
+        SDL_WindowData *data = window->driverdata;
+        int w = (int)SDL_floorf(data->coreWindow->Bounds.Width);
+        int h = (int)SDL_floorf(data->coreWindow->Bounds.Height);
+        SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_RESIZED, w, h);
     }
 #endif
 }

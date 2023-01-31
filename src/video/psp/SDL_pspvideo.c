@@ -41,11 +41,8 @@ static SDL_bool PSP_initialized = SDL_FALSE;
 
 static void PSP_Destroy(SDL_VideoDevice *device)
 {
-    /*    SDL_VideoData *phdata = (SDL_VideoData *) device->driverdata; */
-
-    if (device->driverdata != NULL) {
-        device->driverdata = NULL;
-    }
+    SDL_free(device->driverdata);
+    SDL_free(device);
 }
 
 static SDL_VideoDevice *PSP_Create()
@@ -137,30 +134,30 @@ VideoBootStrap PSP_bootstrap = {
 int PSP_VideoInit(_THIS)
 {
     SDL_VideoDisplay display;
-    SDL_DisplayMode current_mode;
+    SDL_DisplayMode mode;
 
-    SDL_zero(current_mode);
-    current_mode.w = 480;
-    current_mode.h = 272;
-    current_mode.refresh_rate = 60.0f;
+    SDL_zero(mode);
+    mode.pixel_w = 480;
+    mode.pixel_h = 272;
+    mode.refresh_rate = 60.0f;
 
     /* 32 bpp for default */
-    current_mode.format = SDL_PIXELFORMAT_ABGR8888;
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     SDL_zero(display);
-    display.desktop_mode = current_mode;
-    display.current_mode = current_mode;
+    display.desktop_mode = mode;
+    display.current_mode = mode;
 
-    SDL_AddDisplayMode(&display, &current_mode);
+    SDL_AddDisplayMode(&display, &mode);
 
     /* 16 bpp secondary mode */
-    current_mode.format = SDL_PIXELFORMAT_BGR565;
-    display.desktop_mode = current_mode;
-    display.current_mode = current_mode;
-    SDL_AddDisplayMode(&display, &current_mode);
+    mode.format = SDL_PIXELFORMAT_BGR565;
+    SDL_AddDisplayMode(&display, &mode);
 
-    SDL_AddVideoDisplay(&display, SDL_FALSE);
-    return 1;
+    if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
+        return -1;
+    }
+    return 0;
 }
 
 void PSP_VideoQuit(_THIS)

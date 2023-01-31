@@ -167,7 +167,7 @@ quit(int rc)
     /* If rc is 0, just let main return normally rather than calling exit.
      * This allows testing of platforms where SDL_main is required and does meaningful cleanup.
      */
-        
+
     SDL_free(RawMooseData);
 
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
@@ -221,7 +221,7 @@ void loop()
     Uint64 now;
     int i;
     SDL_Event event;
-        
+
     SDL_Renderer *renderer = state->renderers[0]; /* only 1 window */
 
     /* Check for events */
@@ -236,7 +236,7 @@ void loop()
             displayrect.w = (float)window_w;
             displayrect.h = (float)window_h;
             break;
-        case SDL_EVENT_MOUSE_BUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             displayrect.x = event.button.x - window_w / 2;
             displayrect.y = event.button.y - window_h / 2;
             break;
@@ -302,12 +302,12 @@ int main(int argc, char **argv)
     if (state == NULL) {
         return 1;
     }
-    
+
     SDL_zeroa(MooseYUVSurfaces);
 
     for (i = 1; i < argc;) {
         int consumed;
-        
+
         consumed = SDLTest_CommonArg(state, i);
         if (consumed == 0) {
             consumed = -1;
@@ -383,7 +383,7 @@ int main(int argc, char **argv)
             static const char *options[] = {
                 "[--fps <frames per second>]",
                 "[--nodelay]",
-                "[--yuvformat <fmt>] (one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)", 
+                "[--yuvformat <fmt>] (one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)",
                 "[--scale <scale factor>] (initial scale of the overlay)",
                 "[--nostreaming] path that use SDL_CreateTextureFromSurface() not STREAMING texture",
                 NULL

@@ -66,21 +66,6 @@
     <ClCompile Include="..\..\src\test\SDL_test_harness.c">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\test\SDL_test_imageBlit.c">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\test\SDL_test_imageBlitBlend.c">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\test\SDL_test_imageFace.c">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\test\SDL_test_imagePrimitives.c">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\test\SDL_test_imagePrimitivesBlend.c">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\test\SDL_test_log.c">
       <Filter>Common</Filter>
     </ClCompile>

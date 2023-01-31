@@ -17,9 +17,10 @@ jobs:
         run: |
           apt update
           apt install ninja-build
-      - name: Configure CMake
+      - name: Configure (CMake)
         run: |
           cmake -S . -B build -G Ninja \
+            -Wdeprecated -Wdev -Werror \
             -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
             -DSDL_WERROR=ON \
             -DSDL_TESTS=ON \
@@ -27,13 +28,17 @@ jobs:
             -DSDL_VENDOR_INFO="Github Workflow" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=prefix
-      - name: Build
-        run: cmake --build build --verbose
-      - name: Install CMake
+      - name: Build (CMake)
+        run: |
+          cmake --build build --verbose
+      - name: Install (CMake)
         run: |
           echo "SDL3_DIR=$(pwd)/prefix" >> $GITHUB_ENV
           cmake --install build/
           ( cd prefix; find ) | LC_ALL=C sort -u
+      - name: Package (CPack)
+        run: |
+          cmake --build build/ --config Release --target package
       - name: Verify CMake configuration files
         run: |
           cmake -S cmake/test -B cmake_config_build -G Ninja \
@@ -53,3 +58,8 @@ jobs:
         run: |
           export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
           cmake/test/test_pkgconfig.sh
+      - uses: actions/upload-artifact@v3
+        with:
+          if-no-files-found: error
+          name: SDL-n3ds
+          path: build/dist/SDL3*

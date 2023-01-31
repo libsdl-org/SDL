@@ -23,7 +23,7 @@
 #ifndef SDL_x11modes_h_
 #define SDL_x11modes_h_
 
-typedef struct
+struct SDL_DisplayData
 {
     int screen;
     Visual *visual;
@@ -39,16 +39,16 @@ typedef struct
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     RROutput xrandr_output;
 #endif
-} SDL_DisplayData;
+};
 
-typedef struct
+struct SDL_DisplayModeData
 {
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     RRMode xrandr_mode;
 #else
     int unused; /* just so struct isn't empty. */
 #endif
-} SDL_DisplayModeData;
+};
 
 extern int X11_InitModes(_THIS);
 extern void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *display);

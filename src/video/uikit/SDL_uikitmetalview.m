@@ -78,7 +78,7 @@ SDL_MetalView
 UIKit_Metal_CreateView(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         CGFloat scale = 1.0;
         SDL_uikitmetalview *metalview;
 
@@ -121,27 +121,6 @@ UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
     @autoreleasepool {
         SDL_uikitview *uiview = (__bridge SDL_uikitview *)view;
         return (__bridge void *)uiview.layer;
-    }
-}
-
-void UIKit_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-        SDL_uikitview *view = (SDL_uikitview *)data.uiwindow.rootViewController.view;
-        SDL_uikitmetalview *metalview = [view viewWithTag:SDL_METALVIEW_TAG];
-        if (metalview) {
-            CAMetalLayer *layer = (CAMetalLayer *)metalview.layer;
-            assert(layer != NULL);
-            if (w) {
-                *w = layer.drawableSize.width;
-            }
-            if (h) {
-                *h = layer.drawableSize.height;
-            }
-        } else {
-            SDL_GetWindowSize(window, w, h);
-        }
     }
 }
 

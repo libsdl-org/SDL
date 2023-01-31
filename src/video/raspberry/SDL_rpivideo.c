@@ -148,7 +148,7 @@ static void AddDispManXDisplay(const int display_id)
     DISPMANX_MODEINFO_T modeinfo;
     DISPMANX_DISPLAY_HANDLE_T handle;
     SDL_VideoDisplay display;
-    SDL_DisplayMode current_mode;
+    SDL_DisplayMode mode;
     SDL_DisplayData *data;
 
     handle = vc_dispmanx_display_open(display_id);
@@ -162,17 +162,17 @@ static void AddDispManXDisplay(const int display_id)
     }
 
     /* RPI_GetRefreshRate() doesn't distinguish between displays. I'm not sure the hardware distinguishes either */
-    SDL_zero(current_mode);
-    current_mode.w = modeinfo.width;
-    current_mode.h = modeinfo.height;
-    current_mode.refresh_rate = RPI_GetRefreshRate();
+    SDL_zero(mode);
+    mode.pixel_w = modeinfo.width;
+    mode.pixel_h = modeinfo.height;
+    mode.refresh_rate = RPI_GetRefreshRate();
 
     /* 32 bpp for default */
-    current_mode.format = SDL_PIXELFORMAT_ABGR8888;
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     SDL_zero(display);
-    display.desktop_mode = current_mode;
-    display.current_mode = current_mode;
+    display.desktop_mode = mode;
+    display.current_mode = mode;
 
     /* Allocate display internal data */
     data = (SDL_DisplayData *)SDL_calloc(1, sizeof(SDL_DisplayData));
@@ -227,7 +227,7 @@ int RPI_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 
 static void RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)
 {
-    SDL_WindowData *wdata = ((SDL_WindowData *)data);
+    SDL_WindowData *wdata = (SDL_WindowData *)data;
 
     SDL_LockMutex(wdata->vsync_cond_mutex);
     SDL_CondSignal(wdata->vsync_cond);
@@ -256,8 +256,8 @@ int RPI_CreateWindow(_THIS, SDL_Window *window)
     if (wdata == NULL) {
         return SDL_OutOfMemory();
     }
-    display = SDL_GetDisplayForWindow(window);
-    displaydata = (SDL_DisplayData *)display->driverdata;
+    display = SDL_GetVideoDisplayForWindow(window);
+    displaydata = display->driverdata;
 
     /* Windows have one size for now */
     window->w = display->desktop_mode.w;
@@ -330,9 +330,8 @@ int RPI_CreateWindow(_THIS, SDL_Window *window)
 
 void RPI_DestroyWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+    SDL_WindowData *data = window->driverdata;
+    SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
 
     if (data) {
         if (data->double_buffer) {

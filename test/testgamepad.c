@@ -627,13 +627,13 @@ void loop(void *arg)
             SDL_Log("Gamepad %" SDL_PRIu32 " battery state changed to %s\n", event.jbattery.which, power_level_strings[event.jbattery.level + 1]);
             break;
 
-        case SDL_EVENT_MOUSE_BUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             if (virtual_joystick) {
                 VirtualGamepadMouseDown(event.button.x, event.button.y);
             }
             break;
 
-        case SDL_EVENT_MOUSE_BUTTONUP:
+        case SDL_EVENT_MOUSE_BUTTON_UP:
             if (virtual_joystick) {
                 VirtualGamepadMouseUp(event.button.x, event.button.y);
             }

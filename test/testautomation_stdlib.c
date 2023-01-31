@@ -181,7 +181,7 @@ int stdlib_snprintf(void *arg)
             expected = f_and_g_test_cases[i].expected_f;
             SDLTest_AssertPass("Call to SDL_snprintf(\"%%f\", %g)", value);
             SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-            SDLTest_AssertCheck(result == SDL_strlen(expected), "Check result value, expected: %d, got: %d", SDL_strlen(expected), result);
+            SDLTest_AssertCheck(result == SDL_strlen(expected), "Check result value, expected: %d, got: %d", (int)SDL_strlen(expected), result);
             SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
 
             result = SDL_snprintf(text, sizeof(text), "%g", value);
@@ -189,7 +189,7 @@ int stdlib_snprintf(void *arg)
             expected = f_and_g_test_cases[i].expected_g;
             SDLTest_AssertPass("Call to SDL_snprintf(\"%%g\", %g)", value);
             SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-            SDLTest_AssertCheck(result == SDL_strlen(expected), "Check result value, expected: %d, got: %d", SDL_strlen(expected), result);
+            SDLTest_AssertCheck(result == SDL_strlen(expected), "Check result value, expected: %d, got: %d", (int)SDL_strlen(expected), result);
             SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
         }
     }

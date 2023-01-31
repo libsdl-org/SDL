@@ -29,9 +29,7 @@
 
 int VIVANTE_GLES_LoadLibrary(_THIS, const char *path)
 {
-    SDL_DisplayData *displaydata;
-
-    displaydata = SDL_GetDisplayDriverData(0);
+    SDL_DisplayData *displaydata = SDL_GetDisplayDriverData(SDL_GetPrimaryDisplay());
 
     return SDL_EGL_LoadLibrary(_this, path, displaydata->native_display, 0);
 }

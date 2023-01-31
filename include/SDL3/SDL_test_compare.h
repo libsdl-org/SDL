@@ -38,8 +38,6 @@
 
 #include <SDL3/SDL.h>
 
-#include <SDL3/SDL_test_images.h>
-
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus

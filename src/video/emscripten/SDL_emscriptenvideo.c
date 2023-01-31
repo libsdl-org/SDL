@@ -129,9 +129,10 @@ int Emscripten_VideoInit(_THIS)
     /* Use a fake 32-bpp desktop mode */
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
-    emscripten_get_screen_size(&mode.w, &mode.h);
+    emscripten_get_screen_size(&mode.screen_w, &mode.screen_h);
+    mode.display_scale = emscripten_get_device_pixel_ratio();
 
-    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
+    if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
 
@@ -259,7 +260,7 @@ static void Emscripten_SetWindowSize(_THIS, SDL_Window *window)
     SDL_WindowData *data;
 
     if (window->driverdata) {
-        data = (SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
         /* update pixel ratio */
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
@@ -277,7 +278,7 @@ static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, 
 {
     SDL_WindowData *data;
     if (window->driverdata) {
-        data = (SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
         *w = window->w * data->pixel_ratio;
         *h = window->h * data->pixel_ratio;
     }
@@ -288,7 +289,7 @@ static void Emscripten_DestroyWindow(_THIS, SDL_Window *window)
     SDL_WindowData *data;
 
     if (window->driverdata) {
-        data = (SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
 
         Emscripten_UnregisterEventHandlers(data);
 
@@ -305,11 +306,11 @@ static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoD
 {
     SDL_WindowData *data;
     if (window->driverdata) {
-        data = (SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
 
         if (fullscreen) {
             EmscriptenFullscreenStrategy strategy;
-            SDL_bool is_desktop_fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP;
+            SDL_bool is_desktop_fullscreen = ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) ? SDL_TRUE : SDL_FALSE;
             int res;
 
             strategy.scaleMode = is_desktop_fullscreen ? EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH : EMSCRIPTEN_FULLSCREEN_SCALE_ASPECT;
@@ -327,13 +328,13 @@ static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoD
             strategy.canvasResizedCallback = Emscripten_HandleCanvasResize;
             strategy.canvasResizedCallbackUserData = data;
 
-            data->requested_fullscreen_mode = window->flags & (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
+            data->fullscreen_mode_flags = (window->flags & SDL_WINDOW_FULLSCREEN_MASK);
             data->fullscreen_resize = is_desktop_fullscreen;
 
             res = emscripten_request_fullscreen_strategy(data->canvas_id, 1, &strategy);
             if (res != EMSCRIPTEN_RESULT_SUCCESS && res != EMSCRIPTEN_RESULT_DEFERRED) {
                 /* unset flags, fullscreen failed */
-                window->flags &= ~(SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
+                window->flags &= ~SDL_WINDOW_FULLSCREEN_MASK;
             }
         } else
             emscripten_exit_fullscreen();

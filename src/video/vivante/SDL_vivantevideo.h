@@ -34,7 +34,7 @@
 #include <EGL/egl.h>
 #endif
 
-typedef struct SDL_VideoData
+struct SDL_VideoData
 {
 #if SDL_VIDEO_DRIVER_VIVANTE_VDK
     vdkPrivate vdk_private;
@@ -50,18 +50,18 @@ typedef struct SDL_VideoData
     void(EGLAPIENTRY *fbGetWindowInfo)(EGLNativeWindowType Window, int *X, int *Y, int *Width, int *Height, int *BitsPerPixel, unsigned int *Offset);
     void(EGLAPIENTRY *fbDestroyWindow)(EGLNativeWindowType Window);
 #endif
-} SDL_VideoData;
+};
 
-typedef struct SDL_DisplayData
+struct SDL_DisplayData
 {
     EGLNativeDisplayType native_display;
-} SDL_DisplayData;
+};
 
-typedef struct SDL_WindowData
+struct SDL_WindowData
 {
     EGLNativeWindowType native_window;
     EGLSurface egl_surface;
-} SDL_WindowData;
+};
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */

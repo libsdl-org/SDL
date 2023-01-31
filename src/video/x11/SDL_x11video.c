@@ -91,7 +91,7 @@ static int (*orig_x11_errhandler)(Display *, XErrorEvent *) = NULL;
 
 static void X11_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *data = (SDL_VideoData *)device->driverdata;
+    SDL_VideoData *data = device->driverdata;
     if (device->vulkan_config.loader_handle) {
         device->Vulkan_UnloadLibrary(device);
     }
@@ -338,7 +338,7 @@ static int X11_CheckWindowManagerErrorHandler(Display *d, XErrorEvent *e)
 
 static void X11_CheckWindowManager(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
     Display *display = data->display;
     Atom _NET_SUPPORTING_WM_CHECK;
     int status, real_format;
@@ -398,7 +398,7 @@ static void X11_CheckWindowManager(_THIS)
 
 int X11_VideoInit(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     /* Get the window class name, usually the name of the application */
     data->classname = get_classname();
@@ -476,7 +476,7 @@ int X11_VideoInit(_THIS)
 
 void X11_VideoQuit(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     if (data->clipboard_window) {
         X11_XDestroyWindow(data->display, data->clipboard_window);

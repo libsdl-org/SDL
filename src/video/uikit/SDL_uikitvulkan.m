@@ -260,9 +260,4 @@ SDL_bool UIKit_Vulkan_CreateSurface(_THIS,
     return SDL_TRUE;
 }
 
-void UIKit_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    UIKit_Metal_GetDrawableSize(_this, window, w, h);
-}
-
 #endif

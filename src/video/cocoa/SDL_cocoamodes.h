@@ -23,15 +23,15 @@
 #ifndef SDL_cocoamodes_h_
 #define SDL_cocoamodes_h_
 
-typedef struct
+struct SDL_DisplayData
 {
     CGDirectDisplayID display;
-} SDL_DisplayData;
+};
 
-typedef struct
+struct SDL_DisplayModeData
 {
     CFMutableArrayRef modes;
-} SDL_DisplayModeData;
+};
 
 extern void Cocoa_InitModes(_THIS);
 extern int Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);

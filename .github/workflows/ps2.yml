@@ -34,7 +34,7 @@ jobs:
           -DSDL_TESTS=ON \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_BUILD_TYPE=Release
-    - name: Build
+    - name: Build (CMake)
       run: cmake --build build --config Release --verbose --parallel
     - name: Install (CMake)
       run: |
@@ -42,10 +42,14 @@ jobs:
         cmake --install build/ --config Release
         echo "SDL3_DIR=$(pwd)/cmake_prefix" >> $GITHUB_ENV
         ( cd cmake_prefix; find ) | LC_ALL=C sort -u
+    - name: Package (CPack)
+      run: |
+        cmake --build build/ --config Release --target package
 
     - name: Verify CMake configuration files
       run: |
         cmake -S cmake/test -B cmake_config_build -G Ninja \
+          -Wdeprecated -Wdev -Werror \
           -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake \
           -DTEST_SHARED=FALSE \
           -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
@@ -69,3 +73,8 @@ jobs:
         name: tests-${{ steps.slug.outputs.sha8 }}
         path: |
           build/test
+    - uses: actions/upload-artifact@v3
+      with:
+        if-no-files-found: error
+        name: SDL-ps2
+        path: build/dist/SDL3*

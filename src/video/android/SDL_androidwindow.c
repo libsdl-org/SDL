@@ -128,7 +128,7 @@ void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *di
             goto endfunction;
         }
 
-        data = (SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
         if (data == NULL || !data->native_window) {
             if (data && !data->native_window) {
                 SDL_SetError("Missing native window");
@@ -175,7 +175,7 @@ void Android_DestroyWindow(_THIS, SDL_Window *window)
         Android_Window = NULL;
 
         if (window->driverdata) {
-            SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+            SDL_WindowData *data = window->driverdata;
 
 #if SDL_VIDEO_OPENGL_EGL
             if (data->egl_surface != EGL_NO_SURFACE) {
@@ -196,7 +196,7 @@ void Android_DestroyWindow(_THIS, SDL_Window *window)
 
 int Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
 
     info->subsystem = SDL_SYSWM_ANDROID;
     info->info.android.window = data->native_window;

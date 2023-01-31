@@ -23,18 +23,18 @@
 #ifndef SDL_windowsmodes_h_
 #define SDL_windowsmodes_h_
 
-typedef struct
+struct SDL_DisplayData
 {
     WCHAR DeviceName[32];
     HMONITOR MonitorHandle;
     SDL_bool IsValid;
     SDL_Rect bounds;
-} SDL_DisplayData;
+};
 
-typedef struct
+struct SDL_DisplayModeData
 {
     DEVMODE DeviceMode;
-} SDL_DisplayModeData;
+};
 
 extern int WIN_InitModes(_THIS);
 extern int WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);

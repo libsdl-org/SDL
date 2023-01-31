@@ -124,6 +124,10 @@ The SDL_DISPLAYEVENT_* events have been moved to top level events, and SDL_DISPL
 
 The SDL_WINDOWEVENT_* events have been moved to top level events, and SDL_WINDOWEVENT has been removed. In general, handling this change just means checking for the individual events instead of first checking for SDL_WINDOWEVENT and then checking for window events. You can compare the event >= SDL_EVENT_WINDOW_FIRST and <= SDL_EVENT_WINDOW_LAST if you need to see whether it's a window event.
 
+The SDL_EVENT_WINDOW_RESIZED event is always sent, even in response to SDL_SetWindowSize().
+
+The SDL_EVENT_WINDOW_SIZE_CHANGED event has been removed, and you can use SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED to detect window backbuffer size changes.
+
 SDL_QUERY, SDL_IGNORE, SDL_ENABLE, and SDL_DISABLE have been removed. You can use the functions SDL_SetEventEnabled() and SDL_EventEnabled() to set and query event processing state.
 
 The following symbols have been renamed:
@@ -166,8 +170,8 @@ The following symbols have been renamed:
 * SDL_KEYUP => SDL_EVENT_KEY_UP
 * SDL_LASTEVENT => SDL_EVENT_LAST
 * SDL_LOCALECHANGED => SDL_EVENT_LOCALECHANGED
-* SDL_MOUSEBUTTONDOWN => SDL_EVENT_MOUSE_BUTTONDOWN
-* SDL_MOUSEBUTTONUP => SDL_EVENT_MOUSE_BUTTONUP
+* SDL_MOUSEBUTTONDOWN => SDL_EVENT_MOUSE_BUTTON_DOWN
+* SDL_MOUSEBUTTONUP => SDL_EVENT_MOUSE_BUTTON_UP
 * SDL_MOUSEMOTION => SDL_EVENT_MOUSE_MOTION
 * SDL_MOUSEWHEEL => SDL_EVENT_MOUSE_WHEEL
 * SDL_POLLSENTINEL => SDL_EVENT_POLL_SENTINEL
@@ -440,7 +444,7 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
-* SDL_NumJoysticks - replaced with SDL_GetJoysticks()
+* SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
  
 ## SDL_keyboard.h
 
@@ -503,6 +507,10 @@ See [README-winrt.md](./README-winrt.md) for more details.
 Furthermore, the different SDL_*RunApp() functions (SDL_WinRtRunApp, SDL_GDKRunApp, SDL_UIKitRunApp)
 have been unified into just `int SDL_RunApp(int argc, char* argv[], void * reserved)` (which is also
 used by additional platforms that didn't have a SDL_RunApp-like function before).
+
+## SDL_metal.h
+
+SDL_Metal_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
 
 ## SDL_mouse.h
 
@@ -948,11 +956,35 @@ SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in S
 
 ## SDL_video.h
 
-SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_VIDEO_DRIVER hint.
+SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific video driver using SDL_VIDEO_DRIVER hint.
+
+Rather than iterating over displays using display index, there is a new function SDL_GetDisplays() to get the current list of displays, and functions which used to take a display index now take SDL_DisplayID, with an invalid ID being 0.
+```c
+{
+    if (SDL_InitSubSystem(SDL_INIT_VIDEO) == 0) {
+        int i, num_displays;
+        SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+        if (displays) {
+            for (i = 0; i < num_displays; ++i) {
+                SDL_DisplayID instance_id = displays[i];
+                const char *name = SDL_GetDisplayName(instance_id);
+
+                SDL_Log("Display %" SDL_PRIu32 ": %s\n", instance_id, name ? name : "Unknown");
+            }
+            SDL_free(displays);
+        }
+        SDL_QuitSubSystem(SDL_INIT_VIDEO);
+    }
+}
+```
+
+The SDL_WINDOWPOS_UNDEFINED_DISPLAY() and SDL_WINDOWPOS_CENTERED_DISPLAY() macros take a display ID instead of display index. The display ID 0 has a special meaning in this case, and is used to indicate the primary display.
 
 The SDL_WINDOW_SHOWN flag has been removed. Windows are shown by default and can be created hidden by using the SDL_WINDOW_HIDDEN flag.
 
 The SDL_WINDOW_ALLOW_HIGHDPI flag has been removed. Windows are automatically high DPI aware and their coordinates are in screen space, which may differ from physical pixels on displays using display scaling.
+
+SDL_DisplayMode now includes the pixel size, the screen size and the relationship between the two. For example, a 4K display at 200% scale could have a pixel size of 3840x2160, a screen size of 1920x1080, and a display scale of 2.0.
 
 The refresh rate in SDL_DisplayMode is now a float.
 
@@ -968,17 +1000,29 @@ SDL_GL_SwapWindow() returns 0 if the function succeeds or a negative error code 
 
 SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
+SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
+
 The following functions have been renamed:
 * SDL_GetDisplayDPI() => SDL_GetDisplayPhysicalDPI()
-* SDL_GetPointDisplayIndex() => SDL_GetDisplayIndexForPoint()
-* SDL_GetRectDisplayIndex() => SDL_GetDisplayIndexForRect()
+* SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()
+* SDL_GetRectDisplayIndex() => SDL_GetDisplayForRect()
+* SDL_GetWindowDisplayIndex() => SDL_GetDisplayForWindow()
+
+The following functions have been removed:
+* SDL_GetNumVideoDisplays() - replaced with SDL_GetDisplays()
 
 SDL_Window id type is named SDL_WindowID
 
+SDL_WINDOW_FULLSCREEN has been renamed SDL_WINDOW_FULLSCREEN_EXCLUSIVE, and SDL_WINDOW_FULLSCREEN_DESKTOP no longer includes the old SDL_WINDOW_FULLSCREEN flag. You can use `(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_MASK) != 0` if you want to check for either state.
+
+The following symbols have been renamed:
+* SDL_WINDOW_INPUT_GRABBED => SDL_WINDOW_MOUSE_GRABBED
 
 ## SDL_vulkan.h
 
 SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter.
 
 SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to PFN_vkGetInstanceProcAddr.
+
+SDL_Vulkan_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
 

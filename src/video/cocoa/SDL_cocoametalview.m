@@ -41,7 +41,7 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
      * events don't always happen in the same frame (for example when a
      * resizable window exits a fullscreen Space via the user pressing the OS
      * exit-space button). */
-    if (event->type == SDL_EVENT_WINDOW_SIZE_CHANGED) {
+    if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         @autoreleasepool {
             SDL_cocoametalview *view = (__bridge SDL_cocoametalview *)userdata;
             if (view.sdlWindowID == event->window.windowID) {
@@ -133,7 +133,7 @@ SDL_MetalView
 Cocoa_Metal_CreateView(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         NSView *view = data.nswindow.contentView;
         BOOL highDPI = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
         Uint32 windowID = SDL_GetWindowID(window);
@@ -170,28 +170,6 @@ Cocoa_Metal_GetLayer(_THIS, SDL_MetalView view)
     @autoreleasepool {
         SDL_cocoametalview *cocoaview = (__bridge SDL_cocoametalview *)view;
         return (__bridge void *)cocoaview.layer;
-    }
-}
-
-void Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-        NSView *contentView = data.sdlContentView;
-        SDL_cocoametalview *metalview = [contentView viewWithTag:SDL_METALVIEW_TAG];
-        if (metalview) {
-            CAMetalLayer *layer = (CAMetalLayer *)metalview.layer;
-            SDL_assert(layer != NULL);
-            if (w) {
-                *w = layer.drawableSize.width;
-            }
-            if (h) {
-                *h = layer.drawableSize.height;
-            }
-        } else {
-            /* Fall back to the viewport size. */
-            SDL_GetWindowSizeInPixels(window, w, h);
-        }
     }
 }
 

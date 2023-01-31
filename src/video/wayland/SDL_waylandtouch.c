@@ -71,7 +71,7 @@ static void touch_handle_touch(void *data,
      * (src/compositor/wayland_wrapper/qwltouch.cpp)
      **/
 
-    SDL_VideoData *viddata = (SDL_VideoData *)data;
+    SDL_VideoData *viddata = data;
 
     float FIXED_TO_FLOAT = 1. / 10000.;
     float xf = FIXED_TO_FLOAT * normalized_x;

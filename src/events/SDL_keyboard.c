@@ -930,8 +930,8 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, SDL_KeyboardFlags flags
         state == SDL_PRESSED &&
         (keyboard->modstate & SDL_KMOD_ALT) &&
         keyboard->focus &&
-        (keyboard->focus->flags & SDL_WINDOW_KEYBOARD_GRABBED) &&
-        (keyboard->focus->flags & SDL_WINDOW_FULLSCREEN) &&
+        (keyboard->focus->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0 &&
+        (keyboard->focus->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0 &&
         SDL_GetHintBoolean(SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED, SDL_TRUE)) {
         /* We will temporarily forfeit our grab by minimizing our window,
            allowing the user to escape the application */

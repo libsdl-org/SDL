@@ -683,8 +683,8 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
              * window display changes as well! If the new display has a new DPI,
              * we need to update the viewport for the new window/drawable ratio.
              */
-            if (event->type == SDL_EVENT_WINDOW_SIZE_CHANGED ||
-                event->type == SDL_EVENT_WINDOW_DISPLAY_CHANGED) {
+            if (event->type == SDL_EVENT_WINDOW_RESIZED ||
+                event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
                 /* Make sure we're operating on the default render target */
                 SDL_Texture *saved_target = SDL_GetRenderTarget(renderer);
                 if (saved_target) {
@@ -772,8 +772,8 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 }
             }
         }
-    } else if (event->type == SDL_EVENT_MOUSE_BUTTONDOWN ||
-               event->type == SDL_EVENT_MOUSE_BUTTONUP) {
+    } else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+               event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
         SDL_Window *window = SDL_GetWindowFromID(event->button.windowID);
         if (window == renderer->window) {
             int logical_w, logical_h;
@@ -915,15 +915,15 @@ static SDL_RenderLineMethod SDL_GetRenderLineMethod()
 
 static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Window *window)
 {
-    int display_index = SDL_GetWindowDisplayIndex(window);
+    SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
     SDL_DisplayMode mode;
     float refresh_rate;
     int num, den;
 
-    if (display_index < 0) {
-        display_index = 0;
+    if (displayID == 0) {
+        displayID = SDL_GetPrimaryDisplay();
     }
-    if (SDL_GetDesktopDisplayMode(display_index, &mode) == 0 && mode.refresh_rate > 0.0f) {
+    if (SDL_GetDesktopDisplayMode(displayID, &mode) == 0 && mode.refresh_rate > 0.0f) {
         refresh_rate = mode.refresh_rate;
     } else {
         /* Pick a good default refresh rate */
