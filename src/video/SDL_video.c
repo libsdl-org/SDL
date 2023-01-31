@@ -866,13 +866,18 @@ SDL_DisplayOrientation SDL_GetDisplayOrientation(SDL_DisplayID displayID)
 SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
     SDL_DisplayMode *modes;
+    SDL_DisplayMode new_mode;
     int i, nmodes;
+
+    /* Finalize the parameters of the new mode first so duplicate detection will work */
+    new_mode = *mode;
+    SDL_FinalizeDisplayMode(&new_mode);
 
     /* Make sure we don't already have the mode in the list */
     modes = display->display_modes;
     nmodes = display->num_display_modes;
     for (i = 0; i < nmodes; ++i) {
-        if (cmpmodes(mode, &modes[i]) == 0) {
+        if (cmpmodes(&new_mode, &modes[i]) == 0) {
             return SDL_FALSE;
         }
     }
@@ -886,8 +891,7 @@ SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mo
         display->display_modes = modes;
         display->max_display_modes += 32;
     }
-    modes[nmodes] = *mode;
-    SDL_FinalizeDisplayMode(&modes[nmodes]);
+    modes[nmodes] = new_mode;
     display->num_display_modes++;
 
     /* Re-sort video modes */
