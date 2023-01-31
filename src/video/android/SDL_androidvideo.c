@@ -293,6 +293,7 @@ void Android_SendResize(SDL_Window *window)
         int w, h;
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
         SDL_DisplayMode current_mode;
+        SDL_zero(current_mode);
 
         current_mode.format = Android_ScreenFormat;
         current_mode.pixel_w = Android_DeviceWidth;
