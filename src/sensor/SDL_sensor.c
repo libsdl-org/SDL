@@ -115,12 +115,12 @@ SDL_SensorID *SDL_GetSensors(int *count)
             total_sensors += SDL_sensor_drivers[i]->GetCount();
         }
 
-        if (count) {
-            *count = total_sensors;
-        }
-
         sensors = (SDL_SensorID *)SDL_malloc((total_sensors + 1) * sizeof(*sensors));
         if (sensors) {
+            if (count) {
+                *count = total_sensors;
+            }
+
             for (i = 0; i < SDL_arraysize(SDL_sensor_drivers); ++i) {
                 num_sensors = SDL_sensor_drivers[i]->GetCount();
                 for (device_index = 0; device_index < num_sensors; ++device_index) {
@@ -133,6 +133,10 @@ SDL_SensorID *SDL_GetSensors(int *count)
             SDL_assert(sensor_index == total_sensors);
             sensors[sensor_index] = 0;
         } else {
+            if (count) {
+                *count = 0;
+            }
+
             SDL_OutOfMemory();
         }
     }

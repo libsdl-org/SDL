@@ -361,12 +361,12 @@ SDL_JoystickID *SDL_GetJoysticks(int *count)
             total_joysticks += SDL_joystick_drivers[i]->GetCount();
         }
 
-        if (count) {
-            *count = total_joysticks;
-        }
-
         joysticks = (SDL_JoystickID *)SDL_malloc((total_joysticks + 1) * sizeof(*joysticks));
         if (joysticks) {
+            if (count) {
+                *count = total_joysticks;
+            }
+
             for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
                 num_joysticks = SDL_joystick_drivers[i]->GetCount();
                 for (device_index = 0; device_index < num_joysticks; ++device_index) {
@@ -379,6 +379,10 @@ SDL_JoystickID *SDL_GetJoysticks(int *count)
             SDL_assert(joystick_index == total_joysticks);
             joysticks[joystick_index] = 0;
         } else {
+            if (count) {
+                *count = 0;
+            }
+
             SDL_OutOfMemory();
         }
     }
