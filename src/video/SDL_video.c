@@ -632,6 +632,7 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
 
     displays = (SDL_VideoDisplay *)SDL_realloc(_this->displays, (_this->num_displays + 1) * sizeof(*displays));
     if (displays) {
+        int i;
         _this->displays = displays;
         id = _this->next_object_id++;
         new_display = &displays[_this->num_displays++];
@@ -651,6 +652,10 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
         new_display->desktop_mode.displayID = id;
         new_display->current_mode = &new_display->desktop_mode;
         SDL_FinalizeDisplayMode(&new_display->desktop_mode);
+
+        for (i = 0; i < new_display->num_fullscreen_modes; ++i) {
+            new_display->fullscreen_modes[i].displayID = id;
+        }
 
         if (send_event) {
             SDL_SendDisplayEvent(new_display, SDL_EVENT_DISPLAY_CONNECTED, 0);
