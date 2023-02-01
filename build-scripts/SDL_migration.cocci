@@ -2359,3 +2359,18 @@ SDL_DisplayMode e;
 - SDL_GetWindowDisplayIndex
 + SDL_GetDisplayForWindow
   (...)
+@@
+@@
+- SDL_SetWindowDisplayMode
++ SDL_SetWindowFullscreenMode
+  (...)
+@@
+@@
+- SDL_GetWindowDisplayMode
++ SDL_GetWindowFullscreenMode
+  (...)
+@@
+@@
+- SDL_GetClosestDisplayMode
++ SDL_GetClosestFullscreenDisplayMode
+  (...)

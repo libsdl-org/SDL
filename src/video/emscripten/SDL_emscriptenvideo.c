@@ -136,8 +136,6 @@ int Emscripten_VideoInit(_THIS)
         return -1;
     }
 
-    SDL_AddDisplayMode(&_this->displays[0], &mode);
-
     Emscripten_InitMouse();
 
     /* We're done! */

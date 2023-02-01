@@ -125,8 +125,7 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
             int i;
             for (i = 0; i < device->num_displays; i++) {
                 SDL_VideoDisplay *display = &device->displays[i];
-                if (SDL_memcmp(&display->current_mode, &display->desktop_mode,
-                               sizeof(SDL_DisplayMode)) != 0) {
+                if (SDL_GetCurrentDisplayMode(display->id) != SDL_GetDesktopDisplayMode(display->id)) {
                     X11_SetDisplayMode(device, display, &display->desktop_mode);
                 }
             }

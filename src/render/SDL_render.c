@@ -916,15 +916,16 @@ static SDL_RenderLineMethod SDL_GetRenderLineMethod()
 static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Window *window)
 {
     SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode *mode;
     float refresh_rate;
     int num, den;
 
     if (displayID == 0) {
         displayID = SDL_GetPrimaryDisplay();
     }
-    if (SDL_GetDesktopDisplayMode(displayID, &mode) == 0 && mode.refresh_rate > 0.0f) {
-        refresh_rate = mode.refresh_rate;
+    mode = SDL_GetDesktopDisplayMode(displayID);
+    if (mode && mode->refresh_rate > 0.0f) {
+        refresh_rate = mode->refresh_rate;
     } else {
         /* Pick a good default refresh rate */
         refresh_rate = 60.0f;

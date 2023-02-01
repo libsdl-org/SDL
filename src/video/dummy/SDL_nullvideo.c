@@ -150,8 +150,6 @@ int DUMMY_VideoInit(_THIS)
         return -1;
     }
 
-    SDL_AddDisplayMode(&_this->displays[0], &mode);
-
 #if SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
 #endif

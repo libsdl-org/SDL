@@ -178,7 +178,6 @@
 #define SDL_GetCPUCacheLineSize SDL_GetCPUCacheLineSize_REAL
 #define SDL_GetCPUCount SDL_GetCPUCount_REAL
 #define SDL_GetClipboardText SDL_GetClipboardText_REAL
-#define SDL_GetClosestDisplayMode SDL_GetClosestDisplayMode_REAL
 #define SDL_GetCurrentAudioDriver SDL_GetCurrentAudioDriver_REAL
 #define SDL_GetCurrentDisplayMode SDL_GetCurrentDisplayMode_REAL
 #define SDL_GetCurrentVideoDriver SDL_GetCurrentVideoDriver_REAL
@@ -191,7 +190,6 @@
 #define SDL_GetDisplayPhysicalDPI SDL_GetDisplayPhysicalDPI_REAL
 #define SDL_GetDisplayForPoint SDL_GetDisplayForPoint_REAL
 #define SDL_GetDisplayForRect SDL_GetDisplayForRect_REAL
-#define SDL_GetDisplayMode SDL_GetDisplayMode_REAL
 #define SDL_GetDisplayName SDL_GetDisplayName_REAL
 #define SDL_GetDisplayOrientation SDL_GetDisplayOrientation_REAL
 #define SDL_GetDisplayUsableBounds SDL_GetDisplayUsableBounds_REAL
@@ -285,7 +283,6 @@
 #define SDL_GetNumAllocations SDL_GetNumAllocations_REAL
 #define SDL_GetNumAudioDevices SDL_GetNumAudioDevices_REAL
 #define SDL_GetNumAudioDrivers SDL_GetNumAudioDrivers_REAL
-#define SDL_GetNumDisplayModes SDL_GetNumDisplayModes_REAL
 #define SDL_GetNumGamepadMappings SDL_GetNumGamepadMappings_REAL
 #define SDL_GetNumJoystickAxes SDL_GetNumJoystickAxes_REAL
 #define SDL_GetNumJoystickButtons SDL_GetNumJoystickButtons_REAL
@@ -373,7 +370,7 @@
 #define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL
 #define SDL_GetWindowData SDL_GetWindowData_REAL
 #define SDL_GetDisplayForWindow SDL_GetDisplayForWindow_REAL
-#define SDL_GetWindowDisplayMode SDL_GetWindowDisplayMode_REAL
+#define SDL_GetWindowFullscreenMode SDL_GetWindowFullscreenMode_REAL
 #define SDL_GetWindowFlags SDL_GetWindowFlags_REAL
 #define SDL_GetWindowFromID SDL_GetWindowFromID_REAL
 #define SDL_GetWindowGrab SDL_GetWindowGrab_REAL
@@ -638,7 +635,7 @@
 #define SDL_SetWindowAlwaysOnTop SDL_SetWindowAlwaysOnTop_REAL
 #define SDL_SetWindowBordered SDL_SetWindowBordered_REAL
 #define SDL_SetWindowData SDL_SetWindowData_REAL
-#define SDL_SetWindowDisplayMode SDL_SetWindowDisplayMode_REAL
+#define SDL_SetWindowFullscreenMode SDL_SetWindowFullscreenMode_REAL
 #define SDL_SetWindowFullscreen SDL_SetWindowFullscreen_REAL
 #define SDL_SetWindowGrab SDL_SetWindowGrab_REAL
 #define SDL_SetWindowHitTest SDL_SetWindowHitTest_REAL
@@ -867,3 +864,5 @@
 #define SDL_ConvertAudioSamples SDL_ConvertAudioSamples_REAL
 #define SDL_GetDisplays SDL_GetDisplays_REAL
 #define SDL_GetPrimaryDisplay SDL_GetPrimaryDisplay_REAL
+#define SDL_GetFullscreenDisplayModes SDL_GetFullscreenDisplayModes_REAL
+#define SDL_GetClosestFullscreenDisplayMode SDL_GetClosestFullscreenDisplayMode_REAL

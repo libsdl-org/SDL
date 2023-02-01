@@ -109,8 +109,6 @@ int OFFSCREEN_VideoInit(_THIS)
         return -1;
     }
 
-    SDL_AddDisplayMode(&_this->displays[0], &mode);
-
     /* We're done! */
     return 0;
 }

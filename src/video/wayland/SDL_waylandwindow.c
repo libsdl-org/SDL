@@ -83,17 +83,14 @@ static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height,
         }
     } else {
         /* If a mode was set, use it, otherwise use the native resolution. */
-        if (window->fullscreen_mode.pixel_w != 0 && window->fullscreen_mode.pixel_h != 0) {
-            fs_width = window->fullscreen_mode.screen_w;
-            fs_height = window->fullscreen_mode.screen_h;
-            buf_width = window->fullscreen_mode.pixel_w;
-            buf_height = window->fullscreen_mode.pixel_h;
-        } else {
-            fs_width = disp->display_modes[0].screen_w;
-            fs_height = disp->display_modes[0].screen_h;
-            buf_width = disp->display_modes[0].pixel_w;
-            buf_height = disp->display_modes[0].pixel_h;
+        const SDL_DisplayMode *mode = SDL_GetWindowFullscreenMode(window);
+        if (!mode) {
+            mode = &disp->desktop_mode;
         }
+        fs_width = mode->screen_w;
+        fs_height = mode->screen_h;
+        buf_width = mode->pixel_w;
+        buf_height = mode->pixel_h;
     }
 
     if (width) {

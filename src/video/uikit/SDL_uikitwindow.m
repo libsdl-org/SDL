@@ -169,19 +169,7 @@ int UIKit_CreateWindow(_THIS, SDL_Window *window)
 #if !TARGET_OS_TV
         const CGSize origsize = data.uiscreen.currentMode.size;
         if ((origsize.width == 0.0f) && (origsize.height == 0.0f)) {
-            if (display->num_display_modes == 0) {
-                _this->GetDisplayModes(_this, display);
-            }
-
-            int i;
-            const SDL_DisplayMode *bestmode = NULL;
-            for (i = display->num_display_modes; i >= 0; i--) {
-                const SDL_DisplayMode *mode = &display->display_modes[i];
-                if ((mode->screen_w >= window->w) && (mode->screen_h >= window->h)) {
-                    bestmode = mode;
-                }
-            }
-
+            const SDL_DisplayMode *bestmode = SDL_GetClosestFullscreenDisplayMode(display->id, window->w, window->h, 0.0f);
             if (bestmode) {
                 SDL_DisplayModeData *modedata = (__bridge SDL_DisplayModeData *)bestmode->driverdata;
                 [data.uiscreen setCurrentMode:modedata.uiscreenmode];
@@ -189,7 +177,7 @@ int UIKit_CreateWindow(_THIS, SDL_Window *window)
                 /* desktop_mode doesn't change here (the higher level will
                  * use it to set all the screens back to their defaults
                  * upon window destruction, SDL_Quit(), etc. */
-                display->current_mode = *bestmode;
+                SDL_SetCurrentDisplayMode(display, bestmode);
             }
         }
 

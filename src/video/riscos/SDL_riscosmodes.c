@@ -277,7 +277,7 @@ void RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
             break;
         }
 
-        if (!SDL_AddDisplayMode(display, &mode)) {
+        if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
             SDL_free(mode.driverdata);
         }
     }

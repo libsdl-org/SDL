@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     int fsaa, accel;
     int value;
     int i, done;
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode *mode;
     SDL_Event event;
     Uint32 then, now, frames;
     int status;
@@ -187,9 +187,11 @@ int main(int argc, char *argv[])
         SDL_GL_SetSwapInterval(0);
     }
 
-    SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode);
-    SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
-    SDL_Log("\n");
+    mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+    if (mode) {
+        SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode->format));
+        SDL_Log("\n");
+    }
     SDL_Log("Vendor     : %s\n", glGetString(GL_VENDOR));
     SDL_Log("Renderer   : %s\n", glGetString(GL_RENDERER));
     SDL_Log("Version    : %s\n", glGetString(GL_VERSION));

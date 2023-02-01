@@ -1241,7 +1241,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         RECT rect;
         int x, y;
         int w, h;
-        SDL_DisplayID displayID = data->window->displayID;
+        SDL_DisplayID displayID = SDL_GetDisplayForWindow(data->window);
 
         if (data->initializing || data->in_border_change) {
             break;
@@ -1294,7 +1294,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         /* Forces a WM_PAINT event */
         InvalidateRect(hwnd, NULL, FALSE);
 
-        if (data->window->displayID != displayID) {
+        if (data->window->last_displayID != displayID) {
             /* Display changed, check ICC profile */
             WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
         }

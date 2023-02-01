@@ -962,7 +962,7 @@ Rather than iterating over displays using display index, there is a new function
 ```c
 {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) == 0) {
-        int i, num_displays;
+        int i, num_displays = 0;
         SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
         if (displays) {
             for (i = 0; i < num_displays; ++i) {
@@ -988,6 +988,29 @@ SDL_DisplayMode now includes the pixel size, the screen size and the relationshi
 
 The refresh rate in SDL_DisplayMode is now a float.
 
+Rather than iterating over display modes using an index, there is a new function SDL_GetFullscreenDisplayModes() to get the list of available fullscreen modes on a display.
+```c
+{
+    SDL_DisplayID display = SDL_GetPrimaryDisplay();
+    int num_modes = 0;
+    SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display, &num_modes);
+    if (modes) {
+        for (i = 0; i < num_modes; ++i) {
+            SDL_DisplayMode *mode = modes[i];
+            SDL_Log("Display %" SDL_PRIu32 " mode %d:  %dx%d@%gHz, %d%% scale\n",
+                    display, i, mode->pixel_w, mode->pixel_h, mode->refresh_rate, (int)(mode->display_scale * 100.0f));
+        }
+        SDL_free(modes);
+    }
+}
+```
+
+SDL_GetDesktopDisplayMode() and SDL_GetCurrentDisplayMode() return pointers to display modes rather than filling in application memory.
+
+Windows now have an explicit fullscreen mode that is set, using SDL_SetWindowFullscreenMode(). The fullscreen mode for a window can be queried with SDL_GetWindowFullscreenMode(), which returns a pointer to the mode, or NULL if the window will be fullscreen desktop. SDL_SetWindowFullscreen() just takes a boolean value, setting the correct fullscreen state based on the selected mode.
+
+SDL_WINDOW_FULLSCREEN has been renamed SDL_WINDOW_FULLSCREEN_EXCLUSIVE, and SDL_WINDOW_FULLSCREEN_DESKTOP no longer includes the old SDL_WINDOW_FULLSCREEN flag. You can use `(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_MASK) != 0` if you want to check for either state.
+
 SDL_SetWindowBrightness and SDL_SetWindowGammaRamp have been removed from the API, because they interact poorly with modern operating systems and aren't able to limit their effects to the SDL window.
 
 Programs which have access to shaders can implement more robust versions of those functions using custom shader code rendered as a post-process effect.
@@ -1003,17 +1026,21 @@ SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0
 SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
 
 The following functions have been renamed:
+* SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode()
 * SDL_GetDisplayDPI() => SDL_GetDisplayPhysicalDPI()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayForRect()
 * SDL_GetWindowDisplayIndex() => SDL_GetDisplayForWindow()
+* SDL_GetWindowDisplayMode() => SDL_GetWindowFullscreenMode()
+* SDL_SetWindowDisplayMode() => SDL_SetWindowFullscreenMode()
 
 The following functions have been removed:
+* SDL_GetClosestFullscreenDisplayMode()
+* SDL_GetDisplayMode()
+* SDL_GetNumDisplayModes() - replaced with SDL_GetFullscreenDisplayModes()
 * SDL_GetNumVideoDisplays() - replaced with SDL_GetDisplays()
 
 SDL_Window id type is named SDL_WindowID
-
-SDL_WINDOW_FULLSCREEN has been renamed SDL_WINDOW_FULLSCREEN_EXCLUSIVE, and SDL_WINDOW_FULLSCREEN_DESKTOP no longer includes the old SDL_WINDOW_FULLSCREEN flag. You can use `(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_MASK) != 0` if you want to check for either state.
 
 The following symbols have been renamed:
 * SDL_WINDOW_INPUT_GRABBED => SDL_WINDOW_MOUSE_GRABBED
