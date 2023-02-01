@@ -106,14 +106,13 @@ struct SDL_WindowData
     float windowed_scale_factor;
     float pointer_scale_x;
     float pointer_scale_y;
+    int requested_window_width, requested_window_height;
     int drawable_width, drawable_height;
-    int fs_output_width, fs_output_height;
-    int window_width, window_height;
+    int wl_window_width, wl_window_height;
     int system_min_required_width;
     int system_min_required_height;
-    SDL_bool needs_resize_event;
-    SDL_bool floating_resize_pending;
-    SDL_bool was_floating;
+    SDL_DisplayID fullscreen_display;
+    SDL_bool floating;
     SDL_bool is_fullscreen;
     SDL_bool in_fullscreen_transition;
 };
