@@ -1162,7 +1162,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                         }
                     }
                 }
-                SDL_free(modes);
+                SDL_free((void *)modes);
 
 #if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
                 /* Print the D3D9 adapter index */

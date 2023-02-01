@@ -138,7 +138,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
             column_chars = 0;
         }
     }
-    SDL_free(modes);
+    SDL_free((void *)modes);
 }
 
 void loop()
@@ -212,7 +212,7 @@ void loop()
                     SDL_memcpy(&state->fullscreen_mode, modes[highlighted_mode], sizeof(state->fullscreen_mode));
                     SDL_SetWindowFullscreenMode(window, modes[highlighted_mode]);
                 }
-                SDL_free(modes);
+                SDL_free((void *)modes);
             }
         }
     }
