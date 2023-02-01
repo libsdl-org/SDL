@@ -32,6 +32,7 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake \
           -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
+          -DSDL_INSTALL_TESTS=ON \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_BUILD_TYPE=Release
     - name: Build (CMake)
@@ -61,18 +62,6 @@ jobs:
         export LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
         export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh
-
-    - name: Get short SHA
-      id: slug
-      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
-
-    - name: Upload artifacts
-      if: ${{ success() }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: tests-${{ steps.slug.outputs.sha8 }}
-        path: |
-          build/test
     - uses: actions/upload-artifact@v3
       with:
         if-no-files-found: error
