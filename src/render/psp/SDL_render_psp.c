@@ -54,14 +54,21 @@ typedef struct
 typedef struct
 {
     void *data;                 /**< Image data. */
-    unsigned int width;         /**< Image width. */
-    unsigned int height;        /**< Image height. */
-    unsigned int textureWidth;  /**< Texture width (power of two). */
-    unsigned int textureHeight; /**< Texture height (power of two). */
-    unsigned int format;        /**< Image format - one of ::pgePixelFormat. */
-    unsigned int size;          /**< Image size in bytes. */
-    unsigned int filter;        /**< Image filter - one of GU_NEAREST or GU_LINEAR. */
-    unsigned int pitch;
+    void *swizzledData;          /**< Swizzled image data. */
+    uint32_t textureWidth;  /**< Texture width (power of two). */
+    uint32_t textureHeight; /**< Texture height (power of two). */
+    uint32_t width;         /**< Image width. */
+    uint32_t height;        /**< Image height. */
+    uint32_t pitch;         /**< Image pitch. */
+    uint32_t swizzledWidth; /**< Swizzled image width. */
+    uint32_t swizzledHeight;/**< Swizzled image height. */
+    uint32_t swizzledPitch; /**< Swizzled image pitch. */
+    uint32_t size;          /**< Image size in bytes. */
+    uint32_t swizzledSize;  /**< Swizzled image size in bytes. */
+    uint8_t format;        /**< Image format - one of ::pgePixelFormat. */
+    uint8_t filter;        /**< Image filter - one of GU_NEAREST or GU_LINEAR. */
+    uint8_t swizzled;      /**< Whether the image is swizzled or not. */
+
 } PSP_Texture;
 
 typedef struct
@@ -177,6 +184,20 @@ static inline int calculatePitchForTextureFormat(int width, int format)
     }
 }
 
+static inline int calculateHeightForSwizzledTexture(int height, int format)
+{
+    switch (format) {
+    case GU_PSM_5650:
+    case GU_PSM_5551:
+    case GU_PSM_4444:
+        return (height + 15) & ~15;
+    case GU_PSM_8888:
+        return (height + 7) & ~7;
+    default:
+        return height;
+    }
+}
+
 /* Return next power of 2 */
 static inline int calculateNextPow2(int value)
 {
@@ -187,7 +208,8 @@ static inline int calculateNextPow2(int value)
     return i;
 }
 
-static inline int calculateBestSliceSizeForSprite(SDL_Renderer *renderer, const SDL_FRect *dstrect, SliceSize *sliceSize, SliceSize *sliceDimension) {
+static inline int calculateBestSliceSizeForSprite(SDL_Renderer *renderer, const SDL_FRect *dstrect, SliceSize *sliceSize, SliceSize *sliceDimension) 
+{
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
 
     // We split in blocks of (64 x destiny height) when 16 bits per color
@@ -214,7 +236,8 @@ static inline int calculateBestSliceSizeForSprite(SDL_Renderer *renderer, const 
 }
 
 static inline void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, SliceSize *sliceSize,
-                         const SDL_Rect *srcrect, const SDL_FRect *dstrect) {
+                         const SDL_Rect *srcrect, const SDL_FRect *dstrect)
+{
     int i, j;
     int remainingWidth = (int)dstrect->w % sliceSize->width;
     int remainingHeight = (int)dstrect->h % sliceSize->height;
@@ -257,6 +280,92 @@ static inline void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, S
     }
 }
 
+// The slize when swizzling is always 16x32 bytes, no matter the texture format
+// so the algorithm is the same for all formats
+static inline int swizzle(PSP_Texture *psp_texture)
+{
+    uint32_t i, j, verticalSlice, dstOffset;
+    uint32_t *src, *dst, *srcBlock, *dstBlock;
+    uint32_t srcWidth = psp_texture->pitch >> 2;
+    uint32_t dstWidth = psp_texture->swizzledPitch >> 2;
+    uint32_t srcWidthBlocks = srcWidth >> 2;
+    uint8_t blockSizeBytes = 16; // 4 pixels of 32 bits
+
+    dst = (uint32_t *)psp_texture->swizzledData;
+    for (j = 0; j < psp_texture->height; j++) {
+        src = (uint32_t *)psp_texture->data + j * srcWidth;
+        verticalSlice = (((j >> 3) << 3) * dstWidth) + ((j % 8) << 2);
+        for (i = 0; i < srcWidthBlocks; i++) {
+            srcBlock = src + (i << 2);
+            dstOffset = verticalSlice + (i << 5);
+            dstBlock = dst + dstOffset;
+            memcpy(dstBlock, srcBlock, blockSizeBytes);
+        }
+    }
+    
+    return 1;
+}
+
+static inline int unswizzle(PSP_Texture *psp_texture)
+{
+    uint32_t i, j, verticalSlice, srcOffset;
+    uint32_t *src, *dst, *srcBlock, *dstBlock;
+    uint32_t srcWidth = psp_texture->swizzledPitch >> 2;
+    uint32_t dstWidth = psp_texture->pitch >> 2;
+    uint32_t dstWidthBlocks = dstWidth >> 2;
+    uint8_t blockSizeBytes = 16; // 4 pixels of 32 bits
+
+    src = (uint32_t *)psp_texture->swizzledData;
+    for (j = 0; j < psp_texture->height; j++) {
+        dst = (uint32_t *)psp_texture->data + j * dstWidth;
+        verticalSlice = (((j >> 3) << 3) * srcWidth) + ((j % 8) << 2);
+        for (i = 0; i < dstWidthBlocks; i++) {
+            dstBlock = dst + (i << 2);
+            srcOffset = verticalSlice + (i << 5);
+            srcBlock = src + srcOffset;
+            memcpy(dstBlock, srcBlock, blockSizeBytes);
+        }
+    }
+    
+    return 1;
+}
+
+static inline void prepareTextureForUpload(PSP_Texture *psp_tex)
+{
+    if (psp_tex->swizzled)
+        return;
+    
+    psp_tex->swizzledData = vramalloc(psp_tex->swizzledSize);
+    if (!psp_tex->swizzledData) {
+        sceKernelDcacheWritebackRange(psp_tex->data, psp_tex->size);
+        return;
+    }
+
+    swizzle(psp_tex);
+    SDL_free(psp_tex->data);
+    psp_tex->swizzled = GU_TRUE;
+
+    sceKernelDcacheWritebackRange(psp_tex->swizzledData, psp_tex->swizzledSize);
+}
+
+static inline void prepareTextureForDownload(PSP_Texture *psp_tex)
+{
+    if (!psp_tex->swizzled)
+        return;
+    
+    psp_tex->data = SDL_malloc(psp_tex->size);
+    if (!psp_tex->data) {
+        sceKernelDcacheInvalidateRange(psp_tex->swizzledData, psp_tex->swizzledSize);
+        return;
+    }
+
+    unswizzle(psp_tex);
+    vfree(psp_tex->swizzledData);
+    psp_tex->swizzled = GU_FALSE;
+
+    sceKernelDcacheInvalidateRange(psp_tex->data, psp_tex->size);
+}
+
 static void PSP_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
 }
@@ -270,15 +379,21 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 
     psp_tex->format = pixelFormatToPSPFMT(texture->format);
-    psp_tex->width = calculatePitchForTextureFormat(texture->w, psp_tex->format);
-    psp_tex->height = texture->h;
     psp_tex->textureWidth = calculateNextPow2(texture->w);
     psp_tex->textureHeight = calculateNextPow2(texture->h);
+    psp_tex->width = calculatePitchForTextureFormat(texture->w, psp_tex->format);
+    psp_tex->height = texture->h;
+    psp_tex->pitch = psp_tex->width * SDL_BYTESPERPIXEL(texture->format);
+    psp_tex->swizzledWidth = psp_tex->textureWidth;
+    psp_tex->swizzledHeight = calculateHeightForSwizzledTexture(texture->h, psp_tex->format);
+    psp_tex->swizzledPitch = psp_tex->swizzledWidth * SDL_BYTESPERPIXEL(texture->format);
     psp_tex->size = getMemorySize(psp_tex->width, psp_tex->height, psp_tex->format);
-    psp_tex->data = vramalloc(psp_tex->size);
+    psp_tex->swizzledSize = getMemorySize(psp_tex->swizzledWidth, psp_tex->swizzledHeight, psp_tex->format);
+    psp_tex->data = SDL_calloc(1, psp_tex->size);
+    psp_tex->swizzled = GU_FALSE;
 
     if (!psp_tex->data) {
-        vfree(psp_tex);
+        SDL_free(psp_tex);
         return SDL_OutOfMemory();
     }
 
@@ -291,6 +406,9 @@ static int PSP_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                            const SDL_Rect *rect, void **pixels, int *pitch)
 {
     PSP_Texture *psp_texture = (PSP_Texture *)texture->driverdata;
+
+    // How a pointer to the texture data is returned it need to be unswizzled before it can be used
+    prepareTextureForDownload(psp_texture);
 
     *pixels =
         (void *)((Uint8 *)psp_texture->data + rect->y * psp_texture->width * SDL_BYTESPERPIXEL(texture->format) +
@@ -632,11 +750,17 @@ static inline int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL
     PSP_SetBlendMode(data, blendInfo);
 
     if (cmd->data.draw.texture) {
+        uint32_t tbw, twp;
         const VertTCV *verts = (VertTCV *)(vertices + cmd->data.draw.first);
         PSP_Texture *psp_tex = (PSP_Texture *)cmd->data.draw.texture->driverdata;
 
-        sceGuTexMode(psp_tex->format, 0, 0, GU_FALSE);
-        sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, psp_tex->width, psp_tex->data);
+        prepareTextureForUpload(psp_tex);
+
+        tbw = psp_tex->swizzled ? psp_tex->swizzledWidth : psp_tex->width;
+        twp = psp_tex->swizzled ? psp_tex->swizzledData : psp_tex->data;
+
+        sceGuTexMode(psp_tex->format, 0, 0, psp_tex->swizzled);
+        sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, tbw, twp);
         sceGuTexFilter(psp_tex->filter, psp_tex->filter);
         sceGuEnable(GU_TEXTURE_2D);
         sceGuDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF | GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
@@ -700,19 +824,25 @@ static inline int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_R
 
 static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
+    uint32_t tbw, twp;
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     PSP_Texture *psp_tex = (PSP_Texture *)cmd->data.draw.texture->driverdata;
     const size_t count = cmd->data.draw.count;
     const VertTV *verts = (VertTV *)(vertices + cmd->data.draw.first);
-    PSP_BlendInfo blendInfo = {
+    const PSP_BlendInfo blendInfo = {
         .mode = cmd->data.draw.blend,
         .shade = GU_FLAT
     };
 
     PSP_SetBlendMode(data, blendInfo);
 
-    sceGuTexMode(psp_tex->format, 0, 0, GU_FALSE);
-    sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, psp_tex->width, psp_tex->data);
+    prepareTextureForUpload(psp_tex);
+
+    tbw = psp_tex->swizzled ? psp_tex->textureWidth : psp_tex->width;
+    twp = psp_tex->swizzled ? psp_tex->swizzledData : psp_tex->data;
+
+    sceGuTexMode(psp_tex->format, 0, 0, psp_tex->swizzled);
+    sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, tbw, twp);
     sceGuTexFilter(psp_tex->filter, psp_tex->filter);
     sceGuEnable(GU_TEXTURE_2D);
     sceGuDrawArray(GU_SPRITES, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
@@ -834,7 +964,8 @@ static void PSP_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return;
     }
 
-    vfree(psp_texture->data);
+    vfree(psp_texture->swizzledData);
+    SDL_free(psp_texture->data);
     SDL_free(psp_texture);
     texture->driverdata = NULL;
 }
