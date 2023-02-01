@@ -413,15 +413,15 @@ static void AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
 
     int i;
     SDL_DisplayMode mode;
-    const int native_width = dpy->display_modes->pixel_w;
-    const int native_height = dpy->display_modes->pixel_h;
+    const int native_width = dpy->desktop_mode.pixel_w;
+    const int native_height = dpy->desktop_mode.pixel_h;
 
     for (i = 0; i < SDL_arraysize(mode_list); ++i) {
         SDL_zero(mode);
-        mode.format = dpy->display_modes->format;
+        mode.format = dpy->desktop_mode.format;
         mode.display_scale = 1.0f;
-        mode.refresh_rate = dpy->display_modes->refresh_rate;
-        mode.driverdata = dpy->display_modes->driverdata;
+        mode.refresh_rate = dpy->desktop_mode.refresh_rate;
+        mode.driverdata = dpy->desktop_mode.driverdata;
 
         if (rot_90) {
             mode.pixel_w = mode_list[i].h;
@@ -435,7 +435,7 @@ static void AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
         if ((mode.pixel_w < native_width && mode.pixel_h < native_height) ||
             (mode.pixel_w < native_width && mode.pixel_h == native_height) ||
             (mode.pixel_w == native_width && mode.pixel_h < native_height)) {
-            SDL_AddDisplayMode(dpy, &mode);
+            SDL_AddFullscreenDisplayMode(dpy, &mode);
         }
     }
 }
@@ -458,12 +458,12 @@ static void display_handle_geometry(void *data,
     if (driverdata->wl_output_done_count) {
         /* Clear the wl_output ref so Reset doesn't free it */
         display = SDL_GetVideoDisplay(driverdata->display);
-        for (i = 0; i < display->num_display_modes; ++i) {
-            display->display_modes[i].driverdata = NULL;
+        for (i = 0; i < display->num_fullscreen_modes; ++i) {
+            display->fullscreen_modes[i].driverdata = NULL;
         }
 
         /* Okay, now it's safe to reset */
-        SDL_ResetDisplayModes(display);
+        SDL_ResetFullscreenDisplayModes(display);
 
         /* The display has officially started over. */
         driverdata->wl_output_done_count = 0;
@@ -609,15 +609,13 @@ static void display_handle_done(void *data,
     }
 
     /* Set the desktop display mode. */
-    SDL_AddDisplayMode(dpy, &desktop_mode);
-    SDL_SetCurrentDisplayMode(dpy, &desktop_mode);
-    SDL_SetDesktopDisplayMode(dpy, &desktop_mode);
+    SDL_memcpy(&dpy->desktop_mode, &desktop_mode, sizeof(&dpy->desktop_mode));
 
     /* If the desktop is scaled... */
     if (driverdata->scale_factor > 1.0f) {
         /* ...expose the native resolution if viewports are available... */
         if (video->viewporter != NULL) {
-            SDL_AddDisplayMode(dpy, &native_mode);
+            SDL_AddFullscreenDisplayMode(dpy, &native_mode);
         } else {
             /* ...if not, expose some smaller, integer scaled resolutions. */
             int i;
@@ -628,7 +626,7 @@ static void display_handle_done(void *data,
                 desktop_mode.pixel_h = base_pixel_h * i;
                 desktop_mode.display_scale = (float)i;
 
-                SDL_AddDisplayMode(dpy, &desktop_mode);
+                SDL_AddFullscreenDisplayMode(dpy, &desktop_mode);
             }
         }
     }
@@ -749,7 +747,7 @@ static void Wayland_free_display(SDL_VideoData *d, uint32_t id)
                         }
                     }
                 }
-                SDL_DelVideoDisplay(displays[i]);
+                SDL_DelVideoDisplay(displays[i], SDL_FALSE);
                 if (data->xdg_output) {
                     zxdg_output_v1_destroy(data->xdg_output);
                 }
@@ -974,10 +972,11 @@ int Wayland_VideoInit(_THIS)
 static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *driverdata = display->driverdata;
+    const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(display->id);
     rect->x = driverdata->x;
     rect->y = driverdata->y;
-    rect->w = display->current_mode.screen_w;
-    rect->h = display->current_mode.screen_h;
+    rect->w = mode->screen_w;
+    rect->h = mode->screen_h;
     return 0;
 }
 
@@ -1017,11 +1016,11 @@ static void Wayland_VideoCleanup(_THIS)
         SDL_free(display->driverdata);
         display->driverdata = NULL;
 
-        for (j = display->num_display_modes; j--;) {
-            display->display_modes[j].driverdata = NULL;
+        for (j = display->num_fullscreen_modes; j--;) {
+            display->fullscreen_modes[j].driverdata = NULL;
         }
         display->desktop_mode.driverdata = NULL;
-        SDL_DelVideoDisplay(display->id);
+        SDL_DelVideoDisplay(display->id, SDL_FALSE);
     }
     data->output_list = NULL;
 

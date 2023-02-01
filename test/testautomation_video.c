@@ -339,12 +339,13 @@ int video_getWindowFlags(void *arg)
 }
 
 /**
- * @brief Tests the functionality of the SDL_GetNumDisplayModes function
+ * @brief Tests the functionality of the SDL_GetFullscreenDisplayModes function
  */
-int video_getNumDisplayModes(void *arg)
+int video_getFullscreenDisplayModes(void *arg)
 {
     SDL_DisplayID *displays;
-    int result;
+    const SDL_DisplayMode **modes;
+    int count;
     int i;
 
     /* Get number of displays */
@@ -354,9 +355,11 @@ int video_getNumDisplayModes(void *arg)
 
         /* Make call for each display */
         for (i = 0; displays[i]; ++i) {
-            result = SDL_GetNumDisplayModes(displays[i]);
-            SDLTest_AssertPass("Call to SDL_GetNumDisplayModes(%d)", i);
-            SDLTest_AssertCheck(result >= 1, "Validate returned value from function; expected: >=1; got: %d", result);
+            modes = SDL_GetFullscreenDisplayModes(displays[i], &count);
+            SDLTest_AssertPass("Call to SDL_GetFullscreenDisplayModes(%" SDL_PRIu32 ")", displays[i]);
+            SDLTest_AssertCheck(modes != NULL, "Validate returned value from function; expected != NULL; got: %p", modes);
+            SDLTest_AssertCheck(count >= 0, "Validate number of modes; expected: >= 0; got: %d", count);
+            SDL_free(modes);
         }
         SDL_free(displays);
     }
@@ -365,18 +368,15 @@ int video_getNumDisplayModes(void *arg)
 }
 
 /**
- * @brief Tests the functionality of the SDL_GetClosestDisplayMode function against current resolution
+ * @brief Tests the functionality of the SDL_GetClosestFullscreenDisplayMode function against current resolution
  */
 int video_getClosestDisplayModeCurrentResolution(void *arg)
 {
-    int result;
     SDL_DisplayID *displays;
+    const SDL_DisplayMode **modes;
     SDL_DisplayMode current;
-    SDL_DisplayMode target;
-    SDL_DisplayMode closest;
-    SDL_DisplayMode *dResult;
-    int i;
-    int variation;
+    const SDL_DisplayMode *closest;
+    int i, num_modes;
 
     /* Get number of displays */
     displays = SDL_GetDisplays(NULL);
@@ -388,35 +388,22 @@ int video_getClosestDisplayModeCurrentResolution(void *arg)
             SDLTest_Log("Testing against display: %" SDL_PRIu32 "", displays[i]);
 
             /* Get first display mode to get a sane resolution; this should always work */
-            result = SDL_GetDisplayMode(displays[i], 0, &current);
-            SDLTest_AssertPass("Call to SDL_GetDisplayMode()");
-            SDLTest_AssertCheck(result == 0, "Verify return value, expected: 0, got: %d", result);
-            if (result != 0) {
-                return TEST_ABORTED;
-            }
-
-            /* Set the desired resolution equals to current resolution */
-            SDL_zero(target);
-            target.pixel_w = current.pixel_w;
-            target.pixel_h = current.pixel_h;
-            for (variation = 0; variation < 8; variation++) {
-                /* Vary constraints on other query parameters */
-                target.format = (variation & 1) ? current.format : 0;
-                target.refresh_rate = (variation & 2) ? current.refresh_rate : 0.0f;
-                target.driverdata = (variation & 4) ? current.driverdata : 0;
+            modes = SDL_GetFullscreenDisplayModes(displays[i], &num_modes);
+            SDLTest_AssertPass("Call to SDL_GetDisplayModes()");
+            SDLTest_Assert(modes != NULL, "Verify returned value is not NULL");
+            if (num_modes > 0) {
+                SDL_memcpy(&current, modes[0], sizeof(current));
 
                 /* Make call */
-                dResult = SDL_GetClosestDisplayMode(displays[i], &target, &closest);
-                SDLTest_AssertPass("Call to SDL_GetClosestDisplayMode(target=current/variation%d)", variation);
-                SDLTest_Assert(dResult != NULL, "Verify returned value is not NULL");
+                closest = SDL_GetClosestFullscreenDisplayMode(displays[i], current.pixel_w, current.pixel_h, current.refresh_rate);
+                SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=current)");
+                SDLTest_Assert(closest != NULL, "Verify returned value is not NULL");
 
                 /* Check that one gets the current resolution back again */
-                SDLTest_AssertCheck(closest.pixel_w == current.pixel_w, "Verify returned width matches current width; expected: %d, got: %d", current.pixel_w, closest.pixel_w);
-                SDLTest_AssertCheck(closest.pixel_h == current.pixel_h, "Verify returned height matches current height; expected: %d, got: %d", current.pixel_h, closest.pixel_h);
-                /* NOLINTBEGIN(clang-analyzer-core.NullDereference): Checked earlier for NULL */
-                SDLTest_AssertCheck(closest.pixel_w == dResult->pixel_w, "Verify return value matches assigned value; expected: %d, got: %d", closest.pixel_w, dResult->pixel_w);
-                SDLTest_AssertCheck(closest.pixel_h == dResult->pixel_h, "Verify return value matches assigned value; expected: %d, got: %d", closest.pixel_h, dResult->pixel_h);
-                /* NOLINTEND(clang-analyzer-core.NullDereference) */
+                if (closest) {
+                    SDLTest_AssertCheck(closest->pixel_w == current.pixel_w, "Verify returned width matches current width; expected: %d, got: %d", current.pixel_w, closest->pixel_w);
+                    SDLTest_AssertCheck(closest->pixel_h == current.pixel_h, "Verify returned height matches current height; expected: %d, got: %d", current.pixel_h, closest->pixel_h);
+                }
             }
         }
         SDL_free(displays);
@@ -426,13 +413,12 @@ int video_getClosestDisplayModeCurrentResolution(void *arg)
 }
 
 /**
- * @brief Tests the functionality of the SDL_GetClosestDisplayMode function against random resolution
+ * @brief Tests the functionality of the SDL_GetClosestFullscreenDisplayMode function against random resolution
  */
 int video_getClosestDisplayModeRandomResolution(void *arg)
 {
     SDL_DisplayID *displays;
     SDL_DisplayMode target;
-    SDL_DisplayMode closest;
     int i;
     int variation;
 
@@ -451,12 +437,11 @@ int video_getClosestDisplayModeRandomResolution(void *arg)
                 SDL_zero(target);
                 target.pixel_w = (variation & 1) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
                 target.pixel_h = (variation & 2) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
-                target.format = (variation & 4) ? SDLTest_RandomIntegerInRange(1, 10) : 0;
                 target.refresh_rate = (variation & 8) ? (float)SDLTest_RandomIntegerInRange(25, 120) : 0.0f;
 
                 /* Make call; may or may not find anything, so don't validate any further */
-                SDL_GetClosestDisplayMode(displays[i], &target, &closest);
-                SDLTest_AssertPass("Call to SDL_GetClosestDisplayMode(target=random/variation%d)", variation);
+                SDL_GetClosestFullscreenDisplayMode(displays[i], target.pixel_w, target.pixel_h, target.refresh_rate);
+                SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=random/variation%d)", variation);
             }
         }
         SDL_free(displays);
@@ -466,31 +451,22 @@ int video_getClosestDisplayModeRandomResolution(void *arg)
 }
 
 /**
- * @brief Tests call to SDL_GetWindowDisplayMode
+ * @brief Tests call to SDL_GetWindowFullscreenMode
  *
- * @sa http://wiki.libsdl.org/SDL_GetWindowDisplayMode
+ * @sa http://wiki.libsdl.org/SDL_GetWindowFullscreenMode
  */
 int video_getWindowDisplayMode(void *arg)
 {
     SDL_Window *window;
     const char *title = "video_getWindowDisplayMode Test Window";
-    SDL_DisplayMode mode;
-    int result;
-
-    /* Invalidate part of the mode content so we can check values later */
-    mode.pixel_w = -1;
-    mode.pixel_h = -1;
-    mode.refresh_rate = -1.0f;
+    const SDL_DisplayMode *mode;
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
     if (window != NULL) {
-        result = SDL_GetWindowDisplayMode(window, &mode);
-        SDLTest_AssertPass("Call to SDL_GetWindowDisplayMode()");
-        SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0, got: %d", result);
-        SDLTest_AssertCheck(mode.pixel_w > 0, "Validate mode.w content; expected: >0, got: %d", mode.pixel_w);
-        SDLTest_AssertCheck(mode.pixel_h > 0, "Validate mode.h content; expected: >0, got: %d", mode.pixel_h);
-        SDLTest_AssertCheck(mode.refresh_rate > 0.0f, "Validate mode.refresh_rate content; expected: >0, got: %g", mode.refresh_rate);
+        mode = SDL_GetWindowFullscreenMode(window);
+        SDLTest_AssertPass("Call to SDL_GetWindowFullscreenMode()");
+        SDLTest_AssertCheck(mode == NULL, "Validate result value; expected: NULL, got: %p", mode);
     }
 
     /* Clean up */
@@ -519,43 +495,18 @@ static void checkInvalidWindowError()
 }
 
 /**
- * @brief Tests call to SDL_GetWindowDisplayMode with invalid input
+ * @brief Tests call to SDL_GetWindowFullscreenMode with invalid input
  *
- * @sa http://wiki.libsdl.org/SDL_GetWindowDisplayMode
+ * @sa http://wiki.libsdl.org/SDL_GetWindowFullscreenMode
  */
 int video_getWindowDisplayModeNegative(void *arg)
 {
-    const char *expectedError = "Parameter 'mode' is invalid";
-    char *lastError;
-    SDL_Window *window;
-    const char *title = "video_getWindowDisplayModeNegative Test Window";
-    SDL_DisplayMode mode;
-    int result;
-
-    /* Call against new test window */
-    window = createVideoSuiteTestWindow(title);
-    if (window != NULL) {
-        result = SDL_GetWindowDisplayMode(window, NULL);
-        SDLTest_AssertPass("Call to SDL_GetWindowDisplayMode(...,mode=NULL)");
-        SDLTest_AssertCheck(result == -1, "Validate result value; expected: -1, got: %d", result);
-        lastError = (char *)SDL_GetError();
-        SDLTest_AssertPass("SDL_GetError()");
-        SDLTest_AssertCheck(lastError != NULL, "Verify error message is not NULL");
-        if (lastError != NULL) {
-            SDLTest_AssertCheck(SDL_strcmp(lastError, expectedError) == 0,
-                                "SDL_GetError(): expected message '%s', was message: '%s'",
-                                expectedError,
-                                lastError);
-        }
-    }
-
-    /* Clean up */
-    destroyVideoSuiteTestWindow(window);
+    const SDL_DisplayMode *mode;
 
     /* Call against invalid window */
-    result = SDL_GetWindowDisplayMode(NULL, &mode);
-    SDLTest_AssertPass("Call to SDL_GetWindowDisplayMode(window=NULL,...)");
-    SDLTest_AssertCheck(result == -1, "Validate result value; expected: -1, got: %d", result);
+    mode = SDL_GetWindowFullscreenMode(NULL);
+    SDLTest_AssertPass("Call to SDL_GetWindowFullscreenMode(window=NULL)");
+    SDLTest_AssertCheck(mode == NULL, "Validate result value; expected: NULL, got: %p", mode);
     checkInvalidWindowError();
 
     return TEST_COMPLETED;
@@ -1748,7 +1699,7 @@ int video_setWindowCenteredOnDisplay(void *arg)
                 SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
 
                 /* Enter fullscreen desktop */
-                result = SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+                result = SDL_SetWindowFullscreen(window, SDL_TRUE);
                 SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
 
                 /* Check we are filling the full display */
@@ -1763,7 +1714,7 @@ int video_setWindowCenteredOnDisplay(void *arg)
                 SDLTest_AssertCheck(currentY == expectedDisplayRect.y, "Validate y (current: %d, expected: %d)", currentY, expectedDisplayRect.y);
 
                 /* Leave fullscreen desktop */
-                result = SDL_SetWindowFullscreen(window, 0);
+                result = SDL_SetWindowFullscreen(window, SDL_FALSE);
                 SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
 
                 /* Check window was restored correctly */
@@ -1832,7 +1783,7 @@ static const SDLTest_TestCaseReference videoTest5 = {
 };
 
 static const SDLTest_TestCaseReference videoTest6 = {
-    (SDLTest_TestCaseFp)video_getNumDisplayModes, "video_getNumDisplayModes", "Use SDL_GetNumDisplayModes function to get number of display modes", TEST_ENABLED
+    (SDLTest_TestCaseFp)video_getFullscreenDisplayModes, "video_getFullscreenDisplayModes", "Use SDL_GetFullscreenDisplayModes function to get number of display modes", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference videoTest7 = {

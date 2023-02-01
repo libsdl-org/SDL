@@ -106,8 +106,6 @@ static SDL_VideoDevice *VITA_Create()
     /* Setup all functions which we can handle */
     device->VideoInit = VITA_VideoInit;
     device->VideoQuit = VITA_VideoQuit;
-    device->GetDisplayModes = VITA_GetDisplayModes;
-    device->SetDisplayMode = VITA_SetDisplayMode;
     device->CreateSDLWindow = VITA_CreateWindow;
     device->CreateSDLWindowFrom = VITA_CreateWindowFrom;
     device->SetWindowTitle = VITA_SetWindowTitle;
@@ -208,7 +206,9 @@ int VITA_VideoInit(_THIS)
     /* 32 bpp for default */
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
-    SDL_AddBasicVideoDisplay(&mode);
+    if (SDL_AddBasicVideoDisplay(&mode) == 0) {
+        return -1;
+    }
 
     VITA_InitTouch();
     VITA_InitKeyboard();
@@ -220,16 +220,6 @@ int VITA_VideoInit(_THIS)
 void VITA_VideoQuit(_THIS)
 {
     VITA_QuitTouch();
-}
-
-void VITA_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
-{
-    SDL_AddDisplayMode(display, &display->current_mode);
-}
-
-int VITA_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
-{
-    return 0;
 }
 
 int VITA_CreateWindow(_THIS, SDL_Window *window)

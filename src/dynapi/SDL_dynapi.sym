@@ -153,7 +153,6 @@ SDL3_0.0.0 {
     SDL_GetCPUCacheLineSize;
     SDL_GetCPUCount;
     SDL_GetClipboardText;
-    SDL_GetClosestDisplayMode;
     SDL_GetCurrentAudioDriver;
     SDL_GetCurrentDisplayMode;
     SDL_GetCurrentVideoDriver;
@@ -166,7 +165,6 @@ SDL3_0.0.0 {
     SDL_GetDisplayPhysicalDPI;
     SDL_GetDisplayForPoint;
     SDL_GetDisplayForRect;
-    SDL_GetDisplayMode;
     SDL_GetDisplayName;
     SDL_GetDisplayOrientation;
     SDL_GetDisplayUsableBounds;
@@ -260,7 +258,6 @@ SDL3_0.0.0 {
     SDL_GetNumAllocations;
     SDL_GetNumAudioDevices;
     SDL_GetNumAudioDrivers;
-    SDL_GetNumDisplayModes;
     SDL_GetNumGamepadMappings;
     SDL_GetNumJoystickAxes;
     SDL_GetNumJoystickButtons;
@@ -348,7 +345,7 @@ SDL3_0.0.0 {
     SDL_GetWindowBordersSize;
     SDL_GetWindowData;
     SDL_GetDisplayForWindow;
-    SDL_GetWindowDisplayMode;
+    SDL_GetWindowFullscreenMode;
     SDL_GetWindowFlags;
     SDL_GetWindowFromID;
     SDL_GetWindowGrab;
@@ -613,7 +610,7 @@ SDL3_0.0.0 {
     SDL_SetWindowAlwaysOnTop;
     SDL_SetWindowBordered;
     SDL_SetWindowData;
-    SDL_SetWindowDisplayMode;
+    SDL_SetWindowFullscreenMode;
     SDL_SetWindowFullscreen;
     SDL_SetWindowGrab;
     SDL_SetWindowHitTest;
@@ -840,6 +837,8 @@ SDL3_0.0.0 {
     SDL_ConvertAudioSamples;
     SDL_GetDisplays;
     SDL_GetPrimaryDisplay;
+    SDL_GetFullscreenDisplayModes;
+    SDL_GetClosestFullscreenDisplayMode;
     # extra symbols go here (don't modify this line)
   local: *;
 };

@@ -307,17 +307,12 @@ static int WINRT_AddDisplaysForOutput(_THIS, IDXGIAdapter1 *dxgiAdapter1, int ou
         mode.pixel_h = (dxgiOutputDesc.DesktopCoordinates.bottom - dxgiOutputDesc.DesktopCoordinates.top);
         mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
         display.desktop_mode = mode;
-        display.current_mode = mode;
-        if (!SDL_AddDisplayMode(&display, &mode)) {
-            goto done;
-        }
     } else if (FAILED(hr)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIOutput::FindClosestMatchingMode failed", hr);
         goto done;
     } else {
         display.name = WIN_StringToUTF8(dxgiOutputDesc.DeviceName);
         WINRT_DXGIModeToSDLDisplayMode(&closestMatch, &display.desktop_mode);
-        display.current_mode = display.desktop_mode;
 
         hr = dxgiOutput->GetDisplayModeList(DXGI_FORMAT_B8G8R8A8_UNORM, 0, &numModes, NULL);
         if (FAILED(hr)) {
@@ -343,7 +338,7 @@ static int WINRT_AddDisplaysForOutput(_THIS, IDXGIAdapter1 *dxgiAdapter1, int ou
         for (UINT i = 0; i < numModes; ++i) {
             SDL_DisplayMode sdlMode;
             WINRT_DXGIModeToSDLDisplayMode(&dxgiModes[i], &sdlMode);
-            SDL_AddDisplayMode(&display, &sdlMode);
+            SDL_AddFullscreenDisplayMode(&display, &sdlMode);
         }
     }
 
@@ -432,9 +427,7 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
 
                 mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
                 display.desktop_mode = mode;
-                display.current_mode = mode;
-                bool error = SDL_AddDisplayMode(&display, &mode) < 0 ||
-                             SDL_AddVideoDisplay(&display, SDL_FALSE) == 0;
+                bool error = (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0);
                 if (display.name) {
                     SDL_free(display.name);
                 }

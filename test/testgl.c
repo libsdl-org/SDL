@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     int fsaa, accel;
     int value;
     int i, done;
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode *mode;
     SDL_Event event;
     Uint64 then, now;
     Uint32 frames;
@@ -293,8 +293,10 @@ int main(int argc, char *argv[])
         swap_interval = 0;
     }
 
-    SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode);
-    SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
+    mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+    if (mode) {
+        SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode->format));
+    }
 
     ret_interval = SDL_GL_GetSwapInterval(&interval);
     if (ret_interval < 0) {

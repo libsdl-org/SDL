@@ -44,18 +44,28 @@ typedef Uint32 SDL_DisplayID;
 typedef Uint32 SDL_WindowID;
 
 /**
+ *  \brief The flags on a display mode
+ */
+typedef enum
+{
+    SDL_DISPLAYMODE_DESKTOP         = 0x00000001,   /**< The display uses this as the desktop mode */
+    SDL_DISPLAYMODE_CURRENT         = 0x00000002,   /**< The display is currently using this mode */
+
+} SDL_DisplayModeFlags;
+
+/**
  *  \brief  The structure that defines a display mode
  *
- *  \sa SDL_GetNumDisplayModes()
- *  \sa SDL_GetDisplayMode()
+ *  \sa SDL_GetFullscreenDisplayModes()
  *  \sa SDL_GetDesktopDisplayMode()
  *  \sa SDL_GetCurrentDisplayMode()
- *  \sa SDL_GetClosestDisplayMode()
- *  \sa SDL_SetWindowDisplayMode()
- *  \sa SDL_GetWindowDisplayMode()
+ *  \sa SDL_SetWindowFullscreenMode()
+ *  \sa SDL_GetWindowFullscreenMode()
  */
 typedef struct
 {
+    SDL_DisplayID displayID;    /**< the display this mode is associated with */
+    Uint32 flags;               /**< whether this mode is the current mode or a desktop mode */
     Uint32 format;              /**< pixel format */
     int pixel_w;                /**< width in pixels (used for creating back buffers) */
     int pixel_h;                /**< height in pixels (used for creating back buffers) */
@@ -422,24 +432,9 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayPhysicalDPI(SDL_DisplayID displayID, f
 extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayOrientation(SDL_DisplayID displayID);
 
 /**
- * Get the number of available display modes.
- *
- * \param displayID the instance ID of the display to query
- * \returns a number >= 1 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetDisplayMode
- * \sa SDL_GetDisplays
- */
-extern DECLSPEC int SDLCALL SDL_GetNumDisplayModes(SDL_DisplayID displayID);
-
-/**
- * Get information about a specific display mode.
+ * Get a list of fullscreen display modes available on a display.
  *
  * The display modes are sorted in this priority:
- *
  * - screen_w -> largest to smallest
  * - screen_h -> largest to smallest
  * - pixel_w -> largest to smallest
@@ -449,62 +444,16 @@ extern DECLSPEC int SDLCALL SDL_GetNumDisplayModes(SDL_DisplayID displayID);
  * - refresh rate -> highest to lowest
  *
  * \param displayID the instance ID of the display to query
- * \param modeIndex the index of the display mode to query
- * \param mode an SDL_DisplayMode structure filled in with the mode at
- *             `modeIndex`
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \param count a pointer filled in with the number of displays returned
+ * \returns a NULL terminated array of display mode pointers which should be freed
+ *          with SDL_free(), or NULL on error; call SDL_GetError() for more
+ *          details.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetNumDisplayModes
- */
-extern DECLSPEC int SDLCALL SDL_GetDisplayMode(SDL_DisplayID displayID, int modeIndex, SDL_DisplayMode *mode);
-
-/**
- * Get information about the desktop's display mode.
- *
- * There's a difference between this function and SDL_GetCurrentDisplayMode()
- * when SDL runs fullscreen and has changed the resolution. In that case this
- * function will return the previous native display mode, and not the current
- * display mode.
- *
- * \param displayID the instance ID of the display to query
- * \param mode an SDL_DisplayMode structure filled in with the current display
- *             mode
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetCurrentDisplayMode
- * \sa SDL_GetDisplayMode
- * \sa SDL_SetWindowDisplayMode
- */
-extern DECLSPEC int SDLCALL SDL_GetDesktopDisplayMode(SDL_DisplayID displayID, SDL_DisplayMode *mode);
-
-/**
- * Get information about the current display mode.
- *
- * There's a difference between this function and SDL_GetDesktopDisplayMode()
- * when SDL runs fullscreen and has changed the resolution. In that case this
- * function will return the current display mode, and not the previous native
- * display mode.
- *
- * \param displayID the instance ID of the display to query
- * \param mode an SDL_DisplayMode structure filled in with the current display
- *             mode
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetDesktopDisplayMode
- * \sa SDL_GetDisplayMode
  * \sa SDL_GetDisplays
- * \sa SDL_SetWindowDisplayMode
  */
-extern DECLSPEC int SDLCALL SDL_GetCurrentDisplayMode(SDL_DisplayID displayID, SDL_DisplayMode *mode);
+extern DECLSPEC const SDL_DisplayMode **SDLCALL SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *count);
 
 /**
  * Get the closest match to the requested display mode.
@@ -517,19 +466,57 @@ extern DECLSPEC int SDLCALL SDL_GetCurrentDisplayMode(SDL_DisplayID displayID, S
  * small, then NULL is returned.
  *
  * \param displayID the instance ID of the display to query
- * \param mode an SDL_DisplayMode structure containing the desired display
- *             mode, should be zero initialized
- * \param closest an SDL_DisplayMode structure filled in with the closest
- *                match of the available display modes
+ * \param w the width in pixels of the desired display mode
+ * \param h the height in pixels of the desired display mode
+ * \param refresh_rate the refresh rate of the desired display mode, or 0.0f for the desktop refresh rate
+ * \returns a pointer to the closest display mode equal to or larger than the desired mode, or NULL on error; call SDL_GetError() for more information.
  * \returns the passed in value `closest` or NULL if no matching video mode
  *          was available; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetDisplayMode
- * \sa SDL_GetNumDisplayModes
+ * \sa SDL_GetDisplays
+ * \sa SDL_GetFullscreenDisplayModes
  */
-extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode(SDL_DisplayID displayID, const SDL_DisplayMode *mode, SDL_DisplayMode *closest);
+extern DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate);
+
+/**
+ * Get information about the desktop's display mode.
+ *
+ * There's a difference between this function and SDL_GetCurrentDisplayMode()
+ * when SDL runs fullscreen and has changed the resolution. In that case this
+ * function will return the previous native display mode, and not the current
+ * display mode.
+ *
+ * \param displayID the instance ID of the display to query
+ * \returns a pointer to the desktop display mode or NULL on error; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetCurrentDisplayMode
+ * \sa SDL_GetDisplays
+ */
+extern DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetDesktopDisplayMode(SDL_DisplayID displayID);
+
+/**
+ * Get information about the current display mode.
+ *
+ * There's a difference between this function and SDL_GetDesktopDisplayMode()
+ * when SDL runs fullscreen and has changed the resolution. In that case this
+ * function will return the current display mode, and not the previous native
+ * display mode.
+ *
+ * \param displayID the instance ID of the display to query
+ * \returns a pointer to the desktop display mode or NULL on error; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetDesktopDisplayMode
+ * \sa SDL_GetDisplays
+ */
+extern DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetCurrentDisplayMode(SDL_DisplayID displayID);
 
 /**
  * Get the display containing a point
@@ -576,41 +563,36 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForRect(const SDL_Rect *rect
 extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForWindow(SDL_Window *window);
 
 /**
- * Set the display mode to use when a window is visible at fullscreen.
+ * Set the display mode to use when a window is visible and fullscreen.
  *
  * This only affects the display mode used when the window is fullscreen. To
  * change the window size when the window is not fullscreen, use
  * SDL_SetWindowSize().
  *
  * \param window the window to affect
- * \param mode the SDL_DisplayMode structure representing the mode to use, or
- *             NULL to use the window's dimensions and the desktop's format
- *             and refresh rate
+ * \param mode a pointer to the display mode to use, which can be NULL for desktop mode, or one of the fullscreen modes returned by SDL_GetFullscreenDisplayModes().
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetWindowDisplayMode
+ * \sa SDL_GetWindowFullscreenMode
  * \sa SDL_SetWindowFullscreen
  */
-extern DECLSPEC int SDLCALL SDL_SetWindowDisplayMode(SDL_Window *window, const SDL_DisplayMode *mode);
+extern DECLSPEC int SDLCALL SDL_SetWindowFullscreenMode(SDL_Window *window, const SDL_DisplayMode *mode);
 
 /**
  * Query the display mode to use when a window is visible at fullscreen.
  *
  * \param window the window to query
- * \param mode an SDL_DisplayMode structure filled in with the fullscreen
- *             display mode
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \returns a pointer to the fullscreen mode to use or NULL for desktop mode
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SetWindowDisplayMode
+ * \sa SDL_SetWindowFullscreenMode
  * \sa SDL_SetWindowFullscreen
  */
-extern DECLSPEC int SDLCALL SDL_GetWindowDisplayMode(SDL_Window *window, SDL_DisplayMode *mode);
+extern DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetWindowFullscreenMode(SDL_Window *window);
 
 /**
  * Get the raw ICC profile data for the screen the window is currently on.
@@ -879,8 +861,8 @@ extern DECLSPEC void SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x, i
  * The window size in screen coordinates may differ from the size in pixels if
  * the window is on a high density display (one with an OS scaling factor).
  *
- * Fullscreen windows automatically match the size of the display mode, and
- * you should use SDL_SetWindowDisplayMode() to change their size.
+ * This only affects the size of the window when not in fullscreen mode. To change
+ * the fullscreen mode of a window, use SDL_SetWindowFullscreenMode()
  *
  * \param window the window to change
  * \param w the width of the window, must be > 0
@@ -889,7 +871,7 @@ extern DECLSPEC void SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x, i
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetWindowSize
- * \sa SDL_SetWindowDisplayMode
+ * \sa SDL_SetWindowFullscreenMode
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h);
 
@@ -1152,22 +1134,20 @@ extern DECLSPEC void SDLCALL SDL_RestoreWindow(SDL_Window *window);
 /**
  * Set a window's fullscreen state.
  *
- * `flags` may be `SDL_WINDOW_FULLSCREEN_EXCLUSIVE`, for "real" fullscreen
- * with a videomode change; `SDL_WINDOW_FULLSCREEN_DESKTOP` for "fake"
- * fullscreen that takes the size of the desktop; and 0 for windowed mode.
+ * By default a window in fullscreen state uses fullscreen desktop mode,
+ * but a specific display mode can be set using SDL_SetWindowFullscreenMode().
  *
  * \param window the window to change
- * \param flags `SDL_WINDOW_FULLSCREEN_EXCLUSIVE`,
- *              `SDL_WINDOW_FULLSCREEN_DESKTOP` or 0
+ * \param fullscreen SDL_TRUE for fullscreen mode, SDL_FALSE for windowed mode
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetWindowDisplayMode
- * \sa SDL_SetWindowDisplayMode
+ * \sa SDL_GetWindowFullscreenMode
+ * \sa SDL_SetWindowFullscreenMode
  */
-extern DECLSPEC int SDLCALL SDL_SetWindowFullscreen(SDL_Window *window, Uint32 flags);
+extern DECLSPEC int SDLCALL SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool fullscreen);
 
 /**
  * Get the SDL surface associated with the window.

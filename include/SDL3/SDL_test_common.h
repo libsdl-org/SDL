@@ -61,7 +61,8 @@ typedef struct
 
     /* Video info */
     const char *videodriver;
-    int display;
+    int display_index;
+    SDL_DisplayID displayID;
     const char *window_title;
     const char *window_icon;
     Uint32 window_flags;
@@ -79,6 +80,7 @@ typedef struct
     float scale;
     int depth;
     float refresh_rate;
+    SDL_DisplayMode fullscreen_mode;
     int num_windows;
     SDL_Window **windows;
 

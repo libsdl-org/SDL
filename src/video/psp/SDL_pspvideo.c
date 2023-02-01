@@ -133,7 +133,6 @@ VideoBootStrap PSP_bootstrap = {
 /*****************************************************************************/
 int PSP_VideoInit(_THIS)
 {
-    SDL_VideoDisplay display;
     SDL_DisplayMode mode;
 
     SDL_zero(mode);
@@ -144,17 +143,7 @@ int PSP_VideoInit(_THIS)
     /* 32 bpp for default */
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
-    SDL_zero(display);
-    display.desktop_mode = mode;
-    display.current_mode = mode;
-
-    SDL_AddDisplayMode(&display, &mode);
-
-    /* 16 bpp secondary mode */
-    mode.format = SDL_PIXELFORMAT_BGR565;
-    SDL_AddDisplayMode(&display, &mode);
-
-    if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
+    if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
     return 0;
@@ -166,12 +155,27 @@ void PSP_VideoQuit(_THIS)
 
 void PSP_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
+    SDL_DisplayMode mode;
+
+    SDL_zero(mode);
+    mode.pixel_w = 480;
+    mode.pixel_h = 272;
+    mode.refresh_rate = 60.0f;
+
+    /* 32 bpp for default */
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
+    SDL_AddFullscreenDisplayMode(display, &mode);
+
+    /* 16 bpp secondary mode */
+    mode.format = SDL_PIXELFORMAT_BGR565;
+    SDL_AddFullscreenDisplayMode(display, &mode);
 }
 
 int PSP_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
+
 #define EGLCHK(stmt)                           \
     do {                                       \
         EGLint err;                            \

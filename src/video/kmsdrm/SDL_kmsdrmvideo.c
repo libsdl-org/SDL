@@ -490,27 +490,22 @@ KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata)
    available on the DRM connector of the display.
    We use the SDL mode list (which we filled in KMSDRM_GetDisplayModes)
    because it's ordered, while the list on the connector is mostly random.*/
-static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display,
-                                                     uint32_t width, uint32_t height, uint32_t refresh_rate)
+static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display, int width, int height)
 {
 
     SDL_DisplayData *dispdata = display->driverdata;
     drmModeConnector *connector = dispdata->connector;
 
-    SDL_DisplayMode target, closest;
+    const SDL_DisplayMode *closest;
     drmModeModeInfo *drm_mode;
 
-    SDL_zero(target);
-    target.screen_w = (int)width;
-    target.screen_h = (int)height;
-    target.refresh_rate = (int)refresh_rate;
-
-    if (!SDL_GetClosestDisplayMode(SDL_atoi(display->name), &target, &closest)) {
-        return NULL;
-    } else {
-        SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)closest.driverdata;
+    closest = SDL_GetClosestFullscreenDisplayMode(display->id, width, height, 0.0f);
+    if (closest) {
+        const SDL_DisplayModeData *modedata = (const SDL_DisplayModeData *)closest->driverdata;
         drm_mode = &connector->modes[modedata->mode_index];
         return drm_mode;
+    } else {
+        return NULL;
     }
 }
 
@@ -876,7 +871,6 @@ static void KMSDRM_AddDisplay(_THIS, drmModeConnector *connector, drmModeRes *re
     display.desktop_mode.refresh_rate = CalculateRefreshRate(&dispdata->mode);
     display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
     display.desktop_mode.driverdata = modedata;
-    display.current_mode = display.desktop_mode;
 
     /* Add the display to the list of SDL displays. */
     if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
@@ -1124,11 +1118,7 @@ static void KMSDRM_GetModeToSet(SDL_Window *window, drmModeModeInfo *out_mode)
     if ((window->flags & SDL_WINDOW_FULLSCREEN_EXCLUSIVE) != 0) {
         *out_mode = dispdata->fullscreen_mode;
     } else {
-        drmModeModeInfo *mode;
-
-        mode = KMSDRM_GetClosestDisplayMode(display,
-                                            window->windowed.w, window->windowed.h, 0);
-
+        drmModeModeInfo *mode = KMSDRM_GetClosestDisplayMode(display, window->windowed.w, window->windowed.h);
         if (mode) {
             *out_mode = *mode;
         } else {
@@ -1161,7 +1151,6 @@ int KMSDRM_CreateSurfaces(_THIS, SDL_Window *window)
     SDL_WindowData *windata = window->driverdata;
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_DisplayData *dispdata = display->driverdata;
-    SDL_DisplayMode current_mode;
 
     uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
     uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
@@ -1183,15 +1172,20 @@ int KMSDRM_CreateSurfaces(_THIS, SDL_Window *window)
 
     /* The KMSDRM backend doesn't always set the mode the higher-level code in
        SDL_video.c expects. Hulk-smash the display's current_mode to keep the
-       mode that's set in sync with what SDL_video.c thinks is set */
+       mode that's set in sync with what SDL_video.c thinks is set
+
+       FIXME: How do we do that now? Can we get a better idea at the higher level?
+     */
     KMSDRM_GetModeToSet(window, &dispdata->mode);
 
+    /*
     SDL_zero(current_mode);
     current_mode.pixel_w = dispdata->mode.hdisplay;
     current_mode.pixel_h = dispdata->mode.vdisplay;
     current_mode.refresh_rate = CalculateRefreshRate(&dispdata->mode);
     current_mode.format = SDL_PIXELFORMAT_ARGB8888;
     SDL_SetCurrentDisplayMode(display, &current_mode);
+    */
 
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
                                             dispdata->mode.hdisplay, dispdata->mode.vdisplay,
@@ -1308,7 +1302,7 @@ void KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
         mode.format = SDL_PIXELFORMAT_ARGB8888;
         mode.driverdata = modedata;
 
-        if (!SDL_AddDisplayMode(display, &mode)) {
+        if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
             SDL_free(modedata);
         }
     }
@@ -1508,8 +1502,7 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
            are considered "windowed" at this point of their life.
            If a window is fullscreen, SDL internals will call
            KMSDRM_SetWindowFullscreen() to reconfigure it if necessary. */
-        mode = KMSDRM_GetClosestDisplayMode(display,
-                                            window->windowed.w, window->windowed.h, 0);
+        mode = KMSDRM_GetClosestDisplayMode(display, window->windowed.w, window->windowed.h);
 
         if (mode) {
             dispdata->fullscreen_mode = *mode;
