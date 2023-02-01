@@ -150,6 +150,9 @@ Cocoa_Metal_CreateView(_THIS, SDL_Window *window)
 
         [view addSubview:newview];
 
+        /* Make sure the drawable size is up to date after attaching the view. */
+        [newview updateDrawableSize];
+
         metalview = (SDL_MetalView)CFBridgingRetain(newview);
 
         return metalview;
