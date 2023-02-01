@@ -962,7 +962,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 
             /* In order for interaction with the window decorations and menu to work properly
                on Mutter, we need to ungrab the keyboard when the the mouse leaves. */
-            if ((data->window->flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
+            if ((data->window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
                 X11_SetWindowKeyboardGrab(_this, data->window, SDL_FALSE);
             }
 
@@ -1464,7 +1464,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             const Uint32 flags = X11_GetNetWMState(_this, data->window, xevent->xproperty.window);
             const Uint32 changed = flags ^ data->window->flags;
 
-            if ((changed & (SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN_MASK)) != 0) {
+            if ((changed & (SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN)) != 0) {
                 if ((flags & SDL_WINDOW_HIDDEN) != 0) {
                     X11_DispatchUnmapNotify(data);
                 } else {

@@ -73,7 +73,7 @@ static DWORD GetWindowStyle(SDL_Window *window)
 {
     DWORD style = 0;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
         style |= STYLE_FULLSCREEN;
     } else {
         if ((window->flags & SDL_WINDOW_BORDERLESS) != 0) {
@@ -908,7 +908,7 @@ void WIN_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *displa
     int x, y;
     int w, h;
 
-    if (!fullscreen && (window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+    if (!fullscreen && (window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
         /* Resizing the window on hide causes problems restoring it in Wine, and it's unnecessary.
          * Also, Windows would preview the minimized window with the wrong size.
          */

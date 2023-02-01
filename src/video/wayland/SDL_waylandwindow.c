@@ -64,12 +64,23 @@ static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height,
     const int output_width = wind->fs_output_width ? wind->fs_output_width : output->screen_width;
     const int output_height = wind->fs_output_height ? wind->fs_output_height : output->screen_height;
 
-    /*
-     * Fullscreen desktop mandates a desktop sized window, so that's what applications will get.
-     * If the application is DPI aware, it will need to handle the transformations between the
-     * differently sized window and backbuffer spaces on its own.
-     */
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
+    if (window->fullscreen_exclusive) {
+        /* If a mode was set, use it, otherwise use the native resolution. */
+        const SDL_DisplayMode *mode = SDL_GetWindowFullscreenMode(window);
+        if (!mode) {
+            mode = &disp->desktop_mode;
+        }
+        fs_width = mode->screen_w;
+        fs_height = mode->screen_h;
+        buf_width = mode->pixel_w;
+        buf_height = mode->pixel_h;
+    } else {
+        /*
+         * Fullscreen desktop mandates a desktop sized window, so that's what
+         * applications will get. If the application is DPI aware, it will need
+         * to handle the transformations between the differently sized window
+         * and backbuffer spaces on its own.
+         */
         fs_width = output_width;
         fs_height = output_height;
 
@@ -81,16 +92,6 @@ static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height,
             buf_width = fs_width;
             buf_height = fs_height;
         }
-    } else {
-        /* If a mode was set, use it, otherwise use the native resolution. */
-        const SDL_DisplayMode *mode = SDL_GetWindowFullscreenMode(window);
-        if (!mode) {
-            mode = &disp->desktop_mode;
-        }
-        fs_width = mode->screen_w;
-        fs_height = mode->screen_h;
-        buf_width = mode->pixel_w;
-        buf_height = mode->pixel_h;
     }
 
     if (width) {
@@ -109,7 +110,7 @@ static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height,
 
 SDL_FORCE_INLINE SDL_bool FullscreenModeEmulation(SDL_Window *window)
 {
-    return ((window->flags & SDL_WINDOW_FULLSCREEN_EXCLUSIVE) != 0);
+    return window->fullscreen_exclusive;
 }
 
 SDL_bool SurfaceScaleIsFractional(SDL_Window *window)
@@ -325,7 +326,7 @@ static void SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
         return;
     }
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_EXCLUSIVE) != 0) {
+    if (window->fullscreen_exclusive) {
         min_width = 0;
         min_height = 0;
         max_width = 0;
@@ -438,40 +439,19 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
     SDL_WindowData *wind = window->driverdata;
 
     if (fullscreen) {
-        if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
-            /*
-             * If the window was never previously made full screen, check if a particular
-             * fullscreen mode has been set for the window. If one is found, use SDL_WINDOW_FULLSCREEN_EXCLUSIVE,
-             * otherwise, use SDL_WINDOW_FULLSCREEN_DESKTOP.
-             *
-             * If the previous flag was SDL_WINDOW_FULLSCREEN_EXCLUSIVE, make sure a mode is still set,
-             * otherwise, fall back to SDL_WINDOW_FULLSCREEN_DESKTOP.
-             */
-            if (!wind->fullscreen_flags) {
-                if (window->fullscreen_mode.pixel_w && window->fullscreen_mode.pixel_h) {
-                    wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN_EXCLUSIVE;
-                } else {
-                    wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
-                }
-            } else if (wind->fullscreen_flags != SDL_WINDOW_FULLSCREEN_DESKTOP &&
-                       (!window->fullscreen_mode.pixel_w || !window->fullscreen_mode.pixel_h)) {
-                wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
-            }
-
+        if ((window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
             wind->is_fullscreen = SDL_TRUE;
-
             wind->in_fullscreen_transition = SDL_TRUE;
-            SDL_SetWindowFullscreen(window, wind->fullscreen_flags);
+            SDL_SetWindowFullscreen(window, SDL_TRUE);
             wind->in_fullscreen_transition = SDL_FALSE;
         }
     } else {
         /* Don't change the fullscreen flags if the window is hidden or being hidden. */
         if (!window->is_hiding && !(window->flags & SDL_WINDOW_HIDDEN)) {
-            if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+            if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
                 wind->is_fullscreen = SDL_FALSE;
-
                 wind->in_fullscreen_transition = SDL_TRUE;
-                SDL_SetWindowFullscreen(window, 0);
+                SDL_SetWindowFullscreen(window, SDL_FALSE);
                 wind->in_fullscreen_transition = SDL_FALSE;
                 SetMinMaxDimensions(window, SDL_FALSE);
             }
@@ -1668,11 +1648,6 @@ void Wayland_SetWindowFullscreen(_THIS, SDL_Window *window,
     /* Called from within a configure event or the window is a popup, drop it. */
     if (wind->in_fullscreen_transition || wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         return;
-    }
-
-    /* Save the last fullscreen flags for future requests by the compositor. */
-    if (fullscreen) {
-        wind->fullscreen_flags = (window->flags & SDL_WINDOW_FULLSCREEN_MASK);
     }
 
     /* Don't send redundant fullscreen set/unset events. */

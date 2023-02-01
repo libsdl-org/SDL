@@ -840,7 +840,7 @@ static EM_BOOL Emscripten_HandleFullscreenChange(int eventType, const Emscripten
 
         window_data->fullscreen_mode_flags = 0;
     } else {
-        window_data->window->flags &= ~SDL_WINDOW_FULLSCREEN_MASK;
+        window_data->window->flags &= ~SDL_WINDOW_FULLSCREEN;
 
         /* reset fullscreen window if the browser left fullscreen */
         display = SDL_GetVideoDisplayForWindow(window_data->window);
@@ -866,7 +866,7 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
         }
     }
 
-    if ((window_data->window->flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
+    if ((window_data->window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
         /* this will only work if the canvas size is set through css */
         if (window_data->window->flags & SDL_WINDOW_RESIZABLE) {
             double w = window_data->window->w;

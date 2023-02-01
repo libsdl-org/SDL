@@ -419,7 +419,6 @@
 #define SDL_GetWindowDisplayIndex SDL_GetDisplayForWindow
 #define SDL_GetWindowDisplayMode SDL_GetWindowFullscreenMode
 #define SDL_SetWindowDisplayMode SDL_SetWindowFullscreenMode
-#define SDL_WINDOW_FULLSCREEN SDL_WINDOW_FULLSCREEN_EXCLUSIVE
 #define SDL_WINDOW_INPUT_GRABBED SDL_WINDOW_MOUSE_GRABBED
 
 #elif !defined(SDL_DISABLE_OLD_NAMES)
@@ -805,7 +804,6 @@
 #define SDL_GetWindowDisplayIndex SDL_GetWindowDisplayIndex_renamed_SDL_GetDisplayForWindow
 #define SDL_GetWindowDisplayMode SDL_GetWindowDisplayMode_renamed_SDL_GetWindowFullscreenMode
 #define SDL_SetWindowDisplayMode SDL_SetWindowDisplayMode_renamed_SDL_SetWindowFullscreenMode
-#define SDL_WINDOW_FULLSCREEN SDL_WINDOW_FULLSCREEN_renamed_SDL_WINDOW_FULLSCREEN_EXCLUSIVE
 #define SDL_WINDOW_INPUT_GRABBED SDL_WINDOW_INPUT_GRABBED_renamed_SDL_WINDOW_MOUSE_GRABBED
 
 #endif /* SDL_ENABLE_OLD_NAMES */

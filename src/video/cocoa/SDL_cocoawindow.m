@@ -103,7 +103,7 @@
         SDL_Window *window = [self findSDLWindow];
         if (window == NULL) {
             return NO;
-        } else if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+        } else if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
             return NO;
         } else if ((window->flags & SDL_WINDOW_RESIZABLE) == 0) {
             return NO;
@@ -323,7 +323,7 @@ static NSUInteger GetWindowStyle(SDL_Window *window)
 {
     NSUInteger style = 0;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
         style = NSWindowStyleMaskBorderless;
     } else {
         style = GetWindowWindowedStyle(window);
@@ -568,10 +568,10 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 
     if (!videodata.allow_spaces) {
         return NO; /* Spaces are forcibly disabled. */
-    } else if (state && (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == 0) {
-        return NO; /* we only allow you to make a Space on FULLSCREEN_DESKTOP windows. */
-    } else if (!state && (window->last_fullscreen_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == 0) {
-        return NO; /* we only handle leaving the Space on windows that were previously FULLSCREEN_DESKTOP. */
+    } else if (state && window->fullscreen_exclusive) {
+        return NO; /* we only allow you to make a Space on fullscreen desktop windows. */
+    } else if (!state && window->last_fullscreen_exclusive) {
+        return NO; /* we only handle leaving the Space on windows that were previously fullscreen desktop. */
     } else if (state == isFullscreenSpace) {
         return YES; /* already there. */
     }
@@ -740,7 +740,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     int x, y;
     SDL_Window *window = _data.window;
     NSWindow *nswindow = _data.nswindow;
-    BOOL fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_MASK) ? YES : NO;
+    BOOL fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
     NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
     ConvertNSRect([nswindow screen], fullscreen, &rect);
 
@@ -793,7 +793,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     window = _data.window;
     nswindow = _data.nswindow;
     rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-    fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_MASK) ? YES : NO;
+    fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
     ConvertNSRect([nswindow screen], fullscreen, &rect);
     x = (int)rect.origin.x;
     y = (int)rect.origin.y;
@@ -863,7 +863,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     /* Check to see if someone updated the clipboard */
     Cocoa_CheckClipboardUpdate(_data.videodata);
 
-    if (isFullscreenSpace && (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
+    if (isFullscreenSpace && !window->fullscreen_exclusive) {
         [NSMenu setMenuBarVisible:NO];
     }
     {
@@ -967,7 +967,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
         pendingWindowOperation = PENDING_OPERATION_NONE;
         [self setFullscreenSpace:NO];
     } else {
-        if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
+        if (window->fullscreen_exclusive) {
             [NSMenu setMenuBarVisible:NO];
         }
 
@@ -1112,7 +1112,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 
 - (NSApplicationPresentationOptions)window:(NSWindow *)window willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)proposedOptions
 {
-    if ((_data.window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
+    if (_data.window->fullscreen_exclusive) {
         return NSApplicationPresentationFullScreen | NSApplicationPresentationHideDock | NSApplicationPresentationHideMenuBar;
     } else {
         return proposedOptions;
@@ -1640,7 +1640,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, NSWindow *nswindow, NSView
         /* Fill in the SDL window with the window data */
         {
             NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-            BOOL fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_MASK) ? YES : NO;
+            BOOL fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
             ConvertNSRect([nswindow screen], fullscreen, &rect);
             window->x = (int)rect.origin.x;
             window->y = (int)rect.origin.y;
@@ -1730,7 +1730,7 @@ int Cocoa_CreateWindow(_THIS, SDL_Window *window)
         rect.origin.y = window->y;
         rect.size.width = window->w;
         rect.size.height = window->h;
-        fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_MASK) ? YES : NO;
+        fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
         ConvertNSRect([screens objectAtIndex:0], fullscreen, &rect);
 
         style = GetWindowStyle(window);
@@ -1765,7 +1765,7 @@ int Cocoa_CreateWindow(_THIS, SDL_Window *window)
 #endif
 
         if (videodata.allow_spaces) {
-            /* we put FULLSCREEN_DESKTOP windows in their own Space, without a toggle button or menubar, later */
+            /* we put fullscreen desktop windows in their own Space, without a toggle button or menubar, later */
             if (window->flags & SDL_WINDOW_RESIZABLE) {
                 /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
                 [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
@@ -1912,7 +1912,7 @@ void Cocoa_SetWindowPosition(_THIS, SDL_Window *window)
         rect.origin.y = window->y;
         rect.size.width = window->w;
         rect.size.height = window->h;
-        fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_MASK) ? YES : NO;
+        fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
         ConvertNSRect([nswindow screen], fullscreen, &rect);
 
         moveHack = s_moveHack;
@@ -1941,7 +1941,7 @@ void Cocoa_SetWindowSize(_THIS, SDL_Window *window)
         rect.origin.y = window->y;
         rect.size.width = window->w;
         rect.size.height = window->h;
-        fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_MASK) ? YES : NO;
+        fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
         ConvertNSRect([nswindow screen], fullscreen, &rect);
 
         moveHack = s_moveHack;
@@ -2298,7 +2298,7 @@ void Cocoa_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 
         Cocoa_UpdateClipCursor(window);
 
-        if (data && (window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+        if (data && (window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
             if (SDL_ShouldAllowTopmost() && (window->flags & SDL_WINDOW_INPUT_FOCUS) && ![data.listener isInFullscreenSpace]) {
                 /* OpenGL is rendering to the window, so make it visible! */
                 /* Doing this in 10.11 while in a Space breaks things (bug #3152) */

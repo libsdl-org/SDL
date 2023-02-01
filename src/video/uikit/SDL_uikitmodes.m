@@ -556,7 +556,7 @@ void SDL_OnApplicationDidChangeStatusBarOrientation()
 
         /* The desktop display mode should be kept in sync with the screen
          * orientation so that updating a window's fullscreen state to
-         * SDL_WINDOW_FULLSCREEN_DESKTOP keeps the window dimensions in the
+         * fullscreen desktop keeps the window dimensions in the
          * correct orientation. */
         if (isLandscape != (mode->pixel_w > mode->pixel_h)) {
             int height = mode->pixel_w;

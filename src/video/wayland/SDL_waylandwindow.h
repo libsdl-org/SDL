@@ -116,7 +116,6 @@ struct SDL_WindowData
     SDL_bool was_floating;
     SDL_bool is_fullscreen;
     SDL_bool in_fullscreen_transition;
-    Uint32 fullscreen_flags;
 };
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);

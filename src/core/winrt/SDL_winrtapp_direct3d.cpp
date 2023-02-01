@@ -150,7 +150,7 @@ static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identify
                 SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
             }
 
-            WINRT_UpdateWindowFlags(window, SDL_WINDOW_FULLSCREEN_MASK);
+            WINRT_UpdateWindowFlags(window, SDL_WINDOW_FULLSCREEN);
 
             /* The window can move during a resize event, such as when maximizing
                or resizing from a corner */
