@@ -192,7 +192,7 @@ void loop()
         case SDL_EVENT_TEXT_EDITING:
             PrintText("EDIT", event.edit.text);
             break;
-        case SDL_EVENT_TEXTEDITING_EXT:
+        case SDL_EVENT_TEXT_EDITING_EXT:
             PrintText("EDIT_EXT", event.editExt.text);
             SDL_free(event.editExt.text);
             break;

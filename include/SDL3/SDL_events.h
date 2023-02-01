@@ -126,9 +126,8 @@ typedef enum
     SDL_EVENT_TEXT_EDITING,            /**< Keyboard text editing (composition) */
     SDL_EVENT_TEXT_INPUT,              /**< Keyboard text input */
     SDL_EVENT_KEYMAP_CHANGED,          /**< Keymap changed due to a system event such as an
-                                     input language or keyboard layout change.
-                                */
-    SDL_EVENT_TEXTEDITING_EXT,       /**< Extended keyboard text editing (composition) */
+                                            input language or keyboard layout change. */
+    SDL_EVENT_TEXT_EDITING_EXT,        /**< Extended keyboard text editing (composition) */
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
@@ -265,7 +264,7 @@ typedef struct SDL_TextEditingEvent
  */
 typedef struct SDL_TextEditingExtEvent
 {
-    Uint32 type;                                /**< ::SDL_EVENT_TEXTEDITING_EXT */
+    Uint32 type;                                /**< ::SDL_EVENT_TEXT_EDITING_EXT */
     Uint64 timestamp;                           /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;                        /**< The window with keyboard focus, if any */
     char* text;                                 /**< The editing text, which should be freed with SDL_free(), and will not be NULL */
