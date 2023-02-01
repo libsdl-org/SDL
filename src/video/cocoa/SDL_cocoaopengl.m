@@ -301,7 +301,7 @@ SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
         attr[i++] = profile;
 
         attr[i++] = NSOpenGLPFAColorSize;
-        attr[i++] = 32;
+        attr[i++] = SDL_BYTESPERPIXEL(display->current_mode->format) * 8;
 
         attr[i++] = NSOpenGLPFADepthSize;
         attr[i++] = _this->gl_config.depth_size;

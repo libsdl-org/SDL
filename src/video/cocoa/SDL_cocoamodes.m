@@ -622,7 +622,7 @@ void Cocoa_QuitModes(_THIS)
         SDL_VideoDisplay *display = &_this->displays[i];
         SDL_DisplayModeData *mode;
 
-        if (SDL_GetCurrentDisplayMode(display->id) != SDL_GetDesktopDisplayMode(display->id)) {
+        if (display->current_mode->driverdata != display->desktop_mode.driverdata) {
             Cocoa_SetDisplayMode(_this, display, &display->desktop_mode);
         }
 

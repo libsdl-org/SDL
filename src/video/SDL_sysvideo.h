@@ -154,6 +154,7 @@ struct SDL_VideoDisplay
     int num_fullscreen_modes;
     SDL_DisplayMode *fullscreen_modes;
     SDL_DisplayMode desktop_mode;
+    const SDL_DisplayMode *current_mode;
     SDL_DisplayOrientation orientation;
 
     SDL_Window *fullscreen_window;

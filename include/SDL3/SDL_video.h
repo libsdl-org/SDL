@@ -44,16 +44,6 @@ typedef Uint32 SDL_DisplayID;
 typedef Uint32 SDL_WindowID;
 
 /**
- *  \brief The flags on a display mode
- */
-typedef enum
-{
-    SDL_DISPLAYMODE_DESKTOP         = 0x00000001,   /**< The display uses this as the desktop mode */
-    SDL_DISPLAYMODE_CURRENT         = 0x00000002,   /**< The display is currently using this mode */
-
-} SDL_DisplayModeFlags;
-
-/**
  *  \brief  The structure that defines a display mode
  *
  *  \sa SDL_GetFullscreenDisplayModes()
@@ -65,7 +55,6 @@ typedef enum
 typedef struct
 {
     SDL_DisplayID displayID;    /**< the display this mode is associated with */
-    Uint32 flags;               /**< whether this mode is the current mode or a desktop mode */
     Uint32 format;              /**< pixel format */
     int pixel_w;                /**< width in pixels (used for creating back buffers) */
     int pixel_h;                /**< height in pixels (used for creating back buffers) */
