@@ -182,7 +182,9 @@ void loop()
         if (event.type == SDL_EVENT_KEY_UP) {
             SDL_bool updateCursor = SDL_FALSE;
 
-            if (event.key.keysym.sym == SDLK_LEFT) {
+            if (event.key.keysym.sym == SDLK_a) {
+                SDL_assert(!"Keyboard generated assert");
+            } else if (event.key.keysym.sym == SDLK_LEFT) {
                 --system_cursor;
                 if (system_cursor < 0) {
                     system_cursor = SDL_NUM_SYSTEM_CURSORS - 1;
