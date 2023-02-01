@@ -913,7 +913,7 @@ static const SDL_DisplayMode *SDL_GetFullscreenModeMatch(const SDL_DisplayMode *
             }
         }
 
-        SDL_free(modes);
+        SDL_free((void *)modes);
     }
     return mode;
 }
@@ -1068,7 +1068,7 @@ const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID display
 
             closest = mode;
         }
-        SDL_free(modes);
+        SDL_free((void *)modes);
     }
     return closest;
 }
