@@ -649,7 +649,7 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
         }
 
         new_display->desktop_mode.displayID = id;
-        new_display->desktop_mode.flags = (SDL_DISPLAYMODE_DESKTOP | SDL_DISPLAYMODE_CURRENT);
+        new_display->current_mode = &new_display->desktop_mode;
         SDL_FinalizeDisplayMode(&new_display->desktop_mode);
 
         if (send_event) {
@@ -782,7 +782,6 @@ const char *SDL_GetDisplayName(SDL_DisplayID displayID)
 int SDL_GetDisplayBounds(SDL_DisplayID displayID, SDL_Rect *rect)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
-    const SDL_DisplayMode *mode;
 
     CHECK_DISPLAY_MAGIC(display, -1);
 
@@ -804,14 +803,8 @@ int SDL_GetDisplayBounds(SDL_DisplayID displayID, SDL_Rect *rect)
         SDL_GetDisplayBounds(_this->displays[SDL_GetDisplayIndex(displayID) - 1].id, rect);
         rect->x += rect->w;
     }
-    mode = SDL_GetCurrentDisplayMode(displayID);
-    if (mode) {
-        rect->w = mode->screen_w;
-        rect->h = mode->screen_h;
-    } else {
-        rect->w = 0;
-        rect->h = 0;
-    }
+    rect->w = display->current_mode->screen_w;
+    rect->h = display->current_mode->screen_h;
     return 0;
 }
 
@@ -929,22 +922,11 @@ SDL_bool SDL_AddFullscreenDisplayMode(SDL_VideoDisplay *display, const SDL_Displ
     new_mode.displayID = display->id;
     SDL_FinalizeDisplayMode(&new_mode);
 
-    if ((new_mode.flags & SDL_DISPLAYMODE_CURRENT) != 0) {
-        display->desktop_mode.flags &= ~SDL_DISPLAYMODE_CURRENT;
-        for (i = 0; i < display->num_fullscreen_modes; ++i) {
-            display->fullscreen_modes[i].flags &= ~SDL_DISPLAYMODE_CURRENT;
-        }
-    }
-
     /* Make sure we don't already have the mode in the list */
     modes = display->fullscreen_modes;
     nmodes = display->num_fullscreen_modes;
     for (i = 0; i < nmodes; ++i) {
         if (cmpmodes(&new_mode, &modes[i]) == 0) {
-            /* If the new mode is current, make sure we save that */
-            if ((new_mode.flags & SDL_DISPLAYMODE_CURRENT) != 0) {
-                SDL_memcpy(&modes[i], &new_mode, sizeof(modes[i]));
-            }
             return SDL_FALSE;
         }
     }
@@ -979,6 +961,7 @@ void SDL_ResetFullscreenDisplayModes(SDL_VideoDisplay *display)
     display->fullscreen_modes = NULL;
     display->num_fullscreen_modes = 0;
     display->max_fullscreen_modes = 0;
+    display->current_mode = &display->desktop_mode;
 }
 
 const SDL_DisplayMode **SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *count)
@@ -1077,7 +1060,6 @@ void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode 
 {
     SDL_memcpy(&display->desktop_mode, mode, sizeof(*mode));
     display->desktop_mode.displayID = display->id;
-    display->desktop_mode.flags = (SDL_DISPLAYMODE_DESKTOP | SDL_DISPLAYMODE_CURRENT);
     SDL_FinalizeDisplayMode(&display->desktop_mode);
 }
 
@@ -1092,48 +1074,21 @@ const SDL_DisplayMode *SDL_GetDesktopDisplayMode(SDL_DisplayID displayID)
 
 void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
-    int i;
-
-    if (mode == &display->desktop_mode) {
-        display->desktop_mode.flags |= SDL_DISPLAYMODE_CURRENT;
-    } else {
-        display->desktop_mode.flags &= ~SDL_DISPLAYMODE_CURRENT;
-    }
-
-    for (i = 0; i < display->num_fullscreen_modes; ++i) {
-        if (mode == &display->fullscreen_modes[i]) {
-            display->fullscreen_modes[i].flags |= SDL_DISPLAYMODE_CURRENT;
-        } else {
-            display->fullscreen_modes[i].flags &= ~SDL_DISPLAYMODE_CURRENT;
-        }
-    }
-    SDL_assert((mode->flags & SDL_DISPLAYMODE_CURRENT) != 0);
+    display->current_mode = mode;
 }
 
 const SDL_DisplayMode *SDL_GetCurrentDisplayMode(SDL_DisplayID displayID)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
-    const SDL_DisplayMode **modes;
-    const SDL_DisplayMode *current_mode = NULL;
 
     CHECK_DISPLAY_MAGIC(display, NULL);
 
-    modes = SDL_GetFullscreenDisplayModes(displayID, NULL);
-    if (modes) {
-        int i;
+    /* Make sure our mode list is updated */
+    if (display->num_fullscreen_modes == 0 && _this->GetDisplayModes) {
+        _this->GetDisplayModes(_this, display);
+    }
 
-        for (i = 0; modes[i]; ++i) {
-            if ((modes[i]->flags & SDL_DISPLAYMODE_CURRENT) != 0) {
-                current_mode = modes[i];
-                break;
-            }
-        }
-        SDL_free(modes);
-    }
-    if (current_mode == NULL) {
-        current_mode = &display->desktop_mode;
-    }
-    return current_mode;
+    return display->current_mode;
 }
 
 static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, SDL_DisplayMode *mode)
@@ -1142,7 +1097,7 @@ static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, SDL_DisplayMo
         mode = &display->desktop_mode;
     }
 
-    if ((mode->flags & SDL_DISPLAYMODE_CURRENT) != 0) {
+    if (mode == display->current_mode) {
         return 0;
     }
 

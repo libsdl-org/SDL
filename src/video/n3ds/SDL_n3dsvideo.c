@@ -139,7 +139,6 @@ static void N3DS_VideoQuit(_THIS)
 static int N3DS_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *driver_data = display->driverdata;
-    const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(display->id);
 
     if (driver_data == NULL) {
         return -1;
@@ -147,8 +146,8 @@ static int N3DS_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rec
 
     rect->x = 0;
     rect->y = (driver_data->screen == GFX_TOP) ? 0 : GSP_SCREEN_WIDTH;
-    rect->w = mode->screen_w;
-    rect->h = mode->screen_h;
+    rect->w = display->current_mode->screen_w;
+    rect->h = display->current_mode->screen_h;
     return 0;
 }
 

@@ -972,11 +972,10 @@ int Wayland_VideoInit(_THIS)
 static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *driverdata = display->driverdata;
-    const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(display->id);
     rect->x = driverdata->x;
     rect->y = driverdata->y;
-    rect->w = mode->screen_w;
-    rect->h = mode->screen_h;
+    rect->w = display->current_mode->screen_w;
+    rect->h = display->current_mode->screen_h;
     return 0;
 }
 

@@ -816,12 +816,11 @@ void X11_QuitModes(_THIS)
 int X11_GetDisplayBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect)
 {
     SDL_DisplayData *data = sdl_display->driverdata;
-    const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(sdl_display->id);
 
     rect->x = data->x;
     rect->y = data->y;
-    rect->w = mode->screen_w;
-    rect->h = mode->screen_h;
+    rect->w = sdl_display->current_mode->screen_w;
+    rect->h = sdl_display->current_mode->screen_h;
     return 0;
 }
 
