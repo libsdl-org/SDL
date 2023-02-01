@@ -1124,6 +1124,11 @@ const SDL_DisplayMode *SDL_GetCurrentDisplayMode(SDL_DisplayID displayID)
 
 static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
+    /* Mode switching is being emulated per-window; nothing to do and cannot fail. */
+    if (ModeSwitchingEmulated(_this)) {
+        return 0;
+    }
+
     if (!mode) {
         mode = &display->desktop_mode;
     }
