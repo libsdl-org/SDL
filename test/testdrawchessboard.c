@@ -9,7 +9,7 @@
    including commercial applications, and to alter it and redistribute it
    freely.
 
-   This file is created by : Nitin Jain (nitin.j4@samsung.com)
+   This file is created by : Nitin Jain (nitin.j4\samsung.com)
 */
 
 /* Sample program:  Draw a Chess Board  by using SDL_CreateSoftwareRenderer API */

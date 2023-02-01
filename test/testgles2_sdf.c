@@ -115,7 +115,7 @@ quit(int rc)
         }                                                                                   \
     }
 
-/*
+/**
  * Create shader, load in source, compile, dump debug as necessary.
  *
  * shader: Pointer to return created shader ID.

@@ -6,7 +6,7 @@ SPDX-License-Identifier: Zlib
 
 #include "testutils.h"
 
-/*
+/**
  * Return the absolute path to def in the SDL_GetBasePath() if possible, or
  * the relative path to def on platforms that don't have a working
  * SDL_GetBasePath(). Free the result with SDL_free.
@@ -53,7 +53,7 @@ GetNearbyFilename(const char *file)
     return path;
 }
 
-/*
+/**
  * If user_specified is non-NULL, return a copy of it. Free with SDL_free.
  *
  * Otherwise, return the absolute path to def in the SDL_GetBasePath() if
@@ -78,7 +78,7 @@ GetResourceFilename(const char *user_specified, const char *def)
     }
 }
 
-/*
+/**
  * Load the .bmp file whose name is file, from the SDL_GetBasePath() if
  * possible or the current working directory if not.
  *

@@ -11,9 +11,9 @@
 /* Test case functions */
 
 /**
- * @brief Check virtual joystick creation
+ * \brief Check virtual joystick creation
  *
- * @sa SDL_AttachVirtualJoystickEx
+ * \sa SDL_AttachVirtualJoystickEx
  */
 static int
 TestVirtualJoystick(void *arg)

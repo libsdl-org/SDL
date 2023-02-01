@@ -9,11 +9,10 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 
-/* !
+/**
  * \brief Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
- * \sa
- * http://wiki.libsdl.org/SDL_Init
- * http://wiki.libsdl.org/SDL_Quit
+ * \sa SDL_Init
+ * \sa SDL_Quit
  */
 static int main_testInitQuitSubSystem(void *arg)
 {

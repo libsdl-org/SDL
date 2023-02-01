@@ -6,7 +6,7 @@
 
 /* Private helpers */
 
-/*
+/**
  * Create a test window
  */
 static SDL_Window *createVideoSuiteTestWindow(const char *title)
@@ -29,7 +29,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     return window;
 }
 
-/*
+/**
  * Destroy test window
  */
 static void destroyVideoSuiteTestWindow(SDL_Window *window)
@@ -44,7 +44,7 @@ static void destroyVideoSuiteTestWindow(SDL_Window *window)
 /* Test case functions */
 
 /**
- * @brief Enable and disable screensaver while checking state
+ * \brief Enable and disable screensaver while checking state
  */
 int video_enableDisableScreensaver(void *arg)
 {
@@ -95,7 +95,7 @@ int video_enableDisableScreensaver(void *arg)
 }
 
 /**
- * @brief Tests the functionality of the SDL_CreateWindow function using different positions
+ * \brief Tests the functionality of the SDL_CreateWindow function using different positions
  */
 int video_createWindowVariousPositions(void *arg)
 {
@@ -177,7 +177,7 @@ int video_createWindowVariousPositions(void *arg)
 }
 
 /**
- * @brief Tests the functionality of the SDL_CreateWindow function using different sizes
+ * \brief Tests the functionality of the SDL_CreateWindow function using different sizes
  */
 int video_createWindowVariousSizes(void *arg)
 {
@@ -233,7 +233,7 @@ int video_createWindowVariousSizes(void *arg)
 }
 
 /**
- * @brief Tests the functionality of the SDL_CreateWindow function using different flags
+ * \brief Tests the functionality of the SDL_CreateWindow function using different flags
  */
 int video_createWindowVariousFlags(void *arg)
 {
@@ -307,7 +307,7 @@ int video_createWindowVariousFlags(void *arg)
 }
 
 /**
- * @brief Tests the functionality of the SDL_GetWindowFlags function
+ * \brief Tests the functionality of the SDL_GetWindowFlags function
  */
 int video_getWindowFlags(void *arg)
 {
@@ -334,7 +334,7 @@ int video_getWindowFlags(void *arg)
 }
 
 /**
- * @brief Tests the functionality of the SDL_GetFullscreenDisplayModes function
+ * \brief Tests the functionality of the SDL_GetFullscreenDisplayModes function
  */
 int video_getFullscreenDisplayModes(void *arg)
 {
@@ -363,7 +363,7 @@ int video_getFullscreenDisplayModes(void *arg)
 }
 
 /**
- * @brief Tests the functionality of the SDL_GetClosestFullscreenDisplayMode function against current resolution
+ * \brief Tests the functionality of the SDL_GetClosestFullscreenDisplayMode function against current resolution
  */
 int video_getClosestDisplayModeCurrentResolution(void *arg)
 {
@@ -408,7 +408,7 @@ int video_getClosestDisplayModeCurrentResolution(void *arg)
 }
 
 /**
- * @brief Tests the functionality of the SDL_GetClosestFullscreenDisplayMode function against random resolution
+ * \brief Tests the functionality of the SDL_GetClosestFullscreenDisplayMode function against random resolution
  */
 int video_getClosestDisplayModeRandomResolution(void *arg)
 {
@@ -446,9 +446,9 @@ int video_getClosestDisplayModeRandomResolution(void *arg)
 }
 
 /**
- * @brief Tests call to SDL_GetWindowFullscreenMode
+ * \brief Tests call to SDL_GetWindowFullscreenMode
  *
- * @sa http://wiki.libsdl.org/SDL_GetWindowFullscreenMode
+ * \sa SDL_GetWindowFullscreenMode
  */
 int video_getWindowDisplayMode(void *arg)
 {
@@ -490,9 +490,9 @@ static void checkInvalidWindowError()
 }
 
 /**
- * @brief Tests call to SDL_GetWindowFullscreenMode with invalid input
+ * \brief Tests call to SDL_GetWindowFullscreenMode with invalid input
  *
- * @sa http://wiki.libsdl.org/SDL_GetWindowFullscreenMode
+ * \sa SDL_GetWindowFullscreenMode
  */
 int video_getWindowDisplayModeNegative(void *arg)
 {
@@ -578,10 +578,10 @@ static void setAndCheckWindowKeyboardGrabState(SDL_Window *window, SDL_bool desi
 }
 
 /**
- * @brief Tests keyboard and mouse grab support
+ * \brief Tests keyboard and mouse grab support
  *
- * @sa http://wiki.libsdl.org/SDL_GetWindowGrab
- * @sa http://wiki.libsdl.org/SDL_SetWindowGrab
+ * \sa SDL_GetWindowGrab
+ * \sa SDL_SetWindowGrab
  */
 int video_getSetWindowGrab(void *arg)
 {
@@ -721,10 +721,10 @@ int video_getSetWindowGrab(void *arg)
 }
 
 /**
- * @brief Tests call to SDL_GetWindowID and SDL_GetWindowFromID
+ * \brief Tests call to SDL_GetWindowID and SDL_GetWindowFromID
  *
- * @sa http://wiki.libsdl.org/SDL_GetWindowID
- * @sa http://wiki.libsdl.org/SDL_SetWindowFromID
+ * \sa SDL_GetWindowID
+ * \sa SDL_SetWindowFromID
  */
 int video_getWindowId(void *arg)
 {
@@ -778,9 +778,9 @@ int video_getWindowId(void *arg)
 }
 
 /**
- * @brief Tests call to SDL_GetWindowPixelFormat
+ * \brief Tests call to SDL_GetWindowPixelFormat
  *
- * @sa http://wiki.libsdl.org/SDL_GetWindowPixelFormat
+ * \sa SDL_GetWindowPixelFormat
  */
 int video_getWindowPixelFormat(void *arg)
 {
@@ -813,10 +813,10 @@ int video_getWindowPixelFormat(void *arg)
 }
 
 /**
- * @brief Tests call to SDL_GetWindowPosition and SDL_SetWindowPosition
+ * \brief Tests call to SDL_GetWindowPosition and SDL_SetWindowPosition
  *
- * @sa http://wiki.libsdl.org/SDL_GetWindowPosition
- * @sa http://wiki.libsdl.org/SDL_SetWindowPosition
+ * \sa SDL_GetWindowPosition
+ * \sa SDL_SetWindowPosition
  */
 int video_getSetWindowPosition(void *arg)
 {
@@ -959,10 +959,10 @@ static void checkInvalidParameterError()
 }
 
 /**
- * @brief Tests call to SDL_GetWindowSize and SDL_SetWindowSize
+ * \brief Tests call to SDL_GetWindowSize and SDL_SetWindowSize
  *
- * @sa http://wiki.libsdl.org/SDL_GetWindowSize
- * @sa http://wiki.libsdl.org/SDL_SetWindowSize
+ * \sa SDL_GetWindowSize
+ * \sa SDL_SetWindowSize
  */
 int video_getSetWindowSize(void *arg)
 {
@@ -1128,7 +1128,7 @@ int video_getSetWindowSize(void *arg)
 }
 
 /**
- * @brief Tests call to SDL_GetWindowMinimumSize and SDL_SetWindowMinimumSize
+ * \brief Tests call to SDL_GetWindowMinimumSize and SDL_SetWindowMinimumSize
  *
  */
 int video_getSetWindowMinimumSize(void *arg)
@@ -1271,7 +1271,7 @@ int video_getSetWindowMinimumSize(void *arg)
 }
 
 /**
- * @brief Tests call to SDL_GetWindowMaximumSize and SDL_SetWindowMaximumSize
+ * \brief Tests call to SDL_GetWindowMaximumSize and SDL_SetWindowMaximumSize
  *
  */
 int video_getSetWindowMaximumSize(void *arg)
@@ -1409,10 +1409,10 @@ int video_getSetWindowMaximumSize(void *arg)
 }
 
 /**
- * @brief Tests call to SDL_SetWindowData and SDL_GetWindowData
+ * \brief Tests call to SDL_SetWindowData and SDL_GetWindowData
  *
- * @sa http://wiki.libsdl.org/SDL_SetWindowData
- * @sa http://wiki.libsdl.org/SDL_GetWindowData
+ * \sa SDL_SetWindowData
+ * \sa SDL_GetWindowData
  */
 int video_getSetWindowData(void *arg)
 {
@@ -1625,7 +1625,7 @@ cleanup:
 }
 
 /**
- * @brief Tests the functionality of the SDL_WINDOWPOS_CENTERED_DISPLAY along with SDL_WINDOW_FULLSCREEN.
+ * \brief Tests the functionality of the SDL_WINDOWPOS_CENTERED_DISPLAY along with SDL_WINDOW_FULLSCREEN.
  *
  * Espeically useful when run on a multi-monitor system with different DPI scales per monitor,
  * to test that the window size is maintained when moving between monitors.

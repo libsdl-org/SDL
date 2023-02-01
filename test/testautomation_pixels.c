@@ -104,10 +104,10 @@ const char *g_invalidPixelFormatsVerbose[] = {
 /* Test case functions */
 
 /**
- * @brief Call to SDL_CreatePixelFormat and SDL_DestroyPixelFormat
+ * \brief Call to SDL_CreatePixelFormat and SDL_DestroyPixelFormat
  *
- * @sa http://wiki.libsdl.org/SDL_CreatePixelFormat
- * @sa http://wiki.libsdl.org/SDL_DestroyPixelFormat
+ * \sa SDL_CreatePixelFormat
+ * \sa SDL_DestroyPixelFormat
  */
 int pixels_allocFreeFormat(void *arg)
 {
@@ -200,9 +200,9 @@ int pixels_allocFreeFormat(void *arg)
 }
 
 /**
- * @brief Call to SDL_GetPixelFormatName
+ * \brief Call to SDL_GetPixelFormatName
  *
- * @sa http://wiki.libsdl.org/SDL_GetPixelFormatName
+ * \sa SDL_GetPixelFormatName
  */
 int pixels_getPixelFormatName(void *arg)
 {
@@ -267,10 +267,10 @@ int pixels_getPixelFormatName(void *arg)
 }
 
 /**
- * @brief Call to SDL_CreatePalette and SDL_DestroyPalette
+ * \brief Call to SDL_CreatePalette and SDL_DestroyPalette
  *
- * @sa http://wiki.libsdl.org/SDL_CreatePalette
- * @sa http://wiki.libsdl.org/SDL_DestroyPalette
+ * \sa SDL_CreatePalette
+ * \sa SDL_DestroyPalette
  */
 int pixels_allocFreePalette(void *arg)
 {

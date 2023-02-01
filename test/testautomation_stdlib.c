@@ -7,7 +7,7 @@
 /* Test case functions */
 
 /**
- * @brief Call to SDL_strlcpy
+ * \brief Call to SDL_strlcpy
  */
 #undef SDL_strlcpy
 int stdlib_strlcpy(void *arg)
@@ -42,7 +42,7 @@ int stdlib_strlcpy(void *arg)
 #endif
 
 /**
- * @brief Call to SDL_snprintf
+ * \brief Call to SDL_snprintf
  */
 #undef SDL_snprintf
 int stdlib_snprintf(void *arg)
@@ -209,7 +209,7 @@ int stdlib_snprintf(void *arg)
 #endif
 
 /**
- * @brief Call to SDL_getenv and SDL_setenv
+ * \brief Call to SDL_getenv and SDL_setenv
  */
 int stdlib_getsetenv(void *arg)
 {
@@ -352,7 +352,7 @@ int stdlib_getsetenv(void *arg)
 #endif
 
 /**
- * @brief Call to SDL_sscanf
+ * \brief Call to SDL_sscanf
  */
 #undef SDL_sscanf
 int stdlib_sscanf(void *arg)
@@ -445,7 +445,7 @@ int stdlib_sscanf(void *arg)
 #endif
 
 /**
- * @brief Call to SDL_aligned_alloc
+ * \brief Call to SDL_aligned_alloc
  */
 int stdlib_aligned_alloc(void *arg)
 {

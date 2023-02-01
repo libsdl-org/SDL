@@ -57,7 +57,7 @@ void InitCreateRenderer(void *arg)
     }
 }
 
-/*
+/**
  * Destroy renderer for tests
  */
 void CleanupDestroyRenderer(void *arg)
@@ -76,10 +76,9 @@ void CleanupDestroyRenderer(void *arg)
 }
 
 /**
- * @brief Tests call to SDL_GetNumRenderDrivers
+ * \brief Tests call to SDL_GetNumRenderDrivers
  *
- * \sa
- * http://wiki.libsdl.org/SDL_GetNumRenderDrivers
+ * \sa SDL_GetNumRenderDrivers
  */
 int render_testGetNumRenderDrivers(void *arg)
 {
@@ -90,12 +89,11 @@ int render_testGetNumRenderDrivers(void *arg)
 }
 
 /**
- * @brief Tests the SDL primitives for rendering.
+ * \brief Tests the SDL primitives for rendering.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetRenderDrawColor
- * http://wiki.libsdl.org/SDL_RenderFillRect
- * http://wiki.libsdl.org/SDL_RenderLine
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_RenderFillRect
+ * \sa SDL_RenderLine
  *
  */
 int render_testPrimitives(void *arg)
@@ -201,12 +199,11 @@ int render_testPrimitives(void *arg)
 }
 
 /**
- * @brief Tests the SDL primitives with alpha for rendering.
+ * \brief Tests the SDL primitives with alpha for rendering.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetRenderDrawColor
- * http://wiki.libsdl.org/SDL_SetRenderDrawBlendMode
- * http://wiki.libsdl.org/SDL_RenderFillRect
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_SetRenderDrawBlendMode
+ * \sa SDL_RenderFillRect
  */
 int render_testPrimitivesBlend(void *arg)
 {
@@ -365,11 +362,10 @@ int render_testPrimitivesBlend(void *arg)
 }
 
 /**
- * @brief Tests some blitting routines.
+ * \brief Tests some blitting routines.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_RenderTexture
- * http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_RenderTexture
+ * \sa SDL_DestroyTexture
  */
 int render_testBlit(void *arg)
 {
@@ -434,12 +430,11 @@ int render_testBlit(void *arg)
 }
 
 /**
- * @brief Blits doing color tests.
+ * \brief Blits doing color tests.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetTextureColorMod
- * http://wiki.libsdl.org/SDL_RenderTexture
- * http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_SetTextureColorMod
+ * \sa SDL_RenderTexture
+ * \sa SDL_DestroyTexture
  */
 int render_testBlitColor(void *arg)
 {
@@ -510,12 +505,11 @@ int render_testBlitColor(void *arg)
 }
 
 /**
- * @brief Tests blitting with alpha.
+ * \brief Tests blitting with alpha.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetTextureAlphaMod
- * http://wiki.libsdl.org/SDL_RenderTexture
- * http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_SetTextureAlphaMod
+ * \sa SDL_RenderTexture
+ * \sa SDL_DestroyTexture
  */
 int render_testBlitAlpha(void *arg)
 {
@@ -589,11 +583,10 @@ int render_testBlitAlpha(void *arg)
 }
 
 /**
- * @brief Tests a blend mode.
+ * \brief Tests a blend mode.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetTextureBlendMode
- * http://wiki.libsdl.org/SDL_RenderTexture
+ * \sa SDL_SetTextureBlendMode
+ * \sa SDL_RenderTexture
  */
 static void
 testBlitBlendMode(SDL_Texture *tface, int mode)
@@ -642,13 +635,12 @@ testBlitBlendMode(SDL_Texture *tface, int mode)
 }
 
 /**
- * @brief Tests some more blitting routines.
+ * \brief Tests some more blitting routines.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetTextureColorMod
- * http://wiki.libsdl.org/SDL_SetTextureAlphaMod
- * http://wiki.libsdl.org/SDL_SetTextureBlendMode
- * http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_SetTextureColorMod
+ * \sa SDL_SetTextureAlphaMod
+ * \sa SDL_SetTextureBlendMode
+ * \sa SDL_DestroyTexture
  */
 int render_testBlitBlend(void *arg)
 {
@@ -802,7 +794,7 @@ int render_testBlitBlend(void *arg)
 }
 
 /**
- * @brief Test viewport
+ * \brief Test viewport
  */
 int render_testViewport(void *arg)
 {
@@ -821,7 +813,7 @@ int render_testViewport(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
     ret = SDL_FillSurfaceRect(referenceSurface, &viewport, RENDER_COLOR_GREEN);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    
+
     /* Clear surface. */
     clearScreen();
 
@@ -845,7 +837,7 @@ int render_testViewport(void *arg)
     /* Create expected result */
     ret = SDL_FillSurfaceRect(referenceSurface, NULL, RENDER_COLOR_GREEN);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    
+
     /* Clear surface. */
     clearScreen();
 
@@ -871,7 +863,7 @@ int render_testViewport(void *arg)
 }
 
 /**
- * @brief Test logical size
+ * \brief Test logical size
  */
 int render_testLogicalSize(void *arg)
 {
@@ -893,7 +885,7 @@ int render_testLogicalSize(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
     ret = SDL_FillSurfaceRect(referenceSurface, &viewport, RENDER_COLOR_GREEN);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    
+
     /* Clear surface. */
     clearScreen();
 
@@ -956,7 +948,7 @@ int render_testLogicalSize(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
     ret = SDL_FillSurfaceRect(referenceSurface, &viewport, RENDER_COLOR_GREEN);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    
+
     /* Clear surface. */
     clearScreen();
 
@@ -989,7 +981,7 @@ int render_testLogicalSize(void *arg)
 /* Helper functions */
 
 /**
- * @brief Checks to see if functionality is supported. Helper function.
+ * \brief Checks to see if functionality is supported. Helper function.
  */
 static int
 isSupported(int code)
@@ -998,11 +990,10 @@ isSupported(int code)
 }
 
 /**
- * @brief Test to see if we can vary the draw color. Helper function.
+ * \brief Test to see if we can vary the draw color. Helper function.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetRenderDrawColor
- * http://wiki.libsdl.org/SDL_GetRenderDrawColor
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_GetRenderDrawColor
  */
 static int
 hasDrawColor(void)
@@ -1040,11 +1031,10 @@ hasDrawColor(void)
 }
 
 /**
- * @brief Test to see if we can vary the blend mode. Helper function.
+ * \brief Test to see if we can vary the blend mode. Helper function.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetRenderDrawBlendMode
- * http://wiki.libsdl.org/SDL_GetRenderDrawBlendMode
+ * \sa SDL_SetRenderDrawBlendMode
+ * \sa SDL_GetRenderDrawBlendMode
  */
 static int
 hasBlendModes(void)
@@ -1108,10 +1098,9 @@ hasBlendModes(void)
 }
 
 /**
- * @brief Loads the test image 'Face' as texture. Helper function.
+ * \brief Loads the test image 'Face' as texture. Helper function.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_CreateTextureFromSurface
+ * \sa SDL_CreateTextureFromSurface
  */
 static SDL_Texture *
 loadTestFace(void)
@@ -1135,12 +1124,11 @@ loadTestFace(void)
 }
 
 /**
- * @brief Test to see if can set texture color mode. Helper function.
+ * \brief Test to see if can set texture color mode. Helper function.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetTextureColorMod
- * http://wiki.libsdl.org/SDL_GetTextureColorMod
- * http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_SetTextureColorMod
+ * \sa SDL_GetTextureColorMod
+ * \sa SDL_DestroyTexture
  */
 static int
 hasTexColor(void)
@@ -1179,12 +1167,11 @@ hasTexColor(void)
 }
 
 /**
- * @brief Test to see if we can vary the alpha of the texture. Helper function.
+ * \brief Test to see if we can vary the alpha of the texture. Helper function.
  *
- * \sa
- *  http://wiki.libsdl.org/SDL_SetTextureAlphaMod
- *  http://wiki.libsdl.org/SDL_GetTextureAlphaMod
- *  http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_SetTextureAlphaMod
+ * \sa SDL_GetTextureAlphaMod
+ * \sa SDL_DestroyTexture
  */
 static int
 hasTexAlpha(void)
@@ -1223,15 +1210,14 @@ hasTexAlpha(void)
 }
 
 /**
- * @brief Compares screen pixels with image pixels. Helper function.
+ * \brief Compares screen pixels with image pixels. Helper function.
  *
- * @param referenceSurface Image to compare against.
- * @param allowable_error allowed difference from the reference image
+ * \param referenceSurface Image to compare against.
+ * \param allowable_error allowed difference from the reference image
  *
- * \sa
- * http://wiki.libsdl.org/SDL_RenderReadPixels
- * http://wiki.libsdl.org/SDL_CreateSurfaceFrom
- * http://wiki.libsdl.org/SDL_DestroySurface
+ * \sa SDL_RenderReadPixels
+ * \sa SDL_CreateSurfaceFrom
+ * \sa SDL_DestroySurface
  */
 static void
 compare(SDL_Surface *referenceSurface, int allowable_error)
@@ -1270,13 +1256,12 @@ compare(SDL_Surface *referenceSurface, int allowable_error)
 }
 
 /**
- * @brief Clears the screen. Helper function.
+ * \brief Clears the screen. Helper function.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetRenderDrawColor
- * http://wiki.libsdl.org/SDL_RenderClear
- * http://wiki.libsdl.org/SDL_RenderPresent
- * http://wiki.libsdl.org/SDL_SetRenderDrawBlendMode
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_RenderClear
+ * \sa SDL_RenderPresent
+ * \sa SDL_SetRenderDrawBlendMode
  */
 static int
 clearScreen(void)
@@ -1285,7 +1270,7 @@ clearScreen(void)
 
     /* Make current */
     SDL_RenderPresent(renderer);
-    
+
     /* Set color. */
     ret = SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);

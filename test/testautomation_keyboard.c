@@ -10,9 +10,9 @@
 /* Test case functions */
 
 /**
- * @brief Check call to SDL_GetKeyboardState with and without numkeys reference.
+ * \brief Check call to SDL_GetKeyboardState with and without numkeys reference.
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyboardState
+ * \sa SDL_GetKeyboardState
  */
 int keyboard_getKeyboardState(void *arg)
 {
@@ -35,9 +35,9 @@ int keyboard_getKeyboardState(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetKeyboardFocus
+ * \brief Check call to SDL_GetKeyboardFocus
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyboardFocus
+ * \sa SDL_GetKeyboardFocus
  */
 int keyboard_getKeyboardFocus(void *arg)
 {
@@ -49,9 +49,9 @@ int keyboard_getKeyboardFocus(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetKeyFromName for known, unknown and invalid name.
+ * \brief Check call to SDL_GetKeyFromName for known, unknown and invalid name.
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyFromName
+ * \sa SDL_GetKeyFromName
  */
 int keyboard_getKeyFromName(void *arg)
 {
@@ -114,9 +114,9 @@ static void checkInvalidScancodeError()
 }
 
 /**
- * @brief Check call to SDL_GetKeyFromScancode
+ * \brief Check call to SDL_GetKeyFromScancode
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyFromScancode
+ * \sa SDL_GetKeyFromScancode
  */
 int keyboard_getKeyFromScancode(void *arg)
 {
@@ -152,9 +152,9 @@ int keyboard_getKeyFromScancode(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetKeyName
+ * \brief Check call to SDL_GetKeyName
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyName
+ * \sa SDL_GetKeyName
  */
 int keyboard_getKeyName(void *arg)
 {
@@ -207,9 +207,9 @@ int keyboard_getKeyName(void *arg)
 }
 
 /**
- * @brief SDL_GetScancodeName negative cases
+ * \brief SDL_GetScancodeName negative cases
  *
- * @sa http://wiki.libsdl.org/SDL_GetScancodeName
+ * \sa SDL_GetScancodeName
  */
 int keyboard_getScancodeNameNegative(void *arg)
 {
@@ -233,9 +233,9 @@ int keyboard_getScancodeNameNegative(void *arg)
 }
 
 /**
- * @brief SDL_GetKeyName negative cases
+ * \brief SDL_GetKeyName negative cases
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyName
+ * \sa SDL_GetKeyName
  */
 int keyboard_getKeyNameNegative(void *arg)
 {
@@ -269,10 +269,10 @@ int keyboard_getKeyNameNegative(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetModState and SDL_SetModState
+ * \brief Check call to SDL_GetModState and SDL_SetModState
  *
- * @sa http://wiki.libsdl.org/SDL_GetModState
- * @sa http://wiki.libsdl.org/SDL_SetModState
+ * \sa SDL_GetModState
+ * \sa SDL_SetModState
  */
 int keyboard_getSetModState(void *arg)
 {
@@ -328,10 +328,10 @@ int keyboard_getSetModState(void *arg)
 }
 
 /**
- * @brief Check call to SDL_StartTextInput and SDL_StopTextInput
+ * \brief Check call to SDL_StartTextInput and SDL_StopTextInput
  *
- * @sa http://wiki.libsdl.org/SDL_StartTextInput
- * @sa http://wiki.libsdl.org/SDL_StopTextInput
+ * \sa SDL_StartTextInput
+ * \sa SDL_StopTextInput
  */
 int keyboard_startStopTextInput(void *arg)
 {
@@ -374,9 +374,9 @@ static void testSetTextInputRect(SDL_Rect refRect)
 }
 
 /**
- * @brief Check call to SDL_SetTextInputRect
+ * \brief Check call to SDL_SetTextInputRect
  *
- * @sa http://wiki.libsdl.org/SDL_SetTextInputRect
+ * \sa SDL_SetTextInputRect
  */
 int keyboard_setTextInputRect(void *arg)
 {
@@ -453,9 +453,9 @@ int keyboard_setTextInputRect(void *arg)
 }
 
 /**
- * @brief Check call to SDL_SetTextInputRect with invalid data
+ * \brief Check call to SDL_SetTextInputRect with invalid data
  *
- * @sa http://wiki.libsdl.org/SDL_SetTextInputRect
+ * \sa SDL_SetTextInputRect
  */
 int keyboard_setTextInputRectNegative(void *arg)
 {
@@ -490,10 +490,10 @@ int keyboard_setTextInputRectNegative(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetScancodeFromKey
+ * \brief Check call to SDL_GetScancodeFromKey
  *
- * @sa http://wiki.libsdl.org/SDL_GetScancodeFromKey
- * @sa http://wiki.libsdl.org/SDL_Keycode
+ * \sa SDL_GetScancodeFromKey
+ * \sa SDL_Keycode
  */
 int keyboard_getScancodeFromKey(void *arg)
 {
@@ -513,10 +513,10 @@ int keyboard_getScancodeFromKey(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetScancodeFromName
+ * \brief Check call to SDL_GetScancodeFromName
  *
- * @sa http://wiki.libsdl.org/SDL_GetScancodeFromName
- * @sa http://wiki.libsdl.org/SDL_Keycode
+ * \sa SDL_GetScancodeFromName
+ * \sa SDL_Keycode
  */
 int keyboard_getScancodeFromName(void *arg)
 {
@@ -584,10 +584,10 @@ static void checkInvalidNameError()
 }
 
 /**
- * @brief Check call to SDL_GetScancodeFromName with invalid data
+ * \brief Check call to SDL_GetScancodeFromName with invalid data
  *
- * @sa http://wiki.libsdl.org/SDL_GetScancodeFromName
- * @sa http://wiki.libsdl.org/SDL_Keycode
+ * \sa SDL_GetScancodeFromName
+ * \sa SDL_Keycode
  */
 int keyboard_getScancodeFromNameNegative(void *arg)
 {

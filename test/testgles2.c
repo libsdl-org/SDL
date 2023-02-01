@@ -113,7 +113,7 @@ quit(int rc)
         }                                                                                   \
     }
 
-/*
+/**
  * Simulates desktop's glRotatef. The matrix is returned in column-major
  * order.
  */
@@ -154,7 +154,7 @@ rotate_matrix(float angle, float x, float y, float z, float *r)
     }
 }
 
-/*
+/**
  * Simulates gluPerspectiveMatrix
  */
 static void
@@ -177,7 +177,7 @@ perspective_matrix(float fovy, float aspect, float znear, float zfar, float *r)
     r[15] = 0.0f;
 }
 
-/*
+/**
  * Multiplies lhs by rhs and writes out to r. All matrices are 4x4 and column
  * major. In-place multiplication is supported.
  */
@@ -202,7 +202,7 @@ multiply_matrix(const float *lhs, const float *rhs, float *r)
     }
 }
 
-/*
+/**
  * Create shader, load in source, compile, dump debug as necessary.
  *
  * shader: Pointer to return created shader ID.
