@@ -106,7 +106,8 @@ struct SDL_Window
     int max_w, max_h;
     int last_pixel_w, last_pixel_h;
     Uint32 flags;
-    Uint32 last_fullscreen_flags;
+    SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
+    SDL_bool last_fullscreen_exclusive;  /* The last fullscreen_exclusive setting */
     SDL_DisplayID last_displayID;
 
     /* Stored position and size for windowed mode */
@@ -138,7 +139,7 @@ struct SDL_Window
     SDL_Window *next;
 };
 #define SDL_WINDOW_FULLSCREEN_VISIBLE(W)        \
-    ((((W)->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) &&   \
+    ((((W)->flags & SDL_WINDOW_FULLSCREEN) != 0) &&   \
      (((W)->flags & SDL_WINDOW_HIDDEN) == 0) && \
      (((W)->flags & SDL_WINDOW_MINIMIZED) == 0))
 

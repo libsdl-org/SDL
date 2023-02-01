@@ -249,16 +249,11 @@ int video_createWindowVariousFlags(void *arg)
     w = SDLTest_RandomIntegerInRange(320, 1024);
     h = SDLTest_RandomIntegerInRange(320, 768);
 
-    for (fVariation = 0; fVariation < 14; fVariation++) {
+    for (fVariation = 1; fVariation < 14; fVariation++) {
         switch (fVariation) {
         default:
-        case 0:
-            flags = SDL_WINDOW_FULLSCREEN_EXCLUSIVE;
-            /* Skip - blanks screen; comment out next line to run test */
-            continue;
-            break;
         case 1:
-            flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+            flags = SDL_WINDOW_FULLSCREEN;
             /* Skip - blanks screen; comment out next line to run test */
             continue;
             break;
@@ -1630,7 +1625,7 @@ cleanup:
 }
 
 /**
- * @brief Tests the functionality of the SDL_WINDOWPOS_CENTERED_DISPLAY along with SDL_WINDOW_FULLSCREEN_DESKTOP.
+ * @brief Tests the functionality of the SDL_WINDOWPOS_CENTERED_DISPLAY along with SDL_WINDOW_FULLSCREEN.
  *
  * Espeically useful when run on a multi-monitor system with different DPI scales per monitor,
  * to test that the window size is maintained when moving between monitors.

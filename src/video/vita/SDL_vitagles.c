@@ -100,7 +100,7 @@ SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window)
 
     EGLCHK(eglInitialize(display, NULL, NULL));
     wdata->uses_gles = SDL_TRUE;
-    window->flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    window->flags |= SDL_WINDOW_FULLSCREEN;
 
     EGLCHK(eglBindAPI(EGL_OPENGL_ES_API));
 

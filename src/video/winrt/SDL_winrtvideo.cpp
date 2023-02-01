@@ -411,8 +411,8 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
 #if (NTDDI_VERSION >= NTDDI_WIN10) || (SDL_WINRT_USE_APPLICATIONVIEW && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
                 mode.pixel_w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
                 mode.pixel_h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
-                mode.screen_w = appView->VisibleBounds.Width;
-                mode.screen_h = appView->VisibleBounds.Height;
+                mode.screen_w = (int)SDL_floorf(appView->VisibleBounds.Width);
+                mode.screen_h = (int)SDL_floorf(appView->VisibleBounds.Height);
                 mode.display_scale = WINRT_DISPLAY_PROPERTY(LogicalDpi) / 96.0f;
 #else
                 /* On platform(s) that do not support VisibleBounds, such as Windows 8.1,
@@ -420,8 +420,8 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
                 */
                 mode.pixel_w = WINRT_DIPS_TO_PHYSICAL_PIXELS(coreWin->Bounds.Width);
                 mode.pixel_h = WINRT_DIPS_TO_PHYSICAL_PIXELS(coreWin->Bounds.Height);
-                mode.screen_w = coreWin->Bounds.Width;
-                mode.screen_h = coreWin->Bounds.Height;
+                mode.screen_w = (int)SDL_floorf(coreWin->Bounds.Width);
+                mode.screen_h = (int)SDL_floorf(coreWin->Bounds.Height);
                 mode.display_scale = WINRT_DISPLAY_PROPERTY(LogicalDpi) / 96.0f;
 #endif
 
@@ -485,7 +485,7 @@ void WINRT_VideoQuit(_THIS)
     WINRT_QuitMouse(_this);
 }
 
-static const Uint32 WINRT_DetectableFlags = SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN_MASK | SDL_WINDOW_HIDDEN | SDL_WINDOW_MOUSE_FOCUS;
+static const Uint32 WINRT_DetectableFlags = SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_HIDDEN | SDL_WINDOW_MOUSE_FOCUS;
 
 extern "C" Uint32
 WINRT_DetectWindowFlags(SDL_Window *window)
@@ -532,7 +532,7 @@ WINRT_DetectWindowFlags(SDL_Window *window)
             if (display->desktop_mode.pixel_w != w || display->desktop_mode.pixel_h != h) {
                 latestFlags |= SDL_WINDOW_MAXIMIZED;
             } else {
-                latestFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+                latestFlags |= SDL_WINDOW_FULLSCREEN;
             }
         }
 
@@ -561,9 +561,6 @@ void WINRT_UpdateWindowFlags(SDL_Window *window, Uint32 mask)
     mask &= WINRT_DetectableFlags;
     if (window) {
         Uint32 apply = WINRT_DetectWindowFlags(window);
-        if (((apply & mask) & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
-            window->last_fullscreen_flags = window->flags; // seems necessary to programmatically un-fullscreen, via SDL APIs
-        }
         window->flags = (window->flags & ~mask) | (apply & mask);
     }
 }
@@ -709,8 +706,8 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
            mode apps, try this.
         */
         bool didSetSize = false;
-        if ((requestedFlags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
-            const Windows::Foundation::Size size(window->w, window->h);
+        if ((requestedFlags & SDL_WINDOW_FULLSCREEN) == 0) {
+            const Windows::Foundation::Size size((float)window->w, (float)window->h);
             didSetSize = data->appView->TryResizeView(size);
         }
         if (!didSetSize) {
@@ -747,7 +744,7 @@ void WINRT_SetWindowSize(_THIS, SDL_Window *window)
 {
 #if NTDDI_VERSION >= NTDDI_WIN10
     SDL_WindowData *data = window->driverdata;
-    const Windows::Foundation::Size size(window->w, window->h);
+    const Windows::Foundation::Size size((float)window->w, (float)window->h);
     data->appView->TryResizeView(size); // TODO, WinRT: return failure (to caller?) from TryResizeView()
 #endif
 }

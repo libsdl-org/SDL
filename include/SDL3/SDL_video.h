@@ -107,7 +107,7 @@ typedef struct SDL_Window SDL_Window;
  */
 typedef enum
 {
-    SDL_WINDOW_FULLSCREEN_EXCLUSIVE = 0x00000001,   /**< window is in fullscreen exclusive mode */
+    SDL_WINDOW_FULLSCREEN           = 0x00000001,   /**< window is in fullscreen mode */
     SDL_WINDOW_OPENGL               = 0x00000002,   /**< window usable with OpenGL context */
     /* 0x00000004 was SDL_WINDOW_SHOWN in SDL2, please reserve this bit for sdl2-compat. */
     SDL_WINDOW_HIDDEN               = 0x00000008,   /**< window is not visible */
@@ -118,7 +118,7 @@ typedef enum
     SDL_WINDOW_MOUSE_GRABBED        = 0x00000100,   /**< window has grabbed mouse input */
     SDL_WINDOW_INPUT_FOCUS          = 0x00000200,   /**< window has input focus */
     SDL_WINDOW_MOUSE_FOCUS          = 0x00000400,   /**< window has mouse focus */
-    SDL_WINDOW_FULLSCREEN_DESKTOP   = 0x00001000,   /**< window is in fullscreen desktop mode */
+    /* 0x00001000 was SDL_WINDOW_FULLSCREEN_DESKTOP in SDL2, please reserve this bit for sdl2-compat. */
     SDL_WINDOW_FOREIGN              = 0x00000800,   /**< window not created by SDL */
     /* 0x00002000 was SDL_WINDOW_ALLOW_HIGHDPI in SDL2, please reserve this bit for sdl2-compat. */
     SDL_WINDOW_MOUSE_CAPTURE        = 0x00004000,   /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
@@ -132,8 +132,6 @@ typedef enum
     SDL_WINDOW_METAL                = 0x20000000,   /**< window usable for Metal view */
 
 } SDL_WindowFlags;
-
-#define SDL_WINDOW_FULLSCREEN_MASK  (SDL_WINDOW_FULLSCREEN_EXCLUSIVE | SDL_WINDOW_FULLSCREEN_DESKTOP)
 
 /**
  *  \brief Used to indicate that you don't care what the window position is.
@@ -614,9 +612,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  *
  * `flags` may be any of the following OR'd together:
  *
- * - `SDL_WINDOW_FULLSCREEN_EXCLUSIVE`: fullscreen window, switching display
- *   mode to the closest fullscreen resolution
- * - `SDL_WINDOW_FULLSCREEN_DESKTOP`: fullscreen window at desktop resolution
+ * - `SDL_WINDOW_FULLSCREEN`: fullscreen window at desktop resolution
  * - `SDL_WINDOW_OPENGL`: window usable with an OpenGL context
  * - `SDL_WINDOW_VULKAN`: window usable with a Vulkan instance
  * - `SDL_WINDOW_METAL`: window usable with a Metal instance

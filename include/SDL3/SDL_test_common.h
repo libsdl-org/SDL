@@ -80,6 +80,7 @@ typedef struct
     float scale;
     int depth;
     float refresh_rate;
+    SDL_bool fullscreen_exclusive;
     SDL_DisplayMode fullscreen_mode;
     int num_windows;
     SDL_Window **windows;

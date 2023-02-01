@@ -152,7 +152,7 @@ void X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
         atoms[count++] = _NET_WM_STATE_MAXIMIZED_VERT;
         atoms[count++] = _NET_WM_STATE_MAXIMIZED_HORZ;
     }
-    if ((flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+    if ((flags & SDL_WINDOW_FULLSCREEN) != 0) {
         atoms[count++] = _NET_WM_STATE_FULLSCREEN;
     }
 
@@ -207,12 +207,12 @@ X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow)
         }
 
         if (fullscreen == 1) {
-            if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+            if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
                 /* Pick whatever state the window expects */
-                flags |= (window->flags & SDL_WINDOW_FULLSCREEN_MASK);
+                flags |= (window->flags & SDL_WINDOW_FULLSCREEN);
             } else {
                 /* Assume we're fullscreen desktop */
-                flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+                flags |= SDL_WINDOW_FULLSCREEN;
             }
         }
 
@@ -1234,7 +1234,7 @@ static void X11_SetWindowMaximized(_THIS, SDL_Window *window, SDL_bool maximized
     } else {
         window->flags &= ~SDL_WINDOW_MAXIMIZED;
 
-        if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) {
+        if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
             /* Fullscreen windows are maximized on some window managers,
                and this is functional behavior, so don't remove that state
                now, we'll take care of it when we leave fullscreen mode.
@@ -1414,11 +1414,9 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
 
         flags = window->flags;
         if (fullscreen) {
-            if ((flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
-                flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-            }
+            flags |= SDL_WINDOW_FULLSCREEN;
         } else {
-            flags &= ~SDL_WINDOW_FULLSCREEN_MASK;
+            flags &= ~SDL_WINDOW_FULLSCREEN;
         }
         X11_SetNetWMState(_this, data->xwindow, flags);
     }
