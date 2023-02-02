@@ -86,26 +86,30 @@ SDL_GetSpanEnclosingRect(int width, int height,
 #define CODE_RIGHT  8
 
 /* Same code twice, for float and int versions... */
-#define RECTTYPE                 SDL_Rect
-#define POINTTYPE                SDL_Point
-#define SCALARTYPE               int
-#define COMPUTEOUTCODE           ComputeOutCode
-#define SDL_HASINTERSECTION      SDL_HasRectIntersection
-#define SDL_INTERSECTRECT        SDL_GetRectIntersection
-#define SDL_RECTEMPTY            SDL_RectEmpty
-#define SDL_UNIONRECT            SDL_GetRectUnion
-#define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPoints
-#define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersection
+#define RECTTYPE                    SDL_Rect
+#define POINTTYPE                   SDL_Point
+#define SCALARTYPE                  int
+#define SCALAR_EP_TYPE              Sint64
+#define COMPUTEOUTCODE              ComputeOutCode
+#define SUBSTRACT_MULTIPLY_DIVIDE   SubstractMultiplyDivide
+#define SDL_HASINTERSECTION         SDL_HasRectIntersection
+#define SDL_INTERSECTRECT           SDL_GetRectIntersection
+#define SDL_RECTEMPTY               SDL_RectEmpty
+#define SDL_UNIONRECT               SDL_GetRectUnion
+#define SDL_ENCLOSEPOINTS           SDL_GetRectEnclosingPoints
+#define SDL_INTERSECTRECTANDLINE    SDL_GetRectAndLineIntersection
 #include "SDL_rect_impl.h"
 
-#define RECTTYPE                 SDL_FRect
-#define POINTTYPE                SDL_FPoint
-#define SCALARTYPE               float
-#define COMPUTEOUTCODE           ComputeOutCodeFloat
-#define SDL_HASINTERSECTION      SDL_HasRectIntersectionFloat
-#define SDL_INTERSECTRECT        SDL_GetRectIntersectionFloat
-#define SDL_RECTEMPTY            SDL_RectEmptyFloat
-#define SDL_UNIONRECT            SDL_GetRectUnionFloat
-#define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPointsFloat
-#define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersectionFloat
+#define RECTTYPE                    SDL_FRect
+#define POINTTYPE                   SDL_FPoint
+#define SCALARTYPE                  float
+#define SCALAR_EP_TYPE              double
+#define COMPUTEOUTCODE              ComputeOutCodeFloat
+#define SUBSTRACT_MULTIPLY_DIVIDE   SubstractMultiplyDivideFloat
+#define SDL_HASINTERSECTION         SDL_HasRectIntersectionFloat
+#define SDL_INTERSECTRECT           SDL_GetRectIntersectionFloat
+#define SDL_RECTEMPTY               SDL_RectEmptyFloat
+#define SDL_UNIONRECT               SDL_GetRectUnionFloat
+#define SDL_ENCLOSEPOINTS           SDL_GetRectEnclosingPointsFloat
+#define SDL_INTERSECTRECTANDLINE    SDL_GetRectAndLineIntersectionFloat
 #include "SDL_rect_impl.h"

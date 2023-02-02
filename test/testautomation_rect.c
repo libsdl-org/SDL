@@ -34,6 +34,31 @@ static void validateIntersectRectAndLineResults(
                         x1Ref, y1Ref, x2Ref, y2Ref);
 }
 
+/**
+ * \brief Private helper to check SDL_GetRectAndLineIntersectionFloat results
+ */
+static void validateIntersectRectAndLineFloatResults(
+    SDL_bool intersection, SDL_bool expectedIntersection,
+    SDL_FRect *rect, SDL_FRect *refRect,
+    float x1, float y1, float x2, float y2,
+    float x1Ref, float y1Ref, float x2Ref, float y2Ref)
+{
+    SDLTest_AssertCheck(intersection == expectedIntersection,
+                        "Check for correct intersection result: expected %s, got %s intersecting rect (%f,%f,%f,%f) with line (%f,%f - %f,%f)",
+                        (expectedIntersection == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
+                        (intersection == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
+                        refRect->x, refRect->y, refRect->w, refRect->h,
+                        x1Ref, y1Ref, x2Ref, y2Ref);
+    SDLTest_AssertCheck(rect->x == refRect->x && rect->y == refRect->y && rect->w == refRect->w && rect->h == refRect->h,
+                        "Check that source rectangle was not modified: got (%f,%f,%f,%f) expected (%f,%f,%f,%f)",
+                        rect->x, rect->y, rect->w, rect->h,
+                        refRect->x, refRect->y, refRect->w, refRect->h);
+    SDLTest_AssertCheck(x1 == x1Ref && y1 == y1Ref && x2 == x2Ref && y2 == y2Ref,
+                        "Check if line was incorrectly clipped or modified: got (%f,%f - %f,%f) expected (%f,%f - %f,%f)",
+                        x1, y1, x2, y2,
+                        x1Ref, y1Ref, x2Ref, y2Ref);
+}
+
 /* Test case functions */
 
 /**
@@ -285,6 +310,108 @@ int rect_testIntersectRectAndLineParam(void *arg)
     SDLTest_AssertCheck(intersected == SDL_FALSE, "Check that function returns SDL_FALSE when 5th parameter is NULL");
     intersected = SDL_GetRectAndLineIntersection((SDL_Rect *)NULL, (int *)NULL, (int *)NULL, (int *)NULL, (int *)NULL);
     SDLTest_AssertCheck(intersected == SDL_FALSE, "Check that function returns SDL_FALSE when all parameters are NULL");
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Tests SDL_GetRectAndLineIntersection() with big number parameters
+ *
+ * \sa SDL_GetRectAndLineIntersection
+ */
+int rect_testIntersectRectAndLineBigParam(void *arg)
+{
+    SDL_Rect refRect = { 0, 0, 32, 32 };
+    SDL_Rect rect;
+    int x1, y1;
+    int x2, y2;
+    SDL_bool intersected;
+
+    int xCenter = refRect.x + refRect.w / 2;
+    int yCenter = refRect.y + refRect.h / 2;
+
+    x1 = -INT32_MAX;
+    y1 = -INT32_MAX;
+    x2 = xCenter;
+    y2 = yCenter;
+    rect = refRect;
+    intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0, 0, xCenter, yCenter);
+
+    x1 = -INT32_MAX;
+    y1 = +INT32_MAX;
+    x2 = xCenter;
+    y2 = yCenter;
+    rect = refRect;
+    intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0, refRect.h - 1, xCenter, yCenter);
+
+    x1 = +INT32_MAX;
+    y1 = -INT32_MAX;
+    x2 = xCenter;
+    y2 = yCenter;
+    rect = refRect;
+    intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, refRect.w - 1, 1, xCenter, yCenter);
+
+    x1 = +INT32_MAX;
+    y1 = +INT32_MAX;
+    x2 = xCenter;
+    y2 = yCenter;
+    rect = refRect;
+    intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, refRect.w - 1, refRect.h - 1, xCenter, yCenter);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Tests SDL_GetRectAndLineIntersectionFloat() with big number parameters
+ *
+ * \sa SDL_GetRectAndLineIntersection
+ */
+int rect_testIntersectRectAndLineFloatBigParam(void *arg)
+{
+    SDL_FRect refRect = { 0.f, 0.f, 32.f, 32.f };
+    SDL_FRect rect;
+    float x1, y1;
+    float x2, y2;
+    SDL_bool intersected;
+
+    float xCenter = refRect.x + refRect.w / 2;
+    float yCenter = refRect.y + refRect.h / 2;
+
+    x1 = -1e20f;
+    y1 = -1e20f;
+    x2 = xCenter;
+    y2 = yCenter;
+    rect = refRect;
+    intersected = SDL_GetRectAndLineIntersectionFloat(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineFloatResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0.f, 0.f, xCenter, yCenter);
+
+    x1 = -1e20f;
+    y1 = +1e20f;
+    x2 = xCenter;
+    y2 = yCenter;
+    rect = refRect;
+    intersected = SDL_GetRectAndLineIntersectionFloat(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineFloatResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0.f, refRect.h - 1.f, xCenter, yCenter);
+
+    x1 = +1e20f;
+    y1 = -1e20f;
+    x2 = xCenter;
+    y2 = yCenter;
+    rect = refRect;
+    intersected = SDL_GetRectAndLineIntersectionFloat(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineFloatResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0.f, 0.f, xCenter, yCenter);
+
+    x1 = +1e20f;
+    y1 = +1e20f;
+    x2 = xCenter;
+    y2 = yCenter;
+    rect = refRect;
+    intersected = SDL_GetRectAndLineIntersectionFloat(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineFloatResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 0.f, refRect.h - 1.f, xCenter, yCenter);
 
     return TEST_COMPLETED;
 }
@@ -1689,116 +1816,124 @@ static const SDLTest_TestCaseReference rectTest5 = {
     (SDLTest_TestCaseFp)rect_testIntersectRectAndLineParam, "rect_testIntersectRectAndLineParam", "Negative tests against SDL_GetRectAndLineIntersection with invalid parameters", TEST_ENABLED
 };
 
-/* SDL_GetRectIntersection */
 static const SDLTest_TestCaseReference rectTest6 = {
+    (SDLTest_TestCaseFp)rect_testIntersectRectAndLineBigParam, "rect_testIntersectRectAndLineBigParam", "Tests SDL_GetRectAndLineIntersection with big parameters", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference rectTest6b = {
+    (SDLTest_TestCaseFp)rect_testIntersectRectAndLineFloatBigParam, "rect_testIntersectRectAndLineFloatBigParam", "Tests SDL_GetRectAndLineIntersectionFloat with big parameters", TEST_ENABLED
+};
+
+/* SDL_GetRectIntersection */
+static const SDLTest_TestCaseReference rectTest7 = {
     (SDLTest_TestCaseFp)rect_testIntersectRectInside, "rect_testIntersectRectInside", "Tests SDL_GetRectIntersection with B fully contained in A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest7 = {
+static const SDLTest_TestCaseReference rectTest8 = {
     (SDLTest_TestCaseFp)rect_testIntersectRectOutside, "rect_testIntersectRectOutside", "Tests SDL_GetRectIntersection with B fully outside of A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest8 = {
+static const SDLTest_TestCaseReference rectTest9 = {
     (SDLTest_TestCaseFp)rect_testIntersectRectPartial, "rect_testIntersectRectPartial", "Tests SDL_GetRectIntersection with B partially intersecting A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest9 = {
+static const SDLTest_TestCaseReference rectTest10 = {
     (SDLTest_TestCaseFp)rect_testIntersectRectPoint, "rect_testIntersectRectPoint", "Tests SDL_GetRectIntersection with 1x1 sized rectangles", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest10 = {
+static const SDLTest_TestCaseReference rectTest11 = {
     (SDLTest_TestCaseFp)rect_testIntersectRectEmpty, "rect_testIntersectRectEmpty", "Tests SDL_GetRectIntersection with empty rectangles", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest11 = {
+static const SDLTest_TestCaseReference rectTest12 = {
     (SDLTest_TestCaseFp)rect_testIntersectRectParam, "rect_testIntersectRectParam", "Negative tests against SDL_GetRectIntersection with invalid parameters", TEST_ENABLED
 };
 
 /* SDL_HasRectIntersection */
-static const SDLTest_TestCaseReference rectTest12 = {
+static const SDLTest_TestCaseReference rectTest13 = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionInside, "rect_testHasIntersectionInside", "Tests SDL_HasRectIntersection with B fully contained in A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest13 = {
+static const SDLTest_TestCaseReference rectTest14 = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionOutside, "rect_testHasIntersectionOutside", "Tests SDL_HasRectIntersection with B fully outside of A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest14 = {
+static const SDLTest_TestCaseReference rectTest15 = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionPartial, "rect_testHasIntersectionPartial", "Tests SDL_HasRectIntersection with B partially intersecting A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest15 = {
+static const SDLTest_TestCaseReference rectTest16 = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionPoint, "rect_testHasIntersectionPoint", "Tests SDL_HasRectIntersection with 1x1 sized rectangles", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest16 = {
+static const SDLTest_TestCaseReference rectTest17 = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionEmpty, "rect_testHasIntersectionEmpty", "Tests SDL_HasRectIntersection with empty rectangles", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest17 = {
+static const SDLTest_TestCaseReference rectTest18 = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionParam, "rect_testHasIntersectionParam", "Negative tests against SDL_HasRectIntersection with invalid parameters", TEST_ENABLED
 };
 
 /* SDL_GetRectEnclosingPoints */
-static const SDLTest_TestCaseReference rectTest18 = {
+static const SDLTest_TestCaseReference rectTest19 = {
     (SDLTest_TestCaseFp)rect_testEnclosePoints, "rect_testEnclosePoints", "Tests SDL_GetRectEnclosingPoints without clipping", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest19 = {
+static const SDLTest_TestCaseReference rectTest20 = {
     (SDLTest_TestCaseFp)rect_testEnclosePointsWithClipping, "rect_testEnclosePointsWithClipping", "Tests SDL_GetRectEnclosingPoints with clipping", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest20 = {
+static const SDLTest_TestCaseReference rectTest21 = {
     (SDLTest_TestCaseFp)rect_testEnclosePointsRepeatedInput, "rect_testEnclosePointsRepeatedInput", "Tests SDL_GetRectEnclosingPoints with repeated input", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest21 = {
+static const SDLTest_TestCaseReference rectTest22 = {
     (SDLTest_TestCaseFp)rect_testEnclosePointsParam, "rect_testEnclosePointsParam", "Negative tests against SDL_GetRectEnclosingPoints with invalid parameters", TEST_ENABLED
 };
 
 /* SDL_GetRectUnion */
-static const SDLTest_TestCaseReference rectTest22 = {
+static const SDLTest_TestCaseReference rectTest23 = {
     (SDLTest_TestCaseFp)rect_testUnionRectInside, "rect_testUnionRectInside", "Tests SDL_GetRectUnion where rect B is inside rect A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest23 = {
+static const SDLTest_TestCaseReference rectTest24 = {
     (SDLTest_TestCaseFp)rect_testUnionRectOutside, "rect_testUnionRectOutside", "Tests SDL_GetRectUnion where rect B is outside rect A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest24 = {
+static const SDLTest_TestCaseReference rectTest25 = {
     (SDLTest_TestCaseFp)rect_testUnionRectEmpty, "rect_testUnionRectEmpty", "Tests SDL_GetRectUnion where rect A or rect B are empty", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest25 = {
+static const SDLTest_TestCaseReference rectTest26 = {
     (SDLTest_TestCaseFp)rect_testUnionRectParam, "rect_testUnionRectParam", "Negative tests against SDL_GetRectUnion with invalid parameters", TEST_ENABLED
 };
 
 /* SDL_RectEmpty */
-static const SDLTest_TestCaseReference rectTest26 = {
+static const SDLTest_TestCaseReference rectTest27 = {
     (SDLTest_TestCaseFp)rect_testRectEmpty, "rect_testRectEmpty", "Tests SDL_RectEmpty with various inputs", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest27 = {
+static const SDLTest_TestCaseReference rectTest28 = {
     (SDLTest_TestCaseFp)rect_testRectEmptyParam, "rect_testRectEmptyParam", "Negative tests against SDL_RectEmpty with invalid parameters", TEST_ENABLED
 };
 
 /* SDL_RectsEqual */
 
-static const SDLTest_TestCaseReference rectTest28 = {
+static const SDLTest_TestCaseReference rectTest29 = {
     (SDLTest_TestCaseFp)rect_testRectEquals, "rect_testRectEquals", "Tests SDL_RectsEqual with various inputs", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest29 = {
+static const SDLTest_TestCaseReference rectTest30 = {
     (SDLTest_TestCaseFp)rect_testRectEqualsParam, "rect_testRectEqualsParam", "Negative tests against SDL_RectsEqual with invalid parameters", TEST_ENABLED
 };
 
 /* SDL_RectsEqualFloat */
 
-static const SDLTest_TestCaseReference rectTest30 = {
+static const SDLTest_TestCaseReference rectTest31 = {
     (SDLTest_TestCaseFp)rect_testFRectEquals, "rect_testFRectEquals", "Tests SDL_RectsEqualFloat with various inputs", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest31 = {
+static const SDLTest_TestCaseReference rectTest32 = {
     (SDLTest_TestCaseFp)rect_testFRectEqualsParam, "rect_testFRectEqualsParam", "Negative tests against SDL_RectsEqualFloat with invalid parameters", TEST_ENABLED
 };
 
@@ -1806,9 +1941,9 @@ static const SDLTest_TestCaseReference rectTest31 = {
  * \brief Sequence of Rect test cases; functions that handle simple rectangles including overlaps and merges.
  */
 static const SDLTest_TestCaseReference *rectTests[] = {
-    &rectTest1, &rectTest2, &rectTest3, &rectTest4, &rectTest5, &rectTest6, &rectTest7, &rectTest8, &rectTest9, &rectTest10, &rectTest11, &rectTest12, &rectTest13, &rectTest14,
+    &rectTest1, &rectTest2, &rectTest3, &rectTest4, &rectTest5, &rectTest6, &rectTest6b, &rectTest7, &rectTest8, &rectTest9, &rectTest10, &rectTest11, &rectTest12, &rectTest13, &rectTest14,
     &rectTest15, &rectTest16, &rectTest17, &rectTest18, &rectTest19, &rectTest20, &rectTest21, &rectTest22, &rectTest23, &rectTest24, &rectTest25, &rectTest26, &rectTest27,
-    &rectTest28, &rectTest29, &rectTest30, &rectTest31, NULL
+    &rectTest28, &rectTest29, &rectTest30, &rectTest31, &rectTest32, NULL
 };
 
 /* Rect test suite (global) */

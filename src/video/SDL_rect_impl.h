@@ -289,6 +289,15 @@ static int COMPUTEOUTCODE(const RECTTYPE *rect, SCALARTYPE x, SCALARTYPE y)
     return code;
 }
 
+/* Calculate ((a - b) * (c - d)) / (e - f) */
+static SCALARTYPE SUBSTRACT_MULTIPLY_DIVIDE(SCALARTYPE a, SCALARTYPE b, SCALARTYPE c, SCALARTYPE d, SCALARTYPE e, SCALARTYPE f)
+{
+    SCALAR_EP_TYPE ab = (SCALAR_EP_TYPE)a - (SCALAR_EP_TYPE)b;
+    SCALAR_EP_TYPE cd = (SCALAR_EP_TYPE)c - (SCALAR_EP_TYPE)d;
+    SCALAR_EP_TYPE ef = (SCALAR_EP_TYPE)e - (SCALAR_EP_TYPE)f;
+    return (SCALARTYPE)((ab * cd) / ef);
+}
+
 SDL_bool
 SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *Y1, SCALARTYPE *X2,
                          SCALARTYPE *Y2)
@@ -382,16 +391,16 @@ SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *Y1, S
         if (outcode1) {
             if (outcode1 & CODE_TOP) {
                 y = recty1;
-                x = x1 + ((x2 - x1) * (y - y1)) / (y2 - y1);
+                x = x1 + SUBSTRACT_MULTIPLY_DIVIDE(x2, x1, y, y1, y2, y1);
             } else if (outcode1 & CODE_BOTTOM) {
                 y = recty2;
-                x = x1 + ((x2 - x1) * (y - y1)) / (y2 - y1);
+                x = x1 + SUBSTRACT_MULTIPLY_DIVIDE(x2, x1, y, y1, y2, y1);
             } else if (outcode1 & CODE_LEFT) {
                 x = rectx1;
-                y = y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
+                y = y1 + SUBSTRACT_MULTIPLY_DIVIDE(y2, y1, x, x1, x2, x1);
             } else if (outcode1 & CODE_RIGHT) {
                 x = rectx2;
-                y = y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
+                y = y1 + SUBSTRACT_MULTIPLY_DIVIDE(y2, y1, x, x1, x2, x1);
             }
             x1 = x;
             y1 = y;
@@ -400,23 +409,23 @@ SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *Y1, S
             if (outcode2 & CODE_TOP) {
                 SDL_assert(y2 != y1); /* if equal: division by zero. */
                 y = recty1;
-                x = x1 + ((x2 - x1) * (y - y1)) / (y2 - y1);
+                x = x1 + SUBSTRACT_MULTIPLY_DIVIDE(x2, x1, y, y1, y2, y1);
             } else if (outcode2 & CODE_BOTTOM) {
                 SDL_assert(y2 != y1); /* if equal: division by zero. */
                 y = recty2;
-                x = x1 + ((x2 - x1) * (y - y1)) / (y2 - y1);
+                x = x1 + SUBSTRACT_MULTIPLY_DIVIDE(x2, x1, y, y1, y2, y1);
             } else if (outcode2 & CODE_LEFT) {
                 /* If this assertion ever fires, here's the static analysis that warned about it:
                    http://buildbot.libsdl.org/sdl-static-analysis/sdl-macosx-static-analysis/sdl-macosx-static-analysis-1101/report-b0d01a.html#EndPath */
                 SDL_assert(x2 != x1); /* if equal: division by zero. */
                 x = rectx1;
-                y = y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
+                y = y1 + SUBSTRACT_MULTIPLY_DIVIDE(y2, y1, x, x1, x2, x1);
             } else if (outcode2 & CODE_RIGHT) {
                 /* If this assertion ever fires, here's the static analysis that warned about it:
                    http://buildbot.libsdl.org/sdl-static-analysis/sdl-macosx-static-analysis/sdl-macosx-static-analysis-1101/report-39b114.html#EndPath */
                 SDL_assert(x2 != x1); /* if equal: division by zero. */
                 x = rectx2;
-                y = y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
+                y = y1 + SUBSTRACT_MULTIPLY_DIVIDE(y2, y1, x, x1, x2, x1);
             }
             x2 = x;
             y2 = y;
@@ -433,7 +442,9 @@ SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *Y1, S
 #undef RECTTYPE
 #undef POINTTYPE
 #undef SCALARTYPE
+#undef SCALAR_EP_TYPE
 #undef COMPUTEOUTCODE
+#undef SUBSTRACT_MULTIPLY_DIVIDE
 #undef SDL_HASINTERSECTION
 #undef SDL_INTERSECTRECT
 #undef SDL_RECTEMPTY
