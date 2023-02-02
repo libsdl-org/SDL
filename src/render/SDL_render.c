@@ -2766,11 +2766,17 @@ static int RenderLinesWithRectsF(SDL_Renderer *renderer,
     const float scale_y = renderer->scale.y;
     SDL_FRect *frect;
     SDL_FRect *frects;
+    SDL_FRect frenderer_viewport;
     int i, nrects = 0;
     int retval = 0;
     SDL_bool isstack;
     SDL_bool drew_line = SDL_FALSE;
     SDL_bool draw_last = SDL_FALSE;
+
+    frenderer_viewport.x = (float)renderer->viewport.x;
+    frenderer_viewport.y = (float)renderer->viewport.y;
+    frenderer_viewport.w = (float)renderer->viewport.w;
+    frenderer_viewport.h = (float)renderer->viewport.h;
 
     frects = SDL_small_alloc(SDL_FRect, count - 1, &isstack);
     if (frects == NULL) {
@@ -2815,8 +2821,11 @@ static int RenderLinesWithRectsF(SDL_Renderer *renderer,
                 frect->x += scale_x;
             }
         } else {
-            retval += RenderLineBresenham(renderer, (int)SDL_roundf(points[i].x), (int)SDL_roundf(points[i].y),
-                                              (int)SDL_roundf(points[i + 1].x), (int)SDL_roundf(points[i + 1].y), draw_last);
+            float fx1 = points[i].x, fy1 = points[i].y;
+            float fx2 = points[i + 1].x, fy2 = points[i + 1].y;
+            SDL_GetRectAndLineIntersectionFloat(&frenderer_viewport, &fx1, &fy1, &fx2, &fy2);
+
+            retval += RenderLineBresenham(renderer, (int)fx1, (int)fy1, (int)fx2, (int)fy2, draw_last);
         }
         drew_line = SDL_TRUE;
     }
