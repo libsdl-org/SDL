@@ -630,10 +630,21 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
     SDL_VideoDisplay *displays, *new_display;
     SDL_DisplayID id = 0;
 
-    displays = (SDL_VideoDisplay *)SDL_realloc(_this->displays, (_this->num_displays + 1) * sizeof(*displays));
+    displays = (SDL_VideoDisplay *)SDL_malloc((_this->num_displays + 1) * sizeof(*displays));
     if (displays) {
         int i;
+
+        /* The display list may contain self-referential pointers to the desktop mode. */
+        SDL_memcpy(displays, _this->displays, _this->num_displays * sizeof(*displays));
+        for (i = 0; i < _this->num_displays; ++i) {
+            if (displays[i].current_mode == &_this->displays[i].desktop_mode) {
+                displays[i].current_mode = &displays[i].desktop_mode;
+            }
+        }
+
+        SDL_free(_this->displays);
         _this->displays = displays;
+
         id = _this->next_object_id++;
         new_display = &displays[_this->num_displays++];
 
@@ -938,10 +949,20 @@ SDL_bool SDL_AddFullscreenDisplayMode(SDL_VideoDisplay *display, const SDL_Displ
 
     /* Go ahead and add the new mode */
     if (nmodes == display->max_fullscreen_modes) {
-        modes = (SDL_DisplayMode *)SDL_realloc(modes, (display->max_fullscreen_modes + 32) * sizeof(*modes));
+        modes = (SDL_DisplayMode *)SDL_malloc((display->max_fullscreen_modes + 32) * sizeof(*modes));
         if (modes == NULL) {
             return SDL_FALSE;
         }
+
+        /* Copy the list and update the current mode pointer, if necessary. */
+        SDL_memcpy(modes, display->fullscreen_modes, nmodes * sizeof(*modes));
+        for (i = 0; i < nmodes; ++i) {
+            if (display->current_mode == &display->fullscreen_modes[i]) {
+                display->current_mode = &modes[i];
+            }
+        }
+
+        SDL_free(display->fullscreen_modes);
         display->fullscreen_modes = modes;
         display->max_fullscreen_modes += 32;
     }
