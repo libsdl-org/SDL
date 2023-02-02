@@ -1042,8 +1042,8 @@ int X11_SetWindowInputFocus(_THIS, SDL_Window *window)
 
 void X11_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
 {
-    const SDL_bool focused = (window->flags & SDL_WINDOW_INPUT_FOCUS);
-    const SDL_bool visible = !(window->flags & SDL_WINDOW_HIDDEN);
+    const SDL_bool focused = (window->flags & SDL_WINDOW_INPUT_FOCUS) ? SDL_TRUE : SDL_FALSE;
+    const SDL_bool visible = (!(window->flags & SDL_WINDOW_HIDDEN)) ? SDL_TRUE : SDL_FALSE;
     SDL_WindowData *data = window->driverdata;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = data->videodata->display;
