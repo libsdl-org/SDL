@@ -108,7 +108,7 @@ for line in input:
         else:
             save_controller(line)
     else:
-        if (line.startswith("static const char *s_ControllerMappings")):
+        if (line.startswith("static const char *")):
             parsing_controllers = True
 
         output.write(line)
