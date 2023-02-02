@@ -3295,7 +3295,7 @@ static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
             left = 1;
         }
     } else {
-        if ((p[0] & 0x80) == 0x00) {
+        if (!(p[0] & 0x80)) {
             ch = (Uint32)p[0];
         }
     }

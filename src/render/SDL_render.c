@@ -1004,10 +1004,10 @@ SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
         goto error;
     }
 
-    if ((flags & SDL_RENDERER_PRESENTVSYNC) != 0) {
+    if (flags & SDL_RENDERER_PRESENTVSYNC) {
         renderer->wanted_vsync = SDL_TRUE;
 
-        if ((renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) == 0) {
+        if (!(renderer->info.flags & SDL_RENDERER_PRESENTVSYNC)) {
             renderer->simulate_vsync = SDL_TRUE;
             renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
         }

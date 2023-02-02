@@ -412,34 +412,34 @@ static void WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL
     if (rawButtons != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
         SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
-        if ((rawButtons & RI_MOUSE_BUTTON_1_DOWN)) {
+        if (rawButtons & RI_MOUSE_BUTTON_1_DOWN) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_1_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
         }
-        if ((rawButtons & RI_MOUSE_BUTTON_1_UP)) {
+        if (rawButtons & RI_MOUSE_BUTTON_1_UP) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_1_UP), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
         }
-        if ((rawButtons & RI_MOUSE_BUTTON_2_DOWN)) {
+        if (rawButtons & RI_MOUSE_BUTTON_2_DOWN) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_2_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
         }
-        if ((rawButtons & RI_MOUSE_BUTTON_2_UP)) {
+        if (rawButtons & RI_MOUSE_BUTTON_2_UP) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_2_UP), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
         }
-        if ((rawButtons & RI_MOUSE_BUTTON_3_DOWN)) {
+        if (rawButtons & RI_MOUSE_BUTTON_3_DOWN) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_3_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
         }
-        if ((rawButtons & RI_MOUSE_BUTTON_3_UP)) {
+        if (rawButtons & RI_MOUSE_BUTTON_3_UP) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_3_UP), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
         }
-        if ((rawButtons & RI_MOUSE_BUTTON_4_DOWN)) {
+        if (rawButtons & RI_MOUSE_BUTTON_4_DOWN) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_4_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
         }
-        if ((rawButtons & RI_MOUSE_BUTTON_4_UP)) {
+        if (rawButtons & RI_MOUSE_BUTTON_4_UP) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_4_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
         }
-        if ((rawButtons & RI_MOUSE_BUTTON_5_DOWN)) {
+        if (rawButtons & RI_MOUSE_BUTTON_5_DOWN) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_5_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
         }
-        if ((rawButtons & RI_MOUSE_BUTTON_5_UP)) {
+        if (rawButtons & RI_MOUSE_BUTTON_5_UP) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_5_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
         }
         data->mouse_button_flags = rawButtons;
@@ -531,9 +531,9 @@ static void WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
          */
         WIN_CheckClipboardUpdate(data->videodata);
 
-        SDL_ToggleModState(SDL_KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) != 0);
-        SDL_ToggleModState(SDL_KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) != 0);
-        SDL_ToggleModState(SDL_KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) != 0);
+        SDL_ToggleModState(SDL_KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) ? SDL_TRUE : SDL_FALSE);
+        SDL_ToggleModState(SDL_KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) ? SDL_TRUE : SDL_FALSE);
+        SDL_ToggleModState(SDL_KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) ? SDL_TRUE : SDL_FALSE);
 
         WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
     } else {
@@ -907,7 +907,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 */
                 SDL_bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? SDL_TRUE : SDL_FALSE;
                 SDL_bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? SDL_TRUE : SDL_FALSE;
-                SDL_bool normalized_coordinates = ((rawmouse->usFlags & 0x40) == 0) ? SDL_TRUE : SDL_FALSE;
+                SDL_bool normalized_coordinates = !(rawmouse->usFlags & 0x40) ? SDL_TRUE : SDL_FALSE;
                 int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
                 int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
                 int x = normalized_coordinates ? (int)(((float)rawmouse->lLastX / 65535.0f) * w) : (int)rawmouse->lLastX;
@@ -1491,7 +1491,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_NCCALCSIZE:
     {
         Uint32 window_flags = SDL_GetWindowFlags(data->window);
-        if (wParam == TRUE && (window_flags & SDL_WINDOW_BORDERLESS) != 0 && (window_flags & SDL_WINDOW_FULLSCREEN) == 0) {
+        if (wParam == TRUE && (window_flags & SDL_WINDOW_BORDERLESS) && !(window_flags & SDL_WINDOW_FULLSCREEN)) {
             /* When borderless, need to tell windows that the size of the non-client area is 0 */
             if (!(window_flags & SDL_WINDOW_RESIZABLE)) {
                 int w, h;

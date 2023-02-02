@@ -331,7 +331,7 @@ static void SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
         min_height = 0;
         max_width = 0;
         max_height = 0;
-    } else if ((window->flags & SDL_WINDOW_RESIZABLE) != 0) {
+    } else if (window->flags & SDL_WINDOW_RESIZABLE) {
         min_width = window->min_w;
         min_height = window->min_h;
         max_width = window->max_w;
@@ -439,7 +439,7 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
     SDL_WindowData *wind = window->driverdata;
 
     if (fullscreen) {
-        if ((window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
+        if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             wind->is_fullscreen = SDL_TRUE;
             wind->in_fullscreen_transition = SDL_TRUE;
             SDL_SetWindowFullscreen(window, SDL_TRUE);
@@ -448,7 +448,7 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
     } else {
         /* Don't change the fullscreen flags if the window is hidden or being hidden. */
         if (!window->is_hiding && !(window->flags & SDL_WINDOW_HIDDEN)) {
-            if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+            if (window->flags & SDL_WINDOW_FULLSCREEN) {
                 wind->is_fullscreen = SDL_FALSE;
                 wind->in_fullscreen_transition = SDL_TRUE;
                 SDL_SetWindowFullscreen(window, SDL_FALSE);
@@ -568,7 +568,7 @@ static void handle_configure_xdg_toplevel(void *data,
         /* xdg_toplevel spec states that this is a suggestion.
            Ignore if less than or greater than max/min size. */
 
-        if ((window->flags & SDL_WINDOW_RESIZABLE)) {
+        if (window->flags & SDL_WINDOW_RESIZABLE) {
             if (window->max_w > 0) {
                 width = SDL_min(width, window->max_w);
             }

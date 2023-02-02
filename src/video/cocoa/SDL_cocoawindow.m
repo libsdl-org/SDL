@@ -103,7 +103,7 @@
         SDL_Window *window = [self findSDLWindow];
         if (window == NULL) {
             return NO;
-        } else if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+        } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
             return NO;
         } else if ((window->flags & SDL_WINDOW_RESIZABLE) == 0) {
             return NO;
@@ -323,7 +323,7 @@ static NSUInteger GetWindowStyle(SDL_Window *window)
 {
     NSUInteger style = 0;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style = NSWindowStyleMaskBorderless;
     } else {
         style = GetWindowWindowedStyle(window);
@@ -394,7 +394,7 @@ static SDL_bool AdjustCoordinatesForGrab(SDL_Window *window, float x, float y, C
         }
     }
 
-    if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) {
+    if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
         float left = (float)window->x;
         float right = left + window->w - 1;
         float top = (float)window->y;
@@ -663,7 +663,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 
 - (void)clearFocusClickPending:(NSInteger)button
 {
-    if ((focusClickPending & (1 << button)) != 0) {
+    if (focusClickPending & (1 << button)) {
         focusClickPending &= ~(1 << button);
         if (focusClickPending == 0) {
             [self onMovingOrFocusClickPendingStateCleared];
@@ -869,7 +869,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     {
         const unsigned int newflags = [NSEvent modifierFlags] & NSEventModifierFlagCapsLock;
         _data.videodata.modifierFlags = (_data.videodata.modifierFlags & ~NSEventModifierFlagCapsLock) | newflags;
-        SDL_ToggleModState(SDL_KMOD_CAPS, newflags != 0);
+        SDL_ToggleModState(SDL_KMOD_CAPS, newflags ? SDL_TRUE : SDL_FALSE);
     }
 }
 

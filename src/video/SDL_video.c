@@ -1226,7 +1226,7 @@ SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
      * (for example if the window is off-screen), but other code may expect it
      * to succeed in that situation, so we fall back to a generic position-
      * based implementation in that case. */
-    if (!displayID && (window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+    if (!displayID && (window->flags & SDL_WINDOW_FULLSCREEN)) {
         displayID = window->fullscreen_mode.displayID;
     }
     if (!displayID) {
@@ -1620,7 +1620,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
 
     /* ensure no more than one of these flags is set */
     type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU);
-    if ((type_flags & (type_flags - 1)) != 0) {
+    if (type_flags & (type_flags - 1)) {
         SDL_SetError("Conflicting window flags specified");
         return NULL;
     }
@@ -1641,7 +1641,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
 
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
-    if ((graphics_flags & (graphics_flags - 1)) != 0) {
+    if (graphics_flags & (graphics_flags - 1)) {
         SDL_SetError("Conflicting window flags specified");
         return NULL;
     }
@@ -1845,7 +1845,7 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
 
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
-    if ((graphics_flags & (graphics_flags - 1)) != 0) {
+    if (graphics_flags & (graphics_flags - 1)) {
         return SDL_SetError("Conflicting window flags specified");
     }
 
@@ -2141,7 +2141,7 @@ void SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         }
     }
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         if (!SDL_WINDOWPOS_ISUNDEFINED(x)) {
             window->windowed.x = x;
         }
@@ -2167,7 +2167,7 @@ void SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
     CHECK_WINDOW_MAGIC(window, );
 
     /* Fullscreen windows are always at their display's origin */
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         SDL_DisplayID displayID;
 
         if (x) {
@@ -2206,9 +2206,9 @@ void SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
 void SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
 {
     CHECK_WINDOW_MAGIC(window, );
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         const int want = (bordered != SDL_FALSE); /* normalize the flag. */
-        const int have = ((window->flags & SDL_WINDOW_BORDERLESS) == 0);
+        const int have = !(window->flags & SDL_WINDOW_BORDERLESS);
         if ((want != have) && (_this->SetWindowBordered)) {
             if (want) {
                 window->flags &= ~SDL_WINDOW_BORDERLESS;
@@ -2223,9 +2223,9 @@ void SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
 void SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
 {
     CHECK_WINDOW_MAGIC(window, );
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         const int want = (resizable != SDL_FALSE); /* normalize the flag. */
-        const int have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
+        const int have = (window->flags & SDL_WINDOW_RESIZABLE);
         if ((want != have) && (_this->SetWindowResizable)) {
             if (want) {
                 window->flags |= SDL_WINDOW_RESIZABLE;
@@ -2240,9 +2240,9 @@ void SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
 void SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
 {
     CHECK_WINDOW_MAGIC(window, );
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         const int want = (on_top != SDL_FALSE); /* normalize the flag. */
-        const int have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
+        const int have = (window->flags & SDL_WINDOW_ALWAYS_ON_TOP);
         if ((want != have) && (_this->SetWindowAlwaysOnTop)) {
             if (want) {
                 window->flags |= SDL_WINDOW_ALWAYS_ON_TOP;
@@ -2393,7 +2393,7 @@ void SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
     window->min_w = min_w;
     window->min_h = min_h;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         if (_this->SetWindowMinimumSize) {
             _this->SetWindowMinimumSize(_this, window);
         }
@@ -2433,7 +2433,7 @@ void SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
     window->max_w = max_w;
     window->max_h = max_h;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         if (_this->SetWindowMaximumSize) {
             _this->SetWindowMaximumSize(_this, window);
         }
@@ -2853,13 +2853,13 @@ SDL_bool SDL_GetWindowGrab(SDL_Window *window)
 SDL_bool SDL_GetWindowKeyboardGrab(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
-    return window == _this->grabbed_window && ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0);
+    return window == _this->grabbed_window && (_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED);
 }
 
 SDL_bool SDL_GetWindowMouseGrab(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
-    return window == _this->grabbed_window && ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0);
+    return window == _this->grabbed_window && (_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED);
 }
 
 SDL_Window *SDL_GetGrabbedWindow(void)
@@ -2922,7 +2922,7 @@ void SDL_OnWindowHidden(SDL_Window *window)
 
 void SDL_OnWindowDisplayChanged(SDL_Window *window)
 {
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         SDL_Rect rect;
 
         if (SDL_WINDOW_FULLSCREEN_VISIBLE(window) && window->fullscreen_exclusive) {
@@ -3032,7 +3032,7 @@ static SDL_bool SDL_ShouldMinimizeOnFocusLoss(SDL_Window *window)
 {
     const char *hint;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) == 0 || window->is_destroying) {
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN) || window->is_destroying) {
         return SDL_FALSE;
     }
 

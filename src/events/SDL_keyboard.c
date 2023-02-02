@@ -930,8 +930,8 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, SDL_KeyboardFlags flags
         state == SDL_PRESSED &&
         (keyboard->modstate & SDL_KMOD_ALT) &&
         keyboard->focus &&
-        (keyboard->focus->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0 &&
-        (keyboard->focus->flags & SDL_WINDOW_FULLSCREEN) != 0 &&
+        (keyboard->focus->flags & SDL_WINDOW_KEYBOARD_GRABBED) &&
+        (keyboard->focus->flags & SDL_WINDOW_FULLSCREEN) &&
         SDL_GetHintBoolean(SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED, SDL_TRUE)) {
         /* We will temporarily forfeit our grab by minimizing our window,
            allowing the user to escape the application */
@@ -1009,7 +1009,7 @@ SDL_HardwareKeyboardKeyPressed(void)
     SDL_Scancode scancode;
 
     for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
-        if ((keyboard->keysource[scancode] & KEYBOARD_HARDWARE) != 0) {
+        if (keyboard->keysource[scancode] & KEYBOARD_HARDWARE) {
             return SDL_TRUE;
         }
     }

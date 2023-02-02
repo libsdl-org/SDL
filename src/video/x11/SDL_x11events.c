@@ -412,9 +412,9 @@ void X11_ReconcileKeyboardState(_THIS)
 
     /* Sync up the keyboard modifier state */
     if (X11_XQueryPointer(display, DefaultRootWindow(display), &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
-        SDL_ToggleModState(SDL_KMOD_CAPS, (mask & LockMask) != 0);
-        SDL_ToggleModState(SDL_KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) != 0);
-        SDL_ToggleModState(SDL_KMOD_SCROLL, (mask & X11_GetScrollLockModifierMask(_this)) != 0);
+        SDL_ToggleModState(SDL_KMOD_CAPS, (mask & LockMask) ? SDL_TRUE : SDL_FALSE);
+        SDL_ToggleModState(SDL_KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) ? SDL_TRUE : SDL_FALSE);
+        SDL_ToggleModState(SDL_KMOD_SCROLL, (mask & X11_GetScrollLockModifierMask(_this)) ? SDL_TRUE : SDL_FALSE);
     }
 
     keyboardState = SDL_GetKeyboardState(0);
@@ -962,7 +962,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 
             /* In order for interaction with the window decorations and menu to work properly
                on Mutter, we need to ungrab the keyboard when the the mouse leaves. */
-            if ((data->window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
+            if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
                 X11_SetWindowKeyboardGrab(_this, data->window, SDL_FALSE);
             }
 
@@ -1465,15 +1465,15 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             const Uint32 changed = flags ^ data->window->flags;
 
             if ((changed & (SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN)) != 0) {
-                if ((flags & SDL_WINDOW_HIDDEN) != 0) {
+                if (flags & SDL_WINDOW_HIDDEN) {
                     X11_DispatchUnmapNotify(data);
                 } else {
                     X11_DispatchMapNotify(data);
                 }
             }
 
-            if ((changed & SDL_WINDOW_MAXIMIZED) != 0) {
-                if ((flags & SDL_WINDOW_MAXIMIZED) != 0) {
+            if (changed & SDL_WINDOW_MAXIMIZED) {
+                if (flags & SDL_WINDOW_MAXIMIZED) {
                     SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
                 } else {
                     SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
