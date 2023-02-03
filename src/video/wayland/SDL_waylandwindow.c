@@ -794,7 +794,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
          *
          *      https://gitlab.gnome.org/jadahl/libdecor/-/issues/40
          */
-        const SDL_bool use_cached_size = (floating != wind->floating) ||
+        const SDL_bool use_cached_size = (floating && !wind->floating) ||
                                          (window->is_hiding || !!(window->flags & SDL_WINDOW_HIDDEN));
 
         /* This will never set 0 for width/height unless the function returns false */
