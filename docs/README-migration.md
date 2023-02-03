@@ -341,10 +341,12 @@ functionality to your app and aid migration. That is located in the
 SDL_AddHintCallback() now returns a standard int result instead of void, returning 0 if the function succeeds or a negative error code if there was an error.
 
 The following hints have been removed:
-* SDL_HINT_IDLE_TIMER_DISABLED (use SDL_DisableScreenSaver instead)
-* SDL_HINT_VIDEO_X11_FORCE_EGL (use SDL_HINT_VIDEO_FORCE_EGL instead)
-* SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
-* SDL_HINT_VIDEO_X11_XVIDMODE (Xvidmode no longer supported by the X11 backend)
+* SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver instead
+* SDL_HINT_MOUSE_RELATIVE_SCALING - mouse coordinates are no longer automatically scaled by the SDL renderer
+* SDL_HINT_RENDER_LOGICAL_SIZE_MODE - the logical size mode is explicitly set with SDL_SetRenderLogicalPresentation()
+* SDL_HINT_VIDEO_X11_FORCE_EGL - use SDL_HINT_VIDEO_FORCE_EGL instead
+* SDL_HINT_VIDEO_X11_XINERAMA - Xinerama no longer supported by the X11 backend
+* SDL_HINT_VIDEO_X11_XVIDMODE - Xvidmode no longer supported by the X11 backend
 
 * Renamed hints SDL_HINT_VIDEODRIVER and SDL_HINT_AUDIODRIVER to SDL_HINT_VIDEO_DRIVER and SDL_HINT_AUDIO_DRIVER
 * Renamed environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER
@@ -594,9 +596,16 @@ which index is the "opengl" or whatnot driver, you can just pass that string dir
 here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you want SDL
 to decide for you.
 
-SDL_RenderWindowToLogical() and SDL_RenderLogicalToWindow() take floating point coordinates in both directions.
+Mouse and touch events are no longer filtered to change their coordinates, instead you
+can call SDL_ConvertEventToRenderCoordinates() to explicitly map event coordinates into
+the rendering viewport.
+
+SDL_RenderWindowToLogical() and SDL_RenderLogicalToWindow() have been renamed SDL_RenderCoordinatesFromWindow() and SDL_RenderCoordinatesToWindow() and take floating point coordinates in both directions.
+
+The viewport, clipping state, and scale for render targets are now persistent and will remain set whenever they are active.
 
 The following functions have been renamed:
+* SDL_GetRendererOutputSize() => SDL_GetCurrentRenderOutputSize()
 * SDL_RenderCopyExF() => SDL_RenderTextureRotated()
 * SDL_RenderCopyF() => SDL_RenderTexture()
 * SDL_RenderDrawLineF() => SDL_RenderLine()
@@ -609,19 +618,21 @@ The following functions have been renamed:
 * SDL_RenderFillRectsF() => SDL_RenderFillRects()
 * SDL_RenderGetClipRect() => SDL_GetRenderClipRect()
 * SDL_RenderGetIntegerScale() => SDL_GetRenderIntegerScale()
-* SDL_RenderGetLogicalSize() => SDL_GetRenderLogicalSize()
+* SDL_RenderGetLogicalSize() => SDL_GetRenderLogicalPresentation()
 * SDL_RenderGetMetalCommandEncoder() => SDL_GetRenderMetalCommandEncoder()
 * SDL_RenderGetMetalLayer() => SDL_GetRenderMetalLayer()
 * SDL_RenderGetScale() => SDL_GetRenderScale()
 * SDL_RenderGetViewport() => SDL_GetRenderViewport()
 * SDL_RenderGetWindow() => SDL_GetRenderWindow()
 * SDL_RenderIsClipEnabled() => SDL_RenderClipEnabled()
+* SDL_RenderLogicalToWindow() => SDL_RenderCoordinatesToWindow()
 * SDL_RenderSetClipRect() => SDL_SetRenderClipRect()
 * SDL_RenderSetIntegerScale() => SDL_SetRenderIntegerScale()
-* SDL_RenderSetLogicalSize() => SDL_SetRenderLogicalSize()
+* SDL_RenderSetLogicalSize() => SDL_SetRenderLogicalPresentation()
 * SDL_RenderSetScale() => SDL_SetRenderScale()
 * SDL_RenderSetVSync() => SDL_SetRenderVSync()
 * SDL_RenderSetViewport() => SDL_SetRenderViewport()
+* SDL_RenderWindowToLogical() => SDL_RenderCoordinatesFromWindow()
 
 The following functions have been removed:
 * SDL_RenderCopy()
@@ -634,6 +645,9 @@ The following functions have been removed:
 * SDL_RenderDrawRects()
 * SDL_RenderFillRect()
 * SDL_RenderFillRects()
+* SDL_RenderGetIntegerScale()
+* SDL_RenderSetIntegerScale() - this is now explicit with SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
+* SDL_RenderTargetSupported() - render targets are always supported
 
 ## SDL_rwops.h
 

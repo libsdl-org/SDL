@@ -77,6 +77,8 @@ typedef struct
     int window_maxH;
     int logical_w;
     int logical_h;
+    SDL_RendererLogicalPresentation logical_presentation;
+    SDL_ScaleMode logical_scale_mode;
     float scale;
     int depth;
     float refresh_rate;

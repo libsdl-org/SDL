@@ -71,7 +71,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
         float logical_x, logical_y;
 
         SDL_GetMouseState(&window_x, &window_y);
-        SDL_RenderWindowToLogical(renderer, window_x, window_y, &logical_x, &logical_y);
+        SDL_RenderCoordinatesFromWindow(renderer, window_x, window_y, &logical_x, &logical_y);
 
         mouse_pos.x = logical_x;
         mouse_pos.y = logical_y;

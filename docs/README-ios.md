@@ -41,16 +41,15 @@ size their content based on screen coordinates / points rather than pixels,
 as this allows different iOS devices to have different pixel densities
 (Retina versus non-Retina screens, etc.) without apps caring too much.
 
-By default SDL will not use the full pixel density of the screen on
-Retina/high-dpi capable devices. Use the SDL_WINDOW_ALLOW_HIGHDPI flag when
-creating your window to enable high-dpi support.
+SDL_GetWindowSize() and mouse coordinates are in screen coordinates rather
+than pixels, but the window will have a much greater pixel density when the
+device supports it, and the SDL_GetWindowSizeInPixels() can be called to
+determine the size in pixels of the drawable screen framebuffer.
 
-When high-dpi support is enabled, SDL_GetWindowSize() and display mode sizes
-will still be in "screen coordinates" rather than pixels, but the window will
-have a much greater pixel density when the device supports it, and the
-SDL_GetWindowSizeInPixels() or SDL_GetRendererOutputSize() functions (depending
-on whether the SDL_Render API is used) can be queried to determine the size in
-pixels of the drawable screen framebuffer.
+The SDL 2D rendering API will automatically handle this for you, by default
+providing a rendering area in screen coordinates, and you can call
+SDL_SetRenderLogicalPresentation() to gain access to the higher density
+resolution.
 
 Some OpenGL ES functions such as glViewport expect sizes in pixels rather than
 sizes in screen coordinates. When doing 2D rendering with OpenGL ES, an

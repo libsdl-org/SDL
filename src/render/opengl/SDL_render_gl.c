@@ -331,12 +331,6 @@ static void GL_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
     }
 }
 
-static int GL_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
-{
-    SDL_GetWindowSizeInPixels(renderer->window, w, h);
-    return 0;
-}
-
 static GLenum GetBlendFunc(SDL_BlendFactor factor)
 {
     switch (factor) {
@@ -1440,7 +1434,7 @@ static int GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
         return SDL_OutOfMemory();
     }
 
-    SDL_GetRendererOutputSize(renderer, &w, &h);
+    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
 
     data->glPixelStorei(GL_PACK_ALIGNMENT, 1);
     data->glPixelStorei(GL_PACK_ROW_LENGTH,
@@ -1749,7 +1743,6 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
 
     renderer->WindowEvent = GL_WindowEvent;
-    renderer->GetOutputSize = GL_GetOutputSize;
     renderer->SupportsBlendMode = GL_SupportsBlendMode;
     renderer->CreateTexture = GL_CreateTexture;
     renderer->UpdateTexture = GL_UpdateTexture;
@@ -1935,9 +1928,13 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
             SDL_GL_GetProcAddress("glBindFramebufferEXT");
         data->glCheckFramebufferStatusEXT = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)
             SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
-        renderer->info.flags |= SDL_RENDERER_TARGETTEXTURE;
+    } else {
+        SDL_SetError("Can't create render targets, GL_EXT_framebuffer_object not available");
+        SDL_GL_DeleteContext(data->context);
+        SDL_free(renderer);
+        SDL_free(data);
+        goto error;
     }
-    data->framebuffers = NULL;
 
     /* Set up parameters for rendering */
     data->glMatrixMode(GL_MODELVIEW);
@@ -1972,7 +1969,7 @@ error:
 SDL_RenderDriver GL_RenderDriver = {
     GL_CreateRenderer,
     { "opengl",
-      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
       4,
       { SDL_PIXELFORMAT_ARGB8888,
         SDL_PIXELFORMAT_ABGR8888,

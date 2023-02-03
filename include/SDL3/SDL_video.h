@@ -631,10 +631,10 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * The window size in pixels may differ from its size in screen coordinates if
  * the window is on a high density display (one with an OS scaling factor).
  * Use SDL_GetWindowSize() to query the client area's size in screen
- * coordinates, and SDL_GetWindowSizeInPixels() or SDL_GetRendererOutputSize()
+ * coordinates, and SDL_GetWindowSizeInPixels() or SDL_GetRenderOutputSize()
  * to query the drawable size in pixels. Note that the drawable size can vary
- * after the window is created and should be queried again when the window is
- * resized or moved between displays.
+ * after the window is created and should be queried again if you get an
+ * SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
  *
  * If the window is set fullscreen, the width and height parameters `w` and
  * `h` will not be used. However, invalid size parameters (e.g. too large) may
@@ -868,7 +868,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h)
  *
  * The window size in screen coordinates may differ from the size in pixels if
  * the window is on a high density display (one with an OS scaling factor).
- * Use SDL_GetWindowSizeInPixels() or SDL_GetRendererOutputSize() to get the
+ * Use SDL_GetWindowSizeInPixels() or SDL_GetRenderOutputSize() to get the
  * real client area size in pixels.
  *
  * \param window the window to query the width and height from
@@ -877,8 +877,8 @@ extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h)
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetRenderOutputSize
  * \sa SDL_GetWindowSizeInPixels
- * \sa SDL_GetRendererOutputSize
  * \sa SDL_SetWindowSize
  */
 extern DECLSPEC void SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, int *h);
