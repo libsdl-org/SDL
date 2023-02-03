@@ -606,13 +606,21 @@ The viewport, clipping state, and scale for render targets are now persistent an
 
 The following functions have been renamed:
 * SDL_GetRendererOutputSize() => SDL_GetCurrentRenderOutputSize()
+* SDL_RenderCopy() => SDL_RenderTexture()
+* SDL_RenderCopyEx() => SDL_RenderTextureRotated()
 * SDL_RenderCopyExF() => SDL_RenderTextureRotated()
 * SDL_RenderCopyF() => SDL_RenderTexture()
+* SDL_RenderDrawLine() => SDL_RenderLine()
 * SDL_RenderDrawLineF() => SDL_RenderLine()
+* SDL_RenderDrawLines() => SDL_RenderLines()
 * SDL_RenderDrawLinesF() => SDL_RenderLines()
+* SDL_RenderDrawPoint() => SDL_RenderPoint()
 * SDL_RenderDrawPointF() => SDL_RenderPoint()
+* SDL_RenderDrawPoints() => SDL_RenderPoints()
 * SDL_RenderDrawPointsF() => SDL_RenderPoints()
+* SDL_RenderDrawRect() => SDL_RenderRect()
 * SDL_RenderDrawRectF() => SDL_RenderRect()
+* SDL_RenderDrawRects() => SDL_RenderRects()
 * SDL_RenderDrawRectsF() => SDL_RenderRects()
 * SDL_RenderFillRectF() => SDL_RenderFillRect()
 * SDL_RenderFillRectsF() => SDL_RenderFillRects()
@@ -635,16 +643,6 @@ The following functions have been renamed:
 * SDL_RenderWindowToLogical() => SDL_RenderCoordinatesFromWindow()
 
 The following functions have been removed:
-* SDL_RenderCopy()
-* SDL_RenderCopyEx()
-* SDL_RenderDrawLine()
-* SDL_RenderDrawLines()
-* SDL_RenderDrawPoint()
-* SDL_RenderDrawPoints()
-* SDL_RenderDrawRect()
-* SDL_RenderDrawRects()
-* SDL_RenderFillRect()
-* SDL_RenderFillRects()
 * SDL_RenderGetIntegerScale()
 * SDL_RenderSetIntegerScale() - this is now explicit with SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
 * SDL_RenderTargetSupported() - render targets are always supported

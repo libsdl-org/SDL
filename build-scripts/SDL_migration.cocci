@@ -1779,11 +1779,11 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
   (...)
 @@
 SDL_Renderer *renderer;
-int *w;
-int *h;
+int *e1;
+int *e2;
 @@
-- SDL_RenderGetLogicalSize(renderer, w, h)
-+ SDL_GetRenderLogicalPresentation(renderer, w, h, NULL, NULL)
+- SDL_RenderGetLogicalSize(renderer, e1, e2)
++ SDL_GetRenderLogicalPresentation(renderer, e1, e2, NULL, NULL)
 @@
 @@
 - SDL_RenderGetMetalCommandEncoder
@@ -1821,15 +1821,15 @@ int *h;
   (...)
 @@
 SDL_Renderer *renderer;
-expression w;
-expression h;
+expression e1;
+expression e2;
 @@
 (
 - SDL_RenderSetLogicalSize(renderer, 0, 0)
 + SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_ScaleModeNearest)
 |
-- SDL_RenderSetLogicalSize(renderer, w, h)
-+ SDL_SetRenderLogicalPresentation(renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_ScaleModeLinear)
+- SDL_RenderSetLogicalSize(renderer, e1, e2)
++ SDL_SetRenderLogicalPresentation(renderer, e1, e2, SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_ScaleModeLinear)
 )
 @@
 @@
@@ -2387,4 +2387,98 @@ SDL_DisplayMode e;
 @@
 - SDL_RenderLogicalToWindow
 + SDL_RenderCoordinatesToWindow
+  (...)
+@@
+@@
+- SDL_RenderCopy
++ SDL_RenderTexture
+  (...)
+@@
+@@
+- SDL_RenderCopyEx
++ SDL_RenderTextureRotated
+  (...)
+@@
+SDL_Renderer *renderer;
+constant c1;
+constant c2;
+constant c3;
+constant c4;
+expression e1;
+expression e2;
+expression e3;
+expression e4;
+@@
+- SDL_RenderDrawLine(renderer,
++ SDL_RenderLine(renderer,
+(
+  c1
+|
+- e1
++ (float)e1
+)
+  ,
+(
+  c2
+|
+- e2
++ (float)e2
+)
+  ,
+(
+  c3
+|
+- e3
++ (float)e3
+)
+  ,
+(
+  c4
+|
+- e4
++ (float)e4
+)
+  )
+@@
+@@
+- SDL_RenderDrawLines
++ SDL_RenderLines
+  (...)
+@@
+SDL_Renderer *renderer;
+constant c1;
+constant c2;
+expression e1;
+expression e2;
+@@
+- SDL_RenderDrawPoint(renderer,
++ SDL_RenderPoint(renderer,
+(
+  c1
+|
+- e1
++ (float)e1
+)
+  ,
+(
+  c2
+|
+- e2
++ (float)e2
+)
+  )
+@@
+@@
+- SDL_RenderDrawPoints
++ SDL_RenderPoints
+  (...)
+@@
+@@
+- SDL_RenderDrawRect
++ SDL_RenderRect
+  (...)
+@@
+@@
+- SDL_RenderDrawRects
++ SDL_RenderRects
   (...)
