@@ -337,12 +337,6 @@ static void D3D_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event
     }
 }
 
-static int D3D_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
-{
-    SDL_GetWindowSizeInPixels(renderer->window, w, h);
-    return 0;
-}
-
 static D3DBLEND GetBlendFunc(SDL_BlendFactor factor)
 {
     switch (factor) {
@@ -1586,7 +1580,6 @@ D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
 
     renderer->WindowEvent = D3D_WindowEvent;
-    renderer->GetOutputSize = D3D_GetOutputSize;
     renderer->SupportsBlendMode = D3D_SupportsBlendMode;
     renderer->CreateTexture = D3D_CreateTexture;
     renderer->UpdateTexture = D3D_UpdateTexture;
@@ -1609,7 +1602,7 @@ D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->DestroyRenderer = D3D_DestroyRenderer;
     renderer->SetVSync = D3D_SetVSync;
     renderer->info = D3D_RenderDriver.info;
-    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
@@ -1727,7 +1720,7 @@ D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
 SDL_RenderDriver D3D_RenderDriver = {
     D3D_CreateRenderer,
     { "direct3d",
-      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
       1,
       { SDL_PIXELFORMAT_ARGB8888 },
       0,

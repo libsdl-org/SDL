@@ -68,8 +68,6 @@ typedef enum
                                                      acceleration */
     SDL_RENDERER_PRESENTVSYNC = 0x00000004,     /**< Present is synchronized
                                                      with the refresh rate */
-    SDL_RENDERER_TARGETTEXTURE = 0x00000008     /**< The renderer supports
-                                                     rendering to texture */
 } SDL_RendererFlags;
 
 /**
@@ -134,6 +132,19 @@ typedef enum
     SDL_FLIP_HORIZONTAL = 0x00000001,    /**< flip horizontally */
     SDL_FLIP_VERTICAL = 0x00000002     /**< flip vertically */
 } SDL_RendererFlip;
+
+/**
+ * How the logical size is mapped to the output
+ */
+typedef enum
+{
+    SDL_LOGICAL_PRESENTATION_DISABLED,  /**< There is no logical size in effect */
+    SDL_LOGICAL_PRESENTATION_MATCH,     /**< The rendered content matches the window size in screen coordinates */
+    SDL_LOGICAL_PRESENTATION_STRETCH,   /**< The rendered content is stretched to the output resolution */
+    SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with black bars */
+    SDL_LOGICAL_PRESENTATION_OVERSCAN,  /**< The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds */
+    SDL_LOGICAL_PRESENTATION_INTEGER_SCALE,  /**< The rendered content is scaled up by integer multiples to fit the output resolution */
+} SDL_RendererLogicalPresentation;
 
 /**
  * A structure representing rendering state
@@ -223,6 +234,10 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, U
  * need a specific renderer, specify NULL and SDL will attempt to chooes the
  * best option for you, based on what is available on the user's system.
  *
+ * By default the rendering size matches the window size in screen coordinates,
+ * but you can call SDL_SetRenderLogicalPresentation() to enable high DPI
+ * rendering or change the content size and scaling options.
+ *
  * \param window the window where rendering is displayed
  * \param name the name of the rendering driver to initialize, or NULL to
  *             initialize the first one supporting the requested flags
@@ -301,15 +316,14 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetRenderWindow(SDL_Renderer *renderer);
 extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_RendererInfo *info);
 
 /**
- * Get the output size in pixels of a rendering context.
+ * Get the output size in screen coordinates of a rendering context.
  *
- * Due to high-dpi displays, you might end up with a rendering context that
- * has more pixels than the window that contains it, so use this instead of
- * SDL_GetWindowSize() to decide how much drawing area you have.
+ * This returns the true output size in screen coordinates, ignoring any
+ * render targets or logical size and presentation.
  *
  * \param renderer the rendering context
- * \param w an int filled with the width
- * \param h an int filled with the height
+ * \param w a pointer filled in with the width in screen coordinates
+ * \param h a pointer filled in with the height in screen coordinates
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -317,7 +331,46 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  *
  * \sa SDL_GetRenderer
  */
-extern DECLSPEC int SDLCALL SDL_GetRendererOutputSize(SDL_Renderer *renderer, int *w, int *h);
+extern DECLSPEC int SDLCALL SDL_GetRenderWindowSize(SDL_Renderer *renderer, int *w, int *h);
+
+/**
+ * Get the output size in pixels of a rendering context.
+ *
+ * This returns the true output size in pixels, ignoring any render targets
+ * or logical size and presentation.
+ *
+ * \param renderer the rendering context
+ * \param w a pointer filled in with the width in pixels
+ * \param h a pointer filled in with the height in pixels
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetRenderer
+ */
+extern DECLSPEC int SDLCALL SDL_GetRenderOutputSize(SDL_Renderer *renderer, int *w, int *h);
+
+/**
+ * Get the current output size in pixels of a rendering context.
+ *
+ * If a rendering target is active, this will return the size of the
+ * rendering target in pixels, otherwise if a logical size is set, it will
+ * return the logical size, otherwise it will return the value of
+ * SDL_GetRenderOutputSize().
+ *
+ * \param renderer the rendering context
+ * \param w a pointer filled in with the current width
+ * \param h a pointer filled in with the current height
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetRenderOutputSize
+ * \sa SDL_GetRenderer
+ */
+extern DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *renderer, int *w, int *h);
 
 /**
  * Create a texture for a rendering context.
@@ -737,18 +790,6 @@ extern DECLSPEC int SDLCALL SDL_LockTextureToSurface(SDL_Texture *texture,
 extern DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_Texture *texture);
 
 /**
- * Determine whether a renderer supports the use of render targets.
- *
- * \param renderer the renderer that will be checked
- * \returns SDL_TRUE if supported or SDL_FALSE if not.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetRenderTarget
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_RenderTargetSupported(SDL_Renderer *renderer);
-
-/**
  * Set a texture as the current rendering target.
  *
  * Before using this function, you should check the
@@ -788,91 +829,115 @@ extern DECLSPEC int SDLCALL SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Text
 extern DECLSPEC SDL_Texture *SDLCALL SDL_GetRenderTarget(SDL_Renderer *renderer);
 
 /**
- * Set a device independent resolution for rendering.
+ * Set a device independent resolution and presentation mode for rendering.
  *
- * This function uses the viewport and scaling functionality to allow a fixed
- * logical resolution for rendering, regardless of the actual output
- * resolution. If the actual output resolution doesn't have the same aspect
- * ratio the output rendering will be centered within the output display.
+ * This function sets the width and height of the logical rendering output.
+ * A render target is created at the specified size and used for rendering
+ * and then copied to the output during presentation.
  *
- * If the output display is a window, mouse and touch events in the window
- * will be filtered and scaled so they seem to arrive within the logical
- * resolution. The SDL_HINT_MOUSE_RELATIVE_SCALING hint controls whether
- * relative motion events are also scaled.
+ * When a renderer is created, the logical size is set to match the window
+ * size in screen coordinates. The actual output size may be higher pixel
+ * density, and can be queried with SDL_GetRenderOutputSize().
  *
- * If this function results in scaling or subpixel drawing by the rendering
- * backend, it will be handled using the appropriate quality hints.
+ * You can disable logical coordinates by setting the mode to
+ * SDL_LOGICAL_PRESENTATION_DISABLED, and in that case you get the full
+ * resolution of the output window.
  *
- * \param renderer the renderer for which resolution should be set
+ * You can convert coordinates in an event into rendering coordinates using
+ * SDL_ConvertEventToRenderCoordinates().
+ *
+ * \param renderer the rendering context
  * \param w the width of the logical resolution
  * \param h the height of the logical resolution
+ * \param mode the presentation mode used
+ * \param scale_mode the scale mode used
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetRenderLogicalSize
+ * \sa SDL_ConvertEventToRenderCoordinates
+ * \sa SDL_GetRenderLogicalPresentation
  */
-extern DECLSPEC int SDLCALL SDL_SetRenderLogicalSize(SDL_Renderer *renderer, int w, int h);
+extern DECLSPEC int SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_RendererLogicalPresentation mode, SDL_ScaleMode scale_mode);
 
 /**
- * Get device independent resolution for rendering.
+ * Get device independent resolution and presentation mode for rendering.
  *
- * When using the main rendering target (eg no target texture is set): this
- * may return 0 for `w` and `h` if the SDL_Renderer has never had its logical
- * size set by SDL_SetRenderLogicalSize(). Otherwise it returns the logical
- * width and height.
+ * This function gets the width and height of the logical rendering output,
+ * or the output size in pixels if a logical resolution is not enabled.
  *
- * When using a target texture: Never return 0 for `w` and `h` at first. Then
- * it returns the logical width and height that are set.
- *
- * \param renderer a rendering context
+ * \param renderer the rendering context
  * \param w an int to be filled with the width
  * \param h an int to be filled with the height
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetRenderLogicalSize
- */
-extern DECLSPEC void SDLCALL SDL_GetRenderLogicalSize(SDL_Renderer *renderer, int *w, int *h);
-
-/**
- * Set whether to force integer scales for resolution-independent rendering.
- *
- * This function restricts the logical viewport to integer values - that is,
- * when a resolution is between two multiples of a logical size, the viewport
- * size is rounded down to the lower multiple.
- *
- * \param renderer the renderer for which integer scaling should be set
- * \param enable enable or disable the integer scaling for rendering
+ * \param mode a pointer filled in with the presentation mode
+ * \param scale_mode a pointer filled in with the scale mode
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetRenderIntegerScale
- * \sa SDL_SetRenderLogicalSize
+ * \sa SDL_SetRenderLogicalPresentation
  */
-extern DECLSPEC int SDLCALL SDL_SetRenderIntegerScale(SDL_Renderer *renderer, SDL_bool enable);
+extern DECLSPEC int SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL_RendererLogicalPresentation *mode, SDL_ScaleMode *scale_mode);
 
 /**
- * Get whether integer scales are forced for resolution-independent rendering.
+ * Get a point in render coordinates when given a point in window coordinates.
  *
- * \param renderer the renderer from which integer scaling should be queried
- * \returns SDL_TRUE if integer scales are forced or SDL_FALSE if not and on
- *          failure; call SDL_GetError() for more information.
+ * \param renderer the rendering context
+ * \param window_x the x coordinate in window coordinates
+ * \param window_y the y coordinate in window coordinates
+ * \param x a pointer filled with the x coordinate in render coordinates
+ * \param y a pointer filled with the y coordinate in render coordinates
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SetRenderIntegerScale
+ * \sa SDL_SetRenderLogicalPresentation
+ * \sa SDL_SetRenderScale
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetRenderIntegerScale(SDL_Renderer *renderer);
+extern DECLSPEC int SDLCALL SDL_RenderCoordinatesFromWindow(SDL_Renderer *renderer, float window_x, float window_y, float *x, float *y);
+
+/**
+ * Get a point in window coordinates when given a point in render coordinates.
+ *
+ * \param renderer the rendering context
+ * \param x the x coordinate in render coordinates
+ * \param y the y coordinate in render coordinates
+ * \param window_x a pointer filled with the x coordinate in window coordinates
+ * \param window_y a pointer filled with the y coordinate in window coordinates
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetRenderLogicalPresentation
+ * \sa SDL_SetRenderScale
+ */
+extern DECLSPEC int SDLCALL SDL_RenderCoordinatesToWindow(SDL_Renderer *renderer, float x, float y, float *window_x, float *window_y);
+
+/**
+ * Convert the coordinates in an event to render coordinates.
+ *
+ * Touch coordinates are converted from normalized coordinates in the window
+ * to non-normalized rendering coordinates.
+ *
+ * Once converted, the coordinates may be outside the rendering area.
+ *
+ * \param renderer the rendering context
+ * \param event the event to modify
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetRenderCoordinatesFromWindowCoordinates
+ */
+extern DECLSPEC int SDLCALL SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *event);
 
 /**
  * Set the drawing area for rendering on the current target.
- *
- * When the window is resized, the viewport is reset to fill the entire new
- * window size.
  *
  * \param renderer the rendering context
  * \param rect the SDL_Rect structure representing the drawing area, or NULL
@@ -891,18 +956,19 @@ extern DECLSPEC int SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, const 
  *
  * \param renderer the rendering context
  * \param rect an SDL_Rect structure filled in with the current drawing area
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetRenderViewport
  */
-extern DECLSPEC void SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect);
+extern DECLSPEC int SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect);
 
 /**
  * Set the clip rectangle for rendering on the specified target.
  *
- * \param renderer the rendering context for which clip rectangle should be
- *                 set
+ * \param renderer the rendering context
  * \param rect an SDL_Rect structure representing the clip area, relative to
  *             the viewport, or NULL to disable clipping
  * \returns 0 on success or a negative error code on failure; call
@@ -918,22 +984,23 @@ extern DECLSPEC int SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, const 
 /**
  * Get the clip rectangle for the current target.
  *
- * \param renderer the rendering context from which clip rectangle should be
- *                 queried
+ * \param renderer the rendering context
  * \param rect an SDL_Rect structure filled in with the current clipping area
  *             or an empty rectangle if clipping is disabled
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_RenderClipEnabled
  * \sa SDL_SetRenderClipRect
  */
-extern DECLSPEC void SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect);
+extern DECLSPEC int SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect);
 
 /**
  * Get whether clipping is enabled on the given renderer.
  *
- * \param renderer the renderer from which clip state should be queried
+ * \param renderer the rendering context
  * \returns SDL_TRUE if clipping is enabled or SDL_FALSE if not; call
  *          SDL_GetError() for more information.
  *
@@ -943,7 +1010,6 @@ extern DECLSPEC void SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_R
  * \sa SDL_SetRenderClipRect
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_RenderClipEnabled(SDL_Renderer *renderer);
-
 
 /**
  * Set the drawing scale for rendering on the current target.
@@ -956,7 +1022,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_RenderClipEnabled(SDL_Renderer *renderer);
  * will be handled using the appropriate quality hints. For best results use
  * integer scaling factors.
  *
- * \param renderer a rendering context
+ * \param renderer the rendering context
  * \param scaleX the horizontal scaling factor
  * \param scaleY the vertical scaling factor
  * \returns 0 on success or a negative error code on failure; call
@@ -965,73 +1031,23 @@ extern DECLSPEC SDL_bool SDLCALL SDL_RenderClipEnabled(SDL_Renderer *renderer);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRenderScale
- * \sa SDL_SetRenderLogicalSize
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderScale(SDL_Renderer *renderer, float scaleX, float scaleY);
 
 /**
  * Get the drawing scale for the current target.
  *
- * \param renderer the renderer from which drawing scale should be queried
+ * \param renderer the rendering context
  * \param scaleX a pointer filled in with the horizontal scaling factor
  * \param scaleY a pointer filled in with the vertical scaling factor
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetRenderScale
  */
-extern DECLSPEC void SDLCALL SDL_GetRenderScale(SDL_Renderer *renderer, float *scaleX, float *scaleY);
-
-/**
- * Get logical coordinates of point in renderer when given real coordinates of
- * point in window.
- *
- * Logical coordinates will differ from real coordinates when render is scaled
- * and logical renderer size set
- *
- * \param renderer the renderer from which the logical coordinates should be
- *                 calculated
- * \param windowX the real X coordinate in the window
- * \param windowY the real Y coordinate in the window
- * \param logicalX the pointer filled with the logical x coordinate
- * \param logicalY the pointer filled with the logical y coordinate
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetRenderScale
- * \sa SDL_SetRenderScale
- * \sa SDL_GetRenderLogicalSize
- * \sa SDL_SetRenderLogicalSize
- */
-extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer *renderer,
-                                                       float windowX, float windowY,
-                                                       float *logicalX, float *logicalY);
-
-
-/**
- * Get real coordinates of point in window when given logical coordinates of
- * point in renderer.
- *
- * Logical coordinates will differ from real coordinates when render is scaled
- * and logical renderer size set
- *
- * \param renderer the renderer from which the window coordinates should be
- *                 calculated
- * \param logicalX the logical x coordinate
- * \param logicalY the logical y coordinate
- * \param windowX the pointer filled with the real X coordinate in the window
- * \param windowY the pointer filled with the real Y coordinate in the window
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetRenderScale
- * \sa SDL_SetRenderScale
- * \sa SDL_GetRenderLogicalSize
- * \sa SDL_SetRenderLogicalSize
- */
-extern DECLSPEC void SDLCALL SDL_RenderLogicalToWindow(SDL_Renderer *renderer,
-                                                       float logicalX, float logicalY,
-                                                       float *windowX, float *windowY);
+extern DECLSPEC int SDLCALL SDL_GetRenderScale(SDL_Renderer *renderer, float *scaleX, float *scaleY);
 
 /**
  * Set the color used for drawing operations (Rect, Line and Clear).
@@ -1356,8 +1372,8 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
  * Bitmap data pads all rows to multiples of 4 bytes).
  *
  * \param renderer the rendering context
- * \param rect an SDL_Rect structure representing the area to read, or NULL
- *             for the entire render target
+ * \param rect an SDL_Rect structure representing the area in pixels relative
+ *             to the to current viewport, or NULL for the entire viewport
  * \param format an SDL_PixelFormatEnum value of the desired format of the
  *               pixel data, or 0 to use the format of the rendering target
  * \param pixels a pointer to the pixel data to copy into

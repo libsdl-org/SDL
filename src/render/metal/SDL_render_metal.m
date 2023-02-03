@@ -1911,7 +1911,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, Uint32 flags)
         renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
 
         renderer->info = METAL_RenderDriver.info;
-        renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+        renderer->info.flags = SDL_RENDERER_ACCELERATED;
 
         renderer->always_batch = SDL_TRUE;
 
@@ -1972,7 +1972,7 @@ SDL_RenderDriver METAL_RenderDriver = {
     METAL_CreateRenderer,
     {
         "metal",
-        (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+        (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
         6,
         { SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_ABGR8888,

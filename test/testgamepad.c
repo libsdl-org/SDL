@@ -911,7 +911,9 @@ int main(int argc, char *argv[])
     SDL_RenderPresent(screen);
 
     /* scale for platforms that don't give you the window size you asked for. */
-    SDL_SetRenderLogicalSize(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
+    SDL_SetRenderLogicalPresentation(screen, SCREEN_WIDTH, SCREEN_HEIGHT,
+                                     SDL_LOGICAL_PRESENTATION_LETTERBOX,
+                                     SDL_ScaleModeLinear);
 
     background_front = LoadTexture(screen, "gamepadmap.bmp", SDL_FALSE, NULL, NULL);
     background_back = LoadTexture(screen, "gamepadmap_back.bmp", SDL_FALSE, NULL, NULL);

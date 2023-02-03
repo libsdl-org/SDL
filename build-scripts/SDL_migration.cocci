@@ -294,9 +294,12 @@ expression e1, e2, e3;
 @@
 typedef PFN_vkGetInstanceProcAddr;
 @@
+(
+  (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr()
+|
 + (PFN_vkGetInstanceProcAddr)
   SDL_Vulkan_GetVkGetInstanceProcAddr()
-
+)
 
 // SDL_PauseAudioDevice / SDL_PlayAudioDevice
 @@
@@ -716,7 +719,8 @@ expression e1, e2, e3, e4, e5, e6, e7, e8, e9;
 @@
 // SDL_CreateRenderer:
 // 2nd argument changed from int (default=-1) to const char* (default=NULL)
-expression e1, e2, e3;
+expression e1, e3;
+int e2;
 @@
 
 (
@@ -1774,15 +1778,12 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 + SDL_GetRenderClipRect
   (...)
 @@
+SDL_Renderer *renderer;
+int *w;
+int *h;
 @@
-- SDL_RenderGetIntegerScale
-+ SDL_GetRenderIntegerScale
-  (...)
-@@
-@@
-- SDL_RenderGetLogicalSize
-+ SDL_GetRenderLogicalSize
-  (...)
+- SDL_RenderGetLogicalSize(renderer, w, h)
++ SDL_GetRenderLogicalPresentation(renderer, w, h, NULL, NULL)
 @@
 @@
 - SDL_RenderGetMetalCommandEncoder
@@ -1819,15 +1820,17 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 + SDL_SetRenderClipRect
   (...)
 @@
+SDL_Renderer *renderer;
+expression w;
+expression h;
 @@
-- SDL_RenderSetIntegerScale
-+ SDL_SetRenderIntegerScale
-  (...)
-@@
-@@
-- SDL_RenderSetLogicalSize
-+ SDL_SetRenderLogicalSize
-  (...)
+(
+- SDL_RenderSetLogicalSize(renderer, 0, 0)
++ SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_ScaleModeNearest)
+|
+- SDL_RenderSetLogicalSize(renderer, w, h)
++ SDL_SetRenderLogicalPresentation(renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_ScaleModeLinear)
+)
 @@
 @@
 - SDL_RenderSetScale
@@ -2328,10 +2331,6 @@ expression e;
   (...)
 @@
 @@
-- SDL_WINDOW_FULLSCREEN
-+ SDL_WINDOW_FULLSCREEN_EXCLUSIVE
-@@
-@@
 - SDL_WINDOW_INPUT_GRABBED
 + SDL_WINDOW_MOUSE_GRABBED
 @@
@@ -2373,4 +2372,19 @@ SDL_DisplayMode e;
 @@
 - SDL_GetClosestDisplayMode
 + SDL_GetClosestFullscreenDisplayMode
+  (...)
+@@
+@@
+- SDL_GetRendererOutputSize
++ SDL_GetCurrentRenderOutputSizeInPixels
+  (...)
+@@
+@@
+- SDL_RenderWindowToLogical
++ SDL_RenderCoordinatesFromWindow
+  (...)
+@@
+@@
+- SDL_RenderLogicalToWindow
++ SDL_RenderCoordinatesToWindow
   (...)

@@ -1175,7 +1175,7 @@ static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, Uint32 flags)
 SDL_RenderDriver SW_RenderDriver = {
     SW_CreateRenderer,
     { "software",
-      SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
+      (SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC),
       0,
       { /* formats filled in later */
         SDL_PIXELFORMAT_UNKNOWN },
