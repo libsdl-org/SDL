@@ -13,7 +13,16 @@ controllers = []
 controller_guids = {}
 conditionals = []
 split_pattern = re.compile(r'([^"]*")([^,]*,)([^,]*,)([^"]*)(".*)')
-guid_crc_pattern = re.compile(r'^([0-9a-zA-Z]{4})([0-9a-zA-Z]{2})([0-9a-zA-Z]{2})([0-9a-zA-Z]{24},)$')
+#                                     BUS (1)         CRC (3,2)                       VID (5,4)                       (6)   PID (8,7)                       (9)   VERSION (11,10)                 MISC (12)
+standard_guid_pattern = re.compile(r'^([0-9a-fA-F]{4})([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})(0000)([0-9a-fA-F]{2})([0-9a-fA-F]{2})(0000)([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{4},)$')
+
+# These chipsets are used in multiple controllers with different mappings,
+# without enough unique information to differentiate them. e.g.
+# https://github.com/gabomdq/SDL_GameControllerDB/issues/202
+invalid_controllers = (
+    ('0079', '0006', '0000'), # DragonRise Inc. Generic USB Joystick
+    ('0079', '0006', '6120'), # DragonRise Inc. Generic USB Joystick
+)
 
 def find_element(prefix, bindings):
     i=0
@@ -23,7 +32,7 @@ def find_element(prefix, bindings):
         i=(i + 1)
 
     return -1
-       
+
 def save_controller(line):
     global controllers
     match = split_pattern.match(line)
@@ -32,18 +41,34 @@ def save_controller(line):
     if (bindings[0] == ""):
         bindings.pop(0)
 
+    name = entry[2].rstrip(',')
+
     crc = ""
     pos = find_element("crc:", bindings)
     if pos >= 0:
         crc = bindings[pos] + ","
         bindings.pop(pos)
 
-    # Look for CRC embedded in the GUID and convert to crc element
-    crc_match = guid_crc_pattern.match(entry[1])
-    if crc_match and crc_match.group(2) != '00' and crc_match.group(3) != '00':
-        print("Extracting CRC from GUID of " + entry[2])
-        entry[1] = crc_match.group(1) + '0000' + crc_match.group(4)
-        crc = "crc:" + crc_match.group(3) + crc_match.group(2) + ","
+    guid_match = standard_guid_pattern.match(entry[1])
+    if guid_match:
+        groups = guid_match.groups()
+        crc_value = groups[2] + groups[1]
+        vid_value = groups[4] + groups[3]
+        pid_value = groups[7] + groups[6]
+        version_value = groups[10] + groups[9]
+        #print("CRC: %s, VID: %s, PID: %s, VERSION: %s" % (crc_value, vid_value, pid_value, version_value))
+
+        if crc_value == "0000":
+            if crc != "":
+                crc_value = crc[4:-1]
+        else:
+            print("Extracting CRC from GUID of " + name)
+            entry[1] = groups[0] + "0000" + "".join(groups[3:])
+            crc = "crc:" + crc_value + ","
+
+        if (vid_value, pid_value, crc_value) in invalid_controllers:
+            print("Controller '%s' not unique, skipping" % name)
+            return
 
     pos = find_element("sdk", bindings)
     if pos >= 0:
@@ -108,7 +133,7 @@ for line in input:
         else:
             save_controller(line)
     else:
-        if (line.startswith("static const char *s_ControllerMappings")):
+        if (line.startswith("static const char *")):
             parsing_controllers = True
 
         output.write(line)

@@ -170,12 +170,12 @@
 #endif /* SDL_FALLTHROUGH not defined */
 
 #ifndef SDL_MALLOC
-#if defined(__GNUC__)
+#if defined(__GNUC__) && (__GNUC__ >= 3)
 #define SDL_MALLOC __attribute__((malloc))
-/* FIXME
+/** FIXME
 #elif defined(_MSC_VER)
 #define SDL_MALLOC __declspec(allocator) __desclspec(restrict)
-*/
+**/
 #else
 #define SDL_MALLOC
 #endif
