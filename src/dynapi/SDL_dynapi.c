@@ -372,7 +372,7 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
     HMODULE lib = LoadLibraryA(fname);
     void *retval = NULL;
     if (lib) {
-        retval = GetProcAddress(lib, sym);
+        retval = (void *) GetProcAddress(lib, sym);
         if (retval == NULL) {
             FreeLibrary(lib);
         }
