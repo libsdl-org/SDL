@@ -2718,6 +2718,7 @@ int SDL_RenderLine(SDL_Renderer *renderer, float x1, float y1, float x2, float y
 
 static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_bool draw_last)
 {
+    const int MAX_PIXELS = SDL_max(renderer->view->pixel_w, renderer->view->pixel_h) * 4;
     int i, deltax, deltay, numpixels;
     int d, dinc1, dinc2;
     int x, xinc1, xinc2;
@@ -2763,6 +2764,10 @@ static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, i
 
     if (!draw_last) {
         --numpixels;
+    }
+
+    if (numpixels > MAX_PIXELS) {
+        return SDL_SetError("Line too long (tried to draw %d pixels, max %d)", numpixels, MAX_PIXELS);
     }
 
     points = SDL_small_alloc(SDL_FPoint, numpixels, &isstack);
