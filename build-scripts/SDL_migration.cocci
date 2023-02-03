@@ -2390,6 +2390,17 @@ SDL_DisplayMode e;
   (...)
 @@
 @@
+- SDL_ScaleModeNearest
++ SDL_SCALEMODE_NEAREST
+@@
+@@
+- SDL_ScaleModeLinear
++ SDL_SCALEMODE_LINEAR
+@@
+@@
+- SDL_ScaleModeBest
++ SDL_SCALEMODE_BEST
+
 - SDL_RenderCopy
 + SDL_RenderTexture
   (...)

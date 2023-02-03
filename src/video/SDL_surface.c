@@ -759,7 +759,7 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
 int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                         SDL_Surface *dst, SDL_Rect *dstrect)
 {
-    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
 }
 
 int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
@@ -927,7 +927,7 @@ int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
 int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, SDL_Rect *srcrect,
                         SDL_Surface *dst, SDL_Rect *dstrect)
 {
-    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
 }
 
 int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, SDL_Rect *srcrect,
@@ -947,7 +947,7 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, SDL_Rect *srcrect,
         SDL_InvalidateMap(src->map);
     }
 
-    if (scaleMode == SDL_ScaleModeNearest) {
+    if (scaleMode == SDL_SCALEMODE_NEAREST) {
         if (!(src->map->info.flags & complex_copy_flags) &&
             src->format->format == dst->format->format &&
             !SDL_ISPIXELFORMAT_INDEXED(src->format->format)) {

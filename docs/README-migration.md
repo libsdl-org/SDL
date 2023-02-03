@@ -647,6 +647,11 @@ The following functions have been removed:
 * SDL_RenderSetIntegerScale() - this is now explicit with SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
 * SDL_RenderTargetSupported() - render targets are always supported
 
+The following symbols have been renamed:
+* SDL_ScaleModeBest => SDL_SCALEMODE_BEST
+* SDL_ScaleModeLinear => SDL_SCALEMODE_LINEAR
+* SDL_ScaleModeNearest => SDL_SCALEMODE_NEAREST
+
 ## SDL_rwops.h
 
 The following symbols have been renamed:

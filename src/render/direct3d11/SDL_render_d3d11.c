@@ -1070,7 +1070,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         SDL_OutOfMemory();
         return -1;
     }
-    textureData->scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 
     texture->driverdata = textureData;
 
@@ -1546,7 +1546,7 @@ static void D3D11_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
         return;
     }
 
-    textureData->scaleMode = (scaleMode == SDL_ScaleModeNearest) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 }
 
 static int D3D11_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)

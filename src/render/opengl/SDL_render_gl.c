@@ -525,7 +525,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     data->format = format;
     data->formattype = type;
-    scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
     renderdata->glEnable(textype);
     renderdata->glBindTexture(textype, data->texture);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, scaleMode);
@@ -840,7 +840,7 @@ static void GL_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture,
     GL_RenderData *renderdata = (GL_RenderData *)renderer->driverdata;
     const GLenum textype = renderdata->textype;
     GL_TextureData *data = (GL_TextureData *)texture->driverdata;
-    GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    GLenum glScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
 
     renderdata->glBindTexture(textype, data->texture);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);

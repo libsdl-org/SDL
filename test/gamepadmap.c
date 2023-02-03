@@ -368,7 +368,7 @@ WatchJoystick(SDL_Joystick *joystick)
     /* scale for platforms that don't give you the window size you asked for. */
     SDL_SetRenderLogicalPresentation(screen, SCREEN_WIDTH, SCREEN_HEIGHT,
                                      SDL_LOGICAL_PRESENTATION_LETTERBOX,
-                                     SDL_ScaleModeLinear);
+                                     SDL_SCALEMODE_LINEAR);
 
     /* Print info about the joystick we are watching */
     name = SDL_GetJoystickName(joystick);

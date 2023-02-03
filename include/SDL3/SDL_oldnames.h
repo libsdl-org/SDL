@@ -379,6 +379,9 @@
 #define SDL_RenderSetVSync SDL_SetRenderVSync
 #define SDL_RenderSetViewport SDL_SetRenderViewport
 #define SDL_RenderWindowToLogical SDL_RenderCoordinatesFromWindow
+#define SDL_ScaleModeBest SDL_SCALEMODE_BEST
+#define SDL_ScaleModeLinear SDL_SCALEMODE_LINEAR
+#define SDL_ScaleModeNearest SDL_SCALEMODE_NEAREST
 
 /* ##SDL_rwops.h */
 #define RW_SEEK_CUR SDL_RW_SEEK_CUR
@@ -773,6 +776,9 @@
 #define SDL_RenderSetVSync SDL_RenderSetVSync_renamed_SDL_SetRenderVSync
 #define SDL_RenderSetViewport SDL_RenderSetViewport_renamed_SDL_SetRenderViewport
 #define SDL_RenderWindowToLogical SDL_RenderWindowToLogical_renamed_SDL_RenderCoordinatesFromWindow
+#define SDL_ScaleModeBest SDL_ScaleModeBest_renamed_SDL_SCALEMODE_BEST
+#define SDL_ScaleModeLinear SDL_ScaleModeLinear_renamed_SDL_SCALEMODE_LINEAR
+#define SDL_ScaleModeNearest SDL_ScaleModeNearest_renamed_SDL_SCALEMODE_NEAREST
 
 /* ##SDL_rwops.h */
 #define RW_SEEK_CUR RW_SEEK_CUR_renamed_SDL_RW_SEEK_CUR

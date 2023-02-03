@@ -98,9 +98,9 @@ typedef struct SDL_Vertex
  */
 typedef enum
 {
-    SDL_ScaleModeNearest, /**< nearest pixel sampling */
-    SDL_ScaleModeLinear,  /**< linear filtering */
-    SDL_ScaleModeBest     /**< anisotropic filtering */
+    SDL_SCALEMODE_NEAREST, /**< nearest pixel sampling */
+    SDL_SCALEMODE_LINEAR,  /**< linear filtering */
+    SDL_SCALEMODE_BEST     /**< anisotropic filtering */
 } SDL_ScaleMode;
 
 /**
