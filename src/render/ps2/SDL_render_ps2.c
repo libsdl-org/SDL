@@ -177,7 +177,7 @@ static void PS2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture
      gskit scale mode is either GS_FILTER_NEAREST (good for tile-map)
      or GS_FILTER_LINEAR (good for scaling)
      */
-    uint32_t gsKitScaleMode = (scaleMode == SDL_ScaleModeNearest
+    uint32_t gsKitScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST
                                    ? GS_FILTER_NEAREST
                                    : GS_FILTER_LINEAR);
     ps2_texture->Filter = gsKitScaleMode;

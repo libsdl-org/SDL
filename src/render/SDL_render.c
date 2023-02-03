@@ -925,7 +925,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
 
     SDL_SetRenderViewport(renderer, NULL);
 
-    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_MATCH, SDL_ScaleModeLinear);
+    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_MATCH, SDL_SCALEMODE_LINEAR);
 
     SDL_AddEventWatch(SDL_RendererEventWatch, renderer);
 
@@ -1106,11 +1106,11 @@ static SDL_ScaleMode SDL_GetScaleMode(void)
     const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
 
     if (hint == NULL || SDL_strcasecmp(hint, "nearest") == 0) {
-        return SDL_ScaleModeNearest;
+        return SDL_SCALEMODE_NEAREST;
     } else if (SDL_strcasecmp(hint, "linear") == 0) {
-        return SDL_ScaleModeLinear;
+        return SDL_SCALEMODE_LINEAR;
     } else if (SDL_strcasecmp(hint, "best") == 0) {
-        return SDL_ScaleModeBest;
+        return SDL_SCALEMODE_BEST;
     } else {
         return (SDL_ScaleMode)SDL_atoi(hint);
     }
@@ -2231,7 +2231,7 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
     return 0;
 
 error:
-    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_ScaleModeNearest);
+    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
     return -1;
 }
 
@@ -2271,7 +2271,7 @@ int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_R
     return UpdateLogicalPresentation(renderer);
 
 error:
-    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_ScaleModeNearest);
+    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
     return -1;
 }
 

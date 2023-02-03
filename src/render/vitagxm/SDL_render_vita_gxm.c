@@ -607,7 +607,7 @@ static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *te
      or SCE_GXM_TEXTURE_FILTER_LINEAR (good for scaling)
      */
 
-    int vitaScaleMode = (scaleMode == SDL_ScaleModeNearest
+    int vitaScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST
                              ? SCE_GXM_TEXTURE_FILTER_POINT
                              : SCE_GXM_TEXTURE_FILTER_LINEAR);
     gxm_texture_set_filters(vita_texture->tex, vitaScaleMode, vitaScaleMode);

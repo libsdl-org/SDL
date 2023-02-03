@@ -2388,3 +2388,15 @@ SDL_DisplayMode e;
 - SDL_RenderLogicalToWindow
 + SDL_RenderCoordinatesToWindow
   (...)
+@@
+@@
+- SDL_ScaleModeNearest
++ SDL_SCALEMODE_NEAREST
+@@
+@@
+- SDL_ScaleModeLinear
++ SDL_SCALEMODE_LINEAR
+@@
+@@
+- SDL_ScaleModeBest
++ SDL_SCALEMODE_BEST
