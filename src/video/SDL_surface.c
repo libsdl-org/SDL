@@ -1324,7 +1324,7 @@ end:
         (copy_flags & SDL_COPY_MODULATE_ALPHA)) {
         SDL_SetSurfaceBlendMode(convert, SDL_BLENDMODE_BLEND);
     }
-    if ((copy_flags & SDL_COPY_RLE_DESIRED)) {
+    if (copy_flags & SDL_COPY_RLE_DESIRED) {
         SDL_SetSurfaceRLE(convert, SDL_RLEACCEL);
     }
 

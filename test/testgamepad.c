@@ -349,7 +349,7 @@ static SDL_bool ShowingFront()
             }
         }
     }
-    if ((SDL_GetModState() & SDL_KMOD_SHIFT) != 0) {
+    if (SDL_GetModState() & SDL_KMOD_SHIFT) {
         showing_front = SDL_FALSE;
     }
     return showing_front;

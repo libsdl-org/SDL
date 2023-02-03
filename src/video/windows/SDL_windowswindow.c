@@ -73,27 +73,27 @@ static DWORD GetWindowStyle(SDL_Window *window)
 {
     DWORD style = 0;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style |= STYLE_FULLSCREEN;
     } else {
-        if ((window->flags & SDL_WINDOW_BORDERLESS) != 0) {
+        if (window->flags & SDL_WINDOW_BORDERLESS) {
             style |= STYLE_BORDERLESS_WINDOWED;
         } else {
             style |= STYLE_NORMAL;
         }
 
-        if ((window->flags & SDL_WINDOW_RESIZABLE) != 0) {
+        if (window->flags & SDL_WINDOW_RESIZABLE) {
             /* You can have a borderless resizable window, but Windows doesn't always draw it correctly,
                see https://bugzilla.libsdl.org/show_bug.cgi?id=4466
              */
-            if ((window->flags & SDL_WINDOW_BORDERLESS) == 0 ||
+            if (!(window->flags & SDL_WINDOW_BORDERLESS) ||
                 SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", SDL_FALSE)) {
                 style |= STYLE_RESIZABLE;
             }
         }
 
         /* Need to set initialize minimize style, or when we call ShowWindow with WS_MINIMIZE it will activate a random window */
-        if ((window->flags & SDL_WINDOW_MINIMIZED) != 0) {
+        if (window->flags & SDL_WINDOW_MINIMIZED) {
             style |= WS_MINIMIZE;
         }
     }
@@ -908,7 +908,7 @@ void WIN_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *displa
     int x, y;
     int w, h;
 
-    if (!fullscreen && (window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+    if (!fullscreen && (window->flags & SDL_WINDOW_FULLSCREEN)) {
         /* Resizing the window on hide causes problems restoring it in Wine, and it's unnecessary.
          * Also, Windows would preview the minimized window with the wrong size.
          */
@@ -1261,7 +1261,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
                     mouse_rect.bottom = mouse_rect.top + mouse_rect_win_client.h;
                     if (IntersectRect(&intersection, &rect, &mouse_rect)) {
                         SDL_memcpy(&rect, &intersection, sizeof(rect));
-                    } else if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) {
+                    } else if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
                         /* Mouse rect was invalid, just do the normal grab */
                     } else {
                         SDL_zero(rect);
@@ -1322,7 +1322,7 @@ int WIN_SetWindowOpacity(_THIS, SDL_Window *window, float opacity)
     } else {
         const BYTE alpha = (BYTE)((int)(opacity * 255.0f));
         /* want it transparent, mark it layered if necessary. */
-        if ((style & WS_EX_LAYERED) == 0) {
+        if (!(style & WS_EX_LAYERED)) {
             if (SetWindowLong(hwnd, GWL_EXSTYLE, style | WS_EX_LAYERED) == 0) {
                 return WIN_SetError("SetWindowLong()");
             }

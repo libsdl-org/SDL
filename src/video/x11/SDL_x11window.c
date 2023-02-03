@@ -138,21 +138,21 @@ void X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
     }
     */
 
-    if ((flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0) {
+    if (flags & SDL_WINDOW_ALWAYS_ON_TOP) {
         atoms[count++] = _NET_WM_STATE_ABOVE;
     }
-    if ((flags & SDL_WINDOW_SKIP_TASKBAR) != 0) {
+    if (flags & SDL_WINDOW_SKIP_TASKBAR) {
         atoms[count++] = _NET_WM_STATE_SKIP_TASKBAR;
         atoms[count++] = _NET_WM_STATE_SKIP_PAGER;
     }
-    if ((flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
+    if (flags & SDL_WINDOW_INPUT_FOCUS) {
         atoms[count++] = _NET_WM_STATE_FOCUSED;
     }
-    if ((flags & SDL_WINDOW_MAXIMIZED) != 0) {
+    if (flags & SDL_WINDOW_MAXIMIZED) {
         atoms[count++] = _NET_WM_STATE_MAXIMIZED_VERT;
         atoms[count++] = _NET_WM_STATE_MAXIMIZED_HORZ;
     }
-    if ((flags & SDL_WINDOW_FULLSCREEN) != 0) {
+    if (flags & SDL_WINDOW_FULLSCREEN) {
         atoms[count++] = _NET_WM_STATE_FULLSCREEN;
     }
 
@@ -207,7 +207,7 @@ X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow)
         }
 
         if (fullscreen == 1) {
-            if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+            if (window->flags & SDL_WINDOW_FULLSCREEN) {
                 /* Pick whatever state the window expects */
                 flags |= (window->flags & SDL_WINDOW_FULLSCREEN);
             } else {
@@ -544,7 +544,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     }
 
     SetWindowBordered(display, screen, w,
-                      (window->flags & SDL_WINDOW_BORDERLESS) == 0);
+                      !(window->flags & SDL_WINDOW_BORDERLESS));
 
     sizehints = X11_XAllocSizeHints();
     /* Setup the normal size hints */
@@ -1042,8 +1042,8 @@ int X11_SetWindowInputFocus(_THIS, SDL_Window *window)
 
 void X11_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
 {
-    const SDL_bool focused = ((window->flags & SDL_WINDOW_INPUT_FOCUS) != 0);
-    const SDL_bool visible = ((window->flags & SDL_WINDOW_HIDDEN) == 0);
+    const SDL_bool focused = (window->flags & SDL_WINDOW_INPUT_FOCUS) ? SDL_TRUE : SDL_FALSE;
+    const SDL_bool visible = (!(window->flags & SDL_WINDOW_HIDDEN)) ? SDL_TRUE : SDL_FALSE;
     SDL_WindowData *data = window->driverdata;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = data->videodata->display;
@@ -1234,7 +1234,7 @@ static void X11_SetWindowMaximized(_THIS, SDL_Window *window, SDL_bool maximized
     } else {
         window->flags &= ~SDL_WINDOW_MAXIMIZED;
 
-        if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
             /* Fullscreen windows are maximized on some window managers,
                and this is functional behavior, so don't remove that state
                now, we'll take care of it when we leave fullscreen mode.
@@ -1356,7 +1356,7 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
             e.xclient.message_type = _NET_WM_STATE;
             e.xclient.format = 32;
             e.xclient.window = data->xwindow;
-            if ((window->flags & SDL_WINDOW_MAXIMIZED) != 0) {
+            if (window->flags & SDL_WINDOW_MAXIMIZED) {
                 e.xclient.data.l[0] = _NET_WM_STATE_ADD;
             } else {
                 e.xclient.data.l[0] = _NET_WM_STATE_REMOVE;

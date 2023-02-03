@@ -866,7 +866,7 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
         }
     }
 
-    if ((window_data->window->flags & SDL_WINDOW_FULLSCREEN) == 0) {
+    if (!(window_data->window->flags & SDL_WINDOW_FULLSCREEN)) {
         /* this will only work if the canvas size is set through css */
         if (window_data->window->flags & SDL_WINDOW_RESIZABLE) {
             double w = window_data->window->w;

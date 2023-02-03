@@ -276,7 +276,7 @@ static void SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
         min_height = 0;
         max_width = 0;
         max_height = 0;
-    } else if ((window->flags & SDL_WINDOW_RESIZABLE) != 0) {
+    } else if (window->flags & SDL_WINDOW_RESIZABLE) {
         min_width = window->min_w;
         min_height = window->min_h;
         max_width = window->max_w;
@@ -508,7 +508,7 @@ static void handle_configure_xdg_toplevel(void *data,
         /* xdg_toplevel spec states that this is a suggestion.
          * Ignore if less than or greater than max/min size.
          */
-        if ((window->flags & SDL_WINDOW_RESIZABLE)) {
+        if (window->flags & SDL_WINDOW_RESIZABLE) {
             if ((floating && !wind->floating) || width == 0 || height == 0) {
                 /* This happens when we're being restored from a
                  * non-floating state, so use the cached floating size here.

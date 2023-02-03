@@ -2991,7 +2991,7 @@ D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
 
-    if ((flags & SDL_RENDERER_PRESENTVSYNC)) {
+    if (flags & SDL_RENDERER_PRESENTVSYNC) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
     renderer->SetVSync = D3D12_SetVSync;

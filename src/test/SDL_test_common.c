@@ -254,7 +254,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
         if (!argv[index] || !SDL_isdigit((unsigned char)*argv[index])) {
             return -1;
         }
-        if ((state->window_flags & SDL_WINDOW_FULLSCREEN) == 0) {
+        if (!(state->window_flags & SDL_WINDOW_FULLSCREEN)) {
             state->num_windows = SDL_atoi(argv[index]);
         }
         return 2;
@@ -1359,7 +1359,7 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 state->window_w = w;
                 state->window_h = h;
             }
-            if ((state->window_flags & SDL_WINDOW_FULLSCREEN) != 0) {
+            if (state->window_flags & SDL_WINDOW_FULLSCREEN) {
                 if (state->fullscreen_exclusive) {
                     SDL_SetWindowFullscreenMode(state->windows[i], &state->fullscreen_mode);
                 }
@@ -1835,7 +1835,7 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
             SDL_GetDisplayBounds(displays[index], &rect);
 
             flags = SDL_GetWindowFlags(window);
-            if ((flags & SDL_WINDOW_FULLSCREEN) != 0) {
+            if (flags & SDL_WINDOW_FULLSCREEN) {
                 SDL_SetWindowFullscreen(window, SDL_FALSE);
                 SDL_Delay(15);
             }
@@ -1870,7 +1870,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
     if (state->verbose & VERBOSE_EVENT) {
         if (((event->type != SDL_EVENT_MOUSE_MOTION) &&
              (event->type != SDL_EVENT_FINGER_MOTION)) ||
-            ((state->verbose & VERBOSE_MOTION) != 0)) {
+            (state->verbose & VERBOSE_MOTION)) {
             SDLTest_PrintEvent(event);
         }
     }
@@ -2055,7 +2055,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
             if (withShift) {
                 SDL_Window *current_win = SDL_GetKeyboardFocus();
                 if (current_win) {
-                    const SDL_bool shouldCapture = (SDL_GetWindowFlags(current_win) & SDL_WINDOW_MOUSE_CAPTURE) == 0;
+                    const SDL_bool shouldCapture = !(SDL_GetWindowFlags(current_win) & SDL_WINDOW_MOUSE_CAPTURE);
                     const int rc = SDL_CaptureMouse(shouldCapture);
                     SDL_Log("%sapturing mouse %s!\n", shouldCapture ? "C" : "Unc", (rc == 0) ? "succeeded" : "failed");
                 }
@@ -2149,7 +2149,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
                     Uint32 flags = SDL_GetWindowFlags(window);
-                    if ((flags & SDL_WINDOW_FULLSCREEN) != 0) {
+                    if (flags & SDL_WINDOW_FULLSCREEN) {
                         SDL_SetWindowFullscreen(window, SDL_FALSE);
                     } else {
                         SDL_SetWindowFullscreen(window, SDL_TRUE);
@@ -2160,7 +2160,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
                     Uint32 flags = SDL_GetWindowFlags(window);
-                    if ((flags & SDL_WINDOW_FULLSCREEN) != 0) {
+                    if (flags & SDL_WINDOW_FULLSCREEN) {
                         SDL_SetWindowFullscreen(window, SDL_FALSE);
                     } else {
                         SDL_SetWindowFullscreenMode(window, NULL);
@@ -2187,7 +2187,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
                     const Uint32 flags = SDL_GetWindowFlags(window);
-                    const SDL_bool b = ((flags & SDL_WINDOW_BORDERLESS) != 0) ? SDL_TRUE : SDL_FALSE;
+                    const SDL_bool b = (flags & SDL_WINDOW_BORDERLESS) ? SDL_TRUE : SDL_FALSE;
                     SDL_SetWindowBordered(window, b);
                 }
             }
