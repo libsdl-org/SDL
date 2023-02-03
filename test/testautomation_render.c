@@ -894,7 +894,7 @@ int render_testLogicalSize(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_GetRendererOutputSize, expected: 0, got: %i", ret);
     ret = SDL_SetRenderLogicalPresentation(renderer, w / factor, h / factor,
                                            SDL_LOGICAL_PRESENTATION_LETTERBOX,
-                                           SDL_ScaleModeNearest);
+                                           SDL_SCALEMODE_NEAREST);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
     ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
@@ -907,7 +907,7 @@ int render_testLogicalSize(void *arg)
     (void)SDL_RenderPresent(renderer);
     ret = SDL_SetRenderLogicalPresentation(renderer, 0, 0,
                                            SDL_LOGICAL_PRESENTATION_DISABLED,
-                                           SDL_ScaleModeNearest);
+                                           SDL_SCALEMODE_NEAREST);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
 
     /* Check to see if final image matches. */
@@ -921,7 +921,7 @@ int render_testLogicalSize(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_GetRendererOutputSize, expected: 0, got: %i", ret);
     ret = SDL_SetRenderLogicalPresentation(renderer, w / factor, h / factor,
                                            SDL_LOGICAL_PRESENTATION_LETTERBOX,
-                                           SDL_ScaleModeNearest);
+                                           SDL_SCALEMODE_NEAREST);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
     viewport.x = (TESTRENDER_SCREEN_W / 4) / factor;
     viewport.y = (TESTRENDER_SCREEN_H / 4) / factor;
@@ -938,7 +938,7 @@ int render_testLogicalSize(void *arg)
     (void)SDL_RenderPresent(renderer);
     ret = SDL_SetRenderLogicalPresentation(renderer, 0, 0,
                                            SDL_LOGICAL_PRESENTATION_DISABLED,
-                                           SDL_ScaleModeNearest);
+                                           SDL_SCALEMODE_NEAREST);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
 
     /* Check to see if final image matches. */
@@ -969,7 +969,7 @@ int render_testLogicalSize(void *arg)
                                            w - 2 * (TESTRENDER_SCREEN_W / 4),
                                            h,
                                            SDL_LOGICAL_PRESENTATION_LETTERBOX,
-                                           SDL_ScaleModeLinear);
+                                           SDL_SCALEMODE_LINEAR);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
     ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
@@ -978,7 +978,7 @@ int render_testLogicalSize(void *arg)
     (void)SDL_RenderPresent(renderer);
     ret = SDL_SetRenderLogicalPresentation(renderer, 0, 0,
                                            SDL_LOGICAL_PRESENTATION_DISABLED,
-                                           SDL_ScaleModeNearest);
+                                           SDL_SCALEMODE_NEAREST);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
 
     /* Check to see if final image matches. */

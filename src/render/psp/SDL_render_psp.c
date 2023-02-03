@@ -542,7 +542,7 @@ static int TextureShouldSwizzle(PSP_TextureData *psp_texture, SDL_Texture *textu
 static void TextureActivate(SDL_Texture *texture)
 {
     PSP_TextureData *psp_texture = (PSP_TextureData *)texture->driverdata;
-    int scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GU_NEAREST : GU_LINEAR;
+    int scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GU_NEAREST : GU_LINEAR;
 
     /* Swizzling is useless with small textures. */
     if (TextureShouldSwizzle(psp_texture, texture)) {

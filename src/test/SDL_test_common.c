@@ -86,7 +86,7 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     state->window_w = DEFAULT_WINDOW_WIDTH;
     state->window_h = DEFAULT_WINDOW_HEIGHT;
     state->logical_presentation = SDL_LOGICAL_PRESENTATION_MATCH;
-    state->logical_scale_mode = SDL_ScaleModeLinear;
+    state->logical_scale_mode = SDL_SCALEMODE_LINEAR;
     state->num_windows = 1;
     state->audiospec.freq = 22050;
     state->audiospec.format = AUDIO_S16;
@@ -440,15 +440,15 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             return -1;
         }
         if (SDL_strcasecmp(argv[index], "nearest") == 0) {
-            state->logical_scale_mode = SDL_ScaleModeNearest;
+            state->logical_scale_mode = SDL_SCALEMODE_NEAREST;
             return 2;
         }
         if (SDL_strcasecmp(argv[index], "linear") == 0) {
-            state->logical_scale_mode = SDL_ScaleModeLinear;
+            state->logical_scale_mode = SDL_SCALEMODE_LINEAR;
             return 2;
         }
         if (SDL_strcasecmp(argv[index], "best") == 0) {
-            state->logical_scale_mode = SDL_ScaleModeBest;
+            state->logical_scale_mode = SDL_SCALEMODE_BEST;
             return 2;
         }
         return -1;
@@ -1001,13 +1001,13 @@ static void SDLTest_PrintLogicalPresentation(char *text, size_t maxlen, SDL_Rend
 static void SDLTest_PrintScaleMode(char *text, size_t maxlen, SDL_ScaleMode scale_mode)
 {
     switch (scale_mode) {
-    case SDL_ScaleModeNearest:
+    case SDL_SCALEMODE_NEAREST:
         SDL_snprintfcat(text, maxlen, "NEAREST");
         break;
-    case SDL_ScaleModeLinear:
+    case SDL_SCALEMODE_LINEAR:
         SDL_snprintfcat(text, maxlen, "LINEAR");
         break;
-    case SDL_ScaleModeBest:
+    case SDL_SCALEMODE_BEST:
         SDL_snprintfcat(text, maxlen, "BEST");
         break;
     default:

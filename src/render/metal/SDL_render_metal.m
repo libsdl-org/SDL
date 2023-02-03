@@ -621,7 +621,7 @@ METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         }
 #endif /* SDL_HAVE_YUV */
         texturedata = [[METAL_TextureData alloc] init];
-        if (texture->scaleMode == SDL_ScaleModeNearest) {
+        if (texture->scaleMode == SDL_SCALEMODE_NEAREST) {
             texturedata.mtlsampler = data.mtlsamplernearest;
         } else {
             texturedata.mtlsampler = data.mtlsamplerlinear;
@@ -994,7 +994,7 @@ static void METAL_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
         METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
 
-        if (scaleMode == SDL_ScaleModeNearest) {
+        if (scaleMode == SDL_SCALEMODE_NEAREST) {
             texturedata.mtlsampler = data.mtlsamplernearest;
         } else {
             texturedata.mtlsampler = data.mtlsamplerlinear;

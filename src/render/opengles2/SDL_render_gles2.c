@@ -1463,7 +1463,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     data->texture_u = 0;
     data->texture_v = 0;
 #endif
-    scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
 
     /* Allocate a blob for image renderdata */
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
@@ -1824,7 +1824,7 @@ static void GLES2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
 {
     GLES2_RenderData *renderdata = (GLES2_RenderData *)renderer->driverdata;
     GLES2_TextureData *data = (GLES2_TextureData *)texture->driverdata;
-    GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    GLenum glScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
 
 #if SDL_HAVE_YUV
     if (data->yuv) {
