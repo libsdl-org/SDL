@@ -361,7 +361,7 @@ static const struct zxdg_output_v1_listener xdg_output_listener = {
     xdg_output_handle_description,
 };
 
-static void AddEmulatedModes(SDL_DisplayData *dispdata, SDL_bool rot_90)
+static void AddEmulatedModes(SDL_DisplayData *dispdata, int native_width, int native_height)
 {
     struct EmulatedMode
     {
@@ -414,8 +414,7 @@ static void AddEmulatedModes(SDL_DisplayData *dispdata, SDL_bool rot_90)
     int i;
     SDL_DisplayMode mode;
     SDL_VideoDisplay *dpy = dispdata->display ? SDL_GetVideoDisplay(dispdata->display) : &dispdata->placeholder;
-    const int native_width = dispdata->pixel_width;
-    const int native_height = dispdata->pixel_height;
+    const SDL_bool rot_90 = native_width < native_height; /* Reverse width/height for portrait displays. */
 
     for (i = 0; i < SDL_arraysize(mode_list); ++i) {
         SDL_zero(mode);
@@ -424,19 +423,18 @@ static void AddEmulatedModes(SDL_DisplayData *dispdata, SDL_bool rot_90)
         mode.refresh_rate = dpy->desktop_mode.refresh_rate;
         mode.driverdata = dpy->desktop_mode.driverdata;
 
+        if (rot_90) {
+            mode.pixel_w = mode_list[i].h;
+            mode.pixel_h = mode_list[i].w;
+        } else {
+            mode.pixel_w = mode_list[i].w;
+            mode.pixel_h = mode_list[i].h;
+        }
+
         /* Only add modes that are smaller than the native mode. */
-        if ((mode_list[i].w < native_width && mode_list[i].h < native_height) ||
-            (mode_list[i].w < native_width && mode_list[i].h == native_height) ||
-            (mode_list[i].w == native_width && mode_list[i].h < native_height)) {
-
-            if (rot_90) {
-                mode.pixel_w = mode_list[i].h;
-                mode.pixel_h = mode_list[i].w;
-            } else {
-                mode.pixel_w = mode_list[i].w;
-                mode.pixel_h = mode_list[i].h;
-            }
-
+        if ((mode.pixel_w < native_width && mode.pixel_h < native_height) ||
+            (mode.pixel_w < native_width && mode.pixel_h == native_height) ||
+            (mode.pixel_w == native_width && mode.pixel_h < native_height)) {
             SDL_AddFullscreenDisplayMode(dpy, &mode);
         }
     }
@@ -614,11 +612,11 @@ static void display_handle_done(void *data,
     /* Set the desktop display mode. */
     SDL_SetDesktopDisplayMode(dpy, &desktop_mode);
 
-    /* ...expose the unscaled, native resolution if the scale is 1.0 or viewports are available... */
+    /* Expose the unscaled, native resolution if the scale is 1.0 or viewports are available... */
     if (driverdata->scale_factor == 1.0f || video->viewporter != NULL) {
         SDL_AddFullscreenDisplayMode(dpy, &native_mode);
     } else {
-        /* ...if not, expose the integer scaled variants of the desktop resolution down to 1. */
+        /* ...otherwise expose the integer scaled variants of the desktop resolution down to 1. */
         int i;
 
         desktop_mode.pixel_w = 0;
@@ -634,9 +632,8 @@ static void display_handle_done(void *data,
 
     /* Add emulated modes if wp_viewporter is supported and mode emulation is enabled. */
     if (video->viewporter && mode_emulation_enabled) {
-        const SDL_bool rot_90 = (driverdata->transform & WL_OUTPUT_TRANSFORM_90) ||
-                                (driverdata->screen_width < driverdata->screen_height);
-        AddEmulatedModes(driverdata, rot_90);
+        /* The transformed display pixel width/height must be used here. */
+        AddEmulatedModes(driverdata, native_mode.pixel_w, native_mode.pixel_h);
     }
 
     /* Calculate the display DPI */
