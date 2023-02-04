@@ -455,7 +455,7 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     LPDIRECTINPUTDEVICE8 device = NULL;
 
     /* We are only supporting HID devices. */
-    CHECK((pDeviceInstance->dwDevType & DIDEVTYPE_HID) != 0);
+    CHECK(pDeviceInstance->dwDevType & DIDEVTYPE_HID);
 
     CHECK(SUCCEEDED(IDirectInput8_CreateDevice(dinput, &pDeviceInstance->guidInstance, &device, NULL)));
     CHECK(QueryDeviceName(device, &name));
@@ -566,7 +566,7 @@ static BOOL CALLBACK EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInst
     BOOL result = DIENUM_CONTINUE;
 
     /* We are only supporting HID devices. */
-    CHECK((pDeviceInstance->dwDevType & DIDEVTYPE_HID) != 0);
+    CHECK(pDeviceInstance->dwDevType & DIDEVTYPE_HID);
 
     CHECK(SUCCEEDED(IDirectInput8_CreateDevice(dinput, &pDeviceInstance->guidInstance, &device, NULL)));
     CHECK(QueryDeviceInfo(device, &vendor, &product));

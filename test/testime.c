@@ -703,7 +703,7 @@ int main(int argc, char *argv[])
                             if (textlen == 0) {
                                 break;
                             }
-                            if ((text[textlen - 1] & 0x80) == 0x00) {
+                            if (!(text[textlen - 1] & 0x80)) {
                                 /* One byte */
                                 text[textlen - 1] = 0x00;
                                 break;

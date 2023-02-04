@@ -102,7 +102,7 @@
         SDL_Window *window = [self findSDLWindow];
         if (window == NULL) {
             return NO;
-        } else if ((window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0) {
+        } else if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP)) {
             return NO;
         } else if ((window->flags & SDL_WINDOW_RESIZABLE) == 0) {
             return NO;
@@ -400,7 +400,7 @@ AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
         }
     }
 
-    if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) {
+    if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
         int left = window->x;
         int right = left + window->w - 1;
         int top = window->y;
@@ -671,7 +671,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
 
 -(void) clearFocusClickPending:(NSInteger) button
 {
-    if ((focusClickPending & (1 << button)) != 0) {
+    if (focusClickPending & (1 << button)) {
         focusClickPending &= ~(1 << button);
         if (focusClickPending == 0) {
             [self onMovingOrFocusClickPendingStateCleared];
@@ -875,7 +875,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
     {
         const unsigned int newflags = [NSEvent modifierFlags] & NSEventModifierFlagCapsLock;
         _data.videodata.modifierFlags = (_data.videodata.modifierFlags & ~NSEventModifierFlagCapsLock) | newflags;
-        SDL_ToggleModState(KMOD_CAPS, newflags != 0);
+        SDL_ToggleModState(KMOD_CAPS, newflags ? SDL_TRUE : SDL_FALSE);
     }
 }
 

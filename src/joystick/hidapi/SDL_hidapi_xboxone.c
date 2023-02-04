@@ -786,13 +786,13 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     if (axis == 32704) {
         axis = 32767;
     }
-    if (axis == -32768 && size == 30 && (data[22] & 0x80) != 0) {
+    if (axis == -32768 && size == 30 && (data[22] & 0x80)) {
         axis = 32767;
     }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
 
     axis = ((int)SDL_SwapLE16(*(Sint16 *)(&data[8])) * 64) - 32768;
-    if (axis == -32768 && size == 30 && (data[22] & 0x40) != 0) {
+    if (axis == -32768 && size == 30 && (data[22] & 0x40)) {
         axis = 32767;
     }
     if (axis == 32704) {

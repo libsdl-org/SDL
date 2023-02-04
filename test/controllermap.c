@@ -530,7 +530,7 @@ WatchJoystick(SDL_Joystick *joystick)
                     break;
                 }
 
-                if ((event.key.keysym.sym != SDLK_ESCAPE)) {
+                if (event.key.keysym.sym != SDLK_ESCAPE) {
                     break;
                 }
                 SDL_FALLTHROUGH;
@@ -746,7 +746,7 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event) > 0) {
             switch (event.type) {
             case SDL_KEYDOWN:
-                if ((event.key.keysym.sym != SDLK_ESCAPE)) {
+                if (event.key.keysym.sym != SDLK_ESCAPE) {
                     break;
                 }
                 SDL_FALLTHROUGH;

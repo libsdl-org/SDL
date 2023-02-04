@@ -997,7 +997,7 @@ SDL_HardwareKeyboardKeyPressed(void)
     SDL_Scancode scancode;
 
     for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
-        if ((keyboard->keysource[scancode] & KEYBOARD_HARDWARE) != 0) {
+        if (keyboard->keysource[scancode] & KEYBOARD_HARDWARE) {
             return SDL_TRUE;
         }
     }

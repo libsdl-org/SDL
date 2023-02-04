@@ -252,7 +252,7 @@ static int WriteSegmentToSteamControllerPacketAssembler(SteamControllerPacketAss
 
         DPRINTF("GOT PACKET HEADER = 0x%x\n", uSegmentHeader);
 
-        if ((uSegmentHeader & REPORT_SEGMENT_DATA_FLAG) == 0) {
+        if (!(uSegmentHeader & REPORT_SEGMENT_DATA_FLAG)) {
             // We get empty segments, just ignore them
             return 0;
         }

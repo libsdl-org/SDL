@@ -638,7 +638,7 @@ static void display_handle_done(void *data,
 
     /* Add emulated modes if wp_viewporter is supported and mode emulation is enabled. */
     if (video->viewporter && mode_emulation_enabled) {
-        const SDL_bool rot_90 = ((driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0) ||
+        const SDL_bool rot_90 = (driverdata->transform & WL_OUTPUT_TRANSFORM_90) ||
                                 (driverdata->width < driverdata->height);
         AddEmulatedModes(dpy, rot_90);
     }

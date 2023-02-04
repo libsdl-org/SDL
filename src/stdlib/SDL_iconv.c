@@ -395,7 +395,7 @@ SDL_iconv(SDL_iconv_t cd,
                     left = 1;
                 }
             } else {
-                if ((p[0] & 0x80) != 0x00) {
+                if (p[0] & 0x80) {
                     /* Skip illegal sequences
                        return SDL_ICONV_EILSEQ;
                      */
