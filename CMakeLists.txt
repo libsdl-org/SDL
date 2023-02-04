@@ -77,6 +77,12 @@ if (LIBC_IS_GLIBC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
     target_compile_definitions(sdl-build-options INTERFACE "_FILE_OFFSET_BITS=64")
 endif()
 
+if(CMAKE_VERSION VERSION_LESS "3.26")
+  set(build_local_interface "BUILD_INTERFACE")
+else()
+  set(build_local_interface "BUILD_LOCAL_INTERFACE")
+endif()
+
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL3 to SDL4, at which point this would
 # reset to 0 anyway.
@@ -3207,9 +3213,9 @@ if(SDL_SHARED)
   )
   target_link_libraries(SDL3 PUBLIC $<TARGET_NAME:SDL3::Headers>)
   # This picks up all the compiler options and such we've accumulated up to here.
-  target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
-  target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-shared-build-options>)
-  target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
+  target_link_libraries(SDL3 PRIVATE $<${build_local_interface}:sdl-build-options>)
+  target_link_libraries(SDL3 PRIVATE $<${build_local_interface}:sdl-shared-build-options>)
+  target_link_libraries(SDL3 PRIVATE $<${build_local_interface}:sdl-global-options>)
   if(MINGW OR CYGWIN)
     if(NOT CMAKE_VERSION VERSION_LESS "3.13")
       target_link_options(SDL3 PRIVATE -static-libgcc)
@@ -3251,8 +3257,8 @@ if(SDL_STATIC)
   )
   target_link_libraries(SDL3-static PUBLIC $<TARGET_NAME:SDL3::Headers>)
   # This picks up all the compiler options and such we've accumulated up to here.
-  target_link_libraries(SDL3-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
-  target_link_libraries(SDL3-static PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
+  target_link_libraries(SDL3-static PRIVATE $<${build_local_interface}:sdl-build-options>)
+  target_link_libraries(SDL3-static PRIVATE $<${build_local_interface}:sdl-global-options>)
   # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
   set_property(TARGET SDL3-static PROPERTY INTERFACE_SDL3_SHARED FALSE)
   set_property(TARGET SDL3-static APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
@@ -3273,7 +3279,7 @@ if(SDL_TEST)
   file(GLOB TEST_SOURCES ${SDL3_SOURCE_DIR}/src/test/*.c)
   add_library(SDL3_test STATIC ${TEST_SOURCES})
   add_library(SDL3::SDL3_test ALIAS SDL3_test)
-  target_link_libraries(SDL3_test PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
+  target_link_libraries(SDL3_test PRIVATE $<${build_local_interface}:sdl-global-options>)
   set_target_properties(SDL3_test PROPERTIES
       EXPORT_NAME SDL3_test)
   if(APPLE)
@@ -3296,67 +3302,96 @@ if(SDL_TEST)
   target_link_libraries(SDL3_test PRIVATE ${EXTRA_TEST_LIBS})
 endif()
 
+##### Configure installation folders #####
+
+if(WINDOWS AND NOT MINGW)
+  set(SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT "cmake")
+else()
+  set(SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT "${CMAKE_INSTALL_LIBDIR}/cmake")
+endif()
+set(SDL_INSTALL_CMAKEDIR_ROOT "${SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT}" CACHE STRING "Root folder where to install SDL3Config.cmake related files (SDL3 subfolder for MSVC projects)")
+
+if(FREEBSD)
+  # FreeBSD uses ${PREFIX}/libdata/pkgconfig
+  set(SDL_PKGCONFIG_INSTALLDIR "libdata/pkgconfig")
+else()
+  set(SDL_PKGCONFIG_INSTALLDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endif()
+
+if(WINDOWS AND NOT MINGW)
+  set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}")
+  set(SDL_INSTALL_LICENSEDIR "licenses/SDL3")
+  set(SDL_INSTALL_HEADERSDIR "${CMAKE_INSTALL_INCLUDEDIR}/SDL3")
+elseif(SDL_FRAMEWORK)
+  set(SDL_INSTALL_CMAKEDIR "SDL3.framework/Versions/${SDL_FRAMEWORK_VERSION}/Resources/CMake")
+  set(SDL_INSTALL_LICENSEDIR "Resources")
+  set(SDL_INSTALL_HEADERSDIR "Headers")
+else()
+  set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}/SDL3")
+  set(SDL_INSTALL_LICENSEDIR "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
+  set(SDL_INSTALL_HEADERSDIR "${CMAKE_INSTALL_INCLUDEDIR}/SDL3")
+endif()
+
+if(SDL_FRAMEWORK)
+  set(SDL_SDL_INSTALL_RESOURCEDIR "SDL3.framework/Resources")
+  set(SDL_SDL_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_RESOURCEDIR}/CMake")
+  set(SDL_SDL_INSTALL_REAL_RESOURCEDIR "SDL3.framework/Versions/${SDL_FRAMEWORK_VERSION}/Resources")
+  set(SDL_SDL_INSTALL_REAL_CMAKEDIR "${SDL_SDL_INSTALL_REAL_RESOURCEDIR}/CMake")
+
+  # - Install other SDL3*Config.cmake files in SDL3*.framework/Resources/CMake
+  # - The *_RELATIVE_CMAKEDIR variables are the symlinked folders visible from outside
+  set(SDL_SDLstatic_INSTALL_RESOURCEDIR "SDL3-static.framework/Resources")
+  set(SDL_SDLstatic_INSTALL_CMAKEDIR "${SDL_SDLstatic_INSTALL_RESOURCEDIR}/CMake")
+  set(SDL_SDLstatic_INSTALL_CMAKEFILENAME "SDL3-staticConfig.cmake")
+
+  set(SDL_SDLtest_INSTALL_RESOURCEDIR "SDL3_test.framework/Resources")
+  set(SDL_SDLtest_INSTALL_CMAKEDIR "${SDL_SDLtest_INSTALL_RESOURCEDIR}/CMake")
+  set(SDL_SDLtest_INSTALL_CMAKEFILENAME "SDL3_testConfig.cmake")
+else()
+  set(SDL_SDL_INSTALL_RESOURCEDIR ".")
+  set(SDL_SDL_INSTALL_CMAKEDIR ${SDL_INSTALL_CMAKEDIR})
+  set(SDL_SDL_INSTALL_REAL_CMAKEDIR ${SDL_INSTALL_CMAKEDIR})
+
+  # Install SDL3*Targets.cmake files in lib/cmake/SDL3
+  set(SDL_SDLstatic_INSTALL_RESOURCEDIR ".")
+  set(SDL_SDLstatic_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
+  set(SDL_SDLstatic_INSTALL_CMAKEFILENAME "SDL3staticTargets.cmake")
+
+  set(SDL_SDLtest_INSTALL_RESOURCEDIR ".")
+  set(SDL_SDLtest_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
+  set(SDL_SDLtest_INSTALL_CMAKEFILENAME "SDL3testTargets.cmake")
+  endif()
+
+if(CMAKE_VERSION VERSION_LESS "3.26")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/SDL3Targets.cmake" [[message(FATAL_ERROR "find_package(SDL3) using the SDL3 build directory not supported for CMake versions older then 3.26.")]])
+else()
+  export(TARGETS SDL3_Headers NAMESPACE "SDL3::" FILE "SDL3headersTargets.cmake")
+
+  if(SDL_SHARED)
+    export(TARGETS SDL3 NAMESPACE "SDL3::" FILE "SDL3Targets.cmake")
+  endif()
+
+  if(SDL_STATIC)
+    export(TARGETS SDL3-static NAMESPACE "SDL3::" FILE "SDL3staticTargets.cmake")
+  endif()
+
+  if(SDL_TEST)
+    export(TARGETS SDL3_test NAMESPACE "SDL3::" FILE "SDL3testTargets.cmake")
+  endif()
+endif()
+
+configure_file("cmake/sdlfind.cmake" "sdlfind.cmake" COPYONLY)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(cmake/SDL3Config.cmake.in SDL3Config.cmake
+  PATH_VARS CMAKE_INSTALL_PREFIX
+  INSTALL_DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
+)
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/SDL3ConfigVersion.cmake"
+  COMPATIBILITY AnyNewerVersion
+)
+
 if(NOT SDL_DISABLE_INSTALL)
-
-  ##### Configure installation folders #####
-
-  if(WINDOWS AND NOT MINGW)
-    set(SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT "cmake")
-  else()
-    set(SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT "${CMAKE_INSTALL_LIBDIR}/cmake")
-  endif()
-  set(SDL_INSTALL_CMAKEDIR_ROOT "${SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT}" CACHE STRING "Root folder where to install SDL3Config.cmake related files (SDL3 subfolder for MSVC projects)")
-
-  if(FREEBSD)
-    # FreeBSD uses ${PREFIX}/libdata/pkgconfig
-    set(SDL_PKGCONFIG_INSTALLDIR "libdata/pkgconfig")
-  else()
-    set(SDL_PKGCONFIG_INSTALLDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-  endif()
-
-  if(WINDOWS AND NOT MINGW)
-    set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}")
-    set(SDL_INSTALL_LICENSEDIR "licenses/SDL3")
-    set(SDL_INSTALL_HEADERSDIR "${CMAKE_INSTALL_INCLUDEDIR}/SDL3")
-  elseif(SDL_FRAMEWORK)
-    set(SDL_INSTALL_CMAKEDIR "SDL3.framework/Versions/${SDL_FRAMEWORK_VERSION}/Resources/CMake")
-    set(SDL_INSTALL_LICENSEDIR "Resources")
-    set(SDL_INSTALL_HEADERSDIR "Headers")
-  else()
-    set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}/SDL3")
-    set(SDL_INSTALL_LICENSEDIR "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
-    set(SDL_INSTALL_HEADERSDIR "${CMAKE_INSTALL_INCLUDEDIR}/SDL3")
-  endif()
-
-  if(SDL_FRAMEWORK)
-    set(SDL_SDL_INSTALL_RESOURCEDIR "SDL3.framework/Resources")
-    set(SDL_SDL_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_RESOURCEDIR}/CMake")
-    set(SDL_SDL_INSTALL_REAL_RESOURCEDIR "SDL3.framework/Versions/${SDL_FRAMEWORK_VERSION}/Resources")
-    set(SDL_SDL_INSTALL_REAL_CMAKEDIR "${SDL_SDL_INSTALL_REAL_RESOURCEDIR}/CMake")
-
-    # - Install other SDL3*Config.cmake files in SDL3*.framework/Resources/CMake
-    # - The *_RELATIVE_CMAKEDIR variables are the symlinked folders visible from outside
-    set(SDL_SDLstatic_INSTALL_RESOURCEDIR "SDL3-static.framework/Resources")
-    set(SDL_SDLstatic_INSTALL_CMAKEDIR "${SDL_SDLstatic_INSTALL_RESOURCEDIR}/CMake")
-    set(SDL_SDLstatic_INSTALL_CMAKEFILENAME "SDL3-staticConfig.cmake")
-
-    set(SDL_SDLtest_INSTALL_RESOURCEDIR "SDL3_test.framework/Resources")
-    set(SDL_SDLtest_INSTALL_CMAKEDIR "${SDL_SDLtest_INSTALL_RESOURCEDIR}/CMake")
-    set(SDL_SDLtest_INSTALL_CMAKEFILENAME "SDL3_testConfig.cmake")
-  else()
-    set(SDL_SDL_INSTALL_RESOURCEDIR ".")
-    set(SDL_SDL_INSTALL_CMAKEDIR ${SDL_INSTALL_CMAKEDIR})
-    set(SDL_SDL_INSTALL_REAL_CMAKEDIR ${SDL_INSTALL_CMAKEDIR})
-
-    # Install SDL3*Targets.cmake files in lib/cmake/SDL3
-    set(SDL_SDLstatic_INSTALL_RESOURCEDIR ".")
-    set(SDL_SDLstatic_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
-    set(SDL_SDLstatic_INSTALL_CMAKEFILENAME "SDL3staticTargets.cmake")
-
-    set(SDL_SDLtest_INSTALL_RESOURCEDIR ".")
-    set(SDL_SDLtest_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_CMAKEDIR}")
-    set(SDL_SDLtest_INSTALL_CMAKEFILENAME "SDL3testTargets.cmake")
-  endif()
 
   ##### sdl3.pc #####
 
@@ -3428,16 +3463,7 @@ if(NOT SDL_DISABLE_INSTALL)
     )
   endif()
 
-  ##### CMake Export files #####
-
-  include(CMakePackageConfigHelpers)
-  configure_package_config_file(cmake/SDL3Config.cmake.in SDL3Config.cmake
-    PATH_VARS CMAKE_INSTALL_PREFIX
-    INSTALL_DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
-  )
-  write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/SDL3ConfigVersion.cmake"
-    COMPATIBILITY AnyNewerVersion
-  )
+  ##### Install CMake Targets #####
 
   install(EXPORT SDL3headersTargets
     FILE "SDL3headersTargets.cmake"
