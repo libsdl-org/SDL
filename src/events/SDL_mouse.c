@@ -1333,6 +1333,11 @@ void SDL_SetCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
+    /* Return immediately if setting the cursor to the currently set one (fixes #7151) */
+    if (cursor == mouse->cur_cursor) {
+        return;
+    }
+
     /* Set the new cursor */
     if (cursor) {
         /* Make sure the cursor is still valid for this mouse */
