@@ -321,16 +321,16 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS4_PROTOCOL
         HIDAPI_DumpPacket("PS4 capabilities: size = %d", data, size);
 #endif
-        if ((capabilities & 0x02) != 0) {
+        if (capabilities & 0x02) {
             ctx->sensors_supported = SDL_TRUE;
         }
-        if ((capabilities & 0x04) != 0) {
+        if (capabilities & 0x04) {
             ctx->lightbar_supported = SDL_TRUE;
         }
-        if ((capabilities & 0x08) != 0) {
+        if (capabilities & 0x08) {
             ctx->vibration_supported = SDL_TRUE;
         }
-        if ((capabilities & 0x40) != 0) {
+        if (capabilities & 0x40) {
             ctx->touchpad_supported = SDL_TRUE;
         }
 
@@ -899,7 +899,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     /* Some fightsticks, ex: Victrix FS Pro will only this these digital trigger bits and not the analog values so this needs to run whenever the
        trigger is evaluated
     */
-    if ((packet->rgucButtonsHatAndCounter[1] & 0x0C) != 0) {
+    if (packet->rgucButtonsHatAndCounter[1] & 0x0C) {
         Uint8 data = packet->rgucButtonsHatAndCounter[1];
         packet->ucTriggerLeft = (data & 0x04) && packet->ucTriggerLeft == 0 ? 255 : packet->ucTriggerLeft;
         packet->ucTriggerRight = (data & 0x08) && packet->ucTriggerRight == 0 ? 255 : packet->ucTriggerRight;
@@ -944,12 +944,12 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     }
 
     if (ctx->report_touchpad) {
-        touchpad_state = ((packet->ucTouchpadCounter1 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+        touchpad_state = !(packet->ucTouchpadCounter1 & 0x80) ? SDL_PRESSED : SDL_RELEASED;
         touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
         touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);
         SDL_PrivateJoystickTouchpad(joystick, 0, 0, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
 
-        touchpad_state = ((packet->ucTouchpadCounter2 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+        touchpad_state = !(packet->ucTouchpadCounter2 & 0x80) ? SDL_PRESSED : SDL_RELEASED;
         touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
         touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
         SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
@@ -1016,7 +1016,7 @@ static SDL_bool HIDAPI_DriverPS4_IsPacketValid(SDL_DriverPS4_Context *ctx, Uint8
          * This is usually the ID over USB, but the DS4v2 that started shipping with the PS4 Slim will also send this
          * packet over BT with a size of 128
          */
-        if (size >= 64 && (data[31] & 0x04) == 0) {
+        if (size >= 64 && !(data[31] & 0x04)) {
             return SDL_TRUE;
         }
         break;

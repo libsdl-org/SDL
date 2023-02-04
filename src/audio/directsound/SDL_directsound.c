@@ -229,10 +229,10 @@ static void DSOUND_WaitDevice(_THIS)
 
         /* Try to restore a lost sound buffer */
         IDirectSoundBuffer_GetStatus(this->hidden->mixbuf, &status);
-        if ((status & DSBSTATUS_BUFFERLOST)) {
+        if (status & DSBSTATUS_BUFFERLOST) {
             IDirectSoundBuffer_Restore(this->hidden->mixbuf);
             IDirectSoundBuffer_GetStatus(this->hidden->mixbuf, &status);
-            if ((status & DSBSTATUS_BUFFERLOST)) {
+            if (status & DSBSTATUS_BUFFERLOST) {
                 break;
             }
         }
