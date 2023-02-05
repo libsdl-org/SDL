@@ -1590,29 +1590,6 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     return YES;
 }
 
-- (void)resetCursorRects
-{
-    SDL_Mouse *mouse;
-    [super resetCursorRects];
-    mouse = SDL_GetMouse();
-
-    if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
-        [self addCursorRect:[self bounds]
-                     cursor:(__bridge NSCursor *)mouse->cur_cursor->driverdata];
-    } else {
-        [self addCursorRect:[self bounds]
-                     cursor:[NSCursor invisibleCursor]];
-    }
-}
-
-- (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
-{
-    if (SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH)) {
-        return SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
-    } else {
-        return SDL_GetHintBoolean("SDL_MAC_MOUSE_FOCUS_CLICKTHROUGH", SDL_FALSE);
-    }
-}
 @end
 
 static int SetupWindowData(_THIS, SDL_Window *window, NSWindow *nswindow, NSView *nsview, SDL_bool created)
