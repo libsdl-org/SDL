@@ -2134,7 +2134,6 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
             }
             if (logical_w != existing_w || logical_h != existing_h) {
                 SDL_DestroyTexture(renderer->logical_target);
-                renderer->logical_target = NULL;
             }
         }
         if (!renderer->logical_target) {
@@ -2242,7 +2241,6 @@ int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_R
     if (mode == SDL_LOGICAL_PRESENTATION_DISABLED) {
         if (renderer->logical_target) {
             SDL_DestroyTexture(renderer->logical_target);
-            renderer->logical_target = NULL;
         }
     } else if (mode != SDL_LOGICAL_PRESENTATION_MATCH) {
         if (renderer->logical_target) {
@@ -2253,7 +2251,6 @@ int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_R
             }
             if (w != existing_w || h != existing_h) {
                 SDL_DestroyTexture(renderer->logical_target);
-                renderer->logical_target = NULL;
             }
         }
         if (!renderer->logical_target) {
@@ -4052,6 +4049,11 @@ void SDL_DestroyTexture(SDL_Texture *texture)
         FlushRenderCommandsIfTextureNeeded(texture);
     }
 
+    if (texture == renderer->logical_target) {
+        renderer->logical_target = NULL;
+        renderer->logical_presentation_mode = SDL_LOGICAL_PRESENTATION_DISABLED;
+    }
+
     texture->magic = NULL;
 
     if (texture->next) {
@@ -4084,6 +4086,7 @@ void SDL_DestroyTexture(SDL_Texture *texture)
 static void SDL_DropAllCommands(SDL_Renderer *renderer)
 {
     SDL_RenderCommand *cmd;
+
     if (renderer->render_commands_tail != NULL) {
         renderer->render_commands_tail->next = renderer->render_commands_pool;
         cmd = renderer->render_commands;

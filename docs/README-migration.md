@@ -596,6 +596,13 @@ which index is the "opengl" or whatnot driver, you can just pass that string dir
 here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you want SDL
 to decide for you.
 
+When a renderer is created, it will automatically set the logical size to the size of
+the window in screen coordinates. For high DPI displays, this will set up scaling from
+window coordinates to pixels. You can disable this scaling with:
+```c
+    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
+```
+
 Mouse and touch events are no longer filtered to change their coordinates, instead you
 can call SDL_ConvertEventToRenderCoordinates() to explicitly map event coordinates into
 the rendering viewport.
