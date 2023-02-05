@@ -2134,7 +2134,6 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
             }
             if (logical_w != existing_w || logical_h != existing_h) {
                 SDL_DestroyTexture(renderer->logical_target);
-                renderer->logical_target = NULL;
             }
         }
         if (!renderer->logical_target) {
@@ -2242,7 +2241,6 @@ int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_R
     if (mode == SDL_LOGICAL_PRESENTATION_DISABLED) {
         if (renderer->logical_target) {
             SDL_DestroyTexture(renderer->logical_target);
-            renderer->logical_target = NULL;
         }
     } else if (mode != SDL_LOGICAL_PRESENTATION_MATCH) {
         if (renderer->logical_target) {
@@ -2253,7 +2251,6 @@ int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_R
             }
             if (w != existing_w || h != existing_h) {
                 SDL_DestroyTexture(renderer->logical_target);
-                renderer->logical_target = NULL;
             }
         }
         if (!renderer->logical_target) {
@@ -4052,6 +4049,11 @@ void SDL_DestroyTexture(SDL_Texture *texture)
         FlushRenderCommandsIfTextureNeeded(texture);
     }
 
+    if (texture == renderer->logical_target) {
+        renderer->logical_target = NULL;
+        renderer->logical_presentation_mode = SDL_LOGICAL_PRESENTATION_DISABLED;
+    }
+
     texture->magic = NULL;
 
     if (texture->next) {
@@ -4089,6 +4091,17 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
 
     SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
 
+    /* Make sure all rendering has been flushed */
+    FlushRenderCommands(renderer);
+
+    /* Free existing textures for this renderer */
+    while (renderer->textures) {
+        SDL_Texture *tex = renderer->textures;
+        (void)tex;
+        SDL_DestroyTexture(renderer->textures);
+        SDL_assert(tex != renderer->textures); /* satisfy static analysis. */
+    }
+
     if (renderer->render_commands_tail != NULL) {
         renderer->render_commands_tail->next = renderer->render_commands_pool;
         cmd = renderer->render_commands;
@@ -4107,14 +4120,6 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
     }
 
     SDL_free(renderer->vertex_data);
-
-    /* Free existing textures for this renderer */
-    while (renderer->textures) {
-        SDL_Texture *tex = renderer->textures;
-        (void)tex;
-        SDL_DestroyTexture(renderer->textures);
-        SDL_assert(tex != renderer->textures); /* satisfy static analysis. */
-    }
 
     if (renderer->window) {
         SDL_SetWindowData(renderer->window, SDL_WINDOWRENDERDATA, NULL);
