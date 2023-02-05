@@ -1164,7 +1164,7 @@ hasTexAlpha(void)
 static void
 compare(SDL_Surface *referenceSurface, int allowable_error)
 {
-   int result;
+   int ret;
    SDL_Rect rect;
    Uint8 *pixels;
    SDL_Surface *testSurface;
@@ -1188,8 +1188,8 @@ compare(SDL_Surface *referenceSurface, int allowable_error)
    SDLTest_AssertCheck(testSurface != NULL, "Verify result from SDL_CreateSurfaceFrom is not NULL");
 
    /* Compare surface. */
-   result = SDLTest_CompareSurfaces( testSurface, referenceSurface, allowable_error );
-   SDLTest_AssertCheck(result == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", result);
+   ret = SDLTest_CompareSurfaces( testSurface, referenceSurface, allowable_error );
+   SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
    /* Clean up. */
    SDL_free(pixels);
