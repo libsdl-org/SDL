@@ -2400,7 +2400,8 @@ SDL_DisplayMode e;
 @@
 - SDL_ScaleModeBest
 + SDL_SCALEMODE_BEST
-
+@@
+@@
 - SDL_RenderCopy
 + SDL_RenderTexture
   (...)
