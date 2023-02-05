@@ -4081,14 +4081,9 @@ void SDL_DestroyTexture(SDL_Texture *texture)
     SDL_free(texture);
 }
 
-void SDL_DestroyRenderer(SDL_Renderer *renderer)
+static void SDL_DropAllCommands(SDL_Renderer *renderer)
 {
     SDL_RenderCommand *cmd;
-
-    CHECK_RENDERER_MAGIC(renderer, );
-
-    SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
-
     if (renderer->render_commands_tail != NULL) {
         renderer->render_commands_tail->next = renderer->render_commands_pool;
         cmd = renderer->render_commands;
@@ -4105,6 +4100,15 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
         SDL_free(cmd);
         cmd = next;
     }
+}
+
+void SDL_DestroyRenderer(SDL_Renderer *renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, );
+
+    SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
+
+    SDL_DropAllCommands(renderer);
 
     SDL_free(renderer->vertex_data);
 
@@ -4115,6 +4119,9 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
         SDL_DestroyTexture(renderer->textures);
         SDL_assert(tex != renderer->textures); /* satisfy static analysis. */
     }
+
+    /* SDL_DestroyTexture() -> SDL_SetRenderTargetInternal(render, NULL) may have queued some commands */
+    SDL_DropAllCommands(renderer);
 
     if (renderer->window) {
         SDL_SetWindowData(renderer->window, SDL_WINDOWRENDERDATA, NULL);
