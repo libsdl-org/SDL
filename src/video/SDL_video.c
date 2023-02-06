@@ -770,8 +770,7 @@ int SDL_GetDisplayIndex(SDL_DisplayID displayID)
             return display_index;
         }
     }
-    SDL_SetError("Invalid display");
-    return -1;
+    return SDL_SetError("Invalid display");
 }
 
 SDL_DisplayData *SDL_GetDisplayDriverData(SDL_DisplayID displayID)
