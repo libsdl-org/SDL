@@ -1108,7 +1108,7 @@ static int D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         return -1;
     }
 
-    if (vertices) {
+    if (vertsize > 0) {
         /* upload the new VBO data for this set of commands. */
         vbo = data->vertexBuffers[vboidx];
         if (data->vertexBufferSize[vboidx] < vertsize) {
