@@ -112,7 +112,7 @@ SDL_GLContext Emscripten_GLES_CreateContext(_THIS, SDL_Window *window)
     return (SDL_GLContext)context;
 }
 
-void Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
+int Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_Window *window;
 
@@ -126,6 +126,7 @@ void Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
     }
 
     emscripten_webgl_destroy_context((EMSCRIPTEN_WEBGL_CONTEXT_HANDLE)context);
+    return 0;
 }
 
 int Emscripten_GLES_SwapWindow(_THIS, SDL_Window *window)

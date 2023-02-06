@@ -863,7 +863,7 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
     int status = -1;
 
     if ((interval < 0) && (!_this->gl_data->HAS_GLX_EXT_swap_control_tear)) {
-        SDL_SetError("Negative swap interval unsupported in this GL");
+        return SDL_SetError("Negative swap interval unsupported in this GL");
     } else if (_this->gl_data->glXSwapIntervalEXT) {
         Display *display = _this->driverdata->display;
         const SDL_WindowData *windowdata = SDL_GL_GetCurrentWindow()->driverdata;
@@ -900,7 +900,7 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
             swapinterval = interval;
         }
     } else {
-        SDL_Unsupported();
+        return SDL_Unsupported();
     }
     return status;
 }
@@ -952,16 +952,17 @@ int X11_GL_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-void X11_GL_DeleteContext(_THIS, SDL_GLContext context)
+int X11_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     Display *display = _this->driverdata->display;
     GLXContext glx_context = (GLXContext)context;
 
     if (!_this->gl_data) {
-        return;
+        return 0;
     }
     _this->gl_data->glXDestroyContext(display, glx_context);
     X11_XSync(display, False);
+    return 0;
 }
 
 #endif /* SDL_VIDEO_OPENGL_GLX */

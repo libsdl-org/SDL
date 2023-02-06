@@ -24,7 +24,7 @@
 
 #import <Foundation/Foundation.h>
 
-void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     @autoreleasepool {
         NSArray *languages = NSLocale.preferredLanguages;
@@ -72,4 +72,5 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             }
         }
     }
+    return 0;
 }

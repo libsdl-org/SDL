@@ -417,7 +417,7 @@ int UIKit_InitModes(_THIS)
     return 0;
 }
 
-void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     @autoreleasepool {
         SDL_DisplayData *data = display->driverdata;
@@ -448,6 +448,7 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
             UIKit_AddDisplayMode(display, w, h, data.uiscreen, uimode, addRotation);
         }
     }
+    return 0;
 }
 
 int UIKit_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)

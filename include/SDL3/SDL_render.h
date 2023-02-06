@@ -783,11 +783,14 @@ extern DECLSPEC int SDLCALL SDL_LockTextureToSurface(SDL_Texture *texture,
  *
  * \param texture a texture locked by SDL_LockTexture()
  *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LockTexture
  */
-extern DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_Texture *texture);
+extern DECLSPEC int SDLCALL SDL_UnlockTexture(SDL_Texture *texture);
 
 /**
  * Set a texture as the current rendering target.
@@ -1408,6 +1411,8 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer *renderer,
  * pixel.
  *
  * \param renderer the rendering context
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety You may only call this function on the main thread.
  *
@@ -1425,7 +1430,7 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer *renderer,
  * \sa SDL_SetRenderDrawBlendMode
  * \sa SDL_SetRenderDrawColor
  */
-extern DECLSPEC void SDLCALL SDL_RenderPresent(SDL_Renderer *renderer);
+extern DECLSPEC int SDLCALL SDL_RenderPresent(SDL_Renderer *renderer);
 
 /**
  * Destroy the specified texture.
@@ -1434,13 +1439,15 @@ extern DECLSPEC void SDLCALL SDL_RenderPresent(SDL_Renderer *renderer);
  * to "Invalid texture".
  *
  * \param texture the texture to destroy
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateTexture
  * \sa SDL_CreateTextureFromSurface
  */
-extern DECLSPEC void SDLCALL SDL_DestroyTexture(SDL_Texture *texture);
+extern DECLSPEC int SDLCALL SDL_DestroyTexture(SDL_Texture *texture);
 
 /**
  * Destroy the rendering context for a window and free associated textures.
@@ -1449,12 +1456,14 @@ extern DECLSPEC void SDLCALL SDL_DestroyTexture(SDL_Texture *texture);
  * the SDL error message to "Invalid renderer". See SDL_GetError().
  *
  * \param renderer the rendering context
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRenderer
  */
-extern DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_Renderer *renderer);
+extern DECLSPEC int SDLCALL SDL_DestroyRenderer(SDL_Renderer *renderer);
 
 /**
  * Force the rendering context to flush any pending commands to the underlying

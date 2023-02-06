@@ -1202,18 +1202,19 @@ int SDL_EGL_SwapBuffers(_THIS, EGLSurface egl_surface)
     return 0;
 }
 
-void SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
+int SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 {
     EGLContext egl_context = (EGLContext)context;
 
     /* Clean up GLES and EGL */
     if (!_this->egl_data) {
-        return;
+        return 0;
     }
 
     if (egl_context != NULL && egl_context != EGL_NO_CONTEXT) {
         _this->egl_data->eglDestroyContext(_this->egl_data->egl_display, egl_context);
     }
+    return 0;
 }
 
 EGLSurface *

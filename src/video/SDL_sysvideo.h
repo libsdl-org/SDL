@@ -232,7 +232,7 @@ struct SDL_VideoDevice
     /*
      * Get a list of the available display modes for a display.
      */
-    void (*GetDisplayModes)(_THIS, SDL_VideoDisplay *display);
+    int (*GetDisplayModes)(_THIS, SDL_VideoDisplay *display);
 
     /*
      * Setting the display mode is independent of creating windows, so
@@ -303,7 +303,7 @@ struct SDL_VideoDevice
     int (*GL_SetSwapInterval)(_THIS, int interval);
     int (*GL_GetSwapInterval)(_THIS, int *interval);
     int (*GL_SwapWindow)(_THIS, SDL_Window *window);
-    void (*GL_DeleteContext)(_THIS, SDL_GLContext context);
+    int (*GL_DeleteContext)(_THIS, SDL_GLContext context);
     void (*GL_DefaultProfileConfig)(_THIS, int *mask, int *major, int *minor);
 
     /* * * */
@@ -337,7 +337,7 @@ struct SDL_VideoDevice
     /* Text input */
     void (*StartTextInput)(_THIS);
     void (*StopTextInput)(_THIS);
-    void (*SetTextInputRect)(_THIS, const SDL_Rect *rect);
+    int (*SetTextInputRect)(_THIS, const SDL_Rect *rect);
     void (*ClearComposition)(_THIS);
     SDL_bool (*IsTextInputShown)(_THIS);
 

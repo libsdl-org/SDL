@@ -35,7 +35,7 @@
 static SDL_Cursor *KMSDRM_CreateDefaultCursor(void);
 static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y);
 static int KMSDRM_ShowCursor(SDL_Cursor *cursor);
-static void KMSDRM_MoveCursor(SDL_Cursor *cursor);
+static int KMSDRM_MoveCursor(SDL_Cursor *cursor);
 static void KMSDRM_FreeCursor(SDL_Cursor *cursor);
 
 /**************************************************************************************/
@@ -76,7 +76,7 @@ void KMSDRM_DestroyCursorBO(_THIS, SDL_VideoDisplay *display)
 /* Given a display's driverdata, create the cursor BO for it.
    To be called from KMSDRM_CreateWindow(), as that's where we
    build a window and assign a display to it. */
-void KMSDRM_CreateCursorBO(SDL_VideoDisplay *display)
+int KMSDRM_CreateCursorBO(SDL_VideoDisplay *display)
 {
 
     SDL_VideoDevice *dev = SDL_GetVideoDevice();
@@ -86,21 +86,18 @@ void KMSDRM_CreateCursorBO(SDL_VideoDisplay *display)
     if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev,
                                                GBM_FORMAT_ARGB8888,
                                                GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE)) {
-        SDL_SetError("Unsupported pixel format for cursor");
-        return;
+        return SDL_SetError("Unsupported pixel format for cursor");
     }
 
     if (KMSDRM_drmGetCap(viddata->drm_fd,
                          DRM_CAP_CURSOR_WIDTH, &dispdata->cursor_w) ||
         KMSDRM_drmGetCap(viddata->drm_fd, DRM_CAP_CURSOR_HEIGHT,
                          &dispdata->cursor_h)) {
-        SDL_SetError("Could not get the recommended GBM cursor size");
-        return;
+        return SDL_SetError("Could not get the recommended GBM cursor size");
     }
 
     if (dispdata->cursor_w == 0 || dispdata->cursor_h == 0) {
-        SDL_SetError("Could not get an usable GBM cursor size");
-        return;
+        return SDL_SetError("Could not get an usable GBM cursor size");
     }
 
     dispdata->cursor_bo = KMSDRM_gbm_bo_create(viddata->gbm_dev,
@@ -108,11 +105,11 @@ void KMSDRM_CreateCursorBO(SDL_VideoDisplay *display)
                                                GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE | GBM_BO_USE_LINEAR);
 
     if (!dispdata->cursor_bo) {
-        SDL_SetError("Could not create GBM cursor BO");
-        return;
+        return SDL_SetError("Could not create GBM cursor BO");
     }
 
     dispdata->cursor_bo_drm_fd = viddata->drm_fd;
+    return 0;
 }
 
 /* Remove a cursor buffer from a display's DRM cursor BO. */
@@ -380,10 +377,10 @@ static int KMSDRM_WarpMouseGlobal(float x, float y)
     }
 }
 
-static void KMSDRM_WarpMouse(SDL_Window *window, float x, float y)
+static int KMSDRM_WarpMouse(SDL_Window *window, float x, float y)
 {
     /* Only one global/fullscreen window is supported */
-    KMSDRM_WarpMouseGlobal(x, y);
+    return KMSDRM_WarpMouseGlobal(x, y);
 }
 
 void KMSDRM_InitMouse(_THIS, SDL_VideoDisplay *display)
@@ -412,7 +409,7 @@ void KMSDRM_QuitMouse(_THIS)
 }
 
 /* This is called when a mouse motion event occurs */
-static void KMSDRM_MoveCursor(SDL_Cursor *cursor)
+static int KMSDRM_MoveCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int ret = 0;
@@ -425,16 +422,16 @@ static void KMSDRM_MoveCursor(SDL_Cursor *cursor)
         SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
 
         if (!dispdata->cursor_bo) {
-            SDL_SetError("Cursor not initialized properly.");
-            return;
+            return SDL_SetError("Cursor not initialized properly.");
         }
 
         ret = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, mouse->x, mouse->y);
 
         if (ret) {
-            SDL_SetError("drmModeMoveCursor() failed.");
+            return SDL_SetError("drmModeMoveCursor() failed.");
         }
     }
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */

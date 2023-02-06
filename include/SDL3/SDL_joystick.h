@@ -493,10 +493,12 @@ extern DECLSPEC int SDLCALL SDL_GetJoystickPlayerIndex(SDL_Joystick *joystick);
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick()
  * \param player_index Player index to assign to this joystick, or -1 to clear
  *                     the player index and turn off player LEDs.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_SetJoystickPlayerIndex(SDL_Joystick *joystick, int player_index);
+extern DECLSPEC int SDLCALL SDL_SetJoystickPlayerIndex(SDL_Joystick *joystick, int player_index);
 
 /**
  * Get the implementation-dependent GUID for the joystick.
@@ -966,12 +968,14 @@ extern DECLSPEC int SDLCALL SDL_SendJoystickEffect(SDL_Joystick *joystick, const
  * Close a joystick previously opened with SDL_OpenJoystick().
  *
  * \param joystick The joystick device to close
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_OpenJoystick
  */
-extern DECLSPEC void SDLCALL SDL_CloseJoystick(SDL_Joystick *joystick);
+extern DECLSPEC int SDLCALL SDL_CloseJoystick(SDL_Joystick *joystick);
 
 /**
  * Get the battery level of a joystick as SDL_JoystickPowerLevel.

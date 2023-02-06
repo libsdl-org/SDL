@@ -623,20 +623,19 @@ int SDL_InitFormat(SDL_PixelFormat *format, Uint32 pixel_format)
     return 0;
 }
 
-void SDL_DestroyPixelFormat(SDL_PixelFormat *format)
+int SDL_DestroyPixelFormat(SDL_PixelFormat *format)
 {
     SDL_PixelFormat *prev;
 
     if (format == NULL) {
-        SDL_InvalidParamError("format");
-        return;
+        return SDL_InvalidParamError("format");
     }
 
     SDL_AtomicLock(&formats_lock);
 
     if (--format->refcount > 0) {
         SDL_AtomicUnlock(&formats_lock);
-        return;
+        return 0;
     }
 
     /* Remove this format from our list */
@@ -657,6 +656,7 @@ void SDL_DestroyPixelFormat(SDL_PixelFormat *format)
         SDL_DestroyPalette(format->palette);
     }
     SDL_free(format);
+    return 0;
 }
 
 SDL_Palette *
@@ -744,17 +744,17 @@ int SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors,
     return status;
 }
 
-void SDL_DestroyPalette(SDL_Palette *palette)
+int SDL_DestroyPalette(SDL_Palette *palette)
 {
     if (palette == NULL) {
-        SDL_InvalidParamError("palette");
-        return;
+        return SDL_InvalidParamError("palette");
     }
     if (--palette->refcount > 0) {
-        return;
+        return 0;
     }
     SDL_free(palette->colors);
     SDL_free(palette);
+    return 0;
 }
 
 /*

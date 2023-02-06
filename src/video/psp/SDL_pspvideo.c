@@ -153,7 +153,7 @@ void PSP_VideoQuit(_THIS)
 {
 }
 
-void PSP_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int PSP_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayMode mode;
 
@@ -169,6 +169,7 @@ void PSP_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     /* 16 bpp secondary mode */
     mode.format = SDL_PIXELFORMAT_BGR565;
     SDL_AddFullscreenDisplayMode(display, &mode);
+    return 0;
 }
 
 int PSP_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)

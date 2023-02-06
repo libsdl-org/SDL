@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-extern void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen);
+extern int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen);
 
 #ifdef __cplusplus
 }

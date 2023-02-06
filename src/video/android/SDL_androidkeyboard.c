@@ -359,16 +359,11 @@ void Android_StopTextInput(_THIS)
     Android_JNI_HideTextInput();
 }
 
-void Android_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int Android_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *videodata = _this->driverdata;
-
-    if (rect == NULL) {
-        SDL_InvalidParamError("rect");
-        return;
-    }
-
     videodata->textRect = *rect;
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */

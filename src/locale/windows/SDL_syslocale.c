@@ -54,7 +54,7 @@ static void SDL_SYS_GetPreferredLocales_winxp(char *buf, size_t buflen)
 }
 
 /* this works on Windows Vista and later. */
-static void SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
+static int SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
 {
     ULONG numlangs = 0;
     WCHAR *wbuf = NULL;
@@ -66,8 +66,7 @@ static void SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
 
     wbuf = SDL_small_alloc(WCHAR, wbuflen, &isstack);
     if (wbuf == NULL) {
-        SDL_OutOfMemory();
-        return;
+        return SDL_OutOfMemory();
     }
 
     if (!pGetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numlangs, wbuf, &wbuflen)) {
@@ -91,9 +90,10 @@ static void SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
     }
 
     SDL_small_free(wbuf, isstack);
+    return 0;
 }
 
-void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     if (!kernel32) {
         kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
@@ -107,4 +107,5 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     } else {
         SDL_SYS_GetPreferredLocales_vista(buf, buflen); /* available on Vista and later. */
     }
+    return 0;
 }

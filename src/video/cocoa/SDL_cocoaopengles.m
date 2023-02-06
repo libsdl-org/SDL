@@ -92,12 +92,13 @@ Cocoa_GLES_CreateContext(_THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_GLES_DeleteContext(_THIS, SDL_GLContext context)
+int Cocoa_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     @autoreleasepool {
         SDL_EGL_DeleteContext(_this, context);
         Cocoa_GLES_UnloadLibrary(_this);
     }
+    return 0;
 }
 
 int Cocoa_GLES_SwapWindow(_THIS, SDL_Window *window)

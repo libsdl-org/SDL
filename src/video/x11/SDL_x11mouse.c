@@ -347,7 +347,7 @@ static void X11_WarpMouseInternal(Window xwindow, float x, float y)
     videodata->global_mouse_changed = SDL_TRUE;
 }
 
-static void X11_WarpMouse(SDL_Window *window, float x, float y)
+static int X11_WarpMouse(SDL_Window *window, float x, float y)
 {
     SDL_WindowData *data = window->driverdata;
 
@@ -359,6 +359,7 @@ static void X11_WarpMouse(SDL_Window *window, float x, float y)
 #else
     X11_WarpMouseInternal(data->xwindow, x, y);
 #endif
+    return 0;
 }
 
 static int X11_WarpMouseGlobal(float x, float y)
@@ -373,10 +374,8 @@ static int X11_SetRelativeMouseMode(SDL_bool enabled)
     if (X11_Xinput2IsInitialized()) {
         return 0;
     }
-#else
-    SDL_Unsupported();
 #endif
-    return -1;
+    return SDL_Unsupported();
 }
 
 static int X11_CaptureMouse(SDL_Window *window)

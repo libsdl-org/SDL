@@ -1281,7 +1281,7 @@ void KMSDRM_VideoQuit(_THIS)
 }
 
 /* Read modes from the connector modes, and store them in display->display_modes. */
-void KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *dispdata = display->driverdata;
     drmModeConnector *conn = dispdata->connector;
@@ -1306,6 +1306,7 @@ void KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
             SDL_free(modedata);
         }
     }
+    return 0;
 }
 
 int KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
