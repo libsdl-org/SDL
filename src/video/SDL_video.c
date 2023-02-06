@@ -2036,12 +2036,12 @@ Uint32 SDL_GetWindowFlags(SDL_Window *window)
     return window->flags;
 }
 
-void SDL_SetWindowTitle(SDL_Window *window, const char *title)
+int SDL_SetWindowTitle(SDL_Window *window, const char *title)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (title == window->title) {
-        return;
+        return 0;
     }
     SDL_free(window->title);
 
@@ -2050,6 +2050,7 @@ void SDL_SetWindowTitle(SDL_Window *window, const char *title)
     if (_this->SetWindowTitle) {
         _this->SetWindowTitle(_this, window);
     }
+    return 0;
 }
 
 const char *SDL_GetWindowTitle(SDL_Window *window)
@@ -2059,12 +2060,12 @@ const char *SDL_GetWindowTitle(SDL_Window *window)
     return window->title ? window->title : "";
 }
 
-void SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
+int SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (icon == NULL) {
-        return;
+        return 0;
     }
 
     SDL_DestroySurface(window->icon);
@@ -2072,12 +2073,13 @@ void SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
     /* Convert the icon into ARGB8888 */
     window->icon = SDL_ConvertSurfaceFormat(icon, SDL_PIXELFORMAT_ARGB8888);
     if (!window->icon) {
-        return;
+        return -1;
     }
 
     if (_this->SetWindowIcon) {
         _this->SetWindowIcon(_this, window, window->icon);
     }
+    return 0;
 }
 
 void *SDL_SetWindowData(SDL_Window *window, const char *name, void *userdata)
@@ -2284,16 +2286,14 @@ void SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
     }
 }
 
-void SDL_SetWindowSize(SDL_Window *window, int w, int h)
+int SDL_SetWindowSize(SDL_Window *window, int w, int h)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
     if (w <= 0) {
-        SDL_InvalidParamError("w");
-        return;
+        return SDL_InvalidParamError("w");
     }
     if (h <= 0) {
-        SDL_InvalidParamError("h");
-        return;
+        return SDL_InvalidParamError("h");
     }
 
     /* Make sure we don't exceed any window size limits */
@@ -2318,6 +2318,7 @@ void SDL_SetWindowSize(SDL_Window *window, int w, int h)
             _this->SetWindowSize(_this, window);
         }
     }
+    return 0;
 }
 
 void SDL_GetWindowSize(SDL_Window *window, int *w, int *h)
@@ -2402,22 +2403,19 @@ void SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
     }
 }
 
-void SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
+int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
     if (min_w <= 0) {
-        SDL_InvalidParamError("min_w");
-        return;
+        return SDL_InvalidParamError("min_w");
     }
     if (min_h <= 0) {
-        SDL_InvalidParamError("min_h");
-        return;
+        return SDL_InvalidParamError("min_h");
     }
 
     if ((window->max_w && min_w > window->max_w) ||
         (window->max_h && min_h > window->max_h)) {
-        SDL_SetError("SDL_SetWindowMinimumSize(): Tried to set minimum size larger than maximum size");
-        return;
+        return SDL_SetError("SDL_SetWindowMinimumSize(): Tried to set minimum size larger than maximum size");
     }
 
     window->min_w = min_w;
@@ -2428,8 +2426,9 @@ void SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
             _this->SetWindowMinimumSize(_this, window);
         }
         /* Ensure that window is not smaller than minimal size */
-        SDL_SetWindowSize(window, SDL_max(window->w, window->min_w), SDL_max(window->h, window->min_h));
+        return SDL_SetWindowSize(window, SDL_max(window->w, window->min_w), SDL_max(window->h, window->min_h));
     }
+    return 0;
 }
 
 void SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
@@ -2443,21 +2442,18 @@ void SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
     }
 }
 
-void SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
+int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
     if (max_w <= 0) {
-        SDL_InvalidParamError("max_w");
-        return;
+        return SDL_InvalidParamError("max_w");
     }
     if (max_h <= 0) {
-        SDL_InvalidParamError("max_h");
-        return;
+        return SDL_InvalidParamError("max_h");
     }
 
     if (max_w < window->min_w || max_h < window->min_h) {
-        SDL_SetError("SDL_SetWindowMaximumSize(): Tried to set maximum size smaller than minimum size");
-        return;
+        return SDL_SetError("SDL_SetWindowMaximumSize(): Tried to set maximum size smaller than minimum size");
     }
 
     window->max_w = max_w;
@@ -2468,8 +2464,9 @@ void SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
             _this->SetWindowMaximumSize(_this, window);
         }
         /* Ensure that window is not larger than maximal size */
-        SDL_SetWindowSize(window, SDL_min(window->w, window->max_w), SDL_min(window->h, window->max_h));
+        return SDL_SetWindowSize(window, SDL_min(window->w, window->max_w), SDL_min(window->h, window->max_h));
     }
+    return 0;
 }
 
 void SDL_GetWindowMaximumSize(SDL_Window *window, int *max_w, int *max_h)

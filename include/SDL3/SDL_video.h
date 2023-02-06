@@ -750,12 +750,14 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowFlags(SDL_Window *window);
  *
  * \param window the window to change
  * \param title the desired window title in UTF-8 format
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetWindowTitle
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowTitle(SDL_Window *window, const char *title);
+extern DECLSPEC int SDLCALL SDL_SetWindowTitle(SDL_Window *window, const char *title);
 
 /**
  * Get the title of a window.
@@ -775,10 +777,12 @@ extern DECLSPEC const char *SDLCALL SDL_GetWindowTitle(SDL_Window *window);
  *
  * \param window the window to change
  * \param icon an SDL_Surface structure containing the icon for the window
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon);
+extern DECLSPEC int SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon);
 
 /**
  * Associate an arbitrary named pointer with a window.
@@ -852,13 +856,15 @@ extern DECLSPEC void SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x, i
  * \param window the window to change
  * \param w the width of the window, must be > 0
  * \param h the height of the window, must be > 0
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetWindowSize
  * \sa SDL_SetWindowFullscreenMode
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h);
+extern DECLSPEC int SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h);
 
 /**
  * Get the size of a window's client area, in screen coordinates.
@@ -942,13 +948,15 @@ extern DECLSPEC void SDLCALL SDL_GetWindowSizeInPixels(SDL_Window *window, int *
  * \param window the window to change
  * \param min_w the minimum width of the window
  * \param min_h the minimum height of the window
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetWindowMinimumSize
  * \sa SDL_SetWindowMaximumSize
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h);
+extern DECLSPEC int SDLCALL SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h);
 
 /**
  * Get the minimum size of a window's client area, in screen coordinates.
@@ -972,13 +980,15 @@ extern DECLSPEC void SDLCALL SDL_GetWindowMinimumSize(SDL_Window *window, int *w
  * \param window the window to change
  * \param max_w the maximum width of the window
  * \param max_h the maximum height of the window
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetWindowMaximumSize
  * \sa SDL_SetWindowMinimumSize
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h);
+extern DECLSPEC int SDLCALL SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h);
 
 /**
  * Get the maximum size of a window's client area, in screen coordinates.
