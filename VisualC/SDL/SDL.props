@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <SDL3_static_RuntimeLibrary>MultiThreadedDLL</SDL3_static_RuntimeLibrary>
+    <__SDL3_AdditionalDependencies>setupapi.lib;winmm.lib;imm32.lib;version.lib</__SDL3_AdditionalDependencies>
+    <__SDL3_shared Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Debug'">true</__SDL3_shared>
+    <__SDL3_shared Condition="!('$(Configuration)'=='Release' Or '$(Configuration)'=='Debug')">false</__SDL3_shared>
+    <__SDL3_static Condition="'$(Configuration)'=='Release Static' Or '$(Configuration)'=='Debug Static'">true</__SDL3_static>
+    <__SDL3_static Condition="!('$(Configuration)'=='Release Static' Or '$(Configuration)'=='Debug Static')">false</__SDL3_static>
+    <__SDL3_debug Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='Debug Static'">true</__SDL3_debug>
+    <__SDL3_debug Condition="!('$(Configuration)'=='Debug' Or '$(Configuration)'=='Debug Static')">false</__SDL3_debug>
+    <__SDL3_release Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Release Static'">true</__SDL3_release>
+    <__SDL3_release Condition="!('$(Configuration)'=='Release' Or '$(Configuration)'=='Release Static')">false</__SDL3_release>
+    <__SDL3_TargetName Condition="$(__SDL3_shared)">SDL3</__SDL3_TargetName>
+    <__SDL3_TargetName Condition="$(__SDL3_static)">SDL3-static</__SDL3_TargetName>
+  </PropertyGroup>
+</Project>
