@@ -4055,7 +4055,6 @@ static void SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroy
 
     if (texture == renderer->logical_target) {
         renderer->logical_target = NULL;
-        renderer->logical_presentation_mode = SDL_LOGICAL_PRESENTATION_DISABLED;
     }
 
     texture->magic = NULL;
