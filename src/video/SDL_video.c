@@ -2290,12 +2290,10 @@ int SDL_SetWindowSize(SDL_Window *window, int w, int h)
 {
     CHECK_WINDOW_MAGIC(window, -1);
     if (w <= 0) {
-        SDL_InvalidParamError("w");
-        return -1;
+        return SDL_InvalidParamError("w");
     }
     if (h <= 0) {
-        SDL_InvalidParamError("h");
-        return -1;
+        return SDL_InvalidParamError("h");
     }
 
     /* Make sure we don't exceed any window size limits */
@@ -2409,18 +2407,15 @@ int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
 {
     CHECK_WINDOW_MAGIC(window, -1);
     if (min_w <= 0) {
-        SDL_InvalidParamError("min_w");
-        return -1;
+        return SDL_InvalidParamError("min_w");
     }
     if (min_h <= 0) {
-        SDL_InvalidParamError("min_h");
-        return -1;
+        return SDL_InvalidParamError("min_h");
     }
 
     if ((window->max_w && min_w > window->max_w) ||
         (window->max_h && min_h > window->max_h)) {
-        SDL_SetError("SDL_SetWindowMinimumSize(): Tried to set minimum size larger than maximum size");
-        return -1;
+        return SDL_SetError("SDL_SetWindowMinimumSize(): Tried to set minimum size larger than maximum size");
     }
 
     window->min_w = min_w;
@@ -2451,17 +2446,14 @@ int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
 {
     CHECK_WINDOW_MAGIC(window, -1);
     if (max_w <= 0) {
-        SDL_InvalidParamError("max_w");
-        return -1;
+        return SDL_InvalidParamError("max_w");
     }
     if (max_h <= 0) {
-        SDL_InvalidParamError("max_h");
-        return -1;
+        return SDL_InvalidParamError("max_h");
     }
 
     if (max_w < window->min_w || max_h < window->min_h) {
-        SDL_SetError("SDL_SetWindowMaximumSize(): Tried to set maximum size smaller than minimum size");
-        return -1;
+        return SDL_SetError("SDL_SetWindowMaximumSize(): Tried to set maximum size smaller than minimum size");
     }
 
     window->max_w = max_w;
