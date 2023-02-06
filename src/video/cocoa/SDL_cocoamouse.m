@@ -289,9 +289,9 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
     return 0;
 }
 
-static void Cocoa_WarpMouse(SDL_Window *window, float x, float y)
+static int Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 {
-    Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
+    return Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
 }
 
 static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)

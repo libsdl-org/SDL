@@ -2013,12 +2013,12 @@ static void SDL_UnlockTextureNative(SDL_Texture *texture)
     SDL_UnlockTexture(native);
 }
 
-void SDL_UnlockTexture(SDL_Texture *texture)
+int SDL_UnlockTexture(SDL_Texture *texture)
 {
-    CHECK_TEXTURE_MAGIC(texture, );
+    CHECK_TEXTURE_MAGIC(texture, -1);
 
     if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
-        return;
+        return 0;
     }
 #if SDL_HAVE_YUV
     if (texture->yuv) {
@@ -2034,6 +2034,7 @@ void SDL_UnlockTexture(SDL_Texture *texture)
 
     SDL_DestroySurface(texture->locked_surface);
     texture->locked_surface = NULL;
+    return 0;
 }
 
 static int SDL_SetRenderTargetInternal(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -4002,11 +4003,11 @@ static void SDL_RenderLogicalBorders(SDL_Renderer *renderer)
     }
 }
 
-void SDL_RenderPresent(SDL_Renderer *renderer)
+int SDL_RenderPresent(SDL_Renderer *renderer)
 {
     SDL_bool presented = SDL_TRUE;
 
-    CHECK_RENDERER_MAGIC(renderer, );
+    CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (renderer->logical_target) {
         SDL_SetRenderTargetInternal(renderer, NULL);
@@ -4034,13 +4035,14 @@ void SDL_RenderPresent(SDL_Renderer *renderer)
         (!presented && renderer->wanted_vsync)) {
         SDL_SimulateRenderVSync(renderer);
     }
+    return 0;
 }
 
-static void SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroying)
+static int SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroying)
 {
     SDL_Renderer *renderer;
 
-    CHECK_TEXTURE_MAGIC(texture, );
+    CHECK_TEXTURE_MAGIC(texture, -1);
 
     renderer = texture->renderer;
     if (is_destroying) {
@@ -4084,11 +4086,12 @@ static void SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroy
     texture->locked_surface = NULL;
 
     SDL_free(texture);
+    return 0;
 }
 
-void SDL_DestroyTexture(SDL_Texture *texture)
+int SDL_DestroyTexture(SDL_Texture *texture)
 {
-    SDL_DestroyTextureInternal(texture, SDL_FALSE /* is_destroying */);
+    return SDL_DestroyTextureInternal(texture, SDL_FALSE /* is_destroying */);
 }
 
 static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
@@ -4113,9 +4116,9 @@ static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
     }
 }
 
-void SDL_DestroyRenderer(SDL_Renderer *renderer)
+int SDL_DestroyRenderer(SDL_Renderer *renderer)
 {
-    CHECK_RENDERER_MAGIC(renderer, );
+    CHECK_RENDERER_MAGIC(renderer, -1);
 
     SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
 
@@ -4144,6 +4147,7 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
 
     /* Free the renderer instance */
     renderer->DestroyRenderer(renderer);
+    return 0;
 }
 
 int SDL_GL_BindTexture(SDL_Texture *texture, float *texw, float *texh)

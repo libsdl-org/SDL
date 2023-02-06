@@ -31,7 +31,7 @@
 
 #define N3DSVID_DRIVER_NAME "n3ds"
 
-SDL_FORCE_INLINE void AddN3DSDisplay(gfxScreen_t screen);
+SDL_FORCE_INLINE int AddN3DSDisplay(gfxScreen_t screen);
 
 static int N3DS_VideoInit(_THIS);
 static void N3DS_VideoQuit(_THIS);
@@ -100,14 +100,13 @@ static int N3DS_VideoInit(_THIS)
     return 0;
 }
 
-static void AddN3DSDisplay(gfxScreen_t screen)
+static int AddN3DSDisplay(gfxScreen_t screen)
 {
     SDL_DisplayMode mode;
     SDL_VideoDisplay display;
     SDL_DisplayData *display_driver_data = SDL_calloc(1, sizeof(SDL_DisplayData));
     if (display_driver_data == NULL) {
-        SDL_OutOfMemory();
-        return;
+        return SDL_OutOfMemory();
     }
 
     SDL_zero(mode);
@@ -125,6 +124,7 @@ static void AddN3DSDisplay(gfxScreen_t screen)
     display.driverdata = display_driver_data;
 
     SDL_AddVideoDisplay(&display, SDL_FALSE);
+    return 0;
 }
 
 static void N3DS_VideoQuit(_THIS)

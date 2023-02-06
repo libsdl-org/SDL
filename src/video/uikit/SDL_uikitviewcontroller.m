@@ -552,13 +552,8 @@ UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
-    if (!rect) {
-        SDL_InvalidParamError("rect");
-        return;
-    }
-
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(SDL_GetFocusWindow());
         if (vc != nil) {
@@ -569,6 +564,7 @@ void UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect)
             }
         }
     }
+    return 0;
 }
 
 #endif /* SDL_IPHONE_KEYBOARD */

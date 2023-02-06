@@ -89,5 +89,5 @@ SDL_bool UIKit_HasScreenKeyboardSupport(_THIS);
 void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window);
 void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window);
 SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window);
-void UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect);
+int UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect);
 #endif

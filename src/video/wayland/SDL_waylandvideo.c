@@ -681,15 +681,14 @@ static const struct wl_output_listener output_listener = {
     display_handle_scale
 };
 
-static void Wayland_add_display(SDL_VideoData *d, uint32_t id)
+static int Wayland_add_display(SDL_VideoData *d, uint32_t id)
 {
     struct wl_output *output;
     SDL_DisplayData *data;
 
     output = wl_registry_bind(d->registry, id, &wl_output_interface, 2);
     if (output == NULL) {
-        SDL_SetError("Failed to retrieve output.");
-        return;
+        return SDL_SetError("Failed to retrieve output.");
     }
     data = (SDL_DisplayData *)SDL_calloc(1, sizeof(*data));
     data->videodata = d;
@@ -717,6 +716,7 @@ static void Wayland_add_display(SDL_VideoData *d, uint32_t id)
         data->xdg_output = zxdg_output_manager_v1_get_xdg_output(data->videodata->xdg_output_manager, output);
         zxdg_output_v1_add_listener(data->xdg_output, &xdg_output_listener, data);
     }
+    return 0;
 }
 
 static void Wayland_free_display(SDL_VideoData *d, uint32_t id)

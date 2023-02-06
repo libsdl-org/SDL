@@ -1522,12 +1522,13 @@ int SDL_hid_get_feature_report(SDL_hid_device *device, unsigned char *data, size
     return result;
 }
 
-void SDL_hid_close(SDL_hid_device *device)
+int SDL_hid_close(SDL_hid_device *device)
 {
-    CHECK_DEVICE_MAGIC(device, );
+    CHECK_DEVICE_MAGIC(device, -1);
 
     device->backend->hid_close(device->device);
     DeleteHIDDeviceWrapper(device);
+    return 0;
 }
 
 int SDL_hid_get_manufacturer_string(SDL_hid_device *device, wchar_t *string, size_t maxlen)

@@ -52,7 +52,7 @@ struct SDL_DisplayModeData
 };
 
 extern int X11_InitModes(_THIS);
-extern void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+extern int X11_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
 extern int X11_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void X11_QuitModes(_THIS);
 

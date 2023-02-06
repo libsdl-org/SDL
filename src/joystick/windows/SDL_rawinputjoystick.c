@@ -458,15 +458,15 @@ static SDL_bool RAWINPUT_MissingWindowsGamingInputSlot()
     return SDL_FALSE;
 }
 
-static void RAWINPUT_UpdateWindowsGamingInput()
+static int RAWINPUT_UpdateWindowsGamingInput()
 {
     int ii;
     if (!wgi_state.gamepad_statics) {
-        return;
+        return 0;
     }
 
     if (!wgi_state.dirty) {
-        return;
+        return 0;
     }
 
     wgi_state.dirty = SDL_FALSE;
@@ -507,13 +507,11 @@ static void RAWINPUT_UpdateWindowsGamingInput()
                             wgi_state.per_gamepad_count++;
                             wgi_state.per_gamepad = SDL_realloc(wgi_state.per_gamepad, sizeof(wgi_state.per_gamepad[0]) * wgi_state.per_gamepad_count);
                             if (!wgi_state.per_gamepad) {
-                                SDL_OutOfMemory();
-                                return;
+                                return SDL_OutOfMemory();
                             }
                             gamepad_state = SDL_calloc(1, sizeof(*gamepad_state));
                             if (gamepad_state == NULL) {
-                                SDL_OutOfMemory();
-                                return;
+                                return SDL_OutOfMemory();
                             }
                             wgi_state.per_gamepad[wgi_state.per_gamepad_count - 1] = gamepad_state;
                             gamepad_state->gamepad = gamepad;
@@ -549,6 +547,7 @@ static void RAWINPUT_UpdateWindowsGamingInput()
             wgi_state.per_gamepad[ii]->connected = SDL_FALSE; /* Not used by anything, currently */
         }
     }
+    return 0;
 }
 static void RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
 {
@@ -1907,7 +1906,7 @@ RAWINPUT_RegisterNotifications(HWND hWnd)
     return SDL_TRUE;
 }
 
-void RAWINPUT_UnregisterNotifications()
+int RAWINPUT_UnregisterNotifications()
 {
     int i;
     RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];
@@ -1920,9 +1919,9 @@ void RAWINPUT_UnregisterNotifications()
     }
 
     if (!RegisterRawInputDevices(rid, SDL_arraysize(rid), sizeof(RAWINPUTDEVICE))) {
-        SDL_SetError("Couldn't unregister for raw input events");
-        return;
+        return SDL_SetError("Couldn't unregister for raw input events");
     }
+    return 0;
 }
 
 LRESULT CALLBACK

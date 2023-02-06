@@ -226,7 +226,7 @@ int HAIKU_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect) {
     return 0;
 }
 
-void HAIKU_GetDisplayModes(_THIS, SDL_VideoDisplay *display) {
+int HAIKU_GetDisplayModes(_THIS, SDL_VideoDisplay *display) {
     /* Get the current screen */
     BScreen bscreen;
 
@@ -248,6 +248,7 @@ void HAIKU_GetDisplayModes(_THIS, SDL_VideoDisplay *display) {
         }
     }
     free(bmodes); /* This should not be SDL_free() */
+    return 0;
 }
 
 

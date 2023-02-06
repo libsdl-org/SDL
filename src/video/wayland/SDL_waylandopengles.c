@@ -187,10 +187,11 @@ int Wayland_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     return ret;
 }
 
-void Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
+int Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
     WAYLAND_wl_display_flush(_this->driverdata->display);
+    return 0;
 }
 
 EGLSurface Wayland_GLES_GetEGLSurface(_THIS, SDL_Window *window)

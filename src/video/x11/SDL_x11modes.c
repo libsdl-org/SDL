@@ -656,7 +656,7 @@ int X11_InitModes(_THIS)
     return X11_InitModes_StdXlib(_this);
 }
 
-void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
+int X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
 {
     SDL_DisplayData *data = sdl_display->driverdata;
     SDL_DisplayMode mode;
@@ -699,9 +699,9 @@ void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
             X11_XRRFreeOutputInfo(output_info);
             X11_XRRFreeScreenResources(res);
         }
-        return;
     }
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
+    return 0;
 }
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR

@@ -29,7 +29,7 @@
 
 SDL_FORCE_INLINE u8 GetLocaleIndex(void);
 
-void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     /* The 3DS only supports these 12 languages, only one can be active at a time */
     static const char AVAILABLE_LOCALES[][6] = { "ja_JP", "en_US", "fr_FR", "de_DE",
@@ -39,6 +39,7 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     if (current_locale != BAD_LOCALE) {
         SDL_strlcpy(buf, AVAILABLE_LOCALES[current_locale], buflen);
     }
+    return 0;
 }
 
 SDL_FORCE_INLINE u8

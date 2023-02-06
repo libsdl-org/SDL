@@ -422,16 +422,12 @@ void X11_StopTextInput(_THIS)
 #endif
 }
 
-void X11_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int X11_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
-    if (rect == NULL) {
-        SDL_InvalidParamError("rect");
-        return;
-    }
-
 #ifdef SDL_USE_IME
     SDL_IME_UpdateTextRect(rect);
 #endif
+    return 0;
 }
 
 SDL_bool

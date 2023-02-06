@@ -354,16 +354,11 @@ void Cocoa_StopTextInput(_THIS)
     }
 }
 
-void Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *data = _this->driverdata;
-
-    if (!rect) {
-        SDL_InvalidParamError("rect");
-        return;
-    }
-
     [data.fieldEdit setInputRect:rect];
+    return 0;
 }
 
 void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)

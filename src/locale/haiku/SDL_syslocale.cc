@@ -26,7 +26,7 @@
 #include "SDL_internal.h"
 #include "../SDL_syslocale.h"
 
-void
+int
 SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     BLocaleRoster *roster = BLocaleRoster::Default();
@@ -34,16 +34,14 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 
     BMessage msg;
     if (roster->GetPreferredLanguages(&msg) != B_OK) {
-        SDL_SetError("BLocaleRoster couldn't get preferred languages");
-        return;
+        return SDL_SetError("BLocaleRoster couldn't get preferred languages");
     }
 
     const char *key = "language";
     type_code typ = B_ANY_TYPE;
     int32 numlangs = 0;
     if ((msg.GetInfo(key, &typ, &numlangs) != B_OK) || (typ != B_STRING_TYPE)) {
-        SDL_SetError("BLocaleRoster message was wrong");
-        return;
+        return SDL_SetError("BLocaleRoster message was wrong");
     }
 
     for (int32 i = 0; i < numlangs; i++) {
@@ -71,4 +69,5 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             buflen--;
         }
     }
+    return 0;
 }

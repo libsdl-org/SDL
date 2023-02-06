@@ -718,7 +718,7 @@ void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut)
 #endif
 }
 
-void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *data = display->driverdata;
     DWORD i;
@@ -741,6 +741,7 @@ void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
             SDL_free(mode.driverdata);
         }
     }
+    return 0;
 }
 
 #ifdef DEBUG_MODES

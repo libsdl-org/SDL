@@ -473,7 +473,7 @@ int Cocoa_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, f
     }
 }
 
-void Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *data = display->driverdata;
     CVDisplayLinkRef link = NULL;
@@ -529,6 +529,7 @@ void Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     }
 
     CVDisplayLinkRelease(link);
+    return 0;
 }
 
 static CGError SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayModeData *data)

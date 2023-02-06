@@ -112,15 +112,9 @@ void Wayland_StopTextInput(_THIS)
 #endif
 }
 
-void Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *driverdata = _this->driverdata;
-
-    if (rect == NULL) {
-        SDL_InvalidParamError("rect");
-        return;
-    }
-
     if (driverdata->text_input_manager) {
         struct SDL_WaylandInput *input = driverdata->input;
         if (input != NULL && input->text_input) {
@@ -141,6 +135,7 @@ void Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
         SDL_IME_UpdateTextRect(rect);
     }
 #endif
+    return 0;
 }
 
 SDL_bool Wayland_HasScreenKeyboardSupport(_THIS)

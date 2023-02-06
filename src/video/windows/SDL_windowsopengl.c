@@ -885,12 +885,13 @@ int WIN_GL_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-void WIN_GL_DeleteContext(_THIS, SDL_GLContext context)
+int WIN_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     if (!_this->gl_data) {
-        return;
+        return 0;
     }
     _this->gl_data->wglDeleteContext((HGLRC)context);
+    return 0;
 }
 
 SDL_bool WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window *fromWindow, SDL_Window *toWindow)

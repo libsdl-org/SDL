@@ -2157,9 +2157,9 @@ void *SDL_GetWindowData(SDL_Window *window, const char *name)
     return NULL;
 }
 
-void SDL_SetWindowPosition(SDL_Window *window, int x, int y)
+int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
         SDL_DisplayID displayID = 0;
@@ -2201,11 +2201,12 @@ void SDL_SetWindowPosition(SDL_Window *window, int x, int y)
             _this->SetWindowPosition(_this, window);
         }
     }
+    return 0;
 }
 
-void SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
+int SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     /* Fullscreen windows are always at their display's origin */
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
@@ -2242,11 +2243,12 @@ void SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
             *y = window->y;
         }
     }
+    return 0;
 }
 
-void SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
+int SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         const int want = (bordered != SDL_FALSE); /* normalize the flag. */
         const int have = !(window->flags & SDL_WINDOW_BORDERLESS);
@@ -2259,11 +2261,12 @@ void SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
             _this->SetWindowBordered(_this, window, (SDL_bool)want);
         }
     }
+    return 0;
 }
 
-void SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
+int SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         const int want = (resizable != SDL_FALSE); /* normalize the flag. */
         const int have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
@@ -2276,11 +2279,12 @@ void SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
             _this->SetWindowResizable(_this, window, (SDL_bool)want);
         }
     }
+    return 0;
 }
 
-void SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
+int SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         const int want = (on_top != SDL_FALSE); /* normalize the flag. */
         const int have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
@@ -2293,6 +2297,7 @@ void SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
             _this->SetWindowAlwaysOnTop(_this, window, (SDL_bool)want);
         }
     }
+    return 0;
 }
 
 int SDL_SetWindowSize(SDL_Window *window, int w, int h)
@@ -2330,15 +2335,16 @@ int SDL_SetWindowSize(SDL_Window *window, int w, int h)
     return 0;
 }
 
-void SDL_GetWindowSize(SDL_Window *window, int *w, int *h)
+int SDL_GetWindowSize(SDL_Window *window, int *w, int *h)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
     if (w) {
         *w = window->w;
     }
     if (h) {
         *h = window->h;
     }
+    return 0;
 }
 
 int SDL_GetWindowBordersSize(SDL_Window *window, int *top, int *left, int *bottom, int *right)
@@ -2370,11 +2376,11 @@ int SDL_GetWindowBordersSize(SDL_Window *window, int *top, int *left, int *botto
     return _this->GetWindowBordersSize(_this, window, top, left, bottom, right);
 }
 
-void SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
+int SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 {
     int filter;
 
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (w == NULL) {
         w = &filter;
@@ -2410,6 +2416,7 @@ void SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
             }
         }
     }
+    return 0;
 }
 
 int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
@@ -2440,15 +2447,16 @@ int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
     return 0;
 }
 
-void SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
+int SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
     if (min_w) {
         *min_w = window->min_w;
     }
     if (min_h) {
         *min_h = window->min_h;
     }
+    return 0;
 }
 
 int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
@@ -2478,37 +2486,39 @@ int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
     return 0;
 }
 
-void SDL_GetWindowMaximumSize(SDL_Window *window, int *max_w, int *max_h)
+int SDL_GetWindowMaximumSize(SDL_Window *window, int *max_w, int *max_h)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
     if (max_w) {
         *max_w = window->max_w;
     }
     if (max_h) {
         *max_h = window->max_h;
     }
+    return 0;
 }
 
-void SDL_ShowWindow(SDL_Window *window)
+int SDL_ShowWindow(SDL_Window *window)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (!(window->flags & SDL_WINDOW_HIDDEN)) {
-        return;
+        return 0;
     }
 
     if (_this->ShowWindow) {
         _this->ShowWindow(_this, window);
     }
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+    return 0;
 }
 
-void SDL_HideWindow(SDL_Window *window)
+int SDL_HideWindow(SDL_Window *window)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (window->flags & SDL_WINDOW_HIDDEN) {
-        return;
+        return 0;
     }
 
     window->is_hiding = SDL_TRUE;
@@ -2519,26 +2529,28 @@ void SDL_HideWindow(SDL_Window *window)
     }
     window->is_hiding = SDL_FALSE;
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
+    return 0;
 }
 
-void SDL_RaiseWindow(SDL_Window *window)
+int SDL_RaiseWindow(SDL_Window *window)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (window->flags & SDL_WINDOW_HIDDEN) {
-        return;
+        return 0;
     }
     if (_this->RaiseWindow) {
         _this->RaiseWindow(_this, window);
     }
+    return 0;
 }
 
-void SDL_MaximizeWindow(SDL_Window *window)
+int SDL_MaximizeWindow(SDL_Window *window)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (window->flags & SDL_WINDOW_MAXIMIZED) {
-        return;
+        return 0;
     }
 
     /* !!! FIXME: should this check if the window is resizable? */
@@ -2546,6 +2558,7 @@ void SDL_MaximizeWindow(SDL_Window *window)
     if (_this->MaximizeWindow) {
         _this->MaximizeWindow(_this, window);
     }
+    return 0;
 }
 
 static SDL_bool SDL_CanMinimizeWindow(SDL_Window *window)
@@ -2556,16 +2569,16 @@ static SDL_bool SDL_CanMinimizeWindow(SDL_Window *window)
     return SDL_TRUE;
 }
 
-void SDL_MinimizeWindow(SDL_Window *window)
+int SDL_MinimizeWindow(SDL_Window *window)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (window->flags & SDL_WINDOW_MINIMIZED) {
-        return;
+        return 0;
     }
 
     if (!SDL_CanMinimizeWindow(window)) {
-        return;
+        return 0;
     }
 
     if (!DisableUnsetFullscreenOnMinimize(_this)) {
@@ -2575,19 +2588,21 @@ void SDL_MinimizeWindow(SDL_Window *window)
     if (_this->MinimizeWindow) {
         _this->MinimizeWindow(_this, window);
     }
+    return 0;
 }
 
-void SDL_RestoreWindow(SDL_Window *window)
+int SDL_RestoreWindow(SDL_Window *window)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (!(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
-        return;
+        return 0;
     }
 
     if (_this->RestoreWindow) {
         _this->RestoreWindow(_this, window);
     }
+    return 0;
 }
 
 int SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
@@ -2840,23 +2855,24 @@ void SDL_UpdateWindowGrab(SDL_Window *window)
     }
 }
 
-void SDL_SetWindowGrab(SDL_Window *window, SDL_bool grabbed)
+int SDL_SetWindowGrab(SDL_Window *window, SDL_bool grabbed)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     SDL_SetWindowMouseGrab(window, grabbed);
 
     if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
         SDL_SetWindowKeyboardGrab(window, grabbed);
     }
+    return 0;
 }
 
-void SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
+int SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (!!grabbed == !!(window->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
-        return;
+        return 0;
     }
     if (grabbed) {
         window->flags |= SDL_WINDOW_KEYBOARD_GRABBED;
@@ -2864,14 +2880,15 @@ void SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
         window->flags &= ~SDL_WINDOW_KEYBOARD_GRABBED;
     }
     SDL_UpdateWindowGrab(window);
+    return 0;
 }
 
-void SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed)
+int SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed)
 {
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (!!grabbed == !!(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
-        return;
+        return 0;
     }
     if (grabbed) {
         window->flags |= SDL_WINDOW_MOUSE_GRABBED;
@@ -2879,6 +2896,7 @@ void SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed)
         window->flags &= ~SDL_WINDOW_MOUSE_GRABBED;
     }
     SDL_UpdateWindowGrab(window);
+    return 0;
 }
 
 SDL_bool SDL_GetWindowGrab(SDL_Window *window)
@@ -3127,11 +3145,11 @@ SDL_Window *SDL_GetFocusWindow(void)
     return NULL;
 }
 
-void SDL_DestroyWindow(SDL_Window *window)
+int SDL_DestroyWindow(SDL_Window *window)
 {
     SDL_VideoDisplay *display;
 
-    CHECK_WINDOW_MAGIC(window, );
+    CHECK_WINDOW_MAGIC(window, -1);
 
     window->is_destroying = SDL_TRUE;
 
@@ -3208,6 +3226,7 @@ void SDL_DestroyWindow(SDL_Window *window)
     }
 
     SDL_free(window);
+    return 0;
 }
 
 SDL_bool SDL_ScreenSaverEnabled()
@@ -4129,17 +4148,20 @@ int SDL_GL_SwapWindow(SDL_Window *window)
     return _this->GL_SwapWindow(_this, window);
 }
 
-void SDL_GL_DeleteContext(SDL_GLContext context)
+int SDL_GL_DeleteContext(SDL_GLContext context)
 {
-    if (_this == NULL || !context) {
-        return;
+    if (_this == NULL) {
+        return SDL_UninitializedVideo();                                       \
+    }
+    if (!context) {
+        return SDL_InvalidParamError("context");
     }
 
     if (SDL_GL_GetCurrentContext() == context) {
         SDL_GL_MakeCurrent(NULL, NULL);
     }
 
-    _this->GL_DeleteContext(_this, context);
+    return _this->GL_DeleteContext(_this, context);
 }
 
 #if 0 /* FIXME */
@@ -4327,11 +4349,16 @@ void SDL_StopTextInput(void)
     SDL_SetEventEnabled(SDL_EVENT_TEXT_EDITING, SDL_FALSE);
 }
 
-void SDL_SetTextInputRect(const SDL_Rect *rect)
+int SDL_SetTextInputRect(const SDL_Rect *rect)
 {
-    if (_this && _this->SetTextInputRect) {
-        _this->SetTextInputRect(_this, rect);
+    if (rect == NULL) {
+        return SDL_InvalidParamError("rect");
     }
+
+    if (_this && _this->SetTextInputRect) {
+        return _this->SetTextInputRect(_this, rect);
+    }
+    return SDL_Unsupported();
 }
 
 SDL_bool SDL_HasScreenKeyboardSupport(void)

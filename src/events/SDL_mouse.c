@@ -1256,13 +1256,13 @@ SDL_CreateSystemCursor(SDL_SystemCursor id)
    if this is desired for any reason.  This is used when setting
    the video mode and when the SDL window gains the mouse focus.
  */
-void SDL_SetCursor(SDL_Cursor *cursor)
+int SDL_SetCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
     /* Return immediately if setting the cursor to the currently set one (fixes #7151) */
     if (cursor == mouse->cur_cursor) {
-        return;
+        return 0;
     }
 
     /* Set the new cursor */
@@ -1276,8 +1276,7 @@ void SDL_SetCursor(SDL_Cursor *cursor)
                 }
             }
             if (found == NULL) {
-                SDL_SetError("Cursor not associated with the current mouse");
-                return;
+                return SDL_SetError("Cursor not associated with the current mouse");
             }
         }
         mouse->cur_cursor = cursor;
@@ -1298,6 +1297,7 @@ void SDL_SetCursor(SDL_Cursor *cursor)
             mouse->ShowCursor(NULL);
         }
     }
+    return 0;
 }
 
 SDL_Cursor *

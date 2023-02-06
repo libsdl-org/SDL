@@ -128,7 +128,7 @@ extern void SDL_EGL_SetRequiredVisualId(_THIS, int visual_id);
 extern int SDL_EGL_ChooseConfig(_THIS);
 extern int SDL_EGL_SetSwapInterval(_THIS, int interval);
 extern int SDL_EGL_GetSwapInterval(_THIS, int *interval);
-extern void SDL_EGL_DeleteContext(_THIS, SDL_GLContext context);
+extern int SDL_EGL_DeleteContext(_THIS, SDL_GLContext context);
 extern EGLSurface *SDL_EGL_CreateSurface(_THIS, NativeWindowType nw);
 extern void SDL_EGL_DestroySurface(_THIS, EGLSurface egl_surface);
 

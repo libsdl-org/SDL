@@ -31,7 +31,7 @@
 #include <oleauto.h>
 
 #ifndef SDL_DISABLE_WINDOWS_IME
-static void IME_Init(SDL_VideoData *videodata, HWND hwnd);
+static int IME_Init(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Quit(SDL_VideoData *videodata);
@@ -235,15 +235,10 @@ void WIN_StopTextInput(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *videodata = _this->driverdata;
     HIMC himc = 0;
-
-    if (rect == NULL) {
-        SDL_InvalidParamError("rect");
-        return;
-    }
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     videodata->ime_rect = *rect;
@@ -275,6 +270,7 @@ void WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
     }
 #endif /* !SDL_DISABLE_WINDOWS_IME */
+    return 0;
 }
 
 #ifdef SDL_DISABLE_WINDOWS_IME
@@ -374,12 +370,12 @@ static SDL_bool WIN_ShouldShowNativeUI()
     return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
 }
 
-static void IME_Init(SDL_VideoData *videodata, HWND hwnd)
+static int IME_Init(SDL_VideoData *videodata, HWND hwnd)
 {
     HRESULT hResult = S_OK;
 
     if (videodata->ime_initialized) {
-        return;
+        return 0;
     }
 
     videodata->ime_hwnd_main = hwnd;
@@ -388,8 +384,7 @@ static void IME_Init(SDL_VideoData *videodata, HWND hwnd)
         hResult = CoCreateInstance(&CLSID_TF_ThreadMgr, NULL, CLSCTX_INPROC_SERVER, &IID_ITfThreadMgr, (LPVOID *)&videodata->ime_threadmgr);
         if (hResult != S_OK) {
             videodata->ime_available = SDL_FALSE;
-            SDL_SetError("CoCreateInstance() failed, HRESULT is %08X", (unsigned int)hResult);
-            return;
+            return SDL_SetError("CoCreateInstance() failed, HRESULT is %08X", (unsigned int)hResult);
         }
     }
     videodata->ime_initialized = SDL_TRUE;
@@ -397,7 +392,7 @@ static void IME_Init(SDL_VideoData *videodata, HWND hwnd)
     if (!videodata->ime_himm32) {
         videodata->ime_available = SDL_FALSE;
         SDL_ClearError();
-        return;
+        return 0;
     }
     /* *INDENT-OFF* */ /* clang-format off */
     videodata->ImmLockIMC = (LPINPUTCONTEXT2 (WINAPI *)(HIMC))SDL_LoadFunction(videodata->ime_himm32, "ImmLockIMC");
@@ -412,7 +407,7 @@ static void IME_Init(SDL_VideoData *videodata, HWND hwnd)
     if (!videodata->ime_himc) {
         videodata->ime_available = SDL_FALSE;
         IME_Disable(videodata, hwnd);
-        return;
+        return 0;
     }
     videodata->ime_available = SDL_TRUE;
     IME_UpdateInputLocale(videodata);
@@ -424,6 +419,7 @@ static void IME_Init(SDL_VideoData *videodata, HWND hwnd)
     }
     IME_UpdateInputLocale(videodata);
     IME_Disable(videodata, hwnd);
+    return 0;
 }
 
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd)

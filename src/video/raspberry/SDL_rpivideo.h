@@ -61,7 +61,7 @@ struct SDL_WindowData
 /* Display and window functions */
 int RPI_VideoInit(_THIS);
 void RPI_VideoQuit(_THIS);
-void RPI_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+int RPI_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
 int RPI_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 int RPI_CreateWindow(_THIS, SDL_Window *window);
 int RPI_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
@@ -86,6 +86,6 @@ int RPI_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 int RPI_GLES_SetSwapInterval(_THIS, int interval);
 int RPI_GLES_GetSwapInterval(_THIS);
 int RPI_GLES_SwapWindow(_THIS, SDL_Window *window);
-void RPI_GLES_DeleteContext(_THIS, SDL_GLContext context);
+int RPI_GLES_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* SDL_rpivideo_h */

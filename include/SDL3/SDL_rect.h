@@ -172,10 +172,12 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetRectIntersection(const SDL_Rect * A,
  * \param B an SDL_Rect structure representing the second rectangle
  * \param result an SDL_Rect structure filled in with the union of rectangles
  *               `A` and `B`
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_GetRectUnion(const SDL_Rect * A,
+extern DECLSPEC int SDLCALL SDL_GetRectUnion(const SDL_Rect * A,
                                            const SDL_Rect * B,
                                            SDL_Rect * result);
 
@@ -311,10 +313,12 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetRectIntersectionFloat(const SDL_FRect * 
  * \param B an SDL_FRect structure representing the second rectangle
  * \param result an SDL_FRect structure filled in with the union of rectangles
  *               `A` and `B`
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_GetRectUnionFloat(const SDL_FRect * A,
+extern DECLSPEC int SDLCALL SDL_GetRectUnionFloat(const SDL_FRect * A,
                                             const SDL_FRect * B,
                                             SDL_FRect * result);
 

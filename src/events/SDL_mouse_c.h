@@ -54,13 +54,13 @@ typedef struct
     int (*ShowCursor)(SDL_Cursor *cursor);
 
     /* This is called when a mouse motion event occurs */
-    void (*MoveCursor)(SDL_Cursor *cursor);
+    int (*MoveCursor)(SDL_Cursor *cursor);
 
     /* Free a window manager cursor */
     void (*FreeCursor)(SDL_Cursor *cursor);
 
     /* Warp the mouse to (x,y) within a window */
-    void (*WarpMouse)(SDL_Window *window, float x, float y);
+    int (*WarpMouse)(SDL_Window *window, float x, float y);
 
     /* Warp the mouse to (x,y) in screen space */
     int (*WarpMouseGlobal)(float x, float y);
