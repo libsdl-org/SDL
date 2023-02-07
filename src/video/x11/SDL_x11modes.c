@@ -195,7 +195,7 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
 {
     if (info->hTotal && info->vTotal) {
-        return ((100 * info->dotClock) / (info->hTotal * info->vTotal)) / 100.0f;
+        return ((100 * (Sint64)info->dotClock) / (info->hTotal * info->vTotal)) / 100.0f;
     }
     return 0.0f;
 }
