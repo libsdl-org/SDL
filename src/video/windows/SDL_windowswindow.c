@@ -77,7 +77,15 @@ static DWORD GetWindowStyle(SDL_Window *window)
         style |= STYLE_FULLSCREEN;
     } else {
         if (window->flags & SDL_WINDOW_BORDERLESS) {
-            style |= STYLE_BORDERLESS_WINDOWED;
+            /* This behavior more closely matches other platform where the window is borderless
+               but still interacts with the window manager (e.g. task bar shows above it, it can
+               be resized to fit within usable desktop area, etc.)
+             */
+            if (SDL_GetHintBoolean("SDL_BORDERLESS_WINDOWED_STYLE", SDL_TRUE)) {
+                style |= STYLE_BORDERLESS_WINDOWED;
+            } else {
+                style |= STYLE_BORDERLESS;
+            }
         } else {
             style |= STYLE_NORMAL;
         }
