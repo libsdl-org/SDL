@@ -27,4 +27,27 @@
 
 extern SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value);
 
+/* You can "register" a hint, which will set its default value to `default_value` and
+   then whenever the hint changes, `*addr` will update, so you can check a static variable
+   instead of searching a linked list with SDL_GetHint every time, or deciding how to parse
+   a string for ints, floats, or bools, or having to manage your own callback just to get
+   fast lookups. String hints store a pointer to the hint's internal string; it is not to
+   be modified or freed through this interface, and may change at any time. Plan accordingly.
+   `*addr` is set by this call, to either the default or an overridden hint value from the
+   app or user. You can register the same hint to multiple variables, and registering
+   the same hint to the same address multiple times is safe to do, it will only leave
+   a single registration. */
+extern SDL_bool SDL_RegisterIntHint(const char *name, int *addr, int default_value);
+extern SDL_bool SDL_RegisterFloatHint(const char *name, float *addr, float default_value);
+extern SDL_bool SDL_RegisterBoolHint(const char *name, SDL_bool *addr, SDL_bool default_value);
+extern SDL_bool SDL_RegisterStringHint(const char *name, const char **addr, const char *default_value);
+
+/* It's not strictly necessary to unregister hints, as long as they are registered to
+   static memory, since SDL_ClearHint will clear it at shutdown.
+   But in case you want or need to, you can. */
+extern void SDL_UnregisterIntHint(const char *name, int *addr);
+extern void SDL_UnregisterFloatHint(const char *name, float *addr);
+extern void SDL_UnregisterBoolHint(const char *name, SDL_bool *addr);
+extern void SDL_UnregisterStringHint(const char *name, const char **addr);
+
 #endif /* SDL_hints_c_h_ */

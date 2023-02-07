@@ -238,12 +238,6 @@ static void WIN_SetWindowPositionInternal(_THIS, SDL_Window *window, UINT flags)
     data->expected_resize = SDL_FALSE;
 }
 
-static void SDLCALL WIN_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_WindowData *data = (SDL_WindowData *)userdata;
-    data->mouse_relative_mode_center = SDL_GetStringBoolean(hint, SDL_TRUE);
-}
-
 static int WIN_GetScalingDPIForHWND(const SDL_VideoData *videodata, HWND hwnd)
 {
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
@@ -315,7 +309,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
     SDL_Log("SetupWindowData: initialized data->scaling_dpi to %d", data->scaling_dpi);
 #endif
 
-    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
+    SDL_RegisterBoolHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, &data->mouse_relative_mode_center, SDL_TRUE);
 
     window->driverdata = data;
 
@@ -449,7 +443,7 @@ static void CleanupWindowData(_THIS, SDL_Window *window)
     SDL_WindowData *data = window->driverdata;
 
     if (data) {
-        SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
+        SDL_UnregisterBoolHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, &data->mouse_relative_mode_center);
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
         if (data->ICMFileName) {

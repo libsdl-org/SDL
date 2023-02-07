@@ -86,20 +86,18 @@ typedef struct
     SDL_bool relative_mode;
     SDL_bool relative_mode_warp;
     SDL_bool relative_mode_warp_motion;
-    SDL_bool enable_normal_speed_scale;
     float normal_speed_scale;
-    SDL_bool enable_relative_speed_scale;
     float relative_speed_scale;
     SDL_bool enable_relative_system_scale;
     int num_system_scale_values;
     float *system_scale_values;
-    Uint32 double_click_time;
+    int double_click_time;
     int double_click_radius;
     SDL_bool touch_mouse_events;
     SDL_bool mouse_touch_events;
     SDL_bool was_touch_mouse_events; /* Was a touch-mouse event pending? */
 #if defined(__vita__)
-    Uint8 vita_touch_mouse_device;
+    int vita_touch_mouse_device;
 #endif
     SDL_bool auto_capture;
     SDL_bool capture_desired;
