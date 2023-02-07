@@ -107,7 +107,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0207 ), k_eControllerType_PS4Controller, NULL },	// Victrix Pro Fightstick w/ Touchpad for PS4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0055 ), k_eControllerType_PS4Controller, NULL },	// HORIPAD 4 FPS
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005e ), k_eControllerType_PS4Controller, NULL },	// HORI Fighting Commander 4 PS4
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0066 ), k_eControllerType_PS4Controller, NULL },	// HORIPAD 4 FPS Plus 
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0066 ), k_eControllerType_PS4Controller, NULL },	// HORIPAD 4 FPS Plus
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0084 ), k_eControllerType_PS4Controller, NULL },	// HORI Fighting Commander PS4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0087 ), k_eControllerType_PS4Controller, NULL },	// HORI Fighting Stick mini 4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x008a ), k_eControllerType_PS4Controller, NULL },	// HORI Real Arcade Pro 4
@@ -128,7 +128,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d01 ), k_eControllerType_PS4Controller, NULL },	// Nacon Revolution Pro Controller - has gyro
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d02 ), k_eControllerType_PS4Controller, NULL },	// Nacon Revolution Pro Controller v2 - has gyro
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d06 ), k_eControllerType_PS4Controller, NULL },	// NACON Asymetrical Controller Wireless Dongle -- show up as ps4 until you connect controller to it then it reboots into Xbox controller with different vvid/pid
-	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d08 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution Unlimited Wireless Dongle 
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d08 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution Unlimited Wireless Dongle
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d09 ), k_eControllerType_PS4Controller, NULL },	// NACON Daija Fight Stick - touchpad but no gyro/rumble
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d10 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution Infinite - has gyro
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d10 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution Unlimited
@@ -324,7 +324,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0145 ), k_eControllerType_XBoxOneController, "PDP MK X Fight Pad" },	// PDP MK X Fight Pad for Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0146 ), k_eControllerType_XBoxOneController, "PDP Xbox One Rock Candy" },	// PDP Rock Candy Wired Controller for Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015b ), k_eControllerType_XBoxOneController, "PDP Fallout 4 Vault Boy Controller" },	// PDP Fallout 4 Vault Boy Wired Controller for Xbox One
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015c ), k_eControllerType_XBoxOneController, "PDP Xbox One @Play Controller" },	// PDP @Play Wired Controller for Xbox One 
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015c ), k_eControllerType_XBoxOneController, "PDP Xbox One @Play Controller" },	// PDP @Play Wired Controller for Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015d ), k_eControllerType_XBoxOneController, "PDP Mirror's Edge Controller" },	// PDP Mirror's Edge Wired Controller for Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015f ), k_eControllerType_XBoxOneController, "PDP Metallic Controller" },	// PDP Metallic Wired Controller for Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0160 ), k_eControllerType_XBoxOneController, "PDP NFL Face-Off Controller" },	// PDP NFL Official Face-Off Wired Controller for Xbox One
@@ -390,6 +390,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0078 ), k_eControllerType_XBoxOneController, NULL },	// Hori Real Arcade Pro V Kai Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00c5 ), k_eControllerType_XBoxOneController, NULL },	// HORI Fighting Commander
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0150 ), k_eControllerType_XBoxOneController, NULL },	// HORI Fighting Commander OCTA for Xbox Series X
+	{ MAKE_CONTROLLER_ID( 0x10f5, 0x7009 ), k_eControllerType_XBoxOneController, NULL },	// Turtle Beach Recon Controller
+	{ MAKE_CONTROLLER_ID( 0x10f5, 0x7013 ), k_eControllerType_XBoxOneController, NULL },	// Turtle Beach REACT-R
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x0a00 ), k_eControllerType_XBoxOneController, NULL },	// Razer Atrox Arcade Stick
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x0a03 ), k_eControllerType_XBoxOneController, NULL },	// Razer Wildcat
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x0a14 ), k_eControllerType_XBoxOneController, NULL },	// Razer Wolverine Ultimate
@@ -442,7 +444,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00a4 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x1832 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x187f ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x0079, 0x1883 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller	
+	{ MAKE_CONTROLLER_ID( 0x0079, 0x1883 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x03eb, 0xff01 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0ef8 ), k_eControllerType_XBox360Controller, NULL },	// Homemade fightstick based on brook pcb (with XInput driver??)
 	{ MAKE_CONTROLLER_ID( 0x046d, 0x1000 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
@@ -534,7 +536,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x16d0,	0xf3f ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x2f24,	0x8f ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xe6f,	0xf501 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
-																							
+
 	//{ MAKE_CONTROLLER_ID( 0x1949, 0x0402 ), /*android*/, NULL },	// Unknown Controller
 
 	{ MAKE_CONTROLLER_ID( 0x05ac, 0x0001 ), k_eControllerType_AppleController, NULL },	// MFI Extended Gamepad (generic entry for iOS/tvOS)

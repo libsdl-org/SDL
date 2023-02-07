@@ -715,6 +715,7 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 		0x0738, /* Mad Catz */
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
+        0x10f5, /* Turtle Beach */
 		0x1532, /* Razer Wildcat */
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
