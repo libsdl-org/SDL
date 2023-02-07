@@ -2199,6 +2199,12 @@ SDL_bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
             return SDL_TRUE;
         }
     }
+    if (vendor_id == USB_VENDOR_TURTLE_BEACH) {
+        if (product_id == USB_PRODUCT_TURTLE_BEACH_SERIES_X_REACT_R ||
+            product_id == USB_PRODUCT_TURTLE_BEACH_SERIES_X_RECON) {
+            return SDL_TRUE;
+        }
+    }
     if (vendor_id == USB_VENDOR_8BITDO) {
         if (product_id == USB_PRODUCT_8BITDO_XBOX_CONTROLLER) {
             return SDL_TRUE;
