@@ -611,12 +611,11 @@ SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
     return retval;
 }
 
-void SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
+int SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
-
     if (!device) {
-        return; /* nothing to do. */
+        return SDL_InvalidParamError("devid");
     }
 
     /* Blank out the device and release the mutex. Free it afterwards. */
@@ -626,6 +625,7 @@ void SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
     SDL_ClearDataQueue(device->buffer_queue, SDL_AUDIOBUFFERQUEUE_PACKETLEN * 2);
 
     current_audio.impl.UnlockDevice(device);
+    return 0;
 }
 
 #if SDL_AUDIO_DRIVER_ANDROID
@@ -981,7 +981,7 @@ int SDL_InitAudio(const char *driver_name)
  * Get the current audio driver name
  */
 const char *
-SDL_GetCurrentAudioDriver()
+SDL_GetCurrentAudioDriver(void)
 {
     return current_audio.name;
 }
@@ -1518,47 +1518,60 @@ SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
     return status;
 }
 
-void SDL_PauseAudioDevice(SDL_AudioDeviceID devid)
+int SDL_PauseAudioDevice(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
-    if (device) {
-        current_audio.impl.LockDevice(device);
-        SDL_AtomicSet(&device->paused, 1);
-        current_audio.impl.UnlockDevice(device);
+    if (!device) {
+        return SDL_InvalidParamError("devid");
     }
+    current_audio.impl.LockDevice(device);
+    SDL_AtomicSet(&device->paused, 1);
+    current_audio.impl.UnlockDevice(device);
+    return 0;
 }
 
-void SDL_PlayAudioDevice(SDL_AudioDeviceID devid)
+int SDL_PlayAudioDevice(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
-    if (device) {
-        current_audio.impl.LockDevice(device);
-        SDL_AtomicSet(&device->paused, 0);
-        current_audio.impl.UnlockDevice(device);
+    if (!device) {
+        return SDL_InvalidParamError("devid");
     }
+    current_audio.impl.LockDevice(device);
+    SDL_AtomicSet(&device->paused, 0);
+    current_audio.impl.UnlockDevice(device);
+    return 0;
 }
 
-void SDL_LockAudioDevice(SDL_AudioDeviceID devid)
+int SDL_LockAudioDevice(SDL_AudioDeviceID devid)
 {
     /* Obtain a lock on the mixing buffers */
     SDL_AudioDevice *device = get_audio_device(devid);
-    if (device) {
-        current_audio.impl.LockDevice(device);
+    if (!device) {
+        return SDL_InvalidParamError("devid");
     }
+    current_audio.impl.LockDevice(device);
+    return 0;
 }
 
-void SDL_UnlockAudioDevice(SDL_AudioDeviceID devid)
+int SDL_UnlockAudioDevice(SDL_AudioDeviceID devid)
 {
     /* Obtain a lock on the mixing buffers */
     SDL_AudioDevice *device = get_audio_device(devid);
-    if (device) {
-        current_audio.impl.UnlockDevice(device);
+    if (!device) {
+        return SDL_InvalidParamError("devid");
     }
+    current_audio.impl.UnlockDevice(device);
+    return 0;
 }
 
-void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
+int SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
 {
-    close_audio_device(get_audio_device(devid));
+    SDL_AudioDevice *device = get_audio_device(devid);
+    if (!device) {
+        return SDL_InvalidParamError("devid");
+    }
+    close_audio_device(device);
+    return 0;
 }
 
 void SDL_QuitAudio(void)

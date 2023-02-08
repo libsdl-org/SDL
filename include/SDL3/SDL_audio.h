@@ -554,13 +554,15 @@ extern DECLSPEC SDL_AudioStatus SDLCALL SDL_GetAudioDeviceStatus(SDL_AudioDevice
  * callbacks.
  *
  * \param dev a device opened by SDL_OpenAudioDevice()
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information. 
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LockAudioDevice
  * \sa SDL_PauseAudioDevice
  */
-extern DECLSPEC void SDLCALL SDL_PlayAudioDevice(SDL_AudioDeviceID dev);
+extern DECLSPEC int SDLCALL SDL_PlayAudioDevice(SDL_AudioDeviceID dev);
 
 
 
@@ -577,13 +579,15 @@ extern DECLSPEC void SDLCALL SDL_PlayAudioDevice(SDL_AudioDeviceID dev);
  * in the audio playback. Instead, you should use SDL_LockAudioDevice().
  *
  * \param dev a device opened by SDL_OpenAudioDevice()
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information. 
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LockAudioDevice
  * \sa SDL_PlayAudioDevice
  */
-extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
+extern DECLSPEC int SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
 
 
 /**
@@ -1016,6 +1020,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetQueuedAudioSize(SDL_AudioDeviceID dev);
  * This function always succeeds and thus returns void.
  *
  * \param dev the device ID of which to clear the audio queue
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information. 
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1023,7 +1029,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetQueuedAudioSize(SDL_AudioDeviceID dev);
  * \sa SDL_QueueAudio
  * \sa SDL_DequeueAudio
  */
-extern DECLSPEC void SDLCALL SDL_ClearQueuedAudio(SDL_AudioDeviceID dev);
+extern DECLSPEC int SDLCALL SDL_ClearQueuedAudio(SDL_AudioDeviceID dev);
 
 
 /**
@@ -1068,12 +1074,14 @@ extern DECLSPEC void SDLCALL SDL_ClearQueuedAudio(SDL_AudioDeviceID dev);
  * thread.
  *
  * \param dev the ID of the device to be locked
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information. 
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_UnlockAudioDevice
  */
-extern DECLSPEC void SDLCALL SDL_LockAudioDevice(SDL_AudioDeviceID dev);
+extern DECLSPEC int SDLCALL SDL_LockAudioDevice(SDL_AudioDeviceID dev);
 
 /**
  * Use this function to unlock the audio callback function for a specified
@@ -1082,12 +1090,14 @@ extern DECLSPEC void SDLCALL SDL_LockAudioDevice(SDL_AudioDeviceID dev);
  * This function should be paired with a previous SDL_LockAudioDevice() call.
  *
  * \param dev the ID of the device to be unlocked
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information. 
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LockAudioDevice
  */
-extern DECLSPEC void SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
+extern DECLSPEC int SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
 /* @} *//* Audio lock functions */
 
 /**
@@ -1107,12 +1117,14 @@ extern DECLSPEC void SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
  * for reuse in a new SDL_OpenAudioDevice() call immediately.
  *
  * \param dev an audio device previously opened with SDL_OpenAudioDevice()
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information. 
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_OpenAudioDevice
  */
-extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
+extern DECLSPEC int SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
 
 /**
  * Convert some audio data of one format to another format.
