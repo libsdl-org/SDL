@@ -376,36 +376,6 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(SDL_DisplayID displayID, SDL_Re
 extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect);
 
 /**
- * Get the dots/pixels-per-inch for a display.
- *
- * Diagonal, horizontal and vertical DPI can all be optionally returned if the
- * appropriate parameter is non-NULL.
- *
- * **WARNING**: This reports the DPI that the hardware reports, and it is not
- * always reliable! It is almost always better to use SDL_GetWindowSize() to
- * find the window size, which might be in logical points instead of pixels,
- * and then SDL_GetWindowSizeInPixels() or SDL_GetRendererOutputSize(), and
- * compare the two values to get an actual scaling value between the two. We
- * will be rethinking how high-dpi details should be managed in SDL3 to make
- * things more consistent, reliable, and clear.
- *
- * \param displayID the instance ID of the display to query
- * \param ddpi a pointer filled in with the diagonal DPI of the display; may
- *             be NULL
- * \param hdpi a pointer filled in with the horizontal DPI of the display; may
- *             be NULL
- * \param vdpi a pointer filled in with the vertical DPI of the display; may
- *             be NULL
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetDisplays
- */
-extern DECLSPEC int SDLCALL SDL_GetDisplayPhysicalDPI(SDL_DisplayID displayID, float *ddpi, float *hdpi, float *vdpi);
-
-/**
  * Get the orientation of a display.
  *
  * \param displayID the instance ID of the display to query

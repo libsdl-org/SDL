@@ -1187,8 +1187,6 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
         if (state->verbose & VERBOSE_MODES) {
             SDL_DisplayID *displays;
             SDL_Rect bounds, usablebounds;
-            float hdpi = 0;
-            float vdpi = 0;
             const SDL_DisplayMode **modes;
             const SDL_DisplayMode *mode;
             int bpp;
@@ -1209,11 +1207,8 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_zero(usablebounds);
                 SDL_GetDisplayUsableBounds(displayID, &usablebounds);
 
-                SDL_GetDisplayPhysicalDPI(displayID, NULL, &hdpi, &vdpi);
-
                 SDL_Log("Bounds: %dx%d at %d,%d\n", bounds.w, bounds.h, bounds.x, bounds.y);
                 SDL_Log("Usable bounds: %dx%d at %d,%d\n", usablebounds.w, usablebounds.h, usablebounds.x, usablebounds.y);
-                SDL_Log("DPI: %gx%g\n", hdpi, vdpi);
 
                 mode = SDL_GetDesktopDisplayMode(displayID);
                 SDL_GetMasksForPixelFormatEnum(mode->format, &bpp, &Rmask, &Gmask,
@@ -2301,7 +2296,6 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     float fx, fy;
     SDL_Rect rect;
     const SDL_DisplayMode *mode;
-    float ddpi, hdpi, vdpi;
     float scaleX, scaleY;
     Uint32 flags;
     SDL_DisplayID windowDisplayID = SDL_GetDisplayForWindow(window);
@@ -2433,13 +2427,6 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     if (mode) {
         (void)SDL_snprintf(text, sizeof text, "SDL_GetDesktopDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
                            mode->pixel_w, mode->pixel_h, mode->refresh_rate, (int)(mode->display_scale * 100.0f), SDL_GetPixelFormatName(mode->format));
-        SDLTest_DrawString(renderer, 0.0f, textY, text);
-        textY += lineHeight;
-    }
-
-    if (0 == SDL_GetDisplayPhysicalDPI(windowDisplayID, &ddpi, &hdpi, &vdpi)) {
-        (void)SDL_snprintf(text, sizeof text, "SDL_GetDisplayPhysicalDPI: ddpi: %g, hdpi: %g, vdpi: %g",
-                           ddpi, hdpi, vdpi);
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
