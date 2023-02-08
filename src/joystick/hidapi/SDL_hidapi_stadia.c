@@ -74,6 +74,15 @@ static SDL_bool HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
+    /* Check whether this is connected via USB or Bluetooth */
+    {
+        Uint8 rumble_packet[] = { 0x05, 0x00, 0x00, 0x00, 0x00 };
+
+        if (SDL_hid_write(device->dev, rumble_packet, sizeof(rumble_packet)) < 0) {
+            device->is_bluetooth = SDL_TRUE;
+        }
+    }
+
     device->type = SDL_GAMEPAD_TYPE_GOOGLE_STADIA;
     HIDAPI_SetDeviceName(device, "Google Stadia Controller");
 
@@ -109,6 +118,10 @@ static int HIDAPI_DriverStadia_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 {
     Uint8 rumble_packet[] = { 0x05, 0x00, 0x00, 0x00, 0x00 };
 
+    if (device->is_bluetooth) {
+        return SDL_Unsupported();
+    }
+
     rumble_packet[1] = (low_frequency_rumble & 0xFF);
     rumble_packet[2] = (low_frequency_rumble >> 8);
     rumble_packet[3] = (high_frequency_rumble & 0xFF);
@@ -127,7 +140,12 @@ static int HIDAPI_DriverStadia_RumbleJoystickTriggers(SDL_HIDAPI_Device *device,
 
 static Uint32 HIDAPI_DriverStadia_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_JOYCAP_RUMBLE;
+    Uint32 caps = 0;
+
+    if (!device->is_bluetooth) {
+        caps |= SDL_JOYCAP_RUMBLE;
+    }
+    return caps;
 }
 
 static int HIDAPI_DriverStadia_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
