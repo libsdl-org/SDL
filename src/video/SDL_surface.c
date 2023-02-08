@@ -615,11 +615,16 @@ SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect)
     return SDL_GetRectIntersection(rect, &full_rect, &surface->clip_rect);
 }
 
-void SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
+int SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
 {
-    if (surface && rect) {
-        *rect = surface->clip_rect;
+    if (!surface) {
+        return SDL_InvalidParamError("surface");
     }
+    if (!rect) {
+        return SDL_InvalidParamError("rect");
+    }
+    *rect = surface->clip_rect;
+    return 0;
 }
 
 /*

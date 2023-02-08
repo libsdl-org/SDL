@@ -2679,14 +2679,15 @@ int SDL_GetGamepadPlayerIndex(SDL_Gamepad *gamepad)
 /**
  *  Set the player index of an opened gamepad
  */
-void SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index)
+int SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
     if (joystick == NULL) {
-        return;
+        /* SDL_SetError() will have been called already by SDL_GetGamepadJoystick() */
+        return -1;
     }
-    SDL_SetJoystickPlayerIndex(joystick, player_index);
+    return SDL_SetJoystickPlayerIndex(joystick, player_index);
 }
 
 Uint16 SDL_GetGamepadVendor(SDL_Gamepad *gamepad)

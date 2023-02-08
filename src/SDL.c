@@ -513,13 +513,13 @@ void SDL_Quit(void)
 }
 
 /* Get the library version number */
-void SDL_GetVersion(SDL_version *ver)
+int SDL_GetVersion(SDL_version *ver)
 {
     static SDL_bool check_hint = SDL_TRUE;
     static SDL_bool legacy_version = SDL_FALSE;
 
     if (ver == NULL) {
-        return;
+        return SDL_InvalidParamError("ver");
     }
 
     SDL_VERSION(ver);
@@ -534,6 +534,7 @@ void SDL_GetVersion(SDL_version *ver)
         ver->patch = ver->minor;
         ver->minor = 0;
     }
+    return 0;
 }
 
 /* Get the library source revision */

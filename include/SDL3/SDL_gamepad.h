@@ -537,10 +537,12 @@ extern DECLSPEC int SDLCALL SDL_GetGamepadPlayerIndex(SDL_Gamepad *gamepad);
  * \param gamepad the gamepad object to adjust.
  * \param player_index Player index to assign to this gamepad, or -1 to clear
  *                     the player index and turn off player LEDs.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index);
+extern DECLSPEC int SDLCALL SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index);
 
 /**
  * Get the USB vendor ID of an opened gamepad, if available.
