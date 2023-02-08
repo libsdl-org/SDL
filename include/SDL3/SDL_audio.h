@@ -801,6 +801,10 @@ extern DECLSPEC int SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);
 /**
  * Clear any pending data in the stream without converting it
  *
+ * \param   stream The audio stream to clear
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateAudioStream
@@ -810,7 +814,7 @@ extern DECLSPEC int SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);
  * \sa SDL_FlushAudioStream
  * \sa SDL_DestroyAudioStream
  */
-extern DECLSPEC void SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);
+extern DECLSPEC int SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);
 
 /**
  * Free an audio stream

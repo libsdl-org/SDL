@@ -115,12 +115,14 @@ typedef struct SDL_version
  * This function may be called safely at any time, even before SDL_Init().
  *
  * \param ver the SDL_version structure that contains the version information
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRevision
  */
-extern DECLSPEC void SDLCALL SDL_GetVersion(SDL_version * ver);
+extern DECLSPEC int SDLCALL SDL_GetVersion(SDL_version * ver);
 
 /**
  * Get the code revision of SDL that is linked against your program.

@@ -529,13 +529,15 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface,
  *                clipped
  * \param rect an SDL_Rect structure filled in with the clipping rectangle for
  *             the surface
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
  * \sa SDL_SetSurfaceClipRect
  */
-extern DECLSPEC void SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface,
+extern DECLSPEC int SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface,
                                              SDL_Rect *rect);
 
 /*

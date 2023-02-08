@@ -2826,9 +2826,9 @@ SDL_JoystickType SDL_GetJoystickType(SDL_Joystick *joystick)
 }
 
 /* convert the guid to a printable string */
-void SDL_GetJoystickGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID)
+int SDL_GetJoystickGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID)
 {
-    SDL_GUIDToString(guid, pszGUID, cbGUID);
+    return SDL_GUIDToString(guid, pszGUID, cbGUID);
 }
 
 /* convert the string version of a joystick guid to the struct */

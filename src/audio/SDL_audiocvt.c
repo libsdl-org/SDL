@@ -1470,10 +1470,10 @@ int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
     return stream ? (int)SDL_GetDataQueueSize(stream->queue) : 0;
 }
 
-void SDL_ClearAudioStream(SDL_AudioStream *stream)
+int SDL_ClearAudioStream(SDL_AudioStream *stream)
 {
     if (stream == NULL) {
-        SDL_InvalidParamError("stream");
+        return SDL_InvalidParamError("stream");
     } else {
         SDL_ClearDataQueue(stream->queue, (size_t)stream->packetlen * 2);
         if (stream->reset_resampler_func) {
@@ -1481,6 +1481,7 @@ void SDL_ClearAudioStream(SDL_AudioStream *stream)
         }
         stream->first_run = SDL_TRUE;
         stream->staging_buffer_filled = 0;
+        return 0;
     }
 }
 

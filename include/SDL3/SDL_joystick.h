@@ -597,6 +597,8 @@ extern DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickType(SDL_Joystick *joyst
  * \param guid the SDL_JoystickGUID you wish to convert to string
  * \param pszGUID buffer in which to write the ASCII string
  * \param cbGUID the size of pszGUID
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -604,7 +606,7 @@ extern DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickType(SDL_Joystick *joyst
  * \sa SDL_GetJoystickGUID
  * \sa SDL_GetJoystickGUIDFromString
  */
-extern DECLSPEC void SDLCALL SDL_GetJoystickGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID);
+extern DECLSPEC int SDLCALL SDL_GetJoystickGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID);
 
 /**
  * Convert a GUID string into a SDL_JoystickGUID structure.
