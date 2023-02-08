@@ -2163,7 +2163,11 @@ static SDL_bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
                 const Uint32 INPUT_WAIT_TIMEOUT_MS = 100;
                 if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
                     /* Steam may have put the controller back into non-reporting mode */
+                    SDL_bool wasSyncWrite = ctx->m_bSyncWrite;
+
+                    ctx->m_bSyncWrite = SDL_TRUE;
                     WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE);
+                    ctx->m_bSyncWrite = wasSyncWrite;
                 }
             } else if (device->is_bluetooth) {
                 const Uint32 INPUT_WAIT_TIMEOUT_MS = 3000;
