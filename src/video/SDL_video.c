@@ -885,7 +885,7 @@ int SDL_GetDisplayPhysicalDPI(SDL_DisplayID displayID, float *hdpi, float *vdpi)
     return 0;
 
 error:
-    return SDL_SetError("Couldn't get DPI");;
+    return SDL_SetError("Couldn't get DPI");
 }
 
 SDL_DisplayOrientation SDL_GetDisplayOrientation(SDL_DisplayID displayID)
