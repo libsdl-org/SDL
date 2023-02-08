@@ -330,9 +330,10 @@ static inline int unswizzle(PSP_Texture *psp_tex)
     return 1;
 }
 
-static inline void prepareTextureForUpload(PSP_Texture *psp_tex)
+static inline void prepareTextureForUpload(SDL_Texture *texture)
 {
-    if (psp_tex->swizzled)
+    PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
+    if (texture->access != SDL_TEXTUREACCESS_STATIC || psp_tex->swizzled )
         return;
     
     psp_tex->swizzledData = vramalloc(psp_tex->swizzledSize);
@@ -348,9 +349,11 @@ static inline void prepareTextureForUpload(PSP_Texture *psp_tex)
     sceKernelDcacheWritebackRange(psp_tex->swizzledData, psp_tex->swizzledSize);
 }
 
-static inline void prepareTextureForDownload(PSP_Texture *psp_tex)
+static inline void prepareTextureForDownload(SDL_Texture *texture)
 {
-    if (!psp_tex->swizzled)
+    PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
+
+    if (texture->access != SDL_TEXTUREACCESS_STATIC || !psp_tex->swizzled)
         return;
     
     psp_tex->data = SDL_malloc(psp_tex->size);
@@ -389,13 +392,21 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     psp_tex->swizzledPitch = psp_tex->swizzledWidth * SDL_BYTESPERPIXEL(texture->format);
     psp_tex->size = getMemorySize(psp_tex->width, psp_tex->height, psp_tex->format);
     psp_tex->swizzledSize = getMemorySize(psp_tex->swizzledWidth, psp_tex->swizzledHeight, psp_tex->format);
-    psp_tex->data = SDL_calloc(1, psp_tex->size);
-    psp_tex->swizzled = GU_FALSE;
 
-    if (!psp_tex->data) {
-        SDL_free(psp_tex);
-        return SDL_OutOfMemory();
+    if (texture->access != SDL_TEXTUREACCESS_STATIC) {
+        psp_tex->data = vramalloc(psp_tex->size);
+        if (!psp_tex->data) {
+            vfree(psp_tex);
+            return SDL_OutOfMemory();
+        }
+    } else {
+        psp_tex->data = SDL_calloc(1, psp_tex->size);
+        if (!psp_tex->data) {
+            SDL_free(psp_tex);
+            return SDL_OutOfMemory();
+        }
     }
+    psp_tex->swizzled = GU_FALSE;
 
     texture->driverdata = psp_tex;
 
@@ -408,7 +419,7 @@ static int PSP_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
 
     // How a pointer to the texture data is returned it need to be unswizzled before it can be used
-    prepareTextureForDownload(psp_tex);
+    prepareTextureForDownload(texture);
 
     *pixels =
         (void *)((Uint8 *)psp_tex->data + rect->y * psp_tex->width * SDL_BYTESPERPIXEL(texture->format) +
@@ -741,6 +752,7 @@ static inline int PSP_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 static inline int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
+    SDL_Texture *texture = cmd->data.draw.texture;
     const size_t count = cmd->data.draw.count;
     PSP_BlendInfo blendInfo = {
         .mode = cmd->data.draw.blend,
@@ -749,12 +761,13 @@ static inline int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL
 
     PSP_SetBlendMode(data, blendInfo);
 
-    if (cmd->data.draw.texture) {
+    if (texture) {
         uint32_t tbw, twp;
         const VertTCV *verts = (VertTCV *)(vertices + cmd->data.draw.first);
-        PSP_Texture *psp_tex = (PSP_Texture *)cmd->data.draw.texture->driverdata;
+        
+        PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
 
-        prepareTextureForUpload(psp_tex);
+        prepareTextureForUpload(texture);
 
         tbw = psp_tex->swizzled ? psp_tex->swizzledWidth : psp_tex->width;
         twp = psp_tex->swizzled ? psp_tex->swizzledData : psp_tex->data;
@@ -826,7 +839,8 @@ static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_Ren
 {
     uint32_t tbw, twp;
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
-    PSP_Texture *psp_tex = (PSP_Texture *)cmd->data.draw.texture->driverdata;
+    SDL_Texture *texture = cmd->data.draw.texture;
+    PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
     const size_t count = cmd->data.draw.count;
     const VertTV *verts = (VertTV *)(vertices + cmd->data.draw.first);
     const PSP_BlendInfo blendInfo = {
@@ -836,7 +850,7 @@ static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_Ren
 
     PSP_SetBlendMode(data, blendInfo);
 
-    prepareTextureForUpload(psp_tex);
+    prepareTextureForUpload(texture);
 
     tbw = psp_tex->swizzled ? psp_tex->textureWidth : psp_tex->width;
     twp = psp_tex->swizzled ? psp_tex->swizzledData : psp_tex->data;
@@ -965,7 +979,11 @@ static void PSP_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 
     vfree(psp_tex->swizzledData);
-    SDL_free(psp_tex->data);
+    if (texture->access != SDL_TEXTUREACCESS_STATIC) {
+        vfree(psp_tex->data);
+    } else {
+        SDL_free(psp_tex->data);
+    }
     SDL_free(psp_tex);
     texture->driverdata = NULL;
 }
