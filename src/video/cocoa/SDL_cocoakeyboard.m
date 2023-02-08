@@ -307,7 +307,7 @@ void Cocoa_InitKeyboard(_THIS)
     SDL_SetScancodeName(SDL_SCANCODE_RGUI, "Right Command");
 
     data.modifierFlags = (unsigned int)[NSEvent modifierFlags];
-    SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) != 0);
+    SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE);
 }
 
 void Cocoa_StartTextInput(_THIS)
@@ -354,16 +354,11 @@ void Cocoa_StopTextInput(_THIS)
     }
 }
 
-void Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *data = _this->driverdata;
-
-    if (!rect) {
-        SDL_InvalidParamError("rect");
-        return;
-    }
-
     [data.fieldEdit setInputRect:rect];
+    return 0;
 }
 
 void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)

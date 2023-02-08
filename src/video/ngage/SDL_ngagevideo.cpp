@@ -48,7 +48,6 @@ extern "C" {
 
 /* Initialization/Query functions */
 static int NGAGE_VideoInit(_THIS);
-static int NGAGE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void NGAGE_VideoQuit(_THIS);
 
 /* NGAGE driver bootstrap functions */
@@ -121,7 +120,6 @@ static SDL_VideoDevice *NGAGE_CreateDevice(void)
     /* General video */
     device->VideoInit = NGAGE_VideoInit;
     device->VideoQuit = NGAGE_VideoQuit;
-    device->SetDisplayMode = NGAGE_SetDisplayMode;
     device->PumpEvents = NGAGE_PumpEvents;
     device->CreateWindowFramebuffer = SDL_NGAGE_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = SDL_NGAGE_UpdateWindowFramebuffer;
@@ -156,15 +154,7 @@ int NGAGE_VideoInit(_THIS)
         return -1;
     }
 
-    SDL_zero(mode);
-    SDL_AddDisplayMode(&_this->displays[0], &mode);
-
     /* We're done! */
-    return 0;
-}
-
-static int NGAGE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
-{
     return 0;
 }
 

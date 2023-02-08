@@ -54,11 +54,10 @@ quit(int rc)
 static void
 draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
 {
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode **modes;
     char text[1024];
     const int lineHeight = 10;
     const SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
-    const int num_modes = SDL_GetNumDisplayModes(displayID);
     int i;
     int column_chars = 0;
     int text_length;
@@ -72,7 +71,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
         float logical_x, logical_y;
 
         SDL_GetMouseState(&window_x, &window_y);
-        SDL_RenderWindowToLogical(renderer, window_x, window_y, &logical_x, &logical_y);
+        SDL_RenderCoordinatesFromWindow(renderer, window_x, window_y, &logical_x, &logical_y);
 
         mouse_pos.x = logical_x;
         mouse_pos.y = logical_y;
@@ -83,12 +82,12 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
 
     y += lineHeight;
 
-    SDL_strlcpy(text, "Click on a mode to set it with SDL_SetWindowDisplayMode", sizeof text);
+    SDL_strlcpy(text, "Click on a mode to set it with SDL_SetWindowFullscreenMode", sizeof text);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDLTest_DrawString(renderer, x, y, text);
     y += lineHeight;
 
-    SDL_strlcpy(text, "Press Ctrl+Enter to toggle SDL_WINDOW_FULLSCREEN_EXCLUSIVE", sizeof text);
+    SDL_strlcpy(text, "Press Ctrl+Enter to toggle SDL_WINDOW_FULLSCREEN", sizeof text);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDLTest_DrawString(renderer, x, y, text);
     y += lineHeight;
@@ -100,15 +99,13 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
         highlighted_mode = -1;
     }
 
-    for (i = 0; i < num_modes; ++i) {
+    modes = SDL_GetFullscreenDisplayModes(displayID, NULL);
+    for (i = 0; modes[i]; ++i) {
         SDL_FRect cell_rect;
-
-        if (0 != SDL_GetDisplayMode(displayID, i, &mode)) {
-            return;
-        }
+        const SDL_DisplayMode *mode = modes[i];
 
         (void)SDL_snprintf(text, sizeof text, "%d: %dx%d@%gHz",
-                           i, mode.pixel_w, mode.pixel_h, mode.refresh_rate);
+                           i, mode->pixel_w, mode->pixel_h, mode->refresh_rate);
 
         /* Update column width */
         text_length = (int)SDL_strlen(text);
@@ -141,6 +138,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
             column_chars = 0;
         }
     }
+    SDL_free((void *)modes);
 }
 
 void loop()
@@ -184,7 +182,9 @@ void loop()
         if (event.type == SDL_EVENT_KEY_UP) {
             SDL_bool updateCursor = SDL_FALSE;
 
-            if (event.key.keysym.sym == SDLK_LEFT) {
+            if (event.key.keysym.sym == SDLK_a) {
+                SDL_assert(!"Keyboard generated assert");
+            } else if (event.key.keysym.sym == SDLK_LEFT) {
                 --system_cursor;
                 if (system_cursor < 0) {
                     system_cursor = SDL_NUM_SYSTEM_CURSORS - 1;
@@ -208,12 +208,13 @@ void loop()
             SDL_Window *window = SDL_GetMouseFocus();
             if (highlighted_mode != -1 && window != NULL) {
                 SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
-                SDL_DisplayMode mode;
-                if (0 != SDL_GetDisplayMode(displayID, highlighted_mode, &mode)) {
-                    SDL_Log("Couldn't get display mode");
-                } else {
-                    SDL_SetWindowDisplayMode(window, &mode);
+                int num_modes;
+                const SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(displayID, &num_modes);
+                if (highlighted_mode < num_modes) {
+                    SDL_memcpy(&state->fullscreen_mode, modes[highlighted_mode], sizeof(state->fullscreen_mode));
+                    SDL_SetWindowFullscreenMode(window, modes[highlighted_mode]);
                 }
+                SDL_free((void *)modes);
             }
         }
     }

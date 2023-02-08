@@ -219,11 +219,15 @@ static int Cocoa_ShowCursor(SDL_Cursor *cursor)
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
         for (; window != NULL; window = window->next) {
-            SDL_WindowData *driverdata = window->driverdata;
-            if (driverdata) {
-                [driverdata.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
-                                                      withObject:[driverdata.nswindow contentView]
-                                                   waitUntilDone:NO];
+            SDL_Mouse *mouse = SDL_GetMouse();
+            if(mouse->focus) {
+                if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
+                    [(__bridge NSCursor*)mouse->cur_cursor->driverdata set];
+                } else {
+                    [[NSCursor invisibleCursor] set];
+                }
+            } else {
+                [[NSCursor arrowCursor] set];
             }
         }
         return 0;
@@ -285,9 +289,9 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
     return 0;
 }
 
-static void Cocoa_WarpMouse(SDL_Window *window, float x, float y)
+static int Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 {
-    Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
+    return Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
 }
 
 static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)

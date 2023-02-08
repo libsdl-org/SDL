@@ -851,10 +851,12 @@ extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
  * \param len the length of the audio buffer in bytes
  * \param volume ranges from 0 - 128, and should be set to SDL_MIX_MAXVOLUME
  *               for full audio volume
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_MixAudioFormat(Uint8 * dst,
+extern DECLSPEC int SDLCALL SDL_MixAudioFormat(Uint8 * dst,
                                                 const Uint8 * src,
                                                 SDL_AudioFormat format,
                                                 Uint32 len, int volume);

@@ -342,9 +342,7 @@ static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info,
                 SDL_VideoDisplay *existing_display = &_this->displays[i];
                 SDL_Rect bounds;
 
-                SDL_ResetDisplayModes(existing_display);
-                SDL_SetCurrentDisplayMode(existing_display, &mode);
-                SDL_SetDesktopDisplayMode(existing_display, &mode);
+                SDL_ResetFullscreenDisplayModes(existing_display);
                 if (WIN_GetDisplayBounds(_this, existing_display, &bounds) == 0) {
                     if (SDL_memcmp(&driverdata->bounds, &bounds, sizeof(bounds)) != 0 || moved) {
                         SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_MOVED, 0);
@@ -376,7 +374,6 @@ static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info,
     }
 
     display.desktop_mode = mode;
-    display.current_mode = mode;
     display.orientation = orientation;
     display.device = _this;
     display.driverdata = displaydata;
@@ -717,7 +714,7 @@ void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut)
 #endif
 }
 
-void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *data = display->driverdata;
     DWORD i;
@@ -733,13 +730,14 @@ void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
             continue;
         }
         if (mode.format != SDL_PIXELFORMAT_UNKNOWN) {
-            if (!SDL_AddDisplayMode(display, &mode)) {
+            if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
                 SDL_free(mode.driverdata);
             }
         } else {
             SDL_free(mode.driverdata);
         }
     }
+    return 0;
 }
 
 #ifdef DEBUG_MODES
@@ -854,7 +852,7 @@ void WIN_RefreshDisplays(_THIS)
         SDL_VideoDisplay *display = &_this->displays[i];
         SDL_DisplayData *driverdata = display->driverdata;
         if (driverdata->IsValid == SDL_FALSE) {
-            SDL_DelVideoDisplay(display->id);
+            SDL_DelVideoDisplay(display->id, SDL_TRUE);
         }
     }
 }

@@ -119,7 +119,7 @@ SDL_bool KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata);
 /* Display and window functions */
 int KMSDRM_VideoInit(_THIS);
 void KMSDRM_VideoQuit(_THIS);
-void KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+int KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
 int KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 int KMSDRM_CreateWindow(_THIS, SDL_Window *window);
 int KMSDRM_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
@@ -148,6 +148,6 @@ int KMSDRM_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 int KMSDRM_GLES_SetSwapInterval(_THIS, int interval);
 int KMSDRM_GLES_GetSwapInterval(_THIS);
 int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window);
-void KMSDRM_GLES_DeleteContext(_THIS, SDL_GLContext context);
+int KMSDRM_GLES_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* SDL_kmsdrmvideo_h */

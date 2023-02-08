@@ -10,7 +10,7 @@
 /* Helper functions */
 
 /**
- * @brief Compare sizes of types.
+ * \brief Compare sizes of types.
  *
  * @note Watcom C flags these as Warning 201: "Unreachable code" if you just
  *  compare them directly, so we push it through a function to keep the
@@ -24,7 +24,7 @@ static int compareSizeOfType(size_t sizeoftype, size_t hardcodetype)
 /* Test case functions */
 
 /**
- * @brief Tests type sizes.
+ * \brief Tests type sizes.
  */
 int platform_testTypes(void *arg)
 {
@@ -46,7 +46,7 @@ int platform_testTypes(void *arg)
 }
 
 /**
- * @brief Tests platform endianness and SDL_SwapXY functions.
+ * \brief Tests platform endianness and SDL_SwapXY functions.
  */
 int platform_testEndianessAndSwap(void *arg)
 {
@@ -116,13 +116,12 @@ int platform_testEndianessAndSwap(void *arg)
     return TEST_COMPLETED;
 }
 
-/* !
+/**
  * \brief Tests SDL_GetXYZ() functions
- * \sa
- * http://wiki.libsdl.org/SDL_GetPlatform
- * http://wiki.libsdl.org/SDL_GetCPUCount
- * http://wiki.libsdl.org/SDL_GetCPUCacheLineSize
- * http://wiki.libsdl.org/SDL_GetRevision
+ * \sa SDL_GetPlatform
+ * \sa SDL_GetCPUCount
+ * \sa SDL_GetRevision
+ * \sa SDL_GetCPUCacheLineSize
  */
 int platform_testGetFunctions(void *arg)
 {
@@ -161,18 +160,17 @@ int platform_testGetFunctions(void *arg)
     return TEST_COMPLETED;
 }
 
-/* !
+/**
  * \brief Tests SDL_HasXYZ() functions
- * \sa
- * http://wiki.libsdl.org/SDL_HasAltiVec
- * http://wiki.libsdl.org/SDL_HasMMX
- * http://wiki.libsdl.org/SDL_HasRDTSC
- * http://wiki.libsdl.org/SDL_HasSSE
- * http://wiki.libsdl.org/SDL_HasSSE2
- * http://wiki.libsdl.org/SDL_HasSSE3
- * http://wiki.libsdl.org/SDL_HasSSE41
- * http://wiki.libsdl.org/SDL_HasSSE42
- * http://wiki.libsdl.org/SDL_HasAVX
+ * \sa SDL_HasAltiVec
+ * \sa SDL_HasMMX
+ * \sa SDL_HasRDTSC
+ * \sa SDL_HasSSE
+ * \sa SDL_HasSSE2
+ * \sa SDL_HasSSE3
+ * \sa SDL_HasSSE41
+ * \sa SDL_HasSSE42
+ * \sa SDL_HasAVX
  */
 int platform_testHasFunctions(void *arg)
 {
@@ -208,10 +206,9 @@ int platform_testHasFunctions(void *arg)
     return TEST_COMPLETED;
 }
 
-/* !
+/**
  * \brief Tests SDL_GetVersion
- * \sa
- * http://wiki.libsdl.org/SDL_GetVersion
+ * \sa SDL_GetVersion
  */
 int platform_testGetVersion(void *arg)
 {
@@ -232,7 +229,7 @@ int platform_testGetVersion(void *arg)
     return TEST_COMPLETED;
 }
 
-/* !
+/**
  * \brief Tests SDL_VERSION macro
  */
 int platform_testSDLVersion(void *arg)
@@ -254,7 +251,7 @@ int platform_testSDLVersion(void *arg)
     return TEST_COMPLETED;
 }
 
-/* !
+/**
  * \brief Tests default SDL_Init
  */
 int platform_testDefaultInit(void *arg)
@@ -276,12 +273,11 @@ int platform_testDefaultInit(void *arg)
     return TEST_COMPLETED;
 }
 
-/* !
+/**
  * \brief Tests SDL_Get/Set/ClearError
- * \sa
- * http://wiki.libsdl.org/SDL_GetError
- * http://wiki.libsdl.org/SDL_SetError
- * http://wiki.libsdl.org/SDL_ClearError
+ * \sa SDL_GetError
+ * \sa SDL_SetError
+ * \sa SDL_ClearError
  */
 int platform_testGetSetClearError(void *arg)
 {
@@ -328,10 +324,9 @@ int platform_testGetSetClearError(void *arg)
     return TEST_COMPLETED;
 }
 
-/* !
+/**
  * \brief Tests SDL_SetError with empty input
- * \sa
- * http://wiki.libsdl.org/SDL_SetError
+ * \sa SDL_SetError
  */
 int platform_testSetErrorEmptyInput(void *arg)
 {
@@ -370,10 +365,9 @@ int platform_testSetErrorEmptyInput(void *arg)
 #pragma GCC diagnostic ignored "-Wformat-overflow"
 #endif
 
-/* !
+/**
  * \brief Tests SDL_SetError with invalid input
- * \sa
- * http://wiki.libsdl.org/SDL_SetError
+ * \sa SDL_SetError
  */
 int platform_testSetErrorInvalidInput(void *arg)
 {
@@ -454,10 +448,9 @@ int platform_testSetErrorInvalidInput(void *arg)
 #pragma GCC diagnostic pop
 #endif
 
-/* !
+/**
  * \brief Tests SDL_GetPowerInfo
- * \sa
- * http://wiki.libsdl.org/SDL_GetPowerInfo
+ * \sa SDL_GetPowerInfo
  */
 int platform_testGetPowerInfo(void *arg)
 {

@@ -275,7 +275,7 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
-    if (SDL_AddDisplayMode(display, &mode)) {
+    if (SDL_AddFullscreenDisplayMode(display, &mode)) {
         return 0;
     } else {
         UIKit_FreeDisplayModeData(&mode);
@@ -349,7 +349,6 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 
     SDL_zero(display);
     display.desktop_mode = mode;
-    display.current_mode = mode;
 
     /* Allocate the display data */
     SDL_DisplayData *data = [[SDL_DisplayData alloc] initWithScreen:uiscreen];
@@ -378,8 +377,8 @@ void UIKit_DelDisplay(UIScreen *uiscreen)
 
             if (data && data.uiscreen == uiscreen) {
                 display->driverdata = nil;
-                SDL_DelVideoDisplay(displays[i]);
-                return;
+                SDL_DelVideoDisplay(displays[i], SDL_FALSE);
+                break;
             }
         }
         SDL_free(displays);
@@ -418,7 +417,7 @@ int UIKit_InitModes(_THIS)
     return 0;
 }
 
-void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     @autoreleasepool {
         SDL_DisplayData *data = display->driverdata;
@@ -449,6 +448,7 @@ void UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
             UIKit_AddDisplayMode(display, w, h, data.uiscreen, uimode, addRotation);
         }
     }
+    return 0;
 }
 
 int UIKit_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *hdpi, float *vdpi)
@@ -523,8 +523,8 @@ void UIKit_QuitModes(_THIS)
             SDL_VideoDisplay *display = &_this->displays[i];
 
             UIKit_FreeDisplayModeData(&display->desktop_mode);
-            for (j = 0; j < display->num_display_modes; j++) {
-                SDL_DisplayMode *mode = &display->display_modes[j];
+            for (j = 0; j < display->num_fullscreen_modes; j++) {
+                SDL_DisplayMode *mode = &display->fullscreen_modes[j];
                 UIKit_FreeDisplayModeData(mode);
             }
 
@@ -542,31 +542,34 @@ void SDL_OnApplicationDidChangeStatusBarOrientation()
     SDL_VideoDisplay *display = SDL_GetVideoDisplay(SDL_GetPrimaryDisplay());
 
     if (display) {
-        SDL_DisplayMode *desktopmode = &display->desktop_mode;
-        SDL_DisplayMode *currentmode = &display->current_mode;
+        SDL_DisplayMode *mode = &display->desktop_mode;
         SDL_DisplayOrientation orientation = SDL_ORIENTATION_UNKNOWN;
+        int i;
 
         /* The desktop display mode should be kept in sync with the screen
          * orientation so that updating a window's fullscreen state to
-         * SDL_WINDOW_FULLSCREEN_DESKTOP keeps the window dimensions in the
+         * fullscreen desktop keeps the window dimensions in the
          * correct orientation. */
-        if (isLandscape != (desktopmode->pixel_w > desktopmode->pixel_h)) {
-            int height = desktopmode->pixel_w;
-            desktopmode->pixel_w = desktopmode->pixel_h;
-            desktopmode->pixel_h = height;
-            height = desktopmode->screen_w;
-            desktopmode->screen_w = desktopmode->screen_h;
-            desktopmode->screen_h = height;
+        if (isLandscape != (mode->pixel_w > mode->pixel_h)) {
+            int height = mode->pixel_w;
+            mode->pixel_w = mode->pixel_h;
+            mode->pixel_h = height;
+            height = mode->screen_w;
+            mode->screen_w = mode->screen_h;
+            mode->screen_h = height;
         }
 
-        /* Same deal with the current mode + SDL_GetCurrentDisplayMode. */
-        if (isLandscape != (currentmode->pixel_w > currentmode->pixel_h)) {
-            int height = currentmode->pixel_w;
-            currentmode->pixel_w = currentmode->pixel_h;
-            currentmode->pixel_h = height;
-            height = currentmode->screen_w;
-            currentmode->screen_w = currentmode->screen_h;
-            currentmode->screen_h = height;
+        /* Same deal with the fullscreen modes */
+        for (i = 0; i < display->num_fullscreen_modes; ++i) {
+            mode = &display->fullscreen_modes[i];
+            if (isLandscape != (mode->pixel_w > mode->pixel_h)) {
+                int height = mode->pixel_w;
+                mode->pixel_w = mode->pixel_h;
+                mode->pixel_h = height;
+                height = mode->screen_w;
+                mode->screen_w = mode->screen_h;
+                mode->screen_h = height;
+            }
         }
 
         switch ([UIApplication sharedApplication].statusBarOrientation) {

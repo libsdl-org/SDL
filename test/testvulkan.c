@@ -1080,7 +1080,7 @@ static SDL_bool render(void)
 int main(int argc, char **argv)
 {
     int done;
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode *mode;
     SDL_Event event;
     Uint64 then, now;
     Uint32 frames;
@@ -1104,8 +1104,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode);
-    SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
+    mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+    if (mode) {
+        SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode->format));
+    }
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
     SDL_GetWindowSizeInPixels(state->windows[0], &dw, &dh);

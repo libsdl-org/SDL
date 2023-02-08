@@ -485,8 +485,7 @@ static int SDL_SYS_HapticOpenFromService(SDL_Haptic *haptic, io_service_t servic
     /* Open the device */
     ret = FFCreateDevice(service, &haptic->hwdata->device);
     if (ret != FF_OK) {
-        SDL_SetError("Haptic: Unable to create device from service: %s.",
-                     FFStrError(ret));
+        SDL_SetError("Haptic: Unable to create device from service: %s.", FFStrError(ret));
         goto creat_err;
     }
 
@@ -1260,9 +1259,8 @@ int SDL_SYS_HapticGetEffectStatus(SDL_Haptic *haptic,
 
     ret = FFEffectGetEffectStatus(effect->hweffect->ref, &status);
     if (ret != FF_OK) {
-        SDL_SetError("Haptic: Unable to get effect status: %s.",
+        return SDL_SetError("Haptic: Unable to get effect status: %s.",
                      FFStrError(ret));
-        return -1;
     }
 
     if (status == 0) {

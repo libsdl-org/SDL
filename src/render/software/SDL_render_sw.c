@@ -416,7 +416,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
         SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, angle, center,
                                        &rect_dest, &cangle, &sangle);
         src_rotated = SDLgfx_rotateSurface(src_clone, angle,
-                                           (texture->scaleMode == SDL_ScaleModeNearest) ? 0 : 1, flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL,
+                                           (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? 0 : 1, flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL,
                                            &rect_dest, cangle, sangle, center);
         if (src_rotated == NULL) {
             retval = -1;
@@ -1175,7 +1175,7 @@ static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, Uint32 flags)
 SDL_RenderDriver SW_RenderDriver = {
     SW_CreateRenderer,
     { "software",
-      SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
+      (SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC),
       0,
       { /* formats filled in later */
         SDL_PIXELFORMAT_UNKNOWN },

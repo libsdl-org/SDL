@@ -32,7 +32,8 @@ print_mode(const char *prefix, const SDL_DisplayMode *mode)
 int main(int argc, char *argv[])
 {
     SDL_DisplayID *displays;
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode **modes;
+    const SDL_DisplayMode *mode;
     int num_displays, i;
 
     /* Enable standard application logging */
@@ -51,13 +52,13 @@ int main(int argc, char *argv[])
 
     for (i = 0; i < num_displays; i++) {
         SDL_DisplayID dpy = displays[i];
-        const int num_modes = SDL_GetNumDisplayModes(dpy);
         SDL_Rect rect = { 0, 0, 0, 0 };
         float hdpi, vdpi;
-        int m;
+        int m, num_modes = 0;
 
         SDL_GetDisplayBounds(dpy, &rect);
-        SDL_Log("%" SDL_PRIu32 ": \"%s\" (%dx%d, (%d, %d)), %d modes.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, num_modes);
+        modes = SDL_GetFullscreenDisplayModes(dpy, &num_modes);
+        SDL_Log("%" SDL_PRIu32 ": \"%s\" (%dx%d, (%d, %d)), %d fullscreen modes.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, num_modes);
 
         if (SDL_GetDisplayPhysicalDPI(dpy, &hdpi, &vdpi) == -1) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DPI: failed to query (%s)\n", SDL_GetError());
@@ -65,27 +66,26 @@ int main(int argc, char *argv[])
             SDL_Log("    DPI: hdpi=%f; vdpi=%f\n", hdpi, vdpi);
         }
 
-        if (SDL_GetCurrentDisplayMode(dpy, &mode) == -1) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    CURRENT: failed to query (%s)\n", SDL_GetError());
+        mode = SDL_GetCurrentDisplayMode(dpy);
+        if (mode) {
+            print_mode("CURRENT", mode);
         } else {
-            print_mode("CURRENT", &mode);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    CURRENT: failed to query (%s)\n", SDL_GetError());
         }
 
-        if (SDL_GetDesktopDisplayMode(dpy, &mode) == -1) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DESKTOP: failed to query (%s)\n", SDL_GetError());
+        mode = SDL_GetDesktopDisplayMode(dpy);
+        if (mode) {
+            print_mode("DESKTOP", mode);
         } else {
-            print_mode("DESKTOP", &mode);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DESKTOP: failed to query (%s)\n", SDL_GetError());
         }
 
         for (m = 0; m < num_modes; m++) {
-            if (SDL_GetDisplayMode(dpy, m, &mode) == -1) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    MODE %d: failed to query (%s)\n", m, SDL_GetError());
-            } else {
-                char prefix[64];
-                (void)SDL_snprintf(prefix, sizeof prefix, "    MODE %d", m);
-                print_mode(prefix, &mode);
-            }
+            char prefix[64];
+            (void)SDL_snprintf(prefix, sizeof prefix, "    MODE %d", m);
+            print_mode(prefix, modes[i]);
         }
+        SDL_free(modes);
 
         SDL_Log("\n");
     }

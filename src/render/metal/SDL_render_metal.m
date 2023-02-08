@@ -621,7 +621,7 @@ METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         }
 #endif /* SDL_HAVE_YUV */
         texturedata = [[METAL_TextureData alloc] init];
-        if (texture->scaleMode == SDL_ScaleModeNearest) {
+        if (texture->scaleMode == SDL_SCALEMODE_NEAREST) {
             texturedata.mtlsampler = data.mtlsamplernearest;
         } else {
             texturedata.mtlsampler = data.mtlsamplerlinear;
@@ -994,7 +994,7 @@ static void METAL_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
         METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
 
-        if (scaleMode == SDL_ScaleModeNearest) {
+        if (scaleMode == SDL_SCALEMODE_NEAREST) {
             texturedata.mtlsampler = data.mtlsamplernearest;
         } else {
             texturedata.mtlsampler = data.mtlsamplerlinear;
@@ -1911,7 +1911,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, Uint32 flags)
         renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
 
         renderer->info = METAL_RenderDriver.info;
-        renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+        renderer->info.flags = SDL_RENDERER_ACCELERATED;
 
         renderer->always_batch = SDL_TRUE;
 
@@ -1972,7 +1972,7 @@ SDL_RenderDriver METAL_RenderDriver = {
     METAL_CreateRenderer,
     {
         "metal",
-        (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+        (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
         6,
         { SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_ABGR8888,

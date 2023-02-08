@@ -28,7 +28,7 @@ extern void X11_UpdateKeymap(_THIS, SDL_bool send_event);
 extern void X11_QuitKeyboard(_THIS);
 extern void X11_StartTextInput(_THIS);
 extern void X11_StopTextInput(_THIS);
-extern void X11_SetTextInputRect(_THIS, const SDL_Rect *rect);
+extern int X11_SetTextInputRect(_THIS, const SDL_Rect *rect);
 extern SDL_bool X11_HasScreenKeyboardSupport(_THIS);
 extern void X11_ShowScreenKeyboard(_THIS, SDL_Window *window);
 extern void X11_HideScreenKeyboard(_THIS, SDL_Window *window);

@@ -102,8 +102,6 @@ static SDL_VideoDevice *RPI_Create()
     /* Setup all functions which we can handle */
     device->VideoInit = RPI_VideoInit;
     device->VideoQuit = RPI_VideoQuit;
-    device->GetDisplayModes = RPI_GetDisplayModes;
-    device->SetDisplayMode = RPI_SetDisplayMode;
     device->CreateSDLWindow = RPI_CreateWindow;
     device->CreateSDLWindowFrom = RPI_CreateWindowFrom;
     device->SetWindowTitle = RPI_SetWindowTitle;
@@ -172,7 +170,6 @@ static void AddDispManXDisplay(const int display_id)
 
     SDL_zero(display);
     display.desktop_mode = mode;
-    display.current_mode = mode;
 
     /* Allocate display internal data */
     data = (SDL_DisplayData *)SDL_calloc(1, sizeof(SDL_DisplayData));
@@ -212,17 +209,6 @@ void RPI_VideoQuit(_THIS)
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();
 #endif
-}
-
-void RPI_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
-{
-    /* Only one display mode available, the current one */
-    SDL_AddDisplayMode(display, &display->current_mode);
-}
-
-int RPI_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
-{
-    return 0;
 }
 
 static void RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)

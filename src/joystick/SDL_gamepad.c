@@ -936,7 +936,7 @@ const char *SDL_GetGamepadStringForButton(SDL_GamepadButton button)
 /*
  * given a gamepad button name and a joystick name update our mapping structure with it
  */
-static void SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGameButton, const char *szJoystickButton)
+static int SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGameButton, const char *szJoystickButton)
 {
     SDL_ExtendedGamepadBind bind;
     SDL_GamepadButton button;
@@ -975,8 +975,7 @@ static void SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
         bind.outputType = SDL_GAMEPAD_BINDTYPE_BUTTON;
         bind.output.button = button;
     } else {
-        SDL_SetError("Unexpected gamepad element %s", szGameButton);
-        return;
+        return SDL_SetError("Unexpected gamepad element %s", szGameButton);
     }
 
     if (*szJoystickButton == '+' || *szJoystickButton == '-') {
@@ -1015,24 +1014,23 @@ static void SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
         bind.input.hat.hat = hat;
         bind.input.hat.hat_mask = mask;
     } else {
-        SDL_SetError("Unexpected joystick element: %s", szJoystickButton);
-        return;
+        return SDL_SetError("Unexpected joystick element: %s", szJoystickButton);
     }
 
     ++gamepad->num_bindings;
     gamepad->bindings = (SDL_ExtendedGamepadBind *)SDL_realloc(gamepad->bindings, gamepad->num_bindings * sizeof(*gamepad->bindings));
     if (!gamepad->bindings) {
         gamepad->num_bindings = 0;
-        SDL_OutOfMemory();
-        return;
+        return SDL_OutOfMemory();
     }
     gamepad->bindings[gamepad->num_bindings - 1] = bind;
+    return 0;
 }
 
 /*
  * given a gamepad mapping string update our mapping object
  */
-static void SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char *pchString)
+static int SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char *pchString)
 {
     char szGameButton[20];
     char szJoystickButton[20];
@@ -1058,15 +1056,13 @@ static void SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char
 
         } else if (bGameButton) {
             if (i >= sizeof(szGameButton)) {
-                SDL_SetError("Button name too large: %s", szGameButton);
-                return;
+                return SDL_SetError("Button name too large: %s", szGameButton);
             }
             szGameButton[i] = *pchPos;
             i++;
         } else {
             if (i >= sizeof(szJoystickButton)) {
-                SDL_SetError("Joystick button name too large: %s", szJoystickButton);
-                return;
+                return SDL_SetError("Joystick button name too large: %s", szJoystickButton);
             }
             szJoystickButton[i] = *pchPos;
             i++;
@@ -1078,6 +1074,7 @@ static void SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char
     if (szGameButton[0] != '\0' || szJoystickButton[0] != '\0') {
         SDL_PrivateParseGamepadElement(gamepad, szGameButton, szJoystickButton);
     }
+    return 0;
 }
 
 /*

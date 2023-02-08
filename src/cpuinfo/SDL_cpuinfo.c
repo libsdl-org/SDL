@@ -476,7 +476,7 @@ static int CPU_haveNEON(void)
         AndroidCpuFamily cpu_family = android_getCpuFamily();
         if (cpu_family == ANDROID_CPU_FAMILY_ARM) {
             uint64_t cpu_features = android_getCpuFeatures();
-            if ((cpu_features & ANDROID_CPU_ARM_FEATURE_NEON) != 0) {
+            if (cpu_features & ANDROID_CPU_ARM_FEATURE_NEON) {
                 return 1;
             }
         }
@@ -700,7 +700,8 @@ static const char *SDL_GetCPUType(void)
 }
 #endif
 
-#ifdef TEST_MAIN /* !!! FIXME: only used for test at the moment. */
+#if 0
+!!! FIXME: Not used at the moment. */
 #if defined(__e2k__)
 inline const char *
 SDL_GetCPUName(void)
@@ -1093,34 +1094,3 @@ SDL_SIMDGetAlignment(void)
     SDL_assert(SDL_SIMDAlignment != 0);
     return SDL_SIMDAlignment;
 }
-
-#ifdef TEST_MAIN
-
-#include <stdio.h>
-
-int main()
-{
-    printf("CPU count: %d\n", SDL_GetCPUCount());
-    printf("CPU type: %s\n", SDL_GetCPUType());
-    printf("CPU name: %s\n", SDL_GetCPUName());
-    printf("CacheLine size: %d\n", SDL_GetCPUCacheLineSize());
-    printf("RDTSC: %d\n", SDL_HasRDTSC());
-    printf("Altivec: %d\n", SDL_HasAltiVec());
-    printf("MMX: %d\n", SDL_HasMMX());
-    printf("SSE: %d\n", SDL_HasSSE());
-    printf("SSE2: %d\n", SDL_HasSSE2());
-    printf("SSE3: %d\n", SDL_HasSSE3());
-    printf("SSE4.1: %d\n", SDL_HasSSE41());
-    printf("SSE4.2: %d\n", SDL_HasSSE42());
-    printf("AVX: %d\n", SDL_HasAVX());
-    printf("AVX2: %d\n", SDL_HasAVX2());
-    printf("AVX-512F: %d\n", SDL_HasAVX512F());
-    printf("ARM SIMD: %d\n", SDL_HasARMSIMD());
-    printf("NEON: %d\n", SDL_HasNEON());
-    printf("LSX: %d\n", SDL_HasLSX());
-    printf("LASX: %d\n", SDL_HasLASX());
-    printf("RAM: %d MB\n", SDL_GetSystemRAM());
-    return 0;
-}
-
-#endif /* TEST_MAIN */

@@ -57,8 +57,8 @@ static SDL_AudioDeviceID g_audio_id = -1;
 /**
  * \brief Stop and restart audio subsystem
  *
- * \sa https://wiki.libsdl.org/SDL_QuitSubSystem
- * \sa https://wiki.libsdl.org/SDL_InitSubSystem
+ * \sa SDL_QuitSubSystem
+ * \sa SDL_InitSubSystem
  */
 static int audio_quitInitAudioSubSystem(void *arg)
 {
@@ -75,8 +75,8 @@ static int audio_quitInitAudioSubSystem(void *arg)
 /**
  * \brief Start and stop audio directly
  *
- * \sa https://wiki.libsdl.org/SDL_InitAudio
- * \sa https://wiki.libsdl.org/SDL_QuitAudio
+ * \sa SDL_InitAudio
+ * \sa SDL_QuitAudio
  */
 static int audio_initQuitAudio(void *arg)
 {
@@ -131,10 +131,10 @@ static int audio_initQuitAudio(void *arg)
 /**
  * \brief Start, open, close and stop audio
  *
- * \sa https://wiki.libsdl.org/SDL_InitAudio
- * \sa https://wiki.libsdl.org/SDL_OpenAudioDevice
- * \sa https://wiki.libsdl.org/SDL_CloseAudioDevice
- * \sa https://wiki.libsdl.org/SDL_QuitAudio
+ * \sa SDL_InitAudio
+ * \sa SDL_OpenAudioDevice
+ * \sa SDL_CloseAudioDevice
+ * \sa SDL_QuitAudio
  */
 static int audio_initOpenCloseQuitAudio(void *arg)
 {
@@ -223,8 +223,8 @@ static int audio_initOpenCloseQuitAudio(void *arg)
 /**
  * \brief Pause and unpause audio
  *
- * \sa https://wiki.libsdl.org/SDL_PauseAudioDevice
- * \sa https://wiki.libsdl.org/SDL_PlayAudioDevice
+ * \sa SDL_PauseAudioDevice
+ * \sa SDL_PlayAudioDevice
  */
 static int audio_pauseUnpauseAudio(void *arg)
 {
@@ -350,8 +350,8 @@ static int audio_pauseUnpauseAudio(void *arg)
 /**
  * \brief Enumerate and name available audio devices (output and capture).
  *
- * \sa https://wiki.libsdl.org/SDL_GetNumAudioDevices
- * \sa https://wiki.libsdl.org/SDL_GetAudioDeviceName
+ * \sa SDL_GetNumAudioDevices
+ * \sa SDL_GetAudioDeviceName
  */
 static int audio_enumerateAndNameAudioDevices(void *arg)
 {
@@ -408,8 +408,8 @@ static int audio_enumerateAndNameAudioDevices(void *arg)
 /**
  * \brief Negative tests around enumeration and naming of audio devices.
  *
- * \sa https://wiki.libsdl.org/SDL_GetNumAudioDevices
- * \sa https://wiki.libsdl.org/SDL_GetAudioDeviceName
+ * \sa SDL_GetNumAudioDevices
+ * \sa SDL_GetAudioDeviceName
  */
 static int audio_enumerateAndNameAudioDevicesNegativeTests(void *arg)
 {
@@ -454,8 +454,8 @@ static int audio_enumerateAndNameAudioDevicesNegativeTests(void *arg)
 /**
  * \brief Checks available audio driver names.
  *
- * \sa https://wiki.libsdl.org/SDL_GetNumAudioDrivers
- * \sa https://wiki.libsdl.org/SDL_GetAudioDriver
+ * \sa SDL_GetNumAudioDrivers
+ * \sa SDL_GetAudioDriver
  */
 static int audio_printAudioDrivers(void *arg)
 {
@@ -485,7 +485,7 @@ static int audio_printAudioDrivers(void *arg)
 /**
  * \brief Checks current audio driver name with initialized audio.
  *
- * \sa https://wiki.libsdl.org/SDL_GetCurrentAudioDriver
+ * \sa SDL_GetCurrentAudioDriver
  */
 static int audio_printCurrentAudioDriver(void *arg)
 {
@@ -516,7 +516,7 @@ static int g_audioFrequencies[] = { 11025, 22050, 44100, 48000 };
 /**
  * \brief Builds various audio conversion structures
  *
- * \sa https://wiki.libsdl.org/SDL_CreateAudioStream
+ * \sa SDL_CreateAudioStream
  */
 static int audio_buildAudioStream(void *arg)
 {
@@ -581,7 +581,7 @@ static int audio_buildAudioStream(void *arg)
 /**
  * \brief Checks calls with invalid input to SDL_CreateAudioStream
  *
- * \sa https://wiki.libsdl.org/SDL_CreateAudioStream
+ * \sa SDL_CreateAudioStream
  */
 static int audio_buildAudioStreamNegative(void *arg)
 {
@@ -662,7 +662,7 @@ static int audio_buildAudioStreamNegative(void *arg)
 /**
  * \brief Checks current audio status.
  *
- * \sa https://wiki.libsdl.org/SDL_GetAudioDeviceStatus
+ * \sa SDL_GetAudioDeviceStatus
  */
 static int audio_getAudioStatus(void *arg)
 {
@@ -681,7 +681,7 @@ static int audio_getAudioStatus(void *arg)
 /**
  * \brief Opens, checks current audio status, and closes a device.
  *
- * \sa https://wiki.libsdl.org/SDL_GetAudioStatus
+ * \sa SDL_GetAudioStatus
  */
 static int audio_openCloseAndGetAudioStatus(void *arg)
 {
@@ -741,8 +741,8 @@ static int audio_openCloseAndGetAudioStatus(void *arg)
 /**
  * \brief Locks and unlocks open audio device.
  *
- * \sa https://wiki.libsdl.org/SDL_LockAudioDevice
- * \sa https://wiki.libsdl.org/SDL_UnlockAudioDevice
+ * \sa SDL_LockAudioDevice
+ * \sa SDL_UnlockAudioDevice
  */
 static int audio_lockUnlockOpenAudioDevice(void *arg)
 {
@@ -805,7 +805,7 @@ static int audio_lockUnlockOpenAudioDevice(void *arg)
 /**
  * \brief Convert audio using various conversion structures
  *
- * \sa https://wiki.libsdl.org/SDL_CreateAudioStream
+ * \sa SDL_CreateAudioStream
  */
 static int audio_convertAudio(void *arg)
 {
@@ -929,7 +929,7 @@ static int audio_convertAudio(void *arg)
 /**
  * \brief Opens, checks current connected status, and closes a device.
  *
- * \sa https://wiki.libsdl.org/SDL_AudioDeviceConnected
+ * \sa SDL_AudioDeviceConnected
  */
 static int audio_openCloseAudioDeviceConnected(void *arg)
 {

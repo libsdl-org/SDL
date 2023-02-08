@@ -193,8 +193,6 @@ int Android_VideoInit(_THIS)
     display = SDL_GetVideoDisplay(displayID);
     display->orientation = Android_JNI_GetDisplayOrientation();
 
-    SDL_AddDisplayMode(&_this->displays[0], &mode);
-
     Android_InitTouch();
 
     Android_InitMouse();
@@ -288,22 +286,8 @@ void Android_SendResize(SDL_Window *window)
     }
 
     if (window) {
-        /* Force the current mode to match the resize otherwise the SDL_EVENT_WINDOW_RESTORED event
-         * will fall back to the old mode */
-        int w, h;
-        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-        SDL_DisplayMode current_mode;
-        SDL_zero(current_mode);
-
-        current_mode.format = Android_ScreenFormat;
-        current_mode.pixel_w = Android_DeviceWidth;
-        current_mode.pixel_h = Android_DeviceHeight;
-        current_mode.display_scale = Android_ScreenDensity;
-        current_mode.refresh_rate = Android_ScreenRate;
-        SDL_SetCurrentDisplayMode(display, &current_mode);
-
-        w = (int)SDL_floorf(Android_SurfaceWidth / Android_ScreenDensity);
-        h = (int)SDL_floorf(Android_SurfaceHeight / Android_ScreenDensity);
+        int w = (int)SDL_floorf(Android_SurfaceWidth / Android_ScreenDensity);
+        int h = (int)SDL_floorf(Android_SurfaceHeight / Android_ScreenDensity);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
     }
 }

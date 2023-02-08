@@ -1033,14 +1033,6 @@ static void D3D11_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *eve
     }
 }
 
-#if !defined(__WINRT__)
-static int D3D11_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
-{
-    SDL_GetWindowSizeInPixels(renderer->window, w, h);
-    return 0;
-}
-#endif
-
 static SDL_bool D3D11_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
@@ -1078,7 +1070,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         SDL_OutOfMemory();
         return -1;
     }
-    textureData->scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 
     texture->driverdata = textureData;
 
@@ -1554,7 +1546,7 @@ static void D3D11_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
         return;
     }
 
-    textureData->scaleMode = (scaleMode == SDL_ScaleModeNearest) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 }
 
 static int D3D11_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -2324,9 +2316,6 @@ D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
     data->identity = MatrixIdentity();
 
     renderer->WindowEvent = D3D11_WindowEvent;
-#if !defined(__WINRT__)
-    renderer->GetOutputSize = D3D11_GetOutputSize;
-#endif
     renderer->SupportsBlendMode = D3D11_SupportsBlendMode;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
@@ -2349,7 +2338,7 @@ D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->DestroyTexture = D3D11_DestroyTexture;
     renderer->DestroyRenderer = D3D11_DestroyRenderer;
     renderer->info = D3D11_RenderDriver.info;
-    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
@@ -2366,7 +2355,7 @@ D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
      */
     renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
 #else
-    if ((flags & SDL_RENDERER_PRESENTVSYNC)) {
+    if (flags & SDL_RENDERER_PRESENTVSYNC) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
     renderer->SetVSync = D3D11_SetVSync;
@@ -2394,12 +2383,10 @@ SDL_RenderDriver D3D11_RenderDriver = {
     D3D11_CreateRenderer,
     {
         "direct3d11",
-        (
-            SDL_RENDERER_ACCELERATED |
-            SDL_RENDERER_PRESENTVSYNC |
-            SDL_RENDERER_TARGETTEXTURE), /* flags.  see SDL_RendererFlags */
-        6,                               /* num_texture_formats */
-        {                                /* texture_formats */
+        (SDL_RENDERER_ACCELERATED |
+         SDL_RENDERER_PRESENTVSYNC), /* flags.  see SDL_RendererFlags */
+        6,                           /* num_texture_formats */
+        {                            /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_RGB888,
           SDL_PIXELFORMAT_YV12,

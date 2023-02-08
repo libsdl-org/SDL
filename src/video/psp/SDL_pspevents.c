@@ -235,7 +235,7 @@ void PSP_InitOSKeymap(_THIS)
 #endif
 }
 
-void PSP_EventInit(_THIS)
+int PSP_EventInit(_THIS)
 {
 #ifdef PSPIRKEYB
     int outputmode = PSP_IRKBD_OUTPUT_MODE_SCANCODE;
@@ -249,14 +249,13 @@ void PSP_EventInit(_THIS)
 #endif
     /* Start thread to read data */
     if ((event_sem = SDL_CreateSemaphore(1)) == NULL) {
-        SDL_SetError("Can't create input semaphore");
-        return;
+        return SDL_SetError("Can't create input semaphore");
     }
     running = 1;
     if ((thread = SDL_CreateThreadInternal(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
-        SDL_SetError("Can't create input thread");
-        return;
+        return SDL_SetError("Can't create input thread");
     }
+    return 0;
 }
 
 void PSP_EventQuit(_THIS)

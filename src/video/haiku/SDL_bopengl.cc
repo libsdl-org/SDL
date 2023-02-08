@@ -142,7 +142,7 @@ SDL_GLContext HAIKU_GL_CreateContext(_THIS, SDL_Window * window) {
     return (SDL_GLContext)(bwin->GetGLView());
 }
 
-void HAIKU_GL_DeleteContext(_THIS, SDL_GLContext context) {
+int HAIKU_GL_DeleteContext(_THIS, SDL_GLContext context) {
     // printf("HAIKU_GL_DeleteContext(%llx), thread = %d\n", (uint64)context, find_thread(NULL));
     BGLView* glView = (BGLView*)context;
     SDL_BWin *bwin = (SDL_BWin*)glView->Window();
@@ -151,6 +151,7 @@ void HAIKU_GL_DeleteContext(_THIS, SDL_GLContext context) {
     } else {
         bwin->RemoveGLView();
     }
+    return 0;
 }
 
 

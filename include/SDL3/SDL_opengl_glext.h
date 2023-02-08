@@ -1,4 +1,8 @@
-#ifndef __gl_glext_h_
+/* SDL modified the include guard to be compatible with Mesa and Apple include guards:
+ * - Mesa uses: __gl_glext_h_
+ * - Apple uses: __glext_h_  */
+#if !defined(__glext_h_) && !defined(__gl_glext_h_)
+#define __glext_h_ 1
 #define __gl_glext_h_ 1
 
 #ifdef __cplusplus

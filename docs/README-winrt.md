@@ -333,17 +333,14 @@ your project, and open the file in Visual C++'s text editor.
     
 int main(int argc, char **argv)
 {
-    SDL_DisplayMode mode;
-    SDL_Window * window = NULL;
-    SDL_Renderer * renderer = NULL;
+    SDL_Window *window = NULL;
+    SDL_Renderer *renderer = NULL;
     SDL_Event evt;
     SDL_bool keep_going = SDL_TRUE;
   
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         return 1;
-    } else if (SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode) != 0) {
-        return 1;
-    } else if (SDL_CreateWindowAndRenderer(mode.w, mode.h, SDL_WINDOW_FULLSCREEN_EXCLUSIVE, &window, &renderer) != 0) {
+    } else if (SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN, &window, &renderer) != 0) {
         return 1;
     }
     

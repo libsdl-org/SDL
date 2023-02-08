@@ -113,7 +113,7 @@ quit(int rc)
         }                                                                                   \
     }
 
-/*
+/**
  * Simulates desktop's glRotatef. The matrix is returned in column-major
  * order.
  */
@@ -154,7 +154,7 @@ rotate_matrix(float angle, float x, float y, float z, float *r)
     }
 }
 
-/*
+/**
  * Simulates gluPerspectiveMatrix
  */
 static void
@@ -177,7 +177,7 @@ perspective_matrix(float fovy, float aspect, float znear, float zfar, float *r)
     r[15] = 0.0f;
 }
 
-/*
+/**
  * Multiplies lhs by rhs and writes out to r. All matrices are 4x4 and column
  * major. In-place multiplication is supported.
  */
@@ -202,7 +202,7 @@ multiply_matrix(const float *lhs, const float *rhs, float *r)
     }
 }
 
-/*
+/**
  * Create shader, load in source, compile, dump debug as necessary.
  *
  * shader: Pointer to return created shader ID.
@@ -615,7 +615,7 @@ int main(int argc, char *argv[])
     int fsaa, accel, threaded;
     int value;
     int i;
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode *mode;
     Uint64 then, now;
     int status;
     shader_data *data;
@@ -714,10 +714,12 @@ int main(int argc, char *argv[])
         SDL_GL_SetSwapInterval(0);
     }
 
-    SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay(), &mode);
+    mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
     SDL_Log("Threaded  : %s\n", threaded ? "yes" : "no");
-    SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
-    SDL_Log("\n");
+    if (mode) {
+        SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode->format));
+        SDL_Log("\n");
+    }
     SDL_Log("Vendor     : %s\n", ctx.glGetString(GL_VENDOR));
     SDL_Log("Renderer   : %s\n", ctx.glGetString(GL_RENDERER));
     SDL_Log("Version    : %s\n", ctx.glGetString(GL_VERSION));

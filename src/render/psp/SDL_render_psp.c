@@ -542,7 +542,7 @@ static int TextureShouldSwizzle(PSP_TextureData *psp_texture, SDL_Texture *textu
 static void TextureActivate(SDL_Texture *texture)
 {
     PSP_TextureData *psp_texture = (PSP_TextureData *)texture->driverdata;
-    int scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GU_NEAREST : GU_LINEAR;
+    int scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GU_NEAREST : GU_LINEAR;
 
     /* Swizzling is useless with small textures. */
     if (TextureShouldSwizzle(psp_texture, texture)) {
@@ -1333,7 +1333,7 @@ PSP_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->DestroyRenderer = PSP_DestroyRenderer;
     renderer->SetVSync = PSP_SetVSync;
     renderer->info = PSP_RenderDriver.info;
-    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
     renderer->window = window;
 
@@ -1407,7 +1407,7 @@ SDL_RenderDriver PSP_RenderDriver = {
     .CreateRenderer = PSP_CreateRenderer,
     .info = {
         .name = "PSP",
-        .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
+        .flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
         .num_texture_formats = 4,
         .texture_formats = {
             [0] = SDL_PIXELFORMAT_BGR565,

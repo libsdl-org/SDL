@@ -301,7 +301,7 @@ SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
         attr[i++] = profile;
 
         attr[i++] = NSOpenGLPFAColorSize;
-        attr[i++] = SDL_BYTESPERPIXEL(display->current_mode.format) * 8;
+        attr[i++] = SDL_BYTESPERPIXEL(display->current_mode->format) * 8;
 
         attr[i++] = NSOpenGLPFADepthSize;
         attr[i++] = _this->gl_config.depth_size;
@@ -515,12 +515,13 @@ int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context)
+int Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     @autoreleasepool {
         SDLOpenGLContext *nscontext = (SDLOpenGLContext *)CFBridgingRelease(context);
         [nscontext setWindow:NULL];
     }
+    return 0;
 }
 
 /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */

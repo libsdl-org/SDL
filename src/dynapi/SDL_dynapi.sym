@@ -153,7 +153,6 @@ SDL3_0.0.0 {
     SDL_GetCPUCacheLineSize;
     SDL_GetCPUCount;
     SDL_GetClipboardText;
-    SDL_GetClosestDisplayMode;
     SDL_GetCurrentAudioDriver;
     SDL_GetCurrentDisplayMode;
     SDL_GetCurrentVideoDriver;
@@ -166,7 +165,6 @@ SDL3_0.0.0 {
     SDL_GetDisplayPhysicalDPI;
     SDL_GetDisplayForPoint;
     SDL_GetDisplayForRect;
-    SDL_GetDisplayMode;
     SDL_GetDisplayName;
     SDL_GetDisplayOrientation;
     SDL_GetDisplayUsableBounds;
@@ -260,7 +258,6 @@ SDL3_0.0.0 {
     SDL_GetNumAllocations;
     SDL_GetNumAudioDevices;
     SDL_GetNumAudioDrivers;
-    SDL_GetNumDisplayModes;
     SDL_GetNumGamepadMappings;
     SDL_GetNumJoystickAxes;
     SDL_GetNumJoystickButtons;
@@ -298,17 +295,15 @@ SDL3_0.0.0 {
     SDL_GetRenderDrawBlendMode;
     SDL_GetRenderDrawColor;
     SDL_GetRenderDriver;
-    SDL_GetRenderIntegerScale;
-    SDL_GetRenderLogicalSize;
+    SDL_GetRenderLogicalPresentation;
     SDL_GetRenderMetalCommandEncoder;
     SDL_GetRenderMetalLayer;
-    SDL_GetRenderScale;
     SDL_GetRenderTarget;
     SDL_GetRenderViewport;
     SDL_GetRenderWindow;
     SDL_GetRenderer;
     SDL_GetRendererInfo;
-    SDL_GetRendererOutputSize;
+    SDL_GetCurrentRenderOutputSize;
     SDL_GetRevision;
     SDL_GetScancodeFromKey;
     SDL_GetScancodeFromName;
@@ -348,7 +343,7 @@ SDL3_0.0.0 {
     SDL_GetWindowBordersSize;
     SDL_GetWindowData;
     SDL_GetDisplayForWindow;
-    SDL_GetWindowDisplayMode;
+    SDL_GetWindowFullscreenMode;
     SDL_GetWindowFlags;
     SDL_GetWindowFromID;
     SDL_GetWindowGrab;
@@ -529,17 +524,16 @@ SDL3_0.0.0 {
     SDL_RenderGetD3D12Device;
     SDL_RenderLine;
     SDL_RenderLines;
-    SDL_RenderLogicalToWindow;
+    SDL_RenderCoordinatesToWindow;
     SDL_RenderPoint;
     SDL_RenderPoints;
     SDL_RenderPresent;
     SDL_RenderReadPixels;
     SDL_RenderRect;
     SDL_RenderRects;
-    SDL_RenderTargetSupported;
     SDL_RenderTexture;
     SDL_RenderTextureRotated;
-    SDL_RenderWindowToLogical;
+    SDL_RenderCoordinatesFromWindow;
     SDL_ReportAssertion;
     SDL_ResetAssertionReport;
     SDL_ResetHint;
@@ -590,9 +584,7 @@ SDL3_0.0.0 {
     SDL_SetRenderClipRect;
     SDL_SetRenderDrawBlendMode;
     SDL_SetRenderDrawColor;
-    SDL_SetRenderIntegerScale;
-    SDL_SetRenderLogicalSize;
-    SDL_SetRenderScale;
+    SDL_SetRenderLogicalPresentation;
     SDL_SetRenderTarget;
     SDL_SetRenderVSync;
     SDL_SetRenderViewport;
@@ -613,7 +605,7 @@ SDL3_0.0.0 {
     SDL_SetWindowAlwaysOnTop;
     SDL_SetWindowBordered;
     SDL_SetWindowData;
-    SDL_SetWindowDisplayMode;
+    SDL_SetWindowFullscreenMode;
     SDL_SetWindowFullscreen;
     SDL_SetWindowGrab;
     SDL_SetWindowHitTest;
@@ -840,6 +832,13 @@ SDL3_0.0.0 {
     SDL_ConvertAudioSamples;
     SDL_GetDisplays;
     SDL_GetPrimaryDisplay;
+    SDL_GetFullscreenDisplayModes;
+    SDL_GetClosestFullscreenDisplayMode;
+    SDL_GetRenderOutputSize;
+    SDL_ConvertEventToRenderCoordinates;
+    SDL_SetRenderScale;
+    SDL_GetRenderScale;
+    SDL_GetRenderWindowSize;
     # extra symbols go here (don't modify this line)
   local: *;
 };

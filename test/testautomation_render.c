@@ -19,6 +19,14 @@
 #define ALLOWABLE_ERROR_OPAQUE  0
 #define ALLOWABLE_ERROR_BLENDED 64
 
+#define CHECK_FUNC(FUNC, PARAMS)    \
+{                                   \
+    int result = FUNC PARAMS;       \
+    if (result != 0) {              \
+        SDLTest_AssertCheck(result == 0, "Validate result from %s, expected: 0, got: %i, %s", #FUNC, result, SDL_GetError()); \
+    }                               \
+}
+
 /* Test window and renderer */
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -57,7 +65,7 @@ void InitCreateRenderer(void *arg)
     }
 }
 
-/*
+/**
  * Destroy renderer for tests
  */
 void CleanupDestroyRenderer(void *arg)
@@ -76,10 +84,9 @@ void CleanupDestroyRenderer(void *arg)
 }
 
 /**
- * @brief Tests call to SDL_GetNumRenderDrivers
+ * \brief Tests call to SDL_GetNumRenderDrivers
  *
- * \sa
- * http://wiki.libsdl.org/SDL_GetNumRenderDrivers
+ * \sa SDL_GetNumRenderDrivers
  */
 int render_testGetNumRenderDrivers(void *arg)
 {
@@ -90,12 +97,11 @@ int render_testGetNumRenderDrivers(void *arg)
 }
 
 /**
- * @brief Tests the SDL primitives for rendering.
+ * \brief Tests the SDL primitives for rendering.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetRenderDrawColor
- * http://wiki.libsdl.org/SDL_RenderFillRect
- * http://wiki.libsdl.org/SDL_RenderLine
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_RenderFillRect
+ * \sa SDL_RenderLine
  *
  */
 int render_testPrimitives(void *arg)
@@ -119,22 +125,16 @@ int render_testPrimitives(void *arg)
     rect.w = 40.0f;
     rect.h = 80.0f;
 
-    ret = SDL_SetRenderDrawColor(renderer, 13, 73, 200, SDL_ALPHA_OPAQUE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderFillRect(renderer, &rect);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 13, 73, 200, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
 
     /* Draw a rectangle. */
     rect.x = 10.0f;
     rect.y = 10.0f;
     rect.w = 60.0f;
     rect.h = 40.0f;
-    ret = SDL_SetRenderDrawColor(renderer, 200, 0, 100, SDL_ALPHA_OPAQUE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderFillRect(renderer, &rect);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 200, 0, 100, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
 
     /* Draw some points like so:
      * X.X.X.X..
@@ -159,32 +159,15 @@ int render_testPrimitives(void *arg)
     SDLTest_AssertCheck(checkFailCount2 == 0, "Validate results from calls to SDL_RenderPoint, expected: 0, got: %i", checkFailCount2);
 
     /* Draw some lines. */
-    ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor");
-
-    ret = SDL_RenderLine(renderer, 0.0f, 30.0f, (float)TESTRENDER_SCREEN_W, 30.0f);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
-
-    ret = SDL_SetRenderDrawColor(renderer, 55, 55, 5, SDL_ALPHA_OPAQUE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderLine(renderer, 40.0f, 30.0f, 40.0f, 60.0f);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
-
-    ret = SDL_SetRenderDrawColor(renderer, 5, 105, 105, SDL_ALPHA_OPAQUE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderLine(renderer, 0.0f, 0.0f, 29.0f, 29.0f);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderLine(renderer, 29.0f, 30.0f, 0.0f, 59.0f);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderLine(renderer, 79.0f, 0.0f, 50.0f, 29.0f);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderLine(renderer, 79.0f, 59.0f, 50.0f, 30.0f);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderLine, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderLine, (renderer, 0.0f, 30.0f, (float)TESTRENDER_SCREEN_W, 30.0f))
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 55, 55, 5, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderLine, (renderer, 40.0f, 30.0f, 40.0f, 60.0f))
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 5, 105, 105, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderLine, (renderer, 0.0f, 0.0f, 29.0f, 29.0f))
+    CHECK_FUNC(SDL_RenderLine, (renderer, 29.0f, 30.0f, 0.0f, 59.0f))
+    CHECK_FUNC(SDL_RenderLine, (renderer, 79.0f, 0.0f, 50.0f, 29.0f))
+    CHECK_FUNC(SDL_RenderLine, (renderer, 79.0f, 59.0f, 50.0f, 30.0f))
 
     /* See if it's the same. */
     referenceSurface = SDLTest_ImagePrimitives();
@@ -201,12 +184,11 @@ int render_testPrimitives(void *arg)
 }
 
 /**
- * @brief Tests the SDL primitives with alpha for rendering.
+ * \brief Tests the SDL primitives with alpha for rendering.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetRenderDrawColor
- * http://wiki.libsdl.org/SDL_SetRenderDrawBlendMode
- * http://wiki.libsdl.org/SDL_RenderFillRect
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_SetRenderDrawBlendMode
+ * \sa SDL_RenderFillRect
  */
 int render_testPrimitivesBlend(void *arg)
 {
@@ -226,53 +208,33 @@ int render_testPrimitivesBlend(void *arg)
     SDLTest_AssertCheck(hasBlendModes(), "_hasBlendModes");
 
     /* Create some rectangles for each blend mode. */
-    ret = SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-
-    ret = SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawBlendMode, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderFillRect(renderer, NULL);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 255, 255, 255, 0))
+    CHECK_FUNC(SDL_SetRenderDrawBlendMode, (renderer, SDL_BLENDMODE_NONE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
 
     rect.x = 10.0f;
     rect.y = 25.0f;
     rect.w = 40.0f;
     rect.h = 25.0f;
-    ret = SDL_SetRenderDrawColor(renderer, 240, 10, 10, 75);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-
-    ret = SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawBlendMode, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderFillRect(renderer, &rect);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 240, 10, 10, 75))
+    CHECK_FUNC(SDL_SetRenderDrawBlendMode, (renderer, SDL_BLENDMODE_ADD))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
 
     rect.x = 30.0f;
     rect.y = 40.0f;
     rect.w = 45.0f;
     rect.h = 15.0f;
-    ret = SDL_SetRenderDrawColor(renderer, 10, 240, 10, 100);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-
-    ret = SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawBlendMode, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderFillRect(renderer, &rect);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 10, 240, 10, 100))
+    CHECK_FUNC(SDL_SetRenderDrawBlendMode, (renderer, SDL_BLENDMODE_BLEND))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
 
     rect.x = 25.0f;
     rect.y = 25.0f;
     rect.w = 25.0f;
     rect.h = 25.0f;
-    ret = SDL_SetRenderDrawColor(renderer, 10, 10, 240, 125);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-
-    ret = SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawBlendMode, expected: 0, got: %i", ret);
-
-    ret = SDL_RenderFillRect(renderer, &rect);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 10, 10, 240, 125))
+    CHECK_FUNC(SDL_SetRenderDrawBlendMode, (renderer, SDL_BLENDMODE_NONE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
 
     /* Draw blended lines, lines for everyone. */
     checkFailCount1 = 0;
@@ -365,11 +327,10 @@ int render_testPrimitivesBlend(void *arg)
 }
 
 /**
- * @brief Tests some blitting routines.
+ * \brief Tests some blitting routines.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_RenderTexture
- * http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_RenderTexture
+ * \sa SDL_DestroyTexture
  */
 int render_testBlit(void *arg)
 {
@@ -396,8 +357,7 @@ int render_testBlit(void *arg)
     }
 
     /* Constant values. */
-    ret = SDL_QueryTexture(tface, &tformat, &taccess, &tw, &th);
-    SDLTest_AssertCheck(ret == 0, "Verify result from SDL_QueryTexture, expected 0, got %i", ret);
+    CHECK_FUNC(SDL_QueryTexture, (tface, &tformat, &taccess, &tw, &th))
     rect.w = (float)tw;
     rect.h = (float)th;
     ni = TESTRENDER_SCREEN_W - tw;
@@ -434,12 +394,11 @@ int render_testBlit(void *arg)
 }
 
 /**
- * @brief Blits doing color tests.
+ * \brief Blits doing color tests.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetTextureColorMod
- * http://wiki.libsdl.org/SDL_RenderTexture
- * http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_SetTextureColorMod
+ * \sa SDL_RenderTexture
+ * \sa SDL_DestroyTexture
  */
 int render_testBlitColor(void *arg)
 {
@@ -464,8 +423,7 @@ int render_testBlitColor(void *arg)
     }
 
     /* Constant values. */
-    ret = SDL_QueryTexture(tface, &tformat, &taccess, &tw, &th);
-    SDLTest_AssertCheck(ret == 0, "Verify result from SDL_QueryTexture, expected 0, got %i", ret);
+    CHECK_FUNC(SDL_QueryTexture, (tface, &tformat, &taccess, &tw, &th))
     rect.w = (float)tw;
     rect.h = (float)th;
     ni = TESTRENDER_SCREEN_W - tw;
@@ -510,12 +468,11 @@ int render_testBlitColor(void *arg)
 }
 
 /**
- * @brief Tests blitting with alpha.
+ * \brief Tests blitting with alpha.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetTextureAlphaMod
- * http://wiki.libsdl.org/SDL_RenderTexture
- * http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_SetTextureAlphaMod
+ * \sa SDL_RenderTexture
+ * \sa SDL_DestroyTexture
  */
 int render_testBlitAlpha(void *arg)
 {
@@ -543,8 +500,7 @@ int render_testBlitAlpha(void *arg)
     }
 
     /* Constant values. */
-    ret = SDL_QueryTexture(tface, &tformat, &taccess, &tw, &th);
-    SDLTest_AssertCheck(ret == 0, "Verify result from SDL_QueryTexture, expected 0, got %i", ret);
+    CHECK_FUNC(SDL_QueryTexture, (tface, &tformat, &taccess, &tw, &th))
     rect.w = (float)tw;
     rect.h = (float)th;
     ni = TESTRENDER_SCREEN_W - tw;
@@ -589,11 +545,10 @@ int render_testBlitAlpha(void *arg)
 }
 
 /**
- * @brief Tests a blend mode.
+ * \brief Tests a blend mode.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetTextureBlendMode
- * http://wiki.libsdl.org/SDL_RenderTexture
+ * \sa SDL_SetTextureBlendMode
+ * \sa SDL_RenderTexture
  */
 static void
 testBlitBlendMode(SDL_Texture *tface, int mode)
@@ -610,8 +565,7 @@ testBlitBlendMode(SDL_Texture *tface, int mode)
     clearScreen();
 
     /* Constant values. */
-    ret = SDL_QueryTexture(tface, &tformat, &taccess, &tw, &th);
-    SDLTest_AssertCheck(ret == 0, "Verify result from SDL_QueryTexture, expected 0, got %i", ret);
+    CHECK_FUNC(SDL_QueryTexture, (tface, &tformat, &taccess, &tw, &th))
     rect.w = (float)tw;
     rect.h = (float)th;
     ni = TESTRENDER_SCREEN_W - tw;
@@ -642,13 +596,12 @@ testBlitBlendMode(SDL_Texture *tface, int mode)
 }
 
 /**
- * @brief Tests some more blitting routines.
+ * \brief Tests some more blitting routines.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetTextureColorMod
- * http://wiki.libsdl.org/SDL_SetTextureAlphaMod
- * http://wiki.libsdl.org/SDL_SetTextureBlendMode
- * http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_SetTextureColorMod
+ * \sa SDL_SetTextureAlphaMod
+ * \sa SDL_SetTextureBlendMode
+ * \sa SDL_DestroyTexture
  */
 int render_testBlitBlend(void *arg)
 {
@@ -677,16 +630,14 @@ int render_testBlitBlend(void *arg)
     }
 
     /* Constant values. */
-    ret = SDL_QueryTexture(tface, &tformat, &taccess, &tw, &th);
-    SDLTest_AssertCheck(ret == 0, "Verify result from SDL_QueryTexture, expected 0, got %i", ret);
+    CHECK_FUNC(SDL_QueryTexture, (tface, &tformat, &taccess, &tw, &th))
     rect.w = (float)tw;
     rect.h = (float)th;
     ni = TESTRENDER_SCREEN_W - tw;
     nj = TESTRENDER_SCREEN_H - th;
 
     /* Set alpha mod. */
-    ret = SDL_SetTextureAlphaMod(tface, 100);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetTextureAlphaMod, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetTextureAlphaMod, (tface, 100))
 
     /* Test None. */
     testBlitBlendMode(tface, SDL_BLENDMODE_NONE);
@@ -802,11 +753,10 @@ int render_testBlitBlend(void *arg)
 }
 
 /**
- * @brief Test viewport
+ * \brief Test viewport
  */
 int render_testViewport(void *arg)
 {
-    int ret;
     SDL_Surface *referenceSurface;
     SDL_Rect viewport;
 
@@ -817,23 +767,17 @@ int render_testViewport(void *arg)
 
     /* Create expected result */
     referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
-    ret = SDL_FillSurfaceRect(referenceSurface, NULL, RENDER_COLOR_CLEAR);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    ret = SDL_FillSurfaceRect(referenceSurface, &viewport, RENDER_COLOR_GREEN);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &viewport, RENDER_COLOR_GREEN))
+
     /* Clear surface. */
     clearScreen();
 
     /* Set the viewport and do a fill operation */
-    ret = SDL_SetRenderViewport(renderer, &viewport);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-    ret = SDL_RenderFillRect(renderer, NULL);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderViewport(renderer, NULL);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetRenderViewport, (renderer, &viewport))
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
+    CHECK_FUNC(SDL_SetRenderViewport, (renderer, NULL))
 
     /* Check to see if final image matches. */
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
@@ -843,21 +787,16 @@ int render_testViewport(void *arg)
      */
 
     /* Create expected result */
-    ret = SDL_FillSurfaceRect(referenceSurface, NULL, RENDER_COLOR_GREEN);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_GREEN))
+
     /* Clear surface. */
     clearScreen();
 
     /* Set the viewport and do a clear operation */
-    ret = SDL_SetRenderViewport(renderer, &viewport);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-    ret = SDL_RenderClear(renderer);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderClear, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderViewport(renderer, NULL);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetRenderViewport, (renderer, &viewport))
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
+    CHECK_FUNC(SDL_SetRenderViewport, (renderer, NULL))
 
     /* Check to see if final image matches. */
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
@@ -871,11 +810,10 @@ int render_testViewport(void *arg)
 }
 
 /**
- * @brief Test logical size
+ * \brief Test logical size
  */
 int render_testLogicalSize(void *arg)
 {
-    int ret;
     SDL_Surface *referenceSurface;
     SDL_Rect viewport;
     SDL_FRect rect;
@@ -889,29 +827,27 @@ int render_testLogicalSize(void *arg)
 
     /* Create expected result */
     referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
-    ret = SDL_FillSurfaceRect(referenceSurface, NULL, RENDER_COLOR_CLEAR);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    ret = SDL_FillSurfaceRect(referenceSurface, &viewport, RENDER_COLOR_GREEN);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &viewport, RENDER_COLOR_GREEN))
+
     /* Clear surface. */
     clearScreen();
 
     /* Set the logical size and do a fill operation */
-    ret = SDL_GetRendererOutputSize(renderer, &w, &h);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_GetRendererOutputSize, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderLogicalSize(renderer, w / factor, h / factor);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_GetCurrentRenderOutputSize, (renderer, &w, &h))
+    CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, w / factor, h / factor,
+                                           SDL_LOGICAL_PRESENTATION_LETTERBOX,
+                                           SDL_SCALEMODE_NEAREST))
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
     rect.x = (float)viewport.x / factor;
     rect.y = (float)viewport.y / factor;
     rect.w = (float)viewport.w / factor;
     rect.h = (float)viewport.h / factor;
-    ret = SDL_RenderFillRect(renderer, &rect);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderLogicalSize(renderer, 0, 0);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
+    (void)SDL_RenderPresent(renderer);
+    CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
+                                           SDL_LOGICAL_PRESENTATION_DISABLED,
+                                           SDL_SCALEMODE_NEAREST))
 
     /* Check to see if final image matches. */
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
@@ -920,24 +856,22 @@ int render_testLogicalSize(void *arg)
     clearScreen();
 
     /* Set the logical size and viewport and do a fill operation */
-    ret = SDL_GetRendererOutputSize(renderer, &w, &h);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_GetRendererOutputSize, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderLogicalSize(renderer, w / factor, h / factor);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_GetCurrentRenderOutputSize, (renderer, &w, &h))
+    CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, w / factor, h / factor,
+                                           SDL_LOGICAL_PRESENTATION_LETTERBOX,
+                                           SDL_SCALEMODE_NEAREST))
     viewport.x = (TESTRENDER_SCREEN_W / 4) / factor;
     viewport.y = (TESTRENDER_SCREEN_H / 4) / factor;
     viewport.w = (TESTRENDER_SCREEN_W / 2) / factor;
     viewport.h = (TESTRENDER_SCREEN_H / 2) / factor;
-    ret = SDL_SetRenderViewport(renderer, &viewport);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-    ret = SDL_RenderFillRect(renderer, NULL);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderViewport(renderer, NULL);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderViewport, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderLogicalSize(renderer, 0, 0);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_SetRenderViewport, (renderer, &viewport))
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
+    CHECK_FUNC(SDL_SetRenderViewport, (renderer, NULL))
+    (void)SDL_RenderPresent(renderer);
+    CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
+                                           SDL_LOGICAL_PRESENTATION_DISABLED,
+                                           SDL_SCALEMODE_NEAREST))
 
     /* Check to see if final image matches. */
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
@@ -952,25 +886,25 @@ int render_testLogicalSize(void *arg)
     viewport.h = TESTRENDER_SCREEN_H;
 
     /* Create expected result */
-    ret = SDL_FillSurfaceRect(referenceSurface, NULL, RENDER_COLOR_CLEAR);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    ret = SDL_FillSurfaceRect(referenceSurface, &viewport, RENDER_COLOR_GREEN);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &viewport, RENDER_COLOR_GREEN))
+
     /* Clear surface. */
     clearScreen();
 
     /* Set the logical size and do a fill operation */
-    ret = SDL_GetRendererOutputSize(renderer, &w, &h);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_GetRendererOutputSize, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderLogicalSize(renderer, w - 2 * (TESTRENDER_SCREEN_W / 4), h);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
-    ret = SDL_RenderFillRect(renderer, NULL);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderFillRect, expected: 0, got: %i", ret);
-    ret = SDL_SetRenderLogicalSize(renderer, 0, 0);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderLogicalSize, expected: 0, got: %i", ret);
+    CHECK_FUNC(SDL_GetCurrentRenderOutputSize, (renderer, &w, &h))
+    CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer,
+                                           w - 2 * (TESTRENDER_SCREEN_W / 4),
+                                           h,
+                                           SDL_LOGICAL_PRESENTATION_LETTERBOX,
+                                           SDL_SCALEMODE_LINEAR))
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
+    (void)SDL_RenderPresent(renderer);
+    CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
+                                           SDL_LOGICAL_PRESENTATION_DISABLED,
+                                           SDL_SCALEMODE_NEAREST))
 
     /* Check to see if final image matches. */
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
@@ -989,7 +923,7 @@ int render_testLogicalSize(void *arg)
 /* Helper functions */
 
 /**
- * @brief Checks to see if functionality is supported. Helper function.
+ * \brief Checks to see if functionality is supported. Helper function.
  */
 static int
 isSupported(int code)
@@ -998,11 +932,10 @@ isSupported(int code)
 }
 
 /**
- * @brief Test to see if we can vary the draw color. Helper function.
+ * \brief Test to see if we can vary the draw color. Helper function.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetRenderDrawColor
- * http://wiki.libsdl.org/SDL_GetRenderDrawColor
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_GetRenderDrawColor
  */
 static int
 hasDrawColor(void)
@@ -1040,11 +973,10 @@ hasDrawColor(void)
 }
 
 /**
- * @brief Test to see if we can vary the blend mode. Helper function.
+ * \brief Test to see if we can vary the blend mode. Helper function.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetRenderDrawBlendMode
- * http://wiki.libsdl.org/SDL_GetRenderDrawBlendMode
+ * \sa SDL_SetRenderDrawBlendMode
+ * \sa SDL_GetRenderDrawBlendMode
  */
 static int
 hasBlendModes(void)
@@ -1108,10 +1040,9 @@ hasBlendModes(void)
 }
 
 /**
- * @brief Loads the test image 'Face' as texture. Helper function.
+ * \brief Loads the test image 'Face' as texture. Helper function.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_CreateTextureFromSurface
+ * \sa SDL_CreateTextureFromSurface
  */
 static SDL_Texture *
 loadTestFace(void)
@@ -1135,12 +1066,11 @@ loadTestFace(void)
 }
 
 /**
- * @brief Test to see if can set texture color mode. Helper function.
+ * \brief Test to see if can set texture color mode. Helper function.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetTextureColorMod
- * http://wiki.libsdl.org/SDL_GetTextureColorMod
- * http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_SetTextureColorMod
+ * \sa SDL_GetTextureColorMod
+ * \sa SDL_DestroyTexture
  */
 static int
 hasTexColor(void)
@@ -1179,12 +1109,11 @@ hasTexColor(void)
 }
 
 /**
- * @brief Test to see if we can vary the alpha of the texture. Helper function.
+ * \brief Test to see if we can vary the alpha of the texture. Helper function.
  *
- * \sa
- *  http://wiki.libsdl.org/SDL_SetTextureAlphaMod
- *  http://wiki.libsdl.org/SDL_GetTextureAlphaMod
- *  http://wiki.libsdl.org/SDL_DestroyTexture
+ * \sa SDL_SetTextureAlphaMod
+ * \sa SDL_GetTextureAlphaMod
+ * \sa SDL_DestroyTexture
  */
 static int
 hasTexAlpha(void)
@@ -1223,20 +1152,19 @@ hasTexAlpha(void)
 }
 
 /**
- * @brief Compares screen pixels with image pixels. Helper function.
+ * \brief Compares screen pixels with image pixels. Helper function.
  *
- * @param referenceSurface Image to compare against.
- * @param allowable_error allowed difference from the reference image
+ * \param referenceSurface Image to compare against.
+ * \param allowable_error allowed difference from the reference image
  *
- * \sa
- * http://wiki.libsdl.org/SDL_RenderReadPixels
- * http://wiki.libsdl.org/SDL_CreateSurfaceFrom
- * http://wiki.libsdl.org/SDL_DestroySurface
+ * \sa SDL_RenderReadPixels
+ * \sa SDL_CreateSurfaceFrom
+ * \sa SDL_DestroySurface
  */
 static void
 compare(SDL_Surface *referenceSurface, int allowable_error)
 {
-   int result;
+   int ret;
    SDL_Rect rect;
    Uint8 *pixels;
    SDL_Surface *testSurface;
@@ -1253,16 +1181,15 @@ compare(SDL_Surface *referenceSurface, int allowable_error)
    rect.y = 0;
    rect.w = TESTRENDER_SCREEN_W;
    rect.h = TESTRENDER_SCREEN_H;
-   result = SDL_RenderReadPixels(renderer, &rect, RENDER_COMPARE_FORMAT, pixels, 80*4 );
-   SDLTest_AssertCheck(result == 0, "Validate result from SDL_RenderReadPixels, expected: 0, got: %i", result);
+   CHECK_FUNC(SDL_RenderReadPixels, (renderer, &rect, RENDER_COMPARE_FORMAT, pixels, 80*4 ))
 
    /* Create surface. */
    testSurface = SDL_CreateSurfaceFrom(pixels, TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, TESTRENDER_SCREEN_W*4, RENDER_COMPARE_FORMAT);
    SDLTest_AssertCheck(testSurface != NULL, "Verify result from SDL_CreateSurfaceFrom is not NULL");
 
    /* Compare surface. */
-   result = SDLTest_CompareSurfaces( testSurface, referenceSurface, allowable_error );
-   SDLTest_AssertCheck(result == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", result);
+   ret = SDLTest_CompareSurfaces( testSurface, referenceSurface, allowable_error );
+   SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
    /* Clean up. */
    SDL_free(pixels);
@@ -1270,13 +1197,12 @@ compare(SDL_Surface *referenceSurface, int allowable_error)
 }
 
 /**
- * @brief Clears the screen. Helper function.
+ * \brief Clears the screen. Helper function.
  *
- * \sa
- * http://wiki.libsdl.org/SDL_SetRenderDrawColor
- * http://wiki.libsdl.org/SDL_RenderClear
- * http://wiki.libsdl.org/SDL_RenderPresent
- * http://wiki.libsdl.org/SDL_SetRenderDrawBlendMode
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_RenderClear
+ * \sa SDL_RenderPresent
+ * \sa SDL_SetRenderDrawBlendMode
  */
 static int
 clearScreen(void)
@@ -1285,7 +1211,7 @@ clearScreen(void)
 
     /* Make current */
     SDL_RenderPresent(renderer);
-    
+
     /* Set color. */
     ret = SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);

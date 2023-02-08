@@ -45,18 +45,31 @@ typedef struct SDL_DRect
 
 typedef struct SDL_RenderDriver SDL_RenderDriver;
 
+/* Rendering view state */
+typedef struct SDL_RenderViewState
+{
+    int pixel_w;
+    int pixel_h;
+    SDL_Rect viewport;
+    SDL_Rect clip_rect;
+    SDL_bool clipping_enabled;
+    SDL_FPoint scale;
+
+} SDL_RenderViewState;
+
 /* Define the SDL texture structure */
 struct SDL_Texture
 {
     const void *magic;
-    Uint32 format;           /**< The pixel format of the texture */
-    int access;              /**< SDL_TextureAccess */
-    int w;                   /**< The width of the texture */
-    int h;                   /**< The height of the texture */
-    int modMode;             /**< The texture modulation mode */
-    SDL_BlendMode blendMode; /**< The texture blend mode */
-    SDL_ScaleMode scaleMode; /**< The texture scale mode */
-    SDL_Color color;         /**< Texture modulation values */
+    Uint32 format;              /**< The pixel format of the texture */
+    int access;                 /**< SDL_TextureAccess */
+    int w;                      /**< The width of the texture */
+    int h;                      /**< The height of the texture */
+    int modMode;                /**< The texture modulation mode */
+    SDL_BlendMode blendMode;    /**< The texture blend mode */
+    SDL_ScaleMode scaleMode;    /**< The texture scale mode */
+    SDL_Color color;            /**< Texture modulation values */
+    SDL_RenderViewState view;   /**< Target texture view state */
 
     SDL_Renderer *renderer;
 
@@ -212,36 +225,18 @@ struct SDL_Renderer
     Uint64 simulate_vsync_interval_ns;
     Uint64 last_present;
 
-    /* The logical resolution for rendering */
-    int logical_w;
-    int logical_h;
-    int logical_w_backup;
-    int logical_h_backup;
+    /* Support for logical output coordinates */
+    SDL_Texture *logical_target;
+    SDL_RendererLogicalPresentation logical_presentation_mode;
+    SDL_ScaleMode logical_scale_mode;
+    SDL_Rect logical_src_rect;
+    SDL_FRect logical_dst_rect;
 
-    /* Whether or not to force the viewport to even integer intervals */
-    SDL_bool integer_scale;
+    SDL_RenderViewState *view;
+    SDL_RenderViewState main_view;
 
-    /* The drawable area within the window */
-    SDL_DRect viewport;
-    SDL_DRect viewport_backup;
-
-    /* The clip rectangle within the window */
-    SDL_DRect clip_rect;
-    SDL_DRect clip_rect_backup;
-
-    /* Whether or not the clipping rectangle is used. */
-    SDL_bool clipping_enabled;
-    SDL_bool clipping_enabled_backup;
-
-    /* The render output coordinate scale */
-    SDL_FPoint scale;
-    SDL_FPoint scale_backup;
-
-    /* The pixel to point coordinate scale */
+    /* The window pixel to point coordinate scale */
     SDL_FPoint dpi_scale;
-
-    /* Whether or not to scale relative mouse motion */
-    SDL_bool relative_scaling;
 
     /* The method of drawing lines */
     SDL_RenderLineMethod line_method;
@@ -264,8 +259,8 @@ struct SDL_Renderer
     SDL_RenderCommand *render_commands_pool;
     Uint32 render_command_generation;
     Uint32 last_queued_color;
-    SDL_DRect last_queued_viewport;
-    SDL_DRect last_queued_cliprect;
+    SDL_Rect last_queued_viewport;
+    SDL_Rect last_queued_cliprect;
     SDL_bool last_queued_cliprect_enabled;
     SDL_bool color_queued;
     SDL_bool viewport_queued;

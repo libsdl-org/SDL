@@ -67,7 +67,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
             SDL_WINDOWPOS_ISUNDEFINED(data2)) {
             return 0;
         }
-        if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
+        if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             window->windowed.x = data1;
             window->windowed.y = data2;
         }
@@ -78,7 +78,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         window->y = data2;
         break;
     case SDL_EVENT_WINDOW_RESIZED:
-        if ((window->flags & SDL_WINDOW_FULLSCREEN_MASK) == 0) {
+        if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             window->windowed.w = data1;
             window->windowed.h = data2;
         }
@@ -141,10 +141,10 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
         break;
     case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-        if (data1 == 0 || (SDL_DisplayID)data1 == window->displayID) {
+        if (data1 == 0 || (SDL_DisplayID)data1 == window->last_displayID) {
             return 0;
         }
-        window->displayID = (SDL_DisplayID)data1;
+        window->last_displayID = (SDL_DisplayID)data1;
         break;
     default:
         break;

@@ -84,7 +84,7 @@ SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window *window)
     EGLCHK(display = eglGetDisplay(0));
     EGLCHK(eglInitialize(display, NULL, NULL));
     wdata->uses_gles = SDL_TRUE;
-    window->flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    window->flags |= SDL_WINDOW_FULLSCREEN;
 
     /* Setup the config based on SDL's current values. */
     i = 0;
@@ -165,14 +165,13 @@ int PSP_GL_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-void PSP_GL_DeleteContext(_THIS, SDL_GLContext context)
+int PSP_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_VideoData *phdata = _this->driverdata;
     EGLBoolean status;
 
     if (phdata->egl_initialized != SDL_TRUE) {
-        SDL_SetError("PSP: GLES initialization failed, no OpenGL ES support");
-        return;
+        return SDL_SetError("PSP: GLES initialization failed, no OpenGL ES support");
     }
 
     /* Check if OpenGL ES connection has been initialized */
@@ -181,13 +180,11 @@ void PSP_GL_DeleteContext(_THIS, SDL_GLContext context)
             status = eglDestroyContext(_this->gl_data->display, context);
             if (status != EGL_TRUE) {
                 /* Error during OpenGL ES context destroying */
-                SDL_SetError("PSP: OpenGL ES context destroy error");
-                return;
+                return SDL_SetError("PSP: OpenGL ES context destroy error");
             }
         }
     }
-
-    return;
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_PSP */

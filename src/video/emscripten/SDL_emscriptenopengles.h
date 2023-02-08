@@ -34,7 +34,7 @@ extern SDL_FunctionPointer Emscripten_GLES_GetProcAddress(_THIS, const char *pro
 extern int Emscripten_GLES_SetSwapInterval(_THIS, int interval);
 extern int Emscripten_GLES_GetSwapInterval(_THIS, int *interval);
 extern SDL_GLContext Emscripten_GLES_CreateContext(_THIS, SDL_Window *window);
-extern void Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context);
+extern int Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context);
 extern int Emscripten_GLES_SwapWindow(_THIS, SDL_Window *window);
 extern int Emscripten_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 

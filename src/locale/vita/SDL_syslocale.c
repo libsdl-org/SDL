@@ -25,7 +25,7 @@
 #include <psp2/apputil.h>
 #include <psp2/system_param.h>
 
-void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     const char *vita_locales[] = {
         "ja_JP",
@@ -65,4 +65,5 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     SDL_strlcpy(buf, vita_locales[language], buflen);
 
     sceAppUtilShutdown();
+    return 0;
 }

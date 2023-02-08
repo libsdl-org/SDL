@@ -310,7 +310,7 @@ static SDL_bool SDL_UpdateMouseFocus(SDL_Window *window, float x, float y, Uint3
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_bool inWindow = SDL_TRUE;
 
-    if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
+    if (window && !(window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
         if (x < 0.0f || y < 0.0f || x >= (float)window->w || y >= (float)window->h) {
             inWindow = SDL_FALSE;
         }
@@ -482,7 +482,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
                 return 0;
             }
         } else {
-            if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
+            if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
                 if (mouse->WarpMouse) {
                     mouse->WarpMouse(window, center_x, center_y);
                 } else {
@@ -532,7 +532,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
 
     /* make sure that the pointers find themselves inside the windows,
        unless we have the mouse captured. */
-    if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
+    if (window && !(window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
         int x_min = 0, x_max = window->w - 1;
         int y_min = 0, y_max = window->h - 1;
         const SDL_Rect *confine = SDL_GetWindowMouseRect(window);
@@ -1256,9 +1256,14 @@ SDL_CreateSystemCursor(SDL_SystemCursor id)
    if this is desired for any reason.  This is used when setting
    the video mode and when the SDL window gains the mouse focus.
  */
-void SDL_SetCursor(SDL_Cursor *cursor)
+int SDL_SetCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+
+    /* Return immediately if setting the cursor to the currently set one (fixes #7151) */
+    if (cursor == mouse->cur_cursor) {
+        return 0;
+    }
 
     /* Set the new cursor */
     if (cursor) {
@@ -1271,8 +1276,7 @@ void SDL_SetCursor(SDL_Cursor *cursor)
                 }
             }
             if (found == NULL) {
-                SDL_SetError("Cursor not associated with the current mouse");
-                return;
+                return SDL_SetError("Cursor not associated with the current mouse");
             }
         }
         mouse->cur_cursor = cursor;
@@ -1293,6 +1297,7 @@ void SDL_SetCursor(SDL_Cursor *cursor)
             mouse->ShowCursor(NULL);
         }
     }
+    return 0;
 }
 
 SDL_Cursor *

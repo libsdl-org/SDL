@@ -533,22 +533,23 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-static void Wayland_WarpMouse(SDL_Window *window, float x, float y)
+static int Wayland_WarpMouse(SDL_Window *window, float x, float y)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = vd->driverdata;
     struct SDL_WaylandInput *input = d->input;
 
     if (input->cursor_visible == SDL_TRUE) {
-        SDL_Unsupported();
+        return SDL_Unsupported();
     } else if (input->warp_emulation_prohibited) {
-        SDL_Unsupported();
+        return SDL_Unsupported();
     } else {
         if (!d->relative_mouse_mode) {
             Wayland_input_lock_pointer(input);
             input->relative_mode_override = SDL_TRUE;
         }
     }
+    return 0;
 }
 
 static int Wayland_SetRelativeMouseMode(SDL_bool enabled)

@@ -195,7 +195,7 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
 {
     if (info->hTotal && info->vTotal) {
-        return ((100 * info->dotClock) / (info->hTotal * info->vTotal)) / 100.0f;
+        return ((100 * (Sint64)info->dotClock) / (info->hTotal * info->vTotal)) / 100.0f;
     }
     return 0.0f;
 }
@@ -385,7 +385,6 @@ static int X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput output
         display.name = display_name;
     }
     display.desktop_mode = mode;
-    display.current_mode = mode;
     display.driverdata = displaydata;
     if (SDL_AddVideoDisplay(&display, send_event) == 0) {
         return -1;
@@ -418,7 +417,7 @@ static void X11_HandleXRandROutputChange(_THIS, const XRROutputChangeNotifyEvent
 
     if (ev->connection == RR_Disconnected) { /* output is going away */
         if (display != NULL) {
-            SDL_DelVideoDisplay(display->id);
+            SDL_DelVideoDisplay(display->id, SDL_TRUE);
         }
     } else if (ev->connection == RR_Connected) { /* output is coming online */
         if (display != NULL) {
@@ -627,7 +626,6 @@ static int X11_InitModes_StdXlib(_THIS)
     SDL_zero(display);
     display.name = (char *)"Generic X11 Display"; /* this is just copied and thrown away, it's safe to cast to char* here. */
     display.desktop_mode = mode;
-    display.current_mode = mode;
     display.driverdata = displaydata;
     if (SDL_AddVideoDisplay(&display, SDL_TRUE) == 0) {
         return -1;
@@ -656,7 +654,7 @@ int X11_InitModes(_THIS)
     return X11_InitModes_StdXlib(_this);
 }
 
-void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
+int X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
 {
     SDL_DisplayData *data = sdl_display->driverdata;
     SDL_DisplayMode mode;
@@ -668,7 +666,7 @@ void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
      * (or support recreating the window with a new visual behind the scenes)
      */
     SDL_zero(mode);
-    mode.format = sdl_display->current_mode.format;
+    mode.format = sdl_display->desktop_mode.format;
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     if (data->use_xrandr) {
@@ -691,7 +689,7 @@ void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
                     mode.driverdata = modedata;
 
                     if (!SetXRandRModeInfo(display, res, output_info->crtc, output_info->modes[i], &mode) ||
-                        !SDL_AddDisplayMode(sdl_display, &mode)) {
+                        !SDL_AddFullscreenDisplayMode(sdl_display, &mode)) {
                         SDL_free(modedata);
                     }
                 }
@@ -699,23 +697,9 @@ void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
             X11_XRRFreeOutputInfo(output_info);
             X11_XRRFreeScreenResources(res);
         }
-        return;
     }
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
-
-    if (!data->use_xrandr) {
-        SDL_DisplayModeData *modedata;
-        /* Add the desktop mode */
-        mode = sdl_display->desktop_mode;
-        modedata = (SDL_DisplayModeData *)SDL_calloc(1, sizeof(SDL_DisplayModeData));
-        if (modedata) {
-            *modedata = *(SDL_DisplayModeData *)sdl_display->desktop_mode.driverdata;
-        }
-        mode.driverdata = modedata;
-        if (!SDL_AddDisplayMode(sdl_display, &mode)) {
-            SDL_free(modedata);
-        }
-    }
+    return 0;
 }
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
@@ -833,9 +817,8 @@ int X11_GetDisplayBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect)
 
     rect->x = data->x;
     rect->y = data->y;
-    rect->w = sdl_display->current_mode.screen_w;
-    rect->h = sdl_display->current_mode.screen_h;
-
+    rect->w = sdl_display->current_mode->screen_w;
+    rect->h = sdl_display->current_mode->screen_h;
     return 0;
 }
 

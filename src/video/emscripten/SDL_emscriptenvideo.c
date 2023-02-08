@@ -136,8 +136,6 @@ int Emscripten_VideoInit(_THIS)
         return -1;
     }
 
-    SDL_AddDisplayMode(&_this->displays[0], &mode);
-
     Emscripten_InitMouse();
 
     /* We're done! */
@@ -310,12 +308,12 @@ static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoD
 
         if (fullscreen) {
             EmscriptenFullscreenStrategy strategy;
-            SDL_bool is_desktop_fullscreen = ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) ? SDL_TRUE : SDL_FALSE;
+            SDL_bool is_fullscreen_desktop = window->fullscreen_exclusive ? SDL_FALSE : SDL_TRUE;
             int res;
 
-            strategy.scaleMode = is_desktop_fullscreen ? EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH : EMSCRIPTEN_FULLSCREEN_SCALE_ASPECT;
+            strategy.scaleMode = is_fullscreen_desktop ? EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH : EMSCRIPTEN_FULLSCREEN_SCALE_ASPECT;
 
-            if (!is_desktop_fullscreen) {
+            if (!is_fullscreen_desktop) {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_NONE;
             } else if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF;
@@ -328,13 +326,13 @@ static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoD
             strategy.canvasResizedCallback = Emscripten_HandleCanvasResize;
             strategy.canvasResizedCallbackUserData = data;
 
-            data->fullscreen_mode_flags = (window->flags & SDL_WINDOW_FULLSCREEN_MASK);
-            data->fullscreen_resize = is_desktop_fullscreen;
+            data->fullscreen_mode_flags = (window->flags & SDL_WINDOW_FULLSCREEN);
+            data->fullscreen_resize = is_fullscreen_desktop;
 
             res = emscripten_request_fullscreen_strategy(data->canvas_id, 1, &strategy);
             if (res != EMSCRIPTEN_RESULT_SUCCESS && res != EMSCRIPTEN_RESULT_DEFERRED) {
                 /* unset flags, fullscreen failed */
-                window->flags &= ~SDL_WINDOW_FULLSCREEN_MASK;
+                window->flags &= ~SDL_WINDOW_FULLSCREEN;
             }
         } else
             emscripten_exit_fullscreen();

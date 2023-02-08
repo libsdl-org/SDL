@@ -311,12 +311,6 @@ static void GLES2_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *eve
     }
 }
 
-static int GLES2_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
-{
-    SDL_GetWindowSizeInPixels(renderer->window, w, h);
-    return 0;
-}
-
 static GLenum GetBlendFunc(SDL_BlendFactor factor)
 {
     switch (factor) {
@@ -1469,7 +1463,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     data->texture_u = 0;
     data->texture_v = 0;
 #endif
-    scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
 
     /* Allocate a blob for image renderdata */
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
@@ -1830,7 +1824,7 @@ static void GLES2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
 {
     GLES2_RenderData *renderdata = (GLES2_RenderData *)renderer->driverdata;
     GLES2_TextureData *data = (GLES2_TextureData *)texture->driverdata;
-    GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    GLenum glScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
 
 #if SDL_HAVE_YUV
     if (data->yuv) {
@@ -1935,7 +1929,7 @@ static int GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
         return SDL_OutOfMemory();
     }
 
-    SDL_GetRendererOutputSize(renderer, &w, &h);
+    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
 
     data->glReadPixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
                        rect->w, rect->h, GL_RGBA, GL_UNSIGNED_BYTE, temp_pixels);
@@ -2109,7 +2103,7 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
         goto error;
     }
     renderer->info = GLES2_RenderDriver.info;
-    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
     renderer->window = window;
 
@@ -2190,7 +2184,6 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     /* Populate the function pointers for the module */
     renderer->WindowEvent = GLES2_WindowEvent;
-    renderer->GetOutputSize = GLES2_GetOutputSize;
     renderer->SupportsBlendMode = GLES2_SupportsBlendMode;
     renderer->CreateTexture = GLES2_CreateTexture;
     renderer->UpdateTexture = GLES2_UpdateTexture;
@@ -2272,7 +2265,7 @@ error:
 SDL_RenderDriver GLES2_RenderDriver = {
     GLES2_CreateRenderer,
     { "opengles2",
-      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
       4,
       { SDL_PIXELFORMAT_ARGB8888,
         SDL_PIXELFORMAT_ABGR8888,

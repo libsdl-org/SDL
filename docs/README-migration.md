@@ -169,7 +169,7 @@ The following symbols have been renamed:
 * SDL_KEYMAPCHANGED => SDL_EVENT_KEYMAP_CHANGED
 * SDL_KEYUP => SDL_EVENT_KEY_UP
 * SDL_LASTEVENT => SDL_EVENT_LAST
-* SDL_LOCALECHANGED => SDL_EVENT_LOCALECHANGED
+* SDL_LOCALECHANGED => SDL_EVENT_LOCALE_CHANGED
 * SDL_MOUSEBUTTONDOWN => SDL_EVENT_MOUSE_BUTTON_DOWN
 * SDL_MOUSEBUTTONUP => SDL_EVENT_MOUSE_BUTTON_UP
 * SDL_MOUSEMOTION => SDL_EVENT_MOUSE_MOTION
@@ -181,7 +181,7 @@ The following symbols have been renamed:
 * SDL_SENSORUPDATE => SDL_EVENT_SENSOR_UPDATE
 * SDL_SYSWMEVENT => SDL_EVENT_SYSWM
 * SDL_TEXTEDITING => SDL_EVENT_TEXT_EDITING
-* SDL_TEXTEDITING_EXT => SDL_EVENT_TEXTEDITING_EXT
+* SDL_TEXTEDITING_EXT => SDL_EVENT_TEXT_EDITING_EXT
 * SDL_TEXTINPUT => SDL_EVENT_TEXT_INPUT
 * SDL_USEREVENT => SDL_EVENT_USER
 
@@ -341,10 +341,12 @@ functionality to your app and aid migration. That is located in the
 SDL_AddHintCallback() now returns a standard int result instead of void, returning 0 if the function succeeds or a negative error code if there was an error.
 
 The following hints have been removed:
-* SDL_HINT_IDLE_TIMER_DISABLED (use SDL_DisableScreenSaver instead)
-* SDL_HINT_VIDEO_X11_FORCE_EGL (use SDL_HINT_VIDEO_FORCE_EGL instead)
-* SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
-* SDL_HINT_VIDEO_X11_XVIDMODE (Xvidmode no longer supported by the X11 backend)
+* SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver instead
+* SDL_HINT_MOUSE_RELATIVE_SCALING - mouse coordinates are no longer automatically scaled by the SDL renderer
+* SDL_HINT_RENDER_LOGICAL_SIZE_MODE - the logical size mode is explicitly set with SDL_SetRenderLogicalPresentation()
+* SDL_HINT_VIDEO_X11_FORCE_EGL - use SDL_HINT_VIDEO_FORCE_EGL instead
+* SDL_HINT_VIDEO_X11_XINERAMA - Xinerama no longer supported by the X11 backend
+* SDL_HINT_VIDEO_X11_XVIDMODE - Xvidmode no longer supported by the X11 backend
 
 * Renamed hints SDL_HINT_VIDEODRIVER and SDL_HINT_AUDIODRIVER to SDL_HINT_VIDEO_DRIVER and SDL_HINT_AUDIO_DRIVER
 * Renamed environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER
@@ -594,46 +596,68 @@ which index is the "opengl" or whatnot driver, you can just pass that string dir
 here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you want SDL
 to decide for you.
 
-SDL_RenderWindowToLogical() and SDL_RenderLogicalToWindow() take floating point coordinates in both directions.
+When a renderer is created, it will automatically set the logical size to the size of
+the window in screen coordinates. For high DPI displays, this will set up scaling from
+window coordinates to pixels. You can disable this scaling with:
+```c
+    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
+```
+
+Mouse and touch events are no longer filtered to change their coordinates, instead you
+can call SDL_ConvertEventToRenderCoordinates() to explicitly map event coordinates into
+the rendering viewport.
+
+SDL_RenderWindowToLogical() and SDL_RenderLogicalToWindow() have been renamed SDL_RenderCoordinatesFromWindow() and SDL_RenderCoordinatesToWindow() and take floating point coordinates in both directions.
+
+The viewport, clipping state, and scale for render targets are now persistent and will remain set whenever they are active.
 
 The following functions have been renamed:
+* SDL_GetRendererOutputSize() => SDL_GetCurrentRenderOutputSize()
+* SDL_RenderCopy() => SDL_RenderTexture()
+* SDL_RenderCopyEx() => SDL_RenderTextureRotated()
 * SDL_RenderCopyExF() => SDL_RenderTextureRotated()
 * SDL_RenderCopyF() => SDL_RenderTexture()
+* SDL_RenderDrawLine() => SDL_RenderLine()
 * SDL_RenderDrawLineF() => SDL_RenderLine()
+* SDL_RenderDrawLines() => SDL_RenderLines()
 * SDL_RenderDrawLinesF() => SDL_RenderLines()
+* SDL_RenderDrawPoint() => SDL_RenderPoint()
 * SDL_RenderDrawPointF() => SDL_RenderPoint()
+* SDL_RenderDrawPoints() => SDL_RenderPoints()
 * SDL_RenderDrawPointsF() => SDL_RenderPoints()
+* SDL_RenderDrawRect() => SDL_RenderRect()
 * SDL_RenderDrawRectF() => SDL_RenderRect()
+* SDL_RenderDrawRects() => SDL_RenderRects()
 * SDL_RenderDrawRectsF() => SDL_RenderRects()
 * SDL_RenderFillRectF() => SDL_RenderFillRect()
 * SDL_RenderFillRectsF() => SDL_RenderFillRects()
 * SDL_RenderGetClipRect() => SDL_GetRenderClipRect()
 * SDL_RenderGetIntegerScale() => SDL_GetRenderIntegerScale()
-* SDL_RenderGetLogicalSize() => SDL_GetRenderLogicalSize()
+* SDL_RenderGetLogicalSize() => SDL_GetRenderLogicalPresentation()
 * SDL_RenderGetMetalCommandEncoder() => SDL_GetRenderMetalCommandEncoder()
 * SDL_RenderGetMetalLayer() => SDL_GetRenderMetalLayer()
 * SDL_RenderGetScale() => SDL_GetRenderScale()
 * SDL_RenderGetViewport() => SDL_GetRenderViewport()
 * SDL_RenderGetWindow() => SDL_GetRenderWindow()
 * SDL_RenderIsClipEnabled() => SDL_RenderClipEnabled()
+* SDL_RenderLogicalToWindow() => SDL_RenderCoordinatesToWindow()
 * SDL_RenderSetClipRect() => SDL_SetRenderClipRect()
 * SDL_RenderSetIntegerScale() => SDL_SetRenderIntegerScale()
-* SDL_RenderSetLogicalSize() => SDL_SetRenderLogicalSize()
+* SDL_RenderSetLogicalSize() => SDL_SetRenderLogicalPresentation()
 * SDL_RenderSetScale() => SDL_SetRenderScale()
 * SDL_RenderSetVSync() => SDL_SetRenderVSync()
 * SDL_RenderSetViewport() => SDL_SetRenderViewport()
+* SDL_RenderWindowToLogical() => SDL_RenderCoordinatesFromWindow()
 
 The following functions have been removed:
-* SDL_RenderCopy()
-* SDL_RenderCopyEx()
-* SDL_RenderDrawLine()
-* SDL_RenderDrawLines()
-* SDL_RenderDrawPoint()
-* SDL_RenderDrawPoints()
-* SDL_RenderDrawRect()
-* SDL_RenderDrawRects()
-* SDL_RenderFillRect()
-* SDL_RenderFillRects()
+* SDL_RenderGetIntegerScale()
+* SDL_RenderSetIntegerScale() - this is now explicit with SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
+* SDL_RenderTargetSupported() - render targets are always supported
+
+The following symbols have been renamed:
+* SDL_ScaleModeBest => SDL_SCALEMODE_BEST
+* SDL_ScaleModeLinear => SDL_SCALEMODE_LINEAR
+* SDL_ScaleModeNearest => SDL_SCALEMODE_NEAREST
 
 ## SDL_rwops.h
 
@@ -962,7 +986,7 @@ Rather than iterating over displays using display index, there is a new function
 ```c
 {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) == 0) {
-        int i, num_displays;
+        int i, num_displays = 0;
         SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
         if (displays) {
             for (i = 0; i < num_displays; ++i) {
@@ -988,6 +1012,29 @@ SDL_DisplayMode now includes the pixel size, the screen size and the relationshi
 
 The refresh rate in SDL_DisplayMode is now a float.
 
+Rather than iterating over display modes using an index, there is a new function SDL_GetFullscreenDisplayModes() to get the list of available fullscreen modes on a display.
+```c
+{
+    SDL_DisplayID display = SDL_GetPrimaryDisplay();
+    int num_modes = 0;
+    SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display, &num_modes);
+    if (modes) {
+        for (i = 0; i < num_modes; ++i) {
+            SDL_DisplayMode *mode = modes[i];
+            SDL_Log("Display %" SDL_PRIu32 " mode %d:  %dx%d@%gHz, %d%% scale\n",
+                    display, i, mode->pixel_w, mode->pixel_h, mode->refresh_rate, (int)(mode->display_scale * 100.0f));
+        }
+        SDL_free(modes);
+    }
+}
+```
+
+SDL_GetDesktopDisplayMode() and SDL_GetCurrentDisplayMode() return pointers to display modes rather than filling in application memory.
+
+Windows now have an explicit fullscreen mode that is set, using SDL_SetWindowFullscreenMode(). The fullscreen mode for a window can be queried with SDL_GetWindowFullscreenMode(), which returns a pointer to the mode, or NULL if the window will be fullscreen desktop. SDL_SetWindowFullscreen() just takes a boolean value, setting the correct fullscreen state based on the selected mode.
+
+SDL_WINDOW_FULLSCREEN_DESKTOP has been removed, and you can call SDL_GetWindowFullscreenMode() to see whether an exclusive fullscreen mode will be used or the fullscreen desktop mode will be used when the window is fullscreen.
+
 SDL_SetWindowBrightness and SDL_SetWindowGammaRamp have been removed from the API, because they interact poorly with modern operating systems and aren't able to limit their effects to the SDL window.
 
 Programs which have access to shaders can implement more robust versions of those functions using custom shader code rendered as a post-process effect.
@@ -1003,17 +1050,21 @@ SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0
 SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
 
 The following functions have been renamed:
+* SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode()
 * SDL_GetDisplayDPI() => SDL_GetDisplayPhysicalDPI()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayForRect()
 * SDL_GetWindowDisplayIndex() => SDL_GetDisplayForWindow()
+* SDL_GetWindowDisplayMode() => SDL_GetWindowFullscreenMode()
+* SDL_SetWindowDisplayMode() => SDL_SetWindowFullscreenMode()
 
 The following functions have been removed:
+* SDL_GetClosestFullscreenDisplayMode()
+* SDL_GetDisplayMode()
+* SDL_GetNumDisplayModes() - replaced with SDL_GetFullscreenDisplayModes()
 * SDL_GetNumVideoDisplays() - replaced with SDL_GetDisplays()
 
 SDL_Window id type is named SDL_WindowID
-
-SDL_WINDOW_FULLSCREEN has been renamed SDL_WINDOW_FULLSCREEN_EXCLUSIVE, and SDL_WINDOW_FULLSCREEN_DESKTOP no longer includes the old SDL_WINDOW_FULLSCREEN flag. You can use `(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_MASK) != 0` if you want to check for either state.
 
 The following symbols have been renamed:
 * SDL_WINDOW_INPUT_GRABBED => SDL_WINDOW_MOUSE_GRABBED

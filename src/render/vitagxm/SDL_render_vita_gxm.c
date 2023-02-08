@@ -102,7 +102,7 @@ SDL_RenderDriver VITA_GXM_RenderDriver = {
     .CreateRenderer = VITA_GXM_CreateRenderer,
     .info = {
         .name = "VITA gxm",
-        .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
+        .flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
         .num_texture_formats = 8,
         .texture_formats = {
             [0] = SDL_PIXELFORMAT_ABGR8888,
@@ -253,7 +253,7 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->SetVSync = VITA_GXM_SetVSync;
 
     renderer->info = VITA_GXM_RenderDriver.info;
-    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
     renderer->window = window;
 
@@ -607,7 +607,7 @@ static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *te
      or SCE_GXM_TEXTURE_FILTER_LINEAR (good for scaling)
      */
 
-    int vitaScaleMode = (scaleMode == SDL_ScaleModeNearest
+    int vitaScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST
                              ? SCE_GXM_TEXTURE_FILTER_POINT
                              : SCE_GXM_TEXTURE_FILTER_LINEAR);
     gxm_texture_set_filters(vita_texture->tex, vitaScaleMode, vitaScaleMode);
@@ -1106,7 +1106,7 @@ static int VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rec
         return SDL_OutOfMemory();
     }
 
-    SDL_GetRendererOutputSize(renderer, &w, &h);
+    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
 
     read_pixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
                 rect->w, rect->h, temp_pixels);

@@ -74,8 +74,6 @@ static SDL_VideoDevice *VIVANTE_Create()
     /* Setup all functions which we can handle */
     device->VideoInit = VIVANTE_VideoInit;
     device->VideoQuit = VIVANTE_VideoQuit;
-    device->GetDisplayModes = VIVANTE_GetDisplayModes;
-    device->SetDisplayMode = VIVANTE_SetDisplayMode;
     device->CreateSDLWindow = VIVANTE_CreateWindow;
     device->SetWindowTitle = VIVANTE_SetWindowTitle;
     device->SetWindowPosition = VIVANTE_SetWindowPosition;
@@ -159,7 +157,6 @@ static int VIVANTE_AddVideoDisplays(_THIS)
     SDL_zero(display);
     display.name = VIVANTE_GetDisplayName(_this);
     display.desktop_mode = mode;
-    display.current_mode = mode;
     display.driverdata = data;
     if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
         return -1;
@@ -240,17 +237,6 @@ void VIVANTE_VideoQuit(_THIS)
         videodata->egl_handle = NULL;
     }
 #endif
-}
-
-void VIVANTE_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
-{
-    /* Only one display mode available, the current one */
-    SDL_AddDisplayMode(display, &display->current_mode);
-}
-
-int VIVANTE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
-{
-    return 0;
 }
 
 int VIVANTE_CreateWindow(_THIS, SDL_Window *window)

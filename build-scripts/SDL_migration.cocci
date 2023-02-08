@@ -294,9 +294,12 @@ expression e1, e2, e3;
 @@
 typedef PFN_vkGetInstanceProcAddr;
 @@
+(
+  (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr()
+|
 + (PFN_vkGetInstanceProcAddr)
   SDL_Vulkan_GetVkGetInstanceProcAddr()
-
+)
 
 // SDL_PauseAudioDevice / SDL_PlayAudioDevice
 @@
@@ -716,7 +719,8 @@ expression e1, e2, e3, e4, e5, e6, e7, e8, e9;
 @@
 // SDL_CreateRenderer:
 // 2nd argument changed from int (default=-1) to const char* (default=NULL)
-expression e1, e2, e3;
+expression e1, e3;
+int e2;
 @@
 
 (
@@ -1774,15 +1778,12 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 + SDL_GetRenderClipRect
   (...)
 @@
+SDL_Renderer *renderer;
+int *e1;
+int *e2;
 @@
-- SDL_RenderGetIntegerScale
-+ SDL_GetRenderIntegerScale
-  (...)
-@@
-@@
-- SDL_RenderGetLogicalSize
-+ SDL_GetRenderLogicalSize
-  (...)
+- SDL_RenderGetLogicalSize(renderer, e1, e2)
++ SDL_GetRenderLogicalPresentation(renderer, e1, e2, NULL, NULL)
 @@
 @@
 - SDL_RenderGetMetalCommandEncoder
@@ -1819,15 +1820,17 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 + SDL_SetRenderClipRect
   (...)
 @@
+SDL_Renderer *renderer;
+expression e1;
+expression e2;
 @@
-- SDL_RenderSetIntegerScale
-+ SDL_SetRenderIntegerScale
-  (...)
-@@
-@@
-- SDL_RenderSetLogicalSize
-+ SDL_SetRenderLogicalSize
-  (...)
+(
+- SDL_RenderSetLogicalSize(renderer, 0, 0)
++ SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_ScaleModeNearest)
+|
+- SDL_RenderSetLogicalSize(renderer, e1, e2)
++ SDL_SetRenderLogicalPresentation(renderer, e1, e2, SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_ScaleModeLinear)
+)
 @@
 @@
 - SDL_RenderSetScale
@@ -2172,7 +2175,7 @@ expression e;
 @@
 @@
 - SDL_TEXTEDITING_EXT
-+ SDL_EVENT_TEXTEDITING_EXT
++ SDL_EVENT_TEXT_EDITING_EXT
 @@
 @@
 - SDL_MOUSEMOTION
@@ -2333,10 +2336,6 @@ SDL_GetDisplayPhysicalDPI(e1,
 - e2,
   e3, e4)
 @@
-- SDL_WINDOW_FULLSCREEN
-+ SDL_WINDOW_FULLSCREEN_EXCLUSIVE
-@@
-@@
 - SDL_WINDOW_INPUT_GRABBED
 + SDL_WINDOW_MOUSE_GRABBED
 @@
@@ -2363,4 +2362,143 @@ SDL_DisplayMode e;
 @@
 - SDL_GetWindowDisplayIndex
 + SDL_GetDisplayForWindow
+  (...)
+@@
+@@
+- SDL_SetWindowDisplayMode
++ SDL_SetWindowFullscreenMode
+  (...)
+@@
+@@
+- SDL_GetWindowDisplayMode
++ SDL_GetWindowFullscreenMode
+  (...)
+@@
+@@
+- SDL_GetClosestDisplayMode
++ SDL_GetClosestFullscreenDisplayMode
+  (...)
+@@
+@@
+- SDL_GetRendererOutputSize
++ SDL_GetCurrentRenderOutputSizeInPixels
+  (...)
+@@
+@@
+- SDL_RenderWindowToLogical
++ SDL_RenderCoordinatesFromWindow
+  (...)
+@@
+@@
+- SDL_RenderLogicalToWindow
++ SDL_RenderCoordinatesToWindow
+  (...)
+@@
+symbol SDL_ScaleModeNearest;
+@@
+- SDL_ScaleModeNearest
++ SDL_SCALEMODE_NEAREST
+@@
+symbol SDL_ScaleModeLinear;
+@@
+- SDL_ScaleModeLinear
++ SDL_SCALEMODE_LINEAR
+@@
+symbol SDL_ScaleModeBest;
+@@
+- SDL_ScaleModeBest
++ SDL_SCALEMODE_BEST
+@@
+@@
+- SDL_RenderCopy
++ SDL_RenderTexture
+  (...)
+@@
+@@
+- SDL_RenderCopyEx
++ SDL_RenderTextureRotated
+  (...)
+@@
+SDL_Renderer *renderer;
+constant c1;
+constant c2;
+constant c3;
+constant c4;
+expression e1;
+expression e2;
+expression e3;
+expression e4;
+@@
+- SDL_RenderDrawLine(renderer,
++ SDL_RenderLine(renderer,
+(
+  c1
+|
+- e1
++ (float)e1
+)
+  ,
+(
+  c2
+|
+- e2
++ (float)e2
+)
+  ,
+(
+  c3
+|
+- e3
++ (float)e3
+)
+  ,
+(
+  c4
+|
+- e4
++ (float)e4
+)
+  )
+@@
+@@
+- SDL_RenderDrawLines
++ SDL_RenderLines
+  (...)
+@@
+SDL_Renderer *renderer;
+constant c1;
+constant c2;
+expression e1;
+expression e2;
+@@
+- SDL_RenderDrawPoint(renderer,
++ SDL_RenderPoint(renderer,
+(
+  c1
+|
+- e1
++ (float)e1
+)
+  ,
+(
+  c2
+|
+- e2
++ (float)e2
+)
+  )
+@@
+@@
+- SDL_RenderDrawPoints
++ SDL_RenderPoints
+  (...)
+@@
+@@
+- SDL_RenderDrawRect
++ SDL_RenderRect
+  (...)
+@@
+@@
+- SDL_RenderDrawRects
++ SDL_RenderRects
   (...)

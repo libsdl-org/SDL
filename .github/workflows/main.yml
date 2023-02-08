@@ -26,8 +26,8 @@ jobs:
         - { name: Windows (ucrt64),         os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64, artifact: 'SDL-msys2-ucrt64' }
         - { name: Ubuntu 20.04,             os: ubuntu-20.04,   shell: sh, artifact: 'SDL-ubuntu20.04' }
         - { name: Ubuntu 22.04,             os: ubuntu-22.04,   shell: sh, artifact: 'SDL-ubuntu22.04' }
-        - { name: MacOS (Framework),  os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DSDL_FRAMEWORK=ON', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework' }
-        - { name: MacOS (GNU prefix), os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64"', artifact: 'SDL-macos-gnu' }
+        - { name: MacOS (Framework),  os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework' }
+        - { name: MacOS (GNU prefix), os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64" -DCLANG_TIDY_BINARY="$(brew --prefix llvm)/bin/clang-tidy"', artifact: 'SDL-macos-gnu' }
 
     steps:
     - name: Set up MSYS2
@@ -40,6 +40,7 @@ jobs:
           ${{ matrix.platform.msys-env }}-cmake
           ${{ matrix.platform.msys-env }}-ninja
           ${{ matrix.platform.msys-env }}-pkg-config
+          ${{ matrix.platform.msys-env }}-clang-tools-extra
 
     - name: Setup Linux dependencies
       if: runner.os == 'Linux'
@@ -61,7 +62,8 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install \
-          ninja
+          ninja \
+          llvm
     - uses: actions/checkout@v3
     - name: Check that versioning is consistent
       # We only need to run this once: arbitrarily use the Linux/CMake build
@@ -75,6 +77,7 @@ jobs:
           -DSDL_WERROR=ON \
           -DSDL_INSTALL_TESTS=ON \
           -DSDL_VENDOR_INFO="Github Workflow" \
+          -DSDL_CLANG_TIDY=ON \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_BUILD_TYPE=Release \
           ${{ matrix.platform.cmake }}

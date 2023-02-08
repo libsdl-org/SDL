@@ -106,8 +106,9 @@ struct SDL_Window
     int max_w, max_h;
     int last_pixel_w, last_pixel_h;
     Uint32 flags;
-    Uint32 last_fullscreen_flags;
-    SDL_DisplayID displayID;
+    SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
+    SDL_bool last_fullscreen_exclusive;  /* The last fullscreen_exclusive setting */
+    SDL_DisplayID last_displayID;
 
     /* Stored position and size for windowed mode */
     SDL_Rect windowed;
@@ -138,7 +139,7 @@ struct SDL_Window
     SDL_Window *next;
 };
 #define SDL_WINDOW_FULLSCREEN_VISIBLE(W)        \
-    ((((W)->flags & SDL_WINDOW_FULLSCREEN_MASK) != 0) &&   \
+    ((((W)->flags & SDL_WINDOW_FULLSCREEN) != 0) &&   \
      (((W)->flags & SDL_WINDOW_HIDDEN) == 0) && \
      (((W)->flags & SDL_WINDOW_MINIMIZED) == 0))
 
@@ -150,11 +151,11 @@ struct SDL_VideoDisplay
 {
     SDL_DisplayID id;
     char *name;
-    int max_display_modes;
-    int num_display_modes;
-    SDL_DisplayMode *display_modes;
+    int max_fullscreen_modes;
+    int num_fullscreen_modes;
+    SDL_DisplayMode *fullscreen_modes;
     SDL_DisplayMode desktop_mode;
-    SDL_DisplayMode current_mode;
+    const SDL_DisplayMode *current_mode;
     SDL_DisplayOrientation orientation;
 
     SDL_Window *fullscreen_window;
@@ -231,7 +232,7 @@ struct SDL_VideoDevice
     /*
      * Get a list of the available display modes for a display.
      */
-    void (*GetDisplayModes)(_THIS, SDL_VideoDisplay *display);
+    int (*GetDisplayModes)(_THIS, SDL_VideoDisplay *display);
 
     /*
      * Setting the display mode is independent of creating windows, so
@@ -302,7 +303,7 @@ struct SDL_VideoDevice
     int (*GL_SetSwapInterval)(_THIS, int interval);
     int (*GL_GetSwapInterval)(_THIS, int *interval);
     int (*GL_SwapWindow)(_THIS, SDL_Window *window);
-    void (*GL_DeleteContext)(_THIS, SDL_GLContext context);
+    int (*GL_DeleteContext)(_THIS, SDL_GLContext context);
     void (*GL_DefaultProfileConfig)(_THIS, int *mask, int *major, int *minor);
 
     /* * * */
@@ -336,7 +337,7 @@ struct SDL_VideoDevice
     /* Text input */
     void (*StartTextInput)(_THIS);
     void (*StopTextInput)(_THIS);
-    void (*SetTextInputRect)(_THIS, const SDL_Rect *rect);
+    int (*SetTextInputRect)(_THIS, const SDL_Rect *rect);
     void (*ClearComposition)(_THIS);
     SDL_bool (*IsTextInputShown)(_THIS);
 
@@ -505,11 +506,11 @@ extern SDL_VideoDevice *SDL_GetVideoDevice(void);
 extern SDL_bool SDL_IsVideoContextExternal(void);
 extern SDL_DisplayID SDL_AddBasicVideoDisplay(const SDL_DisplayMode *desktop_mode);
 extern SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send_event);
-extern void SDL_DelVideoDisplay(SDL_DisplayID display);
-extern SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
-extern void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
+extern void SDL_DelVideoDisplay(SDL_DisplayID display, SDL_bool send_event);
+extern SDL_bool SDL_AddFullscreenDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
+extern void SDL_ResetFullscreenDisplayModes(SDL_VideoDisplay *display);
 extern void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
-extern void SDL_ResetDisplayModes(SDL_VideoDisplay *display);
+extern void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
 extern SDL_VideoDisplay *SDL_GetVideoDisplay(SDL_DisplayID display);
 extern SDL_VideoDisplay *SDL_GetVideoDisplayForWindow(SDL_Window *window);
 extern int SDL_GetDisplayIndex(SDL_DisplayID displayID);

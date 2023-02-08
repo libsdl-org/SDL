@@ -502,12 +502,6 @@ static void D3D12_DestroyRenderer(SDL_Renderer *renderer)
     SDL_free(renderer);
 }
 
-static int D3D12_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
-{
-    SDL_GetWindowSizeInPixels(renderer->window, w, h);
-    return 0;
-}
-
 static D3D12_BLEND GetBlendFunc(SDL_BlendFactor factor)
 {
     switch (factor) {
@@ -1438,7 +1432,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         SDL_OutOfMemory();
         return -1;
     }
-    textureData->scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? D3D12_FILTER_MIN_MAG_MIP_POINT : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? D3D12_FILTER_MIN_MAG_MIP_POINT : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 
     texture->driverdata = textureData;
     textureData->mainTextureFormat = textureFormat;
@@ -2082,7 +2076,7 @@ static void D3D12_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
         return;
     }
 
-    textureData->scaleMode = (scaleMode == SDL_ScaleModeNearest) ? D3D12_FILTER_MIN_MAG_MIP_POINT : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? D3D12_FILTER_MIN_MAG_MIP_POINT : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 }
 
 static int D3D12_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -2972,7 +2966,6 @@ D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
     data->identity = MatrixIdentity();
 
     renderer->WindowEvent = D3D12_WindowEvent;
-    renderer->GetOutputSize = D3D12_GetOutputSize;
     renderer->SupportsBlendMode = D3D12_SupportsBlendMode;
     renderer->CreateTexture = D3D12_CreateTexture;
     renderer->UpdateTexture = D3D12_UpdateTexture;
@@ -2995,10 +2988,10 @@ D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->DestroyTexture = D3D12_DestroyTexture;
     renderer->DestroyRenderer = D3D12_DestroyRenderer;
     renderer->info = D3D12_RenderDriver.info;
-    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
 
-    if ((flags & SDL_RENDERER_PRESENTVSYNC)) {
+    if (flags & SDL_RENDERER_PRESENTVSYNC) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
     renderer->SetVSync = D3D12_SetVSync;
@@ -3025,12 +3018,10 @@ SDL_RenderDriver D3D12_RenderDriver = {
     D3D12_CreateRenderer,
     {
         "direct3d12",
-        (
-            SDL_RENDERER_ACCELERATED |
-            SDL_RENDERER_PRESENTVSYNC |
-            SDL_RENDERER_TARGETTEXTURE), /* flags.  see SDL_RendererFlags */
-        6,                               /* num_texture_formats */
-        {                                /* texture_formats */
+        (SDL_RENDERER_ACCELERATED |
+         SDL_RENDERER_PRESENTVSYNC), /* flags.  see SDL_RendererFlags */
+        6,                           /* num_texture_formats */
+        {                            /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_RGB888,
           SDL_PIXELFORMAT_YV12,

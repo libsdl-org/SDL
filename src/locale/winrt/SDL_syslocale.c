@@ -27,7 +27,7 @@
 /*using namespace Windows::Graphics::Display;*/
 #include <wchar.h>
 
-void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     WCHAR wbuffer[128] = L"";
     int ret = 0;
@@ -50,4 +50,5 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             buf[i] = (char)wbuffer[i]; /* assume this was ASCII anyhow. */
         }
     }
+    return 0;
 }

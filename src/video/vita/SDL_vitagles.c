@@ -100,7 +100,7 @@ SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window)
 
     EGLCHK(eglInitialize(display, NULL, NULL));
     wdata->uses_gles = SDL_TRUE;
-    window->flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    window->flags |= SDL_WINDOW_FULLSCREEN;
 
     EGLCHK(eglBindAPI(EGL_OPENGL_ES_API));
 
@@ -191,14 +191,13 @@ int VITA_GLES_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
+int VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_VideoData *phdata = _this->driverdata;
     EGLBoolean status;
 
     if (phdata->egl_initialized != SDL_TRUE) {
-        SDL_SetError("VITA: GLES initialization failed, no OpenGL ES support");
-        return;
+        return SDL_SetError("VITA: GLES initialization failed, no OpenGL ES support");
     }
 
     /* Check if OpenGL ES connection has been initialized */
@@ -207,13 +206,12 @@ void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
             status = eglDestroyContext(_this->gl_data->display, context);
             if (status != EGL_TRUE) {
                 /* Error during OpenGL ES context destroying */
-                SDL_SetError("VITA: OpenGL ES context destroy error");
-                return;
+                return SDL_SetError("VITA: OpenGL ES context destroy error");
             }
         }
     }
 
-    return;
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
