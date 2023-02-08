@@ -855,23 +855,6 @@ int SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect)
     return SDL_GetDisplayBounds(displayID, rect);
 }
 
-int SDL_GetDisplayPhysicalDPI(SDL_DisplayID displayID, float *ddpi, float *hdpi, float *vdpi)
-{
-    SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
-
-    CHECK_DISPLAY_MAGIC(display, -1);
-
-    if (_this->GetDisplayPhysicalDPI) {
-        if (_this->GetDisplayPhysicalDPI(_this, display, ddpi, hdpi, vdpi) < 0) {
-            return -1;
-        } else {
-            return 0;
-        }
-    } else {
-        return SDL_Unsupported();
-    }
-}
-
 SDL_DisplayOrientation SDL_GetDisplayOrientation(SDL_DisplayID displayID)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
@@ -4621,16 +4604,6 @@ int SDL_SetWindowHitTest(SDL_Window *window, SDL_HitTest callback, void *callbac
     window->hit_test_data = callback_data;
 
     return 0;
-}
-
-float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
-{
-    float den2 = hinches * hinches + vinches * vinches;
-    if (den2 <= 0.0f) {
-        return 0.0f;
-    }
-
-    return (float)(SDL_sqrt((double)hpix * (double)hpix + (double)vpix * (double)vpix) / SDL_sqrt((double)den2));
 }
 
 /*

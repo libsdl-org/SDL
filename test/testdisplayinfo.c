@@ -53,18 +53,11 @@ int main(int argc, char *argv[])
     for (i = 0; i < num_displays; i++) {
         SDL_DisplayID dpy = displays[i];
         SDL_Rect rect = { 0, 0, 0, 0 };
-        float ddpi, hdpi, vdpi;
         int m, num_modes = 0;
 
         SDL_GetDisplayBounds(dpy, &rect);
         modes = SDL_GetFullscreenDisplayModes(dpy, &num_modes);
         SDL_Log("%" SDL_PRIu32 ": \"%s\" (%dx%d, (%d, %d)), %d fullscreen modes.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, num_modes);
-
-        if (SDL_GetDisplayPhysicalDPI(dpy, &ddpi, &hdpi, &vdpi) == -1) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DPI: failed to query (%s)\n", SDL_GetError());
-        } else {
-            SDL_Log("    DPI: ddpi=%f; hdpi=%f; vdpi=%f\n", ddpi, hdpi, vdpi);
-        }
 
         mode = SDL_GetCurrentDisplayMode(dpy);
         if (mode) {

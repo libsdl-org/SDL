@@ -369,9 +369,6 @@ static int X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput output
     displaydata->screen = screen;
     displaydata->visual = vinfo.visual;
     displaydata->depth = vinfo.depth;
-    displaydata->hdpi = display_mm_width ? (((float)mode.pixel_w) * 25.4f / display_mm_width) : 0.0f;
-    displaydata->vdpi = display_mm_height ? (((float)mode.pixel_h) * 25.4f / display_mm_height) : 0.0f;
-    displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.pixel_w, mode.pixel_h, ((float)display_mm_width) / 25.4f, ((float)display_mm_height) / 25.4f);
     displaydata->scanline_pad = scanline_pad;
     displaydata->x = display_x;
     displaydata->y = display_y;
@@ -522,29 +519,6 @@ static int X11_InitModes_XRandR(_THIS)
 }
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
 
-static int GetXftDPI(Display *dpy)
-{
-    char *xdefault_resource;
-    int xft_dpi, err;
-
-    xdefault_resource = X11_XGetDefault(dpy, "Xft", "dpi");
-
-    if (xdefault_resource == NULL) {
-        return 0;
-    }
-
-    /*
-     * It's possible for SDL_atoi to call SDL_strtol, if it fails due to a
-     * overflow or an underflow, it will return LONG_MAX or LONG_MIN and set
-     * errno to ERANGE. So we need to check for this so we dont get crazy dpi
-     * values
-     */
-    xft_dpi = SDL_atoi(xdefault_resource);
-    err = errno;
-
-    return err == ERANGE ? 0 : xft_dpi;
-}
-
 /* This is used if there's no better functionality--like XRandR--to use.
    It won't attempt to supply different display modes at all, but it can
    enumerate the current displays and their current sizes. */
@@ -555,7 +529,7 @@ static int X11_InitModes_StdXlib(_THIS)
     Display *dpy = data->display;
     const int default_screen = DefaultScreen(dpy);
     Screen *screen = ScreenOfDisplay(dpy, default_screen);
-    int display_mm_width, display_mm_height, xft_dpi, scanline_pad, n, i;
+    int scanline_pad, n, i;
     SDL_DisplayModeData *modedata;
     SDL_DisplayData *displaydata;
     SDL_DisplayMode mode;
@@ -592,21 +566,9 @@ static int X11_InitModes_StdXlib(_THIS)
     }
     mode.driverdata = modedata;
 
-    display_mm_width = WidthMMOfScreen(screen);
-    display_mm_height = HeightMMOfScreen(screen);
-
     displaydata->screen = default_screen;
     displaydata->visual = vinfo.visual;
     displaydata->depth = vinfo.depth;
-    displaydata->hdpi = display_mm_width ? (((float)mode.pixel_w) * 25.4f / display_mm_width) : 0.0f;
-    displaydata->vdpi = display_mm_height ? (((float)mode.pixel_h) * 25.4f / display_mm_height) : 0.0f;
-    displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.pixel_w, mode.pixel_h, ((float)display_mm_width) / 25.4f, ((float)display_mm_height) / 25.4f);
-
-    xft_dpi = GetXftDPI(dpy);
-    if (xft_dpi > 0) {
-        displaydata->hdpi = (float)xft_dpi;
-        displaydata->vdpi = (float)xft_dpi;
-    }
 
     scanline_pad = SDL_BYTESPERPIXEL(pixelformat) * 8;
     pixmapformats = X11_XListPixmapFormats(dpy, &n);
@@ -822,23 +784,6 @@ int X11_GetDisplayBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect)
     rect->w = sdl_display->current_mode->screen_w;
     rect->h = sdl_display->current_mode->screen_h;
     return 0;
-}
-
-int X11_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi)
-{
-    SDL_DisplayData *data = sdl_display->driverdata;
-
-    if (ddpi) {
-        *ddpi = data->ddpi;
-    }
-    if (hdpi) {
-        *hdpi = data->hdpi;
-    }
-    if (vdpi) {
-        *vdpi = data->vdpi;
-    }
-
-    return data->ddpi != 0.0f ? 0 : SDL_SetError("Couldn't get DPI");
 }
 
 int X11_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect)

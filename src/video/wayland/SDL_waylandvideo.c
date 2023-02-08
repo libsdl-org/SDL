@@ -67,8 +67,6 @@ static void display_handle_done(void *data, struct wl_output *output);
 static int Wayland_VideoInit(_THIS);
 
 static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
-static int Wayland_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
-
 static void Wayland_VideoQuit(_THIS);
 
 /* Find out what class name we should use
@@ -207,7 +205,6 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->VideoInit = Wayland_VideoInit;
     device->VideoQuit = Wayland_VideoQuit;
     device->GetDisplayBounds = Wayland_GetDisplayBounds;
-    device->GetDisplayPhysicalDPI = Wayland_GetDisplayPhysicalDPI;
     device->GetWindowWMInfo = Wayland_GetWindowWMInfo;
     device->SuspendScreenSaver = Wayland_SuspendScreenSaver;
 
@@ -636,23 +633,6 @@ static void display_handle_done(void *data,
         AddEmulatedModes(driverdata, native_mode.pixel_w, native_mode.pixel_h);
     }
 
-    /* Calculate the display DPI */
-    if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-        driverdata->hdpi = driverdata->physical_height ? (((float)driverdata->pixel_height) * 25.4f / driverdata->physical_height) : 0.0f;
-        driverdata->vdpi = driverdata->physical_width ? (((float)driverdata->pixel_width) * 25.4f / driverdata->physical_width) : 0.0f;
-        driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->pixel_height,
-                                                  driverdata->pixel_width,
-                                                  ((float)driverdata->physical_height) / 25.4f,
-                                                  ((float)driverdata->physical_width) / 25.4f);
-    } else {
-        driverdata->hdpi = driverdata->physical_width ? (((float)driverdata->pixel_width) * 25.4f / driverdata->physical_width) : 0.0f;
-        driverdata->vdpi = driverdata->physical_height ? (((float)driverdata->pixel_height) * 25.4f / driverdata->physical_height) : 0.0f;
-        driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->pixel_width,
-                                                  driverdata->pixel_height,
-                                                  ((float)driverdata->physical_width) / 25.4f,
-                                                  ((float)driverdata->physical_height) / 25.4f);
-    }
-
     if (driverdata->display == 0) {
         /* First time getting display info, create the VideoDisplay */
         SDL_bool send_event = driverdata->videodata->initializing ? SDL_FALSE : SDL_TRUE;
@@ -986,23 +966,6 @@ static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *
         rect->h = display->current_mode->screen_h;
     }
     return 0;
-}
-
-static int Wayland_GetDisplayPhysicalDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
-{
-    SDL_DisplayData *driverdata = display->driverdata;
-
-    if (ddpi) {
-        *ddpi = driverdata->ddpi;
-    }
-    if (hdpi) {
-        *hdpi = driverdata->hdpi;
-    }
-    if (vdpi) {
-        *vdpi = driverdata->vdpi;
-    }
-
-    return driverdata->ddpi != 0.0f ? 0 : SDL_SetError("Couldn't get DPI");
 }
 
 static void Wayland_VideoCleanup(_THIS)
