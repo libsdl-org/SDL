@@ -567,7 +567,7 @@ void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_SuspendScreenSaver(_THIS)
+int Cocoa_SuspendScreenSaver(_THIS)
 {
     @autoreleasepool {
         SDL_VideoData *data = _this->driverdata;
@@ -592,6 +592,7 @@ void Cocoa_SuspendScreenSaver(_THIS)
             data.screensaver_assertion = assertion;
         }
     }
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */

@@ -2151,9 +2151,9 @@ int Android_JNI_SendMessage(int command, int param)
     return success ? 0 : -1;
 }
 
-void Android_JNI_SuspendScreenSaver(SDL_bool suspend)
+int Android_JNI_SuspendScreenSaver(SDL_bool suspend)
 {
-    Android_JNI_SendMessage(COMMAND_SET_KEEP_SCREEN_ON, (suspend == SDL_FALSE) ? 0 : 1);
+    return Android_JNI_SendMessage(COMMAND_SET_KEEP_SCREEN_ON, (suspend == SDL_FALSE) ? 0 : 1);
 }
 
 void Android_JNI_ShowTextInput(SDL_Rect *inputRect)

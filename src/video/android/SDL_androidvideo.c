@@ -66,9 +66,9 @@ SDL_sem *Android_PauseSem = NULL;
 SDL_sem *Android_ResumeSem = NULL;
 SDL_mutex *Android_ActivityMutex = NULL;
 
-static void Android_SuspendScreenSaver(_THIS)
+static int Android_SuspendScreenSaver(_THIS)
 {
-    Android_JNI_SuspendScreenSaver(_this->suspend_screensaver);
+    return Android_JNI_SuspendScreenSaver(_this->suspend_screensaver);
 }
 
 static void Android_DeleteDevice(SDL_VideoDevice *device)

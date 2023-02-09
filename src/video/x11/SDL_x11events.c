@@ -1726,7 +1726,7 @@ void X11_PumpEvents(_THIS)
     }
 }
 
-void X11_SuspendScreenSaver(_THIS)
+int X11_SuspendScreenSaver(_THIS)
 {
 #if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
     SDL_VideoData *data = _this->driverdata;
@@ -1736,7 +1736,7 @@ void X11_SuspendScreenSaver(_THIS)
 
 #if SDL_USE_LIBDBUS
     if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
-        return;
+        return 0;
     }
 
     if (_this->suspend_screensaver) {
@@ -1751,13 +1751,15 @@ void X11_SuspendScreenSaver(_THIS)
             !X11_XScreenSaverQueryVersion(data->display,
                                           &major_version, &minor_version) ||
             major_version < 1 || (major_version == 1 && minor_version < 1)) {
-            return;
+            return SDL_Unsupported();
         }
 
         X11_XScreenSaverSuspend(data->display, _this->suspend_screensaver);
         X11_XResetScreenSaver(data->display);
+        return 0;
     }
 #endif
+    return SDL_Unsupported();
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */

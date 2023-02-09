@@ -1557,12 +1557,15 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ScreenSaverEnabled(void);
 /**
  * Allow the screen to be blanked by a screen saver.
  *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DisableScreenSaver
  * \sa SDL_ScreenSaverEnabled
  */
-extern DECLSPEC void SDLCALL SDL_EnableScreenSaver(void);
+extern DECLSPEC int SDLCALL SDL_EnableScreenSaver(void);
 
 /**
  * Prevent the screen from being blanked by a screen saver.
@@ -1573,12 +1576,15 @@ extern DECLSPEC void SDLCALL SDL_EnableScreenSaver(void);
  * The screensaver is disabled by default since SDL 2.0.2. Before SDL 2.0.2
  * the screensaver was enabled by default.
  *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_EnableScreenSaver
  * \sa SDL_ScreenSaverEnabled
  */
-extern DECLSPEC void SDLCALL SDL_DisableScreenSaver(void);
+extern DECLSPEC int SDLCALL SDL_DisableScreenSaver(void);
 
 
 /**

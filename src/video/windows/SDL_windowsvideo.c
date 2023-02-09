@@ -58,13 +58,14 @@ static void SDLCALL UpdateWindowFrameUsableWhileCursorHidden(void *userdata, con
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-static void WIN_SuspendScreenSaver(_THIS)
+static int WIN_SuspendScreenSaver(_THIS)
 {
     if (_this->suspend_screensaver) {
         SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
     } else {
         SetThreadExecutionState(ES_CONTINUOUS);
     }
+    return 0;
 }
 #endif
 

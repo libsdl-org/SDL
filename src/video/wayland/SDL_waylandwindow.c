@@ -2005,13 +2005,13 @@ void Wayland_SetWindowTitle(_THIS, SDL_Window *window)
     WAYLAND_wl_display_flush(viddata->display);
 }
 
-void Wayland_SuspendScreenSaver(_THIS)
+int Wayland_SuspendScreenSaver(_THIS)
 {
     SDL_VideoData *data = _this->driverdata;
 
 #if SDL_USE_LIBDBUS
     if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
-        return;
+        return 0;
     }
 #endif
 
@@ -2040,6 +2040,8 @@ void Wayland_SuspendScreenSaver(_THIS)
             window = window->next;
         }
     }
+
+    return 0;
 }
 
 void Wayland_DestroyWindow(_THIS, SDL_Window *window)

@@ -3219,32 +3219,36 @@ SDL_bool SDL_ScreenSaverEnabled()
     return _this->suspend_screensaver ? SDL_FALSE : SDL_TRUE;
 }
 
-void SDL_EnableScreenSaver()
+int SDL_EnableScreenSaver()
 {
     if (_this == NULL) {
-        return;
+        return 0;
     }
     if (!_this->suspend_screensaver) {
-        return;
+        return 0;
     }
     _this->suspend_screensaver = SDL_FALSE;
     if (_this->SuspendScreenSaver) {
-        _this->SuspendScreenSaver(_this);
+        return _this->SuspendScreenSaver(_this);
     }
+
+    return SDL_Unsupported();
 }
 
-void SDL_DisableScreenSaver()
+int SDL_DisableScreenSaver()
 {
     if (_this == NULL) {
-        return;
+        return 0;
     }
     if (_this->suspend_screensaver) {
-        return;
+        return 0;
     }
     _this->suspend_screensaver = SDL_TRUE;
     if (_this->SuspendScreenSaver) {
-        _this->SuspendScreenSaver(_this);
+        return _this->SuspendScreenSaver(_this);
     }
+
+    return SDL_Unsupported();
 }
 
 void SDL_VideoQuit(void)

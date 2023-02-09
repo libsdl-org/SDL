@@ -86,7 +86,7 @@ void Android_JNI_HapticRun(int device_id, float intensity, int length);
 void Android_JNI_HapticStop(int device_id);
 
 /* Video */
-void Android_JNI_SuspendScreenSaver(SDL_bool suspend);
+int Android_JNI_SuspendScreenSaver(SDL_bool suspend);
 
 /* Touch support */
 void Android_JNI_InitTouch(void);
