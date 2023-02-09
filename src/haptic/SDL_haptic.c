@@ -330,7 +330,7 @@ SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
 /*
  * Closes a SDL_Haptic device.
  */
-void SDL_HapticClose(SDL_Haptic *haptic)
+int SDL_HapticClose(SDL_Haptic *haptic)
 {
     int i;
     SDL_Haptic *hapticlist;
@@ -338,12 +338,12 @@ void SDL_HapticClose(SDL_Haptic *haptic)
 
     /* Must be valid */
     if (!ValidHaptic(haptic)) {
-        return;
+        return SDL_InvalidParamError("haptic");
     }
 
     /* Check if it's still in use */
     if (--haptic->ref_count > 0) {
-        return;
+        return 0; /* nothing to do */
     }
 
     /* Close it, properly removing effects if needed */
@@ -374,6 +374,7 @@ void SDL_HapticClose(SDL_Haptic *haptic)
 
     /* Free */
     SDL_free(haptic);
+    return 0;
 }
 
 /*
@@ -562,18 +563,22 @@ int SDL_HapticStopEffect(SDL_Haptic *haptic, int effect)
 /*
  * Gets rid of a haptic effect.
  */
-void SDL_HapticDestroyEffect(SDL_Haptic *haptic, int effect)
+int SDL_HapticDestroyEffect(SDL_Haptic *haptic, int effect)
 {
-    if (!ValidHaptic(haptic) || !ValidEffect(haptic, effect)) {
-        return;
+    if (!ValidHaptic(haptic)) {
+        return SDL_InvalidParamError("haptic");
+    }
+    if (!ValidEffect(haptic, effect)) {
+        return SDL_InvalidParamError("effect");
     }
 
     /* Not allocated */
     if (haptic->effects[effect].hweffect == NULL) {
-        return;
+        return 0; /* nothing to do */
     }
 
     SDL_SYS_HapticDestroyEffect(haptic, &haptic->effects[effect]);
+    return 0;
 }
 
 /*

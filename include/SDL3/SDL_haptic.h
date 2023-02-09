@@ -337,8 +337,8 @@ typedef struct SDL_Haptic SDL_Haptic;
 #define SDL_HAPTIC_SPHERICAL  2
 
 /**
- *  \brief Use this value to play an effect on the steering wheel axis. This 
- *  provides better compatibility across platforms and devices as SDL will guess 
+ *  \brief Use this value to play an effect on the steering wheel axis. This
+ *  provides better compatibility across platforms and devices as SDL will guess
  *  the correct axis.
  *  \sa SDL_HapticDirection
  */
@@ -970,12 +970,14 @@ extern DECLSPEC SDL_Haptic *SDLCALL SDL_HapticOpenFromJoystick(SDL_Joystick *
  * Close a haptic device previously opened with SDL_HapticOpen().
  *
  * \param haptic the SDL_Haptic device to close
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HapticOpen
  */
-extern DECLSPEC void SDLCALL SDL_HapticClose(SDL_Haptic * haptic);
+extern DECLSPEC int SDLCALL SDL_HapticClose(SDL_Haptic * haptic);
 
 /**
  * Get the number of effects a haptic device can store.
@@ -1154,12 +1156,14 @@ extern DECLSPEC int SDLCALL SDL_HapticStopEffect(SDL_Haptic * haptic,
  *
  * \param haptic the SDL_Haptic device to destroy the effect on
  * \param effect the ID of the haptic effect to destroy
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HapticNewEffect
  */
-extern DECLSPEC void SDLCALL SDL_HapticDestroyEffect(SDL_Haptic * haptic,
+extern DECLSPEC int SDLCALL SDL_HapticDestroyEffect(SDL_Haptic * haptic,
                                                      int effect);
 
 /**
