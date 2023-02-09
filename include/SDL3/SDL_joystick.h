@@ -773,15 +773,17 @@ extern DECLSPEC void SDLCALL SDL_UpdateJoysticks(void);
  *
  * \param joystick an SDL_Joystick structure containing joystick information
  * \param axis the axis to query; the axis indices start at index 0
- * \returns a 16-bit signed integer representing the current position of the
- *          axis or 0 on failure; call SDL_GetError() for more information.
+ * \param state filled with a 16-bit signed integer representing the current position of the axis
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetNumJoystickAxes
  */
-extern DECLSPEC Sint16 SDLCALL SDL_GetJoystickAxis(SDL_Joystick *joystick,
-                                                   int axis);
+extern DECLSPEC int SDLCALL SDL_GetJoystickAxis(SDL_Joystick *joystick,
+                                                int axis,
+                                                Sint16 *state);
 
 /**
  * Get the initial state of an axis control on a joystick.

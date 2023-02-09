@@ -816,24 +816,26 @@ int SDL_GetNumJoystickButtons(SDL_Joystick *joystick)
 /*
  * Get the current state of an axis control on a joystick
  */
-Sint16 SDL_GetJoystickAxis(SDL_Joystick *joystick, int axis)
+int SDL_GetJoystickAxis(SDL_Joystick *joystick, int axis, Sint16 *state)
 {
-    Sint16 state;
-
     SDL_LockJoysticks();
     {
-        CHECK_JOYSTICK_MAGIC(joystick, 0);
+        CHECK_JOYSTICK_MAGIC(joystick, -1);
 
         if (axis < joystick->naxes) {
-            state = joystick->axes[axis].value;
+            if (state) {
+                *state = joystick->axes[axis].value;
+            }
         } else {
             SDL_SetError("Joystick only has %d axes", joystick->naxes);
-            state = 0;
+            if (state) {
+                *state = 0;
+            }
         }
     }
     SDL_UnlockJoysticks();
 
-    return state;
+    return 0;
 }
 
 /*

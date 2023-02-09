@@ -2278,7 +2278,7 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
                 SDL_bool valid_output_range;
 
                 if (binding->inputType == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                    value = SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis);
+                    SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis, &value);
                     if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
                         valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
                     } else {
@@ -2358,8 +2358,8 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
             if (binding->outputType == SDL_GAMEPAD_BINDTYPE_BUTTON && binding->output.button == button) {
                 if (binding->inputType == SDL_GAMEPAD_BINDTYPE_AXIS) {
                     SDL_bool valid_input_range;
-
-                    int value = SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis);
+                    int value = 0;
+                    SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis, &value);
                     int threshold = binding->input.axis.axis_min + (binding->input.axis.axis_max - binding->input.axis.axis_min) / 2;
                     if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
                         valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);

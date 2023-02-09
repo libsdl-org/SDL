@@ -313,7 +313,7 @@ SDL_DYNAPI_PROC(Uint32,SDL_GetGlobalMouseState,(float *a, float *b),(a,b),return
 SDL_DYNAPI_PROC(SDL_Window*,SDL_GetGrabbedWindow,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetHint,(const char *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GetHintBoolean,(const char *a, SDL_bool b),(a,b),return)
-SDL_DYNAPI_PROC(Sint16,SDL_GetJoystickAxis,(SDL_Joystick *a, int b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetJoystickAxis,(SDL_Joystick *a, int b, Sint16 *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GetJoystickAxisInitialState,(SDL_Joystick *a, int b, Sint16 *c),(a,b,c),return)
 SDL_DYNAPI_PROC(Uint8,SDL_GetJoystickButton,(SDL_Joystick *a, int b),(a,b),return)
 SDL_DYNAPI_PROC(Uint16,SDL_GetJoystickFirmwareVersion,(SDL_Joystick *a),(a),return)
