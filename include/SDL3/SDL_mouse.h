@@ -214,8 +214,6 @@ extern DECLSPEC int SDLCALL SDL_WarpMouseGlobal(float x, float y);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- *          If relative mode is not supported, this returns -1.
- *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRelativeMouseMode
@@ -259,7 +257,7 @@ extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled);
  * `SDL_HINT_MOUSE_AUTO_CAPTURE` hint to zero.
  *
  * \param enabled SDL_TRUE to enable capturing, SDL_FALSE to disable.
- * \returns 0 on success or -1 if not supported; call SDL_GetError() for more
+ * \returns 0 on success or a negative error code if not supported; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.

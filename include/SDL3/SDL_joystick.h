@@ -188,7 +188,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetJoystickInstancePath(SDL_JoystickID i
  * This can be called before any joysticks are opened.
  *
  * \param instance_id the joystick instance ID
- * \returns the player index of a joystick, or -1 if it's not available
+ * \returns the player index of a joystick, or a negative error code if it's not available
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -373,7 +373,7 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystickEx(const SDL_Vir
  *
  * \param instance_id the joystick instance ID, previously returned from
  *                    SDL_AttachVirtualJoystick()
- * \returns 0 on success, or -1 if an error occurred.
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -405,7 +405,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsJoystickVirtual(SDL_JoystickID instance_i
  * \param joystick the virtual joystick on which to set state.
  * \param axis the specific axis on the virtual joystick to set.
  * \param value the new value for the specified axis.
- * \returns 0 on success, -1 on error.
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -423,7 +423,7 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualAxis(SDL_Joystick *joystick, i
  * \param joystick the virtual joystick on which to set state.
  * \param button the specific button on the virtual joystick to set.
  * \param value the new value for the specified button.
- * \returns 0 on success, -1 on error.
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -441,7 +441,7 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualButton(SDL_Joystick *joystick,
  * \param joystick the virtual joystick on which to set state.
  * \param hat the specific hat on the virtual joystick to set.
  * \param value the new value for the specified hat.
- * \returns 0 on success, -1 on error.
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -481,7 +481,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetJoystickPath(SDL_Joystick *joystick);
  * will not be able to supply this information.
  *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick()
- * \returns the player index, or -1 if it's not available.
+ * \returns the player index, or a negative error code if it's not available.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -868,7 +868,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick,
  * \param high_frequency_rumble The intensity of the high frequency (right)
  *                              rumble motor, from 0 to 0xFFFF
  * \param duration_ms The duration of the rumble effect, in milliseconds
- * \returns 0, or -1 if rumble isn't supported on this joystick
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -893,7 +893,7 @@ extern DECLSPEC int SDLCALL SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 lo
  * \param right_rumble The intensity of the right trigger rumble motor, from 0
  *                     to 0xFFFF
  * \param duration_ms The duration of the rumble effect, in milliseconds
- * \returns 0, or -1 if trigger rumble isn't supported on this joystick
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -948,7 +948,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumbleTriggers(SDL_Joystick *joy
  * \param red The intensity of the red LED
  * \param green The intensity of the green LED
  * \param blue The intensity of the blue LED
- * \returns 0 on success, -1 if this joystick does not have a modifiable LED
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -960,7 +960,7 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red
  * \param joystick The joystick to affect
  * \param data The data to send to the joystick
  * \param size The size of the data to send to the joystick
- * \returns 0, or -1 if this joystick or driver doesn't support effect packets
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

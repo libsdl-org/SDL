@@ -356,7 +356,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetAudioDeviceName(int index,
  * \param iscapture non-zero to query the list of recording devices, zero to
  *                  query the list of output devices.
  * \param spec The SDL_AudioSpec to be initialized by this function.
- * \returns 0 on success, nonzero on error
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -390,7 +390,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  * \param spec The SDL_AudioSpec to be initialized by this function.
  * \param iscapture non-zero to query the default recording device, zero to
  *                  query the default output device.
- * \returns 0 on success, nonzero on error
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -705,7 +705,8 @@ typedef struct SDL_AudioStream SDL_AudioStream;
  * \param dst_format The format of the desired audio output
  * \param dst_channels The number of channels of the desired audio output
  * \param dst_rate The sampling rate of the desired audio output
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -729,7 +730,7 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(SDL_AudioFormat s
  * \param stream The stream the audio data is being added to
  * \param buf A pointer to the audio data to add
  * \param len The number of bytes to write to the stream
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -748,7 +749,7 @@ extern DECLSPEC int SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, cons
  * \param stream The stream the audio is being requested from
  * \param buf A buffer to fill with audio data
  * \param len The maximum number of bytes to fill
- * \returns the number of bytes read from the stream, or -1 on error
+ * \returns the number of bytes read from the stream, or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1140,8 +1141,8 @@ extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
  * \param dst_data Will be filled with a pointer to converted audio data,
  *                 which should be freed with SDL_free().
  * \param dst_len Will be filled with the len of dst_data
- * \returns 0 on success or a negative error code on failure. On error,
- *          *dst_data will be NULL and so not allocated.
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
+ * On error, *dst_data will be NULL and so not allocated.
  *
  * \since This function is available since SDL 3.0.0.
  *

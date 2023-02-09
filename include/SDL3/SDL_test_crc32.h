@@ -76,7 +76,7 @@ extern "C" {
  *
  * \param crcContext        pointer to context variable
  *
- * \returns 0 for OK, -1 on error
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  */
  int SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext);
@@ -90,7 +90,7 @@ extern "C" {
  * \param inLen              length of input buffer
  * \param crc32              pointer to Uint32 to store the final CRC into
  *
- * \returns 0 for OK, -1 on error
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  */
 int SDLTest_Crc32Calc(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32);
@@ -106,7 +106,7 @@ int SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, C
  *
  * \param crcContext        pointer to context variable
  *
- * \returns 0 for OK, -1 on error
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
 */
 

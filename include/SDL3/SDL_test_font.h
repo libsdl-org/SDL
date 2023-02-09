@@ -49,7 +49,7 @@ extern "C" {
  *  \param y The Y coordinate of the upper left corner of the character.
  *  \param c The character to draw.
  *
- *  \returns 0 on success, -1 on failure.
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  */
 int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c);
 
@@ -63,7 +63,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c);
  *  \param y The Y coordinate of the upper left corner of the string.
  *  \param s The string to draw.
  *
- *  \returns 0 on success, -1 on failure.
+ *  \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  */
 int SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s);
 
