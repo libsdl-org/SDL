@@ -255,7 +255,7 @@ extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
  * rationale being that the SDL headers can avoid including jni.h.
  *
  * \returns a pointer to Java native interface object (JNIEnv) to which the
- *          current thread is attached, or 0 on error.
+ *          current thread is attached, or NULL on error.
  *
  * \since This function is available since SDL 3.0.0.
  *
