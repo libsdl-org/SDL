@@ -869,7 +869,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, int *h
  * Get the size of a window's borders (decorations) around the client area, in
  * screen coordinates.
  *
- * Note: If this function fails (returns -1), the size values will be
+ * Note: If this function fails, the size values will be
  * initialized to 0, 0, 0, 0 (if a non-NULL pointer is provided), as if the
  * window in question was borderless.
  *
@@ -879,7 +879,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, int *h
  * window has been presented and composited, so that the window system has a
  * chance to decorate the window and provide the border dimensions to SDL.
  *
- * This function also returns -1 if getting the information is not supported.
+ * This function also returns negative error code if getting the information is not supported.
  *
  * \param window the window to query the size values of the border
  *               (decorations) from
@@ -1370,7 +1370,7 @@ extern DECLSPEC const SDL_Rect *SDLCALL SDL_GetWindowMouseRect(SDL_Window *windo
  * The parameter `opacity` will be clamped internally between 0.0f
  * (transparent) and 1.0f (opaque).
  *
- * This function also returns -1 if setting the opacity isn't supported.
+ * This function also returns negative error code if setting the opacity isn't supported.
  *
  * \param window the window which will be made transparent or opaque
  * \param opacity the opacity value (0.0f - transparent, 1.0f - opaque)
@@ -1391,7 +1391,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window *window, float opaci
  *
  * The parameter `opacity` is ignored if it is NULL.
  *
- * This function also returns -1 if an invalid window was provided.
+ * This function also returns negative error code if an invalid window was provided.
  *
  * \param window the window to get the current opacity value from
  * \param out_opacity the float filled in (0.0f - transparent, 1.0f - opaque)
@@ -1487,7 +1487,7 @@ typedef SDL_HitTestResult (SDLCALL *SDL_HitTest)(SDL_Window *win,
  * Specifying NULL for a callback disables hit-testing. Hit-testing is
  * disabled by default.
  *
- * Platforms that don't support this functionality will return -1
+ * Platforms that don't support this functionality will return negative code
  * unconditionally, even if you're attempting to disable hit-testing.
  *
  * Your callback may fire at any time, and its firing does not indicate any
@@ -1501,7 +1501,7 @@ typedef SDL_HitTestResult (SDLCALL *SDL_HitTest)(SDL_Window *win,
  * \param window the window to set hit-testing on
  * \param callback the function to call when doing a hit-test
  * \param callback_data an app-defined void pointer passed to **callback**
- * \returns 0 on success or -1 on error (including unsupported); call
+ * \returns 0 on success or a negative error code (including unsupported); call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1883,7 +1883,7 @@ extern DECLSPEC void SDLCALL SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArray
  * the vertical retrace for a given frame, it swaps buffers immediately, which
  * might be less jarring for the user during occasional framerate drops. If an
  * application requests adaptive vsync and the system does not support it,
- * this function will fail and return -1. In such a case, you should probably
+ * this function will fail and return a negative error code. In such a case, you should probably
  * retry the call with 1 for the interval.
  *
  * Adaptive vsync is implemented for some glX drivers with
@@ -1895,7 +1895,7 @@ extern DECLSPEC void SDLCALL SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArray
  *
  * \param interval 0 for immediate updates, 1 for updates synchronized with
  *                 the vertical retrace, -1 for adaptive vsync
- * \returns 0 on success or -1 if setting the swap interval is not supported;
+ * \returns 0 on success or a negative error code if setting the swap interval is not supported;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1912,9 +1912,9 @@ extern DECLSPEC int SDLCALL SDL_GL_SetSwapInterval(int interval);
  *
  * \param interval Output interval value. 0 if there is no vertical retrace
  *                 synchronization, 1 if the buffer swap is synchronized with
- *                 the vertical retrace, and -1 if late swaps happen
+ *                 the vertical retrace, and negative error code if late swaps happen
  *                 immediately instead of waiting for the next retrace
- * \returns 0 on success or -1 error. call SDL_GetError() for more
+ * \returns 0 on success or a negative error code on failure. call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.

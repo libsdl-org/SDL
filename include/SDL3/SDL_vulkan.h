@@ -95,7 +95,7 @@ typedef VkSurfaceKHR SDL_vulkanSurface; /* for compatibility with Tizen */
  * library version.
  *
  * \param path The platform dependent Vulkan loader library name or NULL
- * \returns 0 on success or -1 if the library couldn't be loaded; call
+ * \returns 0 on success or a negative error code if the library couldn't be loaded; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.

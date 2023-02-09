@@ -555,7 +555,7 @@ extern DECLSPEC SDL_AudioStatus SDLCALL SDL_GetAudioDeviceStatus(SDL_AudioDevice
  *
  * \param dev a device opened by SDL_OpenAudioDevice()
  * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. 
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -580,7 +580,7 @@ extern DECLSPEC int SDLCALL SDL_PlayAudioDevice(SDL_AudioDeviceID dev);
  *
  * \param dev a device opened by SDL_OpenAudioDevice()
  * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. 
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -705,7 +705,8 @@ typedef struct SDL_AudioStream SDL_AudioStream;
  * \param dst_format The format of the desired audio output
  * \param dst_channels The number of channels of the desired audio output
  * \param dst_rate The sampling rate of the desired audio output
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -729,7 +730,7 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(SDL_AudioFormat s
  * \param stream The stream the audio data is being added to
  * \param buf A pointer to the audio data to add
  * \param len The number of bytes to write to the stream
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success, or a negative error code.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -748,7 +749,7 @@ extern DECLSPEC int SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, cons
  * \param stream The stream the audio is being requested from
  * \param buf A buffer to fill with audio data
  * \param len The maximum number of bytes to fill
- * \returns the number of bytes read from the stream, or -1 on error
+ * \returns the number of bytes read from the stream, or a negative error code
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1025,7 +1026,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetQueuedAudioSize(SDL_AudioDeviceID dev);
  *
  * \param dev the device ID of which to clear the audio queue
  * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. 
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1079,7 +1080,7 @@ extern DECLSPEC int SDLCALL SDL_ClearQueuedAudio(SDL_AudioDeviceID dev);
  *
  * \param dev the ID of the device to be locked
  * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. 
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

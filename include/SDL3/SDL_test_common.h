@@ -151,7 +151,7 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags);
  * \param state The common state describing the test window to create.
  * \param index The index of the argument to process in argv[].
  *
- * \returns the number of arguments processed (i.e. 1 for --fullscreen, 2 for --video [videodriver], or -1 on error.
+ * \returns the number of arguments processed (i.e. 1 for --fullscreen, 2 for --video [videodriver], or a negative error code.
  */
 int SDLTest_CommonArg(SDLTest_CommonState *state, int index);
 

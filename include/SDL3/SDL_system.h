@@ -158,7 +158,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, 
  *
  * \param threadID the Unix thread ID to change priority of.
  * \param priority The new, Unix-specific, priority value.
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success, or a negative error code.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -173,7 +173,7 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int prio
  * \param sdlPriority The new SDL_ThreadPriority value.
  * \param schedPolicy The new scheduling policy (SCHED_FIFO, SCHED_RR,
  *                    SCHED_OTHER, etc...)
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success, or a negative error code.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -432,7 +432,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permis
  *
  * Shows toast in UI thread.
  *
- * For the `gravity` parameter, choose a value from here, or -1 if you don't
+ * For the `gravity` parameter, choose a value from here, or a negative error code if you don't
  * have a preference:
  *
  * https://developer.android.com/reference/android/view/Gravity
@@ -442,7 +442,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permis
  * \param gravity where the notification should appear on the screen.
  * \param xoffset set this parameter only when gravity >=0
  * \param yoffset set this parameter only when gravity >=0
- * \returns 0 if success, -1 if any error occurs.
+ * \returns 0 if success, negative error code if any error occurs.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -600,7 +600,7 @@ typedef struct XTaskQueueObject * XTaskQueueHandle;
  * leak.
  *
  * \param outTaskQueue a pointer to be filled in with task queue handle.
- * \returns 0 if success, -1 if any error occurs.
+ * \returns 0 if success, negative error code if any error occurs.
  *
  * \since This function is available since SDL 3.0.0.
  */

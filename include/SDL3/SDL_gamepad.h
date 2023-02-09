@@ -174,7 +174,7 @@ typedef struct SDL_GamepadBinding
  *
  * \param mappingString the mapping string
  * \returns 1 if a new mapping is added, 0 if an existing mapping is updated,
- *          -1 on error; call SDL_GetError() for more information.
+ *          negative error code; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -202,7 +202,7 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mappingString);
  *
  * \param rw the data stream for the mappings to be added
  * \param freerw non-zero to close the stream after being read
- * \returns the number of mappings added or -1 on error; call SDL_GetError()
+ * \returns the number of mappings added or a negative error code; call SDL_GetError()
  *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -339,7 +339,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetGamepadInstancePath(SDL_JoystickID in
  * This can be called before any gamepads are opened.
  *
  * \param instance_id the joystick instance ID
- * \returns the player index of a gamepad, or -1 if it's not available
+ * \returns the player index of a gamepad, or a negative error code if it's not available
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -525,7 +525,7 @@ extern DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadType(SDL_Gamepad *gamepad)
  * For XInput gamepads this returns the XInput user index.
  *
  * \param gamepad the gamepad object to query.
- * \returns the player index for gamepad, or -1 if it's not available.
+ * \returns the player index for gamepad, or a negative error code if it's not available.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -879,7 +879,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_
  * \param gamepad The gamepad to update
  * \param type The type of sensor to enable/disable
  * \param enabled Whether data reporting should be enabled
- * \returns 0 or -1 if an error occurred.
+ * \returns 0 or a negative error code if an error occurred.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -917,7 +917,7 @@ extern DECLSPEC float SDLCALL SDL_GetGamepadSensorDataRate(SDL_Gamepad *gamepad,
  * \param type The type of sensor to query
  * \param data A pointer filled with the current sensor state
  * \param num_values The number of values to write to data
- * \return 0 or -1 if an error occurred.
+ * \return 0 or a negative error code if an error occurred.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -935,7 +935,7 @@ extern DECLSPEC int SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_S
  * \param high_frequency_rumble The intensity of the high frequency (right)
  *                              rumble motor, from 0 to 0xFFFF
  * \param duration_ms The duration of the rumble effect, in milliseconds
- * \returns 0, or -1 if rumble isn't supported on this gamepad
+ * \returns 0, or a negative error code if rumble isn't supported on this gamepad
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -959,7 +959,7 @@ extern DECLSPEC int SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_f
  * \param right_rumble The intensity of the right trigger rumble motor, from 0
  *                     to 0xFFFF
  * \param duration_ms The duration of the rumble effect, in milliseconds
- * \returns 0, or -1 if trigger rumble isn't supported on this gamepad
+ * \returns 0, or a negative error code if trigger rumble isn't supported on this gamepad
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1011,7 +1011,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GamepadHasRumbleTriggers(SDL_Gamepad *gamep
  * \param red The intensity of the red LED
  * \param green The intensity of the green LED
  * \param blue The intensity of the blue LED
- * \returns 0, or -1 if this gamepad does not have a modifiable LED
+ * \returns 0, or a negative error code if this gamepad does not have a modifiable LED
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1023,7 +1023,7 @@ extern DECLSPEC int SDLCALL SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, U
  * \param gamepad The gamepad to affect
  * \param data The data to send to the gamepad
  * \param size The size of the data to send to the gamepad
- * \returns 0, or -1 if this gamepad or driver doesn't support effect packets
+ * \returns 0, or a negative error code if this gamepad or driver doesn't support effect packets
  *
  * \since This function is available since SDL 3.0.0.
  */
