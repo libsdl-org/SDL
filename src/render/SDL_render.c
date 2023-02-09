@@ -4089,9 +4089,9 @@ static int SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroyi
     return 0;
 }
 
-int SDL_DestroyTexture(SDL_Texture *texture)
+void SDL_DestroyTexture(SDL_Texture *texture)
 {
-    return SDL_DestroyTextureInternal(texture, SDL_FALSE /* is_destroying */);
+    SDL_DestroyTextureInternal(texture, SDL_FALSE /* is_destroying */);
 }
 
 static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
@@ -4116,9 +4116,9 @@ static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
     }
 }
 
-int SDL_DestroyRenderer(SDL_Renderer *renderer)
+void SDL_DestroyRenderer(SDL_Renderer *renderer)
 {
-    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_RENDERER_MAGIC(renderer,);
 
     SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
 
@@ -4147,7 +4147,6 @@ int SDL_DestroyRenderer(SDL_Renderer *renderer)
 
     /* Free the renderer instance */
     renderer->DestroyRenderer(renderer);
-    return 0;
 }
 
 int SDL_GL_BindTexture(SDL_Texture *texture, float *texw, float *texh)

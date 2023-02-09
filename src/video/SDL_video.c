@@ -3128,11 +3128,11 @@ SDL_Window *SDL_GetFocusWindow(void)
     return NULL;
 }
 
-int SDL_DestroyWindow(SDL_Window *window)
+void SDL_DestroyWindow(SDL_Window *window)
 {
     SDL_VideoDisplay *display;
 
-    CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_MAGIC(window,);
 
     window->is_destroying = SDL_TRUE;
 
@@ -3209,7 +3209,6 @@ int SDL_DestroyWindow(SDL_Window *window)
     }
 
     SDL_free(window);
-    return 0;
 }
 
 SDL_bool SDL_ScreenSaverEnabled()
