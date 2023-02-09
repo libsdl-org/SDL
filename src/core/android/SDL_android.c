@@ -2401,7 +2401,7 @@ int SDL_AndroidGetExternalStorageState(Uint32 *state)
     jmethodID mid;
     jclass cls;
     jstring stateString;
-    const char *str_state;
+    const char *state_string;
     int stateFlags;
 
     JNIEnv *env = Android_JNI_GetEnv();
@@ -2418,20 +2418,20 @@ int SDL_AndroidGetExternalStorageState(Uint32 *state)
                                     "getExternalStorageState", "()Ljava/lang/String;");
     stateString = (jstring)(*env)->CallStaticObjectMethod(env, cls, mid);
 
-    str_state = (*env)->GetStringUTFChars(env, stateString, NULL);
+    state_string = (*env)->GetStringUTFChars(env, stateString, NULL);
 
     /* Print an info message so people debugging know the storage state */
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "external storage state: %s", str_state);
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "external storage state: %s", state_string);
 
-    if (SDL_strcmp(str_state, "mounted") == 0) {
+    if (SDL_strcmp(state_string, "mounted") == 0) {
         stateFlags = SDL_ANDROID_EXTERNAL_STORAGE_READ |
                      SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
-    } else if (SDL_strcmp(str_state, "mounted_ro") == 0) {
+    } else if (SDL_strcmp(state_string, "mounted_ro") == 0) {
         stateFlags = SDL_ANDROID_EXTERNAL_STORAGE_READ;
     } else {
         stateFlags = 0;
     }
-    (*env)->ReleaseStringUTFChars(env, stateString, str_state);
+    (*env)->ReleaseStringUTFChars(env, stateString, state_string);
 
     LocalReferenceHolder_Cleanup(&refs);
     if (state) {
