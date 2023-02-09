@@ -84,7 +84,7 @@ static int WINRT_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 
 /* Misc functions */
 static ABI::Windows::System::Display::IDisplayRequest *WINRT_CreateDisplayRequest(_THIS);
-extern void WINRT_SuspendScreenSaver(_THIS);
+extern int WINRT_SuspendScreenSaver(_THIS);
 
 /* SDL-internal globals: */
 SDL_Window *WINRT_GlobalSDLWindow = NULL;
@@ -837,7 +837,7 @@ done:
     return pDisplayRequest;
 }
 
-void WINRT_SuspendScreenSaver(_THIS)
+int WINRT_SuspendScreenSaver(_THIS)
 {
     SDL_VideoData *driverdata = _this->driverdata;
     if (driverdata && driverdata->displayRequest) {
@@ -848,6 +848,7 @@ void WINRT_SuspendScreenSaver(_THIS)
             displayRequest->RequestRelease();
         }
     }
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINRT */

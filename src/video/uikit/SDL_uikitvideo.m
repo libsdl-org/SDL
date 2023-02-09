@@ -164,7 +164,7 @@ void UIKit_VideoQuit(_THIS)
     UIKit_QuitModes(_this);
 }
 
-void UIKit_SuspendScreenSaver(_THIS)
+int UIKit_SuspendScreenSaver(_THIS)
 {
     @autoreleasepool {
         UIApplication *app = [UIApplication sharedApplication];
@@ -172,6 +172,7 @@ void UIKit_SuspendScreenSaver(_THIS)
         /* Prevent the display from dimming and going to sleep. */
         app.idleTimerDisabled = (_this->suspend_screensaver != SDL_FALSE);
     }
+    return 0;
 }
 
 SDL_bool
