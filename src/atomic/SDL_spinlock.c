@@ -166,9 +166,13 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
 #endif
 }
 
-void SDL_AtomicLock(SDL_SpinLock *lock)
+int SDL_AtomicLock(SDL_SpinLock *lock)
 {
     int iterations = 0;
+    if (lock == NULL) {
+        return SDL_InvalidParamError("lock");
+    }
+
     /* FIXME: Should we have an eventual timeout? */
     while (!SDL_AtomicTryLock(lock)) {
         if (iterations < 32) {
@@ -179,10 +183,15 @@ void SDL_AtomicLock(SDL_SpinLock *lock)
             SDL_Delay(0);
         }
     }
+    return 0;
 }
 
-void SDL_AtomicUnlock(SDL_SpinLock *lock)
+int SDL_AtomicUnlock(SDL_SpinLock *lock)
 {
+    if (lock == NULL) {
+        return SDL_InvalidParamError("lock");
+    }
+
 #if HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
     __sync_lock_release(lock);
 
@@ -205,4 +214,5 @@ void SDL_AtomicUnlock(SDL_SpinLock *lock)
 #else
     *lock = 0;
 #endif
+    return 0;
 }

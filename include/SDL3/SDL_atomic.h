@@ -117,13 +117,15 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AtomicTryLock(SDL_SpinLock *lock);
  * doing. Please be careful using any sort of spinlock!***
  *
  * \param lock a pointer to a lock variable
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AtomicTryLock
  * \sa SDL_AtomicUnlock
  */
-extern DECLSPEC void SDLCALL SDL_AtomicLock(SDL_SpinLock *lock);
+extern DECLSPEC int SDLCALL SDL_AtomicLock(SDL_SpinLock *lock);
 
 /**
  * Unlock a spin lock by setting it to 0.
@@ -134,13 +136,15 @@ extern DECLSPEC void SDLCALL SDL_AtomicLock(SDL_SpinLock *lock);
  * doing. Please be careful using any sort of spinlock!***
  *
  * \param lock a pointer to a lock variable
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AtomicLock
  * \sa SDL_AtomicTryLock
  */
-extern DECLSPEC void SDLCALL SDL_AtomicUnlock(SDL_SpinLock *lock);
+extern DECLSPEC int SDLCALL SDL_AtomicUnlock(SDL_SpinLock *lock);
 
 /* @} *//* SDL AtomicLock */
 
