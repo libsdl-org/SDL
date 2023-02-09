@@ -227,7 +227,9 @@ void loop(void *arg)
         SDL_SetRenderDrawColor(screen, 0xFF, 0x00, 0x00, SDL_ALPHA_OPAQUE);
         for (i = 0; i < SDL_GetNumJoystickAxes(joystick); ++i) {
             /* Draw the X/Y axis */
-            SDL_GetJoystickAxis(joystick, i, &x);
+            Sint16 val16 = 0;
+            SDL_GetJoystickAxis(joystick, i, &val16);
+            x = val16;
             x += 32768;
             x *= SCREEN_WIDTH;
             x /= 65535;
@@ -238,7 +240,9 @@ void loop(void *arg)
             }
             ++i;
             if (i < SDL_GetNumJoystickAxes(joystick)) {
-                SDL_GetJoystickAxis(joystick, i, &y);
+                val16 = 0;
+                SDL_GetJoystickAxis(joystick, i, &val16);
+                y = val16;
                 y += 32768;
             } else {
                 y = 32768;
