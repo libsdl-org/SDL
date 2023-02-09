@@ -1090,14 +1090,12 @@ extern DECLSPEC int SDLCALL SDL_LockAudioDevice(SDL_AudioDeviceID dev);
  * This function should be paired with a previous SDL_LockAudioDevice() call.
  *
  * \param dev the ID of the device to be unlocked
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. 
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LockAudioDevice
  */
-extern DECLSPEC int SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
+extern DECLSPEC void SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
 /* @} *//* Audio lock functions */
 
 /**
@@ -1117,14 +1115,12 @@ extern DECLSPEC int SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
  * for reuse in a new SDL_OpenAudioDevice() call immediately.
  *
  * \param dev an audio device previously opened with SDL_OpenAudioDevice()
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. 
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_OpenAudioDevice
  */
-extern DECLSPEC int SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
+extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
 
 /**
  * Convert some audio data of one format to another format.

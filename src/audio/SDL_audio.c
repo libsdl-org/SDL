@@ -1553,25 +1553,23 @@ int SDL_LockAudioDevice(SDL_AudioDeviceID devid)
     return 0;
 }
 
-int SDL_UnlockAudioDevice(SDL_AudioDeviceID devid)
+void SDL_UnlockAudioDevice(SDL_AudioDeviceID devid)
 {
     /* Obtain a lock on the mixing buffers */
     SDL_AudioDevice *device = get_audio_device(devid);
     if (!device) {
-        return SDL_InvalidParamError("devid");
+        return;
     }
     current_audio.impl.UnlockDevice(device);
-    return 0;
 }
 
-int SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
+void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
     if (!device) {
-        return SDL_InvalidParamError("devid");
+        return;
     }
     close_audio_device(device);
-    return 0;
 }
 
 void SDL_QuitAudio(void)

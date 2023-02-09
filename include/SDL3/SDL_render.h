@@ -1439,15 +1439,13 @@ extern DECLSPEC int SDLCALL SDL_RenderPresent(SDL_Renderer *renderer);
  * to "Invalid texture".
  *
  * \param texture the texture to destroy
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateTexture
  * \sa SDL_CreateTextureFromSurface
  */
-extern DECLSPEC int SDLCALL SDL_DestroyTexture(SDL_Texture *texture);
+extern DECLSPEC void SDLCALL SDL_DestroyTexture(SDL_Texture *texture);
 
 /**
  * Destroy the rendering context for a window and free associated textures.
@@ -1456,14 +1454,12 @@ extern DECLSPEC int SDLCALL SDL_DestroyTexture(SDL_Texture *texture);
  * the SDL error message to "Invalid renderer". See SDL_GetError().
  *
  * \param renderer the rendering context
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRenderer
  */
-extern DECLSPEC int SDLCALL SDL_DestroyRenderer(SDL_Renderer *renderer);
+extern DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_Renderer *renderer);
 
 /**
  * Force the rendering context to flush any pending commands to the underlying

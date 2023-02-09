@@ -1527,15 +1527,13 @@ extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOperati
  * the SDL error message to "Invalid window". See SDL_GetError().
  *
  * \param window the window to destroy
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateWindow
  * \sa SDL_CreateWindowFrom
  */
-extern DECLSPEC int SDLCALL SDL_DestroyWindow(SDL_Window *window);
+extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_Window *window);
 
 
 /**
