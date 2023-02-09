@@ -391,6 +391,8 @@ The functions SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystick
 
 SDL_AttachVirtualJoystick() and SDL_AttachVirtualJoystickEx() now return the joystick instance ID instead of a device index, and return 0 if there was an error.
 
+SDL_GetJoystickAxis() takes the state as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
+
 The following functions have been renamed:
 * SDL_JoystickAttachVirtual() => SDL_AttachVirtualJoystick()
 * SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystickEx()
@@ -936,6 +938,8 @@ The following functions have been renamed:
 
 ## SDL_system.h
 
+SDL_AndroidGetExternalStorageState() takes the state as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
+
 The following functions have been renamed:
 * SDL_RenderGetD3D11Device() => SDL_GetRenderD3D11Device()
 * SDL_RenderGetD3D9Device() => SDL_GetRenderD3D9Device()
@@ -972,6 +976,10 @@ If you were using this macro for other things besides SDL ticks values, you can 
 ```c
 #define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
 ```
+
+## SDL_touch.h
+
+SDL_GetNumTouchFingers() returns a negative error code if there was an error.
 
 ## SDL_version.h
 
