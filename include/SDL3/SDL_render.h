@@ -783,14 +783,11 @@ extern DECLSPEC int SDLCALL SDL_LockTextureToSurface(SDL_Texture *texture,
  *
  * \param texture a texture locked by SDL_LockTexture()
  *
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LockTexture
  */
-extern DECLSPEC int SDLCALL SDL_UnlockTexture(SDL_Texture *texture);
+extern DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_Texture *texture);
 
 /**
  * Set a texture as the current rendering target.

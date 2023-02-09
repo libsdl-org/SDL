@@ -2013,12 +2013,12 @@ static void SDL_UnlockTextureNative(SDL_Texture *texture)
     SDL_UnlockTexture(native);
 }
 
-int SDL_UnlockTexture(SDL_Texture *texture)
+void SDL_UnlockTexture(SDL_Texture *texture)
 {
-    CHECK_TEXTURE_MAGIC(texture, -1);
+    CHECK_TEXTURE_MAGIC(texture,);
 
     if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
-        return 0;
+        return;
     }
 #if SDL_HAVE_YUV
     if (texture->yuv) {
@@ -2034,7 +2034,6 @@ int SDL_UnlockTexture(SDL_Texture *texture)
 
     SDL_DestroySurface(texture->locked_surface);
     texture->locked_surface = NULL;
-    return 0;
 }
 
 static int SDL_SetRenderTargetInternal(SDL_Renderer *renderer, SDL_Texture *texture)
