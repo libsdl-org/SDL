@@ -203,11 +203,6 @@ expression e;
 - SDL_HINT_VIDEODRIVER
 + SDL_HINT_VIDEO_DRIVER
 
-@@
-@@
-- M_PI
-+ SDL_PI_D
-
 // SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in SDL 2.0.
 @@
 @@
