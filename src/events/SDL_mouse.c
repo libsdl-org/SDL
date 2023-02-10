@@ -553,14 +553,14 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
             }
         }
 
-        if (mouse->x > (float)x_max) {
+        if (mouse->x >= (float)(x_max + 1)) {
             mouse->x = (float)x_max;
         }
         if (mouse->x < (float)x_min) {
             mouse->x = (float)x_min;
         }
 
-        if (mouse->y > (float)y_max) {
+        if (mouse->y >= (float)(y_max + 1)) {
             mouse->y = (float)y_max;
         }
         if (mouse->y < (float)y_min) {
