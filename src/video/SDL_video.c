@@ -4565,7 +4565,7 @@ int SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *messag
     if (message == NULL) {
         message = "";
     }
-    EM_ASM_({
+    EM_ASM({
         alert(UTF8ToString($0) + "\n\n" + UTF8ToString($1));
     },
             title, message);
