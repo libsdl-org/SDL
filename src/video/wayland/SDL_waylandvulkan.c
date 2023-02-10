@@ -173,5 +173,3 @@ SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
 }
 
 #endif
-
-/* vim: set ts=4 sw=4 expandtab: */

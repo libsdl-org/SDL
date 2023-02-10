@@ -58,6 +58,3 @@ void SDL_DelayNS(Uint64 ns)
 }
 
 #endif /* SDL_TIMER_PSP */
-
-/* vim: ts=4 sw=4
- */

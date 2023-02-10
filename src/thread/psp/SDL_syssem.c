@@ -143,6 +143,3 @@ int SDL_SemPost(SDL_sem *sem)
 }
 
 #endif /* SDL_THREAD_PSP */
-
-/* vim: ts=4 sw=4
- */
