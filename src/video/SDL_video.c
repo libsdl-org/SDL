@@ -1226,11 +1226,12 @@ SDL_DisplayID SDL_GetDisplayForWindowCoordinate(int coordinate)
     return displayID;
 }
 
-SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
+static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
 {
     SDL_DisplayID displayID = 0;
 
     CHECK_WINDOW_MAGIC(window, 0);
+
     if (_this->GetDisplayForWindow) {
         displayID = _this->GetDisplayForWindow(_this, window);
     }
@@ -1248,9 +1249,40 @@ SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
     if (!displayID) {
         displayID = GetDisplayForRect(window->x, window->y, window->w, window->h);
     }
-    if (!displayID && (window->flags & SDL_WINDOW_FULLSCREEN)) {
-        /* Use the explicit fullscreen display if retrieval via the window position fails */
+    if (!displayID) {
+        /* Use the primary display for a window if we can't find it anywhere else */
+        displayID = SDL_GetPrimaryDisplay();
+    }
+    return displayID;
+}
+
+SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
+{
+    SDL_DisplayID displayID = 0;
+
+    CHECK_WINDOW_MAGIC(window, 0);
+
+    /* An explicit fullscreen display overrides all */
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         displayID = window->fullscreen_mode.displayID;
+    }
+
+    if (!displayID && _this->GetDisplayForWindow) {
+        displayID = _this->GetDisplayForWindow(_this, window);
+    }
+
+    /* A backend implementation may fail to get a display for the window
+     * (for example if the window is off-screen), but other code may expect it
+     * to succeed in that situation, so we fall back to a generic position-
+     * based implementation in that case. */
+    if (!displayID) {
+        displayID = SDL_GetDisplayForWindowCoordinate(window->windowed.x);
+    }
+    if (!displayID) {
+        displayID = SDL_GetDisplayForWindowCoordinate(window->windowed.y);
+    }
+    if (!displayID) {
+        displayID = GetDisplayForRect(window->x, window->y, window->w, window->h);
     }
     if (!displayID) {
         /* Use the primary display for a window if we can't find it anywhere else */
@@ -1261,7 +1293,7 @@ SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
 
 void SDL_CheckWindowDisplayChanged(SDL_Window *window)
 {
-    SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
+    SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
 
     if (displayID != window->last_displayID) {
         int i, display_index;
@@ -1498,17 +1530,8 @@ int SDL_SetWindowFullscreenMode(SDL_Window *window, const SDL_DisplayMode *mode)
 
     if (SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
         SDL_UpdateFullscreenMode(window, SDL_TRUE);
-    } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        /* If fullscreen and not visible, just update the position so the window will be
-         * on the correct display when shown/restored.
-         */
-        if (mode) {
-            SDL_Rect r;
-            if (SDL_GetDisplayBounds(mode->displayID, &r) == 0) {
-                SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, r.x, r.y);
-            }
-        }
     }
+
     return 0;
 }
 
