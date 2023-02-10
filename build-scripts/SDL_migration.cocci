@@ -2321,11 +2321,6 @@ expression e;
 + SDL_EVENT_LAST
 @@
 @@
-- SDL_GetDisplayDPI
-+ SDL_GetDisplayPhysicalDPI
-  (...)
-@@
-@@
 - SDL_WINDOW_INPUT_GRABBED
 + SDL_WINDOW_MOUSE_GRABBED
 @@
