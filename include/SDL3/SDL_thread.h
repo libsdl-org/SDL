@@ -116,11 +116,18 @@ typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
 #define SDL_endthread _endthreadex
 #endif
 
+
+/*
+ * \returns SDL_Thread pointer
+ */
 extern DECLSPEC SDL_Thread *SDLCALL
 SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data,
                  pfnSDL_CurrentBeginThread pfnBeginThread,
                  pfnSDL_CurrentEndThread pfnEndThread);
 
+/*
+ * \returns SDL_Thread pointer
+ */
 extern DECLSPEC SDL_Thread *SDLCALL
 SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn,
                  const char *name, const size_t stacksize, void *data,

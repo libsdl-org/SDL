@@ -166,7 +166,7 @@ extern DECLSPEC SDL_mutex *SDLCALL SDL_CreateMutex(void);
  * other threads in the system (this is known as a "recursive mutex").
  *
  * \param mutex the mutex to lock
- * \return 0, or -1 on error.
+ * \returns 0, or -1 on error.
  *
  * \since This function is available since SDL 3.0.0.
  */

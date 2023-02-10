@@ -580,7 +580,7 @@ extern DECLSPEC int SDLCALL SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_Sc
  *
  * \param texture the texture to query.
  * \param scaleMode a pointer filled in with the current scale mode.
- * \return 0 on success, or -1 if the texture is not valid.
+ * \returns 0 on success, or -1 if the texture is not valid.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -605,7 +605,7 @@ extern DECLSPEC int SDLCALL SDL_SetTextureUserData(SDL_Texture *texture, void *u
  * Get the user-specified pointer associated with a texture
  *
  * \param texture the texture to query.
- * \return the pointer associated with the texture, or NULL if the texture is
+ * \returns the pointer associated with the texture, or NULL if the texture is
  *         not valid.
  *
  * \since This function is available since SDL 3.0.0.
@@ -694,7 +694,7 @@ extern DECLSPEC int SDLCALL SDL_UpdateYUVTexture(SDL_Texture *texture,
  * \param UVplane the raw pixel data for the UV plane.
  * \param UVpitch the number of bytes between rows of pixel data for the UV
  *                plane.
- * \return 0 on success, or -1 if the texture is not valid.
+ * \returns 0 on success, or -1 if the texture is not valid.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1161,7 +1161,7 @@ extern DECLSPEC int SDLCALL SDL_RenderClear(SDL_Renderer *renderer);
  * \param renderer The renderer which should draw a point.
  * \param x The x coordinate of the point.
  * \param y The y coordinate of the point.
- * \return 0 on success, or -1 on error
+ * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1173,7 +1173,7 @@ extern DECLSPEC int SDLCALL SDL_RenderPoint(SDL_Renderer *renderer, float x, flo
  * \param renderer The renderer which should draw multiple points.
  * \param points The points to draw
  * \param count The number of points to draw
- * \return 0 on success, or -1 on error
+ * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1187,7 +1187,7 @@ extern DECLSPEC int SDLCALL SDL_RenderPoints(SDL_Renderer *renderer, const SDL_F
  * \param y1 The y coordinate of the start point.
  * \param x2 The x coordinate of the end point.
  * \param y2 The y coordinate of the end point.
- * \return 0 on success, or -1 on error
+ * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1200,7 +1200,7 @@ extern DECLSPEC int SDLCALL SDL_RenderLine(SDL_Renderer *renderer, float x1, flo
  * \param renderer The renderer which should draw multiple lines.
  * \param points The points along the lines
  * \param count The number of points, drawing count-1 lines
- * \return 0 on success, or -1 on error
+ * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1212,7 +1212,7 @@ extern DECLSPEC int SDLCALL SDL_RenderLines(SDL_Renderer *renderer, const SDL_FP
  * \param renderer The renderer which should draw a rectangle.
  * \param rect A pointer to the destination rectangle, or NULL to outline the
  *             entire rendering target.
- * \return 0 on success, or -1 on error
+ * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1225,7 +1225,7 @@ extern DECLSPEC int SDLCALL SDL_RenderRect(SDL_Renderer *renderer, const SDL_FRe
  * \param renderer The renderer which should draw multiple rectangles.
  * \param rects A pointer to an array of destination rectangles.
  * \param count The number of rectangles.
- * \return 0 on success, or -1 on error
+ * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1238,7 +1238,7 @@ extern DECLSPEC int SDLCALL SDL_RenderRects(SDL_Renderer *renderer, const SDL_FR
  * \param renderer The renderer which should fill a rectangle.
  * \param rect A pointer to the destination rectangle, or NULL for the entire
  *             rendering target.
- * \return 0 on success, or -1 on error
+ * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1251,7 +1251,7 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRect(SDL_Renderer *renderer, const SDL
  * \param renderer The renderer which should fill multiple rectangles.
  * \param rects A pointer to an array of destination rectangles.
  * \param count The number of rectangles.
- * \return 0 on success, or -1 on error
+ * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1267,7 +1267,7 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRects(SDL_Renderer *renderer, const SD
  *                texture.
  * \param dstrect A pointer to the destination rectangle, or NULL for the
  *                entire rendering target.
- * \return 0 on success, or -1 on error
+ * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1290,7 +1290,7 @@ extern DECLSPEC int SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_Textur
  *               around dstrect.w/2, dstrect.h/2).
  * \param flip An SDL_RendererFlip value stating which flipping actions should
  *             be performed on the texture
- * \return 0 on success, or -1 on error
+ * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1312,7 +1312,7 @@ extern DECLSPEC int SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL
  *                array, if NULL all vertices will be rendered in sequential
  *                order.
  * \param num_indices Number of indices.
- * \return 0 on success, or -1 if the operation is not supported
+ * \returns 0 on success, or -1 if the operation is not supported
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1342,7 +1342,7 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  *                if NULL all vertices will be rendered in sequential order.
  * \param num_indices Number of indices.
  * \param size_indices Index size: 1 (byte), 2 (short), 4 (int)
- * \return 0 on success, or -1 if the operation is not supported
+ * \returns 0 on success, or -1 if the operation is not supported
  *
  * \since This function is available since SDL 3.0.0.
  *

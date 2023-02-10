@@ -550,7 +550,7 @@ extern DECLSPEC int SDLCALL SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int 
  * If the vendor ID isn't available this function returns 0.
  *
  * \param gamepad the gamepad object to query.
- * \return the USB vendor ID, or zero if unavailable.
+ * \returns the USB vendor ID, or zero if unavailable.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -562,7 +562,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetGamepadVendor(SDL_Gamepad *gamepad);
  * If the product ID isn't available this function returns 0.
  *
  * \param gamepad the gamepad object to query.
- * \return the USB product ID, or zero if unavailable.
+ * \returns the USB product ID, or zero if unavailable.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -574,7 +574,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetGamepadProduct(SDL_Gamepad *gamepad);
  * If the product version isn't available this function returns 0.
  *
  * \param gamepad the gamepad object to query.
- * \return the USB product version, or zero if unavailable.
+ * \returns the USB product version, or zero if unavailable.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -586,7 +586,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductVersion(SDL_Gamepad *gamepad
  * If the firmware version isn't available this function returns 0.
  *
  * \param gamepad the gamepad object to query.
- * \return the gamepad firmware version, or zero if unavailable.
+ * \returns the gamepad firmware version, or zero if unavailable.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -598,7 +598,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetGamepadFirmwareVersion(SDL_Gamepad *gamepa
  * Returns the serial number of the gamepad, or NULL if it is not available.
  *
  * \param gamepad the gamepad object to query.
- * \return the serial number, or NULL if unavailable.
+ * \returns the serial number, or NULL if unavailable.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -843,6 +843,8 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_Gam
 /**
  * Get the number of touchpads on a gamepad.
  *
+ * \returns number of touchpads
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpads(SDL_Gamepad *gamepad);
@@ -851,12 +853,17 @@ extern DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpads(SDL_Gamepad *gamepad);
  * Get the number of supported simultaneous fingers on a touchpad on a game
  * gamepad.
  *
+ * \returns number of supported simultaneous fingers
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *gamepad, int touchpad);
 
 /**
  * Get the current state of a finger on a touchpad on a gamepad.
+ *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -901,7 +908,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, 
  *
  * \param gamepad The gamepad to query
  * \param type The type of sensor to query
- * \return the data rate, or 0.0f if the data rate is not available.
+ * \returns the data rate, or 0.0f if the data rate is not available.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -917,7 +924,7 @@ extern DECLSPEC float SDLCALL SDL_GetGamepadSensorDataRate(SDL_Gamepad *gamepad,
  * \param type The type of sensor to query
  * \param data A pointer filled with the current sensor state
  * \param num_values The number of values to write to data
- * \return 0 or -1 if an error occurred.
+ * \returns 0 or -1 if an error occurred.
  *
  * \since This function is available since SDL 3.0.0.
  */

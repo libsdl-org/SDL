@@ -456,6 +456,8 @@ extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int durati
  *
  * \param command user command that must be greater or equal to 0x8000
  * \param param user parameter
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
