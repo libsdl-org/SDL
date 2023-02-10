@@ -476,7 +476,7 @@ extern DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetDesktopDisplayMode(SDL_Dis
 extern DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetCurrentDisplayMode(SDL_DisplayID displayID);
 
 /**
- * Get the display containing a point
+ * Get the display containing a point, in screen coordinates.
  *
  * \param point the point to query
  * \returns the instance ID of the display containing the point or 0 on
@@ -490,7 +490,7 @@ extern DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetCurrentDisplayMode(SDL_Dis
 extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForPoint(const SDL_Point *point);
 
 /**
- * Get the display primarily containing a rect
+ * Get the display primarily containing a rect, in screen coordinates.
  *
  * \param rect the rect to query
  * \returns the instance ID of the display entirely containing the rect or
