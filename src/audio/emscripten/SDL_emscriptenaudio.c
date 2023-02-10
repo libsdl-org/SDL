@@ -263,7 +263,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
     this->hidden = (struct SDL_PrivateAudioData *)0x1;
 
     /* limit to native freq */
-    this->spec.freq = EM_ASM_INT_V({
+    this->spec.freq = EM_ASM_INT({
         var SDL3 = Module['SDL3'];
         return SDL3.audioContext.sampleRate;
     });
