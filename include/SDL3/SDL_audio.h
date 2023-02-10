@@ -555,7 +555,7 @@ extern DECLSPEC SDL_AudioStatus SDLCALL SDL_GetAudioDeviceStatus(SDL_AudioDevice
  *
  * \param dev a device opened by SDL_OpenAudioDevice()
  * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. 
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -580,7 +580,7 @@ extern DECLSPEC int SDLCALL SDL_PlayAudioDevice(SDL_AudioDeviceID dev);
  *
  * \param dev a device opened by SDL_OpenAudioDevice()
  * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. 
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1025,7 +1025,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetQueuedAudioSize(SDL_AudioDeviceID dev);
  *
  * \param dev the device ID of which to clear the audio queue
  * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. 
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1079,7 +1079,7 @@ extern DECLSPEC int SDLCALL SDL_ClearQueuedAudio(SDL_AudioDeviceID dev);
  *
  * \param dev the ID of the device to be locked
  * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. 
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1132,14 +1132,14 @@ extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
  * \param src_format The format of the source audio
  * \param src_channels The number of channels of the source audio
  * \param src_rate The sampling rate of the source audio
- * \param src_len The len of src_data
  * \param src_data The audio data to be converted
+ * \param src_len The len of src_data
  * \param dst_format The format of the desired audio output
  * \param dst_channels The number of channels of the desired audio output
  * \param dst_rate The sampling rate of the desired audio output
- * \param dst_len Will be filled with the len of dst_data
  * \param dst_data Will be filled with a pointer to converted audio data,
  *                 which should be freed with SDL_free().
+ * \param dst_len Will be filled with the len of dst_data
  * \returns 0 on success or a negative error code on failure. On error,
  *          *dst_data will be NULL and so not allocated.
  *
@@ -1150,13 +1150,13 @@ extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
 extern DECLSPEC int SDLCALL SDL_ConvertAudioSamples(SDL_AudioFormat src_format,
                                                     Uint8 src_channels,
                                                     int src_rate,
+                                                    const Uint8 *src_data,
                                                     int src_len,
-                                                    Uint8 *src_data,
                                                     SDL_AudioFormat dst_format,
                                                     Uint8 dst_channels,
                                                     int dst_rate,
-                                                    int *dst_len,
-                                                    Uint8 **dst_data);
+                                                    Uint8 **dst_data,
+                                                    int *dst_len);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

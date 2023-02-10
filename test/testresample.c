@@ -53,8 +53,8 @@ int main(int argc, char **argv)
         goto end;
     }
 
-    if (SDL_ConvertAudioSamples(spec.format, spec.channels, spec.freq, len, data,
-                           spec.format, cvtchans, cvtfreq, &dst_len, &dst_buf) < 0) {
+    if (SDL_ConvertAudioSamples(spec.format, spec.channels, spec.freq, data, len,
+                           spec.format, cvtchans, cvtfreq, &dst_buf, &dst_len) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to convert samples: %s\n", SDL_GetError());
         ret = 4;
         goto end;

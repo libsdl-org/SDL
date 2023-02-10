@@ -70,8 +70,8 @@ should be changed to:
 ```c
     Uint8 *dst_data = NULL;
     int dst_len = 0;
-    if (SDL_ConvertAudioSamples(src_format, src_channels, src_rate, src_len, src_data
-                                dst_format, dst_channels, dst_rate, &dst_len, &dst_data) < 0) {
+    if (SDL_ConvertAudioSamples(src_format, src_channels, src_rate, src_data, src_len
+                                dst_format, dst_channels, dst_rate, &dst_data, &dst_len) < 0) {
         /* error */
     }
     do_something(dst_data, dst_len);

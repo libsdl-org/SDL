@@ -1674,8 +1674,8 @@ void SDL_CalculateAudioSpec(SDL_AudioSpec *spec)
 }
 
 int SDL_ConvertAudioSamples(
-        SDL_AudioFormat src_format, Uint8 src_channels, int src_rate, int src_len, Uint8 *src_data,
-        SDL_AudioFormat dst_format, Uint8 dst_channels, int dst_rate, int *dst_len, Uint8 **dst_data)
+        SDL_AudioFormat src_format, Uint8 src_channels, int src_rate, const Uint8 *src_data, int src_len,
+        SDL_AudioFormat dst_format, Uint8 dst_channels, int dst_rate, Uint8 **dst_data, int *dst_len)
 {
     int ret = -1;
     SDL_AudioStream *stream = NULL;
@@ -1684,21 +1684,21 @@ int SDL_ConvertAudioSamples(
     int real_dst_len;
 
 
-    if (src_len < 0) {
-        return SDL_InvalidParamError("src_len");
-    }
     if (src_data == NULL) {
         return SDL_InvalidParamError("src_data");
     }
-    if (dst_len == NULL) {
-        return SDL_InvalidParamError("dst_len");
+    if (src_len < 0) {
+        return SDL_InvalidParamError("src_len");
     }
     if (dst_data == NULL) {
         return SDL_InvalidParamError("dst_data");
     }
+    if (dst_len == NULL) {
+        return SDL_InvalidParamError("dst_len");
+    }
 
-    *dst_len = 0;
     *dst_data = NULL;
+    *dst_len = 0;
 
     stream = SDL_CreateAudioStream(src_format, src_channels, src_rate, dst_format, dst_channels, dst_rate);
     if (stream == NULL) {
@@ -1737,8 +1737,8 @@ int SDL_ConvertAudioSamples(
 end:
     if (ret != 0) {
         SDL_free(*dst_data);
-        *dst_len = 0;
         *dst_data = NULL;
+        *dst_len = 0;
     }
     SDL_DestroyAudioStream(stream);
     return ret;
