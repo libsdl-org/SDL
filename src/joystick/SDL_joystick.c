@@ -1217,7 +1217,7 @@ int SDL_SendJoystickEffect(SDL_Joystick *joystick, const void *data, int size)
 /*
  * Close a joystick previously opened with SDL_OpenJoystick()
  */
-int SDL_CloseJoystick(SDL_Joystick *joystick)
+void SDL_CloseJoystick(SDL_Joystick *joystick)
 {
     SDL_Joystick *joysticklist;
     SDL_Joystick *joysticklistprev;
@@ -1225,12 +1225,12 @@ int SDL_CloseJoystick(SDL_Joystick *joystick)
 
     SDL_LockJoysticks();
     {
-        CHECK_JOYSTICK_MAGIC(joystick, -1);
+        CHECK_JOYSTICK_MAGIC(joystick,);
 
         /* First decrement ref count */
         if (--joystick->ref_count > 0) {
             SDL_UnlockJoysticks();
-            return 0;
+            return;
         }
 
         if (joystick->rumble_expiration) {
@@ -1277,7 +1277,6 @@ int SDL_CloseJoystick(SDL_Joystick *joystick)
         SDL_free(joystick);
     }
     SDL_UnlockJoysticks();
-    return 0;
 }
 
 void SDL_QuitJoysticks(void)
