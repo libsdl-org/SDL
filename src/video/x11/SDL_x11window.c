@@ -1348,6 +1348,11 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
         X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
                        SubstructureNotifyMask | SubstructureRedirectMask, &e);
 
+        /* Set the position so the window will be on the target display */
+        if (fullscreen) {
+            X11_XMoveWindow(display, data->xwindow, displaydata->x, displaydata->y);
+        }
+
         /* Fullscreen windows sometimes end up being marked maximized by
             window managers. Force it back to how we expect it to be. */
         if (!fullscreen) {
