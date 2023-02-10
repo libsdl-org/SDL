@@ -2371,7 +2371,7 @@ SDL_DisplayMode e;
 @@
 @@
 - SDL_GetRendererOutputSize
-+ SDL_GetCurrentRenderOutputSizeInPixels
++ SDL_GetCurrentRenderOutputSize
   (...)
 @@
 @@
