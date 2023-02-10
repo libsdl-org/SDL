@@ -218,7 +218,7 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
         const ResampleFloatType intime = ((ResampleFloatType) srcindex) / finrate;
         const ResampleFloatType innexttime = ((ResampleFloatType) (srcindex + 1)) / finrate;
         const ResampleFloatType indeltatime = innexttime - intime;
-        const ResampleFloatType interpolation1 = (indeltatime == 0.0f) ? 1.0f : (1.0f - ((innexttime - outtime) / indeltatime));
+        const ResampleFloatType interpolation1 = SDL_FLT_IS_ZERO(indeltatime) ? 1.0f : (1.0f - ((innexttime - outtime) / indeltatime));
         const int filterindex1 = (int) (interpolation1 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
         const ResampleFloatType interpolation2 = 1.0f - interpolation1;
         const int filterindex2 = (int) (interpolation2 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);

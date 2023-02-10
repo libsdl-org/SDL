@@ -311,7 +311,7 @@ Blit_to_Screen(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *surface, SDL_Re
 {
     int retval;
     /* Renderer scaling, if needed */
-    if (scale_x != 1.0f || scale_y != 1.0f) {
+    if (!SDL_FLT_EQUAL(scale_x, 1.0f) || !SDL_FLT_EQUAL(scale_y, 1.0f)) {
         SDL_Rect r;
         r.x = (int)((float) dstrect->x * scale_x);
         r.y = (int)((float) dstrect->y * scale_y);

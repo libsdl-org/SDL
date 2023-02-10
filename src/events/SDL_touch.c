@@ -423,7 +423,7 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
     prel = pressure - finger->pressure;
 
     /* Drop events that don't change state */
-    if (xrel == 0.0f && yrel == 0.0f && prel == 0.0f) {
+    if (SDL_FLT_IS_ZERO(xrel) && SDL_FLT_IS_ZERO(yrel) && SDL_FLT_IS_ZERO(prel)) {
 #if 0
         printf("Touch event didn't change state - dropped!\n");
 #endif

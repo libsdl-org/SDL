@@ -383,7 +383,7 @@ SDL_SendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int 
 static int
 GetScaledMouseDelta(float scale, int value, float *accum)
 {
-    if (value && scale != 1.0f) {
+    if (value && !SDL_FLT_EQUAL(scale, 1.0f)) {
         if ((value > 0) != (*accum > 0)) {
             *accum = 0.0f;
         }
@@ -838,7 +838,7 @@ SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x, float y, S
         SDL_SetMouseFocus(window);
     }
 
-    if (x == 0.0f && y == 0.0f) {
+    if (SDL_FLT_IS_ZERO(x) && SDL_FLT_IS_ZERO(y)) {
         return 0;
     }
 

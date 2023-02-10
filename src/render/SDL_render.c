@@ -848,7 +848,7 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
             physical_h = ((float) h) * renderer->dpi_scale.y;
         }
 
-        if (physical_w == 0.0f) {  /* nowhere for the touch to go, avoid division by zero and put it dead center. */
+        if (SDL_FLT_IS_ZERO(physical_w)) {  /* nowhere for the touch to go, avoid division by zero and put it dead center. */
             event->tfinger.x = 0.5f;
         } else {
             const float normalized_viewport_x = ((float) viewport.x) / physical_w;
@@ -862,7 +862,7 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
             }
         }
 
-        if (physical_h == 0.0f) {  /* nowhere for the touch to go, avoid division by zero and put it dead center. */
+        if (SDL_FLT_IS_ZERO(physical_h)) {  /* nowhere for the touch to go, avoid division by zero and put it dead center. */
             event->tfinger.y = 0.5f;
         } else {
             const float normalized_viewport_y = ((float) viewport.y) / physical_h;
@@ -2785,7 +2785,7 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
     }
 #endif
 
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+    if (!SDL_FLT_EQUAL(renderer->scale.x, 1.0f) || SDL_FLT_EQUAL(renderer->scale.y, 1.0f)) {
         retval = RenderDrawPointsWithRects(renderer, points, count);
     } else {
         fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
@@ -2858,7 +2858,7 @@ SDL_RenderDrawPointsF(SDL_Renderer * renderer,
     }
 #endif
 
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+    if (!SDL_FLT_EQUAL(renderer->scale.x, 1.0f) || !SDL_FLT_EQUAL(renderer->scale.y, 1.0f)) {
         retval = RenderDrawPointsWithRectsF(renderer, points, count);
     } else {
         retval = QueueCmdDrawPoints(renderer, points, count);
@@ -2956,7 +2956,7 @@ static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x
         }
     }
 
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+    if (!SDL_FLT_EQUAL(renderer->scale.x, 1.0f) || !SDL_FLT_EQUAL(renderer->scale.y, 1.0f)) {
         retval = RenderDrawPointsWithRectsF(renderer, points, numpixels);
     } else {
         retval = QueueCmdDrawPoints(renderer, points, numpixels);
@@ -2987,11 +2987,11 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
     }
 
     for (i = 0; i < count-1; ++i) {
-        SDL_bool same_x = (points[i].x == points[i+1].x);
-        SDL_bool same_y = (points[i].y == points[i+1].y);
+        SDL_bool same_x = SDL_FLT_EQUAL(points[i].x, points[i+1].x);
+        SDL_bool same_y = SDL_FLT_EQUAL(points[i].y, points[i+1].y);
 
         if (i == (count - 2)) {
-            if (!drew_line || points[i+1].x != points[0].x || points[i+1].y != points[0].y) {
+            if (!drew_line || !SDL_FLT_EQUAL(points[i+1].x, points[0].x) || !SDL_FLT_EQUAL(points[i+1].y, points[0].y)) {
                 draw_last = SDL_TRUE;
             }
         } else {
@@ -3128,7 +3128,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
             int num_indices = 0;
             const int size_indices = 4;
             int cur_index = -4;
-            const int is_looping = (points[0].x == points[count - 1].x && points[0].y == points[count - 1].y);
+            const int is_looping = (SDL_FLT_EQUAL(points[0].x, points[count - 1].x) && SDL_FLT_EQUAL(points[0].y, points[count - 1].y));
             SDL_FPoint p; /* previous point */
             p.x = p.y = 0.0f;
             /*       p            q
@@ -3173,7 +3173,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                 }
 
                 /* draw segment */
-                if (p.y == q.y) {
+                if (SDL_FLT_EQUAL(p.y, q.y)) {
                     if (p.x < q.x) {
                         ADD_TRIANGLE(1, 4, 7)
                         ADD_TRIANGLE(1, 7, 2)
@@ -3181,7 +3181,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                         ADD_TRIANGLE(5, 0, 3)
                         ADD_TRIANGLE(5, 3, 6)
                     }
-                } else if (p.x == q.x) {
+                } else if (SDL_FLT_EQUAL(p.x, q.x)) {
                     if (p.y < q.y) {
                         ADD_TRIANGLE(2, 5, 4)
                         ADD_TRIANGLE(2, 4, 3)
@@ -3231,7 +3231,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
         SDL_small_free(xy, isstack1);
         SDL_small_free(indices, isstack2);
 
-    } else if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+    } else if (!SDL_FLT_EQUAL(renderer->scale.x, 1.0f) || !SDL_FLT_EQUAL(renderer->scale.y, 1.0f)) {
         retval = RenderDrawLinesWithRectsF(renderer, points, count);
     } else {
         retval = QueueCmdDrawLines(renderer, points, count);
@@ -3625,7 +3625,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     int retval;
     int use_rendergeometry;
 
-    if (flip == SDL_FLIP_NONE && (int)(angle/360) == angle/360) { /* fast path when we don't need rotation or flipping */
+    if (flip == SDL_FLIP_NONE && SDL_FLT_EQUAL((int)(angle/360), angle/360)) { /* fast path when we don't need rotation or flipping */
         return SDL_RenderCopyF(renderer, texture, srcrect, dstrect);
     }
 
@@ -3800,19 +3800,19 @@ remap_one_indice(
     int col0_, col1_;
     xy0_ = (const float *)((const char*)xy + prev * xy_stride);
     xy1_ = (const float *)((const char*)xy + k * xy_stride);
-    if (xy0_[0] != xy1_[0]) {
+    if (!SDL_FLT_EQUAL(xy0_[0], xy1_[0])) {
         return k;
     }
-    if (xy0_[1] != xy1_[1]) {
+    if (!SDL_FLT_EQUAL(xy0_[1], xy1_[1])) {
         return k;
     }
     if (texture) {
         uv0_ = (const float *)((const char*)uv + prev * uv_stride);
         uv1_ = (const float *)((const char*)uv + k * uv_stride);
-        if (uv0_[0] != uv1_[0]) {
+        if (!SDL_FLT_EQUAL(uv0_[0], uv1_[0])) {
             return k;
         }
-        if (uv0_[1] != uv1_[1]) {
+        if (SDL_FLT_EQUAL(uv0_[1], uv1_[1])) {
             return k;
         }
     }
@@ -3999,7 +3999,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             x2 = xy2_[0]; y2 = xy2_[1];
 
             /* Check if triangle A B C is rectangle */
-            if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)){
+            if ((SDL_FLT_EQUAL(x0, x2) && SDL_FLT_EQUAL(y1, y2)) || (SDL_FLT_EQUAL(y0, y2) && SDL_FLT_EQUAL(x1, x2))){
                 /* ok */
             } else {
                 is_quad = 0;
@@ -4012,7 +4012,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             x2 = xy2_[0]; y2 = xy2_[1];
 
             /* Check if triangle A B C2 is rectangle */
-            if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)){
+            if ((SDL_FLT_EQUAL(x0, x2) && SDL_FLT_EQUAL(y1, y2)) || (SDL_FLT_EQUAL(y0, y2) && SDL_FLT_EQUAL(x1, x2))){
                 /* ok */
             } else {
                 is_quad = 0;
@@ -4087,7 +4087,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 SDL_Log("Rect-COPY: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
                         (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
 #endif
-            } else if (d.w != 0.0f && d.h != 0.0f) { /* Rect, no texture */
+            } else if (!SDL_FLT_IS_ZERO(d.w) && !SDL_FLT_IS_ZERO(d.h)) { /* Rect, no texture */
                 SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
                 SDL_SetRenderDrawColor(renderer, col0_.r, col0_.g, col0_.b, col0_.a);
                 SDL_RenderFillRectF(renderer, &d);

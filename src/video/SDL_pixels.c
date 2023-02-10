@@ -1166,10 +1166,10 @@ SDL_CalculateGammaRamp(float gamma, Uint16 * ramp)
     }
 
     /* 0.0 gamma is all black */
-    if (gamma == 0.0f) {
+    if (SDL_FLT_IS_ZERO(gamma)) {
         SDL_memset(ramp, 0, 256 * sizeof(Uint16));
         return;
-    } else if (gamma == 1.0f) {
+    } else if (SDL_FLT_EQUAL(gamma, 1.0f)) {
         /* 1.0 gamma is identity */
         for (i = 0; i < 256; ++i) {
             ramp[i] = (i << 8) | i;

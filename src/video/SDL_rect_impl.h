@@ -345,7 +345,7 @@ SDL_INTERSECTRECTANDLINE(const RECTTYPE * rect, SCALARTYPE *X1, SCALARTYPE *Y1, 
         return SDL_FALSE;
     }
 
-    if (y1 == y2) {  /* Horizontal line, easy to clip */
+    if (SDL_FLT_EQUAL(y1, y2)) {  /* Horizontal line, easy to clip */
         if (x1 < rectx1) {
             *X1 = rectx1;
         } else if (x1 > rectx2) {
@@ -359,7 +359,7 @@ SDL_INTERSECTRECTANDLINE(const RECTTYPE * rect, SCALARTYPE *X1, SCALARTYPE *Y1, 
         return SDL_TRUE;
     }
 
-    if (x1 == x2) {  /* Vertical line, easy to clip */
+    if (SDL_FLT_EQUAL(x1, x2)) {  /* Vertical line, easy to clip */
         if (y1 < recty1) {
             *Y1 = recty1;
         } else if (y1 > recty2) {

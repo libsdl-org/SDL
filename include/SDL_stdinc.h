@@ -251,7 +251,30 @@ typedef uint64_t Uint64;
 #define SDL_FLT_EPSILON 1.1920928955078125e-07F /* 0x0.000002p0 */
 #endif
 
+#ifdef DBL_EPSILON
+#define SDL_DBL_EPSILON DBL_EPSILON
+#else
+#define SDL_DBL_EPSILON 2.220446e-16
+#endif
+
 /* @} *//* Floating-point constants */
+
+#define SDL_FLOAT_IS_ZERO(value, epsilon)               \
+    ((value) > - (epsilon) && (value) < + (epsilon))
+#define SDL_FLOAT_EQUAL(value1, value2, epsilon)    \
+    (((value1) - (value2)) < + (epsilon)            \
+     &&                                             \
+     ((value1) - (value2)) > - (epsilon))
+
+#define SDL_FLT_IS_ZERO(value)                  \
+    SDL_FLOAT_IS_ZERO(value, SDL_FLT_EPSILON)
+#define SDL_FLT_EQUAL(value1, value2)                   \
+    SDL_FLOAT_EQUAL(value1, value2, SDL_FLT_EPSILON)
+
+#define SDL_DBL_IS_ZERO(value)                  \
+    SDL_FLOAT_IS_ZERO(value, SDL_DBL_EPSILON)
+#define SDL_DBL_EQUAL(value1, value2)               \
+    SDL_FLOAT_EQUAL(value1, value2, SDL_DBL_EPSILON)
 
 /* Make sure we have macros for printing width-based integers.
  * <stdint.h> should define these but this is not true all platforms.
