@@ -679,7 +679,6 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-
 #ifdef HAVE_SDL_TTF
     /* Initialize fonts */
     TTF_Init();
@@ -714,51 +713,44 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
             switch(event.type) {
-                case SDL_KEYDOWN: {
-                    switch (event.key.keysym.sym)
-                    {
-                        case SDLK_RETURN:
-                             text[0]=0x00;
-                             Redraw();
-                             break;
-                        case SDLK_BACKSPACE:
-                            /* Only delete text if not in editing mode. */
-                             if (!markedText[0])
-                             {
-                                 size_t textlen = SDL_strlen(text);
+                case SDL_KEYDOWN:
+                    switch (event.key.keysym.sym) {
+                    case SDLK_RETURN:
+                        text[0] = 0x00;
+                        Redraw();
+                        break;
+                    case SDLK_BACKSPACE:
+                        /* Only delete text if not in editing mode. */
+                        if (!markedText[0]) {
+                            size_t textlen = SDL_strlen(text);
 
-                                 do {
-                                     if (textlen==0)
-                                     {
-                                         break;
-                                     }
-                                     if ((text[textlen-1] & 0x80) == 0x00)
-                                     {
-                                         /* One byte */
-                                         text[textlen-1]=0x00;
-                                         break;
-                                     }
-                                     if ((text[textlen-1] & 0xC0) == 0x80)
-                                     {
-                                         /* Byte from the multibyte sequence */
-                                         text[textlen-1]=0x00;
-                                         textlen--;
-                                     }
-                                     if ((text[textlen-1] & 0xC0) == 0xC0)
-                                     {
-                                         /* First byte of multibyte sequence */
-                                         text[textlen-1]=0x00;
-                                         break;
-                                     }
-                                 } while(1);
+                            do {
+                                if (textlen == 0) {
+                                    break;
+                                }
+                                if ((text[textlen - 1] & 0x80) == 0x00) {
+                                    /* One byte */
+                                    text[textlen - 1] = 0x00;
+                                    break;
+                                }
+                                if ((text[textlen - 1] & 0xC0) == 0x80) {
+                                    /* Byte from the multibyte sequence */
+                                    text[textlen - 1] = 0x00;
+                                    textlen--;
+                                }
+                                if ((text[textlen - 1] & 0xC0) == 0xC0) {
+                                    /* First byte of multibyte sequence */
+                                    text[textlen - 1] = 0x00;
+                                    break;
+                                }
+                            } while(1);
 
-                                 Redraw();
-                             }
-                             break;
+                            Redraw();
+                        }
+                        break;
                     }
 
-                    if (done)
-                    {
+                    if (done) {
                         break;
                     }
 
@@ -796,15 +788,11 @@ int main(int argc, char *argv[])
                     Redraw();
                     break;
                 }
-                break;
-
-            }
         }
     }
     CleanupVideo();
     SDLTest_CommonQuit(state);
     return 0;
 }
-
 
 /* vi: set ts=4 sw=4 expandtab: */
