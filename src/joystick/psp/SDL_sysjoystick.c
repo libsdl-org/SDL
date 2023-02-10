@@ -271,6 +271,3 @@ SDL_JoystickDriver SDL_PSP_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_PSP */
-
-/* vim: ts=4 sw=4
- */

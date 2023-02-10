@@ -295,5 +295,3 @@ void SDL_NSLog(const char *prefix, const char *text)
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
-
-/* vim: set ts=4 sw=4 expandtab: */

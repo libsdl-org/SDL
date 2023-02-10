@@ -105,6 +105,3 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 }
 
 #endif /* SDL_THREAD_PSP */
-
-/* vim: ts=4 sw=4
- */

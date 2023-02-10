@@ -692,5 +692,3 @@ WIN_IsPerMonitorV2DPIAware(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vim: set ts=4 sw=4 expandtab: */
