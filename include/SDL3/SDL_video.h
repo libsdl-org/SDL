@@ -1458,7 +1458,7 @@ typedef enum
  * \param win the SDL_Window where hit-testing was set on
  * \param area an SDL_Point which should be hit-tested
  * \param data what was passed as `callback_data` to SDL_SetWindowHitTest()
- * \return an SDL_HitTestResult value.
+ * \returns an SDL_HitTestResult value.
  *
  * \sa SDL_SetWindowHitTest
  */

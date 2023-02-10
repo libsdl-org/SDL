@@ -793,7 +793,7 @@ extern DECLSPEC Sint16 SDLCALL SDL_GetJoystickAxis(SDL_Joystick *joystick,
  * \param joystick an SDL_Joystick structure containing joystick information
  * \param axis the axis to query; the axis indices start at index 0
  * \param state Upon return, the initial value is supplied here.
- * \return SDL_TRUE if this axis has any initial value, or SDL_FALSE if not.
+ * \returns SDL_TRUE if this axis has any initial value, or SDL_FALSE if not.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -908,7 +908,7 @@ extern DECLSPEC int SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, U
  * DualShock 4 controller.
  *
  * \param joystick The joystick to query
- * \return SDL_TRUE if the joystick has a modifiable LED, SDL_FALSE otherwise.
+ * \returns SDL_TRUE if the joystick has a modifiable LED, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -918,7 +918,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasLED(SDL_Joystick *joystick);
  * Query whether a joystick has rumble support.
  *
  * \param joystick The joystick to query
- * \return SDL_TRUE if the joystick has rumble, SDL_FALSE otherwise.
+ * \returns SDL_TRUE if the joystick has rumble, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -930,7 +930,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumble(SDL_Joystick *joystick);
  * Query whether a joystick has rumble support on triggers.
  *
  * \param joystick The joystick to query
- * \return SDL_TRUE if the joystick has trigger rumble, SDL_FALSE otherwise.
+ * \returns SDL_TRUE if the joystick has trigger rumble, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *

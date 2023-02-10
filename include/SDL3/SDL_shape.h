@@ -60,7 +60,7 @@ extern "C" {
  *              ::SDL_WINDOW_RESIZABLE, ::SDL_WINDOW_MAXIMIZED,
  *              ::SDL_WINDOW_MINIMIZED, ::SDL_WINDOW_BORDERLESS is always set,
  *              and ::SDL_WINDOW_FULLSCREEN is always unset.
- * \return the window created, or NULL if window creation failed.
+ * \returns the window created, or NULL if window creation failed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -72,7 +72,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_CreateShapedWindow(const char *title,un
  * Return whether the given window is a shaped window.
  *
  * \param window The window to query for being shaped.
- * \return SDL_TRUE if the window is a window that can be shaped, SDL_FALSE if
+ * \returns SDL_TRUE if the window is a window that can be shaped, SDL_FALSE if
  *         the window is unshaped or NULL.
  *
  * \since This function is available since SDL 3.0.0.
@@ -116,7 +116,7 @@ typedef struct SDL_WindowShapeMode {
  * \param window The shaped window whose parameters should be set.
  * \param shape A surface encoding the desired shape for the window.
  * \param shape_mode The parameters to set for the shaped window.
- * \return 0 on success, SDL_INVALID_SHAPE_ARGUMENT on an invalid shape
+ * \returns 0 on success, SDL_INVALID_SHAPE_ARGUMENT on an invalid shape
  *         argument, or SDL_NONSHAPEABLE_WINDOW if the SDL_Window given does
  *         not reference a valid shaped window.
  *
@@ -133,7 +133,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowShape(SDL_Window *window,SDL_Surface *s
  * \param window The shaped window whose parameters should be retrieved.
  * \param shape_mode An empty shape-mode structure to fill, or NULL to check
  *                   whether the window has a shape.
- * \return 0 if the window has a shape and, provided shape_mode was not NULL,
+ * \returns 0 if the window has a shape and, provided shape_mode was not NULL,
  *         shape_mode has been filled with the mode data,
  *         SDL_NONSHAPEABLE_WINDOW if the SDL_Window given is not a shaped
  *         window, or SDL_WINDOW_LACKS_SHAPE if the SDL_Window given is a

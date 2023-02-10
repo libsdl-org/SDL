@@ -83,7 +83,7 @@ typedef struct SDL_Locale
  * if possible, and you can call this function again to get an updated copy of
  * preferred locales.
  *
- * \return array of locales, terminated with a locale with a NULL language
+ * \returns array of locales, terminated with a locale with a NULL language
  *         field. Will return NULL on error.
  *
  * \since This function is available since SDL 3.0.0.

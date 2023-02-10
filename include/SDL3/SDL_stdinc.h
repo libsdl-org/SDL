@@ -414,6 +414,9 @@ extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func
 /**
  * Replace SDL's memory allocation functions with a custom set
  *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
@@ -453,6 +456,8 @@ extern DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
 
 /**
  * Get the number of outstanding (unfreed) allocations
+ *
+ * \returns the number of allocations
  *
  * \since This function is available since SDL 3.0.0.
  */

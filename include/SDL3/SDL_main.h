@@ -191,7 +191,7 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
  *                     argc, char* argv[])
  * \param reserved should be NULL (reserved for future use, will probably be
  *                 platform-specific then)
- * \return the return value from mainFunction: 0 on success, -1 on failure;
+ * \returns the return value from mainFunction: 0 on success, -1 on failure;
  *         SDL_GetError() might have more information on the failure
  *
  * \since This function is available since SDL 3.0.0.
