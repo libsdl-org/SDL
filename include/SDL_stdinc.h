@@ -85,7 +85,9 @@
    Visual Studio.  See http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
    for more information.
 */
-#  define _USE_MATH_DEFINES
+#  ifndef _USE_MATH_DEFINES
+#    define _USE_MATH_DEFINES
+#  endif
 # endif
 # include <math.h>
 #endif
