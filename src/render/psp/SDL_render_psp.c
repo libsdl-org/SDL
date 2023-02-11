@@ -45,6 +45,7 @@ typedef struct
     void *frontbuffer;         /**< main screen buffer */
     void *backbuffer;          /**< buffer presented to display */
     uint8_t drawBufferFormat;  /**< GU_PSM_8888 or GU_PSM_5650 or GU_PSM_4444 */
+    uint8_t currentDrawBufferFormat;  /**< GU_PSM_8888 or GU_PSM_5650 or GU_PSM_4444 */
     uint64_t drawColor;
     PSP_BlendInfo blendInfo;   /**< current blend info */
     uint8_t vsync; /* 0 (Disabled), 1 (Enabled), 2 (Dynamic) */
@@ -184,6 +185,16 @@ static inline int calculatePitchForTextureFormat(int width, int format)
     }
 }
 
+static inline int calculatePitchForTextureFormatAndAccess(int width, int format, int access)
+{
+    if (access == SDL_TEXTUREACCESS_TARGET) {
+        // Round up to 64 bytes because it is required to be used by sceGuDrawBufferList
+        return (width + 63) & ~63;
+    } else {
+        return calculatePitchForTextureFormat(width, format);
+    }
+}
+
 static inline int calculateHeightForSwizzledTexture(int height, int format)
 {
     switch (format) {
@@ -215,7 +226,7 @@ static inline int calculateBestSliceSizeForSprite(SDL_Renderer *renderer, const 
     // We split in blocks of (64 x destiny height) when 16 bits per color
     // or (32 x destiny height) when 32 bits per color
 
-    switch (data->drawBufferFormat) {
+    switch (data->currentDrawBufferFormat) {
     case GU_PSM_5650:
     case GU_PSM_5551:
     case GU_PSM_4444:
@@ -384,7 +395,7 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     psp_tex->format = pixelFormatToPSPFMT(texture->format);
     psp_tex->textureWidth = calculateNextPow2(texture->w);
     psp_tex->textureHeight = calculateNextPow2(texture->h);
-    psp_tex->width = calculatePitchForTextureFormat(texture->w, psp_tex->format);
+    psp_tex->width = calculatePitchForTextureFormatAndAccess(texture->w, psp_tex->format, texture->access);
     psp_tex->height = texture->h;
     psp_tex->pitch = psp_tex->width * SDL_BYTESPERPIXEL(texture->format);
     psp_tex->swizzledWidth = psp_tex->textureWidth;
@@ -474,6 +485,22 @@ static void PSP_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture
                                    ? GU_NEAREST
                                    : GU_LINEAR);
     psp_tex->filter = guScaleMode;
+}
+
+static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
+
+    if (texture) {
+        PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
+        sceGuDrawBufferList(psp_tex->format, vrelptr(psp_tex->data), psp_tex->width);
+        data->currentDrawBufferFormat = psp_tex->format;
+    } else {
+        sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
+        data->currentDrawBufferFormat = data->drawBufferFormat;
+    }
+
+    return 0;
 }
 
 static int PSP_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
@@ -1037,6 +1064,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
 
     // Forcing for now using GU_PSM_4444
     data->drawBufferFormat = GU_PSM_4444;
+    data->currentDrawBufferFormat = data->drawBufferFormat;
 
     /* Specific GU init */
     bufferSize = getMemorySize(PSP_FRAME_BUFFER_WIDTH, PSP_SCREEN_HEIGHT, data->drawBufferFormat);
@@ -1048,6 +1076,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     sceGuStart(GU_DIRECT, list);
     sceGuDrawBuffer(data->drawBufferFormat, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
     sceGuDispBuffer(PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
+    sceGuDepthBuffer(vrelptr(data->backbuffer), 0); // Set the depth buffer to the same space as the framebuffer
 	
     sceGuOffset(2048 - (PSP_SCREEN_WIDTH >> 1), 2048 - (PSP_SCREEN_HEIGHT >> 1));
     sceGuViewport(2048, 2048, PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT);
@@ -1084,6 +1113,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     renderer->LockTexture = PSP_LockTexture;
     renderer->UnlockTexture = PSP_UnlockTexture;
     renderer->SetTextureScaleMode = PSP_SetTextureScaleMode;
+    renderer->SetRenderTarget = PSP_SetRenderTarget;
     renderer->QueueSetViewport = PSP_QueueSetViewport;
     renderer->QueueSetDrawColor = PSP_QueueSetViewport;
     renderer->QueueDrawPoints = PSP_QueueDrawPoints;
