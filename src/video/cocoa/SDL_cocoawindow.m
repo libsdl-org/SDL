@@ -570,7 +570,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
         return NO; /* Spaces are forcibly disabled. */
     } else if (state && window->fullscreen_exclusive) {
         return NO; /* we only allow you to make a Space on fullscreen desktop windows. */
-    } else if (!state && window->last_fullscreen_exclusive) {
+    } else if (!state && window->last_fullscreen_exclusive_display) {
         return NO; /* we only handle leaving the Space on windows that were previously fullscreen desktop. */
     } else if (state == isFullscreenSpace) {
         return YES; /* already there. */

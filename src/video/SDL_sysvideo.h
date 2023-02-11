@@ -107,13 +107,14 @@ struct SDL_Window
     int last_pixel_w, last_pixel_h;
     Uint32 flags;
     SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
-    SDL_bool last_fullscreen_exclusive;  /* The last fullscreen_exclusive setting */
+    SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
     SDL_DisplayID last_displayID;
 
     /* Stored position and size for windowed mode */
     SDL_Rect windowed;
 
-    SDL_DisplayMode fullscreen_mode;
+    SDL_DisplayMode requested_fullscreen_mode;
+    SDL_DisplayMode current_fullscreen_mode;
 
     float opacity;
 
