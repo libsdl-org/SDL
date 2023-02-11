@@ -957,10 +957,10 @@ static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *
     if (display->fullscreen_window &&
         display->fullscreen_window->fullscreen_exclusive &&
         display->fullscreen_window == SDL_GetFocusWindow() &&
-        display->fullscreen_window->fullscreen_mode.screen_w != 0 &&
-        display->fullscreen_window->fullscreen_mode.screen_h != 0) {
-        rect->w = display->fullscreen_window->fullscreen_mode.screen_w;
-        rect->h = display->fullscreen_window->fullscreen_mode.screen_h;
+        display->fullscreen_window->current_fullscreen_mode.screen_w != 0 &&
+        display->fullscreen_window->current_fullscreen_mode.screen_h != 0) {
+        rect->w = display->fullscreen_window->current_fullscreen_mode.screen_w;
+        rect->h = display->fullscreen_window->current_fullscreen_mode.screen_h;
     } else {
         rect->w = display->current_mode->screen_w;
         rect->h = display->current_mode->screen_h;

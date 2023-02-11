@@ -56,7 +56,7 @@ SDL_FORCE_INLINE SDL_bool FloatEqual(float a, float b)
 static SDL_bool SurfaceScaleIsFractional(SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
-    const float scale_value = !(window->fullscreen_exclusive) ? data->windowed_scale_factor : window->fullscreen_mode.display_scale;
+    const float scale_value = !(window->fullscreen_exclusive) ? data->windowed_scale_factor : window->current_fullscreen_mode.display_scale;
     return !FloatEqual(SDL_roundf(scale_value), scale_value);
 }
 
@@ -77,7 +77,7 @@ static SDL_bool WindowNeedsViewport(SDL_Window *window)
         if (SurfaceScaleIsFractional(window)) {
             return SDL_TRUE;
         } else if (window->fullscreen_exclusive) {
-            if (window->fullscreen_mode.screen_w != output_width || window->fullscreen_mode.screen_h != output_height) {
+            if (window->current_fullscreen_mode.screen_w != output_width || window->current_fullscreen_mode.screen_h != output_height) {
                 return SDL_TRUE;
             }
         }
@@ -93,8 +93,8 @@ static void GetBufferSize(SDL_Window *window, int *width, int *height)
     int buf_height;
 
     if (window->fullscreen_exclusive) {
-        buf_width = window->fullscreen_mode.pixel_w;
-        buf_height = window->fullscreen_mode.pixel_h;
+        buf_width = window->current_fullscreen_mode.pixel_w;
+        buf_height = window->current_fullscreen_mode.pixel_h;
     } else {
         /* Round fractional backbuffer sizes halfway away from zero. */
         buf_width = (int)SDL_lroundf((float)data->requested_window_width * data->windowed_scale_factor);
@@ -160,8 +160,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
         /* If the compositor supplied fullscreen dimensions, use them, otherwise fall back to the display dimensions. */
         const int output_width = data->requested_window_width ? data->requested_window_width : output->screen_width;
         const int output_height = data->requested_window_height ? data->requested_window_height : output->screen_height;
-        window_width = window->fullscreen_mode.screen_w;
-        window_height = window->fullscreen_mode.screen_h;
+        window_width = window->current_fullscreen_mode.screen_w;
+        window_height = window->current_fullscreen_mode.screen_h;
 
         window_size_changed = window_width != window->w || window_height != window->h ||
             data->wl_window_width != output_width || data->wl_window_height != output_height;
@@ -178,10 +178,10 @@ static void ConfigureWindowGeometry(SDL_Window *window)
             } else {
                 /* Always use the mode dimensions for integer scaling. */
                 UnsetDrawSurfaceViewport(window);
-                wl_surface_set_buffer_scale(data->surface, (int32_t)window->fullscreen_mode.display_scale);
+                wl_surface_set_buffer_scale(data->surface, (int32_t)window->current_fullscreen_mode.display_scale);
 
-                data->wl_window_width = window->fullscreen_mode.screen_w;
-                data->wl_window_height = window->fullscreen_mode.screen_h;
+                data->wl_window_width = window->current_fullscreen_mode.screen_w;
+                data->wl_window_height = window->current_fullscreen_mode.screen_h;
             }
 
             data->pointer_scale_x = (float)window_width / (float)data->wl_window_width;
@@ -554,7 +554,7 @@ static void handle_configure_xdg_toplevel(void *data,
          * place the fullscreen window is unknown.
          */
         if (window->fullscreen_exclusive && !wind->fullscreen_was_positioned) {
-            SDL_VideoDisplay *disp = SDL_GetVideoDisplay(window->fullscreen_mode.displayID);
+            SDL_VideoDisplay *disp = SDL_GetVideoDisplay(window->current_fullscreen_mode.displayID);
             if (disp) {
                 wind->fullscreen_was_positioned = SDL_TRUE;
                 xdg_toplevel_set_fullscreen(xdg_toplevel, disp->driverdata->output);
@@ -768,7 +768,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
          * place the fullscreen window is unknown.
          */
         if (window->fullscreen_exclusive && !wind->fullscreen_was_positioned) {
-            SDL_VideoDisplay *disp = SDL_GetVideoDisplay(window->fullscreen_mode.displayID);
+            SDL_VideoDisplay *disp = SDL_GetVideoDisplay(window->current_fullscreen_mode.displayID);
             if (disp) {
                 wind->fullscreen_was_positioned = SDL_TRUE;
                 libdecor_frame_set_fullscreen(frame, disp->driverdata->output);
