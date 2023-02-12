@@ -237,7 +237,7 @@ extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, 
  * platform-specific path name can be used (eg: /dev/hidraw0 on Linux).
  *
  * \param path The path name of the device to open
- * \param bExclusive exclusive opening (windows only?FIXME)
+ * \param bExclusive Open device in exclusive mode (Windows only)
  * \returns a pointer to a SDL_hid_device object on success or NULL on
  *          failure.
  *
