@@ -879,7 +879,7 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled
 /**
  * Set the YUV conversion mode
  *
- * \param YUV conversion mode
+ * \param mode YUV conversion mode
  *
  * \since This function is available since SDL 3.0.0.
  */
