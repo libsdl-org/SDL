@@ -1055,8 +1055,8 @@ const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID display
                     continue;
                 }
 
-                if (mode->refresh_rate < refresh_rate) {
-                    /* We already found a mode and the new mode doesn't meet our
+                if (SDL_fabsf(closest->refresh_rate - refresh_rate) < SDL_fabsf(mode->refresh_rate - refresh_rate)) {
+                    /* We already found a mode and the new mode is further from our
                      * refresh rate target */
                     continue;
                 }
