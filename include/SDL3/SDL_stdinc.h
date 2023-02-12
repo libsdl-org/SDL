@@ -732,7 +732,7 @@ SDL_FORCE_INLINE void *SDL_memcpy4(SDL_OUT_BYTECAP(dwords*4) void *dst, SDL_IN_B
  * If a * b would overflow, return -1. Otherwise store a * b via ret
  * and return 0.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  */
 SDL_FORCE_INLINE int SDL_size_mul_overflow (size_t a,
                                             size_t b,
@@ -762,7 +762,7 @@ SDL_FORCE_INLINE int SDL_size_mul_overflow_builtin (size_t a,
  * If a + b would overflow, return -1. Otherwise store a + b via ret
  * and return 0.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  */
 SDL_FORCE_INLINE int SDL_size_add_overflow (size_t a,
                                             size_t b,

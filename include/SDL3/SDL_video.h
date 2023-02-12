@@ -427,8 +427,6 @@ extern DECLSPEC const SDL_DisplayMode **SDLCALL SDL_GetFullscreenDisplayModes(SD
  * \param h the height in pixels of the desired display mode
  * \param refresh_rate the refresh rate of the desired display mode, or 0.0f for the desktop refresh rate
  * \returns a pointer to the closest display mode equal to or larger than the desired mode, or NULL on error; call SDL_GetError() for more information.
- * \returns the passed in value `closest` or NULL if no matching video mode
- *          was available; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

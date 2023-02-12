@@ -548,6 +548,8 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface,
  * \param surface the surface to duplicate.
  * \returns a copy of the surface, or NULL on failure; call SDL_GetError() for
  *          more information.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface *surface);
 
