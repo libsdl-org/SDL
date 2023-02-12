@@ -768,6 +768,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamData(SDL_AudioStream *stream, void
  * resample correctly, so this number might be lower than what you expect, or
  * even be zero. Add more data or flush the stream if you need the data now.
  *
+ * \param stream The audio stream to query
  * \returns the number of converted/resampled bytes available.
  *
  * \since This function is available since SDL 3.0.0.
@@ -789,6 +790,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
  * audio gaps in the output. Generally this is intended to signal the end of
  * input, so the complete output becomes available.
  *
+ * \param stream The audio stream to flush
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -824,6 +826,7 @@ extern DECLSPEC int SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);
 /**
  * Free an audio stream
  *
+ * \param stream The audio stream to free
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateAudioStream

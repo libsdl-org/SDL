@@ -130,19 +130,28 @@ typedef struct SDL_AssertData
 
 #if (SDL_ASSERT_LEVEL > 0)
 
-/* Never call this directly. Use the SDL_assert* macros. */
-extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *,
-                                                             const char *,
-                                                             const char *, int)
+/**
+ * Never call this directly. Use the SDL_assert* macros.
+ *
+ * \param data assert data structure
+ * \param func function name
+ * \param file file name
+ * \param line line number
+ * \returns assert state
+ */
+extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data,
+                                                            const char *func,
+                                                            const char *file, int line)
 #if defined(__clang__)
 #if __has_feature(attribute_analyzer_noreturn)
-/* this tells Clang's static analysis that we're a custom assert function,
-   and that the analyzer should assume the condition was always true past this
-   SDL_assert test. */
    __attribute__((analyzer_noreturn))
 #endif
 #endif
 ;
+/* Previous 'analyzer_noreturn' attribute tells Clang's static analysis that we're a custom assert function,
+   and that the analyzer should assume the condition was always true past this
+   SDL_assert test. */
+
 
 /* the do {} while(0) avoids dangling else problems:
     if (x) SDL_assert(y); else blah();
