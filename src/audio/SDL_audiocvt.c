@@ -328,13 +328,14 @@ static int SDL_ResampleAudio(const int chans, const int inrate, const int outrat
             *(dst++) = outsample;
         }
 
-        outtime = ((ResampleFloatType)i) / ((ResampleFloatType)outrate);
+        outtime = ((ResampleFloatType) i) / ((ResampleFloatType) outrate);
     }
 
     return outframes * chans * sizeof(float);
 }
 
-static int SDL_ConvertAudio(SDL_AudioCVT *cvt)
+static int
+SDL_ConvertAudio(SDL_AudioCVT *cvt)
 {
     /* !!! FIXME: (cvt) should be const; stack-copy it here. */
     /* !!! FIXME: (actually, we can't...len_cvt needs to be updated. Grr.) */

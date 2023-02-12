@@ -322,8 +322,10 @@ static NSString *GetApplicationName(void)
     return appName;
 }
 
-static bool LoadMainMenuNibIfAvailable(void)
+static bool
+LoadMainMenuNibIfAvailable(void)
 {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
     NSDictionary *infoDict;
     NSString *mainNibFileName;
     bool success = false;
@@ -338,9 +340,13 @@ static bool LoadMainMenuNibIfAvailable(void)
     }
 
     return success;
+#else
+    return false;
+#endif
 }
 
-static void CreateApplicationMenus(void)
+static void
+CreateApplicationMenus(void)
 {
     NSString *appName;
     NSString *title;
