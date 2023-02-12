@@ -240,6 +240,8 @@ SDL_FORCE_INLINE SDL_bool SDL_PointInRectFloat(const SDL_FPoint *p, const SDL_FR
 
 /**
  * Returns true if the rectangle has no area.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 SDL_FORCE_INLINE SDL_bool SDL_RectEmptyFloat(const SDL_FRect *r)
 {
@@ -249,7 +251,7 @@ SDL_FORCE_INLINE SDL_bool SDL_RectEmptyFloat(const SDL_FRect *r)
 /**
  * Returns true if the two rectangles are equal, within some given epsilon.
  *
- * \since This function is available since SDL 2.0.22.
+ * \since This function is available since SDL 3.0.0.
  */
 SDL_FORCE_INLINE SDL_bool SDL_RectsEqualEpsilon(const SDL_FRect *a, const SDL_FRect *b, const float epsilon)
 {
@@ -264,7 +266,7 @@ SDL_FORCE_INLINE SDL_bool SDL_RectsEqualEpsilon(const SDL_FRect *a, const SDL_FR
 /**
  * Returns true if the two rectangles are equal, using a default epsilon.
  *
- * \since This function is available since SDL 2.0.22.
+ * \since This function is available since SDL 3.0.0.
  */
 SDL_FORCE_INLINE SDL_bool SDL_RectsEqualFloat(const SDL_FRect *a, const SDL_FRect *b)
 {

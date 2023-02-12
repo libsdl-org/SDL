@@ -138,6 +138,8 @@ typedef struct SDL_AssertData
  * \param file file name
  * \param line line number
  * \returns assert state
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data,
                                                             const char *func,

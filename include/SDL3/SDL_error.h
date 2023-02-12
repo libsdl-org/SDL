@@ -153,6 +153,8 @@ typedef enum
  *
  * \param code Error code
  * \returns unconditionally -1.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_Error(SDL_errorcode code);
 /* @} *//* Internal error functions */

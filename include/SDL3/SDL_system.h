@@ -582,13 +582,41 @@ extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
 
 /* Functions used by iOS application delegates to notify SDL about state changes */
+
+/*
+ * \since This function is available since SDL 3.0.0.
+ */
 extern DECLSPEC void SDLCALL SDL_OnApplicationWillTerminate(void);
+
+/*
+ * \since This function is available since SDL 3.0.0.
+ */
 extern DECLSPEC void SDLCALL SDL_OnApplicationDidReceiveMemoryWarning(void);
+
+/*
+ * \since This function is available since SDL 3.0.0.
+ */
 extern DECLSPEC void SDLCALL SDL_OnApplicationWillResignActive(void);
+
+/*
+ * \since This function is available since SDL 3.0.0.
+ */
 extern DECLSPEC void SDLCALL SDL_OnApplicationDidEnterBackground(void);
+
+/*
+ * \since This function is available since SDL 3.0.0.
+ */
 extern DECLSPEC void SDLCALL SDL_OnApplicationWillEnterForeground(void);
+
+/*
+ * \since This function is available since SDL 3.0.0.
+ */
 extern DECLSPEC void SDLCALL SDL_OnApplicationDidBecomeActive(void);
+
 #ifdef __IOS__
+/*
+ * \since This function is available since SDL 3.0.0.
+ */
 extern DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void);
 #endif
 

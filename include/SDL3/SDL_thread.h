@@ -127,6 +127,8 @@ typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
  * \param pfnSDL_CurrentEndThread end function
  *
  * \returns SDL_Thread pointer
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_Thread *SDLCALL
 SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data,
@@ -144,6 +146,8 @@ SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data,
  * \param pfnSDL_CurrentEndThread end function
  *
  * \returns SDL_Thread pointer
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_Thread *SDLCALL
 SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn,
