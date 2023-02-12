@@ -39,6 +39,7 @@
 #include "xdg-activation-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
 #include "fractional-scale-v1-client-protocol.h"
+#include "wlr-layer-shell-unstable-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -220,9 +221,13 @@ static void ConfigureWindowGeometry(SDL_Window *window)
         struct wl_region *region;
 
         /* libdecor does this internally on frame commits, so it's only needed for xdg surfaces. */
-        if (data->shell_surface_type != WAYLAND_SURFACE_LIBDECOR &&
-            viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
+        if (((data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) ||
+             (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP)) &&
+            (data->shell_surface.xdg.surface != NULL)) {
             xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, data->wl_window_width, data->wl_window_height);
+        } else if ((data->shell_surface_type == WAYLAND_SURFACE_LAYER) &&
+                   (data->shell_surface.layer.surface != NULL)) {
+            zwlr_layer_surface_v1_set_size(data->shell_surface.layer.surface, data->wl_window_width, data->wl_window_height);
         }
 
         if (!viddata->egl_transparency_enabled) {
@@ -241,6 +246,49 @@ static void ConfigureWindowGeometry(SDL_Window *window)
     /* Unconditionally send the window and drawable size, the video core will deduplicate when required. */
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window_width, window_height);
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED, data->drawable_width, data->drawable_height);
+}
+
+static void ConfigureWindowLayerPosition(SDL_Window *window)
+{
+    SDL_WindowData *data = window->driverdata;
+
+    /* Set layer-shell surface anchors and margins */
+    data->shell_surface.layer.anchor = WAYLAND_LAYER_ANCHOR_NONE;
+    data->shell_surface.layer.margin.top = 0;
+    data->shell_surface.layer.margin.bottom = 0;
+    data->shell_surface.layer.margin.left = 0;
+    data->shell_surface.layer.margin.right = 0;
+    if (window->x == SDL_WINDOWPOS_UNDEFINED) {
+        ;/* continue */
+    } else if (window->x > 0) {
+        data->shell_surface.layer.anchor |= WAYLAND_LAYER_ANCHOR_LEFT;
+        data->shell_surface.layer.margin.left = (window->x - 1);
+    } else if (window->x < 0) {
+        data->shell_surface.layer.anchor |= WAYLAND_LAYER_ANCHOR_RIGHT;
+        data->shell_surface.layer.margin.right = SDL_abs(window->x + 1);
+    } else { /* 0 */
+        data->shell_surface.layer.anchor |= (WAYLAND_LAYER_ANCHOR_LEFT | WAYLAND_LAYER_ANCHOR_RIGHT);
+    }
+
+    if (window->y == SDL_WINDOWPOS_UNDEFINED) {
+        ;/* continue */
+    } else if (window->y > 0) {
+        data->shell_surface.layer.anchor |= WAYLAND_LAYER_ANCHOR_TOP;
+        data->shell_surface.layer.margin.top = (window->y - 1);
+    } else if (window->y < 0) {
+        data->shell_surface.layer.anchor |= WAYLAND_LAYER_ANCHOR_BOTTOM;
+        data->shell_surface.layer.margin.bottom = SDL_abs(window->y + 1);
+    } else { /* 0 */
+        data->shell_surface.layer.anchor |= (WAYLAND_LAYER_ANCHOR_TOP | WAYLAND_LAYER_ANCHOR_BOTTOM);
+    }
+
+    zwlr_layer_surface_v1_set_anchor(data->shell_surface.layer.surface,
+                                     data->shell_surface.layer.anchor);
+    zwlr_layer_surface_v1_set_margin(data->shell_surface.layer.surface,
+                                     data->shell_surface.layer.margin.top,
+                                     data->shell_surface.layer.margin.right,
+                                     data->shell_surface.layer.margin.bottom,
+                                     data->shell_surface.layer.margin.left);
 }
 
 static void CommitLibdecorFrame(SDL_Window *window)
@@ -263,7 +311,8 @@ static void SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
     int min_width, min_height, max_width, max_height;
 
     /* Pop-ups don't get to change size */
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
+    if ((wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ||
+        (wind->shell_surface_type == WAYLAND_SURFACE_LAYER)) {
         /* ... but we still want to commit, particularly for ShowWindow */
         if (commit) {
             wl_surface_commit(wind->surface);
@@ -403,6 +452,29 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
             SetMinMaxDimensions(window, SDL_FALSE);
         }
     }
+}
+
+static int SetLayerShellSurface(SDL_WindowData *wind, const char *hint)
+{
+    if (SDL_strcasecmp(hint, "background") == 0) {
+        wind->shell_surface.layer.layer = WAYLAND_LAYER_BACKGROUND;
+    } else if (SDL_strcasecmp(hint, "bottom") == 0) {
+        wind->shell_surface.layer.layer = WAYLAND_LAYER_BOTTOM;
+    } else if (SDL_strcasecmp(hint, "top") == 0) {
+        wind->shell_surface.layer.layer = WAYLAND_LAYER_TOP;
+    } else if (SDL_strcasecmp(hint, "overlay") == 0) {
+        wind->shell_surface.layer.layer = WAYLAND_LAYER_OVERLAY;
+    } else {
+        return SDL_SetError("Wayland layer-shell hint expects layer enumeration");
+    }
+
+    hint = SDL_GetHint(SDL_HINT_VIDEO_WAYLAND_SHELL_EXCL);
+    if (hint) {
+        wind->shell_surface.layer.excl_zone = SDL_atoi(hint);
+    }
+
+    wind->shell_surface.layer.kbi = WAYLAND_LAYER_KBI_ON_DEMAND;
+    return 0;
 }
 
 static const struct wl_callback_listener surface_damage_frame_listener;
@@ -665,6 +737,56 @@ static void handle_configure_zxdg_decoration(void *data,
 
 static const struct zxdg_toplevel_decoration_v1_listener decoration_listener = {
     handle_configure_zxdg_decoration
+};
+
+static void handle_configure_layer_shell_surface(void *data,
+                                          struct zwlr_layer_surface_v1 *zwlr_layer_surface_v1,
+                                          uint32_t serial,
+                                          uint32_t width,
+                                          uint32_t height)
+{
+    SDL_WindowData *wind = (SDL_WindowData *)data;
+    SDL_Window *window = wind->sdlwindow;
+
+    /* Toss up a focus event, even though layer may not be focused */
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_FOCUS_GAINED, 0, 0);
+
+    /* When not maximized, shrink to fixed size */
+    if (!(window->flags & SDL_WINDOW_MAXIMIZED)) {
+        /* Respect min/max window size contraints */
+        if (window->max_w > 0) {
+            width = SDL_min(width, window->max_w);
+        }
+        width = SDL_max(width, window->min_w);
+        width = SDL_min(width, window->windowed.w);
+
+        if (window->max_h > 0) {
+            height = SDL_min(height, window->max_h);
+        }
+        height = SDL_max(height, window->min_h);
+        height = SDL_min(height, window->windowed.h);
+    }
+
+    wind->floating = TRUE;
+    wind->floating_width = width;
+    wind->floating_height = height;
+    wind->requested_window_width = width;
+    wind->requested_window_height = height;
+
+    ConfigureWindowGeometry(window);
+    zwlr_layer_surface_v1_ack_configure(zwlr_layer_surface_v1, serial);
+    wind->shell_surface.layer.initial_configure_seen = SDL_TRUE;
+}
+
+static void handle_closed_layer_shell_surface(void *data, struct zwlr_layer_surface_v1 *zwlr_layer_surface_v1)
+{
+    SDL_WindowData *window = (SDL_WindowData *)data;
+    SDL_SendWindowEvent(window->sdlwindow, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
+}
+
+static const struct zwlr_layer_surface_v1_listener shell_surface_listener_layer = {
+    handle_configure_layer_shell_surface,
+    handle_closed_layer_shell_surface,
 };
 
 #ifdef HAVE_LIBDECOR_H
@@ -1028,7 +1150,6 @@ static const struct wl_surface_listener surface_listener = {
 
 int Wayland_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
-    SDL_VideoData *viddata = _this->driverdata;
     SDL_WindowData *data = window->driverdata;
 
     info->subsystem = SDL_SYSWM_WAYLAND;
@@ -1044,7 +1165,9 @@ int Wayland_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
         }
     } else
 #endif
-        if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
+        if (((data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) ||
+             (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP)) &&
+            (data->shell_surface.xdg.surface != NULL)) {
         SDL_bool popup = (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ? SDL_TRUE : SDL_FALSE;
         info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
         info->info.wl.xdg_toplevel = popup ? NULL : data->shell_surface.xdg.roleobj.toplevel;
@@ -1068,8 +1191,11 @@ int Wayland_SetWindowModalFor(_THIS, SDL_Window *modal_window, SDL_Window *paren
     SDL_WindowData *modal_data = modal_window->driverdata;
     SDL_WindowData *parent_data = parent_window->driverdata;
 
-    if (modal_data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP || parent_data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
-        return SDL_SetError("Modal/Parent was a popup, not a toplevel");
+    if ((modal_data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ||
+        (parent_data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ||
+        (modal_data->shell_surface_type == WAYLAND_SURFACE_LAYER) ||
+        (parent_data->shell_surface_type == WAYLAND_SURFACE_LAYER)) {
+        return SDL_SetError("Modal/Parent not a toplevel");
     }
 
 #ifdef HAVE_LIBDECOR_H
@@ -1144,7 +1270,8 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
         }
     } else
 #endif
-        if (c->shell.xdg) {
+        if ((data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) ||
+            (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP)) {
         data->shell_surface.xdg.surface = xdg_wm_base_get_xdg_surface(c->shell.xdg, data->surface);
         xdg_surface_set_user_data(data->shell_surface.xdg.surface, data);
         xdg_surface_add_listener(data->shell_surface.xdg.surface, &shell_surface_listener_xdg, data);
@@ -1174,6 +1301,12 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
                                                                                 data->shell_surface.xdg.roleobj.popup.positioner);
             xdg_popup_add_listener(data->shell_surface.xdg.roleobj.popup.popup, &popup_listener_xdg, data);
 
+            /* Properly parent pop-up if parent is a layer-shell surface */
+            if (focuseddata->shell_surface_type == WAYLAND_SURFACE_LAYER) {
+                zwlr_layer_surface_v1_get_popup(focuseddata->shell_surface.layer.surface,
+                                                data->shell_surface.xdg.roleobj.popup.popup);
+            }
+
             /* For tooltips, track mouse motion so it follows the cursor */
             if (window->flags & SDL_WINDOW_TOOLTIP) {
                 if (xdg_popup_get_version(data->shell_surface.xdg.roleobj.popup.popup) >= 3) {
@@ -1185,6 +1318,17 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
             xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, c->classname);
             xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
         }
+    } else if (data->shell_surface_type == WAYLAND_SURFACE_LAYER) {
+        data->shell_surface.layer.surface = zwlr_layer_shell_v1_get_layer_surface(c->shell.layer,
+                                                                                  data->surface,
+                                                                                  NULL,
+                                                                                  data->shell_surface.layer.layer,
+                                                                                  window->title ? window->title : "");
+        zwlr_layer_surface_v1_set_user_data(data->shell_surface.layer.surface, data);
+        zwlr_layer_surface_v1_add_listener(data->shell_surface.layer.surface, &shell_surface_listener_layer, data);
+
+        /* Restore anchor/margin position */
+        ConfigureWindowLayerPosition(window);
     }
 
     /* Restore state that was set prior to this call */
@@ -1209,7 +1353,8 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
         }
     } else
 #endif
-        if (c->shell.xdg) {
+        if ((data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) ||
+             (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP)) {
         /* Unlike libdecor we need to call this explicitly to prevent a deadlock.
          * libdecor will call this as part of their configure event!
          * -flibit
@@ -1232,6 +1377,38 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
 
         /* Set the geometry */
         xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, data->wl_window_width, data->wl_window_height);
+    } else if (data->shell_surface_type == WAYLAND_SURFACE_LAYER) {
+        /* Restore size */
+        if (!(window->flags & SDL_WINDOW_MAXIMIZED)) {
+            /* Strangely layer-shell surface initial values conflict with each
+            * other (namely, size=0 and anchor=0 is invalid), so if not
+            * maximized set an initial size here to keep from having a protocol
+            * error.
+            */
+            zwlr_layer_surface_v1_set_size(data->shell_surface.layer.surface, data->wl_window_width, data->wl_window_height);
+        }
+
+        /* Restore exclusive zone */
+        if (data->shell_surface.layer.excl_zone) {
+            zwlr_layer_surface_v1_set_exclusive_zone(data->shell_surface.layer.surface, data->shell_surface.layer.excl_zone);
+        }
+
+        /* Restore keyboard-interactivity */
+        if (zwlr_layer_surface_v1_get_version(data->shell_surface.layer.surface) < 4) {
+            data->shell_surface.layer.kbi = WAYLAND_LAYER_KBI_NONE;
+        }
+        if (data->shell_surface.layer.kbi != WAYLAND_LAYER_KBI_NONE) {
+            zwlr_layer_surface_v1_set_keyboard_interactivity(data->shell_surface.layer.surface, data->shell_surface.layer.kbi);
+        }
+
+        /* Same as XDG windows, wait for first 'configure' event */
+        wl_surface_commit(data->surface);
+        if (data->shell_surface.layer.surface) {
+            while (!data->shell_surface.layer.initial_configure_seen) {
+                WAYLAND_wl_display_flush(c->display);
+                WAYLAND_wl_display_dispatch(c->display);
+            }
+        }
     } else {
         /* Nothing to see here, just commit. */
         wl_surface_commit(data->surface);
@@ -1270,7 +1447,8 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     }
 
     /* We're finally done putting the window together, raise if possible */
-    if (c->activation_manager) {
+    if ((c->activation_manager) &&
+        (data->shell_surface_type != WAYLAND_SURFACE_LAYER)) {
         /* Note that we don't check for empty strings, as that is still
          * considered a valid activation token!
          */
@@ -1349,7 +1527,8 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
         }
     } else
 #endif
-        if (data->shell.xdg) {
+    if ((wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) ||
+        (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP)) {
         if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
             Wayland_ReleasePopup(_this, window);
         } else if (wind->shell_surface.xdg.roleobj.toplevel) {
@@ -1360,6 +1539,11 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
             xdg_surface_destroy(wind->shell_surface.xdg.surface);
             wind->shell_surface.xdg.surface = NULL;
         }
+    } else if (wind->shell_surface_type == WAYLAND_SURFACE_LAYER) {
+        if (wind->shell_surface.layer.surface) {
+            zwlr_layer_surface_v1_destroy(wind->shell_surface.layer.surface);
+        }
+        wind->shell_surface.layer.surface = NULL;
     }
 
     /*
@@ -1411,6 +1595,11 @@ static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *wind,
                                     struct wl_surface *surface,
                                     uint32_t serial, struct wl_seat *seat)
 {
+    /* Layer-shell windows are 'always' active */
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LAYER) {
+        return;
+    }
+
     if (data->activation_manager) {
         if (wind->activation_token != NULL) {
             /* We're about to overwrite this with a new request */
@@ -1580,8 +1769,10 @@ void Wayland_SetWindowFullscreen(_THIS, SDL_Window *window,
     SDL_WindowData *wind = window->driverdata;
     struct wl_output *output = display->driverdata->output;
 
-    /* Called from within a configure event or the window is a popup, drop it. */
-    if (wind->in_fullscreen_transition || wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
+    /* Called from within a configure event or the window is a layer or popup, drop it. */
+    if (wind->in_fullscreen_transition ||
+        (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ||
+        (wind->shell_surface_type == WAYLAND_SURFACE_LAYER)) {
         if (!fullscreen) {
             /* Clear the display ID so it will be set next time. */
             wind->fullscreen_display = 0;
@@ -1638,13 +1829,22 @@ void Wayland_RestoreWindow(_THIS, SDL_Window *window)
         libdecor_frame_unset_maximized(wind->shell_surface.libdecor.frame);
     } else
 #endif
-        /* Note that xdg-shell does NOT provide a way to unset minimize! */
-        if (viddata->shell.xdg) {
-            if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
-                return; /* Can't do anything yet, wait for ShowWindow */
-            }
-            xdg_toplevel_unset_maximized(wind->shell_surface.xdg.roleobj.toplevel);
+    /* Note that xdg-shell does NOT provide a way to unset minimize! */
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
+        if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
+            return; /* Can't do anything yet, wait for ShowWindow */
         }
+        xdg_toplevel_unset_maximized(wind->shell_surface.xdg.roleobj.toplevel);
+    } else if (wind->shell_surface_type == WAYLAND_SURFACE_LAYER) {
+        if (wind->shell_surface.layer.surface == NULL) {
+            return; /* Can't do anything yet, wait for ShowWindow */
+        }
+
+        /* Note anchors that may have been added to maximize are not removed */
+        zwlr_layer_surface_v1_set_size(wind->shell_surface.layer.surface,
+                                       window->w,
+                                       window->h);
+    }
 
     WAYLAND_wl_display_roundtrip(viddata->display);
 }
@@ -1654,7 +1854,8 @@ void Wayland_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
     SDL_WindowData *wind = window->driverdata;
     const SDL_VideoData *viddata = (const SDL_VideoData *)_this->driverdata;
 
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
+    if ((wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ||
+        (wind->shell_surface_type == WAYLAND_SURFACE_LAYER)) {
         return;
     }
 
@@ -1696,12 +1897,15 @@ void Wayland_MaximizeWindow(_THIS, SDL_Window *window)
 {
     SDL_VideoData *viddata = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
+    unsigned int layer_width;
+    unsigned int layer_height;
 
     if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         return;
     }
 
-    if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+    if ((!(window->flags & SDL_WINDOW_RESIZABLE)) &&
+        (wind->shell_surface_type != WAYLAND_SURFACE_LAYER)) {
         return;
     }
 
@@ -1718,11 +1922,54 @@ void Wayland_MaximizeWindow(_THIS, SDL_Window *window)
         libdecor_frame_set_maximized(wind->shell_surface.libdecor.frame);
     } else
 #endif
-        if (viddata->shell.xdg) {
+        if ((wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) &&
+            (viddata->shell.xdg)) {
         if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
         xdg_toplevel_set_maximized(wind->shell_surface.xdg.roleobj.toplevel);
+    } else if (wind->shell_surface_type == WAYLAND_SURFACE_LAYER) {
+        if (wind->shell_surface.layer.surface == NULL) {
+            return; /* Can't do anything yet, wait for ShowWindow */
+        }
+
+        /* At least two opposing edges must be anchored to maximize */
+        if (wind->shell_surface.layer.anchor & (WAYLAND_LAYER_ANCHOR_TOP | WAYLAND_LAYER_ANCHOR_BOTTOM)) {
+            if (!((wind->shell_surface.layer.anchor & WAYLAND_LAYER_ANCHOR_LEFT) &&
+                  (wind->shell_surface.layer.anchor & WAYLAND_LAYER_ANCHOR_RIGHT))) {
+                wind->shell_surface.layer.anchor |= WAYLAND_LAYER_ANCHOR_TOP |
+                                                   WAYLAND_LAYER_ANCHOR_BOTTOM;
+            }
+        } else if (wind->shell_surface.layer.anchor & (WAYLAND_LAYER_ANCHOR_LEFT | WAYLAND_LAYER_ANCHOR_RIGHT)) {
+            if (!((wind->shell_surface.layer.anchor & WAYLAND_LAYER_ANCHOR_TOP) &&
+                  (wind->shell_surface.layer.anchor & WAYLAND_LAYER_ANCHOR_BOTTOM))) {
+                wind->shell_surface.layer.anchor |= WAYLAND_LAYER_ANCHOR_LEFT |
+                                                   WAYLAND_LAYER_ANCHOR_RIGHT;
+            }
+        } else {
+            wind->shell_surface.layer.anchor = WAYLAND_LAYER_ANCHOR_TOP |
+                                               WAYLAND_LAYER_ANCHOR_BOTTOM |
+                                               WAYLAND_LAYER_ANCHOR_LEFT |
+                                               WAYLAND_LAYER_ANCHOR_RIGHT;
+        }
+
+        zwlr_layer_surface_v1_set_anchor(wind->shell_surface.layer.surface,
+                                         wind->shell_surface.layer.anchor);
+
+        /* Maximize to anchored edges (set size to '0' according to spec) */
+        if ((wind->shell_surface.layer.anchor & WAYLAND_LAYER_ANCHOR_LEFT) &&
+            (wind->shell_surface.layer.anchor & WAYLAND_LAYER_ANCHOR_RIGHT)) {
+            layer_width = 0;
+        } else {
+            layer_width = window->w;
+        }
+        if ((wind->shell_surface.layer.anchor & WAYLAND_LAYER_ANCHOR_TOP) &&
+            (wind->shell_surface.layer.anchor & WAYLAND_LAYER_ANCHOR_BOTTOM)) {
+            layer_height = 0;
+        } else {
+            layer_height = window->h;
+        }
+        zwlr_layer_surface_v1_set_size(wind->shell_surface.layer.surface, layer_width, layer_height);
     }
 
     WAYLAND_wl_display_roundtrip(viddata->display);
@@ -1733,7 +1980,8 @@ void Wayland_MinimizeWindow(_THIS, SDL_Window *window)
     SDL_VideoData *viddata = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
 
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
+    if ((wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ||
+        (wind->shell_surface_type == WAYLAND_SURFACE_LAYER)) {
         return;
     }
 
@@ -1800,6 +2048,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data;
     SDL_VideoData *c;
+    const char *hint;
 
     data = SDL_calloc(1, sizeof *data);
     if (data == NULL) {
@@ -1808,19 +2057,14 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 
     c = _this->driverdata;
     window->driverdata = data;
+    window->x = SDL_WINDOWPOS_UNDEFINED;
+    window->y = SDL_WINDOWPOS_UNDEFINED;
 
     if (!(window->flags & SDL_WINDOW_VULKAN)) {
         if (!(window->flags & SDL_WINDOW_OPENGL)) {
             SDL_GL_LoadLibrary(NULL);
             window->flags |= SDL_WINDOW_OPENGL;
         }
-    }
-
-    if (window->x == SDL_WINDOWPOS_UNDEFINED) {
-        window->x = 0;
-    }
-    if (window->y == SDL_WINDOWPOS_UNDEFINED) {
-        window->y = 0;
     }
 
     data->waylandData = c;
@@ -1917,6 +2161,14 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     /* We may need to create an idle inhibitor for this new window */
     Wayland_SuspendScreenSaver(_this);
 
+    hint = SDL_GetHint(SDL_HINT_VIDEO_WAYLAND_SHELL_LAYER);
+    if ((c->shell.layer) &&
+        (hint) &&
+        (hint[0] != '\0')) {
+        data->shell_surface_type = WAYLAND_SURFACE_LAYER;
+        return SetLayerShellSurface(data, hint);
+    }
+
 #define IS_POPUP(window) \
     (window->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU))
 #ifdef HAVE_LIBDECOR_H
@@ -1977,13 +2229,32 @@ void Wayland_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h)
     }
 }
 
+void Wayland_SetWindowPosition(_THIS, SDL_Window *window)
+{
+    SDL_WindowData *wind = window->driverdata;
+    SDL_VideoData *viddata = _this->driverdata;
+
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LAYER) {
+        if (wind->shell_surface.layer.surface == NULL) {
+            return; /* Can't do anything yet, wait for ShowWindow */
+        }
+
+        ConfigureWindowLayerPosition(window);
+        wl_surface_commit(wind->surface);
+        WAYLAND_wl_display_flush(viddata->display);
+    } else {
+        SDL_Unsupported();
+    }
+}
+
 void Wayland_SetWindowTitle(_THIS, SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = _this->driverdata;
     const char *title = window->title ? window->title : "";
 
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
+    if ((wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ||
+        (wind->shell_surface_type == WAYLAND_SURFACE_LAYER)) {
         return;
     }
 

@@ -1723,6 +1723,39 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP "SDL_VIDEO_WAYLAND_EMULATE_MOUSE_WARP"
 
 /**
+ *  \brief  Create Wayland layer-shell windows.
+ *
+ *  If this hint is set, the Wayland video backend will create and allow
+ *  operation on layer-shell windows. These windows have different semenatics
+ *  and behavior compared to default (XDG) Wayland windows. The value of this
+ *  hint indicates the layer that subsequently created layer-shell windows use.
+ *
+ *  The value of this hint is a layer enumeration as a string. i.e.
+ *    layer = "background"|"bottom"|"top"|"overlay"
+ *  e.g. "top"
+ *
+ *  This hint defaults to not specifying a Wayland layer-shell layer (i.e. ""),
+ *  in which case the SDL Wayland video backend remains using XDG windows only.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_SHELL_LAYER "SDL_HINT_VIDEO_WAYLAND_SHELL_LAYER"
+
+/**
+ *  \brief  Set a Wayland layer-shell window exclusive zone.
+ *
+ *  This hint is used to specify an exclusive zone for an anchored Wayland
+ *  layer-shell window. Addtionally, this hint can also be used to indicate how
+ *  an unachored Wayland layer-shell window would like to be ordered with
+ *  respect to other exclusive-zoned windows (0 to try not to occlude other
+ *  windows, -1 for no ordering changes).
+ *
+ *  This hints value is a signed 32-bit integer (-2147483648,2147483647)
+ *  converted to a string (e.g. "-1").
+ *
+ *  This hints default value is "0".
+ */
+#define SDL_HINT_VIDEO_WAYLAND_SHELL_EXCL "SDL_HINT_VIDEO_WAYLAND_SHELL_EXCL"
+
+/**
 *  \brief  A variable that is the address of another SDL_Window* (as a hex string formatted with "%p").
 *
 *  If this hint is set before SDL_CreateWindowFrom() and the SDL_Window* it is set to has

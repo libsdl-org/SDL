@@ -54,6 +54,7 @@
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "fractional-scale-v1-client-protocol.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
+#include "wlr-layer-shell-unstable-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -241,6 +242,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->SetWindowSize = Wayland_SetWindowSize;
     device->SetWindowMinimumSize = Wayland_SetWindowMinimumSize;
     device->SetWindowMaximumSize = Wayland_SetWindowMaximumSize;
+    device->SetWindowPosition = Wayland_SetWindowPosition;
     device->SetWindowModalFor = Wayland_SetWindowModalFor;
     device->SetWindowTitle = Wayland_SetWindowTitle;
     device->GetWindowSizeInPixels = Wayland_GetWindowSizeInPixels;
@@ -851,6 +853,8 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
                                             &qt_windowmanager_interface, 1);
         qt_windowmanager_add_listener(d->windowmanager, &windowmanager_listener, d);
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
+    } else if (SDL_strcmp(interface, "zwlr_layer_shell_v1") == 0) {
+        d->shell.layer = wl_registry_bind(d->registry, id, &zwlr_layer_shell_v1_interface, 1);
     }
 }
 
@@ -1087,6 +1091,11 @@ static void Wayland_VideoCleanup(_THIS)
     if (data->input_timestamps_manager) {
         zwp_input_timestamps_manager_v1_destroy(data->input_timestamps_manager);
         data->input_timestamps_manager = NULL;
+    }
+
+    if (data->shell.layer) {
+        zwlr_layer_shell_v1_destroy(data->shell.layer);
+        data->shell.layer = NULL;
     }
 
     if (data->compositor) {

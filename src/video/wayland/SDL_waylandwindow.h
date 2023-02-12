@@ -68,13 +68,48 @@ struct SDL_WindowData
             } roleobj;
             SDL_bool initial_configure_seen;
         } xdg;
+        struct
+        {
+            struct zwlr_layer_surface_v1 *surface;
+            int excl_zone;
+            struct
+            {
+                int top;
+                int right;
+                int bottom;
+                int left;
+            } margin;
+            enum
+            {
+                WAYLAND_LAYER_ANCHOR_NONE = 0,
+                WAYLAND_LAYER_ANCHOR_TOP = 1U,
+                WAYLAND_LAYER_ANCHOR_BOTTOM = 2U,
+                WAYLAND_LAYER_ANCHOR_LEFT = 4U,
+                WAYLAND_LAYER_ANCHOR_RIGHT = 8U
+            } anchor;
+            enum
+            {
+                WAYLAND_LAYER_BACKGROUND = 0,
+                WAYLAND_LAYER_BOTTOM,
+                WAYLAND_LAYER_TOP,
+                WAYLAND_LAYER_OVERLAY
+            } layer;
+            enum
+            {
+                WAYLAND_LAYER_KBI_NONE = 0,
+                WAYLAND_LAYER_KBI_EXCLUSIVE,
+                WAYLAND_LAYER_KBI_ON_DEMAND
+            } kbi;
+            SDL_bool initial_configure_seen;
+        } layer;
     } shell_surface;
     enum
     {
         WAYLAND_SURFACE_UNKNOWN = 0,
         WAYLAND_SURFACE_XDG_TOPLEVEL,
         WAYLAND_SURFACE_XDG_POPUP,
-        WAYLAND_SURFACE_LIBDECOR
+        WAYLAND_SURFACE_LIBDECOR,
+        WAYLAND_SURFACE_LAYER
     } shell_surface_type;
 
     struct wl_egl_window *egl_window;
@@ -133,6 +168,7 @@ extern void Wayland_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool border
 extern void Wayland_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable);
 extern int Wayland_CreateWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowSize(_THIS, SDL_Window *window);
+extern void Wayland_SetWindowPosition(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowMinimumSize(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowMaximumSize(_THIS, SDL_Window *window);
 extern void Wayland_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h);

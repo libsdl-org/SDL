@@ -40,6 +40,7 @@
 #include "tablet-unstable-v2-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
+#include "wlr-layer-shell-unstable-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -2970,6 +2971,18 @@ int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *inp
     SDL_WindowData *w = window->driverdata;
     SDL_VideoData *d = input->display;
 
+    /* Layer-shell windows have exclusive grab baked in */
+    if (w->shell_surface_type == WAYLAND_SURFACE_LAYER) {
+        if (w->shell_surface.layer.surface != NULL) {
+            w->shell_surface.layer.kbi = WAYLAND_LAYER_KBI_EXCLUSIVE;
+            zwlr_layer_surface_v1_set_keyboard_interactivity(w->shell_surface.layer.surface,
+                                                             w->shell_surface.layer.kbi);
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+
     if (!d->key_inhibitor_manager) {
         return -1;
     }
@@ -2989,6 +3002,22 @@ int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *inp
 int Wayland_input_ungrab_keyboard(SDL_Window *window)
 {
     SDL_WindowData *w = window->driverdata;
+
+    /* Layer-shell windows have exclusive grab baked in */
+    if (w->shell_surface_type == WAYLAND_SURFACE_LAYER) {
+        if (w->shell_surface.layer.surface != NULL) {
+            if (zwlr_layer_surface_v1_get_version(w->shell_surface.layer.surface) >= 4) {
+                w->shell_surface.layer.kbi = WAYLAND_LAYER_KBI_ON_DEMAND;
+            } else {
+                w->shell_surface.layer.kbi = WAYLAND_LAYER_KBI_NONE;
+            }
+            zwlr_layer_surface_v1_set_keyboard_interactivity(w->shell_surface.layer.surface,
+                                                             w->shell_surface.layer.kbi);
+            return 0;
+        } else {
+            return -1;
+        }
+    }
 
     if (w->key_inhibitor) {
         zwp_keyboard_shortcuts_inhibitor_v1_destroy(w->key_inhibitor);
