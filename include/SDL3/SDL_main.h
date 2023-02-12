@@ -219,7 +219,8 @@ extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mai
  *              what is specified here.
  * \param hInst the HINSTANCE to use in WNDCLASSEX::hInstance. If zero, SDL
  *              will use `GetModuleHandle(NULL)` instead.
- * \returns 0 on success, -1 on error. SDL_GetError() may have details.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

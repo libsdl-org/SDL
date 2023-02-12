@@ -166,7 +166,8 @@ extern DECLSPEC SDL_mutex *SDLCALL SDL_CreateMutex(void);
  * other threads in the system (this is known as a "recursive mutex").
  *
  * \param mutex the mutex to lock
- * \returns 0, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -208,7 +209,8 @@ extern DECLSPEC int SDLCALL SDL_TryLockMutex(SDL_mutex * mutex) SDL_TRY_ACQUIRE(
  * It is also an error to unlock a mutex that isn't locked at all.
  *
  * \param mutex the mutex to unlock.
- * \returns 0, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

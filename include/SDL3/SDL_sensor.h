@@ -241,7 +241,8 @@ extern DECLSPEC SDL_SensorID SDLCALL SDL_GetSensorInstanceID(SDL_Sensor *sensor)
  * \param sensor The SDL_Sensor object to query
  * \param data A pointer filled with the current sensor state
  * \param num_values The number of values to write to data
- * \returns 0 or -1 if an error occurred.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
