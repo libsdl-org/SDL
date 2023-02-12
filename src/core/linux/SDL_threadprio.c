@@ -302,6 +302,8 @@ SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedP
 #if SDL_THREADS_DISABLED
     return SDL_Unsupported();
 #else
+
+#if SDL_USE_LIBDBUS
     int osPriority;
 
     if (schedPolicy == SCHED_RR || schedPolicy == SCHED_FIFO) {
@@ -330,7 +332,6 @@ SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedP
         }
     }
 
-#if SDL_USE_LIBDBUS
     /* Note that this fails you most likely:
      * Have your process's scheduler incorrectly configured.
        See the requirements at:

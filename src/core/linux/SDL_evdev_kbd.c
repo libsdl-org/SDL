@@ -254,7 +254,7 @@ static void kbd_cleanup_signal_action(int signum, siginfo_t* info, void* ucontex
 
 static void kbd_unregister_emerg_cleanup()
 {
-    int tabidx, signum;
+    int tabidx;
 
     kbd_cleanup_state = NULL;
 
@@ -264,6 +264,7 @@ static void kbd_unregister_emerg_cleanup()
     kbd_cleanup_sigactions_installed = 0;
 
     for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
+        int signum;
         struct sigaction* old_action_p;
         struct sigaction cur_action;
         signum = fatal_signals[tabidx];
@@ -294,7 +295,7 @@ static void kbd_cleanup_atexit(void)
 
 static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state * kbd)
 {
-    int tabidx, signum;
+    int tabidx;
 
     if (kbd_cleanup_state != NULL) {
         return;
@@ -316,6 +317,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state * kbd)
     kbd_cleanup_sigactions_installed = 1;
 
     for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
+        int signum;
         struct sigaction* old_action_p;
         struct sigaction new_action;
         signum = fatal_signals[tabidx];   

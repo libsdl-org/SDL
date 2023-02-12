@@ -72,13 +72,13 @@ typedef struct iuconv_obj {
 static int _createUconvObj(const char *code, UconvObject *uobj)
 {
     UniChar uc_code[MAX_CP_NAME_LEN];
-    int i;
     const unsigned char *ch =
          (const unsigned char *)code;
 
     if (code == NULL)
         uc_code[0] = 0;
     else {
+        int i;
         for (i = 0; i < MAX_CP_NAME_LEN; i++) {
             uc_code[i] = (unsigned short)*ch;
             if (! (*ch))

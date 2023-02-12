@@ -767,7 +767,6 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
 static int
 SDL_EVDEV_device_added(const char *dev_path, int udev_class)
 {
-    int ret;
     SDL_evdevlist_item *item;
     unsigned long relbit[NBITS(REL_MAX)] = { 0 };
 
@@ -806,6 +805,7 @@ SDL_EVDEV_device_added(const char *dev_path, int udev_class)
     if (udev_class & (SDL_UDEV_DEVICE_TOUCHSCREEN | SDL_UDEV_DEVICE_TOUCHPAD)) {
         item->is_touchscreen = SDL_TRUE;
 
+        int ret;
         if ((ret = SDL_EVDEV_init_touchscreen(item, udev_class)) < 0) {
             close(item->fd);
             SDL_free(item->path);

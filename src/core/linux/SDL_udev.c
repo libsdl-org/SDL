@@ -162,8 +162,6 @@ SDL_UDEV_Init(void)
 void
 SDL_UDEV_Quit(void)
 {
-    SDL_UDEV_CallbackList *item;
-
     if (_this == NULL) {
         return;
     }
@@ -183,6 +181,7 @@ SDL_UDEV_Quit(void)
 
         /* Remove existing devices */
         while (_this->first != NULL) {
+            SDL_UDEV_CallbackList *item;
             item = _this->first;
             _this->first = _this->first->next;
             SDL_free(item);

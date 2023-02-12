@@ -766,10 +766,10 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
              */
             argv[argc++] = SDL_strdup("app_process");
             for (i = 0; i < len; ++i) {
-                const char *utf;
                 char *arg = NULL;
                 jstring string = (*env)->GetObjectArrayElement(env, array, i);
                 if (string) {
+                    const char *utf;
                     utf = (*env)->GetStringUTFChars(env, string, 0);
                     if (utf) {
                         arg = SDL_strdup(utf);
@@ -1420,10 +1420,10 @@ SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss()
 
 SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
 {
-    int i;
     SDL_bool retval = SDL_FALSE;
 
     if (bHasNewData) {
+        int i;
         for (i = 0; i < 3; ++i) {
             values[i] = fLastAccelerometer[i];
         }

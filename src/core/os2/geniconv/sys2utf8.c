@@ -32,7 +32,6 @@
 
 int StrUTF8(int to_utf8, char *dst, int c_dst, char *src, int c_src)
 {
-    size_t  rc;
     char   *dststart = dst;
     iconv_t cd;
     char   *tocp, *fromcp;
@@ -56,6 +55,7 @@ int StrUTF8(int to_utf8, char *dst, int c_dst, char *src, int c_src)
     }
 
     while (c_src > 0) {
+        size_t rc;
         rc = iconv(cd, &src, (size_t *)&c_src, &dst, (size_t *)&c_dst);
         if (rc == (size_t)-1) {
             if (errno == EILSEQ) {
