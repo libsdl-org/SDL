@@ -553,11 +553,11 @@ SDL_RWFromFile(const char *file, const char *mode)
     } else {
         /* Try opening it from internal storage if it's a relative path */
         char *path;
-        FILE *fp;
 
         /* !!! FIXME: why not just "char path[PATH_MAX];" ? */
         path = SDL_stack_alloc(char, PATH_MAX);
         if (path) {
+            FILE *fp;
             SDL_snprintf(path, PATH_MAX, "%s/%s",
                          SDL_AndroidGetInternalStoragePath(), file);
             fp = fopen(path, mode);
