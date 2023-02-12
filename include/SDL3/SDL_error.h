@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -148,7 +148,14 @@ typedef enum
     SDL_UNSUPPORTED,
     SDL_LASTERROR
 } SDL_errorcode;
-/* SDL_Error() unconditionally returns -1. */
+/**
+ * SDL_Error()
+ *
+ * \param code Error code
+ * \returns unconditionally -1.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
 extern DECLSPEC int SDLCALL SDL_Error(SDL_errorcode code);
 /* @} *//* Internal error functions */
 

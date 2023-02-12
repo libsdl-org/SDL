@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,13 +38,13 @@ static NativeWindowFactory *factories[] = {
 };
 static NativeWindowFactory *factory = NULL;
 static void *native_window;
-static SDL_Rect *positions, *velocities;
+static SDL_FRect *positions, *velocities;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
 {
-    SDL_VideoQuit();
+    SDL_Quit();
     if (native_window != NULL && factory != NULL) {
         factory->DestroyNativeWindow(native_window);
     }
@@ -56,10 +56,10 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     int sprite_w, sprite_h;
     int i;
     SDL_Rect viewport;
-    SDL_Rect *position, *velocity;
+    SDL_FRect *position, *velocity;
 
     /* Query the sizes */
-    SDL_RenderGetViewport(renderer, &viewport);
+    SDL_GetRenderViewport(renderer, &viewport);
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
 
     /* Draw a gray background */
@@ -82,7 +82,7 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
         }
 
         /* Blit the sprite onto the screen */
-        SDL_RenderCopy(renderer, sprite, NULL, position);
+        SDL_RenderTexture(renderer, sprite, NULL, position);
     }
 
     /* Update the screen! */
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (SDL_VideoInit(NULL) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video: %s\n",
                      SDL_GetError());
         exit(1);
@@ -154,23 +154,23 @@ int main(int argc, char *argv[])
     /* Allocate memory for the sprite info */
     SDL_GetWindowSize(window, &window_w, &window_h);
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
-    positions = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
-    velocities = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
+    positions = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*positions));
+    velocities = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*velocities));
     if (positions == NULL || velocities == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }
     srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = rand() % (window_w - sprite_w);
-        positions[i].y = rand() % (window_h - sprite_h);
-        positions[i].w = sprite_w;
-        positions[i].h = sprite_h;
-        velocities[i].x = 0;
-        velocities[i].y = 0;
+        positions[i].x = (float)(rand() % (window_w - sprite_w));
+        positions[i].y = (float)(rand() % (window_h - sprite_h));
+        positions[i].w = (float)sprite_w;
+        positions[i].h = (float)sprite_h;
+        velocities[i].x = 0.0f;
+        velocities[i].y = 0.0f;
         while (!velocities[i].x && !velocities[i].y) {
-            velocities[i].x = (rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED;
-            velocities[i].y = (rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED;
+            velocities[i].x = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+            velocities[i].y = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
         }
     }
 
@@ -180,11 +180,11 @@ int main(int argc, char *argv[])
         /* Check for events */
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
-            case SDL_WINDOWEVENT_EXPOSED:
+            case SDL_EVENT_WINDOW_EXPOSED:
                 SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
                 SDL_RenderClear(renderer);
                 break;
-            case SDL_QUIT:
+            case SDL_EVENT_QUIT:
                 done = 1;
                 break;
             default:

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,14 +27,13 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_touch_c.h"
 
-#define SDL_ENABLE_SYSWM_WAYLAND
 #include <SDL3/SDL_syswm.h>
 
 #include "SDL_waylandvideo.h"
 
 struct SDL_WaylandInput;
 
-typedef struct
+struct SDL_WindowData
 {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
@@ -101,22 +100,22 @@ typedef struct
     struct qt_extended_surface *extended_surface;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-    SDL_WaylandOutputData **outputs;
+    SDL_DisplayData **outputs;
     int num_outputs;
 
-    float scale_factor;
+    float windowed_scale_factor;
     float pointer_scale_x;
     float pointer_scale_y;
+    int requested_window_width, requested_window_height;
     int drawable_width, drawable_height;
-    int fs_output_width, fs_output_height;
-    int window_width, window_height;
-    SDL_bool needs_resize_event;
-    SDL_bool floating_resize_pending;
-    SDL_bool was_floating;
+    int wl_window_width, wl_window_height;
+    int system_min_required_width;
+    int system_min_required_height;
+    SDL_DisplayID fullscreen_display;
+    SDL_bool floating;
     SDL_bool is_fullscreen;
     SDL_bool in_fullscreen_transition;
-    Uint32 fullscreen_flags;
-} SDL_WindowData;
+};
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);
 extern void Wayland_HideWindow(_THIS, SDL_Window *window);
@@ -140,7 +139,7 @@ extern void Wayland_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int
 extern int Wayland_SetWindowModalFor(_THIS, SDL_Window *modal_window, SDL_Window *parent_window);
 extern void Wayland_SetWindowTitle(_THIS, SDL_Window *window);
 extern void Wayland_DestroyWindow(_THIS, SDL_Window *window);
-extern void Wayland_SuspendScreenSaver(_THIS);
+extern int Wayland_SuspendScreenSaver(_THIS);
 
 extern int Wayland_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info);
 extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);

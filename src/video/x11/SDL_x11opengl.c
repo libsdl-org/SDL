@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
   Copyright (C) 2021 NVIDIA Corporation
 
   This software is provided 'as-is', without any express or implied
@@ -202,7 +202,7 @@ int X11_GL_LoadLibrary(_THIS, const char *path)
         (Bool(*)(Display *, int *, int *))
             GL_LoadFunction(handle, "glXQueryExtension");
     _this->gl_data->glXGetProcAddress =
-        (void *(*)(const GLubyte *))
+        (__GLXextFuncPtr (*)(const GLubyte *))
             GL_LoadFunction(handle, "glXGetProcAddressARB");
     _this->gl_data->glXChooseVisual =
         (XVisualInfo * (*)(Display *, int, int *))
@@ -232,7 +232,7 @@ int X11_GL_LoadLibrary(_THIS, const char *path)
         return SDL_SetError("Could not retrieve OpenGL functions");
     }
 
-    display = ((SDL_VideoData *)_this->driverdata)->display;
+    display = _this->driverdata->display;
     if (!_this->gl_data->glXQueryExtension(display, &_this->gl_data->errorBase, &_this->gl_data->eventBase)) {
         return SDL_SetError("GLX is not supported");
     }
@@ -270,8 +270,7 @@ int X11_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void *
-X11_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer X11_GL_GetProcAddress(_THIS, const char *proc)
 {
     if (_this->gl_data->glXGetProcAddress) {
         return _this->gl_data->glXGetProcAddress((const GLubyte *)proc);
@@ -336,7 +335,7 @@ static SDL_bool HasExtension(const char *extension, const char *extensions)
 
 static void X11_GL_InitExtensions(_THIS)
 {
-    Display *display = ((SDL_VideoData *)_this->driverdata)->display;
+    Display *display = _this->driverdata->display;
     const int screen = DefaultScreen(display);
     XVisualInfo *vinfo = NULL;
     Window w = 0;
@@ -604,8 +603,7 @@ static int X11_GL_GetAttributes(_THIS, Display *display, int screen, int *attrib
     return i;
 }
 
-XVisualInfo *
-X11_GL_GetVisual(_THIS, Display *display, int screen)
+XVisualInfo *X11_GL_GetVisual(_THIS, Display *display, int screen)
 {
     /* 64 seems nice. */
     int attribs[64];
@@ -676,8 +674,7 @@ static int X11_GL_ErrorHandler(Display *d, XErrorEvent *e)
     return (0);
 }
 
-SDL_bool
-X11_GL_UseEGL(_THIS)
+SDL_bool X11_GL_UseEGL(_THIS)
 {
     SDL_assert(_this->gl_data != NULL);
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
@@ -690,13 +687,11 @@ X11_GL_UseEGL(_THIS)
             || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor));
 }
 
-SDL_GLContext
-X11_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
-    int screen =
-        ((SDL_DisplayData *)SDL_GetDisplayForWindow(window)->driverdata)->screen;
+    int screen = SDL_GetDisplayDriverDataForWindow(window)->screen;
     XWindowAttributes xattr;
     XVisualInfo v, *vinfo;
     int n;
@@ -826,9 +821,9 @@ X11_GL_CreateContext(_THIS, SDL_Window *window)
 
 int X11_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
-    Display *display = ((SDL_VideoData *)_this->driverdata)->display;
+    Display *display = _this->driverdata->display;
     Window drawable =
-        (context ? ((SDL_WindowData *)window->driverdata)->xwindow : None);
+        (context ? window->driverdata->xwindow : None);
     GLXContext glx_context = (GLXContext)context;
     int rc;
 
@@ -868,12 +863,10 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
     int status = -1;
 
     if ((interval < 0) && (!_this->gl_data->HAS_GLX_EXT_swap_control_tear)) {
-        SDL_SetError("Negative swap interval unsupported in this GL");
+        return SDL_SetError("Negative swap interval unsupported in this GL");
     } else if (_this->gl_data->glXSwapIntervalEXT) {
-        Display *display = ((SDL_VideoData *)_this->driverdata)->display;
-        const SDL_WindowData *windowdata = (SDL_WindowData *)
-                                               SDL_GL_GetCurrentWindow()
-                                                   ->driverdata;
+        Display *display = _this->driverdata->display;
+        const SDL_WindowData *windowdata = SDL_GL_GetCurrentWindow()->driverdata;
 
         Window drawable = windowdata->xwindow;
 
@@ -885,7 +878,8 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
          * it has the wrong value cached. To work around it, we just run a no-op
          * update to the current value.
          */
-        int currentInterval = X11_GL_GetSwapInterval(_this);
+        int currentInterval = 0;
+        X11_GL_GetSwapInterval(_this, &currentInterval);
         _this->gl_data->glXSwapIntervalEXT(display, drawable, currentInterval);
         _this->gl_data->glXSwapIntervalEXT(display, drawable, interval);
 
@@ -906,21 +900,19 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
             swapinterval = interval;
         }
     } else {
-        SDL_Unsupported();
+        return SDL_Unsupported();
     }
     return status;
 }
 
-int X11_GL_GetSwapInterval(_THIS)
+int X11_GL_GetSwapInterval(_THIS, int *interval)
 {
     if (_this->gl_data->glXSwapIntervalEXT) {
-        Display *display = ((SDL_VideoData *)_this->driverdata)->display;
-        const SDL_WindowData *windowdata = (SDL_WindowData *)
-                                               SDL_GL_GetCurrentWindow()
-                                                   ->driverdata;
+        Display *display = _this->driverdata->display;
+        const SDL_WindowData *windowdata = SDL_GL_GetCurrentWindow()->driverdata;
         Window drawable = windowdata->xwindow;
         unsigned int allow_late_swap_tearing = 0;
-        unsigned int interval = 0;
+        unsigned int val = 0;
 
         if (_this->gl_data->HAS_GLX_EXT_swap_control_tear) {
             _this->gl_data->glXQueryDrawable(display, drawable,
@@ -929,39 +921,48 @@ int X11_GL_GetSwapInterval(_THIS)
         }
 
         _this->gl_data->glXQueryDrawable(display, drawable,
-                                         GLX_SWAP_INTERVAL_EXT, &interval);
+                                         GLX_SWAP_INTERVAL_EXT, &val);
 
-        if ((allow_late_swap_tearing) && (interval > 0)) {
-            return -((int)interval);
+        if ((allow_late_swap_tearing) && (val > 0)) {
+            *interval = -((int)val);
+            return 0;
         }
 
-        return (int)interval;
+        *interval = (int)val;
+        return 0;
     } else if (_this->gl_data->glXGetSwapIntervalMESA) {
-        return _this->gl_data->glXGetSwapIntervalMESA();
+        int val = _this->gl_data->glXGetSwapIntervalMESA();
+        if (val == GLX_BAD_CONTEXT) {
+            return SDL_SetError("GLX_BAD_CONTEXT");
+        }
+        *interval = val;
+        return 0;
     } else {
-        return swapinterval;
+        *interval = swapinterval;
+        return 0;
     }
 }
 
 int X11_GL_SwapWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
 
     _this->gl_data->glXSwapBuffers(display, data->xwindow);
     return 0;
 }
 
-void X11_GL_DeleteContext(_THIS, SDL_GLContext context)
+int X11_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
-    Display *display = ((SDL_VideoData *)_this->driverdata)->display;
+    Display *display = _this->driverdata->display;
     GLXContext glx_context = (GLXContext)context;
 
     if (!_this->gl_data) {
-        return;
+        return 0;
     }
     _this->gl_data->glXDestroyContext(display, glx_context);
     X11_XSync(display, False);
+    return 0;
 }
 
 #endif /* SDL_VIDEO_OPENGL_GLX */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -74,7 +74,7 @@ void NGAGE_DestroyWindow(_THIS, SDL_Window *window)
 
 void DisableKeyBlocking(_THIS)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     TRawEvent event;
 
     event.Set((TRawEvent::TType) /*EDisableKeyBlock*/ 51);
@@ -83,7 +83,7 @@ void DisableKeyBlocking(_THIS)
 
 void ConstructWindowL(_THIS)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     TInt error;
 
     error = phdata->NGAGE_WsSession.Connect();

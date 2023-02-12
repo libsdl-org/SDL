@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,11 +28,27 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>
+#if USE_POSIX_SPAWN
+#include <spawn.h>
+extern char **environ;
+#endif
 
 int SDL_SYS_OpenURL(const char *url)
 {
     const pid_t pid1 = fork();
     if (pid1 == 0) { /* child process */
+#if USE_POSIX_SPAWN
+        pid_t pid2;
+        const char *args[] = { "xdg-open", url, NULL };
+        /* Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam */
+        unsetenv("LD_PRELOAD");
+        if (posix_spawnp(&pid2, args[0], NULL, NULL, (char **)args, environ) == 0) {
+            /* Child process doesn't wait for possibly-blocking grandchild. */
+            _exit(EXIT_SUCCESS);
+        } else {
+            _exit(EXIT_FAILURE);
+        }
+#else
         pid_t pid2;
         /* Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam */
         unsetenv("LD_PRELOAD");
@@ -47,6 +63,7 @@ int SDL_SYS_OpenURL(const char *url)
             /* Child process doesn't wait for possibly-blocking grandchild. */
             _exit(EXIT_SUCCESS);
         }
+#endif /* USE_POSIX_SPAWN */
     } else if (pid1 < 0) {
         return SDL_SetError("fork() failed: %s", strerror(errno));
     } else {

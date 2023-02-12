@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -82,11 +82,11 @@ static const Uint8 mix8[] = {
 #define ADJUST_VOLUME_U8(s, v)  ((s) = ((((s) - 128) * (v)) / SDL_MIX_MAXVOLUME) + 128)
 #define ADJUST_VOLUME_U16(s, v) ((s) = ((((s) - 32768) * (v)) / SDL_MIX_MAXVOLUME) + 32768)
 
-void SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
+int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
                         Uint32 len, int volume)
 {
     if (volume == 0) {
-        return;
+        return 0;
     }
 
     switch (format) {
@@ -334,7 +334,8 @@ void SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
     } break;
 
     default: /* If this happens... FIXME! */
-        SDL_SetError("SDL_MixAudioFormat(): unknown audio format");
-        return;
+        return SDL_SetError("SDL_MixAudioFormat(): unknown audio format");
     }
+
+    return 0;
 }

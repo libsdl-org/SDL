@@ -1,6 +1,6 @@
 /*
  Simple DirectMedia Layer
- Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+ Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
  This software is provided 'as-is', without any express or implied
  warranty.  In no event will the authors be held liable for any damages
@@ -35,7 +35,6 @@
 #import "SDL_uikitwindow.h"
 #import "SDL_uikitmetalview.h"
 
-#define SDL_ENABLE_SYSWM_UIKIT
 #include <SDL3/SDL_syswm.h>
 
 @implementation SDL_uikitmetalview
@@ -79,7 +78,7 @@ SDL_MetalView
 UIKit_Metal_CreateView(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         CGFloat scale = 1.0;
         SDL_uikitmetalview *metalview;
 
@@ -122,27 +121,6 @@ UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
     @autoreleasepool {
         SDL_uikitview *uiview = (__bridge SDL_uikitview *)view;
         return (__bridge void *)uiview.layer;
-    }
-}
-
-void UIKit_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-        SDL_uikitview *view = (SDL_uikitview *)data.uiwindow.rootViewController.view;
-        SDL_uikitmetalview *metalview = [view viewWithTag:SDL_METALVIEW_TAG];
-        if (metalview) {
-            CAMetalLayer *layer = (CAMetalLayer *)metalview.layer;
-            assert(layer != NULL);
-            if (w) {
-                *w = layer.drawableSize.width;
-            }
-            if (h) {
-                *h = layer.drawableSize.height;
-            }
-        } else {
-            SDL_GetWindowSize(window, w, h);
-        }
     }
 }
 

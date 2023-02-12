@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -177,7 +177,7 @@ static void PS2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture
      gskit scale mode is either GS_FILTER_NEAREST (good for tile-map)
      or GS_FILTER_LINEAR (good for scaling)
      */
-    uint32_t gsKitScaleMode = (scaleMode == SDL_ScaleModeNearest
+    uint32_t gsKitScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST
                                    ? GS_FILTER_NEAREST
                                    : GS_FILTER_LINEAR);
     ps2_texture->Filter = gsKitScaleMode;
@@ -233,7 +233,8 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     size_indices = indices ? size_indices : 0;
 
     if (texture) {
-        GSPRIMSTQPOINT *vertices = (GSPRIMSTQPOINT *)SDL_AllocateRenderVertices(renderer, count * sizeof(GSPRIMSTQPOINT), 4, &cmd->data.draw.first);
+        GSPRIMUVPOINT *vertices = (GSPRIMUVPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof (GSPRIMUVPOINT), 4, &cmd->data.draw.first);
+        GSTEXTURE *ps2_tex = (GSTEXTURE *) texture->driverdata;
 
         if (vertices == NULL) {
             return -1;
@@ -259,8 +260,8 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             uv_ = (float *)((char *)uv + j * uv_stride);
 
             vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
-            vertices->stq = vertex_to_STQ(uv_[0], uv_[1]);
-            vertices->rgbaq = color_to_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 1.0f);
+            vertices->rgbaq = color_to_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0);
+            vertices->uv = vertex_to_UV(ps2_tex, uv_[0] * ps2_tex->Width, uv_[1] * ps2_tex->Height);
 
             vertices++;
         }
@@ -400,11 +401,11 @@ static int PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Render
     PS2_SetBlendMode(data, cmd->data.draw.blend);
 
     if (cmd->data.draw.texture) {
-        const GSPRIMSTQPOINT *verts = (GSPRIMSTQPOINT *)(vertices + cmd->data.draw.first);
+        const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *) (vertices + cmd->data.draw.first);
         GSTEXTURE *ps2_tex = (GSTEXTURE *)cmd->data.draw.texture->driverdata;
 
         gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
-        gsKit_prim_list_triangle_goraud_texture_stq_3d(data->gsGlobal, ps2_tex, count, verts);
+        gsKit_prim_list_triangle_goraud_texture_uv_3d(data->gsGlobal, ps2_tex, count, verts);
     } else {
         const GSPRIMPOINT *verts = (GSPRIMPOINT *)(vertices + cmd->data.draw.first);
         gsKit_prim_list_triangle_gouraud_3d(data->gsGlobal, count, verts);
@@ -664,7 +665,7 @@ SDL_RenderDriver PS2_RenderDriver = {
     .CreateRenderer = PS2_CreateRenderer,
     .info = {
         .name = "PS2 gsKit",
-        .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
+        .flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
         .num_texture_formats = 2,
         .texture_formats = {
             [0] = SDL_PIXELFORMAT_ABGR1555,

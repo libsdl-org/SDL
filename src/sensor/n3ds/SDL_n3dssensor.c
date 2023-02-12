@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -157,7 +157,7 @@ UpdateN3DSAccelerometer(SDL_Sensor *sensor)
         data[0] = (float)current_state.x * SDL_STANDARD_GRAVITY;
         data[1] = (float)current_state.y * SDL_STANDARD_GRAVITY;
         data[2] = (float)current_state.z * SDL_STANDARD_GRAVITY;
-        SDL_PrivateSensorUpdate(timestamp, sensor, timestamp, data, sizeof data);
+        SDL_SendSensorUpdate(timestamp, sensor, timestamp, data, sizeof data);
     }
 }
 
@@ -175,7 +175,7 @@ UpdateN3DSGyroscope(SDL_Sensor *sensor)
         data[0] = (float)current_state.x;
         data[1] = (float)current_state.y;
         data[2] = (float)current_state.z;
-        SDL_PrivateSensorUpdate(timestamp, sensor, timestamp, data, sizeof data);
+        SDL_SendSensorUpdate(timestamp, sensor, timestamp, data, sizeof data);
     }
 }
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,6 @@
 #include "SDL_kmsdrmdyn.h"
 #include "SDL_kmsdrmvulkan.h"
 
-#define SDL_ENABLE_SYSWM_KMSDRM
 #include <SDL3/SDL_syswm.h>
 
 #include <sys/ioctl.h>
@@ -142,7 +141,6 @@ void KMSDRM_Vulkan_UnloadLibrary(_THIS)
 /* vkCreateInstance().                                               */
 /*********************************************************************/
 SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
-                                             SDL_Window *window,
                                              unsigned *count,
                                              const char **names)
 {
@@ -156,17 +154,6 @@ SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
     return SDL_Vulkan_GetInstanceExtensions_Helper(
         count, names, SDL_arraysize(extensionsForKMSDRM),
         extensionsForKMSDRM);
-}
-
-void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    if (w) {
-        *w = window->w;
-    }
-
-    if (h) {
-        *h = window->h;
-    }
 }
 
 /***********************************************************************/
@@ -214,7 +201,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     SDL_bool plane_supports_display = SDL_FALSE;
 
     /* Get the display index from the display being used by the window. */
-    int display_index = SDL_atoi(SDL_GetDisplayForWindow(window)->name);
+    int display_index = SDL_GetDisplayIndex(SDL_GetDisplayForWindow(window));
     int i, j;
 
     /* Get the function pointers for the functions we will use. */
@@ -524,5 +511,3 @@ clean:
 }
 
 #endif
-
-/* vim: set ts=4 sw=4 expandtab: */

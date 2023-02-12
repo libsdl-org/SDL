@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -173,23 +173,25 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 
 /**
  * Initializes and launches an SDL application, by doing platform-specific
- * initialization before calling your mainFunction and cleanups after it returns,
- * if that is needed for a specific platform, otherwise it just calls mainFunction.
- * You can use this if you want to use your own main() implementation
- * without using SDL_main (like when using SDL_MAIN_HANDLED).
- * When using this, you do *not* need SDL_SetMainReady().
+ * initialization before calling your mainFunction and cleanups after it
+ * returns, if that is needed for a specific platform, otherwise it just calls
+ * mainFunction.
  *
- * \param argc The argc parameter from the application's main() function,
- *             or 0 if the platform's main-equivalent has no argc
- * \param argv The argv parameter from the application's main() function,
- *             or NULL  if the platform's main-equivalent has no argv
- * \param mainFunction Your SDL app's C-style main(), an SDL_main_func.
- *                     NOT the function you're calling this from!
- *                     Its name doesn't matter, but its signature must be
- *                     like int my_main(int argc, char* argv[])
- * \param reserved should be NULL (reserved for future use, will probably
- *                 be platform-specific then)
- * \return the return value from mainFunction: 0 on success, -1 on failure;
+ * You can use this if you want to use your own main() implementation without
+ * using SDL_main (like when using SDL_MAIN_HANDLED). When using this, you do
+ * *not* need SDL_SetMainReady().
+ *
+ * \param argc The argc parameter from the application's main() function, or 0
+ *             if the platform's main-equivalent has no argc
+ * \param argv The argv parameter from the application's main() function, or
+ *             NULL if the platform's main-equivalent has no argv
+ * \param mainFunction Your SDL app's C-style main(), an SDL_main_func. NOT
+ *                     the function you're calling this from! Its name doesn't
+ *                     matter, but its signature must be like int my_main(int
+ *                     argc, char* argv[])
+ * \param reserved should be NULL (reserved for future use, will probably be
+ *                 platform-specific then)
+ * \returns the return value from mainFunction: 0 on success, -1 on failure;
  *         SDL_GetError() might have more information on the failure
  *
  * \since This function is available since SDL 3.0.0.
@@ -217,7 +219,8 @@ extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mai
  *              what is specified here.
  * \param hInst the HINSTANCE to use in WNDCLASSEX::hInstance. If zero, SDL
  *              will use `GetModuleHandle(NULL)` instead.
- * \returns 0 on success, -1 on error. SDL_GetError() may have details.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -265,7 +268,7 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 /**
  * Callback from the application to let the suspend continue.
  *
- * \since This function is available since SDL 2.28.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 

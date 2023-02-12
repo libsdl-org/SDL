@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -62,20 +62,20 @@ SDL_FORCE_INLINE void
 FreePreviousWindowFramebuffer(SDL_Window *window)
 {
     SDL_Surface *surface = (SDL_Surface *)SDL_GetWindowData(window, N3DS_SURFACE);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 }
 
 SDL_FORCE_INLINE SDL_Surface *
 CreateNewWindowFramebuffer(SDL_Window *window)
 {
     int w, h;
-    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSizeInPixels(window, &w, &h);
     return SDL_CreateSurface(w, h, FRAMEBUFFER_FORMAT);
 }
 
 int SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_WindowData *drv_data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *drv_data = window->driverdata;
     SDL_Surface *surface;
     u16 width, height;
     u32 *framebuffer;
@@ -135,7 +135,7 @@ void SDL_N3DS_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_Surface *surface;
     surface = (SDL_Surface *)SDL_SetWindowData(window, N3DS_SURFACE, NULL);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 }
 
 #endif /* SDL_VIDEO_DRIVER_N3DS */

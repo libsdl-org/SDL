@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,12 +34,12 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format
     int w, h;
 
     /* Free the old framebuffer surface */
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     surface = data->surface;
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     /* Create a new one */
-    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     surface = SDL_CreateSurface(w, h, surface_format);
     if (surface == NULL) {
@@ -58,7 +58,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect
 {
     SDL_Surface *surface;
 
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     surface = data->surface;
     if (surface == NULL) {
         return SDL_SetError("Couldn't find framebuffer surface for window");
@@ -152,9 +152,9 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect
 
 void Emscripten_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
 
-    SDL_FreeSurface(data->surface);
+    SDL_DestroySurface(data->surface);
     data->surface = NULL;
 }
 

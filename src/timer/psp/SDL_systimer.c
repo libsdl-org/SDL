@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -50,7 +50,7 @@ SDL_GetPerformanceFrequency(void)
 
 void SDL_DelayNS(Uint64 ns)
 {
-    const Uint64 max_delay = 0xffffffff * SDL_NS_PER_US;
+    const Uint64 max_delay = 0xffffffffLL * SDL_NS_PER_US;
     if (ns > max_delay) {
         ns = max_delay;
     }
@@ -58,6 +58,3 @@ void SDL_DelayNS(Uint64 ns)
 }
 
 #endif /* SDL_TIMER_PSP */
-
-/* vim: ts=4 sw=4
- */

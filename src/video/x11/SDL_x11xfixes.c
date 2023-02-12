@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -44,7 +44,7 @@ static SDL_bool xfixes_version_atleast(const int version, const int wantmajor, c
 
 void X11_InitXfixes(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     int version = 0;
     int event, error;
@@ -78,7 +78,7 @@ void X11_SetWindowMouseRect(_THIS, SDL_Window *window)
             X11_ConfineCursorWithFlags(_this, window, &window->mouse_rect, 0);
         } else {
             /* Save the state for when we get focus again */
-            SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;
+            SDL_WindowData *wdata = window->driverdata;
 
             SDL_memcpy(&wdata->barrier_rect, &window->mouse_rect, sizeof(wdata->barrier_rect));
 
@@ -93,7 +93,7 @@ int X11_ConfineCursorWithFlags(_THIS, SDL_Window *window, const SDL_Rect *rect, 
      * edges exactly match, a rectangle the cursor 'slips' out of the barrier.
      * To prevent that the lines for the barriers will span the whole screen.
      */
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
     SDL_WindowData *wdata;
 
     if (!X11_XfixesIsInitialized()) {
@@ -106,7 +106,7 @@ int X11_ConfineCursorWithFlags(_THIS, SDL_Window *window, const SDL_Rect *rect, 
     }
 
     SDL_assert(window != NULL);
-    wdata = (SDL_WindowData *)window->driverdata;
+    wdata = window->driverdata;
 
     /* If user did not specify an area to confine, destroy the barrier that was/is assigned to
      * this window it was assigned */
@@ -130,7 +130,7 @@ int X11_ConfineCursorWithFlags(_THIS, SDL_Window *window, const SDL_Rect *rect, 
         }
 
         /* Use the display bounds to ensure the barriers don't have corner gaps */
-        SDL_GetDisplayBounds(SDL_GetWindowDisplayIndex(window), &bounds);
+        SDL_GetDisplayBounds(SDL_GetDisplayForWindow(window), &bounds);
 
         /** Create the left barrier */
         wdata->barrier[0] = X11_XFixesCreatePointerBarrier(data->display, wdata->xwindow,
@@ -179,9 +179,9 @@ int X11_ConfineCursorWithFlags(_THIS, SDL_Window *window, const SDL_Rect *rect, 
 void X11_DestroyPointerBarrier(_THIS, SDL_Window *window)
 {
     int i;
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
     if (window) {
-        SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;
+        SDL_WindowData *wdata = window->driverdata;
 
         for (i = 0; i < 4; i++) {
             if (wdata->barrier[i] > 0) {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
 #ifndef SDL_log_c_h_
 #define SDL_log_c_h_
 
-extern void SDL_LogInit(void);
-extern void SDL_LogQuit(void);
+extern void SDL_InitLog(void);
+extern void SDL_QuitLog(void);
 
 #endif /* SDL_log_c_h_ */

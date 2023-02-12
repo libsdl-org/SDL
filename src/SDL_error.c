@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -90,22 +90,6 @@ int SDL_Error(SDL_errorcode code)
         return SDL_SetError("Unknown SDL error");
     }
 }
-
-#ifdef TEST_ERROR
-int main(int argc, char *argv[])
-{
-    char buffer[BUFSIZ + 1];
-
-    SDL_SetError("Hi there!");
-    printf("Error 1: %s\n", SDL_GetError());
-    SDL_ClearError();
-    SDL_memset(buffer, '1', BUFSIZ);
-    buffer[BUFSIZ] = 0;
-    SDL_SetError("This is the error: %s (%f)", buffer, 1.0);
-    printf("Error 2: %s\n", SDL_GetError());
-    exit(0);
-}
-#endif
 
 char *
 SDL_GetErrorMsg(char *errstr, int maxlen)

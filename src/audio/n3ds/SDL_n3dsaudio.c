@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -311,7 +311,7 @@ static void FreePrivateData(_THIS)
 static int FindAudioFormat(_THIS)
 {
     SDL_bool found_valid_format = SDL_FALSE;
-    Uint16 test_format = SDL_FirstAudioFormat(this->spec.format);
+    Uint16 test_format = SDL_GetFirstAudioFormat(this->spec.format);
 
     while (!found_valid_format && test_format) {
         this->spec.format = test_format;
@@ -331,7 +331,7 @@ static int FindAudioFormat(_THIS)
             found_valid_format = SDL_TRUE;
             break;
         default:
-            test_format = SDL_NextAudioFormat();
+            test_format = SDL_GetNextAudioFormat();
             break;
         }
     }

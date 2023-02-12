@@ -108,6 +108,9 @@
     <ClInclude Include="..\include\SDL3\SDL_platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\SDL3\SDL_platform_defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\SDL3\SDL_power.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -162,7 +165,10 @@
     <ClInclude Include="..\include\SDL3\SDL_video.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\joystick\SDL_gamecontrollerdb.h">
+    <ClInclude Include="..\src\joystick\SDL_gamepad_c.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\joystick\SDL_gamepad_db.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\audio\disk\SDL_diskaudio.h">
@@ -540,7 +546,7 @@
     <ClCompile Include="..\src\joystick\dummy\SDL_sysjoystick.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\joystick\SDL_gamecontroller.c">
+    <ClCompile Include="..\src\joystick\SDL_gamepad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\joystick\SDL_joystick.c">

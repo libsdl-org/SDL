@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,14 +23,17 @@
 #endif
 
 static SDLTest_CommonState *state;
-int i, done;
-SDL_Rect rect;
-SDL_Event event;
+static int i, done;
+static float mouseX, mouseY;
+static SDL_FRect rect;
+static SDL_Event event;
 
 static void
 DrawRects(SDL_Renderer *renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    rect.x = mouseX;
+    rect.y = mouseY;
     SDL_RenderFillRect(renderer, &rect);
 }
 
@@ -41,10 +44,10 @@ loop()
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
         switch (event.type) {
-        case SDL_MOUSEMOTION:
+        case SDL_EVENT_MOUSE_MOTION:
         {
-            rect.x += event.motion.xrel;
-            rect.y += event.motion.yrel;
+            mouseX += event.motion.xrel;
+            mouseY += event.motion.yrel;
         } break;
         }
     }
@@ -58,7 +61,7 @@ loop()
         SDL_RenderClear(renderer);
 
         /* Wrap the cursor rectangle at the screen edges to keep it visible */
-        SDL_RenderGetViewport(renderer, &viewport);
+        SDL_GetRenderViewport(renderer, &viewport);
         if (rect.x < viewport.x) {
             rect.x += viewport.w;
         }

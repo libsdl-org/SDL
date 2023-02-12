@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -50,7 +50,7 @@ static int aaudio_LoadFunctions(AAUDIO_Data *data)
 {
 #define SDL_PROC(ret, func, params)                                                             \
     do {                                                                                        \
-        data->func = SDL_LoadFunction(data->handle, #func);                                     \
+        data->func = (ret (*) params)SDL_LoadFunction(data->handle, #func);                                     \
         if (!data->func) {                                                                      \
             return SDL_SetError("Couldn't load AAUDIO function %s: %s", #func, SDL_GetError()); \
         }                                                                                       \

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -143,7 +143,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnStateChanged(ISensorEvents 
 static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *This, ISensor *pSensor, ISensorDataReport *pNewData)
 {
     int i;
-    Uint64 timestamp = SDL_GetTicks();
+    Uint64 timestamp = SDL_GetTicksNS();
 
     SDL_LockSensors();
     for (i = 0; i < SDL_num_sensors; ++i) {
@@ -180,7 +180,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                         values[0] = (float)valueX.dblVal * SDL_STANDARD_GRAVITY;
                         values[1] = (float)valueY.dblVal * SDL_STANDARD_GRAVITY;
                         values[2] = (float)valueZ.dblVal * SDL_STANDARD_GRAVITY;
-                        SDL_PrivateSensorUpdate(timestamp, SDL_sensors[i].sensor_opened, sensor_timestamp, values, 3);
+                        SDL_SendSensorUpdate(timestamp, SDL_sensors[i].sensor_opened, sensor_timestamp, values, 3);
                     }
                     break;
                 case SDL_SENSOR_GYRO:
@@ -195,7 +195,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                         values[0] = (float)valueX.dblVal * DEGREES_TO_RADIANS;
                         values[1] = (float)valueY.dblVal * DEGREES_TO_RADIANS;
                         values[2] = (float)valueZ.dblVal * DEGREES_TO_RADIANS;
-                        SDL_PrivateSensorUpdate(timestamp, SDL_sensors[i].sensor_opened, sensor_timestamp, values, 3);
+                        SDL_SendSensorUpdate(timestamp, SDL_sensors[i].sensor_opened, sensor_timestamp, values, 3);
                     }
                     break;
                 default:

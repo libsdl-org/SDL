@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,7 +38,7 @@ typedef struct SDL_GLDriverData
     uint32_t swapinterval;
 } SDL_GLDriverData;
 
-extern void *VITA_GLES_GetProcAddress(_THIS, const char *proc);
+extern SDL_FunctionPointer VITA_GLES_GetProcAddress(_THIS, const char *proc);
 extern int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 extern void VITA_GLES_SwapBuffers(_THIS);
 
@@ -48,6 +48,6 @@ extern SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window);
 extern int VITA_GLES_LoadLibrary(_THIS, const char *path);
 extern void VITA_GLES_UnloadLibrary(_THIS);
 extern int VITA_GLES_SetSwapInterval(_THIS, int interval);
-extern int VITA_GLES_GetSwapInterval(_THIS);
+extern int VITA_GLES_GetSwapInterval(_THIS, int *interval);
 
 #endif /* SDL_vitagles_c_h_ */

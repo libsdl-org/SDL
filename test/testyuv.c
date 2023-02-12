@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -204,7 +204,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
 done:
     SDL_free(yuv1);
     SDL_free(yuv2);
-    SDL_FreeSurface(pattern);
+    SDL_DestroySurface(pattern);
     return result;
 }
 
@@ -399,10 +399,10 @@ int main(int argc, char **argv)
         while (!done) {
             SDL_Event event;
             while (SDL_PollEvent(&event) > 0) {
-                if (event.type == SDL_QUIT) {
+                if (event.type == SDL_EVENT_QUIT) {
                     done = 1;
                 }
-                if (event.type == SDL_KEYDOWN) {
+                if (event.type == SDL_EVENT_KEY_DOWN) {
                     if (event.key.keysym.sym == SDLK_ESCAPE) {
                         done = 1;
                     } else if (event.key.keysym.sym == SDLK_LEFT) {
@@ -411,7 +411,7 @@ int main(int argc, char **argv)
                         ++current;
                     }
                 }
-                if (event.type == SDL_MOUSEBUTTONDOWN) {
+                if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
                     if (event.button.x < (original->w / 2)) {
                         --current;
                     } else {
@@ -429,7 +429,7 @@ int main(int argc, char **argv)
             }
 
             SDL_RenderClear(renderer);
-            SDL_RenderCopy(renderer, output[current], NULL, NULL);
+            SDL_RenderTexture(renderer, output[current], NULL, NULL);
             SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
             if (current == 0) {
                 SDLTest_DrawString(renderer, 4, 4, titles[current]);

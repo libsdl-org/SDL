@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,14 +48,13 @@ extern "C" {
 
 /* Initialization/Query functions */
 static int NGAGE_VideoInit(_THIS);
-static int NGAGE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void NGAGE_VideoQuit(_THIS);
 
 /* NGAGE driver bootstrap functions */
 
 static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)device->driverdata;
+    SDL_VideoData *phdata = device->driverdata;
 
     if (phdata) {
         /* Free Epoc resources */
@@ -121,7 +120,6 @@ static SDL_VideoDevice *NGAGE_CreateDevice(void)
     /* General video */
     device->VideoInit = NGAGE_VideoInit;
     device->VideoQuit = NGAGE_VideoQuit;
-    device->SetDisplayMode = NGAGE_SetDisplayMode;
     device->PumpEvents = NGAGE_PumpEvents;
     device->CreateWindowFramebuffer = SDL_NGAGE_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = SDL_NGAGE_UpdateWindowFramebuffer;
@@ -148,24 +146,15 @@ int NGAGE_VideoInit(_THIS)
     SDL_DisplayMode mode;
 
     /* Use 12-bpp desktop mode */
+    SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB444;
-    mode.w = 176;
-    mode.h = 208;
-    mode.refresh_rate = 0;
-    mode.driverdata = NULL;
-    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
+    mode.pixel_w = 176;
+    mode.pixel_h = 208;
+    if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
 
-    SDL_zero(mode);
-    SDL_AddDisplayMode(&_this->displays[0], &mode);
-
     /* We're done! */
-    return 0;
-}
-
-static int NGAGE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
-{
     return 0;
 }
 

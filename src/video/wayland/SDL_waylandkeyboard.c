@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,7 @@
 #include "../SDL_sysvideo.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandevents_c.h"
+#include "../../events/SDL_keyboard_c.h"
 #include "text-input-unstable-v3-client-protocol.h"
 
 int Wayland_InitKeyboard(_THIS)
@@ -35,6 +36,7 @@ int Wayland_InitKeyboard(_THIS)
         SDL_IME_Init();
     }
 #endif
+    SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
 
     return 0;
 }
@@ -110,19 +112,13 @@ void Wayland_StopTextInput(_THIS)
 #endif
 }
 
-void Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *driverdata = _this->driverdata;
-
-    if (rect == NULL) {
-        SDL_InvalidParamError("rect");
-        return;
-    }
-
     if (driverdata->text_input_manager) {
         struct SDL_WaylandInput *input = driverdata->input;
         if (input != NULL && input->text_input) {
-            if (!SDL_RectEquals(rect, &input->text_input->cursor_rect)) {
+            if (!SDL_RectsEqual(rect, &input->text_input->cursor_rect)) {
                 SDL_copyp(&input->text_input->cursor_rect, rect);
                 zwp_text_input_v3_set_cursor_rectangle(input->text_input->text_input,
                                                        rect->x,
@@ -139,6 +135,7 @@ void Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
         SDL_IME_UpdateTextRect(rect);
     }
 #endif
+    return 0;
 }
 
 SDL_bool Wayland_HasScreenKeyboardSupport(_THIS)

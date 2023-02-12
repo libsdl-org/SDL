@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,7 +40,7 @@ typedef enum
     PENDING_FOCUS_OUT
 } PendingFocusEnum;
 
-typedef struct
+struct SDL_WindowData
 {
     SDL_Window *window;
     Window xwindow;
@@ -78,7 +78,7 @@ typedef struct
     PointerBarrier barrier[4];
     SDL_Rect barrier_rect;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
-} SDL_WindowData;
+};
 
 extern void X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags);
 extern Uint32 X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow);

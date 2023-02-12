@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -156,12 +156,12 @@ static void SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)
     int events;
     ASensorEvent event;
     struct android_poll_source *source;
-    Uint64 timestamp = SDL_GetTicks();
+    Uint64 timestamp = SDL_GetTicksNS();
 
     if (ALooper_pollAll(0, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
         SDL_zero(event);
         while (ASensorEventQueue_getEvents(sensor->hwdata->eventqueue, &event, 1) > 0) {
-            SDL_PrivateSensorUpdate(timestamp, sensor, timestamp, event.data, SDL_arraysize(event.data));
+            SDL_SendSensorUpdate(timestamp, sensor, timestamp, event.data, SDL_arraysize(event.data));
         }
     }
 }

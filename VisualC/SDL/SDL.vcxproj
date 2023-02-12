@@ -86,16 +86,16 @@
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)/../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)/../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)/../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)/../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
@@ -250,7 +250,7 @@
     <ClInclude Include="..\..\include\SDL3\SDL_error.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_events.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_filesystem.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_gamecontroller.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_gamepad.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_guid.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_haptic.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_hints.h" />
@@ -278,6 +278,7 @@
     <ClInclude Include="..\..\include\SDL3\SDL_opengles2_khrplatform.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_pixels.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_platform.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_platform_defines.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_power.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_quit.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_rect.h" />
@@ -299,7 +300,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_test_font.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_fuzzer.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_harness.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_test_images.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_log.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_md5.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h" />
@@ -347,7 +347,8 @@
     <ClInclude Include="..\..\src\joystick\controller_type.h" />
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapijoystick_c.h" />
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapi_rumble.h" />
-    <ClInclude Include="..\..\src\joystick\SDL_gamecontrollerdb.h" />
+    <ClInclude Include="..\..\src\joystick\SDL_gamepad_c.h" />
+    <ClInclude Include="..\..\src\joystick\SDL_gamepad_db.h" />
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h" />
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h" />
     <ClInclude Include="..\..\src\joystick\usb_ids.h" />
@@ -520,7 +521,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360w.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c" />
-    <ClCompile Include="..\..\src\joystick\SDL_gamecontroller.c" />
+    <ClCompile Include="..\..\src\joystick\SDL_gamepad.c" />
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c" />
     <ClCompile Include="..\..\src\joystick\virtual\SDL_virtualjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c" />
@@ -545,6 +546,7 @@
     <ClCompile Include="..\..\src\libm\s_cos.c" />
     <ClCompile Include="..\..\src\libm\s_fabs.c" />
     <ClCompile Include="..\..\src\libm\s_floor.c" />
+    <ClCompile Include="..\..\src\libm\s_modf.c" />
     <ClCompile Include="..\..\src\libm\s_scalbn.c" />
     <ClCompile Include="..\..\src\libm\s_sin.c" />
     <ClCompile Include="..\..\src\libm\s_tan.c" />

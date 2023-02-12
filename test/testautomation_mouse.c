@@ -2,16 +2,18 @@
  * Mouse test suite
  */
 #include <limits.h>
+#include <float.h>
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_images.h"
 
 /* ================= Test Case Implementation ================== */
 
 /* Test case functions */
 
 /* Helper to evaluate state returned from SDL_GetMouseState */
-int _mouseStateCheck(Uint32 state)
+static int mouseStateCheck(Uint32 state)
 {
     return (state == 0) ||
            (state == SDL_BUTTON(SDL_BUTTON_LEFT)) ||
@@ -22,13 +24,13 @@ int _mouseStateCheck(Uint32 state)
 }
 
 /**
- * @brief Check call to SDL_GetMouseState
+ * \brief Check call to SDL_GetMouseState
  *
  */
 int mouse_getMouseState(void *arg)
 {
-    int x;
-    int y;
+    float x;
+    float y;
     Uint32 state;
 
     /* Pump some events to update mouse state */
@@ -38,42 +40,42 @@ int mouse_getMouseState(void *arg)
     /* Case where x, y pointer is NULL */
     state = SDL_GetMouseState(NULL, NULL);
     SDLTest_AssertPass("Call to SDL_GetMouseState(NULL, NULL)");
-    SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
+    SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x pointer is not NULL */
-    x = INT_MIN;
+    x = -FLT_MAX;
     state = SDL_GetMouseState(&x, NULL);
     SDLTest_AssertPass("Call to SDL_GetMouseState(&x, NULL)");
-    SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
-    SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
+    SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where y pointer is not NULL */
-    y = INT_MIN;
+    y = -FLT_MAX;
     state = SDL_GetMouseState(NULL, &y);
     SDLTest_AssertPass("Call to SDL_GetMouseState(NULL, &y)");
-    SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
-    SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
+    SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x and y pointer is not NULL */
-    x = INT_MIN;
-    y = INT_MIN;
+    x = -FLT_MAX;
+    y = -FLT_MAX;
     state = SDL_GetMouseState(&x, &y);
     SDLTest_AssertPass("Call to SDL_GetMouseState(&x, &y)");
-    SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
-    SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
-    SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
+    SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     return TEST_COMPLETED;
 }
 
 /**
- * @brief Check call to SDL_GetRelativeMouseState
+ * \brief Check call to SDL_GetRelativeMouseState
  *
  */
 int mouse_getRelativeMouseState(void *arg)
 {
-    int x;
-    int y;
+    float x;
+    float y;
     Uint32 state;
 
     /* Pump some events to update mouse state */
@@ -83,36 +85,36 @@ int mouse_getRelativeMouseState(void *arg)
     /* Case where x, y pointer is NULL */
     state = SDL_GetRelativeMouseState(NULL, NULL);
     SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(NULL, NULL)");
-    SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
+    SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x pointer is not NULL */
-    x = INT_MIN;
+    x = -FLT_MAX;
     state = SDL_GetRelativeMouseState(&x, NULL);
     SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(&x, NULL)");
-    SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
-    SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
+    SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where y pointer is not NULL */
-    y = INT_MIN;
+    y = -FLT_MAX;
     state = SDL_GetRelativeMouseState(NULL, &y);
     SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(NULL, &y)");
-    SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
-    SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
+    SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x and y pointer is not NULL */
-    x = INT_MIN;
-    y = INT_MIN;
+    x = -FLT_MAX;
+    y = -FLT_MAX;
     state = SDL_GetRelativeMouseState(&x, &y);
     SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(&x, &y)");
-    SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
-    SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
-    SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
+    SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     return TEST_COMPLETED;
 }
 
 /* XPM definition of mouse Cursor */
-static const char *_mouseArrowData[] = {
+static const char *g_mouseArrowData[] = {
     /* pixels */
     "X                               ",
     "XX                              ",
@@ -149,7 +151,7 @@ static const char *_mouseArrowData[] = {
 };
 
 /* Helper that creates a new mouse cursor from an XPM */
-static SDL_Cursor *_initArrowCursor(const char *image[])
+static SDL_Cursor *initArrowCursor(const char *image[])
 {
     SDL_Cursor *cursor;
     int i, row, col;
@@ -185,17 +187,17 @@ static SDL_Cursor *_initArrowCursor(const char *image[])
 }
 
 /**
- * @brief Check call to SDL_CreateCursor and SDL_FreeCursor
+ * \brief Check call to SDL_CreateCursor and SDL_DestroyCursor
  *
- * @sa http://wiki.libsdl.org/SDL_CreateCursor
- * @sa http://wiki.libsdl.org/SDL_FreeCursor
+ * \sa SDL_CreateCursor
+ * \sa SDL_DestroyCursor
  */
 int mouse_createFreeCursor(void *arg)
 {
     SDL_Cursor *cursor;
 
     /* Create a cursor */
-    cursor = _initArrowCursor(_mouseArrowData);
+    cursor = initArrowCursor(g_mouseArrowData);
     SDLTest_AssertPass("Call to SDL_CreateCursor()");
     SDLTest_AssertCheck(cursor != NULL, "Validate result from SDL_CreateCursor() is not NULL");
     if (cursor == NULL) {
@@ -203,17 +205,17 @@ int mouse_createFreeCursor(void *arg)
     }
 
     /* Free cursor again */
-    SDL_FreeCursor(cursor);
-    SDLTest_AssertPass("Call to SDL_FreeCursor()");
+    SDL_DestroyCursor(cursor);
+    SDLTest_AssertPass("Call to SDL_DestroyCursor()");
 
     return TEST_COMPLETED;
 }
 
 /**
- * @brief Check call to SDL_CreateColorCursor and SDL_FreeCursor
+ * \brief Check call to SDL_CreateColorCursor and SDL_DestroyCursor
  *
- * @sa http://wiki.libsdl.org/SDL_CreateColorCursor
- * @sa http://wiki.libsdl.org/SDL_FreeCursor
+ * \sa SDL_CreateColorCursor
+ * \sa SDL_DestroyCursor
  */
 int mouse_createFreeColorCursor(void *arg)
 {
@@ -232,81 +234,75 @@ int mouse_createFreeColorCursor(void *arg)
     SDLTest_AssertPass("Call to SDL_CreateColorCursor()");
     SDLTest_AssertCheck(cursor != NULL, "Validate result from SDL_CreateColorCursor() is not NULL");
     if (cursor == NULL) {
-        SDL_FreeSurface(face);
+        SDL_DestroySurface(face);
         return TEST_ABORTED;
     }
 
     /* Free cursor again */
-    SDL_FreeCursor(cursor);
-    SDLTest_AssertPass("Call to SDL_FreeCursor()");
+    SDL_DestroyCursor(cursor);
+    SDLTest_AssertPass("Call to SDL_DestroyCursor()");
 
     /* Clean up */
-    SDL_FreeSurface(face);
+    SDL_DestroySurface(face);
 
     return TEST_COMPLETED;
 }
 
 /* Helper that changes cursor visibility */
-void _changeCursorVisibility(int state)
+static void changeCursorVisibility(SDL_bool state)
 {
-    int oldState;
-    int newState;
-    int result;
+    SDL_bool newState;
 
-    oldState = SDL_ShowCursor(SDL_QUERY);
-    SDLTest_AssertPass("Call to SDL_ShowCursor(SDL_QUERY)");
+    if (state) {
+        SDL_ShowCursor();
+    } else {
+        SDL_HideCursor();
+    }
+    SDLTest_AssertPass("Call to %s", state ? "SDL_ShowCursor()" : "SDL_HideCursor()");
 
-    result = SDL_ShowCursor(state);
-    SDLTest_AssertPass("Call to SDL_ShowCursor(%s)", (state == SDL_ENABLE) ? "SDL_ENABLE" : "SDL_DISABLE");
-    SDLTest_AssertCheck(result == oldState, "Validate result from SDL_ShowCursor(%s), expected: %i, got: %i",
-                        (state == SDL_ENABLE) ? "SDL_ENABLE" : "SDL_DISABLE", oldState, result);
-
-    newState = SDL_ShowCursor(SDL_QUERY);
-    SDLTest_AssertPass("Call to SDL_ShowCursor(SDL_QUERY)");
-    SDLTest_AssertCheck(state == newState, "Validate new state, expected: %i, got: %i",
-                        state, newState);
+    newState = SDL_CursorVisible();
+    SDLTest_AssertPass("Call to SDL_CursorVisible()");
+    SDLTest_AssertCheck(state == newState, "Validate new state, expected: %s, got: %s",
+                        state ? "SDL_TRUE" : "SDL_FALSE",
+                        newState ? "SDL_TRUE" : "SDL_FALSE");
 }
 
 /**
- * @brief Check call to SDL_ShowCursor
+ * \brief Check call to SDL_ShowCursor
  *
- * @sa http://wiki.libsdl.org/SDL_ShowCursor
+ * \sa SDL_ShowCursor
  */
 int mouse_showCursor(void *arg)
 {
-    int currentState;
+    SDL_bool currentState;
 
     /* Get current state */
-    currentState = SDL_ShowCursor(SDL_QUERY);
-    SDLTest_AssertPass("Call to SDL_ShowCursor(SDL_QUERY)");
-    SDLTest_AssertCheck(currentState == SDL_DISABLE || currentState == SDL_ENABLE,
-                        "Validate result is %i or %i, got: %i", SDL_DISABLE, SDL_ENABLE, currentState);
-    if (currentState == SDL_DISABLE) {
-        /* Show the cursor, then hide it again */
-        _changeCursorVisibility(SDL_ENABLE);
-        _changeCursorVisibility(SDL_DISABLE);
-    } else if (currentState == SDL_ENABLE) {
+    currentState = SDL_CursorVisible();
+    SDLTest_AssertPass("Call to SDL_CursorVisible()");
+    if (currentState) {
         /* Hide the cursor, then show it again */
-        _changeCursorVisibility(SDL_DISABLE);
-        _changeCursorVisibility(SDL_ENABLE);
+        changeCursorVisibility(SDL_FALSE);
+        changeCursorVisibility(SDL_TRUE);
     } else {
-        return TEST_ABORTED;
+        /* Show the cursor, then hide it again */
+        changeCursorVisibility(SDL_TRUE);
+        changeCursorVisibility(SDL_FALSE);
     }
 
     return TEST_COMPLETED;
 }
 
 /**
- * @brief Check call to SDL_SetCursor
+ * \brief Check call to SDL_SetCursor
  *
- * @sa http://wiki.libsdl.org/SDL_SetCursor
+ * \sa SDL_SetCursor
  */
 int mouse_setCursor(void *arg)
 {
     SDL_Cursor *cursor;
 
     /* Create a cursor */
-    cursor = _initArrowCursor(_mouseArrowData);
+    cursor = initArrowCursor(g_mouseArrowData);
     SDLTest_AssertPass("Call to SDL_CreateCursor()");
     SDLTest_AssertCheck(cursor != NULL, "Validate result from SDL_CreateCursor() is not NULL");
     if (cursor == NULL) {
@@ -322,16 +318,16 @@ int mouse_setCursor(void *arg)
     SDLTest_AssertPass("Call to SDL_SetCursor(NULL)");
 
     /* Free cursor again */
-    SDL_FreeCursor(cursor);
-    SDLTest_AssertPass("Call to SDL_FreeCursor()");
+    SDL_DestroyCursor(cursor);
+    SDLTest_AssertPass("Call to SDL_DestroyCursor()");
 
     return TEST_COMPLETED;
 }
 
 /**
- * @brief Check call to SDL_GetCursor
+ * \brief Check call to SDL_GetCursor
  *
- * @sa http://wiki.libsdl.org/SDL_GetCursor
+ * \sa SDL_GetCursor
  */
 int mouse_getCursor(void *arg)
 {
@@ -346,10 +342,10 @@ int mouse_getCursor(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetRelativeMouseMode and SDL_SetRelativeMouseMode
+ * \brief Check call to SDL_GetRelativeMouseMode and SDL_SetRelativeMouseMode
  *
- * @sa http://wiki.libsdl.org/SDL_GetRelativeMouseMode
- * @sa http://wiki.libsdl.org/SDL_SetRelativeMouseMode
+ * \sa SDL_GetRelativeMouseMode
+ * \sa SDL_SetRelativeMouseMode
  */
 int mouse_getSetRelativeMouseMode(void *arg)
 {
@@ -406,20 +402,20 @@ int mouse_getSetRelativeMouseMode(void *arg)
 /**
  * Creates a test window
  */
-SDL_Window *_createMouseSuiteTestWindow()
+static SDL_Window *createMouseSuiteTestWindow()
 {
     int posX = 100, posY = 100, width = MOUSE_TESTWINDOW_WIDTH, height = MOUSE_TESTWINDOW_HEIGHT;
     SDL_Window *window;
-    window = SDL_CreateWindow("mouse_createMouseSuiteTestWindow", posX, posY, width, height, 0);
+    window = SDL_CreateWindow("mousecreateMouseSuiteTestWindow", posX, posY, width, height, 0);
     SDLTest_AssertPass("SDL_CreateWindow()");
     SDLTest_AssertCheck(window != NULL, "Check SDL_CreateWindow result");
     return window;
 }
 
-/*
+/**
  * Destroy test window
  */
-void _destroyMouseSuiteTestWindow(SDL_Window *window)
+static void destroyMouseSuiteTestWindow(SDL_Window *window)
 {
     if (window != NULL) {
         SDL_DestroyWindow(window);
@@ -429,46 +425,47 @@ void _destroyMouseSuiteTestWindow(SDL_Window *window)
 }
 
 /**
- * @brief Check call to SDL_WarpMouseInWindow
+ * \brief Check call to SDL_WarpMouseInWindow
  *
- * @sa http://wiki.libsdl.org/SDL_WarpMouseInWindow
+ * \sa SDL_WarpMouseInWindow
  */
 int mouse_warpMouseInWindow(void *arg)
 {
     const int w = MOUSE_TESTWINDOW_WIDTH, h = MOUSE_TESTWINDOW_HEIGHT;
     int numPositions = 6;
-    int xPositions[6];
-    int yPositions[6];
-    int x, y, i, j;
+    float xPositions[6];
+    float yPositions[6];
+    float x, y;
+    int i, j;
     SDL_Window *window;
 
     xPositions[0] = -1;
     xPositions[1] = 0;
     xPositions[2] = 1;
-    xPositions[3] = w - 1;
-    xPositions[4] = w;
-    xPositions[5] = w + 1;
+    xPositions[3] = (float)w - 1;
+    xPositions[4] = (float)w;
+    xPositions[5] = (float)w + 1;
     yPositions[0] = -1;
     yPositions[1] = 0;
     yPositions[2] = 1;
-    yPositions[3] = h - 1;
-    yPositions[4] = h;
-    yPositions[5] = h + 1;
+    yPositions[3] = (float)h - 1;
+    yPositions[4] = (float)h;
+    yPositions[5] = (float)h + 1;
     /* Create test window */
-    window = _createMouseSuiteTestWindow();
+    window = createMouseSuiteTestWindow();
     if (window == NULL) {
         return TEST_ABORTED;
     }
 
     /* Mouse to random position inside window */
-    x = SDLTest_RandomIntegerInRange(1, w - 1);
-    y = SDLTest_RandomIntegerInRange(1, h - 1);
+    x = (float)SDLTest_RandomIntegerInRange(1, w - 1);
+    y = (float)SDLTest_RandomIntegerInRange(1, h - 1);
     SDL_WarpMouseInWindow(window, x, y);
-    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%i,%i)", x, y);
+    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
 
     /* Same position again */
     SDL_WarpMouseInWindow(window, x, y);
-    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%i,%i)", x, y);
+    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
 
     /* Mouse to various boundary positions */
     for (i = 0; i < numPositions; i++) {
@@ -476,7 +473,7 @@ int mouse_warpMouseInWindow(void *arg)
             x = xPositions[i];
             y = yPositions[j];
             SDL_WarpMouseInWindow(window, x, y);
-            SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%i,%i)", x, y);
+            SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
 
             /* TODO: add tracking of events and check that each call generates a mouse motion event */
             SDL_PumpEvents();
@@ -485,20 +482,20 @@ int mouse_warpMouseInWindow(void *arg)
     }
 
     /* Clean up test window */
-    _destroyMouseSuiteTestWindow(window);
+    destroyMouseSuiteTestWindow(window);
 
     return TEST_COMPLETED;
 }
 
 /**
- * @brief Check call to SDL_GetMouseFocus
+ * \brief Check call to SDL_GetMouseFocus
  *
- * @sa http://wiki.libsdl.org/SDL_GetMouseFocus
+ * \sa SDL_GetMouseFocus
  */
 int mouse_getMouseFocus(void *arg)
 {
     const int w = MOUSE_TESTWINDOW_WIDTH, h = MOUSE_TESTWINDOW_HEIGHT;
-    int x, y;
+    float x, y;
     SDL_Window *window;
     SDL_Window *focusWindow;
 
@@ -507,16 +504,16 @@ int mouse_getMouseFocus(void *arg)
     SDLTest_AssertPass("SDL_GetMouseFocus()");
 
     /* Create test window */
-    window = _createMouseSuiteTestWindow();
+    window = createMouseSuiteTestWindow();
     if (window == NULL) {
         return TEST_ABORTED;
     }
 
     /* Mouse to random position inside window */
-    x = SDLTest_RandomIntegerInRange(1, w - 1);
-    y = SDLTest_RandomIntegerInRange(1, h - 1);
+    x = (float)SDLTest_RandomIntegerInRange(1, w - 1);
+    y = (float)SDLTest_RandomIntegerInRange(1, h - 1);
     SDL_WarpMouseInWindow(window, x, y);
-    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%i,%i)", x, y);
+    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
 
     /* Pump events to update focus state */
     SDL_Delay(100);
@@ -530,13 +527,13 @@ int mouse_getMouseFocus(void *arg)
     SDLTest_AssertCheck(focusWindow == window, "Check returned window value is test window");
 
     /* Mouse to random position outside window */
-    x = SDLTest_RandomIntegerInRange(-9, -1);
-    y = SDLTest_RandomIntegerInRange(-9, -1);
+    x = (float)SDLTest_RandomIntegerInRange(-9, -1);
+    y = (float)SDLTest_RandomIntegerInRange(-9, -1);
     SDL_WarpMouseInWindow(window, x, y);
-    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%i,%i)", x, y);
+    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
 
     /* Clean up test window */
-    _destroyMouseSuiteTestWindow(window);
+    destroyMouseSuiteTestWindow(window);
 
     /* Pump events to update focus state */
     SDL_PumpEvents();
@@ -551,9 +548,9 @@ int mouse_getMouseFocus(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetDefaultCursor
+ * \brief Check call to SDL_GetDefaultCursor
  *
- * @sa http://wiki.libsdl.org/SDL_GetDefaultCursor
+ * \sa SDL_GetDefaultCursor
  */
 int mouse_getDefaultCursor(void *arg)
 {
@@ -568,25 +565,25 @@ int mouse_getDefaultCursor(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetGlobalMouseState
+ * \brief Check call to SDL_GetGlobalMouseState
  *
- * @sa http://wiki.libsdl.org/SDL_GetGlobalMouseState
+ * \sa SDL_GetGlobalMouseState
  */
 int mouse_getGlobalMouseState(void *arg)
 {
-    int x;
-    int y;
+    float x;
+    float y;
     Uint32 state;
 
-    x = INT_MIN;
-    y = INT_MIN;
+    x = -FLT_MAX;
+    y = -FLT_MAX;
 
     /* Get current cursor */
     state = SDL_GetGlobalMouseState(&x, &y);
     SDLTest_AssertPass("Call to SDL_GetGlobalMouseState()");
-    SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
-    SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
-    SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %.f", x);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %.f", y);
+    SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     return TEST_COMPLETED;
 }
@@ -603,7 +600,7 @@ static const SDLTest_TestCaseReference mouseTest2 = {
 };
 
 static const SDLTest_TestCaseReference mouseTest3 = {
-    (SDLTest_TestCaseFp)mouse_createFreeCursor, "mouse_createFreeCursor", "Check call to SDL_CreateCursor and SDL_FreeCursor", TEST_ENABLED
+    (SDLTest_TestCaseFp)mouse_createFreeCursor, "mouse_createFreeCursor", "Check call to SDL_CreateCursor and SDL_DestroyCursor", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTest4 = {
@@ -627,7 +624,7 @@ static const SDLTest_TestCaseReference mouseTest8 = {
 };
 
 static const SDLTest_TestCaseReference mouseTest9 = {
-    (SDLTest_TestCaseFp)mouse_createFreeColorCursor, "mouse_createFreeColorCursor", "Check call to SDL_CreateColorCursor and SDL_FreeCursor", TEST_ENABLED
+    (SDLTest_TestCaseFp)mouse_createFreeColorCursor, "mouse_createFreeColorCursor", "Check call to SDL_CreateColorCursor and SDL_DestroyCursor", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTest10 = {

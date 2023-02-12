@@ -1,28 +1,31 @@
 #!/usr/bin/env python3
-
-# WHAT IS THIS?
-#  This script renames symbols in the API, updating SDL_oldnames.h and
-#  adding documentation for the change.
+#
+# This script renames symbols in the API, updating SDL_oldnames.h and
+# adding documentation for the change.
 
 import argparse
 import os
 import pathlib
 import pprint
 import re
+import sys
 from rename_symbols import create_regex_from_replacements, replace_symbols_in_path
 
 SDL_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 SDL_INCLUDE_DIR = SDL_ROOT / "include/SDL3"
+SDL_BUILD_SCRIPTS = SDL_ROOT / "build-scripts"
 
 
 def main():
+    if len(args.args) == 0 or (len(args.args) % 2) != 0:
+        print("Usage: %s [-h] [--skip-header-check] header {enum,function,hint,structure,symbol} [old new ...]" % sys.argv[0])
+        exit(1)
+
     # Check whether we can still modify the ABI
     version_header = pathlib.Path( SDL_INCLUDE_DIR / "SDL_version.h" ).read_text()
     if not re.search("SDL_MINOR_VERSION\s+[01]\s", version_header):
         raise Exception("ABI is frozen, symbols cannot be renamed")
-
-    pattern = re.compile(r"\b%s\b" % args.oldname)
 
     # Find the symbol in the headers
     if pathlib.Path(args.header).is_file():
@@ -33,21 +36,36 @@ def main():
     if not header.exists():
         raise Exception("Couldn't find header %s" % header)
 
-    if not args.skip_header_check and not pattern.search(header.read_text()):
-        raise Exception("Couldn't find %s in %s" % (args.oldname, header))
+    header_text = header.read_text()
 
-    # Replace the symbol in source code and documentation
-    replacements = {
-        args.oldname: args.newname,
-        args.oldname + "_REAL": args.newname + "_REAL"
-    }
+    # Replace the symbols in source code
+    replacements = {}
+    i = 0
+    while i < len(args.args):
+        oldname = args.args[i + 0]
+        newname = args.args[i + 1]
+
+        if not args.skip_header_check and not re.search((r"\b%s\b" % oldname), header_text):
+            raise Exception("Couldn't find %s in %s" % (oldname, header))
+
+        replacements[ oldname ] = newname
+        replacements[ oldname + "_REAL" ] = newname + "_REAL"
+        i += 2
+
     regex = create_regex_from_replacements(replacements)
-    for dir in ["src", "test", "include", "docs", "Xcode-iOS/Demos"]:
+    for dir in ["src", "test", "include", "docs", "cmake/test"]:
         replace_symbols_in_path(SDL_ROOT / dir, regex, replacements)
 
-    add_symbol_to_oldnames(header.name, args.oldname, args.newname)
-    add_symbol_to_migration(header.name, args.type, args.oldname, args.newname)
-    add_symbol_to_whatsnew(args.type, args.oldname, args.newname)
+    # Replace the symbols in documentation
+    i = 0
+    while i < len(args.args):
+        oldname = args.args[i + 0]
+        newname = args.args[i + 1]
+
+        add_symbol_to_oldnames(header.name, oldname, newname)
+        add_symbol_to_migration(header.name, args.type, oldname, newname)
+        add_symbol_to_coccinelle(args.type, oldname, newname)
+        i += 2
 
 
 def add_line(lines, i, section):
@@ -67,6 +85,40 @@ def add_content(lines, i, content, add_trailing_line):
     return i
 
 
+def add_symbol_to_coccinelle(symbol_type, oldname, newname):
+    file = open(SDL_BUILD_SCRIPTS / "SDL_migration.cocci", "a")
+    # Append-adds at last
+
+    if symbol_type == "function":
+        file.write("@@\n")
+        file.write("@@\n")
+        file.write("- %s\n" % oldname)
+        file.write("+ %s\n" % newname)
+        file.write("  (...)\n")
+
+    if symbol_type == "symbol":
+        file.write("@@\n")
+        file.write("@@\n")
+        file.write("- %s\n" % oldname)
+        file.write("+ %s\n" % newname)
+
+    # double check ?
+    if symbol_type == "hint":
+        file.write("@@\n")
+        file.write("@@\n")
+        file.write("- %s\n" % oldname)
+        file.write("+ %s\n" % newname)
+
+    if symbol_type == "enum" or symbol_type == "structure":
+        file.write("@@\n")
+        file.write("typedef %s, %s;\n" % (oldname, newname))
+        file.write("@@\n")
+        file.write("- %s\n" % oldname)
+        file.write("+ %s\n" % newname)
+
+    file.close()
+
+
 def add_symbol_to_oldnames(header, oldname, newname):
     file = (SDL_INCLUDE_DIR / "SDL_oldnames.h")
     lines = file.read_text().splitlines()
@@ -83,7 +135,7 @@ def add_symbol_to_oldnames(header, oldname, newname):
                 content_added = False
             else:
                 raise Exception("add_symbol_to_oldnames(): expected mode 0")
-        elif line == "#else /* !SDL_ENABLE_OLD_NAMES */":
+        elif line == "#elif !defined(SDL_DISABLE_OLD_NAMES)":
             if mode == 1:
                 if not section_added:
                     i = add_line(lines, i, section)
@@ -140,7 +192,10 @@ def add_symbol_to_migration(header, symbol_type, oldname, newname):
     section_added = False
     note = ("The following %ss have been renamed:" % symbol_type)
     note_added = False
-    content = ("* %s => %s" % (oldname, newname))
+    if symbol_type == "function":
+        content = ("* %s() => %s()" % (oldname, newname))
+    else:
+        content = ("* %s => %s" % (oldname, newname))
     content_added = False
     mode = 0
     i = 0
@@ -176,45 +231,13 @@ def add_symbol_to_migration(header, symbol_type, oldname, newname):
     file.write_text("\n".join(lines) + "\n")
 
 
-def add_symbol_to_whatsnew(symbol_type, oldname, newname):
-    file = (SDL_ROOT / "WhatsNew.txt")
-    lines = file.read_text().splitlines()
-    note = ("* The following %ss have been renamed:" % symbol_type)
-    note_added = False
-    content = ("    * %s => %s" % (oldname, newname))
-    content_added = False
-    mode = 0
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-        if not note_added:
-            if note == line:
-                note_added = True
-        elif not content_added:
-            if content == line:
-                content_added = True
-            elif not line.startswith("    *") or content < line:
-                i = add_line(lines, i, content)
-                content_added = True
-        i += 1
+if __name__ == "__main__":
 
-    if not note_added:
-        i = add_line(lines, i, note)
-
-    if not content_added:
-        i = add_line(lines, i, content)
-
-    file.write_text("\r\n".join(lines) + "\r\n")
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--skip-header-check', action='store_true')
-    parser.add_argument('header');
-    parser.add_argument('type', choices=['enum', 'function', 'macro', 'structure']);
-    parser.add_argument('oldname');
-    parser.add_argument('newname');
+    parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
+    parser.add_argument("--skip-header-check", action="store_true")
+    parser.add_argument("header");
+    parser.add_argument("type", choices=["enum", "function", "hint", "structure", "symbol"]);
+    parser.add_argument("args", nargs="*")
     args = parser.parse_args()
 
     try:

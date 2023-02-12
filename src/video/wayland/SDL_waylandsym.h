@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,10 @@
 
 #ifndef SDL_WAYLAND_SYM
 #define SDL_WAYLAND_SYM(rc,fn,params)
+#endif
+
+#ifndef SDL_WAYLAND_SYM_OPT
+#define SDL_WAYLAND_SYM_OPT(rc,fn,params)
 #endif
 
 #ifndef SDL_WAYLAND_INTERFACE
@@ -212,10 +216,19 @@ SDL_WAYLAND_SYM(bool, libdecor_configuration_get_content_size, (struct libdecor_
 SDL_WAYLAND_SYM(bool, libdecor_configuration_get_window_state, (struct libdecor_configuration *,\
                                                                 enum libdecor_window_state *))
 SDL_WAYLAND_SYM(int, libdecor_dispatch, (struct libdecor *, int))
+
+/* Only found in libdecor 0.1.1 or higher, so failure to load them is not fatal. */
+SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_min_content_size, (struct libdecor_frame *,\
+                                                            int *,\
+                                                            int *))
+SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_max_content_size, (struct libdecor_frame *,\
+                                                            int *,\
+                                                            int *))
 #endif
 
 #undef SDL_WAYLAND_MODULE
 #undef SDL_WAYLAND_SYM
+#undef SDL_WAYLAND_SYM_OPT
 #undef SDL_WAYLAND_INTERFACE
 
 /* *INDENT-ON* */ /* clang-format on */

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@ typedef struct
     SDL_Renderer *renderer;
     SDL_Texture *background;
     SDL_Texture *sprite;
-    SDL_Rect sprite_rect;
+    SDL_FRect sprite_rect;
     int scale_direction;
 } DrawState;
 
@@ -48,16 +48,16 @@ void Draw(DrawState *s)
 {
     SDL_Rect viewport;
     SDL_Texture *target;
-    SDL_Point *center = NULL;
-    SDL_Point origin = { 0, 0 };
+    SDL_FPoint *center = NULL;
+    SDL_FPoint origin = { 0.0f, 0.0f };
 
-    SDL_RenderGetViewport(s->renderer, &viewport);
+    SDL_GetRenderViewport(s->renderer, &viewport);
 
     target = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, viewport.w, viewport.h);
     SDL_SetRenderTarget(s->renderer, target);
 
     /* Draw the background */
-    SDL_RenderCopy(s->renderer, s->background, NULL, NULL);
+    SDL_RenderTexture(s->renderer, s->background, NULL, NULL);
 
     /* Scale and draw the sprite */
     s->sprite_rect.w += s->scale_direction;
@@ -72,13 +72,13 @@ void Draw(DrawState *s)
             s->scale_direction = 1;
         }
     }
-    s->sprite_rect.x = (viewport.w - s->sprite_rect.w) / 2;
-    s->sprite_rect.y = (viewport.h - s->sprite_rect.h) / 2;
+    s->sprite_rect.x = (float)((viewport.w - s->sprite_rect.w) / 2);
+    s->sprite_rect.y = (float)((viewport.h - s->sprite_rect.h) / 2);
 
-    SDL_RenderCopyEx(s->renderer, s->sprite, NULL, &s->sprite_rect, (double)s->sprite_rect.w, center, (SDL_RendererFlip)s->scale_direction);
+    SDL_RenderTextureRotated(s->renderer, s->sprite, NULL, &s->sprite_rect, (double)s->sprite_rect.w, center, (SDL_RendererFlip)s->scale_direction);
 
     SDL_SetRenderTarget(s->renderer, NULL);
-    SDL_RenderCopy(s->renderer, target, NULL, NULL);
+    SDL_RenderTexture(s->renderer, target, NULL, NULL);
     SDL_DestroyTexture(target);
 
     /* Update the screen! */
@@ -132,6 +132,7 @@ int main(int argc, char *argv[])
     drawstates = SDL_stack_alloc(DrawState, state->num_windows);
     for (i = 0; i < state->num_windows; ++i) {
         DrawState *drawstate = &drawstates[i];
+        int w, h;
 
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
@@ -140,8 +141,9 @@ int main(int argc, char *argv[])
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }
-        SDL_QueryTexture(drawstate->sprite, NULL, NULL,
-                         &drawstate->sprite_rect.w, &drawstate->sprite_rect.h);
+        SDL_QueryTexture(drawstate->sprite, NULL, NULL, &w, &h);
+        drawstate->sprite_rect.w = (float)w;
+        drawstate->sprite_rect.h = (float)h;
         drawstate->scale_direction = 1;
     }
 

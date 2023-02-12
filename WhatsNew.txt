@@ -7,67 +7,21 @@ This is a list of major changes in SDL's version history.
 
 General:
 * SDL headers should now be included as `#include <SDL3/SDL.h>`
-* M_PI is no longer defined in SDL_stdinc.h, now the symbols SDL_PI_D (double) and SDL_PI_F (float) are available
-* SDL_GetWindowWMInfo() returns a standard int result code instead of SDL_bool, and takes SDL_SYSWM_CURRENT_VERSION as a new third parameter
+* Many functions and symbols have changed since SDL 2.0, see the [migration guide](docs/README-migration.md) for details
 * The preprocessor symbol __MACOSX__ has been renamed __MACOS__
 * The preprocessor symbol __IPHONEOS__ has been renamed __IOS__
-* The following macros have been renamed:
-    * RW_SEEK_CUR -> SDL_RW_SEEK_CUR
-    * RW_SEEK_END -> SDL_RW_SEEK_END
-    * RW_SEEK_SET -> SDL_RW_SEEK_SET
-* The following functions have been renamed:
-* Removed the following functions from the API, see docs/README-migration.md for details:
-    * SDL_CalculateGammaRamp()
-    * SDL_CreateRGBSurface()
-    * SDL_CreateRGBSurfaceFrom()
-    * SDL_CreateRGBSurfaceWithFormat()
-    * SDL_CreateRGBSurfaceWithFormatFrom()
-    * SDL_GameControllerGetSensorDataWithTimestamp()
-    * SDL_GetRevisionNumber()
-    * SDL_GetWindowBrightness()
-    * SDL_GetWindowGammaRamp()
-    * SDL_RWFromFP()
-    * SDL_SensorGetDataWithTimestamp()
-    * SDL_SetWindowBrightness()
-    * SDL_SetWindowGammaRamp()
-* Removed the following hints from the API, see docs/README-migration.md for details:
-    * SDL_HINT_IDLE_TIMER_DISABLED
-    * SDL_HINT_VIDEO_X11_FORCE_EGL
-    * SDL_HINT_VIDEO_X11_XINERAMA
-    * SDL_HINT_VIDEO_X11_XVIDMODE
-* Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
-* Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
-* Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace the SDL_CreateRGBSurface*(), and can also be used to create YUV surfaces
-* Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
-* Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
+* SDL_intrin.h now includes the intrinsics headers that were in SDL_cpuinfo.h
+* Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace SDL_CreateRGBSurface*(), and can also be used to create YUV surfaces
+* Added SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystickInstancePath(), SDL_GetJoystickInstancePlayerIndex(), SDL_GetJoystickInstanceGUID(), SDL_GetJoystickInstanceVendor(), SDL_GetJoystickInstanceProduct(), SDL_GetJoystickInstanceProductVersion(), and SDL_GetJoystickInstanceType() to directly query the list of available joysticks
+* Added SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() to directly query the list of available gamepads
+* Added SDL_GetSensors(), SDL_GetSensorInstanceName(), SDL_GetSensorInstanceType(), and SDL_GetSensorInstanceNonPortableType() to directly query the list of available sensors
 * SDL_GetTicks() now returns a 64-bit value and the tick values should be directly compared instead of using the SDL_TICKS_PASSED macro
 * Added SDL_GetTicksNS() to return the number of nanoseconds since the SDL library initialized
 * Added SDL_DelayNS() to specify a delay in nanoseconds, to the highest precision the system will support
 * The timestamp member of the SDL_Event structure is now in nanoseconds, filled in with the time the event was generated, or the time it was queued if that's not available
-* The `SDL_DISPLAYEVENT_*` and `SDL_WINDOWEVENT_*` events have been moved to top level events
-* Intrinsic headers are no longer included in the public SDL headers
-* The following enums have been renamed:
-    * KMOD_ALT => SDL_KMOD_ALT
-    * KMOD_CAPS => SDL_KMOD_CAPS
-    * KMOD_CTRL => SDL_KMOD_CTRL
-    * KMOD_GUI => SDL_KMOD_GUI
-    * KMOD_LALT => SDL_KMOD_LALT
-    * KMOD_LCTRL => SDL_KMOD_LCTRL
-    * KMOD_LGUI => SDL_KMOD_LGUI
-    * KMOD_LSHIFT => SDL_KMOD_LSHIFT
-    * KMOD_MODE => SDL_KMOD_MODE
-    * KMOD_NONE => SDL_KMOD_NONE
-    * KMOD_NUM => SDL_KMOD_NUM
-    * KMOD_RALT => SDL_KMOD_RALT
-    * KMOD_RCTRL => SDL_KMOD_RCTRL
-    * KMOD_RESERVED => SDL_KMOD_RESERVED
-    * KMOD_RGUI => SDL_KMOD_RGUI
-    * KMOD_RSHIFT => SDL_KMOD_RSHIFT
-    * KMOD_SCROLL => SDL_KMOD_SCROLL
-    * KMOD_SHIFT => SDL_KMOD_SHIFT
-    * ShapeModeBinarizeAlpha => SDL_SHAPETYPE_BINARIZE_ALPHA
-    * ShapeModeColorKey => SDL_SHAPETYPE_COLORKEY
-    * ShapeModeDefault => SDL_SHAPETYPE_DEFAULT
-    * ShapeModeReverseBinarizeAlpha => SDL_SHAPETYPE_REVERSE_BINARIZE_ALPHA
-    * WindowShapeMode => SDL_WindowShapeType
+* Added SDL_modf() and SDL_modff() to separate the whole and fractional portions of a floating point number
+* Added SDL_aligned_alloc() and SDL_aligned_free() to allocate and free memory with a given alignment
+* Added SDL_GetRenderVSync() to get vsync of the given renderer
+* Added SDL_PlayAudioDevice() to start audio playback
+* Added SDL_ConvertAudioSamples() to convert audio samples from one format to another

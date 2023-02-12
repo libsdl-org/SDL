@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -294,7 +294,7 @@ cleanup:
 
 void Cocoa_InitKeyboard(_THIS)
 {
-    SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     UpdateKeymap(data, SDL_FALSE);
 
@@ -307,18 +307,18 @@ void Cocoa_InitKeyboard(_THIS)
     SDL_SetScancodeName(SDL_SCANCODE_RGUI, "Right Command");
 
     data.modifierFlags = (unsigned int)[NSEvent modifierFlags];
-    SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) != 0);
+    SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE);
 }
 
 void Cocoa_StartTextInput(_THIS)
 {
     @autoreleasepool {
         NSView *parentView;
-        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
+        SDL_VideoData *data = _this->driverdata;
         SDL_Window *window = SDL_GetKeyboardFocus();
         NSWindow *nswindow = nil;
         if (window) {
-            nswindow = ((__bridge SDL_WindowData *)window->driverdata).nswindow;
+            nswindow = window->driverdata.nswindow;
         }
 
         parentView = [nswindow contentView];
@@ -345,7 +345,7 @@ void Cocoa_StartTextInput(_THIS)
 void Cocoa_StopTextInput(_THIS)
 {
     @autoreleasepool {
-        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
+        SDL_VideoData *data = _this->driverdata;
 
         if (data && data.fieldEdit) {
             [data.fieldEdit removeFromSuperview];
@@ -354,23 +354,18 @@ void Cocoa_StopTextInput(_THIS)
     }
 }
 
-void Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
-    SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
-
-    if (!rect) {
-        SDL_InvalidParamError("rect");
-        return;
-    }
-
+    SDL_VideoData *data = _this->driverdata;
     [data.fieldEdit setInputRect:rect];
+    return 0;
 }
 
 void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 {
     unsigned short scancode;
     SDL_Scancode code;
-    SDL_VideoData *data = _this ? ((__bridge SDL_VideoData *)_this->driverdata) : nil;
+    SDL_VideoData *data = _this ? _this->driverdata : nil;
     if (!data) {
         return; /* can happen when returning from fullscreen Space on shutdown */
     }
@@ -405,7 +400,7 @@ void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
             SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
         }
 #endif
-        if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
+        if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
             /* FIXME CW 2007-08-16: only send those events to the field editor for which we actually want text events, not e.g. esc or function keys. Arrow keys in particular seem to produce crashes sometimes. */
             [data.fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
 #if 0

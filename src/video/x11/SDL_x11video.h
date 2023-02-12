@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -64,7 +64,7 @@
 
 /* Private display data */
 
-typedef struct SDL_VideoData
+struct SDL_VideoData
 {
     Display *display;
     Display *request_display;
@@ -154,7 +154,7 @@ typedef struct SDL_VideoData
     SDL_bool is_steam_deck;
     SDL_bool steam_keyboard_open;
 
-} SDL_VideoData;
+};
 
 extern SDL_bool X11_UseDirectColorVisuals(void);
 

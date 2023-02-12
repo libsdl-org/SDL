@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,16 +49,19 @@
         SDL_free(ptr);               \
     }
 
+#include "build_config/SDL_build_config.h"
+
 #include "dynapi/SDL_dynapi.h"
 
 #if SDL_DYNAMIC_API
 #include "dynapi/SDL_dynapi_overrides.h"
 /* force DECLSPEC off...it's all internal symbols now.
    These will have actual #defines during SDL_dynapi.c only */
+#ifdef DECLSPEC
+#undef DECLSPEC
+#endif
 #define DECLSPEC
 #endif
-
-#include "build_config/SDL_build_config.h"
 
 #ifdef __APPLE__
 #ifndef _DARWIN_C_SOURCE
@@ -160,7 +163,7 @@
 #endif
 
 /* Run-Length-Encoding
-   - SDL_SetColorKey() called with SDL_RLEACCEL flag */
+   - SDL_SetSurfaceColorKey() called with SDL_RLEACCEL flag */
 #ifndef SDL_HAVE_RLE
 #define SDL_HAVE_RLE !SDL_LEAN_AND_MEAN
 #endif
@@ -181,6 +184,7 @@
 #endif
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_intrin.h>
 #define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
 #include <SDL3/SDL_main.h>
 

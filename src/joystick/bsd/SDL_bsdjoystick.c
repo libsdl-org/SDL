@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -546,7 +546,7 @@ static void BSD_JoystickDetect(void)
 {
 }
 
-static SDL_joylist_item *JoystickByDevIndex(int device_index)
+static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
 {
     SDL_joylist_item *item = SDL_joylist;
 
@@ -565,12 +565,12 @@ static SDL_joylist_item *JoystickByDevIndex(int device_index)
 
 static const char *BSD_JoystickGetDeviceName(int device_index)
 {
-    return JoystickByDevIndex(device_index)->name;
+    return GetJoystickByDevIndex(device_index)->name;
 }
 
 static const char *BSD_JoystickGetDevicePath(int device_index)
 {
-    return JoystickByDevIndex(device_index)->path;
+    return GetJoystickByDevIndex(device_index)->path;
 }
 
 static int BSD_JoystickGetDevicePlayerIndex(int device_index)
@@ -584,13 +584,13 @@ static void BSD_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 
 static SDL_JoystickGUID BSD_JoystickGetDeviceGUID(int device_index)
 {
-    return JoystickByDevIndex(device_index)->guid;
+    return GetJoystickByDevIndex(device_index)->guid;
 }
 
 /* Function to perform the mapping from device index to the instance id for this index */
 static SDL_JoystickID BSD_JoystickGetDeviceInstanceID(int device_index)
 {
-    return JoystickByDevIndex(device_index)->device_instance;
+    return GetJoystickByDevIndex(device_index)->device_instance;
 }
 
 static unsigned hatval_to_sdl(Sint32 hatval)
@@ -609,7 +609,7 @@ static unsigned hatval_to_sdl(Sint32 hatval)
 
 static int BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
 {
-    SDL_joylist_item *item = JoystickByDevIndex(device_index);
+    SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
     struct joystick_hwdata *hw;
 
     if (item == NULL) {
@@ -661,7 +661,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                     xmax++;
                 }
                 v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * ((Sint32)x - xmin)) / (xmax - xmin)) + SDL_JOYSTICK_AXIS_MIN;
-                SDL_PrivateJoystickAxis(timestamp, joy, 0, v);
+                SDL_SendJoystickAxis(timestamp, joy, 0, v);
             }
             if (SDL_abs(y - gameport.y) > 8) {
                 y = gameport.y;
@@ -676,10 +676,10 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                     ymax++;
                 }
                 v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * ((Sint32)y - ymin)) / (ymax - ymin)) + SDL_JOYSTICK_AXIS_MIN;
-                SDL_PrivateJoystickAxis(timestamp, joy, 1, v);
+                SDL_SendJoystickAxis(timestamp, joy, 1, v);
             }
-            SDL_PrivateJoystickButton(timestamp, joy, 0, gameport.b1);
-            SDL_PrivateJoystickButton(timestamp, joy, 1, gameport.b2);
+            SDL_SendJoystickButton(timestamp, joy, 0, gameport.b1);
+            SDL_SendJoystickButton(timestamp, joy, 1, gameport.b2);
         }
         return;
     }
@@ -711,26 +711,26 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                         /* scaleaxe */
                         v = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * (v - hitem.logical_minimum)) / (hitem.logical_maximum - hitem.logical_minimum)) + SDL_JOYSTICK_AXIS_MIN;
-                        SDL_PrivateJoystickAxis(timestamp, joy, naxe, v);
+                        SDL_SendJoystickAxis(timestamp, joy, naxe, v);
                     } else if (usage == HUG_HAT_SWITCH) {
                         v = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
-                        SDL_PrivateJoystickHat(timestamp, joy, 0,
+                        SDL_SendJoystickHat(timestamp, joy, 0,
                                                hatval_to_sdl(v) -
                                                    hitem.logical_minimum);
                     }
 #ifdef __OpenBSD__
                     else if (usage == HUG_DPAD_UP) {
                         dpad[0] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
-                        SDL_PrivateJoystickHat(timestamp, joy, 0, dpad_to_sdl(dpad));
+                        SDL_SendJoystickHat(timestamp, joy, 0, dpad_to_sdl(dpad));
                     } else if (usage == HUG_DPAD_DOWN) {
                         dpad[1] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
-                        SDL_PrivateJoystickHat(timestamp, joy, 0, dpad_to_sdl(dpad));
+                        SDL_SendJoystickHat(timestamp, joy, 0, dpad_to_sdl(dpad));
                     } else if (usage == HUG_DPAD_RIGHT) {
                         dpad[2] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
-                        SDL_PrivateJoystickHat(timestamp, joy, 0, dpad_to_sdl(dpad));
+                        SDL_SendJoystickHat(timestamp, joy, 0, dpad_to_sdl(dpad));
                     } else if (usage == HUG_DPAD_LEFT) {
                         dpad[3] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
-                        SDL_PrivateJoystickHat(timestamp, joy, 0, dpad_to_sdl(dpad));
+                        SDL_SendJoystickHat(timestamp, joy, 0, dpad_to_sdl(dpad));
                     }
 #endif
                     break;
@@ -738,7 +738,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                 case HUP_BUTTON:
                     v = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                     nbutton = HID_USAGE(hitem.usage) - 1; /* SDL buttons are zero-based */
-                    SDL_PrivateJoystickButton(timestamp, joy, nbutton, v);
+                    SDL_SendJoystickButton(timestamp, joy, nbutton, v);
                     break;
                 default:
                     continue;

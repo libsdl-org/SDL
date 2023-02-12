@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -71,7 +71,7 @@ static int LoadContext(GLES2_Context *data)
 #else
 #define SDL_PROC(ret, func, params)                                                            \
     do {                                                                                       \
-        data->func = SDL_GL_GetProcAddress(#func);                                             \
+        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                    \
         if (!data->func) {                                                                     \
             return SDL_SetError("Couldn't load GLES2 function %s: %s", #func, SDL_GetError()); \
         }                                                                                      \
@@ -113,7 +113,7 @@ quit(int rc)
         }                                                                                   \
     }
 
-/*
+/**
  * Simulates desktop's glRotatef. The matrix is returned in column-major
  * order.
  */
@@ -154,7 +154,7 @@ rotate_matrix(float angle, float x, float y, float z, float *r)
     }
 }
 
-/*
+/**
  * Simulates gluPerspectiveMatrix
  */
 static void
@@ -177,7 +177,7 @@ perspective_matrix(float fovy, float aspect, float znear, float zfar, float *r)
     r[15] = 0.0f;
 }
 
-/*
+/**
  * Multiplies lhs by rhs and writes out to r. All matrices are 4x4 and column
  * major. In-place multiplication is supported.
  */
@@ -202,7 +202,7 @@ multiply_matrix(const float *lhs, const float *rhs, float *r)
     }
 }
 
-/*
+/**
  * Create shader, load in source, compile, dump debug as necessary.
  *
  * shader: Pointer to return created shader ID.
@@ -262,7 +262,7 @@ link_program(struct shader_data *data)
 
 /* 3D data. Vertex range -0.5..0.5 in all axes.
  * Z -0.5 is near, 0.5 is far. */
-const float _vertices[] = {
+const float g_vertices[] = {
     /* Front face. */
     /* Bottom left */
     -0.5,
@@ -391,7 +391,7 @@ const float _vertices[] = {
     0.5,
 };
 
-const float _colors[] = {
+const float g_colors[] = {
     /* Front face */
     /* Bottom left */
     1.0, 0.0, 0.0, /* red */
@@ -448,7 +448,7 @@ const float _colors[] = {
     1.0, 0.0, 1.0, /* magenta */
 };
 
-const char *_shader_vert_src =
+const char *g_shader_vert_src =
     " attribute vec4 av4position; "
     " attribute vec3 av3color; "
     " uniform mat4 mvp; "
@@ -458,7 +458,7 @@ const char *_shader_vert_src =
     "    gl_Position = mvp * av4position; "
     " } ";
 
-const char *_shader_frag_src =
+const char *g_shader_frag_src =
     " precision lowp float; "
     " varying vec3 vv3color; "
     " void main() { "
@@ -539,7 +539,7 @@ render_window(int index)
         return;
     }
 
-    SDL_GL_GetDrawableSize(state->windows[index], &w, &h);
+    SDL_GetWindowSizeInPixels(state->windows[index], &w, &h);
     Render(w, h, &datas[index]);
     SDL_GL_SwapWindow(state->windows[index]);
     ++frames;
@@ -567,7 +567,7 @@ loop_threaded()
 
     /* Wait for events */
     while (SDL_WaitEvent(&event) && !done) {
-        if (event.type == SDL_WINDOWEVENT_CLOSE) {
+        if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
             SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
             if (window) {
                 for (i = 0; i < state->num_windows; ++i) {
@@ -615,7 +615,7 @@ int main(int argc, char *argv[])
     int fsaa, accel, threaded;
     int value;
     int i;
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode *mode;
     Uint64 then, now;
     int status;
     shader_data *data;
@@ -714,10 +714,12 @@ int main(int argc, char *argv[])
         SDL_GL_SetSwapInterval(0);
     }
 
-    SDL_GetCurrentDisplayMode(0, &mode);
+    mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
     SDL_Log("Threaded  : %s\n", threaded ? "yes" : "no");
-    SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
-    SDL_Log("\n");
+    if (mode) {
+        SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode->format));
+        SDL_Log("\n");
+    }
     SDL_Log("Vendor     : %s\n", ctx.glGetString(GL_VENDOR));
     SDL_Log("Renderer   : %s\n", ctx.glGetString(GL_RENDERER));
     SDL_Log("Version    : %s\n", ctx.glGetString(GL_VERSION));
@@ -792,7 +794,7 @@ int main(int argc, char *argv[])
             /* Continue for next window */
             continue;
         }
-        SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+        SDL_GetWindowSizeInPixels(state->windows[i], &w, &h);
         ctx.glViewport(0, 0, w, h);
 
         data = &datas[i];
@@ -801,8 +803,8 @@ int main(int argc, char *argv[])
         data->angle_z = 0;
 
         /* Shader Initialization */
-        process_shader(&data->shader_vert, _shader_vert_src, GL_VERTEX_SHADER);
-        process_shader(&data->shader_frag, _shader_frag_src, GL_FRAGMENT_SHADER);
+        process_shader(&data->shader_vert, g_shader_vert_src, GL_VERTEX_SHADER);
+        process_shader(&data->shader_frag, g_shader_frag_src, GL_FRAGMENT_SHADER);
 
         /* Create shader_program (ready to attach shaders) */
         data->shader_program = GL_CHECK(ctx.glCreateProgram());
@@ -827,13 +829,13 @@ int main(int argc, char *argv[])
 
         GL_CHECK(ctx.glGenBuffers(1, &data->position_buffer));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, data->position_buffer));
-        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices), _vertices, GL_STATIC_DRAW));
+        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertices), g_vertices, GL_STATIC_DRAW));
         GL_CHECK(ctx.glVertexAttribPointer(data->attr_position, 3, GL_FLOAT, GL_FALSE, 0, 0));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, 0));
 
         GL_CHECK(ctx.glGenBuffers(1, &data->color_buffer));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, data->color_buffer));
-        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_colors), _colors, GL_STATIC_DRAW));
+        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(g_colors), g_colors, GL_STATIC_DRAW));
         GL_CHECK(ctx.glVertexAttribPointer(data->attr_color, 3, GL_FLOAT, GL_FALSE, 0, 0));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, 0));
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -137,8 +137,8 @@ extern "C" {
  *  \sa SDL_HapticOpenFromJoystick
  *  \sa SDL_HapticClose
  */
-struct _SDL_Haptic;
-typedef struct _SDL_Haptic SDL_Haptic;
+struct SDL_Haptic;
+typedef struct SDL_Haptic SDL_Haptic;
 
 
 /**

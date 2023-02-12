@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -61,7 +61,8 @@ typedef struct
 
     /* Video info */
     const char *videodriver;
-    int display;
+    int display_index;
+    SDL_DisplayID displayID;
     const char *window_title;
     const char *window_icon;
     Uint32 window_flags;
@@ -76,9 +77,13 @@ typedef struct
     int window_maxH;
     int logical_w;
     int logical_h;
+    SDL_RendererLogicalPresentation logical_presentation;
+    SDL_ScaleMode logical_scale_mode;
     float scale;
     int depth;
-    int refresh_rate;
+    float refresh_rate;
+    SDL_bool fullscreen_exclusive;
+    SDL_DisplayMode fullscreen_mode;
     int num_windows;
     SDL_Window **windows;
 
@@ -92,6 +97,7 @@ typedef struct
     /* Audio info */
     const char *audiodriver;
     SDL_AudioSpec audiospec;
+    SDL_AudioDeviceID audio_id;
 
     /* GL settings */
     int gl_red_size;
@@ -147,7 +153,7 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags);
  *
  * \returns the number of arguments processed (i.e. 1 for --fullscreen, 2 for --video [videodriver], or -1 on error.
  */
-int SDLTest_CommonArg(SDLTest_CommonState * state, int index);
+int SDLTest_CommonArg(SDLTest_CommonState *state, int index);
 
 
 /**
@@ -162,7 +168,7 @@ int SDLTest_CommonArg(SDLTest_CommonState * state, int index);
  * \param argv0 argv[0], as passed to main/SDL_main.
  * \param options an array of strings for application specific options. The last element of the array should be NULL.
  */
-void SDLTest_CommonLogUsage(SDLTest_CommonState * state, const char *argv0, const char **options);
+void SDLTest_CommonLogUsage(SDLTest_CommonState *state, const char *argv0, const char **options);
 
 /**
  * \brief Returns common usage information
@@ -175,7 +181,7 @@ void SDLTest_CommonLogUsage(SDLTest_CommonState * state, const char *argv0, cons
  * \param state The common state describing the test window to create.
  * \returns a string with usage information
  */
-const char *SDLTest_CommonUsage(SDLTest_CommonState * state);
+const char *SDLTest_CommonUsage(SDLTest_CommonState *state);
 
 /**
  * \brief Open test window.
@@ -184,7 +190,7 @@ const char *SDLTest_CommonUsage(SDLTest_CommonState * state);
  *
  * \returns SDL_TRUE if initialization succeeded, false otherwise
  */
-SDL_bool SDLTest_CommonInit(SDLTest_CommonState * state);
+SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state);
 
 /**
  * \brief Easy argument handling when test app doesn't need any custom args.
@@ -195,7 +201,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState * state);
  *
  * \returns SDL_FALSE if app should quit, true otherwise.
  */
-SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState * state, const int argc, char **argv);
+SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv);
 
 /**
  * \brief Common event handler for test windows.
@@ -205,7 +211,7 @@ SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState * state, const int argc, 
  * \param done Flag indicating we are done.
  *
  */
-void SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done);
+void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done);
 
 /**
  * \brief Close test window.
@@ -213,7 +219,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *do
  * \param state The common state used to create test window.
  *
  */
-void SDLTest_CommonQuit(SDLTest_CommonState * state);
+void SDLTest_CommonQuit(SDLTest_CommonState *state);
 
 /**
  * \brief Draws various window information (position, size, etc.) to the renderer.
@@ -223,7 +229,7 @@ void SDLTest_CommonQuit(SDLTest_CommonState * state);
  * \param usedHeight Returns the height used, so the caller can draw more below.
  *
  */
-void SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, int * usedHeight);
+void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, float *usedHeight);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

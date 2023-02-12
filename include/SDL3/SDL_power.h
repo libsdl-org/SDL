@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -64,12 +64,12 @@ typedef enum
  * It's possible a platform can only report battery percentage or time left
  * but not both.
  *
- * \param seconds seconds of battery life left, you can pass a NULL here if you
- *             don't care, will return -1 if we can't determine a value, or
- *             we're not running on a battery
- * \param percent percentage of battery life left, between 0 and 100, you can pass
- *            a NULL here if you don't care, will return -1 if we can't
- *            determine a value, or we're not running on a battery
+ * \param seconds seconds of battery life left, you can pass a NULL here if
+ *                you don't care, will return -1 if we can't determine a
+ *                value, or we're not running on a battery
+ * \param percent percentage of battery life left, between 0 and 100, you can
+ *                pass a NULL here if you don't care, will return -1 if we
+ *                can't determine a value, or we're not running on a battery
  * \returns an SDL_PowerState enum representing the current battery state.
  *
  * \since This function is available since SDL 3.0.0.

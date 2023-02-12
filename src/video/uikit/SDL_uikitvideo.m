@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -52,7 +52,7 @@ static void UIKit_VideoQuit(_THIS);
 static void UIKit_DeleteDevice(SDL_VideoDevice *device)
 {
     @autoreleasepool {
-        CFRelease(device->driverdata);
+        device->driverdata = nil;
         SDL_free(device);
     }
 }
@@ -73,7 +73,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
             return (0);
         }
 
-        device->driverdata = (void *)CFBridgingRetain(data);
+        device->driverdata = data;
 
         /* Set the function pointers */
         device->VideoInit = UIKit_VideoInit;
@@ -93,7 +93,6 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->DestroyWindow = UIKit_DestroyWindow;
         device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
         device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;
-        device->GetDisplayDPI = UIKit_GetDisplayDPI;
         device->GetWindowSizeInPixels = UIKit_GetWindowSizeInPixels;
 
 #if SDL_IPHONE_KEYBOARD
@@ -111,7 +110,6 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         /* OpenGL (ES) functions */
 #if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
         device->GL_MakeCurrent = UIKit_GL_MakeCurrent;
-        device->GL_GetDrawableSize = UIKit_GL_GetDrawableSize;
         device->GL_SwapWindow = UIKit_GL_SwapWindow;
         device->GL_CreateContext = UIKit_GL_CreateContext;
         device->GL_DeleteContext = UIKit_GL_DeleteContext;
@@ -125,14 +123,12 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->Vulkan_UnloadLibrary = UIKit_Vulkan_UnloadLibrary;
         device->Vulkan_GetInstanceExtensions = UIKit_Vulkan_GetInstanceExtensions;
         device->Vulkan_CreateSurface = UIKit_Vulkan_CreateSurface;
-        device->Vulkan_GetDrawableSize = UIKit_Vulkan_GetDrawableSize;
 #endif
 
 #if SDL_VIDEO_METAL
         device->Metal_CreateView = UIKit_Metal_CreateView;
         device->Metal_DestroyView = UIKit_Metal_DestroyView;
         device->Metal_GetLayer = UIKit_Metal_GetLayer;
-        device->Metal_GetDrawableSize = UIKit_Metal_GetDrawableSize;
 #endif
 
         device->gl_config.accelerated = 1;
@@ -168,7 +164,7 @@ void UIKit_VideoQuit(_THIS)
     UIKit_QuitModes(_this);
 }
 
-void UIKit_SuspendScreenSaver(_THIS)
+int UIKit_SuspendScreenSaver(_THIS)
 {
     @autoreleasepool {
         UIApplication *app = [UIApplication sharedApplication];
@@ -176,6 +172,7 @@ void UIKit_SuspendScreenSaver(_THIS)
         /* Prevent the display from dimming and going to sleep. */
         app.idleTimerDisabled = (_this->suspend_screensaver != SDL_FALSE);
     }
+    return 0;
 }
 
 SDL_bool
@@ -187,7 +184,7 @@ UIKit_IsSystemVersionAtLeast(double version)
 CGRect
 UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
-    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     CGRect frame = screen.bounds;
 
     /* Use the UIWindow bounds instead of the UIScreen bounds, when possible.
@@ -228,7 +225,7 @@ void UIKit_ForceUpdateHomeIndicator()
     /* Force the main SDL window to re-evaluate home indicator state */
     SDL_Window *focus = SDL_GetFocusWindow();
     if (focus) {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)focus->driverdata;
+        SDL_WindowData *data = focus->driverdata;
         if (data != nil) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability-new"

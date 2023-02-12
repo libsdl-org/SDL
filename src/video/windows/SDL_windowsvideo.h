@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -364,7 +364,7 @@ typedef struct tagINPUTCONTEXT2
 
 /* Private display data */
 
-typedef struct SDL_VideoData
+struct SDL_VideoData
 {
     int render;
 
@@ -457,7 +457,7 @@ typedef struct SDL_VideoData
 
     BYTE pre_hook_key_state[256];
     UINT _SDL_WAKEUP;
-} SDL_VideoData;
+};
 
 extern SDL_bool g_WindowsEnableMessageLoop;
 extern SDL_bool g_WindowsEnableMenuMnemonics;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,7 +46,7 @@ void RedrawWindowL(_THIS);
 
 int SDL_NGAGE_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     SDL_Surface *surface;
     const Uint32 surface_format = SDL_PIXELFORMAT_RGB444;
     int w, h;
@@ -55,7 +55,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
     SDL_NGAGE_DestroyWindowFramebuffer(_this, window);
 
     /* Create a new one */
-    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSizeInPixels(window, &w, &h);
     surface = SDL_CreateSurface(w, h, surface_format);
     if (surface == NULL) {
         return -1;
@@ -171,7 +171,7 @@ void SDL_NGAGE_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
     SDL_Surface *surface;
 
     surface = (SDL_Surface *)SDL_SetWindowData(window, NGAGE_SURFACE, NULL);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 }
 
 /*****************************************************************************/
@@ -199,7 +199,7 @@ int GetBpp(TDisplayMode displaymode)
 
 void DrawBackground(_THIS)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     /* Draw background */
     TUint16 *screenBuffer = (TUint16 *)phdata->NGAGE_FrameBuffer;
     /* Draw black background */
@@ -208,7 +208,7 @@ void DrawBackground(_THIS)
 
 void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     SDL_Surface *screen = (SDL_Surface *)SDL_GetWindowData(_this->windows, NGAGE_SURFACE);
 
     TInt i;
@@ -333,7 +333,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
 
 void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
 
     if (!phdata->NGAGE_IsWindowFocused) {
         SDL_PauseAudio(1);
@@ -368,7 +368,7 @@ void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
 
 void RedrawWindowL(_THIS)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     SDL_Surface *screen = (SDL_Surface *)SDL_GetWindowData(_this->windows, NGAGE_SURFACE);
 
     int w = screen->w;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -78,8 +78,7 @@ extern "C" {
  *  \param ci         integer that defines the random sequence
  *
  */
- void SDLTest_RandomInit(SDLTest_RandomContext * rndContext, unsigned int xi,
-                  unsigned int ci);
+ void SDLTest_RandomInit(SDLTest_RandomContext *rndContext, unsigned int xi, unsigned int ci);
 
 /**
  *  \brief Initialize random number generator based on current system time.

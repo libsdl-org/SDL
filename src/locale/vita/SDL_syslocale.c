@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
 #include <psp2/apputil.h>
 #include <psp2/system_param.h>
 
-void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     const char *vita_locales[] = {
         "ja_JP",
@@ -65,4 +65,5 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     SDL_strlcpy(buf, vita_locales[language], buflen);
 
     sceAppUtilShutdown();
+    return 0;
 }

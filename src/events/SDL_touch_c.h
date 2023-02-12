@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,7 @@ typedef struct SDL_Touch
 } SDL_Touch;
 
 /* Initialize the touch subsystem */
-extern int SDL_TouchInit(void);
+extern int SDL_InitTouch(void);
 
 /* Add a touch, returning the index of the touch, or -1 if there was an error. */
 extern int SDL_AddTouch(SDL_TouchID id, SDL_TouchDeviceType type, const char *name);
@@ -52,6 +52,6 @@ extern int SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fi
 extern void SDL_DelTouch(SDL_TouchID id);
 
 /* Shutdown the touch subsystem */
-extern void SDL_TouchQuit(void);
+extern void SDL_QuitTouch(void);
 
 #endif /* SDL_touch_c_h_ */

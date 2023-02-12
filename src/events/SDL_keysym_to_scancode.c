@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -237,8 +237,8 @@ static const Uint32 LinuxKeycodeKeysyms[] = {
     /* 176, 0x0b0 */    0x0, /* NoSymbol */
     /* 177, 0x0b1 */    0x1008FF78, /* XF86ScrollUp */
     /* 178, 0x0b2 */    0x1008FF79, /* XF86ScrollDown */
-    /* 179, 0x0b3 */    0x28, /* parenleft */
-    /* 180, 0x0b4 */    0x29, /* parenright */
+    /* 179, 0x0b3 */    0x0, /* NoSymbol */
+    /* 180, 0x0b4 */    0x0, /* NoSymbol */
     /* 181, 0x0b5 */    0x1008FF68, /* XF86New */
     /* 182, 0x0b6 */    0xFF66, /* Redo */
     /* 183, 0x0b7 */    0xFFCA, /* F13 */

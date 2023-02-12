@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,11 @@ const SDL_Rect drag_areas[] = {
     { 20, 20, 100, 100 },
     { 200, 70, 100, 100 },
     { 400, 90, 100, 100 }
+};
+const SDL_FRect render_areas[] = {
+    { 20.0f, 20.0f, 100.0f, 100.0f },
+    { 200.0f, 70.0f, 100.0f, 100.0f },
+    { 400.0f, 90.0f, 100.0f, 100.0f }
 };
 
 static const SDL_Rect *areas = drag_areas;
@@ -92,26 +97,26 @@ int main(int argc, char **argv)
         SDL_SetRenderDrawColor(renderer, 0, 0, 127, 255);
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderFillRects(renderer, areas, SDL_arraysize(drag_areas));
+        SDL_RenderFillRects(renderer, render_areas, SDL_arraysize(render_areas));
         SDL_RenderPresent(renderer);
 
         while (SDL_PollEvent(&e)) {
             nothing_to_do = 0;
 
             switch (e.type) {
-            case SDL_MOUSEBUTTONDOWN:
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 SDL_Log("button down!\n");
                 break;
 
-            case SDL_MOUSEBUTTONUP:
+            case SDL_EVENT_MOUSE_BUTTON_UP:
                 SDL_Log("button up!\n");
                 break;
 
-            case SDL_WINDOWEVENT_MOVED:
+            case SDL_EVENT_WINDOW_MOVED:
                 SDL_Log("Window event moved to (%d, %d)!\n", (int)e.window.data1, (int)e.window.data2);
                 break;
 
-            case SDL_KEYDOWN:
+            case SDL_EVENT_KEY_DOWN:
                 if (e.key.keysym.sym == SDLK_ESCAPE) {
                     done = 1;
                 } else if (e.key.keysym.sym == SDLK_x) {
@@ -125,7 +130,7 @@ int main(int argc, char **argv)
                 }
                 break;
 
-            case SDL_QUIT:
+            case SDL_EVENT_QUIT:
                 done = 1;
                 break;
             }

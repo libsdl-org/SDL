@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,7 +38,6 @@
 #include <SDL3/SDL_test_font.h>
 #include <SDL3/SDL_test_fuzzer.h>
 #include <SDL3/SDL_test_harness.h>
-#include <SDL3/SDL_test_images.h>
 #include <SDL3/SDL_test_log.h>
 #include <SDL3/SDL_test_md5.h>
 #include <SDL3/SDL_test_memory.h>

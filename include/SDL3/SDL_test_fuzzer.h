@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -338,7 +338,7 @@ Sint32 SDLTest_RandomIntegerInRange(Sint32 min, Sint32 max);
  *
  * \returns a newly allocated random string; or NULL if length was invalid or string could not be allocated.
  */
-char * SDLTest_RandomAsciiString(void);
+char *SDLTest_RandomAsciiString(void);
 
 
 /**
@@ -352,7 +352,7 @@ char * SDLTest_RandomAsciiString(void);
  *
  * \returns a newly allocated random string; or NULL if maxLength was invalid or string could not be allocated.
  */
-char * SDLTest_RandomAsciiStringWithMaximumLength(int maxLength);
+char *SDLTest_RandomAsciiStringWithMaximumLength(int maxLength);
 
 
 /**
@@ -366,7 +366,7 @@ char * SDLTest_RandomAsciiStringWithMaximumLength(int maxLength);
  *
  * \returns a newly allocated random string; or NULL if size was invalid or string could not be allocated.
  */
-char * SDLTest_RandomAsciiStringOfSize(int size);
+char *SDLTest_RandomAsciiStringOfSize(int size);
 
 /**
  * Get the invocation count for the fuzzer since last ...FuzzerInit.

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -138,7 +138,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 - (void)setWindow:(SDL_Window *)newWindow
 {
     if (self->window) {
-        SDL_WindowData *oldwindowdata = (__bridge SDL_WindowData *)self->window->driverdata;
+        SDL_WindowData *oldwindowdata = self->window->driverdata;
 
         /* Make sure to remove us from the old window's context list, or we'll get scheduled updates from it too. */
         NSMutableArray *contexts = oldwindowdata.nscontexts;
@@ -150,7 +150,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
     self->window = newWindow;
 
     if (newWindow) {
-        SDL_WindowData *windowdata = (__bridge SDL_WindowData *)newWindow->driverdata;
+        SDL_WindowData *windowdata = newWindow->driverdata;
         NSView *contentview = windowdata.sdlContentView;
 
         /* Now sign up for scheduled updates for the new window. */
@@ -239,8 +239,7 @@ int Cocoa_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void *
-Cocoa_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer Cocoa_GL_GetProcAddress(_THIS, const char *proc)
 {
     return SDL_LoadFunction(_this->gl_config.dll_handle, proc);
 }
@@ -251,12 +250,11 @@ void Cocoa_GL_UnloadLibrary(_THIS)
     _this->gl_config.dll_handle = NULL;
 }
 
-SDL_GLContext
-Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-        SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
+        SDL_DisplayData *displaydata = display->driverdata;
         NSOpenGLPixelFormatAttribute attr[32];
         NSOpenGLPixelFormat *fmt;
         SDLOpenGLContext *context;
@@ -303,7 +301,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
         attr[i++] = profile;
 
         attr[i++] = NSOpenGLPFAColorSize;
-        attr[i++] = SDL_BYTESPERPIXEL(display->current_mode.format) * 8;
+        attr[i++] = SDL_BYTESPERPIXEL(display->current_mode->format) * 8;
 
         attr[i++] = NSOpenGLPFADepthSize;
         attr[i++] = _this->gl_config.depth_size;
@@ -467,11 +465,16 @@ int Cocoa_GL_SetSwapInterval(_THIS, int interval)
     }
 }
 
-int Cocoa_GL_GetSwapInterval(_THIS)
+int Cocoa_GL_GetSwapInterval(_THIS, int *interval)
 {
     @autoreleasepool {
         SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)SDL_GL_GetCurrentContext();
-        return nscontext ? SDL_AtomicGet(&nscontext->swapIntervalSetting) : 0;
+        if (nscontext) {
+            *interval = SDL_AtomicGet(&nscontext->swapIntervalSetting);
+            return 0;
+        } else {
+            return SDL_SetError("no OpenGL context");
+        }
     }
 }
 
@@ -479,7 +482,7 @@ int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)SDL_GL_GetCurrentContext();
-        SDL_VideoData *videodata = (__bridge SDL_VideoData *)_this->driverdata;
+        SDL_VideoData *videodata = _this->driverdata;
         const int setting = SDL_AtomicGet(&nscontext->swapIntervalSetting);
 
         if (setting == 0) {
@@ -512,12 +515,13 @@ int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context)
+int Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     @autoreleasepool {
         SDLOpenGLContext *nscontext = (SDLOpenGLContext *)CFBridgingRelease(context);
         [nscontext setWindow:NULL];
     }
+    return 0;
 }
 
 /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */

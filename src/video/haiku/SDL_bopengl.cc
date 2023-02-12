@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -63,7 +63,7 @@ int HAIKU_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void *HAIKU_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer HAIKU_GL_GetProcAddress(_THIS, const char *proc)
 {
     if (_this->gl_config.dll_handle != NULL) {
         void *location = NULL;
@@ -72,7 +72,7 @@ void *HAIKU_GL_GetProcAddress(_THIS, const char *proc)
             get_image_symbol((image_id) (addr_t) _this->gl_config.dll_handle,
                               proc, B_SYMBOL_TYPE_ANY,
                               &location)) == B_OK) {
-            return location;
+            return (SDL_FunctionPointer)location;
         } else {
                 SDL_SetError("Couldn't find OpenGL symbol");
                 return NULL;
@@ -142,7 +142,7 @@ SDL_GLContext HAIKU_GL_CreateContext(_THIS, SDL_Window * window) {
     return (SDL_GLContext)(bwin->GetGLView());
 }
 
-void HAIKU_GL_DeleteContext(_THIS, SDL_GLContext context) {
+int HAIKU_GL_DeleteContext(_THIS, SDL_GLContext context) {
     // printf("HAIKU_GL_DeleteContext(%llx), thread = %d\n", (uint64)context, find_thread(NULL));
     BGLView* glView = (BGLView*)context;
     SDL_BWin *bwin = (SDL_BWin*)glView->Window();
@@ -151,6 +151,7 @@ void HAIKU_GL_DeleteContext(_THIS, SDL_GLContext context) {
     } else {
         bwin->RemoveGLView();
     }
+    return 0;
 }
 
 
@@ -159,9 +160,8 @@ int HAIKU_GL_SetSwapInterval(_THIS, int interval) {
     return SDL_Unsupported();
 }
 
-int HAIKU_GL_GetSwapInterval(_THIS) {
-    /* TODO: Implement this, if necessary? */
-    return 0;
+int HAIKU_GL_GetSwapInterval(_THIS, int *interval) {
+    return SDL_Unsupported();
 }
 
 

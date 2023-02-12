@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_vitavideo_h
-#define _SDL_vitavideo_h
+#ifndef SDL_vitavideo_h
+#define SDL_vitavideo_h
 
 #include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
@@ -31,21 +31,16 @@
 #include <psp2/ime_dialog.h>
 #include <psp2/sysmodule.h>
 
-typedef struct SDL_VideoData
+struct SDL_VideoData
 {
     SDL_bool egl_initialized; /* OpenGL device initialization status */
     uint32_t egl_refcount;    /* OpenGL reference count              */
 
     SceWChar16 ime_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
     SDL_bool ime_active;
-} SDL_VideoData;
+};
 
-typedef struct SDL_DisplayData
-{
-
-} SDL_DisplayData;
-
-typedef struct SDL_WindowData
+struct SDL_WindowData
 {
     SDL_bool uses_gles;
     SceUID buffer_uid;
@@ -54,7 +49,7 @@ typedef struct SDL_WindowData
     EGLSurface egl_surface;
     EGLContext egl_context;
 #endif
-} SDL_WindowData;
+};
 
 extern SDL_Window *Vita_Window;
 
@@ -65,7 +60,7 @@ extern SDL_Window *Vita_Window;
 /* Display and window functions */
 int VITA_VideoInit(_THIS);
 void VITA_VideoQuit(_THIS);
-void VITA_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+int VITA_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
 int VITA_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 int VITA_CreateWindow(_THIS, SDL_Window *window);
 int VITA_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
@@ -87,19 +82,19 @@ void VITA_DestroyWindow(_THIS, SDL_Window *window);
 /* OpenGL functions */
 int VITA_GL_LoadLibrary(_THIS, const char *path);
 SDL_GLContext VITA_GL_CreateContext(_THIS, SDL_Window *window);
-void *VITA_GL_GetProcAddress(_THIS, const char *proc);
+SDL_FunctionPointer VITA_GL_GetProcAddress(_THIS, const char *proc);
 #endif
 
 /* OpenGLES functions */
 int VITA_GLES_LoadLibrary(_THIS, const char *path);
-void *VITA_GLES_GetProcAddress(_THIS, const char *proc);
+SDL_FunctionPointer VITA_GLES_GetProcAddress(_THIS, const char *proc);
 void VITA_GLES_UnloadLibrary(_THIS);
 SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window);
 int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 int VITA_GLES_SetSwapInterval(_THIS, int interval);
-int VITA_GLES_GetSwapInterval(_THIS);
+int VITA_GLES_GetSwapInterval(_THIS, int *interval);
 int VITA_GLES_SwapWindow(_THIS, SDL_Window *window);
-void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context);
+int VITA_GLES_DeleteContext(_THIS, SDL_GLContext context);
 #endif
 
 /* VITA on screen keyboard */
@@ -110,4 +105,4 @@ SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 
 void VITA_PumpEvents(_THIS);
 
-#endif /* _SDL_pspvideo_h */
+#endif /* SDL_pspvideo_h */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,21 +23,20 @@
 #ifndef SDL_cocoamodes_h_
 #define SDL_cocoamodes_h_
 
-typedef struct
+struct SDL_DisplayData
 {
     CGDirectDisplayID display;
-} SDL_DisplayData;
+};
 
-typedef struct
+struct SDL_DisplayModeData
 {
     CFMutableArrayRef modes;
-} SDL_DisplayModeData;
+};
 
 extern void Cocoa_InitModes(_THIS);
 extern int Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 extern int Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
-extern void Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
-extern int Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
+extern int Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
 extern int Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void Cocoa_QuitModes(_THIS);
 

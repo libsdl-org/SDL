@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,7 @@ typedef struct _Object
 {
     struct _Object *next;
 
-    int x1, y1, x2, y2;
+    float x1, y1, x2, y2;
     Uint8 r, g, b;
 
     SDL_bool isRect;
@@ -56,7 +56,7 @@ void DrawObject(SDL_Renderer *renderer, Object *object)
     SDL_SetRenderDrawColor(renderer, object->r, object->g, object->b, 255);
 
     if (object->isRect) {
-        SDL_Rect rect;
+        SDL_FRect rect;
 
         if (object->x1 > object->x2) {
             rect.x = object->x2;
@@ -74,10 +74,9 @@ void DrawObject(SDL_Renderer *renderer, Object *object)
             rect.h = object->y2 - object->y1;
         }
 
-        /* SDL_RenderDrawRect(renderer, &rect); */
         SDL_RenderFillRect(renderer, &rect);
     } else {
-        SDL_RenderDrawLine(renderer, object->x1, object->y1, object->x2, object->y2);
+        SDL_RenderLine(renderer, object->x1, object->y1, object->x2, object->y2);
     }
 }
 
@@ -111,26 +110,24 @@ void loop(void *arg)
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_MOUSEWHEEL:
+        case SDL_EVENT_MOUSE_WHEEL:
             if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
-                event.wheel.preciseX *= -1.0f;
-                event.wheel.preciseY *= -1.0f;
                 event.wheel.x *= -1;
                 event.wheel.y *= -1;
             }
-            if (event.wheel.preciseX != 0.0f) {
+            if (event.wheel.x != 0.0f) {
                 wheel_x_active = SDL_TRUE;
                 /* "positive to the right and negative to the left"  */
-                wheel_x += event.wheel.preciseX * 10.0f;
+                wheel_x += event.wheel.x * 10.0f;
             }
-            if (event.wheel.preciseY != 0.0f) {
+            if (event.wheel.x != 0.0f) {
                 wheel_y_active = SDL_TRUE;
                 /* "positive away from the user and negative towards the user" */
-                wheel_y -= event.wheel.preciseY * 10.0f;
+                wheel_y -= event.wheel.x * 10.0f;
             }
             break;
 
-        case SDL_MOUSEMOTION:
+        case SDL_EVENT_MOUSE_MOTION:
             if (active == NULL) {
                 break;
             }
@@ -139,7 +136,7 @@ void loop(void *arg)
             active->y2 = event.motion.y;
             break;
 
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             if (active == NULL) {
                 active = SDL_calloc(1, sizeof(*active));
                 active->x1 = active->x2 = event.button.x;
@@ -173,7 +170,7 @@ void loop(void *arg)
             }
             break;
 
-        case SDL_MOUSEBUTTONUP:
+        case SDL_EVENT_MOUSE_BUTTON_UP:
             if (active == NULL) {
                 break;
             }
@@ -202,8 +199,8 @@ void loop(void *arg)
             }
             break;
 
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
+        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_UP:
             switch (event.key.keysym.sym) {
             case SDLK_LSHIFT:
                 isRect = (event.key.state == SDL_PRESSED);
@@ -214,7 +211,7 @@ void loop(void *arg)
             }
             break;
 
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
 
@@ -229,10 +226,10 @@ void loop(void *arg)
     /* Mouse wheel */
     SDL_SetRenderDrawColor(renderer, 0, 255, 128, 255);
     if (wheel_x_active) {
-        SDL_RenderDrawLine(renderer, (int)wheel_x, 0, (int)wheel_x, SCREEN_HEIGHT);
+        SDL_RenderLine(renderer, wheel_x, 0.0f, wheel_x, (float)SCREEN_HEIGHT);
     }
     if (wheel_y_active) {
-        SDL_RenderDrawLine(renderer, 0, (int)wheel_y, SCREEN_WIDTH, (int)wheel_y);
+        SDL_RenderLine(renderer, 0.0f, wheel_y, (float)SCREEN_WIDTH, wheel_y);
     }
 
     /* Objects from mouse clicks */

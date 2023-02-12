@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,12 +47,12 @@ extern int SDL_SendLocaleChangedEvent(void);
 
 extern int SDL_SendQuit(void);
 
-extern int SDL_EventsInit(void);
-extern void SDL_EventsQuit(void);
+extern int SDL_InitEvents(void);
+extern void SDL_QuitEvents(void);
 
 extern void SDL_SendPendingSignalEvents(void);
 
-extern int SDL_QuitInit(void);
+extern int SDL_InitQuit(void);
 extern void SDL_QuitQuit(void);
 
 #endif /* SDL_events_c_h_ */

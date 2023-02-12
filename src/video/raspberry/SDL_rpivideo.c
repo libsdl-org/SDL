@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +53,7 @@ static void RPI_Destroy(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static int RPI_GetRefreshRate()
+static float RPI_GetRefreshRate()
 {
     TV_DISPLAY_STATE_T tvstate;
     if (vc_tv_get_display_state(&tvstate) == 0) {
@@ -62,9 +62,13 @@ static int RPI_GetRefreshRate()
         HDMI_PROPERTY_PARAM_T property;
         property.property = HDMI_PROPERTY_PIXEL_CLOCK_TYPE;
         vc_tv_hdmi_get_property(&property);
-        return property.param1 == HDMI_PIXEL_CLOCK_TYPE_NTSC ? tvstate.display.hdmi.frame_rate * (1000.0f / 1001.0f) : tvstate.display.hdmi.frame_rate;
+        if (property.param1 == HDMI_PIXEL_CLOCK_TYPE_NTSC) {
+            return ((100 * tvstate.display.hdmi.frame_rate * 1000) / 1001) / 100.0f;
+        } else {
+            return (float)tvstate.display.hdmi.frame_rate;
+        }
     }
-    return 60; /* Failed to get display state, default to 60 */
+    return 60.0f; /* Failed to get display state, default to 60 */
 }
 
 static SDL_VideoDevice *RPI_Create()
@@ -98,8 +102,6 @@ static SDL_VideoDevice *RPI_Create()
     /* Setup all functions which we can handle */
     device->VideoInit = RPI_VideoInit;
     device->VideoQuit = RPI_VideoQuit;
-    device->GetDisplayModes = RPI_GetDisplayModes;
-    device->SetDisplayMode = RPI_SetDisplayMode;
     device->CreateSDLWindow = RPI_CreateWindow;
     device->CreateSDLWindowFrom = RPI_CreateWindowFrom;
     device->SetWindowTitle = RPI_SetWindowTitle;
@@ -144,7 +146,7 @@ static void AddDispManXDisplay(const int display_id)
     DISPMANX_MODEINFO_T modeinfo;
     DISPMANX_DISPLAY_HANDLE_T handle;
     SDL_VideoDisplay display;
-    SDL_DisplayMode current_mode;
+    SDL_DisplayMode mode;
     SDL_DisplayData *data;
 
     handle = vc_dispmanx_display_open(display_id);
@@ -158,18 +160,16 @@ static void AddDispManXDisplay(const int display_id)
     }
 
     /* RPI_GetRefreshRate() doesn't distinguish between displays. I'm not sure the hardware distinguishes either */
-    SDL_zero(current_mode);
-    current_mode.w = modeinfo.width;
-    current_mode.h = modeinfo.height;
-    current_mode.refresh_rate = RPI_GetRefreshRate();
-    /* 32 bpp for default */
-    current_mode.format = SDL_PIXELFORMAT_ABGR8888;
+    SDL_zero(mode);
+    mode.pixel_w = modeinfo.width;
+    mode.pixel_h = modeinfo.height;
+    mode.refresh_rate = RPI_GetRefreshRate();
 
-    current_mode.driverdata = NULL;
+    /* 32 bpp for default */
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     SDL_zero(display);
-    display.desktop_mode = current_mode;
-    display.current_mode = current_mode;
+    display.desktop_mode = mode;
 
     /* Allocate display internal data */
     data = (SDL_DisplayData *)SDL_calloc(1, sizeof(SDL_DisplayData));
@@ -211,20 +211,9 @@ void RPI_VideoQuit(_THIS)
 #endif
 }
 
-void RPI_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
-{
-    /* Only one display mode available, the current one */
-    SDL_AddDisplayMode(display, &display->current_mode);
-}
-
-int RPI_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
-{
-    return 0;
-}
-
 static void RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)
 {
-    SDL_WindowData *wdata = ((SDL_WindowData *)data);
+    SDL_WindowData *wdata = (SDL_WindowData *)data;
 
     SDL_LockMutex(wdata->vsync_cond_mutex);
     SDL_CondSignal(wdata->vsync_cond);
@@ -253,8 +242,8 @@ int RPI_CreateWindow(_THIS, SDL_Window *window)
     if (wdata == NULL) {
         return SDL_OutOfMemory();
     }
-    display = SDL_GetDisplayForWindow(window);
-    displaydata = (SDL_DisplayData *)display->driverdata;
+    display = SDL_GetVideoDisplayForWindow(window);
+    displaydata = display->driverdata;
 
     /* Windows have one size for now */
     window->w = display->desktop_mode.w;
@@ -327,9 +316,8 @@ int RPI_CreateWindow(_THIS, SDL_Window *window)
 
 void RPI_DestroyWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+    SDL_WindowData *data = window->driverdata;
+    SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
 
     if (data) {
         if (data->double_buffer) {

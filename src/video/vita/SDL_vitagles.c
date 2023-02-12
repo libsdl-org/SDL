@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -64,8 +64,7 @@ int VITA_GLES_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void *
-VITA_GLES_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer VITA_GLES_GetProcAddress(_THIS, const char *proc)
 {
     return eglGetProcAddress(proc);
 }
@@ -78,11 +77,10 @@ void VITA_GLES_UnloadLibrary(_THIS)
 static EGLint width = 960;
 static EGLint height = 544;
 
-SDL_GLContext
-VITA_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window)
 {
 
-    SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *wdata = window->driverdata;
 
     EGLint attribs[32];
     EGLDisplay display;
@@ -179,9 +177,10 @@ int VITA_GLES_SetSwapInterval(_THIS, int interval)
     return SDL_SetError("Unable to set the EGL swap interval");
 }
 
-int VITA_GLES_GetSwapInterval(_THIS)
+int VITA_GLES_GetSwapInterval(_THIS, int *interval)
 {
-    return _this->gl_data->swapinterval;
+    *interval = _this->gl_data->swapinterval;
+    return 0;
 }
 
 int VITA_GLES_SwapWindow(_THIS, SDL_Window *window)
@@ -192,14 +191,13 @@ int VITA_GLES_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
+int VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *phdata = _this->driverdata;
     EGLBoolean status;
 
     if (phdata->egl_initialized != SDL_TRUE) {
-        SDL_SetError("VITA: GLES initialization failed, no OpenGL ES support");
-        return;
+        return SDL_SetError("VITA: GLES initialization failed, no OpenGL ES support");
     }
 
     /* Check if OpenGL ES connection has been initialized */
@@ -208,13 +206,12 @@ void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
             status = eglDestroyContext(_this->gl_data->display, context);
             if (status != EGL_TRUE) {
                 /* Error during OpenGL ES context destroying */
-                SDL_SetError("VITA: OpenGL ES context destroy error");
-                return;
+                return SDL_SetError("VITA: OpenGL ES context destroy error");
             }
         }
     }
 
-    return;
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */

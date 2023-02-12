@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -219,24 +219,28 @@ static int Cocoa_ShowCursor(SDL_Cursor *cursor)
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
         for (; window != NULL; window = window->next) {
-            SDL_WindowData *driverdata = (__bridge SDL_WindowData *)window->driverdata;
-            if (driverdata) {
-                [driverdata.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
-                                                      withObject:[driverdata.nswindow contentView]
-                                                   waitUntilDone:NO];
+            SDL_Mouse *mouse = SDL_GetMouse();
+            if(mouse->focus) {
+                if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
+                    [(__bridge NSCursor*)mouse->cur_cursor->driverdata set];
+                } else {
+                    [[NSCursor invisibleCursor] set];
+                }
+            } else {
+                [[NSCursor arrowCursor] set];
             }
         }
         return 0;
     }
 }
 
-static SDL_Window *SDL_FindWindowAtPoint(const int x, const int y)
+static SDL_Window *SDL_FindWindowAtPoint(const float x, const float y)
 {
-    const SDL_Point pt = { x, y };
+    const SDL_FPoint pt = { x, y };
     SDL_Window *i;
     for (i = SDL_GetVideoDevice()->windows; i; i = i->next) {
-        const SDL_Rect r = { i->x, i->y, i->w, i->h };
-        if (SDL_PointInRect(&pt, &r)) {
+        const SDL_FRect r = { (float)i->x, (float)i->y, (float)i->w, (float)i->h };
+        if (SDL_PointInRectFloat(&pt, &r)) {
             return i;
         }
     }
@@ -244,19 +248,19 @@ static SDL_Window *SDL_FindWindowAtPoint(const int x, const int y)
     return NULL;
 }
 
-static int Cocoa_WarpMouseGlobal(int x, int y)
+static int Cocoa_WarpMouseGlobal(float x, float y)
 {
     CGPoint point;
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse->focus) {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)mouse->focus->driverdata;
+        SDL_WindowData *data = mouse->focus->driverdata;
         if ([data.listener isMovingOrFocusClickPending]) {
             DLog("Postponing warp, window being moved or focused.");
             [data.listener setPendingMoveX:x Y:y];
             return 0;
         }
     }
-    point = CGPointMake((float)x, (float)y);
+    point = CGPointMake(x, y);
 
     Cocoa_HandleMouseWarp(point.x, point.y);
 
@@ -285,9 +289,9 @@ static int Cocoa_WarpMouseGlobal(int x, int y)
     return 0;
 }
 
-static void Cocoa_WarpMouse(SDL_Window *window, int x, int y)
+static int Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 {
-    Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
+    return Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
 }
 
 static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
@@ -317,7 +321,7 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the non-relative mode when the window finishes being moved,
      * if it is being moved right now.
      */
-    data = (__bridge SDL_WindowData *)window->driverdata;
+    data = window->driverdata;
     if ([data.listener isMovingOrFocusClickPending]) {
         return 0;
     }
@@ -340,14 +344,14 @@ static int Cocoa_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 Cocoa_GetGlobalMouseState(int *x, int *y)
+static Uint32 Cocoa_GetGlobalMouseState(float *x, float *y)
 {
     const NSUInteger cocoaButtons = [NSEvent pressedMouseButtons];
     const NSPoint cocoaLocation = [NSEvent mouseLocation];
     Uint32 retval = 0;
 
-    *x = (int)cocoaLocation.x;
-    *y = (int)(CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);
+    *x = cocoaLocation.x;
+    *y = (CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);
 
     retval |= (cocoaButtons & (1 << 0)) ? SDL_BUTTON_LMASK : 0;
     retval |= (cocoaButtons & (1 << 1)) ? SDL_BUTTON_RMASK : 0;
@@ -398,7 +402,7 @@ static void Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
     }
 
     for (window = _this->windows; window; window = window->next) {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         if (data && data.nswindow == nswindow) {
             switch ([event type]) {
             case NSEventTypeLeftMouseDown:
@@ -495,7 +499,7 @@ void Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
 
-    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, 1, (int)deltaX, (int)deltaY);
+    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, 1, deltaX, deltaY);
 }
 
 void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -297,9 +297,9 @@ static int SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic *haptic, LPDIRECTINPUTDEVI
     haptic->hwdata->is_joystick = is_joystick;
 
     /* !!! FIXME: opening a haptic device here first will make an attempt to
-       !!! FIXME:  SDL_JoystickOpen() that same device fail later, since we
+       !!! FIXME:  SDL_OpenJoystick() that same device fail later, since we
        !!! FIXME:  have it open in exclusive mode. But this will allow
-       !!! FIXME:  SDL_JoystickOpen() followed by SDL_HapticOpenFromJoystick()
+       !!! FIXME:  SDL_OpenJoystick() followed by SDL_HapticOpenFromJoystick()
        !!! FIXME:  to work, and that's probably the common case. Still,
        !!! FIXME:  ideally, We need to unify the opening code. */
 

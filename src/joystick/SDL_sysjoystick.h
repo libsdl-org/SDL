@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,7 @@ extern "C" {
 #endif
 
 /* The SDL joystick structure */
-typedef struct _SDL_JoystickAxisInfo
+typedef struct SDL_JoystickAxisInfo
 {
     Sint16 initial_value;           /* Initial axis state */
     Sint16 value;                   /* Current axis state */
@@ -43,7 +43,7 @@ typedef struct _SDL_JoystickAxisInfo
     SDL_bool sending_initial_value; /* Whether we are sending the initial axis value */
 } SDL_JoystickAxisInfo;
 
-typedef struct _SDL_JoystickTouchpadFingerInfo
+typedef struct SDL_JoystickTouchpadFingerInfo
 {
     Uint8 state;
     float x;
@@ -51,23 +51,23 @@ typedef struct _SDL_JoystickTouchpadFingerInfo
     float pressure;
 } SDL_JoystickTouchpadFingerInfo;
 
-typedef struct _SDL_JoystickTouchpadInfo
+typedef struct SDL_JoystickTouchpadInfo
 {
     int nfingers;
     SDL_JoystickTouchpadFingerInfo *fingers;
 } SDL_JoystickTouchpadInfo;
 
-typedef struct _SDL_JoystickSensorInfo
+typedef struct SDL_JoystickSensorInfo
 {
     SDL_SensorType type;
     SDL_bool enabled;
     float rate;
-    float data[3]; /* If this needs to expand, update SDL_ControllerSensorEvent */
+    float data[3]; /* If this needs to expand, update SDL_GamepadSensorEvent */
 } SDL_JoystickSensorInfo;
 
 #define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
 
-struct _SDL_Joystick
+struct SDL_Joystick
 {
     const void *magic _guarded;
 
@@ -109,17 +109,17 @@ struct _SDL_Joystick
     Uint64 led_expiration _guarded;
 
     SDL_bool attached _guarded;
-    SDL_bool is_game_controller _guarded;
+    SDL_bool is_gamepad _guarded;
     SDL_bool delayed_guide_button _guarded;      /* SDL_TRUE if this device has the guide button event delayed */
     SDL_JoystickPowerLevel epowerlevel _guarded; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
 
-    struct _SDL_JoystickDriver *driver _guarded;
+    struct SDL_JoystickDriver *driver _guarded;
 
     struct joystick_hwdata *hwdata _guarded; /* Driver dependent information */
 
     int ref_count _guarded; /* Reference count for multiple opens */
 
-    struct _SDL_Joystick *next _guarded; /* pointer to next joystick we have allocated */
+    struct SDL_Joystick *next _guarded; /* pointer to next joystick we have allocated */
 };
 
 #undef _guarded
@@ -138,7 +138,7 @@ struct _SDL_Joystick
 /* Macro to combine a USB vendor ID and product ID into a single Uint32 value */
 #define MAKE_VIDPID(VID, PID) (((Uint32)(VID)) << 16 | (PID))
 
-typedef struct _SDL_JoystickDriver
+typedef struct SDL_JoystickDriver
 {
     /* Function to scan the system for joysticks.
      * Joystick 0 should be the system default joystick.

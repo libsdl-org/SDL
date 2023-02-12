@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -102,7 +102,7 @@ typedef enum
 
 typedef enum
 {
-    k_eWiiButtons_A = SDL_CONTROLLER_BUTTON_MISC1,
+    k_eWiiButtons_A = SDL_GAMEPAD_BUTTON_MISC1,
     k_eWiiButtons_B,
     k_eWiiButtons_One,
     k_eWiiButtons_Two,
@@ -178,7 +178,7 @@ static SDL_bool HIDAPI_DriverWii_IsEnabled(void)
 #endif
 }
 
-static SDL_bool HIDAPI_DriverWii_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static SDL_bool HIDAPI_DriverWii_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO &&
         (product_id == USB_PRODUCT_NINTENDO_WII_REMOTE ||
@@ -493,13 +493,13 @@ static void DeactivateMotionPlus(SDL_DriverWii_Context *ctx)
 static void UpdatePowerLevelWii(SDL_Joystick *joystick, Uint8 batteryLevelByte)
 {
     if (batteryLevelByte > 178) {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
     } else if (batteryLevelByte > 51) {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
     } else if (batteryLevelByte > 13) {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
+        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
     } else {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
+        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
     }
 }
 
@@ -516,15 +516,15 @@ static void UpdatePowerLevelWiiU(SDL_Joystick *joystick, Uint8 extensionBatteryB
      * No value above 4 has been observed.
      */
     if (pluggedIn && !charging) {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
+        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
     } else if (batteryLevel >= 4) {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
     } else if (batteryLevel > 1) {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
     } else if (batteryLevel == 1) {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
+        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
     } else {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
+        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
     }
 }
 
@@ -790,7 +790,7 @@ static SDL_bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
                         SDL_GameControllerButtonReportingHintChanged, ctx);
 
     /* Initialize player index (needed for setting LEDs) */
-    ctx->m_nPlayerIndex = SDL_JoystickGetPlayerIndex(joystick);
+    ctx->m_nPlayerIndex = SDL_GetJoystickPlayerIndex(joystick);
     ctx->m_bPlayerLights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED, SDL_TRUE);
     UpdateSlotLED(ctx);
 
@@ -804,7 +804,7 @@ static SDL_bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         /* Maximum is Classic Controller + Wiimote */
         joystick->nbuttons = k_eWiiButtons_Max;
     }
-    joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
+    joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
 
     ctx->m_ulLastInput = SDL_GetTicks();
 
@@ -895,12 +895,12 @@ static void PostStickCalibrated(Uint64 timestamp, SDL_Joystick *joystick, struct
         float fvalue = (float)distance / (float)range;
         value = (Sint16)(fvalue * SDL_JOYSTICK_AXIS_MAX);
     }
-    if (axis == SDL_CONTROLLER_AXIS_LEFTY || axis == SDL_CONTROLLER_AXIS_RIGHTY) {
+    if (axis == SDL_GAMEPAD_AXIS_LEFTY || axis == SDL_GAMEPAD_AXIS_RIGHTY) {
         if (value) {
             value = ~value;
         }
     }
-    SDL_PrivateJoystickAxis(timestamp, joystick, axis, value);
+    SDL_SendJoystickAxis(timestamp, joystick, axis, value);
 }
 
 /* Send button data to SDL
@@ -919,7 +919,7 @@ static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, const
             Uint8 button = defs[i][j];
             if (button != 0xFF) {
                 Uint8 state = (data[i] >> j) & 1 ? on : off;
-                SDL_PrivateJoystickButton(timestamp, joystick, button, state);
+                SDL_SendJoystickButton(timestamp, joystick, button, state);
             }
         }
     }
@@ -928,27 +928,27 @@ static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, const
 static const Uint8 GAMEPAD_BUTTON_DEFS[3][8] = {
     {
         0xFF /* Unused */,
-        SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
-        SDL_CONTROLLER_BUTTON_START,
-        SDL_CONTROLLER_BUTTON_GUIDE,
-        SDL_CONTROLLER_BUTTON_BACK,
-        SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
-        SDL_CONTROLLER_BUTTON_DPAD_DOWN,
-        SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
+        SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+        SDL_GAMEPAD_BUTTON_START,
+        SDL_GAMEPAD_BUTTON_GUIDE,
+        SDL_GAMEPAD_BUTTON_BACK,
+        SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
+        SDL_GAMEPAD_BUTTON_DPAD_DOWN,
+        SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
     },
     {
-        SDL_CONTROLLER_BUTTON_DPAD_UP,
-        SDL_CONTROLLER_BUTTON_DPAD_LEFT,
+        SDL_GAMEPAD_BUTTON_DPAD_UP,
+        SDL_GAMEPAD_BUTTON_DPAD_LEFT,
         0xFF /* ZR */,
-        SDL_CONTROLLER_BUTTON_X,
-        SDL_CONTROLLER_BUTTON_A,
-        SDL_CONTROLLER_BUTTON_Y,
-        SDL_CONTROLLER_BUTTON_B,
+        SDL_GAMEPAD_BUTTON_X,
+        SDL_GAMEPAD_BUTTON_A,
+        SDL_GAMEPAD_BUTTON_Y,
+        SDL_GAMEPAD_BUTTON_B,
         0xFF /*ZL*/,
     },
     {
-        SDL_CONTROLLER_BUTTON_RIGHTSTICK,
-        SDL_CONTROLLER_BUTTON_LEFTSTICK,
+        SDL_GAMEPAD_BUTTON_RIGHT_STICK,
+        SDL_GAMEPAD_BUTTON_LEFT_STICK,
         0xFF /* Charging */,
         0xFF /* Plugged In */,
         0xFF /* Unused */,
@@ -961,27 +961,27 @@ static const Uint8 GAMEPAD_BUTTON_DEFS[3][8] = {
 static const Uint8 GAMEPAD_BUTTON_DEFS_POSITIONAL[3][8] = {
     {
         0xFF /* Unused */,
-        SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
-        SDL_CONTROLLER_BUTTON_START,
-        SDL_CONTROLLER_BUTTON_GUIDE,
-        SDL_CONTROLLER_BUTTON_BACK,
-        SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
-        SDL_CONTROLLER_BUTTON_DPAD_DOWN,
-        SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
+        SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+        SDL_GAMEPAD_BUTTON_START,
+        SDL_GAMEPAD_BUTTON_GUIDE,
+        SDL_GAMEPAD_BUTTON_BACK,
+        SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
+        SDL_GAMEPAD_BUTTON_DPAD_DOWN,
+        SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
     },
     {
-        SDL_CONTROLLER_BUTTON_DPAD_UP,
-        SDL_CONTROLLER_BUTTON_DPAD_LEFT,
+        SDL_GAMEPAD_BUTTON_DPAD_UP,
+        SDL_GAMEPAD_BUTTON_DPAD_LEFT,
         0xFF /* ZR */,
-        SDL_CONTROLLER_BUTTON_Y,
-        SDL_CONTROLLER_BUTTON_B,
-        SDL_CONTROLLER_BUTTON_X,
-        SDL_CONTROLLER_BUTTON_A,
+        SDL_GAMEPAD_BUTTON_Y,
+        SDL_GAMEPAD_BUTTON_B,
+        SDL_GAMEPAD_BUTTON_X,
+        SDL_GAMEPAD_BUTTON_A,
         0xFF /*ZL*/,
     },
     {
-        SDL_CONTROLLER_BUTTON_RIGHTSTICK,
-        SDL_CONTROLLER_BUTTON_LEFTSTICK,
+        SDL_GAMEPAD_BUTTON_RIGHT_STICK,
+        SDL_GAMEPAD_BUTTON_LEFT_STICK,
         0xFF /* Charging */,
         0xFF /* Plugged In */,
         0xFF /* Unused */,
@@ -994,27 +994,27 @@ static const Uint8 GAMEPAD_BUTTON_DEFS_POSITIONAL[3][8] = {
 static const Uint8 MP_GAMEPAD_BUTTON_DEFS[3][8] = {
     {
         0xFF /* Unused */,
-        SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
-        SDL_CONTROLLER_BUTTON_START,
-        SDL_CONTROLLER_BUTTON_GUIDE,
-        SDL_CONTROLLER_BUTTON_BACK,
-        SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
-        SDL_CONTROLLER_BUTTON_DPAD_DOWN,
-        SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
+        SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+        SDL_GAMEPAD_BUTTON_START,
+        SDL_GAMEPAD_BUTTON_GUIDE,
+        SDL_GAMEPAD_BUTTON_BACK,
+        SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
+        SDL_GAMEPAD_BUTTON_DPAD_DOWN,
+        SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
     },
     {
         0xFF /* Motion Plus data */,
         0xFF /* Motion Plus data */,
         0xFF /* ZR */,
-        SDL_CONTROLLER_BUTTON_X,
-        SDL_CONTROLLER_BUTTON_A,
-        SDL_CONTROLLER_BUTTON_Y,
-        SDL_CONTROLLER_BUTTON_B,
+        SDL_GAMEPAD_BUTTON_X,
+        SDL_GAMEPAD_BUTTON_A,
+        SDL_GAMEPAD_BUTTON_Y,
+        SDL_GAMEPAD_BUTTON_B,
         0xFF /*ZL*/,
     },
     {
-        SDL_CONTROLLER_BUTTON_RIGHTSTICK,
-        SDL_CONTROLLER_BUTTON_LEFTSTICK,
+        SDL_GAMEPAD_BUTTON_RIGHT_STICK,
+        SDL_GAMEPAD_BUTTON_LEFT_STICK,
         0xFF /* Charging */,
         0xFF /* Plugged In */,
         0xFF /* Unused */,
@@ -1027,27 +1027,27 @@ static const Uint8 MP_GAMEPAD_BUTTON_DEFS[3][8] = {
 static const Uint8 MP_GAMEPAD_BUTTON_DEFS_POSITIONAL[3][8] = {
     {
         0xFF /* Unused */,
-        SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
-        SDL_CONTROLLER_BUTTON_START,
-        SDL_CONTROLLER_BUTTON_GUIDE,
-        SDL_CONTROLLER_BUTTON_BACK,
-        SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
-        SDL_CONTROLLER_BUTTON_DPAD_DOWN,
-        SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
+        SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+        SDL_GAMEPAD_BUTTON_START,
+        SDL_GAMEPAD_BUTTON_GUIDE,
+        SDL_GAMEPAD_BUTTON_BACK,
+        SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
+        SDL_GAMEPAD_BUTTON_DPAD_DOWN,
+        SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
     },
     {
         0xFF /* Motion Plus data */,
         0xFF /* Motion Plus data */,
         0xFF /* ZR */,
-        SDL_CONTROLLER_BUTTON_Y,
-        SDL_CONTROLLER_BUTTON_B,
-        SDL_CONTROLLER_BUTTON_X,
-        SDL_CONTROLLER_BUTTON_A,
+        SDL_GAMEPAD_BUTTON_Y,
+        SDL_GAMEPAD_BUTTON_B,
+        SDL_GAMEPAD_BUTTON_X,
+        SDL_GAMEPAD_BUTTON_A,
         0xFF /*ZL*/,
     },
     {
-        SDL_CONTROLLER_BUTTON_RIGHTSTICK,
-        SDL_CONTROLLER_BUTTON_LEFTSTICK,
+        SDL_GAMEPAD_BUTTON_RIGHT_STICK,
+        SDL_GAMEPAD_BUTTON_LEFT_STICK,
         0xFF /* Charging */,
         0xFF /* Plugged In */,
         0xFF /* Unused */,
@@ -1059,7 +1059,7 @@ static const Uint8 MP_GAMEPAD_BUTTON_DEFS_POSITIONAL[3][8] = {
 
 static const Uint8 MP_FIXUP_DPAD_BUTTON_DEFS[2][8] = {
     {
-        SDL_CONTROLLER_BUTTON_DPAD_UP,
+        SDL_GAMEPAD_BUTTON_DPAD_UP,
         0xFF,
         0xFF,
         0xFF,
@@ -1069,7 +1069,7 @@ static const Uint8 MP_FIXUP_DPAD_BUTTON_DEFS[2][8] = {
         0xFF,
     },
     {
-        SDL_CONTROLLER_BUTTON_DPAD_LEFT,
+        SDL_GAMEPAD_BUTTON_DPAD_LEFT,
         0xFF,
         0xFF,
         0xFF,
@@ -1082,7 +1082,7 @@ static const Uint8 MP_FIXUP_DPAD_BUTTON_DEFS[2][8] = {
 
 static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
 {
-    static const Uint8 axes[] = { SDL_CONTROLLER_AXIS_LEFTX, SDL_CONTROLLER_AXIS_RIGHTX, SDL_CONTROLLER_AXIS_LEFTY, SDL_CONTROLLER_AXIS_RIGHTY };
+    static const Uint8 axes[] = { SDL_GAMEPAD_AXIS_LEFTX, SDL_GAMEPAD_AXIS_RIGHTX, SDL_GAMEPAD_AXIS_LEFTY, SDL_GAMEPAD_AXIS_RIGHTY };
     const Uint8(*buttons)[8] = ctx->m_bUseButtonLabels ? GAMEPAD_BUTTON_DEFS : GAMEPAD_BUTTON_DEFS_POSITIONAL;
     Uint8 zl, zr;
     int i;
@@ -1097,8 +1097,8 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
     /* Triggers */
     zl = data->rgucExtension[9] & 0x80;
     zr = data->rgucExtension[9] & 0x04;
-    SDL_PrivateJoystickAxis(ctx->timestamp, joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, zl ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
-    SDL_PrivateJoystickAxis(ctx->timestamp, joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, zr ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
+    SDL_SendJoystickAxis(ctx->timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, zl ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
+    SDL_SendJoystickAxis(ctx->timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, zr ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
 
     /* Sticks */
     for (i = 0; i < 4; i++) {
@@ -1128,8 +1128,8 @@ static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Jo
     /* Triggers */
     zl = data->rgucExtension[5] & 0x80;
     zr = data->rgucExtension[5] & 0x04;
-    SDL_PrivateJoystickAxis(ctx->timestamp, joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, zl ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
-    SDL_PrivateJoystickAxis(ctx->timestamp, joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, zr ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
+    SDL_SendJoystickAxis(ctx->timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, zl ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
+    SDL_SendJoystickAxis(ctx->timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, zr ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
 
     /* Sticks */
     if (ctx->m_ucMotionPlusMode == WII_MOTIONPLUS_MODE_GAMEPAD) {
@@ -1141,10 +1141,10 @@ static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Jo
     }
     rx = (data->rgucExtension[2] >> 7) | ((data->rgucExtension[1] >> 5) & 0x06) | ((data->rgucExtension[0] >> 3) & 0x18);
     ry = data->rgucExtension[2] & 0x1F;
-    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[0], SDL_CONTROLLER_AXIS_LEFTX, lx);
-    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[1], SDL_CONTROLLER_AXIS_LEFTY, ly);
-    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[2], SDL_CONTROLLER_AXIS_RIGHTX, rx);
-    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[3], SDL_CONTROLLER_AXIS_RIGHTY, ry);
+    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[0], SDL_GAMEPAD_AXIS_LEFTX, lx);
+    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[1], SDL_GAMEPAD_AXIS_LEFTY, ly);
+    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[2], SDL_GAMEPAD_AXIS_RIGHTX, rx);
+    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[3], SDL_GAMEPAD_AXIS_RIGHTY, ry);
 }
 
 static void HandleWiiRemoteButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
@@ -1184,24 +1184,24 @@ static void HandleWiiRemoteButtonDataAsMainController(SDL_DriverWii_Context *ctx
      */
     static const Uint8 buttons[2][8] = {
         {
-            SDL_CONTROLLER_BUTTON_DPAD_LEFT,
-            SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
-            SDL_CONTROLLER_BUTTON_DPAD_DOWN,
-            SDL_CONTROLLER_BUTTON_DPAD_UP,
-            SDL_CONTROLLER_BUTTON_START,
+            SDL_GAMEPAD_BUTTON_DPAD_LEFT,
+            SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
+            SDL_GAMEPAD_BUTTON_DPAD_DOWN,
+            SDL_GAMEPAD_BUTTON_DPAD_UP,
+            SDL_GAMEPAD_BUTTON_START,
             0xFF /* Unused */,
             0xFF /* Unused */,
             0xFF /* Unused */,
         },
         {
-            SDL_CONTROLLER_BUTTON_Y,
-            SDL_CONTROLLER_BUTTON_X,
-            SDL_CONTROLLER_BUTTON_A,
-            SDL_CONTROLLER_BUTTON_B,
-            SDL_CONTROLLER_BUTTON_BACK,
+            SDL_GAMEPAD_BUTTON_Y,
+            SDL_GAMEPAD_BUTTON_X,
+            SDL_GAMEPAD_BUTTON_A,
+            SDL_GAMEPAD_BUTTON_B,
+            SDL_GAMEPAD_BUTTON_BACK,
             0xFF /* Unused */,
             0xFF /* Unused */,
-            SDL_CONTROLLER_BUTTON_GUIDE,
+            SDL_GAMEPAD_BUTTON_GUIDE,
         }
     };
     if (data->hasBaseButtons) {
@@ -1224,10 +1224,10 @@ static void HandleNunchuckButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
         c_button = (data->rgucExtension[5] & 0x02) ? SDL_RELEASED : SDL_PRESSED;
         z_button = (data->rgucExtension[5] & 0x01) ? SDL_RELEASED : SDL_PRESSED;
     }
-    SDL_PrivateJoystickButton(ctx->timestamp, joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, c_button);
-    SDL_PrivateJoystickAxis(ctx->timestamp, joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, z_button ? SDL_JOYSTICK_AXIS_MAX : SDL_JOYSTICK_AXIS_MIN);
-    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[0], SDL_CONTROLLER_AXIS_LEFTX, data->rgucExtension[0]);
-    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[1], SDL_CONTROLLER_AXIS_LEFTY, data->rgucExtension[1]);
+    SDL_SendJoystickButton(ctx->timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, c_button);
+    SDL_SendJoystickAxis(ctx->timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, z_button ? SDL_JOYSTICK_AXIS_MAX : SDL_JOYSTICK_AXIS_MIN);
+    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[0], SDL_GAMEPAD_AXIS_LEFTX, data->rgucExtension[0]);
+    PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[1], SDL_GAMEPAD_AXIS_LEFTY, data->rgucExtension[1]);
 
     if (ctx->m_bReportSensors) {
         const float ACCEL_RES_PER_G = 200.0f;
@@ -1256,7 +1256,7 @@ static void HandleNunchuckButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
         values[0] = -((float)x / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
         values[1] = ((float)z / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
         values[2] = ((float)y / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
-        SDL_PrivateJoystickSensor(ctx->timestamp, joystick, SDL_SENSOR_ACCEL_L, ctx->timestamp, values, 3);
+        SDL_SendJoystickSensor(ctx->timestamp, joystick, SDL_SENSOR_ACCEL_L, ctx->timestamp, values, 3);
     }
 }
 
@@ -1296,7 +1296,7 @@ static void HandleMotionPlusData(SDL_DriverWii_Context *ctx, SDL_Joystick *joyst
         values[0] = -((float)z / GYRO_RES_PER_DEGREE) * SDL_PI_F / 180.0f;
         values[1] = ((float)x / GYRO_RES_PER_DEGREE) * SDL_PI_F / 180.0f;
         values[2] = ((float)y / GYRO_RES_PER_DEGREE) * SDL_PI_F / 180.0f;
-        SDL_PrivateJoystickSensor(ctx->timestamp, joystick, SDL_SENSOR_GYRO, ctx->timestamp, values, 3);
+        SDL_SendJoystickSensor(ctx->timestamp, joystick, SDL_SENSOR_GYRO, ctx->timestamp, values, 3);
     }
 }
 
@@ -1317,7 +1317,7 @@ static void HandleWiiRemoteAccelData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
     values[0] = -((float)x / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
     values[1] = ((float)z / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
     values[2] = ((float)y / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
-    SDL_PrivateJoystickSensor(ctx->timestamp, joystick, SDL_SENSOR_ACCEL, ctx->timestamp, values, 3);
+    SDL_SendJoystickSensor(ctx->timestamp, joystick, SDL_SENSOR_ACCEL, ctx->timestamp, values, 3);
 }
 
 static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, WiiButtonData *data)
@@ -1574,7 +1574,7 @@ static SDL_bool HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     Uint64 now;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
     } else {
         return SDL_FALSE;
     }

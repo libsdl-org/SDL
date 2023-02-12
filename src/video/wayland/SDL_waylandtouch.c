@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -71,7 +71,7 @@ static void touch_handle_touch(void *data,
      * (src/compositor/wayland_wrapper/qwltouch.cpp)
      **/
 
-    SDL_VideoData *viddata = (SDL_VideoData *)data;
+    SDL_VideoData *viddata = data;
 
     float FIXED_TO_FLOAT = 1. / 10000.;
     float xf = FIXED_TO_FLOAT * normalized_x;

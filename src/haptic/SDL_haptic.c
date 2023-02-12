@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 
 #include "SDL_syshaptic.h"
 #include "SDL_haptic_c.h"
-#include "../joystick/SDL_joystick_c.h" /* For SDL_PrivateJoystickValid */
+#include "../joystick/SDL_joystick_c.h" /* For SDL_IsJoystickValid */
 
 /* Global for SDL_windowshaptic.c */
 #if (defined(SDL_HAPTIC_DINPUT) && SDL_HAPTIC_DINPUT) || (defined(SDL_HAPTIC_XINPUT) && SDL_HAPTIC_XINPUT)
@@ -34,7 +34,7 @@ static SDL_Haptic *SDL_haptics = NULL;
 /*
  * Initializes the Haptic devices.
  */
-int SDL_HapticInit(void)
+int SDL_InitHaptics(void)
 {
     int status;
 
@@ -236,7 +236,7 @@ int SDL_JoystickIsHaptic(SDL_Joystick *joystick)
     SDL_LockJoysticks();
     {
         /* Must be a valid joystick */
-        if (!SDL_PrivateJoystickValid(joystick)) {
+        if (!SDL_IsJoystickValid(joystick)) {
             SDL_UnlockJoysticks();
             return -1;
         }
@@ -273,7 +273,7 @@ SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
     SDL_LockJoysticks();
     {
         /* Must be a valid joystick */
-        if (!SDL_PrivateJoystickValid(joystick)) {
+        if (!SDL_IsJoystickValid(joystick)) {
             SDL_SetError("Haptic: Joystick isn't valid.");
             SDL_UnlockJoysticks();
             return NULL;
@@ -379,7 +379,7 @@ void SDL_HapticClose(SDL_Haptic *haptic)
 /*
  * Cleans up after the subsystem.
  */
-void SDL_HapticQuit(void)
+void SDL_QuitHaptics(void)
 {
     while (SDL_haptics) {
         SDL_HapticClose(SDL_haptics);
@@ -585,7 +585,7 @@ int SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect)
         return -1;
     }
 
-    if ((haptic->supported & SDL_HAPTIC_STATUS) == 0) {
+    if (!(haptic->supported & SDL_HAPTIC_STATUS)) {
         return SDL_SetError("Haptic: Device does not support status queries.");
     }
 
@@ -604,7 +604,7 @@ int SDL_HapticSetGain(SDL_Haptic *haptic, int gain)
         return -1;
     }
 
-    if ((haptic->supported & SDL_HAPTIC_GAIN) == 0) {
+    if (!(haptic->supported & SDL_HAPTIC_GAIN)) {
         return SDL_SetError("Haptic: Device does not support setting gain.");
     }
 
@@ -646,7 +646,7 @@ int SDL_HapticSetAutocenter(SDL_Haptic *haptic, int autocenter)
         return -1;
     }
 
-    if ((haptic->supported & SDL_HAPTIC_AUTOCENTER) == 0) {
+    if (!(haptic->supported & SDL_HAPTIC_AUTOCENTER)) {
         return SDL_SetError("Haptic: Device does not support setting autocenter.");
     }
 
@@ -670,7 +670,7 @@ int SDL_HapticPause(SDL_Haptic *haptic)
         return -1;
     }
 
-    if ((haptic->supported & SDL_HAPTIC_PAUSE) == 0) {
+    if (!(haptic->supported & SDL_HAPTIC_PAUSE)) {
         return SDL_SetError("Haptic: Device does not support setting pausing.");
     }
 
@@ -686,7 +686,7 @@ int SDL_HapticUnpause(SDL_Haptic *haptic)
         return -1;
     }
 
-    if ((haptic->supported & SDL_HAPTIC_PAUSE) == 0) {
+    if (!(haptic->supported & SDL_HAPTIC_PAUSE)) {
         return 0; /* Not going to be paused, so we pretend it's unpaused. */
     }
 

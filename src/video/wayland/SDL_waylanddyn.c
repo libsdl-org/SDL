@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -57,7 +57,7 @@ static waylanddynlib waylandlibs[] = {
     { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR }
 };
 
-static void *WAYLAND_GetSym(const char *fnname, int *pHasModule)
+static void *WAYLAND_GetSym(const char *fnname, int *pHasModule, SDL_bool required)
 {
     int i;
     void *fn = NULL;
@@ -77,7 +77,7 @@ static void *WAYLAND_GetSym(const char *fnname, int *pHasModule)
         SDL_Log("WAYLAND: Symbol '%s' NOT FOUND!\n", fnname);
 #endif
 
-    if (fn == NULL) {
+    if (fn == NULL && required) {
         *pHasModule = 0; /* kill this module. */
     }
 
@@ -91,9 +91,10 @@ static void *WAYLAND_GetSym(const char *fnname, int *pHasModule)
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
 
 /* Define all the function pointers and wrappers... */
-#define SDL_WAYLAND_MODULE(modname)     int SDL_WAYLAND_HAVE_##modname = 0;
-#define SDL_WAYLAND_SYM(rc, fn, params) SDL_DYNWAYLANDFN_##fn WAYLAND_##fn = NULL;
-#define SDL_WAYLAND_INTERFACE(iface)    const struct wl_interface *WAYLAND_##iface = NULL;
+#define SDL_WAYLAND_MODULE(modname)         int SDL_WAYLAND_HAVE_##modname = 0;
+#define SDL_WAYLAND_SYM(rc, fn, params)     SDL_DYNWAYLANDFN_##fn WAYLAND_##fn = NULL;
+#define SDL_WAYLAND_SYM_OPT(rc, fn, params) SDL_DYNWAYLANDFN_##fn WAYLAND_##fn = NULL;
+#define SDL_WAYLAND_INTERFACE(iface)        const struct wl_interface *WAYLAND_##iface = NULL;
 #include "SDL_waylandsym.h"
 
 static int wayland_load_refcount = 0;
@@ -108,9 +109,10 @@ void SDL_WAYLAND_UnloadSymbols(void)
 #endif
 
             /* set all the function pointers to NULL. */
-#define SDL_WAYLAND_MODULE(modname)     SDL_WAYLAND_HAVE_##modname = 0;
-#define SDL_WAYLAND_SYM(rc, fn, params) WAYLAND_##fn = NULL;
-#define SDL_WAYLAND_INTERFACE(iface)    WAYLAND_##iface = NULL;
+#define SDL_WAYLAND_MODULE(modname)         SDL_WAYLAND_HAVE_##modname = 0;
+#define SDL_WAYLAND_SYM(rc, fn, params)     WAYLAND_##fn = NULL;
+#define SDL_WAYLAND_SYM_OPT(rc, fn, params) WAYLAND_##fn = NULL;
+#define SDL_WAYLAND_INTERFACE(iface)        WAYLAND_##iface = NULL;
 #include "SDL_waylandsym.h"
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
@@ -144,13 +146,17 @@ int SDL_WAYLAND_LoadSymbols(void)
 #define SDL_WAYLAND_MODULE(modname) SDL_WAYLAND_HAVE_##modname = 1; /* default yes */
 #include "SDL_waylandsym.h"
 
-#define SDL_WAYLAND_MODULE(modname)     thismod = &SDL_WAYLAND_HAVE_##modname;
-#define SDL_WAYLAND_SYM(rc, fn, params) WAYLAND_##fn = (SDL_DYNWAYLANDFN_##fn)WAYLAND_GetSym(#fn, thismod);
-#define SDL_WAYLAND_INTERFACE(iface)    WAYLAND_##iface = (struct wl_interface *)WAYLAND_GetSym(#iface, thismod);
+#define SDL_WAYLAND_MODULE(modname)         thismod = &SDL_WAYLAND_HAVE_##modname;
+#define SDL_WAYLAND_SYM(rc, fn, params)     WAYLAND_##fn = (SDL_DYNWAYLANDFN_##fn)WAYLAND_GetSym(#fn, thismod, SDL_TRUE);
+#define SDL_WAYLAND_SYM_OPT(rc, fn, params) WAYLAND_##fn = (SDL_DYNWAYLANDFN_##fn)WAYLAND_GetSym(#fn, thismod, SDL_FALSE);
+#define SDL_WAYLAND_INTERFACE(iface)        WAYLAND_##iface = (struct wl_interface *)WAYLAND_GetSym(#iface, thismod, SDL_TRUE);
 #include "SDL_waylandsym.h"
 
-        if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT) {
-            /* all required symbols loaded. */
+        if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT &&
+            SDL_WAYLAND_HAVE_WAYLAND_CURSOR &&
+            SDL_WAYLAND_HAVE_WAYLAND_EGL &&
+            SDL_WAYLAND_HAVE_WAYLAND_XKB) {
+            /* All required symbols loaded, only libdecor is optional. */
             SDL_ClearError();
         } else {
             /* in case something got loaded... */
@@ -160,9 +166,10 @@ int SDL_WAYLAND_LoadSymbols(void)
 
 #else /* no dynamic WAYLAND */
 
-#define SDL_WAYLAND_MODULE(modname)     SDL_WAYLAND_HAVE_##modname = 1; /* default yes */
-#define SDL_WAYLAND_SYM(rc, fn, params) WAYLAND_##fn = fn;
-#define SDL_WAYLAND_INTERFACE(iface)    WAYLAND_##iface = &iface;
+#define SDL_WAYLAND_MODULE(modname)         SDL_WAYLAND_HAVE_##modname = 1; /* default yes */
+#define SDL_WAYLAND_SYM(rc, fn, params)     WAYLAND_##fn = fn;
+#define SDL_WAYLAND_SYM_OPT(rc, fn, params) WAYLAND_##fn = fn;
+#define SDL_WAYLAND_INTERFACE(iface)        WAYLAND_##iface = &iface;
 #include "SDL_waylandsym.h"
 
 #endif

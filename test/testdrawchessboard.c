@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+   Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
    This software is provided 'as-is', without any express or implied
    warranty.  In no event will the authors be held liable for any damages
@@ -9,7 +9,7 @@
    including commercial applications, and to alter it and redistribute it
    freely.
 
-   This file is created by : Nitin Jain (nitin.j4@samsung.com)
+   This file is created by : Nitin Jain (nitin.j4\samsung.com)
 */
 
 /* Sample program:  Draw a Chess Board  by using SDL_CreateSoftwareRenderer API */
@@ -29,10 +29,11 @@ int done;
 void DrawChessBoard()
 {
     int row = 0, column = 0, x = 0;
-    SDL_Rect rect, darea;
+    SDL_FRect rect;
+    SDL_Rect darea;
 
     /* Get the Size of drawing surface */
-    SDL_RenderGetViewport(renderer, &darea);
+    SDL_GetRenderViewport(renderer, &darea);
 
     for (; row < 8; row++) {
         column = row % 2;
@@ -40,12 +41,18 @@ void DrawChessBoard()
         for (; column < 4 + (row % 2); column++) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
 
-            rect.w = darea.w / 8;
-            rect.h = darea.h / 8;
-            rect.x = x * rect.w;
-            rect.y = row * rect.h;
+            rect.w = (float)(darea.w / 8);
+            rect.h = (float)(darea.h / 8);
+            rect.x = (float)(x * rect.w);
+            rect.y = (float)(row * rect.h);
             x = x + 2;
             SDL_RenderFillRect(renderer, &rect);
+
+            /* Draw a red diagonal line through the upper left rectangle */
+            if (column == 0 && row == 0) {
+                SDL_SetRenderDrawColor(renderer, 0xFF, 0, 0, 0xFF);
+                SDL_RenderLine(renderer, 0, 0, rect.w, rect.h);
+            }
         }
     }
 }
@@ -55,8 +62,8 @@ void loop()
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
 
-        /* Re-create when window has been resized */
-        if (e.type == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        /* Re-create when window surface has been resized */
+        if (e.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
 
             SDL_DestroyRenderer(renderer);
 
@@ -67,7 +74,7 @@ void loop()
             SDL_RenderClear(renderer);
         }
 
-        if (e.type == SDL_QUIT) {
+        if (e.type == SDL_EVENT_QUIT) {
             done = 1;
 #ifdef __EMSCRIPTEN__
             emscripten_cancel_main_loop();
@@ -75,7 +82,7 @@ void loop()
             return;
         }
 
-        if ((e.type == SDL_KEYDOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
+        if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
             done = 1;
 #ifdef __EMSCRIPTEN__
             emscripten_cancel_main_loop();

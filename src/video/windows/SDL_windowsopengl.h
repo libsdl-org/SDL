@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -76,7 +76,7 @@ struct SDL_GLDriverData
     } es_profile_max_supported_version;
 
     /* *INDENT-OFF* */ /* clang-format off */
-    void *(WINAPI *wglGetProcAddress)(const char *proc);
+    PROC (WINAPI *wglGetProcAddress)(const char *proc);
     HGLRC (WINAPI *wglCreateContext)(HDC hdc);
     BOOL (WINAPI *wglDeleteContext)(HGLRC hglrc);
     BOOL (WINAPI *wglMakeCurrent)(HDC hdc, HGLRC hglrc);
@@ -103,7 +103,7 @@ struct SDL_GLDriverData
 
 /* OpenGL functions */
 extern int WIN_GL_LoadLibrary(_THIS, const char *path);
-extern void *WIN_GL_GetProcAddress(_THIS, const char *proc);
+extern SDL_FunctionPointer WIN_GL_GetProcAddress(_THIS, const char *proc);
 extern void WIN_GL_UnloadLibrary(_THIS);
 extern SDL_bool WIN_GL_UseEGL(_THIS);
 extern int WIN_GL_SetupWindow(_THIS, SDL_Window *window);
@@ -111,9 +111,9 @@ extern SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window *window);
 extern int WIN_GL_MakeCurrent(_THIS, SDL_Window *window,
                               SDL_GLContext context);
 extern int WIN_GL_SetSwapInterval(_THIS, int interval);
-extern int WIN_GL_GetSwapInterval(_THIS);
+extern int WIN_GL_GetSwapInterval(_THIS, int *interval);
 extern int WIN_GL_SwapWindow(_THIS, SDL_Window *window);
-extern void WIN_GL_DeleteContext(_THIS, SDL_GLContext context);
+extern int WIN_GL_DeleteContext(_THIS, SDL_GLContext context);
 extern void WIN_GL_InitExtensions(_THIS);
 extern SDL_bool WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window *fromWindow, SDL_Window *toWindow);
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,7 +35,7 @@ typedef struct SDL_GLDriverData
     uint32_t swapinterval;
 } SDL_GLDriverData;
 
-extern void *PSP_GL_GetProcAddress(_THIS, const char *proc);
+extern SDL_FunctionPointer PSP_GL_GetProcAddress(_THIS, const char *proc);
 extern int PSP_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 extern void PSP_GL_SwapBuffers(_THIS);
 
@@ -45,6 +45,6 @@ extern SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window *window);
 extern int PSP_GL_LoadLibrary(_THIS, const char *path);
 extern void PSP_GL_UnloadLibrary(_THIS);
 extern int PSP_GL_SetSwapInterval(_THIS, int interval);
-extern int PSP_GL_GetSwapInterval(_THIS);
+extern int PSP_GL_GetSwapInterval(_THIS, int *interval);
 
 #endif /* SDL_pspgl_c_h_ */

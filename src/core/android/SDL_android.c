@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -74,7 +74,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     JNIEnv *env, jclass jcls,
     jint surfaceWidth, jint surfaceHeight,
-    jint deviceWidth, jint deviceHeight, jfloat rate);
+    jint deviceWidth, jint deviceHeight, jfloat density, jfloat rate);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
     JNIEnv *env, jclass cls);
@@ -168,7 +168,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "nativeSetupJNI", "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
     { "nativeRunMain", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
     { "onNativeDropFile", "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
-    { "nativeSetScreenResolution", "(IIIIF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
+    { "nativeSetScreenResolution", "(IIIIFF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
     { "onNativeResize", "()V", SDL_JAVA_INTERFACE(onNativeResize) },
     { "onNativeSurfaceCreated", "()V", SDL_JAVA_INTERFACE(onNativeSurfaceCreated) },
     { "onNativeSurfaceChanged", "()V", SDL_JAVA_INTERFACE(onNativeSurfaceChanged) },
@@ -304,7 +304,6 @@ static jmethodID midClipboardSetText;
 static jmethodID midCreateCustomCursor;
 static jmethodID midDestroyCustomCursor;
 static jmethodID midGetContext;
-static jmethodID midGetDisplayDPI;
 static jmethodID midGetManifestEnvironmentVariables;
 static jmethodID midGetNativeSurface;
 static jmethodID midInitTouch;
@@ -593,7 +592,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midCreateCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "createCustomCursor", "([IIIII)I");
     midDestroyCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "destroyCustomCursor", "(I)V");
     midGetContext = (*env)->GetStaticMethodID(env, mActivityClass, "getContext", "()Landroid/content/Context;");
-    midGetDisplayDPI = (*env)->GetStaticMethodID(env, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
     midGetManifestEnvironmentVariables = (*env)->GetStaticMethodID(env, mActivityClass, "getManifestEnvironmentVariables", "()Z");
     midGetNativeSurface = (*env)->GetStaticMethodID(env, mActivityClass, "getNativeSurface", "()Landroid/view/Surface;");
     midInitTouch = (*env)->GetStaticMethodID(env, mActivityClass, "initTouch", "()V");
@@ -624,7 +622,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midCreateCustomCursor ||
         !midDestroyCustomCursor ||
         !midGetContext ||
-        !midGetDisplayDPI ||
         !midGetManifestEnvironmentVariables ||
         !midGetNativeSurface ||
         !midInitTouch ||
@@ -870,11 +867,11 @@ retry:
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     JNIEnv *env, jclass jcls,
     jint surfaceWidth, jint surfaceHeight,
-    jint deviceWidth, jint deviceHeight, jfloat rate)
+    jint deviceWidth, jint deviceHeight, jfloat density, jfloat rate)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, rate);
+    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, density, rate);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -901,8 +898,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
     displayOrientation = (SDL_DisplayOrientation)orientation;
 
     if (Android_Window) {
-        SDL_VideoDisplay *display = SDL_GetDisplay(0);
-        SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
+        SDL_VideoDisplay *display = SDL_GetVideoDisplay(SDL_GetPrimaryDisplay());
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
@@ -1034,7 +1031,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, j
     SDL_LockMutex(Android_ActivityMutex);
 
     if (Android_Window) {
-        SDL_WindowData *data = (SDL_WindowData *)Android_Window->driverdata;
+        SDL_WindowData *data = Android_Window->driverdata;
 
         data->native_window = Android_JNI_GetNativeWindow();
         if (data->native_window == NULL) {
@@ -1053,7 +1050,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 #if SDL_VIDEO_OPENGL_EGL
     if (Android_Window) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        SDL_WindowData *data = (SDL_WindowData *)Android_Window->driverdata;
+        SDL_WindowData *data = Android_Window->driverdata;
 
         /* If the surface has been previously destroyed by onNativeSurfaceDestroyed, recreate it here */
         if (data->egl_surface == EGL_NO_SURFACE) {
@@ -1078,7 +1075,7 @@ retry:
 
     if (Android_Window) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        SDL_WindowData *data = (SDL_WindowData *)Android_Window->driverdata;
+        SDL_WindowData *data = Android_Window->driverdata;
 
         /* Wait for Main thread being paused and context un-activated to release 'egl_surface' */
         if (!data->backup_done) {
@@ -1192,7 +1189,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
     JNIEnv *env, jclass cls)
 {
-    SDL_SendAppEvent(SDL_APP_LOWMEMORY);
+    SDL_SendAppEvent(SDL_EVENT_LOW_MEMORY);
 }
 
 /* Locale
@@ -1200,7 +1197,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeLocaleChanged)(
     JNIEnv *env, jclass cls)
 {
-    SDL_SendAppEvent(SDL_LOCALECHANGED);
+    SDL_SendAppEvent(SDL_EVENT_LOCALE_CHANGED);
 }
 
 /* Send Quit event to "SDLThread" thread */
@@ -1208,17 +1205,17 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
     JNIEnv *env, jclass cls)
 {
     /* Discard previous events. The user should have handled state storage
-     * in SDL_APP_WILLENTERBACKGROUND. After nativeSendQuit() is called, no
-     * events other than SDL_QUIT and SDL_APP_TERMINATING should fire */
-    SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
-    /* Inject a SDL_QUIT event */
+     * in SDL_EVENT_WILL_ENTER_BACKGROUND. After nativeSendQuit() is called, no
+     * events other than SDL_EVENT_QUIT and SDL_EVENT_TERMINATING should fire */
+    SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
+    /* Inject a SDL_EVENT_QUIT event */
     SDL_SendQuit();
-    SDL_SendAppEvent(SDL_APP_TERMINATING);
+    SDL_SendAppEvent(SDL_EVENT_TERMINATING);
     /* Robustness: clear any pending Pause */
     while (SDL_SemTryWait(Android_PauseSem) == 0) {
         /* empty */
     }
-    /* Resume the event loop so that the app can catch SDL_QUIT which
+    /* Resume the event loop so that the app can catch SDL_EVENT_QUIT which
      * should now be the top event in the event queue. */
     SDL_SemPost(Android_ResumeSem);
 }
@@ -1285,7 +1282,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
 
     if (Android_Window) {
         __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeFocusChanged()");
-        SDL_SendWindowEvent(Android_Window, (hasFocus ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST), 0, 0);
+        SDL_SendWindowEvent(Android_Window, (hasFocus ? SDL_EVENT_WINDOW_FOCUS_GAINED : SDL_EVENT_WINDOW_FOCUS_LOST), 0, 0);
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
@@ -1648,37 +1645,6 @@ int Android_JNI_OpenAudioDevice(int iscapture, int device_id, SDL_AudioSpec *spe
 SDL_DisplayOrientation Android_JNI_GetDisplayOrientation(void)
 {
     return displayOrientation;
-}
-
-int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-
-    jobject jDisplayObj = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetDisplayDPI);
-    jclass jDisplayClass = (*env)->GetObjectClass(env, jDisplayObj);
-
-    jfieldID fidXdpi = (*env)->GetFieldID(env, jDisplayClass, "xdpi", "F");
-    jfieldID fidYdpi = (*env)->GetFieldID(env, jDisplayClass, "ydpi", "F");
-    jfieldID fidDdpi = (*env)->GetFieldID(env, jDisplayClass, "densityDpi", "I");
-
-    float nativeXdpi = (*env)->GetFloatField(env, jDisplayObj, fidXdpi);
-    float nativeYdpi = (*env)->GetFloatField(env, jDisplayObj, fidYdpi);
-    int nativeDdpi = (*env)->GetIntField(env, jDisplayObj, fidDdpi);
-
-    (*env)->DeleteLocalRef(env, jDisplayObj);
-    (*env)->DeleteLocalRef(env, jDisplayClass);
-
-    if (ddpi) {
-        *ddpi = (float)nativeDdpi;
-    }
-    if (xdpi) {
-        *xdpi = nativeXdpi;
-    }
-    if (ydpi) {
-        *ydpi = nativeYdpi;
-    }
-
-    return 0;
 }
 
 void *Android_JNI_GetAudioBuffer(void)
@@ -2185,9 +2151,9 @@ int Android_JNI_SendMessage(int command, int param)
     return success ? 0 : -1;
 }
 
-void Android_JNI_SuspendScreenSaver(SDL_bool suspend)
+int Android_JNI_SuspendScreenSaver(SDL_bool suspend)
 {
-    Android_JNI_SendMessage(COMMAND_SET_KEEP_SCREEN_ON, (suspend == SDL_FALSE) ? 0 : 1);
+    return Android_JNI_SendMessage(COMMAND_SET_KEEP_SCREEN_ON, (suspend == SDL_FALSE) ? 0 : 1);
 }
 
 void Android_JNI_ShowTextInput(SDL_Rect *inputRect)
@@ -2429,19 +2395,22 @@ const char *SDL_AndroidGetInternalStoragePath(void)
     return s_AndroidInternalFilesPath;
 }
 
-int SDL_AndroidGetExternalStorageState(void)
+int SDL_AndroidGetExternalStorageState(Uint32 *state)
 {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
     jmethodID mid;
     jclass cls;
     jstring stateString;
-    const char *state;
+    const char *state_string;
     int stateFlags;
 
     JNIEnv *env = Android_JNI_GetEnv();
     if (!LocalReferenceHolder_Init(&refs, env)) {
         LocalReferenceHolder_Cleanup(&refs);
-        return 0;
+        if (state) {
+            *state = 0;
+        }
+        return -1;
     }
 
     cls = (*env)->FindClass(env, "android/os/Environment");
@@ -2449,23 +2418,26 @@ int SDL_AndroidGetExternalStorageState(void)
                                     "getExternalStorageState", "()Ljava/lang/String;");
     stateString = (jstring)(*env)->CallStaticObjectMethod(env, cls, mid);
 
-    state = (*env)->GetStringUTFChars(env, stateString, NULL);
+    state_string = (*env)->GetStringUTFChars(env, stateString, NULL);
 
     /* Print an info message so people debugging know the storage state */
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "external storage state: %s", state);
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "external storage state: %s", state_string);
 
-    if (SDL_strcmp(state, "mounted") == 0) {
+    if (SDL_strcmp(state_string, "mounted") == 0) {
         stateFlags = SDL_ANDROID_EXTERNAL_STORAGE_READ |
                      SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
-    } else if (SDL_strcmp(state, "mounted_ro") == 0) {
+    } else if (SDL_strcmp(state_string, "mounted_ro") == 0) {
         stateFlags = SDL_ANDROID_EXTERNAL_STORAGE_READ;
     } else {
         stateFlags = 0;
     }
-    (*env)->ReleaseStringUTFChars(env, stateString, state);
+    (*env)->ReleaseStringUTFChars(env, stateString, state_string);
 
     LocalReferenceHolder_Cleanup(&refs);
-    return stateFlags;
+    if (state) {
+        *state = stateFlags;
+    }
+    return 0;
 }
 
 const char *SDL_AndroidGetExternalStoragePath(void)
@@ -2625,7 +2597,7 @@ int Android_JNI_GetLocale(char *buf, size_t buflen)
 
     SDL_assert(buflen > 6);
 
-    /* Need to re-create the asset manager if locale has changed (SDL_LOCALECHANGED) */
+    /* Need to re-create the asset manager if locale has changed (SDL_EVENT_LOCALE_CHANGED) */
     Internal_Android_Destroy_AssetManager();
 
     if (asset_manager == NULL) {

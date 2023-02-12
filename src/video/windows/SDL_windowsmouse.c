@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -173,7 +173,7 @@ static SDL_Cursor *WIN_CreateBlankCursor()
     SDL_Surface *surface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_ARGB8888);
     if (surface) {
         cursor = WIN_CreateCursor(surface, 0, 0);
-        SDL_FreeSurface(surface);
+        SDL_DestroySurface(surface);
     }
     return cursor;
 }
@@ -277,33 +277,31 @@ void WIN_SetCursorPos(int x, int y)
     }
 }
 
-static void WIN_WarpMouse(SDL_Window *window, int x, int y)
+static int WIN_WarpMouse(SDL_Window *window, float x, float y)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
     POINT pt;
 
     /* Don't warp the mouse while we're doing a modal interaction */
     if (data->in_title_click || data->focus_click_pending) {
-        return;
+        return 0;
     }
 
-    pt.x = x;
-    pt.y = y;
+    WIN_ClientPointFromSDLFloat(window, x, y, &pt.x, &pt.y);
     ClientToScreen(hwnd, &pt);
     WIN_SetCursorPos(pt.x, pt.y);
 
     /* Send the exact mouse motion associated with this warp */
     SDL_SendMouseMotion(0, window, SDL_GetMouse()->mouseID, 0, x, y);
+    return 0;
 }
 
-static int WIN_WarpMouseGlobal(int x, int y)
+static int WIN_WarpMouseGlobal(float x, float y)
 {
     POINT pt;
 
-    WIN_ScreenPointFromSDL(&x, &y, NULL);
-    pt.x = x;
-    pt.y = y;
+    WIN_ScreenPointFromSDLFloat(x, y, &pt.x, &pt.y, NULL);
     SetCursorPos(pt.x, pt.y);
     return 0;
 }
@@ -316,13 +314,13 @@ static int WIN_SetRelativeMouseMode(SDL_bool enabled)
 static int WIN_CaptureMouse(SDL_Window *window)
 {
     if (window) {
-        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         SetCapture(data->hwnd);
     } else {
         SDL_Window *focus_window = SDL_GetMouseFocus();
 
         if (focus_window) {
-            SDL_WindowData *data = (SDL_WindowData *)focus_window->driverdata;
+            SDL_WindowData *data = focus_window->driverdata;
             if (!data->mouse_tracked) {
                 SDL_SetMouseFocus(NULL);
             }
@@ -333,16 +331,14 @@ static int WIN_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 WIN_GetGlobalMouseState(int *x, int *y)
+static Uint32 WIN_GetGlobalMouseState(float *x, float *y)
 {
     Uint32 retval = 0;
     POINT pt = { 0, 0 };
     SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
 
     GetCursorPos(&pt);
-    *x = (int)pt.x;
-    *y = (int)pt.y;
-    WIN_ScreenPointToSDL(x, y);
+    WIN_ScreenPointToSDLFloat(pt.x, pt.y, x, y);
 
     retval |= GetAsyncKeyState(!swapButtons ? VK_LBUTTON : VK_RBUTTON) & 0x8000 ? SDL_BUTTON_LMASK : 0;
     retval |= GetAsyncKeyState(!swapButtons ? VK_RBUTTON : VK_LBUTTON) & 0x8000 ? SDL_BUTTON_RMASK : 0;

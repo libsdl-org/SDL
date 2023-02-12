@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 #define SDL_keyboard_c_h_
 
 /* Initialize the keyboard subsystem */
-extern int SDL_KeyboardInit(void);
+extern int SDL_InitKeyboard(void);
 
 /* Get the default keymap */
 extern void SDL_GetDefaultKeymap(SDL_Keycode *keymap);
@@ -52,6 +52,7 @@ extern int SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch);
 /* Send a keyboard key event */
 extern int SDL_SendKeyboardKey(Uint64 timestamp, Uint8 state, SDL_Scancode scancode);
 extern int SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode);
+extern int SDL_SendKeyboardKeyIgnoreModifiers(Uint64 timestamp, Uint8 state, SDL_Scancode scancode);
 
 /* This is for platforms that don't know the keymap but can report scancode and keycode directly.
    Most platforms should prefer to optionally call SDL_SetKeymap and then use SDL_SendKeyboardKey. */
@@ -70,7 +71,7 @@ extern int SDL_SendKeyboardText(const char *text);
 extern int SDL_SendEditingText(const char *text, int start, int length);
 
 /* Shutdown the keyboard subsystem */
-extern void SDL_KeyboardQuit(void);
+extern void SDL_QuitKeyboard(void);
 
 /* Convert to UTF-8 */
 extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);

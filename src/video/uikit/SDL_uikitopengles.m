@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,8 +51,7 @@
 
 @end
 
-void *
-UIKit_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer UIKit_GL_GetProcAddress(_THIS, const char *proc)
 {
     /* Look through all SO's for the proc symbol.  Here's why:
      * -Looking for the path to the OpenGL Library seems not to work in the iOS Simulator.
@@ -78,25 +77,6 @@ int UIKit_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     }
 
     return 0;
-}
-
-void UIKit_GL_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-        UIView *view = data.viewcontroller.view;
-        if ([view isKindOfClass:[SDL_uikitopenglview class]]) {
-            SDL_uikitopenglview *glview = (SDL_uikitopenglview *)view;
-            if (w) {
-                *w = glview.backingWidth;
-            }
-            if (h) {
-                *h = glview.backingHeight;
-            }
-        } else {
-            SDL_GetWindowSize(window, w, h);
-        }
-    }
 }
 
 int UIKit_GL_LoadLibrary(_THIS, const char *path)
@@ -128,13 +108,12 @@ int UIKit_GL_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-SDL_GLContext
-UIKit_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDLEAGLContext *context = nil;
         SDL_uikitopenglview *view;
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        SDL_WindowData *data = window->driverdata;
         CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
         EAGLSharegroup *sharegroup = nil;
         CGFloat scale = 1.0;
@@ -206,7 +185,7 @@ UIKit_GL_CreateContext(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
+int UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     @autoreleasepool {
         /* The context was retained in SDL_GL_CreateContext, so we release it
@@ -214,6 +193,7 @@ void UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
          * context is deallocated. */
         CFRelease(context);
     }
+    return 0;
 }
 
 void UIKit_GL_RestoreCurrentContext(void)

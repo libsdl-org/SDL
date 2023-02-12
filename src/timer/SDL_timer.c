@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 
 #if !defined(__EMSCRIPTEN__) || !SDL_THREADS_DISABLED
 
-typedef struct _SDL_Timer
+typedef struct SDL_Timer
 {
     int timerID;
     SDL_TimerCallback callback;
@@ -35,14 +35,14 @@ typedef struct _SDL_Timer
     Uint64 interval;
     Uint64 scheduled;
     SDL_atomic_t canceled;
-    struct _SDL_Timer *next;
+    struct SDL_Timer *next;
 } SDL_Timer;
 
-typedef struct _SDL_TimerMap
+typedef struct SDL_TimerMap
 {
     int timerID;
     SDL_Timer *timer;
-    struct _SDL_TimerMap *next;
+    struct SDL_TimerMap *next;
 } SDL_TimerMap;
 
 /* The timers are kept in a sorted list */
@@ -202,7 +202,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
     return 0;
 }
 
-int SDL_TimerInit(void)
+int SDL_InitTimers(void)
 {
     SDL_TimerData *data = &SDL_timer_data;
 
@@ -224,7 +224,7 @@ int SDL_TimerInit(void)
         /* Timer threads use a callback into the app, so we can't set a limited stack size here. */
         data->thread = SDL_CreateThreadInternal(SDL_TimerThread, name, 0, data);
         if (!data->thread) {
-            SDL_TimerQuit();
+            SDL_QuitTimers();
             return -1;
         }
 
@@ -233,7 +233,7 @@ int SDL_TimerInit(void)
     return 0;
 }
 
-void SDL_TimerQuit(void)
+void SDL_QuitTimers(void)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_Timer *timer;
@@ -280,7 +280,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
 
     SDL_AtomicLock(&data->lock);
     if (!SDL_AtomicGet(&data->active)) {
-        if (SDL_TimerInit() < 0) {
+        if (SDL_InitTimers() < 0) {
             SDL_AtomicUnlock(&data->lock);
             return 0;
         }
@@ -370,14 +370,14 @@ SDL_bool SDL_RemoveTimer(SDL_TimerID id)
 #include <emscripten/emscripten.h>
 #include <emscripten/eventloop.h>
 
-typedef struct _SDL_TimerMap
+typedef struct SDL_TimerMap
 {
     int timerID;
     int timeoutID;
     Uint32 interval;
     SDL_TimerCallback callback;
     void *param;
-    struct _SDL_TimerMap *next;
+    struct SDL_TimerMap *next;
 } SDL_TimerMap;
 
 typedef struct
@@ -399,12 +399,12 @@ static void SDL_Emscripten_TimerHelper(void *userdata)
     }
 }
 
-int SDL_TimerInit(void)
+int SDL_InitTimers(void)
 {
     return 0;
 }
 
-void SDL_TimerQuit(void)
+void SDL_QuitTimers(void)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *entry;
@@ -524,7 +524,7 @@ static Uint32 CalculateGCD(Uint32 a, Uint32 b)
     return CalculateGCD(b, (a % b));
 }
 
-void SDL_TicksInit(void)
+void SDL_InitTicks(void)
 {
     Uint64 tick_freq;
     Uint32 gcd;
@@ -555,7 +555,7 @@ void SDL_TicksInit(void)
     }
 }
 
-void SDL_TicksQuit(void)
+void SDL_QuitTicks(void)
 {
     SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
                         SDL_TimerResolutionChanged, NULL);
@@ -571,7 +571,7 @@ SDL_GetTicksNS(void)
     Uint64 starting_value, value;
 
     if (!tick_start) {
-        SDL_TicksInit();
+        SDL_InitTicks();
     }
 
     starting_value = (SDL_GetPerformanceCounter() - tick_start);
@@ -586,7 +586,7 @@ Uint64 SDL_GetTicks(void)
     Uint64 starting_value, value;
 
     if (!tick_start) {
-        SDL_TicksInit();
+        SDL_InitTicks();
     }
 
     starting_value = (SDL_GetPerformanceCounter() - tick_start);

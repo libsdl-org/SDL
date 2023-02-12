@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
 
-typedef struct SDL_WindowData
+struct SDL_WindowData
 {
     SDL_Window *window;
     SDL_Surface *surface;
@@ -41,10 +41,10 @@ typedef struct SDL_WindowData
 
     SDL_bool external_size;
 
-    int requested_fullscreen_mode;
+    Uint32 fullscreen_mode_flags;
     SDL_bool fullscreen_resize;
 
     SDL_bool has_pointer_lock;
-} SDL_WindowData;
+};
 
 #endif /* SDL_emscriptenvideo_h_ */

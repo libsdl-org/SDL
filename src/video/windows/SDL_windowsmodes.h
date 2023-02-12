@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,26 +23,27 @@
 #ifndef SDL_windowsmodes_h_
 #define SDL_windowsmodes_h_
 
-typedef struct
+struct SDL_DisplayData
 {
     WCHAR DeviceName[32];
     HMONITOR MonitorHandle;
     SDL_bool IsValid;
     SDL_Rect bounds;
-} SDL_DisplayData;
+};
 
-typedef struct
+struct SDL_DisplayModeData
 {
     DEVMODE DeviceMode;
-} SDL_DisplayModeData;
+};
 
 extern int WIN_InitModes(_THIS);
 extern int WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 extern int WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 extern void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut);
+extern void WIN_ScreenPointFromSDLFloat(float x, float y, LONG *xOut, LONG *yOut, int *dpiOut);
 extern void WIN_ScreenPointToSDL(int *x, int *y);
-extern int WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
-extern void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+extern void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut);
+extern int WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
 extern int WIN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void WIN_RefreshDisplays(_THIS);
 extern void WIN_QuitModes(_THIS);

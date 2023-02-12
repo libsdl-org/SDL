@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,7 @@
 #ifndef SDL_sensor_c_h_
 #define SDL_sensor_c_h_
 
-struct _SDL_SensorDriver;
+struct SDL_SensorDriver;
 
 /* Useful functions and variables from SDL_sensor.c */
 
@@ -31,10 +31,16 @@ struct _SDL_SensorDriver;
 extern SDL_SensorID SDL_GetNextSensorInstanceID(void);
 
 /* Initialization and shutdown functions */
-extern int SDL_SensorInit(void);
-extern void SDL_SensorQuit(void);
+extern int SDL_InitSensors(void);
+extern void SDL_QuitSensors(void);
+
+extern void SDL_LockSensors(void);
+extern void SDL_UnlockSensors(void);
+
+/* Function to return whether there are any sensors opened by the application */
+extern SDL_bool SDL_SensorsOpened(void);
 
 /* Internal event queueing functions */
-extern int SDL_PrivateSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
+extern int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
 
 #endif /* SDL_sensor_c_h_ */

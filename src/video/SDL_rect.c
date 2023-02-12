@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -90,22 +90,22 @@ SDL_GetSpanEnclosingRect(int width, int height,
 #define POINTTYPE                SDL_Point
 #define SCALARTYPE               int
 #define COMPUTEOUTCODE           ComputeOutCode
-#define SDL_HASINTERSECTION      SDL_HasIntersection
-#define SDL_INTERSECTRECT        SDL_IntersectRect
+#define SDL_HASINTERSECTION      SDL_HasRectIntersection
+#define SDL_INTERSECTRECT        SDL_GetRectIntersection
 #define SDL_RECTEMPTY            SDL_RectEmpty
-#define SDL_UNIONRECT            SDL_UnionRect
-#define SDL_ENCLOSEPOINTS        SDL_EnclosePoints
-#define SDL_INTERSECTRECTANDLINE SDL_IntersectRectAndLine
+#define SDL_UNIONRECT            SDL_GetRectUnion
+#define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPoints
+#define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersection
 #include "SDL_rect_impl.h"
 
 #define RECTTYPE                 SDL_FRect
 #define POINTTYPE                SDL_FPoint
 #define SCALARTYPE               float
-#define COMPUTEOUTCODE           ComputeOutCodeF
-#define SDL_HASINTERSECTION      SDL_HasIntersectionF
-#define SDL_INTERSECTRECT        SDL_IntersectFRect
-#define SDL_RECTEMPTY            SDL_FRectEmpty
-#define SDL_UNIONRECT            SDL_UnionFRect
-#define SDL_ENCLOSEPOINTS        SDL_EncloseFPoints
-#define SDL_INTERSECTRECTANDLINE SDL_IntersectFRectAndLine
+#define COMPUTEOUTCODE           ComputeOutCodeFloat
+#define SDL_HASINTERSECTION      SDL_HasRectIntersectionFloat
+#define SDL_INTERSECTRECT        SDL_GetRectIntersectionFloat
+#define SDL_RECTEMPTY            SDL_RectEmptyFloat
+#define SDL_UNIONRECT            SDL_GetRectUnionFloat
+#define SDL_ENCLOSEPOINTS        SDL_GetRectEnclosingPointsFloat
+#define SDL_INTERSECTRECTANDLINE SDL_GetRectAndLineIntersectionFloat
 #include "SDL_rect_impl.h"

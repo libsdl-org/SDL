@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -59,10 +59,11 @@ SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
     {
         size_t dst_size;
         if (SDL_CalculateYUVSize(format, w, h, &dst_size, NULL) < 0) {
+            SDL_SW_DestroyYUVTexture(swdata);
             SDL_OutOfMemory();
             return NULL;
         }
-        swdata->pixels = (Uint8 *)SDL_SIMDAlloc(dst_size);
+        swdata->pixels = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), dst_size);
         if (!swdata->pixels) {
             SDL_SW_DestroyYUVTexture(swdata);
             SDL_OutOfMemory();
@@ -342,7 +343,7 @@ int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
 
     /* Make sure we're set up to display in the desired format */
     if (target_format != swdata->target_format && swdata->display) {
-        SDL_FreeSurface(swdata->display);
+        SDL_DestroySurface(swdata->display);
         swdata->display = NULL;
     }
 
@@ -393,9 +394,9 @@ int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
 void SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture *swdata)
 {
     if (swdata) {
-        SDL_SIMDFree(swdata->pixels);
-        SDL_FreeSurface(swdata->stretch);
-        SDL_FreeSurface(swdata->display);
+        SDL_aligned_free(swdata->pixels);
+        SDL_DestroySurface(swdata->stretch);
+        SDL_DestroySurface(swdata->display);
         SDL_free(swdata);
     }
 }

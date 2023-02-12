@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -84,13 +84,13 @@ iteration()
     SDL_Event e;
     SDL_AudioDeviceID dev;
     while (SDL_PollEvent(&e)) {
-        if (e.type == SDL_QUIT) {
+        if (e.type == SDL_EVENT_QUIT) {
             done = 1;
-        } else if (e.type == SDL_KEYUP) {
+        } else if (e.type == SDL_EVENT_KEY_UP) {
             if (e.key.keysym.sym == SDLK_ESCAPE) {
                 done = 1;
             }
-        } else if (e.type == SDL_AUDIODEVICEADDED) {
+        } else if (e.type == SDL_EVENT_AUDIO_DEVICE_ADDED) {
             int index = e.adevice.which;
             int iscapture = e.adevice.iscapture;
             const char *name = SDL_GetAudioDeviceName(index, iscapture);
@@ -110,10 +110,10 @@ iteration()
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open '%s': %s\n", name, SDL_GetError());
                 } else {
                     SDL_Log("Opened '%s' as %u\n", name, (unsigned int)dev);
-                    SDL_PauseAudioDevice(dev, 0);
+                    SDL_PlayAudioDevice(dev);
                 }
             }
-        } else if (e.type == SDL_AUDIODEVICEREMOVED) {
+        } else if (e.type == SDL_EVENT_AUDIO_DEVICE_REMOVED) {
             dev = (SDL_AudioDeviceID)e.adevice.which;
             SDL_Log("%s device %u removed.\n", devtypestr(e.adevice.iscapture), (unsigned int)dev);
             SDL_CloseAudioDevice(dev);
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
     /* Clean up on signal */
     /* Quit audio first, then free WAV. This prevents access violations in the audio threads. */
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
-    SDL_FreeWAV(sound);
+    SDL_free(sound);
     SDL_free(filename);
     SDL_Quit();
     return 0;

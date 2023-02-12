@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -428,7 +428,7 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
         Uint32 format;
 
         /* Get the pixel format */
-        format = SDL_MasksToPixelFormatEnum(biBitCount, Rmask, Gmask, Bmask, Amask);
+        format = SDL_GetPixelFormatEnumForMasks(biBitCount, Rmask, Gmask, Bmask, Amask);
         surface = SDL_CreateSurface(biWidth, biHeight, format);
 
         if (surface == NULL) {
@@ -616,7 +616,7 @@ done:
         if (src) {
             SDL_RWseek(src, fp_offset, SDL_RW_SEEK_SET);
         }
-        SDL_FreeSurface(surface);
+        SDL_DestroySurface(surface);
         surface = NULL;
     }
     if (freesrc && src) {
@@ -861,7 +861,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
         /* Close it up.. */
         SDL_UnlockSurface(intermediate_surface);
         if (intermediate_surface != surface) {
-            SDL_FreeSurface(intermediate_surface);
+            SDL_DestroySurface(intermediate_surface);
         }
     }
 

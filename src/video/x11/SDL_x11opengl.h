@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,8 @@
 #include <SDL3/SDL_opengl.h>
 #include <GL/glx.h>
 
+typedef void (*__GLXextFuncPtr)(void);
+
 struct SDL_GLDriverData
 {
     int errorBase, eventBase;
@@ -49,7 +51,7 @@ struct SDL_GLDriverData
     } es_profile_max_supported_version;
 
     Bool (*glXQueryExtension)(Display *, int *, int *);
-    void *(*glXGetProcAddress)(const GLubyte *);
+    __GLXextFuncPtr (*glXGetProcAddress)(const GLubyte *);
     XVisualInfo *(*glXChooseVisual)(Display *, int, int *);
     GLXContext (*glXCreateContext)(Display *, XVisualInfo *, GLXContext, Bool);
     GLXContext (*glXCreateContextAttribsARB)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
@@ -67,7 +69,7 @@ struct SDL_GLDriverData
 
 /* OpenGL functions */
 extern int X11_GL_LoadLibrary(_THIS, const char *path);
-extern void *X11_GL_GetProcAddress(_THIS, const char *proc);
+extern SDL_FunctionPointer X11_GL_GetProcAddress(_THIS, const char *proc);
 extern void X11_GL_UnloadLibrary(_THIS);
 extern SDL_bool X11_GL_UseEGL(_THIS);
 extern XVisualInfo *X11_GL_GetVisual(_THIS, Display *display, int screen);
@@ -75,9 +77,9 @@ extern SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window *window);
 extern int X11_GL_MakeCurrent(_THIS, SDL_Window *window,
                               SDL_GLContext context);
 extern int X11_GL_SetSwapInterval(_THIS, int interval);
-extern int X11_GL_GetSwapInterval(_THIS);
+extern int X11_GL_GetSwapInterval(_THIS, int *interval);
 extern int X11_GL_SwapWindow(_THIS, SDL_Window *window);
-extern void X11_GL_DeleteContext(_THIS, SDL_GLContext context);
+extern int X11_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* SDL_VIDEO_OPENGL_GLX */
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,9 +47,7 @@ typedef struct
     int size;
 } SDL_WaylandCursorTheme;
 
-typedef struct SDL_WaylandOutputData SDL_WaylandOutputData;
-
-typedef struct
+struct SDL_VideoData
 {
     SDL_bool initializing;
     struct wl_display *display;
@@ -88,7 +86,7 @@ typedef struct
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
     struct SDL_WaylandTabletManager *tablet_manager;
-    SDL_WaylandOutputData *output_list;
+    SDL_DisplayData *output_list;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct SDL_WaylandTouch *touch;
@@ -100,25 +98,25 @@ typedef struct
 
     int relative_mouse_mode;
     SDL_bool egl_transparency_enabled;
-} SDL_VideoData;
+};
 
-struct SDL_WaylandOutputData
+struct SDL_DisplayData
 {
     SDL_VideoData *videodata;
     struct wl_output *output;
     struct zxdg_output_v1 *xdg_output;
     uint32_t registry_id;
     float scale_factor;
-    int native_width, native_height;
-    int x, y, width, height, refresh, transform;
+    int pixel_width, pixel_height;
+    int x, y, screen_width, screen_height, refresh, transform;
     SDL_DisplayOrientation orientation;
     int physical_width, physical_height;
     float ddpi, hdpi, vdpi;
     SDL_bool has_logical_position, has_logical_size;
-    int index;
+    SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
     int wl_output_done_count;
-    SDL_WaylandOutputData *next;
+    SDL_DisplayData *next;
 };
 
 /* Needed here to get wl_surface declaration, fixes GitHub#4594 */

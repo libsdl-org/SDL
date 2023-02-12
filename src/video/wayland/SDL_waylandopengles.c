@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@
 int Wayland_GLES_LoadLibrary(_THIS, const char *path)
 {
     int ret;
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = _this->driverdata;
 
     ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
 
@@ -50,8 +50,8 @@ int Wayland_GLES_LoadLibrary(_THIS, const char *path)
 SDL_GLContext Wayland_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext context;
-    context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);
-    WAYLAND_wl_display_flush(((SDL_VideoData *)_this->driverdata)->display);
+    context = SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
+    WAYLAND_wl_display_flush(_this->driverdata->display);
 
     return context;
 }
@@ -92,19 +92,19 @@ int Wayland_GLES_SetSwapInterval(_THIS, int interval)
     return 0;
 }
 
-int Wayland_GLES_GetSwapInterval(_THIS)
+int Wayland_GLES_GetSwapInterval(_THIS, int *interval)
 {
     if (!_this->egl_data) {
-        SDL_SetError("EGL not initialized");
-        return 0;
+        return SDL_SetError("EGL not initialized");
     }
 
-    return _this->egl_data->egl_swapinterval;
+    *interval =_this->egl_data->egl_swapinterval;
+    return 0;
 }
 
 int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
     const int swap_interval = _this->egl_data->egl_swapinterval;
 
     /* For windows that we know are hidden, skip swaps entirely, if we don't do
@@ -121,11 +121,10 @@ int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
     /* Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval */
     if (swap_interval != 0) {
-        SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+        SDL_VideoData *videodata = _this->driverdata;
         struct wl_display *display = videodata->display;
-        SDL_VideoDisplay *sdldisplay = SDL_GetDisplayForWindow(window);
-        /* ~10 frames (or 1 sec), so we'll progress even if throttled to zero. */
-        const Uint64 max_wait = SDL_GetTicksNS() + (sdldisplay->current_mode.refresh_rate ? ((SDL_NS_PER_SECOND * 10) / sdldisplay->current_mode.refresh_rate) : SDL_NS_PER_SECOND);
+        /* 1 sec, so we'll progress even if throttled to zero. */
+        const Uint64 max_wait = SDL_NS_PER_SECOND;
         while (SDL_AtomicGet(&data->swap_interval_ready) == 0) {
             Uint64 now;
 
@@ -176,27 +175,28 @@ int Wayland_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     int ret;
 
     if (window && context) {
-        ret = SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *)window->driverdata)->egl_surface, context);
+        ret = SDL_EGL_MakeCurrent(_this, window->driverdata->egl_surface, context);
     } else {
         ret = SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
 
-    WAYLAND_wl_display_flush(((SDL_VideoData *)_this->driverdata)->display);
+    WAYLAND_wl_display_flush(_this->driverdata->display);
 
     _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0); /* see comments on Wayland_GLES_SetSwapInterval. */
 
     return ret;
 }
 
-void Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
+int Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
-    WAYLAND_wl_display_flush(((SDL_VideoData *)_this->driverdata)->display);
+    WAYLAND_wl_display_flush(_this->driverdata->display);
+    return 0;
 }
 
 EGLSurface Wayland_GLES_GetEGLSurface(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *windowdata = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *windowdata = window->driverdata;
 
     return windowdata->egl_surface;
 }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -95,7 +95,7 @@ int Win32_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_Windo
     SDL_TraverseShapeTree(data->mask_tree, &CombineRectRegions, &mask_region);
     SDL_assert(mask_region != NULL);
 
-    SetWindowRgn(((SDL_WindowData *)(shaper->window->driverdata))->hwnd, mask_region, TRUE);
+    SetWindowRgn(shaper->window->driverdata->hwnd, mask_region, TRUE);
 
     return 0;
 }

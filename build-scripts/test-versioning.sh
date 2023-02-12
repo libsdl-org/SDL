@@ -25,10 +25,7 @@ not_ok () {
     failed=1
 }
 
-major=$(sed -ne 's/^set(SDL_MAJOR_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
-minor=$(sed -ne 's/^set(SDL_MINOR_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
-micro=$(sed -ne 's/^set(SDL_MICRO_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
-version="${major}.${minor}.${micro}"
+version=$(sed -Ene 's/^project\(SDL[0-9]+ LANGUAGES C CXX VERSION "([0-9.]*)"\)$/\1/p' CMakeLists.txt)
 
 if [ "$ref_version" = "$version" ]; then
     ok "CMakeLists.txt $version"
@@ -131,8 +128,6 @@ case "$ref_minor" in
 esac
 
 ref="${major}.${minor}.0
-${major}.${minor}.0
-${major}.${minor}.0
 ${major}.${minor}.0"
 
 if [ "$ref" = "$dylib_compat" ]; then
@@ -155,8 +150,6 @@ case "$ref_minor" in
 esac
 
 ref="${major}.${minor}.0
-${major}.${minor}.0
-${major}.${minor}.0
 ${major}.${minor}.0"
 
 if [ "$ref" = "$dylib_cur" ]; then

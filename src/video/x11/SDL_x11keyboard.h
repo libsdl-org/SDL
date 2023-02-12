@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@ extern void X11_UpdateKeymap(_THIS, SDL_bool send_event);
 extern void X11_QuitKeyboard(_THIS);
 extern void X11_StartTextInput(_THIS);
 extern void X11_StopTextInput(_THIS);
-extern void X11_SetTextInputRect(_THIS, const SDL_Rect *rect);
+extern int X11_SetTextInputRect(_THIS, const SDL_Rect *rect);
 extern SDL_bool X11_HasScreenKeyboardSupport(_THIS);
 extern void X11_ShowScreenKeyboard(_THIS, SDL_Window *window);
 extern void X11_HideScreenKeyboard(_THIS, SDL_Window *window);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -144,15 +144,11 @@ int DUMMY_VideoInit(_THIS)
     /* Use a fake 32-bpp desktop mode */
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
-    mode.w = 1024;
-    mode.h = 768;
-    mode.refresh_rate = 0;
-    mode.driverdata = NULL;
-    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
+    mode.pixel_w = 1024;
+    mode.pixel_h = 768;
+    if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
-
-    SDL_AddDisplayMode(&_this->displays[0], &mode);
 
 #if SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();

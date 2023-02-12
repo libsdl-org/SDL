@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,7 +21,6 @@
 #include "SDL_internal.h"
 
 #include "SDL_blit.h"
-#include "../SDL_intrin.h"
 
 static int SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 static int SDL_LowerSoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
@@ -30,13 +29,13 @@ static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_S
 int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
                     SDL_Surface *dst, const SDL_Rect *dstrect)
 {
-    return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+    return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
 }
 
 int SDL_SoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect,
                           SDL_Surface *dst, const SDL_Rect *dstrect)
 {
-    return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_ScaleModeLinear);
+    return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_LINEAR);
 }
 
 static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
@@ -52,7 +51,7 @@ static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
         return SDL_SetError("Only works with same format surfaces");
     }
 
-    if (scaleMode != SDL_ScaleModeNearest) {
+    if (scaleMode != SDL_SCALEMODE_NEAREST) {
         if (src->format->BytesPerPixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
             return SDL_SetError("Wrong format");
         }
@@ -115,7 +114,7 @@ static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
         src_locked = 1;
     }
 
-    if (scaleMode == SDL_ScaleModeNearest) {
+    if (scaleMode == SDL_SCALEMODE_NEAREST) {
         ret = SDL_LowerSoftStretchNearest(src, srcrect, dst, dstrect);
     } else {
         ret = SDL_LowerSoftStretchLinear(src, srcrect, dst, dstrect);

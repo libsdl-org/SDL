@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -52,7 +52,7 @@ rwops_error_quit(unsigned line, SDL_RWops *rwops)
 {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testfile.c(%d): failed\n", line);
     if (rwops) {
-        rwops->close(rwops); /* This calls SDL_FreeRW(rwops); */
+        rwops->close(rwops); /* This calls SDL_DestroyRW(rwops); */
     }
     cleanup();
     exit(1); /* quit with rwops error (test failed) */

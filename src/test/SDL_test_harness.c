@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -389,6 +389,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     int testSkippedCount = 0;
     int countSum = 0;
     const SDLTest_TestCaseReference **failedTests;
+    char generatedSeed[16 + 1];
 
     /* Sanitize test iterations */
     if (testIterations < 1) {
@@ -397,11 +398,14 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
     /* Generate run see if we don't have one already */
     if (userRunSeed == NULL || userRunSeed[0] == '\0') {
-        runSeed = SDLTest_GenerateRunSeed(16);
-        if (runSeed == NULL) {
+        char *tmp = SDLTest_GenerateRunSeed(16);
+        if (tmp == NULL) {
             SDLTest_LogError("Generating a random seed failed");
             return 2;
         }
+        SDL_memcpy(generatedSeed, tmp, 16 + 1);
+        SDL_free(tmp);
+        runSeed = generatedSeed;
     } else {
         runSeed = userRunSeed;
     }

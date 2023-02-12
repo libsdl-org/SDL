@@ -10,9 +10,9 @@
 /* Test case functions */
 
 /**
- * @brief Check call to SDL_GetKeyboardState with and without numkeys reference.
+ * \brief Check call to SDL_GetKeyboardState with and without numkeys reference.
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyboardState
+ * \sa SDL_GetKeyboardState
  */
 int keyboard_getKeyboardState(void *arg)
 {
@@ -35,9 +35,9 @@ int keyboard_getKeyboardState(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetKeyboardFocus
+ * \brief Check call to SDL_GetKeyboardFocus
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyboardFocus
+ * \sa SDL_GetKeyboardFocus
  */
 int keyboard_getKeyboardFocus(void *arg)
 {
@@ -49,9 +49,9 @@ int keyboard_getKeyboardFocus(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetKeyFromName for known, unknown and invalid name.
+ * \brief Check call to SDL_GetKeyFromName for known, unknown and invalid name.
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyFromName
+ * \sa SDL_GetKeyFromName
  */
 int keyboard_getKeyFromName(void *arg)
 {
@@ -98,7 +98,7 @@ int keyboard_getKeyFromName(void *arg)
 /*
  * Local helper to check for the invalid scancode error message
  */
-void _checkInvalidScancodeError()
+static void checkInvalidScancodeError()
 {
     const char *expectedError = "Parameter 'scancode' is invalid";
     const char *error;
@@ -114,9 +114,9 @@ void _checkInvalidScancodeError()
 }
 
 /**
- * @brief Check call to SDL_GetKeyFromScancode
+ * \brief Check call to SDL_GetKeyFromScancode
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyFromScancode
+ * \sa SDL_GetKeyFromScancode
  */
 int keyboard_getKeyFromScancode(void *arg)
 {
@@ -140,21 +140,21 @@ int keyboard_getKeyFromScancode(void *arg)
     result = SDL_GetKeyFromScancode(-999);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(-999)");
     SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %i, got: %" SDL_PRIs32, SDLK_UNKNOWN, result);
-    _checkInvalidScancodeError();
+    checkInvalidScancodeError();
 
     /* Case where input is invalid (too big) */
     result = SDL_GetKeyFromScancode(999);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(999)");
     SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %i, got: %" SDL_PRIs32, SDLK_UNKNOWN, result);
-    _checkInvalidScancodeError();
+    checkInvalidScancodeError();
 
     return TEST_COMPLETED;
 }
 
 /**
- * @brief Check call to SDL_GetKeyName
+ * \brief Check call to SDL_GetKeyName
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyName
+ * \sa SDL_GetKeyName
  */
 int keyboard_getKeyName(void *arg)
 {
@@ -207,9 +207,9 @@ int keyboard_getKeyName(void *arg)
 }
 
 /**
- * @brief SDL_GetScancodeName negative cases
+ * \brief SDL_GetScancodeName negative cases
  *
- * @sa http://wiki.libsdl.org/SDL_GetScancodeName
+ * \sa SDL_GetScancodeName
  */
 int keyboard_getScancodeNameNegative(void *arg)
 {
@@ -227,15 +227,15 @@ int keyboard_getScancodeNameNegative(void *arg)
     SDLTest_AssertPass("Call to SDL_GetScancodeName(%d/large)", scancode);
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: '%s', got: '%s'", expected, result);
-    _checkInvalidScancodeError();
+    checkInvalidScancodeError();
 
     return TEST_COMPLETED;
 }
 
 /**
- * @brief SDL_GetKeyName negative cases
+ * \brief SDL_GetKeyName negative cases
  *
- * @sa http://wiki.libsdl.org/SDL_GetKeyName
+ * \sa SDL_GetKeyName
  */
 int keyboard_getKeyNameNegative(void *arg)
 {
@@ -260,7 +260,7 @@ int keyboard_getKeyNameNegative(void *arg)
     SDLTest_AssertPass("Call to SDL_GetKeyName(%" SDL_PRIs32 "/negative)", keycode);
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: '%s', got: '%s'", expected, result);
-    _checkInvalidScancodeError();
+    checkInvalidScancodeError();
 
     SDL_ClearError();
     SDLTest_AssertPass("Call to SDL_ClearError()");
@@ -269,10 +269,10 @@ int keyboard_getKeyNameNegative(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetModState and SDL_SetModState
+ * \brief Check call to SDL_GetModState and SDL_SetModState
  *
- * @sa http://wiki.libsdl.org/SDL_GetModState
- * @sa http://wiki.libsdl.org/SDL_SetModState
+ * \sa SDL_GetModState
+ * \sa SDL_SetModState
  */
 int keyboard_getSetModState(void *arg)
 {
@@ -328,10 +328,10 @@ int keyboard_getSetModState(void *arg)
 }
 
 /**
- * @brief Check call to SDL_StartTextInput and SDL_StopTextInput
+ * \brief Check call to SDL_StartTextInput and SDL_StopTextInput
  *
- * @sa http://wiki.libsdl.org/SDL_StartTextInput
- * @sa http://wiki.libsdl.org/SDL_StopTextInput
+ * \sa SDL_StartTextInput
+ * \sa SDL_StopTextInput
  */
 int keyboard_startStopTextInput(void *arg)
 {
@@ -359,7 +359,7 @@ int keyboard_startStopTextInput(void *arg)
 }
 
 /* Internal function to test SDL_SetTextInputRect */
-void _testSetTextInputRect(SDL_Rect refRect)
+static void testSetTextInputRect(SDL_Rect refRect)
 {
     SDL_Rect testRect;
 
@@ -374,9 +374,9 @@ void _testSetTextInputRect(SDL_Rect refRect)
 }
 
 /**
- * @brief Check call to SDL_SetTextInputRect
+ * \brief Check call to SDL_SetTextInputRect
  *
- * @sa http://wiki.libsdl.org/SDL_SetTextInputRect
+ * \sa SDL_SetTextInputRect
  */
 int keyboard_setTextInputRect(void *arg)
 {
@@ -387,63 +387,63 @@ int keyboard_setTextInputRect(void *arg)
     refRect.y = SDLTest_RandomIntegerInRange(1, 50);
     refRect.w = SDLTest_RandomIntegerInRange(10, 50);
     refRect.h = SDLTest_RandomIntegerInRange(10, 50);
-    _testSetTextInputRect(refRect);
+    testSetTextInputRect(refRect);
 
     /* Normal visible refRect, origin 0,0 */
     refRect.x = 0;
     refRect.y = 0;
     refRect.w = SDLTest_RandomIntegerInRange(10, 50);
     refRect.h = SDLTest_RandomIntegerInRange(10, 50);
-    _testSetTextInputRect(refRect);
+    testSetTextInputRect(refRect);
 
     /* 1Pixel refRect */
     refRect.x = SDLTest_RandomIntegerInRange(10, 50);
     refRect.y = SDLTest_RandomIntegerInRange(10, 50);
     refRect.w = 1;
     refRect.h = 1;
-    _testSetTextInputRect(refRect);
+    testSetTextInputRect(refRect);
 
     /* 0pixel refRect */
     refRect.x = 1;
     refRect.y = 1;
     refRect.w = 1;
     refRect.h = 0;
-    _testSetTextInputRect(refRect);
+    testSetTextInputRect(refRect);
 
     /* 0pixel refRect */
     refRect.x = 1;
     refRect.y = 1;
     refRect.w = 0;
     refRect.h = 1;
-    _testSetTextInputRect(refRect);
+    testSetTextInputRect(refRect);
 
     /* 0pixel refRect */
     refRect.x = 1;
     refRect.y = 1;
     refRect.w = 0;
     refRect.h = 0;
-    _testSetTextInputRect(refRect);
+    testSetTextInputRect(refRect);
 
     /* 0pixel refRect */
     refRect.x = 0;
     refRect.y = 0;
     refRect.w = 0;
     refRect.h = 0;
-    _testSetTextInputRect(refRect);
+    testSetTextInputRect(refRect);
 
     /* negative refRect */
     refRect.x = SDLTest_RandomIntegerInRange(-200, -100);
     refRect.y = SDLTest_RandomIntegerInRange(-200, -100);
     refRect.w = 50;
     refRect.h = 50;
-    _testSetTextInputRect(refRect);
+    testSetTextInputRect(refRect);
 
     /* oversized refRect */
     refRect.x = SDLTest_RandomIntegerInRange(1, 50);
     refRect.y = SDLTest_RandomIntegerInRange(1, 50);
     refRect.w = 5000;
     refRect.h = 5000;
-    _testSetTextInputRect(refRect);
+    testSetTextInputRect(refRect);
 
     /* NULL refRect */
     SDL_SetTextInputRect(NULL);
@@ -453,9 +453,9 @@ int keyboard_setTextInputRect(void *arg)
 }
 
 /**
- * @brief Check call to SDL_SetTextInputRect with invalid data
+ * \brief Check call to SDL_SetTextInputRect with invalid data
  *
- * @sa http://wiki.libsdl.org/SDL_SetTextInputRect
+ * \sa SDL_SetTextInputRect
  */
 int keyboard_setTextInputRectNegative(void *arg)
 {
@@ -490,10 +490,10 @@ int keyboard_setTextInputRectNegative(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetScancodeFromKey
+ * \brief Check call to SDL_GetScancodeFromKey
  *
- * @sa http://wiki.libsdl.org/SDL_GetScancodeFromKey
- * @sa http://wiki.libsdl.org/SDL_Keycode
+ * \sa SDL_GetScancodeFromKey
+ * \sa SDL_Keycode
  */
 int keyboard_getScancodeFromKey(void *arg)
 {
@@ -513,10 +513,10 @@ int keyboard_getScancodeFromKey(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetScancodeFromName
+ * \brief Check call to SDL_GetScancodeFromName
  *
- * @sa http://wiki.libsdl.org/SDL_GetScancodeFromName
- * @sa http://wiki.libsdl.org/SDL_Keycode
+ * \sa SDL_GetScancodeFromName
+ * \sa SDL_Keycode
  */
 int keyboard_getScancodeFromName(void *arg)
 {
@@ -568,7 +568,7 @@ int keyboard_getScancodeFromName(void *arg)
 /*
  * Local helper to check for the invalid scancode error message
  */
-void _checkInvalidNameError()
+static void checkInvalidNameError()
 {
     const char *expectedError = "Parameter 'name' is invalid";
     const char *error;
@@ -584,10 +584,10 @@ void _checkInvalidNameError()
 }
 
 /**
- * @brief Check call to SDL_GetScancodeFromName with invalid data
+ * \brief Check call to SDL_GetScancodeFromName with invalid data
  *
- * @sa http://wiki.libsdl.org/SDL_GetScancodeFromName
- * @sa http://wiki.libsdl.org/SDL_Keycode
+ * \sa SDL_GetScancodeFromName
+ * \sa SDL_Keycode
  */
 int keyboard_getScancodeFromNameNegative(void *arg)
 {
@@ -608,21 +608,21 @@ int keyboard_getScancodeFromNameNegative(void *arg)
     SDLTest_AssertPass("Call to SDL_GetScancodeFromName('%s')", name);
     SDL_free((void *)name);
     SDLTest_AssertCheck(scancode == SDL_SCANCODE_UNKNOWN, "Validate return value from SDL_GetScancodeFromName, expected: %i, got: %i", SDL_SCANCODE_UNKNOWN, scancode);
-    _checkInvalidNameError();
+    checkInvalidNameError();
 
     /* Zero length string input */
     name = "";
     scancode = SDL_GetScancodeFromName(name);
     SDLTest_AssertPass("Call to SDL_GetScancodeFromName(NULL)");
     SDLTest_AssertCheck(scancode == SDL_SCANCODE_UNKNOWN, "Validate return value from SDL_GetScancodeFromName, expected: %i, got: %i", SDL_SCANCODE_UNKNOWN, scancode);
-    _checkInvalidNameError();
+    checkInvalidNameError();
 
     /* NULL input */
     name = NULL;
     scancode = SDL_GetScancodeFromName(name);
     SDLTest_AssertPass("Call to SDL_GetScancodeFromName(NULL)");
     SDLTest_AssertCheck(scancode == SDL_SCANCODE_UNKNOWN, "Validate return value from SDL_GetScancodeFromName, expected: %i, got: %i", SDL_SCANCODE_UNKNOWN, scancode);
-    _checkInvalidNameError();
+    checkInvalidNameError();
 
     return TEST_COMPLETED;
 }

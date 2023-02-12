@@ -3,7 +3,7 @@ name: Build (RISC OS)
 on: [push, pull_request]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -26,6 +26,7 @@ jobs:
       if: ${{ contains(matrix.platform.name, 'CMake') }}
       run: |
         cmake -S . -B build -G Ninja \
+          -Wdeprecated -Wdev -Werror \
           -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake \
           -DRISCOS:BOOL=ON \
           -DSDL_GCC_ATOMICS=OFF \
@@ -43,6 +44,9 @@ jobs:
         echo "SDL3_DIR=${{ github.workspace }}/prefix_cmake" >> $GITHUB_ENV
         cmake --install build/
         ( cd ${{ github.workspace }}/prefix_cmake; find ) | LC_ALL=C sort -u
+    - name: Package (CPack)
+      run: |
+        cmake --build build/ --config Release --target package
     - name: Verify CMake configuration files
       run: |
         cmake -S cmake/test -B cmake_config_build -G Ninja \
@@ -51,3 +55,8 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           ${{ matrix.platform.test_args }}
         cmake --build cmake_config_build --verbose
+    - uses: actions/upload-artifact@v3
+      with:
+        if-no-files-found: error
+        name: SDL-riscos
+        path: build/dist/SDL3*

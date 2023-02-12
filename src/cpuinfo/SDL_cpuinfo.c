@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -139,7 +139,7 @@ static int CPU_haveCPUID(void)
     : "%eax", "%ecx"
     );
 #elif (defined(__GNUC__) || defined(__llvm__)) && defined(__x86_64__)
-/* Technically, if this is being compiled under __x86_64__ then it has 
+/* Technically, if this is being compiled under __x86_64__ then it has
    CPUid by definition.  But it's nice to be able to prove it.  :)      */
     __asm__ (
 "        pushfq                      # Get original EFLAGS             \n"
@@ -476,7 +476,7 @@ static int CPU_haveNEON(void)
         AndroidCpuFamily cpu_family = android_getCpuFamily();
         if (cpu_family == ANDROID_CPU_FAMILY_ARM) {
             uint64_t cpu_features = android_getCpuFeatures();
-            if ((cpu_features & ANDROID_CPU_ARM_FEATURE_NEON) != 0) {
+            if (cpu_features & ANDROID_CPU_ARM_FEATURE_NEON) {
                 return 1;
             }
         }
@@ -700,7 +700,8 @@ static const char *SDL_GetCPUType(void)
 }
 #endif
 
-#ifdef TEST_MAIN /* !!! FIXME: only used for test at the moment. */
+#if 0
+!!! FIXME: Not used at the moment. */
 #if defined(__e2k__)
 inline const char *
 SDL_GetCPUName(void)
@@ -1093,119 +1094,3 @@ SDL_SIMDGetAlignment(void)
     SDL_assert(SDL_SIMDAlignment != 0);
     return SDL_SIMDAlignment;
 }
-
-void *
-SDL_SIMDAlloc(const size_t len)
-{
-    const size_t alignment = SDL_SIMDGetAlignment();
-    const size_t padding = (alignment - (len % alignment)) % alignment;
-    Uint8 *retval = NULL;
-    Uint8 *ptr;
-    size_t to_allocate;
-
-    /* alignment + padding + sizeof (void *) is bounded (a few hundred
-     * bytes max), so no need to check for overflow within that argument */
-    if (SDL_size_add_overflow(len, alignment + padding + sizeof(void *), &to_allocate)) {
-        return NULL;
-    }
-
-    ptr = (Uint8 *)SDL_malloc(to_allocate);
-    if (ptr) {
-        /* store the actual allocated pointer right before our aligned pointer. */
-        retval = ptr + sizeof(void *);
-        retval += alignment - (((size_t)retval) % alignment);
-        *(((void **)retval) - 1) = ptr;
-    }
-    return retval;
-}
-
-void *
-SDL_SIMDRealloc(void *mem, const size_t len)
-{
-    const size_t alignment = SDL_SIMDGetAlignment();
-    const size_t padding = (alignment - (len % alignment)) % alignment;
-    Uint8 *retval = (Uint8 *)mem;
-    void *oldmem = mem;
-    size_t memdiff = 0, ptrdiff;
-    Uint8 *ptr;
-    size_t to_allocate;
-
-    /* alignment + padding + sizeof (void *) is bounded (a few hundred
-     * bytes max), so no need to check for overflow within that argument */
-    if (SDL_size_add_overflow(len, alignment + padding + sizeof(void *), &to_allocate)) {
-        return NULL;
-    }
-
-    if (mem) {
-        mem = *(((void **)mem) - 1);
-
-        /* Check the delta between the real pointer and user pointer */
-        memdiff = ((size_t)oldmem) - ((size_t)mem);
-    }
-
-    ptr = (Uint8 *)SDL_realloc(mem, to_allocate);
-
-    if (ptr == NULL) {
-        return NULL; /* Out of memory, bail! */
-    }
-
-    /* Store the actual allocated pointer right before our aligned pointer. */
-    retval = ptr + sizeof(void *);
-    retval += alignment - (((size_t)retval) % alignment);
-
-    /* Make sure the delta is the same! */
-    if (mem) {
-        ptrdiff = ((size_t)retval) - ((size_t)ptr);
-        if (memdiff != ptrdiff) { /* Delta has changed, copy to new offset! */
-            oldmem = (void *)(((uintptr_t)ptr) + memdiff);
-
-            /* Even though the data past the old `len` is undefined, this is the
-             * only length value we have, and it guarantees that we copy all the
-             * previous memory anyhow.
-             */
-            SDL_memmove(retval, oldmem, len);
-        }
-    }
-
-    /* Actually store the allocated pointer, finally. */
-    *(((void **)retval) - 1) = ptr;
-    return retval;
-}
-
-void SDL_SIMDFree(void *ptr)
-{
-    if (ptr) {
-        SDL_free(*(((void **)ptr) - 1));
-    }
-}
-
-#ifdef TEST_MAIN
-
-#include <stdio.h>
-
-int main()
-{
-    printf("CPU count: %d\n", SDL_GetCPUCount());
-    printf("CPU type: %s\n", SDL_GetCPUType());
-    printf("CPU name: %s\n", SDL_GetCPUName());
-    printf("CacheLine size: %d\n", SDL_GetCPUCacheLineSize());
-    printf("RDTSC: %d\n", SDL_HasRDTSC());
-    printf("Altivec: %d\n", SDL_HasAltiVec());
-    printf("MMX: %d\n", SDL_HasMMX());
-    printf("SSE: %d\n", SDL_HasSSE());
-    printf("SSE2: %d\n", SDL_HasSSE2());
-    printf("SSE3: %d\n", SDL_HasSSE3());
-    printf("SSE4.1: %d\n", SDL_HasSSE41());
-    printf("SSE4.2: %d\n", SDL_HasSSE42());
-    printf("AVX: %d\n", SDL_HasAVX());
-    printf("AVX2: %d\n", SDL_HasAVX2());
-    printf("AVX-512F: %d\n", SDL_HasAVX512F());
-    printf("ARM SIMD: %d\n", SDL_HasARMSIMD());
-    printf("NEON: %d\n", SDL_HasNEON());
-    printf("LSX: %d\n", SDL_HasLSX());
-    printf("LASX: %d\n", SDL_HasLASX());
-    printf("RAM: %d MB\n", SDL_GetSystemRAM());
-    return 0;
-}
-
-#endif /* TEST_MAIN */

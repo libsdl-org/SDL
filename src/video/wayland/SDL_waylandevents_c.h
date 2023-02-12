@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -110,9 +110,6 @@ struct SDL_WaylandInput
 
     uint32_t buttons_pressed;
 
-    double dx_frac;
-    double dy_frac;
-
     struct
     {
         struct xkb_keymap *keymap;
@@ -128,8 +125,13 @@ struct SDL_WaylandInput
         uint32_t idx_ctrl;
         uint32_t idx_alt;
         uint32_t idx_gui;
+        uint32_t idx_mode;
         uint32_t idx_num;
         uint32_t idx_caps;
+
+        /* Current system modifier flags */
+        uint32_t wl_pressed_modifiers;
+        uint32_t wl_locked_modifiers;
     } xkb;
 
     /* information about axis events on current frame */
@@ -154,6 +156,10 @@ struct SDL_WaylandInput
     SDL_bool relative_mode_override;
     SDL_bool warp_emulation_prohibited;
     SDL_bool keyboard_is_virtual;
+
+    /* Current SDL modifier flags */
+    SDL_Keymod pressed_modifiers;
+    SDL_Keymod locked_modifiers;
 };
 
 extern Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -389,7 +389,7 @@ void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEve
     src_ucs2[0] = args->KeyCode;
     src_ucs2[1] = L'\0';
 
-    /* Convert the text, then send an SDL_TEXTINPUT event. */
+    /* Convert the text, then send an SDL_EVENT_TEXT_INPUT event. */
     result = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)&src_ucs2, -1, (LPSTR)dest_utf8, sizeof(dest_utf8), NULL, NULL);
     if (result > 0) {
         SDL_SendKeyboardText(dest_utf8);

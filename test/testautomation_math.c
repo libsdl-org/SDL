@@ -62,10 +62,10 @@ typedef double(SDLCALL *dd_to_d_func)(double, double);
  * \brief Runs all the cases on a given function with a signature double -> double.
  * The result is expected to be exact.
  *
- * \param func_name, a printable name for the tested function.
- * \param func, the function to call.
- * \param cases, an array of all the cases.
- * \param cases_size, the size of the cases array.
+ * \param func_name a printable name for the tested function.
+ * \param func the function to call.
+ * \param cases an array of all the cases.
+ * \param cases_size the size of the cases array.
  */
 static int
 helper_dtod(const char *func_name, d_to_d_func func,
@@ -88,10 +88,10 @@ helper_dtod(const char *func_name, d_to_d_func func,
  * \brief Runs all the cases on a given function with a signature double -> double.
  * Checks if the result between expected +/- EPSILON.
  *
- * \param func_name, a printable name for the tested function.
- * \param func, the function to call.
- * \param cases, an array of all the cases.
- * \param cases_size, the size of the cases array.
+ * \param func_name a printable name for the tested function.
+ * \param func the function to call.
+ * \param cases an array of all the cases.
+ * \param cases_size the size of the cases array.
  */
 static int
 helper_dtod_inexact(const char *func_name, d_to_d_func func,
@@ -117,10 +117,10 @@ helper_dtod_inexact(const char *func_name, d_to_d_func func,
  * \brief Runs all the cases on a given function with a signature
  * (double, double) -> double. The result is expected to be exact.
  *
- * \param func_name, a printable name for the tested function.
- * \param func, the function to call.
- * \param cases, an array of all the cases.
- * \param cases_size, the size of the cases array.
+ * \param func_name a printable name for the tested function.
+ * \param func the function to call.
+ * \param cases an array of all the cases.
+ * \param cases_size the size of the cases array.
  */
 static int
 helper_ddtod(const char *func_name, dd_to_d_func func,
@@ -143,10 +143,10 @@ helper_ddtod(const char *func_name, dd_to_d_func func,
  * \brief Runs all the cases on a given function with a signature
  * (double, double) -> double. Checks if the result between expected +/- EPSILON.
  *
- * \param func_name, a printable name for the tested function.
- * \param func, the function to call.
- * \param cases, an array of all the cases.
- * \param cases_size, the size of the cases array.
+ * \param func_name a printable name for the tested function.
+ * \param func the function to call.
+ * \param cases an array of all the cases.
+ * \param cases_size the size of the cases array.
  */
 static int
 helper_ddtod_inexact(const char *func_name, dd_to_d_func func,
@@ -174,8 +174,8 @@ helper_ddtod_inexact(const char *func_name, dd_to_d_func func,
  * This function is only meant to test functions that returns the input value if it is
  * integral: f(x) -> x for x in N.
  *
- * \param func_name, a printable name for the tested function.
- * \param func, the function to call.
+ * \param func_name a printable name for the tested function.
+ * \param func the function to call.
  */
 static int
 helper_range(const char *func_name, d_to_d_func func)
@@ -1270,6 +1270,24 @@ log10_regularCases(void *args)
         { 2734.876324, 3.436937691540090433761633903486654162406921386718750 }
     };
     return helper_dtod_inexact("Log10", SDL_log10, regular_cases, SDL_arraysize(regular_cases));
+}
+
+/* SDL_modf tests functions */
+
+static int
+modf_baseCases(void *args)
+{
+    double fractional, integral;
+
+    fractional = SDL_modf(1.25, &integral);
+    SDLTest_AssertCheck(integral == 1.0,
+                        "modf(%f), expected integral %f, got %f",
+                        1.25, 1.0, integral);
+    SDLTest_AssertCheck(fractional == 0.25,
+                        "modf(%f), expected fractional %f, got %f",
+                        1.25, 0.25, fractional);
+
+    return TEST_COMPLETED;
 }
 
 /* SDL_pow tests functions */
@@ -3004,6 +3022,13 @@ static const SDLTest_TestCaseReference log10TestRegular = {
     "Checks a set of regular values", TEST_ENABLED
 };
 
+/* SDL_modf test cases */
+
+static const SDLTest_TestCaseReference modfTestBase = {
+    (SDLTest_TestCaseFp)modf_baseCases, "modf_baseCases",
+    "Checks the base cases", TEST_ENABLED
+};
+
 /* SDL_pow test cases */
 
 static const SDLTest_TestCaseReference powTestExpInf1 = {
@@ -3314,6 +3339,8 @@ static const SDLTest_TestCaseReference *mathTests[] = {
 
     &log10TestLimit, &log10TestNan,
     &log10TestBase, &log10TestRegular,
+
+    &modfTestBase,
 
     &powTestExpInf1, &powTestExpInf2, &powTestExpInf3,
     &powTestBaseInf1, &powTestBaseInf2,

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -988,12 +988,12 @@ static void output_callback(void *data)
             int got;
 
             /* Fire the callback until we have enough to fill a buffer */
-            while (SDL_AudioStreamAvailable(this->stream) < this->spec.size) {
+            while (SDL_GetAudioStreamAvailable(this->stream) < this->spec.size) {
                 this->callbackspec.callback(this->callbackspec.userdata, this->work_buffer, this->callbackspec.size);
-                SDL_AudioStreamPut(this->stream, this->work_buffer, this->callbackspec.size);
+                SDL_PutAudioStreamData(this->stream, this->work_buffer, this->callbackspec.size);
             }
 
-            got = SDL_AudioStreamGet(this->stream, dst, this->spec.size);
+            got = SDL_GetAudioStreamData(this->stream, dst, this->spec.size);
             SDL_assert(got == this->spec.size);
         }
     } else {
@@ -1047,7 +1047,7 @@ static void input_callback(void *data)
         /* Pipewire can vary the latency, so buffer all incoming data */
         SDL_WriteToDataQueue(this->hidden->buffer, src, size);
 
-        while (SDL_CountDataQueue(this->hidden->buffer) >= this->callbackspec.size) {
+        while (SDL_GetDataQueueSize(this->hidden->buffer) >= this->callbackspec.size) {
             SDL_ReadFromDataQueue(this->hidden->buffer, this->work_buffer, this->callbackspec.size);
 
             SDL_LockMutex(this->mixer_lock);
@@ -1055,7 +1055,7 @@ static void input_callback(void *data)
             SDL_UnlockMutex(this->mixer_lock);
         }
     } else if (this->hidden->buffer) { /* Flush the buffer when paused */
-        if (SDL_CountDataQueue(this->hidden->buffer) != 0) {
+        if (SDL_GetDataQueueSize(this->hidden->buffer) != 0) {
             SDL_ClearDataQueue(this->hidden->buffer, this->hidden->input_buffer_packet_size);
         }
     }
@@ -1086,7 +1086,7 @@ static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
          * A packet size of 2 periods should be more than is ever needed.
          */
         this->hidden->input_buffer_packet_size = SPA_MAX(this->spec.size, buffer->buffer->datas[0].maxsize) * 2;
-        this->hidden->buffer = SDL_NewDataQueue(this->hidden->input_buffer_packet_size, this->hidden->input_buffer_packet_size);
+        this->hidden->buffer = SDL_CreateDataQueue(this->hidden->input_buffer_packet_size, this->hidden->input_buffer_packet_size);
     }
 
     this->hidden->stream_init_status |= PW_READY_FLAG_BUFFER_ADDED;
@@ -1295,7 +1295,7 @@ static void PIPEWIRE_CloseDevice(_THIS)
     }
 
     if (this->hidden->buffer) {
-        SDL_FreeDataQueue(this->hidden->buffer);
+        SDL_DestroyDataQueue(this->hidden->buffer);
     }
 
     SDL_free(this->hidden);

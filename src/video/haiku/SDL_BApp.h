@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -120,23 +120,23 @@ class SDL_BApp : public BApplication
             break;
 
         case BAPP_REPAINT:
-            _HandleBasicWindowEvent(message, SDL_WINDOWEVENT_EXPOSED);
+            _HandleBasicWindowEvent(message, SDL_EVENT_WINDOW_EXPOSED);
             break;
 
         case BAPP_MAXIMIZE:
-            _HandleBasicWindowEvent(message, SDL_WINDOWEVENT_MAXIMIZED);
+            _HandleBasicWindowEvent(message, SDL_EVENT_WINDOW_MAXIMIZED);
             break;
 
         case BAPP_MINIMIZE:
-            _HandleBasicWindowEvent(message, SDL_WINDOWEVENT_MINIMIZED);
+            _HandleBasicWindowEvent(message, SDL_EVENT_WINDOW_MINIMIZED);
             break;
 
         case BAPP_SHOW:
-            _HandleBasicWindowEvent(message, SDL_WINDOWEVENT_SHOWN);
+            _HandleBasicWindowEvent(message, SDL_EVENT_WINDOW_SHOWN);
             break;
 
         case BAPP_HIDE:
-            _HandleBasicWindowEvent(message, SDL_WINDOWEVENT_HIDDEN);
+            _HandleBasicWindowEvent(message, SDL_EVENT_WINDOW_HIDDEN);
             break;
 
         case BAPP_MOUSE_FOCUS:
@@ -148,7 +148,7 @@ class SDL_BApp : public BApplication
             break;
 
         case BAPP_WINDOW_CLOSE_REQUESTED:
-            _HandleBasicWindowEvent(message, SDL_WINDOWEVENT_CLOSE);
+            _HandleBasicWindowEvent(message, SDL_EVENT_WINDOW_CLOSE_REQUESTED);
             break;
 
         case BAPP_WINDOW_MOVED:
@@ -254,13 +254,13 @@ class SDL_BApp : public BApplication
             SDL_GetWindowPosition(win, &winPosX, &winPosY);
             int dx = x - (winWidth / 2);
             int dy = y - (winHeight / 2);
-            SDL_SendMouseMotion(0, win, 0, SDL_GetMouse()->relative_mode, dx, dy);
+            SDL_SendMouseMotion(0, win, 0, SDL_GetMouse()->relative_mode, (float)dx, (float)dy);
             set_mouse_position((winPosX + winWidth / 2), (winPosY + winHeight / 2));
             if (!be_app->IsCursorHidden())
                 be_app->HideCursor();
         } else {
-            SDL_SendMouseMotion(0, win, 0, 0, x, y);
-            if (SDL_ShowCursor(-1) && be_app->IsCursorHidden())
+            SDL_SendMouseMotion(0, win, 0, 0, (float)x, (float)y);
+            if (SDL_CursorVisible() && be_app->IsCursorHidden())
                 be_app->ShowCursor();
         }
     }
@@ -311,7 +311,7 @@ class SDL_BApp : public BApplication
         HAIKU_SetKeyState(scancode, state);
         SDL_SendKeyboardKey(0, state, HAIKU_GetScancodeFromBeKey(scancode));
 
-        if (state == SDL_PRESSED && SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
+        if (state == SDL_PRESSED && SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
             const int8 *keyUtf8;
             ssize_t count;
             if (msg->FindData("key-utf8", B_INT8_TYPE, (const void **)&keyUtf8, &count) == B_OK) {
@@ -374,7 +374,7 @@ class SDL_BApp : public BApplication
             return;
         }
         win = GetSDLWindow(winID);
-        SDL_SendWindowEvent(win, SDL_WINDOWEVENT_MOVED, xPos, yPos);
+        SDL_SendWindowEvent(win, SDL_EVENT_WINDOW_MOVED, xPos, yPos);
     }
 
     void _HandleWindowResized(BMessage *msg)
@@ -390,7 +390,7 @@ class SDL_BApp : public BApplication
             return;
         }
         win = GetSDLWindow(winID);
-        SDL_SendWindowEvent(win, SDL_WINDOWEVENT_RESIZED, w, h);
+        SDL_SendWindowEvent(win, SDL_EVENT_WINDOW_RESIZED, w, h);
     }
 
     bool _GetWinID(BMessage *msg, int32 *winID)

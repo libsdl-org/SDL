@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -100,12 +100,12 @@ void updateMouse(SDL_WSCONS_mouse_input_data *inputData)
             } break;
             case WSCONS_EVENT_MOUSE_DELTA_X:
             {
-                SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, events[i].value, 0);
+                SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, (float)events[i].value, 0.0f);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_Y:
             {
-                SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, 0, -events[i].value);
+                SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, 0.0f, -(float)events[i].value);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_W:

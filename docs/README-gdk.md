@@ -40,7 +40,7 @@ The included `VisualC-GDK/SDL.sln` solution includes the following targets for t
 * tests/testgamecontroller - Standard SDL test program demonstrating controller functionality.
 * tests/testgdk - GDK-specific test program that demonstrates using the global task queue to login a user into Xbox Live.
   *NOTE*: As of the June 2022 GDK, you cannot test user logins without a valid Title ID and MSAAppId. You will need to manually change the identifiers in the `MicrosoftGame.config` to your valid IDs from Partner Center if you wish to test this.
-* tests/testsprite2 - Standard SDL test program demonstrating sprite drawing functionality.
+* tests/testsprite - Standard SDL test program demonstrating sprite drawing functionality.
 
 If you set one of the test programs as a startup project, you can run it directly from Visual Studio.
 

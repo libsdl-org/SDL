@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,32 +32,35 @@
 
 int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
-    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *driverdata = window->driverdata;
     const char *sprite_name = "display";
     unsigned int sprite_mode;
     _kernel_oserror *error;
     _kernel_swi_regs regs;
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode *mode;
     int size;
+    int w, h;
+
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     /* Free the old framebuffer surface */
     RISCOS_DestroyWindowFramebuffer(_this, window);
 
     /* Create a new one */
-    SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(window), &mode);
-    if ((SDL_ISPIXELFORMAT_PACKED(mode.format) || SDL_ISPIXELFORMAT_ARRAY(mode.format))) {
-        *format = mode.format;
-        sprite_mode = (unsigned int)mode.driverdata;
+    mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(window));
+    if ((SDL_ISPIXELFORMAT_PACKED(mode->format) || SDL_ISPIXELFORMAT_ARRAY(mode->format))) {
+        *format = mode->format;
+        sprite_mode = (unsigned int)mode->driverdata;
     } else {
         *format = SDL_PIXELFORMAT_BGR888;
         sprite_mode = (1 | (90 << 1) | (90 << 14) | (6 << 27));
     }
 
     /* Calculate pitch */
-    *pitch = (((window->w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
+    *pitch = (((w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
 
     /* Allocate the sprite area */
-    size = sizeof(sprite_area) + sizeof(sprite_header) + ((*pitch) * window->h);
+    size = sizeof(sprite_area) + sizeof(sprite_header) + ((*pitch) * h);
     driverdata->fb_area = SDL_malloc(size);
     if (!driverdata->fb_area) {
         return SDL_OutOfMemory();
@@ -73,8 +76,8 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, vo
     regs.r[1] = (int)driverdata->fb_area;
     regs.r[2] = (int)sprite_name;
     regs.r[3] = 0;
-    regs.r[4] = window->w;
-    regs.r[5] = window->h;
+    regs.r[4] = w;
+    regs.r[5] = h;
     regs.r[6] = sprite_mode;
     error = _kernel_swi(OS_SpriteOp, &regs, &regs);
     if (error != NULL) {
@@ -90,7 +93,7 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, vo
 
 int RISCOS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *driverdata = window->driverdata;
     _kernel_swi_regs regs;
     _kernel_oserror *error;
 
@@ -112,7 +115,7 @@ int RISCOS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *re
 
 void RISCOS_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *driverdata = window->driverdata;
 
     if (driverdata->fb_area) {
         SDL_free(driverdata->fb_area);

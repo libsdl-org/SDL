@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,7 +51,10 @@ assert can have unique static variables associated with it.
 /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()
-#elif _SDL_HAS_BUILTIN(__builtin_debugtrap)
+#elif defined(ANDROID)
+    #include <assert.h>
+    #define SDL_TriggerBreakpoint() assert(0)
+#elif SDL_HAS_BUILTIN(__builtin_debugtrap)
     #define SDL_TriggerBreakpoint() __builtin_debugtrap()
 #elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
@@ -127,19 +130,30 @@ typedef struct SDL_AssertData
 
 #if (SDL_ASSERT_LEVEL > 0)
 
-/* Never call this directly. Use the SDL_assert* macros. */
-extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *,
-                                                             const char *,
-                                                             const char *, int)
+/**
+ * Never call this directly. Use the SDL_assert* macros.
+ *
+ * \param data assert data structure
+ * \param func function name
+ * \param file file name
+ * \param line line number
+ * \returns assert state
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data,
+                                                            const char *func,
+                                                            const char *file, int line)
 #if defined(__clang__)
 #if __has_feature(attribute_analyzer_noreturn)
-/* this tells Clang's static analysis that we're a custom assert function,
-   and that the analyzer should assume the condition was always true past this
-   SDL_assert test. */
    __attribute__((analyzer_noreturn))
 #endif
 #endif
 ;
+/* Previous 'analyzer_noreturn' attribute tells Clang's static analysis that we're a custom assert function,
+   and that the analyzer should assume the condition was always true past this
+   SDL_assert test. */
+
 
 /* the do {} while(0) avoids dangling else problems:
     if (x) SDL_assert(y); else blah();

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,7 @@ XInputGetCapabilities_t SDL_XInputGetCapabilities = NULL;
 XInputGetBatteryInformation_t SDL_XInputGetBatteryInformation = NULL;
 DWORD SDL_XInputVersion = 0;
 
-static HANDLE s_pXInputDLL = 0;
+static HMODULE s_pXInputDLL = NULL;
 static int s_XInputDLLRefCount = 0;
 
 #if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
@@ -105,13 +105,13 @@ int WIN_LoadXInputDLL(void)
     s_XInputDLLRefCount = 1;
 
     /* 100 is the ordinal for _XInputGetStateEx, which returns the same struct as XinputGetState, but with extra data in wButtons for the guide button, we think... */
-    SDL_XInputGetState = (XInputGetState_t)GetProcAddress((HMODULE)s_pXInputDLL, (LPCSTR)100);
+    SDL_XInputGetState = (XInputGetState_t)GetProcAddress(s_pXInputDLL, (LPCSTR)100);
     if (SDL_XInputGetState == NULL) {
-        SDL_XInputGetState = (XInputGetState_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetState");
+        SDL_XInputGetState = (XInputGetState_t)GetProcAddress(s_pXInputDLL, "XInputGetState");
     }
-    SDL_XInputSetState = (XInputSetState_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputSetState");
-    SDL_XInputGetCapabilities = (XInputGetCapabilities_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetCapabilities");
-    SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetBatteryInformation");
+    SDL_XInputSetState = (XInputSetState_t)GetProcAddress(s_pXInputDLL, "XInputSetState");
+    SDL_XInputGetCapabilities = (XInputGetCapabilities_t)GetProcAddress(s_pXInputDLL, "XInputGetCapabilities");
+    SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)GetProcAddress(s_pXInputDLL, "XInputGetBatteryInformation");
     if (SDL_XInputGetState == NULL || SDL_XInputSetState == NULL || SDL_XInputGetCapabilities == NULL) {
         WIN_UnloadXInputDLL();
         return -1;

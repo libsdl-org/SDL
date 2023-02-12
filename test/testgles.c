@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     int fsaa, accel;
     int value;
     int i, done;
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode *mode;
     SDL_Event event;
     Uint32 then, now, frames;
     int status;
@@ -187,9 +187,11 @@ int main(int argc, char *argv[])
         SDL_GL_SetSwapInterval(0);
     }
 
-    SDL_GetCurrentDisplayMode(0, &mode);
-    SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
-    SDL_Log("\n");
+    mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+    if (mode) {
+        SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode->format));
+        SDL_Log("\n");
+    }
     SDL_Log("Vendor     : %s\n", glGetString(GL_VENDOR));
     SDL_Log("Renderer   : %s\n", glGetString(GL_RENDERER));
     SDL_Log("Version    : %s\n", glGetString(GL_VERSION));
@@ -283,7 +285,7 @@ int main(int argc, char *argv[])
         /* Check for events */
         ++frames;
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_WINDOWEVENT_RESIZED) {
+            if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                 for (i = 0; i < state->num_windows; ++i) {
                     if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
                         status = SDL_GL_MakeCurrent(state->windows[i], context[i]);

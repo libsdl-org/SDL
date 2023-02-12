@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,7 +36,7 @@ extern void Android_DestroyWindow(_THIS, SDL_Window *window);
 extern int Android_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
 extern SDL_Window *Android_Window;
 
-typedef struct
+struct SDL_WindowData
 {
 #if SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
@@ -45,6 +45,6 @@ typedef struct
     SDL_bool backup_done;
     ANativeWindow *native_window;
 
-} SDL_WindowData;
+};
 
 #endif /* SDL_androidwindow_h_ */

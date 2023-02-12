@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -184,21 +184,20 @@ void SDL_UDEV_Quit(void)
     }
 }
 
-void SDL_UDEV_Scan(void)
+int SDL_UDEV_Scan(void)
 {
     struct udev_enumerate *enumerate = NULL;
     struct udev_list_entry *devs = NULL;
     struct udev_list_entry *item = NULL;
 
     if (_this == NULL) {
-        return;
+        return 0;
     }
 
     enumerate = _this->syms.udev_enumerate_new(_this->udev);
     if (enumerate == NULL) {
         SDL_UDEV_Quit();
-        SDL_SetError("udev_enumerate_new() failed");
-        return;
+        return SDL_SetError("udev_enumerate_new() failed");
     }
 
     _this->syms.udev_enumerate_add_match_subsystem(enumerate, "input");
@@ -216,6 +215,7 @@ void SDL_UDEV_Scan(void)
     }
 
     _this->syms.udev_enumerate_unref(enumerate);
+    return 0;
 }
 
 SDL_bool

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -535,20 +535,20 @@ static void outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBuffe
         Uint8 *ptr = (Uint8 *)inBuffer->mAudioData;
 
         while (remaining > 0) {
-            if (SDL_AudioStreamAvailable(this->stream) == 0) {
+            if (SDL_GetAudioStreamAvailable(this->stream) == 0) {
                 /* Generate the data */
                 (*this->callbackspec.callback)(this->callbackspec.userdata,
                                                this->hidden->buffer, this->hidden->bufferSize);
                 this->hidden->bufferOffset = 0;
-                SDL_AudioStreamPut(this->stream, this->hidden->buffer, this->hidden->bufferSize);
+                SDL_PutAudioStreamData(this->stream, this->hidden->buffer, this->hidden->bufferSize);
             }
-            if (SDL_AudioStreamAvailable(this->stream) > 0) {
+            if (SDL_GetAudioStreamAvailable(this->stream) > 0) {
                 int got;
-                UInt32 len = SDL_AudioStreamAvailable(this->stream);
+                UInt32 len = SDL_GetAudioStreamAvailable(this->stream);
                 if (len > remaining) {
                     len = remaining;
                 }
-                got = SDL_AudioStreamGet(this->stream, ptr, len);
+                got = SDL_GetAudioStreamData(this->stream, ptr, len);
                 SDL_assert((got < 0) || (got == len));
                 if (got != len) {
                     SDL_memset(ptr, this->spec.silence, len);
@@ -1066,7 +1066,7 @@ static int COREAUDIO_OpenDevice(_THIS, const char *devname)
     strdesc->mSampleRate = this->spec.freq;
     strdesc->mFramesPerPacket = 1;
 
-    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
         /* CoreAudio handles most of SDL's formats natively, but not U16, apparently. */
         switch (test_format) {
         case AUDIO_U8:
@@ -1214,7 +1214,7 @@ static int COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int i
             /* Some devices have whitespace at the end...trim it. */
             while ((len > 0) && (devname[len - 1] == ' ')) {
                 len--;
-                usable = len;
+                usable = (int)len;
             }
         }
 

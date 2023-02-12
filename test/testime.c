@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,7 +41,7 @@
 #define MAX_TEXT_LENGTH 256
 
 static SDLTest_CommonState *state;
-static SDL_Rect textRect, markedRect;
+static SDL_FRect textRect, markedRect;
 static SDL_Color lineColor = { 0, 0, 0, 255 };
 static SDL_Color backColor = { 255, 255, 255, 255 };
 static SDL_Color textColor = { 0, 0, 0, 255 };
@@ -326,7 +326,7 @@ static int unifont_load_texture(Uint32 textureID)
     return 0;
 }
 
-static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_Rect *dstrect)
+static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *dst)
 {
     SDL_Texture *texture;
     const Uint32 textureID = codepoint / UNIFONT_GLYPHS_IN_TEXTURE;
@@ -345,7 +345,7 @@ static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_Rect *dst
         const Uint32 cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
         srcrect.x = cInTex % UNIFONT_GLYPHS_IN_ROW * 16;
         srcrect.y = cInTex / UNIFONT_GLYPHS_IN_ROW * 16;
-        SDL_RenderCopy(state->renderers[rendererID], texture, &srcrect, dstrect);
+        SDL_RenderTexture(state->renderers[rendererID], texture, &srcrect, dst);
     }
     return unifontGlyph[codepoint].width;
 }
@@ -453,9 +453,9 @@ static void usage(void)
 static void InitInput(void)
 {
     /* Prepare a rect for text input */
-    textRect.x = textRect.y = 100;
+    textRect.x = textRect.y = 100.0f;
     textRect.w = DEFAULT_WINDOW_WIDTH - 2 * textRect.x;
-    textRect.h = 50;
+    textRect.h = 50.0f;
 
     text[0] = 0;
     markedRect = textRect;
@@ -478,8 +478,8 @@ static void CleanupVideo(void)
 static void _Redraw(int rendererID)
 {
     SDL_Renderer *renderer = state->renderers[rendererID];
-    SDL_Rect drawnTextRect, cursorRect, underlineRect;
-    drawnTextRect = textRect;
+    SDL_FRect drawnTextRect, cursorRect, underlineRect;
+    drawnTextRect.x = textRect.x;
     drawnTextRect.w = 0;
 
     SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
@@ -496,15 +496,15 @@ static void _Redraw(int rendererID)
         drawnTextRect.h = textSur->h;
 
         texture = SDL_CreateTextureFromSurface(renderer, textSur);
-        SDL_FreeSurface(textSur);
+        SDL_DestroySurface(textSur);
 
-        SDL_RenderCopy(renderer, texture, NULL, &drawnTextRect);
+        SDL_RenderTexture(renderer, texture, NULL, &drawnTextRect);
         SDL_DestroyTexture(texture);
 #else
         char *utext = text;
         Uint32 codepoint;
         size_t len;
-        SDL_Rect dstrect;
+        SDL_FRect dstrect;
 
         dstrect.x = textRect.x;
         dstrect.y = textRect.y + (textRect.h - 16 * UNIFONT_DRAW_SCALE) / 2;
@@ -567,16 +567,16 @@ static void _Redraw(int rendererID)
         drawnTextRect.h = textSur->h;
 
         texture = SDL_CreateTextureFromSurface(renderer, textSur);
-        SDL_FreeSurface(textSur);
+        SDL_DestroySurface(textSur);
 
-        SDL_RenderCopy(renderer, texture, NULL, &drawnTextRect);
+        SDL_RenderTexture(renderer, texture, NULL, &drawnTextRect);
         SDL_DestroyTexture(texture);
 #else
         int i = 0;
         char *utext = markedText;
         Uint32 codepoint;
         size_t len;
-        SDL_Rect dstrect;
+        SDL_FRect dstrect;
 
         dstrect.x = drawnTextRect.x;
         dstrect.y = textRect.y + (textRect.h - 16 * UNIFONT_DRAW_SCALE) / 2;
@@ -614,7 +614,15 @@ static void _Redraw(int rendererID)
     SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
     SDL_RenderFillRect(renderer, &cursorRect);
 
-    SDL_SetTextInputRect(&markedRect);
+    {
+        SDL_Rect inputrect;
+
+        inputrect.x = (int)markedRect.x;
+        inputrect.y = (int)markedRect.y;
+        inputrect.w = (int)markedRect.w;
+        inputrect.h = (int)markedRect.h;
+        SDL_SetTextInputRect(&inputrect);
+    }
 }
 
 static void Redraw(void)
@@ -708,7 +716,7 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
             switch (event.type) {
-            case SDL_KEYDOWN:
+            case SDL_EVENT_KEY_DOWN:
                 switch (event.key.keysym.sym) {
                 case SDLK_RETURN:
                     text[0] = 0x00;
@@ -723,7 +731,7 @@ int main(int argc, char *argv[])
                             if (textlen == 0) {
                                 break;
                             }
-                            if ((text[textlen - 1] & 0x80) == 0x00) {
+                            if (!(text[textlen - 1] & 0x80)) {
                                 /* One byte */
                                 text[textlen - 1] = 0x00;
                                 break;
@@ -756,7 +764,7 @@ int main(int argc, char *argv[])
                         SDL_GetKeyName(event.key.keysym.sym));
                 break;
 
-            case SDL_TEXTINPUT:
+            case SDL_EVENT_TEXT_INPUT:
                 if (event.text.text[0] == '\0' || event.text.text[0] == '\n' || markedRect.w < 0) {
                     break;
                 }
@@ -775,7 +783,7 @@ int main(int argc, char *argv[])
                 Redraw();
                 break;
 
-            case SDL_TEXTEDITING:
+            case SDL_EVENT_TEXT_EDITING:
                 SDL_Log("text editing \"%s\", selected range (%" SDL_PRIs32 ", %" SDL_PRIs32 ")\n",
                         event.edit.text, event.edit.start, event.edit.length);
 

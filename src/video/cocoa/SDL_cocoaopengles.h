@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,9 +39,7 @@ extern int Cocoa_GLES_LoadLibrary(_THIS, const char *path);
 extern SDL_GLContext Cocoa_GLES_CreateContext(_THIS, SDL_Window *window);
 extern int Cocoa_GLES_SwapWindow(_THIS, SDL_Window *window);
 extern int Cocoa_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
-extern void Cocoa_GLES_GetDrawableSize(_THIS, SDL_Window *window,
-                                       int *w, int *h);
-extern void Cocoa_GLES_DeleteContext(_THIS, SDL_GLContext context);
+extern int Cocoa_GLES_DeleteContext(_THIS, SDL_GLContext context);
 extern int Cocoa_GLES_SetupWindow(_THIS, SDL_Window *window);
 extern SDL_EGLSurface Cocoa_GLES_GetEGLSurface(_THIS, SDL_Window *window);
 

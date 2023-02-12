@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
         }
 
         while (SDL_WaitEvent(&event)) {
-            if (event.type == SDL_QUIT || event.type == SDL_KEYUP) {
+            if (event.type == SDL_EVENT_QUIT || event.type == SDL_EVENT_KEY_UP) {
                 break;
             }
         }

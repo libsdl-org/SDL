@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -81,7 +81,7 @@ static int UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
         (this->callbackspec.freq == this->spec.freq) &&
         (this->callbackspec.samples == this->spec.samples)) {
         /* no need to buffer/convert in an AudioStream! */
-        SDL_FreeAudioStream(this->stream);
+        SDL_DestroyAudioStream(this->stream);
         this->stream = NULL;
     } else if ((oldspec->channels == this->spec.channels) &&
                (oldspec->format == this->spec.format) &&
@@ -89,22 +89,22 @@ static int UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
         /* The existing audio stream is okay to keep using. */
     } else {
         /* replace the audiostream for new format */
-        SDL_FreeAudioStream(this->stream);
+        SDL_DestroyAudioStream(this->stream);
         if (this->iscapture) {
-            this->stream = SDL_NewAudioStream(this->spec.format,
+            this->stream = SDL_CreateAudioStream(this->spec.format,
                                               this->spec.channels, this->spec.freq,
                                               this->callbackspec.format,
                                               this->callbackspec.channels,
                                               this->callbackspec.freq);
         } else {
-            this->stream = SDL_NewAudioStream(this->callbackspec.format,
+            this->stream = SDL_CreateAudioStream(this->callbackspec.format,
                                               this->callbackspec.channels,
                                               this->callbackspec.freq, this->spec.format,
                                               this->spec.channels, this->spec.freq);
         }
 
         if (!this->stream) {
-            return -1; /* SDL_NewAudioStream should have called SDL_SetError. */
+            return -1; /* SDL_CreateAudioStream should have called SDL_SetError. */
         }
     }
 
@@ -222,10 +222,10 @@ static void WASAPI_WaitDevice(_THIS)
 static int WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     SDL_AudioStream *stream = this->hidden->capturestream;
-    const int avail = SDL_AudioStreamAvailable(stream);
+    const int avail = SDL_GetAudioStreamAvailable(stream);
     if (avail > 0) {
         const int cpy = SDL_min(buflen, avail);
-        SDL_AudioStreamGet(stream, buffer, cpy);
+        SDL_GetAudioStreamData(stream, buffer, cpy);
         return cpy;
     }
 
@@ -268,7 +268,7 @@ static int WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
                     SDL_memset(ptr, this->spec.silence, leftover); /* I guess this is safe? */
                 }
 
-                if (SDL_AudioStreamPut(stream, ptr, leftover) == -1) {
+                if (SDL_PutAudioStreamData(stream, ptr, leftover) == -1) {
                     return -1; /* uhoh, out of memory, etc. Kill device.  :( */
                 }
             }
@@ -304,7 +304,7 @@ static void WASAPI_FlushCapture(_THIS)
             break; /* something broke. */
         }
     }
-    SDL_AudioStreamClear(this->hidden->capturestream);
+    SDL_ClearAudioStream(this->hidden->capturestream);
 }
 
 static void ReleaseWasapiDevice(_THIS)
@@ -331,7 +331,7 @@ static void ReleaseWasapiDevice(_THIS)
     }
 
     if (this->hidden->capturestream) {
-        SDL_FreeAudioStream(this->hidden->capturestream);
+        SDL_DestroyAudioStream(this->hidden->capturestream);
         this->hidden->capturestream = NULL;
     }
 
@@ -424,7 +424,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     /* Make sure we have a valid format that we can convert to whatever WASAPI wants. */
     wasapi_format = WaveFormatToSDLFormat(waveformat);
 
-    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
         if (test_format == wasapi_format) {
             this->spec.format = test_format;
             break;
@@ -484,7 +484,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     this->hidden->framesize = (SDL_AUDIO_BITSIZE(this->spec.format) / 8) * this->spec.channels;
 
     if (this->iscapture) {
-        this->hidden->capturestream = SDL_NewAudioStream(this->spec.format, this->spec.channels, this->spec.freq, this->spec.format, this->spec.channels, this->spec.freq);
+        this->hidden->capturestream = SDL_CreateAudioStream(this->spec.format, this->spec.channels, this->spec.freq, this->spec.format, this->spec.channels, this->spec.freq);
         if (!this->hidden->capturestream) {
             return -1; /* already set SDL_Error */
         }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -74,7 +74,7 @@ void VITA_PollMouse(void)
                 prev_buttons = m_reports[i].buttons;
 
                 if (m_reports[i].rel_x || m_reports[i].rel_y) {
-                    SDL_SendMouseMotion(0, Vita_Window, 0, 1, m_reports[i].rel_x, m_reports[i].rel_y);
+                    SDL_SendMouseMotion(0, Vita_Window, 0, 1, (float)m_reports[i].rel_x, (float)m_reports[i].rel_y);
                 }
             }
         }

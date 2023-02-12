@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -213,7 +213,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
     /* Leave fullscreen mode, if possible (scary!) */
     window = SDL_GetFocusWindow();
     if (window) {
-        if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) {
+        if (window->fullscreen_exclusive) {
             SDL_MinimizeWindow(window);
         } else {
             /* !!! FIXME: ungrab the input if we're not fullscreen? */

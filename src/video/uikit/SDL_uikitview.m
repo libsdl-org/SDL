@@ -1,6 +1,6 @@
 /*
  Simple DirectMedia Layer
- Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+ Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
  This software is provided 'as-is', without any express or implied
  warranty.  In no event will the authors be held liable for any damages
@@ -103,7 +103,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     /* Remove ourself from the old window. */
     if (sdlwindow) {
         SDL_uikitview *view = nil;
-        data = (__bridge SDL_WindowData *)sdlwindow->driverdata;
+        data = sdlwindow->driverdata;
 
         [data.views removeObject:self];
 
@@ -122,7 +122,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     /* Add ourself to the new window. */
     if (window) {
-        data = (__bridge SDL_WindowData *)window->driverdata;
+        data = window->driverdata;
 
         /* Make sure the SDL window has a strong reference to this view. */
         [data.views addObject:self];
@@ -158,14 +158,14 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         point.x -= origin.x;
         point.y -= origin.y;
 
-        SDL_SendMouseMotion(0, sdlwindow, 0, 0, (int)point.x, (int)point.y);
+        SDL_SendMouseMotion(0, sdlwindow, 0, 0, point.x, point.y);
     }
     return [UIPointerRegion regionWithRect:self.bounds identifier:nil];
 }
 
 - (UIPointerStyle *)pointerInteraction:(UIPointerInteraction *)interaction styleForRegion:(UIPointerRegion *)region API_AVAILABLE(ios(13.4))
 {
-    if (SDL_ShowCursor(-1)) {
+    if (SDL_CursorVisible()) {
         return nil;
     } else {
         return [UIPointerStyle hiddenPointerStyle];
@@ -233,7 +233,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                     int i;
 
                     for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
-                        if ((event.buttonMask & SDL_BUTTON(i)) != 0) {
+                        if (event.buttonMask & SDL_BUTTON(i)) {
                             Uint8 button;
 
                             switch (i) {
@@ -289,7 +289,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                     int i;
 
                     for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
-                        if ((event.buttonMask & SDL_BUTTON(i)) != 0) {
+                        if (event.buttonMask & SDL_BUTTON(i)) {
                             Uint8 button;
 
                             switch (i) {

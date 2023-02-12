@@ -13,16 +13,12 @@ include(CMakePushCheckState)
 include(GNUInstallDirs)
 
 set(SDL_TESTS_LINK_SHARED_DEFAULT ON)
-if(WINDOWS)
-    # Avoid missing dll error by linking to static SDL library,
-    # alternatively, copy dll to build directory in a post build event.
-    set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
-endif()
 if(EMSCRIPTEN OR N3DS OR PS2 OR PSP OR RISCOS OR VITA)
     set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
 endif()
 
 option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" ${SDL_TESTS_LINK_SHARED_DEFAULT})
+set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
 
 if(SDL_TESTS_LINK_SHARED)
     set(sdl_name_component SDL3)
@@ -94,6 +90,10 @@ macro(add_sdl_test_executable TARGET)
     if(OPENGL_FOUND)
         target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
     endif()
+
+    if(TARGET sdl-global-options)
+        target_link_libraries(${TARGET} PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
+    endif()
 endmacro()
 
 check_include_file(signal.h HAVE_SIGNAL_H)
@@ -123,7 +123,7 @@ add_sdl_test_executable(testatomic NONINTERACTIVE testatomic.c)
 add_sdl_test_executable(testintersections testintersections.c)
 add_sdl_test_executable(testrelative testrelative.c)
 add_sdl_test_executable(testhittesting testhittesting.c)
-add_sdl_test_executable(testdraw2 testdraw2.c)
+add_sdl_test_executable(testdraw testdraw.c)
 add_sdl_test_executable(testdrawchessboard testdrawchessboard.c)
 add_sdl_test_executable(testdropfile testdropfile.c)
 add_sdl_test_executable(testerror NONINTERACTIVE testerror.c)
@@ -135,9 +135,9 @@ if(LINUX AND TARGET sdl-build-options)
 endif()
 
 add_sdl_test_executable(testfile testfile.c)
-add_sdl_test_executable(testgamecontroller NEEDS_RESOURCES TESTUTILS testgamecontroller.c)
+add_sdl_test_executable(testgamepad NEEDS_RESOURCES TESTUTILS testgamepad.c)
 add_sdl_test_executable(testgeometry TESTUTILS testgeometry.c)
-add_sdl_test_executable(testgl2 testgl2.c)
+add_sdl_test_executable(testgl testgl.c)
 add_sdl_test_executable(testgles testgles.c)
 add_sdl_test_executable(testgles2 testgles2.c)
 add_sdl_test_executable(testgles2_sdf TESTUTILS testgles2_sdf.c)
@@ -174,7 +174,7 @@ elseif(HAVE_X11)
     target_link_libraries(testnative PRIVATE X11)
 endif()
 
-add_sdl_test_executable(testoverlay2 NEEDS_RESOURCES TESTUTILS testoverlay2.c)
+add_sdl_test_executable(testoverlay NEEDS_RESOURCES TESTUTILS testoverlay.c)
 add_sdl_test_executable(testplatform NONINTERACTIVE testplatform.c)
 add_sdl_test_executable(testpower NONINTERACTIVE testpower.c)
 add_sdl_test_executable(testfilesystem NONINTERACTIVE testfilesystem.c)
@@ -184,14 +184,14 @@ add_sdl_test_executable(testsem testsem.c)
 add_sdl_test_executable(testsensor testsensor.c)
 add_sdl_test_executable(testshader NEEDS_RESOURCES testshader.c)
 add_sdl_test_executable(testshape NEEDS_RESOURCES testshape.c)
-add_sdl_test_executable(testsprite2 NEEDS_RESOURCES TESTUTILS testsprite2.c)
+add_sdl_test_executable(testsprite NEEDS_RESOURCES TESTUTILS testsprite.c)
 add_sdl_test_executable(testspriteminimal NEEDS_RESOURCES TESTUTILS testspriteminimal.c)
 add_sdl_test_executable(teststreaming NEEDS_RESOURCES TESTUTILS teststreaming.c)
 add_sdl_test_executable(testtimer NONINTERACTIVE testtimer.c)
 add_sdl_test_executable(testurl testurl.c)
 add_sdl_test_executable(testver NONINTERACTIVE testver.c)
 add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS testviewport.c)
-add_sdl_test_executable(testwm2 testwm2.c)
+add_sdl_test_executable(testwm testwm.c)
 add_sdl_test_executable(testyuv NEEDS_RESOURCES testyuv.c testyuv_cvt.c)
 add_sdl_test_executable(torturethread torturethread.c)
 add_sdl_test_executable(testrendercopyex NEEDS_RESOURCES TESTUTILS testrendercopyex.c)
@@ -200,11 +200,9 @@ add_sdl_test_executable(testdisplayinfo testdisplayinfo.c)
 add_sdl_test_executable(testqsort NONINTERACTIVE testqsort.c)
 add_sdl_test_executable(testbounds testbounds.c)
 add_sdl_test_executable(testcustomcursor testcustomcursor.c)
-add_sdl_test_executable(controllermap NEEDS_RESOURCES TESTUTILS controllermap.c)
+add_sdl_test_executable(gamepadmap NEEDS_RESOURCES TESTUTILS gamepadmap.c)
 add_sdl_test_executable(testvulkan testvulkan.c)
 add_sdl_test_executable(testoffscreen testoffscreen.c)
-
-cmake_push_check_state()
 
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
 if(HAVE_WFORMAT_OVERFLOW)
@@ -216,12 +214,16 @@ if(HAVE_WFORMAT)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT)
 endif()
 
+cmake_push_check_state()
+if(HAVE_WFORMAT)
+    # Some compilers ignore -Wformat-extra-args without -Wformat
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Wformat")
+endif()
 check_c_compiler_flag(-Wformat-extra-args HAVE_WFORMAT_EXTRA_ARGS)
+cmake_pop_check_state()
 if(HAVE_WFORMAT_EXTRA_ARGS)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_EXTRA_ARGS)
 endif()
-
-cmake_pop_check_state()
 
 if(SDL_DUMMYAUDIO)
   list(APPEND SDL_TESTS_NONINTERACTIVE
@@ -241,14 +243,14 @@ endif()
 if(OPENGL_FOUND)
     if(TARGET OpenGL::GL)
         target_link_libraries(testshader PRIVATE OpenGL::GL)
-        target_link_libraries(testgl2 PRIVATE OpenGL::GL)
+        target_link_libraries(testgl PRIVATE OpenGL::GL)
     else()
         if(EMSCRIPTEN AND OPENGL_gl_LIBRARY STREQUAL "nul")
             set(OPENGL_gl_LIBRARY GL)
         endif()
         # emscripten's FindOpenGL.cmake does not create OpenGL::GL
         target_link_libraries(testshader PRIVATE ${OPENGL_gl_LIBRARY})
-        target_link_libraries(testgl2 PRIVATE ${OPENGL_gl_LIBRARY})
+        target_link_libraries(testgl PRIVATE ${OPENGL_gl_LIBRARY})
     endif()
 endif()
 if(EMSCRIPTEN)
@@ -305,7 +307,7 @@ if(N3DS)
     foreach(APP ${SDL_TEST_EXECUTABLES})
         get_target_property(TARGET_BINARY_DIR ${APP} BINARY_DIR)
         set(SMDH_FILE "${TARGET_BINARY_DIR}/${APP}.smdh")
-        ctr_generate_smdh("${SMDH_FILE}" 
+        ctr_generate_smdh("${SMDH_FILE}"
             NAME "SDL-${APP}"
             DESCRIPTION "SDL3 Test suite"
             AUTHOR "SDL3 Contributors"
@@ -344,8 +346,8 @@ if(APPLE)
         foreach(CURRENT_TARGET ${SDL_TEST_EXECUTABLES})
             set_target_properties("${CURRENT_TARGET}" PROPERTIES
                 MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
-                MACOSX_BUNDLE_BUNDLE_VERSION "${SDL_VERSION}"
-                MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL_VERSION}"
+                MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
+                MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
             )
         endforeach()
     endif()
@@ -354,7 +356,13 @@ endif()
 set(TESTS_ENVIRONMENT
     SDL_AUDIO_DRIVER=dummy
     SDL_VIDEO_DRIVER=dummy
+    PATH=$<TARGET_FILE_DIR:SDL3::${sdl_name_component}>
 )
+
+function(sdl_set_test_timeout TEST TIMEOUT)
+    math(EXPR TIMEOUT "${TIMEOUT}*${SDL_TESTS_TIMEOUT_MULTIPLIER}")
+    set_tests_properties(${test} PROPERTIES TIMEOUT "${TIMEOUT}")
+endfunction()
 
 foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
     add_test(
@@ -362,11 +370,8 @@ foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
         COMMAND ${TESTCASE}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
-    set_tests_properties(${TESTCASE}
-        PROPERTIES
-            ENVIRONMENT "${TESTS_ENVIRONMENT}"
-            TIMEOUT 10
-    )
+    set_tests_properties(${TESTCASE} PROPERTIES ENVIRONMENT "${TESTS_ENVIRONMENT}")
+    sdl_set_test_timeout(${TESTCASE} 10)
     if(SDL_INSTALL_TESTS)
         set(exe ${TESTCASE})
         set(installedtestsdir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL3")
@@ -378,8 +383,8 @@ foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
     endif()
 endforeach()
 
-set_tests_properties(testthread PROPERTIES TIMEOUT 40)
-set_tests_properties(testtimer PROPERTIES TIMEOUT 60)
+sdl_set_test_timeout(testthread 40)
+sdl_set_test_timeout(testtimer 60)
 
 if(SDL_INSTALL_TESTS)
     if(RISCOS)

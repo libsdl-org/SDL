@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -60,6 +60,17 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 }
 #endif
 
+@implementation SDLUITextField : UITextField
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{
+	if (action == @selector(paste:)) {
+		return NO;
+	}
+
+	return [super canPerformAction:action withSender:sender];
+}
+@end
+
 @implementation SDL_uikitviewcontroller
 {
     CADisplayLink *displayLink;
@@ -68,7 +79,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     void *animationCallbackParam;
 
 #if SDL_IPHONE_KEYBOARD
-    UITextField *textField;
+    SDLUITextField *textField;
     BOOL hardwareKeyboard;
     BOOL showingKeyboard;
     BOOL rotatingOrientation;
@@ -145,7 +156,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
 
 #ifdef __IPHONE_10_3
-    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
 
     if ([displayLink respondsToSelector:@selector(preferredFramesPerSecond)] && data != nil && data.uiwindow != nil && [data.uiwindow.screen respondsToSelector:@selector(maximumFramesPerSecond)]) {
         displayLink.preferredFramesPerSecond = data.uiwindow.screen.maximumFramesPerSecond / animationInterval;
@@ -190,7 +201,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     int w = (int)size.width;
     int h = (int)size.height;
 
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, w, h);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
 }
 
 #if !TARGET_OS_TV
@@ -252,7 +263,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 - (void)initKeyboard
 {
     obligateForBackspace = @"                                                                "; /* 64 space */
-    textField = [[UITextField alloc] initWithFrame:CGRectZero];
+    textField = [[SDLUITextField alloc] initWithFrame:CGRectZero];
     textField.delegate = self;
     /* placeholder so there is something to delete! */
     textField.text = obligateForBackspace;
@@ -502,7 +513,7 @@ static SDL_uikitviewcontroller *GetWindowViewController(SDL_Window *window)
         return nil;
     }
 
-    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = window->driverdata;
 
     return data.viewcontroller;
 }
@@ -541,13 +552,8 @@ UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
-    if (!rect) {
-        SDL_InvalidParamError("rect");
-        return;
-    }
-
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(SDL_GetFocusWindow());
         if (vc != nil) {
@@ -558,6 +564,7 @@ void UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect)
             }
         }
     }
+    return 0;
 }
 
 #endif /* SDL_IPHONE_KEYBOARD */

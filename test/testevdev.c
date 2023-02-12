@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
   Copyright (C) 2020-2022 Collabora Ltd.
 
   This software is provided 'as-is', without any express or implied
@@ -19,7 +19,7 @@
 static int run_test(void);
 
 /* FIXME: Need CMake tests for this */
-#if HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX)
+#if (HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX)) && HAVE_LINUX_INPUT_H
 
 #include <stdint.h>
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,18 +33,18 @@ static unsigned int max_frames = 200;
 
 void draw()
 {
-    SDL_Rect Rect;
+    SDL_FRect rect;
 
     SDL_SetRenderDrawColor(renderer, 0x10, 0x9A, 0xCE, 0xFF);
     SDL_RenderClear(renderer);
 
     /* Grow based on the frame just to show a difference per frame of the region */
-    Rect.x = 0;
-    Rect.y = 0;
-    Rect.w = (frame_number * 2) % width;
-    Rect.h = (frame_number * 2) % height;
+    rect.x = 0.0f;
+    rect.y = 0.0f;
+    rect.w = (float)((frame_number * 2) % width);
+    rect.h = (float)((frame_number * 2) % height);
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x10, 0x21, 0xFF);
-    SDL_RenderFillRect(renderer, &Rect);
+    SDL_RenderFillRect(renderer, &rect);
 
     SDL_RenderPresent(renderer);
 }
@@ -65,7 +65,7 @@ void save_surface_to_bmp()
                        SDL_GetWindowID(window), ++frame_number);
 
     SDL_SaveBMP(surface, file);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 }
 
 void loop()
@@ -75,7 +75,7 @@ void loop()
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
         }
@@ -102,7 +102,8 @@ int main(int argc, char *argv[])
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Force the offscreen renderer, if it cannot be created then fail out */
-    if (SDL_VideoInit("offscreen") < 0) {
+    SDL_SetHint("SDL_VIDEO_DRIVER", "offscreen");
+    if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
         SDL_Log("Couldn't initialize the offscreen video driver: %s\n",
                 SDL_GetError());
         return SDL_FALSE;

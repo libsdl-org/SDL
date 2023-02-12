@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -251,7 +251,7 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
             return;
         }
 
-        if ((udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
+        if (udev_class & SDL_UDEV_DEVICE_JOYSTICK) {
             return;
         }
 
@@ -448,7 +448,7 @@ void SDL_EVDEV_Poll(void)
                     case SYN_REPORT:
                         /* Send mouse axis changes together to ensure consistency and reduce event processing overhead */
                         if (item->mouse_x != 0 || item->mouse_y != 0) {
-                            SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, item->mouse_x, item->mouse_y);
+                            SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, (float)item->mouse_x, (float)item->mouse_y);
                             item->mouse_x = item->mouse_y = 0;
                         }
                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {

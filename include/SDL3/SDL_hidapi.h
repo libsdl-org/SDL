@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -133,7 +133,8 @@ typedef struct SDL_hid_device_info
  *
  * Each call to this function should have a matching call to SDL_hid_exit()
  *
- * \returns 0 on success and -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -147,7 +148,8 @@ extern DECLSPEC int SDLCALL SDL_hid_init(void);
  * This function frees all of the static data associated with HIDAPI. It
  * should be called at the end of execution to avoid memory leaks.
  *
- * \returns 0 on success and -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -235,6 +237,7 @@ extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, 
  * platform-specific path name can be used (eg: /dev/hidraw0 on Linux).
  *
  * \param path The path name of the device to open
+ * \param bExclusive Open device in exclusive mode (Windows only)
  * \returns a pointer to a SDL_hid_device object on success or NULL on
  *          failure.
  *
@@ -321,7 +324,8 @@ extern DECLSPEC int SDLCALL SDL_hid_read(SDL_hid_device *dev, unsigned char *dat
  * \param dev A device handle returned from SDL_hid_open().
  * \param nonblock enable or not the nonblocking reads - 1 to enable
  *                 nonblocking - 0 to disable nonblocking.
- * \returns 0 on success and -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -377,10 +381,12 @@ extern DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, unsi
  * Close a HID device.
  *
  * \param dev A device handle returned from SDL_hid_open().
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_hid_close(SDL_hid_device *dev);
+extern DECLSPEC int SDLCALL SDL_hid_close(SDL_hid_device *dev);
 
 /**
  * Get The Manufacturer String from a HID device.
@@ -388,7 +394,8 @@ extern DECLSPEC void SDLCALL SDL_hid_close(SDL_hid_device *dev);
  * \param dev A device handle returned from SDL_hid_open().
  * \param string A wide string buffer to put the data into.
  * \param maxlen The length of the buffer in multiples of wchar_t.
- * \returns 0 on success and -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -400,7 +407,8 @@ extern DECLSPEC int SDLCALL SDL_hid_get_manufacturer_string(SDL_hid_device *dev,
  * \param dev A device handle returned from SDL_hid_open().
  * \param string A wide string buffer to put the data into.
  * \param maxlen The length of the buffer in multiples of wchar_t.
- * \returns 0 on success and -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -412,7 +420,8 @@ extern DECLSPEC int SDLCALL SDL_hid_get_product_string(SDL_hid_device *dev, wcha
  * \param dev A device handle returned from SDL_hid_open().
  * \param string A wide string buffer to put the data into.
  * \param maxlen The length of the buffer in multiples of wchar_t.
- * \returns 0 on success and -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -425,7 +434,8 @@ extern DECLSPEC int SDLCALL SDL_hid_get_serial_number_string(SDL_hid_device *dev
  * \param string_index The index of the string to get.
  * \param string A wide string buffer to put the data into.
  * \param maxlen The length of the buffer in multiples of wchar_t.
- * \returns 0 on success and -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

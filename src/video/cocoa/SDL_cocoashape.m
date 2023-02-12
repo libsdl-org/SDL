@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@ Cocoa_CreateShaper(SDL_Window *window)
         SDL_WindowShaper *result;
         SDL_ShapeData *data;
         int resized_properly;
-        SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
+        SDL_WindowData *windata = window->driverdata;
 
         result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
         if (!result) {
@@ -90,7 +90,7 @@ int Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_Windo
 {
     @autoreleasepool {
         SDL_ShapeData *data = (__bridge SDL_ShapeData *)shaper->driverdata;
-        SDL_WindowData *windata = (__bridge SDL_WindowData *)shaper->window->driverdata;
+        SDL_WindowData *windata = shaper->window->driverdata;
         SDL_CocoaClosure *closure;
         if (data.saved == SDL_TRUE) {
             [data.context restoreGraphicsState];

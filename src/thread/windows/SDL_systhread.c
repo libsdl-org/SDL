@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,30 +28,18 @@
 #include "../SDL_systhread.h"
 #include "SDL_systhread_c.h"
 
-#ifndef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-/* We'll use the C library from this DLL */
-#include <process.h>
-
 #ifndef STACK_SIZE_PARAM_IS_A_RESERVATION
 #define STACK_SIZE_PARAM_IS_A_RESERVATION 0x00010000
 #endif
 
-/* Cygwin gcc-3 ... MingW64 (even with a i386 host) does this like MSVC. */
-#if (defined(__MINGW32__) && (__GNUC__ < 4))
-typedef unsigned long(__cdecl *pfnSDL_CurrentBeginThread)(void *, unsigned,
-                                                          unsigned(__stdcall *func)(void *), void *arg,
-                                                          unsigned, unsigned *threadID);
-typedef void(__cdecl *pfnSDL_CurrentEndThread)(unsigned code);
-
-#else
+#ifndef SDL_PASSED_BEGINTHREAD_ENDTHREAD
+/* We'll use the C library from this DLL */
+#include <process.h>
 typedef uintptr_t(__cdecl *pfnSDL_CurrentBeginThread)(void *, unsigned,
-                                                      unsigned(__stdcall *
-                                                                   func)(void
-                                                                             *),
+                                                      unsigned(__stdcall *func)(void*),
                                                       void *arg, unsigned,
                                                       unsigned *threadID);
 typedef void(__cdecl *pfnSDL_CurrentEndThread)(unsigned code);
-#endif
 #endif /* !SDL_PASSED_BEGINTHREAD_ENDTHREAD */
 
 static DWORD RunThread(void *data)
@@ -131,7 +119,7 @@ void SDL_SYS_SetupThread(const char *name)
     if (name != NULL) {
 #ifndef __WINRT__ /* !!! FIXME: There's no LoadLibrary() in WinRT; don't know if SetThreadDescription is available there at all at the moment. */
         static pfnSetThreadDescription pSetThreadDescription = NULL;
-        static HMODULE kernel32 = 0;
+        static HMODULE kernel32 = NULL;
 
         if (!kernel32) {
             kernel32 = GetModuleHandle(TEXT("kernel32.dll"));

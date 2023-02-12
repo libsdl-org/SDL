@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,7 +35,7 @@
 #include <SDL3/SDL_atomic.h>
 #include <SDL3/SDL_mutex.h>
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if (defined(__WIN32__) || defined(__GDK__)) && !defined(__WINRT__)
 #include <process.h> /* _beginthreadex() and _endthreadex() */
 #endif
 
@@ -81,7 +81,7 @@ typedef enum {
 typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
 
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if (defined(__WIN32__) || defined(__GDK__)) && !defined(__WINRT__)
 /**
  *  \file SDL_thread.h
  *
@@ -116,11 +116,39 @@ typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
 #define SDL_endthread _endthreadex
 #endif
 
+
+/*
+ * Create a SDL Thread
+ *
+ * \param fn Thread function
+ * \param name name
+ * \param data some data
+ * \param pfnSDL_CurrentBeginThread begin function
+ * \param pfnSDL_CurrentEndThread end function
+ *
+ * \returns SDL_Thread pointer
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
 extern DECLSPEC SDL_Thread *SDLCALL
 SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data,
                  pfnSDL_CurrentBeginThread pfnBeginThread,
                  pfnSDL_CurrentEndThread pfnEndThread);
 
+/*
+ * Create a SDL Thread, with explicit stack size
+ *
+ * \param fn Thread function
+ * \param name name
+ * \param stacksize stack size
+ * \param data some data
+ * \param pfnSDL_CurrentBeginThread begin function
+ * \param pfnSDL_CurrentEndThread end function
+ *
+ * \returns SDL_Thread pointer
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
 extern DECLSPEC SDL_Thread *SDLCALL
 SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn,
                  const char *name, const size_t stacksize, void *data,

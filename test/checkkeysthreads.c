@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -174,24 +174,24 @@ void loop()
     while (!done && SDL_WaitEvent(&event)) {
         SDL_Log("Got event type: %" SDL_PRIu32 "\n", event.type);
         switch (event.type) {
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
+        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_UP:
             PrintKey(&event.key.keysym, (event.key.state == SDL_PRESSED) ? SDL_TRUE : SDL_FALSE, (event.key.repeat) ? SDL_TRUE : SDL_FALSE);
             break;
-        case SDL_TEXTEDITING:
+        case SDL_EVENT_TEXT_EDITING:
             PrintText("EDIT", event.text.text);
             break;
-        case SDL_TEXTINPUT:
+        case SDL_EVENT_TEXT_INPUT:
             PrintText("INPUT", event.text.text);
             break;
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             /* Left button quits the app, other buttons toggles text input */
             (void)fprintf(stderr, "mouse button down button: %d (LEFT=%d)\n", event.button.button, SDL_BUTTON_LEFT);
             (void)fflush(stderr);
             if (event.button.button == SDL_BUTTON_LEFT) {
                 done = 1;
             } else {
-                if (SDL_IsTextInputActive()) {
+                if (SDL_TextInputActive()) {
                     SDL_Log("Stopping text input\n");
                     SDL_StopTextInput();
                 } else {
@@ -200,7 +200,7 @@ void loop()
                 }
             }
             break;
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             done = 1;
             break;
         default:
@@ -227,7 +227,7 @@ static int SDLCALL ping_thread(void *ptr)
     for (cnt = 0; cnt < 10; ++cnt) {
         (void)fprintf(stderr, "sending event (%d/%d) from thread.\n", cnt + 1, 10);
         (void)fflush(stderr);
-        sdlevent.type = SDL_KEYDOWN;
+        sdlevent.type = SDL_EVENT_KEY_DOWN;
         sdlevent.key.keysym.sym = SDLK_1;
         SDL_PushEvent(&sdlevent);
         SDL_Delay(1000 + rand() % 1000);

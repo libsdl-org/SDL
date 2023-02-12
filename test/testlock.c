@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@ static SDL_threadID mainthread;
 static SDL_Thread *threads[6];
 static SDL_atomic_t doterminate;
 
-/*
+/**
  * SDL_Quit() shouldn't be used with atexit() directly because
  *  calling conventions may differ...
  */

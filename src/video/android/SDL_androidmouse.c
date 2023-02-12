@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -92,7 +92,7 @@ static SDL_Cursor *Android_CreateCursor(SDL_Surface *surface, int hot_x, int hot
         return NULL;
     }
     custom_cursor = Android_JNI_CreateCustomCursor(converted, hot_x, hot_y);
-    SDL_FreeSurface(converted);
+    SDL_DestroySurface(converted);
     if (!custom_cursor) {
         SDL_Unsupported();
         return NULL;
@@ -122,7 +122,7 @@ static SDL_Cursor *Android_CreateEmptyCursor()
         if (empty_surface) {
             SDL_memset(empty_surface->pixels, 0, (size_t)empty_surface->h * empty_surface->pitch);
             empty_cursor = Android_CreateCursor(empty_surface, 0, 0);
-            SDL_FreeSurface(empty_surface);
+            SDL_DestroySurface(empty_surface);
         }
     }
     return empty_cursor;
@@ -219,12 +219,15 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
         return;
     }
 
+    x /= Android_ScreenDensity;
+    y /= Android_ScreenDensity;
+
     switch (action) {
     case ACTION_DOWN:
         changes = state & ~last_state;
         button = TranslateButton(changes);
         last_state = state;
-        SDL_SendMouseMotion(0, window, 0, relative, (int)x, (int)y);
+        SDL_SendMouseMotion(0, window, 0, relative, x, y);
         SDL_SendMouseButton(0, window, 0, SDL_PRESSED, button);
         break;
 
@@ -232,13 +235,13 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
         changes = last_state & ~state;
         button = TranslateButton(changes);
         last_state = state;
-        SDL_SendMouseMotion(0, window, 0, relative, (int)x, (int)y);
+        SDL_SendMouseMotion(0, window, 0, relative, x, y);
         SDL_SendMouseButton(0, window, 0, SDL_RELEASED, button);
         break;
 
     case ACTION_MOVE:
     case ACTION_HOVER_MOVE:
-        SDL_SendMouseMotion(0, window, 0, relative, (int)x, (int)y);
+        SDL_SendMouseMotion(0, window, 0, relative, x, y);
         break;
 
     case ACTION_SCROLL:

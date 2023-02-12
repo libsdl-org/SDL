@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,7 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
         return 0;
     }
     switch (displayevent) {
-    case SDL_DISPLAYEVENT_ORIENTATION:
+    case SDL_EVENT_DISPLAY_ORIENTATION:
         if (data1 == SDL_ORIENTATION_UNKNOWN || data1 == display->orientation) {
             return 0;
         }
@@ -44,11 +44,11 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(displayevent) == SDL_ENABLE) {
+    if (SDL_EventEnabled(displayevent)) {
         SDL_Event event;
         event.type = displayevent;
         event.common.timestamp = 0;
-        event.display.display = SDL_GetIndexOfDisplay(display);
+        event.display.displayID = display->id;
         event.display.data1 = data1;
         posted = (SDL_PushEvent(&event) > 0);
     }

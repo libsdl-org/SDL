@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,8 +27,7 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-void *
-SDL_LoadObject(const char *sofile)
+void *SDL_LoadObject(const char *sofile)
 {
     void *handle;
     LPTSTR tstr;
@@ -59,8 +58,7 @@ SDL_LoadObject(const char *sofile)
     return handle;
 }
 
-void *
-SDL_LoadFunction(void *handle, const char *name)
+SDL_FunctionPointer SDL_LoadFunction(void *handle, const char *name)
 {
     void *symbol = (void *)GetProcAddress((HMODULE)handle, name);
     if (symbol == NULL) {

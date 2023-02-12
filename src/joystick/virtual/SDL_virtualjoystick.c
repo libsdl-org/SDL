@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,20 @@
 #include "../SDL_joystick_c.h"
 
 static joystick_hwdata *g_VJoys SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+
+static joystick_hwdata *VIRTUAL_HWDataForInstance(SDL_JoystickID instance_id)
+{
+    joystick_hwdata *vjoy;
+
+    SDL_AssertJoysticksLocked();
+
+    for (vjoy = g_VJoys; vjoy; vjoy = vjoy->next) {
+        if (instance_id == vjoy->instance_id) {
+            return vjoy;
+        }
+    }
+    return NULL;
+}
 
 static joystick_hwdata *VIRTUAL_HWDataForIndex(int device_index)
 {
@@ -91,10 +105,9 @@ static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
     SDL_free(hwdata);
 }
 
-int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
+SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
 {
     joystick_hwdata *hwdata = NULL;
-    int device_index = -1;
     const char *name = NULL;
     int axis_triggerleft = -1;
     int axis_triggerright = -1;
@@ -120,7 +133,7 @@ int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
         name = hwdata->desc.name;
     } else {
         switch (hwdata->desc.type) {
-        case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
+        case SDL_JOYSTICK_TYPE_GAMEPAD:
             name = "Virtual Controller";
             break;
         case SDL_JOYSTICK_TYPE_WHEEL:
@@ -154,7 +167,7 @@ int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     }
     hwdata->name = SDL_strdup(name);
 
-    if (hwdata->desc.type == SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
+    if (hwdata->desc.type == SDL_JOYSTICK_TYPE_GAMEPAD) {
         int i, axis;
 
         if (hwdata->desc.button_mask == 0) {
@@ -165,24 +178,24 @@ int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
 
         if (hwdata->desc.axis_mask == 0) {
             if (hwdata->desc.naxes >= 2) {
-                hwdata->desc.axis_mask |= ((1 << SDL_CONTROLLER_AXIS_LEFTX) | (1 << SDL_CONTROLLER_AXIS_LEFTY));
+                hwdata->desc.axis_mask |= ((1 << SDL_GAMEPAD_AXIS_LEFTX) | (1 << SDL_GAMEPAD_AXIS_LEFTY));
             }
             if (hwdata->desc.naxes >= 4) {
-                hwdata->desc.axis_mask |= ((1 << SDL_CONTROLLER_AXIS_RIGHTX) | (1 << SDL_CONTROLLER_AXIS_RIGHTY));
+                hwdata->desc.axis_mask |= ((1 << SDL_GAMEPAD_AXIS_RIGHTX) | (1 << SDL_GAMEPAD_AXIS_RIGHTY));
             }
             if (hwdata->desc.naxes >= 6) {
-                hwdata->desc.axis_mask |= ((1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT) | (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+                hwdata->desc.axis_mask |= ((1 << SDL_GAMEPAD_AXIS_LEFT_TRIGGER) | (1 << SDL_GAMEPAD_AXIS_RIGHT_TRIGGER));
             }
         }
 
         /* Find the trigger axes */
         axis = 0;
-        for (i = 0; axis < hwdata->desc.naxes && i < SDL_CONTROLLER_AXIS_MAX; ++i) {
+        for (i = 0; axis < hwdata->desc.naxes && i < SDL_GAMEPAD_AXIS_MAX; ++i) {
             if (hwdata->desc.axis_mask & (1 << i)) {
-                if (i == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
+                if (i == SDL_GAMEPAD_AXIS_LEFT_TRIGGER) {
                     axis_triggerleft = axis;
                 }
-                if (i == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+                if (i == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
                     axis_triggerright = axis;
                 }
                 ++axis;
@@ -238,29 +251,25 @@ int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     }
     SDL_PrivateJoystickAdded(hwdata->instance_id);
 
-    /* Return the new virtual-device's index */
-    device_index = SDL_JoystickGetDeviceIndexFromInstanceID(hwdata->instance_id);
-    return device_index;
+    return hwdata->instance_id;
 }
 
-int SDL_JoystickDetachVirtualInner(int device_index)
+int SDL_JoystickDetachVirtualInner(SDL_JoystickID instance_id)
 {
-    SDL_JoystickID instance_id;
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
+    joystick_hwdata *hwdata = VIRTUAL_HWDataForInstance(instance_id);
     if (hwdata == NULL) {
         return SDL_SetError("Virtual joystick data not found");
     }
-    instance_id = hwdata->instance_id;
     VIRTUAL_FreeHWData(hwdata);
     SDL_PrivateJoystickRemoved(instance_id);
     return 0;
 }
 
-int SDL_JoystickSetVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 value)
+int SDL_SetJoystickVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 value)
 {
     joystick_hwdata *hwdata;
 
-    SDL_LockJoysticks();
+    SDL_AssertJoysticksLocked();
 
     if (joystick == NULL || !joystick->hwdata) {
         SDL_UnlockJoysticks();
@@ -275,15 +284,14 @@ int SDL_JoystickSetVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 val
 
     hwdata->axes[axis] = value;
 
-    SDL_UnlockJoysticks();
     return 0;
 }
 
-int SDL_JoystickSetVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 value)
+int SDL_SetJoystickVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 value)
 {
     joystick_hwdata *hwdata;
 
-    SDL_LockJoysticks();
+    SDL_AssertJoysticksLocked();
 
     if (joystick == NULL || !joystick->hwdata) {
         SDL_UnlockJoysticks();
@@ -298,15 +306,14 @@ int SDL_JoystickSetVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 
 
     hwdata->buttons[button] = value;
 
-    SDL_UnlockJoysticks();
     return 0;
 }
 
-int SDL_JoystickSetVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
+int SDL_SetJoystickVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
 {
     joystick_hwdata *hwdata;
 
-    SDL_LockJoysticks();
+    SDL_AssertJoysticksLocked();
 
     if (joystick == NULL || !joystick->hwdata) {
         SDL_UnlockJoysticks();
@@ -321,7 +328,6 @@ int SDL_JoystickSetVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
 
     hwdata->hats[hat] = value;
 
-    SDL_UnlockJoysticks();
     return 0;
 }
 
@@ -543,13 +549,13 @@ static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
     }
 
     for (i = 0; i < hwdata->desc.naxes; ++i) {
-        SDL_PrivateJoystickAxis(timestamp, joystick, i, hwdata->axes[i]);
+        SDL_SendJoystickAxis(timestamp, joystick, i, hwdata->axes[i]);
     }
     for (i = 0; i < hwdata->desc.nbuttons; ++i) {
-        SDL_PrivateJoystickButton(timestamp, joystick, i, hwdata->buttons[i]);
+        SDL_SendJoystickButton(timestamp, joystick, i, hwdata->buttons[i]);
     }
     for (i = 0; i < hwdata->desc.nhats; ++i) {
-        SDL_PrivateJoystickHat(timestamp, joystick, i, hwdata->hats[i]);
+        SDL_SendJoystickHat(timestamp, joystick, i, hwdata->hats[i]);
     }
 }
 
@@ -579,136 +585,136 @@ static SDL_bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadM
     int current_button = 0;
     int current_axis = 0;
 
-    if (hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
+    if (hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMEPAD) {
         return SDL_FALSE;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_A))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_A))) {
         out->a.kind = EMappingKind_Button;
         out->a.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_B))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_B))) {
         out->b.kind = EMappingKind_Button;
         out->b.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_X))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_X))) {
         out->x.kind = EMappingKind_Button;
         out->x.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_Y))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_Y))) {
         out->y.kind = EMappingKind_Button;
         out->y.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_BACK))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK))) {
         out->back.kind = EMappingKind_Button;
         out->back.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_GUIDE))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_GUIDE))) {
         out->guide.kind = EMappingKind_Button;
         out->guide.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_START))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_START))) {
         out->start.kind = EMappingKind_Button;
         out->start.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_LEFTSTICK))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_STICK))) {
         out->leftstick.kind = EMappingKind_Button;
         out->leftstick.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_RIGHTSTICK))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_STICK))) {
         out->rightstick.kind = EMappingKind_Button;
         out->rightstick.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_LEFTSHOULDER))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_SHOULDER))) {
         out->leftshoulder.kind = EMappingKind_Button;
         out->leftshoulder.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_RIGHTSHOULDER))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER))) {
         out->rightshoulder.kind = EMappingKind_Button;
         out->rightshoulder.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_UP))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_UP))) {
         out->dpup.kind = EMappingKind_Button;
         out->dpup.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN))) {
         out->dpdown.kind = EMappingKind_Button;
         out->dpdown.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT))) {
         out->dpleft.kind = EMappingKind_Button;
         out->dpleft.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_RIGHT))) {
         out->dpright.kind = EMappingKind_Button;
         out->dpright.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_MISC1))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_MISC1))) {
         out->misc1.kind = EMappingKind_Button;
         out->misc1.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE1))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE1))) {
         out->paddle1.kind = EMappingKind_Button;
         out->paddle1.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE2))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE2))) {
         out->paddle2.kind = EMappingKind_Button;
         out->paddle2.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE3))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE3))) {
         out->paddle3.kind = EMappingKind_Button;
         out->paddle3.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE4))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE4))) {
         out->paddle4.kind = EMappingKind_Button;
         out->paddle4.target = current_button++;
     }
 
-    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_LEFTX))) {
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTX))) {
         out->leftx.kind = EMappingKind_Axis;
         out->leftx.target = current_axis++;
     }
 
-    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_LEFTY))) {
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTY))) {
         out->lefty.kind = EMappingKind_Axis;
         out->lefty.target = current_axis++;
     }
 
-    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_RIGHTX))) {
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTX))) {
         out->rightx.kind = EMappingKind_Axis;
         out->rightx.target = current_axis++;
     }
 
-    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_RIGHTY))) {
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTY))) {
         out->righty.kind = EMappingKind_Axis;
         out->righty.target = current_axis++;
     }
 
-    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT))) {
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFT_TRIGGER))) {
         out->lefttrigger.kind = EMappingKind_Axis;
         out->lefttrigger.target = current_axis++;
     }
 
-    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT))) {
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHT_TRIGGER))) {
         out->righttrigger.kind = EMappingKind_Axis;
         out->righttrigger.target = current_axis++;
     }

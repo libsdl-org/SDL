@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -114,7 +114,7 @@ static int DSP_OpenDevice(_THIS, const char *devname)
 
     /* Try for a closest match on audio format */
     format = 0;
-    for (test_format = SDL_FirstAudioFormat(this->spec.format);
+    for (test_format = SDL_GetFirstAudioFormat(this->spec.format);
          !format && test_format;) {
 #ifdef DEBUG_AUDIO
         fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
@@ -161,7 +161,7 @@ static int DSP_OpenDevice(_THIS, const char *devname)
             break;
         }
         if (!format) {
-            test_format = SDL_NextAudioFormat();
+            test_format = SDL_GetNextAudioFormat();
         }
     }
     if (format == 0) {

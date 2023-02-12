@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -135,7 +135,7 @@ SDL_GetPixelFormatName(Uint32 format)
 #undef CASE
 
 SDL_bool
-SDL_PixelFormatEnumToMasks(Uint32 format, int *bpp, Uint32 *Rmask,
+SDL_GetMasksForPixelFormatEnum(Uint32 format, int *bpp, Uint32 *Rmask,
                            Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask)
 {
     Uint32 masks[4];
@@ -302,7 +302,7 @@ SDL_PixelFormatEnumToMasks(Uint32 format, int *bpp, Uint32 *Rmask,
 }
 
 Uint32
-SDL_MasksToPixelFormatEnum(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask,
+SDL_GetPixelFormatEnumForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask,
                            Uint32 Amask)
 {
     switch (bpp) {
@@ -512,7 +512,7 @@ static SDL_PixelFormat *formats;
 static SDL_SpinLock formats_lock = 0;
 
 SDL_PixelFormat *
-SDL_AllocFormat(Uint32 pixel_format)
+SDL_CreatePixelFormat(Uint32 pixel_format)
 {
     SDL_PixelFormat *format;
 
@@ -557,7 +557,7 @@ int SDL_InitFormat(SDL_PixelFormat *format, Uint32 pixel_format)
     Uint32 Rmask, Gmask, Bmask, Amask;
     Uint32 mask;
 
-    if (!SDL_PixelFormatEnumToMasks(pixel_format, &bpp,
+    if (!SDL_GetMasksForPixelFormatEnum(pixel_format, &bpp,
                                     &Rmask, &Gmask, &Bmask, &Amask)) {
         return -1;
     }
@@ -623,12 +623,11 @@ int SDL_InitFormat(SDL_PixelFormat *format, Uint32 pixel_format)
     return 0;
 }
 
-void SDL_FreeFormat(SDL_PixelFormat *format)
+void SDL_DestroyPixelFormat(SDL_PixelFormat *format)
 {
     SDL_PixelFormat *prev;
 
     if (format == NULL) {
-        SDL_InvalidParamError("format");
         return;
     }
 
@@ -654,13 +653,14 @@ void SDL_FreeFormat(SDL_PixelFormat *format)
     SDL_AtomicUnlock(&formats_lock);
 
     if (format->palette) {
-        SDL_FreePalette(format->palette);
+        SDL_DestroyPalette(format->palette);
     }
     SDL_free(format);
+    return;
 }
 
 SDL_Palette *
-SDL_AllocPalette(int ncolors)
+SDL_CreatePalette(int ncolors)
 {
     SDL_Palette *palette;
 
@@ -706,7 +706,7 @@ int SDL_SetPixelFormatPalette(SDL_PixelFormat *format, SDL_Palette *palette)
     }
 
     if (format->palette) {
-        SDL_FreePalette(format->palette);
+        SDL_DestroyPalette(format->palette);
     }
 
     format->palette = palette;
@@ -744,10 +744,9 @@ int SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors,
     return status;
 }
 
-void SDL_FreePalette(SDL_Palette *palette)
+void SDL_DestroyPalette(SDL_Palette *palette)
 {
     if (palette == NULL) {
-        SDL_InvalidParamError("palette");
         return;
     }
     if (--palette->refcount > 0) {

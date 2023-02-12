@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,7 +41,7 @@
 /* The size of the stack buffer to use for rendering log messages. */
 #define SDL_MAX_LOG_MESSAGE_STACK 256
 
-#define DEFAULT_PRIORITY             SDL_LOG_PRIORITY_CRITICAL
+#define DEFAULT_PRIORITY             SDL_LOG_PRIORITY_ERROR
 #define DEFAULT_ASSERT_PRIORITY      SDL_LOG_PRIORITY_WARN
 #define DEFAULT_APPLICATION_PRIORITY SDL_LOG_PRIORITY_INFO
 #define DEFAULT_TEST_PRIORITY        SDL_LOG_PRIORITY_VERBOSE
@@ -65,6 +65,11 @@ static SDL_LogOutputFunction SDL_log_function = SDL_LogOutput;
 static void *SDL_log_userdata = NULL;
 static SDL_mutex *log_function_mutex = NULL;
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
 static const char *SDL_priority_prefixes[SDL_NUM_LOG_PRIORITIES] = {
     NULL,
     "VERBOSE",
@@ -74,6 +79,10 @@ static const char *SDL_priority_prefixes[SDL_NUM_LOG_PRIORITIES] = {
     "ERROR",
     "CRITICAL"
 };
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #ifdef __ANDROID__
 static const char *SDL_category_prefixes[] = {
@@ -101,7 +110,7 @@ static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
 };
 #endif /* __ANDROID__ */
 
-void SDL_LogInit(void)
+void SDL_InitLog(void)
 {
     if (log_function_mutex == NULL) {
         /* if this fails we'll try to continue without it. */
@@ -109,7 +118,7 @@ void SDL_LogInit(void)
     }
 }
 
-void SDL_LogQuit(void)
+void SDL_QuitLog(void)
 {
     SDL_LogResetPriorities();
     if (log_function_mutex) {
@@ -478,11 +487,6 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 #if HAVE_STDIO_H && \
     !(defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
     (void)fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
-#else
-    /* We won't print anything, but reference the priority prefix anyway
-       to avoid a compiler warning.
-     */
-    (void)SDL_priority_prefixes[priority];
 #endif
 }
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -73,7 +73,7 @@ static int LoadContext(GLES2_Context *data)
 #else
 #define SDL_PROC(ret, func, params)                                                            \
     do {                                                                                       \
-        data->func = SDL_GL_GetProcAddress(#func);                                             \
+        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                    \
         if (!data->func) {                                                                     \
             return SDL_SetError("Couldn't load GLES2 function %s: %s", #func, SDL_GetError()); \
         }                                                                                      \
@@ -115,7 +115,7 @@ quit(int rc)
         }                                                                                   \
     }
 
-/*
+/**
  * Create shader, load in source, compile, dump debug as necessary.
  *
  * shader: Pointer to return created shader ID.
@@ -331,7 +331,7 @@ void loop()
     ++frames;
     while (SDL_PollEvent(&event) && !done) {
         switch (event.type) {
-        case SDL_KEYDOWN:
+        case SDL_EVENT_KEY_DOWN:
         {
             const int sym = event.key.keysym.sym;
 
@@ -355,7 +355,7 @@ void loop()
             break;
         }
 
-        case SDL_WINDOWEVENT_RESIZED:
+        case SDL_EVENT_WINDOW_RESIZED:
             for (i = 0; i < state->num_windows; ++i) {
                 if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
                     int w, h;
@@ -365,7 +365,7 @@ void loop()
                         break;
                     }
                     /* Change view port to the new window dimensions */
-                    SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+                    SDL_GetWindowSizeInPixels(state->windows[i], &w, &h);
                     ctx.glViewport(0, 0, w, h);
                     state->window_w = event.window.data1;
                     state->window_h = event.window.data2;
@@ -396,7 +396,7 @@ void loop()
         int w, h;
         SDL_Rect rs, rd;
 
-        SDL_GL_GetDrawableSize(state->windows[0], &w, &h);
+        SDL_GetWindowSizeInPixels(state->windows[0], &w, &h);
 
         rs.x = 0;
         rs.y = 0;
@@ -434,7 +434,7 @@ int main(int argc, char *argv[])
     int fsaa, accel;
     int value;
     int i;
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode *mode;
     Uint64 then, now;
     int status;
     shader_data *data;
@@ -602,9 +602,11 @@ int main(int argc, char *argv[])
         SDL_GL_SetSwapInterval(0);
     }
 
-    SDL_GetCurrentDisplayMode(0, &mode);
-    SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
-    SDL_Log("\n");
+    mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+    if (mode) {
+        SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode->format));
+        SDL_Log("\n");
+    }
     SDL_Log("Vendor     : %s\n", ctx.glGetString(GL_VENDOR));
     SDL_Log("Renderer   : %s\n", ctx.glGetString(GL_RENDERER));
     SDL_Log("Version    : %s\n", ctx.glGetString(GL_VERSION));
@@ -700,7 +702,7 @@ int main(int argc, char *argv[])
             GL_CHECK(ctx.glTexSubImage2D(g_texture_type, 0, 0 /* xoffset */, 0 /* yoffset */, g_surf_sdf->w, g_surf_sdf->h, format, type, g_surf_sdf->pixels));
         }
 
-        SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+        SDL_GetWindowSizeInPixels(state->windows[i], &w, &h);
         ctx.glViewport(0, 0, w, h);
 
         data = &datas[i];

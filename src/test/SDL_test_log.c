@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,7 +46,7 @@ strftime_gcc2_workaround(char *s, size_t max, const char *fmt, const struct tm *
 #define strftime strftime_gcc2_workaround
 #endif
 
-/* !
+/**
  * Converts unix timestamp to its ascii representation in localtime
  *
  * Note: Uses a static buffer internally, so the return value

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -161,7 +161,7 @@ static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
                 data[0] = motionState[i].accelerometer.x * SDL_STANDARD_GRAVITY;
                 data[1] = motionState[i].accelerometer.y * SDL_STANDARD_GRAVITY;
                 data[2] = motionState[i].accelerometer.z * SDL_STANDARD_GRAVITY;
-                SDL_PrivateSensorUpdate(timestamp, sensor, sensor->hwdata->sensor_timestamp, data, SDL_arraysize(data));
+                SDL_SendSensorUpdate(timestamp, sensor, sensor->hwdata->sensor_timestamp, data, SDL_arraysize(data));
             } break;
             case SDL_SENSOR_GYRO:
             {
@@ -169,7 +169,7 @@ static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
                 data[0] = motionState[i].gyro.x;
                 data[1] = motionState[i].gyro.y;
                 data[2] = motionState[i].gyro.z;
-                SDL_PrivateSensorUpdate(timestamp, sensor, sensor->hwdata->sensor_timestamp, data, SDL_arraysize(data));
+                SDL_SendSensorUpdate(timestamp, sensor, sensor->hwdata->sensor_timestamp, data, SDL_arraysize(data));
             } break;
             default:
                 break;

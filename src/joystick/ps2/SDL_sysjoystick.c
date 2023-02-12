@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -290,7 +290,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
                     previous = info->btns & mask;
                     current = pressed_buttons & mask;
                     if (previous != current) {
-                        SDL_PrivateJoystickButton(timestamp, joystick, i, current ? SDL_PRESSED : SDL_RELEASED);
+                        SDL_SendJoystickButton(timestamp, joystick, i, current ? SDL_PRESSED : SDL_RELEASED);
                     }
                 }
             }
@@ -306,7 +306,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
                 previous_axis = info->analog_state[i];
                 current_axis = all_axis[i];
                 if (previous_axis != current_axis) {
-                    SDL_PrivateJoystickAxis(timestamp, joystick, i, convert_u8_to_s16(current_axis));
+                    SDL_SendJoystickAxis(timestamp, joystick, i, convert_u8_to_s16(current_axis));
                 }
 
                 info->analog_state[i] = current_axis;

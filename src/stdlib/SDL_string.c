@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,7 +36,7 @@
 #define UTF8_IsLeadByte(c)     ((c) >= 0xC0 && (c) <= 0xF4)
 #define UTF8_IsTrailingByte(c) ((c) >= 0x80 && (c) <= 0xBF)
 
-static unsigned UTF8_TrailingBytes(unsigned char c)
+static unsigned UTF8_GetTrailingBytes(unsigned char c)
 {
     if (c >= 0xC0 && c <= 0xDF) {
         return 1;
@@ -574,7 +574,7 @@ SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_
         } else if (UTF8_IsTrailingByte(c)) {
             for (i = bytes - 1; i != 0; --i) {
                 c = (unsigned char)src[i];
-                trailing_bytes = UTF8_TrailingBytes(c);
+                trailing_bytes = UTF8_GetTrailingBytes(c);
                 if (trailing_bytes) {
                     if (bytes - i != trailing_bytes + 1) {
                         bytes = i;
@@ -1621,44 +1621,97 @@ SDL_PrintUnsignedLongLong(char *text, size_t maxlen, SDL_FormatInfo *info, Uint6
 }
 
 static size_t
-SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
+SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg, SDL_bool g)
 {
+    char num[327];
     size_t length = 0;
+    size_t integer_length;
+    int precision = info->precision;
 
     /* This isn't especially accurate, but hey, it's easy. :) */
-    unsigned long value;
+    Uint64 value;
 
     if (arg < 0) {
-        if (length < maxlen) {
-            text[length] = '-';
-        }
-        ++length;
+        num[length++] = '-';
         arg = -arg;
     } else if (info->force_sign) {
-        if (length < maxlen) {
-            text[length] = '+';
-        }
-        ++length;
+        num[length++] = '+';
     }
-    value = (unsigned long)arg;
-    length += SDL_PrintUnsignedLong(TEXT_AND_LEN_ARGS, NULL, value);
+    value = (Uint64)arg;
+    integer_length = SDL_PrintUnsignedLongLong(&num[length], sizeof(num) - length, NULL, value);
+    length += integer_length;
     arg -= value;
-    if (info->precision < 0) {
-        info->precision = 6;
+    if (precision < 0) {
+        precision = 6;
     }
-    if (info->force_type || info->precision > 0) {
-        int mult = 10;
-        if (length < maxlen) {
-            text[length] = '.';
+    if (g) {
+        /* The precision includes the integer portion */
+        precision -= SDL_min((int)integer_length, precision);
+    }
+    if (info->force_type || precision > 0) {
+        const char decimal_separator = '.';
+        double integer_value;
+
+        SDL_assert(length < sizeof(num));
+        num[length++] = decimal_separator;
+        while (precision > 1) {
+            arg *= 10.0;
+            arg = SDL_modf(arg, &integer_value);
+            SDL_assert(length < sizeof(num));
+            num[length++] = '0' + (int)integer_value;
+            --precision;
         }
-        ++length;
-        while (info->precision-- > 0) {
-            value = (unsigned long)(arg * mult);
-            length += SDL_PrintUnsignedLong(TEXT_AND_LEN_ARGS, NULL, value);
-            arg -= (double)value / mult;
-            mult *= 10;
+        if (precision == 1) {
+            arg *= 10.0;
+            integer_value = SDL_round(arg);
+            if (integer_value == 10.0) {
+                /* Carry the one... */
+                size_t i;
+
+                for (i = length; i--; ) {
+                    if (num[i] == decimal_separator) {
+                        continue;
+                    }
+                    if (num[i] == '9') {
+                        num[i] = '0';
+                    } else {
+                        ++num[i];
+                        break;
+                    }
+                }
+                if (i == 0 || num[i] == '-' || num[i] == '+') {
+                    SDL_memmove(&num[i+1], &num[i], length - i);
+                    num[i] = '1';
+                    ++length;
+                }
+                SDL_assert(length < sizeof(num));
+                num[length++] = '0';
+            } else {
+                SDL_assert(length < sizeof(num));
+                num[length++] = '0' + (int)integer_value;
+            }
+        }
+
+        if (g) {
+            /* Trim trailing zeroes and decimal separator */
+            size_t i;
+
+            for (i = length - 1; num[i] != decimal_separator; --i) {
+                if (num[i] == '0') {
+                    --length;
+                } else {
+                    break;
+                }
+            }
+            if (num[i] == decimal_separator) {
+                --length;
+            }
         }
     }
+    num[length] = '\0';
+
+    info->precision = -1;
+    length = SDL_PrintString(text, maxlen, info, num);
 
     if (info->width > 0 && (size_t)info->width > length) {
         const char fill = info->pad_zeroes ? '0' : ' ';
@@ -1671,7 +1724,6 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
         SDL_memset(text, fill, filllen);
         length += width;
     }
-
     return length;
 }
 
@@ -1853,7 +1905,11 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *f
                     done = SDL_TRUE;
                     break;
                 case 'f':
-                    length += SDL_PrintFloat(TEXT_AND_LEN_ARGS, &info, va_arg(ap, double));
+                    length += SDL_PrintFloat(TEXT_AND_LEN_ARGS, &info, va_arg(ap, double), SDL_FALSE);
+                    done = SDL_TRUE;
+                    break;
+                case 'g':
+                    length += SDL_PrintFloat(TEXT_AND_LEN_ARGS, &info, va_arg(ap, double), SDL_TRUE);
                     done = SDL_TRUE;
                     break;
                 case 'S':

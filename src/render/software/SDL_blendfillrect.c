@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -223,7 +223,7 @@ int SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect,
     /* If 'rect' == NULL, then fill the whole surface */
     if (rect) {
         /* Perform clipping */
-        if (!SDL_IntersectRect(rect, &dst->clip_rect, &clipped)) {
+        if (!SDL_GetRectIntersection(rect, &dst->clip_rect, &clipped)) {
             return 0;
         }
         rect = &clipped;
@@ -335,7 +335,7 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
 
     for (i = 0; i < count; ++i) {
         /* Perform clipping */
-        if (!SDL_IntersectRect(&rects[i], &dst->clip_rect, &rect)) {
+        if (!SDL_GetRectIntersection(&rects[i], &dst->clip_rect, &rect)) {
             continue;
         }
         status = func(dst, &rect, blendMode, r, g, b, a);

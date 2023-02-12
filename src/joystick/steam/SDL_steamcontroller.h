@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,8 +24,8 @@
 
 #include "SDL_internal.h"
 
-typedef SDL_bool (*SteamControllerConnectedCallback_t)(const char *name, SDL_JoystickGUID guid, int *device_instance);
-typedef void (*SteamControllerDisconnectedCallback_t)(int device_instance);
+typedef SDL_bool (*SteamControllerConnectedCallback_t)(const char *name, SDL_JoystickGUID guid, SDL_JoystickID *device_instance);
+typedef void (*SteamControllerDisconnectedCallback_t)(SDL_JoystickID device_instance);
 
 void SDL_InitSteamControllers(SteamControllerConnectedCallback_t connectedCallback,
                               SteamControllerDisconnectedCallback_t disconnectedCallback);

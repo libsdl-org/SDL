@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -319,6 +319,28 @@ float SDL_log10f(float x)
     return log10f(x);
 #else
     return (float)SDL_log10((double)x);
+#endif
+}
+
+double
+SDL_modf(double x, double *y)
+{
+#if defined(HAVE_MODF)
+    return modf(x, y);
+#else
+    return SDL_uclibc_modf(x, y);
+#endif
+}
+
+float SDL_modff(float x, float *y)
+{
+#if defined(HAVE_MODFF)
+    return modff(x, y);
+#else
+    double double_result, double_y;
+    double_result = SDL_modf((double)x, &double_y);
+    *y = (float)double_y;
+    return (float)double_result;
 #endif
 }
 
@@ -664,3 +686,40 @@ int SDL_isblank(int x)
     return ((x) == ' ') || ((x) == '\t');
 }
 #endif
+
+void *SDL_aligned_alloc(size_t alignment, size_t size)
+{
+    size_t padding;
+    Uint8 *retval = NULL;
+
+    if (alignment < sizeof(void*)) {
+        alignment = sizeof(void*);
+    }
+    padding = (alignment - (size % alignment));
+
+    if (SDL_size_add_overflow(size, alignment, &size) == 0 &&
+        SDL_size_add_overflow(size, sizeof(void *), &size) == 0 &&
+        SDL_size_add_overflow(size, padding, &size) == 0) {
+        void *original = SDL_malloc(size);
+        if (original) {
+            /* Make sure we have enough space to store the original pointer */
+            retval = (Uint8 *)original + sizeof(original);
+
+            /* Align the pointer we're going to return */
+            retval += alignment - (((size_t)retval) % alignment);
+
+            /* Store the original pointer right before the returned value */
+            SDL_memcpy(retval - sizeof(original), &original, sizeof(original));
+        }
+    }
+    return retval;
+}
+
+void SDL_aligned_free(void *mem)
+{
+    if (mem) {
+        void *original;
+        SDL_memcpy(&original, ((Uint8 *)mem - sizeof(original)), sizeof(original));
+        SDL_free(original);
+    }
+}

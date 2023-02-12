@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -99,8 +99,8 @@ typedef struct SDL_Surface
 /**
  * \brief The type of function used for surface blitting functions.
  */
-typedef int (SDLCALL *SDL_blit) (struct SDL_Surface * src, SDL_Rect * srcrect,
-                                 struct SDL_Surface * dst, SDL_Rect * dstrect);
+typedef int (SDLCALL *SDL_blit) (struct SDL_Surface *src, SDL_Rect *srcrect,
+                                 struct SDL_Surface *dst, SDL_Rect *dstrect);
 
 /**
  * \brief The formula used for converting between YUV and RGB
@@ -125,7 +125,7 @@ typedef enum
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateSurfaceFrom
- * \sa SDL_FreeSurface
+ * \sa SDL_DestroySurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface
     (int width, int height, Uint32 format);
@@ -136,6 +136,9 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface
  *
  * No copy is made of the pixel data. Pixel data is not managed automatically;
  * you must free the surface before you free the pixel data.
+ *
+ * You may pass NULL for pixels and 0 for pitch to create a surface that you
+ * will fill in with valid values later.
  *
  * \param pixels a pointer to existing pixel data
  * \param width the width of the surface
@@ -148,7 +151,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateSurface
- * \sa SDL_FreeSurface
+ * \sa SDL_DestroySurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom
     (void *pixels, int width, int height, int pitch, Uint32 format);
@@ -167,7 +170,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom
  * \sa SDL_LoadBMP
  * \sa SDL_LoadBMP_RW
  */
-extern DECLSPEC void SDLCALL SDL_FreeSurface(SDL_Surface * surface);
+extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
 
 /**
  * Set the palette used by a surface.
@@ -181,8 +184,8 @@ extern DECLSPEC void SDLCALL SDL_FreeSurface(SDL_Surface * surface);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetSurfacePalette(SDL_Surface * surface,
-                                                  SDL_Palette * palette);
+extern DECLSPEC int SDLCALL SDL_SetSurfacePalette(SDL_Surface *surface,
+                                                  SDL_Palette *palette);
 
 /**
  * Set up a surface for directly accessing the pixels.
@@ -205,7 +208,7 @@ extern DECLSPEC int SDLCALL SDL_SetSurfacePalette(SDL_Surface * surface,
  * \sa SDL_MUSTLOCK
  * \sa SDL_UnlockSurface
  */
-extern DECLSPEC int SDLCALL SDL_LockSurface(SDL_Surface * surface);
+extern DECLSPEC int SDLCALL SDL_LockSurface(SDL_Surface *surface);
 
 /**
  * Release a surface after directly accessing the pixels.
@@ -216,13 +219,13 @@ extern DECLSPEC int SDLCALL SDL_LockSurface(SDL_Surface * surface);
  *
  * \sa SDL_LockSurface
  */
-extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
+extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
 
 /**
  * Load a BMP image from a seekable SDL data stream.
  *
- * The new surface should be freed with SDL_FreeSurface(). Not doing so will
- * result in a memory leak.
+ * The new surface should be freed with SDL_DestroySurface(). Not doing so
+ * will result in a memory leak.
  *
  * src is an open SDL_RWops buffer, typically loaded with SDL_RWFromFile.
  * Alternitavely, you might also use the macro SDL_LoadBMP to load a bitmap
@@ -235,12 +238,12 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_FreeSurface
+ * \sa SDL_DestroySurface
  * \sa SDL_RWFromFile
  * \sa SDL_LoadBMP
  * \sa SDL_SaveBMP_RW
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops * src,
+extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops *src,
                                                     int freesrc);
 
 /**
@@ -271,7 +274,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops * src,
  * \sa SDL_SaveBMP
  */
 extern DECLSPEC int SDLCALL SDL_SaveBMP_RW
-    (SDL_Surface * surface, SDL_RWops * dst, int freedst);
+    (SDL_Surface *surface, SDL_RWops *dst, int freedst);
 
 /**
  *  Save a surface to a file.
@@ -298,7 +301,7 @@ extern DECLSPEC int SDLCALL SDL_SaveBMP_RW
  * \sa SDL_LockSurface
  * \sa SDL_UnlockSurface
  */
-extern DECLSPEC int SDLCALL SDL_SetSurfaceRLE(SDL_Surface * surface,
+extern DECLSPEC int SDLCALL SDL_SetSurfaceRLE(SDL_Surface *surface,
                                               int flag);
 
 /**
@@ -313,7 +316,7 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceRLE(SDL_Surface * surface,
  *
  * \sa SDL_SetSurfaceRLE
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasSurfaceRLE(SDL_Surface * surface);
+extern DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);
 
 /**
  * Set the color key (transparent pixel) in a surface.
@@ -337,9 +340,9 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSurfaceRLE(SDL_Surface * surface);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
- * \sa SDL_GetColorKey
+ * \sa SDL_GetSurfaceColorKey
  */
-extern DECLSPEC int SDLCALL SDL_SetColorKey(SDL_Surface * surface,
+extern DECLSPEC int SDLCALL SDL_SetSurfaceColorKey(SDL_Surface *surface,
                                             int flag, Uint32 key);
 
 /**
@@ -348,14 +351,14 @@ extern DECLSPEC int SDLCALL SDL_SetColorKey(SDL_Surface * surface,
  * It is safe to pass a NULL `surface` here; it will return SDL_FALSE.
  *
  * \param surface the SDL_Surface structure to query
- * \return SDL_TRUE if the surface has a color key, SDL_FALSE otherwise.
+ * \returns SDL_TRUE if the surface has a color key, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SetColorKey
- * \sa SDL_GetColorKey
+ * \sa SDL_SetSurfaceColorKey
+ * \sa SDL_GetSurfaceColorKey
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasColorKey(SDL_Surface * surface);
+extern DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasColorKey(SDL_Surface *surface);
 
 /**
  * Get the color key (transparent pixel) for a surface.
@@ -373,10 +376,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasColorKey(SDL_Surface * surface);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
- * \sa SDL_SetColorKey
+ * \sa SDL_SetSurfaceColorKey
  */
-extern DECLSPEC int SDLCALL SDL_GetColorKey(SDL_Surface * surface,
-                                            Uint32 * key);
+extern DECLSPEC int SDLCALL SDL_GetSurfaceColorKey(SDL_Surface *surface,
+                                            Uint32 *key);
 
 /**
  * Set an additional color value multiplied into blit operations.
@@ -399,7 +402,7 @@ extern DECLSPEC int SDLCALL SDL_GetColorKey(SDL_Surface * surface,
  * \sa SDL_GetSurfaceColorMod
  * \sa SDL_SetSurfaceAlphaMod
  */
-extern DECLSPEC int SDLCALL SDL_SetSurfaceColorMod(SDL_Surface * surface,
+extern DECLSPEC int SDLCALL SDL_SetSurfaceColorMod(SDL_Surface *surface,
                                                    Uint8 r, Uint8 g, Uint8 b);
 
 
@@ -418,9 +421,9 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceColorMod(SDL_Surface * surface,
  * \sa SDL_GetSurfaceAlphaMod
  * \sa SDL_SetSurfaceColorMod
  */
-extern DECLSPEC int SDLCALL SDL_GetSurfaceColorMod(SDL_Surface * surface,
-                                                   Uint8 * r, Uint8 * g,
-                                                   Uint8 * b);
+extern DECLSPEC int SDLCALL SDL_GetSurfaceColorMod(SDL_Surface *surface,
+                                                   Uint8 *r, Uint8 *g,
+                                                   Uint8 *b);
 
 /**
  * Set an additional alpha value used in blit operations.
@@ -440,7 +443,7 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceColorMod(SDL_Surface * surface,
  * \sa SDL_GetSurfaceAlphaMod
  * \sa SDL_SetSurfaceColorMod
  */
-extern DECLSPEC int SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface * surface,
+extern DECLSPEC int SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface *surface,
                                                    Uint8 alpha);
 
 /**
@@ -456,8 +459,8 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface * surface,
  * \sa SDL_GetSurfaceColorMod
  * \sa SDL_SetSurfaceAlphaMod
  */
-extern DECLSPEC int SDLCALL SDL_GetSurfaceAlphaMod(SDL_Surface * surface,
-                                                   Uint8 * alpha);
+extern DECLSPEC int SDLCALL SDL_GetSurfaceAlphaMod(SDL_Surface *surface,
+                                                   Uint8 *alpha);
 
 /**
  * Set the blend mode used for blit operations.
@@ -475,7 +478,7 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceAlphaMod(SDL_Surface * surface,
  *
  * \sa SDL_GetSurfaceBlendMode
  */
-extern DECLSPEC int SDLCALL SDL_SetSurfaceBlendMode(SDL_Surface * surface,
+extern DECLSPEC int SDLCALL SDL_SetSurfaceBlendMode(SDL_Surface *surface,
                                                     SDL_BlendMode blendMode);
 
 /**
@@ -490,7 +493,7 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceBlendMode(SDL_Surface * surface,
  *
  * \sa SDL_SetSurfaceBlendMode
  */
-extern DECLSPEC int SDLCALL SDL_GetSurfaceBlendMode(SDL_Surface * surface,
+extern DECLSPEC int SDLCALL SDL_GetSurfaceBlendMode(SDL_Surface *surface,
                                                     SDL_BlendMode *blendMode);
 
 /**
@@ -511,10 +514,10 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceBlendMode(SDL_Surface * surface,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
- * \sa SDL_GetClipRect
+ * \sa SDL_GetSurfaceClipRect
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_SetClipRect(SDL_Surface * surface,
-                                                 const SDL_Rect * rect);
+extern DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface,
+                                                 const SDL_Rect *rect);
 
 /**
  * Get the clipping rectangle for a surface.
@@ -526,25 +529,29 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetClipRect(SDL_Surface * surface,
  *                clipped
  * \param rect an SDL_Rect structure filled in with the clipping rectangle for
  *             the surface
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
- * \sa SDL_SetClipRect
+ * \sa SDL_SetSurfaceClipRect
  */
-extern DECLSPEC void SDLCALL SDL_GetClipRect(SDL_Surface * surface,
-                                             SDL_Rect * rect);
+extern DECLSPEC int SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface,
+                                             SDL_Rect *rect);
 
 /*
  * Creates a new surface identical to the existing surface.
  *
- * The returned surface should be freed with SDL_FreeSurface().
+ * The returned surface should be freed with SDL_DestroySurface().
  *
  * \param surface the surface to duplicate.
  * \returns a copy of the surface, or NULL on failure; call SDL_GetError() for
  *          more information.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface *surface);
 
 /**
  * Copy an existing surface to a new surface of the specified format.
@@ -562,7 +569,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface)
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AllocFormat
+ * \sa SDL_CreatePixelFormat
  * \sa SDL_ConvertSurfaceFormat
  * \sa SDL_CreateSurface
  */
@@ -585,7 +592,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AllocFormat
+ * \sa SDL_CreatePixelFormat
  * \sa SDL_ConvertSurface
  * \sa SDL_CreateSurface
  */
@@ -610,9 +617,9 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat(SDL_Surface *surfa
  */
 extern DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height,
                                               Uint32 src_format,
-                                              const void * src, int src_pitch,
+                                              const void *src, int src_pitch,
                                               Uint32 dst_format,
-                                              void * dst, int dst_pitch);
+                                              void *dst, int dst_pitch);
 
 /**
  * Premultiply the alpha on a block of pixels.
@@ -636,9 +643,9 @@ extern DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height,
  */
 extern DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height,
                                                  Uint32 src_format,
-                                                 const void * src, int src_pitch,
+                                                 const void *src, int src_pitch,
                                                  Uint32 dst_format,
-                                                 void * dst, int dst_pitch);
+                                                 void *dst, int dst_pitch);
 
 /**
  * Perform a fast fill of a rectangle with a specific color.
@@ -649,8 +656,8 @@ extern DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height,
  * information, no blending takes place.
  *
  * If there is a clip rectangle set on the destination (set via
- * SDL_SetClipRect()), then this function will fill based on the intersection
- * of the clip rectangle and `rect`.
+ * SDL_SetSurfaceClipRect()), then this function will fill based on the
+ * intersection of the clip rectangle and `rect`.
  *
  * \param dst the SDL_Surface structure that is the drawing target
  * \param rect the SDL_Rect structure representing the rectangle to fill, or
@@ -661,10 +668,10 @@ extern DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_FillRects
+ * \sa SDL_FillSurfaceRects
  */
-extern DECLSPEC int SDLCALL SDL_FillRect
-    (SDL_Surface * dst, const SDL_Rect * rect, Uint32 color);
+extern DECLSPEC int SDLCALL SDL_FillSurfaceRect
+    (SDL_Surface *dst, const SDL_Rect *rect, Uint32 color);
 
 /**
  * Perform a fast fill of a set of rectangles with a specific color.
@@ -675,8 +682,8 @@ extern DECLSPEC int SDLCALL SDL_FillRect
  * information, no blending takes place.
  *
  * If there is a clip rectangle set on the destination (set via
- * SDL_SetClipRect()), then this function will fill based on the intersection
- * of the clip rectangle and `rect`.
+ * SDL_SetSurfaceClipRect()), then this function will fill based on the
+ * intersection of the clip rectangle and `rect`.
  *
  * \param dst the SDL_Surface structure that is the drawing target
  * \param rects an array of SDL_Rects representing the rectangles to fill.
@@ -687,93 +694,63 @@ extern DECLSPEC int SDLCALL SDL_FillRect
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_FillRect
+ * \sa SDL_FillSurfaceRect
  */
-extern DECLSPEC int SDLCALL SDL_FillRects
-    (SDL_Surface * dst, const SDL_Rect * rects, int count, Uint32 color);
-
-/* !!! FIXME: merge this documentation with the wiki */
-/**
- *  Performs a fast blit from the source surface to the destination surface.
- *
- *  This assumes that the source and destination rectangles are
- *  the same size.  If either \c srcrect or \c dstrect are NULL, the entire
- *  surface (\c src or \c dst) is copied.  The final blit rectangles are saved
- *  in \c srcrect and \c dstrect after all clipping is performed.
- *
- *  \returns 0 if the blit is successful, otherwise it returns -1.
- *
- *  The blit function should not be called on a locked surface.
- *
- *  The blit semantics for surfaces with and without blending and colorkey
- *  are defined as follows:
- *  \verbatim
-    RGBA->RGB:
-      Source surface blend mode set to SDL_BLENDMODE_BLEND:
-        alpha-blend (using the source alpha-channel and per-surface alpha)
-        SDL_SRCCOLORKEY ignored.
-      Source surface blend mode set to SDL_BLENDMODE_NONE:
-        copy RGB.
-        if SDL_SRCCOLORKEY set, only copy the pixels matching the
-        RGB values of the source color key, ignoring alpha in the
-        comparison.
-
-    RGB->RGBA:
-      Source surface blend mode set to SDL_BLENDMODE_BLEND:
-        alpha-blend (using the source per-surface alpha)
-      Source surface blend mode set to SDL_BLENDMODE_NONE:
-        copy RGB, set destination alpha to source per-surface alpha value.
-      both:
-        if SDL_SRCCOLORKEY set, only copy the pixels matching the
-        source color key.
-
-    RGBA->RGBA:
-      Source surface blend mode set to SDL_BLENDMODE_BLEND:
-        alpha-blend (using the source alpha-channel and per-surface alpha)
-        SDL_SRCCOLORKEY ignored.
-      Source surface blend mode set to SDL_BLENDMODE_NONE:
-        copy all of RGBA to the destination.
-        if SDL_SRCCOLORKEY set, only copy the pixels matching the
-        RGB values of the source color key, ignoring alpha in the
-        comparison.
-
-    RGB->RGB:
-      Source surface blend mode set to SDL_BLENDMODE_BLEND:
-        alpha-blend (using the source per-surface alpha)
-      Source surface blend mode set to SDL_BLENDMODE_NONE:
-        copy RGB.
-      both:
-        if SDL_SRCCOLORKEY set, only copy the pixels matching the
-        source color key.
-    \endverbatim
- *
- *  You should call SDL_BlitSurface() unless you know exactly how SDL
- *  blitting works internally and how to use the other blit functions.
- */
-#define SDL_BlitSurface SDL_UpperBlit
+extern DECLSPEC int SDLCALL SDL_FillSurfaceRects
+    (SDL_Surface *dst, const SDL_Rect *rects, int count, Uint32 color);
 
 /**
- * Perform a fast blit from the source surface to the destination surface.
+ * Performs a fast blit from the source surface to the destination surface.
  *
- * SDL_UpperBlit() has been replaced by SDL_BlitSurface(), which is merely a
- * macro for this function with a less confusing name.
+ * This assumes that the source and destination rectangles are the same size.
+ * If either `srcrect` or `dstrect` are NULL, the entire surface (`src` or
+ * `dst`) is copied. The final blit rectangles are saved in `srcrect` and
+ * `dstrect` after all clipping is performed.
  *
- * \since This function is available since SDL 3.0.0.
+ * The blit function should not be called on a locked surface.
  *
- * \sa SDL_BlitSurface
- */
-extern DECLSPEC int SDLCALL SDL_UpperBlit
-    (SDL_Surface * src, const SDL_Rect * srcrect,
-     SDL_Surface * dst, SDL_Rect * dstrect);
-
-/**
- * Perform low-level surface blitting only.
+ * The blit semantics for surfaces with and without blending and colorkey are
+ * defined as follows:
  *
- * This is a semi-private blit function and it performs low-level surface
- * blitting, assuming the input rectangles have already been clipped.
+ * ```c
+ *    RGBA->RGB:
+ *      Source surface blend mode set to SDL_BLENDMODE_BLEND:
+ *       alpha-blend (using the source alpha-channel and per-surface alpha)
+ *       SDL_SRCCOLORKEY ignored.
+ *     Source surface blend mode set to SDL_BLENDMODE_NONE:
+ *       copy RGB.
+ *       if SDL_SRCCOLORKEY set, only copy the pixels matching the
+ *       RGB values of the source color key, ignoring alpha in the
+ *       comparison.
  *
- * Unless you know what you're doing, you should be using SDL_BlitSurface()
- * instead.
+ *   RGB->RGBA:
+ *     Source surface blend mode set to SDL_BLENDMODE_BLEND:
+ *       alpha-blend (using the source per-surface alpha)
+ *     Source surface blend mode set to SDL_BLENDMODE_NONE:
+ *       copy RGB, set destination alpha to source per-surface alpha value.
+ *     both:
+ *       if SDL_SRCCOLORKEY set, only copy the pixels matching the
+ *       source color key.
+ *
+ *   RGBA->RGBA:
+ *     Source surface blend mode set to SDL_BLENDMODE_BLEND:
+ *       alpha-blend (using the source alpha-channel and per-surface alpha)
+ *       SDL_SRCCOLORKEY ignored.
+ *     Source surface blend mode set to SDL_BLENDMODE_NONE:
+ *       copy all of RGBA to the destination.
+ *       if SDL_SRCCOLORKEY set, only copy the pixels matching the
+ *       RGB values of the source color key, ignoring alpha in the
+ *       comparison.
+ *
+ *   RGB->RGB:
+ *     Source surface blend mode set to SDL_BLENDMODE_BLEND:
+ *       alpha-blend (using the source per-surface alpha)
+ *     Source surface blend mode set to SDL_BLENDMODE_NONE:
+ *       copy RGB.
+ *     both:
+ *       if SDL_SRCCOLORKEY set, only copy the pixels matching the
+ *       source color key.
+ * ```
  *
  * \param src the SDL_Surface structure to be copied from
  * \param srcrect the SDL_Rect structure representing the rectangle to be
@@ -788,50 +765,95 @@ extern DECLSPEC int SDLCALL SDL_UpperBlit
  *
  * \sa SDL_BlitSurface
  */
-extern DECLSPEC int SDLCALL SDL_LowerBlit
-    (SDL_Surface * src, SDL_Rect * srcrect,
-     SDL_Surface * dst, SDL_Rect * dstrect);
+extern DECLSPEC int SDLCALL SDL_BlitSurface
+    (SDL_Surface *src, const SDL_Rect *srcrect,
+     SDL_Surface *dst, SDL_Rect *dstrect);
+
+/**
+ * Perform low-level surface blitting only.
+ *
+ * This is a semi-private blit function and it performs low-level surface
+ * blitting, assuming the input rectangles have already been clipped.
+ *
+ * \param src the SDL_Surface structure to be copied from
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied, or NULL to copy the entire surface
+ * \param dst the SDL_Surface structure that is the blit target
+ * \param dstrect the SDL_Rect structure representing the rectangle that is
+ *                copied into
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_BlitSurface
+ */
+extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
+    (SDL_Surface *src, SDL_Rect *srcrect,
+     SDL_Surface *dst, SDL_Rect *dstrect);
 
 
 /**
  * Perform a fast, low quality, stretch blit between two surfaces of the same
  * format.
  *
+ * \param src the SDL_Surface structure to be copied from
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied
+ * \param dst the SDL_Surface structure that is the blit target
+ * \param dstrect the SDL_Rect structure representing the rectangle that is
+ *                copied into
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
  * Please use SDL_BlitScaled() instead.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
-                                            const SDL_Rect * srcrect,
-                                            SDL_Surface * dst,
-                                            const SDL_Rect * dstrect);
+extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src,
+                                            const SDL_Rect *srcrect,
+                                            SDL_Surface *dst,
+                                            const SDL_Rect *dstrect);
 
 /**
  * Perform bilinear scaling between two surfaces of the same format, 32BPP.
  *
+ * \param src the SDL_Surface structure to be copied from
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied
+ * \param dst the SDL_Surface structure that is the blit target
+ * \param dstrect the SDL_Rect structure representing the rectangle that is
+ *                copied into
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface * src,
-                                            const SDL_Rect * srcrect,
-                                            SDL_Surface * dst,
-                                            const SDL_Rect * dstrect);
+extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
+                                            const SDL_Rect *srcrect,
+                                            SDL_Surface *dst,
+                                            const SDL_Rect *dstrect);
 
-
-#define SDL_BlitScaled SDL_UpperBlitScaled
 
 /**
  * Perform a scaled surface copy to a destination surface.
  *
- * SDL_UpperBlitScaled() has been replaced by SDL_BlitScaled(), which is
- * merely a macro for this function with a less confusing name.
+ * \param src the SDL_Surface structure to be copied from
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied
+ * \param dst the SDL_Surface structure that is the blit target
+ * \param dstrect the SDL_Rect structure representing the rectangle that is
+ *                copied into
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitScaled
  */
-extern DECLSPEC int SDLCALL SDL_UpperBlitScaled
-    (SDL_Surface * src, const SDL_Rect * srcrect,
-    SDL_Surface * dst, SDL_Rect * dstrect);
+extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
+    (SDL_Surface *src, const SDL_Rect *srcrect,
+    SDL_Surface *dst, SDL_Rect *dstrect);
 
 /**
  * Perform low-level surface scaled blitting only.
@@ -852,12 +874,14 @@ extern DECLSPEC int SDLCALL SDL_UpperBlitScaled
  *
  * \sa SDL_BlitScaled
  */
-extern DECLSPEC int SDLCALL SDL_LowerBlitScaled
-    (SDL_Surface * src, SDL_Rect * srcrect,
-    SDL_Surface * dst, SDL_Rect * dstrect);
+extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled
+    (SDL_Surface *src, SDL_Rect *srcrect,
+    SDL_Surface *dst, SDL_Rect *dstrect);
 
 /**
  * Set the YUV conversion mode
+ *
+ * \param mode YUV conversion mode
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -866,6 +890,8 @@ extern DECLSPEC void SDLCALL SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_MODE mo
 /**
  * Get the YUV conversion mode
  *
+ * \returns YUV conversion mode
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionMode(void);
@@ -873,6 +899,10 @@ extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionMode(void);
 /**
  * Get the YUV conversion mode, returning the correct mode for the resolution
  * when the current conversion mode is SDL_YUV_CONVERSION_AUTOMATIC
+ *
+ * \param width width
+ * \param height height
+ * \returns YUV conversion mode
  *
  * \since This function is available since SDL 3.0.0.
  */

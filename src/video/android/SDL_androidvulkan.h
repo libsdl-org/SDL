@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,6 @@
 int Android_Vulkan_LoadLibrary(_THIS, const char *path);
 void Android_Vulkan_UnloadLibrary(_THIS);
 SDL_bool Android_Vulkan_GetInstanceExtensions(_THIS,
-                                              SDL_Window *window,
                                               unsigned *count,
                                               const char **names);
 SDL_bool Android_Vulkan_CreateSurface(_THIS,

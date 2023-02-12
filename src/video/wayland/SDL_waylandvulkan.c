@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,6 @@
 
 #include "SDL_waylandvulkan.h"
 
-#define SDL_ENABLE_SYSWM_WAYLAND
 #include <SDL3/SDL_syswm.h>
 
 #if defined(__OpenBSD__)
@@ -117,7 +116,6 @@ void Wayland_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
-                                              SDL_Window *window,
                                               unsigned *count,
                                               const char **names)
 {
@@ -138,7 +136,7 @@ SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
                                       VkInstance instance,
                                       VkSurfaceKHR *surface)
 {
-    SDL_WindowData *windowData = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *windowData = window->driverdata;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateWaylandSurfaceKHR vkCreateWaylandSurfaceKHR =
@@ -175,5 +173,3 @@ SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
 }
 
 #endif
-
-/* vim: set ts=4 sw=4 expandtab: */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-typedef struct
+struct SDL_WindowData
 {
     SDL_Window *window;
     HWND hwnd;
@@ -72,7 +72,7 @@ typedef struct
      * between dpi-scaled points and pixels. Only used if videodata->dpi_scaling_enabled.
      */
     int scaling_dpi;
-} SDL_WindowData;
+};
 
 extern int WIN_CreateWindow(_THIS, SDL_Window *window);
 extern int WIN_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
@@ -104,7 +104,9 @@ extern void WIN_OnWindowEnter(_THIS, SDL_Window *window);
 extern void WIN_UpdateClipCursor(SDL_Window *window);
 extern int WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern void WIN_ClientPointToSDL(const SDL_Window *window, int *x, int *y);
+extern void WIN_ClientPointToSDLFloat(const SDL_Window *window, LONG x, LONG y, float *xOut, float *yOut);
 extern void WIN_ClientPointFromSDL(const SDL_Window *window, int *x, int *y);
+extern void WIN_ClientPointFromSDLFloat(const SDL_Window *window, float x, float y, LONG *xOut, LONG *yOut);
 extern void WIN_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int WIN_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation);
 

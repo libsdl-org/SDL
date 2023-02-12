@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,21 +32,21 @@ loop()
     SDL_Event e;
 
     while (SDL_PollEvent(&e)) {
-        if (e.type == SDL_QUIT) {
+        if (e.type == SDL_EVENT_QUIT) {
             please_quit = SDL_TRUE;
-        } else if (e.type == SDL_KEYDOWN) {
+        } else if (e.type == SDL_EVENT_KEY_DOWN) {
             if (e.key.keysym.sym == SDLK_ESCAPE) {
                 please_quit = SDL_TRUE;
             }
-        } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+        } else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
             if (e.button.button == 1) {
-                SDL_PauseAudioDevice(devid_out, SDL_TRUE);
-                SDL_PauseAudioDevice(devid_in, SDL_FALSE);
+                SDL_PauseAudioDevice(devid_out);
+                SDL_PlayAudioDevice(devid_in);
             }
-        } else if (e.type == SDL_MOUSEBUTTONUP) {
+        } else if (e.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             if (e.button.button == 1) {
-                SDL_PauseAudioDevice(devid_in, SDL_TRUE);
-                SDL_PauseAudioDevice(devid_out, SDL_FALSE);
+                SDL_PauseAudioDevice(devid_in);
+                SDL_PlayAudioDevice(devid_out);
             }
         }
     }
@@ -62,9 +62,9 @@ loop()
     if (please_quit) {
         /* stop playing back, quit. */
         SDL_Log("Shutting down.\n");
-        SDL_PauseAudioDevice(devid_in, 1);
+        SDL_PauseAudioDevice(devid_in);
         SDL_CloseAudioDevice(devid_in);
-        SDL_PauseAudioDevice(devid_out, 1);
+        SDL_PauseAudioDevice(devid_out);
         SDL_CloseAudioDevice(devid_out);
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);

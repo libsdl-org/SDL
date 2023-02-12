@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -62,7 +62,7 @@ static void normalize_locales(char *dst, char *src, size_t buflen)
     normalize_locale_str(dst, src, buflen);
 }
 
-void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     /* !!! FIXME: should we be using setlocale()? Or some D-Bus thing? */
     SDL_bool isstack;
@@ -72,8 +72,7 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     SDL_assert(buflen > 0);
     tmp = SDL_small_alloc(char, buflen, &isstack);
     if (tmp == NULL) {
-        SDL_OutOfMemory();
-        return;
+        return SDL_OutOfMemory();
     }
 
     *tmp = '\0';
@@ -100,4 +99,5 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     }
 
     SDL_small_free(tmp, isstack);
+    return 0;
 }

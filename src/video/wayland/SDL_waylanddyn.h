@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -71,6 +71,9 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define SDL_WAYLAND_SYM(rc, fn, params)        \
     typedef rc(*SDL_DYNWAYLANDFN_##fn) params; \
     extern SDL_DYNWAYLANDFN_##fn WAYLAND_##fn;
+#define SDL_WAYLAND_SYM_OPT(rc, fn, params)    \
+    typedef rc(*SDL_DYNWAYLANDFN_##fn) params; \
+    extern SDL_DYNWAYLANDFN_##fn WAYLAND_##fn;
 #define SDL_WAYLAND_INTERFACE(iface) extern const struct wl_interface *WAYLAND_##iface;
 #include "SDL_waylandsym.h"
 
@@ -137,7 +140,9 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define libdecor_frame_set_title                (*WAYLAND_libdecor_frame_set_title)
 #define libdecor_frame_set_app_id               (*WAYLAND_libdecor_frame_set_app_id)
 #define libdecor_frame_set_max_content_size     (*WAYLAND_libdecor_frame_set_max_content_size)
+#define libdecor_frame_get_max_content_size     (*WAYLAND_libdecor_frame_get_max_content_size)
 #define libdecor_frame_set_min_content_size     (*WAYLAND_libdecor_frame_set_min_content_size)
+#define libdecor_frame_get_min_content_size     (*WAYLAND_libdecor_frame_get_min_content_size)
 #define libdecor_frame_resize                   (*WAYLAND_libdecor_frame_resize)
 #define libdecor_frame_move                     (*WAYLAND_libdecor_frame_move)
 #define libdecor_frame_commit                   (*WAYLAND_libdecor_frame_commit)

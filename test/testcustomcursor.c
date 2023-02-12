@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,25 +72,25 @@ init_color_cursor(const char *file)
     SDL_Surface *surface = SDL_LoadBMP(file);
     if (surface) {
         if (surface->format->palette) {
-            SDL_SetColorKey(surface, 1, *(Uint8 *)surface->pixels);
+            SDL_SetSurfaceColorKey(surface, 1, *(Uint8 *)surface->pixels);
         } else {
             switch (surface->format->BitsPerPixel) {
             case 15:
-                SDL_SetColorKey(surface, 1, (*(Uint16 *)surface->pixels) & 0x00007FFF);
+                SDL_SetSurfaceColorKey(surface, 1, (*(Uint16 *)surface->pixels) & 0x00007FFF);
                 break;
             case 16:
-                SDL_SetColorKey(surface, 1, *(Uint16 *)surface->pixels);
+                SDL_SetSurfaceColorKey(surface, 1, *(Uint16 *)surface->pixels);
                 break;
             case 24:
-                SDL_SetColorKey(surface, 1, (*(Uint32 *)surface->pixels) & 0x00FFFFFF);
+                SDL_SetSurfaceColorKey(surface, 1, (*(Uint32 *)surface->pixels) & 0x00FFFFFF);
                 break;
             case 32:
-                SDL_SetColorKey(surface, 1, *(Uint32 *)surface->pixels);
+                SDL_SetSurfaceColorKey(surface, 1, *(Uint32 *)surface->pixels);
                 break;
             }
         }
         cursor = SDL_CreateColorCursor(surface, 0, 0);
-        SDL_FreeSurface(surface);
+        SDL_DestroySurface(surface);
     }
     return cursor;
 }
@@ -137,7 +137,7 @@ static SDL_Cursor *cursors[1 + SDL_NUM_SYSTEM_CURSORS];
 static SDL_SystemCursor cursor_types[1 + SDL_NUM_SYSTEM_CURSORS];
 static int num_cursors;
 static int current_cursor;
-static int show_cursor;
+static SDL_bool show_cursor;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -154,7 +154,7 @@ void loop()
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
-        if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
             if (event.button.button == SDL_BUTTON_LEFT) {
                 if (num_cursors == 0) {
                     continue;
@@ -214,7 +214,11 @@ void loop()
 
             } else {
                 show_cursor = !show_cursor;
-                SDL_ShowCursor(show_cursor);
+                if (show_cursor) {
+                    SDL_ShowCursor();
+                } else {
+                    SDL_HideCursor();
+                }
             }
         }
     }
@@ -300,7 +304,7 @@ int main(int argc, char *argv[])
         SDL_SetCursor(cursors[0]);
     }
 
-    show_cursor = SDL_ShowCursor(SDL_QUERY);
+    show_cursor = SDL_CursorVisible();
 
     /* Main render loop */
     done = 0;
@@ -313,7 +317,7 @@ int main(int argc, char *argv[])
 #endif
 
     for (i = 0; i < num_cursors; ++i) {
-        SDL_FreeCursor(cursors[i]);
+        SDL_DestroyCursor(cursors[i]);
     }
     quit(0);
 

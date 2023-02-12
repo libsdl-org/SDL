@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1500)
+#if defined(_MSC_VER) && (_MSC_VER >= 1900)
 #include <intrin.h>
 #define HAVE_MSC_ATOMICS 1
 #endif

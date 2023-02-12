@@ -3,7 +3,7 @@ name: Build (VM Actions)
 on: [push, pull_request]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -49,6 +49,14 @@ jobs:
 
         run: |
           cmake -S . -B build -GNinja \
+            -Wdeprecated -Wdev -Werror \
+            -DCMAKE_BUILD_TYPE=Release \
             -DSDL_CHECK_REQUIRED_INCLUDES="/usr/local/include" \
             -DSDL_CHECK_REQUIRED_LINK_OPTIONS="-L/usr/local/lib"
-          cmake --build build --verbose -- -j`sysctl -n hw.ncpu`
+          cmake --build build/ --config Release --verbose -- -j`sysctl -n hw.ncpu`
+          cmake --build build/ --config Release --target package
+    - uses: actions/upload-artifact@v3
+      with:
+        if-no-files-found: error
+        name: SDL-freebsd
+        path: build/dist/SDL3*

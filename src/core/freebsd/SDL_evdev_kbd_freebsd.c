@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -77,7 +77,7 @@ static int kbd_cleanup_atexit_installed = 0;
 static struct sigaction old_sigaction[NSIG];
 
 static int fatal_signals[] = {
-    /* Handlers for SIGTERM and SIGINT are installed in SDL_QuitInit. */
+    /* Handlers for SIGTERM and SIGINT are installed in SDL_InitQuit. */
     SIGHUP, SIGQUIT, SIGILL, SIGABRT,
     SIGFPE, SIGSEGV, SIGPIPE, SIGBUS,
     SIGSYS

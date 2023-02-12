@@ -43,7 +43,7 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 
 /* ---- Internally used structures */
 
-/* !
+/**
 \brief A 32 bit RGBA pixel.
 */
 typedef struct tColorRGBA
@@ -54,7 +54,7 @@ typedef struct tColorRGBA
     Uint8 a;
 } tColorRGBA;
 
-/* !
+/**
 \brief A 8bit Y/palette pixel.
 */
 typedef struct tColorY
@@ -62,7 +62,7 @@ typedef struct tColorY
     Uint8 y;
 } tColorY;
 
-/* !
+/**
 \brief Number of guard rows added to destination surfaces.
 
 This is a simple but effective workaround for observed issues.
@@ -74,14 +74,14 @@ to a situation where the program can segfault.
 */
 #define GUARD_ROWS (2)
 
-/* !
+/**
 \brief Returns colorkey info for a surface
 */
 static Uint32 get_colorkey(SDL_Surface *src)
 {
     Uint32 key = 0;
-    if (SDL_HasColorKey(src)) {
-        SDL_GetColorKey(src, &key);
+    if (SDL_SurfaceHasColorKey(src)) {
+        SDL_GetSurfaceColorKey(src, &key);
     }
     return key;
 }
@@ -99,14 +99,14 @@ static void rotate(double sx, double sy, double sinangle, double cosangle, const
     *dy += center->y;
 }
 
-/* !
+/**
 \brief Internal target surface sizing function for rotations with trig result return.
 
 \param width The source surface width.
 \param height The source surface height.
 \param angle The angle to rotate in degrees.
-\param dstwidth The calculated width of the destination surface.
-\param dstheight The calculated height of the destination surface.
+\param center The center of ratation
+\param rect_dest Bounding box of rotated rectangle
 \param cangle The sine of the angle
 \param sangle The cosine of the angle
 
@@ -248,7 +248,7 @@ static void transformSurfaceY90(SDL_Surface *src, SDL_Surface *dst, int angle, i
 
 #undef TRANSFORM_SURFACE_90
 
-/* !
+/**
 \brief Internal 32 bit rotozoomer with optional anti-aliasing.
 
 Rotates and zooms 32 bit RGBA/ABGR 'src' surface to 'dst' surface based on the control
@@ -264,7 +264,7 @@ Assumes dst surface was allocated with the correct dimensions.
 \param flipx Flag indicating horizontal mirroring should be applied.
 \param flipy Flag indicating vertical mirroring should be applied.
 \param smooth Flag indicating anti-aliasing should be used.
-\param dst_rect destination coordinates
+\param rect_dest destination coordinates
 \param center true center.
 */
 static void transformSurfaceRGBA(SDL_Surface *src, SDL_Surface *dst, int isin, int icos,
@@ -389,7 +389,7 @@ static void transformSurfaceRGBA(SDL_Surface *src, SDL_Surface *dst, int isin, i
     }
 }
 
-/* !
+/**
 
 \brief Rotates and zooms 8 bit palette/Y 'src' surface to 'dst' surface without smoothing.
 
@@ -404,7 +404,7 @@ Assumes dst surface was allocated with the correct dimensions.
 \param icos Integer version of cosine of angle.
 \param flipx Flag indicating horizontal mirroring should be applied.
 \param flipy Flag indicating vertical mirroring should be applied.
-\param dst_rect destination coordinates
+\param rect_dest destination coordinates
 \param center true center.
 */
 static void transformSurfaceY(SDL_Surface *src, SDL_Surface *dst, int isin, int icos, int flipx, int flipy,
@@ -461,7 +461,7 @@ static void transformSurfaceY(SDL_Surface *src, SDL_Surface *dst, int isin, int 
     }
 }
 
-/* !
+/**
 \brief Rotates and zooms a surface with different horizontal and vertival scaling factors and optional anti-aliasing.
 
 Rotates a 32-bit or 8-bit 'src' surface to newly created 'dst' surface.
@@ -475,7 +475,6 @@ When using the NONE and MOD modes, color and alpha modulation must be applied be
 
 \param src The surface to rotozoom.
 \param angle The angle to rotate in degrees.
-\param zoomy The vertical coordinate of the center of rotation
 \param smooth Antialiasing flag; set to SMOOTHING_ON to enable.
 \param flipx Set to 1 to flip the image horizontally
 \param flipy Set to 1 to flip the image vertically
@@ -504,8 +503,8 @@ SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int 
         return NULL;
     }
 
-    if (SDL_HasColorKey(src)) {
-        if (SDL_GetColorKey(src, &colorkey) == 0) {
+    if (SDL_SurfaceHasColorKey(src)) {
+        if (SDL_GetSurfaceColorKey(src, &colorkey) == 0) {
             colorKeyAvailable = SDL_TRUE;
         }
     }
@@ -549,8 +548,8 @@ SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int 
 
     if (colorKeyAvailable == SDL_TRUE) {
         /* If available, the colorkey will be used to discard the pixels that are outside of the rotated area. */
-        SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey);
-        SDL_FillRect(rz_dst, NULL, colorkey);
+        SDL_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey);
+        SDL_FillSurfaceRect(rz_dst, NULL, colorkey);
     } else if (blendmode == SDL_BLENDMODE_NONE) {
         blendmode = SDL_BLENDMODE_BLEND;
     } else if (blendmode == SDL_BLENDMODE_MOD || blendmode == SDL_BLENDMODE_MUL) {
@@ -558,12 +557,12 @@ SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int 
          * that the pixels outside the rotated area don't affect the destination surface.
          */
         colorkey = SDL_MapRGBA(rz_dst->format, 255, 255, 255, 0);
-        SDL_FillRect(rz_dst, NULL, colorkey);
+        SDL_FillSurfaceRect(rz_dst, NULL, colorkey);
         /* Setting a white colorkey for the destination surface makes the final blit discard
          * all pixels outside of the rotated area. This doesn't interfere with anything because
          * white pixels are already a no-op and the MOD blend mode does not interact with alpha.
          */
-        SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey);
+        SDL_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey);
     }
 
     SDL_SetSurfaceBlendMode(rz_dst, blendmode);

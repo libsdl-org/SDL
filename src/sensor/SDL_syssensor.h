@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@
 #include "SDL_sensor_c.h"
 
 /* The SDL sensor structure */
-struct _SDL_Sensor
+struct SDL_Sensor
 {
     SDL_SensorID instance_id;   /* Device instance, monotonically increasing from 0 */
     char *name;                 /* Sensor name - system dependent */
@@ -37,16 +37,16 @@ struct _SDL_Sensor
 
     float data[16];             /* The current state of the sensor */
 
-    struct _SDL_SensorDriver *driver;
+    struct SDL_SensorDriver *driver;
 
     struct sensor_hwdata *hwdata; /* Driver dependent information */
 
     int ref_count; /* Reference count for multiple opens */
 
-    struct _SDL_Sensor *next; /* pointer to next sensor we have allocated */
+    struct SDL_Sensor *next; /* pointer to next sensor we have allocated */
 };
 
-typedef struct _SDL_SensorDriver
+typedef struct SDL_SensorDriver
 {
     /* Function to scan the system for sensors.
      * sensor 0 should be the system default sensor.
@@ -80,7 +80,7 @@ typedef struct _SDL_SensorDriver
 
     /* Function to update the state of a sensor - called as a device poll.
      * This function shouldn't update the sensor structure directly,
-     * but instead should call SDL_PrivateSensorUpdate() to deliver events
+     * but instead should call SDL_SendSensorUpdate() to deliver events
      * and update sensor device state.
      */
     void (*Update)(SDL_Sensor *sensor);

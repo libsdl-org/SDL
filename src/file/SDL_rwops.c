@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -276,7 +276,7 @@ static int SDLCALL windows_file_close(SDL_RWops *context)
         }
         SDL_free(context->hidden.windowsio.buffer.data);
         context->hidden.windowsio.buffer.data = NULL;
-        SDL_FreeRW(context);
+        SDL_DestroyRW(context);
     }
     return 0;
 }
@@ -375,7 +375,7 @@ stdio_read(SDL_RWops *context, void *ptr, Sint64 size)
 {
     size_t nread;
 
-    nread = fread(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
+    nread = fread(ptr, 1, (size_t)size, (FILE *)context->hidden.stdio.fp);
     if (nread == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
         return SDL_Error(SDL_EFREAD);
     }
@@ -387,7 +387,7 @@ stdio_write(SDL_RWops *context, const void *ptr, Sint64 size)
 {
     size_t nwrote;
 
-    nwrote = fwrite(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
+    nwrote = fwrite(ptr, 1, (size_t)size, (FILE *)context->hidden.stdio.fp);
     if (nwrote == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
         return SDL_Error(SDL_EFWRITE);
     }
@@ -403,7 +403,7 @@ static int SDLCALL stdio_close(SDL_RWops *context)
                 status = SDL_Error(SDL_EFWRITE);
             }
         }
-        SDL_FreeRW(context);
+        SDL_DestroyRW(context);
     }
     return status;
 }
@@ -412,7 +412,7 @@ static SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
 {
     SDL_RWops *rwops = NULL;
 
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops != NULL) {
         rwops->size = stdio_size;
         rwops->seek = stdio_seek;
@@ -493,7 +493,7 @@ mem_writeconst(SDL_RWops *context, const void *ptr, Sint64 size)
 static int SDLCALL mem_close(SDL_RWops *context)
 {
     if (context) {
-        SDL_FreeRW(context);
+        SDL_DestroyRW(context);
     }
     return 0;
 }
@@ -536,13 +536,13 @@ SDL_RWFromFile(const char *file, const char *mode)
 #endif /* HAVE_STDIO_H */
 
     /* Try to open the file from the asset system */
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops == NULL) {
-        return NULL; /* SDL_SetError already setup by SDL_AllocRW() */
+        return NULL; /* SDL_SetError already setup by SDL_CreateRW() */
     }
 
     if (Android_JNI_FileOpen(rwops, file, mode) < 0) {
-        SDL_FreeRW(rwops);
+        SDL_DestroyRW(rwops);
         return NULL;
     }
     rwops->size = Android_JNI_FileSize;
@@ -553,13 +553,13 @@ SDL_RWFromFile(const char *file, const char *mode)
     rwops->type = SDL_RWOPS_JNIFILE;
 
 #elif defined(__WIN32__) || defined(__GDK__)
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops == NULL) {
-        return NULL; /* SDL_SetError already setup by SDL_AllocRW() */
+        return NULL; /* SDL_SetError already setup by SDL_CreateRW() */
     }
 
     if (windows_file_open(rwops, file, mode) < 0) {
-        SDL_FreeRW(rwops);
+        SDL_DestroyRW(rwops);
         return NULL;
     }
     rwops->size = windows_file_size;
@@ -606,7 +606,7 @@ SDL_RWFromMem(void *mem, int size)
         return rwops;
     }
 
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops != NULL) {
         rwops->size = mem_size;
         rwops->seek = mem_seek;
@@ -634,7 +634,7 @@ SDL_RWFromConstMem(const void *mem, int size)
         return rwops;
     }
 
-    rwops = SDL_AllocRW();
+    rwops = SDL_CreateRW();
     if (rwops != NULL) {
         rwops->size = mem_size;
         rwops->seek = mem_seek;
@@ -650,7 +650,7 @@ SDL_RWFromConstMem(const void *mem, int size)
 }
 
 SDL_RWops *
-SDL_AllocRW(void)
+SDL_CreateRW(void)
 {
     SDL_RWops *area;
 
@@ -663,7 +663,7 @@ SDL_AllocRW(void)
     return area;
 }
 
-void SDL_FreeRW(SDL_RWops *area)
+void SDL_DestroyRW(SDL_RWops *area)
 {
     SDL_free(area);
 }
@@ -703,10 +703,22 @@ SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
         }
 
         size_read = SDL_RWread(src, (char *)data + size_total, size - size_total);
+        if (size_read > 0) {
+            size_total += size_read;
+            continue;
+        }
         if (size_read == 0) {
+            /* End of file */
             break;
         }
-        size_total += size_read;
+        if (size_read == -2) {
+            /* Non-blocking I/O, should we wait here? */
+        }
+
+        /* Read error */
+        SDL_free(data);
+        data = NULL;
+        goto done;
     }
 
     if (datasize) {

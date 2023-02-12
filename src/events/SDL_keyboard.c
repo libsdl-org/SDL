@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,8 +30,14 @@
 
 /* Global keyboard information */
 
-#define KEYBOARD_HARDWARE    0x01
-#define KEYBOARD_AUTORELEASE 0x02
+typedef enum
+{
+    KEYBOARD_HARDWARE = 0x01,
+    KEYBOARD_AUTORELEASE = 0x02,
+    KEYBOARD_IGNOREMODIFIERS = 0x04
+} SDL_KeyboardFlags;
+
+#define KEYBOARD_SOURCE_MASK (KEYBOARD_HARDWARE | KEYBOARD_AUTORELEASE)
 
 typedef struct SDL_Keyboard SDL_Keyboard;
 
@@ -664,7 +670,7 @@ SDL_UCS4ToUTF8(Uint32 ch, char *dst)
 }
 
 /* Public functions */
-int SDL_KeyboardInit(void)
+int SDL_InitKeyboard(void)
 {
     /* Set the default keymap */
     SDL_SetKeymap(0, SDL_default_keymap, SDL_NUM_SCANCODES, SDL_FALSE);
@@ -762,11 +768,11 @@ void SDL_SetKeyboardFocus(SDL_Window *window)
             SDL_assert(!(keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE));
         }
 
-        SDL_SendWindowEvent(keyboard->focus, SDL_WINDOWEVENT_FOCUS_LOST,
+        SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST,
                             0, 0);
 
         /* Ensures IME compositions are committed */
-        if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
+        if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
             SDL_VideoDevice *video = SDL_GetVideoDevice();
             if (video && video->StopTextInput) {
                 video->StopTextInput(video);
@@ -777,10 +783,10 @@ void SDL_SetKeyboardFocus(SDL_Window *window)
     keyboard->focus = window;
 
     if (keyboard->focus) {
-        SDL_SendWindowEvent(keyboard->focus, SDL_WINDOWEVENT_FOCUS_GAINED,
+        SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_GAINED,
                             0, 0);
 
-        if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
+        if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
             SDL_VideoDevice *video = SDL_GetVideoDevice();
             if (video && video->StartTextInput) {
                 video->StartTextInput(video);
@@ -789,13 +795,14 @@ void SDL_SetKeyboardFocus(SDL_Window *window)
     }
 }
 
-static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint8 source, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
+static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, SDL_KeyboardFlags flags, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
     SDL_Keymod modifier;
     Uint32 type;
     Uint8 repeat = SDL_FALSE;
+    const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
 
     if (scancode == SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
         return 0;
@@ -809,10 +816,10 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint8 source, Uint8 sta
     /* Figure out what type of event this is */
     switch (state) {
     case SDL_PRESSED:
-        type = SDL_KEYDOWN;
+        type = SDL_EVENT_KEY_DOWN;
         break;
     case SDL_RELEASED:
-        type = SDL_KEYUP;
+        type = SDL_EVENT_KEY_UP;
         break;
     default:
         /* Invalid state -- bail */
@@ -848,60 +855,62 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint8 source, Uint8 sta
     }
 
     /* Update modifiers state if applicable */
-    switch (keycode) {
-    case SDLK_LCTRL:
-        modifier = SDL_KMOD_LCTRL;
-        break;
-    case SDLK_RCTRL:
-        modifier = SDL_KMOD_RCTRL;
-        break;
-    case SDLK_LSHIFT:
-        modifier = SDL_KMOD_LSHIFT;
-        break;
-    case SDLK_RSHIFT:
-        modifier = SDL_KMOD_RSHIFT;
-        break;
-    case SDLK_LALT:
-        modifier = SDL_KMOD_LALT;
-        break;
-    case SDLK_RALT:
-        modifier = SDL_KMOD_RALT;
-        break;
-    case SDLK_LGUI:
-        modifier = SDL_KMOD_LGUI;
-        break;
-    case SDLK_RGUI:
-        modifier = SDL_KMOD_RGUI;
-        break;
-    case SDLK_MODE:
-        modifier = SDL_KMOD_MODE;
-        break;
-    default:
-        modifier = SDL_KMOD_NONE;
-        break;
-    }
-    if (SDL_KEYDOWN == type) {
+    if (!(flags & KEYBOARD_IGNOREMODIFIERS)) {
         switch (keycode) {
-        case SDLK_NUMLOCKCLEAR:
-            keyboard->modstate ^= SDL_KMOD_NUM;
+        case SDLK_LCTRL:
+            modifier = SDL_KMOD_LCTRL;
             break;
-        case SDLK_CAPSLOCK:
-            keyboard->modstate ^= SDL_KMOD_CAPS;
+        case SDLK_RCTRL:
+            modifier = SDL_KMOD_RCTRL;
             break;
-        case SDLK_SCROLLLOCK:
-            keyboard->modstate ^= SDL_KMOD_SCROLL;
+        case SDLK_LSHIFT:
+            modifier = SDL_KMOD_LSHIFT;
+            break;
+        case SDLK_RSHIFT:
+            modifier = SDL_KMOD_RSHIFT;
+            break;
+        case SDLK_LALT:
+            modifier = SDL_KMOD_LALT;
+            break;
+        case SDLK_RALT:
+            modifier = SDL_KMOD_RALT;
+            break;
+        case SDLK_LGUI:
+            modifier = SDL_KMOD_LGUI;
+            break;
+        case SDLK_RGUI:
+            modifier = SDL_KMOD_RGUI;
+            break;
+        case SDLK_MODE:
+            modifier = SDL_KMOD_MODE;
             break;
         default:
-            keyboard->modstate |= modifier;
+            modifier = SDL_KMOD_NONE;
             break;
         }
-    } else {
-        keyboard->modstate &= ~modifier;
+        if (SDL_EVENT_KEY_DOWN == type) {
+            switch (keycode) {
+            case SDLK_NUMLOCKCLEAR:
+                keyboard->modstate ^= SDL_KMOD_NUM;
+                break;
+            case SDLK_CAPSLOCK:
+                keyboard->modstate ^= SDL_KMOD_CAPS;
+                break;
+            case SDLK_SCROLLLOCK:
+                keyboard->modstate ^= SDL_KMOD_SCROLL;
+                break;
+            default:
+                keyboard->modstate |= modifier;
+                break;
+            }
+        } else {
+            keyboard->modstate &= ~modifier;
+        }
     }
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(type) == SDL_ENABLE) {
+    if (SDL_EventEnabled(type)) {
         SDL_Event event;
         event.type = type;
         event.common.timestamp = timestamp;
@@ -973,6 +982,11 @@ int SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode)
     return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_AUTORELEASE, SDL_PRESSED, scancode, SDLK_UNKNOWN);
 }
 
+int SDL_SendKeyboardKeyIgnoreModifiers(Uint64 timestamp, Uint8 state, SDL_Scancode scancode)
+{
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE | KEYBOARD_IGNOREMODIFIERS, state, scancode, SDLK_UNKNOWN);
+}
+
 void SDL_ReleaseAutoReleaseKeys(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
@@ -995,7 +1009,7 @@ SDL_HardwareKeyboardKeyPressed(void)
     SDL_Scancode scancode;
 
     for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
-        if ((keyboard->keysource[scancode] & KEYBOARD_HARDWARE) != 0) {
+        if (keyboard->keysource[scancode] & KEYBOARD_HARDWARE) {
             return SDL_TRUE;
         }
     }
@@ -1014,11 +1028,11 @@ int SDL_SendKeyboardText(const char *text)
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
         SDL_Event event;
         size_t pos = 0, advance, length = SDL_strlen(text);
 
-        event.type = SDL_TEXTINPUT;
+        event.type = SDL_EVENT_TEXT_INPUT;
         event.common.timestamp = 0;
         event.text.windowID = keyboard->focus ? keyboard->focus->id : 0;
         while (pos < length) {
@@ -1040,19 +1054,19 @@ int SDL_SendEditingText(const char *text, int start, int length)
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(SDL_TEXTEDITING) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_EVENT_TEXT_EDITING)) {
         SDL_Event event;
 
         if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE) &&
             SDL_strlen(text) >= SDL_arraysize(event.text.text)) {
-            event.type = SDL_TEXTEDITING_EXT;
+            event.type = SDL_EVENT_TEXT_EDITING_EXT;
             event.common.timestamp = 0;
             event.editExt.windowID = keyboard->focus ? keyboard->focus->id : 0;
             event.editExt.text = text ? SDL_strdup(text) : NULL;
             event.editExt.start = start;
             event.editExt.length = length;
         } else {
-            event.type = SDL_TEXTEDITING;
+            event.type = SDL_EVENT_TEXT_EDITING;
             event.common.timestamp = 0;
             event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
             event.edit.start = start;
@@ -1065,7 +1079,7 @@ int SDL_SendEditingText(const char *text, int start, int length)
     return posted;
 }
 
-void SDL_KeyboardQuit(void)
+void SDL_QuitKeyboard(void)
 {
 }
 

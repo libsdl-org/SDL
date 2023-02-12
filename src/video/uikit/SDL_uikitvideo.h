@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
 
 #endif /* __OBJC__ */
 
-void UIKit_SuspendScreenSaver(_THIS);
+int UIKit_SuspendScreenSaver(_THIS);
 
 void UIKit_ForceUpdateHomeIndicator(void);
 

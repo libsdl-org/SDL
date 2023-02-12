@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,6 @@
 
 #include "SDL_blit.h"
 #include "SDL_blit_copy.h"
-#include "../SDL_intrin.h"
 
 #ifdef __SSE__
 /* This assumes 16-byte aligned src and dst */

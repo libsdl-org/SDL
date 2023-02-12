@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#ifndef _SDL_offscreenopengles_h
-#define _SDL_offscreenopengles_h
+#ifndef SDL_offscreenopengles_h
+#define SDL_offscreenopengles_h
 
 #if SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL
 
@@ -41,4 +41,4 @@ extern int OFFSCREEN_GLES_SwapWindow(_THIS, SDL_Window *window);
 
 #endif /* SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL */
 
-#endif /* _SDL_offscreenopengles_h */
+#endif /* SDL_offscreenopengles_h */

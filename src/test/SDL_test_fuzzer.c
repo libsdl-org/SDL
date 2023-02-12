@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -161,7 +161,7 @@ SDLTest_RandomIntegerInRange(Sint32 pMin, Sint32 pMax)
     return (Sint32)((number % ((max + 1) - min)) + min);
 }
 
-/* !
+/**
  * Generates a unsigned boundary value between the given boundaries.
  * Boundary values are inclusive. See the examples below.
  * If boundary2 < boundary1, the values are swapped.
@@ -288,7 +288,7 @@ SDLTest_RandomUint64BoundaryValue(Uint64 boundary1, Uint64 boundary2, SDL_bool v
                                                   validDomain);
 }
 
-/* !
+/**
  * Generates a signed boundary value between the given boundaries.
  * Boundary values are inclusive. See the examples below.
  * If boundary2 < boundary1, the values are swapped.

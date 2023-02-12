@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,10 +26,11 @@
 #include <3ds.h>
 
 #include "../SDL_sysvideo.h"
-typedef struct SDL_WindowData
+
+struct SDL_WindowData
 {
     gfxScreen_t screen; /**< Keeps track of which N3DS screen is targetted */
-} SDL_WindowData;
+};
 
 #define FRAMEBUFFER_FORMAT SDL_PIXELFORMAT_RGBA8888
 

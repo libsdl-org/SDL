@@ -78,27 +78,15 @@ function(listtostr LIST OUTPUT)
   # Do not use string(REPLACE ";" " ") here to avoid messing up list entries
   set(res)
   foreach(ITEM ${${LIST}})
+    if(ITEM MATCHES "^SHELL:")
+      string(SUBSTRING "${ITEM}" 6 -1 ITEM)
+    endif()
     if(ITEM)
       set(res "${res} ${LPREFIX}${ITEM}")
     endif()
   endforeach()
+  string(STRIP "${res}" res)
   set(${OUTPUT} "${res}" PARENT_SCOPE)
-endfunction()
-
-function(listtostrrev _LIST _OUTPUT)
-  if(${ARGC} EQUAL 3)
-    # prefix for each element
-    set(_LPREFIX ${ARGV2})
-  else()
-    set(_LPREFIX "")
-  endif()
-  # Do not use string(REPLACE ";" " ") here to avoid messing up list
-  # entries
-  set(res)
-  foreach(_ITEM ${${_LIST}})
-    set(res "${res} ${_LPREFIX}${_ITEM}")
-  endforeach()
-  set($_OUTPUT} "${res}" PARENT_SCOPE)
 endfunction()
 
 function(find_stringlength_longest_item inList outLength)

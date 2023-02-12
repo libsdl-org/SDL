@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -115,7 +115,7 @@ int X11_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowS
     /* Assume that shaper->alphacutoff already has a value, because SDL_SetWindowShape() should have given it one. */
     SDL_CalculateShapeBitmap(shaper->mode, shape, data->bitmap, 8);
 
-    windowdata = (SDL_WindowData *)(shaper->window->driverdata);
+    windowdata = shaper->window->driverdata;
     shapemask = X11_XCreateBitmapFromData(windowdata->videodata->display, windowdata->xwindow, data->bitmap, shaper->window->w, shaper->window->h);
 
     X11_XShapeCombineMask(windowdata->videodata->display, windowdata->xwindow, ShapeBounding, 0, 0, shapemask, ShapeSet);

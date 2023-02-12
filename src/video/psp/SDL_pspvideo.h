@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,23 +27,18 @@
 #include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
-typedef struct SDL_VideoData
+struct SDL_VideoData
 {
     SDL_bool egl_initialized; /* OpenGL ES device initialization status */
     uint32_t egl_refcount;    /* OpenGL ES reference count              */
 
-} SDL_VideoData;
+};
 
-typedef struct SDL_DisplayData
-{
-
-} SDL_DisplayData;
-
-typedef struct SDL_WindowData
+struct SDL_WindowData
 {
     SDL_bool uses_gles; /* if true window must support OpenGL ES */
 
-} SDL_WindowData;
+};
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
@@ -52,7 +47,7 @@ typedef struct SDL_WindowData
 /* Display and window functions */
 int PSP_VideoInit(_THIS);
 void PSP_VideoQuit(_THIS);
-void PSP_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+int PSP_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
 int PSP_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 int PSP_CreateWindow(_THIS, SDL_Window *window);
 int PSP_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
@@ -70,14 +65,14 @@ void PSP_DestroyWindow(_THIS, SDL_Window *window);
 
 /* OpenGL/OpenGL ES functions */
 int PSP_GL_LoadLibrary(_THIS, const char *path);
-void *PSP_GL_GetProcAddress(_THIS, const char *proc);
+SDL_FunctionPointer PSP_GL_GetProcAddress(_THIS, const char *proc);
 void PSP_GL_UnloadLibrary(_THIS);
 SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window *window);
 int PSP_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 int PSP_GL_SetSwapInterval(_THIS, int interval);
-int PSP_GL_GetSwapInterval(_THIS);
+int PSP_GL_GetSwapInterval(_THIS, int *interval);
 int PSP_GL_SwapWindow(_THIS, SDL_Window *window);
-void PSP_GL_DeleteContext(_THIS, SDL_GLContext context);
+int PSP_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 /* PSP on screen keyboard */
 SDL_bool PSP_HasScreenKeyboardSupport(_THIS);

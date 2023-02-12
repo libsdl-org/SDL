@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -320,7 +320,7 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
 
     mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouseInput, float deltaX, float deltaY) {
       if (SDL_GCMouseRelativeMode()) {
-          SDL_SendMouseMotion(0, SDL_GetMouseFocus(), mouseID, 1, (int)deltaX, -(int)deltaY);
+          SDL_SendMouseMotion(0, SDL_GetMouseFocus(), mouseID, 1, deltaX, -deltaY);
       }
     };
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -144,7 +144,7 @@ static void WINRT_HandleGameBarIsInputRedirected_NonMainThread(Platform::Object 
 
 void WINRT_InitGameBar(_THIS)
 {
-    SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *driverdata = _this->driverdata;
     IGameBarStatics_ *gameBar = WINRT_GetGameBar();
     if (gameBar) {
         /* GameBar.IsInputRedirected events can come in via something other than
@@ -173,7 +173,7 @@ void WINRT_QuitGameBar(_THIS)
     if (gameBar == NULL) {
         return;
     }
-    driverdata = (SDL_VideoData *)_this->driverdata;
+    driverdata = _this->driverdata;
     if (driverdata->gameBarIsInputRedirectedToken.Value) {
         gameBar->remove_IsInputRedirectedChanged(driverdata->gameBarIsInputRedirectedToken);
         driverdata->gameBarIsInputRedirectedToken.Value = 0;

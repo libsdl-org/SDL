@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -142,7 +142,7 @@ static void SDL_QuitQuit_Internal(void)
 }
 #endif
 
-int SDL_QuitInit(void)
+int SDL_InitQuit(void)
 {
 #ifdef HAVE_SIGNAL_SUPPORT
     if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
@@ -191,5 +191,5 @@ int SDL_SendQuit(void)
 #ifdef HAVE_SIGNAL_SUPPORT
     send_quit_pending = SDL_FALSE;
 #endif
-    return SDL_SendAppEvent(SDL_QUIT);
+    return SDL_SendAppEvent(SDL_EVENT_QUIT);
 }

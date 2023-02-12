@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,19 +48,21 @@ void poked(int sig)
     done = 1;
 }
 
+static SDL_AudioDeviceID g_audio_id = 0;
+
 void loop()
 {
 #ifdef __EMSCRIPTEN__
-    if (done || (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)) {
+    if (done || (SDL_GetAudioDeviceStatus(g_audio_id) != SDL_AUDIO_PLAYING)) {
         emscripten_cancel_main_loop();
     } else
 #endif
     {
         /* The device from SDL_OpenAudio() is always device #1. */
-        const Uint32 queued = SDL_GetQueuedAudioSize(1);
+        const Uint32 queued = SDL_GetQueuedAudioSize(g_audio_id);
         SDL_Log("Device has %u bytes queued.\n", (unsigned int)queued);
         if (queued <= 8192) { /* time to requeue the whole thing? */
-            if (SDL_QueueAudio(1, wave.sound, wave.soundlen) == 0) {
+            if (SDL_QueueAudio(g_audio_id, wave.sound, wave.soundlen) == 0) {
                 SDL_Log("Device queued %u more bytes.\n", (unsigned int)wave.soundlen);
             } else {
                 SDL_Log("Device FAILED to queue %u more bytes: %s\n", (unsigned int)wave.soundlen, SDL_GetError());
@@ -110,16 +112,18 @@ int main(int argc, char *argv[])
 #endif /* HAVE_SIGNAL_H */
 
     /* Initialize fillerup() variables */
-    if (SDL_OpenAudio(&wave.spec, NULL) < 0) {
+    g_audio_id = SDL_OpenAudioDevice(NULL, 0, &wave.spec, NULL, 0);
+
+    if (!g_audio_id) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
-        SDL_FreeWAV(wave.sound);
+        SDL_free(wave.sound);
         quit(2);
     }
 
     /*static x[99999]; SDL_QueueAudio(1, x, sizeof (x));*/
 
     /* Let the audio run */
-    SDL_PauseAudio(0);
+    SDL_PlayAudioDevice(g_audio_id);
 
     done = 0;
 
@@ -130,7 +134,7 @@ int main(int argc, char *argv[])
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
-    while (!done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING)) {
+    while (!done && (SDL_GetAudioDeviceStatus(g_audio_id) == SDL_AUDIO_PLAYING)) {
         loop();
 
         SDL_Delay(100); /* let it play for awhile. */
@@ -138,8 +142,8 @@ int main(int argc, char *argv[])
 #endif
 
     /* Clean up on signal */
-    SDL_CloseAudio();
-    SDL_FreeWAV(wave.sound);
+    SDL_CloseAudioDevice(g_audio_id);
+    SDL_free(wave.sound);
     SDL_free(filename);
     SDL_Quit();
     return 0;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_n3dsaudio_h_
-#define _SDL_n3dsaudio_h_
+#ifndef SDL_n3dsaudio_h
+#define SDL_n3dsaudio_h
 
 #include <3ds.h>
 
@@ -46,4 +46,4 @@ struct SDL_PrivateAudioData
     SDL_bool isCancelled;
 };
 
-#endif /* _SDL_n3dsaudio_h_ */
+#endif /* SDL_n3dsaudio_h */

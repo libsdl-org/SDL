@@ -222,7 +222,7 @@
     <ClInclude Include="..\..\include\SDL3\SDL_filesystem.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_gamecontroller.h">
+    <ClInclude Include="..\..\include\SDL3\SDL_gamepad.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_guid.h">
@@ -300,6 +300,9 @@
     <ClInclude Include="..\..\include\SDL3\SDL_platform.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_platform_defines.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_power.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -361,9 +364,6 @@
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_test_harness.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_images.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_test_log.h">
@@ -483,7 +483,10 @@
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h">
       <Filter>haptic</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\joystick\SDL_gamecontrollerdb.h">
+    <ClInclude Include="..\..\src\joystick\SDL_gamepad_c.h">
+      <Filter>joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\SDL_gamepad_db.h">
       <Filter>joystick</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h">
@@ -916,7 +919,7 @@
     <ClCompile Include="..\..\src\joystick\controller_type.c">
       <Filter>joystick</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\joystick\SDL_gamecontroller.c">
+    <ClCompile Include="..\..\src\joystick\SDL_gamepad.c">
       <Filter>joystick</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c">
@@ -971,6 +974,9 @@
       <Filter>libm</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libm\s_floor.c">
+      <Filter>libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libm\s_modf.c">
       <Filter>libm</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libm\s_scalbn.c">

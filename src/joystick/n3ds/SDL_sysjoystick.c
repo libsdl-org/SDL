@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -110,7 +110,7 @@ static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick)
     if (updated_down) {
         for (Uint8 i = 0; i < joystick->nbuttons; i++) {
             if (current_state & BIT(i) & updated_down) {
-                SDL_PrivateJoystickButton(timestamp, joystick, i, SDL_PRESSED);
+                SDL_SendJoystickButton(timestamp, joystick, i, SDL_PRESSED);
             }
         }
     }
@@ -126,7 +126,7 @@ static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick)
     if (updated_up) {
         for (Uint8 i = 0; i < joystick->nbuttons; i++) {
             if (current_state & BIT(i) & updated_up) {
-                SDL_PrivateJoystickButton(timestamp, joystick, i, SDL_RELEASED);
+                SDL_SendJoystickButton(timestamp, joystick, i, SDL_RELEASED);
             }
         }
     }
@@ -139,12 +139,12 @@ static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick)
     circlePosition current_state;
     hidCircleRead(&current_state);
     if (previous_state.dx != current_state.dx) {
-        SDL_PrivateJoystickAxis(timestamp, joystick,
+        SDL_SendJoystickAxis(timestamp, joystick,
                                 0,
                                 CORRECT_AXIS_X(current_state.dx));
     }
     if (previous_state.dy != current_state.dy) {
-        SDL_PrivateJoystickAxis(timestamp, joystick,
+        SDL_SendJoystickAxis(timestamp, joystick,
                                 1,
                                 CORRECT_AXIS_Y(current_state.dy));
     }
@@ -157,12 +157,12 @@ static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick)
     circlePosition current_state;
     hidCstickRead(&current_state);
     if (previous_state.dx != current_state.dx) {
-        SDL_PrivateJoystickAxis(timestamp, joystick,
+        SDL_SendJoystickAxis(timestamp, joystick,
                                 2,
                                 CORRECT_AXIS_X(current_state.dx));
     }
     if (previous_state.dy != current_state.dy) {
-        SDL_PrivateJoystickAxis(timestamp, joystick,
+        SDL_SendJoystickAxis(timestamp, joystick,
                                 3,
                                 CORRECT_AXIS_Y(current_state.dy));
     }

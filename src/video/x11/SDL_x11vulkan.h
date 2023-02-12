@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,6 @@ typedef xcb_connection_t *(*PFN_XGetXCBConnection)(Display *dpy);
 int X11_Vulkan_LoadLibrary(_THIS, const char *path);
 void X11_Vulkan_UnloadLibrary(_THIS);
 SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
-                                          SDL_Window *window,
                                           unsigned *count,
                                           const char **names);
 SDL_bool X11_Vulkan_CreateSurface(_THIS,

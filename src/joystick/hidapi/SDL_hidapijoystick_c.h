@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,9 +46,9 @@
 #define USB_PACKET_LENGTH 64
 
 /* Forward declaration */
-struct _SDL_HIDAPI_DeviceDriver;
+struct SDL_HIDAPI_DeviceDriver;
 
-typedef struct _SDL_HIDAPI_Device
+typedef struct SDL_HIDAPI_Device
 {
     char *name;
     char *path;
@@ -65,9 +65,9 @@ typedef struct _SDL_HIDAPI_Device
     Uint16 usage;      /* Available on Windows and macOS */
     SDL_bool is_bluetooth;
     SDL_JoystickType joystick_type;
-    SDL_GameControllerType type;
+    SDL_GamepadType type;
 
-    struct _SDL_HIDAPI_DeviceDriver *driver;
+    struct SDL_HIDAPI_DeviceDriver *driver;
     void *context;
     SDL_mutex *dev_lock;
     SDL_hid_device *dev;
@@ -81,21 +81,21 @@ typedef struct _SDL_HIDAPI_Device
     /* Used to flag that the device is being updated */
     SDL_bool updating;
 
-    struct _SDL_HIDAPI_Device *parent;
+    struct SDL_HIDAPI_Device *parent;
     int num_children;
-    struct _SDL_HIDAPI_Device **children;
+    struct SDL_HIDAPI_Device **children;
 
-    struct _SDL_HIDAPI_Device *next;
+    struct SDL_HIDAPI_Device *next;
 } SDL_HIDAPI_Device;
 
-typedef struct _SDL_HIDAPI_DeviceDriver
+typedef struct SDL_HIDAPI_DeviceDriver
 {
     const char *name;
     SDL_bool enabled;
     void (*RegisterHints)(SDL_HintCallback callback, void *userdata);
     void (*UnregisterHints)(SDL_HintCallback callback, void *userdata);
     SDL_bool (*IsEnabled)(void);
-    SDL_bool (*IsSupportedDevice)(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
+    SDL_bool (*IsSupportedDevice)(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
     SDL_bool (*InitDevice)(SDL_HIDAPI_Device *device);
     int (*GetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id);
     void (*SetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index);
@@ -132,7 +132,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
 
 /* Return true if a HID device is present and supported as a joystick of the given type */
-extern SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GameControllerType type);
+extern SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);
 
 /* Return true if a HID device is present and supported as a joystick */
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
@@ -141,7 +141,7 @@ extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint
 extern SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_JoystickGUID guid);
 
 /* Return the type of a game controller if it's present and supported */
-extern SDL_GameControllerType HIDAPI_GetGameControllerTypeFromGUID(SDL_JoystickGUID guid);
+extern SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_JoystickGUID guid);
 
 extern void HIDAPI_UpdateDevices(void);
 extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);

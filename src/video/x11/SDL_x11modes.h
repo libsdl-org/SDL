@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,7 @@
 #ifndef SDL_x11modes_h_
 #define SDL_x11modes_h_
 
-typedef struct
+struct SDL_DisplayData
 {
     int screen;
     Visual *visual;
@@ -31,28 +31,25 @@ typedef struct
     int scanline_pad;
     int x;
     int y;
-    float ddpi;
-    float hdpi;
-    float vdpi;
 
     SDL_bool use_xrandr;
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     RROutput xrandr_output;
 #endif
-} SDL_DisplayData;
+};
 
-typedef struct
+struct SDL_DisplayModeData
 {
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     RRMode xrandr_mode;
 #else
     int unused; /* just so struct isn't empty. */
 #endif
-} SDL_DisplayModeData;
+};
 
 extern int X11_InitModes(_THIS);
-extern void X11_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+extern int X11_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
 extern int X11_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void X11_QuitModes(_THIS);
 
@@ -63,7 +60,6 @@ extern Uint32 X11_GetPixelFormatFromVisualInfo(Display *display,
                                                XVisualInfo *vinfo);
 extern int X11_GetDisplayBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 extern int X11_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
-extern int X11_GetDisplayDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi);
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
 extern void X11_HandleXRandREvent(_THIS, const XEvent *xevent);

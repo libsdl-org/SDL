@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -945,7 +945,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     while (element) {
         goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
         if (goodRead) {
-            SDL_PrivateJoystickAxis(timestamp, joystick, i, value);
+            SDL_SendJoystickAxis(timestamp, joystick, i, value);
         }
 
         element = element->pNext;
@@ -960,7 +960,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
             if (value > 1) { /* handle pressure-sensitive buttons */
                 value = 1;
             }
-            SDL_PrivateJoystickButton(timestamp, joystick, i, value);
+            SDL_SendJoystickButton(timestamp, joystick, i, value);
         }
 
         element = element->pNext;
@@ -1016,7 +1016,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
                 break;
             }
 
-            SDL_PrivateJoystickHat(timestamp, joystick, i, pos);
+            SDL_SendJoystickHat(timestamp, joystick, i, pos);
         }
 
         element = element->pNext;
