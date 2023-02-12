@@ -1501,7 +1501,7 @@ typedef SDL_HitTestResult (SDLCALL *SDL_HitTest)(SDL_Window *win,
  * \param window the window to set hit-testing on
  * \param callback the function to call when doing a hit-test
  * \param callback_data an app-defined void pointer passed to **callback**
- * \returns 0 on success or -1 on error (including unsupported); call
+ * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1896,8 +1896,8 @@ extern DECLSPEC void SDLCALL SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArray
  *
  * \param interval 0 for immediate updates, 1 for updates synchronized with
  *                 the vertical retrace, -1 for adaptive vsync
- * \returns 0 on success or -1 if setting the swap interval is not supported;
- *          call SDL_GetError() for more information.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1915,8 +1915,8 @@ extern DECLSPEC int SDLCALL SDL_GL_SetSwapInterval(int interval);
  *                 synchronization, 1 if the buffer swap is synchronized with
  *                 the vertical retrace, and -1 if late swaps happen
  *                 immediately instead of waiting for the next retrace
- * \returns 0 on success or -1 error. call SDL_GetError() for more
- *          information.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
