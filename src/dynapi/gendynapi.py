@@ -320,6 +320,9 @@ def main():
     # Dump API into a json file
     full_API_json()
 
+    # Check commment formating
+    check_comment();
+
 # Dump API into a json file
 def full_API_json():
     if args.dump:
@@ -327,6 +330,69 @@ def full_API_json():
         with open(filename, 'w') as f:
             json.dump(full_API, f, indent=4, sort_keys=True)
             print("dump API to '%s'" % filename);
+
+# Dump API into a json file
+def check_comment():
+    if args.check_comment:
+        print("check comment formating");
+
+
+        # Check \param
+        for i in full_API:
+            comment = i['comment']
+            name = i['name']
+            retval = i['retval']
+            header = i['header']
+
+            expected = len(i['parameter'])
+            if expected == 1:
+                if i['parameter'][0] == 'void':
+                    expected = 0;
+            count = comment.count("\\param")
+            if count != expected:
+                # skip SDL_stdinc.h
+                if header != 'SDL_stdinc.h':
+                    # Warning missmatch \param and function prototype
+                    print("%s: %s()  %d '\\param'' but expected %d" % (header, name, count, expected));
+
+
+        # Check \returns
+        for i in full_API:
+            comment = i['comment']
+            name = i['name']
+            retval = i['retval']
+            header = i['header']
+
+            expected = 1
+            if retval == 'void':
+                expected = 0;
+
+            count = comment.count("\\returns")
+            if count != expected:
+                # skip SDL_stdinc.h
+                if header != 'SDL_stdinc.h':
+                    # Warning missmatch \param and function prototype
+                    print("%s: %s()  %d '\\returns'' but expected %d" % (header, name, count, expected));
+
+        # Check \since
+        for i in full_API:
+            comment = i['comment']
+            name = i['name']
+            retval = i['retval']
+            header = i['header']
+
+            expected = 1
+            count = comment.count("\\since")
+            if count != expected:
+                # skip SDL_stdinc.h
+                if header != 'SDL_stdinc.h':
+                    # Warning missmatch \param and function prototype
+                    print("%s: %s()  %d '\\since'' but expected %d" % (header, name, count, expected));
+
+
+
+
+
 
 # Parse 'sdl_dynapi_procs_h' file to find existing functions
 def find_existing_procs():
@@ -459,6 +525,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--dump', help='output all SDL API into a .json file', action='store_true')
+    parser.add_argument('--check-comment', help='check comment formating', action='store_true')
     parser.add_argument('--debug', help='add debug traces', action='store_true')
     args = parser.parse_args()
 
