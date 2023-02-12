@@ -111,10 +111,10 @@ struct SDL_WindowData
     int wl_window_width, wl_window_height;
     int system_min_required_width;
     int system_min_required_height;
-    SDL_DisplayID fullscreen_display;
     SDL_bool floating;
     SDL_bool is_fullscreen;
     SDL_bool in_fullscreen_transition;
+    SDL_bool fullscreen_was_positioned;
 };
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);
