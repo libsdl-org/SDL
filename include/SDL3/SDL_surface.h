@@ -795,6 +795,12 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
  * Perform a fast, low quality, stretch blit between two surfaces of the same
  * format.
  *
+ * \param src the SDL_Surface structure to be copied from
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied
+ * \param dst the SDL_Surface structure that is the blit target
+ * \param dstrect the SDL_Rect structure representing the rectangle that is
+ *                copied into
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -810,6 +816,12 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src,
 /**
  * Perform bilinear scaling between two surfaces of the same format, 32BPP.
  *
+ * \param src the SDL_Surface structure to be copied from
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied
+ * \param dst the SDL_Surface structure that is the blit target
+ * \param dstrect the SDL_Rect structure representing the rectangle that is
+ *                copied into
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -867,6 +879,8 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled
 /**
  * Set the YUV conversion mode
  *
+ * \param YUV conversion mode
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_MODE mode);
@@ -884,6 +898,8 @@ extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionMode(void);
  * Get the YUV conversion mode, returning the correct mode for the resolution
  * when the current conversion mode is SDL_YUV_CONVERSION_AUTOMATIC
  *
+ * \param width width
+ * \param height height
  * \returns YUV conversion mode
  *
  * \since This function is available since SDL 3.0.0.

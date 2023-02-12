@@ -118,6 +118,14 @@ typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
 
 
 /*
+ * Create a SDL Thread
+ *
+ * \param fn Thread function
+ * \param name name
+ * \param data some data
+ * \param pfnSDL_CurrentBeginThread begin function
+ * \param pfnSDL_CurrentEndThread end function
+ *
  * \returns SDL_Thread pointer
  */
 extern DECLSPEC SDL_Thread *SDLCALL
@@ -126,6 +134,15 @@ SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data,
                  pfnSDL_CurrentEndThread pfnEndThread);
 
 /*
+ * Create a SDL Thread, with explicit stack size
+ *
+ * \param fn Thread function
+ * \param name name
+ * \param stacksize stack size
+ * \param data some data
+ * \param pfnSDL_CurrentBeginThread begin function
+ * \param pfnSDL_CurrentEndThread end function
+ *
  * \returns SDL_Thread pointer
  */
 extern DECLSPEC SDL_Thread *SDLCALL

@@ -1842,6 +1842,7 @@ extern DECLSPEC SDL_EGLConfig SDLCALL SDL_EGL_GetCurrentEGLConfig(void);
 /**
  * Get the EGL surface associated with the window.
  *
+ * \param window the window to query
  * \returns the EGLSurface pointer associated with the window, or NULL on
  *          failure.
  *

@@ -232,6 +232,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumGamepadMappings(void);
 /**
  * Get the mapping at a particular index.
  *
+ * \param mapping_index mapping index
  * \returns the mapping string. Must be freed with SDL_free(). Returns NULL if
  *          the index is out of range.
  *
@@ -843,6 +844,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_Gam
 /**
  * Get the number of touchpads on a gamepad.
  *
+ * \param gamepad a gamepad
  * \returns number of touchpads
  *
  * \since This function is available since SDL 3.0.0.
@@ -853,6 +855,8 @@ extern DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpads(SDL_Gamepad *gamepad);
  * Get the number of supported simultaneous fingers on a touchpad on a game
  * gamepad.
  *
+ * \param gamepad a gamepad
+ * \param touchpad a touchpad
  * \returns number of supported simultaneous fingers
  *
  * \since This function is available since SDL 3.0.0.
@@ -862,6 +866,13 @@ extern DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *gamepa
 /**
  * Get the current state of a finger on a touchpad on a gamepad.
  *
+ * \param gamepad a gamepad
+ * \param touchpad a touchpad
+ * \param finger a finger
+ * \param state filled with state
+ * \param x filled with x position
+ * \param y filled with y position
+ * \param pressure filled with pressure value
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

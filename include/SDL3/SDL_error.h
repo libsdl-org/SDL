@@ -148,7 +148,12 @@ typedef enum
     SDL_UNSUPPORTED,
     SDL_LASTERROR
 } SDL_errorcode;
-/* SDL_Error() unconditionally returns -1. */
+/**
+ * SDL_Error()
+ *
+ * \param code Error code
+ * \returns unconditionally -1.
+ */
 extern DECLSPEC int SDLCALL SDL_Error(SDL_errorcode code);
 /* @} *//* Internal error functions */
 

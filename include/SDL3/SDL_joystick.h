@@ -309,6 +309,10 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_GetJoystickFromPlayerIndex(int player_
 /**
  * Attach a new virtual joystick.
  *
+ * \param type Type of joystick
+ * \param naxes number of axes
+ * \param nbuttons number of buttons
+ * \param nhats number of hats
  * \returns the joystick instance ID, or 0 if an error occurred; call
  *          SDL_GetError() for more information.
  *
@@ -361,6 +365,7 @@ typedef struct SDL_VirtualJoystickDesc
 /**
  * Attach a new virtual joystick with extended properties.
  *
+ * \param desc Joystick description
  * \returns the joystick instance ID, or 0 if an error occurred; call
  *          SDL_GetError() for more information.
  *

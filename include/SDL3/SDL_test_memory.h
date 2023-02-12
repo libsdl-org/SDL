@@ -39,7 +39,7 @@ extern "C" {
 
 /**
  * \brief Start tracking SDL memory allocations
- * 
+ *
  * \note This should be called before any other SDL functions for complete tracking coverage
  */
 int SDLTest_TrackAllocations(void);
