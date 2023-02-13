@@ -28404,53 +28404,7 @@ else $as_nop
 fi
 
     if test x$enable_clock_gettime = xyes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lrt" >&5
-printf %s "checking for clock_gettime in -lrt... " >&6; }
-if test ${ac_cv_lib_rt_clock_gettime+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lrt  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char clock_gettime ();
-int
-main (void)
-{
-return clock_gettime ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_rt_clock_gettime=yes
-else $as_nop
-  ac_cv_lib_rt_clock_gettime=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_clock_gettime" >&5
-printf "%s\n" "$ac_cv_lib_rt_clock_gettime" >&6; }
-if test "x$ac_cv_lib_rt_clock_gettime" = xyes
-then :
-  have_clock_gettime=yes
-fi
-
-        if test x$have_clock_gettime = xyes; then
-
-printf "%s\n" "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
-
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lrt"
-        else
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lc" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lc" >&5
 printf %s "checking for clock_gettime in -lc... " >&6; }
 if test ${ac_cv_lib_c_clock_gettime+y}
 then :
@@ -28490,11 +28444,56 @@ then :
   have_clock_gettime=yes
 fi
 
-            if test x$have_clock_gettime = xyes; then
+        if test x$have_clock_gettime = xyes; then
 
 printf "%s\n" "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
 
-               EXTRA_LDFLAGS="$EXTRA_LDFLAGS"
+        else
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lrt" >&5
+printf %s "checking for clock_gettime in -lrt... " >&6; }
+if test ${ac_cv_lib_rt_clock_gettime+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lrt  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char clock_gettime ();
+int
+main (void)
+{
+return clock_gettime ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_rt_clock_gettime=yes
+else $as_nop
+  ac_cv_lib_rt_clock_gettime=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_clock_gettime" >&5
+printf "%s\n" "$ac_cv_lib_rt_clock_gettime" >&6; }
+if test "x$ac_cv_lib_rt_clock_gettime" = xyes
+then :
+  have_clock_gettime=yes
+fi
+
+            if test x$have_clock_gettime = xyes; then
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lrt"
+
+printf "%s\n" "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
+
             fi
         fi
     fi
