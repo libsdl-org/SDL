@@ -1,5 +1,3 @@
-include_guard()
-
 function(get_clang_tidy_ignored_files OUTVAR)
   set(3RD_PARTY_SOURCES
       # Public GL headers
