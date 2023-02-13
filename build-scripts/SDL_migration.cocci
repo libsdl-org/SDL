@@ -2487,3 +2487,18 @@ expression e2;
 - SDL_RenderDrawRects
 + SDL_RenderRects
   (...)
+@@
+@@
+- SDL_GL_GetDrawableSize
++ SDL_GetWindowSizeInPixels
+  (...)
+@@
+@@
+- SDL_Metal_GetDrawableSize
++ SDL_GetWindowSizeInPixels
+  (...)
+@@
+@@
+- SDL_Vulkan_GetDrawableSize
++ SDL_GetWindowSizeInPixels
+  (...)
