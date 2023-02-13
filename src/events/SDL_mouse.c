@@ -912,6 +912,12 @@ void SDL_MouseQuit(void)
     }
     mouse->num_clickstates = 0;
 
+    if (mouse->system_scale_values) {
+        SDL_free(mouse->system_scale_values);
+        mouse->system_scale_values = NULL;
+    }
+    mouse->num_system_scale_values = 0;
+
     SDL_DelHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME,
                         SDL_MouseDoubleClickTimeChanged, mouse);
 
