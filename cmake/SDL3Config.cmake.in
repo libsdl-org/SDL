@@ -14,10 +14,6 @@ set(_sdl3_framework @SDL_FRAMEWORK@)
 # Find SDL3::Headers
 if(NOT TARGET SDL3::Headers)
   include("${CMAKE_CURRENT_LIST_DIR}/SDL3headersTargets.cmake")
-  # Manually add `-F <parent folder of SDL3.framework>` to make sure `#include "SDL3/..."` works.
-  if(_sdl3_framework)
-    set_property(TARGET SDL3::Headers APPEND PROPERTY INTERFACE_COMPILE_OPTIONS "SHELL:-F \"@PACKAGE_CMAKE_INSTALL_PREFIX@\"")
-  endif()
 endif()
 set(SDL3_Headers_FOUND TRUE)
 

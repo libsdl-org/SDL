@@ -3159,7 +3159,12 @@ target_include_directories(SDL3_Headers
 if(SDL_FRAMEWORK)
   target_include_directories(SDL3_Headers
     INTERFACE
-      "$<INSTALL_INTERFACE:SDL3.framework/Headers>"
+      "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/SDL3.framework/Headers>"
+  )
+  # Add `-F <parent folder of SDL3.framework>` to make sure `#include "SDL3/..."` works.
+  target_compile_options(SDL3_Headers
+    INTERFACE
+      "$<INSTALL_INTERFACE:SHELL:-F $<INSTALL_PREFIX>>"
   )
 else()
   target_include_directories(SDL3_Headers
