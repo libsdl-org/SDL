@@ -991,7 +991,11 @@ macro(CheckPTHREAD)
         check_c_source_compiles("
             #include <pthread.h>
             int main(int argc, char **argv) {
+              #ifdef __APPLE__
+              pthread_setname_np(pthread_self());
+              #else
               pthread_setname_np(pthread_self(), \"\");
+              #endif
               return 0;
             }" HAVE_PTHREAD_SETNAME_NP)
         if (HAVE_PTHREAD_NP_H)
