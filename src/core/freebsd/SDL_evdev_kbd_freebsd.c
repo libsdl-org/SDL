@@ -135,7 +135,7 @@ static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontex
 
 static void kbd_unregister_emerg_cleanup()
 {
-    int tabidx, signum;
+    int tabidx;
 
     kbd_cleanup_state = NULL;
 
@@ -147,7 +147,7 @@ static void kbd_unregister_emerg_cleanup()
     for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
         struct sigaction *old_action_p;
         struct sigaction cur_action;
-        signum = fatal_signals[tabidx];
+        int signum = fatal_signals[tabidx];
         old_action_p = &(old_sigaction[signum]);
 
         /* Examine current signal action */
@@ -176,7 +176,7 @@ static void kbd_cleanup_atexit(void)
 
 static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
 {
-    int tabidx, signum;
+    int tabidx;
 
     if (kbd_cleanup_state != NULL) {
         return;
@@ -200,7 +200,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
     for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
         struct sigaction *old_action_p;
         struct sigaction new_action;
-        signum = fatal_signals[tabidx];
+        int signum = fatal_signals[tabidx];
         old_action_p = &(old_sigaction[signum]);
         if (sigaction(signum, NULL, old_action_p)) {
             continue;

@@ -61,14 +61,14 @@ SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse()
 void updateMouse(SDL_WSCONS_mouse_input_data *inputData)
 {
     struct wscons_event events[64];
-    int type;
-    int n, i;
+    int n;
     SDL_Mouse *mouse = SDL_GetMouse();
 
     if ((n = read(inputData->fd, events, sizeof(events))) > 0) {
+        int i;
         n /= sizeof(struct wscons_event);
         for (i = 0; i < n; i++) {
-            type = events[i].type;
+            int type = events[i].type;
             switch (type) {
             case WSCONS_EVENT_MOUSE_DOWN:
             {
