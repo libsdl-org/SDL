@@ -216,6 +216,7 @@ void loop()
         if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             SDL_Window *window = SDL_GetMouseFocus();
             if (highlighted_mode != NULL && window != NULL) {
+                SDL_memcpy(&state->fullscreen_mode, highlighted_mode, sizeof(state->fullscreen_mode));
                 SDL_SetWindowFullscreenMode(window, highlighted_mode);
             }
         }
