@@ -185,6 +185,8 @@ static SDL_Scancode button_to_scancode(int button)
         return SDL_SCANCODE_ESCAPE;
     case SDL_CONTROLLER_BUTTON_BACK:
         return SDL_SCANCODE_ESCAPE;
+    case SDL_CONTROLLER_BUTTON_START:
+        return SDL_SCANCODE_MENU;
     case SDL_CONTROLLER_BUTTON_DPAD_UP:
         return SDL_SCANCODE_UP;
     case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
