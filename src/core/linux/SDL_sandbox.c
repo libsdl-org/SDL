@@ -39,7 +39,7 @@ SDL_Sandbox SDL_DetectSandbox(void)
         return SDL_SANDBOX_SNAP;
     }
 
-    if (access("/run/host/container-runtime", F_OK) == 0) {
+    if (access("/run/host/container-manager", F_OK) == 0) {
         return SDL_SANDBOX_UNKNOWN_CONTAINER;
     }
 
