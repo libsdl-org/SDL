@@ -50,11 +50,6 @@ Build:
     $ emmake make
 
 
-To build one of the tests:
-
-    $ cd test/
-    $ emcc -O2 --js-opts 0 -g4 testdraw.c -I../include ../build/.libs/libSDL3.a ../build/libSDL3_test.a -o a.html
-
 Uses GLES2 renderer or software
 
 Some other SDL3 libraries can be easily built (assuming SDL3 is installed somewhere):
