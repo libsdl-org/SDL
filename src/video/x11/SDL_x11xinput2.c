@@ -294,10 +294,6 @@ int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie
         parse_valuators(rawev->raw_values, rawev->valuators.mask,
                         rawev->valuators.mask_len, coords, 2);
 
-        if ((rawev->time == devinfo->prev_time) && (coords[0] == devinfo->prev_coords[0]) && (coords[1] == devinfo->prev_coords[1])) {
-            return 0; /* duplicate event, drop it. */
-        }
-
         for (i = 0; i < 2; i++) {
             if (devinfo->relative[i]) {
                 processed_coords[i] = coords[i];
@@ -309,7 +305,6 @@ int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie
         SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, (int)processed_coords[0], (int)processed_coords[1]);
         devinfo->prev_coords[0] = coords[0];
         devinfo->prev_coords[1] = coords[1];
-        devinfo->prev_time = rawev->time;
         return 1;
     } break;
 

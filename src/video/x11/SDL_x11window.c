@@ -1624,7 +1624,7 @@ void X11_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 
             /* Try for up to 5000ms (5s) to grab. If it still fails, stop trying. */
             for (attempts = 0; attempts < 100; attempts++) {
-                result = X11_XGrabPointer(display, data->xwindow, True, mask, GrabModeAsync,
+                result = X11_XGrabPointer(display, data->xwindow, False, mask, GrabModeAsync,
                                           GrabModeAsync, data->xwindow, None, CurrentTime);
                 if (result == GrabSuccess) {
                     data->mouse_grabbed = SDL_TRUE;
