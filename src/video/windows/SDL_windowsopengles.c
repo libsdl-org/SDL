@@ -97,7 +97,6 @@ WIN_GLES_CreateContext(_THIS, SDL_Window *window)
 int WIN_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
-    WIN_GLES_UnloadLibrary(_this);
     return 0;
 }
 
