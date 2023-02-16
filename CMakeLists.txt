@@ -322,23 +322,14 @@ if(VITA OR PSP OR PS2 OR N3DS)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
 endif()
 
-# When defined, respect CMake's BUILD_SHARED_LIBS setting:
-set(SDL_STATIC_ENABLED_BY_DEFAULT ON)
+# Default to just building the shared library
 if (NOT DEFINED SDL_SHARED_ENABLED_BY_DEFAULT)
-  # ...unless decided already (as for EMSCRIPTEN)
-
-  set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
-
-  if (NOT DEFINED BUILD_SHARED_LIBS)
-    # No preference? Build both, just like the AC/AM configure
-    set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
-
-  elseif (BUILD_SHARED_LIBS)
-    # In this case, we assume the user wants a shared lib and don't build
-    # the static one
-    set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
-    set(SDL_STATIC_ENABLED_BY_DEFAULT OFF)
-  endif()
+  set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
+endif()
+if(SDL_SHARED_ENABLED_BY_DEFAULT)
+  set(SDL_STATIC_ENABLED_BY_DEFAULT OFF)
+else()
+  set(SDL_STATIC_ENABLED_BY_DEFAULT ON)
 endif()
 
 if (NOT DEFINED SDL_TEST_ENABLED_BY_DEFAULT)
