@@ -49,12 +49,6 @@ Build:
     $ emcmake cmake ..
     $ emmake make
 
-Or with cmake:
-
-    $ mkdir build
-    $ cd build
-    $ emcmake cmake ..
-    $ emmake make
 
 To build one of the tests:
 
