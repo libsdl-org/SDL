@@ -169,6 +169,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(unsigned int *
  * The `window` must have been created with the `SDL_WINDOW_VULKAN` flag and
  * `instance` must have been created with extensions returned by
  * SDL_Vulkan_GetInstanceExtensions() enabled.
+ * 
+ * The surface is always created without user allocator callbacks
+ * (`pAllocator` is `NULL`), so when you destory the surface
+ * with `vkDestroySurfaceKHR` you should also pass `NULL` as the
+ * `pAllocator` value for that call.
  *
  * \param window The window to which to attach the Vulkan surface
  * \param instance The Vulkan instance handle
