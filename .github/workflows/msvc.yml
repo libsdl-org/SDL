@@ -46,6 +46,8 @@ jobs:
       run: cmake -S build -B build `
         -Wdeprecated -Wdev -Werror `
         -DSDL_WERROR=${{ !matrix.platform.nowerror }} `
+        -DSDL_SHARED=ON `
+        -DSDL_STATIC=ON `
         -DSDL_TESTS=ON `
         -DSDL_INSTALL_TESTS=ON `
         -DSDL_VENDOR_INFO="Github Workflow" `
