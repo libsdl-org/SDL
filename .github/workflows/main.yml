@@ -59,7 +59,8 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install \
-          ninja
+          ninja \
+          pkg-config
     - uses: actions/checkout@v3
     - name: Check that versioning is consistent
       # We only need to run this once: arbitrarily use the Linux/CMake build
