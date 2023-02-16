@@ -50,6 +50,7 @@ jobs:
     - name: Verify CMake configuration files
       run: |
         cmake -S cmake/test -B cmake_config_build -G Ninja \
+          -DTEST_SHARED=OFF \
           -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake \
           -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
           -DCMAKE_BUILD_TYPE=Release \
