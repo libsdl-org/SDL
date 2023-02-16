@@ -30,7 +30,6 @@ typedef struct SDL_XInput2DeviceInfo
     double minval[2];
     double maxval[2];
     double prev_coords[2];
-    Time prev_time;
     struct SDL_XInput2DeviceInfo *next;
 } SDL_XInput2DeviceInfo;
 
