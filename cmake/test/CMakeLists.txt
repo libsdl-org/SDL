@@ -35,32 +35,32 @@ add_library(headers_test OBJECT inc_sdl_slash.c inc_sdl_noslash.c)
 target_link_libraries(headers_test PRIVATE SDL3::Headers)
 
 if(TEST_SHARED)
-    find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3)
+    find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3-shared)
     add_executable(gui-shared WIN32 main_gui.c)
-    target_link_libraries(gui-shared PRIVATE SDL3::SDL3)
+    target_link_libraries(gui-shared PRIVATE SDL3::SDL3-shared)
     if(WIN32)
         add_custom_command(TARGET gui-shared POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "$<TARGET_FILE_DIR:gui-shared>"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3-shared>" "$<TARGET_FILE_DIR:gui-shared>"
         )
     endif()
 
     add_library(sharedlib-shared SHARED main_lib.c)
-    target_link_libraries(sharedlib-shared PRIVATE SDL3::SDL3)
+    target_link_libraries(sharedlib-shared PRIVATE SDL3::SDL3-shared)
     generate_export_header(sharedlib-shared EXPORT_MACRO_NAME MYLIBRARY_EXPORT)
     target_compile_definitions(sharedlib-shared PRIVATE "EXPORT_HEADER=\"${CMAKE_CURRENT_BINARY_DIR}/sharedlib-shared_export.h\"")
     set_target_properties(sharedlib-shared PROPERTIES C_VISIBILITY_PRESET "hidden")
 
     add_executable(cli-shared main_cli.c)
-    target_link_libraries(cli-shared PRIVATE SDL3::SDL3)
+    target_link_libraries(cli-shared PRIVATE SDL3::SDL3-shared)
     if(WIN32)
         add_custom_command(TARGET cli-shared POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "$<TARGET_FILE_DIR:cli-shared>"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3-shared>" "$<TARGET_FILE_DIR:cli-shared>"
         )
     endif()
 
     if(TEST_TEST)
         add_executable(sdltest-shared sdltest.c)
-        target_link_libraries(sdltest-shared PRIVATE SDL3::SDL3_test SDL3::SDL3)
+        target_link_libraries(sdltest-shared PRIVATE SDL3::SDL3_test SDL3::SDL3-shared)
     endif()
 endif()
 
@@ -83,5 +83,9 @@ if(TEST_STATIC)
         target_link_libraries(sdltest-static PRIVATE SDL3::SDL3_test SDL3::SDL3-static)
     endif()
 endif()
+
+find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3)
+add_executable(gui-whatever WIN32 main_gui.c)
+target_link_libraries(gui-whatever PRIVATE SDL3::SDL3)
 
 feature_summary(WHAT ALL)

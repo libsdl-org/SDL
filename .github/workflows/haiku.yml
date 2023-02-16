@@ -33,6 +33,8 @@ jobs:
       run: |
         vmshell cmake -S src -B build -GNinja \
           -Wdeprecated -Wdev -Werror \
+          -DSDL_SHARED=ON \
+          -DSDL_STATIC=ON \
           -DSDL_TESTS=ON \
           -DSDL_WERROR=ON \
           -DSDL_INSTALL_TESTS=ON \

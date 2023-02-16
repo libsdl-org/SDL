@@ -3166,15 +3166,16 @@ else()
 endif()
 
 if(SDL_SHARED)
-  add_library(SDL3 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
-  add_library(SDL3::SDL3 ALIAS SDL3)
-  set_target_properties(SDL3 PROPERTIES
+  add_library(SDL3-shared SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
+  add_library(SDL3::SDL3-shared ALIAS SDL3-shared)
+  set_target_properties(SDL3-shared PROPERTIES
+    OUTPUT_NAME "SDL3"
     POSITION_INDEPENDENT_CODE TRUE
     LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym"
     INTERFACE_LINK_DEPENDS "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym>"
   )
   if(HAVE_GCC_FVISIBILITY)
-    set_target_properties(SDL3 PROPERTIES
+    set_target_properties(SDL3-shared PROPERTIES
       C_VISIBILITY_PRESET "hidden"
       CXX_VISIBILITY_PRESET "hidden"
       OBJC_VISIBILITY_PRESET "hidden"
@@ -3183,16 +3184,16 @@ if(SDL_SHARED)
   if(NOT SDL_LIBC)
     if(MSVC AND SDL_CPU_X86)
       # FIXME: should be added for all architectures (missing symbols for ARM)
-      target_link_libraries(SDL3 PRIVATE "-nodefaultlib:MSVCRT")
+      target_link_libraries(SDL3-shared PRIVATE "-nodefaultlib:MSVCRT")
     endif()
   endif()
   if(APPLE)
-    set_target_properties(SDL3 PROPERTIES
+    set_target_properties(SDL3-shared PROPERTIES
       MACOSX_RPATH TRUE
       FRAMEWORK "${SDL_FRAMEWORK}"
     )
     if(SDL_FRAMEWORK)
-      set_target_properties(SDL3 PROPERTIES
+      set_target_properties(SDL3-shared PROPERTIES
         PUBLIC_HEADER "${SDL3_INCLUDE_FILES}"
         FRAMEWORK_VERSION "${SDL_FRAMEWORK_VERSION}"
         MACOSX_FRAMEWORK_IDENTIFIER "org.libsdl.SDL3"
@@ -3200,18 +3201,18 @@ if(SDL_SHARED)
       )
     endif()
     if(NOT CMAKE_VERSION VERSION_LESS "3.6")
-      set_target_properties(SDL3 PROPERTIES
+      set_target_properties(SDL3-shared PROPERTIES
         SOVERSION "${SDL_DYLIB_COMPAT_VERSION}" # SOVERSION corresponds to compatibility version
         VERSION "${SDL_DYLIB_CURRENT_VERSION}"  # VERSION corresponds to the current version
       )
     endif()
   elseif(UNIX AND NOT ANDROID)
-    set_target_properties(SDL3 PROPERTIES
+    set_target_properties(SDL3-shared PROPERTIES
       VERSION "${SDL_SO_VERSION}"
       SOVERSION "${SDL_SO_VERSION_MAJOR}")
   else()
     if(WINDOWS OR CYGWIN)
-      set_target_properties(SDL3 PROPERTIES
+      set_target_properties(SDL3-shared PROPERTIES
         DEFINE_SYMBOL DLL_EXPORT)
     endif()
   endif()
@@ -3219,33 +3220,33 @@ if(SDL_SHARED)
   if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG AND NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM")
     # Don't try to link with the default set of libraries.
     if(NOT WINDOWS_STORE)
-      set_target_properties(SDL3 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
-      set_target_properties(SDL3 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+      set_target_properties(SDL3-shared PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
+      set_target_properties(SDL3-shared PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
     endif()
-    set_target_properties(SDL3 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
+    set_target_properties(SDL3-shared PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
   endif()
   # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for SDL_EXTRA_LDFLAGS
-  target_link_libraries(SDL3 PRIVATE ${SDL_EXTRA_LIBS} ${SDL_EXTRA_LDFLAGS} ${SDL_CMAKE_DEPENDS})
-  target_include_directories(SDL3
+  target_link_libraries(SDL3-shared PRIVATE ${SDL_EXTRA_LIBS} ${SDL_EXTRA_LDFLAGS} ${SDL_CMAKE_DEPENDS})
+  target_include_directories(SDL3-shared
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
   )
-  target_link_libraries(SDL3 PUBLIC $<TARGET_NAME:SDL3::Headers>)
+  target_link_libraries(SDL3-shared PUBLIC $<TARGET_NAME:SDL3::Headers>)
   # This picks up all the compiler options and such we've accumulated up to here.
-  target_link_libraries(SDL3 PRIVATE $<${build_local_interface}:sdl-build-options>)
-  target_link_libraries(SDL3 PRIVATE $<${build_local_interface}:sdl-shared-build-options>)
-  target_link_libraries(SDL3 PRIVATE $<${build_local_interface}:sdl-global-options>)
+  target_link_libraries(SDL3-shared PRIVATE $<${build_local_interface}:sdl-build-options>)
+  target_link_libraries(SDL3-shared PRIVATE $<${build_local_interface}:sdl-shared-build-options>)
+  target_link_libraries(SDL3-shared PRIVATE $<${build_local_interface}:sdl-global-options>)
   if(MINGW OR CYGWIN)
     if(NOT CMAKE_VERSION VERSION_LESS "3.13")
-      target_link_options(SDL3 PRIVATE -static-libgcc)
+      target_link_options(SDL3-shared PRIVATE -static-libgcc)
     endif()
   endif()
   # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
-  set_property(TARGET SDL3 PROPERTY INTERFACE_SDL3_SHARED TRUE)
-  set_property(TARGET SDL3 APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
+  set_property(TARGET SDL3-shared PROPERTY INTERFACE_SDL3_SHARED TRUE)
+  set_property(TARGET SDL3-shared APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
   if(NOT CMAKE_VERSION VERSION_LESS "3.16")
-    target_precompile_headers(SDL3 PRIVATE "${PROJECT_SOURCE_DIR}/src/SDL_internal.h")
+    target_precompile_headers(SDL3-shared PRIVATE "${PROJECT_SOURCE_DIR}/src/SDL_internal.h")
   endif()
 endif()
 
@@ -3300,8 +3301,6 @@ if(SDL_TEST)
   add_library(SDL3_test STATIC ${TEST_SOURCES})
   add_library(SDL3::SDL3_test ALIAS SDL3_test)
   target_link_libraries(SDL3_test PRIVATE $<${build_local_interface}:sdl-global-options>)
-  set_target_properties(SDL3_test PROPERTIES
-      EXPORT_NAME SDL3_test)
   if(APPLE)
     set_target_properties(SDL3_test PROPERTIES
       FRAMEWORK "${SDL_FRAMEWORK}"
@@ -3383,12 +3382,12 @@ else()
   endif()
 
 if(CMAKE_VERSION VERSION_LESS "3.26")
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/SDL3Targets.cmake" [[message(FATAL_ERROR "find_package(SDL3) using the SDL3 build directory not supported for CMake versions older then 3.26.")]])
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/SDL3sharedTargets.cmake" [[message(FATAL_ERROR "find_package(SDL3) using the SDL3 build directory not supported for CMake versions older then 3.26.")]])
 else()
   export(TARGETS SDL3_Headers NAMESPACE "SDL3::" FILE "SDL3headersTargets.cmake")
 
   if(SDL_SHARED)
-    export(TARGETS SDL3 NAMESPACE "SDL3::" FILE "SDL3Targets.cmake")
+    export(TARGETS SDL3-shared NAMESPACE "SDL3::" FILE "SDL3sharedTargets.cmake")
   endif()
 
   if(SDL_STATIC)
@@ -3457,7 +3456,7 @@ if(NOT SDL_DISABLE_INSTALL)
   install(TARGETS SDL3_Headers EXPORT SDL3headersTargets)
 
   if(SDL_SHARED)
-    install(TARGETS SDL3 EXPORT SDL3Targets
+    install(TARGETS SDL3-shared EXPORT SDL3sharedTargets
       PUBLIC_HEADER DESTINATION "${SDL_INSTALL_HEADERSDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -3492,8 +3491,8 @@ if(NOT SDL_DISABLE_INSTALL)
   )
 
   if(SDL_SHARED)
-    install(EXPORT SDL3Targets
-      FILE "SDL3Targets.cmake"
+    install(EXPORT SDL3sharedTargets
+      FILE "SDL3sharedTargets.cmake"
       NAMESPACE SDL3::
       DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
     )
@@ -3575,6 +3574,8 @@ endif()
 set(CMAKE_OBJC_FLAGS "${CMAKE_OBJC_FLAGS} ${CMAKE_C_FLAGS}")
 
 # Make sure SDL3::SDL3 always exists
-if(TARGET SDL3::SDL3-static AND NOT TARGET SDL3::SDL3)
+if(TARGET SDL3::SDL3-shared)
+  add_library(SDL3::SDL3 ALIAS SDL3-shared)
+else()
   add_library(SDL3::SDL3 ALIAS SDL3-static)
 endif()
