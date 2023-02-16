@@ -73,6 +73,8 @@ jobs:
       run: |
         cmake -S . -B build -G Ninja \
           -Wdeprecated -Wdev -Werror \
+          -DSDL_SHARED=ON \
+          -DSDL_STATIC=ON \
           -DSDL_TESTS=ON \
           -DSDL_WERROR=ON \
           -DSDL_INSTALL_TESTS=ON \

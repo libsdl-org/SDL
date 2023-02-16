@@ -13,7 +13,7 @@ include(CMakePushCheckState)
 include(GNUInstallDirs)
 
 set(SDL_TESTS_LINK_SHARED_DEFAULT ON)
-if(EMSCRIPTEN OR N3DS OR PS2 OR PSP OR RISCOS OR VITA)
+if(EMSCRIPTEN OR N3DS OR PS2 OR PSP OR VITA)
     set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
 endif()
 
@@ -27,7 +27,7 @@ else()
 endif()
 
 if(NOT TARGET SDL3::${sdl_name_component})
-    find_package(SDL3 3.0.0 REQUIRED COMPONENTS ${sdl_name_component} SDL3_test)
+    find_package(SDL3 3.0.0 REQUIRED CONFIG COMPONENTS ${sdl_name_component} SDL3_test)
 endif()
 
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
