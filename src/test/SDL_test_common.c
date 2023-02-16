@@ -721,7 +721,7 @@ static void SDLTest_PrintDisplayOrientation(char *text, size_t maxlen, SDL_Displ
     }
 }
 
-static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
+static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint64 flag)
 {
     switch (flag) {
     case SDL_WINDOW_FULLSCREEN:
@@ -790,9 +790,9 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
     }
 }
 
-static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
+static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint64 flags)
 {
-    const Uint32 window_flags[] = {
+    const Uint64 window_flags[] = {
         SDL_WINDOW_FULLSCREEN,
         SDL_WINDOW_OPENGL,
         SDL_WINDOW_HIDDEN,
@@ -818,7 +818,7 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
     int i;
     int count = 0;
     for (i = 0; i < (sizeof(window_flags) / sizeof(window_flags[0])); ++i) {
-        const Uint32 flag = window_flags[i];
+        const Uint64 flag = window_flags[i];
         if ((flags & flag) == flag) {
             if (count > 0) {
                 SDL_snprintfcat(text, maxlen, " | ");
@@ -1819,7 +1819,7 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
     int num_displays;
     SDL_DisplayID *displays;
     SDL_Window *window;
-    Uint32 flags;
+    Uint64 flags;
     const SDL_DisplayMode *mode;
     struct SDL_Rect rect = { 0, 0, 0, 0 };
 
@@ -2100,7 +2100,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 /* Ctrl-M maximize */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    Uint32 flags = SDL_GetWindowFlags(window);
+                    Uint64 flags = SDL_GetWindowFlags(window);
                     if (flags & SDL_WINDOW_MAXIMIZED) {
                         SDL_RestoreWindow(window);
                     } else {
@@ -2120,7 +2120,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 /* Ctrl-T toggle topmost mode */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    Uint32 flags = SDL_GetWindowFlags(window);
+                    Uint64 flags = SDL_GetWindowFlags(window);
                     if (flags & SDL_WINDOW_ALWAYS_ON_TOP) {
                         SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);
                     } else {
@@ -2143,7 +2143,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 /* Ctrl-Enter toggle fullscreen */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    Uint32 flags = SDL_GetWindowFlags(window);
+                    Uint64 flags = SDL_GetWindowFlags(window);
                     if (flags & SDL_WINDOW_FULLSCREEN) {
                         SDL_SetWindowFullscreen(window, SDL_FALSE);
                     } else {
@@ -2154,7 +2154,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 /* Alt-Enter toggle fullscreen desktop */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    Uint32 flags = SDL_GetWindowFlags(window);
+                    Uint64 flags = SDL_GetWindowFlags(window);
                     if (flags & SDL_WINDOW_FULLSCREEN) {
                         SDL_SetWindowFullscreen(window, SDL_FALSE);
                     } else {
@@ -2181,7 +2181,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 /* Ctrl-B toggle window border */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    const Uint32 flags = SDL_GetWindowFlags(window);
+                    const Uint64 flags = SDL_GetWindowFlags(window);
                     const SDL_bool b = (flags & SDL_WINDOW_BORDERLESS) ? SDL_TRUE : SDL_FALSE;
                     SDL_SetWindowBordered(window, b);
                 }

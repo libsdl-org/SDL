@@ -105,7 +105,7 @@ struct SDL_Window
     int min_w, min_h;
     int max_w, max_h;
     int last_pixel_w, last_pixel_h;
-    Uint32 flags;
+    Uint64 flags;
     SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
     SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
     SDL_DisplayID last_displayID;
@@ -517,7 +517,7 @@ extern int SDL_GetMessageBoxCount(void);
 
 extern void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor);
 
-extern int SDL_RecreateWindow(SDL_Window *window, Uint32 flags);
+extern int SDL_RecreateWindow(SDL_Window *window, Uint64 flags);
 extern SDL_bool SDL_HasWindows(void);
 
 extern void SDL_OnWindowShown(SDL_Window *window);

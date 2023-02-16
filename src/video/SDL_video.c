@@ -175,7 +175,7 @@ typedef struct
     int bytes_per_pixel;
 } SDL_WindowTextureData;
 
-static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
+static Uint64 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
 {
 #if (SDL_VIDEO_OPENGL && __MACOS__) || (__IOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__
     if (_this->GL_CreateContext != NULL) {
@@ -1606,7 +1606,7 @@ void SDL_ToggleDragAndDropSupport(void)
     }
 }
 
-static void SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
+static void SDL_FinishWindowCreation(SDL_Window *window, Uint64 flags)
 {
     PrepareDragAndDropSupport(window);
 
@@ -1649,10 +1649,10 @@ static int SDL_DllNotSupported(const char *name)
     return SDL_SetError("No dynamic %s support in current SDL video driver (%s)", name, _this->name);
 }
 
-SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
+SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint64 flags)
 {
     SDL_Window *window;
-    Uint32 type_flags, graphics_flags;
+    Uint64 type_flags, graphics_flags;
 
     if (_this == NULL) {
         /* Initialize the video system if needed */
@@ -1822,7 +1822,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
 SDL_Window *SDL_CreateWindowFrom(const void *data)
 {
     SDL_Window *window;
-    Uint32 flags = SDL_WINDOW_FOREIGN;
+    Uint64 flags = SDL_WINDOW_FOREIGN;
 
     if (_this == NULL) {
         SDL_UninitializedVideo();
@@ -1886,7 +1886,7 @@ SDL_Window *SDL_CreateWindowFrom(const void *data)
     return window;
 }
 
-int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
+int SDL_RecreateWindow(SDL_Window *window, Uint64 flags)
 {
     SDL_bool loaded_opengl = SDL_FALSE;
     SDL_bool need_gl_unload = SDL_FALSE;
@@ -1894,7 +1894,7 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
     SDL_bool loaded_vulkan = SDL_FALSE;
     SDL_bool need_vulkan_unload = SDL_FALSE;
     SDL_bool need_vulkan_load = SDL_FALSE;
-    Uint32 graphics_flags;
+    Uint64 graphics_flags;
 
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
@@ -2052,7 +2052,7 @@ SDL_Window *SDL_GetWindowFromID(SDL_WindowID id)
     return NULL;
 }
 
-Uint32 SDL_GetWindowFlags(SDL_Window *window)
+Uint64 SDL_GetWindowFlags(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, 0);
 
@@ -2622,7 +2622,7 @@ int SDL_RestoreWindow(SDL_Window *window)
 int SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
 {
     int ret = 0;
-    Uint32 flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
+    Uint64 flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
 
     CHECK_WINDOW_MAGIC(window, -1);
 

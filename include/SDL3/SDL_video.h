@@ -131,6 +131,9 @@ typedef enum
     SDL_WINDOW_VULKAN               = 0x10000000,   /**< window usable for Vulkan surface */
     SDL_WINDOW_METAL                = 0x20000000,   /**< window usable for Metal view */
 
+    /* This value is added to ensure SDL_WindowFlags size is compiled to 8 bytes (Uint64) */
+    __SDL_WINDOWFLAGS_SENTINEL      = SDL_MAX_UINT64,   /**< dummy value. Not for use in app code */
+
 } SDL_WindowFlags;
 
 /**
@@ -640,7 +643,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * \sa SDL_CreateWindowFrom
  * \sa SDL_DestroyWindow
  */
-extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags);
+extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint64 flags);
 
 /**
  * Create an SDL window from an existing native window.
@@ -709,7 +712,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowFromID(SDL_WindowID id);
  * \sa SDL_SetWindowGrab
  * \sa SDL_ShowWindow
  */
-extern DECLSPEC Uint32 SDLCALL SDL_GetWindowFlags(SDL_Window *window);
+extern DECLSPEC Uint64 SDLCALL SDL_GetWindowFlags(SDL_Window *window);
 
 /**
  * Set the title of a window.
