@@ -2416,6 +2416,8 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x044f, 0xb65e),    /* Thrustmaster T500RS */
         MAKE_VIDPID(0x044f, 0xb664),    /* Thrustmaster TX (initial mode) */
         MAKE_VIDPID(0x044f, 0xb669),    /* Thrustmaster TX (active mode) */
+        MAKE_VIDPID(0x11ff, 0x0511),    /* DragonRise Inc. Wired Wheel (non-working mode) */
+        MAKE_VIDPID(0x0079, 0x1864),    /* DragonRise Inc. Wired Wheel (active mode) */
     };
     int i;
 
