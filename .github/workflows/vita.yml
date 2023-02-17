@@ -20,50 +20,71 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Vita (GLES w/ pib),                  os: windows-latest, pib: true, artifact: SDL-vita-pib }
-        - { name: Vita (GLES w/ PVR_PSP2 + gles4vita), os: windows-latest, pvr: true, artifact: SDL-vita-pvr }
+        - { name: Vita (GLES w/ pib),                  os: windows-latest, pib: true, version: 1.1.4, artifact: SDL-vita-pib }
+        - { name: Vita (GLES w/ PVR_PSP2 + gles4vita), os: windows-latest, pvr: true, version: 3.9,   artifact: SDL-vita-pvr }
 
     steps:
     - uses: actions/checkout@v3
     - name: Install build requirements
       run: |
         apk update
-        apk add cmake ninja pkgconf bash
+        apk add cmake ninja pkgconf bash tar
 
-    - name: Configure PVR_PSP2 (GLES)
-      if: ${{ !!matrix.platform.pvr }}
+    - uses: actions/cache/restore@v3
+      id: restore-cache
+      with:
+        path: /vita/dependencies
+        key: ${{ matrix.platform.artifact }}-${{ matrix.platform.version }}
+
+    - name: Download PVR_PSP2 (GLES)
+      if: ${{ !!matrix.platform.pvr && !steps.restore-cache.outputs.cache-hit }}
       run: |
-        pvr_psp2_version=3.9
+        pvr_psp2_version=${{ matrix.platform.version }}
+
+        mkdir -p /vita/dependencies/include
+        mkdir -p /vita/dependencies/lib
 
         # Configure PVR_PSP2 headers
         wget https://github.com/GrapheneCt/PVR_PSP2/archive/refs/tags/v$pvr_psp2_version.zip -P/tmp
         unzip /tmp/v$pvr_psp2_version.zip -d/tmp
-        cp -r /tmp/PVR_PSP2-$pvr_psp2_version/include/* ${VITASDK}/arm-vita-eabi/include
+        cp -r /tmp/PVR_PSP2-$pvr_psp2_version/include/* /vita/dependencies/include
         rm /tmp/v$pvr_psp2_version.zip
         
         # include guard of PVR_PSP2's khrplatform.h does not match the usual one
-        sed -i -e s/__drvkhrplatform_h_/__khrplatform_h_/ ${VITASDK}/arm-vita-eabi/include/KHR/khrplatform.h
+        sed -i -e s/__drvkhrplatform_h_/__khrplatform_h_/ /vita/dependencies/include/KHR/khrplatform.h
 
         # Configure PVR_PSP2 stub libraries
         wget https://github.com/GrapheneCt/PVR_PSP2/releases/download/v$pvr_psp2_version/vitasdk_stubs.zip -P/tmp
         unzip /tmp/vitasdk_stubs.zip -d/tmp/pvr_psp2_stubs
-        find /tmp/pvr_psp2_stubs -type f -name "*.a" -exec cp {} ${VITASDK}/arm-vita-eabi/lib \;
+        find /tmp/pvr_psp2_stubs -type f -name "*.a" -exec cp {} /vita/dependencies/lib \;
         rm /tmp/vitasdk_stubs.zip
         rm -rf /tmp/pvr_psp2_stubs
 
-    - name: Configure gl4es4vita (OpenGL)
-      if: ${{ !!matrix.platform.pvr }}
+    - name: Download gl4es4vita (OpenGL)
+      if: ${{ !!matrix.platform.pib && !steps.restore-cache.outputs.cache-hit }}
       run: |
-        gl4es4vita_version=1.1.4
+        gl4es4vita_version=${{ matrix.platform.version }}
+
+        mkdir -p /vita/dependencies/include
+        mkdir -p /vita/dependencies/lib
 
         # Configure gl4es4vita headers
         wget https://github.com/SonicMastr/gl4es4vita/releases/download/v$gl4es4vita_version-vita/include.zip -P/tmp
-        unzip -o /tmp/include.zip -d${VITASDK}/arm-vita-eabi/include
+        unzip -o /tmp/include.zip -d/vita/dependencies/include
         rm /tmp/include.zip
 
         # Configure gl4es4vita stub libraries
         wget https://github.com/SonicMastr/gl4es4vita/releases/download/v$gl4es4vita_version-vita/vitasdk_stubs.zip -P/tmp
-        unzip /tmp/vitasdk_stubs.zip -d${VITASDK}/arm-vita-eabi/lib
+        unzip /tmp/vitasdk_stubs.zip -d/vita/dependencies/lib
+
+    - uses: actions/cache/save@v3
+      with:
+        path: /vita/dependencies
+        key: ${{ matrix.platform.artifact }}-${{ matrix.platform.version }}
+
+    - name: Copy PVR_PSP2 (GLES) or gl4es4vita (OpenGL) to vita toolchain dir
+      run: |
+        cp -rv /vita/dependencies/* ${VITASDK}/arm-vita-eabi
 
     - name: Configure (CMake)
       run: |
