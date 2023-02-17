@@ -2145,7 +2145,11 @@ void *SDL_GetWindowData(SDL_Window *window, const char *name)
 
 int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
 {
+    SDL_DisplayID original_displayID;
+
     CHECK_WINDOW_MAGIC(window, -1);
+
+    original_displayID = SDL_GetDisplayForWindow(window);
 
     if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
         x = window->windowed.x;
@@ -2154,7 +2158,7 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         y = window->windowed.y;
     }
     if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
-        SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
+        SDL_DisplayID displayID = original_displayID;
         SDL_Rect bounds;
 
         if (SDL_WINDOWPOS_ISCENTERED(x) && (x & 0xFFFF)) {
@@ -2179,7 +2183,30 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
     window->windowed.x = x;
     window->windowed.y = y;
 
-    if (!SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
+    if (SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
+        if (!window->fullscreen_exclusive) {
+            /* See if we should move to another display */
+            SDL_DisplayID displayID = GetDisplayForRect(x, y, 1, 1);
+
+            if (displayID != original_displayID) {
+                SDL_Rect bounds;
+                SDL_zero(bounds);
+                SDL_GetDisplayBounds(displayID, &bounds);
+
+                window->x = bounds.x;
+                window->y = bounds.y;
+                window->w = bounds.w;
+                window->w = bounds.w;
+
+                if (_this->SetWindowPosition) {
+                    _this->SetWindowPosition(_this, window);
+                }
+                if (_this->SetWindowSize) {
+                    _this->SetWindowSize(_this, window);
+                }
+            }
+        }
+    } else {
         window->x = x;
         window->y = y;
 
