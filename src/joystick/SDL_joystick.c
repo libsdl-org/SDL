@@ -2441,7 +2441,7 @@ SDL_bool SDL_IsJoystickVirtual(SDL_JoystickGUID guid)
 static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
 {
     static Uint32 wheel_joysticks[] = {
-        MAKE_VIDPID(0x0079, 0x1864), /* PXN V900 (PS3) */
+        MAKE_VIDPID(0x0079, 0x1864), /* DragonRise Inc. Wired Wheel (active mode) (also known as PXN V900 (PS3), Superdrive SV-750, or a Genesis Seaborg 400) */
         MAKE_VIDPID(0x046d, 0xc294), /* Logitech generic wheel */
         MAKE_VIDPID(0x046d, 0xc295), /* Logitech Momo Force */
         MAKE_VIDPID(0x046d, 0xc298), /* Logitech Driving Force Pro */
@@ -2467,6 +2467,7 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x044f, 0xb65e), /* Thrustmaster T500RS */
         MAKE_VIDPID(0x044f, 0xb664), /* Thrustmaster TX (initial mode) */
         MAKE_VIDPID(0x044f, 0xb669), /* Thrustmaster TX (active mode) */
+        MAKE_VIDPID(0x11ff, 0x0511), /* DragonRise Inc. Wired Wheel (initial mode) (also known as PXN V900 (PS3), Superdrive SV-750, or a Genesis Seaborg 400) */
     };
     int i;
 
