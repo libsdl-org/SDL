@@ -1578,7 +1578,7 @@ static void SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
         SDL_MinimizeWindow(window);
     }
     if (flags & SDL_WINDOW_FULLSCREEN) {
-        SDL_SetWindowFullscreen(window, flags);
+        SDL_SetWindowFullscreen(window, SDL_TRUE);
     }
     if (flags & SDL_WINDOW_MOUSE_GRABBED) {
         /* We must specifically call SDL_SetWindowGrab() and not
