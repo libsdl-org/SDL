@@ -273,27 +273,7 @@ int SDL_SetWindowShape(SDL_Window *window, SDL_Surface *shape, SDL_WindowShapeMo
     result = _this->shape_driver.SetWindowShape(window->shaper, shape, shape_mode);
     window->shaper->hasshape = SDL_TRUE;
     if (window->shaper->userx != 0 && window->shaper->usery != 0) {
-        SDL_DisplayID displayID = 0;
-        int x = window->shaper->userx;
-        int y = window->shaper->usery;
-
-        if (!displayID) {
-            displayID = SDL_GetDisplayForWindowCoordinate(x);
-        }
-        if (!displayID) {
-            displayID = SDL_GetDisplayForWindowCoordinate(y);
-        }
-        if (displayID) {
-            SDL_Rect bounds;
-            SDL_GetDisplayBounds(displayID, &bounds);
-            if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
-                x = bounds.x + (bounds.w - window->w) / 2;
-            }
-            if (SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) {
-                y = bounds.y + (bounds.h - window->h) / 2;
-            }
-        }
-        SDL_SetWindowPosition(window, x, y);
+        SDL_SetWindowPosition(window, window->shaper->userx, window->shaper->usery);
         window->shaper->userx = 0;
         window->shaper->usery = 0;
     }

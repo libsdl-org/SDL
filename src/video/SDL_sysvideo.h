@@ -512,7 +512,6 @@ extern SDL_VideoDisplay *SDL_GetVideoDisplayForWindow(SDL_Window *window);
 extern int SDL_GetDisplayIndex(SDL_DisplayID displayID);
 extern SDL_DisplayData *SDL_GetDisplayDriverData(SDL_DisplayID display);
 extern SDL_DisplayData *SDL_GetDisplayDriverDataForWindow(SDL_Window *window);
-extern SDL_DisplayID SDL_GetDisplayForWindowCoordinate(int coordinate);
 extern int SDL_GetMessageBoxCount(void);
 
 extern void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor);

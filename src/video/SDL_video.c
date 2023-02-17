@@ -1211,21 +1211,6 @@ SDL_DisplayID SDL_GetDisplayForRect(const SDL_Rect *rect)
     return GetDisplayForRect(rect->x, rect->y, rect->w, rect->h);
 }
 
-SDL_DisplayID SDL_GetDisplayForWindowCoordinate(int coordinate)
-{
-    SDL_DisplayID displayID = 0;
-
-    if (SDL_WINDOWPOS_ISUNDEFINED(coordinate) ||
-        SDL_WINDOWPOS_ISCENTERED(coordinate)) {
-        displayID = (coordinate & 0xFFFF);
-        /* 0 or invalid */
-        if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
-            displayID = SDL_GetPrimaryDisplay();
-        }
-    }
-    return displayID;
-}
-
 static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
 {
     SDL_DisplayID displayID = 0;
@@ -1240,12 +1225,6 @@ static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
      * (for example if the window is off-screen), but other code may expect it
      * to succeed in that situation, so we fall back to a generic position-
      * based implementation in that case. */
-    if (!displayID) {
-        displayID = SDL_GetDisplayForWindowCoordinate(window->windowed.x);
-    }
-    if (!displayID) {
-        displayID = SDL_GetDisplayForWindowCoordinate(window->windowed.y);
-    }
     if (!displayID) {
         displayID = GetDisplayForRect(window->x, window->y, window->w, window->h);
     }
@@ -1267,26 +1246,8 @@ SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
         displayID = window->current_fullscreen_mode.displayID;
     }
 
-    if (!displayID && _this->GetDisplayForWindow) {
-        displayID = _this->GetDisplayForWindow(_this, window);
-    }
-
-    /* A backend implementation may fail to get a display for the window
-     * (for example if the window is off-screen), but other code may expect it
-     * to succeed in that situation, so we fall back to a generic position-
-     * based implementation in that case. */
     if (!displayID) {
-        displayID = SDL_GetDisplayForWindowCoordinate(window->windowed.x);
-    }
-    if (!displayID) {
-        displayID = SDL_GetDisplayForWindowCoordinate(window->windowed.y);
-    }
-    if (!displayID) {
-        displayID = GetDisplayForRect(window->x, window->y, window->w, window->h);
-    }
-    if (!displayID) {
-        /* Use the primary display for a window if we can't find it anywhere else */
-        displayID = SDL_GetPrimaryDisplay();
+        displayID = SDL_GetDisplayForWindowPosition(window);
     }
     return displayID;
 }
@@ -1692,6 +1653,30 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
         return NULL;
     }
 
+    if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISUNDEFINED(y) ||
+        SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
+        SDL_DisplayID displayID = 0;
+        SDL_Rect bounds;
+
+        if ((SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) && (x & 0xFFFF)) {
+            displayID = (x & 0xFFFF);
+        } else if ((SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) && (y & 0xFFFF)) {
+            displayID = (y & 0xFFFF);
+        }
+        if (SDL_GetDisplayIndex(displayID) < 0) {
+            displayID = SDL_GetPrimaryDisplay();
+        }
+
+        SDL_zero(bounds);
+        SDL_GetDisplayBounds(displayID, &bounds);
+        if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
+            x = bounds.x + (bounds.w - w) / 2;
+        }
+        if (SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) {
+            y = bounds.y + (bounds.h - h) / 2;
+        }
+    }
+
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
     if (graphics_flags & (graphics_flags - 1)) {
@@ -1746,19 +1731,6 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
     window->windowed.y = window->y = y;
     window->windowed.w = window->w = w;
     window->windowed.h = window->h = h;
-    if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISUNDEFINED(y) ||
-        SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
-        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-        SDL_Rect bounds;
-
-        SDL_GetDisplayBounds(display->id, &bounds);
-        if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
-            window->windowed.x = window->x = bounds.x + (bounds.w - w) / 2;
-        }
-        if (SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) {
-            window->windowed.y = window->y = bounds.y + (bounds.h - h) / 2;
-        }
-    }
 
     if (flags & SDL_WINDOW_FULLSCREEN) {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
@@ -2175,15 +2147,23 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
 {
     CHECK_WINDOW_MAGIC(window, -1);
 
+    if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
+        x = window->windowed.x;
+    }
+    if (SDL_WINDOWPOS_ISUNDEFINED(y)) {
+        y = window->windowed.y;
+    }
     if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
-        SDL_DisplayID displayID = 0;
+        SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
         SDL_Rect bounds;
 
-        if (!displayID) {
-            displayID = SDL_GetDisplayForWindowCoordinate(x);
+        if (SDL_WINDOWPOS_ISCENTERED(x) && (x & 0xFFFF)) {
+            displayID = (x & 0xFFFF);
+        } else if (SDL_WINDOWPOS_ISCENTERED(y) && (y & 0xFFFF)) {
+            displayID = (y & 0xFFFF);
         }
-        if (!displayID) {
-            displayID = SDL_GetDisplayForWindowCoordinate(y);
+        if (SDL_GetDisplayIndex(displayID) < 0) {
+            displayID = SDL_GetPrimaryDisplay();
         }
 
         SDL_zero(bounds);
@@ -2196,20 +2176,12 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         }
     }
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        if (!SDL_WINDOWPOS_ISUNDEFINED(x)) {
-            window->windowed.x = x;
-        }
-        if (!SDL_WINDOWPOS_ISUNDEFINED(y)) {
-            window->windowed.y = y;
-        }
-    } else {
-        if (!SDL_WINDOWPOS_ISUNDEFINED(x)) {
-            window->x = x;
-        }
-        if (!SDL_WINDOWPOS_ISUNDEFINED(y)) {
-            window->y = y;
-        }
+    window->windowed.x = x;
+    window->windowed.y = y;
+
+    if (!SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
+        window->x = x;
+        window->y = y;
 
         if (_this->SetWindowPosition) {
             _this->SetWindowPosition(_this, window);
@@ -2342,6 +2314,9 @@ int SDL_SetWindowSize(SDL_Window *window, int w, int h)
     window->windowed.h = h;
 
     if (!SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
+        window->w = w;
+        window->h = h;
+
         if (_this->SetWindowSize) {
             _this->SetWindowSize(_this, window);
         }
