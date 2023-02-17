@@ -2196,7 +2196,7 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
                 window->x = bounds.x;
                 window->y = bounds.y;
                 window->w = bounds.w;
-                window->w = bounds.w;
+                window->h = bounds.h;
 
                 if (_this->SetWindowPosition) {
                     _this->SetWindowPosition(_this, window);
