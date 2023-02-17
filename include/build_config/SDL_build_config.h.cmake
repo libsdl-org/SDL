@@ -240,6 +240,7 @@
 
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBSAMPLERATE_H 1
+#cmakedefine HAVE_LIBSNDFILE_H 1
 #cmakedefine HAVE_LIBDECOR_H  1
 
 #cmakedefine HAVE_D3D_H @HAVE_D3D_H@
@@ -561,6 +562,9 @@
 
 /* Enable dynamic libsamplerate support */
 #cmakedefine SDL_LIBSAMPLERATE_DYNAMIC @SDL_LIBSAMPLERATE_DYNAMIC@
+
+/* Enable dynamic libsndfile support */
+#cmakedefine SDL_LIBSNDFILE_DYNAMIC @SDL_LIBSNDFILE_DYNAMIC@
 
 /* Enable ime support */
 #cmakedefine SDL_USE_IME @SDL_USE_IME@

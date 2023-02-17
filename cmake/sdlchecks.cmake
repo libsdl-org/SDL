@@ -289,6 +289,54 @@ macro(CheckLibSampleRate)
 endmacro()
 
 # Requires:
+# - SDL_LIBSNDFILE
+# Optional:
+# - SDL_LIBSNDFILE_SHARED opt
+# - HAVE_SDL_LOADSO opt
+macro(CheckLibSndFile)
+  if(SDL_LIBSNDFILE)
+    find_package(SndFile QUIET)
+    if(SndFile_FOUND AND TARGET SndFile::sndfile)
+      set(HAVE_LIBSNDFILE TRUE)
+      set(HAVE_LIBSNDFILE_H TRUE)
+      if(SDL_LIBSNDFILE_SHARED)
+        target_include_directories(sdl-build-options INTERFACE $<TARGET_PROPERTY:SndFile::sndfile,INTERFACE_INCLUDE_DIRECTORIES>)
+        if(NOT HAVE_SDL_LOADSO)
+          message_warn("You must have SDL_LoadObject() support for dynamic libsndfile loading")
+        else()
+          get_property(_sndfile_type TARGET SndFile::sndfile PROPERTY TYPE)
+          if(_sndfile_type STREQUAL "SHARED_LIBRARY")
+            set(HAVE_LIBSNDFILE_SHARED TRUE)
+            if(WIN32)
+              set(SDL_LIBSNDFILE_DYNAMIC "\"$<TARGET_FILE_NAME:SndFile::sndfile>\"")
+            else()
+              set(SDL_LIBSNDFILE_DYNAMIC "\"$<TARGET_SONAME_FILE_NAME:SndFile::sndfile>\"")
+            endif()
+          endif()
+        endif()
+      else()
+        target_link_libraries(sdl-build-options INTERFACE SndFile::sndfile)
+      endif()
+    else()
+      check_include_file(sndfile.h HAVE_LIBSNDFILE_H)
+      if(HAVE_LIBSNDFILE_H)
+        set(HAVE_LIBSNDFILE TRUE)
+        if(SDL_LIBSNDFILE_SHARED AND NOT HAVE_SDL_LOADSO)
+          message_warn("You must have SDL_LoadObject() support for dynamic libsndfile loading")
+        endif()
+        FindLibraryAndSONAME("sndfile")
+        if(SDL_LIBSNDFILE_SHARED AND SNDFILE_LIB AND HAVE_SDL_LOADSO)
+          set(SDL_LIBSNDFILE_DYNAMIC "\"${SNDFILE_LIB_SONAME}\"")
+          set(HAVE_LIBSNDFILE_SHARED TRUE)
+        else()
+          list(APPEND SDL_EXTRA_LIBS sndfile)
+        endif()
+      endif()
+    endif()
+  endif()
+endmacro()
+
+# Requires:
 # - n/a
 # Optional:
 # - SDL_X11_SHARED opt

@@ -399,6 +399,8 @@ set_option(SDL_SNDIO               "Support the sndio audio API" ${UNIX_SYS})
 dep_option(SDL_SNDIO_SHARED        "Dynamically load the sndio audio API" ON "SDL_SNDIO" OFF)
 set_option(SDL_LIBSAMPLERATE       "Use libsamplerate for audio rate conversion" ${UNIX_SYS})
 dep_option(SDL_LIBSAMPLERATE_SHARED "Dynamically load libsamplerate" ON "SDL_LIBSAMPLERATE" OFF)
+set_option(SDL_LIBSNDFILE          "Use libsndfile for audio import" ${UNIX_SYS})
+dep_option(SDL_LIBSNDFILE_SHARED   "Dynamically load libsndfile" ON "SDL_LIBSNDFILE" OFF)
 set_option(SDL_RPATH               "Use an rpath when linking SDL" ${UNIX_SYS})
 set_option(SDL_CLOCK_GETTIME       "Use clock_gettime() instead of gettimeofday()" ${SDL_CLOCK_GETTIME_ENABLED_BY_DEFAULT})
 set_option(SDL_X11                 "Use X11 video driver" ${UNIX_SYS})
@@ -2743,6 +2745,7 @@ endif()
 
 # Platform-independent options
 CheckLibSampleRate()
+CheckLibSndFile()
 
 if(SDL_VIDEO)
   if(SDL_OFFSCREEN AND SDL_VIDEO_OPENGL_EGL)

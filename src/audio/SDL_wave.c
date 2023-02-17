@@ -31,6 +31,40 @@
 #define SIZE_MAX ((size_t)-1)
 #endif
 
+#ifdef HAVE_LIBSNDFILE_H
+
+#include <sndfile.h>
+
+static sf_count_t sfvio_size(void *user_data)
+{
+    SDL_RWops *RWops = user_data;
+
+    return SDL_RWsize(RWops);
+}
+
+static sf_count_t sfvio_seek(sf_count_t offset, int whence, void *user_data)
+{
+    SDL_RWops *RWops = user_data;
+
+    return SDL_RWseek(RWops, offset, whence);
+}
+
+static sf_count_t sfvio_read(void *ptr, sf_count_t count, void *user_data)
+{
+    SDL_RWops *RWops = user_data;
+
+    return SDL_RWread(RWops, ptr, count);
+}
+
+static sf_count_t sfvio_tell(void *user_data)
+{
+    SDL_RWops *RWops = user_data;
+
+    return SDL_RWtell(RWops);
+}
+
+#endif
+
 /* Microsoft WAVE file loading routines */
 
 #include "SDL_wave.h"
@@ -1766,7 +1800,102 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
     return 0;
 }
 
-static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+#ifdef HAVE_LIBSNDFILE_H
+
+static int WaveLoad_SndFile(SDL_RWops *src, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+{
+    SNDFILE *sndfile;
+    SF_INFO sfinfo;
+    SF_VIRTUAL_IO sfvio =
+    {
+        sfvio_size,
+        sfvio_seek,
+        sfvio_read,
+        NULL,
+        sfvio_tell
+    };
+    Uint32 wavlen;
+    short *local_wavdata;
+
+    SNDFILE* (*SF_sf_open_virtual) (SF_VIRTUAL_IO *sfvirtual, int mode, SF_INFO *sfinfo, void *user_data);
+    int (*SF_sf_close) (SNDFILE *sndfile);
+    sf_count_t (*SF_sf_readf_short) (SNDFILE *sndfile, short *ptr, sf_count_t frames);
+
+#ifdef SDL_LIBSNDFILE_DYNAMIC
+
+    static void *SNDFILE_lib = NULL;
+    SNDFILE_lib = SDL_LoadObject(SDL_LIBSNDFILE_DYNAMIC);
+    if (!SNDFILE_lib) {
+        SDL_ClearError();
+        return -1;
+    }
+
+    /* *INDENT-OFF* */ /* clang-format off */
+    SF_sf_open_virtual = (SNDFILE* (*)(SF_VIRTUAL_IO *sfvirtual, int mode, SF_INFO *sfinfo, void *user_data))SDL_LoadFunction(SNDFILE_lib, "sf_open_virtual");
+    SF_sf_close = (int (*)(SNDFILE *sndfile))SDL_LoadFunction(SNDFILE_lib, "sf_close");
+    SF_sf_readf_short = (sf_count_t(*)(SNDFILE *sndfile, short *ptr, sf_count_t frames))SDL_LoadFunction(SNDFILE_lib, "sf_readf_short");
+    /* *INDENT-ON* */ /* clang-format on */
+
+    if (!SF_sf_open_virtual || !SF_sf_close || !SF_sf_readf_short) {
+        SDL_UnloadObject(SNDFILE_lib);
+        SNDFILE_lib = NULL;
+        return -1;
+    }
+
+#else
+
+    SF_sf_open_virtual = sf_open_virtual;
+    SF_sf_close = sf_close;
+    SF_sf_readf_short = sf_readf_short;
+
+#endif
+
+    memset(&sfinfo, 0, sizeof(sfinfo));
+
+    sndfile = SF_sf_open_virtual(&sfvio, SFM_READ, &sfinfo, src);
+
+    if (!sndfile)
+    {
+        return -1;
+    }
+
+    if (sfinfo.frames <= 0 || sfinfo.channels <= 0)
+    {
+        SF_sf_close(sndfile);
+        return -1;
+    }
+
+    wavlen = sfinfo.frames * sfinfo.channels * sizeof(short);
+    local_wavdata = SDL_malloc(wavlen);
+
+    if (!local_wavdata)
+    {
+        SF_sf_close(sndfile);
+        return -1;
+    }
+
+    if (SF_sf_readf_short(sndfile, local_wavdata, sfinfo.frames) < sfinfo.frames)
+    {
+        SF_sf_close(sndfile);
+        SDL_free(local_wavdata);
+        return -1;
+    }
+
+    SF_sf_close(sndfile);
+
+    spec->channels = sfinfo.channels;
+    spec->freq = sfinfo.samplerate;
+    spec->format = AUDIO_S16;
+
+    *audio_buf = (Uint8 *)local_wavdata;
+    *audio_len = wavlen;
+
+    return 0;
+}
+
+#endif
+
+static int WaveLoad_SDL(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
 {
     int result;
     Uint32 chunkcount = 0;
@@ -2101,11 +2230,15 @@ SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, Uint8 **audio_b
     *audio_buf = NULL;
     *audio_len = 0;
 
+#ifdef HAVE_LIBSNDFILE_H
+    result = WaveLoad_SndFile(src, spec, audio_buf, audio_len);
+#else
     file.riffhint = WaveGetRiffSizeHint();
     file.trunchint = WaveGetTruncationHint();
     file.facthint = WaveGetFactChunkHint();
 
-    result = WaveLoad(src, &file, spec, audio_buf, audio_len);
+    result = WaveLoad_SDL(src, &file, spec, audio_buf, audio_len);
+#endif
     if (result < 0) {
         SDL_free(*audio_buf);
         spec = NULL;
