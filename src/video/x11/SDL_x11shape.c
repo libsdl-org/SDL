@@ -31,9 +31,10 @@ SDL_WindowShaper *
 X11_CreateShaper(SDL_Window *window)
 {
     SDL_WindowShaper *result = NULL;
-    SDL_ShapeData *data = NULL;
 
 #if SDL_VIDEO_DRIVER_X11_XSHAPE
+    SDL_ShapeData *data = NULL;
+
     if (SDL_X11_HAVE_XSHAPE) { /* Make sure X server supports it. */
         result = SDL_malloc(sizeof(SDL_WindowShaper));
         if (result == NULL) {
@@ -95,9 +96,11 @@ int X11_ResizeWindowShape(SDL_Window *window)
 
 int X11_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode)
 {
+#if SDL_VIDEO_DRIVER_X11_XSHAPE
     SDL_ShapeData *data = NULL;
     SDL_WindowData *windowdata = NULL;
     Pixmap shapemask;
+#endif
 
     if (shaper == NULL || shape == NULL || shaper->driverdata == NULL) {
         return -1;
