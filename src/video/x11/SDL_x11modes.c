@@ -620,6 +620,7 @@ int X11_InitModes(_THIS)
 
 int X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
 {
+#if SDL_VIDEO_DRIVER_X11_XRANDR
     SDL_DisplayData *data = sdl_display->driverdata;
     SDL_DisplayMode mode;
 
@@ -632,7 +633,6 @@ int X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
     SDL_zero(mode);
     mode.format = sdl_display->desktop_mode.format;
 
-#if SDL_VIDEO_DRIVER_X11_XRANDR
     if (data->use_xrandr) {
         Display *display = _this->driverdata->display;
         XRRScreenResources *res;
