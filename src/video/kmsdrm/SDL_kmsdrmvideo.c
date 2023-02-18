@@ -41,8 +41,8 @@
 #include "SDL_kmsdrmdyn.h"
 #include "SDL_kmsdrmevents.h"
 #include "SDL_kmsdrmmouse.h"
-#include "SDL_kmsdrmopengles.h"
 #include "SDL_kmsdrmvideo.h"
+#include "SDL_kmsdrmopengles.h"
 #include "SDL_kmsdrmvulkan.h"
 #include <dirent.h>
 #include <errno.h>
