@@ -1025,12 +1025,17 @@ int SDL_GetSystemRAM(void)
     if (!SDL_SystemRAM) {
 #ifndef SDL_CPUINFO_DISABLED
 #if defined(HAVE_SYSCONF) && defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
-        if (SDL_SystemRAM <= 0) {
-            SDL_SystemRAM = (int)((Sint64)sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
+        {
+            long number_physical_pages = sysconf(_SC_PHYS_PAGES);
+            long pagesize_in_bytes = sysconf(_SC_PAGESIZE);
+            if (number_physical_pages == -1 || pagesize_in_bytes == -1) {
+                SDL_SetError("sysconf");
+            } else {
+                SDL_SystemRAM = (int)((Sint64)number_physical_pages * pagesize_in_bytes / (1024 * 1024));
+            }
         }
-#endif
-#ifdef HAVE_SYSCTLBYNAME
-        if (SDL_SystemRAM <= 0) {
+#elif defined(HAVE_SYSCTLBYNAME)
+        {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__DragonFly__)
 #ifdef HW_REALMEM
             int mib[2] = { CTL_HW, HW_REALMEM };
@@ -1044,42 +1049,48 @@ int SDL_GetSystemRAM(void)
             Uint64 memsize = 0;
             size_t len = sizeof(memsize);
 
-            if (sysctl(mib, 2, &memsize, &len, NULL, 0) == 0) {
+            if (sysctl(mib, 2, &memsize, &len, NULL, 0) == -1) {
+                SDL_SetError("sysctl");
+            } else {
                 SDL_SystemRAM = (int)(memsize / (1024 * 1024));
             }
         }
-#endif
-#if defined(__WIN32__) || defined(__GDK__)
-        if (SDL_SystemRAM <= 0) {
+#elif defined(__WIN32__) || defined(__GDK__)
+        {
             MEMORYSTATUSEX stat;
             stat.dwLength = sizeof(stat);
-            if (GlobalMemoryStatusEx(&stat)) {
+            if (!GlobalMemoryStatusEx(&stat)) {
+                SDL_SetError("GlobalMemoryStatusEx failed, error=%08X", (unsigned int)GetLastError());
+            } else {
                 SDL_SystemRAM = (int)(stat.ullTotalPhys / (1024 * 1024));
             }
         }
-#endif
-#ifdef __RISCOS__
-        if (SDL_SystemRAM <= 0) {
+#elif defined(__RISCOS__)
+        {
             _kernel_swi_regs regs;
             regs.r[0] = 0x108;
-            if (_kernel_swi(OS_Memory, &regs, &regs) == NULL) {
+            if (_kernel_swi(OS_Memory, &regs, &regs)) {
+                SDL_SetError("_kernel_swi");
+            } else {
                 SDL_SystemRAM = (int)(regs.r[1] * regs.r[2] / (1024 * 1024));
             }
         }
-#endif
-#ifdef __VITA__
-        if (SDL_SystemRAM <= 0) {
+#elif defined(__VITA__)
+        {
             /* Vita has 512MiB on SoC, that's split into 256MiB(+109MiB in extended memory mode) for app
                +26MiB of physically continuous memory, +112MiB of CDRAM(VRAM) + system reserved memory. */
             SDL_SystemRAM = 512;
         }
-#endif
-#ifdef __PS2__
-        if (SDL_SystemRAM <= 0) {
+#elif defined(__PS2__)
+        {
             /* PlayStation 2 has 32MiB however there are some special models with 64 and 128 */
             SDL_SystemRAM = GetMemorySize();
         }
+#else
+        SDL_Unsupported();
 #endif
+#else
+        SDL_Unsupported();
 #endif
     }
     return SDL_SystemRAM;
