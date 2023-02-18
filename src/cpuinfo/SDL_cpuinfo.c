@@ -1071,7 +1071,7 @@ int SDL_GetSystemRAM(void)
         if (SDL_SystemRAM <= 0) {
             /* Vita has 512MiB on SoC, that's split into 256MiB(+109MiB in extended memory mode) for app
                +26MiB of physically continuous memory, +112MiB of CDRAM(VRAM) + system reserved memory. */
-            SDL_SystemRAM = 536870912;
+            SDL_SystemRAM = 512;
         }
 #endif
 #ifdef __PS2__
