@@ -631,16 +631,18 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = ../include/SDL_opengles2_gl2ext.h \
-                         ../include/SDL_opengles2_gl2platform.h \
-                         ../include/SDL_opengles2_khrplatform.h \
-                         ../include/SDL_opengl_glext.h \
-                         ../include/SDL_opengles2_gl2.h \
-                         ../include/SDL_opengles2.h \
-                         ../include/SDL_opengles.h \
-                         ../include/SDL_opengl.h \
-                         ../include/SDL_egl.h \
-                         ./release_checklist.md \
+EXCLUDE                = \
+    ../include/SDL3/SDL_egl.h \
+    ../include/SDL3/SDL_opengl.h \
+    ../include/SDL3/SDL_opengl_glext.h \
+    ../include/SDL3/SDL_opengles.h \
+    ../include/SDL3/SDL_opengles2.h \
+    ../include/SDL3/SDL_opengles2_gl2.h \
+    ../include/SDL3/SDL_opengles2_gl2ext.h \
+    ../include/SDL3/SDL_opengles2_gl2platform.h \
+    ../include/SDL3/SDL_opengles2_khrplatform.h \
+    ../include/build_config \
+    ./release_checklist.md \
 
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
