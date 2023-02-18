@@ -267,7 +267,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_misc.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_mouse.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_mutex.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_name.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_opengl.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_opengl_glext.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_opengles.h" />

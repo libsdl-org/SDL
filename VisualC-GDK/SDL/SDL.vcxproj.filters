@@ -267,9 +267,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_mutex.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_name.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_opengl.h">
       <Filter>API Headers</Filter>
     </ClInclude>
