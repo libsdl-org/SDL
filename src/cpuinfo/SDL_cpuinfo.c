@@ -271,7 +271,7 @@ static SDL_bool CPU_OSSavesZMM = SDL_FALSE;
 static void CPU_calcCPUIDFeatures(void)
 {
     static SDL_bool checked = SDL_FALSE;
-    if (!checked) {
+    if (checked == SDL_FALSE) {
         checked = SDL_TRUE;
         if (CPU_haveCPUID()) {
             int a, b, c, d;
@@ -303,7 +303,7 @@ static void CPU_calcCPUIDFeatures(void)
                         }
 #endif
                     CPU_OSSavesYMM = ((a & 6) == 6) ? SDL_TRUE : SDL_FALSE;
-                    CPU_OSSavesZMM = (CPU_OSSavesYMM && ((a & 0xe0) == 0xe0)) ? SDL_TRUE : SDL_FALSE;
+                    CPU_OSSavesZMM = (CPU_OSSavesYMM == SDL_TRUE && ((a & 0xe0) == 0xe0)) ? SDL_TRUE : SDL_FALSE;
                 }
             }
         }
@@ -560,7 +560,7 @@ static int CPU_readCPUCFG(void)
 #define CPU_haveSSE3()  (CPU_CPUIDFeatures[2] & 0x00000001)
 #define CPU_haveSSE41() (CPU_CPUIDFeatures[2] & 0x00080000)
 #define CPU_haveSSE42() (CPU_CPUIDFeatures[2] & 0x00100000)
-#define CPU_haveAVX()   (CPU_OSSavesYMM && (CPU_CPUIDFeatures[2] & 0x10000000))
+#define CPU_haveAVX()   (CPU_OSSavesYMM == SDL_TRUE && (CPU_CPUIDFeatures[2] & 0x10000000))
 #endif
 
 #if defined(__e2k__)
@@ -576,7 +576,7 @@ CPU_haveAVX2(void)
 #else
 static int CPU_haveAVX2(void)
 {
-    if (CPU_OSSavesYMM && (CPU_CPUIDMaxFunction >= 7)) {
+    if (CPU_OSSavesYMM == SDL_TRUE && CPU_CPUIDMaxFunction >= 7) {
         int a, b, c, d;
         (void)a;
         (void)b;
@@ -598,7 +598,7 @@ CPU_haveAVX512F(void)
 #else
 static int CPU_haveAVX512F(void)
 {
-    if (CPU_OSSavesZMM && (CPU_CPUIDMaxFunction >= 7)) {
+    if (CPU_OSSavesZMM == SDL_TRUE && CPU_CPUIDMaxFunction >= 7) {
         int a, b, c, d;
         (void)a;
         (void)b;
