@@ -25,7 +25,7 @@
 /**
  *  \file SDL_mutex.h
  *
- *  Functions to provide thread synchronization primitives.
+ *  \brief Functions to provide thread synchronization primitives.
  */
 
 #include <SDL3/SDL_stdinc.h>

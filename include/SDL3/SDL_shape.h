@@ -36,7 +36,7 @@ extern "C" {
 
 /** \file SDL_shape.h
  *
- * Header file for the shaped window API.
+ *  \brief Header file for the shaped window API.
  */
 
 #define SDL_NONSHAPEABLE_WINDOW -1

@@ -22,7 +22,7 @@
 /**
  *  \file SDL_gamepad.h
  *
- *  Include file for SDL gamepad event handling
+ *  \brief Include file for SDL gamepad event handling
  */
 
 #ifndef SDL_gamepad_h_

@@ -22,7 +22,7 @@
 /**
  *  \file SDL_opengl.h
  *
- *  This is a simple file to encapsulate the OpenGL API headers.
+ *  \brief This is a simple file to encapsulate the OpenGL API headers.
  */
 
 /**

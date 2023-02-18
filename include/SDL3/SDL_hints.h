@@ -22,7 +22,7 @@
 /**
  *  \file SDL_hints.h
  *
- *  Official documentation for SDL configuration variables
+ *  \brief Official documentation for SDL configuration variables
  *
  *  This file contains functions to set and get configuration hints,
  *  as well as listing each of them alphabetically.

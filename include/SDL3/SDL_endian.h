@@ -22,7 +22,7 @@
 /**
  *  \file SDL_endian.h
  *
- *  Functions for reading and writing endian-specific values
+ *  \brief Functions for reading and writing endian-specific values
  */
 
 #ifndef SDL_endian_h_

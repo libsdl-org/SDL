@@ -22,7 +22,7 @@
 /**
  *  \file SDL_init.h
  *
- *  Init and quit header for the SDL library
+ *  \brief Init and quit header for the SDL library
  */
 
 #ifndef SDL_init_h_

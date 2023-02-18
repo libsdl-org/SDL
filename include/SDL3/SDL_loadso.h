@@ -22,7 +22,7 @@
 /**
  *  \file SDL_loadso.h
  *
- *  System dependent library loading routines
+ *  \brief System dependent library loading routines
  *
  *  Some things to keep in mind:
  *  \li These functions only work on C function names.  Other languages may

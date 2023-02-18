@@ -22,7 +22,7 @@
 /**
  *  \file SDL_blendmode.h
  *
- *  Header file declaring the SDL_BlendMode enumeration
+ *  \brief Header file declaring the SDL_BlendMode enumeration
  */
 
 #ifndef SDL_blendmode_h_

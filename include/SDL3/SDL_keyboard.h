@@ -22,7 +22,7 @@
 /**
  *  \file SDL_keyboard.h
  *
- *  Include file for SDL keyboard event handling
+ *  \brief Include file for SDL keyboard event handling
  */
 
 #ifndef SDL_keyboard_h_

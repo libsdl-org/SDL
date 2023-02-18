@@ -22,7 +22,7 @@
 /**
  *  \file SDL_pixels.h
  *
- *  Header for the enumerated pixel format definitions.
+ *  \brief Header for the enumerated pixel format definitions.
  */
 
 #ifndef SDL_pixels_h_

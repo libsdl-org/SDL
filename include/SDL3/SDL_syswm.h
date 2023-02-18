@@ -22,7 +22,7 @@
 /**
  *  \file SDL_syswm.h
  *
- *  Include file for SDL custom system window manager hooks.
+ *  \brief Include file for SDL custom system window manager hooks.
  */
 
 #ifndef SDL_syswm_h_

@@ -26,6 +26,8 @@
 
 /**
  *  \file SDL_build_config.h
+ *
+ *  \brief This is a set of defines to configure the SDL features
  */
 
 /* Add any platform that doesn't build using the configure system. */

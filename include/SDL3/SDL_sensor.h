@@ -22,8 +22,7 @@
 /**
  *  \file SDL_sensor.h
  *
- *  Include file for SDL sensor event handling
- *
+ *  \brief Include file for SDL sensor event handling
  */
 
 #ifndef SDL_sensor_h_

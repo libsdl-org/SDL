@@ -25,7 +25,7 @@
 /**
  *  \file SDL_thread.h
  *
- *  Header for the SDL thread management routines.
+ *  \brief Header for the SDL thread management routines.
  */
 
 #include <SDL3/SDL_stdinc.h>

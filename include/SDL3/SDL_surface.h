@@ -22,7 +22,7 @@
 /**
  *  \file SDL_surface.h
  *
- *  Header file for ::SDL_Surface definition and management functions.
+ *  \brief Header file for ::SDL_Surface definition and management functions.
  */
 
 #ifndef SDL_surface_h_

@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_font.h
  *
- *  Include file for SDL test framework.
+ *  \brief Font related functions of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
