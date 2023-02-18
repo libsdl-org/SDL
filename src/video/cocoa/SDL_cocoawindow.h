@@ -142,7 +142,7 @@ extern int Cocoa_CreateWindow(_THIS, SDL_Window *window);
 extern int Cocoa_CreateWindowFrom(_THIS, SDL_Window *window,
                                   const void *data);
 extern void Cocoa_SetWindowTitle(_THIS, SDL_Window *window);
-extern void Cocoa_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon);
+extern int Cocoa_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon);
 extern void Cocoa_SetWindowPosition(_THIS, SDL_Window *window);
 extern void Cocoa_SetWindowSize(_THIS, SDL_Window *window);
 extern void Cocoa_SetWindowMinimumSize(_THIS, SDL_Window *window);

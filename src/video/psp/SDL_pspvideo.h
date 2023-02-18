@@ -52,7 +52,6 @@ int PSP_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 int PSP_CreateWindow(_THIS, SDL_Window *window);
 int PSP_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
 void PSP_SetWindowTitle(_THIS, SDL_Window *window);
-void PSP_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon);
 void PSP_SetWindowPosition(_THIS, SDL_Window *window);
 void PSP_SetWindowSize(_THIS, SDL_Window *window);
 void PSP_ShowWindow(_THIS, SDL_Window *window);

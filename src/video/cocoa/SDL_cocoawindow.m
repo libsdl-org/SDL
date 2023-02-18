@@ -1874,14 +1874,18 @@ void Cocoa_SetWindowTitle(_THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
+int Cocoa_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
     @autoreleasepool {
         NSImage *nsimage = Cocoa_CreateImage(icon);
 
         if (nsimage) {
             [NSApp setApplicationIconImage:nsimage];
+
+            return 0;
         }
+
+        return SDL_SetError("Unable to set the window's icon");
     }
 }
 

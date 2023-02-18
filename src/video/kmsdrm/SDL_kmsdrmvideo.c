@@ -24,10 +24,10 @@
 #if SDL_VIDEO_DRIVER_KMSDRM
 
 /* SDL internals */
-#include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
-#include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
+#include "../../events/SDL_mouse_c.h"
+#include "../SDL_sysvideo.h"
 
 #ifdef SDL_INPUT_LINUXEV
 #include "../../core/linux/SDL_evdev.h"
@@ -38,18 +38,18 @@
 #include <SDL3/SDL_syswm.h>
 
 /* KMS/DRM declarations */
-#include "SDL_kmsdrmvideo.h"
-#include "SDL_kmsdrmevents.h"
-#include "SDL_kmsdrmopengles.h"
-#include "SDL_kmsdrmmouse.h"
 #include "SDL_kmsdrmdyn.h"
+#include "SDL_kmsdrmevents.h"
+#include "SDL_kmsdrmmouse.h"
+#include "SDL_kmsdrmopengles.h"
+#include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmvulkan.h"
-#include <sys/stat.h>
-#include <sys/param.h>
-#include <sys/utsname.h>
 #include <dirent.h>
-#include <poll.h>
 #include <errno.h>
+#include <poll.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/utsname.h>
 
 #ifdef __OpenBSD__
 static SDL_bool moderndri = SDL_FALSE;
@@ -285,7 +285,6 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     device->CreateSDLWindow = KMSDRM_CreateWindow;
     device->CreateSDLWindowFrom = KMSDRM_CreateWindowFrom;
     device->SetWindowTitle = KMSDRM_SetWindowTitle;
-    device->SetWindowIcon = KMSDRM_SetWindowIcon;
     device->SetWindowPosition = KMSDRM_SetWindowPosition;
     device->SetWindowSize = KMSDRM_SetWindowSize;
     device->SetWindowFullscreen = KMSDRM_SetWindowFullscreen;
@@ -323,7 +322,7 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
 
 cleanup:
     if (device) {
-    	SDL_free(device);
+        SDL_free(device);
     }
 
     if (viddata) {
@@ -1558,9 +1557,6 @@ int KMSDRM_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 }
 
 void KMSDRM_SetWindowTitle(_THIS, SDL_Window *window)
-{
-}
-void KMSDRM_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
 }
 void KMSDRM_SetWindowPosition(_THIS, SDL_Window *window)
