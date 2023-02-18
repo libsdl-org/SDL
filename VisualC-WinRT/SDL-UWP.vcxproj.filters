@@ -96,9 +96,6 @@
     <ClInclude Include="..\include\SDL3\SDL_mutex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\SDL3\SDL_name.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\SDL3\SDL_opengles2.h">
       <Filter>Header Files</Filter>
     </ClInclude>

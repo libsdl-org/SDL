@@ -3384,9 +3384,6 @@
 		F3F7D9B12933074E00816151 /* SDL_power.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DB2933074D00816151 /* SDL_power.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9B22933074E00816151 /* SDL_power.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DB2933074D00816151 /* SDL_power.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9B32933074E00816151 /* SDL_power.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DB2933074D00816151 /* SDL_power.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F3F7D9B52933074E00816151 /* SDL_name.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DC2933074D00816151 /* SDL_name.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F3F7D9B62933074E00816151 /* SDL_name.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DC2933074D00816151 /* SDL_name.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F3F7D9B72933074E00816151 /* SDL_name.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DC2933074D00816151 /* SDL_name.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9B92933074E00816151 /* SDL_cpuinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DD2933074D00816151 /* SDL_cpuinfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9BA2933074E00816151 /* SDL_cpuinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DD2933074D00816151 /* SDL_cpuinfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9BB2933074E00816151 /* SDL_cpuinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DD2933074D00816151 /* SDL_cpuinfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -3924,7 +3921,6 @@
 		F3F7D8D92933074C00816151 /* SDL_loadso.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_loadso.h; path = SDL3/SDL_loadso.h; sourceTree = "<group>"; };
 		F3F7D8DA2933074D00816151 /* SDL_mouse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_mouse.h; path = SDL3/SDL_mouse.h; sourceTree = "<group>"; };
 		F3F7D8DB2933074D00816151 /* SDL_power.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_power.h; path = SDL3/SDL_power.h; sourceTree = "<group>"; };
-		F3F7D8DC2933074D00816151 /* SDL_name.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_name.h; path = SDL3/SDL_name.h; sourceTree = "<group>"; };
 		F3F7D8DD2933074D00816151 /* SDL_cpuinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_cpuinfo.h; path = SDL3/SDL_cpuinfo.h; sourceTree = "<group>"; };
 		F3F7D8DE2933074D00816151 /* SDL_render.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_render.h; path = SDL3/SDL_render.h; sourceTree = "<group>"; };
 		F3F7D8DF2933074D00816151 /* SDL_quit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_quit.h; path = SDL3/SDL_quit.h; sourceTree = "<group>"; };
@@ -4129,7 +4125,6 @@
 				F3F7D8D52933074C00816151 /* SDL_misc.h */,
 				F3F7D8DA2933074D00816151 /* SDL_mouse.h */,
 				F3F7D8E62933074E00816151 /* SDL_mutex.h */,
-				F3F7D8DC2933074D00816151 /* SDL_name.h */,
 				F3B38CCD296E2E52005DA6D3 /* SDL_oldnames.h */,
 				F3F7D8E12933074D00816151 /* SDL_opengl.h */,
 				F3F7D8C02933074A00816151 /* SDL_opengl_glext.h */,
@@ -5737,7 +5732,6 @@
 				F3F7D9AE2933074E00816151 /* SDL_mouse.h in Headers */,
 				A7D8BB1C23E2514500DCD162 /* SDL_mouse_c.h in Headers */,
 				F3F7D9DE2933074E00816151 /* SDL_mutex.h in Headers */,
-				F3F7D9B62933074E00816151 /* SDL_name.h in Headers */,
 				A7D8ABFE23E2514100DCD162 /* SDL_nullevents_c.h in Headers */,
 				A7D8ABE623E2514100DCD162 /* SDL_nullframebuffer_c.h in Headers */,
 				A7D8ABF823E2514100DCD162 /* SDL_nullvideo.h in Headers */,
@@ -5970,7 +5964,6 @@
 				F3F7D9AF2933074E00816151 /* SDL_mouse.h in Headers */,
 				A7D8BB1D23E2514500DCD162 /* SDL_mouse_c.h in Headers */,
 				F3F7D9DF2933074E00816151 /* SDL_mutex.h in Headers */,
-				F3F7D9B72933074E00816151 /* SDL_name.h in Headers */,
 				A7D8ABFF23E2514100DCD162 /* SDL_nullevents_c.h in Headers */,
 				A7D8ABE723E2514100DCD162 /* SDL_nullframebuffer_c.h in Headers */,
 				A7D8ABF923E2514100DCD162 /* SDL_nullvideo.h in Headers */,
@@ -6368,7 +6361,6 @@
 				F3F7D9AD2933074E00816151 /* SDL_mouse.h in Headers */,
 				A7D8BB1B23E2514500DCD162 /* SDL_mouse_c.h in Headers */,
 				F3F7D9DD2933074E00816151 /* SDL_mutex.h in Headers */,
-				F3F7D9B52933074E00816151 /* SDL_name.h in Headers */,
 				A7D8ABFD23E2514100DCD162 /* SDL_nullevents_c.h in Headers */,
 				A7D8ABE523E2514100DCD162 /* SDL_nullframebuffer_c.h in Headers */,
 				A7D8ABF723E2514100DCD162 /* SDL_nullvideo.h in Headers */,
