@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_log.h
  *
- *  Include file for SDL test framework.
+ *  \brief Logging related functions of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */

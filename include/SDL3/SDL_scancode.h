@@ -22,7 +22,7 @@
 /**
  *  \file SDL_scancode.h
  *
- *  Defines keyboard scancodes.
+ *  \brief Defines keyboard scancodes.
  */
 
 #ifndef SDL_scancode_h_

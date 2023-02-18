@@ -22,7 +22,7 @@
 /**
  *  \file SDL_video.h
  *
- *  Header file for SDL video functions.
+ *  \brief Header file for SDL video functions.
  */
 
 #ifndef SDL_video_h_

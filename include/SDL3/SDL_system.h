@@ -22,7 +22,7 @@
 /**
  *  \file SDL_system.h
  *
- *  Include file for platform specific SDL API functions
+ *  \brief Include file for platform specific SDL API functions
  */
 
 #ifndef SDL_system_h_

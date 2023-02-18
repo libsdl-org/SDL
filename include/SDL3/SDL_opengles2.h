@@ -22,7 +22,7 @@
 /**
  *  \file SDL_opengles2.h
  *
- *  This is a simple file to encapsulate the OpenGL ES 2.0 API headers.
+ *  \brief This is a simple file to encapsulate the OpenGL ES 2.0 API headers.
  */
 #include <SDL3/SDL_platform_defines.h>
 

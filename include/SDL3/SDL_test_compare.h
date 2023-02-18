@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_compare.h
  *
- *  Include file for SDL test framework.
+ *  \brief Comparison function of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */

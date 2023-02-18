@@ -22,7 +22,7 @@
 /**
  *  \file SDL_keycode.h
  *
- *  Defines constants which identify keyboard keys and modifiers.
+ *  \brief Defines constants which identify keyboard keys and modifiers.
  */
 
 #ifndef SDL_keycode_h_

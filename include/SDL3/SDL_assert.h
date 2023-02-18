@@ -19,6 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/**
+ *  \file SDL_assert.h
+ *
+ *  \brief Header file for assertion SDL API functions
+ */
+
 #ifndef SDL_assert_h_
 #define SDL_assert_h_
 

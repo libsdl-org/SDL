@@ -22,7 +22,7 @@
 /**
  *  \file SDL_stdinc.h
  *
- *  This is a general header that includes C language support.
+ *  \brief This is a general header that includes C language support.
  */
 
 #ifndef SDL_stdinc_h_

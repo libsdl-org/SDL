@@ -22,7 +22,7 @@
 /**
  *  \file SDL_version.h
  *
- *  This header defines the current SDL version.
+ *  \brief This header defines the current SDL version.
  */
 
 #ifndef SDL_version_h_

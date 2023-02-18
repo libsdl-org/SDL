@@ -22,7 +22,7 @@
 /**
  *  \file SDL_hidapi.h
  *
- *  Header file for SDL HIDAPI functions.
+ *  \brief Header file for SDL HIDAPI functions.
  *
  *  This is an adaptation of the original HIDAPI interface by Alan Ott,
  *  and includes source code licensed under the following BSD license:

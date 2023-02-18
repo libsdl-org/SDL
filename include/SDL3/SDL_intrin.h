@@ -22,7 +22,7 @@
 /**
  *  \file SDL_intrin.h
  *
- *  Header file for CPU intrinsics for SDL
+ *  \brief Header file for CPU intrinsics for SDL
  */
 
 #ifndef SDL_intrin_h_

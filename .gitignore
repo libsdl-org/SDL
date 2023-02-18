@@ -148,3 +148,8 @@ test/testvulkan
 test/testwm
 test/testyuv
 test/torturethread
+
+# for Doxygen
+docs/output
+SDL.tag
+doxygen_warn.txt

@@ -22,7 +22,7 @@
 /**
  *  \file SDL_log.h
  *
- *  Simple log messages with categories and priorities.
+ *  \brief Simple log messages with categories and priorities.
  *
  *  By default logs are quiet, but if you're debugging SDL you might want:
  *

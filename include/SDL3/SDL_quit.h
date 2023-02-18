@@ -22,7 +22,7 @@
 /**
  *  \file SDL_quit.h
  *
- *  Include file for SDL quit event handling.
+ *  \brief Include file for SDL quit event handling.
  */
 
 #ifndef SDL_quit_h_
