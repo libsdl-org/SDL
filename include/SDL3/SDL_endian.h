@@ -138,6 +138,9 @@ extern "C" {
 #   define HAS_BROKEN_BSWAP 0
 #endif
 
+/**
+ * Byte swap 16-bit integer.
+ */
 #if HAS_BUILTIN_BSWAP16
 #define SDL_Swap16(x) __builtin_bswap16(x)
 #elif defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -187,6 +190,9 @@ SDL_Swap16(Uint16 x)
 }
 #endif
 
+/**
+ * Byte swap 32-bit integer.
+ */
 #if HAS_BUILTIN_BSWAP32
 #define SDL_Swap32(x) __builtin_bswap32(x)
 #elif defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -239,6 +245,9 @@ SDL_Swap32(Uint32 x)
 }
 #endif
 
+/**
+ * Byte swap 64-bit integer.
+ */
 #if HAS_BUILTIN_BSWAP64
 #define SDL_Swap64(x) __builtin_bswap64(x)
 #elif defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -293,6 +302,9 @@ SDL_Swap64(Uint64 x)
 #endif
 
 
+/**
+ * Byte swap floating point number.
+ */
 SDL_FORCE_INLINE float
 SDL_SwapFloat(float x)
 {
@@ -315,6 +327,46 @@ SDL_SwapFloat(float x)
  *  \name Swap to native
  *  Byteswap item from the specified endianness to the native endianness.
  */
+
+/**
+ * \def SDL_SwapLE16
+ * Swap 16-bit little endian integer to 16-bit native endian integer.
+ */
+
+/**
+ * \def SDL_SwapLE32
+ * Swap 32-bit little endian integer to 32-bit native endian integer.
+ */
+
+/**
+ * \def SDL_SwapLE64
+ * Swap 64-bit little endian integer to 64-bit native endian integer.
+ */
+
+/**
+ * \def SDL_SwapFloatLE
+ * Swap little endian float to native endian float.
+ */
+/**
+ * \def SDL_SwapBE16
+ * Swap 16-bit big endian integer to 16-bit native endian integer.
+ */
+
+/**
+ * \def SDL_SwapBE32
+ * Swap 32-bit big endian integer to 32-bit native endian integer.
+ */
+
+/**
+ * \def SDL_SwapBE64
+ * Swap 64-bit big endian integer to 64-bit native endian integer.
+ */
+
+/**
+ * \def SDL_SwapFloatBE
+ * Swap endian float to native endian float.
+ */
+
 /* @{ */
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define SDL_SwapLE16(X)     (X)
