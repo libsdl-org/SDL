@@ -753,14 +753,13 @@ int X11_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
     SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
     Atom _NET_WM_ICON = data->videodata->_NET_WM_ICON;
-    int retVal = 0;
+    int rc = 0;
     int (*prevHandler)(Display *, XErrorEvent *) = NULL;
 
     if (icon) {
+        int x, y;
         int propsize;
         long *propdata;
-
-        int x, y;
         Uint32 *src;
         long *dst;
 
@@ -772,6 +771,7 @@ int X11_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
         if (!propdata) {
             return SDL_OutOfMemory();
         }
+
         X11_XSync(display, False);
         prevHandler = X11_XSetErrorHandler(X11_CatchAnyError);
 
@@ -792,9 +792,8 @@ int X11_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
         SDL_free(propdata);
 
         if (caught_x11_error) {
-            retVal = SDL_SetError("An error occurred while trying to set the window's icon");
+            rc = SDL_SetError("An error occurred while trying to set the window's icon");
         }
-
     }
 
     X11_XFlush(display);
@@ -804,7 +803,7 @@ int X11_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
         caught_x11_error = SDL_FALSE;
     }
 
-    return retVal;
+    return rc;
 }
 
 void X11_SetWindowPosition(_THIS, SDL_Window *window)

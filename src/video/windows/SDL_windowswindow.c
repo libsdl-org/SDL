@@ -630,7 +630,6 @@ void WIN_SetWindowTitle(_THIS, SDL_Window *window)
 
 int WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
-    int retVal = 0;
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     HWND hwnd = window->driverdata->hwnd;
     HICON hicon = NULL;
@@ -639,6 +638,7 @@ int WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
     BITMAPINFOHEADER *bmi;
     Uint8 *dst;
     SDL_bool isstack;
+    int retval = 0;
 
     /* Create temporary buffer for ICONIMAGE structure */
     SDL_COMPILE_TIME_ASSERT(WIN_SetWindowIcon_uses_BITMAPINFOHEADER_to_prepare_an_ICONIMAGE, sizeof(BITMAPINFOHEADER) == 40);
@@ -679,8 +679,7 @@ int WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
     SDL_small_free(icon_bmp, isstack);
 
     if (hicon == NULL) {
-        SDL_SetError("SetWindowIcon() failed, error %08X", (unsigned int)GetLastError());
-        retVal = -1;
+        retval = SDL_SetError("SetWindowIcon() failed, error %08X", (unsigned int)GetLastError());
     }
 
     /* Set the icon for the window */
@@ -688,10 +687,10 @@ int WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 
     /* Set the icon in the task manager (should we do this?) */
     SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+    return retval;
 #else
-    retVal = SDL_Unsupported();
+    return SDL_Unsupported();
 #endif
-    return retVal;
 }
 
 void WIN_SetWindowPosition(_THIS, SDL_Window *window)
