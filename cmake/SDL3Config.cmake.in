@@ -71,7 +71,7 @@ check_required_components(SDL3)
 
 function(_sdl_create_target_alias_compat NEW_TARGET TARGET)
   if(CMAKE_VERSION VERSION_LESS "3.18")
-    # FIXME: Aliasing local targets is not supported on CMake < 3.18, so make it global.
+    # Aliasing local targets is not supported on CMake < 3.18, so make it global.
     add_library(${NEW_TARGET} INTERFACE IMPORTED)
     set_target_properties(${NEW_TARGET} PROPERTIES INTERFACE_LINK_LIBRARIES "${TARGET}")
   else()

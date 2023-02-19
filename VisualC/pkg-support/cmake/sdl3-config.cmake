@@ -63,9 +63,9 @@ unset(_sdl3_include_dirs)
 set(_sdl3_library     "${SDL3_LIBDIR}/SDL3.lib")
 set(_sdl3_dll_library "${SDL3_BINDIR}/SDL3.dll")
 if(EXISTS "${_sdl3_library}" AND EXISTS "${_sdl3_dll_library}")
-    if(NOT TARGET SDL3::SDL3)
-        add_library(SDL3::SDL3 SHARED IMPORTED)
-        set_target_properties(SDL3::SDL3
+    if(NOT TARGET SDL3::SDL3-shared)
+        add_library(SDL3::SDL3-shared SHARED IMPORTED)
+        set_target_properties(SDL3::SDL3-shared
             PROPERTIES
                 INTERFACE_LINK_LIBRARIES "SDL3::Headers"
                 IMPORTED_IMPLIB "${_sdl3_library}"
@@ -74,12 +74,14 @@ if(EXISTS "${_sdl3_library}" AND EXISTS "${_sdl3_dll_library}")
                 INTERFACE_SDL3_SHARED "ON"
         )
     endif()
-    set(SDL3_SDL3_FOUND TRUE)
+    set(SDL3_SDL3-shared_FOUND TRUE)
 else()
-    set(SDL3_SDL3_FOUND FALSE)
+    set(SDL3_SDL3-shared_FOUND FALSE)
 endif()
 unset(_sdl3_library)
 unset(_sdl3_dll_library)
+
+set(SDL3_SDL3-static_FOUND FALSE)
 
 set(_sdl3test_library "${SDL3_LIBDIR}/SDL3_test.lib")
 if(EXISTS "${_sdl3test_library}")
@@ -93,8 +95,31 @@ if(EXISTS "${_sdl3test_library}")
     endif()
     set(SDL3_SDL3_test_FOUND TRUE)
 else()
-    set(SDL3_SDL3_FOUND FALSE)
+    set(SDL3_SDL3_test_FOUND FALSE)
 endif()
 unset(_sdl3test_library)
+
+if(SDL3_SDL3-shared_FOUND OR SDL3_SDL3-static_FOUND)
+    set(SDL3_SDL3_FOUND TRUE)
+endif()
+
+function(_sdl_create_target_alias_compat NEW_TARGET TARGET)
+    if(CMAKE_VERSION VERSION_LESS "3.18")
+        # Aliasing local targets is not supported on CMake < 3.18, so make it global.
+        add_library(${NEW_TARGET} INTERFACE IMPORTED)
+        set_target_properties(${NEW_TARGET} PROPERTIES INTERFACE_LINK_LIBRARIES "${TARGET}")
+    else()
+        add_library(${NEW_TARGET} ALIAS ${TARGET})
+    endif()
+endfunction()
+
+# Make sure SDL3::SDL3 always exists
+if(NOT TARGET SDL3::SDL3)
+    if(TARGET SDL3::SDL3-shared)
+        _sdl_create_target_alias_compat(SDL3::SDL3 SDL3::SDL3-shared)
+    else()
+        _sdl_create_target_alias_compat(SDL3::SDL3 SDL3::SDL3-static)
+    endif()
+endif()
 
 check_required_components(SDL3)
