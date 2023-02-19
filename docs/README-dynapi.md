@@ -65,7 +65,7 @@ system's dynamic loader was supposed to do for us? Yes, but now we've got this
 level of indirection, we can do things like this:
 
 ```bash
-export SDL_DYNAMIC_API=/my/actual/libSDL3.so.0
+export SDL3_DYNAMIC_API=/my/actual/libSDL3.so.0
 ./MyGameThatIsStaticallyLinkedToSDL
 ```
 
