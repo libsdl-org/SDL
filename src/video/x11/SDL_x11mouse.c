@@ -415,6 +415,9 @@ static Uint32 X11_GetGlobalMouseState(float *x, float *y)
 
 #if !SDL_VIDEO_DRIVER_X11_XINPUT2
     videodata->global_mouse_changed = SDL_TRUE;
+#else
+    if (!SDL_X11_HAVE_XINPUT2)
+        videodata->global_mouse_changed = SDL_TRUE;
 #endif
 
     /* check if we have this cached since XInput last saw the mouse move. */
