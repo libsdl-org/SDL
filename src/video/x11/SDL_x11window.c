@@ -980,7 +980,7 @@ void X11_SetWindowSize(_THIS, SDL_Window *window)
 
         if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
             /* Timeout occurred and window size didn't change
-             * wwindow manager likely denied the resize. */
+             * window manager likely denied the resize. */
             window->w = orig_w;
             window->h = orig_h;
             break;
