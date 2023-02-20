@@ -246,9 +246,28 @@ static inline int calculateBestSliceSizeForSprite(SDL_Renderer *renderer, const 
     return 0;
 }
 
+static inline void fillSingleSliceVertices(VertTV *vertices, const SDL_Rect *srcrect, const SDL_FRect *dstrect) {
+    vertices[0].x = dstrect->x;
+    vertices[0].y = dstrect->y;
+    vertices[0].z = 0.0f;
+    vertices[0].u = srcrect->x;
+    vertices[0].v = srcrect->y;
+
+    vertices[1].x = dstrect->x + dstrect->w;
+    vertices[1].y = dstrect->y + dstrect->h;
+    vertices[1].z = 0.0f;
+    vertices[1].u = srcrect->x + srcrect->w;
+    vertices[1].v = srcrect->y + srcrect->h;
+}
+
 static inline void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, SliceSize *sliceSize,
                          const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
+    // For avoiding division by zero
+    if (dimensions->width == 1 && dimensions->height == 1) {
+        fillSingleSliceVertices((VertV *)vertices, srcrect, dstrect);
+        return;
+    }
     int i, j;
     int remainingWidth = (int)dstrect->w % sliceSize->width;
     int remainingHeight = (int)dstrect->h % sliceSize->height;
