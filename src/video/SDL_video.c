@@ -1663,7 +1663,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
         } else if ((SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) && (y & 0xFFFF)) {
             displayID = (y & 0xFFFF);
         }
-        if (SDL_GetDisplayIndex(displayID) < 0) {
+        if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
             displayID = SDL_GetPrimaryDisplay();
         }
 
@@ -2167,7 +2167,7 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         } else if (SDL_WINDOWPOS_ISCENTERED(y) && (y & 0xFFFF)) {
             displayID = (y & 0xFFFF);
         }
-        if (SDL_GetDisplayIndex(displayID) < 0) {
+        if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
             displayID = SDL_GetPrimaryDisplay();
         }
 
