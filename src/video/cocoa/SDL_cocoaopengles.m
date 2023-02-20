@@ -49,7 +49,7 @@ Cocoa_GLES_LoadLibrary(_THIS, const char *path)
         return SDL_SetError("SDL not configured with OpenGL/CGL support");
 #endif
     }
-    
+
     if (_this->egl_data == NULL) {
         return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, 0);
     }
@@ -95,7 +95,6 @@ Cocoa_GLES_DeleteContext(_THIS, SDL_GLContext context)
 { @autoreleasepool
 {
     SDL_EGL_DeleteContext(_this, context);
-    Cocoa_GLES_UnloadLibrary(_this);
 }}
 
 int
@@ -133,7 +132,7 @@ Cocoa_GLES_SetupWindow(_THIS, SDL_Window * window)
         }
         _this->gl_config.driver_loaded = 1;
     }
-  
+
     /* Create the GLES window surface */
     v = windowdata.nswindow.contentView;
     windowdata.egl_surface = SDL_EGL_CreateSurface(_this, (__bridge NativeWindowType)[v layer]);
