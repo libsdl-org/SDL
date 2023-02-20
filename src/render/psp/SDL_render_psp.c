@@ -1062,8 +1062,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     // flush cache so that no stray data remains
     sceKernelDcacheWritebackAll();
 
-    // Forcing for now using GU_PSM_4444
-    data->drawBufferFormat = GU_PSM_4444;
+    data->drawBufferFormat = pixelFormatToPSPFMT(SDL_GetWindowPixelFormat(window));;
     data->currentDrawBufferFormat = data->drawBufferFormat;
 
     /* Specific GU init */
