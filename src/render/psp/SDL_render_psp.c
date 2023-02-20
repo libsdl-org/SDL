@@ -514,6 +514,22 @@ static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
         sceGuDrawBufferList(psp_tex->format, vrelptr(psp_tex->data), psp_tex->width);
         data->currentDrawBufferFormat = psp_tex->format;
+
+        if(psp_tex->format == GU_PSM_5551) {
+            sceGuEnable(GU_STENCIL_TEST);
+            sceGuStencilOp(GU_REPLACE, GU_REPLACE, GU_REPLACE);
+            sceGuStencilFunc(GU_GEQUAL, 0xff, 0xff);
+            sceGuEnable(GU_ALPHA_TEST);
+            sceGuAlphaFunc(GU_GREATER, 0x00, 0xff);
+        } else {
+            sceGuDisable(GU_STENCIL_TEST);
+            sceGuDisable(GU_ALPHA_TEST);
+        }
+
+        //Enable scissor to avoid drawing outside viewport
+        sceGuEnable(GU_SCISSOR_TEST);
+        sceGuScissor(0,0,psp_tex->width, psp_tex->height);
+
     } else {
         sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
         data->currentDrawBufferFormat = data->drawBufferFormat;
