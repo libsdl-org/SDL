@@ -96,7 +96,6 @@ int Cocoa_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     @autoreleasepool {
         SDL_EGL_DeleteContext(_this, context);
-        Cocoa_GLES_UnloadLibrary(_this);
     }
     return 0;
 }
