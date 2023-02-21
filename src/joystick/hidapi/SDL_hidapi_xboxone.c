@@ -654,7 +654,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     Uint64 timestamp = SDL_GetTicksNS();
 
     /* Some controllers have larger packets over NDIS, but the real size is in data[3] */
-    size = SDL_min(data[3], size);
+    size = SDL_min(4 + data[3], size);
 
     /* Enable paddles on the Xbox Elite controller when connected over USB */
     if (ctx->has_paddles && !ctx->has_unmapped_state && size == 50) {
@@ -694,7 +694,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
          * Xbox Series X firmware version 5.1, report is 44 bytes, share button is in byte 18
          * Xbox Series X firmware version 5.5, report is 48 bytes, share button is in byte 22
          * Victrix Gambit Tournament Controller, report is 50 bytes, share button is in byte 32
-         * ThrustMaster eSwap PRO Controller Xbox, report is 60 bytes, share button is in byte 46
+         * ThrustMaster eSwap PRO Controller Xbox, report is 64 bytes, share button is in byte 46
          */
         if (size < 48) {
             if (ctx->last_state[18] != data[18]) {
@@ -708,7 +708,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             if (ctx->last_state[32] != data[32]) {
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, (data[32] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
             }
-        } else if (size == 60) {
+        } else if (size == 64) {
             if (ctx->last_state[46] != data[46]) {
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, (data[46] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
             }
