@@ -1063,6 +1063,9 @@ static int SDL_ResampleAudioStream(SDL_AudioStream *stream, const void *_inbuf, 
     retval = SDL_ResampleAudio(chans, inrate, outrate, lpadding, rpadding, inbuf, inbuflen, outbuf, outbuflen);
 
     /* update our left padding with end of current input, for next run. */
+    if (cpy < paddingbytes) {  /* slide end of the padding buffer to the start if we aren't replacing the whole thing. */
+        SDL_memmove(lpadding, lpadding + (cpy / sizeof (float)), paddingbytes - cpy);
+    }
     SDL_memcpy((lpadding + paddingsamples) - (cpy / sizeof(float)), inbufend - cpy, cpy);
     return retval;
 }
