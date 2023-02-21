@@ -1323,6 +1323,9 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
         mode = (SDL_DisplayMode *)SDL_GetWindowFullscreenMode(window);
         if (mode != NULL) {
             window->fullscreen_exclusive = SDL_TRUE;
+        } else {
+            /* Make sure the current mode is zeroed for fullscreen desktop. */
+            SDL_zero(window->current_fullscreen_mode);
         }
     }
 
@@ -2190,21 +2193,9 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
             SDL_DisplayID displayID = GetDisplayForRect(x, y, 1, 1);
 
             if (displayID != original_displayID) {
-                SDL_Rect bounds;
-                SDL_zero(bounds);
-                SDL_GetDisplayBounds(displayID, &bounds);
-
-                window->x = bounds.x;
-                window->y = bounds.y;
-                window->w = bounds.w;
-                window->h = bounds.h;
-
-                if (_this->SetWindowPosition) {
-                    _this->SetWindowPosition(_this, window);
-                }
-                if (_this->SetWindowSize) {
-                    _this->SetWindowSize(_this, window);
-                }
+                /* Set the new target display and update the fullscreen mode */
+                window->current_fullscreen_mode.displayID = displayID;
+                SDL_UpdateFullscreenMode(window, SDL_TRUE);
             }
         }
     } else {
