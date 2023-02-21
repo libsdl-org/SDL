@@ -2201,6 +2201,7 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
     } else {
         window->x = x;
         window->y = y;
+        window->last_displayID = SDL_GetDisplayForWindow(window);
 
         if (_this->SetWindowPosition) {
             _this->SetWindowPosition(_this, window);
