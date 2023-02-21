@@ -209,6 +209,13 @@ static BOOL IsControllerSwitchJoyConPair(GCController *controller)
     }
     return FALSE;
 }
+static BOOL IsControllerStadia(GCController *controller)
+{
+    if ([controller.vendorName hasPrefix:@"Stadia"]) {
+        return TRUE;
+    }
+    return FALSE;
+}
 static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
     Uint16 vendor = 0;
@@ -256,6 +263,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         BOOL is_ps5 = IsControllerPS5(controller);
         BOOL is_switch_pro = IsControllerSwitchPro(controller);
         BOOL is_switch_joycon_pair = IsControllerSwitchJoyConPair(controller);
+        BOOL is_stadia = IsControllerStadia(controller);
         int nbuttons = 0;
         BOOL has_direct_menu;
 
@@ -263,7 +271,8 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         if ((is_xbox && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_XBOXONE)) ||
             (is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS4)) ||
             (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS5)) ||
-            (is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO))) {
+            (is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO)) ||
+            (is_stadia && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_GOOGLE_STADIA))) {
             /* The HIDAPI driver is taking care of this device */
             return FALSE;
         }
