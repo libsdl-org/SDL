@@ -161,6 +161,16 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data
    SDL_assert test. */
 
 
+/* Define the trigger breakpoint call used in asserts */
+#ifndef SDL_AssertBreakpoint
+#if defined(ANDROID) && defined(assert)
+/* Define this as empty in case assert() is defined as SDL_assert */
+#define SDL_AssertBreakpoint() 
+#else
+#define SDL_AssertBreakpoint() SDL_TriggerBreakpoint()
+#endif
+#endif /* !SDL_AssertBreakpoint */
+
 /* the do {} while(0) avoids dangling else problems:
     if (x) SDL_assert(y); else blah();
        ... without the do/while, the "else" could attach to this macro's "if".
@@ -178,7 +188,7 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data
             if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
                 continue; /* go again. */ \
             } else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
-                SDL_TriggerBreakpoint(); \
+                SDL_AssertBreakpoint(); \
             } \
             break; /* not retrying. */ \
         } \
