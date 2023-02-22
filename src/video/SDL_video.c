@@ -1026,7 +1026,7 @@ const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID display
         aspect_ratio = 1.0f;
     }
 
-    if (!refresh_rate) {
+    if (refresh_rate == 0.0f) {
         mode = SDL_GetDesktopDisplayMode(displayID);
         if (mode) {
             refresh_rate = mode->refresh_rate;
