@@ -1252,7 +1252,7 @@ SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
     return displayID;
 }
 
-void SDL_CheckWindowDisplayChanged(SDL_Window *window)
+static void SDL_CheckWindowDisplayChanged(SDL_Window *window)
 {
     SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
 
