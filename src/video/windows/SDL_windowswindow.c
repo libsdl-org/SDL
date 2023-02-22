@@ -309,6 +309,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
     data->last_pointer_update = (LPARAM)-1;
     data->videodata = videodata;
     data->initializing = SDL_TRUE;
+    data->last_displayID = window->last_displayID;
     data->scaling_dpi = WIN_GetScalingDPIForHWND(videodata, hwnd);
 
 #ifdef HIGHDPI_DEBUG

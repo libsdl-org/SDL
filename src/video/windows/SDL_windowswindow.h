@@ -62,6 +62,7 @@ struct SDL_WindowData
     RECT cursor_clipped_rect;
     SDL_Point last_raw_mouse_position;
     SDL_bool mouse_tracked;
+    SDL_DisplayID last_displayID;
     WCHAR *ICMFileName;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL
