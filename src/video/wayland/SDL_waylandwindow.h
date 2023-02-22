@@ -111,6 +111,7 @@ struct SDL_WindowData
     int wl_window_width, wl_window_height;
     int system_min_required_width;
     int system_min_required_height;
+    SDL_DisplayID last_displayID;
     SDL_bool floating;
     SDL_bool is_fullscreen;
     SDL_bool in_fullscreen_transition;
