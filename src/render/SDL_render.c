@@ -925,8 +925,6 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
 
     SDL_SetRenderViewport(renderer, NULL);
 
-    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_MATCH, SDL_SCALEMODE_LINEAR);
-
     SDL_AddEventWatch(SDL_RendererEventWatch, renderer);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
