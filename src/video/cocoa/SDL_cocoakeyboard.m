@@ -228,7 +228,7 @@ static void HandleModifiers(_THIS, unsigned short scancode, unsigned int modifie
     }
 }
 
-static void UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
+static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
 {
     TISInputSourceRef key_layout;
     const void *chr_data;
@@ -294,7 +294,7 @@ cleanup:
 
 void Cocoa_InitKeyboard(_THIS)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
 
     UpdateKeymap(data, SDL_FALSE);
 
@@ -314,11 +314,11 @@ void Cocoa_StartTextInput(_THIS)
 {
     @autoreleasepool {
         NSView *parentView;
-        SDL_VideoData *data = _this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
         SDL_Window *window = SDL_GetKeyboardFocus();
         NSWindow *nswindow = nil;
         if (window) {
-            nswindow = window->driverdata.nswindow;
+            nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
         }
 
         parentView = [nswindow contentView];
@@ -345,7 +345,7 @@ void Cocoa_StartTextInput(_THIS)
 void Cocoa_StopTextInput(_THIS)
 {
     @autoreleasepool {
-        SDL_VideoData *data = _this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
 
         if (data && data.fieldEdit) {
             [data.fieldEdit removeFromSuperview];
@@ -356,7 +356,7 @@ void Cocoa_StopTextInput(_THIS)
 
 int Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
     [data.fieldEdit setInputRect:rect];
     return 0;
 }
@@ -365,7 +365,7 @@ void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 {
     unsigned short scancode;
     SDL_Scancode code;
-    SDL_VideoData *data = _this ? _this->driverdata : nil;
+    SDL_CocoaVideoData *data = _this ? ((__bridge SDL_CocoaVideoData *)_this->driverdata) : nil;
     if (!data) {
         return; /* can happen when returning from fullscreen Space on shutdown */
     }

@@ -363,7 +363,7 @@ void Cocoa_InitModes(_THIS)
 
 int Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
-    SDL_DisplayData *displaydata = display->driverdata;
+    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     CGRect cgrect;
 
     cgrect = CGDisplayBounds(displaydata->display);
@@ -376,7 +376,7 @@ int Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 
 int Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
-    SDL_DisplayData *displaydata = display->driverdata;
+    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     const CGDirectDisplayID cgdisplay = displaydata->display;
     NSArray *screens = [NSScreen screens];
     NSScreen *screen = nil;
@@ -408,7 +408,7 @@ int Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rec
 
 int Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
-    SDL_DisplayData *data = display->driverdata;
+    SDL_DisplayData *data = (SDL_DisplayData *)display->driverdata;
     CVDisplayLinkRef link = NULL;
     CFArrayRef modes;
     CFDictionaryRef dict = NULL;
@@ -485,7 +485,7 @@ static CGError SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayMo
 
 int Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    SDL_DisplayData *displaydata = display->driverdata;
+    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
     CGDisplayFadeReservationToken fade_token = kCGDisplayFadeReservationInvalidToken;
     CGError result;

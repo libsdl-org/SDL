@@ -27,7 +27,7 @@
 
 #include <UIKit/UIKit.h>
 
-@interface SDL_VideoData : NSObject
+@interface SDL_UIKitVideoData : NSObject
 
 @property(nonatomic, assign) id pasteboardObserver;
 

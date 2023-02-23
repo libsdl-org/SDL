@@ -25,11 +25,7 @@
 
 #include "SDL_offscreenvideo.h"
 
-#if defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)
-struct _SDL_WindowData
-#else
 struct SDL_WindowData
-#endif
 {
     SDL_Window *sdl_window;
 #if SDL_VIDEO_OPENGL_EGL

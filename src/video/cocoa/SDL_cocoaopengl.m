@@ -138,7 +138,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 - (void)setWindow:(SDL_Window *)newWindow
 {
     if (self->window) {
-        SDL_WindowData *oldwindowdata = self->window->driverdata;
+        SDL_CocoaWindowData *oldwindowdata = (__bridge SDL_CocoaWindowData *)self->window->driverdata;
 
         /* Make sure to remove us from the old window's context list, or we'll get scheduled updates from it too. */
         NSMutableArray *contexts = oldwindowdata.nscontexts;
@@ -150,7 +150,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
     self->window = newWindow;
 
     if (newWindow) {
-        SDL_WindowData *windowdata = newWindow->driverdata;
+        SDL_CocoaWindowData *windowdata = (__bridge SDL_CocoaWindowData *)newWindow->driverdata;
         NSView *contentview = windowdata.sdlContentView;
 
         /* Now sign up for scheduled updates for the new window. */
@@ -254,7 +254,7 @@ SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-        SDL_DisplayData *displaydata = display->driverdata;
+        SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
         NSOpenGLPixelFormatAttribute attr[32];
         NSOpenGLPixelFormat *fmt;
         SDLOpenGLContext *context;
@@ -482,7 +482,7 @@ int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)SDL_GL_GetCurrentContext();
-        SDL_VideoData *videodata = _this->driverdata;
+        SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
         const int setting = SDL_AtomicGet(&nscontext->swapIntervalSetting);
 
         if (setting == 0) {

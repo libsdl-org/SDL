@@ -262,7 +262,7 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
 
     if (window->flags & SDL_WINDOW_FOREIGN) {
         @autoreleasepool {
-            SDL_WindowData *data = window->driverdata;
+            SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
             if (![data.sdlContentView.layer isKindOfClass:[CAMetalLayer class]]) {
                 [data.sdlContentView setLayer:[CAMetalLayer layer]];
             }

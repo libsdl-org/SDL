@@ -62,7 +62,7 @@ Cocoa_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_GLContext context;
-        SDL_WindowData *data = window->driverdata;
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
 
 #if SDL_VIDEO_OPENGL_CGL
         if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
@@ -103,14 +103,14 @@ int Cocoa_GLES_DeleteContext(_THIS, SDL_GLContext context)
 int Cocoa_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        return SDL_EGL_SwapBuffers(_this, window->driverdata.egl_surface);
+        return SDL_EGL_SwapBuffers(_this, ((__bridge SDL_CocoaWindowData *)window->driverdata).egl_surface);
     }
 }
 
 int Cocoa_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     @autoreleasepool {
-        return SDL_EGL_MakeCurrent(_this, window ? window->driverdata.egl_surface : EGL_NO_SURFACE, context);
+        return SDL_EGL_MakeCurrent(_this, window ? ((__bridge SDL_CocoaWindowData *)window->driverdata).egl_surface : EGL_NO_SURFACE, context);
     }
 }
 
@@ -119,7 +119,7 @@ int Cocoa_GLES_SetupWindow(_THIS, SDL_Window *window)
     @autoreleasepool {
         NSView *v;
         /* The current context is lost in here; save it and reset it. */
-        SDL_WindowData *windowdata = window->driverdata;
+        SDL_CocoaWindowData *windowdata = (__bridge SDL_CocoaWindowData *)window->driverdata;
         SDL_Window *current_win = SDL_GL_GetCurrentWindow();
         SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
 
@@ -151,7 +151,7 @@ SDL_EGLSurface
 Cocoa_GLES_GetEGLSurface(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        return window->driverdata.egl_surface;
+        return ((__bridge SDL_CocoaWindowData *)window->driverdata).egl_surface;
     }
 }
 

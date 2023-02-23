@@ -78,7 +78,7 @@ SDL_MetalView
 UIKit_Metal_CreateView(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_WindowData *data = window->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
         CGFloat scale = 1.0;
         SDL_uikitmetalview *metalview;
 

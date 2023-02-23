@@ -96,7 +96,7 @@ DECLARE_ALERT_STYLE(Critical);
 
 @class SDLTranslatorResponder;
 
-@interface SDL_VideoData : NSObject
+@interface SDL_CocoaVideoData : NSObject
 @property(nonatomic) int allow_spaces;
 @property(nonatomic) int trackpad_is_touch_only;
 @property(nonatomic) unsigned int modifierFlags;

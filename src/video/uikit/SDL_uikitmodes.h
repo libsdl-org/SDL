@@ -25,7 +25,7 @@
 
 #include "SDL_uikitvideo.h"
 
-@interface SDL_DisplayData : NSObject
+@interface SDL_UIKitDisplayData : NSObject
 
 - (instancetype)initWithScreen:(UIScreen *)screen;
 
@@ -33,7 +33,7 @@
 
 @end
 
-@interface SDL_DisplayModeData : NSObject
+@interface SDL_UIKitDisplayModeData : NSObject
 
 @property(nonatomic, strong) UIScreenMode *uiscreenmode;
 

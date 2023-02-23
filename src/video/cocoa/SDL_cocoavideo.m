@@ -32,7 +32,7 @@
 #include "SDL_cocoametalview.h"
 #include "SDL_cocoaopengles.h"
 
-@implementation SDL_VideoData
+@implementation SDL_CocoaVideoData
 
 @end
 
@@ -48,7 +48,7 @@ static void Cocoa_DeleteDevice(SDL_VideoDevice *device)
         if (device->wakeup_lock) {
             SDL_DestroyMutex(device->wakeup_lock);
         }
-        device->driverdata = nil;
+        CFBridgingRelease(device->driverdata);
         SDL_free(device);
     }
 }
@@ -57,14 +57,14 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 {
     @autoreleasepool {
         SDL_VideoDevice *device;
-        SDL_VideoData *data;
+        SDL_CocoaVideoData *data;
 
         Cocoa_RegisterApp();
 
         /* Initialize all variables that we clean on shutdown */
         device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
         if (device) {
-            data = [[SDL_VideoData alloc] init];
+            data = [[SDL_CocoaVideoData alloc] init];
         } else {
             data = nil;
         }
@@ -73,7 +73,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             SDL_free(device);
             return NULL;
         }
-        device->driverdata = data;
+        device->driverdata = (SDL_VideoData *)CFBridgingRetain(data);
         device->wakeup_lock = SDL_CreateMutex();
 
         /* Set the function pointers */
@@ -189,7 +189,7 @@ VideoBootStrap COCOA_bootstrap = {
 int Cocoa_VideoInit(_THIS)
 {
     @autoreleasepool {
-        SDL_VideoData *data = _this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
 
         Cocoa_InitModes(_this);
         Cocoa_InitKeyboard(_this);
@@ -212,7 +212,7 @@ int Cocoa_VideoInit(_THIS)
 void Cocoa_VideoQuit(_THIS)
 {
     @autoreleasepool {
-        SDL_VideoData *data = _this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
         Cocoa_QuitModes(_this);
         Cocoa_QuitKeyboard(_this);
         Cocoa_QuitMouse(_this);
