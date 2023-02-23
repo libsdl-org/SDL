@@ -28,7 +28,7 @@ typedef struct
 {
     SDL_AudioDeviceID dev;
     int soundpos;
-    SDL_atomic_t done;
+    SDL_AtomicInt done;
 } callback_data;
 
 static callback_data cbd[64];

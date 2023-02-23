@@ -64,7 +64,7 @@ struct SDL_PrivateAudioData
     char *thread_error;
 #if MACOSX_COREAUDIO
     AudioDeviceID deviceID;
-    SDL_atomic_t device_change_flag;
+    SDL_AtomicInt device_change_flag;
 #else
     SDL_bool interrupted;
     CFTypeRef interruption_listener;

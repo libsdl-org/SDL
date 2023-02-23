@@ -123,7 +123,7 @@ static SDL_INLINE void leaveLock(void *a)
 #endif
 
 SDL_bool
-SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval)
+SDL_AtomicCAS(SDL_AtomicInt *a, int oldval, int newval)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
@@ -183,7 +183,7 @@ SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
 #endif
 }
 
-int SDL_AtomicSet(SDL_atomic_t *a, int v)
+int SDL_AtomicSet(SDL_AtomicInt *a, int v)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
@@ -223,7 +223,7 @@ SDL_AtomicSetPtr(void **a, void *v)
 #endif
 }
 
-int SDL_AtomicAdd(SDL_atomic_t *a, int v)
+int SDL_AtomicAdd(SDL_AtomicInt *a, int v)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
@@ -246,7 +246,7 @@ int SDL_AtomicAdd(SDL_atomic_t *a, int v)
 #endif
 }
 
-int SDL_AtomicGet(SDL_atomic_t *a)
+int SDL_AtomicGet(SDL_AtomicInt *a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);

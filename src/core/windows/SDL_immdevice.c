@@ -52,8 +52,8 @@ static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x
 /* *INDENT-ON* */ /* clang-format on */
 
 /* these increment as default devices change. Opened default devices pick up changes in their threads. */
-SDL_atomic_t SDL_IMMDevice_DefaultPlaybackGeneration;
-SDL_atomic_t SDL_IMMDevice_DefaultCaptureGeneration;
+SDL_AtomicInt SDL_IMMDevice_DefaultPlaybackGeneration;
+SDL_AtomicInt SDL_IMMDevice_DefaultCaptureGeneration;
 
 static void GetMMDeviceInfo(IMMDevice *device, char **utf8dev, WAVEFORMATEXTENSIBLE *fmt, GUID *guid)
 {
@@ -180,7 +180,7 @@ static void SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAV
 typedef struct SDLMMNotificationClient
 {
     const IMMNotificationClientVtbl *lpVtbl;
-    SDL_atomic_t refcount;
+    SDL_AtomicInt refcount;
     SDL_bool useguid;
 } SDLMMNotificationClient;
 

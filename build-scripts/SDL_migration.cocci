@@ -2529,3 +2529,7 @@ constant c1, c2;
 @@
 - SDL_CreateShapedWindow(e1, c1, c2, e2, e3, e4)
 + SDL_CreateShapedWindow(e1, e2, e3, e4)
+typedef SDL_atomic_t, SDL_AtomicInt;
+@@
+- SDL_atomic_t
++ SDL_AtomicInt

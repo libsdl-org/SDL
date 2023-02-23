@@ -5203,7 +5203,7 @@ static struct
     SDL_calloc_func calloc_func;
     SDL_realloc_func realloc_func;
     SDL_free_func free_func;
-    SDL_atomic_t num_allocations;
+    SDL_AtomicInt num_allocations;
 } s_mem = {
     real_malloc, real_calloc, real_realloc, real_free, { 0 }
 };

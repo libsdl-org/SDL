@@ -39,6 +39,9 @@
  */
 #ifdef SDL_ENABLE_OLD_NAMES
 
+/* ##SDL_atomic.h */
+#define SDL_atomic_t SDL_AtomicInt
+
 /* ##SDL_audio.h */
 #define SDL_AudioStreamAvailable SDL_GetAudioStreamAvailable
 #define SDL_AudioStreamClear SDL_ClearAudioStream

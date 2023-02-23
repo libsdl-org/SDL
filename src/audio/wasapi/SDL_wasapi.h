@@ -38,7 +38,7 @@ extern "C" {
 
 struct SDL_PrivateAudioData
 {
-    SDL_atomic_t refcount;
+    SDL_AtomicInt refcount;
     WCHAR *devid;
     WAVEFORMATEX *waveformat;
     IAudioClient *client;
@@ -52,7 +52,7 @@ struct SDL_PrivateAudioData
     int default_device_generation;
     SDL_bool device_lost;
     void *activation_handler;
-    SDL_atomic_t just_activated;
+    SDL_AtomicInt just_activated;
 };
 
 /* win32 and winrt implementations call into these. */

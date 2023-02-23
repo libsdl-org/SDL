@@ -113,7 +113,7 @@ static int SDL_joysticks_locked;
 static SDL_bool SDL_joysticks_initialized;
 static SDL_bool SDL_joysticks_quitting = SDL_FALSE;
 static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static SDL_atomic_t SDL_last_joystick_instance_id SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_AtomicInt SDL_last_joystick_instance_id SDL_GUARDED_BY(SDL_joystick_lock);
 static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
 static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;

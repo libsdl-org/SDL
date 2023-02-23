@@ -46,6 +46,11 @@ begin_code.h and close_code.h in the public headers have been renamed to SDL_beg
 
 The vi format comments have been removed from source code. Vim users can use the [editorconfig plugin](https://github.com/editorconfig/editorconfig-vim) to automatically set tab spacing for the SDL coding style.
 
+## SDL_atomic.h
+
+The following structures have been renamed:
+- SDL_atomic_t => SDL_AtomicInt
+
 ## SDL_audio.h
 
 SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
@@ -1115,4 +1120,3 @@ SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter.
 SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to PFN_vkGetInstanceProcAddr.
 
 SDL_Vulkan_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
-

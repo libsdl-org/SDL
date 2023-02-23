@@ -894,7 +894,7 @@ static void ALSA_HotplugIteration(void)
 }
 
 #if SDL_ALSA_HOTPLUG_THREAD
-static SDL_atomic_t ALSA_hotplug_shutdown;
+static SDL_AtomicInt ALSA_hotplug_shutdown;
 static SDL_Thread *ALSA_hotplug_thread;
 
 static int SDLCALL ALSA_HotplugThread(void *arg)

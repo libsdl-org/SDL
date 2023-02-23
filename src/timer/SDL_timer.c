@@ -34,7 +34,7 @@ typedef struct SDL_Timer
     void *param;
     Uint64 interval;
     Uint64 scheduled;
-    SDL_atomic_t canceled;
+    SDL_AtomicInt canceled;
     struct SDL_Timer *next;
 } SDL_Timer;
 
@@ -50,7 +50,7 @@ typedef struct
 {
     /* Data used by the main thread */
     SDL_Thread *thread;
-    SDL_atomic_t nextID;
+    SDL_AtomicInt nextID;
     SDL_TimerMap *timermap;
     SDL_mutex *timermap_lock;
 
@@ -62,7 +62,7 @@ typedef struct
     SDL_sem *sem;
     SDL_Timer *pending;
     SDL_Timer *freelist;
-    SDL_atomic_t active;
+    SDL_AtomicInt active;
 
     /* List of timers - this is only touched by the timer thread */
     SDL_Timer *timers;

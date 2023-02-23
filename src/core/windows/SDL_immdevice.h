@@ -35,7 +35,7 @@ int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int isca
 SDL_AudioFormat WaveFormatToSDLFormat(WAVEFORMATEX *waveformat);
 
 /* these increment as default devices change. Opened default devices pick up changes in their threads. */
-extern SDL_atomic_t SDL_IMMDevice_DefaultPlaybackGeneration;
-extern SDL_atomic_t SDL_IMMDevice_DefaultCaptureGeneration;
+extern SDL_AtomicInt SDL_IMMDevice_DefaultPlaybackGeneration;
+extern SDL_AtomicInt SDL_IMMDevice_DefaultCaptureGeneration;
 
 #endif /* SDL_IMMDEVICE_H */
