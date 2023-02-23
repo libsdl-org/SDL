@@ -272,6 +272,8 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             /* The HIDAPI driver is taking care of this device */
             return FALSE;
         }
+#else
+        (void)is_stadia;
 #endif
 
         /* These buttons are part of the original MFi spec */
