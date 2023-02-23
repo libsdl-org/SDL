@@ -41,7 +41,7 @@ struct SDL_GLDriverData
 
 @interface SDLOpenGLContext : NSOpenGLContext
 {
-    SDL_atomic_t dirty;
+    SDL_AtomicInt dirty;
     SDL_Window *window;
     CVDisplayLinkRef displayLink;
   @public
@@ -49,9 +49,9 @@ struct SDL_GLDriverData
   @public
     SDL_cond *swapIntervalCond;
   @public
-    SDL_atomic_t swapIntervalSetting;
+    SDL_AtomicInt swapIntervalSetting;
   @public
-    SDL_atomic_t swapIntervalsPassed;
+    SDL_AtomicInt swapIntervalsPassed;
 }
 
 - (id)initWithFormat:(NSOpenGLPixelFormat *)format

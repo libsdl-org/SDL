@@ -20,7 +20,7 @@
 
 #define NUMTHREADS 10
 
-static SDL_atomic_t time_for_threads_to_die[NUMTHREADS];
+static SDL_AtomicInt time_for_threads_to_die[NUMTHREADS];
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void

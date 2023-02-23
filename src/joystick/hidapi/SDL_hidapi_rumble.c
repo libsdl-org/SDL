@@ -41,8 +41,8 @@ typedef struct SDL_HIDAPI_RumbleRequest
 
 typedef struct SDL_HIDAPI_RumbleContext
 {
-    SDL_atomic_t initialized;
-    SDL_atomic_t running;
+    SDL_AtomicInt initialized;
+    SDL_AtomicInt running;
     SDL_Thread *thread;
     SDL_sem *request_sem;
     SDL_HIDAPI_RumbleRequest *requests_head;

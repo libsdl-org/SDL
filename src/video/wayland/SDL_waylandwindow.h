@@ -94,7 +94,7 @@ struct SDL_WindowData
     /* floating dimensions for restoring from maximized and fullscreen */
     int floating_width, floating_height;
 
-    SDL_atomic_t swap_interval_ready;
+    SDL_AtomicInt swap_interval_ready;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct qt_extended_surface *extended_surface;

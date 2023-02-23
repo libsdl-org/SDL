@@ -310,7 +310,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
 }
 
 static SDL_VideoDevice *_this = NULL;
-static SDL_atomic_t SDL_messagebox_count;
+static SDL_AtomicInt SDL_messagebox_count;
 
 static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {

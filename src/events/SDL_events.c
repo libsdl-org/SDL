@@ -60,7 +60,7 @@ static SDL_EventWatcher *SDL_event_watchers = NULL;
 static int SDL_event_watchers_count = 0;
 static SDL_bool SDL_event_watchers_dispatching = SDL_FALSE;
 static SDL_bool SDL_event_watchers_removed = SDL_FALSE;
-static SDL_atomic_t SDL_sentinel_pending;
+static SDL_AtomicInt SDL_sentinel_pending;
 
 typedef struct
 {
@@ -89,7 +89,7 @@ static struct
 {
     SDL_mutex *lock;
     SDL_bool active;
-    SDL_atomic_t count;
+    SDL_AtomicInt count;
     int max_events_seen;
     SDL_EventEntry *head;
     SDL_EventEntry *tail;

@@ -47,7 +47,7 @@ struct haptic_hwdata
     SDL_Thread *thread;
     SDL_mutex *mutex;
     Uint64 stopTicks;
-    SDL_atomic_t stopThread;
+    SDL_AtomicInt stopThread;
 };
 
 /*

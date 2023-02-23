@@ -36,7 +36,7 @@ static void RunBasicTest(void)
     int value;
     SDL_SpinLock lock = 0;
 
-    SDL_atomic_t v;
+    SDL_AtomicInt v;
     SDL_bool tfret = SDL_FALSE;
 
     SDL_Log("\nspin lock---------------------------------------\n\n");
@@ -106,9 +106,9 @@ enum
 };
 SDL_COMPILE_TIME_ASSERT(size, CountTo_GreaterThanZero); /* check for rollover */
 
-static SDL_atomic_t good = { 42 };
+static SDL_AtomicInt good = { 42 };
 static atomicValue bad = 42;
-static SDL_atomic_t threadsRunning;
+static SDL_AtomicInt threadsRunning;
 static SDL_sem *threadDone;
 
 static int SDLCALL adder(void *junk)
@@ -255,7 +255,7 @@ static void RunEpicTest(void)
 
 typedef struct
 {
-    SDL_atomic_t sequence;
+    SDL_AtomicInt sequence;
     SDL_Event event;
 } SDL_EventQueueEntry;
 
@@ -265,23 +265,23 @@ typedef struct
 
     char cache_pad1[SDL_CACHELINE_SIZE - ((sizeof(SDL_EventQueueEntry) * MAX_ENTRIES) % SDL_CACHELINE_SIZE)];
 
-    SDL_atomic_t enqueue_pos;
+    SDL_AtomicInt enqueue_pos;
 
-    char cache_pad2[SDL_CACHELINE_SIZE - sizeof(SDL_atomic_t)];
+    char cache_pad2[SDL_CACHELINE_SIZE - sizeof(SDL_AtomicInt)];
 
-    SDL_atomic_t dequeue_pos;
+    SDL_AtomicInt dequeue_pos;
 
-    char cache_pad3[SDL_CACHELINE_SIZE - sizeof(SDL_atomic_t)];
+    char cache_pad3[SDL_CACHELINE_SIZE - sizeof(SDL_AtomicInt)];
 
 #ifdef TEST_SPINLOCK_FIFO
     SDL_SpinLock lock;
-    SDL_atomic_t rwcount;
-    SDL_atomic_t watcher;
+    SDL_AtomicInt rwcount;
+    SDL_AtomicInt watcher;
 
-    char cache_pad4[SDL_CACHELINE_SIZE - sizeof(SDL_SpinLock) - 2 * sizeof(SDL_atomic_t)];
+    char cache_pad4[SDL_CACHELINE_SIZE - sizeof(SDL_SpinLock) - 2 * sizeof(SDL_AtomicInt)];
 #endif
 
-    SDL_atomic_t active;
+    SDL_AtomicInt active;
 
     /* Only needed for the mutex test */
     SDL_mutex *mutex;

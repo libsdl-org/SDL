@@ -50,7 +50,7 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 };
 static SDL_mutex *SDL_sensor_lock = NULL; /* This needs to support recursive locks */
 static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
-static SDL_atomic_t SDL_last_sensor_instance_id SDL_GUARDED_BY(SDL_sensor_lock);
+static SDL_AtomicInt SDL_last_sensor_instance_id SDL_GUARDED_BY(SDL_sensor_lock);
 
 void SDL_LockSensors(void) SDL_ACQUIRE(SDL_sensor_lock)
 {

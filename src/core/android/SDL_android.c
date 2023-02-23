@@ -366,7 +366,7 @@ static SDL_bool bHasNewData;
 
 static SDL_bool bHasEnvironmentVariables;
 
-static SDL_atomic_t bPermissionRequestPending;
+static SDL_AtomicInt bPermissionRequestPending;
 static SDL_bool bPermissionRequestResult;
 
 /* Android AssetManager */
@@ -1359,7 +1359,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
              Functions called by SDL into Java
 *******************************************************************************/
 
-static SDL_atomic_t s_active;
+static SDL_AtomicInt s_active;
 struct LocalReferenceHolder
 {
     JNIEnv *m_env;

@@ -208,7 +208,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 typedef struct RawGameControllerDelegate
 {
     __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController iface;
-    SDL_atomic_t refcount;
+    SDL_AtomicInt refcount;
 } RawGameControllerDelegate;
 
 static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInterface(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, REFIID riid, void **ppvObject)

@@ -29,7 +29,7 @@
 SDL_TLSID
 SDL_TLSCreate(void)
 {
-    static SDL_atomic_t SDL_tls_id;
+    static SDL_AtomicInt SDL_tls_id;
     return SDL_AtomicIncRef(&SDL_tls_id) + 1;
 }
 

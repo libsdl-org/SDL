@@ -23,7 +23,7 @@
 static SDL_mutex *mutex = NULL;
 static SDL_threadID mainthread;
 static SDL_Thread *threads[6];
-static SDL_atomic_t doterminate;
+static SDL_AtomicInt doterminate;
 
 /**
  * SDL_Quit() shouldn't be used with atexit() directly because
