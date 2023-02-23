@@ -35,7 +35,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     SDL_VideoDevice *device = SDL_GetVideoDevice();
     if (device && device->windows) {
         for (sdlwindow = device->windows; sdlwindow; sdlwindow = sdlwindow->next) {
-            NSWindow *nswindow = sdlwindow->driverdata.nswindow;
+            NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)sdlwindow->driverdata).nswindow;
             if (win == nswindow) {
                 return sdlwindow;
             }
@@ -557,7 +557,7 @@ void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
                                             location:NSMakePoint(0, 0)
                                        modifierFlags:0
                                            timestamp:0.0
-                                        windowNumber:window->driverdata.window_number
+                                        windowNumber:((__bridge SDL_CocoaWindowData *)window->driverdata).window_number
                                              context:nil
                                              subtype:0
                                                data1:0
@@ -570,7 +570,7 @@ void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
 int Cocoa_SuspendScreenSaver(_THIS)
 {
     @autoreleasepool {
-        SDL_VideoData *data = _this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
 
         if (data.screensaver_assertion) {
             IOPMAssertionRelease(data.screensaver_assertion);

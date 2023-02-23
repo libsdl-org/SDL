@@ -253,7 +253,7 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
     CGPoint point;
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse->focus) {
-        SDL_WindowData *data = mouse->focus->driverdata;
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)mouse->focus->driverdata;
         if ([data.listener isMovingOrFocusClickPending]) {
             DLog("Postponing warp, window being moved or focused.");
             [data.listener setPendingMoveX:x Y:y];
@@ -298,7 +298,7 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
 {
     CGError result;
     SDL_Window *window;
-    SDL_WindowData *data;
+    SDL_CocoaWindowData *data;
     if (enabled) {
         DLog("Turning on.");
         result = CGAssociateMouseAndMouseCursorPosition(NO);
@@ -321,7 +321,7 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the non-relative mode when the window finishes being moved,
      * if it is being moved right now.
      */
-    data = window->driverdata;
+    data = (__bridge SDL_CocoaWindowData *)window->driverdata;
     if ([data.listener isMovingOrFocusClickPending]) {
         return 0;
     }
@@ -402,7 +402,7 @@ static void Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
     }
 
     for (window = _this->windows; window; window = window->next) {
-        SDL_WindowData *data = window->driverdata;
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
         if (data && data.nswindow == nswindow) {
             switch ([event type]) {
             case NSEventTypeLeftMouseDown:

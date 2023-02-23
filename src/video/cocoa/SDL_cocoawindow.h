@@ -29,7 +29,7 @@
 #include "../SDL_egl_c.h"
 #endif
 
-@class SDL_WindowData;
+@class SDL_CocoaWindowData;
 
 typedef enum
 {
@@ -41,10 +41,10 @@ typedef enum
 
 @interface Cocoa_WindowListener : NSResponder <NSWindowDelegate>
 {
-    /* SDL_WindowData owns this Listener and has a strong reference to it.
+    /* SDL_CocoaWindowData owns this Listener and has a strong reference to it.
      * To avoid reference cycles, we could have either a weak or an
      * unretained ref to the WindowData. */
-    __weak SDL_WindowData *_data;
+    __weak SDL_CocoaWindowData *_data;
     BOOL observingVisible;
     BOOL wasCtrlLeft;
     BOOL wasVisible;
@@ -58,7 +58,7 @@ typedef enum
 }
 
 - (BOOL)isTouchFromTrackpad:(NSEvent *)theEvent;
-- (void)listen:(SDL_WindowData *)data;
+- (void)listen:(SDL_CocoaWindowData *)data;
 - (void)pauseVisibleObservation;
 - (void)resumeVisibleObservation;
 - (BOOL)setFullscreenSpace:(BOOL)state;
@@ -120,9 +120,9 @@ typedef enum
 /* *INDENT-ON* */
 
 @class SDLOpenGLContext;
-@class SDL_VideoData;
+@class SDL_CocoaVideoData;
 
-@interface SDL_WindowData : NSObject
+@interface SDL_CocoaWindowData : NSObject
 @property(nonatomic) SDL_Window *window;
 @property(nonatomic) NSWindow *nswindow;
 @property(nonatomic) NSView *sdlContentView;
@@ -132,7 +132,7 @@ typedef enum
 @property(nonatomic) NSInteger window_number;
 @property(nonatomic) NSInteger flash_request;
 @property(nonatomic) Cocoa_WindowListener *listener;
-@property(nonatomic) SDL_VideoData *videodata;
+@property(nonatomic) SDL_CocoaVideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL
 @property(nonatomic) EGLSurface egl_surface;
 #endif

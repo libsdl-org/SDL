@@ -31,34 +31,10 @@ typedef struct SDL_WindowShaper SDL_WindowShaper;
 typedef struct SDL_ShapeDriver SDL_ShapeDriver;
 typedef struct SDL_VideoDisplay SDL_VideoDisplay;
 typedef struct SDL_VideoDevice SDL_VideoDevice;
-#if defined(SDL_VIDEO_DRIVER_COCOA)
-#ifdef __OBJC__
-@class SDL_VideoData;
-@class SDL_WindowData;
-#else
-typedef struct _SDL_VideoData SDL_VideoData;
-typedef struct _SDL_WindowData SDL_WindowData;
-#endif
-typedef struct SDL_DisplayData SDL_DisplayData;
-typedef struct SDL_DisplayModeData SDL_DisplayModeData;
-#elif defined(SDL_VIDEO_DRIVER_UIKIT)
-#ifdef __OBJC__
-@class SDL_VideoData;
-@class SDL_WindowData;
-@class SDL_DisplayData;
-@class SDL_DisplayModeData;
-#else
-typedef struct _SDL_VideoData SDL_VideoData;
-typedef struct _SDL_WindowData SDL_WindowData;
-typedef struct _SDL_DisplayData SDL_DisplayData;
-typedef struct _SDL_DisplayModeData SDL_DisplayModeData;
-#endif
-#else
 typedef struct SDL_VideoData SDL_VideoData;
 typedef struct SDL_DisplayData SDL_DisplayData;
 typedef struct SDL_DisplayModeData SDL_DisplayModeData;
 typedef struct SDL_WindowData SDL_WindowData;
-#endif /* SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT */
 
 /* Define the SDL window-shaper structure */
 struct SDL_WindowShaper

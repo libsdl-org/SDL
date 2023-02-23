@@ -28,7 +28,7 @@
 int Cocoa_SetClipboardText(_THIS, const char *text)
 {
     @autoreleasepool {
-        SDL_VideoData *data = _this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
         NSPasteboard *pasteboard;
         NSString *format = NSPasteboardTypeString;
         NSString *nsstr = [NSString stringWithUTF8String:text];
@@ -86,7 +86,7 @@ Cocoa_HasClipboardText(_THIS)
     return result;
 }
 
-void Cocoa_CheckClipboardUpdate(SDL_VideoData *data)
+void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data)
 {
     @autoreleasepool {
         NSPasteboard *pasteboard;

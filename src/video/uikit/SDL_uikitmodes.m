@@ -28,7 +28,7 @@
 
 #import <sys/utsname.h>
 
-@implementation SDL_DisplayData
+@implementation SDL_UIKitDisplayData
 
 - (instancetype)initWithScreen:(UIScreen *)screen
 {
@@ -42,7 +42,7 @@
 
 @end
 
-@implementation SDL_DisplayModeData
+@implementation SDL_UIKitDisplayModeData
 
 @synthesize uiscreenmode;
 
@@ -96,11 +96,11 @@
 static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
                                          UIScreenMode *uiscreenmode)
 {
-    SDL_DisplayModeData *data = nil;
+    SDL_UIKitDisplayModeData *data = nil;
 
     if (uiscreenmode != nil) {
         /* Allocate the display mode data */
-        data = [[SDL_DisplayModeData alloc] init];
+        data = [[SDL_UIKitDisplayModeData alloc] init];
         if (!data) {
             return SDL_OutOfMemory();
         }
@@ -223,13 +223,13 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     display.desktop_mode = mode;
 
     /* Allocate the display data */
-    SDL_DisplayData *data = [[SDL_DisplayData alloc] initWithScreen:uiscreen];
+    SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] initWithScreen:uiscreen];
     if (!data) {
         UIKit_FreeDisplayModeData(&display.desktop_mode);
         return SDL_OutOfMemory();
     }
 
-    display.driverdata = data;
+    display.driverdata = (SDL_DisplayData *)CFBridgingRetain(data);
     if (SDL_AddVideoDisplay(&display, send_event) == 0) {
         return -1;
     }
@@ -245,10 +245,10 @@ void UIKit_DelDisplay(UIScreen *uiscreen)
     if (displays) {
         for (i = 0; displays[i]; ++i) {
             SDL_VideoDisplay *display = SDL_GetVideoDisplay(displays[i]);
-            SDL_DisplayData *data = display->driverdata;
+            SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
 
             if (data && data.uiscreen == uiscreen) {
-                display->driverdata = nil;
+                CFRelease(display->driverdata);
                 SDL_DelVideoDisplay(displays[i], SDL_FALSE);
                 break;
             }
@@ -292,7 +292,7 @@ int UIKit_InitModes(_THIS)
 int UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     @autoreleasepool {
-        SDL_DisplayData *data = display->driverdata;
+        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
 
         SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
         SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
@@ -326,10 +326,10 @@ int UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     @autoreleasepool {
-        SDL_DisplayData *data = display->driverdata;
+        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
 
 #if !TARGET_OS_TV
-        SDL_DisplayModeData *modedata = (__bridge SDL_DisplayModeData *)mode->driverdata;
+        SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)mode->driverdata;
         [data.uiscreen setCurrentMode:modedata.uiscreenmode];
 #endif
 
@@ -355,7 +355,7 @@ int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode
 int UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     @autoreleasepool {
-        SDL_DisplayData *data = display->driverdata;
+        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
         CGRect frame = data.uiscreen.bounds;
 
         /* the default function iterates displays to make a fake offset,
@@ -389,8 +389,9 @@ void UIKit_QuitModes(_THIS)
                 UIKit_FreeDisplayModeData(mode);
             }
 
-            if (display->driverdata) {
-                display->driverdata = nil;
+            if (display->driverdata != NULL) {
+                CFRelease(display->driverdata);
+                display->driverdata = NULL;
             }
         }
     }
