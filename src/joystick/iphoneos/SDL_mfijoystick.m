@@ -216,6 +216,13 @@ static BOOL IsControllerStadia(GCController *controller)
     }
     return FALSE;
 }
+static BOOL IsControllerBackboneOne(GCController *controller)
+{
+    if ([controller.vendorName hasPrefix:@"Backbone One"]) {
+        return TRUE;
+    }
+    return FALSE;
+}
 static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
     Uint16 vendor = 0;
@@ -264,6 +271,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         BOOL is_switch_pro = IsControllerSwitchPro(controller);
         BOOL is_switch_joycon_pair = IsControllerSwitchJoyConPair(controller);
         BOOL is_stadia = IsControllerStadia(controller);
+        BOOL is_backbone_one = IsControllerBackboneOne(controller);
         int nbuttons = 0;
         BOOL has_direct_menu;
 
@@ -357,7 +365,15 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 #endif
 #pragma clang diagnostic pop
 
-        if (is_xbox) {
+        if (is_backbone_one) {
+            vendor = USB_VENDOR_BACKBONE;
+            if (is_ps5) {
+                product = USB_PRODUCT_BACKBONE_ONE_IOS_PS5;
+            } else {
+                product = USB_PRODUCT_BACKBONE_ONE_IOS;
+            }
+            subtype = 0;
+        } else if (is_xbox) {
             vendor = USB_VENDOR_MICROSOFT;
             if (device->has_xbox_paddles) {
                 /* Assume Xbox One Elite Series 2 Controller unless/until GCController flows VID/PID */
@@ -399,7 +415,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             subtype = 1;
         }
 
-        if (SDL_strcmp(name, "Backbone One") == 0) {
+        if (is_backbone_one) {
             /* The Backbone app uses share button */
             if ((device->button_mask & (1 << SDL_CONTROLLER_BUTTON_MISC1)) != 0) {
                 device->button_mask &= ~(1 << SDL_CONTROLLER_BUTTON_MISC1);
