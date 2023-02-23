@@ -99,6 +99,68 @@ static float virtual_axis_start_x;
 static float virtual_axis_start_y;
 static SDL_GamepadButton virtual_button_active = SDL_GAMEPAD_BUTTON_INVALID;
 
+
+static void PrintJoystickInfo(SDL_JoystickID instance_id)
+{
+    char guid[64];
+    const char *name;
+    const char *path;
+    const char *description;
+
+    SDL_GetJoystickGUIDString(SDL_GetJoystickInstanceGUID(instance_id), guid, sizeof(guid));
+
+    if (SDL_IsGamepad(instance_id)) {
+        name = SDL_GetGamepadInstanceName(instance_id);
+        path = SDL_GetGamepadInstancePath(instance_id);
+        switch (SDL_GetGamepadInstanceType(instance_id)) {
+        case SDL_GAMEPAD_TYPE_AMAZON_LUNA:
+            description = "Amazon Luna Controller";
+            break;
+        case SDL_GAMEPAD_TYPE_GOOGLE_STADIA:
+            description = "Google Stadia Controller";
+            break;
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+            description = "Nintendo Switch Joy-Con";
+            break;
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+            description = "Nintendo Switch Pro Controller";
+            break;
+        case SDL_GAMEPAD_TYPE_PS3:
+            description = "PS3 Controller";
+            break;
+        case SDL_GAMEPAD_TYPE_PS4:
+            description = "PS4 Controller";
+            break;
+        case SDL_GAMEPAD_TYPE_PS5:
+            description = "PS5 Controller";
+            break;
+        case SDL_GAMEPAD_TYPE_XBOX360:
+            description = "XBox 360 Controller";
+            break;
+        case SDL_GAMEPAD_TYPE_XBOXONE:
+            description = "XBox One Controller";
+            break;
+        case SDL_GAMEPAD_TYPE_VIRTUAL:
+            description = "Virtual Gamepad";
+            break;
+        default:
+            description = "Gamepad";
+            break;
+        }
+    } else {
+        name = SDL_GetJoystickInstanceName(instance_id);
+        path = SDL_GetJoystickInstancePath(instance_id);
+        description = "Joystick";
+    }
+    SDL_Log("%s: %s%s%s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)\n",
+            description, name ? name : "Unknown", path ? ", " : "", path ? path : "", guid,
+            SDL_GetJoystickInstanceVendor(instance_id),
+            SDL_GetJoystickInstanceProduct(instance_id),
+            SDL_GetJoystickInstancePlayerIndex(instance_id));
+}
+
 static void UpdateWindowTitle()
 {
     if (window == NULL) {
@@ -562,6 +624,10 @@ void loop(void *arg)
     /* Process all currently pending events */
     while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) == 1) {
         switch (event.type) {
+        case SDL_EVENT_JOYSTICK_ADDED:
+            PrintJoystickInfo(event.jdevice.which);
+            break;
+
         case SDL_EVENT_GAMEPAD_ADDED:
             SDL_Log("Gamepad device %" SDL_PRIu32 " added.\n", event.cdevice.which);
             AddGamepad(event.cdevice.which, SDL_TRUE);
@@ -783,11 +849,7 @@ void loop(void *arg)
 int main(int argc, char *argv[])
 {
     int i;
-    SDL_JoystickID *joysticks;
-    int joystick_count = 0;
-    int gamepad_count = 0;
     int gamepad_index = 0;
-    char guid[64];
 
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
@@ -820,75 +882,6 @@ int main(int argc, char *argv[])
         }
         SDL_Log("\n");
     }
-
-    /* Print information about the gamepads */
-    joysticks = SDL_GetJoysticks(&joystick_count);
-    if (joysticks) {
-        for (i = 0; joysticks[i]; ++i) {
-            SDL_JoystickID instance_id = joysticks[i];
-            const char *name;
-            const char *path;
-            const char *description;
-
-            SDL_GetJoystickGUIDString(SDL_GetJoystickInstanceGUID(instance_id),
-                                      guid, sizeof(guid));
-
-            if (SDL_IsGamepad(instance_id)) {
-                gamepad_count++;
-                name = SDL_GetGamepadInstanceName(instance_id);
-                path = SDL_GetGamepadInstancePath(instance_id);
-                switch (SDL_GetGamepadInstanceType(instance_id)) {
-                case SDL_GAMEPAD_TYPE_AMAZON_LUNA:
-                    description = "Amazon Luna Controller";
-                    break;
-                case SDL_GAMEPAD_TYPE_GOOGLE_STADIA:
-                    description = "Google Stadia Controller";
-                    break;
-                case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
-                case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
-                case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
-                    description = "Nintendo Switch Joy-Con";
-                    break;
-                case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
-                    description = "Nintendo Switch Pro Controller";
-                    break;
-                case SDL_GAMEPAD_TYPE_PS3:
-                    description = "PS3 Controller";
-                    break;
-                case SDL_GAMEPAD_TYPE_PS4:
-                    description = "PS4 Controller";
-                    break;
-                case SDL_GAMEPAD_TYPE_PS5:
-                    description = "PS5 Controller";
-                    break;
-                case SDL_GAMEPAD_TYPE_XBOX360:
-                    description = "XBox 360 Controller";
-                    break;
-                case SDL_GAMEPAD_TYPE_XBOXONE:
-                    description = "XBox One Controller";
-                    break;
-                case SDL_GAMEPAD_TYPE_VIRTUAL:
-                    description = "Virtual Gamepad";
-                    break;
-                default:
-                    description = "Gamepad";
-                    break;
-                }
-                AddGamepad(instance_id, SDL_FALSE);
-            } else {
-                name = SDL_GetJoystickInstanceName(instance_id);
-                path = SDL_GetJoystickInstancePath(instance_id);
-                description = "Joystick";
-            }
-            SDL_Log("%s %d: %s%s%s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)\n",
-                    description, i, name ? name : "Unknown", path ? ", " : "", path ? path : "", guid,
-                    SDL_GetJoystickInstanceVendor(instance_id),
-                    SDL_GetJoystickInstanceProduct(instance_id),
-                    SDL_GetJoystickInstancePlayerIndex(instance_id));
-        }
-        SDL_free(joysticks);
-    }
-    SDL_Log("There are %d gamepad(s) attached (%d joystick(s))\n", gamepad_count, joystick_count);
 
     /* Create a window to display gamepad state */
     window = SDL_CreateWindow("Gamepad Test", SDL_WINDOWPOS_CENTERED,
@@ -928,8 +921,8 @@ int main(int argc, char *argv[])
     SDL_SetTextureColorMod(button_texture, 10, 255, 21);
     SDL_SetTextureColorMod(axis_texture, 10, 255, 21);
 
-    /* !!! FIXME: */
-    /*SDL_SetRenderLogicalSize(screen, background->w, background->h);*/
+    /* Process the initial gamepad list */
+    loop(NULL);
 
     for (i = 1; i < argc; ++i) {
         if (SDL_strcmp(argv[i], "--virtual") == 0) {
