@@ -26,6 +26,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <pthread.h>
+#include <sched.h>
 #include <unistd.h>
 
 /* RLIMIT_RTTIME requires kernel >= 2.6.25 and is in glibc >= 2.14 */
@@ -40,7 +41,6 @@
 #include "SDL_dbus.h"
 
 #if SDL_USE_LIBDBUS
-#include <sched.h>
 
 /* d-bus queries to org.freedesktop.RealtimeKit1. */
 #define RTKIT_DBUS_NODE      "org.freedesktop.RealtimeKit1"
