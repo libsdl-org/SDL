@@ -30,6 +30,7 @@
 #include <storage/Entry.h>
 #include <storage/File.h>
 #include <unistd.h>
+#include <memory>
 
 #include "SDL_BApp.h"   /* SDL_BApp class definition */
 #include "SDL_BeApp.h"
@@ -51,8 +52,9 @@ const char *signature = "application/x-SDL-executable";
 
 static int StartBeApp(void *unused)
 {
-    BApplication *App;
+    std::unique_ptr<BApplication> App;
 
+    (void)unused;
     // dig resources for correct signature
     image_info info;
     int32 cookie = 0;
@@ -69,10 +71,9 @@ static int StartBeApp(void *unused)
         }
     }
 
-    App = new SDL_BApp(signature);
+    App = std::unique_ptr<BApplication>(new SDL_BApp(signature));
 
     App->Run();
-    delete App;
     return 0;
 }
 

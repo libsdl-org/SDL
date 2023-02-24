@@ -45,6 +45,7 @@
 #include <new>
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 enum
 {
@@ -355,9 +356,9 @@ HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 	// because it is possible to create a MessageBox from another thread. This fixes the following errors:
 	// "You need a valid BApplication object before interacting with the app_server."
 	// "2 BApplication objects were created. Only one is allowed."
-	BApplication *application = NULL;
+	std::unique_ptr<BApplication> application;
 	if (be_app == NULL) {
-		application = new(std::nothrow) BApplication(signature);
+		application = std::unique_ptr<BApplication>(new(std::nothrow) BApplication(signature));
 		if (application == NULL) {
 			return SDL_SetError("Cannot create the BApplication object. Lack of memory?");
 		}
@@ -381,10 +382,6 @@ HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 		delete messageBox;
 	}
 	*/
-	if (application != NULL) {
-		delete application;
-	}
-
 	// Initialize button by real pushed value then.
 	*buttonid = pushedButton;
 
