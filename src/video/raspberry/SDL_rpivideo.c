@@ -245,8 +245,8 @@ int RPI_CreateWindow(_THIS, SDL_Window *window)
     displaydata = display->driverdata;
 
     /* Windows have one size for now */
-    window->w = display->desktop_mode.w;
-    window->h = display->desktop_mode.h;
+    window->w = display->desktop_mode.screen_w;
+    window->h = display->desktop_mode.screen_h;
 
     /* OpenGL ES is the law here, buddy */
     window->flags |= SDL_WINDOW_OPENGL;
