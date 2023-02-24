@@ -923,6 +923,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
+                s/\[(.*?)\]\(.*?\)/$1/;  # in case some wikilinks remain.
                 s/\A\/*//;
                 $str .= "\\sa $_\n";
             }
@@ -1510,10 +1511,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
             my @desclines = split /\n/, $v;
             my $nextstr = '';
             foreach (@desclines) {
-print("DESCLINE: '$_'\n");
                 s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
+                s/\[(.*?)\]\(.*?\)/$1/;  # in case some wikilinks remain.
                 s/\A\*\s*\Z//;
                 s/\A\/*//;
                 s/\A\.BR\s+//;  # dewikify added this, but we want to handle it.
