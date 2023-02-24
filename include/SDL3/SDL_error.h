@@ -148,6 +148,7 @@ typedef enum
     SDL_UNSUPPORTED,
     SDL_LASTERROR
 } SDL_errorcode;
+
 /**
  * SDL_Error()
  *

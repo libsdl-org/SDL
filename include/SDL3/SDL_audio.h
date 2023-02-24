@@ -811,7 +811,7 @@ extern DECLSPEC int SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);
 /**
  * Clear any pending data in the stream without converting it
  *
- * \param   stream The audio stream to clear
+ * \param stream The audio stream to clear
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -830,6 +830,7 @@ extern DECLSPEC int SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);
  * Free an audio stream
  *
  * \param stream The audio stream to free
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateAudioStream
@@ -1149,7 +1150,8 @@ extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
  * \param dst_channels The number of channels of the desired audio output
  * \param dst_rate The sampling rate of the desired audio output
  * \param dst_data Will be filled with a pointer to converted audio data,
- *                 which should be freed with SDL_free(). On error, it will be NULL.
+ *                 which should be freed with SDL_free(). On error, it will be
+ *                 NULL.
  * \param dst_len Will be filled with the len of dst_data
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.

@@ -918,7 +918,8 @@ extern DECLSPEC int SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, U
  * DualShock 4 controller.
  *
  * \param joystick The joystick to query
- * \returns SDL_TRUE if the joystick has a modifiable LED, SDL_FALSE otherwise.
+ * \returns SDL_TRUE if the joystick has a modifiable LED, SDL_FALSE
+ *          otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  */

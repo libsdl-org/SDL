@@ -235,9 +235,9 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, U
  * need a specific renderer, specify NULL and SDL will attempt to chooes the
  * best option for you, based on what is available on the user's system.
  *
- * By default the rendering size matches the window size in screen coordinates,
- * but you can call SDL_SetRenderLogicalPresentation() to enable high DPI
- * rendering or change the content size and scaling options.
+ * By default the rendering size matches the window size in screen
+ * coordinates, but you can call SDL_SetRenderLogicalPresentation() to enable
+ * high DPI rendering or change the content size and scaling options.
  *
  * \param window the window where rendering is displayed
  * \param name the name of the rendering driver to initialize, or NULL to
@@ -337,8 +337,8 @@ extern DECLSPEC int SDLCALL SDL_GetRenderWindowSize(SDL_Renderer *renderer, int 
 /**
  * Get the output size in pixels of a rendering context.
  *
- * This returns the true output size in pixels, ignoring any render targets
- * or logical size and presentation.
+ * This returns the true output size in pixels, ignoring any render targets or
+ * logical size and presentation.
  *
  * \param renderer the rendering context
  * \param w a pointer filled in with the width in pixels
@@ -355,9 +355,9 @@ extern DECLSPEC int SDLCALL SDL_GetRenderOutputSize(SDL_Renderer *renderer, int 
 /**
  * Get the current output size in pixels of a rendering context.
  *
- * If a rendering target is active, this will return the size of the
- * rendering target in pixels, otherwise if a logical size is set, it will
- * return the logical size, otherwise it will return the value of
+ * If a rendering target is active, this will return the size of the rendering
+ * target in pixels, otherwise if a logical size is set, it will return the
+ * logical size, otherwise it will return the value of
  * SDL_GetRenderOutputSize().
  *
  * \param renderer the rendering context
@@ -610,7 +610,7 @@ extern DECLSPEC int SDLCALL SDL_SetTextureUserData(SDL_Texture *texture, void *u
  *
  * \param texture the texture to query.
  * \returns the pointer associated with the texture, or NULL if the texture is
- *         not valid.
+ *          not valid.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -836,9 +836,9 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_GetRenderTarget(SDL_Renderer *renderer)
 /**
  * Set a device independent resolution and presentation mode for rendering.
  *
- * This function sets the width and height of the logical rendering output.
- * A render target is created at the specified size and used for rendering
- * and then copied to the output during presentation.
+ * This function sets the width and height of the logical rendering output. A
+ * render target is created at the specified size and used for rendering and
+ * then copied to the output during presentation.
  *
  * When a renderer is created, the logical size is set to match the window
  * size in screen coordinates. The actual output size may be higher pixel
@@ -869,8 +869,8 @@ extern DECLSPEC int SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *rende
 /**
  * Get device independent resolution and presentation mode for rendering.
  *
- * This function gets the width and height of the logical rendering output,
- * or the output size in pixels if a logical resolution is not enabled.
+ * This function gets the width and height of the logical rendering output, or
+ * the output size in pixels if a logical resolution is not enabled.
  *
  * \param renderer the rendering context
  * \param w an int to be filled with the width
@@ -910,8 +910,10 @@ extern DECLSPEC int SDLCALL SDL_RenderCoordinatesFromWindow(SDL_Renderer *render
  * \param renderer the rendering context
  * \param x the x coordinate in render coordinates
  * \param y the y coordinate in render coordinates
- * \param window_x a pointer filled with the x coordinate in window coordinates
- * \param window_y a pointer filled with the y coordinate in window coordinates
+ * \param window_x a pointer filled with the x coordinate in window
+ *                 coordinates
+ * \param window_y a pointer filled with the y coordinate in window
+ *                 coordinates
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

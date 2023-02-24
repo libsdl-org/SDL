@@ -137,7 +137,9 @@ typedef struct SDL_AssertData
 #if (SDL_ASSERT_LEVEL > 0)
 
 /**
- * Never call this directly. Use the SDL_assert* macros.
+ * Never call this directly.
+ *
+ * Use the SDL_assert* macros.
  *
  * \param data assert data structure
  * \param func function name

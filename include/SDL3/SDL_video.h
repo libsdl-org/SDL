@@ -392,6 +392,7 @@ extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayOrientation(SDL_Dis
  * Get a list of fullscreen display modes available on a display.
  *
  * The display modes are sorted in this priority:
+ *
  * - screen_w -> largest to smallest
  * - screen_h -> largest to smallest
  * - pixel_w -> largest to smallest
@@ -402,9 +403,9 @@ extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayOrientation(SDL_Dis
  *
  * \param displayID the instance ID of the display to query
  * \param count a pointer filled in with the number of displays returned
- * \returns a NULL terminated array of display mode pointers which should be freed
- *          with SDL_free(), or NULL on error; call SDL_GetError() for more
- *          details.
+ * \returns a NULL terminated array of display mode pointers which should be
+ *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          more details.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -425,8 +426,11 @@ extern DECLSPEC const SDL_DisplayMode **SDLCALL SDL_GetFullscreenDisplayModes(SD
  * \param displayID the instance ID of the display to query
  * \param w the width in pixels of the desired display mode
  * \param h the height in pixels of the desired display mode
- * \param refresh_rate the refresh rate of the desired display mode, or 0.0f for the desktop refresh rate
- * \returns a pointer to the closest display mode equal to or larger than the desired mode, or NULL on error; call SDL_GetError() for more information.
+ * \param refresh_rate the refresh rate of the desired display mode, or 0.0f
+ *                     for the desktop refresh rate
+ * \returns a pointer to the closest display mode equal to or larger than the
+ *          desired mode, or NULL on error; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -525,7 +529,9 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForWindow(SDL_Window *window
  * SDL_SetWindowSize().
  *
  * \param window the window to affect
- * \param mode a pointer to the display mode to use, which can be NULL for desktop mode, or one of the fullscreen modes returned by SDL_GetFullscreenDisplayModes().
+ * \param mode a pointer to the display mode to use, which can be NULL for
+ *             desktop mode, or one of the fullscreen modes returned by
+ *             SDL_GetFullscreenDisplayModes().
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -822,8 +828,8 @@ extern DECLSPEC int SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x, in
  * The window size in screen coordinates may differ from the size in pixels if
  * the window is on a high density display (one with an OS scaling factor).
  *
- * This only affects the size of the window when not in fullscreen mode. To change
- * the fullscreen mode of a window, use SDL_SetWindowFullscreenMode()
+ * This only affects the size of the window when not in fullscreen mode. To
+ * change the fullscreen mode of a window, use SDL_SetWindowFullscreenMode()
  *
  * \param window the window to change
  * \param w the width of the window, must be > 0
@@ -1127,8 +1133,8 @@ extern DECLSPEC int SDLCALL SDL_RestoreWindow(SDL_Window *window);
 /**
  * Set a window's fullscreen state.
  *
- * By default a window in fullscreen state uses fullscreen desktop mode,
- * but a specific display mode can be set using SDL_SetWindowFullscreenMode().
+ * By default a window in fullscreen state uses fullscreen desktop mode, but a
+ * specific display mode can be set using SDL_SetWindowFullscreenMode().
  *
  * \param window the window to change
  * \param fullscreen SDL_TRUE for fullscreen mode, SDL_FALSE for windowed mode
