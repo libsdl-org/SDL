@@ -26,6 +26,7 @@ my $warn_about_missing = 0;
 my $copy_direction = 0;
 my $optionsfname = undef;
 my $wikipreamble = undef;
+my $changeformat = undef;
 
 foreach (@ARGV) {
     $warn_about_missing = 1, next if $_ eq '--warn-about-missing';
@@ -35,6 +36,9 @@ foreach (@ARGV) {
     $copy_direction = -2, next if $_ eq '--copy-to-manpages';
     if (/\A--options=(.*)\Z/) {
         $optionsfname = $1;
+        next;
+    } elsif (/\A--changeformat=(.*)\Z/) {
+        $changeformat = $1;
         next;
     }
     $srcpath = $_, next if not defined $srcpath;
@@ -131,6 +135,7 @@ sub wordwrap_with_bullet_indent {  # don't call this directly.
     my $usual_prefix = ' ' x $bulletlen;
 
     foreach (@wrappedlines) {
+        s/\s*\Z//;
         $retval .= "$prefix$_\n";
         $prefix = $usual_prefix;
     }
@@ -325,6 +330,11 @@ sub dewikify_chunk {
 
             # bullets
             $str =~ s/^\* /- /gm;
+        } elsif ($wikitype eq 'md') {
+            # Dump obvious wikilinks. The rest can just passthrough.
+            if (defined $apiprefixregex) {
+                $str =~ s/\[($apiprefixregex[a-zA-Z0-9_]+)\]\(($apiprefixregex[a-zA-Z0-9_]+)\)/$1/gms;
+            }
         }
 
         if (defined $code) {
@@ -799,6 +809,33 @@ if ($copy_direction == 1) {  # --copy-to-headers
                         $str .= "${whitespace}$_\n";
                     }
                 }
+            } elsif ($wikitype eq 'md') {
+                my $l;
+                $l = shift @lines;
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\|\s*\|\s*\Z/);
+                $l = shift @lines;
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\-*\s*\|\s*\-*\s*\|\s*\Z/);
+                while (scalar(@lines) >= 1) {
+                    $l = shift @lines;
+                    if ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
+                        my $name = $1;
+                        my $desc = $2;
+                        $name =~ s/\A\*\*(.*?)\*\*/$1/;
+                        $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
+                        #print STDERR "FN: $fn   NAME: $name   DESC: $desc\n";
+                        my $whitespacelen = length($name) + 8;
+                        my $whitespace = ' ' x $whitespacelen;
+                        $desc = wordwrap($desc, -$whitespacelen);
+                        my @desclines = split /\n/, $desc;
+                        my $firstline = shift @desclines;
+                        $str .= "\\param $name $firstline\n";
+                        foreach (@desclines) {
+                            $str .= "${whitespace}$_\n";
+                        }
+                    } else {
+                        last;  # we seem to have run out of table.
+                    }
+                }
             } else {
                 die("write me");
             }
@@ -923,10 +960,17 @@ if ($copy_direction == 1) {  # --copy-to-headers
     }
 
 } elsif ($copy_direction == -1) { # --copy-to-wiki
+
+    if (defined $changeformat) {
+        $dewikify_mode = $changeformat;
+        $wordwrap_mode = $changeformat;
+    }
+
     foreach (keys %headerfuncs) {
         my $fn = $_;
         next if not $headerfuncshasdoxygen{$fn};
-        my $wikitype = defined $wikitypes{$fn} ? $wikitypes{$fn} : 'mediawiki';  # default to MediaWiki for new stuff FOR NOW.
+        my $origwikitype = defined $wikitypes{$fn} ? $wikitypes{$fn} : 'md';  # default to MarkDown for new stuff.
+        my $wikitype = (defined $changeformat) ? $changeformat : $origwikitype;
         die("Unexpected wikitype '$wikitype'\n") if (($wikitype ne 'mediawiki') and ($wikitype ne 'md') and ($wikitype ne 'manpage'));
 
         #print("$fn\n"); next;
@@ -1157,8 +1201,25 @@ if ($copy_direction == 1) {  # --copy-to-headers
             push @$wikisectionorderref, '[footer]';
         }
 
+        # If changing format, convert things that otherwise are passed through unmolested.
+        if (defined $changeformat) {
+            if (($dewikify_mode eq 'md') and ($origwikitype eq 'mediawiki')) {
+                $$sectionsref{'[footer]'} =~ s/\[\[(Category[a-zA-Z0-9_]+)\]\]/[$1]($1)/g;
+            } elsif (($dewikify_mode eq 'mediawiki') and ($origwikitype eq 'md')) {
+                $$sectionsref{'[footer]'} =~ s/\[(Category[a-zA-Z0-9_]+)\]\(.*?\)/[[$1]]/g;
+            }
+
+            foreach (keys %only_wiki_sections) {
+                my $sect = $_;
+                if (defined $$sectionsref{$sect}) {
+                    $$sectionsref{$sect} = wikify($wikitype, dewikify($origwikitype, $$sectionsref{$sect}));
+                }
+            }
+        }
+
         # !!! FIXME: This won't be CategoryAPI if we eventually handle things other than functions.
         my $footer = $$sectionsref{'[footer]'};
+
         if ($wikitype eq 'mediawiki') {
             $footer =~ s/\[\[CategoryAPI\]\],?\s*//g;
             $footer = '[[CategoryAPI]]' . (($footer eq '') ? "\n" : ", $footer");
@@ -1218,6 +1279,12 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         print FH "\n\n";
         close(FH);
+
+        if (defined $changeformat and ($origwikitype ne $wikitype)) {
+            system("cd '$wikipath' ; git mv '$_.${origwikitype}' '$_.${wikitype}'");
+            unlink("$wikipath/$_.${origwikitype}");
+        }
+
         rename($path, "$wikipath/$_.${wikitype}") or die("Can't rename '$path' to '$wikipath/$_.${wikitype}': $!\n");
     }
 
