@@ -365,6 +365,30 @@ sub dewikify_chunk {
 
             # bullets
             $str =~ s/^\* /\n\\\(bu /gm;
+        } elsif ($wikitype eq 'md') {
+            # Dump obvious wikilinks.
+            if (defined $apiprefixregex) {
+                $str =~ s/\[($apiprefixregex[a-zA-Z0-9_]+)\]\(($apiprefixregex[a-zA-Z0-9_]+)\)/\n.BR $1\n/gms;
+            }
+
+            # links
+            $str =~ s/\[(.*?)]\((https?\:\/\/.*?)\)/\n.URL "$2" "$1"\n/g;
+
+            # <code></code> is also popular.  :/
+            $str =~ s/\s*\`(.*?)\`\s*/\n.BR $1\n/gms;
+
+            # bold+italic
+            $str =~ s/\s*\*\*\*(.*?)\*\*\*\s*/\n.BI $1\n/gms;
+
+            # bold
+            $str =~ s/\s*\*\*(.*?)\*\*\s*/\n.B $1\n/gms;
+
+            # italic
+            $str =~ s/\s*\*(.*?)\*\s*/\n.I $1\n/gms;
+
+            # bullets
+            $str =~ s/^\- /\n\\\(bu /gm;
+
         } else {
             die("Unexpected wikitype when converting to manpages\n");   # !!! FIXME: need to handle Markdown wiki pages.
         }
@@ -1430,6 +1454,28 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     $str .= ".I $name\n";
                     $str .= "$desc\n";
                 }
+            } elsif ($wikitype eq 'md') {
+                my $l;
+                $l = shift @lines;
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\|\s*\|\s*\Z/);
+                $l = shift @lines;
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\-*\s*\|\s*\-*\s*\|\s*\Z/);
+                while (scalar(@lines) >= 1) {
+                    $l = shift @lines;
+                    if ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
+                        my $name = $1;
+                        my $desc = $2;
+                        $name =~ s/\A\*\*(.*?)\*\*/$1/;
+                        $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
+                        $desc = dewikify($wikitype, $desc);
+
+                        $str .= ".TP\n";
+                        $str .= ".I $name\n";
+                        $str .= "$desc\n";
+                    } else {
+                        last;  # we seem to have run out of table.
+                    }
+                }
             } else {
                 die("write me");
             }
@@ -1464,11 +1510,14 @@ if ($copy_direction == 1) {  # --copy-to-headers
             my @desclines = split /\n/, $v;
             my $nextstr = '';
             foreach (@desclines) {
+print("DESCLINE: '$_'\n");
                 s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
+                s/\A\*\s*\Z//;
                 s/\A\/*//;
                 s/\A\.BR\s+//;  # dewikify added this, but we want to handle it.
+                s/\A\.I\s+//;  # dewikify added this, but we want to handle it.
                 s/\A\s+//;
                 s/\s+\Z//;
                 next if $_ eq '';
