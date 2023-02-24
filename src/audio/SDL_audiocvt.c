@@ -29,35 +29,6 @@
 
 #define DEBUG_AUDIOSTREAM 0
 
-#ifdef __ARM_NEON
-#define HAVE_NEON_INTRINSICS 1
-#endif
-
-#ifdef __SSE__
-#define HAVE_SSE_INTRINSICS 1
-#endif
-
-#ifdef __SSE3__
-#define HAVE_SSE3_INTRINSICS 1
-#endif
-
-#if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
-#define HAVE_AVX_INTRINSICS 1
-#endif
-#if defined __clang__
-#if (!__has_attribute(target))
-#undef HAVE_AVX_INTRINSICS
-#endif
-#if (defined(_MSC_VER) || defined(__SCE__)) && !defined(__AVX__)
-#undef HAVE_AVX_INTRINSICS
-#endif
-#elif defined __GNUC__
-#if (__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
-#undef HAVE_AVX_INTRINSICS
-#endif
-#endif
-
-
 /**
  * Initialize an SDL_AudioCVT structure for conversion.
  *
