@@ -101,21 +101,20 @@ _m_prefetch(void *__P)
 #include <lasxintrin.h>
 #define __LASX__
 #endif
-#if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
+#if defined(__AVX__) && !defined(SDL_DISABLE_AVX)
 #include <immintrin.h>
-#else
-#if defined(__MMX__) && !defined(SDL_DISABLE_MMINTRIN_H)
+#endif
+#if defined(__MMX__) && !defined(SDL_DISABLE_MMX)
 #include <mmintrin.h>
 #endif
-#if defined(__SSE__) && !defined(SDL_DISABLE_XMMINTRIN_H)
+#if defined(__SSE__) && !defined(SDL_DISABLE_SSE)
 #include <xmmintrin.h>
 #endif
-#if defined(__SSE2__) && !defined(SDL_DISABLE_EMMINTRIN_H)
+#if defined(__SSE2__) && !defined(SDL_DISABLE_SSE2)
 #include <emmintrin.h>
 #endif
-#if defined(__SSE3__) && !defined(SDL_DISABLE_PMMINTRIN_H)
+#if defined(__SSE3__) && !defined(SDL_DISABLE_SSE3)
 #include <pmmintrin.h>
 #endif
-#endif /* HAVE_IMMINTRIN_H */
 
 #endif /* SDL_intrin_h_ */

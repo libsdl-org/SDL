@@ -166,7 +166,7 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
     }
 }
 
-#ifdef __MMX__
+#if HAVE_MMX_INTRINSICS
 
 /* fast RGB888->(A)RGB888 blending with surface alpha=128 special case */
 static void BlitRGBtoRGBSurfaceAlpha128MMX(SDL_BlitInfo *info)
@@ -409,7 +409,7 @@ static void BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
     _mm_empty();
 }
 
-#endif /* __MMX__ */
+#endif /* HAVE_MMX_INTRINSICS */
 
 #if SDL_ARM_SIMD_BLITTERS
 void BlitARGBto565PixelAlphaARMSIMDAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
@@ -750,7 +750,7 @@ static void Blit16to16SurfaceAlpha128(SDL_BlitInfo *info, Uint16 mask)
     }
 }
 
-#ifdef __MMX__
+#if HAVE_MMX_INTRINSICS
 
 /* fast RGB565->RGB565 blending with surface alpha */
 static void Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
@@ -1025,7 +1025,7 @@ static void Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
     }
 }
 
-#endif /* __MMX__ */
+#endif /* HAVE_MMX_INTRINSICS */
 
 /* fast RGB565->RGB565 blending with surface alpha */
 static void Blit565to565SurfaceAlpha(SDL_BlitInfo *info)
@@ -1357,15 +1357,13 @@ SDL_CalculateBlitA(SDL_Surface *surface)
 
         case 4:
             if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
-#if defined(__MMX__)
+#if HAVE_MMX_INTRINSICS
                 if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && sf->Ashift % 8 == 0 && sf->Aloss == 0) {
-#ifdef __MMX__
                     if (SDL_HasMMX()) {
                         return BlitRGBtoRGBPixelAlphaMMX;
                     }
-#endif
                 }
-#endif /* __MMX__ */
+#endif /* HAVE_MMX_INTRINSICS */
                 if (sf->Amask == 0xff000000) {
 #if SDL_ARM_NEON_BLITTERS
                     if (SDL_HasNEON()) {
@@ -1407,7 +1405,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
             case 2:
                 if (surface->map->identity) {
                     if (df->Gmask == 0x7e0) {
-#ifdef __MMX__
+#if HAVE_MMX_INTRINSICS
                         if (SDL_HasMMX()) {
                             return Blit565to565SurfaceAlphaMMX;
                         } else
@@ -1416,7 +1414,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
                             return Blit565to565SurfaceAlpha;
                         }
                     } else if (df->Gmask == 0x3e0) {
-#ifdef __MMX__
+#if HAVE_MMX_INTRINSICS
                         if (SDL_HasMMX()) {
                             return Blit555to555SurfaceAlphaMMX;
                         } else
@@ -1430,7 +1428,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
 
             case 4:
                 if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
-#ifdef __MMX__
+#if HAVE_MMX_INTRINSICS
                     if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && SDL_HasMMX()) {
                         return BlitRGBtoRGBSurfaceAlphaMMX;
                     }

@@ -367,6 +367,7 @@ option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/relea
 #set_option(SDL_DEPENDENCY_TRACKING "Use gcc -MMD -MT dependency tracking" ON)
 set_option(SDL_ASSEMBLY            "Enable assembly routines" ${SDL_ASSEMBLY_DEFAULT})
 dep_option(SDL_SSEMATH             "Allow GCC to use SSE floating point math" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
+dep_option(SDL_AVX                 "Use AVX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE                 "Use SSE assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE2                "Use SSE2 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE3                "Use SSE3 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
@@ -711,6 +712,32 @@ if(SDL_ASSEMBLY)
     # TODO: Those all seem to be quite GCC specific - needs to be
     # reworked for better compiler support
     set(HAVE_ASSEMBLY TRUE)
+
+    if(SDL_AVX)
+      cmake_push_check_state()
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mavx")
+      check_c_source_compiles("
+          #ifdef __MINGW32__
+          #include <_mingw.h>
+          #ifdef __MINGW64_VERSION_MAJOR
+          #include <intrin.h>
+          #else
+          #include <immintrin.h>
+          #endif
+          #else
+          #include <immintrin.h>
+          #endif
+          #ifndef __AVX__
+          #error Assembler CPP flag not enabled
+          #endif
+          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_AVX)
+      cmake_pop_check_state()
+      if(CPU_SUPPORTS_AVX)
+        set(HAVE_AVX TRUE)
+        target_compile_options(sdl-build-options INTERFACE "-mavx")
+      endif()
+    endif()
+
     if(SDL_MMX)
       cmake_push_check_state()
       set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mmmx")
@@ -728,9 +755,10 @@ if(SDL_ASSEMBLY)
           #ifndef __MMX__
           #error Assembler CPP flag not enabled
           #endif
-          int main(int argc, char **argv) { return 0; }" HAVE_MMX)
+          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_MMX)
       cmake_pop_check_state()
-      if(HAVE_MMX)
+      if(CPU_SUPPORTS_MMX)
+        set(HAVE_MMX TRUE)
         target_compile_options(sdl-build-options INTERFACE "-mmmx")
       endif()
     endif()
@@ -822,8 +850,6 @@ if(SDL_ASSEMBLY)
     else()
       set(HAVE_SSEMATH TRUE)
     endif()
-
-    check_include_file("immintrin.h" HAVE_IMMINTRIN_H)
 
     if(SDL_ALTIVEC)
       cmake_push_check_state()
@@ -954,8 +980,44 @@ if(SDL_ASSEMBLY)
     if(SDL_SSE3)
       set(HAVE_SSE3 TRUE)
     endif()
-    check_include_file("immintrin.h" HAVE_IMMINTRIN_H)
+    if(SDL_AVX)
+      cmake_push_check_state()
+      # FIXME: should be CMAKE_REQUIRED_LINK_OPTIONS for CMake 3.14+
+      list(APPEND CMAKE_REQUIRED_LIBRARIES "/ARCH:AVX")
+      check_c_source_compiles("
+          #include <immintrin.h>
+          #ifndef __AVX__
+          #error Assembler CPP flag not enabled
+          #endif
+          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_AVX)
+      cmake_pop_check_state()
+      if(CPU_SUPPORTS_AVX)
+        # FIXME: should be target_link_options for CMake 3.13+
+        target_link_libraries(sdl-build-options INTERFACE "/ARCH:AVX")
+        set(HAVE_AVX TRUE)
+      endif()
+    endif()
   endif()
+endif()
+
+if(NOT HAVE_AVX)
+  set(SDL_DISABLE_AVX 1)
+endif()
+
+if(NOT HAVE_MMX)
+  set(SDL_DISABLE_MMX 1)
+endif()
+
+if(NOT HAVE_SSE)
+  set(SDL_DISABLE_SSE 1)
+endif()
+
+if(NOT HAVE_SSE2)
+  set(SDL_DISABLE_SSE2 1)
+endif()
+
+if(NOT HAVE_SSE3)
+  set(SDL_DISABLE_SSE3 1)
 endif()
 
 # TODO: Can't deactivate on FreeBSD? w/o LIBC, SDL_stdinc.h can't define

@@ -310,7 +310,7 @@ static SDL_bool yuv_rgb_sse(
     Uint8 *rgb, Uint32 rgb_stride,
     YCbCrType yuv_type)
 {
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
     if (!SDL_HasSSE2()) {
         return SDL_FALSE;
     }
@@ -1114,7 +1114,7 @@ static int SDL_ConvertPixels_PackUVPlanes_to_NV(int width, int height, const voi
     const Uint8 *src1, *src2;
     Uint8 *dstUV;
     Uint8 *tmp = NULL;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
     const SDL_bool use_SSE2 = SDL_HasSSE2();
 #endif
 
@@ -1144,7 +1144,7 @@ static int SDL_ConvertPixels_PackUVPlanes_to_NV(int width, int height, const voi
     y = UVheight;
     while (y--) {
         x = UVwidth;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
         if (use_SSE2) {
             while (x >= 16) {
                 __m128i u = _mm_loadu_si128((__m128i *)src1);
@@ -1187,7 +1187,7 @@ static int SDL_ConvertPixels_SplitNV_to_UVPlanes(int width, int height, const vo
     const Uint8 *srcUV;
     Uint8 *dst1, *dst2;
     Uint8 *tmp = NULL;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
     const SDL_bool use_SSE2 = SDL_HasSSE2();
 #endif
 
@@ -1217,7 +1217,7 @@ static int SDL_ConvertPixels_SplitNV_to_UVPlanes(int width, int height, const vo
     y = UVheight;
     while (y--) {
         x = UVwidth;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
         if (use_SSE2) {
             __m128i mask = _mm_set1_epi16(0x00FF);
             while (x >= 16) {
@@ -1264,7 +1264,7 @@ static int SDL_ConvertPixels_SwapNV(int width, int height, const void *src, int 
     const int dstUVPitchLeft = (dstUVPitch - UVwidth * 2) / sizeof(Uint16);
     const Uint16 *srcUV;
     Uint16 *dstUV;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
     const SDL_bool use_SSE2 = SDL_HasSSE2();
 #endif
 
@@ -1277,7 +1277,7 @@ static int SDL_ConvertPixels_SwapNV(int width, int height, const void *src, int 
     y = UVheight;
     while (y--) {
         x = UVwidth;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
         if (use_SSE2) {
             while (x >= 8) {
                 __m128i uv = _mm_loadu_si128((__m128i *)srcUV);
@@ -1372,7 +1372,7 @@ static int SDL_ConvertPixels_Planar2x2_to_Planar2x2(int width, int height,
                         SDL_GetPixelFormatName(dst_format));
 }
 
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
 #define PACKED4_TO_PACKED4_ROW_SSE2(shuffle)                      \
     while (x >= 4) {                                              \
         __m128i yuv = _mm_loadu_si128((__m128i *)srcYUV);         \
@@ -1399,14 +1399,14 @@ static int SDL_ConvertPixels_YUY2_to_UYVY(int width, int height, const void *src
     const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
     const Uint8 *srcYUV = (const Uint8 *)src;
     Uint8 *dstYUV = (Uint8 *)dst;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
     const SDL_bool use_SSE2 = SDL_HasSSE2();
 #endif
 
     y = height;
     while (y--) {
         x = YUVwidth;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
         if (use_SSE2) {
             PACKED4_TO_PACKED4_ROW_SSE2(_MM_SHUFFLE(2, 3, 0, 1));
         }
@@ -1440,14 +1440,14 @@ static int SDL_ConvertPixels_YUY2_to_YVYU(int width, int height, const void *src
     const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
     const Uint8 *srcYUV = (const Uint8 *)src;
     Uint8 *dstYUV = (Uint8 *)dst;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
     const SDL_bool use_SSE2 = SDL_HasSSE2();
 #endif
 
     y = height;
     while (y--) {
         x = YUVwidth;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
         if (use_SSE2) {
             PACKED4_TO_PACKED4_ROW_SSE2(_MM_SHUFFLE(1, 2, 3, 0));
         }
@@ -1481,14 +1481,14 @@ static int SDL_ConvertPixels_UYVY_to_YUY2(int width, int height, const void *src
     const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
     const Uint8 *srcYUV = (const Uint8 *)src;
     Uint8 *dstYUV = (Uint8 *)dst;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
     const SDL_bool use_SSE2 = SDL_HasSSE2();
 #endif
 
     y = height;
     while (y--) {
         x = YUVwidth;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
         if (use_SSE2) {
             PACKED4_TO_PACKED4_ROW_SSE2(_MM_SHUFFLE(2, 3, 0, 1));
         }
@@ -1522,14 +1522,14 @@ static int SDL_ConvertPixels_UYVY_to_YVYU(int width, int height, const void *src
     const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
     const Uint8 *srcYUV = (const Uint8 *)src;
     Uint8 *dstYUV = (Uint8 *)dst;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
     const SDL_bool use_SSE2 = SDL_HasSSE2();
 #endif
 
     y = height;
     while (y--) {
         x = YUVwidth;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
         if (use_SSE2) {
             PACKED4_TO_PACKED4_ROW_SSE2(_MM_SHUFFLE(0, 3, 2, 1));
         }
@@ -1563,14 +1563,14 @@ static int SDL_ConvertPixels_YVYU_to_YUY2(int width, int height, const void *src
     const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
     const Uint8 *srcYUV = (const Uint8 *)src;
     Uint8 *dstYUV = (Uint8 *)dst;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
     const SDL_bool use_SSE2 = SDL_HasSSE2();
 #endif
 
     y = height;
     while (y--) {
         x = YUVwidth;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
         if (use_SSE2) {
             PACKED4_TO_PACKED4_ROW_SSE2(_MM_SHUFFLE(1, 2, 3, 0));
         }
@@ -1604,14 +1604,14 @@ static int SDL_ConvertPixels_YVYU_to_UYVY(int width, int height, const void *src
     const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
     const Uint8 *srcYUV = (const Uint8 *)src;
     Uint8 *dstYUV = (Uint8 *)dst;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
     const SDL_bool use_SSE2 = SDL_HasSSE2();
 #endif
 
     y = height;
     while (y--) {
         x = YUVwidth;
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
         if (use_SSE2) {
             PACKED4_TO_PACKED4_ROW_SSE2(_MM_SHUFFLE(2, 1, 0, 3));
         }

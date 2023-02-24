@@ -6,7 +6,6 @@
 
 #include "yuv_rgb.h"
 
-
 #define PRECISION 6
 #define PRECISION_FACTOR (1<<PRECISION)
 
@@ -240,7 +239,7 @@ void rgb24_yuv420_std(
 	}
 }
 
-#ifdef __SSE2__
+#if HAVE_SSE2_INTRINSICS
 
 #define SSE_FUNCTION_NAME	yuv420_rgb565_sse
 #define STD_FUNCTION_NAME	yuv420_rgb565_std
@@ -683,7 +682,7 @@ void rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 }
 
 
-#endif //__SSE2__
+#endif //HAVE_SSE2_INTRINSICS
 
 #ifdef __loongarch_sx
 
