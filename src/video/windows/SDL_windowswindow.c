@@ -498,41 +498,12 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
 
     style |= GetWindowStyle(window);
 
-    /* Make sure we have valid coordinates for the AdjustWindowRect call below */
-    x = window->x;
-    y = window->y;
-    if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISUNDEFINED(y)) {
-        SDL_DisplayID displayID = 0;
-        SDL_Rect bounds;
-
-        if (SDL_WINDOWPOS_ISUNDEFINED(x) && (x & 0xFFFF)) {
-            displayID = (x & 0xFFFF);
-        } else if (SDL_WINDOWPOS_ISUNDEFINED(y) && (y & 0xFFFF)) {
-            displayID = (y & 0xFFFF);
-        }
-        if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
-            displayID = SDL_GetPrimaryDisplay();
-        }
-
-        SDL_zero(bounds);
-        SDL_GetDisplayBounds(displayID, &bounds);
-        if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
-            window->x = window->windowed.x = bounds.x + (bounds.w - window->w) / 2;
-        }
-        if (SDL_WINDOWPOS_ISUNDEFINED(y)) {
-            window->y = window->windowed.y = bounds.y + (bounds.h - window->h) / 2;
-        }
-        if (displayID == SDL_GetPrimaryDisplay() &&
-            SDL_WINDOWPOS_ISUNDEFINED(x) && SDL_WINDOWPOS_ISUNDEFINED(y)) {
-            /* We can use CW_USEDEFAULT for the position */
-            undefined_position = SDL_TRUE;
-        }
-    }
-
     /* Figure out what the window area will be */
     WIN_AdjustWindowRectWithStyle(window, style, FALSE, &x, &y, &w, &h, SDL_FALSE);
 
-    if (undefined_position) {
+    if (window->undefined_x && window->undefined_y &&
+        window->last_displayID == SDL_GetPrimaryDisplay()) {
+        undefined_position = SDL_TRUE;
         x = CW_USEDEFAULT;
         y = CW_USEDEFAULT; /* Not actually used */
     }

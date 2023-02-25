@@ -392,6 +392,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     Atom _NET_WM_PID;
     long fevent = 0;
     const char *hint = NULL;
+    SDL_bool undefined_position = SDL_FALSE;
 
 #if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
@@ -527,6 +528,11 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
                                 visual, AllocNone);
     }
 
+    if (window->undefined_x && window->undefined_y &&
+        window->last_displayID == SDL_GetPrimaryDisplay()) {
+        undefined_position = SDL_TRUE;
+    }
+
     /* Always create this with the window->windowed.* fields; if we're
        creating a windowed mode window, that's fine. If we're creating a
        fullscreen window, the window manager will want to know these values
@@ -554,9 +560,11 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         sizehints->min_height = sizehints->max_height = window->h;
         sizehints->flags |= (PMaxSize | PMinSize);
     }
-    sizehints->x = window->x;
-    sizehints->y = window->y;
-    sizehints->flags |= USPosition;
+    if (!undefined_position) {
+        sizehints->x = window->x;
+        sizehints->y = window->y;
+        sizehints->flags |= USPosition;
+    }
 
     /* Setup the input hints so we get keyboard input */
     wmhints = X11_XAllocWMHints();
@@ -635,6 +643,12 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         return -1;
     }
     windowdata = window->driverdata;
+
+    if (undefined_position) {
+        /* Record where the window ended up */
+        window->windowed.x = window->x;
+        window->windowed.y = window->y;
+    }
 
 #if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_OPENGL_EGL
     if ((window->flags & SDL_WINDOW_OPENGL) &&

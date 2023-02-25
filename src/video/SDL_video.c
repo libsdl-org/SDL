@@ -168,14 +168,6 @@ static SDL_bool DisableUnsetFullscreenOnMinimize(_THIS)
     return SDL_FALSE;
 }
 
-static SDL_bool HandlesUndefinedWindowPosition(_THIS)
-{
-    if (_this->quirk_flags & VIDEO_DEVICE_QUIRK_HANDLES_UNDEFINED_WINDOW_POSITION) {
-        return SDL_TRUE;
-    }
-    return SDL_FALSE;
-}
-
 /* Support for framebuffer emulation using an accelerated renderer */
 
 #define SDL_WINDOWTEXTUREDATA "_SDL_WindowTextureData"
@@ -1631,6 +1623,8 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
 {
     SDL_Window *window;
     Uint32 type_flags, graphics_flags;
+    SDL_bool undefined_x = SDL_FALSE;
+    SDL_bool undefined_y = SDL_FALSE;
 
     if (_this == NULL) {
         /* Initialize the video system if needed */
@@ -1686,12 +1680,16 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
 
         SDL_zero(bounds);
         SDL_GetDisplayBounds(displayID, &bounds);
-        if (SDL_WINDOWPOS_ISCENTERED(x) ||
-            (SDL_WINDOWPOS_ISUNDEFINED(x) && !HandlesUndefinedWindowPosition(_this))) {
+        if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISUNDEFINED(x)) {
+            if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
+                undefined_x = SDL_TRUE;
+            }
             x = bounds.x + (bounds.w - w) / 2;
         }
-        if (SDL_WINDOWPOS_ISCENTERED(y) ||
-            (SDL_WINDOWPOS_ISUNDEFINED(y) && !HandlesUndefinedWindowPosition(_this))) {
+        if (SDL_WINDOWPOS_ISCENTERED(y) || SDL_WINDOWPOS_ISUNDEFINED(y)) {
+            if (SDL_WINDOWPOS_ISUNDEFINED(y)) {
+                undefined_y = SDL_TRUE;
+            }
             y = bounds.y + (bounds.h - h) / 2;
         }
     }
@@ -1750,6 +1748,8 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
     window->windowed.y = window->y = y;
     window->windowed.w = window->w = w;
     window->windowed.h = window->h = h;
+    window->undefined_x = undefined_x;
+    window->undefined_y = undefined_y;
 
     if (flags & SDL_WINDOW_FULLSCREEN) {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
@@ -2202,6 +2202,8 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
 
     window->windowed.x = x;
     window->windowed.y = y;
+    window->undefined_x = SDL_FALSE;
+    window->undefined_y = SDL_FALSE;
 
     if (SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
         if (!window->fullscreen_exclusive) {

@@ -260,8 +260,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
 
     device->free = WIN_DeleteDevice;
 
-    device->quirk_flags = VIDEO_DEVICE_QUIRK_HANDLES_UNDEFINED_WINDOW_POSITION;
-
     return device;
 }
 

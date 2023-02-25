@@ -89,6 +89,10 @@ struct SDL_Window
     /* Stored position and size for windowed mode */
     SDL_Rect windowed;
 
+    /* Whether or not the intial position was defined */
+    SDL_bool undefined_x;
+    SDL_bool undefined_y;
+
     SDL_DisplayMode requested_fullscreen_mode;
     SDL_DisplayMode current_fullscreen_mode;
 
@@ -153,7 +157,6 @@ typedef enum
 {
     VIDEO_DEVICE_QUIRK_MODE_SWITCHING_EMULATED = 0x01,
     VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE = 0x02,
-    VIDEO_DEVICE_QUIRK_HANDLES_UNDEFINED_WINDOW_POSITION = 0x04,
 } DeviceQuirkFlags;
 
 struct SDL_VideoDevice
