@@ -1020,6 +1020,14 @@ if(NOT HAVE_SSE3)
   set(SDL_DISABLE_SSE3 1)
 endif()
 
+if(NOT HAVE_LSX)
+  set(SDL_DISABLE_LSX 1)
+endif()
+
+if(NOT HAVE_LASX)
+  set(SDL_DISABLE_LASX 1)
+endif()
+
 # TODO: Can't deactivate on FreeBSD? w/o LIBC, SDL_stdinc.h can't define
 # anything.
 if(SDL_LIBC)

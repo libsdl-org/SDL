@@ -211,6 +211,14 @@
 #define HAVE_AVX_INTRINSICS 1
 #endif
 
+#if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX)
+#define HAVE_LSX_INTRINSICS 1
+#endif
+
+#if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX)
+#define HAVE_LASX_INTRINSICS 1
+#endif
+
 #if defined __clang__
 #if (!__has_attribute(target))
 #undef HAVE_AVX_INTRINSICS

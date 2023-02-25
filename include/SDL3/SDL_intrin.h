@@ -93,13 +93,11 @@ _m_prefetch(void *__P)
 #endif
 #endif /* compiler version */
 
-#if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX_H)
+#if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX)
 #include <lsxintrin.h>
-#define __LSX__
 #endif
-#if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX_H)
+#if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX)
 #include <lasxintrin.h>
-#define __LASX__
 #endif
 #if defined(__AVX__) && !defined(SDL_DISABLE_AVX)
 #include <immintrin.h>
