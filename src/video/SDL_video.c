@@ -154,12 +154,26 @@ extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool stat
 /* Convenience functions for reading driver flags */
 static SDL_bool ModeSwitchingEmulated(_THIS)
 {
-    return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_MODE_SWITCHING_EMULATED);
+    if (_this->quirk_flags & VIDEO_DEVICE_QUIRK_MODE_SWITCHING_EMULATED) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 static SDL_bool DisableUnsetFullscreenOnMinimize(_THIS)
 {
-    return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE);
+    if (_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool HandlesUndefinedWindowPosition(_THIS)
+{
+    if (_this->quirk_flags & VIDEO_DEVICE_QUIRK_HANDLES_UNDEFINED_WINDOW_POSITION) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 /* Support for framebuffer emulation using an accelerated renderer */
@@ -1672,10 +1686,12 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
 
         SDL_zero(bounds);
         SDL_GetDisplayBounds(displayID, &bounds);
-        if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
+        if (SDL_WINDOWPOS_ISCENTERED(x) ||
+            (SDL_WINDOWPOS_ISUNDEFINED(x) && !HandlesUndefinedWindowPosition(_this))) {
             x = bounds.x + (bounds.w - w) / 2;
         }
-        if (SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) {
+        if (SDL_WINDOWPOS_ISCENTERED(y) ||
+            (SDL_WINDOWPOS_ISUNDEFINED(y) && !HandlesUndefinedWindowPosition(_this))) {
             y = bounds.y + (bounds.h - h) / 2;
         }
     }

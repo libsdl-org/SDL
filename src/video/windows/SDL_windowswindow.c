@@ -490,6 +490,7 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
     DWORD style = STYLE_BASIC;
     int x, y;
     int w, h;
+    SDL_bool undefined_position = SDL_FALSE;
 
     if (window->flags & SDL_WINDOW_SKIP_TASKBAR) {
         parent = CreateWindow(SDL_Appname, TEXT(""), STYLE_BASIC, 0, 0, 32, 32, NULL, NULL, SDL_Instance, NULL);
@@ -497,12 +498,46 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
 
     style |= GetWindowStyle(window);
 
+    /* Make sure we have valid coordinates for the AdjustWindowRect call below */
+    x = window->x;
+    y = window->y;
+    if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISUNDEFINED(y)) {
+        SDL_DisplayID displayID = 0;
+        SDL_Rect bounds;
+
+        if (SDL_WINDOWPOS_ISUNDEFINED(x) && (x & 0xFFFF)) {
+            displayID = (x & 0xFFFF);
+        } else if (SDL_WINDOWPOS_ISUNDEFINED(y) && (y & 0xFFFF)) {
+            displayID = (y & 0xFFFF);
+        }
+        if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
+            displayID = SDL_GetPrimaryDisplay();
+        }
+
+        SDL_zero(bounds);
+        SDL_GetDisplayBounds(displayID, &bounds);
+        if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
+            window->x = window->windowed.x = bounds.x + (bounds.w - window->w) / 2;
+        }
+        if (SDL_WINDOWPOS_ISUNDEFINED(y)) {
+            window->y = window->windowed.y = bounds.y + (bounds.h - window->h) / 2;
+        }
+        if (displayID == SDL_GetPrimaryDisplay() &&
+            SDL_WINDOWPOS_ISUNDEFINED(x) && SDL_WINDOWPOS_ISUNDEFINED(y)) {
+            /* We can use CW_USEDEFAULT for the position */
+            undefined_position = SDL_TRUE;
+        }
+    }
+
     /* Figure out what the window area will be */
     WIN_AdjustWindowRectWithStyle(window, style, FALSE, &x, &y, &w, &h, SDL_FALSE);
 
-    hwnd =
-        CreateWindow(SDL_Appname, TEXT(""), style, x, y, w, h, parent, NULL,
-                     SDL_Instance, NULL);
+    if (undefined_position) {
+        x = CW_USEDEFAULT;
+        y = CW_USEDEFAULT; /* Not actually used */
+    }
+
+    hwnd = CreateWindow(SDL_Appname, TEXT(""), style, x, y, w, h, parent, NULL, SDL_Instance, NULL);
     if (!hwnd) {
         return WIN_SetError("Couldn't create window");
     }
@@ -515,6 +550,12 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
             DestroyWindow(parent);
         }
         return -1;
+    }
+
+    if (undefined_position) {
+        /* Record where the window ended up */
+        window->windowed.x = window->x;
+        window->windowed.y = window->y;
     }
 
     /* Inform Windows of the frame change so we can respond to WM_NCCALCSIZE */
