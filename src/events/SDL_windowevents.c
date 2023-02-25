@@ -63,10 +63,8 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         window->flags |= SDL_WINDOW_HIDDEN;
         break;
     case SDL_EVENT_WINDOW_MOVED:
-        if (SDL_WINDOWPOS_ISUNDEFINED(data1) ||
-            SDL_WINDOWPOS_ISUNDEFINED(data2)) {
-            return 0;
-        }
+        window->undefined_x = SDL_FALSE;
+        window->undefined_y = SDL_FALSE;
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             window->windowed.x = data1;
             window->windowed.y = data2;

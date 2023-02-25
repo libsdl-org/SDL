@@ -490,7 +490,6 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
     DWORD style = STYLE_BASIC;
     int x, y;
     int w, h;
-    SDL_bool undefined_position = SDL_FALSE;
 
     if (window->flags & SDL_WINDOW_SKIP_TASKBAR) {
         parent = CreateWindow(SDL_Appname, TEXT(""), STYLE_BASIC, 0, 0, 32, 32, NULL, NULL, SDL_Instance, NULL);
@@ -503,7 +502,6 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
 
     if (window->undefined_x && window->undefined_y &&
         window->last_displayID == SDL_GetPrimaryDisplay()) {
-        undefined_position = SDL_TRUE;
         x = CW_USEDEFAULT;
         y = CW_USEDEFAULT; /* Not actually used */
     }
@@ -521,12 +519,6 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
             DestroyWindow(parent);
         }
         return -1;
-    }
-
-    if (undefined_position) {
-        /* Record where the window ended up */
-        window->windowed.x = window->x;
-        window->windowed.y = window->y;
     }
 
     /* Inform Windows of the frame change so we can respond to WM_NCCALCSIZE */

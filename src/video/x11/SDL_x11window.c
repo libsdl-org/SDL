@@ -644,12 +644,6 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     }
     windowdata = window->driverdata;
 
-    if (undefined_position) {
-        /* Record where the window ended up */
-        window->windowed.x = window->x;
-        window->windowed.y = window->y;
-    }
-
 #if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_OPENGL_EGL
     if ((window->flags & SDL_WINDOW_OPENGL) &&
         ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
