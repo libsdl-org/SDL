@@ -419,7 +419,7 @@ static SDL_bool yuv_rgb_lsx(
     Uint8 *rgb, Uint32 rgb_stride,
     YCbCrType yuv_type)
 {
-#ifdef __loongarch_sx
+#if HAVE_LSX_INTRINSICS
     if (!SDL_HasLSX()) {
         return SDL_FALSE;
     }
