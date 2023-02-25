@@ -47,6 +47,11 @@ add_library(sdltests_utils STATIC
 target_link_libraries(sdltests_utils PRIVATE SDL3::${sdl_name_component})
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
+set(RESOURCE_FILE_NAMES)
+foreach(RESOURCE_FILE ${RESOURCE_FILES})
+    get_filename_component(res_file_name ${RESOURCE_FILE} NAME)
+    list(APPEND RESOURCE_FILE_NAMES "${res_file_name}")
+endforeach()
 
 macro(add_sdl_test_executable TARGET)
     cmake_parse_arguments(AST "NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS" "" "" ${ARGN})
@@ -77,6 +82,7 @@ macro(add_sdl_test_executable TARGET)
             # Make sure resource files get installed into macOS/iOS .app bundles.
             set_target_properties(${TARGET} PROPERTIES RESOURCE "${RESOURCE_FILES}")
         endif()
+        set_property(TARGET ${TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:${TARGET}>/$<JOIN:${RESOURCE_FILE_NAMES},$<SEMICOLON>$<TARGET_FILE_DIR:${TARGET}>/>")
     endif()
 
     if(WINDOWS)
