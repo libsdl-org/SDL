@@ -217,9 +217,9 @@ pixman_asm_function name
 .endfunc
 .endm
 
-generate_fillrect_function FillRect32ARMNEONAsm, 32, 2
-generate_fillrect_function FillRect16ARMNEONAsm, 16, 1
-generate_fillrect_function FillRect8ARMNEONAsm,  8,  0
+generate_fillrect_function FillSurfaceRect32ARMNEONAsm, 32, 2
+generate_fillrect_function FillSurfaceRect16ARMNEONAsm, 16, 1
+generate_fillrect_function FillSurfaceRect8ARMNEONAsm,  8,  0
 
 /******************************************************************************/
 
