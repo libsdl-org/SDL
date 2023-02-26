@@ -1044,6 +1044,7 @@ if(SDL_LIBC)
     check_symbol_exists(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
     check_symbol_exists(elf_aux_info "sys/auxv.h" HAVE_ELF_AUX_INFO)
     check_symbol_exists(poll "poll.h" HAVE_POLL)
+    check_symbol_exists(arc4random_buf "stdlib.h" HAVE_ARC4RANDOM)
 
     check_library_exists(m pow "" HAVE_LIBM)
     if(HAVE_LIBM)

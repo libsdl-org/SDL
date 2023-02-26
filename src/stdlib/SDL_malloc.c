@@ -2527,6 +2527,9 @@ static int init_mparams(void) {
 
 #if (FOOTERS && !INSECURE)
     {
+#if HAVE_ARC4RANDOM
+      arc4random_buf(&s, sizeof(s));
+#else
 #if USE_DEV_RANDOM
       int fd;
       unsigned char buf[sizeof(size_t)];
@@ -2542,6 +2545,7 @@ static int init_mparams(void) {
       else
 #endif /* USE_DEV_RANDOM */
         s = (size_t)(time(0) ^ (size_t)0x55555555U);
+#endif
 
       s |= (size_t)8U;    /* ensure nonzero */
       s &= ~(size_t)7U;   /* improve chances of fault for bad values */

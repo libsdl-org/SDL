@@ -207,6 +207,7 @@
 #cmakedefine HAVE_ELF_AUX_INFO 1
 #cmakedefine HAVE_POLL 1
 #cmakedefine HAVE__EXIT 1
+#cmakedefine HAVE_ARC4RANDOM 1
 
 #else
 #cmakedefine HAVE_STDARG_H 1
