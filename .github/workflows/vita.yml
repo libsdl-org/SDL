@@ -78,6 +78,7 @@ jobs:
         unzip /tmp/vitasdk_stubs.zip -d/vita/dependencies/lib
 
     - uses: actions/cache/save@v3
+      if: ${{ !steps.restore-cache.outputs.cache-hit }}
       with:
         path: /vita/dependencies
         key: ${{ matrix.platform.artifact }}-${{ matrix.platform.version }}
