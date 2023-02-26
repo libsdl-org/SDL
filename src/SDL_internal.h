@@ -186,8 +186,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
 
-
-#ifdef __ARM_NEON
+#if defined(__ARM_NEON) && !defined(SDL_DISABLE_NEON)
 #define HAVE_NEON_INTRINSICS 1
 #endif
 

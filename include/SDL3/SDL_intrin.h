@@ -65,7 +65,7 @@ _m_prefetch(void *__P)
 #endif
 #elif defined(__MINGW64_VERSION_MAJOR)
 #include <intrin.h>
-#if !defined(SDL_DISABLE_ARM_NEON_H) && defined(__ARM_NEON)
+#if defined(__ARM_NEON) && !defined(SDL_DISABLE_NEON)
 #  include <arm_neon.h>
 #endif
 #else
@@ -73,7 +73,7 @@ _m_prefetch(void *__P)
 #if defined(HAVE_ALTIVEC_H) && defined(__ALTIVEC__) && !defined(__APPLE_ALTIVEC__) && defined(SDL_ENABLE_ALTIVEC_H)
 #include <altivec.h>
 #endif
-#if !defined(SDL_DISABLE_ARM_NEON_H)
+#if !defined(SDL_DISABLE_NEON)
 #  if defined(__ARM_NEON)
 #    include <arm_neon.h>
 #  elif defined(__WINDOWS__) || defined(__WINRT__) || defined(__GDK__)

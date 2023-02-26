@@ -912,6 +912,7 @@ if(SDL_ASSEMBLY)
     if(SDL_ARMSIMD)
       cmake_push_check_state()
       set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -x assembler-with-cpp")
+      list(APPEND CMAKE_REQUIRED_LINK_OPTIONS -x none)
       check_c_source_compiles("
         .text
         .arch armv6
@@ -921,6 +922,8 @@ if(SDL_ASSEMBLY)
         #ifndef __ARM_EABI__
         #error EABI is required (to be sure that calling conventions are compatible)
         #endif
+        main:
+        .global main
         pld [r0]
         uqadd8 r0, r0, r0
       " ARMSIMD_FOUND)
@@ -929,8 +932,10 @@ if(SDL_ASSEMBLY)
       if(ARMSIMD_FOUND)
         set(HAVE_ARMSIMD TRUE)
         set(SDL_ARM_SIMD_BLITTERS 1)
+        enable_language(ASM)
         file(GLOB ARMSIMD_SOURCES ${SDL3_SOURCE_DIR}/src/video/arm/pixman-arm-simd*.S)
         list(APPEND SOURCE_FILES ${ARMSIMD_SOURCES})
+        set_property(SOURCE ${ARMSIMD_SOURCES} APPEND PROPERTY COMPILE_OPTIONS -x assembler-with-cpp)
         set(WARN_ABOUT_ARM_SIMD_ASM_MIT TRUE)
       endif()
     endif()
@@ -938,6 +943,7 @@ if(SDL_ASSEMBLY)
     if(SDL_ARMNEON)
       cmake_push_check_state()
       set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -x assembler-with-cpp")
+      list(APPEND CMAKE_REQUIRED_LINK_OPTIONS -x none)
       check_c_source_compiles("
         .text
         .fpu neon
@@ -949,6 +955,8 @@ if(SDL_ASSEMBLY)
         #ifndef __ARM_EABI__
         #error EABI is required (to be sure that calling conventions are compatible)
         #endif
+        main:
+        .global main
         pld [r0]
         vmovn.u16 d0, q0
       " ARMNEON_FOUND)
@@ -957,8 +965,10 @@ if(SDL_ASSEMBLY)
       if(ARMNEON_FOUND)
         set(HAVE_ARMNEON TRUE)
         set(SDL_ARM_NEON_BLITTERS 1)
+        enable_language(ASM)
         file(GLOB ARMNEON_SOURCES ${SDL3_SOURCE_DIR}/src/video/arm/pixman-arm-neon*.S)
         list(APPEND SOURCE_FILES ${ARMNEON_SOURCES})
+        set_property(SOURCE ${ARMNEON_SOURCES} APPEND PROPERTY COMPILE_OPTIONS -x assembler-with-cpp)
         set(WARN_ABOUT_ARM_NEON_ASM_MIT TRUE)
       endif()
     endif()
@@ -1026,6 +1036,10 @@ endif()
 
 if(NOT HAVE_LASX)
   set(SDL_DISABLE_LASX 1)
+endif()
+
+if(NOT HAVE_ARMNEON)
+  set(SDL_DISABLE_NEON 1)
 endif()
 
 # TODO: Can't deactivate on FreeBSD? w/o LIBC, SDL_stdinc.h can't define
@@ -3161,21 +3175,21 @@ if(UNIX)
 endif()
 
 if(WARN_ABOUT_ARM_SIMD_ASM_MIT)
-  message(STATUS "")
   message(STATUS "SDL is being built with ARM SIMD optimizations, which")
   message(STATUS "uses code licensed under the MIT license. If this is a")
   message(STATUS "problem, please disable that code by rerunning CMake with:")
   message(STATUS "")
   message(STATUS "    -DSDL_ARMSIMD=OFF")
+  message(STATUS "")
 endif()
 
 if(WARN_ABOUT_ARM_NEON_ASM_MIT)
-  message(STATUS "")
   message(STATUS "SDL is being built with ARM NEON optimizations, which")
   message(STATUS "uses code licensed under the MIT license. If this is a")
   message(STATUS "problem, please disable that code by rerunning CMake with:")
   message(STATUS "")
   message(STATUS "    -DSDL_ARMNEON=OFF")
+  message(STATUS "")
 endif()
 
 if(ANDROID)
