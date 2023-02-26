@@ -207,7 +207,12 @@
 #cmakedefine HAVE_ELF_AUX_INFO 1
 #cmakedefine HAVE_POLL 1
 #cmakedefine HAVE__EXIT 1
+
+#if !defined(__linux__)
+/* Disabling for Linux at least for now until the feature matures
+   a bit on this platform. */
 #cmakedefine HAVE_ARC4RANDOM 1
+#endif
 
 #else
 #cmakedefine HAVE_STDARG_H 1
