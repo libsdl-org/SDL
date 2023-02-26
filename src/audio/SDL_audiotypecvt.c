@@ -23,10 +23,6 @@
 #include "SDL_audio_c.h"
 #include "SDL_audiocvt_c.h"
 
-#ifdef __ARM_NEON
-#define HAVE_NEON_INTRINSICS 1
-#endif
-
 #if defined(__x86_64__) && HAVE_SSE2_INTRINSICS
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* x86_64 guarantees SSE2. */
 #elif __MACOS__ && HAVE_SSE2_INTRINSICS

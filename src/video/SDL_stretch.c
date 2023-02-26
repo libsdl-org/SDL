@@ -332,14 +332,13 @@ static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
     return 0;
 }
 
-#if defined(__ARM_NEON)
-#define HAVE_NEON_INTRINSICS 1
+#if HAVE_NEON_INTRINSICS
 #define CAST_uint8x8_t       (uint8x8_t)
 #define CAST_uint32x2_t      (uint32x2_t)
 #endif
 
 #if defined(__WINRT__) || defined(_MSC_VER)
-#if defined(HAVE_NEON_INTRINSICS)
+#if HAVE_NEON_INTRINSICS
 #undef CAST_uint8x8_t
 #undef CAST_uint32x2_t
 #define CAST_uint8x8_t
