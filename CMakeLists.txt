@@ -2602,22 +2602,7 @@ elseif(VITA)
     )
   endif()
 
-  set(HAVE_ARMSIMD TRUE)
-#  set(SDL_ARM_SIMD_BLITTERS 1)
-#  file(GLOB ARMSIMD_SOURCES ${SDL3_SOURCE_DIR}/src/video/arm/pixman-arm-simd*.S)
-#  list(APPEND SOURCE_FILES ${ARMSIMD_SOURCES})
-
-  set(HAVE_ARMNEON TRUE)
-#  set(SDL_ARM_NEON_BLITTERS 1)
-#  file(GLOB ARMNEON_SOURCES ${SDL3_SOURCE_DIR}/src/video/arm/pixman-arm-neon*.S)
-#  list(APPEND SOURCE_FILES ${ARMNEON_SOURCES})
-
-#  set_property(SOURCE ${SDL3_SOURCE_DIR}/src/video/arm/pixman-arm-simd-asm.S PROPERTY LANGUAGE C)
-#  set_property(SOURCE ${SDL3_SOURCE_DIR}/src/video/arm/pixman-arm-neon-asm.S PROPERTY LANGUAGE C)
-
   target_compile_definitions(sdl-build-options INTERFACE "__VITA__")
-
-#  CheckPTHREAD()
 
 elseif(PSP)
   file(GLOB PSP_CORE_SOURCES ${SDL3_SOURCE_DIR}/src/core/psp/*.c)
