@@ -658,10 +658,57 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_CreatePopupWindow
  * \sa SDL_CreateWindowFrom
  * \sa SDL_DestroyWindow
  */
 extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, int h, Uint32 flags);
+
+/**
+ * Create a child popup window of the specified parent window.
+ *
+ * 'flags' **must** contain exactly one of the following:
+ * - 'SDL_WINDOW_TOOLTIP': The popup window is a tooltip and will not pass any input events
+ * - 'SDL_WINDOW_POPUP_MENU': The popup window is a popup menu
+ *
+ * The following flags are not valid for popup windows and will be ignored:
+ * - 'SDL_WINDOW_MINIMIZED'
+ * - 'SDL_WINDOW_MAXIMIZED'
+ * - 'SDL_WINDOW_FULLSCREEN'
+ * - `SDL_WINDOW_BORDERLESS`
+ * - `SDL_WINDOW_MOUSE_GRABBED`
+ *
+ * The parent parameter **must** be non-null and a valid window.
+ * The parent of a popup window can be either a regular, toplevel window,
+ * or another popup window.
+ *
+ * Popup windows cannot be minimized, maximized, made fullscreen, or grab
+ * the mouse. Attempts to do so will fail.
+ *
+ * If a parent window is hidden, any child popup windows will be recursively
+ * hidden as well. Child popup windows not explicitly hidden will be restored
+ * when the parent is shown.
+ *
+ * If the parent window is destroyed, any child popup windows will be
+ * recursively destroyed as well.
+ *
+ * \param parent the parent of the window, must not be NULL
+ * \param offset_x the x position of the popup window relative to the origin
+ *                 of the parent, in screen coordinates
+ * \param offset_y the y position of the popup window relative to the origin
+ *                 of the parent window, in screen coordinates
+ * \param w the width of the window, in screen coordinates
+ * \param h the height of the window, in screen coordinates
+ * \param flags 0, or one or more SDL_WindowFlags OR'd together
+ * \returns the window that was created or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateWindow
+ * \sa SDL_DestroyWindow
+ */
+extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags);
 
 /**
  * Create an SDL window from an existing native window.

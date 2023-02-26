@@ -145,6 +145,12 @@ static VideoBootStrap *bootstrap[] = {
         return retval;                                                  \
     }                                                                   \
 
+#define CHECK_WINDOW_NOT_POPUP(window, retval)                          \
+    if (SDL_WINDOW_IS_POPUP(window)) {                                  \
+        SDL_SetError("Operation invalid on popup windows");             \
+        return retval;                                                  \
+    }
+
 #if defined(__MACOS__) && defined(SDL_VIDEO_DRIVER_COCOA)
 /* Support for macOS fullscreen spaces */
 extern SDL_bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window);
@@ -1230,6 +1236,46 @@ static SDL_DisplayID GetDisplayForRect(int x, int y, int w, int h)
     return closest;
 }
 
+void SDL_RelativeToGlobalForWindow(SDL_Window *window, int rel_x, int rel_y, int *abs_x, int *abs_y)
+{
+    SDL_Window *w;
+
+    if (SDL_WINDOW_IS_POPUP(window)) {
+        /* Calculate the total offset of the popup from the parents */
+        for (w = window->parent; w != NULL; w = w->parent) {
+            rel_x += w->x;
+            rel_y += w->y;
+        }
+    }
+
+    if (abs_x) {
+        *abs_x = rel_x;
+    }
+    if (abs_y) {
+        *abs_y = rel_y;
+    }
+}
+
+void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int *rel_x, int *rel_y)
+{
+    SDL_Window *w;
+
+    if (SDL_WINDOW_IS_POPUP(window)) {
+        /* Convert absolute window coordinates to relative for a popup */
+        for (w = window->parent; w != NULL; w = w->parent) {
+            abs_x -= w->x;
+            abs_y -= w->y;
+        }
+    }
+
+    if (rel_x) {
+        *rel_x = abs_x;
+    }
+    if (rel_y) {
+        *rel_y = abs_y;
+    }
+}
+
 SDL_DisplayID SDL_GetDisplayForPoint(const SDL_Point *point)
 {
     return GetDisplayForRect(point->x, point->y, 1, 1);
@@ -1242,6 +1288,7 @@ SDL_DisplayID SDL_GetDisplayForRect(const SDL_Rect *rect)
 
 static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
 {
+    int x, y;
     SDL_DisplayID displayID = 0;
 
     CHECK_WINDOW_MAGIC(window, 0);
@@ -1254,8 +1301,10 @@ static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
      * (for example if the window is off-screen), but other code may expect it
      * to succeed in that situation, so we fall back to a generic position-
      * based implementation in that case. */
+    SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y);
+
     if (!displayID) {
-        displayID = GetDisplayForRect(window->x, window->y, window->w, window->h);
+        displayID = GetDisplayForRect(x, y, window->w, window->h);
     }
     if (!displayID) {
         /* Use the primary display for a window if we can't find it anywhere else */
@@ -1536,6 +1585,7 @@ error:
 int SDL_SetWindowFullscreenMode(SDL_Window *window, const SDL_DisplayMode *mode)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (mode) {
         if (!SDL_GetFullscreenModeMatch(mode)) {
@@ -1561,6 +1611,7 @@ int SDL_SetWindowFullscreenMode(SDL_Window *window, const SDL_DisplayMode *mode)
 const SDL_DisplayMode *SDL_GetWindowFullscreenMode(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);
+    CHECK_WINDOW_NOT_POPUP(window, NULL);
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         return SDL_GetFullscreenModeMatch(&window->current_fullscreen_mode);
@@ -1668,12 +1719,10 @@ static int SDL_DllNotSupported(const char *name)
     return SDL_SetError("No dynamic %s support in current SDL video driver (%s)", name, _this->name);
 }
 
-SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
+SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int w, int h, SDL_Window *parent, Uint32 flags)
 {
     SDL_Window *window;
     Uint32 type_flags, graphics_flags;
-    int x = SDL_WINDOWPOS_UNDEFINED;
-    int y = SDL_WINDOWPOS_UNDEFINED;
     SDL_bool undefined_x = SDL_FALSE;
     SDL_bool undefined_y = SDL_FALSE;
 
@@ -1698,6 +1747,12 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
     type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU);
     if (type_flags & (type_flags - 1)) {
         SDL_SetError("Conflicting window type flags specified: 0x%.8x", (unsigned int)type_flags);
+        return NULL;
+    }
+
+    /* Tooltip and popup menu window must specify a parent window */
+    if (!parent && ((type_flags & SDL_WINDOW_TOOLTIP) || (type_flags & SDL_WINDOW_POPUP_MENU))) {
+        SDL_SetError("Tooltip and popup menu windows must specify a parent window");
         return NULL;
     }
 
@@ -1824,6 +1879,16 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
     }
     _this->windows = window;
 
+    if (parent) {
+        window->parent = parent;
+
+        window->next_sibling = parent->first_child;
+        if (parent->first_child) {
+            parent->first_child->prev_sibling = window;
+        }
+        parent->first_child = window;
+    }
+
     if (_this->CreateSDLWindow && _this->CreateSDLWindow(_this, window) < 0) {
         SDL_DestroyWindow(window);
         return NULL;
@@ -1864,6 +1929,33 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
     SDL_CheckWindowPixelSizeChanged(window);
 
     return window;
+}
+
+SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
+{
+    return SDL_CreateWindowInternal(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w , h, NULL, flags);
+}
+
+SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags)
+{
+    if (!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT)) {
+        SDL_Unsupported();
+        return NULL;
+    }
+
+    /* Parent must be a valid window */
+    CHECK_WINDOW_MAGIC(parent, NULL);
+
+    /* Remove invalid flags */
+    flags &= ~(SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MOUSE_GRABBED);
+
+    /* Popups must specify either the tooltip or popup menu window flags */
+    if ((flags & SDL_WINDOW_TOOLTIP) || (flags & SDL_WINDOW_POPUP_MENU)) {
+        return SDL_CreateWindowInternal(NULL, offset_x, offset_y, w, h, parent, flags);
+    }
+
+    SDL_SetError("Popup windows must specify either the 'SDL_WINDOW_TOOLTIP' or the 'SDL_WINDOW_POPUP_MENU' flag");
+    return NULL;
 }
 
 SDL_Window *SDL_CreateWindowFrom(const void *data)
@@ -2109,6 +2201,7 @@ Uint32 SDL_GetWindowFlags(SDL_Window *window)
 int SDL_SetWindowTitle(SDL_Window *window, const char *title)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (title == window->title) {
         return 0;
@@ -2329,6 +2422,7 @@ int SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
 int SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         const int want = (bordered != SDL_FALSE); /* normalize the flag. */
         const int have = !(window->flags & SDL_WINDOW_BORDERLESS);
@@ -2347,6 +2441,7 @@ int SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
 int SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         const int want = (resizable != SDL_FALSE); /* normalize the flag. */
         const int have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
@@ -2365,6 +2460,7 @@ int SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
 int SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         const int want = (on_top != SDL_FALSE); /* normalize the flag. */
         const int have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
@@ -2583,9 +2679,16 @@ int SDL_GetWindowMaximumSize(SDL_Window *window, int *max_w, int *max_h)
 
 int SDL_ShowWindow(SDL_Window *window)
 {
+    SDL_Window *child;
     CHECK_WINDOW_MAGIC(window, -1);
 
     if (!(window->flags & SDL_WINDOW_HIDDEN)) {
+        return 0;
+    }
+
+    /* If the parent is hidden, set the flag to restore this when the parent is shown */
+    if (window->parent && (window->parent->flags & SDL_WINDOW_HIDDEN)) {
+        window->restore_on_show = SDL_TRUE;
         return 0;
     }
 
@@ -2593,15 +2696,35 @@ int SDL_ShowWindow(SDL_Window *window)
         _this->ShowWindow(_this, window);
     }
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+
+    /* Restore child windows */
+    for (child = window->first_child; child != NULL; child = child->next_sibling) {
+        if (!child->restore_on_show && (child->flags & SDL_WINDOW_HIDDEN)) {
+            break;
+        }
+        SDL_ShowWindow(child);
+        child->restore_on_show = SDL_FALSE;
+    }
     return 0;
 }
 
 int SDL_HideWindow(SDL_Window *window)
 {
+    SDL_Window *child;
     CHECK_WINDOW_MAGIC(window, -1);
 
     if (window->flags & SDL_WINDOW_HIDDEN) {
+        window->restore_on_show = SDL_FALSE;
         return 0;
+    }
+
+    /* Hide all child windows */
+    for (child = window->first_child; child != NULL; child = child->next_sibling) {
+        if (child->flags & SDL_WINDOW_HIDDEN) {
+            break;
+        }
+        SDL_HideWindow(child);
+        child->restore_on_show = SDL_TRUE;
     }
 
     window->is_hiding = SDL_TRUE;
@@ -2629,6 +2752,7 @@ int SDL_RaiseWindow(SDL_Window *window)
 int SDL_MaximizeWindow(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (window->flags & SDL_WINDOW_MAXIMIZED) {
         return 0;
@@ -2644,7 +2768,7 @@ int SDL_MaximizeWindow(SDL_Window *window)
 
 static SDL_bool SDL_CanMinimizeWindow(SDL_Window *window)
 {
-    if (!_this->MinimizeWindow) {
+    if (!_this->MinimizeWindow || SDL_WINDOW_IS_POPUP(window)) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
@@ -2653,6 +2777,7 @@ static SDL_bool SDL_CanMinimizeWindow(SDL_Window *window)
 int SDL_MinimizeWindow(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (window->flags & SDL_WINDOW_MINIMIZED) {
         return 0;
@@ -2675,6 +2800,7 @@ int SDL_MinimizeWindow(SDL_Window *window)
 int SDL_RestoreWindow(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (!(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
         return 0;
@@ -2692,6 +2818,7 @@ int SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
     Uint32 flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
 
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (flags == (window->flags & SDL_WINDOW_FULLSCREEN)) {
         return 0;
@@ -2952,6 +3079,7 @@ void SDL_UpdateWindowGrab(SDL_Window *window)
 int SDL_SetWindowGrab(SDL_Window *window, SDL_bool grabbed)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     SDL_SetWindowMouseGrab(window, grabbed);
 
@@ -3235,6 +3363,23 @@ void SDL_DestroyWindow(SDL_Window *window)
     CHECK_WINDOW_MAGIC(window,);
 
     window->is_destroying = SDL_TRUE;
+
+    /* Destroy any child windows of this window */
+    while (window->first_child) {
+        SDL_DestroyWindow(window->first_child);
+    }
+
+    /* If this is a child window, unlink it from its siblings */
+    if (window->parent) {
+        if (window->next_sibling) {
+            window->next_sibling->prev_sibling = window->prev_sibling;
+        }
+        if (window->prev_sibling) {
+            window->prev_sibling->next_sibling = window->next_sibling;
+        } else {
+            window->parent->first_child = window->next_sibling;
+        }
+    }
 
     /* Restore video mode, etc. */
     SDL_UpdateFullscreenMode(window, SDL_FALSE);
