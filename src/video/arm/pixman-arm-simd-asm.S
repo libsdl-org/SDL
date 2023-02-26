@@ -84,7 +84,7 @@
 .endm
 
 generate_composite_function \
-    FillRect32ARMSIMDAsm, 0, 0, 32, \
+    FillSurfaceRect32ARMSIMDAsm, 0, 0, 32, \
     FLAG_DST_WRITEONLY | FLAG_COND_EXEC | FLAG_PROCESS_PRESERVES_PSR | FLAG_PROCESS_DOES_STORE | FLAG_PROCESS_PRESERVES_SCRATCH \
     0, /* prefetch distance doesn't apply */ \
     FillRect32_init \
@@ -94,7 +94,7 @@ generate_composite_function \
     FillRect_process_tail
 
 generate_composite_function \
-    FillRect16ARMSIMDAsm, 0, 0, 16, \
+    FillSurfaceRect16ARMSIMDAsm, 0, 0, 16, \
     FLAG_DST_WRITEONLY | FLAG_COND_EXEC | FLAG_PROCESS_PRESERVES_PSR | FLAG_PROCESS_DOES_STORE | FLAG_PROCESS_PRESERVES_SCRATCH \
     0, /* prefetch distance doesn't apply */ \
     FillRect16_init \
@@ -104,7 +104,7 @@ generate_composite_function \
     FillRect_process_tail
 
 generate_composite_function \
-    FillRect8ARMSIMDAsm, 0, 0, 8, \
+    FillSurfaceRect8ARMSIMDAsm, 0, 0, 8, \
     FLAG_DST_WRITEONLY | FLAG_COND_EXEC | FLAG_PROCESS_PRESERVES_PSR | FLAG_PROCESS_DOES_STORE | FLAG_PROCESS_PRESERVES_SCRATCH \
     0, /* prefetch distance doesn't apply */ \
     FillRect8_init \
