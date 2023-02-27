@@ -2549,7 +2549,9 @@ int SDL_HideWindow(SDL_Window *window)
     }
 
     window->is_hiding = SDL_TRUE;
-    SDL_UpdateFullscreenMode(window, SDL_FALSE);
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        SDL_UpdateFullscreenMode(window, SDL_FALSE);
+    }
 
     if (_this->HideWindow) {
         _this->HideWindow(_this, window);
