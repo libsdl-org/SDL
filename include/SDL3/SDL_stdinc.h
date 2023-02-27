@@ -538,10 +538,12 @@ extern DECLSPEC int SDLCALL SDL_wcscasecmp(const wchar_t *str1, const wchar_t *s
 extern DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t len);
 
 extern DECLSPEC size_t SDLCALL SDL_strlen(const char *str);
+extern DECLSPEC size_t SDLCALL SDL_strnlen(const char *str, size_t maxlen);
 extern DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
 extern DECLSPEC size_t SDLCALL SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_bytes);
 extern DECLSPEC size_t SDLCALL SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
 extern DECLSPEC SDL_MALLOC char *SDLCALL SDL_strdup(const char *str);
+extern DECLSPEC SDL_MALLOC char *SDLCALL SDL_strndup(const char *str, size_t n);
 extern DECLSPEC char *SDLCALL SDL_strrev(char *str);
 extern DECLSPEC char *SDLCALL SDL_strupr(char *str);
 extern DECLSPEC char *SDLCALL SDL_strlwr(char *str);

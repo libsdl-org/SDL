@@ -865,3 +865,5 @@
 #define SDL_SetRenderScale SDL_SetRenderScale_REAL
 #define SDL_GetRenderScale SDL_GetRenderScale_REAL
 #define SDL_GetRenderWindowSize SDL_GetRenderWindowSize_REAL
+#define SDL_strnlen SDL_strnlen_REAL
+#define SDL_strndup SDL_strndup_REAL

@@ -910,3 +910,5 @@ SDL_DYNAPI_PROC(int,SDL_ConvertEventToRenderCoordinates,(SDL_Renderer *a, SDL_Ev
 SDL_DYNAPI_PROC(int,SDL_SetRenderScale,(SDL_Renderer *a, float b, float c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderScale,(SDL_Renderer *a, float *b, float *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderWindowSize,(SDL_Renderer *a, int *b, int *c),(a,b,c),return)
+SDL_DYNAPI_PROC(size_t,SDL_strnlen,(const char *a, size_t b),(a,b),return)
+SDL_DYNAPI_PROC(char*,SDL_strndup,(const char *a, size_t b),(a,b),return)
