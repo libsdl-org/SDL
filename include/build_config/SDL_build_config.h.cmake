@@ -591,5 +591,6 @@ typedef unsigned int uintptr_t;
 #cmakedefine SDL_DISABLE_SSE2 1
 #cmakedefine SDL_DISABLE_SSE3 1
 #cmakedefine SDL_DISABLE_AVX 1
+#cmakedefine SDL_DISABLE_MMX 1
 
 #endif /* SDL_build_config_h_ */
