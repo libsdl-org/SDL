@@ -973,7 +973,7 @@ if(SDL_LIBC)
     foreach(_FN
             malloc calloc realloc free bsearch qsort abs memset memcpy memmove memcmp
             wcslen _wcsdup wcsdup wcsstr wcscmp wcsncmp _wcsicmp _wcsnicmp
-            strlen strnlen strdup strndup _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
+            strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf
             acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf
@@ -1025,7 +1025,7 @@ if(SDL_LIBC)
                              int main(void) { return 0; }" HAVE_MPROTECT)
     foreach(_FN
             strtod malloc calloc realloc free getenv setenv putenv unsetenv
-            bsearch qsort abs bcopy memset memcpy memmove memcmp strlen strnlen strdup strndup strlcpy strlcat
+            bsearch qsort abs bcopy memset memcpy memmove memcmp strlen strnlen strlcpy strlcat
             _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r
             itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp strcasestr

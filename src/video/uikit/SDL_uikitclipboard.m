@@ -27,7 +27,7 @@
 
 #import <UIKit/UIPasteboard.h>
 
-int UIKit_SetClipboardText(_THIS, const char *text)
+int UIKit_SetClipboardText(_THIS, const char *text, size_t len, SDL_bool is_string)
 {
 #if TARGET_OS_TV
     return SDL_SetError("The clipboard is not available on tvOS");

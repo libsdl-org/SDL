@@ -324,7 +324,7 @@ struct SDL_VideoDevice
     SDL_bool (*IsScreenKeyboardShown)(_THIS, SDL_Window *window);
 
     /* Clipboard */
-    int (*SetClipboardText)(_THIS, const char *text);
+    int (*SetClipboardText)(_THIS, const char *text, size_t len, SDL_bool is_string);
     char *(*GetClipboardText)(_THIS);
     SDL_bool (*HasClipboardText)(_THIS);
     int (*SetPrimarySelectionText)(_THIS, const char *text);
@@ -356,6 +356,7 @@ struct SDL_VideoDevice
     SDL_WindowID next_object_id;
     char *clipboard_text;
     char *primary_selection_text;
+    SDL_bool clipboard_accepts_buffer;
     SDL_bool setting_display_mode;
     Uint32 quirk_flags;
 

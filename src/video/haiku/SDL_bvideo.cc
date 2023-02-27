@@ -116,6 +116,7 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     device->StopTextInput = HAIKU_StopTextInput;
     device->SetTextInputRect = HAIKU_SetTextInputRect;
 
+    device->clipboard_accepts_buffer = SDL_TRUE;
     device->SetClipboardText = HAIKU_SetClipboardText;
     device->GetClipboardText = HAIKU_GetClipboardText;
     device->HasClipboardText = HAIKU_HasClipboardText;

@@ -118,7 +118,6 @@ int clipboard_testSetClipboardTextBuffer(void *arg)
     SDL_free(textRef);
     SDL_free(text);
 
-
     return TEST_COMPLETED;
 }
 
@@ -255,7 +254,6 @@ int clipboard_testPrimarySelectionTextFunctions(void *arg)
     char *text = SDL_strdup(textRef);
     SDL_bool boolResult;
     int intResult;
-    int lenLimit;
     char *charResult;
 
     /* Clear primary selection text state */

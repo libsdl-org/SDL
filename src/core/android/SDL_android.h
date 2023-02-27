@@ -70,7 +70,7 @@ int Android_JNI_FileClose(SDL_RWops *ctx);
 void Android_JNI_GetManifestEnvironmentVariables(void);
 
 /* Clipboard support */
-int Android_JNI_SetClipboardText(const char *text);
+int Android_JNI_SetClipboardText(const char *text, size_t len, SDL_bool is_string);
 char *Android_JNI_GetClipboardText(void);
 SDL_bool Android_JNI_HasClipboardText(void);
 

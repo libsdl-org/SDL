@@ -171,6 +171,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->StopTextInput = Cocoa_StopTextInput;
         device->SetTextInputRect = Cocoa_SetTextInputRect;
 
+        device->clipboard_accepts_buffer = SDL_FALSE;
         device->SetClipboardText = Cocoa_SetClipboardText;
         device->GetClipboardText = Cocoa_GetClipboardText;
         device->HasClipboardText = Cocoa_HasClipboardText;

@@ -113,7 +113,7 @@ Atom X11_GetSDLCutBufferClipboardInternalFormat(Display *display, enum ESDLX11Cl
     }
 }
 
-static int SetSelectionText(_THIS, const char *text, Atom selection_type)
+static int SetSelectionText(_THIS, const char *text, size_t len, Atom selection_type)
 {
     Display *display = _this->driverdata->display;
     Window window;
@@ -128,7 +128,7 @@ static int SetSelectionText(_THIS, const char *text, Atom selection_type)
     X11_XChangeProperty(display, DefaultRootWindow(display),
                         X11_GetSDLCutBufferClipboardType(display, SDL_X11_CLIPBOARD_MIME_TYPE_STRING, selection_type),
                         X11_GetSDLCutBufferClipboardInternalFormat(display, SDL_X11_CLIPBOARD_MIME_TYPE_STRING), 8, PropModeReplace,
-                        (const unsigned char *)text, SDL_strlen(text));
+                        (const unsigned char *)text, len);
 
     if (X11_XGetSelectionOwner(display, selection_type) != window) {
         X11_XSetSelectionOwner(display, selection_type, window, CurrentTime);
@@ -137,7 +137,7 @@ static int SetSelectionText(_THIS, const char *text, Atom selection_type)
     return 0;
 }
 
-static char *GetSlectionText(_THIS, Atom selection_type)
+static char *GetSelectionText(_THIS, Atom selection_type)
 {
     SDL_VideoData *videodata = _this->driverdata;
     Display *display = videodata->display;
@@ -189,7 +189,7 @@ static char *GetSlectionText(_THIS, Atom selection_type)
                 SDL_SetError("Selection timeout");
                 /* We need to set the selection text so that next time we won't
                    timeout, otherwise we will hang on every call to this function. */
-                SetSelectionText(_this, "", selection_type);
+                SetSelectionText(_this, "", 0, selection_type);
                 return SDL_strdup("");
             }
         }
@@ -214,19 +214,19 @@ static char *GetSlectionText(_THIS, Atom selection_type)
     return text;
 }
 
-int X11_SetClipboardText(_THIS, const char *text)
+int X11_SetClipboardText(_THIS, const char *text, size_t len, SDL_bool is_string SDL_UNUSED)
 {
     SDL_VideoData *videodata = _this->driverdata;
     Atom XA_CLIPBOARD = X11_XInternAtom(videodata->display, "CLIPBOARD", 0);
     if (XA_CLIPBOARD == None) {
         return SDL_SetError("Couldn't access X clipboard");
     }
-    return SetSelectionText(_this, text, XA_CLIPBOARD);
+    return SetSelectionText(_this, text, len, XA_CLIPBOARD);
 }
 
 int X11_SetPrimarySelectionText(_THIS, const char *text)
 {
-    return SetSelectionText(_this, text, XA_PRIMARY);
+    return SetSelectionText(_this, text, SDL_strlen(text), XA_PRIMARY);
 }
 
 char *
@@ -238,13 +238,13 @@ X11_GetClipboardText(_THIS)
         SDL_SetError("Couldn't access X clipboard");
         return SDL_strdup("");
     }
-    return GetSlectionText(_this, XA_CLIPBOARD);
+    return GetSelectionText(_this, XA_CLIPBOARD);
 }
 
 char *
 X11_GetPrimarySelectionText(_THIS)
 {
-    return GetSlectionText(_this, XA_PRIMARY);
+    return GetSelectionText(_this, XA_PRIMARY);
 }
 
 SDL_bool

@@ -26,7 +26,7 @@
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandclipboard.h"
 
-int Wayland_SetClipboardText(_THIS, const char *text)
+int Wayland_SetClipboardText(_THIS, const char *text, size_t len, SDL_bool is_string SDL_UNUSED)
 {
     SDL_VideoData *video_data = NULL;
     SDL_WaylandDataDevice *data_device = NULL;
@@ -39,10 +39,9 @@ int Wayland_SetClipboardText(_THIS, const char *text)
         video_data = _this->driverdata;
         if (video_data->input != NULL && video_data->input->data_device != NULL) {
             data_device = video_data->input->data_device;
-            if (text[0] != '\0') {
+            if (len) {
                 SDL_WaylandDataSource *source = Wayland_data_source_create(_this);
-                Wayland_data_source_add_data(source, TEXT_MIME, text,
-                                             SDL_strlen(text));
+                Wayland_data_source_add_data(source, TEXT_MIME, text, len);
 
                 status = Wayland_data_device_set_selection(data_device, source);
                 if (status != 0) {

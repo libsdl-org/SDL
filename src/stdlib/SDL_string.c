@@ -658,24 +658,17 @@ SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
 char *
 SDL_strdup(const char *string)
 {
-#if defined(HAVE_STRDUP)
-    return strdup(string);
-#else
     size_t len = SDL_strlen(string) + 1;
     char *newstr = (char *)SDL_malloc(len);
     if (newstr) {
         SDL_memcpy(newstr, string, len);
     }
     return newstr;
-#endif /* HAVE_STRDUP */
 }
 
 char *
 SDL_strndup(const char *string, size_t n)
 {
-#if defined(HAVE_STRNDUP)
-    return strndup(string);
-#else
     size_t len = SDL_strnlen(string, n);
     char *newstr = (char *)SDL_malloc(len + 1);
     if (newstr) {
@@ -683,7 +676,6 @@ SDL_strndup(const char *string, size_t n)
         newstr[len] = 0;
     }
     return newstr;
-#endif /* HAVE_STRNDUP */
 }
 
 char *

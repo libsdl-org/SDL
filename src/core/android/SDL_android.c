@@ -1944,12 +1944,34 @@ int Android_JNI_FileClose(SDL_RWops *ctx)
     return 0;
 }
 
-int Android_JNI_SetClipboardText(const char *text)
+int Android_JNI_SetClipboardText(const char *text, size_t len, SDL_bool is_string)
 {
+    jstring string;
+    jarray bytes;
+    jclass clazz;
+    jmethodID mid;
     JNIEnv *env = Android_JNI_GetEnv();
-    jstring string = (*env)->NewStringUTF(env, text);
+
+    if (is_string) {
+        string = (*env)->NewStringUTF(env, text);
+    } else {
+        if (len > SDL_MAX_SINT32) {
+            return SDL_SetError("Clipboard input too large");
+        }
+        bytes = (*env)->NewByteArray(env, len);
+        if (bytes == NULL) {
+            return SDL_Error(SDL_ENOMEM);
+        }
+        (*env)->SetByteArrayRegion(env, bytes, 0, len, (jbyte*)text);
+        clazz = (*env)->FindClass(env, "java/lang/String");
+        mid = (*env)->GetMethodID(env, clazz, "<init>", "(Ljava/lang/String;)V");
+        string = (*env)->NewObject(env, clazz, mid, bytes);
+        (*env)->DeleteLocalRef(env, bytes);
+    }
+
     (*env)->CallStaticVoidMethod(env, mActivityClass, midClipboardSetText, string);
     (*env)->DeleteLocalRef(env, string);
+
     return 0;
 }
 

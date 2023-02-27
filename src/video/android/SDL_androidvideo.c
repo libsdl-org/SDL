@@ -152,6 +152,7 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->IsScreenKeyboardShown = Android_IsScreenKeyboardShown;
 
     /* Clipboard */
+    device->clipboard_accepts_buffer = SDL_TRUE;
     device->SetClipboardText = Android_SetClipboardText;
     device->GetClipboardText = Android_GetClipboardText;
     device->HasClipboardText = Android_HasClipboardText;

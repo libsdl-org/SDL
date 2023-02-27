@@ -103,6 +103,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->SetTextInputRect = UIKit_SetTextInputRect;
 #endif
 
+        device->clipboard_accepts_buffer = SDL_FALSE;
         device->SetClipboardText = UIKit_SetClipboardText;
         device->GetClipboardText = UIKit_GetClipboardText;
         device->HasClipboardText = UIKit_HasClipboardText;

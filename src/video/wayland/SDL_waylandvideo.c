@@ -249,6 +249,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->FlashWindow = Wayland_FlashWindow;
     device->HasScreenKeyboardSupport = Wayland_HasScreenKeyboardSupport;
 
+    device->clipboard_accepts_buffer = SDL_TRUE;
     device->SetClipboardText = Wayland_SetClipboardText;
     device->GetClipboardText = Wayland_GetClipboardText;
     device->HasClipboardText = Wayland_HasClipboardText;

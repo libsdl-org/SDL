@@ -25,6 +25,9 @@
 int SDL_SetClipboardText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_bool is_string = SDL_TRUE;
+    size_t text_len = 0;
+    int retval = 0;
 
     if (_this == NULL) {
         return SDL_SetError("Video subsystem must be initialized to set clipboard text");
@@ -32,19 +35,70 @@ int SDL_SetClipboardText(const char *text)
 
     if (text == NULL) {
         text = "";
+    } else {
+        text_len = SDL_strlen(text);
     }
+
     if (_this->SetClipboardText) {
-        return _this->SetClipboardText(_this, text);
+        retval = _this->SetClipboardText(_this, text, text_len, is_string);
     } else {
         SDL_free(_this->clipboard_text);
         _this->clipboard_text = SDL_strdup(text);
-        return 0;
+        if (!_this->clipboard_text) {
+            return SDL_Error(SDL_ENOMEM);
+        }
     }
+    return retval;
+}
+
+int SDL_SetClipboardTextBuffer(const char *text, size_t len)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_bool is_string;
+    size_t text_len;
+    int retval = 0;
+
+    if (_this == NULL) {
+        return SDL_SetError("Video subsystem must be initialized to set clipboard text");
+    }
+
+    if (text == NULL) {
+        text = "";
+        text_len = 0;
+        is_string = SDL_TRUE;
+    } else {
+        /* This ensures no embedded nuls */
+        text_len = SDL_strnlen(text, len);
+        is_string = (text_len < len);
+    }
+
+    /* Backends can rely on text_len being correct, and is_string being TRUE iff text is a string (zero-terminated) */
+    if (_this->SetClipboardText) {
+        if (_this->clipboard_accepts_buffer) {
+             retval = _this->SetClipboardText(_this, text, text_len, is_string);
+        } else {
+            char *duped_text = SDL_strndup(text, text_len);
+            if (duped_text) {
+                retval = _this->SetClipboardText(_this, duped_text, text_len, SDL_TRUE);
+                SDL_free(duped_text);
+            } else {
+                return SDL_Error(SDL_ENOMEM);
+            }
+        }
+    } else {
+        SDL_free(_this->clipboard_text);
+        _this->clipboard_text = SDL_strndup(text, text_len);
+        if (!_this->clipboard_text) {
+            return SDL_Error(SDL_ENOMEM);
+        }
+    }
+    return retval;
 }
 
 int SDL_SetPrimarySelectionText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    int retval = 0;
 
     if (_this == NULL) {
         return SDL_SetError("Video subsystem must be initialized to set primary selection text");
@@ -54,12 +108,15 @@ int SDL_SetPrimarySelectionText(const char *text)
         text = "";
     }
     if (_this->SetPrimarySelectionText) {
-        return _this->SetPrimarySelectionText(_this, text);
+        retval = _this->SetPrimarySelectionText(_this, text);
     } else {
         SDL_free(_this->primary_selection_text);
         _this->primary_selection_text = SDL_strdup(text);
-        return 0;
+        if (!_this->primary_selection_text) {
+            return SDL_Error(SDL_ENOMEM);
+        }
     }
+    return retval;
 }
 
 char *

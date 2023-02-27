@@ -26,7 +26,7 @@
 /* Forward declaration */
 @class SDL_CocoaVideoData;
 
-extern int Cocoa_SetClipboardText(_THIS, const char *text);
+extern int Cocoa_SetClipboardText(_THIS, const char *text, size_t len, SDL_bool is_string);
 extern char *Cocoa_GetClipboardText(_THIS);
 extern SDL_bool Cocoa_HasClipboardText(_THIS);
 extern void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data);

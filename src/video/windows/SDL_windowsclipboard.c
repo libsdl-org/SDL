@@ -44,7 +44,7 @@ static HWND GetWindowHandle(_THIS)
     return NULL;
 }
 
-int WIN_SetClipboardText(_THIS, const char *text)
+int WIN_SetClipboardText(_THIS, const char *text, size_t len, SDL_bool is_string SDL_UNUSED)
 {
     SDL_VideoData *data = _this->driverdata;
     int result = 0;

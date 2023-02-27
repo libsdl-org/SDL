@@ -23,7 +23,7 @@
 #ifndef SDL_androidclipboard_h_
 #define SDL_androidclipboard_h_
 
-extern int Android_SetClipboardText(_THIS, const char *text);
+extern int Android_SetClipboardText(_THIS, const char *text, size_t len, SDL_bool is_string);
 extern char *Android_GetClipboardText(_THIS);
 extern SDL_bool Android_HasClipboardText(_THIS);
 

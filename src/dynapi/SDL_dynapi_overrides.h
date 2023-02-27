@@ -867,3 +867,4 @@
 #define SDL_GetRenderWindowSize SDL_GetRenderWindowSize_REAL
 #define SDL_strnlen SDL_strnlen_REAL
 #define SDL_strndup SDL_strndup_REAL
+#define SDL_SetClipboardTextBuffer SDL_SetClipboardTextBuffer_REAL

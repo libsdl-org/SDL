@@ -24,7 +24,7 @@
 #ifndef SDL_BCLIPBOARD_H
 #define SDL_BCLIPBOARD_H
 
-extern int HAIKU_SetClipboardText(_THIS, const char *text);
+extern int HAIKU_SetClipboardText(_THIS, const char *text, size_t len, SDL_bool is_string);
 extern char *HAIKU_GetClipboardText(_THIS);
 extern SDL_bool HAIKU_HasClipboardText(_THIS);
 

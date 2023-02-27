@@ -26,7 +26,7 @@
 /* Forward declaration */
 struct SDL_VideoData;
 
-extern int WIN_SetClipboardText(_THIS, const char *text);
+extern int WIN_SetClipboardText(_THIS, const char *text, size_t len, SDL_bool is_string);
 extern char *WIN_GetClipboardText(_THIS);
 extern SDL_bool WIN_HasClipboardText(_THIS);
 extern void WIN_CheckClipboardUpdate(struct SDL_VideoData *data);

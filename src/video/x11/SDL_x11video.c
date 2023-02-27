@@ -293,6 +293,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 #endif
 #endif
 
+    device->clipboard_accepts_buffer = SDL_TRUE;
     device->SetClipboardText = X11_SetClipboardText;
     device->GetClipboardText = X11_GetClipboardText;
     device->HasClipboardText = X11_HasClipboardText;

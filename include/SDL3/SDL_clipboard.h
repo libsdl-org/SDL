@@ -47,10 +47,27 @@ extern "C" {
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_SetClipboardTextBuffer
  * \sa SDL_GetClipboardText
  * \sa SDL_HasClipboardText
  */
 extern DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
+
+/**
+ * Put UTF-8 text from a buffer into the clipboard.
+ *
+ * \param text the text to store in the clipboard
+ * \param len the number of octets in the buffer
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetClipboardText
+ * \sa SDL_GetClipboardText
+ * \sa SDL_HasClipboardText
+ */
+extern DECLSPEC int SDLCALL SDL_SetClipboardTextBuffer(const char *text, size_t len);
 
 /**
  * Get UTF-8 text from the clipboard, which must be freed with SDL_free().
