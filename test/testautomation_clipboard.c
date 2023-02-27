@@ -94,6 +94,35 @@ int clipboard_testSetClipboardText(void *arg)
 }
 
 /**
+ * \brief Check call to SDL_SetClipboardTextBuffer
+ * \sa SDL_SetClipboardTextBuffer
+ */
+int clipboard_testSetClipboardTextBuffer(void *arg)
+{
+    char *textRef = SDLTest_RandomAsciiString();
+    char *text = SDL_strdup(textRef);
+    int lenLimit = 8;
+    int result;
+    result = SDL_SetClipboardTextBuffer((const char *)text, lenLimit);
+    SDLTest_AssertPass("Call to SDL_SetClipboardTextBuffer succeeded");
+    SDLTest_AssertCheck(
+        result == 0,
+        "Validate SDL_SetClipboardTextBuffer result, expected 0, got %i",
+        result);
+    SDLTest_AssertCheck(
+        SDL_strcmp(textRef, text) == 0,
+        "Verify SDL_SetClipboardTextBuffer did not modify input string, expected '%s', got '%s'",
+        textRef, text);
+
+    /* Cleanup */
+    SDL_free(textRef);
+    SDL_free(text);
+
+
+    return TEST_COMPLETED;
+}
+
+/**
  * \brief Check call to SDL_SetPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
  */
@@ -125,6 +154,7 @@ int clipboard_testSetPrimarySelectionText(void *arg)
  * \sa SDL_HasClipboardText
  * \sa SDL_GetClipboardText
  * \sa SDL_SetClipboardText
+ * \sa SDL_SetClipboardTextBuffer
  */
 int clipboard_testClipboardTextFunctions(void *arg)
 {
@@ -132,6 +162,7 @@ int clipboard_testClipboardTextFunctions(void *arg)
     char *text = SDL_strdup(textRef);
     SDL_bool boolResult;
     int intResult;
+    int lenLimit;
     char *charResult;
 
     /* Clear clipboard text state */
@@ -189,6 +220,21 @@ int clipboard_testClipboardTextFunctions(void *arg)
         "Verify SDL_GetClipboardText returned correct string, expected '%s', got '%s'",
         textRef, charResult);
 
+    /* Verify adding part of buffer to clipboard */
+    lenLimit = 8;
+    intResult = SDL_SetClipboardTextBuffer((const char *)text, lenLimit);
+    SDLTest_AssertPass("Call to SDL_SetClipboardTextBuffer with length succeeded");
+    charResult = SDL_GetClipboardText();
+    SDLTest_AssertPass("Call to SDL_GetClipboardText succeeded");
+    SDLTest_AssertCheck(
+        SDL_strlen(charResult) == lenLimit,
+        "Verify clipboard string length, expected '%i', got '%i'",
+        lenLimit, (int)SDL_strlen(charResult));
+    SDLTest_AssertCheck(
+        SDL_strncmp(textRef, charResult, lenLimit) == 0,
+        "Verify SDL_GetClipboardText returned correct string, expected '%.*s', got '%s'",
+        lenLimit, textRef, charResult);
+
     /* Cleanup */
     SDL_free(textRef);
     SDL_free(text);
@@ -209,6 +255,7 @@ int clipboard_testPrimarySelectionTextFunctions(void *arg)
     char *text = SDL_strdup(textRef);
     SDL_bool boolResult;
     int intResult;
+    int lenLimit;
     char *charResult;
 
     /* Clear primary selection text state */
@@ -298,20 +345,24 @@ static const SDLTest_TestCaseReference clipboardTest5 = {
 };
 
 static const SDLTest_TestCaseReference clipboardTest6 = {
-    (SDLTest_TestCaseFp)clipboard_testSetPrimarySelectionText, "clipboard_testSetPrimarySelectionText", "Check call to SDL_SetPrimarySelectionText", TEST_ENABLED
+    (SDLTest_TestCaseFp)clipboard_testSetClipboardTextBuffer, "clipboard_testSetClipboardTextBuffer", "Check call to SDL_SetClipboardTextBuffer", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference clipboardTest7 = {
-    (SDLTest_TestCaseFp)clipboard_testClipboardTextFunctions, "clipboard_testClipboardTextFunctions", "End-to-end test of SDL_xyzClipboardText functions", TEST_ENABLED
+    (SDLTest_TestCaseFp)clipboard_testSetPrimarySelectionText, "clipboard_testSetPrimarySelectionText", "Check call to SDL_SetPrimarySelectionText", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference clipboardTest8 = {
+    (SDLTest_TestCaseFp)clipboard_testClipboardTextFunctions, "clipboard_testClipboardTextFunctions", "End-to-end test of SDL_xyzClipboardText functions", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference clipboardTest9 = {
     (SDLTest_TestCaseFp)clipboard_testPrimarySelectionTextFunctions, "clipboard_testPrimarySelectionTextFunctions", "End-to-end test of SDL_xyzPrimarySelectionText functions", TEST_ENABLED
 };
 
 /* Sequence of Clipboard test cases */
 static const SDLTest_TestCaseReference *clipboardTests[] = {
-    &clipboardTest1, &clipboardTest2, &clipboardTest3, &clipboardTest4, &clipboardTest5, &clipboardTest6, &clipboardTest7, &clipboardTest8, NULL
+    &clipboardTest1, &clipboardTest2, &clipboardTest3, &clipboardTest4, &clipboardTest5, &clipboardTest6, &clipboardTest7, &clipboardTest8, &clipboardTest9, NULL
 };
 
 /* Clipboard test suite (global) */
