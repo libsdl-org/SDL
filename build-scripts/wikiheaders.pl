@@ -260,12 +260,30 @@ sub wikify_chunk {
             $str .= "<syntaxhighlight lang='$codelang'>$code<\/syntaxhighlight>";
         }
     } elsif ($wikitype eq 'md') {
-        # Convert obvious API things to wikilinks. You can't make links
-        # inside code blocks, but you _can_ make sure that single identifiers
-        # wrapped in backticks encode correctly.
-        if (defined $apiprefixregex) {
-            $str =~ s/(?<LEFT>\b|\`?)(?<SYM>$apiprefixregex[a-zA-Z0-9_]+)(?<RIGHT>\`?)/[$+{"LEFT"}$+{"SYM"}$+{"RIGHT"}]($+{"SYM"})/gms;
+        # convert `code` things first, so they aren't mistaken for other markdown items.
+        my $codedstr = '';
+        while ($str =~ s/\A(.*?)(\`.*?\`)//ms) {
+            my $codeblock = $2;
+            $codedstr .= wikify_chunk($wikitype, $1, undef, undef);
+            if (defined $apiprefixregex) {
+                # Convert obvious API things to wikilinks, even inside `code` blocks,
+                # BUT ONLY IF the entire code block is the API thing,
+                # So something like "just call `SDL_Whatever`" will become
+                # "just call [`SDL_Whatever`](SDL_Whatever)", but
+                # "just call `SDL_Whatever(7)`" will not. It's just the safest
+                # way to do this without resorting to wrapping things in html <code> tags.
+                $codeblock =~ s/\A\`($apiprefixregex[a-zA-Z0-9_]+)\`\Z/[`$1`]($1)/gms;
+            }
+            $codedstr .= $codeblock;
         }
+
+        # Convert obvious API things to wikilinks.
+        if (defined $apiprefixregex) {
+            $str =~ s/\b($apiprefixregex[a-zA-Z0-9_]+)/[$1]($1)/gms;
+        }
+
+        $str = $codedstr . $str;
+
         if (defined $code) {
             $str .= "```$codelang$code```";
         }
@@ -335,7 +353,7 @@ sub dewikify_chunk {
         } elsif ($wikitype eq 'md') {
             # Dump obvious wikilinks. The rest can just passthrough.
             if (defined $apiprefixregex) {
-                $str =~ s/\[(?<LEFT>\`?)(?<SYM>$apiprefixregex[a-zA-Z0-9_]+)(?<RIGHT>\`?)\]\(($apiprefixregex[a-zA-Z0-9_]+)\)/$+{"LEFT"}$+{"SYM"}$+{"RIGHT"}/gms;
+                $str =~ s/\[(\`?$apiprefixregex[a-zA-Z0-9_]+\`?)\]\($apiprefixregex[a-zA-Z0-9_]+\)/$1/gms;
             }
         }
 
@@ -370,7 +388,7 @@ sub dewikify_chunk {
         } elsif ($wikitype eq 'md') {
             # Dump obvious wikilinks.
             if (defined $apiprefixregex) {
-                $str =~ s/\[(?<LEFT>\`?)(?<SYM>$apiprefixregex[a-zA-Z0-9_]+)(?<RIGHT>\`?)\]\(($apiprefixregex[a-zA-Z0-9_]+)\)/\n.BR $+{"SYM"}\n/gms;
+                $str =~ s/\[(\`?$apiprefixregex[a-zA-Z0-9_]+\`?)\]\($apiprefixregex[a-zA-Z0-9_]+\)/\n.BR $1\n/gms;
             }
 
             # links
