@@ -94,4 +94,4 @@ The wiki documentation for API functions is synchronised from the headers' doxyg
 
 ### Editing the wiki
 
-Other changes to the wiki should done directly from https://wiki.libsdl.org/
+Other changes to the wiki should done directly from https://wiki.libsdl.org/  ... Just click the "edit" link at the bottom of any page!
