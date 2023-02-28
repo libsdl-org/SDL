@@ -138,6 +138,56 @@ void HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size)
     SDL_free(buffer);
 }
 
+SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
+{
+    switch (vendor) {
+    case USB_VENDOR_DRAGONRISE:
+        return SDL_TRUE;
+    case USB_VENDOR_HORI:
+        return SDL_TRUE;
+    case USB_VENDOR_LOGITECH:
+        /* Most Logitech devices are fine with this, but the F310 will lock up */
+        if (product == USB_PRODUCT_LOGITECH_F310) {
+            return SDL_FALSE;
+        }
+        return SDL_TRUE;
+    case USB_VENDOR_MADCATZ:
+        return SDL_TRUE;
+    case USB_VENDOR_NACON:
+        return SDL_TRUE;
+    case USB_VENDOR_PDP:
+        return SDL_TRUE;
+    case USB_VENDOR_POWERA:
+        return SDL_TRUE;
+    case USB_VENDOR_POWERA_ALT:
+        return SDL_TRUE;
+    case USB_VENDOR_QANBA:
+        return SDL_TRUE;
+    case USB_VENDOR_RAZER:
+        /* Most Razer devices are not game controllers, and some of them lock up
+         * or reset when we send them the Sony third-party query feature report,
+         * so don't include that vendor here. Instead add devices as appropriate
+         * to controller_type.c
+         *
+         * Reference: https://github.com/libsdl-org/SDL/issues/6733
+         *            https://github.com/libsdl-org/SDL/issues/6799
+         */
+        return SDL_FALSE;
+    case USB_VENDOR_SHANWAN:
+        return SDL_TRUE;
+    case USB_VENDOR_SHANWAN_ALT:
+        return SDL_TRUE;
+    case USB_VENDOR_THRUSTMASTER:
+        return SDL_TRUE;
+    case USB_VENDOR_ZEROPLUS:
+        return SDL_TRUE;
+    case 0x7545 /* SZ-MYPOWER */:
+        return SDL_TRUE;
+    default:
+        return SDL_FALSE;
+    }
+}
+
 float HIDAPI_RemapVal(float val, float val_min, float val_max, float output_min, float output_max)
 {
     return output_min + (output_max - output_min) * (val - val_min) / (val_max - val_min);

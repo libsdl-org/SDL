@@ -282,7 +282,7 @@ static SDL_bool HIDAPI_DriverPS5_IsSupportedDevice(SDL_HIDAPI_Device *device, co
         return SDL_TRUE;
     }
 
-    if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
+    if (HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
         if (device && device->dev) {
             size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof data);
             if (size == 48 && data[2] == 0x28) {

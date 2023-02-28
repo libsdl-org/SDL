@@ -160,6 +160,8 @@ extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickI
 
 extern void HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size);
 
+extern SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product);
+
 extern float HIDAPI_RemapVal(float val, float val_min, float val_max, float output_min, float output_max);
 
 #endif /* SDL_JOYSTICK_HIDAPI_H */
