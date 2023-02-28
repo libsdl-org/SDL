@@ -811,7 +811,7 @@ char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inb
     }
 
     stringsize = inbytesleft > 4 ? inbytesleft : 4;
-    string = (char *)SDL_malloc(stringsize);
+    string = (char *)SDL_malloc(stringsize + 1);
     if (string == NULL) {
         SDL_iconv_close(cd);
         return NULL;
@@ -828,7 +828,7 @@ char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inb
         {
             char *oldstring = string;
             stringsize *= 2;
-            string = (char *)SDL_realloc(string, stringsize);
+            string = (char *)SDL_realloc(string, stringsize + 1);
             if (string == NULL) {
                 SDL_free(oldstring);
                 SDL_iconv_close(cd);
@@ -855,6 +855,7 @@ char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inb
             break;
         }
     }
+    *outbuf = '\0';
     SDL_iconv_close(cd);
 
     return string;
