@@ -166,6 +166,58 @@ void X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
     }
 }
 
+static void X11_ConstrainPopup(SDL_Window *window)
+{
+    /* Clamp popup windows to the output borders */
+    if (SDL_WINDOW_IS_POPUP(window)) {
+        SDL_Window *w;
+        SDL_DisplayID displayID;
+        SDL_Rect rect;
+        int abs_x = window->x;
+        int abs_y = window->y;
+        int offset_x = 0, offset_y = 0;
+
+        /* Calculate the total offset from the parents */
+        for (w = window->parent; w->parent != NULL; w = w->parent) {
+            offset_x += w->x;
+            offset_y += w->y;
+        }
+
+        offset_x += w->x;
+        offset_y += w->y;
+        abs_x += offset_x;
+        abs_y += offset_y;
+
+        displayID = SDL_GetDisplayForWindow(w);
+
+        SDL_GetDisplayBounds(displayID, &rect);
+        if (abs_x + window->w > rect.x + rect.w) {
+            abs_x -= (abs_x + window->w) - (rect.x + rect.w);
+        }
+        if (abs_y + window->h > rect.y + rect.h) {
+            abs_y -= (abs_y + window->h) - (rect.y + rect.h);
+        }
+        abs_x = SDL_max(abs_x, rect.x);
+        abs_y = SDL_max(abs_y, rect.y);
+
+        window->x = window->windowed.x = abs_x - offset_x;
+        window->y = window->windowed.y = abs_y - offset_y;
+    }
+}
+
+static void X11_SetKeyboardFocus(SDL_Window *window)
+{
+    SDL_Window *topmost = window;
+
+    /* Find the topmost parent */
+    while (topmost->parent != NULL) {
+        topmost = topmost->parent;
+    }
+
+    topmost->driverdata->keyboard_focus = window;
+    SDL_SetKeyboardFocus(window);
+}
+
 Uint32
 X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow)
 {
@@ -302,8 +354,10 @@ static int SetupWindowData(_THIS, SDL_Window *window, Window w, BOOL created)
         XWindowAttributes attrib;
 
         X11_XGetWindowAttributes(data->videodata->display, w, &attrib);
-        window->x = attrib.x;
-        window->y = attrib.y;
+        if (!SDL_WINDOW_IS_POPUP(window)) {
+            window->x = attrib.x;
+            window->y = attrib.y;
+        }
         window->w = attrib.width;
         window->h = attrib.height;
         if (attrib.map_state != IsUnmapped) {
@@ -392,6 +446,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     Atom _NET_WM_PID;
     long fevent = 0;
     const char *hint = NULL;
+    int win_x, win_y;
     SDL_bool undefined_position = SDL_FALSE;
 
 #if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
@@ -533,6 +588,13 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         undefined_position = SDL_TRUE;
     }
 
+    if (SDL_WINDOW_IS_POPUP(window)) {
+        X11_ConstrainPopup(window);
+    }
+    SDL_RelativeToGlobalForWindow(window,
+                                      window->windowed.x, window->windowed.y,
+                                      &win_x, &win_y);
+
     /* Always create this with the window->windowed.* fields; if we're
        creating a windowed mode window, that's fine. If we're creating a
        fullscreen window, the window manager will want to know these values
@@ -540,7 +602,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
        migration to fullscreen after CreateSDLWindow returns, which will
        put all the SDL_Window fields and system state as expected. */
     w = X11_XCreateWindow(display, RootWindow(display, screen),
-                          window->windowed.x, window->windowed.y, window->windowed.w, window->windowed.h,
+                          win_x, win_y, window->windowed.w, window->windowed.h,
                           0, depth, InputOutput, visual,
                           (CWOverrideRedirect | CWBackPixmap | CWBorderPixel |
                            CWBackingStore | CWColormap),
@@ -561,8 +623,8 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         sizehints->flags |= (PMaxSize | PMinSize);
     }
     if (!undefined_position) {
-        sizehints->x = window->x;
-        sizehints->y = window->y;
+        sizehints->x = win_x;
+        sizehints->y = win_y;
         sizehints->flags |= USPosition;
     }
 
@@ -674,6 +736,13 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         X11_XGetICValues(windowdata->ic, XNFilterEvents, &fevent, NULL);
     }
 #endif
+
+    /* Tooltips do not receive input */
+    if ((window->flags & SDL_WINDOW_TOOLTIP) && SDL_X11_HAVE_XSHAPE) {
+        Region region = X11_XCreateRegion();
+        X11_XShapeCombineRegion(display, w, ShapeInput, 0, 0, region, ShapeSet);
+        X11_XDestroyRegion(region);
+    }
 
     X11_Xinput2SelectTouch(_this, window);
 
@@ -814,8 +883,9 @@ int X11_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
     return rc;
 }
 
-void X11_SetWindowPosition(_THIS, SDL_Window *window)
+void X11_UpdateWindowPosition(SDL_Window *window)
 {
+    SDL_Window *w;
     SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
     int (*prev_handler)(Display *, XErrorEvent *) = NULL;
@@ -823,6 +893,7 @@ void X11_SetWindowPosition(_THIS, SDL_Window *window)
     Window childReturn, root, parent;
     Window *children;
     XWindowAttributes attrs;
+    int dest_x, dest_y;
     int orig_x, orig_y;
     Uint64 timeout;
 
@@ -832,8 +903,12 @@ void X11_SetWindowPosition(_THIS, SDL_Window *window)
     X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
                               attrs.x, attrs.y, &orig_x, &orig_y, &childReturn);
 
+    SDL_RelativeToGlobalForWindow(window,
+                                      window->x - data->border_left, window->y - data->border_top,
+                                      &dest_x, &dest_y);
+
     /*Attempt to move the window*/
-    X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
+    X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
 
     /* Wait a brief time to see if the window manager decided to let this move happen.
        If the window changes at all, even to an unexpected value, we break out. */
@@ -852,10 +927,13 @@ void X11_SetWindowPosition(_THIS, SDL_Window *window)
 
         if (!caught_x11_error) {
             if ((x != orig_x) || (y != orig_y)) {
+                if (SDL_WINDOW_IS_POPUP(window)) {
+                    SDL_GlobalToRelativeForWindow(window, x, y, &x, &y);
+                }
                 window->x = x;
                 window->y = y;
                 break; /* window moved, time to go. */
-            } else if ((x == window->x) && (y == window->y)) {
+            } else if ((x == dest_x) && (y == dest_y)) {
                 break; /* we're at the place we wanted to be anyhow, drop out. */
             }
         }
@@ -869,6 +947,18 @@ void X11_SetWindowPosition(_THIS, SDL_Window *window)
 
     X11_XSetErrorHandler(prev_handler);
     caught_x11_error = SDL_FALSE;
+
+    for (w = window->first_child; w != NULL; w = w->next_sibling) {
+        X11_UpdateWindowPosition(w);
+    }
+}
+
+void X11_SetWindowPosition(_THIS, SDL_Window *window)
+{
+    if (SDL_WINDOW_IS_POPUP(window)) {
+        X11_ConstrainPopup(window);
+    }
+    X11_UpdateWindowPosition(window);
 }
 
 void X11_SetWindowMinimumSize(_THIS, SDL_Window *window)
@@ -1174,6 +1264,10 @@ void X11_ShowWindow(_THIS, SDL_Window *window)
     Display *display = data->videodata->display;
     XEvent event;
 
+    if (window->driverdata->hidden_by_parent_focus) {
+        return;
+    }
+
     if (!X11_IsWindowMapped(_this, window)) {
         X11_XMapRaised(display, data->xwindow);
         /* Blocking wait for "MapNotify" event.
@@ -1191,6 +1285,13 @@ void X11_ShowWindow(_THIS, SDL_Window *window)
         X11_XSetInputFocus(display, data->xwindow, RevertToNone, CurrentTime);
         X11_XFlush(display);
     }
+
+    /* Popup menus grab the keyboard */
+    if (window->flags & SDL_WINDOW_POPUP_MENU) {
+        if (window->parent == SDL_GetKeyboardFocus()) {
+            X11_SetKeyboardFocus(window);
+        }
+    }
 }
 
 void X11_HideWindow(_THIS, SDL_Window *window)
@@ -1207,6 +1308,20 @@ void X11_HideWindow(_THIS, SDL_Window *window)
             X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
         }
         X11_XFlush(display);
+    }
+
+    /* Transfer keyboard focus back to the parent */
+    if (window->flags & SDL_WINDOW_POPUP_MENU) {
+        if (window == SDL_GetKeyboardFocus()) {
+            SDL_Window *new_focus = window->parent;
+
+            /* Find the highest level window that isn't being hidden or destroyed. */
+            while (new_focus->parent != NULL && (new_focus->is_hiding || new_focus->is_destroying)) {
+                new_focus = new_focus->parent;
+            }
+
+            X11_SetKeyboardFocus(new_focus);
+        }
     }
 }
 
