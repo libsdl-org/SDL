@@ -291,10 +291,6 @@ static int SNDIO_OpenDevice(_THIS, const char *devname)
         this->spec.format = AUDIO_S16LSB;
     } else if ((par.bps == 2) && (par.sig) && (!par.le)) {
         this->spec.format = AUDIO_S16MSB;
-    } else if ((par.bps == 2) && (!par.sig) && (par.le)) {
-        this->spec.format = AUDIO_U16LSB;
-    } else if ((par.bps == 2) && (!par.sig) && (!par.le)) {
-        this->spec.format = AUDIO_U16MSB;
     } else if ((par.bps == 1) && (par.sig)) {
         this->spec.format = AUDIO_S8;
     } else if ((par.bps == 1) && (!par.sig)) {

@@ -915,14 +915,8 @@ static void initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info
     case AUDIO_S8:
         info->format = SPA_AUDIO_FORMAT_S8;
         break;
-    case AUDIO_U16LSB:
-        info->format = SPA_AUDIO_FORMAT_U16_LE;
-        break;
     case AUDIO_S16LSB:
         info->format = SPA_AUDIO_FORMAT_S16_LE;
-        break;
-    case AUDIO_U16MSB:
-        info->format = SPA_AUDIO_FORMAT_U16_BE;
         break;
     case AUDIO_S16MSB:
         info->format = SPA_AUDIO_FORMAT_S16_BE;

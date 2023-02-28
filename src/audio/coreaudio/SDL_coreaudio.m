@@ -1067,7 +1067,7 @@ static int COREAUDIO_OpenDevice(_THIS, const char *devname)
     strdesc->mFramesPerPacket = 1;
 
     for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
-        /* CoreAudio handles most of SDL's formats natively, but not U16, apparently. */
+        /* CoreAudio handles most of SDL's formats natively. */
         switch (test_format) {
         case AUDIO_U8:
         case AUDIO_S8:

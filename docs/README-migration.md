@@ -78,6 +78,26 @@ should be changed to:
     SDL_free(dst_data);
 ```
 
+AUDIO_U16, AUDIO_U16LSB, AUDIO_U16MSB, and AUDIO_U16SYS have been removed. They were not heavily used, and one could not memset a buffer in this format to silence with a single byte value. Use a different audio format.
+
+If you need to convert U16 audio data to a still-supported format at runtime, the fastest, lossless conversion is to AUDIO_S16:
+
+```c
+    /* this converts the buffer in-place. The buffer size does not change. */
+    Sint16 *audio_ui16_to_si16(Uint16 *buffer, const size_t num_samples)
+    {
+        size_t i;
+        const Uint16 *src = buffer;
+        Sint16 *dst = (Sint16 *) buffer;
+
+        for (i = 0; i < num_samples; i++) {
+            dst[i] = (Sint16) (src[i] ^ 0x8000);
+        }
+
+        return dst;
+    }
+```
+
 
 The following functions have been renamed:
 * SDL_AudioStreamAvailable() => SDL_GetAudioStreamAvailable()

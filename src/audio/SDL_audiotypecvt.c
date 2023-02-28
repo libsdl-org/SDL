@@ -50,12 +50,10 @@
 SDL_AudioFilter SDL_Convert_S8_to_F32 = NULL;
 SDL_AudioFilter SDL_Convert_U8_to_F32 = NULL;
 SDL_AudioFilter SDL_Convert_S16_to_F32 = NULL;
-SDL_AudioFilter SDL_Convert_U16_to_F32 = NULL;
 SDL_AudioFilter SDL_Convert_S32_to_F32 = NULL;
 SDL_AudioFilter SDL_Convert_F32_to_S8 = NULL;
 SDL_AudioFilter SDL_Convert_F32_to_U8 = NULL;
 SDL_AudioFilter SDL_Convert_F32_to_S16 = NULL;
-SDL_AudioFilter SDL_Convert_F32_to_U16 = NULL;
 SDL_AudioFilter SDL_Convert_F32_to_S32 = NULL;
 
 #define DIVBY128     0.0078125f
@@ -109,24 +107,6 @@ static void SDLCALL SDL_Convert_S16_to_F32_Scalar(SDL_AudioCVT *cvt, SDL_AudioFo
 
     for (i = cvt->len_cvt / sizeof(Sint16); i; --i, --src, --dst) {
         *dst = ((float)*src) * DIVBY32768;
-    }
-
-    cvt->len_cvt *= 2;
-    if (cvt->filters[++cvt->filter_index]) {
-        cvt->filters[cvt->filter_index](cvt, AUDIO_F32SYS);
-    }
-}
-
-static void SDLCALL SDL_Convert_U16_to_F32_Scalar(SDL_AudioCVT *cvt, SDL_AudioFormat format)
-{
-    const Uint16 *src = ((const Uint16 *)(cvt->buf + cvt->len_cvt)) - 1;
-    float *dst = ((float *)(cvt->buf + cvt->len_cvt * 2)) - 1;
-    int i;
-
-    LOG_DEBUG_CONVERT("AUDIO_U16", "AUDIO_F32");
-
-    for (i = cvt->len_cvt / sizeof(Uint16); i; --i, --src, --dst) {
-        *dst = (((float)*src) * DIVBY32768) - 1.0f;
     }
 
     cvt->len_cvt *= 2;
@@ -224,31 +204,6 @@ static void SDLCALL SDL_Convert_F32_to_S16_Scalar(SDL_AudioCVT *cvt, SDL_AudioFo
     cvt->len_cvt /= 2;
     if (cvt->filters[++cvt->filter_index]) {
         cvt->filters[cvt->filter_index](cvt, AUDIO_S16SYS);
-    }
-}
-
-static void SDLCALL SDL_Convert_F32_to_U16_Scalar(SDL_AudioCVT *cvt, SDL_AudioFormat format)
-{
-    const float *src = (const float *)cvt->buf;
-    Uint16 *dst = (Uint16 *)cvt->buf;
-    int i;
-
-    LOG_DEBUG_CONVERT("AUDIO_F32", "AUDIO_U16");
-
-    for (i = cvt->len_cvt / sizeof(float); i; --i, ++src, ++dst) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 65535;
-        } else if (sample <= -1.0f) {
-            *dst = 0;
-        } else {
-            *dst = (Uint16)((sample + 1.0f) * 32767.0f);
-        }
-    }
-
-    cvt->len_cvt /= 2;
-    if (cvt->filters[++cvt->filter_index]) {
-        cvt->filters[cvt->filter_index](cvt, AUDIO_U16SYS);
     }
 }
 
@@ -450,60 +405,6 @@ static void SDLCALL SDL_Convert_S16_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioForm
     /* Finish off any leftovers with scalar operations. */
     while (i) {
         *dst = ((float)*src) * DIVBY32768;
-        i--;
-        src--;
-        dst--;
-    }
-
-    cvt->len_cvt *= 2;
-    if (cvt->filters[++cvt->filter_index]) {
-        cvt->filters[cvt->filter_index](cvt, AUDIO_F32SYS);
-    }
-}
-
-static void SDLCALL SDL_Convert_U16_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
-{
-    const Uint16 *src = ((const Uint16 *)(cvt->buf + cvt->len_cvt)) - 1;
-    float *dst = ((float *)(cvt->buf + cvt->len_cvt * 2)) - 1;
-    int i;
-
-    LOG_DEBUG_CONVERT("AUDIO_U16", "AUDIO_F32 (using SSE2)");
-
-    /* Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src) */
-    for (i = cvt->len_cvt / sizeof(Sint16); i && (((size_t)(dst - 7)) & 15); --i, --src, --dst) {
-        *dst = (((float)*src) * DIVBY32768) - 1.0f;
-    }
-
-    src -= 7;
-    dst -= 7; /* adjust to read SSE blocks from the start. */
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128 divby32768 = _mm_set1_ps(DIVBY32768);
-        const __m128 minus1 = _mm_set1_ps(-1.0f);
-        while (i >= 8) {                                               /* 8 * 16-bit */
-            const __m128i ints = _mm_load_si128((__m128i const *)src); /* get 8 sint16 into an XMM register. */
-            /* treat as int32, shift left to clear every other sint16, then back right with zero-extend. Now sint32. */
-            const __m128i a = _mm_srli_epi32(_mm_slli_epi32(ints, 16), 16);
-            /* right-shift-sign-extend gets us sint32 with the other set of values. */
-            const __m128i b = _mm_srli_epi32(ints, 16);
-            /* Interleave these back into the right order, convert to float, multiply, store. */
-            _mm_store_ps(dst, _mm_add_ps(_mm_mul_ps(_mm_cvtepi32_ps(_mm_unpacklo_epi32(a, b)), divby32768), minus1));
-            _mm_store_ps(dst + 4, _mm_add_ps(_mm_mul_ps(_mm_cvtepi32_ps(_mm_unpackhi_epi32(a, b)), divby32768), minus1));
-            i -= 8;
-            src -= 8;
-            dst -= 8;
-        }
-    }
-
-    src += 7;
-    dst += 7; /* adjust for any scalar finishing. */
-
-    /* Finish off any leftovers with scalar operations. */
-    while (i) {
-        *dst = (((float)*src) * DIVBY32768) - 1.0f;
         i--;
         src--;
         dst--;
@@ -745,75 +646,6 @@ static void SDLCALL SDL_Convert_F32_to_S16_SSE2(SDL_AudioCVT *cvt, SDL_AudioForm
     }
 }
 
-static void SDLCALL SDL_Convert_F32_to_U16_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
-{
-    const float *src = (const float *)cvt->buf;
-    Uint16 *dst = (Uint16 *)cvt->buf;
-    int i;
-
-    LOG_DEBUG_CONVERT("AUDIO_F32", "AUDIO_U16 (using SSE2)");
-
-    /* Get dst aligned to 16 bytes */
-    for (i = cvt->len_cvt / sizeof(float); i && (((size_t)dst) & 15); --i, ++src, ++dst) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 65535;
-        } else if (sample <= -1.0f) {
-            *dst = 0;
-        } else {
-            *dst = (Uint16)((sample + 1.0f) * 32767.0f);
-        }
-    }
-
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        /* This calculates differently than the scalar path because SSE2 can't
-           pack int32 data down to unsigned int16. _mm_packs_epi32 does signed
-           saturation, so that would corrupt our data. _mm_packus_epi32 exists,
-           but not before SSE 4.1. So we convert from float to sint16, packing
-           that down with legit signed saturation, and then xor the top bit
-           against 1. This results in the correct unsigned 16-bit value, even
-           though it looks like dark magic. */
-        const __m128 mulby32767 = _mm_set1_ps(32767.0f);
-        const __m128i topbit = _mm_set1_epi16(-32768);
-        const __m128 one = _mm_set1_ps(1.0f);
-        const __m128 negone = _mm_set1_ps(-1.0f);
-        __m128i *mmdst = (__m128i *)dst;
-        while (i >= 8) {                                                                                                              /* 8 * float32 */
-            const __m128i ints1 = _mm_cvtps_epi32(_mm_mul_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src)), one), mulby32767));     /* load 4 floats, clamp, convert to sint32 */
-            const __m128i ints2 = _mm_cvtps_epi32(_mm_mul_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src + 4)), one), mulby32767)); /* load 4 floats, clamp, convert to sint32 */
-            _mm_store_si128(mmdst, _mm_xor_si128(_mm_packs_epi32(ints1, ints2), topbit));                                             /* pack to sint16, xor top bit, store out. */
-            i -= 8;
-            src += 8;
-            mmdst++;
-        }
-        dst = (Uint16 *)mmdst;
-    }
-
-    /* Finish off any leftovers with scalar operations. */
-    while (i) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 65535;
-        } else if (sample <= -1.0f) {
-            *dst = 0;
-        } else {
-            *dst = (Uint16)((sample + 1.0f) * 32767.0f);
-        }
-        i--;
-        src++;
-        dst++;
-    }
-
-    cvt->len_cvt /= 2;
-    if (cvt->filters[++cvt->filter_index]) {
-        cvt->filters[cvt->filter_index](cvt, AUDIO_U16SYS);
-    }
-}
-
 static void SDLCALL SDL_Convert_F32_to_S32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
     const float *src = (const float *)cvt->buf;
@@ -1025,56 +857,6 @@ static void SDLCALL SDL_Convert_S16_to_F32_NEON(SDL_AudioCVT *cvt, SDL_AudioForm
     /* Finish off any leftovers with scalar operations. */
     while (i) {
         *dst = ((float)*src) * DIVBY32768;
-        i--;
-        src--;
-        dst--;
-    }
-
-    cvt->len_cvt *= 2;
-    if (cvt->filters[++cvt->filter_index]) {
-        cvt->filters[cvt->filter_index](cvt, AUDIO_F32SYS);
-    }
-}
-
-static void SDLCALL SDL_Convert_U16_to_F32_NEON(SDL_AudioCVT *cvt, SDL_AudioFormat format)
-{
-    const Uint16 *src = ((const Uint16 *)(cvt->buf + cvt->len_cvt)) - 1;
-    float *dst = ((float *)(cvt->buf + cvt->len_cvt * 2)) - 1;
-    int i;
-
-    LOG_DEBUG_CONVERT("AUDIO_U16", "AUDIO_F32 (using NEON)");
-
-    /* Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src) */
-    for (i = cvt->len_cvt / sizeof(Sint16); i && (((size_t)(dst - 7)) & 15); --i, --src, --dst) {
-        *dst = (((float)*src) * DIVBY32768) - 1.0f;
-    }
-
-    src -= 7;
-    dst -= 7; /* adjust to read NEON blocks from the start. */
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
-        const float32x4_t divby32768 = vdupq_n_f32(DIVBY32768);
-        const float32x4_t negone = vdupq_n_f32(-1.0f);
-        while (i >= 8) {                                               /* 8 * 16-bit */
-            const uint16x8_t uints = vld1q_u16((uint16_t const *)src); /* get 8 uint16 into a NEON register. */
-            /* split uint16 to two int32, then convert to float, then multiply to normalize, subtract for sign, store. */
-            vst1q_f32(dst, vmlaq_f32(negone, vcvtq_f32_u32(vmovl_u16(vget_low_u16(uints))), divby32768));
-            vst1q_f32(dst + 4, vmlaq_f32(negone, vcvtq_f32_u32(vmovl_u16(vget_high_u16(uints))), divby32768));
-            i -= 8;
-            src -= 8;
-            dst -= 8;
-        }
-    }
-
-    src += 7;
-    dst += 7; /* adjust for any scalar finishing. */
-
-    /* Finish off any leftovers with scalar operations. */
-    while (i) {
-        *dst = (((float)*src) * DIVBY32768) - 1.0f;
         i--;
         src--;
         dst--;
@@ -1321,67 +1103,6 @@ static void SDLCALL SDL_Convert_F32_to_S16_NEON(SDL_AudioCVT *cvt, SDL_AudioForm
     }
 }
 
-static void SDLCALL SDL_Convert_F32_to_U16_NEON(SDL_AudioCVT *cvt, SDL_AudioFormat format)
-{
-    const float *src = (const float *)cvt->buf;
-    Uint16 *dst = (Uint16 *)cvt->buf;
-    int i;
-
-    LOG_DEBUG_CONVERT("AUDIO_F32", "AUDIO_U16 (using NEON)");
-
-    /* Get dst aligned to 16 bytes */
-    for (i = cvt->len_cvt / sizeof(float); i && (((size_t)dst) & 15); --i, ++src, ++dst) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 65535;
-        } else if (sample <= -1.0f) {
-            *dst = 0;
-        } else {
-            *dst = (Uint16)((sample + 1.0f) * 32767.0f);
-        }
-    }
-
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
-        const float32x4_t one = vdupq_n_f32(1.0f);
-        const float32x4_t negone = vdupq_n_f32(-1.0f);
-        const float32x4_t mulby32767 = vdupq_n_f32(32767.0f);
-        uint16_t *mmdst = (uint16_t *)dst;
-        while (i >= 8) {                                                                                                                           /* 8 * float32 */
-            const uint32x4_t uints1 = vcvtq_u32_f32(vmulq_f32(vaddq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src)), one), one), mulby32767));     /* load 4 floats, clamp, convert to uint32 */
-            const uint32x4_t uints2 = vcvtq_u32_f32(vmulq_f32(vaddq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 4)), one), one), mulby32767)); /* load 4 floats, clamp, convert to uint32 */
-            vst1q_u16(mmdst, vcombine_u16(vmovn_u32(uints1), vmovn_u32(uints2)));                                                                  /* narrow to uint16, combine, store out. */
-            i -= 8;
-            src += 8;
-            mmdst += 8;
-        }
-        dst = (Uint16 *)mmdst;
-    }
-
-    /* Finish off any leftovers with scalar operations. */
-    while (i) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 65535;
-        } else if (sample <= -1.0f) {
-            *dst = 0;
-        } else {
-            *dst = (Uint16)((sample + 1.0f) * 32767.0f);
-        }
-        i--;
-        src++;
-        dst++;
-    }
-
-    cvt->len_cvt /= 2;
-    if (cvt->filters[++cvt->filter_index]) {
-        cvt->filters[cvt->filter_index](cvt, AUDIO_U16SYS);
-    }
-}
-
 static void SDLCALL SDL_Convert_F32_to_S32_NEON(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
     const float *src = (const float *)cvt->buf;
@@ -1453,12 +1174,10 @@ void SDL_ChooseAudioConverters(void)
     SDL_Convert_S8_to_F32 = SDL_Convert_S8_to_F32_##fntype;   \
     SDL_Convert_U8_to_F32 = SDL_Convert_U8_to_F32_##fntype;   \
     SDL_Convert_S16_to_F32 = SDL_Convert_S16_to_F32_##fntype; \
-    SDL_Convert_U16_to_F32 = SDL_Convert_U16_to_F32_##fntype; \
     SDL_Convert_S32_to_F32 = SDL_Convert_S32_to_F32_##fntype; \
     SDL_Convert_F32_to_S8 = SDL_Convert_F32_to_S8_##fntype;   \
     SDL_Convert_F32_to_U8 = SDL_Convert_F32_to_U8_##fntype;   \
     SDL_Convert_F32_to_S16 = SDL_Convert_F32_to_S16_##fntype; \
-    SDL_Convert_F32_to_U16 = SDL_Convert_F32_to_U16_##fntype; \
     SDL_Convert_F32_to_S32 = SDL_Convert_F32_to_S32_##fntype; \
     converters_chosen = SDL_TRUE
 

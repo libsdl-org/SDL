@@ -441,9 +441,6 @@ static int SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat
         case AUDIO_S16:
             filter = SDL_Convert_S16_to_F32;
             break;
-        case AUDIO_U16:
-            filter = SDL_Convert_U16_to_F32;
-            break;
         case AUDIO_S32:
             filter = SDL_Convert_S32_to_F32;
             break;
@@ -491,9 +488,6 @@ static int SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioForm
             break;
         case AUDIO_S16:
             filter = SDL_Convert_F32_to_S16;
-            break;
-        case AUDIO_U16:
-            filter = SDL_Convert_F32_to_U16;
             break;
         case AUDIO_S32:
             filter = SDL_Convert_F32_to_S32;
@@ -735,9 +729,7 @@ static SDL_bool SDL_IsSupportedAudioFormat(const SDL_AudioFormat fmt)
     switch (fmt) {
     case AUDIO_U8:
     case AUDIO_S8:
-    case AUDIO_U16LSB:
     case AUDIO_S16LSB:
-    case AUDIO_U16MSB:
     case AUDIO_S16MSB:
     case AUDIO_S32LSB:
     case AUDIO_S32MSB:

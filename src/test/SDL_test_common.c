@@ -39,8 +39,9 @@ static const char *video_usage[] = {
     "[--usable-bounds]"
 };
 
+/* !!! FIXME: Float32? Sint32? */
 static const char *audio_usage[] = {
-    "[--rate N]", "[--format U8|S8|U16|U16LE|U16BE|S16|S16LE|S16BE]",
+    "[--rate N]", "[--format U8|S8|S16|S16LE|S16BE]",
     "[--channels N]", "[--samples N]"
 };
 
@@ -542,18 +543,6 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             state->audiospec.format = AUDIO_S8;
             return 2;
         }
-        if (SDL_strcasecmp(argv[index], "U16") == 0) {
-            state->audiospec.format = AUDIO_U16;
-            return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "U16LE") == 0) {
-            state->audiospec.format = AUDIO_U16LSB;
-            return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "U16BE") == 0) {
-            state->audiospec.format = AUDIO_U16MSB;
-            return 2;
-        }
         if (SDL_strcasecmp(argv[index], "S16") == 0) {
             state->audiospec.format = AUDIO_S16;
             return 2;
@@ -566,6 +555,9 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             state->audiospec.format = AUDIO_S16MSB;
             return 2;
         }
+
+        /* !!! FIXME: Float32? Sint32? */
+
         return -1;
     }
     if (SDL_strcasecmp(argv[index], "--channels") == 0) {

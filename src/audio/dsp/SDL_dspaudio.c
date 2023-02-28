@@ -145,16 +145,6 @@ static int DSP_OpenDevice(_THIS, const char *devname)
                 format = AFMT_S8;
             }
             break;
-        case AUDIO_U16LSB:
-            if (value & AFMT_U16_LE) {
-                format = AFMT_U16_LE;
-            }
-            break;
-        case AUDIO_U16MSB:
-            if (value & AFMT_U16_BE) {
-                format = AFMT_U16_BE;
-            }
-            break;
 #endif
         default:
             format = 0;

@@ -250,12 +250,6 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
         case AUDIO_S16MSB:
             encoding = AUDIO_ENCODING_SLINEAR_BE;
             break;
-        case AUDIO_U16LSB:
-            encoding = AUDIO_ENCODING_ULINEAR_LE;
-            break;
-        case AUDIO_U16MSB:
-            encoding = AUDIO_ENCODING_ULINEAR_BE;
-            break;
         case AUDIO_S32LSB:
             encoding = AUDIO_ENCODING_SLINEAR_LE;
             break;
