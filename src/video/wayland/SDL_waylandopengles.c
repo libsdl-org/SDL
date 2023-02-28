@@ -115,7 +115,8 @@ int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
      * FIXME: Request EGL_WAYLAND_swap_buffers_with_timeout.
      * -flibit
      */
-    if (window->flags & SDL_WINDOW_HIDDEN) {
+    if (data->surface_status != WAYLAND_SURFACE_STATUS_SHOWN &&
+        data->surface_status != WAYLAND_SURFACE_STATUS_WAITING_FOR_FRAME) {
         return 0;
     }
 

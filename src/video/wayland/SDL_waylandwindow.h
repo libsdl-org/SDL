@@ -41,7 +41,7 @@ struct SDL_WindowData
     struct wl_callback *gles_swap_frame_callback;
     struct wl_event_queue *gles_swap_frame_event_queue;
     struct wl_surface *gles_swap_frame_surface_wrapper;
-    struct wl_callback *surface_damage_frame_callback;
+    struct wl_callback *surface_frame_callback;
 
     union
     {
@@ -62,8 +62,6 @@ struct SDL_WindowData
                 {
                     struct xdg_popup *popup;
                     struct xdg_positioner *positioner;
-                    Uint32 parentID;
-                    SDL_Window *child;
                 } popup;
             } roleobj;
             SDL_bool initial_configure_seen;
@@ -76,6 +74,14 @@ struct SDL_WindowData
         WAYLAND_SURFACE_XDG_POPUP,
         WAYLAND_SURFACE_LIBDECOR
     } shell_surface_type;
+    enum
+    {
+        WAYLAND_SURFACE_STATUS_HIDDEN = 0,
+        WAYLAND_SURFACE_STATUS_WAITING_FOR_CONFIGURE,
+        WAYLAND_SURFACE_STATUS_WAITING_FOR_FRAME,
+        WAYLAND_SURFACE_STATUS_SHOW_PENDING,
+        WAYLAND_SURFACE_STATUS_SHOWN
+    } surface_status;
 
     struct wl_egl_window *egl_window;
     struct SDL_WaylandInput *keyboard_device;
@@ -102,6 +108,8 @@ struct SDL_WindowData
 
     SDL_DisplayData **outputs;
     int num_outputs;
+
+    SDL_Window *keyboard_focus;
 
     float windowed_scale_factor;
     float pointer_scale_x;
@@ -133,6 +141,7 @@ extern void Wayland_RestoreWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered);
 extern void Wayland_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable);
 extern int Wayland_CreateWindow(_THIS, SDL_Window *window);
+extern void Wayland_SetWindowPosition(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowSize(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowMinimumSize(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowMaximumSize(_THIS, SDL_Window *window);
