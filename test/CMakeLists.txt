@@ -1,13 +1,12 @@
 #
 # CMake script for building the SDL tests
 #
-
 if(SDL_TESTS_LINK_SHARED)
     set(sdl_name_component SDL3-shared)
 else()
     set(sdl_name_component SDL3-static)
 endif()
-set(HAVE_TESTS_LINK_SHARED "${SDL_TESTS_LINK_SHARED}")
+set(HAVE_TESTS_LINK_SHARED "${SDL_TESTS_LINK_SHARED}" PARENT_SCOPE)
 
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
 if(NOT (MSVC AND SDL_CPU_ARM64))
@@ -18,11 +17,10 @@ endif()
 
 set(SDL_TEST_EXECUTABLES)
 
-# FIXME: can be OBJECT library for CMake 3.16
-add_library(sdltests_utils STATIC
+add_library(sdltests_utils OBJECT
     testutils.c
 )
-target_link_libraries(sdltests_utils PRIVATE SDL3::${sdl_name_component})
+target_link_libraries(sdltests_utils PRIVATE SDL3::Headers)
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
 set(RESOURCE_FILE_NAMES)
@@ -43,6 +41,9 @@ macro(add_sdl_test_executable TARGET)
     if(NOT AST_SOURCES)
         message(FATAL_ERROR "add_sdl_test_executable needs at least one source")
     endif()
+    if(AST_TESTUTILS)
+        list(APPEND AST_SOURCES $<TARGET_OBJECTS:sdltests_utils>)
+    endif()
     if(AST_NEEDS_RESOURCES)
         list(APPEND AST_SOURCES ${RESOURCE_FILES})
     endif()
@@ -51,10 +52,8 @@ macro(add_sdl_test_executable TARGET)
     else()
         add_executable(${TARGET} ${AST_SOURCES})
     endif()
+    SDL_AddCommonCompilerFlags(${TARGET})
     target_link_libraries(${TARGET} PRIVATE SDL3::SDL3_test SDL3::${sdl_name_component})
-    if(AST_TESTUTILS)
-        target_link_libraries(${TARGET} PRIVATE sdltests_utils)
-    endif()
     if(NOT AST_NO_C90 AND NOT SDL_CMAKE_PLATFORM MATCHES "^(n3ds|ps2|psp)$")
         set_property(TARGET ${TARGET} PROPERTY C_STANDARD 90)
         set_property(TARGET ${TARGET} PROPERTY C_EXTENSIONS FALSE)
@@ -86,7 +85,7 @@ macro(add_sdl_test_executable TARGET)
         set_property(TARGET ${TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:${TARGET}>/$<JOIN:${RESOURCE_FILE_NAMES},$<SEMICOLON>$<TARGET_FILE_DIR:${TARGET}>/>")
     endif()
     if(AST_BUILD_DEPENDENT)
-        target_include_directories(${TARGET} BEFORE PRIVATE $<TARGET_PROPERTY:sdl-build-options,INTERFACE_INCLUDE_DIRECTORIES>)
+        target_include_directories(${TARGET} BEFORE PRIVATE $<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>)
         target_include_directories(${TARGET} BEFORE PRIVATE ${SDL3_SOURCE_DIR}/src)
     endif()
 
@@ -103,10 +102,7 @@ macro(add_sdl_test_executable TARGET)
         target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
     endif()
 
-    if(TARGET sdl-global-options)
-        target_link_libraries(${TARGET} PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
-    endif()
-
+    # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
     target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
 endmacro()
 
@@ -189,8 +185,8 @@ set(gamepad_images
     gamepad_touchpad.bmp
 )
 set(gamepad_image_headers)
-find_package(PythonInterp)
-if(PYTHONINTERP_FOUND AND NOT PYTHON_VERSION_STRING VERSION_LESS "3.2")
+find_package(Python3)
+if(Python3_FOUND AND Python3_VERSION VERSION_GREATER_EQUAL "3.2")
     set(xxd "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/xxd.py")
     foreach(bmp ${gamepad_images})
         get_filename_component(bmp_we "${bmp}" NAME_WE)
@@ -199,7 +195,7 @@ if(PYTHONINTERP_FOUND AND NOT PYTHON_VERSION_STRING VERSION_LESS "3.2")
         # Don't add the 'final' headers to the output, to avoid marking them as GENERATED
         # (generated files are removed when running the CLEAN target)
         add_custom_command(OUTPUT "${intermediate}"
-            COMMAND "${PYTHON_EXECUTABLE}" "${xxd}" -i "${CMAKE_CURRENT_SOURCE_DIR}/${bmp}" "-o" "${intermediate}"
+            COMMAND Python3::Interpreter "${xxd}" -i "${CMAKE_CURRENT_SOURCE_DIR}/${bmp}" "-o" "${intermediate}"
             COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${intermediate}" "${final}"
             DEPENDS "${xxd}" "${bmp}"
         )
@@ -273,7 +269,7 @@ endif()
 cmake_push_check_state()
 if(HAVE_WFORMAT)
     # Some compilers ignore -Wformat-extra-args without -Wformat
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Wformat")
+    string(APPEND CMAKE_REQUIRED_FLAGS " -Wformat")
 endif()
 check_c_compiler_flag(-Wformat-extra-args HAVE_WFORMAT_EXTRA_ARGS)
 cmake_pop_check_state()
@@ -390,19 +386,13 @@ endif()
 # Set Apple App ID / Bundle ID.  This is needed to launch apps on some Apple
 # platforms (iOS, for example).
 if(APPLE)
-    if(CMAKE_VERSION VERSION_LESS "3.7.0")
-        # CMake's 'BUILDSYSTEM_TARGETS' property is only available in
-        # CMake 3.7 and above.
-        message(WARNING "Unable to set Bundle ID for Apple .app builds due to old CMake (pre 3.7).")
-    else()
-        foreach(CURRENT_TARGET ${SDL_TEST_EXECUTABLES})
-            set_target_properties("${CURRENT_TARGET}" PROPERTIES
-                MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
-                MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
-                MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
-            )
-        endforeach()
-    endif()
+  foreach(CURRENT_TARGET ${SDL_TEST_EXECUTABLES})
+    set_target_properties("${CURRENT_TARGET}" PROPERTIES
+      MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
+      MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
+      MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
+    )
+  endforeach()
 endif()
 
 set(TESTS_ENVIRONMENT

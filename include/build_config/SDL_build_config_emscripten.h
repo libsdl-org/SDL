@@ -152,7 +152,6 @@
 #define HAVE_SYSCONF 1
 #define HAVE_CLOCK_GETTIME 1
 /* #undef HAVE_GETPAGESIZE */
-#define HAVE_MPROTECT 1
 #define HAVE_ICONV 1
 
 /* SDL internal assertion support */

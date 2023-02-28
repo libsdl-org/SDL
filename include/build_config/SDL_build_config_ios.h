@@ -42,8 +42,6 @@
 #define HAVE_STRING_H 1
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_WCHAR_H 1
-/* The libunwind functions are only available on x86 */
-/* #undef HAVE_LIBUNWIND_H */
 
 /* C library functions */
 #define HAVE_DLOPEN 1

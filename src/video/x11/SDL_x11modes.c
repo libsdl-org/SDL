@@ -367,7 +367,7 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 #endif
         return SDL_FALSE;
     }
-#endif /* XRANDR_ENABLED_BY_DEFAULT */
+#endif /* XRANDR_DISABLED_BY_DEFAULT */
 
     if (!SDL_X11_HAVE_XRANDR) {
 #ifdef X11MODES_DEBUG
