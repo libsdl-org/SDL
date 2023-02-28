@@ -817,7 +817,12 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, x, y);
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, w, h);
 
-    zoomed = [nswindow isZoomed];
+    /* isZoomed always returns true if the window is not resizable */
+    if ((window->flags & SDL_WINDOW_RESIZABLE) && [nswindow isZoomed]) {
+        zoomed = YES;
+    } else {
+        zoomed = NO;
+    }
     if (!zoomed) {
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
     } else if (zoomed) {
