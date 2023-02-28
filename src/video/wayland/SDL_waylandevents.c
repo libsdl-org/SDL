@@ -1355,7 +1355,9 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     if (window) {
         input->keyboard_focus = window;
         window->keyboard_device = input;
-        SDL_SetKeyboardFocus(window->sdlwindow);
+
+        /* Restore the keyboard focus to the child popup that was holding it */
+        SDL_SetKeyboardFocus(window->keyboard_focus ? window->keyboard_focus : window->sdlwindow);
     }
 #ifdef SDL_USE_IME
     if (!input->text_input) {
