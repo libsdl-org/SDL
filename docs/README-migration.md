@@ -341,6 +341,7 @@ functionality to your app and aid migration. That is located in the
 SDL_AddHintCallback() now returns a standard int result instead of void, returning 0 if the function succeeds or a negative error code if there was an error.
 
 The following hints have been removed:
+* SDL_HINT_VIDEO_HIGHDPI_DISABLED - high DPI support is always enabled
 * SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver instead
 * SDL_HINT_MOUSE_RELATIVE_SCALING - mouse coordinates are no longer automatically scaled by the SDL renderer
 * SDL_HINT_RENDER_LOGICAL_SIZE_MODE - the logical size mode is explicitly set with SDL_SetRenderLogicalPresentation()
@@ -1061,6 +1062,7 @@ The following functions have been renamed:
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayForRect()
 * SDL_GetWindowDisplayIndex() => SDL_GetDisplayForWindow()
 * SDL_GetWindowDisplayMode() => SDL_GetWindowFullscreenMode()
+* SDL_IsScreenSaverEnabled() => SDL_ScreenSaverEnabled()
 * SDL_SetWindowDisplayMode() => SDL_SetWindowFullscreenMode()
 
 The following functions have been removed:

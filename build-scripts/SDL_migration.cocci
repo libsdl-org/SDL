@@ -2462,3 +2462,8 @@ expression e2;
 - SDL_Vulkan_GetDrawableSize
 + SDL_GetWindowSizeInPixels
   (...)
+@@
+@@
+- SDL_IsScreenSaverEnabled
++ SDL_ScreenSaverEnabled
+  (...)
