@@ -1021,6 +1021,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             while (readdir(DH)) {
                 my $dent = $_;
                 if ($dent =~ /\A(.*?)\.md\Z/) {  # we only bridge Markdown files here.
+                    next if $1 eq 'FrontPage';
                     copy("$wikireadmepath/$dent", "$readmepath/README-$dent") or die("failed to copy '$wikireadmepath/$dent' to '$readmepath/README-$dent': $!\n");
                 }
             }
@@ -1364,6 +1365,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 my $dent = $_;
                 if ($dent =~ /\AREADME\-(.*?\.md)\Z/) {  # we only bridge Markdown files here.
                     my $wikifname = $1;
+                    next if $wikifname eq 'FrontPage.md';
                     copy("$readmepath/$dent", "$wikireadmepath/$wikifname") or die("failed to copy '$readmepath/$dent' to '$wikireadmepath/$wikifname': $!\n");
                 }
             }
@@ -1377,6 +1379,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 my $dent = $_;
                 if ($dent =~ /\A(.*?)\.(mediawiki|md)\Z/) {
                     my $wikiname = $1;
+                    next if $wikiname eq 'FrontPage';
                     print FH "- [$wikiname]($wikiname)\n";
                 }
             }
