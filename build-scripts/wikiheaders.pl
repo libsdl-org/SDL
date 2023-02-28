@@ -3,7 +3,6 @@
 use warnings;
 use strict;
 use Text::Wrap;
-use File::Copy;
 
 $Text::Wrap::huge = 'overflow';
 
@@ -455,6 +454,23 @@ sub dewikify {
     #print("DEWIKIFY WHOLE DONE:\n\n$retval\n\n\n");
 
     return $retval;
+}
+
+sub filecopy {
+    my $src = shift;
+    my $dst = shift;
+    my $endline = shift;
+    $endline = "\n" if not defined $endline;
+
+    open(COPYIN, '<', $src) or die("Failed to open '$src' for reading: $!\n");
+    open(COPYOUT, '>', $dst) or die("Failed to open '$dst' for writing: $!\n");
+    while (<COPYIN>) {
+        chomp;
+        s/[ \t\r\n]*\Z//;
+        print COPYOUT "$_$endline";
+    }
+    close(COPYOUT);
+    close(COPYIN);
 }
 
 sub usage {
@@ -1022,7 +1038,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 my $dent = $_;
                 if ($dent =~ /\A(.*?)\.md\Z/) {  # we only bridge Markdown files here.
                     next if $1 eq 'FrontPage';
-                    copy("$wikireadmepath/$dent", "$readmepath/README-$dent") or die("failed to copy '$wikireadmepath/$dent' to '$readmepath/README-$dent': $!\n");
+                    filecopy("$wikireadmepath/$dent", "$readmepath/README-$dent", "\r\n");
                 }
             }
             closedir(DH);
@@ -1366,7 +1382,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 if ($dent =~ /\AREADME\-(.*?\.md)\Z/) {  # we only bridge Markdown files here.
                     my $wikifname = $1;
                     next if $wikifname eq 'FrontPage.md';
-                    copy("$readmepath/$dent", "$wikireadmepath/$wikifname") or die("failed to copy '$readmepath/$dent' to '$wikireadmepath/$wikifname': $!\n");
+                    filecopy("$readmepath/$dent", "$wikireadmepath/$wikifname", "\n");
                 }
             }
             closedir(DH);
