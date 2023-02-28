@@ -24,11 +24,11 @@ The Windows GDK port supports the full set of Win32 APIs, renderers, controllers
   * GDK-specific setup:
     * Initializing/uninitializing the game runtime, and initializing Xbox Live services
     * Creating a global task queue and setting it as the default for the process. When running any async operations, passing in `NULL` as the task queue will make the task get added to the global task queue.
-  
+
   * An implementation on `WinMain` that performs the above GDK setup (you should link against SDL2main.lib, as in Windows x64). If you are unable to do this, you can instead manually call `SDL_GDKRunApp` from your entry point, passing in your `SDL_main` function and `NULL` as the parameters.
   * Global task queue callbacks are dispatched during `SDL_PumpEvents` (which is also called internally if using `SDL_PollEvent`).
   * You can get the handle of the global task queue through `SDL_GDKGetTaskQueue`, if needed. When done with the queue, be sure to use `XTaskQueueCloseHandle` to decrement the reference count (otherwise it will cause a resource leak).
-  
+
 * What doesn't work:
   * Compilation with anything other than through the included Visual C++ solution file
 
@@ -58,7 +58,7 @@ In your game's existing Visual Studio Solution, go to Build > Configuration Mana
 
 Open `VisualC-GDK/SDL.sln` in Visual Studio, you need to build the SDL2 and SDL2main targets for the Gaming.Desktop.x64 platform (Release is recommended). You will need to copy/keep track of the `SDL2.dll`, `XCurl.dll` (which is output by Gaming.Desktop.x64), `SDL2.lib`, and `SDL2main.lib` output files for your game project.
 
-*Alternatively*, you could setup your solution file to instead reference the SDL2/SDL2main project file targets from the SDL source, and add those projects as a dependency. This would mean that SDL2 and SDL2main would both be built when your game is built. 
+*Alternatively*, you could setup your solution file to instead reference the SDL2/SDL2main project file targets from the SDL source, and add those projects as a dependency. This would mean that SDL2 and SDL2main would both be built when your game is built.
 
 ### 3. Configuring Project Settings ###
 

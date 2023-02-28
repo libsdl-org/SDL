@@ -12,7 +12,7 @@ Supports:
 What you need:
 
 * DirectFB 1.0.1, 1.2.x, 1.3.0
-* Kernel-Framebuffer support: required: vesafb, radeonfb .... 
+* Kernel-Framebuffer support: required: vesafb, radeonfb ....
 * Mesa 7.0.x	   - optional for OpenGL
 
 The `/etc/directfbrc` file should contain the following lines to make
@@ -44,7 +44,7 @@ To use hardware accelerated YUV-overlays for YUV-textures, use:
 export SDL_DIRECTFB_YUV_DIRECT=1
 ```
 
-This is disabled by default. It will only support one 
+This is disabled by default. It will only support one
 YUV texture, namely the first. Every other YUV texture will be
 rendered in software.
 
@@ -84,7 +84,7 @@ As of this writing 20100802 you need to pull Mesa from git and do the following:
 
 ```
 git clone git://anongit.freedesktop.org/git/mesa/mesa
-cd mesa 
+cd mesa
 git checkout 2c9fdaf7292423c157fc79b5ce43f0f199dd753a
 ```
 
@@ -92,10 +92,10 @@ Edit `configs/linux-directfb` so that the Directories-section looks like this:
 
 ```
 # Directories
-SRC_DIRS     = mesa glu 
+SRC_DIRS     = mesa glu
 GLU_DIRS     = sgi
 DRIVER_DIRS  = directfb
-PROGRAM_DIRS = 
+PROGRAM_DIRS =
 ```
 
 Then do the following:

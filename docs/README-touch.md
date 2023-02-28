@@ -8,7 +8,7 @@ The linux touch system is currently based off event streams, and proc/bus/device
 Mac:
 The Mac and iPhone APIs are pretty. If your touch device supports them then you'll be fine. If it doesn't, then there isn't much we can do.
 
-iPhone: 
+iPhone:
 Works out of box.
 
 Windows:

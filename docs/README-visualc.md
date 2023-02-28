@@ -17,10 +17,10 @@ _Editor's note: I've been able to successfully build SDL using Visual Studio 201
 2. Your IDE will likely prompt you to upgrade this solution file to whatever later version of the IDE you're using. In the `Retarget Projects` dialog,
 all of the affected project files should be checked allowing you to use the latest `Windows SDK Version` you have installed, along with
 the `Platform Toolset`.
-   
+
 If you choose *NOT* to upgrade to use the latest `Windows SDK Version` or `Platform Toolset`, then you'll need the `Visual Studio 2010 Platform Toolset`.
 
-3. Build the `.dll` and `.lib` files by right clicking on each project in turn (Projects are listed in the _Workspace_ 
+3. Build the `.dll` and `.lib` files by right clicking on each project in turn (Projects are listed in the _Workspace_
 panel in the _FileView_ tab), and selecting `Build`.
 
 You may get a few warnings, but you should not get any errors.
@@ -90,17 +90,17 @@ Here's a sample SDL snippet to verify everything is setup in your IDE:
         SDL_Init(SDL_INIT_VIDEO);
         window = SDL_CreateWindow("SDL2 Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
- 
+
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 0;
     }
- ```               
+ ```
 
 ### That's it!
 
-I hope that this document has helped you get through the most difficult part of using the SDL: installing it. 
+I hope that this document has helped you get through the most difficult part of using the SDL: installing it.
 Suggestions for improvements should be posted to the [Github Issues](https://github.com/libsdl-org/SDL/issues).
 
 ### Credits
