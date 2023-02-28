@@ -3,6 +3,7 @@
 use warnings;
 use strict;
 use Text::Wrap;
+use File::Copy;
 
 $Text::Wrap::huge = 'overflow';
 
@@ -10,6 +11,7 @@ my $projectfullname = 'Simple Directmedia Layer';
 my $projectshortname = 'SDL';
 my $wikisubdir = '';
 my $incsubdir = 'include';
+my $readmesubdir = undef;
 my $apiprefixregex = undef;
 my $versionfname = 'include/SDL_version.h';
 my $versionmajorregex = '\A\#define\s+SDL_MAJOR_VERSION\s+(\d+)\Z';
@@ -22,6 +24,7 @@ my $wikiurl = 'https://wiki.libsdl.org';
 my $bugreporturl = 'https://github.com/libsdl-org/sdlwiki/issues/new';
 my $srcpath = undef;
 my $wikipath = undef;
+my $wikireadmesubdir = 'README';
 my $warn_about_missing = 0;
 my $copy_direction = 0;
 my $optionsfname = undef;
@@ -71,6 +74,7 @@ if (defined $optionsfname) {
             $projectshortname = $val, next if $key eq 'projectshortname';
             $wikisubdir = $val, next if $key eq 'wikisubdir';
             $incsubdir = $val, next if $key eq 'incsubdir';
+            $readmesubdir = $val, next if $key eq 'readmesubdir';
             $versionmajorregex = $val, next if $key eq 'versionmajorregex';
             $versionminorregex = $val, next if $key eq 'versionminorregex';
             $versionpatchregex = $val, next if $key eq 'versionpatchregex';
@@ -492,6 +496,12 @@ my %headerfuncshasdoxygen = ();   # $headerfuncschunk{"SDL_OpenAudio"} -> 1 if t
 
 my $incpath = "$srcpath";
 $incpath .= "/$incsubdir" if $incsubdir ne '';
+
+my $wikireadmepath = "$wikipath/$wikireadmesubdir";
+my $readmepath = undef;
+if (defined $readmesubdir) {
+    $readmepath = "$srcpath/$readmesubdir";
+}
 
 opendir(DH, $incpath) or die("Can't opendir '$incpath': $!\n");
 while (readdir(DH)) {
@@ -1004,6 +1014,19 @@ if ($copy_direction == 1) {  # --copy-to-headers
         rename($path, "$incpath/$header") or die("Can't rename '$path' to '$incpath/$header': $!\n");
     }
 
+    if (defined $readmepath) {
+        if ( -d $wikireadmepath ) {
+            mkdir($readmepath);  # just in case
+            opendir(DH, $wikireadmepath) or die("Can't opendir '$wikireadmepath': $!\n");
+            while (readdir(DH)) {
+                my $dent = $_;
+                if ($dent =~ /\A(.*?)\.md\Z/) {  # we only bridge Markdown files here.
+                    copy("$wikireadmepath/$dent", "$readmepath/README-$dent") or die("failed to copy '$wikireadmepath/$dent' to '$readmepath/README-$dent': $!\n");
+                }
+            }
+            closedir(DH);
+        }
+    }
 } elsif ($copy_direction == -1) { # --copy-to-wiki
 
     if (defined $changeformat) {
@@ -1331,6 +1354,35 @@ if ($copy_direction == 1) {  # --copy-to-headers
         }
 
         rename($path, "$wikipath/$_.${wikitype}") or die("Can't rename '$path' to '$wikipath/$_.${wikitype}': $!\n");
+    }
+
+    if (defined $readmepath) {
+        if ( -d $readmepath ) {
+            mkdir($wikireadmepath);  # just in case
+            opendir(DH, $readmepath) or die("Can't opendir '$readmepath': $!\n");
+            while (readdir(DH)) {
+                my $dent = $_;
+                if ($dent =~ /\AREADME\-(.*?\.md)\Z/) {  # we only bridge Markdown files here.
+                    my $wikifname = $1;
+                    copy("$readmepath/$dent", "$wikireadmepath/$wikifname") or die("failed to copy '$readmepath/$dent' to '$wikireadmepath/$wikifname': $!\n");
+                }
+            }
+            closedir(DH);
+
+            open(FH, '>', "$wikireadmepath/FrontPage.md") or die("Can't open '$wikireadmepath/FrontPage.md': $!\n");
+            print FH "# All READMEs available here\n\n";
+
+            opendir(DH, $wikireadmepath) or die("Can't opendir '$wikireadmepath': $!\n");
+            while (readdir(DH)) {
+                my $dent = $_;
+                if ($dent =~ /\A(.*?)\.(mediawiki|md)\Z/) {
+                    my $wikiname = $1;
+                    print FH "- [$wikiname]($wikiname)\n";
+                }
+            }
+            closedir(DH);
+            close(FH);
+        }
     }
 
 } elsif ($copy_direction == -2) { # --copy-to-manpages
