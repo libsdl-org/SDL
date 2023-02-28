@@ -60,6 +60,7 @@ struct SDL_WindowData
     int border_top;
     int border_bottom;
     SDL_bool mouse_grabbed;
+    SDL_bool hidden_by_parent_focus;
     Uint64 last_focus_event_time;
     PendingFocusEnum pending_focus;
     Uint64 pending_focus_time;
@@ -70,6 +71,7 @@ struct SDL_WindowData
     Window xdnd_source;
     SDL_bool flashing_window;
     Uint64 flash_cancel_time;
+    SDL_Window *keyboard_focus;
 #if SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
@@ -116,5 +118,6 @@ extern void X11_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int X11_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation);
 
 int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title);
+void X11_UpdateWindowPosition(SDL_Window *window);
 
 #endif /* SDL_x11window_h_ */

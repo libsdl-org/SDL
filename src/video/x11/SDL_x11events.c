@@ -447,6 +447,34 @@ void X11_ReconcileKeyboardState(_THIS)
     }
 }
 
+static void X11_ShowChildren(_THIS, SDL_Window *window)
+{
+    for (window = window->first_child; window != NULL; window = window->next_sibling) {
+        window->driverdata->hidden_by_parent_focus = SDL_FALSE;
+        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
+            X11_ShowWindow(_this, window);
+        }
+
+        if (window->first_child) {
+            X11_ShowChildren(_this, window);
+        }
+    }
+}
+
+static void X11_HideChildren(_THIS, SDL_Window *window)
+{
+    for (window = window->first_child; window != NULL; window = window->next_sibling) {
+        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
+            window->driverdata->hidden_by_parent_focus = SDL_TRUE;
+            X11_HideWindow(_this, window);
+        }
+
+        if (window->first_child) {
+            X11_HideChildren(_this, window);
+        }
+    }
+}
+
 static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
@@ -464,6 +492,9 @@ static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 #endif
     if (data->flashing_window) {
         X11_FlashWindow(_this, data->window, SDL_FLASH_CANCEL);
+    }
+    if (data->window->parent == NULL) {
+        X11_ShowChildren(_this, data->window);
     }
 }
 
@@ -487,6 +518,9 @@ static void X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
 #ifdef SDL_USE_IME
     SDL_IME_SetFocus(SDL_FALSE);
 #endif
+    if (data->window->parent == NULL) {
+        X11_HideChildren(_this, data->window);
+    }
 }
 
 static void X11_DispatchMapNotify(SDL_WindowData *data)
@@ -501,8 +535,10 @@ static void X11_DispatchMapNotify(SDL_WindowData *data)
 
 static void X11_DispatchUnmapNotify(SDL_WindowData *data)
 {
-    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
-    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
+    if (!data->hidden_by_parent_focus) {
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
+    }
 }
 
 static void InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
@@ -1168,14 +1204,23 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 
         if (xevent->xconfigure.x != data->last_xconfigure.x ||
             xevent->xconfigure.y != data->last_xconfigure.y) {
+            SDL_Window *w;
+            int x = xevent->xconfigure.x;
+            int y = xevent->xconfigure.y;
+
+            SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED,
-                                xevent->xconfigure.x, xevent->xconfigure.y);
+                                x, y);
+
 #ifdef SDL_USE_IME
             if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
                 /* Update IME candidate list position */
                 SDL_IME_UpdateTextRect(NULL);
             }
 #endif
+            for (w = data->window->first_child; w != NULL; w = w->next_sibling) {
+                X11_UpdateWindowPosition(w);
+            }
         }
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
             xevent->xconfigure.height != data->last_xconfigure.height) {
