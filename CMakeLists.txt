@@ -306,6 +306,9 @@ else()
   target_include_directories(sdl-global-options SYSTEM INTERFACE "${SDL3_SOURCE_DIR}/src/video/khronos")
 endif()
 
+set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
+set(SDL_STATIC_ENABLED_BY_DEFAULT ON)
+
 # All these ENABLED_BY_DEFAULT vars will default to ON if not specified, so
 #  you only need to have a platform override them if they are disabling.
 if(EMSCRIPTEN)
@@ -328,18 +331,18 @@ if(VITA OR PSP OR PS2 OR N3DS OR RISCOS)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
 endif()
 
-# Default to just building the shared library
-if (NOT DEFINED SDL_SHARED_ENABLED_BY_DEFAULT)
-  set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
-endif()
-if(SDL_SHARED_ENABLED_BY_DEFAULT)
-  set(SDL_STATIC_ENABLED_BY_DEFAULT OFF)
-else()
-  set(SDL_STATIC_ENABLED_BY_DEFAULT ON)
-endif()
-
-if (NOT DEFINED SDL_TEST_ENABLED_BY_DEFAULT)
-  set(SDL_TEST_ENABLED_BY_DEFAULT ON)
+if(SDL_SHARED_ENABLED_BY_DEFAULT AND SDL_STATIC_ENABLED_BY_DEFAULT)
+  if(DEFINED BUILD_SHARED_LIBS)
+    # When defined, use BUILD_SHARED_LIBS as default
+    if(BUILD_SHARED_LIBS)
+      set(SDL_STATIC_ENABLED_BY_DEFAULT OFF)
+    else()
+      set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
+    endif()
+  else()
+    # Default to just building the shared library
+    set(SDL_STATIC_ENABLED_BY_DEFAULT OFF)
+  endif()
 endif()
 
 set(LONGESTOPTIONNAME 0)  # set_option and friends will change this.
@@ -443,7 +446,7 @@ option(SDL_WERROR "Enable -Werror" OFF)
 
 option(SDL_SHARED "Build a shared version of the library" ${SDL_SHARED_ENABLED_BY_DEFAULT})
 option(SDL_STATIC "Build a static version of the library" ${SDL_STATIC_ENABLED_BY_DEFAULT})
-option(SDL_TEST   "Build the SDL3_test library" ${SDL_TEST_ENABLED_BY_DEFAULT})
+option(SDL_TEST   "Build the SDL3_test library" ON)
 
 # Apple Frameworks NEED a (shared) SDL3.framework for `#include <SDL3/xxx.h>` to work
 cmake_dependent_option(SDL_FRAMEWORK "Build SDL libraries as Apple Framework" OFF "SDL_SHARED;APPLE" OFF)
