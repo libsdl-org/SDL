@@ -1,5 +1,3 @@
-# sdl pkg-config source file
-
 prefix=@SDL_PKGCONFIG_PREFIX@
 exec_prefix=${prefix}
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
@@ -7,8 +5,9 @@ includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 
 Name: sdl3
 Description: Simple DirectMedia Layer is a cross-platform multimedia library designed to provide low level access to audio, keyboard, mouse, joystick, 3D hardware via OpenGL, and 2D video framebuffer.
+URL: https://www.libsdl.org/
 Version: @PROJECT_VERSION@
 Requires.private: @SDL_PC_PRIVATE_REQUIRES@
 Conflicts:
-Libs: -L${libdir} @SDL_RLD_FLAGS@ @SDL_PC_LIBS@ @PKGCONFIG_LIBS_PRIV@ @SDL_PC_STATIC_LIBS@
+Libs: -L${libdir} @SDL_RLD_FLAGS@ @SDL_PC_LIBS@ @SDL_PC_SECTION_LIBS_PRIVATE@ @SDL_PC_STATIC_LIBS@
 Cflags: -I${includedir} -I${includedir}/SDL3 @SDL_PC_CFLAGS@
