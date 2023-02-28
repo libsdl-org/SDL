@@ -1387,19 +1387,24 @@ if ($copy_direction == 1) {  # --copy-to-headers
             }
             closedir(DH);
 
-            open(FH, '>', "$wikireadmepath/FrontPage.md") or die("Can't open '$wikireadmepath/FrontPage.md': $!\n");
-            print FH "# All READMEs available here\n\n";
-
+            my @pages = ();
             opendir(DH, $wikireadmepath) or die("Can't opendir '$wikireadmepath': $!\n");
             while (readdir(DH)) {
                 my $dent = $_;
                 if ($dent =~ /\A(.*?)\.(mediawiki|md)\Z/) {
                     my $wikiname = $1;
                     next if $wikiname eq 'FrontPage';
-                    print FH "- [$wikiname]($wikiname)\n";
+                    push @pages, $wikiname;
                 }
             }
             closedir(DH);
+
+            open(FH, '>', "$wikireadmepath/FrontPage.md") or die("Can't open '$wikireadmepath/FrontPage.md': $!\n");
+            print FH "# All READMEs available here\n\n";
+            foreach (sort @pages) {
+                my $wikiname = $_;
+                print FH "- [$wikiname]($wikiname)\n";
+            }
             close(FH);
         }
     }
