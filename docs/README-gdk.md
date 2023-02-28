@@ -24,11 +24,11 @@ The Windows GDK port supports the full set of Win32 APIs, renderers, controllers
   * GDK-specific setup:
     * Initializing/uninitializing the game runtime, and initializing Xbox Live services
     * Creating a global task queue and setting it as the default for the process. When running any async operations, passing in `NULL` as the task queue will make the task get added to the global task queue.
-  
+
   * An implementation on `WinMain` that performs the above GDK setup that you can use by #include'ing SDL_main.h in the source file that includes your standard main() function. If you are unable to do this, you can instead manually call `SDL_RunApp` from your entry point, passing in your `SDL_main` function and `NULL` as the parameters. To use `SDL_RunApp`, `#define SDL_MAIN_HANDLED` before `#include <SDL3/SDL_main.h>`.
   * Global task queue callbacks are dispatched during `SDL_PumpEvents` (which is also called internally if using `SDL_PollEvent`).
   * You can get the handle of the global task queue through `SDL_GDKGetTaskQueue`, if needed. When done with the queue, be sure to use `XTaskQueueCloseHandle` to decrement the reference count (otherwise it will cause a resource leak).
-  
+
 * What doesn't work:
   * Compilation with anything other than through the included Visual C++ solution file
 

@@ -109,17 +109,17 @@ e.g.
             return 1;
         }
     }
-    
+
     int main(int argc, char *argv[])
     {
         SDL_SetEventFilter(HandleAppEvents, NULL);
-    
+
         ... run your main loop
-    
+
         return 0;
     }
 
-    
+
 Notes -- Accelerometer as Joystick
 ==============================================================================
 
@@ -183,7 +183,7 @@ Once your application is installed its directory tree looks like:
             Preferences/
         tmp/
 
-When your SDL based iPhone application starts up, it sets the working directory to the main bundle (MySDLApp Home/MySDLApp.app), where your application resources are stored.  You cannot write to this directory.  Instead, I advise you to write document files to "../Documents/" and preferences to "../Library/Preferences".  
+When your SDL based iPhone application starts up, it sets the working directory to the main bundle (MySDLApp Home/MySDLApp.app), where your application resources are stored.  You cannot write to this directory.  Instead, I advise you to write document files to "../Documents/" and preferences to "../Library/Preferences".
 
 More information on this subject is available here:
 http://developer.apple.com/library/ios/#documentation/iPhone/Conceptual/iPhoneOSProgrammingGuide/Introduction/Introduction.html
@@ -192,7 +192,7 @@ http://developer.apple.com/library/ios/#documentation/iPhone/Conceptual/iPhoneOS
 Notes -- xcFramework
 ==============================================================================
 
-The SDL.xcodeproj file now includes a target to build SDL3.xcframework. An xcframework is a new (Xcode 11) uber-framework which can handle any combination of processor type and target OS platform. 
+The SDL.xcodeproj file now includes a target to build SDL3.xcframework. An xcframework is a new (Xcode 11) uber-framework which can handle any combination of processor type and target OS platform.
 
 In the past, iOS devices were always an ARM variant processor, and the simulator was always i386 or x86_64, and thus libraries could be combined into a single framework for both simulator and device. With the introduction of the Apple Silicon ARM-based machines, regular frameworks would collide as CPU type was no longer sufficient to differentiate the platform. So Apple created the new xcframework library package.
 
@@ -204,7 +204,7 @@ In addition, on Apple platforms, main() cannot be in a dynamically loaded librar
 However, unlike in SDL2, in SDL3 SDL_main is implemented inline in SDL_main.h, so you don't need to link against a static libSDL3main.lib, and you don't need to copy a .c file from the SDL3 source either.
 This means that iOS apps which used the statically-linked libSDL3.lib and now link with the xcframwork can just `#include <SDL3/SDL_main.h>` in the source file that contains their standard `int main(int argc; char *argv[])` function to get a header-only SDL_main implementation that calls the `SDL_RunApp()` with your standard main function.
 
-Using an xcFramework is similar to using a regular framework. However, issues have been seen with the build system not seeing the headers in the xcFramework. To remedy this, add the path to the xcFramework in your app's target ==> Build Settings ==> Framework Search Paths and mark it recursive (this is critical). Also critical is to remove "*.framework" from Build Settings ==> Sub-Directories to Exclude in Recursive Searches. Clean the build folder, and on your next build the build system should be able to see any of these in your code, as expected: 
+Using an xcFramework is similar to using a regular framework. However, issues have been seen with the build system not seeing the headers in the xcFramework. To remedy this, add the path to the xcFramework in your app's target ==> Build Settings ==> Framework Search Paths and mark it recursive (this is critical). Also critical is to remove "*.framework" from Build Settings ==> Sub-Directories to Exclude in Recursive Searches. Clean the build folder, and on your next build the build system should be able to see any of these in your code, as expected:
 
 #include "SDL_main.h"
 #include <SDL.h>
@@ -240,7 +240,7 @@ to your Info.plist:
 <string>MyApp would like to remain connected to nearby bluetooth Game Controllers and Game Pads even when you're not using the app.</string>
 
 
-Game Center 
+Game Center
 ==============================================================================
 
 Game Center integration might require that you break up your main loop in order to yield control back to the system. In other words, instead of running an endless main loop, you run each frame in a callback function, using:
@@ -256,15 +256,15 @@ e.g.
     {
         ... do event handling, frame logic and rendering ...
     }
-    
+
     int main(int argc, char *argv[])
     {
         ... initialize game ...
-    
+
     #ifdef __IOS__
         // Initialize the Game Center for scoring and matchmaking
         InitGameCenter();
-    
+
         // Set up the game to run in the window animation callback on iOS
         // so that Game Center and so forth works correctly.
         SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);

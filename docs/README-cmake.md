@@ -18,7 +18,7 @@ The CMake build system is supported on the following platforms:
 
 ## Building SDL
 
-Assuming the source for SDL is located at `~/sdl`. 
+Assuming the source for SDL is located at `~/sdl`.
 ```sh
 cmake -S ~/sdl -B ~/build
 cmake --build ~/build
@@ -55,7 +55,7 @@ else()
     find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
 endif()
 
-# Create your game executable target as usual 
+# Create your game executable target as usual
 add_executable(mygame WIN32 mygame.c)
 
 # Link to the actual SDL3 library. SDL3::SDL3 is the shared SDL library, SDL3::SDL3-static is the static SDL libarary.

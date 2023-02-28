@@ -5,7 +5,7 @@ By default SDL will only link against glibc, the rest of the features will be
 enabled dynamically at runtime depending on the available features on the target
 system. So, for example if you built SDL with XRandR support and the target
 system does not have the XRandR libraries installed, it will be disabled
-at runtime, and you won't get a missing library error, at least with the 
+at runtime, and you won't get a missing library error, at least with the
 default configuration parameters.
 
 
@@ -51,42 +51,42 @@ there's a few issues that may cause SDL to fail to detect your joystick. To
 debug this, start by installing the evtest utility. On Ubuntu/Debian:
 
     sudo apt-get install evtest
-    
+
 Then run:
-    
+
     sudo evtest
-    
+
 You'll hopefully see your joystick listed along with a name like "/dev/input/eventXX"
 Now run:
-    
+
     cat /dev/input/event/XX
 
 If you get a permission error, you need to set a udev rule to change the mode of
-your device (see below)    
-    
+your device (see below)
+
 Also, try:
-    
+
     sudo udevadm info --query=all --name=input/eventXX
-    
+
 If you see a line stating ID_INPUT_JOYSTICK=1, great, if you don't see it,
 you need to set up an udev rule to force this variable.
 
-A combined rule for the Saitek Pro Flight Rudder Pedals to fix both issues looks 
+A combined rule for the Saitek Pro Flight Rudder Pedals to fix both issues looks
 like:
-    
+
     SUBSYSTEM=="input", ATTRS{idProduct}=="0763", ATTRS{idVendor}=="06a3", MODE="0666", ENV{ID_INPUT_JOYSTICK}="1"
     SUBSYSTEM=="input", ATTRS{idProduct}=="0764", ATTRS{idVendor}=="06a3", MODE="0666", ENV{ID_INPUT_JOYSTICK}="1"
-   
+
 You can set up similar rules for your device by changing the values listed in
 idProduct and idVendor. To obtain these values, try:
-    
+
     sudo udevadm info -a --name=input/eventXX | grep idVendor
     sudo udevadm info -a --name=input/eventXX | grep idProduct
-    
-If multiple values come up for each of these, the one you want is the first one of each.    
+
+If multiple values come up for each of these, the one you want is the first one of each.
 
 On other systems which ship with an older udev (such as CentOS), you may need
 to set up a rule such as:
-    
+
     SUBSYSTEM=="input", ENV{ID_CLASS}=="joystick", ENV{ID_INPUT_JOYSTICK}="1"
 
