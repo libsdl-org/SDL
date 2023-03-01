@@ -405,7 +405,7 @@ typedef struct SDL_JoyBatteryEvent
 } SDL_JoyBatteryEvent;
 
 /**
- *  \brief Gamepad axis motion event structure (event.caxis.*)
+ *  \brief Gamepad axis motion event structure (event.gaxis.*)
  */
 typedef struct SDL_GamepadAxisEvent
 {
@@ -422,7 +422,7 @@ typedef struct SDL_GamepadAxisEvent
 
 
 /**
- *  \brief Gamepad button event structure (event.cbutton.*)
+ *  \brief Gamepad button event structure (event.gbutton.*)
  */
 typedef struct SDL_GamepadButtonEvent
 {
@@ -437,7 +437,7 @@ typedef struct SDL_GamepadButtonEvent
 
 
 /**
- *  \brief Gamepad device event structure (event.cdevice.*)
+ *  \brief Gamepad device event structure (event.gdevice.*)
  */
 typedef struct SDL_GamepadDeviceEvent
 {
@@ -447,7 +447,7 @@ typedef struct SDL_GamepadDeviceEvent
 } SDL_GamepadDeviceEvent;
 
 /**
- *  \brief Gamepad touchpad event structure (event.ctouchpad.*)
+ *  \brief Gamepad touchpad event structure (event.gtouchpad.*)
  */
 typedef struct SDL_GamepadTouchpadEvent
 {
@@ -462,7 +462,7 @@ typedef struct SDL_GamepadTouchpadEvent
 } SDL_GamepadTouchpadEvent;
 
 /**
- *  \brief Gamepad sensor event structure (event.csensor.*)
+ *  \brief Gamepad sensor event structure (event.gsensor.*)
  */
 typedef struct SDL_GamepadSensorEvent
 {
@@ -602,11 +602,11 @@ typedef union SDL_Event
     SDL_JoyButtonEvent jbutton;             /**< Joystick button event data */
     SDL_JoyDeviceEvent jdevice;             /**< Joystick device change event data */
     SDL_JoyBatteryEvent jbattery;           /**< Joystick battery event data */
-    SDL_GamepadAxisEvent caxis;             /**< Gamepad axis event data */
-    SDL_GamepadButtonEvent cbutton;         /**< Gamepad button event data */
-    SDL_GamepadDeviceEvent cdevice;         /**< Gamepad device event data */
-    SDL_GamepadTouchpadEvent ctouchpad;     /**< Gamepad touchpad event data */
-    SDL_GamepadSensorEvent csensor;         /**< Gamepad sensor event data */
+    SDL_GamepadAxisEvent gaxis;             /**< Gamepad axis event data */
+    SDL_GamepadButtonEvent gbutton;         /**< Gamepad button event data */
+    SDL_GamepadDeviceEvent gdevice;         /**< Gamepad device event data */
+    SDL_GamepadTouchpadEvent gtouchpad;     /**< Gamepad touchpad event data */
+    SDL_GamepadSensorEvent gsensor;         /**< Gamepad sensor event data */
     SDL_AudioDeviceEvent adevice;           /**< Audio device event data */
     SDL_SensorEvent sensor;                 /**< Sensor event data */
     SDL_QuitEvent quit;                     /**< Quit request event data */

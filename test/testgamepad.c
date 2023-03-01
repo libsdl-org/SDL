@@ -629,61 +629,69 @@ void loop(void *arg)
             break;
 
         case SDL_EVENT_GAMEPAD_ADDED:
-            SDL_Log("Gamepad device %" SDL_PRIu32 " added.\n", event.cdevice.which);
-            AddGamepad(event.cdevice.which, SDL_TRUE);
+            SDL_Log("Gamepad device %" SDL_PRIu32 " added.\n",
+                    event.gdevice.which);
+            AddGamepad(event.gdevice.which, SDL_TRUE);
             break;
 
         case SDL_EVENT_GAMEPAD_REMOVED:
-            SDL_Log("Gamepad device %" SDL_PRIu32 " removed.\n", event.cdevice.which);
-            DelGamepad(event.cdevice.which);
+            SDL_Log("Gamepad device %" SDL_PRIu32 " removed.\n",
+                    event.gdevice.which);
+            DelGamepad(event.gdevice.which);
             break;
 
         case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
         case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
         case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
             SDL_Log("Gamepad %" SDL_PRIu32 " touchpad %" SDL_PRIs32 " finger %" SDL_PRIs32 " %s %.2f, %.2f, %.2f\n",
-                    event.ctouchpad.which,
-                    event.ctouchpad.touchpad,
-                    event.ctouchpad.finger,
+                    event.gtouchpad.which,
+                    event.gtouchpad.touchpad,
+                    event.gtouchpad.finger,
                     (event.type == SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN ? "pressed at" : (event.type == SDL_EVENT_GAMEPAD_TOUCHPAD_UP ? "released at" : "moved to")),
-                    event.ctouchpad.x,
-                    event.ctouchpad.y,
-                    event.ctouchpad.pressure);
+                    event.gtouchpad.x,
+                    event.gtouchpad.y,
+                    event.gtouchpad.pressure);
             break;
 
 #define VERBOSE_SENSORS
 #ifdef VERBOSE_SENSORS
         case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
             SDL_Log("Gamepad %" SDL_PRIu32 " sensor %s: %.2f, %.2f, %.2f (%" SDL_PRIu64 ")\n",
-                    event.csensor.which,
-                    GetSensorName((SDL_SensorType)event.csensor.sensor),
-                    event.csensor.data[0],
-                    event.csensor.data[1],
-                    event.csensor.data[2],
-                    event.csensor.sensor_timestamp);
+                    event.gsensor.which,
+                    GetSensorName((SDL_SensorType) event.gsensor.sensor),
+                    event.gsensor.data[0],
+                    event.gsensor.data[1],
+                    event.gsensor.data[2],
+                    event.gsensor.sensor_timestamp);
             break;
 #endif /* VERBOSE_SENSORS */
 
 #define VERBOSE_AXES
 #ifdef VERBOSE_AXES
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-            if (event.caxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.caxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
-                SetGamepad(event.caxis.which);
+            if (event.gaxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.gaxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
+                SetGamepad(event.gaxis.which);
             }
-            SDL_Log("Gamepad %" SDL_PRIu32 " axis %s changed to %d\n", event.caxis.which, SDL_GetGamepadStringForAxis((SDL_GamepadAxis)event.caxis.axis), event.caxis.value);
+            SDL_Log("Gamepad %" SDL_PRIu32 " axis %s changed to %d\n",
+                    event.gaxis.which,
+                    SDL_GetGamepadStringForAxis((SDL_GamepadAxis) event.gaxis.axis),
+                    event.gaxis.value);
             break;
 #endif /* VERBOSE_AXES */
 
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
         case SDL_EVENT_GAMEPAD_BUTTON_UP:
             if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
-                SetGamepad(event.cbutton.which);
+                SetGamepad(event.gbutton.which);
             }
-            SDL_Log("Gamepad %" SDL_PRIu32 " button %s %s\n", event.cbutton.which, SDL_GetGamepadStringForButton((SDL_GamepadButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
+            SDL_Log("Gamepad %" SDL_PRIu32 " button %s %s\n",
+                    event.gbutton.which,
+                    SDL_GetGamepadStringForButton((SDL_GamepadButton) event.gbutton.button),
+                    event.gbutton.state ? "pressed" : "released");
 
             /* Cycle PS5 trigger effects when the microphone button is pressed */
             if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN &&
-                event.cbutton.button == SDL_GAMEPAD_BUTTON_MISC1 &&
+                event.gbutton.button == SDL_GAMEPAD_BUTTON_MISC1 &&
                 SDL_GetGamepadType(gamepad) == SDL_GAMEPAD_TYPE_PS5) {
                 CyclePS5TriggerEffect();
             }

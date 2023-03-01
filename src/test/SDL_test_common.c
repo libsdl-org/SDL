@@ -1681,28 +1681,28 @@ static void SDLTest_PrintEvent(SDL_Event *event)
         break;
     case SDL_EVENT_GAMEPAD_ADDED:
         SDL_Log("SDL EVENT: Gamepad index %" SDL_PRIu32 " attached",
-                event->cdevice.which);
+                event->gdevice.which);
         break;
     case SDL_EVENT_GAMEPAD_REMOVED:
         SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " removed",
-                event->cdevice.which);
+                event->gdevice.which);
         break;
     case SDL_EVENT_GAMEPAD_AXIS_MOTION:
         SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " axis %d ('%s') value: %d",
-                event->caxis.which,
-                event->caxis.axis,
-                GamepadAxisName((SDL_GamepadAxis)event->caxis.axis),
-                event->caxis.value);
+                event->gaxis.which,
+                event->gaxis.axis,
+                GamepadAxisName((SDL_GamepadAxis)event->gaxis.axis),
+                event->gaxis.value);
         break;
     case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
         SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 "button %d ('%s') down",
-                event->cbutton.which, event->cbutton.button,
-                GamepadButtonName((SDL_GamepadButton)event->cbutton.button));
+                event->gbutton.which, event->gbutton.button,
+                GamepadButtonName((SDL_GamepadButton)event->gbutton.button));
         break;
     case SDL_EVENT_GAMEPAD_BUTTON_UP:
         SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " button %d ('%s') up",
-                event->cbutton.which, event->cbutton.button,
-                GamepadButtonName((SDL_GamepadButton)event->cbutton.button));
+                event->gbutton.which, event->gbutton.button,
+                GamepadButtonName((SDL_GamepadButton)event->gbutton.button));
         break;
     case SDL_EVENT_CLIPBOARD_UPDATE:
         SDL_Log("SDL EVENT: Clipboard updated");

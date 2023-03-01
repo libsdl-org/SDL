@@ -419,7 +419,7 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
 
             deviceevent.type = SDL_EVENT_GAMEPAD_ADDED;
             deviceevent.common.timestamp = 0;
-            deviceevent.cdevice.which = event->jdevice.which;
+            deviceevent.gdevice.which = event->jdevice.which;
             SDL_PushEvent(&deviceevent);
         }
     } break;
@@ -440,7 +440,7 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
 
             deviceevent.type = SDL_EVENT_GAMEPAD_REMOVED;
             deviceevent.common.timestamp = 0;
-            deviceevent.cdevice.which = event->jdevice.which;
+            deviceevent.gdevice.which = event->jdevice.which;
             SDL_PushEvent(&deviceevent);
         }
     } break;
@@ -1214,7 +1214,7 @@ static void SDL_PrivateRefreshGamepadMapping(GamepadMapping_t *pGamepadMapping)
 
                 event.type = SDL_EVENT_GAMEPAD_REMAPPED;
                 event.common.timestamp = 0;
-                event.cdevice.which = gamepad->joystick->instance_id;
+                event.gdevice.which = gamepad->joystick->instance_id;
                 SDL_PushEvent(&event);
             }
         }
@@ -1901,7 +1901,7 @@ int SDL_InitGamepads(void)
                 SDL_Event deviceevent;
                 deviceevent.type = SDL_EVENT_GAMEPAD_ADDED;
                 deviceevent.common.timestamp = 0;
-                deviceevent.cdevice.which = joysticks[i];
+                deviceevent.gdevice.which = joysticks[i];
                 SDL_PushEvent(&deviceevent);
             }
         }
@@ -3060,9 +3060,9 @@ static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gamep
         SDL_Event event;
         event.type = SDL_EVENT_GAMEPAD_AXIS_MOTION;
         event.common.timestamp = timestamp;
-        event.caxis.which = gamepad->joystick->instance_id;
-        event.caxis.axis = axis;
-        event.caxis.value = value;
+        event.gaxis.which = gamepad->joystick->instance_id;
+        event.gaxis.axis = axis;
+        event.gaxis.value = value;
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */
@@ -3120,9 +3120,9 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
 #if !SDL_EVENTS_DISABLED
     if (SDL_EventEnabled(event.type)) {
         event.common.timestamp = timestamp;
-        event.cbutton.which = gamepad->joystick->instance_id;
-        event.cbutton.button = button;
-        event.cbutton.state = state;
+        event.gbutton.which = gamepad->joystick->instance_id;
+        event.gbutton.button = button;
+        event.gbutton.state = state;
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */

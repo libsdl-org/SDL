@@ -2959,12 +2959,12 @@ int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touch
         SDL_Event event;
         event.type = event_type;
         event.common.timestamp = timestamp;
-        event.ctouchpad.which = joystick->instance_id;
-        event.ctouchpad.touchpad = touchpad;
-        event.ctouchpad.finger = finger;
-        event.ctouchpad.x = x;
-        event.ctouchpad.y = y;
-        event.ctouchpad.pressure = pressure;
+        event.gtouchpad.which = joystick->instance_id;
+        event.gtouchpad.touchpad = touchpad;
+        event.gtouchpad.finger = finger;
+        event.gtouchpad.x = x;
+        event.gtouchpad.y = y;
+        event.gtouchpad.pressure = pressure;
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */
@@ -2999,12 +2999,15 @@ int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorT
                     SDL_Event event;
                     event.type = SDL_EVENT_GAMEPAD_SENSOR_UPDATE;
                     event.common.timestamp = timestamp;
-                    event.csensor.which = joystick->instance_id;
-                    event.csensor.sensor = type;
-                    num_values = SDL_min(num_values, SDL_arraysize(event.csensor.data));
-                    SDL_memset(event.csensor.data, 0, sizeof(event.csensor.data));
-                    SDL_memcpy(event.csensor.data, data, num_values * sizeof(*data));
-                    event.csensor.sensor_timestamp = sensor_timestamp;
+                    event.gsensor.which = joystick->instance_id;
+                    event.gsensor.sensor = type;
+                    num_values = SDL_min(num_values,
+                                         SDL_arraysize(event.gsensor.data));
+                    SDL_memset(event.gsensor.data, 0,
+                               sizeof(event.gsensor.data));
+                    SDL_memcpy(event.gsensor.data, data,
+                               num_values * sizeof(*data));
+                    event.gsensor.sensor_timestamp = sensor_timestamp;
                     posted = SDL_PushEvent(&event) == 1;
                 }
 #endif /* !SDL_EVENTS_DISABLED */

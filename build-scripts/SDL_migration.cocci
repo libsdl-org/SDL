@@ -2467,3 +2467,53 @@ expression e2;
 - SDL_IsScreenSaverEnabled
 + SDL_ScreenSaverEnabled
   (...)
+@@
+SDL_Event e1;
+@@
+- e1.caxis
++ e1.gaxis
+@@
+SDL_Event e1;
+@@
+- e1.cbutton
++ e1.gbutton
+@@
+SDL_Event e1;
+@@
+- e1.cdevice
++ e1.gdevice
+@@
+SDL_Event e1;
+@@
+- e1.ctouchpad
++ e1.gtouchpad
+@@
+SDL_Event e1;
+@@
+- e1.csensor
++ e1.gsensor
+@@
+SDL_Event *e1;
+@@
+- e1->caxis
++ e1->gaxis
+@@
+SDL_Event *e1;
+@@
+- e1->cbutton
++ e1->gbutton
+@@
+SDL_Event *e1;
+@@
+- e1->cdevice
++ e1->gdevice
+@@
+SDL_Event *e1;
+@@
+- e1->ctouchpad
++ e1->gtouchpad
+@@
+SDL_Event *e1;
+@@
+- e1->csensor
++ e1->gsensor
