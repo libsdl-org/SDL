@@ -405,7 +405,7 @@ int TestCPUInfo(SDL_bool verbose)
         SDL_Log("NEON %s\n", SDL_HasNEON() ? "detected" : "not detected");
         SDL_Log("LSX %s\n", SDL_HasLSX() ? "detected" : "not detected");
         SDL_Log("LASX %s\n", SDL_HasLASX() ? "detected" : "not detected");
-        SDL_Log("System RAM %d MB\n", SDL_GetSystemRAM());
+        SDL_Log("System RAM %d MiB\n", SDL_GetSystemRAM());
     }
     return 0;
 }
