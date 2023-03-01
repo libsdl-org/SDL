@@ -40,7 +40,8 @@ endif()
 set(SDL_TEST_EXECUTABLES)
 set(SDL_TESTS_NONINTERACTIVE)
 
-add_library(sdltests_utils OBJECT
+# FIXME: can be OBJECT library for CMake 3.16
+add_library(sdltests_utils STATIC
     testutils.c
 )
 target_link_libraries(sdltests_utils PRIVATE SDL3::${sdl_name_component})
@@ -50,14 +51,14 @@ file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
 macro(add_sdl_test_executable TARGET)
     cmake_parse_arguments(AST "NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS" "" "" ${ARGN})
     set(SOURCES ${AST_UNPARSED_ARGUMENTS})
-    if(AST_TESTUTILS)
-        list(APPEND SOURCES $<TARGET_OBJECTS:sdltests_utils>)
-    endif()
     if(AST_NEEDS_RESOURCES)
         list(APPEND SOURCES ${RESOURCE_FILES})
     endif()
     add_executable(${TARGET} ${SOURCES})
     target_link_libraries(${TARGET} PRIVATE SDL3::SDL3_test SDL3::${sdl_name_component})
+    if(AST_TESTUTILS)
+        target_link_libraries(${TARGET} PRIVATE sdltests_utils)
+    endif()
 
     list(APPEND SDL_TEST_EXECUTABLES ${TARGET})
     if(AST_NONINTERACTIVE)
