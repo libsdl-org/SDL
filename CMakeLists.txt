@@ -3245,9 +3245,13 @@ if(SDL_SHARED)
       target_link_options(SDL3-shared PRIVATE -static-libgcc)
     endif()
   endif()
-  # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
-  set_property(TARGET SDL3-shared PROPERTY INTERFACE_SDL3_SHARED TRUE)
+  # Use `Compatible Interface Properties` to:
+  # - allow consumers to enforce a shared/static library
+  # - block linking to SDL libraries of different major version
   set_property(TARGET SDL3-shared APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
+  set_property(TARGET SDL3-shared PROPERTY INTERFACE_SDL3_SHARED TRUE)
+  set_property(TARGET SDL3-shared APPEND PROPERTY COMPATIBLE_INTERFACE_STRING "SDL_VERSION")
+  set_property(TARGET SDL3-shared PROPERTY INTERFACE_SDL_VERSION "SDL${SDL3_VERSION_MAJOR}")
   if(NOT CMAKE_VERSION VERSION_LESS "3.16")
     target_precompile_headers(SDL3-shared PRIVATE "${PROJECT_SOURCE_DIR}/src/SDL_internal.h")
   endif()
@@ -3283,9 +3287,13 @@ if(SDL_STATIC)
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3-static PRIVATE $<${build_local_interface}:sdl-build-options>)
   target_link_libraries(SDL3-static PRIVATE $<${build_local_interface}:sdl-global-options>)
-  # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
-  set_property(TARGET SDL3-static PROPERTY INTERFACE_SDL3_SHARED FALSE)
+  # Use `Compatible Interface Properties` to:
+  # - allow consumers to enforce a shared/static library
+  # - block linking to SDL libraries of different major version
   set_property(TARGET SDL3-static APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
+  set_property(TARGET SDL3-static PROPERTY INTERFACE_SDL3_SHARED FALSE)
+  set_property(TARGET SDL3-static APPEND PROPERTY COMPATIBLE_INTERFACE_STRING "SDL_VERSION")
+  set_property(TARGET SDL3-static PROPERTY INTERFACE_SDL_VERSION "SDL${SDL3_VERSION_MAJOR}")
   if(NOT CMAKE_VERSION VERSION_LESS "3.16")
     target_precompile_headers(SDL3-static PRIVATE "${PROJECT_SOURCE_DIR}/src/SDL_internal.h")
   endif()
@@ -3322,6 +3330,8 @@ if(SDL_TEST)
   )
   target_link_libraries(SDL3_test PUBLIC $<TARGET_NAME:SDL3::Headers>)
   target_link_libraries(SDL3_test PRIVATE ${EXTRA_TEST_LIBS})
+  set_property(TARGET SDL3_test APPEND PROPERTY COMPATIBLE_INTERFACE_STRING "SDL_VERSION")
+  set_property(TARGET SDL3_test PROPERTY INTERFACE_SDL_VERSION "SDL${SDL3_VERSION_MAJOR}")
 endif()
 
 ##### Configure installation folders #####

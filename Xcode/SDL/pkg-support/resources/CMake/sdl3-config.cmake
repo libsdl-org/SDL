@@ -65,6 +65,8 @@ if(NOT TARGET SDL3::SDL3-shared)
             IMPORTED_SONAME "${_sdl3_framework_path}/SDL3"
             COMPATIBLE_INTERFACE_BOOL "SDL3_SHARED"
             INTERFACE_SDL3_SHARED "ON"
+            COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+            INTERFACE_SDL_VERSION "SDL3"
     )
 endif()
 set(SDL3_SDL3-shared_FOUND TRUE)
