@@ -3129,9 +3129,9 @@ int SDL_RenderFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, int coun
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *srcrect, const SDL_FRect *dstrect)
+int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect)
 {
-    SDL_Rect real_srcrect;
+    SDL_FRect real_srcrect;
     SDL_FRect real_dstrect;
     int retval;
     int use_rendergeometry;
@@ -3152,10 +3152,10 @@ int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Re
 
     use_rendergeometry = (renderer->QueueCopy == NULL);
 
-    real_srcrect.x = 0;
-    real_srcrect.y = 0;
-    real_srcrect.w = texture->w;
-    real_srcrect.h = texture->h;
+    real_srcrect.x = 0.0f;
+    real_srcrect.y = 0.0f;
+    real_srcrect.w = (float)texture->w;
+    real_srcrect.h = (float)texture->h;
     if (srcrect) {
         if (!SDL_GetRectIntersection(srcrect, &real_srcrect, &real_srcrect)) {
             return 0;
@@ -3229,7 +3229,13 @@ int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Re
         real_dstrect.w *= renderer->view->scale.x;
         real_dstrect.h *= renderer->view->scale.y;
 
-        retval = QueueCmdCopy(renderer, texture, &real_srcrect, &real_dstrect);
+        SDL_Rect i_src_rect;
+        i_src_rect.x = (int) real_srcrect.x;
+        i_src_rect.y = (int) real_srcrect.y;
+        i_src_rect.w = (int) real_srcrect.w;
+        i_src_rect.h = (int) real_srcrect.h;
+
+        retval = QueueCmdCopy(renderer, texture, &i_src_rect, &real_dstrect);
     }
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
@@ -3272,7 +3278,7 @@ int SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
     real_srcrect.w = texture->w;
     real_srcrect.h = texture->h;
     if (srcrect) {
-        if (!SDL_GetRectIntersection(srcrect, &real_srcrect, &real_srcrect)) {
+        if (!SDL_GetRectIntersectionFloat(srcrect, &real_srcrect, &real_srcrect)) {
             return 0;
         }
     }
@@ -3317,10 +3323,10 @@ int SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
         const float s = SDL_sinf(radian_angle);
         const float c = SDL_cosf(radian_angle);
 
-        minu = (float)(real_srcrect.x) / (float)texture->w;
-        minv = (float)(real_srcrect.y) / (float)texture->h;
-        maxu = (float)(real_srcrect.x + real_srcrect.w) / (float)texture->w;
-        maxv = (float)(real_srcrect.y + real_srcrect.h) / (float)texture->h;
+        minu = eal_srcrect.x / (float)texture->w;
+        minv = real_srcrect.y / (float)texture->h;
+        maxu = (real_srcrect.x + real_srcrect.w) / (float)texture->w;
+        maxv = (real_srcrect.y + real_srcrect.h) / (float)texture->h;
 
         centerx = real_center.x + real_dstrect.x;
         centery = real_center.y + real_dstrect.y;
