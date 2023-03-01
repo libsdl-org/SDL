@@ -501,7 +501,7 @@ static int audio_printCurrentAudioDriver(void *arg)
 }
 
 /* Definition of all formats, channels, and frequencies used to test audio conversions */
-static const int g_numAudioFormats = 18;
+static const int g_numAudioFormats = 14;
 static SDL_AudioFormat g_audioFormats[] = { AUDIO_S8, AUDIO_U8, AUDIO_S16LSB, AUDIO_S16MSB, AUDIO_S16SYS, AUDIO_S16,
                                     AUDIO_S32LSB, AUDIO_S32MSB, AUDIO_S32SYS, AUDIO_S32,
                                     AUDIO_F32LSB, AUDIO_F32MSB, AUDIO_F32SYS, AUDIO_F32 };
