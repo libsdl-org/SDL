@@ -508,10 +508,10 @@ static const char *g_audioFormatsVerbose[] = { "AUDIO_S8", "AUDIO_U8", "AUDIO_S1
                                        "AUDIO_S32LSB", "AUDIO_S32MSB", "AUDIO_S32SYS", "AUDIO_S32",
                                        "AUDIO_F32LSB", "AUDIO_F32MSB", "AUDIO_F32SYS", "AUDIO_F32" };
 static const int g_numAudioFormats = SDL_arraysize(g_audioFormats);
-static const int g_numAudioChannels = 4;
 static Uint8 g_audioChannels[] = { 1, 2, 4, 6 };
-static const int g_numAudioFrequencies = 4;
+static const int g_numAudioChannels = SDL_arraysize(g_audioChannels);
 static int g_audioFrequencies[] = { 11025, 22050, 44100, 48000 };
+static const int g_numAudioFrequencies = SDL_arraysize(g_audioFrequencies);
 
 /**
  * \brief Builds various audio conversion structures
