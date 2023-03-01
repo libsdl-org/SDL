@@ -72,6 +72,8 @@ if(EXISTS "${_sdl3_library}" AND EXISTS "${_sdl3_dll_library}")
                 IMPORTED_LOCATION "${_sdl3_dll_library}"
                 COMPATIBLE_INTERFACE_BOOL "SDL3_SHARED"
                 INTERFACE_SDL3_SHARED "ON"
+                COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+                INTERFACE_SDL_VERSION "SDL3"
         )
     endif()
     set(SDL3_SDL3-shared_FOUND TRUE)
@@ -91,6 +93,8 @@ if(EXISTS "${_sdl3test_library}")
             PROPERTIES
                 INTERFACE_LINK_LIBRARIES "SDL3::Headers"
                 IMPORTED_LOCATION "${_sdl3test_library}"
+                COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+                INTERFACE_SDL_VERSION "SDL3"
         )
     endif()
     set(SDL3_SDL3_test_FOUND TRUE)
