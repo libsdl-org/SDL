@@ -79,7 +79,9 @@ static DWORD GetWindowStyle(SDL_Window *window)
 {
     DWORD style = 0;
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    if (SDL_WINDOW_IS_POPUP(window)) {
+        style |= WS_POPUP;
+    } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style |= STYLE_FULLSCREEN;
     } else {
         if (window->flags & SDL_WINDOW_BORDERLESS) {
@@ -114,6 +116,16 @@ static DWORD GetWindowStyle(SDL_Window *window)
     return style;
 }
 
+static DWORD GetWindowStyleEx(SDL_Window *window)
+{
+    DWORD style = WS_EX_APPWINDOW;
+
+    if (SDL_WINDOW_IS_POPUP(window)) {
+        style = WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
+    }
+    return style;
+}
+
 /**
  * Returns arguments to pass to SetWindowPos - the window rect, including frame, in Windows coordinates.
  * Can be called before we have a HWND.
@@ -128,8 +140,10 @@ static void WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL 
 #endif
 
     /* Client rect, in SDL screen coordinates */
-    *x = (use_current ? window->x : window->windowed.x);
-    *y = (use_current ? window->y : window->windowed.y);
+    SDL_RelativeToGlobalForWindow(window,
+                                  (use_current ? window->x : window->windowed.x),
+                                  (use_current ? window->y : window->windowed.y),
+                                  x, y);
     *width = (use_current ? window->w : window->windowed.w);
     *height = (use_current ? window->h : window->windowed.h);
 
@@ -222,8 +236,9 @@ static void WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width,
     WIN_AdjustWindowRectWithStyle(window, style, menu, x, y, width, height, use_current);
 }
 
-static void WIN_SetWindowPositionInternal(_THIS, SDL_Window *window, UINT flags)
+void WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags)
 {
+    SDL_Window *child_window;
     SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
     HWND top;
@@ -242,6 +257,11 @@ static void WIN_SetWindowPositionInternal(_THIS, SDL_Window *window, UINT flags)
     data->expected_resize = SDL_TRUE;
     SetWindowPos(hwnd, top, x, y, w, h, flags);
     data->expected_resize = SDL_FALSE;
+
+    /* Update any child windows */
+    for (child_window = window->first_child; child_window != NULL; child_window = child_window->next_sibling) {
+        WIN_SetWindowPositionInternal(child_window, flags);
+    }
 }
 
 static void SDLCALL WIN_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -304,7 +324,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
     data->hwnd = hwnd;
     data->parent = parent;
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    data->hdc = (HDC) data->hwnd;
+    data->hdc = (HDC)data->hwnd;
 #else
     data->hdc = GetDC(hwnd);
 #endif
@@ -445,6 +465,10 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
         window->flags |= SDL_WINDOW_ALLOW_HIGHDPI;
     }
 
+    if (data->parent && !window->parent) {
+        data->destroy_parent_with_window = SDL_TRUE;
+    }
+
     data->initializing = SDL_FALSE;
 
     /* All done! */
@@ -470,7 +494,7 @@ static void CleanupWindowData(_THIS, SDL_Window *window)
 #endif
         if (data->created) {
             DestroyWindow(data->hwnd);
-            if (data->parent) {
+            if (data->destroy_parent_with_window && data->parent) {
                 DestroyWindow(data->parent);
             }
         } else {
@@ -490,29 +514,81 @@ static void CleanupWindowData(_THIS, SDL_Window *window)
     window->driverdata = NULL;
 }
 
+static void WIN_ConstrainPopup(SDL_Window *window)
+{
+    /* Clamp popup windows to the output borders */
+    if (SDL_WINDOW_IS_POPUP(window)) {
+        SDL_Window *w;
+        SDL_DisplayID displayID;
+        SDL_Rect rect;
+        int abs_x = window->x;
+        int abs_y = window->y;
+        int offset_x = 0, offset_y = 0;
+
+        /* Calculate the total offset from the parents */
+        for (w = window->parent; w->parent != NULL; w = w->parent) {
+            offset_x += w->x;
+            offset_y += w->y;
+        }
+
+        offset_x += w->x;
+        offset_y += w->y;
+        abs_x += offset_x;
+        abs_y += offset_y;
+
+        /* Constrain the popup window to the display of the toplevel parent */
+        displayID = SDL_GetDisplayForWindow(w);
+        SDL_GetDisplayBounds(displayID, &rect);
+        if (abs_x + window->w > rect.x + rect.w) {
+            abs_x -= (abs_x + window->w) - (rect.x + rect.w);
+        }
+        if (abs_y + window->h > rect.y + rect.h) {
+            abs_y -= (abs_y + window->h) - (rect.y + rect.h);
+        }
+        abs_x = SDL_max(abs_x, rect.x);
+        abs_y = SDL_max(abs_y, rect.y);
+
+        window->x = window->windowed.x = abs_x - offset_x;
+        window->y = window->windowed.y = abs_y - offset_y;
+    }
+}
+
+static void WIN_SetKeyboardFocus(SDL_Window *window)
+{
+    SDL_Window *topmost = window;
+
+    /* Find the topmost parent */
+    while (topmost->parent != NULL) {
+    topmost = topmost->parent;
+    }
+
+    topmost->driverdata->keyboard_focus = window;
+    SDL_SetKeyboardFocus(window);
+}
+
 int WIN_CreateWindow(_THIS, SDL_Window *window)
 {
     HWND hwnd, parent = NULL;
     DWORD style = STYLE_BASIC;
+    DWORD styleEx = 0;
     int x, y;
     int w, h;
 
-    if (window->flags & SDL_WINDOW_SKIP_TASKBAR) {
+    if (SDL_WINDOW_IS_POPUP(window)) {
+        parent = window->parent->driverdata->hwnd;
+    } else if (window->flags & SDL_WINDOW_SKIP_TASKBAR) {
         parent = CreateWindow(SDL_Appname, TEXT(""), STYLE_BASIC, 0, 0, 32, 32, NULL, NULL, SDL_Instance, NULL);
     }
 
     style |= GetWindowStyle(window);
+    styleEx |= GetWindowStyleEx(window);
 
     /* Figure out what the window area will be */
+    WIN_ConstrainPopup(window);
     WIN_AdjustWindowRectWithStyle(window, style, FALSE, &x, &y, &w, &h, SDL_FALSE);
 
-    if (window->undefined_x && window->undefined_y &&
-        window->last_displayID == SDL_GetPrimaryDisplay()) {
-        x = CW_USEDEFAULT;
-        y = CW_USEDEFAULT; /* Not actually used */
-    }
-
-    hwnd = CreateWindow(SDL_Appname, TEXT(""), style, x, y, w, h, parent, NULL, SDL_Instance, NULL);
+    hwnd = CreateWindowEx(styleEx, SDL_Appname, TEXT(""), style,
+                          x, y, w, h, parent, NULL, SDL_Instance, NULL);
     if (!hwnd) {
         return WIN_SetError("Couldn't create window");
     }
@@ -711,12 +787,13 @@ void WIN_SetWindowPosition(_THIS, SDL_Window *window)
     /* HighDPI support: removed SWP_NOSIZE. If the move results in a DPI change, we need to allow
      * the window to resize (e.g. AdjustWindowRectExForDpi frame sizes are different).
      */
-    WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOACTIVATE);
+    WIN_ConstrainPopup(window);
+    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOACTIVATE);
 }
 
 void WIN_SetWindowSize(_THIS, SDL_Window *window)
 {
-    WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOACTIVATE);
+    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
 int WIN_GetWindowBordersSize(_THIS, SDL_Window *window, int *top, int *left, int *bottom, int *right)
@@ -814,12 +891,32 @@ void WIN_ShowWindow(_THIS, SDL_Window *window)
         nCmdShow = SW_SHOWNOACTIVATE;
     }
     ShowWindow(hwnd, nCmdShow);
+
+    if (window->flags & SDL_WINDOW_POPUP_MENU) {
+        if (window->parent == SDL_GetKeyboardFocus()) {
+            WIN_SetKeyboardFocus(window);
+        }
+    }
 }
 
 void WIN_HideWindow(_THIS, SDL_Window *window)
 {
     HWND hwnd = window->driverdata->hwnd;
     ShowWindow(hwnd, SW_HIDE);
+
+    /* Transfer keyboard focus back to the parent */
+    if (window->flags & SDL_WINDOW_POPUP_MENU) {
+        if (window == SDL_GetKeyboardFocus()) {
+            SDL_Window *new_focus = window->parent;
+
+            /* Find the highest level window that isn't being hidden or destroyed. */
+            while (new_focus->parent != NULL && (new_focus->is_hiding || new_focus->is_destroying)) {
+                new_focus = new_focus->parent;
+            }
+
+            WIN_SetKeyboardFocus(new_focus);
+        }
+    }
 }
 
 void WIN_RaiseWindow(_THIS, SDL_Window *window)
@@ -885,7 +982,7 @@ void WIN_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
 
     data->in_border_change = SDL_TRUE;
     SetWindowLong(hwnd, GWL_STYLE, style);
-    WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE);
+    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE);
     data->in_border_change = SDL_FALSE;
 }
 
@@ -1228,7 +1325,7 @@ void WIN_OnWindowEnter(_THIS, SDL_Window *window)
     }
 
     if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
-        WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOACTIVATE);
+        WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOACTIVATE);
     }
 }
 

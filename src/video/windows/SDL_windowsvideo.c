@@ -260,6 +260,8 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
 
     device->free = WIN_DeleteDevice;
 
+    device->quirk_flags = VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT;
+
     return device;
 }
 
