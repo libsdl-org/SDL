@@ -115,12 +115,22 @@
 
 - (BOOL)canBecomeKeyWindow
 {
-    return YES;
+    SDL_Window *window = [self findSDLWindow];
+    if (window && !SDL_WINDOW_IS_POPUP(window)) {
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 - (BOOL)canBecomeMainWindow
 {
-    return YES;
+    SDL_Window *window = [self findSDLWindow];
+    if (window && !SDL_WINDOW_IS_POPUP(window)) {
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 - (void)sendEvent:(NSEvent *)event
@@ -324,13 +334,17 @@ static NSUInteger GetWindowWindowedStyle(SDL_Window *window)
        minimize the window, whether there's a title bar or not */
     NSUInteger style = NSWindowStyleMaskMiniaturizable;
 
-    if (window->flags & SDL_WINDOW_BORDERLESS) {
-        style |= NSWindowStyleMaskBorderless;
+    if (!SDL_WINDOW_IS_POPUP(window)) {
+        if (window->flags & SDL_WINDOW_BORDERLESS) {
+            style |= NSWindowStyleMaskBorderless;
+        } else {
+            style |= (NSWindowStyleMaskTitled | NSWindowStyleMaskClosable);
+        }
+        if (window->flags & SDL_WINDOW_RESIZABLE) {
+            style |= NSWindowStyleMaskResizable;
+        }
     } else {
-        style |= (NSWindowStyleMaskTitled | NSWindowStyleMaskClosable);
-    }
-    if (window->flags & SDL_WINDOW_RESIZABLE) {
-        style |= NSWindowStyleMaskResizable;
+        style |= NSWindowStyleMaskBorderless;
     }
     return style;
 }
@@ -475,6 +489,21 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
             }
         }
     }
+}
+
+static void Cocoa_SetKeyboardFocus(SDL_Window *window)
+{
+    SDL_Window *topmost = window;
+    SDL_CocoaWindowData* topmost_data;
+
+    /* Find the topmost parent */
+    while (topmost->parent != NULL) {
+        topmost = topmost->parent;
+    }
+
+    topmost_data = (__bridge SDL_CocoaWindowData *)topmost->driverdata;
+    topmost_data.keyboard_focus = window;
+    SDL_SetKeyboardFocus(window);
 }
 
 @implementation Cocoa_WindowListener
@@ -785,6 +814,8 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 
     ScheduleContextUpdates(_data);
 
+    /* Get the parent-relative coordinates for child windows. */
+    SDL_GlobalToRelativeForWindow(window, x, y, &x, &y);
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
 }
 
@@ -820,6 +851,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 
     /* The window can move during a resize event, such as when maximizing
        or resizing from a corner */
+    SDL_GlobalToRelativeForWindow(window, x, y, &x, &y);
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
 
@@ -857,7 +889,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 
     /* We're going to get keyboard events, since we're key. */
     /* This needs to be done before restoring the relative mouse mode. */
-    SDL_SetKeyboardFocus(window);
+    Cocoa_SetKeyboardFocus(_data.keyboard_focus ? _data.keyboard_focus : window);
 
     if (mouse->relative_mode && !mouse->relative_mode_warp && ![self isMovingOrFocusClickPending]) {
         mouse->SetRelativeMouseMode(SDL_TRUE);
@@ -1642,13 +1674,16 @@ static int SetupWindowData(_THIS, SDL_Window *window, NSWindow *nswindow, NSView
 
         /* Fill in the SDL window with the window data */
         {
+            int x, y;
             NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
             BOOL fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
             ConvertNSRect([nswindow screen], fullscreen, &rect);
-            window->x = (int)rect.origin.x;
-            window->y = (int)rect.origin.y;
+            x = (int)rect.origin.x;
+            y = (int)rect.origin.y;
             window->w = (int)rect.size.width;
             window->h = (int)rect.size.height;
+
+            SDL_GlobalToRelativeForWindow(window, x, y, &window->x, &window->y);
         }
 
         /* Set up the listener after we create the view */
@@ -1691,9 +1726,22 @@ static int SetupWindowData(_THIS, SDL_Window *window, NSWindow *nswindow, NSView
             window->flags &= ~SDL_WINDOW_MINIMIZED;
         }
 
-        if ([nswindow isKeyWindow]) {
-            window->flags |= SDL_WINDOW_INPUT_FOCUS;
-            SDL_SetKeyboardFocus(data.window);
+        if (!SDL_WINDOW_IS_POPUP(window)) {
+            if ([nswindow isKeyWindow]) {
+                window->flags |= SDL_WINDOW_INPUT_FOCUS;
+                Cocoa_SetKeyboardFocus(data.window);
+            }
+        } else {
+            NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->driverdata).nswindow;
+            [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
+
+            if (window->flags & SDL_WINDOW_TOOLTIP) {
+                [nswindow setIgnoresMouseEvents:YES];
+            } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
+                if (window->parent == SDL_GetKeyboardFocus()) {
+                    Cocoa_SetKeyboardFocus(window);
+                }
+            }
         }
 
         /* SDL_CocoaWindowData will be holding a strong reference to the NSWindow, and
@@ -1718,23 +1766,21 @@ int Cocoa_CreateWindow(_THIS, SDL_Window *window)
     @autoreleasepool {
         SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
         NSWindow *nswindow;
-        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
+        int x, y;
         NSRect rect;
         BOOL fullscreen;
-        SDL_Rect bounds;
         NSUInteger style;
         NSArray *screens = [NSScreen screens];
         NSScreen *screen = nil;
         SDLView *contentView;
         BOOL highdpi;
 
-        Cocoa_GetDisplayBounds(_this, display, &bounds);
-        rect.origin.x = window->x;
-        rect.origin.y = window->y;
+        SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y);
+        rect.origin.x = x;
+        rect.origin.y = y;
         rect.size.width = window->w;
         rect.size.height = window->h;
         fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
-        ConvertNSRect([screens objectAtIndex:0], fullscreen, &rect);
 
         style = GetWindowStyle(window);
 
@@ -1750,6 +1796,22 @@ int Cocoa_CreateWindow(_THIS, SDL_Window *window)
                 rect.origin.y -= screenRect.origin.y;
             }
         }
+
+        /* Constrain the popup */
+        if (SDL_WINDOW_IS_POPUP(window)) {
+            NSRect bounds = [screen frame];
+
+            if (rect.origin.x + rect.size.width > bounds.origin.x + bounds.size.width) {
+                rect.origin.x -= (rect.origin.x + rect.size.width) - (bounds.origin.x + bounds.size.width);
+            }
+            if (rect.origin.y + rect.size.height > bounds.origin.y + bounds.size.height) {
+                rect.origin.y -= (rect.origin.y + rect.size.height) - (bounds.origin.y + bounds.size.height);
+            }
+            rect.origin.x = SDL_max(rect.origin.x, bounds.origin.x);
+            rect.origin.y = SDL_max(rect.origin.y, bounds.origin.y);
+        }
+
+        ConvertNSRect([screens objectAtIndex:0], fullscreen, &rect);
 
         @try {
             nswindow = [[SDLWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO screen:screen];
@@ -1910,16 +1972,34 @@ void Cocoa_SetWindowPosition(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->driverdata;
+        NSRect bounds;
         NSWindow *nswindow = windata.nswindow;
         NSRect rect;
         BOOL fullscreen;
         Uint64 moveHack;
+        int x, y;
 
-        rect.origin.x = window->x;
-        rect.origin.y = window->y;
+        SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y);
+        rect.origin.x = x;
+        rect.origin.y = y;
         rect.size.width = window->w;
         rect.size.height = window->h;
         fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
+
+        /* Position and constrain the popup */
+        if (SDL_WINDOW_IS_POPUP(window)) {
+            bounds = [[nswindow screen] frame];
+
+            if (rect.origin.x + rect.size.width > bounds.origin.x + bounds.size.width) {
+                rect.origin.x -= (rect.origin.x + rect.size.width) - (bounds.origin.x + bounds.size.width);
+            }
+            if (rect.origin.y + rect.size.height > bounds.origin.y + bounds.size.height) {
+                rect.origin.y -= (rect.origin.y + rect.size.height) - (bounds.origin.y + bounds.size.height);
+            }
+            rect.origin.x = SDL_max(rect.origin.x, bounds.origin.x);
+            rect.origin.y = SDL_max(rect.origin.y, bounds.origin.y);
+        }
+
         ConvertNSRect([nswindow screen], fullscreen, &rect);
 
         moveHack = s_moveHack;
@@ -2023,6 +2103,20 @@ void Cocoa_HideWindow(_THIS, SDL_Window *window)
         NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
 
         [nswindow orderOut:nil];
+
+        /* Transfer keyboard focus back to the parent */
+        if (window->flags & SDL_WINDOW_POPUP_MENU) {
+            if (window == SDL_GetKeyboardFocus()) {
+                SDL_Window *new_focus = window->parent;
+
+                /* Find the highest level window that isn't being hidden or destroyed. */
+                while (new_focus->parent != NULL && (new_focus->is_hiding || new_focus->is_destroying)) {
+                    new_focus = new_focus->parent;
+                }
+
+                Cocoa_SetKeyboardFocus(new_focus);
+            }
+        }
     }
 }
 
