@@ -770,7 +770,7 @@ static ControllerMapping_t *SDL_PrivateMatchControllerMappingForGUID(SDL_Joystic
 /*
  * Helper function to scan the mappings database for a controller with the specified GUID
  */
-static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool create_mapping)
+static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool adding_mapping)
 {
     ControllerMapping_t *mapping;
     Uint16 vendor, product, crc;
@@ -790,6 +790,13 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
         return mapping;
     }
 
+    if (adding_mapping) {
+        /* We didn't find an existing mapping */
+        return NULL;
+    }
+
+    /* Try harder to get the best match, or create a mapping */
+
     if (vendor && product) {
         /* Try again, ignoring the version */
         if (crc) {
@@ -805,30 +812,24 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
         }
     }
 
-    if (!create_mapping) {
-        return NULL;
-    }
-
 #if SDL_JOYSTICK_XINPUT
     if (SDL_IsJoystickXInput(guid)) {
         /* This is an XInput device */
         return s_pXInputMapping;
     }
 #endif
-    if (!mapping) {
-        if (SDL_IsJoystickHIDAPI(guid)) {
-            mapping = SDL_CreateMappingForHIDAPIController(guid);
-        } else if (SDL_IsJoystickRAWINPUT(guid)) {
-            mapping = SDL_CreateMappingForRAWINPUTController(guid);
-        } else if (SDL_IsJoystickWGI(guid)) {
-            mapping = SDL_CreateMappingForWGIController(guid);
-        } else if (SDL_IsJoystickVirtual(guid)) {
-            /* We'll pick up a robust mapping in VIRTUAL_JoystickGetGamepadMapping */
+    if (SDL_IsJoystickHIDAPI(guid)) {
+        mapping = SDL_CreateMappingForHIDAPIController(guid);
+    } else if (SDL_IsJoystickRAWINPUT(guid)) {
+        mapping = SDL_CreateMappingForRAWINPUTController(guid);
+    } else if (SDL_IsJoystickWGI(guid)) {
+        mapping = SDL_CreateMappingForWGIController(guid);
+    } else if (SDL_IsJoystickVirtual(guid)) {
+        /* We'll pick up a robust mapping in VIRTUAL_JoystickGetGamepadMapping */
 #ifdef __ANDROID__
-        } else {
-            mapping = SDL_CreateMappingForAndroidController(guid);
+    } else {
+        mapping = SDL_CreateMappingForAndroidController(guid);
 #endif
-        }
     }
     return mapping;
 }
@@ -1276,7 +1277,7 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
         }
     }
 
-    pControllerMapping = SDL_PrivateGetControllerMappingForGUID(jGUID, SDL_FALSE);
+    pControllerMapping = SDL_PrivateGetControllerMappingForGUID(jGUID, SDL_TRUE);
     if (pControllerMapping) {
         /* Only overwrite the mapping if the priority is the same or higher. */
         if (pControllerMapping->priority <= priority) {
@@ -1336,7 +1337,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
 {
     ControllerMapping_t *mapping;
 
-    mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_TRUE);
+    mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_FALSE);
 #ifdef __LINUX__
     if (!mapping && name) {
         if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
@@ -1751,7 +1752,7 @@ SDL_GameControllerMappingForIndex(int mapping_index)
 char *
 SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid)
 {
-    ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_TRUE);
+    ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_FALSE);
     if (mapping) {
         return CreateMappingString(mapping, guid);
     } else {
