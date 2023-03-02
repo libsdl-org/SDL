@@ -144,7 +144,7 @@ static HMODULE hid_lib_handle = NULL;
 static HMODULE cfgmgr32_lib_handle = NULL;
 static BOOLEAN hidapi_initialized = FALSE;
 
-static void free_library_handles()
+static void free_library_handles(void)
 {
 	if (hid_lib_handle)
 		FreeLibrary(hid_lib_handle);
@@ -158,7 +158,7 @@ static void free_library_handles()
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
-static int lookup_functions()
+static int lookup_functions(void)
 {
 	hid_lib_handle = LoadLibraryW(L"hid.dll");
 	if (hid_lib_handle == NULL) {
@@ -242,7 +242,7 @@ IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServiceP
 	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
 }
 
-static hid_device *new_hid_device()
+static hid_device *new_hid_device(void)
 {
 	hid_device *dev = (hid_device*) calloc(1, sizeof(hid_device));
 	dev->device_handle = INVALID_HANDLE_VALUE;
@@ -446,6 +446,7 @@ static int hid_internal_get_interface_number(const wchar_t* hardware_id)
 static void hid_internal_get_info(const wchar_t* interface_path, struct hid_device_info* dev)
 {
 	wchar_t *device_id = NULL, *compatible_ids = NULL, *hardware_ids = NULL;
+	wchar_t *id;
 	CONFIGRET cr;
 	DEVINST dev_node;
 
@@ -465,11 +466,12 @@ static void hid_internal_get_info(const wchar_t* interface_path, struct hid_devi
 		goto end;
 
 	/* Search for interface number in hardware ids */
-	for (wchar_t* hardware_id = hardware_ids; *hardware_id; hardware_id += wcslen(hardware_id) + 1) {
+	for (id = hardware_ids; *id; id += wcslen(id) + 1) {
 		/* Normalize to upper case */
-		for (wchar_t* p = hardware_id; *p; ++p) *p = towupper(*p);
+		wchar_t* p = id;
+		for (; *p; ++p) *p = towupper(*p);
 
-		dev->interface_number = hid_internal_get_interface_number(hardware_id);
+		dev->interface_number = hid_internal_get_interface_number(id);
 
 		if (dev->interface_number != -1)
 			break;
@@ -486,27 +488,28 @@ static void hid_internal_get_info(const wchar_t* interface_path, struct hid_devi
 		goto end;
 
 	/* Now we can parse parent's compatible IDs to find out the device bus type */
-	for (wchar_t* compatible_id = compatible_ids; *compatible_id; compatible_id += wcslen(compatible_id) + 1) {
+	for (id = compatible_ids; *id; id += wcslen(id) + 1) {
 		/* Normalize to upper case */
-		for (wchar_t* p = compatible_id; *p; ++p) *p = towupper(*p);
+		wchar_t* p = id;
+		for (; *p; ++p) *p = towupper(*p);
 
 		/* USB devices
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-support
 		   https://docs.microsoft.com/windows-hardware/drivers/install/standard-usb-identifiers */
-		if (wcsstr(compatible_id, L"USB") != NULL) {
+		if (wcsstr(id, L"USB") != NULL) {
 			dev->bus_type = HID_API_BUS_USB;
 			break;
 		}
 
 		/* Bluetooth devices
 		   https://docs.microsoft.com/windows-hardware/drivers/bluetooth/installing-a-bluetooth-device */
-		if (wcsstr(compatible_id, L"BTHENUM") != NULL) {
+		if (wcsstr(id, L"BTHENUM") != NULL) {
 			dev->bus_type = HID_API_BUS_BLUETOOTH;
 			break;
 		}
 
 		/* Bluetooth LE devices */
-		if (wcsstr(compatible_id, L"BTHLEDEVICE") != NULL) {
+		if (wcsstr(id, L"BTHLEDEVICE") != NULL) {
 			/* HidD_GetProductString/HidD_GetManufacturerString/HidD_GetSerialNumberString is not working for BLE HID devices
 			   Request this info via dev node properties instead.
 			   https://docs.microsoft.com/answers/questions/401236/hidd-getproductstring-with-ble-hid-device.html */
@@ -518,14 +521,14 @@ static void hid_internal_get_info(const wchar_t* interface_path, struct hid_devi
 
 		/* I2C devices
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-support-and-power-management */
-		if (wcsstr(compatible_id, L"PNP0C50") != NULL) {
+		if (wcsstr(id, L"PNP0C50") != NULL) {
 			dev->bus_type = HID_API_BUS_I2C;
 			break;
 		}
 
 		/* SPI devices
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-for-spi */
-		if (wcsstr(compatible_id, L"PNP0C51") != NULL) {
+		if (wcsstr(id, L"PNP0C51") != NULL) {
 			dev->bus_type = HID_API_BUS_SPI;
 			break;
 		}
@@ -570,7 +573,7 @@ static wchar_t *hid_internal_UTF8toUTF16(const char *src)
 static int hid_get_bluetooth_info(const char *path, struct hid_device_info* dev)
 {
 	wchar_t *interface_path = NULL, *device_id = NULL, *compatible_ids = NULL;
-	wchar_t *compatible_id;
+	wchar_t *id;
 	CONFIGRET cr;
 	DEVINST dev_node;
 	int is_bluetooth = 0;
@@ -597,29 +600,29 @@ static int hid_get_bluetooth_info(const char *path, struct hid_device_info* dev)
 		goto end;
 
 	/* Now we can parse parent's compatible IDs to find out the device bus type */
-	for (compatible_id = compatible_ids; *compatible_id; compatible_id += wcslen(compatible_id) + 1) {
+	for (id = compatible_ids; *id; id += wcslen(id) + 1) {
 		/* Normalize to upper case */
-		wchar_t* p = compatible_id;
+		wchar_t* p = id;
 		for (; *p; ++p) *p = towupper(*p);
 
 		/* USB devices
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-support
 		   https://docs.microsoft.com/windows-hardware/drivers/install/standard-usb-identifiers */
-		if (wcsstr(compatible_id, L"USB") != NULL) {
+		if (wcsstr(id, L"USB") != NULL) {
 			/*dev->bus_type = HID_API_BUS_USB;*/
 			break;
 		}
 
 		/* Bluetooth devices
 		   https://docs.microsoft.com/windows-hardware/drivers/bluetooth/installing-a-bluetooth-device */
-		if (wcsstr(compatible_id, L"BTHENUM") != NULL) {
+		if (wcsstr(id, L"BTHENUM") != NULL) {
 			/*dev->bus_type = HID_API_BUS_BLUETOOTH;*/
 			is_bluetooth = 1;
 			break;
 		}
 
 		/* Bluetooth LE devices */
-		if (wcsstr(compatible_id, L"BTHLEDEVICE") != NULL) {
+		if (wcsstr(id, L"BTHLEDEVICE") != NULL) {
 			/* HidD_GetProductString/HidD_GetManufacturerString/HidD_GetSerialNumberString is not working for BLE HID devices
 			   Request this info via dev node properties instead.
 			   https://docs.microsoft.com/answers/questions/401236/hidd-getproductstring-with-ble-hid-device.html */
@@ -633,14 +636,14 @@ static int hid_get_bluetooth_info(const char *path, struct hid_device_info* dev)
 
 		/* I2C devices
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-support-and-power-management */
-		if (wcsstr(compatible_id, L"PNP0C50") != NULL) {
+		if (wcsstr(id, L"PNP0C50") != NULL) {
 			/*dev->bus_type = HID_API_BUS_I2C;*/
 			break;
 		}
 
 		/* SPI devices
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-for-spi */
-		if (wcsstr(compatible_id, L"PNP0C51") != NULL) {
+		if (wcsstr(id, L"PNP0C51") != NULL) {
 			/*dev->bus_type = HID_API_BUS_SPI;*/
 			break;
 		}
