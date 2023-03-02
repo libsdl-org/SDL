@@ -34,19 +34,4 @@ size_t SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *buf, const size_t len);
 size_t SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *buf, const size_t len);
 size_t SDL_GetDataQueueSize(SDL_DataQueue *queue);
 
-/* this sets a section of the data queue aside (possibly allocating memory for it)
-   as if it's been written to, but returns a pointer to that space. You may write
-   to this space until a read would consume it. Writes (and other calls to this
-   function) will safely append their data after this reserved space and can
-   be in flight at the same time. There is no thread safety.
-   If there isn't an existing block of memory that can contain the reserved
-   space, one will be allocated for it. You can not (currently) allocate
-   a space larger than the packetlen requested in SDL_CreateDataQueue.
-   Returned buffer is uninitialized.
-   This lets you avoid an extra copy in some cases, but it's safer to use
-   SDL_WriteToDataQueue() unless you know what you're doing.
-   Returns pointer to buffer of at least (len) bytes, NULL on error.
-*/
-void *SDL_ReserveSpaceInDataQueue(SDL_DataQueue *queue, const size_t len);
-
 #endif /* SDL_dataqueue_h_ */
