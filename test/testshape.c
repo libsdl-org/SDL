@@ -26,21 +26,14 @@ typedef struct LoadedPicture
     const char *name;
 } LoadedPicture;
 
-void render(SDL_Renderer *renderer, SDL_Texture *texture, SDL_FRect texture_dimensions)
+void render(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    SDL_FRect dst;
-
     /* Clear render-target to blue. */
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xff, 0xff);
     SDL_RenderClear(renderer);
 
     /* Render the texture. */
-    dst.x = texture_dimensions.x;
-    dst.y = texture_dimensions.y;
-    dst.w = texture_dimensions.w;
-    dst.h = texture_dimensions.h;
-    SDL_RenderTexture(renderer, texture, &texture_dimensions, &dst);
-
+    SDL_RenderTexture(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
 }
 
@@ -59,7 +52,6 @@ int main(int argc, char **argv)
     int button_down;
     Uint32 pixelFormat = 0;
     int w, h, access = 0;
-    SDL_FRect texture_dimensions;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -110,7 +102,6 @@ int main(int argc, char **argv)
                                     SHAPED_WINDOW_X, SHAPED_WINDOW_Y,
                                     SHAPED_WINDOW_DIMENSION, SHAPED_WINDOW_DIMENSION,
                                     0);
-    SDL_SetWindowPosition(window, SHAPED_WINDOW_X, SHAPED_WINDOW_Y);
     if (window == NULL) {
         for (i = 0; i < num_pictures; i++) {
             SDL_DestroySurface(pictures[i].surface);
@@ -160,10 +151,6 @@ int main(int argc, char **argv)
     button_down = 0;
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture].name);
     SDL_QueryTexture(pictures[current_picture].texture, &pixelFormat, &access, &w, &h);
-    texture_dimensions.x = 0.0f;
-    texture_dimensions.y = 0.0f;
-    texture_dimensions.h = (float)w;
-    texture_dimensions.w = (float)h;
     SDL_SetWindowSize(window, w, h);
     SDL_SetWindowShape(window, pictures[current_picture].surface, &pictures[current_picture].mode);
     while (should_exit == 0) {
@@ -183,8 +170,6 @@ int main(int argc, char **argv)
                 }
                 SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture].name);
                 SDL_QueryTexture(pictures[current_picture].texture, &pixelFormat, &access, &w, &h);
-                texture_dimensions.h = (float)w;
-                texture_dimensions.w = (float)h;
                 SDL_SetWindowSize(window, w, h);
                 SDL_SetWindowShape(window, pictures[current_picture].surface, &pictures[current_picture].mode);
             }
@@ -193,7 +178,7 @@ int main(int argc, char **argv)
                 break;
             }
         }
-        render(renderer, pictures[current_picture].texture, texture_dimensions);
+        render(renderer, pictures[current_picture].texture);
         SDL_Delay(10);
     }
 
