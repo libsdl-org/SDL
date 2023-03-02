@@ -288,43 +288,4 @@ SDL_CountDataQueue(SDL_DataQueue *queue)
     return queue ? queue->queued_bytes : 0;
 }
 
-void *
-SDL_ReserveSpaceInDataQueue(SDL_DataQueue *queue, const size_t len)
-{
-    SDL_DataQueuePacket *packet;
-
-    if (queue == NULL) {
-        SDL_InvalidParamError("queue");
-        return NULL;
-    } else if (len == 0) {
-        SDL_InvalidParamError("len");
-        return NULL;
-    } else if (len > queue->packet_size) {
-        SDL_SetError("len is larger than packet size");
-        return NULL;
-    }
-
-    packet = queue->head;
-    if (packet) {
-        const size_t avail = queue->packet_size - packet->datalen;
-        if (len <= avail) { /* we can use the space at end of this packet. */
-            void *retval = packet->data + packet->datalen;
-            packet->datalen += len;
-            queue->queued_bytes += len;
-            return retval;
-        }
-    }
-
-    /* Need a fresh packet. */
-    packet = AllocateDataQueuePacket(queue);
-    if (packet == NULL) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
-
-    packet->datalen = len;
-    queue->queued_bytes += len;
-    return packet->data;
-}
-
 /* vi: set ts=4 sw=4 expandtab: */
