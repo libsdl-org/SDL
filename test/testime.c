@@ -330,8 +330,8 @@ static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *ds
 {
     SDL_Texture *texture;
     const Uint32 textureID = codepoint / UNIFONT_GLYPHS_IN_TEXTURE;
-    SDL_Rect srcrect;
-    srcrect.w = srcrect.h = 16;
+    SDL_FRect srcrect;
+    srcrect.w = srcrect.h = 16.0f;
     if (codepoint > UNIFONT_MAX_CODEPOINT) {
         return 0;
     }
@@ -343,8 +343,8 @@ static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *ds
     texture = unifontTexture[UNIFONT_NUM_TEXTURES * rendererID + textureID];
     if (texture != NULL) {
         const Uint32 cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
-        srcrect.x = cInTex % UNIFONT_GLYPHS_IN_ROW * 16;
-        srcrect.y = cInTex / UNIFONT_GLYPHS_IN_ROW * 16;
+        srcrect.x = (float)(cInTex % UNIFONT_GLYPHS_IN_ROW * 16);
+        srcrect.y = (float)(cInTex / UNIFONT_GLYPHS_IN_ROW * 16);
         SDL_RenderTexture(state->renderers[rendererID], texture, &srcrect, dst);
     }
     return unifontGlyph[codepoint].width;

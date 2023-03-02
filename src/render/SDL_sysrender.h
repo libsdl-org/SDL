@@ -168,9 +168,9 @@ struct SDL_Renderer
     int (*QueueFillRects)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FRect *rects,
                           int count);
     int (*QueueCopy)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                     const SDL_Rect *srcrect, const SDL_FRect *dstrect);
+                     const SDL_FRect *srcrect, const SDL_FRect *dstrect);
     int (*QueueCopyEx)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                       const SDL_Rect *srcquad, const SDL_FRect *dstrect,
+                       const SDL_FRect *srcquad, const SDL_FRect *dstrect,
                        const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y);
     int (*QueueGeometry)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                          const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
@@ -229,7 +229,7 @@ struct SDL_Renderer
     SDL_Texture *logical_target;
     SDL_RendererLogicalPresentation logical_presentation_mode;
     SDL_ScaleMode logical_scale_mode;
-    SDL_Rect logical_src_rect;
+    SDL_FRect logical_src_rect;
     SDL_FRect logical_dst_rect;
 
     SDL_RenderViewState *view;
