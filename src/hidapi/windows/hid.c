@@ -154,6 +154,10 @@ static void free_library_handles()
 	cfgmgr32_lib_handle = NULL;
 }
 
+#if defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
 static int lookup_functions()
 {
 	hid_lib_handle = LoadLibraryW(L"hid.dll");
@@ -166,10 +170,6 @@ static int lookup_functions()
 		goto err;
 	}
 
-#if defined(__GNUC__)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wcast-function-type"
-#endif
 #define RESOLVE(lib_handle, x) x = (x##_)GetProcAddress(lib_handle, #x); if (!x) goto err;
 
 	RESOLVE(hid_lib_handle, HidD_GetHidGuid);
@@ -195,9 +195,6 @@ static int lookup_functions()
 	RESOLVE(cfgmgr32_lib_handle, CM_Get_Device_Interface_ListW);
 
 #undef RESOLVE
-#if defined(__GNUC__)
-# pragma GCC diagnostic pop
-#endif
 
 	return 0;
 
@@ -205,6 +202,9 @@ err:
 	free_library_handles();
 	return -1;
 }
+#if defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
 
 #endif /* HIDAPI_USE_DDK */
 
@@ -570,6 +570,7 @@ static wchar_t *hid_internal_UTF8toUTF16(const char *src)
 static int hid_get_bluetooth_info(const char *path, struct hid_device_info* dev)
 {
 	wchar_t *interface_path = NULL, *device_id = NULL, *compatible_ids = NULL;
+	wchar_t *compatible_id;
 	CONFIGRET cr;
 	DEVINST dev_node;
 	int is_bluetooth = 0;
@@ -596,9 +597,10 @@ static int hid_get_bluetooth_info(const char *path, struct hid_device_info* dev)
 		goto end;
 
 	/* Now we can parse parent's compatible IDs to find out the device bus type */
-	for (wchar_t* compatible_id = compatible_ids; *compatible_id; compatible_id += wcslen(compatible_id) + 1) {
+	for (compatible_id = compatible_ids; *compatible_id; compatible_id += wcslen(compatible_id) + 1) {
 		/* Normalize to upper case */
-		for (wchar_t* p = compatible_id; *p; ++p) *p = towupper(*p);
+		wchar_t* p = compatible_id;
+		for (; *p; ++p) *p = towupper(*p);
 
 		/* USB devices
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-support
