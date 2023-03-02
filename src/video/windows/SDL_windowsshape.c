@@ -80,9 +80,7 @@ int Win32_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_Windo
 
     if ((shaper == NULL) ||
         (shape == NULL) ||
-        ((shape->format->Amask == 0) && (shape_mode->mode != ShapeModeColorKey)) ||
-        (shape->w != shaper->window->w) ||
-        (shape->h != shaper->window->h)) {
+        ((shape->format->Amask == 0) && (shape_mode->mode != ShapeModeColorKey))) {
         return SDL_INVALID_SHAPE_ARGUMENT;
     }
 
