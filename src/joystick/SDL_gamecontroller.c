@@ -830,8 +830,8 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
 #ifdef __ANDROID__
     } else {
         mapping = SDL_CreateMappingForAndroidController(guid);
-    }
 #endif
+    }
     return mapping;
 }
 
