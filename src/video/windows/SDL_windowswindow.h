@@ -62,8 +62,10 @@ struct SDL_WindowData
     RECT cursor_clipped_rect;
     SDL_Point last_raw_mouse_position;
     SDL_bool mouse_tracked;
+    SDL_bool destroy_parent_with_window;
     SDL_DisplayID last_displayID;
     WCHAR *ICMFileName;
+    SDL_Window *keyboard_focus;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
@@ -111,6 +113,7 @@ extern void WIN_ClientPointFromSDLFloat(const SDL_Window *window, float x, float
 extern void WIN_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int WIN_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation);
 extern void WIN_UpdateDarkModeForHWND(HWND hwnd);
+extern void WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
