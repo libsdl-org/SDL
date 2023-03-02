@@ -137,7 +137,7 @@ static int SetSelectionText(_THIS, const char *text, Atom selection_type)
     return 0;
 }
 
-static char *GetSlectionText(_THIS, Atom selection_type)
+static char *GetSelectionText(_THIS, Atom selection_type)
 {
     SDL_VideoData *videodata = _this->driverdata;
     Display *display = videodata->display;
@@ -238,13 +238,13 @@ X11_GetClipboardText(_THIS)
         SDL_SetError("Couldn't access X clipboard");
         return SDL_strdup("");
     }
-    return GetSlectionText(_this, XA_CLIPBOARD);
+    return GetSelectionText(_this, XA_CLIPBOARD);
 }
 
 char *
 X11_GetPrimarySelectionText(_THIS)
 {
-    return GetSlectionText(_this, XA_PRIMARY);
+    return GetSelectionText(_this, XA_PRIMARY);
 }
 
 SDL_bool
