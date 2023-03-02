@@ -106,6 +106,7 @@ static void PrintJoystickInfo(SDL_JoystickID instance_id)
     const char *name;
     const char *path;
     const char *description;
+    const char *mapping = NULL;
 
     SDL_GetJoystickGUIDString(SDL_GetJoystickInstanceGUID(instance_id), guid, sizeof(guid));
 
@@ -149,6 +150,7 @@ static void PrintJoystickInfo(SDL_JoystickID instance_id)
             description = "Gamepad";
             break;
         }
+        mapping = SDL_GetGamepadInstanceMapping(instance_id);
     } else {
         name = SDL_GetJoystickInstanceName(instance_id);
         path = SDL_GetJoystickInstancePath(instance_id);
@@ -159,6 +161,9 @@ static void PrintJoystickInfo(SDL_JoystickID instance_id)
             SDL_GetJoystickInstanceVendor(instance_id),
             SDL_GetJoystickInstanceProduct(instance_id),
             SDL_GetJoystickInstancePlayerIndex(instance_id));
+    if (mapping) {
+        SDL_Log("Mapping: %s\n", mapping);
+    }
 }
 
 static void UpdateWindowTitle()
