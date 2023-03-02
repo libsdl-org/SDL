@@ -757,7 +757,7 @@ static int PSP_QueueFillRects(SDL_Renderer *renderer, SDL_RenderCommand *cmd, co
 }
 
 static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                         const SDL_Rect *srcrect, const SDL_FRect *dstrect)
+                         const SDL_FRect *srcrect, const SDL_FRect *dstrect)
 {
     VertTV *verts;
     const float x = dstrect->x;
@@ -841,7 +841,7 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
 }
 
 static int PSP_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                           const SDL_Rect *srcrect, const SDL_FRect *dstrect,
+                           const SDL_FRect *srcrect, const SDL_FRect *dstrect,
                            const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
     VertTV *verts = (VertTV *)SDL_AllocateRenderVertices(renderer, 4 * sizeof(VertTV), 4, &cmd->data.draw.first);

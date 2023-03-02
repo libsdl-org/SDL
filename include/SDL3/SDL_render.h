@@ -1282,7 +1282,7 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRects(SDL_Renderer *renderer, const SD
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *srcrect, const SDL_FRect *dstrect);
+extern DECLSPEC int SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect);
 
 /**
  * Copy a portion of the source texture to the current rendering target, with
@@ -1307,7 +1307,7 @@ extern DECLSPEC int SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_Textur
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
-                                                     const SDL_Rect *srcrect, const SDL_FRect *dstrect,
+                                                     const SDL_FRect *srcrect, const SDL_FRect *dstrect,
                                                      const double angle, const SDL_FPoint *center,
                                                      const SDL_RendererFlip flip);
 
