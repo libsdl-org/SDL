@@ -177,6 +177,8 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 
         device->free = Cocoa_DeleteDevice;
 
+        device->quirk_flags = VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT;
+
         return device;
     }
 }

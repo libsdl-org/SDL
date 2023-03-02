@@ -131,6 +131,7 @@ typedef enum
 @property(nonatomic) SDL_bool inWindowFullscreenTransition;
 @property(nonatomic) NSInteger window_number;
 @property(nonatomic) NSInteger flash_request;
+@property(nonatomic) SDL_Window *keyboard_focus;
 @property(nonatomic) Cocoa_WindowListener *listener;
 @property(nonatomic) SDL_CocoaVideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL
