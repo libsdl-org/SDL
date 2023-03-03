@@ -1077,9 +1077,15 @@ const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID display
 
 void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
+    float display_scale = display->desktop_mode.display_scale;
+
     SDL_memcpy(&display->desktop_mode, mode, sizeof(*mode));
     display->desktop_mode.displayID = display->id;
     SDL_FinalizeDisplayMode(&display->desktop_mode);
+
+    if (display_scale != display->desktop_mode.display_scale) {
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_SCALE_CHANGED, 0);
+    }
 }
 
 const SDL_DisplayMode *SDL_GetDesktopDisplayMode(SDL_DisplayID displayID)
