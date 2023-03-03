@@ -793,7 +793,6 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
                             0, 0);
 
         if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
-            SDL_VideoDevice *video = SDL_GetVideoDevice();
             if (video && video->StartTextInput) {
                 video->StartTextInput(video);
             }
