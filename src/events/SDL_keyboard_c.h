@@ -42,7 +42,7 @@ extern void SDL_SetKeymap(int start, const SDL_Keycode *keys, int length, SDL_bo
 extern void SDL_SetScancodeName(SDL_Scancode scancode, const char *name);
 
 /* Set the keyboard focus window */
-extern void SDL_SetKeyboardFocus(SDL_Window *window);
+extern int SDL_SetKeyboardFocus(SDL_Window *window);
 
 /* Send a character from an on-screen keyboard as scancode and modifier key events,
    currently assuming ASCII characters on a US keyboard layout
