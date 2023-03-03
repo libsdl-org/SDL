@@ -324,6 +324,7 @@ static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info,
         SDL_DisplayData *driverdata = _this->displays[i].driverdata;
         if (SDL_wcscmp(driverdata->DeviceName, info->szDevice) == 0) {
             SDL_bool moved = (index != i);
+            SDL_bool changed_bounds = SDL_FALSE;
 
             if (moved) {
                 SDL_VideoDisplay tmp;
@@ -343,10 +344,14 @@ static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info,
                 SDL_Rect bounds;
 
                 SDL_ResetFullscreenDisplayModes(existing_display);
-                if (WIN_GetDisplayBounds(_this, existing_display, &bounds) == 0) {
-                    if (SDL_memcmp(&driverdata->bounds, &bounds, sizeof(bounds)) != 0 || moved) {
-                        SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_MOVED, 0);
-                    }
+                SDL_SetDesktopDisplayMode(existing_display, &mode);
+                if (WIN_GetDisplayBounds(_this, existing_display, &bounds) == 0 &&
+                    SDL_memcmp(&driverdata->bounds, &bounds, sizeof(bounds)) != 0) {
+                    changed_bounds = SDL_TRUE;
+                    SDL_copyp(&driverdata->bounds, &bounds);
+                }
+                if (moved || changed_bounds) {
+                    SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_MOVED, 0);
                 }
                 SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
             }

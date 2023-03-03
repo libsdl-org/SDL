@@ -1511,6 +1511,17 @@ static void SDLTest_PrintEvent(SDL_Event *event)
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
                 event->display.displayID);
         break;
+    case SDL_EVENT_DISPLAY_SCALE_CHANGED:
+        {
+            float display_scale = 1.0f;
+            const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(event->display.displayID);
+            if (mode) {
+                display_scale = mode->display_scale;
+            }
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed scale to %d%%",
+                    event->display.displayID, (int)(display_scale * 100.0f));
+        }
+        break;
     case SDL_EVENT_DISPLAY_MOVED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed position",
                 event->display.displayID);
