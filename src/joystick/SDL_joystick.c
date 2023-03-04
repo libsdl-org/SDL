@@ -232,7 +232,7 @@ static SDL_JoystickID SDL_GetJoystickIDForPlayerIndex(int player_index)
     SDL_AssertJoysticksLocked();
 
     if (player_index < 0 || player_index >= SDL_joystick_player_count) {
-        return -1;
+        return 0;
     }
     return SDL_joystick_players[player_index];
 }
