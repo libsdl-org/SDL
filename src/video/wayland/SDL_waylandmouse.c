@@ -581,7 +581,6 @@ static void SDLCALL Wayland_EmulateMouseWarpChanged(void *userdata, const char *
     input->warp_emulation_prohibited = !SDL_GetStringBoolean(hint, !input->warp_emulation_prohibited);
 }
 
-#if 0  /* TODO RECONNECT: See waylandvideo.c for more information! */
 static void Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
 {
     Wayland_CursorData *cdata = (Wayland_CursorData *) cursor->driverdata;
@@ -606,8 +605,7 @@ static void Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
     wl_surface_set_user_data(cdata->surface, NULL);
 }
 
-void
-Wayland_RecreateCursors(void)
+void Wayland_RecreateCursors(void)
 {
     SDL_Cursor *cursor;
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -636,7 +634,6 @@ Wayland_RecreateCursors(void)
         }
     }
 }
-#endif /* 0 */
 
 void Wayland_InitMouse(void)
 {

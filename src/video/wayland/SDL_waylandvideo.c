@@ -1102,7 +1102,6 @@ static void Wayland_VideoCleanup(_THIS)
 
 SDL_bool Wayland_VideoReconnect(_THIS)
 {
-#if 0 /* TODO RECONNECT: Uncomment all when https://invent.kde.org/plasma/kwin/-/wikis/Restarting is completed */
     SDL_VideoData *data = _this->driverdata;
 
     SDL_Window *window = NULL;
@@ -1115,7 +1114,7 @@ SDL_bool Wayland_VideoReconnect(_THIS)
 
     SDL_ResetKeyboard();
     SDL_ResetMouse();
-    if (WAYLAND_wl_display_reconnect(data->display) < 0) {
+    if (!SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_SOON || WAYLAND_wl_display_reconnect(data->display) < 0) {
         return SDL_FALSE;
     }
 
@@ -1142,9 +1141,6 @@ SDL_bool Wayland_VideoReconnect(_THIS)
         SDL_GL_MakeCurrent (current_window, current_ctx);
     }
     return SDL_TRUE;
-#else
-    return SDL_FALSE;
-#endif /* 0 */
 }
 
 void Wayland_VideoQuit(_THIS)

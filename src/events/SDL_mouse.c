@@ -236,24 +236,14 @@ static Uint32 GetButtonState(SDL_Mouse *mouse, SDL_bool include_touch)
     return buttonstate;
 }
 
-SDL_Window *
-SDL_GetMouseFocus(void)
+SDL_Window *SDL_GetMouseFocus(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
     return mouse->focus;
 }
 
-/* TODO RECONNECT: Hello from the Wayland video driver!
- * This was once removed from SDL, but it's been added back in comment form
- * because we will need it when Wayland adds compositor reconnect support.
- * If you need this before we do, great! Otherwise, leave this alone, we'll
- * uncomment it at the right time.
- * -flibit
- */
-#if 0
-void
-SDL_ResetMouse(void)
+void SDL_ResetMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     Uint32 buttonState = GetButtonState(mouse, SDL_FALSE);
@@ -266,7 +256,6 @@ SDL_ResetMouse(void)
     }
     SDL_assert(GetButtonState(mouse, SDL_FALSE) == 0);
 }
-#endif /* 0 */
 
 void SDL_SetMouseFocus(SDL_Window *window)
 {
