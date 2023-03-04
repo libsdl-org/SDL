@@ -357,7 +357,6 @@ endif()
 set(TESTS_ENVIRONMENT
     SDL_AUDIO_DRIVER=dummy
     SDL_VIDEO_DRIVER=dummy
-    PATH=$<TARGET_FILE_DIR:SDL3::${sdl_name_component}>
 )
 
 function(sdl_set_test_timeout TEST TIMEOUT)
@@ -369,7 +368,7 @@ foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
     add_test(
         NAME ${TESTCASE}
         COMMAND ${TESTCASE}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:SDL3::${sdl_name_component}>
     )
     set_tests_properties(${TESTCASE} PROPERTIES ENVIRONMENT "${TESTS_ENVIRONMENT}")
     sdl_set_test_timeout(${TESTCASE} 10)

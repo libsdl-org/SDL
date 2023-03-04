@@ -3,6 +3,8 @@ macro(SDL_DetectCMakePlatform)
   # Get the platform
   if(WIN32)
     set(SDL_CMAKE_PLATFORM Windows)
+  elseif(CYGWIN)
+    set(SDL_CMAKE_PLATFORM Cygwin)
   elseif(PSP)
     set(SDL_CMAKE_PLATFORM psp)
   elseif(APPLE)
