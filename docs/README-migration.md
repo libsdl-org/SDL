@@ -1092,6 +1092,8 @@ SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0
 
 SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
 
+The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported on Windows, Mac (Cocoa), X11, and Wayland. Creating windows with these flags must happen via the `SDL_CreatePopupWindow()` function. This function requires passing in the handle to a valid parent window for the popup, and the popup window is positioned relative to the parent.
+
 The following functions have been renamed:
 * SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()
