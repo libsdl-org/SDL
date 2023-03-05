@@ -14,8 +14,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-#define SHAPED_WINDOW_X         150
-#define SHAPED_WINDOW_Y         150
 #define SHAPED_WINDOW_DIMENSION 640
 
 typedef struct LoadedPicture
@@ -106,9 +104,7 @@ int main(int argc, char **argv)
     }
 
     window = SDL_CreateShapedWindow("SDL_Shape test",
-                                    SHAPED_WINDOW_X, SHAPED_WINDOW_Y,
-                                    SHAPED_WINDOW_DIMENSION, SHAPED_WINDOW_DIMENSION,
-                                    0);
+                                    SHAPED_WINDOW_DIMENSION, SHAPED_WINDOW_DIMENSION, 0);
     if (window == NULL) {
         for (i = 0; i < num_pictures; i++) {
             SDL_DestroySurface(pictures[i].surface);

@@ -24,10 +24,10 @@
 #include "SDL_shape_internals.h"
 
 SDL_Window *
-SDL_CreateShapedWindow(const char *title, unsigned int x, unsigned int y, unsigned int w, unsigned int h, Uint32 flags)
+SDL_CreateShapedWindow(const char *title, int w, int h, Uint32 flags)
 {
     SDL_Window *result = NULL;
-    result = SDL_CreateWindow(title, -1000, -1000, w, h, (flags | SDL_WINDOW_BORDERLESS) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE));
+    result = SDL_CreateWindow(title, w, h, (flags | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE));
     if (result != NULL) {
         if (SDL_GetVideoDevice()->shape_driver.CreateShaper == NULL) {
             SDL_DestroyWindow(result);
@@ -35,8 +35,6 @@ SDL_CreateShapedWindow(const char *title, unsigned int x, unsigned int y, unsign
         }
         result->shaper = SDL_GetVideoDevice()->shape_driver.CreateShaper(result);
         if (result->shaper != NULL) {
-            result->shaper->userx = x;
-            result->shaper->usery = y;
             result->shaper->mode.mode = ShapeModeDefault;
             result->shaper->mode.parameters.binarizationCutoff = 1;
             result->shaper->hasshape = SDL_FALSE;
@@ -271,11 +269,9 @@ int SDL_SetWindowShape(SDL_Window *window, SDL_Surface *shape, SDL_WindowShapeMo
         window->shaper->mode = *shape_mode;
     }
     result = _this->shape_driver.SetWindowShape(window->shaper, shape, shape_mode);
-    window->shaper->hasshape = SDL_TRUE;
-    if (window->shaper->userx != 0 && window->shaper->usery != 0) {
-        SDL_SetWindowPosition(window, window->shaper->userx, window->shaper->usery);
-        window->shaper->userx = 0;
-        window->shaper->usery = 0;
+    if (result == 0) {
+        window->shaper->hasshape = SDL_TRUE;
+        SDL_ShowWindow(window);
     }
     return result;
 }

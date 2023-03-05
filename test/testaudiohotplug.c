@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
     }
 
     /* Some targets (Mac CoreAudio) need an event queue for audio hotplug, so make and immediately hide a window. */
-    SDL_MinimizeWindow(SDL_CreateWindow("testaudiohotplug", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0));
+    SDL_MinimizeWindow(SDL_CreateWindow("testaudiohotplug", 640, 480, 0));
 
     filename = GetResourceFilename(argc > 1 ? argv[1] : NULL, "sample.wav");
 

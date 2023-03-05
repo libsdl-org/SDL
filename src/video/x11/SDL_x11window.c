@@ -941,9 +941,6 @@ void X11_SetWindowSize(_THIS, SDL_Window *window)
     orig_w = attrs.width;
     orig_h = attrs.height;
 
-    if (SDL_IsShapedWindow(window)) {
-        X11_ResizeWindowShape(window);
-    }
     if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
         /* Apparently, if the X11 Window is set to a 'non-resizable' window, you cannot resize it using the X11_XResizeWindow, thus
            we must set the size hints to adjust the window size. */

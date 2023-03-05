@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
     /* Test showing a message box with a parent window */
     {
         SDL_Event event;
-        SDL_Window *window = SDL_CreateWindow("Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, 0);
+        SDL_Window *window = SDL_CreateWindow("Test", 640, 480, 0);
 
         /* On wayland, no window will actually show until something has
            actually been displayed.

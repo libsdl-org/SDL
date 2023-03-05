@@ -42,9 +42,6 @@ struct SDL_WindowShaper
     /* The window associated with the shaper */
     SDL_Window *window;
 
-    /* The user's specified coordinates for the window, for once we give it a shape. */
-    Uint32 userx, usery;
-
     /* The parameters for shape calculation. */
     SDL_WindowShapeMode mode;
 
@@ -59,7 +56,6 @@ struct SDL_ShapeDriver
 {
     SDL_WindowShaper *(*CreateShaper)(SDL_Window *window);
     int (*SetWindowShape)(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode);
-    int (*ResizeWindowShape)(SDL_Window *window);
 };
 
 typedef struct SDL_WindowUserData

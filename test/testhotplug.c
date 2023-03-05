@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     }
 
     /*
-    //SDL_CreateWindow("Dummy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 128, 128, 0);
+    //SDL_CreateWindow("Dummy", 128, 128, 0);
     */
 
     SDL_free(SDL_GetJoysticks(&num_joysticks));

@@ -251,9 +251,7 @@ int main(int argc, char *argv[])
     }
 
     /* Set 640x480 video mode */
-    window = SDL_CreateWindow("CheckKeys Test",
-                              SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              640, 480, 0);
+    window = SDL_CreateWindow("CheckKeys Test", 640, 480, 0);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create 640x480 window: %s\n",
                      SDL_GetError());

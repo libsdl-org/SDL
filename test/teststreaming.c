@@ -155,11 +155,7 @@ int main(int argc, char **argv)
     SDL_RWclose(handle);
 
     /* Create the window and renderer */
-    window = SDL_CreateWindow("Happy Moose",
-                              SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED,
-                              MOOSEPIC_W * 4, MOOSEPIC_H * 4,
-                              SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Happy Moose", MOOSEPIC_W * 4, MOOSEPIC_H * 4, SDL_WINDOW_RESIZABLE);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create window: %s\n", SDL_GetError());
         quit(3);

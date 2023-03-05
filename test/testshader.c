@@ -456,7 +456,7 @@ int main(int argc, char **argv)
     }
 
     /* Create a 640x480 OpenGL screen */
-    window = SDL_CreateWindow("Shader Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow("Shader Demo", 640, 480, SDL_WINDOW_OPENGL);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create OpenGL window: %s\n", SDL_GetError());
         SDL_Quit();

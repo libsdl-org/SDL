@@ -727,9 +727,7 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
 
 int SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags, SDL_Window **window, SDL_Renderer **renderer)
 {
-    *window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_UNDEFINED,
-                               SDL_WINDOWPOS_UNDEFINED,
-                               width, height, window_flags);
+    *window = SDL_CreateWindow(NULL, width, height, window_flags);
     if (!*window) {
         *renderer = NULL;
         return -1;

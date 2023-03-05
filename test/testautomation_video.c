@@ -12,18 +12,16 @@
 static SDL_Window *createVideoSuiteTestWindow(const char *title)
 {
     SDL_Window *window;
-    int x, y, w, h;
+    int w, h;
     SDL_WindowFlags flags;
 
     /* Standard window */
-    x = SDLTest_RandomIntegerInRange(1, 100);
-    y = SDLTest_RandomIntegerInRange(1, 100);
     w = SDLTest_RandomIntegerInRange(320, 1024);
     h = SDLTest_RandomIntegerInRange(320, 768);
     flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
 
-    window = SDL_CreateWindow(title, x, y, w, h, flags);
-    SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,%d)", x, y, w, h, flags);
+    window = SDL_CreateWindow(title, w, h, flags);
+    SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d)", w, h, flags);
     SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 
     return window;
@@ -95,99 +93,15 @@ int video_enableDisableScreensaver(void *arg)
 }
 
 /**
- * \brief Tests the functionality of the SDL_CreateWindow function using different positions
- */
-int video_createWindowVariousPositions(void *arg)
-{
-    SDL_Window *window;
-    const char *title = "video_createWindowVariousPositions Test Window";
-    int x, y, w, h;
-    int xVariation, yVariation;
-
-    for (xVariation = 0; xVariation < 6; xVariation++) {
-        for (yVariation = 0; yVariation < 6; yVariation++) {
-            switch (xVariation) {
-            default:
-            case 0:
-                /* Zero X Position */
-                x = 0;
-                break;
-            case 1:
-                /* Random X position inside screen */
-                x = SDLTest_RandomIntegerInRange(1, 100);
-                break;
-            case 2:
-                /* Random X position outside screen (positive) */
-                x = SDLTest_RandomIntegerInRange(10000, 11000);
-                break;
-            case 3:
-                /* Random X position outside screen (negative) */
-                x = SDLTest_RandomIntegerInRange(-1000, -100);
-                break;
-            case 4:
-                /* Centered X position */
-                x = SDL_WINDOWPOS_CENTERED;
-                break;
-            case 5:
-                /* Undefined X position */
-                x = SDL_WINDOWPOS_UNDEFINED;
-                break;
-            }
-
-            switch (yVariation) {
-            default:
-            case 0:
-                /* Zero X Position */
-                y = 0;
-                break;
-            case 1:
-                /* Random X position inside screen */
-                y = SDLTest_RandomIntegerInRange(1, 100);
-                break;
-            case 2:
-                /* Random X position outside screen (positive) */
-                y = SDLTest_RandomIntegerInRange(10000, 11000);
-                break;
-            case 3:
-                /* Random Y position outside screen (negative) */
-                y = SDLTest_RandomIntegerInRange(-1000, -100);
-                break;
-            case 4:
-                /* Centered Y position */
-                y = SDL_WINDOWPOS_CENTERED;
-                break;
-            case 5:
-                /* Undefined Y position */
-                y = SDL_WINDOWPOS_UNDEFINED;
-                break;
-            }
-
-            w = SDLTest_RandomIntegerInRange(32, 96);
-            h = SDLTest_RandomIntegerInRange(32, 96);
-            window = SDL_CreateWindow(title, x, y, w, h, 0);
-            SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
-            SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
-
-            /* Clean up */
-            destroyVideoSuiteTestWindow(window);
-        }
-    }
-
-    return TEST_COMPLETED;
-}
-
-/**
  * \brief Tests the functionality of the SDL_CreateWindow function using different sizes
  */
 int video_createWindowVariousSizes(void *arg)
 {
     SDL_Window *window;
     const char *title = "video_createWindowVariousSizes Test Window";
-    int x, y, w, h;
+    int w, h;
     int wVariation, hVariation;
 
-    x = SDLTest_RandomIntegerInRange(1, 100);
-    y = SDLTest_RandomIntegerInRange(1, 100);
     for (wVariation = 0; wVariation < 3; wVariation++) {
         for (hVariation = 0; hVariation < 3; hVariation++) {
             switch (wVariation) {
@@ -220,8 +134,8 @@ int video_createWindowVariousSizes(void *arg)
                 break;
             }
 
-            window = SDL_CreateWindow(title, x, y, w, h, 0);
-            SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
+            window = SDL_CreateWindow(title, w, h, 0);
+            SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,SHOWN)", w, h);
             SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 
             /* Clean up */
@@ -239,13 +153,11 @@ int video_createWindowVariousFlags(void *arg)
 {
     SDL_Window *window;
     const char *title = "video_createWindowVariousFlags Test Window";
-    int x, y, w, h;
+    int w, h;
     int fVariation;
     SDL_WindowFlags flags;
 
     /* Standard window */
-    x = SDLTest_RandomIntegerInRange(1, 100);
-    y = SDLTest_RandomIntegerInRange(1, 100);
     w = SDLTest_RandomIntegerInRange(320, 1024);
     h = SDLTest_RandomIntegerInRange(320, 768);
 
@@ -295,8 +207,8 @@ int video_createWindowVariousFlags(void *arg)
             break;
         }
 
-        window = SDL_CreateWindow(title, x, y, w, h, flags);
-        SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,%d)", x, y, w, h, flags);
+        window = SDL_CreateWindow(title, w, h, flags);
+        SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d)", w, h, flags);
         SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 
         /* Clean up */
@@ -1678,9 +1590,13 @@ int video_setWindowCenteredOnDisplay(void *arg)
                 expectedX = (expectedDisplayRect.x + ((expectedDisplayRect.w - w) / 2));
                 expectedY = (expectedDisplayRect.y + ((expectedDisplayRect.h - h) / 2));
 
-                window = SDL_CreateWindow(title, x, y, w, h, 0);
+                window = SDL_CreateWindow(title, w, h, SDL_WINDOW_HIDDEN);
                 SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
                 SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
+
+                /* Set the desired position */
+                SDL_SetWindowPosition(window, x, y);
+                SDL_ShowWindow(window);
 
                 /* Check the window is centered on the requested display */
                 currentDisplay = SDL_GetDisplayForWindow(window);
@@ -1762,74 +1678,70 @@ static const SDLTest_TestCaseReference videoTest1 = {
 };
 
 static const SDLTest_TestCaseReference videoTest2 = {
-    (SDLTest_TestCaseFp)video_createWindowVariousPositions, "video_createWindowVariousPositions", "Create windows at various locations", TEST_ENABLED
-};
-
-static const SDLTest_TestCaseReference videoTest3 = {
     (SDLTest_TestCaseFp)video_createWindowVariousSizes, "video_createWindowVariousSizes", "Create windows with various sizes", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest4 = {
+static const SDLTest_TestCaseReference videoTest3 = {
     (SDLTest_TestCaseFp)video_createWindowVariousFlags, "video_createWindowVariousFlags", "Create windows using various flags", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest5 = {
+static const SDLTest_TestCaseReference videoTest4 = {
     (SDLTest_TestCaseFp)video_getWindowFlags, "video_getWindowFlags", "Get window flags set during SDL_CreateWindow", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest6 = {
+static const SDLTest_TestCaseReference videoTest5 = {
     (SDLTest_TestCaseFp)video_getFullscreenDisplayModes, "video_getFullscreenDisplayModes", "Use SDL_GetFullscreenDisplayModes function to get number of display modes", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest7 = {
+static const SDLTest_TestCaseReference videoTest6 = {
     (SDLTest_TestCaseFp)video_getClosestDisplayModeCurrentResolution, "video_getClosestDisplayModeCurrentResolution", "Use function to get closes match to requested display mode for current resolution", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest8 = {
+static const SDLTest_TestCaseReference videoTest7 = {
     (SDLTest_TestCaseFp)video_getClosestDisplayModeRandomResolution, "video_getClosestDisplayModeRandomResolution", "Use function to get closes match to requested display mode for random resolution", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest9 = {
+static const SDLTest_TestCaseReference videoTest8 = {
     (SDLTest_TestCaseFp)video_getWindowDisplayMode, "video_getWindowDisplayMode", "Get window display mode", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest10 = {
+static const SDLTest_TestCaseReference videoTest9 = {
     (SDLTest_TestCaseFp)video_getWindowDisplayModeNegative, "video_getWindowDisplayModeNegative", "Get window display mode with invalid input", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest11 = {
+static const SDLTest_TestCaseReference videoTest10 = {
     (SDLTest_TestCaseFp)video_getSetWindowGrab, "video_getSetWindowGrab", "Checks SDL_GetWindowGrab and SDL_SetWindowGrab positive and negative cases", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest12 = {
+static const SDLTest_TestCaseReference videoTest11 = {
     (SDLTest_TestCaseFp)video_getWindowId, "video_getWindowId", "Checks SDL_GetWindowID and SDL_GetWindowFromID", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest13 = {
+static const SDLTest_TestCaseReference videoTest12 = {
     (SDLTest_TestCaseFp)video_getWindowPixelFormat, "video_getWindowPixelFormat", "Checks SDL_GetWindowPixelFormat", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest14 = {
+static const SDLTest_TestCaseReference videoTest13 = {
     (SDLTest_TestCaseFp)video_getSetWindowPosition, "video_getSetWindowPosition", "Checks SDL_GetWindowPosition and SDL_SetWindowPosition positive and negative cases", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest15 = {
+static const SDLTest_TestCaseReference videoTest14 = {
     (SDLTest_TestCaseFp)video_getSetWindowSize, "video_getSetWindowSize", "Checks SDL_GetWindowSize and SDL_SetWindowSize positive and negative cases", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest16 = {
+static const SDLTest_TestCaseReference videoTest15 = {
     (SDLTest_TestCaseFp)video_getSetWindowMinimumSize, "video_getSetWindowMinimumSize", "Checks SDL_GetWindowMinimumSize and SDL_SetWindowMinimumSize positive and negative cases", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest17 = {
+static const SDLTest_TestCaseReference videoTest16 = {
     (SDLTest_TestCaseFp)video_getSetWindowMaximumSize, "video_getSetWindowMaximumSize", "Checks SDL_GetWindowMaximumSize and SDL_SetWindowMaximumSize positive and negative cases", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest18 = {
+static const SDLTest_TestCaseReference videoTest17 = {
     (SDLTest_TestCaseFp)video_getSetWindowData, "video_getSetWindowData", "Checks SDL_SetWindowData and SDL_GetWindowData positive and negative cases", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference videoTest19 = {
+static const SDLTest_TestCaseReference videoTest18 = {
     (SDLTest_TestCaseFp)video_setWindowCenteredOnDisplay, "video_setWindowCenteredOnDisplay", "Checks using SDL_WINDOWPOS_CENTERED_DISPLAY centers the window on a display", TEST_ENABLED
 };
 
@@ -1838,7 +1750,7 @@ static const SDLTest_TestCaseReference *videoTests[] = {
     &videoTest1, &videoTest2, &videoTest3, &videoTest4, &videoTest5, &videoTest6,
     &videoTest7, &videoTest8, &videoTest9, &videoTest10, &videoTest11, &videoTest12,
     &videoTest13, &videoTest14, &videoTest15, &videoTest16, &videoTest17,
-    &videoTest18, &videoTest19, NULL
+    &videoTest18, NULL
 };
 
 /* Video test suite (global) */

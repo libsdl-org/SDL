@@ -16,7 +16,7 @@ int syswm_getWindowWMInfo(void *arg)
     SDL_Window *window;
     SDL_SysWMinfo info;
 
-    window = SDL_CreateWindow("", 0, 0, 0, 0, SDL_WINDOW_HIDDEN);
+    window = SDL_CreateWindow("", 0, 0, SDL_WINDOW_HIDDEN);
     SDLTest_AssertPass("Call to SDL_CreateWindow()");
     SDLTest_AssertCheck(window != NULL, "Check that value returned from SDL_CreateWindow is not NULL");
     if (window == NULL) {

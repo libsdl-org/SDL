@@ -81,7 +81,7 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     state->argv = argv;
     state->flags = flags;
     state->window_title = argv[0];
-    state->window_flags = 0;
+    state->window_flags = SDL_WINDOW_HIDDEN;
     state->window_x = SDL_WINDOWPOS_UNDEFINED;
     state->window_y = SDL_WINDOWPOS_UNDEFINED;
     state->window_w = DEFAULT_WINDOW_WIDTH;
@@ -1278,10 +1278,6 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
             }
             SDL_free(displays);
 
-            if (SDL_WINDOWPOS_ISUNDEFINED(state->window_x)) {
-                state->window_x = SDL_WINDOWPOS_UNDEFINED_DISPLAY(state->displayID);
-                state->window_y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(state->displayID);
-            }
             if (SDL_WINDOWPOS_ISCENTERED(state->window_x)) {
                 state->window_x = SDL_WINDOWPOS_CENTERED_DISPLAY(state->displayID);
                 state->window_y = SDL_WINDOWPOS_CENTERED_DISPLAY(state->displayID);
@@ -1326,12 +1322,14 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
             } else {
                 SDL_strlcpy(title, state->window_title, SDL_arraysize(title));
             }
-            state->windows[i] =
-                SDL_CreateWindow(title, r.x, r.y, r.w, r.h, state->window_flags);
+            state->windows[i] = SDL_CreateWindow(title, r.w, r.h, state->window_flags);
             if (!state->windows[i]) {
                 SDL_Log("Couldn't create window: %s\n",
                         SDL_GetError());
                 return SDL_FALSE;
+            }
+            if (r.x != SDL_WINDOWPOS_UNDEFINED || r.y != SDL_WINDOWPOS_UNDEFINED) {
+                SDL_SetWindowPosition(state->windows[i], r.x, r.y);
             }
             if (state->window_minW || state->window_minH) {
                 SDL_SetWindowMinimumSize(state->windows[i], state->window_minW, state->window_minH);

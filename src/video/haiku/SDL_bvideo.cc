@@ -96,10 +96,6 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     device->UpdateWindowFramebuffer = HAIKU_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = HAIKU_DestroyWindowFramebuffer;
 
-    device->shape_driver.CreateShaper = NULL;
-    device->shape_driver.SetWindowShape = NULL;
-    device->shape_driver.ResizeWindowShape = NULL;
-
 #if SDL_VIDEO_OPENGL
     device->GL_LoadLibrary = HAIKU_GL_LoadLibrary;
     device->GL_GetProcAddress = HAIKU_GL_GetProcAddress;
