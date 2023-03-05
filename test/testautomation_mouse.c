@@ -404,9 +404,9 @@ int mouse_getSetRelativeMouseMode(void *arg)
  */
 static SDL_Window *createMouseSuiteTestWindow()
 {
-    int posX = 100, posY = 100, width = MOUSE_TESTWINDOW_WIDTH, height = MOUSE_TESTWINDOW_HEIGHT;
+    int width = MOUSE_TESTWINDOW_WIDTH, height = MOUSE_TESTWINDOW_HEIGHT;
     SDL_Window *window;
-    window = SDL_CreateWindow("mousecreateMouseSuiteTestWindow", posX, posY, width, height, 0);
+    window = SDL_CreateWindow("mousecreateMouseSuiteTestWindow", width, height, 0);
     SDLTest_AssertPass("SDL_CreateWindow()");
     SDLTest_AssertCheck(window != NULL, "Check SDL_CreateWindow result");
     return window;

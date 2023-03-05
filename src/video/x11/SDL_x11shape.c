@@ -44,7 +44,6 @@ X11_CreateShaper(SDL_Window *window)
         result->window = window;
         result->mode.mode = ShapeModeDefault;
         result->mode.parameters.binarizationCutoff = 1;
-        result->userx = result->usery = 0;
         data = SDL_malloc(sizeof(SDL_ShapeData));
         if (data == NULL) {
             SDL_free(result);
@@ -55,43 +54,10 @@ X11_CreateShaper(SDL_Window *window)
         data->bitmapsize = 0;
         data->bitmap = NULL;
         window->shaper = result;
-        if (X11_ResizeWindowShape(window) != 0) {
-            SDL_free(result);
-            SDL_free(data);
-            window->shaper = NULL;
-            return NULL;
-        }
     }
 #endif
 
     return result;
-}
-
-int X11_ResizeWindowShape(SDL_Window *window)
-{
-    SDL_ShapeData *data = window->shaper->driverdata;
-    unsigned int bitmapsize = window->w / 8;
-    SDL_assert(data != NULL);
-
-    if (window->w % 8 > 0) {
-        bitmapsize += 1;
-    }
-    bitmapsize *= window->h;
-    if (data->bitmapsize != bitmapsize || data->bitmap == NULL) {
-        data->bitmapsize = bitmapsize;
-        SDL_free(data->bitmap);
-        data->bitmap = SDL_malloc(data->bitmapsize);
-        if (data->bitmap == NULL) {
-            return SDL_OutOfMemory();
-        }
-    }
-    SDL_memset(data->bitmap, 0, data->bitmapsize);
-
-    window->shaper->userx = window->x;
-    window->shaper->usery = window->y;
-    SDL_SetWindowPosition(window, -1000, -1000);
-
-    return 0;
 }
 
 int X11_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode)

@@ -800,10 +800,6 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     w = (int)rect.size.width;
     h = (int)rect.size.height;
 
-    if (SDL_IsShapedWindow(window)) {
-        Cocoa_ResizeWindowShape(window);
-    }
-
     ScheduleContextUpdates(_data);
 
     /* The window can move during a resize event, such as when maximizing

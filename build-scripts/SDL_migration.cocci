@@ -2517,3 +2517,15 @@ SDL_Event *e1;
 @@
 - e1->csensor
 + e1->gsensor
+@@
+expression e1, e2, e3, e4;
+constant c1, c2;
+@@
+- SDL_CreateWindow(e1, c1, c2, e2, e3, e4)
++ SDL_CreateWindow(e1, e2, e3, e4)
+@@
+expression e1, e2, e3, e4;
+constant c1, c2;
+@@
+- SDL_CreateShapedWindow(e1, c1, c2, e2, e3, e4)
++ SDL_CreateShapedWindow(e1, e2, e3, e4)

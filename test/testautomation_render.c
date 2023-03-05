@@ -47,9 +47,9 @@ static int isSupported(int code);
  */
 void InitCreateRenderer(void *arg)
 {
-    int posX = 100, posY = 100, width = 320, height = 240;
+    int width = 320, height = 240;
     renderer = NULL;
-    window = SDL_CreateWindow("render_testCreateRenderer", posX, posY, width, height, 0);
+    window = SDL_CreateWindow("render_testCreateRenderer", width, height, 0);
     SDLTest_AssertPass("SDL_CreateWindow()");
     SDLTest_AssertCheck(window != NULL, "Check SDL_CreateWindow result");
     if (window == NULL) {

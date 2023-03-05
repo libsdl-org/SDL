@@ -121,7 +121,6 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 
         device->shape_driver.CreateShaper = Cocoa_CreateShaper;
         device->shape_driver.SetWindowShape = Cocoa_SetWindowShape;
-        device->shape_driver.ResizeWindowShape = Cocoa_ResizeWindowShape;
 
 #if SDL_VIDEO_OPENGL_CGL
         device->GL_LoadLibrary = Cocoa_GL_LoadLibrary;

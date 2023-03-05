@@ -44,7 +44,6 @@ Cocoa_CreateShaper(SDL_Window *window)
     @autoreleasepool {
         SDL_WindowShaper *result;
         SDL_ShapeData *data;
-        int resized_properly;
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->driverdata;
 
         result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
@@ -60,7 +59,6 @@ Cocoa_CreateShaper(SDL_Window *window)
         result->window = window;
         result->mode.mode = ShapeModeDefault;
         result->mode.parameters.binarizationCutoff = 1;
-        result->userx = result->usery = 0;
         window->shaper = result;
 
         data = [[SDL_ShapeData alloc] init];
@@ -71,8 +69,6 @@ Cocoa_CreateShaper(SDL_Window *window)
         /* TODO: There's no place to release this... */
         result->driverdata = (void *)CFBridgingRetain(data);
 
-        resized_properly = Cocoa_ResizeWindowShape(window);
-        SDL_assert(resized_properly == 0);
         return result;
     }
 }
@@ -113,15 +109,6 @@ int Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_Windo
         SDL_TraverseShapeTree(data.shape, &ConvertRects, (__bridge void *)closure);
         [closure.path addClip];
 
-        return 0;
-    }
-}
-
-int Cocoa_ResizeWindowShape(SDL_Window *window)
-{
-    @autoreleasepool {
-        SDL_ShapeData *data = (__bridge SDL_ShapeData *)window->shaper->driverdata;
-        SDL_assert(data != NULL);
         return 0;
     }
 }

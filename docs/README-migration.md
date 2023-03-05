@@ -1031,6 +1031,15 @@ Rather than iterating over displays using display index, there is a new function
 }
 ```
 
+SDL_CreateWindow() has been simplified and no longer takes a window position. You can set a position for your window during window creation by creating it hidden and setting the position before showing it:
+```c
+{
+    SDL_Window *window = SDL_CreateWindow("Test", 640, 480, SDL_WINDOW_HIDDEN);
+    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    SDL_ShowWindow(window);
+}
+```
+
 The SDL_WINDOWPOS_UNDEFINED_DISPLAY() and SDL_WINDOWPOS_CENTERED_DISPLAY() macros take a display ID instead of display index. The display ID 0 has a special meaning in this case, and is used to indicate the primary display.
 
 The SDL_WINDOW_SHOWN flag has been removed. Windows are shown by default and can be created hidden by using the SDL_WINDOW_HIDDEN flag.

@@ -110,9 +110,7 @@ int main(int argc, char *argv[])
     }
 
     /* If OPENGL fails to init it will fallback to using a framebuffer for rendering */
-    window = SDL_CreateWindow("Offscreen Test",
-                              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                              width, height, 0);
+    window = SDL_CreateWindow("Offscreen Test", width, height, 0);
 
     if (window == NULL) {
         SDL_Log("Couldn't create window: %s\n",
