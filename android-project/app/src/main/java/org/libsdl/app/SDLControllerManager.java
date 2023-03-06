@@ -168,6 +168,32 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler {
                 arg1Axis = MotionEvent.AXIS_GAS;
             }
 
+            // Make sure the AXIS_Z is sorted between AXIS_RY and AXIS_RZ.
+            // This is because the usual pairing are:
+            // - AXIS_X + AXIS_Y (left stick).
+            // - AXIS_RX, AXIS_RY (sometimes the right stick, sometimes triggers).
+            // - AXIS_Z, AXIS_RZ (sometimes the right stick, sometimes triggers).
+            // This sorts the axes in the above order, which tends to be correct
+            // for Xbox-ish game pads that have the right stick on RX/RY and the
+            // triggers on Z/RZ.
+            //
+            // Gamepads that don't have AXIS_Z/AXIS_RZ but use
+            // AXIS_LTRIGGER/AXIS_RTRIGGER are unaffected by this.
+            //
+            // References:
+            // - https://developer.android.com/develop/ui/views/touch-and-input/game-controllers/controller-input
+            // - https://www.kernel.org/doc/html/latest/input/gamepad.html
+            if (arg0Axis == MotionEvent.AXIS_Z) {
+                arg0Axis = MotionEvent.AXIS_RZ - 1;
+            } else if (arg0Axis > MotionEvent.AXIS_Z && arg0Axis < MotionEvent.AXIS_RZ) {
+                --arg0Axis;
+            }
+            if (arg1Axis == MotionEvent.AXIS_Z) {
+                arg1Axis = MotionEvent.AXIS_RZ - 1;
+            } else if (arg1Axis > MotionEvent.AXIS_Z && arg1Axis < MotionEvent.AXIS_RZ) {
+                --arg1Axis;
+            }
+
             return arg0Axis - arg1Axis;
         }
     }
