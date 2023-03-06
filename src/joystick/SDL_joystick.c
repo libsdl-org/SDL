@@ -196,7 +196,7 @@ static SDL_bool SDL_GetDriverAndJoystickIndex(SDL_JoystickID instance_id, SDL_Jo
     return SDL_FALSE;
 }
 
-static int SDL_FindFreePlayerIndex()
+static int SDL_FindFreePlayerIndex(void)
 {
     int player_index;
 
@@ -395,7 +395,7 @@ SDL_JoystickID *SDL_GetJoysticks(int *count)
  * Return the next available joystick instance ID
  * This may be called by drivers from multiple threads, unprotected by any locks
  */
-SDL_JoystickID SDL_GetNextJoystickInstanceID()
+SDL_JoystickID SDL_GetNextJoystickInstanceID(void)
 {
     return SDL_AtomicIncRef(&SDL_last_joystick_instance_id) + 1;
 }
@@ -1319,7 +1319,7 @@ void SDL_QuitJoysticks(void)
     SDL_UnlockJoysticks();
 }
 
-static SDL_bool SDL_PrivateJoystickShouldIgnoreEvent()
+static SDL_bool SDL_PrivateJoystickShouldIgnoreEvent(void)
 {
     if (SDL_joystick_allows_background_events) {
         return SDL_FALSE;
@@ -1726,7 +1726,7 @@ void SDL_SetJoystickEventsEnabled(SDL_bool enabled)
 #endif /* SDL_EVENTS_DISABLED */
 }
 
-SDL_bool SDL_JoystickEventsEnabled()
+SDL_bool SDL_JoystickEventsEnabled(void)
 {
     SDL_bool enabled = SDL_FALSE;
 

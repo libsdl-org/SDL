@@ -179,7 +179,7 @@ static struct wl_surface *touch_surface(SDL_TouchID id)
     return NULL;
 }
 
-Uint64 Wayland_GetEventTimestamp(Uint64 nsTimestamp)
+static Uint64 Wayland_GetEventTimestamp(Uint64 nsTimestamp)
 {
     static Uint64 last;
     static Uint64 timestamp_offset;
@@ -2328,7 +2328,7 @@ static void tablet_tool_handle_proximity_out(void *data, struct zwp_tablet_tool_
     }
 }
 
-uint32_t tablet_tool_btn_to_sdl_button(struct SDL_WaylandTabletInput *input)
+static uint32_t tablet_tool_btn_to_sdl_button(struct SDL_WaylandTabletInput *input)
 {
     unsigned int tool_btn = input->btn_stylus3 << 2 | input->btn_stylus2 << 1 | input->btn_stylus << 0;
     switch (tool_btn) {
@@ -2477,7 +2477,7 @@ static const struct zwp_tablet_tool_v2_listener tablet_tool_listener = {
     tablet_tool_handle_frame
 };
 
-struct SDL_WaylandTabletObjectListNode *tablet_object_list_new_node(void *object)
+static struct SDL_WaylandTabletObjectListNode *tablet_object_list_new_node(void *object)
 {
     struct SDL_WaylandTabletObjectListNode *node;
 
@@ -2492,7 +2492,7 @@ struct SDL_WaylandTabletObjectListNode *tablet_object_list_new_node(void *object
     return node;
 }
 
-void tablet_object_list_append(struct SDL_WaylandTabletObjectListNode *head, void *object)
+static void tablet_object_list_append(struct SDL_WaylandTabletObjectListNode *head, void *object)
 {
     if (head->object == NULL) {
         head->object = object;
@@ -2506,7 +2506,7 @@ void tablet_object_list_append(struct SDL_WaylandTabletObjectListNode *head, voi
     head->next = tablet_object_list_new_node(object);
 }
 
-void tablet_object_list_destroy(struct SDL_WaylandTabletObjectListNode *head, void (*deleter)(void *object))
+static void tablet_object_list_destroy(struct SDL_WaylandTabletObjectListNode *head, void (*deleter)(void *object))
 {
     while (head) {
         struct SDL_WaylandTabletObjectListNode *next = head->next;

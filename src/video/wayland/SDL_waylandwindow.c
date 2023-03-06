@@ -1474,7 +1474,7 @@ int Wayland_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
     return 0;
 }
 
-void handle_preferred_scale_changed(void *data,
+static void handle_preferred_scale_changed(void *data,
                                     struct wp_fractional_scale_v1 *wp_fractional_scale_v1,
                                     uint preferred_scale)
 {

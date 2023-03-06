@@ -3285,7 +3285,7 @@ void SDL_DestroyWindow(SDL_Window *window)
     SDL_free(window);
 }
 
-SDL_bool SDL_ScreenSaverEnabled()
+SDL_bool SDL_ScreenSaverEnabled(void)
 {
     if (_this == NULL) {
         return SDL_TRUE;
@@ -3293,7 +3293,7 @@ SDL_bool SDL_ScreenSaverEnabled()
     return _this->suspend_screensaver ? SDL_FALSE : SDL_TRUE;
 }
 
-int SDL_EnableScreenSaver()
+int SDL_EnableScreenSaver(void)
 {
     if (_this == NULL) {
         return 0;
@@ -3309,7 +3309,7 @@ int SDL_EnableScreenSaver()
     return SDL_Unsupported();
 }
 
-int SDL_DisableScreenSaver()
+int SDL_DisableScreenSaver(void)
 {
     if (_this == NULL) {
         return 0;
@@ -3594,7 +3594,7 @@ void SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribC
     _this->egl_contextattrib_callback = contextAttribCallback;
 }
 
-void SDL_GL_ResetAttributes()
+void SDL_GL_ResetAttributes(void)
 {
     if (_this == NULL) {
         return;

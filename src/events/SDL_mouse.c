@@ -1073,7 +1073,7 @@ int SDL_SetRelativeMouseMode(SDL_bool enabled)
 }
 
 SDL_bool
-SDL_GetRelativeMouseMode()
+SDL_GetRelativeMouseMode(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 

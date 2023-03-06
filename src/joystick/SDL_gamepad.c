@@ -1804,7 +1804,7 @@ char *SDL_GetGamepadMapping(SDL_Gamepad *gamepad)
     return retval;
 }
 
-static void SDL_LoadGamepadHints()
+static void SDL_LoadGamepadHints(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_GAMECONTROLLERCONFIG);
     if (hint && hint[0]) {
