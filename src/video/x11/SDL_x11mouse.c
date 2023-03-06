@@ -36,7 +36,7 @@ static Display *GetDisplay(void)
     return SDL_GetVideoDevice()->driverdata->display;
 }
 
-static Cursor X11_CreateEmptyCursor()
+static Cursor X11_CreateEmptyCursor(void)
 {
     if (x11_empty_cursor == None) {
         Display *display = GetDisplay();
@@ -65,7 +65,7 @@ static void X11_DestroyEmptyCursor(void)
     }
 }
 
-static SDL_Cursor *X11_CreateDefaultCursor()
+static SDL_Cursor *X11_CreateDefaultCursor(void)
 {
     SDL_Cursor *cursor;
 

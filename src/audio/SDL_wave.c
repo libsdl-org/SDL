@@ -1436,7 +1436,7 @@ static int PCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     return 0;
 }
 
-static WaveRiffSizeHint WaveGetRiffSizeHint()
+static WaveRiffSizeHint WaveGetRiffSizeHint(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WAVE_RIFF_CHUNK_SIZE);
 
@@ -1455,7 +1455,7 @@ static WaveRiffSizeHint WaveGetRiffSizeHint()
     return RiffSizeNoHint;
 }
 
-static WaveTruncationHint WaveGetTruncationHint()
+static WaveTruncationHint WaveGetTruncationHint(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WAVE_TRUNCATION);
 
@@ -1474,7 +1474,7 @@ static WaveTruncationHint WaveGetTruncationHint()
     return TruncNoHint;
 }
 
-static WaveFactChunkHint WaveGetFactChunkHint()
+static WaveFactChunkHint WaveGetFactChunkHint(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WAVE_FACT_CHUNK);
 

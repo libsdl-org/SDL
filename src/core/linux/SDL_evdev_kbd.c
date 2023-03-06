@@ -181,8 +181,8 @@ static void SDL_EVDEV_kbd_reraise_signal(int sig)
     (void)raise(sig);
 }
 
-siginfo_t *SDL_EVDEV_kdb_cleanup_siginfo = NULL;
-void *SDL_EVDEV_kdb_cleanup_ucontext = NULL;
+static siginfo_t *SDL_EVDEV_kdb_cleanup_siginfo = NULL;
+static void *SDL_EVDEV_kdb_cleanup_ucontext = NULL;
 
 static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontext)
 {
@@ -208,7 +208,7 @@ static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontex
     SDL_EVDEV_kbd_reraise_signal(signum);
 }
 
-static void kbd_unregister_emerg_cleanup()
+static void kbd_unregister_emerg_cleanup(void)
 {
     int tabidx;
 

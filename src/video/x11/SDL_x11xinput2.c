@@ -451,7 +451,7 @@ void X11_Xinput2SelectTouch(_THIS, SDL_Window *window)
 #endif
 }
 
-int X11_Xinput2IsInitialized()
+int X11_Xinput2IsInitialized(void)
 {
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
     return xinput2_initialized;
@@ -460,7 +460,7 @@ int X11_Xinput2IsInitialized()
 #endif
 }
 
-int X11_Xinput2IsMultitouchSupported()
+int X11_Xinput2IsMultitouchSupported(void)
 {
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     return xinput2_initialized && xinput2_multitouch_supported;

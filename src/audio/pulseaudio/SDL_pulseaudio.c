@@ -802,7 +802,7 @@ static int SDLCALL HotplugThread(void *data)
     return 0;
 }
 
-static void PULSEAUDIO_DetectDevices()
+static void PULSEAUDIO_DetectDevices(void)
 {
     WaitForPulseOperation(hotplug_mainloop, PULSEAUDIO_pa_context_get_server_info(hotplug_context, ServerInfoCallback, NULL));
     WaitForPulseOperation(hotplug_mainloop, PULSEAUDIO_pa_context_get_sink_info_list(hotplug_context, SinkInfoCallback, (void *)((intptr_t)SDL_TRUE)));

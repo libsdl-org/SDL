@@ -448,7 +448,7 @@ static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
     return cursor;
 }
 
-static SDL_Cursor *Wayland_CreateDefaultCursor()
+static SDL_Cursor *Wayland_CreateDefaultCursor(void)
 {
     return Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 }

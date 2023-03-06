@@ -53,7 +53,7 @@ typedef struct FcitxClient
 
 static FcitxClient fcitx_client;
 
-static char *GetAppName()
+static char *GetAppName(void)
 {
 #if defined(__LINUX__) || defined(__FREEBSD__)
     char *spot;
@@ -367,7 +367,7 @@ static Uint32 Fcitx_ModState(void)
 }
 
 SDL_bool
-SDL_Fcitx_Init()
+SDL_Fcitx_Init(void)
 {
     fcitx_client.dbus = SDL_DBus_GetContext();
 
@@ -379,7 +379,7 @@ SDL_Fcitx_Init()
     return FcitxClientCreateIC(&fcitx_client);
 }
 
-void SDL_Fcitx_Quit()
+void SDL_Fcitx_Quit(void)
 {
     FcitxClientICCallMethod(&fcitx_client, "DestroyIC");
     if (fcitx_client.ic_path) {

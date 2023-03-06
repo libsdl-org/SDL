@@ -24,6 +24,7 @@
 
 #include "SDL_keyboard_c.h"
 #include "SDL_scancode_tables_c.h"
+#include "SDL_keysym_to_scancode_c.h"
 
 /* *INDENT-OFF* */ /* clang-format off */
 static const struct {

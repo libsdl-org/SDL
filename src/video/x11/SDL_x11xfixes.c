@@ -64,7 +64,7 @@ void X11_InitXfixes(_THIS)
     xfixes_initialized = 1;
 }
 
-int X11_XfixesIsInitialized()
+int X11_XfixesIsInitialized(void)
 {
     return xfixes_initialized;
 }
