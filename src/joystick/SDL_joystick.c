@@ -2356,7 +2356,6 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x044f, 0xb66e), /* Thrustmaster T300RS (normal mode) */
         MAKE_VIDPID(0x044f, 0xb66f), /* Thrustmaster T300RS (advanced mode) */
         MAKE_VIDPID(0x044f, 0xb66d), /* Thrustmaster T300RS (PS4 mode) */
-        MAKE_VIDPID(0x044f, 0xb65e), /* Thrustmaster T500RS */
         MAKE_VIDPID(0x044f, 0xb664), /* Thrustmaster TX (initial mode) */
         MAKE_VIDPID(0x044f, 0xb669), /* Thrustmaster TX (active mode) */
         MAKE_VIDPID(0x11ff, 0x0511), /* DragonRise Inc. Wired Wheel (initial mode) (also known as PXN V900 (PS3), Superdrive SV-750, or a Genesis Seaborg 400) */
