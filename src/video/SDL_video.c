@@ -3393,7 +3393,7 @@ int SDL_GL_LoadLibrary(const char *path)
 
 SDL_FunctionPointer SDL_GL_GetProcAddress(const char *proc)
 {
-    void *func;
+    SDL_FunctionPointer func;
 
     if (_this == NULL) {
         SDL_UninitializedVideo();
@@ -3415,7 +3415,7 @@ SDL_FunctionPointer SDL_GL_GetProcAddress(const char *proc)
 SDL_FunctionPointer SDL_EGL_GetProcAddress(const char *proc)
 {
 #if SDL_VIDEO_OPENGL_EGL
-    void *func;
+    SDL_FunctionPointer func;
 
     if (!_this) {
         SDL_UninitializedVideo();
