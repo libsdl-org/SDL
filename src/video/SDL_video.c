@@ -1680,7 +1680,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
     /* ensure no more than one of these flags is set */
     type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU);
     if (type_flags & (type_flags - 1)) {
-        SDL_SetError("Conflicting window flags specified");
+        SDL_SetError("Conflicting window type flags specified: 0x%.8x", type_flags);
         return NULL;
     }
 
@@ -1731,7 +1731,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
     if (graphics_flags & (graphics_flags - 1)) {
-        SDL_SetError("Conflicting window flags specified");
+        SDL_SetError("Conflicting window graphics flags specified: 0x%.8x", graphics_flags);
         return NULL;
     }
 
