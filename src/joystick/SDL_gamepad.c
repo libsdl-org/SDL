@@ -537,24 +537,17 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_JoystickGUID gui
     if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTY)) {
         SDL_strlcat(mapping_string, "lefty:a1,", sizeof(mapping_string));
     }
+    if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTX)) {
+        SDL_strlcat(mapping_string, "rightx:a2,", sizeof(mapping_string));
+    }
+    if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTY)) {
+        SDL_strlcat(mapping_string, "righty:a3,", sizeof(mapping_string));
+    }
     if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFT_TRIGGER)) {
-        SDL_strlcat(mapping_string, "lefttrigger:a2,", sizeof(mapping_string));
-        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTX)) {
-            SDL_strlcat(mapping_string, "rightx:a3,", sizeof(mapping_string));
-        }
-        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTY)) {
-            SDL_strlcat(mapping_string, "righty:a4,", sizeof(mapping_string));
-        }
-        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)) {
-            SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof(mapping_string));
-        }
-    } else {
-        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTX)) {
-            SDL_strlcat(mapping_string, "rightx:a2,", sizeof(mapping_string));
-        }
-        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTY)) {
-            SDL_strlcat(mapping_string, "righty:a3,", sizeof(mapping_string));
-        }
+        SDL_strlcat(mapping_string, "lefttrigger:a4,", sizeof(mapping_string));
+    }
+    if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)) {
+        SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof(mapping_string));
     }
 
     return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
