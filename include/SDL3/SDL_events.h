@@ -172,6 +172,7 @@ typedef enum
     SDL_EVENT_DROP_TEXT,                 /**< text/plain drag-and-drop event */
     SDL_EVENT_DROP_BEGIN,                /**< A new set of drops is beginning (NULL filename) */
     SDL_EVENT_DROP_COMPLETE,             /**< Current set of drops is now complete (NULL filename) */
+    SDL_EVENT_DROP_POSITION,             /**< Position while moving over the window */
 
     /* Audio hotplug events */
     SDL_EVENT_AUDIO_DEVICE_ADDED = 0x1100, /**< A new audio device is available */
@@ -515,10 +516,12 @@ typedef struct SDL_TouchFingerEvent
  */
 typedef struct SDL_DropEvent
 {
-    Uint32 type;        /**< ::SDL_EVENT_DROP_BEGIN or ::SDL_EVENT_DROP_FILE or ::SDL_EVENT_DROP_TEXT or ::SDL_EVENT_DROP_COMPLETE */
+    Uint32 type;        /**< ::SDL_EVENT_DROP_BEGIN or ::SDL_EVENT_DROP_FILE or ::SDL_EVENT_DROP_TEXT or ::SDL_EVENT_DROP_COMPLETE or ::SDL_EVENT_DROP_POSITION */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     char *file;         /**< The file name, which should be freed with SDL_free(), is NULL on begin/complete */
-    SDL_WindowID windowID;/**< The window that was dropped on, if any */
+    SDL_WindowID windowID;    /**< The window that was dropped on, if any */
+    float x;            /**< X coordinate, relative to window (not on begin) */
+    float y;            /**< Y coordinate, relative to window (not on begin) */
 } SDL_DropEvent;
 
 

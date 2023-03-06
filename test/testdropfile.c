@@ -29,6 +29,9 @@ int main(int argc, char *argv[])
 {
     int i, done;
     SDL_Event event;
+    SDL_bool is_hover = SDL_FALSE;
+    float x = 0.0f, y = 0.0f;
+    unsigned int windowID = 0;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -60,12 +63,6 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
-    for (i = 0; i < state->num_windows; ++i) {
-        SDL_Renderer *renderer = state->renderers[i];
-        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
-        SDL_RenderClear(renderer);
-        SDL_RenderPresent(renderer);
-    }
 
     SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
 
@@ -75,19 +72,43 @@ int main(int argc, char *argv[])
         /* Check for events */
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_DROP_BEGIN) {
-                SDL_Log("Drop beginning on window %u", (unsigned int)event.drop.windowID);
+                SDL_Log("Drop beginning on window %u at (%f, %f)", (unsigned int)event.drop.windowID, event.drop.x, event.drop.y);
             } else if (event.type == SDL_EVENT_DROP_COMPLETE) {
-                SDL_Log("Drop complete on window %u", (unsigned int)event.drop.windowID);
+                is_hover = SDL_FALSE;
+                SDL_Log("Drop complete on window %u at (%f, %f)", (unsigned int)event.drop.windowID, event.drop.x, event.drop.y);
             } else if ((event.type == SDL_EVENT_DROP_FILE) || (event.type == SDL_EVENT_DROP_TEXT)) {
                 const char *typestr = (event.type == SDL_EVENT_DROP_FILE) ? "File" : "Text";
                 char *dropped_filedir = event.drop.file;
-                SDL_Log("%s dropped on window %u: %s", typestr, (unsigned int)event.drop.windowID, dropped_filedir);
+                SDL_Log("%s dropped on window %u: %s at (%f, %f)", typestr, (unsigned int)event.drop.windowID, dropped_filedir, event.drop.x, event.drop.y);
                 /* Normally you'd have to do this, but this is freed in SDLTest_CommonEvent() */
                 /*SDL_free(dropped_filedir);*/
+            } else if (event.type == SDL_EVENT_DROP_POSITION) {
+                is_hover = SDL_TRUE;
+                x = event.drop.x;
+                y = event.drop.y;
+                windowID = event.drop.windowID;
+                SDL_Log("Drop position on window %u at (%f, %f) file = %s", (unsigned int)event.drop.windowID, event.drop.x, event.drop.y, event.drop.file);
             }
 
             SDLTest_CommonEvent(state, &event, &done);
         }
+
+        for (i = 0; i < state->num_windows; ++i) {
+            SDL_Renderer *renderer = state->renderers[i];
+            SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
+            SDL_RenderClear(renderer);
+            if (is_hover) {
+                if (windowID == SDL_GetWindowID(SDL_GetRenderWindow(renderer))) {
+                    int len = 2000;
+                    SDL_SetRenderDrawColor(renderer, 0x0A, 0x0A, 0x0A, 0xFF);
+                    SDL_RenderLine(renderer, x, y - len, x, y + len);
+                    SDL_RenderLine(renderer, x - len, y, x + len, y);
+                }
+            }
+            SDL_RenderPresent(renderer);
+        }
+
+        SDL_Delay(16);
     }
 
     quit(0);
