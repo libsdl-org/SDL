@@ -1222,6 +1222,18 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             }
             printf("Action requested by user is : %s\n", X11_XGetAtomName(display, act));
 #endif
+            {
+                /* Drag and Drop position */
+                int root_x, root_y, window_x, window_y;
+                Window ChildReturn;
+                root_x = xevent->xclient.data.l[2] >> 16;
+                root_y = xevent->xclient.data.l[2] & 0xffff;
+                /* Translate from root to current window position */
+                X11_XTranslateCoordinates(display, DefaultRootWindow(display), data->xwindow,
+                        root_x, root_y, &window_x, &window_y, &ChildReturn);
+
+                SDL_SendDropPosition(data->window, NULL, (float)window_x, (float)window_y); /* FIXME, can we get the filename ? */
+            }
 
             /* reply with status */
             SDL_memset(&m, 0, sizeof(XClientMessageEvent));

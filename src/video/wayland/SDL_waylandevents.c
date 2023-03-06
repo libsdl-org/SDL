@@ -96,6 +96,8 @@ struct SDL_WaylandTouchPointList
 
 static struct SDL_WaylandTouchPointList touch_points = { NULL, NULL };
 
+static char *Wayland_URIToLocal(char *uri);
+
 static void touch_add(SDL_TouchID id, float x, float y, struct wl_surface *surface)
 {
     struct SDL_WaylandTouchPoint *tp = SDL_malloc(sizeof(struct SDL_WaylandTouchPoint));
@@ -1845,6 +1847,30 @@ static void data_device_handle_leave(void *data, struct wl_data_device *wl_data_
 static void data_device_handle_motion(void *data, struct wl_data_device *wl_data_device,
                                       uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
+    SDL_WaylandDataDevice *data_device = data;
+
+    if (data_device->drag_offer != NULL) {
+        /* TODO: SDL Support more mime types */
+        size_t length;
+        void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
+                &length, FILE_MIME, SDL_TRUE);
+        if (buffer) {
+            char *saveptr = NULL;
+            char *token = SDL_strtokr((char *)buffer, "\r\n", &saveptr);
+            while (token != NULL) {
+                char *fn = Wayland_URIToLocal(token);
+                if (fn) {
+                    double dx;
+                    double dy;
+                    dx = wl_fixed_to_double(x);
+                    dy = wl_fixed_to_double(y);
+                    SDL_SendDropPosition(data_device->dnd_window, fn, (float)dx, (float)dy);
+                }
+                token = SDL_strtokr(NULL, "\r\n", &saveptr);
+            }
+            SDL_free(buffer);
+        }
+    }
 }
 
 /* Decodes URI escape sequences in string buf of len bytes
