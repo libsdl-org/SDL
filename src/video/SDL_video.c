@@ -1420,6 +1420,13 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
         if ((window->last_fullscreen_flags & FULLSCREEN_MASK) == (window->flags & FULLSCREEN_MASK)) {
             return 0;
         }
+        if (!fullscreen) {
+            if (_this->SetWindowFullscreen) {
+                _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
+            }
+            window->last_fullscreen_flags = window->flags;
+            return 0;
+        }
     }
 
     /* See if there are any fullscreen windows */
