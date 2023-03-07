@@ -204,6 +204,7 @@ add_sdl_test_executable(testcustomcursor testcustomcursor.c)
 add_sdl_test_executable(gamepadmap NEEDS_RESOURCES TESTUTILS gamepadmap.c)
 add_sdl_test_executable(testvulkan testvulkan.c)
 add_sdl_test_executable(testoffscreen testoffscreen.c)
+add_sdl_test_executable(testpopup testpopup.c)
 
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
 if(HAVE_WFORMAT_OVERFLOW)
