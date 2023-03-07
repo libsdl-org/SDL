@@ -1446,7 +1446,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
                 }
 
                 /* only do the mode change if we want exclusive fullscreen */
-                if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+                if ((other->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
                     if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
                         return -1;
                     }
