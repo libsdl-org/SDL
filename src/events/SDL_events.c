@@ -204,6 +204,8 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
         SDL_EVENT_CASE(SDL_EVENT_LOCALE_CHANGED)
         break;
+        SDL_EVENT_CASE(SDL_EVENT_SYSTEM_THEME_CHANGED)
+        break;
         SDL_EVENT_CASE(SDL_EVENT_KEYMAP_CHANGED)
         break;
         SDL_EVENT_CASE(SDL_EVENT_CLIPBOARD_UPDATE)
@@ -1344,6 +1346,11 @@ int SDL_SendKeymapChangedEvent(void)
 int SDL_SendLocaleChangedEvent(void)
 {
     return SDL_SendAppEvent(SDL_EVENT_LOCALE_CHANGED);
+}
+
+int SDL_SendSystemThemeChangedEvent(void)
+{
+    return SDL_SendAppEvent(SDL_EVENT_SYSTEM_THEME_CHANGED);
 }
 
 int SDL_InitEvents(void)

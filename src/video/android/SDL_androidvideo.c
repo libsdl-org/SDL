@@ -65,6 +65,7 @@ static float Android_ScreenRate = 0.0f;
 SDL_sem *Android_PauseSem = NULL;
 SDL_sem *Android_ResumeSem = NULL;
 SDL_mutex *Android_ActivityMutex = NULL;
+static SDL_SystemTheme Android_SystemTheme;
 
 static int Android_SuspendScreenSaver(_THIS)
 {
@@ -98,6 +99,7 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     }
 
     device->driverdata = data;
+    device->system_theme = Android_SystemTheme;
 
     /* Set the function pointers */
     device->VideoInit = Android_VideoInit;
@@ -281,6 +283,21 @@ void Android_SendResize(SDL_Window *window)
         int w = (int)SDL_floorf(Android_SurfaceWidth / Android_ScreenDensity);
         int h = (int)SDL_floorf(Android_SurfaceHeight / Android_ScreenDensity);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
+    }
+}
+
+void Android_SetDarkMode(SDL_bool enabled)
+{
+    SDL_VideoDevice *device = SDL_GetVideoDevice();
+
+    if (enabled) {
+        Android_SystemTheme = SDL_SYSTEM_THEME_DARK;
+    } else {
+        Android_SystemTheme = SDL_SYSTEM_THEME_LIGHT;
+    }
+
+    if (device) {
+        SDL_SetSystemTheme(Android_SystemTheme);
     }
 }
 

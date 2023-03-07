@@ -129,6 +129,10 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (id)init;
 - (void)localeDidChange:(NSNotification *)notification;
+- (void)observeValueForKeyPath:(NSString *)keyPath 
+                      ofObject:(id)object 
+                        change:(NSDictionary<NSKeyValueChangeKey, id> *)change 
+                       context:(void *)context;
 @end
 
 @implementation SDLAppDelegate : NSObject
@@ -154,6 +158,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                    selector:@selector(localeDidChange:)
                        name:NSCurrentLocaleDidChangeNotification
                      object:nil];
+
+        [NSApp addObserver:self
+                forKeyPath:@"effectiveAppearance"
+                   options:NSKeyValueObservingOptionInitial
+                   context:nil];
     }
 
     return self;
@@ -166,6 +175,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     [center removeObserver:self name:NSWindowWillCloseNotification object:nil];
     [center removeObserver:self name:NSApplicationDidBecomeActiveNotification object:nil];
     [center removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
+    [NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
 
     /* Remove our URL event handler only if we set it */
     if ([NSApp delegate] == self) {
@@ -262,9 +272,17 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     }
 }
 
-- (void)localeDidChange:(NSNotification *)notification;
+- (void)localeDidChange:(NSNotification *)notification
 {
     SDL_SendLocaleChangedEvent();
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath 
+                      ofObject:(id)object 
+                        change:(NSDictionary<NSKeyValueChangeKey, id> *)change 
+                       context:(void *)context
+{
+    SDL_SetSystemTheme(Cocoa_GetSystemTheme());
 }
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename

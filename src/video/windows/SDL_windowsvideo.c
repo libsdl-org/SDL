@@ -116,6 +116,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     }
     device->driverdata = data;
     device->wakeup_lock = SDL_CreateMutex();
+    device->system_theme = WIN_GetSystemTheme();
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     data->userDLL = SDL_LoadObject("USER32.DLL");
@@ -675,8 +676,26 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
 #endif
 }
 
-SDL_bool
-WIN_IsPerMonitorV2DPIAware(_THIS)
+SDL_SystemTheme WIN_GetSystemTheme(void)
+{
+    DWORD type;
+    DWORD value;
+    DWORD count = sizeof(value);
+    LSTATUS status;
+
+    /* Technically this isn't the system theme, but it's the preference for applications */
+    status = RegGetValue(HKEY_CURRENT_USER,
+                         TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
+                         TEXT("AppsUseLightTheme"),
+                         RRF_RT_REG_DWORD, &type, &value, &count);
+    if (status == ERROR_SUCCESS && type == REG_DWORD && value == 0) {
+        return SDL_SYSTEM_THEME_DARK;
+    } else {
+        return SDL_SYSTEM_THEME_LIGHT;
+    }
+}
+
+SDL_bool WIN_IsPerMonitorV2DPIAware(_THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_VideoData *data = _this->driverdata;

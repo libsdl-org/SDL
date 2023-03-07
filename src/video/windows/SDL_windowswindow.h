@@ -110,6 +110,7 @@ extern void WIN_ClientPointFromSDL(const SDL_Window *window, int *x, int *y);
 extern void WIN_ClientPointFromSDLFloat(const SDL_Window *window, float x, float y, LONG *xOut, LONG *yOut);
 extern void WIN_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int WIN_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation);
+extern void WIN_UpdateDarkModeForHWND(HWND hwnd);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

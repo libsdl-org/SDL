@@ -1438,6 +1438,21 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
     return SDL_TRUE;
 }
 
+static const char *SystemThemeName(void)
+{
+    switch (SDL_GetSystemTheme()) {
+#define CASE(X)               \
+    case SDL_SYSTEM_THEME_##X: \
+        return #X
+        CASE(UNKNOWN);
+        CASE(LIGHT);
+        CASE(DARK);
+#undef CASE
+    default:
+        return "???";
+    }
+}
+
 static const char *DisplayOrientationName(int orientation)
 {
     switch (orientation) {
@@ -1505,6 +1520,9 @@ static const char *GamepadButtonName(const SDL_GamepadButton button)
 static void SDLTest_PrintEvent(SDL_Event *event)
 {
     switch (event->type) {
+    case SDL_EVENT_SYSTEM_THEME_CHANGED:
+        SDL_Log("SDL EVENT: System theme changed to %s\n", SystemThemeName());
+        break;
     case SDL_EVENT_DISPLAY_CONNECTED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
                 event->display.displayID);

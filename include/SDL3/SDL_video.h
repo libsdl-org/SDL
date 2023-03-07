@@ -44,6 +44,16 @@ typedef Uint32 SDL_DisplayID;
 typedef Uint32 SDL_WindowID;
 
 /**
+ *  \brief System theme
+ */
+typedef enum
+{
+    SDL_SYSTEM_THEME_UNKNOWN,   /**< Unknown system theme */
+    SDL_SYSTEM_THEME_LIGHT,     /**< Light colored system theme */
+    SDL_SYSTEM_THEME_DARK,      /**< Dark colored system theme */
+} SDL_SystemTheme;
+
+/**
  *  \brief  The structure that defines a display mode
  *
  *  \sa SDL_GetFullscreenDisplayModes()
@@ -64,6 +74,18 @@ typedef struct
     float refresh_rate;         /**< refresh rate (or zero for unspecified) */
     void *driverdata;           /**< driver-specific data, initialize to 0 */
 } SDL_DisplayMode;
+
+/**
+ *  \brief Display orientation
+ */
+typedef enum
+{
+    SDL_ORIENTATION_UNKNOWN,            /**< The display orientation can't be determined */
+    SDL_ORIENTATION_LANDSCAPE,          /**< The display is in landscape mode, with the right side up, relative to portrait mode */
+    SDL_ORIENTATION_LANDSCAPE_FLIPPED,  /**< The display is in landscape mode, with the left side up, relative to portrait mode */
+    SDL_ORIENTATION_PORTRAIT,           /**< The display is in portrait mode */
+    SDL_ORIENTATION_PORTRAIT_FLIPPED    /**< The display is in portrait mode, upside down */
+} SDL_DisplayOrientation;
 
 /**
  *  \brief The type used to identify a window
@@ -150,18 +172,6 @@ typedef enum
 #define SDL_WINDOWPOS_CENTERED         SDL_WINDOWPOS_CENTERED_DISPLAY(0)
 #define SDL_WINDOWPOS_ISCENTERED(X)    \
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK)
-
-/**
- *  \brief Display orientation
- */
-typedef enum
-{
-    SDL_ORIENTATION_UNKNOWN,            /**< The display orientation can't be determined */
-    SDL_ORIENTATION_LANDSCAPE,          /**< The display is in landscape mode, with the right side up, relative to portrait mode */
-    SDL_ORIENTATION_LANDSCAPE_FLIPPED,  /**< The display is in landscape mode, with the left side up, relative to portrait mode */
-    SDL_ORIENTATION_PORTRAIT,           /**< The display is in portrait mode */
-    SDL_ORIENTATION_PORTRAIT_FLIPPED    /**< The display is in portrait mode, upside down */
-} SDL_DisplayOrientation;
 
 /**
  *  \brief Window flash operation
@@ -296,6 +306,15 @@ extern DECLSPEC const char *SDLCALL SDL_GetVideoDriver(int index);
  * \sa SDL_GetVideoDriver
  */
 extern DECLSPEC const char *SDLCALL SDL_GetCurrentVideoDriver(void);
+
+/**
+ * Get the current system theme
+ *
+ * \returns the current system theme, light, dark, or unknown
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
 
 /**
  * Get a list of currently connected displays.
