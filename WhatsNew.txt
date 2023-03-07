@@ -12,6 +12,9 @@ General:
 * The preprocessor symbol __IPHONEOS__ has been renamed __IOS__
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
 * SDL_intrin.h now includes the intrinsics headers that were in SDL_cpuinfo.h
+* Added SDL_GetSystemTheme() to return whether the system is using a dark or light color theme, and SDL_EVENT_SYSTEM_THEME_CHANGED is sent when this changes
+* Added SDL_GetDisplays() to return a list of connected displays
+* Added SDL_GetPrimaryDisplay() to get the instance ID of the primary display
 * Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace SDL_CreateRGBSurface*(), and can also be used to create YUV surfaces
 * Added SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystickInstancePath(), SDL_GetJoystickInstancePlayerIndex(), SDL_GetJoystickInstanceGUID(), SDL_GetJoystickInstanceVendor(), SDL_GetJoystickInstanceProduct(), SDL_GetJoystickInstanceProductVersion(), and SDL_GetJoystickInstanceType() to directly query the list of available joysticks
 * Added SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() to directly query the list of available gamepads

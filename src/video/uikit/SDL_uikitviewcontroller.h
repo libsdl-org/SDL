@@ -45,6 +45,8 @@
 
 - (instancetype)initWithSDLWindow:(SDL_Window *)_window;
 
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection;
+
 - (void)setAnimationCallback:(int)interval
                     callback:(void (*)(void *))callback
                callbackParam:(void *)callbackParam;

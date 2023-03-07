@@ -136,6 +136,11 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #endif
 }
 
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
+{
+    SDL_SetSystemTheme(UIKit_GetSystemTheme());
+}
+
 - (void)setAnimationCallback:(int)interval
                     callback:(void (*)(void *))callback
                callbackParam:(void *)callbackParam

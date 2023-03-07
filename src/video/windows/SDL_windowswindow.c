@@ -40,6 +40,12 @@
 
 #include <SDL3/SDL_syswm.h>
 
+/* Dark mode support */
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+typedef HRESULT (WINAPI *DwmSetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+
 /* Windows CE compatibility */
 #ifndef SWP_NOCOPYBITS
 #define SWP_NOCOPYBITS 0
@@ -510,6 +516,8 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
     if (!hwnd) {
         return WIN_SetError("Couldn't create window");
     }
+
+    WIN_UpdateDarkModeForHWND(hwnd);
 
     WIN_PumpEvents(_this);
 
@@ -1458,5 +1466,19 @@ int WIN_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
     return 0;
 }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+
+void WIN_UpdateDarkModeForHWND(HWND hwnd)
+{
+    void *handle = SDL_LoadObject("dwmapi.dll");
+    if (handle) {
+        DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
+        if (DwmSetWindowAttributeFunc) {
+            /* FIXME: Do we need to traverse children? */
+            BOOL value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
+            DwmSetWindowAttributeFunc(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+        }
+        SDL_UnloadObject(handle);
+    }
+}
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

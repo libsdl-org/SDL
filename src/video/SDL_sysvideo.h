@@ -354,6 +354,7 @@ struct SDL_VideoDevice
     char *primary_selection_text;
     SDL_bool setting_display_mode;
     Uint32 quirk_flags;
+    SDL_SystemTheme system_theme;
 
     /* * * */
     /* Data used by the GL drivers */
@@ -476,6 +477,7 @@ extern VideoBootStrap NGAGE_bootstrap;
 extern SDL_bool SDL_OnVideoThread(void);
 extern SDL_VideoDevice *SDL_GetVideoDevice(void);
 extern SDL_bool SDL_IsVideoContextExternal(void);
+extern void SDL_SetSystemTheme(SDL_SystemTheme theme);
 extern SDL_DisplayID SDL_AddBasicVideoDisplay(const SDL_DisplayMode *desktop_mode);
 extern SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send_event);
 extern void SDL_DelVideoDisplay(SDL_DisplayID display, SDL_bool send_event);

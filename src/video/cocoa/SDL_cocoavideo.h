@@ -108,6 +108,7 @@ DECLARE_ALERT_STYLE(Critical);
 @end
 
 /* Utility functions */
+extern SDL_SystemTheme Cocoa_GetSystemTheme(void);
 extern NSImage *Cocoa_CreateImage(SDL_Surface *surface);
 
 /* Fix build with the 10.11 SDK */

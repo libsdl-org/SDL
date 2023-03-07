@@ -576,14 +576,31 @@ SDL_VideoDevice *SDL_GetVideoDevice(void)
     return _this;
 }
 
+SDL_bool SDL_OnVideoThread(void)
+{
+    return (_this && SDL_ThreadID() == _this->thread) ? SDL_TRUE : SDL_FALSE;
+}
+
 SDL_bool SDL_IsVideoContextExternal(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, SDL_FALSE);
 }
 
-SDL_bool SDL_OnVideoThread(void)
+void SDL_SetSystemTheme(SDL_SystemTheme theme)
 {
-    return (_this && SDL_ThreadID() == _this->thread) ? SDL_TRUE : SDL_FALSE;
+    if (_this && theme != _this->system_theme) {
+        _this->system_theme = theme;
+        SDL_SendSystemThemeChangedEvent();
+    }
+}
+
+SDL_SystemTheme SDL_GetSystemTheme(void)
+{
+    if (_this) {
+        return _this->system_theme;
+    } else {
+        return SDL_SYSTEM_THEME_UNKNOWN;
+    }
 }
 
 static void SDL_FinalizeDisplayMode(SDL_DisplayMode *mode)

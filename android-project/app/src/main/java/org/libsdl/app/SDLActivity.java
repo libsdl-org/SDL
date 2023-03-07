@@ -412,6 +412,15 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         } catch(Exception ignored) {
         }
 
+        switch (getContext().getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) {
+        case Configuration.UI_MODE_NIGHT_NO:
+            SDLActivity.onNativeDarkModeChanged(false);
+            break;
+        case Configuration.UI_MODE_NIGHT_YES:
+            SDLActivity.onNativeDarkModeChanged(true);
+            break;
+        }
+
         setContentView(mLayout);
 
         setWindowStyle(false);
@@ -576,6 +585,15 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (mCurrentLocale == null || !mCurrentLocale.equals(newConfig.locale)) {
             mCurrentLocale = newConfig.locale;
             SDLActivity.onNativeLocaleChanged();
+        }
+
+        switch (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) {
+        case Configuration.UI_MODE_NIGHT_NO:
+            SDLActivity.onNativeDarkModeChanged(false);
+            break;
+        case Configuration.UI_MODE_NIGHT_YES:
+            SDLActivity.onNativeDarkModeChanged(true);
+            break;
         }
     }
 
@@ -931,6 +949,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativeAddTouch(int touchId, String name);
     public static native void nativePermissionResult(int requestCode, boolean result);
     public static native void onNativeLocaleChanged();
+    public static native void onNativeDarkModeChanged(boolean enabled);
 
     /**
      * This method is called by SDL using JNI.

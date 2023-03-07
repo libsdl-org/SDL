@@ -75,6 +75,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         }
         device->driverdata = (SDL_VideoData *)CFBridgingRetain(data);
         device->wakeup_lock = SDL_CreateMutex();
+        device->system_theme = Cocoa_GetSystemTheme();
 
         /* Set the function pointers */
         device->VideoInit = Cocoa_VideoInit;
@@ -217,6 +218,18 @@ void Cocoa_VideoQuit(_THIS)
         Cocoa_QuitMouse(_this);
         SDL_DestroyMutex(data.swaplock);
         data.swaplock = NULL;
+    }
+}
+
+/* This function assumes that it's called from within an autorelease pool */
+SDL_SystemTheme Cocoa_GetSystemTheme(void)
+{
+    NSAppearance* appearance = [[NSApplication sharedApplication] effectiveAppearance];
+
+    if ([appearance.name containsString: @"Dark"]) {
+        return SDL_SYSTEM_THEME_DARK;
+    } else {
+        return SDL_SYSTEM_THEME_LIGHT;
     }
 }
 

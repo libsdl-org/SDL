@@ -87,6 +87,8 @@ typedef enum
 
     SDL_EVENT_LOCALE_CHANGED,  /**< The user's locale preferences have changed. */
 
+    SDL_EVENT_SYSTEM_THEME_CHANGED, /**< The system theme changed */
+
     /* Display events */
     /* 0x150 was SDL_DISPLAYEVENT, reserve the number for sdl2-compat */
     SDL_EVENT_DISPLAY_ORIENTATION = 0x151, /**< Display orientation has changed to data1 */

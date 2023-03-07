@@ -74,6 +74,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         }
 
         device->driverdata = (SDL_VideoData *)CFBridgingRetain(data);
+        device->system_theme = UIKit_GetSystemTheme();
 
         /* Set the function pointers */
         device->VideoInit = UIKit_VideoInit;
@@ -175,14 +176,27 @@ int UIKit_SuspendScreenSaver(_THIS)
     return 0;
 }
 
-SDL_bool
-UIKit_IsSystemVersionAtLeast(double version)
+SDL_bool UIKit_IsSystemVersionAtLeast(double version)
 {
     return [[UIDevice currentDevice].systemVersion doubleValue] >= version;
 }
 
-CGRect
-UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
+SDL_SystemTheme UIKit_GetSystemTheme(void)
+{
+    if (@available(iOS 12.0, tvOS 10.0, *)) {
+        switch ([UIScreen mainScreen].traitCollection.userInterfaceStyle) {
+        case UIUserInterfaceStyleDark:
+            return SDL_SYSTEM_THEME_DARK;
+        case UIUserInterfaceStyleLight:
+            return SDL_SYSTEM_THEME_LIGHT;
+        default:
+            break;
+        }
+    }
+    return SDL_SYSTEM_THEME_UNKNOWN;
+}
+
+CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
     CGRect frame = screen.bounds;
