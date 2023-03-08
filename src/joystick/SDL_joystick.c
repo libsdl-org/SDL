@@ -202,7 +202,7 @@ static SDL_bool SDL_GetDriverAndJoystickIndex(int device_index, SDL_JoystickDriv
 
 static int SDL_FindFreePlayerIndex()
 {
-    int player_index;
+    int player_index = -1;
 
     SDL_AssertJoysticksLocked();
 
