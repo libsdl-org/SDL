@@ -13,7 +13,7 @@ CFLAGS+= -wx -wcd=303
 CFLAGS+= -we
 !endif
 CFLAGS+= -DSDL_MAIN_HANDLED
-CFLAGS+= -DHAVE_OPENGL
+CFLAGS+= -DHAVE_OPENGL -DHAVE_SIGNAL_H
 GLLIBS = opengl32.lib
 
 TNSRCS = testnative.c testnativew32.c
