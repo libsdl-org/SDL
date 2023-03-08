@@ -377,8 +377,8 @@ SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
         interval = 0;
         [context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
 
-        if (Cocoa_GL_MakeCurrent(_this, window, (__bridge SDL_GLContext)context) < 0) {
-            Cocoa_GL_DeleteContext(_this, (__bridge SDL_GLContext)context);
+        if (Cocoa_GL_MakeCurrent(_this, window, sdlcontext) < 0) {
+            SDL_GL_DeleteContext(sdlcontext);
             SDL_SetError("Failed making OpenGL context current");
             return NULL;
         }
@@ -392,27 +392,27 @@ SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
 
             glGetStringFunc = (const GLubyte *(APIENTRY *)(GLenum))SDL_GL_GetProcAddress("glGetString");
             if (!glGetStringFunc) {
-                Cocoa_GL_DeleteContext(_this, (__bridge SDL_GLContext)context);
+                SDL_GL_DeleteContext(sdlcontext);
                 SDL_SetError("Failed getting OpenGL glGetString entry point");
                 return NULL;
             }
 
             glversion = (const char *)glGetStringFunc(GL_VERSION);
             if (glversion == NULL) {
-                Cocoa_GL_DeleteContext(_this, (__bridge SDL_GLContext)context);
+                SDL_GL_DeleteContext(sdlcontext);
                 SDL_SetError("Failed getting OpenGL context version");
                 return NULL;
             }
 
             if (SDL_sscanf(glversion, "%d.%d", &glversion_major, &glversion_minor) != 2) {
-                Cocoa_GL_DeleteContext(_this, (__bridge SDL_GLContext)context);
+                SDL_GL_DeleteContext(sdlcontext);
                 SDL_SetError("Failed parsing OpenGL context version");
                 return NULL;
             }
 
             if ((glversion_major < _this->gl_config.major_version) ||
                 ((glversion_major == _this->gl_config.major_version) && (glversion_minor < _this->gl_config.minor_version))) {
-                Cocoa_GL_DeleteContext(_this, (__bridge SDL_GLContext)context);
+                SDL_GL_DeleteContext(sdlcontext);
                 SDL_SetError("Failed creating OpenGL context at version requested");
                 return NULL;
             }
