@@ -132,7 +132,7 @@ init_system_cursor(const char *image[])
 }
 
 static SDLTest_CommonState *state;
-int done;
+static int done;
 static SDL_Cursor *cursors[1 + SDL_NUM_SYSTEM_CURSORS];
 static SDL_SystemCursor cursor_types[1 + SDL_NUM_SYSTEM_CURSORS];
 static int num_cursors;
@@ -147,7 +147,7 @@ quit(int rc)
     exit(rc);
 }
 
-void loop()
+static void loop(void)
 {
     int i;
     SDL_Event event;

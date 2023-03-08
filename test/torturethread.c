@@ -30,7 +30,7 @@ quit(int rc)
     exit(rc);
 }
 
-int SDLCALL
+static int SDLCALL
 SubThreadFunc(void *data)
 {
     while (!*(int volatile *)data) {
@@ -39,7 +39,7 @@ SubThreadFunc(void *data)
     return 0;
 }
 
-int SDLCALL
+static int SDLCALL
 ThreadFunc(void *data)
 {
     SDL_Thread *sub_threads[NUMTHREADS];

@@ -41,7 +41,7 @@ quit(int rc)
     exit(rc);
 }
 
-void DrawOnViewport(SDL_Renderer *renderer)
+static void DrawOnViewport(SDL_Renderer *renderer)
 {
     SDL_FRect rect;
     SDL_Rect cliprect;
@@ -102,7 +102,7 @@ void DrawOnViewport(SDL_Renderer *renderer)
     SDL_SetRenderClipRect(renderer, NULL);
 }
 
-void loop()
+static void loop(void)
 {
     SDL_Event event;
     int i;

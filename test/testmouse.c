@@ -51,7 +51,7 @@ static float wheel_y = SCREEN_HEIGHT * 0.5f;
 
 static SDL_bool done = SDL_FALSE;
 
-void DrawObject(SDL_Renderer *renderer, Object *object)
+static void DrawObject(SDL_Renderer *renderer, Object *object)
 {
     SDL_SetRenderDrawColor(renderer, object->r, object->g, object->b, 255);
 
@@ -80,7 +80,7 @@ void DrawObject(SDL_Renderer *renderer, Object *object)
     }
 }
 
-void DrawObjects(SDL_Renderer *renderer)
+static void DrawObjects(SDL_Renderer *renderer)
 {
     Object *next = objects;
     while (next != NULL) {
@@ -89,7 +89,7 @@ void DrawObjects(SDL_Renderer *renderer)
     }
 }
 
-void AppendObject(Object *object)
+static void AppendObject(Object *object)
 {
     if (objects) {
         Object *next = objects;
@@ -102,7 +102,7 @@ void AppendObject(Object *object)
     }
 }
 
-void loop(void *arg)
+static void loop(void *arg)
 {
     SDL_Renderer *renderer = (SDL_Renderer *)arg;
     SDL_Event event;

@@ -32,7 +32,7 @@
 #define MOOSEFRAMES_COUNT 10
 
 /* *INDENT-OFF* */ /* clang-format off */
-SDL_Color MooseColors[84] = {
+static SDL_Color MooseColors[84] = {
     {49, 49, 49, 255}, {66, 24, 0, 255}, {66, 33, 0, 255}, {66, 66, 66, 255},
     {66, 115, 49, 255}, {74, 33, 0, 255}, {74, 41, 16, 255}, {82, 33, 8, 255},
     {82, 41, 8, 255}, {82, 49, 16, 255}, {82, 82, 82, 255}, {90, 41, 8, 255},
@@ -57,20 +57,20 @@ SDL_Color MooseColors[84] = {
 };
 /* *INDENT-ON* */ /* clang-format on */
 
-Uint8 MooseFrames[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE];
+static Uint8 MooseFrames[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE];
 
-SDL_Renderer *renderer;
-int frame;
-SDL_Texture *MooseTexture;
-SDL_bool done = SDL_FALSE;
+static SDL_Renderer *renderer;
+static int frame;
+static SDL_Texture *MooseTexture;
+static SDL_bool done = SDL_FALSE;
 
-void quit(int rc)
+static void quit(int rc)
 {
     SDL_Quit();
     exit(rc);
 }
 
-void UpdateTexture(SDL_Texture *texture)
+static void UpdateTexture(SDL_Texture *texture)
 {
     SDL_Color *color;
     Uint8 *src;
@@ -94,7 +94,7 @@ void UpdateTexture(SDL_Texture *texture)
     SDL_UnlockTexture(texture);
 }
 
-void loop()
+static void loop(void)
 {
     SDL_Event event;
 

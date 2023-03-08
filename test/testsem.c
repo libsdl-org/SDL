@@ -24,7 +24,7 @@
 #define NUM_OVERHEAD_OPS_MULT 10
 
 static SDL_sem *sem;
-int alive;
+static int alive;
 
 typedef struct Thread_State
 {

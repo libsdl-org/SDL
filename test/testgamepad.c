@@ -166,7 +166,7 @@ static void PrintJoystickInfo(SDL_JoystickID instance_id)
     }
 }
 
-static void UpdateWindowTitle()
+static void UpdateWindowTitle(void)
 {
     if (window == NULL) {
         return;
@@ -380,7 +380,7 @@ typedef struct
     Uint8 ucLedBlue;                  /* 46 */
 } DS5EffectsState_t;
 
-static void CyclePS5TriggerEffect()
+static void CyclePS5TriggerEffect(void)
 {
     DS5EffectsState_t state;
 
@@ -402,7 +402,7 @@ static void CyclePS5TriggerEffect()
     SDL_SendGamepadEffect(gamepad, &state, sizeof(state));
 }
 
-static SDL_bool ShowingFront()
+static SDL_bool ShowingFront(void)
 {
     SDL_bool showing_front = SDL_TRUE;
     int i;
@@ -445,7 +445,7 @@ static int SDLCALL VirtualGamepadSetLED(void *userdata, Uint8 red, Uint8 green, 
     return 0;
 }
 
-static void OpenVirtualGamepad()
+static void OpenVirtualGamepad(void)
 {
     SDL_VirtualJoystickDesc desc;
     SDL_JoystickID virtual_id;
@@ -471,7 +471,7 @@ static void OpenVirtualGamepad()
     }
 }
 
-static void CloseVirtualGamepad()
+static void CloseVirtualGamepad(void)
 {
     int i;
     SDL_JoystickID *joysticks = SDL_GetJoysticks(NULL);
@@ -617,7 +617,7 @@ static void VirtualGamepadMouseUp(float x, float y)
     }
 }
 
-void loop(void *arg)
+static void loop(void *arg)
 {
     SDL_Event event;
     int i;

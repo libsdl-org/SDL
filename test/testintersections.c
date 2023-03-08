@@ -39,10 +39,10 @@ static int current_alpha = 255;
 static int current_color = 255;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 
-float mouse_begin_x = -1.0f, mouse_begin_y = -1.0f;
-int done;
+static float mouse_begin_x = -1.0f, mouse_begin_y = -1.0f;
+static int done;
 
-void DrawPoints(SDL_Renderer *renderer)
+static void DrawPoints(SDL_Renderer *renderer)
 {
     int i;
     float x, y;
@@ -85,10 +85,9 @@ void DrawPoints(SDL_Renderer *renderer)
 }
 
 #define MAX_LINES 16
-int num_lines = 0;
-SDL_FRect lines[MAX_LINES];
-static int
-add_line(float x1, float y1, float x2, float y2)
+static int num_lines = 0;
+static SDL_FRect lines[MAX_LINES];
+static int add_line(float x1, float y1, float x2, float y2)
 {
     if (num_lines >= MAX_LINES) {
         return 0;
@@ -106,7 +105,7 @@ add_line(float x1, float y1, float x2, float y2)
     return ++num_lines;
 }
 
-void DrawLines(SDL_Renderer *renderer)
+static void DrawLines(SDL_Renderer *renderer)
 {
     int i;
     SDL_Rect viewport;
@@ -129,10 +128,9 @@ void DrawLines(SDL_Renderer *renderer)
 }
 
 #define MAX_RECTS 16
-int num_rects = 0;
-SDL_FRect rects[MAX_RECTS];
-static int
-add_rect(float x1, float y1, float x2, float y2)
+static int num_rects = 0;
+static SDL_FRect rects[MAX_RECTS];
+static int add_rect(float x1, float y1, float x2, float y2)
 {
     if (num_rects >= MAX_RECTS) {
         return 0;
@@ -208,7 +206,7 @@ DrawRectRectIntersections(SDL_Renderer *renderer)
     }
 }
 
-void loop()
+static void loop(void)
 {
     int i;
     SDL_Event event;

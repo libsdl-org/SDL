@@ -41,7 +41,7 @@ quit(int rc)
     exit(rc);
 }
 
-void SDLCALL
+static void SDLCALL
 fillerup(void *_pos, Uint8 *stream, int len)
 {
     Uint32 pos = *((Uint32 *)_pos);
@@ -67,19 +67,18 @@ fillerup(void *_pos, Uint8 *stream, int len)
 }
 
 static int done = 0;
-void poked(int sig)
+
+static void poked(int sig)
 {
     done = 1;
 }
 
-static const char *
-devtypestr(int iscapture)
+static const char *devtypestr(int iscapture)
 {
     return iscapture ? "capture" : "output";
 }
 
-static void
-iteration()
+static void iteration(void)
 {
     SDL_Event e;
     SDL_AudioDeviceID dev;
@@ -122,7 +121,7 @@ iteration()
 }
 
 #ifdef __EMSCRIPTEN__
-void loop()
+static void loop(void)
 {
     if (done)
         emscripten_cancel_main_loop();
