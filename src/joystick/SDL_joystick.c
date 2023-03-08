@@ -202,7 +202,7 @@ static SDL_bool SDL_GetDriverAndJoystickIndex(int device_index, SDL_JoystickDriv
 
 static int SDL_FindFreePlayerIndex()
 {
-    int player_index = -1;
+    int player_index;
 
     SDL_AssertJoysticksLocked();
 
@@ -211,7 +211,7 @@ static int SDL_FindFreePlayerIndex()
             return player_index;
         }
     }
-    return player_index;
+    return -1;
 }
 
 static int SDL_GetPlayerIndexForJoystickID(SDL_JoystickID instance_id)
