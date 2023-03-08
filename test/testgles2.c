@@ -522,7 +522,9 @@ Render(unsigned int width, unsigned int height, shader_data *data)
 static int done;
 static Uint32 frames;
 static shader_data *datas;
+#ifndef __EMSCRIPTEN__
 static thread_data *threads;
+#endif
 
 static void
 render_window(int index)
