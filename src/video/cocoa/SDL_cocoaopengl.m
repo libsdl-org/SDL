@@ -176,11 +176,10 @@ DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const 
             }
         }
     } else {
-        [self clearDrawable];
-        if (self == [NSOpenGLContext currentContext]) {
-            [self explicitUpdate];
+        if ([NSThread isMainThread]) {
+            [self setView:nil];
         } else {
-            [self scheduleUpdate];
+            dispatch_sync(dispatch_get_main_queue(), ^{ [self setView:nil]; });
         }
     }
 }
@@ -203,17 +202,22 @@ DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const 
     }
 }
 
-- (void)dealloc
+- (void)cleanup
 {
+    [self setWindow:NULL];
+
     SDL_DelHintCallback(SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH, SDL_OpenGLAsyncDispatchChanged, NULL);
     if (self->displayLink) {
         CVDisplayLinkRelease(self->displayLink);
+        self->displayLink = nil;
     }
     if (self->swapIntervalCond) {
         SDL_DestroyCond(self->swapIntervalCond);
+        self->swapIntervalCond = NULL;
     }
     if (self->swapIntervalMutex) {
         SDL_DestroyMutex(self->swapIntervalMutex);
+        self->swapIntervalMutex = NULL;
     }
 }
 
@@ -516,8 +520,9 @@ void
 Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context)
 { @autoreleasepool
 {
-    SDLOpenGLContext *nscontext = (SDLOpenGLContext *)CFBridgingRelease(context);
-    [nscontext setWindow:NULL];
+    SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)context;
+    [nscontext cleanup];
+    CFRelease(context);
 }}
 
 /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
