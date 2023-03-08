@@ -4,8 +4,9 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 
-const char *HintsEnum[] = {
+static const char *HintsEnum[] = {
     SDL_HINT_ACCELEROMETER_AS_JOYSTICK,
     SDL_HINT_FRAMEBUFFER_ACCELERATION,
     SDL_HINT_GAMECONTROLLERCONFIG,
@@ -28,7 +29,7 @@ const char *HintsEnum[] = {
     SDL_HINT_VIDEO_X11_XRANDR,
     SDL_HINT_XINPUT_ENABLED,
 };
-const char *HintsVerbose[] = {
+static const char *HintsVerbose[] = {
     "SDL_ACCELEROMETER_AS_JOYSTICK",
     "SDL_FRAMEBUFFER_ACCELERATION",
     "SDL_GAMECONTROLLERCONFIG",
@@ -54,14 +55,14 @@ const char *HintsVerbose[] = {
 
 SDL_COMPILE_TIME_ASSERT(HintsEnum, SDL_arraysize(HintsEnum) == SDL_arraysize(HintsVerbose));
 
-const int numHintsEnum = SDL_arraysize(HintsEnum);
+static const int numHintsEnum = SDL_arraysize(HintsEnum);
 
 /* Test case functions */
 
 /**
  * \brief Call to SDL_GetHint
  */
-int hints_getHint(void *arg)
+static int hints_getHint(void *arg)
 {
     const char *result1;
     const char *result2;
@@ -90,7 +91,7 @@ static void SDLCALL hints_testHintChanged(void *userdata, const char *name, cons
 /**
  * \brief Call to SDL_SetHint
  */
-int hints_setHint(void *arg)
+static int hints_setHint(void *arg)
 {
     const char *testHint = "SDL_AUTOMATED_TEST_HINT";
     const char *originalValue;

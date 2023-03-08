@@ -4,6 +4,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 
 /* ================= Test Case Implementation ================== */
 
@@ -14,7 +15,7 @@
  *
  * \sa SDL_GetKeyboardState
  */
-int keyboard_getKeyboardState(void *arg)
+static int keyboard_getKeyboardState(void *arg)
 {
     int numkeys;
     Uint8 *state;
@@ -39,7 +40,7 @@ int keyboard_getKeyboardState(void *arg)
  *
  * \sa SDL_GetKeyboardFocus
  */
-int keyboard_getKeyboardFocus(void *arg)
+static int keyboard_getKeyboardFocus(void *arg)
 {
     /* Call, but ignore return value */
     SDL_GetKeyboardFocus();
@@ -53,7 +54,7 @@ int keyboard_getKeyboardFocus(void *arg)
  *
  * \sa SDL_GetKeyFromName
  */
-int keyboard_getKeyFromName(void *arg)
+static int keyboard_getKeyFromName(void *arg)
 {
     SDL_Keycode result;
 
@@ -98,7 +99,7 @@ int keyboard_getKeyFromName(void *arg)
 /*
  * Local helper to check for the invalid scancode error message
  */
-static void checkInvalidScancodeError()
+static void checkInvalidScancodeError(void)
 {
     const char *expectedError = "Parameter 'scancode' is invalid";
     const char *error;
@@ -118,7 +119,7 @@ static void checkInvalidScancodeError()
  *
  * \sa SDL_GetKeyFromScancode
  */
-int keyboard_getKeyFromScancode(void *arg)
+static int keyboard_getKeyFromScancode(void *arg)
 {
     SDL_Keycode result;
 
@@ -156,7 +157,7 @@ int keyboard_getKeyFromScancode(void *arg)
  *
  * \sa SDL_GetKeyName
  */
-int keyboard_getKeyName(void *arg)
+static int keyboard_getKeyName(void *arg)
 {
     const char *result;
     const char *expected;
@@ -211,7 +212,7 @@ int keyboard_getKeyName(void *arg)
  *
  * \sa SDL_GetScancodeName
  */
-int keyboard_getScancodeNameNegative(void *arg)
+static int keyboard_getScancodeNameNegative(void *arg)
 {
     SDL_Scancode scancode;
     const char *result;
@@ -237,7 +238,7 @@ int keyboard_getScancodeNameNegative(void *arg)
  *
  * \sa SDL_GetKeyName
  */
-int keyboard_getKeyNameNegative(void *arg)
+static int keyboard_getKeyNameNegative(void *arg)
 {
     SDL_Keycode keycode;
     const char *result;
@@ -274,7 +275,7 @@ int keyboard_getKeyNameNegative(void *arg)
  * \sa SDL_GetModState
  * \sa SDL_SetModState
  */
-int keyboard_getSetModState(void *arg)
+static int keyboard_getSetModState(void *arg)
 {
     SDL_Keymod result;
     SDL_Keymod currentState;
@@ -333,7 +334,7 @@ int keyboard_getSetModState(void *arg)
  * \sa SDL_StartTextInput
  * \sa SDL_StopTextInput
  */
-int keyboard_startStopTextInput(void *arg)
+static int keyboard_startStopTextInput(void *arg)
 {
     /* Start-Stop */
     SDL_StartTextInput();
@@ -378,7 +379,7 @@ static void testSetTextInputRect(SDL_Rect refRect)
  *
  * \sa SDL_SetTextInputRect
  */
-int keyboard_setTextInputRect(void *arg)
+static int keyboard_setTextInputRect(void *arg)
 {
     SDL_Rect refRect;
 
@@ -457,7 +458,7 @@ int keyboard_setTextInputRect(void *arg)
  *
  * \sa SDL_SetTextInputRect
  */
-int keyboard_setTextInputRectNegative(void *arg)
+static int keyboard_setTextInputRectNegative(void *arg)
 {
     /* Some platforms set also an error message; prepare for checking it */
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_ANDROID || SDL_VIDEO_DRIVER_COCOA
@@ -495,7 +496,7 @@ int keyboard_setTextInputRectNegative(void *arg)
  * \sa SDL_GetScancodeFromKey
  * \sa SDL_Keycode
  */
-int keyboard_getScancodeFromKey(void *arg)
+static int keyboard_getScancodeFromKey(void *arg)
 {
     SDL_Scancode scancode;
 
@@ -518,7 +519,7 @@ int keyboard_getScancodeFromKey(void *arg)
  * \sa SDL_GetScancodeFromName
  * \sa SDL_Keycode
  */
-int keyboard_getScancodeFromName(void *arg)
+static int keyboard_getScancodeFromName(void *arg)
 {
     SDL_Scancode scancode;
 
@@ -568,7 +569,7 @@ int keyboard_getScancodeFromName(void *arg)
 /*
  * Local helper to check for the invalid scancode error message
  */
-static void checkInvalidNameError()
+static void checkInvalidNameError(void)
 {
     const char *expectedError = "Parameter 'name' is invalid";
     const char *error;
@@ -589,7 +590,7 @@ static void checkInvalidNameError()
  * \sa SDL_GetScancodeFromName
  * \sa SDL_Keycode
  */
-int keyboard_getScancodeFromNameNegative(void *arg)
+static int keyboard_getScancodeFromNameNegative(void *arg)
 {
     const char *name;
     SDL_Scancode scancode;

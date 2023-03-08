@@ -27,7 +27,7 @@ quit(int rc)
     exit(rc);
 }
 
-int SDLCALL
+static int SDLCALL
 ThreadFunc(void *data)
 {
     /* Set the child thread error string */

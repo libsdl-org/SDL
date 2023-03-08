@@ -47,7 +47,7 @@ getprioritystr(SDL_ThreadPriority priority)
     return "???";
 }
 
-int SDLCALL
+static int SDLCALL
 ThreadFunc(void *data)
 {
     SDL_ThreadPriority prio = SDL_THREAD_PRIORITY_NORMAL;

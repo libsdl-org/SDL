@@ -4,13 +4,14 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_syswm.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 
 /* Test case functions */
 
 /**
  * \brief Call to SDL_GetWindowWMInfo
  */
-int syswm_getWindowWMInfo(void *arg)
+static int syswm_getWindowWMInfo(void *arg)
 {
     int result;
     SDL_Window *window;

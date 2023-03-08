@@ -6,6 +6,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 #include "testautomation_images.h"
 
 /* ================= Test Case Implementation ================== */
@@ -27,7 +28,7 @@ static int mouseStateCheck(Uint32 state)
  * \brief Check call to SDL_GetMouseState
  *
  */
-int mouse_getMouseState(void *arg)
+static int mouse_getMouseState(void *arg)
 {
     float x;
     float y;
@@ -72,7 +73,7 @@ int mouse_getMouseState(void *arg)
  * \brief Check call to SDL_GetRelativeMouseState
  *
  */
-int mouse_getRelativeMouseState(void *arg)
+static int mouse_getRelativeMouseState(void *arg)
 {
     float x;
     float y;
@@ -192,7 +193,7 @@ static SDL_Cursor *initArrowCursor(const char *image[])
  * \sa SDL_CreateCursor
  * \sa SDL_DestroyCursor
  */
-int mouse_createFreeCursor(void *arg)
+static int mouse_createFreeCursor(void *arg)
 {
     SDL_Cursor *cursor;
 
@@ -217,7 +218,7 @@ int mouse_createFreeCursor(void *arg)
  * \sa SDL_CreateColorCursor
  * \sa SDL_DestroyCursor
  */
-int mouse_createFreeColorCursor(void *arg)
+static int mouse_createFreeColorCursor(void *arg)
 {
     SDL_Surface *face;
     SDL_Cursor *cursor;
@@ -272,7 +273,7 @@ static void changeCursorVisibility(SDL_bool state)
  *
  * \sa SDL_ShowCursor
  */
-int mouse_showCursor(void *arg)
+static int mouse_showCursor(void *arg)
 {
     SDL_bool currentState;
 
@@ -297,7 +298,7 @@ int mouse_showCursor(void *arg)
  *
  * \sa SDL_SetCursor
  */
-int mouse_setCursor(void *arg)
+static int mouse_setCursor(void *arg)
 {
     SDL_Cursor *cursor;
 
@@ -329,7 +330,7 @@ int mouse_setCursor(void *arg)
  *
  * \sa SDL_GetCursor
  */
-int mouse_getCursor(void *arg)
+static int mouse_getCursor(void *arg)
 {
     SDL_Cursor *cursor;
 
@@ -347,7 +348,7 @@ int mouse_getCursor(void *arg)
  * \sa SDL_GetRelativeMouseMode
  * \sa SDL_SetRelativeMouseMode
  */
-int mouse_getSetRelativeMouseMode(void *arg)
+static int mouse_getSetRelativeMouseMode(void *arg)
 {
     int result;
     int i;
@@ -402,7 +403,7 @@ int mouse_getSetRelativeMouseMode(void *arg)
 /**
  * Creates a test window
  */
-static SDL_Window *createMouseSuiteTestWindow()
+static SDL_Window *createMouseSuiteTestWindow(void)
 {
     int width = MOUSE_TESTWINDOW_WIDTH, height = MOUSE_TESTWINDOW_HEIGHT;
     SDL_Window *window;
@@ -429,7 +430,7 @@ static void destroyMouseSuiteTestWindow(SDL_Window *window)
  *
  * \sa SDL_WarpMouseInWindow
  */
-int mouse_warpMouseInWindow(void *arg)
+static int mouse_warpMouseInWindow(void *arg)
 {
     const int w = MOUSE_TESTWINDOW_WIDTH, h = MOUSE_TESTWINDOW_HEIGHT;
     int numPositions = 6;
@@ -492,7 +493,7 @@ int mouse_warpMouseInWindow(void *arg)
  *
  * \sa SDL_GetMouseFocus
  */
-int mouse_getMouseFocus(void *arg)
+static int mouse_getMouseFocus(void *arg)
 {
     const int w = MOUSE_TESTWINDOW_WIDTH, h = MOUSE_TESTWINDOW_HEIGHT;
     float x, y;
@@ -552,7 +553,7 @@ int mouse_getMouseFocus(void *arg)
  *
  * \sa SDL_GetDefaultCursor
  */
-int mouse_getDefaultCursor(void *arg)
+static int mouse_getDefaultCursor(void *arg)
 {
     SDL_Cursor *cursor;
 
@@ -569,7 +570,7 @@ int mouse_getDefaultCursor(void *arg)
  *
  * \sa SDL_GetGlobalMouseState
  */
-int mouse_getGlobalMouseState(void *arg)
+static int mouse_getGlobalMouseState(void *arg)
 {
     float x;
     float y;

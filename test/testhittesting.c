@@ -16,12 +16,12 @@
 
 #define RESIZE_BORDER 20
 
-const SDL_Rect drag_areas[] = {
+static const SDL_Rect drag_areas[] = {
     { 20, 20, 100, 100 },
     { 200, 70, 100, 100 },
     { 400, 90, 100, 100 }
 };
-const SDL_FRect render_areas[] = {
+static const SDL_FRect render_areas[] = {
     { 20.0f, 20.0f, 100.0f, 100.0f },
     { 200.0f, 70.0f, 100.0f, 100.0f },
     { 400.0f, 90.0f, 100.0f, 100.0f }

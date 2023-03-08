@@ -5,6 +5,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 #include "testautomation_images.h"
+#include "testautomation_suites.h"
 
 /* ================= Test Case Implementation ================== */
 
@@ -28,8 +29,8 @@
 }
 
 /* Test window and renderer */
-SDL_Window *window = NULL;
-SDL_Renderer *renderer = NULL;
+static SDL_Window *window = NULL;
+static SDL_Renderer *renderer = NULL;
 
 /* Prototypes for helper functions */
 
@@ -45,7 +46,7 @@ static int isSupported(int code);
 /**
  * Create software renderer for tests
  */
-void InitCreateRenderer(void *arg)
+static void InitCreateRenderer(void *arg)
 {
     int width = 320, height = 240;
     renderer = NULL;
@@ -68,7 +69,7 @@ void InitCreateRenderer(void *arg)
 /**
  * Destroy renderer for tests
  */
-void CleanupDestroyRenderer(void *arg)
+static void CleanupDestroyRenderer(void *arg)
 {
     if (renderer != NULL) {
         SDL_DestroyRenderer(renderer);
@@ -88,7 +89,7 @@ void CleanupDestroyRenderer(void *arg)
  *
  * \sa SDL_GetNumRenderDrivers
  */
-int render_testGetNumRenderDrivers(void *arg)
+static int render_testGetNumRenderDrivers(void *arg)
 {
     int n;
     n = SDL_GetNumRenderDrivers();
@@ -104,7 +105,7 @@ int render_testGetNumRenderDrivers(void *arg)
  * \sa SDL_RenderLine
  *
  */
-int render_testPrimitives(void *arg)
+static int render_testPrimitives(void *arg)
 {
     int ret;
     int x, y;
@@ -190,7 +191,7 @@ int render_testPrimitives(void *arg)
  * \sa SDL_SetRenderDrawBlendMode
  * \sa SDL_RenderFillRect
  */
-int render_testPrimitivesBlend(void *arg)
+static int render_testPrimitivesBlend(void *arg)
 {
     int ret;
     int i, j;
@@ -332,7 +333,7 @@ int render_testPrimitivesBlend(void *arg)
  * \sa SDL_RenderTexture
  * \sa SDL_DestroyTexture
  */
-int render_testBlit(void *arg)
+static int render_testBlit(void *arg)
 {
     int ret;
     SDL_FRect rect;
@@ -400,7 +401,7 @@ int render_testBlit(void *arg)
  * \sa SDL_RenderTexture
  * \sa SDL_DestroyTexture
  */
-int render_testBlitColor(void *arg)
+static int render_testBlitColor(void *arg)
 {
     int ret;
     SDL_FRect rect;
@@ -474,7 +475,7 @@ int render_testBlitColor(void *arg)
  * \sa SDL_RenderTexture
  * \sa SDL_DestroyTexture
  */
-int render_testBlitAlpha(void *arg)
+static int render_testBlitAlpha(void *arg)
 {
     int ret;
     SDL_FRect rect;
@@ -603,7 +604,7 @@ testBlitBlendMode(SDL_Texture *tface, int mode)
  * \sa SDL_SetTextureBlendMode
  * \sa SDL_DestroyTexture
  */
-int render_testBlitBlend(void *arg)
+static int render_testBlitBlend(void *arg)
 {
     int ret;
     SDL_FRect rect;
@@ -755,7 +756,7 @@ int render_testBlitBlend(void *arg)
 /**
  * \brief Test viewport
  */
-int render_testViewport(void *arg)
+static int render_testViewport(void *arg)
 {
     SDL_Surface *referenceSurface;
     SDL_Rect viewport;
@@ -812,7 +813,7 @@ int render_testViewport(void *arg)
 /**
  * \brief Test logical size
  */
-int render_testLogicalSize(void *arg)
+static int render_testLogicalSize(void *arg)
 {
     SDL_Surface *referenceSurface;
     SDL_Rect viewport;

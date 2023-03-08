@@ -43,7 +43,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT64, SDL_MIN_SINT64 == ~0x7fffffffffffffffll)
 SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT64, SDL_MAX_UINT64 == 18446744073709551615ull);
 SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT64, SDL_MIN_UINT64 == 0);
 
-int TestTypes(SDL_bool verbose)
+static int TestTypes(SDL_bool verbose)
 {
     int error = 0;
 
@@ -78,7 +78,7 @@ int TestTypes(SDL_bool verbose)
     return error ? 1 : 0;
 }
 
-int TestEndian(SDL_bool verbose)
+static int TestEndian(SDL_bool verbose)
 {
     int error = 0;
     Uint16 value = 0x1234;
@@ -356,10 +356,10 @@ static LL_Test LL_Tests[] = {
     { "_uallrem", &TST_uallrem, 0x7FFFFFFEFFFFFFF0ll, 0x0000FFFFFFFFFFFEll, 0, 0x0000FFFF0000FFEEll },
     { "_uallrem", &TST_uallrem, 0x7FFFFFFEFFFFFFF0ll, 0x7FFFFFFEFFFFFFF0ll, 0, 0x0000000000000000ll },
 
-    { NULL }
+    { NULL, NULL, 0, 0, 0, 0 }
 };
 
-int Test64Bit(SDL_bool verbose)
+static int Test64Bit(SDL_bool verbose)
 {
     LL_Test *t;
     int failed = 0;
@@ -385,7 +385,7 @@ int Test64Bit(SDL_bool verbose)
     return failed ? 1 : 0;
 }
 
-int TestCPUInfo(SDL_bool verbose)
+static int TestCPUInfo(SDL_bool verbose)
 {
     if (verbose) {
         SDL_Log("CPU count: %d\n", SDL_GetCPUCount());
@@ -410,7 +410,7 @@ int TestCPUInfo(SDL_bool verbose)
     return 0;
 }
 
-int TestAssertions(SDL_bool verbose)
+static int TestAssertions(SDL_bool verbose)
 {
     SDL_assert(1);
     SDL_assert_release(1);

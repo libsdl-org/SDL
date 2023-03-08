@@ -3,6 +3,7 @@
  */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 
 /* Test case functions */
 
@@ -10,7 +11,7 @@
  * \brief Call to SDL_strlcpy
  */
 #undef SDL_strlcpy
-int stdlib_strlcpy(void *arg)
+static int stdlib_strlcpy(void *arg)
 {
     size_t result;
     char text[1024];
@@ -45,7 +46,7 @@ int stdlib_strlcpy(void *arg)
  * \brief Call to SDL_snprintf
  */
 #undef SDL_snprintf
-int stdlib_snprintf(void *arg)
+static int stdlib_snprintf(void *arg)
 {
     int result;
     int predicted;
@@ -211,7 +212,7 @@ int stdlib_snprintf(void *arg)
 /**
  * \brief Call to SDL_getenv and SDL_setenv
  */
-int stdlib_getsetenv(void *arg)
+static int stdlib_getsetenv(void *arg)
 {
     const int nameLen = 16;
     char name[17];
@@ -355,7 +356,7 @@ int stdlib_getsetenv(void *arg)
  * \brief Call to SDL_sscanf
  */
 #undef SDL_sscanf
-int stdlib_sscanf(void *arg)
+static int stdlib_sscanf(void *arg)
 {
     int output;
     int result;
@@ -447,7 +448,7 @@ int stdlib_sscanf(void *arg)
 /**
  * \brief Call to SDL_aligned_alloc
  */
-int stdlib_aligned_alloc(void *arg)
+static int stdlib_aligned_alloc(void *arg)
 {
     size_t i, alignment;
     void *ptr;

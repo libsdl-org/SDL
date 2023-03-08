@@ -5,6 +5,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 #include "../src/joystick/usb_ids.h"
+#include "testautomation_suites.h"
 
 /* ================= Test Case Implementation ================== */
 
@@ -15,8 +16,7 @@
  *
  * \sa SDL_AttachVirtualJoystickEx
  */
-static int
-TestVirtualJoystick(void *arg)
+static int TestVirtualJoystick(void *arg)
 {
     SDL_VirtualJoystickDesc desc;
     SDL_Joystick *joystick = NULL;

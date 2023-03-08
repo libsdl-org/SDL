@@ -18,12 +18,13 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 
 /* ================= Test Case Implementation ================== */
 
-const char *RWopsReadTestFilename = "rwops_read";
-const char *RWopsWriteTestFilename = "rwops_write";
-const char *RWopsAlphabetFilename = "rwops_alphabet";
+static const char *RWopsReadTestFilename = "rwops_read";
+static const char *RWopsWriteTestFilename = "rwops_write";
+static const char *RWopsAlphabetFilename = "rwops_alphabet";
 
 static const char RWopsHelloWorldTestString[] = "Hello World!";
 static const char RWopsHelloWorldCompString[] = "Hello World!";
@@ -31,7 +32,7 @@ static const char RWopsAlphabetString[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /* Fixture */
 
-void RWopsSetUp(void *arg)
+static void RWopsSetUp(void *arg)
 {
     size_t fileLen;
     FILE *handle;
@@ -74,7 +75,7 @@ void RWopsSetUp(void *arg)
     SDLTest_AssertPass("Creation of test file completed");
 }
 
-void RWopsTearDown(void *arg)
+static void RWopsTearDown(void *arg)
 {
     int result;
 
@@ -172,7 +173,7 @@ static void testGenericRWopsValidations(SDL_RWops *rw, int write)
  * \sa SDL_RWFromFile
  *
  */
-int rwops_testParamNegative(void)
+static int rwops_testParamNegative(void *arg)
 {
     SDL_RWops *rwops;
 
@@ -218,7 +219,7 @@ int rwops_testParamNegative(void)
  * \sa SDL_RWFromMem
  * \sa SDL_RWClose
  */
-int rwops_testMem(void)
+static int rwops_testMem(void *arg)
 {
     char mem[sizeof(RWopsHelloWorldTestString)];
     SDL_RWops *rw;
@@ -257,7 +258,7 @@ int rwops_testMem(void)
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWClose
  */
-int rwops_testConstMem(void)
+static int rwops_testConstMem(void *arg)
 {
     SDL_RWops *rw;
     int result;
@@ -292,7 +293,7 @@ int rwops_testConstMem(void)
  * \sa SDL_RWFromFile
  * \sa SDL_RWClose
  */
-int rwops_testFileRead(void)
+static int rwops_testFileRead(void *arg)
 {
     SDL_RWops *rw;
     int result;
@@ -339,7 +340,7 @@ int rwops_testFileRead(void)
  * \sa SDL_RWFromFile
  * \sa SDL_RWClose
  */
-int rwops_testFileWrite(void)
+static int rwops_testFileWrite(void *arg)
 {
     SDL_RWops *rw;
     int result;
@@ -386,7 +387,7 @@ int rwops_testFileWrite(void)
  * \sa SDL_CreateRW
  * \sa SDL_DestroyRW
  */
-int rwops_testAllocFree(void)
+static int rwops_testAllocFree(void *arg)
 {
     /* Allocate context */
     SDL_RWops *rw = SDL_CreateRW();
@@ -414,7 +415,7 @@ int rwops_testAllocFree(void)
  * \sa SDL_RWFromMem
  * \sa SDL_RWFromFile
  */
-int rwops_testCompareRWFromMemWithRWFromFile(void)
+static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
 {
     int slen = 26;
     char buffer_file[27];
@@ -479,7 +480,7 @@ int rwops_testCompareRWFromMemWithRWFromFile(void)
  * \sa SDL_ReadBE16
  * \sa SDL_WriteBE16
  */
-int rwops_testFileWriteReadEndian(void)
+static int rwops_testFileWriteReadEndian(void *arg)
 {
     SDL_RWops *rw;
     Sint64 result;

@@ -7,13 +7,14 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 
 /* Test case functions */
 
 /**
  * \brief Calls to SDLTest_GenerateRunSeed()
  */
-int sdltest_generateRunSeed(void *arg)
+static int sdltest_generateRunSeed(void *arg)
 {
     char *result;
     size_t i, l;
@@ -43,7 +44,7 @@ int sdltest_generateRunSeed(void *arg)
 /**
  * \brief Calls to SDLTest_GetFuzzerInvocationCount()
  */
-int sdltest_getFuzzerInvocationCount(void *arg)
+static int sdltest_getFuzzerInvocationCount(void *arg)
 {
     Uint8 result;
     int fuzzerCount1, fuzzerCount2;
@@ -65,7 +66,7 @@ int sdltest_getFuzzerInvocationCount(void *arg)
 /**
  * \brief Calls to random number generators
  */
-int sdltest_randomNumber(void *arg)
+static int sdltest_randomNumber(void *arg)
 {
     Sint64 result;
     double dresult;
@@ -132,7 +133,7 @@ int sdltest_randomNumber(void *arg)
 /**
  * \brief Calls to random boundary number generators for Uint8
  */
-int sdltest_randomBoundaryNumberUint8(void *arg)
+static int sdltest_randomBoundaryNumberUint8(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     char *lastError;
@@ -241,7 +242,7 @@ int sdltest_randomBoundaryNumberUint8(void *arg)
 /**
  * \brief Calls to random boundary number generators for Uint16
  */
-int sdltest_randomBoundaryNumberUint16(void *arg)
+static int sdltest_randomBoundaryNumberUint16(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     char *lastError;
@@ -350,7 +351,7 @@ int sdltest_randomBoundaryNumberUint16(void *arg)
 /**
  * \brief Calls to random boundary number generators for Uint32
  */
-int sdltest_randomBoundaryNumberUint32(void *arg)
+static int sdltest_randomBoundaryNumberUint32(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     char *lastError;
@@ -459,7 +460,7 @@ int sdltest_randomBoundaryNumberUint32(void *arg)
 /**
  * \brief Calls to random boundary number generators for Uint64
  */
-int sdltest_randomBoundaryNumberUint64(void *arg)
+static int sdltest_randomBoundaryNumberUint64(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     char *lastError;
@@ -568,7 +569,7 @@ int sdltest_randomBoundaryNumberUint64(void *arg)
 /**
  * \brief Calls to random boundary number generators for Sint8
  */
-int sdltest_randomBoundaryNumberSint8(void *arg)
+static int sdltest_randomBoundaryNumberSint8(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     char *lastError;
@@ -677,7 +678,7 @@ int sdltest_randomBoundaryNumberSint8(void *arg)
 /**
  * \brief Calls to random boundary number generators for Sint16
  */
-int sdltest_randomBoundaryNumberSint16(void *arg)
+static int sdltest_randomBoundaryNumberSint16(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     char *lastError;
@@ -786,7 +787,7 @@ int sdltest_randomBoundaryNumberSint16(void *arg)
 /**
  * \brief Calls to random boundary number generators for Sint32
  */
-int sdltest_randomBoundaryNumberSint32(void *arg)
+static int sdltest_randomBoundaryNumberSint32(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     char *lastError;
@@ -902,7 +903,7 @@ int sdltest_randomBoundaryNumberSint32(void *arg)
 /**
  * \brief Calls to random boundary number generators for Sint64
  */
-int sdltest_randomBoundaryNumberSint64(void *arg)
+static int sdltest_randomBoundaryNumberSint64(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     char *lastError;
@@ -1011,7 +1012,7 @@ int sdltest_randomBoundaryNumberSint64(void *arg)
 /**
  * \brief Calls to SDLTest_RandomIntegerInRange
  */
-int sdltest_randomIntegerInRange(void *arg)
+static int sdltest_randomIntegerInRange(void *arg)
 {
     Sint32 min, max;
     Sint32 result;
@@ -1085,7 +1086,7 @@ int sdltest_randomIntegerInRange(void *arg)
 /**
  * \brief Calls to SDLTest_RandomAsciiString
  */
-int sdltest_randomAsciiString(void *arg)
+static int sdltest_randomAsciiString(void *arg)
 {
     char *result;
     size_t len;
@@ -1117,7 +1118,7 @@ int sdltest_randomAsciiString(void *arg)
 /**
  * \brief Calls to SDLTest_RandomAsciiStringWithMaximumLength
  */
-int sdltest_randomAsciiStringWithMaximumLength(void *arg)
+static int sdltest_randomAsciiStringWithMaximumLength(void *arg)
 {
     const char *expectedError = "Parameter 'maxLength' is invalid";
     char *lastError;
@@ -1169,7 +1170,7 @@ int sdltest_randomAsciiStringWithMaximumLength(void *arg)
 /**
  * \brief Calls to SDLTest_RandomAsciiStringOfSize
  */
-int sdltest_randomAsciiStringOfSize(void *arg)
+static int sdltest_randomAsciiStringOfSize(void *arg)
 {
     const char *expectedError = "Parameter 'size' is invalid";
     char *lastError;

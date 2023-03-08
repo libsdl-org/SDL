@@ -19,6 +19,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 #include "testautomation_images.h"
 
 /* ================= Test Case Implementation ================== */
@@ -27,11 +28,6 @@
 
 static SDL_Surface *referenceSurface = NULL;
 static SDL_Surface *testSurface = NULL;
-
-/* Helper functions for the test cases */
-
-#define TEST_SURFACE_WIDTH  testSurface->w
-#define TEST_SURFACE_HEIGHT testSurface->h
 
 /* Fixture */
 
@@ -66,7 +62,7 @@ static void surfaceTearDown(void *arg)
 /**
  * Helper that clears the test surface
  */
-static void clearTestSurface()
+static void clearTestSurface(void)
 {
     int ret;
     Uint32 color;
@@ -215,7 +211,7 @@ static void AssertFileExist(const char *filename)
 /**
  * \brief Tests sprite saving and loading
  */
-int surface_testSaveLoadBitmap(void *arg)
+static int surface_testSaveLoadBitmap(void *arg)
 {
     int ret;
     const char *sampleFilename = "testSaveLoadBitmap.bmp";
@@ -262,7 +258,7 @@ int surface_testSaveLoadBitmap(void *arg)
 /**
  *  Tests surface conversion.
  */
-int surface_testSurfaceConversion(void *arg)
+static int surface_testSurfaceConversion(void *arg)
 {
     SDL_Surface *rface = NULL, *face = NULL;
     int ret = 0;
@@ -302,7 +298,7 @@ int surface_testSurfaceConversion(void *arg)
 /**
  *  Tests surface conversion across all pixel formats.
  */
-int surface_testCompleteSurfaceConversion(void *arg)
+static int surface_testCompleteSurfaceConversion(void *arg)
 {
     Uint32 pixel_formats[] = {
         SDL_PIXELFORMAT_INDEX8,
@@ -392,7 +388,7 @@ int surface_testCompleteSurfaceConversion(void *arg)
 /**
  * \brief Tests sprite loading. A failure case.
  */
-int surface_testLoadFailure(void *arg)
+static int surface_testLoadFailure(void *arg)
 {
     SDL_Surface *face = SDL_LoadBMP("nonexistant.bmp");
     SDLTest_AssertCheck(face == NULL, "SDL_CreateLoadBmp");
@@ -403,7 +399,7 @@ int surface_testLoadFailure(void *arg)
 /**
  * \brief Tests some blitting routines.
  */
-int surface_testBlit(void *arg)
+static int surface_testBlit(void *arg)
 {
     int ret;
     SDL_Surface *compareSurface;
@@ -425,7 +421,7 @@ int surface_testBlit(void *arg)
 /**
  * \brief Tests some blitting routines with color mod
  */
-int surface_testBlitColorMod(void *arg)
+static int surface_testBlitColorMod(void *arg)
 {
     int ret;
     SDL_Surface *compareSurface;
@@ -447,7 +443,7 @@ int surface_testBlitColorMod(void *arg)
 /**
  * \brief Tests some blitting routines with alpha mod
  */
-int surface_testBlitAlphaMod(void *arg)
+static int surface_testBlitAlphaMod(void *arg)
 {
     int ret;
     SDL_Surface *compareSurface;
@@ -469,7 +465,7 @@ int surface_testBlitAlphaMod(void *arg)
 /**
  * \brief Tests some more blitting routines.
  */
-int surface_testBlitBlendNone(void *arg)
+static int surface_testBlitBlendNone(void *arg)
 {
     int ret;
     SDL_Surface *compareSurface;
@@ -491,7 +487,7 @@ int surface_testBlitBlendNone(void *arg)
 /**
  * \brief Tests some more blitting routines.
  */
-int surface_testBlitBlendBlend(void *arg)
+static int surface_testBlitBlendBlend(void *arg)
 {
     int ret;
     SDL_Surface *compareSurface;
@@ -513,7 +509,7 @@ int surface_testBlitBlendBlend(void *arg)
 /**
  * \brief Tests some more blitting routines.
  */
-int surface_testBlitBlendAdd(void *arg)
+static int surface_testBlitBlendAdd(void *arg)
 {
     int ret;
     SDL_Surface *compareSurface;
@@ -535,7 +531,7 @@ int surface_testBlitBlendAdd(void *arg)
 /**
  * \brief Tests some more blitting routines.
  */
-int surface_testBlitBlendMod(void *arg)
+static int surface_testBlitBlendMod(void *arg)
 {
     int ret;
     SDL_Surface *compareSurface;
@@ -557,7 +553,7 @@ int surface_testBlitBlendMod(void *arg)
 /**
  * \brief Tests some more blitting routines with loop
  */
-int surface_testBlitBlendLoop(void *arg)
+static int surface_testBlitBlendLoop(void *arg)
 {
 
     int ret;
@@ -577,7 +573,7 @@ int surface_testBlitBlendLoop(void *arg)
     return TEST_COMPLETED;
 }
 
-int surface_testOverflow(void *arg)
+static int surface_testOverflow(void *arg)
 {
     char buf[1024];
     const char *expectedError;

@@ -31,7 +31,7 @@ tf(SDL_bool _tf)
     return f;
 }
 
-static void RunBasicTest()
+static void RunBasicTest(void)
 {
     int value;
     SDL_SpinLock lock = 0;
@@ -107,11 +107,8 @@ enum
 SDL_COMPILE_TIME_ASSERT(size, CountTo_GreaterThanZero); /* check for rollover */
 
 static SDL_atomic_t good = { 42 };
-
 static atomicValue bad = 42;
-
 static SDL_atomic_t threadsRunning;
-
 static SDL_sem *threadDone;
 
 static int SDLCALL adder(void *junk)
@@ -153,7 +150,7 @@ static void runAdder(void)
     SDL_Log("Finished in %f sec\n", (end - start) / 1000000000.0);
 }
 
-static void RunEpicTest()
+static void RunEpicTest(void)
 {
     int b;
     atomicValue v;

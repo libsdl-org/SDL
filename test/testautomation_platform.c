@@ -4,6 +4,7 @@
  */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 
 /* ================= Test Case Implementation ================== */
 
@@ -26,7 +27,7 @@ static int compareSizeOfType(size_t sizeoftype, size_t hardcodetype)
 /**
  * \brief Tests type sizes.
  */
-int platform_testTypes(void *arg)
+static int platform_testTypes(void *arg)
 {
     int ret;
 
@@ -48,7 +49,7 @@ int platform_testTypes(void *arg)
 /**
  * \brief Tests platform endianness and SDL_SwapXY functions.
  */
-int platform_testEndianessAndSwap(void *arg)
+static int platform_testEndianessAndSwap(void *arg)
 {
     int real_byteorder;
     int real_floatwordorder = 0;
@@ -123,7 +124,7 @@ int platform_testEndianessAndSwap(void *arg)
  * \sa SDL_GetRevision
  * \sa SDL_GetCPUCacheLineSize
  */
-int platform_testGetFunctions(void *arg)
+static int platform_testGetFunctions(void *arg)
 {
     char *platform;
     char *revision;
@@ -172,7 +173,7 @@ int platform_testGetFunctions(void *arg)
  * \sa SDL_HasSSE42
  * \sa SDL_HasAVX
  */
-int platform_testHasFunctions(void *arg)
+static int platform_testHasFunctions(void *arg)
 {
     /* TODO: independently determine and compare values as well */
 
@@ -210,7 +211,7 @@ int platform_testHasFunctions(void *arg)
  * \brief Tests SDL_GetVersion
  * \sa SDL_GetVersion
  */
-int platform_testGetVersion(void *arg)
+static int platform_testGetVersion(void *arg)
 {
     SDL_version linked;
     int major = SDL_MAJOR_VERSION;
@@ -232,7 +233,7 @@ int platform_testGetVersion(void *arg)
 /**
  * \brief Tests SDL_VERSION macro
  */
-int platform_testSDLVersion(void *arg)
+static int platform_testSDLVersion(void *arg)
 {
     SDL_version compiled;
     int major = SDL_MAJOR_VERSION;
@@ -254,7 +255,7 @@ int platform_testSDLVersion(void *arg)
 /**
  * \brief Tests default SDL_Init
  */
-int platform_testDefaultInit(void *arg)
+static int platform_testDefaultInit(void *arg)
 {
     int ret;
     int subsystem;
@@ -279,7 +280,7 @@ int platform_testDefaultInit(void *arg)
  * \sa SDL_SetError
  * \sa SDL_ClearError
  */
-int platform_testGetSetClearError(void *arg)
+static int platform_testGetSetClearError(void *arg)
 {
     int result;
     const char *testError = "Testing";
@@ -328,7 +329,7 @@ int platform_testGetSetClearError(void *arg)
  * \brief Tests SDL_SetError with empty input
  * \sa SDL_SetError
  */
-int platform_testSetErrorEmptyInput(void *arg)
+static int platform_testSetErrorEmptyInput(void *arg)
 {
     int result;
     const char *testError = "";
@@ -369,7 +370,7 @@ int platform_testSetErrorEmptyInput(void *arg)
  * \brief Tests SDL_SetError with invalid input
  * \sa SDL_SetError
  */
-int platform_testSetErrorInvalidInput(void *arg)
+static int platform_testSetErrorInvalidInput(void *arg)
 {
     int result;
     const char *invalidError = NULL;
@@ -452,7 +453,7 @@ int platform_testSetErrorInvalidInput(void *arg)
  * \brief Tests SDL_GetPowerInfo
  * \sa SDL_GetPowerInfo
  */
-int platform_testGetPowerInfo(void *arg)
+static int platform_testGetPowerInfo(void *arg)
 {
     SDL_PowerState state;
     SDL_PowerState stateAgain;
