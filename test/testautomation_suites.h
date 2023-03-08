@@ -31,30 +31,4 @@ extern SDLTest_TestSuiteReference syswmTestSuite;
 extern SDLTest_TestSuiteReference timerTestSuite;
 extern SDLTest_TestSuiteReference videoTestSuite;
 
-/* All test suites */
-static SDLTest_TestSuiteReference *testSuites[] = {
-    &audioTestSuite,
-    &clipboardTestSuite,
-    &eventsTestSuite,
-    &guidTestSuite,
-    &hintsTestSuite,
-    &joystickTestSuite,
-    &keyboardTestSuite,
-    &mainTestSuite,
-    &mathTestSuite,
-    &mouseTestSuite,
-    &pixelsTestSuite,
-    &platformTestSuite,
-    &rectTestSuite,
-    &renderTestSuite,
-    &rwopsTestSuite,
-    &sdltestTestSuite,
-    &stdlibTestSuite,
-    &surfaceTestSuite,
-    &syswmTestSuite,
-    &timerTestSuite,
-    &videoTestSuite,
-    NULL
-};
-
 #endif
