@@ -35,18 +35,18 @@ SDL_Quit_Wrapper(void)
     SDL_Quit();
 }
 
-void printid(void)
+static void printid(void)
 {
     SDL_Log("Process %lu:  exiting\n", SDL_ThreadID());
 }
 
-void terminate(int sig)
+static void terminate(int sig)
 {
     (void)signal(SIGINT, terminate);
     SDL_AtomicSet(&doterminate, 1);
 }
 
-void closemutex(int sig)
+static void closemutex(int sig)
 {
     SDL_threadID id = SDL_ThreadID();
     int i;
@@ -59,7 +59,7 @@ void closemutex(int sig)
     exit(sig);
 }
 
-int SDLCALL
+static int SDLCALL
 Run(void *data)
 {
     if (SDL_ThreadID() == mainthread) {

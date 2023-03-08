@@ -190,7 +190,7 @@ static void SDLCALL SDLTest_TrackedFree(void *ptr)
     SDL_free_orig(ptr);
 }
 
-int SDLTest_TrackAllocations()
+int SDLTest_TrackAllocations(void)
 {
     if (SDL_malloc_orig) {
         return 0;
@@ -215,7 +215,7 @@ int SDLTest_TrackAllocations()
     return 0;
 }
 
-void SDLTest_LogAllocations()
+void SDLTest_LogAllocations(void)
 {
     char *message = NULL;
     size_t message_size = 0;

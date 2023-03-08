@@ -8,6 +8,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 
 /**
  * \brief Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
@@ -37,7 +38,7 @@ static int main_testInitQuitSubSystem(void *arg)
     return TEST_COMPLETED;
 }
 
-const int joy_and_controller = SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD;
+static const int joy_and_controller = SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD;
 static int main_testImpliedJoystickInit(void *arg)
 {
     int initialized_system;

@@ -58,8 +58,7 @@ static int LoadContext(GL_Context *data)
 }
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
+static void quit(int rc)
 {
     if (context) {
         /* SDL_GL_MakeCurrent(0, NULL); */ /* doesn't do anything */
@@ -69,8 +68,7 @@ quit(int rc)
     exit(rc);
 }
 
-static void
-Render()
+static void Render(void)
 {
     static float color[8][3] = {
         { 1.0, 1.0, 0.0 },

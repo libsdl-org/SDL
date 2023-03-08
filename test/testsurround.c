@@ -26,7 +26,7 @@ static int active_channel;
 #define LFE_SINE_FREQ_HZ 50
 
 /* The channel layout is defined in SDL_audio.h */
-const char *
+static const char *
 get_channel_name(int channel_index, int channel_count)
 {
     switch (channel_index) {
@@ -84,14 +84,12 @@ get_channel_name(int channel_index, int channel_count)
     return NULL;
 }
 
-SDL_bool
-is_lfe_channel(int channel_index, int channel_count)
+static SDL_bool is_lfe_channel(int channel_index, int channel_count)
 {
     return (channel_count == 3 && channel_index == 2) || (channel_count >= 6 && channel_index == 3);
 }
 
-void SDLCALL
-fill_buffer(void *unused, Uint8 *stream, int len)
+static void SDLCALL fill_buffer(void *unused, Uint8 *stream, int len)
 {
     Sint16 *buffer = (Sint16 *)stream;
     int samples = len / sizeof(Sint16);

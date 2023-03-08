@@ -262,7 +262,7 @@ link_program(struct shader_data *data)
 
 /* 3D data. Vertex range -0.5..0.5 in all axes.
  * Z -0.5 is near, 0.5 is far. */
-const float g_vertices[] = {
+static const float g_vertices[] = {
     /* Front face. */
     /* Bottom left */
     -0.5,
@@ -391,7 +391,7 @@ const float g_vertices[] = {
     0.5,
 };
 
-const float g_colors[] = {
+static const float g_colors[] = {
     /* Front face */
     /* Bottom left */
     1.0, 0.0, 0.0, /* red */
@@ -448,7 +448,7 @@ const float g_colors[] = {
     1.0, 0.0, 1.0, /* magenta */
 };
 
-const char *g_shader_vert_src =
+static const char *g_shader_vert_src =
     " attribute vec4 av4position; "
     " attribute vec3 av3color; "
     " uniform mat4 mvp; "
@@ -458,7 +458,7 @@ const char *g_shader_vert_src =
     "    gl_Position = mvp * av4position; "
     " } ";
 
-const char *g_shader_frag_src =
+static const char *g_shader_frag_src =
     " precision lowp float; "
     " varying vec3 vv3color; "
     " void main() { "
@@ -519,10 +519,10 @@ Render(unsigned int width, unsigned int height, shader_data *data)
     GL_CHECK(ctx.glDrawArrays(GL_TRIANGLES, 0, 36));
 }
 
-int done;
-Uint32 frames;
-shader_data *datas;
-thread_data *threads;
+static int done;
+static Uint32 frames;
+static shader_data *datas;
+static thread_data *threads;
 
 static void
 render_window(int index)
@@ -560,7 +560,7 @@ render_thread_fn(void *render_ctx)
 }
 
 static void
-loop_threaded()
+loop_threaded(void)
 {
     SDL_Event event;
     int i;
@@ -589,7 +589,7 @@ loop_threaded()
 #endif
 
 static void
-loop()
+loop(void)
 {
     SDL_Event event;
     int i;
