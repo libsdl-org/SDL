@@ -970,7 +970,7 @@ run_test(void)
             unsigned long abs[NBITS(ABS_MAX)];
             unsigned long keys[NBITS(KEY_MAX)];
             unsigned long rel[NBITS(REL_MAX)];
-        } caps = {};
+        } caps;
 
         printf("%s...\n", t->name);
 
