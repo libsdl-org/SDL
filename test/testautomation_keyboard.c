@@ -18,16 +18,16 @@
 static int keyboard_getKeyboardState(void *arg)
 {
     int numkeys;
-    Uint8 *state;
+    const Uint8 *state;
 
     /* Case where numkeys pointer is NULL */
-    state = (Uint8 *)SDL_GetKeyboardState(NULL);
+    state = SDL_GetKeyboardState(NULL);
     SDLTest_AssertPass("Call to SDL_GetKeyboardState(NULL)");
     SDLTest_AssertCheck(state != NULL, "Validate that return value from SDL_GetKeyboardState is not NULL");
 
     /* Case where numkeys pointer is not NULL */
     numkeys = -1;
-    state = (Uint8 *)SDL_GetKeyboardState(&numkeys);
+    state = SDL_GetKeyboardState(&numkeys);
     SDLTest_AssertPass("Call to SDL_GetKeyboardState(&numkeys)");
     SDLTest_AssertCheck(state != NULL, "Validate that return value from SDL_GetKeyboardState is not NULL");
     SDLTest_AssertCheck(numkeys >= 0, "Validate that value of numkeys is >= 0, got: %i", numkeys);
@@ -164,42 +164,42 @@ static int keyboard_getKeyName(void *arg)
 
     /* Case where key has a 1 character name */
     expected = "3";
-    result = (char *)SDL_GetKeyName(SDLK_3);
+    result = SDL_GetKeyName(SDLK_3);
     SDLTest_AssertPass("Call to SDL_GetKeyName()");
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: %s, got: %s", expected, result);
 
     /* Case where key has a 2 character name */
     expected = "F1";
-    result = (char *)SDL_GetKeyName(SDLK_F1);
+    result = SDL_GetKeyName(SDLK_F1);
     SDLTest_AssertPass("Call to SDL_GetKeyName()");
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: %s, got: %s", expected, result);
 
     /* Case where key has a 3 character name */
     expected = "Cut";
-    result = (char *)SDL_GetKeyName(SDLK_CUT);
+    result = SDL_GetKeyName(SDLK_CUT);
     SDLTest_AssertPass("Call to SDL_GetKeyName()");
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: %s, got: %s", expected, result);
 
     /* Case where key has a 4 character name */
     expected = "Down";
-    result = (char *)SDL_GetKeyName(SDLK_DOWN);
+    result = SDL_GetKeyName(SDLK_DOWN);
     SDLTest_AssertPass("Call to SDL_GetKeyName()");
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: %s, got: %s", expected, result);
 
     /* Case where key has a N character name */
     expected = "BrightnessUp";
-    result = (char *)SDL_GetKeyName(SDLK_BRIGHTNESSUP);
+    result = SDL_GetKeyName(SDLK_BRIGHTNESSUP);
     SDLTest_AssertPass("Call to SDL_GetKeyName()");
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: %s, got: %s", expected, result);
 
     /* Case where key has a N character name with space */
     expected = "Keypad MemStore";
-    result = (char *)SDL_GetKeyName(SDLK_KP_MEMSTORE);
+    result = SDL_GetKeyName(SDLK_KP_MEMSTORE);
     SDLTest_AssertPass("Call to SDL_GetKeyName()");
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: %s, got: %s", expected, result);
@@ -224,7 +224,7 @@ static int keyboard_getScancodeNameNegative(void *arg)
 
     /* Out-of-bounds scancode */
     scancode = (SDL_Scancode)SDL_NUM_SCANCODES;
-    result = (char *)SDL_GetScancodeName(scancode);
+    result = SDL_GetScancodeName(scancode);
     SDLTest_AssertPass("Call to SDL_GetScancodeName(%d/large)", scancode);
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: '%s', got: '%s'", expected, result);
@@ -246,7 +246,7 @@ static int keyboard_getKeyNameNegative(void *arg)
 
     /* Unknown keycode */
     keycode = SDLK_UNKNOWN;
-    result = (char *)SDL_GetKeyName(keycode);
+    result = SDL_GetKeyName(keycode);
     SDLTest_AssertPass("Call to SDL_GetKeyName(%" SDL_PRIs32 "/unknown)", keycode);
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: '%s', got: '%s'", expected, result);
@@ -257,7 +257,7 @@ static int keyboard_getKeyNameNegative(void *arg)
 
     /* Negative keycode */
     keycode = (SDL_Keycode)SDLTest_RandomIntegerInRange(-255, -1);
-    result = (char *)SDL_GetKeyName(keycode);
+    result = SDL_GetKeyName(keycode);
     SDLTest_AssertPass("Call to SDL_GetKeyName(%" SDL_PRIs32 "/negative)", keycode);
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: '%s', got: '%s'", expected, result);
@@ -592,7 +592,7 @@ static void checkInvalidNameError(void)
  */
 static int keyboard_getScancodeFromNameNegative(void *arg)
 {
-    const char *name;
+    char *name;
     SDL_Scancode scancode;
 
     /* Clear error message */
@@ -607,7 +607,7 @@ static int keyboard_getScancodeFromNameNegative(void *arg)
     }
     scancode = SDL_GetScancodeFromName(name);
     SDLTest_AssertPass("Call to SDL_GetScancodeFromName('%s')", name);
-    SDL_free((void *)name);
+    SDL_free(name);
     SDLTest_AssertCheck(scancode == SDL_SCANCODE_UNKNOWN, "Validate return value from SDL_GetScancodeFromName, expected: %i, got: %i", SDL_SCANCODE_UNKNOWN, scancode);
     checkInvalidNameError();
 

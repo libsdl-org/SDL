@@ -387,9 +387,9 @@ static int video_getWindowDisplayMode(void *arg)
 static void checkInvalidWindowError(void)
 {
     const char *invalidWindowError = "Invalid window";
-    char *lastError;
+    const char *lastError;
 
-    lastError = (char *)SDL_GetError();
+    lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError != NULL, "Verify error message is not NULL");
     if (lastError != NULL) {
@@ -856,9 +856,9 @@ static int video_getSetWindowPosition(void *arg)
 static void checkInvalidParameterError(void)
 {
     const char *invalidParameterError = "Parameter";
-    char *lastError;
+    const char *lastError;
 
-    lastError = (char *)SDL_GetError();
+    lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError != NULL, "Verify error message is not NULL");
     if (lastError != NULL) {

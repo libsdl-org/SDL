@@ -126,12 +126,12 @@ static int platform_testEndianessAndSwap(void *arg)
  */
 static int platform_testGetFunctions(void *arg)
 {
-    char *platform;
-    char *revision;
+    const char *platform;
+    const char *revision;
     int ret;
     size_t len;
 
-    platform = (char *)SDL_GetPlatform();
+    platform = SDL_GetPlatform();
     SDLTest_AssertPass("SDL_GetPlatform()");
     SDLTest_AssertCheck(platform != NULL, "SDL_GetPlatform() != NULL");
     if (platform != NULL) {
@@ -154,7 +154,7 @@ static int platform_testGetFunctions(void *arg)
                         "SDL_GetCPUCacheLineSize(): expected size >= 0, was: %i",
                         ret);
 
-    revision = (char *)SDL_GetRevision();
+    revision = SDL_GetRevision();
     SDLTest_AssertPass("SDL_GetRevision()");
     SDLTest_AssertCheck(revision != NULL, "SDL_GetRevision() != NULL");
 
@@ -284,13 +284,13 @@ static int platform_testGetSetClearError(void *arg)
 {
     int result;
     const char *testError = "Testing";
-    char *lastError;
+    const char *lastError;
     size_t len;
 
     SDL_ClearError();
     SDLTest_AssertPass("SDL_ClearError()");
 
-    lastError = (char *)SDL_GetError();
+    lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");
@@ -303,7 +303,7 @@ static int platform_testGetSetClearError(void *arg)
     result = SDL_SetError("%s", testError);
     SDLTest_AssertPass("SDL_SetError()");
     SDLTest_AssertCheck(result == -1, "SDL_SetError: expected -1, got: %i", result);
-    lastError = (char *)SDL_GetError();
+    lastError = SDL_GetError();
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");
     if (lastError != NULL) {
@@ -333,13 +333,13 @@ static int platform_testSetErrorEmptyInput(void *arg)
 {
     int result;
     const char *testError = "";
-    char *lastError;
+    const char *lastError;
     size_t len;
 
     result = SDL_SetError("%s", testError);
     SDLTest_AssertPass("SDL_SetError()");
     SDLTest_AssertCheck(result == -1, "SDL_SetError: expected -1, got: %i", result);
-    lastError = (char *)SDL_GetError();
+    lastError = SDL_GetError();
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");
     if (lastError != NULL) {
@@ -375,7 +375,7 @@ static int platform_testSetErrorInvalidInput(void *arg)
     int result;
     const char *invalidError = NULL;
     const char *probeError = "Testing";
-    char *lastError;
+    const char *lastError;
     size_t len;
 
     /* Reset */
@@ -386,7 +386,7 @@ static int platform_testSetErrorInvalidInput(void *arg)
     result = SDL_SetError("%s", invalidError);
     SDLTest_AssertPass("SDL_SetError()");
     SDLTest_AssertCheck(result == -1, "SDL_SetError: expected -1, got: %i", result);
-    lastError = (char *)SDL_GetError();
+    lastError = SDL_GetError();
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");
     if (lastError != NULL) {
@@ -405,7 +405,7 @@ static int platform_testSetErrorInvalidInput(void *arg)
     result = SDL_SetError("%s", invalidError);
     SDLTest_AssertPass("SDL_SetError(NULL)");
     SDLTest_AssertCheck(result == -1, "SDL_SetError: expected -1, got: %i", result);
-    lastError = (char *)SDL_GetError();
+    lastError = SDL_GetError();
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");
     if (lastError != NULL) {
@@ -423,7 +423,7 @@ static int platform_testSetErrorInvalidInput(void *arg)
     result = SDL_SetError("%s", probeError);
     SDLTest_AssertPass("SDL_SetError()");
     SDLTest_AssertCheck(result == -1, "SDL_SetError: expected -1, got: %i", result);
-    lastError = (char *)SDL_GetError();
+    lastError = SDL_GetError();
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");
     if (lastError != NULL) {
