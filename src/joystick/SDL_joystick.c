@@ -198,12 +198,12 @@ static SDL_bool SDL_GetDriverAndJoystickIndex(SDL_JoystickID instance_id, SDL_Jo
 
 static int SDL_FindFreePlayerIndex(void)
 {
-    int player_index;
+    int player_index = -1;
 
     SDL_AssertJoysticksLocked();
 
     for (player_index = 0; player_index < SDL_joystick_player_count; ++player_index) {
-        if (SDL_joystick_players[player_index] == -1) {
+        if (SDL_joystick_players[player_index] == 0) {
             return player_index;
         }
     }
@@ -254,7 +254,7 @@ static SDL_bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID
         }
 
         SDL_joystick_players = new_players;
-        SDL_memset(&SDL_joystick_players[SDL_joystick_player_count], 0xFF, (player_index - SDL_joystick_player_count + 1) * sizeof(SDL_joystick_players[0]));
+        SDL_memset(&SDL_joystick_players[SDL_joystick_player_count], 0, (player_index - SDL_joystick_player_count + 1) * sizeof(SDL_joystick_players[0]));
         SDL_joystick_player_count = player_index + 1;
     } else if (player_index >= 0 && SDL_joystick_players[player_index] == instance_id) {
         /* Joystick is already assigned the requested player index */
@@ -264,7 +264,7 @@ static SDL_bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID
     /* Clear the old player index */
     existing_player_index = SDL_GetPlayerIndexForJoystickID(instance_id);
     if (existing_player_index >= 0) {
-        SDL_joystick_players[existing_player_index] = -1;
+        SDL_joystick_players[existing_player_index] = 0;
     }
 
     if (player_index >= 0) {
@@ -1481,7 +1481,7 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id)
 
     player_index = SDL_GetPlayerIndexForJoystickID(instance_id);
     if (player_index >= 0) {
-        SDL_joystick_players[player_index] = -1;
+        SDL_joystick_players[player_index] = 0;
     }
 }
 
