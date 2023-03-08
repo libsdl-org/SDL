@@ -87,7 +87,7 @@ static SDL_bool SetSlotLED(SDL_hid_device *dev, Uint8 slot, SDL_bool on)
 
 static void UpdateSlotLED(SDL_DriverXbox360W_Context *ctx)
 {
-    if (ctx->player_lights && ctx->player_lights >= 0) {
+    if (ctx->player_lights) {
         SetSlotLED(ctx->device->dev, (ctx->player_index % 4), SDL_TRUE);
     } else {
         SetSlotLED(ctx->device->dev, 0, SDL_FALSE);

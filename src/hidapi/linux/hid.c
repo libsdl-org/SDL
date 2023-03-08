@@ -421,7 +421,7 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 					const char *str;
 					const char *key_str = NULL;
 
-					if (key >= 0 && key < DEVICE_STRING_COUNT) {
+					if ((int)key >= 0 && (int)key < DEVICE_STRING_COUNT) {
 						key_str = device_string_names[key];
 					} else {
 						ret = -1;
