@@ -20,6 +20,32 @@
 
 static SDLTest_CommonState *state;
 
+/* All test suites */
+static SDLTest_TestSuiteReference *testSuites[] = {
+    &audioTestSuite,
+    &clipboardTestSuite,
+    &eventsTestSuite,
+    &guidTestSuite,
+    &hintsTestSuite,
+    &joystickTestSuite,
+    &keyboardTestSuite,
+    &mainTestSuite,
+    &mathTestSuite,
+    &mouseTestSuite,
+    &pixelsTestSuite,
+    &platformTestSuite,
+    &rectTestSuite,
+    &renderTestSuite,
+    &rwopsTestSuite,
+    &sdltestTestSuite,
+    &stdlibTestSuite,
+    &surfaceTestSuite,
+    &syswmTestSuite,
+    &timerTestSuite,
+    &videoTestSuite,
+    NULL
+};
+
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
