@@ -47,7 +47,7 @@ static int use_rendergeometry = 0;
 /* -1: infinite random moves (default); >=0: enables N deterministic moves */
 static int iterations = -1;
 
-int done;
+static int done;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -65,7 +65,7 @@ quit(int rc)
     }
 }
 
-int LoadSprite(const char *file)
+static int LoadSprite(const char *file)
 {
     int i, w, h;
 
@@ -88,7 +88,7 @@ int LoadSprite(const char *file)
     return 0;
 }
 
-void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
+static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
     int i;
     SDL_Rect viewport;
@@ -396,7 +396,7 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_RenderPresent(renderer);
 }
 
-void loop()
+static void loop(void)
 {
     Uint64 now;
     int i;

@@ -99,7 +99,7 @@ DrawRect(SDL_Renderer *r, const int x, const int y, const int w, const int h)
     SDL_RenderFillRect(r, &area);
 }
 
-void loop(void *arg)
+static void loop(void *arg)
 {
     SDL_Event event;
     int i;

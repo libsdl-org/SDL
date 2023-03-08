@@ -34,7 +34,7 @@
 #define MOOSEFRAMES_COUNT 10
 
 /* *INDENT-OFF* */ /* clang-format off */
-SDL_Color MooseColors[84] = {
+static SDL_Color MooseColors[84] = {
     {49, 49, 49, SDL_ALPHA_OPAQUE}
     , {66, 24, 0, SDL_ALPHA_OPAQUE}
     , {66, 33, 0, SDL_ALPHA_OPAQUE}
@@ -147,16 +147,16 @@ static Uint64 next_fps_check;
 static Uint32 frames;
 static const Uint32 fps_check_delay = 5000;
 
-SDL_Surface *MooseYUVSurfaces[MOOSEFRAMES_COUNT];
-SDL_Texture *MooseTexture = NULL;
-SDL_FRect displayrect;
-int window_w;
-int window_h;
-int paused = 0;
-int done = 0;
+static SDL_Surface *MooseYUVSurfaces[MOOSEFRAMES_COUNT];
+static SDL_Texture *MooseTexture = NULL;
+static SDL_FRect displayrect;
+static int window_w;
+static int window_h;
+static int paused = 0;
+static int done = 0;
 static int fpsdelay;
-SDL_bool streaming = SDL_TRUE;
-Uint8 *RawMooseData = NULL;
+static SDL_bool streaming = SDL_TRUE;
+static Uint8 *RawMooseData = NULL;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -182,7 +182,7 @@ quit(int rc)
     }
 }
 
-void MoveSprites(SDL_Renderer *renderer)
+static void MoveSprites(SDL_Renderer *renderer)
 {
     static int i = 0;
 
@@ -216,7 +216,7 @@ void MoveSprites(SDL_Renderer *renderer)
 }
 
 
-void loop()
+static void loop(void)
 {
     Uint64 now;
     int i;

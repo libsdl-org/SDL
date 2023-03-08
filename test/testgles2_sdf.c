@@ -35,9 +35,9 @@ typedef struct GLES2_Context
 } GLES2_Context;
 
 static SDL_Surface *g_surf_sdf = NULL;
-GLenum g_texture;
-GLenum g_texture_type = GL_TEXTURE_2D;
-GLfloat g_verts[24];
+static GLenum g_texture;
+static GLenum g_texture_type = GL_TEXTURE_2D;
+static GLfloat g_verts[24];
 typedef enum
 {
     GLES2_ATTRIBUTE_POSITION = 0,
@@ -53,7 +53,7 @@ typedef enum
     GLES2_UNIFORM_COLOR,
 } GLES2_Uniform;
 
-GLint g_uniform_locations[16];
+static GLint g_uniform_locations[16];
 
 static SDLTest_CommonState *state;
 static SDL_GLContext *context = NULL;
@@ -122,7 +122,7 @@ quit(int rc)
  * source: Passed-in shader source code.
  * shader_type: Passed to GL, e.g. GL_VERTEX_SHADER.
  */
-void process_shader(GLenum *shader, const char *source, GLenum shader_type)
+static void process_shader(GLenum *shader, const char *source, GLenum shader_type)
 {
     GLint status = GL_FALSE;
     const char *shaders[1] = { NULL };
@@ -266,7 +266,7 @@ Render(int width, int height, shader_data *data)
     GL_CHECK(ctx.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
 }
 
-void renderCopy_angle(float degree_angle)
+static void renderCopy_angle(float degree_angle)
 {
     const float radian_angle = (float)(3.141592 * degree_angle) / 180.0f;
     const GLfloat s = (GLfloat)SDL_sin(radian_angle);
@@ -282,7 +282,7 @@ void renderCopy_angle(float degree_angle)
     *(verts++) = c;
 }
 
-void renderCopy_position(SDL_Rect *srcrect, SDL_Rect *dstrect)
+static void renderCopy_position(SDL_Rect *srcrect, SDL_Rect *dstrect)
 {
     GLfloat minx, miny, maxx, maxy;
     GLfloat minu, maxu, minv, maxv;
@@ -317,11 +317,11 @@ void renderCopy_position(SDL_Rect *srcrect, SDL_Rect *dstrect)
     *(verts++) = maxv;
 }
 
-int done;
-Uint32 frames;
-shader_data *datas;
+static int done;
+static Uint32 frames;
+static shader_data *datas;
 
-void loop()
+static void loop(void)
 {
     SDL_Event event;
     int i;

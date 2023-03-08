@@ -32,8 +32,8 @@ static SDL_FRect positions[NUM_SPRITES];
 static SDL_FRect velocities[NUM_SPRITES];
 static int sprite_w, sprite_h;
 
-SDL_Renderer *renderer;
-int done;
+static SDL_Renderer *renderer;
+static int done;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -43,7 +43,7 @@ quit(int rc)
     exit(rc);
 }
 
-void MoveSprites()
+static void MoveSprites(void)
 {
     int i;
     int window_w = WINDOW_WIDTH;
@@ -77,7 +77,7 @@ void MoveSprites()
     SDL_RenderPresent(renderer);
 }
 
-void loop()
+static void loop(void)
 {
     SDL_Event event;
 

@@ -33,8 +33,8 @@ typedef struct
     int scale_direction;
 } DrawState;
 
-DrawState *drawstates;
-int done;
+static DrawState *drawstates;
+static int done;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -44,7 +44,7 @@ quit(int rc)
     exit(rc);
 }
 
-void Draw(DrawState *s)
+static void Draw(DrawState *s)
 {
     SDL_Rect viewport;
     SDL_Texture *target;
@@ -86,7 +86,7 @@ void Draw(DrawState *s)
     /* SDL_Delay(10); */
 }
 
-void loop()
+static void loop(void)
 {
     int i;
     SDL_Event event;

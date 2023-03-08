@@ -705,7 +705,7 @@ WatchJoystick(SDL_Joystick *joystick)
     SDL_DestroyRenderer(screen);
 }
 
-static SDL_bool HasJoysticks()
+static SDL_bool HasJoysticks(void)
 {
     int num_joysticks = 0;
     SDL_JoystickID *joysticks;

@@ -21,12 +21,13 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Surface *surface;
-int done;
+static SDL_Window *window;
+static SDL_Renderer *renderer;
+static SDL_Surface *surface;
+static int done;
 
-void DrawChessBoard()
+
+static void DrawChessBoard(void)
 {
     int row = 0, column = 0, x = 0;
     SDL_FRect rect;
@@ -57,7 +58,7 @@ void DrawChessBoard()
     }
 }
 
-void loop()
+static void loop(void)
 {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {

@@ -21,7 +21,7 @@
 #include <SDL3/SDL_main.h>
 
 static SDLTest_CommonState *state;
-int done;
+static int done;
 
 static const char *cursorNames[] = {
     "arrow",
@@ -37,10 +37,10 @@ static const char *cursorNames[] = {
     "NO",
     "hand",
 };
-int system_cursor = -1;
-SDL_Cursor *cursor = NULL;
-SDL_bool relative_mode = SDL_FALSE;
-const SDL_DisplayMode *highlighted_mode = NULL;
+static int system_cursor = -1;
+static SDL_Cursor *cursor = NULL;
+static SDL_bool relative_mode = SDL_FALSE;
+static const SDL_DisplayMode *highlighted_mode = NULL;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -150,7 +150,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
     }
 }
 
-void loop()
+static void loop(void)
 {
     int i;
     SDL_Event event;

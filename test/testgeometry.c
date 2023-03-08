@@ -30,7 +30,7 @@ static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 static float angle = 0.0f;
 static int sprite_w, sprite_h;
 
-int done;
+static int done;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -41,7 +41,7 @@ quit(int rc)
     exit(rc);
 }
 
-int LoadSprite(const char *file)
+static int LoadSprite(const char *file)
 {
     int i;
 
@@ -62,7 +62,7 @@ int LoadSprite(const char *file)
     return 0;
 }
 
-void loop()
+static void loop(void)
 {
     int i;
     SDL_Event event;

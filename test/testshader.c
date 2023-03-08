@@ -231,7 +231,7 @@ static void DestroyShaderProgram(ShaderData *data)
     }
 }
 
-static SDL_bool InitShaders()
+static SDL_bool InitShaders(void)
 {
     int i;
 
@@ -285,7 +285,7 @@ static SDL_bool InitShaders()
     return SDL_TRUE;
 }
 
-static void QuitShaders()
+static void QuitShaders(void)
 {
     int i;
 
@@ -306,7 +306,7 @@ power_of_two(int input)
     return value;
 }
 
-GLuint
+static GLuint
 SDL_GL_LoadTexture(SDL_Surface *surface, GLfloat *texcoord)
 {
     GLuint texture;
@@ -356,7 +356,7 @@ SDL_GL_LoadTexture(SDL_Surface *surface, GLfloat *texcoord)
 }
 
 /* A general OpenGL initialization function.    Sets all of the initial parameters. */
-void InitGL(int Width, int Height) /* We call this right after our OpenGL window is created. */
+static void InitGL(int Width, int Height) /* We call this right after our OpenGL window is created. */
 {
     GLdouble aspect;
 
@@ -377,7 +377,7 @@ void InitGL(int Width, int Height) /* We call this right after our OpenGL window
 }
 
 /* The main drawing function. */
-void DrawGLScene(SDL_Window *window, GLuint texture, GLfloat *texcoord)
+static void DrawGLScene(SDL_Window *window, GLuint texture, GLfloat *texcoord)
 {
     /* Texture coordinate lookup, to make it simple */
     enum

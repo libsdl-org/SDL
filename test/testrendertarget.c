@@ -33,9 +33,9 @@ typedef struct
     int scale_direction;
 } DrawState;
 
-DrawState *drawstates;
-int done;
-SDL_bool test_composite = SDL_FALSE;
+static DrawState *drawstates;
+static int done;
+static SDL_bool test_composite = SDL_FALSE;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -45,7 +45,7 @@ quit(int rc)
     exit(rc);
 }
 
-SDL_bool
+static SDL_bool
 DrawComposite(DrawState *s)
 {
     SDL_Rect viewport;
@@ -129,7 +129,7 @@ DrawComposite(DrawState *s)
     return SDL_TRUE;
 }
 
-SDL_bool
+static SDL_bool
 Draw(DrawState *s)
 {
     SDL_Rect viewport;
@@ -173,7 +173,7 @@ Draw(DrawState *s)
     return SDL_TRUE;
 }
 
-void loop()
+static void loop(void)
 {
     int i;
     SDL_Event event;

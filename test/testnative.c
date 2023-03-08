@@ -51,7 +51,7 @@ quit(int rc)
     exit(rc);
 }
 
-void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
+static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
     int sprite_w, sprite_h;
     int i;

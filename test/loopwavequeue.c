@@ -43,14 +43,14 @@ quit(int rc)
 }
 
 static int done = 0;
-void poked(int sig)
+static void poked(int sig)
 {
     done = 1;
 }
 
 static SDL_AudioDeviceID g_audio_id = 0;
 
-void loop()
+static void loop(void)
 {
 #ifdef __EMSCRIPTEN__
     if (done || (SDL_GetAudioDeviceStatus(g_audio_id) != SDL_AUDIO_PLAYING)) {
