@@ -183,10 +183,10 @@
 
 @end
 
-bool IsModifierKeyPressed(unsigned int flags,
-                          unsigned int target_mask,
-                          unsigned int other_mask,
-                          unsigned int either_mask)
+static bool IsModifierKeyPressed(unsigned int flags,
+                                 unsigned int target_mask,
+                                 unsigned int other_mask,
+                                 unsigned int either_mask)
 {
     bool target_pressed = (flags & target_mask) != 0;
     bool other_pressed = (flags & other_mask) != 0;
@@ -227,7 +227,7 @@ static void HandleModifiers(_THIS, SDL_Scancode code, unsigned int modifierFlags
         pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICERCMDKEYMASK,
                                        NX_DEVICELCMDKEYMASK, NX_COMMANDMASK);
     } else {
-		return;
+        return;
     }
 
     if (pressed) {
