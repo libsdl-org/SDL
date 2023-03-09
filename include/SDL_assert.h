@@ -125,12 +125,10 @@ typedef struct SDL_AssertData
     const struct SDL_AssertData *next;
 } SDL_AssertData;
 
-#if (SDL_ASSERT_LEVEL > 0)
-
 /* Never call this directly. Use the SDL_assert* macros. */
 extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *,
-                                                             const char *,
-                                                             const char *, int)
+                                                            const char *,
+                                                            const char *, int)
 #if defined(__clang__)
 #if __has_feature(attribute_analyzer_noreturn)
 /* this tells Clang's static analysis that we're a custom assert function,
@@ -151,9 +149,7 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *,
 #define SDL_enabled_assert(condition) \
     do { \
         while ( !(condition) ) { \
-            static struct SDL_AssertData sdl_assert_data = { \
-                0, 0, #condition, 0, 0, 0, 0 \
-            }; \
+            static struct SDL_AssertData sdl_assert_data = { 0, 0, #condition, 0, 0, 0, 0 }; \
             const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
             if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
                 continue; /* go again. */ \
@@ -163,8 +159,6 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *,
             break; /* not retrying. */ \
         } \
     } while (SDL_NULL_WHILE_LOOP_CONDITION)
-
-#endif  /* enabled assertions support code */
 
 /* Enable various levels of assertions. */
 #if SDL_ASSERT_LEVEL == 0   /* assertions disabled */
