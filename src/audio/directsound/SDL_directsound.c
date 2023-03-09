@@ -408,7 +408,7 @@ static int CreateSecondary(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
 
     /* Try to create the secondary buffer */
     SDL_zero(format);
-    format.dwSize = sizeof(format);
+    format.dwSize = sizeof (format);
     format.dwFlags = DSBCAPS_GETCURRENTPOSITION2;
     format.dwFlags |= DSBCAPS_GLOBALFOCUS;
     format.dwBufferBytes = bufsize;
@@ -447,7 +447,7 @@ static int CreateCaptureBuffer(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
     HRESULT result;
 
     SDL_zero(format);
-    format.dwSize = sizeof(format);
+    format.dwSize = sizeof (format);
     format.dwFlags = DSCBCAPS_WAVEMAPPED;
     format.dwBufferBytes = bufsize;
     format.lpwfxFormat = wfmt;
@@ -490,7 +490,7 @@ static int DSOUND_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc((sizeof *this->hidden));
+        SDL_malloc(sizeof (*this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
@@ -539,7 +539,7 @@ static int DSOUND_OpenDevice(_THIS, const char *devname)
                 SDL_zero(wfmt);
                 if (this->spec.channels > 2) {
                     wfmt.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
-                    wfmt.Format.cbSize = sizeof(wfmt) - sizeof(WAVEFORMATEX);
+                    wfmt.Format.cbSize = sizeof (wfmt) - sizeof(WAVEFORMATEX);
 
                     if (SDL_AUDIO_ISFLOAT(this->spec.format)) {
                         SDL_memcpy(&wfmt.SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof(GUID));

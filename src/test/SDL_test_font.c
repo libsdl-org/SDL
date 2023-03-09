@@ -3352,7 +3352,7 @@ int SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s)
 
 SDLTest_TextWindow *SDLTest_TextWindowCreate(float x, float y, float w, float h)
 {
-    SDLTest_TextWindow *textwin = (SDLTest_TextWindow *)SDL_malloc(sizeof(*textwin));
+    SDLTest_TextWindow *textwin = (SDLTest_TextWindow *)SDL_malloc(sizeof (*textwin));
 
     if (textwin == NULL) {
         return NULL;
@@ -3364,7 +3364,7 @@ SDLTest_TextWindow *SDLTest_TextWindowCreate(float x, float y, float w, float h)
     textwin->rect.h = h;
     textwin->current = 0;
     textwin->numlines = (int)SDL_ceilf(h / FONT_LINE_HEIGHT);
-    textwin->lines = (char **)SDL_calloc(textwin->numlines, sizeof(*textwin->lines));
+    textwin->lines = (char **)SDL_calloc(textwin->numlines, sizeof (*textwin->lines));
     if (!textwin->lines) {
         SDL_free(textwin);
         return NULL;
@@ -3390,7 +3390,7 @@ void SDLTest_TextWindowAddText(SDLTest_TextWindow *textwin, const char *fmt, ...
     va_list ap;
 
     va_start(ap, fmt);
-    (void)SDL_vsnprintf(text, sizeof text, fmt, ap);
+    (void)SDL_vsnprintf(text, sizeof (text), fmt, ap);
     va_end(ap);
 
     SDLTest_TextWindowAddTextWithLength(textwin, text, SDL_strlen(text));
@@ -3436,7 +3436,7 @@ void SDLTest_TextWindowAddTextWithLength(SDLTest_TextWindow *textwin, const char
         if (newline) {
             if (textwin->current == textwin->numlines - 1) {
                 SDL_free(textwin->lines[0]);
-                SDL_memcpy(&textwin->lines[0], &textwin->lines[1], (textwin->numlines - 1) * sizeof(textwin->lines[1]));
+                SDL_memcpy(&textwin->lines[0], &textwin->lines[1], (textwin->numlines - 1) * sizeof (textwin->lines[1]));
                 textwin->lines[textwin->current] = NULL;
             } else {
                 ++textwin->current;

@@ -65,10 +65,10 @@ SDLTest_TimestampToString(const time_t timestamp)
     struct tm *local;
     size_t result = 0;
 
-    SDL_memset(buffer, 0, sizeof(buffer));
+    SDL_memset(buffer, 0, sizeof (buffer));
     copy = timestamp;
     local = localtime(&copy);
-    result = strftime(buffer, sizeof buffer, "%x %X", local);
+    result = strftime(buffer, sizeof (buffer), "%x %X", local);
     if (result == 0) {
         return "";
     }

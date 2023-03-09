@@ -189,7 +189,7 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
         VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
     SDL_zero(osvi);
-    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    osvi.dwOSVersionInfoSize = sizeof (osvi);
     osvi.dwMajorVersion = wMajorVersion;
     osvi.dwMinorVersion = wMinorVersion;
     osvi.wServicePackMajor = wServicePackMajor;
@@ -266,7 +266,7 @@ WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     }
 
     ptr = (const unsigned char *)guid;
-    (void)SDL_snprintf(keystr, sizeof keystr,
+    (void)SDL_snprintf(keystr, sizeof (keystr),
                        "System\\CurrentControlSet\\Control\\MediaCategories\\{%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
                        ptr[3], ptr[2], ptr[1], ptr[0], ptr[5], ptr[4], ptr[7], ptr[6],
                        ptr[8], ptr[9], ptr[10], ptr[11], ptr[12], ptr[13], ptr[14], ptr[15]);
@@ -307,12 +307,12 @@ WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 
 BOOL WIN_IsEqualGUID(const GUID *a, const GUID *b)
 {
-    return SDL_memcmp(a, b, sizeof(*a)) == 0;
+    return SDL_memcmp(a, b, sizeof (*a)) == 0;
 }
 
 BOOL WIN_IsEqualIID(REFIID a, REFIID b)
 {
-    return SDL_memcmp(a, b, sizeof(*a)) == 0;
+    return SDL_memcmp(a, b, sizeof (*a)) == 0;
 }
 
 void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect)
@@ -369,7 +369,7 @@ SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved
      */
 
     /* Parse it into argv and argc */
-    argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
+    argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof (*argv));
     if (argv == NULL) {
         return OutOfMemory();
     }

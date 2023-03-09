@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 
         for (m = 0; m < num_modes; m++) {
             char prefix[64];
-            (void)SDL_snprintf(prefix, sizeof prefix, "    MODE %d", m);
+            (void)SDL_snprintf(prefix, sizeof (prefix), "    MODE %d", m);
             print_mode(prefix, modes[i]);
         }
         SDL_free(modes);

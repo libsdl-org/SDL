@@ -62,11 +62,11 @@ static char *GetAppName(void)
     int linksize;
 
 #if defined(__LINUX__)
-    (void)SDL_snprintf(procfile, sizeof procfile, "/proc/%d/exe", getpid());
+    (void)SDL_snprintf(procfile, sizeof (procfile), "/proc/%d/exe", getpid());
 #elif defined(__FREEBSD__)
-    (void)SDL_snprintf(procfile, sizeof procfile, "/proc/%d/file", getpid());
+    (void)SDL_snprintf(procfile, sizeof (procfile), "/proc/%d/file", getpid());
 #endif
-    linksize = readlink(procfile, linkfile, sizeof(linkfile) - 1);
+    linksize = readlink(procfile, linkfile, sizeof (linkfile) - 1);
     if (linksize > 0) {
         linkfile[linksize] = '\0';
         spot = SDL_strrchr(linkfile, '/');
@@ -198,7 +198,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
             size_t text_bytes = SDL_strlen(text), i = 0;
 
             while (i < text_bytes) {
-                size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
+                size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof (buf));
                 SDL_SendKeyboardText(buf);
 
                 i += sz;
@@ -224,7 +224,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
                 size_t i = 0;
                 size_t cursor = 0;
                 while (i < text_bytes) {
-                    const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
+                    const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof (buf));
                     const size_t chars = SDL_utf8strlen(buf);
 
                     SDL_SendEditingText(buf, cursor, chars);

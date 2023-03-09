@@ -84,7 +84,7 @@ static int DSP_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc((sizeof *this->hidden));
+        SDL_malloc(sizeof (*this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
@@ -256,7 +256,7 @@ static void DSP_FlushCapture(_THIS)
     if (ioctl(h->audio_fd, SNDCTL_DSP_GETISPACE, &info) == 0) {
         while (info.bytes > 0) {
             char buf[512];
-            const size_t len = SDL_min(sizeof(buf), info.bytes);
+            const size_t len = SDL_min(sizeof (buf), info.bytes);
             const ssize_t br = read(h->audio_fd, buf, len);
             if (br <= 0) {
                 break;

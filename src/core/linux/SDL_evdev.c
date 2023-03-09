@@ -148,7 +148,7 @@ static int SDL_EVDEV_SetRelativeMouseMode(SDL_bool enabled)
 int SDL_EVDEV_Init(void)
 {
     if (_this == NULL) {
-        _this = (SDL_EVDEV_PrivateData *)SDL_calloc(1, sizeof(*_this));
+        _this = (SDL_EVDEV_PrivateData *)SDL_calloc(1, sizeof (*_this));
         if (_this == NULL) {
             return SDL_OutOfMemory();
         }
@@ -287,8 +287,8 @@ void SDL_EVDEV_Poll(void)
     mouse = SDL_GetMouse();
 
     for (item = _this->first; item != NULL; item = item->next) {
-        while ((len = read(item->fd, events, (sizeof events))) > 0) {
-            len /= sizeof(events[0]);
+        while ((len = read(item->fd, events, sizeof (events))) > 0) {
+            len /= sizeof (events[0]);
             for (i = 0; i < len; ++i) {
                 struct input_event *event = &events[i];
 
@@ -553,12 +553,12 @@ static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
         return 0;
     }
 
-    item->touchscreen_data = SDL_calloc(1, sizeof(*item->touchscreen_data));
+    item->touchscreen_data = SDL_calloc(1, sizeof (*item->touchscreen_data));
     if (item->touchscreen_data == NULL) {
         return SDL_OutOfMemory();
     }
 
-    ret = ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
+    ret = ioctl(item->fd, EVIOCGNAME(sizeof (name)), name);
     if (ret < 0) {
         SDL_free(item->touchscreen_data);
         return SDL_SetError("Failed to get evdev touchscreen name");
@@ -619,7 +619,7 @@ static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
 
     item->touchscreen_data->slots = SDL_calloc(
         item->touchscreen_data->max_slots,
-        sizeof(*item->touchscreen_data->slots));
+        sizeof (*item->touchscreen_data->slots));
     if (item->touchscreen_data->slots == NULL) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
@@ -677,8 +677,8 @@ static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
         return;
     }
 
-    mt_req_size = sizeof(*mt_req_code) +
-                  sizeof(*mt_req_values) * item->touchscreen_data->max_slots;
+    mt_req_size = sizeof (*mt_req_code) +
+                  sizeof (*mt_req_values) * item->touchscreen_data->max_slots;
 
     mt_req_code = SDL_calloc(1, mt_req_size);
     if (mt_req_code == NULL) {
@@ -810,7 +810,7 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
         return SDL_OutOfMemory();
     }
 
-    if (ioctl(item->fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) >= 0) {
+    if (ioctl(item->fd, EVIOCGBIT(EV_REL, sizeof (relbit)), relbit) >= 0) {
         item->relative_mouse = test_bit(REL_X, relbit) && test_bit(REL_Y, relbit);
         item->high_res_wheel = test_bit(REL_WHEEL_HI_RES, relbit);
         item->high_res_hwheel = test_bit(REL_HWHEEL_HI_RES, relbit);

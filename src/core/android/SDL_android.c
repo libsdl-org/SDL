@@ -544,7 +544,7 @@ JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(JNIEnv *env, jcla
 {
     char version[128];
 
-    SDL_snprintf(version, sizeof(version), "%d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
+    SDL_snprintf(version, sizeof (version), "%d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
 
     return (*env)->NewStringUTF(env, version);
 }
@@ -936,7 +936,7 @@ SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_c
 {
     if (SDL_GetCurrentAudioDriver() != NULL) {
         char device_name[64];
-        SDL_snprintf(device_name, sizeof(device_name), "%d", device_id);
+        SDL_snprintf(device_name, sizeof (device_name), "%d", device_id);
         SDL_Log("Adding device with name %s, capture %d", device_name, is_capture);
         SDL_AddAudioDevice(is_capture, SDL_strdup(device_name), NULL, (void *)((size_t)device_id + 1));
     }
@@ -1509,7 +1509,7 @@ void Android_DetectDevices(void)
     for (int i = 0; i < inputs_length; ++i) {
         int device_id = inputs[i];
         char device_name[64];
-        SDL_snprintf(device_name, sizeof(device_name), "%d", device_id);
+        SDL_snprintf(device_name, sizeof (device_name), "%d", device_id);
         SDL_Log("Adding input device with name %s", device_name);
         SDL_AddAudioDevice(SDL_TRUE, SDL_strdup(device_name), NULL, (void *)((size_t)device_id + 1));
     }
@@ -1521,7 +1521,7 @@ void Android_DetectDevices(void)
     for (int i = 0; i < outputs_length; ++i) {
         int device_id = outputs[i];
         char device_name[64];
-        SDL_snprintf(device_name, sizeof(device_name), "%d", device_id);
+        SDL_snprintf(device_name, sizeof (device_name), "%d", device_id);
         SDL_Log("Adding output device with name %s", device_name);
         SDL_AddAudioDevice(SDL_FALSE, SDL_strdup(device_name), NULL, (void *)((size_t)device_id + 1));
     }
@@ -1704,11 +1704,11 @@ int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen)
         }
         break;
     case ENCODING_PCM_16BIT:
-        SDL_assert((*env)->GetArrayLength(env, (jshortArray)captureBuffer) == (buflen / sizeof(Sint16)));
+        SDL_assert((*env)->GetArrayLength(env, (jshortArray)captureBuffer) == (buflen / sizeof (Sint16)));
         br = (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadShortBuffer, (jshortArray)captureBuffer, JNI_TRUE);
         if (br > 0) {
             jshort *ptr = (*env)->GetShortArrayElements(env, (jshortArray)captureBuffer, &isCopy);
-            br *= sizeof(Sint16);
+            br *= sizeof (Sint16);
             SDL_memcpy(buffer, ptr, br);
             (*env)->ReleaseShortArrayElements(env, (jshortArray)captureBuffer, ptr, JNI_ABORT);
         }

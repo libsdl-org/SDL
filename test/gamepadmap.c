@@ -246,7 +246,7 @@ BBindingContainsBinding(const SDL_GameControllerExtendedBind *pBindingA, const S
         }
         /* Not reached */
     default:
-        return SDL_memcmp(pBindingA, pBindingB, sizeof(*pBindingA)) == 0;
+        return SDL_memcmp(pBindingA, pBindingB, sizeof (*pBindingA)) == 0;
     }
 }
 
@@ -389,7 +389,7 @@ WatchJoystick(SDL_Joystick *joystick)
     nJoystickID = SDL_GetJoystickInstanceID(joystick);
 
     s_nNumAxes = SDL_GetNumJoystickAxes(joystick);
-    s_arrAxisState = (AxisState *)SDL_calloc(s_nNumAxes, sizeof(*s_arrAxisState));
+    s_arrAxisState = (AxisState *)SDL_calloc(s_nNumAxes, sizeof (*s_arrAxisState));
 
     /* Skip any spurious events at start */
     while (SDL_PollEvent(&event) > 0) {
@@ -593,7 +593,7 @@ WatchJoystick(SDL_Joystick *joystick)
             char crc_string[5];
 
             SDL_strlcat(mapping, "crc:", SDL_arraysize(mapping));
-            (void)SDL_snprintf(crc_string, sizeof crc_string, "%.4x", crc);
+            (void)SDL_snprintf(crc_string, sizeof (crc_string), "%.4x", crc);
             SDL_strlcat(mapping, crc_string, SDL_arraysize(mapping));
             SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
         }
@@ -666,17 +666,17 @@ WatchJoystick(SDL_Joystick *joystick)
             pszElement[0] = '\0';
             switch (pBinding->bindType) {
             case SDL_GAMEPAD_BINDTYPE_BUTTON:
-                (void)SDL_snprintf(pszElement, sizeof pszElement, "b%d", pBinding->value.button);
+                (void)SDL_snprintf(pszElement, sizeof (pszElement), "b%d", pBinding->value.button);
                 break;
             case SDL_GAMEPAD_BINDTYPE_AXIS:
                 if (pBinding->value.axis.axis_min == 0 && pBinding->value.axis.axis_max == SDL_JOYSTICK_AXIS_MIN) {
                     /* The negative half axis */
-                    (void)SDL_snprintf(pszElement, sizeof pszElement, "-a%d", pBinding->value.axis.axis);
+                    (void)SDL_snprintf(pszElement, sizeof (pszElement), "-a%d", pBinding->value.axis.axis);
                 } else if (pBinding->value.axis.axis_min == 0 && pBinding->value.axis.axis_max == SDL_JOYSTICK_AXIS_MAX) {
                     /* The positive half axis */
-                    (void)SDL_snprintf(pszElement, sizeof pszElement, "+a%d", pBinding->value.axis.axis);
+                    (void)SDL_snprintf(pszElement, sizeof (pszElement), "+a%d", pBinding->value.axis.axis);
                 } else {
-                    (void)SDL_snprintf(pszElement, sizeof pszElement, "a%d", pBinding->value.axis.axis);
+                    (void)SDL_snprintf(pszElement, sizeof (pszElement), "a%d", pBinding->value.axis.axis);
                     if (pBinding->value.axis.axis_min > pBinding->value.axis.axis_max) {
                         /* Invert the axis */
                         SDL_strlcat(pszElement, "~", SDL_arraysize(pszElement));
@@ -684,7 +684,7 @@ WatchJoystick(SDL_Joystick *joystick)
                 }
                 break;
             case SDL_GAMEPAD_BINDTYPE_HAT:
-                (void)SDL_snprintf(pszElement, sizeof pszElement, "h%d.%d", pBinding->value.hat.hat, pBinding->value.hat.hat_mask);
+                (void)SDL_snprintf(pszElement, sizeof (pszElement), "h%d.%d", pBinding->value.hat.hat, pBinding->value.hat.hat_mask);
                 break;
             default:
                 SDL_assert(!"Unknown bind type");
@@ -794,7 +794,7 @@ int main(int argc, char *argv[])
             } else {
                 char guid[64];
                 SDL_GetJoystickGUIDString(SDL_GetJoystickGUID(joystick),
-                                          guid, sizeof(guid));
+                                          guid, sizeof (guid));
                 SDL_Log("       axes: %d\n", SDL_GetNumJoystickAxes(joystick));
                 SDL_Log("       hats: %d\n", SDL_GetNumJoystickHats(joystick));
                 SDL_Log("    buttons: %d\n", SDL_GetNumJoystickButtons(joystick));

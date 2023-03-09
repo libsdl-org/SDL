@@ -276,7 +276,7 @@ static int JACK_OpenDevice(_THIS, const char *devname)
     int i;
 
     /* Initialize all variables that we clean on shutdown */
-    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*this->hidden));
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof (*this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
@@ -298,7 +298,7 @@ static int JACK_OpenDevice(_THIS, const char *devname)
     }
 
     /* Filter out non-audio ports */
-    audio_ports = SDL_calloc(ports, sizeof *audio_ports);
+    audio_ports = SDL_calloc(ports, sizeof (*audio_ports));
     for (i = 0; i < ports; i++) {
         const jack_port_t *dport = JACK_jack_port_by_name(client, devports[i]);
         const char *type = JACK_jack_port_type(dport);
@@ -344,7 +344,7 @@ static int JACK_OpenDevice(_THIS, const char *devname)
 
     for (i = 0; i < channels; i++) {
         char portname[32];
-        (void)SDL_snprintf(portname, sizeof(portname), "sdl_jack_%s_%d", sdlportstr, i);
+        (void)SDL_snprintf(portname, sizeof (portname), "sdl_jack_%s_%d", sdlportstr, i);
         this->hidden->sdlports[i] = JACK_jack_port_register(client, portname, JACK_DEFAULT_AUDIO_TYPE, sdlportflags, 0);
         if (this->hidden->sdlports[i] == NULL) {
             SDL_free(audio_ports);

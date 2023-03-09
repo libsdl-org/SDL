@@ -647,7 +647,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
     static int x, y, xmin = 0xffff, ymin = 0xffff, xmax = 0, ymax = 0;
 
     if (joy->hwdata->type == BSDJOY_JOY) {
-        while (read(joy->hwdata->fd, &gameport, sizeof gameport) == sizeof gameport) {
+        while (read(joy->hwdata->fd, &gameport, sizeof (gameport)) == sizeof (gameport)) {
             if (SDL_abs(x - gameport.x) > 8) {
                 x = gameport.x;
                 if (x < xmin) {
@@ -809,7 +809,7 @@ static int report_alloc(struct report *r, struct report_desc *rd, int repind)
 #if defined(__FREEBSD__) && (__FreeBSD_kernel_version > 900000) || defined(__DragonFly__)
         r->buf = SDL_malloc(r->size);
 #else
-        r->buf = SDL_malloc(sizeof(*r->buf) - sizeof(REP_BUF_DATA(r)) +
+        r->buf = SDL_malloc(sizeof (*r->buf) - sizeof (REP_BUF_DATA(r)) +
                             r->size);
 #endif
         if (r->buf == NULL) {

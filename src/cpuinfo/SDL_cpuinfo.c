@@ -325,14 +325,14 @@ static int CPU_haveAltiVec(void)
     int selectors[2] = { CTL_HW, HW_VECTORUNIT };
 #endif
     int hasVectorUnit = 0;
-    size_t length = sizeof(hasVectorUnit);
+    size_t length = sizeof (hasVectorUnit);
     int error = sysctl(selectors, 2, &hasVectorUnit, &length, NULL, 0);
     if (0 == error) {
         altivec = (hasVectorUnit != 0);
     }
 #elif defined(__FreeBSD__) && defined(__powerpc__)
     unsigned long cpufeatures = 0;
-    elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
+    elf_aux_info(AT_HWCAP, &cpufeatures, sizeof (cpufeatures));
     altivec = cpufeatures & PPC_FEATURE_HAS_ALTIVEC;
     return altivec;
 #elif SDL_ALTIVEC_BLITTERS && HAVE_SETJMP
@@ -370,7 +370,7 @@ static int CPU_haveARMSIMD(void)
     fd = open("/proc/self/auxv", O_RDONLY | O_CLOEXEC);
     if (fd >= 0) {
         Elf32_auxv_t aux;
-        while (read(fd, &aux, sizeof aux) == sizeof aux) {
+        while (read(fd, &aux, sizeof (aux)) == sizeof (aux)) {
             if (aux.a_type == AT_PLATFORM) {
                 const char *plat = (const char *)aux.a_un.a_val;
                 if (plat) {
@@ -423,7 +423,7 @@ static int readProcAuxvForNeon(void)
     fd = open("/proc/self/auxv", O_RDONLY | O_CLOEXEC);
     if (fd >= 0) {
         Elf32_auxv_t aux;
-        while (read(fd, &aux, sizeof(aux)) == sizeof(aux)) {
+        while (read(fd, &aux, sizeof (aux)) == sizeof (aux)) {
             if (aux.a_type == AT_HWCAP) {
                 neon = (aux.a_un.a_val & HWCAP_NEON) == HWCAP_NEON;
                 break;
@@ -466,7 +466,7 @@ static int CPU_haveNEON(void)
     return 1; /* OpenBSD only supports ARMv7 CPUs that have NEON. */
 #elif defined(HAVE_ELF_AUX_INFO)
     unsigned long hasneon = 0;
-    if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0) {
+    if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof (hasneon)) != 0) {
         return 0;
     }
     return (hasneon & HWCAP_NEON) == HWCAP_NEON;
@@ -628,7 +628,7 @@ int SDL_GetCPUCount(void)
 #endif
 #ifdef HAVE_SYSCTLBYNAME
         if (SDL_CPUCount <= 0) {
-            size_t size = sizeof(SDL_CPUCount);
+            size_t size = sizeof (SDL_CPUCount);
             sysctlbyname("hw.ncpu", &SDL_CPUCount, &size, NULL, 0);
         }
 #endif
@@ -654,7 +654,7 @@ SDL_GetCPUType(void)
 {
     static char SDL_CPUType[13];
 
-    SDL_strlcpy(SDL_CPUType, "E2K MACHINE", sizeof(SDL_CPUType));
+    SDL_strlcpy(SDL_CPUType, "E2K MACHINE", sizeof (SDL_CPUType));
 
     return SDL_CPUType;
 }
@@ -697,7 +697,7 @@ static const char *SDL_GetCPUType(void)
             SDL_CPUType[i++] = (char)(c & 0xff);
         }
         if (!SDL_CPUType[0]) {
-            SDL_strlcpy(SDL_CPUType, "Unknown", sizeof(SDL_CPUType));
+            SDL_strlcpy(SDL_CPUType, "Unknown", sizeof (SDL_CPUType));
         }
     }
     return SDL_CPUType;
@@ -1046,7 +1046,7 @@ int SDL_GetSystemRAM(void)
             int mib[2] = { CTL_HW, HW_MEMSIZE };
 #endif /* __FreeBSD__ || __FreeBSD_kernel__ */
             Uint64 memsize = 0;
-            size_t len = sizeof(memsize);
+            size_t len = sizeof (memsize);
 
             if (sysctl(mib, 2, &memsize, &len, NULL, 0) == 0) {
                 SDL_SystemRAM = (int)(memsize / (1024 * 1024));
@@ -1056,7 +1056,7 @@ int SDL_GetSystemRAM(void)
 #if defined(__WIN32__) || defined(__GDK__)
         if (SDL_SystemRAM <= 0) {
             MEMORYSTATUSEX stat;
-            stat.dwLength = sizeof(stat);
+            stat.dwLength = sizeof (stat);
             if (GlobalMemoryStatusEx(&stat)) {
                 SDL_SystemRAM = (int)(stat.ullTotalPhys / (1024 * 1024));
             }

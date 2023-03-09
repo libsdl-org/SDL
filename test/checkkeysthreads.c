@@ -110,7 +110,7 @@ PrintModifierState(void)
     size_t left;
 
     spot = message;
-    left = sizeof(message);
+    left = sizeof (message);
 
     print_modifiers(&spot, &left);
     SDL_Log("Initial state:%s\n", message);
@@ -124,7 +124,7 @@ PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
     size_t left;
 
     spot = message;
-    left = sizeof(message);
+    left = sizeof (message);
 
     /* Print the keycode, name and state */
     if (sym->sym) {
@@ -157,7 +157,7 @@ PrintText(const char *eventtype, const char *text)
     expanded[0] = '\0';
     for (spot = text; *spot; ++spot) {
         size_t length = SDL_strlen(expanded);
-        (void)SDL_snprintf(expanded + length, sizeof expanded - length, "\\x%.2x", (unsigned char)*spot);
+        (void)SDL_snprintf(expanded + length, sizeof (expanded) - length, "\\x%.2x", (unsigned char)*spot);
     }
     SDL_Log("%s Text (%s): \"%s%s\"\n", eventtype, expanded, *text == '"' ? "\\" : "", text);
 }

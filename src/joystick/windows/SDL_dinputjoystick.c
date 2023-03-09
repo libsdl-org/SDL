@@ -225,7 +225,7 @@ const DIDATAFORMAT SDL_c_dfDIJoystick2 = {
     sizeof(DIDATAFORMAT),
     sizeof(DIOBJECTDATAFORMAT),
     DIDF_ABSAXIS,
-    sizeof(DIJOYSTATE2),
+    sizeof (DIJOYSTATE2),
     SDL_arraysize(dfDIJoystick2),
     dfDIJoystick2
 };
@@ -275,8 +275,8 @@ static SDL_bool QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char **device_name)
         return SDL_FALSE;
     }
 
-    dipstr.diph.dwSize = sizeof(dipstr);
-    dipstr.diph.dwHeaderSize = sizeof(dipstr.diph);
+    dipstr.diph.dwSize = sizeof (dipstr);
+    dipstr.diph.dwHeaderSize = sizeof (dipstr.diph);
     dipstr.diph.dwObj = 0;
     dipstr.diph.dwHow = DIPH_DEVICE;
 
@@ -297,8 +297,8 @@ static SDL_bool QueryDevicePath(LPDIRECTINPUTDEVICE8 device, char **device_path)
         return SDL_FALSE;
     }
 
-    dippath.diph.dwSize = sizeof(dippath);
-    dippath.diph.dwHeaderSize = sizeof(dippath.diph);
+    dippath.diph.dwSize = sizeof (dippath);
+    dippath.diph.dwHeaderSize = sizeof (dippath.diph);
     dippath.diph.dwObj = 0;
     dippath.diph.dwHow = DIPH_DEVICE;
 
@@ -322,8 +322,8 @@ static SDL_bool QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16 *vendor_id, 
         return SDL_FALSE;
     }
 
-    dipdw.diph.dwSize = sizeof(dipdw);
-    dipdw.diph.dwHeaderSize = sizeof(dipdw.diph);
+    dipdw.diph.dwSize = sizeof (dipdw);
+    dipdw.diph.dwHeaderSize = sizeof (dipdw.diph);
     dipdw.diph.dwObj = 0;
     dipdw.diph.dwHow = DIPH_DEVICE;
     dipdw.dwData = 0;
@@ -355,11 +355,11 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     DIPERIODIC *periodic;
 
     /* Create the effect */
-    effect = (DIEFFECT *)SDL_calloc(1, sizeof(*effect));
+    effect = (DIEFFECT *)SDL_calloc(1, sizeof (*effect));
     if (effect == NULL) {
         return NULL;
     }
-    effect->dwSize = sizeof(*effect);
+    effect->dwSize = sizeof (*effect);
     effect->dwGain = 10000;
     effect->dwFlags = DIEFF_OBJECTOFFSETS;
     effect->dwDuration = SDL_MAX_RUMBLE_DURATION_MS * 1000; /* In microseconds. */
@@ -379,7 +379,7 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     }
     effect->dwFlags |= DIEFF_CARTESIAN;
 
-    periodic = (DIPERIODIC *)SDL_calloc(1, sizeof(*periodic));
+    periodic = (DIPERIODIC *)SDL_calloc(1, sizeof (*periodic));
     if (periodic == NULL) {
         FreeRumbleEffectData(effect);
         return NULL;
@@ -387,7 +387,7 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     periodic->dwMagnitude = CONVERT_MAGNITUDE(magnitude);
     periodic->dwPeriod = 1000000;
 
-    effect->cbTypeSpecificParams = sizeof(*periodic);
+    effect->cbTypeSpecificParams = sizeof (*periodic);
     effect->lpvTypeSpecificParams = periodic;
 
     return effect;
@@ -474,7 +474,7 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
             }
 
             /* Update with new guid/etc, if it has changed */
-            SDL_memcpy(&pNewJoystick->dxdevice, pDeviceInstance, sizeof(DIDEVICEINSTANCE));
+            SDL_memcpy(&pNewJoystick->dxdevice, pDeviceInstance, sizeof (DIDEVICEINSTANCE));
 
             pNewJoystick->pNext = SYS_Joystick;
             SYS_Joystick = pNewJoystick;
@@ -492,7 +492,7 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
 
     SDL_zerop(pNewJoystick);
     SDL_strlcpy(pNewJoystick->path, hidPath, SDL_arraysize(pNewJoystick->path));
-    SDL_memcpy(&pNewJoystick->dxdevice, pDeviceInstance, sizeof(DIDEVICEINSTANCE));
+    SDL_memcpy(&pNewJoystick->dxdevice, pDeviceInstance, sizeof (DIDEVICEINSTANCE));
 
     pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, name);
     CHECK(pNewJoystick->joystickname);
@@ -621,27 +621,27 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
 
         in->type = AXIS;
         in->num = joystick->naxes;
-        if (SDL_memcmp(&pDeviceObject->guidType, &GUID_XAxis, sizeof pDeviceObject->guidType) == 0) {
+        if (SDL_memcmp(&pDeviceObject->guidType, &GUID_XAxis, sizeof (pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_X;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_YAxis, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_YAxis, sizeof (pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_Y;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_ZAxis, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_ZAxis, sizeof (pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_Z;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RxAxis, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RxAxis, sizeof (pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_RX;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RyAxis, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RyAxis, sizeof (pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_RY;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RzAxis, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RzAxis, sizeof (pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_RZ;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_Slider, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_Slider, sizeof (pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_SLIDER(joystick->hwdata->NumSliders);
             ++joystick->hwdata->NumSliders;
         } else {
             return DIENUM_CONTINUE; /* not an axis we can grok */
         }
 
-        diprg.diph.dwSize = sizeof(diprg);
-        diprg.diph.dwHeaderSize = sizeof(diprg.diph);
+        diprg.diph.dwSize = sizeof (diprg);
+        diprg.diph.dwHeaderSize = sizeof (diprg.diph);
         diprg.diph.dwObj = pDeviceObject->dwType;
         diprg.diph.dwHow = DIPH_BYID;
         diprg.lMin = SDL_JOYSTICK_AXIS_MIN;
@@ -655,8 +655,8 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
         }
 
         /* Set dead zone to 0. */
-        dilong.diph.dwSize = sizeof(dilong);
-        dilong.diph.dwHeaderSize = sizeof(dilong.diph);
+        dilong.diph.dwSize = sizeof (dilong);
+        dilong.diph.dwHeaderSize = sizeof (dilong.diph);
         dilong.diph.dwObj = pDeviceObject->dwType;
         dilong.diph.dwHow = DIPH_BYID;
         dilong.dwData = 0;
@@ -736,11 +736,11 @@ int SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
     DIPROPDWORD dipdw;
 
     joystick->hwdata->buffered = SDL_TRUE;
-    joystick->hwdata->Capabilities.dwSize = sizeof(DIDEVCAPS);
+    joystick->hwdata->Capabilities.dwSize = sizeof (DIDEVCAPS);
 
     SDL_zero(dipdw);
     dipdw.diph.dwSize = sizeof(DIPROPDWORD);
-    dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+    dipdw.diph.dwHeaderSize = sizeof (DIPROPHEADER);
 
     result =
         IDirectInput8_CreateDevice(dinput,

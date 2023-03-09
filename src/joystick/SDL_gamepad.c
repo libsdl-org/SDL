@@ -189,7 +189,7 @@ static void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
 
         if (list->num_entries == list->max_entries) {
             int max_entries = list->max_entries + 16;
-            Uint32 *entries = (Uint32 *)SDL_realloc(list->entries, max_entries * sizeof(*list->entries));
+            Uint32 *entries = (Uint32 *)SDL_realloc(list->entries, max_entries * sizeof (*list->entries));
             if (entries == NULL) {
                 /* Out of memory, go with what we have already */
                 break;
@@ -466,8 +466,8 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_JoystickGUID gui
     int button_mask;
     int axis_mask;
 
-    button_mask = SDL_SwapLE16(*(Uint16 *)(&guid.data[sizeof(guid.data) - 4]));
-    axis_mask = SDL_SwapLE16(*(Uint16 *)(&guid.data[sizeof(guid.data) - 2]));
+    button_mask = SDL_SwapLE16(*(Uint16 *)(&guid.data[sizeof (guid.data) - 4]));
+    axis_mask = SDL_SwapLE16(*(Uint16 *)(&guid.data[sizeof (guid.data) - 2]));
     if (!button_mask && !axis_mask) {
         /* Accelerometer, shouldn't have a gamepad mapping */
         return NULL;
@@ -477,77 +477,77 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_JoystickGUID gui
         return NULL;
     }
 
-    SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
+    SDL_strlcpy(mapping_string, "none,*,", sizeof (mapping_string));
 
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_A)) {
-        SDL_strlcat(mapping_string, "a:b0,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "a:b0,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_B)) {
-        SDL_strlcat(mapping_string, "b:b1,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "b:b1,", sizeof (mapping_string));
     } else if (button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) {
         /* Use the back button as "B" for easy UI navigation with TV remotes */
-        SDL_strlcat(mapping_string, "b:b4,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "b:b4,", sizeof (mapping_string));
         button_mask &= ~(1 << SDL_GAMEPAD_BUTTON_BACK);
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_X)) {
-        SDL_strlcat(mapping_string, "x:b2,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "x:b2,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_Y)) {
-        SDL_strlcat(mapping_string, "y:b3,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "y:b3,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) {
-        SDL_strlcat(mapping_string, "back:b4,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "back:b4,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_GUIDE)) {
         /* The guide button generally isn't functional (or acts as a home button) on most Android gamepads before Android 11 */
         if (SDL_GetAndroidSDKVersion() >= 30 /* Android 11 */) {
-            SDL_strlcat(mapping_string, "guide:b5,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "guide:b5,", sizeof (mapping_string));
         }
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_START)) {
-        SDL_strlcat(mapping_string, "start:b6,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "start:b6,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
-        SDL_strlcat(mapping_string, "leftstick:b7,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "leftstick:b7,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
-        SDL_strlcat(mapping_string, "rightstick:b8,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "rightstick:b8,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_SHOULDER)) {
-        SDL_strlcat(mapping_string, "leftshoulder:b9,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "leftshoulder:b9,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER)) {
-        SDL_strlcat(mapping_string, "rightshoulder:b10,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "rightshoulder:b10,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_UP)) {
-        SDL_strlcat(mapping_string, "dpup:b11,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "dpup:b11,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN)) {
-        SDL_strlcat(mapping_string, "dpdown:b12,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "dpdown:b12,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT)) {
-        SDL_strlcat(mapping_string, "dpleft:b13,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "dpleft:b13,", sizeof (mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) {
-        SDL_strlcat(mapping_string, "dpright:b14,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "dpright:b14,", sizeof (mapping_string));
     }
     if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTX)) {
-        SDL_strlcat(mapping_string, "leftx:a0,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "leftx:a0,", sizeof (mapping_string));
     }
     if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTY)) {
-        SDL_strlcat(mapping_string, "lefty:a1,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "lefty:a1,", sizeof (mapping_string));
     }
     if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTX)) {
-        SDL_strlcat(mapping_string, "rightx:a2,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "rightx:a2,", sizeof (mapping_string));
     }
     if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTY)) {
-        SDL_strlcat(mapping_string, "righty:a3,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "righty:a3,", sizeof (mapping_string));
     }
     if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFT_TRIGGER)) {
-        SDL_strlcat(mapping_string, "lefttrigger:a4,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "lefttrigger:a4,", sizeof (mapping_string));
     }
     if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)) {
-        SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof (mapping_string));
     }
 
     return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
@@ -564,14 +564,14 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
     Uint16 vendor;
     Uint16 product;
 
-    SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
+    SDL_strlcpy(mapping_string, "none,*,", sizeof (mapping_string));
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
 
     if ((vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) ||
         (vendor == USB_VENDOR_DRAGONRISE && product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER)) {
         /* GameCube driver has 12 buttons and 6 axes */
-        SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3,start:b8,x:b2,y:b3,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3,start:b8,x:b2,y:b3,", sizeof (mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
                guid.data[15] != k_eSwitchDeviceInfoControllerType_Unknown &&
                guid.data[15] != k_eSwitchDeviceInfoControllerType_ProController &&
@@ -580,19 +580,19 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
         switch (guid.data[15]) {
         case k_eSwitchDeviceInfoControllerType_NESLeft:
         case k_eSwitchDeviceInfoControllerType_NESRight:
-            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,rightshoulder:b10,start:b6,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,rightshoulder:b10,start:b6,", sizeof (mapping_string));
             break;
         case k_eSwitchDeviceInfoControllerType_SNES:
-            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,lefttrigger:a4,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,lefttrigger:a4,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,", sizeof (mapping_string));
             break;
         case k_eSwitchDeviceInfoControllerType_N64:
-            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,misc1:b15,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,misc1:b15,", sizeof (mapping_string));
             break;
         case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
-            SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,rightshoulder:b10,righttrigger:a5,start:b6,misc1:b15,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,rightshoulder:b10,righttrigger:a5,start:b6,misc1:b15,", sizeof (mapping_string));
             break;
         case k_eWiiExtensionControllerType_None:
-            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,start:b6,x:b2,y:b3,", sizeof (mapping_string));
             break;
         case k_eWiiExtensionControllerType_Nunchuk:
         {
@@ -600,84 +600,84 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
             const SDL_bool map_nunchuck_left_side = SDL_TRUE;
 
             if (map_nunchuck_left_side) {
-                SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,lefttrigger:a4,leftx:a0,lefty:a1,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,lefttrigger:a4,leftx:a0,lefty:a1,start:b6,x:b2,y:b3,", sizeof (mapping_string));
             } else {
-                SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,rightshoulder:b9,righttrigger:a4,rightx:a0,righty:a1,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,rightshoulder:b9,righttrigger:a4,rightx:a0,righty:a1,start:b6,x:b2,y:b3,", sizeof (mapping_string));
             }
         } break;
         default:
             if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, SDL_FALSE)) {
                 /* Vertical mode */
                 if (guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
-                    SDL_strlcat(mapping_string, "back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b15,paddle2:b17,paddle4:b19,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b15,paddle2:b17,paddle4:b19,", sizeof (mapping_string));
                 } else {
-                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,paddle1:b16,paddle3:b18,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,paddle1:b16,paddle3:b18,", sizeof (mapping_string));
                 }
             } else {
                 /* Mini gamepad mode */
                 if (guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
-                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,paddle2:b17,paddle4:b19,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,paddle2:b17,paddle4:b19,", sizeof (mapping_string));
                 } else {
-                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,paddle1:b16,paddle3:b18,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,paddle1:b16,paddle3:b18,", sizeof (mapping_string));
                 }
             }
             break;
         }
     } else {
         /* All other gamepads have the standard set of 19 buttons and 6 axes */
-        SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,", sizeof (mapping_string));
 
         if (SDL_IsJoystickXboxSeriesX(vendor, product)) {
             /* XBox Series X Controllers have a share button under the guide button */
-            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "misc1:b15,", sizeof (mapping_string));
         } else if (SDL_IsJoystickXboxOneElite(vendor, product)) {
             /* XBox One Elite Controllers have 4 back paddle buttons */
-            SDL_strlcat(mapping_string, "paddle1:b15,paddle2:b17,paddle3:b16,paddle4:b18,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "paddle1:b15,paddle2:b17,paddle3:b16,paddle4:b18,", sizeof (mapping_string));
         } else if (SDL_IsJoystickSteamController(vendor, product)) {
             /* Steam controllers have 2 back paddle buttons */
-            SDL_strlcat(mapping_string, "paddle1:b16,paddle2:b15,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "paddle1:b16,paddle2:b15,", sizeof (mapping_string));
         } else if (SDL_IsJoystickNintendoSwitchJoyConPair(vendor, product)) {
             /* The Nintendo Switch Joy-Con combined controllers has a share button and paddles */
-            SDL_strlcat(mapping_string, "misc1:b15,paddle1:b16,paddle2:b17,paddle3:b18,paddle4:b19,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "misc1:b15,paddle1:b16,paddle2:b17,paddle3:b18,paddle4:b19,", sizeof (mapping_string));
         } else {
             switch (SDL_GetGamepadTypeFromGUID(guid, NULL)) {
             case SDL_GAMEPAD_TYPE_PS4:
                 /* PS4 controllers have an additional touchpad button */
-                SDL_strlcat(mapping_string, "touchpad:b15,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "touchpad:b15,", sizeof (mapping_string));
                 break;
             case SDL_GAMEPAD_TYPE_PS5:
                 /* PS5 controllers have a microphone button and an additional touchpad button */
-                SDL_strlcat(mapping_string, "touchpad:b15,misc1:b16,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "touchpad:b15,misc1:b16,", sizeof (mapping_string));
                 /* DualSense Edge controllers have paddles */
                 if (SDL_IsJoystickDualSenseEdge(vendor, product)) {
-                    SDL_strlcat(mapping_string, "paddle1:b20,paddle2:b19,paddle3:b18,paddle4:b17,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "paddle1:b20,paddle2:b19,paddle3:b18,paddle4:b17,", sizeof (mapping_string));
                 }
                 break;
             case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
                 /* Nintendo Switch Pro controllers have a screenshot button */
-                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof (mapping_string));
                 break;
             case SDL_GAMEPAD_TYPE_AMAZON_LUNA:
                 /* Amazon Luna Controller has a mic button under the guide button */
-                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof (mapping_string));
                 break;
             case SDL_GAMEPAD_TYPE_GOOGLE_STADIA:
                 /* The Google Stadia controller has a share button and a Google Assistant button */
-                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof (mapping_string));
                 break;
             case SDL_GAMEPAD_TYPE_NVIDIA_SHIELD:
                 /* The NVIDIA SHIELD controller has a share button between back and start buttons */
-                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof (mapping_string));
 
                 if (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
                     /* The original SHIELD controller has a touchpad as well */
-                    SDL_strlcat(mapping_string, "touchpad:b16,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "touchpad:b16,", sizeof (mapping_string));
                 }
                 break;
             default:
                 if (vendor == 0 && product == 0) {
                     /* This is a Bluetooth Nintendo Switch Pro controller */
-                    SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "misc1:b15,", sizeof (mapping_string));
                 }
                 break;
             }
@@ -695,8 +695,8 @@ static GamepadMapping_t *SDL_CreateMappingForRAWINPUTGamepad(SDL_JoystickGUID gu
     SDL_bool existing;
     char mapping_string[1024];
 
-    SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
-    SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,guide:b10,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
+    SDL_strlcpy(mapping_string, "none,*,", sizeof (mapping_string));
+    SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,guide:b10,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,", sizeof (mapping_string));
 
     return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
@@ -713,8 +713,8 @@ static GamepadMapping_t *SDL_CreateMappingForWGIGamepad(SDL_JoystickGUID guid)
         return NULL;
     }
 
-    SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
-    SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:b10,dpdown:b12,dpleft:b13,dpright:b11,leftx:a1,lefty:a0~,rightx:a3,righty:a2~,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
+    SDL_strlcpy(mapping_string, "none,*,", sizeof (mapping_string));
+    SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:b10,dpdown:b12,dpleft:b13,dpright:b11,leftx:a1,lefty:a0~,rightx:a3,righty:a2~,lefttrigger:a4,righttrigger:a5,", sizeof (mapping_string));
 
     return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
@@ -743,16 +743,16 @@ static GamepadMapping_t *SDL_PrivateMatchGamepadMappingForGUID(SDL_JoystickGUID 
     for (mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
         SDL_JoystickGUID mapping_guid;
 
-        if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
+        if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof (mapping->guid)) == 0) {
             continue;
         }
 
-        SDL_memcpy(&mapping_guid, &mapping->guid, sizeof(mapping_guid));
+        SDL_memcpy(&mapping_guid, &mapping->guid, sizeof (mapping_guid));
         if (!match_version) {
             SDL_SetJoystickGUIDVersion(&mapping_guid, 0);
         }
 
-        if (SDL_memcmp(&guid, &mapping_guid, sizeof(guid)) == 0) {
+        if (SDL_memcmp(&guid, &mapping_guid, sizeof (guid)) == 0) {
             Uint16 mapping_crc = 0;
 
             if (match_crc) {
@@ -1019,7 +1019,7 @@ static int SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGa
     }
 
     ++gamepad->num_bindings;
-    gamepad->bindings = (SDL_ExtendedGamepadBind *)SDL_realloc(gamepad->bindings, gamepad->num_bindings * sizeof(*gamepad->bindings));
+    gamepad->bindings = (SDL_ExtendedGamepadBind *)SDL_realloc(gamepad->bindings, gamepad->num_bindings * sizeof (*gamepad->bindings));
     if (!gamepad->bindings) {
         gamepad->num_bindings = 0;
         return SDL_OutOfMemory();
@@ -1056,13 +1056,13 @@ static int SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char 
             SDL_zeroa(szJoystickButton);
 
         } else if (bGameButton) {
-            if (i >= sizeof(szGameButton)) {
+            if (i >= sizeof (szGameButton)) {
                 return SDL_SetError("Button name too large: %s", szGameButton);
             }
             szGameButton[i] = *pchPos;
             i++;
         } else {
-            if (i >= sizeof(szJoystickButton)) {
+            if (i >= sizeof (szJoystickButton)) {
                 return SDL_SetError("Joystick button name too large: %s", szJoystickButton);
             }
             szJoystickButton[i] = *pchPos;
@@ -1091,7 +1091,7 @@ static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t 
     gamepad->num_bindings = 0;
     gamepad->mapping = pGamepadMapping;
     if (gamepad->joystick->naxes != 0 && gamepad->last_match_axis != NULL) {
-        SDL_memset(gamepad->last_match_axis, 0, gamepad->joystick->naxes * sizeof(*gamepad->last_match_axis));
+        SDL_memset(gamepad->last_match_axis, 0, gamepad->joystick->naxes * sizeof (*gamepad->last_match_axis));
     }
 
     SDL_PrivateParseGamepadConfigString(gamepad, pGamepadMapping->mapping);
@@ -1297,7 +1297,7 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, co
         }
         *existing = SDL_TRUE;
     } else {
-        pGamepadMapping = SDL_malloc(sizeof(*pGamepadMapping));
+        pGamepadMapping = SDL_malloc(sizeof (*pGamepadMapping));
         if (pGamepadMapping == NULL) {
             SDL_free(pchName);
             SDL_free(pchMapping);
@@ -1376,13 +1376,13 @@ static void SDL_PrivateAppendToMappingString(char *mapping_string,
     SDL_strlcat(mapping_string, ":", mapping_string_len);
     switch (mapping->kind) {
     case EMappingKind_Button:
-        (void)SDL_snprintf(buffer, sizeof buffer, "b%i", mapping->target);
+        (void)SDL_snprintf(buffer, sizeof (buffer), "b%i", mapping->target);
         break;
     case EMappingKind_Axis:
-        (void)SDL_snprintf(buffer, sizeof buffer, "a%i", mapping->target);
+        (void)SDL_snprintf(buffer, sizeof (buffer), "a%i", mapping->target);
         break;
     case EMappingKind_Hat:
-        (void)SDL_snprintf(buffer, sizeof buffer, "h%i.%i", mapping->target >> 4, mapping->target & 0x0F);
+        (void)SDL_snprintf(buffer, sizeof (buffer), "h%i.%i", mapping->target >> 4, mapping->target & 0x0F);
         break;
     default:
         SDL_assert(SDL_FALSE);
@@ -1401,7 +1401,7 @@ static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *
     char mapping[1024];
 
     /* Remove any commas in the name */
-    SDL_strlcpy(name_string, name, sizeof(name_string));
+    SDL_strlcpy(name_string, name, sizeof (name_string));
     {
         char *spot;
         for (spot = name_string; *spot; ++spot) {
@@ -1410,33 +1410,33 @@ static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *
             }
         }
     }
-    (void)SDL_snprintf(mapping, sizeof mapping, "none,%s,", name_string);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "a", &raw_map->a);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "b", &raw_map->b);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "x", &raw_map->x);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "y", &raw_map->y);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "back", &raw_map->back);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "guide", &raw_map->guide);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "start", &raw_map->start);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "leftstick", &raw_map->leftstick);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "rightstick", &raw_map->rightstick);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "leftshoulder", &raw_map->leftshoulder);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "rightshoulder", &raw_map->rightshoulder);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpup", &raw_map->dpup);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpdown", &raw_map->dpdown);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpleft", &raw_map->dpleft);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpright", &raw_map->dpright);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc1", &raw_map->misc1);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle1", &raw_map->paddle1);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle2", &raw_map->paddle2);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle3", &raw_map->paddle3);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle4", &raw_map->paddle4);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "leftx", &raw_map->leftx);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefty", &raw_map->lefty);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "rightx", &raw_map->rightx);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "righty", &raw_map->righty);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefttrigger", &raw_map->lefttrigger);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "righttrigger", &raw_map->righttrigger);
+    (void)SDL_snprintf(mapping, sizeof (mapping), "none,%s,", name_string);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "a", &raw_map->a);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "b", &raw_map->b);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "x", &raw_map->x);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "y", &raw_map->y);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "back", &raw_map->back);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "guide", &raw_map->guide);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "start", &raw_map->start);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "leftstick", &raw_map->leftstick);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "rightstick", &raw_map->rightstick);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "leftshoulder", &raw_map->leftshoulder);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "rightshoulder", &raw_map->rightshoulder);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "dpup", &raw_map->dpup);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "dpdown", &raw_map->dpdown);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "dpleft", &raw_map->dpleft);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "dpright", &raw_map->dpright);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "misc1", &raw_map->misc1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "paddle1", &raw_map->paddle1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "paddle2", &raw_map->paddle2);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "paddle3", &raw_map->paddle3);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "paddle4", &raw_map->paddle4);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "leftx", &raw_map->leftx);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "lefty", &raw_map->lefty);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "rightx", &raw_map->rightx);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "righty", &raw_map->righty);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "lefttrigger", &raw_map->lefttrigger);
+    SDL_PrivateAppendToMappingString(mapping, sizeof (mapping), "righttrigger", &raw_map->righttrigger);
 
     return SDL_PrivateAddMappingForGUID(guid, mapping, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
@@ -1571,7 +1571,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
             }
 
             len = 0;
-            while (*tmp && *tmp != ',' && *tmp != ':' && len < (sizeof(hint) - 1)) {
+            while (*tmp && *tmp != ',' && *tmp != ':' && len < (sizeof (hint) - 1)) {
                 hint[len++] = *tmp++;
             }
             hint[len] = '\0';
@@ -1671,7 +1671,7 @@ int SDL_GetNumGamepadMappings(void)
         GamepadMapping_t *mapping;
 
         for (mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
-            if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
+            if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof (mapping->guid)) == 0) {
                 continue;
             }
             ++num_mappings;
@@ -1694,7 +1694,7 @@ static char *CreateMappingString(GamepadMapping_t *mapping, SDL_JoystickGUID gui
 
     SDL_AssertJoysticksLocked();
 
-    SDL_GetJoystickGUIDString(guid, pchGUID, sizeof(pchGUID));
+    SDL_GetJoystickGUIDString(guid, pchGUID, sizeof (pchGUID));
 
     /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
     needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
@@ -1746,7 +1746,7 @@ char *SDL_GetGamepadMappingForIndex(int mapping_index)
         GamepadMapping_t *mapping;
 
         for (mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
-            if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
+            if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof (mapping->guid)) == 0) {
                 continue;
             }
             if (mapping_index == 0) {
@@ -1871,7 +1871,7 @@ int SDL_InitGamepadMappings(void)
         pMappingString = s_GamepadMappings[i];
     }
 
-    if (SDL_GetGamepadMappingFilePath(szGamepadMapPath, sizeof(szGamepadMapPath))) {
+    if (SDL_GetGamepadMappingFilePath(szGamepadMapPath, sizeof (szGamepadMapPath))) {
         SDL_AddGamepadMappingsFromFile(szGamepadMapPath);
     }
 
@@ -1923,7 +1923,7 @@ SDL_JoystickID *SDL_GetGamepads(int *count)
             if (SDL_IsGamepad(joysticks[i])) {
                 ++num_gamepads;
             } else {
-                SDL_memmove(&joysticks[i], &joysticks[i+1], (num_gamepads + 1) * sizeof(joysticks[i]));
+                SDL_memmove(&joysticks[i], &joysticks[i+1], (num_gamepads + 1) * sizeof (joysticks[i]));
             }
         }
     }
@@ -2000,7 +2000,7 @@ char *SDL_GetGamepadInstanceMapping(SDL_JoystickID instance_id)
             char pchGUID[33];
             size_t needed;
             guid = SDL_GetJoystickInstanceGUID(instance_id);
-            SDL_GetJoystickGUIDString(guid, pchGUID, sizeof(pchGUID));
+            SDL_GetJoystickGUIDString(guid, pchGUID, sizeof (pchGUID));
             /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
             needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
             retval = (char *)SDL_malloc(needed);
@@ -2181,7 +2181,7 @@ SDL_Gamepad *SDL_OpenGamepad(SDL_JoystickID instance_id)
     }
 
     /* Create and initialize the gamepad */
-    gamepad = (SDL_Gamepad *)SDL_calloc(1, sizeof(*gamepad));
+    gamepad = (SDL_Gamepad *)SDL_calloc(1, sizeof (*gamepad));
     if (gamepad == NULL) {
         SDL_OutOfMemory();
         SDL_UnlockJoysticks();
@@ -2197,7 +2197,7 @@ SDL_Gamepad *SDL_OpenGamepad(SDL_JoystickID instance_id)
     }
 
     if (gamepad->joystick->naxes) {
-        gamepad->last_match_axis = (SDL_ExtendedGamepadBind **)SDL_calloc(gamepad->joystick->naxes, sizeof(*gamepad->last_match_axis));
+        gamepad->last_match_axis = (SDL_ExtendedGamepadBind **)SDL_calloc(gamepad->joystick->naxes, sizeof (*gamepad->last_match_axis));
         if (!gamepad->last_match_axis) {
             SDL_OutOfMemory();
             SDL_CloseJoystick(gamepad->joystick);
@@ -2207,7 +2207,7 @@ SDL_Gamepad *SDL_OpenGamepad(SDL_JoystickID instance_id)
         }
     }
     if (gamepad->joystick->nhats) {
-        gamepad->last_hat_mask = (Uint8 *)SDL_calloc(gamepad->joystick->nhats, sizeof(*gamepad->last_hat_mask));
+        gamepad->last_hat_mask = (Uint8 *)SDL_calloc(gamepad->joystick->nhats, sizeof (*gamepad->last_hat_mask));
         if (!gamepad->last_hat_mask) {
             SDL_OutOfMemory();
             SDL_CloseJoystick(gamepad->joystick);
@@ -2616,7 +2616,7 @@ int SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *d
 
                 if (sensor->type == type) {
                     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
-                    SDL_memcpy(data, sensor->data, num_values * sizeof(*data));
+                    SDL_memcpy(data, sensor->data, num_values * sizeof (*data));
                     SDL_UnlockJoysticks();
                     return 0;
                 }

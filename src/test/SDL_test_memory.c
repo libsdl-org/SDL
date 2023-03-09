@@ -53,7 +53,7 @@ static unsigned int get_allocation_bucket(void *mem)
 {
     CrcUint32 crc_value;
     unsigned int index;
-    SDLTest_Crc32Calc(&s_crc32_context, (CrcUint8 *)&mem, sizeof(mem), &crc_value);
+    SDLTest_Crc32Calc(&s_crc32_context, (CrcUint8 *)&mem, sizeof (mem), &crc_value);
     index = (crc_value & (SDL_arraysize(s_tracked_allocations) - 1));
     return index;
 }
@@ -78,7 +78,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
     if (SDL_IsAllocationTracked(mem)) {
         return;
     }
-    entry = (SDL_tracked_allocation *)SDL_malloc_orig(sizeof(*entry));
+    entry = (SDL_tracked_allocation *)SDL_malloc_orig(sizeof (*entry));
     if (entry == NULL) {
         return;
     }
@@ -104,8 +104,8 @@ static void SDL_TrackAllocation(void *mem, size_t size)
             unw_get_reg(&cursor, UNW_REG_IP, &pc);
             entry->stack[stack_index] = pc;
 
-            if (unw_get_proc_name(&cursor, sym, sizeof(sym), &offset) == 0) {
-                SDL_snprintf(entry->stack_names[stack_index], sizeof(entry->stack_names[stack_index]), "%s+0x%llx", sym, (unsigned long long)offset);
+            if (unw_get_proc_name(&cursor, sym, sizeof (sym), &offset) == 0) {
+                SDL_snprintf(entry->stack_names[stack_index], sizeof (entry->stack_names[stack_index]), "%s+0x%llx", sym, (unsigned long long)offset);
             }
             ++stack_index;
 
@@ -243,30 +243,30 @@ void SDLTest_LogAllocations(void)
     message = tmp;                                         \
     SDL_strlcat(message, line, message_size)
 
-    SDL_strlcpy(line, "Memory allocations:\n", sizeof line);
+    SDL_strlcpy(line, "Memory allocations:\n", sizeof (line));
     ADD_LINE();
-    SDL_strlcpy(line, "Expect 2 allocations from within SDL_GetErrBuf()\n", sizeof line);
+    SDL_strlcpy(line, "Expect 2 allocations from within SDL_GetErrBuf()\n", sizeof (line));
     ADD_LINE();
 
     count = 0;
     total_allocated = 0;
     for (index = 0; index < SDL_arraysize(s_tracked_allocations); ++index) {
         for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
-            (void)SDL_snprintf(line, sizeof line, "Allocation %d: %d bytes\n", count, (int)entry->size);
+            (void)SDL_snprintf(line, sizeof (line), "Allocation %d: %d bytes\n", count, (int)entry->size);
             ADD_LINE();
             /* Start at stack index 1 to skip our tracking functions */
             for (stack_index = 1; stack_index < SDL_arraysize(entry->stack); ++stack_index) {
                 if (!entry->stack[stack_index]) {
                     break;
                 }
-                (void)SDL_snprintf(line, sizeof line, "\t0x%" SDL_PRIx64 ": %s\n", entry->stack[stack_index], entry->stack_names[stack_index]);
+                (void)SDL_snprintf(line, sizeof (line), "\t0x%" SDL_PRIx64 ": %s\n", entry->stack[stack_index], entry->stack_names[stack_index]);
                 ADD_LINE();
             }
             total_allocated += entry->size;
             ++count;
         }
     }
-    (void)SDL_snprintf(line, sizeof line, "Total: %.2f Kb in %d allocations\n", total_allocated / 1024.0, count);
+    (void)SDL_snprintf(line, sizeof (line), "Total: %.2f Kb in %d allocations\n", total_allocated / 1024.0, count);
     ADD_LINE();
 #undef ADD_LINE
 

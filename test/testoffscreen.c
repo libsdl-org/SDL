@@ -61,7 +61,7 @@ static void save_surface_to_bmp(void)
 
     SDL_RenderReadPixels(renderer, NULL, pixel_format, surface->pixels, surface->pitch);
 
-    (void)SDL_snprintf(file, sizeof file, "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
+    (void)SDL_snprintf(file, sizeof (file), "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
                        SDL_GetWindowID(window), ++frame_number);
 
     SDL_SaveBMP(surface, file);

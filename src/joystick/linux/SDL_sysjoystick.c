@@ -130,7 +130,7 @@ static void FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
         unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
 
         /* The first version of the firmware duplicated all the inputs */
-        if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
+        if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof (keybit)), keybit) >= 0) &&
             test_bit(0x2c0, keybit)) {
             /* Change the version to 0x0902, so we can map it differently */
             inpid->version = 0x0902;
@@ -165,10 +165,10 @@ static int GuessIsJoystick(int fd)
     unsigned long relbit[NBITS(REL_MAX)] = { 0 };
     int devclass;
 
-    if ((ioctl(fd, EVIOCGBIT(0, sizeof(evbit)), evbit) < 0) ||
-        (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
-        (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) < 0) ||
-        (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0)) {
+    if ((ioctl(fd, EVIOCGBIT(0, sizeof (evbit)), evbit) < 0) ||
+        (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof (keybit)), keybit) < 0) ||
+        (ioctl(fd, EVIOCGBIT(EV_REL, sizeof (relbit)), relbit) < 0) ||
+        (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof (absbit)), absbit) < 0)) {
         return 0;
     }
 
@@ -187,7 +187,7 @@ static int IsJoystick(const char *path, int fd, char **name_return, SDL_Joystick
     char *name;
     char product_string[128];
 
-    if (ioctl(fd, JSIOCGNAME(sizeof(product_string)), product_string) >= 0) {
+    if (ioctl(fd, JSIOCGNAME(sizeof (product_string)), product_string) >= 0) {
         SDL_zero(inpid);
 #if SDL_USE_LIBUDEV
         SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version);
@@ -202,7 +202,7 @@ static int IsJoystick(const char *path, int fd, char **name_return, SDL_Joystick
             return 0;
         }
 
-        if (ioctl(fd, EVIOCGNAME(sizeof(product_string)), product_string) < 0) {
+        if (ioctl(fd, EVIOCGNAME(sizeof (product_string)), product_string) < 0) {
             return 0;
         }
     }
@@ -552,7 +552,7 @@ static void LINUX_InotifyJoystickDetect(void)
     size_t len;
     char path[PATH_MAX];
 
-    bytes = read(inotify_fd, &buf, sizeof(buf));
+    bytes = read(inotify_fd, &buf, sizeof (buf));
 
     if (bytes > 0) {
         remain = (size_t)bytes;
@@ -658,7 +658,7 @@ static void LINUX_FallbackJoystickDetect(void)
 
             count = scandir("/dev/input", &entries, filter_entries, NULL);
             if (count > 1) {
-                qsort(entries, count, sizeof(*entries), sort_entries);
+                qsort(entries, count, sizeof (*entries), sort_entries);
             }
             for (i = 0; i < count; ++i) {
                 (void)SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
@@ -909,9 +909,9 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
     SDL_AssertJoysticksLocked();
 
     /* See if this device uses the new unified event API */
-    if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
-        (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) >= 0) &&
-        (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) >= 0)) {
+    if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof (keybit)), keybit) >= 0) &&
+        (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof (absbit)), absbit) >= 0) &&
+        (ioctl(fd, EVIOCGBIT(EV_REL, sizeof (relbit)), relbit) >= 0)) {
 
         /* Get the number of buttons, axes, and other thingamajigs */
         for (i = BTN_JOYSTICK; i < KEY_MAX; ++i) {
@@ -1017,13 +1017,13 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
             }
         }
 
-    } else if ((ioctl(fd, JSIOCGBUTTONS, &key_pam_size, sizeof(key_pam_size)) >= 0) &&
-               (ioctl(fd, JSIOCGAXES, &abs_pam_size, sizeof(abs_pam_size)) >= 0)) {
+    } else if ((ioctl(fd, JSIOCGBUTTONS, &key_pam_size, sizeof (key_pam_size)) >= 0) &&
+               (ioctl(fd, JSIOCGAXES, &abs_pam_size, sizeof (abs_pam_size)) >= 0)) {
         size_t len;
 
         joystick->hwdata->classic = SDL_TRUE;
 
-        len = (KEY_MAX - BTN_MISC + 1) * sizeof(*joystick->hwdata->key_pam);
+        len = (KEY_MAX - BTN_MISC + 1) * sizeof (*joystick->hwdata->key_pam);
         joystick->hwdata->key_pam = (Uint16 *)SDL_calloc(1, len);
         if (joystick->hwdata->key_pam) {
             if (ioctl(fd, JSIOCGBTNMAP, joystick->hwdata->key_pam, len) < 0) {
@@ -1044,7 +1044,7 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
             ++joystick->nbuttons;
         }
 
-        len = ABS_CNT * sizeof(*joystick->hwdata->abs_pam);
+        len = ABS_CNT * sizeof (*joystick->hwdata->abs_pam);
         joystick->hwdata->abs_pam = (Uint8 *)SDL_calloc(1, len);
         if (joystick->hwdata->abs_pam) {
             if (ioctl(fd, JSIOCGAXMAP, joystick->hwdata->abs_pam, len) < 0) {
@@ -1090,7 +1090,7 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
         }
     }
 
-    if (ioctl(fd, EVIOCGBIT(EV_FF, sizeof(ffbit)), ffbit) >= 0) {
+    if (ioctl(fd, EVIOCGBIT(EV_FF, sizeof (ffbit)), ffbit) >= 0) {
         if (test_bit(FF_RUMBLE, ffbit)) {
             joystick->hwdata->ff_rumble = SDL_TRUE;
         }
@@ -1113,8 +1113,8 @@ static int PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
     joystick->hwdata->guid = item->guid;
     joystick->hwdata->effect.id = -1;
     joystick->hwdata->m_bSteamController = item->m_bSteamController;
-    SDL_memset(joystick->hwdata->key_map, 0xFF, sizeof(joystick->hwdata->key_map));
-    SDL_memset(joystick->hwdata->abs_map, 0xFF, sizeof(joystick->hwdata->abs_map));
+    SDL_memset(joystick->hwdata->key_map, 0xFF, sizeof (joystick->hwdata->key_map));
+    SDL_memset(joystick->hwdata->abs_map, 0xFF, sizeof (joystick->hwdata->abs_map));
 
     if (item->m_bSteamController) {
         joystick->hwdata->fd = -1;
@@ -1165,7 +1165,7 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     joystick->instance_id = item->device_instance;
     joystick->hwdata = (struct joystick_hwdata *)
-        SDL_calloc(1, sizeof(*joystick->hwdata));
+        SDL_calloc(1, sizeof (*joystick->hwdata));
     if (joystick->hwdata == NULL) {
         return SDL_OutOfMemory();
     }
@@ -1222,7 +1222,7 @@ static int LINUX_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rum
     event.type = EV_FF;
     event.code = joystick->hwdata->effect.id;
     event.value = 1;
-    if (write(joystick->hwdata->fd, &event, sizeof(event)) < 0) {
+    if (write(joystick->hwdata->fd, &event, sizeof (event)) < 0) {
         return SDL_SetError("Couldn't start rumble effect: %s", strerror(errno));
     }
     return 0;
@@ -1387,7 +1387,7 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
 
     /* Poll all buttons */
     SDL_zeroa(keyinfo);
-    if (ioctl(joystick->hwdata->fd, EVIOCGKEY(sizeof(keyinfo)), keyinfo) >= 0) {
+    if (ioctl(joystick->hwdata->fd, EVIOCGKEY(sizeof (keyinfo)), keyinfo) >= 0) {
         for (i = 0; i < KEY_MAX; i++) {
             if (joystick->hwdata->has_key[i]) {
                 const Uint8 value = test_bit(i, keyinfo) ? SDL_PRESSED : SDL_RELEASED;
@@ -1414,8 +1414,8 @@ static void HandleInputEvents(SDL_Joystick *joystick)
         joystick->hwdata->fresh = SDL_FALSE;
     }
 
-    while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
-        len /= sizeof(events[0]);
+    while ((len = read(joystick->hwdata->fd, events, sizeof (events))) > 0) {
+        len /= sizeof (events[0]);
         for (i = 0; i < len; ++i) {
             struct input_event *event = &events[i];
 
@@ -1495,8 +1495,8 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
     SDL_AssertJoysticksLocked();
 
     joystick->hwdata->fresh = SDL_FALSE;
-    while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
-        len /= sizeof(events[0]);
+    while ((len = read(joystick->hwdata->fd, events, sizeof (events))) > 0) {
+        len /= sizeof (events[0]);
         for (i = 0; i < len; ++i) {
             switch (events[i].type) {
             case JS_EVENT_BUTTON:
@@ -1616,7 +1616,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 
     if (item->checked_mapping) {
         if (item->mapping) {
-            SDL_memcpy(out, item->mapping, sizeof(*out));
+            SDL_memcpy(out, item->mapping, sizeof (*out));
 #ifdef DEBUG_GAMEPAD_MAPPING
             SDL_Log("Prior mapping for device %d", device_index);
 #endif
@@ -1628,15 +1628,15 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 
     /* We temporarily open the device to check how it's configured. Make
        a fake SDL_Joystick object to do so. */
-    joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
+    joystick = (SDL_Joystick *)SDL_calloc(sizeof (*joystick), 1);
     if (joystick == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
-    SDL_memcpy(&joystick->guid, &item->guid, sizeof(item->guid));
+    SDL_memcpy(&joystick->guid, &item->guid, sizeof (item->guid));
 
     joystick->hwdata = (struct joystick_hwdata *)
-        SDL_calloc(1, sizeof(*joystick->hwdata));
+        SDL_calloc(1, sizeof (*joystick->hwdata));
     if (joystick->hwdata == NULL) {
         SDL_free(joystick);
         SDL_OutOfMemory();
@@ -1973,9 +1973,9 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     SDL_free(joystick);
 
     /* Cache the mapping for later */
-    item->mapping = (SDL_GamepadMapping *)SDL_malloc(sizeof(*item->mapping));
+    item->mapping = (SDL_GamepadMapping *)SDL_malloc(sizeof (*item->mapping));
     if (item->mapping) {
-        SDL_memcpy(item->mapping, out, sizeof(*out));
+        SDL_memcpy(item->mapping, out, sizeof (*out));
     }
 #ifdef DEBUG_GAMEPAD_MAPPING
     SDL_Log("Generated mapping for device %d", device_index);

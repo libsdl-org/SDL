@@ -121,7 +121,7 @@ static SDL_bool IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter
 {
     DBusMessageIter sub1, sub2, array;
 
-    if (!IBus_EnterVariant(conn, iter, dbus, &sub1, "IBusText", sizeof("IBusText"))) {
+    if (!IBus_EnterVariant(conn, iter, dbus, &sub1, "IBusText", sizeof ("IBusText"))) {
         return SDL_FALSE;
     }
 
@@ -129,7 +129,7 @@ static SDL_bool IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter
     dbus->message_iter_next(&sub1);
     dbus->message_iter_next(&sub1);
 
-    if (!IBus_EnterVariant(conn, &sub1, dbus, &sub2, "IBusAttrList", sizeof("IBusAttrList"))) {
+    if (!IBus_EnterVariant(conn, &sub1, dbus, &sub2, "IBusAttrList", sizeof ("IBusAttrList"))) {
         return SDL_FALSE;
     }
 
@@ -144,7 +144,7 @@ static SDL_bool IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter
 
     while (dbus->message_iter_get_arg_type(&array) == DBUS_TYPE_VARIANT) {
         DBusMessageIter sub;
-        if (IBus_EnterVariant(conn, &array, dbus, &sub, "IBusAttribute", sizeof("IBusAttribute"))) {
+        if (IBus_EnterVariant(conn, &array, dbus, &sub, "IBusAttribute", sizeof ("IBusAttribute"))) {
             Uint32 type;
 
             dbus->message_iter_next(&sub);
@@ -186,7 +186,7 @@ static const char *IBus_GetVariantText(DBusConnection *conn, DBusMessageIter *it
     const char *text = NULL;
     DBusMessageIter sub;
 
-    if (!IBus_EnterVariant(conn, iter, dbus, &sub, "IBusText", sizeof("IBusText"))) {
+    if (!IBus_EnterVariant(conn, iter, dbus, &sub, "IBusText", sizeof ("IBusText"))) {
         return NULL;
     }
 
@@ -231,7 +231,7 @@ static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *
             size_t text_bytes = SDL_strlen(text), i = 0;
 
             while (i < text_bytes) {
-                size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
+                size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof (buf));
                 SDL_SendKeyboardText(buf);
 
                 i += sz;
@@ -274,7 +274,7 @@ static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *
                 size_t cursor = 0;
 
                 do {
-                    const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
+                    const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof (buf));
                     const size_t chars = SDL_utf8strlen(buf);
 
                     SDL_SendEditingText(buf, cursor, chars);
@@ -308,8 +308,8 @@ static char *IBus_ReadAddressFromFile(const char *file_path)
         return NULL;
     }
 
-    while (fgets(addr_buf, sizeof(addr_buf), addr_file)) {
-        if (SDL_strncmp(addr_buf, "IBUS_ADDRESS=", sizeof("IBUS_ADDRESS=") - 1) == 0) {
+    while (fgets(addr_buf, sizeof (addr_buf), addr_file)) {
+        if (SDL_strncmp(addr_buf, "IBUS_ADDRESS=", sizeof ("IBUS_ADDRESS=") - 1) == 0) {
             size_t sz = SDL_strlen(addr_buf);
             if (addr_buf[sz - 1] == '\n') {
                 addr_buf[sz - 1] = 0;
@@ -325,7 +325,7 @@ static char *IBus_ReadAddressFromFile(const char *file_path)
     (void)fclose(addr_file);
 
     if (success) {
-        return SDL_strdup(addr_buf + (sizeof("IBUS_ADDRESS=") - 1));
+        return SDL_strdup(addr_buf + (sizeof ("IBUS_ADDRESS=") - 1));
     } else {
         return NULL;
     }
@@ -394,24 +394,24 @@ static char *IBus_GetDBusAddressFilename(void)
         }
     }
 
-    SDL_memset(config_dir, 0, sizeof(config_dir));
+    SDL_memset(config_dir, 0, sizeof (config_dir));
 
     conf_env = SDL_getenv("XDG_CONFIG_HOME");
     if (conf_env && *conf_env) {
-        SDL_strlcpy(config_dir, conf_env, sizeof(config_dir));
+        SDL_strlcpy(config_dir, conf_env, sizeof (config_dir));
     } else {
         const char *home_env = SDL_getenv("HOME");
         if (home_env == NULL || !*home_env) {
             SDL_free(display);
             return NULL;
         }
-        (void)SDL_snprintf(config_dir, sizeof config_dir, "%s/.config", home_env);
+        (void)SDL_snprintf(config_dir, sizeof (config_dir), "%s/.config", home_env);
     }
 
     key = dbus->get_local_machine_id();
 
-    SDL_memset(file_path, 0, sizeof(file_path));
-    (void)SDL_snprintf(file_path, sizeof file_path, "%s/ibus/bus/%s-%s-%s",
+    SDL_memset(file_path, 0, sizeof (file_path));
+    (void)SDL_snprintf(file_path, sizeof (file_path), "%s/ibus/bus/%s-%s-%s",
                        config_dir, key, host, disp_num);
     dbus->free(key);
     SDL_free(display);
@@ -489,7 +489,7 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
 
     if (result) {
         char matchstr[128];
-        (void)SDL_snprintf(matchstr, sizeof matchstr, "type='signal',interface='%s'", ibus_input_interface);
+        (void)SDL_snprintf(matchstr, sizeof (matchstr), "type='signal',interface='%s'", ibus_input_interface);
         SDL_free(input_ctx_path);
         input_ctx_path = SDL_strdup(path);
         SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, IBus_SetCapabilities, NULL);
@@ -516,7 +516,7 @@ static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus)
 
     if (inotify_fd > 0 && inotify_wd > 0) {
         char buf[1024];
-        ssize_t readsize = read(inotify_fd, buf, sizeof(buf));
+        ssize_t readsize = read(inotify_fd, buf, sizeof (buf));
         if (readsize > 0) {
 
             char *p;
@@ -646,7 +646,7 @@ void SDL_IBus_Quit(void)
 
     SDL_DelHintCallback(SDL_HINT_IME_INTERNAL_EDITING, IBus_SetCapabilities, NULL);
 
-    SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
+    SDL_memset(&ibus_cursor_rect, 0, sizeof (ibus_cursor_rect));
 }
 
 static void IBus_SimpleMessage(const char *method)
@@ -701,7 +701,7 @@ void SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
     SDL_DBusContext *dbus;
 
     if (rect) {
-        SDL_memcpy(&ibus_cursor_rect, rect, sizeof(ibus_cursor_rect));
+        SDL_memcpy(&ibus_cursor_rect, rect, sizeof (ibus_cursor_rect));
     }
 
     focused_win = SDL_GetKeyboardFocus();

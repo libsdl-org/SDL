@@ -460,7 +460,7 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
     /* Atomic functions end */
 
     if (path) {
-        SDL_strlcpy(_this->gl_config.driver_path, path, sizeof(_this->gl_config.driver_path) - 1);
+        SDL_strlcpy(_this->gl_config.driver_path, path, sizeof (_this->gl_config.driver_path) - 1);
     } else {
         *_this->gl_config.driver_path = '\0';
     }
@@ -474,7 +474,7 @@ int SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
         return SDL_SetError("EGL context already created");
     }
 
-    _this->egl_data = (struct SDL_EGL_VideoData *)SDL_calloc(1, sizeof(SDL_EGL_VideoData));
+    _this->egl_data = (struct SDL_EGL_VideoData *)SDL_calloc(1, sizeof (SDL_EGL_VideoData));
     if (!_this->egl_data) {
         return SDL_OutOfMemory();
     }
@@ -718,7 +718,7 @@ static Attribute all_attributes[] = {
 static void dumpconfig(_THIS, EGLConfig config)
 {
     int attr;
-    for (attr = 0; attr < sizeof(all_attributes) / sizeof(Attribute); attr++) {
+    for (attr = 0; attr < sizeof (all_attributes) / sizeof (Attribute); attr++) {
         EGLint value;
         _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, config, all_attributes[attr].attribute, &value);
         SDL_Log("\t%-32s: %10d (0x%08x)\n", all_attributes[attr].name, value, value);
@@ -1043,7 +1043,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
 #endif
 
     if (_this->egl_contextattrib_callback) {
-        const int maxAttribs = sizeof(attribs) / sizeof(attribs[0]);
+        const int maxAttribs = sizeof (attribs) / sizeof (attribs[0]);
         EGLint *userAttribs, *userAttribP;
         userAttribs = _this->egl_contextattrib_callback();
         if (!userAttribs) {
@@ -1267,7 +1267,7 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
 #endif
 
     if (_this->egl_surfaceattrib_callback) {
-        const int maxAttribs = sizeof(attribs) / sizeof(attribs[0]);
+        const int maxAttribs = sizeof (attribs) / sizeof (attribs[0]);
         EGLint *userAttribs, *userAttribP;
         userAttribs = _this->egl_surfaceattrib_callback();
         if (!userAttribs) {

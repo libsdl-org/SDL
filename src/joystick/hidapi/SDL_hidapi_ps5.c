@@ -280,7 +280,7 @@ static SDL_bool HIDAPI_DriverPS5_IsSupportedDevice(SDL_HIDAPI_Device *device, co
 
     if (HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
         if (device && device->dev) {
-            size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof data);
+            size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof (data));
             if (size == 48 && data[2] == 0x28) {
                 /* Supported third party controller */
                 return SDL_TRUE;
@@ -347,7 +347,7 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
     char serial[18];
     SDL_JoystickType joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
 
-    ctx = (SDL_DriverPS5_Context *)SDL_calloc(1, sizeof(*ctx));
+    ctx = (SDL_DriverPS5_Context *)SDL_calloc(1, sizeof (*ctx));
     if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
@@ -372,7 +372,7 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     /* Read a report to see what mode we're in */
-    size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 16);
+    size = SDL_hid_read_timeout(device->dev, data, sizeof (data), 16);
 #ifdef DEBUG_PS5_PROTOCOL
     if (size > 0) {
         HIDAPI_DumpPacket("PS5 first packet: size = %d", data, size);
@@ -404,8 +404,8 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         /* Read the serial number (Bluetooth address in reverse byte order)
            This will also enable enhanced reports over Bluetooth
         */
-        if (ReadFeatureReport(device->dev, k_EPS5FeatureReportIdSerialNumber, data, sizeof(data)) >= 7) {
-            (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+        if (ReadFeatureReport(device->dev, k_EPS5FeatureReportIdSerialNumber, data, sizeof (data)) >= 7) {
+            (void)SDL_snprintf(serial, sizeof (serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                data[6], data[5], data[4], data[3], data[2], data[1]);
         }
 
@@ -417,7 +417,7 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof data);
+    size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof (data));
     /* Get the device capabilities */
     if (device->vendor_id == USB_VENDOR_SONY) {
         ctx->sensors_supported = SDL_TRUE;
@@ -516,7 +516,7 @@ static void HIDAPI_DriverPS5_LoadCalibrationData(SDL_HIDAPI_Device *device)
     int i, size;
     Uint8 data[USB_PACKET_LENGTH];
 
-    size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCalibration, data, sizeof(data));
+    size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCalibration, data, sizeof (data));
     if (size < 35) {
 #ifdef DEBUG_PS5_CALIBRATION
         SDL_Log("Short read of calibration data: %d, ignoring calibration\n", size);
@@ -705,7 +705,7 @@ static int HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_
         effects.ucMicLightMode = 0; /* Bitmask, 0x00 = off, 0x01 = solid, 0x02 = pulse */
     }
 
-    return HIDAPI_DriverPS5_SendJoystickEffect(device, ctx->joystick, &effects, sizeof(effects));
+    return HIDAPI_DriverPS5_SendJoystickEffect(device, ctx->joystick, &effects, sizeof (effects));
 }
 
 static void HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
@@ -750,7 +750,7 @@ static void HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
     data[1] = 0x02; /* Magic value */
 
     if (SDL_HIDAPI_LockRumble() == 0) {
-        SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
+        SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof (data));
     }
 }
 
@@ -954,15 +954,15 @@ static int HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Jo
         offset = 1;
     }
 
-    SDL_memcpy(&data[offset], effect, SDL_min((sizeof(data) - offset), (size_t)size));
+    SDL_memcpy(&data[offset], effect, SDL_min((sizeof (data) - offset), (size_t)size));
 
     if (device->is_bluetooth) {
         /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
         Uint8 ubHdr = 0xA2; /* hidp header is part of the CRC calculation */
         Uint32 unCRC;
         unCRC = SDL_crc32(0, &ubHdr, 1);
-        unCRC = SDL_crc32(unCRC, data, (size_t)(report_size - sizeof(unCRC)));
-        SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
+        unCRC = SDL_crc32(unCRC, data, (size_t)(report_size - sizeof (unCRC)));
+        SDL_memcpy(&data[report_size - sizeof (unCRC)], &unCRC, sizeof (unCRC));
     }
 
     if (SDL_HIDAPI_LockRumble() != 0) {
@@ -1097,7 +1097,7 @@ static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL
     axis = ((int)packet->ucRightJoystickY * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
-    SDL_memcpy(&ctx->last_state.simple, packet, sizeof(ctx->last_state.simple));
+    SDL_memcpy(&ctx->last_state.simple, packet, sizeof (ctx->last_state.simple));
 }
 
 static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacketCommon_t *packet)
@@ -1269,7 +1269,7 @@ static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         }
     }
 
-    SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
+    SDL_memcpy(&ctx->last_state, packet, sizeof (ctx->last_state));
 }
 
 static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacketAlt_t *packet)
@@ -1292,16 +1292,16 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
     }
 
-    SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
+    SDL_memcpy(&ctx->last_state, packet, sizeof (ctx->last_state));
 }
 
 static SDL_bool VerifyCRC(Uint8 *data, int size)
 {
     Uint8 ubHdr = 0xA1; /* hidp header is part of the CRC calculation */
     Uint32 unCRC, unPacketCRC;
-    Uint8 *packetCRC = data + size - sizeof(unPacketCRC);
+    Uint8 *packetCRC = data + size - sizeof (unPacketCRC);
     unCRC = SDL_crc32(0, &ubHdr, 1);
-    unCRC = SDL_crc32(unCRC, data, (size_t)(size - sizeof(unCRC)));
+    unCRC = SDL_crc32(unCRC, data, (size_t)(size - sizeof (unCRC)));
 
     unPacketCRC = LOAD32(packetCRC[0],
                          packetCRC[1],
@@ -1340,7 +1340,7 @@ static SDL_bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
     }
 
-    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
+    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof (data), 0)) > 0) {
 #ifdef DEBUG_PS5_PROTOCOL
         HIDAPI_DumpPacket("PS5 packet: size = %d", data, size);
 #endif

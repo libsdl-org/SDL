@@ -703,13 +703,13 @@ void *SDL_aligned_alloc(size_t alignment, size_t size)
         void *original = SDL_malloc(size);
         if (original) {
             /* Make sure we have enough space to store the original pointer */
-            retval = (Uint8 *)original + sizeof(original);
+            retval = (Uint8 *)original + sizeof (original);
 
             /* Align the pointer we're going to return */
             retval += alignment - (((size_t)retval) % alignment);
 
             /* Store the original pointer right before the returned value */
-            SDL_memcpy(retval - sizeof(original), &original, sizeof(original));
+            SDL_memcpy(retval - sizeof (original), &original, sizeof (original));
         }
     }
     return retval;

@@ -117,17 +117,17 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     }
 
     /* Go through RAWINPUT (WinXP and later) to find HID devices. */
-    if ((GetRawInputDeviceList(NULL, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!raw_device_count)) {
+    if ((GetRawInputDeviceList(NULL, &raw_device_count, sizeof (RAWINPUTDEVICELIST)) == -1) || (!raw_device_count)) {
         return SDL_FALSE; /* oh well. */
     }
 
-    raw_devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * raw_device_count);
+    raw_devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof (RAWINPUTDEVICELIST) * raw_device_count);
     if (raw_devices == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
 
-    if (GetRawInputDeviceList(raw_devices, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
+    if (GetRawInputDeviceList(raw_devices, &raw_device_count, sizeof (RAWINPUTDEVICELIST)) == -1) {
         SDL_free(raw_devices);
         raw_devices = NULL;
         return SDL_FALSE; /* oh well. */
@@ -136,13 +136,13 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     for (i = 0; i < raw_device_count; i++) {
         RID_DEVICE_INFO rdi;
         char devName[MAX_PATH];
-        UINT rdiSize = sizeof(rdi);
+        UINT rdiSize = sizeof (rdi);
         UINT nameSize = SDL_arraysize(devName);
         DEVINST devNode;
         char devVidPidString[32];
         int j;
 
-        rdi.cbSize = sizeof(rdi);
+        rdi.cbSize = sizeof (rdi);
 
         if ((raw_devices[i].dwType != RIM_TYPEHID) ||
             (GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) == ((UINT)-1)) ||
@@ -185,7 +185,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
             continue;
         }
 
-        (void)SDL_snprintf(devVidPidString, sizeof devVidPidString, "VID_%04X&PID_%04X", vendor, product);
+        (void)SDL_snprintf(devVidPidString, sizeof (devVidPidString), "VID_%04X&PID_%04X", vendor, product);
 
         while (CM_Get_Parent(&devNode, devNode, 0) == CR_SUCCESS) {
             char deviceId[MAX_DEVICE_ID_LEN];
@@ -367,7 +367,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             SDL_free(name);
         } else {
             /* New device, add it */
-            WindowsGamingInputControllerState *controllers = SDL_realloc(wgi.controllers, sizeof(wgi.controllers[0]) * (wgi.controller_count + 1));
+            WindowsGamingInputControllerState *controllers = SDL_realloc(wgi.controllers, sizeof (wgi.controllers[0]) * (wgi.controller_count + 1));
             if (controllers) {
                 WindowsGamingInputControllerState *state = &controllers[wgi.controller_count];
                 SDL_JoystickID joystickID = SDL_GetNextJoystickInstanceID();
@@ -430,7 +430,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
 
                 --wgi.controller_count;
                 if (i < wgi.controller_count) {
-                    SDL_memmove(&wgi.controllers[i], &wgi.controllers[i + 1], (wgi.controller_count - i) * sizeof(wgi.controllers[i]));
+                    SDL_memmove(&wgi.controllers[i], &wgi.controllers[i + 1], (wgi.controller_count - i) * sizeof (wgi.controllers[i]));
                 }
 
                 SDL_PrivateJoystickRemoved(joystickID);
@@ -652,7 +652,7 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     struct joystick_hwdata *hwdata;
     boolean wireless = SDL_FALSE;
 
-    hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*hwdata));
+    hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof (*hwdata));
     if (hwdata == NULL) {
         return SDL_OutOfMemory();
     }

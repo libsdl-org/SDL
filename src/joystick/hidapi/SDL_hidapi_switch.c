@@ -330,7 +330,7 @@ static int ReadInput(SDL_DriverSwitch_Context *ctx)
         return 0;
     }
 
-    return SDL_hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
+    return SDL_hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof (ctx->m_rgucReadBuffer), 0);
 }
 
 static int WriteOutput(SDL_DriverSwitch_Context *ctx, const Uint8 *data, int size)
@@ -395,12 +395,12 @@ static SDL_bool ReadProprietaryReply(SDL_DriverSwitch_Context *ctx, ESwitchPropr
 
 static void ConstructSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, Uint8 *pBuf, Uint8 ucLen, SwitchSubcommandOutputPacket_t *outPacket)
 {
-    SDL_memset(outPacket, 0, sizeof(*outPacket));
+    SDL_memset(outPacket, 0, sizeof (*outPacket));
 
     outPacket->commonData.ucPacketType = k_eSwitchOutputReportIDs_RumbleAndSubcommand;
     outPacket->commonData.ucPacketNumber = ctx->m_nCommandNumber;
 
-    SDL_memcpy(outPacket->commonData.rumbleData, ctx->m_RumblePacket.rumbleData, sizeof(ctx->m_RumblePacket.rumbleData));
+    SDL_memcpy(outPacket->commonData.rumbleData, ctx->m_RumblePacket.rumbleData, sizeof (ctx->m_RumblePacket.rumbleData));
 
     outPacket->ucSubcommandID = ucCommandID;
     if (pBuf) {
@@ -441,7 +441,7 @@ static SDL_bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommand
         SwitchSubcommandOutputPacket_t commandPacket;
         ConstructSubcommand(ctx, ucCommandID, pBuf, ucLen, &commandPacket);
 
-        if (!WritePacket(ctx, &commandPacket, sizeof(commandPacket))) {
+        if (!WritePacket(ctx, &commandPacket, sizeof (commandPacket))) {
             continue;
         }
 
@@ -461,7 +461,7 @@ static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprieta
     for (nTries = 1; nTries <= ctx->m_nMaxWriteAttempts; ++nTries) {
         SwitchProprietaryOutputPacket_t packet;
 
-        if ((pBuf == NULL && ucLen > 0) || ucLen > sizeof(packet.rgucProprietaryData)) {
+        if ((pBuf == NULL && ucLen > 0) || ucLen > sizeof (packet.rgucProprietaryData)) {
             return SDL_FALSE;
         }
 
@@ -472,7 +472,7 @@ static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprieta
             SDL_memcpy(packet.rgucProprietaryData, pBuf, ucLen);
         }
 
-        if (!WritePacket(ctx, &packet, sizeof(packet))) {
+        if (!WritePacket(ctx, &packet, sizeof (packet))) {
             continue;
         }
 
@@ -556,7 +556,7 @@ static SDL_bool WriteRumble(SDL_DriverSwitch_Context *ctx)
     /* Refresh the rumble state periodically */
     ctx->m_ulRumbleSent = SDL_GetTicks();
 
-    return WritePacket(ctx, (Uint8 *)&ctx->m_RumblePacket, sizeof(ctx->m_RumblePacket));
+    return WritePacket(ctx, (Uint8 *)&ctx->m_RumblePacket, sizeof (ctx->m_RumblePacket));
 }
 
 static ESwitchDeviceInfoControllerType CalculateControllerType(SDL_DriverSwitch_Context *ctx, ESwitchDeviceInfoControllerType eControllerType)
@@ -594,8 +594,8 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
 
         ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
 
-        for (i = 0; i < sizeof(ctx->m_rgucMACAddress); ++i) {
-            ctx->m_rgucMACAddress[i] = status->rgucMACAddress[sizeof(ctx->m_rgucMACAddress) - i - 1];
+        for (i = 0; i < sizeof (ctx->m_rgucMACAddress); ++i) {
+            ctx->m_rgucMACAddress[i] = status->rgucMACAddress[sizeof (ctx->m_rgucMACAddress) - i - 1];
         }
 
         return SDL_TRUE;
@@ -608,7 +608,7 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
         ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType);
 
         // Bytes 4-9: MAC address (big-endian)
-        SDL_memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof(ctx->m_rgucMACAddress));
+        SDL_memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof (ctx->m_rgucMACAddress));
 
         return SDL_TRUE;
     }
@@ -644,7 +644,7 @@ static SDL_bool BTrySetupUSB(SDL_DriverSwitch_Context *ctx)
 
 static SDL_bool SetVibrationEnabled(SDL_DriverSwitch_Context *ctx, Uint8 enabled)
 {
-    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableVibration, &enabled, sizeof(enabled), NULL);
+    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableVibration, &enabled, sizeof (enabled), NULL);
 }
 static SDL_bool SetInputMode(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
 {
@@ -669,7 +669,7 @@ static SDL_bool SetHomeLED(SDL_DriverSwitch_Context *ctx, Uint8 brightness)
     rgucBuffer[2] = ((ucLedIntensity & 0xF) << 4) | 0x0; /* First cycle LED intensity, 0x0 intensity for second cycle */
     rgucBuffer[3] = (0x0 << 4) | 0x0;                    /* 8ms fade transition to first cycle, 8ms first cycle LED duration */
 
-    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetHomeLight, rgucBuffer, sizeof(rgucBuffer), NULL);
+    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetHomeLight, rgucBuffer, sizeof (rgucBuffer), NULL);
 }
 
 static void SDLCALL SDL_HomeLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -698,7 +698,7 @@ static void UpdateSlotLED(SDL_DriverSwitch_Context *ctx)
         if (ctx->m_bPlayerLights && ctx->m_nPlayerIndex >= 0) {
             led_data = (1 << (ctx->m_nPlayerIndex % 4));
         }
-        WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof(led_data), NULL);
+        WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof (led_data), NULL);
     }
 }
 
@@ -717,7 +717,7 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
 static SDL_bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, SDL_bool enabled)
 {
     Uint8 imu_data = enabled ? 1 : 0;
-    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableIMU, &imu_data, sizeof(imu_data), NULL);
+    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableIMU, &imu_data, sizeof (imu_data), NULL);
 }
 
 static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
@@ -734,7 +734,7 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_
     readUserParams.unAddress = k_unSPIStickUserCalibrationStartOffset;
     readUserParams.ucLength = k_unSPIStickUserCalibrationLength;
 
-    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readUserParams, sizeof(readUserParams), &user_reply)) {
+    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readUserParams, sizeof (readUserParams), &user_reply)) {
         return SDL_FALSE;
     }
 
@@ -742,7 +742,7 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_
     readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
     readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
 
-    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
+    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof (readFactoryParams), &factory_reply)) {
         return SDL_FALSE;
     }
 
@@ -824,7 +824,7 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
     readParams.unAddress = k_unSPIIMUScaleStartOffset;
     readParams.ucLength = k_unSPIIMUScaleLength;
 
-    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply)) {
+    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof (readParams), &reply)) {
         const float accelScale = SDL_STANDARD_GRAVITY / SWITCH_ACCEL_SCALE;
         const float gyroScale = SDL_PI_F / 180.0f / SWITCH_GYRO_SCALE;
 
@@ -853,7 +853,7 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
     /* Check for user calibration data. If it's present and set, it'll override the factory settings */
     readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
     readParams.ucLength = k_unSPIIMUUserScaleLength;
-    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
+    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof (readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
         pIMUScale = reply->spiReadData.rgucReadData;
 
         sAccelRawX = (pIMUScale[3] << 8) | pIMUScale[2];
@@ -966,7 +966,7 @@ static ESwitchDeviceInfoControllerType ReadJoyConControllerType(SDL_HIDAPI_Devic
     int attempts = 0;
 
     /* Create enough of a context to read the controller type from the device */
-    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)SDL_calloc(1, sizeof(*ctx));
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)SDL_calloc(1, sizeof (*ctx));
     if (ctx) {
         ctx->device = device;
         ctx->m_bSyncWrite = SDL_TRUE;
@@ -1214,7 +1214,7 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     }
     device->guid.data[15] = ctx->m_eControllerType;
 
-    (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+    (void)SDL_snprintf(serial, sizeof (serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                        ctx->m_rgucMACAddress[0],
                        ctx->m_rgucMACAddress[1],
                        ctx->m_rgucMACAddress[2],
@@ -1228,7 +1228,7 @@ static SDL_bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSwitch_Context *ctx;
 
-    ctx = (SDL_DriverSwitch_Context *)SDL_calloc(1, sizeof(*ctx));
+    ctx = (SDL_DriverSwitch_Context *)SDL_calloc(1, sizeof (*ctx));
     if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;

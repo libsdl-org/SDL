@@ -133,7 +133,7 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
         is_shanwan = SDL_TRUE;
     }
 
-    ctx = (SDL_DriverPS3_Context *)SDL_calloc(1, sizeof(*ctx));
+    ctx = (SDL_DriverPS3_Context *)SDL_calloc(1, sizeof (*ctx));
     if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
@@ -147,7 +147,7 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
     {
         Uint8 data[] = { 0xf4, 0x42, 0x03, 0x00, 0x00 };
 
-        SendFeatureReport(device->dev, data, sizeof(data));
+        SendFeatureReport(device->dev, data, sizeof (data));
     }
 
     /* Set the controller into report mode over USB */
@@ -208,7 +208,7 @@ static int HIDAPI_DriverPS3_UpdateEffects(SDL_HIDAPI_Device *device)
 
     effects[9] = (0x01 << (1 + (ctx->player_index % 4)));
 
-    return HIDAPI_DriverPS3_SendJoystickEffect(device, ctx->joystick, effects, sizeof(effects));
+    return HIDAPI_DriverPS3_SendJoystickEffect(device, ctx->joystick, effects, sizeof (effects));
 }
 
 static void HIDAPI_DriverPS3_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
@@ -283,9 +283,9 @@ static int HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Jo
     SDL_zeroa(data);
 
     data[0] = k_EPS3ReportIdEffects;
-    report_size = sizeof(data);
+    report_size = sizeof (data);
     offset = 1;
-    SDL_memcpy(&data[offset], effect, SDL_min((sizeof(data) - offset), (size_t)size));
+    SDL_memcpy(&data[offset], effect, SDL_min((sizeof (data) - offset), (size_t)size));
 
     if (SDL_HIDAPI_SendRumble(device, data, report_size) != report_size) {
         return SDL_SetError("Couldn't send rumble packet");
@@ -383,7 +383,7 @@ static void HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_D
     axis = ((int)data[1] * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
-    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof (ctx->last_state)));
 }
 
 static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
@@ -471,7 +471,7 @@ static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_Drive
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
     }
 
-    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof (ctx->last_state)));
 }
 
 static SDL_bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
@@ -487,7 +487,7 @@ static SDL_bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
-    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
+    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof (data), 0)) > 0) {
 #ifdef DEBUG_PS3_PROTOCOL
         HIDAPI_DumpPacket("PS3 packet: size = %d", data, size);
 #endif
@@ -583,7 +583,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
 
     if (HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
         if (device && device->dev) {
-            size = ReadFeatureReport(device->dev, 0x03, data, sizeof data);
+            size = ReadFeatureReport(device->dev, 0x03, data, sizeof (data));
             if (size == 8 && data[2] == 0x26) {
                 /* Supported third party controller */
                 return SDL_TRUE;
@@ -602,7 +602,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx;
 
-    ctx = (SDL_DriverPS3_Context *)SDL_calloc(1, sizeof(*ctx));
+    ctx = (SDL_DriverPS3_Context *)SDL_calloc(1, sizeof (*ctx));
     if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
@@ -787,7 +787,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystic
         }
     }
 
-    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof (ctx->last_state)));
 }
 
 static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
@@ -903,7 +903,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
         }
     }
 
-    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof (ctx->last_state)));
 }
 
 static SDL_bool HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *device)
@@ -919,7 +919,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *devic
         return SDL_FALSE;
     }
 
-    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
+    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof (data), 0)) > 0) {
 #ifdef DEBUG_PS3_PROTOCOL
         HIDAPI_DumpPacket("PS3 packet: size = %d", data, size);
 #endif

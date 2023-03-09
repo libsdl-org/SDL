@@ -654,7 +654,7 @@ SDL_CreateRW(void)
 {
     SDL_RWops *area;
 
-    area = (SDL_RWops *)SDL_malloc(sizeof *area);
+    area = (SDL_RWops *)SDL_malloc(sizeof (*area));
     if (area == NULL) {
         SDL_OutOfMemory();
     } else {
@@ -780,7 +780,7 @@ Uint8 SDL_ReadU8(SDL_RWops *src)
 {
     Uint8 value = 0;
 
-    SDL_RWread(src, &value, sizeof(value));
+    SDL_RWread(src, &value, sizeof (value));
     return value;
 }
 
@@ -789,7 +789,7 @@ SDL_ReadLE16(SDL_RWops *src)
 {
     Uint16 value = 0;
 
-    SDL_RWread(src, &value, sizeof(value));
+    SDL_RWread(src, &value, sizeof (value));
     return SDL_SwapLE16(value);
 }
 
@@ -798,7 +798,7 @@ SDL_ReadBE16(SDL_RWops *src)
 {
     Uint16 value = 0;
 
-    SDL_RWread(src, &value, sizeof(value));
+    SDL_RWread(src, &value, sizeof (value));
     return SDL_SwapBE16(value);
 }
 
@@ -807,7 +807,7 @@ SDL_ReadLE32(SDL_RWops *src)
 {
     Uint32 value = 0;
 
-    SDL_RWread(src, &value, sizeof(value));
+    SDL_RWread(src, &value, sizeof (value));
     return SDL_SwapLE32(value);
 }
 
@@ -816,7 +816,7 @@ SDL_ReadBE32(SDL_RWops *src)
 {
     Uint32 value = 0;
 
-    SDL_RWread(src, &value, sizeof(value));
+    SDL_RWread(src, &value, sizeof (value));
     return SDL_SwapBE32(value);
 }
 
@@ -825,7 +825,7 @@ SDL_ReadLE64(SDL_RWops *src)
 {
     Uint64 value = 0;
 
-    SDL_RWread(src, &value, sizeof(value));
+    SDL_RWread(src, &value, sizeof (value));
     return SDL_SwapLE64(value);
 }
 
@@ -834,54 +834,54 @@ SDL_ReadBE64(SDL_RWops *src)
 {
     Uint64 value = 0;
 
-    SDL_RWread(src, &value, sizeof(value));
+    SDL_RWread(src, &value, sizeof (value));
     return SDL_SwapBE64(value);
 }
 
 size_t
 SDL_WriteU8(SDL_RWops *dst, Uint8 value)
 {
-    return (SDL_RWwrite(dst, &value, sizeof(value)) == sizeof(value)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &value, sizeof (value)) == sizeof (value)) ? 1 : 0;
 }
 
 size_t
 SDL_WriteLE16(SDL_RWops *dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapLE16(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof (swapped)) == sizeof (swapped)) ? 1 : 0;
 }
 
 size_t
 SDL_WriteBE16(SDL_RWops *dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapBE16(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof (swapped)) == sizeof (swapped)) ? 1 : 0;
 }
 
 size_t
 SDL_WriteLE32(SDL_RWops *dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapLE32(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof (swapped)) == sizeof (swapped)) ? 1 : 0;
 }
 
 size_t
 SDL_WriteBE32(SDL_RWops *dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapBE32(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof (swapped)) == sizeof (swapped)) ? 1 : 0;
 }
 
 size_t
 SDL_WriteLE64(SDL_RWops *dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapLE64(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof (swapped)) == sizeof (swapped)) ? 1 : 0;
 }
 
 size_t
 SDL_WriteBE64(SDL_RWops *dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapBE64(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof (swapped)) == sizeof (swapped)) ? 1 : 0;
 }

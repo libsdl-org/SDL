@@ -172,7 +172,7 @@ static void NETBSDAUDIO_FlushCapture(_THIS)
 
     remain = (size_t)(info.record.samples * (SDL_AUDIO_BITSIZE(this->spec.format) / 8));
     while (remain > 0) {
-        const size_t len = SDL_min(sizeof(buf), remain);
+        const size_t len = SDL_min(sizeof (buf), remain);
         const int br = read(this->hidden->audio_fd, buf, len);
         if (br <= 0) {
             return; /* oh well. */
@@ -209,7 +209,7 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc((sizeof *this->hidden));
+        SDL_malloc(sizeof (*this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }

@@ -93,7 +93,7 @@ static int N3DSAUDIO_OpenDevice(_THIS, const char *devname)
     Result ndsp_init_res;
     Uint8 *data_vaddr;
     float mix[12];
-    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof *this->hidden);
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof (*this->hidden));
 
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
@@ -157,12 +157,12 @@ static int N3DSAUDIO_OpenDevice(_THIS, const char *devname)
     ndspChnSetRate(0, this->spec.freq);
     ndspChnSetFormat(0, this->hidden->format);
 
-    SDL_memset(mix, 0, sizeof(mix));
+    SDL_memset(mix, 0, sizeof (mix));
     mix[0] = 1.0;
     mix[1] = 1.0;
     ndspChnSetMix(0, mix);
 
-    SDL_memset(this->hidden->waveBuf, 0, sizeof(ndspWaveBuf) * NUM_BUFFERS);
+    SDL_memset(this->hidden->waveBuf, 0, sizeof (ndspWaveBuf) * NUM_BUFFERS);
 
     for (unsigned i = 0; i < NUM_BUFFERS; i++) {
         this->hidden->waveBuf[i].data_vaddr = data_vaddr;
@@ -238,7 +238,7 @@ static void N3DSAUDIO_CloseDevice(_THIS)
 
     if (!this->hidden->isCancelled) {
         ndspChnReset(0);
-        memset(this->hidden->waveBuf, 0, sizeof(ndspWaveBuf) * NUM_BUFFERS);
+        memset(this->hidden->waveBuf, 0, sizeof (ndspWaveBuf) * NUM_BUFFERS);
         CondVar_Broadcast(&this->hidden->cv);
     }
 

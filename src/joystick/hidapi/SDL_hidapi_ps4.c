@@ -185,7 +185,7 @@ static SDL_bool HIDAPI_DriverPS4_IsSupportedDevice(SDL_HIDAPI_Device *device, co
 
     if (HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
         if (device && device->dev) {
-            size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof data);
+            size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof (data));
             if (size == 48 && data[2] == 0x27) {
                 /* Supported third party controller */
                 return SDL_TRUE;
@@ -235,7 +235,7 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     char serial[18];
     SDL_JoystickType joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
 
-    ctx = (SDL_DriverPS4_Context *)SDL_calloc(1, sizeof(*ctx));
+    ctx = (SDL_DriverPS4_Context *)SDL_calloc(1, sizeof (*ctx));
     if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
@@ -262,9 +262,9 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     /* Check for type of connection */
     ctx->is_dongle = (device->vendor_id == USB_VENDOR_SONY && device->product_id == USB_PRODUCT_SONY_DS4_DONGLE);
     if (ctx->is_dongle) {
-        size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
+        size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof (data));
         if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-            (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+            (void)SDL_snprintf(serial, sizeof (serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                data[6], data[5], data[4], data[3], data[2], data[1]);
         }
         device->is_bluetooth = SDL_FALSE;
@@ -275,9 +275,9 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
 
     } else if (device->vendor_id == USB_VENDOR_SONY) {
         /* This will fail if we're on Bluetooth */
-        size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
+        size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof (data));
         if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-            (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+            (void)SDL_snprintf(serial, sizeof (serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                data[6], data[5], data[4], data[3], data[2], data[1]);
             device->is_bluetooth = SDL_FALSE;
             ctx->enhanced_mode = SDL_TRUE;
@@ -285,7 +285,7 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
             device->is_bluetooth = SDL_TRUE;
 
             /* Read a report to see if we're in enhanced mode */
-            size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 16);
+            size = SDL_hid_read_timeout(device->dev, data, sizeof (data), 16);
 #ifdef DEBUG_PS4_PROTOCOL
             if (size > 0) {
                 HIDAPI_DumpPacket("PS4 first packet: size = %d", data, size);
@@ -308,7 +308,7 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     SDL_Log("PS4 dongle = %s, bluetooth = %s\n", ctx->is_dongle ? "TRUE" : "FALSE", device->is_bluetooth ? "TRUE" : "FALSE");
 #endif
 
-    size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof data);
+    size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof (data));
     /* Get the device capabilities */
     if (size == 48 && data[2] == 0x27) {
         Uint8 capabilities = data[4];
@@ -426,7 +426,7 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
 
     for (tries = 0; tries < 5; ++tries) {
         /* For Bluetooth controllers, this report switches them into advanced report mode */
-        size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdGyroCalibration_USB, data, sizeof(data));
+        size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdGyroCalibration_USB, data, sizeof (data));
         if (size < 35) {
 #ifdef DEBUG_PS4_CALIBRATION
             SDL_Log("Short read of calibration data: %d, ignoring calibration\n", size);
@@ -435,7 +435,7 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
         }
 
         if (device->is_bluetooth) {
-            size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdGyroCalibration_BT, data, sizeof(data));
+            size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdGyroCalibration_BT, data, sizeof (data));
             if (size < 35) {
 #ifdef DEBUG_PS4_CALIBRATION
                 SDL_Log("Short read of calibration data: %d, ignoring calibration\n", size);
@@ -598,7 +598,7 @@ static int HIDAPI_DriverPS4_UpdateEffects(SDL_HIDAPI_Device *device)
             SetLedsForPlayerIndex(&effects, ctx->player_index);
         }
     }
-    return HIDAPI_DriverPS4_SendJoystickEffect(device, ctx->joystick, &effects, sizeof(effects));
+    return HIDAPI_DriverPS4_SendJoystickEffect(device, ctx->joystick, &effects, sizeof (effects));
 }
 
 static void HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
@@ -612,7 +612,7 @@ static void HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
     data[1] = 0xC0; /* Magic value HID + CRC */
 
     if (SDL_HIDAPI_LockRumble() == 0) {
-        SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
+        SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof (data));
     }
 }
 
@@ -784,15 +784,15 @@ static int HIDAPI_DriverPS4_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Jo
         offset = 4;
     }
 
-    SDL_memcpy(&data[offset], effect, SDL_min((sizeof(data) - offset), (size_t)size));
+    SDL_memcpy(&data[offset], effect, SDL_min((sizeof (data) - offset), (size_t)size));
 
     if (device->is_bluetooth) {
         /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
         Uint8 ubHdr = 0xA2; /* hidp header is part of the CRC calculation */
         Uint32 unCRC;
         unCRC = SDL_crc32(0, &ubHdr, 1);
-        unCRC = SDL_crc32(unCRC, data, (size_t)(report_size - sizeof(unCRC)));
-        SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
+        unCRC = SDL_crc32(unCRC, data, (size_t)(report_size - sizeof (unCRC)));
+        SDL_memcpy(&data[report_size - sizeof (unCRC)], &unCRC, sizeof (unCRC));
     }
 
     if (SDL_HIDAPI_SendRumble(device, data, report_size) != report_size) {
@@ -980,16 +980,16 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, data, 3);
     }
 
-    SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
+    SDL_memcpy(&ctx->last_state, packet, sizeof (ctx->last_state));
 }
 
 static SDL_bool VerifyCRC(Uint8 *data, int size)
 {
     Uint8 ubHdr = 0xA1; /* hidp header is part of the CRC calculation */
     Uint32 unCRC, unPacketCRC;
-    Uint8 *packetCRC = data + size - sizeof(unPacketCRC);
+    Uint8 *packetCRC = data + size - sizeof (unPacketCRC);
     unCRC = SDL_crc32(0, &ubHdr, 1);
-    unCRC = SDL_crc32(unCRC, data, (size_t)(size - sizeof(unCRC)));
+    unCRC = SDL_crc32(unCRC, data, (size_t)(size - sizeof (unCRC)));
 
     unPacketCRC = LOAD32(packetCRC[0],
                          packetCRC[1],
@@ -1049,7 +1049,7 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
         joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
     }
 
-    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
+    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof (data), 0)) > 0) {
 #ifdef DEBUG_PS4_PROTOCOL
         HIDAPI_DumpPacket("PS4 packet: size = %d", data, size);
 #endif
@@ -1119,9 +1119,9 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
         } else {
             if (device->num_joysticks == 0) {
                 char serial[18];
-                size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
+                size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof (data));
                 if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-                    (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                    (void)SDL_snprintf(serial, sizeof (serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                        data[6], data[5], data[4], data[3], data[2], data[1]);
                     HIDAPI_SetDeviceSerial(device, serial);
                 }
