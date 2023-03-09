@@ -36,6 +36,7 @@
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
+#include "../../core/linux/SDL_system_theme.h"
 
 #include <SDL3/SDL_syswm.h>
 
@@ -1683,6 +1684,10 @@ int X11_WaitEventTimeout(_THIS, Sint64 timeoutNS)
         SDL_IME_PumpEvents();
     }
 #endif
+
+#ifdef SDL_USE_LIBDBUS
+    SDL_SystemTheme_PumpEvents();
+#endif
     return 1;
 }
 
@@ -1723,6 +1728,10 @@ void X11_PumpEvents(_THIS)
     if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
         SDL_IME_PumpEvents();
     }
+#endif
+
+#ifdef SDL_USE_LIBDBUS
+    SDL_SystemTheme_PumpEvents();
 #endif
 
     /* FIXME: Only need to do this when there are pending focus changes */
