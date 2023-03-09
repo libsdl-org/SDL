@@ -8,6 +8,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#include <math.h>
 #include <stdio.h>
 
 #include <SDL3/SDL.h>
@@ -989,6 +990,153 @@ static int audio_openCloseAudioDeviceConnected(void *arg)
     return TEST_COMPLETED;
 }
 
+static double sine_wave_sample(const Sint64 idx, const Sint64 rate, const Sint64 freq, const double phase)
+{
+  /* Using integer modulo to avoid precision loss caused by large floating
+   * point numbers. Sint64 is needed for the large integer multiplication.
+   * The integers are assumed to be non-negative so that modulo is always
+   * non-negative.
+   *   sin(i / rate * freq * 2 * PI + phase)
+   * = sin(mod(i / rate * freq, 1) * 2 * PI + phase)
+   * = sin(mod(i * freq, rate) / rate * 2 * PI + phase) */
+  return SDL_sin(((double)(idx * freq % rate)) / ((double)rate) * (SDL_PI_D * 2) + phase);
+}
+
+/**
+ * \brief Check signal-to-noise ratio and maximum error of audio resampling.
+ *
+ * \sa https://wiki.libsdl.org/SDL_CreateAudioStream
+ * \sa https://wiki.libsdl.org/SDL_DestroyAudioStream
+ * \sa https://wiki.libsdl.org/SDL_PutAudioStreamData
+ * \sa https://wiki.libsdl.org/SDL_FlushAudioStream
+ * \sa https://wiki.libsdl.org/SDL_GetAudioStreamData
+ */
+static int audio_resampleLoss(void *arg)
+{
+  /* Note: always test long input time (>= 5s from experience) in some test
+   * cases because an improper implementation may suffer from low resampling
+   * precision with long input due to e.g. doing subtraction with large floats. */
+  struct test_spec_t {
+    int time;
+    int freq;
+    double phase;
+    int rate_in;
+    int rate_out;
+    double signal_to_noise;
+    double max_error;
+  } test_specs[] = {
+    { 50, 440, 0, 44100, 48000, 60, 0.0025 },
+    { 50, 5000, SDL_PI_D / 2, 20000, 10000, 65, 0.0010 },
+    { 0 }
+  };
+
+  int spec_idx = 0;
+
+  for (spec_idx = 0; test_specs[spec_idx].time > 0; ++spec_idx) {
+    const struct test_spec_t *spec = &test_specs[spec_idx];
+    const int frames_in = spec->time * spec->rate_in;
+    const int frames_target = spec->time * spec->rate_out;
+    const int len_in = frames_in * (int)sizeof(float);
+    const int len_target = frames_target * (int)sizeof(float);
+
+    Uint64 tick_beg = 0;
+    Uint64 tick_end = 0;
+    int i = 0;
+    int ret = 0;
+    SDL_AudioStream *stream = NULL;
+    float *buf_in = NULL;
+    float *buf_out = NULL;
+    int len_out = 0;
+    double max_error = 0;
+    double sum_squared_error = 0;
+    double sum_squared_value = 0;
+    double signal_to_noise = 0;
+
+    SDLTest_AssertPass("Test resampling of %i s %i Hz %f phase sine wave from sampling rate of %i Hz to %i Hz",
+                       spec->time, spec->freq, spec->phase, spec->rate_in, spec->rate_out);
+
+    stream = SDL_CreateAudioStream(AUDIO_F32, 1, spec->rate_in, AUDIO_F32, 1, spec->rate_out);
+    SDLTest_AssertPass("Call to SDL_CreateAudioStream(AUDIO_F32, 1, %i, AUDIO_F32, 1, %i)", spec->rate_in, spec->rate_out);
+    SDLTest_AssertCheck(stream != NULL, "Expected SDL_CreateAudioStream to succeed.");
+    if (stream == NULL) {
+      return TEST_ABORTED;
+    }
+
+    buf_in = (float *)SDL_malloc(len_in);
+    SDLTest_AssertCheck(buf_in != NULL, "Expected input buffer to be created.");
+    if (buf_in == NULL) {
+      SDL_DestroyAudioStream(stream);
+      return TEST_ABORTED;
+    }
+
+    for (i = 0; i < frames_in; ++i) {
+      *(buf_in + i) = (float)sine_wave_sample(i, spec->rate_in, spec->freq, spec->phase);
+    }
+
+    tick_beg = SDL_GetPerformanceCounter();
+
+    ret = SDL_PutAudioStreamData(stream, buf_in, len_in);
+    SDLTest_AssertPass("Call to SDL_PutAudioStreamData(stream, buf_in, %i)", len_in);
+    SDLTest_AssertCheck(ret == 0, "Expected SDL_PutAudioStreamData to succeed.");
+    SDL_free(buf_in);
+    if (ret != 0) {
+      SDL_DestroyAudioStream(stream);
+      return TEST_ABORTED;
+    }
+
+    ret = SDL_FlushAudioStream(stream);
+    SDLTest_AssertPass("Call to SDL_FlushAudioStream(stream)");
+    SDLTest_AssertCheck(ret == 0, "Expected SDL_FlushAudioStream to succeed");
+    if (ret != 0) {
+      SDL_DestroyAudioStream(stream);
+      return TEST_ABORTED;
+    }
+
+    buf_out = (float *)SDL_malloc(len_target);
+    SDLTest_AssertCheck(buf_out != NULL, "Expected output buffer to be created.");
+    if (buf_out == NULL) {
+      SDL_DestroyAudioStream(stream);
+      return TEST_ABORTED;
+    }
+
+    len_out = SDL_GetAudioStreamData(stream, buf_out, len_target);
+    SDLTest_AssertPass("Call to SDL_GetAudioStreamData(stream, buf_out, %i)", len_target);
+    /** !!! FIXME: SDL_AudioStream does not return output of the same length as
+     ** !!! FIXME: the input even if SDL_FlushAudioStream is called. */
+    SDLTest_AssertCheck(len_out <= len_target, "Expected output length to be no larger than %i, got %i.",
+                        len_target, len_out);
+    SDL_DestroyAudioStream(stream);
+    if (len_out > len_target) {
+      SDL_free(buf_out);
+      return TEST_ABORTED;
+    }
+
+    tick_end = SDL_GetPerformanceCounter();
+    SDLTest_Log("Resampling used %f seconds.", ((double)(tick_end - tick_beg)) / SDL_GetPerformanceFrequency());
+
+    for (i = 0; i < len_out / (int)sizeof(float); ++i) {
+        const float output = *(buf_out + i);
+        const double target = sine_wave_sample(i, spec->rate_out, spec->freq, spec->phase);
+        const double error = SDL_fabs(target - output);
+        max_error = SDL_max(max_error, error);
+        sum_squared_error += error * error;
+        sum_squared_value += target * target;
+    }
+    SDL_free(buf_out);
+    signal_to_noise = 10 * SDL_log10(sum_squared_value / sum_squared_error); /* decibel */
+    SDLTest_AssertCheck(isfinite(sum_squared_value), "Sum of squared target should be finite.");
+    SDLTest_AssertCheck(isfinite(sum_squared_error), "Sum of squared error should be finite.");
+    /* Infinity is theoretically possible when there is very little to no noise */
+    SDLTest_AssertCheck(!isnan(signal_to_noise), "Signal-to-noise ratio should not be NaN.");
+    SDLTest_AssertCheck(isfinite(max_error), "Maximum conversion error should be finite.");
+    SDLTest_AssertCheck(signal_to_noise >= spec->signal_to_noise, "Conversion signal-to-noise ratio %f dB should be no less than %f dB.",
+                        signal_to_noise, spec->signal_to_noise);
+    SDLTest_AssertCheck(max_error <= spec->max_error, "Maximum conversion error %f should be no more than %f.",
+                        max_error, spec->max_error);
+  }
+
+  return TEST_COMPLETED;
+}
 /* ================= Test Case References ================== */
 
 /* Audio test cases */
@@ -1058,11 +1206,15 @@ static const SDLTest_TestCaseReference audioTest15 = {
     audio_pauseUnpauseAudio, "audio_pauseUnpauseAudio", "Pause and Unpause audio for various audio specs while testing callback.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference audioTest16 = {
+    audio_resampleLoss, "audio_resampleLoss", "Check signal-to-noise ratio and maximum error of audio resampling.", TEST_ENABLED
+};
+
 /* Sequence of Audio test cases */
 static const SDLTest_TestCaseReference *audioTests[] = {
     &audioTest1, &audioTest2, &audioTest3, &audioTest4, &audioTest5, &audioTest6,
     &audioTest7, &audioTest8, &audioTest9, &audioTest10, &audioTest11,
-    &audioTest12, &audioTest13, &audioTest14, &audioTest15, NULL
+    &audioTest12, &audioTest13, &audioTest14, &audioTest15, &audioTest16, NULL
 };
 
 /* Audio test suite (global) */
