@@ -36,7 +36,7 @@ This will build the static and dynamic versions of SDL in the `~/build` director
 Installation can be done using:
 
 ```sh
-cmake --install .        # '--install' requires CMake 3.15, or newer
+cmake --install . --prefix=`pwd`        # '--install' requires CMake 3.15, or newer
 ```
 
 ## Including SDL in your project
