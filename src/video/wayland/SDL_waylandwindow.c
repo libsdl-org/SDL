@@ -266,8 +266,12 @@ static void ConfigureWindowGeometry(SDL_Window *window)
             } else {
                 UnsetDrawSurfaceViewport(window);
 
-                /* Round to the next integer in case of a fractional value. */
-                wl_surface_set_buffer_scale(data->surface, (int32_t)SDL_ceilf(data->scale_factor));
+                if (!FullscreenModeEmulation(window)) {
+                    /* Round to the next integer in case of a fractional value. */
+                    wl_surface_set_buffer_scale(data->surface, (int32_t)SDL_ceilf(data->scale_factor));
+                } else {
+                    wl_surface_set_buffer_scale(data->surface, 1);
+                }
             }
 
             data->window_width = window->w;
