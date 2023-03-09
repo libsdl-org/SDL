@@ -177,14 +177,18 @@ SDL_ConvertMonoToStereo_SSE(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 
 #include "SDL_audio_resampler_filter.h"
 
-static int
-ResamplerPadding(const int inrate, const int outrate)
+static Sint32
+ResamplerPadding(const Sint32 inrate, const Sint32 outrate)
 {
+    /* This function uses integer arithmetics to avoid precision loss caused
+     * by large floating point numbers. Sint32 is needed for the large number
+     * multiplication. The integers are assumed to be non-negative so that
+     * division rounds by truncation. */
     if (inrate == outrate) {
         return 0;
     }
     if (inrate > outrate) {
-        return (int) SDL_ceilf(((float) (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate) / ((float) outrate)));
+        return (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate + outrate - 1) / outrate;
     }
     return RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
 }
@@ -196,57 +200,59 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
                         const float *inbuf, const int inbuflen,
                         float *outbuf, const int outbuflen)
 {
-    /* Note that this used to be double, but it looks like we can get by with float in most cases at
-       almost twice the speed on Intel processors, and orders of magnitude more
-       on CPUs that need a software fallback for double calculations. */
-    typedef float ResampleFloatType;
-
-    const ResampleFloatType finrate = (ResampleFloatType) inrate;
-    const ResampleFloatType ratio = ((float) outrate) / ((float) inrate);
+    /* This function uses integer arithmetics to avoid precision loss caused
+     * by large floating point numbers. For some operations, Sint32 or Sint64
+     * are needed for the large number multiplications. The input integers are
+     * assumed to be non-negative so that division rounds by truncation and
+     * modulo is always non-negative. Note that the operator order is important
+     * for these integer divisions. */
     const int paddinglen = ResamplerPadding(inrate, outrate);
     const int framelen = chans * (int)sizeof (float);
     const int inframes = inbuflen / framelen;
-    const int wantedoutframes = (int) ((inbuflen / framelen) * ratio);  /* outbuflen isn't total to write, it's total available. */
+    /* outbuflen isn't total to write, it's total available. */
+    const int wantedoutframes = ((Sint64) inframes) * outrate / inrate;
     const int maxoutframes = outbuflen / framelen;
     const int outframes = SDL_min(wantedoutframes, maxoutframes);
-    ResampleFloatType outtime = 0.0f;
     float *dst = outbuf;
     int i, j, chan;
 
     for (i = 0; i < outframes; i++) {
-        const int srcindex = (int) (outtime * inrate);
-        const ResampleFloatType intime = ((ResampleFloatType) srcindex) / finrate;
-        const ResampleFloatType innexttime = ((ResampleFloatType) (srcindex + 1)) / finrate;
-        const ResampleFloatType indeltatime = innexttime - intime;
-        const ResampleFloatType interpolation1 = (indeltatime == 0.0f) ? 1.0f : (1.0f - ((innexttime - outtime) / indeltatime));
-        const int filterindex1 = (int) (interpolation1 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
-        const ResampleFloatType interpolation2 = 1.0f - interpolation1;
-        const int filterindex2 = (int) (interpolation2 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
+        const int srcindex = ((Sint64) i) * inrate / outrate;
+        /* Calculating the following way avoids subtraction or modulo of large
+         * floats which have low result precision.
+         *   interpolation1
+         * = (i / outrate * inrate) - floor(i / outrate * inrate)
+         * = mod(i / outrate * inrate, 1)
+         * = mod(i * inrate, outrate) / outrate */
+        const int srcfraction = ((Sint64) i) * inrate % outrate;
+        const float interpolation1 = ((float) srcfraction) / ((float) outrate);
+        const int filterindex1 = ((Sint32) srcfraction) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING / outrate;
+        const float interpolation2 = 1.0f - interpolation1;
+        const int filterindex2 = ((Sint32) (outrate - srcfraction)) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING / outrate;
 
         for (chan = 0; chan < chans; chan++) {
             float outsample = 0.0f;
 
             /* do this twice to calculate the sample, once for the "left wing" and then same for the right. */
             for (j = 0; (filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
+                const int filt_ind = filterindex1 + j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
                 const int srcframe = srcindex - j;
                 /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
                 const float insample = (srcframe < 0) ? lpadding[((paddinglen + srcframe) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (float)(insample * (ResamplerFilter[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation1 * ResamplerFilterDifference[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
+                outsample += (float)(insample * (ResamplerFilter[filt_ind] + (interpolation1 * ResamplerFilterDifference[filt_ind])));
             }
 
             /* Do the right wing! */
             for (j = 0; (filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
-                const int jsamples = j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
+                const int filt_ind = filterindex2 + j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
                 const int srcframe = srcindex + 1 + j;
                 /* !!! FIXME: we can bubble this conditional out of here by doing a post loop. */
                 const float insample = (srcframe >= inframes) ? rpadding[((srcframe - inframes) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (float)(insample * (ResamplerFilter[filterindex2 + jsamples] + (interpolation2 * ResamplerFilterDifference[filterindex2 + jsamples])));
+                outsample += (float)(insample * (ResamplerFilter[filt_ind] + (interpolation2 * ResamplerFilterDifference[filt_ind])));
             }
 
             *(dst++) = outsample;
         }
-
-        outtime = ((ResampleFloatType) i) / ((ResampleFloatType) outrate);
     }
 
     return outframes * chans * sizeof (float);
