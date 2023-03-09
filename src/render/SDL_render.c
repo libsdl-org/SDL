@@ -4011,7 +4011,6 @@ int SDL_RenderPresent(SDL_Renderer *renderer)
         SDL_SetRenderScale(renderer, 1.0f, 1.0f);
         SDL_RenderLogicalBorders(renderer);
         SDL_RenderTexture(renderer, renderer->logical_target, &renderer->logical_src_rect, &renderer->logical_dst_rect);
-        SDL_SetRenderTargetInternal(renderer, renderer->logical_target);
     }
 
     FlushRenderCommands(renderer); /* time to send everything to the GPU! */
@@ -4024,6 +4023,10 @@ int SDL_RenderPresent(SDL_Renderer *renderer)
 #endif
     if (renderer->RenderPresent(renderer) < 0) {
         presented = SDL_FALSE;
+    }
+
+    if (renderer->logical_target) {
+        SDL_SetRenderTargetInternal(renderer, renderer->logical_target);
     }
 
     if (renderer->simulate_vsync ||
