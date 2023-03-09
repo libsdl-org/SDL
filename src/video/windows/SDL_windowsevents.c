@@ -1317,8 +1317,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 RECT rect;
                 float x, y;
 
-                if (!GetClientRect(hwnd, &rect) ||
-                    (rect.right == rect.left && rect.bottom == rect.top)) {
+                if (!GetClientRect(hwnd, &rect) || IsRectEmpty(&rect)) {
                     if (inputs) {
                         SDL_small_free(inputs, isstack);
                     }

@@ -790,12 +790,12 @@ WIN_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
     HWND hwnd = data->hwnd;
     RECT rect;
 
-    if (GetClientRect(hwnd, &rect)) {
+    if (GetClientRect(hwnd, &rect) && !IsRectEmpty(&rect)) {
         *w = rect.right;
         *h = rect.bottom;
     } else {
-        *w = 0;
-        *h = 0;
+        *w = window->w;
+        *h = window->h;
     }
 }
 
