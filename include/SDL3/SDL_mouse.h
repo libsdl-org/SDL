@@ -200,13 +200,9 @@ extern DECLSPEC int SDLCALL SDL_WarpMouseGlobal(float x, float y);
 /**
  * Set relative mouse mode.
  *
- * While the mouse is in relative mode, the cursor is hidden, and the driver
- * will try to report continuous motion in the current window. Only relative
- * motion events will be delivered, the mouse position will not change.
- *
- * Note that this function will not be able to provide continuous relative
- * motion when used over Microsoft Remote Desktop, instead motion is limited
- * to the bounds of the screen.
+ * While the mouse is in relative mode, the cursor is hidden, the mouse
+ * position is constrained to the window, and SDL will report continuous
+ * relative mouse motion even if the mouse is at the edge of the window.
  *
  * This function will flush any pending mouse motion.
  *
