@@ -26,6 +26,7 @@
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_scancode_tables_c.h"
+#include "../../core/linux/SDL_system_theme.h"
 #include "../SDL_sysvideo.h"
 
 #include "SDL_waylandvideo.h"
@@ -386,6 +387,10 @@ int Wayland_WaitEventTimeout(_THIS, Sint64 timeoutNS)
     }
 #endif
 
+#ifdef SDL_USE_LIBDBUS
+    SDL_SystemTheme_PumpEvents();
+#endif
+
     /* If key repeat is active, we'll need to cap our maximum wait time to handle repeats */
     if (input && keyboard_repeat_is_set(&input->keyboard_repeat)) {
         const Uint64 elapsed = SDL_GetTicksNS() - input->keyboard_repeat.sdl_press_time_ns;
@@ -453,6 +458,10 @@ void Wayland_PumpEvents(_THIS)
     if (d->text_input_manager == NULL && SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
         SDL_IME_PumpEvents();
     }
+#endif
+
+#ifdef SDL_USE_LIBDBUS
+    SDL_SystemTheme_PumpEvents();
 #endif
 
 #ifdef HAVE_LIBDECOR_H

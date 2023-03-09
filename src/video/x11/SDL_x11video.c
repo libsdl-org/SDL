@@ -26,6 +26,7 @@
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
+#include "../../core/linux/SDL_system_theme.h"
 
 #include "SDL_x11video.h"
 #include "SDL_x11framebuffer.h"
@@ -313,6 +314,11 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->Vulkan_UnloadLibrary = X11_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = X11_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = X11_Vulkan_CreateSurface;
+#endif
+
+#ifdef SDL_USE_LIBDBUS
+    if (SDL_SystemTheme_Init())
+        device->system_theme = SDL_SystemTheme_Get();
 #endif
 
     return device;

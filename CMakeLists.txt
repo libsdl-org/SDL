@@ -1552,6 +1552,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
 
     if(HAVE_DBUS_DBUS_H)
       list(APPEND SOURCE_FILES "${SDL3_SOURCE_DIR}/src/core/linux/SDL_dbus.c")
+      list(APPEND SOURCE_FILES "${SDL3_SOURCE_DIR}/src/core/linux/SDL_system_theme.c")
     endif()
 
     if(SDL_USE_IME)
