@@ -124,7 +124,7 @@ static void HandleCaptureProcess(_THIS)
                 }
             }
         }
-    }, this->work_buffer, (this->spec.size / sizeof (float)) / this->spec.channels);
+    }, this->work_buffer, (this->spec.size / sizeof(float)) / this->spec.channels);
 /* *INDENT-ON* */ /* clang-format on */
 
     /* okay, we've got an interleaved float32 array in C now. */
@@ -253,8 +253,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
 #if 0 /* !!! FIXME: currently not used. Can we move some stuff off the SDL3 namespace? --ryan. */
-    this->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc((sizeof *this->hidden));
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }

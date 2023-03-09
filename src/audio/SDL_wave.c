@@ -1806,7 +1806,7 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     if (RIFFchunk.fourcc == RIFF) {
         Uint32 formtype;
         /* Read the form type. "WAVE" expected. */
-        if (SDL_RWread(src, &formtype, sizeof(Uint32)) != sizeof (Uint32)) {
+        if (SDL_RWread(src, &formtype, sizeof(Uint32)) != sizeof(Uint32)) {
             return SDL_SetError("Could not read RIFF form type");
         } else if (SDL_SwapLE32(formtype) != WAVE) {
             return SDL_SetError("RIFF form type is not WAVE (not a Waveform file)");

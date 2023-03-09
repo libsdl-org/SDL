@@ -125,14 +125,14 @@ SDL_HapticOpen(int device_index)
     }
 
     /* Create the haptic device */
-    haptic = (SDL_Haptic *)SDL_malloc((sizeof *haptic));
+    haptic = (SDL_Haptic *)SDL_malloc(sizeof(*haptic));
     if (haptic == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     /* Initialize the haptic device */
-    SDL_memset(haptic, 0, (sizeof *haptic));
+    SDL_memset(haptic, 0, sizeof(*haptic));
     haptic->rumble_id = -1;
     haptic->index = device_index;
     if (SDL_SYS_HapticOpen(haptic) < 0) {
@@ -299,7 +299,7 @@ SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
         }
 
         /* Create the haptic device */
-        haptic = (SDL_Haptic *)SDL_malloc((sizeof *haptic));
+        haptic = (SDL_Haptic *)SDL_malloc(sizeof(*haptic));
         if (haptic == NULL) {
             SDL_OutOfMemory();
             SDL_UnlockJoysticks();
