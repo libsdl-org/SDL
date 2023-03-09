@@ -1287,6 +1287,8 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 state->window_w = w;
                 state->window_h = h;
             }
+            fullscreen_mode.w = state->window_w;
+            fullscreen_mode.h = state->window_h;
             if (SDL_SetWindowDisplayMode(state->windows[i], &fullscreen_mode) < 0) {
                 SDL_Log("Can't set up fullscreen display mode: %s\n",
                         SDL_GetError());
