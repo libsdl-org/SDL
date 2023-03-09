@@ -116,8 +116,7 @@ int main(int argc, char *argv[])
                               width, height, 0);
 
     if (window == NULL) {
-        SDL_Log("Couldn't create window: %s\n",
-                SDL_GetError());
+        SDL_Log("Couldn't create window: %s\n", SDL_GetError());
         return SDL_FALSE;
     }
 

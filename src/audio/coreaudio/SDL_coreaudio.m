@@ -1015,8 +1015,7 @@ static int COREAUDIO_OpenDevice(_THIS, const char *devname)
     SDL_AudioDevice **new_open_devices;
 
     /* Initialize all variables that we clean on shutdown */
-    this->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc((sizeof *this->hidden));
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }

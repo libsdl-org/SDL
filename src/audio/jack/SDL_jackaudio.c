@@ -132,6 +132,7 @@ static int load_jack_syms(void)
     SDL_JACK_SYM(jack_port_type);
     SDL_JACK_SYM(jack_connect);
     SDL_JACK_SYM(jack_set_process_callback);
+
     return 0;
 }
 
@@ -301,7 +302,7 @@ static int JACK_OpenDevice(_THIS, const char *devname)
     }
 
     /* Filter out non-audio ports */
-    audio_ports = SDL_calloc(ports, sizeof *audio_ports);
+    audio_ports = SDL_calloc(ports, sizeof(*audio_ports));
     for (i = 0; i < ports; i++) {
         const jack_port_t *dport = JACK_jack_port_by_name(client, devports[i]);
         const char *type = JACK_jack_port_type(dport);

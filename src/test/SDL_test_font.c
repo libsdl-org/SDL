@@ -3393,7 +3393,7 @@ void SDLTest_TextWindowAddText(SDLTest_TextWindow *textwin, const char *fmt, ...
     va_list ap;
 
     va_start(ap, fmt);
-    (void)SDL_vsnprintf(text, sizeof text, fmt, ap);
+    (void)SDL_vsnprintf(text, sizeof(text), fmt, ap);
     va_end(ap);
 
     SDLTest_TextWindowAddTextWithLength(textwin, text, SDL_strlen(text));

@@ -1376,13 +1376,13 @@ static void SDL_PrivateAppendToMappingString(char *mapping_string,
     SDL_strlcat(mapping_string, ":", mapping_string_len);
     switch (mapping->kind) {
     case EMappingKind_Button:
-        (void)SDL_snprintf(buffer, sizeof buffer, "b%i", mapping->target);
+        (void)SDL_snprintf(buffer, sizeof(buffer), "b%i", mapping->target);
         break;
     case EMappingKind_Axis:
-        (void)SDL_snprintf(buffer, sizeof buffer, "a%i", mapping->target);
+        (void)SDL_snprintf(buffer, sizeof(buffer), "a%i", mapping->target);
         break;
     case EMappingKind_Hat:
-        (void)SDL_snprintf(buffer, sizeof buffer, "h%i.%i", mapping->target >> 4, mapping->target & 0x0F);
+        (void)SDL_snprintf(buffer, sizeof(buffer), "h%i.%i", mapping->target >> 4, mapping->target & 0x0F);
         break;
     default:
         SDL_assert(SDL_FALSE);
@@ -1410,7 +1410,7 @@ static ControllerMapping_t *SDL_PrivateGenerateAutomaticControllerMapping(const 
             }
         }
     }
-    (void)SDL_snprintf(mapping, sizeof mapping, "none,%s,", name_string);
+    (void)SDL_snprintf(mapping, sizeof(mapping), "none,%s,", name_string);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "a", &raw_map->a);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "b", &raw_map->b);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "x", &raw_map->x);

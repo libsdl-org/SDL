@@ -64,7 +64,7 @@ int SDL_DUMMY_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect 
     /* Send the data to the display */
     if (SDL_getenv("SDL_VIDEO_DUMMY_SAVE_FRAMES")) {
         char file[128];
-        (void)SDL_snprintf(file, sizeof file, "SDL_window%" SDL_PRIu32 "-%8.8d.bmp",
+        (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIu32 "-%8.8d.bmp",
                            SDL_GetWindowID(window), ++frame_number);
         SDL_SaveBMP(surface, file);
     }

@@ -617,7 +617,7 @@ static void RunFIFOTest(SDL_bool lock_free)
     SDL_zeroa(readerData);
     for (i = 0; i < NUM_READERS; ++i) {
         char name[64];
-        (void)SDL_snprintf(name, sizeof name, "FIFOReader%d", i);
+        (void)SDL_snprintf(name, sizeof(name), "FIFOReader%d", i);
         readerData[i].queue = &queue;
         readerData[i].lock_free = lock_free;
         readerData[i].thread = SDL_CreateThread(FIFO_Reader, name, &readerData[i]);
@@ -628,7 +628,7 @@ static void RunFIFOTest(SDL_bool lock_free)
     SDL_zeroa(writerData);
     for (i = 0; i < NUM_WRITERS; ++i) {
         char name[64];
-        (void)SDL_snprintf(name, sizeof name, "FIFOWriter%d", i);
+        (void)SDL_snprintf(name, sizeof(name), "FIFOWriter%d", i);
         writerData[i].queue = &queue;
         writerData[i].index = i;
         writerData[i].lock_free = lock_free;
@@ -677,17 +677,17 @@ static void RunFIFOTest(SDL_bool lock_free)
         }
         grand_total += total;
         SDL_Log("Reader %d read %d events, had %d waits\n", i, total, readerData[i].waits);
-        (void)SDL_snprintf(textBuffer, sizeof textBuffer, "  { ");
+        (void)SDL_snprintf(textBuffer, sizeof(textBuffer), "  { ");
         for (j = 0; j < NUM_WRITERS; ++j) {
             if (j > 0) {
                 len = SDL_strlen(textBuffer);
-                (void)SDL_snprintf(textBuffer + len, sizeof textBuffer - len, ", ");
+                (void)SDL_snprintf(textBuffer + len, sizeof(textBuffer) - len, ", ");
             }
             len = SDL_strlen(textBuffer);
-            (void)SDL_snprintf(textBuffer + len, sizeof textBuffer - len, "%d", readerData[i].counters[j]);
+            (void)SDL_snprintf(textBuffer + len, sizeof(textBuffer) - len, "%d", readerData[i].counters[j]);
         }
         len = SDL_strlen(textBuffer);
-        (void)SDL_snprintf(textBuffer + len, sizeof textBuffer - len, " }\n");
+        (void)SDL_snprintf(textBuffer + len, sizeof(textBuffer) - len, " }\n");
         SDL_Log("%s", textBuffer);
     }
     SDL_Log("Readers read %d total events\n", grand_total);

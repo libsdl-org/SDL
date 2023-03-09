@@ -619,7 +619,7 @@ DirectFB_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 static int
 DirectFB_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    const size_t len = count * sizeof (SDL_FPoint);
+    const size_t len = count * sizeof(SDL_FPoint);
     SDL_FPoint *verts = (SDL_FPoint *) SDL_AllocateRenderVertices(renderer, len, 0, &cmd->data.draw.first);
 
     if (!verts) {
@@ -642,7 +642,7 @@ DirectFB_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
     float *verts;
     int sz = 2 + 4 + (texture ? 2 : 0);
 
-    verts = (float *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof (float), 0, &cmd->data.draw.first);
+    verts = (float *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof(float), 0, &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
@@ -687,7 +687,7 @@ DirectFB_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
 static int
 DirectFB_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
-    const size_t len = count * sizeof (SDL_FRect);
+    const size_t len = count * sizeof(SDL_FRect);
     SDL_FRect *verts = (SDL_FRect *) SDL_AllocateRenderVertices(renderer, len, 0, &cmd->data.draw.first);
 
     if (!verts) {
@@ -703,7 +703,7 @@ static int
 DirectFB_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
              const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
-    DFBRectangle *verts = (DFBRectangle *) SDL_AllocateRenderVertices(renderer, 2 * sizeof (DFBRectangle), 0, &cmd->data.draw.first);
+    DFBRectangle *verts = (DFBRectangle *) SDL_AllocateRenderVertices(renderer, 2 * sizeof(DFBRectangle), 0, &cmd->data.draw.first);
 
     if (!verts) {
         return -1;

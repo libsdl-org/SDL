@@ -86,37 +86,37 @@ static const char *GetXInputName(const Uint8 userid, BYTE SubType)
     static char name[32];
 
     if (SDL_XInputUseOldJoystickMapping()) {
-        (void)SDL_snprintf(name, sizeof name, "X360 Controller #%u", 1 + userid);
+        (void)SDL_snprintf(name, sizeof(name), "X360 Controller #%u", 1 + userid);
     } else {
         switch (SubType) {
         case XINPUT_DEVSUBTYPE_GAMEPAD:
-            (void)SDL_snprintf(name, sizeof name, "XInput Controller #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput Controller #%u", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_WHEEL:
-            (void)SDL_snprintf(name, sizeof name, "XInput Wheel #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput Wheel #%u", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_ARCADE_STICK:
-            (void)SDL_snprintf(name, sizeof name, "XInput ArcadeStick #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput ArcadeStick #%u", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
-            (void)SDL_snprintf(name, sizeof name, "XInput FlightStick #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput FlightStick #%u", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_DANCE_PAD:
-            (void)SDL_snprintf(name, sizeof name, "XInput DancePad #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput DancePad #%u", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_GUITAR:
         case XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE:
         case XINPUT_DEVSUBTYPE_GUITAR_BASS:
-            (void)SDL_snprintf(name, sizeof name, "XInput Guitar #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput Guitar #%u", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_DRUM_KIT:
-            (void)SDL_snprintf(name, sizeof name, "XInput DrumKit #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput DrumKit #%u", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_ARCADE_PAD:
-            (void)SDL_snprintf(name, sizeof name, "XInput ArcadePad #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput ArcadePad #%u", 1 + userid);
             break;
         default:
-            (void)SDL_snprintf(name, sizeof name, "XInput Device #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput Device #%u", 1 + userid);
             break;
         }
     }
@@ -279,7 +279,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
         SDL_free(pNewJoystick);
         return; /* better luck next time? */
     }
-    (void)SDL_snprintf(pNewJoystick->path, sizeof pNewJoystick->path, "XInput#%d", userid);
+    (void)SDL_snprintf(pNewJoystick->path, sizeof(pNewJoystick->path), "XInput#%d", userid);
     if (!SDL_XInputUseOldJoystickMapping()) {
         GuessXInputDevice(userid, &vendor, &product, &version);
 

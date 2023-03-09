@@ -64,9 +64,9 @@ static char *GetAppName()
     int linksize;
 
 #if defined(__LINUX__)
-    (void)SDL_snprintf(procfile, sizeof procfile, "/proc/%d/exe", getpid());
+    (void)SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/exe", getpid());
 #elif defined(__FREEBSD__)
-    (void)SDL_snprintf(procfile, sizeof procfile, "/proc/%d/file", getpid());
+    (void)SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/file", getpid());
 #endif
     linksize = readlink(procfile, linkfile, sizeof(linkfile) - 1);
     if (linksize > 0) {
