@@ -503,10 +503,8 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
     }
 
     /* SDL_HINT_TOUCH_MOUSE_EVENTS: if not set, discard synthetic mouse events coming from platform layer */
-    if (mouse->touch_mouse_events == 0) {
-        if (mouseID == SDL_TOUCH_MOUSEID) {
-            return 0;
-        }
+    if (!mouse->touch_mouse_events && mouseID == SDL_TOUCH_MOUSEID) {
+        return 0;
     }
 
     if (mouseID != SDL_TOUCH_MOUSEID && mouse->relative_mode_warp) {
@@ -549,31 +547,33 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
         }
     }
 
-    /* Ignore relative motion when first positioning the mouse */
-    if (!mouse->has_position) {
-        mouse->x = x;
-        mouse->y = y;
-        mouse->has_position = SDL_TRUE;
-    } else if (xrel == 0.0f && yrel == 0.0f) { /* Drop events that don't change state */
-#ifdef DEBUG_MOUSE
-        SDL_Log("Mouse event didn't change state - dropped!\n");
-#endif
-        return 0;
-    }
-
     /* Ignore relative motion positioning the first touch */
     if (mouseID == SDL_TOUCH_MOUSEID && !GetButtonState(mouse, SDL_TRUE)) {
         xrel = 0.0f;
         yrel = 0.0f;
     }
 
-    /* Update internal mouse coordinates */
-    if (!mouse->relative_mode) {
+    if (mouse->has_position) {
+        if (xrel == 0.0f && yrel == 0.0f) { /* Drop events that don't change state */
+#ifdef DEBUG_MOUSE
+            SDL_Log("Mouse event didn't change state - dropped!\n");
+#endif
+            return 0;
+        }
+
+        /* Update internal mouse coordinates */
+        if (!mouse->relative_mode) {
+            mouse->x = x;
+            mouse->y = y;
+        } else {
+            mouse->x += xrel;
+            mouse->y += yrel;
+            ConstrainMousePosition(mouse, window, &mouse->x, &mouse->y);
+        }
+    } else {
         mouse->x = x;
         mouse->y = y;
-    } else {
-        mouse->x += xrel;
-        mouse->y += yrel;
+        mouse->has_position = SDL_TRUE;
     }
 
     mouse->xdelta += xrel;
