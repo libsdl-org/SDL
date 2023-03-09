@@ -42,9 +42,9 @@
 /* This is the version of the dynamic API. This doesn't match the SDL version
    and should not change until there's been a major revamp in API/ABI.
    So 2.0.5 adds functions over 2.0.4? This number doesn't change;
-   the sizeof (jump_table) changes instead. But 2.1.0 changes how a function
+   the sizeof(jump_table) changes instead. But 2.1.0 changes how a function
    works in an incompatible way or removes a function? This number changes,
-   since sizeof (jump_table) isn't sufficient anymore. It's likely
+   since sizeof(jump_table) isn't sufficient anymore. It's likely
    we'll forget to bump every time we add a function, so this is the
    failsafe switch for major API change decisions. Respect it and use it
    sparingly. */
