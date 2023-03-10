@@ -1860,6 +1860,9 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
         SDL_UpdateFullscreenMode(window, SDL_TRUE);
     }
 
+    /* Make sure window pixel size is up to date */
+    SDL_CheckWindowPixelSizeChanged(window);
+
     return window;
 }
 
