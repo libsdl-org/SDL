@@ -196,7 +196,7 @@ static Sint32 ResamplerPadding(const Sint32 inrate, const Sint32 outrate)
     return RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
 }
 
-/* lpadding and rpadding are expected to be buffers of (ResamplePadding(inrate, outrate) * chans * sizeof (float)) bytes. */
+/* lpadding and rpadding are expected to be buffers of (ResamplePadding(inrate, outrate) * chans * sizeof(float)) bytes. */
 static int SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
                              const float *lpadding, const float *rpadding,
                              const float *inbuf, const int inbuflen,
