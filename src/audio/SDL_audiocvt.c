@@ -276,7 +276,7 @@ static Sint32 GetResamplerPadding(const Sint32 inrate, const Sint32 outrate)
     return RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
 }
 
-/* lpadding and rpadding are expected to be buffers of (ResamplePadding(inrate, outrate) * chans * sizeof (float)) bytes. */
+/* lpadding and rpadding are expected to be buffers of (ResamplePadding(inrate, outrate) * chans * sizeof(float)) bytes. */
 static int SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
                              const float *lpadding, const float *rpadding,
                              const float *inbuf, const int inbuflen,
@@ -1062,7 +1062,7 @@ static int SDL_ResampleAudioStream(SDL_AudioStream *stream, const void *_inbuf, 
 
     /* update our left padding with end of current input, for next run. */
     if (cpy < paddingbytes) {  /* slide end of the padding buffer to the start if we aren't replacing the whole thing. */
-        SDL_memmove(lpadding, lpadding + (cpy / sizeof (float)), paddingbytes - cpy);
+        SDL_memmove(lpadding, lpadding + (cpy / sizeof(float)), paddingbytes - cpy);
     }
     SDL_memcpy((lpadding + paddingsamples) - (cpy / sizeof(float)), inbufend - cpy, cpy);
     return retval;
