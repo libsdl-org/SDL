@@ -1178,9 +1178,17 @@ HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL_hid_device 
         SDL_PrivateJoystickButton(joystick, 16, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
     }
 
-    axis = ((int)packet->ucTriggerLeft * 257) - 32768;
+    if (packet->rgucButtonsAndHat[1] & 0x04) {
+        axis = SDL_JOYSTICK_AXIS_MAX;
+    } else {
+        axis = ((int)packet->ucTriggerLeft * 257) - 32768;
+    }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
-    axis = ((int)packet->ucTriggerRight * 257) - 32768;
+    if (packet->rgucButtonsAndHat[1] & 0x08) {
+        axis = SDL_JOYSTICK_AXIS_MAX;
+    } else {
+        axis = ((int)packet->ucTriggerRight * 257) - 32768;
+    }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
     axis = ((int)packet->ucLeftJoystickX * 257) - 32768;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
