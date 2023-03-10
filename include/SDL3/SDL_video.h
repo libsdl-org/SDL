@@ -667,23 +667,20 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, i
 /**
  * Create a child popup window of the specified parent window.
  *
- * 'flags' **must** contain exactly one of the following:
- * - 'SDL_WINDOW_TOOLTIP': The popup window is a tooltip and will not pass any input events
- * - 'SDL_WINDOW_POPUP_MENU': The popup window is a popup menu
+ * 'flags' **must** contain exactly one of the following: -
+ * 'SDL_WINDOW_TOOLTIP': The popup window is a tooltip and will not pass any
+ * input events - 'SDL_WINDOW_POPUP_MENU': The popup window is a popup menu
  *
- * The following flags are not valid for popup windows and will be ignored:
- * - 'SDL_WINDOW_MINIMIZED'
- * - 'SDL_WINDOW_MAXIMIZED'
- * - 'SDL_WINDOW_FULLSCREEN'
- * - `SDL_WINDOW_BORDERLESS`
- * - `SDL_WINDOW_MOUSE_GRABBED`
+ * The following flags are not valid for popup windows and will be ignored: -
+ * 'SDL_WINDOW_MINIMIZED' - 'SDL_WINDOW_MAXIMIZED' - 'SDL_WINDOW_FULLSCREEN' -
+ * `SDL_WINDOW_BORDERLESS` - `SDL_WINDOW_MOUSE_GRABBED`
  *
- * The parent parameter **must** be non-null and a valid window.
- * The parent of a popup window can be either a regular, toplevel window,
- * or another popup window.
+ * The parent parameter **must** be non-null and a valid window. The parent of
+ * a popup window can be either a regular, toplevel window, or another popup
+ * window.
  *
- * Popup windows cannot be minimized, maximized, made fullscreen, or grab
- * the mouse. Attempts to do so will fail.
+ * Popup windows cannot be minimized, maximized, made fullscreen, or grab the
+ * mouse. Attempts to do so will fail.
  *
  * If a parent window is hidden, any child popup windows will be recursively
  * hidden as well. Child popup windows not explicitly hidden will be restored
