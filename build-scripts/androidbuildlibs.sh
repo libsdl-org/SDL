@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Build the Android libraries without needing a project
 # (AndroidManifest.xml, jni/{Application,Android}.mk, etc.)
