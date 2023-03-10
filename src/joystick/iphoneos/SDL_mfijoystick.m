@@ -1668,31 +1668,14 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
     if (@available(macOS 10.16, *)) {
-        if ([GCController supportsHIDDevice:device]) {
-            return SDL_TRUE;
-        }
-
-        /* GCController supportsHIDDevice may return false if the device hasn't been
-         * seen by the framework yet, so check a few controllers we know are supported.
-         */
-        {
-            Sint32 vendor = 0;
-            Sint32 product = 0;
-            CFTypeRef refCF = NULL;
-
-            refCF = IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey));
-            if (refCF) {
-                CFNumberGetValue(refCF, kCFNumberSInt32Type, &vendor);
-            }
-
-            refCF = IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey));
-            if (refCF) {
-                CFNumberGetValue(refCF, kCFNumberSInt32Type, &product);
-            }
-
-            if (vendor == USB_VENDOR_MICROSOFT && SDL_IsJoystickXboxSeriesX(vendor, product)) {
+        const int MAX_ATTEMPTS = 3;
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
+            if ([GCController supportsHIDDevice:device]) {
                 return SDL_TRUE;
             }
+
+            /* The framework may not have seen the device yet */
+            SDL_Delay(10);
         }
     }
     return SDL_FALSE;
