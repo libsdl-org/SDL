@@ -27,6 +27,7 @@
 
 #ifndef MAC_OS_X_VERSION_10_12
 #define NSEventTypeApplicationDefined NSApplicationDefined
+typedef NSString *NSKeyValueChangeKey;
 #endif
 
 static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
