@@ -680,21 +680,22 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
 
 SDL_SystemTheme WIN_GetSystemTheme(void)
 {
-    DWORD type;
-    DWORD value;
-    DWORD count = sizeof(value);
-    LSTATUS status;
+    SDL_SystemTheme theme = SDL_SYSTEM_THEME_LIGHT;
+    HKEY hKey;
+    DWORD dwType = REG_DWORD;
+    DWORD value = ~0;
+    DWORD length = sizeof(value);
 
     /* Technically this isn't the system theme, but it's the preference for applications */
-    status = RegGetValue(HKEY_CURRENT_USER,
-                         TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
-                         TEXT("AppsUseLightTheme"),
-                         RRF_RT_REG_DWORD, &type, &value, &count);
-    if (status == ERROR_SUCCESS && type == REG_DWORD && value == 0) {
-        return SDL_SYSTEM_THEME_DARK;
-    } else {
-        return SDL_SYSTEM_THEME_LIGHT;
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+        if (RegQueryValueExW(hKey, L"AppsUseLightTheme", 0, &dwType, (LPBYTE)&value, &length) == ERROR_SUCCESS) {
+            if (value == 0) {
+                theme = SDL_SYSTEM_THEME_DARK;
+            }
+        }
+        RegCloseKey(hKey);
     }
+    return theme;
 }
 
 SDL_bool WIN_IsPerMonitorV2DPIAware(_THIS)
