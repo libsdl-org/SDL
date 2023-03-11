@@ -624,6 +624,7 @@ static SDL_bool createSwapchain(void)
     int w, h;
     VkSwapchainCreateInfoKHR createInfo = { 0 };
     VkResult result;
+    Uint32 flags;
 
     // pick an image count
     vulkanContext->swapchainDesiredImageCount = vulkanContext->surfaceCapabilities.minImageCount + 1;
@@ -651,6 +652,9 @@ static SDL_bool createSwapchain(void)
     // get size
     SDL_GetWindowSizeInPixels(vulkanContext->window, &w, &h);
 
+    // get flags
+    flags = SDL_GetWindowFlags(vulkanContext->window);
+
     // Clamp the size to the allowable image extent.
     // SDL_GetWindowSizeInPixels()'s result it not always in this range (bug #3287)
     vulkanContext->swapchainSize.width = SDL_clamp((uint32_t)w,
@@ -677,7 +681,11 @@ static SDL_bool createSwapchain(void)
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     createInfo.preTransform = vulkanContext->surfaceCapabilities.currentTransform;
-    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    if (flags & SDL_WINDOW_TRANSPARENT) {
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+    } else {
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    }
     createInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = vulkanContext->swapchain;
@@ -1037,7 +1045,7 @@ static SDL_bool render(void)
     clearColor.float32[0] = (float)(0.5 + 0.5 * SDL_sin(currentTime));
     clearColor.float32[1] = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 2 / 3));
     clearColor.float32[2] = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 4 / 3));
-    clearColor.float32[3] = 1;
+    clearColor.float32[3] = 0.5; // for SDL_WINDOW_TRANSPARENT, ignored with VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
     rerecordCommandBuffer(frameIndex, &clearColor);
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = 1;

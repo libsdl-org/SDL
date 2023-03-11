@@ -79,7 +79,7 @@ int Android_CreateWindow(_THIS, SDL_Window *window)
        incompatible with vkCreateAndroidSurfaceKHR */
 #if SDL_VIDEO_OPENGL_EGL
     if (window->flags & SDL_WINDOW_OPENGL) {
-        data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)data->native_window);
+        data->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)data->native_window);
 
         if (data->egl_surface == EGL_NO_SURFACE) {
             ANativeWindow_release(data->native_window);

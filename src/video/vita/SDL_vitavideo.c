@@ -275,7 +275,7 @@ int VITA_CreateWindow(_THIS, SDL_Window *window)
             _this->gl_config.minor_version = 1;
             _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
         }
-        wdata->egl_surface = SDL_EGL_CreateSurface(_this, &win);
+        wdata->egl_surface = SDL_EGL_CreateSurface(_this, window, &win);
         if (wdata->egl_surface == EGL_NO_SURFACE) {
             return SDL_SetError("Could not create GLES window surface");
         }

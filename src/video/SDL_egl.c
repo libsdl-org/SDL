@@ -1218,7 +1218,7 @@ int SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 }
 
 EGLSurface *
-SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
+SDL_EGL_CreateSurface(_THIS, SDL_Window *window, NativeWindowType nw)
 {
 #if SDL_VIDEO_DRIVER_ANDROID
     EGLint format_wanted;
@@ -1260,7 +1260,10 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
 
 #ifdef EGL_EXT_present_opaque
     if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_EXT_present_opaque")) {
-        const SDL_bool allow_transparent = SDL_GetHintBoolean(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, SDL_FALSE);
+        SDL_bool allow_transparent = SDL_FALSE;
+        if (window && (window->flags & SDL_WINDOW_TRANSPARENT)) {
+            allow_transparent = SDL_TRUE;
+        }
         attribs[attr++] = EGL_PRESENT_OPAQUE_EXT;
         attribs[attr++] = allow_transparent ? EGL_FALSE : EGL_TRUE;
     }

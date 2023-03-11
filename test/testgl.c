@@ -92,7 +92,7 @@ static void Render(void)
     };
 
     /* Do our drawing, too. */
-    ctx.glClearColor(0.0, 0.0, 0.0, 1.0);
+    ctx.glClearColor(0.0, 0.0, 0.0, 0.0 /* used with --transparent */);
     ctx.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ctx.glBegin(GL_QUADS);

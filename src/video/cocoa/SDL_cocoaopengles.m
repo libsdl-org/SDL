@@ -137,7 +137,7 @@ int Cocoa_GLES_SetupWindow(_THIS, SDL_Window *window)
 
         /* Create the GLES window surface */
         v = windowdata.nswindow.contentView;
-        windowdata.egl_surface = SDL_EGL_CreateSurface(_this, (__bridge NativeWindowType)[v layer]);
+        windowdata.egl_surface = SDL_EGL_CreateSurface(_this, window, (__bridge NativeWindowType)[v layer]);
 
         if (windowdata.egl_surface == EGL_NO_SURFACE) {
             return SDL_SetError("Could not create GLES window surface");

@@ -948,7 +948,6 @@ int Wayland_VideoInit(_THIS)
     WAYLAND_wl_display_flush(data->display);
 
     Wayland_InitKeyboard(_this);
-    Wayland_InitWin(data);
 
     data->initializing = SDL_FALSE;
 
@@ -981,7 +980,6 @@ static void Wayland_VideoCleanup(_THIS)
     SDL_VideoData *data = _this->driverdata;
     int i, j;
 
-    Wayland_QuitWin(data);
     Wayland_FiniMouse(data);
 
     for (i = _this->num_displays - 1; i >= 0; --i) {

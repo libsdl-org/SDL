@@ -270,6 +270,7 @@ SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
         int glversion_minor;
         NSOpenGLPixelFormatAttribute profile;
         int interval;
+        int opaque;
 
         if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
 #if SDL_VIDEO_OPENGL_EGL
@@ -380,6 +381,9 @@ SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
         /* vsync is handled separately by synchronizing with a display link. */
         interval = 0;
         [context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
+
+        opaque = (window->flags & SDL_WINDOW_TRANSPARENT) ? 0 : 1;
+        [context setValues:&opaque forParameter:NSOpenGLCPSurfaceOpacity];
 
         if (Cocoa_GL_MakeCurrent(_this, window, sdlcontext) < 0) {
             SDL_GL_DeleteContext(sdlcontext);

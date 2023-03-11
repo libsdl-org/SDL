@@ -33,7 +33,8 @@ static const char *video_usage[] = {
     "[--logical-presentation disabled|match|stretch|letterbox|overscan|integer_scale]",
     "[--logical-scale-quality nearest|linear|best]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
-    "[--resizable]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
+    "[--resizable]", "[--transparent]",
+    "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
     "[--hidden]", "[--input-focus]", "[--mouse-focus]",
     "[--flash-on-focus-loss]", "[--allow-highdpi]", "[--confine-cursor X,Y,W,H]",
     "[--usable-bounds]"
@@ -488,6 +489,10 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
     }
     if (SDL_strcasecmp(argv[index], "--resizable") == 0) {
         state->window_flags |= SDL_WINDOW_RESIZABLE;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--transparent") == 0) {
+        state->window_flags |= SDL_WINDOW_TRANSPARENT;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--minimize") == 0) {

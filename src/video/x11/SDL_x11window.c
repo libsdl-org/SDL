@@ -431,6 +431,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     SDL_WindowData *windowdata;
     Display *display = data->display;
     int screen = displaydata->screen;
+    const int transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     Visual *visual;
     int depth;
     XSetWindowAttributes xattr;
@@ -477,12 +478,12 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
             && (!_this->gl_data || X11_GL_UseEGL(_this))
 #endif
         ) {
-            vinfo = X11_GLES_GetVisual(_this, display, screen);
+            vinfo = X11_GLES_GetVisual(_this, display, screen, transparent);
         } else
 #endif
         {
 #if SDL_VIDEO_OPENGL_GLX
-            vinfo = X11_GL_GetVisual(_this, display, screen);
+            vinfo = X11_GL_GetVisual(_this, display, screen, transparent);
 #endif
         }
 
@@ -720,7 +721,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         }
 
         /* Create the GLES window surface */
-        windowdata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)w);
+        windowdata->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)w);
 
         if (windowdata->egl_surface == EGL_NO_SURFACE) {
             return SDL_SetError("Could not create GLES window surface");

@@ -76,7 +76,8 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
 - (instancetype)initWithFrame:(NSRect)frame
                       highDPI:(BOOL)highDPI
-                     windowID:(Uint32)windowID;
+                     windowID:(Uint32)windowID
+                       opaque:(BOOL)opaque
 {
     self = [super initWithFrame:frame];
     if (self != nil) {
@@ -86,6 +87,8 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
         /* Allow resize. */
         self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+
+        self.layer.opaque = opaque;
 
         SDL_AddEventWatch(SDL_MetalViewEventWatch, (__bridge void *)(self));
 
@@ -136,13 +139,15 @@ Cocoa_Metal_CreateView(_THIS, SDL_Window *window)
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
         NSView *view = data.nswindow.contentView;
         BOOL highDPI = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+        BOOL opaque = (window->flags & SDL_WINDOW_TRANSPARENT) == 0;
         Uint32 windowID = SDL_GetWindowID(window);
         SDL_cocoametalview *newview;
         SDL_MetalView metalview;
 
         newview = [[SDL_cocoametalview alloc] initWithFrame:view.frame
                                                     highDPI:highDPI
-                                                   windowID:windowID];
+                                                   windowID:windowID
+                                                     opaque:opaque];
         if (newview == nil) {
             SDL_OutOfMemory();
             return NULL;

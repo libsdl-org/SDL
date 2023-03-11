@@ -1600,11 +1600,14 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     /* Force the graphics context to clear to black so we don't get a flash of
        white until the app is ready to draw. In practice on modern macOS, this
        only gets called for window creation and other extraordinary events. */
+    BOOL transparent = (_sdlWindow->flags & SDL_WINDOW_TRANSPARENT) != 0;
     if ([NSGraphicsContext currentContext]) {
-        [[NSColor blackColor] setFill];
+        NSColor *fillColor = transparent ? [NSColor clearColor] : [NSColor blackColor];
+        [fillColor setFill];
         NSRectFill(dirtyRect);
     } else if (self.layer) {
-        self.layer.backgroundColor = CGColorGetConstantColor(kCGColorBlack);
+        CFStringRef color = transparent ? kCGColorClear : kCGColorBlack;
+        self.layer.backgroundColor = CGColorGetConstantColor(color);
     }
 
     SDL_SendWindowEvent(_sdlWindow, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
@@ -1621,7 +1624,9 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     /* Force the graphics context to clear to black so we don't get a flash of
        white until the app is ready to draw. In practice on modern macOS, this
        only gets called for window creation and other extraordinary events. */
-    self.layer.backgroundColor = CGColorGetConstantColor(kCGColorBlack);
+    BOOL transparent = (_sdlWindow->flags & SDL_WINDOW_TRANSPARENT) != 0;
+    CFStringRef color = transparent ? kCGColorClear : kCGColorBlack;
+    self.layer.backgroundColor = CGColorGetConstantColor(color);
     ScheduleContextUpdates((__bridge SDL_CocoaWindowData *)_sdlWindow->driverdata);
     SDL_SendWindowEvent(_sdlWindow, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
 }
@@ -1744,6 +1749,12 @@ static int SetupWindowData(_THIS, SDL_Window *window, NSWindow *nswindow, NSView
             }
         }
 
+        if (nswindow.isOpaque) {
+            window->flags &= ~SDL_WINDOW_TRANSPARENT;
+        } else {
+            window->flags |= SDL_WINDOW_TRANSPARENT;
+        }
+
         /* SDL_CocoaWindowData will be holding a strong reference to the NSWindow, and
          * it will also call [NSWindow close] in DestroyWindow before releasing the
          * NSWindow, so the extra release provided by releasedWhenClosed isn't
@@ -1839,6 +1850,12 @@ int Cocoa_CreateWindow(_THIS, SDL_Window *window)
 
         if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
             [nswindow setLevel:NSFloatingWindowLevel];
+        }
+
+        if (window->flags & SDL_WINDOW_TRANSPARENT) {
+            nswindow.opaque = NO;
+            nswindow.hasShadow = NO;
+            nswindow.backgroundColor = [NSColor clearColor];
         }
 
         /* Create a default view for this window */
