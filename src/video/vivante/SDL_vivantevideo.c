@@ -267,7 +267,7 @@ int VIVANTE_CreateWindow(_THIS, SDL_Window *window)
 
 #if SDL_VIDEO_OPENGL_EGL
     if (window->flags & SDL_WINDOW_OPENGL) {
-        data->egl_surface = SDL_EGL_CreateSurface(_this, data->native_window);
+        data->egl_surface = SDL_EGL_CreateSurface(_this, window, data->native_window);
         if (data->egl_surface == EGL_NO_SURFACE) {
             return SDL_SetError("VIVANTE: Can't create EGL surface");
         }

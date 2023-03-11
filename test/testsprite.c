@@ -126,7 +126,7 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     }
 
     /* Draw a gray background */
-    SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
+    SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0x00 /* used with --transparent */);
     SDL_RenderClear(renderer);
 
     /* Test points */

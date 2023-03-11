@@ -97,7 +97,6 @@ struct SDL_VideoData
     char *classname;
 
     int relative_mouse_mode;
-    SDL_bool egl_transparency_enabled;
 };
 
 struct SDL_DisplayData

@@ -56,7 +56,7 @@ int X11_GLES_LoadLibrary(_THIS, const char *path)
 }
 
 XVisualInfo *
-X11_GLES_GetVisual(_THIS, Display *display, int screen)
+X11_GLES_GetVisual(_THIS, Display *display, int screen, SDL_bool transparent)
 {
 
     XVisualInfo *egl_visualinfo = NULL;
@@ -79,6 +79,23 @@ X11_GLES_GetVisual(_THIS, Display *display, int screen)
         egl_visualinfo = X11_XGetVisualInfo(display,
                                             VisualScreenMask,
                                             &vi_in, &out_count);
+
+        /* Return the first transparent Visual */
+        if (transparent) {
+            int i;
+            for (i = 0; i < out_count; i++) {
+                XVisualInfo *v = &egl_visualinfo[i];
+                Uint32 format = X11_GetPixelFormatFromVisualInfo(display, v);
+                if (SDL_ISPIXELFORMAT_ALPHA(format)) { /* found! */
+                    /* re-request it to have a copy that can be X11_XFree'ed later */
+                    vi_in.screen = screen;
+                    vi_in.visualid = v->visualid;
+                    X11_XFree(egl_visualinfo);
+                    egl_visualinfo = X11_XGetVisualInfo(display, VisualScreenMask | VisualIDMask, &vi_in, &out_count);
+                    return egl_visualinfo;
+                }
+            }
+        }
     } else {
         vi_in.screen = screen;
         vi_in.visualid = visual_id;

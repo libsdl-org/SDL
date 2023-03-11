@@ -44,7 +44,7 @@ typedef struct SDL_PrivateGLESData
 #define X11_GLES_DeleteContext   SDL_EGL_DeleteContext
 
 extern int X11_GLES_LoadLibrary(_THIS, const char *path);
-extern XVisualInfo *X11_GLES_GetVisual(_THIS, Display *display, int screen);
+extern XVisualInfo *X11_GLES_GetVisual(_THIS, Display *display, int screen, SDL_bool transparent);
 extern SDL_GLContext X11_GLES_CreateContext(_THIS, SDL_Window *window);
 extern int X11_GLES_SwapWindow(_THIS, SDL_Window *window);
 extern int X11_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);

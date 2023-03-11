@@ -224,7 +224,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
             xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, data->wl_window_width, data->wl_window_height);
         }
 
-        if (!viddata->egl_transparency_enabled) {
+        if (!(window->flags & SDL_WINDOW_TRANSPARENT)) {
             region = wl_compositor_create_region(viddata->compositor);
             wl_region_add(region, 0, 0,
                           data->wl_window_width, data->wl_window_height);
@@ -2009,12 +2009,18 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     }
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
+    if (window->flags & SDL_WINDOW_TRANSPARENT) {
+        if (_this->gl_config.alpha_size == 0) {
+            _this->gl_config.alpha_size = 8;
+        }
+    }
+
     if (window->flags & SDL_WINDOW_OPENGL) {
         data->egl_window = WAYLAND_wl_egl_window_create(data->surface, data->drawable_width, data->drawable_height);
 
 #if SDL_VIDEO_OPENGL_EGL
         /* Create the GLES window surface */
-        data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)data->egl_window);
+        data->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)data->egl_window);
 
         if (data->egl_surface == EGL_NO_SURFACE) {
             return -1; /* SDL_EGL_CreateSurface should have set error */
@@ -2244,45 +2250,6 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
         WAYLAND_wl_display_flush(data->display);
     }
     window->driverdata = NULL;
-}
-
-static void EGLTransparencyChangedCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
-{
-    const SDL_bool oldval = SDL_GetStringBoolean(oldValue, SDL_FALSE);
-    const SDL_bool newval = SDL_GetStringBoolean(newValue, SDL_FALSE);
-
-    if (oldval != newval) {
-        SDL_Window *window;
-        SDL_VideoData *viddata = (SDL_VideoData *)userdata;
-        SDL_VideoDevice *dev = SDL_GetVideoDevice();
-
-        viddata->egl_transparency_enabled = newval;
-
-        /* Iterate over all windows and update the surface opaque regions */
-        for (window = dev->windows; window != NULL; window = window->next) {
-            SDL_WindowData *wind = window->driverdata;
-
-            if (!newval) {
-                struct wl_region *region = wl_compositor_create_region(wind->waylandData->compositor);
-                wl_region_add(region, 0, 0, wind->wl_window_width, wind->wl_window_height);
-                wl_surface_set_opaque_region(wind->surface, region);
-                wl_region_destroy(region);
-            } else {
-                wl_surface_set_opaque_region(wind->surface, NULL);
-            }
-        }
-    }
-}
-
-void Wayland_InitWin(SDL_VideoData *data)
-{
-    data->egl_transparency_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, SDL_FALSE);
-    SDL_AddHintCallback(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, EGLTransparencyChangedCallback, data);
-}
-
-void Wayland_QuitWin(SDL_VideoData *data)
-{
-    SDL_DelHintCallback(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, EGLTransparencyChangedCallback, data);
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */

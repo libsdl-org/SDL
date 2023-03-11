@@ -1603,17 +1603,6 @@ extern "C" {
 #define SDL_HINT_VIDEO_DOUBLE_BUFFER      "SDL_VIDEO_DOUBLE_BUFFER"
 
 /**
- * \brief A variable controlling whether the EGL window is allowed to be
- * composited as transparent, rather than opaque.
- *
- * Most window systems will always render windows opaque, even if the surface
- * format has an alpha channel. This is not always true, however, so by default
- * SDL will try to enforce opaque composition. To override this behavior, you
- * can set this hint to "1".
- */
-#define SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY "SDL_VIDEO_EGL_ALLOW_TRANSPARENCY"
-
-/**
  * \brief If eglGetPlatformDisplay fails, fall back to calling eglGetDisplay.
  *
  * This variable can be set to one of the following values:

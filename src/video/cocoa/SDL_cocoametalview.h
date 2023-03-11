@@ -43,7 +43,8 @@
 
 - (instancetype)initWithFrame:(NSRect)frame
                       highDPI:(BOOL)highDPI
-                     windowID:(Uint32)windowID;
+                     windowID:(Uint32)windowID
+                       opaque:(BOOL)opaque;
 
 - (void)updateDrawableSize;
 - (NSView *)hitTest:(NSPoint)point;
