@@ -1946,16 +1946,16 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
     /* Parent must be a valid window */
     CHECK_WINDOW_MAGIC(parent, NULL);
 
+    /* Popups must specify either the tooltip or popup menu window flags */
+    if (!(flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU))) {
+        SDL_SetError("Popup windows must specify either the 'SDL_WINDOW_TOOLTIP' or the 'SDL_WINDOW_POPUP_MENU' flag");
+        return NULL;
+    }
+
     /* Remove invalid flags */
     flags &= ~(SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MOUSE_GRABBED);
 
-    /* Popups must specify either the tooltip or popup menu window flags */
-    if ((flags & SDL_WINDOW_TOOLTIP) || (flags & SDL_WINDOW_POPUP_MENU)) {
-        return SDL_CreateWindowInternal(NULL, offset_x, offset_y, w, h, parent, flags);
-    }
-
-    SDL_SetError("Popup windows must specify either the 'SDL_WINDOW_TOOLTIP' or the 'SDL_WINDOW_POPUP_MENU' flag");
-    return NULL;
+    return SDL_CreateWindowInternal(NULL, offset_x, offset_y, w, h, parent, flags);
 }
 
 SDL_Window *SDL_CreateWindowFrom(const void *data)
