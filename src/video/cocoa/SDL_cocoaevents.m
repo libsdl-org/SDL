@@ -27,7 +27,6 @@
 
 #ifndef MAC_OS_X_VERSION_10_12
 #define NSEventTypeApplicationDefined NSApplicationDefined
-typedef NSString *NSKeyValueChangeKey;
 #endif
 
 static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
@@ -132,7 +131,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 - (void)localeDidChange:(NSNotification *)notification;
 - (void)observeValueForKeyPath:(NSString *)keyPath 
                       ofObject:(id)object 
-                        change:(NSDictionary<NSKeyValueChangeKey, id> *)change 
+                        change:(NSDictionary *)change 
                        context:(void *)context;
 @end
 
@@ -280,7 +279,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (void)observeValueForKeyPath:(NSString *)keyPath 
                       ofObject:(id)object 
-                        change:(NSDictionary<NSKeyValueChangeKey, id> *)change 
+                        change:(NSDictionary *)change 
                        context:(void *)context
 {
     SDL_SetSystemTheme(Cocoa_GetSystemTheme());

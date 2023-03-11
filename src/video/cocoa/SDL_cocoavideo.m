@@ -226,13 +226,16 @@ void Cocoa_VideoQuit(_THIS)
 /* This function assumes that it's called from within an autorelease pool */
 SDL_SystemTheme Cocoa_GetSystemTheme(void)
 {
-    NSAppearance* appearance = [[NSApplication sharedApplication] effectiveAppearance];
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400 /* Added in the 10.14.0 SDK. */
+    if ([[NSApplication sharedApplication] respondsToSelector:@selector(effectiveAppearance)]) {
+        NSAppearance* appearance = [[NSApplication sharedApplication] effectiveAppearance];
 
-    if ([appearance.name containsString: @"Dark"]) {
-        return SDL_SYSTEM_THEME_DARK;
-    } else {
-        return SDL_SYSTEM_THEME_LIGHT;
+        if ([appearance.name containsString: @"Dark"]) {
+            return SDL_SYSTEM_THEME_DARK;
+        }
     }
+#endif
+    return SDL_SYSTEM_THEME_LIGHT;
 }
 
 /* This function assumes that it's called from within an autorelease pool */
