@@ -28,22 +28,20 @@
 #include <kernel/image.h>
 #include <storage/Directory.h>
 #include <storage/Entry.h>
+#include <storage/FindDirectory.h>
 #include <storage/Path.h>
 
 
 char *
 SDL_GetBasePath(void)
 {
-    image_info info;
-    int32 cookie = 0;
+    char name[MAXPATHLEN];
 
-    while (get_next_image_info(0, &cookie, &info) == B_OK) {
-        if (info.type == B_APP_IMAGE) {
-            break;
-        }
+    if (find_path(B_APP_IMAGE_SYMBOL, B_FIND_PATH_IMAGE_PATH, NULL, name, sizeof(name)) != B_OK) {
+        return NULL;
     }
 
-    BEntry entry(info.name, true);
+    BEntry entry(name, true);
     BPath path;
     status_t rc = entry.GetPath(&path);  /* (path) now has binary's path. */
     SDL_assert(rc == B_OK);
