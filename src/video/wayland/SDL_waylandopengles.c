@@ -121,7 +121,7 @@ int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
     }
 
     /* Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval */
-    if (swap_interval != 0) {
+    if (swap_interval != 0 && data->surface_status == WAYLAND_SURFACE_STATUS_SHOWN) {
         SDL_VideoData *videodata = _this->driverdata;
         struct wl_display *display = videodata->display;
         /* 1 sec, so we'll progress even if throttled to zero. */
