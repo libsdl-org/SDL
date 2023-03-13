@@ -110,7 +110,7 @@ void Android_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool Android_Vulkan_GetInstanceExtensions(_THIS,
-                                              unsigned *count,
+                                              int *count,
                                               const char **names)
 {
     static const char *const extensionsForAndroid[] = {

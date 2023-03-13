@@ -150,7 +150,7 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  * required extensions, SDL_FALSE will be returned instead of SDL_TRUE, to
  * indicate that not all the required extensions were returned.
  *
- * \param pCount A pointer to an unsigned int corresponding to the number of
+ * \param pCount A pointer to an int corresponding to the number of
  *               extensions to be returned
  * \param pNames NULL or a pointer to an array to be filled with required
  *               Vulkan instance extensions
@@ -160,7 +160,7 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *
  * \sa SDL_Vulkan_CreateSurface
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(unsigned int *pCount,
+extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(int *pCount,
                                                                   const char **pNames);
 
 /**

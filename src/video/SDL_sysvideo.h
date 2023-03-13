@@ -295,7 +295,7 @@ struct SDL_VideoDevice
      */
     int (*Vulkan_LoadLibrary)(_THIS, const char *path);
     void (*Vulkan_UnloadLibrary)(_THIS);
-    SDL_bool (*Vulkan_GetInstanceExtensions)(_THIS, unsigned *count, const char **names);
+    SDL_bool (*Vulkan_GetInstanceExtensions)(_THIS, int *count, const char **names);
     SDL_bool (*Vulkan_CreateSurface)(_THIS, SDL_Window *window, VkInstance instance, VkSurfaceKHR *surface);
 
     /* * * */

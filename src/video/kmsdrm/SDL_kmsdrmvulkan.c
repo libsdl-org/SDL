@@ -141,7 +141,7 @@ void KMSDRM_Vulkan_UnloadLibrary(_THIS)
 /* vkCreateInstance().                                               */
 /*********************************************************************/
 SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
-                                             unsigned *count,
+                                             int *count,
                                              const char **names)
 {
     static const char *const extensionsForKMSDRM[] = {

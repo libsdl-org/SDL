@@ -1062,7 +1062,7 @@ static SDL_bool IsSupportedBlendMode(SDL_Renderer *renderer, SDL_BlendMode blend
 
 static SDL_bool IsSupportedFormat(SDL_Renderer *renderer, Uint32 format)
 {
-    Uint32 i;
+    int i;
 
     for (i = 0; i < renderer->info.num_texture_formats; ++i) {
         if (renderer->info.texture_formats[i] == format) {
@@ -1074,7 +1074,7 @@ static SDL_bool IsSupportedFormat(SDL_Renderer *renderer, Uint32 format)
 
 static Uint32 GetClosestSupportedFormat(SDL_Renderer *renderer, Uint32 format)
 {
-    Uint32 i;
+    int i;
 
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
         /* Look for an exact match */
@@ -1265,14 +1265,14 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     /* No alpha, but a colorkey => promote to alpha */
     if (!fmt->Amask && SDL_SurfaceHasColorKey(surface)) {
         if (fmt->format == SDL_PIXELFORMAT_RGB888) {
-            for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+            for (i = 0; i < renderer->info.num_texture_formats; ++i) {
                 if (renderer->info.texture_formats[i] == SDL_PIXELFORMAT_ARGB8888) {
                     format = SDL_PIXELFORMAT_ARGB8888;
                     break;
                 }
             }
         } else if (fmt->format == SDL_PIXELFORMAT_BGR888) {
-            for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+            for (i = 0; i < renderer->info.num_texture_formats; ++i) {
                 if (renderer->info.texture_formats[i] == SDL_PIXELFORMAT_ABGR8888) {
                     format = SDL_PIXELFORMAT_ABGR8888;
                     break;
@@ -1281,7 +1281,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     } else {
         /* Exact match would be fine */
-        for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+        for (i = 0; i < renderer->info.num_texture_formats; ++i) {
             if (renderer->info.texture_formats[i] == fmt->format) {
                 format = fmt->format;
                 break;
@@ -1292,7 +1292,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     /* Fallback, choose a valid pixel format */
     if (format == SDL_PIXELFORMAT_UNKNOWN) {
         format = renderer->info.texture_formats[0];
-        for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+        for (i = 0; i < renderer->info.num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->info.texture_formats[i]) &&
                 SDL_ISPIXELFORMAT_ALPHA(renderer->info.texture_formats[i]) == needAlpha) {
                 format = renderer->info.texture_formats[i];

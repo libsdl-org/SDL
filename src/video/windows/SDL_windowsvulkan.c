@@ -111,7 +111,7 @@ void WIN_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool WIN_Vulkan_GetInstanceExtensions(_THIS,
-                                          unsigned *count,
+                                          int *count,
                                           const char **names)
 {
     static const char *const extensionsForWin32[] = {

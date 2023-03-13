@@ -37,7 +37,7 @@
 int Wayland_Vulkan_LoadLibrary(_THIS, const char *path);
 void Wayland_Vulkan_UnloadLibrary(_THIS);
 SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
-                                              unsigned *count,
+                                              int *count,
                                               const char **names);
 SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
                                       SDL_Window *window,

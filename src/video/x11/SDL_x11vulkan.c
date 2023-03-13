@@ -141,7 +141,7 @@ void X11_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
-                                          unsigned *count,
+                                          int *count,
                                           const char **names)
 {
     SDL_VideoData *videoData = _this->driverdata;

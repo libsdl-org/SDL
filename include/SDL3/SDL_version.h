@@ -50,9 +50,9 @@ extern "C" {
  */
 typedef struct SDL_version
 {
-    Uint8 major;        /**< major version */
-    Uint8 minor;        /**< minor version */
-    Uint8 patch;        /**< update version */
+    Sint8 major;        /**< major version */
+    Sint8 minor;        /**< minor version */
+    Sint8 patch;        /**< update version */
 } SDL_version;
 
 /* Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL
