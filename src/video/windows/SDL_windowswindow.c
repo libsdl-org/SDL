@@ -559,7 +559,7 @@ static void WIN_SetKeyboardFocus(SDL_Window *window)
 
     /* Find the topmost parent */
     while (topmost->parent != NULL) {
-    topmost = topmost->parent;
+        topmost = topmost->parent;
     }
 
     topmost->driverdata->keyboard_focus = window;
@@ -1135,8 +1135,7 @@ void WIN_UpdateWindowICCProfile(SDL_Window *window, SDL_bool send_event)
     }
 }
 
-void *
-WIN_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
+void *WIN_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
 {
     SDL_WindowData *data = window->driverdata;
     char *filename_utf8;
