@@ -770,7 +770,8 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowFromID(SDL_WindowID id);
  * Get parent of a window.
  *
  * \param window the window to query
- * \returns the parent of the window on success or NULL if the window has no parent.
+ * \returns the parent of the window on success or NULL if the window has no
+ *          parent.
  *
  * \since This function is available since SDL 3.0.0.
  *
