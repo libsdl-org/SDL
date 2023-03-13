@@ -711,6 +711,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, i
  *
  * \sa SDL_CreateWindow
  * \sa SDL_DestroyWindow
+ * \sa SDL_GetWindowParent
  */
 extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags);
 
@@ -764,6 +765,18 @@ extern DECLSPEC SDL_WindowID SDLCALL SDL_GetWindowID(SDL_Window *window);
  * \sa SDL_GetWindowID
  */
 extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowFromID(SDL_WindowID id);
+
+/**
+ * Get parent of a window.
+ *
+ * \param window the window to query
+ * \returns the parent of the window on success or NULL if the window has no parent.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreatePopupWindow
+ */
+extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
 
 /**
  * Get the window flags.

@@ -2191,6 +2191,13 @@ SDL_Window *SDL_GetWindowFromID(SDL_WindowID id)
     return NULL;
 }
 
+SDL_Window *SDL_GetWindowParent(SDL_Window *window)
+{
+    CHECK_WINDOW_MAGIC(window, NULL);
+
+    return window->parent;
+}
+
 Uint32 SDL_GetWindowFlags(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, 0);

@@ -867,3 +867,4 @@
 #define SDL_GetRenderWindowSize SDL_GetRenderWindowSize_REAL
 #define SDL_GetSystemTheme SDL_GetSystemTheme_REAL
 #define SDL_CreatePopupWindow SDL_CreatePopupWindow_REAL
+#define SDL_GetWindowParent SDL_GetWindowParent_REAL
