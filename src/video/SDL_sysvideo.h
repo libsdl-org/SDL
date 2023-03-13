@@ -27,36 +27,12 @@
 
 /* The SDL video driver */
 
-typedef struct SDL_WindowShaper SDL_WindowShaper;
-typedef struct SDL_ShapeDriver SDL_ShapeDriver;
 typedef struct SDL_VideoDisplay SDL_VideoDisplay;
 typedef struct SDL_VideoDevice SDL_VideoDevice;
 typedef struct SDL_VideoData SDL_VideoData;
 typedef struct SDL_DisplayData SDL_DisplayData;
 typedef struct SDL_DisplayModeData SDL_DisplayModeData;
 typedef struct SDL_WindowData SDL_WindowData;
-
-/* Define the SDL window-shaper structure */
-struct SDL_WindowShaper
-{
-    /* The window associated with the shaper */
-    SDL_Window *window;
-
-    /* The parameters for shape calculation. */
-    SDL_WindowShapeMode mode;
-
-    /* Has this window been assigned a shape? */
-    SDL_bool hasshape;
-
-    void *driverdata;
-};
-
-/* Define the SDL shape driver structure */
-struct SDL_ShapeDriver
-{
-    SDL_WindowShaper *(*CreateShaper)(SDL_Window *window);
-    int (*SetWindowShape)(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode);
-};
 
 typedef struct SDL_WindowUserData
 {
@@ -103,8 +79,6 @@ struct SDL_Window
     SDL_bool is_dropping; /* drag/drop in progress, expecting SDL_SendDropComplete(). */
 
     SDL_Rect mouse_rect;
-
-    SDL_WindowShaper *shaper;
 
     SDL_HitTest hit_test;
     void *hit_test_data;
@@ -263,12 +237,6 @@ struct SDL_VideoDevice
     void (*DestroyWindowFramebuffer)(_THIS, SDL_Window *window);
     void (*OnWindowEnter)(_THIS, SDL_Window *window);
     int (*FlashWindow)(_THIS, SDL_Window *window, SDL_FlashOperation operation);
-
-    /* * * */
-    /*
-     * Shaped-window functions
-     */
-    SDL_ShapeDriver shape_driver;
 
     /* Get some platform dependent window information */
     int (*GetWindowWMInfo)(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);

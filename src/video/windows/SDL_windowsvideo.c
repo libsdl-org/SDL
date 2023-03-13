@@ -28,7 +28,6 @@
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsframebuffer.h"
-#include "SDL_windowsshape.h"
 #include "SDL_windowsvulkan.h"
 
 /* #define HIGHDPI_DEBUG */
@@ -204,8 +203,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->AcceptDragAndDrop = WIN_AcceptDragAndDrop;
     device->FlashWindow = WIN_FlashWindow;
 
-    device->shape_driver.CreateShaper = Win32_CreateShaper;
-    device->shape_driver.SetWindowShape = Win32_SetWindowShape;
 #endif
 
 #if SDL_VIDEO_OPENGL_WGL

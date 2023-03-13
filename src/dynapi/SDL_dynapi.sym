@@ -59,7 +59,6 @@ SDL3_0.0.0 {
     SDL_CreatePixelFormat;
     SDL_CreateRenderer;
     SDL_CreateSemaphore;
-    SDL_CreateShapedWindow;
     SDL_CreateSoftwareRenderer;
     SDL_CreateSurface;
     SDL_CreateSurfaceFrom;
@@ -317,7 +316,6 @@ SDL3_0.0.0 {
     SDL_GetSensorNonPortableType;
     SDL_GetSensorType;
     SDL_GetSensors;
-    SDL_GetShapedWindowMode;
     SDL_GetSurfaceAlphaMod;
     SDL_GetSurfaceBlendMode;
     SDL_GetSurfaceClipRect;
@@ -421,7 +419,6 @@ SDL3_0.0.0 {
     SDL_IsDeXMode;
     SDL_IsGamepad;
     SDL_IsJoystickVirtual;
-    SDL_IsShapedWindow;
     SDL_IsTablet;
     SDL_JoystickConnected;
     SDL_JoystickEventsEnabled;
@@ -619,7 +616,6 @@ SDL3_0.0.0 {
     SDL_SetWindowOpacity;
     SDL_SetWindowPosition;
     SDL_SetWindowResizable;
-    SDL_SetWindowShape;
     SDL_SetWindowSize;
     SDL_SetWindowTitle;
     SDL_SetWindowsMessageHook;

@@ -30,7 +30,6 @@
 
 #include "SDL_x11video.h"
 #include "SDL_x11mouse.h"
-#include "SDL_x11shape.h"
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
 
@@ -1754,16 +1753,6 @@ void X11_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 void X11_DestroyWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
-
-    if (window->shaper) {
-        SDL_ShapeData *shapedata = (SDL_ShapeData *)window->shaper->driverdata;
-        if (shapedata) {
-            SDL_free(shapedata->bitmap);
-            SDL_free(shapedata);
-        }
-        SDL_free(window->shaper);
-        window->shaper = NULL;
-    }
 
     if (data) {
         SDL_VideoData *videodata = data->videodata;
