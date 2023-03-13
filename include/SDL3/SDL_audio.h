@@ -144,23 +144,6 @@ typedef Uint16 SDL_AudioFormat;
 /* @} *//* Audio flags */
 
 /**
- *  This function is called when the audio device needs more data.
- *
- *  \param userdata An application-specific parameter saved in
- *                  the SDL_AudioSpec structure
- *  \param stream A pointer to the audio data buffer.
- *  \param len    The length of that buffer in bytes.
- *
- *  Once the callback returns, the buffer will no longer be valid.
- *  Stereo samples are stored in a LRLRLR ordering.
- *
- *  You can choose to avoid callbacks and use SDL_QueueAudio() instead, if
- *  you like. Just open your audio device with a NULL callback.
- */
-typedef void (SDLCALL * SDL_AudioCallback) (void *userdata, Uint8 * stream,
-                                            int len);
-
-/**
  *  The calculated values in this structure are calculated by SDL_OpenAudioDevice().
  *
  *  For multi-channel audio, the default SDL channel mapping is:
@@ -181,8 +164,6 @@ typedef struct SDL_AudioSpec
     Uint16 samples;             /**< Audio buffer size in sample FRAMES (total samples divided by channel count) */
     Uint16 padding;             /**< Necessary for some compile environments */
     Uint32 size;                /**< Audio buffer size in bytes (calculated) */
-    SDL_AudioCallback callback; /**< Callback that feeds the audio device (NULL to use SDL_QueueAudio()). */
-    void *userdata;             /**< Userdata passed to callback (ignored for NULL callbacks). */
 } SDL_AudioSpec;
 
 

@@ -55,7 +55,6 @@ static void FeedAudioDevice(_THIS, const void *buf, const int buflen)
 
 static void HandleAudioProcess(_THIS)
 {
-    SDL_AudioCallback callback = this->callbackspec.callback;
     const int stream_len = this->callbackspec.size;
 
     /* Only do something if audio is enabled */
@@ -71,11 +70,11 @@ static void HandleAudioProcess(_THIS)
 
     if (this->stream == NULL) { /* no conversion necessary. */
         SDL_assert(this->spec.size == stream_len);
-        callback(this->callbackspec.userdata, this->work_buffer, stream_len);
+        SDL_BufferQueueDrainCallback(this, this->work_buffer, stream_len);
     } else { /* streaming/converting */
         int got;
         while (SDL_GetAudioStreamAvailable(this->stream) < ((int)this->spec.size)) {
-            callback(this->callbackspec.userdata, this->work_buffer, stream_len);
+            SDL_BufferQueueDrainCallback(this, this->work_buffer, stream_len);
             if (SDL_PutAudioStreamData(this->stream, this->work_buffer, stream_len) == -1) {
                 SDL_ClearAudioStream(this->stream);
                 SDL_AtomicSet(&this->enabled, 0);
@@ -95,7 +94,6 @@ static void HandleAudioProcess(_THIS)
 
 static void HandleCaptureProcess(_THIS)
 {
-    SDL_AudioCallback callback = this->callbackspec.callback;
     const int stream_len = this->callbackspec.size;
 
     /* Only do something if audio is enabled */
@@ -131,7 +129,7 @@ static void HandleCaptureProcess(_THIS)
 
     if (this->stream == NULL) { /* no conversion necessary. */
         SDL_assert(this->spec.size == stream_len);
-        callback(this->callbackspec.userdata, this->work_buffer, stream_len);
+        SDL_BufferQueueFillCallback(this, this->work_buffer, stream_len);
     } else { /* streaming/converting */
         if (SDL_PutAudioStreamData(this->stream, this->work_buffer, this->spec.size) == -1) {
             SDL_AtomicSet(&this->enabled, 0);
@@ -143,7 +141,7 @@ static void HandleCaptureProcess(_THIS)
             if (got != stream_len) {
                 SDL_memset(this->work_buffer, this->callbackspec.silence, stream_len);
             }
-            callback(this->callbackspec.userdata, this->work_buffer, stream_len); /* Send it to the app. */
+            SDL_BufferQueueFillCallback(this, this->work_buffer, stream_len); /* Send it to the app. */
         }
     }
 }

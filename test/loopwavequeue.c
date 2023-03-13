@@ -97,8 +97,6 @@ int main(int argc, char *argv[])
         quit(1);
     }
 
-    wave.spec.callback = NULL; /* we'll push audio. */
-
 #if HAVE_SIGNAL_H
     /* Set the signals */
 #ifdef SIGHUP

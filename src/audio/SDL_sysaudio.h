@@ -60,6 +60,11 @@ extern void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device);
    The system preallocates enough packets for 2 callbacks' worth of data. */
 #define SDL_AUDIOBUFFERQUEUE_PACKETLEN (8 * 1024)
 
+
+
+extern void SDL_BufferQueueDrainCallback(SDL_AudioDevice *device, Uint8 *stream, int len);
+extern void SDL_BufferQueueFillCallback(SDL_AudioDevice *device, Uint8 *stream, int len);
+
 typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices)(void);

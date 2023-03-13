@@ -537,8 +537,7 @@ static void outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBuffe
         while (remaining > 0) {
             if (SDL_GetAudioStreamAvailable(this->stream) == 0) {
                 /* Generate the data */
-                (*this->callbackspec.callback)(this->callbackspec.userdata,
-                                               this->hidden->buffer, this->hidden->bufferSize);
+                SDL_BufferQueueDrainCallback(this, this->hidden->buffer, this->hidden->bufferSize);
                 this->hidden->bufferOffset = 0;
                 SDL_PutAudioStreamData(this->stream, this->hidden->buffer, this->hidden->bufferSize);
             }
@@ -565,8 +564,7 @@ static void outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBuffe
             UInt32 len;
             if (this->hidden->bufferOffset >= this->hidden->bufferSize) {
                 /* Generate the data */
-                (*this->callbackspec.callback)(this->callbackspec.userdata,
-                                               this->hidden->buffer, this->hidden->bufferSize);
+                SDL_BufferQueueDrainCallback(this, this->hidden->buffer, this->hidden->bufferSize);
                 this->hidden->bufferOffset = 0;
             }
 
@@ -615,7 +613,7 @@ static void inputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBuffer
 
             if (this->hidden->bufferOffset >= this->hidden->bufferSize) {
                 SDL_LockMutex(this->mixer_lock);
-                (*this->callbackspec.callback)(this->callbackspec.userdata, this->hidden->buffer, this->hidden->bufferSize);
+                SDL_BufferQueueFillCallback(this, this->hidden->buffer, this->hidden->bufferSize);
                 SDL_UnlockMutex(this->mixer_lock);
                 this->hidden->bufferOffset = 0;
             }

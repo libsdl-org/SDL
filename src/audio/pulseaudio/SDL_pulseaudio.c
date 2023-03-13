@@ -701,8 +701,6 @@ static void SinkInfoCallback(pa_context *c, const pa_sink_info *i, int is_last, 
         spec.silence = 0;
         spec.samples = 0;
         spec.size = 0;
-        spec.callback = NULL;
-        spec.userdata = NULL;
 
         if (add) {
             SDL_AddAudioDevice(SDL_FALSE, i->description, &spec, (void *)((intptr_t)i->index + 1));
@@ -731,8 +729,6 @@ static void SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_la
             spec.silence = 0;
             spec.samples = 0;
             spec.size = 0;
-            spec.callback = NULL;
-            spec.userdata = NULL;
 
             if (add) {
                 SDL_AddAudioDevice(SDL_TRUE, i->description, &spec, (void *)((intptr_t)i->index + 1));

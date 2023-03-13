@@ -977,13 +977,13 @@ static void output_callback(void *data)
         }
 
         if (!this->stream) {
-            this->callbackspec.callback(this->callbackspec.userdata, dst, this->callbackspec.size);
+            SDL_BufferQueueDrainCallback(this, dst, this->callbackspec.size);
         } else {
             int got;
 
             /* Fire the callback until we have enough to fill a buffer */
             while (SDL_GetAudioStreamAvailable(this->stream) < this->spec.size) {
-                this->callbackspec.callback(this->callbackspec.userdata, this->work_buffer, this->callbackspec.size);
+                SDL_BufferQueueDrainCallback(this, this->work_buffer, this->callbackspec.size);
                 SDL_PutAudioStreamData(this->stream, this->work_buffer, this->callbackspec.size);
             }
 
@@ -1045,7 +1045,7 @@ static void input_callback(void *data)
             SDL_ReadFromDataQueue(this->hidden->buffer, this->work_buffer, this->callbackspec.size);
 
             SDL_LockMutex(this->mixer_lock);
-            this->callbackspec.callback(this->callbackspec.userdata, this->work_buffer, this->callbackspec.size);
+            SDL_BufferQueueFillCallback(this, this->work_buffer, this->callbackspec.size);
             SDL_UnlockMutex(this->mixer_lock);
         }
     } else if (this->hidden->buffer) { /* Flush the buffer when paused */
