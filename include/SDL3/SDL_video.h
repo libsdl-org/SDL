@@ -667,26 +667,23 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, i
 /**
  * Create a child popup window of the specified parent window.
  *
- * 'flags' **must** contain exactly one of the following:
- * - 'SDL_WINDOW_TOOLTIP': The popup window is a tooltip and will not pass any
- *                         input events.
- * - 'SDL_WINDOW_POPUP_MENU': The popup window is a popup menu. The topmost
- *                            popup menu will implicitly gain the keyboard focus.
+ * 'flags' **must** contain exactly one of the following: -
+ * 'SDL_WINDOW_TOOLTIP': The popup window is a tooltip and will not pass any
+ * input events. - 'SDL_WINDOW_POPUP_MENU': The popup window is a popup menu.
+ * The topmost popup menu will implicitly gain the keyboard focus.
  *
- * The following flags are not relevant to popup window creation and will be ignored:
- * - 'SDL_WINDOW_MINIMIZED'
- * - 'SDL_WINDOW_MAXIMIZED'
- * - 'SDL_WINDOW_FULLSCREEN'
- * - 'SDL_WINDOW_BORDERLESS'
- * - 'SDL_WINDOW_SKIP_TASKBAR'
+ * The following flags are not relevant to popup window creation and will be
+ * ignored: - 'SDL_WINDOW_MINIMIZED' - 'SDL_WINDOW_MAXIMIZED' -
+ * 'SDL_WINDOW_FULLSCREEN' - 'SDL_WINDOW_BORDERLESS' -
+ * 'SDL_WINDOW_SKIP_TASKBAR'
  *
  * The parent parameter **must** be non-null and a valid window. The parent of
  * a popup window can be either a regular, toplevel window, or another popup
  * window.
  *
- * Popup windows cannot be minimized, maximized, made fullscreen, raised, flash,
- * be made a modal window, be the parent of a modal window, or grab the mouse
- * and/or keyboard. Attempts to do so will fail.
+ * Popup windows cannot be minimized, maximized, made fullscreen, raised,
+ * flash, be made a modal window, be the parent of a modal window, or grab the
+ * mouse and/or keyboard. Attempts to do so will fail.
  *
  * Popup windows implicitly do not have a border/decorations and do not appear
  * on the taskbar/dock or in lists of windows such as alt-tab menus.
