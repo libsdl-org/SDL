@@ -2739,6 +2739,7 @@ int SDL_HideWindow(SDL_Window *window)
 int SDL_RaiseWindow(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (window->flags & SDL_WINDOW_HIDDEN) {
         return 0;
@@ -3012,6 +3013,8 @@ int SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
 {
     CHECK_WINDOW_MAGIC(modal_window, -1);
     CHECK_WINDOW_MAGIC(parent_window, -1);
+    CHECK_WINDOW_NOT_POPUP(modal_window, -1);
+    CHECK_WINDOW_NOT_POPUP(parent_window, -1);
 
     if (!_this->SetWindowModalFor) {
         return SDL_Unsupported();
@@ -3023,6 +3026,7 @@ int SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
 int SDL_SetWindowInputFocus(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (!_this->SetWindowInputFocus) {
         return SDL_Unsupported();
@@ -3092,6 +3096,7 @@ int SDL_SetWindowGrab(SDL_Window *window, SDL_bool grabbed)
 int SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (!!grabbed == !!(window->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
         return 0;
@@ -3108,6 +3113,7 @@ int SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
 int SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (!!grabbed == !!(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
         return 0;
@@ -3178,6 +3184,7 @@ const SDL_Rect *SDL_GetWindowMouseRect(SDL_Window *window)
 int SDL_FlashWindow(SDL_Window *window, SDL_FlashOperation operation)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (_this->FlashWindow) {
         return _this->FlashWindow(_this, window, operation);
