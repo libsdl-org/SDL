@@ -230,6 +230,9 @@
 /* Disable IME as not supported yet (TODO: Xbox IME?) */
 #define SDL_DISABLE_WINDOWS_IME 1
 
+/* Max length passed to XGameUiShowTextEntryAsync */
+#define SDL_XBOX_VIRTUAL_KEYBOARD_MAX_TEXT_LENGTH 1024
+
 #endif /* SDL_config_wingdk_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -1379,6 +1379,9 @@
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12_xboxseries.cpp">
       <Filter>render\direct3d12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\windows\SDL_xboxkeyboard.cpp">
+      <Filter>video\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />

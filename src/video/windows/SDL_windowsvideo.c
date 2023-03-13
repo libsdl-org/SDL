@@ -245,9 +245,10 @@ WIN_CreateDevice(void)
     device->Vulkan_CreateSurface = WIN_Vulkan_CreateSurface;
 #endif
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     device->StartTextInput = WIN_StartTextInput;
     device->StopTextInput = WIN_StopTextInput;
+    device->HasScreenKeyboardSupport = WIN_HasScreenKeyboardSupport;
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     device->SetTextInputRect = WIN_SetTextInputRect;
     device->ClearComposition = WIN_ClearComposition;
     device->IsTextInputShown = WIN_IsTextInputShown;
