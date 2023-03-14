@@ -191,7 +191,7 @@ add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c)
 add_sdl_test_executable(testaudiostreamdynamicresample NEEDS_RESOURCES TESTUTILS SOURCES testaudiostreamdynamicresample.c)
 
 file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
-add_sdl_test_executable(testautomation NEEDS_RESOURCES NO_C90 SOURCES ${TESTAUTOMATION_SOURCE_FILES})
+add_sdl_test_executable(testautomation NONINTERACTIVE NONINTERACTIVE_TIMEOUT 120 NEEDS_RESOURCES NO_C90 SOURCES ${TESTAUTOMATION_SOURCE_FILES})
 add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS SOURCES testmultiaudio.c)
 add_sdl_test_executable(testaudiohotplug NEEDS_RESOURCES TESTUTILS SOURCES testaudiohotplug.c)
 add_sdl_test_executable(testaudiocapture SOURCES testaudiocapture.c)
