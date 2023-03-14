@@ -2077,7 +2077,9 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
 
     /* Restore video mode, etc. */
     if (!(window->flags & SDL_WINDOW_FOREIGN)) {
+        const SDL_bool restore_on_show = window->restore_on_show;
         SDL_HideWindow(window);
+        window->restore_on_show = restore_on_show;
     }
 
     /* Tear down the old native window */
