@@ -1939,12 +1939,28 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
 
 SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags)
 {
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return NULL;
+    }
+
     if (!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT)) {
         SDL_Unsupported();
         return NULL;
     }
 
     /* Parent must be a valid window */
+    if (!parent) {
+        /* Use the first toplevel window by default */
+        for (parent = _this->windows; parent; parent = parent->next) {
+            if (!SDL_WINDOW_IS_POPUP(parent)) {
+                /* Adjust the offset to be relative to this window */
+                offset_x -= parent->x;
+                offset_y -= parent->y;
+                break;
+            }
+        }
+    }
     CHECK_WINDOW_MAGIC(parent, NULL);
 
     /* Popups must specify either the tooltip or popup menu window flags */
