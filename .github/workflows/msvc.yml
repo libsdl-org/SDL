@@ -21,9 +21,9 @@ jobs:
         - { name: Windows static VCRT (x86), flags: -A Win32 -DSDL_FORCE_STATIC_VCRT=ON, artifact: 'SDL-VC-static-VCRT-x86' }
         - { name: Windows (clang-cl x64), flags: -T ClangCL -A x64, artifact: 'SDL-clang-cl-x64' }
         - { name: Windows (clang-cl x86), flags: -T ClangCL -A Win32, artifact: 'SDL-clang-cl-x86' }
-        - { name: Windows (ARM),          flags: -A ARM, artifact: 'SDL-VC-arm32' }
-        - { name: Windows (ARM64),        flags: -A ARM64, artifact: 'SDL-VC-arm64' }
-        - { name: UWP (x64),              flags: -A x64 -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0", nowerror: true,
+        - { name: Windows (ARM),          flags: -A ARM, artifact: 'SDL-VC-arm32', notests: true }
+        - { name: Windows (ARM64),        flags: -A ARM64, artifact: 'SDL-VC-arm64', notests: true }
+        - { name: UWP (x64),              flags: -A x64 -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0", nowerror: true, notests: true,
             project: VisualC-WinRT/SDL-UWP.sln, projectflags: '/p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0', artifact: 'SDL-VC-UWP' }
 
     steps:
@@ -38,8 +38,9 @@ jobs:
         os.makedirs(builddir)
         with open(f"{ builddir }/CMakeLists.txt", "w") as f:
           f.write(textwrap.dedent(f"""\
-            cmake_minimum_required(VERSION 3.0)
+            cmake_minimum_required(VERSION 3.0...3.25)
             project(sdl_user)
+            enable_testing()
             add_subdirectory("{ srcdir }" SDL)
           """))
     - name: Configure (CMake)
@@ -58,7 +59,7 @@ jobs:
     - name: Build (CMake)
       run: cmake --build build/ --config Release --parallel
     - name: Run build-time tests
-      if: "! contains(matrix.platform.name, 'ARM')"
+      if: ${{ !matrix.platform.notests }}
       run: |
         $env:SDL_TESTS_QUICK=1
         ctest -VV --test-dir build/ -C Release -j2
