@@ -150,6 +150,7 @@ typedef struct {
     Uint8 led_blue;
     Uint16 last_timestamp;
     Uint64 timestamp;
+    Uint16 valid_crc_packets; /* wrapping counter */
     PS4StatePacket_t last_state;
 } SDL_DriverPS4_Context;
 
@@ -1046,7 +1047,18 @@ HIDAPI_DriverPS4_IsPacketValid(SDL_DriverPS4_Context *ctx, Uint8 *data, int size
     case k_EPS4ReportIdBluetoothState8:
     case k_EPS4ReportIdBluetoothState9:
         /* Bluetooth state packets have two additional bytes at the beginning, the first notes if HID data is present */
-        if (size >= 78 && (data[1] & 0x80) && VerifyCRC(data, 78)) {
+        if (size >= 78 && (data[1] & 0x80)) {
+            if (VerifyCRC(data, 78)) {
+                ++ctx->valid_crc_packets;
+            } else {
+                if (ctx->valid_crc_packets > 0) {
+                    --ctx->valid_crc_packets;
+                }
+                if (ctx->valid_crc_packets >= 3) {
+                    /* We're generally getting valid CRC, but failed one */
+                    return SDL_FALSE;
+                }
+            }
             return SDL_TRUE;
         }
         break;
