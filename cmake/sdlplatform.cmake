@@ -78,7 +78,7 @@ function(SDL_DetectCPUArchitecture)
     endforeach()
   endif()
 
-  set(sdl_known_archs x64 x86 arm64 arm32 emscripten powerpc32 powerpc64 loongarch64)
+  set(sdl_known_archs x64 x86 arm64 arm32 emscripten powerpc64 powerpc32 loongarch64)
   if(NOT sdl_cpu_names)
     set(found FALSE)
     foreach(sdl_known_arch ${sdl_known_archs})

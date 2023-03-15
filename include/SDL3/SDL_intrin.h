@@ -69,8 +69,8 @@ _m_prefetch(void *__P)
 #  include <arm_neon.h>
 #endif
 #else
-/* altivec.h redefining bool causes a number of problems, see bugs 3993 and 4392, so you need to explicitly define SDL_ENABLE_ALTIVEC_H to have it included. */
-#if defined(HAVE_ALTIVEC_H) && defined(__ALTIVEC__) && !defined(__APPLE_ALTIVEC__) && defined(SDL_ENABLE_ALTIVEC_H)
+/* altivec.h redefining bool causes a number of problems, see bugs 3993 and 4392, so you need to explicitly define SDL_ENABLE_ALTIVEC to have it included. */
+#if defined(__ALTIVEC__) && defined(SDL_ENABLE_ALTIVEC)
 #include <altivec.h>
 #endif
 #if !defined(SDL_DISABLE_NEON)

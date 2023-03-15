@@ -215,7 +215,6 @@
 #cmakedefine HAVE_FLOAT_H 1
 #endif /* HAVE_LIBC */
 
-#cmakedefine HAVE_ALTIVEC_H 1
 #cmakedefine HAVE_DBUS_DBUS_H 1
 #cmakedefine HAVE_FCITX 1
 #cmakedefine HAVE_IBUS_IBUS_H 1
