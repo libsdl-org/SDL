@@ -859,20 +859,14 @@ if(SDL_ASSEMBLY)
           vector unsigned int vzero() {
               return vec_splat_u32(0);
           }
-          int main(int argc, char **argv) { return 0; }" HAVE_ALTIVEC_H_HDR)
-      check_c_source_compiles("
-          vector unsigned int vzero() {
-              return vec_splat_u32(0);
-          }
           int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_ALTIVEC)
       cmake_pop_check_state()
-      if(CPU_SUPPORTS_ALTIVEC OR HAVE_ALTIVEC_H_HDR)
-        set(HAVE_ALTIVEC TRUE) # if only HAVE_ALTIVEC_H_HDR is set
-        target_compile_options(sdl-build-options INTERFACE "-maltivec")
+      if(CPU_SUPPORTS_ALTIVEC)
+        set(HAVE_ALTIVEC TRUE)
         set(SDL_ALTIVEC_BLITTERS 1)
-        if(HAVE_ALTIVEC_H_HDR)
-          set(HAVE_ALTIVEC_H 1)
-        endif()
+        target_compile_options(sdl-build-options INTERFACE "-maltivec")
+        set_property(SOURCE "${SDL3_SOURCE_DIR}/src/video/SDL_blit_N.c" APPEND PROPERTY COMPILE_DEFINITIONS "SDL_ENABLE_ALTIVEC")
+        set_property(SOURCE "${SDL3_SOURCE_DIR}/src/video/SDL_blit_N.c" APPEND PROPERTY SKIP_PRECOMPILE_HEADERS 1)
       endif()
     endif()
 

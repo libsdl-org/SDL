@@ -186,6 +186,10 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
 
+#if defined(__ALTIVEC__) && defined(SDL_ENABLE_ALTIVEC)
+#define HAVE_ALTIVEC_INTRINSICS 1
+#endif
+
 #if defined(__ARM_NEON) && !defined(SDL_DISABLE_NEON)
 #define HAVE_NEON_INTRINSICS 1
 #endif

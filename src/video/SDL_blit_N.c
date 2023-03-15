@@ -46,9 +46,6 @@ enum blit_features
 };
 
 #if SDL_ALTIVEC_BLITTERS
-#ifdef HAVE_ALTIVEC_H
-#include <altivec.h>
-#endif
 #ifdef __MACOS__
 #include <sys/sysctl.h>
 static size_t
