@@ -233,6 +233,10 @@ if(HAVE_WFORMAT_EXTRA_ARGS)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_EXTRA_ARGS)
 endif()
 
+if(NOT HAVE_X11)
+    target_compile_definitions(testautomation PRIVATE SDL_DISABLE_SYSWM_X11)
+endif()
+
 if(SDL_DUMMYAUDIO)
   list(APPEND SDL_TESTS_NONINTERACTIVE
     testaudioinfo
