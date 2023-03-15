@@ -1141,7 +1141,7 @@ static int video_getSetWindowMinimumSize(void *arg)
     SDLTest_AssertPass("Call to SDL_ClearError()");
     for (desiredH = -2; desiredH < 2; desiredH++) {
         for (desiredW = -2; desiredW < 2; desiredW++) {
-            if (desiredW <= 0 || desiredH <= 0) {
+            if (desiredW < 0 || desiredH < 0) {
                 SDL_SetWindowMinimumSize(window, desiredW, desiredH);
                 SDLTest_AssertPass("Call to SDL_SetWindowMinimumSize(...,%d,%d)", desiredW, desiredH);
                 checkInvalidParameterError();
@@ -1279,7 +1279,7 @@ static int video_getSetWindowMaximumSize(void *arg)
     SDLTest_AssertPass("Call to SDL_ClearError()");
     for (desiredH = -2; desiredH < 2; desiredH++) {
         for (desiredW = -2; desiredW < 2; desiredW++) {
-            if (desiredW <= 0 || desiredH <= 0) {
+            if (desiredW < 0 || desiredH < 0) {
                 SDL_SetWindowMaximumSize(window, desiredW, desiredH);
                 SDLTest_AssertPass("Call to SDL_SetWindowMaximumSize(...,%d,%d)", desiredW, desiredH);
                 checkInvalidParameterError();

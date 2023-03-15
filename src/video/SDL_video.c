@@ -2611,10 +2611,10 @@ int SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
 {
     CHECK_WINDOW_MAGIC(window, -1);
-    if (min_w <= 0) {
+    if (min_w < 0) {
         return SDL_InvalidParamError("min_w");
     }
-    if (min_h <= 0) {
+    if (min_h < 0) {
         return SDL_InvalidParamError("min_h");
     }
 
@@ -2627,11 +2627,16 @@ int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
     window->min_h = min_h;
 
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        int w, h;
+
         if (_this->SetWindowMinimumSize) {
             _this->SetWindowMinimumSize(_this, window);
         }
+
         /* Ensure that window is not smaller than minimal size */
-        return SDL_SetWindowSize(window, SDL_max(window->w, window->min_w), SDL_max(window->h, window->min_h));
+        w = window->min_w ? SDL_max(window->w, window->min_w) : window->w;
+        h = window->min_h ? SDL_max(window->h, window->min_h) : window->h;
+        return SDL_SetWindowSize(window, w, h);
     }
     return 0;
 }
@@ -2651,10 +2656,10 @@ int SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
 int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
 {
     CHECK_WINDOW_MAGIC(window, -1);
-    if (max_w <= 0) {
+    if (max_w < 0) {
         return SDL_InvalidParamError("max_w");
     }
-    if (max_h <= 0) {
+    if (max_h < 0) {
         return SDL_InvalidParamError("max_h");
     }
 
@@ -2666,11 +2671,16 @@ int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
     window->max_h = max_h;
 
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        int w, h;
+
         if (_this->SetWindowMaximumSize) {
             _this->SetWindowMaximumSize(_this, window);
         }
+
         /* Ensure that window is not larger than maximal size */
-        return SDL_SetWindowSize(window, SDL_min(window->w, window->max_w), SDL_min(window->h, window->max_h));
+        w = window->max_w ? SDL_min(window->w, window->max_w) : window->w;
+        h = window->max_h ? SDL_min(window->h, window->max_h) : window->h;
+        return SDL_SetWindowSize(window, w, h);
     }
     return 0;
 }
