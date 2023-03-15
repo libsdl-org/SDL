@@ -1582,7 +1582,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 SDL_Rect expectedDisplayRect;
 
                 /* xVariation is the display we start on */
-                expectedDisplay = xVariation % displayNum;
+                expectedDisplay = displays[xVariation % displayNum];
                 x = SDL_WINDOWPOS_CENTERED_DISPLAY(expectedDisplay);
                 y = SDL_WINDOWPOS_CENTERED_DISPLAY(expectedDisplay);
                 w = SDLTest_RandomIntegerInRange(640, 800);
@@ -1604,7 +1604,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 SDL_GetWindowSize(window, &currentW, &currentH);
                 SDL_GetWindowPosition(window, &currentX, &currentY);
 
-                SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+                SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display ID (current: %d, expected: %d)", currentDisplay, expectedDisplay);
                 SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
                 SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
                 SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
@@ -1619,7 +1619,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 SDL_GetWindowSize(window, &currentW, &currentH);
                 SDL_GetWindowPosition(window, &currentX, &currentY);
 
-                SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+                SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display ID (current: %d, expected: %d)", currentDisplay, expectedDisplay);
                 SDLTest_AssertCheck(currentW == expectedDisplayRect.w, "Validate width (current: %d, expected: %d)", currentW, expectedDisplayRect.w);
                 SDLTest_AssertCheck(currentH == expectedDisplayRect.h, "Validate height (current: %d, expected: %d)", currentH, expectedDisplayRect.h);
                 SDLTest_AssertCheck(currentX == expectedDisplayRect.x, "Validate x (current: %d, expected: %d)", currentX, expectedDisplayRect.x);
@@ -1642,10 +1642,10 @@ static int video_setWindowCenteredOnDisplay(void *arg)
 
                 /* Center on display yVariation, and check window properties */
 
-                expectedDisplay = yVariation % displayNum;
+                expectedDisplay = displays[yVariation % displayNum];
                 x = SDL_WINDOWPOS_CENTERED_DISPLAY(expectedDisplay);
                 y = SDL_WINDOWPOS_CENTERED_DISPLAY(expectedDisplay);
-                expectedDisplayRect = (expectedDisplay == 0) ? display0 : display1;
+                expectedDisplayRect = (yVariation == 0) ? display0 : display1;
                 expectedX = (expectedDisplayRect.x + ((expectedDisplayRect.w - w) / 2));
                 expectedY = (expectedDisplayRect.y + ((expectedDisplayRect.h - h) / 2));
                 SDL_SetWindowPosition(window, x, y);
@@ -1654,7 +1654,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 SDL_GetWindowSize(window, &currentW, &currentH);
                 SDL_GetWindowPosition(window, &currentX, &currentY);
 
-                SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+                SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display ID (current: %d, expected: %d)", currentDisplay, expectedDisplay);
                 SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
                 SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
                 SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
