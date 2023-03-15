@@ -152,6 +152,17 @@ static void loop()
                 SDL_zero(tooltip);
             }
             tooltip_timer = SDL_GetTicks() + TOOLTIP_DELAY;
+
+            if (num_menus > 0) {
+                int parent_x = 0, parent_y = 0;
+                int x = event.motion.x;
+                int y = event.motion.y;
+
+                SDL_GetWindowPosition(menus[0].parent, &parent_x, &parent_y);
+                x -= parent_x;
+                y -= parent_y;
+                SDL_SetWindowPosition(menus[0].win, x, y);
+            }
         } else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
             /* Left click closes the popup menus */
             if (event.button.button == SDL_BUTTON_LEFT) {
