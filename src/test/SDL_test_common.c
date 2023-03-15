@@ -118,6 +118,12 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     return state;
 }
 
+void
+SDLTest_CommonDestroyState(SDLTest_CommonState *state) {
+    SDLTest_LogAllocations();
+    SDL_free(state);
+}
+
 #define SEARCHARG(dim)                  \
     while (*(dim) && *(dim) != ',') {   \
         ++(dim);                        \
@@ -2261,9 +2267,8 @@ void SDLTest_CommonQuit(SDLTest_CommonState *state)
     if (state->flags & SDL_INIT_AUDIO) {
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
     }
-    SDL_free(state);
     SDL_Quit();
-    SDLTest_LogAllocations();
+    SDLTest_CommonDestroyState(state);
 }
 
 void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, float *usedHeight)
