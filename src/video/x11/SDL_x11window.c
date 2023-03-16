@@ -1267,6 +1267,11 @@ void X11_ShowWindow(_THIS, SDL_Window *window)
         return;
     }
 
+    if (window->parent) {
+        /* Update our position in case our parent moved while we were hidden */
+        X11_UpdateWindowPosition(window);
+    }
+
     if (!X11_IsWindowMapped(_this, window)) {
         X11_XMapRaised(display, data->xwindow);
         /* Blocking wait for "MapNotify" event.

@@ -1310,7 +1310,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         /* Update the position of any child windows */
         for (win = data->window->first_child; win != NULL; win = win->next_sibling) {
-            WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE);
+            /* Don't update hidden child windows, their relative position doesn't change */
+            if (!(win->flags & SDL_WINDOW_HIDDEN)) {
+                WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE);
+            }
         }
     } break;
 

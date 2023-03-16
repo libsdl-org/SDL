@@ -884,6 +884,11 @@ void WIN_ShowWindow(_THIS, SDL_Window *window)
     HWND hwnd;
     int nCmdShow;
 
+    if (window->parent) {
+        /* Update our position in case our parent moved while we were hidden */
+        WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOACTIVATE);
+    }
+
     hwnd = window->driverdata->hwnd;
     nCmdShow = SDL_GetHintBoolean(SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN, SDL_FALSE) ? SW_SHOWNA : SW_SHOW;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);

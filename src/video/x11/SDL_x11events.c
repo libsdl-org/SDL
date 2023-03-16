@@ -1219,7 +1219,10 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             }
 #endif
             for (w = data->window->first_child; w != NULL; w = w->next_sibling) {
-                X11_UpdateWindowPosition(w);
+                /* Don't update hidden child windows, their relative position doesn't change */
+                if (!(w->flags & SDL_WINDOW_HIDDEN)) {
+                    X11_UpdateWindowPosition(w);
+                }
             }
         }
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
