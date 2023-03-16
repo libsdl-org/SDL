@@ -17,15 +17,18 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 static SDL_TLSID tls;
 static int alive = 0;
 static int testprio = 0;
+SDLTest_CommonState *state;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
 {
+    SDLTest_CommonDestroyState(state);
     SDL_Quit();
     exit(rc);
 }
@@ -82,11 +85,37 @@ killed(int sig)
 
 int main(int argc, char *argv[])
 {
-    int arg = 1;
+    int i;
     SDL_Thread *thread;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcmp("--prio", argv[i]) == 0) {
+                testprio = 1;
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[--prio]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            exit(1);
+        }
+
+        i += consumed;
+    }
 
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
@@ -98,13 +127,6 @@ int main(int argc, char *argv[])
         SDL_Log("Not running slower tests");
         SDL_Quit();
         return 0;
-    }
-
-    while (argv[arg] && *argv[arg] == '-') {
-        if (SDL_strcmp(argv[arg], "--prio") == 0) {
-            testprio = 1;
-        }
-        ++arg;
     }
 
     tls = SDL_TLSCreate();

@@ -69,7 +69,7 @@ static void closemutex(int sig)
 }
 
 static int SDLCALL
-DoWork(void *data)
+Run(void *data)
 {
     if (SDL_ThreadID() == mainthread) {
         (void)signal(SIGTERM, closemutex);
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < nb_threads; ++i) {
         char name[64];
         (void)SDL_snprintf(name, sizeof(name), "Worker%d", i);
-        threads[i] = SDL_CreateThread(DoWork, name, &threads[i]);
+        threads[i] = SDL_CreateThread(Run, name, NULL);
         if (threads[i] == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread!\n");
         }
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
 #endif
 
     (void)signal(SIGINT, terminate);
-    DoWork(NULL);
+    Run(NULL);
 
     return 0; /* Never reached */
 }
