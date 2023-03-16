@@ -908,7 +908,7 @@ void X11_UpdateWindowPosition(SDL_Window *window)
                                       window->x - data->border_left, window->y - data->border_top,
                                       &dest_x, &dest_y);
 
-    /*Attempt to move the window*/
+    /* Attempt to move the window */
     X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
 
     /* Wait a brief time to see if the window manager decided to let this move happen.
@@ -962,6 +962,39 @@ void X11_SetWindowPosition(_THIS, SDL_Window *window)
     X11_UpdateWindowPosition(window);
 }
 
+static void X11_SetWMNormalHints(_THIS, SDL_Window *window, XSizeHints *sizehints)
+{
+    SDL_WindowData *data = window->driverdata;
+    Display *display = data->videodata->display;
+    int dest_x, dest_y;
+
+    X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+
+    /* From Pierre-Loup:
+       WMs each have their little quirks with that.  When you change the
+       size hints, they get a ConfigureNotify event with the
+       WM_NORMAL_SIZE_HINTS Atom.  They all save the hints then, but they
+       don't all resize the window right away to enforce the new hints.
+
+       Some of them resize only after:
+        - A user-initiated move or resize
+        - A code-initiated move or resize
+        - Hiding & showing window (Unmap & map)
+
+       The following move & resize seems to help a lot of WMs that didn't
+       properly update after the hints were changed. We don't do a
+       hide/show, because there are supposedly subtle problems with doing so
+       and transitioning from windowed to fullscreen in Unity.
+     */
+    X11_XResizeWindow(display, data->xwindow, window->w, window->h);
+    SDL_RelativeToGlobalForWindow(window,
+                                  window->x - data->border_left,
+                                  window->y - data->border_top,
+                                  &dest_x, &dest_y);
+    X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
+    X11_XRaiseWindow(display, data->xwindow);
+}
+
 void X11_SetWindowMinimumSize(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
@@ -977,14 +1010,9 @@ void X11_SetWindowMinimumSize(_THIS, SDL_Window *window)
         sizehints->min_height = window->min_h;
         sizehints->flags |= PMinSize;
 
-        X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+        X11_SetWMNormalHints(_this, window, sizehints);
 
         X11_XFree(sizehints);
-
-        /* See comment in X11_SetWindowSize. */
-        X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-        X11_XRaiseWindow(display, data->xwindow);
     }
 
     X11_XFlush(display);
@@ -1005,14 +1033,9 @@ void X11_SetWindowMaximumSize(_THIS, SDL_Window *window)
         sizehints->max_height = window->max_h;
         sizehints->flags |= PMaxSize;
 
-        X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+        X11_SetWMNormalHints(_this, window, sizehints);
 
         X11_XFree(sizehints);
-
-        /* See comment in X11_SetWindowSize. */
-        X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-        X11_XRaiseWindow(display, data->xwindow);
     }
 
     X11_XFlush(display);
@@ -1044,29 +1067,9 @@ void X11_SetWindowSize(_THIS, SDL_Window *window)
         sizehints->min_height = sizehints->max_height = window->h;
         sizehints->flags |= PMinSize | PMaxSize;
 
-        X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+        X11_SetWMNormalHints(_this, window, sizehints);
 
         X11_XFree(sizehints);
-
-        /* From Pierre-Loup:
-           WMs each have their little quirks with that.  When you change the
-           size hints, they get a ConfigureNotify event with the
-           WM_NORMAL_SIZE_HINTS Atom.  They all save the hints then, but they
-           don't all resize the window right away to enforce the new hints.
-
-           Some of them resize only after:
-            - A user-initiated move or resize
-            - A code-initiated move or resize
-            - Hiding & showing window (Unmap & map)
-
-           The following move & resize seems to help a lot of WMs that didn't
-           properly update after the hints were changed. We don't do a
-           hide/show, because there are supposedly subtle problems with doing so
-           and transitioning from windowed to fullscreen in Unity.
-         */
-        X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-        X11_XRaiseWindow(display, data->xwindow);
     } else {
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
     }
@@ -1218,14 +1221,9 @@ void X11_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
     }
     sizehints->flags |= PMinSize | PMaxSize;
 
-    X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+    X11_SetWMNormalHints(_this, window, sizehints);
 
     X11_XFree(sizehints);
-
-    /* See comment in X11_SetWindowSize. */
-    X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-    X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-    X11_XRaiseWindow(display, data->xwindow);
 
     X11_XFlush(display);
 }
