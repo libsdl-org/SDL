@@ -3798,10 +3798,10 @@ void SDL_GL_ResetAttributes(void)
     _this->egl_surfaceattrib_callback = NULL;
     _this->egl_contextattrib_callback = NULL;
 
-    _this->gl_config.red_size = 3;
-    _this->gl_config.green_size = 3;
-    _this->gl_config.blue_size = 2;
-    _this->gl_config.alpha_size = 0;
+    _this->gl_config.red_size = 8;
+    _this->gl_config.green_size = 8;
+    _this->gl_config.blue_size = 8;
+    _this->gl_config.alpha_size = 8;
     _this->gl_config.buffer_size = 0;
     _this->gl_config.depth_size = 16;
     _this->gl_config.stencil_size = 0;
