@@ -33,7 +33,7 @@ static const char *video_usage[] = {
     "[--logical-presentation disabled|match|stretch|letterbox|overscan|integer_scale]",
     "[--logical-scale-quality nearest|linear|best]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
-    "[--resizable]", "[--transparent]",
+    "[--resizable]", "[--transparent]", "[--skip-taskbar]", "[--always-on-top]",
     "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
     "[--hidden]", "[--input-focus]", "[--mouse-focus]",
     "[--flash-on-focus-loss]", "[--allow-highdpi]", "[--confine-cursor X,Y,W,H]",
@@ -493,6 +493,14 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
     }
     if (SDL_strcasecmp(argv[index], "--transparent") == 0) {
         state->window_flags |= SDL_WINDOW_TRANSPARENT;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--skip-taskbar") == 0) {
+        state->window_flags |= SDL_WINDOW_SKIP_TASKBAR;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--always-on-top") == 0) {
+        state->window_flags |= SDL_WINDOW_ALWAYS_ON_TOP;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--minimize") == 0) {
