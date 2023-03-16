@@ -143,8 +143,6 @@ static void loop()
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
-        SDLTest_CommonEvent(state, &event, &done);
-
         if (event.type == SDL_EVENT_MOUSE_MOTION) {
             /* Hide the tooltip and restart the timer if the mouse is moved */
             if (tooltip.win) {
@@ -170,7 +168,21 @@ static void loop()
                     ++num_menus;
                 }
             }
+        } else if (event.type == SDL_EVENT_KEY_DOWN) {
+            if (event.key.keysym.sym == SDLK_SPACE) {
+                for (i = 0; i < num_menus; ++i) {
+                    if (SDL_GetWindowFlags(menus[i].win) & SDL_WINDOW_HIDDEN) {
+                        SDL_ShowWindow(menus[i].win);
+                    } else {
+                        SDL_HideWindow(menus[i].win);
+                    }
+                }
+                // Don't process this event in SDLTest_CommonEvent()
+                continue;
+            }
         }
+
+        SDLTest_CommonEvent(state, &event, &done);
     }
 
     /* Show the tooltip if the delay period has elapsed */
