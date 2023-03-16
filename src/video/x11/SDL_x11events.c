@@ -501,10 +501,8 @@ static void X11_DispatchMapNotify(SDL_WindowData *data)
 
 static void X11_DispatchUnmapNotify(SDL_WindowData *data)
 {
-    if (!data->hidden_by_parent_focus) {
-        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
-        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
-    }
+    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
+    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
 }
 
 static void InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
