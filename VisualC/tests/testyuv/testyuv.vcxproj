@@ -218,6 +218,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\test\testyuv.c" />
     <ClCompile Include="..\..\..\test\testyuv_cvt.c" />
+    <ClCompile Include="..\..\..\test\testutils.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\test\testyuv_cvt.h" />

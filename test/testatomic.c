@@ -12,6 +12,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 /*
   Absolutely basic tests just to see if we get the expected value
@@ -695,8 +696,21 @@ static void RunFIFOTest(SDL_bool lock_free)
 
 int main(int argc, char *argv[])
 {
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     RunBasicTest();
 
@@ -711,5 +725,6 @@ int main(int argc, char *argv[])
     RunFIFOTest(SDL_FALSE);
 #endif
     RunFIFOTest(SDL_TRUE);
+    SDLTest_CommonDestroyState(state);
     return 0;
 }

@@ -11,6 +11,7 @@
 */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 /*
  * Watcom C flags these as Warning 201: "Unreachable code" if you just
@@ -440,15 +441,40 @@ static int TestAssertions(SDL_bool verbose)
 
 int main(int argc, char *argv[])
 {
+    int i;
     SDL_bool verbose = SDL_TRUE;
     int status = 0;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (argv[1] && (SDL_strcmp(argv[1], "-q") == 0)) {
-        verbose = SDL_FALSE;
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcmp(argv[i], "-q") == 0) {
+                verbose = SDL_FALSE;
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[-q]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return 1;
+        }
+
+        i += consumed;
     }
+
     if (verbose) {
         SDL_Log("This system is running %s\n", SDL_GetPlatform());
     }
@@ -458,6 +484,8 @@ int main(int argc, char *argv[])
     status += Test64Bit(verbose);
     status += TestCPUInfo(verbose);
     status += TestAssertions(verbose);
+
+    SDLTest_CommonDestroyState(state);
 
     return status;
 }

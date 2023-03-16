@@ -19,6 +19,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 #include "testutils.h"
 
 static size_t
@@ -49,18 +50,45 @@ int main(int argc, char *argv[])
         "UCS-4",
     };
 
-    char *fname;
+    char *fname = NULL;
     char buffer[BUFSIZ];
     char *ucs4;
     char *test[2];
     int i;
     FILE *file;
     int errors = 0;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    fname = GetResourceFilename(argc > 1 ? argv[1] : NULL, "utf8.txt");
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (!fname) {
+                fname = argv[i];
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[utf8.txt]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return 1;
+        }
+
+        i += consumed;
+    }
+
+    fname = GetResourceFilename(fname, "utf8.txt");
     file = fopen(fname, "rb");
     if (file == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to open %s\n", fname);
@@ -93,5 +121,6 @@ int main(int argc, char *argv[])
     (void)fclose(file);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Total errors: %d\n", errors);
+    SDLTest_CommonDestroyState(state);
     return errors ? errors + 1 : 0;
 }

@@ -465,8 +465,13 @@ int main(int argc, char *argv[])
                 if (!argv[i]) {
                     consumed = -1;
                 } else {
-                    depth = SDL_atoi(argv[i]);
-                    consumed = 1;
+                    char *endptr = NULL;
+                    depth = (int)SDL_strtol(argv[i], &endptr, 0);
+                    if (endptr != argv[i] && *endptr == '\0') {
+                        consumed = 1;
+                    } else {
+                        consumed = -1;
+                    }
                 }
             } else {
                 consumed = -1;

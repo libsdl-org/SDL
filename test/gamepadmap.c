@@ -18,6 +18,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 #include "testutils.h"
 
 /* Define this for verbose output while mapping gamepads */
@@ -729,20 +730,43 @@ int main(int argc, char *argv[])
     SDL_JoystickID *joysticks;
     int joystick_index;
     SDL_Joystick *joystick = NULL;
+    SDLTest_CommonState *state;
 
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
 
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcmp(argv[i], "--bind-touchpad") == 0) {
+                bind_touchpad = SDL_TRUE;
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[--bind-touchpad]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            exit(1);
+        }
+
+        i += consumed;
+    }
 
     /* Initialize SDL (Note: video is required to start event loop) */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         exit(1);
-    }
-
-    if (argv[1] && SDL_strcmp(argv[1], "--bind-touchpad") == 0) {
-        bind_touchpad = SDL_TRUE;
     }
 
     /* Create a window to display joystick axis position */
@@ -829,6 +853,8 @@ int main(int argc, char *argv[])
     SDL_DestroyWindow(window);
 
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
+
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }

@@ -23,6 +23,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 #include "testutils.h"
 
 #define MOOSEPIC_W 64
@@ -63,10 +64,12 @@ static SDL_Renderer *renderer;
 static int frame;
 static SDL_Texture *MooseTexture;
 static SDL_bool done = SDL_FALSE;
+SDLTest_CommonState *state;
 
 static void quit(int rc)
 {
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     exit(rc);
 }
 
@@ -131,8 +134,19 @@ int main(int argc, char **argv)
     SDL_RWops *handle;
     char *filename = NULL;
 
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDLTest_CommonDestroyState(state);
+        return 1;
+    }
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());

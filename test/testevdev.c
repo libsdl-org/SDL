@@ -12,6 +12,7 @@
 */
 
 #include "../src/SDL_internal.h"
+#include <SDL3/SDL_test.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -1038,5 +1039,22 @@ run_test(void)
 
 int main(int argc, char *argv[])
 {
-    return run_test() ? 0 : 1;
+    int result;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    result = run_test() ? 0 : 1;
+
+    SDLTest_CommonDestroyState(state);
+    return result;
 }

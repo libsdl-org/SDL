@@ -13,6 +13,7 @@
 /* Program to test surround sound audio channels */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 static int total_channels;
 static int active_channel;
@@ -132,9 +133,21 @@ static void SDLCALL fill_buffer(void *unused, Uint8 *stream, int len)
 int main(int argc, char *argv[])
 {
     int i;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDLTest_CommonQuit(state);
+        return 1;
+    }
 
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());

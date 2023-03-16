@@ -24,6 +24,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 static SDL_Haptic *haptic;
 
@@ -35,30 +36,50 @@ static SDL_Haptic *haptic;
 int main(int argc, char **argv)
 {
     int i;
-    char *name;
+    char *name = NULL;
     int index;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     name = NULL;
     index = -1;
-    if (argc > 1) {
-        size_t l;
-        name = argv[1];
-        if ((SDL_strcmp(name, "--help") == 0) || (SDL_strcmp(name, "-h") == 0)) {
-            SDL_Log("USAGE: %s [device]\n"
-                    "If device is a two-digit number it'll use it as an index, otherwise\n"
-                    "it'll use it as if it were part of the device's name.\n",
-                    argv[0]);
-            return 0;
+
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (!name && index < 0) {
+                size_t l;
+
+                l = SDL_strlen(argv[i]);
+                if ((l < 3) && SDL_isdigit(argv[i][0]) && ((l == 1) || SDL_isdigit(argv[i][1]))) {
+                    index = SDL_atoi(argv[i]);
+                } else {
+                    name = argv[i];
+                }
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[device]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            SDL_Log("\n");
+            SDL_Log("If device is a two-digit number it'll use it as an index, otherwise\n"
+                    "it'll use it as if it were part of the device's name.\n");
+            return 1;
         }
 
-        l = SDL_strlen(name);
-        if ((l < 3) && SDL_isdigit(name[0]) && ((l == 1) || SDL_isdigit(name[1]))) {
-            index = SDL_atoi(name);
-            name = NULL;
-        }
+        i += consumed;
     }
 
     /* Initialize the force feedbackness */
@@ -128,7 +149,9 @@ int main(int argc, char **argv)
     if (haptic != NULL) {
         SDL_HapticClose(haptic);
     }
+
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }
