@@ -447,20 +447,6 @@ void X11_ReconcileKeyboardState(_THIS)
     }
 }
 
-static void X11_ShowChildren(_THIS, SDL_Window *window)
-{
-    for (window = window->first_child; window != NULL; window = window->next_sibling) {
-        window->driverdata->hidden_by_parent_focus = SDL_FALSE;
-        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
-            X11_ShowWindow(_this, window);
-        }
-
-        if (window->first_child) {
-            X11_ShowChildren(_this, window);
-        }
-    }
-}
-
 static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
@@ -478,9 +464,6 @@ static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 #endif
     if (data->flashing_window) {
         X11_FlashWindow(_this, data->window, SDL_FLASH_CANCEL);
-    }
-    if (data->window->parent == NULL) {
-        X11_ShowChildren(_this, data->window);
     }
 }
 
