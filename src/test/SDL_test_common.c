@@ -96,10 +96,10 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     state->audiospec.samples = 2048;
 
     /* Set some very sane GL defaults */
-    state->gl_red_size = 3;
-    state->gl_green_size = 3;
-    state->gl_blue_size = 2;
-    state->gl_alpha_size = 0;
+    state->gl_red_size = 8;
+    state->gl_green_size = 8;
+    state->gl_blue_size = 8;
+    state->gl_alpha_size = 8;
     state->gl_buffer_size = 0;
     state->gl_depth_size = 16;
     state->gl_stencil_size = 0;
