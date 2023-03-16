@@ -22,10 +22,15 @@
 /* Ported from original test/common.c file. */
 #include <SDL3/SDL_test.h>
 
+static const char *common_usage[] = {
+    "[-h | --help]",
+    "[--trackmem]",
+    "[--log all|error|system|audio|video|render|input]",
+};
+
 static const char *video_usage[] = {
-    "[--video driver]", "[--renderer driver]", "[--gldebug]",
+    "[--video driver]", "[--renderer driver]", "[--gldebug]", "[--display N]",
     "[--info all|video|modes|render|event|event_motion]",
-    "[--log all|error|system|audio|video|render|input]", "[--display N]",
     "[--metal-window | --opengl-window | --vulkan-window]",
     "[--fullscreen | --fullscreen-desktop | --windows N]", "[--title title]",
     "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
@@ -615,7 +620,10 @@ void SDLTest_CommonLogUsage(SDLTest_CommonState *state, const char *argv0, const
     int i;
 
     SDL_Log("USAGE: %s", argv0);
-    SDL_Log("    %s", "[--trackmem]");
+
+    for (i = 0; i < SDL_arraysize(common_usage); i++) {
+        SDL_Log("    %s", common_usage[i]);
+    }
 
     if (state->flags & SDL_INIT_VIDEO) {
         for (i = 0; i < SDL_arraysize(video_usage); i++) {
