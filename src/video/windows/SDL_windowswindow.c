@@ -118,7 +118,7 @@ static DWORD GetWindowStyle(SDL_Window *window)
 
 static DWORD GetWindowStyleEx(SDL_Window *window)
 {
-    DWORD style = WS_EX_APPWINDOW;
+    DWORD style = 0;
 
     if (SDL_WINDOW_IS_POPUP(window)) {
         style = WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
