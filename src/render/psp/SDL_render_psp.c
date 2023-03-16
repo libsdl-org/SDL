@@ -993,6 +993,7 @@ static void PSP_SetBlendState(PSP_RenderData *data, PSP_BlendState *state)
             break;
         case SDL_BLENDMODE_MUL:
             sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+            /* FIXME SDL_BLENDMODE_MUL is simplified, and dstA is in fact un-changed.*/
             sceGuBlendFunc(GU_ADD, GU_DST_COLOR, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
             sceGuEnable(GU_BLEND);
             break;

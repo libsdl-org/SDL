@@ -201,6 +201,7 @@ SetBlendMode(DirectFB_RenderData * data, int blendMode,
         case SDL_BLENDMODE_MUL:
             data->blitFlags = DSBLIT_BLEND_ALPHACHANNEL;
             data->drawFlags = DSDRAW_BLEND;
+            /* FIXME SDL_BLENDMODE_MUL is simplified, and dstA is in fact un-changed.*/
             SDL_DFB_CHECK(destsurf->SetSrcBlendFunction(destsurf, DSBF_DESTCOLOR));
             SDL_DFB_CHECK(destsurf->SetDstBlendFunction(destsurf, DSBF_INVSRCALPHA));
 
