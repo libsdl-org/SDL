@@ -1073,6 +1073,16 @@ SDL_CreateAudioStream(SDL_AudioFormat src_format,
         return NULL;
     }
 
+    if (src_rate <= 0) {
+        SDL_InvalidParamError("src_rate");
+        return NULL;
+    }
+
+    if (dst_rate <= 0) {
+        SDL_InvalidParamError("dst_rate");
+        return NULL;
+    }
+
     retval = (SDL_AudioStream *)SDL_calloc(1, sizeof(SDL_AudioStream));
     if (retval == NULL) {
         SDL_OutOfMemory();
