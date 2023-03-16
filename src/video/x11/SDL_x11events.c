@@ -461,20 +461,6 @@ static void X11_ShowChildren(_THIS, SDL_Window *window)
     }
 }
 
-static void X11_HideChildren(_THIS, SDL_Window *window)
-{
-    for (window = window->first_child; window != NULL; window = window->next_sibling) {
-        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
-            window->driverdata->hidden_by_parent_focus = SDL_TRUE;
-            X11_HideWindow(_this, window);
-        }
-
-        if (window->first_child) {
-            X11_HideChildren(_this, window);
-        }
-    }
-}
-
 static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
@@ -518,9 +504,6 @@ static void X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
 #ifdef SDL_USE_IME
     SDL_IME_SetFocus(SDL_FALSE);
 #endif
-    if (data->window->parent == NULL) {
-        X11_HideChildren(_this, data->window);
-    }
 }
 
 static void X11_DispatchMapNotify(SDL_WindowData *data)
