@@ -1094,14 +1094,14 @@ int main(int argc, char **argv)
     Uint32 frames;
     int dw, dh;
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (state == NULL) {
         return 1;
     }
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Set Vulkan parameters */
     state->window_flags |= SDL_WINDOW_VULKAN;

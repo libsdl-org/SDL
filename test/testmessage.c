@@ -16,6 +16,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -81,9 +82,21 @@ button_messagebox(void *eventNumber)
 int main(int argc, char *argv[])
 {
     int success;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
                                        "Simple MessageBox",
@@ -208,5 +221,6 @@ int main(int argc, char *argv[])
     }
 
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return 0;
 }

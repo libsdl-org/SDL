@@ -13,6 +13,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 static void
 report_power(void)
@@ -60,10 +61,23 @@ report_power(void)
 
 int main(int argc, char *argv[])
 {
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (SDL_Init(0) == -1) {
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    if (SDL_Init(0) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
         return 1;
     }
@@ -71,6 +85,8 @@ int main(int argc, char *argv[])
     report_power();
 
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
+
     return 0;
 }
 

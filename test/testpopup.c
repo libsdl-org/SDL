@@ -241,6 +241,14 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
     if (!SDLTest_CommonInit(state)) {
         SDLTest_CommonQuit(state);
         quit(2);

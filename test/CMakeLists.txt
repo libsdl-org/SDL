@@ -136,9 +136,39 @@ add_sdl_test_executable(testdropfile testdropfile.c)
 add_sdl_test_executable(testerror NONINTERACTIVE testerror.c)
 
 if(LINUX AND TARGET sdl-build-options)
+    set(build_options_dependent_tests )
+
     add_sdl_test_executable(testevdev NONINTERACTIVE testevdev.c)
-    target_include_directories(testevdev BEFORE PRIVATE $<TARGET_PROPERTY:sdl-build-options,INTERFACE_INCLUDE_DIRECTORIES>)
-    target_include_directories(testevdev BEFORE PRIVATE ${SDL3_SOURCE_DIR}/src)
+    list(APPEND build_options_dependent_tests testevdev)
+
+    if(APPLE)
+        add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS
+            testnative.c
+            testnativecocoa.m
+            testnativex11.c
+        )
+        target_compile_definitions(testnative PRIVATE TEST_NATIVE_COCOA)
+
+        cmake_push_check_state()
+        check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+        cmake_pop_check_state()
+        if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+            set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
+        endif()
+        list(APPEND build_options_dependent_tests testnative)
+    elseif(WINDOWS)
+        add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS testnative.c testnativew32.c)
+        list(APPEND build_options_dependent_tests testnative)
+    elseif(HAVE_X11)
+        add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS testnative.c testnativex11.c)
+        target_link_libraries(testnative PRIVATE X11)
+        list(APPEND build_options_dependent_tests testnative)
+    endif()
+
+    foreach(t ${build_options_dependent_tests})
+        target_include_directories(${t} BEFORE PRIVATE $<TARGET_PROPERTY:sdl-build-options,INTERFACE_INCLUDE_DIRECTORIES>)
+        target_include_directories(${t} BEFORE PRIVATE ${SDL3_SOURCE_DIR}/src)
+    endforeach()
 endif()
 
 add_sdl_test_executable(testfile testfile.c)
@@ -161,26 +191,6 @@ add_sdl_test_executable(testlocale NONINTERACTIVE testlocale.c)
 add_sdl_test_executable(testlock testlock.c)
 add_sdl_test_executable(testmouse testmouse.c)
 
-if(APPLE)
-    add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS
-        testnative.c
-        testnativecocoa.m
-        testnativex11.c
-    )
-
-    cmake_push_check_state()
-    check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
-    cmake_pop_check_state()
-    if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
-        set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
-    endif()
-elseif(WINDOWS)
-    add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS testnative.c testnativew32.c)
-elseif(HAVE_X11)
-    add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS testnative.c testnativex11.c)
-    target_link_libraries(testnative PRIVATE X11)
-endif()
-
 add_sdl_test_executable(testoverlay NEEDS_RESOURCES TESTUTILS testoverlay.c)
 add_sdl_test_executable(testplatform NONINTERACTIVE testplatform.c)
 add_sdl_test_executable(testpower NONINTERACTIVE testpower.c)
@@ -189,7 +199,7 @@ add_sdl_test_executable(testrendertarget NEEDS_RESOURCES TESTUTILS testrendertar
 add_sdl_test_executable(testscale NEEDS_RESOURCES TESTUTILS testscale.c)
 add_sdl_test_executable(testsem testsem.c)
 add_sdl_test_executable(testsensor testsensor.c)
-add_sdl_test_executable(testshader NEEDS_RESOURCES testshader.c)
+add_sdl_test_executable(testshader NEEDS_RESOURCES TESTUTILS testshader.c)
 add_sdl_test_executable(testshape NEEDS_RESOURCES testshape.c)
 add_sdl_test_executable(testsprite NEEDS_RESOURCES TESTUTILS testsprite.c)
 add_sdl_test_executable(testspriteminimal NEEDS_RESOURCES TESTUTILS testspriteminimal.c)
@@ -199,7 +209,7 @@ add_sdl_test_executable(testurl testurl.c)
 add_sdl_test_executable(testver NONINTERACTIVE testver.c)
 add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS testviewport.c)
 add_sdl_test_executable(testwm testwm.c)
-add_sdl_test_executable(testyuv NEEDS_RESOURCES testyuv.c testyuv_cvt.c)
+add_sdl_test_executable(testyuv NEEDS_RESOURCES TESTUTILS testyuv.c testyuv_cvt.c)
 add_sdl_test_executable(torturethread torturethread.c)
 add_sdl_test_executable(testrendercopyex NEEDS_RESOURCES TESTUTILS testrendercopyex.c)
 add_sdl_test_executable(testmessage testmessage.c)

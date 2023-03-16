@@ -25,6 +25,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 /* WARNING ! those 2 files will be destroyed by this test program */
 
@@ -39,6 +40,8 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+
+static SDLTest_CommonState *state;
 
 static void
 cleanup(void)
@@ -55,6 +58,7 @@ rwops_error_quit(unsigned line, SDL_RWops *rwops)
         rwops->close(rwops); /* This calls SDL_DestroyRW(rwops); */
     }
     cleanup();
+    SDLTest_CommonDestroyState(state);
     exit(1); /* quit with rwops error (test failed) */
 }
 
@@ -65,8 +69,19 @@ int main(int argc, char *argv[])
     SDL_RWops *rwops = NULL;
     char test_buf[30];
 
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     cleanup();
 
@@ -354,5 +369,6 @@ int main(int argc, char *argv[])
     rwops->close(rwops);
     SDL_Log("test5 OK\n");
     cleanup();
+    SDLTest_CommonDestroyState(state);
     return 0; /* all ok */
 }

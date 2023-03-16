@@ -14,6 +14,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 #include "testutils.h"
 
 #ifdef __EMSCRIPTEN__
@@ -862,7 +863,14 @@ static void loop(void *arg)
 int main(int argc, char *argv[])
 {
     int i;
-    int gamepad_index = 0;
+    int gamepad_index = -1;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
@@ -875,6 +883,47 @@ int main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcmp(argv[i], "--mappings") == 0) {
+                int map_i;
+                SDL_Log("Supported mappings:\n");
+                for (map_i = 0; map_i < SDL_GetNumGamepadMappings(); ++map_i) {
+                    char *mapping = SDL_GetGamepadMappingForIndex(map_i);
+                    if (mapping) {
+                        SDL_Log("\t%s\n", mapping);
+                        SDL_free(mapping);
+                    }
+                }
+                SDL_Log("\n");
+                consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--virtual") == 0) {
+                OpenVirtualGamepad();
+                consumed = 1;
+            } else if (gamepad_index < 0) {
+                char *endptr = NULL;
+                gamepad_index = (int)SDL_strtol(argv[i], &endptr, 0);
+                if (endptr != argv[i] && *endptr == '\0' && gamepad_index >= 0) {
+                    consumed = 1;
+                }
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[--mappings]", "[--virtual]", "[index]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return 1;
+        }
+
+        i += consumed;
+    }
+    if (gamepad_index < 0) {
+        gamepad_index = 0;
+    }
+
     /* Initialize SDL (Note: video is required to start event loop) */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -882,19 +931,6 @@ int main(int argc, char *argv[])
     }
 
     SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
-
-    /* Print information about the mappings */
-    if (argv[1] && SDL_strcmp(argv[1], "--mappings") == 0) {
-        SDL_Log("Supported mappings:\n");
-        for (i = 0; i < SDL_GetNumGamepadMappings(); ++i) {
-            char *mapping = SDL_GetGamepadMappingForIndex(i);
-            if (mapping) {
-                SDL_Log("\t%s\n", mapping);
-                SDL_free(mapping);
-            }
-        }
-        SDL_Log("\n");
-    }
 
     /* Create a window to display gamepad state */
     window = SDL_CreateWindow("Gamepad Test", SCREEN_WIDTH, SCREEN_HEIGHT, 0);
@@ -935,15 +971,6 @@ int main(int argc, char *argv[])
     /* Process the initial gamepad list */
     loop(NULL);
 
-    for (i = 1; i < argc; ++i) {
-        if (SDL_strcmp(argv[i], "--virtual") == 0) {
-            OpenVirtualGamepad();
-        }
-        if (argv[i] && *argv[i] != '-') {
-            gamepad_index = SDL_atoi(argv[i]);
-            break;
-        }
-    }
     if (gamepad_index < num_gamepads) {
         gamepad = gamepads[gamepad_index];
     } else {
@@ -970,6 +997,7 @@ int main(int argc, char *argv[])
     SDL_DestroyRenderer(screen);
     SDL_DestroyWindow(window);
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD);
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }

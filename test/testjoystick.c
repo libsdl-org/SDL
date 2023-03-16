@@ -16,6 +16,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -32,7 +33,6 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *screen = NULL;
 static SDL_Joystick *joystick = NULL;
-static SDL_bool done = SDL_FALSE;
 
 static void
 PrintJoystick(SDL_Joystick *joy)
@@ -103,6 +103,7 @@ static void loop(void *arg)
 {
     SDL_Event event;
     int i;
+    SDL_bool *done = (SDL_bool*)arg;
 
     /* blank screen, set up for drawing this frame. */
     SDL_SetRenderDrawColor(screen, 0x0, 0x0, 0x0, SDL_ALPHA_OPAQUE);
@@ -200,7 +201,7 @@ static void loop(void *arg)
         case SDL_EVENT_FINGER_DOWN:
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
         case SDL_EVENT_QUIT:
-            done = SDL_TRUE;
+            *done = SDL_TRUE;
             break;
         default:
             break;
@@ -279,7 +280,7 @@ static void loop(void *arg)
     SDL_RenderPresent(screen);
 
 #ifdef __EMSCRIPTEN__
-    if (done) {
+    if (*done == SDL_TRUE) {
         emscripten_cancel_main_loop();
     }
 #endif
@@ -287,10 +288,24 @@ static void loop(void *arg)
 
 int main(int argc, char *argv[])
 {
+    SDL_bool done;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     /* Initialize SDL (Note: video is required to start event loop) */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
@@ -316,12 +331,14 @@ int main(int argc, char *argv[])
     SDL_RenderClear(screen);
     SDL_RenderPresent(screen);
 
+    done = SDL_FALSE;
+
     /* Loop, getting joystick events! */
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop_arg(loop, NULL, 0, 1);
+    emscripten_set_main_loop_arg(loop, &done, 0, 1);
 #else
     while (!done) {
-        loop(NULL);
+        loop(&done);
     }
 #endif
 
@@ -329,6 +346,7 @@ int main(int argc, char *argv[])
     SDL_DestroyWindow(window);
 
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }

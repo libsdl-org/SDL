@@ -12,6 +12,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -49,7 +50,10 @@ static SDL_bool wheel_y_active = SDL_FALSE;
 static float wheel_x = SCREEN_WIDTH * 0.5f;
 static float wheel_y = SCREEN_HEIGHT * 0.5f;
 
-static SDL_bool done = SDL_FALSE;
+struct mouse_loop_data {
+    SDL_bool done;
+    SDL_Renderer *renderer;
+};
 
 static void DrawObject(SDL_Renderer *renderer, Object *object)
 {
@@ -104,8 +108,9 @@ static void AppendObject(Object *object)
 
 static void loop(void *arg)
 {
-    SDL_Renderer *renderer = (SDL_Renderer *)arg;
+    struct mouse_loop_data *loop_data = (struct mouse_loop_data *)arg;
     SDL_Event event;
+    SDL_Renderer *renderer = loop_data->renderer;
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
@@ -212,7 +217,7 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_QUIT:
-            done = SDL_TRUE;
+            loop_data->done = SDL_TRUE;
             break;
 
         default:
@@ -241,7 +246,7 @@ static void loop(void *arg)
     SDL_RenderPresent(renderer);
 
 #ifdef __EMSCRIPTEN__
-    if (done) {
+    if (loop_data->done) {
         emscripten_cancel_main_loop();
     }
 #endif
@@ -249,10 +254,22 @@ static void loop(void *arg)
 
 int main(int argc, char *argv[])
 {
-    SDL_Renderer *renderer;
+    struct mouse_loop_data loop_data;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     /* Initialize SDL (Note: video is required to start event loop) */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -262,31 +279,34 @@ int main(int argc, char *argv[])
 
     /* Create a window to display joystick axis position */
     window = SDL_CreateWindow("Mouse Test", SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
-        return SDL_FALSE;
+        return 0;
     }
 
-    renderer = SDL_CreateRenderer(window, NULL, 0);
-    if (renderer == NULL) {
+    loop_data.done = SDL_FALSE;
+
+    loop_data.renderer = SDL_CreateRenderer(window, NULL, 0);
+    if (!loop_data.renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
-        return SDL_FALSE;
+        return 0;
     }
 
     /* Main render loop */
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop_arg(loop, renderer, 0, 1);
+    emscripten_set_main_loop_arg(loop, &loop_data, 0, 1);
 #else
-    while (!done) {
-        loop(renderer);
+    while (loop_data.done == SDL_FALSE) {
+        loop(&loop_data);
     }
 #endif
 
-    SDL_DestroyRenderer(renderer);
+    SDL_DestroyRenderer(loop_data.renderer);
     SDL_DestroyWindow(window);
 
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }

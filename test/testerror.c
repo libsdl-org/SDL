@@ -16,6 +16,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 static int alive = 0;
 
@@ -44,9 +45,21 @@ ThreadFunc(void *data)
 int main(int argc, char *argv[])
 {
     SDL_Thread *thread;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
@@ -77,5 +90,6 @@ int main(int argc, char *argv[])
     SDL_Log("Main thread error string: %s\n", SDL_GetError());
 
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return 0;
 }

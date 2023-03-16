@@ -14,6 +14,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -89,14 +90,41 @@ static void loop(void)
 
 int main(int argc, char **argv)
 {
-    /* (argv[1] == NULL means "open default device.") */
-    const char *devname = argv[1];
+    /* (NULL means "open default device.") */
+    const char *devname = NULL;
     SDL_AudioSpec wanted;
     int devcount;
     int i;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (!devname) {
+                devname = argv[i];
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[driver_name]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            exit(1);
+        }
+
+        i += consumed;
+    }
 
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
@@ -104,8 +132,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    window = SDL_CreateWindow("testaudiocapture", 320, 240, 0);
-    renderer = SDL_CreateRenderer(window, NULL, 0);
+    if (SDL_CreateWindowAndRenderer(320, 240, 0, &window, &renderer) < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window and renderer: %s\n", SDL_GetError());
+        return 1;
+    }
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
@@ -145,7 +175,7 @@ int main(int argc, char **argv)
             devname ? devname : "[[default]]",
             devname ? "'" : "");
 
-    devid_in = SDL_OpenAudioDevice(argv[1], SDL_TRUE, &spec, &spec, 0);
+    devid_in = SDL_OpenAudioDevice(devname, SDL_TRUE, &spec, &spec, 0);
     if (!devid_in) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for capture: %s!\n", SDL_GetError());
         SDL_Quit();
@@ -162,6 +192,10 @@ int main(int argc, char **argv)
         SDL_Delay(16);
     }
 #endif
+    /* SDL_DestroyRenderer(renderer); */
+    /* SDL_DestroyWindow(window); */
 
+    /* SDL_Quit(); */
+    /* SDLTest_CommonDestroyState(state); */
     /* return 0; */
 }
