@@ -91,7 +91,7 @@
 #define DRAW_SETPIXEL_MUL(getpixel, setpixel)      \
     do {                                           \
         unsigned sr, sg, sb, sa;                   \
-        sa = 0xFF;                                 \
+        (void)sa;                                  \
         getpixel;                                  \
         sr = DRAW_MUL(sr, r) + DRAW_MUL(inva, sr); \
         if (sr > 0xff)                             \
@@ -102,9 +102,6 @@
         sb = DRAW_MUL(sb, b) + DRAW_MUL(inva, sb); \
         if (sb > 0xff)                             \
             sb = 0xff;                             \
-        sa = DRAW_MUL(sa, a) + DRAW_MUL(inva, sa); \
-        if (sa > 0xff)                             \
-            sa = 0xff;                             \
         setpixel;                                  \
     } while (0)
 
