@@ -650,8 +650,11 @@ static void handle_configure_xdg_popup(void *data,
     GetPopupPosition(wind->sdlwindow, 0, 0, &offset_x, &offset_y);
     x -= offset_x;
     y -= offset_y;
-    
-    SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_RESIZED, width, height);
+
+    wind->requested_window_width = width;
+    wind->requested_window_height = height;
+
+    ConfigureWindowGeometry(wind->sdlwindow);
     SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_MOVED, x, y);
 
     if (wind->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
