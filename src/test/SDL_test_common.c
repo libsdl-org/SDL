@@ -659,7 +659,7 @@ SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **arg
     int i = 1;
     while (i < argc) {
         const int consumed = SDLTest_CommonArg(state, i);
-        if (consumed == 0) {
+        if (consumed <= 0) {
             SDLTest_CommonLogUsage(state, argv[0], NULL);
             return SDL_FALSE;
         }
