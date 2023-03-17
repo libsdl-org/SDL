@@ -360,7 +360,8 @@ endforeach()
 
 # Allow some projects to be built conditionally.
 set_option(SDL_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
-cmake_dependent_option(SDL_DISABLE_INSTALL_CPACK "Create binary SDL3 archive using CPack" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL" OFF)
+cmake_dependent_option(SDL_DISABLE_INSTALL_CPACK "Create binary SDL3 archive using CPack" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL" ON)
+cmake_dependent_option(SDL_DISABLE_INSTALL_MAN "Install man pages for SDL3" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" ON)
 set_option(SDL_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
 
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
@@ -3628,6 +3629,31 @@ if(NOT SDL_DISABLE_INSTALL)
     set(CPACK_SOURCE_PACKAGE_FILE_NAME "SDL${PROJECT_VERSION_MAJOR}-${PROJECT_VERSION}-src")
     set(CPACK_PACKAGE_DIRECTORY "${CMAKE_BINARY_DIR}/dist")
     include(CPack)
+  endif()
+
+  if(NOT SDL_DISABLE_INSTALL_MAN)
+    find_package(Perl)
+    if(PERL_FOUND)
+      file(GLOB SDL3_MAN_INCLUDE_FILES "${SDL3_SOURCE_DIR}/include/SDL3/*.h")
+      set(SDL3_BINARY_DOCDIR "${SDL3_BINARY_DIR}/docs")
+      set(SDL3_BINARY_DOC_WIKIDIR "${SDL3_BINARY_DOCDIR}/wiki")
+      set(SDL3_BINARY_DOC_MANDIR "${SDL3_BINARY_DOCDIR}/man")
+      execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${SDL3_BINARY_DOC_WIKIDIR}")
+      add_custom_command(
+        OUTPUT "${SDL3_BINARY_DOC_WIKIDIR}/SDL_Init.md"
+        COMMAND "${PERL_EXECUTABLE}" "${SDL3_SOURCE_DIR}/build-scripts/wikiheaders.pl" "${SDL3_SOURCE_DIR}" "${SDL3_BINARY_DOC_WIKIDIR}" "--options=${SDL3_SOURCE_DIR}/.wikiheaders-options" --copy-to-wiki
+        DEPENDS ${SDL3_MAN_INCLUDE_FILES} "${SDL3_SOURCE_DIR}/build-scripts/wikiheaders.pl" "${SDL3_SOURCE_DIR}/.wikiheaders-options"
+        COMMENT "Generating SDL3 wiki markdown files"
+      )
+      add_custom_command(
+        OUTPUT "${SDL3_BINARY_DOC_MANDIR}/man3/SDL_Init.3"
+        COMMAND "${PERL_EXECUTABLE}" "${SDL3_SOURCE_DIR}/build-scripts/wikiheaders.pl" "${SDL3_SOURCE_DIR}" "${SDL3_BINARY_DOC_WIKIDIR}" "--options=${SDL3_SOURCE_DIR}/.wikiheaders-options" --"manpath=${SDL3_BINARY_DOC_MANDIR}" --copy-to-manpages
+        DEPENDS "${SDL3_BINARY_DOC_WIKIDIR}/SDL_Init.md" "${SDL3_SOURCE_DIR}/build-scripts/wikiheaders.pl" "${SDL3_SOURCE_DIR}/.wikiheaders-options"
+        COMMENT "Generating SDL3 man pages"
+      )
+      add_custom_target(SDL3_docs ALL DEPENDS "${SDL3_BINARY_DOC_MANDIR}/man3/SDL_Init.3")
+      install(DIRECTORY "${SDL3_BINARY_DOCDIR}/man/" DESTINATION "${CMAKE_INSTALL_MANDIR}")
+    endif()
   endif()
 endif()
 
