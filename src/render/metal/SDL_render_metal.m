@@ -119,6 +119,8 @@ typedef struct METAL_ShaderPipelines
     METAL_PipelineCache caches[SDL_METAL_FRAGMENT_COUNT];
 } METAL_ShaderPipelines;
 
+
+#define METAL_RenderData SDL_UNIQUE_OBJC_CLASS(METAL_RenderData)
 @interface METAL_RenderData : NSObject
     @property (nonatomic, retain) id<MTLDevice> mtldevice;
     @property (nonatomic, retain) id<MTLCommandQueue> mtlcmdqueue;
@@ -141,6 +143,8 @@ typedef struct METAL_ShaderPipelines
 @implementation METAL_RenderData
 @end
 
+
+#define METAL_TextureData SDL_UNIQUE_OBJC_CLASS(METAL_TextureData)
 @interface METAL_TextureData : NSObject
     @property (nonatomic, retain) id<MTLTexture> mtltexture;
     @property (nonatomic, retain) id<MTLTexture> mtltexture_uv;

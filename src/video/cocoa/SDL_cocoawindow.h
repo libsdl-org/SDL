@@ -29,6 +29,9 @@
 #include "../SDL_egl_c.h"
 #endif
 
+#include "SDL_cocoavideo.h"
+
+#define SDL_WindowData SDL_UNIQUE_OBJC_CLASS(SDL_WindowData)
 @class SDL_WindowData;
 
 typedef enum
@@ -39,6 +42,7 @@ typedef enum
     PENDING_OPERATION_MINIMIZE
 } PendingWindowOperation;
 
+#define Cocoa_WindowListener SDL_UNIQUE_OBJC_CLASS(Cocoa_WindowListener)
 @interface Cocoa_WindowListener : NSResponder <NSWindowDelegate> {
     /* SDL_WindowData owns this Listener and has a strong reference to it.
      * To avoid reference cycles, we could have either a weak or an
@@ -117,9 +121,6 @@ typedef enum
 
 @end
 /* *INDENT-ON* */
-
-@class SDLOpenGLContext;
-@class SDL_VideoData;
 
 @interface SDL_WindowData : NSObject
     @property (nonatomic) SDL_Window *window;

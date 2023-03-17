@@ -40,6 +40,7 @@ struct SDL_GLDriverData
     int initialized;
 };
 
+#define SDLOpenGLContext SDL_UNIQUE_OBJC_CLASS(SDLOpenGLContext)
 @interface SDLOpenGLContext : NSOpenGLContext {
     SDL_atomic_t dirty;
     SDL_Window *window;

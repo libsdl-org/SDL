@@ -55,6 +55,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     return sdlwindow;
 }
 
+#define SDLApplication SDL_UNIQUE_OBJC_CLASS(SDLApplication)
 @interface SDLApplication : NSApplication
 
 - (void)terminate:(id)sender;
@@ -131,6 +132,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 - (void)setAppleMenu:(NSMenu *)menu;
 @end
 
+#define SDLAppDelegate SDL_UNIQUE_OBJC_CLASS(SDLAppDelegate)
 @interface SDLAppDelegate : NSObject <NSApplicationDelegate> {
 @public
     BOOL seenFirstActivate;

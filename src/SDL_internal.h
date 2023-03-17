@@ -26,6 +26,24 @@
 #define _GNU_SOURCE
 #endif
 
+/* if we use the dynamic API on macOS, our internal Objective-C classes will
+   have the same name as the library we are overriding, which confuses things
+   (class names have to be globally unique). Attempt to name these classes
+   with the current git hash appended, if possible, so they won't clash.
+   Just `#define MyObjCClass SDL_UNIQUE_OBJC_CLASS(MyObjCClass)` and then
+   set up `@interface MyObjCClass` etc, as usual. */
+#ifdef __OBJC__
+#   include "SDL_revision.h"
+#   ifdef SDL_REVISION_HASH
+#       define SDL_UNIQUE_OBJC_CLASS3(name, hash) name##_##hash
+#       define SDL_UNIQUE_OBJC_CLASS2(name, hash) SDL_UNIQUE_OBJC_CLASS3(name, hash)
+#       define SDL_UNIQUE_OBJC_CLASS(name) SDL_UNIQUE_OBJC_CLASS2(name, SDL_REVISION_HASH)
+#   else  /* oh well. */
+#       define SDL_UNIQUE_OBJC_CLASS(name) name
+#   endif
+#endif
+
+
 /* This is for a variable-length array at the end of a struct:
     struct x { int y; char z[SDL_VARIABLE_LENGTH_ARRAY]; };
    Use this because GCC 2 needs different magic than other compilers. */

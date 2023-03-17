@@ -29,6 +29,7 @@
 #include "SDL_shape.h"
 #include "../SDL_shape_internals.h"
 
+#define SDL_ShapeData SDL_UNIQUE_OBJC_CLASS(SDL_ShapeData)
 @interface SDL_ShapeData : NSObject
     @property (nonatomic) NSGraphicsContext* context;
     @property (nonatomic) SDL_bool saved;

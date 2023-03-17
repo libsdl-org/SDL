@@ -32,6 +32,9 @@
 #include "SDL_keycode.h"
 #include "../SDL_sysvideo.h"
 
+#define SDL_VideoData SDL_UNIQUE_OBJC_CLASS(SDL_VideoData)
+@class SDL_VideoData;
+
 #include "SDL_cocoaclipboard.h"
 #include "SDL_cocoaevents.h"
 #include "SDL_cocoakeyboard.h"
@@ -95,6 +98,7 @@ DECLARE_ALERT_STYLE(Critical);
 
 /* Private display data */
 
+#define SDLTranslatorResponder SDL_UNIQUE_OBJC_CLASS(SDLTranslatorResponder)
 @class SDLTranslatorResponder;
 
 @interface SDL_VideoData : NSObject

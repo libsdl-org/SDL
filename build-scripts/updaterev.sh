@@ -28,6 +28,7 @@ done
 
 rev=`sh showrev.sh 2>/dev/null`
 if [ "$rev" != "" ]; then
+    revhash=`sh showrevhash.sh 2>/dev/null`
     if [ -n "$dist" ]; then
         echo "$rev" > "$outdir/VERSION.txt"
     fi
@@ -41,6 +42,9 @@ if [ "$rev" != "" ]; then
     echo "#define SDL_REVISION \"SDL-$rev\"" >>"$header.new"
     echo "#endif" >>"$header.new"
     echo "#define SDL_REVISION_NUMBER 0" >>"$header.new"
+    echo "/* SDL_REVISION_HASH is not a formal version, but whatever happens to be on this computer." >>"$header.new"
+    echo "   It's used for uniqueness internally and should not be shown to the user. */" >>"$header.new"
+    echo "#define SDL_REVISION_HASH $revhash" >>"$header.new"
     if diff $header $header.new >/dev/null 2>&1; then
         rm "$header.new"
     else

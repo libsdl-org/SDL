@@ -40,6 +40,7 @@
 #import <QuartzCore/CAMetalLayer.h>
 
 
+#define SDL_cocoametalview SDL_UNIQUE_OBJC_CLASS(SDL_cocoametalview)
 @interface SDL_cocoametalview : NSView
 
 - (instancetype)initWithFrame:(NSRect)frame

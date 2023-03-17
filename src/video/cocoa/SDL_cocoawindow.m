@@ -75,6 +75,8 @@
 @property (nonatomic) NSRect mouseConfinementRect;
 @end
 
+
+#define SDLWindow SDL_UNIQUE_OBJC_CLASS(SDLWindow)
 @interface SDLWindow : NSWindow <NSDraggingDestination>
 /* These are needed for borderless/fullscreen windows */
 - (BOOL)canBecomeKeyWindow;
@@ -1527,6 +1529,7 @@ Cocoa_SendMouseButtonClicks(SDL_Mouse * mouse, NSEvent *theEvent, SDL_Window * w
 
 @end
 
+#define SDLView SDL_UNIQUE_OBJC_CLASS(SDLView)
 @interface SDLView : NSView {
     SDL_Window *_sdlWindow;
 }

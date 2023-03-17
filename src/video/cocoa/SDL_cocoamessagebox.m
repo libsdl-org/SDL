@@ -27,6 +27,7 @@
 #include "SDL_messagebox.h"
 #include "SDL_cocoavideo.h"
 
+#define SDLMessageBoxPresenter SDL_UNIQUE_OBJC_CLASS(SDLMessageBoxPresenter)
 @interface SDLMessageBoxPresenter : NSObject {
 @public
     NSInteger clicked;

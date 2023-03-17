@@ -23,8 +23,7 @@
 #ifndef SDL_cocoaclipboard_h_
 #define SDL_cocoaclipboard_h_
 
-/* Forward declaration */
-@class SDL_VideoData;
+#include "SDL_cocoavideo.h"
 
 extern int Cocoa_SetClipboardText(_THIS, const char *text);
 extern char *Cocoa_GetClipboardText(_THIS);

@@ -1214,6 +1214,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
 #ifdef ENABLE_MFI_RUMBLE
 
+#define SDL_RumbleMotor SDL_UNIQUE_OBJC_CLASS(SDL_RumbleMotor)
 @interface SDL_RumbleMotor : NSObject
 @property(nonatomic, strong) CHHapticEngine *engine API_AVAILABLE(macos(10.16), ios(13.0), tvos(14.0));
 @property(nonatomic, strong) id<CHHapticPatternPlayer> player API_AVAILABLE(macos(10.16), ios(13.0), tvos(14.0));
@@ -1335,6 +1336,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
 @end
 
+#define SDL_RumbleContext SDL_UNIQUE_OBJC_CLASS(SDL_RumbleContext)
 @interface SDL_RumbleContext : NSObject
 @property(nonatomic, strong) SDL_RumbleMotor *lowFrequencyMotor;
 @property(nonatomic, strong) SDL_RumbleMotor *highFrequencyMotor;

@@ -30,6 +30,7 @@
 @implementation SDL_ShapeData
 @end
 
+#define SDL_CocoaClosure SDL_UNIQUE_OBJC_CLASS(SDL_CocoaClosure)
 @interface SDL_CocoaClosure : NSObject
     @property (nonatomic) NSView* view;
     @property (nonatomic) NSBezierPath* path;
