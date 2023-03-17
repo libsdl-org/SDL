@@ -47,6 +47,7 @@ struct SDL_PrivateAudioData
     SDL_AudioStream *capturestream;
     HANDLE event;
     HANDLE task;
+    SDL_threadID open_threadid;
     SDL_bool coinitialized;
     int framesize;
     int default_device_generation;
