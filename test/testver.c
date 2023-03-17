@@ -25,6 +25,11 @@ int main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
+    if (argc > 1) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "USAGE: %s", argv[0]);
+        return 1;
+    }
+
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_Log("Compiled with SDL 3.0 or newer\n");
 #else
