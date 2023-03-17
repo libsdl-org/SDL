@@ -391,7 +391,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
                 /* Figure out what the window area will be */
                 WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_FALSE);
                 data->expected_resize = SDL_TRUE;
-                SetWindowPos(hwnd, HWND_NOTOPMOST, x, y, w, h, data->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+                SetWindowPos(hwnd, NULL, x, y, w, h, data->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
                 data->expected_resize = SDL_FALSE;
             } else {
                 window->w = w;
@@ -457,6 +457,12 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
         WIN_UpdateClipCursor(window);
     }
 #endif
+
+    if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+        WIN_SetWindowAlwaysOnTop(_this, window, SDL_TRUE);
+    } else {
+        WIN_SetWindowAlwaysOnTop(_this, window, SDL_FALSE);
+    }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* Enable multi-touch */
@@ -891,7 +897,7 @@ void WIN_ShowWindow(_THIS, SDL_Window *window)
 
     if (window->parent) {
         /* Update our position in case our parent moved while we were hidden */
-        WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOACTIVATE);
+        WIN_SetWindowPosition(_this, window);
     }
 
     hwnd = window->driverdata->hwnd;
@@ -954,7 +960,9 @@ void WIN_RaiseWindow(_THIS, SDL_Window *window)
         ShowWindow(hwnd, SW_RESTORE);
         AttachThreadInput(dwCurID, dwMyID, TRUE);
         SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+        if (!SDL_ShouldAllowTopmost() || !(window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
+            SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+        }
     }
     SetForegroundWindow(hwnd);
     if (bForce) {
@@ -1011,13 +1019,7 @@ void WIN_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
 
 void WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window *window, SDL_bool on_top)
 {
-    SDL_WindowData *data = window->driverdata;
-    HWND hwnd = data->hwnd;
-    if (on_top) {
-        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-    } else {
-        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-    }
+    WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE);
 }
 
 void WIN_RestoreWindow(_THIS, SDL_Window *window)
