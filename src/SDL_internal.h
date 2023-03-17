@@ -194,6 +194,8 @@
 #define HAVE_NEON_INTRINSICS 1
 #endif
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+
 #if (defined(__MMX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_MMX)
 #define HAVE_MMX_INTRINSICS 1
 #endif
@@ -213,6 +215,8 @@
 #if (defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
 #define HAVE_AVX_INTRINSICS 1
 #endif
+
+#endif /* x86/x64 */
 
 #if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX)
 #define HAVE_LSX_INTRINSICS 1
