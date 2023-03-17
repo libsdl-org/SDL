@@ -113,6 +113,7 @@ _m_prefetch(void *__P)
 #if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX)
 #include <lasxintrin.h>
 #endif
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #if (defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
 #include <immintrin.h>
 #endif
@@ -128,5 +129,6 @@ _m_prefetch(void *__P)
 #if (defined(__SSE3__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE3)
 #include <pmmintrin.h>
 #endif
+#endif /**/
 
 #endif /* SDL_intrin_h_ */
