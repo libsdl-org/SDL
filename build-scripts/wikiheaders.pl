@@ -2,6 +2,7 @@
 
 use warnings;
 use strict;
+use File::Path;
 use Text::Wrap;
 
 $Text::Wrap::huge = 'overflow';
@@ -29,6 +30,7 @@ my $copy_direction = 0;
 my $optionsfname = undef;
 my $wikipreamble = undef;
 my $changeformat = undef;
+my $manpath = undef;
 
 foreach (@ARGV) {
     $warn_about_missing = 1, next if $_ eq '--warn-about-missing';
@@ -42,6 +44,9 @@ foreach (@ARGV) {
     } elsif (/\A--changeformat=(.*)\Z/) {
         $changeformat = $1;
         next;
+    } elsif (/\A--manpath=(.*)\Z/) {
+        $manpath = $1;
+        next;
     }
     $srcpath = $_, next if not defined $srcpath;
     $wikipath = $_, next if not defined $wikipath;
@@ -52,6 +57,10 @@ $default_optionsfname = "$srcpath/$default_optionsfname" if defined $srcpath;
 
 if ((not defined $optionsfname) && (-f $default_optionsfname)) {
     $optionsfname = $default_optionsfname;
+}
+
+if (not defined $manpath) {
+    $manpath = "$srcpath/man";
 }
 
 if (defined $optionsfname) {
@@ -474,7 +483,7 @@ sub filecopy {
 }
 
 sub usage {
-    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki|--copy-to-manpages] [--warn-about-missing]\n\n");
+    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki|--copy-to-manpages] [--warn-about-missing] [--manpath=<man path>]\n\n");
 }
 
 usage() if not defined $srcpath;
@@ -1412,10 +1421,8 @@ if ($copy_direction == 1) {  # --copy-to-headers
 } elsif ($copy_direction == -2) { # --copy-to-manpages
     # This only takes from the wiki data, since it has sections we omit from the headers, like code examples.
 
-    my $manpath = "$srcpath/man";
-    mkdir($manpath);
     $manpath .= "/man3";
-    mkdir($manpath);
+    File::Path::make_path($manpath);
 
     $dewikify_mode = 'manpage';
     $wordwrap_mode = 'manpage';
