@@ -6,7 +6,7 @@ fi
 
 machine="$($CC -dumpmachine)"
 case "$machine" in
-    *mingw* )
+    *mingw*|*cygwin* )
         EXEPREFIX=""
         EXESUFFIX=".exe"
         ;;

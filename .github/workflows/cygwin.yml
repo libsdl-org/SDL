@@ -1,0 +1,74 @@
+name: Build (Cygwin)
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  cygwin:
+    name: ${{ matrix.platform.name }}
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: bash --noprofile --norc -eo pipefail -o igncr {0}
+
+    steps:
+    - name: Set up Cygwin
+      uses: cygwin/cygwin-install-action@master
+      with:
+        packages: >-
+          ccache
+          cmake
+          gcc-core
+          gcc-g++
+          ninja
+          pkg-config
+
+    - uses: actions/checkout@v3
+
+    - name: Configure (CMake)
+      run: |
+        cmake -S . -B build -G Ninja \
+          -Wdeprecated -Wdev -Werror \
+          -DSDL_SHARED=ON \
+          -DSDL_STATIC=ON \
+          -DSDL_TESTS=ON \
+          -DSDL_WERROR=ON \
+          -DSDL_INSTALL_TESTS=ON \
+          -DSDL_VENDOR_INFO="Github Workflow" \
+          -DCMAKE_INSTALL_PREFIX=cmake_prefix \
+          -DCMAKE_BUILD_TYPE=Release
+    - name: Build (CMake)
+      run: |
+        cmake --build build/ --config Release --verbose --parallel
+    - name: Run build-time tests (CMake)
+      run: |
+        export SDL_TESTS_QUICK=1
+        ctest -VV --test-dir build/
+    - name: Install (CMake)
+      run: |
+        cmake --install build/ --config Release
+    - name: Package (CPack)
+      run: |
+        cmake --build build/ --config Release --target package
+    - name: Verify CMake configuration files
+      run: |
+        cmake -S cmake/test -B cmake_config_build -G Ninja \
+          -DTEST_SHARED=ON \
+          -DTEST_STATIC=ON \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_PREFIX_PATH=$(echo "${{ github.workspace }}/cmake_prefix" | cygpath -u -f -)
+        cmake --build cmake_config_build --verbose
+    - name: Verify sdl3.pc
+      if: ${{ !matrix.platform.skip_test_pkgconfig }}
+      run: |
+        export PKG_CONFIG_PATH=$(echo "${{ github.workspace }}/cmake_prefix/lib/pkgconfig" | cygpath -u -f -)
+        sh -o igncr cmake/test/test_pkgconfig.sh
+    - uses: actions/upload-artifact@v3
+      with:
+        if-no-files-found: error
+        name: SDL-cygwin
+        path: build/dist/SDL3*

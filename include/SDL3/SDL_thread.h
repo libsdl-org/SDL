@@ -109,11 +109,20 @@ typedef uintptr_t (__cdecl * pfnSDL_CurrentBeginThread)
                     void * /*arg*/, unsigned, unsigned * /* threadID */);
 typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
 
+#if defined(__CYGWIN__) || defined(__WINRT__)
+#ifndef SDL_beginthread
+#define SDL_beginthread NULL
+#endif
+#ifndef SDL_endthread
+#define SDL_endthread NULL
+#endif
+#else
 #ifndef SDL_beginthread
 #define SDL_beginthread _beginthreadex
 #endif
 #ifndef SDL_endthread
 #define SDL_endthread _endthreadex
+#endif
 #endif
 
 

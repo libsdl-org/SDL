@@ -358,6 +358,11 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
   option(SDL_${_OPT} "Enable the ${_SUB} subsystem" ${SDL_${_OPT}_ENABLED_BY_DEFAULT})
 endforeach()
 
+set(WINDOWS_PLATFORM_DEFAULT ${WINDOWS})
+if(CYGWIN)
+  set(WINDOWS_PLATFORM_DEFAULT ON)
+endif()
+
 # Allow some projects to be built conditionally.
 set_option(SDL_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
 cmake_dependent_option(SDL_DISABLE_INSTALL_CPACK "Create binary SDL3 archive using CPack" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL" OFF)
@@ -420,10 +425,10 @@ dep_option(SDL_WAYLAND_QT_TOUCH    "QtWayland server support for Wayland video d
 set_option(SDL_RPI                 "Use Raspberry Pi video driver" ${UNIX_SYS})
 set_option(SDL_ROCKCHIP            "Use ROCKCHIP Hardware Acceleration video driver" ${UNIX_SYS})
 set_option(SDL_COCOA               "Use Cocoa video driver" ${APPLE})
-set_option(SDL_DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
-set_option(SDL_XINPUT              "Use Xinput for Windows" ${WINDOWS})
-set_option(SDL_WASAPI              "Use the Windows WASAPI audio driver" ${WINDOWS})
-set_option(SDL_RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS})
+set_option(SDL_DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS_PLATFORM_DEFAULT})
+set_option(SDL_XINPUT              "Use Xinput for Windows" ${WINDOWS_PLATFORM_DEFAULT})
+set_option(SDL_WASAPI              "Use the Windows WASAPI audio driver" ${WINDOWS_PLATFORM_DEFAULT})
+set_option(SDL_RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS_PLATFORM_DEFAULT})
 set_option(SDL_RENDER_METAL        "Enable the Metal render driver" ${APPLE})
 set_option(SDL_VIVANTE             "Use Vivante EGL video driver" ${UNIX_SYS})
 dep_option(SDL_VULKAN              "Enable Vulkan support" ON "ANDROID OR APPLE OR LINUX OR WINDOWS" OFF)
@@ -1228,7 +1233,7 @@ if(SDL_AUDIO)
   endif()
 endif()
 
-if(UNIX OR APPLE)
+if((UNIX OR APPLE) AND NOT CYGWIN)
   # Relevant for Unix/Darwin only
   set(DYNAPI_NEEDS_DLOPEN 1)
   CheckDLOPEN()
@@ -1467,7 +1472,7 @@ elseif(EMSCRIPTEN)
     list(APPEND EXTRA_TEST_LIBS unwind)
   endif()
 
-elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
+elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU AND NOT CYGWIN)
   if(SDL_AUDIO)
     if(NETBSD)
         set(SDL_AUDIO_DRIVER_NETBSD 1)
@@ -1750,7 +1755,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     set(HAVE_RPATH TRUE)
   endif()
 
-elseif(WINDOWS)
+elseif(WINDOWS OR CYGWIN)
   find_program(WINDRES windres)
 
   check_c_source_compiles("
@@ -1791,9 +1796,10 @@ elseif(WINDOWS)
     endif()
     if(NOT MINGW AND NOT USE_WINSDK_DIRECTX)
       if("$ENV{DXSDK_DIR}" STREQUAL "")
-        message_error("DIRECTX requires the \$DXSDK_DIR environment variable to be set")
+        message(STATUS "SDL_DIRECTX options requires the \$DXSDK_DIR environment variable to be set")
+      else()
+        set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} /I\"$ENV{DXSDK_DIR}\\Include\"")
       endif()
-      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} /I\"$ENV{DXSDK_DIR}\\Include\"")
     endif()
 
     check_include_file(d3d9.h HAVE_D3D_H)
@@ -1817,8 +1823,8 @@ elseif(WINDOWS)
     if(HAVE_D3D_H OR HAVE_D3D11_H OR HAVE_D3D12_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H)
       set(HAVE_DIRECTX TRUE)
       if(NOT MINGW AND NOT USE_WINSDK_DIRECTX)
-      # TODO: change $ENV{DXSDL_DIR} to get the path from the include checks
-        target_link_directories(sdl-build-options INTERFACE "$$ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH}")
+        # TODO: change $ENV{DXSDL_DIR} to get the path from the include checks
+        target_link_directories(sdl-build-options INTERFACE "$ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH}")
         target_include_directories(sdl-build-options INTERFACE "$ENV{DXSDK_DIR}\\Include")
       endif()
     endif()
@@ -3276,14 +3282,15 @@ if(SDL_SHARED)
         VERSION "${SDL_DYLIB_CURRENT_VERSION}"  # VERSION corresponds to the current version
       )
     endif()
-  elseif(UNIX AND NOT ANDROID)
+  elseif(UNIX AND NOT ANDROID AND NOT CYGWIN)
     set_target_properties(SDL3-shared PROPERTIES
       VERSION "${SDL_SO_VERSION}"
       SOVERSION "${SDL_SO_VERSION_MAJOR}")
   else()
     if(WINDOWS OR CYGWIN)
       set_target_properties(SDL3-shared PROPERTIES
-        DEFINE_SYMBOL DLL_EXPORT)
+        DEFINE_SYMBOL DLL_EXPORT
+        PREFIX "")
     endif()
   endif()
   # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
