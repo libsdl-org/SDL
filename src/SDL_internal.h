@@ -194,23 +194,23 @@
 #define HAVE_NEON_INTRINSICS 1
 #endif
 
-#if defined(__MMX__) && !defined(SDL_DISABLE_MMX)
+#if (defined(__MMX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_MMX)
 #define HAVE_MMX_INTRINSICS 1
 #endif
 
-#if defined(__SSE__) && !defined(SDL_DISABLE_SSE)
+#if (defined(__SSE__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE)
 #define HAVE_SSE_INTRINSICS 1
 #endif
 
-#if defined(__SSE2__) && !defined(SDL_DISABLE_SSE2)
+#if (defined(__SSE2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE2)
 #define HAVE_SSE2_INTRINSICS 1
 #endif
 
-#if defined(__SSE3__) && !defined(SDL_DISABLE_SSE3)
+#if (defined(__SSE3__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE3)
 #define HAVE_SSE3_INTRINSICS 1
 #endif
 
-#if defined(__AVX__) && !defined(SDL_DISABLE_AVX)
+#if (defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
 #define HAVE_AVX_INTRINSICS 1
 #endif
 
@@ -220,19 +220,6 @@
 
 #if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX)
 #define HAVE_LASX_INTRINSICS 1
-#endif
-
-#if defined __clang__
-#if (!__has_attribute(target))
-#undef HAVE_AVX_INTRINSICS
-#endif
-#if (defined(_MSC_VER) || defined(__SCE__)) && !defined(__AVX__)
-#undef HAVE_AVX_INTRINSICS
-#endif
-#elif defined __GNUC__
-#if (__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
-#undef HAVE_AVX_INTRINSICS
-#endif
 #endif
 
 

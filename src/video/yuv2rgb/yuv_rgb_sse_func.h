@@ -382,7 +382,7 @@ PACK_RGB24_32_STEP1(R1, R2, G1, G2, B1, B2, RGB1, RGB2, RGB3, RGB4, RGB5, RGB6) 
 	\
 
 
-void SSE_FUNCTION_NAME(uint32_t width, uint32_t height, 
+void SDL_TARGETING("sse2") SSE_FUNCTION_NAME(uint32_t width, uint32_t height, 
 	const uint8_t *Y, const uint8_t *U, const uint8_t *V, uint32_t Y_stride, uint32_t UV_stride, 
 	uint8_t *RGB, uint32_t RGB_stride, 
 	YCbCrType yuv_type)

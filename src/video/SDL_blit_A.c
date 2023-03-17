@@ -169,7 +169,7 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
 #if HAVE_MMX_INTRINSICS
 
 /* fast RGB888->(A)RGB888 blending with surface alpha=128 special case */
-static void BlitRGBtoRGBSurfaceAlpha128MMX(SDL_BlitInfo *info)
+static void SDL_TARGETING("mmx") BlitRGBtoRGBSurfaceAlpha128MMX(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -223,7 +223,7 @@ static void BlitRGBtoRGBSurfaceAlpha128MMX(SDL_BlitInfo *info)
 }
 
 /* fast RGB888->(A)RGB888 blending with surface alpha */
-static void BlitRGBtoRGBSurfaceAlphaMMX(SDL_BlitInfo *info)
+static void SDL_TARGETING("mmx") BlitRGBtoRGBSurfaceAlphaMMX(SDL_BlitInfo *info)
 {
     SDL_PixelFormat *df = info->dst_fmt;
     Uint32 chanmask;
@@ -318,7 +318,7 @@ static void BlitRGBtoRGBSurfaceAlphaMMX(SDL_BlitInfo *info)
 }
 
 /* fast ARGB888->(A)RGB888 blending with pixel alpha */
-static void BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
+static void SDL_TARGETING("mmx") BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -753,7 +753,7 @@ static void Blit16to16SurfaceAlpha128(SDL_BlitInfo *info, Uint16 mask)
 #if HAVE_MMX_INTRINSICS
 
 /* fast RGB565->RGB565 blending with surface alpha */
-static void Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
+static void SDL_TARGETING("mmx") Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
 {
     unsigned alpha = info->a;
     if (alpha == 128) {
@@ -889,7 +889,7 @@ static void Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
 }
 
 /* fast RGB555->RGB555 blending with surface alpha */
-static void Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
+static void SDL_TARGETING("mmx") Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
 {
     unsigned alpha = info->a;
     if (alpha == 128) {

@@ -609,7 +609,7 @@ V = _mm_srai_epi16(V, PRECISION);
 	SAVE_SI128((__m128i*)(u_ptr), u1); \
 	SAVE_SI128((__m128i*)(v_ptr), v1);
 
-void rgb24_yuv420_sse(uint32_t width, uint32_t height,
+void SDL_TARGETING("sse2") rgb24_yuv420_sse(uint32_t width, uint32_t height,
 	const uint8_t *RGB, uint32_t RGB_stride,
 	uint8_t *Y, uint8_t *U, uint8_t *V, uint32_t Y_stride, uint32_t UV_stride,
 	YCbCrType yuv_type)
@@ -645,7 +645,7 @@ void rgb24_yuv420_sse(uint32_t width, uint32_t height,
 	#undef SAVE_SI128
 }
 
-void rgb24_yuv420_sseu(uint32_t width, uint32_t height,
+void SDL_TARGETING("sse2") rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 	const uint8_t *RGB, uint32_t RGB_stride,
 	uint8_t *Y, uint8_t *U, uint8_t *V, uint32_t Y_stride, uint32_t UV_stride,
 	YCbCrType yuv_type)
