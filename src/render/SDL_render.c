@@ -4612,8 +4612,13 @@ SDL_RenderSetVSync(SDL_Renderer * renderer, int vsync)
     renderer->wanted_vsync = vsync ? SDL_TRUE : SDL_FALSE;
 
     if (!renderer->SetVSync ||
-        renderer->SetVSync(renderer, vsync) < 0) {
+        renderer->SetVSync(renderer, vsync) != 0) {
         renderer->simulate_vsync = vsync ? SDL_TRUE : SDL_FALSE;
+        if (renderer->simulate_vsync) {
+            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+        } else {
+            renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+        }
     } else {
         renderer->simulate_vsync = SDL_FALSE;
     }
