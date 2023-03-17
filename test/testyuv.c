@@ -34,7 +34,7 @@ static SDL_Surface *generate_test_pattern(int pattern_size)
         const int thickness = 2; /* Important so 2x2 blocks of color are the same, to avoid Cr/Cb interpolation over pixels */
 
         /* R, G, B in alternating horizontal bands */
-        for (y = 0; y < pattern->h; y += thickness) {
+        for (y = 0; y < pattern->h - (thickness - 1); y += thickness) {
             for (i = 0; i < thickness; ++i) {
                 p = (Uint8 *)pattern->pixels + (y + i) * pattern->pitch + ((y / thickness) % 3);
                 for (x = 0; x < pattern->w; ++x) {
