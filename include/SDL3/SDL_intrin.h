@@ -93,25 +93,39 @@ _m_prefetch(void *__P)
 #endif
 #endif /* compiler version */
 
+#if defined(__clang__) && defined(__has_attribute)
+# if __has_attribute(target)
+# define SDL_HAS_TARGET_ATTRIBS
+# endif
+#elif defined(__GNUC__) && (__GNUC__ + (__GNUC_MINOR__ >= 9) > 4) /* gcc >= 4.9 */
+# define SDL_HAS_TARGET_ATTRIBS
+#endif
+
+#ifdef SDL_HAS_TARGET_ATTRIBS
+# define SDL_TARGETING(x) __attribute__((target(x)))
+#else
+# define SDL_TARGETING(x)
+#endif
+
 #if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX)
 #include <lsxintrin.h>
 #endif
 #if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX)
 #include <lasxintrin.h>
 #endif
-#if defined(__AVX__) && !defined(SDL_DISABLE_AVX)
+#if (defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
 #include <immintrin.h>
 #endif
-#if defined(__MMX__) && !defined(SDL_DISABLE_MMX)
+#if (defined(__MMX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_MMX)
 #include <mmintrin.h>
 #endif
-#if defined(__SSE__) && !defined(SDL_DISABLE_SSE)
+#if (defined(__SSE__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE)
 #include <xmmintrin.h>
 #endif
-#if defined(__SSE2__) && !defined(SDL_DISABLE_SSE2)
+#if (defined(__SSE2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE2)
 #include <emmintrin.h>
 #endif
-#if defined(__SSE3__) && !defined(SDL_DISABLE_SSE3)
+#if (defined(__SSE3__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE3)
 #include <pmmintrin.h>
 #endif
 

@@ -349,7 +349,7 @@ static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
 #if defined(HAVE_SSE2_INTRINSICS)
 
 #if 0
-static void printf_128(const char *str, __m128i var)
+static void SDL_TARGETING("sse2") printf_128(const char *str, __m128i var)
 {
     uint16_t *val = (uint16_t*) &var;
     printf(" *   %s: %04x %04x %04x %04x _ %04x %04x %04x %04x\n",
@@ -367,7 +367,7 @@ static SDL_INLINE int hasSSE2(void)
     return val;
 }
 
-static SDL_INLINE void INTERPOL_BILINEAR_SSE(const Uint32 *s0, const Uint32 *s1, int frac_w, __m128i v_frac_h0, __m128i v_frac_h1, Uint32 *dst, __m128i zero)
+static SDL_INLINE void SDL_TARGETING("sse2") INTERPOL_BILINEAR_SSE(const Uint32 *s0, const Uint32 *s1, int frac_w, __m128i v_frac_h0, __m128i v_frac_h1, Uint32 *dst, __m128i zero)
 {
     __m128i x_00_01, x_10_11; /* Pixels in 4*uint8 in row */
     __m128i v_frac_w0, k0, l0, d0, e0;
@@ -404,7 +404,7 @@ static SDL_INLINE void INTERPOL_BILINEAR_SSE(const Uint32 *s0, const Uint32 *s1,
     *dst = _mm_cvtsi128_si32(e0);
 }
 
-static int scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static int SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     BILINEAR___START
 

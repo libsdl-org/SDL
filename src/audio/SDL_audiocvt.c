@@ -146,7 +146,7 @@ static int SDL_ConvertAudio(SDL_AudioCVT * cvt);
 
 #if HAVE_SSE3_INTRINSICS
 /* Convert from stereo to mono. Average left and right. */
-static void SDLCALL SDL_ConvertStereoToMono_SSE3(SDL_AudioCVT *cvt, SDL_AudioFormat format)
+static void SDLCALL SDL_TARGETING("sse3") SDL_ConvertStereoToMono_SSE3(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
     const __m128 divby2 = _mm_set1_ps(0.5f);
     float *dst = (float *)cvt->buf;
@@ -183,7 +183,7 @@ static void SDLCALL SDL_ConvertStereoToMono_SSE3(SDL_AudioCVT *cvt, SDL_AudioFor
 
 #if HAVE_SSE_INTRINSICS
 /* Convert from mono to stereo. Duplicate to stereo left and right. */
-static void SDLCALL SDL_ConvertMonoToStereo_SSE(SDL_AudioCVT *cvt, SDL_AudioFormat format)
+static void SDLCALL SDL_TARGETING("sse") SDL_ConvertMonoToStereo_SSE(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
     float *dst = ((float *)(cvt->buf + (cvt->len_cvt * 2))) - 8;
     const float *src = ((const float *)(cvt->buf + cvt->len_cvt)) - 4;
