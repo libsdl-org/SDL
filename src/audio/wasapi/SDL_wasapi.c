@@ -371,6 +371,11 @@ void WASAPI_UnrefDevice(_THIS)
        our callback thread. We do that in WASAPI_ThreadDeinit().
        (likewise for this->hidden->coinitialized). */
     ReleaseWasapiDevice(this);
+
+    if (SDL_ThreadID() == this->hidden->open_threadid) {
+        WIN_CoUninitialize();  /* if you closed from a different thread than you opened, sorry, it's a leak. We can't help you. */
+    }
+
     SDL_free(this->hidden->devid);
     SDL_free(this->hidden);
 }
@@ -538,6 +543,11 @@ static int WASAPI_OpenDevice(_THIS, const char *devname)
     SDL_zerop(this->hidden);
 
     WASAPI_RefDevice(this); /* so CloseDevice() will unref to zero. */
+
+    if (FAILED(WIN_CoInitialize())) {  /* WASAPI uses COM, we need to make sure it's initialized. You have to close the device from the same thread!! */
+        return SDL_SetError("WIN_CoInitialize failed during WASAPI device open");
+    }
+    this->hidden->open_threadid = SDL_ThreadID();  /* set this _after_ coinitialize so we don't uninit if device fails at the wrong moment. */
 
     if (!devid) { /* is default device? */
         this->hidden->default_device_generation = SDL_AtomicGet(this->iscapture ? &SDL_IMMDevice_DefaultCaptureGeneration : &SDL_IMMDevice_DefaultPlaybackGeneration);
