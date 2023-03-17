@@ -386,7 +386,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
                 /* Figure out what the window area will be */
                 WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_FALSE);
                 data->expected_resize = SDL_TRUE;
-                SetWindowPos(hwnd, HWND_NOTOPMOST, x, y, w, h, SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
+                SetWindowPos(hwnd, HWND_NOTOPMOST, x, y, w, h, SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
                 data->expected_resize = SDL_FALSE;
             } else {
                 window->w = w;
@@ -606,7 +606,7 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
     }
 
     /* Inform Windows of the frame change so we can respond to WM_NCCALCSIZE */
-    SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
+    SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 
     if (window->flags & SDL_WINDOW_MINIMIZED) {
         ShowWindow(hwnd, SW_SHOWMINNOACTIVE);
@@ -788,12 +788,12 @@ void WIN_SetWindowPosition(_THIS, SDL_Window *window)
      * the window to resize (e.g. AdjustWindowRectExForDpi frame sizes are different).
      */
     WIN_ConstrainPopup(window);
-    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOACTIVATE);
+    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 }
 
 void WIN_SetWindowSize(_THIS, SDL_Window *window)
 {
-    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOACTIVATE);
+    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 }
 
 int WIN_GetWindowBordersSize(_THIS, SDL_Window *window, int *top, int *left, int *bottom, int *right)
@@ -987,7 +987,7 @@ void WIN_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
 
     data->in_border_change = SDL_TRUE;
     SetWindowLong(hwnd, GWL_STYLE, style);
-    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE);
+    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
     data->in_border_change = SDL_FALSE;
 }
 
