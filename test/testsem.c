@@ -302,7 +302,6 @@ int main(int argc, char **argv)
     (void)signal(SIGTERM, killed);
     (void)signal(SIGINT, killed);
 
-    init_sem = SDL_atoi(argv[1]);
     if (init_sem > 0) {
         TestRealWorld(init_sem);
     }
