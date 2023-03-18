@@ -66,24 +66,29 @@ _m_prefetch(void *__P)
 #elif defined(__MINGW64_VERSION_MAJOR)
 #include <intrin.h>
 #if defined(__ARM_NEON) && !defined(SDL_DISABLE_NEON)
+#  define SDL_NEON_INTRINSICS 1
 #  include <arm_neon.h>
 #endif
 #else
 /* altivec.h redefining bool causes a number of problems, see bugs 3993 and 4392, so you need to explicitly define SDL_ENABLE_ALTIVEC to have it included. */
 #if defined(__ALTIVEC__) && defined(SDL_ENABLE_ALTIVEC)
+#define SDL_ALTIVEC_INTRINSICS 1
 #include <altivec.h>
 #endif
 #if !defined(SDL_DISABLE_NEON)
 #  if defined(__ARM_NEON)
+#    define SDL_NEON_INTRINSICS 1
 #    include <arm_neon.h>
 #  elif defined(__WINDOWS__) || defined(__WINRT__) || defined(__GDK__)
 /* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1). */
 #    if defined(_M_ARM)
+#      define SDL_NEON_INTRINSICS 1
 #      include <armintr.h>
 #      include <arm_neon.h>
 #      define __ARM_NEON 1 /* Set __ARM_NEON so that it can be used elsewhere, at compile time */
 #    endif
 #    if defined (_M_ARM64)
+#      define SDL_NEON_INTRINSICS 1
 #      include <arm64intr.h>
 #      include <arm64_neon.h>
 #      define __ARM_NEON 1 /* Set __ARM_NEON so that it can be used elsewhere, at compile time */
@@ -108,27 +113,39 @@ _m_prefetch(void *__P)
 #endif
 
 #if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX)
-#include <lsxintrin.h>
+# define SDL_LSX_INTRINSICS 1
+# include <lsxintrin.h>
 #endif
+
 #if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX)
-#include <lasxintrin.h>
+# define SDL_LASX_INTRINSICS 1
+# include <lasxintrin.h>
 #endif
+
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-#if (defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
-#include <immintrin.h>
-#endif
-#if (defined(__MMX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_MMX)
-#include <mmintrin.h>
-#endif
-#if (defined(__SSE__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE)
-#include <xmmintrin.h>
-#endif
-#if (defined(__SSE2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE2)
-#include <emmintrin.h>
-#endif
-#if (defined(__SSE3__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE3)
-#include <pmmintrin.h>
-#endif
-#endif /**/
+# if (defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
+#  define SDL_AVX_INTRINSICS
+#  include <immintrin.h>
+# endif
+# if (defined(__MMX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_MMX)
+#  define SDL_MMX_INTRINSICS 1
+#  include <mmintrin.h>
+# endif
+# if ((defined(_MSC_VER) && defined(_M_IX86) && _M_IX86_FP == 1) || defined(_M_X64) || defined(__SSE__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE)
+   /* x86 MSVC defines _M_IX86_FP == 1 when compiled with /arch:SSE */
+#  define SDL_SSE_INTRINSICS 1
+#  include <xmmintrin.h>
+# endif
+# if ((defined(_MSC_VER) && defined(_M_IX86) && _M_IX86_FP >= 1) || defined(_M_X64) || defined(__SSE2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE2)
+   /* x86 MSVC defines _M_IX86_FP == 2 when compiled with /arch:SSE2 */
+#  define SDL_SSE2_INTRINSICS 1
+#  include <emmintrin.h>
+# endif
+# if (defined(_M_X64) || defined(__SSE3__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE3)
+   /* x86 MSVC does not provide macro's to detect SSE3/SSE4 */
+#  define SDL_SSE3_INTRINSICS 1
+#  include <pmmintrin.h>
+# endif
+#endif /* defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) */
 
 #endif /* SDL_intrin_h_ */

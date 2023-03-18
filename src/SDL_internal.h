@@ -186,47 +186,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
 
-#if defined(__ALTIVEC__) && defined(SDL_ENABLE_ALTIVEC)
-#define HAVE_ALTIVEC_INTRINSICS 1
-#endif
-
-#if defined(__ARM_NEON) && !defined(SDL_DISABLE_NEON)
-#define HAVE_NEON_INTRINSICS 1
-#endif
-
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-
-#if (defined(__MMX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_MMX)
-#define HAVE_MMX_INTRINSICS 1
-#endif
-
-#if (defined(__SSE__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE)
-#define HAVE_SSE_INTRINSICS 1
-#endif
-
-#if (defined(__SSE2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE2)
-#define HAVE_SSE2_INTRINSICS 1
-#endif
-
-#if (defined(__SSE3__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE3)
-#define HAVE_SSE3_INTRINSICS 1
-#endif
-
-#if (defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
-#define HAVE_AVX_INTRINSICS 1
-#endif
-
-#endif /* x86/x64 */
-
-#if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX)
-#define HAVE_LSX_INTRINSICS 1
-#endif
-
-#if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX)
-#define HAVE_LASX_INTRINSICS 1
-#endif
-
-
 #define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
 #include <SDL3/SDL_main.h>
 

@@ -332,13 +332,13 @@ static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
     return 0;
 }
 
-#if HAVE_NEON_INTRINSICS
+#if SDL_NEON_INTRINSICS
 #define CAST_uint8x8_t       (uint8x8_t)
 #define CAST_uint32x2_t      (uint32x2_t)
 #endif
 
 #if defined(__WINRT__) || defined(_MSC_VER)
-#if HAVE_NEON_INTRINSICS
+#if SDL_NEON_INTRINSICS
 #undef CAST_uint8x8_t
 #undef CAST_uint32x2_t
 #define CAST_uint8x8_t
@@ -346,7 +346,7 @@ static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
 #endif
 #endif
 
-#if defined(HAVE_SSE2_INTRINSICS)
+#if defined(SDL_SSE2_INTRINSICS)
 
 #if 0
 static void SDL_TARGETING("sse2") printf_128(const char *str, __m128i var)
@@ -524,7 +524,7 @@ static int SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int
 }
 #endif
 
-#if defined(HAVE_NEON_INTRINSICS)
+#if defined(SDL_NEON_INTRINSICS)
 
 static SDL_INLINE int hasNEON(void)
 {
@@ -800,13 +800,13 @@ int SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     Uint32 *src = (Uint32 *)((Uint8 *)s->pixels + srcrect->x * 4 + srcrect->y * src_pitch);
     Uint32 *dst = (Uint32 *)((Uint8 *)d->pixels + dstrect->x * 4 + dstrect->y * dst_pitch);
 
-#if defined(HAVE_NEON_INTRINSICS)
+#if defined(SDL_NEON_INTRINSICS)
     if (ret == -1 && hasNEON()) {
         ret = scale_mat_NEON(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }
 #endif
 
-#if defined(HAVE_SSE2_INTRINSICS)
+#if defined(SDL_SSE2_INTRINSICS)
     if (ret == -1 && hasSSE2()) {
         ret = scale_mat_SSE(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }

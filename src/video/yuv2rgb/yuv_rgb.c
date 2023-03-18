@@ -239,7 +239,7 @@ void rgb24_yuv420_std(
 	}
 }
 
-#if HAVE_SSE2_INTRINSICS
+#if SDL_SSE2_INTRINSICS
 
 #define SSE_FUNCTION_NAME	yuv420_rgb565_sse
 #define STD_FUNCTION_NAME	yuv420_rgb565_std
@@ -682,9 +682,9 @@ void SDL_TARGETING("sse2") rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 }
 
 
-#endif //HAVE_SSE2_INTRINSICS
+#endif //SDL_SSE2_INTRINSICS
 
-#if HAVE_LSX_INTRINSICS
+#if SDL_LSX_INTRINSICS
 
 #define LSX_FUNCTION_NAME	yuv420_rgb24_lsx
 #define STD_FUNCTION_NAME	yuv420_rgb24_std
@@ -716,6 +716,6 @@ void SDL_TARGETING("sse2") rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 #define RGB_FORMAT			RGB_FORMAT_ABGR
 #include "yuv_rgb_lsx_func.h"
 
-#endif  //HAVE_LSX_INTRINSICS
+#endif  //SDL_LSX_INTRINSICS
 
 #endif /* SDL_HAVE_YUV */
