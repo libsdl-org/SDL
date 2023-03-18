@@ -868,6 +868,7 @@ static void Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
         int dstskip = info->dst_skip >> 1;
         Uint32 s, d;
 
+#ifdef USE_DUFFS_LOOP
         __m64 src1, dst1, src2, dst2, gmask, bmask, mm_res, mm_alpha;
 
         alpha &= ~(1 + 2 + 4);             /* cut alpha to get the exact same behaviour */
@@ -883,6 +884,7 @@ static void Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
         /* Setup the 565 color channel masks */
         gmask = _mm_set_pi32(0x07E007E0, 0x07E007E0); /* MASKGREEN -> gmask */
         bmask = _mm_set_pi32(0x001F001F, 0x001F001F); /* MASKBLUE -> bmask */
+#endif
 
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
@@ -1004,6 +1006,7 @@ static void Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
         int dstskip = info->dst_skip >> 1;
         Uint32 s, d;
 
+#ifdef USE_DUFFS_LOOP
         __m64 src1, dst1, src2, dst2, rmask, gmask, bmask, mm_res, mm_alpha;
 
         alpha &= ~(1 + 2 + 4);             /* cut alpha to get the exact same behaviour */
@@ -1020,7 +1023,7 @@ static void Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
         rmask = _mm_set_pi32(0x7C007C00, 0x7C007C00); /* MASKRED -> rmask */
         gmask = _mm_set_pi32(0x03E003E0, 0x03E003E0); /* MASKGREEN -> gmask */
         bmask = _mm_set_pi32(0x001F001F, 0x001F001F); /* MASKBLUE -> bmask */
-
+#endif
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
             DUFFS_LOOP_124(
