@@ -68,20 +68,53 @@ For CMake to find SDL, it must be installed in [a default location CMake is look
 
 The following components are available, to be used as an argument of `find_package`.
 
-| Component name | Description                                                                                                                                               |
-|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| SDL3-shared    | The SDL3 shared library, available through the `SDL3::SDL3-shared` target                                                                                 |
-| SDL3-static    | The SDL3 static library, available through the `SDL3::SDL3-static` target                                                                                 |
-| SDL3_test      | The SDL3_test static library, available through the `SDL3::SDL3_test` target                                                                              |
-| SDL3           | The SDL3 library, available through the `SDL3::SDL3` target. This is an alias of `SDL3::SDL3` or `SDL3::SDL3-static`. This component is always available. |
-| Headers        | The SDL3 headers, available through the `SDL3::Headers` target. This component is always available.                                                       |
+| Component name | Description                                                                                                                                                      |
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| SDL3-shared    | The SDL3 shared library, available through the `SDL3::SDL3-shared` target                                                                                        |
+| SDL3-static    | The SDL3 static library, available through the `SDL3::SDL3-static` target                                                                                        |
+| SDL3_test      | The SDL3_test static library, available through the `SDL3::SDL3_test` target                                                                                     |
+| SDL3           | The SDL3 library, available through the `SDL3::SDL3` target. This is an alias of `SDL3::SDL3-shared` or `SDL3::SDL3-static`. This component is always available. |
+| Headers        | The SDL3 headers, available through the `SDL3::Headers` target. This component is always available.                                                              |
 
 
 ### Using a vendored SDL
 
 This only requires a copy of SDL in a subdirectory.
 
-## CMake configuration options for platforms
+## CMake configuration options
+
+### Build optimized library
+
+By default, CMake provides 4 build types: `Debug`, `Release`, `RelWithDebInfo` and `MinSizeRel`.
+The main difference(s) between these are the optimization options and the generation of debug info.
+To configure SDL as an optimized `Release` library, configure SDL with:
+```sh
+cmake ~/SDL -DCMAKE_BUILD_TYPE=Release
+```
+To build it, run:
+```sh
+cmake --build . --config Release
+```
+
+### Pass custom compile options to the compiler
+
+- Use [`CMAKE_<LANG>_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html) to pass extra 
+flags to the compiler.
+- Use [`CMAKE_EXE_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_EXE_LINKER_FLAGS.html) to pass extra option to the linker for executables. 
+- Use [`CMAKE_SHARED_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_SHARED_LINKER_FLAGS.html) to pass extra options to the linker for shared libraries. 
+
+#### Examples
+
+- build a SDL library optimized for (more) modern x64 microprocessor architectures.
+
+  With gcc or clang:
+    ```sh
+    cmake ~/sdl -DCMAKE_C_FLAGS="-march=x86-64-v3" -DCMAKE_CXX_FLAGS="-march=x86-64-v3"
+    ```
+  With Visual C:
+    ```sh
+    cmake .. -DCMAKE_C_FLAGS="/ARCH:AVX2" -DCMAKE_CXX_FLAGS="/ARCH:AVX2"
+    ```
 
 ### iOS/tvOS
 
