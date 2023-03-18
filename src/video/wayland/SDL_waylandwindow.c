@@ -1322,21 +1322,15 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     /* Create the shell surface and map the toplevel/popup */
 #ifdef HAVE_LIBDECOR_H
     if (data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-        if (data->shell_surface.libdecor.frame) {
-            /* If the frame already exists, just set the visibility. */
-            libdecor_frame_set_visibility(data->shell_surface.libdecor.frame, true);
-            libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
+        data->shell_surface.libdecor.frame = libdecor_decorate(c->shell.libdecor,
+                                                               data->surface,
+                                                               &libdecor_frame_interface,
+                                                               data);
+        if (data->shell_surface.libdecor.frame == NULL) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create libdecor frame!");
         } else {
-            data->shell_surface.libdecor.frame = libdecor_decorate(c->shell.libdecor,
-                                                                   data->surface,
-                                                                   &libdecor_frame_interface,
-                                                                   data);
-            if (data->shell_surface.libdecor.frame == NULL) {
-                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create libdecor frame!");
-            } else {
-                libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
-                libdecor_frame_map(data->shell_surface.libdecor.frame);
-            }
+            libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
+            libdecor_frame_map(data->shell_surface.libdecor.frame);
         }
     } else
 #endif
@@ -1540,8 +1534,8 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame) {
-            libdecor_frame_set_visibility(wind->shell_surface.libdecor.frame, false);
-            libdecor_frame_set_app_id(wind->shell_surface.libdecor.frame, data->classname);
+            libdecor_frame_unref(wind->shell_surface.libdecor.frame);
+            wind->shell_surface.libdecor.frame = NULL;
         }
     } else
 #endif
