@@ -905,8 +905,8 @@ void X11_UpdateWindowPosition(SDL_Window *window)
                               attrs.x, attrs.y, &orig_x, &orig_y, &childReturn);
 
     SDL_RelativeToGlobalForWindow(window,
-                                      window->x - data->border_left, window->y - data->border_top,
-                                      &dest_x, &dest_y);
+                                  window->x - data->border_left, window->y - data->border_top,
+                                  &dest_x, &dest_y);
 
     /* Attempt to move the window */
     X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
@@ -1292,6 +1292,12 @@ void X11_ShowWindow(_THIS, SDL_Window *window)
             X11_SetKeyboardFocus(window);
         }
     }
+
+    /* Get some valid border values, if we haven't them yet */
+    if (data->border_left == 0 && data->border_right == 0 && data->border_top == 0 && data->border_bottom == 0) {
+        X11_GetBorderValues(data);
+    }
+
 }
 
 void X11_HideWindow(_THIS, SDL_Window *window)
@@ -1438,6 +1444,8 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
     Display *display = data->videodata->display;
     Atom _NET_WM_STATE = data->videodata->_NET_WM_STATE;
     Atom _NET_WM_STATE_FULLSCREEN = data->videodata->_NET_WM_STATE_FULLSCREEN;
+    SDL_bool window_size_changed = SDL_FALSE;
+    int window_position_changed = 0;
 
     if (X11_IsWindowMapped(_this, window)) {
         XEvent e;
@@ -1516,6 +1524,17 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
                            SubstructureNotifyMask | SubstructureRedirectMask, &e);
         }
 
+        if (!fullscreen) {
+            int dest_x = 0, dest_y = 0;
+            SDL_RelativeToGlobalForWindow(window,
+                                          window->windowed.x - data->border_left, window->windowed.y - data->border_top,
+                                          &dest_x, &dest_y);
+
+            /* Attempt to move the window */
+            X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
+        }
+
+
         /* Wait a brief time to see if the window manager decided to let this happen.
            If the window changes at all, even to an unexpected value, we break out. */
         X11_XSync(display, False);
@@ -1532,18 +1551,22 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
                                       attrs.x, attrs.y, &x, &y, &childReturn);
 
             if (!caught_x11_error) {
-                SDL_bool window_changed = SDL_FALSE;
                 if ((x != orig_x) || (y != orig_y)) {
+                    orig_x = x;
+                    orig_y = y;
                     SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
-                    window_changed = SDL_TRUE;
+                    window_position_changed += 1;
                 }
 
                 if ((attrs.width != orig_w) || (attrs.height != orig_h)) {
+                    orig_w = attrs.width;
+                    orig_h = attrs.height;
                     SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, attrs.width, attrs.height);
-                    window_changed = SDL_TRUE;
+                    window_size_changed = SDL_TRUE;
                 }
 
-                if (window_changed) {
+                /* Wait for at least 2 moves + 1 size changed to have valid values */
+                if (window_position_changed >= 2 && window_size_changed) {
                     break; /* window changed, time to go. */
                 }
             }
