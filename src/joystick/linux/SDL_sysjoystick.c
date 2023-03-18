@@ -1487,6 +1487,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                         HandleHat(joystick, hat_index, code % 2, events[i].value);
                         break;
                     }
+                    SDL_FALLTHROUGH;
                 default:
                     events[i].value = AxisCorrect(joystick, code, events[i].value);
                     SDL_PrivateJoystickAxis(joystick,
@@ -1569,6 +1570,7 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
                         HandleHat(joystick, hat_index, code % 2, events[i].value);
                         break;
                     }
+                    SDL_FALLTHROUGH;
                 default:
                     SDL_PrivateJoystickAxis(joystick,
                                             joystick->hwdata->abs_map[code],
