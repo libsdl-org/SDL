@@ -45,6 +45,7 @@
 #include "SDL_log.h"
 #include "SDL_endian.h"
 #include "SDL_timer.h"
+#include "../usb_ids.h"
 #include "../../events/SDL_events_c.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
@@ -161,6 +162,16 @@ static SDL_bool IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version,
 }
 #endif /* SDL_JOYSTICK_HIDAPI */
 
+static SDL_bool IsExplicitlyKnwownAsJoystick(Uint16 vendor, Uint16 product)
+{
+    /* CH Pro Pedals is a device with three axis and no buttons, and would be classified as an accelerometer in
+     * SDL_EVDEV_GuessDeviceClass() by mistake. */
+    if (vendor == USB_VENDOR_CH_PRODUCTS && product == USB_PRODUCT_CH_PRO_PEDALS) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 static int GuessIsJoystick(int fd)
 {
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
@@ -197,16 +208,18 @@ static int IsJoystick(const char *path, int fd, char **name_return, SDL_Joystick
         SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version);
 #endif
     } else {
-        /* When udev is enabled we only get joystick devices here, so there's no need to test them */
-        if (enumeration_method != ENUMERATION_LIBUDEV && !GuessIsJoystick(fd)) {
-            return 0;
-        }
-
         if (ioctl(fd, EVIOCGID, &inpid) < 0) {
             return 0;
         }
 
         if (ioctl(fd, EVIOCGNAME(sizeof(product_string)), product_string) < 0) {
+            return 0;
+        }
+
+        /* When udev is enabled we only get joystick devices here, so there's no need to test them */
+        if (enumeration_method != ENUMERATION_LIBUDEV &&
+            !IsExplicitlyKnwownAsJoystick(inpid.vendor, inpid.product) &&
+            !GuessIsJoystick(fd)) {
             return 0;
         }
     }
