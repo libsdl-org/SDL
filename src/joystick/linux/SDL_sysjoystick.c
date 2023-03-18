@@ -1449,6 +1449,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                         HandleHat(SDL_EVDEV_GetEventTimestamp(event), joystick, hat_index, code % 2, event->value);
                         break;
                     }
+                    SDL_FALLTHROUGH;
                 default:
                     event->value = AxisCorrect(joystick, code, event->value);
                     SDL_SendJoystickAxis(SDL_EVDEV_GetEventTimestamp(event), joystick,
@@ -1521,6 +1522,7 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
                         HandleHat(timestamp, joystick, hat_index, code % 2, events[i].value);
                         break;
                     }
+                    SDL_FALLTHROUGH;
                 default:
                     SDL_SendJoystickAxis(timestamp, joystick,
                                             joystick->hwdata->abs_map[code],
