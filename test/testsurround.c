@@ -38,6 +38,7 @@ get_channel_name(int channel_index, int channel_count)
     case 2:
         switch (channel_count) {
         case 3:
+        case 5:
             return "Low Frequency Effects";
         case 4:
             return "Back Left";
@@ -57,27 +58,32 @@ get_channel_name(int channel_index, int channel_count)
         switch (channel_count) {
         case 5:
             return "Back Right";
+        case 6:
+            return "Side Left";
         case 7:
             return "Back Center";
-        case 6:
         case 8:
             return "Back Left";
         }
+        SDL_assert(0);
     case 5:
         switch (channel_count) {
-        case 7:
-            return "Back Left";
         case 6:
+            return "Side Right";
+        case 7:
+            return "Side Left";
         case 8:
             return "Back Right";
         }
+        SDL_assert(0);
     case 6:
         switch (channel_count) {
         case 7:
-            return "Back Right";
+            return "Side Right";
         case 8:
             return "Side Left";
         }
+        SDL_assert(0);
     case 7:
         return "Side Right";
     }
