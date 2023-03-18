@@ -263,6 +263,7 @@ int audio_pauseUnpauseAudio()
                 desired.samples = 4096;
                 desired.callback = _audio_testCallback;
                 desired.userdata = NULL;
+                break;
 
             case 1:
                 /* Set custom desired spec */
