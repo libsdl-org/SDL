@@ -993,9 +993,11 @@ static void Blit_RGB888_index8(SDL_BlitInfo *info)
             case 3:
                 RGB888_RGB332(*dst++, *src);
                 ++src;
+                SDL_FALLTHROUGH;
             case 2:
                 RGB888_RGB332(*dst++, *src);
                 ++src;
+                SDL_FALLTHROUGH;
             case 1:
                 RGB888_RGB332(*dst++, *src);
                 ++src;
@@ -1037,10 +1039,12 @@ static void Blit_RGB888_index8(SDL_BlitInfo *info)
                 RGB888_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
+                SDL_FALLTHROUGH;
             case 2:
                 RGB888_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
+                SDL_FALLTHROUGH;
             case 1:
                 RGB888_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
@@ -1103,9 +1107,11 @@ static void Blit_RGB101010_index8(SDL_BlitInfo *info)
             case 3:
                 RGB101010_RGB332(*dst++, *src);
                 ++src;
+                SDL_FALLTHROUGH;
             case 2:
                 RGB101010_RGB332(*dst++, *src);
                 ++src;
+                SDL_FALLTHROUGH;
             case 1:
                 RGB101010_RGB332(*dst++, *src);
                 ++src;
@@ -1147,10 +1153,12 @@ static void Blit_RGB101010_index8(SDL_BlitInfo *info)
                 RGB101010_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
+                SDL_FALLTHROUGH;
             case 2:
                 RGB101010_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
+                SDL_FALLTHROUGH;
             case 1:
                 RGB101010_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
@@ -1242,6 +1250,7 @@ static void Blit_RGB888_RGB555(SDL_BlitInfo *info)
                 RGB888_RGB555(dst, src);
                 ++src;
                 ++dst;
+                SDL_FALLTHROUGH;
             case 2:
                 RGB888_RGB555_TWO(dst, src);
                 src += 2;
@@ -1273,6 +1282,7 @@ static void Blit_RGB888_RGB555(SDL_BlitInfo *info)
                 RGB888_RGB555(dst, src);
                 ++src;
                 ++dst;
+                SDL_FALLTHROUGH;
             case 2:
                 RGB888_RGB555_TWO(dst, src);
                 src += 2;
@@ -1370,6 +1380,7 @@ static void Blit_RGB888_RGB565(SDL_BlitInfo *info)
                 RGB888_RGB565(dst, src);
                 ++src;
                 ++dst;
+                SDL_FALLTHROUGH;
             case 2:
                 RGB888_RGB565_TWO(dst, src);
                 src += 2;
@@ -1401,6 +1412,7 @@ static void Blit_RGB888_RGB565(SDL_BlitInfo *info)
                 RGB888_RGB565(dst, src);
                 ++src;
                 ++dst;
+                SDL_FALLTHROUGH;
             case 2:
                 RGB888_RGB565_TWO(dst, src);
                 src += 2;
@@ -1472,9 +1484,11 @@ static void Blit_RGB565_32(SDL_BlitInfo *info, const Uint32 *map)
         case 3:
             *dst++ = RGB565_32(dst, src, map);
             src += 2;
+            SDL_FALLTHROUGH;
         case 2:
             *dst++ = RGB565_32(dst, src, map);
             src += 2;
+            SDL_FALLTHROUGH;
         case 1:
             *dst++ = RGB565_32(dst, src, map);
             src += 2;
