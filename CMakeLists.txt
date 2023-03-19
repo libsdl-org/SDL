@@ -367,7 +367,6 @@ set_option(SDL_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
 #set_option(SDL_DEPENDENCY_TRACKING "Use gcc -MMD -MT dependency tracking" ON)
 set_option(SDL_ASSEMBLY            "Enable assembly routines" ${SDL_ASSEMBLY_DEFAULT})
-dep_option(SDL_SSEMATH             "Allow GCC to use SSE floating point math" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_AVX                 "Use AVX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE                 "Use SSE assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE2                "Use SSE2 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
@@ -709,106 +708,97 @@ if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 if(SDL_ASSEMBLY)
+  set(HAVE_ASSEMBLY TRUE)
+
+  if(SDL_MMX)
+    cmake_push_check_state()
+    if(USE_GCC OR USE_CLANG)
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mmmx")
+    endif()
+    check_c_source_compiles("
+      #include <mmintrin.h>
+      void ints_add(int *dest, int *a, int *b, unsigned size) {
+        for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
+          *(__m64*)dest = _mm_add_pi32(*(__m64*)a, *(__m64*)b);
+        }
+      }
+      int main(int argc, char *argv[]) {
+        ints_add((int*)0, (int*)0, (int*)0, 0);
+        return 0;
+      }" COMPILER_SUPPORTS_MMX)
+    cmake_pop_check_state()
+    if(COMPILER_SUPPORTS_MMX)
+      set(HAVE_MMX TRUE)
+    endif()
+  endif()
+  if(SDL_SSE)
+    cmake_push_check_state()
+    if(USE_GCC OR USE_CLANG)
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -msse")
+    endif()
+    check_c_source_compiles("
+      #include <xmmintrin.h>
+      void floats_add(float *dest, float *a, float *b, unsigned size) {
+        for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
+          _mm_storeu_ps(dest, _mm_add_ps(_mm_loadu_ps(a), _mm_loadu_ps (b)));
+        }
+      }
+      int main(int argc, char **argv) {
+        floats_add((float*)0, (float*)0, (float*)0, 0);
+        return 0;
+      }" COMPILER_SUPPORTS_SSE)
+    cmake_pop_check_state()
+    if(COMPILER_SUPPORTS_SSE)
+      set(HAVE_SSE TRUE)
+    endif()
+  endif()
+  if(SDL_SSE2)
+    cmake_push_check_state()
+    if(USE_GCC OR USE_CLANG)
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -msse2")
+    endif()
+    check_c_source_compiles("
+      #include <emmintrin.h>
+      void doubles_add(double *dest, double *a, double *b, unsigned size) {
+        for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
+          _mm_store_pd(dest, _mm_add_pd(_mm_loadu_pd(a), _mm_loadu_pd(b)));
+        }
+      }
+      int main(int argc, char **argv) {
+        doubles_add((double*)0, (double*)0, (double*)0, 0);
+        return 0;
+      }" COMPILER_SUPPORTS_SSE2)
+    cmake_pop_check_state()
+    if(COMPILER_SUPPORTS_SSE2)
+      set(HAVE_SSE2 TRUE)
+    endif()
+  endif()
+  if(SDL_AVX)
+    cmake_push_check_state()
+    if(USE_GCC OR USE_CLANG)
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mavx")
+    endif()
+    check_c_source_compiles("
+      #include <immintrin.h>
+      void floats_add(float *dest, float *a, float *b, unsigned size) {
+        for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
+          _mm256_storeu_ps(dest, _mm256_add_ps(_mm256_loadu_ps(a), _mm256_loadu_ps(b)));
+        }
+      }
+      int main(int argc, char **argv) {
+        floats_add((float*)0, (float*)0, (float*)0, 0);
+        return 0;
+      }" COMPILER_SUPPORTS_AVX)
+    cmake_pop_check_state()
+    if(COMPILER_SUPPORTS_AVX)
+      set(HAVE_AVX TRUE)
+    endif()
+  endif()
+
   if(USE_GCC OR USE_CLANG)
     # TODO: Those all seem to be quite GCC specific - needs to be
     # reworked for better compiler support
     set(HAVE_ASSEMBLY TRUE)
-
-    if(SDL_AVX)
-      cmake_push_check_state()
-      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mavx")
-      check_c_source_compiles("
-          #ifdef __MINGW32__
-          #include <_mingw.h>
-          #ifdef __MINGW64_VERSION_MAJOR
-          #include <intrin.h>
-          #else
-          #include <immintrin.h>
-          #endif
-          #else
-          #include <immintrin.h>
-          #endif
-          #ifndef __AVX__
-          #error Assembler CPP flag not enabled
-          #endif
-          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_AVX)
-      cmake_pop_check_state()
-      if(CPU_SUPPORTS_AVX)
-        set(HAVE_AVX TRUE)
-      endif()
-    endif()
-
-    if(SDL_MMX)
-      cmake_push_check_state()
-      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mmmx")
-      check_c_source_compiles("
-          #ifdef __MINGW32__
-          #include <_mingw.h>
-          #ifdef __MINGW64_VERSION_MAJOR
-          #include <intrin.h>
-          #else
-          #include <mmintrin.h>
-          #endif
-          #else
-          #include <mmintrin.h>
-          #endif
-          #ifndef __MMX__
-          #error Assembler CPP flag not enabled
-          #endif
-          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_MMX)
-      cmake_pop_check_state()
-      if(CPU_SUPPORTS_MMX)
-        set(HAVE_MMX TRUE)
-      endif()
-    endif()
-
-    if(SDL_SSE)
-      cmake_push_check_state()
-      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -msse")
-      check_c_source_compiles("
-          #ifdef __MINGW32__
-          #include <_mingw.h>
-          #ifdef __MINGW64_VERSION_MAJOR
-          #include <intrin.h>
-          #else
-          #include <xmmintrin.h>
-          #endif
-          #else
-          #include <xmmintrin.h>
-          #endif
-          #ifndef __SSE__
-          #error Assembler CPP flag not enabled
-          #endif
-          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_SSE)
-      cmake_pop_check_state()
-      if(CPU_SUPPORTS_SSE)
-        set(HAVE_SSE ON)
-      endif()
-    endif()
-
-    if(SDL_SSE2)
-      cmake_push_check_state()
-      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -msse2")
-      check_c_source_compiles("
-          #ifdef __MINGW32__
-          #include <_mingw.h>
-          #ifdef __MINGW64_VERSION_MAJOR
-          #include <intrin.h>
-          #else
-          #include <emmintrin.h>
-          #endif
-          #else
-          #include <emmintrin.h>
-          #endif
-          #ifndef __SSE2__
-          #error Assembler CPP flag not enabled
-          #endif
-          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_SSE2)
-      cmake_pop_check_state()
-      if(CPU_SUPPORTS_SSE2)
-        set(HAVE_SSE2 TRUE)
-      endif()
-    endif()
 
     if(SDL_SSE3)
       cmake_push_check_state()
@@ -827,24 +817,11 @@ if(SDL_ASSEMBLY)
           #ifndef __SSE3__
           #error Assembler CPP flag not enabled
           #endif
-          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_SSE3)
+          int main(int argc, char **argv) { return 0; }" COMPILER_SUPPORTS_SSE3)
       cmake_pop_check_state()
-      if(CPU_SUPPORTS_SSE3)
+      if(COMPILER_SUPPORTS_SSE3)
         set(HAVE_SSE3 TRUE)
       endif()
-    endif()
-
-    if(NOT SDL_SSEMATH)
-      if(SDL_SSE OR SDL_SSE2 OR SDL_SSE3)
-        if(USE_GCC)
-          check_c_compiler_flag(-mfpmath=387 HAVE_FP_387)
-          if(HAVE_FP_387)
-            target_compile_options(sdl-build-options INTERFACE "-mfpmath=387")
-          endif()
-        endif()
-      endif()
-    else()
-      set(HAVE_SSEMATH TRUE)
     endif()
 
     if(SDL_ALTIVEC)
@@ -855,9 +832,9 @@ if(SDL_ASSEMBLY)
           vector unsigned int vzero() {
               return vec_splat_u32(0);
           }
-          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_ALTIVEC)
+          int main(int argc, char **argv) { return 0; }" COMPILER_SUPPORTS_ALTIVEC)
       cmake_pop_check_state()
-      if(CPU_SUPPORTS_ALTIVEC)
+      if(COMPILER_SUPPORTS_ALTIVEC)
         set(HAVE_ALTIVEC TRUE)
         set(SDL_ALTIVEC_BLITTERS 1)
         target_compile_options(sdl-build-options INTERFACE "-maltivec")
@@ -873,11 +850,11 @@ if(SDL_ASSEMBLY)
           #ifndef __loongarch_sx
           #error Assembler CPP flag not enabled
           #endif
-          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_LSX)
+          int main(int argc, char **argv) { return 0; }" COMPILER_SUPPORTS_LSX)
       check_include_file("lsxintrin.h" HAVE_LSXINTRIN_H)
       cmake_pop_check_state()
 
-      if(CPU_SUPPORTS_LSX AND HAVE_LSXINTRIN_H)
+      if(COMPILER_SUPPORTS_LSX AND HAVE_LSXINTRIN_H)
         target_compile_options(sdl-build-options INTERFACE "-mlsx")
         set(HAVE_LSX TRUE)
       endif()
@@ -890,10 +867,10 @@ if(SDL_ASSEMBLY)
           #ifndef __loongarch_asx
           #error Assembler CPP flag not enabled
           #endif
-          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_LASX)
+          int main(int argc, char **argv) { return 0; }" COMPILER_SUPPORTS_LASX)
       check_include_file("lasxintrin.h" HAVE_LASXINTRIN_H)
       cmake_pop_check_state()
-      if(CPU_SUPPORTS_LASX AND HAVE_LASXINTRIN_H)
+      if(COMPILER_SUPPORTS_LASX AND HAVE_LASXINTRIN_H)
         target_compile_options(sdl-build-options INTERFACE "-mlasx")
         set(HAVE_LASX TRUE)
       endif()
@@ -964,44 +941,12 @@ if(SDL_ASSEMBLY)
     endif()
 
   elseif(MSVC_VERSION GREATER 1500)
-    # TODO: SDL_cpuinfo.h needs to support the user's configuration wish
     # for MSVC - right now it is always activated
-    if(SDL_CPU_X86)
-      if(SDL_MMX)
-        set(HAVE_MMX TRUE)
-      endif()
-    endif()
-    if(SDL_SSE)
-      set(HAVE_SSE TRUE)
-    endif()
-    if(SDL_SSE2)
-      set(HAVE_SSE2 TRUE)
-    endif()
     if(SDL_SSE3)
+      # TODO: SDL_cpuinfo.h needs to support the user's configuration wish
       set(HAVE_SSE3 TRUE)
     endif()
-    if(SDL_AVX)
-      cmake_push_check_state()
-      # FIXME: should be CMAKE_REQUIRED_LINK_OPTIONS for CMake 3.14+
-      list(APPEND CMAKE_REQUIRED_LIBRARIES "/ARCH:AVX")
-      check_c_source_compiles("
-          #include <immintrin.h>
-          #ifndef __AVX__
-          #error Assembler CPP flag not enabled
-          #endif
-          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_AVX)
-      cmake_pop_check_state()
-      if(CPU_SUPPORTS_AVX)
-        # FIXME: should be target_link_options for CMake 3.13+
-        target_link_libraries(sdl-build-options INTERFACE "/ARCH:AVX")
-        set(HAVE_AVX TRUE)
-      endif()
-    endif()
   endif()
-endif()
-
-if(NOT HAVE_AVX)
-  set(SDL_DISABLE_AVX 1)
 endif()
 
 if(NOT HAVE_MMX)
@@ -1018,6 +963,10 @@ endif()
 
 if(NOT HAVE_SSE3)
   set(SDL_DISABLE_SSE3 1)
+endif()
+
+if(NOT HAVE_AVX)
+  set(SDL_DISABLE_AVX 1)
 endif()
 
 if(NOT HAVE_LSX)
