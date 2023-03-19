@@ -14,6 +14,7 @@ extern SDLTest_TestSuiteReference clipboardTestSuite;
 extern SDLTest_TestSuiteReference eventsTestSuite;
 extern SDLTest_TestSuiteReference guidTestSuite;
 extern SDLTest_TestSuiteReference hintsTestSuite;
+extern SDLTest_TestSuiteReference intrinsicsTestSuite;
 extern SDLTest_TestSuiteReference joystickTestSuite;
 extern SDLTest_TestSuiteReference keyboardTestSuite;
 extern SDLTest_TestSuiteReference mainTestSuite;
