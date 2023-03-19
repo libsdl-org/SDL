@@ -1188,70 +1188,7 @@ static int SDL_TARGETING("sse2") SDL_ConvertPixels_PackUVPlanes_to_NV_SSE2(int w
     }
     return 0;
 }
-#endif
 
-static int SDL_ConvertPixels_PackUVPlanes_to_NV(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch, SDL_bool reverseUV)
-{
-#if SDL_SSE2_INTRINSICS
-  if (SDL_HasSSE2()) {
-    return SDL_ConvertPixels_PackUVPlanes_to_NV_SSE2(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
-  } else
-#endif
-  {
-    int x, y;
-    const int UVwidth = (width + 1) / 2;
-    const int UVheight = (height + 1) / 2;
-    const int srcUVPitch = ((src_pitch + 1) / 2);
-    const int srcUVPitchLeft = srcUVPitch - UVwidth;
-    const int dstUVPitch = ((dst_pitch + 1) / 2) * 2;
-    const int dstUVPitchLeft = dstUVPitch - UVwidth * 2;
-    const Uint8 *src1, *src2;
-    Uint8 *dstUV;
-    Uint8 *tmp = NULL;
-
-    /* Skip the Y plane */
-    src = (const Uint8 *)src + height * src_pitch;
-    dst = (Uint8 *)dst + height * dst_pitch;
-
-    if (src == dst) {
-        /* Need to make a copy of the buffer so we don't clobber it while converting */
-        tmp = (Uint8 *)SDL_malloc((size_t)2 * UVheight * srcUVPitch);
-        if (tmp == NULL) {
-            return SDL_OutOfMemory();
-        }
-        SDL_memcpy(tmp, src, (size_t)2 * UVheight * srcUVPitch);
-        src = tmp;
-    }
-
-    if (reverseUV) {
-        src2 = (const Uint8 *)src;
-        src1 = src2 + UVheight * srcUVPitch;
-    } else {
-        src1 = (const Uint8 *)src;
-        src2 = src1 + UVheight * srcUVPitch;
-    }
-    dstUV = (Uint8 *)dst;
-
-    y = UVheight;
-    while (y--) {
-        x = UVwidth;
-        while (x--) {
-            *dstUV++ = *src1++;
-            *dstUV++ = *src2++;
-        }
-        src1 += srcUVPitchLeft;
-        src2 += srcUVPitchLeft;
-        dstUV += dstUVPitchLeft;
-    }
-
-    if (tmp) {
-        SDL_free(tmp);
-    }
-    return 0;
-  }
-}
-
-#if SDL_SSE2_INTRINSICS
 static int SDL_TARGETING("sse2") SDL_ConvertPixels_SplitNV_to_UVPlanes_SSE2(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch, SDL_bool reverseUV)
 {
     int x, y;
@@ -1322,16 +1259,104 @@ static int SDL_TARGETING("sse2") SDL_ConvertPixels_SplitNV_to_UVPlanes_SSE2(int 
     }
     return 0;
 }
+
+static int SDL_TARGETING("sse2") SDL_ConvertPixels_SwapNV_SSE2(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+{
+    int x, y;
+    const int UVwidth = (width + 1) / 2;
+    const int UVheight = (height + 1) / 2;
+    const int srcUVPitch = ((src_pitch + 1) / 2) * 2;
+    const int srcUVPitchLeft = (srcUVPitch - UVwidth * 2) / sizeof(Uint16);
+    const int dstUVPitch = ((dst_pitch + 1) / 2) * 2;
+    const int dstUVPitchLeft = (dstUVPitch - UVwidth * 2) / sizeof(Uint16);
+    const Uint16 *srcUV;
+    Uint16 *dstUV;
+
+    /* Skip the Y plane */
+    src = (const Uint8 *)src + height * src_pitch;
+    dst = (Uint8 *)dst + height * dst_pitch;
+
+    srcUV = (const Uint16 *)src;
+    dstUV = (Uint16 *)dst;
+    y = UVheight;
+    while (y--) {
+        x = UVwidth;
+        while (x >= 8) {
+            __m128i uv = _mm_loadu_si128((__m128i *)srcUV);
+            __m128i v = _mm_slli_epi16(uv, 8);
+            __m128i u = _mm_srli_epi16(uv, 8);
+            __m128i vu = _mm_or_si128(v, u);
+            _mm_storeu_si128((__m128i *)dstUV, vu);
+            srcUV += 8;
+            dstUV += 8;
+            x -= 8;
+        }
+        while (x--) {
+            *dstUV++ = SDL_Swap16(*srcUV++);
+        }
+        srcUV += srcUVPitchLeft;
+        dstUV += dstUVPitchLeft;
+    }
+    return 0;
+}
 #endif
 
-static int SDL_ConvertPixels_SplitNV_to_UVPlanes(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch, SDL_bool reverseUV)
+static int SDL_ConvertPixels_PackUVPlanes_to_NV_std(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch, SDL_bool reverseUV)
 {
-#if SDL_SSE2_INTRINSICS
-  if (SDL_HasSSE2()) {
-    return SDL_ConvertPixels_SplitNV_to_UVPlanes_SSE2(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
-  } else
-#endif
-  {
+    int x, y;
+    const int UVwidth = (width + 1) / 2;
+    const int UVheight = (height + 1) / 2;
+    const int srcUVPitch = ((src_pitch + 1) / 2);
+    const int srcUVPitchLeft = srcUVPitch - UVwidth;
+    const int dstUVPitch = ((dst_pitch + 1) / 2) * 2;
+    const int dstUVPitchLeft = dstUVPitch - UVwidth * 2;
+    const Uint8 *src1, *src2;
+    Uint8 *dstUV;
+    Uint8 *tmp = NULL;
+
+    /* Skip the Y plane */
+    src = (const Uint8 *)src + height * src_pitch;
+    dst = (Uint8 *)dst + height * dst_pitch;
+
+    if (src == dst) {
+        /* Need to make a copy of the buffer so we don't clobber it while converting */
+        tmp = (Uint8 *)SDL_malloc((size_t)2 * UVheight * srcUVPitch);
+        if (tmp == NULL) {
+            return SDL_OutOfMemory();
+        }
+        SDL_memcpy(tmp, src, (size_t)2 * UVheight * srcUVPitch);
+        src = tmp;
+    }
+
+    if (reverseUV) {
+        src2 = (const Uint8 *)src;
+        src1 = src2 + UVheight * srcUVPitch;
+    } else {
+        src1 = (const Uint8 *)src;
+        src2 = src1 + UVheight * srcUVPitch;
+    }
+    dstUV = (Uint8 *)dst;
+
+    y = UVheight;
+    while (y--) {
+        x = UVwidth;
+        while (x--) {
+            *dstUV++ = *src1++;
+            *dstUV++ = *src2++;
+        }
+        src1 += srcUVPitchLeft;
+        src2 += srcUVPitchLeft;
+        dstUV += dstUVPitchLeft;
+    }
+
+    if (tmp) {
+        SDL_free(tmp);
+    }
+    return 0;
+}
+
+static int SDL_ConvertPixels_SplitNV_to_UVPlanes_std(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch, SDL_bool reverseUV)
+{
     int x, y;
     const int UVwidth = (width + 1) / 2;
     const int UVheight = (height + 1) / 2;
@@ -1382,11 +1407,9 @@ static int SDL_ConvertPixels_SplitNV_to_UVPlanes(int width, int height, const vo
         SDL_free(tmp);
     }
     return 0;
-  }
 }
 
-#if SDL_SSE2_INTRINSICS
-static int SDL_TARGETING("sse2") SDL_ConvertPixels_SwapNV_SSE2(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+static int SDL_ConvertPixels_SwapNV_std(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
 {
     int x, y;
     const int UVwidth = (width + 1) / 2;
@@ -1407,16 +1430,6 @@ static int SDL_TARGETING("sse2") SDL_ConvertPixels_SwapNV_SSE2(int width, int he
     y = UVheight;
     while (y--) {
         x = UVwidth;
-        while (x >= 8) {
-            __m128i uv = _mm_loadu_si128((__m128i *)srcUV);
-            __m128i v = _mm_slli_epi16(uv, 8);
-            __m128i u = _mm_srli_epi16(uv, 8);
-            __m128i vu = _mm_or_si128(v, u);
-            _mm_storeu_si128((__m128i *)dstUV, vu);
-            srcUV += 8;
-            dstUV += 8;
-            x -= 8;
-        }
         while (x--) {
             *dstUV++ = SDL_Swap16(*srcUV++);
         }
@@ -1425,43 +1438,35 @@ static int SDL_TARGETING("sse2") SDL_ConvertPixels_SwapNV_SSE2(int width, int he
     }
     return 0;
 }
-#endif
+
+static int SDL_ConvertPixels_PackUVPlanes_to_NV(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch, SDL_bool reverseUV)
+{
+    #if SDL_SSE2_INTRINSICS
+    if (SDL_HasSSE2()) {
+      return SDL_ConvertPixels_PackUVPlanes_to_NV_SSE2(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
+    }
+    #endif
+    return SDL_ConvertPixels_PackUVPlanes_to_NV_std(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
+}
+
+static int SDL_ConvertPixels_SplitNV_to_UVPlanes(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch, SDL_bool reverseUV)
+{
+    #if SDL_SSE2_INTRINSICS
+    if (SDL_HasSSE2()) {
+      return SDL_ConvertPixels_SplitNV_to_UVPlanes_SSE2(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
+    }
+    #endif
+    return SDL_ConvertPixels_SplitNV_to_UVPlanes_std(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
+}
 
 static int SDL_ConvertPixels_SwapNV(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
 {
-#if SDL_SSE2_INTRINSICS
-  if (SDL_HasSSE2()) {
-    return SDL_ConvertPixels_SwapNV_SSE2(width, height, src, src_pitch, dst, dst_pitch);
-  } else
-#endif
-  {
-    int x, y;
-    const int UVwidth = (width + 1) / 2;
-    const int UVheight = (height + 1) / 2;
-    const int srcUVPitch = ((src_pitch + 1) / 2) * 2;
-    const int srcUVPitchLeft = (srcUVPitch - UVwidth * 2) / sizeof(Uint16);
-    const int dstUVPitch = ((dst_pitch + 1) / 2) * 2;
-    const int dstUVPitchLeft = (dstUVPitch - UVwidth * 2) / sizeof(Uint16);
-    const Uint16 *srcUV;
-    Uint16 *dstUV;
-
-    /* Skip the Y plane */
-    src = (const Uint8 *)src + height * src_pitch;
-    dst = (Uint8 *)dst + height * dst_pitch;
-
-    srcUV = (const Uint16 *)src;
-    dstUV = (Uint16 *)dst;
-    y = UVheight;
-    while (y--) {
-        x = UVwidth;
-        while (x--) {
-            *dstUV++ = SDL_Swap16(*srcUV++);
-        }
-        srcUV += srcUVPitchLeft;
-        dstUV += dstUVPitchLeft;
+    #if SDL_SSE2_INTRINSICS
+    if (SDL_HasSSE2()) {
+      return SDL_ConvertPixels_SwapNV_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
-    return 0;
-  }
+    #endif
+    return SDL_ConvertPixels_SwapNV_std(width, height, src, src_pitch, dst, dst_pitch);
 }
 
 static int SDL_ConvertPixels_Planar2x2_to_Planar2x2(int width, int height,
@@ -1764,14 +1769,8 @@ static int SDL_TARGETING("sse2") SDL_ConvertPixels_YVYU_to_UYVY_SSE2(int width, 
 }
 #endif
 
-static int SDL_ConvertPixels_YUY2_to_UYVY(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+static int SDL_ConvertPixels_YUY2_to_UYVY_std(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
 {
-#if SDL_SSE2_INTRINSICS
-  if (SDL_HasSSE2()) {
-    return SDL_ConvertPixels_YUY2_to_UYVY_SSE2(width, height, src, src_pitch, dst, dst_pitch);
-  } else
-#endif
-  {
     int x, y;
     const int YUVwidth = (width + 1) / 2;
     const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
@@ -1801,207 +1800,231 @@ static int SDL_ConvertPixels_YUY2_to_UYVY(int width, int height, const void *src
         dstYUV += dstYUVPitchLeft;
     }
     return 0;
-  }
+}
+
+static int SDL_ConvertPixels_YUY2_to_YVYU_std(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+{
+    int x, y;
+    const int YUVwidth = (width + 1) / 2;
+    const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
+    const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
+    const Uint8 *srcYUV = (const Uint8 *)src;
+    Uint8 *dstYUV = (Uint8 *)dst;
+
+    y = height;
+    while (y--) {
+        x = YUVwidth;
+        while (x--) {
+            Uint8 Y1, U, Y2, V;
+
+            Y1 = srcYUV[0];
+            U = srcYUV[1];
+            Y2 = srcYUV[2];
+            V = srcYUV[3];
+            srcYUV += 4;
+
+            dstYUV[0] = Y1;
+            dstYUV[1] = V;
+            dstYUV[2] = Y2;
+            dstYUV[3] = U;
+            dstYUV += 4;
+        }
+        srcYUV += srcYUVPitchLeft;
+        dstYUV += dstYUVPitchLeft;
+    }
+    return 0;
+}
+
+static int SDL_ConvertPixels_UYVY_to_YUY2_std(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+{
+    int x, y;
+    const int YUVwidth = (width + 1) / 2;
+    const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
+    const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
+    const Uint8 *srcYUV = (const Uint8 *)src;
+    Uint8 *dstYUV = (Uint8 *)dst;
+
+    y = height;
+    while (y--) {
+        x = YUVwidth;
+        while (x--) {
+            Uint8 Y1, U, Y2, V;
+
+            U = srcYUV[0];
+            Y1 = srcYUV[1];
+            V = srcYUV[2];
+            Y2 = srcYUV[3];
+            srcYUV += 4;
+
+            dstYUV[0] = Y1;
+            dstYUV[1] = U;
+            dstYUV[2] = Y2;
+            dstYUV[3] = V;
+            dstYUV += 4;
+        }
+        srcYUV += srcYUVPitchLeft;
+        dstYUV += dstYUVPitchLeft;
+    }
+    return 0;
+}
+
+static int SDL_ConvertPixels_UYVY_to_YVYU_std(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+{
+    int x, y;
+    const int YUVwidth = (width + 1) / 2;
+    const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
+    const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
+    const Uint8 *srcYUV = (const Uint8 *)src;
+    Uint8 *dstYUV = (Uint8 *)dst;
+
+    y = height;
+    while (y--) {
+        x = YUVwidth;
+        while (x--) {
+            Uint8 Y1, U, Y2, V;
+
+            U = srcYUV[0];
+            Y1 = srcYUV[1];
+            V = srcYUV[2];
+            Y2 = srcYUV[3];
+            srcYUV += 4;
+
+            dstYUV[0] = Y1;
+            dstYUV[1] = V;
+            dstYUV[2] = Y2;
+            dstYUV[3] = U;
+            dstYUV += 4;
+        }
+        srcYUV += srcYUVPitchLeft;
+        dstYUV += dstYUVPitchLeft;
+    }
+    return 0;
+}
+
+static int SDL_ConvertPixels_YVYU_to_YUY2_std(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+{
+    int x, y;
+    const int YUVwidth = (width + 1) / 2;
+    const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
+    const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
+    const Uint8 *srcYUV = (const Uint8 *)src;
+    Uint8 *dstYUV = (Uint8 *)dst;
+
+    y = height;
+    while (y--) {
+        x = YUVwidth;
+        while (x--) {
+            Uint8 Y1, U, Y2, V;
+
+            Y1 = srcYUV[0];
+            V = srcYUV[1];
+            Y2 = srcYUV[2];
+            U = srcYUV[3];
+            srcYUV += 4;
+
+            dstYUV[0] = Y1;
+            dstYUV[1] = U;
+            dstYUV[2] = Y2;
+            dstYUV[3] = V;
+            dstYUV += 4;
+        }
+        srcYUV += srcYUVPitchLeft;
+        dstYUV += dstYUVPitchLeft;
+    }
+    return 0;
+}
+
+static int SDL_ConvertPixels_YVYU_to_UYVY_std(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+{
+    int x, y;
+    const int YUVwidth = (width + 1) / 2;
+    const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
+    const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
+    const Uint8 *srcYUV = (const Uint8 *)src;
+    Uint8 *dstYUV = (Uint8 *)dst;
+
+    y = height;
+    while (y--) {
+        x = YUVwidth;
+        while (x--) {
+            Uint8 Y1, U, Y2, V;
+
+            Y1 = srcYUV[0];
+            V = srcYUV[1];
+            Y2 = srcYUV[2];
+            U = srcYUV[3];
+            srcYUV += 4;
+
+            dstYUV[0] = U;
+            dstYUV[1] = Y1;
+            dstYUV[2] = V;
+            dstYUV[3] = Y2;
+            dstYUV += 4;
+        }
+        srcYUV += srcYUVPitchLeft;
+        dstYUV += dstYUVPitchLeft;
+    }
+    return 0;
+}
+
+static int SDL_ConvertPixels_YUY2_to_UYVY(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+{
+    #if SDL_SSE2_INTRINSICS
+    if (SDL_HasSSE2()) {
+      return SDL_ConvertPixels_YUY2_to_UYVY_SSE2(width, height, src, src_pitch, dst, dst_pitch);
+    }
+    #endif
+    return SDL_ConvertPixels_YUY2_to_UYVY_std(width, height, src, src_pitch, dst, dst_pitch);
 }
 
 static int SDL_ConvertPixels_YUY2_to_YVYU(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
 {
-#if SDL_SSE2_INTRINSICS
-  if (SDL_HasSSE2()) {
-    return SDL_ConvertPixels_YUY2_to_YVYU_SSE2(width, height, src, src_pitch, dst, dst_pitch);
-  } else
-#endif
-  {
-    int x, y;
-    const int YUVwidth = (width + 1) / 2;
-    const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
-    const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
-    const Uint8 *srcYUV = (const Uint8 *)src;
-    Uint8 *dstYUV = (Uint8 *)dst;
-
-    y = height;
-    while (y--) {
-        x = YUVwidth;
-        while (x--) {
-            Uint8 Y1, U, Y2, V;
-
-            Y1 = srcYUV[0];
-            U = srcYUV[1];
-            Y2 = srcYUV[2];
-            V = srcYUV[3];
-            srcYUV += 4;
-
-            dstYUV[0] = Y1;
-            dstYUV[1] = V;
-            dstYUV[2] = Y2;
-            dstYUV[3] = U;
-            dstYUV += 4;
-        }
-        srcYUV += srcYUVPitchLeft;
-        dstYUV += dstYUVPitchLeft;
+    #if SDL_SSE2_INTRINSICS
+    if (SDL_HasSSE2()) {
+      return SDL_ConvertPixels_YUY2_to_YVYU_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
-    return 0;
-  }
+    #endif
+    return SDL_ConvertPixels_YUY2_to_YVYU_std(width, height, src, src_pitch, dst, dst_pitch);
 }
 
 static int SDL_ConvertPixels_UYVY_to_YUY2(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
 {
-#if SDL_SSE2_INTRINSICS
-  if (SDL_HasSSE2()) {
-    return SDL_ConvertPixels_UYVY_to_YUY2_SSE2(width, height, src, src_pitch, dst, dst_pitch);
-  } else
-#endif
-  {
-    int x, y;
-    const int YUVwidth = (width + 1) / 2;
-    const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
-    const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
-    const Uint8 *srcYUV = (const Uint8 *)src;
-    Uint8 *dstYUV = (Uint8 *)dst;
-
-    y = height;
-    while (y--) {
-        x = YUVwidth;
-        while (x--) {
-            Uint8 Y1, U, Y2, V;
-
-            U = srcYUV[0];
-            Y1 = srcYUV[1];
-            V = srcYUV[2];
-            Y2 = srcYUV[3];
-            srcYUV += 4;
-
-            dstYUV[0] = Y1;
-            dstYUV[1] = U;
-            dstYUV[2] = Y2;
-            dstYUV[3] = V;
-            dstYUV += 4;
-        }
-        srcYUV += srcYUVPitchLeft;
-        dstYUV += dstYUVPitchLeft;
+    #if SDL_SSE2_INTRINSICS
+    if (SDL_HasSSE2()) {
+      return SDL_ConvertPixels_UYVY_to_YUY2_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
-    return 0;
-  }
+    #endif
+    return SDL_ConvertPixels_UYVY_to_YUY2_std(width, height, src, src_pitch, dst, dst_pitch);
 }
 
 static int SDL_ConvertPixels_UYVY_to_YVYU(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
 {
-#if SDL_SSE2_INTRINSICS
-  if (SDL_HasSSE2()) {
-    return SDL_ConvertPixels_UYVY_to_YVYU_SSE2(width, height, src, src_pitch, dst, dst_pitch);
-  } else
-#endif
-  {
-    int x, y;
-    const int YUVwidth = (width + 1) / 2;
-    const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
-    const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
-    const Uint8 *srcYUV = (const Uint8 *)src;
-    Uint8 *dstYUV = (Uint8 *)dst;
-
-    y = height;
-    while (y--) {
-        x = YUVwidth;
-        while (x--) {
-            Uint8 Y1, U, Y2, V;
-
-            U = srcYUV[0];
-            Y1 = srcYUV[1];
-            V = srcYUV[2];
-            Y2 = srcYUV[3];
-            srcYUV += 4;
-
-            dstYUV[0] = Y1;
-            dstYUV[1] = V;
-            dstYUV[2] = Y2;
-            dstYUV[3] = U;
-            dstYUV += 4;
-        }
-        srcYUV += srcYUVPitchLeft;
-        dstYUV += dstYUVPitchLeft;
+    #if SDL_SSE2_INTRINSICS
+    if (SDL_HasSSE2()) {
+      return SDL_ConvertPixels_UYVY_to_YVYU_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
-    return 0;
-  }
+    #endif
+    return SDL_ConvertPixels_UYVY_to_YVYU_std(width, height, src, src_pitch, dst, dst_pitch);
 }
 
 static int SDL_ConvertPixels_YVYU_to_YUY2(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
 {
-#if SDL_SSE2_INTRINSICS
-  if (SDL_HasSSE2()) {
-    return SDL_ConvertPixels_YVYU_to_YUY2_SSE2(width, height, src, src_pitch, dst, dst_pitch);
-  } else
-#endif
-  {
-    int x, y;
-    const int YUVwidth = (width + 1) / 2;
-    const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
-    const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
-    const Uint8 *srcYUV = (const Uint8 *)src;
-    Uint8 *dstYUV = (Uint8 *)dst;
-
-    y = height;
-    while (y--) {
-        x = YUVwidth;
-        while (x--) {
-            Uint8 Y1, U, Y2, V;
-
-            Y1 = srcYUV[0];
-            V = srcYUV[1];
-            Y2 = srcYUV[2];
-            U = srcYUV[3];
-            srcYUV += 4;
-
-            dstYUV[0] = Y1;
-            dstYUV[1] = U;
-            dstYUV[2] = Y2;
-            dstYUV[3] = V;
-            dstYUV += 4;
-        }
-        srcYUV += srcYUVPitchLeft;
-        dstYUV += dstYUVPitchLeft;
+    #if SDL_SSE2_INTRINSICS
+    if (SDL_HasSSE2()) {
+      return SDL_ConvertPixels_YVYU_to_YUY2_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
-    return 0;
-  }
+    #endif
+    return SDL_ConvertPixels_YVYU_to_YUY2_std(width, height, src, src_pitch, dst, dst_pitch);
 }
 
 static int SDL_ConvertPixels_YVYU_to_UYVY(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
 {
-#if SDL_SSE2_INTRINSICS
-  if (SDL_HasSSE2()) {
-    return SDL_ConvertPixels_YVYU_to_UYVY_SSE2(width, height, src, src_pitch, dst, dst_pitch);
-  } else
-#endif
-  {
-    int x, y;
-    const int YUVwidth = (width + 1) / 2;
-    const int srcYUVPitchLeft = (src_pitch - YUVwidth * 4);
-    const int dstYUVPitchLeft = (dst_pitch - YUVwidth * 4);
-    const Uint8 *srcYUV = (const Uint8 *)src;
-    Uint8 *dstYUV = (Uint8 *)dst;
-
-    y = height;
-    while (y--) {
-        x = YUVwidth;
-        while (x--) {
-            Uint8 Y1, U, Y2, V;
-
-            Y1 = srcYUV[0];
-            V = srcYUV[1];
-            Y2 = srcYUV[2];
-            U = srcYUV[3];
-            srcYUV += 4;
-
-            dstYUV[0] = U;
-            dstYUV[1] = Y1;
-            dstYUV[2] = V;
-            dstYUV[3] = Y2;
-            dstYUV += 4;
-        }
-        srcYUV += srcYUVPitchLeft;
-        dstYUV += dstYUVPitchLeft;
+    #if SDL_SSE2_INTRINSICS
+    if (SDL_HasSSE2()) {
+      return SDL_ConvertPixels_YVYU_to_UYVY_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
-    return 0;
-  }
+    #endif
+    return SDL_ConvertPixels_YVYU_to_UYVY_std(width, height, src, src_pitch, dst, dst_pitch);
 }
 
 static int SDL_ConvertPixels_Packed4_to_Packed4(int width, int height,
