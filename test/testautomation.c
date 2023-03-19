@@ -27,6 +27,7 @@ static SDLTest_TestSuiteReference *testSuites[] = {
     &eventsTestSuite,
     &guidTestSuite,
     &hintsTestSuite,
+    &intrinsicsTestSuite,
     &joystickTestSuite,
     &keyboardTestSuite,
     &mainTestSuite,
