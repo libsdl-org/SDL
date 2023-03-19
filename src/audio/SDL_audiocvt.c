@@ -494,7 +494,7 @@ static int SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioForm
     return retval;
 }
 
-#ifdef HAVE_LIBSAMPLERATE_H
+#ifdef HAVE_LIBSAMPLERATE
 
 static void SDL_ResampleCVT_SRC(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format)
 {
@@ -533,7 +533,7 @@ static void SDL_ResampleCVT_SRC(SDL_AudioCVT *cvt, const int chans, const SDL_Au
     }
 }
 
-#endif /* HAVE_LIBSAMPLERATE_H */
+#endif /* HAVE_LIBSAMPLERATE */
 
 static int SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format)
 {
@@ -595,7 +595,7 @@ RESAMPLER_FUNCS(6)
 RESAMPLER_FUNCS(8)
 #undef RESAMPLER_FUNCS
 
-#ifdef HAVE_LIBSAMPLERATE_H
+#ifdef HAVE_LIBSAMPLERATE
 #define RESAMPLER_FUNCS(chans)                                                  \
     static void SDLCALL                                                         \
         SDL_ResampleCVT_SRC_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) \
@@ -608,11 +608,11 @@ RESAMPLER_FUNCS(4)
 RESAMPLER_FUNCS(6)
 RESAMPLER_FUNCS(8)
 #undef RESAMPLER_FUNCS
-#endif /* HAVE_LIBSAMPLERATE_H */
+#endif /* HAVE_LIBSAMPLERATE */
 
 static SDL_AudioFilter ChooseCVTResampler(const int dst_channels)
 {
-#ifdef HAVE_LIBSAMPLERATE_H
+#ifdef HAVE_LIBSAMPLERATE
     if (SRC_available) {
         switch (dst_channels) {
         case 1:
@@ -629,7 +629,7 @@ static SDL_AudioFilter ChooseCVTResampler(const int dst_channels)
             break;
         }
     }
-#endif /* HAVE_LIBSAMPLERATE_H */
+#endif /* HAVE_LIBSAMPLERATE */
 
     switch (dst_channels) {
     case 1:
@@ -934,7 +934,7 @@ static Uint8 *EnsureStreamBufferSize(SDL_AudioStream *stream, int newlen)
     return offset ? ptr + (16 - offset) : ptr;
 }
 
-#ifdef HAVE_LIBSAMPLERATE_H
+#ifdef HAVE_LIBSAMPLERATE
 static int SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const void *_inbuf, const int inbuflen, void *_outbuf, const int outbuflen)
 {
     const float *inbuf = (const float *)_inbuf;
@@ -1010,7 +1010,7 @@ static SDL_bool SetupLibSampleRateResampling(SDL_AudioStream *stream)
 
     return SDL_TRUE;
 }
-#endif /* HAVE_LIBSAMPLERATE_H */
+#endif /* HAVE_LIBSAMPLERATE */
 
 static int SDL_ResampleAudioStream(SDL_AudioStream *stream, const void *_inbuf, const int inbuflen, void *_outbuf, const int outbuflen)
 {
@@ -1141,7 +1141,7 @@ SDL_CreateAudioStream(SDL_AudioFormat src_format,
             return NULL; /* SDL_BuildAudioCVT should have called SDL_SetError. */
         }
 
-#ifdef HAVE_LIBSAMPLERATE_H
+#ifdef HAVE_LIBSAMPLERATE
         SetupLibSampleRateResampling(retval);
 #endif
 

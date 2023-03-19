@@ -226,7 +226,7 @@
 #cmakedefine HAVE_O_CLOEXEC 1
 
 #cmakedefine HAVE_LIBUDEV_H 1
-#cmakedefine HAVE_LIBSAMPLERATE_H 1
+#cmakedefine HAVE_LIBSAMPLERATE 1
 #cmakedefine HAVE_LIBDECOR_H  1
 
 #cmakedefine HAVE_D3D_H @HAVE_D3D_H@

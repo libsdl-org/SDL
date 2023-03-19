@@ -36,7 +36,7 @@
 
 /* Functions and variables exported from SDL_audio.c for SDL_sysaudio.c */
 
-#ifdef HAVE_LIBSAMPLERATE_H
+#ifdef HAVE_LIBSAMPLERATE
 #include "samplerate.h"
 extern SDL_bool SRC_available;
 extern int SRC_converter;
