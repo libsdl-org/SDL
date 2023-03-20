@@ -108,28 +108,45 @@ _m_prefetch(void *__P)
 #endif
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-# if (defined(_MSC_VER) || defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
-#  define SDL_AVX_INTRINSICS
-#  include <immintrin.h>
+# if ((defined(__GNUC__) && (__GNUC__ >= 10)) || (defined(__clang__) && __clang_major__ >= 4) || defined(_MSC_VER)) && !defined(SDL_DISABLE_RDTSC)
+#  define SDL_RDTSC_INTRINSICS 1
+#  if defined(_MSC_VER)
+#   include <intrin.h>
+#  else
+#   include <immintrin.h>
+#  endif
 # endif
 # if ((defined(_MSC_VER) && !defined(_M_X64)) || defined(__MMX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_MMX)
 #  define SDL_MMX_INTRINSICS 1
 #  include <mmintrin.h>
 # endif
 # if (defined(_MSC_VER) || defined(__SSE__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE)
-   /* x86 MSVC defines _M_IX86_FP == 1 when compiled with /arch:SSE */
 #  define SDL_SSE_INTRINSICS 1
 #  include <xmmintrin.h>
 # endif
 # if (defined(_MSC_VER) || defined(__SSE2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE2)
-   /* x86 MSVC defines _M_IX86_FP == 2 when compiled with /arch:SSE2 */
 #  define SDL_SSE2_INTRINSICS 1
 #  include <emmintrin.h>
 # endif
 # if (defined(_MSC_VER) || defined(__SSE3__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE3)
-   /* x86 MSVC does not provide macro's to detect SSE3/SSE4 */
 #  define SDL_SSE3_INTRINSICS 1
 #  include <pmmintrin.h>
+# endif
+# if (defined(_MSC_VER) || defined(__SSE4_1__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE42)
+#  define SDL_SSE4_1_INTRINSICS 1
+#  include <smmintrin.h>
+# endif
+# if (defined(_MSC_VER) || defined(__SSE4_2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE42)
+#  define SDL_SSE4_2_INTRINSICS 1
+#  include <nmmintrin.h>
+# endif
+# if (defined(_MSC_VER) || defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
+#  define SDL_AVX_INTRINSICS 1
+#  include <immintrin.h>
+# endif
+# if (defined(_MSC_VER) || defined(__AVX512F__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX512F)
+#  define SDL_AVX512F_INTRINSICS 1
+#  include <immintrin.h>
 # endif
 #endif /* defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) */
 
