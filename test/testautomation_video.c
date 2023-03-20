@@ -501,12 +501,30 @@ static int video_getSetWindowGrab(void *arg)
     const char *title = "video_getSetWindowGrab Test Window";
     SDL_Window *window;
     SDL_bool originalMouseState, originalKeyboardState;
+    SDL_bool hasFocusGained = SDL_FALSE;
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
     if (window == NULL) {
         return TEST_ABORTED;
     }
+
+    /* Need to raise the window to have and SDL_EVENT_WINDOW_FOCUS_GAINED,
+     * so that the window gets the flags SDL_WINDOW_INPUT_FOCUS,
+     * so that it can be "grabbed" */
+    SDL_RaiseWindow(window);
+
+    {
+        SDL_Event evt;
+        SDL_zero(evt);
+        while (SDL_PollEvent(&evt)) {
+            if (evt.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
+                hasFocusGained = SDL_TRUE;
+            }
+        }
+    }
+
+    SDLTest_AssertCheck(hasFocusGained == SDL_TRUE, "Expectded window with focus");
 
     /* Get state */
     originalMouseState = SDL_GetWindowMouseGrab(window);
