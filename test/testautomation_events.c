@@ -68,6 +68,10 @@ int events_pushPumpAndPollUserevent(void *arg)
     SDLTest_AssertPass("Call to SDL_PollEvent()");
     SDLTest_AssertCheck(result == 1, "Check result from SDL_PollEvent, expected: 1, got: %d", result);
 
+    /* Need to finish getting all events and sentinel, otherwise other tests that rely on event are in bad state */
+    while (SDL_PollEvent(&event2)) {
+    }
+
     return TEST_COMPLETED;
 }
 
