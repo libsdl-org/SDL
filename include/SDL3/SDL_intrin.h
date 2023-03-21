@@ -132,7 +132,7 @@ _m_prefetch(void *__P)
 #  define SDL_SSE3_INTRINSICS 1
 #  include <pmmintrin.h>
 # endif
-# if (defined(_MSC_VER) || defined(__SSE4_1__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE42)
+# if (defined(_MSC_VER) || defined(__SSE4_1__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE41)
 #  define SDL_SSE4_1_INTRINSICS 1
 #  include <smmintrin.h>
 # endif
