@@ -89,6 +89,8 @@ _m_prefetch(void *__P)
 # endif
 #elif defined(__GNUC__) && (__GNUC__ + (__GNUC_MINOR__ >= 9) > 4) /* gcc >= 4.9 */
 # define SDL_HAS_TARGET_ATTRIBS
+#elif defined(__ICC) && __ICC >= 1600
+# define SDL_HAS_TARGET_ATTRIBS
 #endif
 
 #ifdef SDL_HAS_TARGET_ATTRIBS
@@ -108,13 +110,14 @@ _m_prefetch(void *__P)
 #endif
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-# if ((defined(__GNUC__) && (__GNUC__ >= 10)) || (defined(__clang__) && __clang_major__ >= 4) || defined(_MSC_VER)) && !defined(SDL_DISABLE_RDTSC)
+# if (defined(_MSC_VER) || (defined(__GNUC__) && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 4)) || defined(__clang__) || defined(__ICC)) && !defined(SDL_DISABLE_RDTSC)
 #  define SDL_RDTSC_INTRINSICS 1
 #  if defined(_MSC_VER)
 #   include <intrin.h>
 #  else
-#   include <immintrin.h>
+#   include <x86intrin.h>
 #  endif
+#  define SDL_rdtsc __rdtsc
 # endif
 # if ((defined(_MSC_VER) && !defined(_M_X64)) || defined(__MMX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_MMX)
 #  define SDL_MMX_INTRINSICS 1
