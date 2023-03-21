@@ -505,6 +505,22 @@ file(GLOB SOURCE_FILES
   ${SDL3_SOURCE_DIR}/src/video/*.c
   ${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c)
 
+if(USE_INTELCC)
+  # warning #39: division by zero
+  # warning #239: floating point underflow
+  # warning #264: floating-point value does not fit in required floating-point type
+  # warning #13203: No EMMS instruction before call to function
+  set_property(SOURCE "${SDL3_SOURCE_DIR}/src/libm/e_exp.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -wd239 -wd264")
+  set_property(SOURCE "${SDL3_SOURCE_DIR}/src/libm/e_log.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -wd39")
+  set_property(SOURCE "${SDL3_SOURCE_DIR}/src/libm/e_log10.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -wd39")
+  set_property(SOURCE "${SDL3_SOURCE_DIR}/src/video/SDL_blit_copy.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -wd13203")
+  set_property(SOURCE
+    "${SDL3_SOURCE_DIR}/src/libm/e_exp.c"
+    "${SDL3_SOURCE_DIR}/src/libm/e_log.c"
+    "${SDL3_SOURCE_DIR}/src/libm/e_log10.c"
+    "${SDL3_SOURCE_DIR}/src/libm/SDL_blit_copy.c"
+    PROPERTY SKIP_PRECOMPILE_HEADERS 1)
+endif()
 
 set(SDL_DEFAULT_ASSERT_LEVEL_CONFIGURED 1)
 if(SDL_ASSERTIONS MATCHES "^(auto|)$")
@@ -943,7 +959,7 @@ if(SDL_ASSEMBLY)
         set(SDL_ALTIVEC_BLITTERS 1)
         target_compile_options(sdl-build-options INTERFACE "-maltivec")
         set_property(SOURCE "${SDL3_SOURCE_DIR}/src/video/SDL_blit_N.c" APPEND PROPERTY COMPILE_DEFINITIONS "SDL_ENABLE_ALTIVEC")
-        set_property(SOURCE "${SDL3_SOURCE_DIR}/src/video/SDL_blit_N.c" APPEND PROPERTY SKIP_PRECOMPILE_HEADERS 1)
+        set_property(SOURCE "${SDL3_SOURCE_DIR}/src/video/SDL_blit_N.c" PROPERTY SKIP_PRECOMPILE_HEADERS 1)
       endif()
     endif()
 
