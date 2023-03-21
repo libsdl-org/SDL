@@ -287,7 +287,7 @@ SDL_TARGETING("avx") static void kernel_floats_add_avx(float *dest, const float 
 }
 #endif
 
-#if SDL_AVX_INTRINSICS
+#if SDL_AVX2_INTRINSICS
 SDL_TARGETING("avx2") static void kernel_ints_add_avx2(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
     for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
         _mm256_storeu_si256((__m256i*)dest, _mm256_add_epi32(_mm256_loadu_si256((__m256i*)a), _mm256_loadu_si256((__m256i*)b)));
@@ -591,7 +591,7 @@ static int intrinsics_testAVX2(void *arg)
 {
     if (SDL_HasAVX2()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX2 support.");
-#if SDL_AVX_INTRINSICS
+#if SDL_AVX2_INTRINSICS
         {
             size_t size;
             Sint32 *dest, *a, *b;

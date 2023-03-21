@@ -144,6 +144,10 @@ _m_prefetch(void *__P)
 #  define SDL_AVX_INTRINSICS 1
 #  include <immintrin.h>
 # endif
+# if (defined(_MSC_VER) || defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX2)
+#  define SDL_AVX2_INTRINSICS 1
+#  include <immintrin.h>
+# endif
 # if (defined(_MSC_VER) || defined(__AVX512F__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX512F)
 #  define SDL_AVX512F_INTRINSICS 1
 #  include <immintrin.h>
