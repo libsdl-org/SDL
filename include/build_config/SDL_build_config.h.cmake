@@ -588,8 +588,8 @@ typedef unsigned int uintptr_t;
 #cmakedefine SDL_DISABLE_SSE 1
 #cmakedefine SDL_DISABLE_SSE2 1
 #cmakedefine SDL_DISABLE_SSE3 1
-#cmakedefine SDL_DISABLE_SSE41 1
-#cmakedefine SDL_DISABLE_SSE42 1
+#cmakedefine SDL_DISABLE_SSE4_1 1
+#cmakedefine SDL_DISABLE_SSE4_2 1
 #cmakedefine SDL_DISABLE_AVX 1
 #cmakedefine SDL_DISABLE_AVX2 1
 #cmakedefine SDL_DISABLE_AVX512F 1
