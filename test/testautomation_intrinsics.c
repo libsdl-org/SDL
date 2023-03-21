@@ -498,7 +498,7 @@ static int intrinsics_testSSE3(void *arg)
 
 static int intrinsics_testSSE4_1(void *arg)
 {
-    if (SDL_HasSSE42()) {
+    if (SDL_HasSSE41()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.1 support.");
 #if SDL_SSE4_1_INTRINSICS
         {
