@@ -368,11 +368,7 @@ static int intrinsics_testRDTSC(void *arg)
         {
             Sint64 ticks;
 
-#if defined(_MSC_VER) || defined(__clang__)
-            ticks = __rdtsc();
-#else
-            ticks = _rdtsc();
-#endif
+            ticks = SDL_rdtsc();
 
             SDLTest_AssertCheck(SDL_TRUE, "rdtsc returned: %" SDL_PRIu64 " ticks", ticks);
 
