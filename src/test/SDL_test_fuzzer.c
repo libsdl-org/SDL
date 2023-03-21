@@ -470,7 +470,9 @@ SDLTest_RandomAsciiStringWithMaximumLength(int maxLength)
     }
 
     size = (SDLTest_RandomUint32() % (maxLength + 1));
-
+    if (size == 0) {
+        size = 1;
+    }
     return SDLTest_RandomAsciiStringOfSize(size);
 }
 
