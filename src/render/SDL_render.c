@@ -2123,7 +2123,7 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
         }
 
         if (renderer->logical_target) {
-            int existing_w, existing_h;
+            int existing_w = 0, existing_h = 0;
 
             if (SDL_QueryTexture(renderer->logical_target, NULL, NULL, &existing_w, &existing_h) < 0) {
                 goto error;
@@ -2240,7 +2240,7 @@ int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_R
         }
     } else if (mode != SDL_LOGICAL_PRESENTATION_MATCH) {
         if (renderer->logical_target) {
-            int existing_w, existing_h;
+            int existing_w = 0, existing_h = 0;
 
             if (SDL_QueryTexture(renderer->logical_target, NULL, NULL, &existing_w, &existing_h) < 0) {
                 goto error;
