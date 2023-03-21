@@ -215,7 +215,7 @@ SDL_TARGETING("sse") static void kernel_floats_add_sse(float *dest, const float 
 #if SDL_SSE2_INTRINSICS
 SDL_TARGETING("sse2") static void kernel_doubles_add_sse2(double *dest, const double *a, const double *b, size_t size) {
     for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
-        _mm_store_pd(dest, _mm_add_pd(_mm_loadu_pd(a), _mm_loadu_pd(b)));
+        _mm_storeu_pd(dest, _mm_add_pd(_mm_loadu_pd(a), _mm_loadu_pd(b)));
     }
     if (size) {
         *dest = *a + *b;
