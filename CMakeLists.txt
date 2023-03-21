@@ -798,7 +798,6 @@ if(SDL_ASSEMBLY)
   if(USE_GCC OR USE_CLANG)
     # TODO: Those all seem to be quite GCC specific - needs to be
     # reworked for better compiler support
-    set(HAVE_ASSEMBLY TRUE)
 
     if(SDL_SSE3)
       cmake_push_check_state()
