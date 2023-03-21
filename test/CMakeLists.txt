@@ -30,6 +30,12 @@ if(NOT TARGET SDL3::${sdl_name_component})
     find_package(SDL3 3.0.0 REQUIRED CONFIG COMPONENTS ${sdl_name_component} SDL3_test)
 endif()
 
+if(TARGET sdl-build-options)
+    set(SDL3_TESTS_SUBPROJECT ON)
+else()
+    set(SDL3_TESTS_SUBPROJECT OFF)
+endif()
+
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
 if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
     # Prefer GLVND, if present
@@ -115,6 +121,13 @@ macro(add_sdl_test_executable TARGET)
     if(TARGET sdl-global-options)
         target_link_libraries(${TARGET} PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
     endif()
+
+    if(SDL3_TESTS_SUBPROJECT)
+        # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
+        target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
+    else()
+        target_include_directories(${TARGET} PRIVATE "../include")
+    endif()
 endmacro()
 
 check_include_file(signal.h HAVE_SIGNAL_H)
@@ -149,7 +162,7 @@ add_sdl_test_executable(testdrawchessboard SOURCES testdrawchessboard.c)
 add_sdl_test_executable(testdropfile SOURCES testdropfile.c)
 add_sdl_test_executable(testerror NONINTERACTIVE SOURCES testerror.c)
 
-if(LINUX AND TARGET sdl-build-options)
+if(LINUX AND SDL3_TESTS_SUBPROJECT)
     set(build_options_dependent_tests )
 
     add_sdl_test_executable(testevdev NONINTERACTIVE SOURCES testevdev.c)
@@ -256,10 +269,6 @@ check_c_compiler_flag(-Wformat-extra-args HAVE_WFORMAT_EXTRA_ARGS)
 cmake_pop_check_state()
 if(HAVE_WFORMAT_EXTRA_ARGS)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_EXTRA_ARGS)
-endif()
-
-if(NOT HAVE_X11)
-    target_compile_definitions(testautomation PRIVATE SDL_DISABLE_SYSWM_X11)
 endif()
 
 if(SDL_DUMMYAUDIO)
