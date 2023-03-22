@@ -382,8 +382,8 @@ sub dewikify_chunk {
             # <code></code> is also popular.  :/
             $str =~ s/\s*\<code>(.*?)<\/code>\s*/\n.BR $1\n/gms;
 
-            # bold+italic
-            $str =~ s/\s*'''''(.*?)'''''\s*/\n.BI $1\n/gms;
+            # bold+italic (this looks bad, just make it bold).
+            $str =~ s/\s*'''''(.*?)'''''\s*/\n.B $1\n/gms;
 
             # bold
             $str =~ s/\s*'''(.*?)'''\s*/\n.B $1\n/gms;
@@ -405,8 +405,8 @@ sub dewikify_chunk {
             # <code></code> is also popular.  :/
             $str =~ s/\s*\`(.*?)\`\s*/\n.BR $1\n/gms;
 
-            # bold+italic
-            $str =~ s/\s*\*\*\*(.*?)\*\*\*\s*/\n.BI $1\n/gms;
+            # bold+italic (this looks bad, just make it bold).
+            $str =~ s/\s*\*\*\*(.*?)\*\*\*\s*/\n.B $1\n/gms;
 
             # bold
             $str =~ s/\s*\*\*(.*?)\*\*\s*/\n.B $1\n/gms;
