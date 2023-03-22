@@ -370,6 +370,7 @@ set_option(SDL_ASSEMBLY            "Enable assembly routines" ${SDL_ASSEMBLY_DEF
 dep_option(SDL_AVX                 "Use AVX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_AVX2                "Use AVX2 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_AVX512              "Use AVX512 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
+dep_option(SDL_RDTSC               "Use RDTSC assembly routine(s)" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE                 "Use SSE assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE2                "Use SSE2 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE3                "Use SSE3 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
@@ -714,6 +715,20 @@ endif()
 if(SDL_ASSEMBLY)
   set(HAVE_ASSEMBLY TRUE)
 
+  if(SDL_RDTSC)
+    check_c_source_compiles("
+      #if defined(_MSC_VER)
+      # include <intrin.h>
+      #else
+      # include <x86intrin.h>
+      #endif
+      int main(int argc, char *argv[]) {
+        return (int)__rdtsc();
+      }" COMPILER_SUPPORTS_RDTSC)
+    if(COMPILER_SUPPORTS_RDTSC)
+      set(HAVE_RDTSC TRUE)
+    endif()
+  endif()
   if(SDL_MMX)
     cmake_push_check_state()
     if(USE_GCC OR USE_CLANG)
@@ -1026,6 +1041,10 @@ if(SDL_ASSEMBLY)
       endif()
     endif()
   endif()
+endif()
+
+if(NOT HAVE_RDTSC)
+  set(SDL_DISABLE_RDTSC 1)
 endif()
 
 if(NOT HAVE_MMX)
