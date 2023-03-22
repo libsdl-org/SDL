@@ -59,10 +59,6 @@ if ((not defined $optionsfname) && (-f $default_optionsfname)) {
     $optionsfname = $default_optionsfname;
 }
 
-if (not defined $manpath) {
-    $manpath = "$srcpath/man";
-}
-
 if (defined $optionsfname) {
     open OPTIONS, '<', $optionsfname or die("Failed to open options file '$optionsfname': $!\n");
     while (<OPTIONS>) {
@@ -489,6 +485,10 @@ sub usage {
 usage() if not defined $srcpath;
 usage() if not defined $wikipath;
 #usage() if $copy_direction == 0;
+
+if (not defined $manpath) {
+    $manpath = "$srcpath/man";
+}
 
 my @standard_wiki_sections = (
     'Draft',
