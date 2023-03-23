@@ -38,7 +38,9 @@ __declspec(selectany) int _fltused = 1;
 #if (_MSC_VER >= 1400) && (!defined(_MT) || defined(DLL_EXPORT))
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memcpy(void *dst, const void *src, size_t len);
+#ifndef __INTEL_LLVM_COMPILER
 #pragma intrinsic(memcpy)
+#endif
 
 #if !defined(__clang__)
 #pragma function(memcpy)
@@ -51,7 +53,9 @@ void *memcpy(void *dst, const void *src, size_t len)
 
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memset(void *dst, int c, size_t len);
+#ifndef __INTEL_LLVM_COMPILER
 #pragma intrinsic(memset)
+#endif
 
 #if !defined(__clang__)
 #pragma function(memset)
