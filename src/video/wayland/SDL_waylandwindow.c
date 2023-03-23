@@ -592,11 +592,16 @@ static void handle_configure_xdg_toplevel(void *data,
         /* Always send a maximized/restore event; if the event is redundant it will
          * automatically be discarded (see src/events/SDL_windowevents.c)
          *
-         * No, we do not get minimize events from xdg-shell.
+         * No, we do not get minimize events from xdg-shell, however, the minimized
+         * state can be programmatically set. The meaning of 'minimized' is compositor
+         * dependent, but in general, we can assume that the flag should remain set until
+         * the next focused configure event occurs.
          */
-        SDL_SendWindowEvent(window,
-                            maximized ? SDL_EVENT_WINDOW_MAXIMIZED : SDL_EVENT_WINDOW_RESTORED,
-                            0, 0);
+        if (focused || !(window->flags & SDL_WINDOW_MINIMIZED)) {
+            SDL_SendWindowEvent(window,
+                                maximized ? SDL_EVENT_WINDOW_MAXIMIZED : SDL_EVENT_WINDOW_RESTORED,
+                                0, 0);
+        }
     } else {
         /* Unconditionally set the output for exclusive fullscreen windows when entering
          * fullscreen from a compositor event, as where the compositor will actually
@@ -795,11 +800,16 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
         /* Always send a maximized/restore event; if the event is redundant it will
          * automatically be discarded (see src/events/SDL_windowevents.c)
          *
-         * No, we do not get minimize events from libdecor.
+         * No, we do not get minimize events from libdecor, however, the minimized
+         * state can be programmatically set. The meaning of 'minimized' is compositor
+         * dependent, but in general, we can assume that the flag should remain set until
+         * the next focused configure event occurs.
          */
-        SDL_SendWindowEvent(window,
-                            maximized ? SDL_EVENT_WINDOW_MAXIMIZED : SDL_EVENT_WINDOW_RESTORED,
-                            0, 0);
+        if (focused || !(window->flags & SDL_WINDOW_MINIMIZED)) {
+            SDL_SendWindowEvent(window,
+                                maximized ? SDL_EVENT_WINDOW_MAXIMIZED : SDL_EVENT_WINDOW_RESTORED,
+                                0, 0);
+        }
     }
 
     /* Similar to maximized/restore events above, send focus events too! */
@@ -1858,9 +1868,7 @@ void Wayland_MinimizeWindow(_THIS, SDL_Window *window)
     SDL_VideoData *viddata = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
 
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
-        return;
-    }
+    window->flags |= SDL_WINDOW_MINIMIZED;
 
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
@@ -1870,7 +1878,7 @@ void Wayland_MinimizeWindow(_THIS, SDL_Window *window)
         libdecor_frame_set_minimized(wind->shell_surface.libdecor.frame);
     } else
 #endif
-        if (viddata->shell.xdg) {
+        if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && viddata->shell.xdg) {
         if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
