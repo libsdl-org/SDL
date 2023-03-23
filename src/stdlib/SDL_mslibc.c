@@ -701,6 +701,19 @@ RETZERO:
 
 #endif /* MSC_VER */
 
+#if defined(__ICL)
+/* The classic Intel compiler generates calls to _intel_fast_memcpy
+ * and _intel_fast_memset when building an optimized SDL library */
+void *_intel_fast_memcpy(void *dst, const void *src, size_t len)
+{
+    return SDL_memcpy(dst, src, len);
+}
+void *_intel_fast_memset(void *dst, int c, size_t len)
+{
+    return SDL_memset(dst, c, len);
+}
+#endif
+
 #endif /* !HAVE_LIBC && !SDL_STATIC_LIB */
 
 /* vi: set ts=4 sw=4 expandtab: */
