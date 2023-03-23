@@ -1269,6 +1269,10 @@ else()
     check_include_file("${_HEADER}" "${LIBC_HAS_VAR}")
     set(HAVE_${HEADER_IDENTIFIER} ${${LIBC_HAS_VAR}})
   endforeach()
+
+  if(MSVC AND USE_CLANG)
+    check_c_compiler_flag("/Q_no-use-libirc" HAS_Q_NO_USE_LIBIRC )
+  endif()
 endif()
 
 
@@ -3334,6 +3338,9 @@ if(SDL_SHARED)
       # FIXME: should be added for all architectures (missing symbols for ARM)
       target_link_libraries(SDL3-shared PRIVATE "-nodefaultlib:MSVCRT")
     endif()
+    if(HAS_Q_NO_USE_LIBIRC)
+      target_compile_options(SDL3-shared PRIVATE /Q_no-use-libirc)
+    endif()
   endif()
   if(APPLE)
     set_target_properties(SDL3-shared PROPERTIES
@@ -3368,10 +3375,9 @@ if(SDL_SHARED)
   if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG AND NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM")
     # Don't try to link with the default set of libraries.
     if(NOT WINDOWS_STORE)
-      set_target_properties(SDL3-shared PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
-      set_target_properties(SDL3-shared PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+      set_property(TARGET SDL3-shared APPEND_STRING PROPERTY LINK_FLAGS "/NODEFAULTLIB")
     endif()
-    set_target_properties(SDL3-shared PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
+    set_property(TARGET SDL3-shared APPEND_STRING PROPERTY STATIC_LIBRARY_FLAGS " /NODEFAULTLIB")
   endif()
   # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for SDL_EXTRA_LDFLAGS
   target_link_libraries(SDL3-shared PRIVATE ${SDL_EXTRA_LIBS} ${SDL_EXTRA_LDFLAGS} ${SDL_CMAKE_DEPENDS})
