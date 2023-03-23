@@ -33,11 +33,6 @@ if(WINDOWS_STORE)
   target_compile_options(sdl-build-options INTERFACE "-ZW")
 endif()
 
-# Build in parallel under Visual Studio. Not enabled by default.
-if(MSVC)
-  target_compile_options(sdl-build-options INTERFACE "/MP")
-endif()
-
 # CMake 3.0 expands the "if(${A})" in "set(OFF 1);set(A OFF);if(${A})" to "if(1)"
 # CMake 3.24+ emits a warning when not set.
 unset(OFF)
@@ -224,6 +219,11 @@ if(NOT ("$ENV{CFLAGS}" STREQUAL ""))
      message(WARNING "Please use CMake's CMAKE_C_FLAGS and CMAKE_BUILD_TYPE variables directly.")
      message(WARNING "Or upgrade to CMake >= 3.11.0, which respects the CFLAGS environment var.")
   endif()
+endif()
+
+# Build in parallel under Visual Studio. Not enabled by default.
+if(MSVC AND NOT USE_CLANG)
+  target_compile_options(sdl-build-options INTERFACE "/MP")
 endif()
 
 if(MSVC)
