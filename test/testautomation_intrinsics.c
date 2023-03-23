@@ -10,6 +10,19 @@
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
 
+#if (defined(_MSC_VER) \
+     || (defined(__GNUC__) && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 5)) \
+     || (defined(__clang__) && (__clang_major__ > 3 || __clang_major__ == 3 && __clang_minor__ >= 5)) \
+     || defined(__ICC)) && !defined(SDL_DISABLE_RDTSC)
+# define SDL_RDTSC_INTRINSICS 1
+# if defined(_MSC_VER)
+#  include <intrin.h>
+# else
+#  include <x86intrin.h>
+# endif
+# define SDLTest_rdtsc __rdtsc
+#endif
+
 // FIXME: missing tests for loongarch lsx/lasx
 // FIXME: missing tests for powerpc altivec
 
@@ -368,7 +381,7 @@ static int intrinsics_testRDTSC(void *arg)
         {
             Sint64 ticks;
 
-            ticks = SDL_rdtsc();
+            ticks = SDLTest_rdtsc();
 
             SDLTest_AssertCheck(SDL_TRUE, "rdtsc returned: %" SDL_PRIu64 " ticks", ticks);
 
