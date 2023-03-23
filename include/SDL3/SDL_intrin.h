@@ -110,15 +110,6 @@ _m_prefetch(void *__P)
 #endif
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-# if (defined(_MSC_VER) || (defined(__GNUC__) && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 4)) || defined(__clang__) || defined(__ICC)) && !defined(SDL_DISABLE_RDTSC)
-#  define SDL_RDTSC_INTRINSICS 1
-#  if defined(_MSC_VER)
-#   include <intrin.h>
-#  else
-#   include <x86intrin.h>
-#  endif
-#  define SDL_rdtsc __rdtsc
-# endif
 # if ((defined(_MSC_VER) && !defined(_M_X64)) || defined(__MMX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_MMX)
 #  define SDL_MMX_INTRINSICS 1
 #  include <mmintrin.h>
