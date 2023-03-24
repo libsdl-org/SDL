@@ -404,7 +404,6 @@ SDL3_0.0.0 {
     SDL_HasMMX;
     SDL_HasNEON;
     SDL_HasPrimarySelectionText;
-    SDL_HasRDTSC;
     SDL_HasRectIntersection;
     SDL_HasRectIntersectionFloat;
     SDL_HasSSE2;

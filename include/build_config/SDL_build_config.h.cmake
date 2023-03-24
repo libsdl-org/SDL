@@ -585,7 +585,6 @@ typedef unsigned int uintptr_t;
 #endif /* !_STDINT_H_ && !HAVE_STDINT_H */
 
 /* Configure use of intrinsics */
-#cmakedefine SDL_DISABLE_RDTSC 1
 #cmakedefine SDL_DISABLE_SSE 1
 #cmakedefine SDL_DISABLE_SSE2 1
 #cmakedefine SDL_DISABLE_SSE3 1
