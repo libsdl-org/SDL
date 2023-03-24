@@ -22,14 +22,29 @@
 
 #include <stdlib.h> /* Needed for exit() */
 
+/* Enable to have color in logs */
+#if 1
+#define COLOR_RED       "\033[0;31m"
+#define COLOR_GREEN     "\033[0;32m"
+#define COLOR_YELLOW    "\033[0;93m"
+#define COLOR_BLUE      "\033[0;94m"
+#define COLOR_END       "\033[0m"
+#else
+#define COLOR_RED       ""
+#define COLOR_GREEN     ""
+#define COLOR_BLUE      ""
+#define COLOR_YELLOW    ""
+#define COLOR_END       ""
+#endif
+
 /* Invalid test name/description message format */
 #define SDLTEST_INVALID_NAME_FORMAT "(Invalid)"
 
 /* Log summary message format */
-#define SDLTEST_LOG_SUMMARY_FORMAT "%s Summary: Total=%d Passed=%d Failed=%d Skipped=%d"
+#define SDLTEST_LOG_SUMMARY_FORMAT "%s Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_RED "Failed=%d" COLOR_END " " COLOR_BLUE "Skipped=%d" COLOR_END
 
 /* Final result message format */
-#define SDLTEST_FINAL_RESULT_FORMAT ">>> %s '%s': %s\n"
+#define SDLTEST_FINAL_RESULT_FORMAT COLOR_YELLOW ">>> %s '%s':" COLOR_END " %s\n"
 
 /* ! \brief Timeout for single test case execution */
 static Uint32 SDLTest_TestCaseTimeout = 3600;
@@ -553,7 +568,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                     testStartSeconds = GetClock();
 
                     /* Log test started */
-                    SDLTest_Log("----- Test Case %i.%i: '%s' started",
+                    SDLTest_Log(COLOR_YELLOW "----- Test Case %i.%i: '%s' started" COLOR_END,
                                 suiteCounter,
                                 testCounter,
                                 currentTestName);
@@ -607,13 +622,13 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                     /* Log final test result */
                     switch (testResult) {
                     case TEST_RESULT_PASSED:
-                        SDLTest_Log(SDLTEST_FINAL_RESULT_FORMAT, "Test", currentTestName, "Passed");
+                        SDLTest_Log(SDLTEST_FINAL_RESULT_FORMAT, "Test", currentTestName, COLOR_GREEN "Passed" COLOR_END);
                         break;
                     case TEST_RESULT_FAILED:
-                        SDLTest_LogError(SDLTEST_FINAL_RESULT_FORMAT, "Test", currentTestName, "Failed");
+                        SDLTest_LogError(SDLTEST_FINAL_RESULT_FORMAT, "Test", currentTestName, COLOR_RED "Failed" COLOR_END);
                         break;
                     case TEST_RESULT_NO_ASSERT:
-                        SDLTest_LogError(SDLTEST_FINAL_RESULT_FORMAT, "Test", currentTestName, "No Asserts");
+                        SDLTest_LogError(SDLTEST_FINAL_RESULT_FORMAT, "Test", currentTestName, COLOR_BLUE "No Asserts" COLOR_END);
                         break;
                     }
 
@@ -673,7 +688,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     if (failedNumberOfTests > 0) {
         SDLTest_Log("Harness input to repro failures:");
         for (testCounter = 0; testCounter < failedNumberOfTests; testCounter++) {
-            SDLTest_Log(" --seed %s --filter %s", runSeed, failedTests[testCounter]->name);
+            SDLTest_Log(COLOR_RED " --seed %s --filter %s" COLOR_END, runSeed, failedTests[testCounter]->name);
         }
     }
     SDL_free((void *)failedTests);
