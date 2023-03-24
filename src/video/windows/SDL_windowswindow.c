@@ -1019,7 +1019,7 @@ void WIN_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
 
 void WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window *window, SDL_bool on_top)
 {
-    WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE);
+    WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
 void WIN_RestoreWindow(_THIS, SDL_Window *window)
