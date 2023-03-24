@@ -313,6 +313,7 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
                     SDLTest_AssertCheck(closest->pixel_h == current.pixel_h, "Verify returned height matches current height; expected: %d, got: %d", current.pixel_h, closest->pixel_h);
                 }
             }
+            SDL_free((void *)modes);
         }
         SDL_free(displays);
     }
