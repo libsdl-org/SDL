@@ -517,7 +517,18 @@ my %headerfuncs = ();   # $headerfuncs{"SDL_OpenAudio"} -> string of header docu
 my %headerdecls = ();
 my %headerfuncslocation = ();   # $headerfuncslocation{"SDL_OpenAudio"} -> name of header holding SDL_OpenAudio define ("SDL_audio.h" in this case).
 my %headerfuncschunk = ();   # $headerfuncschunk{"SDL_OpenAudio"} -> offset in array in %headers that should be replaced for this function.
-my %headerfuncshasdoxygen = ();   # $headerfuncschunk{"SDL_OpenAudio"} -> 1 if there was no existing doxygen for this function.
+my %headerfuncshasdoxygen = ();   # $headerfuncshasdoxygen{"SDL_OpenAudio"} -> 1 if there was no existing doxygen for this function.
+my %headercategory = ();   # $headercategory{"SDL_audio.h"} -> "CategoryAudio". Only set if the page exists or manually set below. (Not all headers have a category page.)
+
+# These categories don't match the header name.
+$headercategory{'SDL.h'} = 'CategoryInit';
+$headercategory{'SDL_assert.h'} = 'CategoryAssertions';
+$headercategory{'SDL_cpuinfo.h'} = 'CategoryCPU';
+$headercategory{'SDL_haptic.h'} = 'CategoryForceFeedback';
+$headercategory{'SDL_loadso.h'} = 'CategorySharedObject';
+$headercategory{'SDL_rwops.h'} = 'CategoryIO';
+$headercategory{'SDL_stdinc.h'} = 'CategoryStandard';
+$headercategory{'SDL_syswm.h'} = 'CategorySWM';
 
 my $incpath = "$srcpath";
 $incpath .= "/$incsubdir" if $incsubdir ne '';
@@ -693,8 +704,18 @@ while (readdir(DH)) {
     # Ignore FrontPage.
     next if $fn eq 'FrontPage';
 
-    # Ignore "Category*" pages.
-    next if ($fn =~ /\ACategory/);
+    # Store case of header category pages.
+    if ($fn =~ /\ACategory/) {
+        my $cat = $fn;
+        $cat =~ s/Category([a-zA-Z0-0]+).*/$1/;
+        my $header = "SDL_\L$cat.h";
+        if (defined $headers{$header}) {
+            $headercategory{$header} = 'Category' . $cat;
+        }
+
+        # Ignore "Category*" pages.
+        next
+    }
 
     open(FH, '<', "$wikipath/$dent") or die("Can't open '$wikipath/$dent': $!\n");
 
@@ -1314,12 +1335,44 @@ if ($copy_direction == 1) {  # --copy-to-headers
         # !!! FIXME: This won't be CategoryAPI if we eventually handle things other than functions.
         my $footer = $$sectionsref{'[footer]'};
 
+        # Ignore SDL_GetWindowWMInfo because it messes up the formating of comment at end of the page
+        my $funccategory = '';
+        my $funccategory2 = '';
+        if ((defined $headercategory{$headerfuncslocation{$fn}}) and ($fn ne 'SDL_GetWindowWMInfo')) {
+            $funccategory = $headercategory{$headerfuncslocation{$fn}};
+            if ($funccategory eq 'CategorySystem') {
+                if (($fn =~ /Android/) or ($fn eq 'SDL_IsChromebook') or ($fn eq 'SDL_IsDeXMode')) {
+                    $funccategory2 = 'CategoryAndroid';
+                } elsif ($fn =~ /Linux/) {
+                    $funccategory2 = 'CategoryLinux';
+                }
+            }
+        }
+
         if ($wikitype eq 'mediawiki') {
             $footer =~ s/\[\[CategoryAPI\]\],?\s*//g;
-            $footer = '[[CategoryAPI]]' . (($footer eq '') ? "\n" : ", $footer");
+            if ($funccategory ne '') {
+                $footer =~ s/\[\[$funccategory\]\],?\s*//g;
+            }
+            if ($funccategory2 ne '') {
+                $footer =~ s/\[\[$funccategory2\]\],?\s*//g;
+            }
+            $footer = "[[CategoryAPI]]"
+                    . (($funccategory eq '') ? "" : ", [[$funccategory]]")
+                    . (($funccategory2 eq '') ? "" : ", [[$funccategory2]]")
+                    . (($footer eq '') ? "\n" : ", $footer");
         } elsif ($wikitype eq 'md') {
             $footer =~ s/\[CategoryAPI\]\(CategoryAPI\),?\s*//g;
-            $footer = '[CategoryAPI](CategoryAPI)' . (($footer eq '') ? '' : ', ') . $footer;
+            if ($funccategory ne '') {
+                $footer =~ s/\[$funccategory\]\($funccategory\),?\s*//g;
+            }
+            if ($funccategory2 ne '') {
+                $footer =~ s/\[$funccategory2\]\($funccategory2\),?\s*//g;
+            }
+            $footer = "[CategoryAPI](CategoryAPI)"
+                    . (($funccategory eq '') ? '' : ", [$funccategory]($funccategory)")
+                    . (($funccategory2 eq '') ? '' : ", [$funccategory2]($funccategory2)")
+                    . (($footer eq '') ? '' : ', ') . $footer;
         } else { die("Unexpected wikitype '$wikitype'\n"); }
         $$sectionsref{'[footer]'} = $footer;
 
