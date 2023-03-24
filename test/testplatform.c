@@ -391,7 +391,6 @@ static int TestCPUInfo(SDL_bool verbose)
     if (verbose) {
         SDL_Log("CPU count: %d\n", SDL_GetCPUCount());
         SDL_Log("CPU cache line size: %d\n", SDL_GetCPUCacheLineSize());
-        SDL_Log("RDTSC %s\n", SDL_HasRDTSC() ? "detected" : "not detected");
         SDL_Log("AltiVec %s\n", SDL_HasAltiVec() ? "detected" : "not detected");
         SDL_Log("MMX %s\n", SDL_HasMMX() ? "detected" : "not detected");
         SDL_Log("SSE %s\n", SDL_HasSSE() ? "detected" : "not detected");

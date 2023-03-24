@@ -10,19 +10,6 @@
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
 
-#if (defined(_MSC_VER) \
-     || (defined(__GNUC__) && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 5)) \
-     || (defined(__clang__) && (__clang_major__ > 3 || __clang_major__ == 3 && __clang_minor__ >= 5)) \
-     || defined(__ICC)) && !defined(SDL_DISABLE_RDTSC)
-# define SDL_RDTSC_INTRINSICS 1
-# if defined(_MSC_VER)
-#  include <intrin.h>
-# else
-#  include <x86intrin.h>
-# endif
-# define SDLTest_rdtsc __rdtsc
-#endif
-
 // FIXME: missing tests for loongarch lsx/lasx
 // FIXME: missing tests for powerpc altivec
 
@@ -373,30 +360,6 @@ static int intrinsics_selftest(void *arg)
     return TEST_COMPLETED;
 }
 
-static int intrinsics_testRDTSC(void *arg)
-{
-    if (SDL_HasRDTSC()) {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has RDTSC support.");
-#if SDL_RDTSC_INTRINSICS
-        {
-            Sint64 ticks;
-
-            ticks = SDLTest_rdtsc();
-
-            SDLTest_AssertCheck(SDL_TRUE, "rdtsc returned: %" SDL_PRIu64 " ticks", ticks);
-
-            return TEST_COMPLETED;
-        }
-#else
-        SDLTest_AssertCheck(SDL_TRUE, "Test executable does NOT use RDTSC intrinsics.");
-#endif
-    } else {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has NO RDTSC support.");
-    }
-
-    return TEST_SKIPPED;
-}
-
 static int intrinsics_testMMX(void *arg)
 {
     if (SDL_HasMMX()) {
@@ -666,42 +629,38 @@ static const SDLTest_TestCaseReference intrinsicsTest1 = {
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest2 = {
-    (SDLTest_TestCaseFp)intrinsics_testRDTSC, "intrinsics_rdtsc", "Tests RDTC intrinsic", TEST_ENABLED
-};
-
-static const SDLTest_TestCaseReference intrinsicsTest3 = {
     (SDLTest_TestCaseFp)intrinsics_testMMX, "intrinsics_testMMX", "Tests MMX intrinsics", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference intrinsicsTest4 = {
+static const SDLTest_TestCaseReference intrinsicsTest3 = {
     (SDLTest_TestCaseFp)intrinsics_testSSE, "intrinsics_testSSE", "Tests SSE intrinsics", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference intrinsicsTest5 = {
+static const SDLTest_TestCaseReference intrinsicsTest4 = {
     (SDLTest_TestCaseFp)intrinsics_testSSE2, "intrinsics_testSSE2", "Tests SSE2 intrinsics", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference intrinsicsTest6 = {
+static const SDLTest_TestCaseReference intrinsicsTest5 = {
     (SDLTest_TestCaseFp)intrinsics_testSSE3, "intrinsics_testSSE3", "Tests SSE3 intrinsics", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference intrinsicsTest7 = {
+static const SDLTest_TestCaseReference intrinsicsTest6 = {
     (SDLTest_TestCaseFp)intrinsics_testSSE4_1, "intrinsics_testSSE4.1", "Tests SSE4.1 intrinsics", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference intrinsicsTest8 = {
+static const SDLTest_TestCaseReference intrinsicsTest7 = {
     (SDLTest_TestCaseFp)intrinsics_testSSE4_2, "intrinsics_testSSE4.2", "Tests SSE4.2 intrinsics", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference intrinsicsTest9 = {
+static const SDLTest_TestCaseReference intrinsicsTest8 = {
     (SDLTest_TestCaseFp)intrinsics_testAVX, "intrinsics_testAVX", "Tests AVX intrinsics", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference intrinsicsTest10 = {
+static const SDLTest_TestCaseReference intrinsicsTest9 = {
     (SDLTest_TestCaseFp)intrinsics_testAVX2, "intrinsics_testAVX2", "Tests AVX2 intrinsics", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference intrinsicsTest11 = {
+static const SDLTest_TestCaseReference intrinsicsTest10 = {
     (SDLTest_TestCaseFp)intrinsics_testAVX512F, "intrinsics_testAVX512F", "Tests AVX512F intrinsics", TEST_ENABLED
 };
 
@@ -717,7 +676,6 @@ static const SDLTest_TestCaseReference *platformTests[] = {
     &intrinsicsTest8,
     &intrinsicsTest9,
     &intrinsicsTest10,
-    &intrinsicsTest11,
     NULL
 };
 

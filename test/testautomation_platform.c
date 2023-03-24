@@ -165,7 +165,6 @@ static int platform_testGetFunctions(void *arg)
  * \brief Tests SDL_HasXYZ() functions
  * \sa SDL_HasAltiVec
  * \sa SDL_HasMMX
- * \sa SDL_HasRDTSC
  * \sa SDL_HasSSE
  * \sa SDL_HasSSE2
  * \sa SDL_HasSSE3
@@ -176,9 +175,6 @@ static int platform_testGetFunctions(void *arg)
 static int platform_testHasFunctions(void *arg)
 {
     /* TODO: independently determine and compare values as well */
-
-    SDL_HasRDTSC();
-    SDLTest_AssertPass("SDL_HasRDTSC()");
 
     SDL_HasAltiVec();
     SDLTest_AssertPass("SDL_HasAltiVec()");
