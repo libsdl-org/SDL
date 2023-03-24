@@ -147,7 +147,7 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
 
 #if SDL_MMX_INTRINSICS
     if (SDL_HasMMX() && !(srcskip & 7) && !(dstskip & 7)) {
-        SDL_BlitCopyMMX(dst, src, w, h, dstskip, srcskip);
+        SDL_BlitCopyMMX(dst, src, dstskip, srcskip, w, h);
         return;
     }
 #endif
