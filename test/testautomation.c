@@ -45,6 +45,9 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    /* No need of windows (or update testautomation_mouse.c:mouse_getMouseFocus() */
+    state->num_windows = 0;
+
     /* Parse commandline */
     for (i = 1; i < argc;) {
         int consumed;
