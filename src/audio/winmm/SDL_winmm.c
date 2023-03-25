@@ -35,7 +35,7 @@
 /* MinGW32 mmsystem.h doesn't include these structures */
 #if defined(__MINGW32__) && defined(_MMSYSTEM_H)
 
-typedef struct tagWAVEINCAPS2W 
+typedef struct tagWAVEINCAPS2W
 {
     WORD wMid;
     WORD wPid;
@@ -192,7 +192,7 @@ WINMM_CaptureFromDevice(_THIS, void *buffer, int buflen)
     /* requeue the buffer that just finished. */
     result = waveInAddBuffer(this->hidden->hin,
                              &this->hidden->wavebuf[nextbuf],
-                             sizeof (this->hidden->wavebuf[nextbuf]));
+                             sizeof(this->hidden->wavebuf[nextbuf]));
     if (result != MMSYSERR_NOERROR) {
         return -1;  /* uhoh! Disable the device. */
     }
@@ -211,7 +211,7 @@ WINMM_FlushCapture(_THIS)
         /* requeue the buffer that just finished without reading from it. */
         waveInAddBuffer(this->hidden->hin,
                         &this->hidden->wavebuf[nextbuf],
-                        sizeof (this->hidden->wavebuf[nextbuf]));
+                        sizeof(this->hidden->wavebuf[nextbuf]));
         this->hidden->next_buffer = (nextbuf + 1) % NUM_BUFFERS;
     }
 }
@@ -229,7 +229,7 @@ WINMM_CloseDevice(_THIS)
             if (this->hidden->wavebuf[i].dwUser != 0xFFFF) {
                 waveOutUnprepareHeader(this->hidden->hout,
                                        &this->hidden->wavebuf[i],
-                                       sizeof (this->hidden->wavebuf[i]));
+                                       sizeof(this->hidden->wavebuf[i]));
             }
         }
 
@@ -244,7 +244,7 @@ WINMM_CloseDevice(_THIS)
             if (this->hidden->wavebuf[i].dwUser != 0xFFFF) {
                 waveInUnprepareHeader(this->hidden->hin,
                                        &this->hidden->wavebuf[i],
-                                       sizeof (this->hidden->wavebuf[i]));
+                                       sizeof(this->hidden->wavebuf[i]));
             }
         }
         waveInClose(this->hidden->hin);
@@ -300,8 +300,7 @@ WINMM_OpenDevice(_THIS, const char *devname)
     }
 
     /* Initialize all variables that we clean on shutdown */
-    this->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc((sizeof *this->hidden));
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
@@ -361,7 +360,7 @@ WINMM_OpenDevice(_THIS, const char *devname)
         if (iscapture) {
             WAVEINCAPS caps;
             result = waveInGetDevCaps((UINT) this->hidden->hout,
-                                      &caps, sizeof (caps));
+                                      &caps, sizeof(caps));
             if (result != MMSYSERR_NOERROR) {
                 return SetMMerror("waveInGetDevCaps()", result);
             }

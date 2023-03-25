@@ -2,6 +2,7 @@ projectfullname = SDL2
 projectshortname = SDL2
 incsubdir = include
 wikisubdir = SDL2
+readmesubdir = docs
 apiprefixregex = (SDL_|SDLK_|KMOD_|AUDIO_)
 mainincludefname = SDL.h
 versionfname = include/SDL_version.h

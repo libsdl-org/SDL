@@ -1220,7 +1220,7 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     }
     device->guid.data[15] = ctx->m_eControllerType;
 
-    (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+    (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                        ctx->m_rgucMACAddress[0],
                        ctx->m_rgucMACAddress[1],
                        ctx->m_rgucMACAddress[2],
@@ -1549,8 +1549,10 @@ static Uint32 HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController && !ctx->m_bInputOnly) {
         /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
         result |= SDL_JOYCAP_RUMBLE;
+    } else if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
+               ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+        result |= SDL_JOYCAP_RUMBLE;
     }
-
     return result;
 }
 

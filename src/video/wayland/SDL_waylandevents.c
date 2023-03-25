@@ -766,7 +766,7 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
     }
 
     /* clear pointer_curr_axis_info for next frame */
-    SDL_memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
+    SDL_memset(&input->pointer_curr_axis_info, 0, sizeof(input->pointer_curr_axis_info));
 
     if (x != 0.0f || y != 0.0f) {
         SDL_SendMouseWheel(window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
@@ -1102,7 +1102,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         const SDL_Scancode scancode = Wayland_get_scancode_from_key(input, *key + 8);
 
         if (scancode != SDL_SCANCODE_UNKNOWN) {
-            for (uint32_t i = 0; i < sizeof mod_scancodes / sizeof *mod_scancodes; ++i) {
+            for (uint32_t i = 0; i < SDL_arraysize(mod_scancodes); ++i) {
                 if (mod_scancodes[i] == scancode) {
                     SDL_SendKeyboardKey(SDL_PRESSED, scancode);
                     break;
@@ -1310,7 +1310,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
 
     if ((caps & WL_SEAT_CAPABILITY_POINTER) && !input->pointer) {
         input->pointer = wl_seat_get_pointer(seat);
-        SDL_memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
+        SDL_memset(&input->pointer_curr_axis_info, 0, sizeof(input->pointer_curr_axis_info));
         input->display->pointer = input->pointer;
         wl_pointer_set_user_data(input->pointer, input);
         wl_pointer_add_listener(input->pointer, &pointer_listener,
@@ -1428,7 +1428,7 @@ SDL_WaylandDataSource *Wayland_data_source_create(_THIS)
         if (id == NULL) {
             SDL_SetError("Wayland unable to create data source");
         } else {
-            data_source = SDL_calloc(1, sizeof *data_source);
+            data_source = SDL_calloc(1, sizeof(*data_source));
             if (data_source == NULL) {
                 SDL_OutOfMemory();
                 wl_data_source_destroy(id);
@@ -1463,7 +1463,7 @@ SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(_THIS
         if (id == NULL) {
             SDL_SetError("Wayland unable to create primary selection source");
         } else {
-            primary_selection_source = SDL_calloc(1, sizeof *primary_selection_source);
+            primary_selection_source = SDL_calloc(1, sizeof(*primary_selection_source));
             if (primary_selection_source == NULL) {
                 SDL_OutOfMemory();
                 zwp_primary_selection_source_v1_destroy(id);
@@ -1517,7 +1517,7 @@ static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_
 {
     SDL_WaylandDataOffer *data_offer = NULL;
 
-    data_offer = SDL_calloc(1, sizeof *data_offer);
+    data_offer = SDL_calloc(1, sizeof(*data_offer));
     if (data_offer == NULL) {
         SDL_OutOfMemory();
     } else {
@@ -1763,7 +1763,7 @@ static void primary_selection_device_handle_offer(void *data, struct zwp_primary
 {
     SDL_WaylandPrimarySelectionOffer *primary_selection_offer = NULL;
 
-    primary_selection_offer = SDL_calloc(1, sizeof *primary_selection_offer);
+    primary_selection_offer = SDL_calloc(1, sizeof(*primary_selection_offer));
     if (primary_selection_offer == NULL) {
         SDL_OutOfMemory();
     } else {
@@ -1904,7 +1904,7 @@ static void Wayland_create_data_device(SDL_VideoData *d)
 {
     SDL_WaylandDataDevice *data_device = NULL;
 
-    data_device = SDL_calloc(1, sizeof *data_device);
+    data_device = SDL_calloc(1, sizeof(*data_device));
     if (data_device == NULL) {
         return;
     }
@@ -1927,7 +1927,7 @@ static void Wayland_create_primary_selection_device(SDL_VideoData *d)
 {
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
 
-    primary_selection_device = SDL_calloc(1, sizeof *primary_selection_device);
+    primary_selection_device = SDL_calloc(1, sizeof(*primary_selection_device));
     if (primary_selection_device == NULL) {
         return;
     }
@@ -1951,7 +1951,7 @@ static void Wayland_create_text_input(SDL_VideoData *d)
 {
     SDL_WaylandTextInput *text_input = NULL;
 
-    text_input = SDL_calloc(1, sizeof *text_input);
+    text_input = SDL_calloc(1, sizeof(*text_input));
     if (text_input == NULL) {
         return;
     }
@@ -2221,7 +2221,7 @@ struct SDL_WaylandTabletObjectListNode *tablet_object_list_new_node(void *object
 {
     struct SDL_WaylandTabletObjectListNode *node;
 
-    node = SDL_calloc(1, sizeof *node);
+    node = SDL_calloc(1, sizeof(*node));
     if (node == NULL) {
         return NULL;
     }
@@ -2296,7 +2296,7 @@ void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_Wayland
         return;
     }
 
-    tablet_input = SDL_calloc(1, sizeof *tablet_input);
+    tablet_input = SDL_calloc(1, sizeof(*tablet_input));
     if (tablet_input == NULL) {
         return;
     }
@@ -2329,7 +2329,7 @@ void Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
     struct SDL_WaylandInput *input;
 
-    input = SDL_calloc(1, sizeof *input);
+    input = SDL_calloc(1, sizeof(*input));
     if (input == NULL) {
         return;
     }

@@ -1454,7 +1454,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
         joystick->hwdata->fresh = SDL_FALSE;
     }
 
-    while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
+    while ((len = read(joystick->hwdata->fd, events, sizeof(events))) > 0) {
         len /= sizeof(events[0]);
         for (i = 0; i < len; ++i) {
             code = events[i].code;
@@ -1543,7 +1543,7 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
     SDL_AssertJoysticksLocked();
 
     joystick->hwdata->fresh = SDL_FALSE;
-    while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
+    while ((len = read(joystick->hwdata->fd, events, sizeof(events))) > 0) {
         len /= sizeof(events[0]);
         for (i = 0; i < len; ++i) {
             switch (events[i].type) {

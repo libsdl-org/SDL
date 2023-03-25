@@ -197,7 +197,7 @@ NAS_CaptureFromDevice(_THIS, void *buffer, int buflen)
     while (SDL_TRUE) {
         /* just keep the event queue moving and the server chattering. */
         NAS_AuHandleEvents(h->aud);
-    
+
         retval = (int) NAS_AuReadElement(h->aud, h->flow, 1, buflen, buffer, NULL);
         /*printf("read %d capture bytes\n", (int) retval);*/
         if (retval == 0) {
@@ -221,10 +221,10 @@ NAS_FlushCapture(_THIS)
     do {
         /* just keep the event queue moving and the server chattering. */
         NAS_AuHandleEvents(h->aud);
-        br = NAS_AuReadElement(h->aud, h->flow, 1, sizeof (buf), buf, NULL);
+        br = NAS_AuReadElement(h->aud, h->flow, 1, sizeof(buf), buf, NULL);
         /*printf("flushed %d capture bytes\n", (int) br);*/
         total += br;
-    } while ((br == sizeof (buf)) && (total < this->spec.size));
+    } while ((br == sizeof(buf)) && (total < this->spec.size));
 }
 
 static void
@@ -319,8 +319,7 @@ NAS_OpenDevice(_THIS, const char *devname)
     SDL_AudioFormat test_format, format = 0;
 
     /* Initialize all variables that we clean on shutdown */
-    this->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc((sizeof *this->hidden));
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }

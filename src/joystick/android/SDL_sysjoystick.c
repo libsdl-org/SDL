@@ -185,6 +185,8 @@ static SDL_Scancode button_to_scancode(int button)
         return SDL_SCANCODE_ESCAPE;
     case SDL_CONTROLLER_BUTTON_BACK:
         return SDL_SCANCODE_ESCAPE;
+    case SDL_CONTROLLER_BUTTON_START:
+        return SDL_SCANCODE_MENU;
     case SDL_CONTROLLER_BUTTON_DPAD_UP:
         return SDL_SCANCODE_UP;
     case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
@@ -302,12 +304,11 @@ int Android_OnHat(int device_id, int hat_id, int x, int y)
     return -1;
 }
 
-int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, SDL_bool is_accelerometer, int button_mask, int naxes, int nhats, int nballs)
+int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, SDL_bool is_accelerometer, int button_mask, int naxes, int axis_mask, int nhats, int nballs)
 {
     SDL_joylist_item *item;
     SDL_JoystickGUID guid;
     int i;
-    int axis_mask;
     int result = -1;
 
     SDL_LockJoysticks();
@@ -333,22 +334,6 @@ int Android_AddJoystick(int device_id, const char *name, const char *desc, int v
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Joystick: %s, descriptor %s, vendor = 0x%.4x, product = 0x%.4x, %d axes, %d hats\n", name, desc, vendor_id, product_id, naxes, nhats);
 #endif
-
-    /* Add the available buttons and axes
-       The axis mask should probably come from Java where there is more information about the axes...
-     */
-    axis_mask = 0;
-    if (!is_accelerometer) {
-        if (naxes >= 2) {
-            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_LEFTX) | (1 << SDL_CONTROLLER_AXIS_LEFTY));
-        }
-        if (naxes >= 4) {
-            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_RIGHTX) | (1 << SDL_CONTROLLER_AXIS_RIGHTY));
-        }
-        if (naxes >= 6) {
-            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT) | (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
-        }
-    }
 
     if (nhats > 0) {
         /* Hat is translated into DPAD buttons */
@@ -483,7 +468,7 @@ static int ANDROID_JoystickInit(void)
 
     if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
         /* Default behavior, accelerometer as joystick */
-        Android_AddJoystick(ANDROID_ACCELEROMETER_DEVICE_ID, ANDROID_ACCELEROMETER_NAME, ANDROID_ACCELEROMETER_NAME, 0, 0, SDL_TRUE, 0, 3, 0, 0);
+        Android_AddJoystick(ANDROID_ACCELEROMETER_DEVICE_ID, ANDROID_ACCELEROMETER_NAME, ANDROID_ACCELEROMETER_NAME, 0, 0, SDL_TRUE, 0, 3, 0x0003, 0, 0);
     }
     return 0;
 }

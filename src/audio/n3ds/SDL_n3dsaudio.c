@@ -96,7 +96,7 @@ static int N3DSAUDIO_OpenDevice(_THIS, const char *devname)
     Result ndsp_init_res;
     Uint8 *data_vaddr;
     float mix[12];
-    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof *this->hidden);
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*this->hidden));
 
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();

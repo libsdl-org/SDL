@@ -25,6 +25,7 @@
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
 #include "SDL_stdinc.h"
+#include "SDL_timer.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
@@ -209,6 +210,20 @@ static BOOL IsControllerSwitchJoyConPair(GCController *controller)
     }
     return FALSE;
 }
+static BOOL IsControllerStadia(GCController *controller)
+{
+    if ([controller.vendorName hasPrefix:@"Stadia"]) {
+        return TRUE;
+    }
+    return FALSE;
+}
+static BOOL IsControllerBackboneOne(GCController *controller)
+{
+    if ([controller.vendorName hasPrefix:@"Backbone One"]) {
+        return TRUE;
+    }
+    return FALSE;
+}
 static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
     Uint16 vendor = 0;
@@ -256,6 +271,8 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         BOOL is_ps5 = IsControllerPS5(controller);
         BOOL is_switch_pro = IsControllerSwitchPro(controller);
         BOOL is_switch_joycon_pair = IsControllerSwitchJoyConPair(controller);
+        BOOL is_stadia = IsControllerStadia(controller);
+        BOOL is_backbone_one = IsControllerBackboneOne(controller);
         int nbuttons = 0;
         BOOL has_direct_menu;
 
@@ -263,7 +280,8 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         if ((is_xbox && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_XBOXONE)) ||
             (is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS4)) ||
             (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS5)) ||
-            (is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO))) {
+            (is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO)) ||
+            (is_stadia && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_GOOGLE_STADIA))) {
             /* The HIDAPI driver is taking care of this device */
             return FALSE;
         }
@@ -348,7 +366,15 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 #endif
 #pragma clang diagnostic pop
 
-        if (is_xbox) {
+        if (is_backbone_one) {
+            vendor = USB_VENDOR_BACKBONE;
+            if (is_ps5) {
+                product = USB_PRODUCT_BACKBONE_ONE_IOS_PS5;
+            } else {
+                product = USB_PRODUCT_BACKBONE_ONE_IOS;
+            }
+            subtype = 0;
+        } else if (is_xbox) {
             vendor = USB_VENDOR_MICROSOFT;
             if (device->has_xbox_paddles) {
                 /* Assume Xbox One Elite Series 2 Controller unless/until GCController flows VID/PID */
@@ -390,7 +416,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             subtype = 1;
         }
 
-        if (SDL_strcmp(name, "Backbone One") == 0) {
+        if (is_backbone_one) {
             /* The Backbone app uses share button */
             if ((device->button_mask & (1 << SDL_CONTROLLER_BUTTON_MISC1)) != 0) {
                 device->button_mask &= ~(1 << SDL_CONTROLLER_BUTTON_MISC1);
@@ -1643,31 +1669,14 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
     if (@available(macOS 10.16, *)) {
-        if ([GCController supportsHIDDevice:device]) {
-            return SDL_TRUE;
-        }
-
-        /* GCController supportsHIDDevice may return false if the device hasn't been
-         * seen by the framework yet, so check a few controllers we know are supported.
-         */
-        {
-            Sint32 vendor = 0;
-            Sint32 product = 0;
-            CFTypeRef refCF = NULL;
-
-            refCF = IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey));
-            if (refCF) {
-                CFNumberGetValue(refCF, kCFNumberSInt32Type, &vendor);
-            }
-
-            refCF = IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey));
-            if (refCF) {
-                CFNumberGetValue(refCF, kCFNumberSInt32Type, &product);
-            }
-
-            if (vendor == USB_VENDOR_MICROSOFT && SDL_IsJoystickXboxSeriesX(vendor, product)) {
+        const int MAX_ATTEMPTS = 3;
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
+            if ([GCController supportsHIDDevice:device]) {
                 return SDL_TRUE;
             }
+
+            /* The framework may not have seen the device yet */
+            SDL_Delay(10);
         }
     }
     return SDL_FALSE;

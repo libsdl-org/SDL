@@ -58,7 +58,7 @@ struct SDL_GLDriverData
 - (void)setWindow:(SDL_Window *)window;
 - (SDL_Window*)window;
 - (void)explicitUpdate;
-- (void)dealloc;
+- (void)cleanup;
 
 @property (retain, nonatomic) NSOpenGLPixelFormat* openglPixelFormat;  // macOS 10.10 has -[NSOpenGLContext pixelFormat] but this handles older OS releases.
 

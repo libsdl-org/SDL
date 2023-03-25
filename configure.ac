@@ -3681,15 +3681,14 @@ CheckClockGettime()
 [AS_HELP_STRING([--enable-clock_gettime], [use clock_gettime() instead of gettimeofday() on UNIX [default=yes]])],
                   , enable_clock_gettime=yes)
     if test x$enable_clock_gettime = xyes; then
-        AC_CHECK_LIB(rt, clock_gettime, have_clock_gettime=yes)
+        AC_CHECK_LIB(c, clock_gettime, have_clock_gettime=yes)
         if test x$have_clock_gettime = xyes; then
-            AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [ ])
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lrt"
+           AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [ ])
         else
-            AC_CHECK_LIB(c, clock_gettime, have_clock_gettime=yes)
+            AC_CHECK_LIB(rt, clock_gettime, have_clock_gettime=yes)
             if test x$have_clock_gettime = xyes; then
-               AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [ ])
-               EXTRA_LDFLAGS="$EXTRA_LDFLAGS"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lrt"
+                AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [ ])
             fi
         fi
     fi

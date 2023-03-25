@@ -93,7 +93,7 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
         audioDevice = this;
     }
 
-    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, (sizeof *this->hidden));
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }

@@ -319,7 +319,7 @@ static SDL_bool SDL_UpdateMouseFocus(SDL_Window *window, int x, int y, Uint32 bu
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_bool inWindow = SDL_TRUE;
 
-    if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
+    if (window && !(window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
         if (x < 0 || y < 0 || x >= w || y >= h) {
@@ -509,7 +509,7 @@ static int SDL_PrivateSendMouseMotion(SDL_Window *window, SDL_MouseID mouseID, i
                 return 0;
             }
         } else {
-            if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
+            if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
                 if (mouse->WarpMouse) {
                     mouse->WarpMouse(window, center_x, center_y);
                 } else {
@@ -559,7 +559,7 @@ static int SDL_PrivateSendMouseMotion(SDL_Window *window, SDL_MouseID mouseID, i
 
     /* make sure that the pointers find themselves inside the windows,
        unless we have the mouse captured. */
-    if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
+    if (window && !(window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
         int x_min = 0, x_max = 0;
         int y_min = 0, y_max = 0;
         const SDL_Rect *confine = SDL_GetWindowMouseRect(window);
@@ -911,6 +911,12 @@ void SDL_MouseQuit(void)
         mouse->clickstate = NULL;
     }
     mouse->num_clickstates = 0;
+
+    if (mouse->system_scale_values) {
+        SDL_free(mouse->system_scale_values);
+        mouse->system_scale_values = NULL;
+    }
+    mouse->num_system_scale_values = 0;
 
     SDL_DelHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME,
                         SDL_MouseDoubleClickTimeChanged, mouse);

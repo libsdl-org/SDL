@@ -66,7 +66,7 @@ SDL_TicksInit(void)
     }
 
     ulTmrFreq = 0; /* Error - use DosQuerySysInfo() for timer. */
-    DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulTmrStart, sizeof (ULONG));
+    DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulTmrStart, sizeof(ULONG));
     ullTmrStart = (ULLONG) ulTmrStart;
 }
 
@@ -92,7 +92,7 @@ SDL_GetTicks64(void)
     } else {
         /* note that this counter rolls over to 0 every ~49 days. Fix your system so DosTmrQueryTime works if you need to avoid this. */
         ULONG ulTmrNow;
-        DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulTmrNow, sizeof (ULONG));
+        DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulTmrNow, sizeof(ULONG));
         ui64Result = (((Uint64) ulTmrNow) - ullTmrStart);
     }
 

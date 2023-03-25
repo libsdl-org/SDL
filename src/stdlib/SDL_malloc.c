@@ -2539,11 +2539,14 @@ static int init_mparams(void) {
       int fd;
       unsigned char buf[sizeof(size_t)];
       /* Try to use /dev/urandom, else fall back on using time */
-      if ((fd = open("/dev/urandom", O_RDONLY)) >= 0 &&
-          read(fd, buf, sizeof(buf)) == sizeof(buf)) {
-        s = *((size_t *) buf);
+      if ((fd = open("/dev/urandom", O_RDONLY)) < 0) {
+        s = 0;
+      } else {
+	s = read(fd, buf, sizeof(buf));
         close(fd);
       }
+      if (s == sizeof(buf))
+        s = *((size_t *)buf);
       else
 #endif /* USE_DEV_RANDOM */
         s = (size_t)(time(0) ^ (size_t)0x55555555U);

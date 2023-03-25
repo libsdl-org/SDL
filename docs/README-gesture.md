@@ -2,7 +2,7 @@ Dollar Gestures
 ===========================================================================
 SDL provides an implementation of the $1 gesture recognition system. This allows for recording, saving, loading, and performing single stroke gestures.
 
-Gestures can be performed with any number of fingers (the centroid of the fingers must follow the path of the gesture), but the number of fingers must be constant (a finger cannot go down in the middle of a gesture). The path of a gesture is considered the path from the time when the final finger went down, to the first time any finger comes up. 
+Gestures can be performed with any number of fingers (the centroid of the fingers must follow the path of the gesture), but the number of fingers must be constant (a finger cannot go down in the middle of a gesture). The path of a gesture is considered the path from the time when the final finger went down, to the first time any finger comes up.
 
 Dollar gestures are assigned an Id based on a hash function. This is guaranteed to remain constant for a given gesture. There is a (small) chance that two different gestures will be assigned the same ID. In this case, simply re-recording one of the gestures should result in a different ID.
 
@@ -42,7 +42,7 @@ Both functions return the number of gestures successfully saved.
 
 Loading:
 --------
-To load templates from a file, call SDL_LoadDollarTemplates(touchId,src) where touchId is the id of the touch to load to (or -1 to load to all touch devices), and src is an SDL_RWops pointer to a gesture save file. 
+To load templates from a file, call SDL_LoadDollarTemplates(touchId,src) where touchId is the id of the touch to load to (or -1 to load to all touch devices), and src is an SDL_RWops pointer to a gesture save file.
 
 SDL_LoadDollarTemplates returns the number of templates successfully loaded.
 
@@ -51,7 +51,7 @@ SDL_LoadDollarTemplates returns the number of templates successfully loaded.
 ===========================================================================
 Multi Gestures
 ===========================================================================
-SDL provides simple support for pinch/rotate/swipe gestures. 
+SDL provides simple support for pinch/rotate/swipe gestures.
 Every time a finger is moved an SDL_MULTIGESTURE event is sent with the following fields:
 
 * event.mgesture.touchId - the Id of the touch on which the gesture was performed.

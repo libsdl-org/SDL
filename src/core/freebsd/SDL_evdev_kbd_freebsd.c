@@ -476,11 +476,11 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, 
     unsigned int final_key_state;
     unsigned int map_from_key_sym;
 
-    key_map = *kbd->key_map;
-
     if (kbd == NULL) {
         return;
     }
+
+    key_map = *kbd->key_map;
 
     kbd->rep = (down == 2);
 

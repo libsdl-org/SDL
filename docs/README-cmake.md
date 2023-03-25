@@ -3,10 +3,10 @@
 (www.cmake.org)
 
 SDL's build system was traditionally based on autotools. Over time, this
-approach has suffered from several issues across the different supported 
+approach has suffered from several issues across the different supported
 platforms.
 To solve these problems, a new build system based on CMake was introduced.
-It is developed in parallel to the legacy autotools build system, so users 
+It is developed in parallel to the legacy autotools build system, so users
 can experiment with it without complication.
 
 The CMake build system is supported on the following platforms:
@@ -59,15 +59,15 @@ if(MYGAME_VENDORED)
 else()
     # 1. Look for a SDL2 package, 2. look for the SDL2 component and 3. fail if none can be found
     find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
-    
-    # 1. Look for a SDL2 package, 2. Look for the SDL2maincomponent and 3. DO NOT fail when SDL2main is not available 
+
+    # 1. Look for a SDL2 package, 2. Look for the SDL2maincomponent and 3. DO NOT fail when SDL2main is not available
     find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 endif()
 
-# Create your game executable target as usual 
+# Create your game executable target as usual
 add_executable(mygame WIN32 mygame.c)
 
-# SDL2::SDL2main may or may not be available. It is e.g. required by Windows GUI applications  
+# SDL2::SDL2main may or may not be available. It is e.g. required by Windows GUI applications
 if(TARGET SDL2::SDL2main)
     # It has an implicit dependency on SDL2 functions, so it MUST be added before SDL2::SDL2 (or SDL2::SDL2-static)
     target_link_libraries(mygame PRIVATE SDL2::SDL2main)

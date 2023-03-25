@@ -530,7 +530,7 @@ WatchJoystick(SDL_Joystick *joystick)
                     break;
                 }
 
-                if ((event.key.keysym.sym != SDLK_ESCAPE)) {
+                if (event.key.keysym.sym != SDLK_ESCAPE) {
                     break;
                 }
                 SDL_FALLTHROUGH;
@@ -591,7 +591,7 @@ WatchJoystick(SDL_Joystick *joystick)
             char crc_string[5];
 
             SDL_strlcat(mapping, "crc:", SDL_arraysize(mapping));
-            (void)SDL_snprintf(crc_string, sizeof crc_string, "%.4x", crc);
+            (void)SDL_snprintf(crc_string, sizeof(crc_string), "%.4x", crc);
             SDL_strlcat(mapping, crc_string, SDL_arraysize(mapping));
             SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
         }
@@ -664,17 +664,17 @@ WatchJoystick(SDL_Joystick *joystick)
             pszElement[0] = '\0';
             switch (pBinding->bindType) {
             case SDL_CONTROLLER_BINDTYPE_BUTTON:
-                (void)SDL_snprintf(pszElement, sizeof pszElement, "b%d", pBinding->value.button);
+                (void)SDL_snprintf(pszElement, sizeof(pszElement), "b%d", pBinding->value.button);
                 break;
             case SDL_CONTROLLER_BINDTYPE_AXIS:
                 if (pBinding->value.axis.axis_min == 0 && pBinding->value.axis.axis_max == SDL_JOYSTICK_AXIS_MIN) {
                     /* The negative half axis */
-                    (void)SDL_snprintf(pszElement, sizeof pszElement, "-a%d", pBinding->value.axis.axis);
+                    (void)SDL_snprintf(pszElement, sizeof(pszElement), "-a%d", pBinding->value.axis.axis);
                 } else if (pBinding->value.axis.axis_min == 0 && pBinding->value.axis.axis_max == SDL_JOYSTICK_AXIS_MAX) {
                     /* The positive half axis */
-                    (void)SDL_snprintf(pszElement, sizeof pszElement, "+a%d", pBinding->value.axis.axis);
+                    (void)SDL_snprintf(pszElement, sizeof(pszElement), "+a%d", pBinding->value.axis.axis);
                 } else {
-                    (void)SDL_snprintf(pszElement, sizeof pszElement, "a%d", pBinding->value.axis.axis);
+                    (void)SDL_snprintf(pszElement, sizeof(pszElement), "a%d", pBinding->value.axis.axis);
                     if (pBinding->value.axis.axis_min > pBinding->value.axis.axis_max) {
                         /* Invert the axis */
                         SDL_strlcat(pszElement, "~", SDL_arraysize(pszElement));
@@ -682,7 +682,7 @@ WatchJoystick(SDL_Joystick *joystick)
                 }
                 break;
             case SDL_CONTROLLER_BINDTYPE_HAT:
-                (void)SDL_snprintf(pszElement, sizeof pszElement, "h%d.%d", pBinding->value.hat.hat, pBinding->value.hat.hat_mask);
+                (void)SDL_snprintf(pszElement, sizeof(pszElement), "h%d.%d", pBinding->value.hat.hat, pBinding->value.hat.hat_mask);
                 break;
             default:
                 SDL_assert(!"Unknown bind type");
@@ -746,7 +746,7 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event) > 0) {
             switch (event.type) {
             case SDL_KEYDOWN:
-                if ((event.key.keysym.sym != SDLK_ESCAPE)) {
+                if (event.key.keysym.sym != SDLK_ESCAPE) {
                     break;
                 }
                 SDL_FALLTHROUGH;

@@ -73,6 +73,8 @@ if(EXISTS "${_sdl2main_library}")
     set_target_properties(SDL2::SDL2main
       PROPERTIES
         IMPORTED_LOCATION "${_sdl2main_library}"
+        COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+        INTERFACE_SDL_VERSION "SDL2"
     )
     if(WIN32)
       # INTERFACE_LINK_OPTIONS needs CMake 3.13
@@ -116,6 +118,8 @@ if(WIN32)
         IMPORTED_LINK_INTERFACE_LANGUAGES "C"
         IMPORTED_IMPLIB "${_sdl2_implib}"
         IMPORTED_LOCATION "${_sdl2_dll}"
+        COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+        INTERFACE_SDL_VERSION "SDL2"
       )
     endif()
     set(SDL2_SDL2_FOUND TRUE)
@@ -135,6 +139,8 @@ else()
         INTERFACE_LINK_DIRECTORIES "${_sdl2_libdirs}"
         IMPORTED_LINK_INTERFACE_LANGUAGES "C"
         IMPORTED_LOCATION "${_sdl2_shared}"
+        COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+        INTERFACE_SDL_VERSION "SDL2"
       )
     endif()
     set(SDL2_SDL2_FOUND TRUE)
@@ -155,6 +161,8 @@ if(EXISTS "${_sdl2_static}")
         INTERFACE_LINK_LIBRARIES "${_sdl2_link_libraries};${_sdl2_static_private_libs}"
         INTERFACE_LINK_DIRECTORIES "${_sdl2_libdirs};${_sdl2_static_private_libdirs}"
         IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+        COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+        INTERFACE_SDL_VERSION "SDL2"
     )
   endif()
   set(SDL2_SDL2-static_FOUND TRUE)
@@ -174,6 +182,8 @@ if(EXISTS "${_sdl2test_library}")
         IMPORTED_LOCATION "${_sdl2test_library}"
         INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
         IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+        COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+        INTERFACE_SDL_VERSION "SDL2"
     )
   endif()
   set(SDL2_SDL2test_FOUND TRUE)

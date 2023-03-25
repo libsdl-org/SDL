@@ -151,6 +151,7 @@ typedef struct
     Uint8 led_blue;
     Uint16 last_timestamp;
     Uint64 timestamp;
+    Uint16 valid_crc_packets; /* wrapping counter */
     PS4StatePacket_t last_state;
 } SDL_DriverPS4_Context;
 
@@ -187,9 +188,9 @@ static SDL_bool HIDAPI_DriverPS4_IsSupportedDevice(SDL_HIDAPI_Device *device, co
         return SDL_TRUE;
     }
 
-    if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
+    if (HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
         if (device && device->dev) {
-            size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof data);
+            size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data));
             if (size == 48 && data[2] == 0x27) {
                 /* Supported third party controller */
                 return SDL_TRUE;
@@ -268,7 +269,7 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     if (ctx->is_dongle) {
         size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
         if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-            (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+            (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                data[6], data[5], data[4], data[3], data[2], data[1]);
         }
         device->is_bluetooth = SDL_FALSE;
@@ -281,7 +282,7 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         /* This will fail if we're on Bluetooth */
         size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
         if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-            (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+            (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                data[6], data[5], data[4], data[3], data[2], data[1]);
             device->is_bluetooth = SDL_FALSE;
             ctx->enhanced_mode = SDL_TRUE;
@@ -312,7 +313,7 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     SDL_Log("PS4 dongle = %s, bluetooth = %s\n", ctx->is_dongle ? "TRUE" : "FALSE", device->is_bluetooth ? "TRUE" : "FALSE");
 #endif
 
-    size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof data);
+    size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data));
     /* Get the device capabilities */
     if (size == 48 && data[2] == 0x27) {
         Uint8 capabilities = data[4];
@@ -321,16 +322,16 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS4_PROTOCOL
         HIDAPI_DumpPacket("PS4 capabilities: size = %d", data, size);
 #endif
-        if ((capabilities & 0x02) != 0) {
+        if (capabilities & 0x02) {
             ctx->sensors_supported = SDL_TRUE;
         }
-        if ((capabilities & 0x04) != 0) {
+        if (capabilities & 0x04) {
             ctx->lightbar_supported = SDL_TRUE;
         }
-        if ((capabilities & 0x08) != 0) {
+        if (capabilities & 0x08) {
             ctx->vibration_supported = SDL_TRUE;
         }
-        if ((capabilities & 0x40) != 0) {
+        if (capabilities & 0x40) {
             ctx->touchpad_supported = SDL_TRUE;
         }
 
@@ -822,7 +823,7 @@ static int HIDAPI_DriverPS4_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device,
     return 0;
 }
 
-static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS4_Context *ctx, PS4StatePacket_t *packet)
+static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS4_Context *ctx, PS4StatePacket_t *packet, int size)
 {
     static const float TOUCHPAD_SCALEX = 1.0f / 1920;
     static const float TOUCHPAD_SCALEY = 1.0f / 920; /* This is noted as being 944 resolution, but 920 feels better */
@@ -899,7 +900,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     /* Some fightsticks, ex: Victrix FS Pro will only this these digital trigger bits and not the analog values so this needs to run whenever the
        trigger is evaluated
     */
-    if ((packet->rgucButtonsHatAndCounter[1] & 0x0C) != 0) {
+    if (packet->rgucButtonsHatAndCounter[1] & 0x0C) {
         Uint8 data = packet->rgucButtonsHatAndCounter[1];
         packet->ucTriggerLeft = (data & 0x04) && packet->ucTriggerLeft == 0 ? 255 : packet->ucTriggerLeft;
         packet->ucTriggerRight = (data & 0x08) && packet->ucTriggerRight == 0 ? 255 : packet->ucTriggerRight;
@@ -925,7 +926,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     axis = ((int)packet->ucRightJoystickY * 257) - 32768;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
-    if (ctx->device->is_bluetooth && ctx->official_controller) {
+    if (size > 9 && ctx->device->is_bluetooth && ctx->official_controller) {
         if (packet->ucBatteryLevel & 0x10) {
             SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
         } else {
@@ -943,19 +944,19 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         }
     }
 
-    if (ctx->report_touchpad) {
-        touchpad_state = ((packet->ucTouchpadCounter1 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+    if (size > 9 && ctx->report_touchpad) {
+        touchpad_state = !(packet->ucTouchpadCounter1 & 0x80) ? SDL_PRESSED : SDL_RELEASED;
         touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
         touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);
         SDL_PrivateJoystickTouchpad(joystick, 0, 0, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
 
-        touchpad_state = ((packet->ucTouchpadCounter2 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+        touchpad_state = !(packet->ucTouchpadCounter2 & 0x80) ? SDL_PRESSED : SDL_RELEASED;
         touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
         touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
         SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
     }
 
-    if (ctx->report_sensors) {
+    if (size > 9 && ctx->report_sensors) {
         Uint16 timestamp;
         Uint64 timestamp_us;
         float data[3];
@@ -1011,12 +1012,17 @@ static SDL_bool HIDAPI_DriverPS4_IsPacketValid(SDL_DriverPS4_Context *ctx, Uint8
 {
     switch (data[0]) {
     case k_EPS4ReportIdUsbState:
+        if (size == 10) {
+            /* This is non-enhanced mode, this packet is fine */
+            return SDL_TRUE;
+        }
+
         /* In the case of a DS4 USB dongle, bit[2] of byte 31 indicates if a DS4 is actually connected (indicated by '0').
          * For non-dongle, this bit is always 0 (connected).
          * This is usually the ID over USB, but the DS4v2 that started shipping with the PS4 Slim will also send this
          * packet over BT with a size of 128
          */
-        if (size >= 64 && (data[31] & 0x04) == 0) {
+        if (size >= 64 && !(data[31] & 0x04)) {
             return SDL_TRUE;
         }
         break;
@@ -1030,7 +1036,18 @@ static SDL_bool HIDAPI_DriverPS4_IsPacketValid(SDL_DriverPS4_Context *ctx, Uint8
     case k_EPS4ReportIdBluetoothState8:
     case k_EPS4ReportIdBluetoothState9:
         /* Bluetooth state packets have two additional bytes at the beginning, the first notes if HID data is present */
-        if (size >= 78 && (data[1] & 0x80) && VerifyCRC(data, 78)) {
+        if (size >= 78 && (data[1] & 0x80)) {
+            if (VerifyCRC(data, 78)) {
+                ++ctx->valid_crc_packets;
+            } else {
+                if (ctx->valid_crc_packets > 0) {
+                    --ctx->valid_crc_packets;
+                }
+                if (ctx->valid_crc_packets >= 3) {
+                    /* We're generally getting valid CRC, but failed one */
+                    return SDL_FALSE;
+                }
+            }
             return SDL_TRUE;
         }
         break;
@@ -1070,7 +1087,7 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
 
         switch (data[0]) {
         case k_EPS4ReportIdUsbState:
-            HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[1]);
+            HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[1], size - 1);
             break;
         case k_EPS4ReportIdBluetoothState1:
         case k_EPS4ReportIdBluetoothState2:
@@ -1086,7 +1103,7 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
                 HIDAPI_DriverPS4_SetEnhancedMode(device, joystick);
             }
             /* Bluetooth state packets have two additional bytes at the beginning, the first notes if HID is present */
-            HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[3]);
+            HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[3], size - 3);
             break;
         default:
 #ifdef DEBUG_JOYSTICK
@@ -1125,7 +1142,7 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
                 char serial[18];
                 size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
                 if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-                    (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                    (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                        data[6], data[5], data[4], data[3], data[2], data[1]);
                     HIDAPI_SetDeviceSerial(device, serial);
                 }

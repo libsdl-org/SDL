@@ -392,17 +392,6 @@ __EOF__
                 ${d}B = ((${s}B * ${d}B) + (${d}B * (255 - ${s}A))) / 255; if (${d}B > 255) ${d}B = 255;
 __EOF__
         }
-        if ( $dst_has_alpha ) {
-            if ($A_is_const_FF) {
-                print FILE <<__EOF__;
-                ${d}A = 0xFF;
-__EOF__
-            } else {
-                print FILE <<__EOF__;
-                ${d}A = ((${s}A * ${d}A) + (${d}A * (255 - ${s}A))) / 255; if (${d}A > 255) ${d}A = 255;
-__EOF__
-            }
-        }
 
         print FILE <<__EOF__;
                 break;
@@ -426,7 +415,7 @@ sub output_copyfunc
 
     my $dst_has_alpha = ($dst =~ /A/) ? 1 : 0;
     my $ignore_dst_alpha = !$dst_has_alpha && !$blend;
-    
+
     my $src_has_alpha = ($src =~ /A/) ? 1 : 0;
 
     my $is_modulateA_done = 0;

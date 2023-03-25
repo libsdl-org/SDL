@@ -455,7 +455,7 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     LPDIRECTINPUTDEVICE8 device = NULL;
 
     /* We are only supporting HID devices. */
-    CHECK((pDeviceInstance->dwDevType & DIDEVTYPE_HID) != 0);
+    CHECK(pDeviceInstance->dwDevType & DIDEVTYPE_HID);
 
     CHECK(SUCCEEDED(IDirectInput8_CreateDevice(dinput, &pDeviceInstance->guidInstance, &device, NULL)));
     CHECK(QueryDeviceName(device, &name));
@@ -566,7 +566,7 @@ static BOOL CALLBACK EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInst
     BOOL result = DIENUM_CONTINUE;
 
     /* We are only supporting HID devices. */
-    CHECK((pDeviceInstance->dwDevType & DIDEVTYPE_HID) != 0);
+    CHECK(pDeviceInstance->dwDevType & DIDEVTYPE_HID);
 
     CHECK(SUCCEEDED(IDirectInput8_CreateDevice(dinput, &pDeviceInstance->guidInstance, &device, NULL)));
     CHECK(QueryDeviceInfo(device, &vendor, &product));
@@ -623,19 +623,19 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
 
         in->type = AXIS;
         in->num = joystick->naxes;
-        if (SDL_memcmp(&pDeviceObject->guidType, &GUID_XAxis, sizeof pDeviceObject->guidType) == 0) {
+        if (SDL_memcmp(&pDeviceObject->guidType, &GUID_XAxis, sizeof(pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_X;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_YAxis, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_YAxis, sizeof(pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_Y;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_ZAxis, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_ZAxis, sizeof(pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_Z;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RxAxis, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RxAxis, sizeof(pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_RX;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RyAxis, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RyAxis, sizeof(pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_RY;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RzAxis, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_RzAxis, sizeof(pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_RZ;
-        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_Slider, sizeof pDeviceObject->guidType) == 0) {
+        } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_Slider, sizeof(pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_SLIDER(joystick->hwdata->NumSliders);
             ++joystick->hwdata->NumSliders;
         } else {

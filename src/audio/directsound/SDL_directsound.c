@@ -229,10 +229,10 @@ static void DSOUND_WaitDevice(_THIS)
 
         /* Try to restore a lost sound buffer */
         IDirectSoundBuffer_GetStatus(this->hidden->mixbuf, &status);
-        if ((status & DSBSTATUS_BUFFERLOST)) {
+        if (status & DSBSTATUS_BUFFERLOST) {
             IDirectSoundBuffer_Restore(this->hidden->mixbuf);
             IDirectSoundBuffer_GetStatus(this->hidden->mixbuf, &status);
-            if ((status & DSBSTATUS_BUFFERLOST)) {
+            if (status & DSBSTATUS_BUFFERLOST) {
                 break;
             }
         }
@@ -492,8 +492,7 @@ static int DSOUND_OpenDevice(_THIS, const char *devname)
     DWORD bufsize;
 
     /* Initialize all variables that we clean on shutdown */
-    this->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc((sizeof *this->hidden));
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }

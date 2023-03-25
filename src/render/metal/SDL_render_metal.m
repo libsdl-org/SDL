@@ -259,7 +259,7 @@ MakePipelineState(METAL_RenderData *data, METAL_PipelineCache *cache,
     switch (cache->vertexFunction) {
         case SDL_METAL_VERTEX_SOLID:
             /* position (float2), color (uchar4normalized) */
-            vertdesc.layouts[0].stride = sizeof(float) * 2 + sizeof (int);
+            vertdesc.layouts[0].stride = sizeof(float) * 2 + sizeof(int);
             vertdesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
 
             vertdesc.attributes[0].format = MTLVertexFormatFloat2;
@@ -267,13 +267,13 @@ MakePipelineState(METAL_RenderData *data, METAL_PipelineCache *cache,
             vertdesc.attributes[0].bufferIndex = 0;
 
             vertdesc.attributes[1].format = MTLVertexFormatUChar4Normalized;
-            vertdesc.attributes[1].offset = sizeof (float) * 2;
+            vertdesc.attributes[1].offset = sizeof(float) * 2;
             vertdesc.attributes[1].bufferIndex = 0;
 
             break;
         case SDL_METAL_VERTEX_COPY:
             /* position (float2), color (uchar4normalized), texcoord (float2) */
-            vertdesc.layouts[0].stride = sizeof(float) * 2 + sizeof (int) + sizeof (float) * 2;
+            vertdesc.layouts[0].stride = sizeof(float) * 2 + sizeof(int) + sizeof(float) * 2;
             vertdesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
 
             vertdesc.attributes[0].format = MTLVertexFormatFloat2;
@@ -281,11 +281,11 @@ MakePipelineState(METAL_RenderData *data, METAL_PipelineCache *cache,
             vertdesc.attributes[0].bufferIndex = 0;
 
             vertdesc.attributes[1].format = MTLVertexFormatUChar4Normalized;
-            vertdesc.attributes[1].offset = sizeof (float) * 2;
+            vertdesc.attributes[1].offset = sizeof(float) * 2;
             vertdesc.attributes[1].bufferIndex = 0;
 
             vertdesc.attributes[2].format = MTLVertexFormatFloat2;
-            vertdesc.attributes[2].offset = sizeof(float) * 2 + sizeof (int);
+            vertdesc.attributes[2].offset = sizeof(float) * 2 + sizeof(int);
             vertdesc.attributes[2].bufferIndex = 0;
             break;
     }
@@ -1002,7 +1002,7 @@ METAL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
     float projection[4][4];    /* Prepare an orthographic projection */
     const int w = cmd->data.viewport.rect.w;
     const int h = cmd->data.viewport.rect.h;
-    const size_t matrixlen = sizeof (projection);
+    const size_t matrixlen = sizeof(projection);
     float *matrix = (float *) SDL_AllocateRenderVertices(renderer, matrixlen, CONSTANT_ALIGN(16), &cmd->data.viewport.first);
     if (!matrix) {
         return -1;
@@ -1024,13 +1024,13 @@ METAL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 static int
 METAL_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    const size_t vertlen = sizeof (float) * 4;
+    const size_t vertlen = sizeof(float) * 4;
     float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(16), &cmd->data.color.first);
     if (!verts) {
         return -1;
     }
     /*
-     * FIXME: not needed anymore, some cleanup to do 
+     * FIXME: not needed anymore, some cleanup to do
      *
     *(verts++) = ((float)cmd->data.color.r) / 255.0f;
     *(verts++) = ((float)cmd->data.color.g) / 255.0f;
@@ -1050,7 +1050,7 @@ METAL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
         cmd->data.draw.a
     };
 
-    const size_t vertlen = (2 * sizeof (float) + sizeof (SDL_Color)) * count;
+    const size_t vertlen = (2 * sizeof(float) + sizeof(SDL_Color)) * count;
     float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
@@ -1079,7 +1079,7 @@ METAL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 
     SDL_assert(count >= 2);  /* should have been checked at the higher level. */
 
-    vertlen = (2 * sizeof (float) + sizeof (SDL_Color)) * count;
+    vertlen = (2 * sizeof(float) + sizeof(SDL_Color)) * count;
     verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
@@ -1126,7 +1126,7 @@ METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
         float scale_x, float scale_y)
 {
     int count = indices ? num_indices : num_vertices;
-    const size_t vertlen = (2 * sizeof (float) + sizeof (int) + (texture ? 2 : 0) * sizeof (float)) * count;
+    const size_t vertlen = (2 * sizeof(float) + sizeof(int) + (texture ? 2 : 0) * sizeof(float)) * count;
     float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
@@ -1338,7 +1338,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
     while (cmd) {
         switch (cmd->command) {
             case SDL_RENDERCMD_SETVIEWPORT: {
-                SDL_memcpy(&statecache.viewport, &cmd->data.viewport.rect, sizeof (statecache.viewport));
+                SDL_memcpy(&statecache.viewport, &cmd->data.viewport.rect, sizeof(statecache.viewport));
                 statecache.projection_offset = cmd->data.viewport.first;
                 statecache.viewport_dirty = SDL_TRUE;
                 statecache.cliprect_dirty = SDL_TRUE;
@@ -1346,7 +1346,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             }
 
             case SDL_RENDERCMD_SETCLIPRECT: {
-                SDL_memcpy(&statecache.cliprect, &cmd->data.cliprect.rect, sizeof (statecache.cliprect));
+                SDL_memcpy(&statecache.cliprect, &cmd->data.cliprect.rect, sizeof(statecache.cliprect));
                 statecache.cliprect_enabled = cmd->data.cliprect.enabled;
                 statecache.cliprect_dirty = SDL_TRUE;
                 break;
