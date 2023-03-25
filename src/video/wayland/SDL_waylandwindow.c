@@ -266,8 +266,12 @@ static void ConfigureWindowGeometry(SDL_Window *window)
             } else {
                 UnsetDrawSurfaceViewport(window);
 
-                /* Round to the next integer in case of a fractional value. */
-                wl_surface_set_buffer_scale(data->surface, (int32_t)SDL_ceilf(data->scale_factor));
+                if (!FullscreenModeEmulation(window)) {
+                    /* Round to the next integer in case of a fractional value. */
+                    wl_surface_set_buffer_scale(data->surface, (int32_t)SDL_ceilf(data->scale_factor));
+                } else {
+                    wl_surface_set_buffer_scale(data->surface, 1);
+                }
             }
 
             /* Clamp the physical window size to the system minimum required size. */
@@ -598,7 +602,7 @@ static void handle_configure_xdg_toplevel(void *data,
         /* xdg_toplevel spec states that this is a suggestion.
            Ignore if less than or greater than max/min size. */
 
-        if ((window->flags & SDL_WINDOW_RESIZABLE)) {
+        if (window->flags & SDL_WINDOW_RESIZABLE) {
             if (window->max_w > 0) {
                 width = SDL_min(width, window->max_w);
             }
@@ -1998,7 +2002,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     SDL_WindowData *data;
     SDL_VideoData *c;
 
-    data = SDL_calloc(1, sizeof *data);
+    data = SDL_calloc(1, sizeof(*data));
     if (data == NULL) {
         return SDL_OutOfMemory();
     }

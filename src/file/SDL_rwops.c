@@ -704,7 +704,7 @@ SDL_AllocRW(void)
 {
     SDL_RWops *area;
 
-    area = (SDL_RWops *)SDL_malloc(sizeof *area);
+    area = (SDL_RWops *)SDL_malloc(sizeof(*area));
     if (area == NULL) {
         SDL_OutOfMemory();
     } else {

@@ -27,7 +27,7 @@ static SDL_atomic_t doterminate;
 
 /*
  * SDL_Quit() shouldn't be used with atexit() directly because
- *  calling conventions may differ...
+ * calling conventions may differ...
  */
 static void
 SDL_Quit_Wrapper(void)
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     (void)atexit(printid);
     for (i = 0; i < maxproc; ++i) {
         char name[64];
-        (void)SDL_snprintf(name, sizeof name, "Worker%d", i);
+        (void)SDL_snprintf(name, sizeof(name), "Worker%d", i);
         threads[i] = SDL_CreateThread(Run, name, NULL);
         if (threads[i] == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread!\n");

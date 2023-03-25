@@ -28,7 +28,7 @@ static const char *GetSensorTypeString(SDL_SensorType type)
     case SDL_SENSOR_GYRO:
         return "SDL_SENSOR_GYRO";
     default:
-        (void)SDL_snprintf(unknown_type, sizeof unknown_type, "UNKNOWN (%d)", type);
+        (void)SDL_snprintf(unknown_type, sizeof(unknown_type), "UNKNOWN (%d)", type);
         return unknown_type;
     }
 }

@@ -26,9 +26,9 @@ How the port works
 ================================================================================
 
 - Android applications are Java-based, optionally with parts written in C
-- As SDL apps are C-based, we use a small Java shim that uses JNI to talk to 
+- As SDL apps are C-based, we use a small Java shim that uses JNI to talk to
   the SDL library
-- This means that your application C code must be placed inside an Android 
+- This means that your application C code must be placed inside an Android
   Java project, along with some C support code that communicates with Java
 - This eventually produces a standard Android .apk package
 
@@ -69,7 +69,7 @@ done in the build directory for the app!
 
 
 For more complex projects, follow these instructions:
-    
+
 1. Copy the android-project directory wherever you want to keep your projects
    and rename it to the name of your project.
 2. Move or symlink this SDL directory into the "<project>/app/jni" directory
@@ -132,15 +132,15 @@ Here's an example of a minimal class file:
 
     --- MyGame.java --------------------------
     package com.gamemaker.game;
-    
-    import org.libsdl.app.SDLActivity; 
-    
+
+    import org.libsdl.app.SDLActivity;
+
     /**
-     * A sample wrapper class that just calls SDLActivity 
-     */ 
-    
+     * A sample wrapper class that just calls SDLActivity
+     */
+
     public class MyGame extends SDLActivity { }
-    
+
     ------------------------------------------
 
 Then replace "SDLActivity" in AndroidManifest.xml with the name of your
@@ -179,7 +179,7 @@ may want to keep this fact in mind when building your APK, specially when large
 files are involved.
 For more information on which extensions get compressed by default and how to
 disable this behaviour, see for example:
-    
+
 http://ponystyle.com/blog/2010/03/26/dealing-with-asset-compression-in-android-apps/
 
 
@@ -350,7 +350,7 @@ I get output from addr2line showing that it's in the quit function, in testsprit
 You can add logging to your code to help show what's happening:
 
     #include <android/log.h>
-    
+
     __android_log_print(ANDROID_LOG_INFO, "foo", "Something happened! x = %d", x);
 
 If you need to build without optimization turned on, you can create a file called
@@ -440,7 +440,7 @@ where you only update a portion of the screen on each frame, you may notice a
 variety of visual glitches on Android, that are not present on other platforms.
 This is caused by SDL's use of EGL as the support system to handle OpenGL ES/ES2
 contexts, in particular the use of the eglSwapBuffers function. As stated in the
-documentation for the function "The contents of ancillary buffers are always 
+documentation for the function "The contents of ancillary buffers are always
 undefined after calling eglSwapBuffers".
 Setting the EGL_SWAP_BEHAVIOR attribute of the surface to EGL_BUFFER_PRESERVED
 is not possible for SDL as it requires EGL 1.4, available only on the API level
@@ -459,7 +459,7 @@ Two legitimate ways:
 Activity by calling Activity.finish().
 
 - Android OS can decide to terminate your application by calling onDestroy()
-(see Activity life cycle). Your application will receive a SDL_QUIT event you 
+(see Activity life cycle). Your application will receive a SDL_QUIT event you
 can handle to save things and quit.
 
 Don't call exit() as it stops the activity badly.

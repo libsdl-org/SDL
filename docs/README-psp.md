@@ -1,7 +1,7 @@
 PSP
 ======
 SDL2 port for the Sony PSP contributed by:
-- Captian Lex 
+- Captian Lex
 - Francisco Javier Trujillo Mata
 - Wouter Wijsman
 

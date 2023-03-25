@@ -153,45 +153,6 @@ static void SDL_EVDEV_dump_keymap(SDL_EVDEV_keyboard_state *kbd)
 }
 #endif /* DUMP_KEYMAP */
 
-static int SDL_EVDEV_kbd_load_keymaps(SDL_EVDEV_keyboard_state *kbd)
-{
-    int i, j;
-
-    kbd->key_maps = (unsigned short **)SDL_calloc(MAX_NR_KEYMAPS, sizeof(unsigned short *));
-    if (!kbd->key_maps) {
-        return -1;
-    }
-
-    for (i = 0; i < MAX_NR_KEYMAPS; ++i) {
-        struct kbentry kbe;
-
-        kbe.kb_table = i;
-        kbe.kb_index = 0;
-        if (ioctl(kbd->console_fd, KDGKBENT, &kbe) < 0) {
-            return -1;
-        }
-
-        if (kbe.kb_value == K_NOSUCHMAP) {
-            continue;
-        }
-
-        kbd->key_maps[i] = (unsigned short *)SDL_malloc(NR_KEYS * sizeof(unsigned short));
-        if (!kbd->key_maps[i]) {
-            return -1;
-        }
-
-        for (j = 0; j < NR_KEYS; ++j) {
-            kbe.kb_table = i;
-            kbe.kb_index = j;
-            if (ioctl(kbd->console_fd, KDGKBENT, &kbe) < 0) {
-                return -1;
-            }
-            kbd->key_maps[i][j] = (kbe.kb_value ^ 0xf000);
-        }
-    }
-    return 0;
-}
-
 static SDL_EVDEV_keyboard_state *kbd_cleanup_state = NULL;
 static int kbd_cleanup_sigactions_installed = 0;
 static int kbd_cleanup_atexit_installed = 0;
@@ -339,8 +300,8 @@ SDL_EVDEV_keyboard_state *
 SDL_EVDEV_kbd_init(void)
 {
     SDL_EVDEV_keyboard_state *kbd;
-    int i;
     char flag_state;
+    char kbtype;
     char shift_state[sizeof(long)] = { TIOCL_GETSHIFTSTATE, 0 };
 
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(*kbd));
@@ -348,10 +309,14 @@ SDL_EVDEV_kbd_init(void)
         return NULL;
     }
 
-    kbd->npadch = -1;
-
     /* This might fail if we're not connected to a tty (e.g. on the Steam Link) */
     kbd->console_fd = open("/dev/tty", O_RDONLY | O_CLOEXEC);
+    if (!((ioctl(kbd->console_fd, KDGKBTYPE, &kbtype) == 0) && ((kbtype == KB_101) || (kbtype == KB_84)))) {
+        close(kbd->console_fd);
+        kbd->console_fd = -1;
+    }
+
+    kbd->npadch = -1;
 
     if (ioctl(kbd->console_fd, TIOCLINUX, shift_state) == 0) {
         kbd->shift_state = *shift_state;
@@ -362,48 +327,27 @@ SDL_EVDEV_kbd_init(void)
     }
 
     kbd->accents = &default_accents;
-    if (ioctl(kbd->console_fd, KDGKBDIACR, kbd->accents) < 0) {
-        /* No worries, we'll use the default accent table */
-    }
-
     kbd->key_maps = default_key_maps;
+
     if (ioctl(kbd->console_fd, KDGKBMODE, &kbd->old_kbd_mode) == 0) {
         /* Set the keyboard in UNICODE mode and load the keymaps */
         ioctl(kbd->console_fd, KDSKBMODE, K_UNICODE);
-
-        if (SDL_EVDEV_kbd_load_keymaps(kbd) < 0) {
-            for (i = 0; i < MAX_NR_KEYMAPS; ++i) {
-                if (kbd->key_maps[i]) {
-                    SDL_free(kbd->key_maps[i]);
-                }
-            }
-            SDL_free(kbd->key_maps);
-
-            kbd->key_maps = default_key_maps;
-        }
-
-        /* Allow inhibiting keyboard mute with env. variable for debugging etc. */
-        if (SDL_getenv("SDL_INPUT_LINUX_KEEP_KBD") == NULL) {
-            /* Mute the keyboard so keystrokes only generate evdev events
-             * and do not leak through to the console
-             */
-            ioctl(kbd->console_fd, KDSKBMODE, K_OFF);
-
-            /* Make sure to restore keyboard if application fails to call
-             * SDL_Quit before exit or fatal signal is raised.
-             */
-            if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
-                kbd_register_emerg_cleanup(kbd);
-            }
-        }
     }
 
-#ifdef DUMP_ACCENTS
-    SDL_EVDEV_dump_accents(kbd);
-#endif
-#ifdef DUMP_KEYMAP
-    SDL_EVDEV_dump_keymap(kbd);
-#endif
+    /* Allow inhibiting keyboard mute with env. variable for debugging etc. */
+    if (SDL_getenv("SDL_INPUT_LINUX_KEEP_KBD") == NULL) {
+        /* Mute the keyboard so keystrokes only generate evdev events
+         * and do not leak through to the console
+         */
+        ioctl(kbd->console_fd, KDSKBMODE, K_OFF);
+
+        /* Make sure to restore keyboard if application fails to call
+         * SDL_Quit before exit or fatal signal is raised.
+         */
+        if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
+            kbd_register_emerg_cleanup(kbd);
+        }
+    }
     return kbd;
 }
 
@@ -488,6 +432,11 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
     unsigned int i;
 
     kbd->diacr = 0;
+
+    if (kbd->console_fd >= 0)
+        if (ioctl(kbd->console_fd, KDGKBDIACR, kbd->accents) < 0) {
+            /* No worries, we'll use the default accent table */
+        }
 
     for (i = 0; i < kbd->accents->kb_cnt; i++) {
         if (kbd->accents->kbdiacr[i].diacr == d &&
@@ -795,7 +744,17 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode
     }
 
     if (keycode < NR_KEYS) {
-        keysym = key_map[keycode];
+        if (state->console_fd < 0) {
+            keysym = key_map[keycode];
+        } else {
+            struct kbentry kbe;
+            kbe.kb_table = shift_final;
+            kbe.kb_index = keycode;
+            if (ioctl(state->console_fd, KDGKBENT, &kbe) == 0)
+                keysym = (kbe.kb_value ^ 0xf000);
+            else
+                return;
+        }
     } else {
         return;
     }
@@ -814,9 +773,18 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode
             type = KT_LATIN;
 
             if (vc_kbd_led(state, K_CAPSLOCK)) {
-                key_map = state->key_maps[shift_final ^ (1 << KG_SHIFT)];
+                shift_final = shift_final ^ (1 << KG_SHIFT);
+                key_map = state->key_maps[shift_final];
                 if (key_map) {
-                    keysym = key_map[keycode];
+                    if (state->console_fd < 0) {
+                        keysym = key_map[keycode];
+                    } else {
+                        struct kbentry kbe;
+                        kbe.kb_table = shift_final;
+                        kbe.kb_index = keycode;
+                        if (ioctl(state->console_fd, KDGKBENT, &kbe) == 0)
+                            keysym = (kbe.kb_value ^ 0xf000);
+                    }
                 }
             }
         }

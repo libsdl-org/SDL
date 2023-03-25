@@ -254,7 +254,7 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
             return;
         }
 
-        if ((udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
+        if (udev_class & SDL_UDEV_DEVICE_JOYSTICK) {
             return;
         }
 
@@ -290,7 +290,7 @@ void SDL_EVDEV_Poll(void)
     mouse = SDL_GetMouse();
 
     for (item = _this->first; item != NULL; item = item->next) {
-        while ((len = read(item->fd, events, (sizeof events))) > 0) {
+        while ((len = read(item->fd, events, sizeof(events))) > 0) {
             len /= sizeof(events[0]);
             for (i = 0; i < len; ++i) {
                 /* special handling for touchscreen, that should eventually be

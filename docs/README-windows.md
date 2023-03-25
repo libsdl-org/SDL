@@ -34,7 +34,7 @@ from a recent Chrome/Chromium install for Windows. The files you need are:
 - libGLESv2.dll
 - d3dcompiler_46.dll (supports Windows Vista or later, better shader
   compiler) *or* d3dcompiler_43.dll (supports Windows XP or later)
-    
+
 If you compile ANGLE from source, you can configure it so it does not need the
 d3dcompiler_* DLL at all (for details on this, see their documentation).
 However, by default SDL will try to preload the d3dcompiler_46.dll to
@@ -48,7 +48,7 @@ Known Bugs:
 - SDL_GL_SetSwapInterval is currently a no op when using ANGLE. It appears
   that there's a bug in the library which prevents the window contents from
   refreshing if this is set to anything other than the default value.
-  
+
 ## Vulkan Surface Support
 
 Support for creating Vulkan surfaces is configured on by default. To disable

@@ -197,7 +197,7 @@ static int KMSDRM_Available(void)
 
     kmsdrm_dri_pathsize = SDL_strlen(kmsdrm_dri_path);
     kmsdrm_dri_devnamesize = SDL_strlen(kmsdrm_dri_devname);
-    (void)SDL_snprintf(kmsdrm_dri_cardpath, sizeof kmsdrm_dri_cardpath, "%s%s",
+    (void)SDL_snprintf(kmsdrm_dri_cardpath, sizeof(kmsdrm_dri_cardpath), "%s%s",
                        kmsdrm_dri_path, kmsdrm_dri_devname);
 
     ret = get_driindex();
@@ -897,7 +897,7 @@ static int KMSDRM_InitDisplays(_THIS)
     int i;
 
     /* Open /dev/dri/cardNN (/dev/drmN if on OpenBSD version less than 6.9) */
-    (void)SDL_snprintf(viddata->devpath, sizeof viddata->devpath, "%s%d",
+    (void)SDL_snprintf(viddata->devpath, sizeof(viddata->devpath), "%s%d",
                        kmsdrm_dri_cardpath, viddata->devindex);
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opening device %s", viddata->devpath);

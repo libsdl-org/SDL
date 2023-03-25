@@ -138,6 +138,56 @@ void HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size)
     SDL_free(buffer);
 }
 
+SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
+{
+    switch (vendor) {
+    case USB_VENDOR_DRAGONRISE:
+        return SDL_TRUE;
+    case USB_VENDOR_HORI:
+        return SDL_TRUE;
+    case USB_VENDOR_LOGITECH:
+        /* Most Logitech devices are fine with this, but the F310 will lock up */
+        if (product == USB_PRODUCT_LOGITECH_F310) {
+            return SDL_FALSE;
+        }
+        return SDL_TRUE;
+    case USB_VENDOR_MADCATZ:
+        return SDL_TRUE;
+    case USB_VENDOR_NACON:
+        return SDL_TRUE;
+    case USB_VENDOR_PDP:
+        return SDL_TRUE;
+    case USB_VENDOR_POWERA:
+        return SDL_TRUE;
+    case USB_VENDOR_POWERA_ALT:
+        return SDL_TRUE;
+    case USB_VENDOR_QANBA:
+        return SDL_TRUE;
+    case USB_VENDOR_RAZER:
+        /* Most Razer devices are not game controllers, and some of them lock up
+         * or reset when we send them the Sony third-party query feature report,
+         * so don't include that vendor here. Instead add devices as appropriate
+         * to controller_type.c
+         *
+         * Reference: https://github.com/libsdl-org/SDL/issues/6733
+         *            https://github.com/libsdl-org/SDL/issues/6799
+         */
+        return SDL_FALSE;
+    case USB_VENDOR_SHANWAN:
+        return SDL_TRUE;
+    case USB_VENDOR_SHANWAN_ALT:
+        return SDL_TRUE;
+    case USB_VENDOR_THRUSTMASTER:
+        return SDL_TRUE;
+    case USB_VENDOR_ZEROPLUS:
+        return SDL_TRUE;
+    case 0x7545 /* SZ-MYPOWER */:
+        return SDL_TRUE;
+    default:
+        return SDL_FALSE;
+    }
+}
+
 float HIDAPI_RemapVal(float val, float val_min, float val_max, float output_min, float output_max)
 {
     return output_min + (output_max - output_min) * (val - val_min) / (val_max - val_min);
@@ -211,6 +261,7 @@ static SDL_GameControllerType SDL_GetJoystickGameControllerProtocol(const char *
             0x0738, /* Mad Catz */
             0x0e6f, /* PDP */
             0x0f0d, /* Hori */
+            0x10f5, /* Turtle Beach */
             0x1532, /* Razer */
             0x20d6, /* PowerA */
             0x24c6, /* PowerA */
@@ -380,44 +431,62 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *remove
     if (HIDAPI_GetDeviceDriver(device)) {
         /* We might have a device driver for this device, try opening it and see */
         if (device->num_children == 0) {
+            SDL_hid_device *dev;
+
+            /* Wait a little bit for the device to initialize */
+            SDL_Delay(10);
+
+#ifdef __ANDROID__
             /* On Android we need to leave joysticks unlocked because it calls
              * out to the main thread for permissions and the main thread can
              * be in the process of handling controller input.
              *
              * See https://github.com/libsdl-org/SDL/issues/6347 for details
              */
-            int lock_count = 0;
-            SDL_HIDAPI_Device *curr;
-            SDL_hid_device *dev;
-            char *path = SDL_strdup(device->path);
+            {
+                SDL_HIDAPI_Device *curr;
+                int lock_count = 0;
+                char *path = SDL_strdup(device->path);
 
-            /* Wait a little bit for the device to initialize */
-            SDL_Delay(10);
-
-            SDL_AssertJoysticksLocked();
-            while (SDL_JoysticksLocked()) {
-                ++lock_count;
-                SDL_UnlockJoysticks();
-            }
-
-            dev = SDL_hid_open_path(path, 0);
-
-            while (lock_count > 0) {
-                --lock_count;
-                SDL_LockJoysticks();
-            }
-            SDL_free(path);
-
-            /* Make sure the device didn't get removed while opening the HID path */
-            for (curr = SDL_HIDAPI_devices; curr && curr != device; curr = curr->next) {
-            }
-            if (curr == NULL) {
-                *removed = SDL_TRUE;
-                if (dev) {
-                    SDL_hid_close(dev);
+                SDL_AssertJoysticksLocked();
+                while (SDL_JoysticksLocked()) {
+                    ++lock_count;
+                    SDL_UnlockJoysticks();
                 }
-                return;
+
+                dev = SDL_hid_open_path(path, 0);
+
+                while (lock_count > 0) {
+                    --lock_count;
+                    SDL_LockJoysticks();
+                }
+                SDL_free(path);
+
+                /* Make sure the device didn't get removed while opening the HID path */
+                for (curr = SDL_HIDAPI_devices; curr && curr != device; curr = curr->next) {
+                    continue;
+                }
+                if (curr == NULL) {
+                    *removed = SDL_TRUE;
+                    if (dev) {
+                        SDL_hid_close(dev);
+                    }
+                    return;
+                }
             }
+#else
+            /* On other platforms we want to keep the lock so other threads wait for
+             * us to finish opening the controller before checking to see whether the
+             * HIDAPI driver is handling the device.
+             *
+             * On Windows, for example, the main thread can be enumerating DirectInput
+             * devices while the Windows.Gaming.Input thread is calling back with a new
+             * controller available.
+             *
+             * See https://github.com/libsdl-org/SDL/issues/7304 for details.
+             */
+            dev = SDL_hid_open_path(device->path, 0);
+#endif
 
             if (dev == NULL) {
                 SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,

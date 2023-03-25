@@ -584,9 +584,9 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
-    if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
+    if (HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
         if (device && device->dev) {
-            size = ReadFeatureReport(device->dev, 0x03, data, sizeof data);
+            size = ReadFeatureReport(device->dev, 0x03, data, sizeof(data));
             if (size == 8 && data[2] == 0x26) {
                 /* Supported third party controller */
                 return SDL_TRUE;

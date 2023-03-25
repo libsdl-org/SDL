@@ -156,7 +156,7 @@ UpdateN3DSAccelerometer(SDL_Sensor *sensor)
         data[0] = (float)current_state.x * SDL_STANDARD_GRAVITY;
         data[1] = (float)current_state.y * SDL_STANDARD_GRAVITY;
         data[2] = (float)current_state.z * SDL_STANDARD_GRAVITY;
-        SDL_PrivateSensorUpdate(sensor, 0, data, sizeof data);
+        SDL_PrivateSensorUpdate(sensor, 0, data, sizeof(data));
     }
 }
 
@@ -173,7 +173,7 @@ UpdateN3DSGyroscope(SDL_Sensor *sensor)
         data[0] = (float)current_state.x;
         data[1] = (float)current_state.y;
         data[2] = (float)current_state.z;
-        SDL_PrivateSensorUpdate(sensor, 0, data, sizeof data);
+        SDL_PrivateSensorUpdate(sensor, 0, data, sizeof(data));
     }
 }
 

@@ -9,6 +9,7 @@ INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
 
 CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
 CFLAGS+= -wx -wcd=303
+CFLAGS+= -DHAVE_SIGNAL_H
 !ifeq ENABLE_WERROR 1
 CFLAGS+= -we
 !endif

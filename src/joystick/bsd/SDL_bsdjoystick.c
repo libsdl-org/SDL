@@ -647,7 +647,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
     static int x, y, xmin = 0xffff, ymin = 0xffff, xmax = 0, ymax = 0;
 
     if (joy->hwdata->type == BSDJOY_JOY) {
-        while (read(joy->hwdata->fd, &gameport, sizeof gameport) == sizeof gameport) {
+        while (read(joy->hwdata->fd, &gameport, sizeof(gameport)) == sizeof(gameport)) {
             if (SDL_abs(x - gameport.x) > 8) {
                 x = gameport.x;
                 if (x < xmin) {

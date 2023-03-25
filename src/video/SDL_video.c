@@ -1420,6 +1420,13 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
         if ((window->last_fullscreen_flags & FULLSCREEN_MASK) == (window->flags & FULLSCREEN_MASK)) {
             return 0;
         }
+        if (!fullscreen) {
+            if (_this->SetWindowFullscreen) {
+                _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
+            }
+            window->last_fullscreen_flags = window->flags;
+            return 0;
+        }
     }
 
     /* See if there are any fullscreen windows */
@@ -1446,7 +1453,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
                 }
 
                 /* only do the mode change if we want exclusive fullscreen */
-                if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+                if ((other->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
                     if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
                         return -1;
                     }
@@ -1607,7 +1614,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     /* ensure no more than one of these flags is set */
     type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU);
-    if ((type_flags & (type_flags - 1)) != 0) {
+    if (type_flags & (type_flags - 1)) {
         SDL_SetError("Conflicting window flags specified");
         return NULL;
     }
@@ -1628,7 +1635,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
-    if ((graphics_flags & (graphics_flags - 1)) != 0) {
+    if (graphics_flags & (graphics_flags - 1)) {
         SDL_SetError("Conflicting window flags specified");
         return NULL;
     }
@@ -1866,7 +1873,7 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
 
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
-    if ((graphics_flags & (graphics_flags - 1)) != 0) {
+    if (graphics_flags & (graphics_flags - 1)) {
         return SDL_SetError("Conflicting window flags specified");
     }
 
@@ -2233,7 +2240,7 @@ void SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
     CHECK_WINDOW_MAGIC(window, );
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         const int want = (bordered != SDL_FALSE); /* normalize the flag. */
-        const int have = ((window->flags & SDL_WINDOW_BORDERLESS) == 0);
+        const int have = !(window->flags & SDL_WINDOW_BORDERLESS);
         if ((want != have) && (_this->SetWindowBordered)) {
             if (want) {
                 window->flags &= ~SDL_WINDOW_BORDERLESS;
@@ -2992,21 +2999,21 @@ SDL_bool
 SDL_GetWindowKeyboardGrab(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
-    return window == _this->grabbed_window && ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0);
+    return window == _this->grabbed_window && (_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED);
 }
 
 SDL_bool
 SDL_GetWindowMouseGrab(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
-    return window == _this->grabbed_window && ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0);
+    return window == _this->grabbed_window && (_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED);
 }
 
 SDL_Window *
 SDL_GetGrabbedWindow(void)
 {
     if (_this->grabbed_window &&
-        (_this->grabbed_window->flags & (SDL_WINDOW_MOUSE_GRABBED | SDL_WINDOW_KEYBOARD_GRABBED)) != 0) {
+        (_this->grabbed_window->flags & (SDL_WINDOW_MOUSE_GRABBED | SDL_WINDOW_KEYBOARD_GRABBED))) {
         return _this->grabbed_window;
     } else {
         return NULL;
@@ -4565,7 +4572,7 @@ int SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *messag
     if (message == NULL) {
         message = "";
     }
-    EM_ASM_({
+    EM_ASM({
         alert(UTF8ToString($0) + "\n\n" + UTF8ToString($1));
     },
             title, message);

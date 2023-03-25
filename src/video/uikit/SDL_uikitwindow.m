@@ -347,7 +347,7 @@ UIKit_DestroyWindow(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
         if (window->driverdata != NULL) {
-            SDL_WindowData *data = (SDL_WindowData *) CFBridgingRelease(window->driverdata);
+            SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
             NSArray *views = nil;
 
             [data.viewcontroller stopAnimation];
@@ -366,9 +366,11 @@ UIKit_DestroyWindow(_THIS, SDL_Window * window)
              * SDL window. */
             data.uiwindow.rootViewController = nil;
             data.uiwindow.hidden = YES;
+
+            CFRelease(window->driverdata);
+            window->driverdata = NULL;
         }
     }
-    window->driverdata = NULL;
 }
 
 void

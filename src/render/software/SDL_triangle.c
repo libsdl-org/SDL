@@ -869,10 +869,6 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
             if (dstB > 255) {
                 dstB = 255;
             }
-            dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255;
-            if (dstA > 255) {
-                dstA = 255;
-            }
             break;
         }
         if (FORMAT_HAS_ALPHA(dstfmt_val)) {

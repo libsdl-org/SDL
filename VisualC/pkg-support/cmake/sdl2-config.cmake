@@ -68,6 +68,8 @@ if(EXISTS "${_sdl2_library}" AND EXISTS "${_sdl2_dll_library}")
                 IMPORTED_LOCATION "${_sdl2_dll_library}"
                 COMPATIBLE_INTERFACE_BOOL "SDL2_SHARED"
                 INTERFACE_SDL2_SHARED "ON"
+                COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+                INTERFACE_SDL_VERSION "SDL2"
         )
     endif()
     set(SDL2_SDL2_FOUND TRUE)
@@ -84,6 +86,8 @@ if(EXISTS "${_sdl2main_library}")
         set_target_properties(SDL2::SDL2main
         PROPERTIES
             IMPORTED_LOCATION "${_sdl2main_library}"
+            COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+            INTERFACE_SDL_VERSION "SDL2"
         )
     endif()
     set(SDL2_SDL2main_FOUND TRUE)
@@ -100,6 +104,8 @@ if(EXISTS "${_sdl2test_library}")
             PROPERTIES
                 INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIRS}"
                 IMPORTED_LOCATION "${_sdl2test_library}"
+                COMPATIBLE_INTERFACE_STRING "SDL_VERSION"
+                INTERFACE_SDL_VERSION "SDL2"
         )
     endif()
     set(SDL2_SDL2test_FOUND TRUE)
