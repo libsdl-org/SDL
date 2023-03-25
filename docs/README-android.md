@@ -454,7 +454,7 @@ screen each frame.
 
 Reference: http://www.khronos.org/registry/egl/specs/EGLTechNote0001.html
 
-t
+
 Ending your application
 ================================================================================
 
