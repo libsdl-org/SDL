@@ -56,7 +56,7 @@ static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint
 #endif
 static SDL_INLINE void SDL_TARGETING("mmx") SDL_memcpyMMX(Uint8 *dst, const Uint8 *src, int len)
 {
-    const int remain = (len & 63);
+    int remain = len & 63;
     int i;
 
     __m64 *d64 = (__m64 *)dst;
@@ -78,7 +78,11 @@ static SDL_INLINE void SDL_TARGETING("mmx") SDL_memcpyMMX(Uint8 *dst, const Uint
 
     if (remain) {
         const int skip = len - remain;
-        SDL_memcpy(dst + skip, src + skip, remain);
+        dst += skip;
+        src += skip;
+        while (remain--) {
+            *dst++ = *src++;
+        }
     }
 }
 
