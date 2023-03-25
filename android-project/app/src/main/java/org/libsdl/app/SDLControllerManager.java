@@ -24,7 +24,7 @@ public class SDLControllerManager
     public static native int nativeAddJoystick(int device_id, String name, String desc,
                                                int vendor_id, int product_id,
                                                boolean is_accelerometer, int button_mask,
-                                               int naxes, int axis_mask, int nhats, nballs);
+                                               int naxes, int axis_mask, int nhats, int nballs);
     public static native int nativeRemoveJoystick(int device_id);
     public static native int nativeAddHaptic(int device_id, String name);
     public static native int nativeRemoveHaptic(int device_id);
