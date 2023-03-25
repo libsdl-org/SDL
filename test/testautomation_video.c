@@ -1044,6 +1044,37 @@ int video_getWindowPixelFormat(void *arg)
     return TEST_COMPLETED;
 }
 
+
+static SDL_bool getPositionFromEvent(int *x, int *y)
+{
+    SDL_bool ret = SDL_FALSE;
+    SDL_Event evt;
+    SDL_zero(evt);
+    while (SDL_PollEvent(&evt)) {
+        if (evt.type == SDL_WINDOWEVENT && evt.window.event == SDL_WINDOWEVENT_MOVED) {
+            *x = evt.window.data1;
+            *y = evt.window.data2;
+            ret = SDL_TRUE;
+        }
+    }
+    return ret;
+}
+
+static SDL_bool getSizeFromEvent(int *w, int *h)
+{
+    SDL_bool ret = SDL_FALSE;
+    SDL_Event evt;
+    SDL_zero(evt);
+    while (SDL_PollEvent(&evt)) {
+        if (evt.type == SDL_WINDOWEVENT && evt.window.event == SDL_WINDOWEVENT_RESIZED) {
+            *w = evt.window.data1;
+            *h = evt.window.data2;
+            ret = SDL_TRUE;
+        }
+    }
+    return ret;
+}
+
 /**
  * @brief Tests call to SDL_GetWindowPosition and SDL_SetWindowPosition
  *
@@ -1116,8 +1147,23 @@ int video_getSetWindowPosition(void *arg)
             currentY = desiredY + 1;
             SDL_GetWindowPosition(window, &currentX, &currentY);
             SDLTest_AssertPass("Call to SDL_GetWindowPosition()");
-            SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position; expected: %d, got: %d", desiredX, currentX);
-            SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position; expected: %d, got: %d", desiredY, currentY);
+
+            if (desiredX == currentX && desiredY == currentY) {
+                SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position; expected: %d, got: %d", desiredX, currentX);
+                SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position; expected: %d, got: %d", desiredY, currentY);
+            } else {
+                SDL_bool hasEvent;
+                /* SDL_SetWindowPosition() and SDL_SetWindowSize() will make requests of the window manager and set the internal position and size,
+                 * and then we get events signaling what actually happened, and they get passed on to the application if they're not what we expect. */
+                desiredX = currentX + 1;
+                desiredY = currentY + 1;
+                hasEvent = getPositionFromEvent(&desiredX, &desiredY);
+                SDLTest_AssertCheck(hasEvent == SDL_TRUE, "Changing position was not honored by WM, checking present of SDL_WINDOWEVENT_MOVED");
+                if (hasEvent) {
+                    SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position is the position from SDL event; expected: %d, got: %d", desiredX, currentX);
+                    SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position is the position from SDL event; expected: %d, got: %d", desiredY, currentY);
+                }
+            }
 
             /* Get position X */
             currentX = desiredX + 1;
@@ -1291,8 +1337,24 @@ int video_getSetWindowSize(void *arg)
             currentH = desiredH + 1;
             SDL_GetWindowSize(window, &currentW, &currentH);
             SDLTest_AssertPass("Call to SDL_GetWindowSize()");
-            SDLTest_AssertCheck(desiredW == currentW, "Verify returned width; expected: %d, got: %d", desiredW, currentW);
-            SDLTest_AssertCheck(desiredH == currentH, "Verify returned height; expected: %d, got: %d", desiredH, currentH);
+
+            if (desiredW == currentW && desiredH == currentH) {
+                SDLTest_AssertCheck(desiredW == currentW, "Verify returned width; expected: %d, got: %d", desiredW, currentW);
+                SDLTest_AssertCheck(desiredH == currentH, "Verify returned height; expected: %d, got: %d", desiredH, currentH);
+            } else {
+                SDL_bool hasEvent;
+                /* SDL_SetWindowPosition() and SDL_SetWindowSize() will make requests of the window manager and set the internal position and size,
+                 * and then we get events signaling what actually happened, and they get passed on to the application if they're not what we expect. */
+                desiredW = currentW + 1;
+                desiredH = currentH + 1;
+                hasEvent = getSizeFromEvent(&desiredW, &desiredH);
+                SDLTest_AssertCheck(hasEvent == SDL_TRUE, "Changing size was not honored by WM, checking presence of SDL_WINDOWEVENT_RESIZED");
+                if (hasEvent) {
+                    SDLTest_AssertCheck(desiredW == currentW, "Verify returned width is the one from SDL event; expected: %d, got: %d", desiredW, currentW);
+                    SDLTest_AssertCheck(desiredH == currentH, "Verify returned height is the one from SDL event; expected: %d, got: %d", desiredH, currentH);
+                }
+            }
+
 
             /* Get just width */
             currentW = desiredW + 1;
