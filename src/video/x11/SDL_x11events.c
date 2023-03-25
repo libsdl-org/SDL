@@ -757,7 +757,7 @@ static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int
 
 void X11_GetBorderValues(void /* SDL_WindowData */ *data_)
 {
-    SDL_WindowData *data = (SDL_VideoData *)data_;
+    SDL_WindowData *data = (SDL_WindowData *)data_;
     SDL_VideoData *videodata = data->videodata;
     Display *display = videodata->display;
 
