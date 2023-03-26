@@ -91,7 +91,7 @@ static void GetBufferSize(SDL_Window *window, int *width, int *height)
     int buf_width;
     int buf_height;
 
-    if (window->fullscreen_exclusive) {
+    if (data->is_fullscreen && window->fullscreen_exclusive) {
         buf_width = window->current_fullscreen_mode.pixel_w;
         buf_height = window->current_fullscreen_mode.pixel_h;
     } else {
@@ -209,7 +209,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
                                      0, 0);
     }
 
-    if (window->fullscreen_exclusive) {
+    if (data->is_fullscreen && window->fullscreen_exclusive) {
         /* If the compositor supplied fullscreen dimensions, use them, otherwise fall back to the display dimensions. */
         const int output_width = data->requested_window_width ? data->requested_window_width : output->screen_width;
         const int output_height = data->requested_window_height ? data->requested_window_height : output->screen_height;
@@ -371,16 +371,27 @@ static void SetFullscreen(SDL_Window *window, struct wl_output *output)
             xdg_toplevel_unset_fullscreen(wind->shell_surface.xdg.roleobj.toplevel);
         }
     }
+
+    /* Roundtrip to apply the new state. */
+    WAYLAND_wl_display_roundtrip(viddata->display);
 }
 
 static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
 {
     SDL_WindowData *wind = window->driverdata;
 
+    wind->is_fullscreen = fullscreen;
+
+    /* If this configure event is coming from a roundtrip after explicitly
+     * changing the fullscreen state, don't call back into the
+     * SDL_SetWindowFullscreen() function.
+     */
+    if (wind->in_fullscreen_transition) {
+        return;
+    }
+
     if (fullscreen) {
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-            wind->is_fullscreen = SDL_TRUE;
-
             wind->in_fullscreen_transition = SDL_TRUE;
             SDL_SetWindowFullscreen(window, SDL_TRUE);
             wind->in_fullscreen_transition = SDL_FALSE;
@@ -388,8 +399,6 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
     } else {
         /* Don't change the fullscreen flags if the window is hidden or being hidden. */
         if ((window->flags & SDL_WINDOW_FULLSCREEN) && !window->is_hiding && !(window->flags & SDL_WINDOW_HIDDEN)) {
-            wind->is_fullscreen = SDL_FALSE;
-
             wind->in_fullscreen_transition = SDL_TRUE;
             SDL_SetWindowFullscreen(window, SDL_FALSE);
             wind->in_fullscreen_transition = SDL_FALSE;
@@ -1704,7 +1713,6 @@ static void QtExtendedSurface_Unsubscribe(struct qt_extended_surface *surface, c
 void Wayland_SetWindowFullscreen(_THIS, SDL_Window *window,
                                  SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
-    SDL_VideoData *viddata = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
     struct wl_output *output = display->driverdata->output;
 
@@ -1717,14 +1725,16 @@ void Wayland_SetWindowFullscreen(_THIS, SDL_Window *window,
         return;
     }
 
+    /* If we're here, this was called from a higher-level video subsystem function.
+     * Set the flag to avoid recursively re-entering these functions while changing the
+     * fullscreen state.
+     */
+    wind->in_fullscreen_transition = SDL_TRUE;
+
     /* Don't send redundant fullscreen set/unset events. */
     if (wind->is_fullscreen != fullscreen) {
-        wind->is_fullscreen = fullscreen;
         wind->fullscreen_was_positioned = fullscreen ? SDL_TRUE : SDL_FALSE;
         SetFullscreen(window, fullscreen ? output : NULL);
-
-        /* Roundtrip required to receive the updated window dimensions */
-        WAYLAND_wl_display_roundtrip(viddata->display);
     } else if (wind->is_fullscreen) {
         /*
          * If the window is already fullscreen, this is likely a request to switch between
@@ -1740,10 +1750,9 @@ void Wayland_SetWindowFullscreen(_THIS, SDL_Window *window,
             ConfigureWindowGeometry(window);
             CommitLibdecorFrame(window);
         }
-
-        /* Roundtrip required to receive the updated window dimensions */
-        WAYLAND_wl_display_roundtrip(viddata->display);
     }
+
+    wind->in_fullscreen_transition = SDL_FALSE;
 }
 
 void Wayland_RestoreWindow(_THIS, SDL_Window *window)
