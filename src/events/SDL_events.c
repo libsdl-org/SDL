@@ -168,7 +168,7 @@ SDL_EventLoggingChanged(void *userdata, const char *name, const char *oldValue, 
 static void
 SDL_LogEvent(const SDL_Event *event)
 {
-    char name[32];
+    char name[64];
     char details[128];
 
     /* sensor/mouse/finger motion are spammy, ignore these if they aren't demanded. */
