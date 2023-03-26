@@ -3229,8 +3229,8 @@ void SDL_OnWindowDisplayChanged(SDL_Window *window)
         SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
         const SDL_DisplayMode *new_mode = NULL;
 
-        if (window->current_fullscreen_mode.pixel_w != 0 || window->current_fullscreen_mode.pixel_h != 0) {
-            new_mode = SDL_GetClosestFullscreenDisplayMode(displayID, window->current_fullscreen_mode.pixel_w, window->current_fullscreen_mode.pixel_h, window->current_fullscreen_mode.refresh_rate);
+        if (window->requested_fullscreen_mode.pixel_w != 0 || window->requested_fullscreen_mode.pixel_h != 0) {
+            new_mode = SDL_GetClosestFullscreenDisplayMode(displayID, window->requested_fullscreen_mode.pixel_w, window->requested_fullscreen_mode.pixel_h, window->requested_fullscreen_mode.refresh_rate);
         }
 
         if (new_mode) {
