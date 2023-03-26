@@ -145,7 +145,7 @@ static void process_shader(GLenum *shader, const char *source, GLenum shader_typ
 
     /* Dump debug info (source and log) if compilation failed. */
     if (status != GL_TRUE) {
-        ctx.glGetProgramInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
+        ctx.glGetShaderInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
         buffer[length] = '\0';
         SDL_Log("Shader compilation failed: %s", buffer);
         quit(-1);
