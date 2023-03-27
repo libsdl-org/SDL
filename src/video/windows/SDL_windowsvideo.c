@@ -208,7 +208,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->shape_driver.SetWindowShape = Win32_SetWindowShape;
 #endif
 
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     device->GL_LoadLibrary = WIN_GL_LoadLibrary;
     device->GL_GetProcAddress = WIN_GL_GetProcAddress;
     device->GL_UnloadLibrary = WIN_GL_UnloadLibrary;
@@ -221,7 +221,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->GL_GetEGLSurface = NULL;
 #endif
 #ifdef SDL_VIDEO_OPENGL_EGL
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
 #endif
         /* Use EGL based functions */
@@ -235,7 +235,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
         device->GL_SwapWindow = WIN_GLES_SwapWindow;
         device->GL_DeleteContext = WIN_GLES_DeleteContext;
         device->GL_GetEGLSurface = WIN_GLES_GetEGLSurface;
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     }
 #endif
 #endif
