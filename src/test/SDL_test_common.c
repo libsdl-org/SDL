@@ -47,7 +47,7 @@ static const char *video_usage[] = {
 
 /* !!! FIXME: Float32? Sint32? */
 static const char *audio_usage[] = {
-    "[--rate N]", "[--format U8|S8|S16|S16LE|S16BE]",
+    "[--audio driver]", "[--rate N]", "[--format U8|S8|S16|S16LE|S16BE]",
     "[--channels N]", "[--samples N]"
 };
 
@@ -192,6 +192,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
                 return -1;
             }
             state->videodriver = argv[index];
+            SDL_SetHint(SDL_HINT_VIDEO_DRIVER, state->videodriver);
             return 2;
         }
         if (SDL_strcasecmp(argv[index], "--renderer") == 0) {
@@ -200,6 +201,8 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
                 return -1;
             }
             state->renderdriver = argv[index];
+            SDL_SetHint(SDL_HINT_RENDER_DRIVER, state->renderdriver);
+            SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
             return 2;
         }
         if (SDL_strcasecmp(argv[index], "--gldebug") == 0) {
@@ -558,6 +561,15 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
     }
 
     if (state->flags & SDL_INIT_AUDIO) {
+        if (SDL_strcasecmp(argv[index], "--audio") == 0) {
+            ++index;
+            if (!argv[index]) {
+                return -1;
+            }
+            state->audiodriver = argv[index];
+            SDL_SetHint(SDL_HINT_AUDIO_DRIVER, state->audiodriver);
+            return 2;
+        }
         if (SDL_strcasecmp(argv[index], "--rate") == 0) {
             ++index;
             if (!argv[index]) {
@@ -1112,7 +1124,6 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Log("%s\n", text);
             }
         }
-        SDL_SetHint(SDL_HINT_VIDEO_DRIVER, state->videodriver);
         if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
             SDL_Log("Couldn't initialize video driver: %s\n",
                     SDL_GetError());
@@ -1396,7 +1407,6 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Log("%s\n", text);
             }
         }
-        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, state->audiodriver);
         if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
             SDL_Log("Couldn't initialize audio driver: %s\n",
                     SDL_GetError());
