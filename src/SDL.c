@@ -620,7 +620,7 @@ SDL_GetPlatform(void)
 SDL_bool
 SDL_IsTablet(void)
 {
-#if __ANDROID__
+#if defined(__ANDROID__)
     extern SDL_bool SDL_IsAndroidTablet(void);
     return SDL_IsAndroidTablet();
 #elif __IOS__
