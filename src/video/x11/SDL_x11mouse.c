@@ -328,7 +328,7 @@ static void X11_WarpMouseInternal(Window xwindow, float x, float y)
 {
     SDL_VideoData *videodata = SDL_GetVideoDevice()->driverdata;
     Display *display = videodata->display;
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     int deviceid = 0;
     /* It seems XIWarpPointer() doesn't work correctly on multi-head setups:
      * https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
@@ -370,7 +370,7 @@ static int X11_WarpMouseGlobal(float x, float y)
 
 static int X11_SetRelativeMouseMode(SDL_bool enabled)
 {
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     if (X11_Xinput2IsInitialized()) {
         return 0;
     }
@@ -413,7 +413,7 @@ static Uint32 X11_GetGlobalMouseState(float *x, float *y)
 
     /* !!! FIXME: should we XSync() here first? */
 
-#if !SDL_VIDEO_DRIVER_X11_XINPUT2
+#if !defined(SDL_VIDEO_DRIVER_X11_XINPUT2)
     videodata->global_mouse_changed = SDL_TRUE;
 #else
     if (!SDL_X11_HAVE_XINPUT2)
