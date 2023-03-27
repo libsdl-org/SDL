@@ -408,6 +408,7 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 static void dynapi_warn(const char *msg)
 {
     const char *caption = "SDL Dynamic API Failure!";
+    (void)caption;
 /* SDL_ShowSimpleMessageBox() is a too heavy for here. */
 #if (defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
