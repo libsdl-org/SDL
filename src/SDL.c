@@ -218,7 +218,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the timer subsystem */
     if (flags & SDL_INIT_TIMER) {
-#if !defined(SDL_TIMERS_DISABLED) && !SDL_TIMER_DUMMY
+#if !defined(SDL_TIMERS_DISABLED) && !defined(SDL_TIMER_DUMMY)
         if (SDL_ShouldInitSubsystem(SDL_INIT_TIMER)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_TIMER);
             if (SDL_InitTimers() < 0) {
@@ -429,7 +429,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !defined(SDL_TIMERS_DISABLED) && !SDL_TIMER_DUMMY
+#if !defined(SDL_TIMERS_DISABLED) && !defined(SDL_TIMER_DUMMY)
     if (flags & SDL_INIT_TIMER) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_TIMER)) {
             SDL_QuitTimers();
