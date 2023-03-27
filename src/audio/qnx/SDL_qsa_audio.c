@@ -343,18 +343,6 @@ QSA_OpenDevice(_THIS, const char *devname)
                 found = 1;
             }
             break;
-        case AUDIO_U16LSB:
-            {
-                format = SND_PCM_SFMT_U16_LE;
-                found = 1;
-            }
-            break;
-        case AUDIO_U16MSB:
-            {
-                format = SND_PCM_SFMT_U16_BE;
-                found = 1;
-            }
-            break;
         case AUDIO_S32LSB:
             {
                 format = SND_PCM_SFMT_S32_LE;
