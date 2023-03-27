@@ -30,6 +30,18 @@
 #include "SDL_internal.h"
 #include "../../thread/SDL_systhread.h"
 
+#ifdef calloc
+#undef calloc
+#endif
+#define calloc	SDL_calloc
+#ifdef malloc
+#undef malloc
+#endif
+#define malloc	SDL_malloc
+#ifdef free
+#undef free
+#endif
+#define free	SDL_free
 #ifdef realloc
 #undef realloc
 #endif
