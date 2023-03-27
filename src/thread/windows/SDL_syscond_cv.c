@@ -56,7 +56,7 @@ typedef struct CONDITION_VARIABLE
 } CONDITION_VARIABLE, *PCONDITION_VARIABLE;
 #endif
 
-#if __WINRT__
+#ifdef __WINRT__
 #define pWakeConditionVariable     WakeConditionVariable
 #define pWakeAllConditionVariable  WakeAllConditionVariable
 #define pSleepConditionVariableSRW SleepConditionVariableSRW
@@ -224,7 +224,7 @@ SDL_CreateCond(void)
             SDL_assert(SDL_mutex_impl_active.Type != SDL_MUTEX_INVALID);
         }
 
-#if __WINRT__
+#ifdef __WINRT__
         /* Link statically on this platform */
         impl = &SDL_cond_impl_cv;
 #else
