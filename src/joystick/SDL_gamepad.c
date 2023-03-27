@@ -1135,7 +1135,7 @@ static char *SDL_PrivateGetGamepadGUIDFromMappingString(const char *pMapping)
             SDL_memcpy(&pchGUID[8], &pchGUID[0], 4);
             SDL_memcpy(&pchGUID[0], "03000000", 8);
         }
-#elif __MACOS__
+#elif defined(__MACOS__)
         if (SDL_strlen(pchGUID) == 32 &&
             SDL_memcmp(&pchGUID[4], "000000000000", 12) == 0 &&
             SDL_memcmp(&pchGUID[20], "000000000000", 12) == 0) {
