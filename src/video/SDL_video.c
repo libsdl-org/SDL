@@ -2081,7 +2081,6 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
         if (_this->DestroyWindowFramebuffer) {
             _this->DestroyWindowFramebuffer(_this, window);
         }
-        _this->checked_texture_framebuffer = SDL_FALSE;
     }
 
     if ((window->flags & SDL_WINDOW_OPENGL) != (flags & SDL_WINDOW_OPENGL)) {
