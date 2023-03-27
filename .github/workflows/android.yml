@@ -40,6 +40,8 @@ jobs:
             -Wdeprecated -Wdev -Werror \
             -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
             -DSDL_WERROR=ON \
+            -DSDL_TESTS=ON \
+            -DSDL_INSTALL_TESTS=ON \
             -DSDL_CLANG_TIDY=ON \
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
