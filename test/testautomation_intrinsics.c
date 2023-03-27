@@ -216,7 +216,7 @@ SDL_TARGETING("sse") static void kernel_floats_add_sse(float *dest, const float 
 }
 #endif
 
-#if SDL_SSE2_INTRINSICS
+#if defined(SDL_SSE2_INTRINSICS)
 SDL_TARGETING("sse2") static void kernel_doubles_add_sse2(double *dest, const double *a, const double *b, size_t size) {
     for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
         _mm_storeu_pd(dest, _mm_add_pd(_mm_loadu_pd(a), _mm_loadu_pd(b)));
@@ -420,7 +420,7 @@ static int intrinsics_testSSE2(void *arg)
 {
     if (SDL_HasSSE2()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE2 support.");
-#if SDL_SSE2_INTRINSICS
+#if defined(SDL_SSE2_INTRINSICS)
         {
             size_t size;
             double *dest, *a, *b;

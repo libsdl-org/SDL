@@ -23,9 +23,9 @@
 #include "SDL_audio_c.h"
 #include "SDL_audiocvt_c.h"
 
-#if defined(__x86_64__) && SDL_SSE2_INTRINSICS
+#if defined(__x86_64__) && defined(SDL_SSE2_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* x86_64 guarantees SSE2. */
-#elif defined(__MACOS__) && SDL_SSE2_INTRINSICS
+#elif defined(__MACOS__) && defined(SDL_SSE2_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* macOS/Intel guarantees SSE2. */
 #elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && defined(SDL_NEON_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* ARMv8+ promise NEON. */
@@ -224,7 +224,7 @@ static void SDLCALL SDL_Convert_F32_to_S32_Scalar(SDL_AudioCVT *cvt, SDL_AudioFo
 }
 #endif
 
-#if SDL_SSE2_INTRINSICS
+#if defined(SDL_SSE2_INTRINSICS)
 static void SDLCALL SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
     const Sint8 *src = ((const Sint8 *)(cvt->buf + cvt->len_cvt)) - 1;
@@ -1173,7 +1173,7 @@ void SDL_ChooseAudioConverters(void)
     SDL_Convert_F32_to_S32 = SDL_Convert_F32_to_S32_##fntype; \
     converters_chosen = SDL_TRUE
 
-#if SDL_SSE2_INTRINSICS
+#if defined(SDL_SSE2_INTRINSICS)
     if (SDL_HasSSE2()) {
         SET_CONVERTER_FUNCS(SSE2);
         return;
