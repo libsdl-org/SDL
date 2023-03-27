@@ -590,7 +590,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #include "windows/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx              1
-#elif __ANDROID__
+#elif defined(__ANDROID__)
 /* The implementation for Android is in a separate .cpp file */
 #include "hidapi/hidapi.h"
 #define HAVE_PLATFORM_BACKEND 1
