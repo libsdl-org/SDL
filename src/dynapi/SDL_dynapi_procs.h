@@ -29,7 +29,7 @@
 */
 
 /* direct jump magic can use these, the rest needs special code. */
-#if !SDL_DYNAPI_PROC_NO_VARARGS
+#ifndef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_PROC(void,SDL_Log,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a),)
 SDL_DYNAPI_PROC(void,SDL_LogCritical,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
 SDL_DYNAPI_PROC(void,SDL_LogDebug,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
