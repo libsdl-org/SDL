@@ -559,7 +559,7 @@ HIDAPI_ShutdownDiscovery()
 #undef HIDAPI_H__
 #if __LINUX__
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
 static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
 #define udev_device_get_sysattr_value                 udev_ctx->udev_device_get_sysattr_value

@@ -124,7 +124,7 @@ static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item);
 static int SDL_EVDEV_device_removed(const char *dev_path);
 
 static int SDL_EVDEV_device_added(const char *dev_path, int udev_class);
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
 static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_class, const char *dev_path);
 #endif /* SDL_USE_LIBUDEV */
 
@@ -153,7 +153,7 @@ int SDL_EVDEV_Init(void)
             return SDL_OutOfMemory();
         }
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
         if (SDL_UDEV_Init() < 0) {
             SDL_free(_this);
             _this = NULL;
@@ -216,7 +216,7 @@ void SDL_EVDEV_Quit(void)
     _this->ref_count -= 1;
 
     if (_this->ref_count < 1) {
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
         SDL_UDEV_DelCallback(SDL_EVDEV_udev_callback);
         SDL_UDEV_Quit();
 #endif /* SDL_USE_LIBUDEV */
@@ -237,7 +237,7 @@ void SDL_EVDEV_Quit(void)
     }
 }
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
 static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_class,
                                     const char *dev_path)
 {
@@ -280,7 +280,7 @@ void SDL_EVDEV_Poll(void)
         return;
     }
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
     SDL_UDEV_Poll();
 #endif
 
