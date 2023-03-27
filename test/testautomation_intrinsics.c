@@ -238,7 +238,7 @@ SDL_TARGETING("sse3") static void kernel_ints_add_sse3(Sint32 *dest, const Sint3
 }
 #endif
 
-#if SDL_SSE4_1_INTRINSICS
+#if defined(SDL_SSE4_1_INTRINSICS)
 SDL_TARGETING("sse4.1") static void kernel_ints_mul_sse4_1(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
         _mm_storeu_si128((__m128i*)dest, _mm_mullo_epi32(_mm_lddqu_si128((__m128i*)a), _mm_lddqu_si128((__m128i*)b)));
@@ -476,7 +476,7 @@ static int intrinsics_testSSE4_1(void *arg)
 {
     if (SDL_HasSSE41()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.1 support.");
-#if SDL_SSE4_1_INTRINSICS
+#if defined(SDL_SSE4_1_INTRINSICS)
         {
             size_t size;
             Sint32 *dest, *a, *b;
