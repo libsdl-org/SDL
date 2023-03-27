@@ -404,6 +404,12 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         ctx->effects_supported = SDL_FALSE;
     }
 
+    if (device->vendor_id == USB_VENDOR_SONY &&
+        device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
+        /* The Armor-X Pro seems to only deliver half the acceleration it should */
+        ctx->accel_numerator *= 2;
+    }
+
     device->joystick_type = joystick_type;
     device->type = SDL_GAMEPAD_TYPE_PS4;
     if (ctx->official_controller) {
