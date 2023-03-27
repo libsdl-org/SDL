@@ -124,7 +124,7 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_NGAGE
     &NGAGE_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_DUMMY
+#ifdef SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,
 #if SDL_INPUT_LINUXEV
     &DUMMY_evdev_bootstrap,
