@@ -280,7 +280,7 @@ SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) 
 }
 #endif
 
-#if SDL_AVX_INTRINSICS
+#if defined(SDL_AVX_INTRINSICS)
 SDL_TARGETING("avx") static void kernel_floats_add_avx(float *dest, const float *a, const float *b, size_t size) {
     for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
         _mm256_storeu_ps(dest, _mm256_add_ps(_mm256_loadu_ps(a), _mm256_loadu_ps(b)));
@@ -539,7 +539,7 @@ static int intrinsics_testAVX(void *arg)
 {
     if (SDL_HasAVX()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX support.");
-#if SDL_AVX_INTRINSICS
+#if defined(SDL_AVX_INTRINSICS)
         {
             size_t size;
             float *dest, *a, *b;
