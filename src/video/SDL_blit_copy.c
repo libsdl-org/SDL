@@ -50,7 +50,7 @@ static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint
 }
 #endif /* SDL_SSE_INTRINSICS */
 
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
 #ifdef _MSC_VER
 #pragma warning(disable : 4799)
 #endif
@@ -149,7 +149,7 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
     }
 #endif
 
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
     if (SDL_HasMMX() && !(srcskip & 7) && !(dstskip & 7)) {
         SDL_BlitCopyMMX(dst, src, dstskip, srcskip, w, h);
         return;

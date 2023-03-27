@@ -166,7 +166,7 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
     }
 }
 
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
 
 /* fast RGB888->(A)RGB888 blending with surface alpha=128 special case */
 static void SDL_TARGETING("mmx") BlitRGBtoRGBSurfaceAlpha128MMX(SDL_BlitInfo *info)
@@ -750,7 +750,7 @@ static void Blit16to16SurfaceAlpha128(SDL_BlitInfo *info, Uint16 mask)
     }
 }
 
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
 
 /* fast RGB565->RGB565 blending with surface alpha */
 static void SDL_TARGETING("mmx") Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
@@ -1360,7 +1360,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
 
         case 4:
             if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
                 if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && sf->Ashift % 8 == 0 && sf->Aloss == 0) {
                     if (SDL_HasMMX()) {
                         return BlitRGBtoRGBPixelAlphaMMX;
@@ -1408,7 +1408,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
             case 2:
                 if (surface->map->identity) {
                     if (df->Gmask == 0x7e0) {
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
                         if (SDL_HasMMX()) {
                             return Blit565to565SurfaceAlphaMMX;
                         } else
@@ -1417,7 +1417,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
                             return Blit565to565SurfaceAlpha;
                         }
                     } else if (df->Gmask == 0x3e0) {
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
                         if (SDL_HasMMX()) {
                             return Blit555to555SurfaceAlphaMMX;
                         } else
@@ -1431,7 +1431,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
 
             case 4:
                 if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
                     if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && SDL_HasMMX()) {
                         return BlitRGBtoRGBSurfaceAlphaMMX;
                     }

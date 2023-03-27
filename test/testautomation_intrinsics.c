@@ -193,7 +193,7 @@ static void kernel_doubles_add_cpu(double *dest, const double *a, const double *
     }
 }
 
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
 SDL_TARGETING("mmx") static void kernel_ints_add_mmx(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
     for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
         *(__m64*)dest = _mm_add_pi32(*(__m64*)a, *(__m64*)b);
@@ -364,7 +364,7 @@ static int intrinsics_testMMX(void *arg)
 {
     if (SDL_HasMMX()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has MMX support.");
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
         {
             size_t size;
             Sint32 *dest, *a, *b;
