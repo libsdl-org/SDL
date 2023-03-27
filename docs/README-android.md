@@ -485,3 +485,79 @@ Known issues
 - The number of buttons reported for each joystick is hardcoded to be 36, which
 is the current maximum number of buttons Android can report.
 
+Building the SDL tests
+================================================================================
+
+SDL's CMake build system can create APK's for the tests.
+It can build all tests with a single command without a dependency on gradle or Android Studio.
+The APK's are signed with a debug certificate.
+The only caveat is that the APK's support a single architecture. 
+
+### Requirements
+- SDL source tree
+- CMake
+- ninja or make
+- Android Platform SDK
+- Android NDK
+- Android Build tools
+- Java JDK (version should be compatible with Android)
+- keytool (usually provided with the Java JDK), used for generating a debug certificate
+- zip
+
+### CMake configuration
+
+When configuring the CMake project, you need to use the Android NDK CMake toolchain, and pass the Android home path through `SDL_ANDROID_HOME`.
+```
+cmake .. -DCMAKE_TOOLCHAIN_FILE=<path/to/android.toolchain.cmake> -DANDROID_ABI=<android-abi> -DSDL_ANDROID_HOME=<path-to-android-sdk-home> -DANDROID_PLATFORM=23 -DSDL_TESTS=ON
+```
+
+Remarks:
+- `android.toolchain.cmake` can usually be found at `$ANDROID_HOME/ndk/x.y.z/build/cmake/android.toolchain.cmake`
+- `ANDROID_ABI` should be one of `arm64-v8a`, `armeabi-v7a`, `x86` or `x86_64`.
+- When CMake is unable to find required paths, use `cmake-gui` to override required `SDL_ANDROID_` CMake cache variables.
+
+### Building the APK's
+
+For the `testsprite` executable, the `testsprite-apk` target will build the associated APK:
+```
+cmake --build . --target testsprite-apk
+```
+
+APK's of all tests can be built with the `sdl-test-apks` target:
+```
+cmake --build . --target sdl-test-apks
+```
+
+### Installation/removal of the tests
+
+`testsprite.apk` APK can be installed on your Android machine using the `install-testsprite` target:
+```
+cmake --build . --target install-testsprite
+```
+
+APK's of all tests can be installed with the `install-sdl-test-apks` target:
+```
+cmake --build . --target install-sdl-test-apks
+```
+
+All SDL tests can be uninstalled with the `uninstall-sdl-test-apks` target:
+```
+cmake --build . --target uninstall-sdl-test-apks
+```
+
+### Starting the tests
+
+After installation, the tests can be started using the Android Launcher GUI.
+Alternatively, they can also be started using CMake targets.
+
+This command will start the testsprite executable:
+```
+cmake --build . --target start-testsprite
+```
+
+There is also a convenience target which will build, install and start a test:
+```
+cmake --build . --target build-install-start-testsprite
+```
+
+Not all tests provide a GUI. For those, you can use `adb logcat` to read the output of stdout.  

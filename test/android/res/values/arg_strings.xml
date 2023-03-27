@@ -1,0 +1,7 @@
+<resources>
+    <string name="label_enter_arguments">Arguments</string>
+    <string name="hint_enter_arguments_here">One argument per line.\ne.g.\n--track-mem\n--windows\n3</string>
+    <string name="button_start_app">Start</string>
+    <string name="shortcutModifyArgumentsShortLabel">Modify arguments</string>
+    <string name="shortcutIntermediateActivityShortLabel">Pass through activity</string>
+</resources>
