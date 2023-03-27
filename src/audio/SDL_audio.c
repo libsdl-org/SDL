@@ -46,7 +46,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_NETBSD
     &NETBSDAUDIO_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_WASAPI
+#ifdef SDL_AUDIO_DRIVER_WASAPI
     &WASAPI_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_DSOUND
