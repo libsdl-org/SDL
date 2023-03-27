@@ -31,7 +31,7 @@
 
 #include "SDL_hidapi_c.h"
 
-#if !SDL_HIDAPI_DISABLED
+#ifndef SDL_HIDAPI_DISABLED
 
 #if defined(__WIN32__) || defined(__WINGDK__)
 #include "../core/windows/SDL_windows.h"
@@ -985,7 +985,7 @@ DeleteHIDDeviceWrapper(SDL_hid_device *device)
         return retval;                               \
     }
 
-#if !SDL_HIDAPI_DISABLED
+#ifndef SDL_HIDAPI_DISABLED
 #if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
 
 #define COPY_IF_EXISTS(var)                \
@@ -1165,7 +1165,7 @@ int SDL_hid_exit(void)
     }
     SDL_hidapi_refcount = 0;
 
-#if !SDL_HIDAPI_DISABLED
+#ifndef SDL_HIDAPI_DISABLED
     HIDAPI_ShutdownDiscovery();
 #endif
 
@@ -1195,7 +1195,7 @@ Uint32 SDL_hid_device_change_count(void)
 {
     Uint32 counter = 0;
 
-#if !SDL_HIDAPI_DISABLED
+#ifndef SDL_HIDAPI_DISABLED
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return 0;
     }
@@ -1585,7 +1585,7 @@ int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t
 
 void SDL_hid_ble_scan(SDL_bool active)
 {
-#if !SDL_HIDAPI_DISABLED && (defined(__IOS__) || __TVOS__)
+#if !defined(SDL_HIDAPI_DISABLED) && (defined(__IOS__) || __TVOS__)
     hid_ble_scan(active);
 #endif
 }
