@@ -106,7 +106,7 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_KMSDRM
     &KMSDRM_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_RISCOS
+#ifdef SDL_VIDEO_DRIVER_RISCOS
     &RISCOS_bootstrap,
 #endif
 #ifdef SDL_VIDEO_DRIVER_RPI
@@ -4795,7 +4795,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_RISCOS
+#ifdef SDL_VIDEO_DRIVER_RISCOS
     if (retval == -1 &&
         SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_RISCOS) &&
         RISCOS_ShowMessageBox(messageboxdata, buttonid) == 0) {
