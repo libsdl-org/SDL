@@ -28,7 +28,7 @@
 #ifndef SDL_JOYSTICK_DISABLED
 #include "../joystick/SDL_joystick_c.h"
 #endif
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
 #include "../sensor/SDL_sensor_c.h"
 #endif
 #include "../video/SDL_sysvideo.h"
@@ -109,7 +109,7 @@ static void SDLCALL SDL_AutoUpdateJoysticksChanged(void *userdata, const char *n
 
 #endif /* !SDL_JOYSTICK_DISABLED */
 
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
 
 static SDL_bool SDL_update_sensors = SDL_TRUE;
 
@@ -859,7 +859,7 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
     }
 #endif
 
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     /* Check for sensor state change */
     if (SDL_update_sensors) {
         SDL_UpdateSensors();
@@ -980,7 +980,7 @@ static SDL_bool SDL_events_need_polling(void)
     need_polling = SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks && SDL_JoysticksOpened();
 #endif
 
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     need_polling = need_polling ||
                    (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && SDL_SensorsOpened());
 #endif
@@ -1358,7 +1358,7 @@ int SDL_InitEvents(void)
 #ifndef SDL_JOYSTICK_DISABLED
     SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
 #endif
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
 #endif
     SDL_AddHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
@@ -1382,7 +1382,7 @@ void SDL_QuitEvents(void)
 #ifndef SDL_JOYSTICK_DISABLED
     SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
 #endif
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
 #endif
 }

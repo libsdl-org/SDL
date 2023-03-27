@@ -331,7 +331,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the sensor subsystem */
     if (flags & SDL_INIT_SENSOR) {
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_SENSOR)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_SENSOR);
             if (SDL_InitSensors() < 0) {
@@ -365,7 +365,7 @@ int SDL_Init(Uint32 flags)
 void SDL_QuitSubSystem(Uint32 flags)
 {
     /* Shut down requested initialized subsystems */
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     if (flags & SDL_INIT_SENSOR) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_SENSOR)) {
             SDL_QuitSensors();
