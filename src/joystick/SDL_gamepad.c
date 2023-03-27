@@ -3130,6 +3130,7 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
     return posted;
 }
 
+#ifndef SDL_EVENTS_DISABLED
 static const Uint32 SDL_gamepad_event_list[] = {
     SDL_EVENT_GAMEPAD_AXIS_MOTION,
     SDL_EVENT_GAMEPAD_BUTTON_DOWN,
@@ -3142,6 +3143,7 @@ static const Uint32 SDL_gamepad_event_list[] = {
     SDL_EVENT_GAMEPAD_TOUCHPAD_UP,
     SDL_EVENT_GAMEPAD_SENSOR_UPDATE,
 };
+#endif
 
 void SDL_SetGamepadEventsEnabled(SDL_bool enabled)
 {

@@ -1705,6 +1705,7 @@ void SDL_UpdateJoysticks(void)
     SDL_UnlockJoysticks();
 }
 
+#ifndef SDL_EVENTS_DISABLED
 static const Uint32 SDL_joystick_event_list[] = {
     SDL_EVENT_JOYSTICK_AXIS_MOTION,
     SDL_EVENT_JOYSTICK_HAT_MOTION,
@@ -1714,6 +1715,7 @@ static const Uint32 SDL_joystick_event_list[] = {
     SDL_EVENT_JOYSTICK_REMOVED,
     SDL_EVENT_JOYSTICK_BATTERY_UPDATED
 };
+#endif
 
 void SDL_SetJoystickEventsEnabled(SDL_bool enabled)
 {
