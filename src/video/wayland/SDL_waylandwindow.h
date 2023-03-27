@@ -85,7 +85,7 @@ struct SDL_WindowData
 
     struct wl_egl_window *egl_window;
     struct SDL_WaylandInput *keyboard_device;
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
     struct zwp_locked_pointer_v1 *locked_pointer;

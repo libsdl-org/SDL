@@ -3622,7 +3622,7 @@ SDL_FunctionPointer SDL_GL_GetProcAddress(const char *proc)
 
 SDL_FunctionPointer SDL_EGL_GetProcAddress(const char *proc)
 {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     SDL_FunctionPointer func;
 
     if (!_this) {
@@ -4314,7 +4314,7 @@ SDL_GLContext SDL_GL_GetCurrentContext(void)
 
 SDL_EGLDisplay SDL_EGL_GetCurrentEGLDisplay(void)
 {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     if (!_this) {
         SDL_UninitializedVideo();
         return EGL_NO_DISPLAY;
@@ -4332,7 +4332,7 @@ SDL_EGLDisplay SDL_EGL_GetCurrentEGLDisplay(void)
 
 SDL_EGLConfig SDL_EGL_GetCurrentEGLConfig(void)
 {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     if (!_this) {
         SDL_UninitializedVideo();
         return NULL;
@@ -4350,7 +4350,7 @@ SDL_EGLConfig SDL_EGL_GetCurrentEGLConfig(void)
 
 SDL_EGLConfig SDL_EGL_GetWindowEGLSurface(SDL_Window *window)
 {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     if (!_this) {
         SDL_UninitializedVideo();
         return NULL;

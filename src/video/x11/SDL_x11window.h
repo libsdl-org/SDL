@@ -29,7 +29,7 @@
 */
 #define PENDING_FOCUS_TIME 200
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 #include <EGL/egl.h>
 #endif
 
@@ -71,7 +71,7 @@ struct SDL_WindowData
     SDL_bool flashing_window;
     Uint64 flash_cancel_time;
     SDL_Window *keyboard_focus;
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES

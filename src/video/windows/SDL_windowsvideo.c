@@ -220,7 +220,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->GL_DeleteContext = WIN_GL_DeleteContext;
     device->GL_GetEGLSurface = NULL;
 #endif
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 #if SDL_VIDEO_OPENGL_WGL
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
 #endif

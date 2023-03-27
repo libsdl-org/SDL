@@ -34,7 +34,7 @@
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
 #endif
 
@@ -450,7 +450,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     int win_x, win_y;
     SDL_bool undefined_position = SDL_FALSE;
 
-#if defined(SDL_VIDEO_OPENGL_GLX) || SDL_VIDEO_OPENGL_EGL
+#if defined(SDL_VIDEO_OPENGL_GLX) || defined(SDL_VIDEO_OPENGL_EGL)
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
 
     if (forced_visual_id != NULL && forced_visual_id[0] != '\0') {
@@ -471,7 +471,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
                !SDL_getenv("SDL_VIDEO_X11_VISUALID")) {
         XVisualInfo *vinfo = NULL;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         if (((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
              SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE))
 #ifdef SDL_VIDEO_OPENGL_GLX
@@ -715,7 +715,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         && (!_this->gl_data || X11_GL_UseEGL(_this))
 #endif
     ) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         if (!_this->egl_data) {
             return -1;
         }

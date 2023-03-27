@@ -135,7 +135,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->GL_DeleteContext = Cocoa_GL_DeleteContext;
         device->GL_GetEGLSurface = NULL;
 #endif
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 #if SDL_VIDEO_OPENGL_CGL
         if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
 #endif
