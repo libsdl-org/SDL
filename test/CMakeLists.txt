@@ -460,3 +460,138 @@ if(SDL_INSTALL_TESTS)
         DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
     )
 endif()
+
+if(ANDROID AND TARGET SDL3-jar)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake/android")
+    find_package(SdlAndroid MODULE)
+    if(SdlAndroid_FOUND)
+        set(apks "")
+        set(packages "")
+
+        include(SdlAndroidFunctions)
+        sdl_create_android_debug_keystore(SDL_test-debug-keystore)
+        sdl_android_compile_resources(SDL_test-resources RESFOLDER android/res)
+        add_custom_target(sdl-test-apks)
+        foreach(TEST ${SDL_TEST_EXECUTABLES})
+            set(ANDROID_MANIFEST_APP_NAME "${TEST}")
+            set(ANDROID_MANIFEST_LABEL "${TEST}")
+            set(ANDROID_MANIFEST_LIB_NAME "$<TARGET_FILE_BASE_NAME:${TEST}>")
+            set(ANDROID_MANIFEST_PACKAGE "org.libsdl.sdl.test.${TEST}")
+            set(generated_manifest_path "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-src/AndroidManifest.xml")
+            string(REPLACE "." "/" JAVA_PACKAGE_DIR "${ANDROID_MANIFEST_PACKAGE}")
+            set(GENERATED_SRC_FOLDER "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-src")
+            set(GENERATED_RES_FOLDER "${GENERATED_SRC_FOLDER}/res")
+            set(JAVA_PACKAGE_DIR "${GENERATED_SRC_FOLDER}/${JAVA_PACKAGE_DIR}")
+            configure_file(android/cmake/SDLEntryTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java" @ONLY)
+            configure_file(android/cmake/SDLTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" @ONLY)
+            configure_file(android/cmake/res/values/strings.xml.cmake android/res/values/strings-${TEST}.xml @ONLY)
+            configure_file(android/cmake/res/xml/shortcuts.xml.cmake "${GENERATED_RES_FOLDER}/xml/shortcuts.xml" @ONLY)
+            configure_file(android/cmake/AndroidManifest.xml.cmake "${generated_manifest_path}" @ONLY)
+            file(GENERATE
+                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-$<CONFIG>/res/values/strings.xml"
+                INPUT "${CMAKE_CURRENT_BINARY_DIR}/android/res/values/strings-${TEST}.xml"
+            )
+
+            sdl_android_compile_resources(${TEST}-resources
+                RESOURCES
+                    "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-$<CONFIG>/res/values/strings.xml"
+                    "${GENERATED_RES_FOLDER}/xml/shortcuts.xml"
+            )
+
+            sdl_android_link_resources(${TEST}-apk-linked
+                MANIFEST "${generated_manifest_path}"
+                PACKAGE ${ANDROID_MANIFEST_PACKAGE}
+                RES_TARGETS SDL_test-resources ${TEST}-resources
+                TARGET_SDK_VERSION 31
+            )
+
+            set(CMAKE_JAVA_COMPILE_FLAGS "-encoding;utf-8")
+            set(classes_path "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${TEST}-java.dir/classes")
+            # Some CMake versions have a slow `cmake -E make_directory` implementation
+            if(NOT IS_DIRECTORY "${classes_path}")
+                execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${classes_path}")
+            endif()
+            set(OUT_JAR "${CMAKE_CURRENT_BINARY_DIR}/${TEST}.jar")
+            add_custom_command(
+                OUTPUT "${OUT_JAR}"
+                COMMAND ${CMAKE_COMMAND} -E rm -rf "${classes_path}"
+                COMMAND ${CMAKE_COMMAND} -E make_directory "${classes_path}"
+                COMMAND ${Java_JAVAC_EXECUTABLE}
+                    -source 1.8 -target 1.8
+                    -bootclasspath "$<TARGET_PROPERTY:SDL3-jar,OUTPUT>"
+                    "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
+                    "${JAVA_PACKAGE_DIR}/SDLTestActivity.java"
+                    $<TARGET_PROPERTY:${TEST}-apk-linked,JAVA_R>
+                    -cp "$<TARGET_PROPERTY:SDL3-jar,OUTPUT>:${path_android_jar}"
+                    -d "${classes_path}"
+                COMMAND ${Java_JAR_EXECUTABLE} cf "${OUT_JAR}" -C "${classes_path}" .
+                DEPENDS $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3-jar,OUTPUT>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
+            )
+            add_custom_target(${TEST}-jar DEPENDS "${OUT_JAR}")
+            set_property(TARGET ${TEST}-jar PROPERTY OUTPUT "${OUT_JAR}")
+
+            set(dexworkdir "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${TEST}-dex.dir")
+            # Some CMake versions have a slow `cmake -E make_directory` implementation
+            if(NOT IS_DIRECTORY "${dexworkdir}")
+                execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${dexworkdir}")
+            endif()
+            set(classes_dex_base_name "classes.dex")
+            set(classes_dex "${dexworkdir}/${classes_dex_base_name}")
+            add_custom_command(
+                OUTPUT "${classes_dex}"
+                COMMAND SdlAndroid::d8
+                    $<TARGET_PROPERTY:${TEST}-jar,OUTPUT>
+                    $<TARGET_PROPERTY:SDL3-jar,OUTPUT>
+                    --lib "${path_android_jar}"
+                    --output "${dexworkdir}"
+                DEPENDS $<TARGET_PROPERTY:${TEST}-jar,OUTPUT> $<TARGET_PROPERTY:SDL3-jar,OUTPUT>
+            )
+            add_custom_target(${TEST}-dex DEPENDS "${classes_dex}")
+            set_property(TARGET ${TEST}-dex PROPERTY OUTPUT "${classes_dex}")
+            set_property(TARGET ${TEST}-dex PROPERTY OUTPUT_BASE_NAME "${classes_dex_base_name}")
+
+            sdl_add_to_apk_unaligned(${TEST}-unaligned-apk
+                APK_IN ${TEST}-apk-linked
+                OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/intermediates"
+                ASSETS ${RESOURCE_FILES}
+                NATIVE_LIBS SDL3::SDL3-shared ${TEST}
+                DEX ${TEST}-dex
+            )
+
+            sdl_apk_align(${TEST}-aligned-apk ${TEST}-unaligned-apk
+                OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/intermediates"
+            )
+            sdl_apk_sign(${TEST}-apk ${TEST}-aligned-apk
+                KEYSTORE SDL_test-debug-keystore
+            )
+            add_dependencies(sdl-test-apks ${TEST}-apk)
+
+            if(TARGET SdlAndroid::adb)
+                add_custom_target(install-${TEST}
+                    COMMAND "${CMAKE_COMMAND}" -DACTION=install "-DAPKS=$<TARGET_PROPERTY:${TEST}-apk,OUTPUT>" -P "${SDL3_SOURCE_DIR}/cmake/android/SdlAndroidScript.cmake"
+                    DEPENDS "${TEST}-apk"
+                )
+                add_custom_target(start-${TEST}
+                    COMMAND "${ADB_BIN}" shell am start-activity -S "${ANDROID_MANIFEST_PACKAGE}/.SDLTestActivity"
+                )
+                add_custom_target(build-install-start-${TEST}
+                    COMMAND "${CMAKE_COMMAND}" -DACTION=build-install-run "-DEXECUTABLES=${TEST}" "-DBUILD_FOLDER=${CMAKE_BINARY_DIR}" -P "${SDL3_SOURCE_DIR}/cmake/android/SdlAndroidScript.cmake"
+                )
+            endif()
+
+            list(APPEND packages "${ANDROID_MANIFEST_PACKAGE}")
+            list(APPEND install_targets install-${TEST})
+        endforeach()
+
+        if(TARGET SdlAndroid::adb)
+            add_custom_target(install-sdl-test-apks
+                DEPENDS ${install_targets}
+                VERBATIM
+            )
+            add_custom_target(uninstall-sdl-test-apks
+                COMMAND "${CMAKE_COMMAND}" "-DADB=$<TARGET_FILE:SdlAndroid::adb>" -DACTION=uninstall "-DPACKAGES=${packages}" -P "${SDL3_SOURCE_DIR}/cmake/android/SdlAndroidScript.cmake"
+                VERBATIM
+            )
+        endif()
+    endif()
+endif()

@@ -368,8 +368,10 @@ endforeach()
 # Allow some projects to be built conditionally.
 set_option(SDL_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
 cmake_dependent_option(SDL_DISABLE_INSTALL_CPACK "Create binary SDL3 archive using CPack" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL" ON)
-cmake_dependent_option(SDL_DISABLE_INSTALL_MAN "Install man pages for SDL3" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" ON)
+cmake_dependent_option(SDL_DISABLE_INSTALL_DOCS "Install docs for SDL3" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" ON)
 set_option(SDL_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
+
+cmake_dependent_option(SDL_DISABLE_ANDROID_JAR  "Disable creation of SDL3.jar" ${SDL3_SUBPROJECT} "ANDROID" ON)
 
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
 #set_option(SDL_DEPENDENCY_TRACKING "Use gcc -MMD -MT dependency tracking" ON)
@@ -1310,6 +1312,8 @@ endif()
 
 # Platform-specific options and settings
 if(ANDROID)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/android")
+
   file(GLOB ANDROID_CORE_SOURCES ${SDL3_SOURCE_DIR}/src/core/android/*.c)
   list(APPEND SOURCE_FILES ${ANDROID_CORE_SOURCES} ${ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c)
   set_property(SOURCE "${ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-declaration-after-statement")
@@ -1440,6 +1444,50 @@ if(ANDROID)
   CheckPTHREAD()
   if(SDL_CLOCK_GETTIME)
     set(HAVE_CLOCK_GETTIME 1)
+  endif()
+
+  if(NOT SDL_DISABLE_ANDROID_JAR)
+    find_package(Java)
+    find_package(SdlAndroidPlatform MODULE)
+
+    if(Java_FOUND AND SdlAndroidPlatform_FOUND)
+      include(UseJava)
+      set(path_android_jar "${SDL_ANDROID_PLATFORM_ROOT}/android.jar")
+      set(android_java_sources_root "${SDL3_SOURCE_DIR}/android-project/app/src/main/java")
+      file(GLOB SDL_JAVA_SOURCES "${android_java_sources_root}/org/libsdl/app/*.java")
+      set(CMAKE_JAVA_COMPILE_FLAGS "-encoding;utf-8")
+      add_jar(SDL3-jar
+        SOURCES ${SDL_JAVA_SOURCES}
+        INCLUDE_JARS "${path_android_jar}"
+        OUTPUT_NAME "SDL3"
+        VERSION "${SDL3_VERSION}"
+      )
+      set_property(TARGET SDL3-jar PROPERTY OUTPUT "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}.jar")
+      set(javasourcesjar "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-sources.jar")
+      string(REGEX REPLACE "${android_java_sources_root}/" "" sdl_relative_java_sources "${SDL_JAVA_SOURCES}")
+      add_custom_command(
+        OUTPUT "${javasourcesjar}"
+        COMMAND ${Java_JAR_EXECUTABLE} cf "${javasourcesjar}" ${sdl_relative_java_sources}
+        WORKING_DIRECTORY "${android_java_sources_root}"
+        DEPENDS ${SDL_JAVA_SOURCES}
+      )
+      add_custom_target(SDL3-javasources ALL DEPENDS "${javasourcesjar}")
+      if(NOT SDL_DISABLE_INSTALL_DOCS)
+        set(javadocdir "${SDL3_BINARY_DIR}/docs/javadoc")
+        set(javadocjar "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-javadoc.jar")
+        set(javadoc_index_html "${javadocdir}/index.html")
+        add_custom_command(
+          OUTPUT "${javadoc_index_html}"
+          COMMAND ${CMAKE_COMMAND} -E rm -rf "${javadocdir}"
+          COMMAND ${Java_JAVADOC_EXECUTABLE} -encoding utf8 -d "${javadocdir}"
+            -classpath "${path_android_jar}"
+            -author -use -version ${SDL_JAVA_SOURCES}
+          DEPENDS ${SDL_JAVA_SOURCES} "${path_android_jar}"
+        )
+        add_custom_target(SDL3-javadoc ALL DEPENDS "${javadoc_index_html}")
+        set_property(TARGET SDL3-javadoc PROPERTY OUTPUT_DIR "${javadocdir}")
+      endif()
+    endif()
   endif()
 
 elseif(EMSCRIPTEN)
@@ -3695,11 +3743,28 @@ if(NOT SDL_DISABLE_INSTALL)
     include(CPack)
   endif()
 
-  if(NOT SDL_DISABLE_INSTALL_MAN)
+  if(ANDROID)
+    set(SDL_INSTALL_JAVADIR "${CMAKE_INSTALL_DATAROOTDIR}/java" CACHE PATH "Path where to install java clases + java sources")
+    if(TARGET SDL3-jar)
+      install(FILES "${SDL3_BINARY_DIR}/SDL3.jar"  "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}.jar"
+        DESTINATION "${SDL_INSTALL_JAVADIR}/SDL3")
+    endif()
+    if(TARGET SDL3-javasources)
+      install(FILES  "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-sources.jar"
+        DESTINATION "${SDL_INSTALL_JAVADIR}/SDL3")
+    endif()
+  endif()
+
+  if(NOT SDL_DISABLE_INSTALL_DOCS)
     SDL_generate_manpages(
       SYMBOL "SDL_Init"
       WIKIHEADERS_PL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build-scripts/wikiheaders.pl"
     )
+    if(TARGET SDL3-javadoc)
+      set(SDL_INSTALL_JAVADOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/javadoc" CACHE PATH "Path where to install SDL3 javadoc")
+      install(DIRECTORY "${SDL3_BINARY_DIR}/docs/javadoc/"
+        DESTINATION "${SDL_INSTALL_JAVADOCDIR}/SDL3")
+    endif()
   endif()
 endif()
 
