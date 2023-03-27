@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_KMSDRM
+#ifdef SDL_VIDEO_DRIVER_KMSDRM
 
 /* SDL internals */
 #include "../../events/SDL_events_c.h"
