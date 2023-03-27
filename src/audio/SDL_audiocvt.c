@@ -181,7 +181,7 @@ static void SDLCALL SDL_TARGETING("sse3") SDL_ConvertStereoToMono_SSE3(SDL_Audio
 }
 #endif
 
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
 /* Convert from mono to stereo. Duplicate to stereo left and right. */
 static void SDLCALL SDL_TARGETING("sse") SDL_ConvertMonoToStereo_SSE(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
@@ -842,7 +842,7 @@ static int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
             }
         } else if (channel_converter == SDL_ConvertMonoToStereo) {
             SDL_AudioFilter filter = NULL;
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
             if (!filter && SDL_HasSSE()) {
                 filter = SDL_ConvertMonoToStereo_SSE;
             }

@@ -23,7 +23,7 @@
 #include "SDL_blit.h"
 #include "SDL_blit_copy.h"
 
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
 /* This assumes 16-byte aligned src and dst */
 static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint8 *src, int len)
 {
@@ -136,7 +136,7 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
         return;
     }
 
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
     if (SDL_HasSSE() &&
         !((uintptr_t)src & 15) && !(srcskip & 15) &&
         !((uintptr_t)dst & 15) && !(dstskip & 15)) {

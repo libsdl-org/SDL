@@ -205,7 +205,7 @@ SDL_TARGETING("mmx") static void kernel_ints_add_mmx(Sint32 *dest, const Sint32 
 }
 #endif
 
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
 SDL_TARGETING("sse") static void kernel_floats_add_sse(float *dest, const float *a, const float *b, size_t size) {
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
         _mm_storeu_ps(dest, _mm_add_ps(_mm_loadu_ps(a), _mm_loadu_ps (b)));
@@ -392,7 +392,7 @@ static int intrinsics_testSSE(void *arg)
 {
     if (SDL_HasSSE()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE support.");
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
         {
             size_t size;
             float *dest, *a, *b;
