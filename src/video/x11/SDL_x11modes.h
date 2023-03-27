@@ -34,14 +34,14 @@ struct SDL_DisplayData
 
     SDL_bool use_xrandr;
 
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     RROutput xrandr_output;
 #endif
 };
 
 struct SDL_DisplayModeData
 {
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     RRMode xrandr_mode;
 #else
     int unused; /* just so struct isn't empty. */
@@ -61,7 +61,7 @@ extern Uint32 X11_GetPixelFormatFromVisualInfo(Display *display,
 extern int X11_GetDisplayBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 extern int X11_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 extern void X11_HandleXRandREvent(_THIS, const XEvent *xevent);
 #endif
 
