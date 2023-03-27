@@ -738,12 +738,14 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     }
 #endif
 
+#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
     /* Tooltips do not receive input */
-    if ((window->flags & SDL_WINDOW_TOOLTIP) && SDL_X11_HAVE_XSHAPE) {
+    if (window->flags & SDL_WINDOW_TOOLTIP) {
         Region region = X11_XCreateRegion();
         X11_XShapeCombineRegion(display, w, ShapeInput, 0, 0, region, ShapeSet);
         X11_XDestroyRegion(region);
     }
+#endif
 
     X11_Xinput2SelectTouch(_this, window);
 
