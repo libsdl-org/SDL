@@ -11,8 +11,17 @@
   freely.
 */
 
-#include "../src/SDL_internal.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+/* Hack to avoid dynapi renaming */
+#include "../src/dynapi/SDL_dynapi.h"
+#ifdef SDL_DYNAMIC_API
+#undef SDL_DYNAMIC_API
+#endif
+
+#include "../src/SDL_internal.h"
 
 #include <stdio.h>
 #include <string.h>

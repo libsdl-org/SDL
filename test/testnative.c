@@ -11,14 +11,15 @@
 */
 /* Simple program:  Create a native window and attach an SDL renderer */
 
-#include <stdlib.h> /* for srand() */
-#include <time.h>   /* for time() */
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #include "testnative.h"
 #include "testutils.h"
 
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include <stdlib.h> /* for srand() */
+#include <time.h>   /* for time() */
 
 #define WINDOW_W    640
 #define WINDOW_H    480
