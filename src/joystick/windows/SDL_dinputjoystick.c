@@ -22,7 +22,7 @@
 
 #include "../SDL_sysjoystick.h"
 
-#if SDL_JOYSTICK_DINPUT
+#ifdef SDL_JOYSTICK_DINPUT
 
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
