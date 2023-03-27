@@ -179,7 +179,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
     data->global_mouse_changed = SDL_TRUE;
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     data->active_cursor_confined_window = NULL;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
@@ -255,7 +255,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
     device->FlashWindow = X11_FlashWindow;
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     device->SetWindowMouseRect = X11_SetWindowMouseRect;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 

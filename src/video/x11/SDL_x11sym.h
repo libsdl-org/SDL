@@ -158,7 +158,7 @@ SDL_X11_SYM(Status,XmbTextListToTextProperty,(Display* a,char** b,int c,XICCEnco
 SDL_X11_SYM(Region,XCreateRegion,(void),(),return)
 SDL_X11_SYM(void,XDestroyRegion,(Region),(a),)
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 SDL_X11_MODULE(XFIXES)
 SDL_X11_SYM(PointerBarrier, XFixesCreatePointerBarrier, (Display* a, Window b, int c, int d, int e, int f, int g, int h, int *i),(a,b,c,d,e,f,g,h,i),return)
 SDL_X11_SYM(void, XFixesDestroyPointerBarrier, (Display* a, PointerBarrier b), (a,b),)

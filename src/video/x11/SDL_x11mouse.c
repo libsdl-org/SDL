@@ -351,7 +351,7 @@ static int X11_WarpMouse(SDL_Window *window, float x, float y)
 {
     SDL_WindowData *data = window->driverdata;
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     /* If we have no barrier, we need to warp */
     if (data->pointer_barrier_active == SDL_FALSE) {
         X11_WarpMouseInternal(data->xwindow, x, y);
