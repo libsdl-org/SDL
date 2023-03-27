@@ -50,7 +50,7 @@
 #if !SDL_TIMERS_DISABLED
 #include "timer/SDL_timer_c.h"
 #endif
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
 extern int SDL_HelperWindowCreate(void);
 extern int SDL_HelperWindowDestroy(void);
 #endif
@@ -185,7 +185,7 @@ int SDL_InitSubSystem(Uint32 flags)
         flags |= SDL_INIT_EVENTS;
     }
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
     if (flags & (SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK)) {
         if (SDL_HelperWindowCreate() < 0) {
             goto quit_and_error;
@@ -484,7 +484,7 @@ void SDL_Quit(void)
     SDL_bInMainQuit = SDL_TRUE;
 
     /* Quit all subsystems */
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
     SDL_HelperWindowDestroy();
 #endif
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
