@@ -176,7 +176,7 @@ SDL_ThreadID(void)
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#if __RISCOS__
+#if defined(__RISCOS__)
     /* FIXME: Setting thread priority does not seem to be supported */
     return 0;
 #else
