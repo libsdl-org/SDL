@@ -443,7 +443,7 @@ int SDL_VideoInit(const char *driver_name)
         SDL_VideoQuit();
     }
 
-#if !SDL_TIMERS_DISABLED
+#ifndef SDL_TIMERS_DISABLED
     SDL_InitTicks();
 #endif
 
