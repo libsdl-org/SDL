@@ -37,7 +37,7 @@
 #include <SDL3/SDL_opengl.h>
 #endif /* SDL_VIDEO_OPENGL */
 
-#if SDL_VIDEO_OPENGL_ES && !defined(SDL_VIDEO_OPENGL)
+#if defined(SDL_VIDEO_OPENGL_ES) && !defined(SDL_VIDEO_OPENGL)
 #include <SDL3/SDL_opengles.h>
 #endif /* SDL_VIDEO_OPENGL_ES && !SDL_VIDEO_OPENGL */
 
@@ -3660,7 +3660,7 @@ void SDL_GL_UnloadLibrary(void)
     }
 }
 
-#if defined(SDL_VIDEO_OPENGL) || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || SDL_VIDEO_OPENGL_ES2
 typedef GLenum (APIENTRY* PFNGLGETERRORPROC) (void);
 typedef void (APIENTRY* PFNGLGETINTEGERVPROC) (GLenum pname, GLint *params);
 typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGPROC) (GLenum name);
@@ -3676,7 +3676,7 @@ static SDL_INLINE SDL_bool isAtLeastGL3(const char *verstr)
 
 SDL_bool SDL_GL_ExtensionSupported(const char *extension)
 {
-#if defined(SDL_VIDEO_OPENGL) || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || SDL_VIDEO_OPENGL_ES2
     PFNGLGETSTRINGPROC glGetStringFunc;
     const char *extensions;
     const char *start;
@@ -3770,7 +3770,7 @@ void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor)
 {
 /* THIS REQUIRES AN EXISTING GL CONTEXT THAT HAS BEEN MADE CURRENT. */
 /*  Please refer to https://bugzilla.libsdl.org/show_bug.cgi?id=3725 for discussion. */
-#if defined(SDL_VIDEO_OPENGL) || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || SDL_VIDEO_OPENGL_ES2
     /* XXX This is fragile; it will break in the event of release of
      * new versions of OpenGL ES.
      */
@@ -3839,7 +3839,7 @@ void SDL_GL_ResetAttributes(void)
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 0;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
-#elif SDL_VIDEO_OPENGL_ES
+#elif defined(SDL_VIDEO_OPENGL_ES)
     _this->gl_config.major_version = 1;
     _this->gl_config.minor_version = 1;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
@@ -3864,7 +3864,7 @@ void SDL_GL_ResetAttributes(void)
 
 int SDL_GL_SetAttribute(SDL_GLattr attr, int value)
 {
-#if defined(SDL_VIDEO_OPENGL) || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || SDL_VIDEO_OPENGL_ES2
     int retval;
 
     if (_this == NULL) {
@@ -3982,7 +3982,7 @@ int SDL_GL_SetAttribute(SDL_GLattr attr, int value)
 
 int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 {
-#if defined(SDL_VIDEO_OPENGL) || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || SDL_VIDEO_OPENGL_ES2
     PFNGLGETERRORPROC glGetErrorFunc;
     GLenum attrib = 0;
     GLenum error = 0;
