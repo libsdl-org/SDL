@@ -41,7 +41,7 @@
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 #include <X11/extensions/Xrandr.h>
 #endif
-#if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
+#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
 #include <X11/extensions/scrnsaver.h>
 #endif
 #if SDL_VIDEO_DRIVER_X11_XSHAPE
