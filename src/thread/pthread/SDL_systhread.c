@@ -22,7 +22,7 @@
 
 #include <pthread.h>
 
-#if HAVE_PTHREAD_NP_H
+#ifdef HAVE_PTHREAD_NP_H
 #include <pthread_np.h>
 #endif
 
