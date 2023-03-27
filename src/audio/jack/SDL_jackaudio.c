@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_JACK
+#ifdef SDL_AUDIO_DRIVER_JACK
 
 #include "../SDL_audio_c.h"
 #include "SDL_jackaudio.h"
