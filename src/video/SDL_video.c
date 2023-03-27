@@ -3433,6 +3433,7 @@ void SDL_DestroyWindow(SDL_Window *window)
         if (_this->DestroyWindowFramebuffer) {
             _this->DestroyWindowFramebuffer(_this, window);
         }
+        _this->checked_texture_framebuffer = SDL_FALSE;
     }
 
     /* make no context current if this is the current context window. */
