@@ -1602,8 +1602,10 @@ static int GL_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *t
 static int GL_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
-    GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
     const GLenum textype = data->textype;
+#if SDL_HAVE_YUV
+    GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
+#endif
 
     GL_ActivateRenderer(renderer);
 
