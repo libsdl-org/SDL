@@ -249,7 +249,7 @@ SDL_TARGETING("sse4.1") static void kernel_ints_mul_sse4_1(Sint32 *dest, const S
 }
 #endif
 
-#if SDL_SSE4_2_INTRINSICS
+#if defined(SDL_SSE4_2_INTRINSICS)
 SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) {
     Uint32 crc32c = ~0;
     size_t len = SDL_strlen(text);
@@ -504,7 +504,7 @@ static int intrinsics_testSSE4_2(void *arg)
 {
     if (SDL_HasSSE42()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.2 support.");
-#if SDL_SSE4_2_INTRINSICS
+#if defined(SDL_SSE4_2_INTRINSICS)
         {
             struct {
                 const char *input;
