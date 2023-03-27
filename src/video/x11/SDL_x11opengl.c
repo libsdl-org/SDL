@@ -27,7 +27,7 @@
 
 /* GLX implementation of SDL OpenGL support */
 
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_GLX
 #include "SDL_x11opengles.h"
 
 #if defined(__IRIX__) || defined(__NetBSD__) || defined(__OpenBSD__)
