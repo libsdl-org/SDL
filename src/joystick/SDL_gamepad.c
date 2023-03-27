@@ -30,7 +30,7 @@
 #include "usb_ids.h"
 #include "hidapi/SDL_hidapi_nintendo.h"
 
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
 #endif
 
@@ -3056,7 +3056,7 @@ static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gamep
 
     /* translate the event, if desired */
     posted = 0;
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     if (SDL_EventEnabled(SDL_EVENT_GAMEPAD_AXIS_MOTION)) {
         SDL_Event event;
         event.type = SDL_EVENT_GAMEPAD_AXIS_MOTION;
@@ -3076,7 +3076,7 @@ static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gamep
 static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, Uint8 state)
 {
     int posted;
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     SDL_Event event;
 
     SDL_AssertJoysticksLocked();
@@ -3118,7 +3118,7 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
 
     /* translate the event, if desired */
     posted = 0;
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     if (SDL_EventEnabled(event.type)) {
         event.common.timestamp = timestamp;
         event.gbutton.which = gamepad->joystick->instance_id;

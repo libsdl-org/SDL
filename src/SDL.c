@@ -199,7 +199,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the event subsystem */
     if (flags & SDL_INIT_EVENTS) {
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_EVENTS)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_EVENTS);
             if (SDL_InitEvents() < 0) {
@@ -438,7 +438,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     if (flags & SDL_INIT_EVENTS) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_EVENTS)) {
             SDL_QuitEvents();
