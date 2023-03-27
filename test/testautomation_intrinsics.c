@@ -302,7 +302,7 @@ SDL_TARGETING("avx2") static void kernel_ints_add_avx2(Sint32 *dest, const Sint3
 }
 #endif
 
-#if SDL_AVX512F_INTRINSICS
+#if defined(SDL_AVX512F_INTRINSICS)
 SDL_TARGETING("avx512f") static void kernel_floats_add_avx512f(float *dest, const float *a, const float *b, size_t size) {
     for (; size >= 16; size -= 16, dest += 16, a += 16, b += 16) {
         _mm512_storeu_ps(dest, _mm512_add_ps(_mm512_loadu_ps(a), _mm512_loadu_ps(b)));
@@ -595,7 +595,7 @@ static int intrinsics_testAVX512F(void *arg)
 {
     if (SDL_HasAVX512F()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX512F support.");
-#if SDL_AVX512F_INTRINSICS
+#if defined(SDL_AVX512F_INTRINSICS)
         {
             size_t size;
             float *dest, *a, *b;
