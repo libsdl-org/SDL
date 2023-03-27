@@ -287,7 +287,7 @@ static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
 static void ScheduleContextUpdates(SDL_CocoaWindowData *data)
 {
 /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -969,7 +969,7 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
 {
     /*printf("WINDOWDIDCHANGESCREEN\n");*/
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 
     if (_data && _data.nscontexts) {
         for (SDLOpenGLContext *context in _data.nscontexts) {
@@ -2436,7 +2436,7 @@ void Cocoa_DestroyWindow(_THIS, SDL_Window *window)
         SDL_CocoaWindowData *data = (SDL_CocoaWindowData *)CFBridgingRelease(window->driverdata);
 
         if (data) {
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 
             NSArray *contexts;
 
@@ -2453,7 +2453,7 @@ void Cocoa_DestroyWindow(_THIS, SDL_Window *window)
                 [data.nswindow close];
             }
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 
             contexts = [data.nscontexts copy];
             for (SDLOpenGLContext *context in contexts) {
