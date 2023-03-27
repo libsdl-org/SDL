@@ -29,7 +29,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_QNX
+#ifdef SDL_AUDIO_DRIVER_QNX
 
 #include <errno.h>
 #include <unistd.h>
