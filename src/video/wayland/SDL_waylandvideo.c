@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WAYLAND
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include "../../events/SDL_events_c.h"
 #include "../../core/linux/SDL_system_theme.h"
