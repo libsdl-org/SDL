@@ -641,13 +641,15 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
         __sync_fetch_and_add(&a, 1);
         __sync_bool_compare_and_swap(&a, 5, 10);
         __sync_bool_compare_and_swap(&x, y, z);
-        return 0; }" HAVE_GCC_ATOMICS)
+        return 0; }" COMPILER_SUPPORTS_GCC_ATOMICS)
+    set(HAVE_GCC_ATOMICS ${COMPILER_SUPPORTS_GCC_ATOMICS})
     if(NOT HAVE_GCC_ATOMICS)
       check_c_source_compiles("int main(int argc, char **argv) {
           int a;
           __sync_lock_test_and_set(&a, 1);
           __sync_lock_release(&a);
-          return 0; }" HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
+          return 0; }" COMPILER_SUPPORTS_SYNC_LOCK_TEST_AND_SET)
+      set(HAVE_GCC_SYNC_LOCK_TEST_AND_SET ${COMPILER_SUPPORTS_SYNC_LOCK_TEST_AND_SET})
     endif()
   endif()
 
