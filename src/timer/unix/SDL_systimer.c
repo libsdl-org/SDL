@@ -52,7 +52,7 @@
 #endif
 
 /* Use CLOCK_MONOTONIC_RAW, if available, which is not subject to adjustment by NTP */
-#if HAVE_CLOCK_GETTIME
+#ifdef HAVE_CLOCK_GETTIME
 #ifdef CLOCK_MONOTONIC_RAW
 #define SDL_MONOTONIC_CLOCK CLOCK_MONOTONIC_RAW
 #else
@@ -69,7 +69,7 @@ static SDL_bool has_monotonic_time = SDL_FALSE;
 
 static void CheckMonotonicTime(void)
 {
-#if HAVE_CLOCK_GETTIME
+#if defined(HAVE_CLOCK_GETTIME)
     struct timespec value;
     if (clock_gettime(SDL_MONOTONIC_CLOCK, &value) == 0) {
         has_monotonic_time = SDL_TRUE;
@@ -92,7 +92,7 @@ SDL_GetPerformanceCounter(void)
     }
 
     if (has_monotonic_time) {
-#if HAVE_CLOCK_GETTIME
+#if defined(HAVE_CLOCK_GETTIME)
         struct timespec now;
 
         clock_gettime(SDL_MONOTONIC_CLOCK, &now);
@@ -124,7 +124,7 @@ SDL_GetPerformanceFrequency(void)
     }
 
     if (has_monotonic_time) {
-#if HAVE_CLOCK_GETTIME
+#if defined(HAVE_CLOCK_GETTIME)
         return SDL_NS_PER_SECOND;
 #elif defined(__APPLE__)
         Uint64 freq = mach_base_info.denom;
