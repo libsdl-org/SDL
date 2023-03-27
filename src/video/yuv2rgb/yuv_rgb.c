@@ -684,7 +684,7 @@ void SDL_TARGETING("sse2") rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 
 #endif //SDL_SSE2_INTRINSICS
 
-#if SDL_LSX_INTRINSICS
+#ifdef SDL_LSX_INTRINSICS
 
 #define LSX_FUNCTION_NAME	yuv420_rgb24_lsx
 #define STD_FUNCTION_NAME	yuv420_rgb24_std

@@ -422,7 +422,7 @@ static SDL_bool yuv_rgb_sse(
 }
 #endif
 
-#if SDL_LSX_INTRINSICS
+#ifdef SDL_LSX_INTRINSICS
 static SDL_bool yuv_rgb_lsx(
     Uint32 src_format, Uint32 dst_format,
     Uint32 width, Uint32 height,
