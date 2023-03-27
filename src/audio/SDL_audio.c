@@ -94,7 +94,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_QNX
     &QSAAUDIO_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_DISK
+#ifdef SDL_AUDIO_DRIVER_DISK
     &DISKAUDIO_bootstrap,
 #endif
 #ifdef SDL_AUDIO_DRIVER_DUMMY
