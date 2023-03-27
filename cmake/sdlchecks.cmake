@@ -879,7 +879,8 @@ macro(CheckPTHREAD)
               int main(int argc, char **argv) {
                   sem_timedwait(NULL, NULL);
                   return 0;
-              }" HAVE_SEM_TIMEDWAIT)
+              }" COMPILER_HAS_SEM_TIMEDWAIT)
+          set(HAVE_SEM_TIMEDWAIT ${COMPILER_HAS_SEM_TIMEDWAIT})
         endif()
       endif()
 
