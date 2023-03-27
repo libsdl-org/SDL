@@ -1729,7 +1729,7 @@ void X11_PumpEvents(_THIS)
         if (!data->screensaver_activity || now >= (data->screensaver_activity + 30000)) {
             X11_XResetScreenSaver(data->display);
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
             SDL_DBus_ScreensaverTickle();
 #endif
 
@@ -1775,7 +1775,7 @@ int X11_SuspendScreenSaver(_THIS)
     int major_version, minor_version;
 #endif /* SDL_VIDEO_DRIVER_X11_XSCRNSAVER */
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
         return 0;
     }

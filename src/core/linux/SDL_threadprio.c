@@ -40,7 +40,7 @@
 
 #include "SDL_dbus.h"
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
 
 /* d-bus queries to org.freedesktop.RealtimeKit1. */
 #define RTKIT_DBUS_NODE      "org.freedesktop.RealtimeKit1"
@@ -258,7 +258,7 @@ int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
         return 0;
     }
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     /* Note that this fails you most likely:
          * Have your process's scheduler incorrectly configured.
            See the requirements at:
@@ -314,7 +314,7 @@ int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
         }
     }
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     /* Note that this fails you most likely:
      * Have your process's scheduler incorrectly configured.
        See the requirements at:
