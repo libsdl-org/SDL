@@ -82,7 +82,7 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_WINRT
     &WINRT_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_HAIKU
+#ifdef SDL_VIDEO_DRIVER_HAIKU
     &HAIKU_bootstrap,
 #endif
 #ifdef SDL_VIDEO_DRIVER_UIKIT
@@ -4671,7 +4671,7 @@ int SDL_GetMessageBoxCount(void)
 #if SDL_VIDEO_DRIVER_X11
 #include "x11/SDL_x11messagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_HAIKU
+#ifdef SDL_VIDEO_DRIVER_HAIKU
 #include "haiku/SDL_bmessagebox.h"
 #endif
 #if SDL_VIDEO_DRIVER_RISCOS
@@ -4681,7 +4681,7 @@ int SDL_GetMessageBoxCount(void)
 #include "vita/SDL_vitamessagebox.h"
 #endif
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT) || defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT) || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_RISCOS
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT) || defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT) || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || defined(SDL_VIDEO_DRIVER_HAIKU) || SDL_VIDEO_DRIVER_RISCOS
 static SDL_bool SDL_IsMessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
@@ -4788,7 +4788,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_HAIKU
+#ifdef SDL_VIDEO_DRIVER_HAIKU
     if (retval == -1 &&
         SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_HAIKU) &&
         HAIKU_ShowMessageBox(messageboxdata, buttonid) == 0) {
