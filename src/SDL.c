@@ -275,7 +275,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the joystick subsystem */
     if (flags & SDL_INIT_JOYSTICK) {
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_JOYSTICK)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_JOYSTICK);
             if (SDL_InitJoysticks() < 0) {
@@ -293,7 +293,7 @@ int SDL_InitSubSystem(Uint32 flags)
     }
 
     if (flags & SDL_INIT_GAMEPAD) {
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_GAMEPAD)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_GAMEPAD);
             if (SDL_InitGamepads() < 0) {
@@ -374,7 +374,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
     if (flags & SDL_INIT_GAMEPAD) {
         /* game controller implies joystick */
         flags |= SDL_INIT_JOYSTICK;

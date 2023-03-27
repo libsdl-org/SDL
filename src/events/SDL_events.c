@@ -25,7 +25,7 @@
 #include "SDL_events_c.h"
 #include "../SDL_hints_c.h"
 #include "../timer/SDL_timer_c.h"
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
 #include "../joystick/SDL_joystick_c.h"
 #endif
 #if !SDL_SENSOR_DISABLED
@@ -98,7 +98,7 @@ static struct
     SDL_SysWMEntry *wmmsg_free;
 } SDL_EventQ = { NULL, SDL_FALSE, { 0 }, 0, NULL, NULL, NULL, NULL, NULL };
 
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
 
 static SDL_bool SDL_update_joysticks = SDL_TRUE;
 
@@ -852,7 +852,7 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
         _this->PumpEvents(_this);
     }
 
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
     /* Check for joystick state change */
     if (SDL_update_joysticks) {
         SDL_UpdateJoysticks();
@@ -893,7 +893,7 @@ static SDL_bool SDL_events_need_periodic_poll(void)
 {
     SDL_bool need_periodic_poll = SDL_FALSE;
 
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
     need_periodic_poll = SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks;
 #endif
 
@@ -976,7 +976,7 @@ static SDL_bool SDL_events_need_polling(void)
 {
     SDL_bool need_polling = SDL_FALSE;
 
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
     need_polling = SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks && SDL_JoysticksOpened();
 #endif
 
@@ -1355,7 +1355,7 @@ int SDL_SendSystemThemeChangedEvent(void)
 
 int SDL_InitEvents(void)
 {
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
     SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
 #endif
 #if !SDL_SENSOR_DISABLED
@@ -1379,7 +1379,7 @@ void SDL_QuitEvents(void)
     SDL_StopEventLoop();
     SDL_DelHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
     SDL_DelHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
     SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
 #endif
 #if !SDL_SENSOR_DISABLED
