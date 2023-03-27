@@ -20,6 +20,7 @@
 #ifdef SDL_DYNAMIC_API
 #undef SDL_DYNAMIC_API
 #endif
+#define SDL_DYNAMIC_API 0
 
 #include "../src/SDL_internal.h"
 
