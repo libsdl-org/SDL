@@ -271,7 +271,7 @@ static void fill_32_neon(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 }
 #endif
 
-#if SDL_ARM_SIMD_BLITTERS
+#ifdef SDL_ARM_SIMD_BLITTERS
 void FillSurfaceRect8ARMSIMDAsm(int32_t w, int32_t h, uint8_t *dst, int32_t dst_stride, uint8_t src);
 void FillSurfaceRect16ARMSIMDAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint16_t src);
 void FillSurfaceRect32ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t src);
@@ -354,7 +354,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         }
     }
 #endif
-#if SDL_ARM_SIMD_BLITTERS
+#ifdef SDL_ARM_SIMD_BLITTERS
     if (SDL_HasARMSIMD() && dst->format->BytesPerPixel != 3 && fill_function == NULL) {
         switch (dst->format->BytesPerPixel) {
         case 1:
