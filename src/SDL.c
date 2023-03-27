@@ -623,7 +623,7 @@ SDL_IsTablet(void)
 #if defined(__ANDROID__)
     extern SDL_bool SDL_IsAndroidTablet(void);
     return SDL_IsAndroidTablet();
-#elif __IOS__
+#elif defined(__IOS__)
     extern SDL_bool SDL_IsIPad(void);
     return SDL_IsIPad();
 #else
