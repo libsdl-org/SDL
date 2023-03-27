@@ -23,7 +23,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
 #if defined(SDL_LOADSO_DISABLED) || defined(SDL_LOADSO_DUMMY)
 #error You should not be here.
 #endif

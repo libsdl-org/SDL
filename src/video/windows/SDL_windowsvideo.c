@@ -239,7 +239,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     }
 #endif
 #endif
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = WIN_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = WIN_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = WIN_Vulkan_GetInstanceExtensions;
