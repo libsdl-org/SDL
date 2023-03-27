@@ -32,7 +32,7 @@
 #ifdef SDL_VIDEO_DRIVER_RPI
 #include <unistd.h>
 #endif
-#if SDL_VIDEO_VITA_PVR_OGL
+#ifdef SDL_VIDEO_VITA_PVR_OGL
 #include <GLES2/gl2.h>
 #endif
 
@@ -107,7 +107,7 @@
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so.1"
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
-#if SDL_VIDEO_OPENGL && !SDL_VIDEO_VITA_PVR_OGL
+#if SDL_VIDEO_OPENGL && !defined(SDL_VIDEO_VITA_PVR_OGL)
 #include <SDL3/SDL_opengl.h>
 #endif
 
