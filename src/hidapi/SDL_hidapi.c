@@ -595,7 +595,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #include "hidapi/hidapi.h"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx              1
-#elif defined(__IOS__) || __TVOS__
+#elif defined(__IOS__) || defined(__TVOS__)
 /* The implementation for iOS and tvOS is in a separate .m file */
 #include "hidapi/hidapi.h"
 #define HAVE_PLATFORM_BACKEND 1
@@ -1585,7 +1585,7 @@ int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t
 
 void SDL_hid_ble_scan(SDL_bool active)
 {
-#if !defined(SDL_HIDAPI_DISABLED) && (defined(__IOS__) || __TVOS__)
+#if !defined(SDL_HIDAPI_DISABLED) && (defined(__IOS__) || defined(__TVOS__))
     hid_ble_scan(active);
 #endif
 }
