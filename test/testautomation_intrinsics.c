@@ -227,7 +227,7 @@ SDL_TARGETING("sse2") static void kernel_doubles_add_sse2(double *dest, const do
 }
 #endif
 
-#if SDL_SSE3_INTRINSICS
+#if defined(SDL_SSE3_INTRINSICS)
 SDL_TARGETING("sse3") static void kernel_ints_add_sse3(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
         _mm_storeu_si128((__m128i*)dest, _mm_add_epi32(_mm_lddqu_si128((__m128i*)a), _mm_lddqu_si128((__m128i*)b)));
@@ -448,7 +448,7 @@ static int intrinsics_testSSE3(void *arg)
 {
     if (SDL_HasSSE3()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE3 support.");
-#if SDL_SSE3_INTRINSICS
+#if defined(SDL_SSE3_INTRINSICS)
         {
             size_t size;
             Sint32 *dest, *a, *b;
