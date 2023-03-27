@@ -24,7 +24,7 @@
 #ifndef SDL_evdev_capabilities_h_
 #define SDL_evdev_capabilities_h_
 
-#if HAVE_LINUX_INPUT_H
+#ifdef HAVE_LINUX_INPUT_H
 
 #include <linux/input.h>
 

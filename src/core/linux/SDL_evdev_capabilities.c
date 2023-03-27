@@ -23,7 +23,7 @@
 
 #include "SDL_evdev_capabilities.h"
 
-#if HAVE_LINUX_INPUT_H
+#ifdef HAVE_LINUX_INPUT_H
 
 /* missing defines in older Linux kernel headers */
 #ifndef BTN_TRIGGER_HAPPY
