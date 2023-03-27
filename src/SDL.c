@@ -256,7 +256,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the audio subsystem */
     if (flags & SDL_INIT_AUDIO) {
-#if !SDL_AUDIO_DISABLED
+#ifndef SDL_AUDIO_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_AUDIO)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_AUDIO);
             if (SDL_InitAudio(NULL) < 0) {
@@ -405,7 +405,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_AUDIO_DISABLED
+#ifndef SDL_AUDIO_DISABLED
     if (flags & SDL_INIT_AUDIO) {
         /* audio implies events */
         flags |= SDL_INIT_EVENTS;
