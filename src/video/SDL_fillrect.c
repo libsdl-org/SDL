@@ -247,7 +247,7 @@ int SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
     return SDL_FillSurfaceRects(dst, rect, 1, color);
 }
 
-#if SDL_ARM_NEON_BLITTERS
+#if defined(SDL_ARM_NEON_BLITTERS)
 void FillSurfaceRect8ARMNEONAsm(int32_t w, int32_t h, uint8_t *dst, int32_t dst_stride, uint8_t src);
 void FillSurfaceRect16ARMNEONAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint16_t src);
 void FillSurfaceRect32ARMNEONAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t src);
@@ -339,7 +339,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         return SDL_SetError("SDL_FillSurfaceRects(): Unsupported surface format");
     }
 
-#if SDL_ARM_NEON_BLITTERS
+#if defined(SDL_ARM_NEON_BLITTERS)
     if (SDL_HasNEON() && dst->format->BytesPerPixel != 3 && fill_function == NULL) {
         switch (dst->format->BytesPerPixel) {
         case 1:
