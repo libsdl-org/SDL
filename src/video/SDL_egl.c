@@ -25,7 +25,7 @@
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) || SDL_VIDEO_DRIVER_WINRT
 #include "../core/windows/SDL_windows.h"
 #endif
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
 #include <android/native_window.h>
 #include "../video/android/SDL_androidvideo.h"
 #endif
@@ -67,7 +67,7 @@
 #define DEFAULT_OGL_ES_PVR (vc4 ? "libGLES_CM.so.1" : "libbrcmGLESv2.so")
 #define DEFAULT_OGL_ES     (vc4 ? "libGLESv1_CM.so.1" : "libbrcmGLESv2.so")
 
-#elif SDL_VIDEO_DRIVER_ANDROID || SDL_VIDEO_DRIVER_VIVANTE
+#elif defined(SDL_VIDEO_DRIVER_ANDROID) || SDL_VIDEO_DRIVER_VIVANTE
 /* Android */
 #define DEFAULT_EGL        "libEGL.so"
 #define DEFAULT_OGL_ES2    "libGLESv2.so"
@@ -971,7 +971,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         share_context = (EGLContext)SDL_GL_GetCurrentContext();
     }
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     if (_this->gl_config.flags & SDL_GL_CONTEXT_DEBUG_FLAG) {
         /* If SDL_GL_CONTEXT_DEBUG_FLAG is set but EGL_KHR_debug unsupported, unset.
          * This is required because some Android devices like to complain about it
@@ -1220,7 +1220,7 @@ int SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 EGLSurface *
 SDL_EGL_CreateSurface(_THIS, SDL_Window *window, NativeWindowType nw)
 {
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     EGLint format_wanted;
     EGLint format_got;
 #endif
@@ -1234,7 +1234,7 @@ SDL_EGL_CreateSurface(_THIS, SDL_Window *window, NativeWindowType nw)
         return EGL_NO_SURFACE;
     }
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     /* On Android, EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
      * guaranteed to be accepted by ANativeWindow_setBuffersGeometry(). */
     _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
@@ -1302,7 +1302,7 @@ SDL_EGL_CreateSurface(_THIS, SDL_Window *window, NativeWindowType nw)
         SDL_EGL_SetError("unable to create an EGL window surface", "eglCreateWindowSurface");
     }
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     format_got = ANativeWindow_getFormat(nw);
     Android_SetFormat(format_wanted, format_got);
 #endif

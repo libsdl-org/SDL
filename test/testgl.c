@@ -36,7 +36,7 @@ static int LoadContext(GL_Context *data)
 {
 #if SDL_VIDEO_DRIVER_UIKIT
 #define __SDL_NOGETPROCADDR__
-#elif SDL_VIDEO_DRIVER_ANDROID
+#elif defined(SDL_VIDEO_DRIVER_ANDROID)
 #define __SDL_NOGETPROCADDR__
 #endif
 
