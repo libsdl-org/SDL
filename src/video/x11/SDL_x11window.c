@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
