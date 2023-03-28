@@ -592,7 +592,7 @@ const char *SDL_GetPlatform(void)
     return "MacOS Classic";
 #elif __MACOSX__
     return "Mac OS X";
-#elif __NACL__
+#elif defined(__NACL__)
     return "NaCl";
 #elif __NETBSD__
     return "NetBSD";

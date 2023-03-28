@@ -62,7 +62,7 @@
 #include "SDL_system.h"
 #endif
 
-#if __NACL__
+#ifdef __NACL__
 #include "nacl_io/nacl_io.h"
 #endif
 
