@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_ALSA
+#ifdef SDL_AUDIO_DRIVER_ALSA
 
 #ifndef SDL_ALSA_NON_BLOCKING
 #define SDL_ALSA_NON_BLOCKING 0
