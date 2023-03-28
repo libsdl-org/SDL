@@ -566,7 +566,7 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 }
 #endif /* !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
 
-#if HAVE_DXGI_H
+#ifdef HAVE_DXGI_H
 #define CINTERFACE
 #define COBJMACROS
 #include <dxgi.h>
@@ -603,7 +603,7 @@ static SDL_bool DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
 
 SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
-#if !HAVE_DXGI_H
+#if !defined(HAVE_DXGI_H)
     if (adapterIndex) {
         *adapterIndex = -1;
     }
