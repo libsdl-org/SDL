@@ -77,7 +77,7 @@ ref class SDL_WinRTApp sealed : public Windows::ApplicationModel::Core::IFramewo
 
 #if NTDDI_VERSION >= NTDDI_WIN10
     void OnBackButtonPressed(Platform::Object ^ sender, Windows::UI::Core::BackRequestedEventArgs ^ args);
-#elif WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#elif SDL_WINAPI_FAMILY_PHONE
     void OnBackButtonPressed(Platform::Object ^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^ args);
 #endif
 
