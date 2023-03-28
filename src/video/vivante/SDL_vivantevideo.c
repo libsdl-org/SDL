@@ -132,7 +132,7 @@ static int VIVANTE_AddVideoDisplays(_THIS)
     }
 
     SDL_zero(mode);
-#if SDL_VIDEO_DRIVER_VIVANTE_VDK
+#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     data->native_display = vdkGetDisplay(videodata->vdk_private);
 
     vdkGetDisplayInfo(data->native_display, &mode.pixel_w, &mode.pixel_h, &pixels, &pitch, &bpp);
@@ -168,7 +168,7 @@ int VIVANTE_VideoInit(_THIS)
 {
     SDL_VideoData *videodata = _this->driverdata;
 
-#if SDL_VIDEO_DRIVER_VIVANTE_VDK
+#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     videodata->vdk_private = vdkInitialize();
     if (!videodata->vdk_private) {
         return SDL_SetError("vdkInitialize() failed");
@@ -226,7 +226,7 @@ void VIVANTE_VideoQuit(_THIS)
 
     VIVANTE_CleanupPlatform(_this);
 
-#if SDL_VIDEO_DRIVER_VIVANTE_VDK
+#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     if (videodata->vdk_private) {
         vdkExit(videodata->vdk_private);
         videodata->vdk_private = NULL;
@@ -256,7 +256,7 @@ int VIVANTE_CreateWindow(_THIS, SDL_Window *window)
     /* Setup driver data for this window */
     window->driverdata = data;
 
-#if SDL_VIDEO_DRIVER_VIVANTE_VDK
+#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     data->native_window = vdkCreateWindow(displaydata->native_display, window->x, window->y, window->w, window->h);
 #else
     data->native_window = videodata->fbCreateWindow(displaydata->native_display, window->x, window->y, window->w, window->h);
@@ -294,7 +294,7 @@ void VIVANTE_DestroyWindow(_THIS, SDL_Window *window)
 #endif
 
         if (data->native_window) {
-#if SDL_VIDEO_DRIVER_VIVANTE_VDK
+#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
             vdkDestroyWindow(data->native_window);
 #else
             videodata->fbDestroyWindow(data->native_window);
@@ -308,7 +308,7 @@ void VIVANTE_DestroyWindow(_THIS, SDL_Window *window)
 
 void VIVANTE_SetWindowTitle(_THIS, SDL_Window *window)
 {
-#if SDL_VIDEO_DRIVER_VIVANTE_VDK
+#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     SDL_WindowData *data = window->driverdata;
     vdkSetWindowTitle(data->native_window, window->title);
 #endif
@@ -326,7 +326,7 @@ void VIVANTE_SetWindowSize(_THIS, SDL_Window *window)
 
 void VIVANTE_ShowWindow(_THIS, SDL_Window *window)
 {
-#if SDL_VIDEO_DRIVER_VIVANTE_VDK
+#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     SDL_WindowData *data = window->driverdata;
     vdkShowWindow(data->native_window);
 #endif
@@ -336,7 +336,7 @@ void VIVANTE_ShowWindow(_THIS, SDL_Window *window)
 
 void VIVANTE_HideWindow(_THIS, SDL_Window *window)
 {
-#if SDL_VIDEO_DRIVER_VIVANTE_VDK
+#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     SDL_WindowData *data = window->driverdata;
     vdkHideWindow(data->native_window);
 #endif
