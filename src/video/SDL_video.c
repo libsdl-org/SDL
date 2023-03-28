@@ -3268,6 +3268,10 @@ void SDL_DestroyWindow(SDL_Window *window)
         display->fullscreen_window = NULL;
     }
 
+    if (_this->grabbed_window == window) {
+        _this->grabbed_window = NULL; /* ungrabbing input. */
+    }
+
     /* Now invalidate magic */
     window->magic = NULL;
 
