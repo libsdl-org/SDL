@@ -179,11 +179,11 @@ if(SDL3_TESTS_SUBPROJECT)
                 testnativecocoa.m
                 testnativex11.c
         )
-        target_compile_definitions(testnative PRIVATE TEST_NATIVE_COCOA)
 
         cmake_push_check_state()
         check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
         cmake_pop_check_state()
+        target_link_libraries(testnative PRIVATE "-Wl,-framework,Cocoa")
         if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
             set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
         endif()
