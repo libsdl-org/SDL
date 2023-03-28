@@ -120,7 +120,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_OSS
     &DSP_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_OS2
+#ifdef SDL_AUDIO_DRIVER_OS2
     &OS2AUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_DISK
