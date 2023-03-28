@@ -36,9 +36,9 @@
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0  /* x86_64 guarantees SSE2. */
 #elif __MACOSX__ && HAVE_SSE2_INTRINSICS
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0  /* Mac OS X/Intel guarantees SSE2. */
-#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && HAVE_NEON_INTRINSICS
+#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && defined(HAVE_NEON_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* ARMv8+ promise NEON. */
-#elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7) && HAVE_NEON_INTRINSICS
+#elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7) && defined(HAVE_NEON_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* All Apple ARMv7 chips promise NEON support. */
 #endif
 
@@ -874,7 +874,7 @@ static void SDLCALL SDL_Convert_F32_to_S32_SSE2(SDL_AudioCVT *cvt, SDL_AudioForm
 }
 #endif
 
-#if HAVE_NEON_INTRINSICS
+#ifdef HAVE_NEON_INTRINSICS
 static void SDLCALL SDL_Convert_S8_to_F32_NEON(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
     const Sint8 *src = ((const Sint8 *)(cvt->buf + cvt->len_cvt)) - 1;
@@ -1470,7 +1470,7 @@ void SDL_ChooseAudioConverters(void)
     }
 #endif
 
-#if HAVE_NEON_INTRINSICS
+#ifdef HAVE_NEON_INTRINSICS
     if (SDL_HasNEON()) {
         SET_CONVERTER_FUNCS(NEON);
         return;
