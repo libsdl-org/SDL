@@ -48,7 +48,7 @@ enum blit_features
     BLIT_FEATURE_HAS_ARM_SIMD = 8
 };
 
-#if SDL_ALTIVEC_BLITTERS
+#ifdef SDL_ALTIVEC_BLITTERS
 #ifdef HAVE_ALTIVEC_H
 #include <altivec.h>
 #endif
@@ -3221,7 +3221,7 @@ static const struct blit_table normal_blit_1[] = {
 };
 
 static const struct blit_table normal_blit_2[] = {
-#if SDL_ALTIVEC_BLITTERS
+#ifdef SDL_ALTIVEC_BLITTERS
     /* has-altivec */
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x00000000, 0x00000000, 0x00000000,
       BLIT_FEATURE_HAS_ALTIVEC, Blit_RGB565_32Altivec, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
@@ -3288,7 +3288,7 @@ static const struct blit_table normal_blit_3[] = {
 };
 
 static const struct blit_table normal_blit_4[] = {
-#if SDL_ALTIVEC_BLITTERS
+#ifdef SDL_ALTIVEC_BLITTERS
     /* has-altivec | dont-use-prefetch */
     { 0x00000000, 0x00000000, 0x00000000, 4, 0x00000000, 0x00000000, 0x00000000,
       BLIT_FEATURE_HAS_ALTIVEC | BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH, ConvertAltivec32to32_noprefetch, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
@@ -3437,7 +3437,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
         } else if (dstfmt->BytesPerPixel == 1) {
             return BlitNto1Key;
         } else {
-#if SDL_ALTIVEC_BLITTERS
+#ifdef SDL_ALTIVEC_BLITTERS
             if ((srcfmt->BytesPerPixel == 4) && (dstfmt->BytesPerPixel == 4) && SDL_HasAltiVec()) {
                 return Blit32to32KeyAltivec;
             } else
