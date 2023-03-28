@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#ifdef SDL_AUDIO_DRIVER_DUMMY
+
 /* Output audio to nowhere... */
 
 #include "SDL_timer.h"
@@ -60,5 +62,7 @@ static SDL_bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
 AudioBootStrap DUMMYAUDIO_bootstrap = {
     "dummy", "SDL dummy audio driver", DUMMYAUDIO_Init, SDL_TRUE
 };
+
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
