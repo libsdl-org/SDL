@@ -150,7 +150,7 @@ static int GLES_SetError(const char *prefix, GLenum result)
 
 static int GLES_LoadFunctions(GLES_RenderData *data)
 {
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
 #define __SDL_NOGETPROCADDR__
 #elif defined(SDL_VIDEO_DRIVER_ANDROID)
 #define __SDL_NOGETPROCADDR__

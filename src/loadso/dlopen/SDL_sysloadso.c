@@ -30,7 +30,7 @@
 
 #include "SDL_loadso.h"
 
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
 #include "../../video/uikit/SDL_uikitvideo.h"
 #endif
 
@@ -39,7 +39,7 @@ void *SDL_LoadObject(const char *sofile)
     void *handle;
     const char *loaderror;
 
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
     if (!UIKit_IsSystemVersionAtLeast(8.0)) {
         SDL_SetError("SDL_LoadObject requires iOS 8+");
         return NULL;
