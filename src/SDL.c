@@ -574,7 +574,7 @@ const char *SDL_GetPlatform(void)
     return "BSDI";
 #elif defined(__DREAMCAST__)
     return "Dreamcast";
-#elif __EMSCRIPTEN__
+#elif defined(__EMSCRIPTEN__)
     return "Emscripten";
 #elif __FREEBSD__
     return "FreeBSD";
