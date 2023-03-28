@@ -576,7 +576,7 @@ const char *SDL_GetPlatform(void)
     return "Dreamcast";
 #elif defined(__EMSCRIPTEN__)
     return "Emscripten";
-#elif __FREEBSD__
+#elif defined(__FREEBSD__)
     return "FreeBSD";
 #elif __HAIKU__
     return "Haiku";
