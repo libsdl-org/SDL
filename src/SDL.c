@@ -572,7 +572,7 @@ const char *SDL_GetPlatform(void)
     return "Android";
 #elif defined(__BSDI__)
     return "BSDI";
-#elif __DREAMCAST__
+#elif defined(__DREAMCAST__)
     return "Dreamcast";
 #elif __EMSCRIPTEN__
     return "Emscripten";
