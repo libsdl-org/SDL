@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WAYLAND
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include <stdlib.h>   /* fgets */
 #include <stdio.h>    /* FILE, STDOUT_FILENO, fdopen, fclose */
