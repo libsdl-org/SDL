@@ -30,7 +30,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_QSA
+#ifdef SDL_AUDIO_DRIVER_QSA
 
 #include <errno.h>
 #include <unistd.h>
