@@ -26,7 +26,7 @@
 #include "SDL_stdinc.h"
 
 #if SDL_VIDEO_VULKAN
-#if SDL_LOADSO_DISABLED || SDL_LOADSO_DUMMY
+#if defined(SDL_LOADSO_DISABLED) || SDL_LOADSO_DUMMY
 #error You should not be here.
 #endif
 
