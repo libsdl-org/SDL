@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 
-#if HAVE_SIGNAL_H
+#ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #endif
 
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
         quit(1);
     }
 
-#if HAVE_SIGNAL_H
+#ifdef HAVE_SIGNAL_H
     /* Set the signals */
 #ifdef SIGHUP
     (void)signal(SIGHUP, poked);
