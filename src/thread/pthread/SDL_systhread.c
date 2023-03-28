@@ -246,7 +246,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         policy = pri_policy;
     }
 
-#if __LINUX__
+#ifdef __LINUX__
     {
         pid_t linuxTid = syscall(SYS_gettid);
         return SDL_LinuxSetThreadPriorityAndPolicy(linuxTid, priority, policy);

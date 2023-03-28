@@ -556,7 +556,7 @@ static void HIDAPI_ShutdownDiscovery()
 #define read_thread                  PLATFORM_read_thread
 
 #undef HIDAPI_H__
-#if __LINUX__
+#ifdef __LINUX__
 
 #if SDL_USE_LIBUDEV
 static const SDL_UDEV_Symbols *udev_ctx = NULL;
@@ -1131,7 +1131,7 @@ int SDL_hid_init(void)
 
 #if HAVE_PLATFORM_BACKEND
     ++attempts;
-#if __LINUX__
+#ifdef __LINUX__
     udev_ctx = SDL_UDEV_GetUdevSyms();
 #endif /* __LINUX __ */
     if (udev_ctx && PLATFORM_hid_init() == 0) {
@@ -1168,7 +1168,7 @@ int SDL_hid_exit(void)
     if (udev_ctx) {
         result |= PLATFORM_hid_exit();
     }
-#if __LINUX__
+#ifdef __LINUX__
     SDL_UDEV_ReleaseUdevSyms();
 #endif /* __LINUX __ */
 #endif /* HAVE_PLATFORM_BACKEND */
