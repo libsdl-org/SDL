@@ -209,6 +209,7 @@ void loop()
             if (event.key.keysym.sym != SDLK_ESCAPE) {
                 break;
             }
+            SDL_FALLTHROUGH;
         case SDL_QUIT:
             done = SDL_TRUE;
             break;
