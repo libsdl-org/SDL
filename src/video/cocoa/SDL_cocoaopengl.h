@@ -23,7 +23,7 @@
 #ifndef SDL_cocoaopengl_h_
 #define SDL_cocoaopengl_h_
 
-#if SDL_VIDEO_OPENGL_CGL
+#ifdef SDL_VIDEO_OPENGL_CGL
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CVDisplayLink.h>

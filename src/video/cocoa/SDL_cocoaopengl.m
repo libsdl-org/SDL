@@ -22,7 +22,7 @@
 
 /* NSOpenGL implementation of SDL OpenGL support */
 
-#if SDL_VIDEO_OPENGL_CGL
+#ifdef SDL_VIDEO_OPENGL_CGL
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoaopengles.h"

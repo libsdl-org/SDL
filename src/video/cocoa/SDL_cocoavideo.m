@@ -123,7 +123,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->shape_driver.CreateShaper = Cocoa_CreateShaper;
         device->shape_driver.SetWindowShape = Cocoa_SetWindowShape;
 
-#if SDL_VIDEO_OPENGL_CGL
+#ifdef SDL_VIDEO_OPENGL_CGL
         device->GL_LoadLibrary = Cocoa_GL_LoadLibrary;
         device->GL_GetProcAddress = Cocoa_GL_GetProcAddress;
         device->GL_UnloadLibrary = Cocoa_GL_UnloadLibrary;
@@ -136,7 +136,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->GL_GetEGLSurface = NULL;
 #endif
 #ifdef SDL_VIDEO_OPENGL_EGL
-#if SDL_VIDEO_OPENGL_CGL
+#ifdef SDL_VIDEO_OPENGL_CGL
         if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
 #endif
             device->GL_LoadLibrary = Cocoa_GLES_LoadLibrary;
@@ -149,7 +149,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             device->GL_SwapWindow = Cocoa_GLES_SwapWindow;
             device->GL_DeleteContext = Cocoa_GLES_DeleteContext;
             device->GL_GetEGLSurface = Cocoa_GLES_GetEGLSurface;
-#if SDL_VIDEO_OPENGL_CGL
+#ifdef SDL_VIDEO_OPENGL_CGL
         }
 #endif
 #endif
