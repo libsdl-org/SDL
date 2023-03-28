@@ -26,7 +26,7 @@
 #include "SDL_stdinc.h"
 #include "SDL_thread.h"
 
-#if !SDL_THREADS_DISABLED
+#ifndef SDL_THREADS_DISABLED
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <pthread.h>
@@ -256,7 +256,7 @@ static SDL_bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 /* this is a public symbol, so it has to exist even if threads are disabled. */
 int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 {
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
     return SDL_Unsupported();
 #else
     if (setpriority(PRIO_PROCESS, (id_t)threadID, priority) == 0) {
@@ -288,7 +288,7 @@ int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 /* this is a public symbol, so it has to exist even if threads are disabled. */
 int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
     return SDL_Unsupported();
 #else
     int osPriority;

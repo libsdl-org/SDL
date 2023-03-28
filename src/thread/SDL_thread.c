@@ -119,7 +119,7 @@ SDL_TLSData *SDL_Generic_GetTLSData(void)
     SDL_TLSEntry *entry;
     SDL_TLSData *storage = NULL;
 
-#if !SDL_THREADS_DISABLED
+#ifndef SDL_THREADS_DISABLED
     if (!SDL_generic_TLS_mutex) {
         static SDL_SpinLock tls_lock;
         SDL_AtomicLock(&tls_lock);
@@ -144,7 +144,7 @@ SDL_TLSData *SDL_Generic_GetTLSData(void)
             break;
         }
     }
-#if !SDL_THREADS_DISABLED
+#ifndef SDL_THREADS_DISABLED
     SDL_UnlockMutex(SDL_generic_TLS_mutex);
 #endif
 
@@ -202,7 +202,7 @@ static SDL_error *SDL_GetStaticErrBuf()
     return &SDL_global_error;
 }
 
-#if !SDL_THREADS_DISABLED
+#ifndef SDL_THREADS_DISABLED
 static void SDLCALL SDL_FreeErrBuf(void *data)
 {
     SDL_error *errbuf = (SDL_error *)data;
@@ -217,7 +217,7 @@ static void SDLCALL SDL_FreeErrBuf(void *data)
 /* Routine to get the thread-specific error variable */
 SDL_error *SDL_GetErrBuf(void)
 {
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
     return SDL_GetStaticErrBuf();
 #else
     static SDL_SpinLock tls_lock;

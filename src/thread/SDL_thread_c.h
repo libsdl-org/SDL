@@ -26,7 +26,7 @@
 #include "SDL_thread.h"
 
 /* Need the definitions of SYS_ThreadHandle */
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
 #include "generic/SDL_systhread_c.h"
 #elif SDL_THREAD_PTHREAD
 #include "pthread/SDL_systhread_c.h"

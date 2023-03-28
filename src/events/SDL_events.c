@@ -621,7 +621,7 @@ int SDL_StartEventLoop(void)
      */
 
     /* Create the lock and set ourselves active */
-#if !SDL_THREADS_DISABLED
+#ifndef SDL_THREADS_DISABLED
     if (!SDL_EventQ.lock) {
         SDL_EventQ.lock = SDL_CreateMutex();
         if (SDL_EventQ.lock == NULL) {
