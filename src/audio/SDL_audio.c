@@ -102,7 +102,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_PSP
     &PSPAUDIO_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_VITA
+#ifdef SDL_AUDIO_DRIVER_VITA
     &VITAAUD_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_N3DS
