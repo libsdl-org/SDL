@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_HAPTIC_DINPUT) || SDL_HAPTIC_XINPUT
+#if defined(SDL_HAPTIC_DINPUT) || defined(SDL_HAPTIC_XINPUT)
 
 #include "../SDL_syshaptic.h"
 #include "../../joystick/SDL_sysjoystick.h"               /* For the real SDL_Joystick */
@@ -178,7 +178,7 @@ int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
     if (joystick->driver != &SDL_WINDOWS_JoystickDriver) {
         return 0;
     }
-#if SDL_HAPTIC_XINPUT
+#ifdef SDL_HAPTIC_XINPUT
     if (joystick->hwdata->bXInputHaptic) {
         return 1;
     }
