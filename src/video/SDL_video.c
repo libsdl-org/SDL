@@ -3458,6 +3458,10 @@ void SDL_DestroyWindow(SDL_Window *window)
         _this->grabbed_window = NULL; /* ungrabbing input. */
     }
 
+    if (_this->current_glwin == window) {
+        _this->current_glwin = NULL;
+    }
+
     /* Now invalidate magic */
     window->magic = NULL;
 
