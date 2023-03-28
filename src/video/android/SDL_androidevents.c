@@ -40,7 +40,7 @@ static void ANDROIDAUDIO_ResumeDevices(void) {}
 static void ANDROIDAUDIO_PauseDevices(void) {}
 #endif
 
-#if !defined(SDL_AUDIO_DISABLED) && SDL_AUDIO_DRIVER_OPENSLES
+#if !defined(SDL_AUDIO_DISABLED) && defined(SDL_AUDIO_DRIVER_OPENSLES)
 extern void openslES_ResumeDevices(void);
 extern void openslES_PauseDevices(void);
 #else

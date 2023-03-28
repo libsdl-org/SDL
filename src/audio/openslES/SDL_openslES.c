@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_OPENSLES
+#ifdef SDL_AUDIO_DRIVER_OPENSLES
 
 /* For more discussion of low latency audio on Android, see this:
    https://googlesamples.github.io/android-audio-high-performance/guides/opensl_es.html
