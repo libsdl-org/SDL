@@ -50,7 +50,7 @@ static void openslES_ResumeDevices(void)
 static void openslES_PauseDevices(void) {}
 #endif
 
-#if !defined(SDL_AUDIO_DISABLED) && SDL_AUDIO_DRIVER_AAUDIO
+#if !defined(SDL_AUDIO_DISABLED) && defined(SDL_AUDIO_DRIVER_AAUDIO)
 extern void aaudio_ResumeDevices(void);
 extern void aaudio_PauseDevices(void);
 SDL_bool aaudio_DetectBrokenPlayState(void);

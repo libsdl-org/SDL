@@ -87,7 +87,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_FUSIONSOUND
     &FUSIONSOUND_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_AAUDIO
+#ifdef SDL_AUDIO_DRIVER_AAUDIO
     &aaudio_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_OPENSLES
