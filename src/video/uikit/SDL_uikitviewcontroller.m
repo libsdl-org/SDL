@@ -78,7 +78,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     void (*animationCallback)(void *);
     void *animationCallbackParam;
 
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
     SDLUITextField *textField;
     BOOL hardwareKeyboard;
     BOOL showingKeyboard;
@@ -95,7 +95,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     if (self = [super initWithNibName:nil bundle:nil]) {
         self.window = _window;
 
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
         [self initKeyboard];
         hardwareKeyboard = NO;
         showingKeyboard = NO;
@@ -119,7 +119,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (void)dealloc
 {
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
     [self deinitKeyboard];
 #endif
 
@@ -258,7 +258,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 /*
  ---- Keyboard related functionality below this line ----
  */
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
 
 @synthesize textInputRect;
 @synthesize keyboardHeight;
@@ -509,7 +509,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 @end
 
 /* iPhone keyboard addition functions */
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
 
 static SDL_uikitviewcontroller *GetWindowViewController(SDL_Window *window)
 {
