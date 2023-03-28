@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
             (void)SDL_snprintf(prefix, sizeof(prefix), "    MODE %d", m);
             print_mode(prefix, modes[m]);
         }
-        SDL_free(modes);
+        SDL_free((void*)modes);
 
         SDL_Log("\n");
     }
