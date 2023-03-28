@@ -67,7 +67,7 @@ struct SDL_WindowData
     WCHAR *ICMFileName;
     SDL_Window *keyboard_focus;
     struct SDL_VideoData *videodata;
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
     /**
