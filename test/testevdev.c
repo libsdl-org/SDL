@@ -30,7 +30,7 @@
 static int run_test(void);
 
 /* FIXME: Need CMake tests for this */
-#if (defined(HAVE_LIBUDEV_H) || defined(SDL_JOYSTICK_LINUX)) && HAVE_LINUX_INPUT_H
+#if (defined(HAVE_LIBUDEV_H) || defined(SDL_JOYSTICK_LINUX)) && defined(HAVE_LINUX_INPUT_H)
 
 #include <stdint.h>
 
