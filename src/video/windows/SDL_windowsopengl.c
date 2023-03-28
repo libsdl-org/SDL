@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
 
 #include "SDL_loadso.h"
 #include "SDL_windowsvideo.h"

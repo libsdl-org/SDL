@@ -22,7 +22,7 @@
 
 #if SDL_VIDEO_OPENGL_EGL
 
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || SDL_VIDEO_DRIVER_WINRT
 #include "../core/windows/SDL_windows.h"
 #endif
 #ifdef SDL_VIDEO_DRIVER_ANDROID
@@ -73,7 +73,7 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so"
 
-#elif SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
+#elif defined(SDL_VIDEO_DRIVER_WINDOWS) || SDL_VIDEO_DRIVER_WINRT
 /* EGL AND OpenGL ES support via ANGLE */
 #define DEFAULT_EGL "libEGL.dll"
 #define DEFAULT_OGL_ES2 "libGLESv2.dll"
@@ -295,14 +295,14 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 {
     void *egl_dll_handle = NULL, *opengl_dll_handle = NULL;
     const char *path = NULL;
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || SDL_VIDEO_DRIVER_WINRT
     const char *d3dcompiler;
 #endif
 #if SDL_VIDEO_DRIVER_RPI
     SDL_bool vc4 = (0 == access("/sys/module/vc4/", F_OK));
 #endif
 
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || SDL_VIDEO_DRIVER_WINRT
     d3dcompiler = SDL_GetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER);
     if (d3dcompiler) {
         if (SDL_strcasecmp(d3dcompiler, "none") != 0) {
