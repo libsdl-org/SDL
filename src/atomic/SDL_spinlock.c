@@ -63,7 +63,7 @@ extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 /* This function is where all the magic happens... */
 SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
 {
-#if SDL_ATOMIC_DISABLED
+#ifdef SDL_ATOMIC_DISABLED
     /* Terrible terrible damage */
     static SDL_mutex *_spinlock_mutex;
 
