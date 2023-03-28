@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_COCOA
+#ifdef SDL_VIDEO_DRIVER_COCOA
 
 #if !__has_feature(objc_arc)
 #error SDL must be built with Objective-C ARC (automatic reference counting) enabled
