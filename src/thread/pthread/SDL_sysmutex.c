@@ -24,7 +24,7 @@
 #include <pthread.h>
 
 #if !defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX) && \
-    !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
+    !defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP)
 #define FAKE_RECURSIVE_MUTEX 1
 #endif
 
@@ -49,7 +49,7 @@ SDL_CreateMutex(void)
         pthread_mutexattr_init(&attr);
 #if defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX)
         pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-#elif SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
+#elif defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP)
         pthread_mutexattr_setkind_np(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
 #else
         /* No extra attributes necessary */
