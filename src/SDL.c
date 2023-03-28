@@ -620,7 +620,7 @@ const char *SDL_GetPlatform(void)
     return "Xbox Series X|S";
 #elif __TVOS__
     return "tvOS";
-#elif __IPHONEOS__
+#elif defined(__IPHONEOS__)
     return "iOS";
 #elif __PS2__
     return "PlayStation 2";
@@ -642,7 +642,7 @@ SDL_bool SDL_IsTablet(void)
 #if defined(__ANDROID__)
     extern SDL_bool SDL_IsAndroidTablet(void);
     return SDL_IsAndroidTablet();
-#elif __IPHONEOS__
+#elif defined(__IPHONEOS__)
     extern SDL_bool SDL_IsIPad(void);
     return SDL_IsIPad();
 #else
