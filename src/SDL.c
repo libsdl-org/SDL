@@ -54,7 +54,7 @@
 #include "sensor/SDL_sensor_c.h"
 
 /* Initialization/Cleanup routines */
-#if !SDL_TIMERS_DISABLED
+#ifndef SDL_TIMERS_DISABLED
 #include "timer/SDL_timer_c.h"
 #endif
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
@@ -210,7 +210,7 @@ int SDL_InitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_TIMERS_DISABLED
+#ifndef SDL_TIMERS_DISABLED
     SDL_TicksInit();
 #endif
 
@@ -232,7 +232,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the timer subsystem */
     if (flags & SDL_INIT_TIMER) {
-#if !SDL_TIMERS_DISABLED && !SDL_TIMER_DUMMY
+#if !defined(SDL_TIMERS_DISABLED) && !SDL_TIMER_DUMMY
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_TIMER)) {
             if (SDL_TimerInit() < 0) {
                 goto quit_and_error;
@@ -445,7 +445,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_TIMERS_DISABLED && !SDL_TIMER_DUMMY
+#if !defined(SDL_TIMERS_DISABLED) && !SDL_TIMER_DUMMY
     if (flags & SDL_INIT_TIMER) {
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_TIMER)) {
             SDL_TimerQuit();
@@ -504,7 +504,7 @@ void SDL_Quit(void)
 #endif
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 
-#if !SDL_TIMERS_DISABLED
+#ifndef SDL_TIMERS_DISABLED
     SDL_TicksQuit();
 #endif
 
