@@ -30,7 +30,7 @@
 */
 
 /* direct jump magic can use these, the rest needs special code. */
-#if !SDL_DYNAPI_PROC_NO_VARARGS
+#ifndef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_PROC(int,SDL_SetError,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a),return)
 SDL_DYNAPI_PROC(void,SDL_Log,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a),)
 SDL_DYNAPI_PROC(void,SDL_LogVerbose,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
@@ -888,7 +888,7 @@ SDL_DYNAPI_PROC(void*,SDL_GetTextureUserData,(SDL_Texture *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_RenderGeometry,(SDL_Renderer *a, SDL_Texture *b, const SDL_Vertex *c, int d, const int *e, int f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(int,SDL_RenderGeometryRaw,(SDL_Renderer *a, SDL_Texture *b, const float *c, int d, const SDL_Color *e, int f, const float *g, int h, int i, const void *j, int k, int l),(a,b,c,d,e,f,g,h,i,j,k,l),return)
 SDL_DYNAPI_PROC(int,SDL_RenderSetVSync,(SDL_Renderer *a, int b),(a,b),return)
-#if !SDL_DYNAPI_PROC_NO_VARARGS
+#ifndef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_PROC(int,SDL_asprintf,(char **a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),return)
 #endif
 SDL_DYNAPI_PROC(int,SDL_vasprintf,(char **a, const char *b, va_list c),(a,b,c),return)
