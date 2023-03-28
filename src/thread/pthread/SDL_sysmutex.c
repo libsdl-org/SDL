@@ -23,7 +23,7 @@
 #include <errno.h>
 #include <pthread.h>
 
-#if !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX && \
+#if !defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX) && \
     !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
 #define FAKE_RECURSIVE_MUTEX 1
 #endif
@@ -47,7 +47,7 @@ SDL_CreateMutex(void)
     mutex = (SDL_mutex *)SDL_calloc(1, sizeof(*mutex));
     if (mutex) {
         pthread_mutexattr_init(&attr);
-#if SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
+#if defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX)
         pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 #elif SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
         pthread_mutexattr_setkind_np(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
