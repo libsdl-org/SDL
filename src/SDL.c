@@ -248,7 +248,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the video subsystem */
     if (flags & SDL_INIT_VIDEO) {
-#if !SDL_VIDEO_DISABLED
+#ifndef SDL_VIDEO_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_VIDEO)) {
             /* video implies events */
             if (!SDL_PrivateInitOrIncrSubsystem(SDL_INIT_EVENTS)) {
@@ -434,7 +434,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_VIDEO_DISABLED
+#ifndef SDL_VIDEO_DISABLED
     if (flags & SDL_INIT_VIDEO) {
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_VIDEO)) {
             SDL_VideoQuit();
