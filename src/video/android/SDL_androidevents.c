@@ -32,7 +32,7 @@
 /* Can't include sysaudio "../../audio/android/SDL_androidaudio.h"
  * because of THIS redefinition */
 
-#if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_ANDROID
+#if !defined(SDL_AUDIO_DISABLED) && SDL_AUDIO_DRIVER_ANDROID
 extern void ANDROIDAUDIO_ResumeDevices(void);
 extern void ANDROIDAUDIO_PauseDevices(void);
 #else
@@ -40,7 +40,7 @@ static void ANDROIDAUDIO_ResumeDevices(void) {}
 static void ANDROIDAUDIO_PauseDevices(void) {}
 #endif
 
-#if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_OPENSLES
+#if !defined(SDL_AUDIO_DISABLED) && SDL_AUDIO_DRIVER_OPENSLES
 extern void openslES_ResumeDevices(void);
 extern void openslES_PauseDevices(void);
 #else
@@ -50,7 +50,7 @@ static void openslES_ResumeDevices(void)
 static void openslES_PauseDevices(void) {}
 #endif
 
-#if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_AAUDIO
+#if !defined(SDL_AUDIO_DISABLED) && SDL_AUDIO_DRIVER_AAUDIO
 extern void aaudio_ResumeDevices(void);
 extern void aaudio_PauseDevices(void);
 SDL_bool aaudio_DetectBrokenPlayState(void);
