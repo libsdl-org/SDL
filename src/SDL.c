@@ -29,7 +29,7 @@
 #endif
 #if defined(__OS2__)
 #include "core/os2/SDL_os2.h"
-#if SDL_THREAD_OS2
+#ifdef SDL_THREAD_OS2
 #include "thread/os2/SDL_systls_c.h"
 #endif
 #endif
@@ -198,7 +198,7 @@ int SDL_InitSubSystem(Uint32 flags)
     SDL_DBus_Init();
 #endif
 
-#if SDL_THREAD_OS2
+#ifdef SDL_THREAD_OS2
     SDL_OS2TLSAlloc(); /* thread/os2/SDL_systls.c */
 #endif
 
@@ -378,7 +378,7 @@ int SDL_Init(Uint32 flags)
 void SDL_QuitSubSystem(Uint32 flags)
 {
 #if defined(__OS2__)
-#if SDL_THREAD_OS2
+#ifdef SDL_THREAD_OS2
     SDL_OS2TLSFree(); /* thread/os2/SDL_systls.c */
 #endif
     SDL_OS2Quit();
