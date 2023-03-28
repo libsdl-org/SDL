@@ -578,7 +578,7 @@ const char *SDL_GetPlatform(void)
     return "Emscripten";
 #elif defined(__FREEBSD__)
     return "FreeBSD";
-#elif __HAIKU__
+#elif defined(__HAIKU__)
     return "Haiku";
 #elif __HPUX__
     return "HP-UX";
