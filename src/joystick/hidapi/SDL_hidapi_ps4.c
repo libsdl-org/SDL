@@ -605,13 +605,15 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
 
             if (device->vendor_id == USB_VENDOR_SONY &&
                 device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
-                /* The Armor-X Pro seems to rotate in the opposite direction on the Z axis */
+                /* The Armor-X Pro seems to only deliver half the rotation it should,
+                 * and in the opposite direction on the Z axis */
                 switch (i) {
                 case 0:
                 case 1:
+                    scale *= 2.0;
                     break;
                 case 2:
-                    scale *= -1.0;
+                    scale *= -2.0;
                     break;
                 default:
                     break;
