@@ -54,7 +54,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_SUNAUDIO
     &SUNAUDIO_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_ARTS
+#ifdef SDL_AUDIO_DRIVER_ARTS
     &ARTS_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_ESD

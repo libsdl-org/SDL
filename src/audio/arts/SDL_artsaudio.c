@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_ARTS
+#ifdef SDL_AUDIO_DRIVER_ARTS
 
 /* Allow access to a raw mixing buffer */
 
