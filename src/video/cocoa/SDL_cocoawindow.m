@@ -1876,7 +1876,7 @@ int Cocoa_CreateWindow(_THIS, SDL_Window *window)
 #pragma clang diagnostic pop
 #endif
 
-#if SDL_VIDEO_OPENGL_ES2
+#ifdef SDL_VIDEO_OPENGL_ES2
 #ifdef SDL_VIDEO_OPENGL_EGL
         if ((window->flags & SDL_WINDOW_OPENGL) &&
             _this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
