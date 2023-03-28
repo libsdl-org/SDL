@@ -468,7 +468,7 @@ static int CPU_haveNEON(void)
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
 #elif (defined(__ARM_ARCH) && (__ARM_ARCH >= 8)) || defined(__aarch64__)
     return 1; /* ARMv8 always has non-optional NEON support. */
-#elif __VITA__
+#elif defined(__VITA__)
     return 1;
 #elif __3DS__
     return 0;
