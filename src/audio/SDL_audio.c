@@ -75,7 +75,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_WINMM
     &WINMM_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_PAUDIO
+#ifdef SDL_AUDIO_DRIVER_PAUDIO
     &PAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_HAIKU
