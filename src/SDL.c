@@ -290,7 +290,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the joystick subsystem */
     if (flags & SDL_INIT_JOYSTICK) {
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_JOYSTICK)) {
             /* joystick implies events */
             if (!SDL_PrivateInitOrIncrSubsystem(SDL_INIT_EVENTS)) {
@@ -310,7 +310,7 @@ int SDL_InitSubSystem(Uint32 flags)
     }
 
     if (flags & SDL_INIT_GAMECONTROLLER) {
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_GAMECONTROLLER)) {
             /* game controller implies joystick */
             if (!SDL_PrivateInitOrIncrSubsystem(SDL_INIT_JOYSTICK)) {
@@ -394,7 +394,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
     if (flags & SDL_INIT_GAMECONTROLLER) {
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_GAMECONTROLLER)) {
             SDL_GameControllerQuit();
