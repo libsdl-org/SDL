@@ -30,7 +30,7 @@
 #error You should not be here.
 #endif
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
 #define VK_USE_PLATFORM_ANDROID_KHR
 #endif
 #if SDL_VIDEO_DRIVER_COCOA

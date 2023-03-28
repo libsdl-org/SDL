@@ -95,7 +95,7 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_UIKIT
     &UIKIT_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     &Android_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_PS2
@@ -4369,7 +4369,7 @@ int SDL_GetMessageBoxCount(void)
     return SDL_AtomicGet(&SDL_messagebox_count);
 }
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
 #include "android/SDL_androidmessagebox.h"
 #endif
 #if SDL_VIDEO_DRIVER_WINDOWS
@@ -4466,7 +4466,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     }
 
     /* It's completely fine to call this function before video is initialized */
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     if (retval == -1 &&
         Android_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
