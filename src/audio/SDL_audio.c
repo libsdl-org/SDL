@@ -99,7 +99,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_PS2
     &PS2AUDIO_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_PSP
+#ifdef SDL_AUDIO_DRIVER_PSP
     &PSPAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_VITA

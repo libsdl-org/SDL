@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_PSP
+#ifdef SDL_AUDIO_DRIVER_PSP
 
 #include <stdio.h>
 #include <string.h>
