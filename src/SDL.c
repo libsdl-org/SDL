@@ -347,7 +347,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the sensor subsystem */
     if (flags & SDL_INIT_SENSOR) {
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_SENSOR)) {
             if (SDL_SensorInit() < 0) {
                 goto quit_and_error;
@@ -385,7 +385,7 @@ void SDL_QuitSubSystem(Uint32 flags)
 #endif
 
     /* Shut down requested initialized subsystems */
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     if (flags & SDL_INIT_SENSOR) {
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_SENSOR)) {
             SDL_SensorQuit();

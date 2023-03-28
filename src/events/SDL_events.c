@@ -119,7 +119,7 @@ static void SDLCALL SDL_AutoUpdateJoysticksChanged(void *userdata, const char *n
 
 #endif /* !SDL_JOYSTICK_DISABLED */
 
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
 
 static SDL_bool SDL_update_sensors = SDL_TRUE;
 
@@ -929,7 +929,7 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
     }
 #endif
 
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     /* Check for sensor state change */
     if (SDL_update_sensors) {
         SDL_SensorUpdate();
@@ -973,7 +973,7 @@ static SDL_bool SDL_events_need_periodic_poll()
         SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks;
 #endif
 
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     need_periodic_poll = need_periodic_poll ||
                          (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors);
 #endif
@@ -1060,7 +1060,7 @@ static SDL_bool SDL_events_need_polling()
         (SDL_NumJoysticks() > 0);
 #endif
 
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     need_polling = need_polling ||
                    (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && (SDL_NumSensors() > 0));
 #endif
@@ -1345,7 +1345,7 @@ Uint8 SDL_EventState(Uint32 type, int state)
 #ifndef SDL_JOYSTICK_DISABLED
         SDL_CalculateShouldUpdateJoysticks(SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_TRUE));
 #endif
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
         SDL_CalculateShouldUpdateSensors(SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_TRUE));
 #endif
     }
@@ -1416,7 +1416,7 @@ int SDL_EventsInit(void)
 #ifndef SDL_JOYSTICK_DISABLED
     SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
 #endif
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
 #endif
     SDL_AddHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
@@ -1440,7 +1440,7 @@ void SDL_EventsQuit(void)
 #ifndef SDL_JOYSTICK_DISABLED
     SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
 #endif
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
 #endif
 }
