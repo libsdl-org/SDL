@@ -597,7 +597,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 #elif __WINRT__
         FILE *fp = NULL;
         fopen_s(&fp, file, mode);
-#elif __3DS__
+#elif defined(__3DS__)
         FILE *fp = N3DS_FileOpen(file, mode);
 #else
         FILE *fp = fopen(file, mode);
