@@ -93,7 +93,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_OPENSLES
     &openslES_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_ANDROID
+#ifdef SDL_AUDIO_DRIVER_ANDROID
     &ANDROIDAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_PS2
@@ -658,7 +658,7 @@ void SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
     current_audio.impl.UnlockDevice(device);
 }
 
-#if SDL_AUDIO_DRIVER_ANDROID
+#ifdef SDL_AUDIO_DRIVER_ANDROID
 extern void Android_JNI_AudioSetThreadPriority(int, int);
 #endif
 
@@ -673,7 +673,7 @@ static int SDLCALL SDL_RunAudio(void *devicep)
 
     SDL_assert(!device->iscapture);
 
-#if SDL_AUDIO_DRIVER_ANDROID
+#ifdef SDL_AUDIO_DRIVER_ANDROID
     {
         /* Set thread priority to THREAD_PRIORITY_AUDIO */
         Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);
@@ -773,7 +773,7 @@ static int SDLCALL SDL_CaptureAudio(void *devicep)
 
     SDL_assert(device->iscapture);
 
-#if SDL_AUDIO_DRIVER_ANDROID
+#ifdef SDL_AUDIO_DRIVER_ANDROID
     {
         /* Set thread priority to THREAD_PRIORITY_AUDIO */
         Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);

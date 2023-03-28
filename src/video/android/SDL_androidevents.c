@@ -32,7 +32,7 @@
 /* Can't include sysaudio "../../audio/android/SDL_androidaudio.h"
  * because of THIS redefinition */
 
-#if !defined(SDL_AUDIO_DISABLED) && SDL_AUDIO_DRIVER_ANDROID
+#if !defined(SDL_AUDIO_DISABLED) && defined(SDL_AUDIO_DRIVER_ANDROID)
 extern void ANDROIDAUDIO_ResumeDevices(void);
 extern void ANDROIDAUDIO_PauseDevices(void);
 #else

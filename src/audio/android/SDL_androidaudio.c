@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_ANDROID
+#ifdef SDL_AUDIO_DRIVER_ANDROID
 
 /* Output audio to Android */
 
