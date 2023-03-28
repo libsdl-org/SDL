@@ -60,6 +60,18 @@ static NSString *GCInputXboxShareButton = @"Button Share";
 #include <Availability.h>
 #include <objc/message.h>
 
+#ifndef __IPHONE_OS_VERSION_MAX_ALLOWED
+#define __IPHONE_OS_VERSION_MAX_ALLOWED 0
+#endif
+
+#ifndef __APPLETV_OS_VERSION_MAX_ALLOWED
+#define __APPLETV_OS_VERSION_MAX_ALLOWED 0
+#endif
+
+#ifndef __MAC_OS_VERSION_MAX_ALLOWED
+#define __MAC_OS_VERSION_MAX_ALLOWED 0
+#endif
+
 /* remove compilation warnings for strict builds by defining these selectors, even though
  * they are only ever used indirectly through objc_msgSend
  */
