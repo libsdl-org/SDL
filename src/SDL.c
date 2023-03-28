@@ -570,7 +570,7 @@ const char *SDL_GetPlatform(void)
     return "AIX";
 #elif defined(__ANDROID__)
     return "Android";
-#elif __BSDI__
+#elif defined(__BSDI__)
     return "BSDI";
 #elif __DREAMCAST__
     return "Dreamcast";
