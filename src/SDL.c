@@ -566,7 +566,7 @@ int SDL_GetRevisionNumber(void)
 /* Get the name of the platform */
 const char *SDL_GetPlatform(void)
 {
-#if __AIX__
+#if defined(__AIX__)
     return "AIX";
 #elif __ANDROID__
     return "Android";
