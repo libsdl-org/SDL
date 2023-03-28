@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_ESD
+#ifdef SDL_AUDIO_DRIVER_ESD
 
 /* Allow access to an ESD network stream mixing buffer */
 
