@@ -896,7 +896,7 @@ static enum blit_features GetBlitFeatures(void)
     return features;
 }
 
-#if __MWERKS__
+#ifdef __MWERKS__
 #pragma altivec_model off
 #endif
 #else
