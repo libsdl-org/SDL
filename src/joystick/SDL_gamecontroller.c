@@ -32,7 +32,7 @@
 #include "usb_ids.h"
 #include "hidapi/SDL_hidapi_nintendo.h"
 
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
 #endif
 
@@ -3061,7 +3061,7 @@ static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL
 
     /* translate the event, if desired */
     posted = 0;
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     if (SDL_GetEventState(SDL_CONTROLLERAXISMOTION) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_CONTROLLERAXISMOTION;
@@ -3080,7 +3080,7 @@ static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL
 static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state)
 {
     int posted;
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     SDL_Event event;
 
     SDL_AssertJoysticksLocked();
@@ -3122,7 +3122,7 @@ static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, S
 
     /* translate the event, if desired */
     posted = 0;
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     if (SDL_GetEventState(event.type) == SDL_ENABLE) {
         event.cbutton.which = gamecontroller->joystick->instance_id;
         event.cbutton.button = button;
@@ -3138,7 +3138,7 @@ static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, S
  */
 int SDL_GameControllerEventState(int state)
 {
-#if SDL_EVENTS_DISABLED
+#ifdef SDL_EVENTS_DISABLED
     return SDL_IGNORE;
 #else
     const Uint32 event_list[] = {

@@ -27,7 +27,7 @@
 #include "SDL_events.h"
 #include "SDL_syssensor.h"
 
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
 #endif
 
@@ -75,7 +75,7 @@ int SDL_SensorInit(void)
         SDL_sensor_lock = SDL_CreateMutex();
     }
 
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) {
         return -1;
     }
@@ -454,7 +454,7 @@ void SDL_SensorQuit(void)
 
     SDL_UnlockSensors();
 
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
 #endif
 
@@ -479,7 +479,7 @@ int SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data
 
     /* Post the event, if desired */
     posted = 0;
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     if (SDL_GetEventState(SDL_SENSORUPDATE) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_SENSORUPDATE;

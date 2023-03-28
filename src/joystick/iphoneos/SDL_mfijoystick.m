@@ -33,7 +33,7 @@
 
 #include "SDL_mfijoystick_c.h"
 
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
 #include "../../events/SDL_events_c.h"
 #endif
 

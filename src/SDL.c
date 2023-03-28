@@ -216,7 +216,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the event subsystem */
     if (flags & SDL_INIT_EVENTS) {
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_EVENTS)) {
             if (SDL_EventsInit() < 0) {
                 goto quit_and_error;
@@ -454,7 +454,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     if (flags & SDL_INIT_EVENTS) {
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_EVENTS)) {
             SDL_EventsQuit();
