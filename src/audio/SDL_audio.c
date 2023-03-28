@@ -69,7 +69,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_WASAPI
     &WASAPI_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_DSOUND
+#ifdef SDL_AUDIO_DRIVER_DSOUND
     &DSOUND_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_WINMM
@@ -932,7 +932,7 @@ int SDL_AudioInit(const char *driver_name)
             const char *driver_attempt_end = SDL_strchr(driver_attempt, ',');
             size_t driver_attempt_len = (driver_attempt_end != NULL) ? (driver_attempt_end - driver_attempt)
                                                                      : SDL_strlen(driver_attempt);
-#if SDL_AUDIO_DRIVER_DSOUND
+#ifdef SDL_AUDIO_DRIVER_DSOUND
             /* SDL 1.2 uses the name "dsound", so we'll support both. */
             if (driver_attempt_len == SDL_strlen("dsound") &&
                 (SDL_strncasecmp(driver_attempt, "dsound", driver_attempt_len) == 0)) {
