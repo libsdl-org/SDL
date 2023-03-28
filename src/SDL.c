@@ -331,7 +331,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the haptic subsystem */
     if (flags & SDL_INIT_HAPTIC) {
-#if !SDL_HAPTIC_DISABLED
+#ifndef SDL_HAPTIC_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_HAPTIC)) {
             if (SDL_HapticInit() < 0) {
                 goto quit_and_error;
@@ -414,7 +414,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_HAPTIC_DISABLED
+#ifndef SDL_HAPTIC_DISABLED
     if (flags & SDL_INIT_HAPTIC) {
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_HAPTIC)) {
             SDL_HapticQuit();
