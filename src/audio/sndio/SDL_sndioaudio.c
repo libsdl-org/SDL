@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_SNDIO
+#ifdef SDL_AUDIO_DRIVER_SNDIO
 
 /* OpenBSD sndio target */
 
