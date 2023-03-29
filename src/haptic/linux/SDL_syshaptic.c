@@ -32,7 +32,8 @@
 #include <linux/input.h> /* Force feedback linux stuff. */
 #include <fcntl.h>       /* O_RDWR */
 #include <limits.h>      /* INT_MAX */
-#include <errno.h>       /* errno, strerror */
+#include <errno.h>       /* errno */
+#include <string.h>      /* strerror */
 #include <sys/stat.h>    /* stat */
 
 #define MAX_HAPTICS 32 /* It's doubtful someone has more then 32 evdev */

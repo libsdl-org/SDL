@@ -34,6 +34,7 @@
 #include <limits.h> /* For the definition of PATH_MAX */
 #ifdef HAVE_INOTIFY
 #include <sys/inotify.h>
+#include <string.h> /* strerror */
 #endif
 #include <sys/ioctl.h>
 #include <unistd.h>
