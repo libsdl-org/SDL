@@ -46,7 +46,7 @@
 #include <X11/extensions/XShm.h>
 #endif
 
-#if SDL_VIDEO_DRIVER_X11_XCURSOR
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 #include <X11/Xcursor/Xcursor.h>
 #endif
 #if SDL_VIDEO_DRIVER_X11_XDBE

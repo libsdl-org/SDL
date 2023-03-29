@@ -248,7 +248,7 @@ SDL_X11_SYM(int,ipUnallocateAndSendData,(ChannelPtr a,IPCard b),(a,b),return)
 #endif
 
 /* XCursor support */
-#if SDL_VIDEO_DRIVER_X11_XCURSOR
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 SDL_X11_MODULE(XCURSOR)
 SDL_X11_SYM(XcursorImage*,XcursorImageCreate,(int a,int b),(a,b),return)
 SDL_X11_SYM(void,XcursorImageDestroy,(XcursorImage *a),(a),)

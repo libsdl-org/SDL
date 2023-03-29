@@ -80,7 +80,7 @@ static SDL_Cursor *X11_CreateDefaultCursor()
     return cursor;
 }
 
-#if SDL_VIDEO_DRIVER_X11_XCURSOR
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 static Cursor X11_CreateXCursorCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     Display *display = GetDisplay();
@@ -204,7 +204,7 @@ static SDL_Cursor *X11_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     if (cursor) {
         Cursor x11_cursor = None;
 
-#if SDL_VIDEO_DRIVER_X11_XCURSOR
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
         if (SDL_X11_HAVE_XCURSOR) {
             x11_cursor = X11_CreateXCursorCursor(surface, hot_x, hot_y);
         }
