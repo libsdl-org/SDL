@@ -89,7 +89,7 @@ this should probably be removed at some point in the future.  --ryan. */
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_DST_COLOR, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD, \
                           SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD)
 
-#if !SDL_RENDER_DISABLED
+#ifndef SDL_RENDER_DISABLED
 static const SDL_RenderDriver *render_drivers[] = {
 #ifdef SDL_VIDEO_RENDER_D3D
     &D3D_RenderDriver,
@@ -643,7 +643,7 @@ static int UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd
 
 int SDL_GetNumRenderDrivers(void)
 {
-#if !SDL_RENDER_DISABLED
+#ifndef SDL_RENDER_DISABLED
     return SDL_arraysize(render_drivers);
 #else
     return 0;
@@ -652,7 +652,7 @@ int SDL_GetNumRenderDrivers(void)
 
 int SDL_GetRenderDriverInfo(int index, SDL_RendererInfo *info)
 {
-#if !SDL_RENDER_DISABLED
+#ifndef SDL_RENDER_DISABLED
     if (index < 0 || index >= SDL_GetNumRenderDrivers()) {
         return SDL_SetError("index must be in the range of 0 - %d",
                             SDL_GetNumRenderDrivers() - 1);
@@ -878,7 +878,7 @@ int SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags,
     return 0;
 }
 
-#if !SDL_RENDER_DISABLED
+#ifndef SDL_RENDER_DISABLED
 static SDL_INLINE void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
 {
     /* all of these functions are required to be implemented, even as no-ops, so we don't
@@ -935,7 +935,7 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 
 SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
 {
-#if !SDL_RENDER_DISABLED
+#ifndef SDL_RENDER_DISABLED
     SDL_Renderer *renderer = NULL;
     int n = SDL_GetNumRenderDrivers();
     SDL_bool batching = SDL_TRUE;
@@ -1108,7 +1108,7 @@ error:
 
 SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 {
-#if !SDL_RENDER_DISABLED && SDL_VIDEO_RENDER_SW
+#if !defined(SDL_RENDER_DISABLED) && SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
 
     renderer = SW_CreateRendererForSurface(surface);
