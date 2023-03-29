@@ -254,7 +254,7 @@ int X11_GL_LoadLibrary(_THIS, const char *path)
     if (((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
          SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) &&
         X11_GL_UseEGL(_this) ) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         X11_GL_UnloadLibrary(_this);
         _this->GL_LoadLibrary = X11_GLES_LoadLibrary;
         _this->GL_GetProcAddress = X11_GLES_GetProcAddress;

@@ -73,7 +73,7 @@ static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
     device->DestroyWindowFramebuffer = SDL_OFFSCREEN_DestroyWindowFramebuffer;
     device->free = OFFSCREEN_DeleteDevice;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     /* GL context */
     device->GL_SwapWindow = OFFSCREEN_GLES_SwapWindow;
     device->GL_MakeCurrent = OFFSCREEN_GLES_MakeCurrent;

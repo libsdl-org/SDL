@@ -702,7 +702,7 @@ SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window *window)
     HGLRC context, share_context;
 
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && WIN_GL_UseEGL(_this)) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         /* Switch to EGL based functions */
         WIN_GL_UnloadLibrary(_this);
         _this->GL_LoadLibrary = WIN_GLES_LoadLibrary;

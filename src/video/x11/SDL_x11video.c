@@ -38,7 +38,7 @@
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
 #endif
 
@@ -280,7 +280,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->GL_SwapWindow = X11_GL_SwapWindow;
     device->GL_DeleteContext = X11_GL_DeleteContext;
 #endif
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 #if SDL_VIDEO_OPENGL_GLX
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) {
 #endif

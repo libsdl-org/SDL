@@ -89,7 +89,7 @@ static SDL_VideoDevice *VIVANTE_Create()
     device->DestroyWindow = VIVANTE_DestroyWindow;
     device->GetWindowWMInfo = VIVANTE_GetWindowWMInfo;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = VIVANTE_GLES_LoadLibrary;
     device->GL_GetProcAddress = VIVANTE_GLES_GetProcAddress;
     device->GL_UnloadLibrary = VIVANTE_GLES_UnloadLibrary;
@@ -281,7 +281,7 @@ int VIVANTE_CreateWindow(_THIS, SDL_Window *window)
         return SDL_SetError("VIVANTE: Can't create native window");
     }
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     if (window->flags & SDL_WINDOW_OPENGL) {
         data->egl_surface = SDL_EGL_CreateSurface(_this, data->native_window);
         if (data->egl_surface == EGL_NO_SURFACE) {
@@ -303,7 +303,7 @@ void VIVANTE_DestroyWindow(_THIS, SDL_Window *window)
 
     data = window->driverdata;
     if (data) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         if (data->egl_surface != EGL_NO_SURFACE) {
             SDL_EGL_DestroySurface(_this, data->egl_surface);
         }

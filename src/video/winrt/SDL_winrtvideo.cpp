@@ -630,7 +630,7 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
     /* Make note of the requested window flags, before they start getting changed. */
     const Uint32 requestedFlags = window->flags;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     /* Setup the EGL surface, but only if OpenGL ES 2 was requested. */
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
         /* OpenGL ES 2 wasn't requested.  Don't set up an EGL surface. */
@@ -685,7 +685,7 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
         SDL_WINDOW_BORDERLESS |
         SDL_WINDOW_RESIZABLE;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     if (data->egl_surface) {
         window->flags |= SDL_WINDOW_OPENGL;
     }

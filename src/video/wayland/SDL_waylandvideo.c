@@ -227,7 +227,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->WaitEventTimeout = Wayland_WaitEventTimeout;
     device->SendWakeupEvent = Wayland_SendWakeupEvent;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     device->GL_SwapWindow = Wayland_GLES_SwapWindow;
     device->GL_GetSwapInterval = Wayland_GLES_GetSwapInterval;
     device->GL_SetSwapInterval = Wayland_GLES_SetSwapInterval;

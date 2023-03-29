@@ -543,7 +543,7 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
         && (!_this->gl_data || WIN_GL_UseEGL(_this))
 #endif /* SDL_VIDEO_OPENGL_WGL */
     ) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         if (WIN_GLES_SetupWindow(_this, window) < 0) {
             WIN_DestroyWindow(_this, window);
             return -1;

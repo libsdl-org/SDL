@@ -23,7 +23,7 @@
 #ifndef SDL_egl_h_
 #define SDL_egl_h_
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 
 #include "SDL_egl.h"
 
@@ -42,7 +42,7 @@ typedef struct SDL_EGL_VideoData
     EGLint egl_required_visual_id;
     SDL_bool is_offscreen;  /* whether EGL display was offscreen */
     EGLenum apitype;  /* EGL_OPENGL_ES_API, EGL_OPENGL_API, etc */
-    
+
     EGLDisplay(EGLAPIENTRY *eglGetDisplay) (NativeDisplayType display);
     EGLDisplay(EGLAPIENTRY *eglGetPlatformDisplay) (EGLenum platform,
                                 void *native_display,
@@ -53,21 +53,21 @@ typedef struct SDL_EGL_VideoData
     EGLBoolean(EGLAPIENTRY *eglInitialize) (EGLDisplay dpy, EGLint * major,
                                 EGLint * minor);
     EGLBoolean(EGLAPIENTRY  *eglTerminate) (EGLDisplay dpy);
-    
+
     void *(EGLAPIENTRY *eglGetProcAddress) (const char * procName);
-    
+
     EGLBoolean(EGLAPIENTRY *eglChooseConfig) (EGLDisplay dpy,
                                   const EGLint * attrib_list,
                                   EGLConfig * configs,
                                   EGLint config_size, EGLint * num_config);
-    
+
     EGLContext(EGLAPIENTRY *eglCreateContext) (EGLDisplay dpy,
                                    EGLConfig config,
                                    EGLContext share_list,
                                    const EGLint * attrib_list);
-    
+
     EGLBoolean(EGLAPIENTRY *eglDestroyContext) (EGLDisplay dpy, EGLContext ctx);
-    
+
     EGLSurface(EGLAPIENTRY *eglCreatePbufferSurface)(EGLDisplay dpy, EGLConfig config,
                                                      EGLint const* attrib_list);
 
@@ -76,25 +76,25 @@ typedef struct SDL_EGL_VideoData
                                          NativeWindowType window,
                                          const EGLint * attrib_list);
     EGLBoolean(EGLAPIENTRY *eglDestroySurface) (EGLDisplay dpy, EGLSurface surface);
-    
+
     EGLBoolean(EGLAPIENTRY *eglMakeCurrent) (EGLDisplay dpy, EGLSurface draw,
                                  EGLSurface read, EGLContext ctx);
-    
+
     EGLBoolean(EGLAPIENTRY *eglSwapBuffers) (EGLDisplay dpy, EGLSurface draw);
-    
+
     EGLBoolean(EGLAPIENTRY *eglSwapInterval) (EGLDisplay dpy, EGLint interval);
-    
+
     const char *(EGLAPIENTRY *eglQueryString) (EGLDisplay dpy, EGLint name);
 
     EGLenum(EGLAPIENTRY *eglQueryAPI)(void);
-    
+
     EGLBoolean(EGLAPIENTRY  *eglGetConfigAttrib) (EGLDisplay dpy, EGLConfig config,
                                      EGLint attribute, EGLint * value);
-    
+
     EGLBoolean(EGLAPIENTRY *eglWaitNative) (EGLint  engine);
 
     EGLBoolean(EGLAPIENTRY *eglWaitGL)(void);
-    
+
     EGLBoolean(EGLAPIENTRY *eglBindAPI)(EGLenum);
 
     EGLint(EGLAPIENTRY *eglGetError)(void);
@@ -109,7 +109,7 @@ typedef struct SDL_EGL_VideoData
 
     EGLBoolean(EGLAPIENTRY *eglDestroySyncKHR)(EGLDisplay dpy, EGLSyncKHR sync);
 
-    EGLint(EGLAPIENTRY *eglDupNativeFenceFDANDROID)(EGLDisplay dpy, EGLSyncKHR sync); 
+    EGLint(EGLAPIENTRY *eglDupNativeFenceFDANDROID)(EGLDisplay dpy, EGLSyncKHR sync);
 
     EGLint(EGLAPIENTRY *eglWaitSyncKHR)(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags);
 

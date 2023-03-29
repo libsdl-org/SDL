@@ -47,7 +47,7 @@ int OFFSCREEN_CreateWindow(_THIS, SDL_Window *window)
 
     offscreen_window->sdl_window = window;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     if (window->flags & SDL_WINDOW_OPENGL) {
 
         if (!_this->egl_data) {
@@ -73,7 +73,7 @@ void OFFSCREEN_DestroyWindow(_THIS, SDL_Window *window)
     OFFSCREEN_Window *offscreen_window = window->driverdata;
 
     if (offscreen_window) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         SDL_EGL_DestroySurface(_this, offscreen_window->egl_surface);
 #endif
         SDL_free(offscreen_window);

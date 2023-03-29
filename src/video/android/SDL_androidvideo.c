@@ -125,7 +125,7 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->free = Android_DeleteDevice;
 
     /* GL pointers */
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = Android_GLES_LoadLibrary;
     device->GL_GetProcAddress = Android_GLES_GetProcAddress;
     device->GL_UnloadLibrary = Android_GLES_UnloadLibrary;

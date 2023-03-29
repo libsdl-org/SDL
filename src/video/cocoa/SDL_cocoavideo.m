@@ -137,7 +137,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
     device->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
     device->GL_SwapWindow = Cocoa_GL_SwapWindow;
     device->GL_DeleteContext = Cocoa_GL_DeleteContext;
-#elif SDL_VIDEO_OPENGL_EGL
+#elif defined(SDL_VIDEO_OPENGL_EGL)
     device->GL_LoadLibrary = Cocoa_GLES_LoadLibrary;
     device->GL_GetProcAddress = Cocoa_GLES_GetProcAddress;
     device->GL_UnloadLibrary = Cocoa_GLES_UnloadLibrary;

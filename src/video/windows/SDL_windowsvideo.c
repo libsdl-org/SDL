@@ -225,7 +225,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
     device->GL_SwapWindow = WIN_GL_SwapWindow;
     device->GL_DeleteContext = WIN_GL_DeleteContext;
-#elif SDL_VIDEO_OPENGL_EGL
+#elif defined(SDL_VIDEO_OPENGL_EGL)
     /* Use EGL based functions */
     device->GL_LoadLibrary = WIN_GLES_LoadLibrary;
     device->GL_GetProcAddress = WIN_GLES_GetProcAddress;

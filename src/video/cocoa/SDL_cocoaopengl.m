@@ -270,7 +270,7 @@ SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
     int interval;
 
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         /* Switch to EGL based functions */
         Cocoa_GL_UnloadLibrary(_this);
         _this->GL_LoadLibrary = Cocoa_GLES_LoadLibrary;

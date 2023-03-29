@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINRT) && SDL_VIDEO_OPENGL_EGL
+#if defined(SDL_VIDEO_DRIVER_WINRT) && defined(SDL_VIDEO_OPENGL_EGL)
 
 /* EGL implementation of SDL OpenGL support */
 
