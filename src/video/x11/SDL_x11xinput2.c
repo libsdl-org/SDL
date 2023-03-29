@@ -29,7 +29,7 @@
 
 #define MAX_AXIS 16
 
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 static int xinput2_initialized = 0;
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
@@ -112,7 +112,7 @@ static void xinput2_normalize_touch_coordinates(SDL_Window *window, double in_x,
 
 void X11_InitXinput2(_THIS)
 {
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     int version = 0;
@@ -181,7 +181,7 @@ void X11_InitXinput2(_THIS)
 #endif
 }
 
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 /* xi2 device went away? take it out of the list. */
 static void xinput2_remove_device_info(SDL_VideoData *videodata, const int device_id)
 {
@@ -266,7 +266,7 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
 
 int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
 {
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     if (cookie->extension != xinput2_opcode) {
         return 0;
     }
@@ -453,7 +453,7 @@ void X11_Xinput2SelectTouch(_THIS, SDL_Window *window)
 
 int X11_Xinput2IsInitialized()
 {
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     return xinput2_initialized;
 #else
     return 0;

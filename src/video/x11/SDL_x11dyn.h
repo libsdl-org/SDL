@@ -52,7 +52,7 @@
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
 #include <X11/extensions/Xdbe.h>
 #endif
-#if SDL_VIDEO_DRIVER_X11_XINPUT2 || defined(SDL_VIDEO_DRIVER_X11_XFIXES)
+#if defined(SDL_VIDEO_DRIVER_X11_XINPUT2) || defined(SDL_VIDEO_DRIVER_X11_XFIXES)
 #include <X11/extensions/XInput2.h>
 #endif
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
