@@ -598,7 +598,7 @@ const char *SDL_GetPlatform(void)
     return "NetBSD";
 #elif defined(__OPENBSD__)
     return "OpenBSD";
-#elif __OS2__
+#elif defined(__OS2__)
     return "OS/2";
 #elif __OSF__
     return "OSF/1";
