@@ -23,6 +23,8 @@
 #include "SDL_audio_c.h"
 #include "SDL_audiocvt_c.h"
 
+
+#ifndef SDL_CPUINFO_DISABLED
 #if defined(__x86_64__) && SDL_SSE2_INTRINSICS
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* x86_64 guarantees SSE2. */
 #elif __MACOS__ && SDL_SSE2_INTRINSICS
@@ -32,9 +34,10 @@
 #elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7) && SDL_NEON_INTRINSICS
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* All Apple ARMv7 chips promise NEON support. */
 #endif
+#endif
 
 /* Set to zero if platform is guaranteed to use a SIMD codepath here. */
-#ifndef NEED_SCALAR_CONVERTER_FALLBACKS
+#if !defined(NEED_SCALAR_CONVERTER_FALLBACKS) || SDL_CPUINFO_DISABLED
 #define NEED_SCALAR_CONVERTER_FALLBACKS 1
 #endif
 
