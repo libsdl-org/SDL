@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_NGAGE
+#ifdef SDL_VIDEO_DRIVER_NGAGE
 
 /* Being a ngage driver, there's no event stream. We just define stubs for
    most of the API. */
