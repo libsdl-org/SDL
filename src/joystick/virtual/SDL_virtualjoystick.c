@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if defined(SDL_JOYSTICK_VIRTUAL)
+#ifdef SDL_JOYSTICK_VIRTUAL
 
 /* This is the virtual implementation of the SDL joystick API */
 

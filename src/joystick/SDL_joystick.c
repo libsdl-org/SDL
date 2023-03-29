@@ -46,7 +46,7 @@
 #include <tlhelp32.h>
 #endif
 
-#if SDL_JOYSTICK_VIRTUAL
+#ifdef SDL_JOYSTICK_VIRTUAL
 #include "./virtual/SDL_virtualjoystick_c.h"
 #endif
 
@@ -606,7 +606,7 @@ int SDL_JoystickAttachVirtual(SDL_JoystickType type, int naxes, int nbuttons, in
 
 int SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc)
 {
-#if SDL_JOYSTICK_VIRTUAL
+#ifdef SDL_JOYSTICK_VIRTUAL
     int retval;
 
     SDL_LockJoysticks();
@@ -620,7 +620,7 @@ int SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc)
 
 int SDL_JoystickDetachVirtual(int device_index)
 {
-#if SDL_JOYSTICK_VIRTUAL
+#ifdef SDL_JOYSTICK_VIRTUAL
     SDL_JoystickDriver *driver;
 
     SDL_LockJoysticks();
@@ -641,7 +641,7 @@ int SDL_JoystickDetachVirtual(int device_index)
 
 SDL_bool SDL_JoystickIsVirtual(int device_index)
 {
-#if SDL_JOYSTICK_VIRTUAL
+#ifdef SDL_JOYSTICK_VIRTUAL
     SDL_JoystickDriver *driver;
     int driver_device_index;
     SDL_bool is_virtual = SDL_FALSE;
@@ -668,7 +668,7 @@ int SDL_JoystickSetVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 value)
     {
         CHECK_JOYSTICK_MAGIC(joystick, -1);
 
-#if SDL_JOYSTICK_VIRTUAL
+#ifdef SDL_JOYSTICK_VIRTUAL
         retval = SDL_JoystickSetVirtualAxisInner(joystick, axis, value);
 #else
         retval = SDL_SetError("SDL not built with virtual-joystick support");
@@ -687,7 +687,7 @@ int SDL_JoystickSetVirtualButton(SDL_Joystick *joystick, int button, Uint8 value
     {
         CHECK_JOYSTICK_MAGIC(joystick, -1);
 
-#if SDL_JOYSTICK_VIRTUAL
+#ifdef SDL_JOYSTICK_VIRTUAL
         retval = SDL_JoystickSetVirtualButtonInner(joystick, button, value);
 #else
         retval = SDL_SetError("SDL not built with virtual-joystick support");
@@ -706,7 +706,7 @@ int SDL_JoystickSetVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value)
     {
         CHECK_JOYSTICK_MAGIC(joystick, -1);
 
-#if SDL_JOYSTICK_VIRTUAL
+#ifdef SDL_JOYSTICK_VIRTUAL
         retval = SDL_JoystickSetVirtualHatInner(joystick, hat, value);
 #else
         retval = SDL_SetError("SDL not built with virtual-joystick support");
