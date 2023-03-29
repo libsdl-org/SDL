@@ -260,7 +260,7 @@ static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
 static void ScheduleContextUpdates(SDL_WindowData *data)
 {
     /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
-    #if SDL_VIDEO_OPENGL
+    #ifdef SDL_VIDEO_OPENGL
 
     #ifdef __clang__
     #pragma clang diagnostic push
@@ -2344,7 +2344,7 @@ void Cocoa_DestroyWindow(_THIS, SDL_Window * window)
             [data.nswindow close];
         }
 
-        #if SDL_VIDEO_OPENGL
+        #ifdef SDL_VIDEO_OPENGL
 
         contexts = [data.nscontexts copy];
         for (SDLOpenGLContext *context in contexts) {
