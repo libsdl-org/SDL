@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_OS2
+#ifdef SDL_VIDEO_DRIVER_OS2
 
 #include "SDL_os2video.h"
 #include "../../events/SDL_mouse_c.h"

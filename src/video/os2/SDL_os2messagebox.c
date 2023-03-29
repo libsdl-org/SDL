@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_OS2
+#ifdef SDL_VIDEO_DRIVER_OS2
 
 /* Display a OS/2 message box */
 
@@ -284,7 +284,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
     }
     pcDlgData += pDlgItem->cchText;
 
-    pDlgItem->flStyle = WS_GROUP | WS_VISIBLE | WS_CLIPSIBLINGS | 
+    pDlgItem->flStyle = WS_GROUP | WS_VISIBLE | WS_CLIPSIBLINGS |
                         FS_DLGBORDER | WS_SAVEBITS;
     pDlgItem->x  = 100;
     pDlgItem->y  = 100;
