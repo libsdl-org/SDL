@@ -121,7 +121,7 @@ static const SDL_RenderDriver *render_drivers[] = {
 #ifdef SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
     &VITA_GXM_RenderDriver,
 #endif
 #if SDL_VIDEO_RENDER_SW
