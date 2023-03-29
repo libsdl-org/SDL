@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_JOYSTICK_PS2
+#ifdef SDL_JOYSTICK_PS2
 
 /* This is the PS2 implementation of the SDL joystick API */
 #include <libmtap.h>
