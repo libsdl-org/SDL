@@ -28,7 +28,7 @@
 
 /* GLX implementation of SDL OpenGL support */
 
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_GLX
 #include "SDL_loadso.h"
 #include "SDL_x11opengles.h"
 

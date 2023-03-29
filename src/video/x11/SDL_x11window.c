@@ -391,7 +391,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     long fevent = 0;
     const char *hint = NULL;
 
-#if SDL_VIDEO_OPENGL_GLX || defined(SDL_VIDEO_OPENGL_EGL)
+#if defined(SDL_VIDEO_OPENGL_GLX) || defined(SDL_VIDEO_OPENGL_EGL)
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
 
     if (forced_visual_id && forced_visual_id[0] != '\0') {
@@ -415,7 +415,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
 #ifdef SDL_VIDEO_OPENGL_EGL
         if (((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
              SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_GLX
             && (!_this->gl_data || X11_GL_UseEGL(_this) )
 #endif
         ) {
@@ -423,7 +423,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         } else
 #endif
         {
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_GLX
             vinfo = X11_GL_GetVisual(_this, display, screen);
 #endif
         }
@@ -638,7 +638,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     if ((window->flags & SDL_WINDOW_OPENGL) &&
         ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
          SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_GLX
         && (!_this->gl_data || X11_GL_UseEGL(_this) )
 #endif
     ) {
