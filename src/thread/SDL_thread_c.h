@@ -30,7 +30,7 @@
 #include "generic/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_PTHREAD)
 #include "pthread/SDL_systhread_c.h"
-#elif SDL_THREAD_WINDOWS
+#elif defined(SDL_THREAD_WINDOWS)
 #include "windows/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_PS2)
 #include "ps2/SDL_systhread_c.h"

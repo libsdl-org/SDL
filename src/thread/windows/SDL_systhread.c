@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_WINDOWS
+#ifdef SDL_THREAD_WINDOWS
 
 /* Win32 thread management routines for SDL */
 
