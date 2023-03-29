@@ -744,6 +744,13 @@ SDL_DisplayID *SDL_GetDisplays(int *count)
     int i;
     SDL_DisplayID *displays;
 
+    if (!_this) {
+        if (count) {
+            *count = 0;
+        }
+        return SDL_UninitializedVideo();
+    }
+
     displays = (SDL_DisplayID *)SDL_malloc((_this->num_displays + 1) * sizeof(*displays));
     if (displays) {
         if (count) {
@@ -794,8 +801,7 @@ int SDL_GetDisplayIndex(SDL_DisplayID displayID)
     int display_index;
 
     if (!_this) {
-        SDL_UninitializedVideo();
-        return -1;
+        return SDL_UninitializedVideo();
     }
 
     for (display_index = 0; display_index < _this->num_displays; ++display_index) {
