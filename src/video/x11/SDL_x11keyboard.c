@@ -46,6 +46,31 @@ static SDL_ScancodeTable scancode_set[] = {
     SDL_SCANCODE_TABLE_XVNC,
 };
 
+static SDL_bool X11_ScancodeIsRemappable(SDL_Scancode scancode)
+{
+    /*
+     * XKB remappings can assign different keysyms for these scancodes, but
+     * as these keys are in fixed positions, the scancodes themselves shouldn't
+     * be switched. Mark them as not being remappable.
+     */
+    switch (scancode) {
+    case SDL_SCANCODE_ESCAPE:
+    case SDL_SCANCODE_CAPSLOCK:
+    case SDL_SCANCODE_NUMLOCKCLEAR:
+    case SDL_SCANCODE_LSHIFT:
+    case SDL_SCANCODE_RSHIFT:
+    case SDL_SCANCODE_LCTRL:
+    case SDL_SCANCODE_RCTRL:
+    case SDL_SCANCODE_LALT:
+    case SDL_SCANCODE_RALT:
+    case SDL_SCANCODE_LGUI:
+    case SDL_SCANCODE_RGUI:
+        return SDL_FALSE;
+    default:
+        return SDL_TRUE;
+    }
+}
+
 /* This function only correctly maps letters and numbers for keyboards in US QWERTY layout */
 static SDL_Scancode X11_KeyCodeToSDLScancode(_THIS, KeyCode keycode)
 {
@@ -266,8 +291,8 @@ int X11_InitKeyboard(_THIS)
             if (scancode == data->key_layout[i]) {
                 continue;
             }
-            if (default_keymap[scancode] >= SDLK_SCANCODE_MASK) {
-                /* Not a character key, safe to remap */
+            if (default_keymap[scancode] >= SDLK_SCANCODE_MASK && X11_ScancodeIsRemappable(scancode)) {
+                /* Not a character key and the scancode is safe to remap */
 #ifdef DEBUG_KEYBOARD
                 SDL_Log("Changing scancode, was %d (%s), now %d (%s)\n", data->key_layout[i], SDL_GetScancodeName(data->key_layout[i]), scancode, SDL_GetScancodeName(scancode));
 #endif
