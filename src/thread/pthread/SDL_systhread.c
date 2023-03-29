@@ -141,7 +141,7 @@ void SDL_SYS_SetupThread(const char *name)
             }
 #endif
         }
-#elif HAVE_PTHREAD_SETNAME_NP
+#elif defined(HAVE_PTHREAD_SETNAME_NP)
 #if defined(__NETBSD__)
         pthread_setname_np(pthread_self(), "%s", name);
 #else
