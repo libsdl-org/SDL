@@ -748,7 +748,9 @@ SDL_DisplayID *SDL_GetDisplays(int *count)
         if (count) {
             *count = 0;
         }
-        return SDL_UninitializedVideo();
+
+        SDL_UninitializedVideo();
+        return NULL;
     }
 
     displays = (SDL_DisplayID *)SDL_malloc((_this->num_displays + 1) * sizeof(*displays));
