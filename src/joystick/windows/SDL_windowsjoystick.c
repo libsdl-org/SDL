@@ -252,7 +252,7 @@ static LRESULT CALLBACK SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARA
         break;
     }
 
-#if SDL_JOYSTICK_RAWINPUT
+#ifdef SDL_JOYSTICK_RAWINPUT
     return CallWindowProc(RAWINPUT_WindowProc, hwnd, msg, wParam, lParam);
 #else
     return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
@@ -261,7 +261,7 @@ static LRESULT CALLBACK SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARA
 
 static void SDL_CleanupDeviceNotification(SDL_DeviceNotificationData *data)
 {
-#if SDL_JOYSTICK_RAWINPUT
+#ifdef SDL_JOYSTICK_RAWINPUT
     RAWINPUT_UnregisterNotifications();
 #endif
 
@@ -318,7 +318,7 @@ static int SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
         return -1;
     }
 
-#if SDL_JOYSTICK_RAWINPUT
+#ifdef SDL_JOYSTICK_RAWINPUT
     RAWINPUT_RegisterNotifications(data->messageWindow);
 #endif
     return 0;
@@ -824,7 +824,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver = {
 
 #else
 
-#if SDL_JOYSTICK_RAWINPUT
+#ifdef SDL_JOYSTICK_RAWINPUT
 /* The RAWINPUT driver needs the device notification setup above */
 #error SDL_JOYSTICK_RAWINPUT requires SDL_JOYSTICK_DINPUT || defined(SDL_JOYSTICK_XINPUT)
 #endif
