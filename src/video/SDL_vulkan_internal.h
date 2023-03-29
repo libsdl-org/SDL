@@ -52,7 +52,7 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #include "../core/windows/SDL_windows.h"
 #endif
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 #define VK_USE_PLATFORM_XLIB_KHR
 #define VK_USE_PLATFORM_XCB_KHR
 #endif
