@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_EMSCRIPTEN
+#ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
 
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>

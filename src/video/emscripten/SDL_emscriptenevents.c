@@ -22,7 +22,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_EMSCRIPTEN
+#ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
 
 #include <emscripten/html5.h>
 #include <emscripten/dom_pk_codes.h>

@@ -122,7 +122,7 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_NACL
     &NACL_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_EMSCRIPTEN
+#ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
     &Emscripten_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_QNX
