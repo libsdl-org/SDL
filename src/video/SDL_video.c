@@ -113,7 +113,7 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_KMSDRM
     &KMSDRM_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_RISCOS
+#ifdef SDL_VIDEO_DRIVER_RISCOS
     &RISCOS_bootstrap,
 #endif
 #ifdef SDL_VIDEO_DRIVER_RPI
@@ -4396,14 +4396,14 @@ int SDL_GetMessageBoxCount(void)
 #if SDL_VIDEO_DRIVER_OS2
 #include "os2/SDL_os2messagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_RISCOS
+#ifdef SDL_VIDEO_DRIVER_RISCOS
 #include "riscos/SDL_riscosmessagebox.h"
 #endif
 #ifdef SDL_VIDEO_DRIVER_VITA
 #include "vita/SDL_vitamessagebox.h"
 #endif
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT) || SDL_VIDEO_DRIVER_COCOA || defined(SDL_VIDEO_DRIVER_UIKIT) || defined(SDL_VIDEO_DRIVER_X11) || SDL_VIDEO_DRIVER_WAYLAND || defined(SDL_VIDEO_DRIVER_HAIKU) || SDL_VIDEO_DRIVER_OS2 || SDL_VIDEO_DRIVER_RISCOS
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT) || SDL_VIDEO_DRIVER_COCOA || defined(SDL_VIDEO_DRIVER_UIKIT) || defined(SDL_VIDEO_DRIVER_X11) || SDL_VIDEO_DRIVER_WAYLAND || defined(SDL_VIDEO_DRIVER_HAIKU) || SDL_VIDEO_DRIVER_OS2 || defined(SDL_VIDEO_DRIVER_RISCOS)
 static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
@@ -4528,7 +4528,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_RISCOS
+#ifdef SDL_VIDEO_DRIVER_RISCOS
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_RISCOS) &&
         RISCOS_ShowMessageBox(messageboxdata, buttonid) == 0) {
