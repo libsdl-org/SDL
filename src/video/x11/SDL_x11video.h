@@ -138,7 +138,7 @@ typedef struct SDL_VideoData
 
     int xrandr_event_base;
 
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     XkbDescPtr xkb;
 #endif
     int xkb_event;
