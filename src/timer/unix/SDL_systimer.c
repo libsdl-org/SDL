@@ -46,7 +46,7 @@
    Also added OS X Monotonic clock support
    Based on work in https://github.com/ThomasHabets/monotonic_clock
  */
-#if HAVE_NANOSLEEP || HAVE_CLOCK_GETTIME
+#if defined(HAVE_NANOSLEEP) || HAVE_CLOCK_GETTIME
 #include <time.h>
 #endif
 #ifdef __APPLE__
@@ -182,7 +182,7 @@ void SDL_Delay(Uint32 ms)
 {
     int was_error;
 
-#if HAVE_NANOSLEEP
+#ifdef HAVE_NANOSLEEP
     struct timespec elapsed, tv;
 #else
     struct timeval tv;
@@ -198,7 +198,7 @@ void SDL_Delay(Uint32 ms)
 #endif
 
     /* Set the timeout interval */
-#if HAVE_NANOSLEEP
+#ifdef HAVE_NANOSLEEP
     elapsed.tv_sec = ms / 1000;
     elapsed.tv_nsec = (ms % 1000) * 1000000;
 #else
@@ -207,7 +207,7 @@ void SDL_Delay(Uint32 ms)
     do {
         errno = 0;
 
-#if HAVE_NANOSLEEP
+#ifdef HAVE_NANOSLEEP
         tv.tv_sec = elapsed.tv_sec;
         tv.tv_nsec = elapsed.tv_nsec;
         was_error = nanosleep(&tv, &elapsed);
