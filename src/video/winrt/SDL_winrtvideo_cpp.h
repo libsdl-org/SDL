@@ -99,7 +99,7 @@ struct SDL_WindowData
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
-#if SDL_WINRT_USE_APPLICATIONVIEW
+#ifdef SDL_WINRT_USE_APPLICATIONVIEW
     Windows::UI::ViewManagement::ApplicationView ^ appView;
 #endif
 };

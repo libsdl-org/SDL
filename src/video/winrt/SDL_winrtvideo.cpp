@@ -406,7 +406,7 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
             if (adapterIndex == 0 && outputIndex == 0) {
                 SDL_VideoDisplay display;
                 SDL_DisplayMode mode;
-#if SDL_WINRT_USE_APPLICATIONVIEW
+#ifdef SDL_WINRT_USE_APPLICATIONVIEW
                 ApplicationView ^ appView = ApplicationView::GetForCurrentView();
 #endif
                 CoreWindow ^ coreWin = CoreWindow::GetForCurrentThread();
@@ -421,7 +421,7 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
                    failing test), whereas CoreWindow might not.  -- DavidL
                 */
 
-#if (NTDDI_VERSION >= NTDDI_WIN10) || (SDL_WINRT_USE_APPLICATIONVIEW && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+#if (NTDDI_VERSION >= NTDDI_WIN10) || (defined(SDL_WINRT_USE_APPLICATIONVIEW) && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
                 mode.w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
                 mode.h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
 #else
@@ -500,7 +500,7 @@ WINRT_DetectWindowFlags(SDL_Window *window)
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     bool is_fullscreen = false;
 
-#if SDL_WINRT_USE_APPLICATIONVIEW
+#ifdef SDL_WINRT_USE_APPLICATIONVIEW
     if (data->appView) {
         is_fullscreen = data->appView->IsFullScreenMode;
     }
@@ -622,7 +622,7 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
     */
     if (!WINRT_XAMLWasEnabled) {
         data->coreWindow = CoreWindow::GetForCurrentThread();
-#if SDL_WINRT_USE_APPLICATIONVIEW
+#ifdef SDL_WINRT_USE_APPLICATIONVIEW
         data->appView = ApplicationView::GetForCurrentView();
 #endif
     }
