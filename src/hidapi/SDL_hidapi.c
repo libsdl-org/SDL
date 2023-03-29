@@ -585,7 +585,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #include "mac/hid.c"
 #define HAVE_PLATFORM_BACKEND
 #define udev_ctx              1
-#elif defined(__WINDOWS__) || __WINGDK__
+#elif defined(__WINDOWS__) || defined(__WINGDK__)
 #include "windows/hid.c"
 #define HAVE_PLATFORM_BACKEND
 #define udev_ctx              1
