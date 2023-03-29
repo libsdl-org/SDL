@@ -477,6 +477,8 @@ static void SDL_ResampleCVT_SRC(SDL_AudioCVT *cvt, const int chans, const SDL_Au
     if (result != 0) {
         SDL_Log("src_simple() failed: %s", SRC_src_strerror(result));
     }
+#else
+    (void)result;
 #endif
 
     cvt->len_cvt = data.output_frames_gen * framelen;
