@@ -622,7 +622,7 @@ const char *SDL_GetPlatform(void)
     return "tvOS";
 #elif defined(__IPHONEOS__)
     return "iOS";
-#elif __PS2__
+#elif defined(__PS2__)
     return "PlayStation 2";
 #elif __PSP__
     return "PlayStation Portable";
