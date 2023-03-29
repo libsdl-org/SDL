@@ -21,7 +21,7 @@
 #include "../../SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
-#if SDL_POWER_ANDROID
+#ifdef SDL_POWER_ANDROID
 
 #include "SDL_power.h"
 #include "../SDL_syspower.h"
