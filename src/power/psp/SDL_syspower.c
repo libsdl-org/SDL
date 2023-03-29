@@ -22,7 +22,7 @@
 #include "../../SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
-#if SDL_POWER_PSP
+#ifdef SDL_POWER_PSP
 
 #include "SDL_power.h"
 #include <psppower.h>
