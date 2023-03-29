@@ -23,7 +23,7 @@
 #ifndef SDL_vivanteplatform_h_
 #define SDL_vivanteplatform_h_
 
-#if SDL_VIDEO_DRIVER_VIVANTE
+#ifdef SDL_VIDEO_DRIVER_VIVANTE
 
 #include "SDL_vivantevideo.h"
 
