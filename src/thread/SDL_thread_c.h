@@ -44,7 +44,7 @@
 #include "stdcpp/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_OS2)
 #include "os2/SDL_systhread_c.h"
-#elif SDL_THREAD_NGAGE
+#elif defined(SDL_THREAD_NGAGE)
 #include "ngage/SDL_systhread_c.h"
 #else
 #error Need thread implementation for this platform

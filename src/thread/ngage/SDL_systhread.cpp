@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_NGAGE
+#ifdef SDL_THREAD_NGAGE
 
 /* N-Gage thread management routines for SDL */
 
