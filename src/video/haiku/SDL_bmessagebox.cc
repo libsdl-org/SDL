@@ -358,7 +358,7 @@ HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 	// "2 BApplication objects were created. Only one is allowed."
 	BApplication *application = NULL;
 	if (be_app == NULL) {
-		application = new(std::nothrow) BApplication(signature);
+		application = new(std::nothrow) BApplication(SDL_signature);
 		if (application == NULL) {
 			return SDL_SetError("Cannot create the BApplication object. Lack of memory?");
 		}

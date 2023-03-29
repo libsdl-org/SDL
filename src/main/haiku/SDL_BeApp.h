@@ -32,7 +32,7 @@ extern int SDL_InitBeApp(void);
 extern void SDL_QuitBeApp(void);
 
 /* Be Application Signature*/
-extern const char *signature;
+extern const char *SDL_signature;
 
 /* vi: set ts=4 sw=4 expandtab: */
 
