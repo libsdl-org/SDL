@@ -581,7 +581,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #define HAVE_PLATFORM_BACKEND 1
 #endif /* SDL_USE_LIBUDEV */
 
-#elif __MACOSX__
+#elif defined(__MACOSX__)
 #include "mac/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx              1

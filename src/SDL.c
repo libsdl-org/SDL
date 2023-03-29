@@ -590,7 +590,7 @@ const char *SDL_GetPlatform(void)
     return "Atari MiNT";
 #elif defined(__MACOS__)
     return "MacOS Classic";
-#elif __MACOSX__
+#elif defined(__MACOSX__)
     return "Mac OS X";
 #elif defined(__NACL__)
     return "NaCl";
