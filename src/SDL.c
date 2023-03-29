@@ -600,7 +600,7 @@ const char *SDL_GetPlatform(void)
     return "OpenBSD";
 #elif defined(__OS2__)
     return "OS/2";
-#elif __OSF__
+#elif defined(__OSF__)
     return "OSF/1";
 #elif __QNXNTO__
     return "QNX Neutrino";
