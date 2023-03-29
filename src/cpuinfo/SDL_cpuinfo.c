@@ -57,7 +57,7 @@
 #elif defined(__FreeBSD__) && defined(__powerpc__)
 #include <machine/cpu.h>
 #include <sys/auxv.h>
-#elif SDL_ALTIVEC_BLITTERS && HAVE_SETJMP
+#elif defined(SDL_ALTIVEC_BLITTERS) && HAVE_SETJMP
 #include <signal.h>
 #include <setjmp.h>
 #endif
