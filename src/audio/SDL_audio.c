@@ -34,6 +34,9 @@ static SDL_AudioDevice *open_devices[16];
 
 /* Available audio drivers */
 static const AudioBootStrap *const bootstrap[] = {
+#if SDL_AUDIO_DRIVER_PIPEWIRE
+    &PIPEWIRE_bootstrap,
+#endif
 #if SDL_AUDIO_DRIVER_PULSEAUDIO
     &PULSEAUDIO_bootstrap,
 #endif
@@ -84,9 +87,6 @@ static const AudioBootStrap *const bootstrap[] = {
 #endif
 #if SDL_AUDIO_DRIVER_JACK
     &JACK_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_PIPEWIRE
-    &PIPEWIRE_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_OSS
     &DSP_bootstrap,
