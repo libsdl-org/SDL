@@ -324,7 +324,7 @@ static char *X11_URIToLocal(char *uri)
     return file;
 }
 
-#if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
+#ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
 {
     /* event is a union, so cookie == &event, but this is type safe. */
@@ -841,7 +841,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         return;
     }
 
-#if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
+#ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
     if (xevent->type == GenericEvent) {
         X11_HandleGenericEvent(videodata, xevent);
         return;
