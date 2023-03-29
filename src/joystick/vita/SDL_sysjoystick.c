@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_JOYSTICK_VITA
+#ifdef SDL_JOYSTICK_VITA
 
 /* This is the PSVita implementation of the SDL joystick API */
 #include <psp2/types.h>
