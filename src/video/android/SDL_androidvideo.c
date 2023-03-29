@@ -137,7 +137,7 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->GL_DeleteContext = Android_GLES_DeleteContext;
 #endif
 
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Android_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = Android_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = Android_Vulkan_GetInstanceExtensions;

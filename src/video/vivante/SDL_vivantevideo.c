@@ -101,7 +101,7 @@ static SDL_VideoDevice *VIVANTE_Create()
     device->GL_DeleteContext = VIVANTE_GLES_DeleteContext;
 #endif
 
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = VIVANTE_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = VIVANTE_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = VIVANTE_Vulkan_GetInstanceExtensions;

@@ -149,7 +149,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
     device->GL_DeleteContext = Cocoa_GLES_DeleteContext;
 #endif
 
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Cocoa_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = Cocoa_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = Cocoa_Vulkan_GetInstanceExtensions;
