@@ -24,7 +24,7 @@
 
 #include "SDL_DirectFB_video.h"
 
-#if SDL_DIRECTFB_OPENGL
+#ifdef SDL_DIRECTFB_OPENGL
 
 #include "SDL_DirectFB_opengl.h"
 #include "SDL_DirectFB_window.h"
@@ -33,7 +33,7 @@
 #include "SDL_loadso.h"
 #endif
 
-#if SDL_DIRECTFB_OPENGL
+#ifdef SDL_DIRECTFB_OPENGL
 
 struct SDL_GLDriverData
 {
