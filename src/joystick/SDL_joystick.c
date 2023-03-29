@@ -1457,6 +1457,7 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance)
 #endif /* !SDL_EVENTS_DISABLED */
 }
 
+#ifndef SDL_EVENTS_DISABLED
 /*
  * If there is an existing add event in the queue, it needs to be modified
  * to have the right value for which, because the number of controllers in
@@ -1516,6 +1517,7 @@ static void UpdateEventsForDeviceRemoval(int device_index, Uint32 type)
 
     SDL_small_free(events, isstack);
 }
+#endif
 
 void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
 {
