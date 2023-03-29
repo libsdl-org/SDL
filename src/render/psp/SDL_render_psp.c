@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_PSP
+#ifdef SDL_VIDEO_RENDER_PSP
 
 #include "SDL_hints.h"
 #include "../SDL_sysrender.h"
