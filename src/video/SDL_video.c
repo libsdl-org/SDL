@@ -98,7 +98,7 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_ANDROID
     &Android_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_PS2
+#ifdef SDL_VIDEO_DRIVER_PS2
     &PS2_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_PSP

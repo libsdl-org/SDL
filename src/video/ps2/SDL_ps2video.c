@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_PS2
+#ifdef SDL_VIDEO_DRIVER_PS2
 
 /* PS2 SDL video driver implementation; this is just enough to make an
  *  SDL-based application THINK it's got a working video driver, for
