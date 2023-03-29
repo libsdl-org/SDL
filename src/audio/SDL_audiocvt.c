@@ -473,7 +473,7 @@ static void SDL_ResampleCVT_SRC(SDL_AudioCVT *cvt, const int chans, const SDL_Au
 
     result = SRC_src_simple(&data, SRC_converter, chans); /* Simple API converts the whole buffer at once.  No need for initialization. */
 /* !!! FIXME: Handle library failures? */
-#ifdef DEBUG_CONVERT
+#if DEBUG_CONVERT
     if (result != 0) {
         SDL_Log("src_simple() failed: %s", SRC_src_strerror(result));
     }
