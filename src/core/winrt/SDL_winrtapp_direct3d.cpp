@@ -39,7 +39,7 @@ using namespace Windows::System;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Input;
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
 using namespace Windows::Phone::UI::Input;
 #endif
 
@@ -126,7 +126,7 @@ static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identify
             int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
             int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
 
-#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) && (NTDDI_VERSION == NTDDI_WIN8)
+#if SDL_WINAPI_FAMILY_PHONE && (NTDDI_VERSION == NTDDI_WIN8)
             /* WinPhone 8.0 always keeps its native window size in portrait,
                regardless of orientation.  This changes in WinPhone 8.1,
                in which the native window's size changes along with
@@ -227,7 +227,7 @@ void SDL_WinRTApp::OnOrientationChanged(Object ^ sender)
 
     WINRT_ProcessWindowSizeChange();
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
     // HACK: Make sure that orientation changes
     // lead to the Direct3D renderer's viewport getting updated:
     //
@@ -273,7 +273,7 @@ void SDL_WinRTApp::SetWindow(CoreWindow ^ window)
     window->Closed +=
         ref new TypedEventHandler<CoreWindow ^, CoreWindowEventArgs ^>(this, &SDL_WinRTApp::OnWindowClosed);
 
-#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if !SDL_WINAPI_FAMILY_PHONE
     window->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
 #endif
 
@@ -295,7 +295,7 @@ void SDL_WinRTApp::SetWindow(CoreWindow ^ window)
     window->PointerWheelChanged +=
         ref new TypedEventHandler<CoreWindow ^, PointerEventArgs ^>(this, &SDL_WinRTApp::OnPointerWheelChanged);
 
-#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if !SDL_WINAPI_FAMILY_PHONE
     // Retrieves relative-only mouse movements:
     Windows::Devices::Input::MouseDevice::GetForCurrentView()->MouseMoved +=
         ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &SDL_WinRTApp::OnMouseMoved);
@@ -313,7 +313,7 @@ void SDL_WinRTApp::SetWindow(CoreWindow ^ window)
 #if NTDDI_VERSION >= NTDDI_WIN10
     Windows::UI::Core::SystemNavigationManager::GetForCurrentView()->BackRequested +=
         ref new EventHandler<BackRequestedEventArgs ^>(this, &SDL_WinRTApp::OnBackButtonPressed);
-#elif WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#elif SDL_WINAPI_FAMILY_PHONE
     HardwareButtons::BackPressed +=
         ref new EventHandler<BackPressedEventArgs ^>(this, &SDL_WinRTApp::OnBackButtonPressed);
 #endif
@@ -555,7 +555,7 @@ void SDL_WinRTApp::OnWindowActivated(CoreWindow ^ sender, WindowActivatedEventAr
                Don't do it on WinPhone 8.0 though, as CoreWindow's 'PointerPosition'
                property isn't available.
              */
-#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION >= NTDDI_WINBLUE)
+#if !SDL_WINAPI_FAMILY_PHONE || (NTDDI_VERSION >= NTDDI_WINBLUE)
             Point cursorPos = WINRT_TransformCursorPosition(window, sender->PointerPosition, TransformToSDLWindowSize);
             SDL_SendMouseMotion(window, 0, 0, (int)cursorPos.X, (int)cursorPos.Y);
 #endif
@@ -762,7 +762,7 @@ void SDL_WinRTApp::OnBackButtonPressed(Platform::Object ^ sender, Windows::UI::C
 {
     WINRT_OnBackButtonPressed(args);
 }
-#elif WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#elif SDL_WINAPI_FAMILY_PHONE
 void SDL_WinRTApp::OnBackButtonPressed(Platform::Object ^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^ args)
 
 {

@@ -421,7 +421,7 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
                    failing test), whereas CoreWindow might not.  -- DavidL
                 */
 
-#if (NTDDI_VERSION >= NTDDI_WIN10) || (defined(SDL_WINRT_USE_APPLICATIONVIEW) && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+#if (NTDDI_VERSION >= NTDDI_WIN10) || (defined(SDL_WINRT_USE_APPLICATIONVIEW) && SDL_WINAPI_FAMILY_PHONE)
                 mode.w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
                 mode.h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
 #else
@@ -504,7 +504,7 @@ WINRT_DetectWindowFlags(SDL_Window *window)
     if (data->appView) {
         is_fullscreen = data->appView->IsFullScreenMode;
     }
-#elif (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION == NTDDI_WIN8)
+#elif SDL_WINAPI_FAMILY_PHONE || (NTDDI_VERSION == NTDDI_WIN8)
     is_fullscreen = true;
 #endif
 
@@ -514,13 +514,13 @@ WINRT_DetectWindowFlags(SDL_Window *window)
             int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
             int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
 
-#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
+#if !SDL_WINAPI_FAMILY_PHONE || (NTDDI_VERSION > NTDDI_WIN8)
             // On all WinRT platforms, except for WinPhone 8.0, rotate the
             // window size.  This is needed to properly calculate
             // fullscreen vs. maximized.
             const DisplayOrientations currentOrientation = WINRT_DISPLAY_PROPERTY(CurrentOrientation);
             switch (currentOrientation) {
-#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+#if SDL_WINAPI_FAMILY_PHONE
             case DisplayOrientations::Landscape:
             case DisplayOrientations::LandscapeFlipped:
 #else
@@ -548,7 +548,7 @@ WINRT_DetectWindowFlags(SDL_Window *window)
             latestFlags |= SDL_WINDOW_HIDDEN;
         }
 
-#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) && (NTDDI_VERSION < NTDDI_WINBLUE)
+#if SDL_WINAPI_FAMILY_PHONE && (NTDDI_VERSION < NTDDI_WINBLUE)
         // data->coreWindow->PointerPosition is not supported on WinPhone 8.0
         latestFlags |= SDL_WINDOW_MOUSE_FOCUS;
 #else

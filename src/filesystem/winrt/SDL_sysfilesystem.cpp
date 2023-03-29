@@ -71,7 +71,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
         return path.c_str();
     }
 
-#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
+#if !SDL_WINAPI_FAMILY_PHONE || (NTDDI_VERSION > NTDDI_WIN8)
     case SDL_WINRT_PATH_ROAMING_FOLDER:
     {
         static wstring path;

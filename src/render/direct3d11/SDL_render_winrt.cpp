@@ -83,7 +83,7 @@ D3D11_GetCurrentRotation()
 
     switch (currentOrientation) {
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
     /* Windows Phone rotations */
     case DisplayOrientations::Landscape:
         return DXGI_MODE_ROTATION_ROTATE90;
@@ -103,7 +103,7 @@ D3D11_GetCurrentRotation()
         return DXGI_MODE_ROTATION_ROTATE180;
     case DisplayOrientations::PortraitFlipped:
         return DXGI_MODE_ROTATION_ROTATE90;
-#endif /* WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP */
+#endif /* SDL_WINAPI_FAMILY_PHONE */
     }
 
     return DXGI_MODE_ROTATION_IDENTITY;

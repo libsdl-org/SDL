@@ -58,7 +58,7 @@
 
      hexdump -v -e '6/4 "0x%08.8x, " "\n"' <FILE>
   */
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
 #define D3D11_USE_SHADER_MODEL_4_0_level_9_3
 #else
 #define D3D11_USE_SHADER_MODEL_4_0_level_9_1

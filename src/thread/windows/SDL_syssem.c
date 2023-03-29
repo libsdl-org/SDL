@@ -68,12 +68,6 @@ static SDL_sem_impl_t SDL_sem_impl_active = { 0 };
 /* APIs not available on WinPhone 8.1 */
 /* https://www.microsoft.com/en-us/download/details.aspx?id=47328 */
 
-#if (HAVE_WINAPIFAMILY_H) && defined(WINAPI_FAMILY_PHONE_APP)
-#define SDL_WINAPI_FAMILY_PHONE (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-#else
-#define SDL_WINAPI_FAMILY_PHONE 0
-#endif
-
 #if !SDL_WINAPI_FAMILY_PHONE
 #ifdef __WINRT__
 /* Functions are guaranteed to be available */
