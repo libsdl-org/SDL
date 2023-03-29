@@ -22,7 +22,7 @@
 #include "../../SDL_internal.h"
 #include "../../main/haiku/SDL_BApp.h"
 
-#if SDL_VIDEO_DRIVER_HAIKU
+#ifdef SDL_VIDEO_DRIVER_HAIKU
 
 #include "SDL_BWin.h"
 #include <Url.h>
