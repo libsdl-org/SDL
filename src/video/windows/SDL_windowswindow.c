@@ -537,7 +537,7 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
     }
 
     /* The rest of this macro mess is for OpenGL or OpenGL ES windows */
-#if SDL_VIDEO_OPENGL_ES2
+#ifdef SDL_VIDEO_OPENGL_ES2
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES
 #if SDL_VIDEO_OPENGL_WGL
         && (!_this->gl_data || WIN_GL_UseEGL(_this))
