@@ -24,7 +24,7 @@
 #ifndef SDL_x11xfixes_h_
 #define SDL_x11xfixes_h_
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 
 #define X11_BARRIER_HANDLED_BY_EVENT 1
 

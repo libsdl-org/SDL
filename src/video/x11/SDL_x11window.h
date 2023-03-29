@@ -73,7 +73,7 @@ typedef struct
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_bool pointer_barrier_active;
     PointerBarrier barrier[4];
     SDL_Rect barrier_rect;

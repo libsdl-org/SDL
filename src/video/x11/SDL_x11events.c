@@ -981,7 +981,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         mouse->last_x = xevent->xcrossing.x;
         mouse->last_y = xevent->xcrossing.y;
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         {
             /* Only create the barriers if we have input focus */
             SDL_WindowData *windowdata = (SDL_WindowData *)data->window->driverdata;
@@ -1093,7 +1093,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
         }
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         /* Disable confinement if it is activated. */
         if (data->pointer_barrier_active == SDL_TRUE) {
             X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
@@ -1180,7 +1180,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             X11_DispatchUnmapNotify(data);
         }
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         /* Disable confinement if the window gets hidden. */
         if (data->pointer_barrier_active == SDL_TRUE) {
             X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
@@ -1196,7 +1196,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
         X11_DispatchMapNotify(data);
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         /* Enable confinement if it was activated. */
         if (data->pointer_barrier_active == SDL_TRUE) {
             X11_ConfineCursorWithFlags(_this, data->window, &data->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);

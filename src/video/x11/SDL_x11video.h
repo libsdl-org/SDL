@@ -79,7 +79,7 @@ typedef struct SDL_VideoData
     int windowlistlength;
     XID window_group;
     Window clipboard_window;
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_Window *active_cursor_confined_window;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
