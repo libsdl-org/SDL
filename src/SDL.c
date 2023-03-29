@@ -602,7 +602,7 @@ const char *SDL_GetPlatform(void)
     return "OS/2";
 #elif defined(__OSF__)
     return "OSF/1";
-#elif __QNXNTO__
+#elif defined(__QNXNTO__)
     return "QNX Neutrino";
 #elif __RISCOS__
     return "RISC OS";
