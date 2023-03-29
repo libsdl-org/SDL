@@ -114,7 +114,7 @@ int UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
     @autoreleasepool {
         SDLEAGLContext *context = (__bridge SDLEAGLContext *) SDL_GL_GetCurrentContext();
 
-#if SDL_POWER_UIKIT
+#ifdef SDL_POWER_UIKIT
         /* Check once a frame to see if we should turn off the battery monitor. */
         SDL_UIKit_UpdateBatteryMonitoring();
 #endif
