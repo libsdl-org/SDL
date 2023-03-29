@@ -320,7 +320,7 @@ SDL_X11_SYM(Status,XScreenSaverQueryVersion,(Display *dpy,int *major_versionp,in
 SDL_X11_SYM(void,XScreenSaverSuspend,(Display *dpy,Bool suspend),(dpy,suspend),return)
 #endif
 
-#if SDL_VIDEO_DRIVER_X11_XSHAPE
+#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
 SDL_X11_MODULE(XSHAPE)
 SDL_X11_SYM(void,XShapeCombineMask,(Display *dpy,Window dest,int dest_kind,int x_off,int y_off,Pixmap src,int op),(dpy,dest,dest_kind,x_off,y_off,src,op),)
 #endif

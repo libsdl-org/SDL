@@ -32,7 +32,7 @@ SDL_WindowShaper *X11_CreateShaper(SDL_Window *window)
     SDL_WindowShaper *result = NULL;
     SDL_ShapeData *data = NULL;
 
-#if SDL_VIDEO_DRIVER_X11_XSHAPE
+#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
     if (SDL_X11_HAVE_XSHAPE) { /* Make sure X server supports it. */
         result = SDL_malloc(sizeof(SDL_WindowShaper));
         if (!result) {
@@ -102,7 +102,7 @@ int X11_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowS
         return -1;
     }
 
-#if SDL_VIDEO_DRIVER_X11_XSHAPE
+#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
     if (shape->format->Amask == 0 && SDL_SHAPEMODEALPHA(shape_mode->mode)) {
         return -2;
     }
