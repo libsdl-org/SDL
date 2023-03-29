@@ -39,8 +39,8 @@ static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
     return (SDL_BWin *)(window->driverdata);
 }
 
-static SDL_INLINE SDL_BApp *_GetBeApp() {
-    return (SDL_BApp *)be_app;
+static SDL_INLINE SDL_BLooper *_GetBeLooper() {
+    return SDL_Looper;
 }
 
 /* Passing a NULL path means load pointers from the application */
@@ -97,7 +97,7 @@ int HAIKU_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context) {
             return SDL_SetError("MakeCurrent failed");
         }
     }
-    _GetBeApp()->SetCurrentContext(glView);
+    _GetBeLooper()->SetCurrentContext(glView);
     return 0;
 }
 
@@ -138,7 +138,7 @@ SDL_GLContext HAIKU_GL_CreateContext(_THIS, SDL_Window * window) {
     }
 #endif
     bwin->CreateGLView(gl_flags);
-    _GetBeApp()->SetCurrentContext(bwin->GetGLView());
+    _GetBeLooper()->SetCurrentContext(bwin->GetGLView());
     return (SDL_GLContext)(bwin->GetGLView());
 }
 

@@ -37,8 +37,8 @@ static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
     return (SDL_BWin *)(window->driverdata);
 }
 
-static SDL_INLINE SDL_BApp *_GetBeApp() {
-    return (SDL_BApp *)be_app;
+static SDL_INLINE SDL_BLooper *_GetBeLooper() {
+    return SDL_Looper;
 }
 
 static int _InitWindow(_THIS, SDL_Window *window) {
@@ -72,7 +72,7 @@ static int _InitWindow(_THIS, SDL_Window *window) {
     }
 
     window->driverdata = bwin;
-    int32 winID = _GetBeApp()->GetID(window);
+    int32 winID = _GetBeLooper()->GetID(window);
     bwin->SetID(winID);
 
     return 0;
@@ -220,7 +220,7 @@ void HAIKU_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed) {
 
 void HAIKU_DestroyWindow(_THIS, SDL_Window * window) {
     _ToBeWin(window)->LockLooper();    /* This MUST be locked */
-    _GetBeApp()->ClearID(_ToBeWin(window));
+    _GetBeLooper()->ClearID(_ToBeWin(window));
     _ToBeWin(window)->Quit();
     window->driverdata = NULL;
 }

@@ -39,8 +39,8 @@ static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
     return (SDL_BWin *)(window->driverdata);
 }
 
-static SDL_INLINE SDL_BApp *_GetBeApp() {
-    return (SDL_BApp *)be_app;
+static SDL_INLINE SDL_BLooper *_GetBeLooper() {
+    return SDL_Looper;
 }
 
 int HAIKU_CreateWindowFramebuffer(_THIS, SDL_Window * window,
