@@ -34,7 +34,7 @@ int WIN_GLES_LoadLibrary(_THIS, const char *path)
 
     /* If the profile requested is not GL ES, switch over to WIN_GL functions  */
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
         WIN_GLES_UnloadLibrary(_this);
         _this->GL_LoadLibrary = WIN_GL_LoadLibrary;
         _this->GL_GetProcAddress = WIN_GL_GetProcAddress;
@@ -63,7 +63,7 @@ SDL_GLContext WIN_GLES_CreateContext(_THIS, SDL_Window *window)
     SDL_GLContext context;
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
         /* Switch to WGL based functions */
         WIN_GLES_UnloadLibrary(_this);

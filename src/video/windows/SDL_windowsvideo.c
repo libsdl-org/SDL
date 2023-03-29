@@ -215,7 +215,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->shape_driver.ResizeWindowShape = Win32_ResizeWindowShape;
 #endif
 
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     device->GL_LoadLibrary = WIN_GL_LoadLibrary;
     device->GL_GetProcAddress = WIN_GL_GetProcAddress;
     device->GL_UnloadLibrary = WIN_GL_UnloadLibrary;

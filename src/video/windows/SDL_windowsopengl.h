@@ -23,7 +23,7 @@
 #ifndef SDL_windowsopengl_h_
 #define SDL_windowsopengl_h_
 
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
 
 #if __XBOXONE__ || __XBOXSERIES__
 typedef struct tagPIXELFORMATDESCRIPTOR
