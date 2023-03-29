@@ -1209,7 +1209,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
 {
     SDL_VideoData *c = _this->driverdata;
     SDL_WindowData *data = window->driverdata;
-    const SDL_bool show_was_pending = data->surface_status == WAYLAND_SURFACE_STATUS_SHOW_PENDING;
 
     /* If this is a child window, the parent *must* be in the final shown state,
      * meaning that it has received a configure event, followed by a frame callback.
@@ -1416,11 +1415,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
      * Roundtrip required to avoid a possible protocol violation when
      * HideWindow was called immediately before ShowWindow.
      */
-    if (!show_was_pending) {
-        while (data->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
-            WAYLAND_wl_display_roundtrip(c->display);
-        }
-    }
+    WAYLAND_wl_display_roundtrip(c->display);
 }
 
 static void Wayland_ReleasePopup(_THIS, SDL_Window *popup)
@@ -1869,7 +1864,11 @@ void Wayland_MaximizeWindow(_THIS, SDL_Window *window)
         xdg_toplevel_set_maximized(wind->shell_surface.xdg.roleobj.toplevel);
     }
 
-    WAYLAND_wl_display_roundtrip(viddata->display);
+    /* Don't roundtrip if this is being called to set the initial state during window creation. */
+    if (wind->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_FRAME ||
+        wind->surface_status == WAYLAND_SURFACE_STATUS_SHOWN) {
+        WAYLAND_wl_display_roundtrip(viddata->display);
+    }
 }
 
 void Wayland_MinimizeWindow(_THIS, SDL_Window *window)
@@ -1894,7 +1893,11 @@ void Wayland_MinimizeWindow(_THIS, SDL_Window *window)
         xdg_toplevel_set_minimized(wind->shell_surface.xdg.roleobj.toplevel);
     }
 
-    WAYLAND_wl_display_flush(viddata->display);
+    /* Don't roundtrip if this is being called to set the initial state during window creation. */
+    if (wind->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_FRAME ||
+        wind->surface_status == WAYLAND_SURFACE_STATUS_SHOWN) {
+        WAYLAND_wl_display_roundtrip(viddata->display);
+    }
 }
 
 void Wayland_SetWindowMouseRect(_THIS, SDL_Window *window)
