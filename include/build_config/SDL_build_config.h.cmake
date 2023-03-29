@@ -31,11 +31,6 @@
 /* General platform specific identifiers */
 #include <SDL3/SDL_platform_defines.h>
 
-/* C language features */
-#cmakedefine const @HAVE_CONST@
-#cmakedefine inline @HAVE_INLINE@
-#cmakedefine volatile @HAVE_VOLATILE@
-
 /* C datatypes */
 /* Define SIZEOF_VOIDP for 64/32 architectures */
 #if defined(__LP64__) || defined(_LP64) || defined(_WIN64)
@@ -49,7 +44,7 @@
 
 /* Comment this if you want to build without any C library requirements */
 #cmakedefine HAVE_LIBC 1
-#if HAVE_LIBC
+#ifdef HAVE_LIBC
 
 /* Useful headers */
 #cmakedefine HAVE_ALLOCA_H 1

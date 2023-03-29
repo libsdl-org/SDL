@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#if defined(SDL_VIDEO_DRIVER_WINDOWS)
 
 #include "../../core/windows/SDL_windows.h"
 
@@ -628,14 +628,14 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
     }
 
     /* The rest of this macro mess is for OpenGL or OpenGL ES windows */
-#if SDL_VIDEO_OPENGL_ES2
+#ifdef SDL_VIDEO_OPENGL_ES2
     if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES ||
          SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) &&
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
         (!_this->gl_data || WIN_GL_UseEGL(_this))
 #endif /* SDL_VIDEO_OPENGL_WGL */
     ) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         if (WIN_GLES_SetupWindow(_this, window) < 0) {
             WIN_DestroyWindow(_this, window);
             return -1;
@@ -647,7 +647,7 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
     }
 #endif /* SDL_VIDEO_OPENGL_ES2 */
 
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     if (WIN_GL_SetupWindow(_this, window) < 0) {
         WIN_DestroyWindow(_this, window);
         return -1;
@@ -688,7 +688,7 @@ int WIN_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
         return -1;
     }
 
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     {
         const char *hint = SDL_GetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT);
         if (hint) {

@@ -28,7 +28,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>
-#if USE_POSIX_SPAWN
+#ifdef USE_POSIX_SPAWN
 #include <spawn.h>
 extern char **environ;
 #endif
@@ -37,7 +37,7 @@ int SDL_SYS_OpenURL(const char *url)
 {
     const pid_t pid1 = fork();
     if (pid1 == 0) { /* child process */
-#if USE_POSIX_SPAWN
+#if defined(USE_POSIX_SPAWN)
         pid_t pid2;
         const char *args[] = { "xdg-open", url, NULL };
         /* Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam */

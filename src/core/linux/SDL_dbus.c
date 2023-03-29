@@ -23,7 +23,7 @@
 #include "SDL_sandbox.h"
 #include "../../stdlib/SDL_vacopy.h"
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
 /* we never link directly to libdbus. */
 static const char *dbus_library = "libdbus-1.so.3";
 static void *dbus_handle = NULL;

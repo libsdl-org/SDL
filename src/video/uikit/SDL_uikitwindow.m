@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
@@ -368,7 +368,7 @@ int UIKit_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
         info->subsystem = SDL_SYSWM_UIKIT;
         info->info.uikit.window = data.uiwindow;
 
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
         if ([data.viewcontroller.view isKindOfClass:[SDL_uikitopenglview class]]) {
             SDL_uikitopenglview *glview = (SDL_uikitopenglview *)data.viewcontroller.view;
             info->info.uikit.framebuffer = glview.drawableFramebuffer;

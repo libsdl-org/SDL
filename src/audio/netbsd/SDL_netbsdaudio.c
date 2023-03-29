@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_NETBSD
+#if defined(SDL_AUDIO_DRIVER_NETBSD)
 
 /*
  * Driver for native NetBSD audio(4).

@@ -23,7 +23,7 @@
 #ifndef SDL_emscriptenopengles_h_
 #define SDL_emscriptenopengles_h_
 
-#if SDL_VIDEO_DRIVER_EMSCRIPTEN
+#ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
 
 #include "../SDL_sysvideo.h"
 

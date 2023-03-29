@@ -22,7 +22,7 @@
 
 #include "SDL_blit.h"
 
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
 /* *INDENT-OFF* */ /* clang-format off */
 
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -247,7 +247,7 @@ int SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
     return SDL_FillSurfaceRects(dst, rect, 1, color);
 }
 
-#if SDL_ARM_NEON_BLITTERS
+#if defined(SDL_ARM_NEON_BLITTERS)
 void FillSurfaceRect8ARMNEONAsm(int32_t w, int32_t h, uint8_t *dst, int32_t dst_stride, uint8_t src);
 void FillSurfaceRect16ARMNEONAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint16_t src);
 void FillSurfaceRect32ARMNEONAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t src);
@@ -271,7 +271,7 @@ static void fill_32_neon(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 }
 #endif
 
-#if SDL_ARM_SIMD_BLITTERS
+#ifdef SDL_ARM_SIMD_BLITTERS
 void FillSurfaceRect8ARMSIMDAsm(int32_t w, int32_t h, uint8_t *dst, int32_t dst_stride, uint8_t src);
 void FillSurfaceRect16ARMSIMDAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint16_t src);
 void FillSurfaceRect32ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t src);
@@ -339,7 +339,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         return SDL_SetError("SDL_FillSurfaceRects(): Unsupported surface format");
     }
 
-#if SDL_ARM_NEON_BLITTERS
+#if defined(SDL_ARM_NEON_BLITTERS)
     if (SDL_HasNEON() && dst->format->BytesPerPixel != 3 && fill_function == NULL) {
         switch (dst->format->BytesPerPixel) {
         case 1:
@@ -354,7 +354,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         }
     }
 #endif
-#if SDL_ARM_SIMD_BLITTERS
+#ifdef SDL_ARM_SIMD_BLITTERS
     if (SDL_HasARMSIMD() && dst->format->BytesPerPixel != 3 && fill_function == NULL) {
         switch (dst->format->BytesPerPixel) {
         case 1:
@@ -376,7 +376,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         {
             color |= (color << 8);
             color |= (color << 16);
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
             if (SDL_HasSSE()) {
                 fill_function = SDL_FillSurfaceRect1SSE;
                 break;
@@ -389,7 +389,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         case 2:
         {
             color |= (color << 16);
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
             if (SDL_HasSSE()) {
                 fill_function = SDL_FillSurfaceRect2SSE;
                 break;
@@ -408,7 +408,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
 
         case 4:
         {
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
             if (SDL_HasSSE()) {
                 fill_function = SDL_FillSurfaceRect4SSE;
                 break;

@@ -24,7 +24,7 @@
 #ifndef SDL_udev_h_
 #define SDL_udev_h_
 
-#if HAVE_LIBUDEV_H && HAVE_LINUX_INPUT_H
+#if defined(HAVE_LIBUDEV_H) && defined(HAVE_LINUX_INPUT_H)
 
 #ifndef SDL_USE_LIBUDEV
 #define SDL_USE_LIBUDEV 1

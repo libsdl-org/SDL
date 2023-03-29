@@ -23,7 +23,7 @@
 #ifndef SDL_winrtopengles_h_
 #define SDL_winrtopengles_h_
 
-#if SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL
+#if defined(SDL_VIDEO_DRIVER_WINRT) && defined(SDL_VIDEO_OPENGL_EGL)
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"

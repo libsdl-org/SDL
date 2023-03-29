@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 
 #include "SDL_x11video.h"
 #include "SDL_x11dyn.h"
@@ -83,7 +83,7 @@ typedef struct SDL_MessageBoxDataX11
     Display *display;
     int screen;
     Window window;
-#if SDL_VIDEO_DRIVER_X11_XDBE
+#ifdef SDL_VIDEO_DRIVER_X11_XDBE
     XdbeBackBuffer buf;
     SDL_bool xdbe; /* Whether Xdbe is present or not */
 #endif
@@ -371,7 +371,7 @@ static void X11_MessageBoxShutdown(SDL_MessageBoxDataX11 *data)
         data->font_struct = NULL;
     }
 
-#if SDL_VIDEO_DRIVER_X11_XDBE
+#ifdef SDL_VIDEO_DRIVER_X11_XDBE
     if (SDL_X11_HAVE_XDBE && data->xdbe) {
         X11_XdbeDeallocateBackBufferName(data->display, data->buf);
     }
@@ -497,7 +497,7 @@ static int X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
 
     X11_XMapRaised(display, data->window);
 
-#if SDL_VIDEO_DRIVER_X11_XDBE
+#ifdef SDL_VIDEO_DRIVER_X11_XDBE
     /* Initialise a back buffer for double buffering */
     if (SDL_X11_HAVE_XDBE) {
         int xdbe_major, xdbe_minor;
@@ -520,7 +520,7 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx)
     Drawable window = data->window;
     Display *display = data->display;
 
-#if SDL_VIDEO_DRIVER_X11_XDBE
+#ifdef SDL_VIDEO_DRIVER_X11_XDBE
     if (SDL_X11_HAVE_XDBE && data->xdbe) {
         window = data->buf;
         X11_XdbeBeginIdiom(data->display);
@@ -575,7 +575,7 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx)
         }
     }
 
-#if SDL_VIDEO_DRIVER_X11_XDBE
+#ifdef SDL_VIDEO_DRIVER_X11_XDBE
     if (SDL_X11_HAVE_XDBE && data->xdbe) {
         XdbeSwapInfo swap_info;
         swap_info.swap_window = data->window;

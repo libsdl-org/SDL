@@ -22,7 +22,7 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-#if HAVE_SIGNAL_H
+#ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #endif
 
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
     wave.spec.callback = NULL; /* we'll push audio. */
 
-#if HAVE_SIGNAL_H
+#ifdef HAVE_SIGNAL_H
     /* Set the signals */
 #ifdef SIGHUP
     (void)signal(SIGHUP, poked);

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_OGL) && !defined(SDL_RENDER_DISABLED)
 #include "../../video/SDL_sysvideo.h" /* For SDL_RecreateWindow */
 #include <SDL3/SDL_opengl.h>
 #include "../SDL_sysrender.h"
@@ -1602,8 +1602,10 @@ static int GL_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *t
 static int GL_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
-    GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
     const GLenum textype = data->textype;
+#if SDL_HAVE_YUV
+    GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
+#endif
 
     GL_ActivateRenderer(renderer);
 

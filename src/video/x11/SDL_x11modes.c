@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 
 #include "SDL_x11video.h"
 #include "edid.h"
@@ -143,7 +143,7 @@ X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *vinfo)
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 {
     /* Default the extension not available */
@@ -603,7 +603,7 @@ int X11_InitModes(_THIS)
     /* XRandR is the One True Modern Way to do this on X11. If this
        fails, we just won't report any display modes except the current
        desktop size. */
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     {
         SDL_VideoData *data = _this->driverdata;
         int xrandr_major, xrandr_minor;
@@ -621,7 +621,7 @@ int X11_InitModes(_THIS)
 
 int X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
 {
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     SDL_DisplayData *data = sdl_display->driverdata;
     SDL_DisplayMode mode;
 
@@ -667,7 +667,7 @@ int X11_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
     return 0;
 }
 
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 /* This catches an error from XRRSetScreenSize, as a workaround for now. */
 /* !!! FIXME: remove this later when we have a better solution. */
 static int (*PreXRRSetScreenSizeErrorHandler)(Display *, XErrorEvent *) = NULL;
@@ -690,7 +690,7 @@ int X11_SetDisplayMode(_THIS, SDL_VideoDisplay *sdl_display, SDL_DisplayMode *mo
 
     viddata->last_mode_change_deadline = SDL_GetTicks() + (PENDING_FOCUS_TIME * 2);
 
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     if (data->use_xrandr) {
         Display *display = viddata->display;
         SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;

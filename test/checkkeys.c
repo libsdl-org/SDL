@@ -294,7 +294,7 @@ int main(int argc, char *argv[])
 
     textwin = SDLTest_TextWindowCreate(0, 0, 640, 480);
 
-#if __IOS__
+#ifdef __IOS__
     /* Creating the context creates the view, which we need to show keyboard */
     SDL_GL_CreateContext(window);
 #endif

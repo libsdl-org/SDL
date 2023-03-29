@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_HAIKU
+#ifdef SDL_VIDEO_DRIVER_HAIKU
 
 /* BWindow based clipboard implementation */
 
@@ -52,7 +52,7 @@ int HAIKU_SetClipboardText(_THIS, const char *text) {
 
 char *HAIKU_GetClipboardText(_THIS) {
     BMessage *clip = NULL;
-    const char *text = NULL;    
+    const char *text = NULL;
     ssize_t length;
     char *result;
     if (be_clipboard->Lock()) {
@@ -62,8 +62,8 @@ char *HAIKU_GetClipboardText(_THIS) {
                 &length);
         }
         be_clipboard->Unlock();
-    } 
-    
+    }
+
     if (text == NULL) {
         result = SDL_strdup("");
     } else {
@@ -71,7 +71,7 @@ char *HAIKU_GetClipboardText(_THIS) {
         result = (char *)SDL_malloc((length + 1) * sizeof(char));
         SDL_strlcpy(result, text, length + 1);
     }
-    
+
     return result;
 }
 
@@ -81,7 +81,7 @@ SDL_bool HAIKU_HasClipboardText(_THIS) {
     if (text) {
         result = text[0] != '\0' ? SDL_TRUE : SDL_FALSE;
         SDL_free(text);
-    } 
+    }
     return result;
 }
 

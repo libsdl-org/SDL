@@ -561,6 +561,11 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
     endif()
   endif()
 
+  check_c_compiler_flag(-Wundef HAVE_GCC_WUNDEF)
+  if(HAVE_GCC_WUNDEF)
+    target_compile_options(sdl-global-options INTERFACE "-Wundef")
+  endif()
+
   check_c_compiler_flag(-fno-strict-aliasing HAVE_GCC_NO_STRICT_ALIASING)
   if(HAVE_GCC_NO_STRICT_ALIASING)
     target_compile_options(sdl-global-options INTERFACE "-fno-strict-aliasing")
@@ -641,13 +646,15 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
         __sync_fetch_and_add(&a, 1);
         __sync_bool_compare_and_swap(&a, 5, 10);
         __sync_bool_compare_and_swap(&x, y, z);
-        return 0; }" HAVE_GCC_ATOMICS)
+        return 0; }" COMPILER_SUPPORTS_GCC_ATOMICS)
+    set(HAVE_GCC_ATOMICS ${COMPILER_SUPPORTS_GCC_ATOMICS})
     if(NOT HAVE_GCC_ATOMICS)
       check_c_source_compiles("int main(int argc, char **argv) {
           int a;
           __sync_lock_test_and_set(&a, 1);
           __sync_lock_release(&a);
-          return 0; }" HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
+          return 0; }" COMPILER_SUPPORTS_SYNC_LOCK_TEST_AND_SET)
+      set(HAVE_GCC_SYNC_LOCK_TEST_AND_SET ${COMPILER_SUPPORTS_SYNC_LOCK_TEST_AND_SET})
     endif()
   endif()
 
@@ -1177,7 +1184,8 @@ if(SDL_LIBC)
 
     check_symbol_exists(sigaction "signal.h" HAVE_SIGACTION)
     check_symbol_exists(setjmp "setjmp.h" HAVE_SETJMP)
-    check_symbol_exists(nanosleep "time.h" HAVE_NANOSLEEP)
+    check_symbol_exists(nanosleep "time.h" FOUND_NANOSLEEP)
+    set(HAVE_NANOSLEEP ${FOUND_NANOSLEEP})
     check_symbol_exists(sysconf "unistd.h" HAVE_SYSCONF)
     check_symbol_exists(sysctlbyname "sys/types.h;sys/sysctl.h" HAVE_SYSCTLBYNAME)
     check_symbol_exists(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
@@ -2974,7 +2982,7 @@ if(SDL_WERROR)
     if(HAVE_WX)
       target_compile_options(sdl-global-options INTERFACE "/WX")
     endif()
-  elseif(USE_GCC OR USE_CLANG OR USE_INTELCC)
+  elseif(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QNX)
     check_c_compiler_flag(-Werror HAVE_WERROR)
     if(HAVE_WERROR)
       target_compile_options(sdl-global-options INTERFACE "-Werror")

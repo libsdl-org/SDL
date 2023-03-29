@@ -41,7 +41,7 @@ struct SDL_DisplayData
 struct SDL_WindowData
 {
     EGL_DISPMANX_WINDOW_T dispman_window;
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
 

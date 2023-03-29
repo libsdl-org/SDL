@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_COCOA
+#ifdef SDL_VIDEO_DRIVER_COCOA
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 1090
 #error SDL for macOS must be built with a 10.9 SDK or above.
@@ -287,7 +287,7 @@ static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
 static void ScheduleContextUpdates(SDL_CocoaWindowData *data)
 {
 /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -969,7 +969,7 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
 {
     /*printf("WINDOWDIDCHANGESCREEN\n");*/
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 
     if (_data && _data.nscontexts) {
         for (SDLOpenGLContext *context in _data.nscontexts) {
@@ -1876,8 +1876,8 @@ int Cocoa_CreateWindow(_THIS, SDL_Window *window)
 #pragma clang diagnostic pop
 #endif
 
-#if SDL_VIDEO_OPENGL_ES2
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_ES2
+#ifdef SDL_VIDEO_OPENGL_EGL
         if ((window->flags & SDL_WINDOW_OPENGL) &&
             _this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
             [contentView setWantsLayer:TRUE];
@@ -1902,9 +1902,9 @@ int Cocoa_CreateWindow(_THIS, SDL_Window *window)
         }
 
         /* The rest of this macro mess is for OpenGL or OpenGL ES windows */
-#if SDL_VIDEO_OPENGL_ES2
+#ifdef SDL_VIDEO_OPENGL_ES2
         if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
             if (Cocoa_GLES_SetupWindow(_this, window) < 0) {
                 Cocoa_DestroyWindow(_this, window);
                 return -1;
@@ -2436,7 +2436,7 @@ void Cocoa_DestroyWindow(_THIS, SDL_Window *window)
         SDL_CocoaWindowData *data = (SDL_CocoaWindowData *)CFBridgingRelease(window->driverdata);
 
         if (data) {
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 
             NSArray *contexts;
 
@@ -2453,7 +2453,7 @@ void Cocoa_DestroyWindow(_THIS, SDL_Window *window)
                 [data.nswindow close];
             }
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 
             contexts = [data.nscontexts copy];
             for (SDLOpenGLContext *context in contexts) {

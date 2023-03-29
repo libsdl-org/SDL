@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_COCOA
+#if defined(SDL_VIDEO_DRIVER_COCOA)
 
 #if !__has_feature(objc_arc)
 #error SDL must be built with Objective-C ARC (automatic reference counting) enabled
@@ -123,7 +123,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->shape_driver.CreateShaper = Cocoa_CreateShaper;
         device->shape_driver.SetWindowShape = Cocoa_SetWindowShape;
 
-#if SDL_VIDEO_OPENGL_CGL
+#ifdef SDL_VIDEO_OPENGL_CGL
         device->GL_LoadLibrary = Cocoa_GL_LoadLibrary;
         device->GL_GetProcAddress = Cocoa_GL_GetProcAddress;
         device->GL_UnloadLibrary = Cocoa_GL_UnloadLibrary;
@@ -135,8 +135,8 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->GL_DeleteContext = Cocoa_GL_DeleteContext;
         device->GL_GetEGLSurface = NULL;
 #endif
-#if SDL_VIDEO_OPENGL_EGL
-#if SDL_VIDEO_OPENGL_CGL
+#ifdef SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_CGL
         if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
 #endif
             device->GL_LoadLibrary = Cocoa_GLES_LoadLibrary;
@@ -149,19 +149,19 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             device->GL_SwapWindow = Cocoa_GLES_SwapWindow;
             device->GL_DeleteContext = Cocoa_GLES_DeleteContext;
             device->GL_GetEGLSurface = Cocoa_GLES_GetEGLSurface;
-#if SDL_VIDEO_OPENGL_CGL
+#ifdef SDL_VIDEO_OPENGL_CGL
         }
 #endif
 #endif
 
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
         device->Vulkan_LoadLibrary = Cocoa_Vulkan_LoadLibrary;
         device->Vulkan_UnloadLibrary = Cocoa_Vulkan_UnloadLibrary;
         device->Vulkan_GetInstanceExtensions = Cocoa_Vulkan_GetInstanceExtensions;
         device->Vulkan_CreateSurface = Cocoa_Vulkan_CreateSurface;
 #endif
 
-#if SDL_VIDEO_METAL
+#ifdef SDL_VIDEO_METAL
         device->Metal_CreateView = Cocoa_Metal_CreateView;
         device->Metal_DestroyView = Cocoa_Metal_DestroyView;
         device->Metal_GetLayer = Cocoa_Metal_GetLayer;

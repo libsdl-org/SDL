@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_PIPEWIRE
+#ifdef SDL_AUDIO_DRIVER_PIPEWIRE
 
 #include "SDL_pipewire.h"
 

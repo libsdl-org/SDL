@@ -24,7 +24,7 @@
 #include <Path.h>
 #include <InterfaceKit.h>
 #include <LocaleRoster.h>
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 #include <OpenGLKit.h>
 #endif
 
@@ -78,7 +78,7 @@ class SDL_BApp : public BApplication
   public:
     SDL_BApp(const char *signature) : BApplication(signature)
     {
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         _current_context = NULL;
 #endif
     }
@@ -203,7 +203,7 @@ class SDL_BApp : public BApplication
         return _window_map[winID];
     }
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     BGLView *GetCurrentContext()
     {
         return _current_context;
@@ -423,7 +423,7 @@ class SDL_BApp : public BApplication
     /* Members */
     std::vector<SDL_Window *> _window_map; /* Keeps track of SDL_Windows by index-id */
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     BGLView *_current_context;
 #endif
 };

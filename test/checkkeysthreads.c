@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
     renderer = SDL_CreateRenderer(window, NULL, 0);
     SDL_RenderPresent(renderer);
 
-#if __IOS__
+#ifdef __IOS__
     /* Creating the context creates the view, which we need to show keyboard */
     SDL_GL_CreateContext(window);
 #endif

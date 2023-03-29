@@ -27,7 +27,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_PULSEAUDIO
+#ifdef SDL_AUDIO_DRIVER_PULSEAUDIO
 
 /* Allow access to a raw mixing buffer */
 

@@ -31,7 +31,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_JOYSTICK_RAWINPUT
+#ifdef SDL_JOYSTICK_RAWINPUT
 
 #include "../usb_ids.h"
 #include "../SDL_sysjoystick.h"

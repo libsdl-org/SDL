@@ -47,10 +47,10 @@
 #include "sensor/SDL_sensor_c.h"
 
 /* Initialization/Cleanup routines */
-#if !SDL_TIMERS_DISABLED
+#ifndef SDL_TIMERS_DISABLED
 #include "timer/SDL_timer_c.h"
 #endif
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
 extern int SDL_HelperWindowCreate(void);
 extern int SDL_HelperWindowDestroy(void);
 #endif
@@ -171,7 +171,7 @@ int SDL_InitSubSystem(Uint32 flags)
     /* Clear the error message */
     SDL_ClearError();
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     SDL_DBus_Init();
 #endif
 
@@ -185,7 +185,7 @@ int SDL_InitSubSystem(Uint32 flags)
         flags |= SDL_INIT_EVENTS;
     }
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
     if (flags & (SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK)) {
         if (SDL_HelperWindowCreate() < 0) {
             goto quit_and_error;
@@ -193,13 +193,13 @@ int SDL_InitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_TIMERS_DISABLED
+#ifndef SDL_TIMERS_DISABLED
     SDL_InitTicks();
 #endif
 
     /* Initialize the event subsystem */
     if (flags & SDL_INIT_EVENTS) {
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_EVENTS)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_EVENTS);
             if (SDL_InitEvents() < 0) {
@@ -218,7 +218,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the timer subsystem */
     if (flags & SDL_INIT_TIMER) {
-#if !SDL_TIMERS_DISABLED && !SDL_TIMER_DUMMY
+#if !defined(SDL_TIMERS_DISABLED) && !defined(SDL_TIMER_DUMMY)
         if (SDL_ShouldInitSubsystem(SDL_INIT_TIMER)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_TIMER);
             if (SDL_InitTimers() < 0) {
@@ -237,7 +237,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the video subsystem */
     if (flags & SDL_INIT_VIDEO) {
-#if !SDL_VIDEO_DISABLED
+#ifndef SDL_VIDEO_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_VIDEO)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_VIDEO);
             if (SDL_VideoInit(NULL) < 0) {
@@ -256,7 +256,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the audio subsystem */
     if (flags & SDL_INIT_AUDIO) {
-#if !SDL_AUDIO_DISABLED
+#ifndef SDL_AUDIO_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_AUDIO)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_AUDIO);
             if (SDL_InitAudio(NULL) < 0) {
@@ -275,7 +275,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the joystick subsystem */
     if (flags & SDL_INIT_JOYSTICK) {
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_JOYSTICK)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_JOYSTICK);
             if (SDL_InitJoysticks() < 0) {
@@ -293,7 +293,7 @@ int SDL_InitSubSystem(Uint32 flags)
     }
 
     if (flags & SDL_INIT_GAMEPAD) {
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_GAMEPAD)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_GAMEPAD);
             if (SDL_InitGamepads() < 0) {
@@ -312,7 +312,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the haptic subsystem */
     if (flags & SDL_INIT_HAPTIC) {
-#if !SDL_HAPTIC_DISABLED
+#ifndef SDL_HAPTIC_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_HAPTIC)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_HAPTIC);
             if (SDL_InitHaptics() < 0) {
@@ -331,7 +331,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the sensor subsystem */
     if (flags & SDL_INIT_SENSOR) {
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_SENSOR)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_SENSOR);
             if (SDL_InitSensors() < 0) {
@@ -365,7 +365,7 @@ int SDL_Init(Uint32 flags)
 void SDL_QuitSubSystem(Uint32 flags)
 {
     /* Shut down requested initialized subsystems */
-#if !SDL_SENSOR_DISABLED
+#ifndef SDL_SENSOR_DISABLED
     if (flags & SDL_INIT_SENSOR) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_SENSOR)) {
             SDL_QuitSensors();
@@ -374,7 +374,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_JOYSTICK_DISABLED
+#ifndef SDL_JOYSTICK_DISABLED
     if (flags & SDL_INIT_GAMEPAD) {
         /* game controller implies joystick */
         flags |= SDL_INIT_JOYSTICK;
@@ -396,7 +396,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_HAPTIC_DISABLED
+#ifndef SDL_HAPTIC_DISABLED
     if (flags & SDL_INIT_HAPTIC) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_HAPTIC)) {
             SDL_QuitHaptics();
@@ -405,7 +405,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_AUDIO_DISABLED
+#ifndef SDL_AUDIO_DISABLED
     if (flags & SDL_INIT_AUDIO) {
         /* audio implies events */
         flags |= SDL_INIT_EVENTS;
@@ -417,7 +417,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_VIDEO_DISABLED
+#ifndef SDL_VIDEO_DISABLED
     if (flags & SDL_INIT_VIDEO) {
         /* video implies events */
         flags |= SDL_INIT_EVENTS;
@@ -429,7 +429,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_TIMERS_DISABLED && !SDL_TIMER_DUMMY
+#if !defined(SDL_TIMERS_DISABLED) && !defined(SDL_TIMER_DUMMY)
     if (flags & SDL_INIT_TIMER) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_TIMER)) {
             SDL_QuitTimers();
@@ -438,7 +438,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_EVENTS_DISABLED
+#ifndef SDL_EVENTS_DISABLED
     if (flags & SDL_INIT_EVENTS) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_EVENTS)) {
             SDL_QuitEvents();
@@ -484,19 +484,19 @@ void SDL_Quit(void)
     SDL_bInMainQuit = SDL_TRUE;
 
     /* Quit all subsystems */
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
     SDL_HelperWindowDestroy();
 #endif
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 
-#if !SDL_TIMERS_DISABLED
+#ifndef SDL_TIMERS_DISABLED
     SDL_QuitTicks();
 #endif
 
     SDL_ClearHints();
     SDL_AssertionsQuit();
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
 
@@ -620,10 +620,10 @@ SDL_GetPlatform(void)
 SDL_bool
 SDL_IsTablet(void)
 {
-#if __ANDROID__
+#if defined(__ANDROID__)
     extern SDL_bool SDL_IsAndroidTablet(void);
     return SDL_IsAndroidTablet();
-#elif __IOS__
+#elif defined(__IOS__)
     extern SDL_bool SDL_IsIPad(void);
     return SDL_IsIPad();
 #else

@@ -26,7 +26,7 @@
  * the FSL demo framework.
  */
 
-#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_VIVANTE
+#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_VIVANTE)
 
 #include "SDL_vivantevideo.h"
 

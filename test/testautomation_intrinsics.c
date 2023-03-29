@@ -193,7 +193,7 @@ static void kernel_doubles_add_cpu(double *dest, const double *a, const double *
     }
 }
 
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
 SDL_TARGETING("mmx") static void kernel_ints_add_mmx(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
     for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
         *(__m64*)dest = _mm_add_pi32(*(__m64*)a, *(__m64*)b);
@@ -205,7 +205,7 @@ SDL_TARGETING("mmx") static void kernel_ints_add_mmx(Sint32 *dest, const Sint32 
 }
 #endif
 
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
 SDL_TARGETING("sse") static void kernel_floats_add_sse(float *dest, const float *a, const float *b, size_t size) {
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
         _mm_storeu_ps(dest, _mm_add_ps(_mm_loadu_ps(a), _mm_loadu_ps (b)));
@@ -216,7 +216,7 @@ SDL_TARGETING("sse") static void kernel_floats_add_sse(float *dest, const float 
 }
 #endif
 
-#if SDL_SSE2_INTRINSICS
+#if defined(SDL_SSE2_INTRINSICS)
 SDL_TARGETING("sse2") static void kernel_doubles_add_sse2(double *dest, const double *a, const double *b, size_t size) {
     for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
         _mm_storeu_pd(dest, _mm_add_pd(_mm_loadu_pd(a), _mm_loadu_pd(b)));
@@ -227,7 +227,7 @@ SDL_TARGETING("sse2") static void kernel_doubles_add_sse2(double *dest, const do
 }
 #endif
 
-#if SDL_SSE3_INTRINSICS
+#if defined(SDL_SSE3_INTRINSICS)
 SDL_TARGETING("sse3") static void kernel_ints_add_sse3(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
         _mm_storeu_si128((__m128i*)dest, _mm_add_epi32(_mm_lddqu_si128((__m128i*)a), _mm_lddqu_si128((__m128i*)b)));
@@ -238,7 +238,7 @@ SDL_TARGETING("sse3") static void kernel_ints_add_sse3(Sint32 *dest, const Sint3
 }
 #endif
 
-#if SDL_SSE4_1_INTRINSICS
+#if defined(SDL_SSE4_1_INTRINSICS)
 SDL_TARGETING("sse4.1") static void kernel_ints_mul_sse4_1(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
         _mm_storeu_si128((__m128i*)dest, _mm_mullo_epi32(_mm_lddqu_si128((__m128i*)a), _mm_lddqu_si128((__m128i*)b)));
@@ -249,7 +249,7 @@ SDL_TARGETING("sse4.1") static void kernel_ints_mul_sse4_1(Sint32 *dest, const S
 }
 #endif
 
-#if SDL_SSE4_2_INTRINSICS
+#if defined(SDL_SSE4_2_INTRINSICS)
 SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) {
     Uint32 crc32c = ~0;
     size_t len = SDL_strlen(text);
@@ -280,7 +280,7 @@ SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) 
 }
 #endif
 
-#if SDL_AVX_INTRINSICS
+#if defined(SDL_AVX_INTRINSICS)
 SDL_TARGETING("avx") static void kernel_floats_add_avx(float *dest, const float *a, const float *b, size_t size) {
     for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
         _mm256_storeu_ps(dest, _mm256_add_ps(_mm256_loadu_ps(a), _mm256_loadu_ps(b)));
@@ -291,7 +291,7 @@ SDL_TARGETING("avx") static void kernel_floats_add_avx(float *dest, const float 
 }
 #endif
 
-#if SDL_AVX2_INTRINSICS
+#if defined(SDL_AVX2_INTRINSICS)
 SDL_TARGETING("avx2") static void kernel_ints_add_avx2(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
     for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
         _mm256_storeu_si256((__m256i*)dest, _mm256_add_epi32(_mm256_loadu_si256((__m256i*)a), _mm256_loadu_si256((__m256i*)b)));
@@ -302,7 +302,7 @@ SDL_TARGETING("avx2") static void kernel_ints_add_avx2(Sint32 *dest, const Sint3
 }
 #endif
 
-#if SDL_AVX512F_INTRINSICS
+#if defined(SDL_AVX512F_INTRINSICS)
 SDL_TARGETING("avx512f") static void kernel_floats_add_avx512f(float *dest, const float *a, const float *b, size_t size) {
     for (; size >= 16; size -= 16, dest += 16, a += 16, b += 16) {
         _mm512_storeu_ps(dest, _mm512_add_ps(_mm512_loadu_ps(a), _mm512_loadu_ps(b)));
@@ -364,7 +364,7 @@ static int intrinsics_testMMX(void *arg)
 {
     if (SDL_HasMMX()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has MMX support.");
-#if SDL_MMX_INTRINSICS
+#if defined(SDL_MMX_INTRINSICS)
         {
             size_t size;
             Sint32 *dest, *a, *b;
@@ -392,7 +392,7 @@ static int intrinsics_testSSE(void *arg)
 {
     if (SDL_HasSSE()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE support.");
-#if SDL_SSE_INTRINSICS
+#if defined(SDL_SSE_INTRINSICS)
         {
             size_t size;
             float *dest, *a, *b;
@@ -420,7 +420,7 @@ static int intrinsics_testSSE2(void *arg)
 {
     if (SDL_HasSSE2()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE2 support.");
-#if SDL_SSE2_INTRINSICS
+#if defined(SDL_SSE2_INTRINSICS)
         {
             size_t size;
             double *dest, *a, *b;
@@ -448,7 +448,7 @@ static int intrinsics_testSSE3(void *arg)
 {
     if (SDL_HasSSE3()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE3 support.");
-#if SDL_SSE3_INTRINSICS
+#if defined(SDL_SSE3_INTRINSICS)
         {
             size_t size;
             Sint32 *dest, *a, *b;
@@ -476,7 +476,7 @@ static int intrinsics_testSSE4_1(void *arg)
 {
     if (SDL_HasSSE41()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.1 support.");
-#if SDL_SSE4_1_INTRINSICS
+#if defined(SDL_SSE4_1_INTRINSICS)
         {
             size_t size;
             Sint32 *dest, *a, *b;
@@ -504,7 +504,7 @@ static int intrinsics_testSSE4_2(void *arg)
 {
     if (SDL_HasSSE42()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.2 support.");
-#if SDL_SSE4_2_INTRINSICS
+#if defined(SDL_SSE4_2_INTRINSICS)
         {
             struct {
                 const char *input;
@@ -539,7 +539,7 @@ static int intrinsics_testAVX(void *arg)
 {
     if (SDL_HasAVX()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX support.");
-#if SDL_AVX_INTRINSICS
+#if defined(SDL_AVX_INTRINSICS)
         {
             size_t size;
             float *dest, *a, *b;
@@ -567,7 +567,7 @@ static int intrinsics_testAVX2(void *arg)
 {
     if (SDL_HasAVX2()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX2 support.");
-#if SDL_AVX2_INTRINSICS
+#if defined(SDL_AVX2_INTRINSICS)
         {
             size_t size;
             Sint32 *dest, *a, *b;
@@ -595,7 +595,7 @@ static int intrinsics_testAVX512F(void *arg)
 {
     if (SDL_HasAVX512F()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX512F support.");
-#if SDL_AVX512F_INTRINSICS
+#if defined(SDL_AVX512F_INTRINSICS)
         {
             size_t size;
             float *dest, *a, *b;

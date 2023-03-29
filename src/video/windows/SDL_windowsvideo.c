@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
@@ -208,7 +208,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->shape_driver.SetWindowShape = Win32_SetWindowShape;
 #endif
 
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     device->GL_LoadLibrary = WIN_GL_LoadLibrary;
     device->GL_GetProcAddress = WIN_GL_GetProcAddress;
     device->GL_UnloadLibrary = WIN_GL_UnloadLibrary;
@@ -220,8 +220,8 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->GL_DeleteContext = WIN_GL_DeleteContext;
     device->GL_GetEGLSurface = NULL;
 #endif
-#if SDL_VIDEO_OPENGL_EGL
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
 #endif
         /* Use EGL based functions */
@@ -235,11 +235,11 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
         device->GL_SwapWindow = WIN_GLES_SwapWindow;
         device->GL_DeleteContext = WIN_GLES_DeleteContext;
         device->GL_GetEGLSurface = WIN_GLES_GetEGLSurface;
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     }
 #endif
 #endif
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = WIN_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = WIN_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = WIN_Vulkan_GetInstanceExtensions;
@@ -566,7 +566,7 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 }
 #endif /* !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
 
-#if HAVE_DXGI_H
+#ifdef HAVE_DXGI_H
 #define CINTERFACE
 #define COBJMACROS
 #include <dxgi.h>
@@ -603,7 +603,7 @@ static SDL_bool DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
 
 SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
-#if !HAVE_DXGI_H
+#if !defined(HAVE_DXGI_H)
     if (adapterIndex) {
         *adapterIndex = -1;
     }

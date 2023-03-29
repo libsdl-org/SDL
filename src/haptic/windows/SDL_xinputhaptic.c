@@ -22,7 +22,7 @@
 
 #include "../SDL_syshaptic.h"
 
-#if SDL_HAPTIC_XINPUT
+#ifdef SDL_HAPTIC_XINPUT
 
 #include "SDL_windowshaptic_c.h"
 #include "SDL_xinputhaptic_c.h"

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
 
 #include "../SDL_sysrender.h"
 
@@ -38,7 +38,7 @@
 
 /* #define DEBUG_RAZOR */
 
-#if DEBUG_RAZOR
+#ifdef DEBUG_RAZOR
 #include <psp2/sysmodule.h>
 #endif
 
@@ -265,7 +265,7 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
         data->displayData.wait_vblank = SDL_FALSE;
     }
 
-#if DEBUG_RAZOR
+#ifdef DEBUG_RAZOR
     sceSysmoduleLoadModule(SCE_SYSMODULE_RAZOR_HUD);
     sceSysmoduleLoadModule(SCE_SYSMODULE_RAZOR_CAPTURE);
 #endif
@@ -1160,7 +1160,7 @@ static int VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 
     sceCommonDialogUpdate(&updateParam);
 
-#if DEBUG_RAZOR
+#ifdef DEBUG_RAZOR
     sceGxmPadHeartbeat(
         (const SceGxmColorSurface *)&data->displaySurface[data->backBufferIndex],
         (SceGxmSyncObject *)data->displayBufferSync[data->backBufferIndex]);

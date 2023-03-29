@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 
 #include <X11/cursorfont.h>
 #include "SDL_x11video.h"
@@ -80,7 +80,7 @@ static SDL_Cursor *X11_CreateDefaultCursor(void)
     return cursor;
 }
 
-#if SDL_VIDEO_DRIVER_X11_XCURSOR
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 static Cursor X11_CreateXCursorCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     Display *display = GetDisplay();
@@ -204,7 +204,7 @@ static SDL_Cursor *X11_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     if (cursor) {
         Cursor x11_cursor = None;
 
-#if SDL_VIDEO_DRIVER_X11_XCURSOR
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
         if (SDL_X11_HAVE_XCURSOR) {
             x11_cursor = X11_CreateXCursorCursor(surface, hot_x, hot_y);
         }
@@ -328,7 +328,7 @@ static void X11_WarpMouseInternal(Window xwindow, float x, float y)
 {
     SDL_VideoData *videodata = SDL_GetVideoDevice()->driverdata;
     Display *display = videodata->display;
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     int deviceid = 0;
     /* It seems XIWarpPointer() doesn't work correctly on multi-head setups:
      * https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
@@ -351,7 +351,7 @@ static int X11_WarpMouse(SDL_Window *window, float x, float y)
 {
     SDL_WindowData *data = window->driverdata;
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     /* If we have no barrier, we need to warp */
     if (data->pointer_barrier_active == SDL_FALSE) {
         X11_WarpMouseInternal(data->xwindow, x, y);
@@ -370,7 +370,7 @@ static int X11_WarpMouseGlobal(float x, float y)
 
 static int X11_SetRelativeMouseMode(SDL_bool enabled)
 {
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     if (X11_Xinput2IsInitialized()) {
         return 0;
     }
@@ -413,7 +413,7 @@ static Uint32 X11_GetGlobalMouseState(float *x, float *y)
 
     /* !!! FIXME: should we XSync() here first? */
 
-#if !SDL_VIDEO_DRIVER_X11_XINPUT2
+#if !defined(SDL_VIDEO_DRIVER_X11_XINPUT2)
     videodata->global_mouse_changed = SDL_TRUE;
 #else
     if (!SDL_X11_HAVE_XINPUT2)

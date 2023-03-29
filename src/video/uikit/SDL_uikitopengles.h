@@ -21,7 +21,7 @@
 #ifndef SDL_uikitopengles_
 #define SDL_uikitopengles_
 
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
 
 #include "../SDL_sysvideo.h"
 

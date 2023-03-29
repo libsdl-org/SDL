@@ -31,7 +31,7 @@
 
 #include "SDL_hidapi_c.h"
 
-#if !SDL_HIDAPI_DISABLED
+#ifndef SDL_HIDAPI_DISABLED
 
 #if defined(__WIN32__) || defined(__WINGDK__)
 #include "../core/windows/SDL_windows.h"
@@ -557,9 +557,9 @@ HIDAPI_ShutdownDiscovery()
 #define read_thread                  PLATFORM_read_thread
 
 #undef HIDAPI_H__
-#if __LINUX__
+#ifdef __LINUX__
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
 static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
 #define udev_device_get_sysattr_value                 udev_ctx->udev_device_get_sysattr_value
@@ -582,20 +582,20 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #define HAVE_PLATFORM_BACKEND 1
 #endif /* SDL_USE_LIBUDEV */
 
-#elif __MACOS__
+#elif defined(__MACOS__)
 #include "mac/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx              1
-#elif __WINDOWS__ || __WINGDK__
+#elif defined(__WINDOWS__) || defined(__WINGDK__)
 #include "windows/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx              1
-#elif __ANDROID__
+#elif defined(__ANDROID__)
 /* The implementation for Android is in a separate .cpp file */
 #include "hidapi/hidapi.h"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx              1
-#elif __IOS__ || __TVOS__
+#elif defined(__IOS__) || defined(__TVOS__)
 /* The implementation for iOS and tvOS is in a separate .m file */
 #include "hidapi/hidapi.h"
 #define HAVE_PLATFORM_BACKEND 1
@@ -899,7 +899,7 @@ struct hidapi_backend
     const wchar_t *(*hid_error)(void *device);
 };
 
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
 static const struct hidapi_backend PLATFORM_Backend = {
     (void *)PLATFORM_hid_write,
     (void *)PLATFORM_hid_read_timeout,
@@ -916,7 +916,7 @@ static const struct hidapi_backend PLATFORM_Backend = {
 };
 #endif /* HAVE_PLATFORM_BACKEND */
 
-#if HAVE_DRIVER_BACKEND
+#ifdef HAVE_DRIVER_BACKEND
 static const struct hidapi_backend DRIVER_Backend = {
     (void *)DRIVER_hid_write,
     (void *)DRIVER_hid_read_timeout,
@@ -958,7 +958,7 @@ struct SDL_hid_device_
 };
 static char device_magic;
 
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
 
 static SDL_hid_device *
 CreateHIDDeviceWrapper(void *device, const struct hidapi_backend *backend)
@@ -985,8 +985,8 @@ DeleteHIDDeviceWrapper(SDL_hid_device *device)
         return retval;                               \
     }
 
-#if !SDL_HIDAPI_DISABLED
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#ifndef SDL_HIDAPI_DISABLED
+#if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
 
 #define COPY_IF_EXISTS(var)                \
     if (pSrc->var != NULL) {               \
@@ -1134,9 +1134,9 @@ int SDL_hid_init(void)
     }
 #endif /* HAVE_LIBUSB */
 
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
     ++attempts;
-#if __LINUX__
+#ifdef __LINUX__
     udev_ctx = SDL_UDEV_GetUdevSyms();
 #endif /* __LINUX __ */
     if (udev_ctx && PLATFORM_hid_init() == 0) {
@@ -1165,15 +1165,15 @@ int SDL_hid_exit(void)
     }
     SDL_hidapi_refcount = 0;
 
-#if !SDL_HIDAPI_DISABLED
+#ifndef SDL_HIDAPI_DISABLED
     HIDAPI_ShutdownDiscovery();
 #endif
 
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         result |= PLATFORM_hid_exit();
     }
-#if __LINUX__
+#ifdef __LINUX__
     SDL_UDEV_ReleaseUdevSyms();
 #endif /* __LINUX __ */
 #endif /* HAVE_PLATFORM_BACKEND */
@@ -1195,7 +1195,7 @@ Uint32 SDL_hid_device_change_count(void)
 {
     Uint32 counter = 0;
 
-#if !SDL_HIDAPI_DISABLED
+#ifndef SDL_HIDAPI_DISABLED
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return 0;
     }
@@ -1215,16 +1215,16 @@ Uint32 SDL_hid_device_change_count(void)
 
 struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
 #ifdef HAVE_LIBUSB
     struct SDL_hid_device_info *usb_devs = NULL;
     struct SDL_hid_device_info *usb_dev;
 #endif
-#if HAVE_DRIVER_BACKEND
+#ifdef HAVE_DRIVER_BACKEND
     struct SDL_hid_device_info *driver_devs = NULL;
     struct SDL_hid_device_info *driver_dev;
 #endif
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
     struct SDL_hid_device_info *raw_devs = NULL;
     struct SDL_hid_device_info *raw_dev;
 #endif
@@ -1280,7 +1280,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
     }
 #endif /* HAVE_DRIVER_BACKEND */
 
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         raw_devs = PLATFORM_hid_enumerate(vendor_id, product_id);
 #ifdef DEBUG_HIDAPI
@@ -1368,14 +1368,14 @@ void SDL_hid_free_enumeration(struct SDL_hid_device_info *devs)
 
 SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
     void *pDevice = NULL;
 
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return NULL;
     }
 
-#if HAVE_PLATFORM_BACKEND
+#if defined(HAVE_PLATFORM_BACKEND)
     if (udev_ctx) {
         pDevice = PLATFORM_hid_open(vendor_id, product_id, serial_number);
         if (pDevice != NULL) {
@@ -1384,7 +1384,7 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
     }
 #endif /* HAVE_PLATFORM_BACKEND */
 
-#if HAVE_DRIVER_BACKEND
+#ifdef HAVE_DRIVER_BACKEND
     pDevice = DRIVER_hid_open(vendor_id, product_id, serial_number);
     if (pDevice != NULL) {
         return CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
@@ -1407,14 +1407,14 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
 
 SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
     void *pDevice = NULL;
 
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return NULL;
     }
 
-#if HAVE_PLATFORM_BACKEND
+#if defined(HAVE_PLATFORM_BACKEND)
     if (udev_ctx) {
         pDevice = PLATFORM_hid_open_path(path, bExclusive);
         if (pDevice != NULL) {
@@ -1423,7 +1423,7 @@ SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */
     }
 #endif /* HAVE_PLATFORM_BACKEND */
 
-#if HAVE_DRIVER_BACKEND
+#ifdef HAVE_DRIVER_BACKEND
     pDevice = DRIVER_hid_open_path(path, bExclusive);
     if (pDevice != NULL) {
         return CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
@@ -1585,7 +1585,7 @@ int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t
 
 void SDL_hid_ble_scan(SDL_bool active)
 {
-#if !SDL_HIDAPI_DISABLED && (__IOS__ || __TVOS__)
+#if !defined(SDL_HIDAPI_DISABLED) && (defined(__IOS__) || defined(__TVOS__))
     hid_ble_scan(active);
 #endif
 }

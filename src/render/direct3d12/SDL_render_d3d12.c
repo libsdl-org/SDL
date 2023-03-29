@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED)
 
 #define SDL_D3D12_NUM_BUFFERS        2
 #define SDL_D3D12_NUM_VERTEX_BUFFERS 256
@@ -3050,7 +3050,7 @@ extern "C"
 {
     ID3D12Device *device = NULL;
 
-#if SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED)
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
 
     /* Make sure that this is a D3D renderer */

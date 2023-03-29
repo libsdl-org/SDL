@@ -408,6 +408,7 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 static void dynapi_warn(const char *msg)
 {
     const char *caption = "SDL Dynamic API Failure!";
+    (void)caption;
 /* SDL_ShowSimpleMessageBox() is a too heavy for here. */
 #if (defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
@@ -484,7 +485,7 @@ static void SDL_InitDynamicAPI(void)
 /* SDL_AtomicLock calls SDL mutex functions to emulate if
    SDL_ATOMIC_DISABLED, which we can't do here, so in such a
    configuration, you're on your own. */
-#if !SDL_ATOMIC_DISABLED
+#ifndef SDL_ATOMIC_DISABLED
     static SDL_SpinLock lock = 0;
     SDL_AtomicLock_REAL(&lock);
 #endif
@@ -494,7 +495,7 @@ static void SDL_InitDynamicAPI(void)
         already_initialized = SDL_TRUE;
     }
 
-#if !SDL_ATOMIC_DISABLED
+#ifndef SDL_ATOMIC_DISABLED
     SDL_AtomicUnlock_REAL(&lock);
 #endif
 }

@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
-#if SDL_POWER_LINUX
+#ifdef SDL_POWER_LINUX
 
 #include <stdio.h>
 #include <unistd.h>
@@ -525,7 +525,7 @@ SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *second
 }
 
 /* d-bus queries to org.freedesktop.UPower. */
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
 #define UPOWER_DBUS_NODE             "org.freedesktop.UPower"
 #define UPOWER_DBUS_PATH             "/org/freedesktop/UPower"
 #define UPOWER_DBUS_INTERFACE        "org.freedesktop.UPower"
@@ -616,7 +616,7 @@ SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *second
 {
     SDL_bool retval = SDL_FALSE;
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     char **paths = NULL;
     int i, numpaths = 0;

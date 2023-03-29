@@ -20,6 +20,7 @@
 #ifdef SDL_DYNAMIC_API
 #undef SDL_DYNAMIC_API
 #endif
+#define SDL_DYNAMIC_API 0
 
 #include "../src/SDL_internal.h"
 
@@ -29,7 +30,7 @@
 static int run_test(void);
 
 /* FIXME: Need CMake tests for this */
-#if (HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX)) && HAVE_LINUX_INPUT_H
+#if (defined(HAVE_LIBUDEV_H) || defined(SDL_JOYSTICK_LINUX)) && defined(HAVE_LINUX_INPUT_H)
 
 #include <stdint.h>
 

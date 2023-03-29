@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_DUMMY
+#ifdef SDL_VIDEO_DRIVER_DUMMY
 
 /* Dummy SDL video driver implementation; this is just enough to make an
  *  SDL-based application THINK it's got a working video driver, for
@@ -53,7 +53,7 @@ static int DUMMY_VideoInit(_THIS);
 static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void DUMMY_VideoQuit(_THIS);
 
-#if SDL_INPUT_LINUXEV
+#ifdef SDL_INPUT_LINUXEV
 static int evdev = 0;
 static void DUMMY_EVDEV_Poll(_THIS);
 #endif
@@ -67,7 +67,7 @@ static int DUMMY_Available(void)
         if (SDL_strcmp(envr, DUMMYVID_DRIVER_NAME) == 0) {
             return 1;
         }
-#if SDL_INPUT_LINUXEV
+#ifdef SDL_INPUT_LINUXEV
         if (SDL_strcmp(envr, DUMMYVID_DRIVER_EVDEV_NAME) == 0) {
             evdev = 1;
             return 1;
@@ -103,7 +103,7 @@ static SDL_VideoDevice *DUMMY_CreateDevice(void)
     device->VideoQuit = DUMMY_VideoQuit;
     device->SetDisplayMode = DUMMY_SetDisplayMode;
     device->PumpEvents = DUMMY_PumpEvents;
-#if SDL_INPUT_LINUXEV
+#ifdef SDL_INPUT_LINUXEV
     if (evdev) {
         device->PumpEvents = DUMMY_EVDEV_Poll;
     }
@@ -122,7 +122,7 @@ VideoBootStrap DUMMY_bootstrap = {
     DUMMY_CreateDevice
 };
 
-#if SDL_INPUT_LINUXEV
+#ifdef SDL_INPUT_LINUXEV
 VideoBootStrap DUMMY_evdev_bootstrap = {
     DUMMYVID_DRIVER_EVDEV_NAME, "SDL dummy video driver with evdev",
     DUMMY_CreateDevice
@@ -150,7 +150,7 @@ int DUMMY_VideoInit(_THIS)
         return -1;
     }
 
-#if SDL_INPUT_LINUXEV
+#ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
 #endif
 
@@ -165,7 +165,7 @@ static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMod
 
 void DUMMY_VideoQuit(_THIS)
 {
-#if SDL_INPUT_LINUXEV
+#ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();
 #endif
 }
