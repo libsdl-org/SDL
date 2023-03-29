@@ -1332,7 +1332,7 @@ static void SDL_RestoreMousePosition(SDL_Window *window)
     }
 }
 
-#if __WINRT__
+#ifdef __WINRT__
 extern Uint32 WINRT_DetectWindowFlags(SDL_Window *window);
 #endif
 
@@ -1379,7 +1379,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
             return 0;
         }
     }
-#elif __WINRT__ && (NTDDI_VERSION < NTDDI_WIN10)
+#elif defined(__WINRT__) && (NTDDI_VERSION < NTDDI_WIN10)
     /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
        or not.  The user can choose this, via OS-provided UI, but this can't
        be set programmatically.
@@ -1779,7 +1779,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
     }
 #endif
 
-#if __WINRT__ && (NTDDI_VERSION < NTDDI_WIN10)
+#if defined(__WINRT__) && (NTDDI_VERSION < NTDDI_WIN10)
     /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
        or not.  The user can choose this, via OS-provided UI, but this can't
        be set programmatically.

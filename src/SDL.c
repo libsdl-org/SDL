@@ -610,7 +610,7 @@ const char *SDL_GetPlatform(void)
     return "Solaris";
 #elif defined(__WIN32__)
     return "Windows";
-#elif __WINRT__
+#elif defined(__WINRT__)
     return "WinRT";
 #elif __WINGDK__
     return "WinGDK";

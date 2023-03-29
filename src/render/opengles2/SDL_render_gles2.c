@@ -2137,7 +2137,7 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
         goto error;
     }
 
-#if __WINRT__
+#ifdef __WINRT__
     /* DLudwig, 2013-11-29: ANGLE for WinRT doesn't seem to work unless VSync
      * is turned on.  Not doing so will freeze the screen's contents to that
      * of the first drawn frame.

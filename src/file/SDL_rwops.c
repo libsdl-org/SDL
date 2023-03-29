@@ -594,7 +594,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     {
 #if __APPLE__ && !SDL_FILE_DISABLED // TODO: add dummy?
         FILE *fp = SDL_OpenFPFromBundleOrFallback(file, mode);
-#elif __WINRT__
+#elif defined(__WINRT__)
         FILE *fp = NULL;
         fopen_s(&fp, file, mode);
 #elif defined(__3DS__)
