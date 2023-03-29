@@ -34,7 +34,7 @@
 #elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7) && SDL_NEON_INTRINSICS
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* All Apple ARMv7 chips promise NEON support. */
 #endif
-#endif
+#endif /* !SDL_CPUINFO_DISABLED */
 
 /* Set to zero if platform is guaranteed to use a SIMD codepath here. */
 #if !defined(NEED_SCALAR_CONVERTER_FALLBACKS) || SDL_CPUINFO_DISABLED
