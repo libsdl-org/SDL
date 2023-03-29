@@ -630,9 +630,11 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
 #ifdef SDL_JOYSTICK_HIDAPI_STEAMXBOX
 #define HAVE_DRIVER_BACKEND 1
+#else
+#define HAVE_DRIVER_BACKEND 0
 #endif
 
-#ifdef HAVE_DRIVER_BACKEND
+#if HAVE_DRIVER_BACKEND
 
 /* DRIVER HIDAPI Implementation */
 
@@ -1260,7 +1262,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
     }
 #endif /* HAVE_LIBUSB */
 
-#ifdef HAVE_DRIVER_BACKEND
+#if HAVE_DRIVER_BACKEND
     driver_devs = DRIVER_hid_enumerate(vendor_id, product_id);
     for (driver_dev = driver_devs; driver_dev; driver_dev = driver_dev->next) {
         new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
@@ -1298,7 +1300,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
                 }
             }
 #endif
-#ifdef HAVE_DRIVER_BACKEND
+#if HAVE_DRIVER_BACKEND
             for (driver_dev = driver_devs; driver_dev; driver_dev = driver_dev->next) {
                 if (raw_dev->vendor_id == driver_dev->vendor_id &&
                     raw_dev->product_id == driver_dev->product_id &&
