@@ -194,7 +194,7 @@ int SDL_InitSubSystem(Uint32 flags)
     /* Clear the error message */
     SDL_ClearError();
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     SDL_DBus_Init();
 #endif
 
@@ -511,7 +511,7 @@ void SDL_Quit(void)
     SDL_ClearHints();
     SDL_AssertionsQuit();
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
 

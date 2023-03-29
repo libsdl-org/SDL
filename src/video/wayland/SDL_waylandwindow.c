@@ -2218,7 +2218,7 @@ void Wayland_SuspendScreenSaver(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
         return;
     }
