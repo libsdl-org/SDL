@@ -942,7 +942,7 @@ static const char *s_ControllerMappings[] = {
     "0500000083050000602000000ffe0000,iBuffalo SNES Controller,a:b0,b:b1,back:b9,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b15,rightshoulder:b16,start:b10,x:b2,y:b3,hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,",
     "0500000083050000602000000ffe0000,iBuffalo SNES Controller,a:b1,b:b0,back:b9,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b15,rightshoulder:b16,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,",
 #endif
-#if SDL_JOYSTICK_MFI
+#ifdef SDL_JOYSTICK_MFI
     "05000000ac050000010000004f066d01,*,a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b6,leftshoulder:b4,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,righttrigger:a5,rightx:a3,righty:a4,x:b2,y:b3,",
     "05000000ac05000001000000cf076d01,*,a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b6,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,x:b2,y:b3,",
     "05000000ac05000001000000df076d01,*,a:b0,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b6,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,start:b9,x:b2,y:b3,",

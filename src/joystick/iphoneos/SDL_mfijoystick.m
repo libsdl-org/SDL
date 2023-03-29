@@ -948,7 +948,7 @@ static Uint8 IOS_MFIJoystickHatStateForDPad(GCControllerDirectionPad *dpad)
 
 static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 {
-#if SDL_JOYSTICK_MFI
+#ifdef SDL_JOYSTICK_MFI
     @autoreleasepool {
         GCController *controller = joystick->hwdata->controller;
         Uint8 hatstate = SDL_HAT_CENTERED;
