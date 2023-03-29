@@ -107,7 +107,7 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_VITA
     &VITA_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_N3DS
+#ifdef SDL_VIDEO_DRIVER_N3DS
     &N3DS_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_KMSDRM
