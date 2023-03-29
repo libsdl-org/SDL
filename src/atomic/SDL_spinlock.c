@@ -81,7 +81,7 @@ SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
         return SDL_FALSE;
     }
 
-#elif HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
+#elif defined(HAVE_GCC_ATOMICS) || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
     return __sync_lock_test_and_set(lock, 1) == 0;
 
 #elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
@@ -186,7 +186,7 @@ void SDL_AtomicLock(SDL_SpinLock *lock)
 
 void SDL_AtomicUnlock(SDL_SpinLock *lock)
 {
-#if HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
+#if defined(HAVE_GCC_ATOMICS) || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
     __sync_lock_release(lock);
 
 #elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
