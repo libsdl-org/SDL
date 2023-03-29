@@ -578,16 +578,16 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #define udev_enumerate_unref                          udev_ctx->udev_enumerate_unref
 
 #include "linux/hid.c"
-#define HAVE_PLATFORM_BACKEND 1
+#define HAVE_PLATFORM_BACKEND
 #endif /* SDL_USE_LIBUDEV */
 
 #elif defined(__MACOSX__)
 #include "mac/hid.c"
-#define HAVE_PLATFORM_BACKEND 1
+#define HAVE_PLATFORM_BACKEND
 #define udev_ctx              1
 #elif __WINDOWS__ || __WINGDK__
 #include "windows/hid.c"
-#define HAVE_PLATFORM_BACKEND 1
+#define HAVE_PLATFORM_BACKEND
 #define udev_ctx              1
 #elif __ANDROID__
 /* The implementation for Android is in a separate .cpp file */
@@ -899,7 +899,7 @@ struct hidapi_backend
     const wchar_t *(*hid_error)(void *device);
 };
 
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
 static const struct hidapi_backend PLATFORM_Backend = {
     (void *)PLATFORM_hid_write,
     (void *)PLATFORM_hid_read_timeout,
@@ -958,7 +958,7 @@ struct SDL_hid_device_
 };
 static char device_magic;
 
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#if defined(HAVE_PLATFORM_BACKEND) || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
 
 static SDL_hid_device *CreateHIDDeviceWrapper(void *device, const struct hidapi_backend *backend)
 {
@@ -984,7 +984,7 @@ static void DeleteHIDDeviceWrapper(SDL_hid_device *device)
     }
 
 #ifndef SDL_HIDAPI_DISABLED
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#if defined(HAVE_PLATFORM_BACKEND) || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
 
 #define COPY_IF_EXISTS(var)                \
     if (pSrc->var != NULL) {               \
@@ -1131,7 +1131,7 @@ int SDL_hid_init(void)
     }
 #endif /* HAVE_LIBUSB */
 
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
     ++attempts;
 #ifdef __LINUX__
     udev_ctx = SDL_UDEV_GetUdevSyms();
@@ -1166,7 +1166,7 @@ int SDL_hid_exit(void)
     HIDAPI_ShutdownDiscovery();
 #endif
 
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         result |= PLATFORM_hid_exit();
     }
@@ -1212,7 +1212,7 @@ Uint32 SDL_hid_device_change_count(void)
 
 struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#if defined(HAVE_PLATFORM_BACKEND) || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
 #ifdef HAVE_LIBUSB
     struct SDL_hid_device_info *usb_devs = NULL;
     struct SDL_hid_device_info *usb_dev;
@@ -1221,7 +1221,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
     struct SDL_hid_device_info *driver_devs = NULL;
     struct SDL_hid_device_info *driver_dev;
 #endif
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
     struct SDL_hid_device_info *raw_devs = NULL;
     struct SDL_hid_device_info *raw_dev;
 #endif
@@ -1277,7 +1277,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
     }
 #endif /* HAVE_DRIVER_BACKEND */
 
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         raw_devs = PLATFORM_hid_enumerate(vendor_id, product_id);
 #ifdef DEBUG_HIDAPI
@@ -1365,14 +1365,14 @@ void SDL_hid_free_enumeration(struct SDL_hid_device_info *devs)
 
 SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#if defined(HAVE_PLATFORM_BACKEND) || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
     void *pDevice = NULL;
 
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return NULL;
     }
 
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         pDevice = PLATFORM_hid_open(vendor_id, product_id, serial_number);
         if (pDevice != NULL) {
@@ -1404,14 +1404,14 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
 
 SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#if defined(HAVE_PLATFORM_BACKEND) || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
     void *pDevice = NULL;
 
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return NULL;
     }
 
-#if HAVE_PLATFORM_BACKEND
+#ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         pDevice = PLATFORM_hid_open_path(path, bExclusive);
         if (pDevice != NULL) {
