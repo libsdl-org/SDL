@@ -99,7 +99,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->GetDisplayDPI = UIKit_GetDisplayDPI;
         device->GetWindowSizeInPixels = UIKit_GetWindowSizeInPixels;
 
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
         device->HasScreenKeyboardSupport = UIKit_HasScreenKeyboardSupport;
         device->ShowScreenKeyboard = UIKit_ShowScreenKeyboard;
         device->HideScreenKeyboard = UIKit_HideScreenKeyboard;
