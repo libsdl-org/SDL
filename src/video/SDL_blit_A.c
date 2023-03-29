@@ -442,7 +442,7 @@ static void BlitRGBtoRGBPixelAlphaARMSIMD(SDL_BlitInfo *info)
 }
 #endif
 
-#if SDL_ARM_NEON_BLITTERS
+#ifdef SDL_ARM_NEON_BLITTERS
 void BlitARGBto565PixelAlphaARMNEONAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
 
 static void BlitARGBto565PixelAlphaARMNEON(SDL_BlitInfo *info)
@@ -1435,9 +1435,9 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             }
 
         case 2:
-#if SDL_ARM_NEON_BLITTERS || defined(SDL_ARM_SIMD_BLITTERS)
+#if defined(SDL_ARM_NEON_BLITTERS) || defined(SDL_ARM_SIMD_BLITTERS)
             if (sf->BytesPerPixel == 4 && sf->Amask == 0xff000000 && sf->Gmask == 0xff00 && df->Gmask == 0x7e0 && ((sf->Rmask == 0xff && df->Rmask == 0x1f) || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
-#if SDL_ARM_NEON_BLITTERS
+#ifdef SDL_ARM_NEON_BLITTERS
                 if (SDL_HasNEON()) {
                     return BlitARGBto565PixelAlphaARMNEON;
                 }
@@ -1475,7 +1475,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                 }
 #endif /* __MMX__ || __3dNOW__ */
                 if (sf->Amask == 0xff000000) {
-#if SDL_ARM_NEON_BLITTERS
+#ifdef SDL_ARM_NEON_BLITTERS
                     if (SDL_HasNEON()) {
                         return BlitRGBtoRGBPixelAlphaARMNEON;
                     }
