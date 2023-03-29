@@ -72,7 +72,7 @@ struct joystick_hwdata
 {
     SDL_JoystickGUID guid;
 
-#if SDL_JOYSTICK_DINPUT
+#ifdef SDL_JOYSTICK_DINPUT
     LPDIRECTINPUTDEVICE8 InputDevice;
     DIDEVCAPS Capabilities;
     SDL_bool buffered;
@@ -90,7 +90,7 @@ struct joystick_hwdata
     DWORD dwPacketNumber;
 };
 
-#if SDL_JOYSTICK_DINPUT
+#ifdef SDL_JOYSTICK_DINPUT
 extern const DIDATAFORMAT SDL_c_dfDIJoystick2;
 #endif
 
