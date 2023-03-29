@@ -132,7 +132,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->Vulkan_GetDrawableSize = UIKit_Vulkan_GetDrawableSize;
 #endif
 
-#if SDL_VIDEO_METAL
+#ifdef SDL_VIDEO_METAL
         device->Metal_CreateView = UIKit_Metal_CreateView;
         device->Metal_DestroyView = UIKit_Metal_DestroyView;
         device->Metal_GetLayer = UIKit_Metal_GetLayer;

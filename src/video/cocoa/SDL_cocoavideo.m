@@ -157,7 +157,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
     device->Vulkan_GetDrawableSize = Cocoa_Vulkan_GetDrawableSize;
 #endif
 
-#if SDL_VIDEO_METAL
+#ifdef SDL_VIDEO_METAL
     device->Metal_CreateView = Cocoa_Metal_CreateView;
     device->Metal_DestroyView = Cocoa_Metal_DestroyView;
     device->Metal_GetLayer = Cocoa_Metal_GetLayer;

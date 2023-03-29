@@ -207,7 +207,7 @@ static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
         return SDL_WINDOW_OPENGL;
     }
 #endif
-#if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || defined(__MACOSX__) || defined(__IPHONEOS__))
+#if defined(SDL_VIDEO_METAL) && (TARGET_OS_MACCATALYST || defined(__MACOSX__) || defined(__IPHONEOS__))
     if (_this->Metal_CreateView) {
         return SDL_WINDOW_METAL;
     }
