@@ -404,12 +404,6 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         ctx->effects_supported = SDL_FALSE;
     }
 
-    if (device->vendor_id == USB_VENDOR_SONY &&
-        device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
-        /* The Armor-X Pro seems to only deliver half the acceleration it should */
-        ctx->accel_numerator *= 2;
-    }
-
     device->joystick_type = joystick_type;
     device->type = SDL_GAMEPAD_TYPE_PS4;
     if (ctx->official_controller) {
@@ -604,8 +598,42 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
 
         if (i < 3) {
             scale *= ((double)ctx->gyro_numerator / ctx->gyro_denominator) * SDL_PI_D / 180.0;
+
+            if (device->vendor_id == USB_VENDOR_SONY &&
+                device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
+                /* The Armor-X Pro seems to only deliver half the rotation it should,
+                 * and in the opposite direction on the Z axis */
+                switch (i) {
+                case 0:
+                case 1:
+                    scale *= 2.0;
+                    break;
+                case 2:
+                    scale *= -2.0;
+                    break;
+                default:
+                    break;
+                }
+            }
         } else {
             scale *= ((double)ctx->accel_numerator / ctx->accel_denominator) * SDL_STANDARD_GRAVITY;
+
+            if (device->vendor_id == USB_VENDOR_SONY &&
+                device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
+                /* The Armor-X Pro seems to only deliver half the acceleration it should,
+                 * and in the opposite direction on the X and Y axes */
+                switch (i) {
+                case 3:
+                case 4:
+                    scale *= -2.0;
+                    break;
+                case 5:
+                    scale *= 2.0;
+                    break;
+                default:
+                    break;
+                }
+            }
         }
         ctx->calibration[i].scale = (float)scale;
     }
