@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_TIMER_OS2
+#ifdef SDL_TIMER_OS2
 
 #include "SDL_timer.h"
 #include "../../core/os2/SDL_os2.h"
