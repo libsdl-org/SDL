@@ -25,13 +25,15 @@
 
 #include "SDL_thread.h"
 
-#define FAKE_RECURSIVE_MUTEX (!(defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX) || \
-    defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP)))
+#if !(defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX) || \
+    defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP))
+#define FAKE_RECURSIVE_MUTEX
+#endif
 
 struct SDL_mutex
 {
     pthread_mutex_t id;
-#if FAKE_RECURSIVE_MUTEX
+#ifdef FAKE_RECURSIVE_MUTEX
     int recursive;
     pthread_t owner;
 #endif
@@ -75,7 +77,7 @@ void SDL_DestroyMutex(SDL_mutex *mutex)
 /* Lock the mutex */
 int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
-#if FAKE_RECURSIVE_MUTEX
+#ifdef FAKE_RECURSIVE_MUTEX
     pthread_t this_thread;
 #endif
 
@@ -83,7 +85,7 @@ int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
         return 0;
     }
 
-#if FAKE_RECURSIVE_MUTEX
+#ifdef FAKE_RECURSIVE_MUTEX
     this_thread = pthread_self();
     if (mutex->owner == this_thread) {
         ++mutex->recursive;
@@ -111,7 +113,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 {
     int retval;
     int result;
-#if FAKE_RECURSIVE_MUTEX
+#ifdef FAKE_RECURSIVE_MUTEX
     pthread_t this_thread;
 #endif
 
@@ -120,7 +122,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
     }
 
     retval = 0;
-#if FAKE_RECURSIVE_MUTEX
+#ifdef FAKE_RECURSIVE_MUTEX
     this_thread = pthread_self();
     if (mutex->owner == this_thread) {
         ++mutex->recursive;
@@ -158,7 +160,7 @@ int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doe
         return 0;
     }
 
-#if FAKE_RECURSIVE_MUTEX
+#ifdef FAKE_RECURSIVE_MUTEX
     /* We can only unlock the mutex if we own it */
     if (pthread_self() == mutex->owner) {
         if (mutex->recursive) {
