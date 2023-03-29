@@ -34,7 +34,7 @@
 #include "windows/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_PS2)
 #include "ps2/SDL_systhread_c.h"
-#elif SDL_THREAD_PSP
+#elif defined(SDL_THREAD_PSP)
 #include "psp/SDL_systhread_c.h"
 #elif SDL_THREAD_VITA
 #include "vita/SDL_systhread_c.h"
