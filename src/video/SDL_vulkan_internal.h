@@ -44,7 +44,7 @@
 #define VK_USE_PLATFORM_METAL_EXT
 #define VK_USE_PLATFORM_IOS_MVK
 #endif
-#if SDL_VIDEO_DRIVER_WAYLAND
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
 #define VK_USE_PLATFORM_WAYLAND_KHR
 #include "wayland/SDL_waylanddyn.h"
 #endif
