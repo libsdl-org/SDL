@@ -36,7 +36,7 @@
 #include "ps2/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_PSP)
 #include "psp/SDL_systhread_c.h"
-#elif SDL_THREAD_VITA
+#elif defined(SDL_THREAD_VITA)
 #include "vita/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_N3DS)
 #include "n3ds/SDL_systhread_c.h"

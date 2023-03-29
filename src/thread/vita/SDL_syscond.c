@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_VITA
+#ifdef SDL_THREAD_VITA
 
 /* An implementation of condition variables using semaphores and mutexes */
 /*

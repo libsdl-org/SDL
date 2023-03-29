@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_VITA
+#ifdef SDL_THREAD_VITA
 
 /* Semaphore functions for the VITA. */
 

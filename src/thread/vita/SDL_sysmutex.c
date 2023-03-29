@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_VITA
+#ifdef SDL_THREAD_VITA
 
 #include "SDL_thread.h"
 #include "SDL_systhread_c.h"
