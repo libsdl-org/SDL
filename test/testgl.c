@@ -45,7 +45,7 @@ static int LoadContext(GL_Context *data)
 #else
 #define SDL_PROC(ret, func, params)                                                         \
     do {                                                                                    \
-        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                                          \
+        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                 \
         if (!data->func) {                                                                  \
             return SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
         }                                                                                   \
@@ -210,9 +210,6 @@ int main(int argc, char *argv[])
     int interval = 0;
     int ret_interval = 0;
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Initialize parameters */
     fsaa = 0;
     accel = -1;
@@ -222,6 +219,10 @@ int main(int argc, char *argv[])
     if (state == NULL) {
         return 1;
     }
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     for (i = 1; i < argc;) {
         int consumed;
 

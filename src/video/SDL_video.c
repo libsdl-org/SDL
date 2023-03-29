@@ -115,6 +115,9 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN
     &Emscripten_bootstrap,
 #endif
+#if SDL_VIDEO_DRIVER_QNX
+    &QNX_bootstrap,
+#endif
 #if SDL_VIDEO_DRIVER_OFFSCREEN
     &OFFSCREEN_bootstrap,
 #endif
@@ -1939,28 +1942,12 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
 
 SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags)
 {
-    if (!_this) {
-        SDL_UninitializedVideo();
-        return NULL;
-    }
-
     if (!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT)) {
         SDL_Unsupported();
         return NULL;
     }
 
     /* Parent must be a valid window */
-    if (!parent) {
-        /* Use the first toplevel window by default */
-        for (parent = _this->windows; parent; parent = parent->next) {
-            if (!SDL_WINDOW_IS_POPUP(parent)) {
-                /* Adjust the offset to be relative to this window */
-                offset_x -= parent->x;
-                offset_y -= parent->y;
-                break;
-            }
-        }
-    }
     CHECK_WINDOW_MAGIC(parent, NULL);
 
     /* Popups must specify either the tooltip or popup menu window flags */
@@ -2094,7 +2081,6 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
         if (_this->DestroyWindowFramebuffer) {
             _this->DestroyWindowFramebuffer(_this, window);
         }
-        _this->checked_texture_framebuffer = SDL_FALSE;
     }
 
     if ((window->flags & SDL_WINDOW_OPENGL) != (flags & SDL_WINDOW_OPENGL)) {
@@ -2627,10 +2613,10 @@ int SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
 {
     CHECK_WINDOW_MAGIC(window, -1);
-    if (min_w <= 0) {
+    if (min_w < 0) {
         return SDL_InvalidParamError("min_w");
     }
-    if (min_h <= 0) {
+    if (min_h < 0) {
         return SDL_InvalidParamError("min_h");
     }
 
@@ -2643,11 +2629,16 @@ int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
     window->min_h = min_h;
 
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        int w, h;
+
         if (_this->SetWindowMinimumSize) {
             _this->SetWindowMinimumSize(_this, window);
         }
+
         /* Ensure that window is not smaller than minimal size */
-        return SDL_SetWindowSize(window, SDL_max(window->w, window->min_w), SDL_max(window->h, window->min_h));
+        w = window->min_w ? SDL_max(window->w, window->min_w) : window->w;
+        h = window->min_h ? SDL_max(window->h, window->min_h) : window->h;
+        return SDL_SetWindowSize(window, w, h);
     }
     return 0;
 }
@@ -2667,10 +2658,10 @@ int SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
 int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
 {
     CHECK_WINDOW_MAGIC(window, -1);
-    if (max_w <= 0) {
+    if (max_w < 0) {
         return SDL_InvalidParamError("max_w");
     }
-    if (max_h <= 0) {
+    if (max_h < 0) {
         return SDL_InvalidParamError("max_h");
     }
 
@@ -2682,11 +2673,16 @@ int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
     window->max_h = max_h;
 
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        int w, h;
+
         if (_this->SetWindowMaximumSize) {
             _this->SetWindowMaximumSize(_this, window);
         }
+
         /* Ensure that window is not larger than maximal size */
-        return SDL_SetWindowSize(window, SDL_min(window->w, window->max_w), SDL_min(window->h, window->max_h));
+        w = window->max_w ? SDL_min(window->w, window->max_w) : window->w;
+        h = window->max_h ? SDL_min(window->h, window->max_h) : window->h;
+        return SDL_SetWindowSize(window, w, h);
     }
     return 0;
 }
@@ -3235,8 +3231,8 @@ void SDL_OnWindowDisplayChanged(SDL_Window *window)
         SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
         const SDL_DisplayMode *new_mode = NULL;
 
-        if (window->current_fullscreen_mode.pixel_w != 0 || window->current_fullscreen_mode.pixel_h != 0) {
-            new_mode = SDL_GetClosestFullscreenDisplayMode(displayID, window->current_fullscreen_mode.pixel_w, window->current_fullscreen_mode.pixel_h, window->current_fullscreen_mode.refresh_rate);
+        if (window->requested_fullscreen_mode.pixel_w != 0 || window->requested_fullscreen_mode.pixel_h != 0) {
+            new_mode = SDL_GetClosestFullscreenDisplayMode(displayID, window->requested_fullscreen_mode.pixel_w, window->requested_fullscreen_mode.pixel_h, window->requested_fullscreen_mode.refresh_rate);
         }
 
         if (new_mode) {
@@ -3456,6 +3452,18 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     if (_this->DestroyWindow) {
         _this->DestroyWindow(_this, window);
+    }
+
+    if (_this->grabbed_window == window) {
+        _this->grabbed_window = NULL; /* ungrabbing input. */
+    }
+
+    if (_this->current_glwin == window) {
+        _this->current_glwin = NULL;
+    }
+
+    if (_this->wakeup_window == window) {
+        _this->wakeup_window = NULL;
     }
 
     /* Now invalidate magic */
@@ -3804,10 +3812,10 @@ void SDL_GL_ResetAttributes(void)
     _this->egl_surfaceattrib_callback = NULL;
     _this->egl_contextattrib_callback = NULL;
 
-    _this->gl_config.red_size = 3;
-    _this->gl_config.green_size = 3;
-    _this->gl_config.blue_size = 2;
-    _this->gl_config.alpha_size = 0;
+    _this->gl_config.red_size = 8;
+    _this->gl_config.green_size = 8;
+    _this->gl_config.blue_size = 8;
+    _this->gl_config.alpha_size = 8;
     _this->gl_config.buffer_size = 0;
     _this->gl_config.depth_size = 16;
     _this->gl_config.stencil_size = 0;

@@ -95,9 +95,12 @@ int main(int argc, char *argv[])
     if (state == NULL) {
         return 1;
     }
-    for (i = 1; i < argc; ++i) {
-        SDLTest_CommonArg(state, i);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
     }
+
     if (!SDLTest_CommonInit(state)) {
         return 2;
     }

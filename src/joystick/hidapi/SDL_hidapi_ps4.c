@@ -38,8 +38,6 @@
 /* Define this if you want to log calibration data */
 /*#define DEBUG_PS4_CALIBRATION*/
 
-#define GYRO_RES_PER_DEGREE             1024.0f
-#define ACCEL_RES_PER_G                 8192.0f
 #define BLUETOOTH_DISCONNECT_TIMEOUT_MS 500
 
 #define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
@@ -118,7 +116,7 @@ typedef struct
 typedef struct
 {
     Sint16 bias;
-    float sensitivity;
+    float scale;
 } IMUCalibrationData;
 
 typedef struct
@@ -145,6 +143,10 @@ typedef struct
     Uint8 led_red;
     Uint8 led_green;
     Uint8 led_blue;
+    Uint16 gyro_numerator;
+    Uint16 gyro_denominator;
+    Uint16 accel_numerator;
+    Uint16 accel_denominator;
     Uint64 sensor_ticks;
     Uint16 last_tick;
     Uint16 valid_crc_packets; /* wrapping counter */
@@ -243,6 +245,11 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     }
     ctx->device = device;
 
+    ctx->gyro_numerator = 1;
+    ctx->gyro_denominator = 16;
+    ctx->accel_numerator = 1;
+    ctx->accel_denominator = 8192;
+
     device->context = ctx;
 
     if (device->serial && SDL_strlen(device->serial) == 12) {
@@ -314,6 +321,10 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     if (size == 48 && data[2] == 0x27) {
         Uint8 capabilities = data[4];
         Uint8 device_type = data[5];
+        Uint16 gyro_numerator = LOAD16(data[10], data[11]);
+        Uint16 gyro_denominator = LOAD16(data[12], data[13]);
+        Uint16 accel_numerator = LOAD16(data[14], data[15]);
+        Uint16 accel_denominator = LOAD16(data[16], data[17]);
 
 #ifdef DEBUG_PS4_PROTOCOL
         HIDAPI_DumpPacket("PS4 capabilities: size = %d", data, size);
@@ -356,6 +367,15 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         default:
             joystick_type = SDL_JOYSTICK_TYPE_UNKNOWN;
             break;
+        }
+
+        if (gyro_numerator && gyro_denominator) {
+            ctx->gyro_numerator = gyro_numerator;
+            ctx->gyro_denominator = gyro_denominator;
+        }
+        if (accel_numerator && accel_denominator) {
+            ctx->accel_numerator = accel_numerator;
+            ctx->accel_denominator = accel_denominator;
         }
     } else if (device->vendor_id == USB_VENDOR_SONY) {
         ctx->official_controller = SDL_TRUE;
@@ -411,7 +431,7 @@ static int HIDAPI_DriverPS4_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_
     return -1;
 }
 
-static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
+static SDL_bool HIDAPI_DriverPS4_LoadOfficialCalibrationData(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
     int i, tries, size;
@@ -422,7 +442,7 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS4_CALIBRATION
         SDL_Log("Not an official controller, ignoring calibration\n");
 #endif
-        return;
+        return SDL_FALSE;
     }
 
     for (tries = 0; tries < 5; ++tries) {
@@ -432,7 +452,7 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS4_CALIBRATION
             SDL_Log("Short read of calibration data: %d, ignoring calibration\n", size);
 #endif
-            return;
+            return SDL_FALSE;
         }
 
         if (device->is_bluetooth) {
@@ -441,7 +461,7 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS4_CALIBRATION
                 SDL_Log("Short read of calibration data: %d, ignoring calibration\n", size);
 #endif
-                return;
+                return SDL_FALSE;
             }
         }
 
@@ -471,6 +491,7 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
         Sint16 sAccZPlus, sAccZMinus;
 
         float flNumerator;
+        float flDenominator;
         Sint16 sRange2g;
 
 #ifdef DEBUG_PS4_CALIBRATION
@@ -507,36 +528,44 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
         sAccZPlus = LOAD16(data[31], data[32]);
         sAccZMinus = LOAD16(data[33], data[34]);
 
-        flNumerator = (sGyroSpeedPlus + sGyroSpeedMinus) * GYRO_RES_PER_DEGREE;
-        ctx->calibration[0].bias = sGyroPitchBias;
-        ctx->calibration[0].sensitivity = flNumerator / (sGyroPitchPlus - sGyroPitchMinus);
+        flNumerator = (float)(sGyroSpeedPlus + sGyroSpeedMinus) * ctx->gyro_denominator / ctx->gyro_numerator;
+        flDenominator = (float)(SDL_abs(sGyroPitchPlus - sGyroPitchBias) + SDL_abs(sGyroPitchMinus - sGyroPitchBias));
+        if (flDenominator != 0.0f) {
+            ctx->calibration[0].bias = sGyroPitchBias;
+            ctx->calibration[0].scale = flNumerator / flDenominator;
+        }
 
-        ctx->calibration[1].bias = sGyroYawBias;
-        ctx->calibration[1].sensitivity = flNumerator / (sGyroYawPlus - sGyroYawMinus);
+        flDenominator = (float)(SDL_abs(sGyroYawPlus - sGyroYawBias) + SDL_abs(sGyroYawMinus - sGyroYawBias));
+        if (flDenominator != 0.0f) {
+            ctx->calibration[1].bias = sGyroYawBias;
+            ctx->calibration[1].scale = flNumerator / flDenominator;
+        }
 
-        ctx->calibration[2].bias = sGyroRollBias;
-        ctx->calibration[2].sensitivity = flNumerator / (sGyroRollPlus - sGyroRollMinus);
+        flDenominator = (float)(SDL_abs(sGyroRollPlus - sGyroRollBias) + SDL_abs(sGyroRollMinus - sGyroRollBias));
+        if (flDenominator != 0.0f) {
+            ctx->calibration[2].bias = sGyroRollBias;
+            ctx->calibration[2].scale = flNumerator / flDenominator;
+        }
 
         sRange2g = sAccXPlus - sAccXMinus;
         ctx->calibration[3].bias = sAccXPlus - sRange2g / 2;
-        ctx->calibration[3].sensitivity = 2.0f * ACCEL_RES_PER_G / (float)sRange2g;
+        ctx->calibration[3].scale = (2.0f * ctx->accel_denominator  / ctx->accel_numerator) / sRange2g;
 
         sRange2g = sAccYPlus - sAccYMinus;
         ctx->calibration[4].bias = sAccYPlus - sRange2g / 2;
-        ctx->calibration[4].sensitivity = 2.0f * ACCEL_RES_PER_G / (float)sRange2g;
+        ctx->calibration[4].scale = (2.0f * ctx->accel_denominator / ctx->accel_numerator) / sRange2g;
 
         sRange2g = sAccZPlus - sAccZMinus;
         ctx->calibration[5].bias = sAccZPlus - sRange2g / 2;
-        ctx->calibration[5].sensitivity = 2.0f * ACCEL_RES_PER_G / (float)sRange2g;
+        ctx->calibration[5].scale = (2.0f * ctx->accel_denominator / ctx->accel_numerator) / sRange2g;
 
         ctx->hardware_calibration = SDL_TRUE;
         for (i = 0; i < 6; ++i) {
-            float divisor = (i < 3 ? 64.0f : 1.0f);
 #ifdef DEBUG_PS4_CALIBRATION
-            SDL_Log("calibration[%d] bias = %d, sensitivity = %f\n", i, ctx->calibration[i].bias, ctx->calibration[i].sensitivity);
+            SDL_Log("calibration[%d] bias = %d, sensitivity = %f\n", i, ctx->calibration[i].bias, ctx->calibration[i].scale);
 #endif
             /* Some controllers have a bad calibration */
-            if ((SDL_abs(ctx->calibration[i].bias) > 1024) || (SDL_fabs(1.0f - ctx->calibration[i].sensitivity / divisor) > 0.5f)) {
+            if (SDL_abs(ctx->calibration[i].bias) > 1024 || SDL_fabs(1.0f - ctx->calibration[i].scale) > 0.5f) {
 #ifdef DEBUG_PS4_CALIBRATION
                 SDL_Log("invalid calibration, ignoring\n");
 #endif
@@ -548,29 +577,73 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
         SDL_Log("Calibration data not available\n");
 #endif
     }
+    return ctx->hardware_calibration;
+}
+
+static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
+    int i;
+
+    if (!HIDAPI_DriverPS4_LoadOfficialCalibrationData(device)) {
+        for (i = 0; i < SDL_arraysize(ctx->calibration); ++i) {
+            ctx->calibration[i].bias = 0;
+            ctx->calibration[i].scale = 1.0f;
+        }
+    }
+
+    /* Scale the raw data to the units expected by SDL */
+    for (i = 0; i < SDL_arraysize(ctx->calibration); ++i) {
+        double scale = ctx->calibration[i].scale;
+
+        if (i < 3) {
+            scale *= ((double)ctx->gyro_numerator / ctx->gyro_denominator) * SDL_PI_D / 180.0;
+
+            if (device->vendor_id == USB_VENDOR_SONY &&
+                device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
+                /* The Armor-X Pro seems to only deliver half the rotation it should,
+                 * and in the opposite direction on the Z axis */
+                switch (i) {
+                case 0:
+                case 1:
+                    scale *= 2.0;
+                    break;
+                case 2:
+                    scale *= -2.0;
+                    break;
+                default:
+                    break;
+                }
+            }
+        } else {
+            scale *= ((double)ctx->accel_numerator / ctx->accel_denominator) * SDL_STANDARD_GRAVITY;
+
+            if (device->vendor_id == USB_VENDOR_SONY &&
+                device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
+                /* The Armor-X Pro seems to only deliver half the acceleration it should,
+                 * and in the opposite direction on the X and Y axes */
+                switch (i) {
+                case 3:
+                case 4:
+                    scale *= -2.0;
+                    break;
+                case 5:
+                    scale *= 2.0;
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+        ctx->calibration[i].scale = (float)scale;
+    }
 }
 
 static float HIDAPI_DriverPS4_ApplyCalibrationData(SDL_DriverPS4_Context *ctx, int index, Sint16 value)
 {
-    float result;
+    IMUCalibrationData *calibration = &ctx->calibration[index];
 
-    if (ctx->hardware_calibration) {
-        IMUCalibrationData *calibration = &ctx->calibration[index];
-
-        result = (value - calibration->bias) * calibration->sensitivity;
-    } else if (index < 3) {
-        result = value * 64.f;
-    } else {
-        result = value;
-    }
-
-    /* Convert the raw data to the units expected by SDL */
-    if (index < 3) {
-        result = (result / GYRO_RES_PER_DEGREE) * SDL_PI_F / 180.0f;
-    } else {
-        result = (result / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
-    }
-    return result;
+    return ((float)value - calibration->bias) * calibration->scale;
 }
 
 static int HIDAPI_DriverPS4_UpdateEffects(SDL_HIDAPI_Device *device)

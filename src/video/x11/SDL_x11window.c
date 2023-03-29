@@ -894,6 +894,7 @@ void X11_UpdateWindowPosition(SDL_Window *window)
     Window childReturn, root, parent;
     Window *children;
     XWindowAttributes attrs;
+    int x, y;
     int dest_x, dest_y;
     int orig_x, orig_y;
     Uint64 timeout;
@@ -905,10 +906,10 @@ void X11_UpdateWindowPosition(SDL_Window *window)
                               attrs.x, attrs.y, &orig_x, &orig_y, &childReturn);
 
     SDL_RelativeToGlobalForWindow(window,
-                                      window->x - data->border_left, window->y - data->border_top,
-                                      &dest_x, &dest_y);
+                                  window->x - data->border_left, window->y - data->border_top,
+                                  &dest_x, &dest_y);
 
-    /*Attempt to move the window*/
+    /* Attempt to move the window */
     X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
 
     /* Wait a brief time to see if the window manager decided to let this move happen.
@@ -918,8 +919,6 @@ void X11_UpdateWindowPosition(SDL_Window *window)
 
     timeout = SDL_GetTicks() + 100;
     while (SDL_TRUE) {
-        int x, y;
-
         caught_x11_error = SDL_FALSE;
         X11_XSync(display, False);
         X11_XGetWindowAttributes(display, data->xwindow, &attrs);
@@ -931,8 +930,6 @@ void X11_UpdateWindowPosition(SDL_Window *window)
                 if (SDL_WINDOW_IS_POPUP(window)) {
                     SDL_GlobalToRelativeForWindow(window, x, y, &x, &y);
                 }
-                window->x = x;
-                window->y = y;
                 break; /* window moved, time to go. */
             } else if ((x == dest_x) && (y == dest_y)) {
                 break; /* we're at the place we wanted to be anyhow, drop out. */
@@ -944,6 +941,11 @@ void X11_UpdateWindowPosition(SDL_Window *window)
         }
 
         SDL_Delay(10);
+    }
+
+    if (!caught_x11_error) {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, attrs.width, attrs.height);
     }
 
     X11_XSetErrorHandler(prev_handler);
@@ -962,6 +964,39 @@ void X11_SetWindowPosition(_THIS, SDL_Window *window)
     X11_UpdateWindowPosition(window);
 }
 
+static void X11_SetWMNormalHints(_THIS, SDL_Window *window, XSizeHints *sizehints)
+{
+    SDL_WindowData *data = window->driverdata;
+    Display *display = data->videodata->display;
+    int dest_x, dest_y;
+
+    X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+
+    /* From Pierre-Loup:
+       WMs each have their little quirks with that.  When you change the
+       size hints, they get a ConfigureNotify event with the
+       WM_NORMAL_SIZE_HINTS Atom.  They all save the hints then, but they
+       don't all resize the window right away to enforce the new hints.
+
+       Some of them resize only after:
+        - A user-initiated move or resize
+        - A code-initiated move or resize
+        - Hiding & showing window (Unmap & map)
+
+       The following move & resize seems to help a lot of WMs that didn't
+       properly update after the hints were changed. We don't do a
+       hide/show, because there are supposedly subtle problems with doing so
+       and transitioning from windowed to fullscreen in Unity.
+     */
+    X11_XResizeWindow(display, data->xwindow, window->w, window->h);
+    SDL_RelativeToGlobalForWindow(window,
+                                  window->x - data->border_left,
+                                  window->y - data->border_top,
+                                  &dest_x, &dest_y);
+    X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
+    X11_XRaiseWindow(display, data->xwindow);
+}
+
 void X11_SetWindowMinimumSize(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
@@ -977,14 +1012,9 @@ void X11_SetWindowMinimumSize(_THIS, SDL_Window *window)
         sizehints->min_height = window->min_h;
         sizehints->flags |= PMinSize;
 
-        X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+        X11_SetWMNormalHints(_this, window, sizehints);
 
         X11_XFree(sizehints);
-
-        /* See comment in X11_SetWindowSize. */
-        X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-        X11_XRaiseWindow(display, data->xwindow);
     }
 
     X11_XFlush(display);
@@ -1005,14 +1035,9 @@ void X11_SetWindowMaximumSize(_THIS, SDL_Window *window)
         sizehints->max_height = window->max_h;
         sizehints->flags |= PMaxSize;
 
-        X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+        X11_SetWMNormalHints(_this, window, sizehints);
 
         X11_XFree(sizehints);
-
-        /* See comment in X11_SetWindowSize. */
-        X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-        X11_XRaiseWindow(display, data->xwindow);
     }
 
     X11_XFlush(display);
@@ -1044,29 +1069,9 @@ void X11_SetWindowSize(_THIS, SDL_Window *window)
         sizehints->min_height = sizehints->max_height = window->h;
         sizehints->flags |= PMinSize | PMaxSize;
 
-        X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+        X11_SetWMNormalHints(_this, window, sizehints);
 
         X11_XFree(sizehints);
-
-        /* From Pierre-Loup:
-           WMs each have their little quirks with that.  When you change the
-           size hints, they get a ConfigureNotify event with the
-           WM_NORMAL_SIZE_HINTS Atom.  They all save the hints then, but they
-           don't all resize the window right away to enforce the new hints.
-
-           Some of them resize only after:
-            - A user-initiated move or resize
-            - A code-initiated move or resize
-            - Hiding & showing window (Unmap & map)
-
-           The following move & resize seems to help a lot of WMs that didn't
-           properly update after the hints were changed. We don't do a
-           hide/show, because there are supposedly subtle problems with doing so
-           and transitioning from windowed to fullscreen in Unity.
-         */
-        X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-        X11_XRaiseWindow(display, data->xwindow);
     } else {
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
     }
@@ -1084,8 +1089,6 @@ void X11_SetWindowSize(_THIS, SDL_Window *window)
 
         if (!caught_x11_error) {
             if ((attrs.width != orig_w) || (attrs.height != orig_h)) {
-                window->w = attrs.width;
-                window->h = attrs.height;
                 break; /* window changed, time to go. */
             } else if ((attrs.width == window->w) && (attrs.height == window->h)) {
                 break; /* we're at the place we wanted to be anyhow, drop out. */
@@ -1094,13 +1097,22 @@ void X11_SetWindowSize(_THIS, SDL_Window *window)
 
         if (SDL_GetTicks() >= timeout) {
             /* Timeout occurred and window size didn't change
-             * window manager likely denied the resize. */
-            window->w = orig_w;
-            window->h = orig_h;
+             * window manager likely denied the resize,
+             * or the new size is the same as the existing:
+             * - current width: is 'full width'.
+             * - try to set new width at 'full width + 1', which get truncated to 'full width'.
+             * - new width is/remains 'full width'
+             * So, even if we break here as a timeout, we can send an event, since the requested size isn't the same
+             * as the final size. (even if final size is same as original size).
+             */
             break;
         }
 
         SDL_Delay(10);
+    }
+
+    if (!caught_x11_error) {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, attrs.width, attrs.height);
     }
 
     X11_XSetErrorHandler(prev_handler);
@@ -1218,14 +1230,9 @@ void X11_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
     }
     sizehints->flags |= PMinSize | PMaxSize;
 
-    X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+    X11_SetWMNormalHints(_this, window, sizehints);
 
     X11_XFree(sizehints);
-
-    /* See comment in X11_SetWindowSize. */
-    X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-    X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-    X11_XRaiseWindow(display, data->xwindow);
 
     X11_XFlush(display);
 }
@@ -1265,8 +1272,9 @@ void X11_ShowWindow(_THIS, SDL_Window *window)
     Display *display = data->videodata->display;
     XEvent event;
 
-    if (window->driverdata->hidden_by_parent_focus) {
-        return;
+    if (window->parent) {
+        /* Update our position in case our parent moved while we were hidden */
+        X11_UpdateWindowPosition(window);
     }
 
     if (!X11_IsWindowMapped(_this, window)) {
@@ -1293,6 +1301,12 @@ void X11_ShowWindow(_THIS, SDL_Window *window)
             X11_SetKeyboardFocus(window);
         }
     }
+
+    /* Get some valid border values, if we haven't them yet */
+    if (data->border_left == 0 && data->border_right == 0 && data->border_top == 0 && data->border_bottom == 0) {
+        X11_GetBorderValues(data);
+    }
+
 }
 
 void X11_HideWindow(_THIS, SDL_Window *window)
@@ -1439,6 +1453,8 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
     Display *display = data->videodata->display;
     Atom _NET_WM_STATE = data->videodata->_NET_WM_STATE;
     Atom _NET_WM_STATE_FULLSCREEN = data->videodata->_NET_WM_STATE_FULLSCREEN;
+    SDL_bool window_size_changed = SDL_FALSE;
+    int window_position_changed = 0;
 
     if (X11_IsWindowMapped(_this, window)) {
         XEvent e;
@@ -1448,6 +1464,7 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
         Window childReturn, root, parent;
         Window *children;
         XWindowAttributes attrs;
+        int x, y;
         int orig_w, orig_h, orig_x, orig_y;
         Uint64 timeout;
 
@@ -1517,6 +1534,17 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
                            SubstructureNotifyMask | SubstructureRedirectMask, &e);
         }
 
+        if (!fullscreen) {
+            int dest_x = 0, dest_y = 0;
+            SDL_RelativeToGlobalForWindow(window,
+                                          window->windowed.x - data->border_left, window->windowed.y - data->border_top,
+                                          &dest_x, &dest_y);
+
+            /* Attempt to move the window */
+            X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
+        }
+
+
         /* Wait a brief time to see if the window manager decided to let this happen.
            If the window changes at all, even to an unexpected value, we break out. */
         X11_XSync(display, False);
@@ -1524,7 +1552,6 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
 
         timeout = SDL_GetTicks() + 100;
         while (SDL_TRUE) {
-            int x, y;
 
             caught_x11_error = SDL_FALSE;
             X11_XSync(display, False);
@@ -1533,18 +1560,20 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
                                       attrs.x, attrs.y, &x, &y, &childReturn);
 
             if (!caught_x11_error) {
-                SDL_bool window_changed = SDL_FALSE;
                 if ((x != orig_x) || (y != orig_y)) {
-                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
-                    window_changed = SDL_TRUE;
+                    orig_x = x;
+                    orig_y = y;
+                    window_position_changed += 1;
                 }
 
                 if ((attrs.width != orig_w) || (attrs.height != orig_h)) {
-                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, attrs.width, attrs.height);
-                    window_changed = SDL_TRUE;
+                    orig_w = attrs.width;
+                    orig_h = attrs.height;
+                    window_size_changed = SDL_TRUE;
                 }
 
-                if (window_changed) {
+                /* Wait for at least 2 moves + 1 size changed to have valid values */
+                if (window_position_changed >= 2 && window_size_changed) {
                     break; /* window changed, time to go. */
                 }
             }
@@ -1554,6 +1583,11 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
             }
 
             SDL_Delay(10);
+        }
+
+        if (!caught_x11_error) {
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, attrs.width, attrs.height);
         }
 
         X11_XSetErrorHandler(prev_handler);

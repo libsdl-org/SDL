@@ -332,18 +332,13 @@ static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
     return 0;
 }
 
-#if defined(__SSE2__)
-#define HAVE_SSE2_INTRINSICS 1
-#endif
-
-#if defined(__ARM_NEON)
-#define HAVE_NEON_INTRINSICS 1
+#if SDL_NEON_INTRINSICS
 #define CAST_uint8x8_t       (uint8x8_t)
 #define CAST_uint32x2_t      (uint32x2_t)
 #endif
 
 #if defined(__WINRT__) || defined(_MSC_VER)
-#if defined(HAVE_NEON_INTRINSICS)
+#if SDL_NEON_INTRINSICS
 #undef CAST_uint8x8_t
 #undef CAST_uint32x2_t
 #define CAST_uint8x8_t
@@ -351,10 +346,10 @@ static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
 #endif
 #endif
 
-#if defined(HAVE_SSE2_INTRINSICS)
+#if defined(SDL_SSE2_INTRINSICS)
 
 #if 0
-static void printf_128(const char *str, __m128i var)
+static void SDL_TARGETING("sse2") printf_128(const char *str, __m128i var)
 {
     uint16_t *val = (uint16_t*) &var;
     printf(" *   %s: %04x %04x %04x %04x _ %04x %04x %04x %04x\n",
@@ -372,7 +367,7 @@ static SDL_INLINE int hasSSE2(void)
     return val;
 }
 
-static SDL_INLINE void INTERPOL_BILINEAR_SSE(const Uint32 *s0, const Uint32 *s1, int frac_w, __m128i v_frac_h0, __m128i v_frac_h1, Uint32 *dst, __m128i zero)
+static SDL_INLINE void SDL_TARGETING("sse2") INTERPOL_BILINEAR_SSE(const Uint32 *s0, const Uint32 *s1, int frac_w, __m128i v_frac_h0, __m128i v_frac_h1, Uint32 *dst, __m128i zero)
 {
     __m128i x_00_01, x_10_11; /* Pixels in 4*uint8 in row */
     __m128i v_frac_w0, k0, l0, d0, e0;
@@ -409,7 +404,7 @@ static SDL_INLINE void INTERPOL_BILINEAR_SSE(const Uint32 *s0, const Uint32 *s1,
     *dst = _mm_cvtsi128_si32(e0);
 }
 
-static int scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static int SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     BILINEAR___START
 
@@ -529,7 +524,7 @@ static int scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch,
 }
 #endif
 
-#if defined(HAVE_NEON_INTRINSICS)
+#if defined(SDL_NEON_INTRINSICS)
 
 static SDL_INLINE int hasNEON(void)
 {
@@ -805,13 +800,13 @@ int SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     Uint32 *src = (Uint32 *)((Uint8 *)s->pixels + srcrect->x * 4 + srcrect->y * src_pitch);
     Uint32 *dst = (Uint32 *)((Uint8 *)d->pixels + dstrect->x * 4 + dstrect->y * dst_pitch);
 
-#if defined(HAVE_NEON_INTRINSICS)
+#if defined(SDL_NEON_INTRINSICS)
     if (ret == -1 && hasNEON()) {
         ret = scale_mat_NEON(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }
 #endif
 
-#if defined(HAVE_SSE2_INTRINSICS)
+#if defined(SDL_SSE2_INTRINSICS)
     if (ret == -1 && hasSSE2()) {
         ret = scale_mat_SSE(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }

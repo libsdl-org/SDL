@@ -91,6 +91,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_OSS
     &DSP_bootstrap,
 #endif
+#if SDL_AUDIO_DRIVER_QNX
+    &QSAAUDIO_bootstrap,
+#endif
 #if SDL_AUDIO_DRIVER_DISK
     &DISKAUDIO_bootstrap,
 #endif
@@ -100,7 +103,7 @@ static const AudioBootStrap *const bootstrap[] = {
     NULL
 };
 
-#ifdef HAVE_LIBSAMPLERATE_H
+#ifdef HAVE_LIBSAMPLERATE
 #ifdef SDL_LIBSAMPLERATE_DYNAMIC
 static void *SRC_lib = NULL;
 #endif
@@ -965,7 +968,7 @@ int SDL_InitAudio(const char *driver_name)
     /* Make sure we have a list of devices available at startup. */
     current_audio.impl.DetectDevices();
 
-#ifdef HAVE_LIBSAMPLERATE_H
+#ifdef HAVE_LIBSAMPLERATE
     LoadLibSampleRate();
 #endif
 
@@ -1590,7 +1593,7 @@ void SDL_QuitAudio(void)
     SDL_zero(current_audio);
     SDL_zeroa(open_devices);
 
-#ifdef HAVE_LIBSAMPLERATE_H
+#ifdef HAVE_LIBSAMPLERATE
     UnloadLibSampleRate();
 #endif
 }

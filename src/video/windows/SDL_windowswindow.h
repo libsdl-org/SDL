@@ -75,6 +75,9 @@ struct SDL_WindowData
      * between dpi-scaled points and pixels. Only used if videodata->dpi_scaling_enabled.
      */
     int scaling_dpi;
+
+    /* Whether we retain the content of the window when changing state */
+    UINT copybits_flag;
 };
 
 extern int WIN_CreateWindow(_THIS, SDL_Window *window);

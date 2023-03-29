@@ -1009,8 +1009,8 @@ extern DECLSPEC int SDLCALL SDL_GetWindowSizeInPixels(SDL_Window *window, int *w
  * Set the minimum size of a window's client area, in screen coordinates.
  *
  * \param window the window to change
- * \param min_w the minimum width of the window
- * \param min_h the minimum height of the window
+ * \param min_w the minimum width of the window, or 0 for no limit
+ * \param min_h the minimum height of the window, or 0 for no limit
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1043,8 +1043,8 @@ extern DECLSPEC int SDLCALL SDL_GetWindowMinimumSize(SDL_Window *window, int *w,
  * Set the maximum size of a window's client area, in screen coordinates.
  *
  * \param window the window to change
- * \param max_w the maximum width of the window
- * \param max_h the maximum height of the window
+ * \param max_w the maximum width of the window, or 0 for no limit
+ * \param max_h the maximum height of the window, or 0 for no limit
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

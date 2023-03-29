@@ -118,7 +118,7 @@ static DWORD GetWindowStyle(SDL_Window *window)
 
 static DWORD GetWindowStyleEx(SDL_Window *window)
 {
-    DWORD style = WS_EX_APPWINDOW;
+    DWORD style = 0;
 
     if (SDL_WINDOW_IS_POPUP(window)) {
         style = WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
@@ -337,6 +337,11 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
     data->initializing = SDL_TRUE;
     data->last_displayID = window->last_displayID;
     data->scaling_dpi = WIN_GetScalingDPIForHWND(videodata, hwnd);
+    if (SDL_GetHintBoolean("SDL_WINDOW_RETAIN_CONTENT", SDL_FALSE)) {
+        data->copybits_flag = 0;
+    } else {
+        data->copybits_flag = SWP_NOCOPYBITS;
+    }
 
 #ifdef HIGHDPI_DEBUG
     SDL_Log("SetupWindowData: initialized data->scaling_dpi to %d", data->scaling_dpi);
@@ -386,7 +391,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
                 /* Figure out what the window area will be */
                 WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_FALSE);
                 data->expected_resize = SDL_TRUE;
-                SetWindowPos(hwnd, HWND_NOTOPMOST, x, y, w, h, SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
+                SetWindowPos(hwnd, NULL, x, y, w, h, data->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
                 data->expected_resize = SDL_FALSE;
             } else {
                 window->w = w;
@@ -452,6 +457,12 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
         WIN_UpdateClipCursor(window);
     }
 #endif
+
+    if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+        WIN_SetWindowAlwaysOnTop(_this, window, SDL_TRUE);
+    } else {
+        WIN_SetWindowAlwaysOnTop(_this, window, SDL_FALSE);
+    }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* Enable multi-touch */
@@ -606,7 +617,7 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
     }
 
     /* Inform Windows of the frame change so we can respond to WM_NCCALCSIZE */
-    SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
+    SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 
     if (window->flags & SDL_WINDOW_MINIMIZED) {
         ShowWindow(hwnd, SW_SHOWMINNOACTIVE);
@@ -788,12 +799,12 @@ void WIN_SetWindowPosition(_THIS, SDL_Window *window)
      * the window to resize (e.g. AdjustWindowRectExForDpi frame sizes are different).
      */
     WIN_ConstrainPopup(window);
-    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOACTIVATE);
+    WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 }
 
 void WIN_SetWindowSize(_THIS, SDL_Window *window)
 {
-    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOACTIVATE);
+    WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 }
 
 int WIN_GetWindowBordersSize(_THIS, SDL_Window *window, int *top, int *left, int *bottom, int *right)
@@ -884,6 +895,11 @@ void WIN_ShowWindow(_THIS, SDL_Window *window)
     HWND hwnd;
     int nCmdShow;
 
+    if (window->parent) {
+        /* Update our position in case our parent moved while we were hidden */
+        WIN_SetWindowPosition(_this, window);
+    }
+
     hwnd = window->driverdata->hwnd;
     nCmdShow = SDL_GetHintBoolean(SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN, SDL_FALSE) ? SW_SHOWNA : SW_SHOW;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
@@ -944,7 +960,9 @@ void WIN_RaiseWindow(_THIS, SDL_Window *window)
         ShowWindow(hwnd, SW_RESTORE);
         AttachThreadInput(dwCurID, dwMyID, TRUE);
         SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+        if (!SDL_ShouldAllowTopmost() || !(window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
+            SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+        }
     }
     SetForegroundWindow(hwnd);
     if (bForce) {
@@ -982,7 +1000,7 @@ void WIN_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
 
     data->in_border_change = SDL_TRUE;
     SetWindowLong(hwnd, GWL_STYLE, style);
-    WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE);
+    WIN_SetWindowPositionInternal(window, data->copybits_flag | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
     data->in_border_change = SDL_FALSE;
 }
 
@@ -1001,13 +1019,7 @@ void WIN_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
 
 void WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window *window, SDL_bool on_top)
 {
-    SDL_WindowData *data = window->driverdata;
-    HWND hwnd = data->hwnd;
-    if (on_top) {
-        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-    } else {
-        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-    }
+    WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
 void WIN_RestoreWindow(_THIS, SDL_Window *window)
@@ -1096,7 +1108,7 @@ void WIN_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *displa
     }
     SetWindowLong(hwnd, GWL_STYLE, style);
     data->expected_resize = SDL_TRUE;
-    SetWindowPos(hwnd, top, x, y, w, h, SWP_NOCOPYBITS | SWP_NOACTIVATE);
+    SetWindowPos(hwnd, top, x, y, w, h, data->copybits_flag | SWP_NOACTIVATE);
     data->expected_resize = SDL_FALSE;
 
 #ifdef HIGHDPI_DEBUG
@@ -1324,7 +1336,7 @@ void WIN_OnWindowEnter(_THIS, SDL_Window *window)
     }
 
     if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
-        WIN_SetWindowPositionInternal(window, SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOACTIVATE);
+        WIN_SetWindowPositionInternal(window, data->copybits_flag | SWP_NOSIZE | SWP_NOACTIVATE);
     }
 }
 

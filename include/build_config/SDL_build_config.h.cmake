@@ -215,7 +215,6 @@
 #cmakedefine HAVE_FLOAT_H 1
 #endif /* HAVE_LIBC */
 
-#cmakedefine HAVE_ALTIVEC_H 1
 #cmakedefine HAVE_DBUS_DBUS_H 1
 #cmakedefine HAVE_FCITX 1
 #cmakedefine HAVE_IBUS_IBUS_H 1
@@ -226,20 +225,8 @@
 #cmakedefine HAVE_LIBUSB 1
 #cmakedefine HAVE_O_CLOEXEC 1
 
-/* Apple platforms might be building universal binaries, where Intel builds
-   can use immintrin.h but other architectures can't. */
-#ifdef __APPLE__
-#  if defined(__has_include) && (defined(__i386__) || defined(__x86_64))
-#    if __has_include(<immintrin.h>)
-#       define HAVE_IMMINTRIN_H 1
-#    endif
-#  endif
-#else  /* non-Apple platforms can use the normal CMake check for this. */
-#cmakedefine HAVE_IMMINTRIN_H 1
-#endif
-
 #cmakedefine HAVE_LIBUDEV_H 1
-#cmakedefine HAVE_LIBSAMPLERATE_H 1
+#cmakedefine HAVE_LIBSAMPLERATE 1
 #cmakedefine HAVE_LIBDECOR_H  1
 
 #cmakedefine HAVE_D3D_H @HAVE_D3D_H@
@@ -316,6 +303,7 @@
 #cmakedefine SDL_AUDIO_DRIVER_PSP @SDL_AUDIO_DRIVER_PSP@
 #cmakedefine SDL_AUDIO_DRIVER_PS2 @SDL_AUDIO_DRIVER_PS2@
 #cmakedefine SDL_AUDIO_DRIVER_N3DS @SDL_AUDIO_DRIVER_N3DS@
+#cmakedefine SDL_AUDIO_DRIVER_QNX @SDL_AUDIO_DRIVER_QNX@
 
 /* Enable various input drivers */
 #cmakedefine SDL_INPUT_LINUXEV @SDL_INPUT_LINUXEV@
@@ -432,6 +420,7 @@
 #cmakedefine SDL_VIDEO_DRIVER_X11_XRANDR @SDL_VIDEO_DRIVER_X11_XRANDR@
 #cmakedefine SDL_VIDEO_DRIVER_X11_XSCRNSAVER @SDL_VIDEO_DRIVER_X11_XSCRNSAVER@
 #cmakedefine SDL_VIDEO_DRIVER_X11_XSHAPE @SDL_VIDEO_DRIVER_X11_XSHAPE@
+#cmakedefine SDL_VIDEO_DRIVER_QNX @SDL_VIDEO_DRIVER_QNX@
 
 #ifdef SDL_VIDEO_DRIVER_ANDROID
 #define SDL_ENABLE_SYSWM_ANDROID
@@ -596,5 +585,19 @@ typedef unsigned int uintptr_t;
 #endif
 #endif /* Visual Studio 2008 */
 #endif /* !_STDINT_H_ && !HAVE_STDINT_H */
+
+/* Configure use of intrinsics */
+#cmakedefine SDL_DISABLE_SSE 1
+#cmakedefine SDL_DISABLE_SSE2 1
+#cmakedefine SDL_DISABLE_SSE3 1
+#cmakedefine SDL_DISABLE_SSE4_1 1
+#cmakedefine SDL_DISABLE_SSE4_2 1
+#cmakedefine SDL_DISABLE_AVX 1
+#cmakedefine SDL_DISABLE_AVX2 1
+#cmakedefine SDL_DISABLE_AVX512F 1
+#cmakedefine SDL_DISABLE_MMX 1
+#cmakedefine SDL_DISABLE_LSX 1
+#cmakedefine SDL_DISABLE_LASX 1
+#cmakedefine SDL_DISABLE_NEON 1
 
 #endif /* SDL_build_config_h_ */

@@ -242,12 +242,14 @@ static void ConfigureWindowGeometry(SDL_Window *window)
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED, data->drawable_width, data->drawable_height);
 }
 
-static void EnsurePopupIsWithinParent(SDL_Window *window)
+static void EnsurePopupPositionIsValid(SDL_Window *window)
 {
-    /* Per the spec, popup windows *must* overlap the parent window.
-     * Failure to do so on a compositor that enforces this restriction
-     * will result in the window being spuriously closed at best, and
-     * a protocol violation at worst.
+    /* Per the xdg-positioner spec, child popup windows must intersect or at
+     * least be partially adjacent to the parent window.
+     *
+     * Failure to ensure this on a compositor that enforces this restriction
+     * can result in behavior ranging from the window being spuriously closed
+     * to a protocol violation.
      */
     if (window->x + window->w < 0) {
         window->x = -window->w;
@@ -590,11 +592,16 @@ static void handle_configure_xdg_toplevel(void *data,
         /* Always send a maximized/restore event; if the event is redundant it will
          * automatically be discarded (see src/events/SDL_windowevents.c)
          *
-         * No, we do not get minimize events from xdg-shell.
+         * No, we do not get minimize events from xdg-shell, however, the minimized
+         * state can be programmatically set. The meaning of 'minimized' is compositor
+         * dependent, but in general, we can assume that the flag should remain set until
+         * the next focused configure event occurs.
          */
-        SDL_SendWindowEvent(window,
-                            maximized ? SDL_EVENT_WINDOW_MAXIMIZED : SDL_EVENT_WINDOW_RESTORED,
-                            0, 0);
+        if (focused || !(window->flags & SDL_WINDOW_MINIMIZED)) {
+            SDL_SendWindowEvent(window,
+                                maximized ? SDL_EVENT_WINDOW_MAXIMIZED : SDL_EVENT_WINDOW_RESTORED,
+                                0, 0);
+        }
     } else {
         /* Unconditionally set the output for exclusive fullscreen windows when entering
          * fullscreen from a compositor event, as where the compositor will actually
@@ -648,8 +655,11 @@ static void handle_configure_xdg_popup(void *data,
     GetPopupPosition(wind->sdlwindow, 0, 0, &offset_x, &offset_y);
     x -= offset_x;
     y -= offset_y;
-    
-    SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_RESIZED, width, height);
+
+    wind->requested_window_width = width;
+    wind->requested_window_height = height;
+
+    ConfigureWindowGeometry(wind->sdlwindow);
     SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_MOVED, x, y);
 
     if (wind->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
@@ -790,11 +800,16 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
         /* Always send a maximized/restore event; if the event is redundant it will
          * automatically be discarded (see src/events/SDL_windowevents.c)
          *
-         * No, we do not get minimize events from libdecor.
+         * No, we do not get minimize events from libdecor, however, the minimized
+         * state can be programmatically set. The meaning of 'minimized' is compositor
+         * dependent, but in general, we can assume that the flag should remain set until
+         * the next focused configure event occurs.
          */
-        SDL_SendWindowEvent(window,
-                            maximized ? SDL_EVENT_WINDOW_MAXIMIZED : SDL_EVENT_WINDOW_RESTORED,
-                            0, 0);
+        if (focused || !(window->flags & SDL_WINDOW_MINIMIZED)) {
+            SDL_SendWindowEvent(window,
+                                maximized ? SDL_EVENT_WINDOW_MAXIMIZED : SDL_EVENT_WINDOW_RESTORED,
+                                0, 0);
+        }
     }
 
     /* Similar to maximized/restore events above, send focus events too! */
@@ -1222,21 +1237,15 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     /* Create the shell surface and map the toplevel/popup */
 #ifdef HAVE_LIBDECOR_H
     if (data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-        if (data->shell_surface.libdecor.frame) {
-            /* If the frame already exists, just set the visibility. */
-            libdecor_frame_set_visibility(data->shell_surface.libdecor.frame, true);
-            libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
+        data->shell_surface.libdecor.frame = libdecor_decorate(c->shell.libdecor,
+                                                               data->surface,
+                                                               &libdecor_frame_interface,
+                                                               data);
+        if (data->shell_surface.libdecor.frame == NULL) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create libdecor frame!");
         } else {
-            data->shell_surface.libdecor.frame = libdecor_decorate(c->shell.libdecor,
-                                                                   data->surface,
-                                                                   &libdecor_frame_interface,
-                                                                   data);
-            if (data->shell_surface.libdecor.frame == NULL) {
-                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create libdecor frame!");
-            } else {
-                libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
-                libdecor_frame_map(data->shell_surface.libdecor.frame);
-            }
+            libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
+            libdecor_frame_map(data->shell_surface.libdecor.frame);
         }
     } else
 #endif
@@ -1468,8 +1477,8 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame) {
-            libdecor_frame_set_visibility(wind->shell_surface.libdecor.frame, false);
-            libdecor_frame_set_app_id(wind->shell_surface.libdecor.frame, data->classname);
+            libdecor_frame_unref(wind->shell_surface.libdecor.frame);
+            wind->shell_surface.libdecor.frame = NULL;
         }
     } else
 #endif
@@ -1859,9 +1868,7 @@ void Wayland_MinimizeWindow(_THIS, SDL_Window *window)
     SDL_VideoData *viddata = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
 
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
-        return;
-    }
+    window->flags |= SDL_WINDOW_MINIMIZED;
 
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
@@ -1871,7 +1878,7 @@ void Wayland_MinimizeWindow(_THIS, SDL_Window *window)
         libdecor_frame_set_minimized(wind->shell_surface.libdecor.frame);
     } else
 #endif
-        if (viddata->shell.xdg) {
+        if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && viddata->shell.xdg) {
         if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
@@ -1950,7 +1957,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     }
 
     if (SDL_WINDOW_IS_POPUP(window)) {
-        EnsurePopupIsWithinParent(window);
+        EnsurePopupPositionIsValid(window);
     }
 
     data->waylandData = c;
@@ -2088,7 +2095,7 @@ void Wayland_SetWindowPosition(_THIS, SDL_Window *window)
         xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) >= XDG_POPUP_REPOSITION_SINCE_VERSION) {
         int x, y;
 
-        EnsurePopupIsWithinParent(window);
+        EnsurePopupPositionIsValid(window);
         GetPopupPosition(window, window->x, window->y, &x, &y);
         xdg_positioner_set_offset(wind->shell_surface.xdg.roleobj.popup.positioner, x, y);
         xdg_popup_reposition(wind->shell_surface.xdg.roleobj.popup.popup,

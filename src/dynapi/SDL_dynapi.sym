@@ -1,6 +1,7 @@
 SDL3_0.0.0 {
   global:
     JNI_OnLoad;
+    SDL_DYNAPI_entry;
     SDL_AddEventWatch;
     SDL_AddGamepadMapping;
     SDL_AddGamepadMappingsFromRW;
@@ -403,7 +404,6 @@ SDL3_0.0.0 {
     SDL_HasMMX;
     SDL_HasNEON;
     SDL_HasPrimarySelectionText;
-    SDL_HasRDTSC;
     SDL_HasRectIntersection;
     SDL_HasRectIntersectionFloat;
     SDL_HasSSE2;

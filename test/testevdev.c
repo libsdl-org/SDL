@@ -11,6 +11,16 @@
   freely.
 */
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
+
+/* Hack to avoid dynapi renaming */
+#include "../src/dynapi/SDL_dynapi.h"
+#ifdef SDL_DYNAMIC_API
+#undef SDL_DYNAMIC_API
+#endif
+
 #include "../src/SDL_internal.h"
 
 #include <stdio.h>
@@ -1038,5 +1048,22 @@ run_test(void)
 
 int main(int argc, char *argv[])
 {
-    return run_test() ? 0 : 1;
+    int result;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    result = run_test() ? 0 : 1;
+
+    SDLTest_CommonDestroyState(state);
+    return result;
 }

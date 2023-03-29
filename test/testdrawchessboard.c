@@ -20,6 +20,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
@@ -101,8 +102,21 @@ static void loop(void)
 
 int main(int argc, char *argv[])
 {
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -138,5 +152,6 @@ int main(int argc, char *argv[])
 #endif
 
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return 0;
 }

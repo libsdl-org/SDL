@@ -23,9 +23,9 @@
 #include "SDL_blit.h"
 #include "SDL_blit_copy.h"
 
-#ifdef __SSE__
+#if SDL_SSE_INTRINSICS
 /* This assumes 16-byte aligned src and dst */
-static SDL_INLINE void SDL_memcpySSE(Uint8 *dst, const Uint8 *src, int len)
+static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint8 *src, int len)
 {
     int i;
 
@@ -48,15 +48,15 @@ static SDL_INLINE void SDL_memcpySSE(Uint8 *dst, const Uint8 *src, int len)
         SDL_memcpy(dst, src, len & 63);
     }
 }
-#endif /* __SSE__ */
+#endif /* SDL_SSE_INTRINSICS */
 
-#ifdef __MMX__
+#if SDL_MMX_INTRINSICS
 #ifdef _MSC_VER
 #pragma warning(disable : 4799)
 #endif
-static SDL_INLINE void SDL_memcpyMMX(Uint8 *dst, const Uint8 *src, int len)
+static SDL_INLINE void SDL_TARGETING("mmx") SDL_memcpyMMX(Uint8 *dst, const Uint8 *src, int len)
 {
-    const int remain = (len & 63);
+    int remain = len & 63;
     int i;
 
     __m64 *d64 = (__m64 *)dst;
@@ -78,10 +78,24 @@ static SDL_INLINE void SDL_memcpyMMX(Uint8 *dst, const Uint8 *src, int len)
 
     if (remain) {
         const int skip = len - remain;
-        SDL_memcpy(dst + skip, src + skip, remain);
+        dst += skip;
+        src += skip;
+        while (remain--) {
+            *dst++ = *src++;
+        }
     }
 }
-#endif /* __MMX__ */
+
+static SDL_INLINE void SDL_TARGETING("mmx") SDL_BlitCopyMMX(Uint8 *dst, const Uint8 *src, const int dstskip, const int srcskip, const int w, int h)
+{
+    while (h--) {
+        SDL_memcpyMMX(dst, src, w);
+        src += srcskip;
+        dst += dstskip;
+    }
+    _mm_empty();
+}
+#endif /* SDL_MMX_INTRINSICS */
 
 void SDL_BlitCopy(SDL_BlitInfo *info)
 {
@@ -122,7 +136,7 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
         return;
     }
 
-#ifdef __SSE__
+#if SDL_SSE_INTRINSICS
     if (SDL_HasSSE() &&
         !((uintptr_t)src & 15) && !(srcskip & 15) &&
         !((uintptr_t)dst & 15) && !(dstskip & 15)) {
@@ -135,14 +149,9 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
     }
 #endif
 
-#ifdef __MMX__
+#if SDL_MMX_INTRINSICS
     if (SDL_HasMMX() && !(srcskip & 7) && !(dstskip & 7)) {
-        while (h--) {
-            SDL_memcpyMMX(dst, src, w);
-            src += srcskip;
-            dst += dstskip;
-        }
-        _mm_empty();
+        SDL_BlitCopyMMX(dst, src, dstskip, srcskip, w, h);
         return;
     }
 #endif

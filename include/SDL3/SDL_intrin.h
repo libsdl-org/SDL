@@ -36,54 +36,44 @@
 #ifdef __clang__
 /* As of Clang 11, '_m_prefetchw' is conflicting with the winnt.h's version,
    so we define the needed '_m_prefetch' here as a pseudo-header, until the issue is fixed. */
-
 #ifndef __PRFCHWINTRIN_H
 #define __PRFCHWINTRIN_H
-
 static __inline__ void __attribute__((__always_inline__, __nodebug__))
 _m_prefetch(void *__P)
 {
   __builtin_prefetch (__P, 0, 3 /* _MM_HINT_T0 */);
 }
-
 #endif /* __PRFCHWINTRIN_H */
 #endif /* __clang__ */
 #include <intrin.h>
-#ifndef _WIN64
-#ifndef __MMX__
-#define __MMX__
-#endif
-#endif
-#ifndef __SSE__
-#define __SSE__
-#endif
-#ifndef __SSE2__
-#define __SSE2__
-#endif
-#ifndef __SSE3__
-#define __SSE3__
-#endif
+
 #elif defined(__MINGW64_VERSION_MAJOR)
 #include <intrin.h>
-#if !defined(SDL_DISABLE_ARM_NEON_H) && defined(__ARM_NEON)
+#if defined(__ARM_NEON) && !defined(SDL_DISABLE_NEON)
+#  define SDL_NEON_INTRINSICS 1
 #  include <arm_neon.h>
 #endif
+
 #else
-/* altivec.h redefining bool causes a number of problems, see bugs 3993 and 4392, so you need to explicitly define SDL_ENABLE_ALTIVEC_H to have it included. */
-#if defined(HAVE_ALTIVEC_H) && defined(__ALTIVEC__) && !defined(__APPLE_ALTIVEC__) && defined(SDL_ENABLE_ALTIVEC_H)
+/* altivec.h redefining bool causes a number of problems, see bugs 3993 and 4392, so you need to explicitly define SDL_ENABLE_ALTIVEC to have it included. */
+#if defined(__ALTIVEC__) && defined(SDL_ENABLE_ALTIVEC)
+#define SDL_ALTIVEC_INTRINSICS 1
 #include <altivec.h>
 #endif
-#if !defined(SDL_DISABLE_ARM_NEON_H)
+#if !defined(SDL_DISABLE_NEON)
 #  if defined(__ARM_NEON)
+#    define SDL_NEON_INTRINSICS 1
 #    include <arm_neon.h>
 #  elif defined(__WINDOWS__) || defined(__WINRT__) || defined(__GDK__)
 /* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1). */
 #    if defined(_M_ARM)
+#      define SDL_NEON_INTRINSICS 1
 #      include <armintr.h>
 #      include <arm_neon.h>
 #      define __ARM_NEON 1 /* Set __ARM_NEON so that it can be used elsewhere, at compile time */
 #    endif
 #    if defined (_M_ARM64)
+#      define SDL_NEON_INTRINSICS 1
 #      include <arm64intr.h>
 #      include <arm64_neon.h>
 #      define __ARM_NEON 1 /* Set __ARM_NEON so that it can be used elsewhere, at compile time */
@@ -93,29 +83,78 @@ _m_prefetch(void *__P)
 #endif
 #endif /* compiler version */
 
-#if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX_H)
-#include <lsxintrin.h>
-#define __LSX__
+#if defined(__clang__) && defined(__has_attribute)
+# if __has_attribute(target)
+# define SDL_HAS_TARGET_ATTRIBS
+# endif
+#elif defined(__GNUC__) && (__GNUC__ + (__GNUC_MINOR__ >= 9) > 4) /* gcc >= 4.9 */
+# define SDL_HAS_TARGET_ATTRIBS
+#elif defined(__ICC) && __ICC >= 1600
+# define SDL_HAS_TARGET_ATTRIBS
 #endif
-#if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX_H)
-#include <lasxintrin.h>
-#define __LASX__
-#endif
-#if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
-#include <immintrin.h>
+
+#ifdef SDL_HAS_TARGET_ATTRIBS
+# define SDL_TARGETING(x) __attribute__((target(x)))
 #else
-#if defined(__MMX__) && !defined(SDL_DISABLE_MMINTRIN_H)
-#include <mmintrin.h>
+# define SDL_TARGETING(x)
 #endif
-#if defined(__SSE__) && !defined(SDL_DISABLE_XMMINTRIN_H)
-#include <xmmintrin.h>
+
+#if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX)
+# define SDL_LSX_INTRINSICS 1
+# include <lsxintrin.h>
 #endif
-#if defined(__SSE2__) && !defined(SDL_DISABLE_EMMINTRIN_H)
-#include <emmintrin.h>
+
+#if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX)
+# define SDL_LASX_INTRINSICS 1
+# include <lasxintrin.h>
 #endif
-#if defined(__SSE3__) && !defined(SDL_DISABLE_PMMINTRIN_H)
-#include <pmmintrin.h>
-#endif
-#endif /* HAVE_IMMINTRIN_H */
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+# if ((defined(_MSC_VER) && !defined(_M_X64)) || defined(__MMX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_MMX)
+#  define SDL_MMX_INTRINSICS 1
+#  include <mmintrin.h>
+# endif
+# if (defined(_MSC_VER) || defined(__SSE__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE)
+#  define SDL_SSE_INTRINSICS 1
+#  include <xmmintrin.h>
+# endif
+# if (defined(_MSC_VER) || defined(__SSE2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE2)
+#  define SDL_SSE2_INTRINSICS 1
+#  include <emmintrin.h>
+# endif
+# if (defined(_MSC_VER) || defined(__SSE3__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE3)
+#  define SDL_SSE3_INTRINSICS 1
+#  include <pmmintrin.h>
+# endif
+# if (defined(_MSC_VER) || defined(__SSE4_1__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE4_1)
+#  define SDL_SSE4_1_INTRINSICS 1
+#  include <smmintrin.h>
+# endif
+# if (defined(_MSC_VER) || defined(__SSE4_2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_SSE4_2)
+#  define SDL_SSE4_2_INTRINSICS 1
+#  include <nmmintrin.h>
+# endif
+# if defined(__clang__) && (defined(_MSC_VER) || defined(__SCE__)) && !defined(__AVX__) && !defined(SDL_DISABLE_AVX)
+#  define SDL_DISABLE_AVX       /* see https://reviews.llvm.org/D20291 and https://reviews.llvm.org/D79194 */
+# endif
+# if (defined(_MSC_VER) || defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
+#  define SDL_AVX_INTRINSICS 1
+#  include <immintrin.h>
+# endif
+# if defined(__clang__) && (defined(_MSC_VER) || defined(__SCE__)) && !defined(__AVX2__) && !defined(SDL_DISABLE_AVX2)
+#  define SDL_DISABLE_AVX2      /* see https://reviews.llvm.org/D20291 and https://reviews.llvm.org/D79194 */
+# endif
+# if (defined(_MSC_VER) || defined(__AVX2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX2)
+#  define SDL_AVX2_INTRINSICS 1
+#  include <immintrin.h>
+# endif
+# if defined(__clang__) && (defined(_MSC_VER) || defined(__SCE__)) && !defined(__AVX512F__) && !defined(SDL_DISABLE_AVX512F)
+#  define SDL_DISABLE_AVX512F   /* see https://reviews.llvm.org/D20291 and https://reviews.llvm.org/D79194 */
+# endif
+# if (defined(_MSC_VER) || defined(__AVX512F__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX512F)
+#  define SDL_AVX512F_INTRINSICS 1
+#  include <immintrin.h>
+# endif
+#endif /* defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) */
 
 #endif /* SDL_intrin_h_ */

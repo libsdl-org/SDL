@@ -6,7 +6,6 @@
 
 #include "yuv_rgb.h"
 
-
 #define PRECISION 6
 #define PRECISION_FACTOR (1<<PRECISION)
 
@@ -74,7 +73,7 @@ static const RGB2YUVParam RGB2YUV[3] = {
 // input must be in the [-128*PRECISION_FACTOR:384*PRECISION_FACTOR] range
 static uint8_t clampU8(int32_t v)
 {
-	static const uint8_t lut[512] = 
+	static const uint8_t lut[512] =
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,
@@ -184,52 +183,52 @@ static uint8_t clampU8(int32_t v)
 #include "yuv_rgb_std_func.h"
 
 void rgb24_yuv420_std(
-	uint32_t width, uint32_t height, 
-	const uint8_t *RGB, uint32_t RGB_stride, 
-	uint8_t *Y, uint8_t *U, uint8_t *V, uint32_t Y_stride, uint32_t UV_stride, 
+	uint32_t width, uint32_t height,
+	const uint8_t *RGB, uint32_t RGB_stride,
+	uint8_t *Y, uint8_t *U, uint8_t *V, uint32_t Y_stride, uint32_t UV_stride,
 	YCbCrType yuv_type)
 {
 	const RGB2YUVParam *const param = &(RGB2YUV[yuv_type]);
-	
+
 	uint32_t x, y;
 	for(y=0; y<(height-1); y+=2)
 	{
 		const uint8_t *rgb_ptr1=RGB+y*RGB_stride,
 			*rgb_ptr2=RGB+(y+1)*RGB_stride;
-			
+
 		uint8_t *y_ptr1=Y+y*Y_stride,
 			*y_ptr2=Y+(y+1)*Y_stride,
 			*u_ptr=U+(y/2)*UV_stride,
 			*v_ptr=V+(y/2)*UV_stride;
-		
+
 		for(x=0; x<(width-1); x+=2)
 		{
 			// compute yuv for the four pixels, u and v values are summed
 			int32_t y_tmp, u_tmp, v_tmp;
-			
+
 			y_tmp = param->matrix[0][0]*rgb_ptr1[0] + param->matrix[0][1]*rgb_ptr1[1] + param->matrix[0][2]*rgb_ptr1[2];
 			u_tmp = param->matrix[1][0]*rgb_ptr1[0] + param->matrix[1][1]*rgb_ptr1[1] + param->matrix[1][2]*rgb_ptr1[2];
 			v_tmp = param->matrix[2][0]*rgb_ptr1[0] + param->matrix[2][1]*rgb_ptr1[1] + param->matrix[2][2]*rgb_ptr1[2];
 			y_ptr1[0]=clampU8(y_tmp+((param->y_shift)<<PRECISION));
-			
+
 			y_tmp = param->matrix[0][0]*rgb_ptr1[3] + param->matrix[0][1]*rgb_ptr1[4] + param->matrix[0][2]*rgb_ptr1[5];
 			u_tmp += param->matrix[1][0]*rgb_ptr1[3] + param->matrix[1][1]*rgb_ptr1[4] + param->matrix[1][2]*rgb_ptr1[5];
 			v_tmp += param->matrix[2][0]*rgb_ptr1[3] + param->matrix[2][1]*rgb_ptr1[4] + param->matrix[2][2]*rgb_ptr1[5];
 			y_ptr1[1]=clampU8(y_tmp+((param->y_shift)<<PRECISION));
-			
+
 			y_tmp = param->matrix[0][0]*rgb_ptr2[0] + param->matrix[0][1]*rgb_ptr2[1] + param->matrix[0][2]*rgb_ptr2[2];
 			u_tmp += param->matrix[1][0]*rgb_ptr2[0] + param->matrix[1][1]*rgb_ptr2[1] + param->matrix[1][2]*rgb_ptr2[2];
 			v_tmp += param->matrix[2][0]*rgb_ptr2[0] + param->matrix[2][1]*rgb_ptr2[1] + param->matrix[2][2]*rgb_ptr2[2];
 			y_ptr2[0]=clampU8(y_tmp+((param->y_shift)<<PRECISION));
-			
+
 			y_tmp = param->matrix[0][0]*rgb_ptr2[3] + param->matrix[0][1]*rgb_ptr2[4] + param->matrix[0][2]*rgb_ptr2[5];
 			u_tmp += param->matrix[1][0]*rgb_ptr2[3] + param->matrix[1][1]*rgb_ptr2[4] + param->matrix[1][2]*rgb_ptr2[5];
 			v_tmp += param->matrix[2][0]*rgb_ptr2[3] + param->matrix[2][1]*rgb_ptr2[4] + param->matrix[2][2]*rgb_ptr2[5];
 			y_ptr2[1]=clampU8(y_tmp+((param->y_shift)<<PRECISION));
-			
+
 			u_ptr[0] = clampU8(u_tmp/4+(128<<PRECISION));
 			v_ptr[0] = clampU8(v_tmp/4+(128<<PRECISION));
-			
+
 			rgb_ptr1 += 6;
 			rgb_ptr2 += 6;
 			y_ptr1 += 2;
@@ -240,7 +239,7 @@ void rgb24_yuv420_std(
 	}
 }
 
-#ifdef __SSE2__
+#if SDL_SSE2_INTRINSICS
 
 #define SSE_FUNCTION_NAME	yuv420_rgb565_sse
 #define STD_FUNCTION_NAME	yuv420_rgb565_std
@@ -610,35 +609,35 @@ V = _mm_srai_epi16(V, PRECISION);
 	SAVE_SI128((__m128i*)(u_ptr), u1); \
 	SAVE_SI128((__m128i*)(v_ptr), v1);
 
-void rgb24_yuv420_sse(uint32_t width, uint32_t height, 
-	const uint8_t *RGB, uint32_t RGB_stride, 
-	uint8_t *Y, uint8_t *U, uint8_t *V, uint32_t Y_stride, uint32_t UV_stride, 
+void SDL_TARGETING("sse2") rgb24_yuv420_sse(uint32_t width, uint32_t height,
+	const uint8_t *RGB, uint32_t RGB_stride,
+	uint8_t *Y, uint8_t *U, uint8_t *V, uint32_t Y_stride, uint32_t UV_stride,
 	YCbCrType yuv_type)
 {
 	#define LOAD_SI128 _mm_load_si128
 	#define SAVE_SI128 _mm_stream_si128
 	const RGB2YUVParam *const param = &(RGB2YUV[yuv_type]);
-	
+
 	uint32_t xpos, ypos;
 	for(ypos=0; ypos<(height-1); ypos+=2)
 	{
 		const uint8_t *rgb_ptr1=RGB+ypos*RGB_stride,
 			*rgb_ptr2=RGB+(ypos+1)*RGB_stride;
-		
+
 		uint8_t *y_ptr1=Y+ypos*Y_stride,
 			*y_ptr2=Y+(ypos+1)*Y_stride,
 			*u_ptr=U+(ypos/2)*UV_stride,
 			*v_ptr=V+(ypos/2)*UV_stride;
-		
+
 		for(xpos=0; xpos<(width-31); xpos+=32)
 		{
 			RGB2YUV_32
-			
+
 			rgb_ptr1+=96;
 			rgb_ptr2+=96;
 			y_ptr1+=32;
 			y_ptr2+=32;
-			u_ptr+=16; 
+			u_ptr+=16;
 			v_ptr+=16;
 		}
 	}
@@ -646,35 +645,35 @@ void rgb24_yuv420_sse(uint32_t width, uint32_t height,
 	#undef SAVE_SI128
 }
 
-void rgb24_yuv420_sseu(uint32_t width, uint32_t height, 
-	const uint8_t *RGB, uint32_t RGB_stride, 
-	uint8_t *Y, uint8_t *U, uint8_t *V, uint32_t Y_stride, uint32_t UV_stride, 
+void SDL_TARGETING("sse2") rgb24_yuv420_sseu(uint32_t width, uint32_t height,
+	const uint8_t *RGB, uint32_t RGB_stride,
+	uint8_t *Y, uint8_t *U, uint8_t *V, uint32_t Y_stride, uint32_t UV_stride,
 	YCbCrType yuv_type)
 {
 	#define LOAD_SI128 _mm_loadu_si128
 	#define SAVE_SI128 _mm_storeu_si128
 	const RGB2YUVParam *const param = &(RGB2YUV[yuv_type]);
-	
+
 	uint32_t xpos, ypos;
 	for(ypos=0; ypos<(height-1); ypos+=2)
 	{
 		const uint8_t *rgb_ptr1=RGB+ypos*RGB_stride,
 			*rgb_ptr2=RGB+(ypos+1)*RGB_stride;
-		
+
 		uint8_t *y_ptr1=Y+ypos*Y_stride,
 			*y_ptr2=Y+(ypos+1)*Y_stride,
 			*u_ptr=U+(ypos/2)*UV_stride,
 			*v_ptr=V+(ypos/2)*UV_stride;
-		
+
 		for(xpos=0; xpos<(width-31); xpos+=32)
 		{
 			RGB2YUV_32
-			
+
 			rgb_ptr1+=96;
 			rgb_ptr2+=96;
 			y_ptr1+=32;
 			y_ptr2+=32;
-			u_ptr+=16; 
+			u_ptr+=16;
 			v_ptr+=16;
 		}
 	}
@@ -683,9 +682,9 @@ void rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 }
 
 
-#endif //__SSE2__
+#endif //SDL_SSE2_INTRINSICS
 
-#ifdef __loongarch_sx
+#if SDL_LSX_INTRINSICS
 
 #define LSX_FUNCTION_NAME	yuv420_rgb24_lsx
 #define STD_FUNCTION_NAME	yuv420_rgb24_std
@@ -717,6 +716,6 @@ void rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 #define RGB_FORMAT			RGB_FORMAT_ABGR
 #include "yuv_rgb_lsx_func.h"
 
-#endif  //__loongarch_sx
+#endif  //SDL_LSX_INTRINSICS
 
 #endif /* SDL_HAVE_YUV */

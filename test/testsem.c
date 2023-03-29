@@ -16,6 +16,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #define NUM_THREADS 10
 /* This value should be smaller than the maximum count of the */
@@ -34,6 +35,11 @@ typedef struct Thread_State
     int loop_count;
     int content_count;
 } Thread_State;
+
+static void log_usage(char *progname, SDLTest_CommonState *state) {
+    static const char *options[] = { "init_value", NULL };
+    SDLTest_CommonLogUsage(state, progname, options);
+}
 
 static void
 killed(int sig)
@@ -248,13 +254,43 @@ TestOverheadContended(SDL_bool try_wait)
 
 int main(int argc, char **argv)
 {
+    int arg_count = 0;
+    int i;
     int init_sem;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (argc < 2) {
-        SDL_Log("Usage: %s init_value\n", argv[0]);
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (arg_count == 0) {
+            char *endptr;
+            init_sem = SDL_strtol(argv[i], &endptr, 0);
+            if (endptr != argv[i] && *endptr == '\0') {
+                arg_count++;
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            log_usage(argv[0], state);
+            return 1;
+        }
+
+        i += consumed;
+    }
+
+    if (arg_count != 1) {
+        log_usage(argv[0], state);
         return 1;
     }
 
@@ -266,7 +302,6 @@ int main(int argc, char **argv)
     (void)signal(SIGTERM, killed);
     (void)signal(SIGINT, killed);
 
-    init_sem = SDL_atoi(argv[1]);
     if (init_sem > 0) {
         TestRealWorld(init_sem);
     }
@@ -280,5 +315,7 @@ int main(int argc, char **argv)
     TestOverheadContended(SDL_TRUE);
 
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
+
     return 0;
 }

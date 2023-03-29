@@ -2,6 +2,7 @@
 
 use warnings;
 use strict;
+use File::Path;
 use Text::Wrap;
 
 $Text::Wrap::huge = 'overflow';
@@ -29,6 +30,7 @@ my $copy_direction = 0;
 my $optionsfname = undef;
 my $wikipreamble = undef;
 my $changeformat = undef;
+my $manpath = undef;
 
 foreach (@ARGV) {
     $warn_about_missing = 1, next if $_ eq '--warn-about-missing';
@@ -41,6 +43,9 @@ foreach (@ARGV) {
         next;
     } elsif (/\A--changeformat=(.*)\Z/) {
         $changeformat = $1;
+        next;
+    } elsif (/\A--manpath=(.*)\Z/) {
+        $manpath = $1;
         next;
     }
     $srcpath = $_, next if not defined $srcpath;
@@ -377,8 +382,8 @@ sub dewikify_chunk {
             # <code></code> is also popular.  :/
             $str =~ s/\s*\<code>(.*?)<\/code>\s*/\n.BR $1\n/gms;
 
-            # bold+italic
-            $str =~ s/\s*'''''(.*?)'''''\s*/\n.BI $1\n/gms;
+            # bold+italic (this looks bad, just make it bold).
+            $str =~ s/\s*'''''(.*?)'''''\s*/\n.B $1\n/gms;
 
             # bold
             $str =~ s/\s*'''(.*?)'''\s*/\n.B $1\n/gms;
@@ -400,8 +405,8 @@ sub dewikify_chunk {
             # <code></code> is also popular.  :/
             $str =~ s/\s*\`(.*?)\`\s*/\n.BR $1\n/gms;
 
-            # bold+italic
-            $str =~ s/\s*\*\*\*(.*?)\*\*\*\s*/\n.BI $1\n/gms;
+            # bold+italic (this looks bad, just make it bold).
+            $str =~ s/\s*\*\*\*(.*?)\*\*\*\s*/\n.B $1\n/gms;
 
             # bold
             $str =~ s/\s*\*\*(.*?)\*\*\s*/\n.B $1\n/gms;
@@ -474,12 +479,16 @@ sub filecopy {
 }
 
 sub usage {
-    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki|--copy-to-manpages] [--warn-about-missing]\n\n");
+    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki|--copy-to-manpages] [--warn-about-missing] [--manpath=<man path>]\n\n");
 }
 
 usage() if not defined $srcpath;
 usage() if not defined $wikipath;
 #usage() if $copy_direction == 0;
+
+if (not defined $manpath) {
+    $manpath = "$srcpath/man";
+}
 
 my @standard_wiki_sections = (
     'Draft',
@@ -520,8 +529,8 @@ if (defined $readmesubdir) {
 }
 
 opendir(DH, $incpath) or die("Can't opendir '$incpath': $!\n");
-while (readdir(DH)) {
-    my $dent = $_;
+while (my $d = readdir(DH)) {
+    my $dent = $d;
     next if not $dent =~ /$selectheaderregex/;  # just selected headers.
     open(FH, '<', "$incpath/$dent") or die("Can't open '$incpath/$dent': $!\n");
 
@@ -669,8 +678,8 @@ my %wikitypes = ();  # contains string of wiki page extension, like $wikitypes{"
 my %wikifuncs = ();  # contains references to hash of strings, each string being the full contents of a section of a wiki page, like $wikifuncs{"SDL_OpenAudio"}{"Remarks"}.
 my %wikisectionorder = ();   # contains references to array, each array item being a key to a wikipage section in the correct order, like $wikisectionorder{"SDL_OpenAudio"}[2] == 'Remarks'
 opendir(DH, $wikipath) or die("Can't opendir '$wikipath': $!\n");
-while (readdir(DH)) {
-    my $dent = $_;
+while (my $d = readdir(DH)) {
+    my $dent = $d;
     my $type = '';
     if ($dent =~ /\.(md|mediawiki)\Z/) {
         $type = $1;
@@ -807,14 +816,14 @@ if ($copy_direction == 1) {  # --copy-to-headers
         next if not defined $wikifuncs{$fn};  # don't have a page for that function, skip it.
         my $wikitype = $wikitypes{$fn};
         my $sectionsref = $wikifuncs{$fn};
-        my $remarks = %$sectionsref{'Remarks'};
-        my $params = %$sectionsref{'Function Parameters'};
-        my $returns = %$sectionsref{'Return Value'};
-        my $threadsafety = %$sectionsref{'Thread Safety'};
-        my $version = %$sectionsref{'Version'};
-        my $related = %$sectionsref{'Related Functions'};
-        my $deprecated = %$sectionsref{'Deprecated'};
-        my $brief = %$sectionsref{'[Brief]'};
+        my $remarks = $sectionsref->{'Remarks'};
+        my $params = $sectionsref->{'Function Parameters'};
+        my $returns = $sectionsref->{'Return Value'};
+        my $threadsafety = $sectionsref->{'Thread Safety'};
+        my $version = $sectionsref->{'Version'};
+        my $related = $sectionsref->{'Related Functions'};
+        my $deprecated = $sectionsref->{'Deprecated'};
+        my $brief = $sectionsref->{'[Brief]'};
         my $addblank = 0;
         my $str = '';
 
@@ -1377,8 +1386,8 @@ if ($copy_direction == 1) {  # --copy-to-headers
         if ( -d $readmepath ) {
             mkdir($wikireadmepath);  # just in case
             opendir(DH, $readmepath) or die("Can't opendir '$readmepath': $!\n");
-            while (readdir(DH)) {
-                my $dent = $_;
+            while (my $d = readdir(DH)) {
+                my $dent = $d;
                 if ($dent =~ /\AREADME\-(.*?\.md)\Z/) {  # we only bridge Markdown files here.
                     my $wikifname = $1;
                     next if $wikifname eq 'FrontPage.md';
@@ -1389,8 +1398,8 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
             my @pages = ();
             opendir(DH, $wikireadmepath) or die("Can't opendir '$wikireadmepath': $!\n");
-            while (readdir(DH)) {
-                my $dent = $_;
+            while (my $d = readdir(DH)) {
+                my $dent = $d;
                 if ($dent =~ /\A(.*?)\.(mediawiki|md)\Z/) {
                     my $wikiname = $1;
                     next if $wikiname eq 'FrontPage';
@@ -1412,10 +1421,8 @@ if ($copy_direction == 1) {  # --copy-to-headers
 } elsif ($copy_direction == -2) { # --copy-to-manpages
     # This only takes from the wiki data, since it has sections we omit from the headers, like code examples.
 
-    my $manpath = "$srcpath/man";
-    mkdir($manpath);
     $manpath .= "/man3";
-    mkdir($manpath);
+    File::Path::make_path($manpath);
 
     $dewikify_mode = 'manpage';
     $wordwrap_mode = 'manpage';
@@ -1456,15 +1463,15 @@ if ($copy_direction == 1) {  # --copy-to-headers
         next if not defined $wikifuncs{$fn};  # don't have a page for that function, skip it.
         my $wikitype = $wikitypes{$fn};
         my $sectionsref = $wikifuncs{$fn};
-        my $remarks = %$sectionsref{'Remarks'};
-        my $params = %$sectionsref{'Function Parameters'};
-        my $returns = %$sectionsref{'Return Value'};
-        my $version = %$sectionsref{'Version'};
-        my $threadsafety = %$sectionsref{'Thread Safety'};
-        my $related = %$sectionsref{'Related Functions'};
-        my $examples = %$sectionsref{'Code Examples'};
-        my $deprecated = %$sectionsref{'Deprecated'};
-        my $brief = %$sectionsref{'[Brief]'};
+        my $remarks = $sectionsref->{'Remarks'};
+        my $params = $sectionsref->{'Function Parameters'};
+        my $returns = $sectionsref->{'Return Value'};
+        my $version = $sectionsref->{'Version'};
+        my $threadsafety = $sectionsref->{'Thread Safety'};
+        my $related = $sectionsref->{'Related Functions'};
+        my $examples = $sectionsref->{'Code Examples'};
+        my $deprecated = $sectionsref->{'Deprecated'};
+        my $brief = $sectionsref->{'[Brief]'};
         my $decl = $headerdecls{$fn};
         my $str = '';
 

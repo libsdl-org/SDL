@@ -302,24 +302,6 @@ static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xd
 {
     SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
 
-    if (driverdata->screen_width != 0 && driverdata->screen_height != 0) {
-        /* FIXME: GNOME has a bug where the logical size does not account for
-         * scale, resulting in bogus viewport sizes.
-         *
-         * Until this is fixed, validate that _some_ kind of scaling is being
-         * done (we can't match exactly because fractional scaling can't be
-         * detected otherwise), then override if necessary.
-         * -flibit
-         */
-        const float scale = (float)driverdata->screen_width / (float)width;
-        if ((scale == 1.0f) && (driverdata->scale_factor != 1.0f)) {
-            SDL_LogWarn(
-                SDL_LOG_CATEGORY_VIDEO,
-                "xdg_output scale did not match, overriding with wl_output scale");
-            return;
-        }
-    }
-
     driverdata->screen_width = width;
     driverdata->screen_height = height;
     driverdata->has_logical_size = SDL_TRUE;
@@ -582,13 +564,22 @@ static void display_handle_done(void *data,
     native_mode.driverdata = driverdata->output;
 
     if (driverdata->has_logical_size) { /* If xdg-output is present... */
-        if (video->viewporter) {
-            /* ...and viewports are supported, calculate the true scale of the output. */
-            driverdata->scale_factor = (float)native_mode.pixel_w / (float)driverdata->screen_width;
+        if (native_mode.pixel_w != driverdata->screen_width || native_mode.pixel_h != driverdata->screen_height) {
+            /* ...and the compositor scales the logical viewport... */
+            if (video->viewporter) {
+                /* ...and viewports are supported, calculate the true scale of the output. */
+                driverdata->scale_factor = (float)native_mode.pixel_w / (float)driverdata->screen_width;
+            } else {
+                /* ...otherwise, the 'native' pixel values are a multiple of the logical screen size. */
+                driverdata->pixel_width = driverdata->screen_width * (int)driverdata->scale_factor;
+                driverdata->pixel_height = driverdata->screen_height * (int)driverdata->scale_factor;
+            }
         } else {
-            /* ...otherwise, the 'native' pixel values are a multiple of the logical screen size. */
-            driverdata->pixel_width = driverdata->screen_width * (int)driverdata->scale_factor;
-            driverdata->pixel_height = driverdata->screen_height * (int)driverdata->scale_factor;
+            /* ...and the output viewport is not scaled in the global compositing
+             * space, the output dimensions need to be divided by the scale factor.
+             */
+            driverdata->screen_width /= (int)driverdata->scale_factor;
+            driverdata->screen_height /= (int)driverdata->scale_factor;
         }
     } else {
         /* Calculate the screen coordinates from the pixel values, if xdg-output isn't present.

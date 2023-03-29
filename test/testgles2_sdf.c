@@ -145,7 +145,7 @@ static void process_shader(GLenum *shader, const char *source, GLenum shader_typ
 
     /* Dump debug info (source and log) if compilation failed. */
     if (status != GL_TRUE) {
-        ctx.glGetProgramInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
+        ctx.glGetShaderInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
         buffer[length] = '\0';
         SDL_Log("Shader compilation failed: %s", buffer);
         quit(-1);
@@ -465,8 +465,13 @@ int main(int argc, char *argv[])
                 if (!argv[i]) {
                     consumed = -1;
                 } else {
-                    depth = SDL_atoi(argv[i]);
-                    consumed = 1;
+                    char *endptr = NULL;
+                    depth = (int)SDL_strtol(argv[i], &endptr, 0);
+                    if (endptr != argv[i] && *endptr == '\0') {
+                        consumed = 1;
+                    } else {
+                        consumed = -1;
+                    }
                 }
             } else {
                 consumed = -1;

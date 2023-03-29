@@ -166,10 +166,10 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
     }
 }
 
-#ifdef __MMX__
+#if SDL_MMX_INTRINSICS
 
 /* fast RGB888->(A)RGB888 blending with surface alpha=128 special case */
-static void BlitRGBtoRGBSurfaceAlpha128MMX(SDL_BlitInfo *info)
+static void SDL_TARGETING("mmx") BlitRGBtoRGBSurfaceAlpha128MMX(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -223,7 +223,7 @@ static void BlitRGBtoRGBSurfaceAlpha128MMX(SDL_BlitInfo *info)
 }
 
 /* fast RGB888->(A)RGB888 blending with surface alpha */
-static void BlitRGBtoRGBSurfaceAlphaMMX(SDL_BlitInfo *info)
+static void SDL_TARGETING("mmx") BlitRGBtoRGBSurfaceAlphaMMX(SDL_BlitInfo *info)
 {
     SDL_PixelFormat *df = info->dst_fmt;
     Uint32 chanmask;
@@ -318,7 +318,7 @@ static void BlitRGBtoRGBSurfaceAlphaMMX(SDL_BlitInfo *info)
 }
 
 /* fast ARGB888->(A)RGB888 blending with pixel alpha */
-static void BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
+static void SDL_TARGETING("mmx") BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -409,7 +409,7 @@ static void BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
     _mm_empty();
 }
 
-#endif /* __MMX__ */
+#endif /* SDL_MMX_INTRINSICS */
 
 #if SDL_ARM_SIMD_BLITTERS
 void BlitARGBto565PixelAlphaARMSIMDAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
@@ -750,10 +750,10 @@ static void Blit16to16SurfaceAlpha128(SDL_BlitInfo *info, Uint16 mask)
     }
 }
 
-#ifdef __MMX__
+#if SDL_MMX_INTRINSICS
 
 /* fast RGB565->RGB565 blending with surface alpha */
-static void Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
+static void SDL_TARGETING("mmx") Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
 {
     unsigned alpha = info->a;
     if (alpha == 128) {
@@ -767,6 +767,7 @@ static void Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
         int dstskip = info->dst_skip >> 1;
         Uint32 s, d;
 
+#ifdef USE_DUFFS_LOOP
         __m64 src1, dst1, src2, dst2, gmask, bmask, mm_res, mm_alpha;
 
         alpha &= ~(1 + 2 + 4);             /* cut alpha to get the exact same behaviour */
@@ -782,6 +783,7 @@ static void Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
         /* Setup the 565 color channel masks */
         gmask = _mm_set_pi32(0x07E007E0, 0x07E007E0); /* MASKGREEN -> gmask */
         bmask = _mm_set_pi32(0x001F001F, 0x001F001F); /* MASKBLUE -> bmask */
+#endif
 
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
@@ -889,7 +891,7 @@ static void Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
 }
 
 /* fast RGB555->RGB555 blending with surface alpha */
-static void Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
+static void SDL_TARGETING("mmx") Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
 {
     unsigned alpha = info->a;
     if (alpha == 128) {
@@ -903,6 +905,7 @@ static void Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
         int dstskip = info->dst_skip >> 1;
         Uint32 s, d;
 
+#ifdef USE_DUFFS_LOOP
         __m64 src1, dst1, src2, dst2, rmask, gmask, bmask, mm_res, mm_alpha;
 
         alpha &= ~(1 + 2 + 4);             /* cut alpha to get the exact same behaviour */
@@ -919,7 +922,7 @@ static void Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
         rmask = _mm_set_pi32(0x7C007C00, 0x7C007C00); /* MASKRED -> rmask */
         gmask = _mm_set_pi32(0x03E003E0, 0x03E003E0); /* MASKGREEN -> gmask */
         bmask = _mm_set_pi32(0x001F001F, 0x001F001F); /* MASKBLUE -> bmask */
-
+#endif
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
             DUFFS_LOOP_124(
@@ -1025,7 +1028,7 @@ static void Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
     }
 }
 
-#endif /* __MMX__ */
+#endif /* SDL_MMX_INTRINSICS */
 
 /* fast RGB565->RGB565 blending with surface alpha */
 static void Blit565to565SurfaceAlpha(SDL_BlitInfo *info)
@@ -1357,15 +1360,13 @@ SDL_CalculateBlitA(SDL_Surface *surface)
 
         case 4:
             if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
-#if defined(__MMX__)
+#if SDL_MMX_INTRINSICS
                 if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && sf->Ashift % 8 == 0 && sf->Aloss == 0) {
-#ifdef __MMX__
                     if (SDL_HasMMX()) {
                         return BlitRGBtoRGBPixelAlphaMMX;
                     }
-#endif
                 }
-#endif /* __MMX__ */
+#endif /* SDL_MMX_INTRINSICS */
                 if (sf->Amask == 0xff000000) {
 #if SDL_ARM_NEON_BLITTERS
                     if (SDL_HasNEON()) {
@@ -1407,7 +1408,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
             case 2:
                 if (surface->map->identity) {
                     if (df->Gmask == 0x7e0) {
-#ifdef __MMX__
+#if SDL_MMX_INTRINSICS
                         if (SDL_HasMMX()) {
                             return Blit565to565SurfaceAlphaMMX;
                         } else
@@ -1416,7 +1417,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
                             return Blit565to565SurfaceAlpha;
                         }
                     } else if (df->Gmask == 0x3e0) {
-#ifdef __MMX__
+#if SDL_MMX_INTRINSICS
                         if (SDL_HasMMX()) {
                             return Blit555to555SurfaceAlphaMMX;
                         } else
@@ -1430,7 +1431,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
 
             case 4:
                 if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
-#ifdef __MMX__
+#if SDL_MMX_INTRINSICS
                     if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && SDL_HasMMX()) {
                         return BlitRGBtoRGBSurfaceAlphaMMX;
                     }

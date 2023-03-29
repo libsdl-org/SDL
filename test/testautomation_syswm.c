@@ -1,6 +1,10 @@
 /**
  * SysWM test suite
  */
+
+/* Avoid inclusion of e.g. X11 headers when these are not installed */
+#include <build_config/SDL_build_config.h>
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_syswm.h>
 #include <SDL3/SDL_test.h>

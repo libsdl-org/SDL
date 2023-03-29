@@ -250,7 +250,6 @@ macro(CheckLibSampleRate)
     find_package(SampleRate QUIET)
     if(SampleRate_FOUND AND TARGET SampleRate::samplerate)
       set(HAVE_LIBSAMPLERATE TRUE)
-      set(HAVE_LIBSAMPLERATE_H TRUE)
       if(SDL_LIBSAMPLERATE_SHARED)
         target_include_directories(sdl-build-options INTERFACE $<TARGET_PROPERTY:SampleRate::samplerate,INTERFACE_INCLUDE_DIRECTORIES>)
         if(NOT HAVE_SDL_LOADSO)
@@ -758,6 +757,22 @@ macro(CheckOpenGLES)
 endmacro()
 
 # Requires:
+# - EGL
+macro(CheckQNXScreen)
+  if(QNX AND HAVE_OPENGL_EGL)
+    check_c_source_compiles("
+        #include <screen/screen.h>
+        int main (int argc, char** argv) { return 0; }" HAVE_QNX_SCREEN)
+    if(HAVE_QNX_SCREEN)
+      set(SDL_VIDEO_DRIVER_QNX 1)
+      file(GLOB QNX_VIDEO_SOURCES ${SDL3_SOURCE_DIR}/src/video/qnx/*.c)
+      list(APPEND SOURCE_FILES ${QNX_VIDEO_SOURCES})
+      list(APPEND SDL_EXTRA_LIBS screen EGL)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
 # - nada
 # Optional:
 # - THREADS opt
@@ -808,6 +823,8 @@ macro(CheckPTHREAD)
     elseif(EMSCRIPTEN)
       set(PTHREAD_CFLAGS "-D_REENTRANT -pthread")
       set(PTHREAD_LDFLAGS "-pthread")
+    elseif(QNX)
+      # pthread support is baked in
     else()
       set(PTHREAD_CFLAGS "-D_REENTRANT")
       set(PTHREAD_LDFLAGS "-lpthread")

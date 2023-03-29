@@ -87,21 +87,20 @@
 #include <kernel/OS.h>
 #endif
 
-#define CPU_HAS_RDTSC    (1 << 0)
-#define CPU_HAS_ALTIVEC  (1 << 1)
-#define CPU_HAS_MMX      (1 << 2)
-#define CPU_HAS_SSE      (1 << 3)
-#define CPU_HAS_SSE2     (1 << 4)
-#define CPU_HAS_SSE3     (1 << 5)
-#define CPU_HAS_SSE41    (1 << 6)
-#define CPU_HAS_SSE42    (1 << 7)
-#define CPU_HAS_AVX      (1 << 8)
-#define CPU_HAS_AVX2     (1 << 9)
-#define CPU_HAS_NEON     (1 << 10)
-#define CPU_HAS_AVX512F  (1 << 11)
-#define CPU_HAS_ARM_SIMD (1 << 12)
-#define CPU_HAS_LSX      (1 << 13)
-#define CPU_HAS_LASX     (1 << 14)
+#define CPU_HAS_ALTIVEC  (1 << 0)
+#define CPU_HAS_MMX      (1 << 1)
+#define CPU_HAS_SSE      (1 << 2)
+#define CPU_HAS_SSE2     (1 << 3)
+#define CPU_HAS_SSE3     (1 << 4)
+#define CPU_HAS_SSE41    (1 << 5)
+#define CPU_HAS_SSE42    (1 << 6)
+#define CPU_HAS_AVX      (1 << 7)
+#define CPU_HAS_AVX2     (1 << 8)
+#define CPU_HAS_NEON     (1 << 9)
+#define CPU_HAS_AVX512F  (1 << 10)
+#define CPU_HAS_ARM_SIMD (1 << 11)
+#define CPU_HAS_LSX      (1 << 12)
+#define CPU_HAS_LASX     (1 << 13)
 
 #define CPU_CFG2      0x2
 #define CPU_CFG2_LSX  (1 << 6)
@@ -246,15 +245,16 @@ done:
         __asm mov c, ecx \
         __asm mov d, edx                   \
     }
-#elif defined(_MSC_VER) && defined(_M_X64)
-#define cpuid(func, a, b, c, d) \
-    {                           \
-        int CPUInfo[4];         \
-        __cpuid(CPUInfo, func); \
-        a = CPUInfo[0];         \
-        b = CPUInfo[1];         \
-        c = CPUInfo[2];         \
-        d = CPUInfo[3];         \
+#elif (defined(_MSC_VER) && defined(_M_X64))
+/* Use __cpuidex instead of __cpuid because ICL does not clear ecx register */
+#define cpuid(func, a, b, c, d)      \
+    {                                \
+        int CPUInfo[4];              \
+        __cpuidex(CPUInfo, func, 0); \
+        a = CPUInfo[0];              \
+        b = CPUInfo[1];              \
+        c = CPUInfo[2];              \
+        d = CPUInfo[3];              \
     }
 #else
 #define cpuid(func, a, b, c, d) \
@@ -520,7 +520,6 @@ static int CPU_readCPUCFG(void)
 #define CPU_haveLASX() (CPU_readCPUCFG() & CPU_CFG2_LASX)
 
 #if defined(__e2k__)
-#define CPU_haveRDTSC() (0)
 #if defined(__MMX__)
 #define CPU_haveMMX() (1)
 #else
@@ -557,7 +556,6 @@ static int CPU_readCPUCFG(void)
 #define CPU_haveAVX() (0)
 #endif
 #else
-#define CPU_haveRDTSC() (CPU_CPUIDFeatures[3] & 0x00000010)
 #define CPU_haveMMX()   (CPU_CPUIDFeatures[3] & 0x00800000)
 #define CPU_haveSSE()   (CPU_CPUIDFeatures[3] & 0x02000000)
 #define CPU_haveSSE2()  (CPU_CPUIDFeatures[3] & 0x04000000)
@@ -868,9 +866,6 @@ static Uint32 SDL_GetCPUFeatures(void)
         CPU_calcCPUIDFeatures();
         SDL_CPUFeatures = 0;
         SDL_SIMDAlignment = sizeof(void *); /* a good safe base value */
-        if (CPU_haveRDTSC()) {
-            SDL_CPUFeatures |= CPU_HAS_RDTSC;
-        }
         if (CPU_haveAltiVec()) {
             SDL_CPUFeatures |= CPU_HAS_ALTIVEC;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
@@ -932,11 +927,6 @@ static Uint32 SDL_GetCPUFeatures(void)
 }
 
 #define CPU_FEATURE_AVAILABLE(f) ((SDL_GetCPUFeatures() & (f)) ? SDL_TRUE : SDL_FALSE)
-
-SDL_bool SDL_HasRDTSC(void)
-{
-    return CPU_FEATURE_AVAILABLE(CPU_HAS_RDTSC);
-}
 
 SDL_bool
 SDL_HasAltiVec(void)

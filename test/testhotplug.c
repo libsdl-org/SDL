@@ -16,6 +16,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 int main(int argc, char *argv[])
 {
@@ -27,11 +28,35 @@ int main(int argc, char *argv[])
     int i;
     SDL_bool enable_haptic = SDL_TRUE;
     Uint32 init_subsystems = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
+    SDLTest_CommonState *state;
 
-    for (i = 1; i < argc; ++i) {
-        if (SDL_strcasecmp(argv[i], "--nohaptic") == 0) {
-            enable_haptic = SDL_FALSE;
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcasecmp(argv[i], "--nohaptic") == 0) {
+                enable_haptic = SDL_FALSE;
+                consumed = 1;
+            }
         }
+        if (consumed <= 0) {
+            static const char *options[] = { "[--nohaptic]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            exit(1);
+        }
+
+        i += consumed;
     }
 
     if (enable_haptic) {
@@ -132,6 +157,7 @@ int main(int argc, char *argv[])
     }
 
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }

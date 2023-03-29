@@ -428,7 +428,6 @@
 #define SDL_HasMMX SDL_HasMMX_REAL
 #define SDL_HasNEON SDL_HasNEON_REAL
 #define SDL_HasPrimarySelectionText SDL_HasPrimarySelectionText_REAL
-#define SDL_HasRDTSC SDL_HasRDTSC_REAL
 #define SDL_HasRectIntersection SDL_HasRectIntersection_REAL
 #define SDL_HasRectIntersectionFloat SDL_HasRectIntersectionFloat_REAL
 #define SDL_HasSSE SDL_HasSSE_REAL

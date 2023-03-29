@@ -12,6 +12,12 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
+
+static void log_usage(char *progname, SDLTest_CommonState *state) {
+    static const char *options[] = { "in.wav", "out.wav", "newfreq", "newchan", NULL };
+    SDLTest_CommonLogUsage(state, progname, options);
+}
 
 int main(int argc, char **argv)
 {
@@ -28,18 +34,65 @@ int main(int argc, char **argv)
     SDL_RWops *io = NULL;
     int dst_len;
     int ret = 0;
+    int argpos = 0;
+    int i;
+    SDLTest_CommonState *state;
+    char *file_in = NULL;
+    char *file_out = NULL;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (argc != 5) {
-        SDL_Log("USAGE: %s in.wav out.wav newfreq newchans\n", argv[0]);
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (argpos == 0) {
+                file_in = argv[i];
+                argpos++;
+                consumed = 1;
+            } else if (argpos == 1) {
+                file_out = argv[i];
+                argpos++;
+                consumed = 1;
+            } else if (argpos == 2) {
+                char *endp;
+                cvtfreq  = (int)SDL_strtoul(argv[i], &endp, 0);
+                if (endp != argv[i] && *endp == '\0') {
+                    argpos++;
+                    consumed = 1;
+                }
+            } else if (argpos == 3) {
+                char *endp;
+                cvtchans = (int)SDL_strtoul(argv[i], &endp, 0);
+                if (endp != argv[i] && *endp == '\0') {
+                    argpos++;
+                    consumed = 1;
+                }
+            }
+        }
+        if (consumed <= 0) {
+            log_usage(argv[0], state);
+            ret = 1;
+            goto end;
+        }
+
+        i += consumed;
+    }
+
+    if (argpos != 4) {
+        log_usage(argv[0], state);
         ret = 1;
         goto end;
     }
-
-    cvtfreq = SDL_atoi(argv[3]);
-    cvtchans = SDL_atoi(argv[4]);
 
     if (SDL_Init(SDL_INIT_AUDIO) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
@@ -47,8 +100,8 @@ int main(int argc, char **argv)
         goto end;
     }
 
-    if (SDL_LoadWAV(argv[1], &spec, &data, &len) == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to load %s: %s\n", argv[1], SDL_GetError());
+    if (SDL_LoadWAV(file_in, &spec, &data, &len) == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to load %s: %s\n", file_in, SDL_GetError());
         ret = 3;
         goto end;
     }
@@ -61,9 +114,9 @@ int main(int argc, char **argv)
     }
 
     /* write out a WAV header... */
-    io = SDL_RWFromFile(argv[2], "wb");
+    io = SDL_RWFromFile(file_out, "wb");
     if (io == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen('%s') failed: %s\n", argv[2], SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen('%s') failed: %s\n", file_out, SDL_GetError());
         ret = 5;
         goto end;
     }
@@ -88,7 +141,7 @@ int main(int argc, char **argv)
     SDL_RWwrite(io, dst_buf, dst_len);
 
     if (SDL_RWclose(io) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fclose('%s') failed: %s\n", argv[2], SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fclose('%s') failed: %s\n", file_out, SDL_GetError());
         ret = 6;
         goto end;
     }
@@ -98,5 +151,6 @@ end:
     SDL_free(data);
     SDL_DestroyAudioStream(stream);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return ret;
 }

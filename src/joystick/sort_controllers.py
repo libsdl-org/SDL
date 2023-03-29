@@ -22,6 +22,7 @@ standard_guid_pattern = re.compile(r'^([0-9a-fA-F]{4})([0-9a-fA-F]{2})([0-9a-fA-
 invalid_controllers = (
     ('0079', '0006', '0000'), # DragonRise Inc. Generic USB Joystick
     ('0079', '0006', '6120'), # DragonRise Inc. Generic USB Joystick
+    ('16c0', '05e1', '0000'), # Xinmotek Controller
 )
 
 def find_element(prefix, bindings):

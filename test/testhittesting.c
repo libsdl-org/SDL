@@ -11,8 +11,7 @@
 */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-
-/* !!! FIXME: rewrite this to be wired in to test framework. */
+#include <SDL3/SDL_test.h>
 
 #define RESIZE_BORDER 20
 
@@ -75,32 +74,53 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
 
 int main(int argc, char **argv)
 {
+    int i;
     int done = 0;
-    SDL_Window *window;
-    SDL_Renderer *renderer;
+    SDLTest_CommonState *state;
 
-    /* !!! FIXME: check for errors. */
-    SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow("Drag the red boxes", 640, 480, SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE);
-    renderer = SDL_CreateRenderer(window, NULL, 0);
-
-    if (SDL_SetWindowHitTest(window, hitTest, NULL) == -1) {
-        SDL_Log("Enabling hit-testing failed!\n");
-        SDL_Quit();
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    if (state == NULL) {
         return 1;
+    }
+
+    state->window_flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE;
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    if (!SDLTest_CommonInit(state)) {
+        return 2;
+    }
+
+    for (i = 0; i < state->num_windows; i++) {
+        if (SDL_SetWindowHitTest(state->windows[i], hitTest, NULL) == -1) {
+            SDL_Log("Enabling hit-testing failed for window %d: %s", i, SDL_GetError());
+            SDL_Quit();
+            return 1;
+        }
     }
 
     while (!done) {
         SDL_Event e;
         int nothing_to_do = 1;
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 127, 255);
-        SDL_RenderClear(renderer);
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderFillRects(renderer, render_areas, SDL_arraysize(render_areas));
-        SDL_RenderPresent(renderer);
+        for (i = 0; i < state->num_windows; ++i) {
+            SDL_SetRenderDrawColor(state->renderers[i], 0, 0, 127, 255);
+            SDL_RenderClear(state->renderers[i]);
+            SDL_SetRenderDrawColor(state->renderers[i], 255, 0, 0, 255);
+            SDLTest_DrawString(state->renderers[i], (float)state->window_w / 2 - 80.0f, 10.0f, "Drag the red boxes");
+            SDL_RenderFillRects(state->renderers[i], render_areas, SDL_arraysize(render_areas));
+            SDL_RenderPresent(state->renderers[i]);
+        }
 
         while (SDL_PollEvent(&e)) {
+            SDLTest_CommonEvent(state, &e, &done);
             nothing_to_do = 0;
 
             switch (e.type) {
@@ -141,6 +161,6 @@ int main(int argc, char **argv)
         }
     }
 
-    SDL_Quit();
+    SDLTest_CommonQuit(state);
     return 0;
 }

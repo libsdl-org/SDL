@@ -13,10 +13,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #include <stdlib.h>
 
 static SDL_Haptic *haptic;
+static SDLTest_CommonState *state;
 
 /*
  * prototypes
@@ -32,33 +34,48 @@ static void HapticPrintSupported(SDL_Haptic *);
 int main(int argc, char **argv)
 {
     int i;
-    char *name;
-    int index;
+    char *name = NULL;
+    int index = -1;
     SDL_HapticEffect efx[9];
     int id[9];
     int nefx;
     unsigned int supported;
 
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
 
-    name = NULL;
-    index = -1;
-    if (argc > 1) {
-        name = argv[1];
-        if ((SDL_strcmp(name, "--help") == 0) || (SDL_strcmp(name, "-h") == 0)) {
-            SDL_Log("USAGE: %s [device]\n"
-                    "If device is a two-digit number it'll use it as an index, otherwise\n"
-                    "it'll use it as if it were part of the device's name.\n",
-                    argv[0]);
-            return 0;
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (!name && index < 0) {
+                size_t len;
+                name = argv[i];
+                len = SDL_strlen(name);
+                if (len < 3 && SDL_isdigit(name[0]) && (len == 1 || SDL_isdigit(name[1]))) {
+                    index = SDL_atoi(name);
+                    name = NULL;
+                }
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[device]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            SDL_Log("\n");
+            SDL_Log("If device is a two-digit number it'll use it as an index, otherwise\n"
+                    "it'll use it as if it were part of the device's name.\n");
+            return 1;
         }
 
-        i = (int)SDL_strlen(name);
-        if ((i < 3) && SDL_isdigit(name[0]) && ((i == 1) || SDL_isdigit(name[1]))) {
-            index = SDL_atoi(name);
-            name = NULL;
-        }
+        i += consumed;
     }
 
     /* Initialize the force feedbackness */
@@ -281,6 +298,7 @@ int main(int argc, char **argv)
         SDL_HapticClose(haptic);
     }
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }
@@ -295,6 +313,7 @@ abort_execution(void)
 
     SDL_HapticClose(haptic);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 
     exit(1);
 }

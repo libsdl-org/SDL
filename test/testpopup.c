@@ -143,8 +143,6 @@ static void loop()
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
-        SDLTest_CommonEvent(state, &event, &done);
-
         if (event.type == SDL_EVENT_MOUSE_MOTION) {
             /* Hide the tooltip and restart the timer if the mouse is moved */
             if (tooltip.win) {
@@ -152,6 +150,13 @@ static void loop()
                 SDL_zero(tooltip);
             }
             tooltip_timer = SDL_GetTicks() + TOOLTIP_DELAY;
+
+            if (num_menus > 0 && event.motion.windowID == SDL_GetWindowID(menus[0].parent)) {
+                int x = (int)event.motion.x;
+                int y = (int)event.motion.y;
+
+                SDL_SetWindowPosition(menus[0].win, x, y);
+            }
         } else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
             /* Left click closes the popup menus */
             if (event.button.button == SDL_BUTTON_LEFT) {
@@ -163,7 +168,21 @@ static void loop()
                     ++num_menus;
                 }
             }
+        } else if (event.type == SDL_EVENT_KEY_DOWN) {
+            if (event.key.keysym.sym == SDLK_SPACE) {
+                for (i = 0; i < num_menus; ++i) {
+                    if (SDL_GetWindowFlags(menus[i].win) & SDL_WINDOW_HIDDEN) {
+                        SDL_ShowWindow(menus[i].win);
+                    } else {
+                        SDL_HideWindow(menus[i].win);
+                    }
+                }
+                // Don't process this event in SDLTest_CommonEvent()
+                continue;
+            }
         }
+
+        SDLTest_CommonEvent(state, &event, &done);
     }
 
     /* Show the tooltip if the delay period has elapsed */
@@ -219,6 +238,14 @@ int main(int argc, char *argv[])
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (state == NULL) {
+        return 1;
+    }
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
         return 1;
     }
 

@@ -168,14 +168,15 @@ int main(int argc, char *argv[])
     Uint64 then, now;
     Uint32 frames;
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (state == NULL) {
         return 1;
     }
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     for (i = 1; i < argc;) {
         int consumed;
 
@@ -196,6 +197,9 @@ int main(int argc, char *argv[])
                     } else if (SDL_strcasecmp(argv[i + 1], "mod") == 0) {
                         blendMode = SDL_BLENDMODE_MOD;
                         consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "mul") == 0) {
+                        blendMode = SDL_BLENDMODE_MUL;
+                        consumed = 2;
                     }
                 }
             } else if (SDL_strcasecmp(argv[i], "--use-texture") == 0) {
@@ -204,7 +208,7 @@ int main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--blend none|blend|add|mod]", "[--use-texture]", NULL };
+            static const char *options[] = { "[--blend none|blend|add|mod|mul]", "[--use-texture]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             return 1;
         }

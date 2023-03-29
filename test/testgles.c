@@ -103,9 +103,6 @@ int main(int argc, char *argv[])
     Uint32 then, now, frames;
     int status;
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Initialize parameters */
     fsaa = 0;
     accel = 0;
@@ -115,6 +112,10 @@ int main(int argc, char *argv[])
     if (state == NULL) {
         return 1;
     }
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     for (i = 1; i < argc;) {
         int consumed;
 
@@ -131,8 +132,13 @@ int main(int argc, char *argv[])
                 if (!argv[i]) {
                     consumed = -1;
                 } else {
-                    depth = SDL_atoi(argv[i]);
-                    consumed = 1;
+                    char *endptr = NULL;
+                    depth = (int)SDL_strtol(argv[i], &endptr, 0);
+                    if (endptr != argv[i] && *endptr == '\0') {
+                        consumed = 1;
+                    } else {
+                        consumed = -1;
+                    }
                 }
             } else {
                 consumed = -1;

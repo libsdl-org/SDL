@@ -13,6 +13,7 @@
 /* Program to test surround sound audio channels */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 static int total_channels;
 static int active_channel;
@@ -37,6 +38,7 @@ get_channel_name(int channel_index, int channel_count)
     case 2:
         switch (channel_count) {
         case 3:
+        case 5:
             return "Low Frequency Effects";
         case 4:
             return "Back Left";
@@ -56,27 +58,32 @@ get_channel_name(int channel_index, int channel_count)
         switch (channel_count) {
         case 5:
             return "Back Right";
+        case 6:
+            return "Side Left";
         case 7:
             return "Back Center";
-        case 6:
         case 8:
             return "Back Left";
         }
+        SDL_assert(0);
     case 5:
         switch (channel_count) {
-        case 7:
-            return "Back Left";
         case 6:
+            return "Side Right";
+        case 7:
+            return "Side Left";
         case 8:
             return "Back Right";
         }
+        SDL_assert(0);
     case 6:
         switch (channel_count) {
         case 7:
-            return "Back Right";
+            return "Side Right";
         case 8:
             return "Side Left";
         }
+        SDL_assert(0);
     case 7:
         return "Side Right";
     }
@@ -132,9 +139,21 @@ static void SDLCALL fill_buffer(void *unused, Uint8 *stream, int len)
 int main(int argc, char *argv[])
 {
     int i;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDLTest_CommonQuit(state);
+        return 1;
+    }
 
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());

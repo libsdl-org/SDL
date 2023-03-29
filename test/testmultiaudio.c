@@ -11,6 +11,9 @@
 */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
+
+#include "testutils.h"
 
 #include <stdio.h> /* for fflush() and stdout */
 
@@ -166,9 +169,38 @@ test_multi_audio(int devcount)
 int main(int argc, char **argv)
 {
     int devcount = 0;
+    int i;
+    char *filename = NULL;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (!filename) {
+                filename = argv[i];
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[sample.wav]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return 1;
+        }
+
+        i += consumed;
+    }
 
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -178,24 +210,26 @@ int main(int argc, char **argv)
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
+    filename = GetResourceFilename(filename, "sample.wav");
+
     devcount = SDL_GetNumAudioDevices(0);
     if (devcount < 1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio devices!\n");
     } else {
-        char *file = GetResourceFilename(argc > 1 ? argv[1] : NULL, "sample.wav");
-
         /* Load the wave file into memory */
-        if (SDL_LoadWAV(file, &spec, &sound, &soundlen) == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", file,
+        if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) == NULL) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename,
                          SDL_GetError());
         } else {
             test_multi_audio(devcount);
             SDL_free(sound);
         }
-
-        SDL_free(file);
     }
 
+    SDL_free(filename);
+
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
+
     return 0;
 }

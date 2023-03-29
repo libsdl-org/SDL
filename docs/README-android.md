@@ -65,14 +65,22 @@ Finally, a word of caution: re running androidbuild.sh wipes any changes you may
 done in the build directory for the app!
 
 
+
 For more complex projects, follow these instructions:
 
-1. Copy the android-project directory wherever you want to keep your projects
-   and rename it to the name of your project.
-2. Move or symlink this SDL directory into the "<project>/app/jni" directory
-3. Edit "<project>/app/jni/src/Android.mk" to include your source files
+1. Get the source code for SDL and copy the 'android-project' directory located at SDL/android-project to a suitable location. Also make sure to rename it to your project name (In these examples: YOURPROJECT).
 
-4a. If you want to use Android Studio, simply open your <project> directory and start building.
+   (The 'android-project' directory can basically be seen as a sort of starting point for the android-port of your project. It contains the glue code between the Android Java 'frontend' and the SDL code 'backend'. It also contains some standard behaviour, like how events should be handled, which you will be able to change.)
+
+2. Move or [symlink](https://en.wikipedia.org/wiki/Symbolic_link) the SDL directory into the "YOURPROJECT/app/jni" directory
+
+(This is needed as the source of SDL has to be compiled by the Android compiler)
+
+3. Edit "YOURPROJECT/app/jni/src/Android.mk" to include your source files.
+
+(They should be separated by spaces after the "LOCAL_SRC_FILES := " declaration)
+
+4a. If you want to use Android Studio, simply open your 'YOURPROJECT' directory and start building.
 
 4b. If you want to build manually, run './gradlew installDebug' in the project directory. This compiles the .java, creates an .apk with the native code embedded, and installs it on any connected Android device
 
@@ -80,9 +88,9 @@ For more complex projects, follow these instructions:
 If you already have a project that uses CMake, the instructions change somewhat:
 
 1. Do points 1 and 2 from the instruction above.
-2. Edit "<project>/app/build.gradle" to comment out or remove sections containing ndk-build
+2. Edit "YOURPROJECT/app/build.gradle" to comment out or remove sections containing ndk-build
    and uncomment the cmake sections. Add arguments to the CMake invocation as needed.
-3. Edit "<project>/app/jni/CMakeLists.txt" to include your project (it defaults to
+3. Edit "YOURPROJECT/app/jni/CMakeLists.txt" to include your project (it defaults to
    adding the "src" subdirectory). Note that you'll have SDL3 and SDL3-static
    as targets in your project, so you should have "target_link_libraries(yourgame SDL3)"
    in your CMakeLists.txt file. Also be aware that you should use add_library() instead of

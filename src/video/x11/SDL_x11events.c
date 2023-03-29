@@ -447,34 +447,6 @@ void X11_ReconcileKeyboardState(_THIS)
     }
 }
 
-static void X11_ShowChildren(_THIS, SDL_Window *window)
-{
-    for (window = window->first_child; window != NULL; window = window->next_sibling) {
-        window->driverdata->hidden_by_parent_focus = SDL_FALSE;
-        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
-            X11_ShowWindow(_this, window);
-        }
-
-        if (window->first_child) {
-            X11_ShowChildren(_this, window);
-        }
-    }
-}
-
-static void X11_HideChildren(_THIS, SDL_Window *window)
-{
-    for (window = window->first_child; window != NULL; window = window->next_sibling) {
-        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
-            window->driverdata->hidden_by_parent_focus = SDL_TRUE;
-            X11_HideWindow(_this, window);
-        }
-
-        if (window->first_child) {
-            X11_HideChildren(_this, window);
-        }
-    }
-}
-
 static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
@@ -492,9 +464,6 @@ static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 #endif
     if (data->flashing_window) {
         X11_FlashWindow(_this, data->window, SDL_FLASH_CANCEL);
-    }
-    if (data->window->parent == NULL) {
-        X11_ShowChildren(_this, data->window);
     }
 }
 
@@ -518,9 +487,6 @@ static void X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
 #ifdef SDL_USE_IME
     SDL_IME_SetFocus(SDL_FALSE);
 #endif
-    if (data->window->parent == NULL) {
-        X11_HideChildren(_this, data->window);
-    }
 }
 
 static void X11_DispatchMapNotify(SDL_WindowData *data)
@@ -535,10 +501,8 @@ static void X11_DispatchMapNotify(SDL_WindowData *data)
 
 static void X11_DispatchUnmapNotify(SDL_WindowData *data)
 {
-    if (!data->hidden_by_parent_focus) {
-        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
-        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
-    }
+    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
+    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
 }
 
 static void InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
@@ -788,6 +752,30 @@ static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int
         }
     }
     return result;
+}
+
+void X11_GetBorderValues(SDL_WindowData *data)
+{
+    SDL_VideoData *videodata = data->videodata;
+    Display *display = videodata->display;
+
+    Atom type;
+    int format;
+    unsigned long nitems, bytes_after;
+    unsigned char *property;
+    if (X11_XGetWindowProperty(display, data->xwindow, videodata->_NET_FRAME_EXTENTS, 0, 16, 0, XA_CARDINAL, &type, &format, &nitems, &bytes_after, &property) == Success) {
+        if (type != None && nitems == 4) {
+            data->border_left = (int)((long *)property)[0];
+            data->border_right = (int)((long *)property)[1];
+            data->border_top = (int)((long *)property)[2];
+            data->border_bottom = (int)((long *)property)[3];
+        }
+        X11_XFree(property);
+
+#ifdef DEBUG_XEVENTS
+        printf("New _NET_FRAME_EXTENTS: left=%d right=%d, top=%d, bottom=%d\n", data->border_left, data->border_right, data->border_top, data->border_bottom);
+#endif
+    }
 }
 
 static void X11_DispatchEvent(_THIS, XEvent *xevent)
@@ -1219,7 +1207,10 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             }
 #endif
             for (w = data->window->first_child; w != NULL; w = w->next_sibling) {
-                X11_UpdateWindowPosition(w);
+                /* Don't update hidden child windows, their relative position doesn't change */
+                if (!(w->flags & SDL_WINDOW_HIDDEN)) {
+                    X11_UpdateWindowPosition(w);
+                }
             }
         }
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
@@ -1546,23 +1537,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
                right approach, but it seems to work. */
             X11_UpdateKeymap(_this, SDL_TRUE);
         } else if (xevent->xproperty.atom == videodata->_NET_FRAME_EXTENTS) {
-            Atom type;
-            int format;
-            unsigned long nitems, bytes_after;
-            unsigned char *property;
-            if (X11_XGetWindowProperty(display, data->xwindow, videodata->_NET_FRAME_EXTENTS, 0, 16, 0, XA_CARDINAL, &type, &format, &nitems, &bytes_after, &property) == Success) {
-                if (type != None && nitems == 4) {
-                    data->border_left = (int)((long *)property)[0];
-                    data->border_right = (int)((long *)property)[1];
-                    data->border_top = (int)((long *)property)[2];
-                    data->border_bottom = (int)((long *)property)[3];
-                }
-                X11_XFree(property);
-
-#ifdef DEBUG_XEVENTS
-                printf("New _NET_FRAME_EXTENTS: left=%d right=%d, top=%d, bottom=%d\n", data->border_left, data->border_right, data->border_top, data->border_bottom);
-#endif
-            }
+            X11_GetBorderValues(data);
         }
     } break;
 

@@ -38,7 +38,9 @@ __declspec(selectany) int _fltused = 1;
 #if (_MSC_VER >= 1400) && (!defined(_MT) || defined(DLL_EXPORT))
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memcpy(void *dst, const void *src, size_t len);
+#ifndef __INTEL_LLVM_COMPILER
 #pragma intrinsic(memcpy)
+#endif
 
 #if !defined(__clang__)
 #pragma function(memcpy)
@@ -51,7 +53,9 @@ void *memcpy(void *dst, const void *src, size_t len)
 
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memset(void *dst, int c, size_t len);
+#ifndef __INTEL_LLVM_COMPILER
 #pragma intrinsic(memset)
+#endif
 
 #if !defined(__clang__)
 #pragma function(memset)
@@ -695,5 +699,18 @@ RETZERO:
 #endif /* _M_IX86 */
 
 #endif /* MSC_VER */
+
+#if defined(__ICL)
+/* The classic Intel compiler generates calls to _intel_fast_memcpy
+ * and _intel_fast_memset when building an optimized SDL library */
+void *_intel_fast_memcpy(void *dst, const void *src, size_t len)
+{
+    return SDL_memcpy(dst, src, len);
+}
+void *_intel_fast_memset(void *dst, int c, size_t len)
+{
+    return SDL_memset(dst, c, len);
+}
+#endif
 
 #endif /* !HAVE_LIBC && !SDL_STATIC_LIB */

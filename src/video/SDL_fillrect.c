@@ -22,7 +22,7 @@
 
 #include "SDL_blit.h"
 
-#ifdef __SSE__
+#if SDL_SSE_INTRINSICS
 /* *INDENT-OFF* */ /* clang-format off */
 
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -55,7 +55,7 @@
 #define SSE_END
 
 #define DEFINE_SSE_FILLRECT(bpp, type) \
-static void SDL_FillSurfaceRect##bpp##SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h) \
+static void SDL_TARGETING("sse") SDL_FillSurfaceRect##bpp##SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h) \
 { \
     int i, n; \
     Uint8 *p = NULL; \
@@ -92,7 +92,7 @@ static void SDL_FillSurfaceRect##bpp##SSE(Uint8 *pixels, int pitch, Uint32 color
     SSE_END; \
 }
 
-static void SDL_FillSurfaceRect1SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
+static void SDL_TARGETING("sse") SDL_FillSurfaceRect1SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {
     int i, n;
 
@@ -376,7 +376,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         {
             color |= (color << 8);
             color |= (color << 16);
-#ifdef __SSE__
+#if SDL_SSE_INTRINSICS
             if (SDL_HasSSE()) {
                 fill_function = SDL_FillSurfaceRect1SSE;
                 break;
@@ -389,7 +389,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         case 2:
         {
             color |= (color << 16);
-#ifdef __SSE__
+#if SDL_SSE_INTRINSICS
             if (SDL_HasSSE()) {
                 fill_function = SDL_FillSurfaceRect2SSE;
                 break;
@@ -408,7 +408,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
 
         case 4:
         {
-#ifdef __SSE__
+#if SDL_SSE_INTRINSICS
             if (SDL_HasSSE()) {
                 fill_function = SDL_FillSurfaceRect4SSE;
                 break;

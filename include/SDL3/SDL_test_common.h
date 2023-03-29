@@ -122,7 +122,7 @@ typedef struct
     int gl_debug;
     int gl_profile_mask;
 
-    /* Additional fields added in 2.0.18 */
+    /* Mouse info */
     SDL_Rect confine;
 
 } SDLTest_CommonState;
@@ -144,6 +144,13 @@ extern "C" {
  * \returns a newly allocated common state object.
  */
 SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags);
+
+/**
+ * \brief Free the common state object.
+ *
+ * \param state The common state object to destroy
+ */
+void SDLTest_CommonDestroyState(SDLTest_CommonState *state);
 
 /**
  * \brief Process one common argument.
@@ -169,19 +176,6 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index);
  * \param options an array of strings for application specific options. The last element of the array should be NULL.
  */
 void SDLTest_CommonLogUsage(SDLTest_CommonState *state, const char *argv0, const char **options);
-
-/**
- * \brief Returns common usage information
- *
- * You should (probably) be using SDLTest_CommonLogUsage() instead, but this
- *  function remains for binary compatibility. Strings returned from this
- *  function are valid until SDLTest_CommonQuit() is called, in which case
- *  those strings' memory is freed and can no longer be used.
- *
- * \param state The common state describing the test window to create.
- * \returns a string with usage information
- */
-const char *SDLTest_CommonUsage(SDLTest_CommonState *state);
 
 /**
  * \brief Open test window.

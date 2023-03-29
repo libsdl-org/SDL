@@ -11,13 +11,15 @@
 */
 /* Simple program:  Create a native window and attach an SDL renderer */
 
-#include <stdlib.h> /* for srand() */
-#include <time.h>   /* for time() */
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #include "testnative.h"
 #include "testutils.h"
 
-#include <SDL3/SDL_main.h>
+#include <stdlib.h> /* for srand() */
+#include <time.h>   /* for time() */
 
 #define WINDOW_W    640
 #define WINDOW_H    480
@@ -39,6 +41,7 @@ static NativeWindowFactory *factories[] = {
 static NativeWindowFactory *factory = NULL;
 static void *native_window;
 static SDL_FRect *positions, *velocities;
+static SDLTest_CommonState *state;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -48,6 +51,7 @@ quit(int rc)
     if (native_window != NULL && factory != NULL) {
         factory->DestroyNativeWindow(native_window);
     }
+    SDLTest_CommonDestroyState(state);
     exit(rc);
 }
 
@@ -100,8 +104,19 @@ int main(int argc, char *argv[])
     int sprite_w, sprite_h;
     SDL_Event event;
 
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video: %s\n",

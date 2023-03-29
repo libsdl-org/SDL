@@ -28,7 +28,7 @@
 
 /* Need this so Linux systems define fseek64o, ftell64o and off64_t */
 #ifndef _LARGEFILE64_SOURCE
-#define _LARGEFILE64_SOURCE
+#define _LARGEFILE64_SOURCE 1
 #endif
 
 /* This is for a variable-length array at the end of a struct:
@@ -185,6 +185,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
+
 #define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
 #include <SDL3/SDL_main.h>
 

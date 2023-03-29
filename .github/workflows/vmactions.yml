@@ -15,6 +15,7 @@ jobs:
     - name: Build
       uses: vmactions/freebsd-vm@v0
       with:
+        mem: 8192
         usesh: true
         prepare: |
           pkg install -y \
@@ -55,6 +56,8 @@ jobs:
             -DSDL_CHECK_REQUIRED_LINK_OPTIONS="-L/usr/local/lib"
           cmake --build build/ --config Release --verbose -- -j`sysctl -n hw.ncpu`
           cmake --build build/ --config Release --target package
+          
+          cmake --build build/ --config Release --target clean
     - uses: actions/upload-artifact@v3
       with:
         if-no-files-found: error

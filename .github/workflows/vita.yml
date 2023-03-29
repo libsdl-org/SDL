@@ -78,6 +78,7 @@ jobs:
         unzip /tmp/vitasdk_stubs.zip -d/vita/dependencies/lib
 
     - uses: actions/cache/save@v3
+      if: ${{ !steps.restore-cache.outputs.cache-hit }}
       with:
         path: /vita/dependencies
         key: ${{ matrix.platform.artifact }}-${{ matrix.platform.version }}
@@ -93,6 +94,8 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake \
           -DVIDEO_VITA_PIB=${{ !!matrix.platform.pib }} \
           -DVIDEO_VITA_PVR=${{ !!matrix.platform.pvr }} \
+          -DSDL_ARMNEON=ON \
+          -DSDL_ARMSIMD=ON \
           -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \

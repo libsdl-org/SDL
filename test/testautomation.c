@@ -27,6 +27,7 @@ static SDLTest_TestSuiteReference *testSuites[] = {
     &eventsTestSuite,
     &guidTestSuite,
     &hintsTestSuite,
+    &intrinsicsTestSuite,
     &joystickTestSuite,
     &keyboardTestSuite,
     &mainTestSuite,
@@ -66,10 +67,13 @@ int main(int argc, char *argv[])
     int list = 0;
 
     /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     if (state == NULL) {
         return 1;
     }
+
+    /* No need of windows (or update testautomation_mouse.c:mouse_getMouseFocus() */
+    state->num_windows = 0;
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
