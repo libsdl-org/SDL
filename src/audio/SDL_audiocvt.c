@@ -93,7 +93,7 @@
  * 8 channels (7.1) layout: FL+FR+FC+LFE+BL+BR+SL+SR
  */
 
-#if HAVE_SSE3_INTRINSICS
+#ifdef HAVE_SSE3_INTRINSICS
 /* Convert from stereo to mono. Average left and right. */
 static void SDLCALL SDL_ConvertStereoToMono_SSE3(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
@@ -791,7 +791,7 @@ int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
         /* swap in some SIMD versions for a few of these. */
         if (channel_converter == SDL_ConvertStereoToMono) {
             SDL_AudioFilter filter = NULL;
-#if HAVE_SSE3_INTRINSICS
+#ifdef HAVE_SSE3_INTRINSICS
             if (!filter && SDL_HasSSE3()) {
                 filter = SDL_ConvertStereoToMono_SSE3;
             }
