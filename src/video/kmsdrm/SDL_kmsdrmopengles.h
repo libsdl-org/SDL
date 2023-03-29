@@ -23,7 +23,7 @@
 #ifndef SDL_kmsdrmopengles_h_
 #define SDL_kmsdrmopengles_h_
 
-#if SDL_VIDEO_DRIVER_KMSDRM
+#ifdef SDL_VIDEO_DRIVER_KMSDRM
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
