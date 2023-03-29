@@ -25,7 +25,7 @@
 
 /* OpenBSD sndio target */
 
-#if HAVE_STDIO_H
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
 

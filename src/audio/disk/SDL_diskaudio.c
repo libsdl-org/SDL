@@ -24,7 +24,7 @@
 
 /* Output raw audio data to a file. */
 
-#if HAVE_STDIO_H
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
 

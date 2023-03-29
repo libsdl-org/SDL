@@ -590,7 +590,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     rwops->write = windows_file_write;
     rwops->close = windows_file_close;
     rwops->type = SDL_RWOPS_WINFILE;
-#elif HAVE_STDIO_H
+#elif defined(HAVE_STDIO_H)
     {
 #if defined(__APPLE__) && !SDL_FILE_DISABLED // TODO: add dummy?
         FILE *fp = SDL_OpenFPFromBundleOrFallback(file, mode);
