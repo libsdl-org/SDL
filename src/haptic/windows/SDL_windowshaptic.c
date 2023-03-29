@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_HAPTIC_DINPUT || SDL_HAPTIC_XINPUT
+#if defined(SDL_HAPTIC_DINPUT) || SDL_HAPTIC_XINPUT
 
 #include "SDL_thread.h"
 #include "SDL_mutex.h"
@@ -160,7 +160,7 @@ int SDL_SYS_HapticOpen(SDL_Haptic *haptic)
  */
 int SDL_SYS_HapticMouse(void)
 {
-#if SDL_HAPTIC_DINPUT
+#ifdef SDL_HAPTIC_DINPUT
     SDL_hapticlist_item *item;
     int index = 0;
 
@@ -188,7 +188,7 @@ int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
         return 1;
     }
 #endif
-#if SDL_HAPTIC_DINPUT
+#ifdef SDL_HAPTIC_DINPUT
     if (joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK) {
         return 1;
     }

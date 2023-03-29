@@ -562,7 +562,7 @@ void WINDOWS_JoystickDetect(void)
             SDL_XINPUT_HapticMaybeRemoveDevice(pCurList->XInputUserId);
 #endif
         } else {
-#if SDL_HAPTIC_DINPUT
+#ifdef SDL_HAPTIC_DINPUT
             SDL_DINPUT_HapticMaybeRemoveDevice(&pCurList->dxdevice);
 #endif
         }
@@ -582,7 +582,7 @@ void WINDOWS_JoystickDetect(void)
                 SDL_XINPUT_HapticMaybeAddDevice(pCurList->XInputUserId);
 #endif
             } else {
-#if SDL_HAPTIC_DINPUT
+#ifdef SDL_HAPTIC_DINPUT
                 SDL_DINPUT_HapticMaybeAddDevice(&pCurList->dxdevice);
 #endif
             }
