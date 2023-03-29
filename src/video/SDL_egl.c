@@ -105,7 +105,7 @@
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so.1"
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
-#if SDL_VIDEO_OPENGL && !SDL_VIDEO_VITA_PVR_OGL
+#if SDL_VIDEO_OPENGL && !defined(SDL_VIDEO_VITA_PVR_OGL)
 #include "SDL_opengl.h"
 #endif
 
