@@ -109,7 +109,7 @@ static const SDL_RenderDriver *render_drivers[] = {
 #ifdef SDL_VIDEO_RENDER_OGL_ES2
     &GLES2_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_OGL_ES
+#ifdef SDL_VIDEO_RENDER_OGL_ES
     &GLES_RenderDriver,
 #endif
 #ifdef SDL_VIDEO_RENDER_DIRECTFB
