@@ -26,10 +26,10 @@
 #include "../SDL_sysaudio.h"
 
 #if !defined(__IPHONEOS__)
-#define MACOSX_COREAUDIO 1
+#define MACOSX_COREAUDIO
 #endif
 
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
 #include <CoreAudio/CoreAudio.h>
 #else
 #import <AVFoundation/AVFoundation.h>
@@ -40,7 +40,7 @@
 #include <AudioUnit/AudioUnit.h>
 
 /* Things named "Master" were renamed to "Main" in macOS 12.0's SDK. */
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
 #include <AvailabilityMacros.h>
 #ifndef MAC_OS_VERSION_12_0
 #define kAudioObjectPropertyElementMain kAudioObjectPropertyElementMaster
@@ -62,7 +62,7 @@ struct SDL_PrivateAudioData
     AudioStreamBasicDescription strdesc;
     SDL_sem *ready_semaphore;
     char *thread_error;
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
     AudioDeviceID deviceID;
     SDL_atomic_t device_change_flag;
 #else
