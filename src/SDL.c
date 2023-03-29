@@ -586,7 +586,7 @@ const char *SDL_GetPlatform(void)
     return "Irix";
 #elif defined(__LINUX__)
     return "Linux";
-#elif __MINT__
+#elif defined(__MINT__)
     return "Atari MiNT";
 #elif __MACOS__
     return "MacOS Classic";
