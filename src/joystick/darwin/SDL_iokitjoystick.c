@@ -237,7 +237,7 @@ static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *s
         device->ffdevice = NULL;
         device->ff_initialized = SDL_FALSE;
     }
-#if SDL_HAPTIC_IOKIT
+#ifdef SDL_HAPTIC_IOKIT
     MacHaptic_MaybeRemoveDevice(device->ffservice);
 #endif
 
@@ -557,7 +557,7 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     ioservice = IOHIDDeviceGetService(ioHIDDeviceObject);
     if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK)) {
         device->ffservice = ioservice;
-#if SDL_HAPTIC_IOKIT
+#ifdef SDL_HAPTIC_IOKIT
         MacHaptic_MaybeAddDevice(ioservice);
 #endif
     }
