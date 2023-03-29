@@ -256,7 +256,7 @@ SDL_X11_SYM(Cursor,XcursorImageLoadCursor,(Display *a,const XcursorImage *b),(a,
 #endif
 
 /* Xdbe support */
-#if SDL_VIDEO_DRIVER_X11_XDBE
+#ifdef SDL_VIDEO_DRIVER_X11_XDBE
 SDL_X11_MODULE(XDBE)
 SDL_X11_SYM(Status,XdbeQueryExtension,(Display *dpy,int *major_version_return,int *minor_version_return),(dpy,major_version_return,minor_version_return),return)
 SDL_X11_SYM(XdbeBackBuffer,XdbeAllocateBackBufferName,(Display *dpy,Window window,XdbeSwapAction swap_action),(dpy,window,swap_action),return)
