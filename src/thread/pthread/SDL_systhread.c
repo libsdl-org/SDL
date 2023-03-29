@@ -151,7 +151,7 @@ void SDL_SYS_SetupThread(const char *name)
             pthread_setname_np(pthread_self(), namebuf);
         }
 #endif
-#elif HAVE_PTHREAD_SET_NAME_NP
+#elif defined(HAVE_PTHREAD_SET_NAME_NP)
         pthread_set_name_np(pthread_self(), name);
 #elif defined(__HAIKU__)
         /* The docs say the thread name can't be longer than B_OS_NAME_LENGTH. */
