@@ -419,7 +419,7 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 #endif
 
     _this->egl_data->egl_dll_handle = egl_dll_handle;
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
     _this->egl_data->opengl_dll_handle = opengl_dll_handle;
 #endif
 

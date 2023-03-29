@@ -104,7 +104,7 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_PSP
     &PSP_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
     &VITA_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_N3DS
@@ -4399,7 +4399,7 @@ int SDL_GetMessageBoxCount(void)
 #if SDL_VIDEO_DRIVER_RISCOS
 #include "riscos/SDL_riscosmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
 #include "vita/SDL_vitamessagebox.h"
 #endif
 
@@ -4535,7 +4535,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
     if (retval == -1 &&
         VITA_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;

@@ -22,7 +22,7 @@
 #ifndef SDL_vitamessagebox_h_
 #define SDL_vitamessagebox_h_
 
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
 
 extern int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 

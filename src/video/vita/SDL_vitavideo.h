@@ -86,7 +86,7 @@ void VITA_DestroyWindow(_THIS, SDL_Window *window);
 SDL_bool VITA_GetWindowWMInfo(_THIS, SDL_Window * window,
                              struct SDL_SysWMinfo *info);
 
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
 #if defined(SDL_VIDEO_VITA_PVR_OGL)
 /* OpenGL functions */
 int VITA_GL_LoadLibrary(_THIS, const char *path);
