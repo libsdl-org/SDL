@@ -460,7 +460,7 @@ extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlob
 
 void Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
-#if SDL_MAC_NO_SANDBOX
+#ifdef SDL_MAC_NO_SANDBOX
     CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);
 #endif
 }
