@@ -25,7 +25,7 @@
 #include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
 
-#if SDL_HAPTIC_XINPUT
+#ifdef SDL_HAPTIC_XINPUT
 
 #include "SDL_hints.h"
 #include "SDL_timer.h"

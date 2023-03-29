@@ -54,14 +54,14 @@ struct haptic_hwdata
 /*
  * Haptic system effect data.
  */
-#if defined(SDL_HAPTIC_DINPUT) || SDL_HAPTIC_XINPUT
+#if defined(SDL_HAPTIC_DINPUT) || defined(SDL_HAPTIC_XINPUT)
 struct haptic_hweffect
 {
 #ifdef SDL_HAPTIC_DINPUT
     DIEFFECT effect;
     LPDIRECTINPUTEFFECT ref;
 #endif
-#if SDL_HAPTIC_XINPUT
+#ifdef SDL_HAPTIC_XINPUT
     XINPUT_VIBRATION vibration;
 #endif
 };
