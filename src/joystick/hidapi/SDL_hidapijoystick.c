@@ -140,6 +140,13 @@ void HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size)
 
 SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
 {
+    /* If we already know the controller is a different type, don't try to detect it.
+     * This fixes a hang with the HORIPAD for Nintendo Switch (0x0f0d/0x00c1)
+     */
+    if (SDL_GetGamepadTypeFromVIDPID(vendor, product, NULL, SDL_FALSE) != SDL_GAMEPAD_TYPE_UNKNOWN) {
+        return SDL_FALSE;
+    }
+
     switch (vendor) {
     case USB_VENDOR_DRAGONRISE:
         return SDL_TRUE;
