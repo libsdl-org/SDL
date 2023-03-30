@@ -448,7 +448,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     this->spec.freq = waveformat->nSamplesPerSec;  /* force sampling rate so our resampler kicks in, if necessary. */
 #else
     /* favor WASAPI's resampler over our own */
-    if (this->spec.freq != waveformat->nSamplesPerSec) {
+    if ((DWORD)this->spec.freq != waveformat->nSamplesPerSec) {
         streamflags |= (AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM | AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY);
         waveformat->nSamplesPerSec = this->spec.freq;
         waveformat->nAvgBytesPerSec = waveformat->nSamplesPerSec * waveformat->nChannels * (waveformat->wBitsPerSample / 8);

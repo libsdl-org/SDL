@@ -666,7 +666,7 @@ static int SDLCALL SDL_RunAudio(void *devicep)
 
         /* Fill the current buffer with sound */
         if (!device->stream && SDL_AtomicGet(&device->enabled)) {
-            SDL_assert(data_len == device->spec.size);
+            SDL_assert((Uint32)data_len == device->spec.size);
             data = current_audio.impl.GetDeviceBuf(device);
         } else {
             /* if the device isn't enabled, we still write to the
@@ -700,13 +700,13 @@ static int SDLCALL SDL_RunAudio(void *devicep)
                 int got;
                 data = SDL_AtomicGet(&device->enabled) ? current_audio.impl.GetDeviceBuf(device) : NULL;
                 got = SDL_GetAudioStreamData(device->stream, data ? data : device->work_buffer, device->spec.size);
-                SDL_assert((got <= 0) || (got == device->spec.size));
+                SDL_assert((got <= 0) || ((Uint32)got == device->spec.size));
 
                 if (data == NULL) { /* device is having issues... */
                     const Uint32 delay = ((device->spec.samples * 1000) / device->spec.freq);
                     SDL_Delay(delay); /* wait for as long as this buffer would have played. Maybe device recovers later? */
                 } else {
-                    if (got != device->spec.size) {
+                    if ((Uint32)got != device->spec.size) {
                         SDL_memset(data, device->spec.silence, device->spec.size);
                     }
                     current_audio.impl.PlayDevice(device);
@@ -814,8 +814,8 @@ static int SDLCALL SDL_CaptureAudio(void *devicep)
 
             while (SDL_GetAudioStreamAvailable(device->stream) >= ((int)device->callbackspec.size)) {
                 const int got = SDL_GetAudioStreamData(device->stream, device->work_buffer, device->callbackspec.size);
-                SDL_assert((got < 0) || (got == device->callbackspec.size));
-                if (got != device->callbackspec.size) {
+                SDL_assert((got < 0) || ((Uint32)got == device->callbackspec.size));
+                if ((Uint32)got != device->callbackspec.size) {
                     SDL_memset(device->work_buffer, device->spec.silence, device->callbackspec.size);
                 }
 

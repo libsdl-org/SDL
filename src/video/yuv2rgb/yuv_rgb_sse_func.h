@@ -491,7 +491,7 @@ void SDL_TARGETING("sse2") SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 
 	/* Catch the right column, if needed */
 	{
-		int converted = (width & ~31);
+		uint32_t converted = (width & ~31);
 		if (fix_read_nv12) {
 			converted -= 32;
 		}

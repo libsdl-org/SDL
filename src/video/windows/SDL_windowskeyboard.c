@@ -1673,7 +1673,7 @@ static void IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             bottom = size.cy - listborder - listpadding - candmargin;
         }
 
-        if (i == videodata->ime_candsel) {
+        if ((DWORD)i == videodata->ime_candsel) {
             SelectObject(hdc, selpen);
             SelectObject(hdc, selbrush);
             SetTextColor(hdc, seltextcolor);

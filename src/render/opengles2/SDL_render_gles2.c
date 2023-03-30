@@ -1579,7 +1579,7 @@ static int GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoff
     /* Reformat the texture data into a tightly packed array */
     src_pitch = (size_t)width * bpp;
     src = (Uint8 *)pixels;
-    if (pitch != src_pitch) {
+    if ((size_t)pitch != src_pitch) {
         blob = (Uint8 *)SDL_malloc(src_pitch * height);
         if (blob == NULL) {
             return SDL_OutOfMemory();

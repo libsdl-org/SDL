@@ -576,7 +576,7 @@ SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_
                 c = (unsigned char)src[i];
                 trailing_bytes = UTF8_GetTrailingBytes(c);
                 if (trailing_bytes) {
-                    if (bytes - i != trailing_bytes + 1) {
+                    if ((bytes - i) != ((size_t)trailing_bytes + 1)) {
                         bytes = i;
                     }
 

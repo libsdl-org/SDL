@@ -328,7 +328,7 @@ static int DSOUND_CaptureFromDevice(_THIS, void *buffer, int buflen)
     DWORD junk, cursor, ptr1len, ptr2len;
     VOID *ptr1, *ptr2;
 
-    SDL_assert(buflen == this->spec.size);
+    SDL_assert((Uint32)buflen == this->spec.size);
 
     while (SDL_TRUE) {
         if (SDL_AtomicGet(&this->shutdown)) { /* in case the buffer froze... */

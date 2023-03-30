@@ -1472,14 +1472,15 @@ int SDL_AddGamepadMappingsFromRW(SDL_RWops *rw, int freerw)
     const char *platform = SDL_GetPlatform();
     int gamepads = 0;
     char *buf, *line, *line_end, *tmp, *comma, line_platform[64];
-    size_t db_size, platform_len;
+    Sint64 db_size;
+    size_t platform_len;
 
     if (rw == NULL) {
         return SDL_SetError("Invalid RWops");
     }
-    db_size = (size_t)SDL_RWsize(rw);
+    db_size = SDL_RWsize(rw);
 
-    buf = (char *)SDL_malloc(db_size + 1);
+    buf = (char *)SDL_malloc((size_t)db_size + 1);
     if (buf == NULL) {
         if (freerw) {
             SDL_RWclose(rw);

@@ -1290,7 +1290,7 @@ static int D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Tex
     src = (const Uint8 *)pixels;
     dst = textureMemory.pData;
     length = w * bpp;
-    if (length == pitch && length == textureMemory.RowPitch) {
+    if (length == (UINT)pitch && length == textureMemory.RowPitch) {
         SDL_memcpy(dst, src, (size_t)length * h);
     } else {
         if (length > (UINT)pitch) {
