@@ -2117,9 +2117,7 @@ static void BlitNto1(SDL_BlitInfo *info)
                                 sR, sG, sB);
                 if ( 1 ) {
                     /* Pack RGB into 8bit pixel */
-                    *dst = ((sR>>5)<<(3+2))|
-                            ((sG>>5)<<(2)) |
-                            ((sB>>6)<<(0)) ;
+                    *dst = (Uint8)(((sR>>5)<<(3+2)) | ((sG>>5)<<(2)) | ((sB>>6)<<(0)));
                 }
                 dst++;
                 src += srcbpp;
@@ -2343,7 +2341,7 @@ static void BlitNtoN(SDL_BlitInfo *info)
                 dst[1] = src[p1];
                 dst[2] = src[p2];
                 dst[3] = src[p3];
-                dst[alpha_channel] = alpha;
+                dst[alpha_channel] = (Uint8)alpha;
                 src += 4;
                 dst += 4;
             }, width);
@@ -2397,7 +2395,7 @@ static void BlitNtoN(SDL_BlitInfo *info)
                 dst[1] = src[p1];
                 dst[2] = src[p2];
                 dst[3] = src[p3];
-                dst[alpha_channel] = alpha;
+                dst[alpha_channel] = (Uint8)alpha;
                 src += 3;
                 dst += 4;
             }, width);
@@ -2670,7 +2668,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
                     dst[1] = src[p1];
                     dst[2] = src[p2];
                     dst[3] = src[p3];
-                    dst[alpha_channel] = alpha;
+                    dst[alpha_channel] = (Uint8)alpha;
                 }
                 src += 4;
                 dst += 4;
@@ -2819,7 +2817,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
                     dst[1] = src[p1];
                     dst[2] = src[p2];
                     dst[3] = src[p3];
-                    dst[alpha_channel] = alpha;
+                    dst[alpha_channel] = (Uint8)alpha;
                 }
                 src += 3;
                 dst += 4;

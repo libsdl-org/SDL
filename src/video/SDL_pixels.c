@@ -565,8 +565,8 @@ int SDL_InitFormat(SDL_PixelFormat *format, Uint32 pixel_format)
     /* Set up the format */
     SDL_zerop(format);
     format->format = pixel_format;
-    format->BitsPerPixel = bpp;
-    format->BytesPerPixel = (bpp + 7) / 8;
+    format->BitsPerPixel = (Uint8)bpp;
+    format->BytesPerPixel = (Uint8)((bpp + 7) / 8);
 
     format->Rmask = Rmask;
     format->Rshift = 0;
@@ -772,14 +772,14 @@ void SDL_DitherColors(SDL_Color *colors, int bpp)
            so 0 is mapped to (0, 0, 0) and 255 to (255, 255, 255) */
         r = i & 0xe0;
         r |= r >> 3 | r >> 6;
-        colors[i].r = r;
+        colors[i].r = (Uint8)r;
         g = (i << 3) & 0xe0;
         g |= g >> 3 | g >> 6;
-        colors[i].g = g;
+        colors[i].g = (Uint8)g;
         b = i & 0x3;
         b |= b << 2;
         b |= b << 4;
-        colors[i].b = b;
+        colors[i].b = (Uint8)b;
         colors[i].a = SDL_ALPHA_OPAQUE;
     }
 }
@@ -804,7 +804,7 @@ Uint8 SDL_FindColor(SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
         ad = pal->colors[i].a - a;
         distance = (rd * rd) + (gd * gd) + (bd * bd) + (ad * ad);
         if (distance < smallest) {
-            pixel = i;
+            pixel = (Uint8)i;
             if (distance == 0) { /* Perfect match! */
                 break;
             }

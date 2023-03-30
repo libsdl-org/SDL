@@ -58,7 +58,7 @@ static void BlitNto1SurfaceAlpha(SDL_BlitInfo *info)
         dB &= 0xff;
         /* Pack RGB into 8bit pixel */
         if ( palmap == NULL ) {
-            *dst =((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0));
+            *dst = (Uint8)(((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0)));
         } else {
             *dst = palmap[((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0))];
         }
@@ -103,7 +103,7 @@ static void BlitNto1PixelAlpha(SDL_BlitInfo *info)
         dB &= 0xff;
         /* Pack RGB into 8bit pixel */
         if ( palmap == NULL ) {
-            *dst =((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0));
+            *dst = (Uint8)(((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0)));
         } else {
             *dst = palmap[((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0))];
         }
@@ -151,7 +151,7 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
             dB &= 0xff;
             /* Pack RGB into 8bit pixel */
             if ( palmap == NULL ) {
-                *dst =((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0));
+                *dst = (Uint8)(((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0)));
             } else {
                 *dst = palmap[((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0))];
             }

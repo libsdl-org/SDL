@@ -414,8 +414,8 @@ static void Vec2ToDLU(short *x, short *y)
 {
     SDL_assert(s_BaseUnitsX != 0); /* we init in WIN_ShowMessageBox(), which is the only public function... */
 
-    *x = MulDiv(*x, 4, s_BaseUnitsX);
-    *y = MulDiv(*y, 8, s_BaseUnitsY);
+    *x = (short)MulDiv(*x, 4, s_BaseUnitsX);
+    *y = (short)MulDiv(*y, 8, s_BaseUnitsY);
 }
 
 static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style, DWORD exStyle, int x, int y, int w, int h, int id, const char *caption, WORD ordinal)
@@ -427,10 +427,10 @@ static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style,
     SDL_zero(item);
     item.style = style;
     item.exStyle = exStyle;
-    item.x = x;
-    item.y = y;
-    item.cx = w;
-    item.cy = h;
+    item.x = (short)x;
+    item.y = (short)y;
+    item.cx = (short)w;
+    item.cy = (short)h;
     item.id = id;
 
     Vec2ToDLU(&item.x, &item.y);
@@ -516,8 +516,8 @@ static WIN_DialogData *CreateDialogData(int w, int h, const char *caption)
     dialogTemplate.style = (WS_CAPTION | DS_CENTER | DS_SHELLFONT);
     dialogTemplate.x = 0;
     dialogTemplate.y = 0;
-    dialogTemplate.cx = w;
-    dialogTemplate.cy = h;
+    dialogTemplate.cx = (short)w;
+    dialogTemplate.cy = (short)h;
     Vec2ToDLU(&dialogTemplate.cx, &dialogTemplate.cy);
 
     dialog = (WIN_DialogData *)SDL_calloc(1, sizeof(*dialog));

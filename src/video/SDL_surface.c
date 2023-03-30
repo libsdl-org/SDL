@@ -1105,7 +1105,7 @@ SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format)
     SDL_Rect bounds;
     int ret;
     SDL_bool palette_ck_transform = SDL_FALSE;
-    int palette_ck_value = 0;
+    Uint8 palette_ck_value = 0;
     SDL_bool palette_has_alpha = SDL_FALSE;
     Uint8 *palette_saved_alpha = NULL;
     int palette_saved_alpha_ncolors = 0;

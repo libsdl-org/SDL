@@ -463,7 +463,7 @@ int SDL_DINPUT_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 int SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
     SDL_hapticlist_item *item;
-    int index = 0;
+    Uint8 index = 0;
     HRESULT ret;
     DIDEVICEINSTANCE joy_instance;
 

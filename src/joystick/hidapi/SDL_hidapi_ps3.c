@@ -447,7 +447,7 @@ static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_Drive
             17, /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
             15, /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
         };
-        int i, axis_index = 6;
+        Uint8 i, axis_index = 6;
 
         for (i = 0; i < SDL_arraysize(button_axis_offsets); ++i) {
             int offset = button_axis_offsets[i];
@@ -772,7 +772,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystic
             7,  /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
             6,  /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
         };
-        int i, axis_index = 6;
+        Uint8 i, axis_index = 6;
 
         for (i = 0; i < SDL_arraysize(button_axis_offsets); ++i) {
             int offset = button_axis_offsets[i];
@@ -888,7 +888,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
             8,  /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
             7,  /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
         };
-        int i, axis_index = 6;
+        Uint8 i, axis_index = 6;
 
         for (i = 0; i < SDL_arraysize(button_axis_offsets); ++i) {
             int offset = button_axis_offsets[i];

@@ -1421,7 +1421,7 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
 
 void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
 {
-    int i, j;
+    Uint8 i, j;
     Uint64 timestamp = SDL_GetTicksNS();
 
     SDL_AssertJoysticksLocked();

@@ -607,12 +607,12 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
 
     if (pDeviceObject->dwType & DIDFT_BUTTON) {
         in->type = BUTTON;
-        in->num = joystick->nbuttons;
+        in->num = (Uint8)joystick->nbuttons;
         in->ofs = DIJOFS_BUTTON(in->num);
         joystick->nbuttons++;
     } else if (pDeviceObject->dwType & DIDFT_POV) {
         in->type = HAT;
-        in->num = joystick->nhats;
+        in->num = (Uint8)joystick->nhats;
         in->ofs = DIJOFS_POV(in->num);
         joystick->nhats++;
     } else if (pDeviceObject->dwType & DIDFT_AXIS) {
@@ -620,7 +620,7 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
         DIPROPDWORD dilong;
 
         in->type = AXIS;
-        in->num = joystick->naxes;
+        in->num = (Uint8)joystick->naxes;
         if (SDL_memcmp(&pDeviceObject->guidType, &GUID_XAxis, sizeof(pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_X;
         } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_YAxis, sizeof(pDeviceObject->guidType)) == 0) {
@@ -703,9 +703,9 @@ static int SDLCALL SortDevFunc(const void *a, const void *b)
 static void SortDevObjects(SDL_Joystick *joystick)
 {
     input_t *inputs = joystick->hwdata->Inputs;
-    int nButtons = 0;
-    int nHats = 0;
-    int nAxis = 0;
+    Uint8 nButtons = 0;
+    Uint8 nHats = 0;
+    Uint8 nAxis = 0;
     int n;
 
     SDL_qsort(inputs, joystick->hwdata->NumInputs, sizeof(input_t), SortDevFunc);
@@ -949,7 +949,7 @@ SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 
 static Uint8 TranslatePOV(DWORD value)
 {
-    const int HAT_VALS[] = {
+    const Uint8 HAT_VALS[] = {
         SDL_HAT_UP,
         SDL_HAT_UP | SDL_HAT_RIGHT,
         SDL_HAT_RIGHT,

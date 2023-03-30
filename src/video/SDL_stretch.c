@@ -263,10 +263,10 @@ static SDL_INLINE void INTERPOL(const Uint32 *src_x0, const Uint32 *src_x1, int 
     cx->c = c0->c + INTEGER(frac0 * (c1->c - c0->c));
     cx->d = c0->d + INTEGER(frac0 * (c1->d - c0->d));
 #else
-    cx->a = INTEGER(frac1 * c0->a + frac0 * c1->a);
-    cx->b = INTEGER(frac1 * c0->b + frac0 * c1->b);
-    cx->c = INTEGER(frac1 * c0->c + frac0 * c1->c);
-    cx->d = INTEGER(frac1 * c0->d + frac0 * c1->d);
+    cx->a = (Uint8)INTEGER(frac1 * c0->a + frac0 * c1->a);
+    cx->b = (Uint8)INTEGER(frac1 * c0->b + frac0 * c1->b);
+    cx->c = (Uint8)INTEGER(frac1 * c0->c + frac0 * c1->c);
+    cx->d = (Uint8)INTEGER(frac1 * c0->d + frac0 * c1->d);
 #endif
 }
 
@@ -375,7 +375,7 @@ static SDL_INLINE void SDL_TARGETING("sse2") INTERPOL_BILINEAR_SSE(const Uint32 
     int f, f2;
     f = frac_w;
     f2 = FRAC_ONE - frac_w;
-    v_frac_w0 = _mm_set_epi16(f, f2, f, f2, f, f2, f, f2);
+    v_frac_w0 = _mm_set_epi16((short)f, (short)f2, (short)f, (short)f2, (short)f, (short)f2, (short)f, (short)f2);
 
     x_00_01 = _mm_loadl_epi64((const __m128i *)s0); /* Load x00 and x01 */
     x_10_11 = _mm_loadl_epi64((const __m128i *)s1);
@@ -418,8 +418,8 @@ static int SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int
 
         nb_block2 = middle / 2;
 
-        v_frac_h0 = _mm_set_epi16(frac_h0, frac_h0, frac_h0, frac_h0, frac_h0, frac_h0, frac_h0, frac_h0);
-        v_frac_h1 = _mm_set_epi16(frac_h1, frac_h1, frac_h1, frac_h1, frac_h1, frac_h1, frac_h1, frac_h1);
+        v_frac_h0 = _mm_set_epi16((short)frac_h0, (short)frac_h0, (short)frac_h0, (short)frac_h0, (short)frac_h0, (short)frac_h0, (short)frac_h0, (short)frac_h0);
+        v_frac_h1 = _mm_set_epi16((short)frac_h1, (short)frac_h1, (short)frac_h1, (short)frac_h1, (short)frac_h1, (short)frac_h1, (short)frac_h1, (short)frac_h1);
         zero = _mm_setzero_si128();
 
         while (left_pad_w--) {
@@ -460,11 +460,11 @@ static int SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int
 
             f = frac_w_0;
             f2 = FRAC_ONE - frac_w_0;
-            v_frac_w0 = _mm_set_epi16(f, f2, f, f2, f, f2, f, f2);
+            v_frac_w0 = _mm_set_epi16((short)f, (short)f2, (short)f, (short)f2, (short)f, (short)f2, (short)f, (short)f2);
 
             f = frac_w_1;
             f2 = FRAC_ONE - frac_w_1;
-            v_frac_w1 = _mm_set_epi16(f, f2, f, f2, f, f2, f, f2);
+            v_frac_w1 = _mm_set_epi16((short)f, (short)f2, (short)f, (short)f2, (short)f, (short)f2, (short)f, (short)f2);
 
             x_00_01 = _mm_loadl_epi64((const __m128i *)s_00_01); /* Load x00 and x01 */
             x_02_03 = _mm_loadl_epi64((const __m128i *)s_02_03);

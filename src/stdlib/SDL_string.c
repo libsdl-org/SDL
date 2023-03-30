@@ -479,8 +479,8 @@ int SDL_wcscasecmp(const wchar_t *str1, const wchar_t *str2)
             a = *str1;
             b = *str2;
         } else {
-            a = SDL_toupper((unsigned char)*str1);
-            b = SDL_toupper((unsigned char)*str2);
+            a = (wchar_t)SDL_toupper((unsigned char)*str1);
+            b = (wchar_t)SDL_toupper((unsigned char)*str2);
         }
         if (a != b) {
             break;
@@ -494,8 +494,8 @@ int SDL_wcscasecmp(const wchar_t *str1, const wchar_t *str2)
         a = *str1;
         b = *str2;
     } else {
-        a = SDL_toupper((unsigned char)*str1);
-        b = SDL_toupper((unsigned char)*str2);
+        a = (wchar_t)SDL_toupper((unsigned char)*str1);
+        b = (wchar_t)SDL_toupper((unsigned char)*str2);
     }
     return (int)((unsigned int)a - (unsigned int)b);
 #endif /* HAVE__WCSICMP */
@@ -516,8 +516,8 @@ int SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
             a = *str1;
             b = *str2;
         } else {
-            a = SDL_toupper((unsigned char)*str1);
-            b = SDL_toupper((unsigned char)*str2);
+            a = (wchar_t)SDL_toupper((unsigned char)*str1);
+            b = (wchar_t)SDL_toupper((unsigned char)*str2);
         }
         if (a != b) {
             break;
@@ -535,8 +535,8 @@ int SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
             a = *str1;
             b = *str2;
         } else {
-            a = SDL_toupper((unsigned char)*str1);
-            b = SDL_toupper((unsigned char)*str2);
+            a = (wchar_t)SDL_toupper((unsigned char)*str1);
+            b = (wchar_t)SDL_toupper((unsigned char)*str2);
         }
         return (int)((unsigned int)a - (unsigned int)b);
     }
@@ -565,7 +565,7 @@ SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_
     size_t src_bytes = SDL_strlen(src);
     size_t bytes = SDL_min(src_bytes, dst_bytes - 1);
     size_t i = 0;
-    unsigned char trailing_bytes = 0;
+    size_t trailing_bytes = 0;
 
     if (bytes) {
         unsigned char c = (unsigned char)src[bytes - 1];
@@ -576,7 +576,7 @@ SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_
                 c = (unsigned char)src[i];
                 trailing_bytes = UTF8_GetTrailingBytes(c);
                 if (trailing_bytes) {
-                    if ((bytes - i) != ((size_t)trailing_bytes + 1)) {
+                    if ((bytes - i) != (trailing_bytes + 1)) {
                         bytes = i;
                     }
 
@@ -678,7 +678,7 @@ SDL_strupr(char *string)
 #else
     char *bufp = string;
     while (*bufp) {
-        *bufp = SDL_toupper((unsigned char)*bufp);
+        *bufp = (char)SDL_toupper((unsigned char)*bufp);
         ++bufp;
     }
     return string;
@@ -693,7 +693,7 @@ SDL_strlwr(char *string)
 #else
     char *bufp = string;
     while (*bufp) {
-        *bufp = SDL_tolower((unsigned char)*bufp);
+        *bufp = (char)SDL_tolower((unsigned char)*bufp);
         ++bufp;
     }
     return string;
@@ -1652,7 +1652,7 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg, SDL_
             arg *= 10.0;
             arg = SDL_modf(arg, &integer_value);
             SDL_assert(length < sizeof(num));
-            num[length++] = '0' + (int)integer_value;
+            num[length++] = '0' + (char)integer_value;
             --precision;
         }
         if (precision == 1) {
@@ -1682,7 +1682,7 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg, SDL_
                 num[length++] = '0';
             } else {
                 SDL_assert(length < sizeof(num));
-                num[length++] = '0' + (int)integer_value;
+                num[length++] = '0' + (char)integer_value;
             }
         }
 

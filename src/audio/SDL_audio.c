@@ -1162,7 +1162,7 @@ GetDefaultSamplesFromFreq(int freq)
 {
     /* Pick a default of ~46 ms at desired frequency */
     /* !!! FIXME: remove this when the non-Po2 resampling is in. */
-    const Uint16 max_sample = (freq / 1000) * 46;
+    const Uint16 max_sample = (Uint16)((freq / 1000) * 46);
     Uint16 current_sample = 1;
     while (current_sample < max_sample) {
         current_sample *= 2;
@@ -1373,7 +1373,13 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
      * value we got from 'desired' and round up to the nearest value
      */
     if (!current_audio.impl.SupportsNonPow2Samples && device->spec.samples > 0) {
-        device->spec.samples = SDL_powerof2(device->spec.samples);
+        int samples = SDL_powerof2(device->spec.samples);
+        if (samples <= SDL_MAX_UINT16) {
+            device->spec.samples = (Uint16)samples;
+        } else {
+            SDL_SetError("Couldn't hold sample count %d\n", samples);
+            return 0;
+        }
     }
 
     if (current_audio.impl.OpenDevice(device, devname) < 0) {

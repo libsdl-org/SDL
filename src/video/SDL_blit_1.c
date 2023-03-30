@@ -492,7 +492,7 @@ static void Blit1toNAlphaKey(SDL_BlitInfo *info)
                 sB = srcpal[*src].b;
                 DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixel, dR, dG, dB, dA);
                 ALPHA_BLEND_RGBA(sR, sG, sB, A, dR, dG, dB, dA);
-                  ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
+                ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
             }
             src++;
             dst += dstbpp;

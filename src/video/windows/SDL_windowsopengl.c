@@ -249,25 +249,24 @@ static void WIN_GL_SetupPixelFormat(_THIS, PIXELFORMATDESCRIPTOR *pfd)
     }
     pfd->iLayerType = PFD_MAIN_PLANE;
     pfd->iPixelType = PFD_TYPE_RGBA;
-    pfd->cRedBits = _this->gl_config.red_size;
-    pfd->cGreenBits = _this->gl_config.green_size;
-    pfd->cBlueBits = _this->gl_config.blue_size;
-    pfd->cAlphaBits = _this->gl_config.alpha_size;
+    pfd->cRedBits = (BYTE)_this->gl_config.red_size;
+    pfd->cGreenBits = (BYTE)_this->gl_config.green_size;
+    pfd->cBlueBits = (BYTE)_this->gl_config.blue_size;
+    pfd->cAlphaBits = (BYTE)_this->gl_config.alpha_size;
     if (_this->gl_config.buffer_size) {
-        pfd->cColorBits =
-            _this->gl_config.buffer_size - _this->gl_config.alpha_size;
+        pfd->cColorBits = (BYTE)(_this->gl_config.buffer_size - _this->gl_config.alpha_size);
     } else {
         pfd->cColorBits = (pfd->cRedBits + pfd->cGreenBits + pfd->cBlueBits);
     }
-    pfd->cAccumRedBits = _this->gl_config.accum_red_size;
-    pfd->cAccumGreenBits = _this->gl_config.accum_green_size;
-    pfd->cAccumBlueBits = _this->gl_config.accum_blue_size;
-    pfd->cAccumAlphaBits = _this->gl_config.accum_alpha_size;
+    pfd->cAccumRedBits = (BYTE)_this->gl_config.accum_red_size;
+    pfd->cAccumGreenBits = (BYTE)_this->gl_config.accum_green_size;
+    pfd->cAccumBlueBits = (BYTE)_this->gl_config.accum_blue_size;
+    pfd->cAccumAlphaBits = (BYTE)_this->gl_config.accum_alpha_size;
     pfd->cAccumBits =
         (pfd->cAccumRedBits + pfd->cAccumGreenBits + pfd->cAccumBlueBits +
          pfd->cAccumAlphaBits);
-    pfd->cDepthBits = _this->gl_config.depth_size;
-    pfd->cStencilBits = _this->gl_config.stencil_size;
+    pfd->cDepthBits = (BYTE)_this->gl_config.depth_size;
+    pfd->cStencilBits = (BYTE)_this->gl_config.stencil_size;
 }
 
 /* Choose the closest pixel format that meets or exceeds the target.

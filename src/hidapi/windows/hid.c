@@ -603,7 +603,7 @@ static int hid_get_bluetooth_info(const char *path, struct hid_device_info* dev)
 	for (id = compatible_ids; *id; id += wcslen(id) + 1) {
 		/* Normalize to upper case */
 		wchar_t* p = id;
-		for (; *p; ++p) *p = towupper(*p);
+		for (; *p; ++p) *p = (wchar_t)towupper(*p);
 
 		/* USB devices
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-support

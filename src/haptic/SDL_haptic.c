@@ -134,7 +134,7 @@ SDL_HapticOpen(int device_index)
     /* Initialize the haptic device */
     SDL_memset(haptic, 0, sizeof(*haptic));
     haptic->rumble_id = -1;
-    haptic->index = device_index;
+    haptic->index = (Uint8)device_index;
     if (SDL_SYS_HapticOpen(haptic) < 0) {
         SDL_free(haptic);
         return NULL;
