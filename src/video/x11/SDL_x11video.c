@@ -140,6 +140,12 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
     return 0;
 }
 
+#ifdef SDL_USE_LIBDBUS
+static int X11_ShowNotification(_THIS, const SDL_NotificationData *notificationdata) {
+    return SDL_DBus_ShowNotification(notificationdata);
+}
+#endif
+
 static SDL_VideoDevice *X11_CreateDevice(void)
 {
     SDL_VideoDevice *device;
@@ -306,6 +312,10 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->ShowScreenKeyboard = X11_ShowScreenKeyboard;
     device->HideScreenKeyboard = X11_HideScreenKeyboard;
     device->IsScreenKeyboardShown = X11_IsScreenKeyboardShown;
+
+#ifdef SDL_USE_LIBDBUS
+    device->ShowNotification = X11_ShowNotification;
+#endif
 
     device->free = X11_DeleteDevice;
 

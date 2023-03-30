@@ -162,6 +162,12 @@ static void Wayland_DeleteDevice(SDL_VideoDevice *device)
     SDL_WAYLAND_UnloadSymbols();
 }
 
+#ifdef SDL_USE_LIBDBUS
+static int Wayland_ShowNotification(_THIS, const SDL_NotificationData *notificationdata) {
+    return SDL_DBus_ShowNotification(notificationdata);
+}
+#endif
+
 static SDL_VideoDevice *Wayland_CreateDevice(void)
 {
     SDL_VideoDevice *device;
@@ -265,6 +271,10 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->StartTextInput = Wayland_StartTextInput;
     device->StopTextInput = Wayland_StopTextInput;
     device->SetTextInputRect = Wayland_SetTextInputRect;
+
+#ifdef SDL_USE_LIBDBUS
+    device->ShowNotification = Wayland_ShowNotification;
+#endif
 
 #ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Wayland_Vulkan_LoadLibrary;

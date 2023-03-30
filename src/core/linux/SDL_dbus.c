@@ -498,4 +498,63 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
 
     return SDL_TRUE;
 }
+
+int SDL_DBus_ShowNotification(const SDL_NotificationData *notificationdata)
+{
+    dbus_bool_t status = 0;
+    DBusConnection *conn = dbus.session_conn;
+    DBusMessage *msg = NULL;
+    Uint32 replace_id = 0;
+    Sint32 timeout = -1;
+    const char *icon = "";
+    DBusMessageIter iter;
+    DBusMessageIter sub;
+
+    const char *app;
+    const char *title;
+    const char *body;
+
+
+    app = notificationdata->title;
+    title = notificationdata->title;
+    body = notificationdata->message;
+
+    if (conn == NULL) {
+        return SDL_FALSE;
+    }
+
+    msg = dbus.message_new_method_call("org.freedesktop.Notifications",
+                                       "/org/freedesktop/Notifications",
+                                       "org.freedesktop.Notifications",
+                                       "Notify");
+    if (msg != NULL) {
+        dbus.message_iter_init_append(msg, &iter);
+        status = dbus.message_iter_append_basic(&iter, DBUS_TYPE_STRING, &app);
+        status = dbus.message_iter_append_basic(&iter, DBUS_TYPE_UINT32, &replace_id);
+        status = dbus.message_iter_append_basic(&iter, DBUS_TYPE_STRING, &icon);
+        status = dbus.message_iter_append_basic(&iter, DBUS_TYPE_STRING, &title);
+        status = dbus.message_iter_append_basic(&iter, DBUS_TYPE_STRING, &body);
+        status = dbus.message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "s", &sub);
+        status = dbus.message_iter_close_container(&iter, &sub);
+        status = dbus.message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &sub);
+        status = dbus.message_iter_close_container(&iter, &sub);
+        status = dbus.message_iter_append_basic(&iter, DBUS_TYPE_INT32, &timeout);
+        if (!status) {
+            SDL_SetError("Error appending to dbus parameters (notification)");
+        } else {
+            status = dbus.connection_send(conn, msg, NULL);
+            if (!status) {
+                SDL_SetError("Error sending to dbus (notification)");
+            } else {
+                dbus.connection_flush(conn);
+            }
+        }
+
+        dbus.message_unref(msg);
+    }
+
+    return (status) ? SDL_TRUE : SDL_FALSE;
+}
+
+
 #endif
