@@ -75,15 +75,15 @@
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #elif defined(HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-#if defined(HAVE_STDDEF_H)
+#ifdef HAVE_STDDEF_H
 #include <stddef.h>
 #endif
-#if defined(HAVE_STDARG_H)
+#ifdef HAVE_STDARG_H
 #include <stdarg.h>
 #endif
 #ifdef HAVE_STRING_H
@@ -98,7 +98,7 @@
 #ifdef HAVE_WCHAR_H
 #include <wchar.h>
 #endif
-#if defined(HAVE_INTTYPES_H)
+#ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #elif defined(HAVE_STDINT_H)
 #include <stdint.h>

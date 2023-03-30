@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_COCOA)
+#ifdef SDL_VIDEO_DRIVER_COCOA
 
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoavideo.h"

@@ -186,14 +186,14 @@ static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVO
 
 static void DSOUND_DetectDevices(void)
 {
-#if defined(HAVE_MMDEVICEAPI_H)
+#ifdef HAVE_MMDEVICEAPI_H
     if (SupportsIMMDevice) {
         SDL_IMMDevice_EnumerateEndpoints(SDL_TRUE);
     } else {
 #endif /* HAVE_MMDEVICEAPI_H */
         pDirectSoundCaptureEnumerateW(FindAllDevs, (void *)((size_t)1));
         pDirectSoundEnumerateW(FindAllDevs, (void *)((size_t)0));
-#if defined(HAVE_MMDEVICEAPI_H)
+#ifdef HAVE_MMDEVICEAPI_H
     }
 #endif /* HAVE_MMDEVICEAPI_H*/
 }
@@ -609,7 +609,7 @@ static int DSOUND_OpenDevice(_THIS, const char *devname)
 
 static void DSOUND_Deinitialize(void)
 {
-#if defined(HAVE_MMDEVICEAPI_H)
+#ifdef HAVE_MMDEVICEAPI_H
     if (SupportsIMMDevice) {
         SDL_IMMDevice_Quit();
         SupportsIMMDevice = SDL_FALSE;
@@ -624,7 +624,7 @@ static SDL_bool DSOUND_Init(SDL_AudioDriverImpl *impl)
         return SDL_FALSE;
     }
 
-#if defined(HAVE_MMDEVICEAPI_H)
+#ifdef HAVE_MMDEVICEAPI_H
     SupportsIMMDevice = !(SDL_IMMDevice_Init() < 0);
 #endif /* HAVE_MMDEVICEAPI_H */
 

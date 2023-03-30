@@ -336,7 +336,7 @@ static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, 
 
 #endif /* !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
 
-#if !defined(__WINRT__)
+#ifndef __WINRT__
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static SDL_DeviceNotificationData s_notification_data;

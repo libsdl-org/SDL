@@ -32,7 +32,7 @@
 /*#define DEBUG_LUNA_PROTOCOL*/
 
 /* Sending rumble on macOS blocks for a long time and eventually fails */
-#if !defined(__MACOS__)
+#ifndef __MACOS__
 #define ENABLE_LUNA_BLUETOOTH_RUMBLE
 #endif
 

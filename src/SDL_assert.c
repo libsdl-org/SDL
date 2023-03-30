@@ -33,7 +33,7 @@
 #endif
 #endif
 
-#if defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
 
@@ -123,13 +123,13 @@ static void SDL_GenerateAssertionReport(void)
 /* This is not declared in any header, although it is shared between some
     parts of SDL, because we don't want anything calling it without an
     extremely good reason. */
-#if defined(__WATCOMC__)
+#ifdef __WATCOMC__
 extern void SDL_ExitProcess(int exitcode);
 #pragma aux SDL_ExitProcess aborts;
 #endif
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
-#if defined(__WATCOMC__)
+#ifdef __WATCOMC__
 static void SDL_AbortAssertion(void);
 #pragma aux SDL_AbortAssertion aborts;
 #endif
@@ -238,7 +238,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
             state = (SDL_AssertState)selected;
         }
     } else {
-#if defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
         /* This is nasty, but we can't block on a custom UI. */
         for (;;) {
             SDL_bool okay = SDL_TRUE;

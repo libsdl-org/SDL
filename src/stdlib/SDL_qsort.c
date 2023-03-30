@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 
 
-#if defined(HAVE_QSORT)
+#ifdef HAVE_QSORT
 void
 SDL_qsort(void *base, size_t nmemb, size_t size, int (*compare) (const void *, const void *))
 {
@@ -531,7 +531,7 @@ extern void qsortG(void *base, size_t nmemb, size_t size,
 void *
 SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (*compare)(const void *, const void *))
 {
-#if defined(HAVE_BSEARCH)
+#ifdef HAVE_BSEARCH
     return bsearch(key, base, nmemb, size, compare);
 #else
 /* SDL's replacement:  Taken from the Public Domain C Library (PDCLib):

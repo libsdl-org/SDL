@@ -421,7 +421,7 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	int len;
 	wchar_t *str = NULL;
 
-#if !defined(NO_ICONV)
+#ifndef NO_ICONV
 	wchar_t wbuf[256];
 	SDL_iconv_t ic;
 	size_t inbytes;
@@ -448,7 +448,7 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	if (len < 0)
 		return NULL;
 
-#if defined(NO_ICONV) /* original hidapi code for NO_ICONV : */
+#ifdef NO_ICONV /* original hidapi code for NO_ICONV : */
 
 	/* Bionic does not have wchar_t iconv support, so it
 	   has to be done manually.  The following code will only work for

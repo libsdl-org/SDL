@@ -20,13 +20,13 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_SENSOR_VITA)
+#ifdef SDL_SENSOR_VITA
 
 #include "SDL_vitasensor.h"
 #include "../SDL_syssensor.h"
 #include <psp2/motion.h>
 
-#if !defined(SCE_MOTION_MAX_NUM_STATES)
+#ifndef SCE_MOTION_MAX_NUM_STATES
 #define SCE_MOTION_MAX_NUM_STATES 64
 #endif
 

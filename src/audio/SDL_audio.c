@@ -646,7 +646,7 @@ static int SDLCALL SDL_RunAudio(void *devicep)
 
     SDL_assert(!device->iscapture);
 
-#if defined(SDL_AUDIO_DRIVER_ANDROID)
+#ifdef SDL_AUDIO_DRIVER_ANDROID
     {
         /* Set thread priority to THREAD_PRIORITY_AUDIO */
         Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);
@@ -746,7 +746,7 @@ static int SDLCALL SDL_CaptureAudio(void *devicep)
 
     SDL_assert(device->iscapture);
 
-#if defined(SDL_AUDIO_DRIVER_ANDROID)
+#ifdef SDL_AUDIO_DRIVER_ANDROID
     {
         /* Set thread priority to THREAD_PRIORITY_AUDIO */
         Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);

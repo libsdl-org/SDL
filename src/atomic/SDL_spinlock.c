@@ -36,7 +36,7 @@
 #include <xmmintrin.h>
 #endif
 
-#if defined(PS2)
+#ifdef PS2
 #include <kernel.h>
 #endif
 
@@ -60,7 +60,7 @@ extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 SDL_bool
 SDL_AtomicTryLock(SDL_SpinLock *lock)
 {
-#if defined(SDL_ATOMIC_DISABLED)
+#ifdef SDL_ATOMIC_DISABLED
     /* Terrible terrible damage */
     static SDL_mutex *_spinlock_mutex;
 
@@ -98,7 +98,7 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
      defined(__ARM_ARCH_5TEJ__))
     int result;
 
-#if defined(__RISCOS__)
+#ifdef __RISCOS__
     if (__cpucap_have_rex()) {
         __asm__ __volatile__(
             "ldrex %0, [%2]\nteq   %0, #0\nstrexeq %0, %1, [%2]"

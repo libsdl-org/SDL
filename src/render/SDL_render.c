@@ -27,7 +27,7 @@
 #include "../video/SDL_pixels_c.h"
 #include "../video/SDL_video_c.h"
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
 #include "../core/android/SDL_android.h"
 #endif
 
@@ -668,7 +668,7 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer);
 
 int SDL_GetNumRenderDrivers(void)
 {
-#if !defined(SDL_RENDER_DISABLED)
+#ifndef SDL_RENDER_DISABLED
     return SDL_arraysize(render_drivers);
 #else
     return 0;
@@ -677,7 +677,7 @@ int SDL_GetNumRenderDrivers(void)
 
 const char *SDL_GetRenderDriver(int index)
 {
-#if !defined(SDL_RENDER_DISABLED)
+#ifndef SDL_RENDER_DISABLED
     if (index < 0 || index >= SDL_GetNumRenderDrivers()) {
         SDL_SetError("index must be in the range of 0 - %d",
                             SDL_GetNumRenderDrivers() - 1);
@@ -741,7 +741,7 @@ int SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags, SDL_
     return 0;
 }
 
-#if !defined(SDL_RENDER_DISABLED)
+#ifndef SDL_RENDER_DISABLED
 static SDL_INLINE void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
 {
     /* all of these functions are required to be implemented, even as no-ops, so we don't
@@ -801,14 +801,14 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 
 SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
 {
-#if !defined(SDL_RENDER_DISABLED)
+#ifndef SDL_RENDER_DISABLED
     SDL_Renderer *renderer = NULL;
     const int n = SDL_GetNumRenderDrivers();
     SDL_bool batching = SDL_TRUE;
     const char *hint;
     int i;
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
     Android_ActivityMutex_Lock_Running();
 #endif
 
@@ -928,14 +928,14 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
                 "Created renderer: %s", renderer->info.name);
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
     Android_ActivityMutex_Unlock();
 #endif
     return renderer;
 
 error:
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
     Android_ActivityMutex_Unlock();
 #endif
     return NULL;

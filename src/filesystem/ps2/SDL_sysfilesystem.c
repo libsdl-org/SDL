@@ -23,7 +23,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#if defined(SDL_FILESYSTEM_PS2)
+#ifdef SDL_FILESYSTEM_PS2
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */

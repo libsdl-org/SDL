@@ -265,7 +265,7 @@ void UIKit_ForceUpdateHomeIndicator()
  *  identical!
  */
 
-#if !defined(SDL_VIDEO_DRIVER_COCOA)
+#ifndef SDL_VIDEO_DRIVER_COCOA
 void SDL_NSLog(const char *prefix, const char *text)
 {
     @autoreleasepool {

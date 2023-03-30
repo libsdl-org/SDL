@@ -31,7 +31,7 @@
  */
 
 #ifndef SDL_MAIN_HANDLED
-#if defined(__WIN32__)
+#ifdef __WIN32__
 /* On Windows SDL provides WinMain(), which parses the command line and passes
    the arguments to your main function.
 
@@ -253,7 +253,7 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* __WINRT__ */
 
-#if defined(__IOS__)
+#ifdef __IOS__
 
 /* for compatibility with SDL2's function of this name */
 #define SDL_UIKitRunApp(ARGC, ARGV, MAIN_FUNC)  SDL_RunApp(ARGC, ARGV, MAIN_FUNC, NULL)

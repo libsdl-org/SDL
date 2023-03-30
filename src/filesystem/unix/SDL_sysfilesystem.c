@@ -68,7 +68,7 @@ static char *readSymLink(const char *path)
     return NULL;
 }
 
-#if defined(__OPENBSD__)
+#ifdef __OPENBSD__
 static char *search_path_for_binary(const char *bin)
 {
     char *envr = SDL_getenv("PATH");
@@ -124,7 +124,7 @@ SDL_GetBasePath(void)
 {
     char *retval = NULL;
 
-#if defined(__FREEBSD__)
+#ifdef __FREEBSD__
     char fullpath[PATH_MAX];
     size_t buflen = sizeof(fullpath);
     const int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
@@ -136,7 +136,7 @@ SDL_GetBasePath(void)
         }
     }
 #endif
-#if defined(__OPENBSD__)
+#ifdef __OPENBSD__
     /* Please note that this will fail if the process was launched with a relative path and $PWD + the cwd have changed, or argv is altered. So don't do that. Or add a new sysctl to OpenBSD. */
     char **cmdline;
     size_t len;
@@ -201,7 +201,7 @@ SDL_GetBasePath(void)
         /* !!! FIXME: after 2.0.6 ships, let's delete this code and just
                       use the /proc/%llu version. There's no reason to have
                       two copies of this plus all the #ifdefs. --ryan. */
-#if defined(__FREEBSD__)
+#ifdef __FREEBSD__
         retval = readSymLink("/proc/curproc/file");
 #elif defined(__NETBSD__)
         retval = readSymLink("/proc/curproc/exe");
@@ -222,7 +222,7 @@ SDL_GetBasePath(void)
 #endif
     }
 
-#if defined(__SOLARIS__)  /* try this as a fallback if /proc didn't pan out */
+#ifdef __SOLARIS__  /* try this as a fallback if /proc didn't pan out */
     if (!retval) {
         const char *path = getexecname();
         if ((path != NULL) && (path[0] == '/')) { /* must be absolute path... */

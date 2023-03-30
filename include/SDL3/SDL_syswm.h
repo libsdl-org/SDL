@@ -45,7 +45,7 @@
 /**
  *  The available subsystems based on platform
  */
-#if !defined(SDL_DISABLE_SYSWM_PLATFORMS)
+#ifndef SDL_DISABLE_SYSWM_PLATFORMS
 
 #ifndef SDL_DISABLE_SYSWM_ANDROID
 #ifdef __ANDROID__
@@ -227,7 +227,7 @@ struct SDL_SysWMmsg
 
     union
     {
-#if defined(SDL_ENABLE_SYSWM_WINDOWS)
+#ifdef SDL_ENABLE_SYSWM_WINDOWS
         struct {
             HWND hwnd;                  /**< The window for the message */
             UINT msg;                   /**< The type of message */
@@ -235,7 +235,7 @@ struct SDL_SysWMmsg
             LPARAM lParam;              /**< LONG message parameter */
         } win;
 #endif
-#if defined(SDL_ENABLE_SYSWM_X11)
+#ifdef SDL_ENABLE_SYSWM_X11
         struct {
             XEvent event;
         } x11;
@@ -260,7 +260,7 @@ struct SDL_SysWMinfo
 
     union
     {
-#if defined(SDL_ENABLE_SYSWM_WINDOWS)
+#ifdef SDL_ENABLE_SYSWM_WINDOWS
         struct
         {
             HWND window;                /**< The window handle */
@@ -268,13 +268,13 @@ struct SDL_SysWMinfo
             HINSTANCE hinstance;        /**< The instance handle */
         } win;
 #endif
-#if defined(SDL_ENABLE_SYSWM_WINRT)
+#ifdef SDL_ENABLE_SYSWM_WINRT
         struct
         {
             IInspectable * window;      /**< The WinRT CoreWindow */
         } winrt;
 #endif
-#if defined(SDL_ENABLE_SYSWM_X11)
+#ifdef SDL_ENABLE_SYSWM_X11
         struct
         {
             Display *display;           /**< The X11 display */
@@ -282,7 +282,7 @@ struct SDL_SysWMinfo
             Window window;              /**< The X11 window */
         } x11;
 #endif
-#if defined(SDL_ENABLE_SYSWM_COCOA)
+#ifdef SDL_ENABLE_SYSWM_COCOA
         struct
         {
 #if defined(__OBJC__) && defined(__has_feature)
@@ -296,7 +296,7 @@ struct SDL_SysWMinfo
 #endif
         } cocoa;
 #endif
-#if defined(SDL_ENABLE_SYSWM_UIKIT)
+#ifdef SDL_ENABLE_SYSWM_UIKIT
         struct
         {
 #if defined(__OBJC__) && defined(__has_feature)
@@ -313,7 +313,7 @@ struct SDL_SysWMinfo
             GLuint resolveFramebuffer; /**< The Framebuffer Object which holds the resolve color Renderbuffer, when MSAA is used. */
         } uikit;
 #endif
-#if defined(SDL_ENABLE_SYSWM_WAYLAND)
+#ifdef SDL_ENABLE_SYSWM_WAYLAND
         struct
         {
             struct wl_display *display;             /**< Wayland display */
@@ -326,7 +326,7 @@ struct SDL_SysWMinfo
         } wl;
 #endif
 
-#if defined(SDL_ENABLE_SYSWM_ANDROID)
+#ifdef SDL_ENABLE_SYSWM_ANDROID
         struct
         {
             ANativeWindow *window;
@@ -334,7 +334,7 @@ struct SDL_SysWMinfo
         } android;
 #endif
 
-#if defined(SDL_ENABLE_SYSWM_VIVANTE)
+#ifdef SDL_ENABLE_SYSWM_VIVANTE
         struct
         {
             EGLNativeDisplayType display;
@@ -342,7 +342,7 @@ struct SDL_SysWMinfo
         } vivante;
 #endif
 
-#if defined(SDL_ENABLE_SYSWM_KMSDRM)
+#ifdef SDL_ENABLE_SYSWM_KMSDRM
         struct
         {
             int dev_index;               /**< Device index (ex: the X in /dev/dri/cardX) */

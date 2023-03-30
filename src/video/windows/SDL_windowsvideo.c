@@ -604,7 +604,7 @@ static SDL_bool DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
 
 SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
-#if !defined(HAVE_DXGI_H)
+#ifndef HAVE_DXGI_H
     if (adapterIndex) {
         *adapterIndex = -1;
     }

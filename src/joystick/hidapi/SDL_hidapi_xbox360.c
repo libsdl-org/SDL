@@ -82,7 +82,7 @@ static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device
         return SDL_FALSE;
     }
 #endif
-#if defined(__MACOS__)
+#ifdef __MACOS__
     /* Wired Xbox One controllers are handled by this driver, interfacing with
        the 360Controller driver available from:
        https://github.com/360Controller/360Controller/releases

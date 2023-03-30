@@ -53,7 +53,7 @@ on the assertion line and not in some random guts of SDL, and so each
 assert can have unique static variables associated with it.
 */
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()
@@ -150,7 +150,7 @@ typedef struct SDL_AssertData
 extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data,
                                                             const char *func,
                                                             const char *file, int line)
-#if defined(__clang__)
+#ifdef __clang__
 #if __has_feature(attribute_analyzer_noreturn)
    __attribute__((analyzer_noreturn))
 #endif

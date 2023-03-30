@@ -439,12 +439,12 @@ static int CPU_haveNEON(void)
 {
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */
-#if defined(SDL_CPUINFO_DISABLED)
+#ifdef SDL_CPUINFO_DISABLED
     return 0; /* disabled */
 #elif (defined(__WINDOWS__) || defined(__WINRT__) || defined(__GDK__)) && (defined(_M_ARM) || defined(_M_ARM64))
 /* Visual Studio, for ARM, doesn't define __ARM_ARCH. Handle this first. */
 /* Seems to have been removed */
-#if !defined(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE)
+#ifndef PF_ARM_NEON_INSTRUCTIONS_AVAILABLE
 #define PF_ARM_NEON_INSTRUCTIONS_AVAILABLE 19
 #endif
     /* All WinRT ARM devices are required to support NEON, but just in case. */
@@ -519,38 +519,38 @@ static int CPU_readCPUCFG(void)
 #define CPU_haveLSX()  (CPU_readCPUCFG() & CPU_CFG2_LSX)
 #define CPU_haveLASX() (CPU_readCPUCFG() & CPU_CFG2_LASX)
 
-#if defined(__e2k__)
-#if defined(__MMX__)
+#ifdef __e2k__
+#ifdef __MMX__
 #define CPU_haveMMX() (1)
 #else
 #define CPU_haveMMX() (0)
 #endif
-#if defined(__SSE__)
+#ifdef __SSE__
 #define CPU_haveSSE() (1)
 #else
 #define CPU_haveSSE() (0)
 #endif
-#if defined(__SSE2__)
+#ifdef __SSE2__
 #define CPU_haveSSE2() (1)
 #else
 #define CPU_haveSSE2() (0)
 #endif
-#if defined(__SSE3__)
+#ifdef __SSE3__
 #define CPU_haveSSE3() (1)
 #else
 #define CPU_haveSSE3() (0)
 #endif
-#if defined(__SSE4_1__)
+#ifdef __SSE4_1__
 #define CPU_haveSSE41() (1)
 #else
 #define CPU_haveSSE41() (0)
 #endif
-#if defined(__SSE4_2__)
+#ifdef __SSE4_2__
 #define CPU_haveSSE42() (1)
 #else
 #define CPU_haveSSE42() (0)
 #endif
-#if defined(__AVX__)
+#ifdef __AVX__
 #define CPU_haveAVX() (1)
 #else
 #define CPU_haveAVX() (0)
@@ -565,11 +565,11 @@ static int CPU_readCPUCFG(void)
 #define CPU_haveAVX()   (CPU_OSSavesYMM && (CPU_CPUIDFeatures[2] & 0x10000000))
 #endif
 
-#if defined(__e2k__)
+#ifdef __e2k__
 inline int
 CPU_haveAVX2(void)
 {
-#if defined(__AVX2__)
+#ifdef __AVX2__
     return 1;
 #else
     return 0;
@@ -591,7 +591,7 @@ static int CPU_haveAVX2(void)
 }
 #endif
 
-#if defined(__e2k__)
+#ifdef __e2k__
 inline int
 CPU_haveAVX512F(void)
 {
@@ -646,7 +646,7 @@ int SDL_GetCPUCount(void)
     return SDL_CPUCount;
 }
 
-#if defined(__e2k__)
+#ifdef __e2k__
 inline const char *
 SDL_GetCPUType(void)
 {
@@ -704,7 +704,7 @@ static const char *SDL_GetCPUType(void)
 
 #if 0
 !!! FIXME: Not used at the moment. */
-#if defined(__e2k__)
+#ifdef __e2k__
 inline const char *
 SDL_GetCPUName(void)
 {

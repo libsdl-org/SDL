@@ -30,7 +30,7 @@
 /* this checks for HAVE_DBUS_DBUS_H internally. */
 #include "core/linux/SDL_dbus.h"
 
-#if defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
 
@@ -548,7 +548,7 @@ SDL_GetRevision(void)
 const char *
 SDL_GetPlatform(void)
 {
-#if defined(__AIX__)
+#ifdef __AIX__
     return "AIX";
 #elif defined(__ANDROID__)
     return "Android";
@@ -620,7 +620,7 @@ SDL_GetPlatform(void)
 SDL_bool
 SDL_IsTablet(void)
 {
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
     extern SDL_bool SDL_IsAndroidTablet(void);
     return SDL_IsAndroidTablet();
 #elif defined(__IOS__)
@@ -631,7 +631,7 @@ SDL_IsTablet(void)
 #endif
 }
 
-#if defined(__WIN32__)
+#ifdef __WIN32__
 
 #if (!defined(HAVE_LIBC) || defined(__WATCOMC__)) && !defined(SDL_STATIC_LIB)
 /* Need to include DllMain() on Watcom C for some reason.. */

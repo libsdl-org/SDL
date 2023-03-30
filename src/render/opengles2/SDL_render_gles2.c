@@ -33,7 +33,7 @@
    In all other cases, attempt to use client-side arrays, as they tend to
    be dramatically faster when not batching, and about the same when
    we are. */
-#if defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
 #define USE_VERTEX_BUFFER_OBJECTS 1
 #else
 #define USE_VERTEX_BUFFER_OBJECTS 0

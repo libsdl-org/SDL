@@ -46,7 +46,7 @@
 #include <SDL3/SDL_opengles2.h>
 #endif /* SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL */
 
-#if !defined(SDL_VIDEO_OPENGL)
+#ifndef SDL_VIDEO_OPENGL
 #ifndef GL_CONTEXT_RELEASE_BEHAVIOR_KHR
 #define GL_CONTEXT_RELEASE_BEHAVIOR_KHR 0x82FB
 #endif
@@ -1536,7 +1536,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
         }
         display->fullscreen_window = window;
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
         /* Android may not resize the window to exactly what our fullscreen mode is,
          * especially on windowed Android environments like the Chromebook or Samsung DeX.
          * Given this, we shouldn't use the mode size. Android's SetWindowFullscreen
@@ -2901,7 +2901,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
             attempt_texture_framebuffer = SDL_FALSE;
         }
 
-#if defined(__LINUX__)
+#ifdef __LINUX__
         /* On WSL, direct X11 is faster than using OpenGL for window framebuffers, so try to detect WSL and avoid texture framebuffer. */
         else if ((_this->CreateWindowFramebuffer != NULL) && (SDL_strcmp(_this->name, "x11") == 0)) {
             struct stat sb;
@@ -2915,7 +2915,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
             attempt_texture_framebuffer = SDL_FALSE;
         }
 #endif
-#if defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
         else {
             attempt_texture_framebuffer = SDL_FALSE;
         }
@@ -3672,7 +3672,7 @@ void SDL_GL_UnloadLibrary(void)
 typedef GLenum (APIENTRY* PFNGLGETERRORPROC) (void);
 typedef void (APIENTRY* PFNGLGETINTEGERVPROC) (GLenum pname, GLint *params);
 typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGPROC) (GLenum name);
-#if !defined(SDL_VIDEO_OPENGL)
+#ifndef SDL_VIDEO_OPENGL
 typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
 #endif
 
@@ -3839,7 +3839,7 @@ void SDL_GL_ResetAttributes(void)
     _this->gl_config.retained_backing = 1;
     _this->gl_config.accelerated = -1; /* accelerated or not, both are fine */
 
-#if defined(SDL_VIDEO_OPENGL)
+#ifdef SDL_VIDEO_OPENGL
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 1;
     _this->gl_config.profile_mask = 0;
@@ -4102,7 +4102,7 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         attrib = GL_SAMPLES;
         break;
     case SDL_GL_CONTEXT_RELEASE_BEHAVIOR:
-#if defined(SDL_VIDEO_OPENGL)
+#ifdef SDL_VIDEO_OPENGL
         attrib = GL_CONTEXT_RELEASE_BEHAVIOR;
 #else
         attrib = GL_CONTEXT_RELEASE_BEHAVIOR_KHR;

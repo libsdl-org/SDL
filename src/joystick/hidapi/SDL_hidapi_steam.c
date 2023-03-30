@@ -979,7 +979,7 @@ static SDL_bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
-#if defined(__WIN32__)
+#ifdef __WIN32__
     if (device->serial) {
         /* We get a garbage serial number on Windows */
         SDL_free(device->serial);

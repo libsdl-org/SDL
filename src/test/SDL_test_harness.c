@@ -213,7 +213,7 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
 /**
  * \brief Timeout handler. Aborts test run and exits harness process.
  */
-#if defined(__WATCOMC__)
+#ifdef __WATCOMC__
 #pragma aux SDLTest_BailOut aborts;
 #endif
 static SDL_NORETURN void SDLCALL SDLTest_BailOut(void)

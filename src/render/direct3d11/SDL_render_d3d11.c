@@ -24,7 +24,7 @@
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
-#if !defined(__WINRT__)
+#ifndef __WINRT__
 #include "../../video/windows/SDL_windowswindow.h"
 #endif
 #include "../SDL_sysrender.h"
@@ -895,7 +895,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
-#if defined(__WINRT__)
+#ifdef __WINRT__
     SDL_GetWindowSize(renderer->window, &w, &h);
 #else
     SDL_GetWindowSizeInPixels(renderer->window, &w, &h);

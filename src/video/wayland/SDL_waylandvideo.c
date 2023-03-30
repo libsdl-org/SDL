@@ -101,7 +101,7 @@ static char *get_classname(void)
 
     /* Next look at the application's executable name */
 #if defined(__LINUX__) || defined(__FREEBSD__)
-#if defined(__LINUX__)
+#ifdef __LINUX__
     (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
 #elif defined(__FREEBSD__)
     (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file", getpid());

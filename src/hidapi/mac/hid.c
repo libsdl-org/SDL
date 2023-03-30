@@ -556,7 +556,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		}
 
 #if 0 // Prefer direct HID support as that has extended functionality
-#if defined(SDL_JOYSTICK_MFI)
+#ifdef SDL_JOYSTICK_MFI
 		// We want to prefer Game Controller support where available,
 		// as Apple will likely be requiring that for supported devices.
 		extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);

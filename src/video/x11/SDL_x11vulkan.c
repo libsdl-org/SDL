@@ -29,7 +29,7 @@
 #include <X11/Xlib.h>
 /*#include <xcb/xcb.h>*/
 
-#if defined(__OpenBSD__)
+#ifdef __OpenBSD__
 #define DEFAULT_VULKAN "libvulkan.so"
 #else
 #define DEFAULT_VULKAN "libvulkan.so.1"

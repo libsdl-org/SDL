@@ -40,7 +40,7 @@
 #define __FreeBSD_kernel_version __FreeBSD_version
 #endif
 
-#if defined(HAVE_USB_H)
+#ifdef HAVE_USB_H
 #include <usb.h>
 #endif
 #ifdef __DragonFly__
@@ -51,7 +51,7 @@
 #include <dev/usb/usbhid.h>
 #endif
 
-#if defined(HAVE_USBHID_H)
+#ifdef HAVE_USBHID_H
 #include <usbhid.h>
 #elif defined(HAVE_LIBUSB_H)
 #include <libusb.h>

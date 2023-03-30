@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__HAIKU__)
+#ifdef __HAIKU__
 
 /* Handle the BeApp specific portions of the application */
 

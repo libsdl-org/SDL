@@ -219,7 +219,7 @@ static void SDLCALL SDL_FreeErrBuf(void *data)
 SDL_error *
 SDL_GetErrBuf(void)
 {
-#if defined(SDL_THREADS_DISABLED)
+#ifdef SDL_THREADS_DISABLED
     return SDL_GetStaticErrBuf();
 #else
     static SDL_SpinLock tls_lock;

@@ -32,7 +32,7 @@
 #include <stdio.h>
 #endif
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
 #include <android/log.h>
 #endif
 
