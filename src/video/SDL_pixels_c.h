@@ -30,6 +30,7 @@
 
 /* Pixel format functions */
 extern int SDL_InitFormat(SDL_PixelFormat *format, Uint32 pixel_format);
+extern int SDL_CalculateSize(Uint32 format, int width, int height, size_t *size, size_t *pitch, SDL_bool minimalPitch);
 
 /* Blit mapping functions */
 extern SDL_BlitMap *SDL_AllocBlitMap(void);

@@ -62,7 +62,7 @@ SDL_YUV_CONVERSION_MODE SDL_GetYUVConversionModeForResolution(int width, int hei
  *
  * return 0 on success, -1 on error
  */
-int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, int *pitch)
+int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitch)
 {
 #if SDL_HAVE_YUV
     int sz_plane = 0, sz_plane_chroma = 0, sz_plane_packed = 0;
@@ -141,7 +141,7 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, int *pitch)
            if (SDL_size_mul_overflow(p1, 4, &p2) < 0) {
                return -1;
            }
-           *pitch = (int) p2;
+           *pitch = p2;
         }
 
         if (size) {
