@@ -1050,7 +1050,7 @@ int SDL_strncmp(const char *str1, const char *str2, size_t maxlen)
 #if defined(HAVE_STRNCMP)
     return strncmp(str1, str2, maxlen);
 #else
-    int result;
+    int result = 0;
 
     while (maxlen) {
         result = (int)(unsigned char)*str1 - (unsigned char)*str2;
@@ -1060,9 +1060,6 @@ int SDL_strncmp(const char *str1, const char *str2, size_t maxlen)
         ++str1;
         ++str2;
         --maxlen;
-    }
-    if (!maxlen) {
-        result = 0;
     }
     return result;
 #endif /* HAVE_STRNCMP */
@@ -1098,7 +1095,7 @@ int SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen)
 #elif defined(HAVE__STRNICMP)
     return _strnicmp(str1, str2, maxlen);
 #else
-    int a, b, result;
+    int a, b, result = 0;
 
     while (maxlen) {
         a = SDL_tolower((unsigned char)*str1);
@@ -1110,9 +1107,6 @@ int SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen)
         ++str1;
         ++str2;
         --maxlen;
-    }
-    if (maxlen == 0) {
-        result = 0;
     }
     return result;
 #endif /* HAVE_STRNCASECMP */

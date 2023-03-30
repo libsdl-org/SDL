@@ -175,7 +175,7 @@
         Uint8 *src = from;                                       \
         Uint8 *dst = to;                                         \
         for (i = 0; i < (int)(length); i++) {                    \
-            Uint32 s, d;                                         \
+            Uint32 s = 0, d = 0;                                         \
             unsigned rs, gs, bs, rd, gd, bd;                     \
             switch (bpp) {                                       \
             case 2:                                              \

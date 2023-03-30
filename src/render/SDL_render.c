@@ -3680,6 +3680,8 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 s.y = uv0_[1] * texh;
                 s.w = uv1_[0] * texw - s.x;
                 s.h = uv1_[1] * texh - s.y;
+            } else {
+                s.x = s.y = s.w = s.h = 0;
             }
 
             d.x = xy0_[0];
