@@ -1321,9 +1321,9 @@ STDMETHODIMP IPPASink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
 
 STDMETHODIMP IPPASink_OnActivated(TSFSink *sink, DWORD dwProfileType, LANGID langid, REFCLSID clsid, REFGUID catid, REFGUID guidProfile, HKL hkl, DWORD dwFlags)
 {
-    static const GUID TF_PROFILE_DAYI = { 0x037B2C25, 0x480C, 0x4D7F, { 0xB0, 0x27, 0xD6, 0xCA, 0x6B, 0x69, 0x78, 0x8A } };
+    static const GUID SDL_TF_PROFILE_DAYI = { 0x037B2C25, 0x480C, 0x4D7F, { 0xB0, 0x27, 0xD6, 0xCA, 0x6B, 0x69, 0x78, 0x8A } };
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    videodata->ime_candlistindexbase = WIN_IsEqualGUID(&TF_PROFILE_DAYI, guidProfile) ? 0 : 1;
+    videodata->ime_candlistindexbase = WIN_IsEqualGUID(&SDL_TF_PROFILE_DAYI, guidProfile) ? 0 : 1;
     if (WIN_IsEqualIID(catid, &GUID_TFCAT_TIP_KEYBOARD) && (dwFlags & TF_IPSINK_FLAG_ACTIVE)) {
         IME_InputLangChanged((SDL_VideoData *)sink->data);
     }
