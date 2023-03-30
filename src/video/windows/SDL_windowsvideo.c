@@ -684,7 +684,7 @@ SDL_SystemTheme WIN_GetSystemTheme(void)
     SDL_SystemTheme theme = SDL_SYSTEM_THEME_LIGHT;
     HKEY hKey;
     DWORD dwType = REG_DWORD;
-    DWORD value = ~0;
+    DWORD value = ~0U;
     DWORD length = sizeof(value);
 
     /* Technically this isn't the system theme, but it's the preference for applications */

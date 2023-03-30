@@ -141,7 +141,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
         }
 
         /* Initial delay if there are no timers */
-        delay = SDL_MUTEX_MAXWAIT;
+        delay = (Uint64)SDL_MUTEX_MAXWAIT;
 
         tick = SDL_GetTicksNS();
 

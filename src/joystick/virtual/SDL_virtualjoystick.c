@@ -396,7 +396,7 @@ static SDL_JoystickID VIRTUAL_JoystickGetDeviceInstanceID(int device_index)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
     if (hwdata == NULL) {
-        return -1;
+        return 0;
     }
     return hwdata->instance_id;
 }

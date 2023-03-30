@@ -587,7 +587,7 @@ static BOOL WIN_ConvertUTF32toUTF8(UINT32 codepoint, char *text)
 
 static BOOL WIN_ConvertUTF16toUTF8(UINT32 high_surrogate, UINT32 low_surrogate, char *text)
 {
-    const UINT32 SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
+    const UINT32 SURROGATE_OFFSET = 0x10000U - (0xD800 << 10) - 0xDC00;
     const UINT32 codepoint = (high_surrogate << 10) + low_surrogate + SURROGATE_OFFSET;
     return WIN_ConvertUTF32toUTF8(codepoint, text);
 }

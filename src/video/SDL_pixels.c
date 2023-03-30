@@ -796,7 +796,7 @@ Uint8 SDL_FindColor(SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     int i;
     Uint8 pixel = 0;
 
-    smallest = ~0;
+    smallest = ~0U;
     for (i = 0; i < pal->ncolors; ++i) {
         rd = pal->colors[i].r - r;
         gd = pal->colors[i].g - g;
