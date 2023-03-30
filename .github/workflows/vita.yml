@@ -20,8 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Vita (GLES w/ pib),                  os: windows-latest, pib: true, version: 1.1.4, artifact: SDL-vita-pib }
-        - { name: Vita (GLES w/ PVR_PSP2 + gles4vita), os: windows-latest, pvr: true, version: 3.9,   artifact: SDL-vita-pvr }
+        - { name: Vita (GLES w/ pib),                  pib: true, version: 1.1.4, artifact: SDL-vita-pib }
+        - { name: Vita (GLES w/ PVR_PSP2 + gles4vita), pvr: true, version: 3.9,   artifact: SDL-vita-pvr }
 
     steps:
     - uses: actions/checkout@v3
