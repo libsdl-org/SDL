@@ -59,11 +59,13 @@ typedef enum
     SDL_INIT_HAPTIC       = 0x00001000,
     SDL_INIT_GAMEPAD      = 0x00002000,  /**< `SDL_INIT_GAMEPAD` implies `SDL_INIT_JOYSTICK` */
     SDL_INIT_EVENTS       = 0x00004000,
-    SDL_INIT_SENSOR       = 0x00008000
+    SDL_INIT_SENSOR       = 0x00008000,
+    SDL_INIT_ACTIONSET    = 0x00010000,  /**< `SDL_INIT_ACTIONSET` implies `SDL_INIT_GAMEPAD | SDL_INIT_SENSOR | SDL_INIT_HAPTIC` */
 } SDL_InitFlags;
 #define SDL_INIT_EVERYTHING ( \
                 SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | \
-                SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR \
+                SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR | \
+                SDL_INIT_ACTIONSET \
             )
 
 /**
@@ -94,6 +96,8 @@ typedef enum
  * - `SDL_INIT_GAMEPAD`: gamepad subsystem; automatically initializes the
  *   joystick subsystem
  * - `SDL_INIT_EVENTS`: events subsystem
+ * - `SDL_INIT_ACTIONSET`: actionset subsystem, automatically initializes the
+ *   gamepad, sensor, haptic, and events subsystems
  * - `SDL_INIT_EVERYTHING`: all of the above subsystems
  *
  * Subsystem initialization is ref-counted, you must call SDL_QuitSubSystem()

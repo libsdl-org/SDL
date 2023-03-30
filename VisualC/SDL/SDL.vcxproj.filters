@@ -180,6 +180,9 @@
     <ClInclude Include="..\..\include\SDL3\SDL.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_actionset.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_assert.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -399,6 +402,7 @@
     <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\actionset\SDL_actionset_c.h" />
     <ClInclude Include="..\..\src\audio\SDL_audio_c.h">
       <Filter>audio</Filter>
     </ClInclude>
@@ -820,6 +824,7 @@
     <ClCompile Include="..\..\src\SDL_hints.c" />
     <ClCompile Include="..\..\src\SDL_list.c" />
     <ClCompile Include="..\..\src\SDL_utils.c" />
+    <ClCompile Include="..\..\src\actionset\SDL_actionset.c" />
     <ClCompile Include="..\..\src\audio\SDL_audio.c">
       <Filter>audio</Filter>
     </ClCompile>

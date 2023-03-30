@@ -30,6 +30,7 @@
 #define SDL_h_
 
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_actionset.h>
 #include <SDL3/SDL_assert.h>
 #include <SDL3/SDL_atomic.h>
 #include <SDL3/SDL_audio.h>
