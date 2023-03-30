@@ -318,8 +318,9 @@ static BOOL WIN_DeclareDPIAwarePerMonitor(_THIS)
         /* Older OS: fall back to system DPI aware */
         return WIN_DeclareDPIAwareSystem(_this);
     }
-#endif
+#else
     return FALSE;
+#endif
 }
 
 static BOOL WIN_DeclareDPIAwarePerMonitorV2(_THIS)
