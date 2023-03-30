@@ -25,7 +25,7 @@
 #include "SDL_windows.h"
 
 #include <objbase.h> /* for CoInitialize/CoUninitialize (Win32 only) */
-#if defined(HAVE_ROAPI_H)
+#ifdef HAVE_ROAPI_H
 #include <roapi.h> /* For RoInitialize/RoUninitialize (Win32 only) */
 #else
 typedef enum RO_INIT_TYPE
@@ -411,7 +411,7 @@ SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved
 /*
  * Public APIs
  */
-#if !defined(SDL_VIDEO_DRIVER_WINDOWS)
+#ifndef SDL_VIDEO_DRIVER_WINDOWS
 
 #if defined(__WIN32__) || defined(__GDK__)
 int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)

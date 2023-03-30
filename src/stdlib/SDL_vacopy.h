@@ -20,7 +20,7 @@
 */
 
 /* Do our best to make sure va_copy is working */
-#if defined(__NGAGE__)
+#ifdef __NGAGE__
 #undef va_copy
 #define va_copy(dst, src) dst = src
 

@@ -24,7 +24,7 @@
 
 #include "SDL_vacopy.h"
 
-#if defined(__vita__)
+#ifdef __vita__
 #include <psp2/kernel/clib.h>
 #endif
 
@@ -290,7 +290,7 @@ SDL_ScanFloat(const char *text, double *valuep)
 void *
 SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len)
 {
-#if defined(HAVE_MEMMOVE)
+#ifdef HAVE_MEMMOVE
     return memmove(dst, src, len);
 #else
     char *srcp = (char *)src;
@@ -313,7 +313,7 @@ SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src,
 
 int SDL_memcmp(const void *s1, const void *s2, size_t len)
 {
-#if defined(__vita__)
+#ifdef __vita__
     /*
       Using memcmp on NULL is UB per POSIX / C99 7.21.1/2.
       But, both linux and bsd allow that, with an exception:
@@ -343,7 +343,7 @@ int SDL_memcmp(const void *s1, const void *s2, size_t len)
 size_t
 SDL_strlen(const char *string)
 {
-#if defined(HAVE_STRLEN)
+#ifdef HAVE_STRLEN
     return strlen(string);
 #else
     size_t len = 0;
@@ -357,7 +357,7 @@ SDL_strlen(const char *string)
 size_t
 SDL_wcslen(const wchar_t *string)
 {
-#if defined(HAVE_WCSLEN)
+#ifdef HAVE_WCSLEN
     return wcslen(string);
 #else
     size_t len = 0;
@@ -371,7 +371,7 @@ SDL_wcslen(const wchar_t *string)
 size_t
 SDL_wcslcpy(SDL_OUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen)
 {
-#if defined(HAVE_WCSLCPY)
+#ifdef HAVE_WCSLCPY
     return wcslcpy(dst, src, maxlen);
 #else
     size_t srclen = SDL_wcslen(src);
@@ -387,7 +387,7 @@ SDL_wcslcpy(SDL_OUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxle
 size_t
 SDL_wcslcat(SDL_INOUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen)
 {
-#if defined(HAVE_WCSLCAT)
+#ifdef HAVE_WCSLCAT
     return wcslcat(dst, src, maxlen);
 #else
     size_t dstlen = SDL_wcslen(dst);
@@ -413,7 +413,7 @@ SDL_wcsdup(const wchar_t *string)
 wchar_t *
 SDL_wcsstr(const wchar_t *haystack, const wchar_t *needle)
 {
-#if defined(HAVE_WCSSTR)
+#ifdef HAVE_WCSSTR
     return SDL_const_cast(wchar_t *, wcsstr(haystack, needle));
 #else
     size_t length = SDL_wcslen(needle);
@@ -429,7 +429,7 @@ SDL_wcsstr(const wchar_t *haystack, const wchar_t *needle)
 
 int SDL_wcscmp(const wchar_t *str1, const wchar_t *str2)
 {
-#if defined(HAVE_WCSCMP)
+#ifdef HAVE_WCSCMP
     return wcscmp(str1, str2);
 #else
     while (*str1 && *str2) {
@@ -445,7 +445,7 @@ int SDL_wcscmp(const wchar_t *str1, const wchar_t *str2)
 
 int SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
 {
-#if defined(HAVE_WCSNCMP)
+#ifdef HAVE_WCSNCMP
     return wcsncmp(str1, str2, maxlen);
 #else
     while (*str1 && *str2 && maxlen) {
@@ -466,7 +466,7 @@ int SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
 
 int SDL_wcscasecmp(const wchar_t *str1, const wchar_t *str2)
 {
-#if defined(HAVE_WCSCASECMP)
+#ifdef HAVE_WCSCASECMP
     return wcscasecmp(str1, str2);
 #elif defined(HAVE__WCSICMP)
     return _wcsicmp(str1, str2);
@@ -503,7 +503,7 @@ int SDL_wcscasecmp(const wchar_t *str1, const wchar_t *str2)
 
 int SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
 {
-#if defined(HAVE_WCSNCASECMP)
+#ifdef HAVE_WCSNCASECMP
     return wcsncasecmp(str1, str2, maxlen);
 #elif defined(HAVE__WCSNICMP)
     return _wcsnicmp(str1, str2, maxlen);
@@ -546,7 +546,7 @@ int SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
 size_t
 SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
 {
-#if defined(HAVE_STRLCPY)
+#ifdef HAVE_STRLCPY
     return strlcpy(dst, src, maxlen);
 #else
     size_t srclen = SDL_strlen(src);
@@ -628,7 +628,7 @@ SDL_utf8strnlen(const char *str, size_t bytes)
 size_t
 SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
 {
-#if defined(HAVE_STRLCAT)
+#ifdef HAVE_STRLCAT
     return strlcat(dst, src, maxlen);
 #else
     size_t dstlen = SDL_strlen(dst);
@@ -654,7 +654,7 @@ SDL_strdup(const char *string)
 char *
 SDL_strrev(char *string)
 {
-#if defined(HAVE__STRREV)
+#ifdef HAVE__STRREV
     return _strrev(string);
 #else
     size_t len = SDL_strlen(string);
@@ -673,7 +673,7 @@ SDL_strrev(char *string)
 char *
 SDL_strupr(char *string)
 {
-#if defined(HAVE__STRUPR)
+#ifdef HAVE__STRUPR
     return _strupr(string);
 #else
     char *bufp = string;
@@ -688,7 +688,7 @@ SDL_strupr(char *string)
 char *
 SDL_strlwr(char *string)
 {
-#if defined(HAVE__STRLWR)
+#ifdef HAVE__STRLWR
     return _strlwr(string);
 #else
     char *bufp = string;
@@ -743,7 +743,7 @@ SDL_strrchr(const char *string, int c)
 char *
 SDL_strstr(const char *haystack, const char *needle)
 {
-#if defined(HAVE_STRSTR)
+#ifdef HAVE_STRSTR
     return SDL_const_cast(char *, strstr(haystack, needle));
 #else
     size_t length = SDL_strlen(needle);
@@ -760,7 +760,7 @@ SDL_strstr(const char *haystack, const char *needle)
 char *
 SDL_strcasestr(const char *haystack, const char *needle)
 {
-#if defined(HAVE_STRCASESTR)
+#ifdef HAVE_STRCASESTR
     return SDL_const_cast(char *, strcasestr(haystack, needle));
 #else
     size_t length = SDL_strlen(needle);
@@ -807,7 +807,7 @@ SDL_uitoa(unsigned int value, char *string, int radix)
 char *
 SDL_ltoa(long value, char *string, int radix)
 {
-#if defined(HAVE__LTOA)
+#ifdef HAVE__LTOA
     return _ltoa(value, string, radix);
 #else
     char *bufp = string;
@@ -826,7 +826,7 @@ SDL_ltoa(long value, char *string, int radix)
 char *
 SDL_ultoa(unsigned long value, char *string, int radix)
 {
-#if defined(HAVE__ULTOA)
+#ifdef HAVE__ULTOA
     return _ultoa(value, string, radix);
 #else
     char *bufp = string;
@@ -851,7 +851,7 @@ SDL_ultoa(unsigned long value, char *string, int radix)
 char *
 SDL_lltoa(Sint64 value, char *string, int radix)
 {
-#if defined(HAVE__I64TOA)
+#ifdef HAVE__I64TOA
     return _i64toa(value, string, radix);
 #else
     char *bufp = string;
@@ -870,7 +870,7 @@ SDL_lltoa(Sint64 value, char *string, int radix)
 char *
 SDL_ulltoa(Uint64 value, char *string, int radix)
 {
-#if defined(HAVE__UI64TOA)
+#ifdef HAVE__UI64TOA
     return _ui64toa(value, string, radix);
 #else
     char *bufp = string;
@@ -912,7 +912,7 @@ double SDL_atof(const char *string)
 
 long SDL_strtol(const char *string, char **endp, int base)
 {
-#if defined(HAVE_STRTOL)
+#ifdef HAVE_STRTOL
     return strtol(string, endp, base);
 #else
     size_t len;
@@ -937,7 +937,7 @@ long SDL_strtol(const char *string, char **endp, int base)
 unsigned long
 SDL_strtoul(const char *string, char **endp, int base)
 {
-#if defined(HAVE_STRTOUL)
+#ifdef HAVE_STRTOUL
     return strtoul(string, endp, base);
 #else
     size_t len;
@@ -962,7 +962,7 @@ SDL_strtoul(const char *string, char **endp, int base)
 Sint64
 SDL_strtoll(const char *string, char **endp, int base)
 {
-#if defined(HAVE_STRTOLL)
+#ifdef HAVE_STRTOLL
     return strtoll(string, endp, base);
 #else
     size_t len;
@@ -987,7 +987,7 @@ SDL_strtoll(const char *string, char **endp, int base)
 Uint64
 SDL_strtoull(const char *string, char **endp, int base)
 {
-#if defined(HAVE_STRTOULL)
+#ifdef HAVE_STRTOULL
     return strtoull(string, endp, base);
 #else
     size_t len;
@@ -1012,7 +1012,7 @@ SDL_strtoull(const char *string, char **endp, int base)
 double
 SDL_strtod(const char *string, char **endp)
 {
-#if defined(HAVE_STRTOD)
+#ifdef HAVE_STRTOD
     return strtod(string, endp);
 #else
     size_t len;
@@ -1028,7 +1028,7 @@ SDL_strtod(const char *string, char **endp)
 
 int SDL_strcmp(const char *str1, const char *str2)
 {
-#if defined(HAVE_STRCMP)
+#ifdef HAVE_STRCMP
     return strcmp(str1, str2);
 #else
     int result;
@@ -1047,7 +1047,7 @@ int SDL_strcmp(const char *str1, const char *str2)
 
 int SDL_strncmp(const char *str1, const char *str2, size_t maxlen)
 {
-#if defined(HAVE_STRNCMP)
+#ifdef HAVE_STRNCMP
     return strncmp(str1, str2, maxlen);
 #else
     int result;

@@ -133,7 +133,7 @@ void SDL_SYS_SetupThread(const char *name)
 #endif
         }
 #elif defined(HAVE_PTHREAD_SETNAME_NP)
-#if defined(__NETBSD__)
+#ifdef __NETBSD__
         pthread_setname_np(pthread_self(), "%s", name);
 #else
         if (pthread_setname_np(pthread_self(), name) == ERANGE) {
@@ -176,7 +176,7 @@ SDL_ThreadID(void)
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#if defined(__RISCOS__)
+#ifdef __RISCOS__
     /* FIXME: Setting thread priority does not seem to be supported */
     return 0;
 #else

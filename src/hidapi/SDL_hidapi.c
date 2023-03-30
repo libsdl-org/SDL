@@ -37,7 +37,7 @@
 #include "../core/windows/SDL_windows.h"
 #endif
 
-#if defined(__MACOS__)
+#ifdef __MACOS__
 #include <CoreFoundation/CoreFoundation.h>
 #include <mach/mach.h>
 #include <IOKit/IOKitLib.h>
@@ -68,7 +68,7 @@
 #include <unistd.h>
 #endif
 
-#if defined(SDL_USE_LIBUDEV)
+#ifdef SDL_USE_LIBUDEV
 typedef enum
 {
     ENUMERATION_UNSET,
@@ -79,11 +79,11 @@ typedef enum
 static LinuxEnumerationMethod linux_enumeration_method = ENUMERATION_UNSET;
 #endif
 
-#if defined(HAVE_INOTIFY)
+#ifdef HAVE_INOTIFY
 static int inotify_fd = -1;
 #endif
 
-#if defined(SDL_USE_LIBUDEV)
+#ifdef SDL_USE_LIBUDEV
 static const SDL_UDEV_Symbols *usyms = NULL;
 #endif
 
@@ -102,12 +102,12 @@ static struct
     double m_flLastWin32MessageCheck;
 #endif
 
-#if defined(__MACOS__)
+#ifdef __MACOS__
     IONotificationPortRef m_notificationPort;
     mach_port_t m_notificationMach;
 #endif
 
-#if defined(SDL_USE_LIBUDEV)
+#ifdef SDL_USE_LIBUDEV
     struct udev *m_pUdev;
     struct udev_monitor *m_pUdevMonitor;
     int m_nUdevFd;
@@ -162,7 +162,7 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
 }
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
-#if defined(__MACOS__)
+#ifdef __MACOS__
 static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
 {
     /* Must drain the iterator, or we won't receive new notifications */
@@ -255,7 +255,7 @@ HIDAPI_InitializeDiscovery()
     }
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
-#if defined(__MACOS__)
+#ifdef __MACOS__
     SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMainPortDefault);
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         {
@@ -307,7 +307,7 @@ HIDAPI_InitializeDiscovery()
 
 #endif /* __MACOS__ */
 
-#if defined(SDL_USE_LIBUDEV)
+#ifdef SDL_USE_LIBUDEV
     if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
         SDL_HIDAPI_discovery.m_pUdev = NULL;
         SDL_HIDAPI_discovery.m_pUdevMonitor = NULL;
@@ -328,7 +328,7 @@ HIDAPI_InitializeDiscovery()
     } else
 #endif /* SDL_USE_LIBUDEV */
     {
-#if defined(HAVE_INOTIFY)
+#ifdef HAVE_INOTIFY
         inotify_fd = SDL_inotify_init1();
 
         if (inotify_fd < 0) {
@@ -390,7 +390,7 @@ HIDAPI_UpdateDiscovery()
 #endif
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
-#if defined(__MACOS__)
+#ifdef __MACOS__
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         struct
         {
@@ -403,7 +403,7 @@ HIDAPI_UpdateDiscovery()
     }
 #endif
 
-#if defined(SDL_USE_LIBUDEV)
+#ifdef SDL_USE_LIBUDEV
     if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
         if (SDL_HIDAPI_discovery.m_nUdevFd >= 0) {
             /* Drain all notification events.
@@ -435,7 +435,7 @@ HIDAPI_UpdateDiscovery()
     } else
 #endif /* SDL_USE_LIBUDEV */
     {
-#if defined(HAVE_INOTIFY)
+#ifdef HAVE_INOTIFY
         if (inotify_fd >= 0) {
             union
             {
@@ -495,13 +495,13 @@ HIDAPI_ShutdownDiscovery()
     UnregisterClassA(SDL_HIDAPI_discovery.m_wndClass.lpszClassName, SDL_HIDAPI_discovery.m_wndClass.hInstance);
 #endif
 
-#if defined(__MACOS__)
+#ifdef __MACOS__
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         IONotificationPortDestroy(SDL_HIDAPI_discovery.m_notificationPort);
     }
 #endif
 
-#if defined(SDL_USE_LIBUDEV)
+#ifdef SDL_USE_LIBUDEV
     if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
         if (usyms) {
             if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
@@ -516,7 +516,7 @@ HIDAPI_ShutdownDiscovery()
     } else
 #endif /* SDL_USE_LIBUDEV */
     {
-#if defined(HAVE_INOTIFY)
+#ifdef HAVE_INOTIFY
         if (inotify_fd >= 0) {
             close(inotify_fd);
             inotify_fd = -1;
@@ -1048,7 +1048,7 @@ int SDL_hid_init(void)
         return 0;
     }
 
-#if defined(SDL_USE_LIBUDEV)
+#ifdef SDL_USE_LIBUDEV
     if (SDL_getenv("SDL_HIDAPI_JOYSTICK_DISABLE_UDEV") != NULL) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      "udev disabled by SDL_HIDAPI_JOYSTICK_DISABLE_UDEV");
@@ -1375,7 +1375,7 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
         return NULL;
     }
 
-#if defined(HAVE_PLATFORM_BACKEND)
+#ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         pDevice = PLATFORM_hid_open(vendor_id, product_id, serial_number);
         if (pDevice != NULL) {
@@ -1414,7 +1414,7 @@ SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */
         return NULL;
     }
 
-#if defined(HAVE_PLATFORM_BACKEND)
+#ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         pDevice = PLATFORM_hid_open_path(path, bExclusive);
         if (pDevice != NULL) {

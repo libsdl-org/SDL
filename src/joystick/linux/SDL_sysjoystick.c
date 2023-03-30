@@ -765,7 +765,7 @@ static int LINUX_JoystickInit(void)
     } else
 #endif
     {
-#if defined(HAVE_INOTIFY)
+#ifdef HAVE_INOTIFY
         inotify_fd = SDL_inotify_init1();
 
         if (inotify_fd < 0) {

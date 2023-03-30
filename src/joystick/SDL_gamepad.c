@@ -34,7 +34,7 @@
 #include "../events/SDL_events_c.h"
 #endif
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
 #endif
 
 /* Many gamepads turn the center button into an instantaneous button press */
@@ -1845,7 +1845,7 @@ static SDL_bool SDL_GetGamepadMappingFilePath(char *path, size_t size)
         return SDL_strlcpy(path, hint, size) < size;
     }
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
     return SDL_snprintf(path, size, "%s/gamepad_map.txt", SDL_AndroidGetInternalStoragePath()) < size;
 #else
     return SDL_FALSE;
@@ -2055,7 +2055,7 @@ SDL_bool SDL_IsGamepad(SDL_JoystickID instance_id)
     return retval;
 }
 
-#if defined(__LINUX__)
+#ifdef __LINUX__
 static SDL_bool SDL_endswith(const char *string, const char *suffix)
 {
     size_t string_length = string ? SDL_strlen(string) : 0;
@@ -2081,7 +2081,7 @@ SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid)
     Uint16 version;
     Uint32 vidpid;
 
-#if defined(__LINUX__)
+#ifdef __LINUX__
     if (SDL_endswith(name, " Motion Sensors")) {
         /* Don't treat the PS3 and PS4 motion controls as a separate gamepad */
         return SDL_TRUE;
@@ -2115,7 +2115,7 @@ SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid)
         /* We shouldn't ignore Steam's virtual gamepad since it's using the hints to filter out the real gamepads so it can remap input for the virtual gamepad */
         /* https://partner.steamgames.com/doc/features/steam_gamepad/steam_input_gamepad_emulation_bestpractices */
         SDL_bool bSteamVirtualGamepad = SDL_FALSE;
-#if defined(__LINUX__)
+#ifdef __LINUX__
         bSteamVirtualGamepad = (vendor == USB_VENDOR_VALVE && product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD);
 #elif defined(__MACOS__)
         bSteamVirtualGamepad = (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 1);
@@ -3190,7 +3190,7 @@ void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick)
 
 const char *SDL_GetGamepadAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
-#if defined(SDL_JOYSTICK_MFI)
+#ifdef SDL_JOYSTICK_MFI
     const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
     const char *retval;
 
@@ -3210,7 +3210,7 @@ const char *SDL_GetGamepadAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_
 
 const char *SDL_GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
-#if defined(SDL_JOYSTICK_MFI)
+#ifdef SDL_JOYSTICK_MFI
     const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
     const char *retval;
 

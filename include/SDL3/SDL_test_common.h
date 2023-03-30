@@ -34,7 +34,7 @@
 
 #include <SDL3/SDL.h>
 
-#if defined(__PSP__)
+#ifdef __PSP__
 #define DEFAULT_WINDOW_WIDTH  480
 #define DEFAULT_WINDOW_HEIGHT 272
 #elif defined(__VITA__)

@@ -357,7 +357,7 @@ static int platform_testSetErrorEmptyInput(void *arg)
     return TEST_COMPLETED;
 }
 
-#if defined(HAVE_WFORMAT_OVERFLOW)
+#ifdef HAVE_WFORMAT_OVERFLOW
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-overflow"
 #endif
@@ -441,7 +441,7 @@ static int platform_testSetErrorInvalidInput(void *arg)
     return TEST_COMPLETED;
 }
 
-#if defined(HAVE_WFORMAT_OVERFLOW)
+#ifdef HAVE_WFORMAT_OVERFLOW
 #pragma GCC diagnostic pop
 #endif
 

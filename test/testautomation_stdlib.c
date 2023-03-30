@@ -34,10 +34,10 @@ static int stdlib_strlcpy(void *arg)
 
 #if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
 #pragma GCC diagnostic push
-#if defined(HAVE_WFORMAT)
+#ifdef HAVE_WFORMAT
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
-#if defined(HAVE_WFORMAT_EXTRA_ARGS)
+#ifdef HAVE_WFORMAT_EXTRA_ARGS
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
 #endif
 #endif
@@ -344,10 +344,10 @@ static int stdlib_getsetenv(void *arg)
 
 #if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
 #pragma GCC diagnostic push
-#if defined(HAVE_WFORMAT)
+#ifdef HAVE_WFORMAT
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
-#if defined(HAVE_WFORMAT_EXTRA_ARGS)
+#ifdef HAVE_WFORMAT_EXTRA_ARGS
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
 #endif
 #endif
@@ -437,7 +437,7 @@ static int stdlib_sscanf(void *arg)
 #pragma GCC diagnostic pop
 #endif
 
-#if defined(_WIN64)
+#ifdef _WIN64
 #define SIZE_FORMAT "I64u"
 #elif defined(__WIN32__)
 #define SIZE_FORMAT "I32u"

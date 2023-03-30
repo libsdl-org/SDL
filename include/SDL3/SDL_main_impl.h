@@ -22,7 +22,7 @@
 #ifndef SDL_main_impl_h_
 #define SDL_main_impl_h_
 
-#if !defined(SDL_main_h_)
+#ifndef SDL_main_h_
 #error "This header should not be included directly, but only via SDL_main.h!"
 #endif
 

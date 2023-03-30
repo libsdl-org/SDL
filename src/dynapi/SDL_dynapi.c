@@ -425,7 +425,7 @@ static void dynapi_warn(const char *msg)
 extern "C" {
 #endif
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
-#if defined(__WATCOMC__)
+#ifdef __WATCOMC__
 #pragma aux SDL_ExitProcess aborts;
 #endif
 #ifdef __cplusplus

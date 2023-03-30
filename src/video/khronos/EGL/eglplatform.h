@@ -48,7 +48,7 @@
  * implementations.
  */
 
-#if defined(EGL_NO_PLATFORM_SPECIFIC_TYPES)
+#ifdef EGL_NO_PLATFORM_SPECIFIC_TYPES
 
 typedef void *EGLNativeDisplayType;
 typedef void *EGLNativePixmapType;
@@ -160,7 +160,7 @@ typedef khronos_int32_t EGLint;
 
 
 /* C++ / C typecast macros for special EGL handle values */
-#if defined(__cplusplus)
+#ifdef __cplusplus
 #define EGL_CAST(type, value) (static_cast<type>(value))
 #else
 #define EGL_CAST(type, value) ((type) (value))

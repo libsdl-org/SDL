@@ -29,7 +29,7 @@
 #define HAVE_FAST_WRITE_INT8 1
 
 /* On some CPU, it's slower than combining and write a word */
-#if defined(__MIPS__)
+#ifdef __MIPS__
 #undef HAVE_FAST_WRITE_INT8
 #define HAVE_FAST_WRITE_INT8 0
 #endif
@@ -904,7 +904,7 @@ static enum blit_features GetBlitFeatures(void)
 #define GetBlitFeatures() ((SDL_HasMMX() ? BLIT_FEATURE_HAS_MMX : 0) | (SDL_HasARMSIMD() ? BLIT_FEATURE_HAS_ARM_SIMD : 0))
 #endif
 
-#if defined(SDL_ARM_SIMD_BLITTERS)
+#ifdef SDL_ARM_SIMD_BLITTERS
 void Blit_BGR888_RGB888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
 
 static void Blit_BGR888_RGB888ARMSIMD(SDL_BlitInfo *info)

@@ -239,7 +239,7 @@ void rgb24_yuv420_std(
 	}
 }
 
-#if defined(SDL_SSE2_INTRINSICS)
+#ifdef SDL_SSE2_INTRINSICS
 
 #define SSE_FUNCTION_NAME	yuv420_rgb565_sse
 #define STD_FUNCTION_NAME	yuv420_rgb565_std

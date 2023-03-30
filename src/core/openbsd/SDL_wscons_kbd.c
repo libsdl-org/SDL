@@ -319,7 +319,7 @@ static struct wscons_keycode_to_SDL
     { KS_f18, SDL_SCANCODE_F18 },
     { KS_f19, SDL_SCANCODE_F19 },
     { KS_f20, SDL_SCANCODE_F20 },
-#if !defined(__NetBSD__)
+#ifndef __NetBSD__
     { KS_f21, SDL_SCANCODE_F21 },
     { KS_f22, SDL_SCANCODE_F22 },
     { KS_f23, SDL_SCANCODE_F23 },

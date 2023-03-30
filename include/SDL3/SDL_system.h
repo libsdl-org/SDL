@@ -622,7 +622,7 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void
 #endif
 
 /* Functions used only by GDK */
-#if defined(__GDK__)
+#ifdef __GDK__
 typedef struct XTaskQueueObject * XTaskQueueHandle;
 
 /**

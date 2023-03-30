@@ -24,7 +24,7 @@
 
 #include "SDL_systhread_c.h"
 
-#if defined(SDL_THREADS_DISABLED)
+#ifdef SDL_THREADS_DISABLED
 
 SDL_sem *
 SDL_CreateSemaphore(Uint32 initial_value)

@@ -99,7 +99,7 @@
 #endif /* Compiler needs structure packing set */
 
 #ifndef SDL_INLINE
-#if defined(__GNUC__)
+#ifdef __GNUC__
 #define SDL_INLINE __inline__
 #elif defined(_MSC_VER) || defined(__BORLANDC__) || \
       defined(__DMC__) || defined(__SC__) || \
@@ -118,7 +118,7 @@
 #endif /* SDL_INLINE not defined */
 
 #ifndef SDL_FORCE_INLINE
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #define SDL_FORCE_INLINE __forceinline
 #elif ( (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__) )
 #define SDL_FORCE_INLINE __attribute__((always_inline)) static __inline__
@@ -128,7 +128,7 @@
 #endif /* SDL_FORCE_INLINE not defined */
 
 #ifndef SDL_NORETURN
-#if defined(__GNUC__)
+#ifdef __GNUC__
 #define SDL_NORETURN __attribute__((noreturn))
 #elif defined(_MSC_VER)
 #define SDL_NORETURN __declspec(noreturn)
@@ -138,7 +138,7 @@
 #endif /* SDL_NORETURN not defined */
 
 /* Apparently this is needed by several Windows compilers */
-#if !defined(__MACH__)
+#ifndef __MACH__
 #ifndef NULL
 #ifdef __cplusplus
 #define NULL 0
@@ -153,7 +153,7 @@
     (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202000L)
 #define SDL_FALLTHROUGH [[fallthrough]]
 #else
-#if defined(__has_attribute)
+#ifdef __has_attribute
 #define SDL_HAS_FALLTHROUGH __has_attribute(__fallthrough__)
 #else
 #define SDL_HAS_FALLTHROUGH 0

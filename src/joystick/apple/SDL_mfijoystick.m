@@ -37,7 +37,7 @@
 #import <CoreMotion/CoreMotion.h>
 #endif
 
-#if defined(__MACOS__)
+#ifdef __MACOS__
 #include <IOKit/hid/IOHIDManager.h>
 #include <AppKit/NSApplication.h>
 #ifndef NSAppKitVersionNumber10_15
@@ -660,7 +660,7 @@ static void SDLCALL SDL_AppleTVRemoteRotationHintChanged(void *udata, const char
 
 static int IOS_JoystickInit(void)
 {
-#if defined(__MACOS__)
+#ifdef __MACOS__
 #if SDL_HAS_BUILTIN(__builtin_available)
     if (@available(macOS 10.16, *)) {
         /* Continue with initialization on macOS 11+ */

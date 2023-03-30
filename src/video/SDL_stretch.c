@@ -183,7 +183,7 @@ static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     left_pad_w = left_pad_w_init;                                      \
     middle = middle_init;
 
-#if defined(__clang__)
+#ifdef __clang__
 // Remove inlining of this function
 // Compiler crash with clang 9.0.8 / android-ndk-r21d
 // Compiler crash with clang 11.0.3 / Xcode
@@ -346,7 +346,7 @@ static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
 #endif
 #endif
 
-#if defined(SDL_SSE2_INTRINSICS)
+#ifdef SDL_SSE2_INTRINSICS
 
 #if 0
 static void SDL_TARGETING("sse2") printf_128(const char *str, __m128i var)
@@ -524,7 +524,7 @@ static int SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int
 }
 #endif
 
-#if defined(SDL_NEON_INTRINSICS)
+#ifdef SDL_NEON_INTRINSICS
 
 static SDL_INLINE int hasNEON(void)
 {
@@ -800,13 +800,13 @@ int SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     Uint32 *src = (Uint32 *)((Uint8 *)s->pixels + srcrect->x * 4 + srcrect->y * src_pitch);
     Uint32 *dst = (Uint32 *)((Uint8 *)d->pixels + dstrect->x * 4 + dstrect->y * dst_pitch);
 
-#if defined(SDL_NEON_INTRINSICS)
+#ifdef SDL_NEON_INTRINSICS
     if (ret == -1 && hasNEON()) {
         ret = scale_mat_NEON(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }
 #endif
 
-#if defined(SDL_SSE2_INTRINSICS)
+#ifdef SDL_SSE2_INTRINSICS
     if (ret == -1 && hasSSE2()) {
         ret = scale_mat_SSE(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }

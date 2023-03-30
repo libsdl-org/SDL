@@ -58,7 +58,7 @@
 #define EGL_PRESENT_OPAQUE_EXT 0x31DF
 #endif /* EGL_EXT_present_opaque */
 
-#if defined(SDL_VIDEO_DRIVER_RPI)
+#ifdef SDL_VIDEO_DRIVER_RPI
 /* Raspbian places the OpenGL ES/EGL binaries in a non standard path */
 #define DEFAULT_EGL        (vc4 ? "libEGL.so.1" : "libbrcmEGL.so")
 #define DEFAULT_OGL_ES2    (vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so")
@@ -304,7 +304,7 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT)
     const char *d3dcompiler;
 #endif
-#if defined(SDL_VIDEO_DRIVER_RPI)
+#ifdef SDL_VIDEO_DRIVER_RPI
     SDL_bool vc4 = (0 == access("/sys/module/vc4/", F_OK));
 #endif
 
@@ -425,7 +425,7 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 #endif
 
     _this->egl_data->egl_dll_handle = egl_dll_handle;
-#if defined(SDL_VIDEO_DRIVER_VITA)
+#ifdef SDL_VIDEO_DRIVER_VITA
     _this->egl_data->opengl_dll_handle = opengl_dll_handle;
 #endif
 
@@ -512,8 +512,8 @@ int SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_di
 
     _this->egl_data->egl_display = EGL_NO_DISPLAY;
 
-#if !defined(__WINRT__)
-#if !defined(SDL_VIDEO_DRIVER_VITA)
+#ifndef __WINRT__
+#ifndef SDL_VIDEO_DRIVER_VITA
     if (platform) {
         /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY
          * --

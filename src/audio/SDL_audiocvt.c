@@ -144,7 +144,7 @@ static int SDL_ConvertAudio(SDL_AudioCVT * cvt);
  * 8 channels (7.1) layout: FL+FR+FC+LFE+BL+BR+SL+SR
  */
 
-#if defined(SDL_SSE3_INTRINSICS)
+#ifdef SDL_SSE3_INTRINSICS
 /* Convert from stereo to mono. Average left and right. */
 static void SDLCALL SDL_TARGETING("sse3") SDL_ConvertStereoToMono_SSE3(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
@@ -181,7 +181,7 @@ static void SDLCALL SDL_TARGETING("sse3") SDL_ConvertStereoToMono_SSE3(SDL_Audio
 }
 #endif
 
-#if defined(SDL_SSE_INTRINSICS)
+#ifdef SDL_SSE_INTRINSICS
 /* Convert from mono to stereo. Duplicate to stereo left and right. */
 static void SDLCALL SDL_TARGETING("sse") SDL_ConvertMonoToStereo_SSE(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
@@ -834,7 +834,7 @@ static int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
         /* swap in some SIMD versions for a few of these. */
         if (channel_converter == SDL_ConvertStereoToMono) {
             SDL_AudioFilter filter = NULL;
-#if defined(SDL_SSE3_INTRINSICS)
+#ifdef SDL_SSE3_INTRINSICS
             if (!filter && SDL_HasSSE3()) {
                 filter = SDL_ConvertStereoToMono_SSE3;
             }
@@ -844,7 +844,7 @@ static int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
             }
         } else if (channel_converter == SDL_ConvertMonoToStereo) {
             SDL_AudioFilter filter = NULL;
-#if defined(SDL_SSE_INTRINSICS)
+#ifdef SDL_SSE_INTRINSICS
             if (!filter && SDL_HasSSE()) {
                 filter = SDL_ConvertMonoToStereo_SSE;
             }

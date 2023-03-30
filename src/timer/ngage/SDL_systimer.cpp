@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_TIMER_NGAGE)
+#ifdef SDL_TIMER_NGAGE
 
 #include <e32std.h>
 #include <e32hal.h>

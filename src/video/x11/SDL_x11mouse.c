@@ -413,7 +413,7 @@ static Uint32 X11_GetGlobalMouseState(float *x, float *y)
 
     /* !!! FIXME: should we XSync() here first? */
 
-#if !defined(SDL_VIDEO_DRIVER_X11_XINPUT2)
+#ifndef SDL_VIDEO_DRIVER_X11_XINPUT2
     videodata->global_mouse_changed = SDL_TRUE;
 #else
     if (!SDL_X11_HAVE_XINPUT2)

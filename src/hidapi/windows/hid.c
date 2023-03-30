@@ -154,7 +154,7 @@ static void free_library_handles(void)
 	cfgmgr32_lib_handle = NULL;
 }
 
-#if defined(__GNUC__)
+#ifdef __GNUC__
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
@@ -202,7 +202,7 @@ err:
 	free_library_handles();
 	return -1;
 }
-#if defined(__GNUC__)
+#ifdef __GNUC__
 # pragma GCC diagnostic pop
 #endif
 

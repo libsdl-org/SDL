@@ -78,7 +78,7 @@ SDL_DYNAPI_PROC(ID3D11Device*,SDL_GetRenderD3D11Device,(SDL_Renderer *a),(a),ret
 SDL_DYNAPI_PROC(IDirect3DDevice9*,SDL_GetRenderD3D9Device,(SDL_Renderer *a),(a),return)
 #endif
 
-#if defined(__GDK__)
+#ifdef __GDK__
 SDL_DYNAPI_PROC(int,SDL_GDKGetTaskQueue,(XTaskQueueHandle *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),)
 #endif

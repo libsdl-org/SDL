@@ -112,7 +112,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
  * Useful macros for blitting routines
  */
 
-#if defined(__GNUC__)
+#ifdef __GNUC__
 #define DECLARE_ALIGNED(t, v, a) t __attribute__((aligned(a))) v
 #elif defined(_MSC_VER)
 #define DECLARE_ALIGNED(t, v, a) __declspec(align(a)) t v

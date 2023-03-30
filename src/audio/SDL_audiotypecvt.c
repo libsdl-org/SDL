@@ -226,7 +226,7 @@ static void SDLCALL SDL_Convert_F32_to_S32_Scalar(SDL_AudioCVT *cvt, SDL_AudioFo
 }
 #endif
 
-#if defined(SDL_SSE2_INTRINSICS)
+#ifdef SDL_SSE2_INTRINSICS
 static void SDLCALL SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
     const Sint8 *src = ((const Sint8 *)(cvt->buf + cvt->len_cvt)) - 1;
@@ -1175,7 +1175,7 @@ void SDL_ChooseAudioConverters(void)
     SDL_Convert_F32_to_S32 = SDL_Convert_F32_to_S32_##fntype; \
     converters_chosen = SDL_TRUE
 
-#if defined(SDL_SSE2_INTRINSICS)
+#ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
         SET_CONVERTER_FUNCS(SSE2);
         return;

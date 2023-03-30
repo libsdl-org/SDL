@@ -24,7 +24,7 @@
 #define SDL_thread_c_h_
 
 /* Need the definitions of SYS_ThreadHandle */
-#if defined(SDL_THREADS_DISABLED)
+#ifdef SDL_THREADS_DISABLED
 #include "generic/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_PTHREAD)
 #include "pthread/SDL_systhread_c.h"
