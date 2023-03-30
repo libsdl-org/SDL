@@ -50,7 +50,7 @@ SDL_BLooper *SDL_Looper = NULL;
 
 
 /* Default application signature */
-const char *signature = "application/x-SDL-executable";
+const char *SDL_signature = "application/x-SDL-executable";
 
 
 /* Create a descendant of BApplication */
@@ -91,13 +91,13 @@ static int StartBeApp(void *unused)
             if (app_info.InitCheck() == B_OK) {
                 char sig[B_MIME_TYPE_LENGTH];
                 if (app_info.GetSignature(sig) == B_OK) {
-                    signature = strndup(sig, B_MIME_TYPE_LENGTH);
+                    SDL_signature = strndup(sig, B_MIME_TYPE_LENGTH);
                 }
             }
         }
     }
 
-    App = std::unique_ptr<BApplication>(new SDL_BApp(signature));
+    App = std::unique_ptr<BApplication>(new SDL_BApp(SDL_signature));
 
     App->Run();
     return 0;
