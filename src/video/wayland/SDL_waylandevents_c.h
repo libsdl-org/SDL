@@ -54,6 +54,7 @@ struct SDL_WaylandTabletInput
 
     SDL_WindowData *tool_focus;
     uint32_t tool_prox_serial;
+    uint32_t press_serial;
 
     /* Last motion location */
     wl_fixed_t sx_w;
@@ -109,6 +110,11 @@ struct SDL_WaylandInput
     wl_fixed_t sy_w;
 
     uint32_t buttons_pressed;
+
+    /* Implicit grab serial events */
+    Uint32 key_serial;
+    Uint32 button_press_serial;
+    Uint32 touch_down_serial;
 
     struct
     {
@@ -194,5 +200,7 @@ extern void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_
 extern void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input);
 
 extern void Wayland_RegisterTimestampListeners(struct SDL_WaylandInput *input);
+
+extern Uint32 Wayland_GetLastImplicitGrabSerial(struct SDL_WaylandInput *input);
 
 #endif /* SDL_waylandevents_h_ */
