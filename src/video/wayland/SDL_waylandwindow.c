@@ -1554,7 +1554,7 @@ static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *wind,
                                              &activation_listener_xdg,
                                              wind);
 
-        /* Note that we are not setting the app_id or serial here.
+        /* Note that we are not setting the app_id here.
          *
          * Hypothetically we could set the app_id from data->classname, but
          * that part of the API is for _external_ programs, not ourselves.
@@ -1574,18 +1574,25 @@ static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *wind,
 void Wayland_RaiseWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
+    struct SDL_WaylandInput * input = _this->driverdata->input;
+    struct wl_seat *seat = NULL;
+    Uint32 serial = 0;
 
-    /* FIXME: This Raise event is arbitrary and doesn't come from an event, so
-     * it's actually very likely that this token will be ignored! Maybe add
-     * support for passing serials (and the associated seat) so this can have
-     * a better chance of actually raising the window.
-     * -flibit
+    /* Pass the seat and last serial from a key event, mouse button press,
+     * touch down event, or tablet tool event to the activation token in order
+     * to increases the chances of the window being activated, as compositors
+     * may require an activation to be in response to an event.
      */
+    if (input) {
+        seat = input->seat;
+        serial = Wayland_GetLastImplicitGrabSerial(input);
+    }
+
     Wayland_activate_window(_this->driverdata,
                             wind,
                             wind->surface,
-                            0,
-                            NULL);
+                            serial,
+                            seat);
 }
 
 int Wayland_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
