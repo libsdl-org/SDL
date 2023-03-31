@@ -409,6 +409,7 @@
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\actionset\SDL_actionset_c.h" />
+    <ClInclude Include="..\..\src\actionset\sdlinput\SDL_sdlinput.h" />
     <ClInclude Include="..\..\src\audio\SDL_audio_c.h">
       <Filter>audio</Filter>
     </ClInclude>
@@ -837,6 +838,7 @@
     <ClCompile Include="..\..\src\SDL_list.c" />
     <ClCompile Include="..\..\src\SDL_utils.c" />
     <ClCompile Include="..\..\src\actionset\SDL_actionset.c" />
+    <ClCompile Include="..\..\src\actionset\sdlinput\SDL_sdlinput.c" />
     <ClCompile Include="..\..\src\audio\SDL_audio.c">
       <Filter>audio</Filter>
     </ClCompile>

@@ -311,6 +311,8 @@
     <ClInclude Include="..\..\include\SDL3\SDL_video.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_vulkan.h" />
     <ClInclude Include="..\..\src\actionset\SDL_actionset_c.h" />
+    <ClInclude Include="..\..\src\actionset\sdlinput\SDL_sdlinput.h" />
+    <ClInclude Include="..\..\src\actionset\steaminput\SDL_steaminput.h" />
     <ClInclude Include="..\..\src\audio\directsound\SDL_directsound.h" />
     <ClInclude Include="..\..\src\audio\disk\SDL_diskaudio.h" />
     <ClInclude Include="..\..\src\audio\dummy\SDL_dummyaudio.h" />
@@ -464,6 +466,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\actionset\SDL_actionset.c" />
+    <ClCompile Include="..\..\src\actionset\sdlinput\SDL_sdlinput.c" />
+    <ClCompile Include="..\..\src\actionset\steaminput\SDL_steaminput.c" />
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c" />
     <ClCompile Include="..\..\src\atomic\SDL_spinlock.c" />
     <ClCompile Include="..\..\src\audio\directsound\SDL_directsound.c" />

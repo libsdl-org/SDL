@@ -484,6 +484,8 @@ endif()
 file(GLOB SOURCE_FILES
   ${SDL3_SOURCE_DIR}/src/*.c
   ${SDL3_SOURCE_DIR}/src/actionset/*.c
+  ${SDL3_SOURCE_DIR}/src/actionset/sdlinput/*.c
+  ${SDL3_SOURCE_DIR}/src/actionset/steaminput/*.c # FIXME: Windows/macOS/Linux only
   ${SDL3_SOURCE_DIR}/src/atomic/*.c
   ${SDL3_SOURCE_DIR}/src/audio/*.c
   ${SDL3_SOURCE_DIR}/src/core/*.c
