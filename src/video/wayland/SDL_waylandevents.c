@@ -2791,11 +2791,14 @@ static void relative_pointer_handle_relative_motion(void *data,
     double dx_unaccel;
     double dy_unaccel;
 
+    /* Relative pointer event times are in microsecond granularity. */
+    const Uint64 timestamp = SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo);
+
     dx_unaccel = wl_fixed_to_double(dx_unaccel_w);
     dy_unaccel = wl_fixed_to_double(dy_unaccel_w);
 
     if (input->pointer_focus && d->relative_mouse_mode) {
-        SDL_SendMouseMotion(0, window->sdlwindow, 0, 1, (float)dx_unaccel, (float)dy_unaccel);
+        SDL_SendMouseMotion(Wayland_GetEventTimestamp(timestamp), window->sdlwindow, 0, 1, (float)dx_unaccel, (float)dy_unaccel);
     }
 }
 
