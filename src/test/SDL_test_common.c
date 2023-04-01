@@ -1312,14 +1312,11 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
             } else {
                 SDL_strlcpy(title, state->window_title, SDL_arraysize(title));
             }
-            state->windows[i] = SDL_CreateWindow(title, r.w, r.h, state->window_flags);
+            state->windows[i] = SDL_CreateWindowWithPosition(title, r.x, r.y, r.w, r.h, state->window_flags);
             if (!state->windows[i]) {
                 SDL_Log("Couldn't create window: %s\n",
                         SDL_GetError());
                 return SDL_FALSE;
-            }
-            if (r.x != SDL_WINDOWPOS_UNDEFINED || r.y != SDL_WINDOWPOS_UNDEFINED) {
-                SDL_SetWindowPosition(state->windows[i], r.x, r.y);
             }
             if (state->window_minW || state->window_minH) {
                 SDL_SetWindowMinimumSize(state->windows[i], state->window_minW, state->window_minH);
