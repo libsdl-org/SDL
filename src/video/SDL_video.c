@@ -1948,6 +1948,11 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
     return SDL_CreateWindowInternal(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w , h, NULL, flags);
 }
 
+SDL_Window *SDL_CreateWindowWithPosition(const char *title, int x, int y, int w, int h, Uint32 flags)
+{
+    return SDL_CreateWindowInternal(title, x, y, w , h, NULL, flags);
+}
+
 SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags)
 {
     if (!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT)) {

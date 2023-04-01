@@ -912,3 +912,4 @@ SDL_DYNAPI_PROC(int,SDL_GetRenderWindowSize,(SDL_Renderer *a, int *b, int *c),(a
 SDL_DYNAPI_PROC(SDL_SystemTheme,SDL_GetSystemTheme,(void),(),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_CreatePopupWindow,(SDL_Window *a, int b, int c, int d, int e, Uint32 f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_GetWindowParent,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(SDL_Window*,SDL_CreateWindowWithPosition,(const char *a, int b, int c, int d, int e, Uint32 f),(a,b,c,d,e,f),return)

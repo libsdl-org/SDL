@@ -92,6 +92,7 @@ typedef enum
  *
  *  \sa SDL_CreateWindow()
  *  \sa SDL_CreateWindowFrom()
+ *  \sa SDL_CreateWindowWithPosition()
  *  \sa SDL_DestroyWindow()
  *  \sa SDL_FlashWindow()
  *  \sa SDL_GetWindowData()
@@ -602,7 +603,7 @@ extern DECLSPEC void *SDLCALL SDL_GetWindowICCProfile(SDL_Window *window, size_t
 extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
 
 /**
- * Create a window with the specified position, dimensions, and flags.
+ * Create a window with the specified dimensions and flags.
  *
  * `flags` may be any of the following OR'd together:
  *
@@ -661,9 +662,77 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  *
  * \sa SDL_CreatePopupWindow
  * \sa SDL_CreateWindowFrom
+ * \sa SDL_CreateWindowWithPosition
  * \sa SDL_DestroyWindow
  */
 extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, int h, Uint32 flags);
+
+/**
+ * Create a window with the specified position, dimensions, and flags.
+ *
+ * `flags` may be any of the following OR'd together:
+ *
+ * - `SDL_WINDOW_FULLSCREEN`: fullscreen window at desktop resolution
+ * - `SDL_WINDOW_OPENGL`: window usable with an OpenGL context
+ * - `SDL_WINDOW_VULKAN`: window usable with a Vulkan instance
+ * - `SDL_WINDOW_METAL`: window usable with a Metal instance
+ * - `SDL_WINDOW_HIDDEN`: window is not visible
+ * - `SDL_WINDOW_BORDERLESS`: no window decoration
+ * - `SDL_WINDOW_RESIZABLE`: window can be resized
+ * - `SDL_WINDOW_MINIMIZED`: window is minimized
+ * - `SDL_WINDOW_MAXIMIZED`: window is maximized
+ * - `SDL_WINDOW_MOUSE_GRABBED`: window has grabbed mouse focus
+ *
+ * The SDL_Window is implicitly shown if SDL_WINDOW_HIDDEN is not set.
+ *
+ * On Apple's macOS, you **must** set the NSHighResolutionCapable Info.plist
+ * property to YES, otherwise you will not receive a High-DPI OpenGL canvas.
+ *
+ * The window size in pixels may differ from its size in screen coordinates if
+ * the window is on a high density display (one with an OS scaling factor).
+ * Use SDL_GetWindowSize() to query the client area's size in screen
+ * coordinates, and SDL_GetWindowSizeInPixels() or SDL_GetRenderOutputSize()
+ * to query the drawable size in pixels. Note that the drawable size can vary
+ * after the window is created and should be queried again if you get an
+ * SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
+ *
+ * If the window is set fullscreen, the width and height parameters `w` and
+ * `h` will not be used. However, invalid size parameters (e.g. too large) may
+ * still fail. Window size is actually limited to 16384 x 16384 for all
+ * platforms at window creation.
+ *
+ * If the window is created with any of the SDL_WINDOW_OPENGL or
+ * SDL_WINDOW_VULKAN flags, then the corresponding LoadLibrary function
+ * (SDL_GL_LoadLibrary or SDL_Vulkan_LoadLibrary) is called and the
+ * corresponding UnloadLibrary function is called by SDL_DestroyWindow().
+ *
+ * If SDL_WINDOW_VULKAN is specified and there isn't a working Vulkan driver,
+ * SDL_CreateWindow() will fail because SDL_Vulkan_LoadLibrary() will fail.
+ *
+ * If SDL_WINDOW_METAL is specified on an OS that does not support Metal,
+ * SDL_CreateWindow() will fail.
+ *
+ * On non-Apple devices, SDL requires you to either not link to the Vulkan
+ * loader or link to a dynamic library version. This limitation may be removed
+ * in a future version of SDL.
+ *
+ * \param title the title of the window, in UTF-8 encoding
+ * \param x the x position of the window, or `SDL_WINDOWPOS_CENTERED`
+ * \param y the y position of the window, or `SDL_WINDOWPOS_CENTERED`
+ * \param w the width of the window, in screen coordinates
+ * \param h the height of the window, in screen coordinates
+ * \param flags 0, or one or more SDL_WindowFlags OR'd together
+ * \returns the window that was created or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreatePopupWindow
+ * \sa SDL_CreateWindow
+ * \sa SDL_CreateWindowFrom
+ * \sa SDL_DestroyWindow
+ */
+extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithPosition(const char *title, int x, int y, int w, int h, Uint32 flags);
 
 /**
  * Create a child popup window of the specified parent window.

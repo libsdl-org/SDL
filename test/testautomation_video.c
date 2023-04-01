@@ -1672,13 +1672,9 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 expectedX = (expectedDisplayRect.x + ((expectedDisplayRect.w - w) / 2));
                 expectedY = (expectedDisplayRect.y + ((expectedDisplayRect.h - h) / 2));
 
-                window = SDL_CreateWindow(title, w, h, SDL_WINDOW_HIDDEN);
+                window = SDL_CreateWindowWithPosition(title, x, y, w, h, 0);
                 SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
                 SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
-
-                /* Set the desired position */
-                SDL_SetWindowPosition(window, x, y);
-                SDL_ShowWindow(window);
 
                 /* Check the window is centered on the requested display */
                 currentDisplay = SDL_GetDisplayForWindow(window);

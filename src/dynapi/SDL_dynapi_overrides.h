@@ -867,3 +867,4 @@
 #define SDL_GetSystemTheme SDL_GetSystemTheme_REAL
 #define SDL_CreatePopupWindow SDL_CreatePopupWindow_REAL
 #define SDL_GetWindowParent SDL_GetWindowParent_REAL
+#define SDL_CreateWindowWithPosition SDL_CreateWindowWithPosition_REAL
