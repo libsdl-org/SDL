@@ -151,6 +151,7 @@ add_sdl_test_executable(loopwavequeue NEEDS_RESOURCES TESTUTILS SOURCES loopwave
 add_sdl_test_executable(testsurround SOURCES testsurround.c)
 add_sdl_test_executable(testresample NEEDS_RESOURCES SOURCES testresample.c)
 add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c)
+add_sdl_test_executable(testaudiostreamdynamicresample SOURCES testaudiostreamdynamicresample.c)
 
 file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
 add_sdl_test_executable(testautomation NEEDS_RESOURCES SOURCES ${TESTAUTOMATION_SOURCE_FILES})

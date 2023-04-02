@@ -221,7 +221,6 @@
 
 #cmakedefine HAVE_LINUX_INPUT_H 1
 #cmakedefine HAVE_LIBUDEV_H 1
-#cmakedefine HAVE_LIBSAMPLERATE 1
 #cmakedefine HAVE_LIBDECOR_H  1
 
 #cmakedefine HAVE_D3D_H @HAVE_D3D_H@
@@ -542,9 +541,6 @@
 
 /* Whether SDL_DYNAMIC_API needs dlopen */
 #cmakedefine DYNAPI_NEEDS_DLOPEN  @DYNAPI_NEEDS_DLOPEN@
-
-/* Enable dynamic libsamplerate support */
-#cmakedefine SDL_LIBSAMPLERATE_DYNAMIC @SDL_LIBSAMPLERATE_DYNAMIC@
 
 /* Enable ime support */
 #cmakedefine SDL_USE_IME @SDL_USE_IME@

@@ -682,15 +682,15 @@ extern DECLSPEC SDL_AudioSpec *SDLCALL SDL_LoadWAV_RW(SDL_RWops * src,
     SDL_LoadWAV_RW(SDL_RWFromFile(file, "rb"),1, spec,audio_buf,audio_len)
 
 
-/* SDL_AudioStream is a new audio conversion interface.
-   The benefits vs SDL_AudioCVT:
-    - it can handle resampling data in chunks without generating
+/* SDL_AudioStream is an audio conversion interface.
+    - It can handle resampling data in chunks without generating
       artifacts, when it doesn't have the complete buffer available.
-    - it can handle incoming data in any variable size.
+    - It can handle incoming data in any variable size.
     - You push data as you have it, and pull it when you need it
+    - It can also function as a basic audio data queue even if you
+      just have sound that needs to pass from one place to another.
  */
-/* this is opaque to the outside world. */
-struct SDL_AudioStream;
+struct SDL_AudioStream;  /* this is opaque to the outside world. */
 typedef struct SDL_AudioStream SDL_AudioStream;
 
 /**
@@ -704,6 +704,8 @@ typedef struct SDL_AudioStream SDL_AudioStream;
  * \param dst_rate The sampling rate of the desired audio output
  * \returns 0 on success, or -1 on error.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_PutAudioStreamData
@@ -711,17 +713,86 @@ typedef struct SDL_AudioStream SDL_AudioStream;
  * \sa SDL_GetAudioStreamAvailable
  * \sa SDL_FlushAudioStream
  * \sa SDL_ClearAudioStream
+ * \sa SDL_ChangeAudioStreamOutput
  * \sa SDL_DestroyAudioStream
  */
 extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(SDL_AudioFormat src_format,
-                                                            Uint8 src_channels,
+                                                            int src_channels,
                                                             int src_rate,
                                                             SDL_AudioFormat dst_format,
-                                                            Uint8 dst_channels,
+                                                            int dst_channels,
                                                             int dst_rate);
+
+
+/**
+ * Query the current format of an audio stream.
+ *
+ * \param stream the SDL_AudioStream to query.
+ * \param src_format Where to store the input audio format; ignored if NULL.
+ * \param src_channels Where to store the input channel count; ignored if NULL.
+ * \param src_rate Where to store the input sample rate; ignored if NULL.
+ * \param dst_format Where to store the output audio format; ignored if NULL.
+ * \param dst_channels Where to store the output channel count; ignored if NULL.
+ * \param dst_rate Where to store the output sample rate; ignored if NULL.
+ * \returns 0 on success, or -1 on error.
+ *
+ * \threadsafety It is safe to call this function from any thread, as it
+ *               holds a stream-specific mutex while running.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream,
+                                                     SDL_AudioFormat *src_format,
+                                                     int *src_channels,
+                                                     int *src_rate,
+                                                     SDL_AudioFormat *dst_format,
+                                                     int *dst_channels,
+                                                     int *dst_rate);
+
+/**
+ * Change the input and output formats of an audio stream.
+ *
+ * Future calls to and SDL_GetAudioStreamAvailable and SDL_GetAudioStreamData
+ * will reflect the new format, and future calls to SDL_PutAudioStreamData
+ * must provide data in the new input formats.
+ *
+ * \param src_format The format of the audio input
+ * \param src_channels The number of channels of the audio input
+ * \param src_rate The sampling rate of the audio input
+ * \param dst_format The format of the desired audio output
+ * \param dst_channels The number of channels of the desired audio output
+ * \param dst_rate The sampling rate of the desired audio output
+ * \returns 0 on success, or -1 on error.
+ *
+ * \threadsafety It is safe to call this function from any thread, as it
+ *               holds a stream-specific mutex while running.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetAudioStreamFormat
+ * \sa SDL_PutAudioStreamData
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_GetAudioStreamAvailable
+ */
+extern DECLSPEC int SDLCALL SDL_SetAudioStreamFormat(SDL_AudioStream *stream,
+                                                     SDL_AudioFormat src_format,
+                                                     int src_channels,
+                                                     int src_rate,
+                                                     SDL_AudioFormat dst_format,
+                                                     int dst_channels,
+                                                     int dst_rate);
 
 /**
  * Add data to be converted/resampled to the stream.
+ *
+ * This data must match the format/channels/samplerate specified in
+ * the latest call to SDL_SetAudioStreamFormat, or the format
+ * specified when creating the stream if it hasn't been changed.
+ *
+ * Note that this call simply queues unconverted data for later.
+ * This is different than SDL2, where data was converted during the
+ * Put call and the Get call would just dequeue the
+ * previously-converted data.
  *
  * \param stream The stream the audio data is being added to
  * \param buf A pointer to the audio data to add
@@ -741,7 +812,17 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(SDL_AudioFormat s
 extern DECLSPEC int SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len);
 
 /**
- * Get converted/resampled data from the stream
+ * Get converted/resampled data from the stream.
+ *
+ * The input/output data format/channels/samplerate is specified when
+ * creating the stream, and can be changed after creation by calling
+ * SDL_SetAudioStreamFormat.
+ *
+ * Note that any conversion and resampling necessary is done during
+ * this call, and SDL_PutAudioStreamData simply queues unconverted
+ * data for later. This is different than SDL2, where that work was
+ * done while inputting new data to the stream and requesting the
+ * output just copied the converted data.
  *
  * \param stream The stream the audio is being requested from
  * \param buf A buffer to fill with audio data
@@ -753,6 +834,7 @@ extern DECLSPEC int SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, cons
  * \sa SDL_CreateAudioStream
  * \sa SDL_PutAudioStreamData
  * \sa SDL_GetAudioStreamAvailable
+ * \sa SDL_SetAudioStreamFormat
  * \sa SDL_FlushAudioStream
  * \sa SDL_ClearAudioStream
  * \sa SDL_DestroyAudioStream
@@ -765,6 +847,12 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamData(SDL_AudioStream *stream, void
  * The stream may be buffering data behind the scenes until it has enough to
  * resample correctly, so this number might be lower than what you expect, or
  * even be zero. Add more data or flush the stream if you need the data now.
+ *
+ * If the stream has so much data that it would overflow an int, the return
+ * value is clamped to a maximum value, but no queued data is lost; if there
+ * are gigabytes of data queued, the app might need to read some of it with
+ * SDL_GetAudioStreamData before this function's return value is no longer
+ * clamped.
  *
  * \param stream The audio stream to query
  * \returns the number of converted/resampled bytes available.
@@ -1133,6 +1221,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
  */
 extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
 
+/* !!! FIXME: maybe remove this before SDL3's API is locked down. */
 /**
  * Convert some audio data of one format to another format.
  *
