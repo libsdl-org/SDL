@@ -271,21 +271,17 @@ extern "C" {
 /**
  *  \brief  A variable controlling speed/quality tradeoff of audio resampling.
  *
- *  If available, SDL can use libsamplerate ( http://www.mega-nerd.com/SRC/ )
- *  to handle audio resampling. There are different resampling modes available
- *  that produce different levels of quality, using more CPU.
+ *  SDL may be able to use different approaches to audio resampling, which
+ *  produce different levels of quality, using more CPU.
  *
- *  If this hint isn't specified to a valid setting, or libsamplerate isn't
- *  available, SDL will use the default, internal resampling algorithm.
- *
- *  As of SDL 2.26, SDL_ConvertAudio() respects this hint when libsamplerate is available.
+ *  If this hint isn't specified to a valid setting SDL will use the default.
  *
  *  This hint is currently only checked at audio subsystem initialization.
  *
  *  This variable can be set to the following values:
  *
- *    "0" or "default" - Use SDL's internal resampling (Default when not set - low quality, fast)
- *    "1" or "fast"    - Use fast, slightly higher quality resampling, if available
+ *    "0" or "default" - SDL chooses default (probably "medium").
+ *    "1" or "fast"    - Use fast, lower-quality resampling, if available
  *    "2" or "medium"  - Use medium quality resampling, if available
  *    "3" or "best"    - Use high quality resampling, if available
  */

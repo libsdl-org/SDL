@@ -241,53 +241,6 @@ macro(CheckSNDIO)
 endmacro()
 
 # Requires:
-# - SDL_LIBSAMPLERATE
-# Optional:
-# - SDL_LIBSAMPLERATE_SHARED opt
-# - HAVE_SDL_LOADSO opt
-macro(CheckLibSampleRate)
-  if(SDL_LIBSAMPLERATE)
-    find_package(SampleRate QUIET)
-    if(SampleRate_FOUND AND TARGET SampleRate::samplerate)
-      set(HAVE_LIBSAMPLERATE TRUE)
-      if(SDL_LIBSAMPLERATE_SHARED)
-        target_include_directories(sdl-build-options INTERFACE $<TARGET_PROPERTY:SampleRate::samplerate,INTERFACE_INCLUDE_DIRECTORIES>)
-        if(NOT HAVE_SDL_LOADSO)
-          message_warn("You must have SDL_LoadObject() support for dynamic libsamplerate loading")
-        else()
-          get_property(_samplerate_type TARGET SampleRate::samplerate PROPERTY TYPE)
-          if(_samplerate_type STREQUAL "SHARED_LIBRARY")
-            set(HAVE_LIBSAMPLERATE_SHARED TRUE)
-            if(WIN32)
-              set(SDL_LIBSAMPLERATE_DYNAMIC "\"$<TARGET_FILE_NAME:SampleRate::samplerate>\"")
-            else()
-              set(SDL_LIBSAMPLERATE_DYNAMIC "\"$<TARGET_SONAME_FILE_NAME:SampleRate::samplerate>\"")
-            endif()
-          endif()
-        endif()
-      else()
-        target_link_libraries(sdl-build-options INTERFACE SampleRate::samplerate)
-      endif()
-    else()
-      check_include_file(samplerate.h HAVE_LIBSAMPLERATE_H)
-      if(HAVE_LIBSAMPLERATE_H)
-        set(HAVE_LIBSAMPLERATE TRUE)
-        if(SDL_LIBSAMPLERATE_SHARED AND NOT HAVE_SDL_LOADSO)
-          message_warn("You must have SDL_LoadObject() support for dynamic libsamplerate loading")
-        endif()
-        FindLibraryAndSONAME("samplerate")
-        if(SDL_LIBSAMPLERATE_SHARED AND SAMPLERATE_LIB AND HAVE_SDL_LOADSO)
-          set(SDL_LIBSAMPLERATE_DYNAMIC "\"${SAMPLERATE_LIB_SONAME}\"")
-          set(HAVE_LIBSAMPLERATE_SHARED TRUE)
-        else()
-          list(APPEND SDL_EXTRA_LIBS samplerate)
-        endif()
-      endif()
-    endif()
-  endif()
-endmacro()
-
-# Requires:
 # - n/a
 # Optional:
 # - SDL_X11_SHARED opt

@@ -868,3 +868,5 @@
 #define SDL_CreatePopupWindow SDL_CreatePopupWindow_REAL
 #define SDL_GetWindowParent SDL_GetWindowParent_REAL
 #define SDL_CreateWindowWithPosition SDL_CreateWindowWithPosition_REAL
+#define SDL_GetAudioStreamFormat SDL_GetAudioStreamFormat_REAL
+#define SDL_SetAudioStreamFormat SDL_SetAudioStreamFormat_REAL
