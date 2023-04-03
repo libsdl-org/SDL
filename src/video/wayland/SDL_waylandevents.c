@@ -2730,16 +2730,28 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
     }
 
     if (input->keyboard) {
-        wl_keyboard_destroy(input->keyboard);
+        if (wl_keyboard_get_version(input->keyboard) >= WL_KEYBOARD_RELEASE_SINCE_VERSION) {
+            wl_keyboard_release(input->keyboard);
+        } else {
+            wl_keyboard_destroy(input->keyboard);
+        }
     }
 
     if (input->pointer) {
-        wl_pointer_destroy(input->pointer);
+        if (wl_pointer_get_version(input->pointer) >= WL_POINTER_RELEASE_SINCE_VERSION) {
+            wl_pointer_release(input->pointer);
+        } else {
+            wl_pointer_destroy(input->pointer);
+        }
     }
 
     if (input->touch) {
         SDL_DelTouch(1);
-        wl_touch_destroy(input->touch);
+        if (wl_touch_get_version(input->touch) >= WL_TOUCH_RELEASE_SINCE_VERSION) {
+            wl_touch_release(input->touch);
+        } else {
+            wl_touch_destroy(input->touch);
+        }
     }
 
     if (input->tablet) {
@@ -2747,7 +2759,11 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
     }
 
     if (input->seat) {
-        wl_seat_destroy(input->seat);
+        if (wl_seat_get_version(input->seat) >= WL_SEAT_RELEASE_SINCE_VERSION) {
+            wl_seat_release(input->seat);
+        } else {
+            wl_seat_destroy(input->seat);
+        }
     }
 
     if (input->xkb.compose_state) {

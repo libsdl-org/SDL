@@ -82,7 +82,7 @@ struct SDL_VideoData
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
     struct SDL_WaylandTabletManager *tablet_manager;
-    SDL_DisplayData *output_list;
+    struct wl_list output_list;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct SDL_WaylandTouch *touch;
@@ -110,7 +110,7 @@ struct SDL_DisplayData
     SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
     int wl_output_done_count;
-    SDL_DisplayData *next;
+    struct wl_list link;
 };
 
 /* Needed here to get wl_surface declaration, fixes GitHub#4594 */

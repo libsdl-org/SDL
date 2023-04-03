@@ -188,6 +188,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
 
     data->initializing = SDL_TRUE;
     data->display = display;
+    WAYLAND_wl_list_init(&data->output_list);
 
     /* Initialize all variables that we clean on shutdown */
     device = SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -660,12 +661,12 @@ static const struct wl_output_listener output_listener = {
     display_handle_scale
 };
 
-static int Wayland_add_display(SDL_VideoData *d, uint32_t id)
+static int Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
     struct wl_output *output;
     SDL_DisplayData *data;
 
-    output = wl_registry_bind(d->registry, id, &wl_output_interface, 2);
+    output = wl_registry_bind(d->registry, id, &wl_output_interface, version);
     if (output == NULL) {
         return SDL_SetError("Failed to retrieve output.");
     }
@@ -679,17 +680,7 @@ static int Wayland_add_display(SDL_VideoData *d, uint32_t id)
     SDL_WAYLAND_register_output(output);
 
     /* Keep a list of outputs for deferred xdg-output initialization. */
-    if (d->output_list != NULL) {
-        SDL_DisplayData *node = d->output_list;
-
-        while (node->next != NULL) {
-            node = node->next;
-        }
-
-        node->next = data;
-    } else {
-        d->output_list = data;
-    }
+    WAYLAND_wl_list_insert(&d->output_list, &data->link);
 
     if (data->videodata->xdg_output_manager) {
         data->xdg_output = zxdg_output_manager_v1_get_xdg_output(data->videodata->xdg_output_manager, output);
@@ -698,49 +689,34 @@ static int Wayland_add_display(SDL_VideoData *d, uint32_t id)
     return 0;
 }
 
-static void Wayland_free_display(SDL_VideoData *d, uint32_t id)
+static void Wayland_free_display(SDL_VideoDisplay *display)
 {
-    SDL_DisplayID *displays;
-    SDL_VideoDisplay *display;
-    SDL_DisplayData *data;
-    int i;
+    if (display) {
+        SDL_DisplayData *display_data = display->driverdata;
+        int i;
 
-    displays = SDL_GetDisplays(NULL);
-    if (displays) {
-        for (i = 0; displays[i]; ++i) {
-            display = SDL_GetVideoDisplay(displays[i]);
-            data = display->driverdata;
-            if (data->registry_id == id) {
-                if (d->output_list != NULL) {
-                    SDL_DisplayData *node = d->output_list;
-                    if (node == data) {
-                        d->output_list = node->next;
-                    } else {
-                        while (node->next != data && node->next != NULL) {
-                            node = node->next;
-                        }
-                        if (node->next != NULL) {
-                            node->next = node->next->next;
-                        }
-                    }
-                }
-                SDL_DelVideoDisplay(displays[i], SDL_FALSE);
-                if (data->xdg_output) {
-                    zxdg_output_v1_destroy(data->xdg_output);
-                }
-                wl_output_destroy(data->output);
-                SDL_free(data);
-                break;
-            }
+        if (wl_output_get_version(display_data->output) >= WL_OUTPUT_RELEASE_SINCE_VERSION) {
+            wl_output_release(display_data->output);
+        } else {
+            wl_output_destroy(display_data->output);
         }
-        SDL_free(displays);
+
+        /* Unlink this display. */
+        WAYLAND_wl_list_remove(&display_data->link);
+
+        /* Null the driverdata member of the mode structs, or they will be wrongly freed. */
+        for (i = display->num_fullscreen_modes; i--;) {
+            display->fullscreen_modes[i].driverdata = NULL;
+        }
+        display->desktop_mode.driverdata = NULL;
+        SDL_DelVideoDisplay(display->id, SDL_FALSE);
     }
 }
 
 static void Wayland_init_xdg_output(SDL_VideoData *d)
 {
     SDL_DisplayData *node;
-    for (node = d->output_list; node != NULL; node = node->next) {
+    wl_list_for_each(node, &d->output_list, link) {
         node->xdg_output = zxdg_output_manager_v1_get_xdg_output(node->videodata->xdg_output_manager, node->output);
         zxdg_output_v1_add_listener(node->xdg_output, &xdg_output_listener, node);
     }
@@ -795,7 +771,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     if (SDL_strcmp(interface, "wl_compositor") == 0) {
         d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(4, version));
     } else if (SDL_strcmp(interface, "wl_output") == 0) {
-        Wayland_add_display(d, id);
+        Wayland_add_display(d, id, SDL_min(version, 3));
     } else if (SDL_strcmp(interface, "wl_seat") == 0) {
         Wayland_display_add_input(d, id, version);
     } else if (SDL_strcmp(interface, "xdg_wm_base") == 0) {
@@ -856,8 +832,15 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
 static void display_remove_global(void *data, struct wl_registry *registry, uint32_t id)
 {
     SDL_VideoData *d = data;
+    SDL_DisplayData  *node;
+
     /* We don't get an interface, just an ID, so assume it's a wl_output :shrug: */
-    Wayland_free_display(d, id);
+    wl_list_for_each (node, &d->output_list, link) {
+        if (node->registry_id == id) {
+            Wayland_free_display(SDL_GetVideoDisplay(node->display));
+            break;
+        }
+    }
 }
 
 static const struct wl_registry_listener registry_listener = {
@@ -969,28 +952,14 @@ static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *
 static void Wayland_VideoCleanup(_THIS)
 {
     SDL_VideoData *data = _this->driverdata;
-    int i, j;
+    int i;
 
     Wayland_FiniMouse(data);
 
     for (i = _this->num_displays - 1; i >= 0; --i) {
         SDL_VideoDisplay *display = &_this->displays[i];
-
-        if (display->driverdata->xdg_output) {
-            zxdg_output_v1_destroy(display->driverdata->xdg_output);
-        }
-
-        wl_output_destroy(display->driverdata->output);
-        SDL_free(display->driverdata);
-        display->driverdata = NULL;
-
-        for (j = display->num_fullscreen_modes; j--;) {
-            display->fullscreen_modes[j].driverdata = NULL;
-        }
-        display->desktop_mode.driverdata = NULL;
-        SDL_DelVideoDisplay(display->id, SDL_FALSE);
+        Wayland_free_display(display);
     }
-    data->output_list = NULL;
 
     Wayland_display_destroy_input(data);
     Wayland_display_destroy_pointer_constraints(data);
