@@ -79,10 +79,6 @@ struct SDL_VideoData
     struct wp_fractional_scale_manager_v1 *fractional_scale_manager;
     struct zwp_input_timestamps_manager_v1 *input_timestamps_manager;
 
-    EGLDisplay edpy;
-    EGLContext context;
-    EGLConfig econf;
-
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
     struct SDL_WaylandTabletManager *tablet_manager;
@@ -110,7 +106,6 @@ struct SDL_DisplayData
     int x, y, screen_width, screen_height, refresh, transform;
     SDL_DisplayOrientation orientation;
     int physical_width, physical_height;
-    float ddpi, hdpi, vdpi;
     SDL_bool has_logical_position, has_logical_size;
     SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
