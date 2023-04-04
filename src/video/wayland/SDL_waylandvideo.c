@@ -62,6 +62,12 @@
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
+#if SDL_WAYLAND_CHECK_VERSION(1, 20, 0)
+#define SDL_WL_OUTPUT_VERSION 4
+#else
+#define SDL_WL_OUTPUT_VERSION 3
+#endif
+
 static void display_handle_done(void *data, struct wl_output *output);
 
 /* Initialization/Query functions */
@@ -324,6 +330,7 @@ static void xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output
 static void xdg_output_handle_name(void *data, struct zxdg_output_v1 *xdg_output,
                                    const char *name)
 {
+    /* Deprecated as of wl_output v4. */
 }
 
 static void xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg_output,
@@ -331,12 +338,11 @@ static void xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg
 {
     SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
 
-    if (driverdata->display == 0) {
+    /* Deprecated as of wl_output v4. */
+    if (wl_output_get_version(driverdata->output) < WL_OUTPUT_DESCRIPTION_SINCE_VERSION &&
+        driverdata->display == 0) {
         /* xdg-output descriptions, if available, supersede wl-output model names. */
-        if (driverdata->placeholder.name != NULL) {
-            SDL_free(driverdata->placeholder.name);
-        }
-
+        SDL_free(driverdata->placeholder.name);
         driverdata->placeholder.name = SDL_strdup(description);
     }
 }
@@ -449,7 +455,7 @@ static void display_handle_geometry(void *data,
     driverdata->physical_width = physical_width;
     driverdata->physical_height = physical_height;
 
-    /* The output name is only set if xdg-output hasn't provided a description. */
+    /* The model is only used for the output name if wl_output or xdg-output haven't provided a description. */
     if (driverdata->display == 0 && driverdata->placeholder.name == NULL) {
         driverdata->placeholder.name = SDL_strdup(model);
     }
@@ -654,11 +660,28 @@ static void display_handle_scale(void *data,
     driverdata->scale_factor = factor;
 }
 
+static void display_handle_name(void *data, struct wl_output *wl_output, const char *name)
+{
+}
+
+static void display_handle_description(void *data, struct wl_output *wl_output, const char *description)
+{
+    SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
+
+    if (driverdata->display == 0) {
+        /* The description, if available, supersedes the model name. */
+        SDL_free(driverdata->placeholder.name);
+        driverdata->placeholder.name = SDL_strdup(description);
+    }
+}
+
 static const struct wl_output_listener output_listener = {
-    display_handle_geometry,
-    display_handle_mode,
-    display_handle_done,
-    display_handle_scale
+    display_handle_geometry, /* Version 1 */
+    display_handle_mode, /* Version 1 */
+    display_handle_done, /* Version 2 */
+    display_handle_scale, /* Version 2 */
+    display_handle_name, /* Version 4 */
+    display_handle_description /* Version 4 */
 };
 
 static int Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
@@ -771,7 +794,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     if (SDL_strcmp(interface, "wl_compositor") == 0) {
         d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(4, version));
     } else if (SDL_strcmp(interface, "wl_output") == 0) {
-        Wayland_add_display(d, id, SDL_min(version, 3));
+        Wayland_add_display(d, id, SDL_min(version, SDL_WL_OUTPUT_VERSION));
     } else if (SDL_strcmp(interface, "wl_seat") == 0) {
         Wayland_display_add_input(d, id, version);
     } else if (SDL_strcmp(interface, "xdg_wm_base") == 0) {
