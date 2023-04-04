@@ -283,7 +283,8 @@ static SDL_bool
 FcitxCreateInputContext(SDL_DBusContext* dbus, const char *appname, char **ic_path) {
     const char *program = "program";
     SDL_bool retval = SDL_FALSE;
-    if (dbus->session_conn) {
+
+    if (dbus && dbus->session_conn) {
         DBusMessage *msg = dbus->message_new_method_call(FCITX_DBUS_SERVICE, FCITX_IM_DBUS_PATH, FCITX_IM_DBUS_INTERFACE, "CreateInputContext");
         if (msg) {
             DBusMessage *reply = NULL;
