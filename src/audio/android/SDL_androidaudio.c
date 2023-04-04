@@ -40,8 +40,17 @@ static int ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
     SDL_AudioFormat test_format;
     SDL_bool iscapture = this->iscapture;
 
-    SDL_assert((captureDevice == NULL) || !iscapture);
-    SDL_assert((audioDevice == NULL) || iscapture);
+    if (iscapture) {
+        if (captureDevice) {
+            return SDL_SetError("An audio capture device is already opened");
+        }
+    }
+
+    if (!iscapture) {
+        if (audioDevice) {
+            return SDL_SetError("An audio playback device is already opened");
+        }
+    }
 
     if (iscapture) {
         captureDevice = this;

@@ -75,8 +75,17 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     aaudio_result_t res;
     LOGI(__func__);
 
-    SDL_assert((captureDevice == NULL) || !iscapture);
-    SDL_assert((audioDevice == NULL) || iscapture);
+    if (iscapture) {
+        if (captureDevice) {
+            return SDL_SetError("An audio capture device is already opened");
+        }
+    }
+
+    if (!iscapture) {
+        if (audioDevice) {
+            return SDL_SetError("An audio playback device is already opened");
+        }
+    }
 
     if (iscapture) {
         if (!Android_JNI_RequestPermission("android.permission.RECORD_AUDIO")) {
