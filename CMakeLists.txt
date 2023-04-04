@@ -383,7 +383,8 @@ dep_option(SDL_SSE4_2              "Use SSE4.2 assembly routines" ON "SDL_ASSEMB
 dep_option(SDL_MMX                 "Use MMX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_ALTIVEC             "Use Altivec assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_POWERPC32 OR SDL_CPU_POWERPC64" OFF)
 dep_option(SDL_ARMSIMD             "Use SIMD assembly blitters on ARM" OFF "SDL_ASSEMBLY;SDL_CPU_ARM32" OFF)
-dep_option(SDL_ARMNEON             "Use NEON assembly blitters on ARM" OFF "SDL_ASSEMBLY;SDL_CPU_ARM32" OFF)
+dep_option(SDL_ARMNEON             "Use NEON assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
+dep_option(SDL_ARMNEON_BLITTERS    "Use NEON assembly blitters on ARM32" OFF "SDL_VIDEO;SDL_ASSEMBLY;SDL_ARMNEON;SDL_CPU_ARM32" OFF)
 dep_option(SDL_LSX                 "Use LSX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 dep_option(SDL_LASX                "Use LASX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 
@@ -1016,7 +1017,7 @@ if(SDL_ASSEMBLY)
       endif()
     endif()
 
-    if(SDL_ARMNEON)
+    if(SDL_ARMNEON_BLITTERS)
       cmake_push_check_state()
       set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -x assembler-with-cpp")
       list(APPEND CMAKE_REQUIRED_LINK_OPTIONS -x none)
@@ -1035,17 +1036,34 @@ if(SDL_ASSEMBLY)
         .global main
         pld [r0]
         vmovn.u16 d0, q0
-      " ARMNEON_FOUND)
+      " COMPILER_SUPPORTS_ARMNEON_ASSEMBLY)
       cmake_pop_check_state()
-
-      if(ARMNEON_FOUND)
-        set(HAVE_ARMNEON TRUE)
+      if(COMPILER_SUPPORTS_ARMNEON_ASSEMBLY)
+        set(HAVE_ARMNEON_BLITTERS TRUE)
         set(SDL_ARM_NEON_BLITTERS 1)
         enable_language(ASM)
         file(GLOB ARMNEON_SOURCES ${SDL3_SOURCE_DIR}/src/video/arm/pixman-arm-neon*.S)
         list(APPEND SOURCE_FILES ${ARMNEON_SOURCES})
         set_property(SOURCE ${ARMNEON_SOURCES} APPEND PROPERTY COMPILE_OPTIONS -x assembler-with-cpp)
         set(WARN_ABOUT_ARM_NEON_ASM_MIT TRUE)
+      endif()
+    endif()
+
+    if(SDL_ARMNEON)
+      check_c_source_compiles("
+        #include <arm_neon.h>
+        void floats_add(float *dest, float *a, float *b, unsigned size) {
+          for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
+            vst1q_f32(dest, vaddq_f32(vld1q_f32(a), vld1q_f32(b)));
+          }
+        }
+        int main(int argc, char *argv[]) {
+          floats_add((float*)0, (float*)0, (float*)0, 0);
+          return 0;
+         }" COMPILER_SUPPORTS_ARMNEON)
+
+      if(COMPILER_SUPPORTS_ARMNEON)
+        set(HAVE_ARMNEON TRUE)
       endif()
     endif()
   endif()
