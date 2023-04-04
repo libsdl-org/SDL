@@ -280,6 +280,17 @@ UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
                 continue;
             }
 
+            /* 
+             * Swap the scancode for these two wrongly translated keys
+             * UCKeyTranslate() function does not do its job properly for ISO layout keyboards, where the key '@',
+             * which is located in the top left corner of the keyboard right under the Escape key, and the additional
+             * key '<', which is on the right of the Shift key, are inverted
+            */
+            if ((scancode == SDL_SCANCODE_NONUSBACKSLASH || scancode == SDL_SCANCODE_GRAVE) && KBGetLayoutType(LMGetKbdType()) == kKeyboardISO) {
+                /* see comments in scancodes_darwin.h */
+                scancode = (SDL_Scancode)((SDL_SCANCODE_NONUSBACKSLASH + SDL_SCANCODE_GRAVE) - scancode);
+            }
+
             dead_key_state = 0;
             err = UCKeyTranslate ((UCKeyboardLayout *) chr_data,
                                   i, kUCKeyActionDown,
@@ -394,7 +405,7 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 #endif
 
     if ((scancode == 10 || scancode == 50) && KBGetLayoutType(LMGetKbdType()) == kKeyboardISO) {
-        /* see comments in SDL_cocoakeys.h */
+        /* see comments in scancodes_darwin.h */
         scancode = 60 - scancode;
     }
 
