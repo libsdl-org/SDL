@@ -569,7 +569,8 @@ macro(CheckWayland)
 
       # We have to generate some protocol interface code for some unstable Wayland features.
       file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols")
-      target_include_directories(sdl-build-options SYSTEM INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols")
+      # Prepend to include path to make sure it they override installed protocol headers
+      target_include_directories(sdl-build-options SYSTEM BEFORE INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols")
 
       file(GLOB WAYLAND_PROTOCOLS_XML RELATIVE "${SDL3_SOURCE_DIR}/wayland-protocols/" "${SDL3_SOURCE_DIR}/wayland-protocols/*.xml")
       foreach(_XML ${WAYLAND_PROTOCOLS_XML})
