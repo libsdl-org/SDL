@@ -34,6 +34,7 @@ extern void WIN_StopTextInput(_THIS);
 extern void WIN_SetTextInputRect(_THIS, const SDL_Rect *rect);
 extern void WIN_ClearComposition(_THIS);
 extern SDL_bool WIN_IsTextInputShown(_THIS);
+extern SDL_bool WIN_HasScreenKeyboardSupport(_THIS);
 
 extern SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, struct SDL_VideoData *videodata);
 

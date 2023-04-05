@@ -202,6 +202,12 @@ WIN_ResetDeadKeys()
     }
 }
 
+SDL_bool
+WIN_HasScreenKeyboardSupport(_THIS)
+{
+    return SDL_FALSE;
+}
+
 void
 WIN_StartTextInput(_THIS)
 {
