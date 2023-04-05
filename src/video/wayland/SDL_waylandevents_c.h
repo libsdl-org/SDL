@@ -21,7 +21,6 @@
 
 #include "SDL_internal.h"
 
-
 #ifndef SDL_waylandevents_h_
 #define SDL_waylandevents_h_
 
