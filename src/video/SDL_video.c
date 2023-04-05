@@ -1731,7 +1731,7 @@ static int SDL_DllNotSupported(const char *name)
     return SDL_SetError("No dynamic %s support in current SDL video driver (%s)", name, _this->name);
 }
 
-SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int w, int h, SDL_Window *parent, Uint32 flags)
+static SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int w, int h, SDL_Window *parent, Uint32 flags)
 {
     SDL_Window *window;
     Uint32 type_flags, graphics_flags;
