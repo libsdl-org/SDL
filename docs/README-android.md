@@ -218,6 +218,13 @@ You should not use the SDL renderer API while the app going in background:
    GL context is restored, and the SDL renderer API is available (unless you
    receive SDL_EVENT_RENDER_DEVICE_RESET).
 
+Activity lifecyle
+================================================================================
+
+You can control activity re-creation (eg. onCreate()) behaviour. This allows to keep
+or re-initialize java and native static datas, see SDL_hints.h:
+- SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY
+
 Mouse / Touch events
 ================================================================================
 

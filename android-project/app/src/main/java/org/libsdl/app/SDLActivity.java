@@ -221,6 +221,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
     // This is what SDL runs in. It invokes SDL_main(), eventually
     protected static Thread mSDLThread;
+    protected static boolean mSDLMainFinished = false;
+    protected static boolean mActivityCreated = false;
 
     protected static SDLGenericMotionListener_API12 getMotionListener() {
         if (mMotionListener == null) {
@@ -323,6 +325,24 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Log.v(TAG, "Model: " + Build.MODEL);
         Log.v(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
+
+
+        /* Control activity re-creation */
+        if (mSDLMainFinished || mActivityCreated) {
+              boolean allow_recreate = SDLActivity.nativeAllowRecreateActivity();
+              if (mSDLMainFinished) {
+                  Log.v(TAG, "SDL main() finished");
+              }
+              if (allow_recreate) {
+                  Log.v(TAG, "activity re-created");
+              } else {
+                  Log.v(TAG, "activity finished");
+                  System.exit(0);
+                  return;
+              }
+        }
+
+        mActivityCreated = true;
 
         try {
             Thread.currentThread().setName("SDLActivity");
@@ -950,6 +970,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativePermissionResult(int requestCode, boolean result);
     public static native void onNativeLocaleChanged();
     public static native void onNativeDarkModeChanged(boolean enabled);
+    public static native boolean nativeAllowRecreateActivity();
 
     /**
      * This method is called by SDL using JNI.
@@ -1902,6 +1923,7 @@ class SDLMain implements Runnable {
         if (SDLActivity.mSingleton != null && !SDLActivity.mSingleton.isFinishing()) {
             // Let's finish the Activity
             SDLActivity.mSDLThread = null;
+            SDLActivity.mSDLMainFinished = true;
             SDLActivity.mSingleton.finish();
         }  // else: Activity is already being destroyed
 

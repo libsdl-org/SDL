@@ -146,6 +146,19 @@ extern "C" {
 #define SDL_HINT_ANDROID_TRAP_BACK_BUTTON "SDL_ANDROID_TRAP_BACK_BUTTON"
 
 /**
+ * \brief A variable to control whether SDL activity is allowed to be re-created.
+ *        If so, java static datas and static datas from native libraries remain with their current values.
+ *        When not allowed, the activity terminates with exit(0) to be fully re-initialized afterward.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Not allowed. (default)
+ *   "1"       - Allowed.
+ *
+ * The value of this hint is used at runtime, so it can be changed at any time.
+ */
+#define SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY "SDL_ANDROID_ALLOW_RECREATE_ACTIVITY"
+
+/**
  *  \brief Specify an application name.
  *
  * This hint lets you specify the application name sent to the OS when
