@@ -200,4 +200,7 @@ extern AudioBootStrap N3DSAUDIO_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 extern AudioBootStrap QSAAUDIO_bootstrap;
 
+extern SDL_AudioDevice *get_audio_dev(SDL_AudioDeviceID id);
+extern int get_max_num_audio_dev(void);
+
 #endif /* SDL_sysaudio_h_ */
