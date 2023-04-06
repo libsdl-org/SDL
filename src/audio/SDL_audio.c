@@ -201,6 +201,16 @@ static SDL_AudioDevice *get_audio_device(SDL_AudioDeviceID id)
     return open_devices[id];
 }
 
+int get_max_num_audio_dev(void)
+{
+    return SDL_arraysize(open_devices);
+}
+
+SDL_AudioDevice *get_audio_dev(SDL_AudioDeviceID id)
+{
+    return open_devices[id];
+}
+
 /* stubs for audio drivers that don't need a specific entry point... */
 static void SDL_AudioDetectDevices_Default(void)
 {
