@@ -87,6 +87,7 @@ static SDL_SpinLock SDL_HIDAPI_spinlock;
 static SDL_bool SDL_HIDAPI_hints_changed = SDL_FALSE;
 static Uint32 SDL_HIDAPI_change_count = 0;
 static SDL_HIDAPI_Device *SDL_HIDAPI_devices SDL_GUARDED_BY(SDL_joystick_lock);
+static char SDL_HIDAPI_device_magic;
 static int SDL_HIDAPI_numjoysticks = 0;
 static SDL_bool SDL_HIDAPI_combine_joycons = SDL_TRUE;
 static SDL_bool initialized = SDL_FALSE;
@@ -846,6 +847,7 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     if (device == NULL) {
         return NULL;
     }
+    device->magic = &SDL_HIDAPI_device_magic;
     device->path = SDL_strdup(info->path);
     if (!device->path) {
         SDL_free(device);
@@ -957,6 +959,7 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
                 device->children[i]->parent = NULL;
             }
 
+            device->magic = NULL;
             SDL_DestroyMutex(device->dev_lock);
             SDL_free(device->serial);
             SDL_free(device->name);
@@ -1432,7 +1435,7 @@ static SDL_bool HIDAPI_GetJoystickDevice(SDL_Joystick *joystick, SDL_HIDAPI_Devi
 
     if (joystick && joystick->hwdata) {
         *device = joystick->hwdata->device;
-        if (*device && (*device)->driver) {
+        if (*device && (*device)->magic == &SDL_HIDAPI_device_magic && (*device)->driver != NULL) {
             return SDL_TRUE;
         }
     }
