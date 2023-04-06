@@ -1723,7 +1723,7 @@ static int D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Res
     src = (const Uint8 *)pixels;
     dst = textureMemory;
     length = w * bpp;
-    if (length == pitch && length == pitchedDesc.RowPitch) {
+    if (length == (UINT)pitch && length == pitchedDesc.RowPitch) {
         SDL_memcpy(dst, src, (size_t)length * h);
     } else {
         if (length > (UINT)pitch) {
