@@ -929,9 +929,6 @@ void X11_UpdateWindowPosition(SDL_Window *window)
 
         if (!caught_x11_error) {
             if ((x != orig_x) || (y != orig_y)) {
-                if (SDL_WINDOW_IS_POPUP(window)) {
-                    SDL_GlobalToRelativeForWindow(window, x, y, &x, &y);
-                }
                 break; /* window moved, time to go. */
             } else if ((x == dest_x) && (y == dest_y)) {
                 break; /* we're at the place we wanted to be anyhow, drop out. */
@@ -946,6 +943,10 @@ void X11_UpdateWindowPosition(SDL_Window *window)
     }
 
     if (!caught_x11_error) {
+        if (SDL_WINDOW_IS_POPUP(window)) {
+            SDL_GlobalToRelativeForWindow(window, x, y, &x, &y);
+        }
+
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, attrs.width, attrs.height);
     }
