@@ -603,40 +603,19 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
         if (i < 3) {
             scale *= ((double)ctx->gyro_numerator / ctx->gyro_denominator) * M_PI / 180.0;
 
-            if (device->vendor_id == USB_VENDOR_SONY &&
-                device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
-                /* The Armor-X Pro seems to only deliver half the rotation it should,
-                 * and in the opposite direction on the Z axis */
-                switch (i) {
-                case 0:
-                case 1:
-                    scale *= 2.0;
-                    break;
-                case 2:
-                    scale *= -2.0;
-                    break;
-                default:
-                    break;
-                }
-            }
+             if (device->vendor_id == USB_VENDOR_SONY &&
+                 device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
+                 /* The Armor-X Pro seems to only deliver half the rotation it should */
+                 scale *= 2.0;
+             }
         } else {
             scale *= ((double)ctx->accel_numerator / ctx->accel_denominator) * SDL_STANDARD_GRAVITY;
 
             if (device->vendor_id == USB_VENDOR_SONY &&
                 device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
                 /* The Armor-X Pro seems to only deliver half the acceleration it should,
-                 * and in the opposite direction on the X and Y axes */
-                switch (i) {
-                case 3:
-                case 4:
-                    scale *= -2.0;
-                    break;
-                case 5:
-                    scale *= 2.0;
-                    break;
-                default:
-                    break;
-                }
+                 * and in the opposite direction on all axes */
+                scale *= -2.0;
             }
         }
         ctx->calibration[i].scale = (float)scale;
