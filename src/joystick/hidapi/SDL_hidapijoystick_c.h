@@ -56,6 +56,7 @@ struct _SDL_HIDAPI_DeviceDriver;
 
 typedef struct _SDL_HIDAPI_Device
 {
+    const void *magic;
     char *name;
     char *path;
     Uint16 vendor_id;
