@@ -1358,6 +1358,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         RECT rect;
         if (GetUpdateRect(hwnd, &rect, FALSE)) {
+            const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+            /* Composited windows will continue to receive WM_PAINT messages for update
+               regions until the window is actually painted through Begin/EndPaint */
+            if (style & WS_EX_COMPOSITED) {
+                PAINTSTRUCT ps;
+                BeginPaint(hwnd, &ps);
+                EndPaint(hwnd, &ps);
+            }
+
             ValidateRect(hwnd, NULL);
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
         }
