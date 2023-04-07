@@ -968,33 +968,48 @@ static const struct qt_extended_surface_listener extended_surface_listener = {
 };
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-static void update_scale_factor(SDL_WindowData *window)
+static void Wayland_HandlePreferredScaleChanged(SDL_WindowData *window_data, float factor)
 {
-    float old_factor = window->windowed_scale_factor;
-    float new_factor;
+    const float old_factor = window_data->windowed_scale_factor;
+
+    if (!(window_data->sdlwindow->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
+        /* Scale will always be 1, just ignore this */
+        return;
+    }
+
+    if (!FloatEqual(factor, old_factor)) {
+        window_data->windowed_scale_factor = factor;
+        ConfigureWindowGeometry(window_data->sdlwindow);
+    }
+}
+
+static void Wayland_MaybeUpdateScaleFactor(SDL_WindowData *window)
+{
+    float factor;
     int i;
 
-    if (!(window->sdlwindow->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
-        /* Scale will always be 1, just ignore this */
+    /* If the fractional scale protocol is present or the core protocol supports the
+     * preferred buffer scale event, the compositor will tell explicitly the application
+     * what scale it wants via these events, so don't try to determine the scale factor
+     * from which displays the surface has entered.
+     */
+    if (window->fractional_scale || wl_surface_get_version(window->surface) >= WL_SURFACE_PREFERRED_BUFFER_SCALE_SINCE_VERSION) {
         return;
     }
 
     if (window->num_outputs != 0) {
         /* Check every display's factor, use the highest */
-        new_factor = 0.0f;
+        factor = 0.0f;
         for (i = 0; i < window->num_outputs; i++) {
             SDL_DisplayData *driverdata = window->outputs[i];
-            new_factor = SDL_max(new_factor, driverdata->scale_factor);
+            factor = SDL_max(factor, driverdata->scale_factor);
         }
     } else {
         /* No monitor (somehow)? Just fall back. */
-        new_factor = old_factor;
+        factor = window->windowed_scale_factor;
     }
 
-    if (!FloatEqual(new_factor, old_factor)) {
-        window->windowed_scale_factor = new_factor;
-        ConfigureWindowGeometry(window->sdlwindow);
-    }
+    Wayland_HandlePreferredScaleChanged(window, factor);
 }
 
 /* While we can't get window position from the compositor, we do at least know
@@ -1060,10 +1075,7 @@ static void handle_surface_enter(void *data, struct wl_surface *surface,
 
     /* Update the scale factor after the move so that fullscreen outputs are updated. */
     Wayland_move_window(window->sdlwindow, driverdata);
-
-    if (!window->fractional_scale) {
-        update_scale_factor(window);
-    }
+    Wayland_MaybeUpdateScaleFactor(window);
 }
 
 static void handle_surface_leave(void *data, struct wl_surface *surface,
@@ -1100,14 +1112,42 @@ static void handle_surface_leave(void *data, struct wl_surface *surface,
                             window->outputs[window->num_outputs - 1]);
     }
 
-    if (!window->fractional_scale) {
-        update_scale_factor(window);
+    Wayland_MaybeUpdateScaleFactor(window);
+}
+
+static void handle_preferred_buffer_scale(void *data, struct wl_surface *wl_surface, int32_t factor)
+{
+    SDL_WindowData *wind = data;
+
+    /* The spec is unclear on how this interacts with the fractional scaling protocol,
+     * so, for now, assume that the fractional scaling protocol takes priority and
+     * only listen to this event if the fractional scaling protocol is not present.
+     */
+    if (!wind->fractional_scale) {
+        Wayland_HandlePreferredScaleChanged(data, (float)factor);
     }
+}
+
+static void handle_preferred_buffer_transform(void *data, struct wl_surface *wl_surface, uint32_t transform)
+{
+    /* Nothing to do here. */
 }
 
 static const struct wl_surface_listener surface_listener = {
     handle_surface_enter,
-    handle_surface_leave
+    handle_surface_leave,
+    handle_preferred_buffer_scale,
+    handle_preferred_buffer_transform
+};
+
+static void handle_preferred_fractional_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale)
+{
+    const float factor = scale / 120.; /* 120 is a magic number defined in the spec as a common denominator */
+    Wayland_HandlePreferredScaleChanged(data, factor);
+}
+
+static const struct wp_fractional_scale_v1_listener fractional_scale_listener = {
+    handle_preferred_fractional_scale
 };
 
 static void SetKeyboardFocus(SDL_Window *window)
@@ -1604,29 +1644,6 @@ int Wayland_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
                             NULL);
     return 0;
 }
-
-static void handle_preferred_scale_changed(void *data,
-                                    struct wp_fractional_scale_v1 *wp_fractional_scale_v1,
-                                    uint preferred_scale)
-{
-    SDL_WindowData *window = data;
-    float old_factor = window->windowed_scale_factor;
-    float new_factor = preferred_scale / 120.; /* 120 is a magic number defined in the spec as a common denominator*/
-
-    if (!(window->sdlwindow->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
-        /* Scale will always be 1, just ignore this */
-        return;
-    }
-
-    if (!FloatEqual(new_factor, old_factor)) {
-        window->windowed_scale_factor = new_factor;
-        ConfigureWindowGeometry(window->sdlwindow);
-    }
-}
-
-static const struct wp_fractional_scale_v1_listener fractional_scale_listener = {
-    handle_preferred_scale_changed
-};
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 static void SDLCALL QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
