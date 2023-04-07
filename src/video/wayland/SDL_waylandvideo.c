@@ -62,6 +62,12 @@
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
+#if SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
+#define SDL_WL_COMPOSITOR_VERSION 6
+#else
+#define SDL_WL_COMPOSITOR_VERSION 4
+#endif
+
 #if SDL_WAYLAND_CHECK_VERSION(1, 20, 0)
 #define SDL_WL_OUTPUT_VERSION 4
 #else
@@ -792,7 +798,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     /*printf("WAYLAND INTERFACE: %s\n", interface);*/
 
     if (SDL_strcmp(interface, "wl_compositor") == 0) {
-        d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(4, version));
+        d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(SDL_WL_COMPOSITOR_VERSION, version));
     } else if (SDL_strcmp(interface, "wl_output") == 0) {
         Wayland_add_display(d, id, SDL_min(version, SDL_WL_OUTPUT_VERSION));
     } else if (SDL_strcmp(interface, "wl_seat") == 0) {
