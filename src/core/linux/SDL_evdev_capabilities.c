@@ -76,7 +76,10 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
         return SDL_UDEV_DEVICE_TOUCHPAD;
     }
 
-    /* X, Y, Z axes but no buttons probably means an accelerometer */
+    /* X, Y, Z axes but no buttons probably means an accelerometer,
+     * although it could equally mean 3-axis driving sim pedals -
+     * we can't actually tell the difference from the information
+     * available here */
     if (test_bit(EV_ABS, bitmask_ev) &&
         test_bit(ABS_X, bitmask_abs) &&
         test_bit(ABS_Y, bitmask_abs) &&
@@ -86,7 +89,8 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
     }
 
     /* RX, RY, RZ axes but no buttons probably means a gyro or
-     * accelerometer (we don't distinguish) */
+     * accelerometer (we don't distinguish), although as with X,Y,Z,
+     * it could equally well mean 3-axis driving sim pedals */
     if (test_bit(EV_ABS, bitmask_ev) &&
         test_bit(ABS_RX, bitmask_abs) &&
         test_bit(ABS_RY, bitmask_abs) &&
