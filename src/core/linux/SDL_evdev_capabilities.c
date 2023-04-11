@@ -58,7 +58,8 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
     unsigned long keyboard_mask;
     unsigned i;
 
-    /* X, Y, Z axes but no buttons probably means an accelerometer */
+    /* X, Y, Z axes but no buttons probably means an accelerometer
+     * (TODO: or it could mean 3-axis driving sim pedals, we can't tell!) */
     if (test_bit(EV_ABS, bitmask_ev) &&
         test_bit(ABS_X, bitmask_abs) &&
         test_bit(ABS_Y, bitmask_abs) &&
@@ -67,7 +68,8 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
         return SDL_UDEV_DEVICE_ACCELEROMETER;
     }
 
-    /* RX, RY, RZ axes but no buttons also probably means an accelerometer */
+    /* RX, RY, RZ axes but no buttons also probably means an accelerometer
+     * (TODO: or it could mean 3-axis driving sim pedals, we can't tell!) */
     if (test_bit(EV_ABS, bitmask_ev) &&
         test_bit(ABS_RX, bitmask_abs) &&
         test_bit(ABS_RY, bitmask_abs) &&
