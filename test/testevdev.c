@@ -71,6 +71,7 @@ typedef struct
     uint8_t ff[(FF_MAX + 1) / 8];
     uint8_t props[INPUT_PROP_MAX / 8];
     int expected;
+    const char *todo;
 } GuessTest;
 
 /*
@@ -1084,7 +1085,12 @@ run_test(void)
                 }
             }
 
-            success = 0;
+            if (t->todo) {
+                printf("\tKnown issue, ignoring: %s\n", t->todo);
+            } else {
+                printf("\tFailed\n");
+                success = 0;
+            }
         }
     }
 
