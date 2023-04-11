@@ -177,6 +177,31 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
         devclass |= SDL_UDEV_DEVICE_KEYBOARD; /* ID_INPUT_KEYBOARD */
     }
 
+    /* If it hasn't been recognised as anything else so far, and it has
+     * flight stick or driving controller buttons, assume it's a joystick. */
+    if (test_bit(EV_KEY, bitmask_ev) && devclass == 0) {
+        /* 0x120 BTN_JOYSTICK/BTN_TRIGGER up to 0x12f BTN_DEAD are
+         * joystick buttons.
+         * 0x130 BTN_GAMEPAD up to 0x13e BTN_THUMBR and presumably the
+         * unused value at 0x13f are gamepad buttons; 0x140 BTN_DIGI is
+         * the first code in the next block. */
+        for (i = BTN_JOYSTICK; i < BTN_DIGI; i++) {
+            if (test_bit(i, bitmask_key)) {
+                devclass |= SDL_UDEV_DEVICE_JOYSTICK;
+                break;
+            }
+        }
+
+        /* 0x150 BTN_WHEEL starts a block of driving sim buttons.
+         * 0x160 KEY_OK is the first code in the next block. */
+        for (i = BTN_WHEEL; i < KEY_OK; i++) {
+            if (test_bit(i, bitmask_key)) {
+                devclass |= SDL_UDEV_DEVICE_JOYSTICK;
+                break;
+            }
+        }
+    }
+
     return devclass;
 }
 

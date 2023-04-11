@@ -1588,8 +1588,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x057e,
       .product_id = 0x0306,
       .version = 0x0600,
-      /* TODO: Should this be JOYSTICK? It has one stick and two buttons */
-      .expected = SDL_UDEV_DEVICE_UNKNOWN,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
       /* RX, RY, RZ, hat 0 - even though this is an accelerometer, which
@@ -1633,8 +1632,7 @@ static const GuessTest guess_tests[] =
       /* Flags guessed from kernel source code, not confirmed with real
        * hardware */
       .name = "Wiimote - Balance Board",
-      /* TODO: Should this be JOYSTICK? */
-      .expected = SDL_UDEV_DEVICE_UNKNOWN,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
       /* Hat 0-1 */
