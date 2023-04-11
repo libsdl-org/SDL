@@ -485,6 +485,61 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      /* https://github.com/ValveSoftware/steam-devices/pull/42
+       * PS4 mode is functionally equivalent, but with product ID 0x011c
+       * and version 0x1101. */
+      .name = "Hori Fighting Stick Alpha - PS5 mode",
+      .bus_type = 0x0003,   /* USB */
+      .vendor_id = 0x0f0d,  /* Hori Co., Ltd. */
+      .product_id = 0x0184, /* HORI FIGHTING STICK α (PS5 mode) */
+      .version = 0x0111,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, MSC */
+      .ev = { 0x1b },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, SELECT, START, MODE,
+           * THUMBL */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x3f,
+      },
+    },
+    {  /* https://github.com/ValveSoftware/steam-devices/pull/42 */
+      .name = "Hori Fighting Stick Alpha - PC mode",
+      .bus_type = 0x0003,   /* USB */
+      .vendor_id = 0x0f0d,  /* Hori Co., Ltd. */
+      .product_id = 0x011e, /* HORI FIGHTING STICK α (PC mode) */
+      .version = 0x0116,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, FF */
+      .ev = { 0x0b, 0x00, 0x20 },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* A, B, X, Y, TL, TR, SELECT, START, MODE, THUMBL, THUMBR */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7c,
+      },
+    },
+    {  /* https://github.com/ValveSoftware/steam-devices/issues/29 */
+      .name = "HORIPAD S for Nintendo",
+      .bus_type = 0x0003,   /* USB */
+      .vendor_id = 0x0f0d,  /* Hori Co., Ltd. */
+      .product_id = 0x00dc, /* HORIPAD S */
+      .version = 0x0112,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, FF */
+      .ev = { 0x0b, 0x00, 0x20 },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* A, B, X, Y, TL, TR, SELECT, START, MODE, THUMBL, THUMBR */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7c,
+      },
+    },
+    {
       .name = "Switch Pro Controller via Bluetooth",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
