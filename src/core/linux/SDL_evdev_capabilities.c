@@ -57,6 +57,7 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
 
     int devclass = 0;
     unsigned long keyboard_mask;
+    unsigned i;
 
     /* If the kernel specifically says it's an accelerometer, believe it */
     if (test_bit(INPUT_PROP_ACCELEROMETER, bitmask_props)) {
@@ -129,8 +130,18 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
         devclass |= SDL_UDEV_DEVICE_MOUSE; /* ID_INPUT_MOUSE */
     }
 
+    /* If it has a driving/flight simulation axis (THROTTLE, RUDDER, WHEEL,
+     * GAS, BRAKE) then it's probably a game or simulation controller */
+    if (test_bit(EV_ABS, bitmask_ev)) {
+        for (i = ABS_THROTTLE; i <= ABS_BRAKE; i++) {
+            if (test_bit(i, bitmask_abs)) {
+                devclass |= SDL_UDEV_DEVICE_JOYSTICK;
+                break;
+            }
+        }
+    }
+
     if (test_bit(EV_KEY, bitmask_ev)) {
-        unsigned i;
         unsigned long found = 0;
 
         for (i = 0; i < BTN_MISC / BITS_PER_LONG; ++i) {

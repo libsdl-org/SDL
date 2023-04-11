@@ -2030,10 +2030,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x0000,
       .product_id = 0x0000,
       .version = 0x0001,
-      /* TODO: Ideally we would identify this as a joystick by it having
-       * the joystick-specific THROTTLE axis and TRIGGER/THUMB buttons */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
-      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
       /* SYN, KEY, ABS, MSC */
       .ev = { 0x1b },
       /* THROTTLE only */
