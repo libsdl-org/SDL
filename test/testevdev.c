@@ -942,6 +942,74 @@ static const GuessTest guess_tests[] =
           /* 0x180 */ ZEROx4, 0x00, 0x00, 0x40, 0x00,
       },
     },
+    { /* https://github.com/ValveSoftware/Proton/issues/5126 */
+      .name = "Smarty Co. VRS DirectForce Pro Pedals",
+      .bus_type = 0x0003,
+      .vendor_id = 0x0483,  /* STMicroelectronics */
+      .product_id = 0xa3be, /* VRS DirectForce Pro Pedals */
+      .version = 0x0111,
+      /* TODO: Ideally we would identify this as a joystick, but there
+       * isn't currently enough information to do that without a table
+       * of known devices. */
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      /* SYN, ABS */
+      .ev = { 0x09 },
+      /* X, Y, Z */
+      .abs = { 0x07 },
+    },
+    { /* https://github.com/ValveSoftware/Proton/issues/5126 */
+      .name = "Heusinkveld Heusinkveld Sim Pedals Ultimate",
+      .bus_type = 0x0003,
+      .vendor_id = 0x30b7,  /* Heusinkveld Engineering */
+      .product_id = 0x1003, /* Heusinkveld Sim Pedals Ultimate */
+      .version = 0x0000,
+      /* TODO: Ideally we would identify this as a joystick, but there
+       * isn't currently enough information to do that without a table
+       * of known devices. */
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      /* SYN, ABS */
+      .ev = { 0x09 },
+      /* RX, RY, RZ */
+      .abs = { 0x38 },
+    },
+    { /* https://github.com/ValveSoftware/Proton/issues/5126 */
+      .name = "Vitaly [mega_mozg] Naidentsev ODDOR-handbrake",
+      .bus_type = 0x0003,
+      .vendor_id = 0x0000,
+      .product_id = 0x0000,
+      .version = 0x0001,
+      /* TODO: Ideally we would identify this as a joystick by it having
+       * the joystick-specific THROTTLE axis and TRIGGER/THUMB buttons */
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      /* SYN, KEY, ABS, MSC */
+      .ev = { 0x1b },
+      /* THROTTLE only */
+      .abs = { 0x40 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* TRIGGER = 0x120, THUMB = 0x121 */
+          /* 0x100 */ ZEROx4, 0x03, 0x00, 0x00, 0x00,
+      },
+    },
+    { /* https://github.com/ValveSoftware/Proton/issues/5126 */
+      .name = "Leo Bodnar Logitech® G25 Pedals",
+      .bus_type = 0x0003,
+      .vendor_id = 0x1dd2,  /* Leo Bodnar Electronics Ltd */
+      .product_id = 0x100c,
+      .version = 0x0110,
+      /* TODO: Ideally we would identify this as a joystick, but there
+       * isn't currently enough information to do that without a table
+       * of known devices. */
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      /* SYN, ABS */
+      .ev = { 0x09 },
+      /* RX, RY, RZ */
+      .abs = { 0x38 },
+    },
     {
       .name = "No information",
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
