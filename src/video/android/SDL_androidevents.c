@@ -82,15 +82,28 @@ static void android_egl_context_restore(SDL_Window *window)
             SDL_PushEvent(&event);
         }
         data->backup_done = 0;
+
+        if (data->has_swap_interval) {
+            SDL_GL_SetSwapInterval(data->swap_interval);
+        }
+
     }
 }
 
 static void android_egl_context_backup(SDL_Window *window)
 {
     if (window) {
+        int interval = 0;
         /* Keep a copy of the EGL Context so we can try to restore it when we resume */
         SDL_WindowData *data = window->driverdata;
         data->egl_context = SDL_GL_GetCurrentContext();
+
+        /* Save/Restore the swap interval / vsync */
+        if (SDL_GL_GetSwapInterval(&interval) == 0) {
+            data->has_swap_interval = 1;
+            data->swap_interval = interval;
+        }
+
         /* We need to do this so the EGLSurface can be freed */
         SDL_GL_MakeCurrent(window, NULL);
         data->backup_done = 1;
