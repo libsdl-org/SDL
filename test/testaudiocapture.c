@@ -25,6 +25,7 @@ static SDL_Renderer *renderer = NULL;
 static SDL_AudioSpec spec;
 static SDL_AudioDeviceID devid_in = 0;
 static SDL_AudioDeviceID devid_out = 0;
+static int done = 0;
 
 static void loop(void)
 {
@@ -72,7 +73,9 @@ static void loop(void)
 #ifdef __EMSCRIPTEN__
         emscripten_cancel_main_loop();
 #endif
-        exit(0);
+        /* Let 'main()' return normally */
+        done = 1;
+        return;
     }
 
     /* Note that it would be easier to just have a one-line function that
@@ -187,9 +190,11 @@ int main(int argc, char **argv)
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
-    while (1) {
+    while (!done) {
         loop();
-        SDL_Delay(16);
+        if (!done) {
+            SDL_Delay(16);
+        }
     }
 #endif
     /* SDL_DestroyRenderer(renderer); */
