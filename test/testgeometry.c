@@ -38,7 +38,10 @@ quit(int rc)
 {
     SDL_free(sprites);
     SDLTest_CommonQuit(state);
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 static int LoadSprite(const char *file)

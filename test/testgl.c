@@ -65,7 +65,10 @@ static void quit(int rc)
         SDL_GL_DeleteContext(context);
     }
     SDLTest_CommonQuit(state);
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 static void Render(void)

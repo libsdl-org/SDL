@@ -57,9 +57,7 @@ quit(int rc)
     SDL_free(positions);
     SDL_free(velocities);
     SDLTest_CommonQuit(state);
-    /* If rc is 0, just let main return normally rather than calling exit.
-     * This allows testing of platforms where SDL_main is required and does meaningful cleanup.
-     */
+    /* Let 'main()' return normally */
     if (rc != 0) {
         exit(rc);
     }

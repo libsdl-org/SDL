@@ -64,13 +64,16 @@ static SDL_Renderer *renderer;
 static int frame;
 static SDL_Texture *MooseTexture;
 static SDL_bool done = SDL_FALSE;
-SDLTest_CommonState *state;
+static SDLTest_CommonState *state;
 
 static void quit(int rc)
 {
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 static void UpdateTexture(SDL_Texture *texture)
