@@ -22,7 +22,7 @@
 static SDL_TLSID tls;
 static int alive = 0;
 static int testprio = 0;
-SDLTest_CommonState *state;
+static SDLTest_CommonState *state;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -30,7 +30,10 @@ quit(int rc)
 {
     SDLTest_CommonDestroyState(state);
     SDL_Quit();
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 static const char *

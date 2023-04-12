@@ -65,7 +65,10 @@ static void closemutex(int sig)
         threads = NULL;
     }
     SDL_DestroyMutex(mutex);
-    exit(sig);
+    /* Let 'main()' return normally */
+    if (sig != 0) {
+        exit(sig);
+    }
 }
 
 static int SDLCALL
@@ -100,7 +103,7 @@ Run(void *data)
 }
 
 #ifndef _WIN32
-Uint32 hit_timeout(Uint32 interval, void *param) {
+static Uint32 hit_timeout(Uint32 interval, void *param) {
     SDL_Log("Hit timeout! Sending SIGINT!");
     kill(0, SIGINT);
     return 0;

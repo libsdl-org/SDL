@@ -187,7 +187,10 @@ static void quit(int rc)
 {
     shutdownVulkan(SDL_TRUE);
     SDLTest_CommonQuit(state);
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 static void loadGlobalFunctions(void)

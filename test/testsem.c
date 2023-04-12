@@ -256,7 +256,7 @@ int main(int argc, char **argv)
 {
     int arg_count = 0;
     int i;
-    int init_sem;
+    int init_sem = 0;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */

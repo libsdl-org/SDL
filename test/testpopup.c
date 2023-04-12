@@ -47,8 +47,8 @@ struct PopupWindow
     int idx;
 };
 
-struct PopupWindow *menus;
-struct PopupWindow tooltip;
+static struct PopupWindow *menus;
+static struct PopupWindow tooltip;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void quit(int rc)
@@ -57,7 +57,10 @@ static void quit(int rc)
     menus = NULL;
 
     SDLTest_CommonQuit(state);
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 static int get_menu_index_by_window(SDL_Window *window)
@@ -115,7 +118,7 @@ static SDL_bool create_popup(struct PopupWindow *new_popup, SDL_bool is_menu)
     return SDL_FALSE;
 }
 
-static void close_popups()
+static void close_popups(void)
 {
     int i;
 
@@ -135,7 +138,7 @@ static void close_popups()
     }
 }
 
-static void loop()
+static void loop(void)
 {
     int i;
     char fmt_str[128];
