@@ -103,6 +103,9 @@ int console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 #endif
 
 /* This is where execution begins [windowed apps] */
+#if defined(__GNUC__) && defined(__i686__)
+__attribute__((force_align_arg_pointer))
+#endif
 int WINAPI
 WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw) /* NOLINT(readability-inconsistent-declaration-parameter-name) */
 {
