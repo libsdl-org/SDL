@@ -12,6 +12,7 @@ import android.os.Build;
 import android.util.Log;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 
 public class SDLAudioManager {
     protected static final String TAG = "SDLAudio";
@@ -320,13 +321,30 @@ public class SDLAudioManager {
         }
     }
 
+    private static int[] ArrayListToArray(ArrayList<Integer> integers)
+    {
+        int[] ret = new int[integers.size()];
+        for (int i=0; i < ret.length; i++) {
+            ret[i] = integers.get(i).intValue();
+        }
+        return ret;
+    }
+
     /**
      * This method is called by SDL using JNI.
      */
     public static int[] getAudioOutputDevices() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-            return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)).mapToInt(AudioDeviceInfo::getId).toArray();
+            ArrayList<Integer> arrlist = new ArrayList<Integer>();
+            for (AudioDeviceInfo dev : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
+                /* Device cannot be opened */
+                if (dev.getType() == AudioDeviceInfo.TYPE_TELEPHONY) {
+                    continue;
+                }
+                arrlist.add(dev.getId());
+            }
+            return ArrayListToArray(arrlist);
         } else {
             return NO_DEVICES;
         }
@@ -338,7 +356,11 @@ public class SDLAudioManager {
     public static int[] getAudioInputDevices() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-            return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).mapToInt(AudioDeviceInfo::getId).toArray();
+            ArrayList<Integer> arrlist = new ArrayList<Integer>();
+            for (AudioDeviceInfo dev : audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)) {
+                arrlist.add(dev.getId());
+            }
+            return ArrayListToArray(arrlist);
         } else {
             return NO_DEVICES;
         }
