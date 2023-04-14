@@ -166,6 +166,6 @@ int main(int argc, char *argv[])
     SDL_free(filter);
 
     /* Shutdown everything */
-    quit(result);
+    quit(0);
     return result;
 }
