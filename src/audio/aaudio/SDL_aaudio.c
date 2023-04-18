@@ -321,6 +321,12 @@ AudioBootStrap aaudio_bootstrap = {
 void aaudio_PauseDevices(void)
 {
     int i;
+
+    /* AAUDIO driver is not used */
+    if (ctx.handle == NULL) {
+        return;
+    }
+
     for (i = 0; i < get_max_num_audio_dev(); i++) {
         SDL_AudioDevice *this = get_audio_dev(i);
         SDL_AudioDevice *audioDevice = NULL;
@@ -386,6 +392,12 @@ void aaudio_PauseDevices(void)
 void aaudio_ResumeDevices(void)
 {
     int i;
+
+    /* AAUDIO driver is not used */
+    if (ctx.handle == NULL) {
+        return;
+    }
+
     for (i = 0; i < get_max_num_audio_dev(); i++) {
         SDL_AudioDevice *this = get_audio_dev(i);
         SDL_AudioDevice *audioDevice = NULL;
@@ -447,6 +459,12 @@ void aaudio_ResumeDevices(void)
 SDL_bool aaudio_DetectBrokenPlayState(void)
 {
     int i;
+
+    /* AAUDIO driver is not used */
+    if (ctx.handle == NULL) {
+        return SDL_FALSE;
+    }
+
     for (i = 0; i < get_max_num_audio_dev(); i++) {
         SDL_AudioDevice *this = get_audio_dev(i);
         SDL_AudioDevice *audioDevice = NULL;
