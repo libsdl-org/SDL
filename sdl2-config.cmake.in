@@ -60,6 +60,11 @@ string(REGEX MATCHALL "-L([-a-zA-Z0-9._/]+)" _sdl2_static_private_libdirs "${_sd
 string(REGEX REPLACE "^-L" "" _sdl2_static_private_libdirs "${_sdl2_static_private_libdirs}")
 string(REGEX REPLACE ";-L" ";" _sdl2_static_private_libdirs "${_sdl2_static_private_libdirs}")
 
+# Set SDL2_NO_MWINDOWS to a true-ish value to not add the -mwindows link option
+if(SDL2_NO_MWINDOWS)
+  list(REMOVE_ITEM _sdl2_libraries "-mwindows")
+endif()
+
 if(_sdl2_libraries MATCHES ".*SDL2main.*")
   list(INSERT SDL2_LIBRARIES 0 SDL2::SDL2main)
   list(INSERT SDL2_STATIC_LIBRARIES 0 SDL2::SDL2main)
