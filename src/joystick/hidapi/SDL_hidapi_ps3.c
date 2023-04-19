@@ -311,7 +311,7 @@ static float HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
 {
     /* Accelerometer values are in big endian order */
     value = SDL_SwapBE16(value);
-    return (float)(value - 511) / 113.0f;
+    return ((float)(value - 511) / 113.0f) * SDL_STANDARD_GRAVITY;
 }
 
 static void HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
