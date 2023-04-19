@@ -2,6 +2,11 @@
 
 cmake_minimum_required(VERSION 3.12)
 project(sdl_test LANGUAGES C)
+if(WINDOWS_STORE)
+    enable_language(CXX)
+    add_compile_options(/ZW)
+    set_source_files_properties(ain_cli.c main_gui.c PROPERTIES LANGUAGE CXX)
+endif()
 
 include(GenerateExportHeader)
 
