@@ -868,6 +868,10 @@
 #define SDL_CreatePopupWindow SDL_CreatePopupWindow_REAL
 #define SDL_GetWindowParent SDL_GetWindowParent_REAL
 #define SDL_CreateWindowWithPosition SDL_CreateWindowWithPosition_REAL
+#define SDL_SetClipboardData SDL_SetClipboardData_REAL
+#define SDL_GetClipboardUserdata SDL_GetClipboardUserdata_REAL
+#define SDL_GetClipboardData SDL_GetClipboardData_REAL
+#define SDL_HasClipboardData SDL_HasClipboardData_REAL
 #define SDL_GetAudioStreamFormat SDL_GetAudioStreamFormat_REAL
 #define SDL_SetAudioStreamFormat SDL_SetAudioStreamFormat_REAL
 #define SDL_CreateRWLock SDL_CreateRWLock_REAL

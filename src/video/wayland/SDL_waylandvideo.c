@@ -269,12 +269,16 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
         device->system_theme = SDL_SystemTheme_Get();
 #endif
 
+    device->SetClipboardData = Wayland_SetClipboardData;
+    device->GetClipboardData = Wayland_GetClipboardData;
+    device->HasClipboardData = Wayland_HasClipboardData;
     device->SetClipboardText = Wayland_SetClipboardText;
     device->GetClipboardText = Wayland_GetClipboardText;
     device->HasClipboardText = Wayland_HasClipboardText;
     device->SetPrimarySelectionText = Wayland_SetPrimarySelectionText;
     device->GetPrimarySelectionText = Wayland_GetPrimarySelectionText;
     device->HasPrimarySelectionText = Wayland_HasPrimarySelectionText;
+    device->GetClipboardUserdata = Wayland_GetClipboardUserdata;
     device->StartTextInput = Wayland_StartTextInput;
     device->StopTextInput = Wayland_StopTextInput;
     device->SetTextInputRect = Wayland_SetTextInputRect;

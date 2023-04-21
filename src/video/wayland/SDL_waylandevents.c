@@ -1673,7 +1673,10 @@ static void data_source_handle_send(void *data, struct wl_data_source *wl_data_s
 
 static void data_source_handle_cancelled(void *data, struct wl_data_source *wl_data_source)
 {
-    Wayland_data_source_destroy(data);
+    SDL_WaylandDataSource *source = data;
+    if (source != NULL) {
+        Wayland_data_source_destroy(source);
+    }
 }
 
 static void data_source_handle_dnd_drop_performed(void *data, struct wl_data_source *wl_data_source)
@@ -1739,7 +1742,6 @@ SDL_WaylandDataSource *Wayland_data_source_create(SDL_VideoDevice *_this)
                 SDL_OutOfMemory();
                 wl_data_source_destroy(id);
             } else {
-                WAYLAND_wl_list_init(&(data_source->mimes));
                 data_source->source = id;
                 wl_data_source_set_user_data(id, data_source);
                 wl_data_source_add_listener(id, &data_source_listener,
@@ -1774,7 +1776,6 @@ SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(SDL_V
                 SDL_OutOfMemory();
                 zwp_primary_selection_source_v1_destroy(id);
             } else {
-                WAYLAND_wl_list_init(&(primary_selection_source->mimes));
                 primary_selection_source->source = id;
                 zwp_primary_selection_source_v1_add_listener(id, &primary_selection_source_listener,
                                                              primary_selection_source);
@@ -2727,6 +2728,9 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
     if (input->primary_selection_device != NULL) {
         if (input->primary_selection_device->selection_offer != NULL) {
             Wayland_primary_selection_offer_destroy(input->primary_selection_device->selection_offer);
+        }
+        if (input->primary_selection_device->selection_source != NULL) {
+            Wayland_primary_selection_source_destroy(input->primary_selection_device->selection_source);
         }
         SDL_free(input->primary_selection_device);
     }
