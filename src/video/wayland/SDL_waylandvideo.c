@@ -709,7 +709,7 @@ static int Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
     SDL_WAYLAND_register_output(output);
 
     /* Keep a list of outputs for deferred xdg-output initialization. */
-    WAYLAND_wl_list_insert(&d->output_list, &data->link);
+    WAYLAND_wl_list_insert(d->output_list.prev, &data->link);
 
     if (data->videodata->xdg_output_manager) {
         data->xdg_output = zxdg_output_manager_v1_get_xdg_output(data->videodata->xdg_output_manager, output);
