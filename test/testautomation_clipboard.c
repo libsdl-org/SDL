@@ -135,7 +135,7 @@ static int clipboard_testSetClipboardData(void *arg)
 {
     const Uint32 len = 20;
     char *data = SDLTest_RandomAsciiStringOfSize(len-1);
-    char copy[len];
+    char *copy = SDL_malloc(len);
     int result;
 
     SDL_memcpy(copy, data, len);
@@ -152,6 +152,7 @@ static int clipboard_testSetClipboardData(void *arg)
 
     /* Cleanup */
     SDL_free(data);
+    SDL_free(copy);
 
     return TEST_COMPLETED;
 }
