@@ -23,6 +23,9 @@
 #ifndef SDL_waylandclipboard_h_
 #define SDL_waylandclipboard_h_
 
+extern int Wayland_SetClipboardData(_THIS, void *data, size_t len, const char *mime_type);
+extern void *Wayland_GetClipboardData(_THIS, size_t *length, const char *mime_type);
+extern SDL_bool Wayland_HasClipboardData(_THIS, const char *mime_type);
 extern int Wayland_SetClipboardText(_THIS, const char *text);
 extern char *Wayland_GetClipboardText(_THIS);
 extern SDL_bool Wayland_HasClipboardText(_THIS);

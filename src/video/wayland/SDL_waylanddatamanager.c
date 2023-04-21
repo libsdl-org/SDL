@@ -29,6 +29,7 @@
 #include <signal.h>
 
 #include "../../core/unix/SDL_poll.h"
+#include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylanddatamanager.h"

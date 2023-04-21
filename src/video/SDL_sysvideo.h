@@ -337,6 +337,9 @@ struct SDL_VideoDevice
     int (*SetPrimarySelectionText)(_THIS, const char *text);
     char *(*GetPrimarySelectionText)(_THIS);
     SDL_bool (*HasPrimarySelectionText)(_THIS);
+    int (*SetClipboardData)(_THIS, void *data, size_t len, const char *mime_type);
+    void *(*GetClipboardData)(_THIS, size_t *len, const char *mime_type);
+    SDL_bool (*HasClipboardData)(_THIS, const char *mime_type);
 
     /* MessageBox */
     int (*ShowMessageBox)(_THIS, const SDL_MessageBoxData *messageboxdata, int *buttonid);

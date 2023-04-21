@@ -20,18 +20,20 @@
 */
 
 /**
- *  \file SDL_revision.h
- *
- *  \brief Header file containing the SDL revision
- */
+*  \file SDL_revision.h
+*
+*  \brief Header file containing the SDL revision.
+*/
 
 #ifndef SDL_revision_h_
 #define SDL_revision_h_
 
+/* #undef SDL_VENDOR_INFO */
+
 #ifdef SDL_VENDOR_INFO
-#define SDL_REVISION SDL_VENDOR_INFO
+#define SDL_REVISION "SDL-prerelease-3.0.0-1436-g0467301ba (" SDL_VENDOR_INFO ")"
 #else
-#define SDL_REVISION ""
+#define SDL_REVISION "SDL-prerelease-3.0.0-1436-g0467301ba"
 #endif
 
 #endif /* SDL_revision_h_ */

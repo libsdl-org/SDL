@@ -129,6 +129,53 @@ extern DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
 
+/**
+ * Set clipboard data for the provided mime type
+ *
+ * \param data      The data buffer to read from
+ * \param len       The length of the data
+ * \param mime_type The mime type of the data
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetClipboardData
+ * \sa SDL_HasClipboardData
+ */
+extern DECLSPEC int SDLCALL SDL_SetClipboardData(void *data, size_t len, const char *mime_type);
+
+/**
+ * Get the data from clipboard for a given mime type
+ *
+ * \param[out] length   A pointer to hold the buffer length
+ * \param mime_type     The mime type to read from the clipboard
+ * \returns the retrieved data buffer or NULL on failure; call
+ *          SDL_GetError() for more information. Caller must call
+ *          SDL_free() on the returned pointer when done with it.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetClipboardData
+ * \sa SDL_HasClipboardData
+ * \sa SDL_free
+ */
+extern DECLSPEC void *SDLCALL SDL_GetClipboardData(size_t *length, const char *mime_type);
+
+/**
+ * Query whether there is data in the clipboard for the provided mime type
+ *
+ * \param mime_type The mime type to check for data for
+ *
+ * \returns SDL_TRUE if there exists data in clipboard for the provided mime
+ *          type, SDL_FALSE if it does not.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetClipboardData
+ * \sa SDL_GetClipboardData
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasClipboardData(const char *mime_type);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
