@@ -167,10 +167,7 @@ typedef enum
     /* 0x800, 0x801, and 0x802 were the Gesture events from SDL2. Do not reuse these values! sdl2-compat needs them! */
 
     /* Clipboard events */
-    // TODO: Is there any point in keeping the original event here?
-    //       Perhaps just update the existing one?
     SDL_EVENT_CLIPBOARD_UPDATE = 0x900, /**< The clipboard or primary selection changed */
-    SDL_EVENT_CLIPBOARD_DATA_UPDATE,    /**< The clipboard changed (any mime-type) */
 
     /* Drag and drop events */
     SDL_EVENT_DROP_FILE        = 0x1000, /**< The system requests a file open */
@@ -528,6 +525,7 @@ typedef struct SDL_DropEvent
     float x;            /**< X coordinate, relative to window (not on begin) */
     float y;            /**< Y coordinate, relative to window (not on begin) */
 } SDL_DropEvent;
+
 
 /**
  *  \brief Sensor event structure (event.sensor.*)

@@ -18,8 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_clipboard.h"
-#include "SDL_error.h"
 #include "SDL_internal.h"
 
 #include "SDL_sysvideo.h"
