@@ -172,6 +172,7 @@ typedef enum
 
     /* Clipboard events */
     SDL_EVENT_CLIPBOARD_UPDATE = 0x900, /**< The clipboard or primary selection changed */
+    SDL_EVENT_CLIPBOARD_CANCELLED,      /**< The clipboard or primary selection cancelled */
 
     /* Drag and drop events */
     SDL_EVENT_DROP_FILE        = 0x1000, /**< The system requests a file open */
@@ -530,6 +531,18 @@ typedef struct SDL_DropEvent
     float y;            /**< Y coordinate, relative to window (not on begin) */
 } SDL_DropEvent;
 
+/**
+ * \brief An event triggered when the applications active clipboard content is cancelled by new clipboard content
+ * \note Primary use for this event is to free any userdata you may have provided when setting the clipboard data.
+ *
+ * \sa SDL_SetClipboardData
+ */
+typedef struct SDL_ClipboardCancelled
+{
+    Uint32 type;        /**< ::SDL_EVENT_CLIPBOARD_CANCELLED or ::SDL_EVENT_CLIPBOARD_UPDATE */
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    void *userdata;     /**< User data if any has been set. NULL for ::SDL_EVENT_CLIPBOARD_UPDATE */
+} SDL_ClipboardEvent;
 
 /**
  *  \brief Sensor event structure (event.sensor.*)
@@ -624,6 +637,7 @@ typedef union SDL_Event
     SDL_SysWMEvent syswm;                   /**< System dependent window event data */
     SDL_TouchFingerEvent tfinger;           /**< Touch finger event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
+    SDL_ClipboardEvent clipboard;       /**< Clipboard cancelled event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of

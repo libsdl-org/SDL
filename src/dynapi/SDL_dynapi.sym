@@ -842,6 +842,10 @@ SDL3_0.0.0 {
     SDL_CreatePopupWindow;
     SDL_GetWindowParent;
     SDL_CreateWindowWithPosition;
+    SDL_SetClipboardData;
+    SDL_GetClipboardUserdata;
+    SDL_GetClipboardData;
+    SDL_HasClipboardData;
     SDL_GetAudioStreamFormat;
     SDL_SetAudioStreamFormat;
     SDL_CreateRWLock;
