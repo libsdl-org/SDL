@@ -182,7 +182,7 @@ SDLCALL SDL_CreateClipboardData(void *data,
 /**
  * Adds one more item with data and mime-type to the provided SDL_ClipboardData
  *
- * \param data      The SDL_ClipboardData struct to add to
+ * \param cbdata    The SDL_ClipboardData struct to add to
  * \param data      The data buffer
  * \param len       The length of the data
  * \param mime_type The mime type of the data
@@ -219,7 +219,8 @@ extern DECLSPEC void SDLCALL SDL_DestroyClipboardData(SDL_ClipboardData *cbdata)
 /**
  * Sets the provided clipbard data in the OS clipboard
  *
- * \param cbdata            The SDL_ClipboardData to set
+ * \param cbdata            The SDL_ClipboardData to set.
+ *                          Passing NULL will clear the clipboard.
  * \param free_resource     Set to SDL_TRUE to free cbdata after use
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.

@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_error.h"
 #include "SDL_internal.h"
 
 #include "SDL_sysvideo.h"
@@ -96,9 +95,6 @@ SDL_SetClipboardData(SDL_ClipboardData *cbdata, SDL_bool free_resource)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     int status = 0;
 
-    if (cbdata == NULL) {
-        return SDL_InvalidParamError("cbdata");
-    }
     if (_this == NULL) {
         return SDL_SetError("Video subsystem must be initialized to set clipboard text");
     }
@@ -163,7 +159,7 @@ SDL_GetClipboardData(size_t *length, const char *mime_type)
         return NULL;
     }
 
-    if (_this->HasClipboardData) {
+    if (_this->GetClipboardData) {
         return _this->GetClipboardData(_this, length, mime_type);
     } else {
         return NULL;

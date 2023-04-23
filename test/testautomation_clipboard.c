@@ -3,8 +3,6 @@
  */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
-#include "SDL_clipboard.h"
-#include "SDL_test_fuzzer.h"
 #include "testautomation_suites.h"
 
 /* ================= Test Case Implementation ================== */
