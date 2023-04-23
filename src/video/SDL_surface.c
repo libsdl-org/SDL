@@ -1293,6 +1293,10 @@ SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format)
 
             /* Create a dummy surface to get the colorkey converted */
             tmp = SDL_CreateSurface(1, 1, surface->format->format);
+            if (tmp == NULL) {
+                SDL_DestroySurface(convert);
+                return NULL;
+            }
 
             /* Share the palette, if any */
             if (surface->format->palette) {
@@ -1305,6 +1309,11 @@ SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format)
 
             /* Convertion of the colorkey */
             tmp2 = SDL_ConvertSurface(tmp, format);
+            if (tmp2 == NULL) {
+                SDL_DestroySurface(tmp);
+                SDL_DestroySurface(convert);
+                return NULL;
+            }
 
             /* Get the converted colorkey */
             SDL_memcpy(&converted_colorkey, tmp2->pixels, tmp2->format->BytesPerPixel);
