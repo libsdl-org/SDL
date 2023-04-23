@@ -3,6 +3,7 @@
  */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "SDL_clipboard.h"
 #include "SDL_test_fuzzer.h"
 #include "testautomation_suites.h"
 
@@ -136,10 +137,17 @@ static int clipboard_testSetClipboardData(void *arg)
     const Uint32 len = 20;
     char *data = SDLTest_RandomAsciiStringOfSize(len-1);
     char *copy = SDL_malloc(len);
-    int result;
+    int result = -1;
+    SDL_ClipboardData *cb = NULL;
+
+    cb = SDL_CreateClipboardData(data, len, "image/png");
+    SDLTest_AssertPass("Call to SDL_CreateClipboardData succeeded");
+    SDLTest_AssertCheck(
+            cb != NULL,
+            "Validate SDL_ClipboardData created, expected != NULL, got NULL");
 
     SDL_memcpy(copy, data, len);
-    result = SDL_SetClipboardData(data, len, "image/png");
+    result = SDL_SetClipboardData(cb, SDL_FALSE);
     SDLTest_AssertPass("Call to SDL_SetClipboardData succeeded");
     SDLTest_AssertCheck(
         result == 0,
@@ -151,6 +159,7 @@ static int clipboard_testSetClipboardData(void *arg)
         data, copy);
 
     /* Cleanup */
+    SDL_DestroyClipboardData(cb);
     SDL_free(data);
     SDL_free(copy);
 

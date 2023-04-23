@@ -36,6 +36,34 @@
 extern "C" {
 #endif
 
+/**
+ * \brief Clipboard content container
+ *
+ * This container struct is used to prepare and hold multiple mime-types of
+ * clipboard content to provide to the OS such as but not limited to images.
+ *
+ * The structure is a linked list allowing multiple mime-types to be offered up
+ * as clipboard data at the same time.
+ *
+ * The internal values within the struct should not need to be manipulated
+ * manually instead refer to the defined functions relating to this struct.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateClipboardData
+ * \sa SDL_AddClipboardData
+ * \sa SDL_SetClipboardData
+ * \sa SDL_GetClipboardData
+ * \sa SDL_HasClipboardData
+ */
+typedef struct SDL_ClipboardData
+{
+    void *data;                         /**< A pointer to the clipboard data */
+    size_t size;                        /**< The size of the data */
+    char *mime_type;                    /**< The mime-type of the data */
+    struct SDL_ClipboardData *next;    /**< Pointer to the next item in the list */
+} SDL_ClipboardData;
+
 /* Function prototypes */
 
 /**
@@ -130,9 +158,32 @@ extern DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
 
 /**
- * Set clipboard data for the provided mime type
+ * Creates a new SDL_ClipboardData with the provided data and mime-type set.
  *
- * \param data      The data buffer to read from
+ * \param data      The data buffer
+ * \param len       The length of the data
+ * \param mime_type The mime type of the data
+ * \returns A pointer to an SDL_ClipboardData, the pointer must be
+ *          freed using SDL_DestroyClipboardData. Returns NULL on failure;
+ *          call SDL_GetError() for information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetClipboardData
+ * \sa SDL_AddClipboardData
+ * \sa SDL_GetClipboardData
+ * \sa SDL_HasClipboardData
+ */
+extern DECLSPEC SDL_ClipboardData*
+SDLCALL SDL_CreateClipboardData(void *data,
+                                size_t len,
+                                const char *mime_type);
+
+/**
+ * Adds one more item with data and mime-type to the provided SDL_ClipboardData
+ *
+ * \param data      The SDL_ClipboardData struct to add to
+ * \param data      The data buffer
  * \param len       The length of the data
  * \param mime_type The mime type of the data
  * \returns 0 on success or a negative error code on failure; call
@@ -140,10 +191,47 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_ClipboardData
+ * \sa SDL_CreateClipboardData
+ * \sa SDL_SetClipboardData
  * \sa SDL_GetClipboardData
  * \sa SDL_HasClipboardData
  */
-extern DECLSPEC int SDLCALL SDL_SetClipboardData(void *data, size_t len, const char *mime_type);
+extern DECLSPEC int SDLCALL SDL_AddClipboardData(SDL_ClipboardData *cbdata,
+                                                 void *data,
+                                                 size_t len,
+                                                 const char *mime_type);
+
+/**
+ * \brief Frees up the memory used by a SDL_ClipboardData
+ *
+ * \param cbdata The SDL_ClipboardData to free
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_ClipboardData
+ * \sa SDL_CreateClipboardData
+ * \sa SDL_AddClipboardData
+ */
+extern DECLSPEC void SDLCALL SDL_DestroyClipboardData(SDL_ClipboardData *cbdata);
+
+
+/**
+ * Sets the provided clipbard data in the OS clipboard
+ *
+ * \param cbdata            The SDL_ClipboardData to set
+ * \param free_resource     Set to SDL_TRUE to free cbdata after use
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_ClipboardData
+ * \sa SDL_AddClipboardData
+ * \sa SDL_GetClipboardData
+ * \sa SDL_HasClipboardData
+ */
+extern DECLSPEC int SDLCALL SDL_SetClipboardData(SDL_ClipboardData *cbdata, SDL_bool free_resource);
 
 /**
  * Get the data from clipboard for a given mime type

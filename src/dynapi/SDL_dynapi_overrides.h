@@ -868,6 +868,9 @@
 #define SDL_CreatePopupWindow SDL_CreatePopupWindow_REAL
 #define SDL_GetWindowParent SDL_GetWindowParent_REAL
 #define SDL_CreateWindowWithPosition SDL_CreateWindowWithPosition_REAL
+#define SDL_CreateClipboardData SDL_CreateClipboardData_REAL
+#define SDL_AddClipboardData SDL_AddClipboardData_REAL
+#define SDL_DestroyClipboardData SDL_DestroyClipboardData_REAL
 #define SDL_SetClipboardData SDL_SetClipboardData_REAL
-#define SDL_HasClipboardData SDL_HasClipboardData_REAL
 #define SDL_GetClipboardData SDL_GetClipboardData_REAL
+#define SDL_HasClipboardData SDL_HasClipboardData_REAL

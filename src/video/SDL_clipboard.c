@@ -18,22 +18,100 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_error.h"
 #include "SDL_internal.h"
 
 #include "SDL_sysvideo.h"
 
-int
-SDL_SetClipboardData(void *data, size_t len, const char *mime_type)
+SDL_ClipboardData *
+SDL_CreateClipboardData(void *data, size_t len, const char *mime_type)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (_this == NULL) {
-        return SDL_SetError("Video subsystem must be initialized to set clipboard data");
+    SDL_ClipboardData *cb = SDL_calloc(1, sizeof(SDL_ClipboardData));
+    if (cb == NULL) {
+        SDL_OutOfMemory();
+        return NULL;
     }
 
-    if (_this->HasClipboardData) {
-        return _this->SetClipboardData(_this, data, len, mime_type);
+    cb->data = SDL_calloc(1, len);
+    if (cb->data == NULL) {
+        SDL_OutOfMemory();
+        return NULL;
     }
+    SDL_memcpy(cb->data, data, len);
+
+    cb->mime_type = SDL_strdup(mime_type);
+    if (cb->mime_type == NULL) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+    cb->size = len;
+
+    return cb;
+}
+
+int
+SDL_AddClipboardData(SDL_ClipboardData *cbdata, void *data, size_t len, const char *mime_type)
+{
+    SDL_ClipboardData *tail;
+
+    if (cbdata == NULL) {
+        return SDL_InvalidParamError("cbdata");
+    }
+
+    while (cbdata->next != NULL) {
+        cbdata = cbdata->next;
+    }
+
+    tail = SDL_CreateClipboardData(data, len, mime_type);
+    if (tail == NULL) {
+        /* Error is set in the create function */
+        return -1;
+    }
+
+    cbdata->next = tail;
     return 0;
+}
+
+void
+SDL_DestroyClipboardData(SDL_ClipboardData *cbdata)
+{
+    SDL_ClipboardData *next;
+
+    while (cbdata != NULL) {
+        if (cbdata->data != NULL) {
+            SDL_free(cbdata->data);
+        }
+        if (cbdata->mime_type != NULL) {
+            SDL_free(cbdata->mime_type);
+        }
+        next = cbdata->next;
+        SDL_free(cbdata);
+        cbdata = next;
+    }
+}
+
+int
+SDL_SetClipboardData(SDL_ClipboardData *cbdata, SDL_bool free_resource)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    int status = 0;
+
+    if (cbdata == NULL) {
+        return SDL_InvalidParamError("cbdata");
+    }
+    if (_this == NULL) {
+        return SDL_SetError("Video subsystem must be initialized to set clipboard text");
+    }
+
+    if (_this->SetClipboardData) {
+        status = _this->SetClipboardData(_this, cbdata);
+    }
+
+    if (free_resource == SDL_TRUE) {
+        SDL_DestroyClipboardData(cbdata);
+    }
+
+    return status;
 }
 
 int SDL_SetClipboardText(const char *text)

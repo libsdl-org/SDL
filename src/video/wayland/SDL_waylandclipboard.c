@@ -26,9 +26,38 @@
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandclipboard.h"
 
-int Wayland_SetClipboardData(_THIS, void *data, size_t len, const char *mime_type)
+int Wayland_SetClipboardData(_THIS, SDL_ClipboardData *cbdata)
 {
-    return 0;
+    SDL_VideoData *video_data = NULL;
+    SDL_WaylandDataDevice *data_device = NULL;
+
+    int status = 0;
+
+    if (_this == NULL || _this->driverdata == NULL) {
+        status = SDL_SetError("Video driver uninitialized");
+    } else {
+        video_data = _this->driverdata;
+        if (video_data->input != NULL && video_data->input->data_device != NULL) {
+            data_device = video_data->input->data_device;
+            if (cbdata != NULL) {
+                SDL_WaylandDataSource *source = Wayland_data_source_create(_this);
+                while (cbdata != NULL) {
+                    Wayland_data_source_add_data(source, cbdata->mime_type, cbdata->data,
+                            cbdata->size);
+
+                    cbdata = cbdata->next;
+                }
+                status = Wayland_data_device_set_selection(data_device, source);
+                if (status != 0) {
+                    Wayland_data_source_destroy(source);
+                }
+            } else {
+                status = Wayland_data_device_clear_selection(data_device);
+            }
+        }
+    }
+
+    return status;
 }
 
 int Wayland_SetClipboardText(_THIS, const char *text)
