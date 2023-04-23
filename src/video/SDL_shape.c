@@ -138,6 +138,11 @@ static SDL_ShapeTree *RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode, SD
     SDL_ShapeTree *result = (SDL_ShapeTree *)SDL_malloc(sizeof(SDL_ShapeTree));
     SDL_Rect next = { 0, 0, 0, 0 };
 
+    if (result == NULL) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
     for (y = dimensions.y; y < dimensions.y + dimensions.h; y++) {
         for (x = dimensions.x; x < dimensions.x + dimensions.w; x++) {
             pixel_value = 0;
