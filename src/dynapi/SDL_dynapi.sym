@@ -844,6 +844,13 @@ SDL3_0.0.0 {
     SDL_CreateWindowWithPosition;
     SDL_GetAudioStreamFormat;
     SDL_SetAudioStreamFormat;
+    SDL_CreateRWLock;
+    SDL_LockRWLockForReading;
+    SDL_LockRWLockForWriting;
+    SDL_TryLockRWLockForReading;
+    SDL_TryLockRWLockForWriting;
+    SDL_UnlockRWLock;
+    SDL_DestroyRWLock;
     # extra symbols go here (don't modify this line)
   local: *;
 };

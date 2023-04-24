@@ -20,21 +20,19 @@
 */
 #include "SDL_internal.h"
 
-#ifndef SDL_mutex_c_h_
-#define SDL_mutex_c_h_
+#ifndef SDL_sysrwlock_c_h_
+#define SDL_sysrwlock_c_h_
 
-#if !(defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX) || \
-    defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP))
-#define FAKE_RECURSIVE_MUTEX
-#endif
+#ifdef SDL_THREAD_GENERIC_RWLOCK_SUFFIX
 
-struct SDL_mutex
-{
-    pthread_mutex_t id;
-#ifdef FAKE_RECURSIVE_MUTEX
-    int recursive;
-    pthread_t owner;
-#endif
-};
+SDL_rwlock *SDL_CreateRWLock_generic(void);
+void SDL_DestroyRWLock_generic(SDL_rwlock *rwlock);
+int SDL_LockRWLockForReading_generic(SDL_rwlock *rwlock);
+int SDL_LockRWLockForWriting_generic(SDL_rwlock *rwlock);
+int SDL_TryLockRWLockForReading_generic(SDL_rwlock *rwlock);
+int SDL_TryLockRWLockForWriting_generic(SDL_rwlock *rwlock);
+int SDL_UnlockRWLock_generic(SDL_rwlock *rwlock);
 
-#endif /* SDL_mutex_c_h_ */
+#endif /* SDL_THREAD_GENERIC_RWLOCK_SUFFIX */
+
+#endif /* SDL_sysrwlock_c_h_ */

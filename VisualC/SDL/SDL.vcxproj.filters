@@ -1213,6 +1213,9 @@
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c">
       <Filter>thread\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\thread\windows\SDL_sysrwlock_srw.c">
+      <Filter>thread\windows</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\thread\windows\SDL_syssem.c">
       <Filter>thread\windows</Filter>
     </ClCompile>

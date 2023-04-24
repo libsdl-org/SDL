@@ -24,6 +24,7 @@
 
 #include <e32std.h>
 
+/* !!! FIXME: Should this be SDL_MUTEX_TIMEDOUT? */
 #define SDL_MUTEX_TIMEOUT -2
 
 struct SDL_semaphore
