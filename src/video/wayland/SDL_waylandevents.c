@@ -2383,6 +2383,13 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
         SDL_free(input->data_device);
     }
 
+    if (input->primary_selection_device != NULL) {
+        if (input->primary_selection_device->selection_offer != NULL) {
+            Wayland_primary_selection_offer_destroy(input->primary_selection_device->selection_offer);
+        }
+        SDL_free(input->primary_selection_device);
+    }
+
     if (input->text_input != NULL) {
         zwp_text_input_v3_destroy(input->text_input->text_input);
         SDL_free(input->text_input);
