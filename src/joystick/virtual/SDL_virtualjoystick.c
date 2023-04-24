@@ -585,7 +585,7 @@ static SDL_bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadM
     Uint8 current_button = 0;
     Uint8 current_axis = 0;
 
-    if (hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMEPAD) {
+    if (!hwdata || hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMEPAD) {
         return SDL_FALSE;
     }
 
