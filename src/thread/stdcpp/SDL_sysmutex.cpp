@@ -97,3 +97,4 @@ SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't
     mutex->cpp_mutex.unlock();
     return 0;
 }
+

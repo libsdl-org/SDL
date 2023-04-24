@@ -1225,6 +1225,9 @@
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c">
       <Filter>thread\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\thread\windows\SDL_sysrwlock_srw.c">
+      <Filter>thread\windows</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\thread\windows\SDL_syssem.c">
       <Filter>thread\windows</Filter>
     </ClCompile>
@@ -1235,6 +1238,9 @@
       <Filter>thread\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\thread\generic\SDL_syscond.c">
+      <Filter>thread\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\thread\generic\SDL_sysrwlock.c">
       <Filter>thread\generic</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\stdlib\SDL_crc16.c">
