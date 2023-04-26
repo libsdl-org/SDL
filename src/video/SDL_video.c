@@ -2774,7 +2774,6 @@ int SDL_HideWindow(SDL_Window *window)
 int SDL_RaiseWindow(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, -1);
-    CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (window->flags & SDL_WINDOW_HIDDEN) {
         return 0;
