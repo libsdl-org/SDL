@@ -194,10 +194,9 @@ static const SDL_cond_impl_t SDL_cond_impl_cv = {
     &SDL_CondWaitTimeoutNS_cv,
 };
 
-/**
- * Generic Condition Variable implementation using SDL_mutex and SDL_sem
- */
 
+#ifndef __WINRT__
+/* Generic Condition Variable implementation using SDL_mutex and SDL_sem */
 static const SDL_cond_impl_t SDL_cond_impl_generic = {
     &SDL_CreateCond_generic,
     &SDL_DestroyCond_generic,
@@ -205,13 +204,13 @@ static const SDL_cond_impl_t SDL_cond_impl_generic = {
     &SDL_CondBroadcast_generic,
     &SDL_CondWaitTimeoutNS_generic,
 };
+#endif
 
 SDL_cond *
 SDL_CreateCond(void)
 {
     if (SDL_cond_impl_active.Create == NULL) {
-        /* Default to generic implementation, works with all mutex implementations */
-        const SDL_cond_impl_t *impl = &SDL_cond_impl_generic;
+        const SDL_cond_impl_t *impl = NULL;
 
         if (SDL_mutex_impl_active.Type == SDL_MUTEX_INVALID) {
             /* The mutex implementation isn't decided yet, trigger it */
@@ -228,6 +227,8 @@ SDL_CreateCond(void)
         /* Link statically on this platform */
         impl = &SDL_cond_impl_cv;
 #else
+        /* Default to generic implementation, works with all mutex implementations */
+        impl = &SDL_cond_impl_generic;
         {
             HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
             if (kernel32) {
