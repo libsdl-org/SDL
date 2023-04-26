@@ -178,7 +178,7 @@ extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_mutex * mutex) SDL_ACQUIRE(mutex);
  * Try to lock a mutex without blocking.
  *
  * This works just like SDL_LockMutex(), but if the mutex is not available,
- * this function returns `SDL_MUTEX_TIMEOUT` immediately.
+ * this function returns `SDL_MUTEX_TIMEDOUT` immediately.
  *
  * This technique is useful if you need exclusive access to a resource but
  * don't want to wait for it, and will return to it to try again later.
