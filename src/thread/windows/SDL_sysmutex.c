@@ -41,13 +41,16 @@ SDL_mutex_impl_t SDL_mutex_impl_active = { 0 };
 
 #ifdef __WINRT__
 /* Functions are guaranteed to be available */
+#define pInitializeSRWLock InitializeSRWLock
 #define pReleaseSRWLockExclusive    ReleaseSRWLockExclusive
 #define pAcquireSRWLockExclusive    AcquireSRWLockExclusive
 #define pTryAcquireSRWLockExclusive TryAcquireSRWLockExclusive
 #else
+typedef VOID(WINAPI *pfnInitializeSRWLock)(PSRWLOCK);
 typedef VOID(WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
 typedef VOID(WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
 typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
+static pfnInitializeSRWLock pInitializeSRWLock = NULL;
 static pfnReleaseSRWLockExclusive pReleaseSRWLockExclusive = NULL;
 static pfnAcquireSRWLockExclusive pAcquireSRWLockExclusive = NULL;
 static pfnTryAcquireSRWLockExclusive pTryAcquireSRWLockExclusive = NULL;
@@ -57,11 +60,12 @@ static SDL_mutex *SDL_CreateMutex_srw(void)
 {
     SDL_mutex_srw *mutex;
 
-    /* Relies on SRWLOCK_INIT == 0. */
     mutex = (SDL_mutex_srw *)SDL_calloc(1, sizeof(*mutex));
     if (mutex == NULL) {
         SDL_OutOfMemory();
     }
+
+    pInitializeSRWLock(&mutex->srw);
 
     return (SDL_mutex *)mutex;
 }
@@ -232,11 +236,12 @@ SDL_CreateMutex(void)
             HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
             if (kernel32) {
                 /* Requires Vista: */
+                pInitializeSRWLock = (pfnInitializeSRWLock)GetProcAddress(kernel32, "InitializeSRWLock");
                 pReleaseSRWLockExclusive = (pfnReleaseSRWLockExclusive)GetProcAddress(kernel32, "ReleaseSRWLockExclusive");
                 pAcquireSRWLockExclusive = (pfnAcquireSRWLockExclusive)GetProcAddress(kernel32, "AcquireSRWLockExclusive");
                 /* Requires 7: */
                 pTryAcquireSRWLockExclusive = (pfnTryAcquireSRWLockExclusive)GetProcAddress(kernel32, "TryAcquireSRWLockExclusive");
-                if (pReleaseSRWLockExclusive && pAcquireSRWLockExclusive && pTryAcquireSRWLockExclusive) {
+                if (pInitializeSRWLock && pReleaseSRWLockExclusive && pAcquireSRWLockExclusive && pTryAcquireSRWLockExclusive) {
                     impl = &SDL_mutex_impl_srw;
                 }
             }
