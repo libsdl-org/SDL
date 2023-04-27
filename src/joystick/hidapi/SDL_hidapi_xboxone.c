@@ -769,7 +769,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             button3_bit = 0x04;
             button4_bit = 0x08;
             paddles_mapped = (data[23] != 0);
-        } else if (size == 51) {
+        } else /* if (size == 51) */ {
             /* XBox One Elite Series 2 */
             paddle_index = 18;
             button1_bit = 0x01;
