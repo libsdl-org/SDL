@@ -2308,9 +2308,9 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
         SDL_free(wind->outputs);
 
         if (wind->gles_swap_frame_callback) {
-            WAYLAND_wl_event_queue_destroy(wind->gles_swap_frame_event_queue);
-            WAYLAND_wl_proxy_wrapper_destroy(wind->gles_swap_frame_surface_wrapper);
             wl_callback_destroy(wind->gles_swap_frame_callback);
+            WAYLAND_wl_proxy_wrapper_destroy(wind->gles_swap_frame_surface_wrapper);
+            WAYLAND_wl_event_queue_destroy(wind->gles_swap_frame_event_queue);
         }
 
         if (wind->surface_damage_frame_callback) {
