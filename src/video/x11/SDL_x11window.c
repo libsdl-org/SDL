@@ -959,12 +959,13 @@ void X11_UpdateWindowPosition(SDL_Window *window)
     }
 }
 
-void X11_SetWindowPosition(_THIS, SDL_Window *window)
+int X11_SetWindowPosition(_THIS, SDL_Window *window)
 {
     if (SDL_WINDOW_IS_POPUP(window)) {
         X11_ConstrainPopup(window);
     }
     X11_UpdateWindowPosition(window);
+    return 0;
 }
 
 static void X11_SetWMNormalHints(_THIS, SDL_Window *window, XSizeHints *sizehints)

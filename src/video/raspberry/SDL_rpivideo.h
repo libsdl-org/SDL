@@ -66,7 +66,7 @@ int RPI_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 int RPI_CreateWindow(_THIS, SDL_Window *window);
 int RPI_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
 void RPI_SetWindowTitle(_THIS, SDL_Window *window);
-void RPI_SetWindowPosition(_THIS, SDL_Window *window);
+int RPI_SetWindowPosition(_THIS, SDL_Window *window);
 void RPI_SetWindowSize(_THIS, SDL_Window *window);
 void RPI_ShowWindow(_THIS, SDL_Window *window);
 void RPI_HideWindow(_THIS, SDL_Window *window);

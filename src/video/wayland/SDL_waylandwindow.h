@@ -141,7 +141,7 @@ extern void Wayland_RestoreWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered);
 extern void Wayland_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable);
 extern int Wayland_CreateWindow(_THIS, SDL_Window *window);
-extern void Wayland_SetWindowPosition(_THIS, SDL_Window *window);
+extern int Wayland_SetWindowPosition(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowSize(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowMinimumSize(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowMaximumSize(_THIS, SDL_Window *window);

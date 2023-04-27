@@ -303,8 +303,9 @@ int VITA_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 void VITA_SetWindowTitle(_THIS, SDL_Window *window)
 {
 }
-void VITA_SetWindowPosition(_THIS, SDL_Window *window)
+int VITA_SetWindowPosition(_THIS, SDL_Window *window)
 {
+    return SDL_Unsupported();
 }
 void VITA_SetWindowSize(_THIS, SDL_Window *window)
 {
