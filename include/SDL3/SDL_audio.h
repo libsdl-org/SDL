@@ -729,15 +729,17 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(SDL_AudioFormat s
  *
  * \param stream the SDL_AudioStream to query.
  * \param src_format Where to store the input audio format; ignored if NULL.
- * \param src_channels Where to store the input channel count; ignored if NULL.
+ * \param src_channels Where to store the input channel count; ignored if
+ *                     NULL.
  * \param src_rate Where to store the input sample rate; ignored if NULL.
  * \param dst_format Where to store the output audio format; ignored if NULL.
- * \param dst_channels Where to store the output channel count; ignored if NULL.
+ * \param dst_channels Where to store the output channel count; ignored if
+ *                     NULL.
  * \param dst_rate Where to store the output sample rate; ignored if NULL.
  * \returns 0 on success, or -1 on error.
  *
- * \threadsafety It is safe to call this function from any thread, as it
- *               holds a stream-specific mutex while running.
+ * \threadsafety It is safe to call this function from any thread, as it holds
+ *               a stream-specific mutex while running.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -764,8 +766,8 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream,
  * \param dst_rate The sampling rate of the desired audio output
  * \returns 0 on success, or -1 on error.
  *
- * \threadsafety It is safe to call this function from any thread, as it
- *               holds a stream-specific mutex while running.
+ * \threadsafety It is safe to call this function from any thread, as it holds
+ *               a stream-specific mutex while running.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -785,14 +787,13 @@ extern DECLSPEC int SDLCALL SDL_SetAudioStreamFormat(SDL_AudioStream *stream,
 /**
  * Add data to be converted/resampled to the stream.
  *
- * This data must match the format/channels/samplerate specified in
- * the latest call to SDL_SetAudioStreamFormat, or the format
- * specified when creating the stream if it hasn't been changed.
+ * This data must match the format/channels/samplerate specified in the latest
+ * call to SDL_SetAudioStreamFormat, or the format specified when creating the
+ * stream if it hasn't been changed.
  *
- * Note that this call simply queues unconverted data for later.
- * This is different than SDL2, where data was converted during the
- * Put call and the Get call would just dequeue the
- * previously-converted data.
+ * Note that this call simply queues unconverted data for later. This is
+ * different than SDL2, where data was converted during the Put call and the
+ * Get call would just dequeue the previously-converted data.
  *
  * \param stream The stream the audio data is being added to
  * \param buf A pointer to the audio data to add
@@ -814,15 +815,14 @@ extern DECLSPEC int SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, cons
 /**
  * Get converted/resampled data from the stream.
  *
- * The input/output data format/channels/samplerate is specified when
- * creating the stream, and can be changed after creation by calling
+ * The input/output data format/channels/samplerate is specified when creating
+ * the stream, and can be changed after creation by calling
  * SDL_SetAudioStreamFormat.
  *
- * Note that any conversion and resampling necessary is done during
- * this call, and SDL_PutAudioStreamData simply queues unconverted
- * data for later. This is different than SDL2, where that work was
- * done while inputting new data to the stream and requesting the
- * output just copied the converted data.
+ * Note that any conversion and resampling necessary is done during this call,
+ * and SDL_PutAudioStreamData simply queues unconverted data for later. This
+ * is different than SDL2, where that work was done while inputting new data
+ * to the stream and requesting the output just copied the converted data.
  *
  * \param stream The stream the audio is being requested from
  * \param buf A buffer to fill with audio data
@@ -1222,6 +1222,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
 extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
 
 /* !!! FIXME: maybe remove this before SDL3's API is locked down. */
+
 /**
  * Convert some audio data of one format to another format.
  *
