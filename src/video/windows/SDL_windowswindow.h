@@ -84,7 +84,7 @@ extern int WIN_CreateWindow(_THIS, SDL_Window *window);
 extern int WIN_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
 extern void WIN_SetWindowTitle(_THIS, SDL_Window *window);
 extern int WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon);
-extern void WIN_SetWindowPosition(_THIS, SDL_Window *window);
+extern int WIN_SetWindowPosition(_THIS, SDL_Window *window);
 extern void WIN_SetWindowSize(_THIS, SDL_Window *window);
 extern int WIN_GetWindowBordersSize(_THIS, SDL_Window *window, int *top, int *left, int *bottom, int *right);
 extern void WIN_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *width, int *height);
@@ -116,7 +116,7 @@ extern void WIN_ClientPointFromSDLFloat(const SDL_Window *window, float x, float
 extern void WIN_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int WIN_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation);
 extern void WIN_UpdateDarkModeForHWND(HWND hwnd);
-extern void WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags);
+extern int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

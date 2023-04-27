@@ -130,7 +130,7 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
  * Returns arguments to pass to SetWindowPos - the window rect, including frame, in Windows coordinates.
  * Can be called before we have a HWND.
  */
-static void WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_bool use_current)
+static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_bool use_current)
 {
     SDL_VideoData *videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->driverdata : NULL;
     RECT rect;
@@ -196,10 +196,14 @@ static void WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL 
                     frame_dpi = 96;
                 }
 
-                videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, frame_dpi);
+                if (videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, frame_dpi) == 0) {
+                    return WIN_SetError("AdjustWindowRectExForDpi()");
+                }
             }
         } else {
-            AdjustWindowRectEx(&rect, style, menu, 0);
+            if (AdjustWindowRectEx(&rect, style, menu, 0) == 0) {
+                return WIN_SetError("AdjustWindowRectEx()");
+            }
         }
 #endif
     }
@@ -218,6 +222,7 @@ static void WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL 
             (use_current ? window->h : window->windowed.h),
             *x, *y, *width, *height, frame_dpi);
 #endif
+    return 0;
 }
 
 static void WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_bool use_current)
@@ -236,7 +241,7 @@ static void WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width,
     WIN_AdjustWindowRectWithStyle(window, style, menu, x, y, width, height, use_current);
 }
 
-void WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags)
+int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags)
 {
     SDL_Window *child_window;
     SDL_WindowData *data = window->driverdata;
@@ -244,6 +249,7 @@ void WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags)
     HWND top;
     int x, y;
     int w, h;
+    int result = 0;
 
     /* Figure out what the window area will be */
     if (SDL_ShouldAllowTopmost() && (window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
@@ -255,13 +261,18 @@ void WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags)
     WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);
 
     data->expected_resize = SDL_TRUE;
-    SetWindowPos(hwnd, top, x, y, w, h, flags);
+    if (SetWindowPos(hwnd, top, x, y, w, h, flags) == 0) {
+        result = WIN_SetError("SetWindowPos()");
+    }
     data->expected_resize = SDL_FALSE;
 
     /* Update any child windows */
     for (child_window = window->first_child; child_window != NULL; child_window = child_window->next_sibling) {
-        WIN_SetWindowPositionInternal(child_window, flags);
+        if (WIN_SetWindowPositionInternal(child_window, flags) < 0) {
+            result = -1;
+        }
     }
+    return result;
 }
 
 static void SDLCALL WIN_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -793,13 +804,13 @@ int WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 #endif
 }
 
-void WIN_SetWindowPosition(_THIS, SDL_Window *window)
+int WIN_SetWindowPosition(_THIS, SDL_Window *window)
 {
     /* HighDPI support: removed SWP_NOSIZE. If the move results in a DPI change, we need to allow
      * the window to resize (e.g. AdjustWindowRectExForDpi frame sizes are different).
      */
     WIN_ConstrainPopup(window);
-    WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+    return WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 }
 
 void WIN_SetWindowSize(_THIS, SDL_Window *window)

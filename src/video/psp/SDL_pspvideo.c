@@ -215,8 +215,9 @@ int PSP_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 void PSP_SetWindowTitle(_THIS, SDL_Window *window)
 {
 }
-void PSP_SetWindowPosition(_THIS, SDL_Window *window)
+int PSP_SetWindowPosition(_THIS, SDL_Window *window)
 {
+    return SDL_Unsupported();
 }
 void PSP_SetWindowSize(_THIS, SDL_Window *window)
 {

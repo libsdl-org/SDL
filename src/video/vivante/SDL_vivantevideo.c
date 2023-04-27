@@ -314,9 +314,10 @@ void VIVANTE_SetWindowTitle(_THIS, SDL_Window *window)
 #endif
 }
 
-void VIVANTE_SetWindowPosition(_THIS, SDL_Window *window)
+int VIVANTE_SetWindowPosition(_THIS, SDL_Window *window)
 {
     /* FIXME */
+    return SDL_Unsupported();
 }
 
 void VIVANTE_SetWindowSize(_THIS, SDL_Window *window)

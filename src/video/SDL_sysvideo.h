@@ -233,7 +233,7 @@ struct SDL_VideoDevice
     int (*CreateSDLWindowFrom)(_THIS, SDL_Window *window, const void *data);
     void (*SetWindowTitle)(_THIS, SDL_Window *window);
     int (*SetWindowIcon)(_THIS, SDL_Window *window, SDL_Surface *icon);
-    void (*SetWindowPosition)(_THIS, SDL_Window *window);
+    int (*SetWindowPosition)(_THIS, SDL_Window *window);
     void (*SetWindowSize)(_THIS, SDL_Window *window);
     void (*SetWindowMinimumSize)(_THIS, SDL_Window *window);
     void (*SetWindowMaximumSize)(_THIS, SDL_Window *window);

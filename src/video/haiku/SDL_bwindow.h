@@ -27,7 +27,7 @@
 extern int HAIKU_CreateWindow(_THIS, SDL_Window *window);
 extern int HAIKU_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
 extern void HAIKU_SetWindowTitle(_THIS, SDL_Window *window);
-extern void HAIKU_SetWindowPosition(_THIS, SDL_Window *window);
+extern int HAIKU_SetWindowPosition(_THIS, SDL_Window *window);
 extern void HAIKU_SetWindowSize(_THIS, SDL_Window *window);
 extern void HAIKU_SetWindowMinimumSize(_THIS, SDL_Window *window);
 extern void HAIKU_ShowWindow(_THIS, SDL_Window *window);

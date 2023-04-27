@@ -65,7 +65,7 @@ int VITA_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 int VITA_CreateWindow(_THIS, SDL_Window *window);
 int VITA_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
 void VITA_SetWindowTitle(_THIS, SDL_Window *window);
-void VITA_SetWindowPosition(_THIS, SDL_Window *window);
+int VITA_SetWindowPosition(_THIS, SDL_Window *window);
 void VITA_SetWindowSize(_THIS, SDL_Window *window);
 void VITA_ShowWindow(_THIS, SDL_Window *window);
 void VITA_HideWindow(_THIS, SDL_Window *window);

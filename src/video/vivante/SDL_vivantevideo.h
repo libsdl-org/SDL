@@ -74,7 +74,7 @@ int VIVANTE_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
 int VIVANTE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 int VIVANTE_CreateWindow(_THIS, SDL_Window *window);
 void VIVANTE_SetWindowTitle(_THIS, SDL_Window *window);
-void VIVANTE_SetWindowPosition(_THIS, SDL_Window *window);
+int VIVANTE_SetWindowPosition(_THIS, SDL_Window *window);
 void VIVANTE_SetWindowSize(_THIS, SDL_Window *window);
 void VIVANTE_ShowWindow(_THIS, SDL_Window *window);
 void VIVANTE_HideWindow(_THIS, SDL_Window *window);

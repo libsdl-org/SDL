@@ -2365,7 +2365,9 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         }
 
         SDL_zero(bounds);
-        SDL_GetDisplayBounds(displayID, &bounds);
+        if (SDL_GetDisplayBounds(displayID, &bounds) < 0) {
+            return -1;
+        }
         if (SDL_WINDOWPOS_ISCENTERED(x)) {
             x = bounds.x + (bounds.w - window->windowed.w) / 2;
         }
@@ -2387,7 +2389,7 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
             if (displayID != original_displayID) {
                 /* Set the new target display and update the fullscreen mode */
                 window->current_fullscreen_mode.displayID = displayID;
-                SDL_UpdateFullscreenMode(window, SDL_TRUE);
+                return SDL_UpdateFullscreenMode(window, SDL_TRUE);
             }
         }
     } else {
@@ -2396,10 +2398,10 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         window->last_displayID = SDL_GetDisplayForWindow(window);
 
         if (_this->SetWindowPosition) {
-            _this->SetWindowPosition(_this, window);
+            return _this->SetWindowPosition(_this, window);
         }
     }
-    return 0;
+    return SDL_Unsupported();
 }
 
 int SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)

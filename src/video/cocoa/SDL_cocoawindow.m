@@ -1985,7 +1985,7 @@ int Cocoa_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
     }
 }
 
-void Cocoa_SetWindowPosition(_THIS, SDL_Window *window)
+int Cocoa_SetWindowPosition(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->driverdata;
@@ -2026,6 +2026,7 @@ void Cocoa_SetWindowPosition(_THIS, SDL_Window *window)
 
         ScheduleContextUpdates(windata);
     }
+    return 0;
 }
 
 void Cocoa_SetWindowSize(_THIS, SDL_Window *window)
