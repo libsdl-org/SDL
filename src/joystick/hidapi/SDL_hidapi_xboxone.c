@@ -728,8 +728,12 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         Paddle bits:
             P3: 0x04 (A)    P1: 0x01 (B)
             P4: 0x08 (X)    P2: 0x02 (Y)
+       Xbox One Elite Series 2 5.17+ firmware report is 51 bytes, paddles in data[18], mode in data[24], mode 0 has no mapped paddles by default
+        Paddle bits:
+            P3: 0x04 (A)    P1: 0x01 (B)
+            P4: 0x08 (X)    P2: 0x02 (Y)
     */
-    if (ctx->has_paddles && !ctx->has_unmapped_state && (size == 33 || size == 38 || size == 50)) {
+    if (ctx->has_paddles && !ctx->has_unmapped_state && (size == 33 || size == 38 || size == 50 || size == 51)) {
         int paddle_index;
         int button1_bit;
         int button2_bit;
@@ -757,7 +761,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             button4_bit = 0x08;
             paddles_mapped = (data[19] != 0);
 
-        } else /* if (size == 50) */ {
+        } else if (size == 50) {
             /* XBox One Elite Series 2 */
             paddle_index = 22;
             button1_bit = 0x01;
@@ -765,6 +769,14 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             button3_bit = 0x04;
             button4_bit = 0x08;
             paddles_mapped = (data[23] != 0);
+        } else if (size == 51) {
+            /* XBox One Elite Series 2 */
+            paddle_index = 18;
+            button1_bit = 0x01;
+            button2_bit = 0x02;
+            button3_bit = 0x04;
+            button4_bit = 0x08;
+            paddles_mapped = (data[24] != 0);
         }
 #ifdef DEBUG_XBOX_PROTOCOL
         SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s\n",
