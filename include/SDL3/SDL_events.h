@@ -120,8 +120,12 @@ typedef enum
     SDL_EVENT_WINDOW_HIT_TEST,          /**< Window had a hit test that wasn't SDL_HITTEST_NORMAL */
     SDL_EVENT_WINDOW_ICCPROF_CHANGED,   /**< The ICC profile of the window's display has changed */
     SDL_EVENT_WINDOW_DISPLAY_CHANGED,   /**< Window has been moved to display data1 */
+    SDL_EVENT_WINDOW_DESTROYED,         /**< The window with the associated ID is being or has been destroyed. If this message is being handled
+                                             in an event watcher, the window handle is still valid and can still be used to retrieve any userdata
+                                             associated with the window. Otherwise, the handle has already been destroyed and all resources
+                                             associated with it are invalid */
     SDL_EVENT_WINDOW_FIRST = SDL_EVENT_WINDOW_SHOWN,
-    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_DISPLAY_CHANGED,
+    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_DESTROYED,
 
     /* Keyboard events */
     SDL_EVENT_KEY_DOWN        = 0x300, /**< Key pressed */
