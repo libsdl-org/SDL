@@ -172,7 +172,6 @@ extern DECLSPEC SDL_mutex *SDLCALL SDL_CreateMutex(void);
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_mutex * mutex) SDL_ACQUIRE(mutex);
-#define SDL_mutexP(m)   SDL_LockMutex(m)
 
 /**
  * Try to lock a mutex without blocking.
@@ -213,7 +212,6 @@ extern DECLSPEC int SDLCALL SDL_TryLockMutex(SDL_mutex * mutex) SDL_TRY_ACQUIRE(
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_UnlockMutex(SDL_mutex * mutex) SDL_RELEASE(mutex);
-#define SDL_mutexV(m)   SDL_UnlockMutex(m)
 
 /**
  * Destroy a mutex created with SDL_CreateMutex().
