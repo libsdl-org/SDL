@@ -554,6 +554,21 @@ SDL_GetMouseState(), SDL_GetGlobalMouseState(), SDL_GetRelativeMouseState(), SDL
 The following functions have been renamed:
 * SDL_FreeCursor() => SDL_DestroyCursor()
 
+## SDL_mutex.h
+
+The following functions have been renamed:
+* SDL_CondBroadcast() => SDL_BroadcastCondition()
+* SDL_CondSignal() => SDL_SignalCondition()
+* SDL_CondWait() => SDL_WaitCondition()
+* SDL_CondWaitTimeout() => SDL_WaitConditionTimeout()
+* SDL_CreateCond() => SDL_CreateCondition()
+* SDL_DestroyCond() => SDL_DestroyCondition()
+* SDL_SemPost() => SDL_PostSemaphore()
+* SDL_SemTryWait() => SDL_TryWaitSemaphore()
+* SDL_SemValue() => SDL_GetSemaphoreValue()
+* SDL_SemWait() => SDL_WaitSemaphore()
+* SDL_SemWaitTimeout() => SDL_WaitSemaphoreTimeout()
+
 ## SDL_pixels.h
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).

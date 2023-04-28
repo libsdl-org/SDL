@@ -859,8 +859,8 @@ retry:
 
     SDL_LockMutex(Android_ActivityMutex);
 
-    pauseSignaled = SDL_SemValue(Android_PauseSem);
-    resumeSignaled = SDL_SemValue(Android_ResumeSem);
+    pauseSignaled = SDL_GetSemaphoreValue(Android_PauseSem);
+    resumeSignaled = SDL_GetSemaphoreValue(Android_ResumeSem);
 
     if (pauseSignaled > resumeSignaled) {
         SDL_UnlockMutex(Android_ActivityMutex);
@@ -1225,12 +1225,12 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
     SDL_SendQuit();
     SDL_SendAppEvent(SDL_EVENT_TERMINATING);
     /* Robustness: clear any pending Pause */
-    while (SDL_SemTryWait(Android_PauseSem) == 0) {
+    while (SDL_TryWaitSemaphore(Android_PauseSem) == 0) {
         /* empty */
     }
     /* Resume the event loop so that the app can catch SDL_EVENT_QUIT which
      * should now be the top event in the event queue. */
-    SDL_SemPost(Android_ResumeSem);
+    SDL_PostSemaphore(Android_ResumeSem);
 }
 
 /* Activity ends */
@@ -1272,7 +1272,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
 
     /* Signal the pause semaphore so the event loop knows to pause and (optionally) block itself.
      * Sometimes 2 pauses can be queued (eg pause/resume/pause), so it's always increased. */
-    SDL_SemPost(Android_PauseSem);
+    SDL_PostSemaphore(Android_PauseSem);
 }
 
 /* Resume */
@@ -1285,7 +1285,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
      * We can't restore the GL Context here because it needs to be done on the SDL main thread
      * and this function will be called from the Java thread instead.
      */
-    SDL_SemPost(Android_ResumeSem);
+    SDL_PostSemaphore(Android_ResumeSem);
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(

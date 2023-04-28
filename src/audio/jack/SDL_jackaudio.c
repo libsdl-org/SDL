@@ -137,7 +137,7 @@ static void jackShutdownCallback(void *arg) /* JACK went away; device is lost. *
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *)arg;
     SDL_OpenedAudioDeviceDisconnected(this);
-    SDL_SemPost(this->hidden->iosem); /* unblock the SDL thread. */
+    SDL_PostSemaphore(this->hidden->iosem); /* unblock the SDL thread. */
 }
 
 // !!! FIXME: implement and register these!
@@ -169,7 +169,7 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
         }
     }
 
-    SDL_SemPost(this->hidden->iosem); /* tell SDL thread we're done; refill the buffer. */
+    SDL_PostSemaphore(this->hidden->iosem); /* tell SDL thread we're done; refill the buffer. */
     return 0;
 }
 
@@ -177,7 +177,7 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
 static void JACK_WaitDevice(_THIS)
 {
     if (SDL_AtomicGet(&this->enabled)) {
-        if (SDL_SemWait(this->hidden->iosem) == -1) {
+        if (SDL_WaitSemaphore(this->hidden->iosem) == -1) {
             SDL_OpenedAudioDeviceDisconnected(this);
         }
     }
@@ -210,7 +210,7 @@ static int jackProcessCaptureCallback(jack_nframes_t nframes, void *arg)
         }
     }
 
-    SDL_SemPost(this->hidden->iosem); /* tell SDL thread we're done; new buffer is ready! */
+    SDL_PostSemaphore(this->hidden->iosem); /* tell SDL thread we're done; new buffer is ready! */
     return 0;
 }
 
@@ -219,7 +219,7 @@ static int JACK_CaptureFromDevice(_THIS, void *buffer, int buflen)
     SDL_assert(buflen == this->spec.size); /* we always fill a full buffer. */
 
     /* Wait for JACK to fill the iobuffer */
-    if (SDL_SemWait(this->hidden->iosem) == -1) {
+    if (SDL_WaitSemaphore(this->hidden->iosem) == -1) {
         return -1;
     }
 
@@ -229,7 +229,7 @@ static int JACK_CaptureFromDevice(_THIS, void *buffer, int buflen)
 
 static void JACK_FlushCapture(_THIS)
 {
-    SDL_SemWait(this->hidden->iosem);
+    SDL_WaitSemaphore(this->hidden->iosem);
 }
 
 static void JACK_CloseDevice(_THIS)

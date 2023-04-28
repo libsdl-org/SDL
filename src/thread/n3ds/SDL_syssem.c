@@ -61,7 +61,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     SDL_free(sem);
 }
 
-int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
@@ -97,7 +97,7 @@ int WaitOnSemaphoreFor(SDL_sem *sem, Sint64 timeout)
     return SDL_MUTEX_TIMEDOUT;
 }
 
-Uint32 SDL_SemValue(SDL_sem *sem)
+Uint32 SDL_GetSemaphoreValue(SDL_sem *sem)
 {
     if (sem == NULL) {
         SDL_InvalidParamError("sem");
@@ -106,7 +106,7 @@ Uint32 SDL_SemValue(SDL_sem *sem)
     return sem->semaphore.current_count;
 }
 
-int SDL_SemPost(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_sem *sem)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");

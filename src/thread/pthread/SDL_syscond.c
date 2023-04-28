@@ -35,7 +35,7 @@ struct SDL_cond
 
 /* Create a condition variable */
 SDL_cond *
-SDL_CreateCond(void)
+SDL_CreateCondition(void)
 {
     SDL_cond *cond;
 
@@ -51,7 +51,7 @@ SDL_CreateCond(void)
 }
 
 /* Destroy a condition variable */
-void SDL_DestroyCond(SDL_cond *cond)
+void SDL_DestroyCondition(SDL_cond *cond)
 {
     if (cond) {
         pthread_cond_destroy(&cond->cond);
@@ -60,7 +60,7 @@ void SDL_DestroyCond(SDL_cond *cond)
 }
 
 /* Restart one of the threads that are waiting on the condition variable */
-int SDL_CondSignal(SDL_cond *cond)
+int SDL_SignalCondition(SDL_cond *cond)
 {
     int retval;
 
@@ -76,7 +76,7 @@ int SDL_CondSignal(SDL_cond *cond)
 }
 
 /* Restart all threads that are waiting on the condition variable */
-int SDL_CondBroadcast(SDL_cond *cond)
+int SDL_BroadcastCondition(SDL_cond *cond)
 {
     int retval;
 
@@ -91,7 +91,7 @@ int SDL_CondBroadcast(SDL_cond *cond)
     return retval;
 }
 
-int SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
+int SDL_WaitConditionTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
 {
     int retval;
 #ifndef HAVE_CLOCK_GETTIME

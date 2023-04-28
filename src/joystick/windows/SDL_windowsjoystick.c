@@ -365,7 +365,7 @@ static int SDLCALL SDL_JoystickThread(void *_data)
 #endif
 #ifdef SDL_JOYSTICK_XINPUT
             /* WM_DEVICECHANGE not working, poll for new XINPUT controllers */
-            SDL_CondWaitTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
+            SDL_WaitConditionTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
             if (SDL_XINPUT_Enabled() && XINPUTGETCAPABILITIES) {
                 /* scan for any change in XInput devices */
                 Uint8 userId;
@@ -403,7 +403,7 @@ static int SDL_StartJoystickThread(void)
         return -1;
     }
 
-    s_condJoystickThread = SDL_CreateCond();
+    s_condJoystickThread = SDL_CreateCondition();
     if (s_condJoystickThread == NULL) {
         return -1;
     }
@@ -424,7 +424,7 @@ static void SDL_StopJoystickThread(void)
 
     SDL_LockMutex(s_mutexJoyStickEnum);
     s_bJoystickThreadQuit = SDL_TRUE;
-    SDL_CondBroadcast(s_condJoystickThread); /* signal the joystick thread to quit */
+    SDL_BroadcastCondition(s_condJoystickThread); /* signal the joystick thread to quit */
     SDL_UnlockMutex(s_mutexJoyStickEnum);
     PostThreadMessage(SDL_GetThreadID(s_joystickThread), WM_QUIT, 0, 0);
 
@@ -434,7 +434,7 @@ static void SDL_StopJoystickThread(void)
     SDL_WaitThread(s_joystickThread, NULL); /* wait for it to bugger off */
     SDL_LockJoysticks();
 
-    SDL_DestroyCond(s_condJoystickThread);
+    SDL_DestroyCondition(s_condJoystickThread);
     s_condJoystickThread = NULL;
 
     SDL_DestroyMutex(s_mutexJoyStickEnum);

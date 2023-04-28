@@ -138,7 +138,7 @@ void Android_PumpEvents_Blocking(_THIS)
         openslES_PauseDevices();
         aaudio_PauseDevices();
 
-        if (SDL_SemWait(Android_ResumeSem) == 0) {
+        if (SDL_WaitSemaphore(Android_ResumeSem) == 0) {
 
             videodata->isPaused = 0;
 
@@ -166,7 +166,7 @@ void Android_PumpEvents_Blocking(_THIS)
             }
         }
     } else {
-        if (videodata->isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
+        if (videodata->isPausing || SDL_TryWaitSemaphore(Android_PauseSem) == 0) {
 
             /* Android_PauseSem was signaled */
             if (videodata->isPausing == 0) {
@@ -178,7 +178,7 @@ void Android_PumpEvents_Blocking(_THIS)
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */
-            if (SDL_NumberOfEvents(SDL_EVENT_DID_ENTER_BACKGROUND) > SDL_SemValue(Android_PauseSem)) {
+            if (SDL_NumberOfEvents(SDL_EVENT_DID_ENTER_BACKGROUND) > SDL_GetSemaphoreValue(Android_PauseSem)) {
                 videodata->isPausing = 1;
             } else {
                 videodata->isPausing = 0;
@@ -220,7 +220,7 @@ void Android_PumpEvents_NonBlocking(_THIS)
             backup_context = 0;
         }
 
-        if (SDL_SemTryWait(Android_ResumeSem) == 0) {
+        if (SDL_TryWaitSemaphore(Android_ResumeSem) == 0) {
 
             videodata->isPaused = 0;
 
@@ -250,7 +250,7 @@ void Android_PumpEvents_NonBlocking(_THIS)
             }
         }
     } else {
-        if (videodata->isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
+        if (videodata->isPausing || SDL_TryWaitSemaphore(Android_PauseSem) == 0) {
 
             /* Android_PauseSem was signaled */
             if (videodata->isPausing == 0) {
@@ -262,7 +262,7 @@ void Android_PumpEvents_NonBlocking(_THIS)
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */
-            if (SDL_NumberOfEvents(SDL_EVENT_DID_ENTER_BACKGROUND) > SDL_SemValue(Android_PauseSem)) {
+            if (SDL_NumberOfEvents(SDL_EVENT_DID_ENTER_BACKGROUND) > SDL_GetSemaphoreValue(Android_PauseSem)) {
                 videodata->isPausing = 1;
             } else {
                 videodata->isPausing = 0;

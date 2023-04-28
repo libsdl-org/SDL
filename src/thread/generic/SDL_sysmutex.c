@@ -89,7 +89,7 @@ int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
            We set the locking thread id after we obtain the lock
            so unlocks from other threads will fail.
          */
-        SDL_SemWait(mutex->sem);
+        SDL_WaitSemaphore(mutex->sem);
         mutex->owner = this_thread;
         mutex->recursive = 0;
     }
@@ -119,7 +119,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
          We set the locking thread id after we obtain the lock
          so unlocks from other threads will fail.
          */
-        retval = SDL_SemWait(mutex->sem);
+        retval = SDL_WaitSemaphore(mutex->sem);
         if (retval == 0) {
             mutex->owner = this_thread;
             mutex->recursive = 0;
@@ -154,7 +154,7 @@ int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doe
            then release the lock semaphore.
          */
         mutex->owner = 0;
-        SDL_SemPost(mutex->sem);
+        SDL_PostSemaphore(mutex->sem);
     }
     return 0;
 #endif /* SDL_THREADS_DISABLED */

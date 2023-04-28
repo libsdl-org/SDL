@@ -950,14 +950,14 @@ static int audioqueue_thread(void *arg)
     rc = prepare_audioqueue(this);
     if (!rc) {
         this->hidden->thread_error = SDL_strdup(SDL_GetError());
-        SDL_SemPost(this->hidden->ready_semaphore);
+        SDL_PostSemaphore(this->hidden->ready_semaphore);
         return 0;
     }
 
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
     /* init was successful, alert parent thread and start running... */
-    SDL_SemPost(this->hidden->ready_semaphore);
+    SDL_PostSemaphore(this->hidden->ready_semaphore);
 
     while (!SDL_AtomicGet(&this->shutdown)) {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.10, 1);
@@ -1119,7 +1119,7 @@ static int COREAUDIO_OpenDevice(_THIS, const char *devname)
         return -1;
     }
 
-    SDL_SemWait(this->hidden->ready_semaphore);
+    SDL_WaitSemaphore(this->hidden->ready_semaphore);
     SDL_DestroySemaphore(this->hidden->ready_semaphore);
     this->hidden->ready_semaphore = NULL;
 

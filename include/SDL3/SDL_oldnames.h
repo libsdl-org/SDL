@@ -314,6 +314,19 @@
 /* ##SDL_mouse.h */
 #define SDL_FreeCursor SDL_DestroyCursor
 
+/* ##SDL_mutex.h */
+#define SDL_CondBroadcast SDL_BroadcastCondition
+#define SDL_CondSignal SDL_SignalCondition
+#define SDL_CondWait SDL_WaitCondition
+#define SDL_CondWaitTimeout SDL_WaitConditionTimeout
+#define SDL_CreateCond SDL_CreateCondition
+#define SDL_DestroyCond SDL_DestroyCondition
+#define SDL_SemPost SDL_PostSemaphore
+#define SDL_SemTryWait SDL_TryWaitSemaphore
+#define SDL_SemValue SDL_GetSemaphoreValue
+#define SDL_SemWait SDL_WaitSemaphore
+#define SDL_SemWaitTimeout SDL_WaitSemaphoreTimeout
+
 /* ##SDL_pixels.h */
 #define SDL_AllocFormat SDL_CreatePixelFormat
 #define SDL_AllocPalette SDL_CreatePalette
@@ -710,6 +723,19 @@
 
 /* ##SDL_mouse.h */
 #define SDL_FreeCursor SDL_FreeCursor_renamed_SDL_DestroyCursor
+
+/* ##SDL_mutex.h */
+#define SDL_CondBroadcast SDL_CondBroadcast_renamed_SDL_BroadcastCondition
+#define SDL_CondSignal SDL_CondSignal_renamed_SDL_SignalCondition
+#define SDL_CondWait SDL_CondWait_renamed_SDL_WaitCondition
+#define SDL_CondWaitTimeout SDL_CondWaitTimeout_renamed_SDL_WaitConditionTimeout
+#define SDL_CreateCond SDL_CreateCond_renamed_SDL_CreateCondition
+#define SDL_DestroyCond SDL_DestroyCond_renamed_SDL_DestroyCondition
+#define SDL_SemPost SDL_SemPost_renamed_SDL_PostSemaphore
+#define SDL_SemTryWait SDL_SemTryWait_renamed_SDL_TryWaitSemaphore
+#define SDL_SemValue SDL_SemValue_renamed_SDL_GetSemaphoreValue
+#define SDL_SemWait SDL_SemWait_renamed_SDL_WaitSemaphore
+#define SDL_SemWaitTimeout SDL_SemWaitTimeout_renamed_SDL_WaitSemaphoreTimeout
 
 /* ##SDL_pixels.h */
 #define SDL_AllocFormat SDL_AllocFormat_renamed_SDL_CreatePixelFormat

@@ -52,7 +52,7 @@ int RPI_GLES_SwapWindow(_THIS, SDL_Window *window)
      * Run your SDL program with "SDL_RPI_DOUBLE_BUFFER=1 <program_name>" to enable this. */
     if (wdata->double_buffer) {
         SDL_LockMutex(wdata->vsync_cond_mutex);
-        SDL_CondWait(wdata->vsync_cond, wdata->vsync_cond_mutex);
+        SDL_WaitCondition(wdata->vsync_cond, wdata->vsync_cond_mutex);
         SDL_UnlockMutex(wdata->vsync_cond_mutex);
     }
 

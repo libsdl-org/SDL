@@ -186,7 +186,7 @@ static void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *)context;
 
     LOGV("SLES: Recording Callback");
-    SDL_SemPost(audiodata->playsem);
+    SDL_PostSemaphore(audiodata->playsem);
 }
 
 static void openslES_DestroyPCMRecorder(_THIS)
@@ -363,7 +363,7 @@ static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *)context;
 
     LOGV("SLES: Playback Callback");
-    SDL_SemPost(audiodata->playsem);
+    SDL_PostSemaphore(audiodata->playsem);
 }
 
 static void openslES_DestroyPCMPlayer(_THIS)
@@ -625,7 +625,7 @@ static void openslES_WaitDevice(_THIS)
     LOGV("openslES_WaitDevice()");
 
     /* Wait for an audio chunk to finish */
-    SDL_SemWait(audiodata->playsem);
+    SDL_WaitSemaphore(audiodata->playsem);
 }
 
 static void openslES_PlayDevice(_THIS)
@@ -646,7 +646,7 @@ static void openslES_PlayDevice(_THIS)
     /* If Enqueue fails, callback won't be called.
      * Post the semphore, not to run out of buffer */
     if (SL_RESULT_SUCCESS != result) {
-        SDL_SemPost(audiodata->playsem);
+        SDL_PostSemaphore(audiodata->playsem);
     }
 }
 
@@ -676,7 +676,7 @@ static int openslES_CaptureFromDevice(_THIS, void *buffer, int buflen)
     SLresult result;
 
     /* Wait for new recorded data */
-    SDL_SemWait(audiodata->playsem);
+    SDL_WaitSemaphore(audiodata->playsem);
 
     /* Copy it to the output buffer */
     SDL_assert(buflen == this->spec.size);

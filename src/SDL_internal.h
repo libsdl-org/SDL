@@ -197,8 +197,8 @@
 extern "C" {
 #endif
 
-extern DECLSPEC int SDLCALL SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS);
-extern DECLSPEC int SDLCALL SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS);
+extern DECLSPEC int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_sem *sem, Sint64 timeoutNS);
+extern DECLSPEC int SDLCALL SDL_WaitConditionTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS);
 extern DECLSPEC int SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
 
 /* Ends C function definitions when using C++ */

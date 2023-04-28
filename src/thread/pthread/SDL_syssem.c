@@ -63,7 +63,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     }
 }
 
-int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
     int retval = 0;
 #ifdef HAVE_SEM_TIMEDWAIT
@@ -150,7 +150,7 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 }
 
 Uint32
-SDL_SemValue(SDL_sem *sem)
+SDL_GetSemaphoreValue(SDL_sem *sem)
 {
     int ret = 0;
 
@@ -166,7 +166,7 @@ SDL_SemValue(SDL_sem *sem)
     return (Uint32)ret;
 }
 
-int SDL_SemPost(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_sem *sem)
 {
     int retval;
 

@@ -2538,3 +2538,58 @@ typedef SDL_atomic_t, SDL_AtomicInt;
 @@
 - SDL_atomic_t
 + SDL_AtomicInt
+@@
+@@
+- SDL_SemWait
++ SDL_WaitSemaphore
+  (...)
+@@
+@@
+- SDL_SemTryWait
++ SDL_TryWaitSemaphore
+  (...)
+@@
+@@
+- SDL_SemWaitTimeout
++ SDL_WaitSemaphoreTimeout
+  (...)
+@@
+@@
+- SDL_SemPost
++ SDL_PostSemaphore
+  (...)
+@@
+@@
+- SDL_SemValue
++ SDL_GetSemaphoreValue
+  (...)
+@@
+@@
+- SDL_CreateCond
++ SDL_CreateCondition
+  (...)
+@@
+@@
+- SDL_DestroyCond
++ SDL_DestroyCondition
+  (...)
+@@
+@@
+- SDL_CondSignal
++ SDL_SignalCondition
+  (...)
+@@
+@@
+- SDL_CondBroadcast
++ SDL_BroadcastCondition
+  (...)
+@@
+@@
+- SDL_CondWait
++ SDL_WaitCondition
+  (...)
+@@
+@@
+- SDL_CondWaitTimeout
++ SDL_WaitConditionTimeout
+  (...)
