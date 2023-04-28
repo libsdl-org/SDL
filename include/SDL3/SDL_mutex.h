@@ -516,8 +516,8 @@ extern DECLSPEC void SDLCALL SDL_DestroySemaphore(SDL_Semaphore *sem);
  * signal or error. If the call is successful it will atomically decrement the
  * semaphore value.
  *
- * This function is the equivalent of calling SDL_WaitSemaphoreTimeout() with a time
- * length of `SDL_MUTEX_MAXWAIT`.
+ * This function is the equivalent of calling SDL_WaitSemaphoreTimeout() with
+ * a time length of `SDL_MUTEX_MAXWAIT`.
  *
  * \param sem the semaphore wait on
  * \returns 0 on success or a negative error code on failure; call
@@ -695,16 +695,16 @@ extern DECLSPEC int SDLCALL SDL_BroadcastCondition(SDL_Condition *cond);
  * Wait until a condition variable is signaled.
  *
  * This function unlocks the specified `mutex` and waits for another thread to
- * call SDL_SignalCondition() or SDL_BroadcastCondition() on the condition variable
- * `cond`. Once the condition variable is signaled, the mutex is re-locked and
- * the function returns.
+ * call SDL_SignalCondition() or SDL_BroadcastCondition() on the condition
+ * variable `cond`. Once the condition variable is signaled, the mutex is
+ * re-locked and the function returns.
  *
  * The mutex must be locked before calling this function. Locking the mutex
  * recursively (more than once) is not supported and leads to undefined
  * behavior.
  *
- * This function is the equivalent of calling SDL_WaitConditionTimeout() with a
- * time length of `SDL_MUTEX_MAXWAIT`.
+ * This function is the equivalent of calling SDL_WaitConditionTimeout() with
+ * a time length of `SDL_MUTEX_MAXWAIT`.
  *
  * \param cond the condition variable to wait on
  * \param mutex the mutex used to coordinate thread access
@@ -725,10 +725,10 @@ extern DECLSPEC int SDLCALL SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex *mu
  * Wait until a condition variable is signaled or a certain time has passed.
  *
  * This function unlocks the specified `mutex` and waits for another thread to
- * call SDL_SignalCondition() or SDL_BroadcastCondition() on the condition variable
- * `cond`, or for the specified time to elapse. Once the condition variable is
- * signaled or the time elapsed, the mutex is re-locked and the function
- * returns.
+ * call SDL_SignalCondition() or SDL_BroadcastCondition() on the condition
+ * variable `cond`, or for the specified time to elapse. Once the condition
+ * variable is signaled or the time elapsed, the mutex is re-locked and the
+ * function returns.
  *
  * The mutex must be locked before calling this function. Locking the mutex
  * recursively (more than once) is not supported and leads to undefined
