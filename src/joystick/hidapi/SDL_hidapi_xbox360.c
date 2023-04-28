@@ -67,6 +67,10 @@ static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device
 {
     const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
 
+    if (vendor_id == USB_VENDOR_ASTRO && product_id == USB_PRODUCT_ASTRO_C40_XBOX360) {
+        /* This is the ASTRO C40 in Xbox 360 mode */
+        return SDL_TRUE;
+    }
     if (vendor_id == USB_VENDOR_NVIDIA) {
         /* This is the NVIDIA Shield controller which doesn't talk Xbox controller protocol */
         return SDL_FALSE;

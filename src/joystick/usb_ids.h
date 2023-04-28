@@ -27,6 +27,7 @@
 #define USB_VENDOR_8BITDO       0x2dc8
 #define USB_VENDOR_AMAZON       0x1949
 #define USB_VENDOR_APPLE        0x05ac
+#define USB_VENDOR_ASTRO        0x9886
 #define USB_VENDOR_BACKBONE     0x358a
 #define USB_VENDOR_DRAGONRISE   0x0079
 #define USB_VENDOR_GOOGLE       0x18d1
@@ -53,6 +54,7 @@
 
 #define USB_PRODUCT_8BITDO_XBOX_CONTROLLER                0x2002
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                0x0419
+#define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
 #define USB_PRODUCT_BACKBONE_ONE_IOS_PS5                  0x0104
 #define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER              0x9400
