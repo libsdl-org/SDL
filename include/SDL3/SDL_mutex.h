@@ -257,35 +257,33 @@ typedef struct SDL_rwlock SDL_rwlock;
 /**
  * Create a new read/write lock.
  *
- * A read/write lock is useful for situations where you have multiple
- * threads trying to access a resource that is rarely updated. All threads
- * requesting a read-only lock will be allowed to run in parallel; if a
- * thread requests a write lock, it will be provided exclusive access.
- * This makes it safe for multiple threads to use a resource at the same
- * time if they promise not to change it, and when it has to be changed,
- * the rwlock will serve as a gateway to make sure those changes can be
- * made safely.
+ * A read/write lock is useful for situations where you have multiple threads
+ * trying to access a resource that is rarely updated. All threads requesting
+ * a read-only lock will be allowed to run in parallel; if a thread requests a
+ * write lock, it will be provided exclusive access. This makes it safe for
+ * multiple threads to use a resource at the same time if they promise not to
+ * change it, and when it has to be changed, the rwlock will serve as a
+ * gateway to make sure those changes can be made safely.
  *
- * In the right situation, a rwlock can be more efficient than a mutex,
- * which only lets a single thread proceed at a time, even if it won't be
- * modifying the data.
+ * In the right situation, a rwlock can be more efficient than a mutex, which
+ * only lets a single thread proceed at a time, even if it won't be modifying
+ * the data.
  *
  * All newly-created read/write locks begin in the _unlocked_ state.
  *
- * Calls to SDL_LockRWLockForReading() and SDL_LockRWLockForWriting will
- * not return while the rwlock is locked _for writing_ by another thread.
- * See SDL_TryLockRWLockForReading() and SDL_TryLockRWLockForWriting() to
- * attempt to lock without blocking.
+ * Calls to SDL_LockRWLockForReading() and SDL_LockRWLockForWriting will not
+ * return while the rwlock is locked _for writing_ by another thread. See
+ * SDL_TryLockRWLockForReading() and SDL_TryLockRWLockForWriting() to attempt
+ * to lock without blocking.
  *
- * SDL read/write locks are only recursive for read-only locks! They
- * are not guaranteed to be fair, or provide access in a FIFO manner! They
- * are not guaranteed to favor writers. You may not lock a rwlock for
- * both read-only and write access at the same time from the same thread
- * (so you can't promote your read-only lock to a write lock without
- * unlocking first).
+ * SDL read/write locks are only recursive for read-only locks! They are not
+ * guaranteed to be fair, or provide access in a FIFO manner! They are not
+ * guaranteed to favor writers. You may not lock a rwlock for both read-only
+ * and write access at the same time from the same thread (so you can't
+ * promote your read-only lock to a write lock without unlocking first).
  *
- * \returns the initialized and unlocked read/write lock or NULL on
- *          failure; call SDL_GetError() for more information.
+ * \returns the initialized and unlocked read/write lock or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -301,25 +299,25 @@ extern DECLSPEC SDL_rwlock *SDLCALL SDL_CreateRWLock(void);
 /**
  * Lock the read/write lock for _read only_ operations.
  *
- * This will block until the rwlock is available, which is to say it is
- * not locked for writing by any other thread. Of all threads waiting to
- * lock the rwlock, all may do so at the same time as long as they are
- * requesting read-only access; if a thread wants to lock for writing,
- * only one may do so at a time, and no other threads, read-only or not,
- * may hold the lock at the same time.
+ * This will block until the rwlock is available, which is to say it is not
+ * locked for writing by any other thread. Of all threads waiting to lock the
+ * rwlock, all may do so at the same time as long as they are requesting
+ * read-only access; if a thread wants to lock for writing, only one may do so
+ * at a time, and no other threads, read-only or not, may hold the lock at the
+ * same time.
  *
- * It is legal for the owning thread to lock an already-locked rwlock
- * for reading. It must unlock it the same number of times before it is
- * actually made available for other threads in the system (this is known
- * as a "recursive rwlock").
+ * It is legal for the owning thread to lock an already-locked rwlock for
+ * reading. It must unlock it the same number of times before it is actually
+ * made available for other threads in the system (this is known as a
+ * "recursive rwlock").
  *
- * Note that locking for writing is not recursive (this is only available
- * to read-only locks).
+ * Note that locking for writing is not recursive (this is only available to
+ * read-only locks).
  *
- * It is illegal to request a read-only lock from a thread that already
- * holds the write lock. Doing so results in undefined behavior. Unlock the
- * write lock before requesting a read-only lock. (But, of course, if you
- * have the write lock, you don't need further locks to read in any case.)
+ * It is illegal to request a read-only lock from a thread that already holds
+ * the write lock. Doing so results in undefined behavior. Unlock the write
+ * lock before requesting a read-only lock. (But, of course, if you have the
+ * write lock, you don't need further locks to read in any case.)
  *
  * \param rwlock the read/write lock to lock
  * \returns 0 on success or a negative error code on failure; call
@@ -334,18 +332,18 @@ extern DECLSPEC int SDLCALL SDL_LockRWLockForReading(SDL_rwlock * rwlock) SDL_AC
 /**
  * Lock the read/write lock for _write_ operations.
  *
- * This will block until the rwlock is available, which is to say it is
- * not locked for reading or writing by any other thread. Only one thread
- * may hold the lock when it requests write access; all other threads,
- * whether they also want to write or only want read-only access, must wait
- * until the writer thread has released the lock.
+ * This will block until the rwlock is available, which is to say it is not
+ * locked for reading or writing by any other thread. Only one thread may hold
+ * the lock when it requests write access; all other threads, whether they
+ * also want to write or only want read-only access, must wait until the
+ * writer thread has released the lock.
  *
- * It is illegal for the owning thread to lock an already-locked rwlock
- * for writing (read-only may be locked recursively, writing can not). Doing
- * so results in undefined behavior.
+ * It is illegal for the owning thread to lock an already-locked rwlock for
+ * writing (read-only may be locked recursively, writing can not). Doing so
+ * results in undefined behavior.
  *
- * It is illegal to request a write lock from a thread that already holds
- * a read-only lock. Doing so results in undefined behavior. Unlock the
+ * It is illegal to request a write lock from a thread that already holds a
+ * read-only lock. Doing so results in undefined behavior. Unlock the
  * read-only lock before requesting a write lock.
  *
  * \param rwlock the read/write lock to lock
@@ -364,8 +362,8 @@ extern DECLSPEC int SDLCALL SDL_LockRWLockForWriting(SDL_rwlock * rwlock) SDL_AC
  * This works just like SDL_LockRWLockForReading(), but if the rwlock is not
  * available, then this function returns `SDL_RWLOCK_TIMEDOUT` immediately.
  *
- * This technique is useful if you need access to a resource but
- * don't want to wait for it, and will return to it to try again later.
+ * This technique is useful if you need access to a resource but don't want to
+ * wait for it, and will return to it to try again later.
  *
  * Trying to lock for read-only access can succeed if other threads are
  * holding read-only locks, as this won't prevent access.
@@ -386,18 +384,18 @@ extern DECLSPEC int SDLCALL SDL_TryLockRWLockForReading(SDL_rwlock * rwlock) SDL
 /**
  * Try to lock a read/write lock _for writing_ without blocking.
  *
- * This works just like SDL_LockRWLockForWriting(), but if the rwlock is not available,
- * this function returns `SDL_RWLOCK_TIMEDOUT` immediately.
+ * This works just like SDL_LockRWLockForWriting(), but if the rwlock is not
+ * available, this function returns `SDL_RWLOCK_TIMEDOUT` immediately.
  *
  * This technique is useful if you need exclusive access to a resource but
  * don't want to wait for it, and will return to it to try again later.
  *
- * It is illegal for the owning thread to lock an already-locked rwlock
- * for writing (read-only may be locked recursively, writing can not). Doing
- * so results in undefined behavior.
+ * It is illegal for the owning thread to lock an already-locked rwlock for
+ * writing (read-only may be locked recursively, writing can not). Doing so
+ * results in undefined behavior.
  *
- * It is illegal to request a write lock from a thread that already holds
- * a read-only lock. Doing so results in undefined behavior. Unlock the
+ * It is illegal to request a write lock from a thread that already holds a
+ * read-only lock. Doing so results in undefined behavior. Unlock the
  * read-only lock before requesting a write lock.
  *
  * \param rwlock the rwlock to try to lock
@@ -438,11 +436,11 @@ extern DECLSPEC int SDLCALL SDL_UnlockRWLock(SDL_rwlock * rwlock) SDL_RELEASE_SH
 /**
  * Destroy a read/write lock created with SDL_CreateRWLock().
  *
- * This function must be called on any read/write lock that is no longer needed.
- * Failure to destroy a rwlock will result in a system memory or resource leak. While
- * it is safe to destroy a rwlock that is _unlocked_, it is not safe to attempt
- * to destroy a locked rwlock, and may result in undefined behavior depending
- * on the platform.
+ * This function must be called on any read/write lock that is no longer
+ * needed. Failure to destroy a rwlock will result in a system memory or
+ * resource leak. While it is safe to destroy a rwlock that is _unlocked_, it
+ * is not safe to attempt to destroy a locked rwlock, and may result in
+ * undefined behavior depending on the platform.
  *
  * \param rwlock the rwlock to destroy
  *
