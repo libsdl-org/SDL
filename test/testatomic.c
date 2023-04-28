@@ -121,7 +121,7 @@ static int SDLCALL adder(void *junk)
         bad -= CountInc;
     }
     SDL_AtomicAdd(&threadsRunning, -1);
-    SDL_SemPost(threadDone);
+    SDL_PostSemaphore(threadDone);
     return 0;
 }
 
@@ -141,7 +141,7 @@ static void runAdder(void)
     }
 
     while (SDL_AtomicGet(&threadsRunning) > 0) {
-        SDL_SemWait(threadDone);
+        SDL_WaitSemaphore(threadDone);
     }
 
     SDL_DestroySemaphore(threadDone);

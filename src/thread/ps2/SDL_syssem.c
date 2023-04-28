@@ -79,7 +79,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     }
 }
 
-int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
     int ret;
     struct timer_alarm_t alarm;
@@ -110,7 +110,7 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 }
 
 /* Returns the current count of the semaphore */
-Uint32 SDL_SemValue(SDL_sem *sem)
+Uint32 SDL_GetSemaphoreValue(SDL_sem *sem)
 {
     ee_sema_t info;
 
@@ -126,7 +126,7 @@ Uint32 SDL_SemValue(SDL_sem *sem)
     return 0;
 }
 
-int SDL_SemPost(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_sem *sem)
 {
     int res;
 

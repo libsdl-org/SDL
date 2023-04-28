@@ -65,7 +65,7 @@ SDL_rwlock *SDL_CreateRWLock_generic(void)
         return NULL;
     }
 
-    rwlock->condition = SDL_CreateCond();
+    rwlock->condition = SDL_CreateCondition();
     if (!rwlock->condition) {
         SDL_DestroyMutex(rwlock->lock);
         SDL_free(rwlock);
@@ -82,7 +82,7 @@ void SDL_DestroyRWLock_generic(SDL_rwlock *rwlock)
 {
     if (rwlock) {
         SDL_DestroyMutex(rwlock->lock);
-        SDL_DestroyCond(rwlock->condition);
+        SDL_DestroyCondition(rwlock->condition);
         SDL_free(rwlock);
     }
 }
@@ -111,7 +111,7 @@ int SDL_LockRWLockForWriting_generic(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_AN
     }
 
     while (SDL_AtomicGet(&rwlock->reader_count) > 0) {  /* while something is holding the shared lock, keep waiting. */
-        SDL_CondWait(rwlock->condition, rwlock->lock);  /* release the lock and wait for readers holding the shared lock to release it, regrab the lock. */
+        SDL_WaitCondition(rwlock->condition, rwlock->lock);  /* release the lock and wait for readers holding the shared lock to release it, regrab the lock. */
     }
 
     /* we hold the lock! */
@@ -172,7 +172,7 @@ int SDL_UnlockRWLock_generic(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /
 
     if (SDL_AtomicGet(&rwlock->reader_count) > 0) {  /* we're a reader */
         SDL_AtomicAdd(&rwlock->reader_count, -1);
-        SDL_CondBroadcast(rwlock->condition);  /* alert any pending writers to attempt to try to grab the lock again. */
+        SDL_BroadcastCondition(rwlock->condition);  /* alert any pending writers to attempt to try to grab the lock again. */
     } else if (SDL_AtomicGet(&rwlock->writer_count) > 0) {  /* we're a writer */
         SDL_AtomicAdd(&rwlock->writer_count, -1);
         SDL_UnlockMutex(rwlock->lock);  /* recursive unlock. */

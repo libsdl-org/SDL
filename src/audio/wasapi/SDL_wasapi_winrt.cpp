@@ -175,7 +175,7 @@ void SDL_WasapiDeviceEventHandler::OnDeviceUpdated(DeviceWatcher ^ sender, Devic
 void SDL_WasapiDeviceEventHandler::OnEnumerationCompleted(DeviceWatcher ^ sender, Platform::Object ^ args)
 {
     SDL_assert(sender == this->watcher);
-    SDL_SemPost(this->completed);
+    SDL_PostSemaphore(this->completed);
 }
 
 void SDL_WasapiDeviceEventHandler::OnDefaultRenderDeviceChanged(Platform::Object ^ sender, DefaultAudioRenderDeviceChangedEventArgs ^ args)
@@ -225,8 +225,8 @@ void WASAPI_EnumerateEndpoints(void)
     //  listening for updates.
     playback_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_FALSE);
     capture_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_TRUE);
-    SDL_SemWait(playback_device_event_handler->completed);
-    SDL_SemWait(capture_device_event_handler->completed);
+    SDL_WaitSemaphore(playback_device_event_handler->completed);
+    SDL_WaitSemaphore(capture_device_event_handler->completed);
 }
 
 struct SDL_WasapiActivationHandler : public RuntimeClass<RuntimeClassFlags<ClassicCom>, FtmBase, IActivateAudioInterfaceCompletionHandler>

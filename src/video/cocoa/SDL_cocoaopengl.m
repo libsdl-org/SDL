@@ -68,7 +68,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
     if (setting != 0) { /* nothing to do if vsync is disabled, don't even lock */
         SDL_LockMutex(nscontext->swapIntervalMutex);
         SDL_AtomicAdd(&nscontext->swapIntervalsPassed, 1);
-        SDL_CondSignal(nscontext->swapIntervalCond);
+        SDL_SignalCondition(nscontext->swapIntervalCond);
         SDL_UnlockMutex(nscontext->swapIntervalMutex);
     }
 
@@ -87,7 +87,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
         self->window = NULL;
         SDL_AtomicSet(&self->swapIntervalSetting, 0);
         SDL_AtomicSet(&self->swapIntervalsPassed, 0);
-        self->swapIntervalCond = SDL_CreateCond();
+        self->swapIntervalCond = SDL_CreateCondition();
         self->swapIntervalMutex = SDL_CreateMutex();
         if (!self->swapIntervalCond || !self->swapIntervalMutex) {
             return nil;
@@ -214,7 +214,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
         self->displayLink = nil;
     }
     if (self->swapIntervalCond) {
-        SDL_DestroyCond(self->swapIntervalCond);
+        SDL_DestroyCondition(self->swapIntervalCond);
         self->swapIntervalCond = NULL;
     }
     if (self->swapIntervalMutex) {
@@ -498,14 +498,14 @@ int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window)
         } else if (setting < 0) { /* late swap tearing */
             SDL_LockMutex(nscontext->swapIntervalMutex);
             while (SDL_AtomicGet(&nscontext->swapIntervalsPassed) == 0) {
-                SDL_CondWait(nscontext->swapIntervalCond, nscontext->swapIntervalMutex);
+                SDL_WaitCondition(nscontext->swapIntervalCond, nscontext->swapIntervalMutex);
             }
             SDL_AtomicSet(&nscontext->swapIntervalsPassed, 0);
             SDL_UnlockMutex(nscontext->swapIntervalMutex);
         } else {
             SDL_LockMutex(nscontext->swapIntervalMutex);
             do { /* always wait here so we know we just hit a swap interval. */
-                SDL_CondWait(nscontext->swapIntervalCond, nscontext->swapIntervalMutex);
+                SDL_WaitCondition(nscontext->swapIntervalCond, nscontext->swapIntervalMutex);
             } while ((SDL_AtomicGet(&nscontext->swapIntervalsPassed) % setting) != 0);
             SDL_AtomicSet(&nscontext->swapIntervalsPassed, 0);
             SDL_UnlockMutex(nscontext->swapIntervalMutex);

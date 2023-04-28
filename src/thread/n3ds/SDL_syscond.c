@@ -33,7 +33,7 @@ struct SDL_cond
 
 /* Create a condition variable */
 SDL_cond *
-SDL_CreateCond(void)
+SDL_CreateCondition(void)
 {
     SDL_cond *cond = (SDL_cond *)SDL_malloc(sizeof(SDL_cond));
     if (cond) {
@@ -45,7 +45,7 @@ SDL_CreateCond(void)
 }
 
 /* Destroy a condition variable */
-void SDL_DestroyCond(SDL_cond *cond)
+void SDL_DestroyCondition(SDL_cond *cond)
 {
     if (cond) {
         SDL_free(cond);
@@ -53,7 +53,7 @@ void SDL_DestroyCond(SDL_cond *cond)
 }
 
 /* Restart one of the threads that are waiting on the condition variable */
-int SDL_CondSignal(SDL_cond *cond)
+int SDL_SignalCondition(SDL_cond *cond)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -64,7 +64,7 @@ int SDL_CondSignal(SDL_cond *cond)
 }
 
 /* Restart all threads that are waiting on the condition variable */
-int SDL_CondBroadcast(SDL_cond *cond)
+int SDL_BroadcastCondition(SDL_cond *cond)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -83,7 +83,7 @@ Typical use:
 Thread A:
     SDL_LockMutex(lock);
     while ( ! condition ) {
-        SDL_CondWait(cond, lock);
+        SDL_WaitCondition(cond, lock);
     }
     SDL_UnlockMutex(lock);
 
@@ -92,10 +92,10 @@ Thread B:
     ...
     condition = true;
     ...
-    SDL_CondSignal(cond);
+    SDL_SignalCondition(cond);
     SDL_UnlockMutex(lock);
  */
-int SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
+int SDL_WaitConditionTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
 {
     Result res;
 

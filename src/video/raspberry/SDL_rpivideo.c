@@ -215,7 +215,7 @@ static void RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)
     SDL_WindowData *wdata = (SDL_WindowData *)data;
 
     SDL_LockMutex(wdata->vsync_cond_mutex);
-    SDL_CondSignal(wdata->vsync_cond);
+    SDL_SignalCondition(wdata->vsync_cond);
     SDL_UnlockMutex(wdata->vsync_cond_mutex);
 }
 
@@ -296,7 +296,7 @@ int RPI_CreateWindow(_THIS, SDL_Window *window)
     /* Start generating vsync callbacks if necesary */
     wdata->double_buffer = SDL_FALSE;
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
-        wdata->vsync_cond = SDL_CreateCond();
+        wdata->vsync_cond = SDL_CreateCondition();
         wdata->vsync_cond_mutex = SDL_CreateMutex();
         wdata->double_buffer = SDL_TRUE;
         vc_dispmanx_vsync_callback(displaydata->dispman_display, RPI_vsync_callback, (void *)wdata);
@@ -322,12 +322,12 @@ void RPI_DestroyWindow(_THIS, SDL_Window *window)
         if (data->double_buffer) {
             /* Wait for vsync, and then stop vsync callbacks and destroy related stuff, if needed */
             SDL_LockMutex(data->vsync_cond_mutex);
-            SDL_CondWait(data->vsync_cond, data->vsync_cond_mutex);
+            SDL_WaitCondition(data->vsync_cond, data->vsync_cond_mutex);
             SDL_UnlockMutex(data->vsync_cond_mutex);
 
             vc_dispmanx_vsync_callback(displaydata->dispman_display, NULL, NULL);
 
-            SDL_DestroyCond(data->vsync_cond);
+            SDL_DestroyCondition(data->vsync_cond);
             SDL_DestroyMutex(data->vsync_cond_mutex);
         }
 

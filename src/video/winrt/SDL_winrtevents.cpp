@@ -78,11 +78,11 @@ static void WINRT_YieldXAMLThread()
     _threadState = ThreadState_Yielding;
     SDL_UnlockMutex(_mutex);
 
-    SDL_CondSignal(_cond);
+    SDL_SignalCondition(_cond);
 
     SDL_LockMutex(_mutex);
     while (_threadState != ThreadState_Running) {
-        SDL_CondWait(_cond, _mutex);
+        SDL_WaitCondition(_cond, _mutex);
     }
     SDL_UnlockMutex(_mutex);
 }
@@ -101,7 +101,7 @@ void WINRT_CycleXAMLThread(void)
     switch (_threadState) {
     case ThreadState_NotLaunched:
     {
-        _cond = SDL_CreateCond();
+        _cond = SDL_CreateCondition();
 
         _mutex = SDL_CreateMutex();
         _threadState = ThreadState_Running;
@@ -109,7 +109,7 @@ void WINRT_CycleXAMLThread(void)
 
         SDL_LockMutex(_mutex);
         while (_threadState != ThreadState_Yielding) {
-            SDL_CondWait(_cond, _mutex);
+            SDL_WaitCondition(_cond, _mutex);
         }
         SDL_UnlockMutex(_mutex);
 
@@ -129,11 +129,11 @@ void WINRT_CycleXAMLThread(void)
         _threadState = ThreadState_Running;
         SDL_UnlockMutex(_mutex);
 
-        SDL_CondSignal(_cond);
+        SDL_SignalCondition(_cond);
 
         SDL_LockMutex(_mutex);
         while (_threadState != ThreadState_Yielding) {
-            SDL_CondWait(_cond, _mutex);
+            SDL_WaitCondition(_cond, _mutex);
         }
         SDL_UnlockMutex(_mutex);
     }

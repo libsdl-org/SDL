@@ -74,7 +74,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
  * If the timeout is 0 then just poll the semaphore; if it's SDL_MUTEX_MAXWAIT, pass
  * NULL to sceKernelWaitSema() so that it waits indefinitely; and if the timeout
  * is specified, convert it to microseconds. */
-int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
     SceUInt timeoutUS;
     SceUInt *pTimeout;
@@ -111,7 +111,7 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 }
 
 /* Returns the current count of the semaphore */
-Uint32 SDL_SemValue(SDL_sem *sem)
+Uint32 SDL_GetSemaphoreValue(SDL_sem *sem)
 {
     SceKernelSemaInfo info;
     info.size = sizeof(info);
@@ -128,7 +128,7 @@ Uint32 SDL_SemValue(SDL_sem *sem)
     return 0;
 }
 
-int SDL_SemPost(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_sem *sem)
 {
     int res;
 

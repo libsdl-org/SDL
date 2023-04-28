@@ -197,7 +197,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
            That's okay, it just means we run through the loop a few
            extra times.
          */
-        SDL_SemWaitTimeoutNS(data->sem, delay);
+        SDL_WaitSemaphoreTimeoutNS(data->sem, delay);
     }
     return 0;
 }
@@ -242,7 +242,7 @@ void SDL_QuitTimers(void)
     if (SDL_AtomicCAS(&data->active, 1, 0)) { /* active? Move to inactive. */
         /* Shutdown the timer thread */
         if (data->thread) {
-            SDL_SemPost(data->sem);
+            SDL_PostSemaphore(data->sem);
             SDL_WaitThread(data->thread, NULL);
             data->thread = NULL;
         }
@@ -329,7 +329,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     SDL_AtomicUnlock(&data->lock);
 
     /* Wake up the timer thread if necessary */
-    SDL_SemPost(data->sem);
+    SDL_PostSemaphore(data->sem);
 
     return entry->timerID;
 }

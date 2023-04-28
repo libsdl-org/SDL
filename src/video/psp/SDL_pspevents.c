@@ -64,9 +64,9 @@ static struct
 int EventUpdate(void *data)
 {
     while (running) {
-        SDL_SemWait(event_sem);
+        SDL_WaitSemaphore(event_sem);
         sceHprmPeekCurrentKey((u32 *)&hprm);
-        SDL_SemPost(event_sem);
+        SDL_PostSemaphore(event_sem);
         /* Delay 1/60th of a second */
         sceKernelDelayThread(1000000 / 60);
     }
@@ -80,9 +80,9 @@ void PSP_PumpEvents(_THIS)
     enum PspHprmKeys changed;
     static enum PspHprmKeys old_keys = 0;
 
-    SDL_SemWait(event_sem);
+    SDL_WaitSemaphore(event_sem);
     keys = hprm;
-    SDL_SemPost(event_sem);
+    SDL_PostSemaphore(event_sem);
 
     /* HPRM Keyboard */
     changed = old_keys ^ keys;

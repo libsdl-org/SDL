@@ -39,7 +39,7 @@ struct SDL_cond
 
 /* Create a condition variable */
 SDL_cond *
-SDL_CreateCond(void)
+SDL_CreateCondition(void)
 {
     SDL_cond *cond;
 
@@ -50,7 +50,7 @@ SDL_CreateCond(void)
         cond->wait_done = SDL_CreateSemaphore(0);
         cond->waiting = cond->signals = 0;
         if (!cond->lock || !cond->wait_sem || !cond->wait_done) {
-            SDL_DestroyCond(cond);
+            SDL_DestroyCondition(cond);
             cond = NULL;
         }
     } else {
@@ -60,7 +60,7 @@ SDL_CreateCond(void)
 }
 
 /* Destroy a condition variable */
-void SDL_DestroyCond(SDL_cond *cond)
+void SDL_DestroyCondition(SDL_cond *cond)
 {
     if (cond) {
         if (cond->wait_sem) {
@@ -77,7 +77,7 @@ void SDL_DestroyCond(SDL_cond *cond)
 }
 
 /* Restart one of the threads that are waiting on the condition variable */
-int SDL_CondSignal(SDL_cond *cond)
+int SDL_SignalCondition(SDL_cond *cond)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -89,9 +89,9 @@ int SDL_CondSignal(SDL_cond *cond)
     SDL_LockMutex(cond->lock);
     if (cond->waiting > cond->signals) {
         ++cond->signals;
-        SDL_SemPost(cond->wait_sem);
+        SDL_PostSemaphore(cond->wait_sem);
         SDL_UnlockMutex(cond->lock);
-        SDL_SemWait(cond->wait_done);
+        SDL_WaitSemaphore(cond->wait_done);
     } else {
         SDL_UnlockMutex(cond->lock);
     }
@@ -100,7 +100,7 @@ int SDL_CondSignal(SDL_cond *cond)
 }
 
 /* Restart all threads that are waiting on the condition variable */
-int SDL_CondBroadcast(SDL_cond *cond)
+int SDL_BroadcastCondition(SDL_cond *cond)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -116,14 +116,14 @@ int SDL_CondBroadcast(SDL_cond *cond)
         num_waiting = (cond->waiting - cond->signals);
         cond->signals = cond->waiting;
         for (i = 0; i < num_waiting; ++i) {
-            SDL_SemPost(cond->wait_sem);
+            SDL_PostSemaphore(cond->wait_sem);
         }
         /* Now all released threads are blocked here, waiting for us.
            Collect them all (and win fabulous prizes!) :-)
          */
         SDL_UnlockMutex(cond->lock);
         for (i = 0; i < num_waiting; ++i) {
-            SDL_SemWait(cond->wait_done);
+            SDL_WaitSemaphore(cond->wait_done);
         }
     } else {
         SDL_UnlockMutex(cond->lock);
@@ -141,7 +141,7 @@ Typical use:
 Thread A:
     SDL_LockMutex(lock);
     while ( ! condition ) {
-        SDL_CondWait(cond, lock);
+        SDL_WaitCondition(cond, lock);
     }
     SDL_UnlockMutex(lock);
 
@@ -150,10 +150,10 @@ Thread B:
     ...
     condition = true;
     ...
-    SDL_CondSignal(cond);
+    SDL_SignalCondition(cond);
     SDL_UnlockMutex(lock);
  */
-int SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
+int SDL_WaitConditionTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
 {
     int retval;
 
@@ -173,7 +173,7 @@ int SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
     SDL_UnlockMutex(mutex);
 
     /* Wait for a signal */
-    retval = SDL_SemWaitTimeout(cond->wait_sem, timeoutNS);
+    retval = SDL_WaitSemaphoreTimeout(cond->wait_sem, timeoutNS);
 
     /* Let the signaler know we have completed the wait, otherwise
        the signaler can race ahead and get the condition semaphore
@@ -185,10 +185,10 @@ int SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
     if (cond->signals > 0) {
         /* If we timed out, we need to eat a condition signal */
         if (retval > 0) {
-            SDL_SemWait(cond->wait_sem);
+            SDL_WaitSemaphore(cond->wait_sem);
         }
         /* We always notify the signal thread that we are done */
-        SDL_SemPost(cond->wait_done);
+        SDL_PostSemaphore(cond->wait_done);
 
         /* Signal handshake complete */
         --cond->signals;

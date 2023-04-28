@@ -481,17 +481,17 @@ void SDL_DetachThread(SDL_Thread *thread)
     }
 }
 
-int SDL_SemWait(SDL_sem *sem)
+int SDL_WaitSemaphore(SDL_sem *sem)
 {
-    return SDL_SemWaitTimeoutNS(sem, SDL_MUTEX_MAXWAIT);
+    return SDL_WaitSemaphoreTimeoutNS(sem, SDL_MUTEX_MAXWAIT);
 }
 
-int SDL_SemTryWait(SDL_sem *sem)
+int SDL_TryWaitSemaphore(SDL_sem *sem)
 {
-    return SDL_SemWaitTimeoutNS(sem, 0);
+    return SDL_WaitSemaphoreTimeoutNS(sem, 0);
 }
 
-int SDL_SemWaitTimeout(SDL_sem *sem, Sint32 timeoutMS)
+int SDL_WaitSemaphoreTimeout(SDL_sem *sem, Sint32 timeoutMS)
 {
     Sint64 timeoutNS;
 
@@ -500,15 +500,15 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Sint32 timeoutMS)
     } else {
         timeoutNS = -1;
     }
-    return SDL_SemWaitTimeoutNS(sem, timeoutNS);
+    return SDL_WaitSemaphoreTimeoutNS(sem, timeoutNS);
 }
 
-int SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex)
+int SDL_WaitCondition(SDL_cond *cond, SDL_mutex *mutex)
 {
-    return SDL_CondWaitTimeoutNS(cond, mutex, SDL_MUTEX_MAXWAIT);
+    return SDL_WaitConditionTimeoutNS(cond, mutex, SDL_MUTEX_MAXWAIT);
 }
 
-int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Sint32 timeoutMS)
+int SDL_WaitConditionTimeout(SDL_cond *cond, SDL_mutex *mutex, Sint32 timeoutMS)
 {
     Sint64 timeoutNS;
 
@@ -517,5 +517,5 @@ int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Sint32 timeoutMS)
     } else {
         timeoutNS = -1;
     }
-    return SDL_CondWaitTimeoutNS(cond, mutex, timeoutNS);
+    return SDL_WaitConditionTimeoutNS(cond, mutex, timeoutNS);
 }

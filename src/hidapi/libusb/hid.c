@@ -108,7 +108,7 @@ static int SDL_CreateThreadBarrier(SDL_ThreadBarrier *barrier, Uint32 count)
 	if (barrier->mutex == NULL) {
 		return -1; /* Error set by CreateMutex */
 	}
-	barrier->cond = SDL_CreateCond();
+	barrier->cond = SDL_CreateCondition();
 	if (barrier->cond == NULL) {
 		return -1; /* Error set by CreateCond */
 	}
@@ -121,7 +121,7 @@ static int SDL_CreateThreadBarrier(SDL_ThreadBarrier *barrier, Uint32 count)
 
 static void SDL_DestroyThreadBarrier(SDL_ThreadBarrier *barrier)
 {
-	SDL_DestroyCond(barrier->cond);
+	SDL_DestroyCondition(barrier->cond);
 	SDL_DestroyMutex(barrier->mutex);
 }
 
@@ -131,11 +131,11 @@ static int SDL_WaitThreadBarrier(SDL_ThreadBarrier *barrier)
 	barrier->count += 1;
 	if (barrier->count >= barrier->trip_count) {
 		barrier->count = 0;
-		SDL_CondBroadcast(barrier->cond);
+		SDL_BroadcastCondition(barrier->cond);
 		SDL_UnlockMutex(barrier->mutex);
 		return 1;
 	}
-	SDL_CondWait(barrier->cond, barrier->mutex);
+	SDL_WaitCondition(barrier->cond, barrier->mutex);
 	SDL_UnlockMutex(barrier->mutex);
 	return 0;
 }
@@ -219,7 +219,7 @@ static hid_device *new_hid_device(void)
 	dev->blocking = 1;
 
 	dev->mutex = SDL_CreateMutex();
-	dev->condition = SDL_CreateCond();
+	dev->condition = SDL_CreateCondition();
 	SDL_CreateThreadBarrier(&dev->barrier, 2);
 
 	return dev;
@@ -229,7 +229,7 @@ static void free_hid_device(hid_device *dev)
 {
 	/* Clean up the thread objects */
 	SDL_DestroyThreadBarrier(&dev->barrier);
-	SDL_DestroyCond(dev->condition);
+	SDL_DestroyCondition(dev->condition);
 	SDL_DestroyMutex(dev->mutex);
 
 	/* Free the device itself */
@@ -1011,7 +1011,7 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 		if (dev->input_reports == NULL) {
 			/* The list is empty. Put it at the root. */
 			dev->input_reports = rpt;
-			SDL_CondSignal(dev->condition);
+			SDL_SignalCondition(dev->condition);
 		}
 		else {
 			/* Find the end of the list and attach. */
@@ -1122,7 +1122,7 @@ static int SDLCALL read_thread(void *param)
 	   the condition actually will go to sleep before the condition is
 	   signaled. */
 	SDL_LockMutex(dev->mutex);
-	SDL_CondBroadcast(dev->condition);
+	SDL_BroadcastCondition(dev->condition);
 	SDL_UnlockMutex(dev->mutex);
 
 	/* The dev->transfer->buffer and dev->transfer objects are cleaned up
@@ -1466,7 +1466,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 	if (milliseconds == -1) {
 		/* Blocking */
 		while (!dev->input_reports && !dev->shutdown_thread) {
-			SDL_CondWait(dev->condition, dev->mutex);
+			SDL_WaitCondition(dev->condition, dev->mutex);
 		}
 		if (dev->input_reports) {
 			bytes_read = return_data(dev, data, length);
@@ -1477,7 +1477,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 		int res;
 
 		while (!dev->input_reports && !dev->shutdown_thread) {
-			res = SDL_CondWaitTimeout(dev->condition, dev->mutex, milliseconds);
+			res = SDL_WaitConditionTimeout(dev->condition, dev->mutex, milliseconds);
 			if (res == 0) {
 				if (dev->input_reports) {
 					bytes_read = return_data(dev, data, length);
