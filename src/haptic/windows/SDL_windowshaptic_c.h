@@ -45,7 +45,7 @@ struct haptic_hwdata
     Uint8 bXInputHaptic;  /* Supports force feedback via XInput. */
     Uint8 userid;         /* XInput userid index for this joystick */
     SDL_Thread *thread;
-    SDL_mutex *mutex;
+    SDL_Mutex *mutex;
     Uint64 stopTicks;
     SDL_AtomicInt stopThread;
 };

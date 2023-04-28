@@ -112,7 +112,7 @@ typedef struct SDL_AudioDriver
     SDL_AudioDriverImpl impl;
 
     /* A mutex for device detection */
-    SDL_mutex *detectionLock;
+    SDL_Mutex *detectionLock;
     SDL_bool captureDevicesRemoved;
     SDL_bool outputDevicesRemoved;
     int outputDeviceCount;
@@ -150,7 +150,7 @@ struct SDL_AudioDevice
     Uint32 work_buffer_len;
 
     /* A mutex for locking the mixing buffers */
-    SDL_mutex *mixer_lock;
+    SDL_Mutex *mixer_lock;
 
     /* A thread to feed the audio device */
     SDL_Thread *thread;

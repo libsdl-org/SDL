@@ -93,8 +93,8 @@ namespace NAMESPACE
 
 typedef struct _SDL_ThreadBarrier
 {
-	SDL_mutex *mutex;
-	SDL_cond *cond;
+	SDL_Mutex *mutex;
+	SDL_Condition *cond;
 	Uint32 count;
 	Uint32 trip_count;
 } SDL_ThreadBarrier;
@@ -193,8 +193,8 @@ struct hid_device_ {
 
 	/* Read thread objects */
 	SDL_Thread *thread;
-	SDL_mutex *mutex; /* Protects input_reports */
-	SDL_cond *condition;
+	SDL_Mutex *mutex; /* Protects input_reports */
+	SDL_Condition *condition;
 	SDL_ThreadBarrier barrier; /* Ensures correct startup sequence */
 	int shutdown_thread;
 	int transfer_loop_finished;

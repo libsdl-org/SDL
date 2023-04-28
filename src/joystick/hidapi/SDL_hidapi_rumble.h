@@ -26,7 +26,7 @@
 
 /* Advanced API */
 #ifdef SDL_THREAD_SAFETY_ANALYSIS
-extern SDL_mutex *SDL_HIDAPI_rumble_lock;
+extern SDL_Mutex *SDL_HIDAPI_rumble_lock;
 #endif
 int SDL_HIDAPI_LockRumble(void) SDL_TRY_ACQUIRE(0, SDL_HIDAPI_rumble_lock);
 SDL_bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size);

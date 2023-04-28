@@ -41,18 +41,18 @@
 #define SDL_UnlockRWLock_generic SDL_UnlockRWLock
 #endif
 
-struct SDL_rwlock
+struct SDL_RWLock
 {
-    SDL_mutex *lock;
-    SDL_cond *condition;
+    SDL_Mutex *lock;
+    SDL_Condition *condition;
     SDL_threadID writer_thread;
     SDL_AtomicInt reader_count;
     SDL_AtomicInt writer_count;
 };
 
-SDL_rwlock *SDL_CreateRWLock_generic(void)
+SDL_RWLock *SDL_CreateRWLock_generic(void)
 {
-    SDL_rwlock *rwlock = (SDL_rwlock *) SDL_malloc(sizeof (*rwlock));
+    SDL_RWLock *rwlock = (SDL_RWLock *) SDL_malloc(sizeof (*rwlock));
 
     if (!rwlock) {
         SDL_OutOfMemory();
@@ -78,7 +78,7 @@ SDL_rwlock *SDL_CreateRWLock_generic(void)
     return rwlock;
 }
 
-void SDL_DestroyRWLock_generic(SDL_rwlock *rwlock)
+void SDL_DestroyRWLock_generic(SDL_RWLock *rwlock)
 {
     if (rwlock) {
         SDL_DestroyMutex(rwlock->lock);
@@ -87,7 +87,7 @@ void SDL_DestroyRWLock_generic(SDL_rwlock *rwlock)
     }
 }
 
-int SDL_LockRWLockForReading_generic(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockRWLockForReading_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (!rwlock) {
         return SDL_InvalidParamError("rwlock");
@@ -102,7 +102,7 @@ int SDL_LockRWLockForReading_generic(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_AN
     return 0;
 }
 
-int SDL_LockRWLockForWriting_generic(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockRWLockForWriting_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (!rwlock) {
         return SDL_InvalidParamError("rwlock");
@@ -120,7 +120,7 @@ int SDL_LockRWLockForWriting_generic(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_AN
     return 0;
 }
 
-int SDL_TryLockRWLockForReading_generic(SDL_rwlock *rwlock)
+int SDL_TryLockRWLockForReading_generic(SDL_RWLock *rwlock)
 {
     int rc;
 
@@ -141,7 +141,7 @@ int SDL_TryLockRWLockForReading_generic(SDL_rwlock *rwlock)
     return 0;
 }
 
-int SDL_TryLockRWLockForWriting_generic(SDL_rwlock *rwlock)
+int SDL_TryLockRWLockForWriting_generic(SDL_RWLock *rwlock)
 {
     int rc;
 
@@ -162,7 +162,7 @@ int SDL_TryLockRWLockForWriting_generic(SDL_rwlock *rwlock)
     return 0;
 }
 
-int SDL_UnlockRWLock_generic(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_UnlockRWLock_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (!rwlock) {
         return SDL_InvalidParamError("rwlock");

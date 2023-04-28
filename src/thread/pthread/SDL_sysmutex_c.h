@@ -28,7 +28,7 @@
 #define FAKE_RECURSIVE_MUTEX
 #endif
 
-struct SDL_mutex
+struct SDL_Mutex
 {
     pthread_mutex_t id;
 #ifdef FAKE_RECURSIVE_MUTEX

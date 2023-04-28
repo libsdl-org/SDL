@@ -22,11 +22,11 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-typedef SDL_mutex *(*pfnSDL_CreateMutex)(void);
-typedef int (*pfnSDL_LockMutex)(SDL_mutex *);
-typedef int (*pfnSDL_TryLockMutex)(SDL_mutex *);
-typedef int (*pfnSDL_UnlockMutex)(SDL_mutex *);
-typedef void (*pfnSDL_DestroyMutex)(SDL_mutex *);
+typedef SDL_Mutex *(*pfnSDL_CreateMutex)(void);
+typedef int (*pfnSDL_LockMutex)(SDL_Mutex *);
+typedef int (*pfnSDL_TryLockMutex)(SDL_Mutex *);
+typedef int (*pfnSDL_UnlockMutex)(SDL_Mutex *);
+typedef void (*pfnSDL_DestroyMutex)(SDL_Mutex *);
 
 typedef enum
 {
@@ -42,7 +42,7 @@ typedef struct SDL_mutex_impl_t
     pfnSDL_LockMutex Lock;
     pfnSDL_TryLockMutex TryLock;
     pfnSDL_UnlockMutex Unlock;
-    /* Needed by SDL_cond: */
+    /* Needed by SDL_Condition: */
     SDL_MutexType Type;
 } SDL_mutex_impl_t;
 

@@ -2593,3 +2593,18 @@ typedef SDL_atomic_t, SDL_AtomicInt;
 - SDL_CondWaitTimeout
 + SDL_WaitConditionTimeout
   (...)
+@@
+typedef SDL_mutex, SDL_Mutex;
+@@
+- SDL_mutex
++ SDL_Mutex
+@@
+typedef SDL_sem, SDL_Semaphore;
+@@
+- SDL_sem
++ SDL_Semaphore
+@@
+typedef SDL_cond, SDL_Condition;
+@@
+- SDL_cond
++ SDL_Condition

@@ -26,49 +26,49 @@
 
 #ifdef SDL_THREADS_DISABLED
 
-SDL_sem *
+SDL_Semaphore *
 SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_SetError("SDL not built with thread support");
-    return (SDL_sem *)0;
+    return (SDL_Semaphore *)0;
 }
 
-void SDL_DestroySemaphore(SDL_sem *sem)
+void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
 }
 
-int SDL_WaitSemaphoreTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     return SDL_SetError("SDL not built with thread support");
 }
 
 Uint32
-SDL_GetSemaphoreValue(SDL_sem *sem)
+SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     return 0;
 }
 
-int SDL_PostSemaphore(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_Semaphore *sem)
 {
     return SDL_SetError("SDL not built with thread support");
 }
 
 #else
 
-struct SDL_semaphore
+struct SDL_Semaphore
 {
     Uint32 count;
     Uint32 waiters_count;
-    SDL_mutex *count_lock;
-    SDL_cond *count_nonzero;
+    SDL_Mutex *count_lock;
+    SDL_Condition *count_nonzero;
 };
 
-SDL_sem *
+SDL_Semaphore *
 SDL_CreateSemaphore(Uint32 initial_value)
 {
-    SDL_sem *sem;
+    SDL_Semaphore *sem;
 
-    sem = (SDL_sem *)SDL_malloc(sizeof(*sem));
+    sem = (SDL_Semaphore *)SDL_malloc(sizeof(*sem));
     if (sem == NULL) {
         SDL_OutOfMemory();
         return NULL;
@@ -89,7 +89,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
 /* WARNING:
    You cannot call this function when another thread is using the semaphore.
 */
-void SDL_DestroySemaphore(SDL_sem *sem)
+void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
     if (sem) {
         sem->count = 0xFFFFFFFF;
@@ -107,7 +107,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     }
 }
 
-int SDL_WaitSemaphoreTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     int retval;
 
@@ -145,7 +145,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 }
 
 Uint32
-SDL_GetSemaphoreValue(SDL_sem *sem)
+SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     Uint32 value;
 
@@ -158,7 +158,7 @@ SDL_GetSemaphoreValue(SDL_sem *sem)
     return value;
 }
 
-int SDL_PostSemaphore(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_Semaphore *sem)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");

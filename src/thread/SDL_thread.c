@@ -110,7 +110,7 @@ typedef struct SDL_TLSEntry
     struct SDL_TLSEntry *next;
 } SDL_TLSEntry;
 
-static SDL_mutex *SDL_generic_TLS_mutex;
+static SDL_Mutex *SDL_generic_TLS_mutex;
 static SDL_TLSEntry *SDL_generic_TLS;
 
 SDL_TLSData *
@@ -125,7 +125,7 @@ SDL_Generic_GetTLSData(void)
         static SDL_SpinLock tls_lock;
         SDL_AtomicLock(&tls_lock);
         if (SDL_generic_TLS_mutex == NULL) {
-            SDL_mutex *mutex = SDL_CreateMutex();
+            SDL_Mutex *mutex = SDL_CreateMutex();
             SDL_MemoryBarrierRelease();
             SDL_generic_TLS_mutex = mutex;
             if (SDL_generic_TLS_mutex == NULL) {
@@ -481,17 +481,17 @@ void SDL_DetachThread(SDL_Thread *thread)
     }
 }
 
-int SDL_WaitSemaphore(SDL_sem *sem)
+int SDL_WaitSemaphore(SDL_Semaphore *sem)
 {
     return SDL_WaitSemaphoreTimeoutNS(sem, SDL_MUTEX_MAXWAIT);
 }
 
-int SDL_TryWaitSemaphore(SDL_sem *sem)
+int SDL_TryWaitSemaphore(SDL_Semaphore *sem)
 {
     return SDL_WaitSemaphoreTimeoutNS(sem, 0);
 }
 
-int SDL_WaitSemaphoreTimeout(SDL_sem *sem, Sint32 timeoutMS)
+int SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sint32 timeoutMS)
 {
     Sint64 timeoutNS;
 
@@ -503,12 +503,12 @@ int SDL_WaitSemaphoreTimeout(SDL_sem *sem, Sint32 timeoutMS)
     return SDL_WaitSemaphoreTimeoutNS(sem, timeoutNS);
 }
 
-int SDL_WaitCondition(SDL_cond *cond, SDL_mutex *mutex)
+int SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex *mutex)
 {
     return SDL_WaitConditionTimeoutNS(cond, mutex, SDL_MUTEX_MAXWAIT);
 }
 
-int SDL_WaitConditionTimeout(SDL_cond *cond, SDL_mutex *mutex, Sint32 timeoutMS)
+int SDL_WaitConditionTimeout(SDL_Condition *cond, SDL_Mutex *mutex, Sint32 timeoutMS)
 {
     Sint64 timeoutNS;
 

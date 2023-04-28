@@ -62,9 +62,9 @@ static int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; /* Default SurfaceView format, in case this is queried before being filled */
 float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
-SDL_sem *Android_PauseSem = NULL;
-SDL_sem *Android_ResumeSem = NULL;
-SDL_mutex *Android_ActivityMutex = NULL;
+SDL_Semaphore *Android_PauseSem = NULL;
+SDL_Semaphore *Android_ResumeSem = NULL;
+SDL_Mutex *Android_ActivityMutex = NULL;
 static SDL_SystemTheme Android_SystemTheme;
 
 static int Android_SuspendScreenSaver(_THIS)

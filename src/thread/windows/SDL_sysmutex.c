@@ -56,7 +56,7 @@ static pfnAcquireSRWLockExclusive pAcquireSRWLockExclusive = NULL;
 static pfnTryAcquireSRWLockExclusive pTryAcquireSRWLockExclusive = NULL;
 #endif
 
-static SDL_mutex *SDL_CreateMutex_srw(void)
+static SDL_Mutex *SDL_CreateMutex_srw(void)
 {
     SDL_mutex_srw *mutex;
 
@@ -67,16 +67,16 @@ static SDL_mutex *SDL_CreateMutex_srw(void)
 
     pInitializeSRWLock(&mutex->srw);
 
-    return (SDL_mutex *)mutex;
+    return (SDL_Mutex *)mutex;
 }
 
-static void SDL_DestroyMutex_srw(SDL_mutex *mutex)
+static void SDL_DestroyMutex_srw(SDL_Mutex *mutex)
 {
     /* There are no kernel allocated resources */
     SDL_free(mutex);
 }
 
-static int SDL_LockMutex_srw(SDL_mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+static int SDL_LockMutex_srw(SDL_Mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
     DWORD this_thread;
@@ -97,7 +97,7 @@ static int SDL_LockMutex_srw(SDL_mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /*
     return 0;
 }
 
-static int SDL_TryLockMutex_srw(SDL_mutex *_mutex)
+static int SDL_TryLockMutex_srw(SDL_Mutex *_mutex)
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
     DWORD this_thread;
@@ -118,7 +118,7 @@ static int SDL_TryLockMutex_srw(SDL_mutex *_mutex)
     return retval;
 }
 
-static int SDL_UnlockMutex_srw(SDL_mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+static int SDL_UnlockMutex_srw(SDL_Mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
 
@@ -148,7 +148,7 @@ static const SDL_mutex_impl_t SDL_mutex_impl_srw = {
  */
 
 /* Create a mutex */
-static SDL_mutex *SDL_CreateMutex_cs(void)
+static SDL_Mutex *SDL_CreateMutex_cs(void)
 {
     SDL_mutex_cs *mutex;
 
@@ -165,11 +165,11 @@ static SDL_mutex *SDL_CreateMutex_cs(void)
     } else {
         SDL_OutOfMemory();
     }
-    return (SDL_mutex *)mutex;
+    return (SDL_Mutex *)mutex;
 }
 
 /* Free the mutex */
-static void SDL_DestroyMutex_cs(SDL_mutex *mutex_)
+static void SDL_DestroyMutex_cs(SDL_Mutex *mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
 
@@ -178,7 +178,7 @@ static void SDL_DestroyMutex_cs(SDL_mutex *mutex_)
 }
 
 /* Lock the mutex */
-static int SDL_LockMutex_cs(SDL_mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+static int SDL_LockMutex_cs(SDL_Mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
 
@@ -187,7 +187,7 @@ static int SDL_LockMutex_cs(SDL_mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS /* 
 }
 
 /* TryLock the mutex */
-static int SDL_TryLockMutex_cs(SDL_mutex *mutex_)
+static int SDL_TryLockMutex_cs(SDL_Mutex *mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     int retval = 0;
@@ -199,7 +199,7 @@ static int SDL_TryLockMutex_cs(SDL_mutex *mutex_)
 }
 
 /* Unlock the mutex */
-static int SDL_UnlockMutex_cs(SDL_mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+static int SDL_UnlockMutex_cs(SDL_Mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
 
@@ -220,7 +220,7 @@ static const SDL_mutex_impl_t SDL_mutex_impl_cs = {
  * Runtime selection and redirection
  */
 
-SDL_mutex *
+SDL_Mutex *
 SDL_CreateMutex(void)
 {
     if (SDL_mutex_impl_active.Create == NULL) {
@@ -254,14 +254,14 @@ SDL_CreateMutex(void)
     return SDL_mutex_impl_active.Create();
 }
 
-void SDL_DestroyMutex(SDL_mutex *mutex)
+void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
         SDL_mutex_impl_active.Destroy(mutex);
     }
 }
 
-int SDL_LockMutex(SDL_mutex *mutex)
+int SDL_LockMutex(SDL_Mutex *mutex)
 {
     if (mutex == NULL) {
         return 0;
@@ -270,7 +270,7 @@ int SDL_LockMutex(SDL_mutex *mutex)
     return SDL_mutex_impl_active.Lock(mutex);
 }
 
-int SDL_TryLockMutex(SDL_mutex *mutex)
+int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     if (mutex == NULL) {
         return 0;
@@ -279,7 +279,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
     return SDL_mutex_impl_active.TryLock(mutex);
 }
 
-int SDL_UnlockMutex(SDL_mutex *mutex)
+int SDL_UnlockMutex(SDL_Mutex *mutex)
 {
     if (mutex == NULL) {
         return 0;

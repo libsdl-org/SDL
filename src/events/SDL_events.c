@@ -54,7 +54,7 @@ typedef struct SDL_EventWatcher
     SDL_bool removed;
 } SDL_EventWatcher;
 
-static SDL_mutex *SDL_event_watchers_lock;
+static SDL_Mutex *SDL_event_watchers_lock;
 static SDL_EventWatcher SDL_EventOK;
 static SDL_EventWatcher *SDL_event_watchers = NULL;
 static int SDL_event_watchers_count = 0;
@@ -87,7 +87,7 @@ typedef struct SDL_SysWMEntry
 
 static struct
 {
-    SDL_mutex *lock;
+    SDL_Mutex *lock;
     SDL_bool active;
     SDL_AtomicInt count;
     int max_events_seen;

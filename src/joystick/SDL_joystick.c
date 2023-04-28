@@ -108,7 +108,7 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
 static
 #endif
-SDL_mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
+SDL_Mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
 static int SDL_joysticks_locked;
 static SDL_bool SDL_joysticks_initialized;
 static SDL_bool SDL_joysticks_quitting = SDL_FALSE;

@@ -46,8 +46,8 @@ struct SDL_WindowData
 #endif
 
     /* Vsync callback cond and mutex */
-    SDL_cond *vsync_cond;
-    SDL_mutex *vsync_cond_mutex;
+    SDL_Condition *vsync_cond;
+    SDL_Mutex *vsync_cond_mutex;
     SDL_bool double_buffer;
 };
 

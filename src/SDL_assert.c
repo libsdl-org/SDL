@@ -49,7 +49,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
 static SDL_AssertData *triggered_assertions = NULL;
 
 #ifndef SDL_THREADS_DISABLED
-static SDL_mutex *assertion_mutex = NULL;
+static SDL_Mutex *assertion_mutex = NULL;
 #endif
 
 static SDL_AssertionHandler assertion_handler = SDL_PromptAssertion;

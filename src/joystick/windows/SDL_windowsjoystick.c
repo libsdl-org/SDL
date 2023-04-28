@@ -145,8 +145,8 @@ typedef DWORD(WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyCont
 /* local variables */
 static SDL_bool s_bJoystickThread = SDL_FALSE;
 static SDL_bool s_bWindowsDeviceChanged = SDL_FALSE;
-static SDL_cond *s_condJoystickThread = NULL;
-static SDL_mutex *s_mutexJoyStickEnum = NULL;
+static SDL_Condition *s_condJoystickThread = NULL;
+static SDL_Mutex *s_mutexJoyStickEnum = NULL;
 static SDL_Thread *s_joystickThread = NULL;
 static SDL_bool s_bJoystickThreadQuit = SDL_FALSE;
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
@@ -313,7 +313,7 @@ static int SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
     return 0;
 }
 
-static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex)
+static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_Mutex *mutex)
 {
     MSG msg;
     int lastret = 1;

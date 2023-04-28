@@ -28,22 +28,22 @@
    implementation, written by Christopher Tate and Owen Smith.  Thanks!
  */
 
-struct SDL_cond
+struct SDL_Condition
 {
-    SDL_mutex *lock;
+    SDL_Mutex *lock;
     int waiting;
     int signals;
-    SDL_sem *wait_sem;
-    SDL_sem *wait_done;
+    SDL_Semaphore *wait_sem;
+    SDL_Semaphore *wait_done;
 };
 
 /* Create a condition variable */
-SDL_cond *
+SDL_Condition *
 SDL_CreateCondition(void)
 {
-    SDL_cond *cond;
+    SDL_Condition *cond;
 
-    cond = (SDL_cond *)SDL_malloc(sizeof(SDL_cond));
+    cond = (SDL_Condition *)SDL_malloc(sizeof(SDL_Condition));
     if (cond) {
         cond->lock = SDL_CreateMutex();
         cond->wait_sem = SDL_CreateSemaphore(0);
@@ -60,7 +60,7 @@ SDL_CreateCondition(void)
 }
 
 /* Destroy a condition variable */
-void SDL_DestroyCondition(SDL_cond *cond)
+void SDL_DestroyCondition(SDL_Condition *cond)
 {
     if (cond) {
         if (cond->wait_sem) {
@@ -77,7 +77,7 @@ void SDL_DestroyCondition(SDL_cond *cond)
 }
 
 /* Restart one of the threads that are waiting on the condition variable */
-int SDL_SignalCondition(SDL_cond *cond)
+int SDL_SignalCondition(SDL_Condition *cond)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -100,7 +100,7 @@ int SDL_SignalCondition(SDL_cond *cond)
 }
 
 /* Restart all threads that are waiting on the condition variable */
-int SDL_BroadcastCondition(SDL_cond *cond)
+int SDL_BroadcastCondition(SDL_Condition *cond)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -153,7 +153,7 @@ Thread B:
     SDL_SignalCondition(cond);
     SDL_UnlockMutex(lock);
  */
-int SDL_WaitConditionTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
+int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
     int retval;
 

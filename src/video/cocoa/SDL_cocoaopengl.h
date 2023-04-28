@@ -45,9 +45,9 @@ struct SDL_GLDriverData
     SDL_Window *window;
     CVDisplayLinkRef displayLink;
   @public
-    SDL_mutex *swapIntervalMutex;
+    SDL_Mutex *swapIntervalMutex;
   @public
-    SDL_cond *swapIntervalCond;
+    SDL_Condition *swapIntervalCond;
   @public
     SDL_AtomicInt swapIntervalSetting;
   @public
