@@ -18,7 +18,7 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-static SDL_rwlock *rwlock = NULL;
+static SDL_RWLock *rwlock = NULL;
 static SDL_threadID mainthread;
 static SDL_AtomicInt doterminate;
 static int nb_threads = 6;

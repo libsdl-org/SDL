@@ -44,7 +44,7 @@ struct SDL_VideoData
 extern int Android_SurfaceWidth;
 extern int Android_SurfaceHeight;
 extern float Android_ScreenDensity;
-extern SDL_sem *Android_PauseSem, *Android_ResumeSem;
-extern SDL_mutex *Android_ActivityMutex;
+extern SDL_Semaphore *Android_PauseSem, *Android_ResumeSem;
+extern SDL_Mutex *Android_ActivityMutex;
 
 #endif /* SDL_androidvideo_h_ */

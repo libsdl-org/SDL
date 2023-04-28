@@ -45,7 +45,7 @@ static SDL_Keycode keymap[256];
 #endif
 
 static enum PspHprmKeys hprm = 0;
-static SDL_sem *event_sem = NULL;
+static SDL_Semaphore *event_sem = NULL;
 static SDL_Thread *thread = NULL;
 static int running = 0;
 static struct

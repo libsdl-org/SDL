@@ -70,7 +70,7 @@ typedef struct SDL_HIDAPI_Device
 
     struct SDL_HIDAPI_DeviceDriver *driver;
     void *context;
-    SDL_mutex *dev_lock;
+    SDL_Mutex *dev_lock;
     SDL_hid_device *dev;
     SDL_AtomicInt rumble_pending;
     int num_joysticks;

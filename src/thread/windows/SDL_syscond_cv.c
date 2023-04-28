@@ -23,11 +23,11 @@
 #include "../generic/SDL_syscond_c.h"
 #include "SDL_sysmutex_c.h"
 
-typedef SDL_cond *(*pfnSDL_CreateCondition)(void);
-typedef void (*pfnSDL_DestroyCondition)(SDL_cond *);
-typedef int (*pfnSDL_SignalCondition)(SDL_cond *);
-typedef int (*pfnSDL_BroadcastCondition)(SDL_cond *);
-typedef int (*pfnSDL_WaitConditionTimeoutNS)(SDL_cond *, SDL_mutex *, Sint64);
+typedef SDL_Condition *(*pfnSDL_CreateCondition)(void);
+typedef void (*pfnSDL_DestroyCondition)(SDL_Condition *);
+typedef int (*pfnSDL_SignalCondition)(SDL_Condition *);
+typedef int (*pfnSDL_BroadcastCondition)(SDL_Condition *);
+typedef int (*pfnSDL_WaitConditionTimeoutNS)(SDL_Condition *, SDL_Mutex *, Sint64);
 
 typedef struct SDL_cond_impl_t
 {
@@ -78,7 +78,7 @@ typedef struct SDL_cond_cv
     CONDITION_VARIABLE cond;
 } SDL_cond_cv;
 
-static SDL_cond *SDL_CreateCondition_cv(void)
+static SDL_Condition *SDL_CreateCondition_cv(void)
 {
     SDL_cond_cv *cond;
 
@@ -88,10 +88,10 @@ static SDL_cond *SDL_CreateCondition_cv(void)
         SDL_OutOfMemory();
     }
 
-    return (SDL_cond *)cond;
+    return (SDL_Condition *)cond;
 }
 
-static void SDL_DestroyCondition_cv(SDL_cond *cond)
+static void SDL_DestroyCondition_cv(SDL_Condition *cond)
 {
     if (cond != NULL) {
         /* There are no kernel allocated resources */
@@ -99,7 +99,7 @@ static void SDL_DestroyCondition_cv(SDL_cond *cond)
     }
 }
 
-static int SDL_SignalCondition_cv(SDL_cond *_cond)
+static int SDL_SignalCondition_cv(SDL_Condition *_cond)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
     if (cond == NULL) {
@@ -111,7 +111,7 @@ static int SDL_SignalCondition_cv(SDL_cond *_cond)
     return 0;
 }
 
-static int SDL_BroadcastCondition_cv(SDL_cond *_cond)
+static int SDL_BroadcastCondition_cv(SDL_Condition *_cond)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
     if (cond == NULL) {
@@ -123,7 +123,7 @@ static int SDL_BroadcastCondition_cv(SDL_cond *_cond)
     return 0;
 }
 
-static int SDL_WaitConditionTimeoutNS_cv(SDL_cond *_cond, SDL_mutex *_mutex, Sint64 timeoutNS)
+static int SDL_WaitConditionTimeoutNS_cv(SDL_Condition *_cond, SDL_Mutex *_mutex, Sint64 timeoutNS)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
     DWORD timeout;
@@ -196,7 +196,7 @@ static const SDL_cond_impl_t SDL_cond_impl_cv = {
 
 
 #ifndef __WINRT__
-/* Generic Condition Variable implementation using SDL_mutex and SDL_sem */
+/* Generic Condition Variable implementation using SDL_Mutex and SDL_Semaphore */
 static const SDL_cond_impl_t SDL_cond_impl_generic = {
     &SDL_CreateCondition_generic,
     &SDL_DestroyCondition_generic,
@@ -206,7 +206,7 @@ static const SDL_cond_impl_t SDL_cond_impl_generic = {
 };
 #endif
 
-SDL_cond *
+SDL_Condition *
 SDL_CreateCondition(void)
 {
     if (SDL_cond_impl_active.Create == NULL) {
@@ -214,7 +214,7 @@ SDL_CreateCondition(void)
 
         if (SDL_mutex_impl_active.Type == SDL_MUTEX_INVALID) {
             /* The mutex implementation isn't decided yet, trigger it */
-            SDL_mutex *mutex = SDL_CreateMutex();
+            SDL_Mutex *mutex = SDL_CreateMutex();
             if (mutex == NULL) {
                 return NULL;
             }
@@ -249,22 +249,22 @@ SDL_CreateCondition(void)
     return SDL_cond_impl_active.Create();
 }
 
-void SDL_DestroyCondition(SDL_cond *cond)
+void SDL_DestroyCondition(SDL_Condition *cond)
 {
     SDL_cond_impl_active.Destroy(cond);
 }
 
-int SDL_SignalCondition(SDL_cond *cond)
+int SDL_SignalCondition(SDL_Condition *cond)
 {
     return SDL_cond_impl_active.Signal(cond);
 }
 
-int SDL_BroadcastCondition(SDL_cond *cond)
+int SDL_BroadcastCondition(SDL_Condition *cond)
 {
     return SDL_cond_impl_active.Broadcast(cond);
 }
 
-int SDL_WaitConditionTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
+int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
     return SDL_cond_impl_active.WaitTimeoutNS(cond, mutex, timeoutNS);
 }

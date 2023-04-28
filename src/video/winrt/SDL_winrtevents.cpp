@@ -68,8 +68,8 @@ enum SDL_XAMLAppThreadState
 
 static SDL_XAMLAppThreadState _threadState = ThreadState_NotLaunched;
 static SDL_Thread *_XAMLThread = nullptr;
-static SDL_mutex *_mutex = nullptr;
-static SDL_cond *_cond = nullptr;
+static SDL_Mutex *_mutex = nullptr;
+static SDL_Condition *_cond = nullptr;
 
 static void WINRT_YieldXAMLThread()
 {

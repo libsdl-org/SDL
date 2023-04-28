@@ -110,7 +110,7 @@ SDL_COMPILE_TIME_ASSERT(size, CountTo_GreaterThanZero); /* check for rollover */
 static SDL_AtomicInt good = { 42 };
 static atomicValue bad = 42;
 static SDL_AtomicInt threadsRunning;
-static SDL_sem *threadDone;
+static SDL_Semaphore *threadDone;
 
 static int SDLCALL adder(void *junk)
 {
@@ -285,7 +285,7 @@ typedef struct
     SDL_AtomicInt active;
 
     /* Only needed for the mutex test */
-    SDL_mutex *mutex;
+    SDL_Mutex *mutex;
 
 } SDL_EventQueue;
 

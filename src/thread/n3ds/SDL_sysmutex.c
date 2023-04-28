@@ -27,13 +27,13 @@
 #include "SDL_sysmutex_c.h"
 
 /* Create a mutex */
-SDL_mutex *
+SDL_Mutex *
 SDL_CreateMutex(void)
 {
-    SDL_mutex *mutex;
+    SDL_Mutex *mutex;
 
     /* Allocate mutex memory */
-    mutex = (SDL_mutex *)SDL_malloc(sizeof(*mutex));
+    mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
     if (mutex) {
         RecursiveLock_Init(&mutex->lock);
     } else {
@@ -43,7 +43,7 @@ SDL_CreateMutex(void)
 }
 
 /* Free the mutex */
-void SDL_DestroyMutex(SDL_mutex *mutex)
+void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
         SDL_free(mutex);
@@ -51,7 +51,7 @@ void SDL_DestroyMutex(SDL_mutex *mutex)
 }
 
 /* Lock the mutex */
-int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
         return 0;
@@ -63,7 +63,7 @@ int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
 }
 
 /* try Lock the mutex */
-int SDL_TryLockMutex(SDL_mutex *mutex)
+int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     if (mutex == NULL) {
         return 0;
@@ -73,7 +73,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 }
 
 /* Unlock the mutex */
-int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
         return 0;

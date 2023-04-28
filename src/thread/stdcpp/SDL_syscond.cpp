@@ -30,18 +30,18 @@ extern "C" {
 
 #include "SDL_sysmutex_c.h"
 
-struct SDL_cond
+struct SDL_Condition
 {
     std::condition_variable_any cpp_cond;
 };
 
 /* Create a condition variable */
-extern "C" SDL_cond *
+extern "C" SDL_Condition *
 SDL_CreateCondition(void)
 {
     /* Allocate and initialize the condition variable */
     try {
-        SDL_cond *cond = new SDL_cond;
+        SDL_Condition *cond = new SDL_Condition;
         return cond;
     } catch (std::system_error &ex) {
         SDL_SetError("unable to create a C++ condition variable: code=%d; %s", ex.code(), ex.what());
@@ -54,7 +54,7 @@ SDL_CreateCondition(void)
 
 /* Destroy a condition variable */
 extern "C" void
-SDL_DestroyCondition(SDL_cond *cond)
+SDL_DestroyCondition(SDL_Condition *cond)
 {
     if (cond != NULL) {
         delete cond;
@@ -63,7 +63,7 @@ SDL_DestroyCondition(SDL_cond *cond)
 
 /* Restart one of the threads that are waiting on the condition variable */
 extern "C" int
-SDL_SignalCondition(SDL_cond *cond)
+SDL_SignalCondition(SDL_Condition *cond)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -75,7 +75,7 @@ SDL_SignalCondition(SDL_cond *cond)
 
 /* Restart all threads that are waiting on the condition variable */
 extern "C" int
-SDL_BroadcastCondition(SDL_cond *cond)
+SDL_BroadcastCondition(SDL_Condition *cond)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -107,7 +107,7 @@ Thread B:
     SDL_UnlockMutex(lock);
  */
 extern "C" int
-SDL_WaitConditionTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
+SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");

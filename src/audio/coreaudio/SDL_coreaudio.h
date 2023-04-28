@@ -60,7 +60,7 @@ struct SDL_PrivateAudioData
     UInt32 bufferOffset;
     UInt32 bufferSize;
     AudioStreamBasicDescription strdesc;
-    SDL_sem *ready_semaphore;
+    SDL_Semaphore *ready_semaphore;
     char *thread_error;
 #ifdef MACOSX_COREAUDIO
     AudioDeviceID deviceID;

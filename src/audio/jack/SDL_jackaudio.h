@@ -31,7 +31,7 @@
 struct SDL_PrivateAudioData
 {
     jack_client_t *client;
-    SDL_sem *iosem;
+    SDL_Semaphore *iosem;
     float *iobuffer;
     jack_port_t **sdlports;
 };

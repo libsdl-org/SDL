@@ -52,14 +52,14 @@ typedef struct
     SDL_Thread *thread;
     SDL_AtomicInt nextID;
     SDL_TimerMap *timermap;
-    SDL_mutex *timermap_lock;
+    SDL_Mutex *timermap_lock;
 
     /* Padding to separate cache lines between threads */
     char cache_pad[SDL_CACHELINE_SIZE];
 
     /* Data used to communicate with the timer thread */
     SDL_SpinLock lock;
-    SDL_sem *sem;
+    SDL_Semaphore *sem;
     SDL_Timer *pending;
     SDL_Timer *freelist;
     SDL_AtomicInt active;

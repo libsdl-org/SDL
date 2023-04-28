@@ -80,7 +80,7 @@ class SDL_WasapiDeviceEventHandler
     void OnEnumerationCompleted(DeviceWatcher ^ sender, Platform::Object ^ args);
     void OnDefaultRenderDeviceChanged(Platform::Object ^ sender, DefaultAudioRenderDeviceChangedEventArgs ^ args);
     void OnDefaultCaptureDeviceChanged(Platform::Object ^ sender, DefaultAudioCaptureDeviceChangedEventArgs ^ args);
-    SDL_semaphore *completed;
+    SDL_Semaphore *completed;
 
   private:
     const SDL_bool iscapture;

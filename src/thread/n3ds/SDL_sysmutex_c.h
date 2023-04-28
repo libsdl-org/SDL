@@ -25,7 +25,7 @@
 
 #include <3ds.h>
 
-struct SDL_mutex
+struct SDL_Mutex
 {
     RecursiveLock lock;
 };

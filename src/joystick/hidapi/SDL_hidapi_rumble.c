@@ -44,7 +44,7 @@ typedef struct SDL_HIDAPI_RumbleContext
     SDL_AtomicInt initialized;
     SDL_AtomicInt running;
     SDL_Thread *thread;
-    SDL_sem *request_sem;
+    SDL_Semaphore *request_sem;
     SDL_HIDAPI_RumbleRequest *requests_head;
     SDL_HIDAPI_RumbleRequest *requests_tail;
 } SDL_HIDAPI_RumbleContext;
@@ -52,7 +52,7 @@ typedef struct SDL_HIDAPI_RumbleContext
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
 static
 #endif
-SDL_mutex *SDL_HIDAPI_rumble_lock;
+SDL_Mutex *SDL_HIDAPI_rumble_lock;
 static SDL_HIDAPI_RumbleContext rumble_context SDL_GUARDED_BY(SDL_HIDAPI_rumble_lock);
 
 static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)

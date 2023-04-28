@@ -31,20 +31,20 @@
 
 #define SCE_KERNEL_MUTEX_ATTR_RECURSIVE 0x0200U
 
-struct SDL_mutex
+struct SDL_Mutex
 {
     SceLwMutexWorkarea lock;
 };
 
 /* Create a mutex */
-SDL_mutex *
+SDL_Mutex *
 SDL_CreateMutex(void)
 {
-    SDL_mutex *mutex = NULL;
+    SDL_Mutex *mutex = NULL;
     SceInt32 res = 0;
 
     /* Allocate mutex memory */
-    mutex = (SDL_mutex *)SDL_malloc(sizeof(*mutex));
+    mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
     if (mutex) {
 
         res = sceKernelCreateLwMutex(
@@ -64,7 +64,7 @@ SDL_CreateMutex(void)
 }
 
 /* Free the mutex */
-void SDL_DestroyMutex(SDL_mutex *mutex)
+void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
         sceKernelDeleteLwMutex(&mutex->lock);
@@ -73,7 +73,7 @@ void SDL_DestroyMutex(SDL_mutex *mutex)
 }
 
 /* Lock the mutex */
-int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
 #ifdef SDL_THREADS_DISABLED
     return 0;
@@ -94,7 +94,7 @@ int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
 }
 
 /* Try to lock the mutex */
-int SDL_TryLockMutex(SDL_mutex *mutex)
+int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
 #ifdef SDL_THREADS_DISABLED
     return 0;
@@ -123,7 +123,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 }
 
 /* Unlock the mutex */
-int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
 #ifdef SDL_THREADS_DISABLED
     return 0;

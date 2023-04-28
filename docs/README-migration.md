@@ -569,6 +569,11 @@ The following functions have been renamed:
 * SDL_SemWait() => SDL_WaitSemaphore()
 * SDL_SemWaitTimeout() => SDL_WaitSemaphoreTimeout()
 
+The following symbols have been renamed:
+* SDL_cond => SDL_Condition
+* SDL_mutex => SDL_Mutex
+* SDL_sem => SDL_Semaphore
+
 ## SDL_pixels.h
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).

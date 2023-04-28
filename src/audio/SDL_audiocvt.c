@@ -437,7 +437,7 @@ static void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_fo
 struct SDL_AudioStream
 {
     SDL_DataQueue *queue;
-    SDL_mutex *lock;  /* this is just a copy of `queue`'s mutex. We share a lock. */
+    SDL_Mutex *lock;  /* this is just a copy of `queue`'s mutex. We share a lock. */
 
     Uint8 *work_buffer;    /* used for scratch space during data conversion/resampling. */
     Uint8 *history_buffer;  /* history for left padding and future sample rate changes. */

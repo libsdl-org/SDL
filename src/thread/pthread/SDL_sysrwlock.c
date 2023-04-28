@@ -23,19 +23,19 @@
 #include <errno.h>
 #include <pthread.h>
 
-struct SDL_rwlock
+struct SDL_RWLock
 {
     pthread_rwlock_t id;
 };
 
 
-SDL_rwlock *
+SDL_RWLock *
 SDL_CreateRWLock(void)
 {
-    SDL_rwlock *rwlock;
+    SDL_RWLock *rwlock;
 
     /* Allocate the structure */
-    rwlock = (SDL_rwlock *)SDL_calloc(1, sizeof(*rwlock));
+    rwlock = (SDL_RWLock *)SDL_calloc(1, sizeof(*rwlock));
     if (rwlock) {
         if (pthread_rwlock_init(&rwlock->id, NULL) != 0) {
             SDL_SetError("pthread_rwlock_init() failed");
@@ -48,7 +48,7 @@ SDL_CreateRWLock(void)
     return rwlock;
 }
 
-void SDL_DestroyRWLock(SDL_rwlock *rwlock)
+void SDL_DestroyRWLock(SDL_RWLock *rwlock)
 {
     if (rwlock) {
         pthread_rwlock_destroy(&rwlock->id);
@@ -56,7 +56,7 @@ void SDL_DestroyRWLock(SDL_rwlock *rwlock)
     }
 }
 
-int SDL_LockRWLockForReading(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (rwlock == NULL) {
         return SDL_InvalidParamError("rwlock");
@@ -66,7 +66,7 @@ int SDL_LockRWLockForReading(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /
     return 0;
 }
 
-int SDL_LockRWLockForWriting(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (rwlock == NULL) {
         return SDL_InvalidParamError("rwlock");
@@ -76,7 +76,7 @@ int SDL_LockRWLockForWriting(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /
     return 0;
 }
 
-int SDL_TryLockRWLockForReading(SDL_rwlock *rwlock)
+int SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
 {
     int retval = 0;
 
@@ -95,7 +95,7 @@ int SDL_TryLockRWLockForReading(SDL_rwlock *rwlock)
     return retval;
 }
 
-int SDL_TryLockRWLockForWriting(SDL_rwlock *rwlock)
+int SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
 {
     int retval = 0;
 
@@ -115,7 +115,7 @@ int SDL_TryLockRWLockForWriting(SDL_rwlock *rwlock)
     return retval;
 }
 
-int SDL_UnlockRWLock(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (rwlock == NULL) {
         return SDL_InvalidParamError("rwlock");

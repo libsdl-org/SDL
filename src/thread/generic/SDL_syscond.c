@@ -42,15 +42,15 @@
 
 typedef struct SDL_cond_generic
 {
-    SDL_mutex *lock;
+    SDL_Mutex *lock;
     int waiting;
     int signals;
-    SDL_sem *wait_sem;
-    SDL_sem *wait_done;
+    SDL_Semaphore *wait_sem;
+    SDL_Semaphore *wait_done;
 } SDL_cond_generic;
 
 /* Create a condition variable */
-SDL_cond *
+SDL_Condition *
 SDL_CreateCondition_generic(void)
 {
     SDL_cond_generic *cond;
@@ -62,17 +62,17 @@ SDL_CreateCondition_generic(void)
         cond->wait_done = SDL_CreateSemaphore(0);
         cond->waiting = cond->signals = 0;
         if (!cond->lock || !cond->wait_sem || !cond->wait_done) {
-            SDL_DestroyCondition_generic((SDL_cond *)cond);
+            SDL_DestroyCondition_generic((SDL_Condition *)cond);
             cond = NULL;
         }
     } else {
         SDL_OutOfMemory();
     }
-    return (SDL_cond *)cond;
+    return (SDL_Condition *)cond;
 }
 
 /* Destroy a condition variable */
-void SDL_DestroyCondition_generic(SDL_cond *_cond)
+void SDL_DestroyCondition_generic(SDL_Condition *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (cond) {
@@ -90,7 +90,7 @@ void SDL_DestroyCondition_generic(SDL_cond *_cond)
 }
 
 /* Restart one of the threads that are waiting on the condition variable */
-int SDL_SignalCondition_generic(SDL_cond *_cond)
+int SDL_SignalCondition_generic(SDL_Condition *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (cond == NULL) {
@@ -114,7 +114,7 @@ int SDL_SignalCondition_generic(SDL_cond *_cond)
 }
 
 /* Restart all threads that are waiting on the condition variable */
-int SDL_BroadcastCondition_generic(SDL_cond *_cond)
+int SDL_BroadcastCondition_generic(SDL_Condition *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (cond == NULL) {
@@ -168,7 +168,7 @@ Thread B:
     SDL_SignalCondition(cond);
     SDL_UnlockMutex(lock);
  */
-int SDL_WaitConditionTimeoutNS_generic(SDL_cond *_cond, SDL_mutex *mutex, Sint64 timeoutNS)
+int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     int retval;

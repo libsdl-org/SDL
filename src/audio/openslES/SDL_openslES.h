@@ -35,7 +35,7 @@ struct SDL_PrivateAudioData
     Uint8 *mixbuff;
     int next_buffer;
     Uint8 *pmixbuff[NUM_BUFFERS];
-    SDL_sem *playsem;
+    SDL_Semaphore *playsem;
 };
 
 void openslES_ResumeDevices(void);

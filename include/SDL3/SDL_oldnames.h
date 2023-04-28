@@ -327,6 +327,11 @@
 #define SDL_SemWait SDL_WaitSemaphore
 #define SDL_SemWaitTimeout SDL_WaitSemaphoreTimeout
 
+/* ##SDL_mutex.h */
+#define SDL_cond SDL_Condition
+#define SDL_mutex SDL_Mutex
+#define SDL_sem SDL_Semaphore
+
 /* ##SDL_pixels.h */
 #define SDL_AllocFormat SDL_CreatePixelFormat
 #define SDL_AllocPalette SDL_CreatePalette
@@ -736,6 +741,11 @@
 #define SDL_SemValue SDL_SemValue_renamed_SDL_GetSemaphoreValue
 #define SDL_SemWait SDL_SemWait_renamed_SDL_WaitSemaphore
 #define SDL_SemWaitTimeout SDL_SemWaitTimeout_renamed_SDL_WaitSemaphoreTimeout
+
+/* ##SDL_mutex.h */
+#define SDL_cond SDL_cond_renamed_SDL_Condition
+#define SDL_mutex SDL_mutex_renamed_SDL_Mutex
+#define SDL_sem SDL_sem_renamed_SDL_Semaphore
 
 /* ##SDL_pixels.h */
 #define SDL_AllocFormat SDL_AllocFormat_renamed_SDL_CreatePixelFormat

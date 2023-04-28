@@ -65,7 +65,7 @@ extern "C" {
  * The joystick structure used to identify an SDL joystick
  */
 #ifdef SDL_THREAD_SAFETY_ANALYSIS
-extern SDL_mutex *SDL_joystick_lock;
+extern SDL_Mutex *SDL_joystick_lock;
 #endif
 struct SDL_Joystick;
 typedef struct SDL_Joystick SDL_Joystick;

@@ -33,16 +33,16 @@
 #include "../generic/SDL_syssem.c"
 #else
 
-struct SDL_semaphore
+struct SDL_Semaphore
 {
     sem_t sem;
 };
 
 /* Create a semaphore, initialized with value */
-SDL_sem *
+SDL_Semaphore *
 SDL_CreateSemaphore(Uint32 initial_value)
 {
-    SDL_sem *sem = (SDL_sem *)SDL_malloc(sizeof(SDL_sem));
+    SDL_Semaphore *sem = (SDL_Semaphore *)SDL_malloc(sizeof(SDL_Semaphore));
     if (sem != NULL) {
         if (sem_init(&sem->sem, 0, initial_value) < 0) {
             SDL_SetError("sem_init() failed");
@@ -55,7 +55,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
     return sem;
 }
 
-void SDL_DestroySemaphore(SDL_sem *sem)
+void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
     if (sem != NULL) {
         sem_destroy(&sem->sem);
@@ -63,7 +63,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     }
 }
 
-int SDL_WaitSemaphoreTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     int retval = 0;
 #ifdef HAVE_SEM_TIMEDWAIT
@@ -150,7 +150,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 }
 
 Uint32
-SDL_GetSemaphoreValue(SDL_sem *sem)
+SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     int ret = 0;
 
@@ -166,7 +166,7 @@ SDL_GetSemaphoreValue(SDL_sem *sem)
     return (Uint32)ret;
 }
 
-int SDL_PostSemaphore(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_Semaphore *sem)
 {
     int retval;
 

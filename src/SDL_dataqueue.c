@@ -32,7 +32,7 @@ typedef struct SDL_DataQueuePacket
 
 struct SDL_DataQueue
 {
-    SDL_mutex *lock;
+    SDL_Mutex *lock;
     SDL_DataQueuePacket *head; /* device fed from here. */
     SDL_DataQueuePacket *tail; /* queue fills to here. */
     SDL_DataQueuePacket *pool; /* these are unused packets. */
@@ -315,7 +315,7 @@ SDL_GetDataQueueSize(SDL_DataQueue *queue)
     return retval;
 }
 
-SDL_mutex *
+SDL_Mutex *
 SDL_GetDataQueueMutex(SDL_DataQueue *queue)
 {
     return queue ? queue->lock : NULL;

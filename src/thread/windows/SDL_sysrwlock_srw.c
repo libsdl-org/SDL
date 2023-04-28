@@ -55,13 +55,13 @@ static pfnAcquireSRWLockExclusive pAcquireSRWLockExclusive = NULL;
 static pfnTryAcquireSRWLockExclusive pTryAcquireSRWLockExclusive = NULL;
 #endif
 
-typedef SDL_rwlock *(*pfnSDL_CreateRWLock)(void);
-typedef void (*pfnSDL_DestroyRWLock)(SDL_rwlock *);
-typedef int (*pfnSDL_LockRWLockForReading)(SDL_rwlock *);
-typedef int (*pfnSDL_LockRWLockForWriting)(SDL_rwlock *);
-typedef int (*pfnSDL_TryLockRWLockForReading)(SDL_rwlock *);
-typedef int (*pfnSDL_TryLockRWLockForWriting)(SDL_rwlock *);
-typedef int (*pfnSDL_UnlockRWLock)(SDL_rwlock *);
+typedef SDL_RWLock *(*pfnSDL_CreateRWLock)(void);
+typedef void (*pfnSDL_DestroyRWLock)(SDL_RWLock *);
+typedef int (*pfnSDL_LockRWLockForReading)(SDL_RWLock *);
+typedef int (*pfnSDL_LockRWLockForWriting)(SDL_RWLock *);
+typedef int (*pfnSDL_TryLockRWLockForReading)(SDL_RWLock *);
+typedef int (*pfnSDL_TryLockRWLockForWriting)(SDL_RWLock *);
+typedef int (*pfnSDL_UnlockRWLock)(SDL_RWLock *);
 
 typedef struct SDL_rwlock_impl_t
 {
@@ -85,17 +85,17 @@ typedef struct SDL_rwlock_srw
     SDL_threadID write_owner;
 } SDL_rwlock_srw;
 
-static SDL_rwlock *SDL_CreateRWLock_srw(void)
+static SDL_RWLock *SDL_CreateRWLock_srw(void)
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *)SDL_calloc(1, sizeof(*rwlock));
     if (rwlock == NULL) {
         SDL_OutOfMemory();
     }
     pInitializeSRWLock(&rwlock->srw);
-    return (SDL_rwlock *)rwlock;
+    return (SDL_RWLock *)rwlock;
 }
 
-static void SDL_DestroyRWLock_srw(SDL_rwlock *_rwlock)
+static void SDL_DestroyRWLock_srw(SDL_RWLock *_rwlock)
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     if (rwlock) {
@@ -104,7 +104,7 @@ static void SDL_DestroyRWLock_srw(SDL_rwlock *_rwlock)
     }
 }
 
-static int SDL_LockRWLockForReading_srw(SDL_rwlock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+static int SDL_LockRWLockForReading_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     if (rwlock == NULL) {
@@ -114,7 +114,7 @@ static int SDL_LockRWLockForReading_srw(SDL_rwlock *_rwlock) SDL_NO_THREAD_SAFET
     return 0;
 }
 
-static int SDL_LockRWLockForWriting_srw(SDL_rwlock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+static int SDL_LockRWLockForWriting_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     if (rwlock == NULL) {
@@ -125,7 +125,7 @@ static int SDL_LockRWLockForWriting_srw(SDL_rwlock *_rwlock) SDL_NO_THREAD_SAFET
     return 0;
 }
 
-static int SDL_TryLockRWLockForReading_srw(SDL_rwlock *_rwlock)
+static int SDL_TryLockRWLockForReading_srw(SDL_RWLock *_rwlock)
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     int retval = 0;
@@ -138,7 +138,7 @@ static int SDL_TryLockRWLockForReading_srw(SDL_rwlock *_rwlock)
     return retval;
 }
 
-static int SDL_TryLockRWLockForWriting_srw(SDL_rwlock *_rwlock)
+static int SDL_TryLockRWLockForWriting_srw(SDL_RWLock *_rwlock)
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     int retval = 0;
@@ -151,7 +151,7 @@ static int SDL_TryLockRWLockForWriting_srw(SDL_rwlock *_rwlock)
     return retval;
 }
 
-static int SDL_UnlockRWLock_srw(SDL_rwlock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+static int SDL_UnlockRWLock_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     if (rwlock == NULL) {
@@ -179,7 +179,7 @@ static const SDL_rwlock_impl_t SDL_rwlock_impl_srw = {
 
 #include "../generic/SDL_sysrwlock_c.h"
 
-/* Generic rwlock implementation using SDL_mutex, SDL_cond, and SDL_AtomicInt */
+/* Generic rwlock implementation using SDL_Mutex, SDL_Condition, and SDL_AtomicInt */
 static const SDL_rwlock_impl_t SDL_rwlock_impl_generic = {
     &SDL_CreateRWLock_generic,
     &SDL_DestroyRWLock_generic,
@@ -191,7 +191,7 @@ static const SDL_rwlock_impl_t SDL_rwlock_impl_generic = {
 };
 #endif
 
-SDL_rwlock *SDL_CreateRWLock(void)
+SDL_RWLock *SDL_CreateRWLock(void)
 {
     if (SDL_rwlock_impl_active.Create == NULL) {
         const SDL_rwlock_impl_t *impl;
@@ -227,32 +227,32 @@ SDL_rwlock *SDL_CreateRWLock(void)
     return SDL_rwlock_impl_active.Create();
 }
 
-void SDL_DestroyRWLock(SDL_rwlock *rwlock)
+void SDL_DestroyRWLock(SDL_RWLock *rwlock)
 {
     SDL_rwlock_impl_active.Destroy(rwlock);
 }
 
-int SDL_LockRWLockForReading(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     return SDL_rwlock_impl_active.LockForReading(rwlock);
 }
 
-int SDL_LockRWLockForWriting(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     return SDL_rwlock_impl_active.LockForWriting(rwlock);
 }
 
-int SDL_TryLockRWLockForReading(SDL_rwlock *rwlock)
+int SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
 {
     return SDL_rwlock_impl_active.TryLockForReading(rwlock);
 }
 
-int SDL_TryLockRWLockForWriting(SDL_rwlock *rwlock)
+int SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
 {
     return SDL_rwlock_impl_active.TryLockForWriting(rwlock);
 }
 
-int SDL_UnlockRWLock(SDL_rwlock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     return SDL_rwlock_impl_active.Unlock(rwlock);
 }

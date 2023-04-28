@@ -33,6 +33,6 @@ int SDL_WriteToDataQueue(SDL_DataQueue *queue, const void *data, const size_t le
 size_t SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *buf, const size_t len);
 size_t SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *buf, const size_t len);
 size_t SDL_GetDataQueueSize(SDL_DataQueue *queue);
-SDL_mutex *SDL_GetDataQueueMutex(SDL_DataQueue *queue);  /* don't destroy this, obviously. */
+SDL_Mutex *SDL_GetDataQueueMutex(SDL_DataQueue *queue);  /* don't destroy this, obviously. */
 
 #endif /* SDL_dataqueue_h_ */
