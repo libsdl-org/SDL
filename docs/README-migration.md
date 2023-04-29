@@ -480,6 +480,9 @@ The following functions have been removed:
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
 * SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
 
+The following symbols have been removed:
+* SDL_JOYBALLMOTION
+
 ## SDL_keyboard.h
 
 The following functions have been renamed:
