@@ -476,6 +476,7 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceType() - replaced with SDL_GetJoystickInstanceType()
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
+* SDL_JoystickNumBalls() - API has been removed, see https://github.com/libsdl-org/SDL/issues/6766
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
 * SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
 
