@@ -189,8 +189,8 @@ static void SDL_TARGETING("sse") SDL_ConvertMonoToStereo_SSE(float *dst, const f
     int i = num_frames;
 
     /* convert backwards, since output is growing in-place. */
-    src += (num_frames-1) * 1;
-    dst += (num_frames-1) * 2;
+    src += (num_frames-4) * 1;
+    dst += (num_frames-4) * 2;
 
     LOG_DEBUG_AUDIO_CONVERT("mono", "stereo (using SSE)");
 
