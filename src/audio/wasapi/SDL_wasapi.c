@@ -397,6 +397,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     WAVEFORMATEX *waveformat = NULL;
     SDL_AudioFormat test_format;
     SDL_AudioFormat wasapi_format = 0;
+    const SDL_AudioFormat *closefmts;
     HRESULT ret = S_OK;
     DWORD streamflags = 0;
 
@@ -425,7 +426,8 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     /* Make sure we have a valid format that we can convert to whatever WASAPI wants. */
     wasapi_format = WaveFormatToSDLFormat(waveformat);
 
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
+    closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
         if (test_format == wasapi_format) {
             this->spec.format = test_format;
             break;

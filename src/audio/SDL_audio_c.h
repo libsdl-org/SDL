@@ -35,9 +35,8 @@
 
 /* Functions and variables exported from SDL_audio.c for SDL_sysaudio.c */
 
-/* Functions to get a list of "close" audio formats */
-extern SDL_AudioFormat SDL_GetFirstAudioFormat(SDL_AudioFormat format);
-extern SDL_AudioFormat SDL_GetNextAudioFormat(void);
+/* Function to get a list of audio formats, ordered most similar to `format` to least, 0-terminated. Don't free results. */
+const SDL_AudioFormat *SDL_ClosestAudioFormats(SDL_AudioFormat format);
 
 /* Function to calculate the size and silence for a SDL_AudioSpec */
 extern Uint8 SDL_GetSilenceValueForFormat(const SDL_AudioFormat format);

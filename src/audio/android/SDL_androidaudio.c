@@ -38,6 +38,7 @@ static SDL_AudioDevice *captureDevice = NULL;
 static int ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
+    const SDL_AudioFormat *closefmts;
     SDL_bool iscapture = this->iscapture;
 
     if (iscapture) {
@@ -63,7 +64,8 @@ static int ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
         return SDL_OutOfMemory();
     }
 
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
+    closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
         if ((test_format == SDL_AUDIO_U8) ||
             (test_format == SDL_AUDIO_S16) ||
             (test_format == SDL_AUDIO_F32)) {

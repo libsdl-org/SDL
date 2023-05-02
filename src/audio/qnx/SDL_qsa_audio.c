@@ -269,7 +269,7 @@ QSA_OpenDevice(_THIS, const char *devname)
     int status = 0;
     int format = 0;
     SDL_AudioFormat test_format = 0;
-    int found = 0;
+    const SDL_AudioFormat *closefmts;
     snd_pcm_channel_setup_t csetup;
     snd_pcm_channel_params_t cparams;
     SDL_bool iscapture = this->iscapture;
@@ -312,70 +312,23 @@ QSA_OpenDevice(_THIS, const char *devname)
     }
 
     /* Try for a closest match on audio format */
-    format = 0;
-    /* can't use format as SND_PCM_SFMT_U8 = 0 in qsa */
-    found = 0;
-
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); !found;) {
+    closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
         /* if match found set format to equivalent QSA format */
         switch (test_format) {
-        case SDL_AUDIO_U8:
-            {
-                format = SND_PCM_SFMT_U8;
-                found = 1;
-            }
-            break;
-        case SDL_AUDIO_S8:
-            {
-                format = SND_PCM_SFMT_S8;
-                found = 1;
-            }
-            break;
-        case SDL_AUDIO_S16LSB:
-            {
-                format = SND_PCM_SFMT_S16_LE;
-                found = 1;
-            }
-            break;
-        case SDL_AUDIO_S16MSB:
-            {
-                format = SND_PCM_SFMT_S16_BE;
-                found = 1;
-            }
-            break;
-        case SDL_AUDIO_S32LSB:
-            {
-                format = SND_PCM_SFMT_S32_LE;
-                found = 1;
-            }
-            break;
-        case SDL_AUDIO_S32MSB:
-            {
-                format = SND_PCM_SFMT_S32_BE;
-                found = 1;
-            }
-            break;
-        case SDL_AUDIO_F32LSB:
-            {
-                format = SND_PCM_SFMT_FLOAT_LE;
-                found = 1;
-            }
-            break;
-        case SDL_AUDIO_F32MSB:
-            {
-                format = SND_PCM_SFMT_FLOAT_BE;
-                found = 1;
-            }
-            break;
-        default:
-            {
-                break;
-            }
+        #define CHECKFMT(sdlfmt, qsafmt) case SDL_AUDIO_##sdlfmt: format = SND_PCM_SFMT_##qsafmt; break
+        CHECKFMT(U8, U8);
+        CHECKFMT(S8, S8);
+        CHECKFMT(S16LSB, S16_LE);
+        CHECKFMT(S16MSB, S16_BE);
+        CHECKFMT(S32LSB, S32_LE);
+        CHECKFMT(S32MSB, S32_BE);
+        CHECKFMT(F32LSB, FLOAT_LE);
+        CHECKFMT(F32MSB, FLOAT_BE);
+        #undef CHECKFMT
+        default: continue;
         }
-
-        if (!found) {
-            test_format = SDL_GetNextAudioFormat();
-        }
+        break;
     }
 
     /* assumes test_format not 0 on success */

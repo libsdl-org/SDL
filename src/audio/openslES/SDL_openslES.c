@@ -417,8 +417,9 @@ static int openslES_CreatePCMPlayer(_THIS)
         https://developer.android.com/ndk/guides/audio/opensl/android-extensions.html#floating-point
     */
     if (SDL_GetAndroidSDKVersion() >= 21) {
+        const SDL_AudioFormat *closefmts = SDL_ClosestAudioFormats(this->spec.format);
         SDL_AudioFormat test_format;
-        for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
+        while ((test_format = *(closefmts++)) != 0) {
             if (SDL_AUDIO_ISSIGNED(test_format)) {
                 break;
             }

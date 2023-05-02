@@ -310,10 +310,9 @@ static void FreePrivateData(_THIS)
 
 static int FindAudioFormat(_THIS)
 {
-    SDL_bool found_valid_format = SDL_FALSE;
-    Uint16 test_format = SDL_GetFirstAudioFormat(this->spec.format);
-
-    while (!found_valid_format && test_format) {
+    SDL_AudioFormat test_format;
+    const SDL_AudioFormat *closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
         this->spec.format = test_format;
         switch (test_format) {
         case SDL_AUDIO_S8:
@@ -321,22 +320,17 @@ static int FindAudioFormat(_THIS)
             this->hidden->format = (this->spec.channels == 2) ? NDSP_FORMAT_STEREO_PCM8 : NDSP_FORMAT_MONO_PCM8;
             this->hidden->isSigned = 1;
             this->hidden->bytePerSample = this->spec.channels;
-            found_valid_format = SDL_TRUE;
-            break;
+            return 0;
         case SDL_AUDIO_S16:
             /* Signed 16-bit audio supported */
             this->hidden->format = (this->spec.channels == 2) ? NDSP_FORMAT_STEREO_PCM16 : NDSP_FORMAT_MONO_PCM16;
             this->hidden->isSigned = 1;
             this->hidden->bytePerSample = this->spec.channels * 2;
-            found_valid_format = SDL_TRUE;
-            break;
-        default:
-            test_format = SDL_GetNextAudioFormat();
-            break;
+            return 0;
         }
     }
 
-    return found_valid_format ? 0 : -1;
+    return -1;
 }
 
 #endif /* SDL_AUDIO_DRIVER_N3DS */
