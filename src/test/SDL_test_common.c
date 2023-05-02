@@ -96,7 +96,7 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     state->logical_scale_mode = SDL_SCALEMODE_LINEAR;
     state->num_windows = 1;
     state->audiospec.freq = 22050;
-    state->audiospec.format = AUDIO_S16;
+    state->audiospec.format = SDL_AUDIO_S16;
     state->audiospec.channels = 2;
     state->audiospec.samples = 2048;
 
@@ -584,23 +584,23 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
                 return -1;
             }
             if (SDL_strcasecmp(argv[index], "U8") == 0) {
-                state->audiospec.format = AUDIO_U8;
+                state->audiospec.format = SDL_AUDIO_U8;
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "S8") == 0) {
-                state->audiospec.format = AUDIO_S8;
+                state->audiospec.format = SDL_AUDIO_S8;
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "S16") == 0) {
-                state->audiospec.format = AUDIO_S16;
+                state->audiospec.format = SDL_AUDIO_S16;
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "S16LE") == 0) {
-                state->audiospec.format = AUDIO_S16LSB;
+                state->audiospec.format = SDL_AUDIO_S16LSB;
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "S16BE") == 0) {
-                state->audiospec.format = AUDIO_S16MSB;
+                state->audiospec.format = SDL_AUDIO_S16MSB;
                 return 2;
             }
 

@@ -716,7 +716,7 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
                 /* Begin setting the node properties */
                 io->id = id;
                 io->is_capture = is_capture;
-                io->spec.format = AUDIO_F32; /* Pipewire uses floats internally, other formats require conversion. */
+                io->spec.format = SDL_AUDIO_F32; /* Pipewire uses floats internally, other formats require conversion. */
                 io->name = io->buf;
                 io->path = io->buf + desc_buffer_len;
                 SDL_strlcpy(io->buf, node_desc, desc_buffer_len);
@@ -909,28 +909,28 @@ static void initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info
 
     /* Pipewire natively supports all of SDL's sample formats */
     switch (spec->format) {
-    case AUDIO_U8:
+    case SDL_AUDIO_U8:
         info->format = SPA_AUDIO_FORMAT_U8;
         break;
-    case AUDIO_S8:
+    case SDL_AUDIO_S8:
         info->format = SPA_AUDIO_FORMAT_S8;
         break;
-    case AUDIO_S16LSB:
+    case SDL_AUDIO_S16LSB:
         info->format = SPA_AUDIO_FORMAT_S16_LE;
         break;
-    case AUDIO_S16MSB:
+    case SDL_AUDIO_S16MSB:
         info->format = SPA_AUDIO_FORMAT_S16_BE;
         break;
-    case AUDIO_S32LSB:
+    case SDL_AUDIO_S32LSB:
         info->format = SPA_AUDIO_FORMAT_S32_LE;
         break;
-    case AUDIO_S32MSB:
+    case SDL_AUDIO_S32MSB:
         info->format = SPA_AUDIO_FORMAT_S32_BE;
         break;
-    case AUDIO_F32LSB:
+    case SDL_AUDIO_F32LSB:
         info->format = SPA_AUDIO_FORMAT_F32_LE;
         break;
-    case AUDIO_F32MSB:
+    case SDL_AUDIO_F32MSB:
         info->format = SPA_AUDIO_FORMAT_F32_BE;
         break;
     }

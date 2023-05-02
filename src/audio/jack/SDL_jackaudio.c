@@ -317,7 +317,7 @@ static int JACK_OpenDevice(_THIS, const char *devname)
     /* !!! FIXME: docs say about buffer size: "This size may change, clients that depend on it must register a bufsize_callback so they will be notified if it does." */
 
     /* Jack pretty much demands what it wants. */
-    this->spec.format = AUDIO_F32SYS;
+    this->spec.format = SDL_AUDIO_F32SYS;
     this->spec.freq = JACK_jack_get_sample_rate(client);
     this->spec.channels = channels;
     this->spec.samples = JACK_jack_get_buffer_size(client);

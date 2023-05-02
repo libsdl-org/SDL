@@ -93,7 +93,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 
     switch (format) {
 
-    case AUDIO_U8:
+    case SDL_AUDIO_U8:
     {
         Uint8 src_sample;
 
@@ -106,7 +106,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_S8:
+    case SDL_AUDIO_S8:
     {
         Sint8 *dst8, *src8;
         Sint8 src_sample;
@@ -131,7 +131,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_S16LSB:
+    case SDL_AUDIO_S16LSB:
     {
         Sint16 src1, src2;
         int dst_sample;
@@ -155,7 +155,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_S16MSB:
+    case SDL_AUDIO_S16MSB:
     {
         Sint16 src1, src2;
         int dst_sample;
@@ -179,7 +179,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_S32LSB:
+    case SDL_AUDIO_S32LSB:
     {
         const Uint32 *src32 = (Uint32 *)src;
         Uint32 *dst32 = (Uint32 *)dst;
@@ -204,7 +204,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_S32MSB:
+    case SDL_AUDIO_S32MSB:
     {
         const Uint32 *src32 = (Uint32 *)src;
         Uint32 *dst32 = (Uint32 *)dst;
@@ -229,7 +229,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_F32LSB:
+    case SDL_AUDIO_F32LSB:
     {
         const float fmaxvolume = 1.0f / ((float)SDL_MIX_MAXVOLUME);
         const float fvolume = (float)volume;
@@ -257,7 +257,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_F32MSB:
+    case SDL_AUDIO_F32MSB:
     {
         const float fmaxvolume = 1.0f / ((float)SDL_MIX_MAXVOLUME);
         const float fvolume = (float)volume;

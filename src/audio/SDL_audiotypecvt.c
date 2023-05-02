@@ -49,7 +49,7 @@
 #define AUDIOCVT_TOFLOAT_SCALAR(from, fromtype, equation) \
     static void SDL_Convert_##from##_to_F32_Scalar(float *dst, const fromtype *src, int num_samples) { \
         int i; \
-        LOG_DEBUG_AUDIO_CONVERT("AUDIO_" #from, "AUDIO_F32"); \
+        LOG_DEBUG_AUDIO_CONVERT(#from, "F32"); \
         for (i = num_samples - 1; i >= 0; --i) { \
             dst[i] = equation; \
         } \
@@ -65,7 +65,7 @@ AUDIOCVT_TOFLOAT_SCALAR(S32, Sint32, ((float)(src[i] >> 8)) * DIVBY8388607)
 #define AUDIOCVT_FROMFLOAT_SCALAR(to, totype, clampmin, clampmax, equation) \
     static void SDL_Convert_F32_to_##to##_Scalar(totype *dst, const float *src, int num_samples) { \
         int i; \
-        LOG_DEBUG_AUDIO_CONVERT("AUDIO_F32", "AUDIO_" #to); \
+        LOG_DEBUG_AUDIO_CONVERT("F32", #to); \
         for (i = 0; i < num_samples; i++) { \
             const float sample = src[i]; \
             if (sample >= 1.0f) { \
@@ -91,7 +91,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const S
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_S8", "AUDIO_F32 (using SSE2)");
+    LOG_DEBUG_AUDIO_CONVERT("S8", "F32 (using SSE2)");
 
     src += num_samples - 1;
     dst += num_samples - 1;
@@ -151,7 +151,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_U8_to_F32_SSE2(float *dst, const U
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_U8", "AUDIO_F32 (using SSE2)");
+    LOG_DEBUG_AUDIO_CONVERT("U8", "F32 (using SSE2)");
 
     src += num_samples - 1;
     dst += num_samples - 1;
@@ -213,7 +213,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S16_to_F32_SSE2(float *dst, const 
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_S16", "AUDIO_F32 (using SSE2)");
+    LOG_DEBUG_AUDIO_CONVERT("S16", "F32 (using SSE2)");
 
     src += num_samples - 1;
     dst += num_samples - 1;
@@ -262,7 +262,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S32_to_F32_SSE2(float *dst, const 
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_S32", "AUDIO_F32 (using SSE2)");
+    LOG_DEBUG_AUDIO_CONVERT("S32", "F32 (using SSE2)");
 
     /* Get dst aligned to 16 bytes */
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
@@ -299,7 +299,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S8_SSE2(Sint8 *dst, const f
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_F32", "AUDIO_S8 (using SSE2)");
+    LOG_DEBUG_AUDIO_CONVERT("F32", "S8 (using SSE2)");
 
     /* Get dst aligned to 16 bytes */
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
@@ -355,7 +355,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(Uint8 *dst, const f
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_F32", "AUDIO_U8 (using SSE2)");
+    LOG_DEBUG_AUDIO_CONVERT("F32", "U8 (using SSE2)");
 
     /* Get dst aligned to 16 bytes */
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
@@ -411,7 +411,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S16_SSE2(Sint16 *dst, const
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_F32", "AUDIO_S16 (using SSE2)");
+    LOG_DEBUG_AUDIO_CONVERT("F32", "S16 (using SSE2)");
 
     /* Get dst aligned to 16 bytes */
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
@@ -465,7 +465,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_F32", "AUDIO_S32 (using SSE2)");
+    LOG_DEBUG_AUDIO_CONVERT("F32", "S32 (using SSE2)");
 
     /* Get dst aligned to 16 bytes */
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
@@ -519,7 +519,7 @@ static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_sam
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_S8", "AUDIO_F32 (using NEON)");
+    LOG_DEBUG_AUDIO_CONVERT("S8", "F32 (using NEON)");
 
     src += num_samples - 1;
     dst += num_samples - 1;
@@ -571,7 +571,7 @@ static void SDL_Convert_U8_to_F32_NEON(float *dst, const Uint8 *src, int num_sam
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_U8", "AUDIO_F32 (using NEON)");
+    LOG_DEBUG_AUDIO_CONVERT("U8", "F32 (using NEON)");
 
     src += num_samples - 1;
     dst += num_samples - 1;
@@ -624,7 +624,7 @@ static void SDL_Convert_S16_to_F32_NEON(float *dst, const Sint16 *src, int num_s
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_S16", "AUDIO_F32 (using NEON)");
+    LOG_DEBUG_AUDIO_CONVERT("S16", "F32 (using NEON)");
 
     src += num_samples - 1;
     dst += num_samples - 1;
@@ -669,7 +669,7 @@ static void SDL_Convert_S32_to_F32_NEON(float *dst, const Sint32 *src, int num_s
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_S32", "AUDIO_F32 (using NEON)");
+    LOG_DEBUG_AUDIO_CONVERT("S32", "F32 (using NEON)");
 
     /* Get dst aligned to 16 bytes */
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
@@ -706,7 +706,7 @@ static void SDL_Convert_F32_to_S8_NEON(Sint8 *dst, const float *src, int num_sam
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_F32", "AUDIO_S8 (using NEON)");
+    LOG_DEBUG_AUDIO_CONVERT("F32", "S8 (using NEON)");
 
     /* Get dst aligned to 16 bytes */
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
@@ -764,7 +764,7 @@ static void SDL_Convert_F32_to_U8_NEON(Uint8 *dst, const float *src, int num_sam
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_F32", "AUDIO_U8 (using NEON)");
+    LOG_DEBUG_AUDIO_CONVERT("F32", "U8 (using NEON)");
 
     /* Get dst aligned to 16 bytes */
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
@@ -823,7 +823,7 @@ static void SDL_Convert_F32_to_S16_NEON(Sint16 *dst, const float *src, int num_s
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_F32", "AUDIO_S16 (using NEON)");
+    LOG_DEBUG_AUDIO_CONVERT("F32", "S16 (using NEON)");
 
     /* Get dst aligned to 16 bytes */
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
@@ -877,7 +877,7 @@ static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_s
 {
     int i;
 
-    LOG_DEBUG_AUDIO_CONVERT("AUDIO_F32", "AUDIO_S32 (using NEON)");
+    LOG_DEBUG_AUDIO_CONVERT("F32", "S32 (using NEON)");
 
     /* Get dst aligned to 16 bytes */
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {

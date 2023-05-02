@@ -316,14 +316,14 @@ static int FindAudioFormat(_THIS)
     while (!found_valid_format && test_format) {
         this->spec.format = test_format;
         switch (test_format) {
-        case AUDIO_S8:
+        case SDL_AUDIO_S8:
             /* Signed 8-bit audio supported */
             this->hidden->format = (this->spec.channels == 2) ? NDSP_FORMAT_STEREO_PCM8 : NDSP_FORMAT_MONO_PCM8;
             this->hidden->isSigned = 1;
             this->hidden->bytePerSample = this->spec.channels;
             found_valid_format = SDL_TRUE;
             break;
-        case AUDIO_S16:
+        case SDL_AUDIO_S16:
             /* Signed 16-bit audio supported */
             this->hidden->format = (this->spec.channels == 2) ? NDSP_FORMAT_STEREO_PCM16 : NDSP_FORMAT_MONO_PCM16;
             this->hidden->isSigned = 1;

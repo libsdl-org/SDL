@@ -571,28 +571,28 @@ static int ALSA_OpenDevice(_THIS, const char *devname)
     /* Try for a closest match on audio format */
     for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
         switch (test_format) {
-        case AUDIO_U8:
+        case SDL_AUDIO_U8:
             format = SND_PCM_FORMAT_U8;
             break;
-        case AUDIO_S8:
+        case SDL_AUDIO_S8:
             format = SND_PCM_FORMAT_S8;
             break;
-        case AUDIO_S16LSB:
+        case SDL_AUDIO_S16LSB:
             format = SND_PCM_FORMAT_S16_LE;
             break;
-        case AUDIO_S16MSB:
+        case SDL_AUDIO_S16MSB:
             format = SND_PCM_FORMAT_S16_BE;
             break;
-        case AUDIO_S32LSB:
+        case SDL_AUDIO_S32LSB:
             format = SND_PCM_FORMAT_S32_LE;
             break;
-        case AUDIO_S32MSB:
+        case SDL_AUDIO_S32MSB:
             format = SND_PCM_FORMAT_S32_BE;
             break;
-        case AUDIO_F32LSB:
+        case SDL_AUDIO_F32LSB:
             format = SND_PCM_FORMAT_FLOAT_LE;
             break;
-        case AUDIO_F32MSB:
+        case SDL_AUDIO_F32MSB:
             format = SND_PCM_FORMAT_FLOAT_BE;
             break;
         default:

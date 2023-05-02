@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
         }
 
         spec.freq = SAMPLE_RATE_HZ;
-        spec.format = AUDIO_S16SYS;
+        spec.format = SDL_AUDIO_S16SYS;
         spec.samples = 4096;
         spec.callback = fill_buffer;
 

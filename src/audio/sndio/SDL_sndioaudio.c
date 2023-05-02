@@ -284,17 +284,17 @@ static int SNDIO_OpenDevice(_THIS, const char *devname)
     }
 
     if ((par.bps == 4) && (par.sig) && (par.le)) {
-        this->spec.format = AUDIO_S32LSB;
+        this->spec.format = SDL_AUDIO_S32LSB;
     } else if ((par.bps == 4) && (par.sig) && (!par.le)) {
-        this->spec.format = AUDIO_S32MSB;
+        this->spec.format = SDL_AUDIO_S32MSB;
     } else if ((par.bps == 2) && (par.sig) && (par.le)) {
-        this->spec.format = AUDIO_S16LSB;
+        this->spec.format = SDL_AUDIO_S16LSB;
     } else if ((par.bps == 2) && (par.sig) && (!par.le)) {
-        this->spec.format = AUDIO_S16MSB;
+        this->spec.format = SDL_AUDIO_S16MSB;
     } else if ((par.bps == 1) && (par.sig)) {
-        this->spec.format = AUDIO_S8;
+        this->spec.format = SDL_AUDIO_S8;
     } else if ((par.bps == 1) && (!par.sig)) {
-        this->spec.format = AUDIO_U8;
+        this->spec.format = SDL_AUDIO_U8;
     } else {
         return SDL_SetError("sndio: Got unsupported hardware audio format.");
     }

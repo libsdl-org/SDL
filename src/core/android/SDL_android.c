@@ -1541,13 +1541,13 @@ int Android_JNI_OpenAudioDevice(int iscapture, int device_id, SDL_AudioSpec *spe
     JNIEnv *env = Android_JNI_GetEnv();
 
     switch (spec->format) {
-    case AUDIO_U8:
+    case SDL_AUDIO_U8:
         audioformat = ENCODING_PCM_8BIT;
         break;
-    case AUDIO_S16:
+    case SDL_AUDIO_S16:
         audioformat = ENCODING_PCM_16BIT;
         break;
-    case AUDIO_F32:
+    case SDL_AUDIO_F32:
         audioformat = ENCODING_PCM_FLOAT;
         break;
     default:
@@ -1575,13 +1575,13 @@ int Android_JNI_OpenAudioDevice(int iscapture, int device_id, SDL_AudioSpec *spe
     audioformat = resultElements[1];
     switch (audioformat) {
     case ENCODING_PCM_8BIT:
-        spec->format = AUDIO_U8;
+        spec->format = SDL_AUDIO_U8;
         break;
     case ENCODING_PCM_16BIT:
-        spec->format = AUDIO_S16;
+        spec->format = SDL_AUDIO_S16;
         break;
     case ENCODING_PCM_FLOAT:
-        spec->format = AUDIO_F32;
+        spec->format = SDL_AUDIO_F32;
         break;
     default:
         return SDL_SetError("Unexpected audio format from Java: %d\n", audioformat);

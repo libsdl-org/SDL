@@ -541,25 +541,25 @@ static int PULSEAUDIO_OpenDevice(_THIS, const char *devname)
         fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
 #endif
         switch (test_format) {
-        case AUDIO_U8:
+        case SDL_AUDIO_U8:
             format = PA_SAMPLE_U8;
             break;
-        case AUDIO_S16LSB:
+        case SDL_AUDIO_S16LSB:
             format = PA_SAMPLE_S16LE;
             break;
-        case AUDIO_S16MSB:
+        case SDL_AUDIO_S16MSB:
             format = PA_SAMPLE_S16BE;
             break;
-        case AUDIO_S32LSB:
+        case SDL_AUDIO_S32LSB:
             format = PA_SAMPLE_S32LE;
             break;
-        case AUDIO_S32MSB:
+        case SDL_AUDIO_S32MSB:
             format = PA_SAMPLE_S32BE;
             break;
-        case AUDIO_F32LSB:
+        case SDL_AUDIO_F32LSB:
             format = PA_SAMPLE_FLOAT32LE;
             break;
-        case AUDIO_F32MSB:
+        case SDL_AUDIO_F32MSB:
             format = PA_SAMPLE_FLOAT32BE;
             break;
         default:
@@ -671,19 +671,19 @@ static SDL_AudioFormat PulseFormatToSDLFormat(pa_sample_format_t format)
 {
     switch (format) {
     case PA_SAMPLE_U8:
-        return AUDIO_U8;
+        return SDL_AUDIO_U8;
     case PA_SAMPLE_S16LE:
-        return AUDIO_S16LSB;
+        return SDL_AUDIO_S16LSB;
     case PA_SAMPLE_S16BE:
-        return AUDIO_S16MSB;
+        return SDL_AUDIO_S16MSB;
     case PA_SAMPLE_S32LE:
-        return AUDIO_S32LSB;
+        return SDL_AUDIO_S32LSB;
     case PA_SAMPLE_S32BE:
-        return AUDIO_S32MSB;
+        return SDL_AUDIO_S32MSB;
     case PA_SAMPLE_FLOAT32LE:
-        return AUDIO_F32LSB;
+        return SDL_AUDIO_F32LSB;
     case PA_SAMPLE_FLOAT32BE:
-        return AUDIO_F32MSB;
+        return SDL_AUDIO_F32MSB;
     default:
         return 0;
     }

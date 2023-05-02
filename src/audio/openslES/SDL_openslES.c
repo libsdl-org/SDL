@@ -239,7 +239,7 @@ static int openslES_CreatePCMRecorder(_THIS)
     }
 
     /* Just go with signed 16-bit audio as it's the most compatible */
-    this->spec.format = AUDIO_S16SYS;
+    this->spec.format = SDL_AUDIO_S16SYS;
     this->spec.channels = 1;
     /*this->spec.freq = SL_SAMPLINGRATE_16 / 1000;*/
 
@@ -427,12 +427,12 @@ static int openslES_CreatePCMPlayer(_THIS)
         if (!test_format) {
             /* Didn't find a compatible format : */
             LOGI("No compatible audio format, using signed 16-bit audio");
-            test_format = AUDIO_S16SYS;
+            test_format = SDL_AUDIO_S16SYS;
         }
         this->spec.format = test_format;
     } else {
         /* Just go with signed 16-bit audio as it's the most compatible */
-        this->spec.format = AUDIO_S16SYS;
+        this->spec.format = SDL_AUDIO_S16SYS;
     }
 
     /* Update the fragment size as size in bytes */

@@ -237,22 +237,22 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
 
     for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
         switch (test_format) {
-        case AUDIO_U8:
+        case SDL_AUDIO_U8:
             encoding = AUDIO_ENCODING_ULINEAR;
             break;
-        case AUDIO_S8:
+        case SDL_AUDIO_S8:
             encoding = AUDIO_ENCODING_SLINEAR;
             break;
-        case AUDIO_S16LSB:
+        case SDL_AUDIO_S16LSB:
             encoding = AUDIO_ENCODING_SLINEAR_LE;
             break;
-        case AUDIO_S16MSB:
+        case SDL_AUDIO_S16MSB:
             encoding = AUDIO_ENCODING_SLINEAR_BE;
             break;
-        case AUDIO_S32LSB:
+        case SDL_AUDIO_S32LSB:
             encoding = AUDIO_ENCODING_SLINEAR_LE;
             break;
-        case AUDIO_S32MSB:
+        case SDL_AUDIO_S32MSB:
             encoding = AUDIO_ENCODING_SLINEAR_BE;
             break;
         default:
