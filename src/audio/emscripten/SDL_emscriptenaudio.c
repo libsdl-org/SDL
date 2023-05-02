@@ -199,6 +199,7 @@ static void EMSCRIPTENAUDIO_CloseDevice(_THIS)
 static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
+    const SDL_AudioFormat *closefmts;
     SDL_bool iscapture = this->iscapture;
     int result;
 
@@ -235,7 +236,8 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
         return SDL_SetError("Web Audio API is not available!");
     }
 
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
+    closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
         switch (test_format) {
         case SDL_AUDIO_F32: /* web audio only supports floats */
             break;

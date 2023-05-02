@@ -527,6 +527,7 @@ static int ALSA_OpenDevice(_THIS, const char *devname)
     snd_pcm_sw_params_t *swparams = NULL;
     snd_pcm_format_t format = 0;
     SDL_AudioFormat test_format = 0;
+    const SDL_AudioFormat *closefmts;
     unsigned int rate = 0;
     unsigned int channels = 0;
 #ifdef SND_CHMAP_API_VERSION
@@ -569,7 +570,8 @@ static int ALSA_OpenDevice(_THIS, const char *devname)
     }
 
     /* Try for a closest match on audio format */
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
+    closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
         switch (test_format) {
         case SDL_AUDIO_U8:
             format = SND_PCM_FORMAT_U8;

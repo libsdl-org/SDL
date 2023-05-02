@@ -485,6 +485,7 @@ static int DSOUND_OpenDevice(_THIS, const char *devname)
     SDL_bool tried_format = SDL_FALSE;
     SDL_bool iscapture = this->iscapture;
     SDL_AudioFormat test_format;
+    const SDL_AudioFormat *closefmts;
     LPGUID guid = (LPGUID)this->handle;
     DWORD bufsize;
 
@@ -514,7 +515,8 @@ static int DSOUND_OpenDevice(_THIS, const char *devname)
         }
     }
 
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
+    closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
         switch (test_format) {
         case SDL_AUDIO_U8:
         case SDL_AUDIO_S16:

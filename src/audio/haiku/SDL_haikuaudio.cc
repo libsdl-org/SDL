@@ -119,6 +119,7 @@ static int HAIKUAUDIO_OpenDevice(_THIS, const char *devname)
 {
     media_raw_audio_format format;
     SDL_AudioFormat test_format;
+    const SDL_AudioFormat *closefmts;
 
     /* Initialize all variables that we clean on shutdown */
     _this->hidden = new SDL_PrivateAudioData;
@@ -132,7 +133,9 @@ static int HAIKUAUDIO_OpenDevice(_THIS, const char *devname)
     format.byte_order = B_MEDIA_LITTLE_ENDIAN;
     format.frame_rate = (float) _this->spec.freq;
     format.channel_count = _this->spec.channels;        /* !!! FIXME: support > 2? */
-    for (test_format = SDL_GetFirstAudioFormat(_this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
+
+    closefmts = SDL_ClosestAudioFormats(_this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
         switch (test_format) {
         case SDL_AUDIO_S8:
             format.format = media_raw_audio_format::B_AUDIO_CHAR;

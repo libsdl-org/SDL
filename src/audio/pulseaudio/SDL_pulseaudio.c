@@ -519,6 +519,7 @@ static int PULSEAUDIO_OpenDevice(_THIS, const char *devname)
 {
     struct SDL_PrivateAudioData *h = NULL;
     SDL_AudioFormat test_format;
+    const SDL_AudioFormat *closefmts;
     pa_sample_spec paspec;
     pa_buffer_attr paattr;
     pa_channel_map pacmap;
@@ -536,7 +537,8 @@ static int PULSEAUDIO_OpenDevice(_THIS, const char *devname)
     SDL_zerop(this->hidden);
 
     /* Try for a closest match on audio format */
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
+    closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
 #ifdef DEBUG_AUDIO
         fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
 #endif

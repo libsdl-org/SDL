@@ -1008,6 +1008,7 @@ static int audioqueue_thread(void *arg)
 static int COREAUDIO_OpenDevice(_THIS, const char *devname)
 {
     AudioStreamBasicDescription *strdesc;
+    const SDL_AudioFormat *closefmts;
     SDL_AudioFormat test_format;
     SDL_bool iscapture = this->iscapture;
     SDL_AudioDevice **new_open_devices;
@@ -1065,7 +1066,8 @@ static int COREAUDIO_OpenDevice(_THIS, const char *devname)
     strdesc->mSampleRate = this->spec.freq;
     strdesc->mFramesPerPacket = 1;
 
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
+    closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
         /* CoreAudio handles most of SDL's formats natively. */
         switch (test_format) {
         case SDL_AUDIO_U8:

@@ -58,10 +58,11 @@ static int DSP_OpenDevice(_THIS, const char *devname)
 {
     SDL_bool iscapture = this->iscapture;
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
-    int format;
+    int format = 0;
     int value;
     int frag_spec;
     SDL_AudioFormat test_format;
+    const SDL_AudioFormat *closefmts;
 
     /* We don't care what the devname is...we'll try to open anything. */
     /*  ...but default to first name in the list... */
@@ -112,9 +113,8 @@ static int DSP_OpenDevice(_THIS, const char *devname)
     }
 
     /* Try for a closest match on audio format */
-    format = 0;
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format);
-         !format && test_format;) {
+    closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
 #ifdef DEBUG_AUDIO
         fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
 #endif
@@ -146,12 +146,9 @@ static int DSP_OpenDevice(_THIS, const char *devname)
             break;
 #endif
         default:
-            format = 0;
-            break;
+            continue;
         }
-        if (!format) {
-            test_format = SDL_GetNextAudioFormat();
-        }
+        break;
     }
     if (format == 0) {
         return SDL_SetError("Couldn't find any hardware audio formats");

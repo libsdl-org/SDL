@@ -194,6 +194,7 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_bool iscapture = this->iscapture;
     SDL_AudioFormat test_format;
+    const SDL_AudioFormat *closefmts;
     int encoding = AUDIO_ENCODING_NONE;
     audio_info_t info, hwinfo;
     struct audio_prinfo *prinfo = iscapture ? &info.record : &info.play;
@@ -235,7 +236,8 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
     prinfo->sample_rate = this->spec.freq;
     prinfo->channels = this->spec.channels;
 
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
+    closefmts = SDL_ClosestAudioFormats(this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
         switch (test_format) {
         case SDL_AUDIO_U8:
             encoding = AUDIO_ENCODING_ULINEAR;
