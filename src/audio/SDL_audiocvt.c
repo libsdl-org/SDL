@@ -774,11 +774,11 @@ static Uint8 *EnsureStreamWorkBufferSize(SDL_AudioStream *stream, size_t newlen)
 
 static int CalculateAudioStreamWorkBufSize(const SDL_AudioStream *stream, int len)
 {
-    int workbuf_frames = len / stream->src_sample_frame_size;  /* start with requested sample frames */
+    int workbuf_frames = len / stream->dst_sample_frame_size;  /* start with requested sample frames */
     int workbuflen = len;
     int inputlen;
 
-    inputlen = workbuf_frames * stream->dst_sample_frame_size;
+    inputlen = workbuf_frames * stream->src_sample_frame_size;
     if (inputlen > workbuflen) {
         workbuflen = inputlen;
     }
