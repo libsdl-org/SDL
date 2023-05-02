@@ -119,17 +119,17 @@ static int DSP_OpenDevice(_THIS, const char *devname)
         fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
 #endif
         switch (test_format) {
-        case AUDIO_U8:
+        case SDL_AUDIO_U8:
             if (value & AFMT_U8) {
                 format = AFMT_U8;
             }
             break;
-        case AUDIO_S16LSB:
+        case SDL_AUDIO_S16LSB:
             if (value & AFMT_S16_LE) {
                 format = AFMT_S16_LE;
             }
             break;
-        case AUDIO_S16MSB:
+        case SDL_AUDIO_S16MSB:
             if (value & AFMT_S16_BE) {
                 format = AFMT_S16_BE;
             }
@@ -139,7 +139,7 @@ static int DSP_OpenDevice(_THIS, const char *devname)
  * These formats are not used by any real life systems so they are not
  * needed here.
  */
-        case AUDIO_S8:
+        case SDL_AUDIO_S8:
             if (value & AFMT_S8) {
                 format = AFMT_S8;
             }

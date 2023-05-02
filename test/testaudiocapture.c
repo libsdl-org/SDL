@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 
     SDL_zero(wanted);
     wanted.freq = 44100;
-    wanted.format = AUDIO_F32SYS;
+    wanted.format = SDL_AUDIO_F32SYS;
     wanted.channels = 1;
     wanted.samples = 4096;
     wanted.callback = NULL;

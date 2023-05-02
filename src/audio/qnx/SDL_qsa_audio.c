@@ -319,49 +319,49 @@ QSA_OpenDevice(_THIS, const char *devname)
     for (test_format = SDL_GetFirstAudioFormat(this->spec.format); !found;) {
         /* if match found set format to equivalent QSA format */
         switch (test_format) {
-        case AUDIO_U8:
+        case SDL_AUDIO_U8:
             {
                 format = SND_PCM_SFMT_U8;
                 found = 1;
             }
             break;
-        case AUDIO_S8:
+        case SDL_AUDIO_S8:
             {
                 format = SND_PCM_SFMT_S8;
                 found = 1;
             }
             break;
-        case AUDIO_S16LSB:
+        case SDL_AUDIO_S16LSB:
             {
                 format = SND_PCM_SFMT_S16_LE;
                 found = 1;
             }
             break;
-        case AUDIO_S16MSB:
+        case SDL_AUDIO_S16MSB:
             {
                 format = SND_PCM_SFMT_S16_BE;
                 found = 1;
             }
             break;
-        case AUDIO_S32LSB:
+        case SDL_AUDIO_S32LSB:
             {
                 format = SND_PCM_SFMT_S32_LE;
                 found = 1;
             }
             break;
-        case AUDIO_S32MSB:
+        case SDL_AUDIO_S32MSB:
             {
                 format = SND_PCM_SFMT_S32_BE;
                 found = 1;
             }
             break;
-        case AUDIO_F32LSB:
+        case SDL_AUDIO_F32LSB:
             {
                 format = SND_PCM_SFMT_FLOAT_LE;
                 found = 1;
             }
             break;
-        case AUDIO_F32MSB:
+        case SDL_AUDIO_F32MSB:
             {
                 format = SND_PCM_SFMT_FLOAT_BE;
                 found = 1;

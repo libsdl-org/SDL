@@ -85,7 +85,7 @@ should be changed to:
 
 AUDIO_U16, AUDIO_U16LSB, AUDIO_U16MSB, and AUDIO_U16SYS have been removed. They were not heavily used, and one could not memset a buffer in this format to silence with a single byte value. Use a different audio format.
 
-If you need to convert U16 audio data to a still-supported format at runtime, the fastest, lossless conversion is to AUDIO_S16:
+If you need to convert U16 audio data to a still-supported format at runtime, the fastest, lossless conversion is to SDL_AUDIO_S16:
 
 ```c
     /* this converts the buffer in-place. The buffer size does not change. */
@@ -129,6 +129,22 @@ The following functions have been removed:
 * SDL_MixAudio()
 
 Use the SDL_AudioDevice functions instead.
+
+The following symbols have been renamed:
+* AUDIO_F32 => SDL_AUDIO_F32
+* AUDIO_F32LSB => SDL_AUDIO_F32LSB
+* AUDIO_F32MSB => SDL_AUDIO_F32MSB
+* AUDIO_F32SYS => SDL_AUDIO_F32SYS
+* AUDIO_S16 => SDL_AUDIO_S16
+* AUDIO_S16LSB => SDL_AUDIO_S16LSB
+* AUDIO_S16MSB => SDL_AUDIO_S16MSB
+* AUDIO_S16SYS => SDL_AUDIO_S16SYS
+* AUDIO_S32 => SDL_AUDIO_S32
+* AUDIO_S32LSB => SDL_AUDIO_S32LSB
+* AUDIO_S32MSB => SDL_AUDIO_S32MSB
+* AUDIO_S32SYS => SDL_AUDIO_S32SYS
+* AUDIO_S8 => SDL_AUDIO_S8
+* AUDIO_U8 => SDL_AUDIO_U8
 
 ## SDL_cpuinfo.h
 

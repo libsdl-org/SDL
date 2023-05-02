@@ -70,7 +70,7 @@ static int VITAAUD_OpenDevice(_THIS, const char *devname)
     SDL_memset(this->hidden, 0, sizeof(*this->hidden));
 
     for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
-        if (test_format == AUDIO_S16LSB) {
+        if (test_format == SDL_AUDIO_S16LSB) {
             this->spec.format = test_format;
             break;
         }

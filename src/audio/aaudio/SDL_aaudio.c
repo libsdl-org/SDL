@@ -98,9 +98,9 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     }
     {
         aaudio_format_t format = AAUDIO_FORMAT_PCM_FLOAT;
-        if (this->spec.format == AUDIO_S16SYS) {
+        if (this->spec.format == SDL_AUDIO_S16SYS) {
             format = AAUDIO_FORMAT_PCM_I16;
-        } else if (this->spec.format == AUDIO_S16SYS) {
+        } else if (this->spec.format == SDL_AUDIO_S16SYS) {
             format = AAUDIO_FORMAT_PCM_FLOAT;
         }
         ctx.AAudioStreamBuilder_setFormat(ctx.builder, format);
@@ -123,9 +123,9 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     {
         aaudio_format_t fmt = ctx.AAudioStream_getFormat(private->stream);
         if (fmt == AAUDIO_FORMAT_PCM_I16) {
-            this->spec.format = AUDIO_S16SYS;
+            this->spec.format = SDL_AUDIO_S16SYS;
         } else if (fmt == AAUDIO_FORMAT_PCM_FLOAT) {
-            this->spec.format = AUDIO_F32SYS;
+            this->spec.format = SDL_AUDIO_F32SYS;
         }
     }
 

@@ -134,37 +134,37 @@ static int HAIKUAUDIO_OpenDevice(_THIS, const char *devname)
     format.channel_count = _this->spec.channels;        /* !!! FIXME: support > 2? */
     for (test_format = SDL_GetFirstAudioFormat(_this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
         switch (test_format) {
-        case AUDIO_S8:
+        case SDL_AUDIO_S8:
             format.format = media_raw_audio_format::B_AUDIO_CHAR;
             break;
 
-        case AUDIO_U8:
+        case SDL_AUDIO_U8:
             format.format = media_raw_audio_format::B_AUDIO_UCHAR;
             break;
 
-        case AUDIO_S16LSB:
+        case SDL_AUDIO_S16LSB:
             format.format = media_raw_audio_format::B_AUDIO_SHORT;
             break;
 
-        case AUDIO_S16MSB:
+        case SDL_AUDIO_S16MSB:
             format.format = media_raw_audio_format::B_AUDIO_SHORT;
             format.byte_order = B_MEDIA_BIG_ENDIAN;
             break;
 
-        case AUDIO_S32LSB:
+        case SDL_AUDIO_S32LSB:
             format.format = media_raw_audio_format::B_AUDIO_INT;
             break;
 
-        case AUDIO_S32MSB:
+        case SDL_AUDIO_S32MSB:
             format.format = media_raw_audio_format::B_AUDIO_INT;
             format.byte_order = B_MEDIA_BIG_ENDIAN;
             break;
 
-        case AUDIO_F32LSB:
+        case SDL_AUDIO_F32LSB:
             format.format = media_raw_audio_format::B_AUDIO_FLOAT;
             break;
 
-        case AUDIO_F32MSB:
+        case SDL_AUDIO_F32MSB:
             format.format = media_raw_audio_format::B_AUDIO_FLOAT;
             format.byte_order = B_MEDIA_BIG_ENDIAN;
             break;

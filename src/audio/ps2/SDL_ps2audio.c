@@ -63,11 +63,11 @@ static int PS2AUDIO_OpenDevice(_THIS, const char *devname)
 
     this->spec.samples = 512;
     this->spec.channels = this->spec.channels == 1 ? 1 : 2;
-    this->spec.format = this->spec.format == AUDIO_S8 ? AUDIO_S8 : AUDIO_S16;
+    this->spec.format = this->spec.format == SDL_AUDIO_S8 ? SDL_AUDIO_S8 : SDL_AUDIO_S16;
 
     SDL_CalculateAudioSpec(&this->spec);
 
-    format.bits = this->spec.format == AUDIO_S8 ? 8 : 16;
+    format.bits = this->spec.format == SDL_AUDIO_S8 ? 8 : 16;
     format.freq = this->spec.freq;
     format.channels = this->spec.channels;
 
