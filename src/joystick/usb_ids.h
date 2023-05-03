@@ -47,6 +47,7 @@
 #define USB_VENDOR_POWERA_ALT   0x20d6
 #define USB_VENDOR_QANBA        0x2c22
 #define USB_VENDOR_RAZER        0x1532
+#define USB_VENDOR_SAITEK       0x06a3
 #define USB_VENDOR_SHANWAN      0x2563
 #define USB_VENDOR_SHANWAN_ALT  0x20bc
 #define USB_VENDOR_SONY         0x054c
@@ -104,6 +105,7 @@
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_PS5_WIRELESS   0x100c
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_XBOX_WIRED     0x1010
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_XBOX_WIRELESS  0x1011
+#define USB_PRODUCT_SAITEK_CYBORG_V3                      0xf622
 #define USB_PRODUCT_SHANWAN_DS3                           0x0523
 #define USB_PRODUCT_SONY_DS3                              0x0268
 #define USB_PRODUCT_SONY_DS4                              0x05c4
