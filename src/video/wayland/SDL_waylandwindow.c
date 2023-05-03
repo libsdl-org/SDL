@@ -317,10 +317,10 @@ static void EnsurePopupPositionIsValid(SDL_Window *window)
         window->y = -window->h;
     }
     if (window->x > window->parent->w) {
-        window->x = window->parent->w;
+        window->x = window->parent->w - 1;
     }
     if (window->y > window->parent->h) {
-        window->y = window->parent->h;
+        window->y = window->parent->h - 1;
     }
 }
 
