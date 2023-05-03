@@ -182,7 +182,7 @@ static SDL_bool WIN_GetDisplayMode(_THIS, HMONITOR hMonitor, LPCWSTR deviceName,
     mode->pixel_h = data->DeviceMode.dmPelsHeight;
     mode->refresh_rate = WIN_GetRefreshRate(&data->DeviceMode);
 
-    if (index == ENUM_CURRENT_SETTINGS && videodata->GetDpiForMonitor) {
+    if (index == ENUM_CURRENT_SETTINGS && videodata->GetDpiForMonitor && videodata->dpi_scaling_enabled) {
         UINT hdpi_uint, vdpi_uint;
         if (videodata->GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &hdpi_uint, &vdpi_uint) == S_OK) {
             mode->display_scale = hdpi_uint / 96.0f;
