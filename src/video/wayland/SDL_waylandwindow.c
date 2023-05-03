@@ -421,6 +421,25 @@ static void GetPopupPosition(SDL_Window *popup, int x, int y, int *adj_x, int *a
     }
 }
 
+static void RepositionPopup(SDL_Window *window)
+{
+    SDL_WindowData *wind = window->driverdata;
+
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP &&
+        wind->shell_surface.xdg.roleobj.popup.positioner &&
+        xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) >= XDG_POPUP_REPOSITION_SINCE_VERSION) {
+        int x, y;
+
+        EnsurePopupPositionIsValid(window);
+        GetPopupPosition(window, window->x, window->y, &x, &y);
+        xdg_positioner_set_size(wind->shell_surface.xdg.roleobj.popup.positioner, window->w, window->h);
+        xdg_positioner_set_offset(wind->shell_surface.xdg.roleobj.popup.positioner, x, y);
+        xdg_popup_reposition(wind->shell_surface.xdg.roleobj.popup.popup,
+                             wind->shell_surface.xdg.roleobj.popup.positioner,
+                             0);
+    }
+}
+
 static const struct wl_callback_listener surface_frame_listener;
 
 static void surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
@@ -1331,6 +1350,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
             xdg_positioner_set_size(data->shell_surface.xdg.roleobj.popup.positioner, window->w, window->h);
 
             /* Set the popup initial position */
+            EnsurePopupPositionIsValid(window);
             GetPopupPosition(window, window->x, window->y, &position_x, &position_y);
             xdg_positioner_set_offset(data->shell_surface.xdg.roleobj.popup.positioner, position_x, position_y);
 
@@ -2129,20 +2149,12 @@ int Wayland_SetWindowPosition(_THIS, SDL_Window *window)
     SDL_WindowData *wind = window->driverdata;
 
     /* Only popup windows can be positioned relative to the parent. */
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP && wind->shell_surface.xdg.roleobj.popup.popup) {
         if (xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) < XDG_POPUP_REPOSITION_SINCE_VERSION) {
             return SDL_Unsupported();
         }
-        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
-            int x, y;
 
-            EnsurePopupPositionIsValid(window);
-            GetPopupPosition(window, window->x, window->y, &x, &y);
-            xdg_positioner_set_offset(wind->shell_surface.xdg.roleobj.popup.positioner, x, y);
-            xdg_popup_reposition(wind->shell_surface.xdg.roleobj.popup.popup,
-                                 wind->shell_surface.xdg.roleobj.popup.positioner,
-                                 0);
-        }
+        RepositionPopup(window);
         return 0;
     }
     return SDL_SetError("wayland cannot position non-popup windows");
@@ -2167,6 +2179,7 @@ void Wayland_SetWindowSize(_THIS, SDL_Window *window)
         wind->requested_window_height = window->windowed.h;
 
         ConfigureWindowGeometry(window);
+        RepositionPopup(window);
     }
 
     /* Always commit, as this may be in response to a min/max limit change. */
