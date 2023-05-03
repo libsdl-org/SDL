@@ -584,7 +584,8 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
-    if (HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
+    if ((type == SDL_CONTROLLER_TYPE_PS3 && vendor_id != USB_VENDOR_SONY) ||
+        HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
         if (device && device->dev) {
             size = ReadFeatureReport(device->dev, 0x03, data, sizeof(data));
             if (size == 8 && data[2] == 0x26) {
@@ -813,48 +814,56 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[1] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
     }
 
-    if (ctx->last_state[2] != data[2]) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+    if (ctx->device->vendor_id == USB_VENDOR_SAITEK && ctx->device->product_id == USB_PRODUCT_SAITEK_CYBORG_V3) {
+        /* Cyborg V.3 Rumble Pad doesn't set the dpad bits as expected, so use the axes instead */
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, data[10] ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, data[9] ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, data[7] ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, data[8] ? SDL_PRESSED : SDL_RELEASED);
+    } else {
+        if (ctx->last_state[2] != data[2]) {
+            SDL_bool dpad_up = SDL_FALSE;
+            SDL_bool dpad_down = SDL_FALSE;
+            SDL_bool dpad_left = SDL_FALSE;
+            SDL_bool dpad_right = SDL_FALSE;
 
-        switch (data[2] & 0x0f) {
-        case 0:
-            dpad_up = SDL_TRUE;
-            break;
-        case 1:
-            dpad_up = SDL_TRUE;
-            dpad_right = SDL_TRUE;
-            break;
-        case 2:
-            dpad_right = SDL_TRUE;
-            break;
-        case 3:
-            dpad_right = SDL_TRUE;
-            dpad_down = SDL_TRUE;
-            break;
-        case 4:
-            dpad_down = SDL_TRUE;
-            break;
-        case 5:
-            dpad_left = SDL_TRUE;
-            dpad_down = SDL_TRUE;
-            break;
-        case 6:
-            dpad_left = SDL_TRUE;
-            break;
-        case 7:
-            dpad_up = SDL_TRUE;
-            dpad_left = SDL_TRUE;
-            break;
-        default:
-            break;
+            switch (data[2] & 0x0f) {
+            case 0:
+                dpad_up = SDL_TRUE;
+                break;
+            case 1:
+                dpad_up = SDL_TRUE;
+                dpad_right = SDL_TRUE;
+                break;
+            case 2:
+                dpad_right = SDL_TRUE;
+                break;
+            case 3:
+                dpad_right = SDL_TRUE;
+                dpad_down = SDL_TRUE;
+                break;
+            case 4:
+                dpad_down = SDL_TRUE;
+                break;
+            case 5:
+                dpad_left = SDL_TRUE;
+                dpad_down = SDL_TRUE;
+                break;
+            case 6:
+                dpad_left = SDL_TRUE;
+                break;
+            case 7:
+                dpad_up = SDL_TRUE;
+                dpad_left = SDL_TRUE;
+                break;
+            default:
+                break;
+            }
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, dpad_down);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, dpad_up);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, dpad_right);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
         }
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, dpad_down);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, dpad_up);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, dpad_right);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
     }
 
     axis = ((int)data[17] * 257) - 32768;
