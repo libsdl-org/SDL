@@ -103,7 +103,7 @@ DirectFB_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowSh
         dsc.pixelformat = DSPF_ARGB;
 
         SDL_DFB_CHECKERR(devdata->dfb->CreateSurface(devdata->dfb, &dsc, &data->surface));
-
+        SDL_DFB_CALLOC(bitmap, shape->w * shape->h, 1);
         /* Assume that shaper->alphacutoff already has a value, because SDL_SetWindowShape() should have given it one. */
         SDL_CalculateShapeBitmap(shaper->mode, shape, bitmap, 1);
 
