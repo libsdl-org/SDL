@@ -2,10 +2,10 @@ name: Build (Haiku @QEMU)
 
 on:
   # push:  # Disabled ci on push because of long build times
-  pull_request:
-    paths:
-      - '**/haiku/*'
-      - '.github/workflows/haiku.yml'
+  # pull_request:
+  #   paths:
+  #     - '**/haiku/*'
+  #     - '.github/workflows/haiku.yml'
   workflow_dispatch:
 
 jobs:
