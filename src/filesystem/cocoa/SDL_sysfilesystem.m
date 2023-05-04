@@ -184,6 +184,10 @@ SDL_GetPath(SDL_Folder folder)
                 dir = NSPicturesDirectory;
                 break;
 
+            case SDL_FOLDER_PUBLICSHARE:
+                dir = NSSharedPublicDirectory;
+                break;
+
             case SDL_FOLDER_SAVEDGAMES:
                 SDL_SetError("Saved games folder not supported on Cocoa");
                 return NULL;
@@ -195,10 +199,6 @@ SDL_GetPath(SDL_Folder folder)
             case SDL_FOLDER_TEMPLATES:
                 SDL_SetError("Templates folder not supported on Cocoa");
                 return NULL;
-
-            case SDL_FOLDER_PUBLICSHARE:
-                dir = NSSharedPublicDirectory;
-                break;
 
             case SDL_FOLDER_VIDEOS:
                 dir = NSMoviesDirectory;
