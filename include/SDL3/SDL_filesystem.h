@@ -138,6 +138,54 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  */
 extern DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
 
+
+/**
+ * The type of the OS-provided default folder for a specific purpose.
+ *
+ * Note that the Trash folder isn't included here, because trashing files usually
+ * involves extra OS-specific functionality to remember the file's original
+ * location.
+ *
+ * \sa SDL_GetPath
+ */
+typedef enum
+{
+  SDL_FOLDER_HOME,
+  SDL_FOLDER_DESKTOP,
+  SDL_FOLDER_DOCUMENTS,
+  SDL_FOLDER_DOWNLOADS,
+  SDL_FOLDER_MUSIC,
+  SDL_FOLDER_PICTURES,
+  SDL_FOLDER_PUBLICSHARE,
+  SDL_FOLDER_SAVEDGAMES,
+  SDL_FOLDER_SCREENSHOTS,
+  SDL_FOLDER_TEMPLATES,
+  SDL_FOLDER_VIDEOS,
+} SDL_Folder;
+
+/**
+ * Finds the most suitable OS-provided folder for @p folder, and returns its
+ * path in OS-specific notation.
+ *
+ * Many OSes provide certain standard folders for certain purposes, such as
+ * storing pictures, music or videos for a certain user. This function gives
+ * the path for many of those special locations.
+ *
+ * Note that the function is expensive, and should be called once at the
+ * beginning of the execution and kept for as long as needed.
+ *
+ * The returned value is owned by the caller and should be freed with
+ * SDL_free().
+ *
+ * If NULL is returned, the error may be obtained with SDL_GetError().
+ *
+ * \returns Either a null-terminated C string containing the full path to the
+ *          folder, or NULL if an error happened.
+ *
+ * \sa SDL_Folder
+ */
+extern DECLSPEC char *SDLCALL SDL_GetPath(SDL_Folder folder);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
