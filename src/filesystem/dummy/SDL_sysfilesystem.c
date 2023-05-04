@@ -39,4 +39,11 @@ SDL_GetPrefPath(const char *org, const char *app)
     return NULL;
 }
 
+char *
+SDL_GetPath(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
 #endif /* SDL_FILESYSTEM_DUMMY || SDL_FILESYSTEM_DISABLED */

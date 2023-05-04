@@ -26,7 +26,14 @@
 /* System dependent filesystem routines                                */
 
 #include "../../core/windows/SDL_windows.h"
+#include <errhandlingapi.h>
+#include <fileapi.h>
 #include <shlobj.h>
+#include <libloaderapi.h>
+/* Lowercase is necessary for Wine */
+#include <knownfolders.h>
+#include <initguid.h>
+#include <windows.h>
 
 char *
 SDL_GetBasePath(void)
@@ -166,6 +173,179 @@ SDL_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
+char *
+SDL_GetPath(SDL_Folder folder)
+{
+    typedef HRESULT (*SHGKFP)(REFKNOWNFOLDERID, DWORD, HANDLE, PWSTR *);
+    char *retval;
+    HMODULE lib = LoadLibrary(L"Shell32.dll");
+    SHGKFP SHGetKnownFolderPath_ = (SHGKFP) GetProcAddress(lib,
+                                                       "SHGetKnownFolderPath");
+
+    if (!SHGetKnownFolderPath_)
+    {
+        int type;
+        HRESULT result;
+    	wchar_t path[MAX_PATH];
+
+        switch (folder)
+        {
+            case SDL_FOLDER_HOME:
+                type = CSIDL_PROFILE;
+                break;
+
+            case SDL_FOLDER_DESKTOP:
+                type = CSIDL_DESKTOP;
+                break;
+
+            case SDL_FOLDER_DOCUMENTS:
+                type = CSIDL_MYDOCUMENTS;
+                break;
+
+            case SDL_FOLDER_DOWNLOADS:
+                SDL_SetError("Downloads folder unavailable before Vista");
+                return NULL;
+
+            case SDL_FOLDER_MUSIC:
+                type = CSIDL_MYMUSIC;
+                break;
+
+            case SDL_FOLDER_PICTURES:
+                type = CSIDL_MYPICTURES;
+                break;
+
+            case SDL_FOLDER_PUBLICSHARE:
+                SDL_SetError("Public share unavailable on Windows");
+                return NULL;
+
+            case SDL_FOLDER_SAVEDGAMES:
+                SDL_SetError("Saved games unavailable before Vista");
+                return NULL;
+
+            case SDL_FOLDER_SCREENSHOTS:
+                SDL_SetError("Screenshots folder unavailable before Vista");
+                return NULL;
+
+            case SDL_FOLDER_TEMPLATES:
+                type = CSIDL_TEMPLATES;
+                break;
+
+            case SDL_FOLDER_VIDEOS:
+                type = CSIDL_MYVIDEO;
+                break;
+
+            default:
+                SDL_SetError("Unsupported SDL_Folder on Windows before Vista: %d",
+                              (int) folder);
+                return NULL;
+        };
+
+        /* Create the OS-specific folder if it doesn't already exist */
+        type |= CSIDL_FLAG_CREATE;
+
+#if 0
+        /* Apparently the oldest, but not supported in modern Windows */
+        HRESULT result = SHGetSpecialFolderPath(NULL, path, type, TRUE);
+#endif
+
+        /* Windows 2000/XP and later, deprecated as of Windows 10 (still
+           available), available in Wine (tested 6.0.3) */
+        result = SHGetFolderPathW(NULL, type, NULL, SHGFP_TYPE_CURRENT, path);
+
+        /* use `!= TRUE` for SHGetSpecialFolderPath */
+        if (result != S_OK)
+        {
+            SDL_SetError("Couldn't get folder, windows-specific error: %ld",
+                         result);
+            return NULL;
+        }
+
+        retval = (char *) SDL_malloc((SDL_wcslen(path) + 1) * 2);
+        if (retval == NULL)
+        {
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        retval = WIN_StringToUTF8W(path);
+        return retval;
+    }
+    else
+    {
+        KNOWNFOLDERID type;
+        HRESULT result;
+    	wchar_t *path;
+
+        switch (folder)
+        {
+            case SDL_FOLDER_HOME:
+                type = FOLDERID_Profile;
+                break;
+
+            case SDL_FOLDER_DESKTOP:
+                type = FOLDERID_Desktop;
+                break;
+
+            case SDL_FOLDER_DOCUMENTS:
+                type = FOLDERID_Documents;
+                break;
+
+            case SDL_FOLDER_DOWNLOADS:
+                type = FOLDERID_Downloads;
+                break;
+
+            case SDL_FOLDER_MUSIC:
+                type = FOLDERID_Music;
+                break;
+
+            case SDL_FOLDER_PICTURES:
+                type = FOLDERID_Pictures;
+                break;
+
+            case SDL_FOLDER_PUBLICSHARE:
+                SDL_SetError("Public share unavailable on Windows");
+                return NULL;
+
+            case SDL_FOLDER_SAVEDGAMES:
+                type = FOLDERID_SavedGames;
+                break;
+
+            case SDL_FOLDER_SCREENSHOTS:
+                type = FOLDERID_Screenshots;
+                break;
+
+            case SDL_FOLDER_TEMPLATES:
+                type = FOLDERID_Templates;
+                break;
+
+            case SDL_FOLDER_VIDEOS:
+                type = FOLDERID_Videos;
+                break;
+
+            default:
+                SDL_SetError("Invalid SDL_Folder: %d", (int) folder);
+                return NULL;
+        };
+
+        result = SHGetKnownFolderPath_(&type, KF_FLAG_CREATE, NULL, &path);
+
+        if (result != S_OK)
+        {
+            SDL_SetError("Couldn't get folder, windows-specific error: %ld",
+                         result);
+            return NULL;
+        }
+
+        retval = (char *) SDL_malloc((SDL_wcslen(path) + 1) * 2);
+        if (retval == NULL)
+        {
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        retval = WIN_StringToUTF8W(path);
+        return retval;
+    }
+}
+
 #endif /* SDL_FILESYSTEM_WINDOWS */
 
 #ifdef SDL_FILESYSTEM_XBOX
@@ -178,6 +358,13 @@ SDL_GetBasePath(void)
 
 char *
 SDL_GetPrefPath(const char *org, const char *app)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+char *
+SDL_GetPath(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;

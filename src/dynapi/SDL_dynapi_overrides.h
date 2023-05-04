@@ -877,3 +877,4 @@
 #define SDL_TryLockRWLockForWriting SDL_TryLockRWLockForWriting_REAL
 #define SDL_UnlockRWLock SDL_UnlockRWLock_REAL
 #define SDL_DestroyRWLock SDL_DestroyRWLock_REAL
+#define SDL_GetPath SDL_GetPath_REAL

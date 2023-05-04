@@ -27,6 +27,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -327,6 +328,289 @@ SDL_GetPrefPath(const char *org, const char *app)
         SDL_SetError("Couldn't create directory '%s': '%s'", retval, strerror(errno));
         SDL_free(retval);
         return NULL;
+    }
+
+    return retval;
+}
+
+/*
+  The two functions below (prefixed with `xdg_`) have been copied from:
+  https://gitlab.freedesktop.org/xdg/xdg-user-dirs/-/blob/master/xdg-user-dir-lookup.c
+  and have been adapted to work with SDL. They are licensed under the following
+  terms:
+
+  Copyright (c) 2007 Red Hat, Inc.
+
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation files
+  (the "Software"), to deal in the Software without restriction,
+  including without limitation the rights to use, copy, modify, merge,
+  publish, distribute, sublicense, and/or sell copies of the Software,
+  and to permit persons to whom the Software is furnished to do so,
+  subject to the following conditions: 
+
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software. 
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+  BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+  ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+*/
+static char *
+xdg_user_dir_lookup_with_fallback (const char *type, const char *fallback)
+{
+  FILE *file;
+  char *home_dir, *config_home, *config_file;
+  char buffer[512];
+  char *user_dir;
+  char *p, *d;
+  int len;
+  int relative;
+  size_t l;
+  
+  home_dir = SDL_getenv ("HOME");
+
+  if (home_dir == NULL)
+    goto error;
+
+  config_home = SDL_getenv ("XDG_CONFIG_HOME");
+  if (config_home == NULL || config_home[0] == 0)
+    {
+      l = SDL_strlen (home_dir) + SDL_strlen ("/.config/user-dirs.dirs") + 1;
+      config_file = (char*) SDL_malloc (l);
+      if (config_file == NULL)
+        goto error;
+
+      SDL_strlcpy (config_file, home_dir, l);
+      SDL_strlcat (config_file, "/.config/user-dirs.dirs", l);
+    }
+  else
+    {
+      l = SDL_strlen (config_home) + SDL_strlen ("/user-dirs.dirs") + 1;
+      config_file = (char*) SDL_malloc (l);
+      if (config_file == NULL)
+        goto error;
+
+      SDL_strlcpy (config_file, config_home, l);
+      SDL_strlcat (config_file, "/user-dirs.dirs", l);
+    }
+
+  file = fopen (config_file, "r");
+  SDL_free (config_file);
+  if (file == NULL)
+    goto error;
+
+  user_dir = NULL;
+  while (fgets (buffer, sizeof (buffer), file))
+    {
+      /* Remove newline at end */
+      len = SDL_strlen (buffer);
+      if (len > 0 && buffer[len-1] == '\n')
+        buffer[len-1] = 0;
+      
+      p = buffer;
+      while (*p == ' ' || *p == '\t')
+        p++;
+      
+      if (SDL_strncmp (p, "XDG_", 4) != 0)
+        continue;
+      p += 4;
+      if (SDL_strncmp (p, type, SDL_strlen (type)) != 0)
+        continue;
+      p += strlen (type);
+      if (SDL_strncmp (p, "_DIR", 4) != 0)
+        continue;
+      p += 4;
+
+      while (*p == ' ' || *p == '\t')
+        p++;
+
+      if (*p != '=')
+        continue;
+      p++;
+      
+      while (*p == ' ' || *p == '\t')
+        p++;
+
+      if (*p != '"')
+        continue;
+      p++;
+      
+      relative = 0;
+      if (SDL_strncmp (p, "$HOME/", 6) == 0)
+        {
+          p += 6;
+          relative = 1;
+        }
+      else if (*p != '/')
+        continue;
+
+      SDL_free (user_dir);
+      if (relative)
+        {
+          l = SDL_strlen (home_dir) + 1 + SDL_strlen (p) + 1;
+          user_dir = (char*) SDL_malloc (l);
+          if (user_dir == NULL)
+            goto error2;
+
+          SDL_strlcpy (user_dir, home_dir, l);
+          SDL_strlcat (user_dir, "/", l);
+        }
+      else
+        {
+          user_dir = (char*) SDL_malloc (SDL_strlen (p) + 1);
+          if (user_dir == NULL)
+            goto error2;
+
+          *user_dir = 0;
+        }
+      
+      d = user_dir + SDL_strlen (user_dir);
+      while (*p && *p != '"')
+        {
+          if ((*p == '\\') && (*(p+1) != 0))
+            p++;
+          *d++ = *p++;
+        }
+      *d = 0;
+    }
+error2:
+  fclose (file);
+
+  if (user_dir)
+    return user_dir;
+
+ error:
+  if (fallback)
+    return SDL_strdup (fallback);
+  return NULL;
+}
+
+static char *
+xdg_user_dir_lookup (const char *type)
+{
+    char *dir, *home_dir, *user_dir;
+
+    dir = xdg_user_dir_lookup_with_fallback(type, NULL);
+    if (dir != NULL)
+        return dir;
+
+    home_dir = SDL_getenv("HOME");
+
+    if (home_dir == NULL)
+        return NULL;
+
+    /* Special case desktop for historical compatibility */
+    if (SDL_strcmp(type, "DESKTOP") == 0)
+    {
+        user_dir = (char*) SDL_malloc(SDL_strlen(home_dir) +
+                                      SDL_strlen("/Desktop") + 1);
+        if (user_dir == NULL)
+            return NULL;
+
+        strcpy(user_dir, home_dir);
+        strcat(user_dir, "/Desktop");
+        return user_dir;
+    }
+
+    return NULL;
+}
+
+char *
+SDL_GetPath(SDL_Folder folder)
+{
+    const char *param = NULL;
+    char *retval;
+
+    /* According to `man xdg-user-dir`, the possible values are:
+        DESKTOP
+        DOWNLOAD
+        TEMPLATES
+        PUBLICSHARE
+        DOCUMENTS
+        MUSIC
+        PICTURES
+        VIDEOS
+    */
+    switch(folder)
+    {
+        case SDL_FOLDER_HOME:
+            param = SDL_getenv("HOME");
+
+            if (!param)
+            {
+                SDL_SetError("No $HOME environment variable available");
+            }
+
+            retval = SDL_strdup(param);
+
+            if (!retval)
+                SDL_OutOfMemory();
+
+            return retval;
+
+        case SDL_FOLDER_DESKTOP:
+            param = "DESKTOP";
+            break;
+
+        case SDL_FOLDER_DOCUMENTS:
+            param = "DOCUMENTS";
+            break;
+
+        case SDL_FOLDER_DOWNLOADS:
+            param = "DOWNLOAD";
+            break;
+
+        case SDL_FOLDER_MUSIC:
+            param = "MUSIC";
+            break;
+
+        case SDL_FOLDER_PICTURES:
+            param = "PICTURES";
+            break;
+
+        case SDL_FOLDER_PUBLICSHARE:
+            param = "PUBLICSHARE";
+            break;
+
+        case SDL_FOLDER_SAVEDGAMES:
+            SDL_SetError("Saved Games folder unavailable on XDG");
+            return NULL;
+
+        case SDL_FOLDER_SCREENSHOTS:
+            SDL_SetError("Screenshots folder unavailable on XDG");
+            return NULL;
+
+        case SDL_FOLDER_TEMPLATES:
+            param = "TEMPLATES";
+            break;
+
+        case SDL_FOLDER_VIDEOS:
+            param = "VIDEOS";
+            break;
+
+        default:
+            SDL_SetError("Invalid SDL_Folder: %d", (int) folder);
+            return NULL;
+    }
+
+    /* param *should* to be set to something at this point, but just in case */
+    if (!param)
+    {
+        SDL_SetError("No corresponding XDG user directory");
+        return NULL;
+    }
+
+    retval = xdg_user_dir_lookup(param);
+
+    if (!retval)
+    {
+        SDL_SetError("XDG directory not available");
     }
 
     return retval;

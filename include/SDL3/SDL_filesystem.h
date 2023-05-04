@@ -138,6 +138,83 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  */
 extern DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
 
+/**
+ * The type of the OS-provided default folder for a specific purpose.
+ *
+ * Note that the Trash folder isn't included here, because trashing files usually
+ * involves extra OS-specific functionality to remember the file's original
+ * location.
+ *
+ * \sa SDL_GetPath
+ */
+typedef enum
+{
+  /** The folder which contains all of the current user's data, preferences,
+      and documents. It usually contains most of the other folders. If a
+      requested folder does not exist, the home folder can be considered a safe
+      fallback to store a user's documents. Supported on Windows, macOS and
+      Unix with XDG. */
+  SDL_FOLDER_HOME,
+  /** The folder of files that are displayed on the desktop. Note that the
+      existence of a desktop folder does not guarantee that the system does
+      show icons on its desktop; certain GNU/Linux distros with a graphical
+      environment may not have desktop icons. Supported on Windows, macOS and
+      Unix with XDG. */
+  SDL_FOLDER_DESKTOP,
+  /** General document files, possibly application-specific. This is a good
+      place to save a user's projects. Supported on Windows, macOS and Unix
+      with XDG. */
+  SDL_FOLDER_DOCUMENTS,
+  /** Generic landing folder for files downloaded from the internet. Supported
+      on Windows Vista and later, macOS and Unix with XDG. */
+  SDL_FOLDER_DOWNLOADS,
+  /** Music files that can be played using a standard music player (mp3,
+      ogg...). Supported on Windows, macOS and Unix with XDG. */
+  SDL_FOLDER_MUSIC,
+  /** Image files that can be displayed using a standard viewer (png,
+      jpg...). Supported on Windows, macOS and Unix with XDG. */
+  SDL_FOLDER_PICTURES,
+  /** Files that are meant to be shared with other users on the same
+      computer. Supported on macOS and Unix with XDG. */
+  SDL_FOLDER_PUBLICSHARE,
+  /** Save files for games. Supported on Windows Vista and later. */
+  SDL_FOLDER_SAVEDGAMES,
+  /** Application screenshots. Supported on Windows Vista and later. */
+  SDL_FOLDER_SCREENSHOTS,
+  /** Template files to be used when the user requests the desktop environment
+      to create a new file in a certain folder, such as "New Text File.txt".
+      Any file in the Templates folder can be used as a starting point for a
+      new file. Supported on Windows, macOS and Unix with XDG. */
+  SDL_FOLDER_TEMPLATES,
+  /** Video files that can be played using a standard video player (mp4,
+      webm...). On macOS, this is the "Movies" folder. Supported on Windows,
+      macOS and Unix with XDG. */
+  SDL_FOLDER_VIDEOS,
+} SDL_Folder;
+
+/**
+ * Finds the most suitable OS-provided folder for @p folder, and returns its
+ * path in OS-specific notation.
+ *
+ * Many OSes provide certain standard folders for certain purposes, such as
+ * storing pictures, music or videos for a certain user. This function gives
+ * the path for many of those special locations.
+ *
+ * Note that the function is expensive, and should be called once at the
+ * beginning of the execution and kept for as long as needed.
+ *
+ * The returned value is owned by the caller and should be freed with
+ * SDL_free().
+ *
+ * If NULL is returned, the error may be obtained with SDL_GetError().
+ *
+ * \returns Either a null-terminated C string containing the full path to the
+ *          folder, or NULL if an error happened.
+ *
+ * \sa SDL_Folder
+ */
+extern DECLSPEC char *SDLCALL SDL_GetPath(SDL_Folder folder);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
