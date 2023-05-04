@@ -281,11 +281,7 @@ static void write_converter(const int fromchans, const int tochans)
             printf(" * %d", tochans);
         }
         printf(";\n");
-        printf("    for (i = num_frames");
-        if (fromchans > 1) {
-            printf(" * %d", fromchans);
-        }
-        printf("; i; i--, ");
+        printf("    for (i = num_frames; i; i--, ");
         if (fromchans == 1) {
             printf("src--");
         } else {
@@ -342,7 +338,7 @@ static void write_converter(const int fromchans, const int tochans)
 
         printf("    }\n");
     } else {
-        printf("    for (i = num_frames * %d; i; i--, ", fromchans);
+        printf("    for (i = num_frames; i; i--, ");
         if (fromchans == 1) {
             printf("src++");
         } else {

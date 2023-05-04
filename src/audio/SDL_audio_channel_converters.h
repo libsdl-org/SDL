@@ -170,7 +170,7 @@ static void SDL_ConvertStereoToMono(float *dst, const float *src, int num_frames
 
     LOG_DEBUG_AUDIO_CONVERT("stereo", "mono");
 
-    for (i = num_frames * 2; i; i--, src += 2, dst++) {
+    for (i = num_frames; i; i--, src += 2, dst++) {
         dst[0] /* FC */ = (src[0] * 0.500000000f) + (src[1] * 0.500000000f);
     }
 
@@ -185,7 +185,7 @@ static void SDL_ConvertStereoTo21(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 2;
     dst += (num_frames-1) * 3;
-    for (i = num_frames * 2; i; i--, src -= 2, dst -= 3) {
+    for (i = num_frames; i; i--, src -= 2, dst -= 3) {
         dst[2] /* LFE */ = 0.0f;
         dst[1] /* FR */ = src[1];
         dst[0] /* FL */ = src[0];
@@ -202,7 +202,7 @@ static void SDL_ConvertStereoToQuad(float *dst, const float *src, int num_frames
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 2;
     dst += (num_frames-1) * 4;
-    for (i = num_frames * 2; i; i--, src -= 2, dst -= 4) {
+    for (i = num_frames; i; i--, src -= 2, dst -= 4) {
         dst[3] /* BR */ = 0.0f;
         dst[2] /* BL */ = 0.0f;
         dst[1] /* FR */ = src[1];
@@ -220,7 +220,7 @@ static void SDL_ConvertStereoTo41(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 2;
     dst += (num_frames-1) * 5;
-    for (i = num_frames * 2; i; i--, src -= 2, dst -= 5) {
+    for (i = num_frames; i; i--, src -= 2, dst -= 5) {
         dst[4] /* BR */ = 0.0f;
         dst[3] /* BL */ = 0.0f;
         dst[2] /* LFE */ = 0.0f;
@@ -239,7 +239,7 @@ static void SDL_ConvertStereoTo51(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 2;
     dst += (num_frames-1) * 6;
-    for (i = num_frames * 2; i; i--, src -= 2, dst -= 6) {
+    for (i = num_frames; i; i--, src -= 2, dst -= 6) {
         dst[5] /* BR */ = 0.0f;
         dst[4] /* BL */ = 0.0f;
         dst[3] /* LFE */ = 0.0f;
@@ -259,7 +259,7 @@ static void SDL_ConvertStereoTo61(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 2;
     dst += (num_frames-1) * 7;
-    for (i = num_frames * 2; i; i--, src -= 2, dst -= 7) {
+    for (i = num_frames; i; i--, src -= 2, dst -= 7) {
         dst[6] /* SR */ = 0.0f;
         dst[5] /* SL */ = 0.0f;
         dst[4] /* BC */ = 0.0f;
@@ -280,7 +280,7 @@ static void SDL_ConvertStereoTo71(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 2;
     dst += (num_frames-1) * 8;
-    for (i = num_frames * 2; i; i--, src -= 2, dst -= 8) {
+    for (i = num_frames; i; i--, src -= 2, dst -= 8) {
         dst[7] /* SR */ = 0.0f;
         dst[6] /* SL */ = 0.0f;
         dst[5] /* BR */ = 0.0f;
@@ -299,7 +299,7 @@ static void SDL_Convert21ToMono(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("2.1", "mono");
 
-    for (i = num_frames * 3; i; i--, src += 3, dst++) {
+    for (i = num_frames; i; i--, src += 3, dst++) {
         dst[0] /* FC */ = (src[0] * 0.333333343f) + (src[1] * 0.333333343f) + (src[2] * 0.333333343f);
     }
 
@@ -311,7 +311,7 @@ static void SDL_Convert21ToStereo(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("2.1", "stereo");
 
-    for (i = num_frames * 3; i; i--, src += 3, dst += 2) {
+    for (i = num_frames; i; i--, src += 3, dst += 2) {
         const float srcLFE = src[2];
         dst[0] /* FL */ = (src[0] * 0.800000012f) + (srcLFE * 0.200000003f);
         dst[1] /* FR */ = (src[1] * 0.800000012f) + (srcLFE * 0.200000003f);
@@ -328,7 +328,7 @@ static void SDL_Convert21ToQuad(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 3;
     dst += (num_frames-1) * 4;
-    for (i = num_frames * 3; i; i--, src -= 3, dst -= 4) {
+    for (i = num_frames; i; i--, src -= 3, dst -= 4) {
         const float srcLFE = src[2];
         dst[3] /* BR */ = (srcLFE * 0.111111112f);
         dst[2] /* BL */ = (srcLFE * 0.111111112f);
@@ -347,7 +347,7 @@ static void SDL_Convert21To41(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 3;
     dst += (num_frames-1) * 5;
-    for (i = num_frames * 3; i; i--, src -= 3, dst -= 5) {
+    for (i = num_frames; i; i--, src -= 3, dst -= 5) {
         dst[4] /* BR */ = 0.0f;
         dst[3] /* BL */ = 0.0f;
         dst[2] /* LFE */ = src[2];
@@ -366,7 +366,7 @@ static void SDL_Convert21To51(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 3;
     dst += (num_frames-1) * 6;
-    for (i = num_frames * 3; i; i--, src -= 3, dst -= 6) {
+    for (i = num_frames; i; i--, src -= 3, dst -= 6) {
         dst[5] /* BR */ = 0.0f;
         dst[4] /* BL */ = 0.0f;
         dst[3] /* LFE */ = src[2];
@@ -386,7 +386,7 @@ static void SDL_Convert21To61(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 3;
     dst += (num_frames-1) * 7;
-    for (i = num_frames * 3; i; i--, src -= 3, dst -= 7) {
+    for (i = num_frames; i; i--, src -= 3, dst -= 7) {
         dst[6] /* SR */ = 0.0f;
         dst[5] /* SL */ = 0.0f;
         dst[4] /* BC */ = 0.0f;
@@ -407,7 +407,7 @@ static void SDL_Convert21To71(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 3;
     dst += (num_frames-1) * 8;
-    for (i = num_frames * 3; i; i--, src -= 3, dst -= 8) {
+    for (i = num_frames; i; i--, src -= 3, dst -= 8) {
         dst[7] /* SR */ = 0.0f;
         dst[6] /* SL */ = 0.0f;
         dst[5] /* BR */ = 0.0f;
@@ -426,7 +426,7 @@ static void SDL_ConvertQuadToMono(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("quad", "mono");
 
-    for (i = num_frames * 4; i; i--, src += 4, dst++) {
+    for (i = num_frames; i; i--, src += 4, dst++) {
         dst[0] /* FC */ = (src[0] * 0.250000000f) + (src[1] * 0.250000000f) + (src[2] * 0.250000000f) + (src[3] * 0.250000000f);
     }
 
@@ -438,7 +438,7 @@ static void SDL_ConvertQuadToStereo(float *dst, const float *src, int num_frames
 
     LOG_DEBUG_AUDIO_CONVERT("quad", "stereo");
 
-    for (i = num_frames * 4; i; i--, src += 4, dst += 2) {
+    for (i = num_frames; i; i--, src += 4, dst += 2) {
         const float srcBL = src[2];
         const float srcBR = src[3];
         dst[0] /* FL */ = (src[0] * 0.421000004f) + (srcBL * 0.358999997f) + (srcBR * 0.219999999f);
@@ -453,7 +453,7 @@ static void SDL_ConvertQuadTo21(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("quad", "2.1");
 
-    for (i = num_frames * 4; i; i--, src += 4, dst += 3) {
+    for (i = num_frames; i; i--, src += 4, dst += 3) {
         const float srcBL = src[2];
         const float srcBR = src[3];
         dst[0] /* FL */ = (src[0] * 0.421000004f) + (srcBL * 0.358999997f) + (srcBR * 0.219999999f);
@@ -472,7 +472,7 @@ static void SDL_ConvertQuadTo41(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 4;
     dst += (num_frames-1) * 5;
-    for (i = num_frames * 4; i; i--, src -= 4, dst -= 5) {
+    for (i = num_frames; i; i--, src -= 4, dst -= 5) {
         dst[4] /* BR */ = src[3];
         dst[3] /* BL */ = src[2];
         dst[2] /* LFE */ = 0.0f;
@@ -491,7 +491,7 @@ static void SDL_ConvertQuadTo51(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 4;
     dst += (num_frames-1) * 6;
-    for (i = num_frames * 4; i; i--, src -= 4, dst -= 6) {
+    for (i = num_frames; i; i--, src -= 4, dst -= 6) {
         dst[5] /* BR */ = src[3];
         dst[4] /* BL */ = src[2];
         dst[3] /* LFE */ = 0.0f;
@@ -511,7 +511,7 @@ static void SDL_ConvertQuadTo61(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 4;
     dst += (num_frames-1) * 7;
-    for (i = num_frames * 4; i; i--, src -= 4, dst -= 7) {
+    for (i = num_frames; i; i--, src -= 4, dst -= 7) {
         const float srcBL = src[2];
         const float srcBR = src[3];
         dst[6] /* SR */ = (srcBR * 0.796000004f);
@@ -534,7 +534,7 @@ static void SDL_ConvertQuadTo71(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 4;
     dst += (num_frames-1) * 8;
-    for (i = num_frames * 4; i; i--, src -= 4, dst -= 8) {
+    for (i = num_frames; i; i--, src -= 4, dst -= 8) {
         dst[7] /* SR */ = 0.0f;
         dst[6] /* SL */ = 0.0f;
         dst[5] /* BR */ = src[3];
@@ -553,7 +553,7 @@ static void SDL_Convert41ToMono(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("4.1", "mono");
 
-    for (i = num_frames * 5; i; i--, src += 5, dst++) {
+    for (i = num_frames; i; i--, src += 5, dst++) {
         dst[0] /* FC */ = (src[0] * 0.200000003f) + (src[1] * 0.200000003f) + (src[2] * 0.200000003f) + (src[3] * 0.200000003f) + (src[4] * 0.200000003f);
     }
 
@@ -565,7 +565,7 @@ static void SDL_Convert41ToStereo(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("4.1", "stereo");
 
-    for (i = num_frames * 5; i; i--, src += 5, dst += 2) {
+    for (i = num_frames; i; i--, src += 5, dst += 2) {
         const float srcLFE = src[2];
         const float srcBL = src[3];
         const float srcBR = src[4];
@@ -581,7 +581,7 @@ static void SDL_Convert41To21(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("4.1", "2.1");
 
-    for (i = num_frames * 5; i; i--, src += 5, dst += 3) {
+    for (i = num_frames; i; i--, src += 5, dst += 3) {
         const float srcBL = src[3];
         const float srcBR = src[4];
         dst[0] /* FL */ = (src[0] * 0.421000004f) + (srcBL * 0.358999997f) + (srcBR * 0.219999999f);
@@ -597,7 +597,7 @@ static void SDL_Convert41ToQuad(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("4.1", "quad");
 
-    for (i = num_frames * 5; i; i--, src += 5, dst += 4) {
+    for (i = num_frames; i; i--, src += 5, dst += 4) {
         const float srcLFE = src[2];
         dst[0] /* FL */ = (src[0] * 0.941176474f) + (srcLFE * 0.058823530f);
         dst[1] /* FR */ = (src[1] * 0.941176474f) + (srcLFE * 0.058823530f);
@@ -616,7 +616,7 @@ static void SDL_Convert41To51(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 5;
     dst += (num_frames-1) * 6;
-    for (i = num_frames * 5; i; i--, src -= 5, dst -= 6) {
+    for (i = num_frames; i; i--, src -= 5, dst -= 6) {
         dst[5] /* BR */ = src[4];
         dst[4] /* BL */ = src[3];
         dst[3] /* LFE */ = src[2];
@@ -636,7 +636,7 @@ static void SDL_Convert41To61(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 5;
     dst += (num_frames-1) * 7;
-    for (i = num_frames * 5; i; i--, src -= 5, dst -= 7) {
+    for (i = num_frames; i; i--, src -= 5, dst -= 7) {
         const float srcBL = src[3];
         const float srcBR = src[4];
         dst[6] /* SR */ = (srcBR * 0.796000004f);
@@ -659,7 +659,7 @@ static void SDL_Convert41To71(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 5;
     dst += (num_frames-1) * 8;
-    for (i = num_frames * 5; i; i--, src -= 5, dst -= 8) {
+    for (i = num_frames; i; i--, src -= 5, dst -= 8) {
         dst[7] /* SR */ = 0.0f;
         dst[6] /* SL */ = 0.0f;
         dst[5] /* BR */ = src[4];
@@ -678,7 +678,7 @@ static void SDL_Convert51ToMono(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("5.1", "mono");
 
-    for (i = num_frames * 6; i; i--, src += 6, dst++) {
+    for (i = num_frames; i; i--, src += 6, dst++) {
         dst[0] /* FC */ = (src[0] * 0.166666672f) + (src[1] * 0.166666672f) + (src[2] * 0.166666672f) + (src[3] * 0.166666672f) + (src[4] * 0.166666672f) + (src[5] * 0.166666672f);
     }
 
@@ -690,7 +690,7 @@ static void SDL_Convert51ToStereo(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("5.1", "stereo");
 
-    for (i = num_frames * 6; i; i--, src += 6, dst += 2) {
+    for (i = num_frames; i; i--, src += 6, dst += 2) {
         const float srcFC = src[2];
         const float srcLFE = src[3];
         const float srcBL = src[4];
@@ -707,7 +707,7 @@ static void SDL_Convert51To21(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("5.1", "2.1");
 
-    for (i = num_frames * 6; i; i--, src += 6, dst += 3) {
+    for (i = num_frames; i; i--, src += 6, dst += 3) {
         const float srcFC = src[2];
         const float srcBL = src[4];
         const float srcBR = src[5];
@@ -724,7 +724,7 @@ static void SDL_Convert51ToQuad(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("5.1", "quad");
 
-    for (i = num_frames * 6; i; i--, src += 6, dst += 4) {
+    for (i = num_frames; i; i--, src += 6, dst += 4) {
         const float srcFC = src[2];
         const float srcLFE = src[3];
         dst[0] /* FL */ = (src[0] * 0.558095276f) + (srcFC * 0.394285709f) + (srcLFE * 0.047619049f);
@@ -741,7 +741,7 @@ static void SDL_Convert51To41(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("5.1", "4.1");
 
-    for (i = num_frames * 6; i; i--, src += 6, dst += 5) {
+    for (i = num_frames; i; i--, src += 6, dst += 5) {
         const float srcFC = src[2];
         dst[0] /* FL */ = (src[0] * 0.586000025f) + (srcFC * 0.414000005f);
         dst[1] /* FR */ = (src[1] * 0.586000025f) + (srcFC * 0.414000005f);
@@ -761,7 +761,7 @@ static void SDL_Convert51To61(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 6;
     dst += (num_frames-1) * 7;
-    for (i = num_frames * 6; i; i--, src -= 6, dst -= 7) {
+    for (i = num_frames; i; i--, src -= 6, dst -= 7) {
         const float srcBL = src[4];
         const float srcBR = src[5];
         dst[6] /* SR */ = (srcBR * 0.796000004f);
@@ -784,7 +784,7 @@ static void SDL_Convert51To71(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 6;
     dst += (num_frames-1) * 8;
-    for (i = num_frames * 6; i; i--, src -= 6, dst -= 8) {
+    for (i = num_frames; i; i--, src -= 6, dst -= 8) {
         dst[7] /* SR */ = 0.0f;
         dst[6] /* SL */ = 0.0f;
         dst[5] /* BR */ = src[5];
@@ -803,7 +803,7 @@ static void SDL_Convert61ToMono(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("6.1", "mono");
 
-    for (i = num_frames * 7; i; i--, src += 7, dst++) {
+    for (i = num_frames; i; i--, src += 7, dst++) {
         dst[0] /* FC */ = (src[0] * 0.143142849f) + (src[1] * 0.143142849f) + (src[2] * 0.143142849f) + (src[3] * 0.142857149f) + (src[4] * 0.143142849f) + (src[5] * 0.143142849f) + (src[6] * 0.143142849f);
     }
 
@@ -815,7 +815,7 @@ static void SDL_Convert61ToStereo(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("6.1", "stereo");
 
-    for (i = num_frames * 7; i; i--, src += 7, dst += 2) {
+    for (i = num_frames; i; i--, src += 7, dst += 2) {
         const float srcFC = src[2];
         const float srcLFE = src[3];
         const float srcBC = src[4];
@@ -833,7 +833,7 @@ static void SDL_Convert61To21(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("6.1", "2.1");
 
-    for (i = num_frames * 7; i; i--, src += 7, dst += 3) {
+    for (i = num_frames; i; i--, src += 7, dst += 3) {
         const float srcFC = src[2];
         const float srcBC = src[4];
         const float srcSL = src[5];
@@ -851,7 +851,7 @@ static void SDL_Convert61ToQuad(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("6.1", "quad");
 
-    for (i = num_frames * 7; i; i--, src += 7, dst += 4) {
+    for (i = num_frames; i; i--, src += 7, dst += 4) {
         const float srcFC = src[2];
         const float srcLFE = src[3];
         const float srcBC = src[4];
@@ -871,7 +871,7 @@ static void SDL_Convert61To41(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("6.1", "4.1");
 
-    for (i = num_frames * 7; i; i--, src += 7, dst += 5) {
+    for (i = num_frames; i; i--, src += 7, dst += 5) {
         const float srcFC = src[2];
         const float srcBC = src[4];
         const float srcSL = src[5];
@@ -891,7 +891,7 @@ static void SDL_Convert61To51(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("6.1", "5.1");
 
-    for (i = num_frames * 7; i; i--, src += 7, dst += 6) {
+    for (i = num_frames; i; i--, src += 7, dst += 6) {
         const float srcBC = src[4];
         const float srcSL = src[5];
         const float srcSR = src[6];
@@ -914,7 +914,7 @@ static void SDL_Convert61To71(float *dst, const float *src, int num_frames)
     /* convert backwards, since output is growing in-place. */
     src += (num_frames-1) * 7;
     dst += (num_frames-1) * 8;
-    for (i = num_frames * 7; i; i--, src -= 7, dst -= 8) {
+    for (i = num_frames; i; i--, src -= 7, dst -= 8) {
         const float srcBC = src[4];
         dst[7] /* SR */ = src[6];
         dst[6] /* SL */ = src[5];
@@ -934,7 +934,7 @@ static void SDL_Convert71ToMono(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("7.1", "mono");
 
-    for (i = num_frames * 8; i; i--, src += 8, dst++) {
+    for (i = num_frames; i; i--, src += 8, dst++) {
         dst[0] /* FC */ = (src[0] * 0.125125006f) + (src[1] * 0.125125006f) + (src[2] * 0.125125006f) + (src[3] * 0.125000000f) + (src[4] * 0.125125006f) + (src[5] * 0.125125006f) + (src[6] * 0.125125006f) + (src[7] * 0.125125006f);
     }
 
@@ -946,7 +946,7 @@ static void SDL_Convert71ToStereo(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("7.1", "stereo");
 
-    for (i = num_frames * 8; i; i--, src += 8, dst += 2) {
+    for (i = num_frames; i; i--, src += 8, dst += 2) {
         const float srcFC = src[2];
         const float srcLFE = src[3];
         const float srcBL = src[4];
@@ -965,7 +965,7 @@ static void SDL_Convert71To21(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("7.1", "2.1");
 
-    for (i = num_frames * 8; i; i--, src += 8, dst += 3) {
+    for (i = num_frames; i; i--, src += 8, dst += 3) {
         const float srcFC = src[2];
         const float srcBL = src[4];
         const float srcBR = src[5];
@@ -984,7 +984,7 @@ static void SDL_Convert71ToQuad(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("7.1", "quad");
 
-    for (i = num_frames * 8; i; i--, src += 8, dst += 4) {
+    for (i = num_frames; i; i--, src += 8, dst += 4) {
         const float srcFC = src[2];
         const float srcLFE = src[3];
         const float srcSL = src[6];
@@ -1003,7 +1003,7 @@ static void SDL_Convert71To41(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("7.1", "4.1");
 
-    for (i = num_frames * 8; i; i--, src += 8, dst += 5) {
+    for (i = num_frames; i; i--, src += 8, dst += 5) {
         const float srcFC = src[2];
         const float srcSL = src[6];
         const float srcSR = src[7];
@@ -1022,7 +1022,7 @@ static void SDL_Convert71To51(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("7.1", "5.1");
 
-    for (i = num_frames * 8; i; i--, src += 8, dst += 6) {
+    for (i = num_frames; i; i--, src += 8, dst += 6) {
         const float srcSL = src[6];
         const float srcSR = src[7];
         dst[0] /* FL */ = (src[0] * 0.518000007f) + (srcSL * 0.188999996f);
@@ -1041,7 +1041,7 @@ static void SDL_Convert71To61(float *dst, const float *src, int num_frames)
 
     LOG_DEBUG_AUDIO_CONVERT("7.1", "6.1");
 
-    for (i = num_frames * 8; i; i--, src += 8, dst += 7) {
+    for (i = num_frames; i; i--, src += 8, dst += 7) {
         const float srcBL = src[4];
         const float srcBR = src[5];
         dst[0] /* FL */ = (src[0] * 0.541000009f);
