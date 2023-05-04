@@ -653,7 +653,6 @@ static void handle_configure_xdg_popup(void *data,
                                        int32_t width,
                                        int32_t height)
 {
-    /* Popups can't be resized, so only position data is sent. */
     SDL_WindowData *wind = (SDL_WindowData *)data;
     int offset_x, offset_y;
 
@@ -665,7 +664,6 @@ static void handle_configure_xdg_popup(void *data,
     wind->requested_window_width = width;
     wind->requested_window_height = height;
 
-    ConfigureWindowGeometry(wind->sdlwindow);
     SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_MOVED, x, y);
 
     if (wind->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
