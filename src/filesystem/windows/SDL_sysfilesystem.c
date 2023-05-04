@@ -27,18 +27,19 @@
 
 #include "../../core/windows/SDL_windows.h"
 #include <shlobj.h>
+#include <initguid.h>
 
 /* These aren't all defined in older SDKs, so define them here */
-DEFINE_KNOWN_FOLDER(SDL_FOLDERID_Profile, 0x5E6C858F, 0x0E22, 0x4760, 0x9A, 0xFE, 0xEA, 0x33, 0x17, 0xB6, 0x71, 0x73);
-DEFINE_KNOWN_FOLDER(FOLDERID_Desktop, 0xB4BFCC3A, 0xDB2C, 0x424C, 0xB0, 0x29, 0x7F, 0xE9, 0x9A, 0x87, 0xC6, 0x41);
-DEFINE_KNOWN_FOLDER(FOLDERID_Documents, 0xFDD39AD0, 0x238F, 0x46AF, 0xAD, 0xB4, 0x6C, 0x85, 0x48, 0x03, 0x69, 0xC7);
-DEFINE_KNOWN_FOLDER(FOLDERID_Downloads, 0x374de290, 0x123f, 0x4565, 0x91, 0x64, 0x39, 0xc4, 0x92, 0x5e, 0x46, 0x7b);
-DEFINE_KNOWN_FOLDER(FOLDERID_Music, 0x4BD8D571, 0x6D19, 0x48D3, 0xBE, 0x97, 0x42, 0x22, 0x20, 0x08, 0x0E, 0x43);
-DEFINE_KNOWN_FOLDER(FOLDERID_Pictures, 0x33E28130, 0x4E1E, 0x4676, 0x83, 0x5A, 0x98, 0x39, 0x5C, 0x3B, 0xC3, 0xBB);
-DEFINE_KNOWN_FOLDER(FOLDERID_SavedGames, 0x4c5c32ff, 0xbb9d, 0x43b0, 0xb5, 0xb4, 0x2d, 0x72, 0xe5, 0x4e, 0xaa, 0xa4);
-DEFINE_KNOWN_FOLDER(FOLDERID_Screenshots, 0xb7bede81, 0xdf94, 0x4682, 0xa7, 0xd8, 0x57, 0xa5, 0x26, 0x20, 0xb8, 0x6f);
-DEFINE_KNOWN_FOLDER(FOLDERID_Templates, 0xA63293E8, 0x664E, 0x48DB, 0xA0, 0x79, 0xDF, 0x75, 0x9E, 0x05, 0x09, 0xF7);
-DEFINE_KNOWN_FOLDER(FOLDERID_Videos, 0x18989B1D, 0x99B5, 0x455B, 0x84, 0x1C, 0xAB, 0x7C, 0x74, 0xE4, 0xDD, 0xFC);
+DEFINE_GUID(SDL_FOLDERID_Profile, 0x5E6C858F, 0x0E22, 0x4760, 0x9A, 0xFE, 0xEA, 0x33, 0x17, 0xB6, 0x71, 0x73);
+DEFINE_GUID(SDL_FOLDERID_Desktop, 0xB4BFCC3A, 0xDB2C, 0x424C, 0xB0, 0x29, 0x7F, 0xE9, 0x9A, 0x87, 0xC6, 0x41);
+DEFINE_GUID(SDL_FOLDERID_Documents, 0xFDD39AD0, 0x238F, 0x46AF, 0xAD, 0xB4, 0x6C, 0x85, 0x48, 0x03, 0x69, 0xC7);
+DEFINE_GUID(SDL_FOLDERID_Downloads, 0x374de290, 0x123f, 0x4565, 0x91, 0x64, 0x39, 0xc4, 0x92, 0x5e, 0x46, 0x7b);
+DEFINE_GUID(SDL_FOLDERID_Music, 0x4BD8D571, 0x6D19, 0x48D3, 0xBE, 0x97, 0x42, 0x22, 0x20, 0x08, 0x0E, 0x43);
+DEFINE_GUID(SDL_FOLDERID_Pictures, 0x33E28130, 0x4E1E, 0x4676, 0x83, 0x5A, 0x98, 0x39, 0x5C, 0x3B, 0xC3, 0xBB);
+DEFINE_GUID(SDL_FOLDERID_SavedGames, 0x4c5c32ff, 0xbb9d, 0x43b0, 0xb5, 0xb4, 0x2d, 0x72, 0xe5, 0x4e, 0xaa, 0xa4);
+DEFINE_GUID(SDL_FOLDERID_Screenshots, 0xb7bede81, 0xdf94, 0x4682, 0xa7, 0xd8, 0x57, 0xa5, 0x26, 0x20, 0xb8, 0x6f);
+DEFINE_GUID(SDL_FOLDERID_Templates, 0xA63293E8, 0x664E, 0x48DB, 0xA0, 0x79, 0xDF, 0x75, 0x9E, 0x05, 0x09, 0xF7);
+DEFINE_GUID(SDL_FOLDERID_Videos, 0x18989B1D, 0x99B5, 0x455B, 0x84, 0x1C, 0xAB, 0x7C, 0x74, 0xE4, 0xDD, 0xFC);
 
 char *SDL_GetBasePath(void)
 {
@@ -96,7 +97,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
      * Vista and later has a new API for this, but SHGetFolderPath works there,
      *  and apparently just wraps the new API. This is the new way to do it:
      *
-     *     SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_CREATE,
+     *     SHGetKnownFolderPath(SDL_FOLDERID_RoamingAppData, KF_FLAG_CREATE,
      *                          NULL, &wszPath);
      */
 
@@ -194,27 +195,27 @@ char *SDL_GetPath(SDL_Folder folder)
 
         switch (folder) {
         case SDL_FOLDER_HOME:
-            type = FOLDERID_Profile;
+            type = SDL_FOLDERID_Profile;
             break;
 
         case SDL_FOLDER_DESKTOP:
-            type = FOLDERID_Desktop;
+            type = SDL_FOLDERID_Desktop;
             break;
 
         case SDL_FOLDER_DOCUMENTS:
-            type = FOLDERID_Documents;
+            type = SDL_FOLDERID_Documents;
             break;
 
         case SDL_FOLDER_DOWNLOADS:
-            type = FOLDERID_Downloads;
+            type = SDL_FOLDERID_Downloads;
             break;
 
         case SDL_FOLDER_MUSIC:
-            type = FOLDERID_Music;
+            type = SDL_FOLDERID_Music;
             break;
 
         case SDL_FOLDER_PICTURES:
-            type = FOLDERID_Pictures;
+            type = SDL_FOLDERID_Pictures;
             break;
 
         case SDL_FOLDER_PUBLICSHARE:
@@ -222,19 +223,19 @@ char *SDL_GetPath(SDL_Folder folder)
             goto done;
 
         case SDL_FOLDER_SAVEDGAMES:
-            type = FOLDERID_SavedGames;
+            type = SDL_FOLDERID_SavedGames;
             break;
 
         case SDL_FOLDER_SCREENSHOTS:
-            type = FOLDERID_Screenshots;
+            type = SDL_FOLDERID_Screenshots;
             break;
 
         case SDL_FOLDER_TEMPLATES:
-            type = FOLDERID_Templates;
+            type = SDL_FOLDERID_Templates;
             break;
 
         case SDL_FOLDER_VIDEOS:
-            type = FOLDERID_Videos;
+            type = SDL_FOLDERID_Videos;
             break;
 
         default:
