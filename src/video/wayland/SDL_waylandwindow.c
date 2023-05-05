@@ -2147,8 +2147,9 @@ int Wayland_SetWindowPosition(_THIS, SDL_Window *window)
     SDL_WindowData *wind = window->driverdata;
 
     /* Only popup windows can be positioned relative to the parent. */
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP && wind->shell_surface.xdg.roleobj.popup.popup) {
-        if (xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) < XDG_POPUP_REPOSITION_SINCE_VERSION) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
+        if (wind->shell_surface.xdg.roleobj.popup.popup &&
+            xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) < XDG_POPUP_REPOSITION_SINCE_VERSION) {
             return SDL_Unsupported();
         }
 
