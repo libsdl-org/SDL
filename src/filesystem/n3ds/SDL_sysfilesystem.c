@@ -61,6 +61,13 @@ SDL_GetPrefPath(const char *org, const char *app)
     return pref_path;
 }
 
+/* TODO */
+char *SDL_GetPath(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
 SDL_FORCE_INLINE char *
 MakePrefPath(const char *app)
 {

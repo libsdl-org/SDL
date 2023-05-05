@@ -85,4 +85,29 @@ SDL_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
+char *SDL_GetPath(SDL_Folder folder)
+{
+    const char *home = NULL;
+    char *retval;
+
+    if (folder != SDL_FOLDER_HOME) {
+        SDL_SetError("Emscripten only supports the home folder");
+        return NULL;
+    }
+
+    home = SDL_getenv("HOME");
+    if (!home) {
+        SDL_SetError("No $HOME environment variable available");
+        return NULL;
+    }
+
+    retval = SDL_strdup(home);
+
+    if (!retval) {
+        SDL_OutOfMemory();
+    }
+
+    return retval;
+}
+
 #endif /* SDL_FILESYSTEM_EMSCRIPTEN */

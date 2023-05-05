@@ -145,6 +145,24 @@ extern DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
  * involves extra OS-specific functionality to remember the file's original
  * location.
  *
+ * The folders supported per platform are:
+ *
+ * |             | Windows | macOS/iOS | tvOS | Unix (XDG) | Haiku | Emscripten |
+ * | ----------- | ------- | --------- | ---- | ---------- | ----- | ---------- |
+ * | HOME        | X       | X         |      | X          | X     | X          |
+ * | DESKTOP     | X       | X         |      | X          | X     |            |
+ * | DOCUMENTS   | X       | X         |      | X          |       |            |
+ * | DOWNLOADS   | Vista+  | X         |      | X          |       |            |
+ * | MUSIC       | X       | X         |      | X          |       |            |
+ * | PICTURES    | X       | X         |      | X          |       |            |
+ * | PUBLICSHARE |         | X         |      | X          |       |            |
+ * | SAVEDGAMES  | Vista+  |           |      |            |       |            |
+ * | SCREENSHOTS | Vista+  |           |      |            |       |            |
+ * | TEMPLATES   | X       | X         |      | X          |       |            |
+ * | VIDEOS      | X       | X         |      | X          |       |            |
+ *
+ * Note that on macOS/iOS, the Videos folder is called "Movies".
+ *
  * \sa SDL_GetPath
  */
 typedef enum
@@ -152,43 +170,38 @@ typedef enum
   /** The folder which contains all of the current user's data, preferences,
       and documents. It usually contains most of the other folders. If a
       requested folder does not exist, the home folder can be considered a safe
-      fallback to store a user's documents. Supported on Windows, macOS and
-      Unix with XDG. */
+      fallback to store a user's documents. */
   SDL_FOLDER_HOME,
   /** The folder of files that are displayed on the desktop. Note that the
       existence of a desktop folder does not guarantee that the system does
       show icons on its desktop; certain GNU/Linux distros with a graphical
-      environment may not have desktop icons. Supported on Windows, macOS and
-      Unix with XDG. */
+      environment may not have desktop icons. */
   SDL_FOLDER_DESKTOP,
-  /** General document files, possibly application-specific. This is a good
-      place to save a user's projects. Supported on Windows, macOS and Unix
-      with XDG. */
+  /** User document files, possibly application-specific. This is a good
+      place to save a user's projects. */
   SDL_FOLDER_DOCUMENTS,
-  /** Generic landing folder for files downloaded from the internet. Supported
-      on Windows Vista and later, macOS and Unix with XDG. */
+  /** Standard folder for user files downloaded from the internet. */
   SDL_FOLDER_DOWNLOADS,
   /** Music files that can be played using a standard music player (mp3,
-      ogg...). Supported on Windows, macOS and Unix with XDG. */
+      ogg...). */
   SDL_FOLDER_MUSIC,
   /** Image files that can be displayed using a standard viewer (png,
-      jpg...). Supported on Windows, macOS and Unix with XDG. */
+      jpg...). */
   SDL_FOLDER_PICTURES,
   /** Files that are meant to be shared with other users on the same
-      computer. Supported on macOS and Unix with XDG. */
+      computer. */
   SDL_FOLDER_PUBLICSHARE,
-  /** Save files for games. Supported on Windows Vista and later. */
+  /** Save files for games. */
   SDL_FOLDER_SAVEDGAMES,
-  /** Application screenshots. Supported on Windows Vista and later. */
+  /** Application screenshots. */
   SDL_FOLDER_SCREENSHOTS,
   /** Template files to be used when the user requests the desktop environment
       to create a new file in a certain folder, such as "New Text File.txt".
       Any file in the Templates folder can be used as a starting point for a
-      new file. Supported on Windows, macOS and Unix with XDG. */
+      new file. */
   SDL_FOLDER_TEMPLATES,
   /** Video files that can be played using a standard video player (mp4,
-      webm...). On macOS, this is the "Movies" folder. Supported on Windows,
-      macOS and Unix with XDG. */
+      webm...). */
   SDL_FOLDER_VIDEOS,
 } SDL_Folder;
 

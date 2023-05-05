@@ -132,8 +132,7 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 }
 
-char *
-SDL_GetPath(SDL_Folder folder)
+char *SDL_GetPath(SDL_Folder folder)
 {
     @autoreleasepool {
 #if TARGET_OS_TV
@@ -147,87 +146,83 @@ SDL_GetPath(SDL_Folder folder)
         NSString *str;
         char *ptr;
 
-        switch (folder)
-        {
-            case SDL_FOLDER_HOME:
-                base = SDL_getenv("HOME");
+        switch (folder) {
+        case SDL_FOLDER_HOME:
+            base = SDL_getenv("HOME");
 
-                if (!base)
-                {
-                    SDL_SetError("No $HOME environment variable available");
-                }
+            if (!base) {
+                SDL_SetError("No $HOME environment variable available");
+            }
 
-                retval = SDL_strdup(base);
+            retval = SDL_strdup(base);
 
-                if (!retval)
-                    SDL_OutOfMemory();
+            if (!retval) {
+                SDL_OutOfMemory();
+            }
 
-                return retval;
+            return retval;
 
-            case SDL_FOLDER_DESKTOP:
-                dir = NSDesktopDirectory;
-                break;
+        case SDL_FOLDER_DESKTOP:
+            dir = NSDesktopDirectory;
+            break;
 
-            case SDL_FOLDER_DOCUMENTS:
-                dir = NSDocumentDirectory;
-                break;
+        case SDL_FOLDER_DOCUMENTS:
+            dir = NSDocumentDirectory;
+            break;
 
-            case SDL_FOLDER_DOWNLOADS:
-                dir = NSDownloadsDirectory;
-                break;
+        case SDL_FOLDER_DOWNLOADS:
+            dir = NSDownloadsDirectory;
+            break;
 
-            case SDL_FOLDER_MUSIC:
-                dir = NSMusicDirectory;
-                break;
+        case SDL_FOLDER_MUSIC:
+            dir = NSMusicDirectory;
+            break;
 
-            case SDL_FOLDER_PICTURES:
-                dir = NSPicturesDirectory;
-                break;
+        case SDL_FOLDER_PICTURES:
+            dir = NSPicturesDirectory;
+            break;
 
-            case SDL_FOLDER_PUBLICSHARE:
-                dir = NSSharedPublicDirectory;
-                break;
+        case SDL_FOLDER_PUBLICSHARE:
+            dir = NSSharedPublicDirectory;
+            break;
 
-            case SDL_FOLDER_SAVEDGAMES:
-                SDL_SetError("Saved games folder not supported on Cocoa");
-                return NULL;
+        case SDL_FOLDER_SAVEDGAMES:
+            SDL_SetError("Saved games folder not supported on Cocoa");
+            return NULL;
 
-            case SDL_FOLDER_SCREENSHOTS:
-                SDL_SetError("Screenshots folder not supported on Cocoa");
-                return NULL;
+        case SDL_FOLDER_SCREENSHOTS:
+            SDL_SetError("Screenshots folder not supported on Cocoa");
+            return NULL;
 
-            case SDL_FOLDER_TEMPLATES:
-                SDL_SetError("Templates folder not supported on Cocoa");
-                return NULL;
+        case SDL_FOLDER_TEMPLATES:
+            SDL_SetError("Templates folder not supported on Cocoa");
+            return NULL;
 
-            case SDL_FOLDER_VIDEOS:
-                dir = NSMoviesDirectory;
-                break;
+        case SDL_FOLDER_VIDEOS:
+            dir = NSMoviesDirectory;
+            break;
 
-            default:
-                SDL_SetError("Invalid SDL_Folder: %d", (int) folder);
-                return NULL;
+        default:
+            SDL_SetError("Invalid SDL_Folder: %d", (int) folder);
+            return NULL;
         };
 
         array = NSSearchPathForDirectoriesInDomains(dir, NSUserDomainMask, YES);
 
-        if ([array count] <= 0)
-        {
+        if ([array count] <= 0) {
             SDL_SetError("Directory not found");
             return NULL;
         }
 
         str = [array objectAtIndex:0];
         base = [str fileSystemRepresentation];
-        if (!base)
-        {
+        if (!base) {
             SDL_SetError("Couldn't get folder path");
             return NULL;
         }
 
         retval = SDL_strdup(base);
-        if (retval == NULL)
-        {
+        if (retval == NULL) {
             SDL_OutOfMemory();
             return NULL;
         }
