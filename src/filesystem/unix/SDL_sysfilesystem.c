@@ -521,8 +521,7 @@ xdg_user_dir_lookup (const char *type)
     return NULL;
 }
 
-char *
-SDL_GetPath(SDL_Folder folder)
+char *SDL_GetPath(SDL_Folder folder)
 {
     const char *param = NULL;
     char *retval;
@@ -537,80 +536,79 @@ SDL_GetPath(SDL_Folder folder)
         PICTURES
         VIDEOS
     */
-    switch(folder)
-    {
-        case SDL_FOLDER_HOME:
-            param = SDL_getenv("HOME");
+    switch(folder) {
+    case SDL_FOLDER_HOME:
+        param = SDL_getenv("HOME");
 
-            if (!param)
-            {
-                SDL_SetError("No $HOME environment variable available");
-            }
-
-            retval = SDL_strdup(param);
-
-            if (!retval)
-                SDL_OutOfMemory();
-
-            return retval;
-
-        case SDL_FOLDER_DESKTOP:
-            param = "DESKTOP";
-            break;
-
-        case SDL_FOLDER_DOCUMENTS:
-            param = "DOCUMENTS";
-            break;
-
-        case SDL_FOLDER_DOWNLOADS:
-            param = "DOWNLOAD";
-            break;
-
-        case SDL_FOLDER_MUSIC:
-            param = "MUSIC";
-            break;
-
-        case SDL_FOLDER_PICTURES:
-            param = "PICTURES";
-            break;
-
-        case SDL_FOLDER_PUBLICSHARE:
-            param = "PUBLICSHARE";
-            break;
-
-        case SDL_FOLDER_SAVEDGAMES:
-            SDL_SetError("Saved Games folder unavailable on XDG");
+        if (!param) {
+            SDL_SetError("No $HOME environment variable available");
             return NULL;
+        }
 
-        case SDL_FOLDER_SCREENSHOTS:
-            SDL_SetError("Screenshots folder unavailable on XDG");
-            return NULL;
+        retval = SDL_strdup(param);
 
-        case SDL_FOLDER_TEMPLATES:
-            param = "TEMPLATES";
-            break;
+        if (!retval) {
+            SDL_OutOfMemory();
+        }
 
-        case SDL_FOLDER_VIDEOS:
-            param = "VIDEOS";
-            break;
+        return retval;
 
-        default:
-            SDL_SetError("Invalid SDL_Folder: %d", (int) folder);
-            return NULL;
+    case SDL_FOLDER_DESKTOP:
+        param = "DESKTOP";
+        break;
+
+    case SDL_FOLDER_DOCUMENTS:
+        param = "DOCUMENTS";
+        break;
+
+    case SDL_FOLDER_DOWNLOADS:
+        param = "DOWNLOAD";
+        break;
+
+    case SDL_FOLDER_MUSIC:
+        param = "MUSIC";
+        break;
+
+    case SDL_FOLDER_PICTURES:
+        param = "PICTURES";
+        break;
+
+    case SDL_FOLDER_PUBLICSHARE:
+        param = "PUBLICSHARE";
+        break;
+
+    case SDL_FOLDER_SAVEDGAMES:
+        SDL_SetError("Saved Games folder unavailable on XDG");
+        return NULL;
+
+    case SDL_FOLDER_SCREENSHOTS:
+        SDL_SetError("Screenshots folder unavailable on XDG");
+        return NULL;
+
+    case SDL_FOLDER_TEMPLATES:
+        param = "TEMPLATES";
+        break;
+
+    case SDL_FOLDER_VIDEOS:
+        param = "VIDEOS";
+        break;
+
+    default:
+        SDL_SetError("Invalid SDL_Folder: %d", (int) folder);
+        return NULL;
     }
 
     /* param *should* to be set to something at this point, but just in case */
-    if (!param)
-    {
+    if (!param) {
         SDL_SetError("No corresponding XDG user directory");
         return NULL;
     }
 
     retval = xdg_user_dir_lookup(param);
 
-    if (!retval)
-    {
+    if (!retval) {
         SDL_SetError("XDG directory not available");
+        return NULL;
     }
 
     return retval;

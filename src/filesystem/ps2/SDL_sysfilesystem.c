@@ -104,4 +104,11 @@ SDL_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
+/* TODO */
+char *SDL_GetPath(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
 #endif /* SDL_FILESYSTEM_PS2 */
