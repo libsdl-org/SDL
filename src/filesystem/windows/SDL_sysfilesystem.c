@@ -30,10 +30,6 @@
 #include <initguid.h>
 
 /* These aren't all defined in older SDKs, so define them here */
-#ifndef DEFINE_KNOWN_FOLDER
-typedef GUID KNOWNFOLDERID;
-typedef KNOWNFOLDERID *REFKNOWNFOLDERID;
-#endif
 DEFINE_GUID(SDL_FOLDERID_Profile, 0x5E6C858F, 0x0E22, 0x4760, 0x9A, 0xFE, 0xEA, 0x33, 0x17, 0xB6, 0x71, 0x73);
 DEFINE_GUID(SDL_FOLDERID_Desktop, 0xB4BFCC3A, 0xDB2C, 0x424C, 0xB0, 0x29, 0x7F, 0xE9, 0x9A, 0x87, 0xC6, 0x41);
 DEFINE_GUID(SDL_FOLDERID_Documents, 0xFDD39AD0, 0x238F, 0x46AF, 0xAD, 0xB4, 0x6C, 0x85, 0x48, 0x03, 0x69, 0xC7);
@@ -183,7 +179,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 
 char *SDL_GetPath(SDL_Folder folder)
 {
-    typedef HRESULT (*pfnSHGetKnownFolderPath)(REFKNOWNFOLDERID, DWORD, HANDLE, PWSTR *);
+    typedef HRESULT (*pfnSHGetKnownFolderPath)(REFGUID /* REFKNOWNFOLDERID */, DWORD, HANDLE, PWSTR*);
     HMODULE lib = LoadLibrary(L"Shell32.dll");
     pfnSHGetKnownFolderPath pSHGetKnownFolderPath = NULL;
     char *retval = NULL;
@@ -193,7 +189,7 @@ char *SDL_GetPath(SDL_Folder folder)
     }
 
     if (pSHGetKnownFolderPath) {
-        KNOWNFOLDERID type;
+        GUID type; /* KNOWNFOLDERID */
         HRESULT result;
         wchar_t *path;
 
@@ -305,8 +301,7 @@ char *SDL_GetPath(SDL_Folder folder)
             break;
 
         default:
-            SDL_SetError("Unsupported SDL_Folder on Windows before Vista: %d",
-                         (int)folder);
+            SDL_SetError("Unsupported SDL_Folder on Windows before Vista: %d", (int)folder);
             goto done;
         };
 
