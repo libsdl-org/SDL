@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if (defined(__WIN32__) || defined(__GDK__)) && HAVE_MMDEVICEAPI_H
+#if (defined(__WIN32__) || defined(__GDK__)) && defined(HAVE_MMDEVICEAPI_H)
 
 #include "SDL_windows.h"
 #include "SDL_immdevice.h"
@@ -527,4 +527,4 @@ WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
     return 0;
 }
 
-#endif /* (defined(__WIN32__) || defined(__GDK__)) && HAVE_MMDEVICEAPI_H */
+#endif /* (defined(__WIN32__) || defined(__GDK__)) && defined(HAVE_MMDEVICEAPI_H) */
