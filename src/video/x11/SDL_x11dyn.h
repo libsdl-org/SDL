@@ -59,6 +59,9 @@
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 #include <X11/extensions/Xfixes.h>
 #endif
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+#include <X11/extensions/sync.h>
+#endif
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 #include <X11/extensions/Xrandr.h>
 #endif

@@ -173,6 +173,15 @@ SDL_X11_SYM(Status, XFixesQueryVersion,(Display* a, int* b, int* c), (a,b,c), re
 SDL_X11_SYM(Status, XFixesSelectSelectionInput, (Display* a, Window b, Atom c, unsigned long d), (a,b,c,d), return)
 #endif
 
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+SDL_X11_MODULE(XSYNC)
+SDL_X11_SYM(Status, XSyncQueryExtension, (Display* a, int* b, int* c), (a, b, c), return)
+SDL_X11_SYM(Status, XSyncInitialize, (Display* a, int* b, int* c), (a, b, c), return)
+SDL_X11_SYM(XSyncCounter, XSyncCreateCounter, (Display* a, XSyncValue b), (a, b), return)
+SDL_X11_SYM(Status, XSyncDestroyCounter, (Display* a, XSyncCounter b), (a, b), return)
+SDL_X11_SYM(Status, XSyncSetCounter, (Display* a, XSyncCounter b, XSyncValue c), (a, b, c), return)
+#endif
+
 #ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 SDL_X11_SYM(Bool,XGetEventData,(Display* a,XGenericEventCookie* b),(a,b),return)
 SDL_X11_SYM(void,XFreeEventData,(Display* a,XGenericEventCookie* b),(a,b),)

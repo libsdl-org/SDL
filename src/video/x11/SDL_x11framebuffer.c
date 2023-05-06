@@ -24,6 +24,7 @@
 
 #include "SDL_x11video.h"
 #include "SDL_x11framebuffer.h"
+#include "SDL_x11xsync.h"
 
 #ifndef NO_SHARED_MEMORY
 
@@ -215,6 +216,10 @@ bool X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, con
                           x, y, x, y, w, h);
         }
     }
+
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+    X11_HandlePresent(data->window);
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
 
     X11_XSync(display, False);
 
