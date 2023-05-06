@@ -173,7 +173,7 @@ static vector unsigned char calc_swizzle32(const SDL_PixelFormat *srcfmt, const 
     return (vswiz);
 }
 
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
 /* reorder bytes for PowerPC little endian */
 static vector unsigned char reorder_ppc64le_vec(vector unsigned char vpermute)
 {
@@ -624,7 +624,7 @@ static void Blit32to32KeyAltivec(SDL_BlitInfo *info)
     ((unsigned int *)(char *)&vrgbmask)[0] = rgbmask;
     vrgbmask = vec_splat(vrgbmask, 0);
 
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
     /* reorder bytes for PowerPC little endian */
     vpermute = reorder_ppc64le_vec(vpermute);
 #endif
@@ -725,7 +725,7 @@ static void ConvertAltivec32to32_noprefetch(SDL_BlitInfo *info)
     SDL_assert(srcfmt->BytesPerPixel == 4);
     SDL_assert(dstfmt->BytesPerPixel == 4);
 
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
     /* reorder bytes for PowerPC little endian */
     vpermute = reorder_ppc64le_vec(vpermute);
 #endif
@@ -811,7 +811,7 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
     SDL_assert(srcfmt->BytesPerPixel == 4);
     SDL_assert(dstfmt->BytesPerPixel == 4);
 
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
     /* reorder bytes for PowerPC little endian */
     vpermute = reorder_ppc64le_vec(vpermute);
 #endif
