@@ -303,6 +303,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 
 static void EnsurePopupPositionIsValid(SDL_Window *window)
 {
+    int adj_count = 0;
+
     /* Per the xdg-positioner spec, child popup windows must intersect or at
      * least be partially adjacent to the parent window.
      *
@@ -312,15 +314,27 @@ static void EnsurePopupPositionIsValid(SDL_Window *window)
      */
     if (window->x + window->w < 0) {
         window->x = -window->w;
+        ++adj_count;
     }
     if (window->y + window->h < 0) {
         window->y = -window->h;
+        ++adj_count;
     }
     if (window->x > window->parent->w) {
-        window->x = window->parent->w - 1;
+        window->x = window->parent->w;
+        ++adj_count;
     }
     if (window->y > window->parent->h) {
-        window->y = window->parent->h - 1;
+        window->y = window->parent->h;
+        ++adj_count;
+    }
+
+    /* If adjustment was required on the x and y axes, the popup is aligned with
+     * the parent corner-to-corner and is neither overlapping nor adjacent, so it
+     * must be nudged by 1 to be considered adjacent.
+     */
+    if (adj_count > 1) {
+        window->x += window->x < 0 ? 1 : -1;
     }
 }
 
