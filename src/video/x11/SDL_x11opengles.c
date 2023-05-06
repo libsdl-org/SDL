@@ -25,6 +25,7 @@
 #include "SDL_x11video.h"
 #include "SDL_x11opengles.h"
 #include "SDL_x11opengl.h"
+#include "SDL_x11xsync.h"
 
 // EGL implementation of SDL OpenGL support
 
@@ -134,7 +135,18 @@ SDL_EGLSurface X11_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window
     return data->egl_surface;
 }
 
-SDL_EGL_SwapWindow_impl(X11)
+bool X11_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    const bool ret = SDL_EGL_SwapBuffers(_this, window->internal->egl_surface);                       \
+
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+    X11_HandlePresent(window);
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
+
+    return ret;
+}
+
 SDL_EGL_MakeCurrent_impl(X11)
 
 #endif // SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_OPENGL_EGL
+

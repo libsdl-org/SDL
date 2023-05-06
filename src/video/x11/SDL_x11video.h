@@ -89,6 +89,8 @@ struct SDL_VideoData
         Atom _NET_WM_ICON_NAME;
         Atom _NET_WM_ICON;
         Atom _NET_WM_PING;
+        Atom _NET_WM_SYNC_REQUEST;
+        Atom _NET_WM_SYNC_REQUEST_COUNTER;
         Atom _NET_WM_WINDOW_OPACITY;
         Atom _NET_WM_USER_TIME;
         Atom _NET_ACTIVE_WINDOW;

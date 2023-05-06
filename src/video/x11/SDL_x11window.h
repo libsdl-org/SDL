@@ -83,6 +83,12 @@ struct SDL_WindowData
     PointerBarrier barrier[4];
     SDL_Rect barrier_rect;
 #endif // SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+    XSyncCounter resize_counter;
+    XSyncValue resize_id;
+    bool resize_in_progress;
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
+
     SDL_Rect expected;
     SDL_DisplayMode requested_fullscreen_mode;
 
