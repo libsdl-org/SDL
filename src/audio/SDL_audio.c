@@ -1555,73 +1555,56 @@ void SDL_CalculateAudioSpec(SDL_AudioSpec *spec)
     spec->size *= spec->samples;
 }
 
-int SDL_ConvertAudioSamples(
-        SDL_AudioFormat src_format, Uint8 src_channels, int src_rate, const Uint8 *src_data, int src_len,
-        SDL_AudioFormat dst_format, Uint8 dst_channels, int dst_rate, Uint8 **dst_data, int *dst_len)
+/* !!! FIXME: move this to SDL_audiocvt.c */
+int SDL_ConvertAudioSamples(SDL_AudioFormat src_format, Uint8 src_channels, int src_rate, const Uint8 *src_data, int src_len,
+                            SDL_AudioFormat dst_format, Uint8 dst_channels, int dst_rate, Uint8 **dst_data, int *dst_len)
 {
     int ret = -1;
     SDL_AudioStream *stream = NULL;
+    Uint8 *dst = NULL;
+    int dstlen = 0;
 
-    int src_samplesize, dst_samplesize;
-    int real_dst_len;
+    if (dst_data) {
+        *dst_data = NULL;
+    }
 
+    if (dst_len) {
+        *dst_len = 0;
+    }
 
     if (src_data == NULL) {
         return SDL_InvalidParamError("src_data");
-    }
-    if (src_len < 0) {
+    } else if (src_len < 0) {
         return SDL_InvalidParamError("src_len");
-    }
-    if (dst_data == NULL) {
+    } else if (dst_data == NULL) {
         return SDL_InvalidParamError("dst_data");
-    }
-    if (dst_len == NULL) {
+    } else if (dst_len == NULL) {
         return SDL_InvalidParamError("dst_len");
     }
 
-    *dst_data = NULL;
-    *dst_len = 0;
-
     stream = SDL_CreateAudioStream(src_format, src_channels, src_rate, dst_format, dst_channels, dst_rate);
-    if (stream == NULL) {
-        goto end;
+    if (stream != NULL) {
+        if ((SDL_PutAudioStreamData(stream, src_data, src_len) == 0) && (SDL_FlushAudioStream(stream) == 0)) {
+            dstlen = SDL_GetAudioStreamAvailable(stream);
+            if (dstlen >= 0) {
+                dst = (Uint8 *)SDL_malloc(dstlen);
+                if (!dst) {
+                    SDL_OutOfMemory();
+                } else {
+                    ret = (SDL_GetAudioStreamData(stream, dst, dstlen) >= 0) ? 0 : -1;
+                }
+            }
+        }
     }
 
-    src_samplesize = (SDL_AUDIO_BITSIZE(src_format) / 8) * src_channels;
-    dst_samplesize = (SDL_AUDIO_BITSIZE(dst_format) / 8) * dst_channels;
-
-    src_len &= ~(src_samplesize - 1);
-    *dst_len = dst_samplesize * (src_len / src_samplesize);
-    if (src_rate < dst_rate) {
-        const double mult = ((double)dst_rate) / ((double)src_rate);
-        *dst_len *= (int) SDL_ceil(mult);
+    if (ret == -1) {
+        SDL_free(dst);
+    } else {
+        *dst_data = dst;
+        *dst_len = dstlen;
     }
 
-    *dst_len &= ~(dst_samplesize - 1);
-    *dst_data = (Uint8 *)SDL_malloc(*dst_len);
-    if (*dst_data == NULL) {
-        goto end;
-    }
-
-    if (SDL_PutAudioStreamData(stream, src_data, src_len) < 0 ||
-        SDL_FlushAudioStream(stream) < 0) {
-        goto end;
-    }
-
-    real_dst_len = SDL_GetAudioStreamData(stream, *dst_data, *dst_len);
-    if (real_dst_len < 0) {
-        goto end;
-    }
-
-    *dst_len = real_dst_len;
-    ret = 0;
-
-end:
-    if (ret != 0) {
-        SDL_free(*dst_data);
-        *dst_data = NULL;
-        *dst_len = 0;
-    }
     SDL_DestroyAudioStream(stream);
     return ret;
 }
+
