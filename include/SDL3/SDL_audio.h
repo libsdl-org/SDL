@@ -1221,10 +1221,19 @@ extern DECLSPEC void SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
  */
 extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
 
-/* !!! FIXME: maybe remove this before SDL3's API is locked down. */
-
 /**
  * Convert some audio data of one format to another format.
+ *
+ * Please note that this function is for convenience, but should not
+ * be used to resample audio in blocks, as it will introduce audio
+ * artifacts on the boundaries. You should only use this function if
+ * you are converting audio data in its entirety in one call. If you
+ * want to convert audio in smaller chunks, use an SDL_AudioStream,
+ * which is designed for this situation.
+ *
+ * Internally, this function creates and destroys an SDL_AudioStream
+ * on each use, so it's also less efficient than using one directly,
+ * if you need to convert multiple times.
  *
  * \param src_format The format of the source audio
  * \param src_channels The number of channels of the source audio
