@@ -475,6 +475,17 @@ static int GetMemsetSilenceValue(const SDL_AudioFormat fmt)
     return (fmt == SDL_AUDIO_U8) ? 0x80 : 0x00;
 }
 
+/* figure out the largest thing we might need for ConvertAudio, which might grow data in-place. */
+static int CalculateMaxSampleFrameSize(SDL_AudioFormat src_format, int src_channels, SDL_AudioFormat dst_format, int dst_channels)
+{
+    const int src_format_size = SDL_AUDIO_BITSIZE(src_format) / 8;
+    const int dst_format_size = SDL_AUDIO_BITSIZE(dst_format) / 8;
+    const int max_app_format_size = SDL_max(src_format_size, dst_format_size);
+    const int max_format_size = SDL_max(max_app_format_size, sizeof (float));  /* ConvertAudio converts to float internally. */
+    const int max_channels = SDL_max(src_channels, dst_channels);
+    return max_format_size * max_channels;
+}
+
 /* this assumes you're holding the stream's lock (or are still creating the stream). */
 static int SetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioFormat src_format, int src_channels, int src_rate, SDL_AudioFormat dst_format, int dst_channels, int dst_rate)
 {
@@ -485,13 +496,14 @@ static int SetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioFormat src_for
        This is decided in pre_resample_channels. */
     const int src_sample_frame_size = (SDL_AUDIO_BITSIZE(src_format) / 8) * src_channels;
     const int dst_sample_frame_size = (SDL_AUDIO_BITSIZE(dst_format) / 8) * dst_channels;
+    const int max_sample_frame_size = CalculateMaxSampleFrameSize(src_format, src_channels, dst_format, dst_channels);
     const int prev_history_buffer_frames = stream->history_buffer_frames;
     const int pre_resample_channels = SDL_min(src_channels, dst_channels);
     const int resampler_padding_frames = GetResamplerPaddingFrames(src_rate, dst_rate);
-    const size_t resampler_padding_allocation = ((size_t) resampler_padding_frames) * pre_resample_channels * sizeof (float);
-    const size_t future_buffer_allocation = resampler_padding_frames * src_sample_frame_size;
+    const size_t resampler_padding_allocation = ((size_t) resampler_padding_frames) * max_sample_frame_size;
+    const size_t future_buffer_allocation = resampler_padding_allocation;
     const int history_buffer_frames = GetHistoryBufferSampleFrames(resampler_padding_frames);
-    const size_t history_buffer_allocation = history_buffer_frames * src_sample_frame_size;
+    const size_t history_buffer_allocation = history_buffer_frames * max_sample_frame_size;
     Uint8 *history_buffer = stream->history_buffer;
     Uint8 *future_buffer = stream->future_buffer;
     float *padding;
