@@ -75,55 +75,55 @@ void WASAPI_PlatformDeinit(void)
     SDL_IMMDevice_Quit();
 }
 
-void WASAPI_PlatformThreadInit(_THIS)
+void WASAPI_PlatformThreadInit(SDL_AudioDevice *_this)
 {
     /* this thread uses COM. */
     if (SUCCEEDED(WIN_CoInitialize())) { /* can't report errors, hope it worked! */
-        this->hidden->coinitialized = SDL_TRUE;
+        _this->hidden->coinitialized = SDL_TRUE;
     }
 
     /* Set this thread to very high "Pro Audio" priority. */
     if (pAvSetMmThreadCharacteristicsW) {
         DWORD idx = 0;
-        this->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
+        _this->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
     }
 }
 
-void WASAPI_PlatformThreadDeinit(_THIS)
+void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *_this)
 {
     /* Set this thread back to normal priority. */
-    if (this->hidden->task && pAvRevertMmThreadCharacteristics) {
-        pAvRevertMmThreadCharacteristics(this->hidden->task);
-        this->hidden->task = NULL;
+    if (_this->hidden->task && pAvRevertMmThreadCharacteristics) {
+        pAvRevertMmThreadCharacteristics(_this->hidden->task);
+        _this->hidden->task = NULL;
     }
 
-    if (this->hidden->coinitialized) {
+    if (_this->hidden->coinitialized) {
         WIN_CoUninitialize();
-        this->hidden->coinitialized = SDL_FALSE;
+        _this->hidden->coinitialized = SDL_FALSE;
     }
 }
 
-int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
+int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery)
 {
     IMMDevice *device = NULL;
     HRESULT ret;
 
-    if (SDL_IMMDevice_Get(this->hidden->devid, &device, this->iscapture) < 0) {
-        this->hidden->client = NULL;
+    if (SDL_IMMDevice_Get(_this->hidden->devid, &device, _this->iscapture) < 0) {
+        _this->hidden->client = NULL;
         return -1; /* This is already set by SDL_IMMDevice_Get */
     }
 
     /* this is not async in standard win32, yay! */
-    ret = IMMDevice_Activate(device, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&this->hidden->client);
+    ret = IMMDevice_Activate(device, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&_this->hidden->client);
     IMMDevice_Release(device);
 
     if (FAILED(ret)) {
-        SDL_assert(this->hidden->client == NULL);
+        SDL_assert(_this->hidden->client == NULL);
         return WIN_SetErrorFromHRESULT("WASAPI can't activate audio endpoint", ret);
     }
 
-    SDL_assert(this->hidden->client != NULL);
-    if (WASAPI_PrepDevice(this, isrecovery) == -1) { /* not async, fire it right away. */
+    SDL_assert(_this->hidden->client != NULL);
+    if (WASAPI_PrepDevice(_this, isrecovery) == -1) { /* not async, fire it right away. */
         return -1;
     }
 

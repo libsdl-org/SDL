@@ -27,8 +27,6 @@
 #include "../thread/SDL_systhread.h"
 #include "../SDL_utils_c.h"
 
-#define _THIS SDL_AudioDevice *_this
-
 static SDL_AudioDriver current_audio;
 static SDL_AudioDevice *open_devices[16];
 
@@ -137,37 +135,37 @@ static void SDL_AudioDetectDevices_Default(void)
     }
 }
 
-static void SDL_AudioThreadInit_Default(_THIS)
+static void SDL_AudioThreadInit_Default(SDL_AudioDevice *_this)
 { /* no-op. */
 }
 
-static void SDL_AudioThreadDeinit_Default(_THIS)
+static void SDL_AudioThreadDeinit_Default(SDL_AudioDevice *_this)
 { /* no-op. */
 }
 
-static void SDL_AudioWaitDevice_Default(_THIS)
+static void SDL_AudioWaitDevice_Default(SDL_AudioDevice *_this)
 { /* no-op. */
 }
 
-static void SDL_AudioPlayDevice_Default(_THIS)
+static void SDL_AudioPlayDevice_Default(SDL_AudioDevice *_this)
 { /* no-op. */
 }
 
-static Uint8 *SDL_AudioGetDeviceBuf_Default(_THIS)
+static Uint8 *SDL_AudioGetDeviceBuf_Default(SDL_AudioDevice *_this)
 {
     return NULL;
 }
 
-static int SDL_AudioCaptureFromDevice_Default(_THIS, void *buffer, int buflen)
+static int SDL_AudioCaptureFromDevice_Default(SDL_AudioDevice *_this, void *buffer, int buflen)
 {
     return -1; /* just fail immediately. */
 }
 
-static void SDL_AudioFlushCapture_Default(_THIS)
+static void SDL_AudioFlushCapture_Default(SDL_AudioDevice *_this)
 { /* no-op. */
 }
 
-static void SDL_AudioCloseDevice_Default(_THIS)
+static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *_this)
 { /* no-op. */
 }
 
@@ -179,7 +177,7 @@ static void SDL_AudioFreeDeviceHandle_Default(void *handle)
 { /* no-op. */
 }
 
-static int SDL_AudioOpenDevice_Default(_THIS, const char *devname)
+static int SDL_AudioOpenDevice_Default(SDL_AudioDevice *_this, const char *devname)
 {
     return SDL_Unsupported();
 }
