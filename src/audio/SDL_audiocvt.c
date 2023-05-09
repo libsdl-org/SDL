@@ -456,6 +456,8 @@ struct SDL_AudioStream
     int history_buffer_frames;
     int future_buffer_filled_frames;
 
+    int max_sample_frame_size;
+
     int src_sample_frame_size;
     SDL_AudioFormat src_format;
     int src_channels;
@@ -586,6 +588,7 @@ static int SetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioFormat src_for
 
     stream->resampler_padding_frames = resampler_padding_frames;
     stream->history_buffer_frames = history_buffer_frames;
+    stream->max_sample_frame_size = max_sample_frame_size;
     stream->src_sample_frame_size = src_sample_frame_size;
     stream->src_format = src_format;
     stream->src_channels = src_channels;
@@ -790,12 +793,7 @@ static int CalculateAudioStreamWorkBufSize(const SDL_AudioStream *stream, int le
     int workbuflen = len;
     int inputlen;
 
-    inputlen = workbuf_frames * stream->src_sample_frame_size;
-    if (inputlen > workbuflen) {
-        workbuflen = inputlen;
-    }
-
-    inputlen = workbuf_frames * stream->pre_resample_channels * sizeof (float);
+    inputlen = workbuf_frames * stream->max_sample_frame_size;
     if (inputlen > workbuflen) {
         workbuflen = inputlen;
     }
@@ -834,6 +832,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     const int dst_channels = stream->dst_channels;
     const int dst_rate = stream->dst_rate;
     const int dst_sample_frame_size = stream->dst_sample_frame_size;
+    const int max_sample_frame_size = stream->max_sample_frame_size;
     const int pre_resample_channels = stream->pre_resample_channels;
     const int resampler_padding_frames = stream->resampler_padding_frames;
     const int history_buffer_frames = stream->history_buffer_frames;
@@ -963,7 +962,13 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     /* Not resampling? It's an easy conversion (and maybe not even that!) */
     if (src_rate == dst_rate) {
         SDL_assert(resampler_padding_frames == 0);
-        ConvertAudio(input_frames, workbuf, src_format, src_channels, buf, dst_format, dst_channels);
+        /* see if we can do the conversion in-place (will fit in `buf` while in-progress), or if we need to do it in the workbuf and copy it over */
+        if (max_sample_frame_size <= dst_sample_frame_size) {
+            ConvertAudio(input_frames, workbuf, src_format, src_channels, buf, dst_format, dst_channels);
+        } else {
+            ConvertAudio(input_frames, workbuf, src_format, src_channels, workbuf, dst_format, dst_channels);
+            SDL_memcpy(workbuf, buf, input_frames * dst_sample_frame_size);
+        }
         return input_frames * dst_sample_frame_size;
     }
 
@@ -974,7 +979,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         resample_outbuf = (float *) buf;
     } else {
         const int input_bytes = input_frames * pre_resample_channels * sizeof (float);
-        resample_outbuf = (float *) (workbuf + input_bytes);
+        resample_outbuf = (float *) ((workbuf + stream->work_buffer_allocation) - input_bytes);  /* do at the end of the buffer so we have room for final convert at front. */
     }
 
     ResampleAudio(pre_resample_channels, src_rate, dst_rate,
@@ -983,7 +988,14 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
                   resample_outbuf, output_frames);
 
     /* Get us to the final format! */
-    ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32, pre_resample_channels, buf, dst_format, dst_channels);
+    /* see if we can do the conversion in-place (will fit in `buf` while in-progress), or if we need to do it in the workbuf and copy it over */
+    if (max_sample_frame_size <= dst_sample_frame_size) {
+        ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32, pre_resample_channels, buf, dst_format, dst_channels);
+    } else {
+        ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32, pre_resample_channels, workbuf, dst_format, dst_channels);
+        SDL_memcpy(workbuf, buf, output_frames * dst_sample_frame_size);
+    }
+
     return (int) (output_frames * dst_sample_frame_size);
 }
 
