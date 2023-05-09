@@ -65,10 +65,10 @@ void aaudio_errorCallback(AAudioStream *stream, void *userData, aaudio_result_t 
 
 #define LIB_AAUDIO_SO "libaaudio.so"
 
-static int aaudio_OpenDevice(_THIS, const char *devname)
+static int aaudio_OpenDevice(SDL_AudioDevice *_this, const char *devname)
 {
     struct SDL_PrivateAudioData *private;
-    SDL_bool iscapture = this->iscapture;
+    SDL_bool iscapture = _this->iscapture;
     aaudio_result_t res;
     LOGI(__func__);
 
@@ -79,14 +79,14 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
         }
     }
 
-    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    _this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*_this->hidden));
+    if (_this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    private = this->hidden;
+    private = _this->hidden;
 
-    ctx.AAudioStreamBuilder_setSampleRate(ctx.builder, this->spec.freq);
-    ctx.AAudioStreamBuilder_setChannelCount(ctx.builder, this->spec.channels);
+    ctx.AAudioStreamBuilder_setSampleRate(ctx.builder, _this->spec.freq);
+    ctx.AAudioStreamBuilder_setChannelCount(ctx.builder, _this->spec.channels);
     if(devname != NULL) {
         int aaudio_device_id = SDL_atoi(devname);
         LOGI("Opening device id %d", aaudio_device_id);
@@ -98,9 +98,9 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     }
     {
         aaudio_format_t format = AAUDIO_FORMAT_PCM_FLOAT;
-        if (this->spec.format == SDL_AUDIO_S16SYS) {
+        if (_this->spec.format == SDL_AUDIO_S16SYS) {
             format = AAUDIO_FORMAT_PCM_I16;
-        } else if (this->spec.format == SDL_AUDIO_S16SYS) {
+        } else if (_this->spec.format == SDL_AUDIO_S16SYS) {
             format = AAUDIO_FORMAT_PCM_FLOAT;
         }
         ctx.AAudioStreamBuilder_setFormat(ctx.builder, format);
@@ -109,8 +109,8 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     ctx.AAudioStreamBuilder_setErrorCallback(ctx.builder, aaudio_errorCallback, private);
 
     LOGI("AAudio Try to open %u hz %u bit chan %u %s samples %u",
-         this->spec.freq, SDL_AUDIO_BITSIZE(this->spec.format),
-         this->spec.channels, (this->spec.format & 0x1000) ? "BE" : "LE", this->spec.samples);
+         _this->spec.freq, SDL_AUDIO_BITSIZE(_this->spec.format),
+         _this->spec.channels, (_this->spec.format & 0x1000) ? "BE" : "LE", _this->spec.samples);
 
     res = ctx.AAudioStreamBuilder_openStream(ctx.builder, &private->stream);
     if (res != AAUDIO_OK) {
@@ -118,34 +118,34 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
         return SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
     }
 
-    this->spec.freq = ctx.AAudioStream_getSampleRate(private->stream);
-    this->spec.channels = ctx.AAudioStream_getChannelCount(private->stream);
+    _this->spec.freq = ctx.AAudioStream_getSampleRate(private->stream);
+    _this->spec.channels = ctx.AAudioStream_getChannelCount(private->stream);
     {
         aaudio_format_t fmt = ctx.AAudioStream_getFormat(private->stream);
         if (fmt == AAUDIO_FORMAT_PCM_I16) {
-            this->spec.format = SDL_AUDIO_S16SYS;
+            _this->spec.format = SDL_AUDIO_S16SYS;
         } else if (fmt == AAUDIO_FORMAT_PCM_FLOAT) {
-            this->spec.format = SDL_AUDIO_F32SYS;
+            _this->spec.format = SDL_AUDIO_F32SYS;
         }
     }
 
     LOGI("AAudio Try to open %u hz %u bit chan %u %s samples %u",
-         this->spec.freq, SDL_AUDIO_BITSIZE(this->spec.format),
-         this->spec.channels, (this->spec.format & 0x1000) ? "BE" : "LE", this->spec.samples);
+         _this->spec.freq, SDL_AUDIO_BITSIZE(_this->spec.format),
+         _this->spec.channels, (_this->spec.format & 0x1000) ? "BE" : "LE", _this->spec.samples);
 
-    SDL_CalculateAudioSpec(&this->spec);
+    SDL_CalculateAudioSpec(&_this->spec);
 
     /* Allocate mixing buffer */
     if (!iscapture) {
-        private->mixlen = this->spec.size;
+        private->mixlen = _this->spec.size;
         private->mixbuf = (Uint8 *)SDL_malloc(private->mixlen);
         if (private->mixbuf == NULL) {
             return SDL_OutOfMemory();
         }
-        SDL_memset(private->mixbuf, this->spec.silence, this->spec.size);
+        SDL_memset(private->mixbuf, _this->spec.silence, _this->spec.size);
     }
 
-    private->frame_size = this->spec.channels * (SDL_AUDIO_BITSIZE(this->spec.format) / 8);
+    private->frame_size = _this->spec.channels * (SDL_AUDIO_BITSIZE(_this->spec.format) / 8);
 
     res = ctx.AAudioStream_requestStart(private->stream);
     if (res != AAUDIO_OK) {
@@ -157,9 +157,9 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static void aaudio_CloseDevice(_THIS)
+static void aaudio_CloseDevice(SDL_AudioDevice *_this)
 {
-    struct SDL_PrivateAudioData *private = this->hidden;
+    struct SDL_PrivateAudioData *private = _this->hidden;
     aaudio_result_t res;
     LOGI(__func__);
 
@@ -179,19 +179,19 @@ static void aaudio_CloseDevice(_THIS)
         }
     }
 
-    SDL_free(this->hidden->mixbuf);
-    SDL_free(this->hidden);
+    SDL_free(_this->hidden->mixbuf);
+    SDL_free(_this->hidden);
 }
 
-static Uint8 *aaudio_GetDeviceBuf(_THIS)
+static Uint8 *aaudio_GetDeviceBuf(SDL_AudioDevice *_this)
 {
-    struct SDL_PrivateAudioData *private = this->hidden;
+    struct SDL_PrivateAudioData *private = _this->hidden;
     return private->mixbuf;
 }
 
-static void aaudio_PlayDevice(_THIS)
+static void aaudio_PlayDevice(SDL_AudioDevice *_this)
 {
-    struct SDL_PrivateAudioData *private = this->hidden;
+    struct SDL_PrivateAudioData *private = _this->hidden;
     aaudio_result_t res;
     int64_t timeoutNanoseconds = 1 * 1000 * 1000; /* 8 ms */
     res = ctx.AAudioStream_write(private->stream, private->mixbuf, private->mixlen / private->frame_size, timeoutNanoseconds);
@@ -214,9 +214,9 @@ static void aaudio_PlayDevice(_THIS)
 #endif
 }
 
-static int aaudio_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int aaudio_CaptureFromDevice(SDL_AudioDevice *_this, void *buffer, int buflen)
 {
-    struct SDL_PrivateAudioData *private = this->hidden;
+    struct SDL_PrivateAudioData *private = _this->hidden;
     aaudio_result_t res;
     int64_t timeoutNanoseconds = 8 * 1000 * 1000; /* 8 ms */
     res = ctx.AAudioStream_read(private->stream, buffer, buflen / private->frame_size, timeoutNanoseconds);
@@ -328,18 +328,18 @@ void aaudio_PauseDevices(void)
     }
 
     for (i = 0; i < get_max_num_audio_dev(); i++) {
-        SDL_AudioDevice *this = get_audio_dev(i);
+        SDL_AudioDevice *_this = get_audio_dev(i);
         SDL_AudioDevice *audioDevice = NULL;
         SDL_AudioDevice *captureDevice = NULL;
 
-        if (this == NULL) {
+        if (_this == NULL) {
             continue;
         }
 
-        if (this->iscapture) {
-            captureDevice = this;
+        if (_this->iscapture) {
+            captureDevice = _this;
         } else {
-            audioDevice = this;
+            audioDevice = _this;
         }
 
         if (audioDevice != NULL && audioDevice->hidden != NULL) {
@@ -399,18 +399,18 @@ void aaudio_ResumeDevices(void)
     }
 
     for (i = 0; i < get_max_num_audio_dev(); i++) {
-        SDL_AudioDevice *this = get_audio_dev(i);
+        SDL_AudioDevice *_this = get_audio_dev(i);
         SDL_AudioDevice *audioDevice = NULL;
         SDL_AudioDevice *captureDevice = NULL;
 
-        if (this == NULL) {
+        if (_this == NULL) {
             continue;
         }
 
-        if (this->iscapture) {
-            captureDevice = this;
+        if (_this->iscapture) {
+            captureDevice = _this;
         } else {
-            audioDevice = this;
+            audioDevice = _this;
         }
 
         if (audioDevice != NULL && audioDevice->hidden != NULL) {
@@ -466,18 +466,18 @@ SDL_bool aaudio_DetectBrokenPlayState(void)
     }
 
     for (i = 0; i < get_max_num_audio_dev(); i++) {
-        SDL_AudioDevice *this = get_audio_dev(i);
+        SDL_AudioDevice *_this = get_audio_dev(i);
         SDL_AudioDevice *audioDevice = NULL;
         SDL_AudioDevice *captureDevice = NULL;
 
-        if (this == NULL) {
+        if (_this == NULL) {
             continue;
         }
 
-        if (this->iscapture) {
-            captureDevice = this;
+        if (_this->iscapture) {
+            captureDevice = _this;
         } else {
-            audioDevice = this;
+            audioDevice = _this;
         }
 
         if (audioDevice != NULL && audioDevice->hidden != NULL) {

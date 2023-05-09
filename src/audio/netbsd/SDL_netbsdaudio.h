@@ -25,8 +25,6 @@
 
 #include "../SDL_sysaudio.h"
 
-#define _THIS SDL_AudioDevice *this
-
 struct SDL_PrivateAudioData
 {
     /* The file descriptor for the audio device */
