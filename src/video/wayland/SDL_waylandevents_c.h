@@ -173,9 +173,9 @@ struct SDL_WaylandInput
 
 extern Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms);
 
-extern void Wayland_PumpEvents(_THIS);
-extern void Wayland_SendWakeupEvent(_THIS, SDL_Window *window);
-extern int Wayland_WaitEventTimeout(_THIS, Sint64 timeoutNS);
+extern void Wayland_PumpEvents(SDL_VideoDevice *_this);
+extern void Wayland_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 
 extern void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
 extern void Wayland_add_primary_selection_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);

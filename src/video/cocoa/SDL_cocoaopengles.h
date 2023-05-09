@@ -35,13 +35,13 @@
 #define Cocoa_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 #define Cocoa_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 
-extern int Cocoa_GLES_LoadLibrary(_THIS, const char *path);
-extern SDL_GLContext Cocoa_GLES_CreateContext(_THIS, SDL_Window *window);
-extern int Cocoa_GLES_SwapWindow(_THIS, SDL_Window *window);
-extern int Cocoa_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
-extern int Cocoa_GLES_DeleteContext(_THIS, SDL_GLContext context);
-extern int Cocoa_GLES_SetupWindow(_THIS, SDL_Window *window);
-extern SDL_EGLSurface Cocoa_GLES_GetEGLSurface(_THIS, SDL_Window *window);
+extern int Cocoa_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern SDL_GLContext Cocoa_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Cocoa_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Cocoa_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern int Cocoa_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern int Cocoa_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern SDL_EGLSurface Cocoa_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif /* SDL_VIDEO_OPENGL_EGL */
 

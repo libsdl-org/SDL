@@ -34,10 +34,10 @@
 #define OFFSCREEN_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define OFFSCREEN_GLES_DeleteContext   SDL_EGL_DeleteContext
 
-extern int OFFSCREEN_GLES_LoadLibrary(_THIS, const char *path);
-extern SDL_GLContext OFFSCREEN_GLES_CreateContext(_THIS, SDL_Window *window);
-extern int OFFSCREEN_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
-extern int OFFSCREEN_GLES_SwapWindow(_THIS, SDL_Window *window);
+extern int OFFSCREEN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern SDL_GLContext OFFSCREEN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+extern int OFFSCREEN_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern int OFFSCREEN_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif /* SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL */
 

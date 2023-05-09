@@ -22,6 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_RISCOS
 
+#include "SDL_riscosvideo.h"
+#include "SDL_riscosmouse.h"
 #include "../../events/SDL_mouse_c.h"
 
 #include <kernel.h>
@@ -59,7 +61,7 @@ static int RISCOS_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-int RISCOS_InitMouse(_THIS)
+int RISCOS_InitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 

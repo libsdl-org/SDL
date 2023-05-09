@@ -48,7 +48,7 @@ static SDL_bool have_mitshm(Display *dpy)
 
 #endif /* !NO_SHARED_MEMORY */
 
-int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
+int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format,
                                 void **pixels, int *pitch)
 {
     SDL_WindowData *data = window->driverdata;
@@ -143,7 +143,7 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
     return 0;
 }
 
-int X11_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects,
+int X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects,
                                 int numrects)
 {
     SDL_WindowData *data = window->driverdata;
@@ -222,7 +222,7 @@ int X11_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects
     return 0;
 }
 
-void X11_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
+void X11_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display;

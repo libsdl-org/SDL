@@ -33,7 +33,7 @@
 /* #define DEBUG_MODES */
 /* #define HIGHDPI_DEBUG_VERBOSE */
 
-static void WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode)
+static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
     HDC hdc;
@@ -156,7 +156,7 @@ static float WIN_GetRefreshRate(DEVMODE *mode)
     }
 }
 
-static SDL_bool WIN_GetDisplayMode(_THIS, HMONITOR hMonitor, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *orientation)
+static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, HMONITOR hMonitor, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *orientation)
 {
     const SDL_VideoData *videodata = (const SDL_VideoData *)_this->driverdata;
     SDL_DisplayModeData *data;
@@ -300,7 +300,7 @@ WIN_GetDisplayNameVista_failed:
     return NULL;
 }
 
-static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index, SDL_bool send_event)
+static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index, SDL_bool send_event)
 {
     int i, index = *display_index;
     SDL_DisplayID displayID;
@@ -422,7 +422,7 @@ static BOOL CALLBACK WIN_AddDisplaysCallback(HMONITOR hMonitor,
     return TRUE;
 }
 
-static void WIN_AddDisplays(_THIS, SDL_bool send_event)
+static void WIN_AddDisplays(SDL_VideoDevice *_this, SDL_bool send_event)
 {
     WIN_AddDisplaysData callback_data;
     callback_data.video_device = _this;
@@ -436,7 +436,7 @@ static void WIN_AddDisplays(_THIS, SDL_bool send_event)
     EnumDisplayMonitors(NULL, NULL, WIN_AddDisplaysCallback, (LPARAM)&callback_data);
 }
 
-int WIN_InitModes(_THIS)
+int WIN_InitModes(SDL_VideoDevice *_this)
 {
     WIN_AddDisplays(_this, SDL_FALSE);
 
@@ -480,7 +480,7 @@ static void WIN_MonitorInfoToSDL(const SDL_VideoData *videodata, HMONITOR monito
     info->rcWork.bottom = info->rcMonitor.top + MulDiv(info->rcWork.bottom - info->rcMonitor.top, 96, ydpi);
 }
 
-int WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+int WIN_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     const SDL_DisplayData *data = display->driverdata;
     const SDL_VideoData *videodata = display->device->driverdata;
@@ -532,7 +532,7 @@ static int WIN_GetDisplayDPI(SDL_DisplayID displayID, int *dpi)
     return 0;
 }
 
-int WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+int WIN_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     const SDL_DisplayData *data = display->driverdata;
     const SDL_VideoData *videodata = display->device->driverdata;
@@ -693,7 +693,7 @@ void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut)
 #endif
 }
 
-int WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *data = display->driverdata;
     DWORD i;
@@ -720,7 +720,7 @@ int WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 }
 
 #ifdef DEBUG_MODES
-static void WIN_LogMonitor(_THIS, HMONITOR mon)
+static void WIN_LogMonitor(SDL_VideoDevice *_this, HMONITOR mon)
 {
     const SDL_VideoData *vid_data = (const SDL_VideoData *)_this->driverdata;
     MONITORINFOEX minfo;
@@ -749,7 +749,7 @@ static void WIN_LogMonitor(_THIS, HMONITOR mon)
 }
 #endif
 
-int WIN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int WIN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     SDL_DisplayData *displaydata = display->driverdata;
     SDL_DisplayModeData *data = mode->driverdata;
@@ -810,7 +810,7 @@ int WIN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
     return 0;
 }
 
-void WIN_RefreshDisplays(_THIS)
+void WIN_RefreshDisplays(SDL_VideoDevice *_this)
 {
     int i;
 
@@ -836,7 +836,7 @@ void WIN_RefreshDisplays(_THIS)
     }
 }
 
-void WIN_QuitModes(_THIS)
+void WIN_QuitModes(SDL_VideoDevice *_this)
 {
     /* All fullscreen windows should have restored modes by now */
 }

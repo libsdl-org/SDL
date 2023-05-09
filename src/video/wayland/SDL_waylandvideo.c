@@ -77,10 +77,10 @@
 static void display_handle_done(void *data, struct wl_output *output);
 
 /* Initialization/Query functions */
-static int Wayland_VideoInit(_THIS);
+static int Wayland_VideoInit(SDL_VideoDevice *_this);
 
-static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
-static void Wayland_VideoQuit(_THIS);
+static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
+static void Wayland_VideoQuit(SDL_VideoDevice *_this);
 
 /* Find out what class name we should use
  * Based on src/video/x11/SDL_x11video.c */
@@ -918,7 +918,7 @@ SDL_bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
     return SDL_FALSE;
 }
 
-int Wayland_VideoInit(_THIS)
+int Wayland_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 
@@ -957,7 +957,7 @@ int Wayland_VideoInit(_THIS)
     return 0;
 }
 
-static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *driverdata = display->driverdata;
     rect->x = driverdata->x;
@@ -978,7 +978,7 @@ static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *
     return 0;
 }
 
-static void Wayland_VideoCleanup(_THIS)
+static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
     int i;
@@ -1095,7 +1095,7 @@ static void Wayland_VideoCleanup(_THIS)
     }
 }
 
-SDL_bool Wayland_VideoReconnect(_THIS)
+SDL_bool Wayland_VideoReconnect(SDL_VideoDevice *_this)
 {
 #if 0 /* TODO RECONNECT: Uncomment all when https://invent.kde.org/plasma/kwin/-/wikis/Restarting is completed */
     SDL_VideoData *data = _this->driverdata;
@@ -1142,7 +1142,7 @@ SDL_bool Wayland_VideoReconnect(_THIS)
 #endif /* 0 */
 }
 
-void Wayland_VideoQuit(_THIS)
+void Wayland_VideoQuit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 

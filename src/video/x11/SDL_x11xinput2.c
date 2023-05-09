@@ -110,7 +110,7 @@ static void xinput2_normalize_touch_coordinates(SDL_Window *window, double in_x,
 
 #endif /* SDL_VIDEO_DRIVER_X11_XINPUT2 */
 
-void X11_InitXinput2(_THIS)
+void X11_InitXinput2(SDL_VideoDevice *_this)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_VideoData *data = _this->driverdata;
@@ -383,7 +383,7 @@ int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie
     return 0;
 }
 
-void X11_InitXinput2Multitouch(_THIS)
+void X11_InitXinput2Multitouch(SDL_VideoDevice *_this)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     SDL_VideoData *data = _this->driverdata;
@@ -423,7 +423,7 @@ void X11_InitXinput2Multitouch(_THIS)
 #endif
 }
 
-void X11_Xinput2SelectTouch(_THIS, SDL_Window *window)
+void X11_Xinput2SelectTouch(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     SDL_VideoData *data = NULL;
@@ -469,7 +469,7 @@ int X11_Xinput2IsMultitouchSupported(void)
 #endif
 }
 
-void X11_Xinput2GrabTouch(_THIS, SDL_Window *window)
+void X11_Xinput2GrabTouch(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     SDL_WindowData *data = window->driverdata;
@@ -499,7 +499,7 @@ void X11_Xinput2GrabTouch(_THIS, SDL_Window *window)
 #endif
 }
 
-void X11_Xinput2UngrabTouch(_THIS, SDL_Window *window)
+void X11_Xinput2UngrabTouch(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     SDL_WindowData *data = window->driverdata;

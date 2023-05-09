@@ -79,7 +79,7 @@
 
 @end
 
-static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
+static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->driverdata;
@@ -149,7 +149,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
     return 0;
 }
 
-int UIKit_CreateWindow(_THIS, SDL_Window *window)
+int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
@@ -207,7 +207,7 @@ int UIKit_CreateWindow(_THIS, SDL_Window *window)
     return 1;
 }
 
-void UIKit_SetWindowTitle(_THIS, SDL_Window *window)
+void UIKit_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
@@ -215,7 +215,7 @@ void UIKit_SetWindowTitle(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_ShowWindow(_THIS, SDL_Window *window)
+void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
@@ -231,7 +231,7 @@ void UIKit_ShowWindow(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_HideWindow(_THIS, SDL_Window *window)
+void UIKit_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
@@ -239,7 +239,7 @@ void UIKit_HideWindow(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_RaiseWindow(_THIS, SDL_Window *window)
+void UIKit_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* We don't currently offer a concept of "raising" the SDL window, since
      * we only allow one per display, in the iOS fashion.
@@ -248,7 +248,7 @@ void UIKit_RaiseWindow(_THIS, SDL_Window *window)
     _this->GL_MakeCurrent(_this, _this->current_glwin, _this->current_glctx);
 }
 
-static void UIKit_UpdateWindowBorder(_THIS, SDL_Window *window)
+static void UIKit_UpdateWindowBorder(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
     SDL_uikitviewcontroller *viewcontroller = data.viewcontroller;
@@ -277,26 +277,26 @@ static void UIKit_UpdateWindowBorder(_THIS, SDL_Window *window)
     [viewcontroller.view layoutIfNeeded];
 }
 
-void UIKit_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
+void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered)
 {
     @autoreleasepool {
         UIKit_UpdateWindowBorder(_this, window);
     }
 }
 
-void UIKit_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+void UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     @autoreleasepool {
         UIKit_UpdateWindowBorder(_this, window);
     }
 }
 
-void UIKit_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+void UIKit_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     /* There really isn't a concept of window grab or cursor confinement on iOS */
 }
 
-void UIKit_UpdatePointerLock(_THIS, SDL_Window *window)
+void UIKit_UpdatePointerLock(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #if !TARGET_OS_TV
 #if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
@@ -311,7 +311,7 @@ void UIKit_UpdatePointerLock(_THIS, SDL_Window *window)
 #endif /* !TARGET_OS_TV */
 }
 
-void UIKit_DestroyWindow(_THIS, SDL_Window *window)
+void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         if (window->driverdata != NULL) {
@@ -341,7 +341,7 @@ void UIKit_DestroyWindow(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h)
+void UIKit_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)
 {
     @autoreleasepool {
         SDL_UIKitWindowData *windata = (__bridge SDL_UIKitWindowData *)window->driverdata;
@@ -360,7 +360,7 @@ void UIKit_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h)
     }
 }
 
-int UIKit_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
+int UIKit_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
 {
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;

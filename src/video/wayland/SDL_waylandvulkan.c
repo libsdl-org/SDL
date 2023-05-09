@@ -41,7 +41,7 @@
 #define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
-int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
+int Wayland_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
@@ -107,7 +107,7 @@ fail:
     return -1;
 }
 
-void Wayland_Vulkan_UnloadLibrary(_THIS)
+void Wayland_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -115,7 +115,7 @@ void Wayland_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
+SDL_bool Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                               unsigned *count,
                                               const char **names)
 {
@@ -131,7 +131,7 @@ SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
         extensionsForWayland);
 }
 
-SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
+SDL_bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                       SDL_Window *window,
                                       VkInstance instance,
                                       VkSurfaceKHR *surface)

@@ -142,7 +142,7 @@ static void WINRT_HandleGameBarIsInputRedirected_NonMainThread(Platform::Object 
     }
 }
 
-void WINRT_InitGameBar(_THIS)
+void WINRT_InitGameBar(SDL_VideoDevice *_this)
 {
     SDL_VideoData *driverdata = _this->driverdata;
     IGameBarStatics_ *gameBar = WINRT_GetGameBar();
@@ -162,7 +162,7 @@ void WINRT_InitGameBar(_THIS)
     }
 }
 
-void WINRT_QuitGameBar(_THIS)
+void WINRT_QuitGameBar(SDL_VideoDevice *_this)
 {
     SDL_VideoData *driverdata;
     IGameBarStatics_ *gameBar;

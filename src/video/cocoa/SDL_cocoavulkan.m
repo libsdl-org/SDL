@@ -48,7 +48,7 @@ const char *defaultPaths[] = {
 /* Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF. */
 #define DEFAULT_HANDLE RTLD_DEFAULT
 
-int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
+int Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
@@ -153,7 +153,7 @@ fail:
     return -1;
 }
 
-void Cocoa_Vulkan_UnloadLibrary(_THIS)
+void Cocoa_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
     if (_this->vulkan_config.loader_handle) {
         if (_this->vulkan_config.loader_handle != DEFAULT_HANDLE) {
@@ -163,7 +163,7 @@ void Cocoa_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
+SDL_bool Cocoa_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                             unsigned *count,
                                             const char **names)
 {
@@ -179,7 +179,7 @@ SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
         extensionsForCocoa);
 }
 
-static SDL_bool Cocoa_Vulkan_CreateSurfaceViaMetalView(_THIS,
+static SDL_bool Cocoa_Vulkan_CreateSurfaceViaMetalView(SDL_VideoDevice *_this,
                                                        SDL_Window *window,
                                                        VkInstance instance,
                                                        VkSurfaceKHR *surface,
@@ -232,7 +232,7 @@ static SDL_bool Cocoa_Vulkan_CreateSurfaceViaMetalView(_THIS,
     return SDL_TRUE;
 }
 
-SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
+SDL_bool Cocoa_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                     SDL_Window *window,
                                     VkInstance instance,
                                     VkSurfaceKHR *surface)

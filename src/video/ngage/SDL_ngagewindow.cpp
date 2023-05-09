@@ -29,10 +29,10 @@
 
 const TUint32 WindowClientHandle = 9210;
 
-void DisableKeyBlocking(_THIS);
-void ConstructWindowL(_THIS);
+void DisableKeyBlocking(SDL_VideoDevice *_this);
+void ConstructWindowL(SDL_VideoDevice *_this);
 
-int NGAGE_CreateWindow(_THIS, SDL_Window *window)
+int NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     NGAGE_Window *ngage_window = (NGAGE_Window *)SDL_calloc(1, sizeof(NGAGE_Window));
 
@@ -57,7 +57,7 @@ int NGAGE_CreateWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-void NGAGE_DestroyWindow(_THIS, SDL_Window *window)
+void NGAGE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     NGAGE_Window *ngage_window = (NGAGE_Window *)window->driverdata;
 
@@ -72,7 +72,7 @@ void NGAGE_DestroyWindow(_THIS, SDL_Window *window)
 /* Internal                                                                  */
 /*****************************************************************************/
 
-void DisableKeyBlocking(_THIS)
+void DisableKeyBlocking(SDL_VideoDevice *_this)
 {
     SDL_VideoData *phdata = _this->driverdata;
     TRawEvent event;
@@ -81,7 +81,7 @@ void DisableKeyBlocking(_THIS)
     phdata->NGAGE_WsSession.SimulateRawEvent(event);
 }
 
-void ConstructWindowL(_THIS)
+void ConstructWindowL(SDL_VideoDevice *_this)
 {
     SDL_VideoData *phdata = _this->driverdata;
     TInt error;

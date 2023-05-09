@@ -34,12 +34,12 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WINDOWS)
 
-int WIN_Vulkan_LoadLibrary(_THIS, const char *path);
-void WIN_Vulkan_UnloadLibrary(_THIS);
-SDL_bool WIN_Vulkan_GetInstanceExtensions(_THIS,
+int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
+SDL_bool WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                           unsigned *count,
                                           const char **names);
-SDL_bool WIN_Vulkan_CreateSurface(_THIS,
+SDL_bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface);

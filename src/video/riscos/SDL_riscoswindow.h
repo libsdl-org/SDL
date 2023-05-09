@@ -32,8 +32,8 @@ struct SDL_WindowData
     sprite_header *fb_sprite;
 };
 
-extern int RISCOS_CreateWindow(_THIS, SDL_Window *window);
-extern void RISCOS_DestroyWindow(_THIS, SDL_Window *window);
-extern int RISCOS_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
+extern int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern int RISCOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
 
 #endif /* SDL_riscoswindow_h_ */

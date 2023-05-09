@@ -46,7 +46,7 @@ const char *defaultPaths[] = {
  * proofing. */
 #define DEFAULT_HANDLE RTLD_DEFAULT
 
-int UIKit_Vulkan_LoadLibrary(_THIS, const char *path)
+int UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
@@ -159,7 +159,7 @@ fail:
     return -1;
 }
 
-void UIKit_Vulkan_UnloadLibrary(_THIS)
+void UIKit_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
     if (_this->vulkan_config.loader_handle) {
         if (_this->vulkan_config.loader_handle != DEFAULT_HANDLE) {
@@ -169,7 +169,7 @@ void UIKit_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool UIKit_Vulkan_GetInstanceExtensions(_THIS,
+SDL_bool UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                             unsigned *count,
                                             const char **names)
 {
@@ -186,7 +186,7 @@ SDL_bool UIKit_Vulkan_GetInstanceExtensions(_THIS,
         extensionsForUIKit);
 }
 
-SDL_bool UIKit_Vulkan_CreateSurface(_THIS,
+SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                     SDL_Window *window,
                                     VkInstance instance,
                                     VkSurfaceKHR *surface)

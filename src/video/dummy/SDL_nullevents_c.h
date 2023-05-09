@@ -26,6 +26,6 @@
 
 #include "SDL_nullvideo.h"
 
-extern void DUMMY_PumpEvents(_THIS);
+extern void DUMMY_PumpEvents(SDL_VideoDevice *_this);
 
 #endif /* SDL_nullevents_c_h_ */

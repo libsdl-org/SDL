@@ -467,6 +467,6 @@ typedef struct IDirect3D9 IDirect3D9;
 extern SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface);
 
 extern SDL_SystemTheme WIN_GetSystemTheme(void);
-extern SDL_bool WIN_IsPerMonitorV2DPIAware(_THIS);
+extern SDL_bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this);
 
 #endif /* SDL_windowsvideo_h_ */

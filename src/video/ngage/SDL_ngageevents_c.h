@@ -23,4 +23,4 @@
 
 #include "SDL_ngagevideo.h"
 
-extern void NGAGE_PumpEvents(_THIS);
+extern void NGAGE_PumpEvents(SDL_VideoDevice *_this);

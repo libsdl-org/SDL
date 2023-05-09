@@ -34,7 +34,7 @@
 
 /* EGL implementation of SDL OpenGL ES support */
 
-int Wayland_GLES_LoadLibrary(_THIS, const char *path)
+int Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     int ret;
     SDL_VideoData *data = _this->driverdata;
@@ -47,7 +47,7 @@ int Wayland_GLES_LoadLibrary(_THIS, const char *path)
     return ret;
 }
 
-SDL_GLContext Wayland_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext Wayland_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_GLContext context;
     context = SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
@@ -70,7 +70,7 @@ SDL_GLContext Wayland_GLES_CreateContext(_THIS, SDL_Window *window)
    libretro, Wayland, probably others...it feels like we're eventually going to have
    to give in with a future SDL API revision, since we can bend the other APIs to
    this style, but this style is much harder to bend the other way.  :/ */
-int Wayland_GLES_SetSwapInterval(_THIS, int interval)
+int Wayland_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
@@ -92,7 +92,7 @@ int Wayland_GLES_SetSwapInterval(_THIS, int interval)
     return 0;
 }
 
-int Wayland_GLES_GetSwapInterval(_THIS, int *interval)
+int Wayland_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
@@ -102,7 +102,7 @@ int Wayland_GLES_GetSwapInterval(_THIS, int *interval)
     return 0;
 }
 
-int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
+int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     const int swap_interval = _this->egl_data->egl_swapinterval;
@@ -171,7 +171,7 @@ int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-int Wayland_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int Wayland_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     int ret;
 
@@ -188,14 +188,14 @@ int Wayland_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     return ret;
 }
 
-int Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
+int Wayland_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
     WAYLAND_wl_display_flush(_this->driverdata->display);
     return 0;
 }
 
-EGLSurface Wayland_GLES_GetEGLSurface(_THIS, SDL_Window *window)
+EGLSurface Wayland_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *windowdata = window->driverdata;
 

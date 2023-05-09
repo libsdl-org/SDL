@@ -27,7 +27,7 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-int VIVANTE_GLES_LoadLibrary(_THIS, const char *path)
+int VIVANTE_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverData(SDL_GetPrimaryDisplay());
 
