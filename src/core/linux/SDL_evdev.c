@@ -115,9 +115,7 @@ typedef struct SDL_EVDEV_PrivateData
     SDL_EVDEV_keyboard_state *kbd;
 } SDL_EVDEV_PrivateData;
 
-#undef _THIS
-#define _THIS SDL_EVDEV_PrivateData *_this
-static _THIS = NULL;
+static SDL_EVDEV_PrivateData *_this = NULL;
 
 static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode);
 static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item);
