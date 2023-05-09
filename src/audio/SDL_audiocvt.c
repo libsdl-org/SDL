@@ -983,7 +983,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
                   resample_outbuf, output_frames);
 
     /* Get us to the final format! */
-    ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32, src_channels, buf, dst_format, dst_channels);
+    ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32, pre_resample_channels, buf, dst_format, dst_channels);
     return (int) (output_frames * dst_sample_frame_size);
 }
 
