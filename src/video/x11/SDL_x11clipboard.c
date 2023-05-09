@@ -28,7 +28,7 @@
 #include "SDL_x11clipboard.h"
 
 /* Get any application owned window handle for clipboard association */
-static Window GetWindow(_THIS)
+static Window GetWindow(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 
@@ -113,7 +113,7 @@ Atom X11_GetSDLCutBufferClipboardInternalFormat(Display *display, enum ESDLX11Cl
     }
 }
 
-static int SetSelectionText(_THIS, const char *text, Atom selection_type)
+static int SetSelectionText(SDL_VideoDevice *_this, const char *text, Atom selection_type)
 {
     Display *display = _this->driverdata->display;
     Window window;
@@ -137,7 +137,7 @@ static int SetSelectionText(_THIS, const char *text, Atom selection_type)
     return 0;
 }
 
-static char *GetSelectionText(_THIS, Atom selection_type)
+static char *GetSelectionText(SDL_VideoDevice *_this, Atom selection_type)
 {
     SDL_VideoData *videodata = _this->driverdata;
     Display *display = videodata->display;
@@ -214,7 +214,7 @@ static char *GetSelectionText(_THIS, Atom selection_type)
     return text;
 }
 
-int X11_SetClipboardText(_THIS, const char *text)
+int X11_SetClipboardText(SDL_VideoDevice *_this, const char *text)
 {
     SDL_VideoData *videodata = _this->driverdata;
     Atom XA_CLIPBOARD = X11_XInternAtom(videodata->display, "CLIPBOARD", 0);
@@ -224,13 +224,13 @@ int X11_SetClipboardText(_THIS, const char *text)
     return SetSelectionText(_this, text, XA_CLIPBOARD);
 }
 
-int X11_SetPrimarySelectionText(_THIS, const char *text)
+int X11_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
 {
     return SetSelectionText(_this, text, XA_PRIMARY);
 }
 
 char *
-X11_GetClipboardText(_THIS)
+X11_GetClipboardText(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
     Atom XA_CLIPBOARD = X11_XInternAtom(videodata->display, "CLIPBOARD", 0);
@@ -242,13 +242,13 @@ X11_GetClipboardText(_THIS)
 }
 
 char *
-X11_GetPrimarySelectionText(_THIS)
+X11_GetPrimarySelectionText(SDL_VideoDevice *_this)
 {
     return GetSelectionText(_this, XA_PRIMARY);
 }
 
 SDL_bool
-X11_HasClipboardText(_THIS)
+X11_HasClipboardText(SDL_VideoDevice *_this)
 {
     SDL_bool result = SDL_FALSE;
     char *text = X11_GetClipboardText(_this);
@@ -260,7 +260,7 @@ X11_HasClipboardText(_THIS)
 }
 
 SDL_bool
-X11_HasPrimarySelectionText(_THIS)
+X11_HasPrimarySelectionText(SDL_VideoDevice *_this)
 {
     SDL_bool result = SDL_FALSE;
     char *text = X11_GetPrimarySelectionText(_this);

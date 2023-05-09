@@ -95,8 +95,8 @@ typedef struct
 extern const char *Wayland_convert_mime_type(const char *mime_type);
 
 /* Wayland Data Source / Primary Selection Source - (Sending) */
-extern SDL_WaylandDataSource *Wayland_data_source_create(_THIS);
-extern SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(_THIS);
+extern SDL_WaylandDataSource *Wayland_data_source_create(SDL_VideoDevice *_this);
+extern SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(SDL_VideoDevice *_this);
 extern ssize_t Wayland_data_source_send(SDL_WaylandDataSource *source,
                                         const char *mime_type, int fd);
 extern ssize_t Wayland_primary_selection_source_send(SDL_WaylandPrimarySelectionSource *source,

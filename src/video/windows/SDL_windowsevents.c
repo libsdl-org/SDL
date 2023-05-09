@@ -1838,7 +1838,7 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
     g_WindowsMessageHookData = userdata;
 }
 
-int WIN_WaitEventTimeout(_THIS, Sint64 timeoutNS)
+int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 {
     MSG msg;
     if (g_WindowsEnableMessageLoop) {
@@ -1873,13 +1873,13 @@ int WIN_WaitEventTimeout(_THIS, Sint64 timeoutNS)
     }
 }
 
-void WIN_SendWakeupEvent(_THIS, SDL_Window *window)
+void WIN_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     PostMessage(data->hwnd, data->videodata->_SDL_WAKEUP, 0, 0);
 }
 
-void WIN_PumpEvents(_THIS)
+void WIN_PumpEvents(SDL_VideoDevice *_this)
 {
     MSG msg;
     DWORD end_ticks = GetTickCount() + 1;

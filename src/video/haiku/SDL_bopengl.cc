@@ -44,7 +44,7 @@ static SDL_INLINE SDL_BLooper *_GetBeLooper() {
 }
 
 /* Passing a NULL path means load pointers from the application */
-int HAIKU_GL_LoadLibrary(_THIS, const char *path)
+int HAIKU_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
 /* FIXME: Is this working correctly? */
     image_info info;
@@ -63,7 +63,7 @@ int HAIKU_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-SDL_FunctionPointer HAIKU_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer HAIKU_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
 {
     if (_this->gl_config.dll_handle != NULL) {
         void *location = NULL;
@@ -84,12 +84,12 @@ SDL_FunctionPointer HAIKU_GL_GetProcAddress(_THIS, const char *proc)
 }
 
 
-int HAIKU_GL_SwapWindow(_THIS, SDL_Window * window) {
+int HAIKU_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window * window) {
     _ToBeWin(window)->SwapBuffers();
     return 0;
 }
 
-int HAIKU_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context) {
+int HAIKU_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window * window, SDL_GLContext context) {
     BGLView* glView = (BGLView*)context;
     // printf("HAIKU_GL_MakeCurrent(%llx), win = %llx, thread = %d\n", (uint64)context, (uint64)window, find_thread(NULL));
     if (glView != NULL) {
@@ -102,7 +102,7 @@ int HAIKU_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context) {
 }
 
 
-SDL_GLContext HAIKU_GL_CreateContext(_THIS, SDL_Window * window) {
+SDL_GLContext HAIKU_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window * window) {
     /* FIXME: Not sure what flags should be included here; may want to have
        most of them */
     SDL_BWin *bwin = _ToBeWin(window);
@@ -142,7 +142,7 @@ SDL_GLContext HAIKU_GL_CreateContext(_THIS, SDL_Window * window) {
     return (SDL_GLContext)(bwin->GetGLView());
 }
 
-int HAIKU_GL_DeleteContext(_THIS, SDL_GLContext context) {
+int HAIKU_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context) {
     // printf("HAIKU_GL_DeleteContext(%llx), thread = %d\n", (uint64)context, find_thread(NULL));
     BGLView* glView = (BGLView*)context;
     SDL_BWin *bwin = (SDL_BWin*)glView->Window();
@@ -155,17 +155,17 @@ int HAIKU_GL_DeleteContext(_THIS, SDL_GLContext context) {
 }
 
 
-int HAIKU_GL_SetSwapInterval(_THIS, int interval) {
+int HAIKU_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval) {
     /* TODO: Implement this, if necessary? */
     return SDL_Unsupported();
 }
 
-int HAIKU_GL_GetSwapInterval(_THIS, int *interval) {
+int HAIKU_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval) {
     return SDL_Unsupported();
 }
 
 
-void HAIKU_GL_UnloadLibrary(_THIS) {
+void HAIKU_GL_UnloadLibrary(SDL_VideoDevice *_this) {
     /* TODO: Implement this, if necessary? */
 }
 
@@ -173,7 +173,7 @@ void HAIKU_GL_UnloadLibrary(_THIS) {
 /* FIXME: This function is meant to clear the OpenGL context when the video
    mode changes (see SDL_bmodes.cc), but it doesn't seem to help, and is not
    currently in use. */
-void HAIKU_GL_RebootContexts(_THIS) {
+void HAIKU_GL_RebootContexts(SDL_VideoDevice *_this) {
     SDL_Window *window = _this->windows;
     while (window) {
         SDL_BWin *bwin = _ToBeWin(window);

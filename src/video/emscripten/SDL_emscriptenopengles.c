@@ -29,21 +29,21 @@
 #include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenopengles.h"
 
-int Emscripten_GLES_LoadLibrary(_THIS, const char *path)
+int Emscripten_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     return 0;
 }
 
-void Emscripten_GLES_UnloadLibrary(_THIS)
+void Emscripten_GLES_UnloadLibrary(SDL_VideoDevice *_this)
 {
 }
 
-SDL_FunctionPointer Emscripten_GLES_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer Emscripten_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
 {
     return emscripten_webgl_get_proc_address(proc);
 }
 
-int Emscripten_GLES_SetSwapInterval(_THIS, int interval)
+int Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     if (interval < 0) {
         return SDL_SetError("Late swap tearing currently unsupported");
@@ -56,7 +56,7 @@ int Emscripten_GLES_SetSwapInterval(_THIS, int interval)
     return 0;
 }
 
-int Emscripten_GLES_GetSwapInterval(_THIS, int *interval)
+int Emscripten_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     int mode, value;
 
@@ -71,7 +71,7 @@ int Emscripten_GLES_GetSwapInterval(_THIS, int *interval)
     }
 }
 
-SDL_GLContext Emscripten_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext Emscripten_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *window_data;
 
@@ -112,7 +112,7 @@ SDL_GLContext Emscripten_GLES_CreateContext(_THIS, SDL_Window *window)
     return (SDL_GLContext)context;
 }
 
-int Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
+int Emscripten_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     SDL_Window *window;
 
@@ -129,7 +129,7 @@ int Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
     return 0;
 }
 
-int Emscripten_GLES_SwapWindow(_THIS, SDL_Window *window)
+int Emscripten_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* give back control to browser for screen refresh */
@@ -138,7 +138,7 @@ int Emscripten_GLES_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-int Emscripten_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int Emscripten_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     /* it isn't possible to reuse contexts across canvases */
     if (window && context) {

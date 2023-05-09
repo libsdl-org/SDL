@@ -48,7 +48,7 @@ static void WINRT_YieldXAMLThread();
 
 /* Global event management */
 
-void WINRT_PumpEvents(_THIS)
+void WINRT_PumpEvents(SDL_VideoDevice *_this)
 {
     if (SDL_WinRTGlobalApp) {
         SDL_WinRTGlobalApp->PumpEvents();

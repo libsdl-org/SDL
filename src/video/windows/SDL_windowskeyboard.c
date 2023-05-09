@@ -49,7 +49,7 @@ static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata);
 #endif
 
 /* Alphabetic scancodes for PC keyboards */
-void WIN_InitKeyboard(_THIS)
+void WIN_InitKeyboard(SDL_VideoDevice *_this)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_VideoData *data = _this->driverdata;
@@ -153,7 +153,7 @@ void WIN_UpdateKeymap(SDL_bool send_event)
     SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
 }
 
-void WIN_QuitKeyboard(_THIS)
+void WIN_QuitKeyboard(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 
@@ -196,7 +196,7 @@ void WIN_ResetDeadKeys()
     }
 }
 
-void WIN_StartTextInput(_THIS)
+void WIN_StartTextInput(SDL_VideoDevice *_this)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_Window *window;
@@ -216,7 +216,7 @@ void WIN_StartTextInput(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void WIN_StopTextInput(_THIS)
+void WIN_StopTextInput(SDL_VideoDevice *_this)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_Window *window;
@@ -235,7 +235,7 @@ void WIN_StopTextInput(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-int WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int WIN_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
 {
     SDL_VideoData *videodata = _this->driverdata;
     HIMC himc = 0;
@@ -275,11 +275,11 @@ int WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
 
 #ifdef SDL_DISABLE_WINDOWS_IME
 
-void WIN_ClearComposition(_THIS)
+void WIN_ClearComposition(SDL_VideoDevice *_this)
 {
 }
 
-SDL_bool WIN_IsTextInputShown(_THIS)
+SDL_bool WIN_IsTextInputShown(SDL_VideoDevice *_this)
 {
     return SDL_FALSE;
 }
@@ -1721,13 +1721,13 @@ void IME_Present(SDL_VideoData *videodata)
     /* FIXME: Need to show the IME bitmap */
 }
 
-SDL_bool WIN_IsTextInputShown(_THIS)
+SDL_bool WIN_IsTextInputShown(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
     return IME_IsTextInputShown(videodata);
 }
 
-void WIN_ClearComposition(_THIS)
+void WIN_ClearComposition(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
     IME_ClearComposition(videodata);

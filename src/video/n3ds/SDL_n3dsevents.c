@@ -28,7 +28,7 @@
 #include "SDL_n3dsevents_c.h"
 #include "SDL_n3dstouch.h"
 
-void N3DS_PumpEvents(_THIS)
+void N3DS_PumpEvents(SDL_VideoDevice *_this)
 {
     hidScanInput();
     N3DS_PollTouch();

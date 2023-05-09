@@ -321,7 +321,7 @@ static int WIN_GetScalingDPIForHWND(const SDL_VideoData *videodata, HWND hwnd)
 #endif
 }
 
-static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SDL_bool created)
+static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd, HWND parent, SDL_bool created)
 {
     SDL_VideoData *videodata = _this->driverdata;
     SDL_WindowData *data;
@@ -497,7 +497,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
     return 0;
 }
 
-static void CleanupWindowData(_THIS, SDL_Window *window)
+static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
 
@@ -588,7 +588,7 @@ static void WIN_SetKeyboardFocus(SDL_Window *window)
     SDL_SetKeyboardFocus(window);
 }
 
-int WIN_CreateWindow(_THIS, SDL_Window *window)
+int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     HWND hwnd, parent = NULL;
     DWORD style = STYLE_BASIC;
@@ -670,7 +670,7 @@ int WIN_CreateWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-int WIN_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
+int WIN_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data)
 {
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return -1;
@@ -729,7 +729,7 @@ int WIN_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 }
 
-void WIN_SetWindowTitle(_THIS, SDL_Window *window)
+void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     HWND hwnd = window->driverdata->hwnd;
@@ -739,7 +739,7 @@ void WIN_SetWindowTitle(_THIS, SDL_Window *window)
 #endif
 }
 
-int WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
+int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     HWND hwnd = window->driverdata->hwnd;
@@ -804,7 +804,7 @@ int WIN_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 #endif
 }
 
-int WIN_SetWindowPosition(_THIS, SDL_Window *window)
+int WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* HighDPI support: removed SWP_NOSIZE. If the move results in a DPI change, we need to allow
      * the window to resize (e.g. AdjustWindowRectExForDpi frame sizes are different).
@@ -813,12 +813,12 @@ int WIN_SetWindowPosition(_THIS, SDL_Window *window)
     return WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 }
 
-void WIN_SetWindowSize(_THIS, SDL_Window *window)
+void WIN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 }
 
-int WIN_GetWindowBordersSize(_THIS, SDL_Window *window, int *top, int *left, int *bottom, int *right)
+int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right)
 {
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     HWND hwnd = window->driverdata->hwnd;
@@ -885,7 +885,7 @@ int WIN_GetWindowBordersSize(_THIS, SDL_Window *window, int *top, int *left, int
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 }
 
-void WIN_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h)
+void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)
 {
     const SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
@@ -900,7 +900,7 @@ void WIN_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h)
     }
 }
 
-void WIN_ShowWindow(_THIS, SDL_Window *window)
+void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     DWORD style;
     HWND hwnd;
@@ -926,7 +926,7 @@ void WIN_ShowWindow(_THIS, SDL_Window *window)
     }
 }
 
-void WIN_HideWindow(_THIS, SDL_Window *window)
+void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     HWND hwnd = window->driverdata->hwnd;
     ShowWindow(hwnd, SW_HIDE);
@@ -946,7 +946,7 @@ void WIN_HideWindow(_THIS, SDL_Window *window)
     }
 }
 
-void WIN_RaiseWindow(_THIS, SDL_Window *window)
+void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* If desired, raise the window more forcefully.
@@ -984,7 +984,7 @@ void WIN_RaiseWindow(_THIS, SDL_Window *window)
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 }
 
-void WIN_MaximizeWindow(_THIS, SDL_Window *window)
+void WIN_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
@@ -993,13 +993,13 @@ void WIN_MaximizeWindow(_THIS, SDL_Window *window)
     data->expected_resize = SDL_FALSE;
 }
 
-void WIN_MinimizeWindow(_THIS, SDL_Window *window)
+void WIN_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     HWND hwnd = window->driverdata->hwnd;
     ShowWindow(hwnd, SW_MINIMIZE);
 }
 
-void WIN_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
+void WIN_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered)
 {
     SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
@@ -1015,7 +1015,7 @@ void WIN_SetWindowBordered(_THIS, SDL_Window *window, SDL_bool bordered)
     data->in_border_change = SDL_FALSE;
 }
 
-void WIN_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
+void WIN_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable)
 {
     SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
@@ -1028,12 +1028,12 @@ void WIN_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
     SetWindowLong(hwnd, GWL_STYLE, style);
 }
 
-void WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window *window, SDL_bool on_top)
+void WIN_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool on_top)
 {
     WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
-void WIN_RestoreWindow(_THIS, SDL_Window *window)
+void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
@@ -1045,7 +1045,7 @@ void WIN_RestoreWindow(_THIS, SDL_Window *window)
 /**
  * Reconfigures the window to fill the given display, if fullscreen is true, otherwise restores the window.
  */
-void WIN_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+void WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_DisplayData *displaydata = display->driverdata;
@@ -1158,7 +1158,7 @@ void WIN_UpdateWindowICCProfile(SDL_Window *window, SDL_bool send_event)
     }
 }
 
-void *WIN_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
+void *WIN_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size)
 {
     SDL_WindowData *data = window->driverdata;
     char *filename_utf8;
@@ -1221,17 +1221,17 @@ void WIN_UngrabKeyboard(SDL_Window *window)
     }
 }
 
-void WIN_SetWindowMouseRect(_THIS, SDL_Window *window)
+void WIN_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     WIN_UpdateClipCursor(window);
 }
 
-void WIN_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+void WIN_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
 }
 
-void WIN_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+void WIN_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     if (grabbed) {
         WIN_GrabKeyboard(window);
@@ -1241,7 +1241,7 @@ void WIN_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
-void WIN_DestroyWindow(_THIS, SDL_Window *window)
+void WIN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (window->shaper) {
         SDL_ShapeData *shapedata = (SDL_ShapeData *)window->shaper->driverdata;
@@ -1258,7 +1258,7 @@ void WIN_DestroyWindow(_THIS, SDL_Window *window)
     CleanupWindowData(_this, window);
 }
 
-int WIN_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
+int WIN_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
 {
     const SDL_WindowData *data = (const SDL_WindowData *)window->driverdata;
 
@@ -1337,7 +1337,7 @@ void SDL_HelperWindowDestroy(void)
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-void WIN_OnWindowEnter(_THIS, SDL_Window *window)
+void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
 
@@ -1451,7 +1451,7 @@ int WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
 }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
-int WIN_SetWindowOpacity(_THIS, SDL_Window *window, float opacity)
+int WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
 {
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return -1;
@@ -1558,7 +1558,7 @@ void WIN_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept)
     DragAcceptFiles(data->hwnd, accept ? TRUE : FALSE);
 }
 
-int WIN_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
+int WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation)
 {
     FLASHWINFO desc;
 

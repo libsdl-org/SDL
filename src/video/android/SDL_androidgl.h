@@ -23,9 +23,9 @@
 #ifndef SDL_androidgl_h_
 #define SDL_androidgl_h_
 
-SDL_GLContext Android_GLES_CreateContext(_THIS, SDL_Window *window);
-int Android_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
-int Android_GLES_SwapWindow(_THIS, SDL_Window *window);
-int Android_GLES_LoadLibrary(_THIS, const char *path);
+SDL_GLContext Android_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+int Android_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+int Android_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+int Android_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 
 #endif /* SDL_androidgl_h_ */

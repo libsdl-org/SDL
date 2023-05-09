@@ -27,19 +27,19 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-void RPI_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
+void RPI_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor)
 {
     *mask = SDL_GL_CONTEXT_PROFILE_ES;
     *major = 2;
     *minor = 0;
 }
 
-int RPI_GLES_LoadLibrary(_THIS, const char *path)
+int RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
 }
 
-int RPI_GLES_SwapWindow(_THIS, SDL_Window *window)
+int RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wdata = window->driverdata;
 

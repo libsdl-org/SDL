@@ -42,7 +42,7 @@
 #define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
-int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
+int KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
@@ -122,7 +122,7 @@ fail:
     return -1;
 }
 
-void KMSDRM_Vulkan_UnloadLibrary(_THIS)
+void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -140,7 +140,7 @@ void KMSDRM_Vulkan_UnloadLibrary(_THIS)
 /* members of the VkInstanceCreateInfo struct passed to              */
 /* vkCreateInstance().                                               */
 /*********************************************************************/
-SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
+SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                              unsigned *count,
                                              const char **names)
 {
@@ -164,7 +164,7 @@ SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
 /* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with              */
 /* VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK. */
 /***********************************************************************/
-SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
+SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                      SDL_Window *window,
                                      VkInstance instance,
                                      VkSurfaceKHR *surface)

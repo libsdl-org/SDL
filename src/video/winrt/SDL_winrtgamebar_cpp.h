@@ -26,8 +26,8 @@
 #ifdef __cplusplus
 /* These are exported as C++ functions, rather than C, to fix a compilation
    bug with MSVC 2013, for Windows 8.x builds. */
-extern void WINRT_InitGameBar(_THIS);
-extern void WINRT_QuitGameBar(_THIS);
+extern void WINRT_InitGameBar(SDL_VideoDevice *_this);
+extern void WINRT_QuitGameBar(SDL_VideoDevice *_this);
 #endif
 
 #endif /* SDL_winrtgamebar_h_ */

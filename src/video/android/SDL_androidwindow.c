@@ -36,7 +36,7 @@
 /* Currently only one window */
 SDL_Window *Android_Window = NULL;
 
-int Android_CreateWindow(_THIS, SDL_Window *window)
+int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
     int retval = 0;
@@ -100,12 +100,12 @@ endfunction:
     return retval;
 }
 
-void Android_SetWindowTitle(_THIS, SDL_Window *window)
+void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     Android_JNI_SetActivityTitle(window->title);
 }
 
-void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+void Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
@@ -156,18 +156,18 @@ endfunction:
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-void Android_MinimizeWindow(_THIS, SDL_Window *window)
+void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     Android_JNI_MinizeWindow();
 }
 
-void Android_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
+void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable)
 {
     /* Set orientation */
     Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));
 }
 
-void Android_DestroyWindow(_THIS, SDL_Window *window)
+void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
@@ -194,7 +194,7 @@ void Android_DestroyWindow(_THIS, SDL_Window *window)
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-int Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
+int Android_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
 {
     SDL_WindowData *data = window->driverdata;
 

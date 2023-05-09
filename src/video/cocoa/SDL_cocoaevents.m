@@ -524,7 +524,7 @@ Uint64 Cocoa_GetEventTimestamp(NSTimeInterval nsTimestamp)
     return timestamp;
 }
 
-int Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
+int Cocoa_PumpEventsUntilDate(SDL_VideoDevice *_this, NSDate *expiration, bool accumulate)
 {
     for (;;) {
         NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:expiration inMode:NSDefaultRunLoopMode dequeue:YES];
@@ -545,7 +545,7 @@ int Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
     return 1;
 }
 
-int Cocoa_WaitEventTimeout(_THIS, Sint64 timeoutNS)
+int Cocoa_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 {
     @autoreleasepool {
         if (timeoutNS > 0) {
@@ -561,14 +561,14 @@ int Cocoa_WaitEventTimeout(_THIS, Sint64 timeoutNS)
     }
 }
 
-void Cocoa_PumpEvents(_THIS)
+void Cocoa_PumpEvents(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         Cocoa_PumpEventsUntilDate(_this, [NSDate distantPast], true);
     }
 }
 
-void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
+void Cocoa_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         NSEvent *event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined
@@ -585,7 +585,7 @@ void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
     }
 }
 
-int Cocoa_SuspendScreenSaver(_THIS)
+int Cocoa_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;

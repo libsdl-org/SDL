@@ -27,8 +27,8 @@
 extern "C" {
 #endif
 
-extern void WINRT_InitMouse(_THIS);
-extern void WINRT_QuitMouse(_THIS);
+extern void WINRT_InitMouse(SDL_VideoDevice *_this);
+extern void WINRT_QuitMouse(SDL_VideoDevice *_this);
 extern SDL_bool WINRT_UsingRelativeMouseMode;
 
 #ifdef __cplusplus

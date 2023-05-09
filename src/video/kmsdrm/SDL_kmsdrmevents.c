@@ -32,7 +32,7 @@
 #include "../../core/openbsd/SDL_wscons.h"
 #endif
 
-void KMSDRM_PumpEvents(_THIS)
+void KMSDRM_PumpEvents(SDL_VideoDevice *_this)
 {
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Poll();

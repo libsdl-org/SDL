@@ -42,8 +42,8 @@
 #include "SDL_x11vulkan.h"
 
 /* Initialization/Query functions */
-static int X11_VideoInit(_THIS);
-static void X11_VideoQuit(_THIS);
+static int X11_VideoInit(SDL_VideoDevice *_this);
+static void X11_VideoQuit(SDL_VideoDevice *_this);
 
 /* Find out what class name we should use */
 static char *get_classname(void)
@@ -341,7 +341,7 @@ static int X11_CheckWindowManagerErrorHandler(Display *d, XErrorEvent *e)
     }
 }
 
-static void X11_CheckWindowManager(_THIS)
+static void X11_CheckWindowManager(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
     Display *display = data->display;
@@ -401,7 +401,7 @@ static void X11_CheckWindowManager(_THIS)
 #endif
 }
 
-int X11_VideoInit(_THIS)
+int X11_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 
@@ -479,7 +479,7 @@ int X11_VideoInit(_THIS)
     return 0;
 }
 
-void X11_VideoQuit(_THIS)
+void X11_VideoQuit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 

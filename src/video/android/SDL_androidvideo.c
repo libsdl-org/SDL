@@ -42,8 +42,8 @@
 #define ANDROID_VID_DRIVER_NAME "Android"
 
 /* Initialization/Query functions */
-static int Android_VideoInit(_THIS);
-static void Android_VideoQuit(_THIS);
+static int Android_VideoInit(SDL_VideoDevice *_this);
+static void Android_VideoQuit(SDL_VideoDevice *_this);
 
 #include "../SDL_egl_c.h"
 #define Android_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
@@ -67,7 +67,7 @@ SDL_Semaphore *Android_ResumeSem = NULL;
 SDL_Mutex *Android_ActivityMutex = NULL;
 static SDL_SystemTheme Android_SystemTheme;
 
-static int Android_SuspendScreenSaver(_THIS)
+static int Android_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     return Android_JNI_SuspendScreenSaver(_this->suspend_screensaver);
 }
@@ -166,7 +166,7 @@ VideoBootStrap Android_bootstrap = {
     Android_CreateDevice
 };
 
-int Android_VideoInit(_THIS)
+int Android_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
     SDL_DisplayID displayID;
@@ -200,7 +200,7 @@ int Android_VideoInit(_THIS)
     return 0;
 }
 
-void Android_VideoQuit(_THIS)
+void Android_VideoQuit(SDL_VideoDevice *_this)
 {
     Android_QuitMouse();
     Android_QuitTouch();

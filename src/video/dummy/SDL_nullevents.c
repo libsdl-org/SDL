@@ -30,7 +30,7 @@
 #include "SDL_nullvideo.h"
 #include "SDL_nullevents_c.h"
 
-void DUMMY_PumpEvents(_THIS)
+void DUMMY_PumpEvents(SDL_VideoDevice *_this)
 {
     /* do nothing. */
 }
