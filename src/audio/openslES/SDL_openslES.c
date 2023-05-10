@@ -26,15 +26,25 @@
    https://googlesamples.github.io/android-audio-high-performance/guides/opensl_es.html
 */
 
+#include "../SDL_sysaudio.h"
 #include "../SDL_audio_c.h"
-#include "../../core/android/SDL_android.h"
 #include "SDL_openslES.h"
 
-/* for native audio */
+#include "../../core/android/SDL_android.h"
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
-
 #include <android/log.h>
+
+
+#define NUM_BUFFERS 2 /* -- Don't lower this! */
+
+struct SDL_PrivateAudioData
+{
+    Uint8 *mixbuff;
+    int next_buffer;
+    Uint8 *pmixbuff[NUM_BUFFERS];
+    SDL_Semaphore *playsem;
+};
 
 #if 0
 #define LOG_TAG   "SDL_openslES"

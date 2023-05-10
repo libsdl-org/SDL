@@ -24,12 +24,19 @@
 
 /* Output audio to Android */
 
+#include "../SDL_sysaudio.h"
 #include "../SDL_audio_c.h"
 #include "SDL_androidaudio.h"
 
 #include "../../core/android/SDL_android.h"
-
 #include <android/log.h>
+
+
+struct SDL_PrivateAudioData
+{
+    /* Resume device if it was paused automatically */
+    int resume;
+};
 
 static SDL_AudioDevice *audioDevice = NULL;
 static SDL_AudioDevice *captureDevice = NULL;
@@ -207,10 +214,5 @@ void ANDROIDAUDIO_ResumeDevices(void)
         }
     }
 }
-
-#else
-
-void ANDROIDAUDIO_ResumeDevices(void) {}
-void ANDROIDAUDIO_PauseDevices(void) {}
 
 #endif /* SDL_AUDIO_DRIVER_ANDROID */
