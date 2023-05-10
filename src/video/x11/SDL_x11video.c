@@ -293,9 +293,13 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 #endif
 #endif
 
+    device->SetClipboardData = X11_SetClipboardData;
+    device->GetClipboardData = X11_GetClipboardData;
+    device->HasClipboardData = X11_HasClipboardData;
     device->SetClipboardText = X11_SetClipboardText;
     device->GetClipboardText = X11_GetClipboardText;
     device->HasClipboardText = X11_HasClipboardText;
+    device->GetClipboardUserdata = X11_GetClipboardUserdata;
     device->SetPrimarySelectionText = X11_SetPrimarySelectionText;
     device->GetPrimarySelectionText = X11_GetPrimarySelectionText;
     device->HasPrimarySelectionText = X11_HasPrimarySelectionText;
@@ -498,6 +502,7 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     X11_QuitKeyboard(_this);
     X11_QuitMouse(_this);
     X11_QuitTouch(_this);
+    X11_QuitClipboard(_this);
 }
 
 SDL_bool

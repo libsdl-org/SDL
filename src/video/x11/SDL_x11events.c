@@ -627,17 +627,27 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
     {
         const XSelectionRequestEvent *req = &xevent->xselectionrequest;
         XEvent sevent;
-        int seln_format, mime_formats;
+        int mime_formats;
         unsigned long nbytes;
-        unsigned long overflow;
         unsigned char *seln_data;
-        Atom supportedFormats[SDL_X11_CLIPBOARD_MIME_TYPE_MAX + 1];
         Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
+        SDLX11_ClipboardData *clipboard;
 
 #ifdef DEBUG_XEVENTS
-        printf("window CLIPBOARD: SelectionRequest (requestor = %ld, target = %ld)\n",
-               req->requestor, req->target);
+        char *atom_name;
+        atom_name = X11_XGetAtomName(display, req->target);
+        printf("window CLIPBOARD: SelectionRequest (requestor = %ld, target = %ld, mime_type = %s)\n",
+               req->requestor, req->target, atom_name);
+        if (atom_name) {
+            X11_XFree(atom_name);
+        }
 #endif
+
+        if (req->selection == XA_PRIMARY) {
+            clipboard = &videodata->primary_selection;
+        } else {
+            clipboard = &videodata->clipboard;
+        }
 
         SDL_zero(sevent);
         sevent.xany.type = SelectionNotify;
@@ -652,10 +662,12 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
            this now (or ever, really). */
 
         if (req->target == XA_TARGETS) {
+            Atom *supportedFormats;
+            supportedFormats = SDL_malloc((clipboard->mime_count + 1) * sizeof(Atom));
             supportedFormats[0] = XA_TARGETS;
             mime_formats = 1;
-            for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) {
-                supportedFormats[mime_formats++] = X11_GetSDLCutBufferClipboardExternalFormat(display, i);
+            for (i = 0; i < clipboard->mime_count; ++i) {
+                supportedFormats[mime_formats++] = X11_XInternAtom(display, clipboard->mime_types[i], False);
             }
             X11_XChangeProperty(display, req->requestor, req->property,
                                 XA_ATOM, 32, PropModeReplace,
@@ -663,25 +675,25 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
                                 mime_formats);
             sevent.xselection.property = req->property;
             sevent.xselection.target = XA_TARGETS;
+            SDL_free(supportedFormats);
         } else {
-            for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) {
-                if (X11_GetSDLCutBufferClipboardExternalFormat(display, i) != req->target) {
-                    continue;
-                }
-                if (X11_XGetWindowProperty(display, DefaultRootWindow(display),
-                                           X11_GetSDLCutBufferClipboardType(display, i, req->selection), 0, INT_MAX / 4, False, X11_GetSDLCutBufferClipboardInternalFormat(display, i),
-                                           &sevent.xselection.target, &seln_format, &nbytes,
-                                           &overflow, &seln_data) == Success) {
-                    if (seln_format != None) {
+            if (clipboard->callback) {
+                for (i = 0; i < clipboard->mime_count; ++i) {
+                    const char *mime_type = clipboard->mime_types[i];
+                    if (X11_XInternAtom(display, mime_type, False) != req->target) {
+                        continue;
+                    }
+
+                    /* FIXME: We don't support the X11 INCR protocol for large clipboards. Do we want that? */
+                    seln_data = clipboard->callback(&nbytes, mime_type, clipboard->userdata);
+                    if (seln_data != NULL) {
                         X11_XChangeProperty(display, req->requestor, req->property,
-                                            sevent.xselection.target, seln_format, PropModeReplace,
+                                            req->target, 8, PropModeReplace,
                                             seln_data, nbytes);
                         sevent.xselection.property = req->property;
-                        X11_XFree(seln_data);
-                        break;
-                    } else {
-                        X11_XFree(seln_data);
+                        sevent.xselection.target = req->target;
                     }
+                    break;
                 }
             }
         }
@@ -702,15 +714,24 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
     {
         /* !!! FIXME: cache atoms */
         Atom XA_CLIPBOARD = X11_XInternAtom(display, "CLIPBOARD", 0);
+        SDLX11_ClipboardData *clipboard = NULL;
 
 #ifdef DEBUG_XEVENTS
         printf("window CLIPBOARD: SelectionClear (requestor = %ld, target = %ld)\n",
                xevent->xselection.requestor, xevent->xselection.target);
 #endif
 
-        if (xevent->xselectionclear.selection == XA_PRIMARY ||
-            (XA_CLIPBOARD != None && xevent->xselectionclear.selection == XA_CLIPBOARD)) {
-            SDL_SendClipboardUpdate();
+        if (xevent->xselectionclear.selection == XA_PRIMARY) {
+            clipboard = &videodata->primary_selection;
+        } else if (XA_CLIPBOARD != None && xevent->xselectionclear.selection == XA_CLIPBOARD) {
+            clipboard = &videodata->clipboard;
+            if (clipboard->internal == SDL_FALSE) {
+                SDL_SendClipboardCancelled(clipboard->userdata);
+            }
+        }
+        if (clipboard != NULL && clipboard->internal == SDL_TRUE) {
+            SDL_free(clipboard->userdata);
+            clipboard->userdata = NULL;
         }
     } break;
     }
