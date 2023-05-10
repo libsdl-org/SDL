@@ -54,41 +54,41 @@
 #define SDL_PT_GUARDED_BY(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_by(x))
 
-#define SDL_ACQUIRED_BEFORE(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquired_before(__VA_ARGS__))
+#define SDL_ACQUIRED_BEFORE(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquired_before(x))
 
-#define SDL_ACQUIRED_AFTER(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquired_after(__VA_ARGS__))
+#define SDL_ACQUIRED_AFTER(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquired_after(x))
 
-#define SDL_REQUIRES(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(requires_capability(__VA_ARGS__))
+#define SDL_REQUIRES(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(requires_capability(x))
 
-#define SDL_REQUIRES_SHARED(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(requires_shared_capability(__VA_ARGS__))
+#define SDL_REQUIRES_SHARED(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(requires_shared_capability(x))
 
-#define SDL_ACQUIRE(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquire_capability(__VA_ARGS__))
+#define SDL_ACQUIRE(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquire_capability(x))
 
-#define SDL_ACQUIRE_SHARED(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquire_shared_capability(__VA_ARGS__))
+#define SDL_ACQUIRE_SHARED(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquire_shared_capability(x))
 
-#define SDL_RELEASE(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_capability(__VA_ARGS__))
+#define SDL_RELEASE(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_capability(x))
 
-#define SDL_RELEASE_SHARED(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_shared_capability(__VA_ARGS__))
+#define SDL_RELEASE_SHARED(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_shared_capability(x))
 
-#define SDL_RELEASE_GENERIC(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_generic_capability(__VA_ARGS__))
+#define SDL_RELEASE_GENERIC(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_generic_capability(x))
 
-#define SDL_TRY_ACQUIRE(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_capability(__VA_ARGS__))
+#define SDL_TRY_ACQUIRE(x, y) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_capability(x, y))
 
-#define SDL_TRY_ACQUIRE_SHARED(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_shared_capability(__VA_ARGS__))
+#define SDL_TRY_ACQUIRE_SHARED(x, y) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_shared_capability(x, y))
 
-#define SDL_EXCLUDES(...) \
-  SDL_THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(__VA_ARGS__))
+#define SDL_EXCLUDES(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(x))
 
 #define SDL_ASSERT_CAPABILITY(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(assert_capability(x))
