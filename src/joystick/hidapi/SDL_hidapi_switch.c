@@ -1560,6 +1560,26 @@ static int HIDAPI_DriverSwitch_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joy
 
 static int HIDAPI_DriverSwitch_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+
+    if (size == sizeof(SwitchCommonOutputPacket_t)) {
+        const SwitchCommonOutputPacket_t *packet = (SwitchCommonOutputPacket_t *)data;
+
+        if (packet->ucPacketType != k_eSwitchOutputReportIDs_Rumble) {
+            return SDL_SetError("Unknown Nintendo Switch Pro effect type");
+        }
+
+        SDL_copyp(&ctx->m_RumblePacket.rumbleData[0], &packet->rumbleData[0]);
+        SDL_copyp(&ctx->m_RumblePacket.rumbleData[1], &packet->rumbleData[1]);
+        if (!WriteRumble(ctx)) {
+            return -1;
+        }
+
+        /* This overwrites any internal rumble */
+        ctx->m_bRumblePending = SDL_FALSE;
+        ctx->m_bRumbleZeroPending = SDL_FALSE;
+        return 0;
+    }
     return SDL_Unsupported();
 }
 
