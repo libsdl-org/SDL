@@ -20,28 +20,21 @@
 */
 #include "SDL_internal.h"
 
-#ifndef SDL_aaudio_h
-#define SDL_aaudio_h
+#ifndef SDL_aaudio_h_
+#define SDL_aaudio_h_
 
-#include "../SDL_sysaudio.h"
-#include <stdbool.h>
-#include <aaudio/AAudio.h>
-
-struct SDL_PrivateAudioData
-{
-    AAudioStream *stream;
-
-    /* Raw mixing buffer */
-    Uint8 *mixbuf;
-    int mixlen;
-    int frame_size;
-
-    /* Resume device if it was paused automatically */
-    int resume;
-};
+#ifdef SDL_AUDIO_DRIVER_AAUDIO
 
 void aaudio_ResumeDevices(void);
 void aaudio_PauseDevices(void);
 SDL_bool aaudio_DetectBrokenPlayState(void);
 
-#endif /* SDL_aaudio_h */
+#else
+
+static void aaudio_ResumeDevices(void) {}
+static void aaudio_PauseDevices(void) {}
+static SDL_bool aaudio_DetectBrokenPlayState(void) { return SDL_FALSE; }
+
+#endif
+
+#endif /* SDL_aaudio_h_ */

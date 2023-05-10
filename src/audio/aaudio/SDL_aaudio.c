@@ -22,9 +22,26 @@
 
 #ifdef SDL_AUDIO_DRIVER_AAUDIO
 
+#include "../SDL_sysaudio.h"
 #include "../SDL_audio_c.h"
-#include "../../core/android/SDL_android.h"
 #include "SDL_aaudio.h"
+
+#include "../../core/android/SDL_android.h"
+#include <stdbool.h>
+#include <aaudio/AAudio.h>
+
+struct SDL_PrivateAudioData
+{
+    AAudioStream *stream;
+
+    /* Raw mixing buffer */
+    Uint8 *mixbuf;
+    int mixlen;
+    int frame_size;
+
+    /* Resume device if it was paused automatically */
+    int resume;
+};
 
 /* Debug */
 #if 0
