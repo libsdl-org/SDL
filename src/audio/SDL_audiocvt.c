@@ -978,8 +978,8 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     if ((dst_format == SDL_AUDIO_F32) && (dst_channels == pre_resample_channels)) {
         resample_outbuf = (float *) buf;
     } else {
-        const int input_bytes = input_frames * pre_resample_channels * sizeof (float);
-        resample_outbuf = (float *) ((workbuf + stream->work_buffer_allocation) - input_bytes);  /* do at the end of the buffer so we have room for final convert at front. */
+        const int output_bytes = output_frames * pre_resample_channels * sizeof (float);
+        resample_outbuf = (float *) ((workbuf + stream->work_buffer_allocation) - output_bytes);  /* do at the end of the buffer so we have room for final convert at front. */
     }
 
     ResampleAudio(pre_resample_channels, src_rate, dst_rate,
