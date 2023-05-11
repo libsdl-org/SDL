@@ -967,7 +967,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
             ConvertAudio(input_frames, workbuf, src_format, src_channels, buf, dst_format, dst_channels);
         } else {
             ConvertAudio(input_frames, workbuf, src_format, src_channels, workbuf, dst_format, dst_channels);
-            SDL_memcpy(workbuf, buf, input_frames * dst_sample_frame_size);
+            SDL_memcpy(buf, workbuf, input_frames * dst_sample_frame_size);
         }
         return input_frames * dst_sample_frame_size;
     }
@@ -993,7 +993,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32, pre_resample_channels, buf, dst_format, dst_channels);
     } else {
         ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32, pre_resample_channels, workbuf, dst_format, dst_channels);
-        SDL_memcpy(workbuf, buf, output_frames * dst_sample_frame_size);
+        SDL_memcpy(buf, workbuf, output_frames * dst_sample_frame_size);
     }
 
     return (int) (output_frames * dst_sample_frame_size);
