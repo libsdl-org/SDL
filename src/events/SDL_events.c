@@ -1092,7 +1092,7 @@ int SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
         case -1:
             return 0;
         case 0:
-            if (timeoutNS > 0 && SDL_GetTicks() >= expiration) {
+            if (timeoutNS > 0 && SDL_GetTicksNS() >= expiration) {
                 /* Timeout expired and no events */
                 return 0;
             }
