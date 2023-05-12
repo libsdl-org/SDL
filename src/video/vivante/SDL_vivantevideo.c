@@ -245,7 +245,7 @@ int VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_DisplayData *displaydata;
     SDL_WindowData *data;
 
-    displaydata = SDL_GetDisplayDriverData(0);
+    displaydata = SDL_GetDisplayDriverData(SDL_GetPrimaryDisplay());
 
     /* Allocate window internal data */
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
@@ -349,7 +349,7 @@ void VIVANTE_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 int VIVANTE_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info)
 {
     SDL_WindowData *data = window->driverdata;
-    SDL_DisplayData *displaydata = SDL_GetDisplayDriverData(0);
+    SDL_DisplayData *displaydata = SDL_GetDisplayDriverData(SDL_GetPrimaryDisplay());
 
     info->subsystem = SDL_SYSWM_VIVANTE;
     info->info.vivante.display = displaydata->native_display;
