@@ -29,6 +29,7 @@
 #define USB_VENDOR_APPLE        0x05ac
 #define USB_VENDOR_ASTRO        0x9886
 #define USB_VENDOR_BACKBONE     0x358a
+#define USB_VENDOR_GAMESIR      0x3537
 #define USB_VENDOR_DRAGONRISE   0x0079
 #define USB_VENDOR_GOOGLE       0x18d1
 #define USB_VENDOR_HORI         0x0f0d
@@ -58,6 +59,7 @@
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
 #define USB_PRODUCT_BACKBONE_ONE_IOS_PS5                  0x0104
+#define USB_PRODUCT_GAMESIR_G7                            0x1001
 #define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER              0x9400
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1            0x1843
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2            0x1846

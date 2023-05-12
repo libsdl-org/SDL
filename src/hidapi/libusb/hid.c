@@ -723,6 +723,7 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 		0x24c6, /* PowerA */
 		0x2dc8, /* 8BitDo */
 		0x2e24, /* Hyperkin */
+        0x3537, /* GameSir */
 	};
 
 	if (intf_desc->bInterfaceNumber == 0 &&
