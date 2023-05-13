@@ -801,7 +801,7 @@ static int CalculateAudioStreamWorkBufSize(const SDL_AudioStream *stream, int le
     if (stream->dst_rate != stream->src_rate) {
         /* calculate requested sample frames needed before resampling. Use a Uint64 so the multiplication doesn't overflow. */
         const int input_frames = ((int) ((((Uint64) workbuf_frames) * stream->src_rate) / stream->dst_rate));
-        inputlen = input_frames * stream->src_sample_frame_size;
+        inputlen = input_frames * stream->max_sample_frame_size;
         if (inputlen > workbuflen) {
             workbuflen = inputlen;
         }
@@ -811,10 +811,7 @@ static int CalculateAudioStreamWorkBufSize(const SDL_AudioStream *stream, int le
             workbuflen = inputlen;
         }
         /* Calculate space needed after resample (which lives in a second copy in the same buffer). */
-        inputlen += workbuf_frames * stream->pre_resample_channels * sizeof (float);
-        if (inputlen > workbuflen) {
-            workbuflen = inputlen;
-        }
+        workbuflen += workbuf_frames * stream->pre_resample_channels * sizeof (float);
     }
 
     return workbuflen;
