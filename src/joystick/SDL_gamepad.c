@@ -22,6 +22,7 @@
 
 /* This is the gamepad API for Simple DirectMedia Layer */
 
+#include "../SDL_utils_c.h"
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
 #include "SDL_gamepad_c.h"
@@ -2068,21 +2069,6 @@ SDL_bool SDL_IsGamepad(SDL_JoystickID instance_id)
 
     return retval;
 }
-
-#ifdef __LINUX__
-static SDL_bool SDL_endswith(const char *string, const char *suffix)
-{
-    size_t string_length = string ? SDL_strlen(string) : 0;
-    size_t suffix_length = suffix ? SDL_strlen(suffix) : 0;
-
-    if (suffix_length > 0 && suffix_length <= string_length) {
-        if (SDL_memcmp(string + string_length - suffix_length, suffix, suffix_length) == 0) {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
-}
-#endif
 
 /*
  * Return 1 if the gamepad should be ignored by SDL

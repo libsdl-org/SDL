@@ -28,4 +28,6 @@
 /* Return the smallest power of 2 greater than or equal to 'x' */
 extern int SDL_powerof2(int x);
 
+SDL_bool SDL_endswith(const char *string, const char *suffix);
+
 #endif /* SDL_utils_h_ */
