@@ -63,7 +63,7 @@ static void test_device(const int iscapture, const char *fname, int flags, int (
                  * information,  making this information inaccessible at
                  * enumeration time
                  */
-                SDL_AddAudioDevice(iscapture, fname, NULL, (void *)(uintptr_t)dummyhandle);
+                SDL_AddAudioDevice(iscapture, fname, 0, 0, 0, (void *)(uintptr_t)dummyhandle, );
             }
         }
     }

@@ -28,13 +28,15 @@
 
 static struct
 {
-    SDL_AudioSpec spec;
+    SDL_AudioFormat fmt;
+    int channels;
+    int freq;
     Uint8 *sound;    /* Pointer to wave data */
     Uint32 soundlen; /* Length of wave data */
-    int soundpos;    /* Current play position */
 } wave;
 
 static SDL_AudioDeviceID device;
+static SDL_AudioStream *stream;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -51,6 +53,8 @@ static void
 close_audio(void)
 {
     if (device != 0) {
+        SDL_DestroyAudioStream(stream);
+        stream = NULL;
         SDL_CloseAudioDevice(device);
         device = 0;
     }
@@ -59,16 +63,21 @@ close_audio(void)
 static void
 open_audio(void)
 {
-    /* Initialize fillerup() variables */
-    device = SDL_OpenAudioDevice(NULL, SDL_FALSE, &wave.spec, NULL, 0);
+    SDL_AudioDeviceID *devices = SDL_GetAudioOutputDevices(NULL);
+    device = devices ? SDL_OpenAudioDevice(devices[0], wave.fmt, wave.channels, wave.freq) : 0;
+    SDL_free(devices);
     if (!device) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
         SDL_free(wave.sound);
         quit(2);
     }
-
-    /* Let the audio run */
-    SDL_PlayAudioDevice(device);
+    stream = SDL_CreateAndBindAudioStream(device, wave.fmt, wave.channels, wave.freq);
+    if (!stream) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create audio stream: %s\n", SDL_GetError());
+        SDL_CloseAudioDevice(device);
+        SDL_free(wave.sound);
+        quit(2);
+    }
 }
 
 #ifndef __EMSCRIPTEN__
@@ -79,36 +88,24 @@ static void reopen_audio(void)
 }
 #endif
 
-static void SDLCALL
-fillerup(void *unused, Uint8 *stream, int len)
-{
-    Uint8 *waveptr;
-    int waveleft;
-
-    /* Set up the pointers */
-    waveptr = wave.sound + wave.soundpos;
-    waveleft = wave.soundlen - wave.soundpos;
-
-    /* Go! */
-    while (waveleft <= len) {
-        SDL_memcpy(stream, waveptr, waveleft);
-        stream += waveleft;
-        len -= waveleft;
-        waveptr = wave.sound;
-        waveleft = wave.soundlen;
-        wave.soundpos = 0;
-    }
-    SDL_memcpy(stream, waveptr, len);
-    wave.soundpos += len;
-}
 
 static int done = 0;
+
+static void fillerup(void)
+{
+    if (SDL_GetAudioStreamAvailable(stream) < (wave.soundlen / 2)) {
+        SDL_PutAudioStreamData(stream, wave.sound, wave.soundlen);
+    }
+}
+
 
 #ifdef __EMSCRIPTEN__
 static void loop(void)
 {
     if (done || (SDL_GetAudioDeviceStatus(device) != SDL_AUDIO_PLAYING)) {
         emscripten_cancel_main_loop();
+    } else {
+        fillerup();
     }
 }
 #endif
@@ -162,12 +159,10 @@ int main(int argc, char *argv[])
     }
 
     /* Load the wave file into memory */
-    if (SDL_LoadWAV(filename, &wave.spec, &wave.sound, &wave.soundlen) == NULL) {
+    if (SDL_LoadWAV(filename, &wave.fmt, &wave.channels, &wave.freq, &wave.sound, &wave.soundlen) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         quit(1);
     }
-
-    wave.spec.callback = fillerup;
 
     /* Show the list of available drivers */
     SDL_Log("Available audio drivers:");
@@ -196,6 +191,8 @@ int main(int argc, char *argv[])
                 reopen_audio();
             }
         }
+
+        fillerup();
         SDL_Delay(100);
     }
 #endif

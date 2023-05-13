@@ -1241,7 +1241,7 @@ static int LAW_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
 
     dst = (Sint16 *)src;
 
-    /* Work backwards, since we're expanding in-place. SDL_AudioSpec.format will
+    /* Work backwards, since we're expanding in-place. `format` will
      * inform the caller about the byte order.
      */
     i = sample_count;
@@ -1667,15 +1667,13 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
 
     if (format->channels == 0) {
         return SDL_SetError("Invalid number of channels");
-    } else if (format->channels > 255) {
-        /* Limit given by SDL_AudioSpec.channels. */
-        return SDL_SetError("Number of channels exceeds limit of 255");
+    } else if (format->channels > INT_MAX) {
+        return SDL_SetError("Number of channels exceeds limit of %d", INT_MAX);
     }
 
     if (format->frequency == 0) {
         return SDL_SetError("Invalid sample rate");
     } else if (format->frequency > INT_MAX) {
-        /* Limit given by SDL_AudioSpec.freq. */
         return SDL_SetError("Sample rate exceeds limit of %d", INT_MAX);
     }
 
@@ -1766,7 +1764,7 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
     return 0;
 }
 
-static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioFormat *fmt, int *channels, int *freq, Uint8 **audio_buf, Uint32 *audio_len)
 {
     int result;
     Uint32 chunkcount = 0;
@@ -2025,13 +2023,11 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
         break;
     }
 
-    /* Setting up the SDL_AudioSpec. All unsupported formats were filtered out
+    /* Setting up the specs. All unsupported formats were filtered out
      * by checks earlier in this function.
      */
-    SDL_zerop(spec);
-    spec->freq = format->frequency;
-    spec->channels = (Uint8)format->channels;
-    spec->samples = 4096; /* Good default buffer size */
+    *freq = format->frequency;
+    *channels = (Uint8)format->channels;
 
     switch (format->encoding) {
     case MS_ADPCM_CODE:
@@ -2039,22 +2035,22 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     case ALAW_CODE:
     case MULAW_CODE:
         /* These can be easily stored in the byte order of the system. */
-        spec->format = SDL_AUDIO_S16SYS;
+        *fmt = SDL_AUDIO_S16SYS;
         break;
     case IEEE_FLOAT_CODE:
-        spec->format = SDL_AUDIO_F32LSB;
+        *fmt = SDL_AUDIO_F32LSB;
         break;
     case PCM_CODE:
         switch (format->bitspersample) {
         case 8:
-            spec->format = SDL_AUDIO_U8;
+            *fmt = SDL_AUDIO_U8;
             break;
         case 16:
-            spec->format = SDL_AUDIO_S16LSB;
+            *fmt = SDL_AUDIO_S16LSB;
             break;
         case 24: /* Has been shifted to 32 bits. */
         case 32:
-            spec->format = SDL_AUDIO_S32LSB;
+            *fmt = SDL_AUDIO_S32LSB;
             break;
         default:
             /* Just in case something unexpected happened in the checks. */
@@ -2062,8 +2058,6 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
         }
         break;
     }
-
-    spec->silence = SDL_GetSilenceValueForFormat(spec->format);
 
     /* Report the end position back to the cleanup code. */
     if (RIFFlengthknown) {
@@ -2075,39 +2069,37 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     return 0;
 }
 
-SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, SDL_bool freesrc, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+int SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioFormat *fmt, int *channels, int *freq, Uint8 **audio_buf, Uint32 *audio_len)
 {
     int result = -1;
     WaveFile file;
 
-    SDL_zero(file);
-
     /* Make sure we are passed a valid data source */
     if (src == NULL) {
-        /* Error may come from RWops. */
-        goto done;
-    } else if (spec == NULL) {
-        SDL_InvalidParamError("spec");
-        goto done;
+        return -1;  /* Error may come from RWops. */
+    } else if (fmt == NULL) {
+        return SDL_InvalidParamError("fmt");
+    } else if (channels == NULL) {
+        return SDL_InvalidParamError("channels");
+    } else if (freq == NULL) {
+        return SDL_InvalidParamError("freq");
     } else if (audio_buf == NULL) {
-        SDL_InvalidParamError("audio_buf");
-        goto done;
+        return SDL_InvalidParamError("audio_buf");
     } else if (audio_len == NULL) {
-        SDL_InvalidParamError("audio_len");
-        goto done;
+        return SDL_InvalidParamError("audio_len");
     }
 
     *audio_buf = NULL;
     *audio_len = 0;
 
+    SDL_zero(file);
     file.riffhint = WaveGetRiffSizeHint();
     file.trunchint = WaveGetTruncationHint();
     file.facthint = WaveGetFactChunkHint();
 
-    result = WaveLoad(src, &file, spec, audio_buf, audio_len);
+    result = WaveLoad(src, &file, fmt, channels, freq, audio_buf, audio_len);
     if (result < 0) {
         SDL_free(*audio_buf);
-        spec = NULL;
         audio_buf = NULL;
         audio_len = 0;
     }
@@ -2119,13 +2111,5 @@ SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, SDL_bool freesrc, SDL_AudioSpec *s
     WaveFreeChunkData(&file.chunk);
     SDL_free(file.decoderdata);
 
-done:
-    if (freesrc && src) {
-        SDL_RWclose(src);
-    }
-    if (result == 0) {
-        return spec;
-    } else {
-        return NULL;
-    }
+    return result;
 }

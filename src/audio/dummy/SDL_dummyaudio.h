@@ -25,6 +25,8 @@
 
 #include "../SDL_sysaudio.h"
 
+/* !!! FIXME: none of this is actually used. Dump this whole file. */
+
 struct SDL_PrivateAudioData
 {
     /* The file descriptor for the audio device */

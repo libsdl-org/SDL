@@ -434,49 +434,6 @@ static void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_fo
     SDL_assert(src == dst);  /* if we got here, we _had_ to have done _something_. Otherwise, we should have memcpy'd! */
 }
 
-struct SDL_AudioStream
-{
-    SDL_DataQueue *queue;
-    SDL_Mutex *lock;  /* this is just a copy of `queue`'s mutex. We share a lock. */
-
-    Uint8 *work_buffer;    /* used for scratch space during data conversion/resampling. */
-    Uint8 *history_buffer;  /* history for left padding and future sample rate changes. */
-    Uint8 *future_buffer;  /* stuff that left the queue for the right padding and will be next read's data. */
-    float *left_padding;  /* left padding for resampling. */
-    float *right_padding;  /* right padding for resampling. */
-
-    SDL_bool flushed;
-
-    size_t work_buffer_allocation;
-    size_t history_buffer_allocation;
-    size_t future_buffer_allocation;
-    size_t resampler_padding_allocation;
-
-    int resampler_padding_frames;
-    int history_buffer_frames;
-    int future_buffer_filled_frames;
-
-    int max_sample_frame_size;
-
-    int src_sample_frame_size;
-    SDL_AudioFormat src_format;
-    int src_channels;
-    int src_rate;
-
-    int dst_sample_frame_size;
-    SDL_AudioFormat dst_format;
-    int dst_channels;
-    int dst_rate;
-
-    int pre_resample_channels;
-    int packetlen;
-};
-
-static int GetMemsetSilenceValue(const SDL_AudioFormat fmt)
-{
-    return (fmt == SDL_AUDIO_U8) ? 0x80 : 0x00;
-}
-
 /* figure out the largest thing we might need for ConvertAudio, which might grow data in-place. */
 static int CalculateMaxSampleFrameSize(SDL_AudioFormat src_format, int src_channels, SDL_AudioFormat dst_format, int dst_channels)
 {
@@ -560,7 +517,7 @@ static int SetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioFormat src_for
     if (stream->future_buffer) {
         ConvertAudio(stream->future_buffer_filled_frames, stream->future_buffer, stream->src_format, stream->src_channels, future_buffer, src_format, src_channels);
     } else if (future_buffer != NULL) {
-        SDL_memset(future_buffer, GetMemsetSilenceValue(src_format), future_buffer_allocation);
+        SDL_memset(future_buffer, SDL_GetSilenceValueForFormat(src_format), future_buffer_allocation);
     }
 
     if (stream->history_buffer) {
@@ -568,10 +525,10 @@ static int SetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioFormat src_for
             ConvertAudio(history_buffer_frames, stream->history_buffer, stream->src_format, stream->src_channels, history_buffer, src_format, src_channels);
         } else {
             ConvertAudio(prev_history_buffer_frames, stream->history_buffer, stream->src_format, stream->src_channels, history_buffer + ((history_buffer_frames - prev_history_buffer_frames) * src_sample_frame_size), src_format, src_channels);
-            SDL_memset(history_buffer, GetMemsetSilenceValue(src_format), (history_buffer_frames - prev_history_buffer_frames) * src_sample_frame_size);  /* silence oldest history samples. */
+            SDL_memset(history_buffer, SDL_GetSilenceValueForFormat(src_format), (history_buffer_frames - prev_history_buffer_frames) * src_sample_frame_size);  /* silence oldest history samples. */
         }
     } else if (history_buffer != NULL) {
-        SDL_memset(history_buffer, GetMemsetSilenceValue(src_format), history_buffer_allocation);
+        SDL_memset(history_buffer, SDL_GetSilenceValueForFormat(src_format), history_buffer_allocation);
     }
 
     if (future_buffer != stream->future_buffer) {
@@ -611,6 +568,8 @@ SDL_AudioStream *SDL_CreateAudioStream(SDL_AudioFormat src_format,
 {
     int packetlen = 4096; /* !!! FIXME: good enough for now. */
     SDL_AudioStream *retval;
+
+    /* !!! FIXME: fail if audio isn't initialized? */
 
     if (!SDL_IsSupportedChannelCount(src_channels)) {
         SDL_InvalidParamError("src_channels");
@@ -917,7 +876,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         stream->future_buffer_filled_frames = future_buffer_filled_frames;
         if (br < cpy) {  /* we couldn't fill the future buffer with enough padding! */
             if (stream->flushed) {  /* that's okay, we're flushing, just silence the still-needed padding. */
-                SDL_memset(future_buffer + (future_buffer_filled_frames * src_sample_frame_size), GetMemsetSilenceValue(src_format), cpy - br);
+                SDL_memset(future_buffer + (future_buffer_filled_frames * src_sample_frame_size), SDL_GetSilenceValueForFormat(src_format), cpy - br);
             } else {  /* Drastic measures: steal from the work buffer! */
                 const int stealcpyframes = SDL_min(workbuf_frames, cpyframes - brframes);
                 const int stealcpy = stealcpyframes * src_sample_frame_size;
@@ -1100,7 +1059,7 @@ int SDL_ClearAudioStream(SDL_AudioStream *stream)
 
     SDL_LockMutex(stream->lock);
     SDL_ClearDataQueue(stream->queue, (size_t)stream->packetlen * 2);
-    SDL_memset(stream->history_buffer, GetMemsetSilenceValue(stream->src_format), stream->history_buffer_frames * stream->src_channels * sizeof (float));
+    SDL_memset(stream->history_buffer, SDL_GetSilenceValueForFormat(stream->src_format), stream->history_buffer_frames * stream->src_channels * sizeof (float));
     stream->future_buffer_filled_frames = 0;
     stream->flushed = SDL_FALSE;
     SDL_UnlockMutex(stream->lock);
@@ -1110,6 +1069,7 @@ int SDL_ClearAudioStream(SDL_AudioStream *stream)
 void SDL_DestroyAudioStream(SDL_AudioStream *stream)
 {
     if (stream) {
+        SDL_UnbindAudioStream(stream);
         /* do not destroy stream->lock! it's a copy of `stream->queue`'s mutex, so destroying the queue will handle it. */
         SDL_DestroyDataQueue(stream->queue);
         SDL_aligned_free(stream->work_buffer);
@@ -1120,3 +1080,56 @@ void SDL_DestroyAudioStream(SDL_AudioStream *stream)
         SDL_free(stream);
     }
 }
+
+int SDL_ConvertAudioSamples(SDL_AudioFormat src_format, int src_channels, int src_rate, const Uint8 *src_data, int src_len,
+                            SDL_AudioFormat dst_format, int dst_channels, int dst_rate, Uint8 **dst_data, int *dst_len)
+{
+    int ret = -1;
+    SDL_AudioStream *stream = NULL;
+    Uint8 *dst = NULL;
+    int dstlen = 0;
+
+    if (dst_data) {
+        *dst_data = NULL;
+    }
+
+    if (dst_len) {
+        *dst_len = 0;
+    }
+
+    if (src_data == NULL) {
+        return SDL_InvalidParamError("src_data");
+    } else if (src_len < 0) {
+        return SDL_InvalidParamError("src_len");
+    } else if (dst_data == NULL) {
+        return SDL_InvalidParamError("dst_data");
+    } else if (dst_len == NULL) {
+        return SDL_InvalidParamError("dst_len");
+    }
+
+    stream = SDL_CreateAudioStream(src_format, src_channels, src_rate, dst_format, dst_channels, dst_rate);
+    if (stream != NULL) {
+        if ((SDL_PutAudioStreamData(stream, src_data, src_len) == 0) && (SDL_FlushAudioStream(stream) == 0)) {
+            dstlen = SDL_GetAudioStreamAvailable(stream);
+            if (dstlen >= 0) {
+                dst = (Uint8 *)SDL_malloc(dstlen);
+                if (!dst) {
+                    SDL_OutOfMemory();
+                } else {
+                    ret = (SDL_GetAudioStreamData(stream, dst, dstlen) >= 0) ? 0 : -1;
+                }
+            }
+        }
+    }
+
+    if (ret == -1) {
+        SDL_free(dst);
+    } else {
+        *dst_data = dst;
+        *dst_len = dstlen;
+    }
+
+    SDL_DestroyAudioStream(stream);
+    return ret;
+}
+

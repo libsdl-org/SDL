@@ -25,20 +25,35 @@
 #include "../SDL_audio_c.h"
 #include "SDL_dummyaudio.h"
 
-static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *_this, const char *devname)
-{
-    _this->hidden = (void *)0x1; /* just something non-NULL */
+/* !!! FIXME: add a dummy WaitDevice to simulate real audio better? */
 
-    return 0; /* always succeeds. */
+static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
+{
+    device->hidden = (struct SDL_PrivateAudioData *) SDL_malloc(device->buffer_size);
+    if (!device->hidden) {
+        return SDL_OutOfMemory();
+    }
+    return 0; /* don't change reported device format. */
 }
 
-static int DUMMYAUDIO_CaptureFromDevice(SDL_AudioDevice *_this, void *buffer, int buflen)
+static void DUMMYAUDIO_CloseDevice(SDL_AudioDevice *device)
+{
+    SDL_free(device->hidden);
+    device->hidden = NULL;
+}
+
+static Uint8 *DUMMYAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+{
+    return (Uint8 *) device->hidden;
+}
+
+static int DUMMYAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     /* Delay to make this sort of simulate real audio input. */
-    SDL_Delay((_this->spec.samples * 1000) / _this->spec.freq);
+    SDL_Delay((device->sample_frames * 1000) / device->freq);
 
     /* always return a full buffer of silence. */
-    SDL_memset(buffer, _this->spec.silence, buflen);
+    SDL_memset(buffer, device->silence_value, buflen);
     return buflen;
 }
 
@@ -46,6 +61,8 @@ static SDL_bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
     impl->OpenDevice = DUMMYAUDIO_OpenDevice;
+    impl->CloseDevice = DUMMYAUDIO_CloseDevice;
+    impl->GetDeviceBuf = DUMMYAUDIO_GetDeviceBuf;
     impl->CaptureFromDevice = DUMMYAUDIO_CaptureFromDevice;
 
     impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
