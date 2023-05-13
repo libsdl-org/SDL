@@ -1370,6 +1370,9 @@ static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
 
     SDL_memset(uniq_item, 0, sizeof(uniq_item));
     fd_item = open(item->path, O_RDONLY | O_CLOEXEC, 0);
+    if (fd_item < 0) {
+        return NULL;
+    }
     if (ioctl(fd_item, EVIOCGUNIQ(sizeof(uniq_item) - 1), &uniq_item) < 0) {
         return NULL;
     }
@@ -1388,6 +1391,9 @@ static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
 
         SDL_memset(uniq_sensor, 0, sizeof(uniq_sensor));
         fd_sensor = open(item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
+        if (fd_sensor < 0) {
+            continue;
+        }
         if (ioctl(fd_sensor, EVIOCGUNIQ(sizeof(uniq_sensor) - 1), &uniq_sensor) < 0) {
             close(fd_sensor);
             continue;
@@ -1448,6 +1454,11 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
     if (joystick->hwdata->has_accelerometer) {
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
+    }
+    if (joystick->hwdata->fd_sensor >= 0) {
+        /* Don't keep fd_sensor opened while sensor is disabled */
+        close(joystick->hwdata->fd_sensor);
+        joystick->hwdata->fd_sensor = -1;
     }
 
     return 0;
@@ -1529,9 +1540,24 @@ static int LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enab
     if (!joystick->hwdata->has_accelerometer && !joystick->hwdata->has_gyro) {
         return SDL_Unsupported();
     }
+    if (enabled == joystick->hwdata->report_sensor) {
+        return 0;
+    }
+
+    if (enabled) {
+        SDL_assert(joystick->hwdata->item_sensor);
+        joystick->hwdata->fd_sensor = open(joystick->hwdata->item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
+        if (joystick->hwdata->fd_sensor < 0) {
+            return SDL_SetError("Couldn't open sensor file %s.", joystick->hwdata->item_sensor->path);
+        }
+        fcntl(joystick->hwdata->fd_sensor, F_SETFL, O_NONBLOCK);
+    } else {
+        SDL_assert(joystick->hwdata->fd_sensor >= 0);
+        close(joystick->hwdata->fd_sensor);
+        joystick->hwdata->fd_sensor = -1;
+    }
 
     joystick->hwdata->report_sensor = enabled;
-
     return 0;
 }
 
@@ -1681,9 +1707,10 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
     struct input_absinfo absinfo;
     int i;
 
+    SDL_assert(joystick->hwdata->fd_sensor >= 0);
+
     if (joystick->hwdata->has_gyro) {
         float data[3] = {0.0f, 0.0f, 0.0f};
-        SDL_assert(joystick->hwdata->fd_sensor >= 0);
         for (i = 0; i < 3; i++) {
             if (ioctl(joystick->hwdata->fd_sensor, EVIOCGABS(ABS_RX + i), &absinfo) >= 0) {
                 data[i] = absinfo.value * (SDL_PI_F / 180.f) / joystick->hwdata->gyro_scale[i];
@@ -1696,7 +1723,6 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
     }
     if (joystick->hwdata->has_accelerometer) {
         float data[3] = {0.0f, 0.0f, 0.0f};
-        SDL_assert(joystick->hwdata->fd_sensor >= 0);
         for (i = 0; i < 3; i++) {
             if (ioctl(joystick->hwdata->fd_sensor, EVIOCGABS(ABS_X + i), &absinfo) >= 0) {
                 data[i] = absinfo.value * SDL_STANDARD_GRAVITY / joystick->hwdata->accelerometer_scale[i];
@@ -1708,6 +1734,7 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, SDL_US_TO_NS(joystick->hwdata->sensor_tick), data, 3);
     }
 }
+
 static void HandleInputEvents(SDL_Joystick *joystick)
 {
     struct input_event events[32];
@@ -1718,7 +1745,9 @@ static void HandleInputEvents(SDL_Joystick *joystick)
     if (joystick->hwdata->fresh) {
         Uint64 ticks = SDL_GetTicksNS();
         PollAllValues(ticks, joystick);
-        PollAllSensors(ticks, joystick);
+        if (joystick->hwdata->report_sensor) {
+            PollAllSensors(ticks, joystick);
+        }
         joystick->hwdata->fresh = SDL_FALSE;
     }
 
