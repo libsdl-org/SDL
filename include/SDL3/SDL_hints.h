@@ -1785,6 +1785,21 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION "SDL_VIDEO_WAYLAND_MODE_EMULATION"
 
 /**
+ *  \brief  A variable controlling how modes with a non-native aspect ratio are displayed under Wayland.
+ *
+ *  When this hint is set, the requested scaling will be used when displaying fullscreen video modes
+ *  that don't match the display's native aspect ratio. This is contingent on compositor viewport support.
+ *
+ *  This variable can be set to the following values:
+ *    "aspect"       - Video modes will be displayed scaled, in their proper aspect ratio, with black bars.
+ *    "stretch"      - Video modes will be scaled to fill the entire display.
+ *    "none"         - Video modes will be displayed as 1:1 with no scaling.
+ *
+ *  By default 'stretch' is used.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_MODE_SCALING "SDL_VIDEO_WAYLAND_MODE_SCALING"
+
+/**
  *  \brief  Enable or disable mouse pointer warp emulation, needed by some older games.
  *
  *  When this hint is set, any SDL will emulate mouse warps using relative mouse mode.
