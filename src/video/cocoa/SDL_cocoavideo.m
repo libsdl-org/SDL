@@ -175,6 +175,10 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->GetClipboardText = Cocoa_GetClipboardText;
         device->HasClipboardText = Cocoa_HasClipboardText;
 
+        device->GetClipboardData = Cocoa_GetClipboardData;
+        device->HasClipboardData = Cocoa_HasClipboardData;
+        device->SetClipboardData = Cocoa_SetClipboardData;
+
         device->free = Cocoa_DeleteDevice;
 
         device->quirk_flags = VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT;
