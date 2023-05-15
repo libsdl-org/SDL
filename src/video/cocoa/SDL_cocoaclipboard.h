@@ -30,5 +30,10 @@ extern int Cocoa_SetClipboardText(SDL_VideoDevice *_this, const char *text);
 extern char *Cocoa_GetClipboardText(SDL_VideoDevice *_this);
 extern SDL_bool Cocoa_HasClipboardText(SDL_VideoDevice *_this);
 extern void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data);
+extern void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, size_t *len, const char *mime_type);
+extern SDL_bool Cocoa_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
+extern int Cocoa_SetClipboardData(SDL_VideoDevice *_this, SDL_ClipboardDataCallback callback, size_t mime_count,
+                                  const char **mime_types, void *userdata);
+
 
 #endif /* SDL_cocoaclipboard_h_ */
