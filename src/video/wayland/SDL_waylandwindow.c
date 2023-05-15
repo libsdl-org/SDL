@@ -53,6 +53,51 @@ static SDL_bool FloatEqual(float a, float b)
     return diff <= largest * SDL_FLT_EPSILON;
 }
 
+/* According to the Wayland spec:
+ *
+ * "If the [fullscreen] surface doesn't cover the whole output, the compositor will
+ * position the surface in the center of the output and compensate with border fill
+ * covering the rest of the output. The content of the border fill is undefined, but
+ * should be assumed to be in some way that attempts to blend into the surrounding area
+ * (e.g. solid black)."
+ *
+ * - KDE, as of 5.27, still doesn't do this
+ * - GNOME prior to 43 didn't do this (older versions are still found in many LTS distros)
+ *
+ * Default to 'stretch' for now, until things have moved forward enough that the default
+ * can be changed to 'aspect'.
+ */
+enum WaylandModeScale
+{
+    WAYLAND_MODE_SCALE_UNDEFINED,
+    WAYLAND_MODE_SCALE_ASPECT,
+    WAYLAND_MODE_SCALE_STRETCH,
+    WAYLAND_MODE_SCALE_NONE
+};
+
+static enum WaylandModeScale GetModeScaleMethod()
+{
+    static enum WaylandModeScale scale_mode = WAYLAND_MODE_SCALE_UNDEFINED;
+
+    if (scale_mode == WAYLAND_MODE_SCALE_UNDEFINED) {
+        const char *scale_hint = SDL_GetHint(SDL_HINT_VIDEO_WAYLAND_MODE_SCALING);
+
+        if (scale_hint) {
+            if (!SDL_strcasecmp(scale_hint, "aspect")) {
+                scale_mode = WAYLAND_MODE_SCALE_ASPECT;
+            } else if (!SDL_strcasecmp(scale_hint, "none")) {
+                scale_mode = WAYLAND_MODE_SCALE_NONE;
+            } else {
+                scale_mode = WAYLAND_MODE_SCALE_STRETCH;
+            }
+        } else {
+            scale_mode = WAYLAND_MODE_SCALE_STRETCH;
+        }
+    }
+
+    return scale_mode;
+}
+
 static SDL_bool SurfaceScaleIsFractional(SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
@@ -213,10 +258,38 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 
     if (data->is_fullscreen && window->fullscreen_exclusive) {
         /* If the compositor supplied fullscreen dimensions, use them, otherwise fall back to the display dimensions. */
-        const int output_width = data->requested_window_width ? data->requested_window_width : output->screen_width;
-        const int output_height = data->requested_window_height ? data->requested_window_height : output->screen_height;
+        int output_width = data->requested_window_width ? data->requested_window_width : output->screen_width;
+        int output_height = data->requested_window_height ? data->requested_window_height : output->screen_height;
         window_width = window->current_fullscreen_mode.w;
         window_height = window->current_fullscreen_mode.h;
+
+        switch (GetModeScaleMethod()) {
+        case WAYLAND_MODE_SCALE_NONE:
+            /* The Wayland spec states that the advertised fullscreen dimensions are a maximum.
+             * Windows can request a smaller size, but exceeding these dimensions is a protocol violation,
+             * thus, modes that exceed the output size still need to be scaled with a viewport.
+             */
+            if (window_width <= output_width && window_height <= output_height) {
+                output_width = window_width;
+                output_height = window_height;
+
+                break;
+            }
+            SDL_FALLTHROUGH;
+        case WAYLAND_MODE_SCALE_ASPECT:
+        {
+            const float output_ratio = (float)output_width / (float)output_height;
+            const float mode_ratio = (float)window_width / (float)window_height;
+
+            if (output_ratio > mode_ratio) {
+                output_width = SDL_lroundf((float)window_width * ((float)output_height / (float)window_height));
+            } else if (output_ratio < mode_ratio) {
+                output_height = SDL_lroundf((float)window_height * ((float)output_width / (float)window_width));
+            }
+        } break;
+        default:
+            break;
+        }
 
         window_size_changed = window_width != window->w || window_height != window->h ||
             data->wl_window_width != output_width || data->wl_window_height != output_height;
