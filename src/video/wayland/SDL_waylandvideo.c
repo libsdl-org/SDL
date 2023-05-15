@@ -599,7 +599,7 @@ static void display_handle_done(void *data,
             driverdata->screen_height /= (int)driverdata->scale_factor;
         }
     } else {
-        /* Calculate the screen coordinates from the pixel values, if xdg-output isn't present.
+        /* Calculate the points from the pixel values, if xdg-output isn't present.
          * Use the native mode pixel values since they are pre-transformed.
          */
         driverdata->screen_width = native_mode.pixel_w / (int)driverdata->scale_factor;

@@ -140,7 +140,7 @@ typedef enum
 typedef enum
 {
     SDL_LOGICAL_PRESENTATION_DISABLED,  /**< There is no logical size in effect */
-    SDL_LOGICAL_PRESENTATION_MATCH,     /**< The rendered content matches the window size in screen coordinates */
+    SDL_LOGICAL_PRESENTATION_MATCH,     /**< The rendered content matches the window size in points */
     SDL_LOGICAL_PRESENTATION_STRETCH,   /**< The rendered content is stretched to the output resolution */
     SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with black bars */
     SDL_LOGICAL_PRESENTATION_OVERSCAN,  /**< The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds */
@@ -235,8 +235,8 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, U
  * need a specific renderer, specify NULL and SDL will attempt to chooes the
  * best option for you, based on what is available on the user's system.
  *
- * By default the rendering size matches the window size in screen
- * coordinates, but you can call SDL_SetRenderLogicalPresentation() to enable
+ * By default the rendering size matches the window size in points,
+ * but you can call SDL_SetRenderLogicalPresentation() to enable
  * high DPI rendering or change the content size and scaling options.
  *
  * \param window the window where rendering is displayed
@@ -317,14 +317,14 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetRenderWindow(SDL_Renderer *renderer);
 extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_RendererInfo *info);
 
 /**
- * Get the output size in screen coordinates of a rendering context.
+ * Get the output size in points of a rendering context.
  *
- * This returns the true output size in screen coordinates, ignoring any
+ * This returns the true output size in points, ignoring any
  * render targets or logical size and presentation.
  *
  * \param renderer the rendering context
- * \param w a pointer filled in with the width in screen coordinates
- * \param h a pointer filled in with the height in screen coordinates
+ * \param w a pointer filled in with the width in points
+ * \param h a pointer filled in with the height in points
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -841,8 +841,7 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_GetRenderTarget(SDL_Renderer *renderer)
  * then copied to the output during presentation.
  *
  * When a renderer is created, the logical size is set to match the window
- * size in screen coordinates. The actual output size may be higher pixel
- * density, and can be queried with SDL_GetRenderOutputSize().
+ * size in points. The actual output size may be higher pixel density, and can be queried with SDL_GetRenderOutputSize().
  *
  * You can disable logical coordinates by setting the mode to
  * SDL_LOGICAL_PRESENTATION_DISABLED, and in that case you get the full
@@ -887,7 +886,7 @@ extern DECLSPEC int SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *rende
 extern DECLSPEC int SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL_RendererLogicalPresentation *mode, SDL_ScaleMode *scale_mode);
 
 /**
- * Get a point in render coordinates when given a point in window coordinates.
+ * Get a point in render coordinates when given a point in window coordinates (points).
  *
  * \param renderer the rendering context
  * \param window_x the x coordinate in window coordinates
@@ -905,7 +904,7 @@ extern DECLSPEC int SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *rende
 extern DECLSPEC int SDLCALL SDL_RenderCoordinatesFromWindow(SDL_Renderer *renderer, float window_x, float window_y, float *x, float *y);
 
 /**
- * Get a point in window coordinates when given a point in render coordinates.
+ * Get a point in window coordinates (points) when given a point in render coordinates.
  *
  * \param renderer the rendering context
  * \param x the x coordinate in render coordinates

@@ -139,7 +139,7 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL m
     UINT frame_dpi;
 #endif
 
-    /* Client rect, in SDL screen coordinates */
+    /* Client rect, in points */
     SDL_RelativeToGlobalForWindow(window,
                                   (use_current ? window->x : window->windowed.x),
                                   (use_current ? window->y : window->windowed.y),
@@ -147,7 +147,7 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL m
     *width = (use_current ? window->w : window->windowed.w);
     *height = (use_current ? window->h : window->windowed.h);
 
-    /* Convert client rect from SDL coordinates to pixels (no-op if DPI scaling not enabled) */
+    /* Convert client rect from points to pixels (no-op if DPI scaling not enabled) */
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     WIN_ScreenPointFromSDL(x, y, &dpi);
 #endif

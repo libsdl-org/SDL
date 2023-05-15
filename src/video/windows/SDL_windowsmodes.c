@@ -597,7 +597,7 @@ void WIN_ScreenPointFromSDLFloat(float x, float y, LONG *xOut, LONG *yOut, int *
         goto passthrough;
     }
 
-    /* Can't use MonitorFromPoint for this because we currently have SDL coordinates, not pixels */
+    /* Can't use MonitorFromPoint for this because we currently have SDL points, not pixels */
     displayID = SDL_GetDisplayForPoint(&point);
     if (displayID == 0) {
         goto passthrough;
