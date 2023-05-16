@@ -160,8 +160,8 @@ static void AddDispManXDisplay(const int display_id)
 
     /* RPI_GetRefreshRate() doesn't distinguish between displays. I'm not sure the hardware distinguishes either */
     SDL_zero(mode);
-    mode.pixel_w = modeinfo.width;
-    mode.pixel_h = modeinfo.height;
+    mode.w = modeinfo.width;
+    mode.h = modeinfo.height;
     mode.refresh_rate = RPI_GetRefreshRate();
 
     /* 32 bpp for default */
@@ -245,8 +245,8 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     displaydata = display->driverdata;
 
     /* Windows have one size for now */
-    window->w = display->desktop_mode.screen_w;
-    window->h = display->desktop_mode.screen_h;
+    window->w = display->desktop_mode.w;
+    window->h = display->desktop_mode.h;
 
     /* OpenGL ES is the law here, buddy */
     window->flags |= SDL_WINDOW_OPENGL;

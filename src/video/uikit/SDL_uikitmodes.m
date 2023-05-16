@@ -141,9 +141,9 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
         return -1;
     }
 
-    mode.pixel_w = w;
-    mode.pixel_h = h;
-    mode.display_scale = uiscreen.nativeScale;
+    mode.w = w;
+    mode.h = h;
+    mode.pixel_density = uiscreen.nativeScale;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
@@ -209,9 +209,9 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
 
     SDL_zero(mode);
-    mode.pixel_w = (int)size.width;
-    mode.pixel_h = (int)size.height;
-    mode.display_scale = uiscreen.nativeScale;
+    mode.w = (int)size.width;
+    mode.h = (int)size.height;
+    mode.pixel_density = uiscreen.nativeScale;
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
 
@@ -337,11 +337,11 @@ int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
             /* [UIApplication setStatusBarOrientation:] no longer works reliably
              * in recent iOS versions, so we can't rotate the screen when setting
              * the display mode. */
-            if (mode->pixel_w > mode->pixel_h) {
+            if (mode->w > mode->h) {
                 if (!UIKit_IsDisplayLandscape(data.uiscreen)) {
                     return SDL_SetError("Screen orientation does not match display mode size");
                 }
-            } else if (mode->pixel_w < mode->pixel_h) {
+            } else if (mode->w < mode->h) {
                 if (UIKit_IsDisplayLandscape(data.uiscreen)) {
                     return SDL_SetError("Screen orientation does not match display mode size");
                 }
@@ -412,25 +412,19 @@ void SDL_OnApplicationDidChangeStatusBarOrientation()
          * orientation so that updating a window's fullscreen state to
          * fullscreen desktop keeps the window dimensions in the
          * correct orientation. */
-        if (isLandscape != (mode->pixel_w > mode->pixel_h)) {
-            int height = mode->pixel_w;
-            mode->pixel_w = mode->pixel_h;
-            mode->pixel_h = height;
-            height = mode->screen_w;
-            mode->screen_w = mode->screen_h;
-            mode->screen_h = height;
+        if (isLandscape != (mode->w > mode->h)) {
+            int height = mode->w;
+            mode->w = mode->h;
+            mode->h = height;
         }
 
         /* Same deal with the fullscreen modes */
         for (i = 0; i < display->num_fullscreen_modes; ++i) {
             mode = &display->fullscreen_modes[i];
-            if (isLandscape != (mode->pixel_w > mode->pixel_h)) {
-                int height = mode->pixel_w;
-                mode->pixel_w = mode->pixel_h;
-                mode->pixel_h = height;
-                height = mode->screen_w;
-                mode->screen_w = mode->screen_h;
-                mode->screen_h = height;
+            if (isLandscape != (mode->w > mode->h)) {
+                int height = mode->w;
+                mode->w = mode->h;
+                mode->h = height;
             }
         }
 

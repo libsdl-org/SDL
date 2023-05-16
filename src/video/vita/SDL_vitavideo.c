@@ -182,20 +182,20 @@ int VITA_VideoInit(SDL_VideoDevice *_this)
     if (res) {
         /* 1088i for PSTV (Or Sharpscale) */
         if (!SDL_strncmp(res, "1080", 4)) {
-            mode.pixel_w = 1920;
-            mode.pixel_h = 1088;
+            mode.w = 1920;
+            mode.h = 1088;
         }
         /* 725p for PSTV (Or Sharpscale) */
         else if (!SDL_strncmp(res, "720", 3)) {
-            mode.pixel_w = 1280;
-            mode.pixel_h = 725;
+            mode.w = 1280;
+            mode.h = 725;
         }
     }
     /* 544p */
     else {
 #endif
-        mode.pixel_w = 960;
-        mode.pixel_h = 544;
+        mode.w = 960;
+        mode.h = 544;
 #ifdef SDL_VIDEO_VITA_PVR
     }
 #endif

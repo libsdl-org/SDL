@@ -135,11 +135,13 @@ static int VIVANTE_AddVideoDisplays(SDL_VideoDevice *_this)
 #ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     data->native_display = vdkGetDisplay(videodata->vdk_private);
 
-    vdkGetDisplayInfo(data->native_display, &mode.pixel_w, &mode.pixel_h, &pixels, &pitch, &bpp);
+    vdkGetDisplayInfo(data->native_display, &mode.w, &mode.h, &pixels, &pitch,
+                      &bpp);
 #else
     data->native_display = videodata->fbGetDisplayByIndex(0);
 
-    videodata->fbGetDisplayInfo(data->native_display, &mode.pixel_w, &mode.pixel_h, &pixels, &pitch, &bpp);
+    videodata->fbGetDisplayInfo(data->native_display, &mode.w, &mode.h,
+                                &pixels, &pitch, &bpp);
 #endif /* SDL_VIDEO_DRIVER_VIVANTE_VDK */
 
     switch (bpp) {

@@ -399,7 +399,6 @@ struct SDL_VideoData
     /* *INDENT-ON* */ /* clang-format on */
 #endif                /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
-    SDL_bool dpi_scaling_enabled;
     SDL_bool cleared;
 
 #ifndef SDL_DISABLE_WINDOWS_IME

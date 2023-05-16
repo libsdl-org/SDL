@@ -863,7 +863,6 @@
 #define SDL_ConvertEventToRenderCoordinates SDL_ConvertEventToRenderCoordinates_REAL
 #define SDL_SetRenderScale SDL_SetRenderScale_REAL
 #define SDL_GetRenderScale SDL_GetRenderScale_REAL
-#define SDL_GetRenderWindowSize SDL_GetRenderWindowSize_REAL
 #define SDL_GetSystemTheme SDL_GetSystemTheme_REAL
 #define SDL_CreatePopupWindow SDL_CreatePopupWindow_REAL
 #define SDL_GetWindowParent SDL_GetWindowParent_REAL
@@ -882,3 +881,5 @@
 #define SDL_UnlockRWLock SDL_UnlockRWLock_REAL
 #define SDL_DestroyRWLock SDL_DestroyRWLock_REAL
 #define SDL_GetPath SDL_GetPath_REAL
+#define SDL_GetDisplayContentScale SDL_GetDisplayContentScale_REAL
+#define SDL_GetWindowDisplayScale SDL_GetWindowDisplayScale_REAL

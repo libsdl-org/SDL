@@ -78,6 +78,7 @@ struct SDL_Window
     int max_w, max_h;
     int last_pixel_w, last_pixel_h;
     Uint32 flags;
+    float display_scale;
     SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
     SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
     SDL_DisplayID last_displayID;
@@ -144,6 +145,7 @@ struct SDL_VideoDisplay
     SDL_DisplayMode desktop_mode;
     const SDL_DisplayMode *current_mode;
     SDL_DisplayOrientation orientation;
+    float content_scale;
 
     SDL_Window *fullscreen_window;
 
@@ -499,6 +501,7 @@ extern SDL_bool SDL_AddFullscreenDisplayMode(SDL_VideoDisplay *display, const SD
 extern void SDL_ResetFullscreenDisplayModes(SDL_VideoDisplay *display);
 extern void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
 extern void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
+extern void SDL_SetDisplayContentScale(SDL_VideoDisplay *display, float scale);
 extern SDL_VideoDisplay *SDL_GetVideoDisplay(SDL_DisplayID display);
 extern SDL_VideoDisplay *SDL_GetVideoDisplayForWindow(SDL_Window *window);
 extern int SDL_GetDisplayIndex(SDL_DisplayID displayID);

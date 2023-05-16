@@ -174,6 +174,13 @@ static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode,
     pixelW = CGDisplayModeGetPixelWidth(vidmode);
     pixelH = CGDisplayModeGetPixelHeight(vidmode);
 
+    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_ENABLE_HIGH_PIXEL_DENSITY, SDL_TRUE)) {
+        if (width != pixelW) {
+            /* We don't want high pixel density modes */
+            return SDL_FALSE;
+        }
+    }
+
     if (modelist != NULL) {
         CFIndex modescount = CFArrayGetCount(modelist);
         int i;
@@ -253,10 +260,9 @@ static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode,
     }
     data->modes = modes;
     mode->format = format;
-    mode->pixel_w = (int)pixelW;
-    mode->pixel_h = (int)pixelH;
-    mode->screen_w = (int)width;
-    mode->screen_h = (int)height;
+    mode->w = (int)width;
+    mode->h = (int)height;
+    mode->pixel_density = (float)pixelW / width;
     mode->refresh_rate = refreshrate;
     mode->driverdata = data;
     return SDL_TRUE;

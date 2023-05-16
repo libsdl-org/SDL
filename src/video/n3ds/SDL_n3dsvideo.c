@@ -114,8 +114,8 @@ static int AddN3DSDisplay(gfxScreen_t screen)
 
     display_driver_data->screen = screen;
 
-    mode.pixel_w = (screen == GFX_TOP) ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_BOTTOM;
-    mode.pixel_h = GSP_SCREEN_WIDTH;
+    mode.w = (screen == GFX_TOP) ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_BOTTOM;
+    mode.h = GSP_SCREEN_WIDTH;
     mode.refresh_rate = 60.0f;
     mode.format = FRAMEBUFFER_FORMAT;
 
@@ -146,8 +146,8 @@ static int N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
 
     rect->x = 0;
     rect->y = (driver_data->screen == GFX_TOP) ? 0 : GSP_SCREEN_WIDTH;
-    rect->w = display->current_mode->screen_w;
-    rect->h = display->current_mode->screen_h;
+    rect->w = display->current_mode->w;
+    rect->h = display->current_mode->h;
     return 0;
 }
 

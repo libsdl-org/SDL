@@ -70,11 +70,6 @@ struct SDL_WindowData
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
-    /**
-     * Cached value of GetDpiForWindow, for use for scaling points in the client area
-     * between dpi-scaled points and pixels. Only used if videodata->dpi_scaling_enabled.
-     */
-    int scaling_dpi;
 
     /* Whether we retain the content of the window when changing state */
     UINT copybits_flag;
@@ -109,10 +104,6 @@ extern int WIN_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struc
 extern void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_UpdateClipCursor(SDL_Window *window);
 extern int WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
-extern void WIN_ClientPointToSDL(const SDL_Window *window, int *x, int *y);
-extern void WIN_ClientPointToSDLFloat(const SDL_Window *window, LONG x, LONG y, float *xOut, float *yOut);
-extern void WIN_ClientPointFromSDL(const SDL_Window *window, int *x, int *y);
-extern void WIN_ClientPointFromSDLFloat(const SDL_Window *window, float x, float y, LONG *xOut, LONG *yOut);
 extern void WIN_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
 extern void WIN_UpdateDarkModeForHWND(HWND hwnd);

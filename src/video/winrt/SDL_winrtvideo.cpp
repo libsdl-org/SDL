@@ -253,8 +253,8 @@ extern "C" Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat);
 static void WINRT_DXGIModeToSDLDisplayMode(const DXGI_MODE_DESC *dxgiMode, SDL_DisplayMode *sdlMode)
 {
     SDL_zerop(sdlMode);
-    sdlMode->pixel_w = dxgiMode->Width;
-    sdlMode->pixel_h = dxgiMode->Height;
+    sdlMode->w = dxgiMode->Width;
+    sdlMode->h = dxgiMode->Height;
     sdlMode->refresh_rate = (((100 * dxgiMode->RefreshRate.Numerator) / dxgiMode->RefreshRate.Denominator) / 100.0f);
     sdlMode->format = D3D11_DXGIFormatToSDLPixelFormat(dxgiMode->Format);
 }
@@ -303,8 +303,8 @@ static int WINRT_AddDisplaysForOutput(SDL_VideoDevice *_this, IDXGIAdapter1 *dxg
         SDL_DisplayMode mode;
         SDL_zero(mode);
         display.name = SDL_strdup("Windows Simulator / Terminal Services Display");
-        mode.pixel_w = (dxgiOutputDesc.DesktopCoordinates.right - dxgiOutputDesc.DesktopCoordinates.left);
-        mode.pixel_h = (dxgiOutputDesc.DesktopCoordinates.bottom - dxgiOutputDesc.DesktopCoordinates.top);
+        mode.w = (dxgiOutputDesc.DesktopCoordinates.right - dxgiOutputDesc.DesktopCoordinates.left);
+        mode.h = (dxgiOutputDesc.DesktopCoordinates.bottom - dxgiOutputDesc.DesktopCoordinates.top);
         mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
         display.desktop_mode = mode;
     } else if (FAILED(hr)) {
@@ -409,23 +409,18 @@ static int WINRT_AddDisplaysForAdapter(SDL_VideoDevice *_this, IDXGIFactory2 *dx
                 */
 
 #if (NTDDI_VERSION >= NTDDI_WIN10) || (SDL_WINRT_USE_APPLICATIONVIEW && SDL_WINAPI_FAMILY_PHONE)
-                mode.pixel_w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
-                mode.pixel_h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
-                mode.screen_w = (int)SDL_floorf(appView->VisibleBounds.Width);
-                mode.screen_h = (int)SDL_floorf(appView->VisibleBounds.Height);
-                mode.display_scale = WINRT_DISPLAY_PROPERTY(LogicalDpi) / 96.0f;
+                mode.w = (int)SDL_floorf(appView->VisibleBounds.Width);
+                mode.h = (int)SDL_floorf(appView->VisibleBounds.Height);
 #else
                 /* On platform(s) that do not support VisibleBounds, such as Windows 8.1,
                    fall back to CoreWindow's Bounds property.
                 */
-                mode.pixel_w = WINRT_DIPS_TO_PHYSICAL_PIXELS(coreWin->Bounds.Width);
-                mode.pixel_h = WINRT_DIPS_TO_PHYSICAL_PIXELS(coreWin->Bounds.Height);
-                mode.screen_w = (int)SDL_floorf(coreWin->Bounds.Width);
-                mode.screen_h = (int)SDL_floorf(coreWin->Bounds.Height);
-                mode.display_scale = WINRT_DISPLAY_PROPERTY(LogicalDpi) / 96.0f;
+                mode.w = (int)SDL_floorf(coreWin->Bounds.Width);
+                mode.h = (int)SDL_floorf(coreWin->Bounds.Height);
 #endif
-
+                mode.pixel_density = WINRT_DISPLAY_PROPERTY(LogicalDpi) / 96.0f;
                 mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
+
                 display.desktop_mode = mode;
                 bool error = (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0);
                 if (display.name) {
@@ -529,7 +524,7 @@ WINRT_DetectWindowFlags(SDL_Window *window)
             }
 #endif
 
-            if (display->desktop_mode.pixel_w != w || display->desktop_mode.pixel_h != h) {
+            if (display->desktop_mode.w != w || display->desktop_mode.h != h) {
                 latestFlags |= SDL_WINDOW_MAXIMIZED;
             } else {
                 latestFlags |= SDL_WINDOW_FULLSCREEN;

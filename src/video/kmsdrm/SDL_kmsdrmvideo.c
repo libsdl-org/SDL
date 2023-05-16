@@ -865,8 +865,8 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *connecto
     modedata->mode_index = mode_index;
 
     display.driverdata = dispdata;
-    display.desktop_mode.pixel_w = dispdata->mode.hdisplay;
-    display.desktop_mode.pixel_h = dispdata->mode.vdisplay;
+    display.desktop_mode.w = dispdata->mode.hdisplay;
+    display.desktop_mode.h = dispdata->mode.vdisplay;
     display.desktop_mode.refresh_rate = CalculateRefreshRate(&dispdata->mode);
     display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
     display.desktop_mode.driverdata = modedata;
@@ -1179,8 +1179,8 @@ int KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window)
 
     /*
     SDL_zero(current_mode);
-    current_mode.pixel_w = dispdata->mode.hdisplay;
-    current_mode.pixel_h = dispdata->mode.vdisplay;
+    current_mode.w = dispdata->mode.hdisplay;
+    current_mode.h = dispdata->mode.vdisplay;
     current_mode.refresh_rate = CalculateRefreshRate(&dispdata->mode);
     current_mode.format = SDL_PIXELFORMAT_ARGB8888;
     SDL_SetCurrentDisplayMode(display, &current_mode);
@@ -1295,8 +1295,8 @@ int KMSDRM_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
         }
 
         SDL_zero(mode);
-        mode.pixel_w = conn->modes[i].hdisplay;
-        mode.pixel_h = conn->modes[i].vdisplay;
+        mode.w = conn->modes[i].hdisplay;
+        mode.h = conn->modes[i].vdisplay;
         mode.refresh_rate = CalculateRefreshRate(&conn->modes[i]);
         mode.format = SDL_PIXELFORMAT_ARGB8888;
         mode.driverdata = modedata;
