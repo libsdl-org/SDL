@@ -533,6 +533,9 @@ SDL_CalculateBlit1(SDL_Surface *surface)
     case SDL_COPY_COLORKEY:
         return one_blitkey[which];
 
+    case SDL_COPY_COLORKEY | SDL_COPY_BLEND:  /* this is not super-robust but handles a specific case we found sdl12-compat. */
+        return (surface->map->info.a == 255) ? one_blitkey[which] : (SDL_BlitFunc)NULL;
+
     case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
         /* Supporting 8bpp->8bpp alpha is doable but requires lots of
            tables which consume space and takes time to precompute,
