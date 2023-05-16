@@ -217,11 +217,11 @@ static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRC
             }
 
             if (rotation & (XRANDR_ROTATION_LEFT | XRANDR_ROTATION_RIGHT)) {
-                mode->pixel_w = info->height;
-                mode->pixel_h = info->width;
+                mode->w = info->height;
+                mode->h = info->width;
             } else {
-                mode->pixel_w = info->width;
-                mode->pixel_h = info->height;
+                mode->w = info->width;
+                mode->h = info->height;
             }
             mode->refresh_rate = CalculateXRandRRefreshRate(info);
             ((SDL_DisplayModeData *)mode->driverdata)->xrandr_mode = modeID;
@@ -344,8 +344,8 @@ static int X11_AddXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int screen
 
     SDL_zero(mode);
     modeID = crtc->mode;
-    mode.pixel_w = crtc->width;
-    mode.pixel_h = crtc->height;
+    mode.w = crtc->width;
+    mode.h = crtc->height;
     mode.format = pixelformat;
 
     display_x = crtc->x;
@@ -551,8 +551,8 @@ static int X11_InitModes_StdXlib(SDL_VideoDevice *_this)
     }
 
     SDL_zero(mode);
-    mode.pixel_w = WidthOfScreen(screen);
-    mode.pixel_h = HeightOfScreen(screen);
+    mode.w = WidthOfScreen(screen);
+    mode.h = HeightOfScreen(screen);
     mode.format = pixelformat;
 
     displaydata = (SDL_DisplayData *)SDL_calloc(1, sizeof(*displaydata));
@@ -734,8 +734,8 @@ int X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SD
             goto ungrabServer;
         }
 
-        mm_width = mode->pixel_w * DisplayWidthMM(display, data->screen) / DisplayWidth(display, data->screen);
-        mm_height = mode->pixel_h * DisplayHeightMM(display, data->screen) / DisplayHeight(display, data->screen);
+        mm_width = mode->w * DisplayWidthMM(display, data->screen) / DisplayWidth(display, data->screen);
+        mm_height = mode->h * DisplayHeightMM(display, data->screen) / DisplayHeight(display, data->screen);
 
         /* !!! FIXME: this can get into a problem scenario when a window is
            bigger than a physical monitor in a configuration where one screen
@@ -746,7 +746,8 @@ int X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SD
            crashing */
         X11_XSync(display, False);
         PreXRRSetScreenSizeErrorHandler = X11_XSetErrorHandler(SDL_XRRSetScreenSizeErrHandler);
-        X11_XRRSetScreenSize(display, RootWindow(display, data->screen), mode->pixel_w, mode->pixel_h, mm_width, mm_height);
+        X11_XRRSetScreenSize(display, RootWindow(display, data->screen),
+                             mode->w, mode->h, mm_width, mm_height);
         X11_XSync(display, False);
         X11_XSetErrorHandler(PreXRRSetScreenSizeErrorHandler);
 
@@ -782,8 +783,8 @@ int X11_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, 
 
     rect->x = data->x;
     rect->y = data->y;
-    rect->w = sdl_display->current_mode->screen_w;
-    rect->h = sdl_display->current_mode->screen_h;
+    rect->w = sdl_display->current_mode->w;
+    rect->h = sdl_display->current_mode->h;
     return 0;
 }
 

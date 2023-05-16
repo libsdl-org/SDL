@@ -39,10 +39,6 @@ struct SDL_DisplayModeData
 extern int WIN_InitModes(SDL_VideoDevice *_this);
 extern int WIN_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
 extern int WIN_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
-extern void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut);
-extern void WIN_ScreenPointFromSDLFloat(float x, float y, LONG *xOut, LONG *yOut, int *dpiOut);
-extern void WIN_ScreenPointToSDL(int *x, int *y);
-extern void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut);
 extern int WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 extern int WIN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void WIN_RefreshDisplays(SDL_VideoDevice *_this);

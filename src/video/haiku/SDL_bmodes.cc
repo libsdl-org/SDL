@@ -167,8 +167,8 @@ int32 HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
 
 static void _BDisplayModeToSdlDisplayMode(display_mode *bmode, SDL_DisplayMode *mode) {
     SDL_zerop(mode);
-    mode->pixel_w = bmode->virtual_width;
-    mode->pixel_h = bmode->virtual_height;
+    mode->w = bmode->virtual_width;
+    mode->h = bmode->virtual_height;
     mode->refresh_rate = get_refresh_rate(*bmode);
 
 #if WRAP_BMODE

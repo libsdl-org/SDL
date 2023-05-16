@@ -156,9 +156,34 @@ static float WIN_GetRefreshRate(DEVMODE *mode)
     }
 }
 
-static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, HMONITOR hMonitor, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *orientation)
+static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
 {
     const SDL_VideoData *videodata = (const SDL_VideoData *)_this->driverdata;
+    int dpi = 0;
+
+    if (videodata->GetDpiForMonitor) {
+        UINT hdpi_uint, vdpi_uint;
+        if (videodata->GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &hdpi_uint, &vdpi_uint) == S_OK) {
+            dpi = (int)hdpi_uint;
+        }
+    }
+    if (dpi == 0) {
+        /* Window 8.0 and below: same DPI for all monitors */
+        HDC hdc = GetDC(NULL);
+        if (hdc) {
+            dpi = GetDeviceCaps(hdc, LOGPIXELSX);
+            ReleaseDC(NULL, hdc);
+        }
+    }
+    if (dpi == 0) {
+        /* Safe default */
+        dpi = 96;
+    }
+    return dpi / 96.0f;
+}
+
+static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, HMONITOR hMonitor, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *orientation)
+{
     SDL_DisplayModeData *data;
     DEVMODE devmode;
 
@@ -178,16 +203,9 @@ static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, HMONITOR hMonitor, LP
     data->DeviceMode = devmode;
 
     mode->format = SDL_PIXELFORMAT_UNKNOWN;
-    mode->pixel_w = data->DeviceMode.dmPelsWidth;
-    mode->pixel_h = data->DeviceMode.dmPelsHeight;
+    mode->w = data->DeviceMode.dmPelsWidth;
+    mode->h = data->DeviceMode.dmPelsHeight;
     mode->refresh_rate = WIN_GetRefreshRate(&data->DeviceMode);
-
-    if (index == ENUM_CURRENT_SETTINGS && videodata->GetDpiForMonitor && videodata->dpi_scaling_enabled) {
-        UINT hdpi_uint, vdpi_uint;
-        if (videodata->GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &hdpi_uint, &vdpi_uint) == S_OK) {
-            mode->display_scale = hdpi_uint / 96.0f;
-        }
-    }
 
     /* Fill in the mode information */
     WIN_UpdateDisplayMode(_this, deviceName, index, mode);
@@ -308,6 +326,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     SDL_DisplayData *displaydata;
     SDL_DisplayMode mode;
     SDL_DisplayOrientation orientation;
+    float content_scale = WIN_GetContentScale(_this, hMonitor);
 
 #ifdef DEBUG_MODES
     SDL_Log("Display: %s\n", WIN_StringToUTF8W(info->szDevice));
@@ -354,6 +373,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
                     SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_MOVED, 0);
                 }
                 SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
+                SDL_SetDisplayContentScale(existing_display, content_scale);
             }
             goto done;
         }
@@ -380,6 +400,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 
     display.desktop_mode = mode;
     display.orientation = orientation;
+    display.content_scale = content_scale;
     display.device = _this;
     display.driverdata = displaydata;
     WIN_GetDisplayBounds(_this, &display, &displaydata->bounds);
@@ -446,44 +467,9 @@ int WIN_InitModes(SDL_VideoDevice *_this)
     return 0;
 }
 
-/**
- * Convert the monitor rect and work rect from pixels to the SDL coordinate system (monitor origins are in pixels,
- * monitor size in DPI-scaled points).
- *
- * No-op if DPI scaling is not enabled.
- */
-static void WIN_MonitorInfoToSDL(const SDL_VideoData *videodata, HMONITOR monitor, MONITORINFO *info)
-{
-    UINT xdpi, ydpi;
-
-    if (!videodata->dpi_scaling_enabled) {
-        return;
-    }
-
-    /* Check for Windows < 8.1*/
-    if (!videodata->GetDpiForMonitor) {
-        return;
-    }
-    if (videodata->GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &xdpi, &ydpi) != S_OK) {
-        /* Shouldn't happen? */
-        return;
-    }
-
-    /* Convert monitor size to points, leaving the monitor position in pixels */
-    info->rcMonitor.right = info->rcMonitor.left + MulDiv(info->rcMonitor.right - info->rcMonitor.left, 96, xdpi);
-    info->rcMonitor.bottom = info->rcMonitor.top + MulDiv(info->rcMonitor.bottom - info->rcMonitor.top, 96, ydpi);
-
-    /* Convert monitor work rect to points */
-    info->rcWork.left = info->rcMonitor.left + MulDiv(info->rcWork.left - info->rcMonitor.left, 96, xdpi);
-    info->rcWork.right = info->rcMonitor.left + MulDiv(info->rcWork.right - info->rcMonitor.left, 96, xdpi);
-    info->rcWork.top = info->rcMonitor.top + MulDiv(info->rcWork.top - info->rcMonitor.top, 96, ydpi);
-    info->rcWork.bottom = info->rcMonitor.top + MulDiv(info->rcWork.bottom - info->rcMonitor.top, 96, ydpi);
-}
-
 int WIN_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     const SDL_DisplayData *data = display->driverdata;
-    const SDL_VideoData *videodata = display->device->driverdata;
     MONITORINFO minfo;
     BOOL rc;
 
@@ -495,7 +481,6 @@ int WIN_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
         return SDL_SetError("Couldn't find monitor data");
     }
 
-    WIN_MonitorInfoToSDL(videodata, data->MonitorHandle, &minfo);
     rect->x = minfo.rcMonitor.left;
     rect->y = minfo.rcMonitor.top;
     rect->w = minfo.rcMonitor.right - minfo.rcMonitor.left;
@@ -504,38 +489,9 @@ int WIN_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
     return 0;
 }
 
-static int WIN_GetDisplayDPI(SDL_DisplayID displayID, int *dpi)
-{
-    const SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
-    const SDL_DisplayData *displaydata = display ? display->driverdata : NULL;
-    const SDL_VideoData *videodata = display ? display->device->driverdata : NULL;
-
-    *dpi = 0;
-
-    if (videodata && videodata->GetDpiForMonitor) {
-        /* Windows 8.1 + codepath */
-        UINT xdpi, ydpi;
-        videodata->GetDpiForMonitor(displaydata->MonitorHandle, MDT_EFFECTIVE_DPI, &xdpi, &ydpi);
-        *dpi = (int)xdpi; /* xdpi and hdpi are the same value */
-    }
-    if (*dpi == 0) {
-        /* Window 8.0 and below: same DPI for all monitors */
-        HDC hdc = GetDC(NULL);
-        if (hdc) {
-            *dpi = GetDeviceCaps(hdc, LOGPIXELSX);
-            ReleaseDC(NULL, hdc);
-        }
-    }
-    if (*dpi == 0) {
-        return SDL_SetError("Couldn't get display DPI");
-    }
-    return 0;
-}
-
 int WIN_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     const SDL_DisplayData *data = display->driverdata;
-    const SDL_VideoData *videodata = display->device->driverdata;
     MONITORINFO minfo;
     BOOL rc;
 
@@ -547,150 +503,12 @@ int WIN_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display
         return SDL_SetError("Couldn't find monitor data");
     }
 
-    WIN_MonitorInfoToSDL(videodata, data->MonitorHandle, &minfo);
     rect->x = minfo.rcWork.left;
     rect->y = minfo.rcWork.top;
     rect->w = minfo.rcWork.right - minfo.rcWork.left;
     rect->h = minfo.rcWork.bottom - minfo.rcWork.top;
 
     return 0;
-}
-
-/**
- * Convert a point from the SDL coordinate system (monitor origins are in pixels,
- * offset within a monitor in DPI-scaled points) to Windows virtual screen coordinates (pixels).
- *
- * No-op if DPI scaling is not enabled (returns 96 dpi).
- *
- * Returns the DPI of the monitor that was closest to x, y and used for the conversion.
- */
-void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut)
-{
-    POINT pt = { 0, 0 };
-    WIN_ScreenPointFromSDLFloat((float)*x, (float)*y, &pt.x, &pt.y, dpiOut);
-    *x = pt.x;
-    *y = pt.y;
-}
-
-void WIN_ScreenPointFromSDLFloat(float x, float y, LONG *xOut, LONG *yOut, int *dpiOut)
-{
-    const SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
-    const SDL_VideoData *videodata;
-    SDL_DisplayID displayID;
-    SDL_Rect bounds;
-    int dpi;
-    SDL_Point point;
-
-    point.x = (int)x;
-    point.y = (int)y;
-
-    if (dpiOut) {
-        *dpiOut = 96;
-    }
-
-    if (videodevice == NULL || !videodevice->driverdata) {
-        goto passthrough;
-    }
-
-    videodata = videodevice->driverdata;
-    if (!videodata->dpi_scaling_enabled) {
-        goto passthrough;
-    }
-
-    /* Can't use MonitorFromPoint for this because we currently have SDL points, not pixels */
-    displayID = SDL_GetDisplayForPoint(&point);
-    if (displayID == 0) {
-        goto passthrough;
-    }
-
-    if (SDL_GetDisplayBounds(displayID, &bounds) < 0 || WIN_GetDisplayDPI(displayID, &dpi) < 0) {
-        goto passthrough;
-    }
-
-    if (dpiOut) {
-        *dpiOut = dpi;
-    }
-
-    /* Undo the DPI-scaling within the monitor bounds to convert back to pixels */
-    *xOut = bounds.x + SDL_lroundf(((x - bounds.x) * dpi) / 96.0f);
-    *yOut = bounds.y + SDL_lroundf(((y - bounds.y) * dpi) / 96.0f);
-
-#ifdef HIGHDPI_DEBUG_VERBOSE
-    SDL_Log("WIN_ScreenPointFromSDL: (%g, %g) points -> (%d x %d) pixels, using %g DPI monitor",
-            x, y, *xOut, *yOut, ddpi);
-#endif
-    return;
-
-passthrough:
-    *xOut = SDL_lroundf(x);
-    *yOut = SDL_lroundf(y);
-}
-
-/**
- * Convert a point from Windows virtual screen coordinates (pixels) to the SDL
- * coordinate system (monitor origins are in pixels, offset within a monitor in DPI-scaled points).
- *
- * No-op if DPI scaling is not enabled.
- */
-void WIN_ScreenPointToSDL(int *x, int *y)
-{
-    SDL_FPoint pt;
-    WIN_ScreenPointToSDLFloat(*x, *y, &pt.x, &pt.y);
-    *x = SDL_lroundf(pt.x);
-    *y = SDL_lroundf(pt.y);
-}
-
-void WIN_ScreenPointToSDLFloat(LONG x, LONG y, float *xOut, float *yOut)
-{
-    const SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
-    const SDL_VideoData *videodata;
-    POINT point;
-    HMONITOR monitor;
-    int i;
-    SDL_DisplayID displayID;
-    SDL_Rect bounds;
-    int dpi;
-
-    if (videodevice == NULL || !videodevice->driverdata) {
-        return;
-    }
-
-    videodata = videodevice->driverdata;
-    if (!videodata->dpi_scaling_enabled) {
-        *xOut = (float)x;
-        *yOut = (float)y;
-        return;
-    }
-
-    point.x = x;
-    point.y = y;
-    monitor = MonitorFromPoint(point, MONITOR_DEFAULTTONEAREST);
-
-    /* Search for the corresponding SDL monitor */
-    displayID = 0;
-    for (i = 0; i < videodevice->num_displays; ++i) {
-        SDL_DisplayData *driverdata = videodevice->displays[i].driverdata;
-        if (driverdata->MonitorHandle == monitor) {
-            displayID = videodevice->displays[i].id;
-        }
-    }
-    if (displayID == 0) {
-        return;
-    }
-
-    /* Get SDL display properties */
-    if (SDL_GetDisplayBounds(displayID, &bounds) < 0 || WIN_GetDisplayDPI(displayID, &dpi) < 0) {
-        return;
-    }
-
-    /* Convert the point's offset within the monitor from pixels to DPI-scaled points */
-    *xOut = (float)bounds.x + ((float)(x - bounds.x) * 96.0f) / dpi;
-    *yOut = (float)bounds.y + ((float)(y - bounds.y) * 96.0f) / dpi;
-
-#ifdef HIGHDPI_DEBUG_VERBOSE
-    SDL_Log("WIN_ScreenPointToSDL: (%d, %d) pixels -> (%g x %g) points, using %g DPI monitor",
-            x, y, *xOut, *yOut, ddpi);
-#endif
 }
 
 int WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)

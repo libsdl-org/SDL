@@ -35,13 +35,14 @@ static const char *video_usage[] = {
     "[--fullscreen | --fullscreen-desktop | --windows N]", "[--title title]",
     "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
+    "[--disable-high-pixel-density]", "[--auto-scale-content]",
     "[--logical-presentation disabled|match|stretch|letterbox|overscan|integer_scale]",
     "[--logical-scale-quality nearest|linear|best]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
     "[--resizable]", "[--transparent]", "[--skip-taskbar]", "[--always-on-top]",
     "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
     "[--hidden]", "[--input-focus]", "[--mouse-focus]",
-    "[--flash-on-focus-loss]", "[--allow-highdpi]", "[--confine-cursor X,Y,W,H]",
+    "[--flash-on-focus-loss]", "[--confine-cursor X,Y,W,H]",
     "[--usable-bounds]"
 };
 
@@ -92,7 +93,7 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     state->window_y = SDL_WINDOWPOS_UNDEFINED;
     state->window_w = DEFAULT_WINDOW_WIDTH;
     state->window_h = DEFAULT_WINDOW_HEIGHT;
-    state->logical_presentation = SDL_LOGICAL_PRESENTATION_MATCH;
+    state->logical_presentation = SDL_LOGICAL_PRESENTATION_DISABLED;
     state->logical_scale_mode = SDL_SCALEMODE_LINEAR;
     state->num_windows = 1;
     state->audiospec.freq = 22050;
@@ -428,6 +429,19 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             state->logical_h = SDL_atoi(h);
             return 2;
         }
+        if (SDL_strcasecmp(argv[index], "--disable-high-pixel-density") == 0) {
+            /* Note that on some platforms it's not possible to disable high density modes */
+            SDL_SetHint(SDL_HINT_VIDEO_ENABLE_HIGH_PIXEL_DENSITY, "0");
+            return 1;
+        }
+        if (SDL_strcasecmp(argv[index], "--auto-scale-content") == 0) {
+            state->auto_scale_content = SDL_TRUE;
+
+            if (state->logical_presentation == SDL_LOGICAL_PRESENTATION_DISABLED) {
+                state->logical_presentation = SDL_LOGICAL_PRESENTATION_STRETCH;
+            }
+            return 1;
+        }
         if (SDL_strcasecmp(argv[index], "--logical-presentation") == 0) {
             ++index;
             if (!argv[index]) {
@@ -435,10 +449,6 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             }
             if (SDL_strcasecmp(argv[index], "disabled") == 0) {
                 state->logical_presentation = SDL_LOGICAL_PRESENTATION_DISABLED;
-                return 2;
-            }
-            if (SDL_strcasecmp(argv[index], "match") == 0) {
-                state->logical_presentation = SDL_LOGICAL_PRESENTATION_MATCH;
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "stretch") == 0) {
@@ -960,9 +970,6 @@ static void SDLTest_PrintLogicalPresentation(char *text, size_t maxlen, SDL_Rend
     case SDL_LOGICAL_PRESENTATION_DISABLED:
         SDL_snprintfcat(text, maxlen, "DISABLED");
         break;
-    case SDL_LOGICAL_PRESENTATION_MATCH:
-        SDL_snprintfcat(text, maxlen, "MATCH");
-        break;
     case SDL_LOGICAL_PRESENTATION_STRETCH:
         SDL_snprintfcat(text, maxlen, "STRETCH");
         break;
@@ -1195,8 +1202,8 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 mode = SDL_GetDesktopDisplayMode(displayID);
                 SDL_GetMasksForPixelFormatEnum(mode->format, &bpp, &Rmask, &Gmask,
                                            &Bmask, &Amask);
-                SDL_Log("  Desktop mode: %dx%d@%gHz, %d%% scale, %d bits-per-pixel (%s)\n",
-                        mode->pixel_w, mode->pixel_h, mode->refresh_rate, (int)(mode->display_scale * 100.0f), bpp,
+                SDL_Log("  Desktop mode: %dx%d@%gx %gHz, %d bits-per-pixel (%s)\n",
+                        mode->w, mode->h, mode->pixel_density, mode->refresh_rate, bpp,
                         SDL_GetPixelFormatName(mode->format));
                 if (Rmask || Gmask || Bmask) {
                     SDL_Log("      Red Mask   = 0x%.8" SDL_PRIx32 "\n", Rmask);
@@ -1217,8 +1224,8 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                         mode = modes[j];
                         SDL_GetMasksForPixelFormatEnum(mode->format, &bpp, &Rmask,
                                                    &Gmask, &Bmask, &Amask);
-                        SDL_Log("    Mode %d: %dx%d@%gHz, %d%% scale, %d bits-per-pixel (%s)\n",
-                                j, mode->pixel_w, mode->pixel_h, mode->refresh_rate, (int)(mode->display_scale * 100.0f), bpp,
+                        SDL_Log("    Mode %d: %dx%d@%gx %gHz, %d bits-per-pixel (%s)\n",
+                                j, mode->w, mode->h, mode->pixel_density, mode->refresh_rate, bpp,
                                 SDL_GetPixelFormatName(mode->format));
                         if (Rmask || Gmask || Bmask) {
                             SDL_Log("        Red Mask   = 0x%.8" SDL_PRIx32 "\n",
@@ -1300,6 +1307,11 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
             r.y = state->window_y;
             r.w = state->window_w;
             r.h = state->window_h;
+            if (state->auto_scale_content) {
+                float scale = SDL_GetDisplayContentScale(state->displayID);
+                r.w = (int)SDL_ceilf(r.w * scale);
+                r.h = (int)SDL_ceilf(r.h * scale);
+            }
 
             /* !!! FIXME: hack to make --usable-bounds work for now. */
             if ((r.x == -1) && (r.y == -1) && (r.w == -1) && (r.h == -1)) {
@@ -1325,9 +1337,8 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_SetWindowMaximumSize(state->windows[i], state->window_maxW, state->window_maxH);
             }
             SDL_GetWindowSize(state->windows[i], &w, &h);
-            if (!(state->window_flags & SDL_WINDOW_RESIZABLE) &&
-                (w != state->window_w || h != state->window_h)) {
-                SDL_Log("Window requested size %dx%d, got %dx%d\n", state->window_w, state->window_h, w, h);
+            if (!(state->window_flags & SDL_WINDOW_RESIZABLE) && (w != r.w || h != r.h)) {
+                SDL_Log("Window requested size %dx%d, got %dx%d\n", r.w, r.h, w, h);
                 state->window_w = w;
                 state->window_h = h;
             }
@@ -1513,15 +1524,11 @@ static void SDLTest_PrintEvent(SDL_Event *event)
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
                 event->display.displayID);
         break;
-    case SDL_EVENT_DISPLAY_SCALE_CHANGED:
+    case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
         {
-            float display_scale = 1.0f;
-            const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(event->display.displayID);
-            if (mode) {
-                display_scale = mode->display_scale;
-            }
-            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed scale to %d%%",
-                    event->display.displayID, (int)(display_scale * 100.0f));
+            float scale = SDL_GetDisplayContentScale(event->display.displayID);
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed content scale to %d%%",
+                    event->display.displayID, (int)(scale * 100.0f));
         }
         break;
     case SDL_EVENT_DISPLAY_MOVED:
@@ -1551,6 +1558,10 @@ static void SDLTest_PrintEvent(SDL_Event *event)
         break;
     case SDL_EVENT_WINDOW_RESIZED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32,
+                event->window.windowID, event->window.data1, event->window.data2);
+        break;
+    case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed pixel size to %" SDL_PRIs32 "x%" SDL_PRIs32,
                 event->window.windowID, event->window.data1, event->window.data2);
         break;
     case SDL_EVENT_WINDOW_MINIMIZED:
@@ -1592,9 +1603,8 @@ static void SDLTest_PrintEvent(SDL_Event *event)
     case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %" SDL_PRIs32 "", event->window.windowID, event->window.data1);
         break;
-    case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed pixel size to %" SDL_PRIs32 "x%" SDL_PRIs32,
-                event->window.windowID, event->window.data1, event->window.data2);
+    case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display scale changed to %d%%", event->window.windowID, (int)(SDL_GetWindowDisplayScale(SDL_GetWindowFromID(event->window.windowID)) * 100.0f));
         break;
     case SDL_EVENT_KEY_DOWN:
         SDL_Log("SDL EVENT: Keyboard: key pressed  in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s",
@@ -1897,6 +1907,20 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
             }
         }
     } break;
+    case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+        if (state->auto_scale_content) {
+            SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
+            if (window) {
+                float scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(window));
+                int w = state->window_w;
+                int h = state->window_h;
+
+                w = (int)SDL_ceilf(w * scale);
+                h = (int)SDL_ceilf(h * scale);
+                SDL_SetWindowSize(window, w, h);
+            }
+        }
+        break;
     case SDL_EVENT_WINDOW_FOCUS_LOST:
         if (state->flash_on_focus_loss) {
             SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
@@ -2390,8 +2414,8 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
 
     mode = SDL_GetWindowFullscreenMode(window);
     if (mode) {
-        (void)SDL_snprintf(text, sizeof(text), "SDL_GetWindowFullscreenMode: %dx%d@%gHz %d%% scale, (%s)",
-                           mode->pixel_w, mode->pixel_h, mode->refresh_rate, (int)(mode->display_scale * 100.0f), SDL_GetPixelFormatName(mode->format));
+        (void)SDL_snprintf(text, sizeof(text), "SDL_GetWindowFullscreenMode: %dx%d@%gx %gHz, (%s)",
+                           mode->w, mode->h, mode->pixel_density, mode->refresh_rate, SDL_GetPixelFormatName(mode->format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
@@ -2421,16 +2445,16 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
 
     mode = SDL_GetCurrentDisplayMode(windowDisplayID);
     if (mode) {
-        (void)SDL_snprintf(text, sizeof(text), "SDL_GetCurrentDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
-                           mode->pixel_w, mode->pixel_h, mode->refresh_rate, (int)(mode->display_scale * 100.0f), SDL_GetPixelFormatName(mode->format));
+        (void)SDL_snprintf(text, sizeof(text), "SDL_GetCurrentDisplayMode: %dx%d@%gx %gHz, (%s)",
+                           mode->w, mode->h, mode->pixel_density, mode->refresh_rate, SDL_GetPixelFormatName(mode->format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
     mode = SDL_GetDesktopDisplayMode(windowDisplayID);
     if (mode) {
-        (void)SDL_snprintf(text, sizeof(text), "SDL_GetDesktopDisplayMode: %dx%d@%gHz %d%% scale, (%s)",
-                           mode->pixel_w, mode->pixel_h, mode->refresh_rate, (int)(mode->display_scale * 100.0f), SDL_GetPixelFormatName(mode->format));
+        (void)SDL_snprintf(text, sizeof(text), "SDL_GetDesktopDisplayMode: %dx%d@%gx %gHz, (%s)",
+                           mode->w, mode->h, mode->pixel_density, mode->refresh_rate, SDL_GetPixelFormatName(mode->format));
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }

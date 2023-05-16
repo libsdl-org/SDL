@@ -1085,9 +1085,9 @@ The SDL_WINDOWPOS_UNDEFINED_DISPLAY() and SDL_WINDOWPOS_CENTERED_DISPLAY() macro
 
 The SDL_WINDOW_SHOWN flag has been removed. Windows are shown by default and can be created hidden by using the SDL_WINDOW_HIDDEN flag.
 
-The SDL_WINDOW_ALLOW_HIGHDPI flag has been removed. Windows are automatically high DPI aware and their coordinates are in screen space, which may differ from physical pixels on displays using display scaling.
+The SDL_WINDOW_ALLOW_HIGHDPI flag has been replaced by the SDL_HINT_VIDEO_ENABLE_HIGH_PIXEL_DENSITY hint, which is enabled by default.
 
-SDL_DisplayMode now includes the pixel size, the screen size and the relationship between the two. For example, a 4K display at 200% scale could have a pixel size of 3840x2160, a screen size of 1920x1080, and a display scale of 2.0.
+SDL_DisplayMode now includes the pixel density which can be greater than 1.0 for display modes that have a higher pixel size than the mode size. You should use SDL_GetWindowSizeInPixels() to get the actual pixel size of the window back buffer.
 
 The refresh rate in SDL_DisplayMode is now a float.
 
@@ -1100,8 +1100,8 @@ Rather than iterating over display modes using an index, there is a new function
     if (modes) {
         for (i = 0; i < num_modes; ++i) {
             SDL_DisplayMode *mode = modes[i];
-            SDL_Log("Display %" SDL_PRIu32 " mode %d:  %dx%d@%gHz, %d%% scale\n",
-                    display, i, mode->pixel_w, mode->pixel_h, mode->refresh_rate, (int)(mode->display_scale * 100.0f));
+            SDL_Log("Display %" SDL_PRIu32 " mode %d: %dx%d@%gx %gHz\n",
+                    display, i, mode->w, mode->h, mode->pixel_density, mode->refresh_rate);
         }
         SDL_free(modes);
     }

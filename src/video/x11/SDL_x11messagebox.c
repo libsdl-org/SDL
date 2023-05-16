@@ -470,8 +470,8 @@ static int X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
         if ((dev) && (dev->displays) && (dev->num_displays > 0)) {
             const SDL_VideoDisplay *dpy = &dev->displays[0];
             const SDL_DisplayData *dpydata = dpy->driverdata;
-            x = dpydata->x + ((dpy->current_mode->pixel_w - data->dialog_width) / 2);
-            y = dpydata->y + ((dpy->current_mode->pixel_h - data->dialog_height) / 3);
+            x = dpydata->x + ((dpy->current_mode->w - data->dialog_width) / 2);
+            y = dpydata->y + ((dpy->current_mode->h - data->dialog_height) / 3);
         } else { /* oh well. This will misposition on a multi-head setup. Init first next time. */
             x = (DisplayWidth(display, data->screen) - data->dialog_width) / 2;
             y = (DisplayHeight(display, data->screen) - data->dialog_height) / 3;

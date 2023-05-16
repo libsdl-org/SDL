@@ -134,7 +134,6 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL m
 {
     SDL_VideoData *videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->driverdata : NULL;
     RECT rect;
-    int dpi = 96;
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     UINT frame_dpi;
 #endif
@@ -146,21 +145,6 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL m
                                   x, y);
     *width = (use_current ? window->w : window->windowed.w);
     *height = (use_current ? window->h : window->windowed.h);
-
-    /* Convert client rect from points to pixels (no-op if DPI scaling not enabled) */
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    WIN_ScreenPointFromSDL(x, y, &dpi);
-#endif
-    /* Note, use the guessed DPI returned from WIN_ScreenPointFromSDL rather than the cached one in
-       data->scaling_dpi.
-
-       - This is called before the window is created, so we can't rely on data->scaling_dpi
-       - Bug workaround: when leaving exclusive fullscreen, the cached DPI and window DPI reported
-         by GetDpiForWindow will be wrong, and would cause windows shrinking slightly when
-         going from exclusive fullscreen to windowed on a HighDPI monitor with scaling if we used them.
-    */
-    *width = MulDiv(*width, dpi, 96);
-    *height = MulDiv(*height, dpi, 96);
 
     /* Copy the client size in pixels into this rect structure,
        which we'll then adjust with AdjustWindowRectEx */
@@ -281,46 +265,6 @@ static void SDLCALL WIN_MouseRelativeModeCenterChanged(void *userdata, const cha
     data->mouse_relative_mode_center = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
-static int WIN_GetScalingDPIForHWND(const SDL_VideoData *videodata, HWND hwnd)
-{
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    return 96;
-#else
-    /* DPI scaling not requested? */
-    if (!videodata->dpi_scaling_enabled) {
-        return 96;
-    }
-
-    /* Window 10+ */
-    if (videodata->GetDpiForWindow) {
-        return videodata->GetDpiForWindow(hwnd);
-    }
-
-    /* Window 8.1+ */
-    if (videodata->GetDpiForMonitor) {
-        HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-        if (monitor) {
-            UINT dpi_uint, unused;
-            if (S_OK == videodata->GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpi_uint, &unused)) {
-                return (int)dpi_uint;
-            }
-        }
-        return 96;
-    }
-
-    /* Windows Vista-8.0 */
-    {
-        HDC hdc = GetDC(NULL);
-        if (hdc) {
-            int dpi = GetDeviceCaps(hdc, LOGPIXELSX);
-            ReleaseDC(NULL, hdc);
-            return dpi;
-        }
-        return 96;
-    }
-#endif
-}
-
 static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd, HWND parent, SDL_bool created)
 {
     SDL_VideoData *videodata = _this->driverdata;
@@ -347,7 +291,6 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
     data->videodata = videodata;
     data->initializing = SDL_TRUE;
     data->last_displayID = window->last_displayID;
-    data->scaling_dpi = WIN_GetScalingDPIForHWND(videodata, hwnd);
     if (SDL_GetHintBoolean("SDL_WINDOW_RETAIN_CONTENT", SDL_FALSE)) {
         data->copybits_flag = 0;
     } else {
@@ -395,7 +338,6 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
             int w = rect.right;
             int h = rect.bottom;
 
-            WIN_ClientPointToSDL(window, &w, &h);
             if ((window->windowed.w && window->windowed.w != w) || (window->windowed.h && window->windowed.h != h)) {
                 /* We tried to create a window larger than the desktop and Windows didn't allow it.  Override! */
                 int x, y;
@@ -416,11 +358,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
         point.x = 0;
         point.y = 0;
         if (ClientToScreen(hwnd, &point)) {
-            int x = point.x;
-            int y = point.y;
-            WIN_ScreenPointToSDL(&x, &y);
-            window->x = x;
-            window->y = y;
+            window->x = point.x;
+            window->y = point.y;
         }
     }
     WIN_UpdateWindowICCProfile(window, SDL_FALSE);
@@ -481,11 +420,6 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
         videodata->RegisterTouchWindow(hwnd, (TWF_FINETOUCH | TWF_WANTPALM));
     }
 #endif
-
-    /* Force the SDL_WINDOW_ALLOW_HIGHDPI window flag if we are doing DPI scaling */
-    if (videodata->dpi_scaling_enabled) {
-        window->flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-    }
 
     if (data->parent && !window->parent) {
         data->destroy_parent_with_window = SDL_TRUE;
@@ -1401,8 +1335,6 @@ void WIN_UpdateClipCursor(SDL_Window *window)
 
                     /* mouse_rect_win_client is the mouse rect in Windows client space */
                     mouse_rect_win_client = window->mouse_rect;
-                    WIN_ClientPointFromSDL(window, &mouse_rect_win_client.x, &mouse_rect_win_client.y);
-                    WIN_ClientPointFromSDL(window, &mouse_rect_win_client.w, &mouse_rect_win_client.h);
 
                     /* mouse_rect is the rect in Windows screen space */
                     mouse_rect.left = rect.left + mouse_rect_win_client.x;
@@ -1485,70 +1417,6 @@ int WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opaci
 
     return 0;
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
-}
-
-/**
- * Convert a point in the client area from pixels to DPI-scaled points.
- *
- * No-op if DPI scaling is not enabled.
- */
-void WIN_ClientPointToSDL(const SDL_Window *window, int *x, int *y)
-{
-    const SDL_WindowData *data = window->driverdata;
-    const SDL_VideoData *videodata = data->videodata;
-
-    if (!videodata->dpi_scaling_enabled) {
-        return;
-    }
-
-    *x = MulDiv(*x, 96, data->scaling_dpi);
-    *y = MulDiv(*y, 96, data->scaling_dpi);
-}
-
-void WIN_ClientPointToSDLFloat(const SDL_Window *window, LONG x, LONG y, float *xOut, float *yOut)
-{
-    const SDL_WindowData *data = window->driverdata;
-    const SDL_VideoData *videodata = data->videodata;
-
-    if (videodata->dpi_scaling_enabled) {
-        *xOut = (float)(x * 96) / data->scaling_dpi;
-        *yOut = (float)(y * 96) / data->scaling_dpi;
-    } else {
-        *xOut = (float)x;
-        *yOut = (float)y;
-    }
-}
-
-/**
- * Convert a point in the client area from DPI-scaled points to pixels.
- *
- * No-op if DPI scaling is not enabled.
- */
-void WIN_ClientPointFromSDL(const SDL_Window *window, int *x, int *y)
-{
-    const SDL_WindowData *data = window->driverdata;
-    const SDL_VideoData *videodata = data->videodata;
-
-    if (!videodata->dpi_scaling_enabled) {
-        return;
-    }
-
-    *x = MulDiv(*x, data->scaling_dpi, 96);
-    *y = MulDiv(*y, data->scaling_dpi, 96);
-}
-
-void WIN_ClientPointFromSDLFloat(const SDL_Window *window, float x, float y, LONG *xOut, LONG *yOut)
-{
-    const SDL_WindowData *data = window->driverdata;
-    const SDL_VideoData *videodata = data->videodata;
-
-    if (videodata->dpi_scaling_enabled) {
-        *xOut = (LONG)SDL_roundf((x * data->scaling_dpi) / 96.0f);
-        *yOut = (LONG)SDL_roundf((y * data->scaling_dpi) / 96.0f);
-    } else {
-        *xOut = (LONG)SDL_roundf(x);
-        *yOut = (LONG)SDL_roundf(y);
-    }
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)

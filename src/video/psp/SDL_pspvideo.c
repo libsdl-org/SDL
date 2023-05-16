@@ -135,8 +135,8 @@ int PSP_VideoInit(SDL_VideoDevice *_this)
     SDL_DisplayMode mode;
 
     SDL_zero(mode);
-    mode.pixel_w = 480;
-    mode.pixel_h = 272;
+    mode.w = 480;
+    mode.h = 272;
     mode.refresh_rate = 60.0f;
 
     /* 32 bpp for default */
@@ -157,8 +157,8 @@ int PSP_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     SDL_DisplayMode mode;
 
     SDL_zero(mode);
-    mode.pixel_w = 480;
-    mode.pixel_h = 272;
+    mode.w = 480;
+    mode.h = 272;
     mode.refresh_rate = 60.0f;
 
     /* 32 bpp for default */

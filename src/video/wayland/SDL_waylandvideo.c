@@ -423,22 +423,21 @@ static void AddEmulatedModes(SDL_DisplayData *dispdata, int native_width, int na
     for (i = 0; i < SDL_arraysize(mode_list); ++i) {
         SDL_zero(mode);
         mode.format = dpy->desktop_mode.format;
-        mode.display_scale = 1.0f;
         mode.refresh_rate = dpy->desktop_mode.refresh_rate;
         mode.driverdata = dpy->desktop_mode.driverdata;
 
         if (rot_90) {
-            mode.pixel_w = mode_list[i].h;
-            mode.pixel_h = mode_list[i].w;
+            mode.w = mode_list[i].h;
+            mode.h = mode_list[i].w;
         } else {
-            mode.pixel_w = mode_list[i].w;
-            mode.pixel_h = mode_list[i].h;
+            mode.w = mode_list[i].w;
+            mode.h = mode_list[i].h;
         }
 
         /* Only add modes that are smaller than the native mode. */
-        if ((mode.pixel_w < native_width && mode.pixel_h < native_height) ||
-            (mode.pixel_w < native_width && mode.pixel_h == native_height) ||
-            (mode.pixel_w == native_width && mode.pixel_h < native_height)) {
+        if ((mode.w < native_width && mode.h < native_height) ||
+            (mode.w < native_width && mode.h == native_height) ||
+            (mode.w == native_width && mode.h < native_height)) {
             SDL_AddFullscreenDisplayMode(dpy, &mode);
         }
     }
@@ -570,22 +569,21 @@ static void display_handle_done(void *data,
 
     /* Transform the pixel values, if necessary. */
     if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-        native_mode.pixel_w = driverdata->pixel_height;
-        native_mode.pixel_h = driverdata->pixel_width;
+        native_mode.w = driverdata->pixel_height;
+        native_mode.h = driverdata->pixel_width;
     } else {
-        native_mode.pixel_w = driverdata->pixel_width;
-        native_mode.pixel_h = driverdata->pixel_height;
+        native_mode.w = driverdata->pixel_width;
+        native_mode.h = driverdata->pixel_height;
     }
-    native_mode.display_scale = 1.0f;
     native_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
     native_mode.driverdata = driverdata->output;
 
     if (driverdata->has_logical_size) { /* If xdg-output is present... */
-        if (native_mode.pixel_w != driverdata->screen_width || native_mode.pixel_h != driverdata->screen_height) {
+        if (native_mode.w != driverdata->screen_width || native_mode.h != driverdata->screen_height) {
             /* ...and the compositor scales the logical viewport... */
             if (video->viewporter) {
                 /* ...and viewports are supported, calculate the true scale of the output. */
-                driverdata->scale_factor = (float)native_mode.pixel_w / (float)driverdata->screen_width;
+                driverdata->scale_factor = (float) native_mode.w / (float)driverdata->screen_width;
             } else {
                 /* ...otherwise, the 'native' pixel values are a multiple of the logical screen size. */
                 driverdata->pixel_width = driverdata->screen_width * (int)driverdata->scale_factor;
@@ -602,17 +600,17 @@ static void display_handle_done(void *data,
         /* Calculate the points from the pixel values, if xdg-output isn't present.
          * Use the native mode pixel values since they are pre-transformed.
          */
-        driverdata->screen_width = native_mode.pixel_w / (int)driverdata->scale_factor;
-        driverdata->screen_height = native_mode.pixel_h / (int)driverdata->scale_factor;
+        driverdata->screen_width = native_mode.w / (int)driverdata->scale_factor;
+        driverdata->screen_height = native_mode.h / (int)driverdata->scale_factor;
     }
 
     /* The scaled desktop mode */
     SDL_zero(desktop_mode);
     desktop_mode.format = SDL_PIXELFORMAT_RGB888;
 
-    desktop_mode.screen_w = driverdata->screen_width;
-    desktop_mode.screen_h = driverdata->screen_height;
-    desktop_mode.display_scale = driverdata->scale_factor;
+    desktop_mode.w = driverdata->screen_width;
+    desktop_mode.h = driverdata->screen_height;
+    desktop_mode.pixel_density = driverdata->scale_factor;
     desktop_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
     desktop_mode.driverdata = driverdata->output;
 
@@ -632,13 +630,11 @@ static void display_handle_done(void *data,
         /* ...otherwise expose the integer scaled variants of the desktop resolution down to 1. */
         int i;
 
-        desktop_mode.pixel_w = 0;
-        desktop_mode.pixel_h = 0;
-        desktop_mode.screen_w = driverdata->screen_width;
-        desktop_mode.screen_h = driverdata->screen_height;
+        desktop_mode.w = driverdata->screen_width;
+        desktop_mode.h = driverdata->screen_height;
 
         for (i = (int)driverdata->scale_factor; i > 0; --i) {
-            desktop_mode.display_scale = (float)i;
+            desktop_mode.pixel_density = (float)i;
             SDL_AddFullscreenDisplayMode(dpy, &desktop_mode);
         }
     }
@@ -646,7 +642,7 @@ static void display_handle_done(void *data,
     /* Add emulated modes if wp_viewporter is supported and mode emulation is enabled. */
     if (video->viewporter && mode_emulation_enabled) {
         /* The transformed display pixel width/height must be used here. */
-        AddEmulatedModes(driverdata, native_mode.pixel_w, native_mode.pixel_h);
+        AddEmulatedModes(driverdata, native_mode.w, native_mode.h);
     }
 
     if (driverdata->display == 0) {
@@ -971,13 +967,13 @@ static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *di
     if (display->fullscreen_window &&
         display->fullscreen_window->fullscreen_exclusive &&
         display->fullscreen_window == SDL_GetFocusWindow() &&
-        display->fullscreen_window->current_fullscreen_mode.screen_w != 0 &&
-        display->fullscreen_window->current_fullscreen_mode.screen_h != 0) {
-        rect->w = display->fullscreen_window->current_fullscreen_mode.screen_w;
-        rect->h = display->fullscreen_window->current_fullscreen_mode.screen_h;
+        display->fullscreen_window->current_fullscreen_mode.w != 0 &&
+        display->fullscreen_window->current_fullscreen_mode.h != 0) {
+        rect->w = display->fullscreen_window->current_fullscreen_mode.w;
+        rect->h = display->fullscreen_window->current_fullscreen_mode.h;
     } else {
-        rect->w = display->current_mode->screen_w;
-        rect->h = display->current_mode->screen_h;
+        rect->w = display->current_mode->w;
+        rect->h = display->current_mode->h;
     }
     return 0;
 }

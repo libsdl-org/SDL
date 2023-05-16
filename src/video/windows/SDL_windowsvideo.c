@@ -401,23 +401,11 @@ static void WIN_InitDPIAwareness(SDL_VideoDevice *_this)
     }
 }
 
-static void WIN_InitDPIScaling(SDL_VideoDevice *_this)
-{
-    SDL_VideoData *data = _this->driverdata;
-
-    if (SDL_GetHintBoolean("SDL_WINDOWS_DPI_SCALING", SDL_TRUE)) {
-        WIN_DeclareDPIAwarePerMonitorV2(_this);
-
-        data->dpi_scaling_enabled = SDL_TRUE;
-    }
-}
-
 int WIN_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 
     WIN_InitDPIAwareness(_this);
-    WIN_InitDPIScaling(_this);
 
 #ifdef HIGHDPI_DEBUG
     SDL_Log("DPI awareness: %s", WIN_GetDPIAwareness(_this));
@@ -429,7 +417,7 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
         SDL_DisplayMode mode;
 
         SDL_zero(mode);
-        D3D12_XBOX_GetResolution(&mode.pixel_w, &mode.pixel_h);
+        D3D12_XBOX_GetResolution(&mode.w, &mode.h);
         mode.refresh_rate = 60.0f;
         mode.format = SDL_PIXELFORMAT_ARGB8888;
 
