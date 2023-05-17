@@ -320,7 +320,7 @@ static void ScheduleContextUpdates(SDL_CocoaWindowData *data)
 }
 
 /* !!! FIXME: this should use a hint callback. */
-static int GetHintCtrlClickEmulateRightClick()
+static int GetHintCtrlClickEmulateRightClick(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, SDL_FALSE);
 }
