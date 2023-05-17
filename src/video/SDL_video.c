@@ -1381,6 +1381,20 @@ static void SDL_CheckWindowDisplayChanged(SDL_Window *window)
     }
 }
 
+float SDL_GetWindowPixelDensity(SDL_Window *window)
+{
+    int window_w, window_h, pixel_w, pixel_h;
+    float pixel_density = 1.0f;
+
+    CHECK_WINDOW_MAGIC(window, 0.0f);
+
+    if (SDL_GetWindowSize(window, &window_w, &window_h) == 0 &&
+        SDL_GetWindowSizeInPixels(window, &pixel_w, &pixel_h) == 0) {
+        pixel_density = (float)pixel_w / window_w;
+    }
+    return pixel_density;
+}
+
 float SDL_GetWindowDisplayScale(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, 0.0f);
@@ -1390,15 +1404,9 @@ float SDL_GetWindowDisplayScale(SDL_Window *window)
 
 static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
 {
-    int window_w, window_h, pixel_w, pixel_h;
-    float pixel_density = 1.0f;
+    float pixel_density = SDL_GetWindowPixelDensity(window);
     float content_scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindowPosition(window));
     float display_scale;
-
-    if (SDL_GetWindowSize(window, &window_w, &window_h) == 0 &&
-        SDL_GetWindowSizeInPixels(window, &pixel_w, &pixel_h) == 0) {
-        pixel_density = (float)pixel_w / window_w;
-    }
 
     display_scale = (pixel_density * content_scale);
     if (display_scale != window->display_scale) {
@@ -1686,7 +1694,7 @@ Uint32 SDL_GetWindowPixelFormat(SDL_Window *window)
 }
 
 #define CREATE_FLAGS \
-    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL | SDL_WINDOW_TRANSPARENT)
+    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL | SDL_WINDOW_TRANSPARENT)
 
 static SDL_INLINE SDL_bool IsAcceptingDragAndDrop(void)
 {
@@ -1877,10 +1885,6 @@ static SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int
             SDL_ContextNotSupported("Metal");
             return NULL;
         }
-    }
-
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_ENABLE_HIGH_PIXEL_DENSITY, SDL_TRUE)) {
-        flags |= SDL_WINDOW_ALLOW_HIGHDPI;
     }
 
     window = (SDL_Window *)SDL_calloc(1, sizeof(*window));

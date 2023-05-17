@@ -861,7 +861,7 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
     SDL_bool force = SDL_FALSE;
 
     /* update pixel ratio */
-    if (window_data->window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+    if (window_data->window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
         if (window_data->pixel_ratio != emscripten_get_device_pixel_ratio()) {
             window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
             force = SDL_TRUE;

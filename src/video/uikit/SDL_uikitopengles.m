@@ -140,7 +140,7 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
             sharegroup = currContext.sharegroup;
         }
 
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             /* Set the scale to the natural scale factor of the screen - the
              * backing dimensions of the OpenGL view will match the pixel
              * dimensions of the screen rather than the dimensions in points. */

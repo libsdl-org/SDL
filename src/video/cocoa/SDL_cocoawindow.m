@@ -1870,7 +1870,7 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
         /* Note: as of the macOS 10.15 SDK, this defaults to YES instead of NO when
          * the NSHighResolutionCapable boolean is set in Info.plist. */
-        highdpi = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+        highdpi = (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) ? YES : NO;
         [contentView setWantsBestResolutionOpenGLSurface:highdpi];
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -1881,12 +1881,11 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         if ((window->flags & SDL_WINDOW_OPENGL) &&
             _this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
             [contentView setWantsLayer:TRUE];
-            if (!(window->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
-                contentView.layer.contentsScale = 1;
+            if ((window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) &&
+                [nswindow.screen respondsToSelector:@selector(backingScaleFactor)]) {
+                contentView.layer.contentsScale = nswindow.screen.backingScaleFactor;
             } else {
-                if ([nswindow.screen respondsToSelector:@selector(backingScaleFactor)]) {
-                    contentView.layer.contentsScale = nswindow.screen.backingScaleFactor;
-                }
+                contentView.layer.contentsScale = 1;
             }
         }
 #endif /* SDL_VIDEO_OPENGL_EGL */
@@ -1950,7 +1949,7 @@ int Cocoa_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const voi
 #endif
         /* Note: as of the macOS 10.15 SDK, this defaults to YES instead of NO when
          * the NSHighResolutionCapable boolean is set in Info.plist. */
-        highdpi = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+        highdpi = (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) ? YES : NO;
         [nsview setWantsBestResolutionOpenGLSurface:highdpi];
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -2091,7 +2090,7 @@ void Cocoa_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int
         NSView *contentView = windata.sdlContentView;
         NSRect viewport = [contentView bounds];
 
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             /* This gives us the correct viewport for a Retina-enabled view. */
             viewport = [contentView convertRectToBacking:viewport];
         }

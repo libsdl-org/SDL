@@ -1003,7 +1003,7 @@ static void Wayland_HandlePreferredScaleChanged(SDL_WindowData *window_data, flo
 {
     const float old_factor = window_data->windowed_scale_factor;
 
-    if (!(window_data->sdlwindow->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
+    if (!(window_data->sdlwindow->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY)) {
         /* Scale will always be 1, just ignore this */
         return;
     }
@@ -2033,7 +2033,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     data->windowed_scale_factor = 1.0f;
 
-    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+    if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
         int i;
         for (i = 0; i < _this->num_displays; i++) {
             float scale = _this->displays[i].driverdata->scale_factor;

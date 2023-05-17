@@ -35,7 +35,7 @@ static const char *video_usage[] = {
     "[--fullscreen | --fullscreen-desktop | --windows N]", "[--title title]",
     "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
-    "[--disable-high-pixel-density]", "[--auto-scale-content]",
+    "[--high-pixel-density]", "[--auto-scale-content]",
     "[--logical-presentation disabled|match|stretch|letterbox|overscan|integer_scale]",
     "[--logical-scale-quality nearest|linear|best]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
@@ -429,9 +429,8 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             state->logical_h = SDL_atoi(h);
             return 2;
         }
-        if (SDL_strcasecmp(argv[index], "--disable-high-pixel-density") == 0) {
-            /* Note that on some platforms it's not possible to disable high density modes */
-            SDL_SetHint(SDL_HINT_VIDEO_ENABLE_HIGH_PIXEL_DENSITY, "0");
+        if (SDL_strcasecmp(argv[index], "--high-pixel-density") == 0) {
+            state->window_flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
             return 1;
         }
         if (SDL_strcasecmp(argv[index], "--auto-scale-content") == 0) {

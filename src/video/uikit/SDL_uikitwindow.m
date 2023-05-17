@@ -349,7 +349,7 @@ void UIKit_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int
         CGSize size = view.bounds.size;
         CGFloat scale = 1.0;
 
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             scale = windata.uiwindow.screen.nativeScale;
         }
 

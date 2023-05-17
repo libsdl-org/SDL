@@ -537,7 +537,4 @@ extern SDL_bool SDL_ShouldAllowTopmost(void);
 
 extern void SDL_ToggleDragAndDropSupport(void);
 
-/* This has been moved out of the public API, but is still available for now */
-#define SDL_WINDOW_ALLOW_HIGHDPI    0x00002000
-
 #endif /* SDL_sysvideo_h_ */
