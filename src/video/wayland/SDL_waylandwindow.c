@@ -91,9 +91,10 @@ static void GetBufferSize(SDL_Window *window, int *width, int *height)
     int buf_width;
     int buf_height;
 
+    /* Exclusive fullscreen modes always have a pixel density of 1 */
     if (data->is_fullscreen && window->fullscreen_exclusive) {
-        buf_width = (int)SDL_lroundf(window->current_fullscreen_mode.w * window->current_fullscreen_mode.pixel_density);
-        buf_height = (int)SDL_lroundf(window->current_fullscreen_mode.h * window->current_fullscreen_mode.pixel_density);
+        buf_width = window->current_fullscreen_mode.w;
+        buf_height = window->current_fullscreen_mode.h;
     } else {
         /* Round fractional backbuffer sizes halfway away from zero. */
         buf_width = (int)SDL_lroundf(data->requested_window_width * data->windowed_scale_factor);
@@ -229,9 +230,11 @@ static void ConfigureWindowGeometry(SDL_Window *window)
                 data->wl_window_width = output_width;
                 data->wl_window_height = output_height;
             } else {
-                /* Always use the mode dimensions for integer scaling. */
+                /* Calculate the integer scale from the mode and output. */
+                const int32_t int_scale = SDL_max(window->current_fullscreen_mode.w / output_width, 1);
+
                 UnsetDrawSurfaceViewport(window);
-                wl_surface_set_buffer_scale(data->surface, (int32_t)window->current_fullscreen_mode.pixel_density);
+                wl_surface_set_buffer_scale(data->surface, int_scale);
 
                 data->wl_window_width = window->current_fullscreen_mode.w;
                 data->wl_window_height = window->current_fullscreen_mode.h;
