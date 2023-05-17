@@ -529,11 +529,12 @@ static void display_handle_mode(void *data,
 static void display_handle_done(void *data,
                                 struct wl_output *output)
 {
+    const SDL_bool highdpi_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_ENABLE_HIGH_PIXEL_DENSITY, SDL_TRUE);
+    const SDL_bool mode_emulation_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION, SDL_TRUE);
     SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
     SDL_VideoData *video = driverdata->videodata;
     SDL_DisplayMode native_mode, desktop_mode;
     SDL_VideoDisplay *dpy;
-    const SDL_bool mode_emulation_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION, SDL_TRUE);
 
     /*
      * When using xdg-output, two wl-output.done events will be emitted:
@@ -610,7 +611,7 @@ static void display_handle_done(void *data,
 
     desktop_mode.w = driverdata->screen_width;
     desktop_mode.h = driverdata->screen_height;
-    desktop_mode.pixel_density = driverdata->scale_factor;
+    desktop_mode.pixel_density = highdpi_enabled ? driverdata->scale_factor : 1.0f;
     desktop_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
     desktop_mode.driverdata = driverdata->output;
 
@@ -630,11 +631,11 @@ static void display_handle_done(void *data,
         /* ...otherwise expose the integer scaled variants of the desktop resolution down to 1. */
         int i;
 
-        desktop_mode.w = driverdata->screen_width;
-        desktop_mode.h = driverdata->screen_height;
+        desktop_mode.pixel_density = 1.0f;
 
         for (i = (int)driverdata->scale_factor; i > 0; --i) {
-            desktop_mode.pixel_density = (float)i;
+            desktop_mode.w = driverdata->screen_width * i;
+            desktop_mode.h = driverdata->screen_height * i;
             SDL_AddFullscreenDisplayMode(dpy, &desktop_mode);
         }
     }
