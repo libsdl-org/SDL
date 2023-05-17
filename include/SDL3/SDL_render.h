@@ -235,7 +235,8 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, U
  * best option for you, based on what is available on the user's system.
  *
  * By default the rendering size matches the window size in pixels, but you
- * can call SDL_SetRenderLogicalPresentation() to change the content size and scaling options.
+ * can call SDL_SetRenderLogicalPresentation() to change the content size and
+ * scaling options.
  *
  * \param window the window where rendering is displayed
  * \param name the name of the rendering driver to initialize, or NULL to
@@ -821,8 +822,8 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_GetRenderTarget(SDL_Renderer *renderer)
  * then copied to the output during presentation.
  *
  * You can disable logical coordinates by setting the mode to
- * SDL_LOGICAL_PRESENTATION_DISABLED, and in that case you get the full
- * pixel resolution of the output window.
+ * SDL_LOGICAL_PRESENTATION_DISABLED, and in that case you get the full pixel
+ * resolution of the output window.
  *
  * You can convert coordinates in an event into rendering coordinates using
  * SDL_ConvertEventToRenderCoordinates().

@@ -410,10 +410,14 @@ extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayOrientation(SDL_Dis
 /**
  * Get the content scale of a display.
  *
- * The content scale is the expected scale for content based on the DPI settings of the display. For example, a 4K display might have a 2.0 (200%) display scale, which means that the user expects UI elements to be twice as big on this display, to aid in readability.
+ * The content scale is the expected scale for content based on the DPI
+ * settings of the display. For example, a 4K display might have a 2.0 (200%)
+ * display scale, which means that the user expects UI elements to be twice as
+ * big on this display, to aid in readability.
  *
  * \param displayID the instance ID of the display to query
- * \returns The content scale of the display, or 0.0f on error; call SDL_GetError() for more details.
+ * \returns The content scale of the display, or 0.0f on error; call
+ *          SDL_GetError() for more details.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -556,12 +560,20 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForWindow(SDL_Window *window
 /**
  * Get the content display scale relative to a window's pixel size.
  *
- * This is a combination of the window pixel density and the display content scale, and is the expected scale for displaying content in this window. For example, if a 3840x2160 window had a display scale of 2.0, the user expects the content to take twice as many pixels and be the same physical size as if it were being displayed in a 1920x1080 window with a display scale of 1.0.
+ * This is a combination of the window pixel density and the display content
+ * scale, and is the expected scale for displaying content in this window. For
+ * example, if a 3840x2160 window had a display scale of 2.0, the user expects
+ * the content to take twice as many pixels and be the same physical size as
+ * if it were being displayed in a 1920x1080 window with a display scale of
+ * 1.0.
  *
- * Conceptually this value corresponds to the scale display setting, and is updated when that setting is changed, or the window moves to a display with a different scale setting.
+ * Conceptually this value corresponds to the scale display setting, and is
+ * updated when that setting is changed, or the window moves to a display with
+ * a different scale setting.
  *
  * \param window the window to query
- * \returns the display scale, or 0.0f on failure; call SDL_GetError() for more information.
+ * \returns the display scale, or 0.0f on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -648,11 +660,12 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * On Apple's macOS, you **must** set the NSHighResolutionCapable Info.plist
  * property to YES, otherwise you will not receive a High-DPI OpenGL canvas.
  *
- * The window pixel size may differ from its window coordinate size if the window is on a high pixel density display.
- * Use SDL_GetWindowSize() to query the client area's size in window
- * coordinates, and SDL_GetWindowSizeInPixels() or SDL_GetRenderOutputSize()
- * to query the drawable size in pixels. Note that the drawable size can vary
- * after the window is created and should be queried again if you get an
+ * The window pixel size may differ from its window coordinate size if the
+ * window is on a high pixel density display. Use SDL_GetWindowSize() to query
+ * the client area's size in window coordinates, and
+ * SDL_GetWindowSizeInPixels() or SDL_GetRenderOutputSize() to query the
+ * drawable size in pixels. Note that the drawable size can vary after the
+ * window is created and should be queried again if you get an
  * SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
  *
  * If the window is set fullscreen, the width and height parameters `w` and
@@ -712,11 +725,12 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, i
  * On Apple's macOS, you **must** set the NSHighResolutionCapable Info.plist
  * property to YES, otherwise you will not receive a High-DPI OpenGL canvas.
  *
- * The window pixel size may differ from its window coordinate size if the window is on a high pixel density display.
- * Use SDL_GetWindowSize() to query the client area's size in window
- * coordinates, and SDL_GetWindowSizeInPixels() or SDL_GetRenderOutputSize()
- * to query the drawable size in pixels. Note that the drawable size can vary
- * after the window is created and should be queried again if you get an
+ * The window pixel size may differ from its window coordinate size if the
+ * window is on a high pixel density display. Use SDL_GetWindowSize() to query
+ * the client area's size in window coordinates, and
+ * SDL_GetWindowSizeInPixels() or SDL_GetRenderOutputSize() to query the
+ * drawable size in pixels. Note that the drawable size can vary after the
+ * window is created and should be queried again if you get an
  * SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
  *
  * If the window is set fullscreen, the width and height parameters `w` and
@@ -1020,9 +1034,9 @@ extern DECLSPEC int SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h);
  * NULL can safely be passed as the `w` or `h` parameter if the width or
  * height value is not desired.
  *
- * The window pixel size may differ from its window coordinate size if the window is on a high pixel density display.
- * Use SDL_GetWindowSizeInPixels() or SDL_GetRenderOutputSize() to get the
- * real client area size in pixels.
+ * The window pixel size may differ from its window coordinate size if the
+ * window is on a high pixel density display. Use SDL_GetWindowSizeInPixels()
+ * or SDL_GetRenderOutputSize() to get the real client area size in pixels.
  *
  * \param window the window to query the width and height from
  * \param w a pointer filled in with the width of the window, may be NULL
