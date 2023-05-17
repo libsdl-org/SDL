@@ -63,7 +63,7 @@
 }
 @end
 
-static SDL_Cursor *Cocoa_CreateDefaultCursor()
+static SDL_Cursor *Cocoa_CreateDefaultCursor(void)
 {
     @autoreleasepool {
         NSCursor *nscursor;
