@@ -883,3 +883,4 @@
 #define SDL_GetPath SDL_GetPath_REAL
 #define SDL_GetDisplayContentScale SDL_GetDisplayContentScale_REAL
 #define SDL_GetWindowDisplayScale SDL_GetWindowDisplayScale_REAL
+#define SDL_GetWindowPixelDensity SDL_GetWindowPixelDensity_REAL

@@ -1639,17 +1639,6 @@ extern "C" {
 #define SDL_HINT_VIDEO_EXTERNAL_CONTEXT    "SDL_VIDEO_EXTERNAL_CONTEXT"
 
 /**
- *  \brief  A variable controlling whether to use high pixel density display modes
- *
- *  The variable can be set to the following values:
- *    "0"       - Disable high pixel density display modes
- *    "1"       - Enable high pixel density display modes
- *
- *  The default value is "1". This hint must be set before display modes are queried and windows are created.
- */
-#define SDL_HINT_VIDEO_ENABLE_HIGH_PIXEL_DENSITY    "SDL_VIDEO_ENABLE_HIGH_PIXEL_DENSITY"
-
-/**
  *  \brief  A variable that dictates policy for fullscreen Spaces on macOS.
  *
  *  This hint only applies to macOS.

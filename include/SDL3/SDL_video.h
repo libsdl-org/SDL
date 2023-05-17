@@ -141,7 +141,7 @@ typedef enum
     SDL_WINDOW_MOUSE_FOCUS          = 0x00000400,   /**< window has mouse focus */
     /* 0x00001000 was SDL_WINDOW_FULLSCREEN_DESKTOP in SDL2, please reserve this bit for sdl2-compat. */
     SDL_WINDOW_FOREIGN              = 0x00000800,   /**< window not created by SDL */
-    /* 0x00002000 was SDL_WINDOW_ALLOW_HIGHDPI in SDL2, please reserve this bit for sdl2-compat. */
+    SDL_WINDOW_HIGH_PIXEL_DENSITY   = 0x00002000,   /**< window uses high pixel density back buffer if possible */
     SDL_WINDOW_MOUSE_CAPTURE        = 0x00004000,   /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
     SDL_WINDOW_ALWAYS_ON_TOP        = 0x00008000,   /**< window should always be above others */
     SDL_WINDOW_SKIP_TASKBAR         = 0x00010000,   /**< window should not be added to the taskbar */
@@ -556,6 +556,21 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForRect(const SDL_Rect *rect
  * \sa SDL_GetDisplays
  */
 extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForWindow(SDL_Window *window);
+
+/**
+ * Get the pixel density of a window.
+ *
+ * This is a ratio of pixel size to window size. For example, if the window is 1920x1080 and it has a high density back buffer of 3840x2160 pixels, it would have a pixel density of 2.0.
+ *
+ * \param window the window to query
+ * \returns the pixel density or 0.0f on failure; call SDL_GetError() for
+ *          more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetWindowDisplayScale
+ */
+extern DECLSPEC float SDLCALL SDL_GetWindowPixelDensity(SDL_Window *window);
 
 /**
  * Get the content display scale relative to a window's pixel size.

@@ -191,7 +191,7 @@ static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     wdata->canvas_id = SDL_strdup(selector);
 
-    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+    if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
         wdata->pixel_ratio = emscripten_get_device_pixel_ratio();
     } else {
         wdata->pixel_ratio = 1.0f;
@@ -245,7 +245,7 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
     if (window->driverdata) {
         data = window->driverdata;
         /* update pixel ratio */
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
         }
         emscripten_set_canvas_element_size(data->canvas_id, window->w * data->pixel_ratio, window->h * data->pixel_ratio);
@@ -300,7 +300,7 @@ static void Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *w
 
             if (!is_fullscreen_desktop) {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_NONE;
-            } else if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            } else if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF;
             } else {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;

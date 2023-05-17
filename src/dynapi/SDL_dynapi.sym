@@ -857,6 +857,7 @@ SDL3_0.0.0 {
     SDL_GetPath;
     SDL_GetDisplayContentScale;
     SDL_GetWindowDisplayScale;
+    SDL_GetWindowPixelDensity;
     # extra symbols go here (don't modify this line)
   local: *;
 };
