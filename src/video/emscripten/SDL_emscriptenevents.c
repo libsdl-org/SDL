@@ -649,6 +649,7 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
     Uint8 sdl_button_state;
     SDL_EventType sdl_event_type;
     double css_w, css_h;
+    SDL_bool prevent_default = SDL_FALSE; /* needed for iframe implementation in Chrome-based browsers. */
 
     switch (mouseEvent->button) {
     case 0:
@@ -673,6 +674,7 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
     } else {
         sdl_button_state = SDL_RELEASED;
         sdl_event_type = SDL_MOUSEBUTTONUP;
+        prevent_default = SDL_GetEventState(sdl_event_type) == SDL_ENABLE;
     }
     SDL_SendMouseButton(window_data->window, 0, sdl_button_state, sdl_button);
 
@@ -683,7 +685,7 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
         return 0;
     }
 
-    return SDL_GetEventState(sdl_event_type) == SDL_ENABLE;
+    return prevent_default;
 }
 
 static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
