@@ -749,6 +749,9 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
     case SDL_WINDOW_FOREIGN:
         SDL_snprintfcat(text, maxlen, "FOREIGN");
         break;
+    case SDL_WINDOW_HIGH_PIXEL_DENSITY:
+        SDL_snprintfcat(text, maxlen, "HIGH_PIXEL_DENSITY");
+        break;
     case SDL_WINDOW_MOUSE_CAPTURE:
         SDL_snprintfcat(text, maxlen, "MOUSE_CAPTURE");
         break;
@@ -776,6 +779,9 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
     case SDL_WINDOW_METAL:
         SDL_snprintfcat(text, maxlen, "METAL");
         break;
+    case SDL_WINDOW_TRANSPARENT:
+        SDL_snprintfcat(text, maxlen, "TRANSPARENT");
+        break;
     default:
         SDL_snprintfcat(text, maxlen, "0x%8.8x", flag);
         break;
@@ -796,6 +802,7 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
         SDL_WINDOW_INPUT_FOCUS,
         SDL_WINDOW_MOUSE_FOCUS,
         SDL_WINDOW_FOREIGN,
+        SDL_WINDOW_HIGH_PIXEL_DENSITY,
         SDL_WINDOW_MOUSE_CAPTURE,
         SDL_WINDOW_ALWAYS_ON_TOP,
         SDL_WINDOW_SKIP_TASKBAR,
@@ -804,7 +811,8 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
         SDL_WINDOW_POPUP_MENU,
         SDL_WINDOW_KEYBOARD_GRABBED,
         SDL_WINDOW_VULKAN,
-        SDL_WINDOW_METAL
+        SDL_WINDOW_METAL,
+        SDL_WINDOW_TRANSPARENT
     };
 
     int i;
