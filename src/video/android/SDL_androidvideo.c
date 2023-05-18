@@ -279,7 +279,7 @@ void Android_SendResize(SDL_Window *window)
     }
 
     if (window) {
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, Android_SurfaceWidth, Android_SurfaceWidth);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, Android_SurfaceWidth, Android_SurfaceHeight);
     }
 }
 
