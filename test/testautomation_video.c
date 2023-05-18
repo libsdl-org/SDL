@@ -303,10 +303,7 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
                 SDL_memcpy(&current, modes[0], sizeof(current));
 
                 /* Make call */
-                closest = SDL_GetClosestFullscreenDisplayMode(displays[i],
-                                                              current.w,
-                                                              current.h,
-                                                              current.refresh_rate);
+                closest = SDL_GetClosestFullscreenDisplayMode(displays[i], current.w, current.h, current.refresh_rate, SDL_FALSE);
                 SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=current)");
                 SDLTest_Assert(closest != NULL, "Verify returned value is not NULL");
 
@@ -356,9 +353,7 @@ static int video_getClosestDisplayModeRandomResolution(void *arg)
                 target.refresh_rate = (variation & 8) ? (float)SDLTest_RandomIntegerInRange(25, 120) : 0.0f;
 
                 /* Make call; may or may not find anything, so don't validate any further */
-                SDL_GetClosestFullscreenDisplayMode(displays[i], target.w,
-                                                    target.h,
-                                                    target.refresh_rate);
+                SDL_GetClosestFullscreenDisplayMode(displays[i], target.w, target.h, target.refresh_rate, SDL_FALSE);
                 SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=random/variation%d)", variation);
             }
         }

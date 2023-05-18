@@ -498,7 +498,7 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display, 
     const SDL_DisplayMode *closest;
     drmModeModeInfo *drm_mode;
 
-    closest = SDL_GetClosestFullscreenDisplayMode(display->id, width, height, 0.0f);
+    closest = SDL_GetClosestFullscreenDisplayMode(display->id, width, height, 0.0f, SDL_FALSE);
     if (closest) {
         const SDL_DisplayModeData *modedata = (const SDL_DisplayModeData *)closest->driverdata;
         drm_mode = &connector->modes[modedata->mode_index];

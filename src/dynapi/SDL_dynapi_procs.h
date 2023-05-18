@@ -903,7 +903,7 @@ SDL_DYNAPI_PROC(int,SDL_ConvertAudioSamples,(SDL_AudioFormat a, Uint8 b, int c, 
 SDL_DYNAPI_PROC(SDL_DisplayID*,SDL_GetDisplays,(int *a),(a),return)
 SDL_DYNAPI_PROC(SDL_DisplayID,SDL_GetPrimaryDisplay,(void),(),return)
 SDL_DYNAPI_PROC(const SDL_DisplayMode**,SDL_GetFullscreenDisplayModes,(SDL_DisplayID a, int *b),(a,b),return)
-SDL_DYNAPI_PROC(const SDL_DisplayMode*,SDL_GetClosestFullscreenDisplayMode,(SDL_DisplayID a, int b, int c, float d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(const SDL_DisplayMode*,SDL_GetClosestFullscreenDisplayMode,(SDL_DisplayID a, int b, int c, float d, SDL_bool e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderOutputSize,(SDL_Renderer *a, int *b, int *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_ConvertEventToRenderCoordinates,(SDL_Renderer *a, SDL_Event *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetRenderScale,(SDL_Renderer *a, float b, float c),(a,b,c),return)

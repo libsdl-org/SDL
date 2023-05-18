@@ -1062,7 +1062,7 @@ const SDL_DisplayMode **SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, i
     return modes;
 }
 
-const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate)
+const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate, SDL_bool include_high_density_modes)
 {
     const SDL_DisplayMode **modes;
     const SDL_DisplayMode *mode, *closest = NULL;
@@ -1096,6 +1096,9 @@ const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID display
                  * This mode must be skipped, but closer modes may still follow */
                 continue;
             }
+            if (mode->pixel_density > 1.0f && !include_high_density_modes) {
+                continue;
+            }
             if (closest) {
                 float current_aspect_ratio = (float)mode->w / mode->h;
                 float closest_aspect_ratio = (float)closest->w / closest->h;
@@ -1104,7 +1107,8 @@ const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID display
                     continue;
                 }
 
-                if (SDL_fabsf(closest->refresh_rate - refresh_rate) < SDL_fabsf(mode->refresh_rate - refresh_rate)) {
+                if (mode->w == closest->w && mode->h == closest->h &&
+                    SDL_fabsf(closest->refresh_rate - refresh_rate) < SDL_fabsf(mode->refresh_rate - refresh_rate)) {
                     /* We already found a mode and the new mode is further from our
                      * refresh rate target */
                     continue;
@@ -3272,7 +3276,12 @@ void SDL_OnWindowDisplayChanged(SDL_Window *window)
         const SDL_DisplayMode *new_mode = NULL;
 
         if (window->requested_fullscreen_mode.w != 0 || window->requested_fullscreen_mode.h != 0) {
-            new_mode = SDL_GetClosestFullscreenDisplayMode(displayID, window->requested_fullscreen_mode.w, window->requested_fullscreen_mode.h, window->requested_fullscreen_mode.refresh_rate);
+            SDL_bool include_high_density_modes = SDL_FALSE;
+
+            if (window->requested_fullscreen_mode.pixel_density > 1.0f) {
+                include_high_density_modes = SDL_TRUE;
+            }
+            new_mode = SDL_GetClosestFullscreenDisplayMode(displayID, window->requested_fullscreen_mode.w, window->requested_fullscreen_mode.h, window->requested_fullscreen_mode.refresh_rate, include_high_density_modes);
         }
 
         if (new_mode) {

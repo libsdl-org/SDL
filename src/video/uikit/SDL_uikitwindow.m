@@ -169,7 +169,12 @@ int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #if !TARGET_OS_TV
         const CGSize origsize = data.uiscreen.currentMode.size;
         if ((origsize.width == 0.0f) && (origsize.height == 0.0f)) {
-            const SDL_DisplayMode *bestmode = SDL_GetClosestFullscreenDisplayMode(display->id, window->w, window->h, 0.0f);
+            const SDL_DisplayMode *bestmode;
+            SDL_bool include_high_density_modes = SDL_FALSE;
+            if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+                include_high_density_modes = SDL_TRUE;
+            }
+            bestmode = SDL_GetClosestFullscreenDisplayMode(display->id, window->w, window->h, 0.0f, include_high_density_modes);
             if (bestmode) {
                 SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)bestmode->driverdata;
                 [data.uiscreen setCurrentMode:modedata.uiscreenmode];

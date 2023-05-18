@@ -1288,9 +1288,15 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
             }
         }
 
-        fullscreen_mode = SDL_GetClosestFullscreenDisplayMode(state->displayID, state->window_w, state->window_h, state->refresh_rate);
-        if (fullscreen_mode) {
-            SDL_memcpy(&state->fullscreen_mode, fullscreen_mode, sizeof(state->fullscreen_mode));
+        {
+            SDL_bool include_high_density_modes = SDL_FALSE;
+            if (state->window_flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+                include_high_density_modes = SDL_TRUE;
+            }
+            fullscreen_mode = SDL_GetClosestFullscreenDisplayMode(state->displayID, state->window_w, state->window_h, state->refresh_rate, include_high_density_modes);
+            if (fullscreen_mode) {
+                SDL_memcpy(&state->fullscreen_mode, fullscreen_mode, sizeof(state->fullscreen_mode));
+            }
         }
 
         state->windows =
@@ -1866,7 +1872,11 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
                 new_mode.displayID = displays[index];
                 if (SDL_SetWindowFullscreenMode(window, &new_mode) < 0) {
                     /* Try again with a default mode */
-                    mode = SDL_GetClosestFullscreenDisplayMode(displays[index], state->window_w, state->window_h, state->refresh_rate);
+                    SDL_bool include_high_density_modes = SDL_FALSE;
+                    if (state->window_flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+                        include_high_density_modes = SDL_TRUE;
+                    }
+                    mode = SDL_GetClosestFullscreenDisplayMode(displays[index], state->window_w, state->window_h, state->refresh_rate, include_high_density_modes);
                     SDL_SetWindowFullscreenMode(window, mode);
                 }
             }
