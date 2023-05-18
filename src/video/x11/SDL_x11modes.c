@@ -39,6 +39,91 @@
  */
 /* #define XRANDR_DISABLED_BY_DEFAULT */
 
+#ifdef SDL_USE_LIBDBUS
+
+static DBusMessage *ReadDBusSetting(SDL_DBusContext *dbus, const char *key)
+{
+    static const char *iface = "org.gnome.desktop.interface";
+
+    DBusMessage *reply = NULL;
+    DBusMessage *msg = dbus->message_new_method_call("org.freedesktop.portal.Desktop",  /* Node */
+                                                     "/org/freedesktop/portal/desktop", /* Path */
+                                                     "org.freedesktop.portal.Settings", /* Interface */
+                                                     "Read");                           /* Method */
+
+    if (msg) {
+        if (dbus->message_append_args(msg, DBUS_TYPE_STRING, &iface, DBUS_TYPE_STRING, &key, DBUS_TYPE_INVALID)) {
+            reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, DBUS_TIMEOUT_USE_DEFAULT, NULL);
+        }
+        dbus->message_unref(msg);
+    }
+
+    return reply;
+}
+
+static SDL_bool ParseDBusReply(SDL_DBusContext *dbus, DBusMessage *reply, int type, void *value)
+{
+    DBusMessageIter iter[3];
+
+    dbus->message_iter_init(reply, &iter[0]);
+    if (dbus->message_iter_get_arg_type(&iter[0]) != DBUS_TYPE_VARIANT) {
+        return SDL_FALSE;
+    }
+
+    dbus->message_iter_recurse(&iter[0], &iter[1]);
+    if (dbus->message_iter_get_arg_type(&iter[1]) != DBUS_TYPE_VARIANT) {
+        return SDL_FALSE;
+    }
+
+    dbus->message_iter_recurse(&iter[1], &iter[2]);
+    if (dbus->message_iter_get_arg_type(&iter[2]) != type) {
+        return SDL_FALSE;
+    }
+
+    dbus->message_iter_get_basic(&iter[2], value);
+
+    return SDL_TRUE;
+}
+
+#endif
+
+static float GetGlobalContentScale()
+{
+    static const char *text_scaling_factor = "text-scaling-factor";
+    static double scale_factor = 0.0;
+
+    if (scale_factor <= 0.0) {
+        /* First try the settings portal via D-Bus for the text scaling factor (aka 'Global Scale' on KDE) */
+#ifdef SDL_USE_LIBDBUS
+        DBusMessage *reply;
+        SDL_DBusContext *dbus = SDL_DBus_GetContext();
+
+        if (dbus) {
+            if ((reply = ReadDBusSetting(dbus, text_scaling_factor))) {
+                ParseDBusReply(dbus, reply, DBUS_TYPE_DOUBLE, &scale_factor);
+                dbus->message_unref(reply);
+            }
+        }
+
+        /* If that failed, try the GDK_SCALE envvar... */
+        if (scale_factor <= 0.0)
+#endif
+        {
+            const char *scale_str = SDL_getenv("GDK_SCALE");
+            if (scale_str) {
+                scale_factor = SDL_atoi(scale_str);
+            }
+        }
+
+        /* Nothing or a bad value, just fall back to 1.0 */
+        if (scale_factor <= 0.0) {
+            scale_factor = 1.0;
+        }
+    }
+
+    return scale_factor;
+}
+
 static int get_visualinfo(Display *display, int screen, XVisualInfo *vinfo)
 {
     const char *visual_id = SDL_getenv("SDL_VIDEO_X11_VISUALID");
@@ -384,6 +469,7 @@ static int X11_AddXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int screen
         display.name = display_name;
     }
     display.desktop_mode = mode;
+    display.content_scale = GetGlobalContentScale();
     display.driverdata = displaydata;
     if (SDL_AddVideoDisplay(&display, send_event) == 0) {
         return -1;
@@ -591,6 +677,7 @@ static int X11_InitModes_StdXlib(SDL_VideoDevice *_this)
     SDL_zero(display);
     display.name = (char *)"Generic X11 Display"; /* this is just copied and thrown away, it's safe to cast to char* here. */
     display.desktop_mode = mode;
+    display.content_scale = GetGlobalContentScale();
     display.driverdata = displaydata;
     if (SDL_AddVideoDisplay(&display, SDL_TRUE) == 0) {
         return -1;
