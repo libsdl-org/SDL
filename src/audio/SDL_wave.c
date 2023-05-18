@@ -1711,7 +1711,7 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
 
         /* All supported formats must have a proper block size. */
         if (format->blockalign == 0) {
-            return SDL_SetError("Invalid block alignment");
+            format->blockalign = 1;  /* force it to 1 if it was unset. */
         }
 
         /* If the fact chunk is valid and the appropriate hint is set, the
