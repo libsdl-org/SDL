@@ -560,11 +560,13 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForWindow(SDL_Window *window
 /**
  * Get the pixel density of a window.
  *
- * This is a ratio of pixel size to window size. For example, if the window is 1920x1080 and it has a high density back buffer of 3840x2160 pixels, it would have a pixel density of 2.0.
+ * This is a ratio of pixel size to window size. For example, if the window is
+ * 1920x1080 and it has a high density back buffer of 3840x2160 pixels, it
+ * would have a pixel density of 2.0.
  *
  * \param window the window to query
- * \returns the pixel density or 0.0f on failure; call SDL_GetError() for
- *          more information.
+ * \returns the pixel density or 0.0f on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
