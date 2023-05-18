@@ -840,13 +840,15 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     HWND hwnd;
     int nCmdShow;
 
+    SDL_bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, SDL_TRUE);
+
     if (window->parent) {
         /* Update our position in case our parent moved while we were hidden */
         WIN_SetWindowPosition(_this, window);
     }
 
     hwnd = window->driverdata->hwnd;
-    nCmdShow = SDL_GetHintBoolean(SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN, SDL_FALSE) ? SW_SHOWNA : SW_SHOW;
+    nCmdShow = bActivate ? SW_SHOW : SW_SHOWNA;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
     if (style & WS_EX_NOACTIVATE) {
         nCmdShow = SW_SHOWNOACTIVATE;
@@ -892,12 +894,14 @@ void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
      * for "security" reasons. Apparently, the following song-and-dance gets
      * around their objections. */
     SDL_bool bForce = SDL_GetHintBoolean(SDL_HINT_FORCE_RAISEWINDOW, SDL_FALSE);
+    SDL_bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED, SDL_TRUE);
 
     HWND hCurWnd = NULL;
     DWORD dwMyID = 0u;
     DWORD dwCurID = 0u;
 
-    HWND hwnd = window->driverdata->hwnd;
+    SDL_WindowData *data = window->driverdata;
+    HWND hwnd = data->hwnd;
     if (bForce) {
         hCurWnd = GetForegroundWindow();
         dwMyID = GetCurrentThreadId();
@@ -909,7 +913,11 @@ void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
             SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
         }
     }
-    SetForegroundWindow(hwnd);
+    if (bActivate) {
+        SetForegroundWindow(hwnd);
+    } else {
+        SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, data->copybits_flag | SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+    }
     if (bForce) {
         AttachThreadInput(dwCurID, dwMyID, FALSE);
         SetFocus(hwnd);

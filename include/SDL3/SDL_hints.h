@@ -442,6 +442,18 @@ extern "C" {
 #define SDL_HINT_FORCE_RAISEWINDOW    "SDL_HINT_FORCE_RAISEWINDOW"
 
 /**
+*  \brief  A variable controlling whether the window is activated when the SDL_RaiseWindow function is called
+*
+*  This variable can be set to the following values:
+*    "0"       - The window is not activated when the SDL_RaiseWindow function is called
+*    "1"       - The window is activated when the SDL_RaiseWindow function is called
+*
+*  By default SDL will activate the window when the SDL_RaiseWindow function is called.
+*  At present this is only available for MS Windows.
+*/
+#define SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED    "SDL_WINDOW_ACTIVATE_WHEN_RAISED"
+
+/**
  *  \brief  A variable controlling how 3D acceleration is used to accelerate the SDL screen surface.
  *
  *  SDL can try to accelerate the SDL screen surface by using streaming
@@ -2025,12 +2037,12 @@ extern "C" {
 *  \brief  A variable controlling whether the window is activated when the SDL_ShowWindow function is called
 *
 *  This variable can be set to the following values:
-*    "0"       - The window is activated when the SDL_ShowWindow function is called
-*    "1"       - The window is not activated when the SDL_ShowWindow function is called
+*    "0"       - The window is not activated when the SDL_ShowWindow function is called
+*    "1"       - The window is activated when the SDL_ShowWindow function is called
 *
 *  By default SDL will activate the window when the SDL_ShowWindow function is called
 */
-#define SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN    "SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN"
+#define SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN    "SDL_WINDOW_ACTIVATE_WHEN_SHOWN"
 
 /** \brief Allows back-button-press events on Windows Phone to be marked as handled
  *
