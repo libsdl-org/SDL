@@ -143,18 +143,18 @@ static void check_proc_acpi_battery(const char *node, SDL_bool *have_battery,
 
     ptr = &state[0];
     while (make_proc_acpi_key_val(&ptr, &key, &val)) {
-        if (SDL_strcmp(key, "present") == 0) {
-            if (SDL_strcmp(val, "yes") == 0) {
+        if (SDL_strcasecmp(key, "present") == 0) {
+            if (SDL_strcasecmp(val, "yes") == 0) {
                 *have_battery = SDL_TRUE;
             }
-        } else if (SDL_strcmp(key, "charging state") == 0) {
+        } else if (SDL_strcasecmp(key, "charging state") == 0) {
             /* !!! FIXME: what exactly _does_ charging/discharging mean? */
-            if (SDL_strcmp(val, "charging/discharging") == 0) {
+            if (SDL_strcasecmp(val, "charging/discharging") == 0) {
                 charge = SDL_TRUE;
-            } else if (SDL_strcmp(val, "charging") == 0) {
+            } else if (SDL_strcasecmp(val, "charging") == 0) {
                 charge = SDL_TRUE;
             }
-        } else if (SDL_strcmp(key, "remaining capacity") == 0) {
+        } else if (SDL_strcasecmp(key, "remaining capacity") == 0) {
             char *endptr = NULL;
             const int cvt = (int)SDL_strtol(val, &endptr, 10);
             if (*endptr == ' ') {
@@ -165,7 +165,7 @@ static void check_proc_acpi_battery(const char *node, SDL_bool *have_battery,
 
     ptr = &info[0];
     while (make_proc_acpi_key_val(&ptr, &key, &val)) {
-        if (SDL_strcmp(key, "design capacity") == 0) {
+        if (SDL_strcasecmp(key, "design capacity") == 0) {
             char *endptr = NULL;
             const int cvt = (int)SDL_strtol(val, &endptr, 10);
             if (*endptr == ' ') {
@@ -221,8 +221,8 @@ static void check_proc_acpi_ac_adapter(const char *node, SDL_bool *have_ac)
 
     ptr = &state[0];
     while (make_proc_acpi_key_val(&ptr, &key, &val)) {
-        if (SDL_strcmp(key, "state") == 0) {
-            if (SDL_strcmp(val, "on-line") == 0) {
+        if (SDL_strcasecmp(key, "state") == 0) {
+            if (SDL_strcasecmp(val, "on-line") == 0) {
                 *have_ac = SDL_TRUE;
             }
         }
@@ -386,7 +386,7 @@ SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state,
 
     if (!next_string(&ptr, &str)) { /* remaining battery life time units */
         return SDL_FALSE;
-    } else if (SDL_strcmp(str, "min") == 0) {
+    } else if (SDL_strcasecmp(str, "min") == 0) {
         battery_time *= 60;
     }
 
@@ -452,7 +452,7 @@ SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *second
             continue; /* skip these, of course. */
         } else if (!read_power_file(base, name, "type", str, sizeof(str))) {
             continue; /* Don't know _what_ we're looking at. Give up on it. */
-        } else if (SDL_strcmp(str, "Battery\n") != 0) {
+        } else if (SDL_strcasecmp(str, "Battery\n") != 0) {
             continue; /* we don't care about UPS and such. */
         }
 
@@ -461,7 +461,7 @@ SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *second
            the system. Most system batteries don't list a scope at all; we
            assume it's a system battery if not specified. */
         if (read_power_file(base, name, "scope", str, sizeof(str))) {
-            if (SDL_strcmp(str, "device\n") == 0) {
+            if (SDL_strcasecmp(str, "Device\n") == 0) {
                 continue; /* skip external devices with their own batteries. */
             }
         }
@@ -471,11 +471,11 @@ SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *second
             st = SDL_POWERSTATE_NO_BATTERY;
         } else if (!read_power_file(base, name, "status", str, sizeof(str))) {
             st = SDL_POWERSTATE_UNKNOWN; /* uh oh */
-        } else if (SDL_strcmp(str, "Charging\n") == 0) {
+        } else if (SDL_strcasecmp(str, "Charging\n") == 0) {
             st = SDL_POWERSTATE_CHARGING;
-        } else if (SDL_strcmp(str, "Discharging\n") == 0) {
+        } else if (SDL_strcasecmp(str, "Discharging\n") == 0) {
             st = SDL_POWERSTATE_ON_BATTERY;
-        } else if ((SDL_strcmp(str, "Full\n") == 0) || (SDL_strcmp(str, "Not charging\n") == 0)) {
+        } else if ((SDL_strcasecmp(str, "Full\n") == 0) || (SDL_strcasecmp(str, "Not charging\n") == 0)) {
             st = SDL_POWERSTATE_CHARGED;
         } else {
             st = SDL_POWERSTATE_UNKNOWN; /* uh oh */
