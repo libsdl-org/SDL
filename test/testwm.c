@@ -112,9 +112,9 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
                 SDL_FRect cell_rect;
                 const SDL_DisplayMode *mode = modes[j];
 
-                (void)SDL_snprintf(text, sizeof(text), "%s mode %d: %dx%d@%gHz",
+                (void)SDL_snprintf(text, sizeof(text), "%s mode %d: %dx%d@%gx %gHz",
                                    SDL_GetDisplayName(display_id),
-                                   j, mode->w, mode->h, mode->refresh_rate);
+                                   j, mode->w, mode->h, mode->pixel_density, mode->refresh_rate);
 
                 /* Update column width */
                 text_length = (int)SDL_strlen(text);
