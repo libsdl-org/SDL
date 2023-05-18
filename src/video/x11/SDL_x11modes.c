@@ -41,15 +41,22 @@
 
 #ifdef SDL_USE_LIBDBUS
 
+#define SCALE_FACTOR_NODE "org.freedesktop.portal.Desktop"
+#define SCALE_FACTOR_PATH "/org/freedesktop/portal/desktop"
+#define SCALE_FACTOR_INTERFACE "org.freedesktop.portal.Settings"
+#define SCALE_FACTOR_NAMESPACE "org.gnome.desktop.interface"
+#define SCALE_FACTOR_SIGNAL_NAME "SettingChanged"
+#define SCALE_FACTOR_KEY "text-scaling-factor"
+
 static DBusMessage *ReadDBusSetting(SDL_DBusContext *dbus, const char *key)
 {
-    static const char *iface = "org.gnome.desktop.interface";
+    static const char *iface = SCALE_FACTOR_NAMESPACE;
 
     DBusMessage *reply = NULL;
-    DBusMessage *msg = dbus->message_new_method_call("org.freedesktop.portal.Desktop",  /* Node */
-                                                     "/org/freedesktop/portal/desktop", /* Path */
-                                                     "org.freedesktop.portal.Settings", /* Interface */
-                                                     "Read");                           /* Method */
+    DBusMessage *msg = dbus->message_new_method_call(SCALE_FACTOR_NODE,
+                                                     SCALE_FACTOR_PATH,
+                                                     SCALE_FACTOR_INTERFACE,
+                                                     "Read"); /* Method */
 
     if (msg) {
         if (dbus->message_append_args(msg, DBUS_TYPE_STRING, &iface, DBUS_TYPE_STRING, &key, DBUS_TYPE_INVALID)) {
@@ -85,11 +92,75 @@ static SDL_bool ParseDBusReply(SDL_DBusContext *dbus, DBusMessage *reply, int ty
     return SDL_TRUE;
 }
 
+static void UpdateDisplayContentScale(float scale)
+{
+    SDL_VideoDevice *viddevice = SDL_GetVideoDevice();
+    int i;
+
+    if (viddevice) {
+        for (i = 0; i < viddevice->num_displays; ++i) {
+            SDL_SetDisplayContentScale(&viddevice->displays[i], scale);
+        }
+    }
+}
+
+static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
+{
+    SDL_DBusContext *dbus = SDL_DBus_GetContext();
+    double *scale_factor = (double *)data;
+    double new_scale = 0.0;
+
+    if (dbus->message_is_signal(msg, SCALE_FACTOR_INTERFACE, SCALE_FACTOR_SIGNAL_NAME)) {
+        DBusMessageIter signal_iter, variant_iter;
+        const char *namespace, *key;
+
+        dbus->message_iter_init(msg, &signal_iter);
+        /* Check if the parameters are what we expect */
+        if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_STRING) {
+            goto not_our_signal;
+        }
+        dbus->message_iter_get_basic(&signal_iter, &namespace);
+        if (SDL_strcmp(SCALE_FACTOR_NAMESPACE, namespace) != 0) {
+            goto not_our_signal;
+        }
+        if (!dbus->message_iter_next(&signal_iter)) {
+            goto not_our_signal;
+        }
+        if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_STRING) {
+            goto not_our_signal;
+        }
+        dbus->message_iter_get_basic(&signal_iter, &key);
+        if (SDL_strcmp(SCALE_FACTOR_KEY, key) != 0) {
+            goto not_our_signal;
+        }
+        if (!dbus->message_iter_next(&signal_iter)) {
+            goto not_our_signal;
+        }
+        if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_VARIANT) {
+            goto not_our_signal;
+        }
+        dbus->message_iter_recurse(&signal_iter, &variant_iter);
+        if (dbus->message_iter_get_arg_type(&variant_iter) != DBUS_TYPE_DOUBLE) {
+            goto not_our_signal;
+        }
+        dbus->message_iter_get_basic(&variant_iter, &new_scale);
+
+        if (new_scale > 0.0) {
+            *scale_factor = new_scale;
+            UpdateDisplayContentScale(new_scale);
+        }
+
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+not_our_signal:
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
 #endif
 
 static float GetGlobalContentScale()
 {
-    static const char *text_scaling_factor = "text-scaling-factor";
     static double scale_factor = 0.0;
 
     if (scale_factor <= 0.0) {
@@ -99,8 +170,16 @@ static float GetGlobalContentScale()
         SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
         if (dbus) {
-            if ((reply = ReadDBusSetting(dbus, text_scaling_factor))) {
-                ParseDBusReply(dbus, reply, DBUS_TYPE_DOUBLE, &scale_factor);
+            if ((reply = ReadDBusSetting(dbus, SCALE_FACTOR_KEY))) {
+                if (ParseDBusReply(dbus, reply, DBUS_TYPE_DOUBLE, &scale_factor)) {
+                    /* If the setting exists, register a listener for scale changes. */
+                    dbus->bus_add_match(dbus->session_conn,
+                                        "type='signal', interface='"SCALE_FACTOR_INTERFACE"',"
+                                        "member='"SCALE_FACTOR_SIGNAL_NAME"', arg0='"SCALE_FACTOR_NAMESPACE"',"
+                                        "arg1='"SCALE_FACTOR_KEY"'", NULL);
+                    dbus->connection_add_filter(dbus->session_conn, &DBus_MessageFilter, &scale_factor, NULL);
+                    dbus->connection_flush(dbus->session_conn);
+                }
                 dbus->message_unref(reply);
             }
         }

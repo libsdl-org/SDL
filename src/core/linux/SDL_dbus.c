@@ -498,4 +498,16 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
 
     return SDL_TRUE;
 }
+
+void SDL_DBus_PumpEvents(void)
+{
+    if (dbus.session_conn) {
+        dbus.connection_read_write(dbus.session_conn, 0);
+
+        while (dbus.connection_dispatch(dbus.session_conn) == DBUS_DISPATCH_DATA_REMAINS) {
+            /* Do nothing, actual work happens in DBus_MessageFilter */
+            SDL_DelayNS(SDL_US_TO_NS(10));
+        }
+    }
+}
 #endif

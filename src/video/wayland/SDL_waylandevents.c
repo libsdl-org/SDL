@@ -391,7 +391,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 #endif
 
 #ifdef SDL_USE_LIBDBUS
-    SDL_SystemTheme_PumpEvents();
+    SDL_DBus_PumpEvents();
 #endif
 
     /* If key repeat is active, we'll need to cap our maximum wait time to handle repeats */
@@ -464,7 +464,7 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
 #endif
 
 #ifdef SDL_USE_LIBDBUS
-    SDL_SystemTheme_PumpEvents();
+    SDL_DBus_PumpEvents();
 #endif
 
 #ifdef HAVE_LIBDECOR_H

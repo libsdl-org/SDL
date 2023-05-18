@@ -158,18 +158,3 @@ SDL_SystemTheme_Get(void)
 {
     return system_theme_data.theme;
 }
-
-void
-SDL_SystemTheme_PumpEvents(void)
-{
-    SDL_DBusContext *dbus = system_theme_data.dbus;
-    DBusConnection *conn;
-    if (dbus == NULL) return;
-    conn = dbus->session_conn;
-    dbus->connection_read_write(conn, 0);
-
-    while (dbus->connection_dispatch(conn) == DBUS_DISPATCH_DATA_REMAINS) {
-        /* Do nothing, actual work happens in DBus_MessageFilter */
-        usleep(10);
-    }
-}
