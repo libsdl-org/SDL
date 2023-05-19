@@ -61,13 +61,13 @@ EControllerType GuessControllerType( int nVID, int nPID )
 	{
 		s_bCheckedForDuplicates = true;
 		int i, j;
-		for ( i = 0; i < sizeof( SDL_controller_list ) / sizeof( SDL_controller_list[ 0 ] ); ++i )
+		for ( i = 0; i < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++i )
 		{
-			for ( j = i + 1; j < sizeof( SDL_controller_list ) / sizeof( SDL_controller_list[ 0 ] ); ++j )
+			for ( j = i + 1; j < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++j )
 			{
-				if ( SDL_controller_list[ i ].m_unDeviceID == SDL_controller_list[ j ].m_unDeviceID )
+				if ( arrControllers[ i ].m_unDeviceID == arrControllers[ j ].m_unDeviceID )
 				{
-					Log( "Duplicate controller entry found for VID 0x%.4x PID 0x%.4x\n", ( SDL_controller_list[ i ].m_unDeviceID >> 16 ), SDL_controller_list[ i ].m_unDeviceID & 0xFFFF );
+					Log( "Duplicate controller entry found for VID 0x%.4x PID 0x%.4x\n", ( arrControllers[ i ].m_unDeviceID >> 16 ), arrControllers[ i ].m_unDeviceID & 0xFFFF );
 				}
 			}
 		}
@@ -111,11 +111,11 @@ EControllerType GuessControllerType( int nVID, int nPID )
 		return k_eControllerType_UnknownNonSteamController;
 	}
 
-	for ( iIndex = 0; iIndex < sizeof( SDL_controller_list ) / sizeof( SDL_controller_list[0] ); ++iIndex )
+	for ( iIndex = 0; iIndex < sizeof( arrControllers ) / sizeof( arrControllers[0] ); ++iIndex )
 	{
-		if ( unDeviceID == SDL_controller_list[ iIndex ].m_unDeviceID )
+		if ( unDeviceID == arrControllers[ iIndex ].m_unDeviceID )
 		{
-			return SDL_controller_list[ iIndex ].m_eControllerType;
+			return arrControllers[ iIndex ].m_eControllerType;
 		}
 	}
 
@@ -127,11 +127,11 @@ const char *GuessControllerName( int nVID, int nPID )
 {
 	unsigned int unDeviceID = MAKE_CONTROLLER_ID( nVID, nPID );
 	int iIndex;
-	for ( iIndex = 0; iIndex < sizeof( SDL_controller_list ) / sizeof( SDL_controller_list[0] ); ++iIndex )
+	for ( iIndex = 0; iIndex < sizeof( arrControllers ) / sizeof( arrControllers[0] ); ++iIndex )
 	{
-		if ( unDeviceID == SDL_controller_list[ iIndex ].m_unDeviceID )
+		if ( unDeviceID == arrControllers[ iIndex ].m_unDeviceID )
 		{
-			return SDL_controller_list[ iIndex ].m_pszName;
+			return arrControllers[ iIndex ].m_pszName;
 		}
 	}
 
