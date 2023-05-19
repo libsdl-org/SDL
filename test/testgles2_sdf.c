@@ -16,6 +16,7 @@
 #endif
 
 #include "SDL_test_common.h"
+#include "testutils.h"
 
 #if defined(__IPHONEOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__NACL__) \
     || defined(__WINDOWS__) || defined(__LINUX__)
@@ -25,8 +26,6 @@
 #ifdef HAVE_OPENGLES2
 
 #include "SDL_opengles2.h"
-
-#include "testutils.h"
 
 typedef struct GLES2_Context
 {
@@ -127,7 +126,7 @@ quit(int rc)
  * shader_type: Passed to GL, e.g. GL_VERTEX_SHADER.
  */
 void
-process_shader(GLint *shader, const char *source, GLenum shader_type)
+process_shader(GLenum *shader, const char *source, GLenum shader_type)
 {
     GLint status = GL_FALSE;
     const char *shaders[1] = { NULL };
@@ -245,7 +244,8 @@ static float matrix_mvp[4][4];
 
 typedef struct shader_data
 {
-    GLint shader_program, shader_frag, shader_vert;
+    GLint shader_program;
+    GLenum shader_frag, shader_vert;
 
     GLint attr_position;
     GLint attr_color, attr_mvp;
@@ -294,8 +294,8 @@ void renderCopy_position(SDL_Rect *srcrect, SDL_Rect *dstrect)
 
     minx = (GLfloat)dstrect->x;
     miny = (GLfloat)dstrect->y;
-    maxx = (GLfloat)dstrect->x + dstrect->w;
-    maxy = (GLfloat)dstrect->y + dstrect->h;
+    maxx = (GLfloat)(dstrect->x + dstrect->w);
+    maxy = (GLfloat)(dstrect->y + dstrect->h);
 
     minu = (GLfloat) srcrect->x / (GLfloat)g_surf_sdf->w;
     maxu = (GLfloat) (srcrect->x + srcrect->w) / (GLfloat)g_surf_sdf->w;
@@ -339,28 +339,25 @@ void loop()
         {
             const int sym = event.key.keysym.sym;
 
-                if (sym == SDLK_TAB) {
-                    SDL_Log("Tab");
-                }
+            if (sym == SDLK_TAB) {
+                SDL_Log("Tab");
+            }
 
-
-                if (sym == SDLK_LEFT) {
-                    g_val -= 0.05f;
-                }
-                if (sym == SDLK_RIGHT) {
-                    g_val += 0.05f;
-                }
-                if (sym == SDLK_UP) {
-                    g_angle -= 1.0f;
-                }
-                if (sym == SDLK_DOWN) {
-                    g_angle += 1.0f;
-                }
-
-                break;
+            if (sym == SDLK_LEFT) {
+                g_val -= 0.05f;
+            }
+            if (sym == SDLK_RIGHT) {
+                g_val += 0.05f;
+            }
+            if (sym == SDLK_UP) {
+                g_angle -= 1.0f;
+            }
+            if (sym == SDLK_DOWN) {
+                g_angle += 1.0f;
             }
 
             break;
+        }
 
         case SDL_WINDOWEVENT:
             switch (event.window.event) {
