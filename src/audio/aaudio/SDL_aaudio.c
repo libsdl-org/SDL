@@ -39,7 +39,7 @@ typedef struct AAUDIO_Data
 {
     AAudioStreamBuilder *builder;
     void *handle;
-#define SDL_PROC(ret, func, params) ret(*func) params;
+#define SDL_PROC(ret, func, params) ret (*func) params;
 #include "SDL_aaudiofuncs.h"
 #undef SDL_PROC
 } AAUDIO_Data;

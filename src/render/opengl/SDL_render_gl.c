@@ -102,7 +102,7 @@ typedef struct
     GL_FBOList *framebuffers;
 
     /* OpenGL functions */
-#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #include "SDL_glfuncs.h"
 #undef SDL_PROC
 

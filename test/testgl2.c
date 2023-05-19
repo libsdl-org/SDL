@@ -26,7 +26,7 @@
 
 typedef struct GL_Context
 {
-#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #include "../src/render/opengl/SDL_glfuncs.h"
 #undef SDL_PROC
 } GL_Context;

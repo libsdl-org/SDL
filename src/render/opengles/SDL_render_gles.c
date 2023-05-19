@@ -85,7 +85,7 @@ typedef struct
 {
     SDL_GLContext context;
 
-#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #define SDL_PROC_OES                SDL_PROC
 #include "SDL_glesfuncs.h"
 #undef SDL_PROC
