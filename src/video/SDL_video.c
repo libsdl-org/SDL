@@ -1728,10 +1728,8 @@ void SDL_ToggleDragAndDropSupport(void)
     }
 }
 
-static void SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
+static void ApplyWindowFlags(SDL_Window *window, Uint32 flags)
 {
-    PrepareDragAndDropSupport(window);
-
     if (flags & SDL_WINDOW_MAXIMIZED) {
         SDL_MaximizeWindow(window);
     }
@@ -1752,6 +1750,12 @@ static void SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
     if (flags & SDL_WINDOW_KEYBOARD_GRABBED) {
         SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
     }
+}
+
+static void SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
+{
+    PrepareDragAndDropSupport(window);
+    ApplyWindowFlags(window, flags);
     if (!(flags & SDL_WINDOW_HIDDEN)) {
         SDL_ShowWindow(window);
     }
@@ -2764,6 +2768,12 @@ int SDL_ShowWindow(SDL_Window *window)
     }
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
 
+    /* Set window state if we have pending window flags cached */
+    if (window->pending_flags) {
+        ApplyWindowFlags(window, window->pending_flags);
+        window->pending_flags = 0;
+    }
+
     /* Restore child windows */
     for (child = window->first_child; child != NULL; child = child->next_sibling) {
         if (!child->restore_on_show && (child->flags & SDL_WINDOW_HIDDEN)) {
@@ -2825,6 +2835,11 @@ int SDL_MaximizeWindow(SDL_Window *window)
         return 0;
     }
 
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        window->pending_flags |= SDL_WINDOW_MAXIMIZED;
+        return 0;
+    }
+
     /* !!! FIXME: should this check if the window is resizable? */
 
     if (_this->MaximizeWindow) {
@@ -2847,6 +2862,11 @@ int SDL_MinimizeWindow(SDL_Window *window)
     CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (window->flags & SDL_WINDOW_MINIMIZED) {
+        return 0;
+    }
+
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        window->pending_flags |= SDL_WINDOW_MINIMIZED;
         return 0;
     }
 
@@ -2886,6 +2906,15 @@ int SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
 
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
+
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        if (fullscreen) {
+            window->pending_flags |= SDL_WINDOW_FULLSCREEN;
+        } else {
+            window->pending_flags &= ~SDL_WINDOW_FULLSCREEN;
+        }
+        return 0;
+    }
 
     if (flags == (window->flags & SDL_WINDOW_FULLSCREEN)) {
         return 0;
@@ -3164,6 +3193,15 @@ int SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
 
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        if (grabbed) {
+            window->pending_flags |= SDL_WINDOW_KEYBOARD_GRABBED;
+        } else {
+            window->pending_flags &= ~SDL_WINDOW_KEYBOARD_GRABBED;
+        }
+        return 0;
+    }
+
     if (!!grabbed == !!(window->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
         return 0;
     }
@@ -3180,6 +3218,15 @@ int SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed)
 {
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
+
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        if (grabbed) {
+            window->pending_flags |= SDL_WINDOW_MOUSE_GRABBED;
+        } else {
+            window->pending_flags &= ~SDL_WINDOW_MOUSE_GRABBED;
+        }
+        return 0;
+    }
 
     if (!!grabbed == !!(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
         return 0;

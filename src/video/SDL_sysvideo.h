@@ -78,6 +78,7 @@ struct SDL_Window
     int max_w, max_h;
     int last_pixel_w, last_pixel_h;
     Uint32 flags;
+    Uint32 pending_flags;
     float display_scale;
     SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
     SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
