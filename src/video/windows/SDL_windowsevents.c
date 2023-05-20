@@ -1217,7 +1217,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
         }
 
-        if (!GetClientRect(hwnd, &rect) || IsRectEmpty(&rect)) {
+        if (!GetClientRect(hwnd, &rect) || WIN_IsRectEmpty(&rect)) {
             break;
         }
         ClientToScreen(hwnd, (LPPOINT)&rect);
@@ -1349,7 +1349,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 RECT rect;
                 float x, y;
 
-                if (!GetClientRect(hwnd, &rect) || IsRectEmpty(&rect)) {
+                if (!GetClientRect(hwnd, &rect) || WIN_IsRectEmpty(&rect)) {
                     if (inputs) {
                         SDL_small_free(inputs, isstack);
                     }

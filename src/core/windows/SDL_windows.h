@@ -153,6 +153,9 @@ extern BOOL WIN_IsEqualIID(REFIID a, REFIID b);
 extern void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect);
 extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
 
+/* Returns SDL_TRUE if the rect is empty */
+extern BOOL WIN_IsRectEmpty(const RECT *rect);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
