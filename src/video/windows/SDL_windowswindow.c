@@ -825,7 +825,7 @@ void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *
     HWND hwnd = data->hwnd;
     RECT rect;
 
-    if (GetClientRect(hwnd, &rect) && !IsRectEmpty(&rect)) {
+    if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
         *w = rect.right;
         *h = rect.bottom;
     } else {
@@ -1358,7 +1358,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
                     }
                 }
                 if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
-                    if (!IsRectEmpty(&rect)) {
+                    if (!WIN_IsRectEmpty(&rect)) {
                         if (ClipCursor(&rect)) {
                             data->cursor_clipped_rect = rect;
                         }
