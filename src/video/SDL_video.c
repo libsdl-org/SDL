@@ -4665,9 +4665,11 @@ void SDL_StartTextInput(void)
     SDL_SetEventEnabled(SDL_EVENT_TEXT_EDITING, SDL_TRUE);
 
     /* Then show the on-screen keyboard, if any */
-    window = SDL_GetFocusWindow();
-    if (window && _this && _this->ShowScreenKeyboard) {
-        _this->ShowScreenKeyboard(_this, window);
+    if (SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
+        window = SDL_GetFocusWindow();
+        if (window && _this && _this->ShowScreenKeyboard) {
+            _this->ShowScreenKeyboard(_this, window);
+        }
     }
 
     /* Finally start the text input system */
@@ -4707,9 +4709,11 @@ void SDL_StopTextInput(void)
     }
 
     /* Hide the on-screen keyboard, if any */
-    window = SDL_GetFocusWindow();
-    if (window && _this && _this->HideScreenKeyboard) {
-        _this->HideScreenKeyboard(_this, window);
+    if (SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
+        window = SDL_GetFocusWindow();
+        if (window && _this && _this->HideScreenKeyboard) {
+            _this->HideScreenKeyboard(_this, window);
+        }
     }
 
     /* Finally disable text events */
