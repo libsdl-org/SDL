@@ -331,6 +331,12 @@ void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
     winrect->bottom = sdlrect->y + sdlrect->h - 1;
 }
 
+BOOL WIN_IsRectEmpty(const RECT *rect)
+{
+    /* Calculating this manually because UWP and Xbox do not support Win32 IsRectEmpty. */
+    return (rect->right <= rect->left) || (rect->bottom <= rect->top);
+}
+
 /* Win32-specific SDL_RunApp(), which does most of the SDL_main work,
   based on SDL_windows_main.c, placed in the public domain by Sam Lantinga  4/13/98 */
 #ifdef __WIN32__
