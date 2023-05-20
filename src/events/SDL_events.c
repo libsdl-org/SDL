@@ -941,6 +941,11 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
     if (push_sentinel && SDL_GetEventState(SDL_POLLSENTINEL) == SDL_ENABLE) {
         SDL_Event sentinel;
 
+        /* Make sure we don't already have a sentinel in the queue, and add one to the end */
+        if (SDL_AtomicGet(&SDL_sentinel_pending) > 0) {
+            SDL_PeepEventsInternal(&sentinel, 1, SDL_GETEVENT, SDL_POLLSENTINEL, SDL_POLLSENTINEL, SDL_TRUE);
+        }
+
         SDL_zero(sentinel);
         sentinel.type = SDL_POLLSENTINEL;
         SDL_PushEvent(&sentinel);
@@ -988,12 +993,8 @@ static int SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Eve
            c) Periodic processing that takes place in some platform PumpEvents() functions happens
            d) Signals received in WaitEventTimeout() are turned into SDL events
         */
-        /* We only want a single sentinel in the queue. We could get more than one if event is NULL,
-         * since the SDL_PeepEvents() call below won't remove it in that case.
-         */
         int status;
-        SDL_bool add_sentinel = (SDL_AtomicGet(&SDL_sentinel_pending) == 0) ? SDL_TRUE : SDL_FALSE;
-        SDL_PumpEventsInternal(add_sentinel);
+        SDL_PumpEventsInternal(SDL_TRUE);
 
         SDL_LockMutex(_this->wakeup_lock);
         {
