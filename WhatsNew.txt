@@ -7,6 +7,7 @@ This is a list of major changes in SDL's version history.
 
 General:
 * Added a display event SDL_DISPLAYEVENT_MOVED which is sent when the primary monitor changes or displays change position relative to each other
+* Added the hint SDL_HINT_ENABLE_SCREEN_KEYBOARD to control whether the on-screen keyboard should be shown when text input is active
 
 
 ---------------------------------------------------------------------------
@@ -32,7 +33,7 @@ General:
 * Added access to the individual left and right gyro sensors of the combined Joy-Cons controller
 * Added a microsecond timestamp to SDL_SensorEvent and SDL_ControllerSensorEvent, when the hardware provides that information
 * Added SDL_SensorGetDataWithTimestamp() and SDL_GameControllerGetSensorDataWithTimestamp() to retrieve the last sensor data with the associated microsecond timestamp
-* Added the hint SDL_HINT_HIDAPI_IGNORE_DEVICES to have the SDL HID API ignore specific devices 
+* Added the hint SDL_HINT_HIDAPI_IGNORE_DEVICES to have the SDL HID API ignore specific devices
 * SDL_GetRevision() now includes more information about the SDL build, including the git commit hash if available
 
 Windows:
@@ -653,7 +654,7 @@ iOS:
 
 tvOS:
 * Added support for Apple TV
-* Added a hint SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION to control whether he Apple TV remote's joystick axes will automatically match the rotation of the remote.  
+* Added a hint SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION to control whether he Apple TV remote's joystick axes will automatically match the rotation of the remote.
 
 Android:
 * Fixed SDL not resizing window when Android screen resolution changes
@@ -798,8 +799,8 @@ Linux:
 * Added experimental Wayland and Mir support, disabled by default
 
 Android:
-* Joystick support (minimum SDK version required to build SDL is now 12, 
-  the required runtime version remains at 10, but on such devices joystick 
+* Joystick support (minimum SDK version required to build SDL is now 12,
+  the required runtime version remains at 10, but on such devices joystick
   support won't be available).
 * Hotplugging support for joysticks
 * Added a hint SDL_HINT_ACCELEROMETER_AS_JOYSTICK to control whether the accelerometer should be listed as a 3 axis joystick, which it will by default.
@@ -852,7 +853,7 @@ iOS:
 
 Android:
 IMPORTANT: You MUST get the updated SDLActivity.java to match C code
-* Moved EGL initialization to native code 
+* Moved EGL initialization to native code
 * Fixed the accelerometer axis rotation relative to the device rotation
 * Fixed race conditions when handling the EGL context on pause/resume
 * Touch devices are available for enumeration immediately after init
