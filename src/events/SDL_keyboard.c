@@ -699,20 +699,41 @@ void SDL_SetKeymap(int start, const SDL_Keycode *keys, int length, SDL_bool send
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
     SDL_Keycode normalized_keymap[SDL_NUM_SCANCODES];
+    SDL_bool is_azerty = SDL_FALSE;
 
     if (start < 0 || start + length > SDL_NUM_SCANCODES) {
         return;
     }
 
+    if (start > 0) {
+        SDL_memcpy(&normalized_keymap[0], &keyboard->keymap[0], sizeof(*keys) * start);
+    }
+
     SDL_memcpy(&normalized_keymap[start], keys, sizeof(*keys) * length);
 
-    /* The number key scancodes always map to the number key keycodes.
-     * On AZERTY layouts these technically are symbols, but users (and games)
-     * always think of them and view them in UI as number keys.
+    if (start + length < SDL_NUM_SCANCODES) {
+        int offset = start + length;
+        SDL_memcpy(&normalized_keymap[offset], &keyboard->keymap[offset], sizeof(*keys) * (SDL_NUM_SCANCODES - offset));
+    }
+
+    /* On AZERTY layouts the number keys are technically symbols, but users (and games)
+     * always think of them and view them in UI as number keys, so remap them here.
      */
-    normalized_keymap[SDL_SCANCODE_0] = SDLK_0;
-    for (scancode = SDL_SCANCODE_1; scancode <= SDL_SCANCODE_9; ++scancode) {
-        normalized_keymap[scancode] = SDLK_1 + (scancode - SDL_SCANCODE_1);
+    if (normalized_keymap[SDL_SCANCODE_0] < SDLK_0 || normalized_keymap[SDL_SCANCODE_0] > SDLK_9) {
+        is_azerty = SDL_TRUE;
+        for (scancode = SDL_SCANCODE_1; scancode <= SDL_SCANCODE_9; ++scancode) {
+            if (normalized_keymap[scancode] >= SDLK_0 && normalized_keymap[scancode] <= SDLK_9) {
+                /* There's a number on this row, it's not AZERTY */
+                is_azerty = SDL_FALSE;
+                break;
+            }
+        }
+    }
+    if (is_azerty) {
+        normalized_keymap[SDL_SCANCODE_0] = SDLK_0;
+        for (scancode = SDL_SCANCODE_1; scancode <= SDL_SCANCODE_9; ++scancode) {
+            normalized_keymap[scancode] = SDLK_1 + (scancode - SDL_SCANCODE_1);
+        }
     }
 
     /* If the mapping didn't really change, we're done here */
