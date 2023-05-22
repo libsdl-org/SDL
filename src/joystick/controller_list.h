@@ -171,7 +171,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc21f ), k_eControllerType_XBox360Controller, NULL },	// Logitech Gamepad F710
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc242 ), k_eControllerType_XBox360Controller, NULL },	// Logitech Chillstream Controller
 	{ MAKE_CONTROLLER_ID( 0x056e, 0x2004 ), k_eControllerType_XBox360Controller, NULL },	// Elecom JC-U3613M
-	{ MAKE_CONTROLLER_ID( 0x06a3, 0xf51a ), k_eControllerType_XBox360Controller, NULL },	// Saitek P3600
+// This isn't actually an Xbox 360 controller, it just looks like one
+//	{ MAKE_CONTROLLER_ID( 0x06a3, 0xf51a ), k_eControllerType_XBox360Controller, NULL },	// Saitek P3600
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4716 ), k_eControllerType_XBox360Controller, NULL },	// Mad Catz Wired Xbox 360 Controller
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4718 ), k_eControllerType_XBox360Controller, NULL },	// Mad Catz Street Fighter IV FightStick SE
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4726 ), k_eControllerType_XBox360Controller, NULL },	// Mad Catz Xbox 360 Controller
