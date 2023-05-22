@@ -93,7 +93,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         s2 = s_copy & InputDevice.SOURCE_ANY; // keep source only, no class;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= 23) {
             tst = InputDevice.SOURCE_BLUETOOTH_STYLUS;
             if ((s & tst) == tst) src += " BLUETOOTH_STYLUS";
             s2 &= ~tst;
@@ -107,7 +107,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if ((s & tst) == tst) src += " GAMEPAD";
         s2 &= ~tst;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= 21) {
             tst = InputDevice.SOURCE_HDMI;
             if ((s & tst) == tst) src += " HDMI";
             s2 &= ~tst;
@@ -146,7 +146,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if ((s & tst) == tst) src += " TOUCHSCREEN";
         s2 &= ~tst;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+        if (Build.VERSION.SDK_INT >= 18) {
             tst = InputDevice.SOURCE_TOUCH_NAVIGATION;
             if ((s & tst) == tst) src += " TOUCH_NAVIGATION";
             s2 &= ~tst;
