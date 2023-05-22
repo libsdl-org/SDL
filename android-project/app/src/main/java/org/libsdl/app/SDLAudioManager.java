@@ -30,7 +30,7 @@ public class SDLAudioManager {
         mAudioRecord = null;
         mAudioDeviceCallback = null;
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        if(Build.VERSION.SDK_INT >= 24)
         {
             mAudioDeviceCallback = new AudioDeviceCallback() {
                 @Override
@@ -242,7 +242,7 @@ public class SDLAudioManager {
                     return null;
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && deviceId != 0) {
+                if (Build.VERSION.SDK_INT >= 24 && deviceId != 0) {
                     mAudioRecord.setPreferredDevice(getOutputAudioDeviceInfo(deviceId));
                 }
 
@@ -269,7 +269,7 @@ public class SDLAudioManager {
                     return null;
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && deviceId != 0) {
+                if (Build.VERSION.SDK_INT >= 24 && deviceId != 0) {
                     mAudioTrack.setPreferredDevice(getInputAudioDeviceInfo(deviceId));
                 }
 
@@ -288,7 +288,7 @@ public class SDLAudioManager {
     }
 
     private static AudioDeviceInfo getInputAudioDeviceInfo(int deviceId) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= 24) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             for (AudioDeviceInfo deviceInfo : audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)) {
                 if (deviceInfo.getId() == deviceId) {
@@ -300,7 +300,7 @@ public class SDLAudioManager {
     }
 
     private static AudioDeviceInfo getOutputAudioDeviceInfo(int deviceId) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= 24) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             for (AudioDeviceInfo deviceInfo : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
                 if (deviceInfo.getId() == deviceId) {
@@ -312,14 +312,14 @@ public class SDLAudioManager {
     }
 
     private static void registerAudioDeviceCallback() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= 24) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             audioManager.registerAudioDeviceCallback(mAudioDeviceCallback, null);
         }
     }
 
     private static void unregisterAudioDeviceCallback(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= 24) {
             AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             audioManager.unregisterAudioDeviceCallback(mAudioDeviceCallback);
         }
@@ -338,7 +338,7 @@ public class SDLAudioManager {
      * This method is called by SDL using JNI.
      */
     public static int[] getAudioOutputDevices() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= 24) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             ArrayList<Integer> arrlist = new ArrayList<Integer>();
             for (AudioDeviceInfo dev : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
@@ -358,7 +358,7 @@ public class SDLAudioManager {
      * This method is called by SDL using JNI.
      */
     public static int[] getAudioInputDevices() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= 24) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             ArrayList<Integer> arrlist = new ArrayList<Integer>();
             for (AudioDeviceInfo dev : audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)) {
@@ -386,7 +386,7 @@ public class SDLAudioManager {
             return;
         }
 
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) {
+        if (android.os.Build.VERSION.SDK_INT < 21) {
             Log.e(TAG, "Attempted to make an incompatible audio call with uninitialized audio! (floating-point output is supported since Android 5.0 Lollipop)");
             return;
         }
