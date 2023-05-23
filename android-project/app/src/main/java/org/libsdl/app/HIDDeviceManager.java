@@ -357,13 +357,13 @@ public class HIDDeviceManager {
     private void initializeBluetooth() {
         Log.d(TAG, "Initializing Bluetooth");
 
-        if (Build.VERSION.SDK_INT <= 30 &&
+        if (Build.VERSION.SDK_INT <= 30 /* Android 11.0 (R) */ &&
             mContext.getPackageManager().checkPermission(android.Manifest.permission.BLUETOOTH, mContext.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Couldn't initialize Bluetooth, missing android.permission.BLUETOOTH");
             return;
         }
 
-        if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) || (Build.VERSION.SDK_INT < 18)) {
+        if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) || (Build.VERSION.SDK_INT < 18 /* Android 4.3 (JELLY_BEAN_MR2) */)) {
             Log.d(TAG, "Couldn't initialize Bluetooth, this version of Android does not support Bluetooth LE");
             return;
         }
@@ -577,7 +577,7 @@ public class HIDDeviceManager {
             try {
                 final int FLAG_MUTABLE = 0x02000000; // PendingIntent.FLAG_MUTABLE, but don't require SDK 31
                 int flags;
-                if (Build.VERSION.SDK_INT >= 31) {
+                if (Build.VERSION.SDK_INT >= 31 /* Android 12.0 (S) */) {
                     flags = FLAG_MUTABLE;
                 } else {
                     flags = 0;
