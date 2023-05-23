@@ -628,8 +628,8 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         const XSelectionRequestEvent *req = &xevent->xselectionrequest;
         XEvent sevent;
         int mime_formats;
-        unsigned long nbytes;
         unsigned char *seln_data;
+        size_t seln_length = 0;
         Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
         SDLX11_ClipboardData *clipboard;
 
@@ -685,11 +685,11 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
                     }
 
                     /* FIXME: We don't support the X11 INCR protocol for large clipboards. Do we want that? */
-                    seln_data = clipboard->callback(&nbytes, mime_type, clipboard->userdata);
+                    seln_data = clipboard->callback(&seln_length, mime_type, clipboard->userdata);
                     if (seln_data != NULL) {
                         X11_XChangeProperty(display, req->requestor, req->property,
                                             req->target, 8, PropModeReplace,
-                                            seln_data, nbytes);
+                                            seln_data, seln_length);
                         sevent.xselection.property = req->property;
                         sevent.xselection.target = req->target;
                     }

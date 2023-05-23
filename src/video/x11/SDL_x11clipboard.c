@@ -41,13 +41,15 @@ static void *X11_ClipboardTextCallback(size_t *length, const char *mime_type, vo
 {
     void *data = NULL;
     SDL_bool valid_mime_type = SDL_FALSE;
+    size_t i;
+
     *length = 0;
 
     if (userdata == NULL) {
         return data;
     }
 
-    for (size_t i = 0; i < TEXT_MIME_TYPES_LEN; ++i) {
+    for (i = 0; i < TEXT_MIME_TYPES_LEN; ++i) {
         if (SDL_strcmp(mime_type, text_mime_types[i]) == 0) {
             valid_mime_type = SDL_TRUE;
             break;
@@ -163,6 +165,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type, size_
     Atom selection;
     Atom seln_type;
     int seln_format;
+    unsigned long count;
     unsigned long overflow;
     Uint64 waitStart;
     Uint64 waitElapsed;
@@ -170,6 +173,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type, size_
     void *data = NULL;
     unsigned char *src = NULL;
     Atom XA_MIME = X11_XInternAtom(display, mime_type, False);
+
     *length = 0;
 
     /* Get the window that holds the selection */
@@ -216,8 +220,9 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type, size_
         }
 
         if (X11_XGetWindowProperty(display, owner, selection, 0, INT_MAX / 4, False,
-                                   XA_MIME, &seln_type, &seln_format, length, &overflow, &src) == Success) {
+                                   XA_MIME, &seln_type, &seln_format, &count, &overflow, &src) == Success) {
             if (seln_type == XA_MIME) {
+                *length = (size_t)count;
                 data = CloneDataBuffer(src, length, nullterminate);
             }
             X11_XFree(src);
