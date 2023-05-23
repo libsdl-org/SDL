@@ -804,7 +804,6 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
                                uint32_t timestamp, struct wl_surface *surface,
                                int id, wl_fixed_t fx, wl_fixed_t fy)
 {
-    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)data;
     SDL_WindowData *window_data;
 
     /* Check that this surface belongs to one of the SDL windows */
@@ -829,7 +828,6 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
 static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial,
                              uint32_t timestamp, int id)
 {
-    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)data;
     wl_fixed_t fx = 0, fy = 0;
     struct wl_surface *surface = NULL;
 
@@ -853,7 +851,6 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
 static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t timestamp,
                                  int id, wl_fixed_t fx, wl_fixed_t fy)
 {
-    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)data;
     struct wl_surface *surface = NULL;
 
     touch_update(id, fx, fy, &surface);
