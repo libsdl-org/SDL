@@ -885,8 +885,7 @@ void SDL_QuitMouse(void)
                         SDL_MouseRelativeWarpMotionChanged, mouse);
 }
 
-Uint32
-SDL_GetMouseState(float *x, float *y)
+Uint32 SDL_GetMouseState(float *x, float *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -899,8 +898,7 @@ SDL_GetMouseState(float *x, float *y)
     return GetButtonState(mouse, SDL_TRUE);
 }
 
-Uint32
-SDL_GetRelativeMouseState(float *x, float *y)
+Uint32 SDL_GetRelativeMouseState(float *x, float *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -915,8 +913,7 @@ SDL_GetRelativeMouseState(float *x, float *y)
     return GetButtonState(mouse, SDL_TRUE);
 }
 
-Uint32
-SDL_GetGlobalMouseState(float *x, float *y)
+Uint32 SDL_GetGlobalMouseState(float *x, float *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 

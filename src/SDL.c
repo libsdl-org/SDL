@@ -448,8 +448,7 @@ void SDL_QuitSubSystem(Uint32 flags)
 #endif
 }
 
-Uint32
-SDL_WasInit(Uint32 flags)
+Uint32 SDL_WasInit(Uint32 flags)
 {
     int i;
     int num_subsystems = SDL_arraysize(SDL_SubsystemRefCount);

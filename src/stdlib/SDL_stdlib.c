@@ -533,8 +533,7 @@ int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a' + ((x) - 'A'
 
 /* This file contains a portable memcpy manipulation function for SDL */
 
-void *
-SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len)
+void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len)
 {
 #ifdef __GNUC__
     /* Presumably this is well tuned for speed.
@@ -586,8 +585,7 @@ SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, 
 #endif /* __GNUC__ */
 }
 
-void *
-SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
+void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
 {
 #ifdef HAVE_MEMSET
     return memset(dst, c, len);
@@ -636,8 +634,7 @@ SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
 }
 
 /* Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent. */
-void *
-SDL_memset4(void *dst, Uint32 val, size_t dwords)
+void *SDL_memset4(void *dst, Uint32 val, size_t dwords)
 {
 #if defined(__APPLE__) && defined(HAVE_STRING_H)
     memset_pattern4(dst, &val, dwords * 4);

@@ -33,8 +33,7 @@ SDL_TLSCreate(void)
     return SDL_AtomicIncRef(&SDL_tls_id) + 1;
 }
 
-void *
-SDL_TLSGet(SDL_TLSID id)
+void *SDL_TLSGet(SDL_TLSID id)
 {
     SDL_TLSData *storage;
 

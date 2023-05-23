@@ -669,8 +669,7 @@ void SDL_DestroyRW(SDL_RWops *area)
 }
 
 /* Load all the data from an SDL data stream */
-void *
-SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
+void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
 {
     static const Sint64 FILE_CHUNK_SIZE = 1024;
     Sint64 size;
@@ -733,38 +732,32 @@ done:
     return data;
 }
 
-void *
-SDL_LoadFile(const char *file, size_t *datasize)
+void *SDL_LoadFile(const char *file, size_t *datasize)
 {
     return SDL_LoadFile_RW(SDL_RWFromFile(file, "rb"), datasize, 1);
 }
 
-Sint64
-SDL_RWsize(SDL_RWops *context)
+Sint64 SDL_RWsize(SDL_RWops *context)
 {
     return context->size(context);
 }
 
-Sint64
-SDL_RWseek(SDL_RWops *context, Sint64 offset, int whence)
+Sint64 SDL_RWseek(SDL_RWops *context, Sint64 offset, int whence)
 {
     return context->seek(context, offset, whence);
 }
 
-Sint64
-SDL_RWtell(SDL_RWops *context)
+Sint64 SDL_RWtell(SDL_RWops *context)
 {
     return context->seek(context, 0, SDL_RW_SEEK_CUR);
 }
 
-Sint64
-SDL_RWread(SDL_RWops *context, void *ptr, Sint64 size)
+Sint64 SDL_RWread(SDL_RWops *context, void *ptr, Sint64 size)
 {
     return context->read(context, ptr, size);
 }
 
-Sint64
-SDL_RWwrite(SDL_RWops *context, const void *ptr, Sint64 size)
+Sint64 SDL_RWwrite(SDL_RWops *context, const void *ptr, Sint64 size)
 {
     return context->write(context, ptr, size);
 }
@@ -784,8 +777,7 @@ Uint8 SDL_ReadU8(SDL_RWops *src)
     return value;
 }
 
-Uint16
-SDL_ReadLE16(SDL_RWops *src)
+Uint16 SDL_ReadLE16(SDL_RWops *src)
 {
     Uint16 value = 0;
 
@@ -793,8 +785,7 @@ SDL_ReadLE16(SDL_RWops *src)
     return SDL_SwapLE16(value);
 }
 
-Uint16
-SDL_ReadBE16(SDL_RWops *src)
+Uint16 SDL_ReadBE16(SDL_RWops *src)
 {
     Uint16 value = 0;
 
@@ -802,8 +793,7 @@ SDL_ReadBE16(SDL_RWops *src)
     return SDL_SwapBE16(value);
 }
 
-Uint32
-SDL_ReadLE32(SDL_RWops *src)
+Uint32 SDL_ReadLE32(SDL_RWops *src)
 {
     Uint32 value = 0;
 
@@ -811,8 +801,7 @@ SDL_ReadLE32(SDL_RWops *src)
     return SDL_SwapLE32(value);
 }
 
-Uint32
-SDL_ReadBE32(SDL_RWops *src)
+Uint32 SDL_ReadBE32(SDL_RWops *src)
 {
     Uint32 value = 0;
 
@@ -820,8 +809,7 @@ SDL_ReadBE32(SDL_RWops *src)
     return SDL_SwapBE32(value);
 }
 
-Uint64
-SDL_ReadLE64(SDL_RWops *src)
+Uint64 SDL_ReadLE64(SDL_RWops *src)
 {
     Uint64 value = 0;
 
@@ -829,8 +817,7 @@ SDL_ReadLE64(SDL_RWops *src)
     return SDL_SwapLE64(value);
 }
 
-Uint64
-SDL_ReadBE64(SDL_RWops *src)
+Uint64 SDL_ReadBE64(SDL_RWops *src)
 {
     Uint64 value = 0;
 

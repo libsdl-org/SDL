@@ -132,8 +132,7 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
 @end
 
-SDL_MetalView
-Cocoa_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_MetalView Cocoa_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
@@ -172,8 +171,7 @@ void Cocoa_Metal_DestroyView(SDL_VideoDevice *_this, SDL_MetalView view)
     }
 }
 
-void *
-Cocoa_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view)
+void *Cocoa_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_cocoametalview *cocoaview = (__bridge SDL_cocoametalview *)view;

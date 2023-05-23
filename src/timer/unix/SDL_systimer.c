@@ -82,8 +82,7 @@ static void CheckMonotonicTime(void)
     checked_monotonic_time = SDL_TRUE;
 }
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     Uint64 ticks;
 
@@ -116,8 +115,7 @@ SDL_GetPerformanceCounter(void)
     return ticks;
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     if (!checked_monotonic_time) {
         CheckMonotonicTime();

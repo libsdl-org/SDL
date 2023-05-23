@@ -139,8 +139,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     return info->iVal;
 }
 
-Uint32
-SDL_GetSemaphoreValue(SDL_Semaphore *sem)
+Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     if (sem == NULL) {
         SDL_InvalidParamError("sem");

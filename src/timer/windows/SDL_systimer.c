@@ -25,8 +25,7 @@
 #include "../../core/windows/SDL_windows.h"
 
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     LARGE_INTEGER counter;
     const BOOL rc = QueryPerformanceCounter(&counter);
@@ -34,8 +33,7 @@ SDL_GetPerformanceCounter(void)
     return (Uint64)counter.QuadPart;
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     LARGE_INTEGER frequency;
     const BOOL rc = QueryPerformanceFrequency(&frequency);

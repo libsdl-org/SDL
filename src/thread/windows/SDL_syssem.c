@@ -377,8 +377,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     return SDL_sem_impl_active.WaitTimeoutNS(sem, timeoutNS);
 }
 
-Uint32
-SDL_GetSemaphoreValue(SDL_Semaphore *sem)
+Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     return SDL_sem_impl_active.Value(sem);
 }

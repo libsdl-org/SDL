@@ -565,8 +565,7 @@ void SDL_QuitTicks(void)
     tick_start = 0;
 }
 
-Uint64
-SDL_GetTicksNS(void)
+Uint64 SDL_GetTicksNS(void)
 {
     Uint64 starting_value, value;
 

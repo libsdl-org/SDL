@@ -528,8 +528,7 @@ extern void qsortG(void *base, size_t nmemb, size_t size,
 
 #endif /* HAVE_QSORT */
 
-void *
-SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (*compare)(const void *, const void *))
+void *SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (*compare)(const void *, const void *))
 {
 #ifdef HAVE_BSEARCH
     return bsearch(key, base, nmemb, size, compare);

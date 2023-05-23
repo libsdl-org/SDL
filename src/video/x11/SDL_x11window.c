@@ -218,8 +218,7 @@ static void X11_SetKeyboardFocus(SDL_Window *window)
     SDL_SetKeyboardFocus(window);
 }
 
-Uint32
-X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow)
+Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow)
 {
     SDL_VideoData *videodata = _this->driverdata;
     Display *display = videodata->display;
@@ -1657,8 +1656,7 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     p->type = type;
 }
 
-void *
-X11_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size)
+void *X11_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;

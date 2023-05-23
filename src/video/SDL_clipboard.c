@@ -78,8 +78,7 @@ int SDL_SetPrimarySelectionText(const char *text)
     }
 }
 
-void *
-SDL_GetClipboardData(size_t *length, const char *mime_type)
+void *SDL_GetClipboardData(size_t *length, const char *mime_type)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this == NULL) {
@@ -193,8 +192,7 @@ SDL_HasPrimarySelectionText(void)
     return SDL_FALSE;
 }
 
-void *
-SDL_GetClipboardUserdata(void)
+void *SDL_GetClipboardUserdata(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 

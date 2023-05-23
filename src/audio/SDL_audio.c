@@ -495,8 +495,7 @@ int SDL_QueueAudio(SDL_AudioDeviceID devid, const void *data, Uint32 len)
     return rc;
 }
 
-Uint32
-SDL_DequeueAudio(SDL_AudioDeviceID devid, void *data, Uint32 len)
+Uint32 SDL_DequeueAudio(SDL_AudioDeviceID devid, void *data, Uint32 len)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
     Uint32 rc;
@@ -514,8 +513,7 @@ SDL_DequeueAudio(SDL_AudioDeviceID devid, void *data, Uint32 len)
     return rc;
 }
 
-Uint32
-SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
+Uint32 SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
 {
     Uint32 retval = 0;
     SDL_AudioDevice *device = get_audio_device(devid);
@@ -1074,8 +1072,7 @@ static void close_audio_device(SDL_AudioDevice *device)
     SDL_free(device);
 }
 
-static Uint16
-GetDefaultSamplesFromFreq(int freq)
+static Uint16 GetDefaultSamplesFromFreq(int freq)
 {
     /* Pick a default of ~46 ms at desired frequency */
     /* !!! FIXME: remove this when the non-Po2 resampling is in. */

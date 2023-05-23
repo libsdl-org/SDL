@@ -287,8 +287,7 @@ SDL_ScanFloat(const char *text, double *valuep)
 }
 #endif
 
-void *
-SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len)
+void *SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len)
 {
 #ifdef HAVE_MEMMOVE
     return memmove(dst, src, len);
@@ -959,8 +958,7 @@ SDL_strtoul(const char *string, char **endp, int base)
 #endif /* HAVE_STRTOUL */
 }
 
-Sint64
-SDL_strtoll(const char *string, char **endp, int base)
+Sint64 SDL_strtoll(const char *string, char **endp, int base)
 {
 #ifdef HAVE_STRTOLL
     return strtoll(string, endp, base);
@@ -984,8 +982,7 @@ SDL_strtoll(const char *string, char **endp, int base)
 #endif /* HAVE_STRTOLL */
 }
 
-Uint64
-SDL_strtoull(const char *string, char **endp, int base)
+Uint64 SDL_strtoull(const char *string, char **endp, int base)
 {
 #ifdef HAVE_STRTOULL
     return strtoull(string, endp, base);
