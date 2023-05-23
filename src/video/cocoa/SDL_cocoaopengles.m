@@ -57,8 +57,7 @@ int Cocoa_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     return 0;
 }
 
-SDL_GLContext
-Cocoa_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_GLContext Cocoa_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_GLContext context;
@@ -147,8 +146,7 @@ int Cocoa_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-SDL_EGLSurface
-Cocoa_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_EGLSurface Cocoa_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         return ((__bridge SDL_CocoaWindowData *)window->driverdata).egl_surface;

@@ -22,8 +22,7 @@
 
 
 #ifdef HAVE_QSORT
-void
-SDL_qsort(void *base, size_t nmemb, size_t size, int (*compare) (const void *, const void *))
+void SDL_qsort(void *base, size_t nmemb, size_t size, int (*compare) (const void *, const void *))
 {
     qsort(base, nmemb, size, compare);
 }

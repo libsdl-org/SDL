@@ -643,8 +643,7 @@ static const char *SDL_scancode_names[SDL_NUM_SCANCODES] = {
 };
 
 /* Taken from SDL_iconv() */
-char *
-SDL_UCS4ToUTF8(Uint32 ch, char *dst)
+char *SDL_UCS4ToUTF8(Uint32 ch, char *dst)
 {
     Uint8 *p = (Uint8 *)dst;
     if (ch <= 0x7F) {
@@ -759,8 +758,7 @@ void SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
     SDL_scancode_names[scancode] = name;
 }
 
-SDL_Window *
-SDL_GetKeyboardFocus(void)
+SDL_Window *SDL_GetKeyboardFocus(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
@@ -1029,8 +1027,7 @@ void SDL_ReleaseAutoReleaseKeys(void)
     }
 }
 
-SDL_bool
-SDL_HardwareKeyboardKeyPressed(void)
+SDL_bool SDL_HardwareKeyboardKeyPressed(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
@@ -1110,8 +1107,7 @@ void SDL_QuitKeyboard(void)
 {
 }
 
-const Uint8 *
-SDL_GetKeyboardState(int *numkeys)
+const Uint8 *SDL_GetKeyboardState(int *numkeys)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
@@ -1121,8 +1117,7 @@ SDL_GetKeyboardState(int *numkeys)
     return keyboard->keystate;
 }
 
-SDL_Keymod
-SDL_GetModState(void)
+SDL_Keymod SDL_GetModState(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
@@ -1147,8 +1142,7 @@ void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle)
     }
 }
 
-SDL_Keycode
-SDL_GetKeyFromScancode(SDL_Scancode scancode)
+SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
@@ -1160,8 +1154,7 @@ SDL_GetKeyFromScancode(SDL_Scancode scancode)
     return keyboard->keymap[scancode];
 }
 
-SDL_Keycode
-SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode)
+SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode)
 {
     if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
         SDL_InvalidParamError("scancode");
@@ -1171,8 +1164,7 @@ SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode)
     return SDL_default_keymap[scancode];
 }
 
-SDL_Scancode
-SDL_GetScancodeFromKey(SDL_Keycode key)
+SDL_Scancode SDL_GetScancodeFromKey(SDL_Keycode key)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
@@ -1186,8 +1178,7 @@ SDL_GetScancodeFromKey(SDL_Keycode key)
     return SDL_SCANCODE_UNKNOWN;
 }
 
-const char *
-SDL_GetScancodeName(SDL_Scancode scancode)
+const char *SDL_GetScancodeName(SDL_Scancode scancode)
 {
     const char *name;
     if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
@@ -1225,8 +1216,7 @@ SDL_Scancode SDL_GetScancodeFromName(const char *name)
     return SDL_SCANCODE_UNKNOWN;
 }
 
-const char *
-SDL_GetKeyName(SDL_Keycode key)
+const char *SDL_GetKeyName(SDL_Keycode key)
 {
     static char name[8];
     char *end;
@@ -1263,8 +1253,7 @@ SDL_GetKeyName(SDL_Keycode key)
     }
 }
 
-SDL_Keycode
-SDL_GetKeyFromName(const char *name)
+SDL_Keycode SDL_GetKeyFromName(const char *name)
 {
     SDL_Keycode key;
 

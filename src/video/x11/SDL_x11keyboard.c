@@ -455,8 +455,7 @@ int X11_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
     return 0;
 }
 
-SDL_bool
-X11_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+SDL_bool X11_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
     return videodata->is_steam_deck;
@@ -489,8 +488,7 @@ void X11_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-SDL_bool
-X11_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_bool X11_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *videodata = _this->driverdata;
 

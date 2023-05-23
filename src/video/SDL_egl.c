@@ -949,8 +949,7 @@ int SDL_EGL_ChooseConfig(SDL_VideoDevice *_this)
     return SDL_EGL_SetError("Couldn't find matching EGL config", "eglChooseConfig");
 }
 
-SDL_GLContext
-SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surface)
+SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surface)
 {
     /* max 16 key+value pairs plus terminator. */
     EGLint attribs[33];
@@ -1217,8 +1216,7 @@ int SDL_EGL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
     return 0;
 }
 
-EGLSurface *
-SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw)
+EGLSurface *SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw)
 {
 #ifdef SDL_VIDEO_DRIVER_ANDROID
     EGLint format_wanted;

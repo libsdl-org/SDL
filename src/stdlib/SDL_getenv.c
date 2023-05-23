@@ -161,8 +161,7 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
 
 /* Retrieve a variable named "name" from the environment */
 #ifdef HAVE_GETENV
-char *
-SDL_getenv(const char *name)
+char *SDL_getenv(const char *name)
 {
 #ifdef __ANDROID__
     /* Make sure variables from the application manifest are available */
@@ -177,8 +176,7 @@ SDL_getenv(const char *name)
     return getenv(name);
 }
 #elif defined(__WIN32__) || defined(__WINGDK__)
-char *
-SDL_getenv(const char *name)
+char *SDL_getenv(const char *name)
 {
     size_t bufferlen;
 
@@ -204,8 +202,7 @@ SDL_getenv(const char *name)
     return SDL_envmem;
 }
 #else
-char *
-SDL_getenv(const char *name)
+char *SDL_getenv(const char *name)
 {
     size_t len, i;
     char *value;

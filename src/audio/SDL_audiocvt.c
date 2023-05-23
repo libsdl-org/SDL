@@ -602,8 +602,7 @@ static int SetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioFormat src_for
     return 0;
 }
 
-SDL_AudioStream *
-SDL_CreateAudioStream(SDL_AudioFormat src_format,
+SDL_AudioStream *SDL_CreateAudioStream(SDL_AudioFormat src_format,
                    int src_channels,
                    int src_rate,
                    SDL_AudioFormat dst_format,

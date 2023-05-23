@@ -49,8 +49,7 @@ static void SDL_FreeDataQueueList(SDL_DataQueuePacket *packet)
     }
 }
 
-SDL_DataQueue *
-SDL_CreateDataQueue(const size_t _packetlen, const size_t initialslack)
+SDL_DataQueue *SDL_CreateDataQueue(const size_t _packetlen, const size_t initialslack)
 {
     SDL_DataQueue *queue = (SDL_DataQueue *)SDL_calloc(1, sizeof(SDL_DataQueue));
 
@@ -230,8 +229,7 @@ int SDL_WriteToDataQueue(SDL_DataQueue *queue, const void *_data, const size_t _
     return 0;
 }
 
-size_t
-SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
+size_t SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
 {
     size_t len = _len;
     Uint8 *buf = (Uint8 *)_buf;
@@ -259,8 +257,7 @@ SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
     return (size_t)(ptr - buf);
 }
 
-size_t
-SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
+size_t SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
 {
     size_t len = _len;
     Uint8 *buf = (Uint8 *)_buf;
@@ -303,8 +300,7 @@ SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
     return (size_t)(ptr - buf);
 }
 
-size_t
-SDL_GetDataQueueSize(SDL_DataQueue *queue)
+size_t SDL_GetDataQueueSize(SDL_DataQueue *queue)
 {
     size_t retval = 0;
     if (queue) {
@@ -315,8 +311,7 @@ SDL_GetDataQueueSize(SDL_DataQueue *queue)
     return retval;
 }
 
-SDL_Mutex *
-SDL_GetDataQueueMutex(SDL_DataQueue *queue)
+SDL_Mutex *SDL_GetDataQueueMutex(SDL_DataQueue *queue)
 {
     return queue ? queue->lock : NULL;
 }

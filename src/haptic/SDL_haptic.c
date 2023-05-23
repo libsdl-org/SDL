@@ -85,8 +85,7 @@ int SDL_NumHaptics(void)
 /*
  * Gets the name of a Haptic device by index.
  */
-const char *
-SDL_HapticName(int device_index)
+const char *SDL_HapticName(int device_index)
 {
     if ((device_index < 0) || (device_index >= SDL_NumHaptics())) {
         SDL_SetError("Haptic: There are %d haptic devices available",
@@ -99,8 +98,7 @@ SDL_HapticName(int device_index)
 /*
  * Opens a Haptic device.
  */
-SDL_Haptic *
-SDL_HapticOpen(int device_index)
+SDL_Haptic *SDL_HapticOpen(int device_index)
 {
     SDL_Haptic *haptic;
     SDL_Haptic *hapticlist;
@@ -211,8 +209,7 @@ int SDL_MouseIsHaptic(void)
 /*
  * Returns the haptic device if mouse is haptic or NULL elsewise.
  */
-SDL_Haptic *
-SDL_HapticOpenFromMouse(void)
+SDL_Haptic *SDL_HapticOpenFromMouse(void)
 {
     int device_index;
 
@@ -257,8 +254,7 @@ int SDL_JoystickIsHaptic(SDL_Joystick *joystick)
 /*
  * Opens a haptic device from a joystick.
  */
-SDL_Haptic *
-SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
+SDL_Haptic *SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
 {
     SDL_Haptic *haptic;
     SDL_Haptic *hapticlist;
@@ -415,8 +411,7 @@ int SDL_HapticNumEffectsPlaying(SDL_Haptic *haptic)
 /*
  * Returns supported effects by the device.
  */
-unsigned int
-SDL_HapticQuery(SDL_Haptic *haptic)
+unsigned int SDL_HapticQuery(SDL_Haptic *haptic)
 {
     if (!ValidHaptic(haptic)) {
         return 0; /* same as if no effects were supported */

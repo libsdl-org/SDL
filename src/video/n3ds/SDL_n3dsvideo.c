@@ -31,7 +31,7 @@
 
 #define N3DSVID_DRIVER_NAME "n3ds"
 
-SDL_FORCE_INLINE int AddN3DSDisplay(gfxScreen_t screen);
+static int AddN3DSDisplay(gfxScreen_t screen);
 
 static int N3DS_VideoInit(SDL_VideoDevice *_this);
 static void N3DS_VideoQuit(SDL_VideoDevice *_this);

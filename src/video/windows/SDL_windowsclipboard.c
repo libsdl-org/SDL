@@ -100,8 +100,7 @@ int WIN_SetClipboardText(SDL_VideoDevice *_this, const char *text)
     return result;
 }
 
-char *
-WIN_GetClipboardText(SDL_VideoDevice *_this)
+char *WIN_GetClipboardText(SDL_VideoDevice *_this)
 {
     char *text;
 
@@ -127,8 +126,7 @@ WIN_GetClipboardText(SDL_VideoDevice *_this)
     return text;
 }
 
-SDL_bool
-WIN_HasClipboardText(SDL_VideoDevice *_this)
+SDL_bool WIN_HasClipboardText(SDL_VideoDevice *_this)
 {
     SDL_bool result = SDL_FALSE;
     char *text = WIN_GetClipboardText(_this);

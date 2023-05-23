@@ -67,8 +67,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
     return 0;
 }
 
-static size_t
-GetStackSize(size_t requested_size)
+static size_t GetStackSize(size_t requested_size)
 {
     if (requested_size == 0) {
         return N3DS_THREAD_STACK_SIZE_DEFAULT;
@@ -90,8 +89,7 @@ void SDL_SYS_SetupThread(const char *name)
     return;
 }
 
-SDL_threadID
-SDL_ThreadID(void)
+SDL_threadID SDL_ThreadID(void)
 {
     u32 thread_ID = 0;
     svcGetThreadId(&thread_ID, CUR_THREAD_HANDLE);

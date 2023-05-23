@@ -789,8 +789,7 @@ int SDL_GetNumAudioDrivers(void)
     return SDL_arraysize(bootstrap) - 1;
 }
 
-const char *
-SDL_GetAudioDriver(int index)
+const char *SDL_GetAudioDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumAudioDrivers()) {
         return bootstrap[index]->name;
@@ -893,8 +892,7 @@ int SDL_InitAudio(const char *driver_name)
 /*
  * Get the current audio driver name
  */
-const char *
-SDL_GetCurrentAudioDriver(void)
+const char *SDL_GetCurrentAudioDriver(void)
 {
     return current_audio.name;
 }
@@ -954,8 +952,7 @@ int SDL_GetNumAudioDevices(int iscapture)
     return retval;
 }
 
-const char *
-SDL_GetAudioDeviceName(int index, int iscapture)
+const char *SDL_GetAudioDeviceName(int index, int iscapture)
 {
     SDL_AudioDeviceItem *item;
     int i;
@@ -1412,8 +1409,7 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
     return device->id;
 }
 
-SDL_AudioDeviceID
-SDL_OpenAudioDevice(const char *device, int iscapture,
+SDL_AudioDeviceID SDL_OpenAudioDevice(const char *device, int iscapture,
                     const SDL_AudioSpec *desired, SDL_AudioSpec *obtained,
                     int allowed_changes)
 {
@@ -1421,8 +1417,7 @@ SDL_OpenAudioDevice(const char *device, int iscapture,
                              allowed_changes, 2);
 }
 
-SDL_AudioStatus
-SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
+SDL_AudioStatus SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
     SDL_AudioStatus status = SDL_AUDIO_STOPPED;

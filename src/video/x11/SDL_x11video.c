@@ -505,8 +505,7 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     X11_QuitClipboard(_this);
 }
 
-SDL_bool
-X11_UseDirectColorVisuals(void)
+SDL_bool X11_UseDirectColorVisuals(void)
 {
     return SDL_getenv("SDL_VIDEO_X11_NODIRECTCOLOR") ? SDL_FALSE : SDL_TRUE;
 }

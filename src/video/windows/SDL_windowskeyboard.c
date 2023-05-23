@@ -282,8 +282,7 @@ SDL_bool WIN_IsTextInputShown(SDL_VideoDevice *_this)
     return SDL_FALSE;
 }
 
-SDL_bool
-IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
+SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
 {
     return SDL_FALSE;
 }
@@ -994,8 +993,7 @@ static void IME_HideCandidateList(SDL_VideoData *videodata)
     IME_SendEditingEvent(videodata);
 }
 
-SDL_bool
-IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
+SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
 {
     SDL_bool trap = SDL_FALSE;
     HIMC himc = 0;

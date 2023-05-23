@@ -43,13 +43,11 @@
 #define _NET_WM_STATE_REMOVE 0l
 #define _NET_WM_STATE_ADD    1l
 
-static Bool
-isMapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
+static Bool isMapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
 {
     return ev->type == MapNotify && ev->xmap.window == *((Window *)win);
 }
-static Bool
-isUnmapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
+static Bool isUnmapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
 {
     return ev->type == UnmapNotify && ev->xunmap.window == *((Window *)win);
 }
@@ -775,8 +773,7 @@ int X11_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void 
     return 0;
 }
 
-char *
-X11_GetWindowTitle(SDL_VideoDevice *_this, Window xwindow)
+char *X11_GetWindowTitle(SDL_VideoDevice *_this, Window xwindow)
 {
     SDL_VideoData *data = _this->driverdata;
     Display *display = data->display;

@@ -83,8 +83,7 @@ Uint8 *SDL_expand_byte[9] = {
 #define CASE(X) \
     case X:     \
         return #X;
-const char *
-SDL_GetPixelFormatName(Uint32 format)
+const char *SDL_GetPixelFormatName(Uint32 format)
 {
     switch (format) {
 
@@ -134,9 +133,8 @@ SDL_GetPixelFormatName(Uint32 format)
 }
 #undef CASE
 
-SDL_bool
-SDL_GetMasksForPixelFormatEnum(Uint32 format, int *bpp, Uint32 *Rmask,
-                           Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask)
+SDL_bool SDL_GetMasksForPixelFormatEnum(Uint32 format, int *bpp, Uint32 *Rmask,
+                                        Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask)
 {
     Uint32 masks[4];
 
@@ -509,8 +507,7 @@ Uint32 SDL_GetPixelFormatEnumForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint3
 static SDL_PixelFormat *formats;
 static SDL_SpinLock formats_lock = 0;
 
-SDL_PixelFormat *
-SDL_CreatePixelFormat(Uint32 pixel_format)
+SDL_PixelFormat *SDL_CreatePixelFormat(Uint32 pixel_format)
 {
     SDL_PixelFormat *format;
 
@@ -657,8 +654,7 @@ void SDL_DestroyPixelFormat(SDL_PixelFormat *format)
     return;
 }
 
-SDL_Palette *
-SDL_CreatePalette(int ncolors)
+SDL_Palette *SDL_CreatePalette(int ncolors)
 {
     SDL_Palette *palette;
 
@@ -998,8 +994,7 @@ static Uint8 *MapNto1(SDL_PixelFormat *src, SDL_PixelFormat *dst, int *identical
     return Map1to1(&dithered, pal, identical);
 }
 
-SDL_BlitMap *
-SDL_AllocBlitMap(void)
+SDL_BlitMap *SDL_AllocBlitMap(void)
 {
     SDL_BlitMap *map;
 

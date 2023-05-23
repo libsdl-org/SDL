@@ -38,8 +38,7 @@ struct SDL_Condition
 };
 
 /* Create a condition variable */
-SDL_Condition *
-SDL_CreateCondition(void)
+SDL_Condition *SDL_CreateCondition(void)
 {
     SDL_Condition *cond;
 

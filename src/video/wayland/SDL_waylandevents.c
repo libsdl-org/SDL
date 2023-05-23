@@ -808,8 +808,7 @@ static void pointer_handle_axis(void *data, struct wl_pointer *pointer,
     }
 }
 
-static void
-pointer_handle_axis_relative_direction(void *data, struct wl_pointer *pointer,
+static void pointer_handle_axis_relative_direction(void *data, struct wl_pointer *pointer,
                     uint32_t axis, uint32_t axis_relative_direction)
 {
     struct SDL_WaylandInput *input = data;
@@ -826,8 +825,7 @@ pointer_handle_axis_relative_direction(void *data, struct wl_pointer *pointer,
     }
 }
 
-static void
-pointer_handle_frame(void *data, struct wl_pointer *pointer)
+static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
 {
     struct SDL_WaylandInput *input = data;
     SDL_WindowData *window = input->pointer_focus;

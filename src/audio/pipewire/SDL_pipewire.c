@@ -202,7 +202,7 @@ static int load_pipewire_syms(void)
     return 0;
 }
 
-SDL_FORCE_INLINE SDL_bool pipewire_version_at_least(int major, int minor, int patch)
+static SDL_bool pipewire_version_at_least(int major, int minor, int patch)
 {
     return (pipewire_version_major >= major) &&
            (pipewire_version_major > major || pipewire_version_minor >= minor) &&

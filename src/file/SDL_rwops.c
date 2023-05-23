@@ -500,8 +500,7 @@ static int SDLCALL mem_close(SDL_RWops *context)
 
 /* Functions to create SDL_RWops structures from various data sources */
 
-SDL_RWops *
-SDL_RWFromFile(const char *file, const char *mode)
+SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 {
     SDL_RWops *rwops = NULL;
     if (file == NULL || !*file || mode == NULL || !*mode) {
@@ -593,8 +592,7 @@ SDL_RWFromFile(const char *file, const char *mode)
     return rwops;
 }
 
-SDL_RWops *
-SDL_RWFromMem(void *mem, int size)
+SDL_RWops *SDL_RWFromMem(void *mem, int size)
 {
     SDL_RWops *rwops = NULL;
     if (mem == NULL) {
@@ -621,8 +619,7 @@ SDL_RWFromMem(void *mem, int size)
     return rwops;
 }
 
-SDL_RWops *
-SDL_RWFromConstMem(const void *mem, int size)
+SDL_RWops *SDL_RWFromConstMem(const void *mem, int size)
 {
     SDL_RWops *rwops = NULL;
     if (mem == NULL) {
@@ -649,8 +646,7 @@ SDL_RWFromConstMem(const void *mem, int size)
     return rwops;
 }
 
-SDL_RWops *
-SDL_CreateRW(void)
+SDL_RWops *SDL_CreateRW(void)
 {
     SDL_RWops *area;
 
@@ -825,49 +821,42 @@ Uint64 SDL_ReadBE64(SDL_RWops *src)
     return SDL_SwapBE64(value);
 }
 
-size_t
-SDL_WriteU8(SDL_RWops *dst, Uint8 value)
+size_t SDL_WriteU8(SDL_RWops *dst, Uint8 value)
 {
     return (SDL_RWwrite(dst, &value, sizeof(value)) == sizeof(value)) ? 1 : 0;
 }
 
-size_t
-SDL_WriteLE16(SDL_RWops *dst, Uint16 value)
+size_t SDL_WriteLE16(SDL_RWops *dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapLE16(value);
     return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
 }
 
-size_t
-SDL_WriteBE16(SDL_RWops *dst, Uint16 value)
+size_t SDL_WriteBE16(SDL_RWops *dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapBE16(value);
     return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
 }
 
-size_t
-SDL_WriteLE32(SDL_RWops *dst, Uint32 value)
+size_t SDL_WriteLE32(SDL_RWops *dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapLE32(value);
     return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
 }
 
-size_t
-SDL_WriteBE32(SDL_RWops *dst, Uint32 value)
+size_t SDL_WriteBE32(SDL_RWops *dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapBE32(value);
     return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
 }
 
-size_t
-SDL_WriteLE64(SDL_RWops *dst, Uint64 value)
+size_t SDL_WriteLE64(SDL_RWops *dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapLE64(value);
     return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
 }
 
-size_t
-SDL_WriteBE64(SDL_RWops *dst, Uint64 value)
+size_t SDL_WriteBE64(SDL_RWops *dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapBE64(value);
     return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;

@@ -318,9 +318,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
     return state;
 }
 
-SDL_AssertState
-SDL_ReportAssertion(SDL_AssertData *data, const char *func, const char *file,
-                    int line)
+SDL_AssertState SDL_ReportAssertion(SDL_AssertData *data, const char *func, const char *file, int line)
 {
     SDL_AssertState state = SDL_ASSERTION_IGNORE;
     static int assertion_running = 0;

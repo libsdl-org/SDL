@@ -22,8 +22,7 @@
 
 #include "SDL_sysvideo.h"
 
-int
-SDL_SetClipboardData(SDL_ClipboardDataCallback callback, size_t mime_count, const char **mime_types, void *userdata)
+int SDL_SetClipboardData(SDL_ClipboardDataCallback callback, size_t mime_count, const char **mime_types, void *userdata)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -93,8 +92,7 @@ void *SDL_GetClipboardData(size_t *length, const char *mime_type)
     }
 }
 
-char *
-SDL_GetClipboardText(void)
+char *SDL_GetClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -114,8 +112,7 @@ SDL_GetClipboardText(void)
     }
 }
 
-char *
-SDL_GetPrimarySelectionText(void)
+char *SDL_GetPrimarySelectionText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -135,8 +132,7 @@ SDL_GetPrimarySelectionText(void)
     }
 }
 
-SDL_bool
-SDL_HasClipboardData(const char *mime_type)
+SDL_bool SDL_HasClipboardData(const char *mime_type)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this == NULL) {
@@ -150,8 +146,7 @@ SDL_HasClipboardData(const char *mime_type)
     return SDL_FALSE;
 }
 
-SDL_bool
-SDL_HasClipboardText(void)
+SDL_bool SDL_HasClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -171,8 +166,7 @@ SDL_HasClipboardText(void)
     }
 }
 
-SDL_bool
-SDL_HasPrimarySelectionText(void)
+SDL_bool SDL_HasPrimarySelectionText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 

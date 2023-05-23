@@ -160,8 +160,7 @@ void SDL_LogSetPriority(int category, SDL_LogPriority priority)
     }
 }
 
-SDL_LogPriority
-SDL_LogGetPriority(int category)
+SDL_LogPriority SDL_LogGetPriority(int category)
 {
     SDL_LogLevel *entry;
 

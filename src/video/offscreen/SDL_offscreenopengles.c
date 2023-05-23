@@ -54,8 +54,7 @@ int OFFSCREEN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     return 0;
 }
 
-SDL_GLContext
-OFFSCREEN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_GLContext OFFSCREEN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *offscreen_window = window->driverdata;
 

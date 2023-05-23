@@ -64,8 +64,7 @@ static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL
     va_end(ap);
 }
 
-SDLTest_CommonState *
-SDLTest_CommonCreateState(char **argv, Uint32 flags)
+SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags)
 {
     int i;
     SDLTest_CommonState *state;
@@ -124,8 +123,7 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     return state;
 }
 
-void
-SDLTest_CommonDestroyState(SDLTest_CommonState *state) {
+void SDLTest_CommonDestroyState(SDLTest_CommonState *state) {
     SDLTest_LogAllocations();
     SDL_free(state);
 }
@@ -674,8 +672,7 @@ static char *common_usage_video = NULL;
 static char *common_usage_audio = NULL;
 static char *common_usage_videoaudio = NULL;
 
-SDL_bool
-SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv)
+SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv)
 {
     int i = 1;
     while (i < argc) {
@@ -1115,8 +1112,7 @@ static SDL_HitTestResult SDLCALL SDLTest_ExampleHitTestCallback(SDL_Window *win,
     return SDL_HITTEST_NORMAL;
 }
 
-SDL_bool
-SDLTest_CommonInit(SDLTest_CommonState *state)
+SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
 {
     int i, j, m, n, w, h;
     const SDL_DisplayMode *fullscreen_mode;

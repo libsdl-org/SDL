@@ -349,8 +349,7 @@ static void KMSDRM_FBDestroyCallback(struct gbm_bo *bo, void *data)
     SDL_free(fb_info);
 }
 
-KMSDRM_FBInfo *
-KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo)
+KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo)
 {
     SDL_VideoData *viddata = _this->driverdata;
     unsigned w, h;
@@ -401,8 +400,7 @@ static void KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, uns
     *((SDL_bool *)data) = SDL_FALSE;
 }
 
-SDL_bool
-KMSDRM_WaitPageflip(SDL_VideoDevice *_this, SDL_WindowData *windata)
+SDL_bool KMSDRM_WaitPageflip(SDL_VideoDevice *_this, SDL_WindowData *windata)
 {
 
     SDL_VideoData *viddata = _this->driverdata;

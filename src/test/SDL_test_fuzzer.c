@@ -440,14 +440,12 @@ SDLTest_RandomDouble(void)
     return r;
 }
 
-char *
-SDLTest_RandomAsciiString(void)
+char *SDLTest_RandomAsciiString(void)
 {
     return SDLTest_RandomAsciiStringWithMaximumLength(255);
 }
 
-char *
-SDLTest_RandomAsciiStringWithMaximumLength(int maxLength)
+char *SDLTest_RandomAsciiStringWithMaximumLength(int maxLength)
 {
     int size;
 
@@ -463,8 +461,7 @@ SDLTest_RandomAsciiStringWithMaximumLength(int maxLength)
     return SDLTest_RandomAsciiStringOfSize(size);
 }
 
-char *
-SDLTest_RandomAsciiStringOfSize(int size)
+char *SDLTest_RandomAsciiStringOfSize(int size)
 {
     char *string;
     int counter;

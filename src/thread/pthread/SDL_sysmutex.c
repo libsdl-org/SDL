@@ -25,8 +25,7 @@
 
 #include "SDL_sysmutex_c.h"
 
-SDL_Mutex *
-SDL_CreateMutex(void)
+SDL_Mutex *SDL_CreateMutex(void)
 {
     SDL_Mutex *mutex;
     pthread_mutexattr_t attr;

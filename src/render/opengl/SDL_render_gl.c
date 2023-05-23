@@ -145,8 +145,7 @@ typedef struct
     GL_FBOList *fbo;
 } GL_TextureData;
 
-SDL_FORCE_INLINE const char *
-GL_TranslateError(GLenum error)
+static const char *GL_TranslateError(GLenum error)
 {
 #define GL_ERROR_TRANSLATE(e) \
     case e:                   \
@@ -166,8 +165,7 @@ GL_TranslateError(GLenum error)
 #undef GL_ERROR_TRANSLATE
 }
 
-SDL_FORCE_INLINE void
-GL_ClearErrors(SDL_Renderer *renderer)
+static void GL_ClearErrors(SDL_Renderer *renderer)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
 
@@ -192,8 +190,7 @@ GL_ClearErrors(SDL_Renderer *renderer)
     }
 }
 
-SDL_FORCE_INLINE int
-GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const char *file, int line, const char *function)
+static int GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const char *file, int line, const char *function)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
     int ret = 0;
@@ -400,8 +397,7 @@ static SDL_bool GL_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blend
     return SDL_TRUE;
 }
 
-SDL_FORCE_INLINE SDL_bool
-convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
+static SDL_bool convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
                GLint *internalFormat, GLenum *format, GLenum *type)
 {
     switch (pixel_format) {

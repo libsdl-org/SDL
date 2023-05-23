@@ -193,14 +193,12 @@ static int SDL_inotify_init1(void)
 }
 #endif
 
-static int
-StrHasPrefix(const char *string, const char *prefix)
+static int StrHasPrefix(const char *string, const char *prefix)
 {
     return SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0;
 }
 
-static int
-StrIsInteger(const char *string)
+static int StrIsInteger(const char *string)
 {
     const char *p;
 
@@ -218,8 +216,7 @@ StrIsInteger(const char *string)
 }
 #endif /* HAVE_INOTIFY */
 
-static void
-HIDAPI_InitializeDiscovery(void)
+static void HIDAPI_InitializeDiscovery(void)
 {
     SDL_HIDAPI_discovery.m_bInitialized = SDL_TRUE;
     SDL_HIDAPI_discovery.m_unDeviceChangeCounter = 1;
@@ -358,8 +355,7 @@ HIDAPI_InitializeDiscovery(void)
     }
 }
 
-static void
-HIDAPI_UpdateDiscovery(void)
+static void HIDAPI_UpdateDiscovery(void)
 {
     if (!SDL_HIDAPI_discovery.m_bInitialized) {
         HIDAPI_InitializeDiscovery();
@@ -476,8 +472,7 @@ HIDAPI_UpdateDiscovery(void)
     }
 }
 
-static void
-HIDAPI_ShutdownDiscovery(void)
+static void HIDAPI_ShutdownDiscovery(void)
 {
     if (!SDL_HIDAPI_discovery.m_bInitialized) {
         return;
@@ -808,8 +803,7 @@ static struct
 #ifndef __FreeBSD__
 /* this is awkwardly inlined, so we need to re-implement it here
  * so we can override the libusb_control_transfer call */
-static int
-SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
+static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
                                  uint8_t descriptor_index, uint16_t lang_id,
                                  unsigned char *data, int length)
 {
@@ -960,8 +954,7 @@ static char device_magic;
 
 #if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
 
-static SDL_hid_device *
-CreateHIDDeviceWrapper(void *device, const struct hidapi_backend *backend)
+static SDL_hid_device *CreateHIDDeviceWrapper(void *device, const struct hidapi_backend *backend)
 {
     SDL_hid_device *wrapper = (SDL_hid_device *)SDL_malloc(sizeof(*wrapper));
     wrapper->magic = &device_magic;

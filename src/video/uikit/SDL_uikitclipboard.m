@@ -39,8 +39,7 @@ int UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text)
 #endif
 }
 
-char *
-UIKit_GetClipboardText(SDL_VideoDevice *_this)
+char *UIKit_GetClipboardText(SDL_VideoDevice *_this)
 {
 #if TARGET_OS_TV
     return SDL_strdup(""); // Unsupported.
@@ -58,8 +57,7 @@ UIKit_GetClipboardText(SDL_VideoDevice *_this)
 #endif
 }
 
-SDL_bool
-UIKit_HasClipboardText(SDL_VideoDevice *_this)
+SDL_bool UIKit_HasClipboardText(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
 #if !TARGET_OS_TV

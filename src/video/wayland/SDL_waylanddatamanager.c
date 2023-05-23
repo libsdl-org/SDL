@@ -218,8 +218,7 @@ static void mime_data_list_free(struct wl_list *list)
     }
 }
 
-static size_t
-Wayland_send_data(void *data, size_t length, int fd)
+static size_t Wayland_send_data(void *data, size_t length, int fd)
 {
     size_t result = 0;
 
@@ -233,9 +232,7 @@ Wayland_send_data(void *data, size_t length, int fd)
     return result;
 }
 
-ssize_t
-Wayland_data_source_send(SDL_WaylandDataSource *source,
-                         const char *mime_type, int fd)
+ssize_t Wayland_data_source_send(SDL_WaylandDataSource *source, const char *mime_type, int fd)
 {
     void *data = NULL;
     size_t length = 0;
@@ -247,9 +244,7 @@ Wayland_data_source_send(SDL_WaylandDataSource *source,
     return Wayland_send_data(data, length, fd);
 }
 
-ssize_t
-Wayland_primary_selection_source_send(SDL_WaylandPrimarySelectionSource *source,
-                                      const char *mime_type, int fd)
+ssize_t Wayland_primary_selection_source_send(SDL_WaylandPrimarySelectionSource *source, const char *mime_type, int fd)
 {
     void *data = NULL;
     size_t length = 0;

@@ -45,8 +45,7 @@ void N3DS_SwkbQuit()
     return;
 }
 
-SDL_bool
-N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+SDL_bool N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     return SDL_TRUE;
 }

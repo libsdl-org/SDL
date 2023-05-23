@@ -222,8 +222,7 @@ struct hid_device_ {
 		BOOL use_hid_write_output_report;
 };
 
-static BOOL
-IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
+static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
 {
 	OSVERSIONINFOEXW osvi;
 	DWORDLONG const dwlConditionMask = VerSetConditionMask(

@@ -245,8 +245,7 @@ has the same problem.)
 
 WASAPI doesn't need this. This is just for DirectSound/WinMM.
 */
-char *
-WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
+char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
 #if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return WIN_StringToUTF8(name); /* No registry access on WinRT/UWP and Xbox, go with what we've got. */
@@ -343,15 +342,13 @@ BOOL WIN_IsRectEmpty(const RECT *rect)
 #include <shellapi.h> /* CommandLineToArgvW() */
 
 /* Pop up an out of memory message, returns to Windows */
-static int
-OutOfMemory(void)
+static int OutOfMemory(void)
 {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
     return -1;
 }
 
-DECLSPEC int
-SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved)
+DECLSPEC int SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved)
 {
 
     /* Gets the arguments with GetCommandLine, converts them to argc and argv

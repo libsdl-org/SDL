@@ -2943,8 +2943,7 @@ static int D3D12_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *
-D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     D3D12_RenderData *data;

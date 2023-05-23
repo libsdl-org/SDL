@@ -29,8 +29,7 @@ struct SDL_RWLock
 };
 
 
-SDL_RWLock *
-SDL_CreateRWLock(void)
+SDL_RWLock *SDL_CreateRWLock(void)
 {
     SDL_RWLock *rwlock;
 

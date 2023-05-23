@@ -257,8 +257,7 @@ void UIKit_DelDisplay(UIScreen *uiscreen)
     }
 }
 
-SDL_bool
-UIKit_IsDisplayLandscape(UIScreen *uiscreen)
+SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen)
 {
 #if !TARGET_OS_TV
     if (uiscreen == [UIScreen mainScreen]) {

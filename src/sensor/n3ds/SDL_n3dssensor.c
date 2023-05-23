@@ -38,12 +38,11 @@ typedef struct
 
 static SDL_N3DSSensor N3DS_sensors[N3DS_SENSOR_COUNT];
 
-SDL_FORCE_INLINE int InitN3DSServices(void);
-SDL_FORCE_INLINE void UpdateN3DSAccelerometer(SDL_Sensor *sensor);
-SDL_FORCE_INLINE void UpdateN3DSGyroscope(SDL_Sensor *sensor);
+static int InitN3DSServices(void);
+static void UpdateN3DSAccelerometer(SDL_Sensor *sensor);
+static void UpdateN3DSGyroscope(SDL_Sensor *sensor);
 
-SDL_FORCE_INLINE SDL_bool
-IsDeviceIndexValid(int device_index)
+static SDL_bool IsDeviceIndexValid(int device_index)
 {
     return device_index >= 0 && device_index < N3DS_SENSOR_COUNT;
 }
@@ -61,8 +60,7 @@ static int N3DS_SensorInit(void)
     return 0;
 }
 
-SDL_FORCE_INLINE int
-InitN3DSServices(void)
+static int InitN3DSServices(void)
 {
     if (R_FAILED(hidInit())) {
         return -1;
@@ -143,8 +141,7 @@ static void N3DS_SensorUpdate(SDL_Sensor *sensor)
     }
 }
 
-SDL_FORCE_INLINE void
-UpdateN3DSAccelerometer(SDL_Sensor *sensor)
+static void UpdateN3DSAccelerometer(SDL_Sensor *sensor)
 {
     static accelVector previous_state = { 0, 0, 0 };
     accelVector current_state;
@@ -161,8 +158,7 @@ UpdateN3DSAccelerometer(SDL_Sensor *sensor)
     }
 }
 
-SDL_FORCE_INLINE void
-UpdateN3DSGyroscope(SDL_Sensor *sensor)
+static void UpdateN3DSGyroscope(SDL_Sensor *sensor)
 {
     static angularRate previous_state = { 0, 0, 0 };
     angularRate current_state;

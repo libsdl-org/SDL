@@ -472,8 +472,7 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
 #endif
 #endif
 
-SDL_bool
-D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
+SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
 {
     *pD3DDLL = SDL_LoadObject("D3D9.DLL");
     if (*pD3DDLL) {

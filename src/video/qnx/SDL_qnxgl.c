@@ -30,8 +30,7 @@ static EGLDisplay   egl_disp;
  * @param   egl_conf    EGL configuration to use
  * @return  A SCREEN_FORMAT* constant for the pixel format to use
  */
-static int
-chooseFormat(EGLConfig egl_conf)
+static int chooseFormat(EGLConfig egl_conf)
 {
     EGLint buffer_bit_depth;
     EGLint alpha_bit_depth;
@@ -64,8 +63,7 @@ chooseFormat(EGLConfig egl_conf)
  * @param[out]  pformat The chosen pixel format
  * @return 0 if successful, -1 on error
  */
-int
-glGetConfig(EGLConfig *pconf, int *pformat)
+int glGetConfig(EGLConfig *pconf, int *pformat)
 {
     EGLConfig egl_conf = (EGLConfig)0;
     EGLConfig *egl_configs;
@@ -132,8 +130,7 @@ glGetConfig(EGLConfig *pconf, int *pformat)
  * @param   name    unused
  * @return  0 if successful, -1 on error
  */
-int
-glLoadLibrary(SDL_VideoDevice *_this, const char *name)
+int glLoadLibrary(SDL_VideoDevice *_this, const char *name)
 {
     EGLNativeDisplayType    disp_id = EGL_DEFAULT_DISPLAY;
 
@@ -154,8 +151,7 @@ glLoadLibrary(SDL_VideoDevice *_this, const char *name)
  * @param   proc    Function name
  * @return  Function address
  */
-SDL_FunctionPointer
-glGetProcAddress(SDL_VideoDevice *_this, const char *proc)
+SDL_FunctionPointer glGetProcAddress(SDL_VideoDevice *_this, const char *proc)
 {
     return eglGetProcAddress(proc);
 }
@@ -167,8 +163,7 @@ glGetProcAddress(SDL_VideoDevice *_this, const char *proc)
  * @param   window  The SDL window to create the context for
  * @return  A pointer to the created context, if successful, NULL on error
  */
-SDL_GLContext
-glCreateContext(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_GLContext glCreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
     EGLContext      context;
@@ -215,8 +210,7 @@ glCreateContext(SDL_VideoDevice *_this, SDL_Window *window)
  * @param   interval    New interval value
  * @return  0 if successful, -1 on error
  */
-int
-glSetSwapInterval(SDL_VideoDevice *_this, int interval)
+int glSetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     if (eglSwapInterval(egl_disp, interval) != EGL_TRUE) {
         return -1;
@@ -231,8 +225,7 @@ glSetSwapInterval(SDL_VideoDevice *_this, int interval)
  * @param   window  Window to swap buffers for
  * @return  0 if successful, -1 on error
  */
-int
-glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* !!! FIXME: should we migrate this all over to use SDL_egl.c? */
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
@@ -246,8 +239,7 @@ glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
  * @param   context The context to activate
  * @return  0 if successful, -1 on error
  */
-int
-glMakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+int glMakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     window_impl_t   *impl;
     EGLSurface      surface = NULL;
@@ -269,8 +261,7 @@ glMakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
  * @param   SDL_VideoDevice *_this
  * @param   context The context to destroy
  */
-void
-glDeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
+void glDeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     eglDestroyContext(egl_disp, context);
 }
@@ -279,8 +270,7 @@ glDeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
  * Terminates access to the EGL library.
  * @param   SDL_VideoDevice *_this
  */
-void
-glUnloadLibrary(SDL_VideoDevice *_this)
+void glUnloadLibrary(SDL_VideoDevice *_this)
 {
     eglTerminate(egl_disp);
 }

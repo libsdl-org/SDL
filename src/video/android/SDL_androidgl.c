@@ -44,8 +44,7 @@ int Android_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLC
     }
 }
 
-SDL_GLContext
-Android_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_GLContext Android_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_GLContext ret;
 

@@ -1316,8 +1316,7 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
     }
 }
 
-SDL_BlitFunc
-SDL_CalculateBlitA(SDL_Surface *surface)
+SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 {
     SDL_PixelFormat *sf = surface->format;
     SDL_PixelFormat *df = surface->map->dst->format;

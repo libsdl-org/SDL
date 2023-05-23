@@ -23,8 +23,7 @@
 #include "../SDL_sysurl.h"
 #include <Url.h>
 
-int
-SDL_SYS_OpenURL(const char *url)
+int SDL_SYS_OpenURL(const char *url)
 {
     BUrl burl(url);
     const status_t rc = burl.OpenWithPreferredApplication(false);

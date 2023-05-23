@@ -2293,8 +2293,7 @@ static int D3D11_SetVSync(SDL_Renderer *renderer, const int vsync)
 }
 #endif
 
-SDL_Renderer *
-D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     D3D11_RenderData *data;
@@ -2401,8 +2400,7 @@ SDL_RenderDriver D3D11_RenderDriver = {
 
 #if defined(__WIN32__) || defined(__WINGDK__)
 /* This function needs to always exist on Windows, for the Dynamic API. */
-ID3D11Device *
-SDL_GetRenderD3D11Device(SDL_Renderer *renderer)
+ID3D11Device *SDL_GetRenderD3D11Device(SDL_Renderer *renderer)
 {
     ID3D11Device *device = NULL;
 

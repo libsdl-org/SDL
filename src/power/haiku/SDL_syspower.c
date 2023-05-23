@@ -40,8 +40,7 @@
 #define APM_DEVICE_ALL            1
 #define APM_BIOS_CALL             (B_DEVICE_OP_CODES_END + 3)
 
-SDL_bool
-SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percent)
 {
     const int fd = open("/dev/misc/apm", O_RDONLY | O_CLOEXEC);
     SDL_bool need_details = SDL_FALSE;

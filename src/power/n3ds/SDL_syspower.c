@@ -25,15 +25,14 @@
 
 #include <3ds.h>
 
-SDL_FORCE_INLINE SDL_PowerState GetPowerState(void);
-SDL_FORCE_INLINE int ReadStateFromPTMU(bool *is_plugged, u8 *is_charging);
-SDL_FORCE_INLINE int GetBatteryPercentage(void);
+static SDL_PowerState GetPowerState(void);
+static int ReadStateFromPTMU(bool *is_plugged, u8 *is_charging);
+static int GetBatteryPercentage(void);
 
 #define BATTERY_PERCENT_REG      0xB
 #define BATTERY_PERCENT_REG_SIZE 2
 
-SDL_bool
-SDL_GetPowerInfo_N3DS(SDL_PowerState *state, int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_N3DS(SDL_PowerState *state, int *seconds, int *percent)
 {
     *state = GetPowerState();
     *percent = GetBatteryPercentage();
@@ -42,8 +41,7 @@ SDL_GetPowerInfo_N3DS(SDL_PowerState *state, int *seconds, int *percent)
     return SDL_TRUE;
 }
 
-SDL_FORCE_INLINE SDL_PowerState
-GetPowerState(void)
+static SDL_PowerState GetPowerState(void)
 {
     bool is_plugged;
     u8 is_charging;
@@ -63,8 +61,7 @@ GetPowerState(void)
     return SDL_POWERSTATE_ON_BATTERY;
 }
 
-SDL_FORCE_INLINE int
-ReadStateFromPTMU(bool *is_plugged, u8 *is_charging)
+static int ReadStateFromPTMU(bool *is_plugged, u8 *is_charging)
 {
     if (R_FAILED(ptmuInit())) {
         return SDL_SetError("Failed to initialise PTMU service");
@@ -84,8 +81,7 @@ ReadStateFromPTMU(bool *is_plugged, u8 *is_charging)
     return 0;
 }
 
-SDL_FORCE_INLINE int
-GetBatteryPercentage(void)
+static int GetBatteryPercentage(void)
 {
     u8 data[BATTERY_PERCENT_REG_SIZE];
 

@@ -120,8 +120,7 @@ static char *search_path_for_binary(const char *bin)
 }
 #endif
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *retval = NULL;
 
@@ -259,8 +258,7 @@ SDL_GetBasePath(void)
     return retval;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     /*
      * We use XDG's base directory spec, even if you're not on Linux.
@@ -347,10 +345,10 @@ SDL_GetPrefPath(const char *org, const char *app)
   including without limitation the rights to use, copy, modify, merge,
   publish, distribute, sublicense, and/or sell copies of the Software,
   and to permit persons to whom the Software is furnished to do so,
-  subject to the following conditions: 
+  subject to the following conditions:
 
   The above copyright notice and this permission notice shall be
-  included in all copies or substantial portions of the Software. 
+  included in all copies or substantial portions of the Software.
 
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -361,8 +359,7 @@ SDL_GetPrefPath(const char *org, const char *app)
   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 */
-static char *
-xdg_user_dir_lookup_with_fallback (const char *type, const char *fallback)
+static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fallback)
 {
   FILE *file;
   char *home_dir, *config_home, *config_file;
@@ -372,7 +369,7 @@ xdg_user_dir_lookup_with_fallback (const char *type, const char *fallback)
   int len;
   int relative;
   size_t l;
-  
+
   home_dir = SDL_getenv ("HOME");
 
   if (home_dir == NULL)
@@ -412,11 +409,11 @@ xdg_user_dir_lookup_with_fallback (const char *type, const char *fallback)
       len = SDL_strlen (buffer);
       if (len > 0 && buffer[len-1] == '\n')
         buffer[len-1] = 0;
-      
+
       p = buffer;
       while (*p == ' ' || *p == '\t')
         p++;
-      
+
       if (SDL_strncmp (p, "XDG_", 4) != 0)
         continue;
       p += 4;
@@ -433,14 +430,14 @@ xdg_user_dir_lookup_with_fallback (const char *type, const char *fallback)
       if (*p != '=')
         continue;
       p++;
-      
+
       while (*p == ' ' || *p == '\t')
         p++;
 
       if (*p != '"')
         continue;
       p++;
-      
+
       relative = 0;
       if (SDL_strncmp (p, "$HOME/", 6) == 0)
         {
@@ -469,7 +466,7 @@ xdg_user_dir_lookup_with_fallback (const char *type, const char *fallback)
 
           *user_dir = 0;
         }
-      
+
       d = user_dir + SDL_strlen (user_dir);
       while (*p && *p != '"')
         {
@@ -491,8 +488,7 @@ error2:
   return NULL;
 }
 
-static char *
-xdg_user_dir_lookup (const char *type)
+static char *xdg_user_dir_lookup (const char *type)
 {
     char *dir, *home_dir, *user_dir;
 

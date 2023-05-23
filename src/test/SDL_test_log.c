@@ -35,8 +35,7 @@
 
 /* work around compiler warning on older GCCs. */
 #if (defined(__GNUC__) && (__GNUC__ <= 2))
-static size_t
-strftime_gcc2_workaround(char *s, size_t max, const char *fmt, const struct tm *tm)
+static size_t strftime_gcc2_workaround(char *s, size_t max, const char *fmt, const struct tm *tm)
 {
     return strftime(s, max, fmt, tm);
 }
@@ -57,8 +56,7 @@ strftime_gcc2_workaround(char *s, size_t max, const char *fmt, const struct tm *
  *
  * \return Ascii representation of the timestamp in localtime in the format '08/23/01 14:55:02'
  */
-static const char *
-SDLTest_TimestampToString(const time_t timestamp)
+static const char *SDLTest_TimestampToString(const time_t timestamp)
 {
     time_t copy;
     static char buffer[64];

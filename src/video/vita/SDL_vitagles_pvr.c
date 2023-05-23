@@ -67,8 +67,7 @@ int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }
 
-SDL_GLContext
-VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
 }

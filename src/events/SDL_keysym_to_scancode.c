@@ -387,8 +387,7 @@ static const struct {
 };
 /* *INDENT-ON* */ /* clang-format on */
 
-SDL_Scancode
-SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode)
+SDL_Scancode SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode)
 {
     int i;
     Uint32 linux_keycode = 0;

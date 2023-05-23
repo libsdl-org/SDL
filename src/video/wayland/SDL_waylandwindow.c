@@ -44,7 +44,7 @@
 #endif
 
 
-SDL_FORCE_INLINE SDL_bool FloatEqual(float a, float b)
+static SDL_bool FloatEqual(float a, float b)
 {
     const float diff = SDL_fabsf(a - b);
     const float largest = SDL_max(SDL_fabsf(a), SDL_fabsf(b));

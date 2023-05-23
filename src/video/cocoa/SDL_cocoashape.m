@@ -38,8 +38,7 @@
 @implementation SDL_CocoaClosure
 @end
 
-SDL_WindowShaper *
-Cocoa_CreateShaper(SDL_Window *window)
+SDL_WindowShaper *Cocoa_CreateShaper(SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowShaper *result;

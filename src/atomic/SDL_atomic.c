@@ -122,8 +122,7 @@ static SDL_INLINE void leaveLock(void *a)
 }
 #endif
 
-SDL_bool
-SDL_AtomicCAS(SDL_AtomicInt *a, int oldval, int newval)
+SDL_bool SDL_AtomicCAS(SDL_AtomicInt *a, int oldval, int newval)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
@@ -152,8 +151,7 @@ SDL_AtomicCAS(SDL_AtomicInt *a, int oldval, int newval)
 #endif
 }
 
-SDL_bool
-SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
+SDL_bool SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
 {
 #ifdef HAVE_MSC_ATOMICS
     return _InterlockedCompareExchangePointer(a, newval, oldval) == oldval;

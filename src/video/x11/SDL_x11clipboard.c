@@ -284,8 +284,7 @@ int X11_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
                             SDL_strdup(text), SDL_TRUE);
 }
 
-char *
-X11_GetClipboardText(SDL_VideoDevice *_this)
+char *X11_GetClipboardText(SDL_VideoDevice *_this)
 {
     size_t length;
     SDL_VideoData *videodata = _this->driverdata;
@@ -298,15 +297,13 @@ X11_GetClipboardText(SDL_VideoDevice *_this)
     return GetSelectionData(_this, XA_CLIPBOARD, &length, text_mime_types[0], SDL_TRUE);
 }
 
-char *
-X11_GetPrimarySelectionText(SDL_VideoDevice *_this)
+char *X11_GetPrimarySelectionText(SDL_VideoDevice *_this)
 {
     size_t length;
     return GetSelectionData(_this, XA_PRIMARY, &length, text_mime_types[0], SDL_TRUE);
 }
 
-SDL_bool
-X11_HasClipboardText(SDL_VideoDevice *_this)
+SDL_bool X11_HasClipboardText(SDL_VideoDevice *_this)
 {
     SDL_bool result = SDL_FALSE;
     char *text = X11_GetClipboardText(_this);
@@ -317,8 +314,7 @@ X11_HasClipboardText(SDL_VideoDevice *_this)
     return result;
 }
 
-SDL_bool
-X11_HasPrimarySelectionText(SDL_VideoDevice *_this)
+SDL_bool X11_HasPrimarySelectionText(SDL_VideoDevice *_this)
 {
     SDL_bool result = SDL_FALSE;
     char *text = X11_GetPrimarySelectionText(_this);
@@ -329,8 +325,7 @@ X11_HasPrimarySelectionText(SDL_VideoDevice *_this)
     return result;
 }
 
-void
-X11_QuitClipboard(SDL_VideoDevice *_this)
+void X11_QuitClipboard(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
     if (data->primary_selection.internal == SDL_TRUE) {

@@ -334,22 +334,19 @@ done:
 #endif /* SDL_FILESYSTEM_WINDOWS */
 
 #ifdef SDL_FILESYSTEM_XBOX
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-char *
-SDL_GetPath(SDL_Folder folder)
+char *SDL_GetPath(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;

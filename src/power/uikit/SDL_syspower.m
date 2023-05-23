@@ -50,8 +50,7 @@ void SDL_UIKit_UpdateBatteryMonitoring(void)
 }
 #endif /* !TARGET_OS_TV */
 
-SDL_bool
-SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percent)
 {
 #if TARGET_OS_TV
     *state = SDL_POWERSTATE_NO_BATTERY;

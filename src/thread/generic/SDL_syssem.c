@@ -26,8 +26,7 @@
 
 #ifdef SDL_THREADS_DISABLED
 
-SDL_Semaphore *
-SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_SetError("SDL not built with thread support");
     return (SDL_Semaphore *)0;
@@ -62,8 +61,7 @@ struct SDL_Semaphore
     SDL_Condition *count_nonzero;
 };
 
-SDL_Semaphore *
-SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_Semaphore *sem;
 

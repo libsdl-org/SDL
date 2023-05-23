@@ -215,8 +215,7 @@ int SDL_UDEV_Scan(void)
     return 0;
 }
 
-SDL_bool
-SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version)
+SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version)
 {
     struct udev_enumerate *enumerate = NULL;
     struct udev_list_entry *devs = NULL;
@@ -543,8 +542,7 @@ void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
     }
 }
 
-const SDL_UDEV_Symbols *
-SDL_UDEV_GetUdevSyms(void)
+const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void)
 {
     if (SDL_UDEV_Init() < 0) {
         SDL_SetError("Could not initialize UDEV");

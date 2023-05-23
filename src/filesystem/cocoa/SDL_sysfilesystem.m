@@ -29,8 +29,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     @autoreleasepool {
         NSBundle *bundle = [NSBundle mainBundle];
@@ -64,8 +63,7 @@ SDL_GetBasePath(void)
     }
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     @autoreleasepool {
         char *retval = NULL;

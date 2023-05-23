@@ -1089,8 +1089,7 @@ static void SW_SelectBestFormats(SDL_Renderer *renderer, Uint32 format)
     }
 }
 
-SDL_Renderer *
-SW_CreateRendererForSurface(SDL_Surface *surface)
+SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
 {
     SDL_Renderer *renderer;
     SW_RenderData *data;

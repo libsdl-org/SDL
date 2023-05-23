@@ -32,8 +32,7 @@
 #include <storage/Path.h>
 
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char name[MAXPATHLEN];
 
@@ -64,8 +63,7 @@ SDL_GetBasePath(void)
 }
 
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     // !!! FIXME: is there a better way to do this?
     const char *home = SDL_getenv("HOME");

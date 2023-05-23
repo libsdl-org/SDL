@@ -523,8 +523,7 @@ static SDL_uikitviewcontroller *GetWindowViewController(SDL_Window *window)
     return data.viewcontroller;
 }
 
-SDL_bool
-UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+SDL_bool UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     return SDL_TRUE;
 }
@@ -545,8 +544,7 @@ void UIKit_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-SDL_bool
-UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);

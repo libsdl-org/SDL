@@ -206,8 +206,7 @@ static const SDL_cond_impl_t SDL_cond_impl_generic = {
 };
 #endif
 
-SDL_Condition *
-SDL_CreateCondition(void)
+SDL_Condition *SDL_CreateCondition(void)
 {
     if (SDL_cond_impl_active.Create == NULL) {
         const SDL_cond_impl_t *impl = NULL;

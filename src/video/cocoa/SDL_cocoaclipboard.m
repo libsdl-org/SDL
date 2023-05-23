@@ -92,8 +92,7 @@ int Cocoa_SetClipboardText(SDL_VideoDevice *_this, const char *text)
     }
 }
 
-char *
-Cocoa_GetClipboardText(SDL_VideoDevice *_this)
+char *Cocoa_GetClipboardText(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         NSPasteboard *pasteboard;
@@ -122,8 +121,7 @@ Cocoa_GetClipboardText(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool
-Cocoa_HasClipboardText(SDL_VideoDevice *_this)
+SDL_bool Cocoa_HasClipboardText(SDL_VideoDevice *_this)
 {
     SDL_bool result = SDL_FALSE;
     char *text = Cocoa_GetClipboardText(_this);

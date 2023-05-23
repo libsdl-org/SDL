@@ -28,8 +28,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *retval = NULL;
     size_t len;
@@ -43,8 +42,7 @@ SDL_GetBasePath(void)
     return retval;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *retval = NULL;
     size_t len;

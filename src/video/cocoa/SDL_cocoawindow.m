@@ -2483,8 +2483,7 @@ int Cocoa_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMi
     }
 }
 
-SDL_bool
-Cocoa_IsWindowInFullscreenSpace(SDL_Window *window)
+SDL_bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
@@ -2497,8 +2496,7 @@ Cocoa_IsWindowInFullscreenSpace(SDL_Window *window)
     }
 }
 
-SDL_bool
-Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool state)
+SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool state)
 {
     @autoreleasepool {
         SDL_bool succeeded = SDL_FALSE;

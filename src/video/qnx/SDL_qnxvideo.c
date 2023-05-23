@@ -32,8 +32,7 @@ static screen_event_t   event;
  * @param   SDL_VideoDevice *_this
  * @return  0 if successful, -1 on error
  */
-static int
-videoInit(SDL_VideoDevice *_this)
+static int videoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoDisplay display;
 
@@ -55,8 +54,7 @@ videoInit(SDL_VideoDevice *_this)
     return 0;
 }
 
-static void
-videoQuit(SDL_VideoDevice *_this)
+static void videoQuit(SDL_VideoDevice *_this)
 {
 }
 
@@ -67,8 +65,7 @@ videoQuit(SDL_VideoDevice *_this)
  * @param   window  SDL window to initialize
  * @return  0 if successful, -1 on error
  */
-static int
-createWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static int createWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     window_impl_t   *impl;
     int             size[2];
@@ -150,8 +147,7 @@ fail:
  * @param[out]  pitch   Holds the number of bytes per line
  * @return  0 if successful, -1 on error
  */
-static int
-createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * format,
+static int createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * format,
                         void ** pixels, int *pitch)
 {
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
@@ -186,8 +182,7 @@ createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
  * @param   numrects    Rect array length
  * @return  0 if successful, -1 on error
  */
-static int
-updateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects,
+static int updateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects,
                         int numrects)
 {
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
@@ -207,8 +202,7 @@ updateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Re
  * Runs the main event loop.
  * @param   SDL_VideoDevice *_this
  */
-static void
-pumpEvents(SDL_VideoDevice *_this)
+static void pumpEvents(SDL_VideoDevice *_this)
 {
     int             type;
 
@@ -242,8 +236,7 @@ pumpEvents(SDL_VideoDevice *_this)
  * @param   SDL_VideoDevice *_this
  * @param   window  SDL window to update
  */
-static void
-setWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
+static void setWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
     int             size[2];
@@ -261,8 +254,7 @@ setWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
  * @param   SDL_VideoDevice *_this
  * @param   window  SDL window to update
  */
-static void
-showWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static void showWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
     const int       visible = 1;
@@ -276,8 +268,7 @@ showWindow(SDL_VideoDevice *_this, SDL_Window *window)
  * @param   SDL_VideoDevice *_this
  * @param   window  SDL window to update
  */
-static void
-hideWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static void hideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
     const int       visible = 0;
@@ -291,8 +282,7 @@ hideWindow(SDL_VideoDevice *_this, SDL_Window *window)
  * @param   SDL_VideoDevice *_this
  * @param   window  SDL window that is being destroyed
  */
-static void
-destroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static void destroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
 
@@ -306,8 +296,7 @@ destroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
  * Frees the plugin object created by createDevice().
  * @param   device  Plugin object to free
  */
-static void
-deleteDevice(SDL_VideoDevice *device)
+static void deleteDevice(SDL_VideoDevice *device)
 {
     SDL_free(device);
 }
@@ -316,8 +305,7 @@ deleteDevice(SDL_VideoDevice *device)
  * Creates the QNX video plugin used by SDL.
  * @return  Initialized device if successful, NULL otherwise
  */
-static SDL_VideoDevice *
-createDevice()
+static SDL_VideoDevice *createDevice()
 {
     SDL_VideoDevice *device;
 

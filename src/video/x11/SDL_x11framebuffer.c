@@ -30,8 +30,7 @@
 /* Shared memory error handler routine */
 static int shm_error;
 static int (*X_handler)(Display *, XErrorEvent *) = NULL;
-static int
-shm_errhandler(Display *d, XErrorEvent *e)
+static int shm_errhandler(Display *d, XErrorEvent *e)
 {
     if (e->error_code == BadAccess) {
         shm_error = True;
