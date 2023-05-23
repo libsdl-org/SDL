@@ -593,8 +593,7 @@ err:
 #undef CHECK
 }
 
-SDL_bool
-SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 version_number)
+SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 version_number)
 {
     Joystick_PresentData data;
 
@@ -945,8 +944,7 @@ int SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     return 0;
 }
 
-Uint32
-SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
+Uint32 SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     Uint32 result = 0;
 
@@ -1177,8 +1175,7 @@ void SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
 }
 
-SDL_bool
-SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
+SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
 {
     return SDL_FALSE;
 }
@@ -1193,8 +1190,7 @@ int SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     return SDL_Unsupported();
 }
 
-Uint32
-SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
+Uint32 SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     return 0;
 }

@@ -51,8 +51,7 @@ static DFB_Theme theme_none = {
     NULL
 };
 
-static void
-DrawTriangle(IDirectFBSurface * s, int down, int x, int y, int w)
+static void DrawTriangle(IDirectFBSurface * s, int down, int x, int y, int w)
 {
     int x1, x2, x3;
     int y1, y2, y3;
@@ -75,8 +74,7 @@ DrawTriangle(IDirectFBSurface * s, int down, int x, int y, int w)
     s->FillTriangle(s, x1, y1, x2, y2, x3, y3);
 }
 
-static void
-LoadFont(_THIS, SDL_Window * window)
+static void LoadFont(_THIS, SDL_Window * window)
 {
     SDL_DFB_DEVICEDATA(_this);
     SDL_DFB_WINDOWDATA(window);
@@ -101,8 +99,7 @@ LoadFont(_THIS, SDL_Window * window)
     }
 }
 
-static void
-DrawCraption(_THIS, IDirectFBSurface * s, int x, int y, char *text)
+static void DrawCraption(_THIS, IDirectFBSurface * s, int x, int y, char *text)
 {
     DFBSurfaceTextFlags flags;
 
@@ -111,8 +108,7 @@ DrawCraption(_THIS, IDirectFBSurface * s, int x, int y, char *text)
     s->DrawString(s, text, -1, x, y, flags);
 }
 
-void
-DirectFB_WM_RedrawLayout(_THIS, SDL_Window * window)
+void DirectFB_WM_RedrawLayout(_THIS, SDL_Window * window)
 {
     SDL_DFB_WINDOWDATA(window);
     IDirectFBSurface *s = windata->window_surface;
@@ -180,8 +176,7 @@ DirectFB_WM_RedrawLayout(_THIS, SDL_Window * window)
     windata->wm_needs_redraw = 0;
 }
 
-DFBResult
-DirectFB_WM_GetClientSize(_THIS, SDL_Window * window, int *cw, int *ch)
+DFBResult DirectFB_WM_GetClientSize(_THIS, SDL_Window * window, int *cw, int *ch)
 {
     SDL_DFB_WINDOWDATA(window);
     IDirectFBWindow *dfbwin = windata->dfbwin;
@@ -195,8 +190,7 @@ DirectFB_WM_GetClientSize(_THIS, SDL_Window * window, int *cw, int *ch)
     return DFB_OK;
 }
 
-void
-DirectFB_WM_AdjustWindowLayout(SDL_Window * window, int flags, int w, int h)
+void DirectFB_WM_AdjustWindowLayout(SDL_Window * window, int flags, int w, int h)
 {
     SDL_DFB_WINDOWDATA(window);
 
@@ -241,8 +235,7 @@ enum
     WM_POS_BOTTOM = 0x40,
 };
 
-static int
-WMIsClient(DFB_WindowData * p, int x, int y)
+static int WMIsClient(DFB_WindowData * p, int x, int y)
 {
     x -= p->client.x;
     y -= p->client.y;
@@ -253,8 +246,7 @@ WMIsClient(DFB_WindowData * p, int x, int y)
     return 1;
 }
 
-static int
-WMPos(DFB_WindowData * p, int x, int y)
+static int WMPos(DFB_WindowData * p, int x, int y)
 {
     int pos = WM_POS_NONE;
 
@@ -284,8 +276,7 @@ WMPos(DFB_WindowData * p, int x, int y)
     return pos;
 }
 
-int
-DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
+int DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
 {
     SDL_DFB_WINDOWDATA(window);
     SDL_Window *grabbed_window = SDL_GetGrabbedWindow();

@@ -1174,8 +1174,7 @@ static const struct wl_surface_listener surface_listener = {
     handle_surface_leave
 };
 
-static void
-Wayland_FillEmptyShellInfo(SDL_SysWMinfo * info, const Uint32 version)
+static void Wayland_FillEmptyShellInfo(SDL_SysWMinfo * info, const Uint32 version)
 {
     info->info.wl.xdg_surface = NULL;
     if (version >= SDL_VERSIONNUM(2, 0, 17)) {
@@ -1187,8 +1186,7 @@ Wayland_FillEmptyShellInfo(SDL_SysWMinfo * info, const Uint32 version)
     }
 }
 
-SDL_bool
-Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+SDL_bool Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;

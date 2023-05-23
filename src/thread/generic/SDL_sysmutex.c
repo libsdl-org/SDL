@@ -33,8 +33,7 @@ struct SDL_mutex
 };
 
 /* Create a mutex */
-SDL_mutex *
-SDL_CreateMutex(void)
+SDL_mutex *SDL_CreateMutex(void)
 {
     SDL_mutex *mutex;
 

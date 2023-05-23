@@ -258,8 +258,7 @@ void PSP_DestroyWindow(_THIS, SDL_Window *window)
 /* SDL Window Manager function                                               */
 /*****************************************************************************/
 #if 0
-SDL_bool
-PSP_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
+SDL_bool PSP_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 {
     if (info->version.major <= SDL_MAJOR_VERSION) {
         return SDL_TRUE;

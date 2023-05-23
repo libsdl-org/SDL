@@ -32,15 +32,13 @@
 
 #include <emscripten/emscripten.h>
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *retval = "/";
     return SDL_strdup(retval);
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     const char *append = "/libsdl/";
     char *retval;

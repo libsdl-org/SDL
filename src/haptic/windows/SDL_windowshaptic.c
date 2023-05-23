@@ -136,8 +136,7 @@ static SDL_hapticlist_item *HapticByDevIndex(int device_index)
 /*
  * Return the name of a haptic device, does not need to be opened.
  */
-const char *
-SDL_SYS_HapticName(int index)
+const char *SDL_SYS_HapticName(int index)
 {
     SDL_hapticlist_item *item = HapticByDevIndex(index);
     return item->name;

@@ -32,8 +32,7 @@ struct SDL_cond
 };
 
 /* Create a condition variable */
-SDL_cond *
-SDL_CreateCond(void)
+SDL_cond *SDL_CreateCond(void)
 {
     SDL_cond *cond = (SDL_cond *)SDL_malloc(sizeof(SDL_cond));
     if (cond) {

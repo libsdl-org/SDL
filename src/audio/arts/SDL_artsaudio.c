@@ -86,8 +86,7 @@ static struct
 
 #undef SDL_ARTS_SYM
 
-static void
-UnloadARTSLibrary()
+static void UnloadARTSLibrary()
 {
     if (arts_handle != NULL) {
         SDL_UnloadObject(arts_handle);
@@ -95,8 +94,7 @@ UnloadARTSLibrary()
     }
 }
 
-static int
-LoadARTSLibrary(void)
+static int LoadARTSLibrary(void)
 {
     int i, retval = -1;
 
@@ -121,14 +119,12 @@ LoadARTSLibrary(void)
 
 #else
 
-static void
-UnloadARTSLibrary()
+static void UnloadARTSLibrary()
 {
     return;
 }
 
-static int
-LoadARTSLibrary(void)
+static int LoadARTSLibrary(void)
 {
     return 0;
 }
@@ -136,8 +132,7 @@ LoadARTSLibrary(void)
 #endif /* SDL_AUDIO_DRIVER_ARTS_DYNAMIC */
 
 /* This function waits until it is possible to write a full sound buffer */
-static void
-ARTS_WaitDevice(_THIS)
+static void ARTS_WaitDevice(_THIS)
 {
     Sint32 ticks;
 
@@ -163,8 +158,7 @@ ARTS_WaitDevice(_THIS)
     }
 }
 
-static void
-ARTS_PlayDevice(_THIS)
+static void ARTS_PlayDevice(_THIS)
 {
     /* Write the audio data */
     int written = SDL_NAME(arts_write) (this->hidden->stream,
@@ -185,15 +179,13 @@ ARTS_PlayDevice(_THIS)
 #endif
 }
 
-static Uint8 *
-ARTS_GetDeviceBuf(_THIS)
+static Uint8 *ARTS_GetDeviceBuf(_THIS)
 {
     return (this->hidden->mixbuf);
 }
 
 
-static void
-ARTS_CloseDevice(_THIS)
+static void ARTS_CloseDevice(_THIS)
 {
     if (this->hidden->stream) {
         SDL_NAME(arts_close_stream) (this->hidden->stream);
@@ -203,8 +195,7 @@ ARTS_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static int
-ARTS_Suspend(void)
+static int ARTS_Suspend(void)
 {
     const Uint32 abortms = SDL_GetTicks() + 3000; /* give up after 3 secs */
     while ( (!SDL_NAME(arts_suspended)()) && !SDL_TICKS_PASSED(SDL_GetTicks(), abortms) ) {
@@ -215,8 +206,7 @@ ARTS_Suspend(void)
     return SDL_NAME(arts_suspended)();
 }
 
-static int
-ARTS_OpenDevice(_THIS, const char *devname)
+static int ARTS_OpenDevice(_THIS, const char *devname)
 {
     int rc = 0;
     int bits, frag_spec = 0;
@@ -304,15 +294,13 @@ ARTS_OpenDevice(_THIS, const char *devname)
 }
 
 
-static void
-ARTS_Deinitialize(void)
+static void ARTS_Deinitialize(void)
 {
     UnloadARTSLibrary();
 }
 
 
-static SDL_bool
-ARTS_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool ARTS_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadARTSLibrary() < 0) {
         return SDL_FALSE;

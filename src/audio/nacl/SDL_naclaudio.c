@@ -45,7 +45,8 @@
 static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelta latency, void* data);
 
 /* FIXME: Make use of latency if needed */
-static void nacl_audio_callback(void* stream, uint32_t buffer_size, PP_TimeDelta latency, void* data) {
+static void nacl_audio_callback(void* stream, uint32_t buffer_size, PP_TimeDelta latency, void* data)
+{
     const int len = (int) buffer_size;
     SDL_AudioDevice* _this = (SDL_AudioDevice*) data;
     SDL_AudioCallback callback = _this->callbackspec.callback;
@@ -85,7 +86,8 @@ static void nacl_audio_callback(void* stream, uint32_t buffer_size, PP_TimeDelta
     SDL_UnlockMutex(_this->mixer_lock);
 }
 
-static void NACLAUDIO_CloseDevice(SDL_AudioDevice *device) {
+static void NACLAUDIO_CloseDevice(SDL_AudioDevice *device)
+{
     const PPB_Core *core = PSInterfaceCore();
     const PPB_Audio *ppb_audio = PSInterfaceAudio();
     SDL_PrivateAudioData *hidden = (SDL_PrivateAudioData *) device->hidden;
@@ -94,8 +96,8 @@ static void NACLAUDIO_CloseDevice(SDL_AudioDevice *device) {
     core->ReleaseResource(hidden->audio);
 }
 
-static int
-NACLAUDIO_OpenDevice(_THIS, const char *devname) {
+static int NACLAUDIO_OpenDevice(_THIS, const char *devname)
+{
     PP_Instance instance = PSGetInstanceId();
     const PPB_Audio *ppb_audio = PSInterfaceAudio();
     const PPB_AudioConfig *ppb_audiocfg = PSInterfaceAudioConfig();
@@ -128,8 +130,7 @@ NACLAUDIO_OpenDevice(_THIS, const char *devname) {
     return 0;
 }
 
-static SDL_bool
-NACLAUDIO_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool NACLAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     if (PSGetInstanceId() == 0) {
         return SDL_FALSE;

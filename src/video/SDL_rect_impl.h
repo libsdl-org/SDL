@@ -21,8 +21,7 @@
 
 /* This file is #included twice to support int and float versions with the same code. */
 
-SDL_bool
-SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
+SDL_bool SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
 
@@ -67,8 +66,7 @@ SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
     return SDL_TRUE;
 }
 
-SDL_bool
-SDL_INTERSECTRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
+SDL_bool SDL_INTERSECTRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
 
@@ -289,9 +287,7 @@ static int COMPUTEOUTCODE(const RECTTYPE *rect, SCALARTYPE x, SCALARTYPE y)
     return code;
 }
 
-SDL_bool
-SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *Y1, SCALARTYPE *X2,
-                         SCALARTYPE *Y2)
+SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *Y1, SCALARTYPE *X2, SCALARTYPE *Y2)
 {
     SCALARTYPE x = 0;
     SCALARTYPE y = 0;

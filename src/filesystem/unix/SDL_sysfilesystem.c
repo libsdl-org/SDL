@@ -45,8 +45,7 @@
 
 /* QNX's /proc/self/exefile is a text file and not a symlink. */
 #if !defined(__QNXNTO__)
-static char *
-readSymLink(const char *path)
+static char *readSymLink(const char *path)
 {
     char *retval = NULL;
     ssize_t len = 64;
@@ -129,8 +128,7 @@ static char *search_path_for_binary(const char *bin)
 }
 #endif
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *retval = NULL;
 
@@ -271,8 +269,7 @@ SDL_GetBasePath(void)
     return retval;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     /*
      * We use XDG's base directory spec, even if you're not on Linux.

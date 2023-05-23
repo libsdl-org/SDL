@@ -25,8 +25,7 @@
 
 #include "SDL_render_vita_gxm_memory.h"
 
-void *
-vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
+void *vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
 {
     void *mem;
 
@@ -63,8 +62,7 @@ void vita_mem_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-void *
-vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
+void *vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
 {
     void *mem;
 
@@ -122,8 +120,7 @@ void vita_gpu_mem_destroy(VITA_GXM_RenderData *data)
     }
 }
 
-void *
-vita_mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
+void *vita_mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 {
     void *mem = NULL;
 
@@ -150,8 +147,7 @@ void vita_mem_vertex_usse_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-void *
-vita_mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
+void *vita_mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 {
     void *mem = NULL;
 

@@ -50,8 +50,7 @@ static void SDL_FreeDataQueueList(SDL_DataQueuePacket *packet)
     }
 }
 
-SDL_DataQueue *
-SDL_NewDataQueue(const size_t _packetlen, const size_t initialslack)
+SDL_DataQueue *SDL_NewDataQueue(const size_t _packetlen, const size_t initialslack)
 {
     SDL_DataQueue *queue = (SDL_DataQueue *)SDL_calloc(1, sizeof(SDL_DataQueue));
 
@@ -316,8 +315,7 @@ SDL_CountDataQueue(SDL_DataQueue *queue)
     return retval;
 }
 
-SDL_mutex *
-SDL_GetDataQueueMutex(SDL_DataQueue *queue)
+SDL_mutex *SDL_GetDataQueueMutex(SDL_DataQueue *queue)
 {
     return queue ? queue->lock : NULL;
 }

@@ -42,8 +42,7 @@ struct SDL_semaphore
 };
 
 /* Create a semaphore, initialized with value */
-SDL_sem *
-SDL_CreateSemaphore(Uint32 initial_value)
+SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_sem *sem = (SDL_sem *)SDL_malloc(sizeof(SDL_sem));
     if (sem != NULL) {
@@ -172,8 +171,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     return retval;
 }
 
-Uint32
-SDL_SemValue(SDL_sem *sem)
+Uint32 SDL_SemValue(SDL_sem *sem)
 {
     int ret = 0;
 

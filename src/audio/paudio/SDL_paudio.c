@@ -69,8 +69,7 @@ static char devsettings[][3] = {
     {'\0', '\0', '\0'}
 };
 
-static int
-OpenUserDefinedDevice(char *path, int maxlen, int flags)
+static int OpenUserDefinedDevice(char *path, int maxlen, int flags)
 {
     const char *audiodev;
     int fd;
@@ -90,8 +89,7 @@ OpenUserDefinedDevice(char *path, int maxlen, int flags)
     return fd;
 }
 
-static int
-OpenAudioPath(char *path, int maxlen, int flags, int classic)
+static int OpenAudioPath(char *path, int maxlen, int flags, int classic)
 {
     struct stat sb;
     int cycle = 0;
@@ -123,8 +121,7 @@ OpenAudioPath(char *path, int maxlen, int flags, int classic)
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void
-PAUDIO_WaitDevice(_THIS)
+static void PAUDIO_WaitDevice(_THIS)
 {
     fd_set fdset;
 
@@ -176,8 +173,7 @@ PAUDIO_WaitDevice(_THIS)
     }
 }
 
-static void
-PAUDIO_PlayDevice(_THIS)
+static void PAUDIO_PlayDevice(_THIS)
 {
     int written = 0;
     const Uint8 *mixbuf = this->hidden->mixbuf;
@@ -206,14 +202,12 @@ PAUDIO_PlayDevice(_THIS)
 #endif
 }
 
-static Uint8 *
-PAUDIO_GetDeviceBuf(_THIS)
+static Uint8 *PAUDIO_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbuf;
 }
 
-static void
-PAUDIO_CloseDevice(_THIS)
+static void PAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden->audio_fd >= 0) {
         close(this->hidden->audio_fd);
@@ -222,8 +216,7 @@ PAUDIO_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static int
-PAUDIO_OpenDevice(_THIS, const char *devname)
+static int PAUDIO_OpenDevice(_THIS, const char *devname)
 {
     const char *workaround = SDL_getenv("SDL_DSP_NOSELECT");
     char audiodev[1024];
@@ -462,8 +455,7 @@ PAUDIO_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static SDL_bool
-PAUDIO_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool PAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* !!! FIXME: not right for device enum? */
     int fd = OpenAudioPath(NULL, 0, OPEN_FLAGS, 0);

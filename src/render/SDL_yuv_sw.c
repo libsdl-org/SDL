@@ -28,8 +28,7 @@
 #include "../video/SDL_yuv_c.h"
 #include "SDL_cpuinfo.h"
 
-SDL_SW_YUVTexture *
-SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
+SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
 {
     SDL_SW_YUVTexture *swdata;
 

@@ -197,8 +197,7 @@ static bool IsModifierKeyPressed(unsigned int flags,
     return target_pressed;
 }
 
-static void
-HandleModifiers(_THIS, SDL_Scancode code, unsigned int modifierFlags)
+static void HandleModifiers(_THIS, SDL_Scancode code, unsigned int modifierFlags)
 {
     bool pressed = false;
 
@@ -237,8 +236,7 @@ HandleModifiers(_THIS, SDL_Scancode code, unsigned int modifierFlags)
     }
 }
 
-static void
-UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
+static void UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
 {
     TISInputSourceRef key_layout;
     const void *chr_data;
@@ -280,7 +278,7 @@ UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
                 continue;
             }
 
-            /* 
+            /*
              * Swap the scancode for these two wrongly translated keys
              * UCKeyTranslate() function does not do its job properly for ISO layout keyboards, where the key '@',
              * which is located in the top left corner of the keyboard right under the Escape key, and the additional
@@ -313,8 +311,7 @@ cleanup:
     CFRelease(key_layout);
 }
 
-void
-Cocoa_InitKeyboard(_THIS)
+void Cocoa_InitKeyboard(_THIS)
 {
     SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
 
@@ -332,8 +329,7 @@ Cocoa_InitKeyboard(_THIS)
     SDL_ToggleModState(KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE);
 }
 
-void
-Cocoa_StartTextInput(_THIS)
+void Cocoa_StartTextInput(_THIS)
 { @autoreleasepool
 {
     NSView *parentView;
@@ -364,8 +360,7 @@ Cocoa_StartTextInput(_THIS)
     }
 }}
 
-void
-Cocoa_StopTextInput(_THIS)
+void Cocoa_StopTextInput(_THIS)
 { @autoreleasepool
 {
     SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
@@ -376,8 +371,7 @@ Cocoa_StopTextInput(_THIS)
     }
 }}
 
-void
-Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
+void Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
 
@@ -389,8 +383,7 @@ Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
     [data.fieldEdit setInputRect:rect];
 }
 
-void
-Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
+void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 {
     unsigned short scancode;
     SDL_Scancode code;
@@ -452,8 +445,7 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
     }
 }
 
-void
-Cocoa_QuitKeyboard(_THIS)
+void Cocoa_QuitKeyboard(_THIS)
 {
 }
 
@@ -466,8 +458,7 @@ typedef enum {
 extern CGSConnection _CGSDefaultConnection(void);
 extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
 
-void
-Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+void Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
 #if SDL_MAC_NO_SANDBOX
     CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);

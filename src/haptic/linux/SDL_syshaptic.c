@@ -351,8 +351,7 @@ static const char *SDL_SYS_HapticNameFromFD(int fd)
 /*
  * Return the name of a haptic device, does not need to be opened.
  */
-const char *
-SDL_SYS_HapticName(int index)
+const char *SDL_SYS_HapticName(int index)
 {
     SDL_hapticlist_item *item;
     int fd;

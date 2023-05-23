@@ -193,8 +193,7 @@ void SDL_DBus_Quit(void)
     inhibit_handle = NULL;
 }
 
-SDL_DBusContext *
-SDL_DBus_GetContext(void)
+SDL_DBusContext *SDL_DBus_GetContext(void)
 {
     if (dbus_handle == NULL || !dbus.session_conn) {
         SDL_DBus_Init();
@@ -246,8 +245,7 @@ static SDL_bool SDL_DBus_CallMethodInternal(DBusConnection *conn, const char *no
     return retval;
 }
 
-SDL_bool
-SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
+SDL_bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
 {
     SDL_bool retval;
     va_list ap;
@@ -257,8 +255,7 @@ SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const ch
     return retval;
 }
 
-SDL_bool
-SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...)
+SDL_bool SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...)
 {
     SDL_bool retval;
     va_list ap;
@@ -315,8 +312,7 @@ static SDL_bool SDL_DBus_CallWithBasicReply(DBusConnection *conn, DBusMessage *m
     return retval;
 }
 
-SDL_bool
-SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
+SDL_bool SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
 {
     SDL_bool retval;
     va_list ap;
@@ -326,8 +322,7 @@ SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, cons
     return retval;
 }
 
-SDL_bool
-SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interface, const char *method, ...)
+SDL_bool SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interface, const char *method, ...)
 {
     SDL_bool retval;
     va_list ap;
@@ -337,8 +332,7 @@ SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interfac
     return retval;
 }
 
-SDL_bool
-SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result)
+SDL_bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result)
 {
     SDL_bool retval = SDL_FALSE;
 
@@ -355,8 +349,7 @@ SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const
     return retval;
 }
 
-SDL_bool
-SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result)
+SDL_bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result)
 {
     return SDL_DBus_QueryPropertyOnConnection(dbus.session_conn, node, path, interface, property, expectedtype, result);
 }
@@ -407,8 +400,7 @@ failed:
     return SDL_FALSE;
 }
 
-SDL_bool
-SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
+SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
 {
     const char *default_inhibit_reason = "Playing a game";
 

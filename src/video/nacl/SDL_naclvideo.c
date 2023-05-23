@@ -32,34 +32,33 @@
 #include "SDL_naclvideo.h"
 #include "SDL_naclwindow.h"
 #include "SDL_naclevents_c.h"
-#include "SDL_naclopengles.h"   
+#include "SDL_naclopengles.h"
 #include "SDL_video.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 
 #define NACLVID_DRIVER_NAME "nacl"
 
-/* Static init required because NACL_SetScreenResolution 
+/* Static init required because NACL_SetScreenResolution
  * may appear even before SDL starts and we want to remember
  * the window width and height
  */
 static SDL_VideoData nacl = {0};
 
-void
-NACL_SetScreenResolution(int width, int height, Uint32 format)
+void NACL_SetScreenResolution(int width, int height, Uint32 format)
 {
     PP_Resource context;
-    
+
     nacl.w = width;
-    nacl.h = height;   
+    nacl.h = height;
     nacl.format = format;
-    
+
     if (nacl.window) {
         nacl.window->w = width;
         nacl.window->h = height;
         SDL_SendWindowEvent(nacl.window, SDL_WINDOWEVENT_RESIZED, width, height);
     }
-    
+
     /* FIXME: Check threading issues...otherwise use a hardcoded _this->context across all threads */
     context = (PP_Resource) SDL_GL_GetCurrentContext();
     if (context) {
@@ -85,19 +84,18 @@ static void NACL_DeleteDevice(SDL_VideoDevice *device) {
     SDL_free(device);
 }
 
-static int
-NACL_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+static int NACL_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
     return 0;
 }
 
 static SDL_VideoDevice *NACL_CreateDevice(void) {
     SDL_VideoDevice *device;
-    
+
     if (!NACL_Available()) {
         return NULL;
     }
-    
+
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
@@ -105,20 +103,20 @@ static SDL_VideoDevice *NACL_CreateDevice(void) {
         return NULL;
     }
     device->driverdata = &nacl;
-  
+
     /* Set the function pointers */
     device->VideoInit = NACL_VideoInit;
     device->VideoQuit = NACL_VideoQuit;
     device->PumpEvents = NACL_PumpEvents;
-    
+
     device->CreateSDLWindow = NACL_CreateWindow;
     device->SetWindowTitle = NACL_SetWindowTitle;
     device->DestroyWindow = NACL_DestroyWindow;
-    
+
     device->SetDisplayMode = NACL_SetDisplayMode;
-    
+
     device->free = NACL_DeleteDevice;
-    
+
     /* GL pointers */
     device->GL_LoadLibrary = NACL_GLES_LoadLibrary;
     device->GL_GetProcAddress = NACL_GLES_GetProcAddress;
@@ -129,8 +127,8 @@ static SDL_VideoDevice *NACL_CreateDevice(void) {
     device->GL_GetSwapInterval = NACL_GLES_GetSwapInterval;
     device->GL_SwapWindow = NACL_GLES_SwapWindow;
     device->GL_DeleteContext = NACL_GLES_DeleteContext;
-    
-    
+
+
     return device;
 }
 
@@ -154,7 +152,7 @@ int NACL_VideoInit(_THIS) {
     }
 
     SDL_AddDisplayMode(&_this->displays[0], &mode);
-    
+
     PSInterfaceInit();
     driverdata->instance = PSGetInstanceId();
     driverdata->ppb_graphics = PSInterfaceGraphics3D();
@@ -170,12 +168,12 @@ int NACL_VideoInit(_THIS) {
     driverdata->ppb_mouse_input_event = (PPB_MouseInputEvent*) PSGetInterface(PPB_MOUSE_INPUT_EVENT_INTERFACE);
     driverdata->ppb_wheel_input_event = (PPB_WheelInputEvent*) PSGetInterface(PPB_WHEEL_INPUT_EVENT_INTERFACE);
     driverdata->ppb_touch_input_event = (PPB_TouchInputEvent*) PSGetInterface(PPB_TOUCH_INPUT_EVENT_INTERFACE);
-    
-    
+
+
     driverdata->message_loop = driverdata->ppb_message_loop->Create(driverdata->instance);
-    
+
     PSEventSetFilter(PSE_ALL);
-    
+
     /* We're done! */
     return 0;
 }

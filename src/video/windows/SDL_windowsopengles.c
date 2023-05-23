@@ -58,8 +58,7 @@ int WIN_GLES_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-SDL_GLContext
-WIN_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext WIN_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext context;
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;

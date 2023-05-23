@@ -498,8 +498,7 @@ void X11_VideoQuit(_THIS)
     X11_QuitTouch(_this);
 }
 
-SDL_bool
-X11_UseDirectColorVisuals(void)
+SDL_bool X11_UseDirectColorVisuals(void)
 {
     return SDL_getenv("SDL_VIDEO_X11_NODIRECTCOLOR") ? SDL_FALSE : SDL_TRUE;
 }

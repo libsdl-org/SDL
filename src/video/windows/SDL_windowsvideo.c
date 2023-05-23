@@ -486,8 +486,7 @@ void WIN_VideoQuit(_THIS)
 #endif
 #endif
 
-SDL_bool
-D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
+SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
 {
     *pD3DDLL = SDL_LoadObject("D3D9.DLL");
     if (*pD3DDLL) {
@@ -604,8 +603,7 @@ static SDL_bool DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
 }
 #endif
 
-SDL_bool
-SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
+SDL_bool SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
 {
 #if !HAVE_DXGI_H
     if (adapterIndex) {
@@ -682,8 +680,7 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
 #endif
 }
 
-SDL_bool
-WIN_IsPerMonitorV2DPIAware(_THIS)
+SDL_bool WIN_IsPerMonitorV2DPIAware(_THIS)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;

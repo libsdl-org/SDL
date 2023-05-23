@@ -31,8 +31,7 @@ int Android_SetClipboardText(_THIS, const char *text)
     return Android_JNI_SetClipboardText(text);
 }
 
-char *
-Android_GetClipboardText(_THIS)
+char *Android_GetClipboardText(_THIS)
 {
     return Android_JNI_GetClipboardText();
 }

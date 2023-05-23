@@ -221,8 +221,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
     }
 }
 
-SDL_EVDEV_keyboard_state *
-SDL_EVDEV_kbd_init(void)
+SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
 {
     SDL_EVDEV_keyboard_state *kbd;
     struct mouse_info mData;

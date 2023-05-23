@@ -69,8 +69,7 @@
 @end
 
 
-static void
-Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid, int *returnValue)
+static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid, int *returnValue)
 {
     NSAlert* alert;
     const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
@@ -130,8 +129,7 @@ Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid
 }
 
 /* Display a Cocoa message box */
-int
-Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 { @autoreleasepool
 {
     __block int returnValue = 0;

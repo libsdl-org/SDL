@@ -28,8 +28,8 @@
 
 #include "../SDL_shape_internals.h"
 
-SDL_WindowShaper*
-DirectFB_CreateShaper(SDL_Window* window) {
+SDL_WindowShaper *DirectFB_CreateShaper(SDL_Window* window)
+{
     SDL_WindowShaper* result = NULL;
     SDL_ShapeData* data;
     int resized_properly;
@@ -58,8 +58,8 @@ DirectFB_CreateShaper(SDL_Window* window) {
     return result;
 }
 
-int
-DirectFB_ResizeWindowShape(SDL_Window* window) {
+int DirectFB_ResizeWindowShape(SDL_Window* window)
+{
     SDL_ShapeData* data = window->shaper->driverdata;
     SDL_assert(data != NULL);
 
@@ -73,8 +73,8 @@ DirectFB_ResizeWindowShape(SDL_Window* window) {
     return 0;
 }
 
-int
-DirectFB_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode) {
+int DirectFB_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode)
+{
 
     if(shaper == NULL || shape == NULL || shaper->driverdata == NULL)
         return -1;

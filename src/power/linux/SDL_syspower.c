@@ -229,9 +229,7 @@ static void check_proc_acpi_ac_adapter(const char *node, SDL_bool *have_ac)
     }
 }
 
-SDL_bool
-SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *state,
-                                 int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *state, int *seconds, int *percent)
 {
     struct dirent *dent = NULL;
     DIR *dirp = NULL;
@@ -314,9 +312,7 @@ static SDL_bool int_string(char *str, int *val)
 }
 
 /* http://lxr.linux.no/linux+v2.6.29/drivers/char/apm-emulation.c */
-SDL_bool
-SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state,
-                                int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state, int *seconds, int *percent)
 {
     SDL_bool need_details = SDL_FALSE;
     int ac_status = 0;
@@ -422,8 +418,7 @@ SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state,
     return SDL_TRUE;
 }
 
-SDL_bool
-SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *seconds, int *percent)
 {
     const char *base = sys_class_power_supply_path;
     struct dirent *dent;
@@ -612,8 +607,7 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
 }
 #endif
 
-SDL_bool
-SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *seconds, int *percent)
 {
     SDL_bool retval = SDL_FALSE;
 

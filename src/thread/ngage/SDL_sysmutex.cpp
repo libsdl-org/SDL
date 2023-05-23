@@ -40,8 +40,7 @@ static TInt NewMutex(const TDesC &aName, TAny *aPtr1, TAny *)
 }
 
 /* Create a mutex */
-SDL_mutex *
-SDL_CreateMutex(void)
+SDL_mutex *SDL_CreateMutex(void)
 {
     RMutex rmutex;
 
@@ -84,8 +83,7 @@ int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
 
 /* Try to lock the mutex */
 #if 0
-int
-SDL_TryLockMutex(SDL_mutex *mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
     if (mutex == NULL)
     {

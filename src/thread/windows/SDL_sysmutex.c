@@ -243,8 +243,7 @@ static const SDL_mutex_impl_t SDL_mutex_impl_cs = {
  * Runtime selection and redirection
  */
 
-SDL_mutex *
-SDL_CreateMutex(void)
+SDL_mutex *SDL_CreateMutex(void)
 {
     if (SDL_mutex_impl_active.Create == NULL) {
         /* Default to fallback implementation */

@@ -26,8 +26,7 @@
 #include "../../SDL_internal.h"
 #include "../SDL_syslocale.h"
 
-void
-SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     BLocaleRoster *roster = BLocaleRoster::Default();
     roster->Refresh();

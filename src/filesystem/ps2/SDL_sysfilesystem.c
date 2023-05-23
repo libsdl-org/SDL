@@ -31,8 +31,7 @@
 #include "SDL_error.h"
 #include "SDL_filesystem.h"
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *retval;
     size_t len;
@@ -78,8 +77,7 @@ static void recursive_mkdir(const char *dir)
     mkdir(tmp, S_IRWXU);
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *retval = NULL;
     size_t len;

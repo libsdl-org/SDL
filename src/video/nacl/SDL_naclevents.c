@@ -305,8 +305,7 @@ static Uint8 SDL_NACL_translate_mouse_button(int32_t button) {
     }
 }
 
-static SDL_Scancode
-SDL_NACL_translate_keycode(int keycode)
+static SDL_Scancode SDL_NACL_translate_keycode(int keycode)
 {
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
 

@@ -138,8 +138,7 @@ static void checkps(CFDictionaryRef dict, SDL_bool *have_ac, SDL_bool *have_batt
 #undef GETVAL
 #undef STRMATCH
 
-SDL_bool
-SDL_GetPowerInfo_MacOSX(SDL_PowerState *state, int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_MacOSX(SDL_PowerState *state, int *seconds, int *percent)
 {
     CFTypeRef blob = IOPSCopyPowerSourcesInfo();
 

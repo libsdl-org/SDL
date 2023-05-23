@@ -514,8 +514,7 @@ static const SDL_BlitFunc one_blitkey[] = {
     (SDL_BlitFunc)NULL, Blit1to1Key, Blit1to2Key, Blit1to3Key, Blit1to4Key
 };
 
-SDL_BlitFunc
-SDL_CalculateBlit1(SDL_Surface *surface)
+SDL_BlitFunc SDL_CalculateBlit1(SDL_Surface *surface)
 {
     int which;
     SDL_PixelFormat *dstfmt;

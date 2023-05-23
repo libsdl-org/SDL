@@ -34,8 +34,7 @@
 #include "SDL_stdinc.h"
 #include "SDL_filesystem.h"
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     image_info info;
     int32 cookie = 0;
@@ -69,8 +68,7 @@ SDL_GetBasePath(void)
 }
 
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     // !!! FIXME: is there a better way to do this?
     const char *home = SDL_getenv("HOME");

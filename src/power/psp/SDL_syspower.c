@@ -27,9 +27,7 @@
 #include "SDL_power.h"
 #include <psppower.h>
 
-SDL_bool
-SDL_GetPowerInfo_PSP(SDL_PowerState *state, int *seconds,
-                     int *percent)
+SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *state, int *seconds, int *percent)
 {
     int battery = scePowerIsBatteryExist();
     int plugged = scePowerIsPowerOnline();

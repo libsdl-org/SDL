@@ -64,8 +64,7 @@ static struct
 
 #undef SDL_ESD_SYM
 
-static void
-UnloadESDLibrary()
+static void UnloadESDLibrary()
 {
     if (esd_handle != NULL) {
         SDL_UnloadObject(esd_handle);
@@ -73,8 +72,7 @@ UnloadESDLibrary()
     }
 }
 
-static int
-LoadESDLibrary(void)
+static int LoadESDLibrary(void)
 {
     int i, retval = -1;
 
@@ -98,14 +96,12 @@ LoadESDLibrary(void)
 
 #else
 
-static void
-UnloadESDLibrary()
+static void UnloadESDLibrary()
 {
     return;
 }
 
-static int
-LoadESDLibrary(void)
+static int LoadESDLibrary(void)
 {
     return 0;
 }
@@ -114,8 +110,7 @@ LoadESDLibrary(void)
 
 
 /* This function waits until it is possible to write a full sound buffer */
-static void
-ESD_WaitDevice(_THIS)
+static void ESD_WaitDevice(_THIS)
 {
     Sint32 ticks;
 
@@ -140,8 +135,7 @@ ESD_WaitDevice(_THIS)
     }
 }
 
-static void
-ESD_PlayDevice(_THIS)
+static void ESD_PlayDevice(_THIS)
 {
     int written = 0;
 
@@ -164,14 +158,12 @@ ESD_PlayDevice(_THIS)
     }
 }
 
-static Uint8 *
-ESD_GetDeviceBuf(_THIS)
+static Uint8 *ESD_GetDeviceBuf(_THIS)
 {
     return (this->hidden->mixbuf);
 }
 
-static void
-ESD_CloseDevice(_THIS)
+static void ESD_CloseDevice(_THIS)
 {
     if (this->hidden->audio_fd >= 0) {
         SDL_NAME(esd_close) (this->hidden->audio_fd);
@@ -181,8 +173,7 @@ ESD_CloseDevice(_THIS)
 }
 
 /* Try to get the name of the program */
-static char *
-get_progname(void)
+static char *get_progname(void)
 {
     char *progname = NULL;
 #ifdef __LINUX__
@@ -207,8 +198,7 @@ get_progname(void)
 }
 
 
-static int
-ESD_OpenDevice(_THIS, const char *devname)
+static int ESD_OpenDevice(_THIS, const char *devname)
 {
     esd_format_t format = (ESD_STREAM | ESD_PLAY);
     SDL_AudioFormat test_format = 0;
@@ -286,14 +276,12 @@ ESD_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static void
-ESD_Deinitialize(void)
+static void ESD_Deinitialize(void)
 {
     UnloadESDLibrary();
 }
 
-static SDL_bool
-ESD_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool ESD_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadESDLibrary() < 0) {
         return SDL_FALSE;

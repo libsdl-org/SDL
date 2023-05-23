@@ -164,8 +164,7 @@ void SDL_SYS_SetupThread(const char *name)
     }
 }
 
-SDL_threadID
-SDL_ThreadID(void)
+SDL_threadID SDL_ThreadID(void)
 {
     return (SDL_threadID)GetCurrentThreadId();
 }

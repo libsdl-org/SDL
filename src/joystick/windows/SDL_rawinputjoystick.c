@@ -883,14 +883,12 @@ static int RAWINPUT_JoystickGetCount(void)
     return SDL_RAWINPUT_numjoysticks;
 }
 
-SDL_bool
-RAWINPUT_IsEnabled()
+SDL_bool RAWINPUT_IsEnabled()
 {
     return SDL_RAWINPUT_inited;
 }
 
-SDL_bool
-RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+SDL_bool RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     SDL_RAWINPUT_Device *device;
 
@@ -1874,8 +1872,7 @@ static void RAWINPUT_JoystickClose(SDL_Joystick *joystick)
     }
 }
 
-SDL_bool
-RAWINPUT_RegisterNotifications(HWND hWnd)
+SDL_bool RAWINPUT_RegisterNotifications(HWND hWnd)
 {
     RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];
     int i;

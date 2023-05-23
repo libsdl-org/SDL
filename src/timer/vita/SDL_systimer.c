@@ -49,8 +49,7 @@ void SDL_TicksQuit(void)
     ticks_started = SDL_FALSE;
 }
 
-Uint64
-SDL_GetTicks64(void)
+Uint64 SDL_GetTicks64(void)
 {
     uint64_t now;
 
@@ -62,14 +61,12 @@ SDL_GetTicks64(void)
     return (Uint64)((now - start) / 1000);
 }
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     return sceKernelGetProcessTimeWide();
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     return 1000000;
 }

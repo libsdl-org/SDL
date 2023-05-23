@@ -35,15 +35,13 @@
 SDL_FORCE_INLINE char *MakePrefPath(const char *app);
 SDL_FORCE_INLINE int CreatePrefPathDir(const char *pref);
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *base_path = SDL_strdup("romfs:/");
     return base_path;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *pref_path = NULL;
     if (app == NULL) {

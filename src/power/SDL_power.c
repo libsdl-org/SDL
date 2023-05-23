@@ -85,8 +85,7 @@ static SDL_GetPowerInfo_Impl implementations[] = {
 };
 #endif
 
-SDL_PowerState
-SDL_GetPowerInfo(int *seconds, int *percent)
+SDL_PowerState SDL_GetPowerInfo(int *seconds, int *percent)
 {
 #ifndef SDL_POWER_DISABLED
     const int total = sizeof(implementations) / sizeof(implementations[0]);

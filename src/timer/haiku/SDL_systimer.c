@@ -45,8 +45,7 @@ void SDL_TicksQuit(void)
     ticks_started = SDL_FALSE;
 }
 
-Uint64
-SDL_GetTicks64(void)
+Uint64 SDL_GetTicks64(void)
 {
     if (!ticks_started) {
         SDL_TicksInit();
@@ -55,14 +54,12 @@ SDL_GetTicks64(void)
     return (Uint64)((system_time() - start) / 1000);
 }
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     return system_time();
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     return 1000000;
 }

@@ -83,8 +83,7 @@ static void InitIME()
 #endif /* HAVE_IBUS_IBUS_H */
 }
 
-SDL_bool
-SDL_IME_Init(void)
+SDL_bool SDL_IME_Init(void)
 {
     InitIME();
 
@@ -127,8 +126,7 @@ void SDL_IME_Reset(void)
     }
 }
 
-SDL_bool
-SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
+SDL_bool SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
     if (SDL_IME_ProcessKeyEvent_Real) {
         return SDL_IME_ProcessKeyEvent_Real(keysym, keycode, state);

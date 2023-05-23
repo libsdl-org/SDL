@@ -195,8 +195,7 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
     }
 }
 
-SDL_Surface *
-SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
+SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
 {
     SDL_bool was_error;
     Sint64 fp_offset = 0;

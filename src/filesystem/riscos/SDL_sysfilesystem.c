@@ -129,8 +129,7 @@ static _kernel_oserror *createDirectoryRecursive(char *path)
     return _kernel_swi(OS_File, &regs, &regs);
 }
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     _kernel_swi_regs regs;
     _kernel_oserror *error;
@@ -157,8 +156,7 @@ SDL_GetBasePath(void)
     return retval;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *canon, *dir, *retval;
     size_t len;

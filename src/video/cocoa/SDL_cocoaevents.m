@@ -314,8 +314,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 static SDLAppDelegate *appDelegate = nil;
 
-static NSString *
-GetApplicationName(void)
+static NSString *GetApplicationName(void)
 {
     NSString *appName;
 
@@ -332,8 +331,7 @@ GetApplicationName(void)
     return appName;
 }
 
-static bool
-LoadMainMenuNibIfAvailable(void)
+static bool LoadMainMenuNibIfAvailable(void)
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
     NSDictionary *infoDict;
@@ -346,20 +344,19 @@ LoadMainMenuNibIfAvailable(void)
     infoDict = [[NSBundle mainBundle] infoDictionary];
     if (infoDict) {
         mainNibFileName = [infoDict valueForKey:@"NSMainNibFile"];
-        
+
         if (mainNibFileName) {
             success = [[NSBundle mainBundle] loadNibNamed:mainNibFileName owner:[NSApplication sharedApplication] topLevelObjects:nil];
         }
     }
-    
+
     return success;
 #else
     return false;
 #endif
 }
 
-static void
-CreateApplicationMenus(void)
+static void CreateApplicationMenus(void)
 {
     NSString *appName;
     NSString *title;
@@ -372,7 +369,7 @@ CreateApplicationMenus(void)
     if (NSApp == nil) {
         return;
     }
-    
+
     mainMenu = [[NSMenu alloc] init];
 
     /* Create the main menu bar */
@@ -430,7 +427,7 @@ CreateApplicationMenus(void)
     [windowMenu addItemWithTitle:@"Minimize" action:@selector(performMiniaturize:) keyEquivalent:@"m"];
 
     [windowMenu addItemWithTitle:@"Zoom" action:@selector(performZoom:) keyEquivalent:@""];
-    
+
     /* Add the fullscreen toggle menu option. */
     /* Cocoa should update the title to Enter or Exit Full Screen automatically.
      * But if not, then just fallback to Toggle Full Screen.
@@ -448,8 +445,7 @@ CreateApplicationMenus(void)
     [NSApp setWindowsMenu:windowMenu];
 }
 
-void
-Cocoa_RegisterApp(void)
+void Cocoa_RegisterApp(void)
 { @autoreleasepool
 {
     /* This can get called more than once! Be careful what you initialize! */
@@ -470,7 +466,7 @@ Cocoa_RegisterApp(void)
          */
         if ([NSApp mainMenu] == nil) {
             bool nibLoaded;
-            
+
             nibLoaded = LoadMainMenuNibIfAvailable();
             if (!nibLoaded) {
                 CreateApplicationMenus();
@@ -507,8 +503,7 @@ Cocoa_RegisterApp(void)
     }
 }}
 
-int
-Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
+int Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
 {
     for ( ; ; ) {
         NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:expiration inMode:NSDefaultRunLoopMode dequeue:YES ];
@@ -529,8 +524,7 @@ Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
     return 1;
 }
 
-int
-Cocoa_WaitEventTimeout(_THIS, int timeout)
+int Cocoa_WaitEventTimeout(_THIS, int timeout)
 { @autoreleasepool
 {
     if (timeout > 0) {
@@ -545,8 +539,7 @@ Cocoa_WaitEventTimeout(_THIS, int timeout)
     return 1;
 }}
 
-void
-Cocoa_PumpEvents(_THIS)
+void Cocoa_PumpEvents(_THIS)
 { @autoreleasepool
 {
     Cocoa_PumpEventsUntilDate(_this, [NSDate distantPast], true);
@@ -568,8 +561,7 @@ void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
     [NSApp postEvent: event atStart: YES];
 }}
 
-void
-Cocoa_SuspendScreenSaver(_THIS)
+void Cocoa_SuspendScreenSaver(_THIS)
 { @autoreleasepool
 {
     SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;

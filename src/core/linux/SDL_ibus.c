@@ -555,8 +555,7 @@ static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus)
     return SDL_FALSE;
 }
 
-SDL_bool
-SDL_IBus_Init(void)
+SDL_bool SDL_IBus_Init(void)
 {
     SDL_bool result = SDL_FALSE;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
@@ -671,8 +670,7 @@ void SDL_IBus_Reset(void)
     IBus_SimpleMessage("Reset");
 }
 
-SDL_bool
-SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
+SDL_bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
     Uint32 result = 0;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
@@ -717,16 +715,16 @@ void SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
     }
 
     SDL_GetWindowPosition(focused_win, &x, &y);
-   
-#if SDL_VIDEO_DRIVER_X11    
+
+#if SDL_VIDEO_DRIVER_X11
     if (info.subsystem == SDL_SYSWM_X11) {
         SDL_DisplayData *displaydata = (SDL_DisplayData *) SDL_GetDisplayForWindow(focused_win)->driverdata;
-            
+
         Display *x_disp = info.info.x11.display;
         Window x_win = info.info.x11.window;
         int x_screen = displaydata->screen;
         Window unused;
-            
+
         X11_XTranslateCoordinates(x_disp, x_win, RootWindow(x_disp, x_screen), 0, 0, &x, &y, &unused);
     }
 #endif

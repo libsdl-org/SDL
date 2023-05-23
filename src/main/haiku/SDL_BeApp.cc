@@ -105,8 +105,7 @@ static int StartBeApp(void *unused)
 }
 
 
-static int
-StartBeLooper()
+static int StartBeLooper()
 {
     if (!be_app) {
         SDL_AppThread = SDL_CreateThreadInternal(StartBeApp, "SDLApplication", 0, NULL);
@@ -141,8 +140,7 @@ StartBeLooper()
 
 
 /* Initialize the Be Application, if it's not already started */
-int
-SDL_InitBeApp(void)
+int SDL_InitBeApp(void)
 {
     /* Create the BApplication that handles appserver interaction */
     if (SDL_BeAppActive <= 0) {
@@ -160,8 +158,7 @@ SDL_InitBeApp(void)
 }
 
 /* Quit the Be Application, if there's nothing left to do */
-void
-SDL_QuitBeApp(void)
+void SDL_QuitBeApp(void)
 {
     /* Decrement the application reference count */
     --SDL_BeAppActive;

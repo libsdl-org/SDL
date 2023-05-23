@@ -82,8 +82,7 @@ int VITA_GL_LoadLibrary(_THIS, const char *path)
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }
 
-SDL_GLContext
-VITA_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext VITA_GL_CreateContext(_THIS, SDL_Window *window)
 {
     char gl_version[3];
     SDL_GLContext context = NULL;
@@ -117,8 +116,7 @@ VITA_GL_CreateContext(_THIS, SDL_Window *window)
     return context;
 }
 
-void *
-VITA_GL_GetProcAddress(_THIS, const char *proc)
+void *VITA_GL_GetProcAddress(_THIS, const char *proc)
 {
     return gl4es_GetProcAddress(proc);
 }

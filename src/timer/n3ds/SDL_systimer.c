@@ -44,8 +44,7 @@ void SDL_TicksQuit(void)
     ticks_started = SDL_FALSE;
 }
 
-Uint64
-SDL_GetTicks64(void)
+Uint64 SDL_GetTicks64(void)
 {
     u64 elapsed;
     if (!ticks_started) {
@@ -56,14 +55,12 @@ SDL_GetTicks64(void)
     return elapsed / CPU_TICKS_PER_MSEC;
 }
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     return svcGetSystemTick();
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     return SYSCLOCK_ARM11;
 }

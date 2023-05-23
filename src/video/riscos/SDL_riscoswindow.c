@@ -62,8 +62,7 @@ void RISCOS_DestroyWindow(_THIS, SDL_Window *window)
     window->driverdata = NULL;
 }
 
-SDL_bool
-RISCOS_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
+SDL_bool RISCOS_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 {
     if (info->version.major == SDL_MAJOR_VERSION) {
         info->subsystem = SDL_SYSWM_RISCOS;

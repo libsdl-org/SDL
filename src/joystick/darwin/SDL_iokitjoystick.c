@@ -701,15 +701,13 @@ static void DARWIN_JoystickDetect(void)
     }
 }
 
-const char *
-DARWIN_JoystickGetDeviceName(int device_index)
+const char *DARWIN_JoystickGetDeviceName(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
     return device ? device->product : "UNKNOWN";
 }
 
-const char *
-DARWIN_JoystickGetDevicePath(int device_index)
+const char *DARWIN_JoystickGetDevicePath(int device_index)
 {
     return NULL;
 }

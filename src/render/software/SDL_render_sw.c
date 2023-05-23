@@ -986,8 +986,7 @@ static void SW_DestroyRenderer(SDL_Renderer *renderer)
     SDL_free(renderer);
 }
 
-SDL_Renderer *
-SW_CreateRendererForSurface(SDL_Surface *surface)
+SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
 {
     SDL_Renderer *renderer;
     SW_RenderData *data;

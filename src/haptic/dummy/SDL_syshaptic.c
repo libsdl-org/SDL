@@ -40,8 +40,7 @@ int SDL_SYS_NumHaptics(void)
     return 0;
 }
 
-const char *
-SDL_SYS_HapticName(int index)
+const char *SDL_SYS_HapticName(int index)
 {
     SDL_SYS_LogicError();
     return NULL;

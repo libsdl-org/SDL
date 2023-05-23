@@ -211,8 +211,7 @@ static int VITA_GXM_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *
-VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     VITA_GXM_RenderData *data;

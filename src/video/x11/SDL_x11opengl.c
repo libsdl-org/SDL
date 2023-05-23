@@ -274,8 +274,7 @@ int X11_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void *
-X11_GL_GetProcAddress(_THIS, const char *proc)
+void *X11_GL_GetProcAddress(_THIS, const char *proc)
 {
     if (_this->gl_data->glXGetProcAddress) {
         return _this->gl_data->glXGetProcAddress((const GLubyte *)proc);
@@ -608,8 +607,7 @@ static int X11_GL_GetAttributes(_THIS, Display *display, int screen, int *attrib
     return i;
 }
 
-XVisualInfo *
-X11_GL_GetVisual(_THIS, Display *display, int screen)
+XVisualInfo *X11_GL_GetVisual(_THIS, Display *display, int screen)
 {
     /* 64 seems nice. */
     int attribs[64];
@@ -680,8 +678,7 @@ static int X11_GL_ErrorHandler(Display *d, XErrorEvent *e)
     return (0);
 }
 
-SDL_bool
-X11_GL_UseEGL(_THIS)
+SDL_bool X11_GL_UseEGL(_THIS)
 {
     SDL_assert(_this->gl_data != NULL);
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
@@ -695,8 +692,7 @@ X11_GL_UseEGL(_THIS)
             || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor));
 }
 
-SDL_GLContext
-X11_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display = data->videodata->display;

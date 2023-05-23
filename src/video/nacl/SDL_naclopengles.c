@@ -35,15 +35,13 @@
 #include "ppapi_simple/ps.h"
 
 /* GL functions */
-int
-NACL_GLES_LoadLibrary(_THIS, const char *path)
+int NACL_GLES_LoadLibrary(_THIS, const char *path)
 {
     /* FIXME: Support dynamic linking when PNACL supports it */
     return glInitializePPAPI(PSGetInterface) == 0;
 }
 
-void *
-NACL_GLES_GetProcAddress(_THIS, const char *proc)
+void *NACL_GLES_GetProcAddress(_THIS, const char *proc)
 {
 #ifdef HAVE_DLOPEN
     return dlsym( 0 /* RTLD_DEFAULT */, proc);
@@ -52,15 +50,13 @@ NACL_GLES_GetProcAddress(_THIS, const char *proc)
 #endif
 }
 
-void
-NACL_GLES_UnloadLibrary(_THIS)
+void NACL_GLES_UnloadLibrary(_THIS)
 {
     /* FIXME: Support dynamic linking when PNACL supports it */
     glTerminatePPAPI();
 }
 
-int
-NACL_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext sdl_context)
+int NACL_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext sdl_context)
 {
     SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
     /* FIXME: Check threading issues...otherwise use a hardcoded _this->context across all threads */
@@ -69,21 +65,20 @@ NACL_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext sdl_context)
     return 0;
 }
 
-SDL_GLContext
-NACL_GLES_CreateContext(_THIS, SDL_Window * window)
+SDL_GLContext NACL_GLES_CreateContext(_THIS, SDL_Window * window)
 {
     SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
     PP_Resource context, share_context = 0;
     /* 64 seems nice. */
     Sint32 attribs[64];
     int i = 0;
-    
+
     if (_this->gl_config.share_with_current_context) {
         share_context = (PP_Resource) SDL_GL_GetCurrentContext();
     }
 
     /* FIXME: Some ATTRIBS from PP_Graphics3DAttrib are not set here */
-    
+
     attribs[i++] = PP_GRAPHICS3DATTRIB_WIDTH;
     attribs[i++] = window->w;
     attribs[i++] = PP_GRAPHICS3DATTRIB_HEIGHT;
@@ -94,65 +89,62 @@ NACL_GLES_CreateContext(_THIS, SDL_Window * window)
     attribs[i++] = _this->gl_config.green_size;
     attribs[i++] = PP_GRAPHICS3DATTRIB_BLUE_SIZE;
     attribs[i++] = _this->gl_config.blue_size;
-    
+
     if (_this->gl_config.alpha_size) {
         attribs[i++] = PP_GRAPHICS3DATTRIB_ALPHA_SIZE;
         attribs[i++] = _this->gl_config.alpha_size;
     }
-    
+
     /*if (_this->gl_config.buffer_size) {
         attribs[i++] = EGL_BUFFER_SIZE;
         attribs[i++] = _this->gl_config.buffer_size;
     }*/
-    
+
     attribs[i++] = PP_GRAPHICS3DATTRIB_DEPTH_SIZE;
     attribs[i++] = _this->gl_config.depth_size;
-    
+
     if (_this->gl_config.stencil_size) {
         attribs[i++] = PP_GRAPHICS3DATTRIB_STENCIL_SIZE;
         attribs[i++] = _this->gl_config.stencil_size;
     }
-    
+
     if (_this->gl_config.multisamplebuffers) {
         attribs[i++] = PP_GRAPHICS3DATTRIB_SAMPLE_BUFFERS;
         attribs[i++] = _this->gl_config.multisamplebuffers;
     }
-    
+
     if (_this->gl_config.multisamplesamples) {
         attribs[i++] = PP_GRAPHICS3DATTRIB_SAMPLES;
         attribs[i++] = _this->gl_config.multisamplesamples;
     }
-       
+
     attribs[i++] = PP_GRAPHICS3DATTRIB_NONE;
-    
+
     context = driverdata->ppb_graphics->Create(driverdata->instance, share_context, attribs);
 
     if (context) {
         /* We need to make the context current, otherwise nothing works */
         SDL_GL_MakeCurrent(window, (SDL_GLContext) context);
     }
-    
+
     return (SDL_GLContext) context;
 }
 
 
 
-int
-NACL_GLES_SetSwapInterval(_THIS, int interval)
+int NACL_GLES_SetSwapInterval(_THIS, int interval)
 {
     /* STUB */
     return SDL_Unsupported();
 }
 
-int
-NACL_GLES_GetSwapInterval(_THIS)
+int NACL_GLES_GetSwapInterval(_THIS)
 {
     /* STUB */
     return 0;
 }
 
-int
-NACL_GLES_SwapWindow(_THIS, SDL_Window * window)
+int NACL_GLES_SwapWindow(_THIS, SDL_Window * window)
 {
     SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
     struct PP_CompletionCallback callback = { NULL, 0, PP_COMPLETIONCALLBACK_FLAG_NONE };
@@ -162,8 +154,7 @@ NACL_GLES_SwapWindow(_THIS, SDL_Window * window)
     return 0;
 }
 
-void
-NACL_GLES_DeleteContext(_THIS, SDL_GLContext context)
+void NACL_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
     driverdata->ppb_core->ReleaseResource((PP_Resource) context);

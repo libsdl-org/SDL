@@ -518,8 +518,7 @@ int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a' + ((x) - 'A'
 
 /* This file contains a portable memcpy manipulation function for SDL */
 
-void *
-SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len)
+void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len)
 {
 #ifdef __GNUC__
     /* Presumably this is well tuned for speed.
@@ -571,8 +570,7 @@ SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, 
 #endif /* __GNUC__ */
 }
 
-void *
-SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
+void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
 {
 #if defined(HAVE_MEMSET)
     return memset(dst, c, len);

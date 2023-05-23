@@ -27,8 +27,7 @@
 #include "SDL_x11window.h"
 #include "../SDL_shape_internals.h"
 
-SDL_WindowShaper *
-X11_CreateShaper(SDL_Window *window)
+SDL_WindowShaper *X11_CreateShaper(SDL_Window *window)
 {
     SDL_WindowShaper *result = NULL;
     SDL_ShapeData *data = NULL;

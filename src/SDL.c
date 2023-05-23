@@ -442,8 +442,7 @@ void SDL_QuitSubSystem(Uint32 flags)
 #endif
 }
 
-Uint32
-SDL_WasInit(Uint32 flags)
+Uint32 SDL_WasInit(Uint32 flags)
 {
     int i;
     int num_subsystems = SDL_arraysize(SDL_SubsystemRefCount);
@@ -531,22 +530,19 @@ void SDL_GetVersion(SDL_version *ver)
 }
 
 /* Get the library source revision */
-const char *
-SDL_GetRevision(void)
+const char *SDL_GetRevision(void)
 {
     return SDL_REVISION;
 }
 
 /* Get the library source revision number */
-int
-SDL_GetRevisionNumber(void)
+int SDL_GetRevisionNumber(void)
 {
     return 0;  /* doesn't make sense without Mercurial. */
 }
 
 /* Get the name of the platform */
-const char *
-SDL_GetPlatform(void)
+const char *SDL_GetPlatform(void)
 {
 #if __AIX__
     return "AIX";
@@ -619,8 +615,7 @@ SDL_GetPlatform(void)
 #endif
 }
 
-SDL_bool
-SDL_IsTablet(void)
+SDL_bool SDL_IsTablet(void)
 {
 #if __ANDROID__
     extern SDL_bool SDL_IsAndroidTablet(void);
@@ -638,9 +633,7 @@ SDL_IsTablet(void)
 #if (!defined(HAVE_LIBC) || defined(__WATCOMC__)) && !defined(SDL_STATIC_LIB)
 /* Need to include DllMain() on Watcom C for some reason.. */
 
-BOOL APIENTRY
-_DllMainCRTStartup(HANDLE hModule,
-                   DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY _DllMainCRTStartup(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call) {
     case DLL_PROCESS_ATTACH:

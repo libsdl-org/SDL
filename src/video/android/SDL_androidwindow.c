@@ -197,8 +197,7 @@ void Android_DestroyWindow(_THIS, SDL_Window *window)
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-SDL_bool
-Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
+SDL_bool Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 

@@ -1,15 +1,15 @@
 /*
  Simple DirectMedia Layer
  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
- 
+
  This software is provided 'as-is', without any express or implied
  warranty.  In no event will the authors be held liable for any damages
  arising from the use of this software.
- 
+
  Permission is granted to anyone to use this software for any purpose,
  including commercial applications, and to alter it and redistribute it
  freely, subject to the following restrictions:
- 
+
  1. The origin of this software must not be misrepresented; you must not
  claim that you wrote the original software. If you use this software
  in a product, an acknowledgment in the product documentation would be
@@ -74,8 +74,7 @@
 
 @end
 
-SDL_MetalView
-UIKit_Metal_CreateView(_THIS, SDL_Window * window)
+SDL_MetalView UIKit_Metal_CreateView(_THIS, SDL_Window * window)
 { @autoreleasepool {
     SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
     CGFloat scale = 1.0;
@@ -102,8 +101,7 @@ UIKit_Metal_CreateView(_THIS, SDL_Window * window)
     return (void*)CFBridgingRetain(metalview);
 }}
 
-void
-UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
+void UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
 { @autoreleasepool {
     SDL_uikitmetalview *metalview = CFBridgingRelease(view);
 
@@ -112,15 +110,13 @@ UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
     }
 }}
 
-void *
-UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
+void *UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
 { @autoreleasepool {
     SDL_uikitview *uiview = (__bridge SDL_uikitview *)view;
     return (__bridge void *)uiview.layer;
 }}
 
-void
-UIKit_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
+void UIKit_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;

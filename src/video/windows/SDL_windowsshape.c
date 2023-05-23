@@ -25,8 +25,7 @@
 #include "SDL_windowsshape.h"
 #include "SDL_windowsvideo.h"
 
-SDL_WindowShaper *
-Win32_CreateShaper(SDL_Window *window)
+SDL_WindowShaper *Win32_CreateShaper(SDL_Window *window)
 {
     int resized_properly;
     SDL_WindowShaper *result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));

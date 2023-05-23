@@ -63,8 +63,7 @@ int SDL_SetPrimarySelectionText(const char *text)
     }
 }
 
-char *
-SDL_GetClipboardText(void)
+char *SDL_GetClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -84,8 +83,7 @@ SDL_GetClipboardText(void)
     }
 }
 
-char *
-SDL_GetPrimarySelectionText(void)
+char *SDL_GetPrimarySelectionText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -105,8 +103,7 @@ SDL_GetPrimarySelectionText(void)
     }
 }
 
-SDL_bool
-SDL_HasClipboardText(void)
+SDL_bool SDL_HasClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -126,8 +123,7 @@ SDL_HasClipboardText(void)
     }
 }
 
-SDL_bool
-SDL_HasPrimarySelectionText(void)
+SDL_bool SDL_HasPrimarySelectionText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 

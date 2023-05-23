@@ -83,8 +83,7 @@ static char *GetAppName()
     return SDL_strdup("SDL_App");
 }
 
-static size_t
-Fcitx_GetPreeditString(SDL_DBusContext *dbus,
+static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
                        DBusMessage *msg,
                        char **ret,
                        Sint32 *start_pos,
@@ -369,8 +368,7 @@ static Uint32 Fcitx_ModState(void)
     return fcitx_mods;
 }
 
-SDL_bool
-SDL_Fcitx_Init()
+SDL_bool SDL_Fcitx_Init()
 {
     fcitx_client.dbus = SDL_DBus_GetContext();
 
@@ -406,8 +404,7 @@ void SDL_Fcitx_Reset(void)
     FcitxClientICCallMethod(&fcitx_client, "CloseIC");
 }
 
-SDL_bool
-SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
+SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
     Uint32 mod_state = Fcitx_ModState();
     Uint32 handled = SDL_FALSE;

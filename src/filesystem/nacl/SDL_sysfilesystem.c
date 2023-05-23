@@ -24,15 +24,13 @@
 
 #ifdef SDL_FILESYSTEM_NACL
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     SDL_Unsupported();
     return NULL;

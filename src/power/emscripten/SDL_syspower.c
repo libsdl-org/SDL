@@ -27,8 +27,7 @@
 
 #include "SDL_power.h"
 
-SDL_bool
-SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *percent)
 {
     EmscriptenBatteryEvent batteryState;
     int haveBattery = 0;

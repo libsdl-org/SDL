@@ -52,12 +52,11 @@ int X11_GLES_LoadLibrary(_THIS, const char *path)
         return SDL_SetError("SDL not configured with OpenGL/GLX support");
 #endif
     }
-    
+
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
 }
 
-XVisualInfo *
-X11_GLES_GetVisual(_THIS, Display *display, int screen)
+XVisualInfo *X11_GLES_GetVisual(_THIS, Display *display, int screen)
 {
 
     XVisualInfo *egl_visualinfo = NULL;
@@ -89,8 +88,7 @@ X11_GLES_GetVisual(_THIS, Display *display, int screen)
     return egl_visualinfo;
 }
 
-SDL_GLContext
-X11_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext X11_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext context;
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;

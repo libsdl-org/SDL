@@ -276,8 +276,7 @@ UINT D3D12_Align(UINT location, UINT alignment)
     return (location + (alignment - 1)) & ~(alignment - 1);
 }
 
-Uint32
-D3D12_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
+Uint32 D3D12_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
 {
     switch (dxgiFormat) {
     case DXGI_FORMAT_B8G8R8A8_UNORM:
@@ -2949,8 +2948,7 @@ static int D3D12_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *
-D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     D3D12_RenderData *data;

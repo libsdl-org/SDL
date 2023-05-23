@@ -42,8 +42,8 @@ int VITA_GLES_LoadLibrary(_THIS, const char *path)
     char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (skip_init == NULL) { // we don't care about actual value 
-    
+    if (skip_init == NULL) { // we don't care about actual value
+
         if (override != NULL) {
             default_path = override;
         }
@@ -69,8 +69,7 @@ int VITA_GLES_LoadLibrary(_THIS, const char *path)
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }
 
-SDL_GLContext
-VITA_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     return SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);
 }

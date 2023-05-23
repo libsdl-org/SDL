@@ -505,8 +505,7 @@ int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int isca
     return 0;
 }
 
-SDL_AudioFormat
-WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
+SDL_AudioFormat WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
 {
     if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
         return AUDIO_F32SYS;

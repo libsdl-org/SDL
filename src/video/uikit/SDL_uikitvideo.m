@@ -60,8 +60,7 @@ static void UIKit_DeleteDevice(SDL_VideoDevice * device)
     }
 }
 
-static SDL_VideoDevice *
-UIKit_CreateDevice(void)
+static SDL_VideoDevice *UIKit_CreateDevice(void)
 {
     @autoreleasepool {
         SDL_VideoDevice *device;
@@ -152,8 +151,7 @@ VideoBootStrap UIKIT_bootstrap = {
 };
 
 
-int
-UIKit_VideoInit(_THIS)
+int UIKit_VideoInit(_THIS)
 {
     _this->gl_config.driver_loaded = 1;
 
@@ -167,8 +165,7 @@ UIKit_VideoInit(_THIS)
     return 0;
 }
 
-void
-UIKit_VideoQuit(_THIS)
+void UIKit_VideoQuit(_THIS)
 {
     SDL_QuitGCKeyboard();
     SDL_QuitGCMouse();
@@ -176,8 +173,7 @@ UIKit_VideoQuit(_THIS)
     UIKit_QuitModes(_this);
 }
 
-void
-UIKit_SuspendScreenSaver(_THIS)
+void UIKit_SuspendScreenSaver(_THIS)
 {
     @autoreleasepool {
         /* Ignore ScreenSaver API calls if the idle timer hint has been set. */
@@ -191,14 +187,12 @@ UIKit_SuspendScreenSaver(_THIS)
     }
 }
 
-SDL_bool
-UIKit_IsSystemVersionAtLeast(double version)
+SDL_bool UIKit_IsSystemVersionAtLeast(double version)
 {
     return [[UIDevice currentDevice].systemVersion doubleValue] >= version;
 }
 
-CGRect
-UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
+CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
     CGRect frame = screen.bounds;
@@ -236,8 +230,7 @@ UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
     return frame;
 }
 
-void
-UIKit_ForceUpdateHomeIndicator()
+void UIKit_ForceUpdateHomeIndicator()
 {
 #if !TARGET_OS_TV
     /* Force the main SDL window to re-evaluate home indicator state */

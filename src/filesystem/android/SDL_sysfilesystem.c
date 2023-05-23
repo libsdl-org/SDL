@@ -32,16 +32,14 @@
 #include "SDL_system.h"
 
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     /* The current working directory is / on Android */
     SDL_Unsupported();
     return NULL;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     const char *path = SDL_AndroidGetInternalStoragePath();
     if (path) {

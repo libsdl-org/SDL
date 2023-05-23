@@ -39,8 +39,7 @@ struct SDL_semaphore {
 };
 
 
-SDL_sem *
-SDL_CreateSemaphore(Uint32 initial_value)
+SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
     ULONG ulRC;
     SDL_sem *pSDLSem = SDL_malloc(sizeof(SDL_sem));
@@ -70,8 +69,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
     return pSDLSem;
 }
 
-void
-SDL_DestroySemaphore(SDL_sem * sem)
+void SDL_DestroySemaphore(SDL_sem * sem)
 {
     if (!sem) return;
 
@@ -80,8 +78,7 @@ SDL_DestroySemaphore(SDL_sem * sem)
     SDL_free(sem);
 }
 
-int
-SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
+int SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 {
     ULONG ulRC;
     ULONG ulStartTime, ulCurTime;
@@ -129,20 +126,17 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
     return 0;
 }
 
-int
-SDL_SemTryWait(SDL_sem * sem)
+int SDL_SemTryWait(SDL_sem * sem)
 {
     return SDL_SemWaitTimeout(sem, 0);
 }
 
-int
-SDL_SemWait(SDL_sem * sem)
+int SDL_SemWait(SDL_sem * sem)
 {
     return SDL_SemWaitTimeout(sem, SDL_MUTEX_MAXWAIT);
 }
 
-Uint32
-SDL_SemValue(SDL_sem * sem)
+Uint32 SDL_SemValue(SDL_sem * sem)
 {
     ULONG ulRC;
 
@@ -161,8 +155,7 @@ SDL_SemValue(SDL_sem * sem)
     return ulRC;
 }
 
-int
-SDL_SemPost(SDL_sem * sem)
+int SDL_SemPost(SDL_sem * sem)
 {
     ULONG ulRC;
 

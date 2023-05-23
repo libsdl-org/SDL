@@ -74,16 +74,14 @@ static const DirectFBAccelerationMaskNames(acceleration_mask);
 
 /* DirectFB driver bootstrap functions */
 
-static void
-DirectFB_DeleteDevice(SDL_VideoDevice * device)
+static void DirectFB_DeleteDevice(SDL_VideoDevice * device)
 {
     SDL_DirectFB_UnLoadLibrary();
     SDL_DFB_FREE(device->driverdata);
     SDL_DFB_FREE(device);
 }
 
-static SDL_VideoDevice *
-DirectFB_CreateDevice(void)
+static SDL_VideoDevice *DirectFB_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
@@ -154,8 +152,7 @@ DirectFB_CreateDevice(void)
     return (0);
 }
 
-static void
-DirectFB_DeviceInformation(IDirectFB * dfb)
+static void DirectFB_DeviceInformation(IDirectFB * dfb)
 {
     DFBGraphicsDeviceDescription desc;
     int n;
@@ -206,8 +203,7 @@ static int readBoolEnv(const char *env_name, int def_val)
         return def_val;
 }
 
-static int
-DirectFB_VideoInit(_THIS)
+static int DirectFB_VideoInit(_THIS)
 {
     IDirectFB *dfb = NULL;
     DFB_DeviceData *devdata = NULL;
@@ -282,8 +278,7 @@ DirectFB_VideoInit(_THIS)
     return -1;
 }
 
-static void
-DirectFB_VideoQuit(_THIS)
+static void DirectFB_VideoQuit(_THIS)
 {
     DFB_DeviceData *devdata = (DFB_DeviceData *) _this->driverdata;
 
@@ -379,8 +374,7 @@ static const struct {
     { DSPF_UNKNOWN, SDL_PIXELFORMAT_YVYU },                        /**< Packed mode: Y0+V0+Y1+U0 (1 pla */
 };
 
-Uint32
-DirectFB_DFBToSDLPixelFormat(DFBSurfacePixelFormat pixelformat)
+Uint32 DirectFB_DFBToSDLPixelFormat(DFBSurfacePixelFormat pixelformat)
 {
     int i;
 
@@ -392,8 +386,7 @@ DirectFB_DFBToSDLPixelFormat(DFBSurfacePixelFormat pixelformat)
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-DFBSurfacePixelFormat
-DirectFB_SDLToDFBPixelFormat(Uint32 format)
+DFBSurfacePixelFormat DirectFB_SDLToDFBPixelFormat(Uint32 format)
 {
     int i;
 

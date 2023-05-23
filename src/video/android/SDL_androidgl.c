@@ -45,8 +45,7 @@ int Android_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     }
 }
 
-SDL_GLContext
-Android_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext Android_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext ret;
 

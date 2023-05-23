@@ -39,8 +39,7 @@
 @implementation SDL_CocoaClosure
 @end
 
-SDL_WindowShaper*
-Cocoa_CreateShaper(SDL_Window* window)
+SDL_WindowShaper *Cocoa_CreateShaper(SDL_Window* window)
 { @autoreleasepool
 {
     SDL_WindowShaper* result;
@@ -77,8 +76,7 @@ Cocoa_CreateShaper(SDL_Window* window)
     return result;
 }}
 
-void
-ConvertRects(SDL_ShapeTree* tree, void* closure)
+static void ConvertRects(SDL_ShapeTree* tree, void* closure)
 {
     SDL_CocoaClosure* data = (__bridge SDL_CocoaClosure*)closure;
     if(tree->kind == OpaqueShape) {
@@ -87,8 +85,7 @@ ConvertRects(SDL_ShapeTree* tree, void* closure)
     }
 }
 
-int
-Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode)
+int Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode)
 { @autoreleasepool
 {
     SDL_ShapeData* data = (__bridge SDL_ShapeData*)shaper->driverdata;
@@ -118,8 +115,7 @@ Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowSha
     return 0;
 }}
 
-int
-Cocoa_ResizeWindowShape(SDL_Window *window)
+int Cocoa_ResizeWindowShape(SDL_Window *window)
 { @autoreleasepool {
     SDL_ShapeData* data = (__bridge SDL_ShapeData*)window->shaper->driverdata;
     SDL_assert(data != NULL);

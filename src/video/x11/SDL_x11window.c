@@ -45,13 +45,11 @@
 #define _NET_WM_STATE_REMOVE 0l
 #define _NET_WM_STATE_ADD    1l
 
-static Bool
-isMapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
+static Bool isMapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
 {
     return ev->type == MapNotify && ev->xmap.window == *((Window *)win);
 }
-static Bool
-isUnmapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
+static Bool isUnmapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
 {
     return ev->type == UnmapNotify && ev->xunmap.window == *((Window *)win);
 }
@@ -168,8 +166,7 @@ void X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
     }
 }
 
-Uint32
-X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow)
+Uint32 X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     Display *display = videodata->display;
@@ -697,8 +694,7 @@ int X11_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
     return 0;
 }
 
-char *
-X11_GetWindowTitle(_THIS, Window xwindow)
+char *X11_GetWindowTitle(_THIS, Window xwindow)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     Display *display = data->display;
@@ -1480,8 +1476,7 @@ void X11_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *_displ
     X11_SetWindowFullscreenViaWM(_this, window, _display, fullscreen);
 }
 
-int
-X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
+int X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
@@ -1579,8 +1574,7 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     p->type = type;
 }
 
-void *
-X11_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
+void *X11_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display = data->videodata->display;
@@ -1763,8 +1757,7 @@ void X11_DestroyWindow(_THIS, SDL_Window *window)
     window->driverdata = NULL;
 }
 
-SDL_bool
-X11_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+SDL_bool X11_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display;

@@ -87,8 +87,7 @@ int X11_GetVisualInfoFromVisual(Display *display, Visual *visual, XVisualInfo *v
     return -1;
 }
 
-Uint32
-X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *vinfo)
+Uint32 X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *vinfo)
 {
     if (vinfo->class == DirectColor || vinfo->class == TrueColor) {
         int bpp;

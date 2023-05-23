@@ -62,8 +62,7 @@ SDL_OpenGLAsyncDispatchChanged(void *userdata, const char *name, const char *old
     SDL_opengl_async_dispatch = SDL_GetStringBoolean(hint, SDL_FALSE);
 }
 
-static CVReturn
-DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext)
+static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext)
 {
     SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *) displayLinkContext;
 
@@ -224,8 +223,7 @@ DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const 
 @end
 
 
-int
-Cocoa_GL_LoadLibrary(_THIS, const char *path)
+int Cocoa_GL_LoadLibrary(_THIS, const char *path)
 {
     /* Load the OpenGL library */
     if (path == NULL) {
@@ -243,21 +241,18 @@ Cocoa_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void *
-Cocoa_GL_GetProcAddress(_THIS, const char *proc)
+void *Cocoa_GL_GetProcAddress(_THIS, const char *proc)
 {
     return SDL_LoadFunction(_this->gl_config.dll_handle, proc);
 }
 
-void
-Cocoa_GL_UnloadLibrary(_THIS)
+void Cocoa_GL_UnloadLibrary(_THIS)
 {
     SDL_UnloadObject(_this->gl_config.dll_handle);
     _this->gl_config.dll_handle = NULL;
 }
 
-SDL_GLContext
-Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
+SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 { @autoreleasepool
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
@@ -287,7 +282,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
         _this->GL_GetSwapInterval = Cocoa_GLES_GetSwapInterval;
         _this->GL_SwapWindow = Cocoa_GLES_SwapWindow;
         _this->GL_DeleteContext = Cocoa_GLES_DeleteContext;
-        
+
         if (Cocoa_GLES_LoadLibrary(_this, NULL) != 0) {
             return NULL;
         }
@@ -433,8 +428,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
     return sdlcontext;
 }}
 
-int
-Cocoa_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
+int Cocoa_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 { @autoreleasepool
 {
     if (context) {
@@ -451,8 +445,7 @@ Cocoa_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
     return 0;
 }}
 
-int
-Cocoa_GL_SetSwapInterval(_THIS, int interval)
+int Cocoa_GL_SetSwapInterval(_THIS, int interval)
 { @autoreleasepool
 {
     SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *) SDL_GL_GetCurrentContext();
@@ -471,16 +464,14 @@ Cocoa_GL_SetSwapInterval(_THIS, int interval)
     return status;
 }}
 
-int
-Cocoa_GL_GetSwapInterval(_THIS)
+int Cocoa_GL_GetSwapInterval(_THIS)
 { @autoreleasepool
 {
     SDLOpenGLContext* nscontext = (__bridge SDLOpenGLContext*)SDL_GL_GetCurrentContext();
     return nscontext ? SDL_AtomicGet(&nscontext->swapIntervalSetting) : 0;
 }}
 
-int
-Cocoa_GL_SwapWindow(_THIS, SDL_Window * window)
+int Cocoa_GL_SwapWindow(_THIS, SDL_Window * window)
 { @autoreleasepool
 {
     SDLOpenGLContext* nscontext = (__bridge SDLOpenGLContext*)SDL_GL_GetCurrentContext();
@@ -516,8 +507,7 @@ Cocoa_GL_SwapWindow(_THIS, SDL_Window * window)
     return 0;
 }}
 
-void
-Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context)
+void Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context)
 { @autoreleasepool
 {
     SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)context;

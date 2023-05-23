@@ -61,8 +61,7 @@ extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 /* *INDENT-ON* */ /* clang-format on */
 
 /* This function is where all the magic happens... */
-SDL_bool
-SDL_AtomicTryLock(SDL_SpinLock *lock)
+SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
 {
 #if SDL_ATOMIC_DISABLED
     /* Terrible terrible damage */

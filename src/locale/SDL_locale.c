@@ -87,8 +87,7 @@ static SDL_Locale *build_locales_from_csv_string(char *csv)
     return retval;
 }
 
-SDL_Locale *
-SDL_GetPreferredLocales(void)
+SDL_Locale *SDL_GetPreferredLocales(void)
 {
     char locbuf[128]; /* enough for 21 "xx_YY," language strings. */
     const char *hint = SDL_GetHint(SDL_HINT_PREFERRED_LOCALES);

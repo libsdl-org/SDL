@@ -30,8 +30,7 @@ static EGLDisplay   egl_disp;
  * @param   egl_conf    EGL configuration to use
  * @return  A SCREEN_FORMAT* constant for the pixel format to use
  */
-static int
-chooseFormat(EGLConfig egl_conf)
+static int chooseFormat(EGLConfig egl_conf)
 {
     EGLint buffer_bit_depth;
     EGLint alpha_bit_depth;
@@ -64,8 +63,7 @@ chooseFormat(EGLConfig egl_conf)
  * @param[out]  pformat The chosen pixel format
  * @return 0 if successful, -1 on error
  */
-int
-glGetConfig(EGLConfig *pconf, int *pformat)
+int glGetConfig(EGLConfig *pconf, int *pformat)
 {
     EGLConfig egl_conf = (EGLConfig)0;
     EGLConfig *egl_configs;
@@ -132,8 +130,7 @@ glGetConfig(EGLConfig *pconf, int *pformat)
  * @param   name    unused
  * @return  0 if successful, -1 on error
  */
-int
-glLoadLibrary(_THIS, const char *name)
+int glLoadLibrary(_THIS, const char *name)
 {
     EGLNativeDisplayType    disp_id = EGL_DEFAULT_DISPLAY;
 
@@ -154,8 +151,7 @@ glLoadLibrary(_THIS, const char *name)
  * @param   proc    Function name
  * @return  Function address
  */
-void *
-glGetProcAddress(_THIS, const char *proc)
+void *glGetProcAddress(_THIS, const char *proc)
 {
     return eglGetProcAddress(proc);
 }
@@ -167,8 +163,7 @@ glGetProcAddress(_THIS, const char *proc)
  * @param   window  The SDL window to create the context for
  * @return  A pointer to the created context, if successful, NULL on error
  */
-SDL_GLContext
-glCreateContext(_THIS, SDL_Window *window)
+SDL_GLContext glCreateContext(_THIS, SDL_Window *window)
 {
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
     EGLContext      context;
@@ -214,8 +209,7 @@ glCreateContext(_THIS, SDL_Window *window)
  * @param   interval    New interval value
  * @return  0 if successful, -1 on error
  */
-int
-glSetSwapInterval(_THIS, int interval)
+int glSetSwapInterval(_THIS, int interval)
 {
     if (eglSwapInterval(egl_disp, interval) != EGL_TRUE) {
         return -1;
@@ -230,8 +224,7 @@ glSetSwapInterval(_THIS, int interval)
  * @param   window  Window to swap buffers for
  * @return  0 if successful, -1 on error
  */
-int
-glSwapWindow(_THIS, SDL_Window *window)
+int glSwapWindow(_THIS, SDL_Window *window)
 {
     /* !!! FIXME: should we migrate this all over to use SDL_egl.c? */
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
@@ -245,8 +238,7 @@ glSwapWindow(_THIS, SDL_Window *window)
  * @param   context The context to activate
  * @return  0 if successful, -1 on error
  */
-int
-glMakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int glMakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     window_impl_t   *impl;
     EGLSurface      surface = NULL;
@@ -268,8 +260,7 @@ glMakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
  * @param   _THIS
  * @param   context The context to destroy
  */
-void
-glDeleteContext(_THIS, SDL_GLContext context)
+void glDeleteContext(_THIS, SDL_GLContext context)
 {
     eglDestroyContext(egl_disp, context);
 }
@@ -278,8 +269,7 @@ glDeleteContext(_THIS, SDL_GLContext context)
  * Terminates access to the EGL library.
  * @param   _THIS
  */
-void
-glUnloadLibrary(_THIS)
+void glUnloadLibrary(_THIS)
 {
     eglTerminate(egl_disp);
 }

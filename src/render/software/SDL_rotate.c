@@ -488,8 +488,7 @@ When using the NONE and MOD modes, color and alpha modulation must be applied be
 
 */
 
-SDL_Surface *
-SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int flipy,
+SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int flipy,
                      const SDL_Rect *rect_dest, double cangle, double sangle, const SDL_FPoint *center)
 {
     SDL_Surface *rz_dst;

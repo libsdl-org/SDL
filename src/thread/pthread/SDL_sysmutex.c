@@ -39,8 +39,7 @@ struct SDL_mutex
 #endif
 };
 
-SDL_mutex *
-SDL_CreateMutex(void)
+SDL_mutex *SDL_CreateMutex(void)
 {
     SDL_mutex *mutex;
     pthread_mutexattr_t attr;

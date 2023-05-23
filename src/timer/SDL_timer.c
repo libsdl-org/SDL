@@ -274,8 +274,7 @@ void SDL_TimerQuit(void)
     }
 }
 
-SDL_TimerID
-SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
+SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_Timer *timer;
@@ -337,8 +336,7 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     return entry->timerID;
 }
 
-SDL_bool
-SDL_RemoveTimer(SDL_TimerID id)
+SDL_bool SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
@@ -420,8 +418,7 @@ void SDL_TimerQuit(void)
     }
 }
 
-SDL_TimerID
-SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
+SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *entry;
@@ -446,8 +443,7 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     return entry->timerID;
 }
 
-SDL_bool
-SDL_RemoveTimer(SDL_TimerID id)
+SDL_bool SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
@@ -480,8 +476,7 @@ SDL_RemoveTimer(SDL_TimerID id)
    which wraps back to zero every ~49 days. The newer SDL_GetTicks64()
    doesn't have this problem, so we just wrap that function and clamp to
    the low 32-bits for binary compatibility. */
-Uint32
-SDL_GetTicks(void)
+Uint32 SDL_GetTicks(void)
 {
     return (Uint32)(SDL_GetTicks64() & 0xFFFFFFFF);
 }

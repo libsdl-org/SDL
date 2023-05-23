@@ -330,8 +330,7 @@ static void KMSDRM_FBDestroyCallback(struct gbm_bo *bo, void *data)
     SDL_free(fb_info);
 }
 
-KMSDRM_FBInfo *
-KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
+KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     unsigned w, h;
@@ -382,8 +381,7 @@ static void KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, uns
     *((SDL_bool *)data) = SDL_FALSE;
 }
 
-SDL_bool
-KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata)
+SDL_bool KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata)
 {
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
@@ -1530,8 +1528,7 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
     return ret;
 }
 
-int
-KMSDRM_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
+int KMSDRM_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 {
     SDL_WindowData *windata = (SDL_WindowData*)window->driverdata;
     SDL_VideoData *viddata = (SDL_VideoData*)windata->viddata;
@@ -1544,8 +1541,7 @@ KMSDRM_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
     return 0;
 }
 
-int
-KMSDRM_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
+int KMSDRM_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
 {
     SDL_WindowData *windata = (SDL_WindowData*)window->driverdata;
     SDL_VideoData *viddata = (SDL_VideoData*)windata->viddata;
@@ -1566,8 +1562,7 @@ KMSDRM_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     return 0;
 }
 
-int
-KMSDRM_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
+int KMSDRM_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 {
     return -1;
 }
@@ -1618,8 +1613,7 @@ void KMSDRM_RestoreWindow(_THIS, SDL_Window *window)
 /*****************************************************************************/
 /* SDL Window Manager function                                               */
 /*****************************************************************************/
-SDL_bool
-KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
+SDL_bool KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 {
      SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
      const Uint32 version = SDL_VERSIONNUM((Uint32)info->version.major,

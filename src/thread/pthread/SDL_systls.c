@@ -30,8 +30,7 @@
 static pthread_key_t thread_local_storage = INVALID_PTHREAD_KEY;
 static SDL_bool generic_local_storage = SDL_FALSE;
 
-SDL_TLSData *
-SDL_SYS_GetTLSData(void)
+SDL_TLSData *SDL_SYS_GetTLSData(void)
 {
     if (thread_local_storage == INVALID_PTHREAD_KEY && !generic_local_storage) {
         static SDL_SpinLock lock;

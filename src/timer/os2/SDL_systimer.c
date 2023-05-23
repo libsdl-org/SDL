@@ -43,8 +43,7 @@ static SDL_bool ticks_started = SDL_FALSE;
 static ULONG    ulTmrFreq = 0;
 static ULLONG   ullTmrStart = 0;
 
-void
-SDL_TicksInit(void)
+void SDL_TicksInit(void)
 {
     ULONG ulTmrStart;  /* for 32-bit fallback. */
     ULONG ulRC;
@@ -70,14 +69,12 @@ SDL_TicksInit(void)
     ullTmrStart = (ULLONG) ulTmrStart;
 }
 
-void
-SDL_TicksQuit(void)
+void SDL_TicksQuit(void)
 {
     ticks_started = SDL_FALSE;
 }
 
-Uint64
-SDL_GetTicks64(void)
+Uint64 SDL_GetTicks64(void)
 {
     Uint64 ui64Result;
     ULLONG ullTmrNow;
@@ -99,8 +96,7 @@ SDL_GetTicks64(void)
     return ui64Result;
 }
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     QWORD   qwTmrNow;
 
@@ -110,14 +106,12 @@ SDL_GetPerformanceCounter(void)
     return *((Uint64 *)&qwTmrNow);
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     return (ulTmrFreq == 0)? 1000 : (Uint64)ulTmrFreq;
 }
 
-void
-SDL_Delay(Uint32 ms)
+void SDL_Delay(Uint32 ms)
 {
     HTIMER  hTimer = NULLHANDLE;
     ULONG   ulRC;

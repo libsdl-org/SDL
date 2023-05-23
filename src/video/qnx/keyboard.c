@@ -95,8 +95,7 @@ static int key_to_sdl[] = {
  * Translates the event such that it can be handled by SDL.
  * @param   event   Screen keyboard event
  */
-void
-handleKeyboardEvent(screen_event_t event)
+void handleKeyboardEvent(screen_event_t event)
 {
     int             val;
     SDL_Scancode    scancode;

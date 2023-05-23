@@ -319,8 +319,7 @@ int MacHaptic_MaybeRemoveDevice(io_object_t device)
 /*
  * Return the name of a haptic device, does not need to be opened.
  */
-const char *
-SDL_SYS_HapticName(int index)
+const char *SDL_SYS_HapticName(int index)
 {
     SDL_hapticlist_item *item;
     item = HapticByDevIndex(index);

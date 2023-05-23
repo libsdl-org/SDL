@@ -89,8 +89,7 @@ static SDL_hapticlist_item *HapticByDevId(int device_id)
     return NULL;
 }
 
-const char *
-SDL_SYS_HapticName(int index)
+const char *SDL_SYS_HapticName(int index)
 {
     SDL_hapticlist_item *item = HapticByOrder(index);
     if (item == NULL) {

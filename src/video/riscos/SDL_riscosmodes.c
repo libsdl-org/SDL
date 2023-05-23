@@ -85,8 +85,7 @@ static SDL_PixelFormatEnum RISCOS_ModeToPixelFormat(int ncolour, int modeflags, 
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-static size_t
-measure_mode_block(const int *block)
+static size_t measure_mode_block(const int *block)
 {
     size_t blockSize = ((block[0] & 0xFF) == 3) ? 7 : 5;
     while (block[blockSize] != -1) {

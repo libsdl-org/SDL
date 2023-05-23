@@ -28,8 +28,7 @@
 #include "SDL_shape.h"
 #include "SDL_shape_internals.h"
 
-SDL_Window *
-SDL_CreateShapedWindow(const char *title, unsigned int x, unsigned int y, unsigned int w, unsigned int h, Uint32 flags)
+SDL_Window *SDL_CreateShapedWindow(const char *title, unsigned int x, unsigned int y, unsigned int w, unsigned int h, Uint32 flags)
 {
     SDL_Window *result = NULL;
     result = SDL_CreateWindow(title, -1000, -1000, w, h, (flags | SDL_WINDOW_BORDERLESS) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE) /* & (~SDL_WINDOW_SHOWN) */);
@@ -54,8 +53,7 @@ SDL_CreateShapedWindow(const char *title, unsigned int x, unsigned int y, unsign
     return NULL;
 }
 
-SDL_bool
-SDL_IsShapedWindow(const SDL_Window *window)
+SDL_bool SDL_IsShapedWindow(const SDL_Window *window)
 {
     if (window == NULL) {
         return SDL_FALSE;
@@ -217,8 +215,7 @@ static SDL_ShapeTree *RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode, SD
     return result;
 }
 
-SDL_ShapeTree *
-SDL_CalculateShapeTree(SDL_WindowShapeMode mode, SDL_Surface *shape)
+SDL_ShapeTree *SDL_CalculateShapeTree(SDL_WindowShapeMode mode, SDL_Surface *shape)
 {
     SDL_Rect dimensions;
     SDL_ShapeTree *result = NULL;

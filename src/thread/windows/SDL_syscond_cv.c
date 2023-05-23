@@ -218,8 +218,7 @@ static const SDL_cond_impl_t SDL_cond_impl_generic = {
     &SDL_CondWaitTimeout_generic,
 };
 
-SDL_cond *
-SDL_CreateCond(void)
+SDL_cond *SDL_CreateCond(void)
 {
     if (SDL_cond_impl_active.Create == NULL) {
         /* Default to generic implementation, works with all mutex implementations */

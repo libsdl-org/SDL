@@ -497,8 +497,7 @@ int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     return 0;
 }
 
-Uint32
-SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
+Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     return SDL_JOYCAP_RUMBLE;
 }
@@ -583,8 +582,7 @@ int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     return SDL_Unsupported();
 }
 
-Uint32
-SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
+Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     return 0;
 }

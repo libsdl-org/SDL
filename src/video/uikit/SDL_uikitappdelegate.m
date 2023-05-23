@@ -87,8 +87,7 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
 
 #if !TARGET_OS_TV
 /* Load a launch image using the old UILaunchImageFile-era naming rules. */
-static UIImage *
-SDL_LoadLaunchImageNamed(NSString *name, int screenh)
+static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 {
     UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
     UIUserInterfaceIdiom idiom = [UIDevice currentDevice].userInterfaceIdiom;

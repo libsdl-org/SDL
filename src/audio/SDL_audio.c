@@ -603,8 +603,7 @@ int SDL_QueueAudio(SDL_AudioDeviceID devid, const void *data, Uint32 len)
     return rc;
 }
 
-Uint32
-SDL_DequeueAudio(SDL_AudioDeviceID devid, void *data, Uint32 len)
+Uint32 SDL_DequeueAudio(SDL_AudioDeviceID devid, void *data, Uint32 len)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
     Uint32 rc;
@@ -622,8 +621,7 @@ SDL_DequeueAudio(SDL_AudioDeviceID devid, void *data, Uint32 len)
     return rc;
 }
 
-Uint32
-SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
+Uint32 SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
 {
     Uint32 retval = 0;
     SDL_AudioDevice *device = get_audio_device(devid);
@@ -904,8 +902,7 @@ int SDL_GetNumAudioDrivers(void)
     return SDL_arraysize(bootstrap) - 1;
 }
 
-const char *
-SDL_GetAudioDriver(int index)
+const char *SDL_GetAudioDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumAudioDrivers()) {
         return bootstrap[index]->name;
@@ -1012,8 +1009,7 @@ int SDL_AudioInit(const char *driver_name)
 /*
  * Get the current audio driver name
  */
-const char *
-SDL_GetCurrentAudioDriver()
+const char *SDL_GetCurrentAudioDriver()
 {
     return current_audio.name;
 }
@@ -1073,8 +1069,7 @@ int SDL_GetNumAudioDevices(int iscapture)
     return retval;
 }
 
-const char *
-SDL_GetAudioDeviceName(int index, int iscapture)
+const char *SDL_GetAudioDeviceName(int index, int iscapture)
 {
     SDL_AudioDeviceItem *item;
     int i;
@@ -1191,8 +1186,7 @@ static void close_audio_device(SDL_AudioDevice *device)
     SDL_free(device);
 }
 
-static Uint16
-GetDefaultSamplesFromFreq(int freq)
+static Uint16 GetDefaultSamplesFromFreq(int freq)
 {
     /* Pick a default of ~46 ms at desired frequency */
     /* !!! FIXME: remove this when the non-Po2 resampling is in. */
@@ -1560,8 +1554,7 @@ int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained)
     return (id == 0) ? -1 : 0;
 }
 
-SDL_AudioDeviceID
-SDL_OpenAudioDevice(const char *device, int iscapture,
+SDL_AudioDeviceID SDL_OpenAudioDevice(const char *device, int iscapture,
                     const SDL_AudioSpec *desired, SDL_AudioSpec *obtained,
                     int allowed_changes)
 {
@@ -1569,8 +1562,7 @@ SDL_OpenAudioDevice(const char *device, int iscapture,
                              allowed_changes, 2);
 }
 
-SDL_AudioStatus
-SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
+SDL_AudioStatus SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
     SDL_AudioStatus status = SDL_AUDIO_STOPPED;
@@ -1584,8 +1576,7 @@ SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
     return status;
 }
 
-SDL_AudioStatus
-SDL_GetAudioStatus(void)
+SDL_AudioStatus SDL_GetAudioStatus(void)
 {
     return SDL_GetAudioDeviceStatus(1);
 }
@@ -1697,8 +1688,7 @@ static SDL_AudioFormat format_list[NUM_FORMATS][NUM_FORMATS] = {
       AUDIO_S16LSB, AUDIO_U16MSB, AUDIO_U16LSB, AUDIO_U8, AUDIO_S8 },
 };
 
-SDL_AudioFormat
-SDL_FirstAudioFormat(SDL_AudioFormat format)
+SDL_AudioFormat SDL_FirstAudioFormat(SDL_AudioFormat format)
 {
     for (format_idx = 0; format_idx < NUM_FORMATS; ++format_idx) {
         if (format_list[format_idx][0] == format) {
@@ -1709,8 +1699,7 @@ SDL_FirstAudioFormat(SDL_AudioFormat format)
     return SDL_NextAudioFormat();
 }
 
-SDL_AudioFormat
-SDL_NextAudioFormat(void)
+SDL_AudioFormat SDL_NextAudioFormat(void)
 {
     if ((format_idx == NUM_FORMATS) || (format_idx_sub == NUM_FORMATS)) {
         return 0;

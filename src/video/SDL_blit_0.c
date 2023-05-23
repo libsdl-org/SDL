@@ -507,8 +507,7 @@ static void Blit4bto4Key(SDL_BlitInfo *info)
     }
 }
 
-SDL_BlitFunc
-SDL_CalculateBlit0(SDL_Surface *surface)
+SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
 {
     int which;
 

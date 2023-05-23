@@ -612,8 +612,7 @@ static void Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
     wl_surface_set_user_data(cdata->surface, NULL);
 }
 
-void
-Wayland_RecreateCursors(void)
+void Wayland_RecreateCursors(void)
 {
     SDL_Cursor *cursor;
     SDL_Mouse *mouse = SDL_GetMouse();

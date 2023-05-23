@@ -22,8 +22,7 @@
 #include "../../SDL_internal.h"
 #include "../SDL_thread_c.h"
 
-SDL_TLSData *
-SDL_SYS_GetTLSData(void)
+SDL_TLSData *SDL_SYS_GetTLSData(void)
 {
     return SDL_Generic_GetTLSData();
 }

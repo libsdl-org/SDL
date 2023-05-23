@@ -106,8 +106,7 @@ void SDL_TicksQuit(void)
     ticks_started = SDL_FALSE;
 }
 
-Uint64
-SDL_GetTicks64(void)
+Uint64 SDL_GetTicks64(void)
 {
     LARGE_INTEGER now;
     BOOL rc;
@@ -121,8 +120,7 @@ SDL_GetTicks64(void)
     return (Uint64)(((now.QuadPart - start_ticks.QuadPart) * 1000) / ticks_per_second.QuadPart);
 }
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     LARGE_INTEGER counter;
     const BOOL rc = QueryPerformanceCounter(&counter);
@@ -130,8 +128,7 @@ SDL_GetPerformanceCounter(void)
     return (Uint64)counter.QuadPart;
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     LARGE_INTEGER frequency;
     const BOOL rc = QueryPerformanceFrequency(&frequency);

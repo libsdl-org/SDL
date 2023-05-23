@@ -100,8 +100,7 @@ int WIN_SetClipboardText(_THIS, const char *text)
     return result;
 }
 
-char *
-WIN_GetClipboardText(_THIS)
+char *WIN_GetClipboardText(_THIS)
 {
     char *text;
 
@@ -127,8 +126,7 @@ WIN_GetClipboardText(_THIS)
     return text;
 }
 
-SDL_bool
-WIN_HasClipboardText(_THIS)
+SDL_bool WIN_HasClipboardText(_THIS)
 {
     SDL_bool result = SDL_FALSE;
     char *text = WIN_GetClipboardText(_this);

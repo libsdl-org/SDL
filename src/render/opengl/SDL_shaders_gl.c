@@ -490,8 +490,7 @@ static void DestroyShaderProgram(GL_ShaderContext *ctx, GL_ShaderData *data)
     ctx->glDeleteObjectARB(data->program);
 }
 
-GL_ShaderContext *
-GL_CreateShaderContext(void)
+GL_ShaderContext *GL_CreateShaderContext(void)
 {
     GL_ShaderContext *ctx;
     SDL_bool shaders_supported;

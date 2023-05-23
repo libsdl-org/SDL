@@ -193,8 +193,7 @@ static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
 // OK with clang 12.0.0 / Xcode
 __attribute__((noinline))
 #endif
-static void
-get_scaler_datas(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_pad, int *right_pad)
+static void get_scaler_datas(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_pad, int *right_pad)
 {
 
     int step = FIXED_POINT(src_nb) / (dst_nb); /* source step in fixed point */
@@ -575,8 +574,7 @@ static SDL_INLINE void INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1
     *dst = vget_lane_u32(CAST_uint32x2_t e0, 0);
 }
 
-static int
-scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static int scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     BILINEAR___START
 

@@ -23,21 +23,20 @@
 #include "SDL_error.h"
 
 /* Checks if the mode is a kind of reading */
-SDL_FORCE_INLINE SDL_bool IsReadMode(const char *mode);
+static SDL_bool IsReadMode(const char *mode);
 
 /* Checks if the file starts with the given prefix */
-SDL_FORCE_INLINE SDL_bool HasPrefix(const char *file, const char *prefix);
+static SDL_bool HasPrefix(const char *file, const char *prefix);
 
-SDL_FORCE_INLINE FILE *TryOpenFile(const char *file, const char *mode);
-SDL_FORCE_INLINE FILE *TryOpenInRomfs(const char *file, const char *mode);
+static FILE *TryOpenFile(const char *file, const char *mode);
+static FILE *TryOpenInRomfs(const char *file, const char *mode);
 
 /* Nintendo 3DS applications may embed resources in the executable. The
   resources are stored in a special read-only partition prefixed with
   'romfs:/'. As such, when opening a file, we should first try the romfs
   unless sdmc is specifically mentionned.
 */
-FILE *
-N3DS_FileOpen(const char *file, const char *mode)
+FILE *N3DS_FileOpen(const char *file, const char *mode)
 {
     /* romfs are read-only */
     if (!IsReadMode(mode)) {
@@ -52,20 +51,17 @@ N3DS_FileOpen(const char *file, const char *mode)
     return TryOpenFile(file, mode);
 }
 
-SDL_FORCE_INLINE SDL_bool
-IsReadMode(const char *mode)
+static SDL_bool IsReadMode(const char *mode)
 {
     return SDL_strchr(mode, 'r') != NULL;
 }
 
-SDL_FORCE_INLINE SDL_bool
-HasPrefix(const char *file, const char *prefix)
+static SDL_bool HasPrefix(const char *file, const char *prefix)
 {
     return SDL_strncmp(prefix, file, SDL_strlen(prefix)) == 0;
 }
 
-SDL_FORCE_INLINE FILE *
-TryOpenFile(const char *file, const char *mode)
+static FILE *TryOpenFile(const char *file, const char *mode)
 {
     FILE *fp = NULL;
 
@@ -77,8 +73,7 @@ TryOpenFile(const char *file, const char *mode)
     return fp;
 }
 
-SDL_FORCE_INLINE FILE *
-TryOpenInRomfs(const char *file, const char *mode)
+static FILE *TryOpenInRomfs(const char *file, const char *mode)
 {
     FILE *fp = NULL;
     char *prefixed_filepath = NULL;

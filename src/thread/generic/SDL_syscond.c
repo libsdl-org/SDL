@@ -53,8 +53,7 @@ typedef struct SDL_cond_generic
 } SDL_cond_generic;
 
 /* Create a condition variable */
-SDL_cond *
-SDL_CreateCond_generic(void)
+SDL_cond *SDL_CreateCond_generic(void)
 {
     SDL_cond_generic *cond;
 

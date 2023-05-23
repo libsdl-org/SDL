@@ -25,8 +25,7 @@
 
 /* There's no float version of this at the moment, because it's not a public API
    and internally we only need the int version. */
-SDL_bool
-SDL_GetSpanEnclosingRect(int width, int height,
+SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
                          int numrects, const SDL_Rect *rects, SDL_Rect *span)
 {
     int i;

@@ -1291,8 +1291,7 @@ static int PSP_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *
-PSP_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
 
     SDL_Renderer *renderer;

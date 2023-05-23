@@ -997,8 +997,7 @@ void WIN_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *displa
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-int
-WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
+int WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
@@ -1016,8 +1015,7 @@ WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     return succeeded ? 0 : -1;
 }
 
-void
-WIN_UpdateWindowICCProfile(SDL_Window * window, SDL_bool send_event)
+void WIN_UpdateWindowICCProfile(SDL_Window * window, SDL_bool send_event)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
@@ -1046,8 +1044,7 @@ WIN_UpdateWindowICCProfile(SDL_Window * window, SDL_bool send_event)
     }
 }
 
-void *
-WIN_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
+void *WIN_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     char *filename_utf8;
@@ -1066,8 +1063,7 @@ WIN_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
     return iccProfileData;
 }
 
-int
-WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
+int WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
@@ -1166,8 +1162,7 @@ void WIN_DestroyWindow(_THIS, SDL_Window *window)
     CleanupWindowData(_this, window);
 }
 
-SDL_bool
-WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+SDL_bool WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     const SDL_WindowData *data = (const SDL_WindowData *) window->driverdata;
     if (info->version.major <= SDL_MAJOR_VERSION) {

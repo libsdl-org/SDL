@@ -346,8 +346,7 @@ protected:
 extern "C" {
 #endif
 
-int
-HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
 	// Initialize button by closed or error value first.
 	*buttonid = G_CLOSE_BUTTON_ID;

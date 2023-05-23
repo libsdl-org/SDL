@@ -28,15 +28,13 @@
 #include "SDL_hints.h"
 #include "../SDL_error_c.h"
 
-SDL_TLSID
-SDL_TLSCreate()
+SDL_TLSID SDL_TLSCreate()
 {
     static SDL_atomic_t SDL_tls_id;
     return SDL_AtomicIncRef(&SDL_tls_id) + 1;
 }
 
-void *
-SDL_TLSGet(SDL_TLSID id)
+void *SDL_TLSGet(SDL_TLSID id)
 {
     SDL_TLSData *storage;
 
@@ -115,8 +113,7 @@ typedef struct SDL_TLSEntry
 static SDL_mutex *SDL_generic_TLS_mutex;
 static SDL_TLSEntry *SDL_generic_TLS;
 
-SDL_TLSData *
-SDL_Generic_GetTLSData(void)
+SDL_TLSData *SDL_Generic_GetTLSData(void)
 {
     SDL_threadID thread = SDL_ThreadID();
     SDL_TLSEntry *entry;
@@ -218,8 +215,7 @@ static void SDLCALL SDL_FreeErrBuf(void *data)
 #endif
 
 /* Routine to get the thread-specific error variable */
-SDL_error *
-SDL_GetErrBuf(void)
+SDL_error *SDL_GetErrBuf(void)
 {
 #if SDL_THREADS_DISABLED
     return SDL_GetStaticErrBuf();
@@ -320,14 +316,12 @@ void SDL_RunThread(SDL_Thread *thread)
 #endif
 
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-SDL_Thread *
-SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
+SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
                               const char *name, const size_t stacksize, void *data,
                               pfnSDL_CurrentBeginThread pfnBeginThread,
                               pfnSDL_CurrentEndThread pfnEndThread)
 #else
-SDL_Thread *
-SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
+SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
                               const char *name, const size_t stacksize, void *data)
 #endif
 {
@@ -375,14 +369,12 @@ SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
 }
 
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-DECLSPEC SDL_Thread *SDLCALL
-SDL_CreateThread(int(SDLCALL *fn)(void *),
+DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
                  const char *name, void *data,
                  pfnSDL_CurrentBeginThread pfnBeginThread,
                  pfnSDL_CurrentEndThread pfnEndThread)
 #else
-DECLSPEC SDL_Thread *SDLCALL
-SDL_CreateThread(int(SDLCALL *fn)(void *),
+DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
                  const char *name, void *data)
 #endif
 {
@@ -408,8 +400,7 @@ SDL_CreateThread(int(SDLCALL *fn)(void *),
 #endif
 }
 
-SDL_Thread *
-SDL_CreateThreadInternal(int(SDLCALL *fn)(void *), const char *name,
+SDL_Thread *SDL_CreateThreadInternal(int(SDLCALL *fn)(void *), const char *name,
                          const size_t stacksize, void *data)
 {
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
@@ -419,8 +410,7 @@ SDL_CreateThreadInternal(int(SDLCALL *fn)(void *), const char *name,
 #endif
 }
 
-SDL_threadID
-SDL_GetThreadID(SDL_Thread *thread)
+SDL_threadID SDL_GetThreadID(SDL_Thread *thread)
 {
     SDL_threadID id;
 
@@ -432,8 +422,7 @@ SDL_GetThreadID(SDL_Thread *thread)
     return id;
 }
 
-const char *
-SDL_GetThreadName(SDL_Thread *thread)
+const char *SDL_GetThreadName(SDL_Thread *thread)
 {
     if (thread) {
         return thread->name;
