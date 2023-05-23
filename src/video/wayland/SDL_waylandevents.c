@@ -78,8 +78,8 @@
 struct SDL_WaylandTouchPoint
 {
     SDL_TouchID id;
-    float x;
-    float y;
+    wl_fixed_t x;
+    wl_fixed_t y;
     struct wl_surface *surface;
 
     struct SDL_WaylandTouchPoint *prev;
@@ -94,7 +94,7 @@ struct SDL_WaylandTouchPointList
 
 static struct SDL_WaylandTouchPointList touch_points = { NULL, NULL };
 
-static void touch_add(SDL_TouchID id, float x, float y, struct wl_surface *surface)
+static void touch_add(SDL_TouchID id, wl_fixed_t x, wl_fixed_t y, struct wl_surface *surface)
 {
     struct SDL_WaylandTouchPoint *tp = SDL_malloc(sizeof(struct SDL_WaylandTouchPoint));
 
@@ -115,7 +115,7 @@ static void touch_add(SDL_TouchID id, float x, float y, struct wl_surface *surfa
     tp->next = NULL;
 }
 
-static void touch_update(SDL_TouchID id, float x, float y)
+static void touch_update(SDL_TouchID id, wl_fixed_t x, wl_fixed_t y, struct wl_surface **surface)
 {
     struct SDL_WaylandTouchPoint *tp = touch_points.head;
 
@@ -123,13 +123,14 @@ static void touch_update(SDL_TouchID id, float x, float y)
         if (tp->id == id) {
             tp->x = x;
             tp->y = y;
+            *surface = tp->surface;
         }
 
         tp = tp->next;
     }
 }
 
-static void touch_del(SDL_TouchID id, float *x, float *y, struct wl_surface **surface)
+static void touch_del(SDL_TouchID id, wl_fixed_t *x, wl_fixed_t *y, struct wl_surface **surface)
 {
     struct SDL_WaylandTouchPoint *tp = touch_points.head;
 
@@ -160,21 +161,6 @@ static void touch_del(SDL_TouchID id, float *x, float *y, struct wl_surface **su
             tp = tp->next;
         }
     }
-}
-
-static struct wl_surface *touch_surface(SDL_TouchID id)
-{
-    struct SDL_WaylandTouchPoint *tp = touch_points.head;
-
-    while (tp) {
-        if (tp->id == id) {
-            return tp->surface;
-        }
-
-        tp = tp->next;
-    }
-
-    return NULL;
 }
 
 /* Returns SDL_TRUE if a key repeat event was due */
@@ -814,49 +800,77 @@ static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_axis_value120  /* Version 8 */
 };
 
-static void touch_handler_down(void *data, struct wl_touch *touch, unsigned int serial,
-                               unsigned int timestamp, struct wl_surface *surface,
+static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t serial,
+                               uint32_t timestamp, struct wl_surface *surface,
                                int id, wl_fixed_t fx, wl_fixed_t fy)
 {
-    SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
-    const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
-    const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
-    const float x = dblx / window_data->sdlwindow->w;
-    const float y = dbly / window_data->sdlwindow->h;
+    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)data;
+    SDL_WindowData *window_data;
 
-    touch_add(id, x, y, surface);
+    /* Check that this surface belongs to one of the SDL windows */
+    if (!SDL_WAYLAND_own_surface(surface)) {
+        return;
+    }
 
-    SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
+    touch_add(id, fx, fy, surface);
+    window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
+
+    if (window_data) {
+        const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
+        const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
+        const float x = dblx / window_data->sdlwindow->w;
+        const float y = dbly / window_data->sdlwindow->h;
+
+        SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id,
+                      window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
+    }
 }
 
-static void touch_handler_up(void *data, struct wl_touch *touch, unsigned int serial,
-                             unsigned int timestamp, int id)
+static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial,
+                             uint32_t timestamp, int id)
 {
-    float x = 0, y = 0;
+    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)data;
+    wl_fixed_t fx = 0, fy = 0;
     struct wl_surface *surface = NULL;
-    SDL_Window *window = NULL;
 
-    touch_del(id, &x, &y, &surface);
+    touch_del(id, &fx, &fy, &surface);
 
     if (surface) {
         SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
-        window = window_data->sdlwindow;
-    }
 
-    SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window, SDL_FALSE, x, y, 0.0f);
+        if (window_data) {
+            const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
+            const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
+            const float x = dblx / window_data->sdlwindow->w;
+            const float y = dbly / window_data->sdlwindow->h;
+
+            SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id,
+                          window_data->sdlwindow, SDL_FALSE, x, y, 1.0f);
+        }
+    }
 }
 
-static void touch_handler_motion(void *data, struct wl_touch *touch, unsigned int timestamp,
+static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t timestamp,
                                  int id, wl_fixed_t fx, wl_fixed_t fy)
 {
-    SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(touch_surface(id));
-    const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
-    const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
-    const float x = dblx / window_data->sdlwindow->w;
-    const float y = dbly / window_data->sdlwindow->h;
+    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)data;
+    struct wl_surface *surface = NULL;
 
-    touch_update(id, x, y);
-    SDL_SendTouchMotion((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, x, y, 1.0f);
+    touch_update(id, fx, fy, &surface);
+
+    if (surface) {
+        SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
+
+        if (window_data) {
+            const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
+            const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
+            const float x = dblx / window_data->sdlwindow->w;
+            const float y = dbly / window_data->sdlwindow->h;
+
+            SDL_SendTouchMotion((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id,
+                                window_data->sdlwindow, x, y, 1.0f);
+        }
+    }
 }
 
 static void touch_handler_frame(void *data, struct wl_touch *touch)
