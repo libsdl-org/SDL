@@ -25,6 +25,31 @@
 #include "../../core/windows/SDL_windows.h"
 
 
+#ifdef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+static void SDL_CleanupWaitableTimer(void *timer)
+{
+    CloseHandle(timer);
+}
+
+HANDLE SDL_GetWaitableTimer()
+{
+    static SDL_TLSID TLS_timer_handle;
+    HANDLE timer;
+
+    if (!TLS_timer_handle) {
+        TLS_timer_handle = SDL_TLSCreate();
+    }
+    timer = SDL_TLSGet(TLS_timer_handle);
+    if (!timer) {
+        timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+        if (timer) {
+            SDL_TLSSet(TLS_timer_handle, timer, SDL_CleanupWaitableTimer);
+        }
+    }
+    return timer;
+}
+#endif /* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION */
+
 Uint64 SDL_GetPerformanceCounter(void)
 {
     LARGE_INTEGER counter;
@@ -58,14 +83,13 @@ void SDL_DelayNS(Uint64 ns)
      *    apps and libraries.
      */
 #ifdef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
-    HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+    HANDLE timer = SDL_GetWaitableTimer();
     if (timer) {
         LARGE_INTEGER due_time;
         due_time.QuadPart = -((LONGLONG)ns / 100);
         if (SetWaitableTimerEx(timer, &due_time, 0, NULL, NULL, NULL, 0)) {
             WaitForSingleObject(timer, INFINITE);
         }
-        CloseHandle(timer);
         return;
     }
 #endif
