@@ -1996,6 +1996,11 @@ SDL_Window *SDL_CreateWindowWithPosition(const char *title, int x, int y, int w,
 
 SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags)
 {
+    if (_this == NULL) {
+        SDL_UninitializedVideo();
+        return NULL;
+    }
+
     if (!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT)) {
         SDL_Unsupported();
         return NULL;
