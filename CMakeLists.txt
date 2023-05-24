@@ -675,6 +675,11 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
     target_compile_options(sdl-global-options INTERFACE "-Wshadow")
   endif()
 
+  check_c_compiler_flag(-Wunused-local-typedefs HAVE_GCC_WUNUSED_LOCAL_TYPEDEFS)
+  if(HAVE_GCC_WUNUSED_LOCAL_TYPEDEFS)
+    target_compile_options(sdl-global-options INTERFACE "-Wno-unused-local-typedefs")
+  endif()
+
   if(APPLE)
     cmake_push_check_state()
     # FIXME: don't use deprecated declarations
