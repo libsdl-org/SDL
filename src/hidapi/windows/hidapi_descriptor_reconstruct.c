@@ -46,7 +46,7 @@ static void rd_append_byte(unsigned char byte, struct rd_buffer* rpt_desc) {
  *
  * @param[in]  rd_item  Enumeration identifying type (Main, Global, Local) and function (e.g Usage or Report Count) of the item.
  * @param[in]  data     Data (Size depends on rd_item 0,1,2 or 4bytes).
- * @param      list     Chained list of report descriptor bytes.
+ * @param      rpt_desc Pointer to report descriptor buffer struct.
  *
  * @return Returns 0 if successful, -1 for error.
  */

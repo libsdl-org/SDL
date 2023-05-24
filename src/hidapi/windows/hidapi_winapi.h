@@ -46,7 +46,7 @@ extern "C" {
 
 			@ingroup API
 			@param dev A device handle returned from hid_open().
-			@param guid The device's container ID on return.
+			@param container_id The device's container ID on return.
 
 			@returns
 				This function returns 0 on success and -1 on error.
