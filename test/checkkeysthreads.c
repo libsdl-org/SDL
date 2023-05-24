@@ -174,7 +174,6 @@ static void loop(void)
 
     (void)fprintf(stderr, "starting loop\n");
     (void)fflush(stderr);
-    // while (SDL_PollEvent(&event)) {
     while (!done && SDL_WaitEvent(&event)) {
         SDL_Log("Got event type: %" SDL_PRIu32 "\n", event.type);
         switch (event.type) {

@@ -87,19 +87,19 @@ int main(int argc, char *argv[])
             }
             SDL_SetWindowTitle(window, title);
 
-            // this math sucks, but whatever.
+            /* this math sucks, but whatever. */
             if (multiplier < 0) {
                 newfreq = spec.freq + (int) ((spec.freq * (multiplier / 400.0f)) * 0.75f);
             } else if (multiplier > 0) {
                 newfreq = spec.freq + (int) (spec.freq * (multiplier / 100.0f));
             }
-            //SDL_Log("newfreq=%d   multiplier=%d\n", newfreq, multiplier);
+            /* SDL_Log("newfreq=%d   multiplier=%d\n", newfreq, multiplier); */
             SDL_LockAudioDevice(device);
             SDL_SetAudioStreamFormat(stream, spec.format, spec.channels, newfreq, spec.format, spec.channels, spec.freq);
             SDL_UnlockAudioDevice(device);
         }
 
-        // keep it looping.
+        /* keep it looping. */
         if (SDL_GetAudioStreamAvailable(stream) < (1024 * 100)) {
             SDL_PutAudioStreamData(stream, audio_buf, audio_len);
         }
