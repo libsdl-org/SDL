@@ -1,0 +1,33 @@
+alpine_task:
+        container:
+                image: alpine:latest
+        install_script: apk add autoconf automake g++ gcc libusb-dev libtool linux-headers eudev-dev make musl-dev
+        script:
+                - ./bootstrap
+                - ./configure || { cat config.log; exit 1; }
+                - make
+                - make install
+
+freebsd11_task:
+        freebsd_instance:
+                image: freebsd-11-2-release-amd64
+        install_script:
+                - pkg install -y
+                  autoconf automake libiconv libtool pkgconf
+        script:
+                - ./bootstrap
+                - ./configure || { cat config.log; exit 1; }
+                - make
+                - make install
+
+freebsd12_task:
+        freebsd_instance:
+                image: freebsd-12-1-release-amd64
+        install_script:
+                - pkg install -y
+                  autoconf automake libiconv libtool pkgconf
+        script:
+                - ./bootstrap
+                - ./configure || { cat config.log; exit 1; }
+                - make
+                - make install

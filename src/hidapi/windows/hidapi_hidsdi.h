@@ -40,6 +40,8 @@ typedef struct _HIDD_ATTRIBUTES{
 	USHORT VersionNumber;
 } HIDD_ATTRIBUTES, *PHIDD_ATTRIBUTES;
 
+typedef struct _HIDP_PREPARSED_DATA * PHIDP_PREPARSED_DATA;
+
 typedef void (__stdcall *HidD_GetHidGuid_)(LPGUID hid_guid);
 typedef BOOLEAN (__stdcall *HidD_GetAttributes_)(HANDLE device, PHIDD_ATTRIBUTES attrib);
 typedef BOOLEAN (__stdcall *HidD_GetSerialNumberString_)(HANDLE device, PVOID buffer, ULONG buffer_len);
@@ -52,7 +54,6 @@ typedef BOOLEAN (__stdcall *HidD_GetIndexedString_)(HANDLE handle, ULONG string_
 typedef BOOLEAN (__stdcall *HidD_GetPreparsedData_)(HANDLE handle, PHIDP_PREPARSED_DATA *preparsed_data);
 typedef BOOLEAN (__stdcall *HidD_FreePreparsedData_)(PHIDP_PREPARSED_DATA preparsed_data);
 typedef BOOLEAN (__stdcall *HidD_SetNumInputBuffers_)(HANDLE handle, ULONG number_buffers);
-typedef BOOLEAN (__stdcall *HidD_SetOutputReport_)(HANDLE handle, PVOID buffer, ULONG buffer_len);
 
 #endif
 

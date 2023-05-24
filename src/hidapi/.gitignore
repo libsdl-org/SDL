@@ -1,0 +1,32 @@
+
+# Autotools-added generated files
+Makefile.in
+aclocal.m4
+ar-lib
+autom4te.cache/
+config.*
+configure
+configure~
+compile
+depcomp
+install-sh
+libusb/Makefile.in
+linux/Makefile.in
+ltmain.sh
+mac/Makefile.in
+missing
+testgui/Makefile.in
+windows/Makefile.in
+
+Makefile
+stamp-h1
+libtool
+
+# macOS
+.DS_Store
+
+# Qt Creator
+CMakeLists.txt.user
+
+# doxgen output
+doxygen/html/

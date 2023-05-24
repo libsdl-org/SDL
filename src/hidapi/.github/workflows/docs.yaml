@@ -1,0 +1,58 @@
+name: Docs
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Install Doxygen static libclang deps
+        run: sudo apt-get install libclang1-12 libclang-cpp12
+
+      - name: Install Doxygen from SF binary archives
+        env:
+          DOXYGEN_VERSION: '1.9.6'
+        run: |
+          mkdir .doxygen && cd .doxygen
+          curl -L https://sourceforge.net/projects/doxygen/files/rel-$DOXYGEN_VERSION/doxygen-$DOXYGEN_VERSION.linux.bin.tar.gz > doxygen.tar.gz
+          gunzip doxygen.tar.gz
+          tar xf doxygen.tar
+          cd doxygen-$DOXYGEN_VERSION
+          sudo make install
+
+      - uses: actions/checkout@v3
+
+      - run: doxygen
+        working-directory: doxygen
+
+      - name: Save doxygen docs as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: HIDAPI_doxygen_docs
+          path: ${{ github.workspace }}/doxygen/html
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref_type == 'branch' && github.ref_name == 'master'
+    concurrency:
+      group: "github-pages-deploy"
+      cancel-in-progress: true
+    steps:
+      - name: downlod artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: HIDAPI_doxygen_docs
+          path: docs
+
+      - name: upload to github pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          force_orphan: true

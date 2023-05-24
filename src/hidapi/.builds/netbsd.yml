@@ -1,0 +1,18 @@
+image: netbsd/latest
+packages:
+- cmake
+- pkgconf
+- libusb1
+- libiconv
+sources:
+- https://github.com/libusb/hidapi
+tasks:
+- configure: |
+    cd hidapi
+    mkdir -p build install
+    cmake -B build -S . -DCMAKE_INSTALL_PREFIX=install
+- build: |
+    cd hidapi/build
+    make
+    make install
+    make clean

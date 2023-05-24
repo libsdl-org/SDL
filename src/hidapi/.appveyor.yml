@@ -1,0 +1,31 @@
+environment:
+  matrix:
+  - BUILD_ENV: msbuild
+    arch: x64
+  - BUILD_ENV: msbuild
+    arch: Win32
+  - BUILD_ENV: cygwin
+
+for:
+  -
+    matrix:
+      only:
+        - BUILD_ENV: msbuild
+
+    os: Visual Studio 2015
+
+    build_script:
+      - cmd: msbuild .\windows\hidapi.sln /p:Configuration=Release /p:Platform=%arch% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+
+  -
+    matrix:
+      only:
+        - BUILD_ENV: cygwin
+
+    os: Visual Studio 2022
+
+    install:
+      - cmd: C:\cygwin64\setup-x86_64.exe --quiet-mode --no-shortcuts --upgrade-also --packages autoconf,automake
+
+    build_script:
+      - cmd: C:\cygwin64\bin\bash -exlc "cd $APPVEYOR_BUILD_FOLDER; ./bootstrap; ./configure; make"

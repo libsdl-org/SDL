@@ -13,20 +13,16 @@ libs: libhidapi.so
 CC       ?= cc
 CFLAGS   ?= -Wall -g -fPIC
 
-CXX      ?= c++
-CXXFLAGS ?= -Wall -g
-
-COBJS     = hid.o
-CPPOBJS   = ../hidtest/hidtest.o
-OBJS      = $(COBJS) $(CPPOBJS)
-INCLUDES  = -I../hidapi -I/usr/local/include
+COBJS     = hid.o ../hidtest/test.o
+OBJS      = $(COBJS)
+INCLUDES  = -I../hidapi -I. -I/usr/local/include
 LDFLAGS   = -L/usr/local/lib
 LIBS      = -lusb -liconv -pthread
 
 
 # Console Test Program
 hidtest: $(OBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 # Shared Libs
 libhidapi.so: $(COBJS)
@@ -35,9 +31,6 @@ libhidapi.so: $(COBJS)
 # Objects
 $(COBJS): %.o: %.c
 	$(CC) $(CFLAGS) -c $(INCLUDES) $< -o $@
-
-$(CPPOBJS): %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $(INCLUDES) $< -o $@
 
 
 clean:

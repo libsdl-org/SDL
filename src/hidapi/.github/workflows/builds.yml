@@ -1,0 +1,540 @@
+name: GitHub Builds
+
+on: [push, pull_request]
+
+env:
+  NIX_COMPILE_FLAGS: -Wall -Wextra -pedantic -Werror
+  MSVC_COMPILE_FLAGS: /W4 /WX
+
+jobs:
+  macos-automake:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install build tools
+      run: brew install autoconf automake libtool
+    - name: Configure Automake
+      run: |
+        ./bootstrap
+        ./configure --prefix=$(pwd)/install
+    - name: Build Automake
+      run: |
+        make
+        make install
+    - name: Clean build
+      run: make clean
+    - name: Build Manual makefile
+      working-directory: mac
+      run: make -f Makefile-manual
+
+
+  macos-cmake:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: hidapisrc
+    - name: Install dependencies
+      run: brew install meson ninja
+    - name: Configure CMake
+      run: |
+        rm -rf build install
+        cmake -B build/shared -S hidapisrc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_ENABLE_ASAN=ON -DCMAKE_INSTALL_PREFIX=install/shared -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cmake -B build/static -S hidapisrc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_ENABLE_ASAN=ON -DCMAKE_INSTALL_PREFIX=install/static -DBUILD_SHARED_LIBS=FALSE -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cmake -B build/framework -S hidapisrc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_ENABLE_ASAN=ON -DCMAKE_INSTALL_PREFIX=install/framework -DCMAKE_FRAMEWORK=ON -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+    - name: Build CMake Shared
+      working-directory: build/shared
+      run: make install
+    - name: Build CMake Static
+      working-directory: build/static
+      run: make install
+    - name: Build CMake Framework
+      working-directory: build/framework
+      run: make install
+    - name: Check artifacts
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "install/shared/lib/libhidapi.dylib, \
+                install/shared/include/hidapi/hidapi.h, \
+                install/shared/include/hidapi/hidapi_darwin.h, \
+                install/static/lib/libhidapi.a, \
+                install/static/include/hidapi/hidapi.h, \
+                install/static/include/hidapi/hidapi_darwin.h, \
+                install/framework/lib/hidapi.framework/hidapi, \
+                install/framework/lib/hidapi.framework/Headers/hidapi.h, \
+                install/framework/lib/hidapi.framework/Headers/hidapi_darwin.h"
+        fail: true
+    - name: Check CMake Export Package Shared
+      run: |
+        cmake \
+          -B build/shared_test \
+          -S hidapisrc/hidtest \
+          -Dhidapi_ROOT=install/shared \
+          -DCMAKE_INSTALL_PREFIX=install/shared_test \
+          "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cd build/shared_test
+        make install
+    - name: Check CMake Export Package Static
+      run: |
+        cmake \
+          -B build/static_test \
+          -S hidapisrc/hidtest \
+          -Dhidapi_ROOT=install/static \
+          -DCMAKE_INSTALL_PREFIX=install/static_test \
+          "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cd build/static_test
+        make install
+
+    - name: Check Meson build
+      run: |
+        meson setup build_meson hidapisrc
+        cd build_meson
+        ninja
+
+
+  ubuntu-cmake:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: hidapisrc
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install libudev-dev libusb-1.0-0-dev python3-pip ninja-build
+        sudo -H pip3 install meson
+    - name: Configure CMake
+      run: |
+        rm -rf build install
+        cmake -B build/shared -S hidapisrc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_ENABLE_ASAN=ON -DCMAKE_INSTALL_PREFIX=install/shared -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cmake -B build/static -S hidapisrc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_ENABLE_ASAN=ON -DCMAKE_INSTALL_PREFIX=install/static -DBUILD_SHARED_LIBS=FALSE -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+    - name: Build CMake Shared
+      working-directory: build/shared
+      run: make install
+    - name: Build CMake Static
+      working-directory: build/static
+      run: make install
+    - name: Check artifacts
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "install/shared/lib/libhidapi-libusb.so, \
+                install/shared/lib/libhidapi-hidraw.so, \
+                install/shared/include/hidapi/hidapi.h, \
+                install/shared/include/hidapi/hidapi_libusb.h, \
+                install/static/lib/libhidapi-libusb.a, \
+                install/static/lib/libhidapi-hidraw.a, \
+                install/static/include/hidapi/hidapi.h, \
+                install/static/include/hidapi/hidapi_libusb.h"
+        fail: true
+    - name: Check CMake Export Package Shared
+      run: |
+        cmake \
+          -B build/shared_test \
+          -S hidapisrc/hidtest \
+          -Dhidapi_ROOT=install/shared \
+          -DCMAKE_INSTALL_PREFIX=install/shared_test \
+          "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cd build/shared_test
+        make install
+    - name: Check CMake Export Package Static
+      run: |
+        cmake \
+          -B build/static_test \
+          -S hidapisrc/hidtest \
+          -Dhidapi_ROOT=install/static \
+          -DCMAKE_INSTALL_PREFIX=install/static_test \
+          "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cd build/static_test
+        make install
+
+    - name: Check Meson build
+      run: |
+        meson setup build_meson hidapisrc
+        cd build_meson
+        ninja
+
+
+  windows-cmake:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: hidapisrc
+    - name: Install dependencies
+      run: |
+        choco install ninja
+        pip3 install meson
+        refreshenv
+    - name: Configure CMake MSVC
+      shell: cmd
+      run: |
+        cmake -B build\msvc -S hidapisrc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_WITH_TESTS=ON -DHIDAPI_BUILD_PP_DATA_DUMP=ON -DHIDAPI_ENABLE_ASAN=ON -DCMAKE_INSTALL_PREFIX=install\msvc -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=%MSVC_COMPILE_FLAGS%"
+    - name: Build CMake MSVC
+      working-directory: build/msvc
+      run: cmake --build . --config RelWithDebInfo --target install
+    - name: Check artifacts MSVC
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "install/msvc/lib/hidapi.lib, \
+                install/msvc/bin/hidapi.dll, \
+                install/msvc/include/hidapi/hidapi.h, \
+                install/msvc/include/hidapi/hidapi_winapi.h"
+        fail: true
+    - name: Check CMake Export Package
+      shell: cmd
+      run: |
+        cmake ^
+          -B build\msvc_test ^
+          -S hidapisrc\hidtest ^
+          -Dhidapi_ROOT=install\msvc ^
+          -DCMAKE_INSTALL_PREFIX=install\msvc_test ^
+          "-DCMAKE_C_FLAGS=%MSVC_COMPILE_FLAGS%"
+        cd build\msvc_test
+        cmake --build . --target install
+    - name: Run CTest MSVC
+      shell: cmd
+      working-directory: build/msvc
+      run: ctest -C RelWithDebInfo --rerun-failed --output-on-failure
+
+    - name: Configure CMake NMake
+      shell: cmd
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        cmake -G"NMake Makefiles" -B build\nmake -S hidapisrc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_WITH_TESTS=ON -DHIDAPI_BUILD_PP_DATA_DUMP=ON -DHIDAPI_ENABLE_ASAN=ON -DCMAKE_INSTALL_PREFIX=install\nmake -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=%MSVC_COMPILE_FLAGS%"
+    - name: Build CMake NMake
+      working-directory: build\nmake
+      shell: cmd
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        nmake install
+    - name: Check artifacts NMake
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "install/nmake/lib/hidapi.lib, \
+                install/nmake/bin/hidapi.dll, \
+                install/nmake/include/hidapi/hidapi.h, \
+                install/nmake/include/hidapi/hidapi_winapi.h"
+        fail: true
+    - name: Check CMake Export Package NMake
+      shell: cmd
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        cmake ^
+          -G"NMake Makefiles" ^
+          -B build\nmake_test ^
+          -S hidapisrc\hidtest ^
+          -Dhidapi_ROOT=install\nmake ^
+          -DCMAKE_INSTALL_PREFIX=install\nmake_test ^
+          "-DCMAKE_C_FLAGS=%MSVC_COMPILE_FLAGS%"
+        cd build\nmake_test
+        nmake install
+    - name: Run CTest NMake
+      working-directory: build\nmake
+      run: ctest --rerun-failed --output-on-failure
+
+    - name: Configure CMake MinGW
+      shell: cmd
+      run: |
+        cmake -G"MinGW Makefiles" -B build\mingw -S hidapisrc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_WITH_TESTS=ON -DHIDAPI_BUILD_PP_DATA_DUMP=ON -DCMAKE_INSTALL_PREFIX=install\mingw -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=%NIX_COMPILE_FLAGS%"
+    - name: Build CMake MinGW
+      working-directory: build\mingw
+      run: cmake --build . --target install
+    - name: Check artifacts MinGW
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "install/mingw/lib/libhidapi.dll.a, \
+                install/mingw/bin/libhidapi.dll, \
+                install/mingw/include/hidapi/hidapi.h, \
+                install/mingw/include/hidapi/hidapi_winapi.h"
+        fail: true
+    - name: Check CMake Export Package MinGW
+      shell: cmd
+      run: |
+        cmake ^
+          -G"MinGW Makefiles" ^
+          -B build\mingw_test ^
+          -S hidapisrc\hidtest ^
+          -Dhidapi_ROOT=install\mingw ^
+          -DCMAKE_INSTALL_PREFIX=install\mingw_test ^
+          "-DCMAKE_C_FLAGS=%NIX_COMPILE_FLAGS%"
+        cd build\mingw_test
+        cmake --build . --target install
+    - name: Run CTest MinGW
+      working-directory: build\mingw
+      run: ctest --rerun-failed --output-on-failure
+
+    - name: Check Meson build
+      shell: cmd
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        meson setup build_meson hidapisrc
+        cd build_meson
+        ninja
+
+
+  windows-msbuild:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: microsoft/setup-msbuild@v1.1
+    - name: MSBuild x86
+      run: msbuild windows\hidapi.sln /p:Configuration=Release /p:Platform=Win32
+    - name: Check artifacts x86
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "windows/Release/hidapi.dll, windows/Release/hidapi.lib, windows/Release/hidapi.pdb"
+        fail: true
+    - name: MSBuild x64
+      run: msbuild windows\hidapi.sln /p:Configuration=Release /p:Platform=x64
+    - name: Check artifacts x64
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "windows/x64/Release/hidapi.dll, windows/x64/Release/hidapi.lib, windows/x64/Release/hidapi.pdb"
+        fail: true
+    - name: Gather artifacts
+      run: |
+        md artifacts
+        md artifacts\x86
+        md artifacts\x64
+        md artifacts\include
+        Copy-Item "windows\Release\hidapi.dll","windows\Release\hidapi.lib","windows\Release\hidapi.pdb" -Destination "artifacts\x86"
+        Copy-Item "windows\x64\Release\hidapi.dll","windows\x64\Release\hidapi.lib","windows\x64\Release\hidapi.pdb" -Destination "artifacts\x64"
+        Copy-Item "hidapi\hidapi.h","windows\hidapi_winapi.h" -Destination "artifacts\include"
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: hidapi-win
+        path: artifacts/
+        retention-days: ${{ (github.event_name == 'pull_request' || github.ref_name != 'master') && 7 || 90 }}
+
+
+  fedora-mingw:
+
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: hidapisrc
+    - name: Install dependencies
+      run: sudo dnf install -y autoconf automake libtool mingw64-gcc cmake ninja-build make
+    - name: Configure CMake
+      run: |
+        rm -rf build install
+        mingw64-cmake -B build/shared-cmake -S hidapisrc -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=install/shared-cmake -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        mingw64-cmake -B build/static-cmake -S hidapisrc -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=install/static-cmake -DBUILD_SHARED_LIBS=FALSE -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+    - name: Configure Automake
+      working-directory: hidapisrc
+      run: |
+        ./bootstrap
+        mingw64-configure
+    - name: Build CMake Shared
+      working-directory: build/shared-cmake
+      run: ninja install
+    - name: Build CMake Static
+      working-directory: build/static-cmake
+      run: ninja install
+    - name: Build Automake
+      working-directory: hidapisrc
+      run: |
+        make
+        make DESTDIR=$PWD/../install/automake install
+        make clean
+    - name: Build manual Makefile
+      working-directory: hidapisrc/windows
+      run: make -f Makefile-manual OS=MINGW CC=x86_64-w64-mingw32-gcc
+    - name: Check artifacts
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "install/shared-cmake/bin/libhidapi.dll, \
+                install/shared-cmake/lib/libhidapi.dll.a, \
+                install/shared-cmake/include/hidapi/hidapi.h, \
+                install/shared-cmake/include/hidapi/hidapi_winapi.h, \
+                install/static-cmake/lib/libhidapi.a, \
+                install/static-cmake/include/hidapi/hidapi.h, \
+                install/static-cmake/include/hidapi/hidapi_winapi.h"
+        fail: true
+    - name: Check CMake Export Package Shared
+      run: |
+        mingw64-cmake \
+          -GNinja \
+          -B build/shared_test \
+          -S hidapisrc/hidtest \
+          -Dhidapi_DIR=$PWD/install/shared-cmake/lib/cmake/hidapi \
+          -DCMAKE_INSTALL_PREFIX=install/shared_test \
+          "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cd build/shared_test
+        ninja install
+    - name: Check CMake Export Package Static
+      run: |
+        mingw64-cmake \
+          -GNinja \
+          -B build/static_test \
+          -S hidapisrc/hidtest \
+          -Dhidapi_DIR=$PWD/install/static-cmake/lib/cmake/hidapi \
+          -DCMAKE_INSTALL_PREFIX=install/static_test \
+          "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cd build/static_test
+        ninja install
+
+
+  archlinux:
+
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: hidapisrc
+    - name: Install dependencies
+      run: |
+        pacman -Sy
+        pacman -S --noconfirm gcc pkg-config autoconf automake libtool libusb libudev0 cmake make
+    - name: Configure CMake
+      run: |
+        rm -rf build install
+        cmake -B build/shared-cmake -S hidapisrc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=install/shared-cmake -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cmake -B build/static-cmake -S hidapisrc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=install/static-cmake -DBUILD_SHARED_LIBS=FALSE -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+    - name: Configure Automake
+      working-directory: hidapisrc
+      run: |
+        ./bootstrap
+        ./configure
+    - name: Build CMake Shared
+      working-directory: build/shared-cmake
+      run: make install
+    - name: Build CMake Static
+      working-directory: build/static-cmake
+      run: make install
+    - name: Build Automake
+      working-directory: hidapisrc
+      run: |
+        make
+        make DESTDIR=$PWD/../install/automake install
+        make clean
+    - name: Build manual Makefile
+      run: |
+        cd hidapisrc/linux
+        make -f Makefile-manual
+        cd ../libusb
+        make -f Makefile-manual
+    - name: Check artifacts
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "install/shared-cmake/lib/libhidapi-libusb.so, \
+                install/shared-cmake/lib/libhidapi-hidraw.so, \
+                install/shared-cmake/include/hidapi/hidapi.h, \
+                install/shared-cmake/include/hidapi/hidapi_libusb.h, \
+                install/static-cmake/lib/libhidapi-libusb.a, \
+                install/static-cmake/lib/libhidapi-hidraw.a, \
+                install/static-cmake/include/hidapi/hidapi.h, \
+                install/static-cmake/include/hidapi/hidapi_libusb.h"
+        fail: true
+    - name: Check CMake Export Package Shared
+      run: |
+        cmake \
+          -B build/shared_test \
+          -S hidapisrc/hidtest \
+          -Dhidapi_ROOT=install/shared-cmake \
+          -DCMAKE_INSTALL_PREFIX=install/shared_test \
+          "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cd build/shared_test
+        make install
+    - name: Check CMake Export Package Static
+      run: |
+        cmake \
+          -B build/static_test \
+          -S hidapisrc/hidtest \
+          -Dhidapi_ROOT=install/static-cmake \
+          -DCMAKE_INSTALL_PREFIX=install/static_test \
+          "-DCMAKE_C_FLAGS=${NIX_COMPILE_FLAGS}"
+        cd build/static_test
+        make install
+
+
+  alpine:
+
+    runs-on: ubuntu-latest
+    container: alpine:edge
+    env:
+      # A bug in musl: https://www.openwall.com/lists/musl/2020/01/20/2
+      ALPINE_COMPILE_FLAGS: ${NIX_COMPILE_FLAGS} -Wno-overflow
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: hidapisrc
+    - name: Install dependencies
+      run: |
+        apk add gcc musl-dev autoconf automake libtool eudev-dev libusb-dev linux-headers cmake ninja make
+    - name: Configure CMake
+      run: |
+        rm -rf build install
+        cmake -B build/shared-cmake -S hidapisrc -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=install/shared-cmake -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${ALPINE_COMPILE_FLAGS}"
+        cmake -B build/static-cmake -S hidapisrc -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=install/static-cmake -DBUILD_SHARED_LIBS=FALSE -DHIDAPI_BUILD_HIDTEST=ON "-DCMAKE_C_FLAGS=${ALPINE_COMPILE_FLAGS}"
+    - name: Configure Automake
+      working-directory: hidapisrc
+      run: |
+        ./bootstrap
+        ./configure
+    - name: Build CMake Shared
+      working-directory: build/shared-cmake
+      run: ninja install
+    - name: Build CMake Static
+      working-directory: build/static-cmake
+      run: ninja install
+    - name: Build Automake
+      working-directory: hidapisrc
+      run: |
+        make
+        make DESTDIR=$PWD/../install/automake install
+        make clean
+    - name: Build manual Makefile
+      run: |
+        cd hidapisrc/linux
+        make -f Makefile-manual
+        cd ../libusb
+        make -f Makefile-manual
+    - name: Check artifacts
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "install/shared-cmake/lib/libhidapi-libusb.so, \
+                install/shared-cmake/lib/libhidapi-hidraw.so, \
+                install/shared-cmake/include/hidapi/hidapi.h, \
+                install/shared-cmake/include/hidapi/hidapi_libusb.h, \
+                install/static-cmake/lib/libhidapi-libusb.a, \
+                install/static-cmake/lib/libhidapi-hidraw.a, \
+                install/static-cmake/include/hidapi/hidapi.h, \
+                install/static-cmake/include/hidapi/hidapi_libusb.h"
+        fail: true
+    - name: Check CMake Export Package Shared
+      run: |
+        cmake \
+          -GNinja \
+          -B build/shared_test \
+          -S hidapisrc/hidtest \
+          -Dhidapi_ROOT=install/shared-cmake \
+          -DCMAKE_INSTALL_PREFIX=install/shared_test \
+          "-DCMAKE_C_FLAGS=${ALPINE_COMPILE_FLAGS}"
+        cd build/shared_test
+        ninja install
+    - name: Check CMake Export Package Static
+      run: |
+        cmake \
+          -GNinja \
+          -B build/static_test \
+          -S hidapisrc/hidtest \
+          -Dhidapi_ROOT=install/static-cmake \
+          -DCMAKE_INSTALL_PREFIX=install/static_test \
+          "-DCMAKE_C_FLAGS=${ALPINE_COMPILE_FLAGS}"
+        cd build/static_test
+        ninja install
