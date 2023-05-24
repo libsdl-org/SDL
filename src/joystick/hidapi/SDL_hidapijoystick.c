@@ -839,6 +839,7 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     SDL_HIDAPI_Device *device;
     SDL_HIDAPI_Device *curr, *last = NULL;
     SDL_bool removed;
+    Uint16 bus;
 
     SDL_AssertJoysticksLocked();
 
@@ -896,8 +897,12 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
         }
     }
 
-    /* FIXME: Is there any way to tell whether this is a Bluetooth device? */
-    device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, device->vendor_id, device->product_id, device->version, device->name, 'h', 0);
+    if (info->bus_type == SDL_HID_API_BUS_BLUETOOTH) {
+        bus = SDL_HARDWARE_BUS_BLUETOOTH;
+    } else {
+        bus = SDL_HARDWARE_BUS_USB;
+    }
+    device->guid = SDL_CreateJoystickGUID(bus, device->vendor_id, device->product_id, device->version, device->name, 'h', 0);
     device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
     device->type = SDL_GetJoystickGameControllerProtocol(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol);
 
