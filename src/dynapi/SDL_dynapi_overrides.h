@@ -885,3 +885,5 @@
 #define SDL_GetWindowDisplayScale SDL_GetWindowDisplayScale_REAL
 #define SDL_GetWindowPixelDensity SDL_GetWindowPixelDensity_REAL
 #define SDL_wcstol SDL_wcstol_REAL
+#define SDL_swprintf SDL_swprintf_REAL
+#define SDL_vswprintf SDL_vswprintf_REAL

@@ -859,6 +859,8 @@ SDL3_0.0.0 {
     SDL_GetWindowDisplayScale;
     SDL_GetWindowPixelDensity;
     SDL_wcstol;
+    SDL_swprintf;
+    SDL_vswprintf;
     # extra symbols go here (don't modify this line)
   local: *;
 };

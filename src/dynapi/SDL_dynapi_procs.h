@@ -41,6 +41,7 @@ SDL_DYNAPI_PROC(void,SDL_LogWarn,(int a, SDL_PRINTF_FORMAT_STRING const char *b,
 SDL_DYNAPI_PROC(int,SDL_SetError,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a),return)
 SDL_DYNAPI_PROC(int,SDL_asprintf,(char **a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_snprintf,(SDL_OUT_Z_CAP(b) char *a, size_t b, SDL_PRINTF_FORMAT_STRING const char *c, ...),(a,b,c),return)
+SDL_DYNAPI_PROC(int,SDL_swprintf,(SDL_OUT_Z_CAP(b) wchar_t *a, size_t b, SDL_PRINTF_FORMAT_STRING const wchar_t *c, ...),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_sscanf,(const char *a, SDL_SCANF_FORMAT_STRING const char *b, ...),(a,b),return)
 #endif
 
@@ -930,3 +931,4 @@ SDL_DYNAPI_PROC(float,SDL_GetDisplayContentScale,(SDL_DisplayID a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_GetWindowDisplayScale,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_GetWindowPixelDensity,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(long,SDL_wcstol,(const wchar_t *a, wchar_t **b, int c),(a,b,c),return)
+SDL_DYNAPI_PROC(int,SDL_vswprintf,(wchar_t *a, size_t b, const wchar_t *c, va_list d),(a,b,c,d),return)

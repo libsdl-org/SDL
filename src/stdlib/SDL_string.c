@@ -1466,6 +1466,18 @@ int SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FOR
     return retval;
 }
 
+int SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ...)
+{
+    va_list ap;
+    int retval;
+
+    va_start(ap, fmt);
+    retval = SDL_vswprintf(text, maxlen, fmt, ap);
+    va_end(ap);
+
+    return retval;
+}
+
 #if defined(HAVE_LIBC) && defined(__WATCOMC__)
 /* _vsnprintf() doesn't ensure nul termination */
 int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
@@ -1978,6 +1990,49 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *f
 
 #undef TEXT_AND_LEN_ARGS
 #endif /* HAVE_VSNPRINTF */
+
+int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, va_list ap)
+{
+    char *text_utf8 = NULL, *fmt_utf8 = NULL;
+    int retval;
+
+    if (fmt) {
+        fmt_utf8 = SDL_iconv_string("UTF-8", "WCHAR_T", (const char *)fmt, (SDL_wcslen(fmt) + 1) * sizeof(wchar_t));
+        if (!fmt_utf8) {
+            return -1;
+        }
+    }
+
+    if (!maxlen) {
+        /* We still need to generate the text to find the final text length */
+        maxlen = 1024;
+    }
+    text_utf8 = (char *)SDL_malloc(maxlen * 4);
+    if (!text_utf8) {
+        SDL_free(fmt_utf8);
+        return -1;
+    }
+
+    retval = SDL_vsnprintf(text_utf8, maxlen * 4, fmt_utf8, ap);
+
+    if (retval >= 0) {
+        wchar_t *text_wchar =  (wchar_t *)SDL_iconv_string("WCHAR_T", "UTF-8", text_utf8, SDL_strlen(text_utf8) + 1);
+        if (text_wchar) {
+            if (text) {
+                SDL_wcslcpy(text, text_wchar, maxlen);
+            }
+            retval = (int)SDL_wcslen(text_wchar);
+            SDL_free(text_wchar);
+        } else {
+            retval = -1;
+        }
+    }
+
+    SDL_free(text_utf8);
+    SDL_free(fmt_utf8);
+
+    return retval;
+}
 
 int SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {

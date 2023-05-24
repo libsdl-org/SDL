@@ -123,6 +123,16 @@ static void SDL_InitDynamicAPI(void);
         va_end(ap);                                                                                                                       \
         return retval;                                                                                                                    \
     }                                                                                                                                     \
+    _static int SDLCALL SDL_swprintf##name(SDL_OUT_Z_CAP(maxlen) wchar_t *buf, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ...) \
+    {                                                                                                                                     \
+        int retval;                                                                                                                       \
+        va_list ap;                                                                                                                       \
+        initcall;                                                                                                                         \
+        va_start(ap, fmt);                                                                                                                \
+        retval = jump_table.SDL_vswprintf(buf, maxlen, fmt, ap);                                                                          \
+        va_end(ap);                                                                                                                       \
+        return retval;                                                                                                                    \
+    }                                                                                                                                     \
     _static int SDLCALL SDL_asprintf##name(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                    \
     {                                                                                                                                     \
         int retval;                                                                                                                       \
