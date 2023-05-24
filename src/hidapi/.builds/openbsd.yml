@@ -1,0 +1,19 @@
+image: openbsd/latest
+packages:
+- cmake
+- pkgconf
+- libusb1--
+- libiconv
+- ninja
+sources:
+- https://github.com/libusb/hidapi
+tasks:
+- configure: |
+    cd hidapi
+    mkdir -p build install
+    cmake -GNinja -B build -S . -DCMAKE_INSTALL_PREFIX=install
+- build: |
+    cd hidapi/build
+    ninja
+    ninja install
+    ninja clean

@@ -21,7 +21,14 @@ libhidapi_la_LDFLAGS = $(LTLDFLAGS)
 libhidapi_la_LIBADD = $(LIBS_LIBUSB)
 endif
 
+if OS_HAIKU
+lib_LTLIBRARIES = libhidapi.la
+libhidapi_la_SOURCES = hid.c
+libhidapi_la_LDFLAGS = $(LTLDFLAGS)
+libhidapi_la_LIBADD = $(LIBS_LIBUSB)
+endif
+
 hdrdir = $(includedir)/hidapi
-hdr_HEADERS = $(top_srcdir)/hidapi/hidapi.h
+hdr_HEADERS = $(top_srcdir)/hidapi/hidapi.h hidapi_libusb.h
 
 EXTRA_DIST = Makefile-manual

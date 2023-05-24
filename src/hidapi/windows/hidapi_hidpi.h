@@ -29,6 +29,13 @@
 /* This part of the header mimics hidpi.h,
     but only what is used by HIDAPI */
 
+typedef enum _HIDP_REPORT_TYPE
+{
+    HidP_Input,
+    HidP_Output,
+    HidP_Feature
+} HIDP_REPORT_TYPE;
+
 typedef struct _HIDP_PREPARSED_DATA * PHIDP_PREPARSED_DATA;
 
 typedef struct _HIDP_CAPS

@@ -10,6 +10,10 @@ ifeq ($(OS), FreeBSD)
 	FILE=Makefile.freebsd
 endif
 
+ifeq ($(OS), Haiku)
+	FILE=Makefile.haiku
+endif
+
 ifeq ($(FILE), )
 all:
 	$(error Your platform ${OS} is not supported by hidapi/libusb at this time.)
