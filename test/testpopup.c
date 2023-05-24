@@ -180,7 +180,7 @@ static void loop(void)
                         SDL_HideWindow(menus[i].win);
                     }
                 }
-                // Don't process this event in SDLTest_CommonEvent()
+                /* Don't process this event in SDLTest_CommonEvent() */
                 continue;
             }
         }

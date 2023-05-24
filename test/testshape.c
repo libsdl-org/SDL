@@ -232,8 +232,8 @@ int main(int argc, char **argv)
 
     rc = 0;
 
-//    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-//    SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "0");
+    /* SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software"); */
+    /* SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "0"); */
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
