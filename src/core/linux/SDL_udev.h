@@ -56,6 +56,7 @@ typedef struct SDL_UDEV_Symbols
 {
     const char *(*udev_device_get_action)(struct udev_device *);
     const char *(*udev_device_get_devnode)(struct udev_device *);
+    const char *(*udev_device_get_syspath)(struct udev_device *);
     const char *(*udev_device_get_subsystem)(struct udev_device *);
     struct udev_device *(*udev_device_get_parent_with_subsystem_devtype)(struct udev_device *udev_device, const char *subsystem, const char *devtype);
     const char *(*udev_device_get_property_value)(struct udev_device *, const char *);
