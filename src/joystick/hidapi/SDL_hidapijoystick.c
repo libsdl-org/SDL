@@ -459,7 +459,7 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *remove
                     SDL_UnlockJoysticks();
                 }
 
-                dev = SDL_hid_open_path(path, 0);
+                dev = SDL_hid_open_path(path);
 
                 while (lock_count > 0) {
                     --lock_count;
@@ -490,7 +490,7 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *remove
              *
              * See https://github.com/libsdl-org/SDL/issues/7304 for details.
              */
-            dev = SDL_hid_open_path(device->path, 0);
+            dev = SDL_hid_open_path(device->path);
 #endif
 
             if (dev == NULL) {

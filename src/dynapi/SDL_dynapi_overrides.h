@@ -887,3 +887,6 @@
 #define SDL_wcstol SDL_wcstol_REAL
 #define SDL_swprintf SDL_swprintf_REAL
 #define SDL_vswprintf SDL_vswprintf_REAL
+#define SDL_hid_get_input_report SDL_hid_get_input_report_REAL
+#define SDL_hid_get_device_info SDL_hid_get_device_info_REAL
+#define SDL_hid_get_report_descriptor SDL_hid_get_report_descriptor_REAL

@@ -861,6 +861,9 @@ SDL3_0.0.0 {
     SDL_wcstol;
     SDL_swprintf;
     SDL_vswprintf;
+    SDL_hid_get_input_report;
+    SDL_hid_get_device_info;
+    SDL_hid_get_report_descriptor;
     # extra symbols go here (don't modify this line)
   local: *;
 };
