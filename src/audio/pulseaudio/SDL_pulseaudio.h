@@ -32,8 +32,6 @@ struct SDL_PrivateAudioData
     char *device_name;
 
     /* pulseaudio structures */
-    pa_mainloop *mainloop;
-    pa_context *context;
     pa_stream *stream;
 
     /* Raw mixing buffer */
