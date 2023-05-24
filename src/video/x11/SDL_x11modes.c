@@ -159,7 +159,7 @@ not_our_signal:
 
 #endif
 
-static float GetGlobalContentScale()
+static float GetGlobalContentScale(SDL_VideoDevice *_this)
 {
     static double scale_factor = 0.0;
 
@@ -184,9 +184,34 @@ static float GetGlobalContentScale()
             }
         }
 
-        /* If that failed, try the GDK_SCALE envvar... */
+        /* If that failed, try "Xft.dpi" from the XResourcesDatabase... */
         if (scale_factor <= 0.0)
 #endif
+        {
+            SDL_VideoData *data = _this->driverdata;
+            Display *display = data->display;
+            char * resource_manager;
+            XrmDatabase db;
+            XrmValue value;
+            char *type;
+
+            X11_XrmInitialize();
+
+            resource_manager = X11_XResourceManagerString(display);
+            db = X11_XrmGetStringDatabase(resource_manager);
+
+            // Get the value of Xft.dpi from the Database
+            if (X11_XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
+                if (value.addr && type && SDL_strcmp(type, "String") == 0) {
+                    int dpi = SDL_atoi(value.addr);
+                    scale_factor  = dpi / 96.0;
+                }
+            }
+            X11_XrmDestroyDatabase(db);
+        }
+
+        /* If that failed, try the GDK_SCALE envvar... */
+        if (scale_factor <= 0.0)
         {
             const char *scale_str = SDL_getenv("GDK_SCALE");
             if (scale_str) {
@@ -547,7 +572,7 @@ static int X11_AddXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int screen
         display.name = display_name;
     }
     display.desktop_mode = mode;
-    display.content_scale = GetGlobalContentScale();
+    display.content_scale = GetGlobalContentScale(_this);
     display.driverdata = displaydata;
     if (SDL_AddVideoDisplay(&display, send_event) == 0) {
         return -1;
@@ -755,8 +780,8 @@ static int X11_InitModes_StdXlib(SDL_VideoDevice *_this)
     SDL_zero(display);
     display.name = (char *)"Generic X11 Display"; /* this is just copied and thrown away, it's safe to cast to char* here. */
     display.desktop_mode = mode;
-    display.content_scale = GetGlobalContentScale();
     display.driverdata = displaydata;
+    display.content_scale = GetGlobalContentScale(_this);
     if (SDL_AddVideoDisplay(&display, SDL_TRUE) == 0) {
         return -1;
     }

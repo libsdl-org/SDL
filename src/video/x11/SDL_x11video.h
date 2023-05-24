@@ -28,6 +28,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <X11/Xresource.h>
 
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 #include <X11/Xcursor/Xcursor.h>

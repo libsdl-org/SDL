@@ -157,6 +157,12 @@ SDL_X11_SYM(Bool,XSupportsLocale,(void),(),return)
 SDL_X11_SYM(Status,XmbTextListToTextProperty,(Display* a,char** b,int c,XICCEncodingStyle d,XTextProperty* e),(a,b,c,d,e),return)
 SDL_X11_SYM(Region,XCreateRegion,(void),(),return)
 SDL_X11_SYM(void,XDestroyRegion,(Region),(a),)
+SDL_X11_SYM(void,XrmInitialize,(),(),)
+SDL_X11_SYM(char*,XResourceManagerString,(Display *display),(display),)
+SDL_X11_SYM(XrmDatabase,XrmGetStringDatabase,(char *data),(data),)
+SDL_X11_SYM(void,XrmDestroyDatabase,(XrmDatabase db),(db),)
+SDL_X11_SYM(Bool,XrmGetResource,(XrmDatabase db, char* str_name, char* str_class, char **str_type_return, XrmValue *),(db, str_name, str_class,str_type_return,value_return),)
+
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 SDL_X11_MODULE(XFIXES)
