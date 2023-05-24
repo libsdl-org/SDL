@@ -150,6 +150,9 @@ struct hid_device_ {
 	int config_number;
 	/* The interface number of the HID */
 	int interface;
+	int interface_class;
+	int interface_subclass;
+	int interface_protocol;
 
 	uint16_t report_descriptor_size;
 
@@ -652,7 +655,7 @@ static void invasive_fill_device_info_usage(struct hid_device_info *cur_dev, lib
  * Create and fill up most of hid_device_info fields.
  * usage_page/usage is not filled up.
  */
-static struct hid_device_info * create_device_info_for_device(libusb_device *device, libusb_device_handle *handle, struct libusb_device_descriptor *desc, int config_number, int interface_num)
+static struct hid_device_info * create_device_info_for_device(libusb_device *device, libusb_device_handle *handle, struct libusb_device_descriptor *desc, int config_number, int interface_num, int interface_class, int interface_subclass, int interface_protocol)
 {
 	struct hid_device_info *cur_dev = calloc(1, sizeof(struct hid_device_info));
 	if (cur_dev == NULL) {
@@ -666,6 +669,9 @@ static struct hid_device_info * create_device_info_for_device(libusb_device *dev
 	cur_dev->release_number = desc->bcdDevice;
 
 	cur_dev->interface_number = interface_num;
+	cur_dev->interface_class = interface_class;
+	cur_dev->interface_subclass = interface_subclass;
+	cur_dev->interface_protocol = interface_protocol;
 
 	cur_dev->bus_type = HID_API_BUS_USB;
 
@@ -798,7 +804,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 						}
 #endif
 
-						tmp = create_device_info_for_device(dev, handle, &desc, conf_desc->bConfigurationValue, intf_desc->bInterfaceNumber);
+						tmp = create_device_info_for_device(dev, handle, &desc, conf_desc->bConfigurationValue, intf_desc->bInterfaceNumber, intf_desc->bInterfaceClass, intf_desc->bInterfaceSubClass, intf_desc->bInterfaceProtocol);
 						if (tmp) {
 #ifdef INVASIVE_GET_USAGE
 							/* TODO: have a runtime check for this section. */
@@ -1090,6 +1096,9 @@ static int hidapi_initialize_device(hid_device *dev, int config_number, const st
 	/* Store off the USB information */
 	dev->config_number = config_number;
 	dev->interface = intf_desc->bInterfaceNumber;
+	dev->interface_class = intf_desc->bInterfaceClass;
+	dev->interface_subclass = intf_desc->bInterfaceSubClass;
+	dev->interface_protocol = intf_desc->bInterfaceProtocol;
 
 	dev->report_descriptor_size = get_report_descriptor_size_from_interface_descriptors(intf_desc);
 
@@ -1607,7 +1616,7 @@ HID_API_EXPORT struct hid_device_info *HID_API_CALL hid_get_device_info(hid_devi
 		libusb_device *usb_device = libusb_get_device(dev->device_handle);
 		libusb_get_device_descriptor(usb_device, &desc);
 
-		dev->device_info = create_device_info_for_device(usb_device, dev->device_handle, &desc, dev->config_number, dev->interface);
+		dev->device_info = create_device_info_for_device(usb_device, dev->device_handle, &desc, dev->config_number, dev->interface, dev->interface_class, dev->interface_subclass, dev->interface_protocol);
 		// device error already set by create_device_info_for_device, if any
 
 		if (dev->device_info) {
