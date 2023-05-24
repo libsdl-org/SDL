@@ -641,6 +641,11 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC)
     list(APPEND EXTRA_CFLAGS "-Wshadow")
   endif()
 
+  check_c_compiler_flag(-Wunused-local-typedefs HAVE_GCC_WUNUSED_LOCAL_TYPEDEFS)
+  if(HAVE_GCC_WUNUSED_LOCAL_TYPEDEFS)
+    list(APPEND EXTRA_CFLAGS "-Wno-unused-local-typedefs")
+  endif()
+
   if(APPLE)
     cmake_push_check_state(RESET)
     # FIXME: don't use deprecated declarations

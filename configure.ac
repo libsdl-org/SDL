@@ -1674,6 +1674,27 @@ dnl Haiku headers use multicharacter constants all over the place. Ignore these 
     fi
 }
 
+dnl See if GCC's -Wunused-local-typedefs is supported and disable it
+dnl  because it triggers on gcc 4.8.4 for compile time asserts inside
+dnl  of functions.
+CheckUnusedLocalTypedefs()
+{
+    AC_MSG_CHECKING(for GCC -Wunused-local-typedefs option)
+    have_gcc_unused_local_typedefs=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -Wunused-local-typedefs"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    int x = 0;
+    ]],[])], [have_gcc_unused_local_typedefs=yes],[])
+    AC_MSG_RESULT($have_gcc_unused_local_typedefs)
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_unused_local_typedefs = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -Wno-unused-local-typedefs"
+    fi
+}
+
 dnl Check for Wayland
 CheckWayland()
 {
@@ -3746,6 +3767,7 @@ CheckVirtualJoystick()
 
 dnl Do this on all platforms, before everything else (other things might want to override it).
 CheckWarnAll
+CheckUnusedLocalTypedefs
 CheckNoStrictAliasing
 
 dnl Do this for every platform, but for some it doesn't mean anything, but better to catch it here anyhow.

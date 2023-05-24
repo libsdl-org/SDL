@@ -23225,6 +23225,41 @@ printf "%s\n" "$need_gcc_Wno_multichar" >&6; }
     fi
 }
 
+CheckUnusedLocalTypedefs()
+{
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Wunused-local-typedefs option" >&5
+printf %s "checking for GCC -Wunused-local-typedefs option... " >&6; }
+    have_gcc_unused_local_typedefs=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -Wunused-local-typedefs"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    int x = 0;
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_gcc_unused_local_typedefs=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_unused_local_typedefs" >&5
+printf "%s\n" "$have_gcc_unused_local_typedefs" >&6; }
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_unused_local_typedefs = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -Wno-unused-local-typedefs"
+    fi
+}
+
 CheckWayland()
 {
     # Check whether --enable-video-wayland was given.
@@ -28571,6 +28606,7 @@ printf "%s\n" "#define SDL_JOYSTICK_VIRTUAL 1" >>confdefs.h
 }
 
 CheckWarnAll
+CheckUnusedLocalTypedefs
 CheckNoStrictAliasing
 
 CheckEventSignals
