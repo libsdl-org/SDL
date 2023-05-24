@@ -186,6 +186,12 @@ extern "C" {
 			    Since version 0.13.0, @ref HID_API_VERSION >= HID_API_MAKE_VERSION(0, 13, 0)
 			*/
 			hid_bus_type bus_type;
+
+			/** Additional information about the USB interface.
+			    (libusb only) */
+			int interface_class;
+			int interface_subclass;
+			int interface_protocol;
 		};
 
 #endif /* DEFINED_HID_TYPES */

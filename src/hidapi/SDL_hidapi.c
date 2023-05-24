@@ -1057,9 +1057,9 @@ CopyHIDDeviceInfo(struct hid_device_info *pSrc, struct SDL_hid_device_info *pDst
     pDst->usage_page = pSrc->usage_page;
     pDst->usage = pSrc->usage;
     pDst->interface_number = pSrc->interface_number;
-    //pDst->interface_class = pSrc->interface_class;
-    //pDst->interface_subclass = pSrc->interface_subclass;
-    //pDst->interface_protocol = pSrc->interface_protocol;
+    pDst->interface_class = pSrc->interface_class;
+    pDst->interface_subclass = pSrc->interface_subclass;
+    pDst->interface_protocol = pSrc->interface_protocol;
     pDst->next = NULL;
 }
 
