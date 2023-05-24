@@ -102,6 +102,7 @@
 #cmakedefine HAVE__WCSICMP 1
 #cmakedefine HAVE_WCSNCASECMP 1
 #cmakedefine HAVE__WCSNICMP 1
+#cmakedefine HAVE_WCSTOL 1
 #cmakedefine HAVE_STRLEN 1
 #cmakedefine HAVE_STRLCPY 1
 #cmakedefine HAVE_STRLCAT 1

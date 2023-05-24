@@ -1106,16 +1106,7 @@ if(SDL_LIBC)
       set(${_HAVE_H} 1)
     endforeach()
     set(HAVE_SIGNAL_H 1)
-    foreach(_FN
-            malloc calloc realloc free bsearch qsort abs memset memcpy memmove memcmp
-            wcslen _wcsdup wcsdup wcsstr wcscmp wcsncmp _wcsicmp _wcsnicmp
-            strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
-            _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
-            _stricmp _strnicmp sscanf
-            acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf
-            copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf
-            log logf log10 log10f lround lroundf modf modff pow powf round roundf
-            scalbn scalbnf sin sinf sqrt sqrtf tan tanf trunc truncf)
+    foreach(_FN abs acos acosf asin asinf atan atan2 atan2f atanf atof atoi bsearch calloc ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf free itoa log log10 log10f logf lround lroundf _ltoa malloc memcmp memcpy memmove memset modf modff pow powf qsort realloc round roundf scalbn scalbnf sin sinf sqrt sqrtf sscanf strchr strcmp _stricmp strlen _strlwr strncmp _strnicmp strrchr _strrev strstr strtod strtol strtoll strtoul _strupr tan tanf trunc truncf _ultoa wcscmp _wcsdup wcsdup _wcsicmp wcslen wcsncmp _wcsnicmp wcsstr wcstol)
       string(TOUPPER ${_FN} _UPPER)
       set(HAVE_${_UPPER} 1)
     endforeach()
@@ -1159,16 +1150,7 @@ if(SDL_LIBC)
     check_c_source_compiles("#include <sys/types.h>
                              #include <sys/mman.h>
                              int main(void) { return 0; }" HAVE_MPROTECT)
-    foreach(_FN
-            strtod malloc calloc realloc free getenv setenv putenv unsetenv
-            bsearch qsort abs bcopy memset memcpy memmove memcmp strlen strlcpy strlcat
-            _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r
-            itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
-            atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp strcasestr
-            wcscmp _wcsdup wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr
-            wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp
-            sscanf vsscanf vsnprintf fopen64 fseeko fseeko64 _Exit
-            )
+    foreach(_FN abs atof atoi bcopy bsearch calloc _Exit fopen64 free fseeko fseeko64 getenv _i64toa index itoa _ltoa malloc memcmp memcpy memmove memset putenv qsort realloc rindex setenv sscanf strcasecmp strcasestr strchr strcmp _stricmp strlcat strlcpy strlen _strlwr strncasecmp strncmp _strnicmp strrchr _strrev strstr strtod strtok_r strtol strtoll strtoul strtoull _strupr _ui64toa _uitoa _ultoa unsetenv vsnprintf vsscanf wcscasecmp wcscmp _wcsdup wcsdup _wcsicmp wcslcat wcslcpy wcslen wcsncasecmp wcsncmp _wcsnicmp wcsstr wcstol)
       string(TOUPPER ${_FN} _UPPER)
       set(LIBC_HAS_VAR "LIBC_HAS_${_UPPER}")
       check_symbol_exists("${_FN}" "${STDC_HEADER_NAMES}" ${LIBC_HAS_VAR})

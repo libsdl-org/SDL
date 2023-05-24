@@ -28,7 +28,7 @@
 #include <psp2/kernel/clib.h>
 #endif
 
-#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
+#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_WCSTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
 #define SDL_isupperhex(X) (((X) >= 'A') && ((X) <= 'F'))
 #define SDL_islowerhex(X) (((X) >= 'a') && ((X) <= 'f'))
 #endif
@@ -66,6 +66,50 @@ static size_t SDL_ScanLong(const char *text, int count, int radix, long *valuep)
     for (;;) {
         int v;
         if (SDL_isdigit((unsigned char)*text)) {
+            v = *text - '0';
+        } else if (radix == 16 && SDL_isupperhex(*text)) {
+            v = 10 + (*text - 'A');
+        } else if (radix == 16 && SDL_islowerhex(*text)) {
+            v = 10 + (*text - 'a');
+        } else {
+            break;
+        }
+        value *= radix;
+        value += v;
+        ++text;
+
+        if (count > 0 && (text - textstart) == count) {
+            break;
+        }
+    }
+    if (valuep && text > textstart) {
+        if (negative && value) {
+            *valuep = -value;
+        } else {
+            *valuep = value;
+        }
+    }
+    return text - textstart;
+}
+#endif
+
+#if !defined(HAVE_WCSTOL)
+static size_t SDL_ScanLongW(const wchar_t *text, int count, int radix, long *valuep)
+{
+    const wchar_t *textstart = text;
+    long value = 0;
+    SDL_bool negative = SDL_FALSE;
+
+    if (*text == '-') {
+        negative = SDL_TRUE;
+        ++text;
+    }
+    if (radix == 16 && SDL_wcsncmp(text, L"0x", 2) == 0) {
+        text += 2;
+    }
+    for (;;) {
+        int v;
+        if (*text >= '0' && *text <= '9') {
             v = *text - '0';
         } else if (radix == 16 && SDL_isupperhex(*text)) {
             v = 10 + (*text - 'A');
@@ -528,6 +572,30 @@ int SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
         return (int)((unsigned int)a - (unsigned int)b);
     }
 #endif /* HAVE__WCSNICMP */
+}
+
+long SDL_wcstol(const wchar_t *string, wchar_t **endp, int base)
+{
+#ifdef HAVE_WCSTOL
+    return wcstol(string, endp, base);
+#else
+    size_t len;
+    long value = 0;
+
+    if (!base) {
+        if ((SDL_wcslen(string) > 2) && (SDL_wcsncmp(string, L"0x", 2) == 0)) {
+            base = 16;
+        } else {
+            base = 10;
+        }
+    }
+
+    len = SDL_ScanLongW(string, 0, base, &value);
+    if (endp) {
+        *endp = (wchar_t *)string + len;
+    }
+    return value;
+#endif /* HAVE_WCSTOL */
 }
 
 size_t SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
