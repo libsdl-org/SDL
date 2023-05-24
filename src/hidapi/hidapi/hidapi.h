@@ -105,6 +105,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#ifndef DEFINED_HID_TYPES
+#define DEFINED_HID_TYPES
 		/** A structure to hold the version numbers. */
 		struct hid_api_version {
 			int major; /**< major version number */
@@ -185,6 +187,8 @@ extern "C" {
 			*/
 			hid_bus_type bus_type;
 		};
+
+#endif /* DEFINED_HID_TYPES */
 
 
 		/** @brief Initialize the HIDAPI library.

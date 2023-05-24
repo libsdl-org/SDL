@@ -26,6 +26,8 @@
 
 #else
 
+#include <winioctl.h>
+
 /* This part of the header mimics hidclass.h,
     but only what is used by HIDAPI */
 
