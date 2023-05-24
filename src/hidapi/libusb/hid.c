@@ -566,7 +566,7 @@ int HID_API_EXPORT hid_exit(void)
 
 static int hid_get_report_descriptor_libusb(libusb_device_handle *handle, int interface_num, uint16_t expected_report_descriptor_size, unsigned char *buf, size_t buf_size)
 {
-	unsigned char tmp[HID_API_MAX_REPORT_DESCRIPTOR_SIZE];
+	unsigned char *tmp = (unsigned char *)malloc(HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
 
 	if (expected_report_descriptor_size > HID_API_MAX_REPORT_DESCRIPTOR_SIZE)
 		expected_report_descriptor_size = HID_API_MAX_REPORT_DESCRIPTOR_SIZE;
@@ -575,15 +575,16 @@ static int hid_get_report_descriptor_libusb(libusb_device_handle *handle, int in
 	   See USB HID Specificatin, sectin 7.1.1
 	*/
 	int res = libusb_control_transfer(handle, LIBUSB_ENDPOINT_IN|LIBUSB_RECIPIENT_INTERFACE, LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_REPORT << 8), interface_num, tmp, expected_report_descriptor_size, 5000);
-	if (res < 0) {
+	if (res >= 0) {
+		if (res > (int)buf_size)
+			res = (int)buf_size;
+
+		memcpy(buf, tmp, (size_t)res);
+	} else {
 		LOG("libusb_control_transfer() for getting the HID Report descriptor failed with %d: %s\n", res, libusb_error_name(res));
-		return -1;
 	}
+	free(tmp);
 
-	if (res > (int)buf_size)
-		res = (int)buf_size;
-
-	memcpy(buf, tmp, (size_t)res);
 	return res;
 }
 
@@ -592,10 +593,10 @@ static int hid_get_report_descriptor_libusb(libusb_device_handle *handle, int in
  */
 static void fill_device_info_usage(struct hid_device_info *cur_dev, libusb_device_handle *handle, int interface_num, uint16_t expected_report_descriptor_size)
 {
-	unsigned char hid_report_descriptor[HID_API_MAX_REPORT_DESCRIPTOR_SIZE];
+	unsigned char *hid_report_descriptor = malloc(HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
 	unsigned short page = 0, usage = 0;
 
-	int res = hid_get_report_descriptor_libusb(handle, interface_num, expected_report_descriptor_size, hid_report_descriptor, sizeof(hid_report_descriptor));
+	int res = hid_get_report_descriptor_libusb(handle, interface_num, expected_report_descriptor_size, hid_report_descriptor, HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
 	if (res >= 0) {
 		/* Parse the usage and usage page
 		   out of the report descriptor. */
@@ -1298,7 +1299,7 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 			0x09/*HID Set_Report*/,
 			(2/*HID output*/ << 8) | report_number,
 			dev->interface,
-			(unsigned char *)data, length,
+			(unsigned char *)data, (uint16_t)length,
 			1000/*timeout millis*/);
 
 		if (res < 0)
@@ -1469,7 +1470,7 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 		0x09/*HID set_report*/,
 		(3/*HID feature*/ << 8) | report_number,
 		dev->interface,
-		(unsigned char *)data, length,
+		(unsigned char *)data, (uint16_t)length,
 		1000/*timeout millis*/);
 
 	if (res < 0)
@@ -1500,7 +1501,7 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 		0x01/*HID get_report*/,
 		(3/*HID feature*/ << 8) | report_number,
 		dev->interface,
-		(unsigned char *)data, length,
+		(unsigned char *)data, (uint16_t)length,
 		1000/*timeout millis*/);
 
 	if (res < 0)
@@ -1530,7 +1531,7 @@ int HID_API_EXPORT HID_API_CALL hid_get_input_report(hid_device *dev, unsigned c
 		0x01/*HID get_report*/,
 		(1/*HID Input*/ << 8) | report_number,
 		dev->interface,
-		(unsigned char *)data, length,
+		(unsigned char *)data, (uint16_t)length,
 		1000/*timeout millis*/);
 
 	if (res < 0)

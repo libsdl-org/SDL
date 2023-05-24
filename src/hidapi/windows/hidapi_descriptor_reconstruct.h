@@ -27,7 +27,7 @@
 
 #include "hidapi_winapi.h"
 
-#if _MSC_VER
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable: 4200)
 #pragma warning(disable: 4201)
@@ -106,7 +106,7 @@ struct rd_main_item_node {
 
 typedef struct hid_pp_caps_info_ {
 	USHORT FirstCap;
-	USHORT NumberOfCaps; // Includes empty caps after LastCap 
+	USHORT NumberOfCaps; // Includes empty caps after LastCap
 	USHORT LastCap;
 	USHORT ReportByteLength;
 } hid_pp_caps_info, *phid_pp_caps_info;

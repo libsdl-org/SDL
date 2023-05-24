@@ -528,9 +528,11 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 	//  report descriptors seem to have it, as assumed here.
 	// ***********************************************************
 	{
-		int last_bit_position[NUM_OF_HIDP_REPORT_TYPES][256];
-		struct rd_main_item_node *last_report_item_lookup[NUM_OF_HIDP_REPORT_TYPES][256];
+		int *last_bit_position[NUM_OF_HIDP_REPORT_TYPES];
+		struct rd_main_item_node **last_report_item_lookup[NUM_OF_HIDP_REPORT_TYPES];
 		for (HIDP_REPORT_TYPE rt_idx = 0; rt_idx < NUM_OF_HIDP_REPORT_TYPES; rt_idx++) {
+			last_bit_position[rt_idx] = malloc(256 * sizeof(*last_bit_position[rt_idx]));
+			last_report_item_lookup[rt_idx] = malloc(256 * sizeof(*last_report_item_lookup[rt_idx]));
 			for (int reportid_idx = 0; reportid_idx < 256; reportid_idx++) {
 				last_bit_position[rt_idx][reportid_idx] = -1;
 				last_report_item_lookup[rt_idx][reportid_idx] = NULL;
@@ -569,6 +571,8 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 					}
 				}
 			}
+			free(last_bit_position[rt_idx]);
+			free(last_report_item_lookup[rt_idx]);
 		}
 	}
 

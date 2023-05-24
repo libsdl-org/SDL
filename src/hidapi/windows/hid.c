@@ -38,10 +38,11 @@ extern "C" {
 typedef LONG NTSTATUS;
 #endif
 
-#ifdef __MINGW32__
-#include <ntdef.h>
-#include <winbase.h>
+#ifndef WC_ERR_INVALID_CHARS
 #define WC_ERR_INVALID_CHARS 0x00000080
+#endif
+#ifndef _WIN32_WINNT_WIN8
+#define _WIN32_WINNT_WIN8 0x0602
 #endif
 
 #ifdef __CYGWIN__
@@ -116,6 +117,11 @@ static void free_library_handles()
 	cfgmgr32_lib_handle = NULL;
 }
 
+#if defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+
 static int lookup_functions()
 {
 	hid_lib_handle = LoadLibraryW(L"hid.dll");
@@ -128,10 +134,6 @@ static int lookup_functions()
 		goto err;
 	}
 
-#if defined(__GNUC__)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wcast-function-type"
-#endif
 #define RESOLVE(lib_handle, x) x = (x##_)GetProcAddress(lib_handle, #x); if (!x) goto err;
 
 	RESOLVE(hid_lib_handle, HidD_GetHidGuid);
@@ -156,9 +158,6 @@ static int lookup_functions()
 	RESOLVE(cfgmgr32_lib_handle, CM_Get_Device_Interface_ListW);
 
 #undef RESOLVE
-#if defined(__GNUC__)
-# pragma GCC diagnostic pop
-#endif
 
 	return 0;
 
@@ -166,6 +165,10 @@ err:
 	free_library_handles();
 	return -1;
 }
+
+#if defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
 
 #endif /* HIDAPI_USE_DDK */
 
