@@ -274,7 +274,7 @@ static id mouse_connect_observer = nil;
 static id mouse_disconnect_observer = nil;
 static bool mouse_relative_mode = SDL_FALSE;
 
-static void UpdatePointerLock()
+static void UpdatePointerLock(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
