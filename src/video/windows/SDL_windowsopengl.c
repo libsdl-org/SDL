@@ -780,20 +780,20 @@ SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window *window)
                 attribs[iattr++] = _this->gl_config.flags;
             }
 
-            /* only set if wgl extension is available */
-            if (_this->gl_data->HAS_WGL_ARB_context_flush_control) {
+            /* only set if wgl extension is available and not the default setting */
+            if ((_this->gl_data->HAS_WGL_ARB_context_flush_control) && (_this->gl_config.release_behavior == 0)) {
                 attribs[iattr++] = WGL_CONTEXT_RELEASE_BEHAVIOR_ARB;
                 attribs[iattr++] = _this->gl_config.release_behavior ? WGL_CONTEXT_RELEASE_BEHAVIOR_FLUSH_ARB : WGL_CONTEXT_RELEASE_BEHAVIOR_NONE_ARB;
             }
 
-            /* only set if wgl extension is available */
-            if (_this->gl_data->HAS_WGL_ARB_create_context_robustness) {
+            /* only set if wgl extension is available and not the default setting */
+            if ((_this->gl_data->HAS_WGL_ARB_create_context_robustness) && (_this->gl_config.reset_notification != 0)) {
                 attribs[iattr++] = WGL_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB;
                 attribs[iattr++] = _this->gl_config.reset_notification ? WGL_LOSE_CONTEXT_ON_RESET_ARB : WGL_NO_RESET_NOTIFICATION_ARB;
             }
 
-            /* only set if wgl extension is available */
-            if (_this->gl_data->HAS_WGL_ARB_create_context_no_error) {
+            /* only set if wgl extension is available and not the default setting */
+            if ((_this->gl_data->HAS_WGL_ARB_create_context_no_error) && (_this->gl_config.no_error != 0)) {
                 attribs[iattr++] = WGL_CONTEXT_OPENGL_NO_ERROR_ARB;
                 attribs[iattr++] = _this->gl_config.no_error;
             }
