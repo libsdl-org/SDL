@@ -492,6 +492,111 @@ err:
 	return str;
 }
 
+struct usb_string_cache_entry {
+	uint16_t vid;
+	uint16_t pid;
+	wchar_t *vendor;
+	wchar_t *product;
+};
+
+static struct usb_string_cache_entry *usb_string_cache = NULL;
+static size_t usb_string_cache_size = 0;
+static size_t usb_string_cache_insert_pos = 0;
+
+static int usb_string_cache_grow()
+{
+	struct usb_string_cache_entry *new_cache;
+	size_t allocSize;
+	size_t new_cache_size;
+
+	new_cache_size = usb_string_cache_size + 8;
+	allocSize = sizeof(struct usb_string_cache_entry) * new_cache_size;
+	new_cache = (struct usb_string_cache_entry *)realloc(usb_string_cache, allocSize);
+	if (!new_cache)
+		return -1;
+
+	usb_string_cache = new_cache;
+	usb_string_cache_size = new_cache_size;
+
+	return 0;
+}
+
+static void usb_string_cache_destroy()
+{
+	size_t i;
+	for (i = 0; i < usb_string_cache_insert_pos; i++) {
+		free(usb_string_cache[i].vendor);
+		free(usb_string_cache[i].product);
+	}
+	free(usb_string_cache);
+
+	usb_string_cache = NULL;
+	usb_string_cache_size = 0;
+	usb_string_cache_insert_pos = 0;
+}
+
+static struct usb_string_cache_entry *usb_string_cache_insert()
+{
+	struct usb_string_cache_entry *new_entry = NULL;
+	if (usb_string_cache_insert_pos >= usb_string_cache_size) {
+		if (usb_string_cache_grow() < 0)
+			return NULL;
+	}
+	new_entry = &usb_string_cache[usb_string_cache_insert_pos];
+	usb_string_cache_insert_pos++;
+	return new_entry;
+}
+
+static int usb_string_can_cache(uint16_t vid, uint16_t pid)
+{
+	if (!vid || !pid) {
+		/* We can't cache these, they aren't unique */
+		return 0;
+	}
+
+	if (vid == 0x0f0d && pid == 0x00dc) {
+		/* HORI reuses this VID/PID for many different products */
+		return 0;
+	}
+
+	/* We can cache these strings */
+	return 1;
+}
+
+static const struct usb_string_cache_entry *usb_string_cache_find(struct libusb_device_descriptor *desc, struct libusb_device_handle *handle)
+{
+	struct usb_string_cache_entry *entry = NULL;
+	size_t i;
+
+	/* Search for existing string cache entry */
+	for (i = 0; i < usb_string_cache_insert_pos; i++) {
+		entry = &usb_string_cache[i];
+		if (entry->vid != desc->idVendor)
+			continue;
+		if (entry->pid != desc->idProduct)
+			continue;
+		return entry;
+	}
+
+	/* Not found, create one. */
+	entry = usb_string_cache_insert();
+	if (!entry)
+		return NULL;
+
+	entry->vid = desc->idVendor;
+	entry->pid = desc->idProduct;
+	if (desc->iManufacturer > 0)
+		entry->vendor = get_usb_string(handle, desc->iManufacturer);
+	else
+		entry->vendor = NULL;
+	if (desc->iProduct > 0)
+		entry->product = get_usb_string(handle, desc->iProduct);
+	else
+		entry->product = NULL;
+
+	return entry;
+}
+
 /**
   Max length of the result: "000-000.000.000.000.000.000.000:000.000" (39 chars).
   64 is used for simplicity/alignment.
@@ -559,6 +664,8 @@ int HID_API_EXPORT hid_init(void)
 
 int HID_API_EXPORT hid_exit(void)
 {
+	usb_string_cache_destroy();
+
 	if (usb_context) {
 		libusb_exit(usb_context);
 		usb_context = NULL;
@@ -685,10 +792,21 @@ static struct hid_device_info * create_device_info_for_device(libusb_device *dev
 		cur_dev->serial_number = get_usb_string(handle, desc->iSerialNumber);
 
 	/* Manufacturer and Product strings */
-	if (desc->iManufacturer > 0)
-		cur_dev->manufacturer_string = get_usb_string(handle, desc->iManufacturer);
-	if (desc->iProduct > 0)
-		cur_dev->product_string = get_usb_string(handle, desc->iProduct);
+	const struct usb_string_cache_entry *string_cache;
+	if (usb_string_can_cache(desc->idVendor, desc->idProduct) &&
+	    (string_cache = usb_string_cache_find(desc, handle)) != NULL) {
+		if (string_cache->vendor) {
+			cur_dev->manufacturer_string = wcsdup(string_cache->vendor);
+		}
+		if (string_cache->product) {
+			cur_dev->product_string = wcsdup(string_cache->product);
+		}
+	} else {
+		if (desc->iManufacturer > 0)
+			cur_dev->manufacturer_string = get_usb_string(handle, desc->iManufacturer);
+		if (desc->iProduct > 0)
+			cur_dev->product_string = get_usb_string(handle, desc->iProduct);
+	}
 
 	return cur_dev;
 }
