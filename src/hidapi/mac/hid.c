@@ -372,11 +372,14 @@ static int get_string_property(IOHIDDeviceRef device, CFStringRef prop, wchar_t 
 	if (!len)
 		return 0;
 
+	if (CFGetTypeID(prop) != CFStringGetTypeID())
+		return 0;
+
 	str = (CFStringRef) IOHIDDeviceGetProperty(device, prop);
 
 	buf[0] = 0;
 
-	if (str) {
+	if (str && CFGetTypeID(str) == CFStringGetTypeID()) {
 		CFIndex str_len = CFStringGetLength(str);
 		CFRange range;
 		CFIndex used_buf_len;
