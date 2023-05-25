@@ -1633,6 +1633,7 @@ int SDL_hid_get_report_descriptor(SDL_hid_device *device, unsigned char *buf, si
 void SDL_hid_ble_scan(SDL_bool active)
 {
 #if !defined(SDL_HIDAPI_DISABLED) && (defined(__IOS__) || defined(__TVOS__))
+    extern void hid_ble_scan(int bStart);
     hid_ble_scan(active);
 #endif
 }
