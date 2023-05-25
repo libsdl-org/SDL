@@ -564,66 +564,16 @@ typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 #define read_thread                  PLATFORM_read_thread
 #define return_data                  PLATFORM_return_data
 
-/* Allow hidapi.h to be included in the platform implementation */
-#undef HIDAPI_H__
-
 #ifdef __LINUX__
-
-#ifdef SDL_USE_LIBUDEV
-static const SDL_UDEV_Symbols *udev_ctx = NULL;
-
-#define udev_device_get_devnode                       udev_ctx->udev_device_get_devnode
-#define udev_device_get_parent_with_subsystem_devtype udev_ctx->udev_device_get_parent_with_subsystem_devtype
-#define udev_device_get_sysattr_value                 udev_ctx->udev_device_get_sysattr_value
-#define udev_device_get_syspath                       udev_ctx->udev_device_get_syspath
-#define udev_device_new_from_devnum                   udev_ctx->udev_device_new_from_devnum
-#define udev_device_new_from_syspath                  udev_ctx->udev_device_new_from_syspath
-#define udev_device_unref                             udev_ctx->udev_device_unref
-#define udev_enumerate_add_match_subsystem            udev_ctx->udev_enumerate_add_match_subsystem
-#define udev_enumerate_get_list_entry                 udev_ctx->udev_enumerate_get_list_entry
-#define udev_enumerate_new                            udev_ctx->udev_enumerate_new
-#define udev_enumerate_scan_devices                   udev_ctx->udev_enumerate_scan_devices
-#define udev_enumerate_unref                          udev_ctx->udev_enumerate_unref
-#define udev_list_entry_get_name                      udev_ctx->udev_list_entry_get_name
-#define udev_list_entry_get_next                      udev_ctx->udev_list_entry_get_next
-#define udev_new                                      udev_ctx->udev_new
-#define udev_unref                                    udev_ctx->udev_unref
-
-#include "linux/hid.c"
-#define HAVE_PLATFORM_BACKEND 1
-#endif /* SDL_USE_LIBUDEV */
-
+#include "SDL_hidapi_linux.h"
 #elif defined(__MACOS__)
-#include "mac/hid.c"
-#define HAVE_PLATFORM_BACKEND 1
-#define udev_ctx              1
+#include "SDL_hidapi_mac.h"
 #elif defined(__WINDOWS__) || defined(__WINGDK__)
-/* Define standard library functions in terms of SDL */
-#define calloc      SDL_calloc
-#define free        SDL_free
-#define malloc      SDL_malloc
-#define memcmp      SDL_memcmp
-#define swprintf    SDL_swprintf
-#define towupper    SDL_toupper
-#define wcscmp      SDL_wcscmp
-#define _wcsdup     SDL_wcsdup
-#define wcslen      SDL_wcslen
-#define wcsncpy     SDL_wcslcpy
-#define wcsstr      SDL_wcsstr
-#define wcstol      SDL_wcstol
-#include "windows/hid.c"
-#define HAVE_PLATFORM_BACKEND 1
-#define udev_ctx              1
+#include "SDL_hidapi_windows.h"
 #elif defined(__ANDROID__)
-/* The implementation for Android is in a separate .cpp file */
-#include "hidapi/hidapi.h"
-#define HAVE_PLATFORM_BACKEND 1
-#define udev_ctx              1
+#include "SDL_hidapi_android.h"
 #elif defined(__IOS__) || defined(__TVOS__)
-/* The implementation for iOS and tvOS is in a separate .m file */
-#include "hidapi/hidapi.h"
-#define HAVE_PLATFORM_BACKEND 1
-#define udev_ctx              1
+#include "SDL_hidapi_ios.h"
 #endif
 
 #undef api_version
@@ -696,8 +646,7 @@ typedef struct DRIVER_hid_device_ DRIVER_hid_device;
 #define hid_write                    DRIVER_hid_write
 
 #ifdef SDL_JOYSTICK_HIDAPI_STEAMXBOX
-#undef HIDAPI_H__
-#include "steamxbox/hid.c"
+#include "SDL_hidapi_steamxbox.h"
 #else
 #error Need a driver hid.c for this platform!
 #endif
@@ -857,21 +806,7 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 #define read_thread                  LIBUSB_read_thread
 #define return_data                  LIBUSB_return_data
 
-#ifndef __FreeBSD__
-/* this is awkwardly inlined, so we need to re-implement it here
- * so we can override the libusb_control_transfer call */
-static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
-                                 uint8_t descriptor_index, uint16_t lang_id,
-                                 unsigned char *data, int length)
-{
-    return libusb_control_transfer(dev, LIBUSB_ENDPOINT_IN | 0x0, LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_STRING << 8) | descriptor_index, lang_id,
-                                   data, (uint16_t)length, 1000); /* Endpoint 0 IN */
-}
-#define libusb_get_string_descriptor SDL_libusb_get_string_descriptor
-#endif /* __FreeBSD__ */
-
-#undef HIDAPI_H__
-#include "libusb/hid.c"
+#include "SDL_hidapi_libusb.h"
 
 #undef libusb_init
 #undef libusb_exit
