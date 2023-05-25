@@ -761,6 +761,28 @@ static struct hid_device_info *hid_internal_get_device_info(const wchar_t *path,
 	return dev;
 }
 
+static int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
+{
+	size_t i;
+	static const struct { unsigned short vid; unsigned short pid; } known_bad[] = {
+		{ 0x045E, 0x0822 },  /* Microsoft Precision Mouse - causes deadlock asking for device details */
+		{ 0x0738, 0x2217 },  /* SPEEDLINK COMPETITION PRO - turns into an Android controller when enumerated */
+		{ 0x0D8C, 0x0014 },  /* Sharkoon Skiller SGH2 headset - causes deadlock asking for device details */
+		{ 0x1532, 0x0109 },  /* Razer Lycosa Gaming keyboard - causes deadlock asking for device details */
+		{ 0x1532, 0x010B },  /* Razer Arctosa Gaming keyboard - causes deadlock asking for device details */
+		{ 0x1B1C, 0x1B3D },  /* Corsair Gaming keyboard - causes deadlock asking for device details */
+		{ 0x1CCF, 0x0000 }  /* All Konami Amusement Devices - causes deadlock asking for device details */
+	};
+
+	for (i = 0; i < (sizeof(known_bad)/sizeof(known_bad[0])); i++) {
+		if ((vendor_id == known_bad[i].vid) && (product_id == known_bad[i].pid || known_bad[i].pid == 0x0000)) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
 	struct hid_device_info *root = NULL; /* return object */
@@ -831,7 +853,8 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 		/* Check the VID/PID to see if we should add this
 		   device to the enumeration list. */
 		if ((vendor_id == 0x0 || attrib.VendorID == vendor_id) &&
-		    (product_id == 0x0 || attrib.ProductID == product_id)) {
+		    (product_id == 0x0 || attrib.ProductID == product_id) &&
+		    !hid_blacklist(attrib.VendorID, attrib.ProductID)) {
 
 			/* VID/PID match. Create the record. */
 			struct hid_device_info *tmp = hid_internal_get_device_info(device_interface, device_handle);
