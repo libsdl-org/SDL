@@ -179,6 +179,10 @@ struct hid_device_ {
 	int transfer_loop_finished;
 	struct libusb_transfer *transfer;
 
+	/* Quirks */
+	int skip_output_report_id;
+	int no_output_reports_on_intr_ep;
+
 	/* List of received input reports. */
 	struct input_report *input_reports;
 
@@ -1329,6 +1333,19 @@ static void init_xboxone(libusb_device_handle *device_handle, unsigned short idV
 	}
 }
 
+static void calculate_device_quirks(hid_device *dev, unsigned short idVendor, unsigned short idProduct)
+{
+	static const int VENDOR_SONY = 0x054c;
+	static const int PRODUCT_PS3_CONTROLLER = 0x0268;
+	static const int PRODUCT_NAVIGATION_CONTROLLER = 0x042f;
+
+	if (idVendor == VENDOR_SONY &&
+	    (idProduct == PRODUCT_PS3_CONTROLLER || idProduct == PRODUCT_NAVIGATION_CONTROLLER)) {
+		dev->skip_output_report_id = 1;
+		dev->no_output_reports_on_intr_ep = 1;
+	}
+}
+
 static int hidapi_initialize_device(hid_device *dev, int config_number, const struct libusb_interface_descriptor *intf_desc, const struct libusb_config_descriptor *conf_desc)
 {
 	int i =0;
@@ -1425,6 +1442,8 @@ static int hidapi_initialize_device(hid_device *dev, int config_number, const st
 			dev->output_endpoint = ep->bEndpointAddress;
 		}
 	}
+
+	calculate_device_quirks(dev, desc.idVendor, desc.idProduct);
 
 	pthread_create(&dev->thread, NULL, read_thread, dev);
 
@@ -1591,14 +1610,14 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 
 	report_number = data[0];
 
-	if (report_number == 0x0) {
+	if (report_number == 0x0 || dev->skip_output_report_id) {
 		data++;
 		length--;
 		skipped_report_id = 1;
 	}
 
 
-	if (dev->output_endpoint <= 0) {
+	if (dev->output_endpoint <= 0 || dev->no_output_reports_on_intr_ep) {
 		/* No interrupt out endpoint. Use the Control Endpoint */
 		res = libusb_control_transfer(dev->device_handle,
 			LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_RECIPIENT_INTERFACE|LIBUSB_ENDPOINT_OUT,
