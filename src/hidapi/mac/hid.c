@@ -38,6 +38,11 @@
 
 #include "hidapi_darwin.h"
 
+/* Only matching controllers is a more safe option and prevents input monitoring permissions dialogs */
+#ifndef HIDAPI_ONLY_ENUMERATE_CONTROLLERS
+#define HIDAPI_ONLY_ENUMERATE_CONTROLLERS 0
+#endif
+
 /* As defined in AppKit.h, but we don't need the entire AppKit for a single constant. */
 extern const double NSAppKitVersionNumber;
 
@@ -700,6 +705,51 @@ static struct hid_device_info *create_device_info(IOHIDDeviceRef device)
 	return root;
 }
 
+static CFDictionaryRef create_usage_match(const UInt32 page, const UInt32 usage, int *okay)
+{
+    CFDictionaryRef retval = NULL;
+    CFNumberRef pageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page);
+    CFNumberRef usageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &usage);
+    const void *keys[2] = { (void *) CFSTR(kIOHIDDeviceUsagePageKey), (void *) CFSTR(kIOHIDDeviceUsageKey) };
+    const void *vals[2] = { (void *) pageNumRef, (void *) usageNumRef };
+
+    if (pageNumRef && usageNumRef) {
+        retval = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    }
+
+    if (pageNumRef) {
+        CFRelease(pageNumRef);
+    }
+    if (usageNumRef) {
+        CFRelease(usageNumRef);
+    }
+
+    if (!retval) {
+        *okay = 0;
+    }
+
+    return retval;
+}
+
+static CFDictionaryRef create_vendor_match(const UInt32 vendor, int *okay)
+{
+    CFDictionaryRef retval = NULL;
+    CFNumberRef vidNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &vendor);
+    const void *keys[1] = { (void *) CFSTR(kIOHIDVendorIDKey) };
+    const void *vals[1] = { (void *) vidNumRef };
+
+    if (vidNumRef) {
+        retval = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFRelease(vidNumRef);
+    }
+
+    if (!retval) {
+        *okay = 0;
+    }
+
+    return retval;
+}
+
 struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
 	struct hid_device_info *root = NULL; /* return object */
@@ -717,9 +767,8 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	process_pending_events();
 
 	/* Get a list of the Devices */
-	CFMutableDictionaryRef matching = NULL;
 	if (vendor_id != 0 || product_id != 0) {
-		matching = CFDictionaryCreateMutable(kCFAllocatorDefault, kIOHIDOptionsTypeNone, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFMutableDictionaryRef matching = CFDictionaryCreateMutable(kCFAllocatorDefault, kIOHIDOptionsTypeNone, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 
 		if (matching && vendor_id != 0) {
 			CFNumberRef v = CFNumberCreate(kCFAllocatorDefault, kCFNumberShortType, &vendor_id);
@@ -732,10 +781,35 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			CFDictionarySetValue(matching, CFSTR(kIOHIDProductIDKey), p);
 			CFRelease(p);
 		}
-	}
-	IOHIDManagerSetDeviceMatching(hid_mgr, matching);
-	if (matching != NULL) {
-		CFRelease(matching);
+
+		IOHIDManagerSetDeviceMatching(hid_mgr, matching);
+		if (matching != NULL) {
+			CFRelease(matching);
+		}
+	} else if (HIDAPI_ONLY_ENUMERATE_CONTROLLERS) {
+		const UInt32 VALVE_USB_VID = 0x28DE;
+		int okay = 1;
+		const void *vals[] = {
+			(void *) create_usage_match(kHIDPage_GenericDesktop, kHIDUsage_GD_Joystick, &okay),
+			(void *) create_usage_match(kHIDPage_GenericDesktop, kHIDUsage_GD_GamePad, &okay),
+			(void *) create_usage_match(kHIDPage_GenericDesktop, kHIDUsage_GD_MultiAxisController, &okay),
+			(void *) create_vendor_match(VALVE_USB_VID, &okay),
+		};
+		CFIndex numElements = sizeof(vals) / sizeof(vals[0]);
+		CFArrayRef matching = okay ? CFArrayCreate(kCFAllocatorDefault, vals, numElements, &kCFTypeArrayCallBacks) : NULL;
+
+		for (i = 0; i < numElements; i++) {
+			if (vals[i]) {
+				CFRelease((CFTypeRef) vals[i]);
+			}
+		}
+
+		IOHIDManagerSetDeviceMatchingMultiple(hid_mgr, matching);
+		if (matching != NULL) {
+			CFRelease(matching);
+		}
+	} else {
+		IOHIDManagerSetDeviceMatching(hid_mgr, NULL);
 	}
 
 	CFSetRef device_set = IOHIDManagerCopyDevices(hid_mgr);
