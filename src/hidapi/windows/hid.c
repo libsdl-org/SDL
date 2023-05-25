@@ -872,6 +872,13 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			goto cont_close;
 		}
 
+#ifdef HIDAPI_IGNORE_DEVICE
+		/* See if there are any devices we should skip in enumeration */
+		if (HIDAPI_IGNORE_DEVICE(attrib.VendorID, attrib.ProductID)) {
+			goto cont_close;
+		}
+#endif
+
 		/* Check the VID/PID to see if we should add this
 		   device to the enumeration list. */
 		if ((vendor_id == 0x0 || attrib.VendorID == vendor_id) &&

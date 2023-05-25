@@ -25,9 +25,6 @@
 #define free        SDL_free
 #define malloc      SDL_malloc
 #define memcmp      SDL_memcmp
-#define snprintf    SDL_snprintf
-#define strlen      SDL_strlen
-#define _strnicmp   SDL_strncasecmp
 #define swprintf    SDL_swprintf
 #define towupper    SDL_toupper
 #define wcscmp      SDL_wcscmp

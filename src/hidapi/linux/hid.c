@@ -960,6 +960,16 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 				continue;
 		}
 
+#ifdef HIDAPI_IGNORE_DEVICE
+		/* See if there are any devices we should skip in enumeration */
+		if (!parse_hid_vid_pid_from_sysfs(sysfs_path, &bus_type, &dev_vid, &dev_pid))
+			continue;
+
+		if (HIDAPI_IGNORE_DEVICE(dev_vid, dev_pid)) {
+			continue;
+		}
+#endif
+
 		raw_dev = udev_device_new_from_syspath(udev, sysfs_path);
 		if (!raw_dev)
 			continue;
