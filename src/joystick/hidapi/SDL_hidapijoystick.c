@@ -117,7 +117,7 @@ void HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size)
 {
     int i;
     char *buffer;
-    size_t length = SDL_strlen(prefix) + 11 * (USB_PACKET_LENGTH / 8) + (5 * USB_PACKET_LENGTH * 2) + 1 + 1;
+    size_t length = SDL_strlen(prefix) + 11 * (size / 8) + (5 * size * 2) + 1 + 1;
     int start = 0, amount = size;
     size_t current_len;
 
