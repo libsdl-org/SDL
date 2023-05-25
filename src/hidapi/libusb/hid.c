@@ -1085,6 +1085,13 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			continue;
 		}
 
+#ifdef HIDAPI_IGNORE_DEVICE
+		/* See if there are any devices we should skip in enumeration */
+		if (HIDAPI_IGNORE_DEVICE(dev_vid, dev_pid)) {
+			continue;
+		}
+#endif
+
 		res = libusb_get_active_config_descriptor(dev, &conf_desc);
 		if (res < 0)
 			libusb_get_config_descriptor(dev, 0, &conf_desc);

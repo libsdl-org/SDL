@@ -833,6 +833,15 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			continue;
 		}
 
+#ifdef HIDAPI_IGNORE_DEVICE
+		/* See if there are any devices we should skip in enumeration */
+		unsigned short dev_vid = get_vendor_id(dev);
+		unsigned short dev_pid = get_product_id(dev);
+		if (HIDAPI_IGNORE_DEVICE(dev_vid, dev_pid)) {
+			continue;
+		}
+#endif
+
 		struct hid_device_info *tmp = create_device_info(dev);
 		if (tmp == NULL) {
 			continue;

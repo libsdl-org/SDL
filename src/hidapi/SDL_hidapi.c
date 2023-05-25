@@ -527,6 +527,8 @@ static void HIDAPI_ShutdownDiscovery(void)
 
 /* Platform HIDAPI Implementation */
 
+#define HIDAPI_IGNORE_DEVICE(VID, PID)  SDL_HIDAPI_ShouldIgnoreDevice(VID, PID)
+
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 
@@ -1029,6 +1031,7 @@ static void CopyHIDDeviceInfo(struct hid_device_info *pSrc, struct SDL_hid_devic
 #undef WCOPY_IF_EXISTS
 
 static int SDL_hidapi_refcount = 0;
+static char *SDL_hidapi_ignored_devices = NULL;
 
 static void SDL_SetHIDAPIError(const wchar_t *error)
 {
@@ -1041,6 +1044,33 @@ static void SDL_SetHIDAPIError(const wchar_t *error)
     }
 }
 
+static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    if (SDL_hidapi_ignored_devices) {
+        SDL_free(SDL_hidapi_ignored_devices);
+    }
+    if (hint && *hint) {
+        SDL_hidapi_ignored_devices = SDL_strdup(hint);
+    } else {
+        SDL_hidapi_ignored_devices = NULL;
+    }
+}
+
+SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(Uint16 vendor_id, Uint16 product_id)
+{
+    /* See if there are any devices we should skip in enumeration */
+    if (SDL_hidapi_ignored_devices) {
+        char vendor_match[16], product_match[16];
+        SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", vendor_id);
+        SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", vendor_id, product_id);
+        if (SDL_strcasestr(SDL_hidapi_ignored_devices, vendor_match) ||
+            SDL_strcasestr(SDL_hidapi_ignored_devices, product_match)) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 int SDL_hid_init(void)
 {
     int attempts = 0, success = 0;
@@ -1049,6 +1079,8 @@ int SDL_hid_init(void)
         ++SDL_hidapi_refcount;
         return 0;
     }
+
+    SDL_AddHintCallback(SDL_HINT_HIDAPI_IGNORE_DEVICES, IgnoredDevicesChanged, NULL);
 
 #ifdef SDL_USE_LIBUDEV
     if (SDL_getenv("SDL_HIDAPI_JOYSTICK_DISABLE_UDEV") != NULL) {
@@ -1192,6 +1224,13 @@ int SDL_hid_exit(void)
         libusb_ctx.libhandle = NULL;
     }
 #endif /* HAVE_LIBUSB */
+
+    SDL_DelHintCallback(SDL_HINT_HIDAPI_IGNORE_DEVICES, IgnoredDevicesChanged, NULL);
+
+    if (SDL_hidapi_ignored_devices) {
+        SDL_free(SDL_hidapi_ignored_devices);
+        SDL_hidapi_ignored_devices = NULL;
+    }
 
     return result;
 }

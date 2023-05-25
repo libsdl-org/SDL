@@ -22,6 +22,7 @@
 
 #ifndef SDL_HIDAPI_DISABLED
 
+#include "../SDL_hidapi_c.h"
 
 #define hid_close                    PLATFORM_hid_close
 #define hid_device                   PLATFORM_hid_device
@@ -856,16 +857,10 @@ static struct hid_device_info *create_device_info_for_hid_device(HIDBLEDevice *d
 struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 { @autoreleasepool {
 	struct hid_device_info *root = NULL;
-	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
 
 	/* See if there are any devices we should skip in enumeration */
-	if (hint) {
-		char vendor_match[16], product_match[16];
-		SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", VALVE_USB_VID);
-		SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", VALVE_USB_VID, D0G_BLE2_PID);
-		if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
-			return NULL;
-		}
+	if (SDL_HIDAPI_ShouldIgnoreDevice(VALVE_USB_VID, D0G_BLE2_PID)) {
+		return NULL;
 	}
 
 	if ( ( vendor_id == 0 && product_id == 0 ) ||
