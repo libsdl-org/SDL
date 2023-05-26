@@ -82,60 +82,6 @@ static int Wayland_VideoInit(SDL_VideoDevice *_this);
 static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
 static void Wayland_VideoQuit(SDL_VideoDevice *_this);
 
-/* Find out what class name we should use
- * Based on src/video/x11/SDL_x11video.c */
-static char *get_classname(void)
-{
-    /* !!! FIXME: this is probably wrong, albeit harmless in many common cases. From protocol spec:
-        "The surface class identifies the general class of applications
-        to which the surface belongs. A common convention is to use the
-        file name (or the full path if it is a non-standard location) of
-        the application's .desktop file as the class." */
-
-    char *spot;
-#if defined(__LINUX__) || defined(__FREEBSD__)
-    char procfile[1024];
-    char linkfile[1024];
-    int linksize;
-#endif
-
-    /* First allow environment variable override */
-    spot = SDL_getenv("SDL_VIDEO_WAYLAND_WMCLASS");
-    if (spot) {
-        return SDL_strdup(spot);
-    } else {
-        /* Fallback to the "old" envvar */
-        spot = SDL_getenv("SDL_VIDEO_X11_WMCLASS");
-        if (spot) {
-            return SDL_strdup(spot);
-        }
-    }
-
-    /* Next look at the application's executable name */
-#if defined(__LINUX__) || defined(__FREEBSD__)
-#ifdef __LINUX__
-    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
-#elif defined(__FREEBSD__)
-    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file", getpid());
-#else
-#error Where can we find the executable name?
-#endif
-    linksize = readlink(procfile, linkfile, sizeof(linkfile) - 1);
-    if (linksize > 0) {
-        linkfile[linksize] = '\0';
-        spot = SDL_strrchr(linkfile, '/');
-        if (spot) {
-            return SDL_strdup(spot + 1);
-        } else {
-            return SDL_strdup(linkfile);
-        }
-    }
-#endif /* __LINUX__ || __FREEBSD__ */
-
-    /* Finally use the default we've used forever */
-    return SDL_strdup("SDL_App");
-}
-
 static const char *SDL_WAYLAND_surface_tag = "sdl-window";
 static const char *SDL_WAYLAND_output_tag = "sdl-output";
 
@@ -945,9 +891,6 @@ int Wayland_VideoInit(SDL_VideoDevice *_this)
 
     Wayland_InitMouse();
 
-    /* Get the surface class name, usually the name of the application */
-    data->classname = get_classname();
-
     WAYLAND_wl_display_flush(data->display);
 
     Wayland_InitKeyboard(_this);
@@ -1144,18 +1087,15 @@ SDL_bool Wayland_VideoReconnect(SDL_VideoDevice *_this)
 
 void Wayland_VideoQuit(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
-
     Wayland_VideoCleanup(_this);
 
 #ifdef HAVE_LIBDECOR_H
+    SDL_VideoData *data = _this->driverdata;
     if (data->shell.libdecor) {
         libdecor_unref(data->shell.libdecor);
         data->shell.libdecor = NULL;
     }
 #endif
-
-    SDL_free(data->classname);
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */

@@ -203,7 +203,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
         (void)setlocale(LC_ALL, "");
         X11_XSetLocaleModifiers(new_xmods);
 
-        data->im = X11_XOpenIM(data->display, NULL, data->classname, data->classname);
+        data->im = X11_XOpenIM(data->display, NULL, NULL, NULL);
 
         /* Reset the locale + X locale modifiers back to how they were,
            locale first because the X locale modifiers depend on it. */

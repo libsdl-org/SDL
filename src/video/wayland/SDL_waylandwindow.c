@@ -25,6 +25,7 @@
 
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
+#include "../../core/unix/SDL_appid.h"
 #include "../SDL_egl_c.h"
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandwindow.h"
@@ -1328,7 +1329,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         if (data->shell_surface.libdecor.frame == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create libdecor frame!");
         } else {
-            libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
+            libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, data->app_id);
             libdecor_frame_map(data->shell_surface.libdecor.frame);
         }
     } else
@@ -1390,7 +1391,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             }
         } else {
             data->shell_surface.xdg.roleobj.toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
-            xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, c->classname);
+            xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, data->app_id);
             xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
         }
     }
@@ -2047,6 +2048,9 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     data->outputs = NULL;
     data->num_outputs = 0;
 
+    /* Cache the app_id at creation time, as it may change before the window is mapped. */
+    data->app_id = SDL_strdup(SDL_GetAppID());
+
     data->requested_window_width = window->w;
     data->requested_window_height = window->h;
     data->floating_width = window->windowed.w;
@@ -2311,6 +2315,7 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
 
         SDL_free(wind->outputs);
+        SDL_free(wind->app_id);
 
         if (wind->gles_swap_frame_callback) {
             wl_callback_destroy(wind->gles_swap_frame_callback);

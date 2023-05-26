@@ -69,7 +69,6 @@ struct SDL_VideoData
 {
     Display *display;
     Display *request_display;
-    char *classname;
     pid_t pid;
     XIM im;
     Uint64 screensaver_activity;

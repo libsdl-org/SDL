@@ -45,47 +45,6 @@
 static int X11_VideoInit(SDL_VideoDevice *_this);
 static void X11_VideoQuit(SDL_VideoDevice *_this);
 
-/* Find out what class name we should use */
-static char *get_classname(void)
-{
-    char *spot;
-#if defined(__LINUX__) || defined(__FREEBSD__)
-    char procfile[1024];
-    char linkfile[1024];
-    int linksize;
-#endif
-
-    /* First allow environment variable override */
-    spot = SDL_getenv("SDL_VIDEO_X11_WMCLASS");
-    if (spot) {
-        return SDL_strdup(spot);
-    }
-
-    /* Next look at the application's executable name */
-#if defined(__LINUX__) || defined(__FREEBSD__)
-#ifdef __LINUX__
-    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
-#elif defined(__FREEBSD__)
-    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file", getpid());
-#else
-#error Where can we find the executable name?
-#endif
-    linksize = readlink(procfile, linkfile, sizeof(linkfile) - 1);
-    if (linksize > 0) {
-        linkfile[linksize] = '\0';
-        spot = SDL_strrchr(linkfile, '/');
-        if (spot) {
-            return SDL_strdup(spot + 1);
-        } else {
-            return SDL_strdup(linkfile);
-        }
-    }
-#endif /* __LINUX__ || __FREEBSD__ */
-
-    /* Finally use the default we've used forever */
-    return SDL_strdup("SDL_App");
-}
-
 /* X11 driver bootstrap functions */
 
 static int (*orig_x11_errhandler)(Display *, XErrorEvent *) = NULL;
@@ -409,9 +368,6 @@ int X11_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 
-    /* Get the window class name, usually the name of the application */
-    data->classname = get_classname();
-
     /* Get the process PID to be associated to the window */
     data->pid = getpid();
 
@@ -491,7 +447,6 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
         X11_XDestroyWindow(data->display, data->clipboard_window);
     }
 
-    SDL_free(data->classname);
 #ifdef X_HAVE_UTF8_STRING
     if (data->im) {
         X11_XCloseIM(data->im);
