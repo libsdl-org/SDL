@@ -20,10 +20,14 @@
 */
 
 /* Define standard library functions in terms of SDL */
+#define HIDAPI_USING_SDL_RUNTIME
 #define calloc      SDL_calloc
 #define free        SDL_free
 #define malloc      SDL_malloc
 #define memcmp      SDL_memcmp
+#define snprintf    SDL_snprintf
+#define strlen      SDL_strlen
+#define _strnicmp   SDL_strncasecmp
 #define swprintf    SDL_swprintf
 #define towupper    SDL_toupper
 #define wcscmp      SDL_wcscmp
