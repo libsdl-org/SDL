@@ -513,6 +513,11 @@ static int parse_uevent_info(const char *uevent, unsigned *bus_type,
 	char **serial_number_utf8, char **product_name_utf8)
 {
 	char tmp[1024];
+
+	if (!uevent) {
+		return 0;
+	}
+
 	size_t uevent_len = strlen(uevent);
 	if (uevent_len > sizeof(tmp) - 1)
 		uevent_len = sizeof(tmp) - 1;
