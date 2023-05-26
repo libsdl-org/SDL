@@ -182,7 +182,7 @@ void X11_InitXinput2(_THIS)
 }
 
 /* xi2 device went away? take it out of the list. */
-static void xinput2_remove_device_info(SDL_VideoData *videodata, const int device_id)
+__attribute__((unused)) static void xinput2_remove_device_info(SDL_VideoData *videodata, const int device_id)
 {
     SDL_XInput2DeviceInfo *prev = NULL;
     SDL_XInput2DeviceInfo *devinfo;
