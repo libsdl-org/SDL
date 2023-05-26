@@ -26,7 +26,7 @@
 #define malloc      SDL_malloc
 #define memcmp      SDL_memcmp
 #define swprintf    SDL_swprintf
-#define towupper    SDL_toupper
+#define towupper    (wchar_t)SDL_toupper
 #define wcscmp      SDL_wcscmp
 #define _wcsdup     SDL_wcsdup
 #define wcslen      SDL_wcslen
