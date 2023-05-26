@@ -71,6 +71,7 @@
 struct hid_device_ {
 	int device_handle;
 	int blocking;
+	int needs_ble_hack;
 	wchar_t *last_error_str;
 	struct hid_device_info* device_info;
 };
@@ -564,6 +565,69 @@ next_line:
 	return (found_id && found_name && found_serial);
 }
 
+static int is_BLE(hid_device *dev)
+{
+	struct udev *udev;
+	struct udev_device *udev_dev, *hid_dev;
+	struct stat s;
+	int ret;
+
+	/* Create the udev object */
+	udev = udev_new();
+	if (!udev) {
+		printf("Can't create udev\n");
+		return -1;
+	}
+
+	/* Get the dev_t (major/minor numbers) from the file handle. */
+	if (fstat(dev->device_handle, &s) < 0) {
+		udev_unref(udev);
+		return -1;
+	}
+
+	/* Open a udev device from the dev_t. 'c' means character device. */
+	ret = 0;
+	udev_dev = udev_device_new_from_devnum(udev, 'c', s.st_rdev);
+	if (udev_dev) {
+		hid_dev = udev_device_get_parent_with_subsystem_devtype(
+			udev_dev,
+			"hid",
+			NULL);
+		if (hid_dev) {
+			unsigned short dev_vid = 0;
+			unsigned short dev_pid = 0;
+			unsigned bus_type = 0;
+			char *serial_number_utf8 = NULL;
+			char *product_name_utf8 = NULL;
+
+			parse_uevent_info(
+			           udev_device_get_sysattr_value(hid_dev, "uevent"),
+			           &bus_type,
+			           &dev_vid,
+			           &dev_pid,
+			           &serial_number_utf8,
+			           &product_name_utf8);
+			free(serial_number_utf8);
+			free(product_name_utf8);
+
+			if (bus_type == BUS_BLUETOOTH) {
+				/* Right now the Steam Controller is the only BLE device that we send feature reports to */
+				if (dev_vid == 0x28de /* Valve */) {
+					ret = 1;
+				}
+			}
+
+			/* hid_dev doesn't need to be (and can't be) unref'd.
+			   I'm not sure why, but it'll throw double-free() errors. */
+		}
+		udev_device_unref(udev_dev);
+	}
+
+	udev_unref(udev);
+
+	return ret;
+}
+
 
 static struct hid_device_info * create_device_info_for_device(struct udev_device *raw_dev)
 {
@@ -1011,6 +1075,8 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
 			return NULL;
 		}
 
+		dev->needs_ble_hack = (is_BLE(dev) == 1);
+
 		return dev;
 	}
 	else {
@@ -1124,12 +1190,26 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, size_t length)
 {
 	int res;
+	unsigned char report = data[0];
 
 	register_device_error(dev, NULL);
 
 	res = ioctl(dev->device_handle, HIDIOCGFEATURE(length), data);
 	if (res < 0)
 		register_device_error_format(dev, "ioctl (GFEATURE): %s", strerror(errno));
+	else if (dev->needs_ble_hack) {
+		/* Versions of BlueZ before 5.56 don't include the report in the data,
+		 * and versions of BlueZ >= 5.56 include 2 copies of the report.
+		 * We'll fix it so that there is a single copy of the report in both cases
+		 */
+		if (data[0] == report && data[1] == report) {
+			memmove(&data[0], &data[1], res);
+		} else if (data[0] != report) {
+			memmove(&data[1], &data[0], res);
+			data[0] = report;
+			++res;
+		}
+	}
 
 	return res;
 }
