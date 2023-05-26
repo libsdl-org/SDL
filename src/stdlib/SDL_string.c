@@ -1514,6 +1514,19 @@ static size_t SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, c
     return length;
 }
 
+static size_t SDL_PrintStringW(char *text, size_t maxlen, SDL_FormatInfo *info, const wchar_t *wide_string)
+{
+    size_t length = 0;
+    if (wide_string) {
+        char *string = SDL_iconv_string("UTF-8", "WCHAR_T", (char *)(wide_string), (SDL_wcslen(wide_string) + 1) * sizeof(*wide_string));
+        length = SDL_PrintString(TEXT_AND_LEN_ARGS, info, string);
+        SDL_free(string);
+    } else {
+        length = SDL_PrintString(TEXT_AND_LEN_ARGS, info, NULL);
+    }
+    return length;
+}
+
 static void SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
 { /* left-pad num with zeroes. */
     size_t sz, pad, have_sign;
@@ -1831,23 +1844,17 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *f
                     done = SDL_TRUE;
                     break;
                 case 'S':
-                {
-                    /* In practice this is used on Windows for WCHAR strings */
-                    wchar_t *wide_arg = va_arg(ap, wchar_t *);
-                    if (wide_arg) {
-                        char *arg = SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(wide_arg), (SDL_wcslen(wide_arg) + 1) * sizeof(*wide_arg));
-                        info.pad_zeroes = SDL_FALSE;
-                        length += SDL_PrintString(TEXT_AND_LEN_ARGS, &info, arg);
-                        SDL_free(arg);
-                    } else {
-                        info.pad_zeroes = SDL_FALSE;
-                        length += SDL_PrintString(TEXT_AND_LEN_ARGS, &info, NULL);
-                    }
+                    info.pad_zeroes = SDL_FALSE;
+                    length += SDL_PrintStringW(TEXT_AND_LEN_ARGS, &info, va_arg(ap, wchar_t *));
                     done = SDL_TRUE;
-                } break;
+                    break;
                 case 's':
                     info.pad_zeroes = SDL_FALSE;
-                    length += SDL_PrintString(TEXT_AND_LEN_ARGS, &info, va_arg(ap, char *));
+                    if (inttype > DO_INT) {
+                        length += SDL_PrintStringW(TEXT_AND_LEN_ARGS, &info, va_arg(ap, wchar_t *));
+                    } else {
+                        length += SDL_PrintString(TEXT_AND_LEN_ARGS, &info, va_arg(ap, char *));
+                    }
                     done = SDL_TRUE;
                     break;
                 default:
