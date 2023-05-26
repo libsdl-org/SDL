@@ -57,9 +57,11 @@ typedef LONG NTSTATUS;
 #include "hidapi_hidclass.h"
 #include "hidapi_hidsdi.h"
 
+#ifndef HIDAPI_USING_SDL_RUNTIME
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#endif
 
 #ifdef MIN
 #undef MIN
