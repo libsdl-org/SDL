@@ -27,6 +27,7 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_events_c.h"
+#include "../../core/unix/SDL_appid.h"
 
 #include "SDL_x11video.h"
 #include "SDL_x11mouse.h"
@@ -634,8 +635,8 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     /* Setup the class hints so we can get an icon (AfterStep) */
     classhints = X11_XAllocClassHint();
-    classhints->res_name = data->classname;
-    classhints->res_class = data->classname;
+    classhints->res_name = (char *)SDL_GetExeName();
+    classhints->res_class = (char *)SDL_GetAppID();
 
     /* Set the size, input and class hints, and define WM_CLIENT_MACHINE and WM_LOCALE_NAME */
     X11_XSetWMProperties(display, w, NULL, NULL, NULL, 0, sizehints, wmhints, classhints);

@@ -90,8 +90,6 @@ struct SDL_VideoData
     struct qt_windowmanager *windowmanager;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-    char *classname;
-
     int relative_mouse_mode;
 };
 
