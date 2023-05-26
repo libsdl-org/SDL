@@ -2648,3 +2648,23 @@ typedef SDL_cond, SDL_Condition;
 @@
 - SDL_WINDOW_ALLOW_HIGHDPI
 + SDL_WINDOW_HIGH_PIXEL_DENSITY
+@@
+@@
+- SDL_TLSCreate
++ SDL_CreateTLS
+  (...)
+@@
+@@
+- SDL_TLSGet
++ SDL_GetTLS
+  (...)
+@@
+@@
+- SDL_TLSSet
++ SDL_SetTLS
+  (...)
+@@
+@@
+- SDL_TLSCleanup
++ SDL_CleanupTLS
+  (...)

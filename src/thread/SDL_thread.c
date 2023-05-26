@@ -26,13 +26,13 @@
 #include "SDL_systhread.h"
 #include "../SDL_error_c.h"
 
-SDL_TLSID SDL_TLSCreate(void)
+SDL_TLSID SDL_CreateTLS(void)
 {
     static SDL_AtomicInt SDL_tls_id;
     return SDL_AtomicIncRef(&SDL_tls_id) + 1;
 }
 
-void *SDL_TLSGet(SDL_TLSID id)
+void *SDL_GetTLS(SDL_TLSID id)
 {
     SDL_TLSData *storage;
 
@@ -43,7 +43,7 @@ void *SDL_TLSGet(SDL_TLSID id)
     return storage->array[id - 1].data;
 }
 
-int SDL_TLSSet(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *))
+int SDL_SetTLS(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *))
 {
     SDL_TLSData *storage;
 
@@ -76,7 +76,7 @@ int SDL_TLSSet(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
     return 0;
 }
 
-void SDL_TLSCleanup(void)
+void SDL_CleanupTLS(void)
 {
     SDL_TLSData *storage;
 
@@ -224,7 +224,7 @@ SDL_error *SDL_GetErrBuf(void)
     const SDL_error *ALLOCATION_IN_PROGRESS = (SDL_error *)-1;
     SDL_error *errbuf;
 
-    /* tls_being_created is there simply to prevent recursion if SDL_TLSCreate() fails.
+    /* tls_being_created is there simply to prevent recursion if SDL_CreateTLS() fails.
        It also means it's possible for another thread to also use SDL_global_errbuf,
        but that's very unlikely and hopefully won't cause issues.
      */
@@ -233,7 +233,7 @@ SDL_error *SDL_GetErrBuf(void)
         if (!tls_errbuf) {
             SDL_TLSID slot;
             tls_being_created = SDL_TRUE;
-            slot = SDL_TLSCreate();
+            slot = SDL_CreateTLS();
             tls_being_created = SDL_FALSE;
             SDL_MemoryBarrierRelease();
             tls_errbuf = slot;
@@ -245,7 +245,7 @@ SDL_error *SDL_GetErrBuf(void)
     }
 
     SDL_MemoryBarrierAcquire();
-    errbuf = (SDL_error *)SDL_TLSGet(tls_errbuf);
+    errbuf = (SDL_error *)SDL_GetTLS(tls_errbuf);
     if (errbuf == ALLOCATION_IN_PROGRESS) {
         return SDL_GetStaticErrBuf();
     }
@@ -258,16 +258,16 @@ SDL_error *SDL_GetErrBuf(void)
         SDL_GetOriginalMemoryFunctions(NULL, NULL, &realloc_func, &free_func);
 
         /* Mark that we're in the middle of allocating our buffer */
-        SDL_TLSSet(tls_errbuf, ALLOCATION_IN_PROGRESS, NULL);
+        SDL_SetTLS(tls_errbuf, ALLOCATION_IN_PROGRESS, NULL);
         errbuf = (SDL_error *)realloc_func(NULL, sizeof(*errbuf));
         if (errbuf == NULL) {
-            SDL_TLSSet(tls_errbuf, NULL, NULL);
+            SDL_SetTLS(tls_errbuf, NULL, NULL);
             return SDL_GetStaticErrBuf();
         }
         SDL_zerop(errbuf);
         errbuf->realloc_func = realloc_func;
         errbuf->free_func = free_func;
-        SDL_TLSSet(tls_errbuf, errbuf, SDL_FreeErrBuf);
+        SDL_SetTLS(tls_errbuf, errbuf, SDL_FreeErrBuf);
     }
     return errbuf;
 #endif /* SDL_THREADS_DISABLED */
@@ -290,7 +290,7 @@ void SDL_RunThread(SDL_Thread *thread)
     *statusloc = userfunc(userdata);
 
     /* Clean up thread-local storage */
-    SDL_TLSCleanup();
+    SDL_CleanupTLS();
 
     /* Mark us as ready to be joined (or detached) */
     if (!SDL_AtomicCAS(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {

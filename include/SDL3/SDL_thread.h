@@ -387,10 +387,10 @@ extern DECLSPEC void SDLCALL SDL_DetachThread(SDL_Thread * thread);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_TLSGet
- * \sa SDL_TLSSet
+ * \sa SDL_GetTLS
+ * \sa SDL_SetTLS
  */
-extern DECLSPEC SDL_TLSID SDLCALL SDL_TLSCreate(void);
+extern DECLSPEC SDL_TLSID SDLCALL SDL_CreateTLS(void);
 
 /**
  * Get the current thread's value associated with a thread local storage ID.
@@ -401,10 +401,10 @@ extern DECLSPEC SDL_TLSID SDLCALL SDL_TLSCreate(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_TLSCreate
- * \sa SDL_TLSSet
+ * \sa SDL_CreateTLS
+ * \sa SDL_SetTLS
  */
-extern DECLSPEC void * SDLCALL SDL_TLSGet(SDL_TLSID id);
+extern DECLSPEC void * SDLCALL SDL_GetTLS(SDL_TLSID id);
 
 /**
  * Set the current thread's value associated with a thread local storage ID.
@@ -415,7 +415,7 @@ extern DECLSPEC void * SDLCALL SDL_TLSGet(SDL_TLSID id);
  * void destructor(void *value)
  * ```
  *
- * where its parameter `value` is what was passed as `value` to SDL_TLSSet().
+ * where its parameter `value` is what was passed as `value` to SDL_SetTLS().
  *
  * \param id the thread local storage ID
  * \param value the value to associate with the ID for the current thread
@@ -426,17 +426,17 @@ extern DECLSPEC void * SDLCALL SDL_TLSGet(SDL_TLSID id);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_TLSCreate
- * \sa SDL_TLSGet
+ * \sa SDL_CreateTLS
+ * \sa SDL_GetTLS
  */
-extern DECLSPEC int SDLCALL SDL_TLSSet(SDL_TLSID id, const void *value, void (SDLCALL *destructor)(void*));
+extern DECLSPEC int SDLCALL SDL_SetTLS(SDL_TLSID id, const void *value, void (SDLCALL *destructor)(void*));
 
 /**
  * Cleanup all TLS data for this thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_TLSCleanup(void);
+extern DECLSPEC void SDLCALL SDL_CleanupTLS(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -658,10 +658,10 @@
 #define SDL_StopTextInput SDL_StopTextInput_REAL
 #define SDL_SurfaceHasColorKey SDL_SurfaceHasColorKey_REAL
 #define SDL_SurfaceHasRLE SDL_SurfaceHasRLE_REAL
-#define SDL_TLSCleanup SDL_TLSCleanup_REAL
-#define SDL_TLSCreate SDL_TLSCreate_REAL
-#define SDL_TLSGet SDL_TLSGet_REAL
-#define SDL_TLSSet SDL_TLSSet_REAL
+#define SDL_CleanupTLS SDL_CleanupTLS_REAL
+#define SDL_CreateTLS SDL_CreateTLS_REAL
+#define SDL_GetTLS SDL_GetTLS_REAL
+#define SDL_SetTLS SDL_SetTLS_REAL
 #define SDL_TextInputActive SDL_TextInputActive_REAL
 #define SDL_TextInputShown SDL_TextInputShown_REAL
 #define SDL_ThreadID SDL_ThreadID_REAL

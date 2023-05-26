@@ -37,13 +37,13 @@ HANDLE SDL_GetWaitableTimer()
     HANDLE timer;
 
     if (!TLS_timer_handle) {
-        TLS_timer_handle = SDL_TLSCreate();
+        TLS_timer_handle = SDL_CreateTLS();
     }
-    timer = SDL_TLSGet(TLS_timer_handle);
+    timer = SDL_GetTLS(TLS_timer_handle);
     if (!timer) {
         timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
         if (timer) {
-            SDL_TLSSet(TLS_timer_handle, timer, SDL_CleanupWaitableTimer);
+            SDL_SetTLS(TLS_timer_handle, timer, SDL_CleanupWaitableTimer);
         }
     }
     return timer;

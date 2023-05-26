@@ -634,10 +634,10 @@ SDL3_0.0.0 {
     SDL_StopTextInput;
     SDL_SurfaceHasColorKey;
     SDL_SurfaceHasRLE;
-    SDL_TLSCleanup;
-    SDL_TLSCreate;
-    SDL_TLSGet;
-    SDL_TLSSet;
+    SDL_CleanupTLS;
+    SDL_CreateTLS;
+    SDL_GetTLS;
+    SDL_SetTLS;
     SDL_TextInputActive;
     SDL_TextInputShown;
     SDL_ThreadID;
