@@ -222,8 +222,10 @@ extern DECLSPEC Uint32 SDLCALL SDL_hid_device_change_count(void);
  * matches. If `vendor_id` and `product_id` are both set to 0, then all HID
  * devices will be returned.
  *
- * \param vendor_id The Vendor ID (VID) of the types of device to open, or 0 to match any vendor.
- * \param product_id The Product ID (PID) of the types of device to open, or 0 to match any product.
+ * \param vendor_id The Vendor ID (VID) of the types of device to open, or 0
+ *                  to match any vendor.
+ * \param product_id The Product ID (PID) of the types of device to open, or 0
+ *                   to match any product.
  * \returns a pointer to a linked list of type SDL_hid_device_info, containing
  *          information about the HID devices attached to the system, or NULL
  *          in the case of failure. Free this linked list by calling
@@ -430,7 +432,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, unsi
  *          still in the first byte), or -1 on error.
  *
  * \since This function is available since SDL 3.0.0.
-*/
+ */
 extern DECLSPEC int SDLCALL SDL_hid_get_input_report(SDL_hid_device *dev, unsigned char *data, size_t length);
 
 /**
@@ -501,19 +503,24 @@ extern DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int 
  * Get the device info from a HID device.
  *
  * \param dev A device handle returned from SDL_hid_open().
- * \returns a pointer to the SDL_hid_device_info for this hid_device, or NULL in the case of failure; call SDL_GetError() for more information. This struct is valid until the device is closed with SDL_hid_close().
+ * \returns a pointer to the SDL_hid_device_info for this hid_device, or NULL
+ *          in the case of failure; call SDL_GetError() for more information.
+ *          This struct is valid until the device is closed with
+ *          SDL_hid_close().
  */
 extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_get_device_info(SDL_hid_device *dev);
 
 /**
  * Get a report descriptor from a HID device.
  *
- * User has to provide a preallocated buffer where descriptor will be copied to. The recommended size for a preallocated buffer is 4096 bytes.
+ * User has to provide a preallocated buffer where descriptor will be copied
+ * to. The recommended size for a preallocated buffer is 4096 bytes.
  *
  * \param dev A device handle returned from SDL_hid_open().
  * \param buf The buffer to copy descriptor into.
  * \param buf_size The size of the buffer in bytes.
- * \returns the number of bytes actually copied, or -1 on error; call SDL_GetError() for more information.
+ * \returns the number of bytes actually copied, or -1 on error; call
+ *          SDL_GetError() for more information.
  */
 extern DECLSPEC int SDLCALL SDL_hid_get_report_descriptor(SDL_hid_device *dev, unsigned char *buf, size_t buf_size);
 
