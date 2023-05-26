@@ -94,7 +94,7 @@
 #endif /* !SDL_DISABLE_SYSWM_WAYLAND */
 
 #ifndef SDL_DISABLE_SYSWM_WINDOWS
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
 #define SDL_ENABLE_SYSWM_WINDOWS
 #endif
 #endif /* !SDL_DISABLE_SYSWM_WINDOWS */
