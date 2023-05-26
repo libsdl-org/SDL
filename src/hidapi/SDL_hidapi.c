@@ -32,6 +32,7 @@
 #include "SDL_hidapi_c.h"
 
 /* Initial type declarations */
+#define HID_API_NO_EXPORT_DEFINE /* do not export hidapi procedures */
 #include "hidapi/hidapi.h"
 
 #ifndef SDL_HIDAPI_DISABLED
