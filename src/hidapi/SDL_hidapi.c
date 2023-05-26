@@ -631,7 +631,7 @@ typedef struct DRIVER_hid_device_ DRIVER_hid_device;
 #define hid_error                    DRIVER_hid_error
 #define hid_exit                     DRIVER_hid_exit
 #define hid_free_enumeration         DRIVER_hid_free_enumeration
-#define hid_get_device_info          DRIVER_hid_device_info
+#define hid_get_device_info          DRIVER_hid_get_device_info
 #define hid_get_feature_report       DRIVER_hid_get_feature_report
 #define hid_get_indexed_string       DRIVER_hid_get_indexed_string
 #define hid_get_input_report         DRIVER_hid_get_input_report
