@@ -1022,6 +1022,14 @@ The structures in this file are versioned separately from the rest of SDL, allow
 This function now returns a standard int result instead of SDL_bool, returning 0 if the function succeeds or a negative error code if there was an error. You should also pass SDL_SYSWM_CURRENT_VERSION as the new third version parameter. The version member of the info structure will be filled in with the version of data that is returned, the minimum of the version you requested and the version supported by the runtime SDL library.
 
 
+## SDL_thread.h
+
+The following functions have been renamed:
+* SDL_TLSCleanup() => SDL_CleanupTLS()
+* SDL_TLSCreate() => SDL_CreateTLS()
+* SDL_TLSGet() => SDL_GetTLS()
+* SDL_TLSSet() => SDL_SetTLS()
+
 ## SDL_timer.h
 
 SDL_GetTicks() now returns a 64-bit value. Instead of using the SDL_TICKS_PASSED macro, you can directly compare tick values, e.g.

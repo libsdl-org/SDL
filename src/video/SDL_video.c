@@ -521,8 +521,8 @@ int SDL_VideoInit(const char *driver_name)
     _this->gl_config.dll_handle = NULL;
     SDL_GL_ResetAttributes();
 
-    _this->current_glwin_tls = SDL_TLSCreate();
-    _this->current_glctx_tls = SDL_TLSCreate();
+    _this->current_glwin_tls = SDL_CreateTLS();
+    _this->current_glctx_tls = SDL_CreateTLS();
 
     /* Initialize the video subsystem */
     if (_this->VideoInit(_this) < 0) {
@@ -4357,8 +4357,8 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
     if (ctx) {
         _this->current_glwin = window;
         _this->current_glctx = ctx;
-        SDL_TLSSet(_this->current_glwin_tls, window, NULL);
-        SDL_TLSSet(_this->current_glctx_tls, ctx, NULL);
+        SDL_SetTLS(_this->current_glwin_tls, window, NULL);
+        SDL_SetTLS(_this->current_glctx_tls, ctx, NULL);
     }
     return ctx;
 }
@@ -4393,8 +4393,8 @@ int SDL_GL_MakeCurrent(SDL_Window *window, SDL_GLContext context)
     if (retval == 0) {
         _this->current_glwin = window;
         _this->current_glctx = context;
-        SDL_TLSSet(_this->current_glwin_tls, window, NULL);
-        SDL_TLSSet(_this->current_glctx_tls, context, NULL);
+        SDL_SetTLS(_this->current_glwin_tls, window, NULL);
+        SDL_SetTLS(_this->current_glctx_tls, context, NULL);
     }
     return retval;
 }
@@ -4405,7 +4405,7 @@ SDL_Window *SDL_GL_GetCurrentWindow(void)
         SDL_UninitializedVideo();
         return NULL;
     }
-    return (SDL_Window *)SDL_TLSGet(_this->current_glwin_tls);
+    return (SDL_Window *)SDL_GetTLS(_this->current_glwin_tls);
 }
 
 SDL_GLContext SDL_GL_GetCurrentContext(void)
@@ -4414,7 +4414,7 @@ SDL_GLContext SDL_GL_GetCurrentContext(void)
         SDL_UninitializedVideo();
         return NULL;
     }
-    return (SDL_GLContext)SDL_TLSGet(_this->current_glctx_tls);
+    return (SDL_GLContext)SDL_GetTLS(_this->current_glctx_tls);
 }
 
 SDL_EGLDisplay SDL_EGL_GetCurrentEGLDisplay(void)

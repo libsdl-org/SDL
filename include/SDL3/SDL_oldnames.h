@@ -455,6 +455,12 @@
 #define SDL_RenderGetD3D11Device SDL_GetRenderD3D11Device
 #define SDL_RenderGetD3D9Device SDL_GetRenderD3D9Device
 
+/* ##SDL_thread.h */
+#define SDL_TLSCleanup SDL_CleanupTLS
+#define SDL_TLSCreate SDL_CreateTLS
+#define SDL_TLSGet SDL_GetTLS
+#define SDL_TLSSet SDL_SetTLS
+
 /* ##SDL_timer.h */
 #define SDL_GetTicks64 SDL_GetTicks
 
@@ -884,6 +890,12 @@
 /* ##SDL_system.h */
 #define SDL_RenderGetD3D11Device SDL_RenderGetD3D11Device_renamed_SDL_GetRenderD3D11Device
 #define SDL_RenderGetD3D9Device SDL_RenderGetD3D9Device_renamed_SDL_GetRenderD3D9Device
+
+/* ##SDL_thread.h */
+#define SDL_TLSCleanup SDL_TLSCleanup_renamed_SDL_CleanupTLS
+#define SDL_TLSCreate SDL_TLSCreate_renamed_SDL_CreateTLS
+#define SDL_TLSGet SDL_TLSGet_renamed_SDL_GetTLS
+#define SDL_TLSSet SDL_TLSSet_renamed_SDL_SetTLS
 
 /* ##SDL_timer.h */
 #define SDL_GetTicks64 SDL_GetTicks64_renamed_SDL_GetTicks
