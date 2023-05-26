@@ -357,19 +357,32 @@ void SDL_IMMDevice_Quit(void)
 
 int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
 {
+    const Uint64 timeout = SDL_GetTicks64() + 8000;  /* intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep. */
     HRESULT ret;
 
     SDL_assert(device != NULL);
 
-    if (devid == NULL) {
-        const EDataFlow dataflow = iscapture ? eCapture : eRender;
-        ret = IMMDeviceEnumerator_GetDefaultAudioEndpoint(enumerator, dataflow, SDL_IMMDevice_role, device);
-    } else {
-        ret = IMMDeviceEnumerator_GetDevice(enumerator, devid, device);
-    }
+    while (SDL_TRUE) {
+        if (devid == NULL) {
+            const EDataFlow dataflow = iscapture ? eCapture : eRender;
+            ret = IMMDeviceEnumerator_GetDefaultAudioEndpoint(enumerator, dataflow, SDL_IMMDevice_role, device);
+        } else {
+            ret = IMMDeviceEnumerator_GetDevice(enumerator, devid, device);
+        }
 
-    if (FAILED(ret)) {
-        SDL_assert(*device == NULL);
+        if (SUCCEEDED(ret)) {
+            break;
+        }
+
+        if (ret == E_NOTFOUND) {
+            const Uint64 now = SDL_GetTicks64();
+            if (timeout > now) {
+                const Uint64 ticksleft = timeout - now;
+                SDL_Delay(SDL_min(ticksleft, 300));   /* wait awhile and try again. */
+                continue;
+            }
+        }
+
         return WIN_SetErrorFromHRESULT("WASAPI can't find requested audio endpoint", ret);
     }
     return 0;
