@@ -255,15 +255,8 @@ static void free_hid_device(hid_device *dev)
 
 static void register_winapi_error_to_buffer(wchar_t **error_buffer, const WCHAR *op)
 {
-	wchar_t *old_string;
-#ifdef HIDAPI_ATOMIC_SET_POINTER
-	old_string = HIDAPI_ATOMIC_SET_POINTER(error_buffer, NULL);
-#else
-	old_string = *error_buffer; *error_buffer = NULL;
-#endif
-	if (old_string) {
-		free(old_string);
-	}
+	free(*error_buffer);
+	*error_buffer = NULL;
 
 	/* Only clear out error messages if NULL is passed into op */
 	if (!op) {
@@ -327,15 +320,8 @@ static void register_winapi_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 
 static void register_string_error_to_buffer(wchar_t **error_buffer, const WCHAR *string_error)
 {
-	wchar_t *old_string;
-#ifdef HIDAPI_ATOMIC_SET_POINTER
-	old_string = HIDAPI_ATOMIC_SET_POINTER(error_buffer, NULL);
-#else
-	old_string = *error_buffer; *error_buffer = NULL;
-#endif
-	if (old_string) {
-		free(old_string);
-	}
+	free(*error_buffer);
+	*error_buffer = NULL;
 
 	if (string_error) {
 		*error_buffer = _wcsdup(string_error);
