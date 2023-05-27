@@ -24,6 +24,7 @@
 
 #include "SDL_windows.h"
 #include "SDL_immdevice.h"
+#include "SDL_timer.h"
 #include "../../audio/SDL_sysaudio.h"
 #include <objbase.h> /* For CLSIDFromString */
 
