@@ -20,7 +20,6 @@
 */
 
 /* Define standard library functions in terms of SDL */
-#define HIDAPI_USING_SDL_RUNTIME
 #define free    SDL_free
 #define iconv_t         SDL_iconv_t
 #define ICONV_CONST

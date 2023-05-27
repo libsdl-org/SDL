@@ -285,8 +285,7 @@ static void register_winapi_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 		+ system_err_len
 		;
 
-	*error_buffer = (WCHAR *)calloc(msg_len + 1, sizeof (WCHAR));
-	WCHAR *msg = *error_buffer;
+	WCHAR *msg = (WCHAR *)calloc(msg_len + 1, sizeof (WCHAR));
 
 	if (!msg)
 		return;
@@ -307,6 +306,18 @@ static void register_winapi_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 		msg[msg_len-1] = L'\0';
 		msg_len--;
 	}
+
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	/* Thread-safe error handling */
+	char *error_utf8 = SDL_iconv_wchar_utf8(msg);
+	if (error_utf8) {
+		SDL_SetError("%s", error_utf8);
+		SDL_free(error_utf8);
+	}
+	free(msg);
+#else
+	*error_buffer = msg;
+#endif
 }
 
 #if defined(__GNUC__)
@@ -324,7 +335,16 @@ static void register_string_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 	*error_buffer = NULL;
 
 	if (string_error) {
+#ifdef HIDAPI_USING_SDL_RUNTIME
+		/* Thread-safe error handling */
+		char *error_utf8 = SDL_iconv_wchar_utf8(string_error);
+		if (error_utf8) {
+			SDL_SetError("%s", error_utf8);
+			SDL_free(error_utf8);
+		}
+#else
 		*error_buffer = _wcsdup(string_error);
+#endif
 	}
 }
 

@@ -20,7 +20,6 @@
 */
 
 /* Define standard library functions in terms of SDL */
-#define HIDAPI_USING_SDL_RUNTIME
 #define calloc      SDL_calloc
 #define free        SDL_free
 #define malloc      SDL_malloc

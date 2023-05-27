@@ -528,7 +528,8 @@ static void HIDAPI_ShutdownDiscovery(void)
 
 /* Platform HIDAPI Implementation */
 
-#define HIDAPI_IGNORE_DEVICE(VID, PID)  SDL_HIDAPI_ShouldIgnoreDevice(VID, PID)
+#define HIDAPI_USING_SDL_RUNTIME
+#define HIDAPI_IGNORE_DEVICE(VID, PID)      SDL_HIDAPI_ShouldIgnoreDevice(VID, PID)
 
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
@@ -1034,17 +1035,6 @@ static void CopyHIDDeviceInfo(struct hid_device_info *pSrc, struct SDL_hid_devic
 static int SDL_hidapi_refcount = 0;
 static char *SDL_hidapi_ignored_devices = NULL;
 
-static void SDL_SetHIDAPIError(const wchar_t *error)
-{
-    if (error) {
-        char *error_utf8 = SDL_iconv_wchar_utf8(error);
-        if (error_utf8) {
-            SDL_SetError("%s", error_utf8);
-            SDL_free(error_utf8);
-        }
-    }
-}
-
 static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     if (SDL_hidapi_ignored_devices) {
@@ -1491,93 +1481,51 @@ SDL_hid_device *SDL_hid_open_path(const char *path)
 
 int SDL_hid_write(SDL_hid_device *device, const unsigned char *data, size_t length)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_write(device->device, data, length);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_write(device->device, data, length);
 }
 
 int SDL_hid_read_timeout(SDL_hid_device *device, unsigned char *data, size_t length, int milliseconds)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_read_timeout(device->device, data, length, milliseconds);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_read_timeout(device->device, data, length, milliseconds);
 }
 
 int SDL_hid_read(SDL_hid_device *device, unsigned char *data, size_t length)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_read(device->device, data, length);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_read(device->device, data, length);
 }
 
 int SDL_hid_set_nonblocking(SDL_hid_device *device, int nonblock)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_set_nonblocking(device->device, nonblock);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_set_nonblocking(device->device, nonblock);
 }
 
 int SDL_hid_send_feature_report(SDL_hid_device *device, const unsigned char *data, size_t length)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_send_feature_report(device->device, data, length);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_send_feature_report(device->device, data, length);
 }
 
 int SDL_hid_get_feature_report(SDL_hid_device *device, unsigned char *data, size_t length)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_get_feature_report(device->device, data, length);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_get_feature_report(device->device, data, length);
 }
 
 int SDL_hid_get_input_report(SDL_hid_device *device, unsigned char *data, size_t length)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_get_input_report(device->device, data, length);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_get_input_report(device->device, data, length);
 }
 
 int SDL_hid_close(SDL_hid_device *device)
@@ -1591,54 +1539,30 @@ int SDL_hid_close(SDL_hid_device *device)
 
 int SDL_hid_get_manufacturer_string(SDL_hid_device *device, wchar_t *string, size_t maxlen)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_get_manufacturer_string(device->device, string, maxlen);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_get_manufacturer_string(device->device, string, maxlen);
 }
 
 int SDL_hid_get_product_string(SDL_hid_device *device, wchar_t *string, size_t maxlen)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_get_product_string(device->device, string, maxlen);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_get_product_string(device->device, string, maxlen);
 }
 
 int SDL_hid_get_serial_number_string(SDL_hid_device *device, wchar_t *string, size_t maxlen)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_get_serial_number_string(device->device, string, maxlen);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_get_serial_number_string(device->device, string, maxlen);
 }
 
 int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t *string, size_t maxlen)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_get_indexed_string(device->device, string_index, string, maxlen);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_get_indexed_string(device->device, string_index, string, maxlen);
 }
 
 SDL_hid_device_info *SDL_hid_get_device_info(SDL_hid_device *device)
@@ -1652,22 +1576,15 @@ SDL_hid_device_info *SDL_hid_get_device_info(SDL_hid_device *device)
         CopyHIDDeviceInfo(info, &device->info);
         return &device->info;
     } else {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
         return NULL;
     }
 }
 
 int SDL_hid_get_report_descriptor(SDL_hid_device *device, unsigned char *buf, size_t buf_size)
 {
-    int result;
-
     CHECK_DEVICE_MAGIC(device, -1);
 
-    result = device->backend->hid_get_report_descriptor(device->device, buf, buf_size);
-    if (result < 0) {
-        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
-    }
-    return result;
+    return device->backend->hid_get_report_descriptor(device->device, buf, buf_size);
 }
 
 void SDL_hid_ble_scan(SDL_bool active)

@@ -244,7 +244,12 @@ static wchar_t *utf8_to_wchar_t(const char *utf8)
 static void register_error_str(wchar_t **error_str, const char *msg)
 {
 	free(*error_str);
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	/* Thread-safe error handling */
+	SDL_SetError("%s", msg);
+#else
 	*error_str = utf8_to_wchar_t(msg);
+#endif
 }
 
 /* Similar to register_error_str, but allows passing a format string with va_list args into this function. */
