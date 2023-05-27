@@ -2439,14 +2439,24 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
                 return SDL_UpdateFullscreenMode(window, SDL_TRUE);
             }
         }
-    } else {
+    } else if (_this->SetWindowPosition) {
+        const int original_x = window->x;
+        const int original_y = window->y;
+        int res;
+
         window->x = x;
         window->y = y;
         window->last_displayID = SDL_GetDisplayForWindow(window);
 
-        if (_this->SetWindowPosition) {
-            return _this->SetWindowPosition(_this, window);
+        res = _this->SetWindowPosition(_this, window);
+
+        if (res < 0) {
+            window->x = original_x;
+            window->y = original_y;
+            window->last_displayID = original_displayID;
         }
+
+        return res;
     }
     return SDL_Unsupported();
 }
