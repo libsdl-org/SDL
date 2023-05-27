@@ -859,7 +859,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	struct hid_device_info *root = NULL;
 
 	/* See if there are any devices we should skip in enumeration */
-	if (SDL_HIDAPI_ShouldIgnoreDevice(VALVE_USB_VID, D0G_BLE2_PID)) {
+	if (SDL_HIDAPI_ShouldIgnoreDevice(VALVE_USB_VID, D0G_BLE2_PID, 0, 0)) {
 		return NULL;
 	}
 

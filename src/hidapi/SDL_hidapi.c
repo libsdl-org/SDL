@@ -30,6 +30,8 @@
 #include "SDL_internal.h"
 
 #include "SDL_hidapi_c.h"
+#include "../joystick/usb_ids.h"
+#include "../SDL_hints_c.h"
 
 /* Initial type declarations */
 #define HID_API_NO_EXPORT_DEFINE /* do not export hidapi procedures */
@@ -529,7 +531,8 @@ static void HIDAPI_ShutdownDiscovery(void)
 /* Platform HIDAPI Implementation */
 
 #define HIDAPI_USING_SDL_RUNTIME
-#define HIDAPI_IGNORE_DEVICE(VID, PID)      SDL_HIDAPI_ShouldIgnoreDevice(VID, PID)
+#define HIDAPI_IGNORE_DEVICE(VID, PID, USAGE_PAGE, USAGE) \
+        SDL_HIDAPI_ShouldIgnoreDevice(VID, PID, USAGE_PAGE, USAGE)
 
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
@@ -1033,7 +1036,13 @@ static void CopyHIDDeviceInfo(struct hid_device_info *pSrc, struct SDL_hid_devic
 #undef WCOPY_IF_EXISTS
 
 static int SDL_hidapi_refcount = 0;
+static SDL_bool SDL_hidapi_only_controllers;
 static char *SDL_hidapi_ignored_devices = NULL;
+
+static void SDLCALL OnlyControllersChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_hidapi_only_controllers = SDL_GetStringBoolean(hint, SDL_TRUE);
+}
 
 static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -1047,9 +1056,22 @@ static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, cons
     }
 }
 
-SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(Uint16 vendor_id, Uint16 product_id)
+SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage)
 {
     /* See if there are any devices we should skip in enumeration */
+    if (SDL_hidapi_only_controllers && usage_page) {
+        if (vendor_id == USB_VENDOR_VALVE) {
+            /* Ignore the keyboard interface on Steam Controllers */
+            if (usage == USB_USAGE_GENERIC_KEYBOARD) {
+                return SDL_TRUE;
+            }
+        } else if (usage_page == USB_USAGEPAGE_GENERIC_DESKTOP &&
+                   (usage == USB_USAGE_GENERIC_JOYSTICK || usage == USB_USAGE_GENERIC_GAMEPAD || usage == USB_USAGE_GENERIC_MULTIAXISCONTROLLER)) {
+            /* This is a controller */
+        } else {
+            return SDL_TRUE;
+        }
+    }
     if (SDL_hidapi_ignored_devices) {
         char vendor_match[16], product_match[16];
         SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", vendor_id);
@@ -1071,6 +1093,7 @@ int SDL_hid_init(void)
         return 0;
     }
 
+    SDL_AddHintCallback(SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS, OnlyControllersChanged, NULL);
     SDL_AddHintCallback(SDL_HINT_HIDAPI_IGNORE_DEVICES, IgnoredDevicesChanged, NULL);
 
 #ifdef SDL_USE_LIBUDEV
@@ -1216,6 +1239,7 @@ int SDL_hid_exit(void)
     }
 #endif /* HAVE_LIBUSB */
 
+    SDL_DelHintCallback(SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS, OnlyControllersChanged, NULL);
     SDL_DelHintCallback(SDL_HINT_HIDAPI_IGNORE_DEVICES, IgnoredDevicesChanged, NULL);
 
     if (SDL_hidapi_ignored_devices) {

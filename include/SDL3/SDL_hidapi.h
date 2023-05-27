@@ -222,6 +222,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_hid_device_change_count(void);
  * matches. If `vendor_id` and `product_id` are both set to 0, then all HID
  * devices will be returned.
  *
+ * By default SDL will only enumerate controllers, to reduce risk of hanging or crashing on bad drivers, but SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS can be set to "0" to enumerate all HID devices.
+ *
  * \param vendor_id The Vendor ID (VID) of the types of device to open, or 0
  *                  to match any vendor.
  * \param product_id The Product ID (PID) of the types of device to open, or 0

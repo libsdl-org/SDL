@@ -581,6 +581,17 @@ extern "C" {
 #define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
 
 /**
+ *  \brief  A variable to control whether SDL_hid_enumerate() enumerates all HID devices or only controllers.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - SDL_hid_enumerate() will enumerate all HID devices
+ *    "1"       - SDL_hid_enumerate() will only enumerate controllers
+ *
+ *  By default SDL will only enumerate controllers, to reduce risk of hanging or crashing on devices with bad drivers and avoiding macOS keyboard capture permission prompts.
+ */
+#define SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS "SDL_HIDAPI_ENUMERATE_ONLY_CONTROLLERS"
+
+/**
  *  \brief  A variable containing a list of devices to ignore in SDL_hid_enumerate()
  *
  *  For example, to ignore the Shanwan DS3 controller and any Valve controller, you might
