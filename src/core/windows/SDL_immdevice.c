@@ -378,7 +378,7 @@ int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
             const Uint64 now = SDL_GetTicks();
             if (timeout > now) {
                 const Uint64 ticksleft = timeout - now;
-                SDL_Delay(SDL_min(ticksleft, 300));   /* wait awhile and try again. */
+                SDL_Delay((Uint32)SDL_min(ticksleft, 300));   /* wait awhile and try again. */
                 continue;
             }
         }
