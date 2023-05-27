@@ -529,6 +529,7 @@ static void HIDAPI_ShutdownDiscovery(void)
 /* Platform HIDAPI Implementation */
 
 #define HIDAPI_IGNORE_DEVICE(VID, PID)  SDL_HIDAPI_ShouldIgnoreDevice(VID, PID)
+#define HIDAPI_ATOMIC_SET_POINTER(a, v) SDL_AtomicSetPtr((void **)a, v)
 
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
