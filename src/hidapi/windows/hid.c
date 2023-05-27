@@ -1193,7 +1193,7 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char 
 
 	if (overlapped) {
 		/* See if there is any data yet. */
-		res = WaitForSingleObject(ev, milliseconds >= 0 ? milliseconds : INFINITE);
+		res = WaitForSingleObject(ev, milliseconds >= 0 ? (DWORD)milliseconds : INFINITE);
 		if (res != WAIT_OBJECT_0) {
 			/* There was no data this time. Return zero bytes available,
 				but leave the Overlapped I/O running. */
@@ -1351,7 +1351,7 @@ int HID_API_EXPORT HID_API_CALL hid_get_input_report(hid_device *dev, unsigned c
 void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
 {
 	typedef BOOL (WINAPI *CancelIoEx_t)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
-	CancelIoEx_t CancelIoExFunc = (CancelIoEx_t)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CancelIoEx");
+	CancelIoEx_t CancelIoExFunc = (CancelIoEx_t)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CancelIoEx");
 
 	if (!dev)
 		return;
