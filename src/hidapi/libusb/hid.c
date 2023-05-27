@@ -148,7 +148,7 @@ static int pthread_barrier_wait(pthread_barrier_t *barrier)
 
 #define THREAD_STATE_WAIT_TIMED_OUT	ETIMEDOUT
 
-typdef struct
+typedef struct
 {
 	pthread_t thread;
 	pthread_mutex_t mutex; /* Protects input_reports */
@@ -171,15 +171,8 @@ static void thread_state_free(hid_device_thread_state *state)
 	pthread_mutex_destroy(&state->mutex);
 }
 
-static void thread_state_push_cleanup(void (*routine)(void *), void *arg)
-{
-	pthread_cleanup_push(&cleanup_mutex, dev);
-}
-
-static void thread_state_pop_cleanup(int execute)
-{
-	pthread_cleanup_pop(execute);
-}
+#define thread_state_push_cleanup	pthread_cleanup_push
+#define thread_state_pop_cleanup	pthread_cleanup_pop
 
 static void thread_state_lock(hid_device_thread_state *state)
 {
@@ -218,7 +211,7 @@ static void thread_state_wait_barrier(hid_device_thread_state *state)
 
 static void thread_state_create_thread(hid_device_thread_state *state, void *(*func)(void*), void *func_arg)
 {
-	pthread_create(&dev->thread, NULL, func, param);
+	pthread_create(&state->thread, NULL, func, func_arg);
 }
 
 static void thread_state_join_thread(hid_device_thread_state *state)
@@ -983,14 +976,14 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x24c6, /* PowerA */
 		0x2c22, /* Qanba */
 		0x2dc8, /* 8BitDo */
-        0x9886, /* ASTRO Gaming */
+		0x9886, /* ASTRO Gaming */
 	};
 
 	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
 	    intf_desc->bInterfaceSubClass == XB360_IFACE_SUBCLASS &&
 	    (intf_desc->bInterfaceProtocol == XB360_IFACE_PROTOCOL ||
 	     intf_desc->bInterfaceProtocol == XB360W_IFACE_PROTOCOL)) {
-		int i;
+		size_t i;
 		for (i = 0; i < sizeof(SUPPORTED_VENDORS)/sizeof(SUPPORTED_VENDORS[0]); ++i) {
 			if (vendor_id == SUPPORTED_VENDORS[i]) {
 				return 1;
@@ -1010,20 +1003,20 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 		0x0738, /* Mad Catz */
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
-        0x10f5, /* Turtle Beach */
+		0x10f5, /* Turtle Beach */
 		0x1532, /* Razer Wildcat */
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
 		0x2dc8, /* 8BitDo */
 		0x2e24, /* Hyperkin */
-        0x3537, /* GameSir */
+		0x3537, /* GameSir */
 	};
 
 	if (intf_desc->bInterfaceNumber == 0 &&
 	    intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
 	    intf_desc->bInterfaceSubClass == XB1_IFACE_SUBCLASS &&
 	    intf_desc->bInterfaceProtocol == XB1_IFACE_PROTOCOL) {
-		int i;
+		size_t i;
 		for (i = 0; i < sizeof(SUPPORTED_VENDORS)/sizeof(SUPPORTED_VENDORS[0]); ++i) {
 			if (vendor_id == SUPPORTED_VENDORS[i]) {
 				return 1;
@@ -1367,6 +1360,8 @@ static void *read_thread(void *param)
 
 static void init_xbox360(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, const struct libusb_config_descriptor *conf_desc)
 {
+	(void)conf_desc;
+
 	if ((idVendor == 0x05ac && idProduct == 0x055b) /* Gamesir-G3w */ ||
 	    idVendor == 0x0f0d /* Hori Xbox controllers */) {
 		unsigned char data[20];
@@ -1385,6 +1380,8 @@ static void init_xboxone(libusb_device_handle *device_handle, unsigned short idV
 	static const int XB1_IFACE_SUBCLASS = 71;
 	static const int XB1_IFACE_PROTOCOL = 208;
 	int j, k, res;
+
+	(void)idProduct;
 
 	for (j = 0; j < conf_desc->bNumInterfaces; j++) {
 		const struct libusb_interface *intf = &conf_desc->interface[j];
