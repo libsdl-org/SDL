@@ -214,6 +214,7 @@ static void free_hid_device(hid_device *dev)
 }
 
 
+#ifndef HIDAPI_USING_SDL_RUNTIME
 /* The caller must free the returned string with free(). */
 static wchar_t *utf8_to_wchar_t(const char *utf8)
 {
@@ -235,6 +236,7 @@ static wchar_t *utf8_to_wchar_t(const char *utf8)
 
 	return ret;
 }
+#endif
 
 
 /* Makes a copy of the given error message (and decoded according to the
