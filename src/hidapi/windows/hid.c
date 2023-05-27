@@ -1370,8 +1370,15 @@ int HID_API_EXPORT HID_API_CALL hid_get_input_report(hid_device *dev, unsigned c
 
 void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
 {
+#if defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
 	typedef BOOL (WINAPI *CancelIoEx_t)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
-	CancelIoEx_t CancelIoExFunc = (CancelIoEx_t)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CancelIoEx");
+	CancelIoEx_t CancelIoExFunc = (CancelIoEx_t)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CancelIoEx");
+#if defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
 
 	if (!dev)
 		return;
