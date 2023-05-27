@@ -1375,17 +1375,14 @@ int HID_API_EXPORT HID_API_CALL hid_get_input_report(hid_device *dev, unsigned c
 	return hid_get_report(dev, IOCTL_HID_GET_INPUT_REPORT, data, length);
 }
 
-void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
-{
 #if defined(__GNUC__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
+void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
+{
 	typedef BOOL (WINAPI *CancelIoEx_t)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
 	CancelIoEx_t CancelIoExFunc = (CancelIoEx_t)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CancelIoEx");
-#if defined(__GNUC__)
-# pragma GCC diagnostic pop
-#endif
 
 	if (!dev)
 		return;
@@ -1398,11 +1395,13 @@ void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
 	}
 	if (dev->read_pending) {
 		DWORD bytes_read = 0;
-
 		GetOverlappedResult(dev->device_handle, &dev->ol, &bytes_read, TRUE/*wait*/);
 	}
 	free_hid_device(dev);
 }
+#if defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
 
 int HID_API_EXPORT_CALL HID_API_CALL hid_get_manufacturer_string(hid_device *dev, wchar_t *string, size_t maxlen)
 {
