@@ -243,8 +243,19 @@ static wchar_t *utf8_to_wchar_t(const char *utf8)
  * Use register_error_str(NULL) to free the error message completely. */
 static void register_error_str(wchar_t **error_str, const char *msg)
 {
-	free(*error_str);
-	*error_str = utf8_to_wchar_t(msg);
+	wchar_t *old_string;
+#ifdef HIDAPI_ATOMIC_SET_POINTER
+	old_string = HIDAPI_ATOMIC_SET_POINTER(error_str, NULL);
+#else
+	old_string = *error_str; *error_str = NULL;
+#endif
+	if (old_string) {
+		free(old_string);
+	}
+
+	if (msg) {
+		*error_str = utf8_to_wchar_t(msg);
+	}
 }
 
 /* Similar to register_error_str, but allows passing a format string with va_list args into this function. */
