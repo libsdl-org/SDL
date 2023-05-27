@@ -901,7 +901,13 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 
 #ifdef HIDAPI_IGNORE_DEVICE
 		/* See if there are any devices we should skip in enumeration */
-		if (HIDAPI_IGNORE_DEVICE(attrib.VendorID, attrib.ProductID)) {
+		PHIDP_PREPARSED_DATA pp_data = NULL;
+		HIDP_CAPS caps = { 0 };
+		if (HidD_GetPreparsedData(device_handle, &pp_data)) {
+			HidP_GetCaps(pp_data, &caps);
+			HidD_FreePreparsedData(pp_data);
+		}
+		if (HIDAPI_IGNORE_DEVICE(attrib.VendorID, attrib.ProductID, caps.UsagePage, caps.Usage)) {
 			goto cont_close;
 		}
 #endif

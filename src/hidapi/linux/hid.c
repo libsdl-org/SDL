@@ -974,7 +974,13 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		if (!parse_hid_vid_pid_from_sysfs(sysfs_path, &bus_type, &dev_vid, &dev_pid))
 			continue;
 
-		if (HIDAPI_IGNORE_DEVICE(dev_vid, dev_pid)) {
+		struct hidraw_report_descriptor report_desc;
+		unsigned short page = 0, usage = 0;
+		unsigned int pos = 0;
+		if (get_hid_report_descriptor_from_sysfs(sysfs_path, &report_desc) >= 0) {
+			get_next_hid_usage(report_desc.value, report_desc.size, &pos, &page, &usage);
+		}
+		if (HIDAPI_IGNORE_DEVICE(dev_vid, dev_pid, page, usage)) {
 			continue;
 		}
 #endif
