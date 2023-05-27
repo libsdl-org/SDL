@@ -357,7 +357,7 @@ void SDL_IMMDevice_Quit(void)
 
 int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
 {
-    const Uint64 timeout = SDL_GetTicks64() + 8000;  /* intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep. */
+    const Uint64 timeout = SDL_GetTicks() + 8000;  /* intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep. */
     HRESULT ret;
 
     SDL_assert(device != NULL);
@@ -375,7 +375,7 @@ int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
         }
 
         if (ret == E_NOTFOUND) {
-            const Uint64 now = SDL_GetTicks64();
+            const Uint64 now = SDL_GetTicks();
             if (timeout > now) {
                 const Uint64 ticksleft = timeout - now;
                 SDL_Delay(SDL_min(ticksleft, 300));   /* wait awhile and try again. */
