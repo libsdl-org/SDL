@@ -246,7 +246,11 @@ static void register_error_str(wchar_t **error_str, const char *msg)
 	free(*error_str);
 #ifdef HIDAPI_USING_SDL_RUNTIME
 	/* Thread-safe error handling */
-	SDL_SetError("%s", msg);
+	if (msg) {
+		SDL_SetError("%s", msg);
+	} else {
+		SDL_ClearError();
+	}
 #else
 	*error_str = utf8_to_wchar_t(msg);
 #endif

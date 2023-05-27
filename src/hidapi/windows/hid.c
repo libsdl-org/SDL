@@ -258,6 +258,11 @@ static void register_winapi_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 	free(*error_buffer);
 	*error_buffer = NULL;
 
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	/* Thread-safe error handling */
+	SDL_ClearError();
+#endif
+
 	/* Only clear out error messages if NULL is passed into op */
 	if (!op) {
 		return;
@@ -334,18 +339,20 @@ static void register_string_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 	free(*error_buffer);
 	*error_buffer = NULL;
 
-	if (string_error) {
 #ifdef HIDAPI_USING_SDL_RUNTIME
-		/* Thread-safe error handling */
-		char *error_utf8 = SDL_iconv_wchar_utf8(string_error);
-		if (error_utf8) {
-			SDL_SetError("%s", error_utf8);
-			SDL_free(error_utf8);
-		}
-#else
-		*error_buffer = _wcsdup(string_error);
-#endif
+	/* Thread-safe error handling */
+	char *error_utf8 = string_error ? SDL_iconv_wchar_utf8(string_error) : NULL;
+	if (error_utf8) {
+		SDL_SetError("%s", error_utf8);
+		SDL_free(error_utf8);
+	} else {
+		SDL_ClearError();
 	}
+#else
+	if (string_error) {
+		*error_buffer = _wcsdup(string_error);
+	}
+#endif /* HIDAPI_USING_SDL_RUNTIME */
 }
 
 #if defined(__GNUC__)
