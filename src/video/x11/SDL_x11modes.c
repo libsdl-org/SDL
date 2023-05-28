@@ -190,7 +190,7 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
         {
             SDL_VideoData *data = _this->driverdata;
             Display *display = data->display;
-            char * resource_manager;
+            char *resource_manager;
             XrmDatabase db;
             XrmValue value;
             char *type;
@@ -198,16 +198,18 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
             X11_XrmInitialize();
 
             resource_manager = X11_XResourceManagerString(display);
-            db = X11_XrmGetStringDatabase(resource_manager);
+            if (resource_manager) {
+                db = X11_XrmGetStringDatabase(resource_manager);
 
-            // Get the value of Xft.dpi from the Database
-            if (X11_XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
-                if (value.addr && type && SDL_strcmp(type, "String") == 0) {
-                    int dpi = SDL_atoi(value.addr);
-                    scale_factor  = dpi / 96.0;
+                // Get the value of Xft.dpi from the Database
+                if (X11_XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
+                    if (value.addr && type && SDL_strcmp(type, "String") == 0) {
+                        int dpi = SDL_atoi(value.addr);
+                        scale_factor  = dpi / 96.0;
+                    }
                 }
+                X11_XrmDestroyDatabase(db);
             }
-            X11_XrmDestroyDatabase(db);
         }
 
         /* If that failed, try the GDK_SCALE envvar... */
