@@ -167,17 +167,17 @@ endif()
 #  so we default to yes on iOS.
 #  TODO: Windows can support libusb, the hid.c file just depends on Unix APIs
 if((WINDOWS AND NOT WINDOWS_STORE) OR IOS OR TVOS OR ANDROID)
-  set(HIDAPI_SKIP_LIBUSB TRUE)
+  set(SDL_HIDAPI_LIBUSB_AVAILABLE FALSE)
 else()
-  set(HIDAPI_SKIP_LIBUSB FALSE)
+  set(SDL_HIDAPI_LIBUSB_AVAILABLE TRUE)
 endif()
 
 # On the other hand, *BSD specifically uses libusb only, so we make a special
 #  case just for them.
 if(FREEBSD OR NETBSD OR OPENBSD OR BSDI)
-  set(HIDAPI_ONLY_LIBUSB TRUE)
+  set(SDL_HIDAPI_LIBUSB_DEFAULT TRUE)
 else()
-  set(HIDAPI_ONLY_LIBUSB FALSE)
+  set(SDL_HIDAPI_LIBUSB_DEFAULT FALSE)
 endif()
 
 # Compiler info
@@ -442,7 +442,7 @@ set_option(SDL_OFFSCREEN           "Use offscreen video driver" ON)
 option_string(SDL_BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" OFF)
 option_string(SDL_FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" OFF)
 set_option(SDL_HIDAPI              "Enable the HIDAPI subsystem" ON)
-dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" OFF SDL_HIDAPI OFF)
+dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" ${SDL_HIDAPI_LIBUSB_DEFAULT} "SDL_HIDAPI;${SDL_HIDAPI_LIBUSB_AVAILABLE}" OFF)
 dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" ON SDL_HIDAPI OFF)
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
 set_option(SDL_LIBUDEV             "Enable libudev support" ON)
@@ -465,14 +465,6 @@ dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST OFF)
 dep_option(SDL_INSTALL_TESTS   "Install test-cases" OFF "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" OFF)
 
 set(HAVE_STATIC_PIC "${SDL_STATIC_PIC}")
-
-if(SDL_HIDAPI)
-  if(HIDAPI_ONLY_LIBUSB)
-    set(SDL_HIDAPI_LIBUSB ON CACHE BOOL "" FORCE)
-  elseif(HIDAPI_SKIP_LIBUSB)
-    set(SDL_HIDAPI_LIBUSB OFF CACHE BOOL "" FORCE)
-  endif()
-endif()
 
 if(VITA)
   set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
