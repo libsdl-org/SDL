@@ -116,7 +116,7 @@
 - (BOOL)canBecomeKeyWindow
 {
     SDL_Window *window = [self findSDLWindow];
-    if (window && !SDL_WINDOW_IS_POPUP(window)) {
+    if (window && !(window->flags & SDL_WINDOW_TOOLTIP)) {
         return YES;
     } else {
         return NO;
@@ -279,7 +279,63 @@
 
 static Uint64 s_moveHack;
 
-static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
+static CGFloat SqDistanceToRect(const NSPoint *point, const NSRect *rect)
+{
+    NSPoint edge = *point;
+    CGFloat left = NSMinX(*rect), right = NSMaxX(*rect);
+    CGFloat bottom = NSMinX(*rect), top = NSMaxY(*rect);
+    NSPoint delta;
+
+    if (point->x < left) {
+        edge.x = left;
+    } else if (point->x > right) {
+        edge.x = right;
+    }
+
+    if (point->y < bottom) {
+        edge.y = bottom;
+    } else if (point->y > top) {
+        edge.y = top;
+    }
+
+    delta = NSMakePoint(edge.x - point->x, edge.y - point->y);
+    return delta.x * delta.x + delta.y * delta.y;
+}
+
+static NSScreen *ScreenForPoint(const NSPoint *point) {
+    NSScreen *screen;
+
+    /* Do a quick check first to see if the point lies on a specific screen*/
+    for (NSScreen *candidate in [NSScreen screens]) {
+        if (NSPointInRect(*point, [candidate frame])) {
+            screen = candidate;
+            break;
+        }
+    }
+
+    /* Find the screen the point is closest to */
+    if (!screen) {
+        CGFloat closest = MAXFLOAT;
+        for (NSScreen *candidate in [NSScreen screens]) {
+            NSRect screenRect = [candidate frame];
+
+            CGFloat sqdist = SqDistanceToRect(point, &screenRect);
+            if (sqdist < closest) {
+                screen = candidate;
+                closest = sqdist;
+            }
+        }
+    }
+
+    return screen;
+}
+
+static NSScreen *ScreenForRect(const NSRect *rect) {
+    NSPoint center = NSMakePoint(NSMidX(*rect), NSMidY(*rect));
+    return ScreenForPoint(&center);
+}
+
+static void ConvertNSRect(BOOL fullscreen, NSRect *r)
 {
     r->origin.y = CGDisplayPixelsHigh(kCGDirectMainDisplay) - r->origin.y - r->size.height;
 }
@@ -787,7 +843,7 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
     NSWindow *nswindow = _data.nswindow;
     BOOL fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
     NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-    ConvertNSRect([nswindow screen], fullscreen, &rect);
+    ConvertNSRect(fullscreen, &rect);
 
     if (inFullscreenTransition) {
         /* We'll take care of this at the end of the transition */
@@ -801,9 +857,10 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
 
         if (blockMove) {
             /* Cocoa is adjusting the window in response to a mode change */
-            rect.origin.x = window->x;
-            rect.origin.y = window->y;
-            ConvertNSRect([nswindow screen], fullscreen, &rect);
+            SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y );
+            rect.origin.x = x;
+            rect.origin.y = y;
+            ConvertNSRect(fullscreen, &rect);
             [nswindow setFrameOrigin:rect.origin];
             return;
         }
@@ -841,7 +898,7 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
     nswindow = _data.nswindow;
     rect = [nswindow contentRectForFrameRect:[nswindow frame]];
     fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
-    ConvertNSRect([nswindow screen], fullscreen, &rect);
+    ConvertNSRect(fullscreen, &rect);
     x = (int)rect.origin.x;
     y = (int)rect.origin.y;
     w = (int)rect.size.width;
@@ -1114,12 +1171,14 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
  */
         /* Restore windowed size and position in case it changed while fullscreen */
         {
+            int x, y;
             NSRect rect;
-            rect.origin.x = window->windowed.x;
-            rect.origin.y = window->windowed.y;
+            SDL_RelativeToGlobalForWindow(window, window->windowed.x, window->windowed.y, x, y);
+            rect.origin.x = x;
+            rect.origin.y = y;
             rect.size.width = window->windowed.w;
             rect.size.height = window->windowed.h;
-            ConvertNSRect([nswindow screen], NO, &rect);
+            ConvertNSRect(NO, &rect);
 
             s_moveHack = 0;
             [nswindow setContentSize:rect.size];
@@ -1682,13 +1741,12 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
             int x, y;
             NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
             BOOL fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
-            ConvertNSRect([nswindow screen], fullscreen, &rect);
-            x = (int)rect.origin.x;
-            y = (int)rect.origin.y;
+            ConvertNSRect(fullscreen, &rect);
+            SDL_GlobalToRelativeForWindow(window, (int)rect.origin.x, (int)rect.origin.y, &x, &y);
+            window->x = x;
+            window->y = y;
             window->w = (int)rect.size.width;
             window->h = (int)rect.size.height;
-
-            SDL_GlobalToRelativeForWindow(window, x, y, &window->x, &window->y);
         }
 
         /* Set up the listener after we create the view */
@@ -1778,11 +1836,10 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
         NSWindow *nswindow;
         int x, y;
-        NSRect rect;
+        NSScreen *screen;
+        NSRect rect, screenRect;
         BOOL fullscreen;
         NSUInteger style;
-        NSArray *screens = [NSScreen screens];
-        NSScreen *screen = nil;
         SDLView *contentView;
         BOOL highdpi;
 
@@ -1792,37 +1849,27 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         rect.size.width = window->w;
         rect.size.height = window->h;
         fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
+        ConvertNSRect(fullscreen, &rect);
 
         style = GetWindowStyle(window);
 
         /* Figure out which screen to place this window */
-        for (NSScreen *candidate in screens) {
-            NSRect screenRect = [candidate frame];
-            if (rect.origin.x >= screenRect.origin.x &&
-                rect.origin.x < screenRect.origin.x + screenRect.size.width &&
-                rect.origin.y >= screenRect.origin.y &&
-                rect.origin.y < screenRect.origin.y + screenRect.size.height) {
-                screen = candidate;
-                rect.origin.x -= screenRect.origin.x;
-                rect.origin.y -= screenRect.origin.y;
-            }
-        }
+        screen = ScreenForRect(&rect);
+        screenRect = [screen frame];
+        rect.origin.x -= screenRect.origin.x;
+        rect.origin.y -= screenRect.origin.y;
 
         /* Constrain the popup */
         if (SDL_WINDOW_IS_POPUP(window)) {
-            NSRect bounds = [screen frame];
-
-            if (rect.origin.x + rect.size.width > bounds.origin.x + bounds.size.width) {
-                rect.origin.x -= (rect.origin.x + rect.size.width) - (bounds.origin.x + bounds.size.width);
+            if (rect.origin.x + rect.size.width > screenRect.origin.x + screenRect.size.width) {
+                rect.origin.x -= (rect.origin.x + rect.size.width) - (screenRect.origin.x + screenRect.size.width);
             }
-            if (rect.origin.y + rect.size.height > bounds.origin.y + bounds.size.height) {
-                rect.origin.y -= (rect.origin.y + rect.size.height) - (bounds.origin.y + bounds.size.height);
+            if (rect.origin.y + rect.size.height > screenRect.origin.y + screenRect.size.height) {
+                rect.origin.y -= (rect.origin.y + rect.size.height) - (screenRect.origin.y + screenRect.size.height);
             }
-            rect.origin.x = SDL_max(rect.origin.x, bounds.origin.x);
-            rect.origin.y = SDL_max(rect.origin.y, bounds.origin.y);
+            rect.origin.x = SDL_max(rect.origin.x, screenRect.origin.x);
+            rect.origin.y = SDL_max(rect.origin.y, screenRect.origin.y);
         }
-
-        ConvertNSRect([screens objectAtIndex:0], fullscreen, &rect);
 
         @try {
             nswindow = [[SDLWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO screen:screen];
@@ -1988,9 +2035,8 @@ int Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->driverdata;
-        NSRect bounds;
         NSWindow *nswindow = windata.nswindow;
-        NSRect rect;
+        NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
         BOOL fullscreen;
         Uint64 moveHack;
         int x, y;
@@ -1998,25 +2044,22 @@ int Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y);
         rect.origin.x = x;
         rect.origin.y = y;
-        rect.size.width = window->w;
-        rect.size.height = window->h;
         fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
+        ConvertNSRect(fullscreen, &rect);
 
         /* Position and constrain the popup */
         if (SDL_WINDOW_IS_POPUP(window)) {
-            bounds = [[nswindow screen] frame];
+            NSRect screenRect = [ScreenForRect(&rect) frame];
 
-            if (rect.origin.x + rect.size.width > bounds.origin.x + bounds.size.width) {
-                rect.origin.x -= (rect.origin.x + rect.size.width) - (bounds.origin.x + bounds.size.width);
+            if (rect.origin.x + rect.size.width > screenRect.origin.x + screenRect.size.width) {
+                rect.origin.x -= (rect.origin.x + rect.size.width) - (screenRect.origin.x + screenRect.size.width);
             }
-            if (rect.origin.y + rect.size.height > bounds.origin.y + bounds.size.height) {
-                rect.origin.y -= (rect.origin.y + rect.size.height) - (bounds.origin.y + bounds.size.height);
+            if (rect.origin.y + rect.size.height > screenRect.origin.y + screenRect.size.height) {
+                rect.origin.y -= (rect.origin.y + rect.size.height) - (screenRect.origin.y + screenRect.size.height);
             }
-            rect.origin.x = SDL_max(rect.origin.x, bounds.origin.x);
-            rect.origin.y = SDL_max(rect.origin.y, bounds.origin.y);
+            rect.origin.x = SDL_max(rect.origin.x, screenRect.origin.x);
+            rect.origin.y = SDL_max(rect.origin.y, screenRect.origin.y);
         }
-
-        ConvertNSRect([nswindow screen], fullscreen, &rect);
 
         moveHack = s_moveHack;
         s_moveHack = 0;
@@ -2033,20 +2076,13 @@ void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
     @autoreleasepool {
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->driverdata;
         NSWindow *nswindow = windata.nswindow;
-        NSRect rect;
+        NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
         BOOL fullscreen;
         Uint64 moveHack;
 
-        /* Cocoa will resize the window from the bottom-left rather than the
-         * top-left when -[nswindow setContentSize:] is used, so we must set the
-         * entire frame based on the new size, in order to preserve the position.
-         */
-        rect.origin.x = window->x;
-        rect.origin.y = window->y;
         rect.size.width = window->w;
         rect.size.height = window->h;
         fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
-        ConvertNSRect([nswindow screen], fullscreen, &rect);
 
         moveHack = s_moveHack;
         s_moveHack = 0;
@@ -2108,6 +2144,10 @@ void Cocoa_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         if (![nswindow isMiniaturized]) {
             [windowData.listener pauseVisibleObservation];
+            if (SDL_WINDOW_IS_POPUP(window)) {
+                NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->driverdata).nswindow;
+                [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
+            }
             [nswindow makeKeyAndOrderFront:nil];
             [windowData.listener resumeVisibleObservation];
         }
@@ -2149,6 +2189,10 @@ void Cocoa_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
         [windowData.listener pauseVisibleObservation];
         if (![nswindow isMiniaturized] && [nswindow isVisible]) {
             [NSApp activateIgnoringOtherApps:YES];
+            if (SDL_WINDOW_IS_POPUP(window)) {
+                NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->driverdata).nswindow;
+                [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
+            }
             [nswindow makeKeyAndOrderFront:nil];
         }
         [windowData.listener resumeVisibleObservation];
@@ -2261,7 +2305,7 @@ void Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_V
             rect.origin.y = bounds.y;
             rect.size.width = bounds.w;
             rect.size.height = bounds.h;
-            ConvertNSRect([nswindow screen], fullscreen, &rect);
+            ConvertNSRect(fullscreen, &rect);
 
             /* Hack to fix origin on macOS 10.4
                This is no longer needed as of macOS 10.15, according to bug 4822.
@@ -2280,7 +2324,7 @@ void Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_V
             rect.origin.y = window->windowed.y;
             rect.size.width = window->windowed.w;
             rect.size.height = window->windowed.h;
-            ConvertNSRect([nswindow screen], fullscreen, &rect);
+            ConvertNSRect(fullscreen, &rect);
 
             /* The window is not meant to be fullscreen, but its flags might have a
              * fullscreen bit set if it's scheduled to go fullscreen immediately
