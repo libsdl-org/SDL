@@ -43,7 +43,11 @@
 #include "../../core/windows/SDL_hid.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
-#ifdef HAVE_XINPUT_H
+/* SDL_JOYSTICK_RAWINPUT_XINPUT is disabled because using XInput at the same time as
+   raw input will turn off the Xbox Series X controller when it is connected via the
+   Xbox One Wireless Adapter.
+ */
+#if 0 /*def HAVE_XINPUT_H*/
 #define SDL_JOYSTICK_RAWINPUT_XINPUT
 #endif
 #ifdef HAVE_WINDOWS_GAMING_INPUT_H
