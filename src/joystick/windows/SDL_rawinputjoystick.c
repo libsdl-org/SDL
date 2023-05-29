@@ -1608,7 +1608,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
     if (!ctx->wgi_correlated) {
         SDL_bool new_correlation_count = 0;
         if (RAWINPUT_MissingWindowsGamingInputSlot()) {
-            Uint8 correlation_id;
+            Uint8 correlation_id = 0;
             WindowsGamingInputGamepadState *slot_idx = NULL;
             if (RAWINPUT_GuessWindowsGamingInputSlot(&match_state_xinput, &correlation_id, &slot_idx, xinput_correlated)) {
                 /* we match exactly one WindowsGamingInput device */
