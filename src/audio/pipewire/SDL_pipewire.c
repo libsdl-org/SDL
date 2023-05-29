@@ -1127,7 +1127,7 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *_this, const char *devname)
     const struct spa_pod *params = NULL;
     struct SDL_PrivateAudioData *priv;
     struct pw_properties *props;
-    const char *app_name, *stream_name, *stream_role, *error;
+    const char *app_name, *app_id, *stream_name, *stream_role, *error;
     Uint32 node_id = _this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(_this->handle);
     SDL_bool iscapture = _this->iscapture;
     int res;
@@ -1143,6 +1143,9 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *_this, const char *devname)
             app_name = "SDL Application";
         }
     }
+
+    /* App ID. Default to NULL if not available. */
+    app_id = SDL_GetHint(SDL_HINT_APP_ID);
 
     stream_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
     if (stream_name == NULL || *stream_name == '\0') {
@@ -1205,6 +1208,9 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *_this, const char *devname)
     PIPEWIRE_pw_properties_set(props, PW_KEY_MEDIA_CATEGORY, iscapture ? "Capture" : "Playback");
     PIPEWIRE_pw_properties_set(props, PW_KEY_MEDIA_ROLE, stream_role);
     PIPEWIRE_pw_properties_set(props, PW_KEY_APP_NAME, app_name);
+    if (app_id != NULL) {
+        PIPEWIRE_pw_properties_set(props, PW_KEY_APP_ID, app_id);
+    }
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_NAME, stream_name);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DESCRIPTION, stream_name);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_LATENCY, "%u/%i", _this->spec.samples, _this->spec.freq);
