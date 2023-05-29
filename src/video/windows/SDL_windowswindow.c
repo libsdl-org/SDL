@@ -847,11 +847,16 @@ void WIN_RaiseWindow(_THIS, SDL_Window *window)
 
 void WIN_MaximizeWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-    HWND hwnd = data->hwnd;
-    data->expected_resize = SDL_TRUE;
-    ShowWindow(hwnd, SW_MAXIMIZE);
-    data->expected_resize = SDL_FALSE;
+    /* Other platforms refuse to maximize a non-resizable window, and with win32,
+       the OS resizes the window weirdly (covering the taskbar) if you don't have
+       the STYLE_RESIZABLE flag set. So just forbid it for now. */
+    if (window->flags & SDL_WINDOW_RESIZABLE) {
+        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        HWND hwnd = data->hwnd;
+        data->expected_resize = SDL_TRUE;
+        ShowWindow(hwnd, SW_MAXIMIZE);
+        data->expected_resize = SDL_FALSE;
+    }
 }
 
 void WIN_MinimizeWindow(_THIS, SDL_Window *window)
