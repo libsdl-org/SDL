@@ -629,6 +629,40 @@ SDL_AudioStream *SDL_CreateAudioStream(SDL_AudioFormat src_format,
     return retval;
 }
 
+int SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamRequestCallback callback, void *userdata)
+{
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    }
+    SDL_LockMutex(stream->lock);
+    stream->get_callback = callback;
+    stream->get_callback_userdata = userdata;
+    SDL_UnlockMutex(stream->lock);
+    return 0;
+}
+
+int SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamRequestCallback callback, void *userdata)
+{
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    }
+    SDL_LockMutex(stream->lock);
+    stream->put_callback = callback;
+    stream->put_callback_userdata = userdata;
+    SDL_UnlockMutex(stream->lock);
+    return 0;
+}
+
+int SDL_LockAudioStream(SDL_AudioStream *stream)
+{
+    return stream ? SDL_LockMutex(stream->lock) : SDL_InvalidParamError("stream");
+}
+
+int SDL_UnlockAudioStream(SDL_AudioStream *stream)
+{
+    return stream ? SDL_UnlockMutex(stream->lock) : SDL_InvalidParamError("stream");
+}
+
 int SDL_GetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioFormat *src_format, int *src_channels, int *src_rate, SDL_AudioFormat *dst_format, int *dst_channels, int *dst_rate)
 {
     if (!stream) {
@@ -696,6 +730,8 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
 
     SDL_LockMutex(stream->lock);
 
+    const int prev_available = stream->put_callback ? SDL_GetAudioStreamAvailable(stream) : 0;
+
     if ((len % stream->src_sample_frame_size) != 0) {
         SDL_UnlockMutex(stream->lock);
         return SDL_SetError("Can't add partial sample frames");
@@ -704,6 +740,11 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
     /* just queue the data, we convert/resample when dequeueing. */
     retval = SDL_WriteToDataQueue(stream->queue, buf, len);
     stream->flushed = SDL_FALSE;
+
+    if (stream->put_callback) {
+        stream->put_callback(stream, SDL_GetAudioStreamAvailable(stream) - prev_available, stream->put_callback_userdata);
+    }
+
     SDL_UnlockMutex(stream->lock);
 
     return retval;
@@ -977,6 +1018,23 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
     SDL_LockMutex(stream->lock);
 
     len -= len % stream->dst_sample_frame_size;  /* chop off any fractional sample frame. */
+
+    // give the callback a chance to fill in more stream data if it wants.
+    if (stream->get_callback) {
+        int approx_request = len / stream->dst_sample_frame_size;  /* start with sample frames desired */
+        if (stream->src_rate != stream->dst_rate) {
+            /* calculate difference in dataset size after resampling. Use a Uint64 so the multiplication doesn't overflow. */
+            approx_request = (size_t) ((((Uint64) approx_request) * stream->src_rate) / stream->dst_rate);
+            if (!stream->flushed) {  /* do we need to fill the future buffer to accomodate this, too? */
+                approx_request += stream->future_buffer_filled_frames - stream->resampler_padding_frames;
+            }
+        }
+
+        approx_request *= stream->src_sample_frame_size;  // convert sample frames to bytes.
+        const int already_have = SDL_GetAudioStreamAvailable(stream);
+        approx_request -= SDL_min(approx_request, already_have);  // we definitely have this much output already packed in.
+        stream->get_callback(stream, approx_request, stream->get_callback_userdata);
+    }
 
     /* we convert in chunks, so we don't end up allocating a massive work buffer, etc. */
     while (len > 0) { /* didn't ask for a whole sample frame, nothing to do */

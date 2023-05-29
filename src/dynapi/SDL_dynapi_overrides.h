@@ -905,3 +905,7 @@
 #define SDL_MixAudioFormat SDL_MixAudioFormat_REAL
 #define SDL_ConvertAudioSamples SDL_ConvertAudioSamples_REAL
 #define SDL_GetSilenceValueForFormat SDL_GetSilenceValueForFormat_REAL
+#define SDL_LockAudioStream SDL_LockAudioStream_REAL
+#define SDL_UnlockAudioStream SDL_UnlockAudioStream_REAL
+#define SDL_SetAudioStreamGetCallback SDL_SetAudioStreamGetCallback_REAL
+#define SDL_SetAudioStreamPutCallback SDL_SetAudioStreamPutCallback_REAL

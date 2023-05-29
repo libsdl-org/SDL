@@ -53,11 +53,11 @@ The following structures have been renamed:
 
 ## SDL_audio.h
 
-The audio subsystem in SDL3 is dramatically different than SDL2. There is no longer an audio callback; instead you bind SDL_AudioStreams to devices.
+The audio subsystem in SDL3 is dramatically different than SDL2. The primary way to play audio is no longer an audio callback; instead you bind SDL_AudioStreams to devices.
 
 The SDL 1.2 audio compatibility API has also been removed, as it was a simplified version of the audio callback interface.
 
-If your app depends on the callback method, you can use the single-header library at https://github.com/libsdl-org/SDL3_audio_callback (to be written!) to simulate it on top of SDL3's new API.
+If your app depends on the callback method, there is a similar approach you can take. But first, this is the new approach:
 
 In SDL2, you might have done something like this to play audio:
 
@@ -84,13 +84,29 @@ in SDL3:
 
 ```c
     /* ...somewhere near startup... */
-    my_desired_audio_format.callback = MyAudioCallback;  /* etc */
     SDL_AudioDeviceID my_audio_device = SDL_OpenAudioDevice(0, SDL_AUDIO_S16, 2, 44100);
     SDL_AudioSteam *stream = SDL_CreateAndBindAudioStream(my_audio_device, SDL_AUDIO_S16, 2, 44100);
 
     /* ...in your main loop... */
     /* calculate a little more audio into `buf`, add it to `stream` */
     SDL_PutAudioStreamData(stream, buf, buflen);
+```
+
+If you absolutely require the callback method, SDL_AudioStreams can use a callback whenever more data is to be read from them, which can be used to simulate SDL2 semantics:
+
+```c
+    void SDLCALL MyAudioCallback(SDL_AudioStream *stream, int len, void *userdata)
+    {
+        /* calculate a little more audio here, maybe using `userdata`, write it to `stream` */
+        SDL_PutAudioStreamData(stream, newdata, len);
+    }
+
+    /* ...somewhere near startup... */
+    SDL_AudioDeviceID my_audio_device = SDL_OpenAudioDevice(0, SDL_AUDIO_S16, 2, 44100);
+    SDL_AudioSteam *stream = SDL_CreateAndBindAudioStream(my_audio_device, SDL_AUDIO_S16, 2, 44100);
+    SDL_SetAudioStreamGetCallback(stream, MyAudioCallback);
+
+    /* MyAudioCallback will be called whenever the device requests more audio data. */
 ```
 
 SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.

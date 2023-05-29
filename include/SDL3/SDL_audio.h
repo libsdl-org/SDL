@@ -714,6 +714,171 @@ extern DECLSPEC int SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);
 extern DECLSPEC int SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);
 
 /**
+ * Lock an audio stream for serialized access.
+ *
+ * Each SDL_AudioStream has an internal mutex it uses to
+ * protect its data structures from threading conflicts. This function
+ * allows an app to lock that mutex, which could be useful if
+ * registering callbacks on this stream.
+ *
+ * One does not need to lock a stream to use in it most cases,
+ * as the stream manages this lock internally. However, this lock
+ * is held during callbacks, which may run from arbitrary threads
+ * at any time, so if an app needs to protect shared data during
+ * those callbacks, locking the stream guarantees that the
+ * callback is not running while the lock is held.
+ *
+ * As this is just a wrapper over SDL_LockMutex for an internal
+ * lock, it has all the same attributes (recursive locks are
+ * allowed, etc).
+ *
+ * \param stream The audio stream to lock.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \sa SDL_UnlockAudioStream
+ * \sa SDL_SetAudioStreamPutCallback
+ * \sa SDL_SetAudioStreamGetCallback
+ */
+extern DECLSPEC int SDLCALL SDL_LockAudioStream(SDL_AudioStream *stream);
+
+
+/**
+ * Unlock an audio stream for serialized access.
+ *
+ * This unlocks an audio stream after a call to SDL_LockAudioStream.
+ *
+ * \param stream The audio stream to unlock.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \threadsafety You should only call this from the same thread that
+ *               previously called SDL_LockAudioStream.
+ *
+ * \sa SDL_LockAudioStream
+ * \sa SDL_SetAudioStreamPutCallback
+ * \sa SDL_SetAudioStreamGetCallback
+ */
+extern DECLSPEC int SDLCALL SDL_UnlockAudioStream(SDL_AudioStream *stream);
+
+/**
+ * A callback that fires when data passes through an SDL_AudioStream.
+ *
+ * Apps can (optionally) register a callback with an audio stream that
+ * is called when data is added with SDL_PutAudioStreamData, or requested
+ * with SDL_GetAudioStreamData. These callbacks may run from any
+ * thread, so if you need to protect shared data, you should use
+ * SDL_LockAudioStream to serialize access; this lock will be held by
+ * before your callback is called, so your callback does not need to
+ * manage the lock explicitly.
+ *
+ * \param stream The SDL audio stream associated with this callback.
+ * \param approx_request The _approximate_ amout of data, in bytes, that is requested.
+ *                       This might be slightly overestimated due to buffering or
+ *                       resampling, and may change from call to call anyhow.
+ * \param userdata An opaque pointer provided by the app for their personal use.
+ */
+typedef void (SDLCALL *SDL_AudioStreamRequestCallback)(SDL_AudioStream *stream, int approx_request, void *userdata);
+
+/**
+ * Set a callback that runs when data is requested from an audio stream.
+ *
+ * This callback is called _before_ data is obtained from the stream,
+ * giving the callback the chance to add more on-demand.
+ *
+ * The callback can (optionally) call SDL_PutAudioStreamData() to add
+ * more audio to the stream during this call; if needed, the request
+ * that triggered this callback will obtain the new data immediately.
+ *
+ * The callback's `approx_request` argument is roughly how many bytes
+ * of _unconverted_ data (in the stream's input format) is needed by
+ * the caller, although this may overestimate a little for safety.
+ * This takes into account how much is already in the stream and only
+ * asks for any extra necessary to resolve the request, which means
+ * the callback may be asked for zero bytes, and a different amount
+ * on each call.
+ *
+ * The callback is not required to supply exact amounts; it is allowed
+ * to supply too much or too little or none at all. The caller will
+ * get what's available, up to the amount they requested, regardless
+ * of this callback's outcome.
+ *
+ * Clearing or flushing an audio stream does not call this callback.
+ *
+ * This function obtains the stream's lock, which means any existing
+ * callback (get or put) in progress will finish running before setting
+ * the new callback.
+ *
+ * Setting a NULL function turns off the callback.
+ *
+ * \param stream the audio stream to set the new callback on.
+ * \param callback the new callback function to call when data is added to the stream.
+ * \param userdata an opaque pointer provided to the callback for its own personal use.
+ * \returns 0 on success, -1 on error. This only fails if `stream` is NULL.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \sa SDL_SetAudioStreamPutCallback
+ */
+extern DECLSPEC int SDLCALL SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamRequestCallback callback, void *userdata);
+
+/**
+ * Set a callback that runs when data is added to an audio stream.
+ *
+ * This callback is called _after_ the data is added to the stream,
+ * giving the callback the chance to obtain it immediately.
+ *
+ * The callback can (optionally) call SDL_GetAudioStreamData() to
+ * obtain audio from the stream during this call.
+ *
+ * The callback's `approx_request` argument is how many bytes
+ * of _converted_ data (in the stream's output format) was provided
+ * by the caller, although this may underestimate a little for safety.
+ * This value might be less than what is currently available in the
+ * stream, if data was already there, and might be less than the
+ * caller provided if the stream needs to keep a buffer to aid in
+ * resampling. Which means the callback may be provided with zero
+ * bytes, and a different amount on each call.
+ *
+ * The callback may call SDL_GetAudioStreamAvailable to see the
+ * total amount currently available to read from the stream, instead
+ * of the total provided by the current call.
+ *
+ * The callback is not required to obtain all data. It is allowed
+ * to read less or none at all. Anything not read now simply remains
+ * in the stream for later access.
+ *
+ * Clearing or flushing an audio stream does not call this callback.
+ *
+ * This function obtains the stream's lock, which means any existing
+ * callback (get or put) in progress will finish running before setting
+ * the new callback.
+ *
+ * Setting a NULL function turns off the callback.
+ *
+ * \param stream the audio stream to set the new callback on.
+ * \param callback the new callback function to call when data is added to the stream.
+ * \param userdata an opaque pointer provided to the callback for its own personal use.
+ * \returns 0 on success, -1 on error. This only fails if `stream` is NULL.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \sa SDL_SetAudioStreamGetCallback
+ */
+extern DECLSPEC int SDLCALL SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamRequestCallback callback, void *userdata);
+
+
+/**
  * Free an audio stream
  *
  * \param stream The audio stream to free
