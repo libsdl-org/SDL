@@ -29,6 +29,10 @@
 #include "SDL_stdinc.h"
 #include <dbus/dbus.h>
 
+#ifndef DBUS_TIMEOUT_USE_DEFAULT
+#define DBUS_TIMEOUT_USE_DEFAULT -1
+#endif
+
 typedef struct SDL_DBusContext
 {
     DBusConnection *session_conn;
