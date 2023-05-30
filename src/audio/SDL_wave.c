@@ -2058,6 +2058,8 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
             return SDL_SetError("Unexpected %u-bit PCM data format", (unsigned int)format->bitspersample);
         }
         break;
+    default:
+        return SDL_SetError("Unexpected data format");
     }
 
     /* Report the end position back to the cleanup code. */
