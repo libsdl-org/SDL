@@ -24,7 +24,7 @@
 /**
  *  \file SDL_audio.h
  *
- *  \brief Access to the raw audio mixing buffer for the SDL library.
+ *  \brief Audio functionality for the SDL library.
  */
 
 #ifndef SDL_audio_h_
