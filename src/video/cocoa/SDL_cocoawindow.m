@@ -2077,12 +2077,10 @@ void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->driverdata;
         NSWindow *nswindow = windata.nswindow;
         NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-        BOOL fullscreen;
         Uint64 moveHack;
 
         rect.size.width = window->w;
         rect.size.height = window->h;
-        fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
 
         moveHack = s_moveHack;
         s_moveHack = 0;
