@@ -123,7 +123,7 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     if (envr != NULL) {
         device->hidden->io_delay = SDL_atoi(envr);
     } else {
-        device->hidden->io_delay = ((device->sample_frames * 1000) / device->freq);
+        device->hidden->io_delay = ((device->sample_frames * 1000) / device->spec.freq);
     }
 
     /* Open the "audio device" */
@@ -153,8 +153,8 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
 
 static void DISKAUDIO_DetectDevices(void)
 {
-    SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, 0, 0, 0, (void *)0x1);
-    SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, 0, 0, 0, (void *)0x2);
+    SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, NULL, (void *)0x1);
+    SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *)0x2);
 }
 
 static SDL_bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)

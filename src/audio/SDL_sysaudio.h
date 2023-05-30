@@ -73,7 +73,7 @@ extern void SDL_ChooseAudioConverters(void);
 /* Audio targets should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, SDL_AudioFormat fmt, int channels, int freq, void *handle);
+extern SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, const SDL_AudioSpec *spec, void *handle);
 
 /* Audio targets should call this if an opened audio device is lost.
    This can happen due to i/o errors, or a device being unplugged, etc. */
@@ -159,17 +159,12 @@ struct SDL_AudioStream
     int history_buffer_frames;
     int future_buffer_filled_frames;
 
-    int max_sample_frame_size;
+    SDL_AudioSpec src_spec;
+    SDL_AudioSpec dst_spec;
 
     int src_sample_frame_size;
-    SDL_AudioFormat src_format;
-    int src_channels;
-    int src_rate;
-
     int dst_sample_frame_size;
-    SDL_AudioFormat dst_format;
-    int dst_channels;
-    int dst_rate;
+    int max_sample_frame_size;
 
     int pre_resample_channels;
     int packetlen;
@@ -194,15 +189,11 @@ struct SDL_AudioDevice
     void *handle;
 
     /* The device's current audio specification */
-    SDL_AudioFormat format;
-    int freq;
-    int channels;
+    SDL_AudioSpec spec;
     Uint32 buffer_size;
 
     /* The device's default audio specification */
-    SDL_AudioFormat default_format;
-    int default_freq;
-    int default_channels;
+    SDL_AudioSpec default_spec;
 
     /* Number of sample frames the devices wants per-buffer. */
     int sample_frames;

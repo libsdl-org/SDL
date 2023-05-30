@@ -152,7 +152,7 @@ SDL_QueueAudio(), SDL_DequeueAudio, and SDL_ClearQueuedAudio and SDL_GetQueuedAu
 
 APIs that use channel counts used to use a Uint8 for the channel; now they use int.
 
-SDL_AudioSpec has been removed; things that used it have simply started taking separate arguments for format, channel, and sample rate. SDL_GetSilenceValueForFormat() can provide the information from the SDL_AudioSpec's `silence` field. The other SDL_AudioSpec fields aren't relevant anymore.
+SDL_AudioSpec has been reduced; now it only holds format, channel, and sample rate. SDL_GetSilenceValueForFormat() can provide the information from the SDL_AudioSpec's `silence` field. The other SDL2 SDL_AudioSpec fields aren't relevant anymore.
 
 SDL_GetAudioDeviceSpec() is removed; use SDL_GetAudioDeviceFormat() instead.
 

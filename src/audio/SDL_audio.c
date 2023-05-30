@@ -169,7 +169,7 @@ static void DestroyAudioDevice(SDL_AudioDevice *device)
     SDL_free(device);
 }
 
-static SDL_AudioDevice *CreateAudioDevice(const char *name, SDL_bool iscapture, SDL_AudioFormat fmt, int channels, int freq, void *handle, SDL_AudioDevice **devices, SDL_AtomicInt *device_count)
+static SDL_AudioDevice *CreateAudioDevice(const char *name, SDL_bool iscapture, const SDL_AudioSpec *spec, void *handle, SDL_AudioDevice **devices, SDL_AtomicInt *device_count)
 {
     SDL_AudioDevice *device;
 
@@ -202,10 +202,9 @@ static SDL_AudioDevice *CreateAudioDevice(const char *name, SDL_bool iscapture, 
     SDL_AtomicSet(&device->shutdown, 0);
     SDL_AtomicSet(&device->condemned, 0);
     device->iscapture = iscapture;
-    device->format = device->default_format = fmt;
-    device->channels = device->default_channels = channels;
-    device->freq = device->default_freq = freq;
-    device->silence_value = SDL_GetSilenceValueForFormat(device->format);
+    SDL_memcpy(&device->spec, spec, sizeof (SDL_AudioSpec));
+    SDL_memcpy(&device->default_spec, spec, sizeof (SDL_AudioSpec));
+    device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
     device->handle = handle;
     device->prev = NULL;
 
@@ -225,33 +224,34 @@ static SDL_AudioDevice *CreateAudioDevice(const char *name, SDL_bool iscapture, 
     return device;
 }
 
-static SDL_AudioDevice *CreateAudioCaptureDevice(const char *name, SDL_AudioFormat fmt, int channels, int freq, void *handle)
+static SDL_AudioDevice *CreateAudioCaptureDevice(const char *name, const SDL_AudioSpec *spec, void *handle)
 {
     SDL_assert(current_audio.impl.HasCaptureSupport);
-    return CreateAudioDevice(name, SDL_TRUE, fmt, channels, freq, handle, &current_audio.capture_devices, &current_audio.capture_device_count);
+    return CreateAudioDevice(name, SDL_TRUE, spec, handle, &current_audio.capture_devices, &current_audio.capture_device_count);
 }
 
-static SDL_AudioDevice *CreateAudioOutputDevice(const char *name, SDL_AudioFormat fmt, int channels, int freq, void *handle)
+static SDL_AudioDevice *CreateAudioOutputDevice(const char *name, const SDL_AudioSpec *spec, void *handle)
 {
-    return CreateAudioDevice(name, SDL_FALSE, fmt, channels, freq, handle, &current_audio.output_devices, &current_audio.output_device_count);
+    return CreateAudioDevice(name, SDL_FALSE, spec, handle, &current_audio.output_devices, &current_audio.output_device_count);
 }
 
 /* The audio backends call this when a new device is plugged in. */
-SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, SDL_AudioFormat fmt, int channels, int freq, void *handle)
+SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, const SDL_AudioSpec *inspec, void *handle)
 {
     SDL_AudioDevice *device;
+    SDL_AudioSpec spec;
 
-    if (fmt == 0) {
-        fmt = DEFAULT_AUDIO_FORMAT;
-    }
-    if (channels == 0) {
-        channels = DEFAULT_AUDIO_CHANNELS;
-    }
-    if (freq == 0) {
-        freq = DEFAULT_AUDIO_FREQUENCY;
+    if (!inspec) {
+        spec.format = DEFAULT_AUDIO_FORMAT;
+        spec.channels = DEFAULT_AUDIO_CHANNELS;
+        spec.freq = DEFAULT_AUDIO_FREQUENCY;
+    } else {
+        spec.format = (inspec->format != 0) ? inspec->format : DEFAULT_AUDIO_FORMAT;
+        spec.channels = (inspec->channels != 0) ? inspec->channels : DEFAULT_AUDIO_CHANNELS;
+        spec.freq = (inspec->freq != 0) ? inspec->freq : DEFAULT_AUDIO_FREQUENCY;
     }
 
-    device = iscapture ? CreateAudioCaptureDevice(name, fmt, channels, freq, handle) : CreateAudioOutputDevice(name, fmt, channels, freq, handle);
+    device = iscapture ? CreateAudioCaptureDevice(name, &spec, handle) : CreateAudioOutputDevice(name, &spec, handle);
     if (device) {
         /* Post the event, if desired */
         if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_ADDED)) {
@@ -330,9 +330,9 @@ static void SDL_AudioDetectDevices_Default(void)
     SDL_assert(current_audio.impl.OnlyHasDefaultOutputDevice);
     SDL_assert(current_audio.impl.OnlyHasDefaultCaptureDevice || !current_audio.impl.HasCaptureSupport);
 
-    SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, 0, 0, 0, (void *)((size_t)0x1));
+    SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, NULL, (void *)((size_t)0x1));
     if (current_audio.impl.HasCaptureSupport) {
-        SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, 0, 0, 0, (void *)((size_t)0x2));
+        SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *)((size_t)0x2));
     }
 }
 
@@ -614,7 +614,7 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
                 retval = SDL_FALSE;
                 break;
             } else if (br > 0) {  /* it's okay if we get less than requested, we mix what we have. */
-                if (SDL_MixAudioFormat(mix_buffer, device->work_buffer, device->format, br, SDL_MIX_MAXVOLUME) < 0) {  /* !!! FIXME: allow streams to specify gain? */
+                if (SDL_MixAudioFormat(mix_buffer, device->work_buffer, device->spec.format, br, SDL_MIX_MAXVOLUME) < 0) {  /* !!! FIXME: allow streams to specify gain? */
                     SDL_assert(!"We probably ended up with some totally unexpected audio format here");
                     retval = SDL_FALSE;  /* uh...? */
                     break;
@@ -636,10 +636,10 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
 
 void SDL_OutputAudioThreadShutdown(SDL_AudioDevice *device)
 {
-    const int samples = (device->buffer_size / (SDL_AUDIO_BITSIZE(device->format) / 8)) / device->channels;
+    const int samples = (device->buffer_size / (SDL_AUDIO_BITSIZE(device->spec.format) / 8)) / device->spec.channels;
     SDL_assert(!device->iscapture);
     /* Wait for the audio to drain. */ /* !!! FIXME: don't bother waiting if device is lost. */
-    SDL_Delay(((samples * 1000) / device->freq) * 2);
+    SDL_Delay(((samples * 1000) / device->spec.freq) * 2);
     current_audio.impl.ThreadDeinit(device);
     if (SDL_AtomicGet(&device->condemned)) {
         SDL_DetachThread(device->thread);  /* no one is waiting for us, just detach ourselves. */
@@ -878,23 +878,18 @@ char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
     return retval;
 }
 
-int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioFormat *fmt, int *channels, int *freq)
+int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec)
 {
+    if (!spec) {
+        return SDL_InvalidParamError("spec");
+    }
+
     SDL_AudioDevice *device = ObtainAudioDevice(devid);
     if (!device) {
         return -1;
     }
 
-    if (fmt) {
-        *fmt = device->format;
-    }
-    if (channels) {
-        *channels = device->channels;
-    }
-    if (freq) {
-        *freq = device->freq;
-    }
-
+    SDL_memcpy(spec, &device->spec, sizeof (SDL_AudioSpec));
     SDL_UnlockMutex(device->lock);
 
     return 0;
@@ -917,11 +912,9 @@ static void CloseAudioDevice(SDL_AudioDevice *device)
         device->work_buffer = NULL;
     }
 
-    device->format = device->default_format;
-    device->channels = device->default_channels;
-    device->freq = device->default_freq;
+    SDL_memcpy(&device->spec, &device->default_spec, sizeof (SDL_AudioSpec));
     device->sample_frames = 0;
-    device->silence_value = SDL_GetSilenceValueForFormat(device->format);
+    device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
 }
 
 void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
@@ -965,35 +958,35 @@ static SDL_AudioFormat ParseAudioFormatString(const char *string)
     return 0;
 }
 
-static void PrepareAudioFormat(SDL_AudioFormat *fmt, int *channels, int *freq)
+static void PrepareAudioFormat(SDL_AudioSpec *spec)
 {
     const char *env;
 
-    if (*freq == 0) {
-        *freq = DEFAULT_AUDIO_FREQUENCY;
-        env = SDL_getenv("SDL_AUDIO_FREQUENCY");
+    if (spec->freq == 0) {
+        spec->freq = DEFAULT_AUDIO_FREQUENCY;
+        env = SDL_getenv("SDL_AUDIO_FREQUENCY");  // !!! FIXME: should be a hint?
         if (env != NULL) {
             const int val = SDL_atoi(env);
             if (val > 0) {
-                *freq = val;
+                spec->freq = val;
             }
         }
     }
 
-    if (*channels == 0) {
-        *channels = DEFAULT_AUDIO_CHANNELS;
+    if (spec->channels == 0) {
+        spec->channels = DEFAULT_AUDIO_CHANNELS;
         env = SDL_getenv("SDL_AUDIO_CHANNELS");
         if (env != NULL) {
             const int val = SDL_atoi(env);
             if (val > 0) {
-                *channels = val;
+                spec->channels = val;
             }
         }
     }
 
-    if (*fmt == 0) {
+    if (spec->format == 0) {
         const SDL_AudioFormat val = ParseAudioFormatString(SDL_getenv("SDL_AUDIO_FORMAT"));
-        *fmt = (val != 0) ? val : DEFAULT_AUDIO_FORMAT;
+        spec->format = (val != 0) ? val : DEFAULT_AUDIO_FORMAT;
     }
 }
 
@@ -1010,25 +1003,27 @@ static int GetDefaultSampleFramesFromFreq(int freq)
 
 void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device)
 {
-    device->silence_value = SDL_GetSilenceValueForFormat(device->format);
-    device->buffer_size = device->sample_frames * (SDL_AUDIO_BITSIZE(device->format) / 8) * device->channels;
+    device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
+    device->buffer_size = device->sample_frames * (SDL_AUDIO_BITSIZE(device->spec.format) / 8) * device->spec.channels;
 }
 
 /* this expects the device lock to be held. */
-static int OpenAudioDevice(SDL_AudioDevice *device, SDL_AudioFormat fmt, int channels, int freq)
+static int OpenAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec *inspec)
 {
     SDL_assert(SDL_AtomicGet(&device->refcount) == 1);
 
-    PrepareAudioFormat(&fmt, &channels, &freq);
+    SDL_AudioSpec spec;
+    SDL_memcpy(&spec, inspec, sizeof (SDL_AudioSpec));
+    PrepareAudioFormat(&spec);
 
     /* we allow the device format to change if it's better than the current settings (by various definitions of "better"). This prevents
        something low quality, like an old game using S8/8000Hz audio, from ruining a music thing playing at CD quality that tries to open later.
        (or some VoIP library that opens for mono output ruining your surround-sound game because it got there first). */
     /* These are just requests! The backend may change any of these values during OpenDevice method! */
-    device->format = (SDL_AUDIO_BITSIZE(device->default_format) >= SDL_AUDIO_BITSIZE(fmt)) ? device->default_format : fmt;
-    device->freq = SDL_max(device->default_freq, freq);
-    device->channels = SDL_max(device->default_channels, channels);
-    device->sample_frames = GetDefaultSampleFramesFromFreq(device->freq);
+    device->spec.format = (SDL_AUDIO_BITSIZE(device->default_spec.format) >= SDL_AUDIO_BITSIZE(spec.format)) ? device->default_spec.format : spec.format;
+    device->spec.freq = SDL_max(device->default_spec.freq, spec.freq);
+    device->spec.channels = SDL_max(device->default_spec.channels, spec.channels);
+    device->sample_frames = GetDefaultSampleFramesFromFreq(device->spec.freq);
     SDL_UpdatedAudioDeviceFormat(device);  /* start this off sane. */
 
     if (current_audio.impl.OpenDevice(device) < 0) {
@@ -1062,7 +1057,7 @@ static int OpenAudioDevice(SDL_AudioDevice *device, SDL_AudioFormat fmt, int cha
     return 0;
 }
 
-SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, SDL_AudioFormat fmt, int channels, int freq)
+SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec)
 {
     SDL_AudioDevice *device = ObtainAudioDevice(devid);  /* !!! FIXME: need to choose default device for devid==0 */
     int retval = 0;
@@ -1070,7 +1065,7 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, SDL_AudioFormat f
     if (device) {
         retval = device->instance_id;
         if (SDL_AtomicIncRef(&device->refcount) == 0) {
-            if (OpenAudioDevice(device, fmt, channels, freq) == -1) {
+            if (OpenAudioDevice(device, spec) == -1) {
                 retval = 0;
             }
         }
@@ -1127,16 +1122,14 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
         /* Now that everything is verified, chain everything together. */
         for (i = 0; i < num_streams; i++) {
             SDL_AudioStream *stream = streams[i];
-            SDL_AudioFormat src_format, dst_format;
-            int src_channels, dst_channels;
-            int src_rate, dst_rate;
+            SDL_AudioSpec src_spec, dst_spec;
 
             /* set the proper end of the stream to the device's format. */
-            SDL_GetAudioStreamFormat(stream, &src_format, &src_channels, &src_rate, &dst_format, &dst_channels, &dst_rate);
+            SDL_GetAudioStreamFormat(stream, &src_spec, &dst_spec);
             if (device->iscapture) {
-                SDL_SetAudioStreamFormat(stream, device->format, device->channels, device->freq, dst_format, dst_channels, dst_rate);
+                SDL_SetAudioStreamFormat(stream, &device->spec, &dst_spec);
             } else {
-                SDL_SetAudioStreamFormat(stream, src_format, src_channels, src_rate, device->format, device->channels, device->freq);
+                SDL_SetAudioStreamFormat(stream, &src_spec, &device->spec);
             }
 
             stream->bound_device = device;
@@ -1236,16 +1229,16 @@ void SDL_UnbindAudioStream(SDL_AudioStream *stream)
 }
 
 
-SDL_AudioStream *SDL_CreateAndBindAudioStream(SDL_AudioDeviceID devid, SDL_AudioFormat fmt, int channels, int freq)
+SDL_AudioStream *SDL_CreateAndBindAudioStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec)
 {
     SDL_AudioStream *stream = NULL;
     SDL_AudioDevice *device = ObtainAudioDevice(devid);
     if (device) {
         const SDL_bool iscapture = (devid & 1) ? SDL_FALSE : SDL_TRUE;   /* capture instance ids are even and output devices are odd */
         if (iscapture) {
-            stream = SDL_CreateAudioStream(device->format, device->channels, device->freq, fmt, channels, freq);
+            stream = SDL_CreateAudioStream(&device->spec, spec);
         } else {
-            stream = SDL_CreateAudioStream(fmt, channels, freq, device->format, device->channels, device->freq);
+            stream = SDL_CreateAudioStream(spec, &device->spec);
         }
 
         if (stream) {

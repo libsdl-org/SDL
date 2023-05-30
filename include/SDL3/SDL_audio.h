@@ -141,6 +141,13 @@ typedef Uint16 SDL_AudioFormat;
 
 /* @} *//* Audio flags */
 
+typedef struct SDL_AudioSpec
+{
+    SDL_AudioFormat format;     /**< Audio data format */
+    int channels;               /**< Number of channels: 1 mono, 2 stereo, etc */
+    int freq;                   /**< sample rate: sample frames per second */
+} SDL_AudioSpec;
+
 /* SDL_AudioStream is an audio conversion interface.
     - It can handle resampling data in chunks without generating
       artifacts, when it doesn't have the complete buffer available.
@@ -305,9 +312,7 @@ extern DECLSPEC char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
  * can't be determined).
  *
  * \param devid the instance ID of the device to query.
- * \param fmt On return, will be set to the device's data format. Can be NULL.
- * \param channels On return, will be set to the device's channel count. Can be NULL.
- * \param freq On return, will be set to the device's sample rate. Can be NULL.
+ * \param spec On return, will be filled with device details.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -315,7 +320,7 @@ extern DECLSPEC char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioFormat *fmt, int *channels, int *freq);
+extern DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec);
 
 
 /**
@@ -362,9 +367,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SD
  *
  * \param devid the device instance id to open. 0 requests the most
  *              reasonable default device.
- * \param fmt the requested device format (`SDL_AUDIO_S16`, etc)
- * \param channels the requested device channels (1==mono, 2==stereo, etc).
- * \param freq the requested device frequency in sample-frames-per-second (Hz)
+ * \param spec the requested device configuration
  * \returns The device ID on success, 0 on error; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -374,7 +377,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SD
  * \sa SDL_CloseAudioDevice
  * \sa SDL_GetAudioDeviceFormat
  */
-extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDeviceID devid, SDL_AudioFormat fmt, int channels, int freq);
+extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec);
 
 
 /**
@@ -499,12 +502,8 @@ extern DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
 /**
  * Create a new audio stream.
  *
- * \param src_format The format of the source audio
- * \param src_channels The number of channels of the source audio
- * \param src_rate The sampling rate of the source audio
- * \param dst_format The format of the desired audio output
- * \param dst_channels The number of channels of the desired audio output
- * \param dst_rate The sampling rate of the desired audio output
+ * \param src_spec The format details of the input audio
+ * \param dst_spec The format details of the output audio
  * \returns 0 on success, or -1 on error.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -519,26 +518,15 @@ extern DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
  * \sa SDL_ChangeAudioStreamOutput
  * \sa SDL_DestroyAudioStream
  */
-extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(SDL_AudioFormat src_format,
-                                                            int src_channels,
-                                                            int src_rate,
-                                                            SDL_AudioFormat dst_format,
-                                                            int dst_channels,
-                                                            int dst_rate);
+extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec);
 
 
 /**
  * Query the current format of an audio stream.
  *
  * \param stream the SDL_AudioStream to query.
- * \param src_format Where to store the input audio format; ignored if NULL.
- * \param src_channels Where to store the input channel count; ignored if
- *                     NULL.
- * \param src_rate Where to store the input sample rate; ignored if NULL.
- * \param dst_format Where to store the output audio format; ignored if NULL.
- * \param dst_channels Where to store the output channel count; ignored if
- *                     NULL.
- * \param dst_rate Where to store the output sample rate; ignored if NULL.
+ * \param src_spec Where to store the input audio format; ignored if NULL.
+ * \param dst_spec Where to store the output audio format; ignored if NULL.
  * \returns 0 on success, or -1 on error.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds
@@ -547,12 +535,8 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(SDL_AudioFormat s
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream,
-                                                     SDL_AudioFormat *src_format,
-                                                     int *src_channels,
-                                                     int *src_rate,
-                                                     SDL_AudioFormat *dst_format,
-                                                     int *dst_channels,
-                                                     int *dst_rate);
+                                                     SDL_AudioSpec *src_spec,
+                                                     SDL_AudioSpec *dst_spec);
 
 /**
  * Change the input and output formats of an audio stream.
@@ -562,12 +546,8 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream,
  * must provide data in the new input formats.
  *
  * \param stream The stream the format is being changed
- * \param src_format The format of the audio input
- * \param src_channels The number of channels of the audio input
- * \param src_rate The sampling rate of the audio input
- * \param dst_format The format of the desired audio output
- * \param dst_channels The number of channels of the desired audio output
- * \param dst_rate The sampling rate of the desired audio output
+ * \param src_spec The new format of the audio input; if NULL, it is not changed.
+ * \param dst_spec The new format of the audio output; if NULL, it is not changed.
  * \returns 0 on success, or -1 on error.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds
@@ -581,12 +561,8 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream,
  * \sa SDL_GetAudioStreamAvailable
  */
 extern DECLSPEC int SDLCALL SDL_SetAudioStreamFormat(SDL_AudioStream *stream,
-                                                     SDL_AudioFormat src_format,
-                                                     int src_channels,
-                                                     int src_rate,
-                                                     SDL_AudioFormat dst_format,
-                                                     int dst_channels,
-                                                     int dst_rate);
+                                                     const SDL_AudioSpec *src_spec,
+                                                     const SDL_AudioSpec *dst_spec);
 
 /**
  * Add data to be converted/resampled to the stream.
@@ -902,15 +878,13 @@ extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
  * correctly to match both the app and the audio device's needs. This is
  * optional, but slightly less cumbersome to set up for a common use case.
  *
- * The format parameters (`fmt`, `channels`, `freq`) represent the app's side
- * of the audio stream. That is, for recording audio, this will be the output
- * format, and for playing audio, this will be the input format. This function
- * will set the other side of the audio stream to the device's format.
+ * The `spec` parameter represents the app's side of the audio stream. That
+ * is, for recording audio, this will be the output format, and for playing
+ * audio, this will be the input format. This function will set the other
+ * side of the audio stream to the device's format.
  *
  * \param devid an audio device to bind a stream to. This must be an opened device, and can not be zero.
- * \param fmt the audio stream's format (`SDL_AUDIO_S16`, etc)
- * \param channels the audio stream's channel count (1==mono, 2==stereo, etc).
- * \param freq the audio stream's frequency in sample-frames-per-second (Hz)
+ * \param spec the audio stream's input format
  * \returns a bound audio stream on success, ready to use. NULL on error; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -921,7 +895,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
  * \sa SDL_UnbindAudioStreams
  * \sa SDL_UnbindAudioStream
  */
-extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAndBindAudioStream(SDL_AudioDeviceID devid, SDL_AudioFormat fmt, int channels, int freq);
+extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAndBindAudioStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec);
 
 
 /**
@@ -981,12 +955,8 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAndBindAudioStream(SDL_AudioD
  *
  * \param src The data source for the WAVE data
  * \param freesrc If non-zero, SDL will _always_ free the data source
- * \param fmt A pointer to an SDL_AudioFormat that will be set to the
- *            WAVE data's format on successful return.
- * \param channels A pointer to an int that will be set to the
- *            WAVE data's channel count on successful return.
- * \param freq A pointer to an int that will be set to the
- *             WAVE data's sample rate in Hz on successful return.
+ * \param spec A pointer to an SDL_AudioSpec that will be set to the
+ *             WAVE data's format details on successful return.
  * \param audio_buf A pointer filled with the audio data, allocated by the
  *                  function.
  * \param audio_len A pointer filled with the length of the audio data buffer
@@ -1009,8 +979,7 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAndBindAudioStream(SDL_AudioD
  * \sa SDL_LoadWAV
  */
 extern DECLSPEC int SDLCALL SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
-                                           SDL_AudioFormat *fmt, int *channels, int *freq,
-                                           Uint8 ** audio_buf,
+                                           SDL_AudioSpec * spec, Uint8 ** audio_buf,
                                            Uint32 * audio_len);
 
 /**
@@ -1074,14 +1043,10 @@ extern DECLSPEC int SDLCALL SDL_MixAudioFormat(Uint8 * dst,
  * use, so it's also less efficient than using one directly, if you need to
  * convert multiple times.
  *
- * \param src_format The format of the source audio
- * \param src_channels The number of channels of the source audio
- * \param src_rate The sampling rate of the source audio
+ * \param src_spec The format details of the input audio
  * \param src_data The audio data to be converted
  * \param src_len The len of src_data
- * \param dst_format The format of the desired audio output
- * \param dst_channels The number of channels of the desired audio output
- * \param dst_rate The sampling rate of the desired audio output
+ * \param dst_spec The format details of the output audio
  * \param dst_data Will be filled with a pointer to converted audio data,
  *                 which should be freed with SDL_free(). On error, it will be
  *                 NULL.
@@ -1093,14 +1058,10 @@ extern DECLSPEC int SDLCALL SDL_MixAudioFormat(Uint8 * dst,
  *
  * \sa SDL_CreateAudioStream
  */
-extern DECLSPEC int SDLCALL SDL_ConvertAudioSamples(SDL_AudioFormat src_format,
-                                                    int src_channels,
-                                                    int src_rate,
+extern DECLSPEC int SDLCALL SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec,
                                                     const Uint8 *src_data,
                                                     int src_len,
-                                                    SDL_AudioFormat dst_format,
-                                                    int dst_channels,
-                                                    int dst_rate,
+                                                    const SDL_AudioSpec *dst_spec,
                                                     Uint8 **dst_data,
                                                     int *dst_len);
 

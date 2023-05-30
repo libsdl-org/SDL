@@ -50,7 +50,7 @@ static Uint8 *DUMMYAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 static int DUMMYAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     /* Delay to make this sort of simulate real audio input. */
-    SDL_Delay((device->sample_frames * 1000) / device->freq);
+    SDL_Delay((device->sample_frames * 1000) / device->spec.freq);
 
     /* always return a full buffer of silence. */
     SDL_memset(buffer, device->silence_value, buflen);

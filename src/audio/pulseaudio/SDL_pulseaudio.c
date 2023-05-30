@@ -599,7 +599,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_zerop(device->hidden);
 
     /* Try for a closest match on audio format */
-    closefmts = SDL_ClosestAudioFormats(device->format);
+    closefmts = SDL_ClosestAudioFormats(device->spec.format);
     while ((test_format = *(closefmts++)) != 0) {
 #ifdef DEBUG_AUDIO
         fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
@@ -634,7 +634,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     if (!test_format) {
         return SDL_SetError("pulseaudio: Unsupported audio format");
     }
-    device->format = test_format;
+    device->spec.format = test_format;
     paspec.format = format;
 
     /* Calculate the final parameters for this audio specification */
@@ -650,8 +650,8 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
         SDL_memset(h->mixbuf, device->silence_value, device->buffer_size);
     }
 
-    paspec.channels = device->channels;
-    paspec.rate = device->freq;
+    paspec.channels = device->spec.channels;
+    paspec.rate = device->spec.freq;
 
     /* Reduced prebuffering compared to the defaults. */
     paattr.fragsize = device->buffer_size;
@@ -669,7 +669,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
         const char *name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
         /* The SDL ALSA output hints us that we use Windows' channel mapping */
         /* https://bugzilla.libsdl.org/show_bug.cgi?id=110 */
-        PULSEAUDIO_pa_channel_map_init_auto(&pacmap, device->channels, PA_CHANNEL_MAP_WAVEEX);
+        PULSEAUDIO_pa_channel_map_init_auto(&pacmap, device->spec.channels, PA_CHANNEL_MAP_WAVEEX);
 
         h->stream = PULSEAUDIO_pa_stream_new(
             pulseaudio_context,
@@ -750,12 +750,13 @@ static void SinkInfoCallback(pa_context *c, const pa_sink_info *i, int is_last, 
 {
     if (i) {
         const SDL_bool add = (SDL_bool)((intptr_t)data);
-        const SDL_AudioFormat fmt = PulseFormatToSDLFormat(i->sample_spec.format);
-        const int channels = i->sample_spec.channels;
-        const int freq = i->sample_spec.rate;
+        SDL_AudioSpec spec;
+        spec.format = PulseFormatToSDLFormat(i->sample_spec.format);
+        spec.channels = i->sample_spec.channels;
+        spec.freq = i->sample_spec.rate;
 
         if (add) {
-            SDL_AddAudioDevice(SDL_FALSE, i->description, fmt, channels, freq, (void *)((intptr_t)i->index + 1));
+            SDL_AddAudioDevice(SDL_FALSE, i->description, &spec, (void *)((intptr_t)i->index + 1));
         }
 
         if (default_sink_path != NULL && SDL_strcmp(i->name, default_sink_path) == 0) {
@@ -772,12 +773,13 @@ static void SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_la
     /* Maybe skip "monitor" sources. These are just output from other sinks. */
     if (i && (include_monitors || (i->monitor_of_sink == PA_INVALID_INDEX))) {
         const SDL_bool add = (SDL_bool)((intptr_t)data);
-        const SDL_AudioFormat fmt = PulseFormatToSDLFormat(i->sample_spec.format);
-        const int channels = i->sample_spec.channels;
-        const int freq = i->sample_spec.rate;
+        SDL_AudioSpec spec;
+        spec.format = PulseFormatToSDLFormat(i->sample_spec.format);
+        spec.channels = i->sample_spec.channels;
+        spec.freq = i->sample_spec.rate;
 
         if (add) {
-            SDL_AddAudioDevice(SDL_TRUE, i->description, fmt, channels, freq, (void *)((intptr_t)i->index + 1));
+            SDL_AddAudioDevice(SDL_TRUE, i->description, &spec, (void *)((intptr_t)i->index + 1));
         }
 
         if (default_source_path != NULL && SDL_strcmp(i->name, default_source_path) == 0) {

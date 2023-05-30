@@ -28,9 +28,7 @@
 
 static struct
 {
-    SDL_AudioFormat fmt;
-    int channels;
-    int freq;
+    SDL_AudioSpec spec;
     Uint8 *sound;    /* Pointer to wave data */
     Uint32 soundlen; /* Length of wave data */
     Uint32 soundpos;
@@ -89,14 +87,14 @@ static void
 open_audio(void)
 {
     SDL_AudioDeviceID *devices = SDL_GetAudioOutputDevices(NULL);
-    device = devices ? SDL_OpenAudioDevice(devices[0], wave.fmt, wave.channels, wave.freq) : 0;
+    device = devices ? SDL_OpenAudioDevice(devices[0], &wave.spec) : 0;
     SDL_free(devices);
     if (!device) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
         SDL_free(wave.sound);
         quit(2);
     }
-    stream = SDL_CreateAndBindAudioStream(device, wave.fmt, wave.channels, wave.freq);
+    stream = SDL_CreateAndBindAudioStream(device, &wave.spec);
     if (!stream) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create audio stream: %s\n", SDL_GetError());
         SDL_CloseAudioDevice(device);
@@ -180,7 +178,7 @@ int main(int argc, char *argv[])
     }
 
     /* Load the wave file into memory */
-    if (SDL_LoadWAV(filename, &wave.fmt, &wave.channels, &wave.freq, &wave.sound, &wave.soundlen) == -1) {
+    if (SDL_LoadWAV(filename, &wave.spec, &wave.sound, &wave.soundlen) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         quit(1);
     }
