@@ -1263,7 +1263,24 @@ static void SetWindowMaximized(_THIS, SDL_Window *window, SDL_bool maximized)
     }
 
     if (X11_IsWindowMapped(_this, window)) {
+        /* !!! FIXME: most of this waiting code is copy/pasted from elsewhere. */
+        int (*prev_handler)(Display *, XErrorEvent *) = NULL;
+        XWindowAttributes attrs;
+        Window childReturn, root, parent;
+        Window *children;
+        unsigned int childCount;
+        int orig_w, orig_h, orig_x, orig_y;
+        int x, y;
+        Uint64 timeout;
         XEvent e;
+
+        X11_XSync(display, False);
+        X11_XQueryTree(display, data->xwindow, &root, &parent, &children, &childCount);
+        X11_XGetWindowAttributes(display, data->xwindow, &attrs);
+        X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
+                                  attrs.x, attrs.y, &orig_x, &orig_y, &childReturn);
+        orig_w = attrs.width;
+        orig_h = attrs.height;
 
         SDL_zero(e);
         e.xany.type = ClientMessage;
@@ -1278,6 +1295,40 @@ static void SetWindowMaximized(_THIS, SDL_Window *window, SDL_bool maximized)
 
         X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
                        SubstructureNotifyMask | SubstructureRedirectMask, &e);
+
+        /* Wait a brief time to see if the window manager decided to let this happen.
+           If the window changes at all, even to an unexpected value, we break out. */
+        X11_XSync(display, False);
+        prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
+
+        timeout = SDL_GetTicks64() + 1000;
+        while (SDL_TRUE) {
+            caught_x11_error = SDL_FALSE;
+            X11_XSync(display, False);
+            X11_XGetWindowAttributes(display, data->xwindow, &attrs);
+            X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
+                                      attrs.x, attrs.y, &x, &y, &childReturn);
+
+            if (!caught_x11_error) {
+                if ((x != orig_x) || (y != orig_y) || (attrs.width != orig_w) || (attrs.height != orig_h)) {
+                    break; /* window changed, time to go. */
+                }
+            }
+
+            if (SDL_GetTicks64() >= timeout) {
+                break;
+            }
+
+            SDL_Delay(10);
+        }
+
+        if (!caught_x11_error) {
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, x, y);
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, attrs.width, attrs.height);
+        }
+
+        X11_XSetErrorHandler(prev_handler);
+        caught_x11_error = SDL_FALSE;
     } else {
         X11_SetNetWMState(_this, data->xwindow, window->flags);
     }
