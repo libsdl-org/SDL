@@ -873,16 +873,17 @@ SDL3_0.0.0 {
     SDL_GetAudioStreamAvailable;
     SDL_FlushAudioStream;
     SDL_ClearAudioStream;
-    SDL_DestroyAudioStream;
-    SDL_CreateAndBindAudioStream;
-    SDL_LoadWAV_RW;
-    SDL_MixAudioFormat;
-    SDL_ConvertAudioSamples;
-    SDL_GetSilenceValueForFormat;
     SDL_LockAudioStream;
     SDL_UnlockAudioStream;
     SDL_SetAudioStreamGetCallback;
     SDL_SetAudioStreamPutCallback;
+    SDL_DestroyAudioStream;
+    SDL_CreateAndBindAudioStream;
+    SDL_LoadWAV_RW;
+    SDL_LoadWAV;
+    SDL_MixAudioFormat;
+    SDL_ConvertAudioSamples;
+    SDL_GetSilenceValueForFormat;
     # extra symbols go here (don't modify this line)
   local: *;
 };

@@ -946,8 +946,8 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAndBindAudioStream(SDL_AudioD
  * SDL_LoadWAV_RW(SDL_RWFromFile("sample.wav", "rb"), 1, &spec, &buf, &len);
  * ```
  *
- * Note that the SDL_LoadWAV macro does this same thing for you, but in a less
- * messy way:
+ * Note that the SDL_LoadWAV function does this same thing for you, but in a
+ * less messy way:
  *
  * ```c
  * SDL_LoadWAV("sample.wav", &spec, &buf, &len);
@@ -983,11 +983,42 @@ extern DECLSPEC int SDLCALL SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
                                            Uint32 * audio_len);
 
 /**
- *  Loads a WAV from a file.
- *  Compatibility convenience function.
+ * Loads a WAV from a file path.
+ *
+ * This is a convenience function that is effectively the same as:
+ *
+ * ```c
+ * SDL_LoadWAV_RW(SDL_RWFromFile(path, "rb"), 1, spec, audio_buf, audio_len);
+ * ```
+ *
+ * Note that in SDL2, this was a preprocessor macro and not a real function.
+ *
+ * \param path The file path of the WAV file to open.
+ * \param spec A pointer to an SDL_AudioSpec that will be set to the
+ *             WAVE data's format details on successful return.
+ * \param audio_buf A pointer filled with the audio data, allocated by the
+ *                  function.
+ * \param audio_len A pointer filled with the length of the audio data buffer
+ *                  in bytes
+ * \returns This function, if successfully called, returns 0. `audio_buf`
+ *          will be filled with a pointer to an allocated buffer
+ *          containing the audio data, and `audio_len` is filled with the
+ *          length of that audio buffer in bytes.
+ *
+ *          This function returns -1 if the .WAV file cannot be opened, uses
+ *          an unknown data format, or is corrupt; call SDL_GetError() for
+ *          more information.
+ *
+ *          When the application is done with the data returned in
+ *          `audio_buf`, it should call SDL_free() to dispose of it.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_free
+ * \sa SDL_LoadWAV_RW
  */
-#define SDL_LoadWAV(file, fmt, channels, freq, audio_buf, audio_len) \
-    SDL_LoadWAV_RW(SDL_RWFromFile(file, "rb"), 1, fmt, channels, freq, audio_buf, audio_len)
+extern DECLSPEC int SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec * spec,
+                                        Uint8 ** audio_buf, Uint32 * audio_len);
 
 
 
