@@ -40,6 +40,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #define udev_unref                                    udev_ctx->udev_unref
 
 #undef HIDAPI_H__
+#define HIDAPI_ALLOW_BUILD_WORKAROUND_KERNEL_2_6_39
 #include "linux/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 
