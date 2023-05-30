@@ -1441,7 +1441,7 @@ static void X11_SetWindowMaximized(SDL_VideoDevice *_this, SDL_Window *window, S
         X11_XSync(display, False);
         prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
 
-        timeout = SDL_GetTicks64() + 1000;
+        timeout = SDL_GetTicks() + 1000;
         while (SDL_TRUE) {
             caught_x11_error = SDL_FALSE;
             X11_XSync(display, False);
@@ -1455,7 +1455,7 @@ static void X11_SetWindowMaximized(SDL_VideoDevice *_this, SDL_Window *window, S
                 }
             }
 
-            if (SDL_GetTicks64() >= timeout) {
+            if (SDL_GetTicks() >= timeout) {
                 break;
             }
 
@@ -1463,8 +1463,8 @@ static void X11_SetWindowMaximized(SDL_VideoDevice *_this, SDL_Window *window, S
         }
 
         if (!caught_x11_error) {
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, x, y);
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, attrs.width, attrs.height);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, attrs.width, attrs.height);
         }
 
         X11_XSetErrorHandler(prev_handler);
