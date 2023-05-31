@@ -884,6 +884,11 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 		HANDLE device_handle = INVALID_HANDLE_VALUE;
 		HIDD_ATTRIBUTES attrib;
 
+        /* XInput devices don't get real HID reports and are better handled by the raw input driver */
+        if (wcsstr(device_interface, L"&IG_") != NULL) {
+            continue;
+        }
+
 		/* Open read-only handle to the device */
 		device_handle = open_device(device_interface, FALSE);
 
