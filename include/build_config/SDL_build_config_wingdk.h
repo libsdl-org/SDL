@@ -245,4 +245,7 @@
 /* Enable filesystem support */
 #define SDL_FILESYSTEM_WINDOWS  1
 
+/* Use the (inferior) GDK text input method for GDK platforms */
+/*#define SDL_GDK_TEXTINPUT 1*/
+
 #endif /* SDL_build_config_wingdk_h_ */

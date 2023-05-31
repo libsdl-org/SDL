@@ -31,6 +31,10 @@
 #include "SDL_windowsshape.h"
 #include "SDL_windowsvulkan.h"
 
+#ifdef SDL_GDK_TEXTINPUT
+#include "../gdk/SDL_gdktextinput.h"
+#endif
+
 /* #define HIGHDPI_DEBUG */
 
 /* Initialization/Query functions */
@@ -256,6 +260,21 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->SetClipboardText = WIN_SetClipboardText;
     device->GetClipboardText = WIN_GetClipboardText;
     device->HasClipboardText = WIN_HasClipboardText;
+#endif
+
+#ifdef SDL_GDK_TEXTINPUT
+    GDK_EnsureHints();
+
+    device->StartTextInput = GDK_StartTextInput;
+    device->StopTextInput = GDK_StopTextInput;
+    device->SetTextInputRect = GDK_SetTextInputRect;
+    device->ClearComposition = GDK_ClearComposition;
+    device->IsTextInputShown = GDK_IsTextInputShown;
+
+    device->HasScreenKeyboardSupport = GDK_HasScreenKeyboardSupport;
+    device->ShowScreenKeyboard = GDK_ShowScreenKeyboard;
+    device->HideScreenKeyboard = GDK_HideScreenKeyboard;
+    device->IsScreenKeyboardShown = GDK_IsScreenKeyboardShown;
 #endif
 
     device->free = WIN_DeleteDevice;

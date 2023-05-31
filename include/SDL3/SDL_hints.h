@@ -2414,6 +2414,110 @@ extern "C" {
 
 
 /**
+ *  \brief  Sets the title of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the title of the window.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_TITLE "SDL_GDK_TEXTINPUT_TITLE"
+
+/**
+ *  \brief  Sets the description of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the description of the window.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_DESCRIPTION "SDL_GDK_TEXTINPUT_DESCRIPTION"
+
+/**
+ *  \brief  Sets the default text of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the default text value of the window.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_DEFAULT "SDL_GDK_TEXTINPUT_DEFAULT"
+
+/**
+ *  \brief  Sets the input scope of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the XGameUiTextEntryInputScope value
+ *  that will be passed to the window creation function.
+ *
+ *  The value must be a stringified integer,
+ *  for example "0" for XGameUiTextEntryInputScope::Default.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_SCOPE "SDL_GDK_TEXTINPUT_SCOPE"
+
+/**
+ *  \brief  Sets the maximum input length of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the maximum allowed input
+ *  length of the text box in the virtual keyboard window.
+ *
+ *  The value must be a stringified integer,
+ *  for example "10" to allow for up to 10 characters of text input.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_MAX_LENGTH "SDL_GDK_TEXTINPUT_MAX_LENGTH"
+
+
+/**
  *  \brief  An enumeration of hint priorities
  */
 typedef enum
