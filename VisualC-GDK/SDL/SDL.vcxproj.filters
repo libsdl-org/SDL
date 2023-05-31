@@ -172,6 +172,9 @@
     <Filter Include="core\gdk">
       <UniqueIdentifier>{3ab60a46-e18e-450a-a916-328fb8547e59}</UniqueIdentifier>
     </Filter>
+    <Filter Include="video\gdk">
+      <UniqueIdentifier>{3ad16a8a-0ed8-439c-a771-383af2e2867f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
@@ -821,6 +824,9 @@
     <ClInclude Include="..\..\src\render\direct3d12\SDL_render_d3d12_xbox.h">
       <Filter>render\direct3d12</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\video\gdk\SDL_gdktextinput.h">
+      <Filter>video\gdk</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\thread\generic\SDL_sysrwlock_c.h">
       <Filter>thread\generic</Filter>
     </ClInclude>
@@ -1366,6 +1372,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\core\windows\pch_cpp.cpp">
       <Filter>core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\gdk\SDL_gdktextinput.cpp">
+      <Filter>video\gdk</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\thread\windows\SDL_sysrwlock_srw.c">
       <Filter>thread\windows</Filter>

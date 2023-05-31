@@ -231,5 +231,7 @@
 
 /* Disable IME as not supported yet (TODO: Xbox IME?) */
 #define SDL_DISABLE_WINDOWS_IME 1
+/* Use the (inferior) GDK text input method for GDK platforms */
+#define SDL_GDK_TEXTINPUT 1
 
 #endif /* SDL_build_config_wingdk_h_ */
