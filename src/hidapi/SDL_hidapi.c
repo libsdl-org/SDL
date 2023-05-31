@@ -1061,8 +1061,8 @@ SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(Uint16 vendor_id, Uint16 product_id, Uint
     /* See if there are any devices we should skip in enumeration */
     if (SDL_hidapi_only_controllers && usage_page) {
         if (vendor_id == USB_VENDOR_VALVE) {
-            /* Ignore the keyboard interface on Steam Controllers */
-            if (usage == USB_USAGE_GENERIC_KEYBOARD) {
+            /* Ignore the mouse/keyboard interface on Steam Controllers */
+            if (usage == USB_USAGE_GENERIC_KEYBOARD || usage == USB_USAGE_GENERIC_MOUSE) {
                 return SDL_TRUE;
             }
         } else if (usage_page == USB_USAGEPAGE_GENERIC_DESKTOP &&
