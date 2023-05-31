@@ -1,4 +1,5 @@
 build/
+build-*/
 buildbot/
 /VERSION.txt
 __pycache__
