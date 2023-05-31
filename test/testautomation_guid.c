@@ -5,11 +5,25 @@
 #include "SDL.h"
 #include "SDL_test.h"
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
 /* ================= Test Case Implementation ================== */
 
 /* Helper functions */
 
 #define NUM_TEST_GUIDS 5
+
+#ifndef UINT64_C
+#ifdef _MSC_VER
+#define UINT64_C(x) x##ui64
+#elif defined(_LP64)
+#define UINT64_C(x) x##UL
+#else
+#define UINT64_C(x) x##ULL
+#endif
+#endif
 
 static struct
 {
@@ -18,19 +32,19 @@ static struct
 } test_guids[NUM_TEST_GUIDS] = {
     { "0000000000000000"
       "ffffffffffffffff",
-      0x0000000000000000, 0xfffffffffffffffflu },
+      UINT64_C(0x0000000000000000), UINT64_C(0xffffffffffffffff) },
     { "0011223344556677"
       "8091a2b3c4d5e6f0",
-      0x0011223344556677lu, 0x8091a2b3c4d5e6f0lu },
+      UINT64_C(0x0011223344556677), UINT64_C(0x8091a2b3c4d5e6f0) },
     { "a011223344556677"
       "8091a2b3c4d5e6f0",
-      0xa011223344556677lu, 0x8091a2b3c4d5e6f0lu },
+      UINT64_C(0xa011223344556677), UINT64_C(0x8091a2b3c4d5e6f0) },
     { "a011223344556677"
       "8091a2b3c4d5e6f1",
-      0xa011223344556677lu, 0x8091a2b3c4d5e6f1lu },
+      UINT64_C(0xa011223344556677), UINT64_C(0x8091a2b3c4d5e6f1) },
     { "a011223344556677"
       "8191a2b3c4d5e6f0",
-      0xa011223344556677lu, 0x8191a2b3c4d5e6f0lu },
+      UINT64_C(0xa011223344556677), UINT64_C(0x8191a2b3c4d5e6f0) },
 };
 
 static void
