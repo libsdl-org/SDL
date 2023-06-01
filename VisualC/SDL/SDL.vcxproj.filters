@@ -809,7 +809,6 @@
       <Filter>render\direct3d12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\hidapi\SDL_hidapi_c.h" />
-    <ClInclude Include="..\..\src\thread\generic\SDL_sysrwlock_c.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1341,7 +1340,6 @@
     <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c">
       <Filter>stdlib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\thread\generic\SDL_sysrwlock.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />
