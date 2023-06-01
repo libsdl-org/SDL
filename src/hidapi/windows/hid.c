@@ -1234,7 +1234,7 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char 
 		res = WaitForSingleObject(ev, milliseconds >= 0 ? (DWORD)milliseconds : INFINITE);
 		if (res != WAIT_OBJECT_0) {
 			/* There was no data this time. Return zero bytes available,
-				but leave the Overlapped I/O running. */
+			   but leave the Overlapped I/O running. */
 			return 0;
 		}
 
@@ -1242,7 +1242,7 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char 
 		   array which was passed to ReadFile(). We must not wait here because we've
 		   already waited on our event above, and since it's auto-reset, it will have
 		   been reset back to unsignalled by now. */
-		res = GetOverlappedResult(dev->device_handle, &dev->ol, &bytes_read, FALSE/*don't wait*/);
+		res = GetOverlappedResult(dev->device_handle, &dev->ol, &bytes_read, FALSE/*don't wait now - already did on the prev step*/);
 	}
 	/* Set pending back to false, even if GetOverlappedResult() returned error. */
 	dev->read_pending = FALSE;
