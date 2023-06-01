@@ -7,7 +7,9 @@
 
  libusb/hidapi Team
 
- Copyright 2022, All Rights Reserved.
+ Sam Lantinga
+
+ Copyright 2023, All Rights Reserved.
 
  At the discretion of the user of this library,
  this software may be licensed under the terms of the
@@ -66,15 +68,13 @@ static int pthread_barrier_wait(pthread_barrier_t *barrier)
 {
 	pthread_mutex_lock(&barrier->mutex);
 	++(barrier->count);
-	if(barrier->count >= barrier->trip_count)
-	{
+	if(barrier->count >= barrier->trip_count) {
 		barrier->count = 0;
 		pthread_cond_broadcast(&barrier->cond);
 		pthread_mutex_unlock(&barrier->mutex);
 		return 1;
 	}
-	else
-	{
+	else {
 		pthread_cond_wait(&barrier->cond, &(barrier->mutex));
 		pthread_mutex_unlock(&barrier->mutex);
 		return 0;
@@ -84,6 +84,8 @@ static int pthread_barrier_wait(pthread_barrier_t *barrier)
 #endif
 
 #define HIDAPI_THREAD_TIMED_OUT	ETIMEDOUT
+
+typedef struct timespec hidapi_timespec;
 
 typedef struct
 {
@@ -126,7 +128,7 @@ static void hidapi_thread_cond_wait(hidapi_thread_state *state)
 	pthread_cond_wait(&state->condition, &state->mutex);
 }
 
-static int hidapi_thread_cond_timedwait(hidapi_thread_state *state, struct timespec *ts)
+static int hidapi_thread_cond_timedwait(hidapi_thread_state *state, hidapi_timespec *ts)
 {
 	return pthread_cond_timedwait(&state->condition, &state->mutex, ts);
 }
@@ -156,8 +158,17 @@ static void hidapi_thread_join(hidapi_thread_state *state)
 	pthread_join(state->thread, NULL);
 }
 
-static void hidapi_thread_gettime(struct timespec *ts)
+static void hidapi_thread_gettime(hidapi_timespec *ts)
 {
 	clock_gettime(CLOCK_REALTIME, ts);
 }
 
+static void hidapi_thread_addtime(hidapi_timespec *ts, int milliseconds)
+{
+    ts->tv_sec += milliseconds / 1000;
+    ts->tv_nsec += (milliseconds % 1000) * 1000000;
+    if (ts->tv_nsec >= 1000000000L) {
+        ts->tv_sec++;
+        ts->tv_nsec -= 1000000000L;
+    }
+}

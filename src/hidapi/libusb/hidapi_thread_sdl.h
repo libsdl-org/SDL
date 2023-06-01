@@ -76,6 +76,8 @@ static int SDL_WaitThreadBarrier(SDL_ThreadBarrier *barrier)
 
 #define HIDAPI_THREAD_TIMED_OUT SDL_MUTEX_TIMEDOUT
 
+typedef Uint64 hidapi_timespec;
+
 typedef struct
 {
     SDL_Thread *thread;
@@ -123,16 +125,12 @@ static void hidapi_thread_cond_wait(hidapi_thread_state *state)
     SDL_WaitCondition(state->condition, state->mutex);
 }
 
-static int hidapi_thread_cond_timedwait(hidapi_thread_state *state, struct timespec *ts)
+static int hidapi_thread_cond_timedwait(hidapi_thread_state *state, hidapi_timespec *ts)
 {
-    Uint64 end_time;
     Sint64 timeout_ns;
     Sint32 timeout_ms;
 
-    end_time = ts->tv_sec;
-    end_time *= 1000000000L;
-    end_time += ts->tv_nsec;
-    timeout_ns = (Sint64)(end_time - SDL_GetTicksNS());
+    timeout_ns = (Sint64)(*ts - SDL_GetTicksNS());
     if (timeout_ns <= 0) {
         timeout_ms = 0;
     } else {
@@ -189,10 +187,12 @@ static void hidapi_thread_join(hidapi_thread_state *state)
     SDL_WaitThread(state->thread, NULL);
 }
 
-static void hidapi_thread_gettime(struct timespec *ts)
+static void hidapi_thread_gettime(hidapi_timespec *ts)
 {
-    Uint64 ns = SDL_GetTicksNS();
+    *ts = SDL_GetTicksNS();
+}
 
-    ts->tv_sec = ns / 1000000000L;
-    ts->tv_nsec = ns % 1000000000L;
+static void hidapi_thread_addtime(hidapi_timespec *ts, int milliseconds)
+{
+    *ts += SDL_MS_TO_NS(milliseconds);
 }

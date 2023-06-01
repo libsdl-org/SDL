@@ -1672,14 +1672,9 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 	else if (milliseconds > 0) {
 		/* Non-blocking, but called with timeout. */
 		int res;
-		struct timespec ts;
+		hidapi_timespec ts;
 		hidapi_thread_gettime(&ts);
-		ts.tv_sec += milliseconds / 1000;
-		ts.tv_nsec += (milliseconds % 1000) * 1000000;
-		if (ts.tv_nsec >= 1000000000L) {
-			ts.tv_sec++;
-			ts.tv_nsec -= 1000000000L;
-		}
+		hidapi_thread_addtime(&ts, milliseconds);
 
 		while (!dev->input_reports && !dev->shutdown_thread) {
 			res = hidapi_thread_cond_timedwait(&dev->thread_state, &ts);
