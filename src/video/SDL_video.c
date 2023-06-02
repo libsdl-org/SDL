@@ -160,6 +160,7 @@ extern SDL_bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window);
 extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool state);
 #endif
 
+static void SDL_CheckWindowDisplayChanged(SDL_Window *window);
 static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window);
 
 /* Convenience functions for reading driver flags */
@@ -692,6 +693,16 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
         SDL_OutOfMemory();
     }
     return id;
+}
+
+void SDL_OnDisplayConnected(SDL_VideoDisplay *display)
+{
+    SDL_Window *window;
+
+    /* See if any windows have changed to the new display */
+    for (window = _this->windows; window; window = window->next) {
+        SDL_CheckWindowDisplayChanged(window);
+    }
 }
 
 void SDL_DelVideoDisplay(SDL_DisplayID displayID, SDL_bool send_event)

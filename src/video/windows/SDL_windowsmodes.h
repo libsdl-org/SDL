@@ -23,11 +23,19 @@
 #ifndef SDL_windowsmodes_h_
 #define SDL_windowsmodes_h_
 
+typedef enum
+{
+    DisplayUnchanged,
+    DisplayAdded,
+    DisplayRemoved,
+
+} WIN_DisplayState;
+
 struct SDL_DisplayData
 {
     WCHAR DeviceName[32];
     HMONITOR MonitorHandle;
-    SDL_bool IsValid;
+    WIN_DisplayState state;
     SDL_Rect bounds;
 };
 

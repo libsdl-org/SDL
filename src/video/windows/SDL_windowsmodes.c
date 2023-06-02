@@ -318,7 +318,7 @@ WIN_GetDisplayNameVista_failed:
     return NULL;
 }
 
-static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index, SDL_bool send_event)
+static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index)
 {
     int i, index = *display_index;
     SDL_DisplayID displayID;
@@ -356,7 +356,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
             }
 
             driverdata->MonitorHandle = hMonitor;
-            driverdata->IsValid = SDL_TRUE;
+            driverdata->state = DisplayUnchanged;
 
             if (!_this->setting_display_mode) {
                 SDL_VideoDisplay *existing_display = &_this->displays[i];
@@ -385,7 +385,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     }
     SDL_memcpy(displaydata->DeviceName, info->szDevice, sizeof(displaydata->DeviceName));
     displaydata->MonitorHandle = hMonitor;
-    displaydata->IsValid = SDL_TRUE;
+    displaydata->state = DisplayAdded;
 
     SDL_zero(display);
     display.name = WIN_GetDisplayNameVista(info->szDevice);
@@ -404,8 +404,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     display.device = _this;
     display.driverdata = displaydata;
     WIN_GetDisplayBounds(_this, &display, &displaydata->bounds);
-    displayID = SDL_AddVideoDisplay(&display, send_event);
-    SDL_assert(SDL_GetDisplayIndex(displayID) == *display_index);
+    displayID = SDL_AddVideoDisplay(&display, SDL_FALSE);
     SDL_free(display.name);
 
 done:
@@ -416,7 +415,6 @@ typedef struct _WIN_AddDisplaysData
 {
     SDL_VideoDevice *video_device;
     int display_index;
-    SDL_bool send_event;
     SDL_bool want_primary;
 } WIN_AddDisplaysData;
 
@@ -435,7 +433,7 @@ static BOOL CALLBACK WIN_AddDisplaysCallback(HMONITOR hMonitor,
         const SDL_bool is_primary = ((info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY);
 
         if (is_primary == data->want_primary) {
-            WIN_AddDisplay(data->video_device, hMonitor, &info, &data->display_index, data->send_event);
+            WIN_AddDisplay(data->video_device, hMonitor, &info, &data->display_index);
         }
     }
 
@@ -443,12 +441,11 @@ static BOOL CALLBACK WIN_AddDisplaysCallback(HMONITOR hMonitor,
     return TRUE;
 }
 
-static void WIN_AddDisplays(SDL_VideoDevice *_this, SDL_bool send_event)
+static void WIN_AddDisplays(SDL_VideoDevice *_this)
 {
     WIN_AddDisplaysData callback_data;
     callback_data.video_device = _this;
     callback_data.display_index = 0;
-    callback_data.send_event = send_event;
 
     callback_data.want_primary = SDL_TRUE;
     EnumDisplayMonitors(NULL, NULL, WIN_AddDisplaysCallback, (LPARAM)&callback_data);
@@ -459,7 +456,7 @@ static void WIN_AddDisplays(SDL_VideoDevice *_this, SDL_bool send_event)
 
 int WIN_InitModes(SDL_VideoDevice *_this)
 {
-    WIN_AddDisplays(_this, SDL_FALSE);
+    WIN_AddDisplays(_this);
 
     if (_this->num_displays == 0) {
         return SDL_SetError("No displays available");
@@ -636,20 +633,29 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
     // entries that have actually been removed
     for (i = 0; i < _this->num_displays; ++i) {
         SDL_DisplayData *driverdata = _this->displays[i].driverdata;
-        driverdata->IsValid = SDL_FALSE;
+        driverdata->state = DisplayRemoved;
     }
 
     // Enumerate displays to add any new ones and mark still
     // connected entries as valid
-    WIN_AddDisplays(_this, SDL_TRUE);
+    WIN_AddDisplays(_this);
 
     // Delete any entries still marked as invalid, iterate
     // in reverse as each delete takes effect immediately
     for (i = _this->num_displays - 1; i >= 0; --i) {
         SDL_VideoDisplay *display = &_this->displays[i];
         SDL_DisplayData *driverdata = display->driverdata;
-        if (driverdata->IsValid == SDL_FALSE) {
+        if (driverdata->state == DisplayRemoved) {
             SDL_DelVideoDisplay(display->id, SDL_TRUE);
+        }
+    }
+
+    // Send events for any newly added displays
+    for (i = 0; i < _this->num_displays; ++i) {
+        SDL_VideoDisplay *display = &_this->displays[i];
+        SDL_DisplayData *driverdata = display->driverdata;
+        if (driverdata->state == DisplayAdded) {
+            SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_CONNECTED, 0);
         }
     }
 }
