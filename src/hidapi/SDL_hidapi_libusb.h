@@ -84,6 +84,8 @@ static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #endif /* __FreeBSD__ */
 
 #define HIDAPI_THREAD_MODEL_INCLUDE "hidapi_thread_sdl.h"
+/* we don't need libusb_wrap_sys_device: */
+#define HIDAPI_TARGET_LIBUSB_API_VERSION 0x01000100
 
 #undef HIDAPI_H__
 #include "libusb/hid.c"
