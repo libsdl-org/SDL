@@ -54,8 +54,16 @@ static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #endif /* __FreeBSD__ */
 
 #define HIDAPI_THREAD_MODEL_INCLUDE "hidapi_thread_sdl.h"
+#ifndef LIBUSB_API_VERSION
+#ifdef LIBUSBX_API_VERSION
+#define LIBUSB_API_VERSION LIBUSBX_API_VERSION
+#else
+#define LIBUSB_API_VERSION 0x0
+#endif
+#endif
+/* we need libusb >= 1.0.16 because of libusb_get_port_numbers */
 /* we don't need libusb_wrap_sys_device: */
-#define HIDAPI_TARGET_LIBUSB_API_VERSION 0x01000100
+#define HIDAPI_TARGET_LIBUSB_API_VERSION 0x01000102
 
 #undef HIDAPI_H__
 #include "libusb/hid.c"
