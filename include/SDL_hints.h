@@ -1321,6 +1321,8 @@ extern "C" {
  *
  *  This variable can be one of the following values:
  *    "primary" (default), "portrait", "landscape", "inverted-portrait", "inverted-landscape"
+ *
+ *  Since SDL 2.0.22 this variable accepts a comma-separated list of values above.
  */
 #define SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION "SDL_QTWAYLAND_CONTENT_ORIENTATION"
 
