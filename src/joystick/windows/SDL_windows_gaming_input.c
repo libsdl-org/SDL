@@ -108,7 +108,7 @@ extern SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16
 
 static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 {
-#ifdef SDL_JOYSTICK_XINPUT
+#if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
     PRAWINPUTDEVICELIST raw_devices = NULL;
     UINT i, raw_device_count = 0;
     LONG vidpid = MAKELONG(vendor, product);
@@ -206,7 +206,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     }
 
     SDL_free(raw_devices);
-#endif /* SDL_JOYSTICK_XINPUT */
+#endif /* SDL_JOYSTICK_XINPUT || SDL_JOYSTICK_RAWINPUT */
 
     return SDL_FALSE;
 }

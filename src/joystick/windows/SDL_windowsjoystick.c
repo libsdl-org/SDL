@@ -165,6 +165,11 @@ static CM_Register_NotificationFunc CM_Register_Notification;
 static CM_Unregister_NotificationFunc CM_Unregister_Notification;
 static HCMNOTIFICATION s_DeviceNotificationFuncHandle;
 
+void WINDOWS_RAWINPUTEnabledChanged(void)
+{
+    s_bWindowsDeviceChanged = SDL_TRUE;
+}
+
 static DWORD CALLBACK SDL_DeviceNotificationFunc(HCMNOTIFICATION hNotify, PVOID context, CM_NOTIFY_ACTION action, PCM_NOTIFY_EVENT_DATA eventData, DWORD event_data_size)
 {
     if (action == CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL ||
@@ -459,8 +464,8 @@ void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
     SYS_Joystick = device;
 }
 
-static void WINDOWS_JoystickDetect(void);
-static void WINDOWS_JoystickQuit(void);
+void WINDOWS_JoystickDetect(void);
+void WINDOWS_JoystickQuit(void);
 
 /* Function to scan the system for joysticks.
  * Joystick 0 should be the system default joystick.
@@ -521,7 +526,7 @@ static int WINDOWS_JoystickGetCount(void)
 }
 
 /* detect any new joysticks being inserted into the system */
-static void WINDOWS_JoystickDetect(void)
+void WINDOWS_JoystickDetect(void)
 {
     JoyStick_DeviceData *pCurList = NULL;
 
@@ -750,7 +755,7 @@ static void WINDOWS_JoystickClose(SDL_Joystick *joystick)
 }
 
 /* Function to perform any system-specific joystick related cleanup */
-static void WINDOWS_JoystickQuit(void)
+void WINDOWS_JoystickQuit(void)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
 

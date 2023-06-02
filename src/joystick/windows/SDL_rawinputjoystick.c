@@ -96,7 +96,11 @@ typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
 #define GIDC_REMOVAL 2
 #endif
 
+extern void WINDOWS_RAWINPUTEnabledChanged(void);
+extern void WINDOWS_JoystickDetect(void);
+
 static SDL_bool SDL_RAWINPUT_inited = SDL_FALSE;
+static SDL_bool SDL_RAWINPUT_remote_desktop = SDL_FALSE;
 static int SDL_RAWINPUT_numjoysticks = 0;
 
 static void RAWINPUT_JoystickClose(SDL_Joystick *joystick);
@@ -843,10 +847,36 @@ static void RAWINPUT_DelDevice(SDL_RAWINPUT_Device *device, SDL_bool send_event)
     }
 }
 
-static int RAWINPUT_JoystickInit(void)
+static void RAWINPUT_DetectDevices(void)
 {
     UINT device_count = 0;
 
+    if ((GetRawInputDeviceList(NULL, &device_count, sizeof(RAWINPUTDEVICELIST)) != -1) && device_count > 0) {
+        PRAWINPUTDEVICELIST devices = NULL;
+        UINT i;
+
+        devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
+        if (devices) {
+            if (GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST)) != -1) {
+                for (i = 0; i < device_count; ++i) {
+                    RAWINPUT_AddDevice(devices[i].hDevice);
+                }
+            }
+            SDL_free(devices);
+        }
+    }
+}
+
+static void RAWINPUT_RemoveDevices(void)
+{
+    while (SDL_RAWINPUT_devices) {
+        RAWINPUT_DelDevice(SDL_RAWINPUT_devices, SDL_FALSE);
+    }
+    SDL_assert(SDL_RAWINPUT_numjoysticks == 0);
+}
+
+static int RAWINPUT_JoystickInit(void)
+{
     SDL_assert(!SDL_RAWINPUT_inited);
 
     if (!WIN_IsWindowsVistaOrGreater()) {
@@ -864,20 +894,7 @@ static int RAWINPUT_JoystickInit(void)
 
     SDL_RAWINPUT_inited = SDL_TRUE;
 
-    if ((GetRawInputDeviceList(NULL, &device_count, sizeof(RAWINPUTDEVICELIST)) != -1) && device_count > 0) {
-        PRAWINPUTDEVICELIST devices = NULL;
-        UINT i;
-
-        devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
-        if (devices) {
-            if (GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST)) != -1) {
-                for (i = 0; i < device_count; ++i) {
-                    RAWINPUT_AddDevice(devices[i].hDevice);
-                }
-            }
-            SDL_free(devices);
-        }
-    }
+    RAWINPUT_DetectDevices();
 
     return 0;
 }
@@ -889,7 +906,7 @@ static int RAWINPUT_JoystickGetCount(void)
 
 SDL_bool RAWINPUT_IsEnabled()
 {
-    return SDL_RAWINPUT_inited;
+    return SDL_RAWINPUT_inited && !SDL_RAWINPUT_remote_desktop;
 }
 
 SDL_bool RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
@@ -991,6 +1008,21 @@ static void RAWINPUT_PostUpdate(void)
 
 static void RAWINPUT_JoystickDetect(void)
 {
+    SDL_bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? SDL_TRUE : SDL_FALSE;
+
+    if (remote_desktop != SDL_RAWINPUT_remote_desktop) {
+        SDL_RAWINPUT_remote_desktop = remote_desktop;
+
+        WINDOWS_RAWINPUTEnabledChanged();
+
+        if (remote_desktop) {
+            RAWINPUT_RemoveDevices();
+            WINDOWS_JoystickDetect();
+        } else {
+            WINDOWS_JoystickDetect();
+            RAWINPUT_DetectDevices();
+        }
+    }
     RAWINPUT_PostUpdate();
 }
 
@@ -1981,13 +2013,9 @@ static void RAWINPUT_JoystickQuit(void)
         return;
     }
 
-    while (SDL_RAWINPUT_devices) {
-        RAWINPUT_DelDevice(SDL_RAWINPUT_devices, SDL_FALSE);
-    }
+    RAWINPUT_RemoveDevices();
 
     WIN_UnloadHIDDLL();
-
-    SDL_RAWINPUT_numjoysticks = 0;
 
     SDL_RAWINPUT_inited = SDL_FALSE;
 }

@@ -240,7 +240,7 @@ static int SetDIerror(const char *function, HRESULT code)
 
 static SDL_bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *hidPath)
 {
-#ifdef SDL_JOYSTICK_XINPUT
+#if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
     SDL_GameControllerType type;
 
     /* XInput and RawInput backends will pick up XInput-compatible devices */
@@ -264,7 +264,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const ch
         (vendor_id == USB_VENDOR_VALVE && product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
         return SDL_TRUE;
     }
-#endif /* SDL_JOYSTICK_XINPUT */
+#endif /* SDL_JOYSTICK_XINPUT || SDL_JOYSTICK_RAWINPUT */
 
     return SDL_FALSE;
 }
