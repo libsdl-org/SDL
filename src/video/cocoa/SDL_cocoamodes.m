@@ -487,7 +487,7 @@ int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
     CGDisplayFadeReservationToken fade_token = kCGDisplayFadeReservationInvalidToken;
-    CGError result;
+    CGError result = kCGErrorSuccess;
 
     /* Fade to black to hide resolution-switching flicker */
     if (CGAcquireDisplayFadeReservation(5, &fade_token) == kCGErrorSuccess) {
@@ -497,31 +497,9 @@ int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
     if (data == display->desktop_mode.driverdata) {
         /* Restoring desktop mode */
         SetDisplayModeForDisplay(displaydata->display, data);
-
-        if (CGDisplayIsMain(displaydata->display)) {
-            CGReleaseAllDisplays();
-        } else {
-            CGDisplayRelease(displaydata->display);
-        }
     } else {
-        /* Put up the blanking window (a window above all other windows) */
-        if (CGDisplayIsMain(displaydata->display)) {
-            /* If we don't capture all displays, Cocoa tries to rearrange windows... *sigh* */
-            result = CGCaptureAllDisplays();
-        } else {
-            result = CGDisplayCapture(displaydata->display);
-        }
-        if (result != kCGErrorSuccess) {
-            CG_SetError("CGDisplayCapture()", result);
-            goto ERR_NO_CAPTURE;
-        }
-
         /* Do the physical switch */
         result = SetDisplayModeForDisplay(displaydata->display, data);
-        if (result != kCGErrorSuccess) {
-            CG_SetError("CGDisplaySwitchToMode()", result);
-            goto ERR_NO_SWITCH;
-        }
     }
 
     /* Fade in again (asynchronously) */
@@ -530,21 +508,11 @@ int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
         CGReleaseDisplayFadeReservation(fade_token);
     }
 
+    if (result != kCGErrorSuccess) {
+        CG_SetError("CGDisplaySwitchToMode()", result);
+        return -1;
+    }
     return 0;
-
-    /* Since the blanking window covers *all* windows (even force quit) correct recovery is crucial */
-ERR_NO_SWITCH:
-    if (CGDisplayIsMain(displaydata->display)) {
-        CGReleaseAllDisplays();
-    } else {
-        CGDisplayRelease(displaydata->display);
-    }
-ERR_NO_CAPTURE:
-    if (fade_token != kCGDisplayFadeReservationInvalidToken) {
-        CGDisplayFade(fade_token, 0.5, kCGDisplayBlendSolidColor, kCGDisplayBlendNormal, 0.0, 0.0, 0.0, FALSE);
-        CGReleaseDisplayFadeReservation(fade_token);
-    }
-    return -1;
 }
 
 void Cocoa_QuitModes(SDL_VideoDevice *_this)
