@@ -321,7 +321,6 @@ WIN_GetDisplayNameVista_failed:
 static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index)
 {
     int i, index = *display_index;
-    SDL_DisplayID displayID;
     SDL_VideoDisplay display;
     SDL_DisplayData *displaydata;
     SDL_DisplayMode mode;
@@ -404,7 +403,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     display.device = _this;
     display.driverdata = displaydata;
     WIN_GetDisplayBounds(_this, &display, &displaydata->bounds);
-    displayID = SDL_AddVideoDisplay(&display, SDL_FALSE);
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
     SDL_free(display.name);
 
 done:
