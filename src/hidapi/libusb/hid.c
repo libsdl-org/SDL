@@ -598,7 +598,7 @@ int HID_API_EXPORT hid_init(void)
 		/* Set the locale if it's not set. */
 		locale = setlocale(LC_CTYPE, NULL);
 		if (!locale)
-			setlocale(LC_CTYPE, "");
+			(void) setlocale(LC_CTYPE, "");
 	}
 
 	return 0;

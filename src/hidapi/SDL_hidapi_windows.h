@@ -20,6 +20,32 @@
 */
 
 /* Define standard library functions in terms of SDL */
+#pragma push_macro("calloc")
+#pragma push_macro("free")
+#pragma push_macro("malloc")
+#pragma push_macro("memcmp")
+#pragma push_macro("swprintf")
+#pragma push_macro("towupper")
+#pragma push_macro("wcscmp")
+#pragma push_macro("_wcsdup")
+#pragma push_macro("wcslen")
+#pragma push_macro("wcsncpy")
+#pragma push_macro("wcsstr")
+#pragma push_macro("wcstol")
+
+#undef calloc
+#undef free
+#undef malloc
+#undef memcmp
+#undef swprintf
+#undef towupper
+#undef wcscmp
+#undef _wcsdup
+#undef wcslen
+#undef wcsncpy
+#undef wcsstr
+#undef wcstol
+
 #define calloc      SDL_calloc
 #define free        SDL_free
 #define malloc      SDL_malloc
@@ -37,3 +63,17 @@
 #include "windows/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx              1
+
+/* restore libc function macros */
+#pragma pop_macro("calloc")
+#pragma pop_macro("free")
+#pragma pop_macro("malloc")
+#pragma pop_macro("memcmp")
+#pragma pop_macro("swprintf")
+#pragma pop_macro("towupper")
+#pragma pop_macro("wcscmp")
+#pragma pop_macro("_wcsdup")
+#pragma pop_macro("wcslen")
+#pragma pop_macro("wcsncpy")
+#pragma pop_macro("wcsstr")
+#pragma pop_macro("wcstol")
