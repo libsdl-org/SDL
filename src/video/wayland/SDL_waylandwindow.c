@@ -1720,6 +1720,8 @@ static void SDLCALL QtExtendedSurface_OnHintChanged(void *userdata, const char *
 
         if (newValue != NULL) {
             const char *value_attempt = newValue;
+
+            orientation = 0;
             while (value_attempt != NULL && *value_attempt != 0) {
                 const char *value_attempt_end = SDL_strchr(value_attempt, ',');
                 size_t value_attempt_len = (value_attempt_end != NULL) ? (value_attempt_end - value_attempt)
