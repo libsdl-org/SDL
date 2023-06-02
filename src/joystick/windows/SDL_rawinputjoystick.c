@@ -1075,6 +1075,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     ctx->is_xinput = device->is_xinput;
     ctx->is_xboxone = device->is_xboxone;
+    ctx->match_state = 0x0000008800000000ULL; /* Trigger axes at rest */
     ctx->preparsed_data = device->preparsed_data;
     ctx->max_data_length = SDL_HidP_MaxDataListLength(HidP_Input, ctx->preparsed_data);
     ctx->data = (HIDP_DATA *)SDL_malloc(ctx->max_data_length * sizeof(*ctx->data));
