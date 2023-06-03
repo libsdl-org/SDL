@@ -1195,6 +1195,10 @@ int SDL_hid_init(void)
         return -1;
     }
 
+#ifdef __MACOS__
+    hid_darwin_set_open_exclusive(0);
+#endif
+
     ++SDL_hidapi_refcount;
     return 0;
 }
