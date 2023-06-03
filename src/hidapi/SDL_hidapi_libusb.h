@@ -20,6 +20,9 @@
 */
 
 /* Define standard library functions in terms of SDL */
+
+/* #pragma push_macro/pop_macro works correctly only as of gcc >= 4.4.3
+   clang-3.0 _seems_ to be OK. */
 #pragma push_macro("malloc")
 #pragma push_macro("realloc")
 #pragma push_macro("free")
