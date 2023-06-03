@@ -80,13 +80,11 @@ static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device
         /* This is the chatpad or other input interface, not the Xbox 360 interface */
         return SDL_FALSE;
     }
-#if defined(__MACOS__) || defined(__WIN32__)
-    if (vendor_id == USB_VENDOR_MICROSOFT && product_id == 0x028e && version == 1) {
+#ifdef __MACOS__
+    if (vendor_id == USB_VENDOR_MICROSOFT && product_id == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 1) {
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
         return SDL_FALSE;
     }
-#endif
-#ifdef __MACOS__
     /* Wired Xbox One controllers are handled by this driver, interfacing with
        the 360Controller driver available from:
        https://github.com/360Controller/360Controller/releases
