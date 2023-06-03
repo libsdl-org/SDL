@@ -81,7 +81,8 @@ static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device
         return SDL_FALSE;
     }
 #if defined(__MACOS__) || defined(__WIN32__)
-    if (vendor_id == USB_VENDOR_MICROSOFT && product_id == 0x028e && version == 1) {
+    if (vendor_id == USB_VENDOR_MICROSOFT && product_id == 0x028e &&
+        (version == 0 || version == 1)) {
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
         return SDL_FALSE;
     }
