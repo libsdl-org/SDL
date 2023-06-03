@@ -84,7 +84,7 @@ static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device
         /* This is the chatpad or other input interface, not the Xbox 360 interface */
         return SDL_FALSE;
     }
-#def __MACOSX__
+#ifdef __MACOSX__
     if (vendor_id == USB_VENDOR_MICROSOFT && product_id == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 1) {
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
         return SDL_FALSE;
