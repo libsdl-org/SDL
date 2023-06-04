@@ -621,42 +621,6 @@ SDL_utf8strnlen(const char *str, size_t bytes)
     return retval;
 }
 
-SDL_bool SDL_utf8valid(const char *str, size_t bytes)
-{
-    while (*str && bytes > 0) {
-        Uint8 ch = (Uint8)*str;
-
-        if (ch <= 0x7F) {
-            ++str;
-            --bytes;
-            continue;
-        }
-
-        if (UTF8_IsLeadByte(ch)) {
-            size_t left = UTF8_TrailingBytes(ch);
-            if (bytes < left) {
-                return SDL_FALSE;
-            }
-
-            ++str;
-            --bytes;
-
-            while (left-- > 0) {
-                ch = (Uint8)*str;
-                if (!UTF8_IsTrailingByte(ch)) {
-                    return SDL_FALSE;
-                }
-
-                ++str;
-                --bytes;
-            }
-        } else {
-            return SDL_FALSE;
-        }
-    }
-    return SDL_TRUE;
-}
-
 size_t
 SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
 {

@@ -740,10 +740,22 @@ static Bool isReparentNotify(Display *display, XEvent *ev, XPointer arg)
            ev->xreparent.serial == unmap->serial;
 }
 
+static SDL_bool IsHighLatin1(const char *string, int length)
+{
+	while (length-- > 0) {
+		Uint8 ch = (Uint8)*string;
+		if (ch >= 0x80) {
+			return SDL_TRUE;
+		}
+		++string;
+	}
+	return SDL_FALSE;
+}
+
 static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int bytes_buffer, KeySym *keysym_return, XComposeStatus *status_in_out)
 {
     int result = X11_XLookupString(event_struct, buffer_return, bytes_buffer, keysym_return, status_in_out);
-    if (result > 0 && !SDL_utf8valid(buffer_return, (size_t)result)) {
+    if (IsHighLatin1(buffer_return, result)) {
         char *utf8_text = SDL_iconv_string("UTF-8", "ISO-8859-1", buffer_return, result);
         if (utf8_text) {
             SDL_strlcpy(buffer_return, utf8_text, bytes_buffer);
