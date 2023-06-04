@@ -2186,10 +2186,12 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
                     Uint32 flags = SDL_GetWindowFlags(window);
-                    if (flags & SDL_WINDOW_FULLSCREEN) {
-                        SDL_SetWindowFullscreen(window, SDL_FALSE);
-                    } else {
+                    if (!(flags & SDL_WINDOW_FULLSCREEN) ||
+						!SDL_GetWindowFullscreenMode(window)) {
+                        SDL_SetWindowFullscreenMode(window, &state->fullscreen_mode);
                         SDL_SetWindowFullscreen(window, SDL_TRUE);
+                    } else {
+                        SDL_SetWindowFullscreen(window, SDL_FALSE);
                     }
                 }
             } else if (withAlt) {
@@ -2197,23 +2199,13 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
                     Uint32 flags = SDL_GetWindowFlags(window);
-                    if (flags & SDL_WINDOW_FULLSCREEN) {
-                        SDL_SetWindowFullscreen(window, SDL_FALSE);
-                    } else {
+                    if (!(flags & SDL_WINDOW_FULLSCREEN) ||
+						SDL_GetWindowFullscreenMode(window)) {
                         SDL_SetWindowFullscreenMode(window, NULL);
                         SDL_SetWindowFullscreen(window, SDL_TRUE);
-                    }
-                }
-            } else if (withShift) {
-                /* Shift-Enter toggle fullscreen desktop / fullscreen */
-                SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
-                if (window) {
-                    if (SDL_GetWindowFullscreenMode(window)) {
-                        SDL_SetWindowFullscreenMode(window, NULL);
                     } else {
-                        SDL_SetWindowFullscreenMode(window, &state->fullscreen_mode);
+                        SDL_SetWindowFullscreen(window, SDL_FALSE);
                     }
-                    SDL_SetWindowFullscreen(window, SDL_TRUE);
                 }
             }
 
