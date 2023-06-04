@@ -28,7 +28,4 @@
 /* Return the smallest power of 2 greater than or equal to 'x' */
 extern int SDL_powerof2(int x);
 
-/* Return whether the string is valid UTF8 */
-extern SDL_bool SDL_utf8valid(const char *str, size_t bytes);
-
 #endif /* SDL_utils_h_ */
