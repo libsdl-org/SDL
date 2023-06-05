@@ -126,6 +126,8 @@ static void OS2_WarpMouse(SDL_Window * window, int x, int y)
     WinMapWindowPoints(pWinData->hwnd, HWND_DESKTOP, &pointl, 1);
 /*  pWinData->lSkipWMMouseMove++; ???*/
     WinSetPointerPos(HWND_DESKTOP, pointl.x, pointl.y);
+
+    SDL_SendMouseMotion(window, SDL_GetMouse()->mouseID, 0, x, y);
 }
 
 static int OS2_WarpMouseGlobal(int x, int y)
