@@ -531,8 +531,8 @@ static void HIDAPI_ShutdownDiscovery(void)
 /* Platform HIDAPI Implementation */
 
 #define HIDAPI_USING_SDL_RUNTIME
-#define HIDAPI_IGNORE_DEVICE(VID, PID, USAGE_PAGE, USAGE) \
-        SDL_HIDAPI_ShouldIgnoreDevice(VID, PID, USAGE_PAGE, USAGE)
+#define HIDAPI_IGNORE_DEVICE(BUS, VID, PID, USAGE_PAGE, USAGE) \
+        SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE)
 
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
@@ -1053,13 +1053,15 @@ static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, cons
     }
 }
 
-SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage)
+SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage)
 {
     /* See if there are any devices we should skip in enumeration */
     if (SDL_hidapi_only_controllers && usage_page) {
         if (vendor_id == USB_VENDOR_VALVE) {
-            /* Ignore the mouse/keyboard interface on Steam Controllers */
-            if (usage == USB_USAGE_GENERIC_KEYBOARD || usage == USB_USAGE_GENERIC_MOUSE) {
+            /* Ignore the USB mouse/keyboard interface on Steam Controllers */
+            if (bus == HID_API_BUS_USB &&
+                usage_page == USB_USAGEPAGE_GENERIC_DESKTOP &&
+                (usage == USB_USAGE_GENERIC_KEYBOARD || usage == USB_USAGE_GENERIC_MOUSE)) {
                 return SDL_TRUE;
             }
         } else if (usage_page == USB_USAGEPAGE_GENERIC_DESKTOP &&
