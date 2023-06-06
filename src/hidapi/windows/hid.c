@@ -255,6 +255,9 @@ static void free_hid_device(hid_device *dev)
 
 static void register_winapi_error_to_buffer(wchar_t **error_buffer, const WCHAR *op)
 {
+	WCHAR system_err_buf[1024];
+	DWORD error_code = GetLastError();
+
 	free(*error_buffer);
 	*error_buffer = NULL;
 
@@ -267,9 +270,6 @@ static void register_winapi_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 	if (!op) {
 		return;
 	}
-
-	WCHAR system_err_buf[1024];
-	DWORD error_code = GetLastError();
 
 	DWORD system_err_len = FormatMessageW(
 		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
