@@ -1058,8 +1058,14 @@ SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product
     /* See if there are any devices we should skip in enumeration */
     if (SDL_hidapi_only_controllers && usage_page) {
         if (vendor_id == USB_VENDOR_VALVE) {
-            /* Ignore the USB mouse/keyboard interface on Steam Controllers */
-            if (bus == HID_API_BUS_USB &&
+            /* Ignore the mouse/keyboard interface on Steam Controllers */
+            if (
+#ifdef __WIN32__
+                /* Check the usage page and usage on both USB and Bluetooth */
+#else
+                /* Only check the usage page and usage on USB */
+                bus == HID_API_BUS_USB &&
+#endif
                 usage_page == USB_USAGEPAGE_GENERIC_DESKTOP &&
                 (usage == USB_USAGE_GENERIC_KEYBOARD || usage == USB_USAGE_GENERIC_MOUSE)) {
                 return SDL_TRUE;
