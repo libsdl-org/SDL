@@ -548,6 +548,28 @@ static int read_usb_interface_from_hid_service_parent(io_service_t hid_service)
 	return result;
 }
 
+#ifdef HIDAPI_IGNORE_DEVICE
+static hid_bus_type get_bus_type(IOHIDDeviceRef dev)
+{
+	hid_bus_type bus_type = HID_API_BUS_UNKNOWN;
+
+	CFTypeRef transport_prop = IOHIDDeviceGetProperty(dev, CFSTR(kIOHIDTransportKey));
+
+	if (transport_prop != NULL && CFGetTypeID(transport_prop) == CFStringGetTypeID()) {
+		if (CFStringCompare((CFStringRef)transport_prop, CFSTR(kIOHIDTransportUSBValue), 0) == kCFCompareEqualTo) {
+			bus_type = HID_API_BUS_USB;
+		} else if (CFStringHasPrefix((CFStringRef)transport_prop, CFSTR(kIOHIDTransportBluetoothValue))) {
+			bus_type = HID_API_BUS_BLUETOOTH;
+		} else if (CFStringCompare((CFStringRef)transport_prop, CFSTR(kIOHIDTransportI2CValue), 0) == kCFCompareEqualTo) {
+			bus_type = HID_API_BUS_I2C;
+		} else  if (CFStringCompare((CFStringRef)transport_prop, CFSTR(kIOHIDTransportSPIValue), 0) == kCFCompareEqualTo) {
+			bus_type = HID_API_BUS_SPI;
+		}
+	}
+	return bus_type;
+}
+#endif /* HIDAPI_IGNORE_DEVICE */
+
 static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev, int32_t usage_page, int32_t usage)
 {
 	unsigned short dev_vid;
@@ -769,11 +791,12 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 #ifdef HIDAPI_IGNORE_DEVICE
 		/* See if there are any devices we should skip in enumeration */
+		hid_bus_type bus_type = get_bus_type(dev);
 		unsigned short dev_vid = get_vendor_id(dev);
 		unsigned short dev_pid = get_product_id(dev);
 		unsigned short usage_page = get_int_property(dev, CFSTR(kIOHIDPrimaryUsagePageKey));
 		unsigned short usage = get_int_property(dev, CFSTR(kIOHIDPrimaryUsageKey));
-		if (HIDAPI_IGNORE_DEVICE(dev_vid, dev_pid, usage_page, usage)) {
+		if (HIDAPI_IGNORE_DEVICE(bus_type, dev_vid, dev_pid, usage_page, usage)) {
 			continue;
 		}
 #endif

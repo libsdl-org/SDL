@@ -943,7 +943,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 #ifdef HIDAPI_IGNORE_DEVICE
 		/* See if there are any devices we should skip in enumeration */
-		if (HIDAPI_IGNORE_DEVICE(dev_vid, dev_pid, 0, 0)) {
+		if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, dev_vid, dev_pid, 0, 0)) {
 			continue;
 		}
 #endif

@@ -984,7 +984,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		if (get_hid_report_descriptor_from_sysfs(sysfs_path, &report_desc) >= 0) {
 			get_next_hid_usage(report_desc.value, report_desc.size, &pos, &page, &usage);
 		}
-		if (HIDAPI_IGNORE_DEVICE(dev_vid, dev_pid, page, usage)) {
+		if (HIDAPI_IGNORE_DEVICE(bus_type, dev_vid, dev_pid, page, usage)) {
 			continue;
 		}
 #endif
