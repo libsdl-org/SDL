@@ -1180,6 +1180,33 @@ void X11_ShowWindow(_THIS, SDL_Window *window)
     if (data->border_left == 0 && data->border_right == 0 && data->border_top == 0 && data->border_bottom == 0) {
         X11_GetBorderValues(data);
     }
+
+    /* Check if the window manager moved us somewhere unexpected, just in case. */
+    {
+        int (*prev_handler)(Display *, XErrorEvent *) = NULL;
+        Window childReturn, root, parent;
+        Window *children;
+        unsigned int childCount;
+        XWindowAttributes attrs;
+        int x, y;
+
+        X11_XSync(display, False);
+        prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
+        caught_x11_error = SDL_FALSE;
+        X11_XQueryTree(display, data->xwindow, &root, &parent, &children, &childCount);
+        X11_XGetWindowAttributes(display, data->xwindow, &attrs);
+        X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
+                                  attrs.x, attrs.y, &x, &y, &childReturn);
+
+        if (!caught_x11_error) {
+            /* if these values haven't changed from our current beliefs, these don't actually generate events. */
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, x, y);
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, attrs.width, attrs.height);
+        }
+
+        X11_XSetErrorHandler(prev_handler);
+        caught_x11_error = SDL_FALSE;
+    }
 }
 
 void X11_HideWindow(_THIS, SDL_Window *window)
