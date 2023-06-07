@@ -1747,9 +1747,12 @@ static void ApplyWindowFlags(SDL_Window *window, Uint32 flags)
     if (flags & SDL_WINDOW_MINIMIZED) {
         SDL_MinimizeWindow(window);
     }
-    if (flags & SDL_WINDOW_FULLSCREEN) {
-        SDL_SetWindowFullscreen(window, SDL_TRUE);
+    if (!(flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED))) {
+        SDL_RestoreWindow(window);
     }
+
+    SDL_SetWindowFullscreen(window, (flags & SDL_WINDOW_FULLSCREEN) != 0);
+
     if (flags & SDL_WINDOW_MOUSE_GRABBED) {
         /* We must specifically call SDL_SetWindowGrab() and not
            SDL_SetWindowMouseGrab() here because older applications may use
@@ -2785,10 +2788,8 @@ int SDL_ShowWindow(SDL_Window *window)
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
 
     /* Set window state if we have pending window flags cached */
-    if (window->pending_flags) {
-        ApplyWindowFlags(window, window->pending_flags);
-        window->pending_flags = 0;
-    }
+    ApplyWindowFlags(window, window->pending_flags);
+    window->pending_flags = 0;
 
     /* Restore child windows */
     for (child = window->first_child; child != NULL; child = child->next_sibling) {
@@ -2819,6 +2820,9 @@ int SDL_HideWindow(SDL_Window *window)
         SDL_HideWindow(child);
         child->restore_on_show = SDL_TRUE;
     }
+
+    /* Store the flags for restoration later. */
+    window->pending_flags = window->flags;
 
     window->is_hiding = SDL_TRUE;
     if (_this->HideWindow) {
@@ -2906,6 +2910,11 @@ int SDL_RestoreWindow(SDL_Window *window)
     CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (!(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
+        return 0;
+    }
+
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        window->pending_flags &= ~(SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED);
         return 0;
     }
 
