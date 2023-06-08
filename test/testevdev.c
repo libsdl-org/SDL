@@ -615,6 +615,27 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      .name = "NES Controller (R) NES-style Joycon from Nintendo Online",
+      /* Joy-Con (L), 0005:057e:2006 v0001, is functionally equivalent.
+       * Ordinary Joy-Con (R) and NES-style Joy-Con (L) are assumed to be
+       * functionally equivalent as well. */
+      .bus_type = 0x0005,   /* Bluetooth-only */
+      .vendor_id = 0x057e,
+      .product_id = 0x2007,
+      .version = 0x0001,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS */
+      .ev = { 0x0b },
+      /* X, Y, RX, RY, hat 0 */
+      .abs = { 0x1b, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, SELECT, START, MODE, THUMBL, THUMBR,
+           * and an unassigned button code */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0xff,
+      },
+    },
+    {
       .name = "Thrustmaster Racing Wheel FFB",
       /* Mad Catz FightStick TE S+ PS4, 0003:0738:8384:0111 v0111
        * (aka Street Fighter V Arcade FightStick TES+)
