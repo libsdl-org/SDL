@@ -866,6 +866,7 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     device->interface_protocol = info->interface_protocol;
     device->usage_page = info->usage_page;
     device->usage = info->usage;
+    device->is_bluetooth = (info->bus_type == SDL_HID_API_BUS_BLUETOOTH);
     device->dev_lock = SDL_CreateMutex();
 
     /* Need the device name before getting the driver to know whether to ignore this device */

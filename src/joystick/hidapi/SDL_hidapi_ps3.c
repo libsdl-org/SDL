@@ -144,14 +144,14 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
     device->context = ctx;
 
     /* Set the controller into report mode over Bluetooth */
-    {
+    if (device->is_bluetooth) {
         Uint8 data[] = { 0xf4, 0x42, 0x03, 0x00, 0x00 };
 
         SendFeatureReport(device->dev, data, sizeof(data));
     }
 
     /* Set the controller into report mode over USB */
-    {
+    if (!device->is_bluetooth) {
         Uint8 data[USB_PACKET_LENGTH];
 
         int size = ReadFeatureReport(device->dev, 0xf2, data, 17);
