@@ -1462,6 +1462,10 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
     /* Get the correct display for this operation */
     if (fullscreen) {
         display = SDL_GetVideoDisplayForWindow(window);
+        if (!display) {
+            /* This should never happen, but it did... */
+            goto done;
+        }
     } else {
         for (i = 0; i < _this->num_displays; ++i) {
             display = &_this->displays[i];
