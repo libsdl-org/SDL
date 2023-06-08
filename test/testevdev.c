@@ -690,9 +690,17 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thrustmaster Racing Wheel FFB",
-      /* Mad Catz FightStick TE S+ PS4, 0003:0738:8384:0111 v0111
+      /* Several devices intended for PS4 are functionally equivalent to this:
+       * https://github.com/ValveSoftware/steam-devices/pull/34
+       * Mad Catz FightStick TE S+ PS4, 0003:0738:8384:0111 v0111
        * (aka Street Fighter V Arcade FightStick TES+)
-       * is functionally the same */
+       * Mad Catz FightStick TE2+ PS4, 0003:0738:8481 v0100
+       * (aka Street Fighter V Arcade FightStick TE2+)
+       * Bigben Interactive DAIJA Arcade Stick, 0003:146b:0d09 v0111
+       * (aka Nacon Daija PS4 Arcade Stick)
+       * Razer Razer Raiju Ultimate Wired, 0003:1532:1009 v0000
+       * Razer Razer Raiju Ultimate (Bluetooth), 0005:1532:1009 v0001
+       */
       .bus_type = 0x0003,
       .vendor_id = 0x044f,
       .product_id = 0xb66d,
