@@ -571,6 +571,24 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      .name = "Switch Pro Controller via Bluetooth (Linux 6.2.11)",
+      .bus_type = 0x0005,
+      .vendor_id = 0x057e,
+      .product_id = 0x2009,
+      .version = 0x0001,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS */
+      .ev = { 0x0b },
+      /* X, Y, RX, RY, hat 0 */
+      .abs = { 0x1b, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, SELECT, START, MODE, THUMBL, THUMBR,
+           * and an unassigned button code */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0xff,
+      },
+    },
+    {
       .name = "Switch Pro Controller via USB",
       .bus_type = 0x0003,
       .vendor_id = 0x057e,
