@@ -583,6 +583,17 @@ static const GuessTest guess_tests[] =
       .abs = { 0x27, 0x00, 0x03 },
       .keys = {
           /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* 16 buttons: TRIGGER, THUMB, THUMB2, TOP, TOP2, PINKIE, BASE,
+           * BASE2..BASE6, unregistered event codes 0x12c-0x12e, DEAD */
+          /* 0x100 */ ZEROx4, 0xff, 0xff, 0x00, 0x00,
+          /* 0x140 */ ZEROx8,
+          /* 0x180 */ ZEROx8,
+          /* 0x1c0 */ ZEROx8,
+          /* 0x200 */ ZEROx8,
+          /* 0x240 */ ZEROx8,
+          /* 0x280 */ ZEROx8,
+          /* TRIGGER_HAPPY1..TRIGGER_HAPPY2 */
+          /* 0x2c0 */ 0x03,
       },
     },
     {
