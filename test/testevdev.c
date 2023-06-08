@@ -94,6 +94,8 @@ static const GuessTest guess_tests[] =
 {
     {
       .name = "Xbox 360 wired USB controller",
+      /* 8BitDo N30 Pro 2 v0114 via USB-C (with the xpad driver) is
+       * reported as 0003:045e:028e v0114, and is functionally equivalent */
       .bus_type = 0x0003,
       .vendor_id = 0x045e,
       .product_id = 0x028e,
@@ -452,7 +454,9 @@ static const GuessTest guess_tests[] =
        * except for having force feedback, which we don't use in our
        * heuristic */
       /* Jess Tech GGE909 PC Recoil Pad, 0003:0f30:010b v0110, is the same */
-      /* 8BitDo SNES30, 0003:2dc8:ab20 v0110, is the same */
+      /* 8BitDo SNES30 via USB, 0003:2dc8:ab20 v0110, is the same;
+       * see below for the same physical device via Bluetooth,
+       * 0005:2dc8:2840 v0100 */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
@@ -463,6 +467,29 @@ static const GuessTest guess_tests[] =
           /* 12 buttons: TRIGGER, THUMB, THUMB2, TOP, TOP2, PINKIE, BASE,
            * BASE2..BASE6 */
           /* 0x100 */ ZEROx4, 0xff, 0x0f, 0x00, 0x00,
+      },
+    },
+    {
+      .name = "8BitDo SNES30 v0100 via Bluetooth",
+      /* The same physical device via USB, 0003:2dc8:ab20 v0110,
+       * is reported differently (above). */
+      /* 8BitDo NES30 Pro (aka N30 Pro) via Bluetooth, 0005:2dc8:3820 v0100,
+       * is functionally equivalent; but the same physical device via USB,
+       * 0003:2dc8:9001 v0111, matches N30 Pro 2 v0111. */
+      .bus_type = 0x0005,
+      .vendor_id = 0x2dc8,
+      .product_id = 0x2840,
+      .version = 0x0100,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, MSC */
+      .ev = { 0x1b },
+      /* XYZ, RZ, GAS, BRAKE, HAT0X, HAT0Y */
+      .abs = { 0x27, 0x06, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, SELECT, START, MODE, THUMBL, THUMBR,
+           * and an unassigned button code */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0xff,
       },
     },
     {
@@ -734,12 +761,34 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      .name = "8BitDo N30 Pro 2",
+      .name = "8BitDo N30 Pro via Bluetooth",
+      /* This device has also been seen reported with an additional
+       * unassigned button code, the same as the SNES30 v0100 via Bluetooth */
+      .bus_type = 0x0005,
+      .vendor_id = 0x2dc8,
+      .product_id = 0x3820,
+      .version = 0x0100,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, MSC */
+      .ev = { 0x1b },
+      /* XYZ, RZ, gas, brake, hat0 */
+      .abs = { 0x27, 0x06, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, select, start, mode, thumbl,
+           * thumbr */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x7f,
+      },
+    },
+    {
+      .name = "8BitDo N30 Pro 2 v0111",
       .bus_type = 0x0003,
       .vendor_id = 0x2dc8,
       .product_id = 0x9015,
       .version = 0x0111,
-      /* 8BitDo NES30 Pro, 0003:2dc8:9001 v0111, is the same */
+      /* 8BitDo NES30 Pro via USB, 0003:2dc8:9001 v0111, is the same;
+       * but the same physical device via Bluetooth, 0005:2dc8:3820 v0100,
+       * matches 8BitDo SNES30 v0100 via Bluetooth instead (see above). */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       .ev = { 0x0b },
       /* XYZ, RZ, gas, brake, hat0 */
@@ -749,6 +798,29 @@ static const GuessTest guess_tests[] =
           /* ABC, XYZ, TL, TR, TL2, TR2, select, start, mode, thumbl,
            * thumbr */
           /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x7f,
+      },
+    },
+    {
+      .name = "8BitDo N30 Pro 2 via Bluetooth",
+      /* Physically the same device as the one that mimics an Xbox 360
+       * USB controller when wired */
+      .bus_type = 0x0005,
+      .vendor_id = 0x045e,
+      .product_id = 0x02e0,
+      .version = 0x0903,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      /* SYN, KEY, ABS, MSC, FF */
+      .ev = { 0x1b, 0x00, 0x20 },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* 0x40 */ ZEROx8,
+          /* KEY_MENU */
+          /* 0x80 */ 0x00, 0x08, 0x00, 0x00, ZEROx4,
+          /* 0xc0 */ ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2 */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x03,
       },
     },
     {
