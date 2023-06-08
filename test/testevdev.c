@@ -326,6 +326,10 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Guitar Hero for PS3",
+      /* SWITCH CO.,LTD. Controller (Dinput) off-brand N64-style USB controller
+       * 0003:2563:0575 v0111 is functionally equivalent.
+       * https://linux-hardware.org/?id=usb:2563-0575 reports the same IDs as
+       * ShenZhen ShanWan Technology ZD-V+ Wired Gaming Controller */
       .bus_type = 0x0003,
       .vendor_id = 0x12ba,
       .product_id = 0x0100,
