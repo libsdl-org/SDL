@@ -159,10 +159,51 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      .name = "DualSense (PS5) - gamepad",
+      .bus_type = 0x0003,
+      .vendor_id = 0x054c,
+      .product_id = 0x0ce6,
+      .version = 0x111,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS */
+      .ev = { 0x0b },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, select, start, mode, thumbl,
+           * thumbr; note that C and Z don't physically exist */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x7f,
+      },
+    },
+    {
+      .name = "DualSense (PS5) v8111 - gamepad",
+      /* Same physical device via Bluetooth is 0005:054c:0ce6 v8100,
+       * but otherwise equivalent */
+      .bus_type = 0x0003,
+      .vendor_id = 0x054c,
+      .product_id = 0x0ce6,
+      .version = 0x8111,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS */
+      .ev = { 0x0b },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* A, B, X, Y, TL, TR, TL2, TR2, SELECT, START, MODE,
+           * THUMBL, THUMBR */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7f,
+      },
+    },
+    {
       .name = "DualShock 4 - gamepad",
+      /* Same physical device via Bluetooth is 0005:054c:09cc v8100,
+       * but otherwise equivalent */
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x09cc,
+      .version = 0x8111,
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS, MSC, FF */
       /* Some versions only have 0x0b, SYN, KEY, ABS, like the
@@ -178,7 +219,7 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      .name = "DualShock 4 - gamepad via Bluetooth",
+      .name = "DualShock 4 - gamepad via Bluetooth (unknown version)",
       .bus_type = 0x0005,
       .vendor_id = 0x054c,
       .product_id = 0x09cc,
@@ -196,9 +237,15 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 4 - touchpad",
+      /* Same physical device via Bluetooth is 0005:054c:09cc v8100 and is
+       * functionally equivalent. */
+      /* DualSense (PS5), 0003:054c:0ce6 v8111, is functionally equivalent.
+       * Same physical device via Bluetooth is 0005:054c:0ce6 v8100 and also
+       * functionally equivalent. */
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x09cc,
+      .version = 0x8111,
       .expected = SDL_UDEV_DEVICE_TOUCHPAD,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
@@ -216,9 +263,15 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 4 - accelerometer",
+      /* Same physical device via Bluetooth is 0005:054c:09cc v8100 and is
+       * functionally equivalent. */
+      /* DualSense (PS5), 0003:054c:0ce6 v8111, is functionally equivalent.
+       * Same physical device via Bluetooth is 0005:054c:0ce6 v8100 and also
+       * functionally equivalent. */
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x09cc,
+      .version = 0x8111,
       .expected = SDL_UDEV_DEVICE_ACCELEROMETER,
       /* SYN, ABS, MSC */
       .ev = { 0x19 },
