@@ -801,6 +801,26 @@ static const GuessTest guess_tests[] =
       .props = { 0x05 },
     },
     {
+      .name = "DELL08AF:00 (Dell XPS laptop touchpad)",
+      .bus_type = 0x18,
+      .vendor_id = 0x6cb,
+      .product_id = 0x76af,
+      .version = 0x100,
+      .ev = { 0x0b },
+      .expected = SDL_UDEV_DEVICE_TOUCHPAD,
+      /* X, Y, multitouch */
+      .abs = { 0x03, 0x00, 0x00, 0x00, 0x00, 0x80, 0xe0, 0x02 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* Left mouse button */
+          /* 0x100 */ 0x00, 0x00, 0x01, 0x00, ZEROx4,
+          /* BTN_TOOL_FINGER and some multitouch gestures */
+          /* 0x140 */ 0x20, 0xe5
+      },
+      /* POINTER, BUTTONPAD */
+      .props = { 0x05 },
+    },
+    {
       .name = "TPPS/2 Elan TrackPoint (Thinkpad X280)",
       .bus_type = 0x0011,   /* BUS_I8042 */
       .vendor_id = 0x0002,
