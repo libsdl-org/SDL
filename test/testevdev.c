@@ -687,6 +687,37 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      .name = "Google Stadia Controller rev.A",
+      /* This data is with USB-C, but the same physical device via Bluetooth,
+       * 0005:18d1:9400 v0000, is functionally equivalent */
+      .bus_type = 0x0003,
+      .vendor_id = 0x18d1,
+      .product_id = 0x9400,
+      .version = 0x0100,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .ev = { 0x0b },
+      /* XYZ, RZ, gas, brake, hat0 */
+      .abs = { 0x27, 0x06, 0x03 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* Volume up/down */
+          /* 0x40 */ ZEROx4, 0x00, 0x00, 0x0c, 0x00,
+          /* Media play/pause */
+          /* 0x80 */ ZEROx4, 0x10, 0x00, 0x00, 0x00,
+          /* 0xc0 */ ZEROx8,
+          /* ABXY, TL, TR, SELECT, START, MODE, THUMBL, THUMBR */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7c,
+          /* 0x140 */ ZEROx8,
+          /* 0x180 */ ZEROx8,
+          /* 0x1c0 */ ZEROx8,
+          /* 0x200 */ ZEROx8,
+          /* 0x240 */ ZEROx8,
+          /* 0x280 */ ZEROx8,
+          /* TRIGGER_HAPPY 1-4 */
+          /* 0x2c0 */ 0x0f, 0x00, 0x00, 0x00, ZEROx4,
+      },
+    },
+    {
       .name = "Wiimote - buttons",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
