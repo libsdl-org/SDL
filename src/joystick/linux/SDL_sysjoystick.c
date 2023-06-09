@@ -1676,6 +1676,17 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 {
     SDL_Joystick *joystick;
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
+    enum {
+        MAPPED_TRIGGER_LEFT = 0x1,
+        MAPPED_TRIGGER_RIGHT = 0x2,
+        MAPPED_TRIGGER_BOTH = 0x3,
+
+        MAPPED_DPAD_UP = 0x1,
+        MAPPED_DPAD_DOWN = 0x2,
+        MAPPED_DPAD_LEFT = 0x4,
+        MAPPED_DPAD_RIGHT = 0x8,
+        MAPPED_DPAD_ALL = 0xF,
+    };
     unsigned int mapped;
 
     SDL_AssertJoysticksLocked();
@@ -1883,14 +1894,14 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (joystick->hwdata->has_abs[ABS_HAT2Y]) {
         out->lefttrigger.kind = EMappingKind_Axis;
         out->lefttrigger.target = joystick->hwdata->abs_map[ABS_HAT2Y];
-        mapped |= 0x1;
+        mapped |= MAPPED_TRIGGER_LEFT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped LEFTTRIGGER to axis %d (ABS_HAT2Y)", out->lefttrigger.target);
 #endif
     } else if (joystick->hwdata->has_abs[ABS_Z]) {
         out->lefttrigger.kind = EMappingKind_Axis;
         out->lefttrigger.target = joystick->hwdata->abs_map[ABS_Z];
-        mapped |= 0x1;
+        mapped |= MAPPED_TRIGGER_LEFT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped LEFTTRIGGER to axis %d (ABS_Z)", out->lefttrigger.target);
 #endif
@@ -1899,44 +1910,44 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (joystick->hwdata->has_abs[ABS_HAT2X]) {
         out->righttrigger.kind = EMappingKind_Axis;
         out->righttrigger.target = joystick->hwdata->abs_map[ABS_HAT2X];
-        mapped |= 0x2;
+        mapped |= MAPPED_TRIGGER_RIGHT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped RIGHTTRIGGER to axis %d (ABS_HAT2X)", out->righttrigger.target);
 #endif
     } else if (joystick->hwdata->has_abs[ABS_RZ]) {
         out->righttrigger.kind = EMappingKind_Axis;
         out->righttrigger.target = joystick->hwdata->abs_map[ABS_RZ];
-        mapped |= 0x2;
+        mapped |= MAPPED_TRIGGER_RIGHT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped RIGHTTRIGGER to axis %d (ABS_RZ)", out->righttrigger.target);
 #endif
     }
 
-    if (mapped != 0x3 && joystick->hwdata->has_hat[2]) {
+    if (mapped != MAPPED_TRIGGER_BOTH && joystick->hwdata->has_hat[2]) {
         int hat = joystick->hwdata->hats_indices[2] << 4;
         out->lefttrigger.kind = EMappingKind_Hat;
         out->righttrigger.kind = EMappingKind_Hat;
         out->lefttrigger.target = hat | 0x4;
         out->righttrigger.target = hat | 0x2;
-        mapped |= 0x3;
+        mapped |= MAPPED_TRIGGER_BOTH;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped LEFT+RIGHTTRIGGER to hat 2 (ABS_HAT2X, ABS_HAT2Y)");
 #endif
     }
 
-    if (!(mapped & 0x1) && joystick->hwdata->has_key[BTN_TL2]) {
+    if (!(mapped & MAPPED_TRIGGER_LEFT) && joystick->hwdata->has_key[BTN_TL2]) {
         out->lefttrigger.kind = EMappingKind_Button;
         out->lefttrigger.target = joystick->hwdata->key_map[BTN_TL2];
-        mapped |= 0x1;
+        mapped |= MAPPED_TRIGGER_LEFT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped LEFTTRIGGER to button %d (BTN_TL2)", out->lefttrigger.target);
 #endif
     }
 
-    if (!(mapped & 0x2) && joystick->hwdata->has_key[BTN_TR2]) {
+    if (!(mapped & MAPPED_TRIGGER_LEFT) && joystick->hwdata->has_key[BTN_TR2]) {
         out->righttrigger.kind = EMappingKind_Button;
         out->righttrigger.target = joystick->hwdata->key_map[BTN_TR2];
-        mapped |= 0x2;
+        mapped |= MAPPED_TRIGGER_RIGHT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped RIGHTTRIGGER to button %d (BTN_TR2)", out->righttrigger.target);
 #endif
@@ -1948,7 +1959,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (joystick->hwdata->has_key[BTN_DPAD_UP]) {
         out->dpup.kind = EMappingKind_Button;
         out->dpup.target = joystick->hwdata->key_map[BTN_DPAD_UP];
-        mapped |= 0x1;
+        mapped |= MAPPED_DPAD_UP;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped DPUP to button %d (BTN_DPAD_UP)", out->dpup.target);
 #endif
@@ -1957,7 +1968,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (joystick->hwdata->has_key[BTN_DPAD_DOWN]) {
         out->dpdown.kind = EMappingKind_Button;
         out->dpdown.target = joystick->hwdata->key_map[BTN_DPAD_DOWN];
-        mapped |= 0x2;
+        mapped |= MAPPED_DPAD_DOWN;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped DPDOWN to button %d (BTN_DPAD_DOWN)", out->dpdown.target);
 #endif
@@ -1966,7 +1977,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (joystick->hwdata->has_key[BTN_DPAD_LEFT]) {
         out->dpleft.kind = EMappingKind_Button;
         out->dpleft.target = joystick->hwdata->key_map[BTN_DPAD_LEFT];
-        mapped |= 0x4;
+        mapped |= MAPPED_DPAD_LEFT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped DPLEFT to button %d (BTN_DPAD_LEFT)", out->dpleft.target);
 #endif
@@ -1975,13 +1986,13 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (joystick->hwdata->has_key[BTN_DPAD_RIGHT]) {
         out->dpright.kind = EMappingKind_Button;
         out->dpright.target = joystick->hwdata->key_map[BTN_DPAD_RIGHT];
-        mapped |= 0x8;
+        mapped |= MAPPED_DPAD_RIGHT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped DPRIGHT to button %d (BTN_DPAD_RIGHT)", out->dpright.target);
 #endif
     }
 
-    if (mapped != 0xF) {
+    if (mapped != MAPPED_DPAD_ALL) {
         if (joystick->hwdata->has_hat[0]) {
             int hat = joystick->hwdata->hats_indices[0] << 4;
             out->dpleft.kind = EMappingKind_Hat;
@@ -1992,7 +2003,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
             out->dpright.target = hat | 0x2;
             out->dpup.target = hat | 0x1;
             out->dpdown.target = hat | 0x4;
-            mapped |= 0xF;
+            mapped |= MAPPED_DPAD_ALL;
 #ifdef DEBUG_GAMEPAD_MAPPING
             SDL_Log("Mapped DPUP+DOWN+LEFT+RIGHT to hat 0 (ABS_HAT0X, ABS_HAT0Y)");
 #endif
@@ -2005,7 +2016,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
             out->dpright.target = joystick->hwdata->abs_map[ABS_HAT0X];
             out->dpup.target = joystick->hwdata->abs_map[ABS_HAT0Y];
             out->dpdown.target = joystick->hwdata->abs_map[ABS_HAT0Y];
-            mapped |= 0xF;
+            mapped |= MAPPED_DPAD_ALL;
 #ifdef DEBUG_GAMEPAD_MAPPING
             SDL_Log("Mapped DPUP+DOWN to axis %d (ABS_HAT0Y)", out->dpup.target);
             SDL_Log("Mapped DPLEFT+RIGHT to axis %d (ABS_HAT0X)", out->dpleft.target);
