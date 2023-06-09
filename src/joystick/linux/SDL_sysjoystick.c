@@ -1671,6 +1671,8 @@ static void LINUX_JoystickQuit(void)
 /*
    This is based on the Linux Gamepad Specification
    available at: https://www.kernel.org/doc/html/v4.15/input/gamepad.html
+   and the Android gamepad documentation,
+   https://developer.android.com/develop/ui/views/touch-and-input/game-controllers/controller-input
  */
 static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
@@ -1891,14 +1893,35 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     /* Prefer analog triggers, but settle for digital hat or buttons. */
     mapped = 0;
 
+    /* Unfortunately there are several conventions for how analog triggers
+     * are represented as absolute axes:
+     *
+     * - Linux Gamepad Specification:
+     *   LT = ABS_HAT2Y, RT = ABS_HAT2X
+     * - Android (and therefore many Bluetooth controllers):
+     *   LT = ABS_BRAKE, RT = ABS_GAS
+     * - De facto standard for older Xbox and Playstation controllers:
+     *   LT = ABS_Z, RT = ABS_RZ
+     *
+     * We try each one in turn. */
     if (joystick->hwdata->has_abs[ABS_HAT2Y]) {
+        /* Linux Gamepad Specification */
         out->lefttrigger.kind = EMappingKind_Axis;
         out->lefttrigger.target = joystick->hwdata->abs_map[ABS_HAT2Y];
         mapped |= MAPPED_TRIGGER_LEFT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped LEFTTRIGGER to axis %d (ABS_HAT2Y)", out->lefttrigger.target);
 #endif
+    } else if (joystick->hwdata->has_abs[ABS_BRAKE]) {
+        /* Android convention */
+        out->lefttrigger.kind = EMappingKind_Axis;
+        out->lefttrigger.target = joystick->hwdata->abs_map[ABS_BRAKE];
+        mapped |= MAPPED_TRIGGER_LEFT;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFTTRIGGER to axis %d (ABS_BRAKE)", out->lefttrigger.target);
+#endif
     } else if (joystick->hwdata->has_abs[ABS_Z]) {
+        /* De facto standard for Xbox 360 and Playstation gamepads */
         out->lefttrigger.kind = EMappingKind_Axis;
         out->lefttrigger.target = joystick->hwdata->abs_map[ABS_Z];
         mapped |= MAPPED_TRIGGER_LEFT;
@@ -1908,13 +1931,23 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     }
 
     if (joystick->hwdata->has_abs[ABS_HAT2X]) {
+        /* Linux Gamepad Specification */
         out->righttrigger.kind = EMappingKind_Axis;
         out->righttrigger.target = joystick->hwdata->abs_map[ABS_HAT2X];
         mapped |= MAPPED_TRIGGER_RIGHT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped RIGHTTRIGGER to axis %d (ABS_HAT2X)", out->righttrigger.target);
 #endif
+    } else if (joystick->hwdata->has_abs[ABS_GAS]) {
+        /* Android convention */
+        out->righttrigger.kind = EMappingKind_Axis;
+        out->righttrigger.target = joystick->hwdata->abs_map[ABS_GAS];
+        mapped |= MAPPED_TRIGGER_RIGHT;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTTRIGGER to axis %d (ABS_GAS)", out->righttrigger.target);
+#endif
     } else if (joystick->hwdata->has_abs[ABS_RZ]) {
+        /* De facto standard for Xbox 360 and Playstation gamepads */
         out->righttrigger.kind = EMappingKind_Axis;
         out->righttrigger.target = joystick->hwdata->abs_map[ABS_RZ];
         mapped |= MAPPED_TRIGGER_RIGHT;
@@ -2035,7 +2068,16 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 #endif
     }
 
+    /* The Linux Gamepad Specification uses the RX and RY axes,
+     * originally intended to represent X and Y rotation, as a second
+     * joystick. This is common for USB gamepads, and also many Bluetooth
+     * gamepads, particularly older ones.
+     *
+     * The Android mapping convention used by many Bluetooth controllers
+     * instead uses the Z axis as a secondary X axis, and the RZ axis as
+     * a secondary Y axis. */
     if (joystick->hwdata->has_abs[ABS_RX] && joystick->hwdata->has_abs[ABS_RY]) {
+        /* Linux Gamepad Specification, Xbox 360, Playstation etc. */
         out->rightx.kind = EMappingKind_Axis;
         out->righty.kind = EMappingKind_Axis;
         out->rightx.target = joystick->hwdata->abs_map[ABS_RX];
@@ -2043,6 +2085,16 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped RIGHTX to axis %d (ABS_RX)", out->rightx.target);
         SDL_Log("Mapped RIGHTY to axis %d (ABS_RY)", out->righty.target);
+#endif
+    } else if (joystick->hwdata->has_abs[ABS_Z] && joystick->hwdata->has_abs[ABS_RZ]) {
+        /* Android convention */
+        out->rightx.kind = EMappingKind_Axis;
+        out->righty.kind = EMappingKind_Axis;
+        out->rightx.target = joystick->hwdata->abs_map[ABS_Z];
+        out->righty.target = joystick->hwdata->abs_map[ABS_RZ];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTX to axis %d (ABS_Z)", out->rightx.target);
+        SDL_Log("Mapped RIGHTY to axis %d (ABS_RZ)", out->righty.target);
 #endif
     }
 
