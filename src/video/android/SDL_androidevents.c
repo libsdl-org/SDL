@@ -116,8 +116,6 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
 
             /* Android_ResumeSem was signaled */
             SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_FOREGROUND);
-            SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
-            SDL_SendWindowEvent(Android_Window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
 
             ANDROIDAUDIO_ResumeDevices();
             openslES_ResumeDevices();
@@ -136,6 +134,9 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
             if (SDL_TextInputActive()) {
                 Android_StartTextInput(_this); /* Only showTextInput */
             }
+
+            SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
+            SDL_SendWindowEvent(Android_Window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
         }
     } else {
         if (videodata->isPausing || SDL_TryWaitSemaphore(Android_PauseSem) == 0) {
@@ -198,8 +199,6 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
 
             /* Android_ResumeSem was signaled */
             SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_FOREGROUND);
-            SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
-            SDL_SendWindowEvent(Android_Window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
 
             if (videodata->pauseAudio) {
                 ANDROIDAUDIO_ResumeDevices();
@@ -220,6 +219,9 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
             if (SDL_TextInputActive()) {
                 Android_StartTextInput(_this); /* Only showTextInput */
             }
+
+            SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
+            SDL_SendWindowEvent(Android_Window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
         }
     } else {
         if (videodata->isPausing || SDL_TryWaitSemaphore(Android_PauseSem) == 0) {
