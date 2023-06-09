@@ -398,6 +398,24 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
            return;
         }
 
+
+        /* Control activity re-creation */
+        /* Robustness: check that the native code is run for the first time.
+         * (Maybe Activity was reset, but not the native code.) */
+        {
+            int run_count = SDLActivity.nativeCheckSDLThreadCounter(); /* get and increment a native counter */
+            if (run_count != 0) {
+                boolean allow_recreate = SDLActivity.nativeAllowRecreateActivity();
+                if (allow_recreate) {
+                    Log.v(TAG, "activity re-created // run_count: " + run_count);
+                } else {
+                    Log.v(TAG, "activity finished // run_count: " + run_count);
+                    System.exit(0);
+                    return;
+                }
+            }
+        }
+
         // Set up JNI
         SDL.setupJNI();
 
@@ -971,6 +989,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void onNativeLocaleChanged();
     public static native void onNativeDarkModeChanged(boolean enabled);
     public static native boolean nativeAllowRecreateActivity();
+    public static native int nativeCheckSDLThreadCounter();
 
     /**
      * This method is called by SDL using JNI.
