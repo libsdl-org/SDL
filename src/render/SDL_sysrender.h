@@ -310,6 +310,9 @@ extern void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t num
 extern int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 extern int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 
+
+extern SDL_Renderer *SDL_GetRendererInternal(SDL_Window *window);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

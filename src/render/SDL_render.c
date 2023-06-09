@@ -44,6 +44,7 @@ this should probably be removed at some point in the future.  --ryan. */
 #endif
 
 #define SDL_WINDOWRENDERDATA "_SDL_WindowRenderData"
+#define SDL_WINDOWRENDERINTERNALDATA "_SDL_WindowRenderInternalData"
 
 #define CHECK_RENDERER_MAGIC(renderer, retval)                  \
     if (!(renderer) || (renderer)->magic != &renderer_magic) {  \
@@ -822,7 +823,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
         goto error;
     }
 
-    if (SDL_GetRenderer(window)) {
+    if (SDL_GetRendererInternal(window)) {
         SDL_SetError("Renderer already associated with window");
         goto error;
     }
@@ -925,6 +926,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
     }
 
     SDL_SetWindowData(window, SDL_WINDOWRENDERDATA, renderer);
+    SDL_SetWindowData(window, SDL_WINDOWRENDERINTERNALDATA, NULL);
 
     SDL_SetRenderViewport(renderer, NULL);
 
@@ -987,9 +989,23 @@ SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 #endif /* !SDL_RENDER_DISABLED */
 }
 
-SDL_Renderer *SDL_GetRenderer(SDL_Window *window)
+SDL_Renderer *SDL_GetRendererInternal(SDL_Window *window)
 {
     return (SDL_Renderer *)SDL_GetWindowData(window, SDL_WINDOWRENDERDATA);
+}
+
+void SDL_MarkRendererInternal(SDL_Window *window) {
+    SDL_SetWindowData(window, SDL_WINDOWRENDERINTERNALDATA, window /* something non null, to mark as internal */);
+}
+
+SDL_Renderer *SDL_GetRenderer(SDL_Window *window)
+{
+    void *internal = SDL_GetWindowData(window, SDL_WINDOWRENDERINTERNALDATA);
+    if (internal != NULL) {
+        /* SDL_Renderer is internal for framebuffer, and shouldn't be reported */
+        return NULL;
+    }
+    return SDL_GetRendererInternal(window);
 }
 
 SDL_Window *SDL_GetRenderWindow(SDL_Renderer *renderer)
@@ -4102,6 +4118,7 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
 
     if (renderer->window) {
         SDL_SetWindowData(renderer->window, SDL_WINDOWRENDERDATA, NULL);
+        SDL_SetWindowData(renderer->window, SDL_WINDOWRENDERINTERNALDATA, NULL);
     }
 
     /* It's no longer magical... */

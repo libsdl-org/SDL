@@ -235,6 +235,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
                 }
                 return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not available");
             }
+            SDL_MarkRendererInternal(window);
             /* if it was specifically requested, even if SDL_RENDERER_ACCELERATED isn't set, we'll accept this renderer. */
         } else {
             const int total = SDL_GetNumRenderDrivers();
@@ -243,6 +244,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
                 if (name && (SDL_strcmp(name, "software") != 0)) {
                     renderer = SDL_CreateRenderer(window, name, 0);
                     if (renderer && (SDL_GetRendererInfo(renderer, &info) == 0) && (info.flags & SDL_RENDERER_ACCELERATED)) {
+                        SDL_MarkRendererInternal(window);
                         break; /* this will work. */
                     }
                     if (renderer) { /* wasn't accelerated, etc, skip it. */

@@ -57,4 +57,6 @@ extern void SDL_VideoQuit(void);
 
 extern int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync);
 
+extern void SDL_MarkRendererInternal(SDL_Window *window);
+
 #endif /* SDL_video_c_h_ */

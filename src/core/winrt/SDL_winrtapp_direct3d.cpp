@@ -620,7 +620,7 @@ void SDL_WinRTApp::OnSuspending(Platform::Object ^ sender, SuspendingEventArgs ^
         // More details at: http://msdn.microsoft.com/en-us/library/windows/apps/Hh994929.aspx
 #if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
         if (WINRT_GlobalSDLWindow) {
-            SDL_Renderer *renderer = SDL_GetRenderer(WINRT_GlobalSDLWindow);
+            SDL_Renderer *renderer = SDL_GetRendererInternal(WINRT_GlobalSDLWindow);
             if (renderer && (SDL_strcmp(renderer->info.name, "direct3d11") == 0)) {
                 D3D11_Trim(renderer);
             }
