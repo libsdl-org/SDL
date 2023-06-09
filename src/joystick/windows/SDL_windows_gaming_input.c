@@ -833,17 +833,20 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
     }
 
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_GetCurrentReading(hwdata->controller, nbuttons, buttons, nhats, hats, naxes, axes, &timestamp);
-    if (SUCCEEDED(hr) && timestamp != hwdata->timestamp) {
+    if (SUCCEEDED(hr) && (!timestamp || timestamp != hwdata->timestamp)) {
         UINT32 i;
-        SDL_bool all_zero = SDL_TRUE;
+        SDL_bool all_zero = SDL_FALSE;
 
         hwdata->timestamp = timestamp;
 
         /* The axes are all zero when the application loses focus */
-        for (i = 0; i < naxes; ++i) {
-            if (axes[i] != 0.0f) {
-                all_zero = SDL_FALSE;
-                break;
+        if (naxes > 0) {
+            all_zero = SDL_TRUE;
+            for (i = 0; i < naxes; ++i) {
+                if (axes[i] != 0.0f) {
+                    all_zero = SDL_FALSE;
+                    break;
+                }
             }
         }
         if (all_zero) {
