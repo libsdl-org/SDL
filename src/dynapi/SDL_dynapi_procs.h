@@ -935,3 +935,5 @@ SDL_DYNAPI_PROC(int,SDL_vswprintf,(wchar_t *a, size_t b, const wchar_t *c, va_li
 SDL_DYNAPI_PROC(int,SDL_hid_get_input_report,(SDL_hid_device *a, unsigned char *b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_hid_device_info*,SDL_hid_get_device_info,(SDL_hid_device *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_hid_get_report_descriptor,(SDL_hid_device *a, unsigned char *b, size_t c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_HasWindowSurface,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_DestroyWindowSurface,(SDL_Window *a),(a),return)

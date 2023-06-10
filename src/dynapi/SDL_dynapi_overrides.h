@@ -890,3 +890,5 @@
 #define SDL_hid_get_input_report SDL_hid_get_input_report_REAL
 #define SDL_hid_get_device_info SDL_hid_get_device_info_REAL
 #define SDL_hid_get_report_descriptor SDL_hid_get_report_descriptor_REAL
+#define SDL_HasWindowSurface SDL_HasWindowSurface_REAL
+#define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL
