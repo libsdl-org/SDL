@@ -161,7 +161,7 @@ static void SDL_InitDynamicAPI(void);
 /* The DEFAULT funcs will init jump table and then call real function. */
 /* The REAL funcs are the actual functions, name-mangled to not clash. */
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) \
-    typedef rc(SDLCALL *SDL_DYNAPIFN_##fn) params; \
+    typedef rc (SDLCALL *SDL_DYNAPIFN_##fn) params;\
     static rc SDLCALL fn##_DEFAULT params;         \
     extern rc SDLCALL fn##_REAL params;
 #include "SDL_dynapi_procs.h"
@@ -347,7 +347,7 @@ static Sint32 initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
 
 /* Here's the exported entry point that fills in the jump table. */
 /*  Use specific types when an "int" might suffice to keep this sane. */
-typedef Sint32(SDLCALL *SDL_DYNAPI_ENTRYFN)(Uint32 apiver, void *table, Uint32 tablesize);
+typedef Sint32 (SDLCALL *SDL_DYNAPI_ENTRYFN)(Uint32 apiver, void *table, Uint32 tablesize);
 extern DECLSPEC Sint32 SDLCALL SDL_DYNAPI_entry(Uint32, void *, Uint32);
 
 Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
@@ -502,22 +502,22 @@ static void SDL_InitDynamicAPI(void)
      */
     static SDL_bool already_initialized = SDL_FALSE;
 
-/* SDL_AtomicLock calls SDL mutex functions to emulate if
-   SDL_ATOMIC_DISABLED, which we can't do here, so in such a
-   configuration, you're on your own. */
-#if !SDL_ATOMIC_DISABLED
+    /* SDL_AtomicLock calls SDL mutex functions to emulate if
+       SDL_ATOMIC_DISABLED, which we can't do here, so in such a
+       configuration, you're on your own. */
+    #if !SDL_ATOMIC_DISABLED
     static SDL_SpinLock lock = 0;
     SDL_AtomicLock_REAL(&lock);
-#endif
+    #endif
 
     if (!already_initialized) {
         SDL_InitDynamicAPILocked();
         already_initialized = SDL_TRUE;
     }
 
-#if !SDL_ATOMIC_DISABLED
+    #if !SDL_ATOMIC_DISABLED
     SDL_AtomicUnlock_REAL(&lock);
-#endif
+    #endif
 }
 
 #endif /* SDL_DYNAMIC_API */
