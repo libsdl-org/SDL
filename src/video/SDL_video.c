@@ -2765,7 +2765,7 @@ int SDL_DestroyWindowSurface(SDL_Window *window)
 
     if (window->surface) {
         window->surface->flags &= ~SDL_DONTFREE;
-        SDL_DestroySurface(window->surface);
+        SDL_FreeSurface(window->surface);
         window->surface = NULL;
         window->surface_valid = SDL_FALSE;
     }
