@@ -6,6 +6,7 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
+* Added SDL_HasWindowSurface() and SDL_DestroyWindowSurface() to switch between the window surface and rendering APIs
 * Added a display event SDL_DISPLAYEVENT_MOVED which is sent when the primary monitor changes or displays change position relative to each other
 * Added the hint SDL_HINT_ENABLE_SCREEN_KEYBOARD to control whether the on-screen keyboard should be shown when text input is active
 

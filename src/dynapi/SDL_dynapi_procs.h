@@ -979,3 +979,5 @@ SDL_DYNAPI_PROC(char*,SDL_strcasestr,(const char *a, const char *b),(a,b),return
 #if defined(__GDK__)
 SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),)
 #endif
+SDL_DYNAPI_PROC(SDL_bool,SDL_HasWindowSurface,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_DestroyWindowSurface,(SDL_Window *a),(a),return)

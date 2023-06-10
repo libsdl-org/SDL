@@ -894,3 +894,5 @@
 #define SDL_ResetHints SDL_ResetHints_REAL
 #define SDL_strcasestr SDL_strcasestr_REAL
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
+#define SDL_HasWindowSurface SDL_HasWindowSurface_REAL
+#define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL

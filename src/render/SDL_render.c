@@ -950,6 +950,11 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
         goto error;
     }
 
+    if (SDL_HasWindowSurface(window)) {
+        SDL_SetError("Surface already associated with window");
+        goto error;
+    }
+
     if (SDL_GetRenderer(window)) {
         SDL_SetError("Renderer already associated with window");
         goto error;
