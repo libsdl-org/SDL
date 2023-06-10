@@ -1347,7 +1347,8 @@ extern DECLSPEC int SDLCALL SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool
 /**
  * Return whether the window has a surface associated with it.
  *
- * \returns SDL_TRUE if there is a surface associated with the window, or SDL_FALSE otherwise.
+ * \returns SDL_TRUE if there is a surface associated with the window, or
+ *          SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
