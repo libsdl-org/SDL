@@ -296,10 +296,16 @@ static int Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 
 static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
 {
+    SDL_Window *window = SDL_GetKeyboardFocus();
     CGError result;
-    SDL_Window *window;
     SDL_CocoaWindowData *data;
     if (enabled) {
+        if (window) {
+            /* make sure the mouse isn't at the corner of the window, as this can confuse things if macOS thinks a window resize is happening on the first click. */
+            const CGPoint point = CGPointMake((float)(window->x + (window->w / 2)), (float)(window->y + (window->h / 2)));
+            Cocoa_HandleMouseWarp(point.x, point.y);
+            CGWarpMouseCursorPosition(point);
+        }
         DLog("Turning on.");
         result = CGAssociateMouseAndMouseCursorPosition(NO);
     } else {
@@ -313,7 +319,6 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the non-relative mode when the window gets focus, if it
      * doesn't have focus right now.
      */
-    window = SDL_GetKeyboardFocus();
     if (!window) {
         return 0;
     }
