@@ -462,7 +462,13 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     }
 #endif
 
+    if (this->iscapture && this->hidden->isplayback)
+    {
+        streamflags |= AUDCLNT_STREAMFLAGS_LOOPBACK;
+    }
+    
     streamflags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
+    
     ret = IAudioClient_Initialize(client, sharemode, streamflags, 0, 0, waveformat, NULL);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("WASAPI can't initialize audio client", ret);
@@ -609,6 +615,7 @@ static SDL_bool WASAPI_Init(SDL_AudioDriverImpl *impl)
     impl->GetDefaultAudioInfo = WASAPI_GetDefaultAudioInfo;
     impl->HasCaptureSupport = SDL_TRUE;
     impl->SupportsNonPow2Samples = SDL_TRUE;
+    impl->SupportsCaptureOnPlaybackDevices = SDL_TRUE;
 
     return SDL_TRUE; /* this audio target is available. */
 }

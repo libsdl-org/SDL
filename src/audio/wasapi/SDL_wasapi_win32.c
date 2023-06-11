@@ -115,6 +115,8 @@ int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
         return -1; /* This is already set by SDL_IMMDevice_Get */
     }
 
+    this->hidden->isplayback = !SDL_IMMDevice_GetIsCapture(device);
+
     /* this is not async in standard win32, yay! */
     ret = IMMDevice_Activate(device, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&this->hidden->client);
     IMMDevice_Release(device);
