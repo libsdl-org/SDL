@@ -139,9 +139,9 @@ SDL_bool SDL_JoysticksQuitting(void)
 
 void SDL_LockJoysticks(void)
 {
-    SDL_AtomicIncRef(&SDL_joystick_lock_pending);
+    (void)SDL_AtomicIncRef(&SDL_joystick_lock_pending);
     SDL_LockMutex(SDL_joystick_lock);
-    SDL_AtomicDecRef(&SDL_joystick_lock_pending);
+    (void)SDL_AtomicDecRef(&SDL_joystick_lock_pending);
 
     ++SDL_joysticks_locked;
 }
