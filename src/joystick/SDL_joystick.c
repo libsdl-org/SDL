@@ -153,8 +153,16 @@ void SDL_UnlockJoysticks(void)
      * allowing applications to lock joysticks while reinitializing the system.
      */
     if (SDL_joystick_lock && !SDL_joysticks_locked && !SDL_joysticks_initialized) {
+#ifdef __ANDROID__
+        /* On Android, let's keep the mutex alive:
+         * Because the SDLActivity may be trying and waiting in SDL_LockJoysticks(),
+         * while we are about to destroying it.
+         * (this would trigger "pthread_mutex_lock called on a destroyed mutex")
+         */
+#else
         SDL_DestroyMutex(SDL_joystick_lock);
         SDL_joystick_lock = NULL;
+#endif
     }
 }
 
