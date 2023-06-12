@@ -170,6 +170,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type, size_
     Uint64 waitStart;
     Uint64 waitElapsed;
 
+    SDLX11_ClipboardData *clipboard;
     void *data = NULL;
     unsigned char *src = NULL;
     Atom XA_MIME = X11_XInternAtom(display, mime_type, False);
@@ -185,12 +186,15 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type, size_
     } else if (owner == window) {
         owner = DefaultRootWindow(display);
         if (selection_type == XA_PRIMARY) {
-            src = videodata->primary_selection.callback(length, mime_type, videodata->primary_selection.userdata);
+            clipboard = &videodata->primary_selection;
         } else {
-            src = videodata->clipboard.callback(length, mime_type, videodata->clipboard.userdata);
+            clipboard = &videodata->clipboard;
         }
 
-        data = CloneDataBuffer(src, length, nullterminate);
+        if (clipboard->callback) {
+            src = clipboard->callback(length, mime_type, clipboard->userdata);
+            data = CloneDataBuffer(src, length, nullterminate);
+        }
     } else {
         /* Request that the selection owner copy the data to our window */
         owner = window;
@@ -264,7 +268,7 @@ SDL_bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     size_t length;
     void *data;
     data = X11_GetClipboardData(_this, &length, mime_type);
-    if (data != NULL && length > 0) {
+    if (data != NULL) {
         SDL_free(data);
     }
     return length > 0;
