@@ -30,7 +30,7 @@ static int clipboard_testHasClipboardText(void *arg)
 static int clipboard_testHasClipboardData(void *arg)
 {
     SDL_HasClipboardData("image/png");
-    SDLTest_AssertPass("Call to SDL_HasClipboardText succeeded");
+    SDLTest_AssertPass("Call to SDL_HasClipboardData succeeded");
 
     return TEST_COMPLETED;
 }
