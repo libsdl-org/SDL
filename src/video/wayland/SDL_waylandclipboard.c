@@ -245,14 +245,16 @@ static SDL_bool HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     SDL_WaylandDataDevice *data_device = NULL;
 
     SDL_bool result = SDL_FALSE;
-    if (_this == NULL || _this->driverdata == NULL) {
-        SDL_SetError("Video driver uninitialized");
-    } else {
-        video_data = _this->driverdata;
-        if (video_data->input != NULL && video_data->input->data_device != NULL) {
-            data_device = video_data->input->data_device;
-            result = result ||
-                     Wayland_data_offer_has_mime(data_device->selection_offer, mime_type);
+    video_data = _this->driverdata;
+    if (video_data->input != NULL && video_data->input->data_device != NULL) {
+        data_device = video_data->input->data_device;
+        if (data_device->selection_source != NULL) {
+            size_t length = 0;
+            char *buffer = Wayland_data_source_get_data(data_device->selection_source, &length, mime_type, SDL_TRUE);
+            result = buffer != NULL;
+            SDL_free(buffer);
+        } else {
+            result = Wayland_data_offer_has_mime(data_device->selection_offer, mime_type);
         }
     }
     return result;
@@ -280,9 +282,16 @@ SDL_bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
         video_data = _this->driverdata;
         if (video_data->input != NULL && video_data->input->primary_selection_device != NULL) {
             primary_selection_device = video_data->input->primary_selection_device;
-            result = result ||
-                     Wayland_primary_selection_offer_has_mime(
-                         primary_selection_device->selection_offer, TEXT_MIME);
+            if (primary_selection_device->selection_source != NULL) {
+                size_t length = 0;
+                char *buffer = Wayland_primary_selection_source_get_data(primary_selection_device->selection_source,
+                                                                         &length, TEXT_MIME, SDL_TRUE);
+                result = buffer != NULL;
+                SDL_free(buffer);
+            } else {
+                result = Wayland_primary_selection_offer_has_mime(
+                    primary_selection_device->selection_offer, TEXT_MIME);
+            }
         }
     }
     return result;

@@ -181,7 +181,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type, size_
     owner = X11_XGetSelectionOwner(display, selection_type);
     if (owner == None) {
         /* This requires a fallback to ancient X10 cut-buffers. We will just skip those for now */
-        return NULL;
+        data = NULL;
     } else if (owner == window) {
         owner = DefaultRootWindow(display);
         if (selection_type == XA_PRIMARY) {
@@ -227,6 +227,10 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type, size_
             }
             X11_XFree(src);
         }
+    }
+
+    if (nullterminate && data == NULL) {
+        data = strdup("");
     }
 
     return data;
