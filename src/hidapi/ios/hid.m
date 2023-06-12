@@ -848,8 +848,8 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		}
 	}
 
-	if ( ( vendor_id == 0 && product_id == 0 ) ||
-		 ( vendor_id == VALVE_USB_VID && product_id == D0G_BLE2_PID ) )
+	if ( ( vendor_id == 0 || vendor_id == VALVE_USB_VID ) &&
+	     ( product_id == 0 || product_id == D0G_BLE2_PID ) )
 	{
 		HIDBLEManager *bleManager = HIDBLEManager.sharedInstance;
 		[bleManager updateConnectedSteamControllers:false];
