@@ -41,6 +41,8 @@ typedef unsigned int u_int32_t;
 #define __ieee754_log   SDL_uclibc_log
 #define __ieee754_log10 SDL_uclibc_log10
 #define modf            SDL_uclibc_modf
+#define nextafter       SDL_uclibc_nextafter
+#define nextafterf      SDL_uclibc_nextafterf
 #define __ieee754_pow   SDL_uclibc_pow
 #define scalbln         SDL_uclibc_scalbln
 #define scalbn          SDL_uclibc_scalbn
@@ -224,5 +226,8 @@ __ieee754_sqrt(double)
      extern double __kernel_tan(double, double, int) attribute_hidden;
      extern int32_t __kernel_rem_pio2(const double *, double *, int, int, const unsigned int,
                                   const int32_t *) attribute_hidden;
+
+/* FIXME: We don't have a cross-platform implementation of this */
+#define math_force_eval(x)  (void)x
 
 #endif /* _MATH_PRIVATE_H_ */

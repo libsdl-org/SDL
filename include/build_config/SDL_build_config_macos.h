@@ -117,6 +117,9 @@
 #define HAVE_LROUND 1
 #define HAVE_LROUNDF 1
 #define HAVE_MODF   1
+#define HAVE_MODFF  1
+#define HAVE_NEXTAFTER  1
+#define HAVE_NEXTAFTERF 1
 #define HAVE_POW    1
 #define HAVE_POWF   1
 #define HAVE_ROUND  1

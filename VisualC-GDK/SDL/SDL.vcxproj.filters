@@ -985,6 +985,12 @@
     <ClCompile Include="..\..\src\libm\s_modf.c">
       <Filter>libm</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libm\s_nextafter.c">
+      <Filter>libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libm\s_nextafterf.c">
+      <Filter>libm</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libm\s_scalbn.c">
       <Filter>libm</Filter>
     </ClCompile>

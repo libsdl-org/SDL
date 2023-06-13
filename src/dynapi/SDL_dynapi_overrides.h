@@ -892,3 +892,5 @@
 #define SDL_hid_get_report_descriptor SDL_hid_get_report_descriptor_REAL
 #define SDL_HasWindowSurface SDL_HasWindowSurface_REAL
 #define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL
+#define SDL_nextafter SDL_nextafter_REAL
+#define SDL_nextafterf SDL_nextafterf_REAL

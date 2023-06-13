@@ -37,6 +37,8 @@ double SDL_uclibc_fmod(double x, double y);
 double SDL_uclibc_log(double x);
 double SDL_uclibc_log10(double x);
 double SDL_uclibc_modf(double x, double *y);
+double SDL_uclibc_nextafter(double from, double to);
+float SDL_uclibc_nextafterf(float from, float to);
 double SDL_uclibc_pow(double x, double y);
 double SDL_uclibc_scalbn(double x, int n);
 double SDL_uclibc_sin(double x);
