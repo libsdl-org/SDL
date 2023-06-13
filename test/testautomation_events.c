@@ -51,6 +51,7 @@ static int events_pushPumpAndPollUserevent(void *arg)
 
     /* Create user event */
     event1.type = SDL_EVENT_USER;
+    event1.common.timestamp = 0;
     event1.user.code = SDLTest_RandomSint32();
     event1.user.data1 = (void *)&g_userdataValue1;
     event1.user.data2 = (void *)&g_userdataValue2;
@@ -86,6 +87,7 @@ static int events_addDelEventWatch(void *arg)
 
     /* Create user event */
     event.type = SDL_EVENT_USER;
+    event.common.timestamp = 0;
     event.user.code = SDLTest_RandomSint32();
     event.user.data1 = (void *)&g_userdataValue1;
     event.user.data2 = (void *)&g_userdataValue2;
@@ -135,6 +137,7 @@ static int events_addDelEventWatchWithUserdata(void *arg)
 
     /* Create user event */
     event.type = SDL_EVENT_USER;
+    event.common.timestamp = 0;
     event.user.code = SDLTest_RandomSint32();
     event.user.data1 = (void *)&g_userdataValue1;
     event.user.data2 = (void *)&g_userdataValue2;
