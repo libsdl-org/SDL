@@ -2085,7 +2085,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     }
 
     if (SDL_GetJoystickVendor(joystick) == USB_VENDOR_MICROSOFT) {
-        /* The Xbox Elite controllers have the paddles as BTN_TRIGGER_HAPPY4 - BTN_TRIGGER_HAPPY7 */
+        /* The Xbox Elite controllers have the paddles as BTN_TRIGGER_HAPPY5 - BTN_TRIGGER_HAPPY8 */
         if (joystick->hwdata->has_key[BTN_TRIGGER_HAPPY5] &&
             joystick->hwdata->has_key[BTN_TRIGGER_HAPPY6] &&
             joystick->hwdata->has_key[BTN_TRIGGER_HAPPY7] &&
@@ -2099,10 +2099,10 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
             out->paddle4.kind = EMappingKind_Button;
             out->paddle4.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY8];
 #ifdef DEBUG_GAMEPAD_MAPPING
-            SDL_Log("Mapped PADDLE1 to button %d (BTN_TRIGGER_HAPPY4)", out->paddle1.target);
-            SDL_Log("Mapped PADDLE2 to button %d (BTN_TRIGGER_HAPPY6)", out->paddle2.target);
-            SDL_Log("Mapped PADDLE3 to button %d (BTN_TRIGGER_HAPPY5)", out->paddle3.target);
-            SDL_Log("Mapped PADDLE4 to button %d (BTN_TRIGGER_HAPPY7)", out->paddle4.target);
+            SDL_Log("Mapped PADDLE1 to button %d (BTN_TRIGGER_HAPPY5)", out->paddle1.target);
+            SDL_Log("Mapped PADDLE2 to button %d (BTN_TRIGGER_HAPPY7)", out->paddle2.target);
+            SDL_Log("Mapped PADDLE3 to button %d (BTN_TRIGGER_HAPPY6)", out->paddle3.target);
+            SDL_Log("Mapped PADDLE4 to button %d (BTN_TRIGGER_HAPPY8)", out->paddle4.target);
 #endif
         }
 
@@ -2110,7 +2110,6 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
         if (joystick->hwdata->has_key[KEY_RECORD]) {
             out->misc1.kind = EMappingKind_Button;
             out->misc1.target = joystick->hwdata->key_map[KEY_RECORD];
-            mapped |= MAPPED_DPAD_RIGHT;
 #ifdef DEBUG_GAMEPAD_MAPPING
             SDL_Log("Mapped MISC1 to button %d (KEY_RECORD)", out->misc1.target);
 #endif
