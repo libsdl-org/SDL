@@ -127,6 +127,30 @@ static const GuessTest guess_tests[] =
           /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7c,
       },
     },
+    { /* Reference: https://github.com/libsdl-org/SDL/issues/7814 */
+      .name = "X-Box One Elite 2",
+      .bus_type = 0x0003,
+      .vendor_id = 0x045e,
+      .product_id = 0x0b00,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, FF */
+      .ev = { 0x0b, 0x00, 0x20 },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* A, B, X, Y, TL, TR, SELECT, START, MODE, THUMBL, THUMBR */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7c,
+          /* 0x140 */ ZEROx8,
+          /* 0x180 */ ZEROx8,
+          /* 0x1c0 */ ZEROx8,
+          /* 0x200 */ ZEROx8,
+          /* 0x240 */ ZEROx8,
+          /* 0x280 */ ZEROx8,
+          /* BTN_TRIGGER_HAPPY5 up to BTN_TRIGGER_HAPPY8 inclusive */
+          /* 0x2c0 */ 0xf0,
+      },
+    },
     {
       .name = "X-Box One S via Bluetooth",
       .bus_type = 0x0005,
