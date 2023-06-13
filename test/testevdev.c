@@ -921,14 +921,14 @@ static const GuessTest guess_tests[] =
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
       /* This one is a bit weird because some of the buttons are mapped
        * to the arrow, page up and page down keys, so it's a joystick
        * with a subset of a keyboard attached. */
       /* TODO: Should this be JOYSTICK, or even JOYSTICK|KEYBOARD? */
       .expected = SDL_UDEV_DEVICE_KEYBOARD,
-      /* SYN, KEY */
-      .ev = { 0x03 },
+      /* SYN, KEY, FF */
+      .ev = { 0x03, 0x00, 0x20 },
       .keys = {
           /* 0x00 */ ZEROx8,
           /* left, right, up down */
@@ -943,11 +943,16 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      /* The ordinary accelerometer and the Motion Plus report as the same
+       * vendor, product, version and axes, just with different
+       * min/max/fuzz/flat parameters (not shown here). A Wiimote with an
+       * attached Motion Plus reports both accelerometers as separate
+       * evdev devices. */
       .name = "Wiimote - Motion Plus or accelerometer",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
       .expected = SDL_UDEV_DEVICE_ACCELEROMETER,
       /* SYN, ABS */
       .ev = { 0x09 },
@@ -959,19 +964,19 @@ static const GuessTest guess_tests[] =
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
       /* SYN, ABS */
       .ev = { 0x09 },
-      /* HAT0 to HAT3 */
-      .abs = { 0x00, 0x1f },
+      /* HAT0X, Y to HAT3X, Y */
+      .abs = { 0x00, 0x00, 0xff },
     },
     {
       .name = "Wiimote - Nunchuck",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
       /* TODO: Should this be JOYSTICK? It has one stick and two buttons */
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
       /* SYN, KEY, ABS */
@@ -985,15 +990,14 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      /* Flags guessed from kernel source code */
       .name = "Wiimote - Classic Controller",
       /* TODO: Should this be JOYSTICK, or maybe JOYSTICK|KEYBOARD?
        * It's unusual in the same ways as the Wiimote */
       .expected = SDL_UDEV_DEVICE_KEYBOARD,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
-      /* Hat 1-3 */
-      .abs = { 0x00, 0x1c },
+      /* Hat 1-3 X and Y */
+      .abs = { 0x00, 0x00, 0xfc },
       .keys = {
           /* 0x00 */ ZEROx8,
           /* left, right, up down */
@@ -1001,7 +1005,7 @@ static const GuessTest guess_tests[] =
           /* 0x80 */ ZEROx8,
           /* 0xc0 */ ZEROx8,
           /* A, B, X, Y, MODE, TL, TL2, TR, TR2 */
-          /* 0x100 */ ZEROx4, 0x00, 0x13, 0xdb, 0x10,
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x13,
           /* 0x140 */ ZEROx8,
           /* next (keyboard page down), previous (keyboard page up) */
           /* 0x180 */ 0x00, 0x00, 0x80, 0x10, ZEROx4,
