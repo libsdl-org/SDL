@@ -216,6 +216,40 @@ int SDL_UDEV_Scan(void)
     return 0;
 }
 
+static void
+input_dev_get_product_info(struct udev_device *dev, Uint16 *bus, Uint16 *vendor, Uint16 *product, Uint16 *version)
+{
+    const char *val = NULL;
+
+    if (bus != NULL) {
+        val = _this->syms.udev_device_get_sysattr_value(dev, "id/bustype");
+        if (val != NULL) {
+            *bus = (Uint16)SDL_strtol(val, NULL, 16);
+        }
+    }
+
+    if (vendor != NULL) {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
+        if (val != NULL) {
+            *vendor = (Uint16)SDL_strtol(val, NULL, 16);
+        }
+    }
+
+    if (product != NULL) {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
+        if (val != NULL) {
+            *product = (Uint16)SDL_strtol(val, NULL, 16);
+        }
+    }
+
+    if (version != NULL) {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
+        if (val != NULL) {
+            *version = (Uint16)SDL_strtol(val, NULL, 16);
+        }
+    }
+}
+
 SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version)
 {
     struct udev_enumerate *enumerate = NULL;
@@ -239,27 +273,12 @@ SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16
         const char *path = _this->syms.udev_list_entry_get_name(item);
         struct udev_device *dev = _this->syms.udev_device_new_from_syspath(_this->udev, path);
         if (dev != NULL) {
-            const char *val = NULL;
             const char *existing_path;
 
             existing_path = _this->syms.udev_device_get_devnode(dev);
             if (existing_path && SDL_strcmp(device_path, existing_path) == 0) {
                 found = SDL_TRUE;
-
-                val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
-                if (val != NULL) {
-                    *vendor = (Uint16)SDL_strtol(val, NULL, 16);
-                }
-
-                val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
-                if (val != NULL) {
-                    *product = (Uint16)SDL_strtol(val, NULL, 16);
-                }
-
-                val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
-                if (val != NULL) {
-                    *version = (Uint16)SDL_strtol(val, NULL, 16);
-                }
+                input_dev_get_product_info (dev, NULL, vendor, product, version);
             }
             _this->syms.udev_device_unref(dev);
         }
@@ -362,6 +381,10 @@ static void get_caps(struct udev_device *dev, struct udev_device *pdev, const ch
 static int guess_device_class(struct udev_device *dev)
 {
     struct udev_device *pdev;
+    Uint16 bus = 0;
+    Uint16 vendor = 0;
+    Uint16 product = 0;
+    Uint16 version = 0;
     unsigned long bitmask_ev[NBITS(EV_MAX)];
     unsigned long bitmask_abs[NBITS(ABS_MAX)];
     unsigned long bitmask_key[NBITS(KEY_MAX)];
@@ -377,12 +400,14 @@ static int guess_device_class(struct udev_device *dev)
         return 0;
     }
 
+    input_dev_get_product_info (dev, &bus, &vendor, &product, &version);
     get_caps(dev, pdev, "capabilities/ev", bitmask_ev, SDL_arraysize(bitmask_ev));
     get_caps(dev, pdev, "capabilities/abs", bitmask_abs, SDL_arraysize(bitmask_abs));
     get_caps(dev, pdev, "capabilities/rel", bitmask_rel, SDL_arraysize(bitmask_rel));
     get_caps(dev, pdev, "capabilities/key", bitmask_key, SDL_arraysize(bitmask_key));
 
-    return SDL_EVDEV_GuessDeviceClass(&bitmask_ev[0],
+    return SDL_EVDEV_GuessDeviceClass(bus, vendor, product, version,
+                                      &bitmask_ev[0],
                                       &bitmask_abs[0],
                                       &bitmask_key[0],
                                       &bitmask_rel[0]);

@@ -158,7 +158,7 @@ static SDL_bool IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version,
 }
 #endif /* SDL_JOYSTICK_HIDAPI */
 
-static int GuessIsJoystick(int fd)
+static int GuessIsJoystick(struct input_id *inpid, int fd)
 {
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
@@ -173,7 +173,11 @@ static int GuessIsJoystick(int fd)
         return 0;
     }
 
-    devclass = SDL_EVDEV_GuessDeviceClass(evbit, absbit, keybit, relbit);
+    devclass = SDL_EVDEV_GuessDeviceClass(inpid->bustype,
+                                          inpid->vendor,
+                                          inpid->product,
+                                          inpid->version,
+                                          evbit, absbit, keybit, relbit);
 
     if (devclass & SDL_UDEV_DEVICE_JOYSTICK) {
         return 1;
@@ -194,12 +198,12 @@ static int IsJoystick(const char *path, int fd, char **name_return, SDL_Joystick
         SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version);
 #endif
     } else {
-        /* When udev is enabled we only get joystick devices here, so there's no need to test them */
-        if (enumeration_method != ENUMERATION_LIBUDEV && !GuessIsJoystick(fd)) {
+        if (ioctl(fd, EVIOCGID, &inpid) < 0) {
             return 0;
         }
 
-        if (ioctl(fd, EVIOCGID, &inpid) < 0) {
+        /* When udev is enabled we only get joystick devices here, so there's no need to test them */
+        if (enumeration_method != ENUMERATION_LIBUDEV && !GuessIsJoystick(&inpid, fd)) {
             return 0;
         }
 
