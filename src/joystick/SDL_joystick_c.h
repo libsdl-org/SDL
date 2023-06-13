@@ -34,6 +34,7 @@ extern "C" {
 #endif
 
 struct _SDL_JoystickDriver;
+extern char SDL_joystick_magic;
 
 /* Initialization and shutdown functions */
 extern int SDL_JoystickInit(void);
