@@ -118,10 +118,10 @@ static SDL_AtomicInt SDL_last_joystick_instance_id SDL_GUARDED_BY(SDL_joystick_l
 static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
 static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;
-static char joystick_magic;
+char SDL_joystick_magic;
 
 #define CHECK_JOYSTICK_MAGIC(joystick, retval)             \
-    if (!joystick || joystick->magic != &joystick_magic) { \
+    if (!joystick || joystick->magic != &SDL_joystick_magic) { \
         SDL_InvalidParamError("joystick");                 \
         SDL_UnlockJoysticks();                             \
         return retval;                                     \
@@ -555,7 +555,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
         SDL_UnlockJoysticks();
         return NULL;
     }
-    joystick->magic = &joystick_magic;
+    joystick->magic = &SDL_joystick_magic;
     joystick->driver = driver;
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
@@ -754,7 +754,7 @@ int SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value)
 SDL_bool SDL_IsJoystickValid(SDL_Joystick *joystick)
 {
     SDL_AssertJoysticksLocked();
-    return (joystick && joystick->magic == &joystick_magic);
+    return (joystick && joystick->magic == &SDL_joystick_magic);
 }
 
 SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance_id, SDL_GamepadMapping *out)
