@@ -81,7 +81,8 @@ typedef struct
  * Trailing zeroes can be omitted.
  *
  * The evemu-describe tool is a convenient way to add a test-case for
- * a physically available device.
+ * a physically available device. To contribute new test-cases, see:
+ * https://github.com/libsdl-org/SDL/issues/7801#issuecomment-1589114910
  */
 #define ZEROx4 0, 0, 0, 0
 #define ZEROx8 ZEROx4, ZEROx4
