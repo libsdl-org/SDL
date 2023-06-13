@@ -76,47 +76,47 @@
 #endif
 
 #ifndef BTN_TRIGGER_HAPPY
-#define BTN_TRIGGER_HAPPY		0x2c0
-#define BTN_TRIGGER_HAPPY1		0x2c0
-#define BTN_TRIGGER_HAPPY2		0x2c1
-#define BTN_TRIGGER_HAPPY3		0x2c2
-#define BTN_TRIGGER_HAPPY4		0x2c3
-#define BTN_TRIGGER_HAPPY5		0x2c4
-#define BTN_TRIGGER_HAPPY6		0x2c5
-#define BTN_TRIGGER_HAPPY7		0x2c6
-#define BTN_TRIGGER_HAPPY8		0x2c7
-#define BTN_TRIGGER_HAPPY9		0x2c8
-#define BTN_TRIGGER_HAPPY10		0x2c9
-#define BTN_TRIGGER_HAPPY11		0x2ca
-#define BTN_TRIGGER_HAPPY12		0x2cb
-#define BTN_TRIGGER_HAPPY13		0x2cc
-#define BTN_TRIGGER_HAPPY14		0x2cd
-#define BTN_TRIGGER_HAPPY15		0x2ce
-#define BTN_TRIGGER_HAPPY16		0x2cf
-#define BTN_TRIGGER_HAPPY17		0x2d0
-#define BTN_TRIGGER_HAPPY18		0x2d1
-#define BTN_TRIGGER_HAPPY19		0x2d2
-#define BTN_TRIGGER_HAPPY20		0x2d3
-#define BTN_TRIGGER_HAPPY21		0x2d4
-#define BTN_TRIGGER_HAPPY22		0x2d5
-#define BTN_TRIGGER_HAPPY23		0x2d6
-#define BTN_TRIGGER_HAPPY24		0x2d7
-#define BTN_TRIGGER_HAPPY25		0x2d8
-#define BTN_TRIGGER_HAPPY26		0x2d9
-#define BTN_TRIGGER_HAPPY27		0x2da
-#define BTN_TRIGGER_HAPPY28		0x2db
-#define BTN_TRIGGER_HAPPY29		0x2dc
-#define BTN_TRIGGER_HAPPY30		0x2dd
-#define BTN_TRIGGER_HAPPY31		0x2de
-#define BTN_TRIGGER_HAPPY32		0x2df
-#define BTN_TRIGGER_HAPPY33		0x2e0
-#define BTN_TRIGGER_HAPPY34		0x2e1
-#define BTN_TRIGGER_HAPPY35		0x2e2
-#define BTN_TRIGGER_HAPPY36		0x2e3
-#define BTN_TRIGGER_HAPPY37		0x2e4
-#define BTN_TRIGGER_HAPPY38		0x2e5
-#define BTN_TRIGGER_HAPPY39		0x2e6
-#define BTN_TRIGGER_HAPPY40		0x2e7
+#define BTN_TRIGGER_HAPPY       0x2c0
+#define BTN_TRIGGER_HAPPY1      0x2c0
+#define BTN_TRIGGER_HAPPY2      0x2c1
+#define BTN_TRIGGER_HAPPY3      0x2c2
+#define BTN_TRIGGER_HAPPY4      0x2c3
+#define BTN_TRIGGER_HAPPY5      0x2c4
+#define BTN_TRIGGER_HAPPY6      0x2c5
+#define BTN_TRIGGER_HAPPY7      0x2c6
+#define BTN_TRIGGER_HAPPY8      0x2c7
+#define BTN_TRIGGER_HAPPY9      0x2c8
+#define BTN_TRIGGER_HAPPY10     0x2c9
+#define BTN_TRIGGER_HAPPY11     0x2ca
+#define BTN_TRIGGER_HAPPY12     0x2cb
+#define BTN_TRIGGER_HAPPY13     0x2cc
+#define BTN_TRIGGER_HAPPY14     0x2cd
+#define BTN_TRIGGER_HAPPY15     0x2ce
+#define BTN_TRIGGER_HAPPY16     0x2cf
+#define BTN_TRIGGER_HAPPY17     0x2d0
+#define BTN_TRIGGER_HAPPY18     0x2d1
+#define BTN_TRIGGER_HAPPY19     0x2d2
+#define BTN_TRIGGER_HAPPY20     0x2d3
+#define BTN_TRIGGER_HAPPY21     0x2d4
+#define BTN_TRIGGER_HAPPY22     0x2d5
+#define BTN_TRIGGER_HAPPY23     0x2d6
+#define BTN_TRIGGER_HAPPY24     0x2d7
+#define BTN_TRIGGER_HAPPY25     0x2d8
+#define BTN_TRIGGER_HAPPY26     0x2d9
+#define BTN_TRIGGER_HAPPY27     0x2da
+#define BTN_TRIGGER_HAPPY28     0x2db
+#define BTN_TRIGGER_HAPPY29     0x2dc
+#define BTN_TRIGGER_HAPPY30     0x2dd
+#define BTN_TRIGGER_HAPPY31     0x2de
+#define BTN_TRIGGER_HAPPY32     0x2df
+#define BTN_TRIGGER_HAPPY33     0x2e0
+#define BTN_TRIGGER_HAPPY34     0x2e1
+#define BTN_TRIGGER_HAPPY35     0x2e2
+#define BTN_TRIGGER_HAPPY36     0x2e3
+#define BTN_TRIGGER_HAPPY37     0x2e4
+#define BTN_TRIGGER_HAPPY38     0x2e5
+#define BTN_TRIGGER_HAPPY39     0x2e6
+#define BTN_TRIGGER_HAPPY40     0x2e7
 #endif
 
 #include "../../core/linux/SDL_evdev_capabilities.h"
@@ -1788,6 +1788,10 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 
     /* We have a gamepad, start filling out the mappings */
 
+#ifdef DEBUG_GAMEPAD_MAPPING
+    SDL_Log("Mapping %s (VID/PID 0x%.4x/0x%.4x)", item->name, SDL_JoystickGetVendor(joystick), SDL_JoystickGetProduct(joystick));
+#endif
+
     if (joystick->hwdata->has_key[BTN_A]) {
         out->a.kind = EMappingKind_Button;
         out->a.target = joystick->hwdata->key_map[BTN_A];
@@ -2143,37 +2147,36 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 #endif
     }
 
-    /* The xpadneo driver uses the happy buttons for triggers.
-       Unfortunately it also reports them as available for all controllers,
-       and exposes the Xbox Elite with the VID/PID of an Xbox 360 controller,
-       so we can't really tell whether this is an Xbox Elite or Xbox One S
-       controller.
-
-       xpadneo has a note about this in the driver code:
-       https://github.com/atar-axis/xpadneo/blob/master/hid-xpadneo/src/hid-xpadneo.c#L1137
-     */
-    if (SDL_IsJoystickXboxOneElite(SDL_JoystickGetVendor(joystick), SDL_JoystickGetProduct(joystick))) {
-        int i;
-        unsigned int paddle_index = 0;
-        SDL_InputMapping *paddles[4] = {
-            &out->paddle1,
-            &out->paddle3,
-            &out->paddle2,
-            &out->paddle4
-        };
-
-        for (i = BTN_TRIGGER_HAPPY; i <= BTN_TRIGGER_HAPPY40; ++i) {
-            if (joystick->hwdata->has_key[i]) {
-                paddles[paddle_index]->kind = EMappingKind_Button;
-                paddles[paddle_index]->target = joystick->hwdata->key_map[i];
+    if (SDL_JoystickGetVendor(joystick) == USB_VENDOR_MICROSOFT) {
+        /* The Xbox Elite controllers have the paddles as BTN_TRIGGER_HAPPY4 - BTN_TRIGGER_HAPPY7 */
+        if (joystick->hwdata->has_key[BTN_TRIGGER_HAPPY5] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY6] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY7] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY8]) {
+            out->paddle1.kind = EMappingKind_Button;
+            out->paddle1.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY5];
+            out->paddle2.kind = EMappingKind_Button;
+            out->paddle2.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY7];
+            out->paddle3.kind = EMappingKind_Button;
+            out->paddle3.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY6];
+            out->paddle4.kind = EMappingKind_Button;
+            out->paddle4.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY8];
 #ifdef DEBUG_GAMEPAD_MAPPING
-                SDL_Log("Mapped PADDLE%u to button %d (BTN_TRIGGER_HAPPY%d)", 1 + paddle_index, paddles[paddle_index]->target, i - BTN_TRIGGER_HAPPY);
+            SDL_Log("Mapped PADDLE1 to button %d (BTN_TRIGGER_HAPPY4)", out->paddle1.target);
+            SDL_Log("Mapped PADDLE2 to button %d (BTN_TRIGGER_HAPPY6)", out->paddle2.target);
+            SDL_Log("Mapped PADDLE3 to button %d (BTN_TRIGGER_HAPPY5)", out->paddle3.target);
+            SDL_Log("Mapped PADDLE4 to button %d (BTN_TRIGGER_HAPPY7)", out->paddle4.target);
 #endif
-                ++paddle_index;
-                if (paddle_index == SDL_arraysize(paddles)) {
-                    break;
-                }
-            }
+        }
+
+        /* The Xbox Series X controllers have the Share button as KEY_RECORD */
+        if (joystick->hwdata->has_key[KEY_RECORD]) {
+            out->misc1.kind = EMappingKind_Button;
+            out->misc1.target = joystick->hwdata->key_map[KEY_RECORD];
+            mapped |= MAPPED_DPAD_RIGHT;
+#ifdef DEBUG_GAMEPAD_MAPPING
+            SDL_Log("Mapped MISC1 to button %d (KEY_RECORD)", out->misc1.target);
+#endif
         }
     }
 
