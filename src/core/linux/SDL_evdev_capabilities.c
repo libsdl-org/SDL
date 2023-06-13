@@ -25,6 +25,8 @@
 
 #ifdef HAVE_LINUX_INPUT_H
 
+#include "../../joystick/usb_ids.h"
+
 /* missing defines in older Linux kernel headers */
 #ifndef BTN_TRIGGER_HAPPY
 #define BTN_TRIGGER_HAPPY 0x2c0
@@ -35,6 +37,18 @@
 #ifndef KEY_ALS_TOGGLE
 #define KEY_ALS_TOGGLE 0x230
 #endif
+
+static const struct input_id known_joysticks[] = {
+    { BUS_USB, USB_VENDOR_CH_PRODUCTS, USB_PRODUCT_CH_PRO_PEDALS }, /* https://github.com/libsdl-org/SDL/issues/7500 */
+    { BUS_USB, USB_VENDOR_FANATEC, USB_PRODUCT_FANATEC_CLUBSPORT_USB_HANDBRAKE },  /* https://github.com/ValveSoftware/Proton/issues/5126 */
+    { BUS_USB, USB_VENDOR_HEUSINKVELD, USB_PRODUCT_HEUSINKVELD_SIM_PEDALS_ULTIMATE }, /* https://github.com/ValveSoftware/Proton/issues/5126 */
+    { BUS_USB, USB_VENDOR_LEO_BODNAR, USB_PRODUCT_LEO_BODNAR_G25_PEDAL_ADAPTER }, /* https://github.com/ValveSoftware/Proton/issues/5126 */
+    { BUS_USB, USB_VENDOR_STMICRO, USB_PRODUCT_STMICRO_VRS_DIRECTFORCE_PRO_PEDALS }, /* https://github.com/ValveSoftware/Proton/issues/5126 */
+    { BUS_USB, USB_VENDOR_THRUSTMASTER, USB_PRODUCT_THRUSTMASTER_TFRP_RUDDER }, /* https://github.com/ValveSoftware/steam-devices/pull/36 */
+    { BUS_USB, USB_VENDOR_THRUSTMASTER, USB_PRODUCT_THRUSTMASTER_TWCS_THROTTLE }, /* https://github.com/ValveSoftware/steam-devices/pull/36 */
+    { BUS_USB, USB_VENDOR_THRUSTMASTER, USB_PRODUCT_THRUSTMASTER_T16000M_JOYSTICK }, /* https://github.com/ValveSoftware/steam-devices/pull/36 */
+};
+#define N_KNOWN_JOYSTICKS (sizeof(known_joysticks) / sizeof(known_joysticks[0]))
 
 extern int
 SDL_EVDEV_GuessDeviceClass(unsigned int bus_type,
@@ -78,6 +92,16 @@ SDL_EVDEV_GuessDeviceClass(unsigned int bus_type,
         test_bit(INPUT_PROP_BUTTONPAD, bitmask_props) ||
         test_bit(INPUT_PROP_SEMI_MT, bitmask_props)) {
         return SDL_UDEV_DEVICE_TOUCHPAD;
+    }
+
+    for (i = 0; i < N_KNOWN_JOYSTICKS; i++) {
+        const struct input_id *known = &known_joysticks[i];
+
+        if (vendor_id == known->vendor &&
+            product_id == known->product &&
+            (known->bustype == 0 || bus_type == known->bustype)) {
+            return SDL_UDEV_DEVICE_JOYSTICK;
+        }
     }
 
     /* X, Y, Z axes but no buttons probably means an accelerometer,
