@@ -2152,7 +2152,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
        xpadneo has a note about this in the driver code:
        https://github.com/atar-axis/xpadneo/blob/master/hid-xpadneo/src/hid-xpadneo.c#L1137
      */
-    if (SDL_IsJoystickXboxOneElite(SDL_GetJoystickVendor(joystick), SDL_GetJoystickProduct(joystick))) {
+    if (SDL_IsJoystickXboxOneElite(SDL_JoystickGetVendor(joystick), SDL_JoystickGetProduct(joystick))) {
         int i;
         unsigned int paddle_index = 0;
         SDL_InputMapping *paddles[4] = {
