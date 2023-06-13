@@ -1350,8 +1350,6 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
             mapping = SDL_PrivateAddMappingForGUID(guid,
                                                    "none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
                                                    &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
-        } else if (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box") || SDL_strstr(name, "XBOX")) {
-            mapping = s_pXInputMapping;
         }
     }
 #endif /* __LINUX__ */
