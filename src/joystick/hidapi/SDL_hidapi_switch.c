@@ -1041,6 +1041,11 @@ static SDL_bool HasHomeLED(SDL_DriverSwitch_Context *ctx)
         return SDL_FALSE;
     }
 
+    /* Third party controllers don't have a home LED and will shut off if we try to set it */
+    if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_LicProController) {
+        return SDL_FALSE;
+    }
+
     /* The Nintendo Online classic controllers don't have a Home LED */
     if (vendor_id == USB_VENDOR_NINTENDO &&
         ctx->m_eControllerType > k_eSwitchDeviceInfoControllerType_ProController) {
