@@ -1098,7 +1098,7 @@ if(SDL_LIBC)
       set(${_HAVE_H} 1)
     endforeach()
     set(HAVE_SIGNAL_H 1)
-    foreach(_FN abs acos acosf asin asinf atan atan2 atan2f atanf atof atoi bsearch calloc ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf free itoa log log10 log10f logf lround lroundf _ltoa malloc memcmp memcpy memmove memset modf modff nextafter nextafterf pow powf qsort realloc round roundf scalbn scalbnf sin sinf sqrt sqrtf sscanf strchr strcmp _stricmp strlen _strlwr strncmp _strnicmp strrchr _strrev strstr strtod strtol strtoll strtoul _strupr tan tanf trunc truncf _ultoa wcscmp _wcsdup wcsdup _wcsicmp wcslen wcsncmp _wcsnicmp wcsstr wcstol)
+    foreach(_FN abs acos acosf asin asinf atan atan2 atan2f atanf atof atoi bsearch calloc ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf free itoa log log10 log10f logf lround lroundf _ltoa malloc memcmp memcpy memmove memset modf modff pow powf qsort realloc round roundf scalbn scalbnf sin sinf sqrt sqrtf sscanf strchr strcmp _stricmp strlen _strlwr strncmp _strnicmp strrchr _strrev strstr strtod strtol strtoll strtoul _strupr tan tanf trunc truncf _ultoa wcscmp _wcsdup wcsdup _wcsicmp wcslen wcsncmp _wcsnicmp wcsstr wcstol)
       string(TOUPPER ${_FN} _UPPER)
       set(HAVE_${_UPPER} 1)
     endforeach()
@@ -1167,8 +1167,8 @@ if(SDL_LIBC)
     foreach(_FN
               atan atan2 atanf atan2f ceil ceilf copysign copysignf cos cosf
               exp expf fabs fabsf floor floorf fmod fmodf log logf log10 log10f
-              lround lroundf modf modff nextafter nextafterf pow powf round roundf
-              scalbn scalbnf sin sinf sqrt sqrtf tan tanf acos acosf asin asinf trunc truncf)
+              lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt
+              sqrtf tan tanf acos acosf asin asinf trunc truncf)
         string(TOUPPER ${_FN} _UPPER)
         set(LIBC_HASVAR "LIBC_HAS_${_UPPER}")
         check_symbol_exists("${_FN}" "math.h" ${LIBC_HASVAR})

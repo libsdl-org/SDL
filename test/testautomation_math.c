@@ -1293,52 +1293,6 @@ modf_baseCases(void *args)
     return TEST_COMPLETED;
 }
 
-/* SDL_nextafter tests functions */
-
-static int
-nextafter_baseCases(void *args)
-{
-    double value, expected;
-
-    value = SDL_nextafter(0.0, 1.0);
-    expected = 4.940656458412e-324;
-    SDLTest_AssertCheck(value == expected,
-                        "nextafter(%f), expected %f, got %f",
-                        0.0, expected, value);
-
-    value = SDL_nextafter(1.0, 2.0);
-    expected = 1.0000000000000002;
-    SDLTest_AssertCheck(value == expected,
-                        "nextafter(%f), expected %f, got %f",
-                        1.0, expected, value);
-
-    return TEST_COMPLETED;
-}
-
-/* SDL_nextafterf tests functions */
-
-static int
-nextafterf_baseCases(void *args)
-{
-    float value, expected;
-
-#if 0 /* Some compilers truncate this to zero */
-    value = SDL_nextafterf(0.0f, 1.0f);
-    expected = 1.401e-45f;
-    SDLTest_AssertCheck(value == expected,
-                        "nextafterf(%f), expected %f, got %f",
-                        0.0, expected, value);
-#endif
-
-    value = SDL_nextafterf(1.0f, 2.0f);
-    expected = 1.00000012f;
-    SDLTest_AssertCheck(value == expected,
-                        "nextafterf(%f), expected %f, got %f",
-                        1.0, expected, value);
-
-    return TEST_COMPLETED;
-}
-
 /* SDL_pow tests functions */
 
 /* Tests with positive and negative infinities as exponents */
@@ -3078,20 +3032,6 @@ static const SDLTest_TestCaseReference modfTestBase = {
     "Checks the base cases", TEST_ENABLED
 };
 
-/* SDL_nextafter test cases */
-
-static const SDLTest_TestCaseReference nextafterTestBase = {
-    (SDLTest_TestCaseFp)nextafter_baseCases, "nextafter_baseCases",
-    "Checks the base cases", TEST_ENABLED
-};
-
-/* SDL_nextafterf test cases */
-
-static const SDLTest_TestCaseReference nextafterfTestBase = {
-    (SDLTest_TestCaseFp)nextafterf_baseCases, "nextafterf_baseCases",
-    "Checks the base cases", TEST_ENABLED
-};
-
 /* SDL_pow test cases */
 
 static const SDLTest_TestCaseReference powTestExpInf1 = {
@@ -3404,8 +3344,6 @@ static const SDLTest_TestCaseReference *mathTests[] = {
     &log10TestBase, &log10TestRegular,
 
     &modfTestBase,
-
-    &nextafterTestBase, &nextafterfTestBase,
 
     &powTestExpInf1, &powTestExpInf2, &powTestExpInf3,
     &powTestBaseInf1, &powTestBaseInf2,

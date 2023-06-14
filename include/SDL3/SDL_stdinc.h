@@ -640,8 +640,6 @@ extern DECLSPEC double SDLCALL SDL_log10(double x);
 extern DECLSPEC float SDLCALL SDL_log10f(float x);
 extern DECLSPEC double SDLCALL SDL_modf(double x, double *y);
 extern DECLSPEC float SDLCALL SDL_modff(float x, float *y);
-extern DECLSPEC double SDLCALL SDL_nextafter(double from, double to);
-extern DECLSPEC float SDLCALL SDL_nextafterf(float from, float to);
 extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
 extern DECLSPEC float SDLCALL SDL_powf(float x, float y);
 extern DECLSPEC double SDLCALL SDL_round(double x);
