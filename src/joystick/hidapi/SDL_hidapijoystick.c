@@ -653,12 +653,6 @@ void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name)
     }
 }
 
-void HIDAPI_SetDeviceVendor(SDL_HIDAPI_Device *device, Uint16 vendor_id)
-{
-    /* Don't set the device vendor ID directly, or we'll constantly re-enumerate this device */
-    SDL_SetJoystickGUIDVendor(&device->guid, vendor_id);
-}
-
 void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 vendor_id, Uint16 product_id)
 {
     /* Don't set the device product ID directly, or we'll constantly re-enumerate this device */
