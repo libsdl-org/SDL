@@ -1596,6 +1596,10 @@ static int HIDAPI_DriverSwitch_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL
             /* Going into simple mode over USB disables input reports, so don't do that */
             return 0;
         }
+        if (cmd == k_eSwitchSubcommandIDs_SetHomeLight && !HasHomeLED(ctx)) {
+            /* Setting the home LED when it's not supported can cause the controller to reset */
+            return 0;
+        }
 
         if (!WriteSubcommand(ctx, cmd, &payload[1], (Uint8)(size - 1), NULL)) {
             return -1;
