@@ -72,6 +72,7 @@ typedef struct
     uint8_t props[INPUT_PROP_MAX / 8];
     int expected;
     const char *todo;
+    const char *caps_insufficient;
 } GuessTest;
 
 /*
@@ -946,14 +947,14 @@ static const GuessTest guess_tests[] =
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
       /* This one is a bit weird because some of the buttons are mapped
        * to the arrow, page up and page down keys, so it's a joystick
        * with a subset of a keyboard attached. */
       /* TODO: Should this be JOYSTICK, or even JOYSTICK|KEYBOARD? */
       .expected = SDL_UDEV_DEVICE_KEYBOARD,
-      /* SYN, KEY */
-      .ev = { 0x03 },
+      /* SYN, KEY, FF */
+      .ev = { 0x03, 0x00, 0x20 },
       .keys = {
           /* 0x00 */ ZEROx8,
           /* left, right, up down */
@@ -968,11 +969,16 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      /* The ordinary accelerometer and the Motion Plus report as the same
+       * vendor, product, version and axes, just with different
+       * min/max/fuzz/flat parameters (not shown here). A Wiimote with an
+       * attached Motion Plus reports both accelerometers as separate
+       * evdev devices. */
       .name = "Wiimote - Motion Plus or accelerometer",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
       .expected = SDL_UDEV_DEVICE_ACCELEROMETER,
       /* SYN, ABS */
       .ev = { 0x09 },
@@ -984,21 +990,20 @@ static const GuessTest guess_tests[] =
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
       /* SYN, ABS */
       .ev = { 0x09 },
-      /* HAT0 to HAT3 */
-      .abs = { 0x00, 0x1f },
+      /* HAT0X, Y to HAT3X, Y */
+      .abs = { 0x00, 0x00, 0xff },
     },
     {
       .name = "Wiimote - Nunchuck",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
-      /* TODO: Should this be JOYSTICK? It has one stick and two buttons */
-      .expected = SDL_UDEV_DEVICE_UNKNOWN,
+      .version = 0x0600,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
       /* RX, RY, RZ, hat 0 */
@@ -1010,15 +1015,14 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      /* Flags guessed from kernel source code */
       .name = "Wiimote - Classic Controller",
       /* TODO: Should this be JOYSTICK, or maybe JOYSTICK|KEYBOARD?
        * It's unusual in the same ways as the Wiimote */
       .expected = SDL_UDEV_DEVICE_KEYBOARD,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
-      /* Hat 1-3 */
-      .abs = { 0x00, 0x1c },
+      /* Hat 1-3 X and Y */
+      .abs = { 0x00, 0x00, 0xfc },
       .keys = {
           /* 0x00 */ ZEROx8,
           /* left, right, up down */
@@ -1026,29 +1030,30 @@ static const GuessTest guess_tests[] =
           /* 0x80 */ ZEROx8,
           /* 0xc0 */ ZEROx8,
           /* A, B, X, Y, MODE, TL, TL2, TR, TR2 */
-          /* 0x100 */ ZEROx4, 0x00, 0x13, 0xdb, 0x10,
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x13,
           /* 0x140 */ ZEROx8,
           /* next (keyboard page down), previous (keyboard page up) */
           /* 0x180 */ 0x00, 0x00, 0x80, 0x10, ZEROx4,
       },
     },
     {
-      /* Flags guessed from kernel source code */
+      /* Flags guessed from kernel source code, not confirmed with real
+       * hardware */
       .name = "Wiimote - Balance Board",
-      /* TODO: Should this be JOYSTICK? */
-      .expected = SDL_UDEV_DEVICE_UNKNOWN,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
       /* Hat 0-1 */
-      .abs = { 0x00, 0x0f },
+      .abs = { 0x00, 0x00, 0x0f },
       .keys = {
           /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
-          /* A */
+          /* BTN_A */
           /* 0x100 */ ZEROx4, 0x00, 0x00, 0x01, 0x00,
       },
     },
     {
-      /* Flags guessed from kernel source code */
+      /* Flags guessed from kernel source code, not confirmed with real
+       * hardware */
       .name = "Wiimote - Wii U Pro Controller",
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS */
@@ -1311,11 +1316,8 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x0483,  /* STMicroelectronics */
       .product_id = 0xa3be, /* VRS DirectForce Pro Pedals */
       .version = 0x0111,
-      /* TODO: Ideally we would identify this as a joystick, but there
-       * isn't currently enough information to do that without a table
-       * of known devices. */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
-      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      .caps_insufficient = "can't distinguish from an accelerometer",
       /* SYN, ABS */
       .ev = { 0x09 },
       /* X, Y, Z */
@@ -1327,11 +1329,8 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x30b7,  /* Heusinkveld Engineering */
       .product_id = 0x1003, /* Heusinkveld Sim Pedals Ultimate */
       .version = 0x0000,
-      /* TODO: Ideally we would identify this as a joystick, but there
-       * isn't currently enough information to do that without a table
-       * of known devices. */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
-      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      .caps_insufficient = "can't distinguish from an accelerometer",
       /* SYN, ABS */
       .ev = { 0x09 },
       /* RX, RY, RZ */
@@ -1343,10 +1342,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x0000,
       .product_id = 0x0000,
       .version = 0x0001,
-      /* TODO: Ideally we would identify this as a joystick by it having
-       * the joystick-specific THROTTLE axis and TRIGGER/THUMB buttons */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
-      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
       /* SYN, KEY, ABS, MSC */
       .ev = { 0x1b },
       /* THROTTLE only */
@@ -1363,11 +1359,8 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x1dd2,  /* Leo Bodnar Electronics Ltd */
       .product_id = 0x100c,
       .version = 0x0110,
-      /* TODO: Ideally we would identify this as a joystick, but there
-       * isn't currently enough information to do that without a table
-       * of known devices. */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
-      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      .caps_insufficient = "can't distinguish from an accelerometer",
       /* SYN, ABS */
       .ev = { 0x09 },
       /* RX, RY, RZ */
@@ -1439,7 +1432,9 @@ run_test(void)
             caps.rel[j] = SwapLongLE(caps.rel[j]);
         }
 
-        actual = SDL_EVDEV_GuessDeviceClass(caps.ev, caps.abs, caps.keys,
+        actual = SDL_EVDEV_GuessDeviceClass(t->bus_type, t->vendor_id,
+                                            t->product_id, t->version,
+                                            caps.ev, caps.abs, caps.keys,
                                             caps.rel);
 
         if (actual == t->expected) {
@@ -1463,6 +1458,37 @@ run_test(void)
 
             if (t->todo) {
                 printf("\tKnown issue, ignoring: %s\n", t->todo);
+            } else {
+                printf("\tFailed\n");
+                success = 0;
+            }
+        }
+
+        actual = SDL_EVDEV_GuessDeviceClass(0, 0, 0, 0, caps.ev, caps.abs,
+                                            caps.keys, caps.rel);
+
+        if (actual == t->expected) {
+            printf("\tOK\n");
+        } else {
+            printf("\tExpected 0x%08x\n", t->expected);
+
+            for (j = 0; device_classes[j].code != 0; j++) {
+                if (t->expected & device_classes[j].code) {
+                    printf("\t\t%s\n", device_classes[j].name);
+                }
+            }
+
+            printf("\tGot      0x%08x using only evdev caps\n", actual);
+
+            for (j = 0; device_classes[j].code != 0; j++) {
+                if (actual & device_classes[j].code) {
+                    printf("\t\t%s\n", device_classes[j].name);
+                }
+            }
+
+            if (t->caps_insufficient) {
+                printf("\tKnown issue, evdev caps are not enough information: %s\n",
+                       t->caps_insufficient);
             } else {
                 printf("\tFailed\n");
                 success = 0;
