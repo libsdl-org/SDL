@@ -152,7 +152,7 @@ extern SDL_GameControllerType HIDAPI_GetGameControllerTypeFromGUID(SDL_JoystickG
 
 extern void HIDAPI_UpdateDevices(void);
 extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);
-extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 product_id);
+extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 vendor_id, Uint16 product_id);
 extern void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial);
 extern SDL_bool HIDAPI_HasConnectedUSBDevice(const char *serial);
 extern void HIDAPI_DisconnectBluetoothDevice(const char *serial);
