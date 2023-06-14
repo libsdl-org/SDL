@@ -653,10 +653,16 @@ void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name)
     }
 }
 
-void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 product_id)
+void HIDAPI_SetDeviceVendor(SDL_HIDAPI_Device *device, Uint16 vendor_id)
+{
+    /* Don't set the device vendor ID directly, or we'll constantly re-enumerate this device */
+    SDL_SetJoystickGUIDVendor(&device->guid, vendor_id);
+}
+
+void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 vendor_id, Uint16 product_id)
 {
     /* Don't set the device product ID directly, or we'll constantly re-enumerate this device */
-    SDL_SetJoystickGUIDProduct(&device->guid, product_id);
+    device->guid = SDL_CreateJoystickGUID(device->guid.data[0], vendor_id, product_id, device->version, device->name, 'h', 0);
 }
 
 static void HIDAPI_UpdateJoystickSerial(SDL_HIDAPI_Device *device)
