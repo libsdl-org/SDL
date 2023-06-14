@@ -720,13 +720,35 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
     }
 }
 
+static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
+{
+    Uint8 input_mode;
+
+    /* Determine the desired input mode */
+    if (ctx->device->is_bluetooth) {
+        input_mode = k_eSwitchInputReportIDs_SimpleControllerState;
+    } else {
+        input_mode = k_eSwitchInputReportIDs_FullControllerState;
+    }
+
+    /* The official Nintendo Switch Pro Controller supports FullControllerState over Bluetooth
+     * just fine. We really should use that, or else the epowerlevel code in HandleFullControllerState
+     * is completely pointless. We need full state if we want battery level and we only care about
+     * battery level over Bluetooth anyway.
+     */
+    if (ctx->device->vendor_id == USB_VENDOR_NINTENDO) {
+        input_mode = k_eSwitchInputReportIDs_FullControllerState;
+    }
+    return input_mode;
+}
+
 static SDL_bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, SDL_bool enabled)
 {
     Uint8 imu_data = enabled ? 1 : 0;
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableIMU, &imu_data, sizeof(imu_data), NULL);
 }
 
-static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
+static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 {
     Uint8 *pLeftStickCal;
     Uint8 *pRightStickCal;
@@ -1299,7 +1321,6 @@ static void HIDAPI_DriverSwitch_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
-    Uint8 input_mode;
 
     SDL_AssertJoysticksLocked();
 
@@ -1319,24 +1340,7 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
             }
         }
 
-        /* Determine the desired input mode (needed before loading stick calibration) */
-        if (device->is_bluetooth) {
-            input_mode = k_eSwitchInputReportIDs_SimpleControllerState;
-        } else {
-            input_mode = k_eSwitchInputReportIDs_FullControllerState;
-        }
-
-        /* The official Nintendo Switch Pro Controller supports FullControllerState over bluetooth
-         * just fine. We really should use that, or else the epowerlevel code in
-         * HandleFullControllerState is completely pointless. We need full state if we want battery
-         * level and we only care about battery level over bluetooth anyway.
-         */
-        if (device->vendor_id == USB_VENDOR_NINTENDO) {
-            input_mode = k_eSwitchInputReportIDs_FullControllerState;
-        }
-
-        if (input_mode == k_eSwitchInputReportIDs_FullControllerState &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESLeft &&
+        if (ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESLeft &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESRight &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SNES &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_N64 &&
@@ -1359,7 +1363,7 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
             }
         }
 
-        if (!LoadStickCalibration(ctx, input_mode)) {
+        if (!LoadStickCalibration(ctx)) {
             SDL_SetError("Couldn't load stick calibration");
             return SDL_FALSE;
         }
@@ -1375,7 +1379,7 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
         }
 
         /* Set desired input mode */
-        if (!SetInputMode(ctx, input_mode)) {
+        if (!SetInputMode(ctx, GetDefaultInputMode(ctx))) {
             SDL_SetError("Couldn't set input mode");
             return SDL_FALSE;
         }
@@ -1574,6 +1578,14 @@ static int HIDAPI_DriverSwitch_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL
 static int HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+    Uint8 input_mode;
+
+    if (enabled) {
+        input_mode = k_eSwitchInputReportIDs_FullControllerState;
+    } else {
+        input_mode = GetDefaultInputMode(ctx);
+    }
+    SetInputMode(ctx, input_mode);
 
     SetIMUEnabled(ctx, enabled);
     ctx->m_bReportSensors = enabled;
