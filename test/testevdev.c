@@ -128,14 +128,18 @@ static const GuessTest guess_tests[] =
       },
     },
     { /* Reference: https://github.com/libsdl-org/SDL/issues/7814 */
-      .name = "X-Box One Elite 2",
+      .name = "X-Box One Elite 2 via USB",
+      /* The same physical device via Bluetooth, 0005:045e:0b22 v0517,
+       * is reported differently (below). */
+      /* Version 0407 is functionally equivalent. */
       .bus_type = 0x0003,
       .vendor_id = 0x045e,
       .product_id = 0x0b00,
+      .version = 0x0511,
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS, FF */
       .ev = { 0x0b, 0x00, 0x20 },
-      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      /* XY (left stick), RX/RY (right stick), Z/RZ (triggers), HAT0 (dpad) */
       .abs = { 0x3f, 0x00, 0x03 },
       .keys = {
           /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
@@ -147,8 +151,37 @@ static const GuessTest guess_tests[] =
           /* 0x200 */ ZEROx8,
           /* 0x240 */ ZEROx8,
           /* 0x280 */ ZEROx8,
-          /* BTN_TRIGGER_HAPPY5 up to BTN_TRIGGER_HAPPY8 inclusive */
+          /* BTN_TRIGGER_HAPPY5 up to BTN_TRIGGER_HAPPY8 inclusive are the
+           * back buttons (paddles) */
           /* 0x2c0 */ 0xf0,
+      },
+    },
+    { /* Reference: https://github.com/libsdl-org/SDL/issues/7814 */
+      .name = "X-Box One Elite 2 via Bluetooth",
+      /* The same physical device via USB, 0003:045e:0b00 v0511,
+       * is reported differently (above). */
+      .bus_type = 0x0003,
+      .vendor_id = 0x045e,
+      .product_id = 0x0b22,
+      .version = 0x0517,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      /* SYN, KEY, ABS, FF */
+      .ev = { 0x0b, 0x00, 0x20 },
+      /* Android-style mapping:
+       * XY (left stick), Z/RZ (right stick), GAS/BRAKE (triggers), HAT0 (dpad) */
+      .abs = { 0x27, 0x06, 0x03 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* 0x40 */ ZEROx8,
+          /* KEY_RECORD is advertised but isn't generated in practice */
+          /* 0x80 */ ZEROx4, 0x80, 0x00, 0x00, 0x00,
+          /* KEY_UNKNOWN (240) is reported for the profile selector and all
+           * four back buttons (paddles) */
+          /* 0xc0 */ ZEROx4, 0x00, 0x00, 0x01, 0x00,
+          /* ABXY, TL, TR, TL2, TR2, SELECT, START, MODE, THUMBL,
+           * THUMBR have their obvious meanings; C and Z are also
+           * advertised, but are not generated in practice. */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x7f,
       },
     },
     {
