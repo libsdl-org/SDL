@@ -504,6 +504,11 @@ int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_tim
     return posted;
 }
 
+void SDL_UpdateSensor(SDL_Sensor *sensor)
+{
+    sensor->driver->Update(sensor);
+}
+
 void SDL_UpdateSensors(void)
 {
     int i;

@@ -617,6 +617,18 @@ extern "C" {
 #define SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS "SDL_GAMECONTROLLER_USE_BUTTON_LABELS"
 
 /**
+ *  \brief  Controls whether the device's built-in accelerometer and gyro should be used as sensors for gamepads.
+ *
+ *  The variable can be set to the following values:
+ *    "auto"    - Sensor fusion is enabled for known wraparound controllers like the Razer Kishi and Backbone One
+ *    "0"       - Sensor fusion is disabled
+ *    "1"       - Sensor fusion is enabled for all controllers that lack sensors
+ *
+ *  The default value is "auto". This hint is checked when a gamepad is opened.
+ */
+#define SDL_HINT_GAMECONTROLLER_SENSOR_FUSION "SDL_GAMECONTROLLER_SENSOR_FUSION"
+
+/**
  *  \brief  A variable controlling whether grabbing input grabs the keyboard
  *
  *  This variable can be set to the following values:
