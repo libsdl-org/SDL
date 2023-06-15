@@ -234,7 +234,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type, size_
     }
 
     if (nullterminate && data == NULL) {
-        data = strdup("");
+        data = SDL_strdup("");
     }
 
     return data;
