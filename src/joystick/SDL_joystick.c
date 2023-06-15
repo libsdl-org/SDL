@@ -31,6 +31,7 @@
 #include "../events/SDL_events_c.h"
 #endif
 #include "../video/SDL_sysvideo.h"
+#include "../sensor/SDL_sensor_c.h"
 #include "hidapi/SDL_hidapijoystick_c.h"
 
 /* This is included in only one place because it has a large static list of controllers */
@@ -510,6 +511,166 @@ static SDL_bool SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
 #endif /* __WINRT__ */
 }
 
+static SDL_bool IsBackboneOne(SDL_Joystick *joystick)
+{
+    if (joystick->name && SDL_strstr(joystick->name, "Backbone One")) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool IsROGAlly(SDL_Joystick *joystick)
+{
+    Uint16 vendor, product;
+    SDL_JoystickGUID guid = SDL_GetJoystickGUID(joystick);
+
+    /* The ROG Ally controller spoofs an Xbox 360 controller */
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+    if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX360_WIRED_CONTROLLER) {
+        /* Check to see if this system has the expected sensors */
+        SDL_bool has_ally_accel = SDL_FALSE;
+        SDL_bool has_ally_gyro = SDL_FALSE;
+
+        if (SDL_InitSubSystem(SDL_INIT_SENSOR) == 0) {
+            SDL_SensorID *sensors = SDL_GetSensors(NULL);
+            if (sensors) {
+                int i;
+                for (i = 0; sensors[i]; ++i) {
+                    SDL_SensorID sensor = sensors[i];
+
+                    if (!has_ally_accel && SDL_GetSensorInstanceType(sensor) == SDL_SENSOR_ACCEL) {
+                        const char *sensor_name = SDL_GetSensorInstanceName(sensor);
+                        if (sensor_name && SDL_strcmp(sensor_name, "Sensor BMI320 Acc") == 0) {
+                            has_ally_accel = SDL_TRUE;
+                        }
+                    }
+                    if (!has_ally_gyro && SDL_GetSensorInstanceType(sensor) == SDL_SENSOR_GYRO) {
+                        const char *sensor_name = SDL_GetSensorInstanceName(sensor);
+                        if (sensor_name && SDL_strcmp(sensor_name, "Sensor BMI320 Gyr") == 0) {
+                            has_ally_gyro = SDL_TRUE;
+                        }
+                    }
+                }
+                SDL_free(sensors);
+            }
+            SDL_QuitSubSystem(SDL_INIT_SENSOR);
+        }
+        if (has_ally_accel && has_ally_gyro) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick)
+{
+    static Uint32 wraparound_gamepads[] = {
+        MAKE_VIDPID(0x1949, 0x0402),    /* Ipega PG-9083S */
+        MAKE_VIDPID(0x27f8, 0x0bbc),    /* Gamevice */
+        MAKE_VIDPID(0x27f8, 0x0bbf),    /* Razer Kishi */
+    };
+    SDL_JoystickGUID guid;
+    Uint16 vendor, product;
+    Uint32 vidpid;
+    int i;
+    int hint;
+
+    /* The SDL controller sensor API is only available for gamepads (at the moment) */
+    if (!joystick->is_gamepad) {
+        return SDL_FALSE;
+    }
+
+    /* If the controller already has sensors, use those */
+    if (joystick->nsensors > 0) {
+        return SDL_FALSE;
+    }
+
+    hint = SDL_GetStringInteger(SDL_GetHint(SDL_HINT_GAMECONTROLLER_SENSOR_FUSION), -1);
+    if (hint > 0) {
+        return SDL_TRUE;
+    }
+    if (hint == 0) {
+        return SDL_FALSE;
+    }
+
+    /* See if the controller is in our list of wraparound gamepads */
+    guid = SDL_GetJoystickGUID(joystick);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+    vidpid = MAKE_VIDPID(vendor, product);
+    for (i = 0; i < SDL_arraysize(wraparound_gamepads); ++i) {
+        if (vidpid == wraparound_gamepads[i]) {
+            return SDL_TRUE;
+        }
+    }
+
+    /* See if this is another known wraparound gamepad */
+    if (IsBackboneOne(joystick) || IsROGAlly(joystick)) {
+        return SDL_TRUE;
+    }
+
+    return SDL_FALSE;
+}
+
+static void AttemptSensorFusion(SDL_Joystick *joystick)
+{
+    SDL_SensorID *sensors;
+    int i;
+
+    if (SDL_InitSubSystem(SDL_INIT_SENSOR) < 0) {
+        return;
+    }
+
+    sensors = SDL_GetSensors(NULL);
+    if (sensors) {
+        for (i = 0; sensors[i]; ++i) {
+            SDL_SensorID sensor = sensors[i];
+
+            if (!joystick->accel_sensor && SDL_GetSensorInstanceType(sensor) == SDL_SENSOR_ACCEL) {
+                /* Increment the sensor subsystem reference count */
+                SDL_InitSubSystem(SDL_INIT_SENSOR);
+
+                joystick->accel_sensor = sensor;
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
+            }
+            if (!joystick->gyro_sensor && SDL_GetSensorInstanceType(sensor) == SDL_SENSOR_GYRO) {
+                /* Increment the sensor subsystem reference count */
+                SDL_InitSubSystem(SDL_INIT_SENSOR);
+
+                joystick->gyro_sensor = sensor;
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
+            }
+        }
+        SDL_free(sensors);
+    }
+    SDL_QuitSubSystem(SDL_INIT_SENSOR);
+}
+
+static void CleanupSensorFusion(SDL_Joystick *joystick)
+{
+    if (joystick->accel_sensor || joystick->gyro_sensor) {
+        if (joystick->accel_sensor) {
+            if (joystick->accel) {
+                SDL_CloseSensor(joystick->accel);
+                joystick->accel = NULL;
+            }
+            joystick->accel_sensor = 0;
+
+            /* Decrement the sensor subsystem reference count */
+            SDL_QuitSubSystem(SDL_INIT_SENSOR);
+        }
+        if (joystick->gyro_sensor) {
+            if (joystick->gyro) {
+                SDL_CloseSensor(joystick->gyro);
+                joystick->gyro = NULL;
+            }
+            joystick->gyro_sensor = 0;
+
+            /* Decrement the sensor subsystem reference count */
+            SDL_QuitSubSystem(SDL_INIT_SENSOR);
+        }
+    }
+}
+
 /*
  * Open a joystick for use - the index passed as an argument refers to
  * the N'th joystick on the system.  This index is the value which will
@@ -610,6 +771,11 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     }
 
     joystick->is_gamepad = SDL_IsGamepad(instance_id);
+
+    /* Use system gyro and accelerometer if the gamepad doesn't have built-in sensors */
+    if (ShouldAttemptSensorFusion(joystick)) {
+        AttemptSensorFusion(joystick);
+    }
 
     /* Add joystick to list */
     ++joystick->ref_count;
@@ -1253,6 +1419,8 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
             SDL_RumbleJoystickTriggers(joystick, 0, 0, 0);
         }
 
+        CleanupSensorFusion(joystick);
+
         joystick->driver->Close(joystick);
         joystick->hwdata = NULL;
         joystick->magic = NULL;
@@ -1273,11 +1441,10 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
             joysticklist = joysticklist->next;
         }
 
+        /* Free the data associated with this joystick */
         SDL_free(joystick->name);
         SDL_free(joystick->path);
         SDL_free(joystick->serial);
-
-        /* Free the data associated with this joystick */
         SDL_free(joystick->axes);
         SDL_free(joystick->hats);
         SDL_free(joystick->buttons);
@@ -1682,6 +1849,16 @@ void SDL_UpdateJoysticks(void)
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
+            if (joystick->accel || joystick->gyro) {
+                SDL_LockSensors();
+                if (joystick->gyro) {
+                    SDL_UpdateSensor(joystick->gyro);
+                }
+                if (joystick->accel) {
+                    SDL_UpdateSensor(joystick->accel);
+                }
+                SDL_UnlockSensors();
+            }
             joystick->driver->Update(joystick);
 
             if (joystick->delayed_guide_button) {

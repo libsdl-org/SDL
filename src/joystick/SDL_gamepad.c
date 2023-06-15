@@ -444,6 +444,19 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
             SDL_PushEvent(&deviceevent);
         }
     } break;
+    case SDL_EVENT_SENSOR_UPDATE:
+    {
+        SDL_LockJoysticks();
+        for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
+            if (gamepad->joystick->accel && gamepad->joystick->accel_sensor == event->sensor.which) {
+                SDL_SendJoystickSensor(event->common.timestamp, gamepad->joystick, SDL_SENSOR_ACCEL, event->sensor.sensor_timestamp, event->sensor.data, SDL_arraysize(event->sensor.data));
+            }
+            if (gamepad->joystick->gyro && gamepad->joystick->gyro_sensor == event->sensor.which) {
+                SDL_SendJoystickSensor(event->common.timestamp, gamepad->joystick, SDL_SENSOR_GYRO, event->sensor.sensor_timestamp, event->sensor.data, SDL_arraysize(event->sensor.data));
+            }
+        }
+        SDL_UnlockJoysticks();
+    } break;
     default:
         break;
     }
@@ -2523,22 +2536,50 @@ int SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_b
                         return 0;
                     }
 
-                    if (enabled) {
-                        if (joystick->nsensors_enabled == 0) {
-                            if (joystick->driver->SetSensorsEnabled(joystick, SDL_TRUE) < 0) {
+                    if (type == SDL_SENSOR_ACCEL && joystick->accel_sensor) {
+                        if (enabled) {
+                            joystick->accel = SDL_OpenSensor(joystick->accel_sensor);
+                            if (!joystick->accel) {
                                 SDL_UnlockJoysticks();
                                 return -1;
                             }
+                        } else {
+                            if (joystick->accel) {
+                                SDL_CloseSensor(joystick->accel);
+                                joystick->accel = NULL;
+                            }
                         }
-                        ++joystick->nsensors_enabled;
+                    } else if (type == SDL_SENSOR_GYRO && joystick->gyro_sensor) {
+                        if (enabled) {
+                            joystick->gyro = SDL_OpenSensor(joystick->gyro_sensor);
+                            if (!joystick->gyro) {
+                                SDL_UnlockJoysticks();
+                                return -1;
+                            }
+                        } else {
+                            if (joystick->gyro) {
+                                SDL_CloseSensor(joystick->gyro);
+                                joystick->gyro = NULL;
+                            }
+                        }
                     } else {
-                        if (joystick->nsensors_enabled == 1) {
-                            if (joystick->driver->SetSensorsEnabled(joystick, SDL_FALSE) < 0) {
-                                SDL_UnlockJoysticks();
-                                return -1;
+                        if (enabled) {
+                            if (joystick->nsensors_enabled == 0) {
+                                if (joystick->driver->SetSensorsEnabled(joystick, SDL_TRUE) < 0) {
+                                    SDL_UnlockJoysticks();
+                                    return -1;
+                                }
                             }
+                            ++joystick->nsensors_enabled;
+                        } else {
+                            if (joystick->nsensors_enabled == 1) {
+                                if (joystick->driver->SetSensorsEnabled(joystick, SDL_FALSE) < 0) {
+                                    SDL_UnlockJoysticks();
+                                    return -1;
+                                }
+                            }
+                            --joystick->nsensors_enabled;
                         }
-                        --joystick->nsensors_enabled;
                     }
 
                     sensor->enabled = enabled;

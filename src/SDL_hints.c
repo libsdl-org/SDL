@@ -171,6 +171,23 @@ const char *SDL_GetHint(const char *name)
     return env;
 }
 
+int SDL_GetStringInteger(const char *value, int default_value)
+{
+    if (value == NULL || !*value) {
+        return default_value;
+    }
+    if (*value == '0' || SDL_strcasecmp(value, "false") == 0) {
+        return 0;
+    }
+    if (*value == '1' || SDL_strcasecmp(value, "true") == 0) {
+        return 1;
+    }
+    if (*value == '-' || SDL_isdigit(*value)) {
+        return SDL_atoi(value);
+    }
+    return default_value;
+}
+
 SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value)
 {
     if (value == NULL || !*value) {
