@@ -1167,8 +1167,8 @@ if(SDL_LIBC)
     foreach(_FN
               atan atan2 atanf atan2f ceil ceilf copysign copysignf cos cosf
               exp expf fabs fabsf floor floorf fmod fmodf log logf log10 log10f
-              lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt
-              sqrtf tan tanf acos acosf asin asinf trunc truncf)
+              lround lroundf modf modff pow powf round roundf scalbn scalbnf
+              sin sinf sqrt sqrtf tan tanf acos acosf asin asinf trunc truncf)
         string(TOUPPER ${_FN} _UPPER)
         set(LIBC_HASVAR "LIBC_HAS_${_UPPER}")
         check_symbol_exists("${_FN}" "math.h" ${LIBC_HASVAR})
