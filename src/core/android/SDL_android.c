@@ -1157,7 +1157,13 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyDown)(
     JNIEnv *env, jclass jcls,
     jint keycode)
 {
-    Android_OnKeyDown(keycode);
+    SDL_LockMutex(Android_ActivityMutex);
+
+    if (Android_Window) {
+        Android_OnKeyDown(keycode);
+    }
+
+    SDL_UnlockMutex(Android_ActivityMutex);
 }
 
 /* Keyup */
@@ -1165,7 +1171,13 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyUp)(
     JNIEnv *env, jclass jcls,
     jint keycode)
 {
-    Android_OnKeyUp(keycode);
+    SDL_LockMutex(Android_ActivityMutex);
+
+    if (Android_Window) {
+        Android_OnKeyUp(keycode);
+    }
+
+    SDL_UnlockMutex(Android_ActivityMutex);
 }
 
 /* Virtual keyboard return key might stop text input */
