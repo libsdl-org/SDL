@@ -1440,12 +1440,46 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      .name = "Thinkpad ACPI buttons (Linux 6.1)",
+      .eviocgname = "ThinkPad Extra Buttons",
+      .bus_type = 0x0019,
+      .vendor_id = 0x17aa,
+      .product_id = 0x5054,
+      .version = 0x4101,
+      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      /* SYN, KEY, MSC, SW */
+      .ev = { 0x33 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* 0x40 */ ZEROx4, 0x00, 0x00, 0x0e, 0x01,
+          /* 0x80 */ 0x00, 0x50, 0x11, 0x51, 0x00, 0x28, 0x00, 0xc0,
+          /* 0xc0 */ 0x04, 0x20, 0x10, 0x02, 0x1b, 0x70, 0x01, 0x00,
+          /* 0x100 */ ZEROx8,
+          /* 0x140 */ ZEROx4, 0x00, 0x00, 0x50, 0x00,
+          /* 0x180 */ ZEROx4, 0x00, 0x00, 0x00, 0x70,
+          /* 0x1c0 */ 0x00, 0x00, 0x04, 0x18, 0x20, 0x00, 0x00, 0x00,
+          /* 0x200 */ ZEROx8,
+          /* 0x240 */ ZEROx8,
+      },
+    },
+    {
       .name = "PC speaker",
       .eviocgname = "PC Speaker",
       .bus_type = 0x0010,   /* BUS_ISA */
       .vendor_id = 0x001f,
       .product_id = 0x0001,
       .version = 0x0100,
+      .expected = SDL_UDEV_DEVICE_UNKNOWN,
+      /* SYN, SND */
+      .ev = { 0x01, 0x00, 0x04 },
+    },
+    {
+      .name = "HDA Digital PCBeep",
+      .eviocgname = "HDA Digital PCBeep",
+      .bus_type = 0x0001,
+      .vendor_id = 0x10ec,
+      .product_id = 0x0257,
+      .version = 0x0001,
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
       /* SYN, SND */
       .ev = { 0x01, 0x00, 0x04 },
@@ -1546,6 +1580,26 @@ static const GuessTest guess_tests[] =
           /* 0x80 */ ZEROx8,
           /* brightness control, video mode, display off */
           /* 0xc0 */ ZEROx4, 0x0b, 0x00, 0x3e, 0x00,
+      },
+    },
+    {
+      .name = "Thinkpad X280 webcam",
+      .eviocgname = "Integrated Camera: Integrated C",
+      .usb_vendor_name = "Chicony Electronics Co.,Ltd.",
+      .usb_product_name = "Integrated Camera",
+      .bus_type = 0x0003,
+      .vendor_id = 0x04f2,
+      .product_id = 0xb604,
+      .version = 0x0027,
+      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      /* SYN, KEY */
+      .ev = { 0x03 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* 0x40 */ ZEROx8,
+          /* 0x80 */ ZEROx8,
+          /* KEY_CAMERA */
+          /* 0xc0 */ 0x00, 0x00, 0x10, 0x00, ZEROx4,
       },
     },
     {
