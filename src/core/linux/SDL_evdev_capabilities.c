@@ -131,14 +131,15 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
         }
 
         if (found > 0) {
-            devclass |= SDL_UDEV_DEVICE_KEYBOARD; /* ID_INPUT_KEY */
+            devclass |= SDL_UDEV_DEVICE_HAS_KEYS; /* ID_INPUT_KEY */
         }
     }
 
-    /* the first 32 bits are ESC, numbers, and Q to D; if we have any of
-     * those, consider it a keyboard device; do not test KEY_RESERVED, though */
+    /* the first 32 bits are ESC, numbers, and Q to D, so if we have all of
+     * those, consider it to be a fully-featured keyboard;
+     * do not test KEY_RESERVED, though */
     keyboard_mask = 0xFFFFFFFE;
-    if ((bitmask_key[0] & keyboard_mask) != 0) {
+    if ((bitmask_key[0] & keyboard_mask) == keyboard_mask) {
         devclass |= SDL_UDEV_DEVICE_KEYBOARD; /* ID_INPUT_KEYBOARD */
     }
 

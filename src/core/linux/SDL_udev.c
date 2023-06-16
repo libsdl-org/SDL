@@ -436,6 +436,11 @@ static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
         */
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_KEY");
         if (val != NULL && SDL_strcmp(val, "1") == 0) {
+            devclass |= SDL_UDEV_DEVICE_HAS_KEYS;
+        }
+
+        val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_KEYBOARD");
+        if (val != NULL && SDL_strcmp(val, "1") == 0) {
             devclass |= SDL_UDEV_DEVICE_KEYBOARD;
         }
 
@@ -448,7 +453,7 @@ static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
                 } else if (SDL_strcmp(val, "mouse") == 0) {
                     devclass = SDL_UDEV_DEVICE_MOUSE;
                 } else if (SDL_strcmp(val, "kbd") == 0) {
-                    devclass = SDL_UDEV_DEVICE_KEYBOARD;
+                    devclass = SDL_UDEV_DEVICE_HAS_KEYS | SDL_UDEV_DEVICE_KEYBOARD;
                 } else {
                     return;
                 }
