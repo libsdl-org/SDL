@@ -1794,6 +1794,7 @@ run_test(void)
         int actual;
         struct
         {
+            unsigned long props[NBITS(INPUT_PROP_MAX)];
             unsigned long ev[NBITS(EV_MAX)];
             unsigned long abs[NBITS(ABS_MAX)];
             unsigned long keys[NBITS(KEY_MAX)];
@@ -1803,10 +1804,15 @@ run_test(void)
         printf("%s...\n", t->name);
 
         memset(&caps, '\0', sizeof(caps));
+        memcpy(caps.props, t->props, sizeof(t->props));
         memcpy(caps.ev, t->ev, sizeof(t->ev));
         memcpy(caps.keys, t->keys, sizeof(t->keys));
         memcpy(caps.abs, t->abs, sizeof(t->abs));
         memcpy(caps.rel, t->rel, sizeof(t->rel));
+
+        for (j = 0; j < SDL_arraysize(caps.props); j++) {
+            caps.props[j] = SwapLongLE(caps.props[j]);
+        }
 
         for (j = 0; j < SDL_arraysize(caps.ev); j++) {
             caps.ev[j] = SwapLongLE(caps.ev[j]);
@@ -1824,8 +1830,8 @@ run_test(void)
             caps.rel[j] = SwapLongLE(caps.rel[j]);
         }
 
-        actual = SDL_EVDEV_GuessDeviceClass(caps.ev, caps.abs, caps.keys,
-                                            caps.rel);
+        actual = SDL_EVDEV_GuessDeviceClass(caps.props, caps.ev, caps.abs,
+                                            caps.keys, caps.rel);
 
         if (actual == t->expected) {
             printf("\tOK\n");

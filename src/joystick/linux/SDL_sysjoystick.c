@@ -204,6 +204,7 @@ static SDL_bool IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version,
 
 static int GuessIsJoystick(int fd)
 {
+    unsigned long propbit[NBITS(INPUT_PROP_MAX)] = { 0 };
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
     unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
@@ -217,7 +218,11 @@ static int GuessIsJoystick(int fd)
         return 0;
     }
 
-    devclass = SDL_EVDEV_GuessDeviceClass(evbit, absbit, keybit, relbit);
+    /* This is a newer feature, so it's allowed to fail - if so, then the
+     * device just doesn't have any properties. */
+    (void) ioctl(fd, EVIOCGPROP(sizeof(propbit)), propbit);
+
+    devclass = SDL_EVDEV_GuessDeviceClass(propbit, evbit, absbit, keybit, relbit);
 
     if (devclass & SDL_UDEV_DEVICE_JOYSTICK) {
         return 1;

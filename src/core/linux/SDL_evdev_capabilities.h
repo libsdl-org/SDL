@@ -28,6 +28,10 @@
 
 #include <linux/input.h>
 
+#ifndef INPUT_PROP_MAX
+#define INPUT_PROP_MAX 0x1f
+#endif
+
 /* A device can be any combination of these classes */
 typedef enum
 {
@@ -48,7 +52,8 @@ typedef enum
 #define EVDEV_LONG(x)        ((x) / BITS_PER_LONG)
 #define test_bit(bit, array) ((array[EVDEV_LONG(bit)] >> EVDEV_OFF(bit)) & 1)
 
-extern int SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
+extern int SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MAX)],
+                                      const unsigned long bitmask_ev[NBITS(EV_MAX)],
                                       const unsigned long bitmask_abs[NBITS(ABS_MAX)],
                                       const unsigned long bitmask_key[NBITS(KEY_MAX)],
                                       const unsigned long bitmask_rel[NBITS(REL_MAX)]);
