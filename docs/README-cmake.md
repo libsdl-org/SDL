@@ -63,7 +63,7 @@ endif()
 # Create your game executable target as usual
 add_executable(mygame WIN32 mygame.c)
 
-# Link to the actual SDL3 library.  
+# Link to the actual SDL3 library.
 target_link_libraries(mygame PRIVATE SDL3::SDL3)
 ```
 
@@ -280,7 +280,7 @@ int main(int argc, char *argv[]) {
         if (finished) {
             break;
         }
-    
+
         SDL_SetRenderDrawColor(renderer, 80, 80, 80, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
         SDL_RenderPresent(renderer);
