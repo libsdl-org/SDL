@@ -955,7 +955,7 @@ static const GuessTest guess_tests[] =
       .name = "Microsoft Xbox Series S|X Controller (model 1914) via Bluetooth",
       /* Physically the same device as 0003:045e:0b12 v050f above,
        * but some functionality is mapped differently */
-      .bus_type = 0x0003,
+      .bus_type = 0x0005,
       .vendor_id = 0x045e,
       .product_id = 0x0b13,
       .version = 0x0515,
