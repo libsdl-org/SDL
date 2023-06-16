@@ -48,6 +48,7 @@ static const struct
     }
     CLS(MOUSE),
     CLS(KEYBOARD),
+    CLS(HAS_KEYS),
     CLS(JOYSTICK),
     CLS(SOUND),
     CLS(TOUCHSCREEN),
@@ -351,7 +352,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x045e,
       .product_id = 0x0b22,
       .version = 0x0517,
-      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, ABS, FF */
       .ev = { 0x0b, 0x00, 0x20 },
       /* Android-style mapping:
@@ -638,7 +639,8 @@ static const GuessTest guess_tests[] =
       .bus_type = 0x0003,
       .vendor_id = 0x28de,
       .product_id = 0x1142,
-      .expected = (SDL_UDEV_DEVICE_KEYBOARD
+      .expected = (SDL_UDEV_DEVICE_HAS_KEYS
+                   | SDL_UDEV_DEVICE_KEYBOARD
                    | SDL_UDEV_DEVICE_MOUSE),
       /* SYN, KEY, REL, MSC, LED, REP */
       .ev = { 0x17, 0x00, 0x12 },
@@ -1087,7 +1089,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x045e,
       .product_id = 0x02e0,
       .version = 0x0903,
-      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, ABS, MSC, FF */
       .ev = { 0x1b, 0x00, 0x20 },
       /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
@@ -1132,7 +1134,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x18d1,
       .product_id = 0x9400,
       .version = 0x0100,
-      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_HAS_KEYS,
       .ev = { 0x0b },
       /* XYZ, RZ, gas, brake, hat0 */
       .abs = { 0x27, 0x06, 0x03 },
@@ -1166,7 +1168,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x045e,
       .product_id = 0x0b12,
       .version = 0x050f,
-      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_HAS_KEYS,
       .ev = { 0x0b },
       /* X, Y, Z, RX, RY, RZ, hat 0 */
       .abs = { 0x3f, 0x00, 0x03 },
@@ -1189,7 +1191,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x045e,
       .product_id = 0x0b13,
       .version = 0x0515,
-      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_HAS_KEYS,
       .ev = { 0x0b },
       /* XYZ, RZ, gas, brake, hat0 */
       .abs = { 0x27, 0x06, 0x03 },
@@ -1214,8 +1216,8 @@ static const GuessTest guess_tests[] =
       /* This one is a bit weird because some of the buttons are mapped
        * to the arrow, page up and page down keys, so it's a joystick
        * with a subset of a keyboard attached. */
-      /* TODO: Should this be JOYSTICK, or even JOYSTICK|KEYBOARD? */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      /* TODO: Should this be JOYSTICK, or even JOYSTICK|HAS_KEYS? */
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, FF */
       .ev = { 0x03, 0x00, 0x20 },
       .keys = {
@@ -1296,9 +1298,9 @@ static const GuessTest guess_tests[] =
     {
       .name = "Wiimote - Classic Controller",
       .eviocgname = "Nintendo Wii Remote Classic Controller",
-      /* TODO: Should this be JOYSTICK, or maybe JOYSTICK|KEYBOARD?
+      /* TODO: Should this be JOYSTICK, or maybe JOYSTICK|HAS_KEYS?
        * It's unusual in the same ways as the Wiimote */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
       /* Hat 1-3 X and Y */
@@ -1422,8 +1424,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x17aa,
       .product_id = 0x5054,
       .version = 0x4101,
-      /* SDL treats this as a keyboard because it has a power button */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, MSC, SW */
       .ev = { 0x33 },
       .keys = {
@@ -1446,7 +1447,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x17aa,
       .product_id = 0x5054,
       .version = 0x4101,
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, MSC, SW */
       .ev = { 0x33 },
       .keys = {
@@ -1507,7 +1508,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x0001,
       .product_id = 0x0001,
       .version = 0xab54,
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS | SDL_UDEV_DEVICE_KEYBOARD,
       /* SYN, KEY, MSC, LED, REP */
       .ev = { 0x13, 0x00, 0x12 },
       .keys = {
@@ -1524,8 +1525,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x0000,
       .product_id = 0x0003,
       .version = 0x0000,
-      /* SDL treats KEY_SLEEP as indicating a keyboard */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY */
       .ev = { 0x03 },
       .keys = {
@@ -1553,8 +1553,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x0000,
       .product_id = 0x0001,
       .version = 0x0000,
-      /* SDL treats KEY_POWER as indicating a keyboard */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY */
       .ev = { 0x03 },
       .keys = {
@@ -1570,8 +1569,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x0000,
       .product_id = 0x0006,
       .version = 0x0000,
-      /* SDL treats brightness control, etc. as keyboard keys */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY */
       .ev = { 0x03 },
       .keys = {
@@ -1591,7 +1589,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x04f2,
       .product_id = 0xb604,
       .version = 0x0027,
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY */
       .ev = { 0x03 },
       .keys = {
@@ -1608,7 +1606,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x17aa,
       .product_id = 0x5054,
       .version = 0x4101,
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY */
       .ev = { 0x03 },
       .keys = {
@@ -1632,7 +1630,7 @@ static const GuessTest guess_tests[] =
       .bus_type = 0x0003,
       .vendor_id = 0x17ef,
       .product_id = 0x6009,
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS | SDL_UDEV_DEVICE_KEYBOARD,
       /* SYN, KEY, MSC, LED, REP */
       .ev = { 0x13, 0x00, 0x12 },
       .keys = {
@@ -1656,7 +1654,7 @@ static const GuessTest guess_tests[] =
       /* For some reason the special keys like mute and wlan toggle
        * show up here instead of, or in addition to, as part of
        * the keyboard - so both udev and SDL report this as having keys too. */
-      .expected = SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, REL, MSC, LED */
       .ev = { 0x17, 0x00, 0x02 },
       /* X, Y */
