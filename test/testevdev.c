@@ -73,7 +73,7 @@ typedef struct
     uint8_t abs[(ABS_MAX + 1) / 8];
     uint8_t rel[(REL_MAX + 1) / 8];
     uint8_t ff[(FF_MAX + 1) / 8];
-    uint8_t props[INPUT_PROP_MAX / 8];
+    uint8_t props[(INPUT_PROP_MAX + 1) / 8];
     int expected;
     const char *todo;
     size_t hid_report_descriptor_length;
