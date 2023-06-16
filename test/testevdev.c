@@ -60,6 +60,9 @@ static const struct
 typedef struct
 {
     const char *name;
+    const char *eviocgname;
+    const char *usb_vendor_name;
+    const char *usb_product_name;
     uint16_t bus_type;
     uint16_t vendor_id;
     uint16_t product_id;
@@ -275,11 +278,15 @@ static const GuessTest guess_tests[] =
 {
     {
       .name = "Xbox 360 wired USB controller",
+      .eviocgname = "Microsoft X-Box 360 pad",
+      .usb_vendor_name = "©Microsoft Corporation",
+      .usb_product_name = "Controller",
       /* 8BitDo N30 Pro 2 v0114 via USB-C (with the xpad driver) is
        * reported as 0003:045e:028e v0114, and is functionally equivalent */
       .bus_type = 0x0003,
       .vendor_id = 0x045e,
       .product_id = 0x028e,
+      .version = 0x0114,
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS, FF */
       .ev = { 0x0b, 0x00, 0x20 },
@@ -420,8 +427,11 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualSense (PS5) v8111 - gamepad",
-      /* Same physical device via Bluetooth is 0005:054c:0ce6 v8100,
-       * but otherwise equivalent */
+      .eviocgname = "Sony Interactive Entertainment Wireless Controller",
+      .usb_vendor_name = "Sony Interactive Entertainment",
+      .usb_product_name = "Wireless Controller",
+      /* Same physical device via Bluetooth is 0005:054c:0ce6 v8100
+       * and EVIOCGNAME is just "Wireless Controller", otherwise equivalent */
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x0ce6,
@@ -440,6 +450,10 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 4 - gamepad",
+      /* EVIOCGNAME is just "Wireless Controller" when seen via Bluetooth */
+      .eviocgname = "Sony Interactive Entertainment Wireless Controller",
+      .usb_vendor_name = "Sony Interactive Entertainment",
+      .usb_product_name = "Wireless Controller",
       /* Same physical device via Bluetooth is 0005:054c:09cc v8100,
        * but otherwise equivalent */
       .bus_type = 0x0003,
@@ -479,6 +493,10 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 4 - touchpad",
+      /* EVIOCGNAME is just "Wireless Controller Touchpad" when seen via Bluetooth */
+      .eviocgname = "Sony Interactive Entertainment Wireless Controller Touchpad",
+      .usb_vendor_name = "Sony Interactive Entertainment",
+      .usb_product_name = "Wireless Controller",
       /* Same physical device via Bluetooth is 0005:054c:09cc v8100 and is
        * functionally equivalent. */
       /* DualSense (PS5), 0003:054c:0ce6 v8111, is functionally equivalent.
@@ -505,6 +523,10 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 4 - accelerometer",
+      /* EVIOCGNAME is just "Wireless Controller Motion Sensors" when seen via Bluetooth */
+      .eviocgname = "Sony Interactive Entertainment Wireless Controller Motion Sensors",
+      .usb_vendor_name = "Sony Interactive Entertainment",
+      .usb_product_name = "Wireless Controller",
       /* Same physical device via Bluetooth is 0005:054c:09cc v8100 and is
        * functionally equivalent. */
       /* DualSense (PS5), 0003:054c:0ce6 v8111, is functionally equivalent.
@@ -542,9 +564,13 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 3 - gamepad",
+      .eviocgname = "Sony PLAYSTATION(R)3 Controller",
+      .usb_vendor_name = "Sony",
+      .usb_product_name = "PLAYSTATION(R)3 Controller",
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x0268,
+      .version = 0x8111,
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS, MSC, FF */
       .ev = { 0x1b, 0x00, 0x20 },
@@ -566,6 +592,9 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 3 - accelerometer",
+      .eviocgname = "Sony PLAYSTATION(R)3 Controller Motion Sensors",
+      .usb_vendor_name = "Sony",
+      .usb_product_name = "PLAYSTATION(R)3 Controller",
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x0268,
@@ -715,6 +744,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "8BitDo SNES30 v0100 via Bluetooth",
+      .eviocgname = "8Bitdo SNES30 GamePad",
       /* The same physical device via USB, 0003:2dc8:ab20 v0110,
        * is reported differently (above). */
       /* 8BitDo NES30 Pro (aka N30 Pro) via Bluetooth, 0005:2dc8:3820 v0100,
@@ -896,6 +926,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Switch Pro Controller via Bluetooth (Linux 6.2.11)",
+      .eviocgname = "Pro Controller",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x2009,
@@ -914,6 +945,9 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Switch Pro Controller via USB",
+      .eviocgname = "Nintendo Co., Ltd. Pro Controller",
+      .usb_vendor_name = "Nintendo Co., Ltd.",
+      .usb_product_name = "Pro Controller",
       .bus_type = 0x0003,
       .vendor_id = 0x057e,
       .product_id = 0x2009,
@@ -940,6 +974,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "NES Controller (R) NES-style Joycon from Nintendo Online",
+      .eviocgname = "NES Controller (R)",
       /* Joy-Con (L), 0005:057e:2006 v0001, is functionally equivalent.
        * Ordinary Joy-Con (R) and NES-style Joy-Con (L) are assumed to be
        * functionally equivalent as well. */
@@ -1086,8 +1121,13 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Google Stadia Controller rev.A",
+      .eviocgname = "Google LLC Stadia Controller rev. A",
+      .usb_vendor_name = "Google LLC",
+      .usb_product_name = "Stadia Controller rev. A",
       /* This data is with USB-C, but the same physical device via Bluetooth,
-       * 0005:18d1:9400 v0000, is functionally equivalent */
+       * 0005:18d1:9400 v0000, is functionally equivalent other than having
+       * EVIOCGNAME = StadiaXXXX-YYYY where XXXX is the last 4 digits of
+       * the serial number and YYYY is some other mystery number */
       .bus_type = 0x0003,
       .vendor_id = 0x18d1,
       .product_id = 0x9400,
@@ -1117,6 +1157,9 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Microsoft Xbox Series S|X Controller (model 1914) via USB",
+      .eviocgname = "Microsoft Xbox Series S|X Controller",
+      .usb_vendor_name = "Microsoft",
+      .usb_product_name = "Controller",
       /* Physically the same device as 0003:045e:0b13 v0515 below,
        * but some functionality is mapped differently */
       .bus_type = 0x0003,
@@ -1139,6 +1182,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Microsoft Xbox Series S|X Controller (model 1914) via Bluetooth",
+      .eviocgname = "Xbox Wireless Controller",
       /* Physically the same device as 0003:045e:0b12 v050f above,
        * but some functionality is mapped differently */
       .bus_type = 0x0005,
@@ -1162,6 +1206,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Wiimote - buttons",
+      .eviocgname = "Nintendo Wii Remote",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
@@ -1187,12 +1232,8 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      /* The accelerometer and the Motion Plus gyro report as the same
-       * vendor, product, version and axes, just with different
-       * min/max/fuzz/flat parameters (not shown here). A Wiimote with an
-       * attached Motion Plus reports the accelerometer and gyro as separate
-       * evdev devices. */
-      .name = "Wiimote - Motion Plus or accelerometer",
+      .name = "Wiimote - accelerometer",
+      .eviocgname = "Nintendo Wii Remote Accelerometer",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
@@ -1200,12 +1241,27 @@ static const GuessTest guess_tests[] =
       .expected = SDL_UDEV_DEVICE_ACCELEROMETER,
       /* SYN, ABS */
       .ev = { 0x09 },
-      /* RX, RY, RZ - even for the accelerometer, which would more
-       * conventionally be X, Y, Z */
+      /* RX, RY, RZ - even though it would more conventionally be X, Y, Z */
+      .abs = { 0x38 },
+    },
+    {
+      .name = "Wiimote - Motion Plus gyroscope",
+      .eviocgname = "Nintendo Wii Remote Motion Plus",
+      /* Note that if we only look at the bus type, vendor, product, version
+       * and axes, this is indistinguishable from the accelerometer */
+      .bus_type = 0x0005,
+      .vendor_id = 0x057e,
+      .product_id = 0x0306,
+      .version = 0x0600,
+      .expected = SDL_UDEV_DEVICE_ACCELEROMETER,
+      /* SYN, ABS */
+      .ev = { 0x09 },
+      /* RX, RY, RZ */
       .abs = { 0x38 },
     },
     {
       .name = "Wiimote - IR positioning",
+      .eviocgname = "Nintendo Wii Remote IR",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
@@ -1218,6 +1274,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Wiimote - Nunchuck",
+      .eviocgname = "Nintendo Wii Remote Nunchuk",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
@@ -1238,6 +1295,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Wiimote - Classic Controller",
+      .eviocgname = "Nintendo Wii Remote Classic Controller",
       /* TODO: Should this be JOYSTICK, or maybe JOYSTICK|KEYBOARD?
        * It's unusual in the same ways as the Wiimote */
       .expected = SDL_UDEV_DEVICE_KEYBOARD,
@@ -1297,6 +1355,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Synaptics TM3381-002 (Thinkpad X280 trackpad)",
+      .eviocgname = "Synaptics TM3381-002",
       .bus_type = 0x001d,   /* BUS_RMI */
       .vendor_id = 0x06cb,
       .product_id = 0x0000,
@@ -1338,6 +1397,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "TPPS/2 Elan TrackPoint (Thinkpad X280)",
+      .eviocgname = "TPPS/2 Elan TrackPoint",
       .bus_type = 0x0011,   /* BUS_I8042 */
       .vendor_id = 0x0002,
       .product_id = 0x000a,
@@ -1357,6 +1417,11 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad ACPI buttons",
+      .eviocgname = "ThinkPad Extra Buttons",
+      .bus_type = 0x0019,
+      .vendor_id = 0x17aa,
+      .product_id = 0x5054,
+      .version = 0x4101,
       /* SDL treats this as a keyboard because it has a power button */
       .expected = SDL_UDEV_DEVICE_KEYBOARD,
       /* SYN, KEY, MSC, SW */
@@ -1376,6 +1441,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "PC speaker",
+      .eviocgname = "PC Speaker",
       .bus_type = 0x0010,   /* BUS_ISA */
       .vendor_id = 0x001f,
       .product_id = 0x0001,
@@ -1386,6 +1452,11 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "ALSA headphone detection, etc.",
+      .eviocgname = "HDA Intel PCH Mic",
+      /* HDA Intel PCH Headphone is functionally equivalent */
+      /* HDA Intel PCH HDMI/DP,pcm=3 is functionally equivalent */
+      /* HDA Intel PCH HDMI/DP,pcm=7 is functionally equivalent */
+      /* HDA Intel PCH HDMI/DP,pcm=8 is functionally equivalent */
       .bus_type = 0x0000,
       .vendor_id = 0x0000,
       .product_id = 0x0000,
@@ -1397,6 +1468,7 @@ static const GuessTest guess_tests[] =
     {
       /* Assumed to be a reasonably typical i8042 (PC AT) keyboard */
       .name = "Thinkpad T520 and X280 keyboards",
+      .eviocgname = "AT Translated Set 2 keyboard",
       .bus_type = 0x0011,   /* BUS_I8042 */
       .vendor_id = 0x0001,
       .product_id = 0x0001,
@@ -1413,6 +1485,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad X280 sleep button",
+      .eviocgname = "Sleep Button",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
       .product_id = 0x0003,
@@ -1430,6 +1503,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad X280 lid switch",
+      .eviocgname = "Lid Switch",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
       .product_id = 0x0005,
@@ -1440,6 +1514,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad X280 power button",
+      .eviocgname = "Power Button",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
       .product_id = 0x0001,
@@ -1456,6 +1531,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad X280 video bus",
+      .eviocgname = "Video Bus",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
       .product_id = 0x0006,
@@ -1496,6 +1572,9 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad USB keyboard with Trackpoint - keyboard",
+      .eviocgname = "Lite-On Technology Corp. ThinkPad USB Keyboard with TrackPoint",
+      .usb_vendor_name = "Lite-On Technology Corp.",
+      .usb_product_name = "ThinkPad USB Keyboard with TrackPoint",
       .bus_type = 0x0003,
       .vendor_id = 0x17ef,
       .product_id = 0x6009,
@@ -1513,9 +1592,13 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad USB keyboard with Trackpoint - Trackpoint",
+      .eviocgname = "Lite-On Technology Corp. ThinkPad USB Keyboard with TrackPoint",
+      .usb_vendor_name = "Lite-On Technology Corp.",
+      .usb_product_name = "ThinkPad USB Keyboard with TrackPoint",
       .bus_type = 0x0003,
       .vendor_id = 0x17ef,
       .product_id = 0x6009,
+      .version = 0x0110,
       /* For some reason the special keys like mute and wlan toggle
        * show up here instead of, or in addition to, as part of
        * the keyboard - so both udev and SDL report this as having keys too. */
