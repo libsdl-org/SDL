@@ -1760,6 +1760,36 @@ static const GuessTest guess_tests[] =
       .hid_report_descriptor_length = sizeof (fanatec_handbrake_hid_report_descriptor),
       .hid_report_descriptor = &fanatec_handbrake_hid_report_descriptor[0],
     },
+    { /* Artificial test data, not a real device */
+      .name = "Fake accelerometer with fewer than usual axes reported",
+      .expected = SDL_UDEV_DEVICE_ACCELEROMETER,
+      /* SYN, ABS */
+      .ev = { 0x09 },
+      /* X only */
+      .abs = { 0x01 },
+      /* ACCELEROMETER */
+      .props = { 0x40 },
+    },
+    { /* Artificial test data, not a real device */
+      .name = "Fake pointing stick with no buttons",
+      .expected = SDL_UDEV_DEVICE_MOUSE,
+      /* SYN, REL */
+      .ev = { 0x05 },
+      /* X,Y */
+      .rel = { 0x03 },
+      /* POINTER, POINTING_STICK */
+      .props = { 0x21 },
+    },
+    { /* Artificial test data, not a real device */
+      .name = "Fake buttonpad",
+      .expected = SDL_UDEV_DEVICE_TOUCHPAD,
+      /* SYN, ABS */
+      .ev = { 0x09 },
+      /* X,Y */
+      .abs = { 0x03 },
+      /* POINTER, BUTTONPAD */
+      .props = { 0x05 },
+    },
     {
       .name = "No information",
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
