@@ -325,36 +325,36 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
             // Since we may have an orientation set, we won't receive onConfigurationChanged events.
             // We thus should check here.
-            int newOrientation;
+            int newRotation;
 
             float x, y;
             switch (mDisplay.getRotation()) {
-                case Surface.ROTATION_90:
-                    x = -event.values[1];
-                    y = event.values[0];
-                    newOrientation = SDLActivity.SDL_ORIENTATION_LANDSCAPE;
-                    break;
-                case Surface.ROTATION_270:
-                    x = event.values[1];
-                    y = -event.values[0];
-                    newOrientation = SDLActivity.SDL_ORIENTATION_LANDSCAPE_FLIPPED;
-                    break;
-                case Surface.ROTATION_180:
-                    x = -event.values[0];
-                    y = -event.values[1];
-                    newOrientation = SDLActivity.SDL_ORIENTATION_PORTRAIT_FLIPPED;
-                    break;
                 case Surface.ROTATION_0:
                 default:
                     x = event.values[0];
                     y = event.values[1];
-                    newOrientation = SDLActivity.SDL_ORIENTATION_PORTRAIT;
+                    newRotation = 0;
+                    break;
+                case Surface.ROTATION_90:
+                    x = -event.values[1];
+                    y = event.values[0];
+                    newRotation = 90;
+                    break;
+                case Surface.ROTATION_180:
+                    x = -event.values[0];
+                    y = -event.values[1];
+                    newRotation = 180;
+                    break;
+                case Surface.ROTATION_270:
+                    x = event.values[1];
+                    y = -event.values[0];
+                    newRotation = 270;
                     break;
             }
 
-            if (newOrientation != SDLActivity.mCurrentOrientation) {
-                SDLActivity.mCurrentOrientation = newOrientation;
-                SDLActivity.onNativeOrientationChanged(newOrientation);
+            if (newRotation != SDLActivity.mCurrentRotation) {
+                SDLActivity.mCurrentRotation = newRotation;
+                SDLActivity.onNativeRotationChanged(newRotation);
             }
 
             SDLActivity.onNativeAccel(-x / SensorManager.GRAVITY_EARTH,

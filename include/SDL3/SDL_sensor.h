@@ -96,7 +96,7 @@ typedef enum
  *
  * The axis data is not changed when the device is rotated.
  *
- * \sa SDL_GetDisplayOrientation()
+ * \sa SDL_GetDisplayCurrentOrientation()
  */
 #define SDL_STANDARD_GRAVITY    9.80665f
 
@@ -120,7 +120,7 @@ typedef enum
  *
  * The axis data is not changed when the device is rotated.
  *
- * \sa SDL_GetDisplayOrientation()
+ * \sa SDL_GetDisplayCurrentOrientation()
  */
 
 /* Function prototypes */

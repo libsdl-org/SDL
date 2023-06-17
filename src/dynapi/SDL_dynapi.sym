@@ -166,7 +166,7 @@ SDL3_0.0.0 {
     SDL_GetDisplayForPoint;
     SDL_GetDisplayForRect;
     SDL_GetDisplayName;
-    SDL_GetDisplayOrientation;
+    SDL_GetDisplayCurrentOrientation;
     SDL_GetDisplayUsableBounds;
     SDL_GetError;
     SDL_GetErrorMsg;
@@ -866,6 +866,7 @@ SDL3_0.0.0 {
     SDL_hid_get_report_descriptor;
     SDL_HasWindowSurface;
     SDL_DestroyWindowSurface;
+    SDL_GetDisplayNaturalOrientation;
     # extra symbols go here (don't modify this line)
   local: *;
 };

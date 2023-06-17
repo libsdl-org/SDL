@@ -43,7 +43,8 @@ extern void Android_JNI_HideTextInput(void);
 extern SDL_bool Android_JNI_IsScreenKeyboardShown(void);
 extern ANativeWindow *Android_JNI_GetNativeWindow(void);
 
-extern SDL_DisplayOrientation Android_JNI_GetDisplayOrientation(void);
+extern SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void);
+extern SDL_DisplayOrientation Android_JNI_GetDisplayCurrentOrientation(void);
 
 /* Audio support */
 extern void Android_DetectDevices(void);

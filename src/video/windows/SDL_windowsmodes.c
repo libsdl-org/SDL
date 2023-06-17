@@ -102,7 +102,7 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
     }
 }
 
-static SDL_DisplayOrientation WIN_GetDisplayOrientation(DEVMODE *mode)
+static SDL_DisplayOrientation WIN_GetNaturalOrientation(DEVMODE *mode)
 {
     int width = mode->dmPelsWidth;
     int height = mode->dmPelsHeight;
@@ -115,6 +115,15 @@ static SDL_DisplayOrientation WIN_GetDisplayOrientation(DEVMODE *mode)
     }
 
     if (width >= height) {
+        return SDL_ORIENTATION_LANDSCAPE;
+    } else {
+        return SDL_ORIENTATION_PORTRAIT;
+    }
+}
+
+static SDL_DisplayOrientation WIN_GetDisplayOrientation(DEVMODE *mode)
+{
+    if (WIN_GetNaturalOrientation(mode) == SDL_ORIENTATION_LANDSCAPE) {
         switch (mode->dmDisplayOrientation) {
         case DMDO_DEFAULT:
             return SDL_ORIENTATION_LANDSCAPE;
@@ -182,7 +191,7 @@ static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
     return dpi / 96.0f;
 }
 
-static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, HMONITOR hMonitor, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *orientation)
+static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, HMONITOR hMonitor, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *natural_orientation, SDL_DisplayOrientation *current_orientation)
 {
     SDL_DisplayModeData *data;
     DEVMODE devmode;
@@ -210,8 +219,11 @@ static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, HMONITOR hMonitor, LP
     /* Fill in the mode information */
     WIN_UpdateDisplayMode(_this, deviceName, index, mode);
 
-    if (orientation) {
-        *orientation = WIN_GetDisplayOrientation(&devmode);
+    if (natural_orientation) {
+        *natural_orientation = WIN_GetNaturalOrientation(&devmode);
+    }
+    if (current_orientation) {
+        *current_orientation = WIN_GetDisplayOrientation(&devmode);
     }
 
     return SDL_TRUE;
@@ -324,14 +336,15 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     SDL_VideoDisplay display;
     SDL_DisplayData *displaydata;
     SDL_DisplayMode mode;
-    SDL_DisplayOrientation orientation;
+    SDL_DisplayOrientation natural_orientation;
+    SDL_DisplayOrientation current_orientation;
     float content_scale = WIN_GetContentScale(_this, hMonitor);
 
 #ifdef DEBUG_MODES
     SDL_Log("Display: %s\n", WIN_StringToUTF8W(info->szDevice));
 #endif
 
-    if (!WIN_GetDisplayMode(_this, hMonitor, info->szDevice, ENUM_CURRENT_SETTINGS, &mode, &orientation)) {
+    if (!WIN_GetDisplayMode(_this, hMonitor, info->szDevice, ENUM_CURRENT_SETTINGS, &mode, &natural_orientation, &current_orientation)) {
         return;
     }
 
@@ -371,7 +384,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
                 if (moved || changed_bounds) {
                     SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_MOVED, 0);
                 }
-                SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
+                SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_ORIENTATION, current_orientation);
                 SDL_SetDisplayContentScale(existing_display, content_scale);
             }
             goto done;
@@ -398,7 +411,8 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     }
 
     display.desktop_mode = mode;
-    display.orientation = orientation;
+    display.natural_orientation = natural_orientation;
+    display.current_orientation = current_orientation;
     display.content_scale = content_scale;
     display.device = _this;
     display.driverdata = displaydata;
@@ -514,7 +528,7 @@ int WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     SDL_DisplayMode mode;
 
     for (i = 0;; ++i) {
-        if (!WIN_GetDisplayMode(_this, data->MonitorHandle, data->DeviceName, i, &mode, NULL)) {
+        if (!WIN_GetDisplayMode(_this, data->MonitorHandle, data->DeviceName, i, &mode, NULL, NULL)) {
             break;
         }
         if (SDL_ISPIXELFORMAT_INDEXED(mode.format)) {

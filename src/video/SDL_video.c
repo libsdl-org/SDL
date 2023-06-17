@@ -889,13 +889,32 @@ int SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect)
     return SDL_GetDisplayBounds(displayID, rect);
 }
 
-SDL_DisplayOrientation SDL_GetDisplayOrientation(SDL_DisplayID displayID)
+SDL_DisplayOrientation SDL_GetDisplayNaturalOrientation(SDL_DisplayID displayID)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
 
     CHECK_DISPLAY_MAGIC(display, SDL_ORIENTATION_UNKNOWN);
 
-    return display->orientation;
+    if (display->natural_orientation != SDL_ORIENTATION_UNKNOWN) {
+        return display->natural_orientation;
+    } else {
+        /* Default to landscape if the driver hasn't set it */
+        return SDL_ORIENTATION_LANDSCAPE;
+    }
+}
+
+SDL_DisplayOrientation SDL_GetDisplayCurrentOrientation(SDL_DisplayID displayID)
+{
+    SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
+
+    CHECK_DISPLAY_MAGIC(display, SDL_ORIENTATION_UNKNOWN);
+
+    if (display->current_orientation != SDL_ORIENTATION_UNKNOWN) {
+        return display->current_orientation;
+    } else {
+        /* Default to landscape if the driver hasn't set it */
+        return SDL_ORIENTATION_LANDSCAPE;
+    }
 }
 
 void SDL_SetDisplayContentScale(SDL_VideoDisplay *display, float scale)

@@ -220,6 +220,17 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
 
     SDL_zero(display);
+#if !TARGET_OS_TV
+    if (uiscreen == [UIScreen mainScreen]) {
+        /* The natural orientation (used by sensors) is portrait */
+        display.natural_orientation = SDL_ORIENTATION_PORTRAIT;
+    } else
+#endif
+    if (UIKit_IsDisplayLandscape(uiscreen)) {
+        display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
+    } else {
+        display.natural_orientation = SDL_ORIENTATION_PORTRAIT;
+    }
     display.desktop_mode = mode;
 
     /* Allocate the display data */

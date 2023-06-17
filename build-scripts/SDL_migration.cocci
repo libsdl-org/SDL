@@ -2668,3 +2668,8 @@ typedef SDL_cond, SDL_Condition;
 - SDL_TLSCleanup
 + SDL_CleanupTLS
   (...)
+@@
+@@
+- SDL_GetDisplayOrientation
++ SDL_GetDisplayCurrentOrientation
+  (...)

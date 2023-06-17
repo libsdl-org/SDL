@@ -395,6 +395,19 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(SDL_DisplayID displayID, SDL_Re
 extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect);
 
 /**
+ * Get the orientation of a display when it is unrotated.
+ *
+ * \param displayID the instance ID of the display to query
+ * \returns The SDL_DisplayOrientation enum value of the display, or
+ *          `SDL_ORIENTATION_UNKNOWN` if it isn't available.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetDisplays
+ */
+extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayNaturalOrientation(SDL_DisplayID displayID);
+
+/**
  * Get the orientation of a display.
  *
  * \param displayID the instance ID of the display to query
@@ -405,7 +418,7 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, 
  *
  * \sa SDL_GetDisplays
  */
-extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayOrientation(SDL_DisplayID displayID);
+extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayCurrentOrientation(SDL_DisplayID displayID);
 
 /**
  * Get the content scale of a display.

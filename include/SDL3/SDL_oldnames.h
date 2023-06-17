@@ -466,6 +466,7 @@
 
 /* ##SDL_video.h */
 #define SDL_GetClosestDisplayMode SDL_GetClosestFullscreenDisplayMode
+#define SDL_GetDisplayOrientation SDL_GetDisplayCurrentOrientation
 #define SDL_GetPointDisplayIndex SDL_GetDisplayForPoint
 #define SDL_GetRectDisplayIndex SDL_GetDisplayForRect
 #define SDL_GetWindowDisplayIndex SDL_GetDisplayForWindow
@@ -902,6 +903,7 @@
 
 /* ##SDL_video.h */
 #define SDL_GetClosestDisplayMode SDL_GetClosestDisplayMode_renamed_SDL_GetClosestFullscreenDisplayMode
+#define SDL_GetDisplayOrientation SDL_GetDisplayOrientation_renamed_SDL_GetDisplayCurrentOrientation
 #define SDL_GetPointDisplayIndex SDL_GetPointDisplayIndex_renamed_SDL_GetDisplayForPoint
 #define SDL_GetRectDisplayIndex SDL_GetRectDisplayIndex_renamed_SDL_GetDisplayForRect
 #define SDL_GetWindowDisplayIndex SDL_GetWindowDisplayIndex_renamed_SDL_GetDisplayForWindow
