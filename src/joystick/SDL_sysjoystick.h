@@ -117,6 +117,7 @@ struct SDL_Joystick
     SDL_Sensor *accel _guarded;
     SDL_SensorID gyro_sensor _guarded;
     SDL_Sensor *gyro _guarded;
+    float sensor_transform[3][3] _guarded;
 
     struct SDL_JoystickDriver *driver _guarded;
 

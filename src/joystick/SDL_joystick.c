@@ -562,7 +562,7 @@ static SDL_bool IsROGAlly(SDL_Joystick *joystick)
     return SDL_FALSE;
 }
 
-static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick)
+static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, SDL_bool *invert_sensors)
 {
     static Uint32 wraparound_gamepads[] = {
         MAKE_VIDPID(0x1532, 0x0709),    /* Razer Junglecat (L) */
@@ -577,6 +577,8 @@ static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick)
     Uint32 vidpid;
     int i;
     int hint;
+
+    *invert_sensors = SDL_FALSE;
 
     /* The SDL controller sensor API is only available for gamepads (at the moment) */
     if (!joystick->is_gamepad) {
@@ -607,17 +609,23 @@ static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick)
     }
 
     /* See if this is another known wraparound gamepad */
-    if (IsBackboneOne(joystick) || IsROGAlly(joystick)) {
+    if (IsBackboneOne(joystick)) {
         return SDL_TRUE;
     }
-
+    if (IsROGAlly(joystick)) {
+        /* I'm not sure if this is a Windows thing, or a quirk for ROG Ally,
+         * but we need to invert the sensor data on all axes.
+         */
+        *invert_sensors = SDL_TRUE;
+        return SDL_TRUE;
+    }
     return SDL_FALSE;
 }
 
-static void AttemptSensorFusion(SDL_Joystick *joystick)
+static void AttemptSensorFusion(SDL_Joystick *joystick, SDL_bool invert_sensors)
 {
     SDL_SensorID *sensors;
-    int i;
+    unsigned int i, j;
 
     if (SDL_InitSubSystem(SDL_INIT_SENSOR) < 0) {
         return;
@@ -646,6 +654,41 @@ static void AttemptSensorFusion(SDL_Joystick *joystick)
         SDL_free(sensors);
     }
     SDL_QuitSubSystem(SDL_INIT_SENSOR);
+
+    /* SDL defines sensor orientation for phones relative to the natural
+       orientation, and for gamepads relative to being held in front of you.
+       When a phone is being used as a gamepad, its orientation changes,
+       so adjust sensor axes to match.
+     */
+    if (SDL_GetDisplayNaturalOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
+        /* When a device in landscape orientation is laid flat, the axes change
+           orientation as follows:
+            -X to +X becomes -X to +X
+            -Y to +Y becomes +Z to -Z
+            -Z to +Z becomes -Y to +Y
+        */
+        joystick->sensor_transform[0][0] = 1.0f;
+        joystick->sensor_transform[1][2] = 1.0f;
+        joystick->sensor_transform[2][1] = -1.0f;
+    } else {
+        /* When a device in portrait orientation is rotated left and laid flat,
+           the axes change orientation as follows:
+            -X to +X becomes +Z to -Z
+            -Y to +Y becomes +X to -X
+            -Z to +Z becomes -Y to +Y
+        */
+        joystick->sensor_transform[0][1] = -1.0f;
+        joystick->sensor_transform[1][2] = 1.0f;
+        joystick->sensor_transform[2][0] = -1.0f;
+    }
+
+    if (invert_sensors) {
+        for (i = 0; i < SDL_arraysize(joystick->sensor_transform); ++i) {
+            for (j = 0; j < SDL_arraysize(joystick->sensor_transform[i]); ++j) {
+                joystick->sensor_transform[i][j] *= -1.0f;
+            }
+        }
+    }
 }
 
 static void CleanupSensorFusion(SDL_Joystick *joystick)
@@ -690,6 +733,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     const char *joystickname = NULL;
     const char *joystickpath = NULL;
     SDL_JoystickPowerLevel initial_power_level;
+    SDL_bool invert_sensors = SDL_FALSE;
 
     SDL_LockJoysticks();
 
@@ -776,8 +820,8 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->is_gamepad = SDL_IsGamepad(instance_id);
 
     /* Use system gyro and accelerometer if the gamepad doesn't have built-in sensors */
-    if (ShouldAttemptSensorFusion(joystick)) {
-        AttemptSensorFusion(joystick);
+    if (ShouldAttemptSensorFusion(joystick, &invert_sensors)) {
+        AttemptSensorFusion(joystick, invert_sensors);
     }
 
     /* Add joystick to list */
