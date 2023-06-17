@@ -564,19 +564,8 @@ static SDL_bool IsROGAlly(SDL_Joystick *joystick)
 
 static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, SDL_bool *invert_sensors)
 {
-    static Uint32 wraparound_gamepads[] = {
-        MAKE_VIDPID(0x1532, 0x0709),    /* Razer Junglecat (L) */
-        MAKE_VIDPID(0x1532, 0x070a),    /* Razer Junglecat (R) */
-        MAKE_VIDPID(0x1532, 0x0717),    /* Razer Edge controller */
-        MAKE_VIDPID(0x1949, 0x0402),    /* Ipega PG-9083S */
-        MAKE_VIDPID(0x27f8, 0x0bbc),    /* Gamevice */
-        MAKE_VIDPID(0x27f8, 0x0bbf),    /* Razer Kishi */
-    };
-    SDL_JoystickGUID guid;
-    Uint16 vendor, product;
-    Uint32 vidpid;
-    int i;
-    int hint;
+    const char *hint;
+    int hint_value;
 
     *invert_sensors = SDL_FALSE;
 
@@ -590,20 +579,28 @@ static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, SDL_bool *inve
         return SDL_FALSE;
     }
 
-    hint = SDL_GetStringInteger(SDL_GetHint(SDL_HINT_GAMECONTROLLER_SENSOR_FUSION), -1);
-    if (hint > 0) {
+    hint = SDL_GetHint(SDL_HINT_GAMECONTROLLER_SENSOR_FUSION);
+    hint_value = SDL_GetStringInteger(hint, -1);
+    if (hint_value > 0) {
         return SDL_TRUE;
     }
-    if (hint == 0) {
+    if (hint_value == 0) {
         return SDL_FALSE;
     }
 
-    /* See if the controller is in our list of wraparound gamepads */
-    guid = SDL_GetJoystickGUID(joystick);
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
-    vidpid = MAKE_VIDPID(vendor, product);
-    for (i = 0; i < SDL_arraysize(wraparound_gamepads); ++i) {
-        if (vidpid == wraparound_gamepads[i]) {
+    if (hint) {
+        SDL_vidpid_list gamepads;
+        SDL_JoystickGUID guid;
+        Uint16 vendor, product;
+        SDL_bool enabled;
+
+        /* See if the gamepad is in our list of devices to enable */
+        guid = SDL_GetJoystickGUID(joystick);
+        SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+        SDL_LoadVIDPIDListFromHint(hint, &gamepads);
+        enabled = SDL_VIDPIDInList(vendor, product, &gamepads);
+        SDL_FreeVIDPIDList(&gamepads);
+        if (enabled) {
             return SDL_TRUE;
         }
     }
@@ -3262,4 +3259,70 @@ int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorT
         }
     }
     return posted;
+}
+
+void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
+{
+    Uint32 entry;
+    char *spot;
+    char *file = NULL;
+
+    list->num_entries = 0;
+
+    if (hint && *hint == '@') {
+        spot = file = (char *)SDL_LoadFile(hint + 1, NULL);
+    } else {
+        spot = (char *)hint;
+    }
+
+    if (spot == NULL) {
+        return;
+    }
+
+    while ((spot = SDL_strstr(spot, "0x")) != NULL) {
+        entry = (Uint16)SDL_strtol(spot, &spot, 0);
+        entry <<= 16;
+        spot = SDL_strstr(spot, "0x");
+        if (spot == NULL) {
+            break;
+        }
+        entry |= (Uint16)SDL_strtol(spot, &spot, 0);
+
+        if (list->num_entries == list->max_entries) {
+            int max_entries = list->max_entries + 16;
+            Uint32 *entries = (Uint32 *)SDL_realloc(list->entries, max_entries * sizeof(*list->entries));
+            if (entries == NULL) {
+                /* Out of memory, go with what we have already */
+                break;
+            }
+            list->entries = entries;
+            list->max_entries = max_entries;
+        }
+        list->entries[list->num_entries++] = entry;
+    }
+
+    if (file) {
+        SDL_free(file);
+    }
+}
+
+SDL_bool SDL_VIDPIDInList(Uint16 vendor_id, Uint16 product_id, const SDL_vidpid_list *list)
+{
+    int i;
+    Uint32 vidpid = MAKE_VIDPID(vendor_id, product_id);
+
+    for (i = 0; i < list->num_entries; ++i) {
+        if (vidpid == list->entries[i]) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+void SDL_FreeVIDPIDList(SDL_vidpid_list *list)
+{
+    if (list->entries) {
+        SDL_free(list->entries);
+        SDL_zerop(list);
+    }
 }

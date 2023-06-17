@@ -150,60 +150,8 @@ struct SDL_Gamepad
         return retval;                                                       \
     }
 
-typedef struct
-{
-    int num_entries;
-    int max_entries;
-    Uint32 *entries;
-} SDL_vidpid_list;
-
 static SDL_vidpid_list SDL_allowed_gamepads;
 static SDL_vidpid_list SDL_ignored_gamepads;
-
-static void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
-{
-    Uint32 entry;
-    char *spot;
-    char *file = NULL;
-
-    list->num_entries = 0;
-
-    if (hint && *hint == '@') {
-        spot = file = (char *)SDL_LoadFile(hint + 1, NULL);
-    } else {
-        spot = (char *)hint;
-    }
-
-    if (spot == NULL) {
-        return;
-    }
-
-    while ((spot = SDL_strstr(spot, "0x")) != NULL) {
-        entry = (Uint16)SDL_strtol(spot, &spot, 0);
-        entry <<= 16;
-        spot = SDL_strstr(spot, "0x");
-        if (spot == NULL) {
-            break;
-        }
-        entry |= (Uint16)SDL_strtol(spot, &spot, 0);
-
-        if (list->num_entries == list->max_entries) {
-            int max_entries = list->max_entries + 16;
-            Uint32 *entries = (Uint32 *)SDL_realloc(list->entries, max_entries * sizeof(*list->entries));
-            if (entries == NULL) {
-                /* Out of memory, go with what we have already */
-                break;
-            }
-            list->entries = entries;
-            list->max_entries = max_entries;
-        }
-        list->entries[list->num_entries++] = entry;
-    }
-
-    if (file) {
-        SDL_free(file);
-    }
-}
 
 static void SDLCALL SDL_GamepadIgnoreDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -2112,11 +2060,9 @@ static SDL_bool SDL_endswith(const char *string, const char *suffix)
  */
 SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid)
 {
-    int i;
     Uint16 vendor;
     Uint16 product;
     Uint16 version;
-    Uint32 vidpid;
 
 #ifdef __LINUX__
     if (SDL_endswith(name, " Motion Sensors")) {
@@ -2165,20 +2111,14 @@ SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid)
         }
     }
 
-    vidpid = MAKE_VIDPID(vendor, product);
-
     if (SDL_allowed_gamepads.num_entries > 0) {
-        for (i = 0; i < SDL_allowed_gamepads.num_entries; ++i) {
-            if (vidpid == SDL_allowed_gamepads.entries[i]) {
-                return SDL_FALSE;
-            }
+        if (SDL_VIDPIDInList(vendor, product, &SDL_allowed_gamepads)) {
+            return SDL_FALSE;
         }
         return SDL_TRUE;
     } else {
-        for (i = 0; i < SDL_ignored_gamepads.num_entries; ++i) {
-            if (vidpid == SDL_ignored_gamepads.entries[i]) {
-                return SDL_TRUE;
-            }
+        if (SDL_VIDPIDInList(vendor, product, &SDL_ignored_gamepads)) {
+            return SDL_TRUE;
         }
         return SDL_FALSE;
     }
@@ -3100,14 +3040,8 @@ void SDL_QuitGamepadMappings(void)
     SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,
                         SDL_GamepadIgnoreDevicesExceptChanged, NULL);
 
-    if (SDL_allowed_gamepads.entries) {
-        SDL_free(SDL_allowed_gamepads.entries);
-        SDL_zero(SDL_allowed_gamepads);
-    }
-    if (SDL_ignored_gamepads.entries) {
-        SDL_free(SDL_ignored_gamepads.entries);
-        SDL_zero(SDL_ignored_gamepads);
-    }
+    SDL_FreeVIDPIDList(&SDL_allowed_gamepads);
+    SDL_FreeVIDPIDList(&SDL_ignored_gamepads);
 }
 
 /*

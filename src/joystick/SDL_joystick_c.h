@@ -202,6 +202,18 @@ typedef struct SDL_GamepadMapping
 extern SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance_id,
                                                          SDL_GamepadMapping *out);
 
+
+typedef struct
+{
+    int num_entries;
+    int max_entries;
+    Uint32 *entries;
+} SDL_vidpid_list;
+
+extern void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list);
+extern SDL_bool SDL_VIDPIDInList(Uint16 vendor_id, Uint16 product_id, const SDL_vidpid_list *list);
+extern void SDL_FreeVIDPIDList(SDL_vidpid_list *list);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

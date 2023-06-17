@@ -620,11 +620,18 @@ extern "C" {
  *  \brief  Controls whether the device's built-in accelerometer and gyro should be used as sensors for gamepads.
  *
  *  The variable can be set to the following values:
- *    "auto"    - Sensor fusion is enabled for known wraparound controllers like the Razer Kishi and Backbone One
  *    "0"       - Sensor fusion is disabled
  *    "1"       - Sensor fusion is enabled for all controllers that lack sensors
  *
- *  The default value is "auto". This hint is checked when a gamepad is opened.
+ *  Or the variable can be a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ *
+ *  This hint is checked when a gamepad is opened.
  */
 #define SDL_HINT_GAMECONTROLLER_SENSOR_FUSION "SDL_GAMECONTROLLER_SENSOR_FUSION"
 
