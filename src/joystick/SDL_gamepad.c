@@ -370,6 +370,24 @@ static void RecenterGamepad(SDL_Gamepad *gamepad)
     }
 }
 
+/* SDL defines sensor orientation for phones relative to the natural
+   orientation, and for gamepads relative to being held in front of you.
+   When a phone is being used as a gamepad, its orientation changes,
+   so adjust sensor axes to match.
+ */
+static void AdjustSensorOrientation(float *src, float *dst)
+{
+    /* When a phone is rotated left and laid flat, the axes change
+       orientation as follows:
+        -X to +X becomes +Z to -Z
+        -Y to +Y becomes +X to -X
+        -Z to +Z becomes -Y to +Y
+    */
+    dst[0] = -src[1];
+    dst[1] = src[2];
+    dst[2] = -src[0];
+}
+
 /*
  * Event filter to fire gamepad events from joystick ones
  */
@@ -449,10 +467,14 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
         SDL_LockJoysticks();
         for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
             if (gamepad->joystick->accel && gamepad->joystick->accel_sensor == event->sensor.which) {
-                SDL_SendJoystickSensor(event->common.timestamp, gamepad->joystick, SDL_SENSOR_ACCEL, event->sensor.sensor_timestamp, event->sensor.data, SDL_arraysize(event->sensor.data));
+                float data[3];
+                AdjustSensorOrientation(event->sensor.data, data);
+                SDL_SendJoystickSensor(event->common.timestamp, gamepad->joystick, SDL_SENSOR_ACCEL, event->sensor.sensor_timestamp, data, SDL_arraysize(data));
             }
             if (gamepad->joystick->gyro && gamepad->joystick->gyro_sensor == event->sensor.which) {
-                SDL_SendJoystickSensor(event->common.timestamp, gamepad->joystick, SDL_SENSOR_GYRO, event->sensor.sensor_timestamp, event->sensor.data, SDL_arraysize(event->sensor.data));
+                float data[3];
+                AdjustSensorOrientation(event->sensor.data, data);
+                SDL_SendJoystickSensor(event->common.timestamp, gamepad->joystick, SDL_SENSOR_GYRO, event->sensor.sensor_timestamp, data, SDL_arraysize(data));
             }
         }
         SDL_UnlockJoysticks();

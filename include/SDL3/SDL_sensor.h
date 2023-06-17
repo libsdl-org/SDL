@@ -89,13 +89,12 @@ typedef enum
  * values[1]: Acceleration on the y axis
  * values[2]: Acceleration on the z axis
  *
- * For phones held in portrait mode and game controllers held in front of you,
- * the axes are defined as follows:
+ * For phones and tablets held in natural orientation and game controllers held in front of you, the axes are defined as follows:
  * -X ... +X : left ... right
  * -Y ... +Y : bottom ... top
  * -Z ... +Z : farther ... closer
  *
- * The axis data is not changed when the phone is rotated.
+ * The axis data is not changed when the device is rotated.
  *
  * \sa SDL_GetDisplayOrientation()
  */
@@ -114,13 +113,12 @@ typedef enum
  * values[1]: Angular speed around the y axis (yaw)
  * values[2]: Angular speed around the z axis (roll)
  *
- * For phones held in portrait mode and game controllers held in front of you,
- * the axes are defined as follows:
+ * For phones and tablets held in natural orientation and game controllers held in front of you, the axes are defined as follows:
  * -X ... +X : left ... right
  * -Y ... +Y : bottom ... top
  * -Z ... +Z : farther ... closer
  *
- * The axis data is not changed when the phone or controller is rotated.
+ * The axis data is not changed when the device is rotated.
  *
  * \sa SDL_GetDisplayOrientation()
  */
