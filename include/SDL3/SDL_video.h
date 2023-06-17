@@ -405,7 +405,7 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, 
  *
  * \sa SDL_GetDisplays
  */
-extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayNaturalOrientation(SDL_DisplayID displayID);
+extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetNaturalDisplayOrientation(SDL_DisplayID displayID);
 
 /**
  * Get the orientation of a display.
@@ -418,7 +418,7 @@ extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayNaturalOrientation(
  *
  * \sa SDL_GetDisplays
  */
-extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetDisplayCurrentOrientation(SDL_DisplayID displayID);
+extern DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetCurrentDisplayOrientation(SDL_DisplayID displayID);
 
 /**
  * Get the content scale of a display.

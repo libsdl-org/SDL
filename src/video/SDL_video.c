@@ -889,7 +889,7 @@ int SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect)
     return SDL_GetDisplayBounds(displayID, rect);
 }
 
-SDL_DisplayOrientation SDL_GetDisplayNaturalOrientation(SDL_DisplayID displayID)
+SDL_DisplayOrientation SDL_GetNaturalDisplayOrientation(SDL_DisplayID displayID)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
 
@@ -903,7 +903,7 @@ SDL_DisplayOrientation SDL_GetDisplayNaturalOrientation(SDL_DisplayID displayID)
     }
 }
 
-SDL_DisplayOrientation SDL_GetDisplayCurrentOrientation(SDL_DisplayID displayID)
+SDL_DisplayOrientation SDL_GetCurrentDisplayOrientation(SDL_DisplayID displayID)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
 

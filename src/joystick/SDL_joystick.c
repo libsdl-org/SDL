@@ -657,7 +657,7 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, SDL_bool invert_sensors)
        When a phone is being used as a gamepad, its orientation changes,
        so adjust sensor axes to match.
      */
-    if (SDL_GetDisplayNaturalOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
+    if (SDL_GetNaturalDisplayOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
         /* When a device in landscape orientation is laid flat, the axes change
            orientation as follows:
             -X to +X becomes -X to +X
