@@ -377,15 +377,27 @@ static void RecenterGamepad(SDL_Gamepad *gamepad)
  */
 static void AdjustSensorOrientation(float *src, float *dst)
 {
-    /* When a phone is rotated left and laid flat, the axes change
-       orientation as follows:
-        -X to +X becomes +Z to -Z
-        -Y to +Y becomes +X to -X
-        -Z to +Z becomes -Y to +Y
-    */
-    dst[0] = -src[1];
-    dst[1] = src[2];
-    dst[2] = -src[0];
+    if (SDL_GetDisplayNaturalOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
+        /* When a device in landscape orientation is laid flat, the axes change
+           orientation as follows:
+            -X to +X becomes -X to +X
+            -Y to +Y becomes +Z to -Z
+            -Z to +Z becomes -Y to +Y
+        */
+        dst[0] = src[0];
+        dst[1] = src[2];
+        dst[2] = -src[1];
+    } else {
+        /* When a device in portrait orientation is rotated left and laid flat,
+           the axes change orientation as follows:
+            -X to +X becomes +Z to -Z
+            -Y to +Y becomes +X to -X
+            -Z to +Z becomes -Y to +Y
+        */
+        dst[0] = -src[1];
+        dst[1] = src[2];
+        dst[2] = -src[0];
+    }
 }
 
 /*
