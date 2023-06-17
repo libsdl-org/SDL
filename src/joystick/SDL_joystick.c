@@ -3226,4 +3226,70 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, Uint6
     return posted;
 }
 
+void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
+{
+    Uint32 entry;
+    char *spot;
+    char *file = NULL;
+
+    list->num_entries = 0;
+
+    if (hint && *hint == '@') {
+        spot = file = (char *)SDL_LoadFile(hint + 1, NULL);
+    } else {
+        spot = (char *)hint;
+    }
+
+    if (spot == NULL) {
+        return;
+    }
+
+    while ((spot = SDL_strstr(spot, "0x")) != NULL) {
+        entry = (Uint16)SDL_strtol(spot, &spot, 0);
+        entry <<= 16;
+        spot = SDL_strstr(spot, "0x");
+        if (spot == NULL) {
+            break;
+        }
+        entry |= (Uint16)SDL_strtol(spot, &spot, 0);
+
+        if (list->num_entries == list->max_entries) {
+            int max_entries = list->max_entries + 16;
+            Uint32 *entries = (Uint32 *)SDL_realloc(list->entries, max_entries * sizeof(*list->entries));
+            if (entries == NULL) {
+                /* Out of memory, go with what we have already */
+                break;
+            }
+            list->entries = entries;
+            list->max_entries = max_entries;
+        }
+        list->entries[list->num_entries++] = entry;
+    }
+
+    if (file) {
+        SDL_free(file);
+    }
+}
+
+SDL_bool SDL_VIDPIDInList(Uint16 vendor_id, Uint16 product_id, const SDL_vidpid_list *list)
+{
+    int i;
+    Uint32 vidpid = MAKE_VIDPID(vendor_id, product_id);
+
+    for (i = 0; i < list->num_entries; ++i) {
+        if (vidpid == list->entries[i]) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+void SDL_FreeVIDPIDList(SDL_vidpid_list *list)
+{
+    if (list->entries) {
+        SDL_free(list->entries);
+        SDL_zerop(list);
+    }
+}
+
 /* vi: set ts=4 sw=4 expandtab: */
