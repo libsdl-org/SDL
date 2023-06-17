@@ -592,30 +592,33 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
 {
     SwitchSubcommandInputPacket_t *reply = NULL;
 
-    if (ctx->device->is_bluetooth) {
-        if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
-            // Byte 2: Controller ID (1=LJC, 2=RJC, 3=Pro)
-            ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType);
+    ctx->device->is_bluetooth = SDL_FALSE;
 
-            // Bytes 4-9: MAC address (big-endian)
-            SDL_memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof(ctx->m_rgucMACAddress));
+    if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
+        SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
+        size_t i;
 
-            return SDL_TRUE;
+        ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
+
+        for (i = 0; i < sizeof(ctx->m_rgucMACAddress); ++i) {
+            ctx->m_rgucMACAddress[i] = status->rgucMACAddress[sizeof(ctx->m_rgucMACAddress) - i - 1];
         }
-    } else {
-        if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
-            SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
-            size_t i;
 
-            ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
-
-            for (i = 0; i < sizeof(ctx->m_rgucMACAddress); ++i) {
-                ctx->m_rgucMACAddress[i] = status->rgucMACAddress[sizeof(ctx->m_rgucMACAddress) - i - 1];
-            }
-
-            return SDL_TRUE;
-        }
+        return SDL_TRUE;
     }
+
+    ctx->device->is_bluetooth = SDL_TRUE;
+
+    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
+        // Byte 2: Controller ID (1=LJC, 2=RJC, 3=Pro)
+        ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType);
+
+        // Bytes 4-9: MAC address (big-endian)
+        SDL_memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof(ctx->m_rgucMACAddress));
+
+        return SDL_TRUE;
+    }
+
     return SDL_FALSE;
 }
 
