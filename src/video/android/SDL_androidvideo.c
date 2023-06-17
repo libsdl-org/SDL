@@ -189,7 +189,8 @@ int Android_VideoInit(SDL_VideoDevice *_this)
         return -1;
     }
     display = SDL_GetVideoDisplay(displayID);
-    display->orientation = Android_JNI_GetDisplayOrientation();
+    display->natural_orientation = Android_JNI_GetDisplayNaturalOrientation();
+    display->current_orientation = Android_JNI_GetDisplayCurrentOrientation();
     display->content_scale = Android_ScreenDensity;
 
     Android_InitTouch();

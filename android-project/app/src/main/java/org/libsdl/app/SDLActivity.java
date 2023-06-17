@@ -193,7 +193,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected static final int SDL_ORIENTATION_PORTRAIT = 3;
     protected static final int SDL_ORIENTATION_PORTRAIT_FLIPPED = 4;
 
-    protected static int mCurrentOrientation;
+    protected static int mCurrentRotation;
     protected static Locale mCurrentLocale;
 
     // Handle the state of the native layer
@@ -437,9 +437,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mLayout.addView(mSurface);
 
         // Get our current screen orientation and pass it down.
-        mCurrentOrientation = SDLActivity.getCurrentOrientation();
-        // Only record current orientation
-        SDLActivity.onNativeOrientationChanged(mCurrentOrientation);
+        SDLActivity.nativeSetNaturalOrientation(SDLActivity.getNaturalOrientation());
+        mCurrentRotation = SDLActivity.getCurrentRotation();
+        SDLActivity.onNativeRotationChanged(mCurrentRotation);
 
         try {
             if (Build.VERSION.SDK_INT < 24 /* Android 7.0 (N) */) {
@@ -543,33 +543,47 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
     }
 
-    public static int getCurrentOrientation() {
+    public static int getNaturalOrientation() {
         int result = SDL_ORIENTATION_UNKNOWN;
 
         Activity activity = (Activity)getContext();
-        if (activity == null) {
-            return result;
-        }
-        Display display = activity.getWindowManager().getDefaultDisplay();
-
-        switch (display.getRotation()) {
-            case Surface.ROTATION_0:
-                result = SDL_ORIENTATION_PORTRAIT;
-                break;
-
-            case Surface.ROTATION_90:
+        if (activity != null) {
+            Configuration config = activity.getResources().getConfiguration();
+            Display display = activity.getWindowManager().getDefaultDisplay();
+            int rotation = display.getRotation();
+            if (((rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) &&
+                    config.orientation == Configuration.ORIENTATION_LANDSCAPE) ||
+                ((rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) &&
+                    config.orientation == Configuration.ORIENTATION_PORTRAIT)) {
                 result = SDL_ORIENTATION_LANDSCAPE;
-                break;
-
-            case Surface.ROTATION_180:
-                result = SDL_ORIENTATION_PORTRAIT_FLIPPED;
-                break;
-
-            case Surface.ROTATION_270:
-                result = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
-                break;
+            } else {
+                result = SDL_ORIENTATION_PORTRAIT;
+            }
         }
+        return result;
+    }
 
+    public static int getCurrentRotation() {
+        int result = 0;
+
+        Activity activity = (Activity)getContext();
+        if (activity != null) {
+            Display display = activity.getWindowManager().getDefaultDisplay();
+            switch (display.getRotation()) {
+                case Surface.ROTATION_0:
+                    result = 0;
+                    break;
+                case Surface.ROTATION_90:
+                    result = 90;
+                    break;
+                case Surface.ROTATION_180:
+                    result = 180;
+                    break;
+                case Surface.ROTATION_270:
+                    result = 270;
+                    break;
+            }
+        }
         return result;
     }
 
@@ -987,7 +1001,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native String nativeGetHint(String name);
     public static native boolean nativeGetHintBoolean(String name, boolean default_value);
     public static native void nativeSetenv(String name, String value);
-    public static native void onNativeOrientationChanged(int orientation);
+    public static native void nativeSetNaturalOrientation(int orientation);
+    public static native void onNativeRotationChanged(int rotation);
     public static native void nativeAddTouch(int touchId, String name);
     public static native void nativePermissionResult(int requestCode, boolean result);
     public static native void onNativeLocaleChanged();

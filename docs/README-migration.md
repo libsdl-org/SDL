@@ -1139,6 +1139,7 @@ The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported 
 
 The following functions have been renamed:
 * SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode()
+* SDL_GetDisplayOrientation() => SDL_GetDisplayCurrentOrientation()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayForRect()
 * SDL_GetWindowDisplayIndex() => SDL_GetDisplayForWindow()
