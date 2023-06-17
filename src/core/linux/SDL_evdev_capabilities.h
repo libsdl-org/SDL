@@ -28,6 +28,9 @@
 
 #include <linux/input.h>
 
+#ifndef INPUT_PROP_ACCELEROMETER
+#define INPUT_PROP_ACCELEROMETER 0x06
+#endif
 #ifndef INPUT_PROP_MAX
 #define INPUT_PROP_MAX 0x1f
 #endif
