@@ -567,6 +567,7 @@ static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick)
     static Uint32 wraparound_gamepads[] = {
         MAKE_VIDPID(0x1532, 0x0709),    /* Razer Junglecat (L) */
         MAKE_VIDPID(0x1532, 0x070a),    /* Razer Junglecat (R) */
+        MAKE_VIDPID(0x1532, 0x0717),    /* Razer Edge controller */
         MAKE_VIDPID(0x1949, 0x0402),    /* Ipega PG-9083S */
         MAKE_VIDPID(0x27f8, 0x0bbc),    /* Gamevice */
         MAKE_VIDPID(0x27f8, 0x0bbf),    /* Razer Kishi */
