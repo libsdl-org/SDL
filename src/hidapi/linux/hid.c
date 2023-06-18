@@ -729,6 +729,8 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 
 hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 {
+	const int MAX_ATTEMPTS = 10;
+	int attempt;
 	hid_device *dev = NULL;
 
 	hid_init();
@@ -736,7 +738,15 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	dev = new_hid_device();
 
 	/* OPEN HERE */
-	dev->device_handle = open(path, O_RDWR | O_CLOEXEC);
+	for (attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+		dev->device_handle = open(path, O_RDWR | O_CLOEXEC);
+		if (dev->device_handle < 0 && errno == EACCES) {
+			/* udev might be setting up permissions, wait a bit and try again */
+			usleep(1 * 1000);
+			continue;
+		}
+		break;
+	}
 
 	/* If we have a good handle, return it. */
 	if (dev->device_handle >= 0) {
