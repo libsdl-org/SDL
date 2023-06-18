@@ -2139,6 +2139,7 @@ void Cocoa_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     @autoreleasepool {
         SDL_CocoaWindowData *windowData = ((__bridge SDL_CocoaWindowData *)window->driverdata);
         NSWindow *nswindow = windowData.nswindow;
+        SDL_bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, SDL_TRUE);
 
         if (![nswindow isMiniaturized]) {
             [windowData.listener pauseVisibleObservation];
@@ -2146,7 +2147,15 @@ void Cocoa_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->driverdata).nswindow;
                 [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
             }
-            [nswindow makeKeyAndOrderFront:nil];
+            if (bActivate) {
+                [nswindow makeKeyAndOrderFront:nil];
+            } else {
+                /* Order this window below the key window if we're not activating it */
+                if ([NSApp keyWindow]) {
+                    [nswindow orderWindow:NSWindowBelow relativeTo:[[NSApp keyWindow] windowNumber]];
+                }
+                [nswindow setIsVisible:YES];
+            }
             [windowData.listener resumeVisibleObservation];
         }
     }
@@ -2180,9 +2189,10 @@ void Cocoa_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
     @autoreleasepool {
         SDL_CocoaWindowData *windowData = ((__bridge SDL_CocoaWindowData *)window->driverdata);
         NSWindow *nswindow = windowData.nswindow;
+        SDL_bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED, SDL_TRUE);
 
         /* makeKeyAndOrderFront: has the side-effect of deminiaturizing and showing
-           a minimized or hidden window, so check for that before showing it.
+         a minimized or hidden window, so check for that before showing it.
          */
         [windowData.listener pauseVisibleObservation];
         if (![nswindow isMiniaturized] && [nswindow isVisible]) {
@@ -2191,7 +2201,12 @@ void Cocoa_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->driverdata).nswindow;
                 [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
             }
-            [nswindow makeKeyAndOrderFront:nil];
+            
+            if (bActivate) {
+                [nswindow makeKeyAndOrderFront:nil];
+            } else {
+                [nswindow orderFront:nil];
+            }
         }
         [windowData.listener resumeVisibleObservation];
     }
