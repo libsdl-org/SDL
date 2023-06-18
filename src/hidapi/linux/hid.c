@@ -1096,7 +1096,17 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
 		return NULL;
 	}
 
-	dev->device_handle = open(path, O_RDWR | O_CLOEXEC);
+    const int MAX_ATTEMPTS = 10;
+    int attempt;
+    for (attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+        dev->device_handle = open(path, O_RDWR | O_CLOEXEC);
+        if (dev->device_handle < 0 && errno == EACCES) {
+            /* udev might be setting up permissions, wait a bit and try again */
+            usleep(1 * 1000);
+            continue;
+        }
+        break;
+    }
 
 	if (dev->device_handle >= 0) {
 		int res, desc_size = 0;
