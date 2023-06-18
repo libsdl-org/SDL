@@ -164,29 +164,42 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
     static double scale_factor = 0.0;
 
     if (scale_factor <= 0.0) {
-        /* First try the settings portal via D-Bus for the text scaling factor (aka 'Global Scale' on KDE) */
-#ifdef SDL_USE_LIBDBUS
-        DBusMessage *reply;
-        SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
-        if (dbus) {
-            if ((reply = ReadDBusSetting(dbus, SCALE_FACTOR_KEY))) {
-                if (ParseDBusReply(dbus, reply, DBUS_TYPE_DOUBLE, &scale_factor)) {
-                    /* If the setting exists, register a listener for scale changes. */
-                    dbus->bus_add_match(dbus->session_conn,
-                                        "type='signal', interface='"SCALE_FACTOR_INTERFACE"',"
-                                        "member='"SCALE_FACTOR_SIGNAL_NAME"', arg0='"SCALE_FACTOR_NAMESPACE"',"
-                                        "arg1='"SCALE_FACTOR_KEY"'", NULL);
-                    dbus->connection_add_filter(dbus->session_conn, &DBus_MessageFilter, &scale_factor, NULL);
-                    dbus->connection_flush(dbus->session_conn);
-                }
-                dbus->message_unref(reply);
+        /* First use the forced scaling factor specified by the app/user */
+        const char *hint = SDL_GetHint(SDL_HINT_VIDEO_X11_SCALING_FACTOR);
+        if (hint && *hint) {
+            double value = SDL_atof(hint);
+            if (value >= 1.0f && value <= 10.0f) {
+                scale_factor = value;
             }
         }
 
+        /* Next try the settings portal via D-Bus for the text scaling factor (aka 'Global Scale' on KDE) */
+#ifdef SDL_USE_LIBDBUS
+        if (scale_factor <= 0.0)
+        {
+            DBusMessage *reply;
+            SDL_DBusContext *dbus = SDL_DBus_GetContext();
+
+            if (dbus) {
+                if ((reply = ReadDBusSetting(dbus, SCALE_FACTOR_KEY))) {
+                    if (ParseDBusReply(dbus, reply, DBUS_TYPE_DOUBLE, &scale_factor)) {
+                        /* If the setting exists, register a listener for scale changes. */
+                        dbus->bus_add_match(dbus->session_conn,
+                                            "type='signal', interface='"SCALE_FACTOR_INTERFACE"',"
+                                            "member='"SCALE_FACTOR_SIGNAL_NAME"', arg0='"SCALE_FACTOR_NAMESPACE"',"
+                                            "arg1='"SCALE_FACTOR_KEY"'", NULL);
+                        dbus->connection_add_filter(dbus->session_conn, &DBus_MessageFilter, &scale_factor, NULL);
+                        dbus->connection_flush(dbus->session_conn);
+                    }
+                    dbus->message_unref(reply);
+                }
+            }
+        }
+#endif
+
         /* If that failed, try "Xft.dpi" from the XResourcesDatabase... */
         if (scale_factor <= 0.0)
-#endif
         {
             SDL_VideoData *data = _this->driverdata;
             Display *display = data->display;

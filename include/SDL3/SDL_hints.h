@@ -1939,6 +1939,13 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_WINDOW_VISUALID      "SDL_VIDEO_X11_WINDOW_VISUALID"
 
 /**
+ *  \brief  A variable forcing the scaling factor for X11 windows
+ *
+ *  This variable can be set to a floating point value in the range 1.0-10.0f
+ */
+#define SDL_HINT_VIDEO_X11_SCALING_FACTOR      "SDL_VIDEO_X11_SCALING_FACTOR"
+
+/**
  *  \brief  A variable controlling whether the X11 XRandR extension should be used.
  *
  *  This variable can be set to the following values:
