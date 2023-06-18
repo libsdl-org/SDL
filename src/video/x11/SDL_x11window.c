@@ -1303,12 +1303,17 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
+    SDL_bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, SDL_TRUE);
     XEvent event;
 
     if (window->parent) {
         /* Update our position in case our parent moved while we were hidden */
         X11_UpdateWindowPosition(window);
     }
+
+    /* Whether XMapRaised focuses the window is based on the window type and it is
+     * wm specific. There isn't much we can do here */
+    (void)bActivate;
 
     if (!X11_IsWindowMapped(_this, window)) {
         X11_XMapRaised(display, data->xwindow);
@@ -1408,9 +1413,12 @@ void X11_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
+    SDL_bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED, SDL_TRUE);
 
     X11_XRaiseWindow(display, data->xwindow);
-    X11_SetWindowActive(_this, window);
+    if (bActivate) {
+        X11_SetWindowActive(_this, window);
+    }
     X11_XFlush(display);
 }
 
