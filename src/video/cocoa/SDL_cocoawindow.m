@@ -562,6 +562,14 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
     SDL_SetKeyboardFocus(window);
 }
 
+static void Cocoa_SendExposedEventIfVisible(SDL_Window *window)
+{
+    NSWindow *nswindow = ((__bridge SDL_CocoaWindowData*)window->driverdata).nswindow;
+    if ([nswindow occlusionState] & NSWindowOcclusionStateVisible) {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+    }
+}
+
 @implementation Cocoa_WindowListener
 
 - (void)listen:(SDL_CocoaWindowData *)data
@@ -600,6 +608,7 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
         [center addObserver:self selector:@selector(windowDidExitFullScreen:) name:NSWindowDidExitFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowDidFailToEnterFullScreen:) name:@"NSWindowDidFailToEnterFullScreenNotification" object:window];
         [center addObserver:self selector:@selector(windowDidFailToExitFullScreen:) name:@"NSWindowDidFailToExitFullScreenNotification" object:window];
+        [center addObserver:self selector:@selector(windowDidChangeOcclusionState:) name:NSWindowDidChangeOcclusionStateNotification object:window];
     } else {
         [window setDelegate:self];
     }
@@ -733,6 +742,7 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
         [center removeObserver:self name:NSWindowDidExitFullScreenNotification object:window];
         [center removeObserver:self name:@"NSWindowDidFailToEnterFullScreenNotification" object:window];
         [center removeObserver:self name:@"NSWindowDidFailToExitFullScreenNotification" object:window];
+        [center removeObserver:self name:NSWindowDidChangeOcclusionStateNotification object:window];
     } else {
         [window setDelegate:nil];
     }
@@ -825,7 +835,16 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
 
 - (void)windowDidExpose:(NSNotification *)aNotification
 {
-    SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+    Cocoa_SendExposedEventIfVisible(_data.window);
+}
+
+- (void)windowDidChangeOcclusionState:(NSNotification *)aNotification
+{
+    if ([_data.nswindow occlusionState] & NSWindowOcclusionStateVisible) {
+        SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+    } else {
+        SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);
+    }
 }
 
 - (void)windowWillMove:(NSNotification *)aNotification
@@ -1669,7 +1688,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
         self.layer.backgroundColor = CGColorGetConstantColor(color);
     }
 
-    SDL_SendWindowEvent(_sdlWindow, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+    Cocoa_SendExposedEventIfVisible(_sdlWindow);
 }
 
 - (BOOL)wantsUpdateLayer
@@ -1687,7 +1706,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     CFStringRef color = transparent ? kCGColorClear : kCGColorBlack;
     self.layer.backgroundColor = CGColorGetConstantColor(color);
     ScheduleContextUpdates((__bridge SDL_CocoaWindowData *)_sdlWindow->driverdata);
-    SDL_SendWindowEvent(_sdlWindow, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+    Cocoa_SendExposedEventIfVisible(_sdlWindow);
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent

@@ -62,6 +62,9 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         }
         window->flags |= SDL_WINDOW_HIDDEN;
         break;
+    case SDL_EVENT_WINDOW_EXPOSED:
+        window->flags &= ~SDL_WINDOW_OCCLUDED;
+        break;
     case SDL_EVENT_WINDOW_MOVED:
         window->undefined_x = SDL_FALSE;
         window->undefined_y = SDL_FALSE;
@@ -144,6 +147,12 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         }
         window->last_displayID = (SDL_DisplayID)data1;
         break;
+    case SDL_EVENT_WINDOW_OCCLUDED:
+        if (window->flags & SDL_WINDOW_OCCLUDED) {
+            return 0;
+        }
+        window->flags |= SDL_WINDOW_OCCLUDED;
+        break;
     default:
         break;
     }
@@ -162,7 +171,8 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         if (windowevent == SDL_EVENT_WINDOW_MOVED ||
             windowevent == SDL_EVENT_WINDOW_RESIZED ||
             windowevent == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED ||
-            windowevent == SDL_EVENT_WINDOW_EXPOSED) {
+            windowevent == SDL_EVENT_WINDOW_EXPOSED ||
+            windowevent == SDL_EVENT_WINDOW_OCCLUDED) {
             SDL_FilterEvents(RemoveSupercededWindowEvents, &event);
         }
         posted = (SDL_PushEvent(&event) > 0);
