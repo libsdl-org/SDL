@@ -318,22 +318,6 @@ static void RecenterGamepad(SDL_Gamepad *gamepad)
     }
 }
 
-/* SDL defines sensor orientation relative to the device natural
-   orientation, so when it's changed orientation to be used as a
-   gamepad, change the sensor orientation to match.
- */
-static void AdjustSensorOrientation(SDL_Joystick *joystick, float *src, float *dst)
-{
-    unsigned int i, j;
-
-    for (i = 0; i < 3; ++i) {
-        dst[i] = 0.0f;
-        for (j = 0; j < 3; ++j) {
-            dst[i] += joystick->sensor_transform[i][j] * src[j];
-        }
-    }
-}
-
 /*
  * Event filter to fire gamepad events from joystick ones
  */
@@ -408,28 +392,57 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
             SDL_PushEvent(&deviceevent);
         }
     } break;
-    case SDL_EVENT_SENSOR_UPDATE:
-    {
-        SDL_LockJoysticks();
-        for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
-            if (gamepad->joystick->accel && gamepad->joystick->accel_sensor == event->sensor.which) {
-                float data[3];
-                AdjustSensorOrientation(gamepad->joystick, event->sensor.data, data);
-                SDL_SendJoystickSensor(event->common.timestamp, gamepad->joystick, SDL_SENSOR_ACCEL, event->sensor.sensor_timestamp, data, SDL_arraysize(data));
-            }
-            if (gamepad->joystick->gyro && gamepad->joystick->gyro_sensor == event->sensor.which) {
-                float data[3];
-                AdjustSensorOrientation(gamepad->joystick, event->sensor.data, data);
-                SDL_SendJoystickSensor(event->common.timestamp, gamepad->joystick, SDL_SENSOR_GYRO, event->sensor.sensor_timestamp, data, SDL_arraysize(data));
-            }
-        }
-        SDL_UnlockJoysticks();
-    } break;
     default:
         break;
     }
 
     return 1;
+}
+
+/* SDL defines sensor orientation relative to the device natural
+   orientation, so when it's changed orientation to be used as a
+   gamepad, change the sensor orientation to match.
+ */
+static void AdjustSensorOrientation(SDL_Joystick *joystick, float *src, float *dst)
+{
+    unsigned int i, j;
+
+    for (i = 0; i < 3; ++i) {
+        dst[i] = 0.0f;
+        for (j = 0; j < 3; ++j) {
+            dst[i] += joystick->sensor_transform[i][j] * src[j];
+        }
+    }
+}
+
+/*
+ * Event filter to fire gamepad sensor events from system sensor events
+ *
+ * We don't use SDL_GamepadEventWatcher() for this because we want to
+ * deliver gamepad sensor events when system sensor events are disabled,
+ * and we also need to avoid a potential deadlock where joystick event
+ * delivery locks the joysticks and then the event queue, but sensor
+ * event delivery would lock the event queue and then from within the
+ * event watcher function lock the joysticks.
+ */
+void SDL_GamepadSensorWatcher(Uint64 timestamp, SDL_SensorID sensor, Uint64 sensor_timestamp, float *data, int num_values)
+{
+    SDL_Gamepad *gamepad;
+
+    SDL_LockJoysticks();
+    for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
+        if (gamepad->joystick->accel && gamepad->joystick->accel_sensor == sensor) {
+            float gamepad_data[3];
+            AdjustSensorOrientation(gamepad->joystick, data, gamepad_data);
+            SDL_SendJoystickSensor(timestamp, gamepad->joystick, SDL_SENSOR_ACCEL, sensor_timestamp, gamepad_data, SDL_arraysize(gamepad_data));
+        }
+        if (gamepad->joystick->gyro && gamepad->joystick->gyro_sensor == sensor) {
+            float gamepad_data[3];
+            AdjustSensorOrientation(gamepad->joystick, data, gamepad_data);
+            SDL_SendJoystickSensor(timestamp, gamepad->joystick, SDL_SENSOR_GYRO, sensor_timestamp, gamepad_data, SDL_arraysize(gamepad_data));
+        }
+    }
+    SDL_UnlockJoysticks();
 }
 
 #ifdef __ANDROID__

@@ -27,6 +27,7 @@
 #ifndef SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
 #endif
+#include "../joystick/SDL_gamepad_c.h"
 
 static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #ifdef SDL_SENSOR_ANDROID
@@ -501,6 +502,9 @@ int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_tim
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */
+
+    SDL_GamepadSensorWatcher(timestamp, sensor->instance_id, sensor_timestamp, data, num_values);
+
     return posted;
 }
 
