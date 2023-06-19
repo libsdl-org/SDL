@@ -121,6 +121,7 @@ typedef enum
     SDL_EVENT_WINDOW_ICCPROF_CHANGED,   /**< The ICC profile of the window's display has changed */
     SDL_EVENT_WINDOW_DISPLAY_CHANGED,   /**< Window has been moved to display data1 */
     SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED, /**< Window display scale has been changed */
+    SDL_EVENT_WINDOW_OCCLUDED,          /**< The window has been occluded */
     SDL_EVENT_WINDOW_DESTROYED,         /**< The window with the associated ID is being or has been destroyed. If this message is being handled
                                              in an event watcher, the window handle is still valid and can still be used to retrieve any userdata
                                              associated with the window. Otherwise, the handle has already been destroyed and all resources

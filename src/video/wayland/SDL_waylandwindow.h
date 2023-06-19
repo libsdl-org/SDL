@@ -122,6 +122,7 @@ struct SDL_WindowData
     int system_min_required_height;
     SDL_DisplayID last_displayID;
     SDL_bool floating;
+    SDL_bool suspended;
     SDL_bool is_fullscreen;
     SDL_bool in_fullscreen_transition;
     SDL_bool fullscreen_was_positioned;
