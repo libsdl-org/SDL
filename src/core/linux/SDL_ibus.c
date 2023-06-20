@@ -410,7 +410,12 @@ static char *IBus_GetDBusAddressFilename(void)
         (void)SDL_snprintf(config_dir, sizeof(config_dir), "%s/.config", home_env);
     }
 
-    key = dbus->get_local_machine_id();
+    key = SDL_DBus_GetLocalMachineId();
+
+    if (key == NULL) {
+        SDL_free(display);
+        return NULL;
+    }
 
     SDL_memset(file_path, 0, sizeof(file_path));
     (void)SDL_snprintf(file_path, sizeof(file_path), "%s/ibus/bus/%s-%s-%s",
