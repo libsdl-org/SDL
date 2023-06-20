@@ -45,6 +45,7 @@
 #include "joystick/SDL_gamepad_c.h"
 #include "joystick/SDL_joystick_c.h"
 #include "sensor/SDL_sensor_c.h"
+#include "actionset/SDL_actionset_c.h"
 
 /* Initialization/Cleanup routines */
 #ifndef SDL_TIMERS_DISABLED
@@ -174,6 +175,11 @@ int SDL_InitSubSystem(Uint32 flags)
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Init();
 #endif
+
+    if (flags & SDL_INIT_ACTIONSET) {
+        /* action set implies gamepad, sensor, and haptic */
+        flags |= SDL_INIT_GAMEPAD | SDL_INIT_SENSOR | SDL_INIT_HAPTIC;
+    }
 
     if (flags & SDL_INIT_GAMEPAD) {
         /* game controller implies joystick */
@@ -348,6 +354,24 @@ int SDL_InitSubSystem(Uint32 flags)
 #endif
     }
 
+    if (flags & SDL_INIT_ACTIONSET) {
+#ifndef SDL_ACTIONSET_DISABLED
+        if (SDL_ShouldInitSubsystem(SDL_INIT_ACTIONSET)) {
+            SDL_IncrementSubsystemRefCount(SDL_INIT_ACTIONSET);
+            if (SDL_InitActionSet() < 0) {
+                SDL_DecrementSubsystemRefCount(SDL_INIT_ACTIONSET);
+                goto quit_and_error;
+            }
+        } else {
+            SDL_IncrementSubsystemRefCount(SDL_INIT_ACTIONSET);
+        }
+        flags_initialized |= SDL_INIT_ACTIONSET;
+#else
+        SDL_SetError("SDL not built with actionset support");
+        goto quit_and_error;
+#endif
+    }
+
     (void)flags_initialized; /* make static analysis happy, since this only gets used in error cases. */
 
     return 0;
@@ -365,6 +389,15 @@ int SDL_Init(Uint32 flags)
 void SDL_QuitSubSystem(Uint32 flags)
 {
     /* Shut down requested initialized subsystems */
+#ifndef SDL_ACTIONSET_DISABLED
+    if (flags & SDL_INIT_ACTIONSET) {
+        if (SDL_ShouldQuitSubsystem(SDL_INIT_ACTIONSET)) {
+            SDL_QuitActionSet();
+        }
+        SDL_DecrementSubsystemRefCount(SDL_INIT_ACTIONSET);
+    }
+#endif
+
 #ifndef SDL_SENSOR_DISABLED
     if (flags & SDL_INIT_SENSOR) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_SENSOR)) {

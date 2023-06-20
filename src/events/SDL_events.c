@@ -31,6 +31,9 @@
 #ifndef SDL_SENSOR_DISABLED
 #include "../sensor/SDL_sensor_c.h"
 #endif
+#ifndef SDL_ACTIONSET_DISABLED
+#include "../actionset/SDL_actionset_c.h"
+#endif
 #include "../video/SDL_sysvideo.h"
 #include <SDL3/SDL_syswm.h>
 
@@ -119,6 +122,17 @@ static void SDLCALL SDL_AutoUpdateSensorsChanged(void *userdata, const char *nam
 }
 
 #endif /* !SDL_SENSOR_DISABLED */
+
+#ifndef SDL_ACTIONSET_DISABLED
+
+static SDL_bool SDL_update_actionset = SDL_TRUE;
+
+static void SDLCALL SDL_AutoUpdateActionSetChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_update_actionset = SDL_GetStringBoolean(hint, SDL_TRUE);
+}
+
+#endif /* !SDL_ACTIONSET_DISABLED */
 
 static void SDLCALL SDL_PollSentinelChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -868,6 +882,13 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
     }
 #endif
 
+#ifndef SDL_ACTIONSET_DISABLED
+    /* Check for action set changes */
+    if (SDL_update_actionset) {
+        SDL_UpdateActionSet();
+    }
+#endif
+
     SDL_SendPendingSignalEvents(); /* in case we had a signal handler fire, etc. */
 
     if (push_sentinel && SDL_EventEnabled(SDL_EVENT_POLL_SENTINEL)) {
@@ -986,6 +1007,11 @@ static SDL_bool SDL_events_need_polling(void)
 #ifndef SDL_SENSOR_DISABLED
     need_polling = need_polling ||
                    (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && SDL_SensorsOpened());
+#endif
+
+#ifndef SDL_ACTIONSET_DISABLED
+    need_polling = need_polling ||
+                   (SDL_WasInit(SDL_INIT_ACTIONSET) && SDL_update_actionset && SDL_ActionSetsOpened());
 #endif
 
     return need_polling;
@@ -1364,6 +1390,9 @@ int SDL_InitEvents(void)
 #ifndef SDL_SENSOR_DISABLED
     SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
 #endif
+#ifndef SDL_ACTIONSET_DISABLED
+    SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_ACTIONSET, SDL_AutoUpdateActionSetChanged, NULL);
+#endif
     SDL_AddHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
     SDL_AddHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
     if (SDL_StartEventLoop() < 0) {
@@ -1382,6 +1411,9 @@ void SDL_QuitEvents(void)
     SDL_StopEventLoop();
     SDL_DelHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
     SDL_DelHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
+#ifndef SDL_ACTIONSET_DISABLED
+    SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_ACTIONSET, SDL_AutoUpdateActionSetChanged, NULL);
+#endif
 #ifndef SDL_JOYSTICK_DISABLED
     SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
 #endif

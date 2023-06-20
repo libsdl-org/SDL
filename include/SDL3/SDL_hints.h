@@ -372,6 +372,18 @@ extern "C" {
 #define SDL_HINT_AUTO_UPDATE_SENSORS    "SDL_AUTO_UPDATE_SENSORS"
 
 /**
+ *  \brief  A variable controlling whether SDL updates action set state when getting action events
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "0"     - You'll call SDL_UpdateActionSet() manually
+ *    "1"     - SDL will automatically call SDL_UpdateActionSet() (default)
+ *
+ *  This hint can be toggled on and off at runtime.
+ */
+#define SDL_HINT_AUTO_UPDATE_ACTIONSET    "SDL_AUTO_UPDATE_ACTIONSET"
+
+/**
  *  \brief Prevent SDL from using version 4 of the bitmap header when saving BMPs.
  *
  * The bitmap header version 4 is required for proper alpha channel support and

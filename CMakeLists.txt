@@ -353,8 +353,8 @@ endif()
 set(LONGESTOPTIONNAME 0)  # set_option and friends will change this.
 
 set(SDL_SUBSYSTEMS
-    Atomic Audio Video Render Events Joystick Haptic Hidapi Power Threads Timers
-    File Loadso CPUinfo Filesystem Sensor Locale Misc)
+    ActionSet Atomic Audio Video Render Events Joystick Haptic Hidapi Power
+    Threads Timers File Loadso CPUinfo Filesystem Sensor Locale Misc)
 foreach(_SUB ${SDL_SUBSYSTEMS})
   string(TOUPPER ${_SUB} _OPT)
   if (NOT DEFINED SDL_${_OPT}_ENABLED_BY_DEFAULT)
@@ -474,6 +474,9 @@ endif()
 # General source files
 file(GLOB SOURCE_FILES
   ${SDL3_SOURCE_DIR}/src/*.c
+  ${SDL3_SOURCE_DIR}/src/actionset/*.c
+  ${SDL3_SOURCE_DIR}/src/actionset/sdlinput/*.c
+  ${SDL3_SOURCE_DIR}/src/actionset/steaminput/*.c # FIXME: Windows/macOS/Linux only
   ${SDL3_SOURCE_DIR}/src/atomic/*.c
   ${SDL3_SOURCE_DIR}/src/audio/*.c
   ${SDL3_SOURCE_DIR}/src/core/*.c

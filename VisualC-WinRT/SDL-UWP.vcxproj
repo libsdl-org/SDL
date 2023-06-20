@@ -38,6 +38,7 @@
     <ClInclude Include="..\include\SDL3\SDL_begin_code.h" />
     <ClInclude Include="..\include\SDL3\SDL_close_code.h" />
     <ClInclude Include="..\include\SDL3\SDL.h" />
+    <ClInclude Include="..\include\SDL3\SDL_actionset.h" />
     <ClInclude Include="..\include\SDL3\SDL_assert.h" />
     <ClInclude Include="..\include\SDL3\SDL_atomic.h" />
     <ClInclude Include="..\include\SDL3\SDL_audio.h" />
@@ -89,6 +90,8 @@
     <ClInclude Include="..\include\SDL3\SDL_types.h" />
     <ClInclude Include="..\include\SDL3\SDL_version.h" />
     <ClInclude Include="..\include\SDL3\SDL_video.h" />
+    <ClInclude Include="..\src\actionset\SDL_actionset_c.h" />
+    <ClInclude Include="..\src\actionset\sdlinput\SDL_sdlinput.h" />
     <ClInclude Include="..\src\audio\disk\SDL_diskaudio.h" />
     <ClInclude Include="..\src\audio\dummy\SDL_dummyaudio.h" />
     <ClInclude Include="..\src\audio\SDL_audiodev_c.h" />
@@ -185,6 +188,8 @@
     <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\actionset\SDL_actionset.c" />
+    <ClCompile Include="..\src\actionset\sdlinput\SDL_sdlinput.c" />
     <ClCompile Include="..\src\atomic\SDL_atomic.c" />
     <ClCompile Include="..\src\atomic\SDL_spinlock.c" />
     <ClCompile Include="..\src\audio\disk\SDL_diskaudio.c" />

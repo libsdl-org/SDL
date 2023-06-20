@@ -18,6 +18,9 @@
     <ClInclude Include="..\include\SDL3\SDL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\SDL3\SDL_actionset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\SDL3\SDL_assert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -167,6 +170,12 @@
     </ClInclude>
     <ClInclude Include="..\src\joystick\SDL_gamepad_db.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\actionset\SDL_actionset_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\actionset\sdlinput\SDL_sdlinput.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\audio\disk\SDL_diskaudio.h">
       <Filter>Source Files</Filter>
@@ -447,6 +456,12 @@
     <ClInclude Include="..\include\SDL3\SDL_misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="..\src\actionset\SDL_actionset.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\actionset\sdlinput\SDL_sdlinput.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\atomic\SDL_atomic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
