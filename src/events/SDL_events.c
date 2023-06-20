@@ -854,17 +854,17 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
         _this->PumpEvents(_this);
     }
 
-#ifndef SDL_JOYSTICK_DISABLED
-    /* Check for joystick state change */
-    if (SDL_update_joysticks) {
-        SDL_UpdateJoysticks();
-    }
-#endif
-
 #ifndef SDL_SENSOR_DISABLED
     /* Check for sensor state change */
     if (SDL_update_sensors) {
         SDL_UpdateSensors();
+    }
+#endif
+
+#ifndef SDL_JOYSTICK_DISABLED
+    /* Check for joystick state change */
+    if (SDL_update_joysticks) {
+        SDL_UpdateJoysticks();
     }
 #endif
 
