@@ -511,14 +511,6 @@ static SDL_bool SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
 #endif /* __WINRT__ */
 }
 
-static SDL_bool IsBackboneOne(SDL_Joystick *joystick)
-{
-    if (joystick->name && SDL_strstr(joystick->name, "Backbone One")) {
-        return SDL_TRUE;
-    }
-    return SDL_FALSE;
-}
-
 static SDL_bool IsROGAlly(SDL_Joystick *joystick)
 {
     Uint16 vendor, product;
@@ -606,7 +598,9 @@ static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, SDL_bool *inve
     }
 
     /* See if this is another known wraparound gamepad */
-    if (IsBackboneOne(joystick)) {
+    if (joystick->name &&
+        (SDL_strstr(joystick->name, "Backbone One") ||
+         SDL_strstr(joystick->name, "Kishi"))) {
         return SDL_TRUE;
     }
     if (IsROGAlly(joystick)) {
