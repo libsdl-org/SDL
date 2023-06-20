@@ -29,6 +29,17 @@ obj=
 lib=
 ndk_args=
 
+# Allow overriding the ABI from the environment
+if [ "$APP_ABI" = "" ]; then
+    #APP_ABI="armeabi-v7a arm64-v8a x86 x86_64"
+    APP_ABI="arm64-v8a"
+fi
+
+# Allow overriding the platform from the environment
+if [ "$APP_PLATFORM" = "" ]; then
+    APP_PLATFORM=android-16
+fi
+
 # Allow an external caller to specify locations.
 for arg in $*; do
     if [ "${arg:0:8}" == "NDK_OUT=" ]; then
@@ -64,7 +75,7 @@ ndk-build \
     NDK_OUT=$obj \
     NDK_LIBS_OUT=$lib \
     APP_BUILD_SCRIPT=Android.mk \
-    APP_ABI="armeabi-v7a arm64-v8a x86 x86_64" \
-    APP_PLATFORM=android-16 \
+    APP_ABI="$APP_ABI" \
+    APP_PLATFORM="$APP_PLATFORM" \
     APP_MODULES="SDL3" \
     $ndk_args
