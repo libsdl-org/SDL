@@ -1893,16 +1893,6 @@ void SDL_UpdateJoysticks(void)
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
-            if (joystick->accel || joystick->gyro) {
-                SDL_LockSensors();
-                if (joystick->gyro) {
-                    SDL_UpdateSensor(joystick->gyro);
-                }
-                if (joystick->accel) {
-                    SDL_UpdateSensor(joystick->accel);
-                }
-                SDL_UnlockSensors();
-            }
             joystick->driver->Update(joystick);
 
             if (joystick->delayed_guide_button) {
