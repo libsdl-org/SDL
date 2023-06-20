@@ -36,12 +36,18 @@ static SDL_DBusContext dbus;
 
 static int LoadDBUSSyms(void)
 {
+#define SDL_DBUS_SYM2_OPTIONAL(x, y)                   \
+    dbus.x = SDL_LoadFunction(dbus_handle, #y)
+
 #define SDL_DBUS_SYM2(x, y)                            \
     if (!(dbus.x = SDL_LoadFunction(dbus_handle, #y))) \
     return -1
 
 #define SDL_DBUS_SYM(x) \
     SDL_DBUS_SYM2(x, dbus_##x)
+
+#define SDL_DBUS_SYM_OPTIONAL(x) \
+    SDL_DBUS_SYM2_OPTIONAL(x, dbus_##x)
 
     SDL_DBUS_SYM(bus_get_private);
     SDL_DBUS_SYM(bus_register);
@@ -80,6 +86,7 @@ static int LoadDBUSSyms(void)
     SDL_DBUS_SYM(error_is_set);
     SDL_DBUS_SYM(error_free);
     SDL_DBUS_SYM(get_local_machine_id);
+    SDL_DBUS_SYM_OPTIONAL(try_get_local_machine_id);
     SDL_DBUS_SYM(free);
     SDL_DBUS_SYM(free_string_array);
     SDL_DBUS_SYM(shutdown);
@@ -492,6 +499,40 @@ SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
     }
 
     return SDL_TRUE;
+}
+
+/*
+ * Get the machine ID if possible. Result must be freed with dbus->free().
+ */
+char *SDL_DBus_GetLocalMachineId(void)
+{
+    DBusError err;
+    char *result;
+
+    dbus.error_init(&err);
+
+    if (dbus.try_get_local_machine_id) {
+        /* Available since dbus 1.12.0, has proper error-handling */
+        result = dbus.try_get_local_machine_id(&err);
+    } else {
+        /* Available since time immemorial, but has no error-handling:
+         * if the machine ID can't be read, many versions of libdbus will
+         * treat that as a fatal mis-installation and abort() */
+        result = dbus.get_local_machine_id();
+    }
+
+    if (result) {
+        return result;
+    }
+
+    if (dbus.error_is_set(&err)) {
+        SDL_SetError("%s: %s", err.name, err.message);
+        dbus.error_free(&err);
+    } else {
+        SDL_SetError("Error getting D-Bus machine ID");
+    }
+
+    return NULL;
 }
 #endif
 

@@ -72,6 +72,7 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*error_is_set)(const DBusError *);
     void (*error_free)(DBusError *);
     char *(*get_local_machine_id)(void);
+    char *(*try_get_local_machine_id)(DBusError *);
     void (*free)(void *);
     void (*free_string_array)(char **);
     void (*shutdown)(void);
@@ -94,6 +95,8 @@ extern SDL_bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const c
 
 extern void SDL_DBus_ScreensaverTickle(void);
 extern SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit);
+
+extern char *SDL_DBus_GetLocalMachineId(void);
 
 #endif /* HAVE_DBUS_DBUS_H */
 
