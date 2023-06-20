@@ -81,7 +81,10 @@ int main(int argc, char **argv)
     /* Initialize the force feedbackness */
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK |
              SDL_INIT_HAPTIC);
-    SDL_Log("%d Haptic devices detected.\n", SDL_NumHaptics());
+    SDL_Log("%d Haptic devices detected:\n", SDL_NumHaptics());
+    for (i = 0; i < SDL_NumHaptics(); ++i) {
+        SDL_Log("    %s\n", SDL_HapticName(i));
+    }
     if (SDL_NumHaptics() > 0) {
         /* We'll just use index or the first force feedback device found */
         if (name == NULL) {
