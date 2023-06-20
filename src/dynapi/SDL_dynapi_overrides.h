@@ -893,3 +893,5 @@
 #define SDL_HasWindowSurface SDL_HasWindowSurface_REAL
 #define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL
 #define SDL_GetNaturalDisplayOrientation SDL_GetNaturalDisplayOrientation_REAL
+#define SDL_StartLocation SDL_StartLocation_REAL
+#define SDL_StopLocation SDL_StopLocation_REAL
