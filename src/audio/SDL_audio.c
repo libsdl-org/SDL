@@ -1160,10 +1160,21 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
         is_default = SDL_TRUE;
     }
 
+    // this will let you use a logical device to make a new logical device on the parent physical device. Could be useful?
+    SDL_AudioDevice *device = NULL;
+    const SDL_bool islogical = (devid & (1<<1)) ? SDL_FALSE : SDL_TRUE;
+    if (!islogical) {
+        device = ObtainPhysicalAudioDevice(devid);
+    } else {
+        SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid);  // this locks the physical device, too.
+        if (logdev) {
+            is_default = logdev->is_default;  // was the original logical device meant to be a default? Make this one, too.
+            device = logdev->physical_device;
+        }
+    }
+
     SDL_AudioDeviceID retval = 0;
 
-    // this will let you use a logical device to make a new logical device on the parent physical device. Could be useful?
-    SDL_AudioDevice *device = ObtainPhysicalAudioDevice(devid);
     if (device) {
         SDL_LogicalAudioDevice *logdev = (SDL_LogicalAudioDevice *) SDL_calloc(1, sizeof (SDL_LogicalAudioDevice));
         if (!logdev) {
