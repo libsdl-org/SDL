@@ -119,6 +119,8 @@ struct SDL_Joystick
     SDL_Sensor *gyro _guarded;
     float sensor_transform[3][3] _guarded;
 
+    Uint64 update_complete _guarded;
+
     struct SDL_JoystickDriver *driver _guarded;
 
     struct joystick_hwdata *hwdata _guarded; /* Driver dependent information */

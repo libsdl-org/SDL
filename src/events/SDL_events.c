@@ -579,6 +579,8 @@ int SDL_StartEventLoop(void)
     SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_FALSE);
     SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_FALSE);
 #endif
+    SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE, SDL_FALSE);
+    SDL_SetEventEnabled(SDL_EVENT_GAMEPAD_UPDATE_COMPLETE, SDL_FALSE);
 
     SDL_EventQ.active = SDL_TRUE;
     SDL_UnlockMutex(SDL_EventQ.lock);
@@ -1264,6 +1266,29 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
     if (enabled != current_state) {
         if (enabled) {
             SDL_disabled_events[hi]->bits[lo / 32] &= ~(1 << (lo & 31));
+
+            /* Gamepad events depend on joystick events */
+            switch (type) {
+            case SDL_EVENT_GAMEPAD_ADDED:
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_ADDED, SDL_TRUE);
+                break;
+            case SDL_EVENT_GAMEPAD_REMOVED:
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_REMOVED, SDL_TRUE);
+                break;
+            case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+            case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+            case SDL_EVENT_GAMEPAD_BUTTON_UP:
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_AXIS_MOTION, SDL_TRUE);
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_HAT_MOTION, SDL_TRUE);
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_BUTTON_DOWN, SDL_TRUE);
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_BUTTON_UP, SDL_TRUE);
+                break;
+            case SDL_EVENT_GAMEPAD_UPDATE_COMPLETE:
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE, SDL_TRUE);
+                break;
+            default:
+                break;
+            }
         } else {
             /* Disable this event type and discard pending events */
             if (!SDL_disabled_events[hi]) {
