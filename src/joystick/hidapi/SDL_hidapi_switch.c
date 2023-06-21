@@ -841,16 +841,55 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 
 static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 *pIMUScale;
     SwitchSubcommandInputPacket_t *reply = NULL;
-    Sint16 sAccelRawX, sAccelRawY, sAccelRawZ, sGyroRawX, sGyroRawY, sGyroRawZ;
 
     /* Read Calibration Info */
     SwitchSPIOpData_t readParams;
     readParams.unAddress = k_unSPIIMUScaleStartOffset;
     readParams.ucLength = k_unSPIIMUScaleLength;
 
-    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply)) {
+    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply)) {
+        Uint8 *pIMUScale;
+        Sint16 sAccelRawX, sAccelRawY, sAccelRawZ, sGyroRawX, sGyroRawY, sGyroRawZ;
+
+        /* IMU scale gives us multipliers for converting raw values to real world values */
+        pIMUScale = reply->spiReadData.rgucReadData;
+
+        sAccelRawX = (pIMUScale[1] << 8) | pIMUScale[0];
+        sAccelRawY = (pIMUScale[3] << 8) | pIMUScale[2];
+        sAccelRawZ = (pIMUScale[5] << 8) | pIMUScale[4];
+
+        sGyroRawX = (pIMUScale[13] << 8) | pIMUScale[12];
+        sGyroRawY = (pIMUScale[15] << 8) | pIMUScale[14];
+        sGyroRawZ = (pIMUScale[17] << 8) | pIMUScale[16];
+
+        /* Check for user calibration data. If it's present and set, it'll override the factory settings */
+        readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
+        readParams.ucLength = k_unSPIIMUUserScaleLength;
+        if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
+            pIMUScale = reply->spiReadData.rgucReadData;
+
+            sAccelRawX = (pIMUScale[3] << 8) | pIMUScale[2];
+            sAccelRawY = (pIMUScale[5] << 8) | pIMUScale[4];
+            sAccelRawZ = (pIMUScale[7] << 8) | pIMUScale[6];
+
+            sGyroRawX = (pIMUScale[15] << 8) | pIMUScale[14];
+            sGyroRawY = (pIMUScale[17] << 8) | pIMUScale[16];
+            sGyroRawZ = (pIMUScale[19] << 8) | pIMUScale[18];
+        }
+
+        /* Accelerometer scale */
+        ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
+        ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
+        ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
+
+        /* Gyro scale */
+        ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / (SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawX) * (float)M_PI / 180.0f;
+        ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / (SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawY) * (float)M_PI / 180.0f;
+        ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / (SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawZ) * (float)M_PI / 180.0f;
+
+    } else {
+        /* Use default values */
         const float accelScale = SDL_STANDARD_GRAVITY / SWITCH_ACCEL_SCALE;
         const float gyroScale = (float)M_PI / 180.0f / SWITCH_GYRO_SCALE;
 
@@ -861,46 +900,7 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
         ctx->m_IMUScaleData.fGyroScaleX = gyroScale;
         ctx->m_IMUScaleData.fGyroScaleY = gyroScale;
         ctx->m_IMUScaleData.fGyroScaleZ = gyroScale;
-
-        return SDL_FALSE;
     }
-
-    /* IMU scale gives us multipliers for converting raw values to real world values */
-    pIMUScale = reply->spiReadData.rgucReadData;
-
-    sAccelRawX = (pIMUScale[1] << 8) | pIMUScale[0];
-    sAccelRawY = (pIMUScale[3] << 8) | pIMUScale[2];
-    sAccelRawZ = (pIMUScale[5] << 8) | pIMUScale[4];
-
-    sGyroRawX = (pIMUScale[13] << 8) | pIMUScale[12];
-    sGyroRawY = (pIMUScale[15] << 8) | pIMUScale[14];
-    sGyroRawZ = (pIMUScale[17] << 8) | pIMUScale[16];
-
-    /* Check for user calibration data. If it's present and set, it'll override the factory settings */
-    readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
-    readParams.ucLength = k_unSPIIMUUserScaleLength;
-    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
-        pIMUScale = reply->spiReadData.rgucReadData;
-
-        sAccelRawX = (pIMUScale[3] << 8) | pIMUScale[2];
-        sAccelRawY = (pIMUScale[5] << 8) | pIMUScale[4];
-        sAccelRawZ = (pIMUScale[7] << 8) | pIMUScale[6];
-
-        sGyroRawX = (pIMUScale[15] << 8) | pIMUScale[14];
-        sGyroRawY = (pIMUScale[17] << 8) | pIMUScale[16];
-        sGyroRawZ = (pIMUScale[19] << 8) | pIMUScale[18];
-    }
-
-    /* Accelerometer scale */
-    ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
-    ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
-    ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
-
-    /* Gyro scale */
-    ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / (float)(SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawX) * (float)M_PI / 180.0f;
-    ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / (float)(SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawY) * (float)M_PI / 180.0f;
-    ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / (float)(SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawZ) * (float)M_PI / 180.0f;
-
     return SDL_TRUE;
 }
 
