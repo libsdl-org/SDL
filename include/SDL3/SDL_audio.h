@@ -141,6 +141,14 @@ typedef Uint16 SDL_AudioFormat;
 
 /* @} *//* Audio flags */
 
+/**
+ * SDL Audio Device instance IDs.
+ */
+typedef Uint32 SDL_AudioDeviceID;
+
+#define SDL_AUDIO_DEVICE_DEFAULT_OUTPUT ((SDL_AudioDeviceID) 0xFFFFFFFF)
+#define SDL_AUDIO_DEVICE_DEFAULT_CAPTURE ((SDL_AudioDeviceID) 0xFFFFFFFE)
+
 typedef struct SDL_AudioSpec
 {
     SDL_AudioFormat format;     /**< Audio data format */
@@ -237,11 +245,6 @@ extern DECLSPEC const char *SDLCALL SDL_GetAudioDriver(int index);
  */
 extern DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
 
-/**
- * SDL Audio Device instance IDs.
- */
-typedef Uint32 SDL_AudioDeviceID;
-
 
 /**
  * Get a list of currently-connected audio output devices.
@@ -326,8 +329,6 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SD
 /**
  * Open a specific audio device.
  *
- * Passing in a `devid` name of zero requests the most reasonable default.
- *
  * You can open both output and capture devices through this function.
  * Output devices will take data from bound audio streams, mix it, and
  * send it to the hardware. Capture devices will feed any bound audio
@@ -336,7 +337,22 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SD
  * An opened audio device starts out with no audio streams bound. To
  * start audio playing, bind a stream and supply audio data to it. Unlike
  * SDL2, there is no audio callback; you only bind audio streams and
- * make sure they have data flowing into them.
+ * make sure they have data flowing into them (although, as an optional
+ * feature, each audio stream may have its own callback, which can be
+ * used to simulate SDL2's semantics).
+ *
+ * If you don't care about opening a specific device, pass a `devid`
+ * of either `SDL_AUDIO_DEVICE_DEFAULT_OUTPUT` or
+ * `SDL_AUDIO_DEVICE_DEFAULT_CAPTURE`. In this case, SDL will try to
+ * pick the most reasonable default, and may also switch between
+ * physical devices seamlessly later, if the most reasonable default
+ * changes during the lifetime of this opened device (user changed
+ * the default in the OS's system preferences, the default got
+ * unplugged so the system jumped to a new default, the user plugged
+ * in headphones on a mobile device, etc). Unless you have a good
+ * reason to choose a specific device, this is probably what you want.
+ * Requesting the default will also allow the user to specify
+ * preferences with hints/environment variables.
  *
  * You may request a specific format for the audio device, but there is
  * no promise the device will honor that request for several reasons. As
@@ -346,28 +362,30 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SD
  * tell you the preferred format for the device before opening and the
  * actual format the device is using after opening.
  *
- * It's legal to open the same device ID more than once; in the end, you must
- * close it the same number of times. This allows libraries to open a device
- * separate from the main app and bind its own streams without conflicting.
+ * It's legal to open the same device ID more than once; each successful
+ * open will generate a new logical SDL_AudioDeviceID that is managed
+ * separately from others on the same physical device. This allows
+ * libraries to open a device separately from the main app and bind its own
+ * streams without conflicting.
  *
- * This function returns the opened device ID on success, so that if you
- * open a device of 0, you'll have a real ID to bind streams to, but this
- * does not generate new instance IDs. Unlike SDL2, these IDs are assigned
- * to each unique device on the system, open or not, so if you request a
- * specific device, you'll get that same device ID back.
+ * This function returns the opened device ID on success. This is a new,
+ * unique SDL_AudioDeviceID that represents a logical device.
  *
  * Some backends might offer arbitrary devices (for example, a networked
  * audio protocol that can connect to an arbitrary server). For these, as
- * a change from SDL2, you should open a device ID of zero and use an SDL
+ * a change from SDL2, you should open a default device ID and use an SDL
  * hint to specify the target if you care, or otherwise let the backend
  * figure out a reasonable default. Most backends don't offer anything like
  * this, and often this would be an end user setting an environment
  * variable for their custom need, and not something an application should
  * specifically manage.
  *
- * \param devid the device instance id to open. 0 requests the most
- *              reasonable default device.
- * \param spec the requested device configuration
+ * When done with an audio device, possibly at the end of the app's life,
+ * one should call SDL_CloseAudioDevice() on the returned device id.
+ *
+ * \param devid the device instance id to open, or SDL_AUDIO_DEVICE_DEFAULT_OUTPUT or
+ *              SDL_AUDIO_DEVICE_DEFAULT_CAPTURE for the most reasonable default device.
+ * \param spec the requested device configuration. Can be NULL to use reasonable defaults.
  * \returns The device ID on success, 0 on error; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -384,15 +402,13 @@ extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDeviceID 
  * Close a previously-opened audio device.
  *
  * The application should close open audio devices once they are no longer
- * needed. Audio devices can be opened multiple times; when they are closed
- * an equal number of times, its resources are freed, any bound streams are
- * unbound, and any audio will stop playing.
+ * needed.
  *
  * This function may block briefly while pending audio data is played by the
  * hardware, so that applications don't drop the last buffer of data they
- * supplied.
+ * supplied if terminating immediately afterwards.
  *
- * \param devid an audio device previously opened with SDL_OpenAudioDevice()
+ * \param devid an audio device id previously returned by SDL_OpenAudioDevice()
  *
  * \since This function is available since SDL 3.0.0.
  *

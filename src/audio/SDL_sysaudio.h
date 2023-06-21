@@ -55,8 +55,8 @@ extern void (*SDL_Convert_F32_to_S32)(Sint32 *dst, const float *src, int num_sam
 #define DEFAULT_AUDIO_FREQUENCY 44100
 
 
-/* The SDL audio driver */
 typedef struct SDL_AudioDevice SDL_AudioDevice;
+typedef struct SDL_LogicalAudioDevice SDL_LogicalAudioDevice;
 
 /* Used by src/SDL.c to initialize a particular audio driver. */
 extern int SDL_InitAudio(const char *driver_name);
@@ -80,7 +80,7 @@ extern SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char 
 extern void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device);
 
 /* Find the SDL_AudioDevice associated with the handle supplied to SDL_AddAudioDevice. NULL if not found. Locks the device! You must unlock!! */
-extern SDL_AudioDevice *SDL_ObtainAudioDeviceByHandle(void *handle);
+extern SDL_AudioDevice *SDL_ObtainPhysicalAudioDeviceByHandle(void *handle);
 
 /* Backends should call this if they change the device format, channels, freq, or sample_frames to keep other state correct. */
 extern void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device);
@@ -169,9 +169,35 @@ struct SDL_AudioStream
     int pre_resample_channels;
     int packetlen;
 
-    SDL_AudioDevice *bound_device;
+    SDL_LogicalAudioDevice *bound_device;
     SDL_AudioStream *next_binding;
     SDL_AudioStream *prev_binding;
+};
+
+/* Logical devices are an abstraction in SDL3; you can open the same physical
+   device multiple times, and each will result in an object with its own set
+   of bound audio streams, etc, even though internally these are all processed
+   as a group when mixing the final output for the physical device. */
+struct SDL_LogicalAudioDevice
+{
+    /* the unique instance ID of this device. */
+    SDL_AudioDeviceID instance_id;
+
+    /* The physical device associated with this opened device. */
+    SDL_AudioDevice *physical_device;
+
+    /* If whole logical device is paused (process no streams bound to this device). */
+    SDL_AtomicInt paused;
+
+    /* double-linked list of all audio streams currently bound to this opened device. */
+    SDL_AudioStream *bound_streams;
+
+    /* SDL_TRUE if this was opened as a default device. */
+    SDL_bool is_default;
+
+    /* double-linked list of opened devices on the same physical device. */
+    SDL_LogicalAudioDevice *next;
+    SDL_LogicalAudioDevice *prev;
 };
 
 struct SDL_AudioDevice
@@ -216,16 +242,16 @@ struct SDL_AudioDevice
     /* A thread to feed the audio device */
     SDL_Thread *thread;
 
+    /* SDL_TRUE if this physical device is currently opened by the backend. */
+    SDL_bool is_opened;
+
     /* Data private to this driver */
     struct SDL_PrivateAudioData *hidden;
 
-    /* Each device open increases the refcount. We actually close the system device when this hits zero again. */
-    SDL_AtomicInt refcount;
+    /* All logical devices associated with this physical device. */
+    SDL_LogicalAudioDevice *logical_devices;
 
-    /* double-linked list of all audio streams currently bound to this device. */
-    SDL_AudioStream *bound_streams;
-
-    /* double-linked list of all devices. */
+    /* double-linked list of all physical devices. */
     struct SDL_AudioDevice *prev;
     struct SDL_AudioDevice *next;
 };

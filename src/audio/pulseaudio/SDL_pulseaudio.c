@@ -824,7 +824,7 @@ static void HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint3
             PULSEAUDIO_pa_operation_unref(PULSEAUDIO_pa_context_get_source_info_by_index(pulseaudio_context, idx, SourceInfoCallback, (void *)((intptr_t)added)));
         } else if (removed && (sink || source)) {
             /* removes we can handle just with the device index. */
-            SDL_AudioDevice *device = SDL_ObtainAudioDeviceByHandle((void *)((intptr_t)idx + 1));  /* !!! FIXME: maybe just have a "disconnect by handle" function instead. */
+            SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((intptr_t)idx + 1));  /* !!! FIXME: maybe just have a "disconnect by handle" function instead. */
             if (device) {
                 SDL_UnlockMutex(device->lock);  /* AudioDeviceDisconnected will relock and verify it's still in the list, but in case this is destroyed, unlock now. */
                 SDL_AudioDeviceDisconnected(device);
