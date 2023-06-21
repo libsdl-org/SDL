@@ -992,26 +992,27 @@ static ESwitchDeviceInfoControllerType ReadJoyConControllerType(SDL_HIDAPI_Devic
         ctx->m_bSyncWrite = SDL_TRUE;
         ctx->m_nMaxWriteAttempts = GetMaxWriteAttempts(device);
 
-        for (attempts = 0; attempts < MAX_ATTEMPTS; ++attempts) {
-            if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
-                SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
-
-                eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
-            } else {
+        for ( ; ; ) {
+            ++attempts;
+            if (device->is_bluetooth) {
                 SwitchSubcommandInputPacket_t *reply = NULL;
 
-                device->is_bluetooth = SDL_TRUE;
                 if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
                     eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType);
                 }
+            } else {
+                if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
+                    SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
+
+                    eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
+                }
             }
-            if (eControllerType == k_eSwitchDeviceInfoControllerType_Unknown) {
+            if (eControllerType == k_eSwitchDeviceInfoControllerType_Unknown && attempts < MAX_ATTEMPTS) {
                 /* Wait a bit and try again */
                 SDL_Delay(100);
                 continue;
-            } else {
-                break;
             }
+            break;
         }
         SDL_free(ctx);
     }
