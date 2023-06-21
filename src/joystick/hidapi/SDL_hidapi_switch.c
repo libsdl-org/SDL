@@ -998,7 +998,9 @@ static ESwitchDeviceInfoControllerType ReadJoyConControllerType(SDL_HIDAPI_Devic
         ctx->m_bSyncWrite = SDL_TRUE;
         ctx->m_nMaxWriteAttempts = GetMaxWriteAttempts(device);
 
-        for (attempts = 0; attempts < MAX_ATTEMPTS; ++attempts) {
+        for ( ; ; ) {
+            ++attempts;
+            device->is_bluetooth = SDL_FALSE;
             if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
                 SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
 
@@ -1011,13 +1013,12 @@ static ESwitchDeviceInfoControllerType ReadJoyConControllerType(SDL_HIDAPI_Devic
                     eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType);
                 }
             }
-            if (eControllerType == k_eSwitchDeviceInfoControllerType_Unknown) {
+            if (eControllerType == k_eSwitchDeviceInfoControllerType_Unknown && attempts < MAX_ATTEMPTS) {
                 /* Wait a bit and try again */
                 SDL_Delay(100);
                 continue;
-            } else {
-                break;
             }
+            break;
         }
         SDL_free(ctx);
     }
