@@ -288,6 +288,7 @@ static void WIN_WarpMouse(SDL_Window *window, int x, int y)
         return;
     }
 
+    WIN_ClientPointFromSDL(window, &x, &y);
     pt.x = x;
     pt.y = y;
     ClientToScreen(hwnd, &pt);
