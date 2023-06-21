@@ -25,11 +25,9 @@
 #include "../thread/SDL_systhread.h"
 #include "../SDL_utils_c.h"
 
-extern void Android_JNI_AudioSetThreadPriority(int, int);  /* we need this on Android in the audio device threads. */
+extern void Android_JNI_AudioSetThreadPriority(int, int);  // we need this on Android in the audio device threads.
 
-static SDL_AudioDriver current_audio;
-
-/* Available audio drivers */
+// Available audio drivers
 static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO
     &PULSEAUDIO_bootstrap,
@@ -100,6 +98,8 @@ static const AudioBootStrap *const bootstrap[] = {
     NULL
 };
 
+static SDL_AudioDriver current_audio;
+
 int SDL_GetNumAudioDrivers(void)
 {
     return SDL_arraysize(bootstrap) - 1;
@@ -118,7 +118,7 @@ const char *SDL_GetCurrentAudioDriver(void)
     return current_audio.name;
 }
 
-/* device management and hotplug... */
+// device management and hotplug...
 
 
 /* SDL_AudioDevice, in SDL3, represents a piece of physical hardware, whether it is in use or not, so these objects exist as long as
@@ -208,15 +208,13 @@ static void DestroyPhysicalAudioDevice(SDL_AudioDevice *device)
 
 static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool iscapture, const SDL_AudioSpec *spec, void *handle, SDL_AudioDevice **devices, SDL_AtomicInt *device_count)
 {
-    SDL_AudioDevice *device;
-
     SDL_assert(name != NULL);
 
     if (SDL_AtomicGet(&current_audio.shutting_down)) {
-        return NULL;  /* we're shutting down, don't add any devices that are hotplugged at the last possible moment. */
+        return NULL;  // we're shutting down, don't add any devices that are hotplugged at the last possible moment.
     }
 
-    device = (SDL_AudioDevice *)SDL_calloc(1, sizeof(SDL_AudioDevice));
+    SDL_AudioDevice *device = (SDL_AudioDevice *)SDL_calloc(1, sizeof(SDL_AudioDevice));
     if (!device) {
         SDL_OutOfMemory();
         return NULL;
@@ -267,12 +265,10 @@ static SDL_AudioDevice *CreateAudioOutputDevice(const char *name, const SDL_Audi
     return CreatePhysicalAudioDevice(name, SDL_FALSE, spec, handle, &current_audio.output_devices, &current_audio.output_device_count);
 }
 
-/* The audio backends call this when a new device is plugged in. */
+// The audio backends call this when a new device is plugged in.
 SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, const SDL_AudioSpec *inspec, void *handle)
 {
-    SDL_AudioDevice *device;
     SDL_AudioSpec spec;
-
     if (!inspec) {
         spec.format = DEFAULT_AUDIO_FORMAT;
         spec.channels = DEFAULT_AUDIO_CHANNELS;
@@ -283,9 +279,9 @@ SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, 
         spec.freq = (inspec->freq != 0) ? inspec->freq : DEFAULT_AUDIO_FREQUENCY;
     }
 
-    device = iscapture ? CreateAudioCaptureDevice(name, &spec, handle) : CreateAudioOutputDevice(name, &spec, handle);
+    SDL_AudioDevice *device = iscapture ? CreateAudioCaptureDevice(name, &spec, handle) : CreateAudioOutputDevice(name, &spec, handle);
     if (device) {
-        /* Post the event, if desired */
+        // Post the event, if desired
         if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_ADDED)) {
             SDL_Event event;
             event.type = SDL_EVENT_AUDIO_DEVICE_ADDED;
@@ -298,19 +294,18 @@ SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, 
     return device;
 }
 
-/* Called when a device is removed from the system, or it fails unexpectedly, from any thread, possibly even the audio device's thread. */
+// Called when a device is removed from the system, or it fails unexpectedly, from any thread, possibly even the audio device's thread.
 void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 {
-    SDL_bool was_live = SDL_FALSE;
-    SDL_bool should_destroy = SDL_TRUE;
-
     if (!device) {
         return;
     }
 
-    /* take it out of the device list. */
+    SDL_bool was_live = SDL_FALSE;
+
+    // take it out of the device list.
     SDL_LockRWLockForWriting(current_audio.device_list_lock);
-    SDL_LockMutex(device->lock);  /* make sure nothing else is messing with the device before continuing. */
+    SDL_LockMutex(device->lock);  // make sure nothing else is messing with the device before continuing.
     if (device == current_audio.output_devices) {
         SDL_assert(device->prev == NULL);
         current_audio.output_devices = device->next;
@@ -330,17 +325,18 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
     }
     SDL_UnlockRWLock(current_audio.device_list_lock);
 
-    /* now device is not in the list, and we own it, so no one should be able to find it again, except the audio thread, which holds a pointer! */
+    // now device is not in the list, and we own it, so no one should be able to find it again, except the audio thread, which holds a pointer!
     SDL_AtomicSet(&device->condemned, 1);
-    SDL_AtomicSet(&device->shutdown, 1);  /* tell audio thread to terminate. */
-    if (device->thread) {
-        should_destroy = SDL_FALSE;  /* if there's an audio thread, don't free until thread is terminating. */
-    }
+    SDL_AtomicSet(&device->shutdown, 1);  // tell audio thread to terminate.
+
+    // if there's an audio thread, don't free until thread is terminating, otherwise free stuff now.
+    const SDL_bool should_destroy = (device->thread != NULL);
     SDL_UnlockMutex(device->lock);
 
-    /* Post the event, if we haven't tried to before and if it's desired */
+    // Post the event, if we haven't tried to before and if it's desired
     if (was_live && SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_REMOVED)) {
         SDL_Event event;
+        SDL_zero(event);
         event.type = SDL_EVENT_AUDIO_DEVICE_REMOVED;
         event.common.timestamp = 0;
         event.adevice.which = device->instance_id;
@@ -354,11 +350,20 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 }
 
 
-/* stubs for audio drivers that don't need a specific entry point... */
+// stubs for audio drivers that don't need a specific entry point...
+
+static void SDL_AudioThreadInit_Default(SDL_AudioDevice *device) { /* no-op. */ }
+static void SDL_AudioThreadDeinit_Default(SDL_AudioDevice *device) { /* no-op. */ }
+static void SDL_AudioWaitDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
+static void SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, int buffer_size) { /* no-op. */ }
+static void SDL_AudioFlushCapture_Default(SDL_AudioDevice *device) { /* no-op. */ }
+static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
+static void SDL_AudioDeinitialize_Default(void) { /* no-op. */ }
+static void SDL_AudioFreeDeviceHandle_Default(void *handle) { /* no-op. */ }
 
 static void SDL_AudioDetectDevices_Default(void)
 {
-    /* you have to write your own implementation if these assertions fail. */
+    // you have to write your own implementation if these assertions fail.
     SDL_assert(current_audio.impl.OnlyHasDefaultOutputDevice);
     SDL_assert(current_audio.impl.OnlyHasDefaultCaptureDevice || !current_audio.impl.HasCaptureSupport);
 
@@ -366,22 +371,6 @@ static void SDL_AudioDetectDevices_Default(void)
     if (current_audio.impl.HasCaptureSupport) {
         SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *)((size_t)0x2));
     }
-}
-
-static void SDL_AudioThreadInit_Default(SDL_AudioDevice *device)
-{ /* no-op. */
-}
-
-static void SDL_AudioThreadDeinit_Default(SDL_AudioDevice *device)
-{ /* no-op. */
-}
-
-static void SDL_AudioWaitDevice_Default(SDL_AudioDevice *device)
-{ /* no-op. */
-}
-
-static void SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, int buffer_size)
-{ /* no-op. */
 }
 
 static Uint8 *SDL_AudioGetDeviceBuf_Default(SDL_AudioDevice *device, int *buffer_size)
@@ -392,23 +381,7 @@ static Uint8 *SDL_AudioGetDeviceBuf_Default(SDL_AudioDevice *device, int *buffer
 
 static int SDL_AudioCaptureFromDevice_Default(SDL_AudioDevice *device, void *buffer, int buflen)
 {
-    return -1; /* just fail immediately. */
-}
-
-static void SDL_AudioFlushCapture_Default(SDL_AudioDevice *device)
-{ /* no-op. */
-}
-
-static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device)
-{ /* no-op. */
-}
-
-static void SDL_AudioDeinitialize_Default(void)
-{ /* no-op. */
-}
-
-static void SDL_AudioFreeDeviceHandle_Default(void *handle)
-{ /* no-op. */
+    return SDL_Unsupported();
 }
 
 static int SDL_AudioOpenDevice_Default(SDL_AudioDevice *device)
@@ -416,7 +389,7 @@ static int SDL_AudioOpenDevice_Default(SDL_AudioDevice *device)
     return SDL_Unsupported();
 }
 
-/* Fill in stub functions for unused driver entry points. This lets us blindly call them without having to check for validity first. */
+// Fill in stub functions for unused driver entry points. This lets us blindly call them without having to check for validity first.
 static void CompleteAudioEntryPoints(void)
 {
     #define FILL_STUB(x) if (!current_audio.impl.x) { current_audio.impl.x = SDL_Audio##x##_Default; }
@@ -435,29 +408,27 @@ static void CompleteAudioEntryPoints(void)
     #undef FILL_STUB
 }
 
-/* !!! FIXME: the video subsystem does SDL_VideoInit, not SDL_InitVideo. Make this match. */
+// !!! FIXME: the video subsystem does SDL_VideoInit, not SDL_InitVideo. Make this match.
 int SDL_InitAudio(const char *driver_name)
 {
-    SDL_RWLock *device_list_lock = NULL;
-    SDL_bool initialized = SDL_FALSE;
-    SDL_bool tried_to_init = SDL_FALSE;
-    int i;
-
     if (SDL_GetCurrentAudioDriver()) {
-        SDL_QuitAudio(); /* shutdown driver if already running. */
+        SDL_QuitAudio(); // shutdown driver if already running.
     }
 
     SDL_ChooseAudioConverters();
 
-    device_list_lock = SDL_CreateRWLock();  /* create this early, so if it fails we don't have to tear down the whole audio subsystem. */
+    SDL_RWLock *device_list_lock = SDL_CreateRWLock();  // create this early, so if it fails we don't have to tear down the whole audio subsystem.
     if (!device_list_lock) {
         return -1;
     }
 
-    /* Select the proper audio driver */
+    // Select the proper audio driver
     if (driver_name == NULL) {
         driver_name = SDL_GetHint(SDL_HINT_AUDIO_DRIVER);
     }
+
+    SDL_bool initialized = SDL_FALSE;
+    SDL_bool tried_to_init = SDL_FALSE;
 
     if (driver_name != NULL && *driver_name != 0) {
         char *driver_name_copy = SDL_strdup(driver_name);
@@ -474,18 +445,18 @@ int SDL_InitAudio(const char *driver_name)
                 *driver_attempt_end = '\0';
             }
 
-            /* SDL 1.2 uses the name "dsound", so we'll support both. */
+            // SDL 1.2 uses the name "dsound", so we'll support both.
             if (SDL_strcmp(driver_attempt, "dsound") == 0) {
                 driver_attempt = "directsound";
-            } else if (SDL_strcmp(driver_attempt, "pulse") == 0) {  /* likewise, "pulse" was renamed to "pulseaudio" */
+            } else if (SDL_strcmp(driver_attempt, "pulse") == 0) {  // likewise, "pulse" was renamed to "pulseaudio"
                 driver_attempt = "pulseaudio";
             }
 
-            for (i = 0; bootstrap[i]; ++i) {
+            for (int i = 0; bootstrap[i]; ++i) {
                 if (SDL_strcasecmp(bootstrap[i]->name, driver_attempt) == 0) {
                     tried_to_init = SDL_TRUE;
                     SDL_zero(current_audio);
-                    SDL_AtomicSet(&current_audio.last_device_instance_id, 2);  /* start past 1 because of SDL2's legacy interface. */
+                    SDL_AtomicSet(&current_audio.last_device_instance_id, 2);  // start past 1 because of SDL2's legacy interface.
                     current_audio.device_list_lock = device_list_lock;
                     if (bootstrap[i]->init(&current_audio.impl)) {
                         current_audio.name = bootstrap[i]->name;
@@ -501,14 +472,14 @@ int SDL_InitAudio(const char *driver_name)
 
         SDL_free(driver_name_copy);
     } else {
-        for (i = 0; (!initialized) && (bootstrap[i]); ++i) {
+        for (int i = 0; (!initialized) && (bootstrap[i]); ++i) {
             if (bootstrap[i]->demand_only) {
                 continue;
             }
 
             tried_to_init = SDL_TRUE;
             SDL_zero(current_audio);
-            SDL_AtomicSet(&current_audio.last_device_instance_id, 2);  /* start past 1 because of SDL2's legacy interface. */
+            SDL_AtomicSet(&current_audio.last_device_instance_id, 2);  // start past 1 because of SDL2's legacy interface.
             current_audio.device_list_lock = device_list_lock;
             if (bootstrap[i]->init(&current_audio.impl)) {
                 current_audio.name = bootstrap[i]->name;
@@ -519,7 +490,7 @@ int SDL_InitAudio(const char *driver_name)
     }
 
     if (!initialized) {
-        /* specific drivers will set the error message if they fail... */
+        // specific drivers will set the error message if they fail, but otherwise we do it here.
         if (!tried_to_init) {
             if (driver_name) {
                 SDL_SetError("Audio target '%s' not available", driver_name);
@@ -530,12 +501,12 @@ int SDL_InitAudio(const char *driver_name)
 
         SDL_zero(current_audio);
         SDL_DestroyRWLock(device_list_lock);
-        return -1; /* No driver was available, so fail. */
+        return -1;  // No driver was available, so fail.
     }
 
     CompleteAudioEntryPoints();
 
-    /* Make sure we have a list of devices available at startup. */
+    // Make sure we have a list of devices available at startup...
     current_audio.impl.DetectDevices();
 
     return 0;
@@ -543,15 +514,14 @@ int SDL_InitAudio(const char *driver_name)
 
 void SDL_QuitAudio(void)
 {
-    SDL_AudioDevice *devices = NULL;
-
-    if (!current_audio.name) { /* not initialized?! */
+    if (!current_audio.name) {  // not initialized?!
         return;
     }
 
-    /* merge device lists so we don't have to duplicate work below. */
+    // merge device lists so we don't have to duplicate work below.
     SDL_LockRWLockForWriting(current_audio.device_list_lock);
     SDL_AtomicSet(&current_audio.shutting_down, 1);
+    SDL_AudioDevice *devices = NULL;
     for (SDL_AudioDevice *i = current_audio.output_devices; i != NULL; i = i->next) {
         devices = i;
     }
@@ -566,15 +536,15 @@ void SDL_QuitAudio(void)
     current_audio.capture_devices = NULL;
     SDL_UnlockRWLock(current_audio.device_list_lock);
     
-    /* mark all devices for shutdown so all threads can begin to terminate. */
+    // mark all devices for shutdown so all threads can begin to terminate.
     for (SDL_AudioDevice *i = devices; i != NULL; i = i->next) {
         SDL_AtomicSet(&i->shutdown, 1);
     }
 
-    /* now wait on any audio threads. */
+    // now wait on any audio threads...
     for (SDL_AudioDevice *i = devices; i != NULL; i = i->next) {
         if (i->thread) {
-            SDL_assert(!SDL_AtomicGet(&i->condemned));  /* these shouldn't have been in the device list still, and thread should have detached. */
+            SDL_assert(!SDL_AtomicGet(&i->condemned));  // these shouldn't have been in the device list still, and thread should have detached.
             SDL_WaitThread(i->thread, NULL);
             i->thread = NULL;
         }
@@ -586,7 +556,7 @@ void SDL_QuitAudio(void)
         devices = next;
     }
 
-    /* Free the driver data */
+    // Free the driver data
     current_audio.impl.Deinitialize();
 
     SDL_DestroyRWLock(current_audio.device_list_lock);
@@ -597,72 +567,72 @@ void SDL_QuitAudio(void)
 
 
 
-/* Output device thread. This is split into chunks, so backends that need to control this directly can use the pieces they need without duplicating effort. */
+// Output device thread. This is split into chunks, so backends that need to control this directly can use the pieces they need without duplicating effort.
 
 void SDL_OutputAudioThreadSetup(SDL_AudioDevice *device)
 {
     SDL_assert(!device->iscapture);
 
-    /* The audio mixing is always a high priority thread */
+    // The audio mixing is always a high priority thread
 #ifdef SDL_AUDIO_DRIVER_ANDROID
     Android_JNI_AudioSetThreadPriority(SDL_FALSE, device->id);
 #else
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_TIME_CRITICAL);
 #endif
 
-    /* Perform any thread setup */
+    // Perform any thread setup
     current_audio.impl.ThreadInit(device);
 }
 
 SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
 {
-    SDL_bool retval = SDL_TRUE;
-    int buffer_size = device->buffer_size;
-    Uint8 *mix_buffer;
-
     SDL_assert(!device->iscapture);
 
     SDL_LockMutex(device->lock);
 
     if (SDL_AtomicGet(&device->shutdown)) {
         SDL_UnlockMutex(device->lock);
-        return SDL_FALSE;  /* we're done, shut it down. */
+        return SDL_FALSE;  // we're done, shut it down.
     }
 
-    mix_buffer = current_audio.impl.GetDeviceBuf(device, &buffer_size);
+    SDL_bool retval = SDL_TRUE;
+    int buffer_size = device->buffer_size;
+    Uint8 *mix_buffer = current_audio.impl.GetDeviceBuf(device, &buffer_size);
     if (!mix_buffer) {
         retval = SDL_FALSE;
     } else {
-        SDL_assert(buffer_size <= device->buffer_size);  /* you can ask for less, but not more. */
-        SDL_memset(mix_buffer, device->silence_value, buffer_size);  /* start with silence. */
+        SDL_assert(buffer_size <= device->buffer_size);  // you can ask for less, but not more.
+        SDL_memset(mix_buffer, device->silence_value, buffer_size);  // start with silence.
         for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
             for (SDL_AudioStream *stream = logdev->bound_streams; stream != NULL; stream = stream->next_binding) {
-                /* this will hold a lock on `stream` while getting. We don't explicitly lock the streams for iterating here because the binding linked list can only change while the device lock is held. */
-                /* (we _do_ lock the stream during binding/unbinding to make sure that two threads can't try to bind the same stream to different devices at the same time, though.) */
+                /* this will hold a lock on `stream` while getting. We don't explicitly lock the streams
+                   for iterating here because the binding linked list can only change while the device lock is held.
+                   (we _do_ lock the stream during binding/unbinding to make sure that two threads can't try to bind
+                   the same stream to different devices at the same time, though.) */
                 const int br = SDL_GetAudioStreamData(stream, device->work_buffer, buffer_size);
                 if (br < 0) {
-                    /* oh crud, we probably ran out of memory. This is possibly an overreaction to kill the audio device, but it's likely the whole thing is going down in a moment anyhow. */
+                    // oh crud, we probably ran out of memory. This is possibly an overreaction to kill the audio device, but it's likely the whole thing is going down in a moment anyhow.
                     retval = SDL_FALSE;
                     break;
-                } else if (br > 0) {  /* it's okay if we get less than requested, we mix what we have. */
+                } else if (br > 0) {  // it's okay if we get less than requested, we mix what we have.
                     // !!! FIXME: this needs to mix to float32 or int32, so we don't clip.
-                    if (SDL_MixAudioFormat(mix_buffer, device->work_buffer, device->spec.format, br, SDL_MIX_MAXVOLUME) < 0) {  /* !!! FIXME: allow streams to specify gain? */
+                    if (SDL_MixAudioFormat(mix_buffer, device->work_buffer, device->spec.format, br, SDL_MIX_MAXVOLUME) < 0) {  // !!! FIXME: allow streams to specify gain?
                         SDL_assert(!"We probably ended up with some totally unexpected audio format here");
-                        retval = SDL_FALSE;  /* uh...? */
+                        retval = SDL_FALSE;  // uh...?
                         break;
                     }
                 }
             }
         }
 
-        /* !!! FIXME: have PlayDevice return a value and do disconnects in here with it. */
-        current_audio.impl.PlayDevice(device, buffer_size);  /* this SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitDevice! */
+        // !!! FIXME: have PlayDevice return a value and do disconnects in here with it.
+        current_audio.impl.PlayDevice(device, buffer_size);  // this SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitDevice!
     }
 
     SDL_UnlockMutex(device->lock);
 
     if (!retval) {
-        SDL_AudioDeviceDisconnected(device);  /* doh. */
+        SDL_AudioDeviceDisconnected(device);  // doh.
     }
 
     return retval;
@@ -670,20 +640,19 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
 
 void SDL_OutputAudioThreadShutdown(SDL_AudioDevice *device)
 {
-    const int samples = (device->buffer_size / (SDL_AUDIO_BITSIZE(device->spec.format) / 8)) / device->spec.channels;
     SDL_assert(!device->iscapture);
-    /* Wait for the audio to drain. */ /* !!! FIXME: don't bother waiting if device is lost. */
+    const int samples = (device->buffer_size / (SDL_AUDIO_BITSIZE(device->spec.format) / 8)) / device->spec.channels;
+    // Wait for the audio to drain. !!! FIXME: don't bother waiting if device is lost.
     SDL_Delay(((samples * 1000) / device->spec.freq) * 2);
     current_audio.impl.ThreadDeinit(device);
     if (SDL_AtomicGet(&device->condemned)) {
-        SDL_DetachThread(device->thread);  /* no one is waiting for us, just detach ourselves. */
+        SDL_DetachThread(device->thread);  // no one is waiting for us, just detach ourselves.
         device->thread = NULL;
         DestroyPhysicalAudioDevice(device);
     }
 }
 
-/* thread entry point */
-static int SDLCALL OutputAudioThread(void *devicep)
+static int SDLCALL OutputAudioThread(void *devicep)  // thread entry point
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *)devicep;
     SDL_assert(device != NULL);
@@ -699,46 +668,47 @@ static int SDLCALL OutputAudioThread(void *devicep)
 
 
 
-/* Capture device thread. This is split into chunks, so backends that need to control this directly can use the pieces they need without duplicating effort. */
+// Capture device thread. This is split into chunks, so backends that need to control this directly can use the pieces they need without duplicating effort.
 
 void SDL_CaptureAudioThreadSetup(SDL_AudioDevice *device)
 {
     SDL_assert(device->iscapture);
 
-    /* The audio mixing is always a high priority thread */
+    // Audio capture is always a high priority thread (!!! FIXME: _should_ it be?)
 #ifdef SDL_AUDIO_DRIVER_ANDROID
     Android_JNI_AudioSetThreadPriority(SDL_TRUE, device->id);
 #else
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 #endif
 
-    /* Perform any thread setup */
     current_audio.impl.ThreadInit(device);
 }
 
 SDL_bool SDL_CaptureAudioThreadIterate(SDL_AudioDevice *device)
 {
-    SDL_bool retval = SDL_TRUE;
-
     SDL_assert(device->iscapture);
 
     SDL_LockMutex(device->lock);
 
+    SDL_bool retval = SDL_TRUE;
+
     if (SDL_AtomicGet(&device->shutdown)) {
-        retval = SDL_FALSE;  /* we're done, shut it down. */
+        retval = SDL_FALSE;  // we're done, shut it down.
     } else if (device->logical_devices == NULL) {
-        current_audio.impl.FlushCapture(device); /* nothing wants data, dump anything pending. */
+        current_audio.impl.FlushCapture(device); // nothing wants data, dump anything pending.
     } else {
         const int rc = current_audio.impl.CaptureFromDevice(device, device->work_buffer, device->buffer_size);
-        if (rc < 0) { /* uhoh, device failed for some reason! */
+        if (rc < 0) {  // uhoh, device failed for some reason!
             retval = SDL_FALSE;
-        } else if (rc > 0) {  /* queue the new data to each bound stream. */
+        } else if (rc > 0) {  // queue the new data to each bound stream.
             for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
                 for (SDL_AudioStream *stream = logdev->bound_streams; stream != NULL; stream = stream->next_binding) {
-                    /* this will hold a lock on `stream` while putting. We don't explicitly lock the streams for iterating here because the binding linked list can only change while the device lock is held. */
-                    /* (we _do_ lock the stream during binding/unbinding to make sure that two threads can't try to bind the same stream to different devices at the same time, though.) */
+                    /* this will hold a lock on `stream` while putting. We don't explicitly lock the streams
+                       for iterating here because the binding linked list can only change while the device lock is held.
+                       (we _do_ lock the stream during binding/unbinding to make sure that two threads can't try to bind
+                       the same stream to different devices at the same time, though.) */
                     if (SDL_PutAudioStreamData(stream, device->work_buffer, rc) < 0) {
-                        /* oh crud, we probably ran out of memory. This is possibly an overreaction to kill the audio device, but it's likely the whole thing is going down in a moment anyhow. */
+                        // oh crud, we probably ran out of memory. This is possibly an overreaction to kill the audio device, but it's likely the whole thing is going down in a moment anyhow.
                         retval = SDL_FALSE;
                         break;
                     }
@@ -750,7 +720,7 @@ SDL_bool SDL_CaptureAudioThreadIterate(SDL_AudioDevice *device)
     SDL_UnlockMutex(device->lock);
 
     if (!retval) {
-        SDL_AudioDeviceDisconnected(device);  /* doh. */
+        SDL_AudioDeviceDisconnected(device);  // doh.
     }
 
     return retval;
@@ -766,8 +736,7 @@ void SDL_CaptureAudioThreadShutdown(SDL_AudioDevice *device)
     }
 }
 
-/* thread entry point */
-static int SDLCALL CaptureAudioThread(void *devicep)
+static int SDLCALL CaptureAudioThread(void *devicep)  // thread entry point
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *)devicep;
     SDL_assert(device != NULL);
@@ -781,31 +750,27 @@ static int SDLCALL CaptureAudioThread(void *devicep)
 
 static SDL_AudioDeviceID *GetAudioDevices(int *reqcount, SDL_AudioDevice **devices, SDL_AtomicInt *device_count)
 {
-    SDL_AudioDeviceID *retval = NULL;
-    int num_devices = 0;
-
     if (!SDL_GetCurrentAudioDriver()) {
         SDL_SetError("Audio subsystem is not initialized");
         return NULL;
     }
 
     SDL_LockRWLockForReading(current_audio.device_list_lock);
-    num_devices = SDL_AtomicGet(device_count);
-    retval = (SDL_AudioDeviceID *) SDL_malloc((num_devices + 1) * sizeof (SDL_AudioDeviceID));
+    int num_devices = SDL_AtomicGet(device_count);
+    SDL_AudioDeviceID *retval = (SDL_AudioDeviceID *) SDL_malloc((num_devices + 1) * sizeof (SDL_AudioDeviceID));
     if (retval == NULL) {
         num_devices = 0;
         SDL_OutOfMemory();
     } else {
         const SDL_AudioDevice *dev = *devices;
-        int i;
-        for (i = 0; i < num_devices; i++) {
+        for (int i = 0; i < num_devices; i++) {
             SDL_assert(dev != NULL);
-            SDL_assert(!SDL_AtomicGet((SDL_AtomicInt *) &dev->condemned));  /* shouldn't be in the list if pending deletion. */
+            SDL_assert(!SDL_AtomicGet((SDL_AtomicInt *) &dev->condemned));  // shouldn't be in the list if pending deletion.
             retval[i] = dev->instance_id;
             dev = dev->next;
         }
-        SDL_assert(dev == NULL);  /* did the whole list? */
-        retval[num_devices] = 0;  /* null-terminated. */
+        SDL_assert(dev == NULL);  // did the whole list?
+        retval[num_devices] = 0;  // null-terminated.
     }
     SDL_UnlockRWLock(current_audio.device_list_lock);
 
@@ -892,9 +857,9 @@ static SDL_AudioDevice *ObtainPhysicalAudioDevice(SDL_AudioDeviceID devid)
     SDL_LockRWLockForReading(current_audio.device_list_lock);
 
     for (dev = iscapture ? current_audio.capture_devices : current_audio.output_devices; dev != NULL; dev = dev->next) {
-        if (dev->instance_id == devid) {  /* found it? */
-            SDL_LockMutex(dev->lock);  /* caller must unlock. */
-            SDL_assert(!SDL_AtomicGet(&dev->condemned));  /* shouldn't be in the list if pending deletion. */
+        if (dev->instance_id == devid) {  // found it?
+            SDL_LockMutex(dev->lock);  // caller must unlock.
+            SDL_assert(!SDL_AtomicGet(&dev->condemned));  // shouldn't be in the list if pending deletion.
             break;
         }
     }
@@ -910,8 +875,6 @@ static SDL_AudioDevice *ObtainPhysicalAudioDevice(SDL_AudioDeviceID devid)
 
 SDL_AudioDevice *SDL_ObtainPhysicalAudioDeviceByHandle(void *handle)
 {
-    SDL_AudioDevice *dev = NULL;
-
     if (!SDL_GetCurrentAudioDriver()) {
         SDL_SetError("Audio subsystem is not initialized");
         return NULL;
@@ -919,18 +882,21 @@ SDL_AudioDevice *SDL_ObtainPhysicalAudioDeviceByHandle(void *handle)
 
     SDL_LockRWLockForReading(current_audio.device_list_lock);
 
+    SDL_AudioDevice *dev = NULL;
     for (dev = current_audio.output_devices; dev != NULL; dev = dev->next) {
-        if (dev->handle == handle) {  /* found it? */
-            SDL_LockMutex(dev->lock);  /* caller must unlock. */
-            SDL_assert(!SDL_AtomicGet(&dev->condemned));  /* shouldn't be in the list if pending deletion. */
+        if (dev->handle == handle) {  // found it?
+            SDL_LockMutex(dev->lock);  // caller must unlock.
+            SDL_assert(!SDL_AtomicGet(&dev->condemned));  // shouldn't be in the list if pending deletion.
             break;
         }
     }
+
     if (!dev) {
+        // !!! FIXME: code duplication, from above.
         for (dev = current_audio.capture_devices; dev != NULL; dev = dev->next) {
-            if (dev->handle == handle) {  /* found it? */
-                SDL_LockMutex(dev->lock);  /* caller must unlock. */
-                SDL_assert(!SDL_AtomicGet(&dev->condemned));  /* shouldn't be in the list if pending deletion. */
+            if (dev->handle == handle) {  // found it?
+                SDL_LockMutex(dev->lock);  // caller must unlock.
+                SDL_assert(!SDL_AtomicGet(&dev->condemned));  // shouldn't be in the list if pending deletion.
                 break;
             }
         }
@@ -947,13 +913,12 @@ SDL_AudioDevice *SDL_ObtainPhysicalAudioDeviceByHandle(void *handle)
 
 char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
 {
-    char *retval;
     SDL_AudioDevice *device = ObtainPhysicalAudioDevice(devid);
     if (!device) {
         return NULL;
     }
 
-    retval = SDL_strdup(device->name);
+    char *retval = SDL_strdup(device->name);
     if (!retval) {
         SDL_OutOfMemory();
     }
@@ -980,7 +945,7 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec)
     return 0;
 }
 
-/* this expects the device lock to be held. */
+// this expects the device lock to be held.
 static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
 {
     if (device->thread != NULL) {
@@ -1008,13 +973,13 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
 void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
 {
     SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid);
-    if (logdev) {  /* if NULL, maybe it was already lost? */
+    if (logdev) {  // if NULL, maybe it was already lost?
         SDL_AudioDevice *device = logdev->physical_device;
         DestroyLogicalAudioDevice(logdev);
 
         if (device->logical_devices == NULL) {  // no more logical devices? Close the physical device, too.
             // !!! FIXME: we _need_ to release this lock, but doing so can cause a race condition if someone opens a device while we're closing it.
-            SDL_UnlockMutex(device->lock);  /* can't hold the lock or the audio thread will deadlock while we WaitThread it. */
+            SDL_UnlockMutex(device->lock);  // can't hold the lock or the audio thread will deadlock while we WaitThread it.
             ClosePhysicalAudioDevice(device);
         } else {
             SDL_UnlockMutex(device->lock);  // we're set, let everything go again.
@@ -1026,9 +991,7 @@ void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
 static SDL_AudioFormat ParseAudioFormatString(const char *string)
 {
     if (string) {
-#define CHECK_FMT_STRING(x)          \
-        if (SDL_strcmp(string, #x) == 0) \
-        return SDL_AUDIO_##x
+        #define CHECK_FMT_STRING(x) if (SDL_strcmp(string, #x) == 0) { return SDL_AUDIO_##x; }
         CHECK_FMT_STRING(U8);
         CHECK_FMT_STRING(S8);
         CHECK_FMT_STRING(S16LSB);
@@ -1042,18 +1005,16 @@ static SDL_AudioFormat ParseAudioFormatString(const char *string)
         CHECK_FMT_STRING(F32MSB);
         CHECK_FMT_STRING(F32SYS);
         CHECK_FMT_STRING(F32);
-#undef CHECK_FMT_STRING
+        #undef CHECK_FMT_STRING
     }
     return 0;
 }
 
 static void PrepareAudioFormat(SDL_AudioSpec *spec)
 {
-    const char *env;
-
     if (spec->freq == 0) {
         spec->freq = DEFAULT_AUDIO_FREQUENCY;
-        env = SDL_getenv("SDL_AUDIO_FREQUENCY");  // !!! FIXME: should be a hint?
+        const char *env = SDL_getenv("SDL_AUDIO_FREQUENCY");  // !!! FIXME: should be a hint?
         if (env != NULL) {
             const int val = SDL_atoi(env);
             if (val > 0) {
@@ -1064,7 +1025,7 @@ static void PrepareAudioFormat(SDL_AudioSpec *spec)
 
     if (spec->channels == 0) {
         spec->channels = DEFAULT_AUDIO_CHANNELS;
-        env = SDL_getenv("SDL_AUDIO_CHANNELS");
+        const char *env = SDL_getenv("SDL_AUDIO_CHANNELS");
         if (env != NULL) {
             const int val = SDL_atoi(env);
             if (val > 0) {
@@ -1081,7 +1042,7 @@ static void PrepareAudioFormat(SDL_AudioSpec *spec)
 
 static int GetDefaultSampleFramesFromFreq(int freq)
 {
-    /* Pick the closest power-of-two to ~46 ms at desired frequency */
+    // Pick the closest power-of-two to ~46 ms at desired frequency
     const int max_sample = ((freq / 1000) * 46);
     int current_sample = 1;
     while (current_sample < max_sample) {
@@ -1096,7 +1057,7 @@ void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device)
     device->buffer_size = device->sample_frames * (SDL_AUDIO_BITSIZE(device->spec.format) / 8) * device->spec.channels;
 }
 
-/* this expects the device lock to be held. */
+// this expects the device lock to be held.
 static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec *inspec)
 {
     SDL_assert(device->logical_devices == NULL);
@@ -1105,36 +1066,35 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
     SDL_memcpy(&spec, inspec, sizeof (SDL_AudioSpec));
     PrepareAudioFormat(&spec);
 
-    /* we allow the device format to change if it's better than the current settings (by various definitions of "better"). This prevents
+    /* We allow the device format to change if it's better than the current settings (by various definitions of "better"). This prevents
        something low quality, like an old game using S8/8000Hz audio, from ruining a music thing playing at CD quality that tries to open later.
-       (or some VoIP library that opens for mono output ruining your surround-sound game because it got there first). */
-    /* These are just requests! The backend may change any of these values during OpenDevice method! */
+       (or some VoIP library that opens for mono output ruining your surround-sound game because it got there first).
+       These are just requests! The backend may change any of these values during OpenDevice method! */
     device->spec.format = (SDL_AUDIO_BITSIZE(device->default_spec.format) >= SDL_AUDIO_BITSIZE(spec.format)) ? device->default_spec.format : spec.format;
     device->spec.freq = SDL_max(device->default_spec.freq, spec.freq);
     device->spec.channels = SDL_max(device->default_spec.channels, spec.channels);
     device->sample_frames = GetDefaultSampleFramesFromFreq(device->spec.freq);
-    SDL_UpdatedAudioDeviceFormat(device);  /* start this off sane. */
+    SDL_UpdatedAudioDeviceFormat(device);  // start this off sane.
 
     device->is_opened = SDL_TRUE;  // mark this true even if impl.OpenDevice fails, so we know to clean up.
     if (current_audio.impl.OpenDevice(device) < 0) {
-        ClosePhysicalAudioDevice(device);  /* clean up anything the backend left half-initialized. */
+        ClosePhysicalAudioDevice(device);  // clean up anything the backend left half-initialized.
         return -1;
     }
 
-    SDL_UpdatedAudioDeviceFormat(device);  /* in case the backend changed things and forgot to call this. */
+    SDL_UpdatedAudioDeviceFormat(device);  // in case the backend changed things and forgot to call this.
 
-    /* Allocate a scratch audio buffer */
+    // Allocate a scratch audio buffer
     device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->buffer_size);
     if (device->work_buffer == NULL) {
         ClosePhysicalAudioDevice(device);
         return SDL_OutOfMemory();
     }
 
-    /* Start the audio thread if necessary */
+    // Start the audio thread if necessary
     if (!current_audio.impl.ProvidesOwnCallbackThread) {
-        const size_t stacksize = 0;  /* just take the system default, since audio streams might have callbacks. */
+        const size_t stacksize = 0;  // just take the system default, since audio streams might have callbacks.
         char threadname[64];
-
         (void)SDL_snprintf(threadname, sizeof(threadname), "SDLAudio%c%d", (device->iscapture) ? 'C' : 'P', (int) device->instance_id);
         device->thread = SDL_CreateThreadInternal(device->iscapture ? CaptureAudioThread : OutputAudioThread, threadname, stacksize, device);
 
@@ -1289,32 +1249,30 @@ int SDL_BindAudioStream(SDL_AudioDeviceID devid, SDL_AudioStream *stream)
 
 void SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams)
 {
-    int i;
-
     /* to prevent deadlock when holding both locks, we _must_ lock the device first, and the stream second, as that is the order the audio thread will do it.
        But this means we have an unlikely, pathological case where a stream could change its binding between when we lookup its bound device and when we lock everything,
        so we double-check here. */
-    for (i = 0; i < num_streams; i++) {
+    for (int i = 0; i < num_streams; i++) {
         SDL_AudioStream *stream = streams[i];
         if (!stream) {
-            continue;  /* nothing to do, it's a NULL stream. */
+            continue;  // nothing to do, it's a NULL stream.
         }
 
         while (SDL_TRUE) {
-            SDL_LockMutex(stream->lock);   /* lock to check this and then release it, in case the device isn't locked yet. */
+            SDL_LockMutex(stream->lock);   // lock to check this and then release it, in case the device isn't locked yet.
             SDL_LogicalAudioDevice *bounddev = stream->bound_device;
             SDL_UnlockMutex(stream->lock);
 
-            /* lock in correct order. */
+            // lock in correct order.
             if (bounddev) {
-                SDL_LockMutex(bounddev->physical_device->lock);  /* this requires recursive mutexes, since we're likely locking the same device multiple times. */
+                SDL_LockMutex(bounddev->physical_device->lock);  // this requires recursive mutexes, since we're likely locking the same device multiple times.
             }
             SDL_LockMutex(stream->lock);
 
             if (bounddev == stream->bound_device) {
-                break;  /* the binding didn't change in the small window where it could, so we're good. */
+                break;  // the binding didn't change in the small window where it could, so we're good.
             } else {
-                SDL_UnlockMutex(stream->lock);  /* it changed bindings! Try again. */
+                SDL_UnlockMutex(stream->lock);  // it changed bindings! Try again.
                 if (bounddev) {
                     SDL_UnlockMutex(bounddev->physical_device->lock);
                 }
@@ -1322,8 +1280,8 @@ void SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams)
         }
     }
 
-    /* everything is locked, start unbinding streams. */
-    for (i = 0; i < num_streams; i++) {
+    // everything is locked, start unbinding streams.
+    for (int i = 0; i < num_streams; i++) {
         SDL_AudioStream *stream = streams[i];
         if (stream && stream->bound_device) {
             if (stream->bound_device->bound_streams == stream) {
@@ -1340,8 +1298,8 @@ void SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams)
         }
     }
 
-    /* Finalize and unlock everything. */
-    for (i = 0; i < num_streams; i++) {
+    // Finalize and unlock everything.
+    for (int i = 0; i < num_streams; i++) {
         SDL_AudioStream *stream = streams[i];
         if (stream && stream->bound_device) {
             SDL_LogicalAudioDevice *logdev = stream->bound_device;
@@ -1403,13 +1361,12 @@ static const SDL_AudioFormat format_list[NUM_FORMATS][NUM_FORMATS + 1] = {
 
 const SDL_AudioFormat *SDL_ClosestAudioFormats(SDL_AudioFormat format)
 {
-    int i;
-    for (i = 0; i < NUM_FORMATS; i++) {
+    for (int i = 0; i < NUM_FORMATS; i++) {
         if (format_list[i][0] == format) {
             return &format_list[i][0];
         }
     }
-    return &format_list[0][NUM_FORMATS]; /* not found; return what looks like a list with only a zero in it. */
+    return &format_list[0][NUM_FORMATS]; // not found; return what looks like a list with only a zero in it.
 }
 
 int SDL_GetSilenceValueForFormat(SDL_AudioFormat format)
