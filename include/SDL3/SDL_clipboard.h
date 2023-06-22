@@ -195,6 +195,7 @@ extern DECLSPEC void *SDLCALL SDL_GetClipboardUserdata(void);
 /**
  * Get the data from clipboard for a given mime type
  *
+ * \param length Length of the data
  * \param mime_type The mime type to read from the clipboard
  * \returns the retrieved data buffer or NULL on failure; call SDL_GetError()
  *          for more information. Caller must call SDL_free() on the returned

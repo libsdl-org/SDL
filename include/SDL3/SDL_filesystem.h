@@ -221,8 +221,11 @@ typedef enum
  *
  * If NULL is returned, the error may be obtained with SDL_GetError().
  *
+ * \param folder The type of folder to find
  * \returns Either a null-terminated C string containing the full path to the
  *          folder, or NULL if an error happened.
+ *
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Folder
  */

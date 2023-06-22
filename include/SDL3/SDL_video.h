@@ -477,6 +477,7 @@ extern DECLSPEC const SDL_DisplayMode **SDLCALL SDL_GetFullscreenDisplayModes(SD
  * \param h the height in pixels of the desired display mode
  * \param refresh_rate the refresh rate of the desired display mode, or 0.0f
  *                     for the desktop refresh rate
+ * \param include_high_density_modes Boolean to include high density modes in the search
  * \returns a pointer to the closest display mode equal to or larger than the
  *          desired mode, or NULL on error; call SDL_GetError() for more
  *          information.
@@ -1360,6 +1361,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool
 /**
  * Return whether the window has a surface associated with it.
  *
+ * \param window the window to query
  * \returns SDL_TRUE if there is a surface associated with the window, or
  *          SDL_FALSE otherwise.
  *
