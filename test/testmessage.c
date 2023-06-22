@@ -343,11 +343,22 @@ int main(int argc, char *argv[])
             quit(1);
         }
 
+
+        /* Test showing a system notification message with a parent window */
+        success = SDL_ShowSimpleNotification("Simple Notification", "Hey this window needs attention!");
+        if (success == -1) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting Notification: %s\n", SDL_GetError());
+            quit(1);
+        }
+
         while (SDL_WaitEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT || event.type == SDL_EVENT_KEY_UP) {
                 break;
             }
         }
+
+
+        SDL_DestroyWindow(window);
     }
 
     SDL_Quit();

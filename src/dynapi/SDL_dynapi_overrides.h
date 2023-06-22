@@ -1283,3 +1283,5 @@
 #define SDL_GetPixelFormatFromGPUTextureFormat SDL_GetPixelFormatFromGPUTextureFormat_REAL
 #define SDL_GetGPUTextureFormatFromPixelFormat SDL_GetGPUTextureFormatFromPixelFormat_REAL
 #define JNI_OnLoad JNI_OnLoad_REAL
+#define SDL_ShowNotification SDL_ShowNotification_REAL
+#define SDL_ShowSimpleNotification SDL_ShowSimpleNotification_REAL
