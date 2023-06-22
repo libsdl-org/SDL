@@ -323,6 +323,11 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
         device->next->prev = device->prev;
         was_live = SDL_TRUE;
     }
+
+    if (was_live) {
+        SDL_AtomicDecRef(device->iscapture ? &current_audio.capture_device_count : &current_audio.output_device_count);
+    }
+
     SDL_UnlockRWLock(current_audio.device_list_lock);
 
     // now device is not in the list, and we own it, so no one should be able to find it again, except the audio thread, which holds a pointer!
@@ -534,6 +539,8 @@ void SDL_QuitAudio(void)
     }
     current_audio.output_devices = NULL;
     current_audio.capture_devices = NULL;
+    SDL_AtomicSet(&current_audio.output_device_count, 0);
+    SDL_AtomicSet(&current_audio.capture_device_count, 0);
     SDL_UnlockRWLock(current_audio.device_list_lock);
     
     // mark all devices for shutdown so all threads can begin to terminate.
@@ -767,7 +774,7 @@ static SDL_AudioDeviceID *GetAudioDevices(int *reqcount, SDL_AudioDevice **devic
         num_devices = 0;
         SDL_OutOfMemory();
     } else {
-        const SDL_AudioDevice *dev = *devices;
+        const SDL_AudioDevice *dev = *devices;  // pointer to a pointer so we can dereference it after the lock is held.
         for (int i = 0; i < num_devices; i++) {
             SDL_assert(dev != NULL);
             SDL_assert(!SDL_AtomicGet((SDL_AtomicInt *) &dev->condemned));  // shouldn't be in the list if pending deletion.
