@@ -1032,17 +1032,7 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint keycode)
 {
-    int ret = -1;
-
-    SDL_LockMutex(Android_ActivityMutex);
-
-    if (Android_Window) {
-        ret = Android_OnPadDown(device_id, keycode);
-    }
-
-    SDL_UnlockMutex(Android_ActivityMutex);
-
-    return ret;
+    return Android_OnPadDown(device_id, keycode);
 }
 
 /* Padup */
@@ -1050,17 +1040,7 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint keycode)
 {
-    int ret = -1;
-
-    SDL_LockMutex(Android_ActivityMutex);
-
-    if (Android_Window) {
-        ret = Android_OnPadUp(device_id, keycode);
-    }
-
-    SDL_UnlockMutex(Android_ActivityMutex);
-
-    return ret;
+    return Android_OnPadUp(device_id, keycode);
 }
 
 /* Joy */
@@ -1068,13 +1048,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint axis, jfloat value)
 {
-    SDL_LockMutex(Android_ActivityMutex);
-
-    if (Android_Window) {
-        Android_OnJoy(device_id, axis, value);
-    }
-
-    SDL_UnlockMutex(Android_ActivityMutex);
+    Android_OnJoy(device_id, axis, value);
 }
 
 /* POV Hat */
@@ -1082,13 +1056,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint hat_id, jint x, jint y)
 {
-    SDL_LockMutex(Android_ActivityMutex);
-
-    if (Android_Window) {
-        Android_OnHat(device_id, hat_id, x, y);
-    }
-
-    SDL_UnlockMutex(Android_ActivityMutex);
+    Android_OnHat(device_id, hat_id, x, y);
 }
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
