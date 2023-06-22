@@ -958,3 +958,4 @@ SDL_DYNAPI_PROC(int,SDL_LoadWAV,(const char *a, SDL_AudioSpec *b, Uint8 **c, Uin
 SDL_DYNAPI_PROC(int,SDL_PauseAudioDevice,(SDL_AudioDeviceID a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_UnpauseAudioDevice,(SDL_AudioDeviceID a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsAudioDevicePaused,(SDL_AudioDeviceID a),(a),return)
+SDL_DYNAPI_PROC(SDL_AudioDeviceID,SDL_GetAudioStreamBinding,(SDL_AudioStream *a),(a),return)

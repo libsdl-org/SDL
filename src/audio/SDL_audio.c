@@ -1357,6 +1357,18 @@ void SDL_UnbindAudioStream(SDL_AudioStream *stream)
     SDL_UnbindAudioStreams(&stream, 1);
 }
 
+SDL_AudioDeviceID SDL_GetAudioStreamBinding(SDL_AudioStream *stream)
+{
+    SDL_AudioDeviceID retval = 0;
+    if (stream) {
+        SDL_LockMutex(stream->lock);
+        if (stream->bound_device) {
+            retval = stream->bound_device->instance_id;
+        }
+        SDL_UnlockMutex(stream->lock);
+    }
+    return retval;
+}
 
 SDL_AudioStream *SDL_CreateAndBindAudioStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec)
 {

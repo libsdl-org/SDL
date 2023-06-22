@@ -914,3 +914,4 @@
 #define SDL_PauseAudioDevice SDL_PauseAudioDevice_REAL
 #define SDL_UnpauseAudioDevice SDL_UnpauseAudioDevice_REAL
 #define SDL_IsAudioDevicePaused SDL_IsAudioDevicePaused_REAL
+#define SDL_GetAudioStreamBinding SDL_GetAudioStreamBinding_REAL
