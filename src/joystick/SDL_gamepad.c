@@ -3211,6 +3211,11 @@ void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick)
     for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
         if (gamepad->joystick == joystick) {
             SDL_SendGamepadButton(0, gamepad, SDL_GAMEPAD_BUTTON_GUIDE, SDL_RELEASED);
+
+            /* Make sure we send an update complete event for this change */
+            if (!gamepad->joystick->update_complete) {
+                gamepad->joystick->update_complete = SDL_GetTicksNS();
+            }
             break;
         }
     }
