@@ -335,7 +335,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
     SDL_AtomicSet(&device->shutdown, 1);  // tell audio thread to terminate.
 
     // if there's an audio thread, don't free until thread is terminating, otherwise free stuff now.
-    const SDL_bool should_destroy = (device->thread != NULL);
+    const SDL_bool should_destroy = (device->thread == NULL);
     SDL_UnlockMutex(device->lock);
 
     // Post the event, if we haven't tried to before and if it's desired
