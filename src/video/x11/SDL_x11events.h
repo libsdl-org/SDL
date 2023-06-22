@@ -23,11 +23,11 @@
 #ifndef SDL_x11events_h_
 #define SDL_x11events_h_
 
-extern void X11_PumpEvents(_THIS);
-extern int X11_WaitEventTimeout(_THIS, Sint64 timeoutNS);
-extern void X11_SendWakeupEvent(_THIS, SDL_Window *window);
-extern int X11_SuspendScreenSaver(_THIS);
-extern void X11_ReconcileKeyboardState(_THIS);
+extern void X11_PumpEvents(SDL_VideoDevice *_this);
+extern int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
+extern void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
+extern int X11_SuspendScreenSaver(SDL_VideoDevice *_this);
+extern void X11_ReconcileKeyboardState(SDL_VideoDevice *_this);
 extern void X11_GetBorderValues(SDL_WindowData *data);
 
 #endif /* SDL_x11events_h_ */

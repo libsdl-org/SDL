@@ -1084,9 +1084,17 @@ static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
     }
 
-    axis = ((int)packet->ucTriggerLeft * 257) - 32768;
+    if (packet->ucTriggerLeft == 0 && (packet->rgucButtonsHatAndCounter[1] & 0x04)) {
+        axis = SDL_JOYSTICK_AXIS_MAX;
+    } else {
+        axis = ((int)packet->ucTriggerLeft * 257) - 32768;
+    }
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
-    axis = ((int)packet->ucTriggerRight * 257) - 32768;
+    if (packet->ucTriggerRight == 0 && (packet->rgucButtonsHatAndCounter[1] & 0x08)) {
+        axis = SDL_JOYSTICK_AXIS_MAX;
+    } else {
+        axis = ((int)packet->ucTriggerRight * 257) - 32768;
+    }
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
     axis = ((int)packet->ucLeftJoystickX * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
@@ -1183,13 +1191,13 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
         SDL_SendJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_RIGHT_PADDLE, (data & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
-    if (packet->rgucButtonsAndHat[1] & 0x04) {
+    if (packet->ucTriggerLeft == 0 && (packet->rgucButtonsAndHat[1] & 0x04)) {
         axis = SDL_JOYSTICK_AXIS_MAX;
     } else {
         axis = ((int)packet->ucTriggerLeft * 257) - 32768;
     }
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
-    if (packet->rgucButtonsAndHat[1] & 0x08) {
+    if (packet->ucTriggerRight == 0 && (packet->rgucButtonsAndHat[1] & 0x08)) {
         axis = SDL_JOYSTICK_AXIS_MAX;
     } else {
         axis = ((int)packet->ucTriggerRight * 257) - 32768;

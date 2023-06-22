@@ -69,7 +69,7 @@ static SDL_bool has_monotonic_time = SDL_FALSE;
 
 static void CheckMonotonicTime(void)
 {
-#if defined(HAVE_CLOCK_GETTIME)
+#ifdef HAVE_CLOCK_GETTIME
     struct timespec value;
     if (clock_gettime(SDL_MONOTONIC_CLOCK, &value) == 0) {
         has_monotonic_time = SDL_TRUE;
@@ -82,8 +82,7 @@ static void CheckMonotonicTime(void)
     checked_monotonic_time = SDL_TRUE;
 }
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     Uint64 ticks;
 
@@ -92,7 +91,7 @@ SDL_GetPerformanceCounter(void)
     }
 
     if (has_monotonic_time) {
-#if defined(HAVE_CLOCK_GETTIME)
+#ifdef HAVE_CLOCK_GETTIME
         struct timespec now;
 
         clock_gettime(SDL_MONOTONIC_CLOCK, &now);
@@ -116,15 +115,14 @@ SDL_GetPerformanceCounter(void)
     return ticks;
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     if (!checked_monotonic_time) {
         CheckMonotonicTime();
     }
 
     if (has_monotonic_time) {
-#if defined(HAVE_CLOCK_GETTIME)
+#ifdef HAVE_CLOCK_GETTIME
         return SDL_NS_PER_SECOND;
 #elif defined(__APPLE__)
         Uint64 freq = mach_base_info.denom;
@@ -141,7 +139,7 @@ void SDL_DelayNS(Uint64 ns)
 {
     int was_error;
 
-#if defined(HAVE_NANOSLEEP)
+#ifdef HAVE_NANOSLEEP
     struct timespec tv, remaining;
 #else
     struct timeval tv;
@@ -157,7 +155,7 @@ void SDL_DelayNS(Uint64 ns)
 #endif
 
     /* Set the timeout interval */
-#if defined(HAVE_NANOSLEEP)
+#ifdef HAVE_NANOSLEEP
     remaining.tv_sec = (time_t)(ns / SDL_NS_PER_SECOND);
     remaining.tv_nsec = (long)(ns % SDL_NS_PER_SECOND);
 #else
@@ -166,7 +164,7 @@ void SDL_DelayNS(Uint64 ns)
     do {
         errno = 0;
 
-#if defined(HAVE_NANOSLEEP)
+#ifdef HAVE_NANOSLEEP
         tv.tv_sec = remaining.tv_sec;
         tv.tv_nsec = remaining.tv_nsec;
         was_error = nanosleep(&tv, &remaining);

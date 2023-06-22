@@ -29,15 +29,13 @@
 
 #include <emscripten/emscripten.h>
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *retval = "/";
     return SDL_strdup(retval);
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     const char *append = "/libsdl/";
     char *retval;
@@ -80,6 +78,31 @@ SDL_GetPrefPath(const char *org, const char *app)
         SDL_SetError("Couldn't create directory '%s': '%s'", retval, strerror(errno));
         SDL_free(retval);
         return NULL;
+    }
+
+    return retval;
+}
+
+char *SDL_GetPath(SDL_Folder folder)
+{
+    const char *home = NULL;
+    char *retval;
+
+    if (folder != SDL_FOLDER_HOME) {
+        SDL_SetError("Emscripten only supports the home folder");
+        return NULL;
+    }
+
+    home = SDL_getenv("HOME");
+    if (!home) {
+        SDL_SetError("No $HOME environment variable available");
+        return NULL;
+    }
+
+    retval = SDL_strdup(home);
+
+    if (!retval) {
+        SDL_OutOfMemory();
     }
 
     return retval;

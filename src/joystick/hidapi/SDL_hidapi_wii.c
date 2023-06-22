@@ -256,11 +256,11 @@ static SDL_bool WriteRegister(SDL_DriverWii_Context *ctx, Uint32 address, const 
 
     SDL_zeroa(writeRequest);
     writeRequest[0] = k_eWiiOutputReportIDs_WriteMemory;
-    writeRequest[1] = 0x04 | ctx->m_bRumbleActive;
+    writeRequest[1] = (Uint8)(0x04 | ctx->m_bRumbleActive);
     writeRequest[2] = (address >> 16) & 0xff;
     writeRequest[3] = (address >> 8) & 0xff;
     writeRequest[4] = address & 0xff;
-    writeRequest[5] = size;
+    writeRequest[5] = (Uint8)size;
     SDL_assert(size > 0 && size <= 16);
     SDL_memcpy(writeRequest + 6, data, size);
 
@@ -285,7 +285,7 @@ static SDL_bool ReadRegister(SDL_DriverWii_Context *ctx, Uint32 address, int siz
     Uint8 readRequest[7];
 
     readRequest[0] = k_eWiiOutputReportIDs_ReadMemory;
-    readRequest[1] = 0x04 | ctx->m_bRumbleActive;
+    readRequest[1] = (Uint8)(0x04 | ctx->m_bRumbleActive);
     readRequest[2] = (address >> 16) & 0xff;
     readRequest[3] = (address >> 8) & 0xff;
     readRequest[4] = address & 0xff;
@@ -455,7 +455,7 @@ static void CheckMotionPlusConnection(SDL_DriverWii_Context *ctx)
 
 static void ActivateMotionPlusWithMode(SDL_DriverWii_Context *ctx, Uint8 mode)
 {
-#if defined(__LINUX__)
+#ifdef __LINUX__
     /* Linux drivers maintain a lot of state around the Motion Plus
      * extension, so don't mess with it here.
      */
@@ -1400,7 +1400,7 @@ static void GetExtensionData(WiiButtonData *dst, const Uint8 *src, int size)
     }
     if (valid_data) {
         SDL_memcpy(dst->rgucExtension, src, size);
-        dst->ucNExtensionBytes = size;
+        dst->ucNExtensionBytes = (Uint8)size;
     }
 }
 

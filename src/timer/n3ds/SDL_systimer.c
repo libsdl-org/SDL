@@ -25,14 +25,12 @@
 #include <3ds.h>
 
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     return svcGetSystemTick();
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     return SYSCLOCK_ARM11;
 }

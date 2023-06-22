@@ -13,23 +13,19 @@ libs: libhidapi-libusb.so
 CC       ?= gcc
 CFLAGS   ?= -Wall -g -fpic
 
-CXX      ?= g++
-CXXFLAGS ?= -Wall -g -fpic
-
 LDFLAGS  ?= -Wall -g
 
 COBJS_LIBUSB = hid.o
-COBJS = $(COBJS_LIBUSB)
-CPPOBJS   = ../hidtest/hidtest.o
-OBJS      = $(COBJS) $(CPPOBJS)
+COBJS = $(COBJS_LIBUSB) ../hidtest/test.o
+OBJS      = $(COBJS)
 LIBS_USB  = `pkg-config libusb-1.0 --libs` -lrt -lpthread
 LIBS      = $(LIBS_USB)
-INCLUDES ?= -I../hidapi `pkg-config libusb-1.0 --cflags`
+INCLUDES ?= -I../hidapi -I. `pkg-config libusb-1.0 --cflags`
 
 
 # Console Test Program
-hidtest-libusb: $(COBJS_LIBUSB) $(CPPOBJS)
-	$(CXX) $(LDFLAGS) $^ $(LIBS_USB) -o $@
+hidtest-libusb: $(COBJS)
+	$(CC) $(LDFLAGS) $^ $(LIBS_USB) -o $@
 
 # Shared Libs
 libhidapi-libusb.so: $(COBJS_LIBUSB)
@@ -38,9 +34,6 @@ libhidapi-libusb.so: $(COBJS_LIBUSB)
 # Objects
 $(COBJS): %.o: %.c
 	$(CC) $(CFLAGS) -c $(INCLUDES) $< -o $@
-
-$(CPPOBJS): %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $(INCLUDES) $< -o $@
 
 
 clean:

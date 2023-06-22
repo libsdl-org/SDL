@@ -112,7 +112,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
  * Useful macros for blitting routines
  */
 
-#if defined(__GNUC__)
+#ifdef __GNUC__
 #define DECLARE_ALIGNED(t, v, a) t __attribute__((aligned(a))) v
 #elif defined(_MSC_VER)
 #define DECLARE_ALIGNED(t, v, a) __declspec(align(a)) t v
@@ -226,11 +226,11 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
     }
 #define RGB565_FROM_RGB(Pixel, r, g, b)                        \
     {                                                          \
-        Pixel = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3); \
+        Pixel = (Uint16)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)); \
     }
 #define RGB555_FROM_RGB(Pixel, r, g, b)                        \
     {                                                          \
-        Pixel = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3); \
+        Pixel = (Uint16)(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)); \
     }
 #define RGB888_FROM_RGB(Pixel, r, g, b)   \
     {                                     \
@@ -574,9 +574,8 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 
 #endif /* USE_DUFFS_LOOP */
 
-/* Prevent Visual C++ 6.0 from printing out stupid warnings */
 #if defined(_MSC_VER) && (_MSC_VER >= 600)
-#pragma warning(disable : 4550)
+#pragma warning(disable : 4244) /* '=': conversion from 'X' to 'Y', possible loss of data */
 #endif
 
 #endif /* SDL_blit_h_ */

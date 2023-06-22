@@ -47,8 +47,8 @@ extern "C" {
 #define NGAGEVID_DRIVER_NAME "ngage"
 
 /* Initialization/Query functions */
-static int NGAGE_VideoInit(_THIS);
-static void NGAGE_VideoQuit(_THIS);
+static int NGAGE_VideoInit(SDL_VideoDevice *_this);
+static void NGAGE_VideoQuit(SDL_VideoDevice *_this);
 
 /* NGAGE driver bootstrap functions */
 
@@ -141,15 +141,15 @@ VideoBootStrap NGAGE_bootstrap = {
     NGAGE_CreateDevice
 };
 
-int NGAGE_VideoInit(_THIS)
+int NGAGE_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
     /* Use 12-bpp desktop mode */
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB444;
-    mode.pixel_w = 176;
-    mode.pixel_h = 208;
+    mode.w = 176;
+    mode.h = 208;
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
@@ -158,7 +158,7 @@ int NGAGE_VideoInit(_THIS)
     return 0;
 }
 
-void NGAGE_VideoQuit(_THIS)
+void NGAGE_VideoQuit(SDL_VideoDevice *_this)
 {
 }
 

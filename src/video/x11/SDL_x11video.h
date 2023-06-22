@@ -28,6 +28,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <X11/Xresource.h>
 
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 #include <X11/Xcursor/Xcursor.h>
@@ -68,7 +69,6 @@ struct SDL_VideoData
 {
     Display *display;
     Display *request_display;
-    char *classname;
     pid_t pid;
     XIM im;
     Uint64 screensaver_activity;
@@ -77,6 +77,8 @@ struct SDL_VideoData
     int windowlistlength;
     XID window_group;
     Window clipboard_window;
+    SDLX11_ClipboardData clipboard;
+    SDLX11_ClipboardData primary_selection;
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_Window *active_cursor_confined_window;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */

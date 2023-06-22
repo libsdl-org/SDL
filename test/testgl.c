@@ -20,7 +20,7 @@
 
 typedef struct GL_Context
 {
-#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #include "../src/render/opengl/SDL_glfuncs.h"
 #undef SDL_PROC
 } GL_Context;
@@ -65,7 +65,10 @@ static void quit(int rc)
         SDL_GL_DeleteContext(context);
     }
     SDLTest_CommonQuit(state);
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 static void Render(void)

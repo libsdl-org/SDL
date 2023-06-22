@@ -20,25 +20,19 @@
 */
 #include "SDL_internal.h"
 
-#ifndef SDL_openslesaudio_h
-#define SDL_openslesaudio_h
+#ifndef SDL_openslesaudio_h_
+#define SDL_openslesaudio_h_
 
-#include "../SDL_sysaudio.h"
-
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *this
-
-#define NUM_BUFFERS 2 /* -- Don't lower this! */
-
-struct SDL_PrivateAudioData
-{
-    Uint8 *mixbuff;
-    int next_buffer;
-    Uint8 *pmixbuff[NUM_BUFFERS];
-    SDL_sem *playsem;
-};
+#ifdef SDL_AUDIO_DRIVER_OPENSLES
 
 void openslES_ResumeDevices(void);
 void openslES_PauseDevices(void);
 
-#endif /* SDL_openslesaudio_h */
+#else
+
+static void openslES_ResumeDevices(void) {}
+static void openslES_PauseDevices(void) {}
+
+#endif
+
+#endif /* SDL_openslesaudio_h_ */

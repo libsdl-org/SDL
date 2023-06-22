@@ -23,17 +23,17 @@
 #ifndef SDL_windowskeyboard_h_
 #define SDL_windowskeyboard_h_
 
-extern void WIN_InitKeyboard(_THIS);
+extern void WIN_InitKeyboard(SDL_VideoDevice *_this);
 extern void WIN_UpdateKeymap(SDL_bool send_event);
-extern void WIN_QuitKeyboard(_THIS);
+extern void WIN_QuitKeyboard(SDL_VideoDevice *_this);
 
 extern void WIN_ResetDeadKeys(void);
 
-extern void WIN_StartTextInput(_THIS);
-extern void WIN_StopTextInput(_THIS);
-extern int WIN_SetTextInputRect(_THIS, const SDL_Rect *rect);
-extern void WIN_ClearComposition(_THIS);
-extern SDL_bool WIN_IsTextInputShown(_THIS);
+extern void WIN_StartTextInput(SDL_VideoDevice *_this);
+extern void WIN_StopTextInput(SDL_VideoDevice *_this);
+extern int WIN_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);
+extern void WIN_ClearComposition(SDL_VideoDevice *_this);
+extern SDL_bool WIN_IsTextInputShown(SDL_VideoDevice *_this);
 
 extern SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, struct SDL_VideoData *videodata);
 

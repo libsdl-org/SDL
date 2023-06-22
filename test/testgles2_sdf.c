@@ -29,7 +29,7 @@
 
 typedef struct GLES2_Context
 {
-#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #include "../src/render/opengles2/SDL_gles2funcs.h"
 #undef SDL_PROC
 } GLES2_Context;
@@ -102,7 +102,10 @@ quit(int rc)
     }
 
     SDLTest_CommonQuit(state);
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 #define GL_CHECK(x)                                                                         \
@@ -755,7 +758,7 @@ int main(int argc, char *argv[])
         ctx.glBindTexture(g_texture_type, g_texture);
         GL_CHECK(ctx.glClearColor(1, 1, 1, 1));
 
-        // SDL_BLENDMODE_BLEND
+        /* SDL_BLENDMODE_BLEND */
         GL_CHECK(ctx.glEnable(GL_BLEND));
         ctx.glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         ctx.glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
@@ -780,7 +783,7 @@ int main(int argc, char *argv[])
         SDL_Log("%2.2f frames per second\n",
                 ((double)frames * 1000) / (now - then));
     }
-#if !defined(__ANDROID__)
+#ifndef __ANDROID__
     quit(0);
 #endif
     return 0;

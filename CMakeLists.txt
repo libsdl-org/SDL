@@ -167,17 +167,17 @@ endif()
 #  so we default to yes on iOS.
 #  TODO: Windows can support libusb, the hid.c file just depends on Unix APIs
 if((WINDOWS AND NOT WINDOWS_STORE) OR IOS OR TVOS OR ANDROID)
-  set(HIDAPI_SKIP_LIBUSB TRUE)
+  set(SDL_HIDAPI_LIBUSB_AVAILABLE FALSE)
 else()
-  set(HIDAPI_SKIP_LIBUSB FALSE)
+  set(SDL_HIDAPI_LIBUSB_AVAILABLE TRUE)
 endif()
 
 # On the other hand, *BSD specifically uses libusb only, so we make a special
 #  case just for them.
 if(FREEBSD OR NETBSD OR OPENBSD OR BSDI)
-  set(HIDAPI_ONLY_LIBUSB TRUE)
+  set(SDL_HIDAPI_LIBUSB_DEFAULT TRUE)
 else()
-  set(HIDAPI_ONLY_LIBUSB FALSE)
+  set(SDL_HIDAPI_LIBUSB_DEFAULT FALSE)
 endif()
 
 # Compiler info
@@ -383,7 +383,8 @@ dep_option(SDL_SSE4_2              "Use SSE4.2 assembly routines" ON "SDL_ASSEMB
 dep_option(SDL_MMX                 "Use MMX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_ALTIVEC             "Use Altivec assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_POWERPC32 OR SDL_CPU_POWERPC64" OFF)
 dep_option(SDL_ARMSIMD             "Use SIMD assembly blitters on ARM" OFF "SDL_ASSEMBLY;SDL_CPU_ARM32" OFF)
-dep_option(SDL_ARMNEON             "Use NEON assembly blitters on ARM" OFF "SDL_ASSEMBLY;SDL_CPU_ARM32" OFF)
+dep_option(SDL_ARMNEON             "Use NEON assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
+dep_option(SDL_ARMNEON_BLITTERS    "Use NEON assembly blitters on ARM32" OFF "SDL_VIDEO;SDL_ASSEMBLY;SDL_ARMNEON;SDL_CPU_ARM32" OFF)
 dep_option(SDL_LSX                 "Use LSX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 dep_option(SDL_LASX                "Use LASX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 
@@ -410,8 +411,6 @@ set_option(SDL_PULSEAUDIO          "Use PulseAudio" ${UNIX_SYS})
 dep_option(SDL_PULSEAUDIO_SHARED   "Dynamically load PulseAudio support" ON "SDL_PULSEAUDIO" OFF)
 set_option(SDL_SNDIO               "Support the sndio audio API" ${UNIX_SYS})
 dep_option(SDL_SNDIO_SHARED        "Dynamically load the sndio audio API" ON "SDL_SNDIO" OFF)
-set_option(SDL_LIBSAMPLERATE       "Use libsamplerate for audio rate conversion" ${UNIX_SYS})
-dep_option(SDL_LIBSAMPLERATE_SHARED "Dynamically load libsamplerate" ON "SDL_LIBSAMPLERATE" OFF)
 set_option(SDL_RPATH               "Use an rpath when linking SDL" ${UNIX_SYS})
 set_option(SDL_CLOCK_GETTIME       "Use clock_gettime() instead of gettimeofday()" ${SDL_CLOCK_GETTIME_ENABLED_BY_DEFAULT})
 set_option(SDL_X11                 "Use X11 video driver" ${UNIX_SYS})
@@ -443,7 +442,7 @@ set_option(SDL_OFFSCREEN           "Use offscreen video driver" ON)
 option_string(SDL_BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" OFF)
 option_string(SDL_FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" OFF)
 set_option(SDL_HIDAPI              "Enable the HIDAPI subsystem" ON)
-dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" OFF SDL_HIDAPI OFF)
+dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" ${SDL_HIDAPI_LIBUSB_DEFAULT} "SDL_HIDAPI;${SDL_HIDAPI_LIBUSB_AVAILABLE}" OFF)
 dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" ON SDL_HIDAPI OFF)
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
 set_option(SDL_LIBUDEV             "Enable libudev support" ON)
@@ -466,14 +465,6 @@ dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST OFF)
 dep_option(SDL_INSTALL_TESTS   "Install test-cases" OFF "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" OFF)
 
 set(HAVE_STATIC_PIC "${SDL_STATIC_PIC}")
-
-if(SDL_HIDAPI)
-  if(HIDAPI_ONLY_LIBUSB)
-    set(SDL_HIDAPI_LIBUSB ON CACHE BOOL "" FORCE)
-  elseif(HIDAPI_SKIP_LIBUSB)
-    set(SDL_HIDAPI_LIBUSB OFF CACHE BOOL "" FORCE)
-  endif()
-endif()
 
 if(VITA)
   set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
@@ -571,32 +562,6 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
     target_compile_options(sdl-global-options INTERFACE "-fno-strict-aliasing")
   endif()
 
-  # command-line option ‘-Wdeclaration-after-statement’ is valid for C/ObjC but not for C++
-  check_c_compiler_flag(-Wdeclaration-after-statement HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
-  if(HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
-    if(SDL_WERROR)
-      check_c_compiler_flag(-Werror=declaration-after-statement HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
-      if(HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
-        if(CMAKE_VERSION VERSION_LESS 3.3)
-          target_compile_options(sdl-global-options INTERFACE "-Werror=declaration-after-statement")
-        else()
-          target_compile_options(sdl-global-options INTERFACE "$<$<COMPILE_LANGUAGE:C>:-Werror=declaration-after-statement>")
-          if(CMAKE_OBJC_COMPILER)
-              target_compile_options(sdl-global-options INTERFACE "$<$<COMPILE_LANGUAGE:OBJC>:-Werror=declaration-after-statement>")
-          endif()
-        endif()
-      endif()
-    endif()
-    if(CMAKE_VERSION VERSION_LESS 3.3)
-      target_compile_options(sdl-global-options INTERFACE "-Wdeclaration-after-statement")
-    else()
-      target_compile_options(sdl-global-options INTERFACE "$<$<COMPILE_LANGUAGE:C>:-Wdeclaration-after-statement>")
-      if(CMAKE_OBJC_COMPILER)
-          target_compile_options(sdl-global-options INTERFACE "$<$<COMPILE_LANGUAGE:OBJC>:-Wdeclaration-after-statement>")
-      endif()
-    endif()
-  endif()
-
   check_c_compiler_flag(-Wdocumentation HAVE_GCC_WDOCUMENTATION)
   if(HAVE_GCC_WDOCUMENTATION)
     if(SDL_WERROR)
@@ -674,6 +639,11 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
   check_c_compiler_flag(-Wshadow HAVE_GCC_WSHADOW)
   if(HAVE_GCC_WSHADOW)
     target_compile_options(sdl-global-options INTERFACE "-Wshadow")
+  endif()
+
+  check_c_compiler_flag(-Wunused-local-typedefs HAVE_GCC_WUNUSED_LOCAL_TYPEDEFS)
+  if(HAVE_GCC_WUNUSED_LOCAL_TYPEDEFS)
+    target_compile_options(sdl-global-options INTERFACE "-Wno-unused-local-typedefs")
   endif()
 
   if(APPLE)
@@ -1016,7 +986,7 @@ if(SDL_ASSEMBLY)
       endif()
     endif()
 
-    if(SDL_ARMNEON)
+    if(SDL_ARMNEON_BLITTERS)
       cmake_push_check_state()
       set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -x assembler-with-cpp")
       list(APPEND CMAKE_REQUIRED_LINK_OPTIONS -x none)
@@ -1035,17 +1005,34 @@ if(SDL_ASSEMBLY)
         .global main
         pld [r0]
         vmovn.u16 d0, q0
-      " ARMNEON_FOUND)
+      " COMPILER_SUPPORTS_ARMNEON_ASSEMBLY)
       cmake_pop_check_state()
-
-      if(ARMNEON_FOUND)
-        set(HAVE_ARMNEON TRUE)
+      if(COMPILER_SUPPORTS_ARMNEON_ASSEMBLY)
+        set(HAVE_ARMNEON_BLITTERS TRUE)
         set(SDL_ARM_NEON_BLITTERS 1)
         enable_language(ASM)
         file(GLOB ARMNEON_SOURCES ${SDL3_SOURCE_DIR}/src/video/arm/pixman-arm-neon*.S)
         list(APPEND SOURCE_FILES ${ARMNEON_SOURCES})
         set_property(SOURCE ${ARMNEON_SOURCES} APPEND PROPERTY COMPILE_OPTIONS -x assembler-with-cpp)
         set(WARN_ABOUT_ARM_NEON_ASM_MIT TRUE)
+      endif()
+    endif()
+
+    if(SDL_ARMNEON)
+      check_c_source_compiles("
+        #include <arm_neon.h>
+        void floats_add(float *dest, float *a, float *b, unsigned size) {
+          for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
+            vst1q_f32(dest, vaddq_f32(vld1q_f32(a), vld1q_f32(b)));
+          }
+        }
+        int main(int argc, char *argv[]) {
+          floats_add((float*)0, (float*)0, (float*)0, 0);
+          return 0;
+         }" COMPILER_SUPPORTS_ARMNEON)
+
+      if(COMPILER_SUPPORTS_ARMNEON)
+        set(HAVE_ARMNEON TRUE)
       endif()
     endif()
   endif()
@@ -1111,16 +1098,7 @@ if(SDL_LIBC)
       set(${_HAVE_H} 1)
     endforeach()
     set(HAVE_SIGNAL_H 1)
-    foreach(_FN
-            malloc calloc realloc free bsearch qsort abs memset memcpy memmove memcmp
-            wcslen _wcsdup wcsdup wcsstr wcscmp wcsncmp _wcsicmp _wcsnicmp
-            strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
-            _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
-            _stricmp _strnicmp sscanf
-            acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf
-            copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf
-            log logf log10 log10f lround lroundf modf modff pow powf round roundf
-            scalbn scalbnf sin sinf sqrt sqrtf tan tanf trunc truncf)
+    foreach(_FN abs acos acosf asin asinf atan atan2 atan2f atanf atof atoi bsearch calloc ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf free itoa log log10 log10f logf lround lroundf _ltoa malloc memcmp memcpy memmove memset modf modff pow powf qsort realloc round roundf scalbn scalbnf sin sinf sqrt sqrtf sscanf strchr strcmp _stricmp strlen _strlwr strncmp _strnicmp strrchr _strrev strstr strtod strtol strtoll strtoul _strupr tan tanf trunc truncf _ultoa wcscmp _wcsdup wcsdup _wcsicmp wcslen wcsncmp _wcsnicmp wcsstr wcstol)
       string(TOUPPER ${_FN} _UPPER)
       set(HAVE_${_UPPER} 1)
     endforeach()
@@ -1164,16 +1142,7 @@ if(SDL_LIBC)
     check_c_source_compiles("#include <sys/types.h>
                              #include <sys/mman.h>
                              int main(void) { return 0; }" HAVE_MPROTECT)
-    foreach(_FN
-            strtod malloc calloc realloc free getenv setenv putenv unsetenv
-            bsearch qsort abs bcopy memset memcpy memmove memcmp strlen strlcpy strlcat
-            _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r
-            itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
-            atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp strcasestr
-            wcscmp _wcsdup wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr
-            wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp
-            sscanf vsscanf vsnprintf fopen64 fseeko fseeko64 _Exit
-            )
+    foreach(_FN abs atof atoi bcopy bsearch calloc _Exit fopen64 free fseeko fseeko64 getenv _i64toa index itoa _ltoa malloc memcmp memcpy memmove memset putenv qsort realloc rindex setenv sscanf strcasecmp strcasestr strchr strcmp _stricmp strlcat strlcpy strlen _strlwr strncasecmp strncmp _strnicmp strrchr _strrev strstr strtod strtok_r strtol strtoll strtoul strtoull _strupr _ui64toa _uitoa _ultoa unsetenv vsnprintf vsscanf wcscasecmp wcscmp _wcsdup wcsdup _wcsicmp wcslcat wcslcpy wcslen wcsncasecmp wcsncmp _wcsnicmp wcsstr wcstol)
       string(TOUPPER ${_FN} _UPPER)
       set(LIBC_HAS_VAR "LIBC_HAS_${_UPPER}")
       check_symbol_exists("${_FN}" "${STDC_HEADER_NAMES}" ${LIBC_HAS_VAR})
@@ -1198,8 +1167,8 @@ if(SDL_LIBC)
     foreach(_FN
               atan atan2 atanf atan2f ceil ceilf copysign copysignf cos cosf
               exp expf fabs fabsf floor floorf fmod fmodf log logf log10 log10f
-              lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt
-              sqrtf tan tanf acos acosf asin asinf trunc truncf)
+              lround lroundf modf modff pow powf round roundf scalbn scalbnf
+              sin sinf sqrt sqrtf tan tanf acos acosf asin asinf trunc truncf)
         string(TOUPPER ${_FN} _UPPER)
         set(LIBC_HASVAR "LIBC_HAS_${_UPPER}")
         check_symbol_exists("${_FN}" "math.h" ${LIBC_HASVAR})
@@ -1992,11 +1961,14 @@ elseif(WINDOWS)
 
   if(SDL_THREADS)
     set(SDL_THREAD_GENERIC_COND_SUFFIX 1)
+    set(SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1)
     set(SDL_THREAD_WINDOWS 1)
     list(APPEND SOURCE_FILES
       ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c
+      ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c
       ${SDL3_SOURCE_DIR}/src/thread/windows/SDL_syscond_cv.c
       ${SDL3_SOURCE_DIR}/src/thread/windows/SDL_sysmutex.c
+      ${SDL3_SOURCE_DIR}/src/thread/windows/SDL_sysrwlock_srw.c
       ${SDL3_SOURCE_DIR}/src/thread/windows/SDL_syssem.c
       ${SDL3_SOURCE_DIR}/src/thread/windows/SDL_systhread.c
       ${SDL3_SOURCE_DIR}/src/thread/windows/SDL_systls.c)
@@ -2581,6 +2553,7 @@ elseif(VITA)
       ${SDL3_SOURCE_DIR}/src/thread/vita/SDL_syssem.c
       ${SDL3_SOURCE_DIR}/src/thread/vita/SDL_systhread.c
       ${SDL3_SOURCE_DIR}/src/thread/vita/SDL_syscond.c
+      ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c
       ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c)
     set(HAVE_SDL_THREADS TRUE)
   endif()
@@ -2716,7 +2689,7 @@ elseif(PSP)
   endif()
   if(SDL_THREADS)
     set(SDL_THREAD_PSP 1)
-    file(GLOB PSP_THREAD_SOURCES ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c ${SDL3_SOURCE_DIR}/src/thread/psp/*.c)
+    file(GLOB PSP_THREAD_SOURCES ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c ${SDL3_SOURCE_DIR}/src/thread/psp/*.c)
     list(APPEND SOURCE_FILES ${PSP_THREAD_SOURCES})
     set(HAVE_SDL_THREADS TRUE)
   endif()
@@ -2775,7 +2748,7 @@ elseif(PS2)
   endif()
   if(SDL_THREADS)
     set(SDL_THREAD_PS2 1)
-    file(GLOB PS2_THREAD_SOURCES ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysmutex.c ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c ${SDL3_SOURCE_DIR}/src/thread/ps2/*.c)
+    file(GLOB PS2_THREAD_SOURCES ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysmutex.c ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c ${SDL3_SOURCE_DIR}/src/thread/ps2/*.c)
     list(APPEND SOURCE_FILES ${PS2_THREAD_SOURCES})
     set(HAVE_SDL_THREADS TRUE)
   endif()
@@ -2836,7 +2809,7 @@ elseif(N3DS)
   if(SDL_THREADS)
     set(SDL_THREAD_N3DS 1)
     file(GLOB N3DS_THREAD_SOURCES ${SDL3_SOURCE_DIR}/src/thread/n3ds/*.c)
-    list(APPEND SOURCE_FILES ${N3DS_THREAD_SOURCES} ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c)
+    list(APPEND SOURCE_FILES ${N3DS_THREAD_SOURCES} ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c ${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c)
     set(HAVE_SDL_THREADS TRUE)
   endif()
 
@@ -2891,7 +2864,6 @@ if(HAVE_VULKAN AND NOT SDL_LOADSO)
 endif()
 
 # Platform-independent options
-CheckLibSampleRate()
 
 if(SDL_VIDEO)
   if(SDL_OFFSCREEN AND SDL_VIDEO_OPENGL_EGL)

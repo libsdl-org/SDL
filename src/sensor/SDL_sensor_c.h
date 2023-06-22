@@ -40,6 +40,9 @@ extern void SDL_UnlockSensors(void);
 /* Function to return whether there are any sensors opened by the application */
 extern SDL_bool SDL_SensorsOpened(void);
 
+/* Update an individual sensor, used by gamepad sensor fusion */
+extern void SDL_UpdateSensor(SDL_Sensor *sensor);
+
 /* Internal event queueing functions */
 extern int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
 

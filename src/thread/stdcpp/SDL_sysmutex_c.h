@@ -22,7 +22,8 @@
 
 #include <mutex>
 
-struct SDL_mutex
+struct SDL_Mutex
 {
     std::recursive_mutex cpp_mutex;
 };
+

@@ -42,8 +42,8 @@
 #define ANDROID_VID_DRIVER_NAME "Android"
 
 /* Initialization/Query functions */
-static int Android_VideoInit(_THIS);
-static void Android_VideoQuit(_THIS);
+static int Android_VideoInit(SDL_VideoDevice *_this);
+static void Android_VideoQuit(SDL_VideoDevice *_this);
 
 #include "../SDL_egl_c.h"
 #define Android_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
@@ -62,12 +62,12 @@ static int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; /* Default SurfaceView format, in case this is queried before being filled */
 float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
-SDL_sem *Android_PauseSem = NULL;
-SDL_sem *Android_ResumeSem = NULL;
-SDL_mutex *Android_ActivityMutex = NULL;
+SDL_Semaphore *Android_PauseSem = NULL;
+SDL_Semaphore *Android_ResumeSem = NULL;
+SDL_Mutex *Android_ActivityMutex = NULL;
 static SDL_SystemTheme Android_SystemTheme;
 
-static int Android_SuspendScreenSaver(_THIS)
+static int Android_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     return Android_JNI_SuspendScreenSaver(_this->suspend_screensaver);
 }
@@ -166,7 +166,7 @@ VideoBootStrap Android_bootstrap = {
     Android_CreateDevice
 };
 
-int Android_VideoInit(_THIS)
+int Android_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
     SDL_DisplayID displayID;
@@ -179,9 +179,8 @@ int Android_VideoInit(_THIS)
 
     SDL_zero(mode);
     mode.format = Android_ScreenFormat;
-    mode.pixel_w = Android_DeviceWidth;
-    mode.pixel_h = Android_DeviceHeight;
-    mode.display_scale = Android_ScreenDensity;
+    mode.w = Android_DeviceWidth;
+    mode.h = Android_DeviceHeight;
     mode.refresh_rate = Android_ScreenRate;
     mode.driverdata = NULL;
 
@@ -190,7 +189,9 @@ int Android_VideoInit(_THIS)
         return -1;
     }
     display = SDL_GetVideoDisplay(displayID);
-    display->orientation = Android_JNI_GetDisplayOrientation();
+    display->natural_orientation = Android_JNI_GetDisplayNaturalOrientation();
+    display->current_orientation = Android_JNI_GetDisplayCurrentOrientation();
+    display->content_scale = Android_ScreenDensity;
 
     Android_InitTouch();
 
@@ -200,7 +201,7 @@ int Android_VideoInit(_THIS)
     return 0;
 }
 
-void Android_VideoQuit(_THIS)
+void Android_VideoQuit(SDL_VideoDevice *_this)
 {
     Android_QuitMouse();
     Android_QuitTouch();
@@ -272,17 +273,14 @@ void Android_SendResize(SDL_Window *window)
 
         SDL_zero(desktop_mode);
         desktop_mode.format = Android_ScreenFormat;
-        desktop_mode.pixel_w = Android_DeviceWidth;
-        desktop_mode.pixel_h = Android_DeviceHeight;
-        desktop_mode.display_scale = Android_ScreenDensity;
+        desktop_mode.w = Android_DeviceWidth;
+        desktop_mode.h = Android_DeviceHeight;
         desktop_mode.refresh_rate = Android_ScreenRate;
         SDL_SetDesktopDisplayMode(display, &desktop_mode);
     }
 
     if (window) {
-        int w = (int)SDL_floorf(Android_SurfaceWidth / Android_ScreenDensity);
-        int h = (int)SDL_floorf(Android_SurfaceHeight / Android_ScreenDensity);
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, Android_SurfaceWidth, Android_SurfaceHeight);
     }
 }
 

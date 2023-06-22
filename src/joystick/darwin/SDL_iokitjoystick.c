@@ -499,7 +499,7 @@ static SDL_bool JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 {
     recDevice *i;
 
-#if defined(SDL_JOYSTICK_MFI)
+#ifdef SDL_JOYSTICK_MFI
     extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
     if (IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
         return SDL_TRUE;
@@ -699,15 +699,13 @@ static void DARWIN_JoystickDetect(void)
     }
 }
 
-const char *
-DARWIN_JoystickGetDeviceName(int device_index)
+const char *DARWIN_JoystickGetDeviceName(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
     return device ? device->product : "UNKNOWN";
 }
 
-const char *
-DARWIN_JoystickGetDevicePath(int device_index)
+const char *DARWIN_JoystickGetDevicePath(int device_index)
 {
     return NULL;
 }

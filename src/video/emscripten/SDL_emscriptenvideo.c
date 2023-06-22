@@ -35,18 +35,18 @@
 #define EMSCRIPTENVID_DRIVER_NAME "emscripten"
 
 /* Initialization/Query functions */
-static int Emscripten_VideoInit(_THIS);
-static int Emscripten_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-static void Emscripten_VideoQuit(_THIS);
-static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
+static int Emscripten_VideoInit(SDL_VideoDevice *_this);
+static int Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+static void Emscripten_VideoQuit(SDL_VideoDevice *_this);
+static int Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
 
-static int Emscripten_CreateWindow(_THIS, SDL_Window *window);
-static void Emscripten_SetWindowSize(_THIS, SDL_Window *window);
-static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h);
-static void Emscripten_DestroyWindow(_THIS, SDL_Window *window);
-static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
-static void Emscripten_PumpEvents(_THIS);
-static void Emscripten_SetWindowTitle(_THIS, SDL_Window *window);
+static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
+static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
+static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static void Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
+static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 
 /* Emscripten driver bootstrap functions */
 
@@ -120,15 +120,15 @@ VideoBootStrap Emscripten_bootstrap = {
     Emscripten_CreateDevice
 };
 
-int Emscripten_VideoInit(_THIS)
+int Emscripten_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
     /* Use a fake 32-bpp desktop mode */
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
-    emscripten_get_screen_size(&mode.screen_w, &mode.screen_h);
-    mode.display_scale = emscripten_get_device_pixel_ratio();
+    emscripten_get_screen_size(&mode.w, &mode.h);
+    mode.pixel_density = emscripten_get_device_pixel_ratio();
 
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
@@ -140,18 +140,18 @@ int Emscripten_VideoInit(_THIS)
     return 0;
 }
 
-static int Emscripten_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static int Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     /* can't do this */
     return 0;
 }
 
-static void Emscripten_VideoQuit(_THIS)
+static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
 {
     Emscripten_FiniMouse();
 }
 
-static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+static int Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     if (rect) {
         rect->x = 0;
@@ -166,12 +166,12 @@ static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, S
     return 0;
 }
 
-static void Emscripten_PumpEvents(_THIS)
+static void Emscripten_PumpEvents(SDL_VideoDevice *_this)
 {
     /* do nothing. */
 }
 
-static int Emscripten_CreateWindow(_THIS, SDL_Window *window)
+static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wdata;
     double scaled_w, scaled_h;
@@ -191,7 +191,7 @@ static int Emscripten_CreateWindow(_THIS, SDL_Window *window)
 
     wdata->canvas_id = SDL_strdup(selector);
 
-    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+    if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
         wdata->pixel_ratio = emscripten_get_device_pixel_ratio();
     } else {
         wdata->pixel_ratio = 1.0f;
@@ -238,14 +238,14 @@ static int Emscripten_CreateWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-static void Emscripten_SetWindowSize(_THIS, SDL_Window *window)
+static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
 
     if (window->driverdata) {
         data = window->driverdata;
         /* update pixel ratio */
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
         }
         emscripten_set_canvas_element_size(data->canvas_id, window->w * data->pixel_ratio, window->h * data->pixel_ratio);
@@ -257,7 +257,7 @@ static void Emscripten_SetWindowSize(_THIS, SDL_Window *window)
     }
 }
 
-static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h)
+static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)
 {
     SDL_WindowData *data;
     if (window->driverdata) {
@@ -267,7 +267,7 @@ static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, 
     }
 }
 
-static void Emscripten_DestroyWindow(_THIS, SDL_Window *window)
+static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
 
@@ -285,7 +285,7 @@ static void Emscripten_DestroyWindow(_THIS, SDL_Window *window)
     }
 }
 
-static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+static void Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     SDL_WindowData *data;
     if (window->driverdata) {
@@ -300,7 +300,7 @@ static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoD
 
             if (!is_fullscreen_desktop) {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_NONE;
-            } else if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            } else if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF;
             } else {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
@@ -324,7 +324,7 @@ static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoD
     }
 }
 
-static void Emscripten_SetWindowTitle(_THIS, SDL_Window *window)
+static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     emscripten_set_window_title(window->title);
 }

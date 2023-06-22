@@ -50,6 +50,7 @@ struct SDL_HIDAPI_DeviceDriver;
 
 typedef struct SDL_HIDAPI_Device
 {
+    const void *magic;
     char *name;
     char *path;
     Uint16 vendor_id;
@@ -69,7 +70,7 @@ typedef struct SDL_HIDAPI_Device
 
     struct SDL_HIDAPI_DeviceDriver *driver;
     void *context;
-    SDL_mutex *dev_lock;
+    SDL_Mutex *dev_lock;
     SDL_hid_device *dev;
     SDL_AtomicInt rumble_pending;
     int num_joysticks;
@@ -145,7 +146,7 @@ extern SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_JoystickGUID guid);
 
 extern void HIDAPI_UpdateDevices(void);
 extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);
-extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 product_id);
+extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 vendor_id, Uint16 product_id);
 extern void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial);
 extern SDL_bool HIDAPI_HasConnectedUSBDevice(const char *serial);
 extern void HIDAPI_DisconnectBluetoothDevice(const char *serial);

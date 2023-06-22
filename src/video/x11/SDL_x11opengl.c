@@ -159,9 +159,9 @@ typedef GLXContext (*PFNGLXCREATECONTEXTATTRIBSARBPROC)(Display *dpy,
 #define GL_UnloadObject SDL_UnloadObject
 #endif
 
-static void X11_GL_InitExtensions(_THIS);
+static void X11_GL_InitExtensions(SDL_VideoDevice *_this);
 
-int X11_GL_LoadLibrary(_THIS, const char *path)
+int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     Display *display;
     void *handle;
@@ -270,7 +270,7 @@ int X11_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-SDL_FunctionPointer X11_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer X11_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
 {
     if (_this->gl_data->glXGetProcAddress) {
         return _this->gl_data->glXGetProcAddress((const GLubyte *)proc);
@@ -278,7 +278,7 @@ SDL_FunctionPointer X11_GL_GetProcAddress(_THIS, const char *proc)
     return GL_LoadFunction(_this->gl_config.dll_handle, proc);
 }
 
-void X11_GL_UnloadLibrary(_THIS)
+void X11_GL_UnloadLibrary(SDL_VideoDevice *_this)
 {
     /* Don't actually unload the library, since it may have registered
      * X11 shutdown hooks, per the notes at:
@@ -333,7 +333,7 @@ static SDL_bool HasExtension(const char *extension, const char *extensions)
     return SDL_FALSE;
 }
 
-static void X11_GL_InitExtensions(_THIS)
+static void X11_GL_InitExtensions(SDL_VideoDevice *_this)
 {
     Display *display = _this->driverdata->display;
     const int screen = DefaultScreen(display);
@@ -484,7 +484,7 @@ static void X11_GL_InitExtensions(_THIS)
  *  In case of failure, if that pointer is not NULL, set that pointer to None
  *  and try again.
  */
-static int X11_GL_GetAttributes(_THIS, Display *display, int screen, int *attribs, int size, Bool for_FBConfig, int **_pvistypeattr, SDL_bool transparent)
+static int X11_GL_GetAttributes(SDL_VideoDevice *_this, Display *display, int screen, int *attribs, int size, Bool for_FBConfig, int **_pvistypeattr, SDL_bool transparent)
 {
     int i = 0;
     const int MAX_ATTRIBUTES = 64;
@@ -605,7 +605,7 @@ static int X11_GL_GetAttributes(_THIS, Display *display, int screen, int *attrib
     return i;
 }
 
-XVisualInfo *X11_GL_GetVisual(_THIS, Display *display, int screen, SDL_bool transparent)
+XVisualInfo *X11_GL_GetVisual(SDL_VideoDevice *_this, Display *display, int screen, SDL_bool transparent)
 {
     /* 64 seems nice. */
     int attribs[64];
@@ -693,7 +693,7 @@ static int X11_GL_ErrorHandler(Display *d, XErrorEvent *e)
     return (0);
 }
 
-SDL_bool X11_GL_UseEGL(_THIS)
+SDL_bool X11_GL_UseEGL(SDL_VideoDevice *_this)
 {
     SDL_assert(_this->gl_data != NULL);
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
@@ -706,7 +706,7 @@ SDL_bool X11_GL_UseEGL(_THIS)
             || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor));
 }
 
-SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext X11_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
@@ -763,22 +763,22 @@ SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window *window)
                 attribs[iattr++] = _this->gl_config.flags;
             }
 
-            /* only set if glx extension is available */
-            if (_this->gl_data->HAS_GLX_ARB_context_flush_control) {
+            /* only set if glx extension is available and not the default setting */
+            if ((_this->gl_data->HAS_GLX_ARB_context_flush_control) && (_this->gl_config.release_behavior == 0)) {
                 attribs[iattr++] = GLX_CONTEXT_RELEASE_BEHAVIOR_ARB;
                 attribs[iattr++] =
                     _this->gl_config.release_behavior ? GLX_CONTEXT_RELEASE_BEHAVIOR_FLUSH_ARB : GLX_CONTEXT_RELEASE_BEHAVIOR_NONE_ARB;
             }
 
-            /* only set if glx extension is available */
-            if (_this->gl_data->HAS_GLX_ARB_create_context_robustness) {
+            /* only set if glx extension is available and not the default setting */
+            if ((_this->gl_data->HAS_GLX_ARB_create_context_robustness) && (_this->gl_config.reset_notification != 0)) {
                 attribs[iattr++] = GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB;
                 attribs[iattr++] =
                     _this->gl_config.reset_notification ? GLX_LOSE_CONTEXT_ON_RESET_ARB : GLX_NO_RESET_NOTIFICATION_ARB;
             }
 
-            /* only set if glx extension is available */
-            if (_this->gl_data->HAS_GLX_ARB_create_context_no_error) {
+            /* only set if glx extension is available and not the default setting */
+            if ((_this->gl_data->HAS_GLX_ARB_create_context_no_error) && (_this->gl_config.no_error != 0)) {
                 attribs[iattr++] = GLX_CONTEXT_OPENGL_NO_ERROR_ARB;
                 attribs[iattr++] = _this->gl_config.no_error;
             }
@@ -839,7 +839,7 @@ SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window *window)
     return context;
 }
 
-int X11_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int X11_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     Display *display = _this->driverdata->display;
     Window drawable =
@@ -878,7 +878,7 @@ int X11_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 */
 
 static int swapinterval = 0;
-int X11_GL_SetSwapInterval(_THIS, int interval)
+int X11_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     int status = -1;
 
@@ -925,7 +925,7 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
     return status;
 }
 
-int X11_GL_GetSwapInterval(_THIS, int *interval)
+int X11_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     if (_this->gl_data->glXSwapIntervalEXT) {
         Display *display = _this->driverdata->display;
@@ -963,7 +963,7 @@ int X11_GL_GetSwapInterval(_THIS, int *interval)
     }
 }
 
-int X11_GL_SwapWindow(_THIS, SDL_Window *window)
+int X11_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
@@ -972,7 +972,7 @@ int X11_GL_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-int X11_GL_DeleteContext(_THIS, SDL_GLContext context)
+int X11_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     Display *display = _this->driverdata->display;
     GLXContext glx_context = (GLXContext)context;

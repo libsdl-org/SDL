@@ -61,7 +61,7 @@ static char *GetAppName(void)
     char linkfile[1024];
     int linksize;
 
-#if defined(__LINUX__)
+#ifdef __LINUX__
     (void)SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/exe", getpid());
 #elif defined(__FREEBSD__)
     (void)SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/file", getpid());
@@ -81,8 +81,7 @@ static char *GetAppName(void)
     return SDL_strdup("SDL_App");
 }
 
-static size_t
-Fcitx_GetPreeditString(SDL_DBusContext *dbus,
+static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
                        DBusMessage *msg,
                        char **ret,
                        Sint32 *start_pos,
@@ -276,7 +275,8 @@ static SDL_bool FcitxCreateInputContext(SDL_DBusContext *dbus, const char *appna
 {
     const char *program = "program";
     SDL_bool retval = SDL_FALSE;
-    if (dbus->session_conn) {
+
+    if (dbus && dbus->session_conn) {
         DBusMessage *msg = dbus->message_new_method_call(FCITX_DBUS_SERVICE, FCITX_IM_DBUS_PATH, FCITX_IM_DBUS_INTERFACE, "CreateInputContext");
         if (msg) {
             DBusMessage *reply = NULL;
@@ -366,8 +366,7 @@ static Uint32 Fcitx_ModState(void)
     return fcitx_mods;
 }
 
-SDL_bool
-SDL_Fcitx_Init(void)
+SDL_bool SDL_Fcitx_Init(void)
 {
     fcitx_client.dbus = SDL_DBus_GetContext();
 
@@ -403,8 +402,7 @@ void SDL_Fcitx_Reset(void)
     FcitxClientICCallMethod(&fcitx_client, "CloseIC");
 }
 
-SDL_bool
-SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
+SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
     Uint32 mod_state = Fcitx_ModState();
     Uint32 handled = SDL_FALSE;

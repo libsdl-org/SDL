@@ -243,7 +243,7 @@ static int HAIKU_SetRelativeMouseMode(SDL_bool enabled)
     return 0;
 }
 
-static void HAIKU_MouseInit(_THIS)
+static void HAIKU_MouseInit(SDL_VideoDevice *_this)
 {
 	SDL_Mouse *mouse = SDL_GetMouse();
 	if (mouse == NULL) {
@@ -258,7 +258,7 @@ static void HAIKU_MouseInit(_THIS)
 	SDL_SetDefaultCursor(HAIKU_CreateDefaultCursor());
 }
 
-int HAIKU_VideoInit(_THIS)
+int HAIKU_VideoInit(SDL_VideoDevice *_this)
 {
     /* Initialize the Be Application for appserver interaction */
     if (SDL_InitBeApp() < 0) {
@@ -283,7 +283,7 @@ int HAIKU_VideoInit(_THIS)
     return 0;
 }
 
-void HAIKU_VideoQuit(_THIS)
+void HAIKU_VideoQuit(SDL_VideoDevice *_this)
 {
 
     HAIKU_QuitModes(_this);

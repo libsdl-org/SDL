@@ -22,5 +22,5 @@
 
 #include "SDL_androidvideo.h"
 
-extern void Android_PumpEvents_Blocking(_THIS);
-extern void Android_PumpEvents_NonBlocking(_THIS);
+extern void Android_PumpEvents_Blocking(SDL_VideoDevice *_this);
+extern void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this);

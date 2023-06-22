@@ -83,21 +83,20 @@ typedef enum
  * The accelerometer returns the current acceleration in SI meters per
  * second squared. This measurement includes the force of gravity, so
  * a device at rest will have an value of SDL_STANDARD_GRAVITY away
- * from the center of the earth.
+ * from the center of the earth, which is a positive Y value.
  *
  * values[0]: Acceleration on the x axis
  * values[1]: Acceleration on the y axis
  * values[2]: Acceleration on the z axis
  *
- * For phones held in portrait mode and game controllers held in front of you,
- * the axes are defined as follows:
+ * For phones and tablets held in natural orientation and game controllers held in front of you, the axes are defined as follows:
  * -X ... +X : left ... right
  * -Y ... +Y : bottom ... top
  * -Z ... +Z : farther ... closer
  *
- * The axis data is not changed when the phone is rotated.
+ * The axis data is not changed when the device is rotated.
  *
- * \sa SDL_GetDisplayOrientation()
+ * \sa SDL_GetCurrentDisplayOrientation()
  */
 #define SDL_STANDARD_GRAVITY    9.80665f
 
@@ -114,15 +113,14 @@ typedef enum
  * values[1]: Angular speed around the y axis (yaw)
  * values[2]: Angular speed around the z axis (roll)
  *
- * For phones held in portrait mode and game controllers held in front of you,
- * the axes are defined as follows:
+ * For phones and tablets held in natural orientation and game controllers held in front of you, the axes are defined as follows:
  * -X ... +X : left ... right
  * -Y ... +Y : bottom ... top
  * -Z ... +Z : farther ... closer
  *
- * The axis data is not changed when the phone or controller is rotated.
+ * The axis data is not changed when the device is rotated.
  *
- * \sa SDL_GetDisplayOrientation()
+ * \sa SDL_GetCurrentDisplayOrientation()
  */
 
 /* Function prototypes */

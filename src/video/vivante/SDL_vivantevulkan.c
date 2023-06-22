@@ -33,7 +33,7 @@
 #include "SDL_vivantevulkan.h"
 #include <SDL3/SDL_syswm.h>
 
-int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
+int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
@@ -108,7 +108,7 @@ fail:
     return -1;
 }
 
-void VIVANTE_Vulkan_UnloadLibrary(_THIS)
+void VIVANTE_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -116,7 +116,7 @@ void VIVANTE_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
+SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                               unsigned *count,
                                               const char **names)
 {
@@ -132,7 +132,7 @@ SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
         extensionsForVivante);
 }
 
-SDL_bool VIVANTE_Vulkan_CreateSurface(_THIS,
+SDL_bool VIVANTE_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                       SDL_Window *window,
                                       VkInstance instance,
                                       VkSurfaceKHR *surface)

@@ -33,11 +33,11 @@ struct SDL_DisplayModeData
     CFMutableArrayRef modes;
 };
 
-extern void Cocoa_InitModes(_THIS);
-extern int Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
-extern int Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
-extern int Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
-extern int Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-extern void Cocoa_QuitModes(_THIS);
+extern void Cocoa_InitModes(SDL_VideoDevice *_this);
+extern int Cocoa_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
+extern int Cocoa_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
+extern int Cocoa_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+extern void Cocoa_QuitModes(SDL_VideoDevice *_this);
 
 #endif /* SDL_cocoamodes_h_ */

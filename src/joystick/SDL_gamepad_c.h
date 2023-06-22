@@ -42,4 +42,7 @@ extern SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid)
 /* Handle delayed guide button on a gamepad */
 extern void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick);
 
+/* Handle system sensor data */
+extern void SDL_GamepadSensorWatcher(Uint64 timestamp, SDL_SensorID sensor, Uint64 sensor_timestamp, float *data, int num_values);
+
 #endif /* SDL_gamepad_c_h_ */

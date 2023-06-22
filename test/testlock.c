@@ -21,7 +21,7 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-static SDL_mutex *mutex = NULL;
+static SDL_Mutex *mutex = NULL;
 static SDL_threadID mainthread;
 static SDL_AtomicInt doterminate;
 static int nb_threads = 6;
@@ -65,7 +65,10 @@ static void closemutex(int sig)
         threads = NULL;
     }
     SDL_DestroyMutex(mutex);
-    exit(sig);
+    /* Let 'main()' return normally */
+    if (sig != 0) {
+        exit(sig);
+    }
 }
 
 static int SDLCALL
@@ -99,8 +102,8 @@ Run(void *data)
     return 0;
 }
 
-#if !defined(_WIN32)
-Uint32 hit_timeout(Uint32 interval, void *param) {
+#ifndef _WIN32
+static Uint32 hit_timeout(Uint32 interval, void *param) {
     SDL_Log("Hit timeout! Sending SIGINT!");
     kill(0, SIGINT);
     return 0;
@@ -110,7 +113,7 @@ Uint32 hit_timeout(Uint32 interval, void *param) {
 int main(int argc, char *argv[])
 {
     int i;
-#if !defined(_WIN32)
+#ifndef _WIN32
     int timeout = 0;
 #endif
 
@@ -144,7 +147,7 @@ int main(int argc, char *argv[])
                         consumed = 2;
                     }
                 }
-#if !defined(_WIN32)
+#ifndef _WIN32
             } else if (SDL_strcmp(argv[i], "--timeout") == 0) {
                 if (argv[i + 1]) {
                     char *endptr;
@@ -160,7 +163,7 @@ int main(int argc, char *argv[])
             static const char *options[] = {
                 "[--nbthreads NB]",
                 "[--worktime ms]",
-#if !defined(_WIN32)
+#ifndef _WIN32
                 "[--timeout ms]",
 #endif
                 NULL,
@@ -201,7 +204,7 @@ int main(int argc, char *argv[])
         }
     }
 
-#if !defined(_WIN32)
+#ifndef _WIN32
     if (timeout) {
         SDL_AddTimer(timeout, hit_timeout, NULL);
     }

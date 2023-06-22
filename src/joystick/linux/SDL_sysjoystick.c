@@ -72,6 +72,50 @@
 #define BTN_DPAD_RIGHT 0x223
 #endif
 
+#ifndef BTN_TRIGGER_HAPPY
+#define BTN_TRIGGER_HAPPY       0x2c0
+#define BTN_TRIGGER_HAPPY1      0x2c0
+#define BTN_TRIGGER_HAPPY2      0x2c1
+#define BTN_TRIGGER_HAPPY3      0x2c2
+#define BTN_TRIGGER_HAPPY4      0x2c3
+#define BTN_TRIGGER_HAPPY5      0x2c4
+#define BTN_TRIGGER_HAPPY6      0x2c5
+#define BTN_TRIGGER_HAPPY7      0x2c6
+#define BTN_TRIGGER_HAPPY8      0x2c7
+#define BTN_TRIGGER_HAPPY9      0x2c8
+#define BTN_TRIGGER_HAPPY10     0x2c9
+#define BTN_TRIGGER_HAPPY11     0x2ca
+#define BTN_TRIGGER_HAPPY12     0x2cb
+#define BTN_TRIGGER_HAPPY13     0x2cc
+#define BTN_TRIGGER_HAPPY14     0x2cd
+#define BTN_TRIGGER_HAPPY15     0x2ce
+#define BTN_TRIGGER_HAPPY16     0x2cf
+#define BTN_TRIGGER_HAPPY17     0x2d0
+#define BTN_TRIGGER_HAPPY18     0x2d1
+#define BTN_TRIGGER_HAPPY19     0x2d2
+#define BTN_TRIGGER_HAPPY20     0x2d3
+#define BTN_TRIGGER_HAPPY21     0x2d4
+#define BTN_TRIGGER_HAPPY22     0x2d5
+#define BTN_TRIGGER_HAPPY23     0x2d6
+#define BTN_TRIGGER_HAPPY24     0x2d7
+#define BTN_TRIGGER_HAPPY25     0x2d8
+#define BTN_TRIGGER_HAPPY26     0x2d9
+#define BTN_TRIGGER_HAPPY27     0x2da
+#define BTN_TRIGGER_HAPPY28     0x2db
+#define BTN_TRIGGER_HAPPY29     0x2dc
+#define BTN_TRIGGER_HAPPY30     0x2dd
+#define BTN_TRIGGER_HAPPY31     0x2de
+#define BTN_TRIGGER_HAPPY32     0x2df
+#define BTN_TRIGGER_HAPPY33     0x2e0
+#define BTN_TRIGGER_HAPPY34     0x2e1
+#define BTN_TRIGGER_HAPPY35     0x2e2
+#define BTN_TRIGGER_HAPPY36     0x2e3
+#define BTN_TRIGGER_HAPPY37     0x2e4
+#define BTN_TRIGGER_HAPPY38     0x2e5
+#define BTN_TRIGGER_HAPPY39     0x2e6
+#define BTN_TRIGGER_HAPPY40     0x2e7
+#endif
+
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
 #include "../../core/linux/SDL_sandbox.h"
@@ -160,6 +204,7 @@ static SDL_bool IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version,
 
 static int GuessIsJoystick(int fd)
 {
+    unsigned long propbit[NBITS(INPUT_PROP_MAX)] = { 0 };
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
     unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
@@ -173,7 +218,11 @@ static int GuessIsJoystick(int fd)
         return 0;
     }
 
-    devclass = SDL_EVDEV_GuessDeviceClass(evbit, absbit, keybit, relbit);
+    /* This is a newer feature, so it's allowed to fail - if so, then the
+     * device just doesn't have any properties. */
+    (void) ioctl(fd, EVIOCGPROP(sizeof(propbit)), propbit);
+
+    devclass = SDL_EVDEV_GuessDeviceClass(propbit, evbit, absbit, keybit, relbit);
 
     if (devclass & SDL_UDEV_DEVICE_JOYSTICK) {
         return 1;
@@ -765,7 +814,7 @@ static int LINUX_JoystickInit(void)
     } else
 #endif
     {
-#if defined(HAVE_INOTIFY)
+#ifdef HAVE_INOTIFY
         inotify_fd = SDL_inotify_init1();
 
         if (inotify_fd < 0) {
@@ -1608,11 +1657,24 @@ static void LINUX_JoystickQuit(void)
 /*
    This is based on the Linux Gamepad Specification
    available at: https://www.kernel.org/doc/html/v4.15/input/gamepad.html
+   and the Android gamepad documentation,
+   https://developer.android.com/develop/ui/views/touch-and-input/game-controllers/controller-input
  */
 static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     SDL_Joystick *joystick;
     SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
+    enum {
+        MAPPED_TRIGGER_LEFT = 0x1,
+        MAPPED_TRIGGER_RIGHT = 0x2,
+        MAPPED_TRIGGER_BOTH = 0x3,
+
+        MAPPED_DPAD_UP = 0x1,
+        MAPPED_DPAD_DOWN = 0x2,
+        MAPPED_DPAD_LEFT = 0x4,
+        MAPPED_DPAD_RIGHT = 0x8,
+        MAPPED_DPAD_ALL = 0xF,
+    };
     unsigned int mapped;
 
     SDL_AssertJoysticksLocked();
@@ -1632,6 +1694,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     /* We temporarily open the device to check how it's configured. Make
        a fake SDL_Joystick object to do so. */
     joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
+    joystick->magic = &SDL_joystick_magic;
     if (joystick == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
@@ -1666,6 +1729,10 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     }
 
     /* We have a gamepad, start filling out the mappings */
+
+#ifdef DEBUG_GAMEPAD_MAPPING
+    SDL_Log("Mapping %s (VID/PID 0x%.4x/0x%.4x)", item->name, SDL_GetJoystickVendor(joystick), SDL_GetJoystickProduct(joystick));
+#endif
 
     if (joystick->hwdata->has_key[BTN_A]) {
         out->a.kind = EMappingKind_Button;
@@ -1817,63 +1884,94 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     /* Prefer analog triggers, but settle for digital hat or buttons. */
     mapped = 0;
 
+    /* Unfortunately there are several conventions for how analog triggers
+     * are represented as absolute axes:
+     *
+     * - Linux Gamepad Specification:
+     *   LT = ABS_HAT2Y, RT = ABS_HAT2X
+     * - Android (and therefore many Bluetooth controllers):
+     *   LT = ABS_BRAKE, RT = ABS_GAS
+     * - De facto standard for older Xbox and Playstation controllers:
+     *   LT = ABS_Z, RT = ABS_RZ
+     *
+     * We try each one in turn. */
     if (joystick->hwdata->has_abs[ABS_HAT2Y]) {
+        /* Linux Gamepad Specification */
         out->lefttrigger.kind = EMappingKind_Axis;
         out->lefttrigger.target = joystick->hwdata->abs_map[ABS_HAT2Y];
-        mapped |= 0x1;
+        mapped |= MAPPED_TRIGGER_LEFT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped LEFTTRIGGER to axis %d (ABS_HAT2Y)", out->lefttrigger.target);
 #endif
+    } else if (joystick->hwdata->has_abs[ABS_BRAKE]) {
+        /* Android convention */
+        out->lefttrigger.kind = EMappingKind_Axis;
+        out->lefttrigger.target = joystick->hwdata->abs_map[ABS_BRAKE];
+        mapped |= MAPPED_TRIGGER_LEFT;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFTTRIGGER to axis %d (ABS_BRAKE)", out->lefttrigger.target);
+#endif
     } else if (joystick->hwdata->has_abs[ABS_Z]) {
+        /* De facto standard for Xbox 360 and Playstation gamepads */
         out->lefttrigger.kind = EMappingKind_Axis;
         out->lefttrigger.target = joystick->hwdata->abs_map[ABS_Z];
-        mapped |= 0x1;
+        mapped |= MAPPED_TRIGGER_LEFT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped LEFTTRIGGER to axis %d (ABS_Z)", out->lefttrigger.target);
 #endif
     }
 
     if (joystick->hwdata->has_abs[ABS_HAT2X]) {
+        /* Linux Gamepad Specification */
         out->righttrigger.kind = EMappingKind_Axis;
         out->righttrigger.target = joystick->hwdata->abs_map[ABS_HAT2X];
-        mapped |= 0x2;
+        mapped |= MAPPED_TRIGGER_RIGHT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped RIGHTTRIGGER to axis %d (ABS_HAT2X)", out->righttrigger.target);
 #endif
+    } else if (joystick->hwdata->has_abs[ABS_GAS]) {
+        /* Android convention */
+        out->righttrigger.kind = EMappingKind_Axis;
+        out->righttrigger.target = joystick->hwdata->abs_map[ABS_GAS];
+        mapped |= MAPPED_TRIGGER_RIGHT;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTTRIGGER to axis %d (ABS_GAS)", out->righttrigger.target);
+#endif
     } else if (joystick->hwdata->has_abs[ABS_RZ]) {
+        /* De facto standard for Xbox 360 and Playstation gamepads */
         out->righttrigger.kind = EMappingKind_Axis;
         out->righttrigger.target = joystick->hwdata->abs_map[ABS_RZ];
-        mapped |= 0x2;
+        mapped |= MAPPED_TRIGGER_RIGHT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped RIGHTTRIGGER to axis %d (ABS_RZ)", out->righttrigger.target);
 #endif
     }
 
-    if (mapped != 0x3 && joystick->hwdata->has_hat[2]) {
+    if (mapped != MAPPED_TRIGGER_BOTH && joystick->hwdata->has_hat[2]) {
         int hat = joystick->hwdata->hats_indices[2] << 4;
         out->lefttrigger.kind = EMappingKind_Hat;
         out->righttrigger.kind = EMappingKind_Hat;
         out->lefttrigger.target = hat | 0x4;
         out->righttrigger.target = hat | 0x2;
-        mapped |= 0x3;
+        mapped |= MAPPED_TRIGGER_BOTH;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped LEFT+RIGHTTRIGGER to hat 2 (ABS_HAT2X, ABS_HAT2Y)");
 #endif
     }
 
-    if (!(mapped & 0x1) && joystick->hwdata->has_key[BTN_TL2]) {
+    if (!(mapped & MAPPED_TRIGGER_LEFT) && joystick->hwdata->has_key[BTN_TL2]) {
         out->lefttrigger.kind = EMappingKind_Button;
         out->lefttrigger.target = joystick->hwdata->key_map[BTN_TL2];
-        mapped |= 0x1;
+        mapped |= MAPPED_TRIGGER_LEFT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped LEFTTRIGGER to button %d (BTN_TL2)", out->lefttrigger.target);
 #endif
     }
 
-    if (!(mapped & 0x2) && joystick->hwdata->has_key[BTN_TR2]) {
+    if (!(mapped & MAPPED_TRIGGER_LEFT) && joystick->hwdata->has_key[BTN_TR2]) {
         out->righttrigger.kind = EMappingKind_Button;
         out->righttrigger.target = joystick->hwdata->key_map[BTN_TR2];
-        mapped |= 0x2;
+        mapped |= MAPPED_TRIGGER_RIGHT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped RIGHTTRIGGER to button %d (BTN_TR2)", out->righttrigger.target);
 #endif
@@ -1885,7 +1983,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (joystick->hwdata->has_key[BTN_DPAD_UP]) {
         out->dpup.kind = EMappingKind_Button;
         out->dpup.target = joystick->hwdata->key_map[BTN_DPAD_UP];
-        mapped |= 0x1;
+        mapped |= MAPPED_DPAD_UP;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped DPUP to button %d (BTN_DPAD_UP)", out->dpup.target);
 #endif
@@ -1894,7 +1992,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (joystick->hwdata->has_key[BTN_DPAD_DOWN]) {
         out->dpdown.kind = EMappingKind_Button;
         out->dpdown.target = joystick->hwdata->key_map[BTN_DPAD_DOWN];
-        mapped |= 0x2;
+        mapped |= MAPPED_DPAD_DOWN;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped DPDOWN to button %d (BTN_DPAD_DOWN)", out->dpdown.target);
 #endif
@@ -1903,7 +2001,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (joystick->hwdata->has_key[BTN_DPAD_LEFT]) {
         out->dpleft.kind = EMappingKind_Button;
         out->dpleft.target = joystick->hwdata->key_map[BTN_DPAD_LEFT];
-        mapped |= 0x4;
+        mapped |= MAPPED_DPAD_LEFT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped DPLEFT to button %d (BTN_DPAD_LEFT)", out->dpleft.target);
 #endif
@@ -1912,13 +2010,13 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (joystick->hwdata->has_key[BTN_DPAD_RIGHT]) {
         out->dpright.kind = EMappingKind_Button;
         out->dpright.target = joystick->hwdata->key_map[BTN_DPAD_RIGHT];
-        mapped |= 0x8;
+        mapped |= MAPPED_DPAD_RIGHT;
 #ifdef DEBUG_GAMEPAD_MAPPING
         SDL_Log("Mapped DPRIGHT to button %d (BTN_DPAD_RIGHT)", out->dpright.target);
 #endif
     }
 
-    if (mapped != 0xF) {
+    if (mapped != MAPPED_DPAD_ALL) {
         if (joystick->hwdata->has_hat[0]) {
             int hat = joystick->hwdata->hats_indices[0] << 4;
             out->dpleft.kind = EMappingKind_Hat;
@@ -1929,7 +2027,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
             out->dpright.target = hat | 0x2;
             out->dpup.target = hat | 0x1;
             out->dpdown.target = hat | 0x4;
-            mapped |= 0xF;
+            mapped |= MAPPED_DPAD_ALL;
 #ifdef DEBUG_GAMEPAD_MAPPING
             SDL_Log("Mapped DPUP+DOWN+LEFT+RIGHT to hat 0 (ABS_HAT0X, ABS_HAT0Y)");
 #endif
@@ -1942,7 +2040,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
             out->dpright.target = joystick->hwdata->abs_map[ABS_HAT0X];
             out->dpup.target = joystick->hwdata->abs_map[ABS_HAT0Y];
             out->dpdown.target = joystick->hwdata->abs_map[ABS_HAT0Y];
-            mapped |= 0xF;
+            mapped |= MAPPED_DPAD_ALL;
 #ifdef DEBUG_GAMEPAD_MAPPING
             SDL_Log("Mapped DPUP+DOWN to axis %d (ABS_HAT0Y)", out->dpup.target);
             SDL_Log("Mapped DPLEFT+RIGHT to axis %d (ABS_HAT0X)", out->dpleft.target);
@@ -1961,7 +2059,16 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 #endif
     }
 
+    /* The Linux Gamepad Specification uses the RX and RY axes,
+     * originally intended to represent X and Y rotation, as a second
+     * joystick. This is common for USB gamepads, and also many Bluetooth
+     * gamepads, particularly older ones.
+     *
+     * The Android mapping convention used by many Bluetooth controllers
+     * instead uses the Z axis as a secondary X axis, and the RZ axis as
+     * a secondary Y axis. */
     if (joystick->hwdata->has_abs[ABS_RX] && joystick->hwdata->has_abs[ABS_RY]) {
+        /* Linux Gamepad Specification, Xbox 360, Playstation etc. */
         out->rightx.kind = EMappingKind_Axis;
         out->righty.kind = EMappingKind_Axis;
         out->rightx.target = joystick->hwdata->abs_map[ABS_RX];
@@ -1970,6 +2077,48 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
         SDL_Log("Mapped RIGHTX to axis %d (ABS_RX)", out->rightx.target);
         SDL_Log("Mapped RIGHTY to axis %d (ABS_RY)", out->righty.target);
 #endif
+    } else if (joystick->hwdata->has_abs[ABS_Z] && joystick->hwdata->has_abs[ABS_RZ]) {
+        /* Android convention */
+        out->rightx.kind = EMappingKind_Axis;
+        out->righty.kind = EMappingKind_Axis;
+        out->rightx.target = joystick->hwdata->abs_map[ABS_Z];
+        out->righty.target = joystick->hwdata->abs_map[ABS_RZ];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTX to axis %d (ABS_Z)", out->rightx.target);
+        SDL_Log("Mapped RIGHTY to axis %d (ABS_RZ)", out->righty.target);
+#endif
+    }
+
+    if (SDL_GetJoystickVendor(joystick) == USB_VENDOR_MICROSOFT) {
+        /* The Xbox Elite controllers have the paddles as BTN_TRIGGER_HAPPY5 - BTN_TRIGGER_HAPPY8 */
+        if (joystick->hwdata->has_key[BTN_TRIGGER_HAPPY5] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY6] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY7] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY8]) {
+            out->paddle1.kind = EMappingKind_Button;
+            out->paddle1.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY5];
+            out->paddle2.kind = EMappingKind_Button;
+            out->paddle2.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY7];
+            out->paddle3.kind = EMappingKind_Button;
+            out->paddle3.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY6];
+            out->paddle4.kind = EMappingKind_Button;
+            out->paddle4.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY8];
+#ifdef DEBUG_GAMEPAD_MAPPING
+            SDL_Log("Mapped PADDLE1 to button %d (BTN_TRIGGER_HAPPY5)", out->paddle1.target);
+            SDL_Log("Mapped PADDLE2 to button %d (BTN_TRIGGER_HAPPY7)", out->paddle2.target);
+            SDL_Log("Mapped PADDLE3 to button %d (BTN_TRIGGER_HAPPY6)", out->paddle3.target);
+            SDL_Log("Mapped PADDLE4 to button %d (BTN_TRIGGER_HAPPY8)", out->paddle4.target);
+#endif
+        }
+
+        /* The Xbox Series X controllers have the Share button as KEY_RECORD */
+        if (joystick->hwdata->has_key[KEY_RECORD]) {
+            out->misc1.kind = EMappingKind_Button;
+            out->misc1.target = joystick->hwdata->key_map[KEY_RECORD];
+#ifdef DEBUG_GAMEPAD_MAPPING
+            SDL_Log("Mapped MISC1 to button %d (KEY_RECORD)", out->misc1.target);
+#endif
+        }
     }
 
     LINUX_JoystickClose(joystick);

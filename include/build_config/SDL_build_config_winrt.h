@@ -135,6 +135,7 @@
 #define HAVE_LROUND 1
 #define HAVE_LROUNDF 1
 #define HAVE_MODF   1
+#define HAVE_MODFF  1
 #define HAVE_POW    1
 #define HAVE_POWF   1
 #define HAVE_ROUND 1
@@ -184,6 +185,7 @@
 /* Enable various threading systems */
 #if (NTDDI_VERSION >= NTDDI_WINBLUE)
 #define SDL_THREAD_GENERIC_COND_SUFFIX 1
+#define SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1
 #define SDL_THREAD_WINDOWS  1
 #else
 /* WinRT on Windows 8.0 and Windows Phone 8.0 don't support CreateThread() */

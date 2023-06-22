@@ -33,14 +33,14 @@ typedef struct
     int width, height;
 } Dimensions;
 
-SDL_FORCE_INLINE void FreePreviousWindowFramebuffer(SDL_Window *window);
-SDL_FORCE_INLINE SDL_Surface *CreateNewWindowFramebuffer(SDL_Window *window);
-SDL_FORCE_INLINE void CopyFramebuffertoN3DS(u32 *dest, const Dimensions dest_dim, const u32 *source, const Dimensions source_dim);
-SDL_FORCE_INLINE int GetDestOffset(int x, int y, int dest_width);
-SDL_FORCE_INLINE int GetSourceOffset(int x, int y, int source_width);
-SDL_FORCE_INLINE void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen);
+static void FreePreviousWindowFramebuffer(SDL_Window *window);
+static SDL_Surface *CreateNewWindowFramebuffer(SDL_Window *window);
+static void CopyFramebuffertoN3DS(u32 *dest, const Dimensions dest_dim, const u32 *source, const Dimensions source_dim);
+static int GetDestOffset(int x, int y, int dest_width);
+static int GetSourceOffset(int x, int y, int source_width);
+static void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen);
 
-int SDL_N3DS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_Surface *framebuffer;
 
@@ -58,22 +58,20 @@ int SDL_N3DS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, 
     return 0;
 }
 
-SDL_FORCE_INLINE void
-FreePreviousWindowFramebuffer(SDL_Window *window)
+static void FreePreviousWindowFramebuffer(SDL_Window *window)
 {
     SDL_Surface *surface = (SDL_Surface *)SDL_GetWindowData(window, N3DS_SURFACE);
     SDL_DestroySurface(surface);
 }
 
-SDL_FORCE_INLINE SDL_Surface *
-CreateNewWindowFramebuffer(SDL_Window *window)
+static SDL_Surface *CreateNewWindowFramebuffer(SDL_Window *window)
 {
     int w, h;
     SDL_GetWindowSizeInPixels(window, &w, &h);
     return SDL_CreateSurface(w, h, FRAMEBUFFER_FORMAT);
 }
 
-int SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int SDL_N3DS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_WindowData *drv_data = window->driverdata;
     SDL_Surface *surface;
@@ -97,8 +95,7 @@ int SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *
     return 0;
 }
 
-SDL_FORCE_INLINE void
-CopyFramebuffertoN3DS(u32 *dest, const Dimensions dest_dim, const u32 *source, const Dimensions source_dim)
+static void CopyFramebuffertoN3DS(u32 *dest, const Dimensions dest_dim, const u32 *source, const Dimensions source_dim)
 {
     int rows = SDL_min(dest_dim.width, source_dim.height);
     int cols = SDL_min(dest_dim.height, source_dim.width);
@@ -112,26 +109,23 @@ CopyFramebuffertoN3DS(u32 *dest, const Dimensions dest_dim, const u32 *source, c
     }
 }
 
-SDL_FORCE_INLINE int
-GetDestOffset(int x, int y, int dest_width)
+static int GetDestOffset(int x, int y, int dest_width)
 {
     return dest_width - y - 1 + dest_width * x;
 }
 
-SDL_FORCE_INLINE int
-GetSourceOffset(int x, int y, int source_width)
+static int GetSourceOffset(int x, int y, int source_width)
 {
     return x + y * source_width;
 }
 
-SDL_FORCE_INLINE void
-FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen)
+static void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen)
 {
     GSPGPU_FlushDataCache(buffer, bufsize);
     gfxScreenSwapBuffers(screen, false);
 }
 
-void SDL_N3DS_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
+void SDL_N3DS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_Surface *surface;
     surface = (SDL_Surface *)SDL_SetWindowData(window, N3DS_SURFACE, NULL);

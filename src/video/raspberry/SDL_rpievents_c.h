@@ -24,8 +24,8 @@
 
 #include "SDL_rpivideo.h"
 
-void RPI_PumpEvents(_THIS);
-void RPI_EventInit(_THIS);
-void RPI_EventQuit(_THIS);
+void RPI_PumpEvents(SDL_VideoDevice *_this);
+void RPI_EventInit(SDL_VideoDevice *_this);
+void RPI_EventQuit(SDL_VideoDevice *_this);
 
 #endif /* SDL_rpievents_c_h_ */

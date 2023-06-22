@@ -23,14 +23,14 @@
 #ifndef SDL_cocoakeyboard_h_
 #define SDL_cocoakeyboard_h_
 
-extern void Cocoa_InitKeyboard(_THIS);
-extern void Cocoa_HandleKeyEvent(_THIS, NSEvent *event);
-extern void Cocoa_QuitKeyboard(_THIS);
+extern void Cocoa_InitKeyboard(SDL_VideoDevice *_this);
+extern void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event);
+extern void Cocoa_QuitKeyboard(SDL_VideoDevice *_this);
 
-extern void Cocoa_StartTextInput(_THIS);
-extern void Cocoa_StopTextInput(_THIS);
-extern int Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect);
+extern void Cocoa_StartTextInput(SDL_VideoDevice *_this);
+extern void Cocoa_StopTextInput(SDL_VideoDevice *_this);
+extern int Cocoa_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);
 
-extern void Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
+extern void Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
 
 #endif /* SDL_cocoakeyboard_h_ */

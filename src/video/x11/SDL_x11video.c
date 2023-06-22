@@ -42,49 +42,8 @@
 #include "SDL_x11vulkan.h"
 
 /* Initialization/Query functions */
-static int X11_VideoInit(_THIS);
-static void X11_VideoQuit(_THIS);
-
-/* Find out what class name we should use */
-static char *get_classname(void)
-{
-    char *spot;
-#if defined(__LINUX__) || defined(__FREEBSD__)
-    char procfile[1024];
-    char linkfile[1024];
-    int linksize;
-#endif
-
-    /* First allow environment variable override */
-    spot = SDL_getenv("SDL_VIDEO_X11_WMCLASS");
-    if (spot) {
-        return SDL_strdup(spot);
-    }
-
-    /* Next look at the application's executable name */
-#if defined(__LINUX__) || defined(__FREEBSD__)
-#if defined(__LINUX__)
-    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
-#elif defined(__FREEBSD__)
-    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file", getpid());
-#else
-#error Where can we find the executable name?
-#endif
-    linksize = readlink(procfile, linkfile, sizeof(linkfile) - 1);
-    if (linksize > 0) {
-        linkfile[linksize] = '\0';
-        spot = SDL_strrchr(linkfile, '/');
-        if (spot) {
-            return SDL_strdup(spot + 1);
-        } else {
-            return SDL_strdup(linkfile);
-        }
-    }
-#endif /* __LINUX__ || __FREEBSD__ */
-
-    /* Finally use the default we've used forever */
-    return SDL_strdup("SDL_App");
-}
+static int X11_VideoInit(SDL_VideoDevice *_this);
+static void X11_VideoQuit(SDL_VideoDevice *_this);
 
 /* X11 driver bootstrap functions */
 
@@ -141,7 +100,7 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
 }
 
 #ifdef SDL_USE_LIBDBUS
-static int X11_ShowNotification(_THIS, const SDL_NotificationData *notificationdata) {
+static int X11_ShowNotification(SDL_VideoDevice *device, const SDL_NotificationData *notificationdata) {
     return SDL_DBus_ShowNotification(notificationdata);
 }
 #endif
@@ -299,9 +258,13 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 #endif
 #endif
 
+    device->SetClipboardData = X11_SetClipboardData;
+    device->GetClipboardData = X11_GetClipboardData;
+    device->HasClipboardData = X11_HasClipboardData;
     device->SetClipboardText = X11_SetClipboardText;
     device->GetClipboardText = X11_GetClipboardText;
     device->HasClipboardText = X11_HasClipboardText;
+    device->GetClipboardUserdata = X11_GetClipboardUserdata;
     device->SetPrimarySelectionText = X11_SetPrimarySelectionText;
     device->GetPrimarySelectionText = X11_GetPrimarySelectionText;
     device->HasPrimarySelectionText = X11_HasPrimarySelectionText;
@@ -351,7 +314,7 @@ static int X11_CheckWindowManagerErrorHandler(Display *d, XErrorEvent *e)
     }
 }
 
-static void X11_CheckWindowManager(_THIS)
+static void X11_CheckWindowManager(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
     Display *display = data->display;
@@ -411,12 +374,9 @@ static void X11_CheckWindowManager(_THIS)
 #endif
 }
 
-int X11_VideoInit(_THIS)
+int X11_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
-
-    /* Get the window class name, usually the name of the application */
-    data->classname = get_classname();
 
     /* Get the process PID to be associated to the window */
     data->pid = getpid();
@@ -489,7 +449,7 @@ int X11_VideoInit(_THIS)
     return 0;
 }
 
-void X11_VideoQuit(_THIS)
+void X11_VideoQuit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 
@@ -497,7 +457,6 @@ void X11_VideoQuit(_THIS)
         X11_XDestroyWindow(data->display, data->clipboard_window);
     }
 
-    SDL_free(data->classname);
 #ifdef X_HAVE_UTF8_STRING
     if (data->im) {
         X11_XCloseIM(data->im);
@@ -508,10 +467,10 @@ void X11_VideoQuit(_THIS)
     X11_QuitKeyboard(_this);
     X11_QuitMouse(_this);
     X11_QuitTouch(_this);
+    X11_QuitClipboard(_this);
 }
 
-SDL_bool
-X11_UseDirectColorVisuals(void)
+SDL_bool X11_UseDirectColorVisuals(void)
 {
     return SDL_getenv("SDL_VIDEO_X11_NODIRECTCOLOR") ? SDL_FALSE : SDL_TRUE;
 }

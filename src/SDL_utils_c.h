@@ -26,6 +26,6 @@
 /* Common utility functions that aren't in the public API */
 
 /* Return the smallest power of 2 greater than or equal to 'x' */
-int SDL_powerof2(int x);
+extern int SDL_powerof2(int x);
 
 #endif /* SDL_utils_h_ */

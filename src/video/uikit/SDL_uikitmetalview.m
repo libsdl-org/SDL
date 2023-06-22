@@ -74,15 +74,14 @@
 
 @end
 
-SDL_MetalView
-UIKit_Metal_CreateView(_THIS, SDL_Window *window)
+SDL_MetalView UIKit_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
         CGFloat scale = 1.0;
         SDL_uikitmetalview *metalview;
 
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             /* Set the scale to the natural scale factor of the screen - then
              * the backing dimensions of the Metal view will match the pixel
              * dimensions of the screen rather than the dimensions in points
@@ -104,7 +103,7 @@ UIKit_Metal_CreateView(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
+void UIKit_Metal_DestroyView(SDL_VideoDevice *_this, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_uikitmetalview *metalview = CFBridgingRelease(view);
@@ -115,8 +114,7 @@ void UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
     }
 }
 
-void *
-UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
+void *UIKit_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_uikitview *uiview = (__bridge SDL_uikitview *)view;

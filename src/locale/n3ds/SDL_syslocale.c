@@ -27,7 +27,7 @@
 /* Used when the CFGU fails to work. */
 #define BAD_LOCALE 255
 
-SDL_FORCE_INLINE u8 GetLocaleIndex(void);
+static u8 GetLocaleIndex(void);
 
 int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
@@ -42,8 +42,7 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     return 0;
 }
 
-SDL_FORCE_INLINE u8
-GetLocaleIndex(void)
+static u8 GetLocaleIndex(void)
 {
     u8 current_locale;
     if (R_FAILED(cfguInit())) {

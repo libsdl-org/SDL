@@ -288,7 +288,7 @@ static int RPI_WarpMouse(SDL_Window *window, float x, float y)
     return RPI_WarpMouseGlobal(x, y);
 }
 
-void RPI_InitMouse(_THIS)
+void RPI_InitMouse(SDL_VideoDevice *_this)
 {
     /* FIXME: Using UDEV it should be possible to scan all mice
      * but there's no point in doing so as there's no multimice support...yet!
@@ -305,7 +305,7 @@ void RPI_InitMouse(_THIS)
     SDL_SetDefaultCursor(RPI_CreateDefaultCursor());
 }
 
-void RPI_QuitMouse(_THIS)
+void RPI_QuitMouse(SDL_VideoDevice *_this)
 {
 }
 

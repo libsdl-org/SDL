@@ -256,6 +256,7 @@ typedef unsigned int uintptr_t;
 
 /* Enable various threading systems */
 #define SDL_THREAD_GENERIC_COND_SUFFIX 1
+#define SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1
 #define SDL_THREAD_WINDOWS  1
 
 /* Enable various timer systems */

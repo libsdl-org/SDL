@@ -80,7 +80,7 @@ class SDL_WasapiDeviceEventHandler
     void OnEnumerationCompleted(DeviceWatcher ^ sender, Platform::Object ^ args);
     void OnDefaultRenderDeviceChanged(Platform::Object ^ sender, DefaultAudioRenderDeviceChangedEventArgs ^ args);
     void OnDefaultCaptureDeviceChanged(Platform::Object ^ sender, DefaultAudioCaptureDeviceChangedEventArgs ^ args);
-    SDL_semaphore *completed;
+    SDL_Semaphore *completed;
 
   private:
     const SDL_bool iscapture;
@@ -175,7 +175,7 @@ void SDL_WasapiDeviceEventHandler::OnDeviceUpdated(DeviceWatcher ^ sender, Devic
 void SDL_WasapiDeviceEventHandler::OnEnumerationCompleted(DeviceWatcher ^ sender, Platform::Object ^ args)
 {
     SDL_assert(sender == this->watcher);
-    SDL_SemPost(this->completed);
+    SDL_PostSemaphore(this->completed);
 }
 
 void SDL_WasapiDeviceEventHandler::OnDefaultRenderDeviceChanged(Platform::Object ^ sender, DefaultAudioRenderDeviceChangedEventArgs ^ args)
@@ -225,8 +225,8 @@ void WASAPI_EnumerateEndpoints(void)
     //  listening for updates.
     playback_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_FALSE);
     capture_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_TRUE);
-    SDL_SemWait(playback_device_event_handler->completed);
-    SDL_SemWait(capture_device_event_handler->completed);
+    SDL_WaitSemaphore(playback_device_event_handler->completed);
+    SDL_WaitSemaphore(capture_device_event_handler->completed);
 }
 
 struct SDL_WasapiActivationHandler : public RuntimeClass<RuntimeClassFlags<ClassicCom>, FtmBase, IActivateAudioInterfaceCompletionHandler>
@@ -256,7 +256,7 @@ int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
     return SDL_Unsupported();
 }
 
-int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
+int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery)
 {
     LPCWSTR devid = _this->hidden->devid;
     Platform::String ^ defdevid;
@@ -326,12 +326,12 @@ int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
     return 0;
 }
 
-void WASAPI_PlatformThreadInit(_THIS)
+void WASAPI_PlatformThreadInit(SDL_AudioDevice *_this)
 {
     // !!! FIXME: set this thread to "Pro Audio" priority.
 }
 
-void WASAPI_PlatformThreadDeinit(_THIS)
+void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *_this)
 {
     // !!! FIXME: set this thread to "Pro Audio" priority.
 }
@@ -345,19 +345,19 @@ extern "C" SDL_AudioFormat
 WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
 {
     if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
-        return AUDIO_F32SYS;
+        return SDL_AUDIO_F32SYS;
     } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
-        return AUDIO_S16SYS;
+        return SDL_AUDIO_S16SYS;
     } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
-        return AUDIO_S32SYS;
+        return SDL_AUDIO_S32SYS;
     } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
         const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *)waveformat;
         if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return AUDIO_F32SYS;
+            return SDL_AUDIO_F32SYS;
         } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
-            return AUDIO_S16SYS;
+            return SDL_AUDIO_S16SYS;
         } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return AUDIO_S32SYS;
+            return SDL_AUDIO_S32SYS;
         }
     }
     return 0;

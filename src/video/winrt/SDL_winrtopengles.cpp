@@ -52,7 +52,7 @@ static const int ANGLE_D3D_FEATURE_LEVEL_ANY = 0;
  */
 
 extern "C" int
-WINRT_GLES_LoadLibrary(_THIS, const char *path)
+WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     SDL_VideoData *video_data = _this->driverdata;
 
@@ -184,7 +184,7 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
 }
 
 extern "C" void
-WINRT_GLES_UnloadLibrary(_THIS)
+WINRT_GLES_UnloadLibrary(SDL_VideoDevice *_this)
 {
     SDL_VideoData *video_data = _this->driverdata;
 

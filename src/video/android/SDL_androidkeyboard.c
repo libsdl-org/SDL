@@ -336,30 +336,28 @@ int Android_OnKeyUp(int keycode)
     return SDL_SendKeyboardKey(0, SDL_RELEASED, TranslateKeycode(keycode));
 }
 
-SDL_bool
-Android_HasScreenKeyboardSupport(_THIS)
+SDL_bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     return SDL_TRUE;
 }
 
-SDL_bool
-Android_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+SDL_bool Android_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return Android_JNI_IsScreenKeyboardShown();
 }
 
-void Android_StartTextInput(_THIS)
+void Android_StartTextInput(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
     Android_JNI_ShowTextInput(&videodata->textRect);
 }
 
-void Android_StopTextInput(_THIS)
+void Android_StopTextInput(SDL_VideoDevice *_this)
 {
     Android_JNI_HideTextInput();
 }
 
-int Android_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int Android_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
 {
     SDL_VideoData *videodata = _this->driverdata;
     videodata->textRect = *rect;

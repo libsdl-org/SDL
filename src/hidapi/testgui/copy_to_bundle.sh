@@ -77,9 +77,10 @@ function copydeps {
 }
 
 rm -f $EXEPATH/*
+mkdir -p $EXEPATH
 
 # Copy the binary into the bundle. Use ../libtool to do this if it's
-# available beacuse if $EXE_NAME was built with autotools, it will be
+# available because if $EXE_NAME was built with autotools, it will be
 # necessary.  If ../libtool not available, just use cp to do the copy, but
 # only if $EXE_NAME is a binary.
 if [ -x ../libtool ]; then

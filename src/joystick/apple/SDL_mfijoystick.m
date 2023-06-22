@@ -37,7 +37,7 @@
 #import <CoreMotion/CoreMotion.h>
 #endif
 
-#if defined(__MACOS__)
+#ifdef __MACOS__
 #include <IOKit/hid/IOHIDManager.h>
 #include <AppKit/NSApplication.h>
 #ifndef NSAppKitVersionNumber10_15
@@ -288,6 +288,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             (is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_PS4)) ||
             (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_PS5)) ||
             (is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO)) ||
+            (is_switch_joycon_pair && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR, 0, "")) ||
             (is_stadia && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_GOOGLE_STADIA))) {
             /* The HIDAPI driver is taking care of this device */
             return FALSE;
@@ -442,6 +443,17 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         BOOL is_switch_joyconL = IsControllerSwitchJoyConL(controller);
         BOOL is_switch_joyconR = IsControllerSwitchJoyConR(controller);
         int nbuttons = 0;
+
+#ifdef SDL_JOYSTICK_HIDAPI
+        if ((is_switch_joyconL && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT, 0, "")) ||
+            (is_switch_joyconR && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT, 0, ""))) {
+            /* The HIDAPI driver is taking care of this device */
+            return FALSE;
+        }
+#else
+        (void)is_switch_joyconL;
+        (void)is_switch_joyconR;
+#endif
 
         if (is_switch_joyconL) {
             vendor = USB_VENDOR_NINTENDO;
@@ -660,7 +672,7 @@ static void SDLCALL SDL_AppleTVRemoteRotationHintChanged(void *udata, const char
 
 static int IOS_JoystickInit(void)
 {
-#if defined(__MACOS__)
+#ifdef __MACOS__
 #if SDL_HAS_BUILTIN(__builtin_available)
     if (@available(macOS 10.16, *)) {
         /* Continue with initialization on macOS 11+ */
@@ -1724,8 +1736,7 @@ static GCControllerDirectionPad *GetDirectionalPadForController(GCController *co
 
 static char elementName[256];
 
-const char *
-IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
+const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
     elementName[0] = '\0';
 #if defined(SDL_JOYSTICK_MFI) && defined(ENABLE_PHYSICAL_INPUT_PROFILE)
@@ -1840,8 +1851,7 @@ IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton butto
     return elementName;
 }
 
-const char *
-IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
+const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
     elementName[0] = '\0';
 #if defined(SDL_JOYSTICK_MFI) && defined(ENABLE_PHYSICAL_INPUT_PROFILE)

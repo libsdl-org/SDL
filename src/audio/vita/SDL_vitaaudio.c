@@ -39,39 +39,41 @@
 #define SCE_AUDIO_SAMPLE_ALIGN(s) (((s) + 63) & ~63)
 #define SCE_AUDIO_MAX_VOLUME      0x8000
 
-static int VITAAUD_OpenCaptureDevice(_THIS)
+static int VITAAUD_OpenCaptureDevice(SDL_AudioDevice *_this)
 {
-    this->spec.freq = 16000;
-    this->spec.samples = 512;
-    this->spec.channels = 1;
+    _this->spec.freq = 16000;
+    _this->spec.samples = 512;
+    _this->spec.channels = 1;
 
-    SDL_CalculateAudioSpec(&this->spec);
+    SDL_CalculateAudioSpec(&_this->spec);
 
-    this->hidden->port = sceAudioInOpenPort(SCE_AUDIO_IN_PORT_TYPE_VOICE, 512, 16000, SCE_AUDIO_IN_PARAM_FORMAT_S16_MONO);
+    _this->hidden->port = sceAudioInOpenPort(SCE_AUDIO_IN_PORT_TYPE_VOICE, 512, 16000, SCE_AUDIO_IN_PARAM_FORMAT_S16_MONO);
 
-    if (this->hidden->port < 0) {
-        return SDL_SetError("Couldn't open audio in port: %x", this->hidden->port);
+    if (_this->hidden->port < 0) {
+        return SDL_SetError("Couldn't open audio in port: %x", _this->hidden->port);
     }
 
     return 0;
 }
 
-static int VITAAUD_OpenDevice(_THIS, const char *devname)
+static int VITAAUD_OpenDevice(SDL_AudioDevice *_this, const char *devname)
 {
     int format, mixlen, i, port = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
     int vols[2] = { SCE_AUDIO_MAX_VOLUME, SCE_AUDIO_MAX_VOLUME };
     SDL_AudioFormat test_format;
+    const SDL_AudioFormat *closefmts;
 
-    this->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    _this->hidden = (struct SDL_PrivateAudioData *)
+        SDL_malloc(sizeof(*_this->hidden));
+    if (_this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_memset(this->hidden, 0, sizeof(*this->hidden));
+    SDL_memset(_this->hidden, 0, sizeof(*_this->hidden));
 
-    for (test_format = SDL_GetFirstAudioFormat(this->spec.format); test_format; test_format = SDL_GetNextAudioFormat()) {
-        if (test_format == AUDIO_S16LSB) {
-            this->spec.format = test_format;
+    closefmts = SDL_ClosestAudioFormats(_this->spec.format);
+    while ((test_format = *(closefmts++)) != 0) {
+        if (test_format == SDL_AUDIO_S16LSB) {
+            _this->spec.format = test_format;
             break;
         }
     }
@@ -80,103 +82,103 @@ static int VITAAUD_OpenDevice(_THIS, const char *devname)
         return SDL_SetError("Unsupported audio format");
     }
 
-    if (this->iscapture) {
-        return VITAAUD_OpenCaptureDevice(this);
+    if (_this->iscapture) {
+        return VITAAUD_OpenCaptureDevice(_this);
     }
 
     /* The sample count must be a multiple of 64. */
-    this->spec.samples = SCE_AUDIO_SAMPLE_ALIGN(this->spec.samples);
+    _this->spec.samples = SCE_AUDIO_SAMPLE_ALIGN(_this->spec.samples);
 
     /* Update the fragment size as size in bytes. */
-    SDL_CalculateAudioSpec(&this->spec);
+    SDL_CalculateAudioSpec(&_this->spec);
 
     /* Allocate the mixing buffer.  Its size and starting address must
        be a multiple of 64 bytes.  Our sample count is already a multiple of
        64, so spec->size should be a multiple of 64 as well. */
-    mixlen = this->spec.size * NUM_BUFFERS;
-    this->hidden->rawbuf = (Uint8 *)memalign(64, mixlen);
-    if (this->hidden->rawbuf == NULL) {
+    mixlen = _this->spec.size * NUM_BUFFERS;
+    _this->hidden->rawbuf = (Uint8 *)memalign(64, mixlen);
+    if (_this->hidden->rawbuf == NULL) {
         return SDL_SetError("Couldn't allocate mixing buffer");
     }
 
     /* Setup the hardware channel. */
-    if (this->spec.channels == 1) {
+    if (_this->spec.channels == 1) {
         format = SCE_AUDIO_OUT_MODE_MONO;
     } else {
         format = SCE_AUDIO_OUT_MODE_STEREO;
     }
 
-    if (this->spec.freq < 48000) {
+    if (_this->spec.freq < 48000) {
         port = SCE_AUDIO_OUT_PORT_TYPE_BGM;
     }
 
-    this->hidden->port = sceAudioOutOpenPort(port, this->spec.samples, this->spec.freq, format);
-    if (this->hidden->port < 0) {
-        free(this->hidden->rawbuf);
-        this->hidden->rawbuf = NULL;
-        return SDL_SetError("Couldn't open audio out port: %x", this->hidden->port);
+    _this->hidden->port = sceAudioOutOpenPort(port, _this->spec.samples, _this->spec.freq, format);
+    if (_this->hidden->port < 0) {
+        free(_this->hidden->rawbuf);
+        _this->hidden->rawbuf = NULL;
+        return SDL_SetError("Couldn't open audio out port: %x", _this->hidden->port);
     }
 
-    sceAudioOutSetVolume(this->hidden->port, SCE_AUDIO_VOLUME_FLAG_L_CH | SCE_AUDIO_VOLUME_FLAG_R_CH, vols);
+    sceAudioOutSetVolume(_this->hidden->port, SCE_AUDIO_VOLUME_FLAG_L_CH | SCE_AUDIO_VOLUME_FLAG_R_CH, vols);
 
-    SDL_memset(this->hidden->rawbuf, 0, mixlen);
+    SDL_memset(_this->hidden->rawbuf, 0, mixlen);
     for (i = 0; i < NUM_BUFFERS; i++) {
-        this->hidden->mixbufs[i] = &this->hidden->rawbuf[i * this->spec.size];
+        _this->hidden->mixbufs[i] = &_this->hidden->rawbuf[i * _this->spec.size];
     }
 
-    this->hidden->next_buffer = 0;
+    _this->hidden->next_buffer = 0;
     return 0;
 }
 
-static void VITAAUD_PlayDevice(_THIS)
+static void VITAAUD_PlayDevice(SDL_AudioDevice *_this)
 {
-    Uint8 *mixbuf = this->hidden->mixbufs[this->hidden->next_buffer];
+    Uint8 *mixbuf = _this->hidden->mixbufs[_this->hidden->next_buffer];
 
-    sceAudioOutOutput(this->hidden->port, mixbuf);
+    sceAudioOutOutput(_this->hidden->port, mixbuf);
 
-    this->hidden->next_buffer = (this->hidden->next_buffer + 1) % NUM_BUFFERS;
+    _this->hidden->next_buffer = (_this->hidden->next_buffer + 1) % NUM_BUFFERS;
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void VITAAUD_WaitDevice(_THIS)
+static void VITAAUD_WaitDevice(SDL_AudioDevice *_this)
 {
     /* Because we block when sending audio, there's no need for this function to do anything. */
 }
 
-static Uint8 *VITAAUD_GetDeviceBuf(_THIS)
+static Uint8 *VITAAUD_GetDeviceBuf(SDL_AudioDevice *_this)
 {
-    return this->hidden->mixbufs[this->hidden->next_buffer];
+    return _this->hidden->mixbufs[_this->hidden->next_buffer];
 }
 
-static void VITAAUD_CloseDevice(_THIS)
+static void VITAAUD_CloseDevice(SDL_AudioDevice *_this)
 {
-    if (this->hidden->port >= 0) {
-        if (this->iscapture) {
-            sceAudioInReleasePort(this->hidden->port);
+    if (_this->hidden->port >= 0) {
+        if (_this->iscapture) {
+            sceAudioInReleasePort(_this->hidden->port);
         } else {
-            sceAudioOutReleasePort(this->hidden->port);
+            sceAudioOutReleasePort(_this->hidden->port);
         }
-        this->hidden->port = -1;
+        _this->hidden->port = -1;
     }
 
-    if (!this->iscapture && this->hidden->rawbuf != NULL) {
-        free(this->hidden->rawbuf); /* this uses memalign(), not SDL_malloc(). */
-        this->hidden->rawbuf = NULL;
+    if (!_this->iscapture && _this->hidden->rawbuf != NULL) {
+        free(_this->hidden->rawbuf); /* this uses memalign(), not SDL_malloc(). */
+        _this->hidden->rawbuf = NULL;
     }
 }
 
-static int VITAAUD_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int VITAAUD_CaptureFromDevice(SDL_AudioDevice *_this, void *buffer, int buflen)
 {
     int ret;
-    SDL_assert(buflen == this->spec.size);
-    ret = sceAudioInInput(this->hidden->port, buffer);
+    SDL_assert(buflen == _this->spec.size);
+    ret = sceAudioInInput(_this->hidden->port, buffer);
     if (ret < 0) {
         return SDL_SetError("Failed to capture from device: %x", ret);
     }
-    return this->spec.size;
+    return _this->spec.size;
 }
 
-static void VITAAUD_ThreadInit(_THIS)
+static void VITAAUD_ThreadInit(SDL_AudioDevice *_this)
 {
     /* Increase the priority of this audio thread by 1 to put it
        ahead of other SDL threads. */

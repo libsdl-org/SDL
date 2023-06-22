@@ -71,40 +71,35 @@ Sint8 SDLTest_RandomSint8(void)
     return (Sint8)SDLTest_RandomInt(&rndContext) & 0x000000FF;
 }
 
-Uint16
-SDLTest_RandomUint16(void)
+Uint16 SDLTest_RandomUint16(void)
 {
     fuzzerInvocationCounter++;
 
     return (Uint16)SDLTest_RandomInt(&rndContext) & 0x0000FFFF;
 }
 
-Sint16
-SDLTest_RandomSint16(void)
+Sint16 SDLTest_RandomSint16(void)
 {
     fuzzerInvocationCounter++;
 
     return (Sint16)SDLTest_RandomInt(&rndContext) & 0x0000FFFF;
 }
 
-Sint32
-SDLTest_RandomSint32(void)
+Sint32 SDLTest_RandomSint32(void)
 {
     fuzzerInvocationCounter++;
 
     return (Sint32)SDLTest_RandomInt(&rndContext);
 }
 
-Uint32
-SDLTest_RandomUint32(void)
+Uint32 SDLTest_RandomUint32(void)
 {
     fuzzerInvocationCounter++;
 
     return (Uint32)SDLTest_RandomInt(&rndContext);
 }
 
-Uint64
-SDLTest_RandomUint64(void)
+Uint64 SDLTest_RandomUint64(void)
 {
     union
     {
@@ -121,8 +116,7 @@ SDLTest_RandomUint64(void)
     return value.v64;
 }
 
-Sint64
-SDLTest_RandomSint64(void)
+Sint64 SDLTest_RandomSint64(void)
 {
     union
     {
@@ -139,8 +133,7 @@ SDLTest_RandomSint64(void)
     return (Sint64)value.v64;
 }
 
-Sint32
-SDLTest_RandomIntegerInRange(Sint32 pMin, Sint32 pMax)
+Sint32 SDLTest_RandomIntegerInRange(Sint32 pMin, Sint32 pMax)
 {
     Sint64 min = pMin;
     Sint64 max = pMax;
@@ -254,8 +247,7 @@ Uint8 SDLTest_RandomUint8BoundaryValue(Uint8 boundary1, Uint8 boundary2, SDL_boo
                                                          validDomain);
 }
 
-Uint16
-SDLTest_RandomUint16BoundaryValue(Uint16 boundary1, Uint16 boundary2, SDL_bool validDomain)
+Uint16 SDLTest_RandomUint16BoundaryValue(Uint16 boundary1, Uint16 boundary2, SDL_bool validDomain)
 {
     /* max value for Uint16 */
     const Uint64 maxValue = USHRT_MAX;
@@ -264,8 +256,7 @@ SDLTest_RandomUint16BoundaryValue(Uint16 boundary1, Uint16 boundary2, SDL_bool v
                                                           validDomain);
 }
 
-Uint32
-SDLTest_RandomUint32BoundaryValue(Uint32 boundary1, Uint32 boundary2, SDL_bool validDomain)
+Uint32 SDLTest_RandomUint32BoundaryValue(Uint32 boundary1, Uint32 boundary2, SDL_bool validDomain)
 {
 /* max value for Uint32 */
 #if ((ULONG_MAX) == (UINT_MAX))
@@ -278,8 +269,7 @@ SDLTest_RandomUint32BoundaryValue(Uint32 boundary1, Uint32 boundary2, SDL_bool v
                                                           validDomain);
 }
 
-Uint64
-SDLTest_RandomUint64BoundaryValue(Uint64 boundary1, Uint64 boundary2, SDL_bool validDomain)
+Uint64 SDLTest_RandomUint64BoundaryValue(Uint64 boundary1, Uint64 boundary2, SDL_bool validDomain)
 {
     /* max value for Uint64 */
     const Uint64 maxValue = UINT64_MAX;
@@ -384,8 +374,7 @@ Sint8 SDLTest_RandomSint8BoundaryValue(Sint8 boundary1, Sint8 boundary2, SDL_boo
                                                        validDomain);
 }
 
-Sint16
-SDLTest_RandomSint16BoundaryValue(Sint16 boundary1, Sint16 boundary2, SDL_bool validDomain)
+Sint16 SDLTest_RandomSint16BoundaryValue(Sint16 boundary1, Sint16 boundary2, SDL_bool validDomain)
 {
     /* min & max values for Sint16 */
     const Sint64 maxValue = SHRT_MAX;
@@ -395,8 +384,7 @@ SDLTest_RandomSint16BoundaryValue(Sint16 boundary1, Sint16 boundary2, SDL_bool v
                                                         validDomain);
 }
 
-Sint32
-SDLTest_RandomSint32BoundaryValue(Sint32 boundary1, Sint32 boundary2, SDL_bool validDomain)
+Sint32 SDLTest_RandomSint32BoundaryValue(Sint32 boundary1, Sint32 boundary2, SDL_bool validDomain)
 {
 /* min & max values for Sint32 */
 #if ((ULONG_MAX) == (UINT_MAX))
@@ -411,8 +399,7 @@ SDLTest_RandomSint32BoundaryValue(Sint32 boundary1, Sint32 boundary2, SDL_bool v
                                                         validDomain);
 }
 
-Sint64
-SDLTest_RandomSint64BoundaryValue(Sint64 boundary1, Sint64 boundary2, SDL_bool validDomain)
+Sint64 SDLTest_RandomSint64BoundaryValue(Sint64 boundary1, Sint64 boundary2, SDL_bool validDomain)
 {
     /* min & max values for Sint64 */
     const Sint64 maxValue = INT64_MAX;
@@ -453,14 +440,12 @@ SDLTest_RandomDouble(void)
     return r;
 }
 
-char *
-SDLTest_RandomAsciiString(void)
+char *SDLTest_RandomAsciiString(void)
 {
     return SDLTest_RandomAsciiStringWithMaximumLength(255);
 }
 
-char *
-SDLTest_RandomAsciiStringWithMaximumLength(int maxLength)
+char *SDLTest_RandomAsciiStringWithMaximumLength(int maxLength)
 {
     int size;
 
@@ -476,8 +461,7 @@ SDLTest_RandomAsciiStringWithMaximumLength(int maxLength)
     return SDLTest_RandomAsciiStringOfSize(size);
 }
 
-char *
-SDLTest_RandomAsciiStringOfSize(int size)
+char *SDLTest_RandomAsciiStringOfSize(int size)
 {
     char *string;
     int counter;

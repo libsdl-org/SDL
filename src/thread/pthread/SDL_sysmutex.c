@@ -23,32 +23,18 @@
 #include <errno.h>
 #include <pthread.h>
 
+#include "SDL_sysmutex_c.h"
 
-#if !(defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX) || \
-    defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP))
-#define FAKE_RECURSIVE_MUTEX
-#endif
-
-struct SDL_mutex
+SDL_Mutex *SDL_CreateMutex(void)
 {
-    pthread_mutex_t id;
-#ifdef FAKE_RECURSIVE_MUTEX
-    int recursive;
-    pthread_t owner;
-#endif
-};
-
-SDL_mutex *
-SDL_CreateMutex(void)
-{
-    SDL_mutex *mutex;
+    SDL_Mutex *mutex;
     pthread_mutexattr_t attr;
 
     /* Allocate the structure */
-    mutex = (SDL_mutex *)SDL_calloc(1, sizeof(*mutex));
+    mutex = (SDL_Mutex *)SDL_calloc(1, sizeof(*mutex));
     if (mutex) {
         pthread_mutexattr_init(&attr);
-#if defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX)
+#ifdef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
         pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 #elif defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP)
         pthread_mutexattr_setkind_np(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
@@ -66,7 +52,7 @@ SDL_CreateMutex(void)
     return mutex;
 }
 
-void SDL_DestroyMutex(SDL_mutex *mutex)
+void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
         pthread_mutex_destroy(&mutex->id);
@@ -75,7 +61,7 @@ void SDL_DestroyMutex(SDL_mutex *mutex)
 }
 
 /* Lock the mutex */
-int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
 #ifdef FAKE_RECURSIVE_MUTEX
     pthread_t this_thread;
@@ -109,7 +95,7 @@ int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
     return 0;
 }
 
-int SDL_TryLockMutex(SDL_mutex *mutex)
+int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     int retval;
     int result;
@@ -154,7 +140,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
     return retval;
 }
 
-int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
         return 0;
@@ -186,3 +172,4 @@ int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doe
 
     return 0;
 }
+

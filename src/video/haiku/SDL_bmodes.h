@@ -30,12 +30,12 @@ extern "C" {
 
 extern int32 HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace);
 
-extern int HAIKU_InitModes(_THIS);
-extern int HAIKU_QuitModes(_THIS);
-extern int HAIKU_GetDisplayBounds(_THIS, SDL_VideoDisplay *display,
+extern int HAIKU_InitModes(SDL_VideoDevice *_this);
+extern int HAIKU_QuitModes(SDL_VideoDevice *_this);
+extern int HAIKU_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display,
                                   SDL_Rect *rect);
-extern int HAIKU_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
-extern int HAIKU_SetDisplayMode(_THIS, SDL_VideoDisplay *display,
+extern int HAIKU_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern int HAIKU_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display,
                                 SDL_DisplayMode *mode);
 
 #ifdef __cplusplus

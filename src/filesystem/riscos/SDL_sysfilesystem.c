@@ -125,8 +125,7 @@ static _kernel_oserror *createDirectoryRecursive(char *path)
     return _kernel_swi(OS_File, &regs, &regs);
 }
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     _kernel_swi_regs regs;
     _kernel_oserror *error;
@@ -153,8 +152,7 @@ SDL_GetBasePath(void)
     return retval;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *canon, *dir, *retval;
     size_t len;
@@ -199,6 +197,13 @@ SDL_GetPrefPath(const char *org, const char *app)
     retval = SDL_unixify_std(dir, NULL, 0, __RISCOSIFY_FILETYPE_NOTSPECIFIED);
     SDL_free(dir);
     return retval;
+}
+
+/* TODO */
+char *SDL_GetPath(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
 }
 
 #endif /* SDL_FILESYSTEM_RISCOS */

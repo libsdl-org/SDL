@@ -79,8 +79,7 @@ static void patcher_host_free(void *user_data, void *mem)
     SDL_free(mem);
 }
 
-void *
-pool_malloc(VITA_GXM_RenderData *data, unsigned int size)
+void *pool_malloc(VITA_GXM_RenderData *data, unsigned int size)
 {
 
     if ((data->pool_index + size) < VITA_GXM_POOL_SIZE) {
@@ -92,8 +91,7 @@ pool_malloc(VITA_GXM_RenderData *data, unsigned int size)
     return NULL;
 }
 
-void *
-pool_memalign(VITA_GXM_RenderData *data, unsigned int size, unsigned int alignment)
+void *pool_memalign(VITA_GXM_RenderData *data, unsigned int size, unsigned int alignment)
 {
     unsigned int new_index = (data->pool_index + alignment - 1) & ~(alignment - 1);
     if ((new_index + size) < VITA_GXM_POOL_SIZE) {
@@ -957,8 +955,7 @@ gxm_texture_get_format(const gxm_texture *texture)
     return sceGxmTextureGetFormat(&texture->gxm_tex);
 }
 
-void *
-gxm_texture_get_datap(const gxm_texture *texture)
+void *gxm_texture_get_datap(const gxm_texture *texture)
 {
     return sceGxmTextureGetData(&texture->gxm_tex);
 }
@@ -983,8 +980,7 @@ static SceGxmColorFormat tex_format_to_color_format(SceGxmTextureFormat format)
     }
 }
 
-gxm_texture *
-create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget, unsigned int *return_w, unsigned int *return_h, unsigned int *return_pitch, float *return_wscale)
+gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget, unsigned int *return_w, unsigned int *return_h, unsigned int *return_pitch, float *return_wscale)
 {
     gxm_texture *texture = SDL_calloc(1, sizeof(gxm_texture));
     int aligned_w = ALIGN(w, 8);

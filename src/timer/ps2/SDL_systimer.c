@@ -29,14 +29,12 @@
 #include <sys/time.h>
 
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     return GetTimerSystemTime();
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     return kBUSCLK;
 }

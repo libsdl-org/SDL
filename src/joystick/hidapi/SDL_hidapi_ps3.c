@@ -69,7 +69,7 @@ static SDL_bool HIDAPI_DriverPS3_IsEnabled(void)
 {
     SDL_bool default_value;
 
-#if defined(__MACOS__)
+#ifdef __MACOS__
     /* This works well on macOS */
     default_value = SDL_TRUE;
 #elif defined(__WINDOWS__)
@@ -144,14 +144,14 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
     device->context = ctx;
 
     /* Set the controller into report mode over Bluetooth */
-    {
+    if (device->is_bluetooth) {
         Uint8 data[] = { 0xf4, 0x42, 0x03, 0x00, 0x00 };
 
         SendFeatureReport(device->dev, data, sizeof(data));
     }
 
     /* Set the controller into report mode over USB */
-    {
+    if (!device->is_bluetooth) {
         Uint8 data[USB_PACKET_LENGTH];
 
         int size = ReadFeatureReport(device->dev, 0xf2, data, 17);
@@ -306,7 +306,7 @@ static float HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
 {
     /* Accelerometer values are in big endian order */
     value = SDL_SwapBE16(value);
-    return (float)(value - 511) / 113.0f;
+    return ((float)(value - 511) / 113.0f) * SDL_STANDARD_GRAVITY;
 }
 
 static void HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
@@ -447,7 +447,7 @@ static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_Drive
             17, /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
             15, /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
         };
-        int i, axis_index = 6;
+        Uint8 i, axis_index = 6;
 
         for (i = 0; i < SDL_arraysize(button_axis_offsets); ++i) {
             int offset = button_axis_offsets[i];
@@ -581,7 +581,8 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
-    if (HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
+    if ((type == SDL_GAMEPAD_TYPE_PS3 && vendor_id != USB_VENDOR_SONY) ||
+        HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
         if (device && device->dev) {
             size = ReadFeatureReport(device->dev, 0x03, data, sizeof(data));
             if (size == 8 && data[2] == 0x26) {
@@ -772,7 +773,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystic
             7,  /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
             6,  /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
         };
-        int i, axis_index = 6;
+        Uint8 i, axis_index = 6;
 
         for (i = 0; i < SDL_arraysize(button_axis_offsets); ++i) {
             int offset = button_axis_offsets[i];
@@ -812,48 +813,56 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data[1] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
     }
 
-    if (ctx->last_state[2] != data[2]) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+    if (ctx->device->vendor_id == USB_VENDOR_SAITEK && ctx->device->product_id == USB_PRODUCT_SAITEK_CYBORG_V3) {
+        /* Cyborg V.3 Rumble Pad doesn't set the dpad bits as expected, so use the axes instead */
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, data[10] ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, data[9] ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, data[7] ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, data[8] ? SDL_PRESSED : SDL_RELEASED);
+    } else {
+        if (ctx->last_state[2] != data[2]) {
+            SDL_bool dpad_up = SDL_FALSE;
+            SDL_bool dpad_down = SDL_FALSE;
+            SDL_bool dpad_left = SDL_FALSE;
+            SDL_bool dpad_right = SDL_FALSE;
 
-        switch (data[2] & 0x0f) {
-        case 0:
-            dpad_up = SDL_TRUE;
-            break;
-        case 1:
-            dpad_up = SDL_TRUE;
-            dpad_right = SDL_TRUE;
-            break;
-        case 2:
-            dpad_right = SDL_TRUE;
-            break;
-        case 3:
-            dpad_right = SDL_TRUE;
-            dpad_down = SDL_TRUE;
-            break;
-        case 4:
-            dpad_down = SDL_TRUE;
-            break;
-        case 5:
-            dpad_left = SDL_TRUE;
-            dpad_down = SDL_TRUE;
-            break;
-        case 6:
-            dpad_left = SDL_TRUE;
-            break;
-        case 7:
-            dpad_up = SDL_TRUE;
-            dpad_left = SDL_TRUE;
-            break;
-        default:
-            break;
+            switch (data[2] & 0x0f) {
+            case 0:
+                dpad_up = SDL_TRUE;
+                break;
+            case 1:
+                dpad_up = SDL_TRUE;
+                dpad_right = SDL_TRUE;
+                break;
+            case 2:
+                dpad_right = SDL_TRUE;
+                break;
+            case 3:
+                dpad_right = SDL_TRUE;
+                dpad_down = SDL_TRUE;
+                break;
+            case 4:
+                dpad_down = SDL_TRUE;
+                break;
+            case 5:
+                dpad_left = SDL_TRUE;
+                dpad_down = SDL_TRUE;
+                break;
+            case 6:
+                dpad_left = SDL_TRUE;
+                break;
+            case 7:
+                dpad_up = SDL_TRUE;
+                dpad_left = SDL_TRUE;
+                break;
+            default:
+                break;
+            }
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, dpad_down);
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, dpad_up);
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, dpad_right);
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, dpad_left);
         }
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, dpad_down);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, dpad_up);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, dpad_right);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, dpad_left);
     }
 
     axis = ((int)data[17] * 257) - 32768;
@@ -888,7 +897,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
             8,  /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
             7,  /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
         };
-        int i, axis_index = 6;
+        Uint8 i, axis_index = 6;
 
         for (i = 0; i < SDL_arraysize(button_axis_offsets); ++i) {
             int offset = button_axis_offsets[i];

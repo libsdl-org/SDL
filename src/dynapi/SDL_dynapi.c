@@ -123,6 +123,16 @@ static void SDL_InitDynamicAPI(void);
         va_end(ap);                                                                                                                       \
         return retval;                                                                                                                    \
     }                                                                                                                                     \
+    _static int SDLCALL SDL_swprintf##name(SDL_OUT_Z_CAP(maxlen) wchar_t *buf, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ...) \
+    {                                                                                                                                     \
+        int retval;                                                                                                                       \
+        va_list ap;                                                                                                                       \
+        initcall;                                                                                                                         \
+        va_start(ap, fmt);                                                                                                                \
+        retval = jump_table.SDL_vswprintf(buf, maxlen, fmt, ap);                                                                          \
+        va_end(ap);                                                                                                                       \
+        return retval;                                                                                                                    \
+    }                                                                                                                                     \
     _static int SDLCALL SDL_asprintf##name(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                    \
     {                                                                                                                                     \
         int retval;                                                                                                                       \
@@ -161,7 +171,7 @@ static void SDL_InitDynamicAPI(void);
 /* The DEFAULT funcs will init jump table and then call real function. */
 /* The REAL funcs are the actual functions, name-mangled to not clash. */
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) \
-    typedef rc(SDLCALL *SDL_DYNAPIFN_##fn) params; \
+    typedef rc (SDLCALL *SDL_DYNAPIFN_##fn) params;\
     static rc SDLCALL fn##_DEFAULT params;         \
     extern rc SDLCALL fn##_REAL params;
 #include "SDL_dynapi_procs.h"
@@ -353,11 +363,10 @@ static Sint32 initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
 
 /* Here's the exported entry point that fills in the jump table. */
 /*  Use specific types when an "int" might suffice to keep this sane. */
-typedef Sint32(SDLCALL *SDL_DYNAPI_ENTRYFN)(Uint32 apiver, void *table, Uint32 tablesize);
+typedef Sint32 (SDLCALL *SDL_DYNAPI_ENTRYFN)(Uint32 apiver, void *table, Uint32 tablesize);
 extern DECLSPEC Sint32 SDLCALL SDL_DYNAPI_entry(Uint32, void *, Uint32);
 
-Sint32
-SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
+Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 {
     return initialize_jumptable(apiver, table, tablesize);
 }
@@ -425,7 +434,7 @@ static void dynapi_warn(const char *msg)
 extern "C" {
 #endif
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
-#if defined(__WATCOMC__)
+#ifdef __WATCOMC__
 #pragma aux SDL_ExitProcess aborts;
 #endif
 #ifdef __cplusplus
@@ -434,14 +443,28 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 static void SDL_InitDynamicAPILocked(void)
 {
-    const char *libname = SDL_getenv_REAL(SDL_DYNAMIC_API_ENVVAR);
+    char *libname = SDL_getenv_REAL(SDL_DYNAMIC_API_ENVVAR);
     SDL_DYNAPI_ENTRYFN entry = NULL; /* funcs from here by default. */
     SDL_bool use_internal = SDL_TRUE;
 
     if (libname) {
-        entry = (SDL_DYNAPI_ENTRYFN)get_sdlapi_entry(libname, "SDL_DYNAPI_entry");
+        while (*libname && !entry) {
+            char *ptr = libname;
+            while (SDL_TRUE) {
+                const char ch = *ptr;
+                if ((ch == ',') || (ch == '\0')) {
+                    *ptr = '\0';
+                    entry = (SDL_DYNAPI_ENTRYFN)get_sdlapi_entry(libname, "SDL_DYNAPI_entry");
+                    *ptr = ch;
+                    libname = (ch == '\0') ? ptr : (ptr + 1);
+                    break;
+                } else {
+                    ptr++;
+                }
+            }
+        }
         if (!entry) {
-            dynapi_warn("Couldn't load overriding SDL library. Please fix or remove the " SDL_DYNAMIC_API_ENVVAR " environment variable. Using the default SDL.");
+            dynapi_warn("Couldn't load an overriding SDL library. Please fix or remove the " SDL_DYNAMIC_API_ENVVAR " environment variable. Using the default SDL.");
             /* Just fill in the function pointers from this library, later. */
         }
     }
@@ -482,22 +505,22 @@ static void SDL_InitDynamicAPI(void)
      */
     static SDL_bool already_initialized = SDL_FALSE;
 
-/* SDL_AtomicLock calls SDL mutex functions to emulate if
-   SDL_ATOMIC_DISABLED, which we can't do here, so in such a
-   configuration, you're on your own. */
-#ifndef SDL_ATOMIC_DISABLED
+    /* SDL_AtomicLock calls SDL mutex functions to emulate if
+       SDL_ATOMIC_DISABLED, which we can't do here, so in such a
+       configuration, you're on your own. */
+    #ifndef SDL_ATOMIC_DISABLED
     static SDL_SpinLock lock = 0;
     SDL_AtomicLock_REAL(&lock);
-#endif
+    #endif
 
     if (!already_initialized) {
         SDL_InitDynamicAPILocked();
         already_initialized = SDL_TRUE;
     }
 
-#ifndef SDL_ATOMIC_DISABLED
+    #ifndef SDL_ATOMIC_DISABLED
     SDL_AtomicUnlock_REAL(&lock);
-#endif
+    #endif
 }
 
 #endif /* SDL_DYNAMIC_API */

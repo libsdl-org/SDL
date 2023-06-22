@@ -27,7 +27,7 @@
 
 #include "SDL_offscreenwindow.h"
 
-int OFFSCREEN_CreateWindow(_THIS, SDL_Window *window)
+int OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *offscreen_window = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
 
@@ -68,7 +68,7 @@ int OFFSCREEN_CreateWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-void OFFSCREEN_DestroyWindow(_THIS, SDL_Window *window)
+void OFFSCREEN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *offscreen_window = window->driverdata;
 

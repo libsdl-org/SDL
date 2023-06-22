@@ -26,13 +26,13 @@
 
 #include <jni.h>
 
-#if defined(__cplusplus)
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 extern JNINativeMethod HIDDeviceManager_tab[8];
 
-#if defined(__cplusplus)
+#ifdef __cplusplus
 }
 #endif
 

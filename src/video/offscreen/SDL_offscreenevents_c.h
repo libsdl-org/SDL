@@ -20,4 +20,4 @@
 */
 #include "SDL_internal.h"
 
-extern void OFFSCREEN_PumpEvents(_THIS);
+extern void OFFSCREEN_PumpEvents(SDL_VideoDevice *_this);

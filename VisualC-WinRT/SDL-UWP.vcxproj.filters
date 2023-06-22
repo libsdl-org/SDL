@@ -678,6 +678,9 @@
     <ClCompile Include="..\src\thread\stdcpp\SDL_sysmutex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\thread\stdcpp\SDL_sysrwlock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\thread\stdcpp\SDL_systhread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

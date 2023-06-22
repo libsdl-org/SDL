@@ -33,9 +33,15 @@ static SDL_DBusContext dbus;
 
 static int LoadDBUSSyms(void)
 {
+#define SDL_DBUS_SYM2_OPTIONAL(TYPE, x, y)                   \
+    dbus.x = (TYPE)SDL_LoadFunction(dbus_handle, #y)
+
 #define SDL_DBUS_SYM2(TYPE, x, y)                            \
     if (!(dbus.x = (TYPE)SDL_LoadFunction(dbus_handle, #y))) \
     return -1
+
+#define SDL_DBUS_SYM_OPTIONAL(TYPE, x) \
+    SDL_DBUS_SYM2_OPTIONAL(TYPE, x, dbus_##x)
 
 #define SDL_DBUS_SYM(TYPE, x) \
     SDL_DBUS_SYM2(TYPE, x, dbus_##x)
@@ -77,6 +83,7 @@ static int LoadDBUSSyms(void)
     SDL_DBUS_SYM(dbus_bool_t (*)(const DBusError *), error_is_set);
     SDL_DBUS_SYM(void (*)(DBusError *), error_free);
     SDL_DBUS_SYM(char *(*)(void), get_local_machine_id);
+    SDL_DBUS_SYM_OPTIONAL(char *(*)(DBusError *), try_get_local_machine_id);
     SDL_DBUS_SYM(void (*)(void *), free);
     SDL_DBUS_SYM(void (*)(char **), free_string_array);
     SDL_DBUS_SYM(void (*)(void), shutdown);
@@ -190,8 +197,7 @@ void SDL_DBus_Quit(void)
     inhibit_handle = NULL;
 }
 
-SDL_DBusContext *
-SDL_DBus_GetContext(void)
+SDL_DBusContext *SDL_DBus_GetContext(void)
 {
     if (dbus_handle == NULL || !dbus.session_conn) {
         SDL_DBus_Init();
@@ -243,8 +249,7 @@ static SDL_bool SDL_DBus_CallMethodInternal(DBusConnection *conn, const char *no
     return retval;
 }
 
-SDL_bool
-SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
+SDL_bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
 {
     SDL_bool retval;
     va_list ap;
@@ -254,8 +259,7 @@ SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const ch
     return retval;
 }
 
-SDL_bool
-SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...)
+SDL_bool SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...)
 {
     SDL_bool retval;
     va_list ap;
@@ -312,8 +316,7 @@ static SDL_bool SDL_DBus_CallWithBasicReply(DBusConnection *conn, DBusMessage *m
     return retval;
 }
 
-SDL_bool
-SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
+SDL_bool SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
 {
     SDL_bool retval;
     va_list ap;
@@ -323,8 +326,7 @@ SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, cons
     return retval;
 }
 
-SDL_bool
-SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interface, const char *method, ...)
+SDL_bool SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interface, const char *method, ...)
 {
     SDL_bool retval;
     va_list ap;
@@ -334,8 +336,7 @@ SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interfac
     return retval;
 }
 
-SDL_bool
-SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result)
+SDL_bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result)
 {
     SDL_bool retval = SDL_FALSE;
 
@@ -352,8 +353,7 @@ SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const
     return retval;
 }
 
-SDL_bool
-SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result)
+SDL_bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result)
 {
     return SDL_DBus_QueryPropertyOnConnection(dbus.session_conn, node, path, interface, property, expectedtype, result);
 }
@@ -367,31 +367,41 @@ void SDL_DBus_ScreensaverTickle(void)
     }
 }
 
-static SDL_bool SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const char *key, const char *value)
+static SDL_bool SDL_DBus_AppendDictWithKeysValues(DBusMessageIter *iterInit, const char **keys, const char **values, int count)
 {
-    DBusMessageIter iterDict, iterEntry, iterValue;
+    DBusMessageIter iterDict;
 
     if (!dbus.message_iter_open_container(iterInit, DBUS_TYPE_ARRAY, "{sv}", &iterDict)) {
         goto failed;
     }
 
-    if (!dbus.message_iter_open_container(&iterDict, DBUS_TYPE_DICT_ENTRY, NULL, &iterEntry)) {
-        goto failed;
+    for (int i = 0; i < count; i++) {
+        DBusMessageIter iterEntry, iterValue;
+        const char *key = keys[i];
+        const char *value = values[i];
+
+        if (!dbus.message_iter_open_container(&iterDict, DBUS_TYPE_DICT_ENTRY, NULL, &iterEntry)) {
+            goto failed;
+        }
+
+        if (!dbus.message_iter_append_basic(&iterEntry, DBUS_TYPE_STRING, &key)) {
+            goto failed;
+        }
+
+        if (!dbus.message_iter_open_container(&iterEntry, DBUS_TYPE_VARIANT, DBUS_TYPE_STRING_AS_STRING, &iterValue)) {
+            goto failed;
+        }
+
+        if (!dbus.message_iter_append_basic(&iterValue, DBUS_TYPE_STRING, &value)) {
+            goto failed;
+        }
+
+        if (!dbus.message_iter_close_container(&iterEntry, &iterValue) || !dbus.message_iter_close_container(&iterDict, &iterEntry)) {
+            goto failed;
+        }
     }
 
-    if (!dbus.message_iter_append_basic(&iterEntry, DBUS_TYPE_STRING, &key)) {
-        goto failed;
-    }
-
-    if (!dbus.message_iter_open_container(&iterEntry, DBUS_TYPE_VARIANT, DBUS_TYPE_STRING_AS_STRING, &iterValue)) {
-        goto failed;
-    }
-
-    if (!dbus.message_iter_append_basic(&iterValue, DBUS_TYPE_STRING, &value)) {
-        goto failed;
-    }
-
-    if (!dbus.message_iter_close_container(&iterEntry, &iterValue) || !dbus.message_iter_close_container(&iterDict, &iterEntry) || !dbus.message_iter_close_container(iterInit, &iterDict)) {
+    if (!dbus.message_iter_close_container(iterInit, &iterDict)) {
         goto failed;
     }
 
@@ -404,8 +414,7 @@ failed:
     return SDL_FALSE;
 }
 
-SDL_bool
-SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
+SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
 {
     const char *default_inhibit_reason = "Playing a game";
 
@@ -448,9 +457,17 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
             }
 
             dbus.message_iter_init_append(msg, &iterInit);
-            if (!SDL_DBus_AppendDictWithKeyValue(&iterInit, key, reason)) {
-                dbus.message_unref(msg);
-                return SDL_FALSE;
+
+            /* a{sv} */
+            {
+               const char *keys[1];
+               const char *values[1];
+               keys[0] = key;
+               values[0] = reason;
+               if (!SDL_DBus_AppendDictWithKeysValues(&iterInit, keys, values, 1)) {
+                   dbus.message_unref(msg);
+                   return SDL_FALSE;
+               }
             }
 
             if (SDL_DBus_CallWithBasicReply(dbus.session_conn, msg, DBUS_TYPE_OBJECT_PATH, &reply)) {
@@ -497,6 +514,52 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
     }
 
     return SDL_TRUE;
+}
+
+void SDL_DBus_PumpEvents(void)
+{
+    if (dbus.session_conn) {
+        dbus.connection_read_write(dbus.session_conn, 0);
+
+        while (dbus.connection_dispatch(dbus.session_conn) == DBUS_DISPATCH_DATA_REMAINS) {
+            /* Do nothing, actual work happens in DBus_MessageFilter */
+            SDL_DelayNS(SDL_US_TO_NS(10));
+        }
+    }
+}
+
+/*
+ * Get the machine ID if possible. Result must be freed with dbus->free().
+ */
+char *SDL_DBus_GetLocalMachineId(void)
+{
+    DBusError err;
+    char *result;
+
+    dbus.error_init(&err);
+
+    if (dbus.try_get_local_machine_id) {
+        /* Available since dbus 1.12.0, has proper error-handling */
+        result = dbus.try_get_local_machine_id(&err);
+    } else {
+        /* Available since time immemorial, but has no error-handling:
+         * if the machine ID can't be read, many versions of libdbus will
+         * treat that as a fatal mis-installation and abort() */
+        result = dbus.get_local_machine_id();
+    }
+
+    if (result) {
+        return result;
+    }
+
+    if (dbus.error_is_set(&err)) {
+        SDL_SetError("%s: %s", err.name, err.message);
+        dbus.error_free(&err);
+    } else {
+        SDL_SetError("Error getting D-Bus machine ID");
+    }
+
+    return NULL;
 }
 
 int SDL_DBus_ShowNotification(const SDL_NotificationData *notificationdata)
@@ -555,6 +618,5 @@ int SDL_DBus_ShowNotification(const SDL_NotificationData *notificationdata)
 
     return (status) ? SDL_TRUE : SDL_FALSE;
 }
-
 
 #endif

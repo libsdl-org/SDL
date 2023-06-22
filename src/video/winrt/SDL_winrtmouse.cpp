@@ -204,7 +204,7 @@ static int WINRT_SetRelativeMouseMode(SDL_bool enabled)
     return 0;
 }
 
-void WINRT_InitMouse(_THIS)
+void WINRT_InitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -226,7 +226,7 @@ void WINRT_InitMouse(_THIS)
 #endif
 }
 
-void WINRT_QuitMouse(_THIS)
+void WINRT_QuitMouse(SDL_VideoDevice *_this)
 {
 }
 

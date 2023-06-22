@@ -45,7 +45,8 @@
 #define SDLTEST_ASSERT_CHECK_FORMAT "Assert '%s': %s"
 
 /* Assert summary message format */
-#define SDLTEST_ASSERT_SUMMARY_FORMAT "Assert Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_RED "Failed=%d" COLOR_END
+#define SDLTEST_ASSERT_SUMMARY_FORMAT    "Assert Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_RED "Failed=%d" COLOR_END
+#define SDLTEST_ASSERT_SUMMARY_FORMAT_OK "Assert Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_GREEN "Failed=%d" COLOR_END
 
 /* ! \brief counts the failed asserts */
 static int SDLTest_AssertsFailed = 0;
@@ -133,7 +134,7 @@ void SDLTest_LogAssertSummary(void)
 {
     int totalAsserts = SDLTest_AssertsPassed + SDLTest_AssertsFailed;
     if (SDLTest_AssertsFailed == 0) {
-        SDLTest_Log(SDLTEST_ASSERT_SUMMARY_FORMAT, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
+        SDLTest_Log(SDLTEST_ASSERT_SUMMARY_FORMAT_OK, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
     } else {
         SDLTest_LogError(SDLTEST_ASSERT_SUMMARY_FORMAT, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
     }

@@ -49,8 +49,7 @@ int SDL_GetNumTouchDevices(void)
     return SDL_num_touch;
 }
 
-SDL_TouchID
-SDL_GetTouchDevice(int index)
+SDL_TouchID SDL_GetTouchDevice(int index)
 {
     if (index < 0 || index >= SDL_num_touch) {
         SDL_SetError("Unknown touch device index %d", index);
@@ -59,8 +58,7 @@ SDL_GetTouchDevice(int index)
     return SDL_touchDevices[index]->id;
 }
 
-const char *
-SDL_GetTouchName(int index)
+const char *SDL_GetTouchName(int index)
 {
     if (index < 0 || index >= SDL_num_touch) {
         SDL_SetError("Unknown touch device");
@@ -83,8 +81,7 @@ static int SDL_GetTouchIndex(SDL_TouchID id)
     return -1;
 }
 
-SDL_Touch *
-SDL_GetTouch(SDL_TouchID id)
+SDL_Touch *SDL_GetTouch(SDL_TouchID id)
 {
     int index = SDL_GetTouchIndex(id);
     if (index < 0 || index >= SDL_num_touch) {
@@ -99,8 +96,7 @@ SDL_GetTouch(SDL_TouchID id)
     return SDL_touchDevices[index];
 }
 
-SDL_TouchDeviceType
-SDL_GetTouchDeviceType(SDL_TouchID id)
+SDL_TouchDeviceType SDL_GetTouchDeviceType(SDL_TouchID id)
 {
     SDL_Touch *touch = SDL_GetTouch(id);
     if (touch) {
@@ -138,8 +134,7 @@ int SDL_GetNumTouchFingers(SDL_TouchID touchID)
     return 0;
 }
 
-SDL_Finger *
-SDL_GetTouchFinger(SDL_TouchID touchID, int index)
+SDL_Finger *SDL_GetTouchFinger(SDL_TouchID touchID, int index)
 {
     SDL_Touch *touch = SDL_GetTouch(touchID);
     if (touch == NULL) {
@@ -250,7 +245,7 @@ int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_W
     /* SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events */
     /* SDL_HINT_VITA_TOUCH_MOUSE_DEVICE: controlling which touchpad should generate synthetic mouse events, PSVita-only */
     {
-#if defined(__vita__)
+#ifdef __vita__
         if (mouse->touch_mouse_events && ((mouse->vita_touch_mouse_device == id) || (mouse->vita_touch_mouse_device == 2))) {
 #else
         if (mouse->touch_mouse_events) {

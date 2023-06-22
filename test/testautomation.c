@@ -52,7 +52,10 @@ static void
 quit(int rc)
 {
     SDLTest_CommonQuit(state);
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 int main(int argc, char *argv[])
@@ -163,6 +166,6 @@ int main(int argc, char *argv[])
     SDL_free(filter);
 
     /* Shutdown everything */
-    quit(result);
+    quit(0);
     return result;
 }

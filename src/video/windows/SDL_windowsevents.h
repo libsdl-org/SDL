@@ -30,8 +30,8 @@ extern HINSTANCE SDL_Instance;
 extern LRESULT CALLBACK WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam);
 extern LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam,
                                        LPARAM lParam);
-extern void WIN_PumpEvents(_THIS);
-extern void WIN_SendWakeupEvent(_THIS, SDL_Window *window);
-extern int WIN_WaitEventTimeout(_THIS, Sint64 timeoutNS);
+extern void WIN_PumpEvents(SDL_VideoDevice *_this);
+extern void WIN_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
+extern int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 
 #endif /* SDL_windowsevents_h_ */

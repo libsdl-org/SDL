@@ -28,38 +28,10 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 
-/* Can't include sysaudio "../../audio/android/SDL_androidaudio.h"
- * because of THIS redefinition */
 
-#if !defined(SDL_AUDIO_DISABLED) && defined(SDL_AUDIO_DRIVER_ANDROID)
-extern void ANDROIDAUDIO_ResumeDevices(void);
-extern void ANDROIDAUDIO_PauseDevices(void);
-#else
-static void ANDROIDAUDIO_ResumeDevices(void) {}
-static void ANDROIDAUDIO_PauseDevices(void) {}
-#endif
-
-#if !defined(SDL_AUDIO_DISABLED) && defined(SDL_AUDIO_DRIVER_OPENSLES)
-extern void openslES_ResumeDevices(void);
-extern void openslES_PauseDevices(void);
-#else
-static void openslES_ResumeDevices(void)
-{
-}
-static void openslES_PauseDevices(void) {}
-#endif
-
-#if !defined(SDL_AUDIO_DISABLED) && defined(SDL_AUDIO_DRIVER_AAUDIO)
-extern void aaudio_ResumeDevices(void);
-extern void aaudio_PauseDevices(void);
-SDL_bool aaudio_DetectBrokenPlayState(void);
-#else
-static void aaudio_ResumeDevices(void)
-{
-}
-static void aaudio_PauseDevices(void) {}
-static SDL_bool aaudio_DetectBrokenPlayState(void) { return SDL_FALSE; }
-#endif
+#include "../../audio/android/SDL_androidaudio.h"
+#include "../../audio/aaudio/SDL_aaudio.h"
+#include "../../audio/openslES/SDL_openslES.h"
 
 /* Number of 'type' events in the event queue */
 static int SDL_NumberOfEvents(Uint32 type)
@@ -82,15 +54,28 @@ static void android_egl_context_restore(SDL_Window *window)
             SDL_PushEvent(&event);
         }
         data->backup_done = 0;
+
+        if (data->has_swap_interval) {
+            SDL_GL_SetSwapInterval(data->swap_interval);
+        }
+
     }
 }
 
 static void android_egl_context_backup(SDL_Window *window)
 {
     if (window) {
+        int interval = 0;
         /* Keep a copy of the EGL Context so we can try to restore it when we resume */
         SDL_WindowData *data = window->driverdata;
         data->egl_context = SDL_GL_GetCurrentContext();
+
+        /* Save/Restore the swap interval / vsync */
+        if (SDL_GL_GetSwapInterval(&interval) == 0) {
+            data->has_swap_interval = 1;
+            data->swap_interval = interval;
+        }
+
         /* We need to do this so the EGLSurface can be freed */
         SDL_GL_MakeCurrent(window, NULL);
         data->backup_done = 1;
@@ -105,7 +90,7 @@ static void android_egl_context_backup(SDL_Window *window)
  * No polling necessary
  */
 
-void Android_PumpEvents_Blocking(_THIS)
+void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
 
@@ -125,14 +110,12 @@ void Android_PumpEvents_Blocking(_THIS)
         openslES_PauseDevices();
         aaudio_PauseDevices();
 
-        if (SDL_SemWait(Android_ResumeSem) == 0) {
+        if (SDL_WaitSemaphore(Android_ResumeSem) == 0) {
 
             videodata->isPaused = 0;
 
             /* Android_ResumeSem was signaled */
             SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_FOREGROUND);
-            SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
-            SDL_SendWindowEvent(Android_Window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
 
             ANDROIDAUDIO_ResumeDevices();
             openslES_ResumeDevices();
@@ -151,9 +134,12 @@ void Android_PumpEvents_Blocking(_THIS)
             if (SDL_TextInputActive()) {
                 Android_StartTextInput(_this); /* Only showTextInput */
             }
+
+            SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
+            SDL_SendWindowEvent(Android_Window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
         }
     } else {
-        if (videodata->isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
+        if (videodata->isPausing || SDL_TryWaitSemaphore(Android_PauseSem) == 0) {
 
             /* Android_PauseSem was signaled */
             if (videodata->isPausing == 0) {
@@ -165,7 +151,7 @@ void Android_PumpEvents_Blocking(_THIS)
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */
-            if (SDL_NumberOfEvents(SDL_EVENT_DID_ENTER_BACKGROUND) > SDL_SemValue(Android_PauseSem)) {
+            if (SDL_NumberOfEvents(SDL_EVENT_DID_ENTER_BACKGROUND) > SDL_GetSemaphoreValue(Android_PauseSem)) {
                 videodata->isPausing = 1;
             } else {
                 videodata->isPausing = 0;
@@ -180,7 +166,7 @@ void Android_PumpEvents_Blocking(_THIS)
     }
 }
 
-void Android_PumpEvents_NonBlocking(_THIS)
+void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
     static int backup_context = 0;
@@ -207,14 +193,12 @@ void Android_PumpEvents_NonBlocking(_THIS)
             backup_context = 0;
         }
 
-        if (SDL_SemTryWait(Android_ResumeSem) == 0) {
+        if (SDL_TryWaitSemaphore(Android_ResumeSem) == 0) {
 
             videodata->isPaused = 0;
 
             /* Android_ResumeSem was signaled */
             SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_FOREGROUND);
-            SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
-            SDL_SendWindowEvent(Android_Window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
 
             if (videodata->pauseAudio) {
                 ANDROIDAUDIO_ResumeDevices();
@@ -235,9 +219,12 @@ void Android_PumpEvents_NonBlocking(_THIS)
             if (SDL_TextInputActive()) {
                 Android_StartTextInput(_this); /* Only showTextInput */
             }
+
+            SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
+            SDL_SendWindowEvent(Android_Window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
         }
     } else {
-        if (videodata->isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
+        if (videodata->isPausing || SDL_TryWaitSemaphore(Android_PauseSem) == 0) {
 
             /* Android_PauseSem was signaled */
             if (videodata->isPausing == 0) {
@@ -249,7 +236,7 @@ void Android_PumpEvents_NonBlocking(_THIS)
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */
-            if (SDL_NumberOfEvents(SDL_EVENT_DID_ENTER_BACKGROUND) > SDL_SemValue(Android_PauseSem)) {
+            if (SDL_NumberOfEvents(SDL_EVENT_DID_ENTER_BACKGROUND) > SDL_GetSemaphoreValue(Android_PauseSem)) {
                 videodata->isPausing = 1;
             } else {
                 videodata->isPausing = 0;

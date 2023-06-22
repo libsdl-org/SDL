@@ -23,8 +23,7 @@
 #include "SDL_sysvideo.h"
 #include "SDL_shape_internals.h"
 
-SDL_Window *
-SDL_CreateShapedWindow(const char *title, int w, int h, Uint32 flags)
+SDL_Window *SDL_CreateShapedWindow(const char *title, int w, int h, Uint32 flags)
 {
     SDL_Window *result = NULL;
     result = SDL_CreateWindow(title, w, h, (flags | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE));
@@ -47,8 +46,7 @@ SDL_CreateShapedWindow(const char *title, int w, int h, Uint32 flags)
     return NULL;
 }
 
-SDL_bool
-SDL_IsShapedWindow(const SDL_Window *window)
+SDL_bool SDL_IsShapedWindow(const SDL_Window *window)
 {
     if (window == NULL) {
         return SDL_FALSE;
@@ -131,6 +129,11 @@ static SDL_ShapeTree *RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode, SD
     SDL_ShapeTree *result = (SDL_ShapeTree *)SDL_malloc(sizeof(SDL_ShapeTree));
     SDL_Rect next = { 0, 0, 0, 0 };
 
+    if (result == NULL) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
     for (y = dimensions.y; y < dimensions.y + dimensions.h; y++) {
         for (x = dimensions.x; x < dimensions.x + dimensions.w; x++) {
             pixel_value = 0;
@@ -205,8 +208,7 @@ static SDL_ShapeTree *RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode, SD
     return result;
 }
 
-SDL_ShapeTree *
-SDL_CalculateShapeTree(SDL_WindowShapeMode mode, SDL_Surface *shape)
+SDL_ShapeTree *SDL_CalculateShapeTree(SDL_WindowShapeMode mode, SDL_Surface *shape)
 {
     SDL_Rect dimensions;
     SDL_ShapeTree *result = NULL;

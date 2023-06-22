@@ -46,7 +46,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
     if (window == NULL) {
         return 0;
     }
-    if (window->is_destroying) {
+    if (window->is_destroying && windowevent != SDL_EVENT_WINDOW_DESTROYED) {
         return 0;
     }
     switch (windowevent) {

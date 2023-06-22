@@ -343,16 +343,16 @@ static void transformSurfaceRGBA(SDL_Surface *src, SDL_Surface *dst, int isin, i
                     ey = (sdy & 0xffff);
                     t1 = ((((c01.r - c00.r) * ex) >> 16) + c00.r) & 0xff;
                     t2 = ((((c11.r - c10.r) * ex) >> 16) + c10.r) & 0xff;
-                    pc->r = (((t2 - t1) * ey) >> 16) + t1;
+                    pc->r = (Uint8)((((t2 - t1) * ey) >> 16) + t1);
                     t1 = ((((c01.g - c00.g) * ex) >> 16) + c00.g) & 0xff;
                     t2 = ((((c11.g - c10.g) * ex) >> 16) + c10.g) & 0xff;
-                    pc->g = (((t2 - t1) * ey) >> 16) + t1;
+                    pc->g = (Uint8)((((t2 - t1) * ey) >> 16) + t1);
                     t1 = ((((c01.b - c00.b) * ex) >> 16) + c00.b) & 0xff;
                     t2 = ((((c11.b - c10.b) * ex) >> 16) + c10.b) & 0xff;
-                    pc->b = (((t2 - t1) * ey) >> 16) + t1;
+                    pc->b = (Uint8)((((t2 - t1) * ey) >> 16) + t1);
                     t1 = ((((c01.a - c00.a) * ex) >> 16) + c00.a) & 0xff;
                     t2 = ((((c11.a - c10.a) * ex) >> 16) + c10.a) & 0xff;
-                    pc->a = (((t2 - t1) * ey) >> 16) + t1;
+                    pc->a = (Uint8)((((t2 - t1) * ey) >> 16) + t1);
                 }
                 sdx += icos;
                 sdy += isin;
@@ -486,8 +486,7 @@ When using the NONE and MOD modes, color and alpha modulation must be applied be
 
 */
 
-SDL_Surface *
-SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int flipy,
+SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int flipy,
                      const SDL_Rect *rect_dest, double cangle, double sangle, const SDL_FPoint *center)
 {
     SDL_Surface *rz_dst;

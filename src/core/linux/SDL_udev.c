@@ -37,8 +37,7 @@
 
 static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
 
-#define _THIS SDL_UDEV_PrivateData *_this
-static _THIS = NULL;
+static SDL_UDEV_PrivateData *_this = NULL;
 
 static SDL_bool SDL_UDEV_load_sym(const char *fn, void **addr);
 static int SDL_UDEV_load_syms(void);
@@ -65,6 +64,7 @@ static int SDL_UDEV_load_syms(void)
 
     SDL_UDEV_SYM(udev_device_get_action);
     SDL_UDEV_SYM(udev_device_get_devnode);
+    SDL_UDEV_SYM(udev_device_get_syspath);
     SDL_UDEV_SYM(udev_device_get_subsystem);
     SDL_UDEV_SYM(udev_device_get_parent_with_subsystem_devtype);
     SDL_UDEV_SYM(udev_device_get_property_value);
@@ -216,8 +216,7 @@ int SDL_UDEV_Scan(void)
     return 0;
 }
 
-SDL_bool
-SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version)
+SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version)
 {
     struct udev_enumerate *enumerate = NULL;
     struct udev_list_entry *devs = NULL;
@@ -363,6 +362,7 @@ static void get_caps(struct udev_device *dev, struct udev_device *pdev, const ch
 static int guess_device_class(struct udev_device *dev)
 {
     struct udev_device *pdev;
+    unsigned long bitmask_props[NBITS(INPUT_PROP_MAX)];
     unsigned long bitmask_ev[NBITS(EV_MAX)];
     unsigned long bitmask_abs[NBITS(ABS_MAX)];
     unsigned long bitmask_key[NBITS(KEY_MAX)];
@@ -378,12 +378,14 @@ static int guess_device_class(struct udev_device *dev)
         return 0;
     }
 
+    get_caps(dev, pdev, "properties", bitmask_props, SDL_arraysize(bitmask_props));
     get_caps(dev, pdev, "capabilities/ev", bitmask_ev, SDL_arraysize(bitmask_ev));
     get_caps(dev, pdev, "capabilities/abs", bitmask_abs, SDL_arraysize(bitmask_abs));
     get_caps(dev, pdev, "capabilities/rel", bitmask_rel, SDL_arraysize(bitmask_rel));
     get_caps(dev, pdev, "capabilities/key", bitmask_key, SDL_arraysize(bitmask_key));
 
-    return SDL_EVDEV_GuessDeviceClass(&bitmask_ev[0],
+    return SDL_EVDEV_GuessDeviceClass(&bitmask_props[0],
+                                      &bitmask_ev[0],
                                       &bitmask_abs[0],
                                       &bitmask_key[0],
                                       &bitmask_rel[0]);
@@ -437,6 +439,11 @@ static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
         */
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_KEY");
         if (val != NULL && SDL_strcmp(val, "1") == 0) {
+            devclass |= SDL_UDEV_DEVICE_HAS_KEYS;
+        }
+
+        val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_KEYBOARD");
+        if (val != NULL && SDL_strcmp(val, "1") == 0) {
             devclass |= SDL_UDEV_DEVICE_KEYBOARD;
         }
 
@@ -449,7 +456,7 @@ static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
                 } else if (SDL_strcmp(val, "mouse") == 0) {
                     devclass = SDL_UDEV_DEVICE_MOUSE;
                 } else if (SDL_strcmp(val, "kbd") == 0) {
-                    devclass = SDL_UDEV_DEVICE_KEYBOARD;
+                    devclass = SDL_UDEV_DEVICE_HAS_KEYS | SDL_UDEV_DEVICE_KEYBOARD;
                 } else {
                     return;
                 }
@@ -544,8 +551,7 @@ void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
     }
 }
 
-const SDL_UDEV_Symbols *
-SDL_UDEV_GetUdevSyms(void)
+const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void)
 {
     if (SDL_UDEV_Init() < 0) {
         SDL_SetError("Could not initialize UDEV");

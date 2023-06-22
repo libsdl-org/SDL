@@ -45,13 +45,12 @@ void N3DS_SwkbQuit()
     return;
 }
 
-SDL_bool
-N3DS_HasScreenKeyboardSupport(_THIS)
+SDL_bool N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     return SDL_TRUE;
 }
 
-void N3DS_StartTextInput(_THIS)
+void N3DS_StartTextInput(SDL_VideoDevice *_this)
 {
     char buffer[BUFFER_SIZE];
     SwkbdButton button_pressed;
@@ -61,7 +60,7 @@ void N3DS_StartTextInput(_THIS)
     }
 }
 
-void N3DS_StopTextInput(_THIS)
+void N3DS_StopTextInput(SDL_VideoDevice *_this)
 {
     return;
 }

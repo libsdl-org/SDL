@@ -26,7 +26,7 @@
 
 /* These are some C runtime intrinsics that need to be defined */
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 
 #ifndef __FLTUSED__
 #define __FLTUSED__
@@ -42,7 +42,7 @@ extern void *memcpy(void *dst, const void *src, size_t len);
 #pragma intrinsic(memcpy)
 #endif
 
-#if !defined(__clang__)
+#ifndef __clang__
 #pragma function(memcpy)
 #endif
 /* NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) */
@@ -57,7 +57,7 @@ extern void *memset(void *dst, int c, size_t len);
 #pragma intrinsic(memset)
 #endif
 
-#if !defined(__clang__)
+#ifndef __clang__
 #pragma function(memset)
 #endif
 /* NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) */
@@ -700,7 +700,7 @@ RETZERO:
 
 #endif /* MSC_VER */
 
-#if defined(__ICL)
+#ifdef __ICL
 /* The classic Intel compiler generates calls to _intel_fast_memcpy
  * and _intel_fast_memset when building an optimized SDL library */
 void *_intel_fast_memcpy(void *dst, const void *src, size_t len)

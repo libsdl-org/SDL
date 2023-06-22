@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_COCOA)
+#ifdef SDL_VIDEO_DRIVER_COCOA
 
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoashape.h"
@@ -38,8 +38,7 @@
 @implementation SDL_CocoaClosure
 @end
 
-SDL_WindowShaper *
-Cocoa_CreateShaper(SDL_Window *window)
+SDL_WindowShaper *Cocoa_CreateShaper(SDL_Window *window)
 {
     @autoreleasepool {
         SDL_WindowShaper *result;

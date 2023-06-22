@@ -33,7 +33,7 @@
 #endif
 #endif
 
-#if defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
 
@@ -49,7 +49,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
 static SDL_AssertData *triggered_assertions = NULL;
 
 #ifndef SDL_THREADS_DISABLED
-static SDL_mutex *assertion_mutex = NULL;
+static SDL_Mutex *assertion_mutex = NULL;
 #endif
 
 static SDL_AssertionHandler assertion_handler = SDL_PromptAssertion;
@@ -123,13 +123,13 @@ static void SDL_GenerateAssertionReport(void)
 /* This is not declared in any header, although it is shared between some
     parts of SDL, because we don't want anything calling it without an
     extremely good reason. */
-#if defined(__WATCOMC__)
+#ifdef __WATCOMC__
 extern void SDL_ExitProcess(int exitcode);
 #pragma aux SDL_ExitProcess aborts;
 #endif
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
-#if defined(__WATCOMC__)
+#ifdef __WATCOMC__
 static void SDL_AbortAssertion(void);
 #pragma aux SDL_AbortAssertion aborts;
 #endif
@@ -238,7 +238,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
             state = (SDL_AssertState)selected;
         }
     } else {
-#if defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
         /* This is nasty, but we can't block on a custom UI. */
         for (;;) {
             SDL_bool okay = SDL_TRUE;
@@ -318,9 +318,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
     return state;
 }
 
-SDL_AssertState
-SDL_ReportAssertion(SDL_AssertData *data, const char *func, const char *file,
-                    int line)
+SDL_AssertState SDL_ReportAssertion(SDL_AssertData *data, const char *func, const char *file, int line)
 {
     SDL_AssertState state = SDL_ASSERTION_IGNORE;
     static int assertion_running = 0;

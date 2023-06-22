@@ -1538,8 +1538,7 @@ static int D3D_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *
-D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     D3D_RenderData *data;
@@ -1730,8 +1729,7 @@ SDL_RenderDriver D3D_RenderDriver = {
 
 #if defined(__WIN32__) || defined(__WINGDK__)
 /* This function needs to always exist on Windows, for the Dynamic API. */
-IDirect3DDevice9 *
-SDL_GetRenderD3D9Device(SDL_Renderer *renderer)
+IDirect3DDevice9 *SDL_GetRenderD3D9Device(SDL_Renderer *renderer)
 {
     IDirect3DDevice9 *device = NULL;
 

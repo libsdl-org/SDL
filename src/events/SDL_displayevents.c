@@ -33,10 +33,10 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
     }
     switch (displayevent) {
     case SDL_EVENT_DISPLAY_ORIENTATION:
-        if (data1 == SDL_ORIENTATION_UNKNOWN || data1 == display->orientation) {
+        if (data1 == SDL_ORIENTATION_UNKNOWN || data1 == display->current_orientation) {
             return 0;
         }
-        display->orientation = (SDL_DisplayOrientation)data1;
+        display->current_orientation = (SDL_DisplayOrientation)data1;
         break;
     default:
         break;
@@ -51,6 +51,14 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
         event.display.displayID = display->id;
         event.display.data1 = data1;
         posted = (SDL_PushEvent(&event) > 0);
+    }
+
+    switch (displayevent) {
+    case SDL_EVENT_DISPLAY_CONNECTED:
+        SDL_OnDisplayConnected(display);
+        break;
+    default:
+        break;
     }
 
     return posted;

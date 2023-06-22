@@ -29,13 +29,6 @@ extern "C" {
 
 #include "../SDL_sysaudio.h"
 
-/* Hidden "this" pointer for the audio functions */
-#ifdef __cplusplus
-#define _THIS SDL_AudioDevice *_this
-#else
-#define _THIS SDL_AudioDevice *this
-#endif
-
 struct SDL_PrivateAudioData
 {
     SDL_AtomicInt refcount;
@@ -56,18 +49,18 @@ struct SDL_PrivateAudioData
 };
 
 /* win32 and winrt implementations call into these. */
-int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream);
-void WASAPI_RefDevice(_THIS);
-void WASAPI_UnrefDevice(_THIS);
+int WASAPI_PrepDevice(SDL_AudioDevice *_this, const SDL_bool updatestream);
+void WASAPI_RefDevice(SDL_AudioDevice *_this);
+void WASAPI_UnrefDevice(SDL_AudioDevice *_this);
 
 /* These are functions that are implemented differently for Windows vs WinRT. */
 int WASAPI_PlatformInit(void);
 void WASAPI_PlatformDeinit(void);
 void WASAPI_EnumerateEndpoints(void);
 int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture);
-int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery);
-void WASAPI_PlatformThreadInit(_THIS);
-void WASAPI_PlatformThreadDeinit(_THIS);
+int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery);
+void WASAPI_PlatformThreadInit(SDL_AudioDevice *_this);
+void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *_this);
 void WASAPI_PlatformDeleteActivationHandler(void *handler);
 
 #ifdef __cplusplus

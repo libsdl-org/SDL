@@ -22,15 +22,13 @@
 
 #if defined(SDL_TIMER_DUMMY) || defined(SDL_TIMERS_DISABLED)
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     SDL_Unsupported();
     return 0;
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     return 1;
 }

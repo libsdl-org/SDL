@@ -44,8 +44,7 @@ typedef struct SystemThemeData
 
 static SystemThemeData system_theme_data;
 
-static SDL_bool
-DBus_ExtractThemeVariant(DBusMessageIter *iter, SDL_SystemTheme *theme) {
+static SDL_bool DBus_ExtractThemeVariant(DBusMessageIter *iter, SDL_SystemTheme *theme) {
     SDL_DBusContext *dbus = system_theme_data.dbus;
     Uint32 color_scheme;
     DBusMessageIter variant_iter;
@@ -70,8 +69,7 @@ DBus_ExtractThemeVariant(DBusMessageIter *iter, SDL_SystemTheme *theme) {
     return SDL_TRUE;
 }
 
-static DBusHandlerResult
-DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data) {
+static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data) {
     SDL_DBusContext *dbus = (SDL_DBusContext *)data;
 
     if (dbus->message_is_signal(msg, SIGNAL_INTERFACE, SIGNAL_NAME)) {
@@ -108,14 +106,13 @@ not_our_signal:
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-SDL_bool
-SDL_SystemTheme_Init(void)
+SDL_bool SDL_SystemTheme_Init(void)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     DBusMessage *msg;
     static const char *namespace = SIGNAL_NAMESPACE;
     static const char *key = SIGNAL_KEY;
-    
+
     system_theme_data.theme = SDL_SYSTEM_THEME_UNKNOWN;
     system_theme_data.dbus = dbus;
     if (dbus == NULL) {
@@ -153,23 +150,7 @@ incorrect_type:
     return SDL_TRUE;
 }
 
-SDL_SystemTheme
-SDL_SystemTheme_Get(void)
+SDL_SystemTheme SDL_SystemTheme_Get(void)
 {
     return system_theme_data.theme;
-}
-
-void
-SDL_SystemTheme_PumpEvents(void)
-{
-    SDL_DBusContext *dbus = system_theme_data.dbus;
-    DBusConnection *conn;
-    if (dbus == NULL) return;
-    conn = dbus->session_conn;
-    dbus->connection_read_write(conn, 0);
-
-    while (dbus->connection_dispatch(conn) == DBUS_DISPATCH_DATA_REMAINS) {
-        /* Do nothing, actual work happens in DBus_MessageFilter */
-        usleep(10);
-    }
 }

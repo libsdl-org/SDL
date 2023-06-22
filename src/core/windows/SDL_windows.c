@@ -25,7 +25,7 @@
 #include "SDL_windows.h"
 
 #include <objbase.h> /* for CoInitialize/CoUninitialize (Win32 only) */
-#if defined(HAVE_ROAPI_H)
+#ifdef HAVE_ROAPI_H
 #include <roapi.h> /* For RoInitialize/RoUninitialize (Win32 only) */
 #else
 typedef enum RO_INIT_TYPE
@@ -120,8 +120,7 @@ void WIN_CoUninitialize(void)
 }
 
 #ifndef __WINRT__
-void *
-WIN_LoadComBaseFunction(const char *name)
+void *WIN_LoadComBaseFunction(const char *name)
 {
     static SDL_bool s_bLoaded;
     static HMODULE s_hComBase;
@@ -246,8 +245,7 @@ has the same problem.)
 
 WASAPI doesn't need this. This is just for DirectSound/WinMM.
 */
-char *
-WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
+char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
 #if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return WIN_StringToUTF8(name); /* No registry access on WinRT/UWP and Xbox, go with what we've got. */
@@ -331,6 +329,12 @@ void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
     winrect->bottom = sdlrect->y + sdlrect->h - 1;
 }
 
+BOOL WIN_IsRectEmpty(const RECT *rect)
+{
+    /* Calculating this manually because UWP and Xbox do not support Win32 IsRectEmpty. */
+    return (rect->right <= rect->left) || (rect->bottom <= rect->top);
+}
+
 /* Win32-specific SDL_RunApp(), which does most of the SDL_main work,
   based on SDL_windows_main.c, placed in the public domain by Sam Lantinga  4/13/98 */
 #ifdef __WIN32__
@@ -338,15 +342,13 @@ void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
 #include <shellapi.h> /* CommandLineToArgvW() */
 
 /* Pop up an out of memory message, returns to Windows */
-static int
-OutOfMemory(void)
+static int OutOfMemory(void)
 {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
     return -1;
 }
 
-DECLSPEC int
-SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved)
+DECLSPEC int SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved)
 {
 
     /* Gets the arguments with GetCommandLine, converts them to argc and argv
@@ -411,7 +413,7 @@ SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved
 /*
  * Public APIs
  */
-#if !defined(SDL_VIDEO_DRIVER_WINDOWS)
+#ifndef SDL_VIDEO_DRIVER_WINDOWS
 
 #if defined(__WIN32__) || defined(__GDK__)
 int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)

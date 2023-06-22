@@ -28,6 +28,19 @@
 
 #include <linux/input.h>
 
+#ifndef INPUT_PROP_TOPBUTTONPAD
+#define INPUT_PROP_TOPBUTTONPAD     0x04
+#endif
+#ifndef INPUT_PROP_POINTING_STICK
+#define INPUT_PROP_POINTING_STICK   0x05
+#endif
+#ifndef INPUT_PROP_ACCELEROMETER
+#define INPUT_PROP_ACCELEROMETER    0x06
+#endif
+#ifndef INPUT_PROP_MAX
+#define INPUT_PROP_MAX 0x1f
+#endif
+
 /* A device can be any combination of these classes */
 typedef enum
 {
@@ -38,7 +51,8 @@ typedef enum
     SDL_UDEV_DEVICE_SOUND = 0x0008,
     SDL_UDEV_DEVICE_TOUCHSCREEN = 0x0010,
     SDL_UDEV_DEVICE_ACCELEROMETER = 0x0020,
-    SDL_UDEV_DEVICE_TOUCHPAD = 0x0040
+    SDL_UDEV_DEVICE_TOUCHPAD = 0x0040,
+    SDL_UDEV_DEVICE_HAS_KEYS = 0x0080,
 } SDL_UDEV_deviceclass;
 
 #define BITS_PER_LONG        (sizeof(unsigned long) * 8)
@@ -47,7 +61,8 @@ typedef enum
 #define EVDEV_LONG(x)        ((x) / BITS_PER_LONG)
 #define test_bit(bit, array) ((array[EVDEV_LONG(bit)] >> EVDEV_OFF(bit)) & 1)
 
-extern int SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
+extern int SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MAX)],
+                                      const unsigned long bitmask_ev[NBITS(EV_MAX)],
                                       const unsigned long bitmask_abs[NBITS(ABS_MAX)],
                                       const unsigned long bitmask_key[NBITS(KEY_MAX)],
                                       const unsigned long bitmask_rel[NBITS(REL_MAX)]);

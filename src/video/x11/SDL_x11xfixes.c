@@ -42,7 +42,7 @@ static SDL_bool xfixes_version_atleast(const int version, const int wantmajor, c
     return version >= ((wantmajor * 1000) + wantminor);
 }
 
-void X11_InitXfixes(_THIS)
+void X11_InitXfixes(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 
@@ -69,7 +69,7 @@ int X11_XfixesIsInitialized(void)
     return xfixes_initialized;
 }
 
-void X11_SetWindowMouseRect(_THIS, SDL_Window *window)
+void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (SDL_RectEmpty(&window->mouse_rect)) {
         X11_ConfineCursorWithFlags(_this, window, NULL, 0);
@@ -87,7 +87,7 @@ void X11_SetWindowMouseRect(_THIS, SDL_Window *window)
     }
 }
 
-int X11_ConfineCursorWithFlags(_THIS, SDL_Window *window, const SDL_Rect *rect, int flags)
+int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rect, int flags)
 {
     /* Yaakuro: For some reason Xfixes when confining inside a rect where the
      * edges exactly match, a rectangle the cursor 'slips' out of the barrier.
@@ -176,7 +176,7 @@ int X11_ConfineCursorWithFlags(_THIS, SDL_Window *window, const SDL_Rect *rect, 
     return 0;
 }
 
-void X11_DestroyPointerBarrier(_THIS, SDL_Window *window)
+void X11_DestroyPointerBarrier(SDL_VideoDevice *_this, SDL_Window *window)
 {
     int i;
     SDL_VideoData *data = _this->driverdata;

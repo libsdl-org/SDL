@@ -31,6 +31,6 @@ extern int SDL_ConvertPixels_RGB_to_YUV(int width, int height, Uint32 src_format
 extern int SDL_ConvertPixels_YUV_to_YUV(int width, int height, Uint32 src_format, const void *src, int src_pitch, Uint32 dst_format, void *dst, int dst_pitch);
 
 
-extern int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, int *pitch);
+extern int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitch);
 
 #endif /* SDL_yuv_c_h_ */

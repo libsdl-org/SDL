@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_COCOA)
+#ifdef SDL_VIDEO_DRIVER_COCOA
 
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoavideo.h"
@@ -63,7 +63,7 @@
 }
 @end
 
-static SDL_Cursor *Cocoa_CreateDefaultCursor()
+static SDL_Cursor *Cocoa_CreateDefaultCursor(void)
 {
     @autoreleasepool {
         NSCursor *nscursor;
@@ -296,10 +296,16 @@ static int Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 
 static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
 {
+    SDL_Window *window = SDL_GetKeyboardFocus();
     CGError result;
-    SDL_Window *window;
     SDL_CocoaWindowData *data;
     if (enabled) {
+        if (window) {
+            /* make sure the mouse isn't at the corner of the window, as this can confuse things if macOS thinks a window resize is happening on the first click. */
+            const CGPoint point = CGPointMake((float)(window->x + (window->w / 2)), (float)(window->y + (window->h / 2)));
+            Cocoa_HandleMouseWarp(point.x, point.y);
+            CGWarpMouseCursorPosition(point);
+        }
         DLog("Turning on.");
         result = CGAssociateMouseAndMouseCursorPosition(NO);
     } else {
@@ -313,7 +319,6 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the non-relative mode when the window gets focus, if it
      * doesn't have focus right now.
      */
-    window = SDL_GetKeyboardFocus();
     if (!window) {
         return 0;
     }
@@ -362,7 +367,7 @@ static Uint32 Cocoa_GetGlobalMouseState(float *x, float *y)
     return retval;
 }
 
-int Cocoa_InitMouse(_THIS)
+int Cocoa_InitMouse(SDL_VideoDevice *_this)
 {
     NSPoint location;
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -390,7 +395,7 @@ int Cocoa_InitMouse(_THIS)
     return 0;
 }
 
-static void Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
+static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
     SDL_Window *window;
     NSWindow *nswindow = [event window];
@@ -423,7 +428,7 @@ static void Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
     }
 }
 
-void Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
+void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
     SDL_Mouse *mouse;
     SDL_MouseData *driverdata;
@@ -552,7 +557,7 @@ void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y)
     DLog("(%g, %g)", x, y);
 }
 
-void Cocoa_QuitMouse(_THIS)
+void Cocoa_QuitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse) {

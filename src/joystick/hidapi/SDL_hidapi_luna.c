@@ -32,7 +32,7 @@
 /*#define DEBUG_LUNA_PROTOCOL*/
 
 /* Sending rumble on macOS blocks for a long time and eventually fails */
-#if !defined(__MACOS__)
+#ifndef __MACOS__
 #define ENABLE_LUNA_BLUETOOTH_RUMBLE
 #endif
 
@@ -117,8 +117,8 @@ static int HIDAPI_DriverLuna_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
         Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xEB };
 
         /* Magnitude is 1..100 so scale the 16-bit input here */
-        rumble_packet[4] = low_frequency_rumble / 655;
-        rumble_packet[5] = high_frequency_rumble / 655;
+        rumble_packet[4] = (Uint8)(low_frequency_rumble / 655);
+        rumble_packet[5] = (Uint8)(high_frequency_rumble / 655);
 
         if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
             return SDL_SetError("Couldn't send rumble packet");

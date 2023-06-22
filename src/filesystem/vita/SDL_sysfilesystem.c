@@ -34,16 +34,14 @@
 #include <limits.h>
 #include <fcntl.h>
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     const char *basepath = "app0:/";
     char *retval = SDL_strdup(basepath);
     return retval;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     const char *envr = "ux0:/data/";
     char *retval = NULL;
@@ -83,6 +81,13 @@ SDL_GetPrefPath(const char *org, const char *app)
     sceIoMkdir(retval, 0777);
 
     return retval;
+}
+
+/* TODO */
+char *SDL_GetPath(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
 }
 
 #endif /* SDL_FILESYSTEM_VITA */

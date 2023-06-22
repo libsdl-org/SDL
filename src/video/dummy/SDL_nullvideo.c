@@ -49,13 +49,13 @@
 #define DUMMYVID_DRIVER_EVDEV_NAME "evdev"
 
 /* Initialization/Query functions */
-static int DUMMY_VideoInit(_THIS);
-static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-static void DUMMY_VideoQuit(_THIS);
+static int DUMMY_VideoInit(SDL_VideoDevice *_this);
+static int DUMMY_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+static void DUMMY_VideoQuit(SDL_VideoDevice *_this);
 
 #ifdef SDL_INPUT_LINUXEV
 static int evdev = 0;
-static void DUMMY_EVDEV_Poll(_THIS);
+static void DUMMY_EVDEV_Poll(SDL_VideoDevice *_this);
 #endif
 
 /* DUMMY driver bootstrap functions */
@@ -130,22 +130,22 @@ VideoBootStrap DUMMY_evdev_bootstrap = {
 void SDL_EVDEV_Init(void);
 void SDL_EVDEV_Poll(void);
 void SDL_EVDEV_Quit(void);
-static void DUMMY_EVDEV_Poll(_THIS)
+static void DUMMY_EVDEV_Poll(SDL_VideoDevice *_this)
 {
     (void)_this;
     SDL_EVDEV_Poll();
 }
 #endif
 
-int DUMMY_VideoInit(_THIS)
+int DUMMY_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
     /* Use a fake 32-bpp desktop mode */
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
-    mode.pixel_w = 1024;
-    mode.pixel_h = 768;
+    mode.w = 1024;
+    mode.h = 768;
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
@@ -158,12 +158,12 @@ int DUMMY_VideoInit(_THIS)
     return 0;
 }
 
-static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static int DUMMY_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
-void DUMMY_VideoQuit(_THIS)
+void DUMMY_VideoQuit(SDL_VideoDevice *_this)
 {
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();

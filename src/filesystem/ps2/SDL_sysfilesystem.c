@@ -23,13 +23,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#if defined(SDL_FILESYSTEM_PS2)
+#ifdef SDL_FILESYSTEM_PS2
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *retval;
     size_t len;
@@ -75,8 +74,7 @@ static void recursive_mkdir(const char *dir)
     mkdir(tmp, S_IRWXU);
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *retval = NULL;
     size_t len;
@@ -102,6 +100,13 @@ SDL_GetPrefPath(const char *org, const char *app)
     recursive_mkdir(retval);
 
     return retval;
+}
+
+/* TODO */
+char *SDL_GetPath(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
 }
 
 #endif /* SDL_FILESYSTEM_PS2 */

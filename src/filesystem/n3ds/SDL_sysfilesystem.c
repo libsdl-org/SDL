@@ -29,18 +29,16 @@
 #include <dirent.h>
 #include <errno.h>
 
-SDL_FORCE_INLINE char *MakePrefPath(const char *app);
-SDL_FORCE_INLINE int CreatePrefPathDir(const char *pref);
+static char *MakePrefPath(const char *app);
+static int CreatePrefPathDir(const char *pref);
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *base_path = SDL_strdup("romfs:/");
     return base_path;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *pref_path = NULL;
     if (app == NULL) {
@@ -61,8 +59,14 @@ SDL_GetPrefPath(const char *org, const char *app)
     return pref_path;
 }
 
-SDL_FORCE_INLINE char *
-MakePrefPath(const char *app)
+/* TODO */
+char *SDL_GetPath(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+static char *MakePrefPath(const char *app)
 {
     char *pref_path;
     if (SDL_asprintf(&pref_path, "sdmc:/3ds/%s/", app) < 0) {
@@ -72,8 +76,7 @@ MakePrefPath(const char *app)
     return pref_path;
 }
 
-SDL_FORCE_INLINE int
-CreatePrefPathDir(const char *pref)
+static int CreatePrefPathDir(const char *pref)
 {
     int result = mkdir(pref, 0666);
 

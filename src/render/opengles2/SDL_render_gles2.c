@@ -33,7 +33,7 @@
    In all other cases, attempt to use client-side arrays, as they tend to
    be dramatically faster when not batching, and about the same when
    we are. */
-#if defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
 #define USE_VERTEX_BUFFER_OBJECTS 1
 #else
 #define USE_VERTEX_BUFFER_OBJECTS 0
@@ -150,7 +150,7 @@ typedef struct GLES2_RenderData
 
     SDL_bool GL_EXT_blend_minmax_supported;
 
-#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #include "SDL_gles2funcs.h"
 #undef SDL_PROC
     GLES2_FBOList *framebuffers;
@@ -175,8 +175,7 @@ typedef struct GLES2_RenderData
 
 static const float inv255f = 1.0f / 255.0f;
 
-SDL_FORCE_INLINE const char *
-GL_TranslateError(GLenum error)
+static const char *GL_TranslateError(GLenum error)
 {
 #define GL_ERROR_TRANSLATE(e) \
     case e:                   \
@@ -193,8 +192,7 @@ GL_TranslateError(GLenum error)
 #undef GL_ERROR_TRANSLATE
 }
 
-SDL_FORCE_INLINE void
-GL_ClearErrors(SDL_Renderer *renderer)
+static void GL_ClearErrors(SDL_Renderer *renderer)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
 
@@ -206,8 +204,7 @@ GL_ClearErrors(SDL_Renderer *renderer)
     }
 }
 
-SDL_FORCE_INLINE int
-GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const char *file, int line, const char *function)
+static int GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const char *file, int line, const char *function)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
     int ret = 0;
@@ -1579,7 +1576,7 @@ static int GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoff
     /* Reformat the texture data into a tightly packed array */
     src_pitch = (size_t)width * bpp;
     src = (Uint8 *)pixels;
-    if (pitch != src_pitch) {
+    if ((size_t)pitch != src_pitch) {
         blob = (Uint8 *)SDL_malloc(src_pitch * height);
         if (blob == NULL) {
             return SDL_OutOfMemory();

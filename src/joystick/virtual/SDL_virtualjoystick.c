@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_JOYSTICK_VIRTUAL)
+#ifdef SDL_JOYSTICK_VIRTUAL
 
 /* This is the virtual implementation of the SDL joystick API */
 
@@ -396,7 +396,7 @@ static SDL_JoystickID VIRTUAL_JoystickGetDeviceInstanceID(int device_index)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
     if (hwdata == NULL) {
-        return -1;
+        return 0;
     }
     return hwdata->instance_id;
 }
@@ -530,7 +530,7 @@ static int VIRTUAL_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool en
 static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
 {
     joystick_hwdata *hwdata;
-    int i;
+    Uint8 i;
     Uint64 timestamp = SDL_GetTicksNS();
 
     SDL_AssertJoysticksLocked();
@@ -582,10 +582,10 @@ static void VIRTUAL_JoystickQuit(void)
 static SDL_bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-    int current_button = 0;
-    int current_axis = 0;
+    Uint8 current_button = 0;
+    Uint8 current_axis = 0;
 
-    if (hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMEPAD) {
+    if (!hwdata || hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMEPAD) {
         return SDL_FALSE;
     }
 

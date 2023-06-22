@@ -23,13 +23,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#if defined(SDL_FILESYSTEM_PSP)
+#ifdef SDL_FILESYSTEM_PSP
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *retval = NULL;
     size_t len;
@@ -43,8 +42,7 @@ SDL_GetBasePath(void)
     return retval;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *retval = NULL;
     size_t len;
@@ -69,6 +67,13 @@ SDL_GetPrefPath(const char *org, const char *app)
 
     mkdir(retval, 0755);
     return retval;
+}
+
+/* TODO */
+char *SDL_GetPath(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
 }
 
 #endif /* SDL_FILESYSTEM_PSP */

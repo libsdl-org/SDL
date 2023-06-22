@@ -2284,26 +2284,6 @@ expression e;
 - SDL_WINDOW_INPUT_GRABBED
 + SDL_WINDOW_MOUSE_GRABBED
 @@
-SDL_DisplayMode *e;
-@@
-(
-- e->w
-+ e->screen_w
-|
-- e->h
-+ e->screen_h
-)
-@@
-SDL_DisplayMode e;
-@@
-(
-- e.w
-+ e.screen_w
-|
-- e.h
-+ e.screen_h
-)
-@@
 @@
 - SDL_GetWindowDisplayIndex
 + SDL_GetDisplayForWindow
@@ -2519,17 +2499,177 @@ SDL_Event *e1;
 + e1->gsensor
 @@
 expression e1, e2, e3, e4;
-constant c1, c2;
 @@
-- SDL_CreateWindow(e1, c1, c2, e2, e3, e4)
+- SDL_CreateWindow(e1, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, e2, e3, e4)
 + SDL_CreateWindow(e1, e2, e3, e4)
+@@
+expression e1, e2, e3, e4, e5, e6;
+@@
+- SDL_CreateWindow(e1, e2, e3, e4, e5, e6)
++ SDL_CreateWindowWithPosition(e1, e2, e3, e4, e5, e6)
 @@
 expression e1, e2, e3, e4;
 constant c1, c2;
 @@
 - SDL_CreateShapedWindow(e1, c1, c2, e2, e3, e4)
 + SDL_CreateShapedWindow(e1, e2, e3, e4)
+@@
 typedef SDL_atomic_t, SDL_AtomicInt;
 @@
 - SDL_atomic_t
 + SDL_AtomicInt
+@@
+@@
+- SDL_SemWait
++ SDL_WaitSemaphore
+  (...)
+@@
+@@
+- SDL_SemTryWait
++ SDL_TryWaitSemaphore
+  (...)
+@@
+@@
+- SDL_SemWaitTimeout
++ SDL_WaitSemaphoreTimeout
+  (...)
+@@
+@@
+- SDL_SemPost
++ SDL_PostSemaphore
+  (...)
+@@
+@@
+- SDL_SemValue
++ SDL_GetSemaphoreValue
+  (...)
+@@
+@@
+- SDL_CreateCond
++ SDL_CreateCondition
+  (...)
+@@
+@@
+- SDL_DestroyCond
++ SDL_DestroyCondition
+  (...)
+@@
+@@
+- SDL_CondSignal
++ SDL_SignalCondition
+  (...)
+@@
+@@
+- SDL_CondBroadcast
++ SDL_BroadcastCondition
+  (...)
+@@
+@@
+- SDL_CondWait
++ SDL_WaitCondition
+  (...)
+@@
+@@
+- SDL_CondWaitTimeout
++ SDL_WaitConditionTimeout
+  (...)
+@@
+typedef SDL_mutex, SDL_Mutex;
+@@
+- SDL_mutex
++ SDL_Mutex
+@@
+typedef SDL_sem, SDL_Semaphore;
+@@
+- SDL_sem
++ SDL_Semaphore
+@@
+typedef SDL_cond, SDL_Condition;
+@@
+- SDL_cond
++ SDL_Condition
+@@
+@@
+- AUDIO_F32
++ SDL_AUDIO_F32
+@@
+@@
+- AUDIO_F32LSB
++ SDL_AUDIO_F32LSB
+@@
+@@
+- AUDIO_F32MSB
++ SDL_AUDIO_F32MSB
+@@
+@@
+- AUDIO_F32SYS
++ SDL_AUDIO_F32SYS
+@@
+@@
+- AUDIO_S16
++ SDL_AUDIO_S16
+@@
+@@
+- AUDIO_S16LSB
++ SDL_AUDIO_S16LSB
+@@
+@@
+- AUDIO_S16MSB
++ SDL_AUDIO_S16MSB
+@@
+@@
+- AUDIO_S16SYS
++ SDL_AUDIO_S16SYS
+@@
+@@
+- AUDIO_S32
++ SDL_AUDIO_S32
+@@
+@@
+- AUDIO_S32LSB
++ SDL_AUDIO_S32LSB
+@@
+@@
+- AUDIO_S32MSB
++ SDL_AUDIO_S32MSB
+@@
+@@
+- AUDIO_S32SYS
++ SDL_AUDIO_S32SYS
+@@
+@@
+- AUDIO_S8
++ SDL_AUDIO_S8
+@@
+@@
+- AUDIO_U8
++ SDL_AUDIO_U8
+@@
+@@
+- SDL_WINDOW_ALLOW_HIGHDPI
++ SDL_WINDOW_HIGH_PIXEL_DENSITY
+@@
+@@
+- SDL_TLSCreate
++ SDL_CreateTLS
+  (...)
+@@
+@@
+- SDL_TLSGet
++ SDL_GetTLS
+  (...)
+@@
+@@
+- SDL_TLSSet
++ SDL_SetTLS
+  (...)
+@@
+@@
+- SDL_TLSCleanup
++ SDL_CleanupTLS
+  (...)
+@@
+@@
+- SDL_GetDisplayOrientation
++ SDL_GetDisplayCurrentOrientation
+  (...)

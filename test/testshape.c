@@ -232,8 +232,8 @@ int main(int argc, char **argv)
 
     rc = 0;
 
-//    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-//    SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "0");
+    /* SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software"); */
+    /* SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "0"); */
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -339,7 +339,7 @@ int main(int argc, char **argv)
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture]->name);
     SDL_QueryTexture(pictures[current_picture]->texture, &pixelFormat, &access, &w, &h);
     /* We want to set the window size in pixels */
-    SDL_SetWindowSize(window, (int)SDL_ceilf(w / mode->display_scale), (int)SDL_ceilf(h / mode->display_scale));
+    SDL_SetWindowSize(window, (int)SDL_ceilf(w / mode->pixel_density), (int)SDL_ceilf(h / mode->pixel_density));
     SDL3_SetWindowShape(window, pictures[current_picture]->surface, &pictures[current_picture]->mode);
     while (should_exit == 0) {
         while (SDL_PollEvent(&event)) {
@@ -358,7 +358,7 @@ int main(int argc, char **argv)
                 }
                 SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture]->name);
                 SDL_QueryTexture(pictures[current_picture]->texture, &pixelFormat, &access, &w, &h);
-                SDL_SetWindowSize(window, (int)SDL_ceilf(w / mode->display_scale), (int)SDL_ceilf(h / mode->display_scale));
+                SDL_SetWindowSize(window, (int)SDL_ceilf(w / mode->pixel_density), (int)SDL_ceilf(h / mode->pixel_density));
                 SDL3_SetWindowShape(window, pictures[current_picture]->surface, &pictures[current_picture]->mode);
             }
             if (event.type == SDL_EVENT_QUIT) {

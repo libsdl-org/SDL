@@ -581,6 +581,35 @@ static void SDLCALL Wayland_EmulateMouseWarpChanged(void *userdata, const char *
     input->warp_emulation_prohibited = !SDL_GetStringBoolean(hint, !input->warp_emulation_prohibited);
 }
 
+/* Wayland doesn't support getting the true global cursor position, but it can
+ * be faked well enough for what most applications use it for: querying the
+ * global cursor coordinates and transforming them to the window-relative
+ * coordinates manually.
+ *
+ * The global position is derived by taking the cursor position relative to the
+ * toplevel window, and offsetting it by the origin of the output the window is
+ * currently considered to be on. The cursor position and button state when the
+ * cursor is outside an application window are unknown, but this gives 'correct'
+ * coordinates when the window has focus, which is good enough for most
+ * applications.
+ */
+static Uint32 SDLCALL Wayland_GetGlobalMouseState(float *x, float *y)
+{
+    SDL_Window *focus = SDL_GetMouseFocus();
+    Uint32 ret = 0;
+
+    if (focus) {
+        int off_x, off_y;
+
+        ret = SDL_GetMouseState(x, y);
+        SDL_RelativeToGlobalForWindow(focus, focus->x, focus->y, &off_x, &off_y);
+        *x += off_x;
+        *y += off_y;
+    }
+
+    return ret;
+}
+
 #if 0  /* TODO RECONNECT: See waylandvideo.c for more information! */
 static void Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
 {
@@ -606,8 +635,7 @@ static void Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
     wl_surface_set_user_data(cdata->surface, NULL);
 }
 
-void
-Wayland_RecreateCursors(void)
+void Wayland_RecreateCursors(void)
 {
     SDL_Cursor *cursor;
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -651,6 +679,7 @@ void Wayland_InitMouse(void)
     mouse->FreeCursor = Wayland_FreeCursor;
     mouse->WarpMouse = Wayland_WarpMouse;
     mouse->SetRelativeMouseMode = Wayland_SetRelativeMouseMode;
+    mouse->GetGlobalMouseState = Wayland_GetGlobalMouseState;
 
     input->relative_mode_override = SDL_FALSE;
     input->cursor_visible = SDL_TRUE;

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_COCOA)
+#ifdef SDL_VIDEO_DRIVER_COCOA
 
 #include "SDL_cocoavideo.h"
 
@@ -139,7 +139,7 @@ static Uint32 GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
     return pixelformat;
 }
 
-static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
+static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data;
     bool usableForGUI = CGDisplayModeIsUsableForDesktopGUI(vidmode);
@@ -253,10 +253,9 @@ static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmode
     }
     data->modes = modes;
     mode->format = format;
-    mode->pixel_w = (int)pixelW;
-    mode->pixel_h = (int)pixelH;
-    mode->screen_w = (int)width;
-    mode->screen_h = (int)height;
+    mode->w = (int)width;
+    mode->h = (int)height;
+    mode->pixel_density = (float)pixelW / width;
     mode->refresh_rate = refreshrate;
     mode->driverdata = data;
     return SDL_TRUE;
@@ -277,7 +276,7 @@ static const char *Cocoa_GetDisplayName(CGDirectDisplayID displayID)
     return displayName;
 }
 
-void Cocoa_InitModes(_THIS)
+void Cocoa_InitModes(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         CGDisplayErr result;
@@ -361,7 +360,7 @@ void Cocoa_InitModes(_THIS)
     }
 }
 
-int Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+int Cocoa_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     CGRect cgrect;
@@ -374,7 +373,7 @@ int Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
     return 0;
 }
 
-int Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+int Cocoa_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     const CGDirectDisplayID cgdisplay = displaydata->display;
@@ -406,7 +405,7 @@ int Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rec
     return 0;
 }
 
-int Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int Cocoa_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *data = (SDL_DisplayData *)display->driverdata;
     CVDisplayLinkRef link = NULL;
@@ -483,12 +482,12 @@ static CGError SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayMo
     return result;
 }
 
-int Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
     SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
     CGDisplayFadeReservationToken fade_token = kCGDisplayFadeReservationInvalidToken;
-    CGError result;
+    CGError result = kCGErrorSuccess;
 
     /* Fade to black to hide resolution-switching flicker */
     if (CGAcquireDisplayFadeReservation(5, &fade_token) == kCGErrorSuccess) {
@@ -498,31 +497,9 @@ int Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode
     if (data == display->desktop_mode.driverdata) {
         /* Restoring desktop mode */
         SetDisplayModeForDisplay(displaydata->display, data);
-
-        if (CGDisplayIsMain(displaydata->display)) {
-            CGReleaseAllDisplays();
-        } else {
-            CGDisplayRelease(displaydata->display);
-        }
     } else {
-        /* Put up the blanking window (a window above all other windows) */
-        if (CGDisplayIsMain(displaydata->display)) {
-            /* If we don't capture all displays, Cocoa tries to rearrange windows... *sigh* */
-            result = CGCaptureAllDisplays();
-        } else {
-            result = CGDisplayCapture(displaydata->display);
-        }
-        if (result != kCGErrorSuccess) {
-            CG_SetError("CGDisplayCapture()", result);
-            goto ERR_NO_CAPTURE;
-        }
-
         /* Do the physical switch */
         result = SetDisplayModeForDisplay(displaydata->display, data);
-        if (result != kCGErrorSuccess) {
-            CG_SetError("CGDisplaySwitchToMode()", result);
-            goto ERR_NO_SWITCH;
-        }
     }
 
     /* Fade in again (asynchronously) */
@@ -531,24 +508,14 @@ int Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode
         CGReleaseDisplayFadeReservation(fade_token);
     }
 
+    if (result != kCGErrorSuccess) {
+        CG_SetError("CGDisplaySwitchToMode()", result);
+        return -1;
+    }
     return 0;
-
-    /* Since the blanking window covers *all* windows (even force quit) correct recovery is crucial */
-ERR_NO_SWITCH:
-    if (CGDisplayIsMain(displaydata->display)) {
-        CGReleaseAllDisplays();
-    } else {
-        CGDisplayRelease(displaydata->display);
-    }
-ERR_NO_CAPTURE:
-    if (fade_token != kCGDisplayFadeReservationInvalidToken) {
-        CGDisplayFade(fade_token, 0.5, kCGDisplayBlendSolidColor, kCGDisplayBlendNormal, 0.0, 0.0, 0.0, FALSE);
-        CGReleaseDisplayFadeReservation(fade_token);
-    }
-    return -1;
 }
 
-void Cocoa_QuitModes(_THIS)
+void Cocoa_QuitModes(SDL_VideoDevice *_this)
 {
     int i, j;
 

@@ -27,7 +27,7 @@
 #include "../video/SDL_pixels_c.h"
 #include "../video/SDL_video_c.h"
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
 #include "../core/android/SDL_android.h"
 #endif
 
@@ -655,11 +655,16 @@ static void UpdateMainViewDimensions(SDL_Renderer *renderer)
 {
     int window_w = 0, window_h = 0;
 
-    SDL_GetRenderWindowSize(renderer, &window_w, &window_h);
+    if (renderer->window) {
+        SDL_GetWindowSize(renderer->window, &window_w, &window_h);
+    }
     SDL_GetRenderOutputSize(renderer, &renderer->main_view.pixel_w, &renderer->main_view.pixel_h);
     if (window_w > 0 && window_h > 0) {
         renderer->dpi_scale.x = (float)renderer->main_view.pixel_w / window_w;
         renderer->dpi_scale.y = (float)renderer->main_view.pixel_h / window_h;
+    } else {
+        renderer->dpi_scale.x = 1.0f;
+        renderer->dpi_scale.y = 1.0f;
     }
 }
 
@@ -668,7 +673,7 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer);
 
 int SDL_GetNumRenderDrivers(void)
 {
-#if !defined(SDL_RENDER_DISABLED)
+#ifndef SDL_RENDER_DISABLED
     return SDL_arraysize(render_drivers);
 #else
     return 0;
@@ -677,7 +682,7 @@ int SDL_GetNumRenderDrivers(void)
 
 const char *SDL_GetRenderDriver(int index)
 {
-#if !defined(SDL_RENDER_DISABLED)
+#ifndef SDL_RENDER_DISABLED
     if (index < 0 || index >= SDL_GetNumRenderDrivers()) {
         SDL_SetError("index must be in the range of 0 - %d",
                             SDL_GetNumRenderDrivers() - 1);
@@ -741,7 +746,7 @@ int SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags, SDL_
     return 0;
 }
 
-#if !defined(SDL_RENDER_DISABLED)
+#ifndef SDL_RENDER_DISABLED
 static SDL_INLINE void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
 {
     /* all of these functions are required to be implemented, even as no-ops, so we don't
@@ -801,19 +806,24 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 
 SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
 {
-#if !defined(SDL_RENDER_DISABLED)
+#ifndef SDL_RENDER_DISABLED
     SDL_Renderer *renderer = NULL;
     const int n = SDL_GetNumRenderDrivers();
     SDL_bool batching = SDL_TRUE;
     const char *hint;
     int i;
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
     Android_ActivityMutex_Lock_Running();
 #endif
 
     if (window == NULL) {
         SDL_InvalidParamError("window");
+        goto error;
+    }
+
+    if (SDL_HasWindowSurface(window)) {
+        SDL_SetError("Surface already associated with window");
         goto error;
     }
 
@@ -928,14 +938,14 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
                 "Created renderer: %s", renderer->info.name);
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
     Android_ActivityMutex_Unlock();
 #endif
     return renderer;
 
 error:
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
     Android_ActivityMutex_Unlock();
 #endif
     return NULL;
@@ -1001,21 +1011,6 @@ int SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_RendererInfo *info)
     return 0;
 }
 
-int SDL_GetRenderWindowSize(SDL_Renderer *renderer, int *w, int *h)
-{
-    CHECK_RENDERER_MAGIC(renderer, -1);
-
-    if (renderer->window) {
-        /*return */SDL_GetWindowSize(renderer->window, w, h);
-        return 0;
-    } else if (renderer->GetOutputSize) {
-        return renderer->GetOutputSize(renderer, w, h);
-    } else {
-        SDL_assert(0 && "This should never happen");
-        return SDL_SetError("Renderer doesn't support querying output size");
-    }
-}
-
 int SDL_GetRenderOutputSize(SDL_Renderer *renderer, int *w, int *h)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
@@ -1023,8 +1018,7 @@ int SDL_GetRenderOutputSize(SDL_Renderer *renderer, int *w, int *h)
     if (renderer->GetOutputSize) {
         return renderer->GetOutputSize(renderer, w, h);
     } else if (renderer->window) {
-        SDL_GetWindowSizeInPixels(renderer->window, w, h);
-        return 0;
+        return SDL_GetWindowSizeInPixels(renderer->window, w, h);
     } else {
         SDL_assert(0 && "This should never happen");
         return SDL_SetError("Renderer doesn't support querying output size");
@@ -2117,36 +2111,12 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
         return 0;
     }
 
-    if (renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_MATCH) {
-        if (SDL_GetRenderWindowSize(renderer, &logical_w, &logical_h) < 0) {
-            goto error;
-        }
-
-        if (renderer->logical_target) {
-            int existing_w = 0, existing_h = 0;
-
-            if (SDL_QueryTexture(renderer->logical_target, NULL, NULL, &existing_w, &existing_h) < 0) {
-                goto error;
-            }
-            if (logical_w != existing_w || logical_h != existing_h) {
-                SDL_DestroyTexture(renderer->logical_target);
-            }
-        }
-        if (!renderer->logical_target) {
-            renderer->logical_target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, logical_w, logical_h);
-            if (!renderer->logical_target) {
-                goto error;
-            }
-            SDL_SetTextureBlendMode(renderer->logical_target, SDL_BLENDMODE_NONE);
-        }
-    } else {
-        if (SDL_QueryTexture(renderer->logical_target, NULL, NULL, &logical_w, &logical_h) < 0) {
-            goto error;
-        }
-
-        want_aspect = (float)logical_w / logical_h;
-        real_aspect = (float)output_w / output_h;
+    if (SDL_QueryTexture(renderer->logical_target, NULL, NULL, &logical_w, &logical_h) < 0) {
+        goto error;
     }
+
+    want_aspect = (float)logical_w / logical_h;
+    real_aspect = (float)output_w / output_h;
 
     renderer->logical_src_rect.x = 0.0f;
     renderer->logical_src_rect.y = 0.0f;
@@ -2169,8 +2139,7 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
         renderer->logical_dst_rect.h = SDL_floorf(logical_h * scale);
         renderer->logical_dst_rect.y = (output_h - renderer->logical_dst_rect.h) / 2.0f;
 
-    } else if (renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_MATCH ||
-               renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_STRETCH ||
+    } else if (renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_STRETCH ||
                SDL_fabsf(want_aspect - real_aspect) < 0.0001f) {
         renderer->logical_dst_rect.x = 0.0f;
         renderer->logical_dst_rect.y = 0.0f;
@@ -2238,7 +2207,7 @@ int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_R
         if (renderer->logical_target) {
             SDL_DestroyTexture(renderer->logical_target);
         }
-    } else if (mode != SDL_LOGICAL_PRESENTATION_MATCH) {
+    } else {
         if (renderer->logical_target) {
             int existing_w = 0, existing_h = 0;
 
@@ -2438,11 +2407,13 @@ int SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *event
                event->type == SDL_EVENT_FINGER_UP ||
                event->type == SDL_EVENT_FINGER_MOTION) {
         /* FIXME: Are these events guaranteed to be window relative? */
-        int w, h;
-        if (SDL_GetRenderWindowSize(renderer, &w, &h) < 0) {
-            return -1;
+        if (renderer->window) {
+            int w, h;
+            if (SDL_GetWindowSize(renderer->window, &w, &h) < 0) {
+                return -1;
+            }
+            SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * w, event->tfinger.y * h, &event->tfinger.x, &event->tfinger.y);
         }
-        SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * w, event->tfinger.y * h, &event->tfinger.x, &event->tfinger.y);
     }
     return 0;
 }
@@ -3680,6 +3651,8 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 s.y = uv0_[1] * texh;
                 s.w = uv1_[0] * texw - s.x;
                 s.h = uv1_[1] * texh - s.y;
+            } else {
+                s.x = s.y = s.w = s.h = 0;
             }
 
             d.x = xy0_[0];

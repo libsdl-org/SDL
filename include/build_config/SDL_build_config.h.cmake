@@ -102,6 +102,7 @@
 #cmakedefine HAVE__WCSICMP 1
 #cmakedefine HAVE_WCSNCASECMP 1
 #cmakedefine HAVE__WCSNICMP 1
+#cmakedefine HAVE_WCSTOL 1
 #cmakedefine HAVE_STRLEN 1
 #cmakedefine HAVE_STRLCPY 1
 #cmakedefine HAVE_STRLCAT 1
@@ -221,7 +222,6 @@
 
 #cmakedefine HAVE_LINUX_INPUT_H 1
 #cmakedefine HAVE_LIBUDEV_H 1
-#cmakedefine HAVE_LIBSAMPLERATE 1
 #cmakedefine HAVE_LIBDECOR_H  1
 
 #cmakedefine HAVE_D3D_H @HAVE_D3D_H@
@@ -349,6 +349,7 @@
 
 /* Enable various threading systems */
 #cmakedefine SDL_THREAD_GENERIC_COND_SUFFIX @SDL_THREAD_GENERIC_COND_SUFFIX@
+#cmakedefine SDL_THREAD_GENERIC_RWLOCK_SUFFIX @SDL_THREAD_GENERIC_RWLOCK_SUFFIX@
 #cmakedefine SDL_THREAD_PTHREAD @SDL_THREAD_PTHREAD@
 #cmakedefine SDL_THREAD_PTHREAD_RECURSIVE_MUTEX @SDL_THREAD_PTHREAD_RECURSIVE_MUTEX@
 #cmakedefine SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP @SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP@
@@ -542,9 +543,6 @@
 
 /* Whether SDL_DYNAMIC_API needs dlopen */
 #cmakedefine DYNAPI_NEEDS_DLOPEN  @DYNAPI_NEEDS_DLOPEN@
-
-/* Enable dynamic libsamplerate support */
-#cmakedefine SDL_LIBSAMPLERATE_DYNAMIC @SDL_LIBSAMPLERATE_DYNAMIC@
 
 /* Enable ime support */
 #cmakedefine SDL_USE_IME @SDL_USE_IME@

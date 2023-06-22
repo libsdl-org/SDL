@@ -4,7 +4,7 @@
 
 #include EXPORT_HEADER
 
-#if defined(_WIN32)
+#ifdef _WIN32
 #include <windows.h>
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     return TRUE;

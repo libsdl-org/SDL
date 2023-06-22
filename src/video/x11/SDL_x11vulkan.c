@@ -29,7 +29,7 @@
 #include <X11/Xlib.h>
 /*#include <xcb/xcb.h>*/
 
-#if defined(__OpenBSD__)
+#ifdef __OpenBSD__
 #define DEFAULT_VULKAN "libvulkan.so"
 #else
 #define DEFAULT_VULKAN "libvulkan.so.1"
@@ -40,7 +40,7 @@ typedef uint32_t xcb_window_t;
 typedef uint32_t xcb_visualid_t;
 */
 
-int X11_Vulkan_LoadLibrary(_THIS, const char *path)
+int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     SDL_VideoData *videoData = _this->driverdata;
     VkExtensionProperties *extensions = NULL;
@@ -128,7 +128,7 @@ fail:
     return -1;
 }
 
-void X11_Vulkan_UnloadLibrary(_THIS)
+void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videoData = _this->driverdata;
     if (_this->vulkan_config.loader_handle) {
@@ -140,7 +140,7 @@ void X11_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
+SDL_bool X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                           unsigned *count,
                                           const char **names)
 {
@@ -166,7 +166,7 @@ SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
     }
 }
 
-SDL_bool X11_Vulkan_CreateSurface(_THIS,
+SDL_bool X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)

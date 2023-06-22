@@ -39,11 +39,11 @@ static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
     return (SDL_BWin *)(window->driverdata);
 }
 
-static SDL_INLINE SDL_BApp *_GetBeApp() {
-    return (SDL_BApp *)be_app;
+static SDL_INLINE SDL_BLooper *_GetBeLooper() {
+    return SDL_Looper;
 }
 
-int HAIKU_CreateWindowFramebuffer(_THIS, SDL_Window * window,
+int HAIKU_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
                                        Uint32 * format,
                                        void ** pixels, int *pitch) {
     SDL_BWin *bwin = _ToBeWin(window);
@@ -92,7 +92,7 @@ int HAIKU_CreateWindowFramebuffer(_THIS, SDL_Window * window,
 
 
 
-int HAIKU_UpdateWindowFramebuffer(_THIS, SDL_Window * window,
+int HAIKU_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
                                       const SDL_Rect * rects, int numrects) {
     if (window == NULL) {
         return 0;
@@ -105,7 +105,7 @@ int HAIKU_UpdateWindowFramebuffer(_THIS, SDL_Window * window,
     return 0;
 }
 
-void HAIKU_DestroyWindowFramebuffer(_THIS, SDL_Window * window) {
+void HAIKU_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window) {
     SDL_BWin *bwin = _ToBeWin(window);
 
     bwin->LockBuffer();

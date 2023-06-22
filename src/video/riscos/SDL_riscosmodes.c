@@ -85,8 +85,7 @@ static SDL_PixelFormatEnum RISCOS_ModeToPixelFormat(int ncolour, int modeflags, 
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-static size_t
-measure_mode_block(const int *block)
+static size_t measure_mode_block(const int *block)
 {
     size_t blockSize = ((block[0] & 0xFF) == 3) ? 7 : 5;
     while (block[blockSize] != -1) {
@@ -137,8 +136,8 @@ static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool exte
     }
 
     SDL_zerop(mode);
-    mode->pixel_w = xres;
-    mode->pixel_h = yres;
+    mode->w = xres;
+    mode->h = yres;
     mode->format = RISCOS_ModeToPixelFormat(ncolour, modeflags, log2bpp);
     mode->refresh_rate = (float)rate;
 
@@ -199,7 +198,7 @@ static void *copy_memory(const void *src, size_t size, size_t alloc)
     return dst;
 }
 
-int RISCOS_InitModes(_THIS)
+int RISCOS_InitModes(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
     int *current_mode;
@@ -230,7 +229,7 @@ int RISCOS_InitModes(_THIS)
     return 0;
 }
 
-int RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
     SDL_DisplayMode mode;
     _kernel_swi_regs regs;
@@ -283,7 +282,7 @@ int RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     return 0;
 }
 
-int RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     const char disable_cursor[] = { 23, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     _kernel_swi_regs regs;

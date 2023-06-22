@@ -24,9 +24,10 @@
 
 #include <e32std.h>
 
+/* !!! FIXME: Should this be SDL_MUTEX_TIMEDOUT? */
 #define SDL_MUTEX_TIMEOUT -2
 
-struct SDL_semaphore
+struct SDL_Semaphore
 {
     TInt handle;
     TInt count;
@@ -64,7 +65,7 @@ static TInt NewSema(const TDesC &aName, TAny *aPtr1, TAny *aPtr2)
     return ((RSemaphore *)aPtr1)->CreateGlobal(aName, value);
 }
 
-static void WaitAll(SDL_sem *sem)
+static void WaitAll(SDL_Semaphore *sem)
 {
     RSemaphore sema;
     sema.SetHandle(sem->handle);
@@ -74,21 +75,20 @@ static void WaitAll(SDL_sem *sem)
     }
 }
 
-SDL_sem *
-SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
     RSemaphore s;
     TInt status = CreateUnique(NewSema, &s, &initial_value);
     if (status != KErrNone) {
         SDL_SetError("Couldn't create semaphore");
     }
-    SDL_semaphore *sem = new /*(ELeave)*/ SDL_semaphore;
+    SDL_Semaphore *sem = new /*(ELeave)*/ SDL_Semaphore;
     sem->handle = s.Handle();
     sem->count = initial_value;
     return sem;
 }
 
-void SDL_DestroySemaphore(SDL_sem *sem)
+void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
     if (sem != NULL) {
         RSemaphore sema;
@@ -100,7 +100,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     }
 }
 
-int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
@@ -138,8 +138,7 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
     return info->iVal;
 }
 
-Uint32
-SDL_SemValue(SDL_sem *sem)
+Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     if (sem == NULL) {
         SDL_InvalidParamError("sem");
@@ -148,7 +147,7 @@ SDL_SemValue(SDL_sem *sem)
     return sem->count;
 }
 
-int SDL_SemPost(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_Semaphore *sem)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");

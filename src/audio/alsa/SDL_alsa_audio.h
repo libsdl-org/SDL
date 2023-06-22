@@ -27,9 +27,6 @@
 
 #include "../SDL_sysaudio.h"
 
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *this
-
 struct SDL_PrivateAudioData
 {
     /* The audio device handle */
@@ -40,7 +37,7 @@ struct SDL_PrivateAudioData
     int mixlen;
 
     /* swizzle function */
-    void (*swizzle_func)(_THIS, void *buffer, Uint32 bufferlen);
+    void (*swizzle_func)(SDL_AudioDevice *_this, void *buffer, Uint32 bufferlen);
 };
 
 #endif /* SDL_ALSA_audio_h_ */

@@ -848,8 +848,6 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_BlitScaled
  */
 extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
     (SDL_Surface *src, const SDL_Rect *srcrect,
@@ -872,7 +870,7 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_BlitScaled
+ * \sa SDL_BlitSurfaceScaled
  */
 extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled
     (SDL_Surface *src, SDL_Rect *srcrect,

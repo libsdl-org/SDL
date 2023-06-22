@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_COCOA)
+#ifdef SDL_VIDEO_DRIVER_COCOA
 
 #if !__has_feature(objc_arc)
 #error SDL must be built with Objective-C ARC (automatic reference counting) enabled
@@ -37,8 +37,8 @@
 @end
 
 /* Initialization/Query functions */
-static int Cocoa_VideoInit(_THIS);
-static void Cocoa_VideoQuit(_THIS);
+static int Cocoa_VideoInit(SDL_VideoDevice *_this);
+static void Cocoa_VideoQuit(SDL_VideoDevice *_this);
 
 /* Cocoa driver bootstrap functions */
 
@@ -175,6 +175,10 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->GetClipboardText = Cocoa_GetClipboardText;
         device->HasClipboardText = Cocoa_HasClipboardText;
 
+        device->GetClipboardData = Cocoa_GetClipboardData;
+        device->HasClipboardData = Cocoa_HasClipboardData;
+        device->SetClipboardData = Cocoa_SetClipboardData;
+
         device->free = Cocoa_DeleteDevice;
 
         device->quirk_flags = VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT;
@@ -188,7 +192,7 @@ VideoBootStrap COCOA_bootstrap = {
     Cocoa_CreateDevice
 };
 
-int Cocoa_VideoInit(_THIS)
+int Cocoa_VideoInit(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
@@ -211,7 +215,7 @@ int Cocoa_VideoInit(_THIS)
     }
 }
 
-void Cocoa_VideoQuit(_THIS)
+void Cocoa_VideoQuit(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;

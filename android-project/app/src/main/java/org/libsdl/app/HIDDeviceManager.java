@@ -252,6 +252,7 @@ public class HIDDeviceManager {
             0x24c6, // PowerA
             0x2c22, // Qanba
             0x2dc8, // 8BitDo
+            0x9886, // ASTRO Gaming
         };
 
         if (usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_VENDOR_SPEC &&
@@ -283,6 +284,7 @@ public class HIDDeviceManager {
             0x24c6, // PowerA
             0x2dc8, // 8BitDo
             0x2e24, // Hyperkin
+            0x3537, // GameSir
         };
 
         if (usbInterface.getId() == 0 &&
@@ -356,13 +358,13 @@ public class HIDDeviceManager {
     private void initializeBluetooth() {
         Log.d(TAG, "Initializing Bluetooth");
 
-        if (Build.VERSION.SDK_INT <= 30 &&
+        if (Build.VERSION.SDK_INT <= 30 /* Android 11.0 (R) */ &&
             mContext.getPackageManager().checkPermission(android.Manifest.permission.BLUETOOTH, mContext.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Couldn't initialize Bluetooth, missing android.permission.BLUETOOTH");
             return;
         }
 
-        if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) || (Build.VERSION.SDK_INT < 18)) {
+        if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) || (Build.VERSION.SDK_INT < 18 /* Android 4.3 (JELLY_BEAN_MR2) */)) {
             Log.d(TAG, "Couldn't initialize Bluetooth, this version of Android does not support Bluetooth LE");
             return;
         }
@@ -576,7 +578,7 @@ public class HIDDeviceManager {
             try {
                 final int FLAG_MUTABLE = 0x02000000; // PendingIntent.FLAG_MUTABLE, but don't require SDK 31
                 int flags;
-                if (Build.VERSION.SDK_INT >= 31) {
+                if (Build.VERSION.SDK_INT >= 31 /* Android 12.0 (S) */) {
                     flags = FLAG_MUTABLE;
                 } else {
                     flags = 0;
@@ -597,9 +599,9 @@ public class HIDDeviceManager {
         return false;
     }
 
-    public int sendOutputReport(int deviceID, byte[] report) {
+    public int writeReport(int deviceID, byte[] report, boolean feature) {
         try {
-            //Log.v(TAG, "sendOutputReport deviceID=" + deviceID + " length=" + report.length);
+            //Log.v(TAG, "writeReport deviceID=" + deviceID + " length=" + report.length);
             HIDDevice device;
             device = getDevice(deviceID);
             if (device == null) {
@@ -607,33 +609,16 @@ public class HIDDeviceManager {
                 return -1;
             }
 
-            return device.sendOutputReport(report);
+            return device.writeReport(report, feature);
         } catch (Exception e) {
             Log.e(TAG, "Got exception: " + Log.getStackTraceString(e));
         }
         return -1;
     }
 
-    public int sendFeatureReport(int deviceID, byte[] report) {
+    public boolean readReport(int deviceID, byte[] report, boolean feature) {
         try {
-            //Log.v(TAG, "sendFeatureReport deviceID=" + deviceID + " length=" + report.length);
-            HIDDevice device;
-            device = getDevice(deviceID);
-            if (device == null) {
-                HIDDeviceDisconnected(deviceID);
-                return -1;
-            }
-
-            return device.sendFeatureReport(report);
-        } catch (Exception e) {
-            Log.e(TAG, "Got exception: " + Log.getStackTraceString(e));
-        }
-        return -1;
-    }
-
-    public boolean getFeatureReport(int deviceID, byte[] report) {
-        try {
-            //Log.v(TAG, "getFeatureReport deviceID=" + deviceID);
+            //Log.v(TAG, "readReport deviceID=" + deviceID);
             HIDDevice device;
             device = getDevice(deviceID);
             if (device == null) {
@@ -641,7 +626,7 @@ public class HIDDeviceManager {
                 return false;
             }
 
-            return device.getFeatureReport(report);
+            return device.readReport(report, feature);
         } catch (Exception e) {
             Log.e(TAG, "Got exception: " + Log.getStackTraceString(e));
         }
@@ -678,5 +663,5 @@ public class HIDDeviceManager {
     native void HIDDeviceDisconnected(int deviceID);
 
     native void HIDDeviceInputReport(int deviceID, byte[] report);
-    native void HIDDeviceFeatureReport(int deviceID, byte[] report);
+    native void HIDDeviceReportResponse(int deviceID, byte[] report);
 }

@@ -638,6 +638,7 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
     Uint8 sdl_button_state;
     SDL_EventType sdl_event_type;
     double css_w, css_h;
+    SDL_bool prevent_default = SDL_FALSE; /* needed for iframe implementation in Chrome-based browsers. */
 
     switch (mouseEvent->button) {
     case 0:
@@ -662,6 +663,7 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
     } else {
         sdl_button_state = SDL_RELEASED;
         sdl_event_type = SDL_EVENT_MOUSE_BUTTON_UP;
+        prevent_default = SDL_EventEnabled(sdl_event_type);
     }
     SDL_SendMouseButton(0, window_data->window, 0, sdl_button_state, sdl_button);
 
@@ -672,7 +674,7 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
         return 0;
     }
 
-    return SDL_EventEnabled(sdl_event_type);
+    return prevent_default;
 }
 
 static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
@@ -859,7 +861,7 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
     SDL_bool force = SDL_FALSE;
 
     /* update pixel ratio */
-    if (window_data->window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+    if (window_data->window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
         if (window_data->pixel_ratio != emscripten_get_device_pixel_ratio()) {
             window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
             force = SDL_TRUE;

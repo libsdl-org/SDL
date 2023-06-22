@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_SENSOR_WINDOWS)
+#ifdef SDL_SENSOR_WINDOWS
 
 #include "SDL_windowssensor.h"
 #include "../SDL_syssensor.h"

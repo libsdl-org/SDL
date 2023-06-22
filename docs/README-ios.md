@@ -33,29 +33,26 @@ TODO: Add information regarding App Store requirements such as icons, etc.
 Notes -- Retina / High-DPI and window sizes
 ==============================================================================
 
-Window and display mode sizes in SDL are in "screen coordinates" (or "points",
-in Apple's terminology) rather than in pixels. On iOS this means that a window
-created on an iPhone 6 will have a size in screen coordinates of 375 x 667,
-rather than a size in pixels of 750 x 1334. All iOS apps are expected to
-size their content based on screen coordinates / points rather than pixels,
+Window and display mode sizes in SDL are in points rather than in pixels.
+On iOS this means that a window created on an iPhone 6 will have a size in
+points of 375 x 667, rather than a size in pixels of 750 x 1334. All iOS apps
+are expected to size their content based on points rather than pixels,
 as this allows different iOS devices to have different pixel densities
 (Retina versus non-Retina screens, etc.) without apps caring too much.
 
-SDL_GetWindowSize() and mouse coordinates are in screen coordinates rather
-than pixels, but the window will have a much greater pixel density when the
-device supports it, and the SDL_GetWindowSizeInPixels() can be called to
-determine the size in pixels of the drawable screen framebuffer.
+SDL_GetWindowSize() and mouse coordinates are in points rather than pixels,
+but the window will have a much greater pixel density when the device supports
+it, and the SDL_GetWindowSizeInPixels() can be called to determine the size
+in pixels of the drawable screen framebuffer.
 
 The SDL 2D rendering API will automatically handle this for you, by default
-providing a rendering area in screen coordinates, and you can call
-SDL_SetRenderLogicalPresentation() to gain access to the higher density
-resolution.
+providing a rendering area in points, and you can call SDL_SetRenderLogicalPresentation()
+to gain access to the higher density resolution.
 
 Some OpenGL ES functions such as glViewport expect sizes in pixels rather than
-sizes in screen coordinates. When doing 2D rendering with OpenGL ES, an
-orthographic projection matrix using the size in screen coordinates
-(SDL_GetWindowSize()) can be used in order to display content at the same scale
-no matter whether a Retina device is used or not.
+sizes in points. When doing 2D rendering with OpenGL ES, an orthographic projection
+matrix using the size in points (SDL_GetWindowSize()) can be used in order to
+display content at the same scale no matter whether a Retina device is used or not.
 
 
 Notes -- Application events

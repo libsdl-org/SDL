@@ -54,7 +54,7 @@ typedef struct SDL_EventWatcher
     SDL_bool removed;
 } SDL_EventWatcher;
 
-static SDL_mutex *SDL_event_watchers_lock;
+static SDL_Mutex *SDL_event_watchers_lock;
 static SDL_EventWatcher SDL_EventOK;
 static SDL_EventWatcher *SDL_event_watchers = NULL;
 static int SDL_event_watchers_count = 0;
@@ -87,7 +87,7 @@ typedef struct SDL_SysWMEntry
 
 static struct
 {
-    SDL_mutex *lock;
+    SDL_Mutex *lock;
     SDL_bool active;
     SDL_AtomicInt count;
     int max_events_seen;
@@ -225,7 +225,7 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_CONNECTED);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_DISCONNECTED);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_MOVED);
-        SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_SCALE_CHANGED);
+        SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED);
 #undef SDL_DISPLAYEVENT_CASE
 
 #define SDL_WINDOWEVENT_CASE(x)                \
@@ -239,6 +239,7 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_EXPOSED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_MOVED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_RESIZED);
+        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_MINIMIZED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_MAXIMIZED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_RESTORED);
@@ -251,7 +252,8 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_HIT_TEST);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_ICCPROF_CHANGED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DISPLAY_CHANGED);
-        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
+        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED);
+        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DESTROYED);
 #undef SDL_WINDOWEVENT_CASE
 
         SDL_EVENT_CASE(SDL_EVENT_SYSWM)
@@ -577,6 +579,8 @@ int SDL_StartEventLoop(void)
     SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_FALSE);
     SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_FALSE);
 #endif
+    SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE, SDL_FALSE);
+    SDL_SetEventEnabled(SDL_EVENT_GAMEPAD_UPDATE_COMPLETE, SDL_FALSE);
 
     SDL_EventQ.active = SDL_TRUE;
     SDL_UnlockMutex(SDL_EventQ.lock);
@@ -852,13 +856,6 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
         _this->PumpEvents(_this);
     }
 
-#ifndef SDL_JOYSTICK_DISABLED
-    /* Check for joystick state change */
-    if (SDL_update_joysticks) {
-        SDL_UpdateJoysticks();
-    }
-#endif
-
 #ifndef SDL_SENSOR_DISABLED
     /* Check for sensor state change */
     if (SDL_update_sensors) {
@@ -866,10 +863,22 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
     }
 #endif
 
+#ifndef SDL_JOYSTICK_DISABLED
+    /* Check for joystick state change */
+    if (SDL_update_joysticks) {
+        SDL_UpdateJoysticks();
+    }
+#endif
+
     SDL_SendPendingSignalEvents(); /* in case we had a signal handler fire, etc. */
 
     if (push_sentinel && SDL_EventEnabled(SDL_EVENT_POLL_SENTINEL)) {
         SDL_Event sentinel;
+
+        /* Make sure we don't already have a sentinel in the queue, and add one to the end */
+        if (SDL_AtomicGet(&SDL_sentinel_pending) > 0) {
+            SDL_PeepEventsInternal(&sentinel, 1, SDL_GETEVENT, SDL_EVENT_POLL_SENTINEL, SDL_EVENT_POLL_SENTINEL, SDL_TRUE);
+        }
 
         sentinel.type = SDL_EVENT_POLL_SENTINEL;
         sentinel.common.timestamp = 0;
@@ -900,7 +909,7 @@ static SDL_bool SDL_events_need_periodic_poll(void)
     return need_periodic_poll;
 }
 
-static int SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event *event, Uint64 start, Sint64 timeoutNS)
+static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeup_window, SDL_Event *event, Uint64 start, Sint64 timeoutNS)
 {
     Sint64 loop_timeoutNS = timeoutNS;
     SDL_bool need_periodic_poll = SDL_events_need_periodic_poll();
@@ -913,11 +922,7 @@ static int SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Eve
            c) Periodic processing that takes place in some platform PumpEvents() functions happens
            d) Signals received in WaitEventTimeout() are turned into SDL events
         */
-        /* We only want a single sentinel in the queue. We could get more than one if event is NULL,
-         * since the SDL_PeepEvents() call below won't remove it in that case.
-         */
-        SDL_bool add_sentinel = (SDL_AtomicGet(&SDL_sentinel_pending) == 0) ? SDL_TRUE : SDL_FALSE;
-        SDL_PumpEventsInternal(add_sentinel);
+        SDL_PumpEventsInternal(SDL_TRUE);
 
         SDL_LockMutex(_this->wakeup_lock);
         {
@@ -1092,7 +1097,7 @@ int SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
         case -1:
             return 0;
         case 0:
-            if (timeoutNS > 0 && SDL_GetTicks() >= expiration) {
+            if (timeoutNS > 0 && SDL_GetTicksNS() >= expiration) {
                 /* Timeout expired and no events */
                 return 0;
             }
@@ -1261,6 +1266,29 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
     if (enabled != current_state) {
         if (enabled) {
             SDL_disabled_events[hi]->bits[lo / 32] &= ~(1 << (lo & 31));
+
+            /* Gamepad events depend on joystick events */
+            switch (type) {
+            case SDL_EVENT_GAMEPAD_ADDED:
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_ADDED, SDL_TRUE);
+                break;
+            case SDL_EVENT_GAMEPAD_REMOVED:
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_REMOVED, SDL_TRUE);
+                break;
+            case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+            case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+            case SDL_EVENT_GAMEPAD_BUTTON_UP:
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_AXIS_MOTION, SDL_TRUE);
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_HAT_MOTION, SDL_TRUE);
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_BUTTON_DOWN, SDL_TRUE);
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_BUTTON_UP, SDL_TRUE);
+                break;
+            case SDL_EVENT_GAMEPAD_UPDATE_COMPLETE:
+                SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE, SDL_TRUE);
+                break;
+            default:
+                break;
+            }
         } else {
             /* Disable this event type and discard pending events */
             if (!SDL_disabled_events[hi]) {

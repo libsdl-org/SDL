@@ -51,7 +51,7 @@
 
 @end
 
-SDL_FunctionPointer UIKit_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer UIKit_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
 {
     /* Look through all SO's for the proc symbol.  Here's why:
      * -Looking for the path to the OpenGL Library seems not to work in the iOS Simulator.
@@ -62,7 +62,7 @@ SDL_FunctionPointer UIKit_GL_GetProcAddress(_THIS, const char *proc)
 /*
   note that SDL_GL_DeleteContext makes it current without passing the window
 */
-int UIKit_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int UIKit_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     @autoreleasepool {
         SDLEAGLContext *eaglcontext = (__bridge SDLEAGLContext *)context;
@@ -79,7 +79,7 @@ int UIKit_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     return 0;
 }
 
-int UIKit_GL_LoadLibrary(_THIS, const char *path)
+int UIKit_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     /* We shouldn't pass a path to this function, since we've already loaded the
      * library. */
@@ -89,7 +89,7 @@ int UIKit_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-int UIKit_GL_SwapWindow(_THIS, SDL_Window *window)
+int UIKit_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDLEAGLContext *context = (__bridge SDLEAGLContext *)SDL_GL_GetCurrentContext();
@@ -108,7 +108,7 @@ int UIKit_GL_SwapWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDLEAGLContext *context = nil;
@@ -140,7 +140,7 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window *window)
             sharegroup = currContext.sharegroup;
         }
 
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             /* Set the scale to the natural scale factor of the screen - the
              * backing dimensions of the OpenGL view will match the pixel
              * dimensions of the screen rather than the dimensions in points. */
@@ -185,7 +185,7 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window *window)
     }
 }
 
-int UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
+int UIKit_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     @autoreleasepool {
         /* The context was retained in SDL_GL_CreateContext, so we release it

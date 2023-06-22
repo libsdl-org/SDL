@@ -413,7 +413,7 @@ static Uint32 X11_GetGlobalMouseState(float *x, float *y)
 
     /* !!! FIXME: should we XSync() here first? */
 
-#if !defined(SDL_VIDEO_DRIVER_X11_XINPUT2)
+#ifndef SDL_VIDEO_DRIVER_X11_XINPUT2
     videodata->global_mouse_changed = SDL_TRUE;
 #else
     if (!SDL_X11_HAVE_XINPUT2)
@@ -463,7 +463,7 @@ static Uint32 X11_GetGlobalMouseState(float *x, float *y)
     return videodata->global_mouse_buttons;
 }
 
-void X11_InitMouse(_THIS)
+void X11_InitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -480,7 +480,7 @@ void X11_InitMouse(_THIS)
     SDL_SetDefaultCursor(X11_CreateDefaultCursor());
 }
 
-void X11_QuitMouse(_THIS)
+void X11_QuitMouse(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
     SDL_XInput2DeviceInfo *i;

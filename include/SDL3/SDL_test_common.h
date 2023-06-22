@@ -34,7 +34,7 @@
 
 #include <SDL3/SDL.h>
 
-#if defined(__PSP__)
+#ifdef __PSP__
 #define DEFAULT_WINDOW_WIDTH  480
 #define DEFAULT_WINDOW_HEIGHT 272
 #elif defined(__VITA__)
@@ -77,6 +77,7 @@ typedef struct
     int window_maxH;
     int logical_w;
     int logical_h;
+    SDL_bool auto_scale_content;
     SDL_RendererLogicalPresentation logical_presentation;
     SDL_ScaleMode logical_scale_mode;
     float scale;

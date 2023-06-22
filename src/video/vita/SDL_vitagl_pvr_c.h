@@ -24,8 +24,8 @@
 
 #include "SDL_vitavideo.h"
 
-extern SDL_GLContext VITA_GL_CreateContext(_THIS, SDL_Window *window);
-extern int VITA_GL_LoadLibrary(_THIS, const char *path);
-extern SDL_FunctionPointer VITA_GL_GetProcAddress(_THIS, const char *proc);
+extern SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+extern int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern SDL_FunctionPointer VITA_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 
 #endif /* SDL_vitagl_pvr_c_h_ */

@@ -30,7 +30,7 @@
 
 #include <kernel.h>
 
-struct SDL_semaphore
+struct SDL_Semaphore
 {
     s32 semid;
 };
@@ -41,12 +41,12 @@ static void usercb(struct timer_alarm_t *alarm, void *arg)
 }
 
 /* Create a semaphore */
-SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
-    SDL_sem *sem;
+    SDL_Semaphore *sem;
     ee_sema_t sema;
 
-    sem = (SDL_sem *)SDL_malloc(sizeof(*sem));
+    sem = (SDL_Semaphore *)SDL_malloc(sizeof(*sem));
     if (sem != NULL) {
         /* TODO: Figure out the limit on the maximum value. */
         sema.init_count = initial_value;
@@ -67,7 +67,7 @@ SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 }
 
 /* Free the semaphore */
-void SDL_DestroySemaphore(SDL_sem *sem)
+void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
     if (sem != NULL) {
         if (sem->semid > 0) {
@@ -79,7 +79,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     }
 }
 
-int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     int ret;
     struct timer_alarm_t alarm;
@@ -110,7 +110,7 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 }
 
 /* Returns the current count of the semaphore */
-Uint32 SDL_SemValue(SDL_sem *sem)
+Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     ee_sema_t info;
 
@@ -126,7 +126,7 @@ Uint32 SDL_SemValue(SDL_sem *sem)
     return 0;
 }
 
-int SDL_SemPost(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_Semaphore *sem)
 {
     int res;
 

@@ -247,7 +247,7 @@ struct SDL_Renderer
     /* The list of textures */
     SDL_Texture *textures;
     SDL_Texture *target;
-    SDL_mutex *target_mutex;
+    SDL_Mutex *target_mutex;
 
     SDL_Color color;         /**< Color for drawing operations values */
     SDL_BlendMode blendMode; /**< The drawing blend mode */

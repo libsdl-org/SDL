@@ -43,9 +43,7 @@ typedef struct SDL_Hint
 
 static SDL_Hint *SDL_hints;
 
-SDL_bool
-SDL_SetHintWithPriority(const char *name, const char *value,
-                        SDL_HintPriority priority)
+SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
 {
     const char *env;
     SDL_Hint *hint;
@@ -95,8 +93,7 @@ SDL_SetHintWithPriority(const char *name, const char *value,
     return SDL_TRUE;
 }
 
-SDL_bool
-SDL_ResetHint(const char *name)
+SDL_bool SDL_ResetHint(const char *name)
 {
     const char *env;
     SDL_Hint *hint;
@@ -152,14 +149,12 @@ void SDL_ResetHints(void)
     }
 }
 
-SDL_bool
-SDL_SetHint(const char *name, const char *value)
+SDL_bool SDL_SetHint(const char *name, const char *value)
 {
     return SDL_SetHintWithPriority(name, value, SDL_HINT_NORMAL);
 }
 
-const char *
-SDL_GetHint(const char *name)
+const char *SDL_GetHint(const char *name)
 {
     const char *env;
     SDL_Hint *hint;
@@ -176,8 +171,24 @@ SDL_GetHint(const char *name)
     return env;
 }
 
-SDL_bool
-SDL_GetStringBoolean(const char *value, SDL_bool default_value)
+int SDL_GetStringInteger(const char *value, int default_value)
+{
+    if (value == NULL || !*value) {
+        return default_value;
+    }
+    if (*value == '0' || SDL_strcasecmp(value, "false") == 0) {
+        return 0;
+    }
+    if (*value == '1' || SDL_strcasecmp(value, "true") == 0) {
+        return 1;
+    }
+    if (*value == '-' || SDL_isdigit(*value)) {
+        return SDL_atoi(value);
+    }
+    return default_value;
+}
+
+SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value)
 {
     if (value == NULL || !*value) {
         return default_value;
@@ -188,8 +199,7 @@ SDL_GetStringBoolean(const char *value, SDL_bool default_value)
     return SDL_TRUE;
 }
 
-SDL_bool
-SDL_GetHintBoolean(const char *name, SDL_bool default_value)
+SDL_bool SDL_GetHintBoolean(const char *name, SDL_bool default_value)
 {
     const char *hint = SDL_GetHint(name);
     return SDL_GetStringBoolean(hint, default_value);

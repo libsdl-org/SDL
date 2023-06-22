@@ -45,7 +45,7 @@
 
 /* PS2 driver bootstrap functions */
 
-static int PS2_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static int PS2_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
@@ -55,7 +55,7 @@ static void PS2_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static int PS2_CreateWindow(_THIS, SDL_Window *window)
+static int PS2_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_SetKeyboardFocus(window);
 
@@ -63,13 +63,13 @@ static int PS2_CreateWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-static int PS2_VideoInit(_THIS)
+static int PS2_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
     SDL_zero(mode);
-    mode.pixel_w = 640;
-    mode.pixel_h = 480;
+    mode.w = 640;
+    mode.h = 480;
     mode.refresh_rate = 60.0f;
 
     /* 32 bpp for default */
@@ -80,11 +80,11 @@ static int PS2_VideoInit(_THIS)
     return 1;
 }
 
-static void PS2_VideoQuit(_THIS)
+static void PS2_VideoQuit(SDL_VideoDevice *_this)
 {
 }
 
-static void PS2_PumpEvents(_THIS)
+static void PS2_PumpEvents(SDL_VideoDevice *_this)
 {
     /* do nothing. */
 }

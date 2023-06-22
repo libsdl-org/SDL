@@ -29,3 +29,4 @@ General:
 * Added SDL_GetRenderVSync() to get vsync of the given renderer
 * Added SDL_PlayAudioDevice() to start audio playback
 * Added SDL_ConvertAudioSamples() to convert audio samples from one format to another
+* Added SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY hint to control re-creation of Android SDL activity.

@@ -27,6 +27,7 @@
 #ifndef SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
 #endif
+#include "../joystick/SDL_gamepad_c.h"
 
 static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #ifdef SDL_SENSOR_ANDROID
@@ -48,7 +49,7 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
     &SDL_DUMMY_SensorDriver
 #endif
 };
-static SDL_mutex *SDL_sensor_lock = NULL; /* This needs to support recursive locks */
+static SDL_Mutex *SDL_sensor_lock = NULL; /* This needs to support recursive locks */
 static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
 static SDL_AtomicInt SDL_last_sensor_instance_id SDL_GUARDED_BY(SDL_sensor_lock);
 
@@ -501,7 +502,15 @@ int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_tim
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */
+
+    SDL_GamepadSensorWatcher(timestamp, sensor->instance_id, sensor_timestamp, data, num_values);
+
     return posted;
+}
+
+void SDL_UpdateSensor(SDL_Sensor *sensor)
+{
+    sensor->driver->Update(sensor);
 }
 
 void SDL_UpdateSensors(void)

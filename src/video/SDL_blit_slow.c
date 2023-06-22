@@ -28,7 +28,7 @@
 #define FORMAT_2101010              1
 #define FORMAT_HAS_ALPHA(format)    format == 0
 #define FORMAT_HAS_NO_ALPHA(format) format < 0
-static int SDL_INLINE detect_format(SDL_PixelFormat *pf)
+static int detect_format(SDL_PixelFormat *pf)
 {
     if (pf->format == SDL_PIXELFORMAT_ARGB2101010) {
         return FORMAT_2101010;

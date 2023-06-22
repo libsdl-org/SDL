@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if (defined(__WIN32__) || defined(__GDK__)) && HAVE_MMDEVICEAPI_H
+#if (defined(__WIN32__) || defined(__GDK__)) && defined(HAVE_MMDEVICEAPI_H)
 
 #include "SDL_windows.h"
 #include "SDL_immdevice.h"
@@ -357,19 +357,32 @@ void SDL_IMMDevice_Quit(void)
 
 int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
 {
+    const Uint64 timeout = SDL_GetTicks() + 8000;  /* intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep. */
     HRESULT ret;
 
     SDL_assert(device != NULL);
 
-    if (devid == NULL) {
-        const EDataFlow dataflow = iscapture ? eCapture : eRender;
-        ret = IMMDeviceEnumerator_GetDefaultAudioEndpoint(enumerator, dataflow, SDL_IMMDevice_role, device);
-    } else {
-        ret = IMMDeviceEnumerator_GetDevice(enumerator, devid, device);
-    }
+    while (SDL_TRUE) {
+        if (devid == NULL) {
+            const EDataFlow dataflow = iscapture ? eCapture : eRender;
+            ret = IMMDeviceEnumerator_GetDefaultAudioEndpoint(enumerator, dataflow, SDL_IMMDevice_role, device);
+        } else {
+            ret = IMMDeviceEnumerator_GetDevice(enumerator, devid, device);
+        }
 
-    if (FAILED(ret)) {
-        SDL_assert(*device == NULL);
+        if (SUCCEEDED(ret)) {
+            break;
+        }
+
+        if (ret == E_NOTFOUND) {
+            const Uint64 now = SDL_GetTicks();
+            if (timeout > now) {
+                const Uint64 ticksleft = timeout - now;
+                SDL_Delay((Uint32)SDL_min(ticksleft, 300));   /* wait awhile and try again. */
+                continue;
+            }
+        }
+
         return WIN_SetErrorFromHRESULT("WASAPI can't find requested audio endpoint", ret);
     }
     return 0;
@@ -505,26 +518,25 @@ int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int isca
     return 0;
 }
 
-SDL_AudioFormat
-WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
+SDL_AudioFormat WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
 {
     if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
-        return AUDIO_F32SYS;
+        return SDL_AUDIO_F32SYS;
     } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
-        return AUDIO_S16SYS;
+        return SDL_AUDIO_S16SYS;
     } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
-        return AUDIO_S32SYS;
+        return SDL_AUDIO_S32SYS;
     } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
         const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *)waveformat;
         if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return AUDIO_F32SYS;
+            return SDL_AUDIO_F32SYS;
         } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
-            return AUDIO_S16SYS;
+            return SDL_AUDIO_S16SYS;
         } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return AUDIO_S32SYS;
+            return SDL_AUDIO_S32SYS;
         }
     }
     return 0;
 }
 
-#endif /* (defined(__WIN32__) || defined(__GDK__)) && HAVE_MMDEVICEAPI_H */
+#endif /* (defined(__WIN32__) || defined(__GDK__)) && defined(HAVE_MMDEVICEAPI_H) */

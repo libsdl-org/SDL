@@ -146,6 +146,66 @@ extern "C" {
 #define SDL_HINT_ANDROID_TRAP_BACK_BUTTON "SDL_ANDROID_TRAP_BACK_BUTTON"
 
 /**
+ * \brief A variable to control whether SDL activity is allowed to be re-created.
+ *        If so, java static datas and static datas from native libraries remain with their current values.
+ *        When not allowed, the activity terminates with exit(0) to be fully re-initialized afterward.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Not allowed. (default)
+ *   "1"       - Allowed.
+ *
+ * The value of this hint is used at runtime, so it can be changed at any time.
+ */
+#define SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY "SDL_ANDROID_ALLOW_RECREATE_ACTIVITY"
+
+/**
+ *  \brief  A variable setting the app ID string.
+ *          This string is used by desktop compositors to identify and group windows
+ *          together, as well as match applications with associated desktop settings
+ *          and icons.
+ *
+ *          On Wayland this corresponds to the "app ID" window property and on X11 this
+ *          corresponds to the WM_CLASS property. Windows inherit the value of this hint
+ *          at creation time. Changing this hint after a window has been created will not
+ *          change the app ID or class of existing windows.
+ *
+ *          For *nix platforms, this string should be formatted in reverse-DNS notation
+ *          and follow some basic rules to be valid:
+ *
+ *          - The application ID must be composed of two or more elements separated by a
+ *            period (‘.’) character.
+ *
+ *          - Each element must contain one or more of the alphanumeric characters
+ *            (A-Z, a-z, 0-9) plus underscore (‘_’) and hyphen (‘-’) and must not start
+ *            with a digit. Note that hyphens, while technically allowed, should not be
+ *            used if possible, as they are not supported by all components that use the ID,
+ *            such as D-Bus. For maximum compatability, replace hyphens with an underscore.
+ *
+ *          - The empty string is not a valid element (ie: your application ID may not
+ *            start or end with a period and it is not valid to have two periods in a row).
+ *
+ *          - The entire ID must be less than 255 characters in length.
+ *
+ *          Examples of valid app ID strings:
+ *
+ *          - org.MyOrg.MyApp
+ *          - com.your_company.your_app
+ *
+ *          Desktops such as GNOME and KDE require that the app ID string matches your
+ *          application's .desktop file name (e.g. if the app ID string is 'org.MyOrg.MyApp',
+ *          your application's .desktop file should be named 'org.MyOrg.MyApp.desktop').
+ *
+ *          If you plan to package your application in a container such as Flatpak, the
+ *          app ID should match the name of your Flatpak container as well.
+ *
+ *  If not set, SDL will attempt to use the application executable name.
+ *  If the executable name cannot be retrieved, the generic string "SDL_App" will be used.
+ *
+ *  On targets where this is not supported, this hint does nothing.
+ */
+#define SDL_HINT_APP_ID      "SDL_APP_ID"
+
+/**
  *  \brief Specify an application name.
  *
  * This hint lets you specify the application name sent to the OS when
@@ -271,21 +331,17 @@ extern "C" {
 /**
  *  \brief  A variable controlling speed/quality tradeoff of audio resampling.
  *
- *  If available, SDL can use libsamplerate ( http://www.mega-nerd.com/SRC/ )
- *  to handle audio resampling. There are different resampling modes available
- *  that produce different levels of quality, using more CPU.
+ *  SDL may be able to use different approaches to audio resampling, which
+ *  produce different levels of quality, using more CPU.
  *
- *  If this hint isn't specified to a valid setting, or libsamplerate isn't
- *  available, SDL will use the default, internal resampling algorithm.
- *
- *  As of SDL 2.26, SDL_ConvertAudio() respects this hint when libsamplerate is available.
+ *  If this hint isn't specified to a valid setting SDL will use the default.
  *
  *  This hint is currently only checked at audio subsystem initialization.
  *
  *  This variable can be set to the following values:
  *
- *    "0" or "default" - Use SDL's internal resampling (Default when not set - low quality, fast)
- *    "1" or "fast"    - Use fast, slightly higher quality resampling, if available
+ *    "0" or "default" - SDL chooses default (probably "medium").
+ *    "1" or "fast"    - Use fast, lower-quality resampling, if available
  *    "2" or "medium"  - Use medium quality resampling, if available
  *    "3" or "best"    - Use high quality resampling, if available
  */
@@ -387,6 +443,17 @@ extern "C" {
 #define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT   "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
 
 /**
+ *  \brief  A variable that controls whether the on-screen keyboard should be shown when text input is active
+ *
+ *  The variable can be set to the following values:
+ *    "0"       - Do not show the on-screen keyboard
+ *    "1"       - Show the on-screen keyboard
+ *
+ *  The default value is "1". This hint must be set before text input is activated.
+ */
+#define SDL_HINT_ENABLE_SCREEN_KEYBOARD "SDL_ENABLE_SCREEN_KEYBOARD"
+
+/**
  *  \brief  A variable that controls whether Steam Controllers should be exposed using the SDL joystick and game controller APIs
  *
  *  The variable can be set to the following values:
@@ -431,6 +498,18 @@ extern "C" {
  *  http://stackoverflow.com/a/34414846 for a discussion.
  */
 #define SDL_HINT_FORCE_RAISEWINDOW    "SDL_HINT_FORCE_RAISEWINDOW"
+
+/**
+*  \brief  A variable controlling whether the window is activated when the SDL_RaiseWindow function is called
+*
+*  This variable can be set to the following values:
+*    "0"       - The window is not activated when the SDL_RaiseWindow function is called
+*    "1"       - The window is activated when the SDL_RaiseWindow function is called
+*
+*  By default SDL will activate the window when the SDL_RaiseWindow function is called.
+*  At present this is only available for MS Windows.
+*/
+#define SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED    "SDL_WINDOW_ACTIVATE_WHEN_RAISED"
 
 /**
  *  \brief  A variable controlling how 3D acceleration is used to accelerate the SDL screen surface.
@@ -538,6 +617,25 @@ extern "C" {
 #define SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS "SDL_GAMECONTROLLER_USE_BUTTON_LABELS"
 
 /**
+ *  \brief  Controls whether the device's built-in accelerometer and gyro should be used as sensors for gamepads.
+ *
+ *  The variable can be set to the following values:
+ *    "0"       - Sensor fusion is disabled
+ *    "1"       - Sensor fusion is enabled for all controllers that lack sensors
+ *
+ *  Or the variable can be a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ *
+ *  This hint is checked when a gamepad is opened.
+ */
+#define SDL_HINT_GAMECONTROLLER_SENSOR_FUSION "SDL_GAMECONTROLLER_SENSOR_FUSION"
+
+/**
  *  \brief  A variable controlling whether grabbing input grabs the keyboard
  *
  *  This variable can be set to the following values:
@@ -547,6 +645,17 @@ extern "C" {
  *  By default SDL will not grab the keyboard so system shortcuts still work.
  */
 #define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
+
+/**
+ *  \brief  A variable to control whether SDL_hid_enumerate() enumerates all HID devices or only controllers.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - SDL_hid_enumerate() will enumerate all HID devices
+ *    "1"       - SDL_hid_enumerate() will only enumerate controllers
+ *
+ *  By default SDL will only enumerate controllers, to reduce risk of hanging or crashing on devices with bad drivers and avoiding macOS keyboard capture permission prompts.
+ */
+#define SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS "SDL_HIDAPI_ENUMERATE_ONLY_CONTROLLERS"
 
 /**
  *  \brief  A variable containing a list of devices to ignore in SDL_hid_enumerate()
@@ -1291,6 +1400,8 @@ extern "C" {
  *
  *  This variable can be one of the following values:
  *    "primary" (default), "portrait", "landscape", "inverted-portrait", "inverted-landscape"
+ *
+ *  Since SDL 2.0.22 this variable accepts a comma-separated list of values above.
  */
 #define SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION "SDL_QTWAYLAND_CONTENT_ORIENTATION"
 
@@ -1695,6 +1806,21 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION "SDL_VIDEO_WAYLAND_MODE_EMULATION"
 
 /**
+ *  \brief  A variable controlling how modes with a non-native aspect ratio are displayed under Wayland.
+ *
+ *  When this hint is set, the requested scaling will be used when displaying fullscreen video modes
+ *  that don't match the display's native aspect ratio. This is contingent on compositor viewport support.
+ *
+ *  This variable can be set to the following values:
+ *    "aspect"       - Video modes will be displayed scaled, in their proper aspect ratio, with black bars.
+ *    "stretch"      - Video modes will be scaled to fill the entire display.
+ *    "none"         - Video modes will be displayed as 1:1 with no scaling.
+ *
+ *  By default 'stretch' is used.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_MODE_SCALING "SDL_VIDEO_WAYLAND_MODE_SCALING"
+
+/**
  *  \brief  Enable or disable mouse pointer warp emulation, needed by some older games.
  *
  *  When this hint is set, any SDL will emulate mouse warps using relative mouse mode.
@@ -1811,6 +1937,13 @@ extern "C" {
  *
  */
 #define SDL_HINT_VIDEO_X11_WINDOW_VISUALID      "SDL_VIDEO_X11_WINDOW_VISUALID"
+
+/**
+ *  \brief  A variable forcing the scaling factor for X11 windows
+ *
+ *  This variable can be set to a floating point value in the range 1.0-10.0f
+ */
+#define SDL_HINT_VIDEO_X11_SCALING_FACTOR      "SDL_VIDEO_X11_SCALING_FACTOR"
 
 /**
  *  \brief  A variable controlling whether the X11 XRandR extension should be used.
@@ -2016,12 +2149,12 @@ extern "C" {
 *  \brief  A variable controlling whether the window is activated when the SDL_ShowWindow function is called
 *
 *  This variable can be set to the following values:
-*    "0"       - The window is activated when the SDL_ShowWindow function is called
-*    "1"       - The window is not activated when the SDL_ShowWindow function is called
+*    "0"       - The window is not activated when the SDL_ShowWindow function is called
+*    "1"       - The window is activated when the SDL_ShowWindow function is called
 *
 *  By default SDL will activate the window when the SDL_ShowWindow function is called
 */
-#define SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN    "SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN"
+#define SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN    "SDL_WINDOW_ACTIVATE_WHEN_SHOWN"
 
 /** \brief Allows back-button-press events on Windows Phone to be marked as handled
  *
@@ -2306,6 +2439,110 @@ extern "C" {
  *  This hint is available since SDL 2.24.0.
  */
 #define SDL_HINT_TRACKPAD_IS_TOUCH_ONLY "SDL_TRACKPAD_IS_TOUCH_ONLY"
+
+
+/**
+ *  \brief  Sets the title of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the title of the window.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_TITLE "SDL_GDK_TEXTINPUT_TITLE"
+
+/**
+ *  \brief  Sets the description of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the description of the window.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_DESCRIPTION "SDL_GDK_TEXTINPUT_DESCRIPTION"
+
+/**
+ *  \brief  Sets the default text of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the default text value of the window.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_DEFAULT "SDL_GDK_TEXTINPUT_DEFAULT"
+
+/**
+ *  \brief  Sets the input scope of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the XGameUiTextEntryInputScope value
+ *  that will be passed to the window creation function.
+ *
+ *  The value must be a stringified integer,
+ *  for example "0" for XGameUiTextEntryInputScope::Default.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_SCOPE "SDL_GDK_TEXTINPUT_SCOPE"
+
+/**
+ *  \brief  Sets the maximum input length of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the maximum allowed input
+ *  length of the text box in the virtual keyboard window.
+ *
+ *  The value must be a stringified integer,
+ *  for example "10" to allow for up to 10 characters of text input.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_MAX_LENGTH "SDL_GDK_TEXTINPUT_MAX_LENGTH"
 
 
 /**

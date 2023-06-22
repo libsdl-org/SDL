@@ -26,6 +26,5 @@
 
 extern SDL_bool SDL_SystemTheme_Init(void);
 extern SDL_SystemTheme SDL_SystemTheme_Get(void);
-extern void SDL_SystemTheme_PumpEvents(void);
 
 #endif /* SDL_system_theme_h_ */

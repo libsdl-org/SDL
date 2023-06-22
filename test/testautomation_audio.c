@@ -174,7 +174,7 @@ static int audio_initOpenCloseQuitAudio(void *arg)
             case 0:
                 /* Set standard desired spec */
                 desired.freq = 22050;
-                desired.format = AUDIO_S16SYS;
+                desired.format = SDL_AUDIO_S16SYS;
                 desired.channels = 2;
                 desired.samples = 4096;
                 desired.callback = audio_testCallback;
@@ -183,7 +183,7 @@ static int audio_initOpenCloseQuitAudio(void *arg)
             case 1:
                 /* Set custom desired spec */
                 desired.freq = 48000;
-                desired.format = AUDIO_F32SYS;
+                desired.format = SDL_AUDIO_F32SYS;
                 desired.channels = 2;
                 desired.samples = 2048;
                 desired.callback = audio_testCallback;
@@ -267,7 +267,7 @@ static int audio_pauseUnpauseAudio(void *arg)
             case 0:
                 /* Set standard desired spec */
                 desired.freq = 22050;
-                desired.format = AUDIO_S16SYS;
+                desired.format = SDL_AUDIO_S16SYS;
                 desired.channels = 2;
                 desired.samples = 4096;
                 desired.callback = audio_testCallback;
@@ -277,7 +277,7 @@ static int audio_pauseUnpauseAudio(void *arg)
             case 1:
                 /* Set custom desired spec */
                 desired.freq = 48000;
-                desired.format = AUDIO_F32SYS;
+                desired.format = SDL_AUDIO_F32SYS;
                 desired.channels = 2;
                 desired.samples = 2048;
                 desired.callback = audio_testCallback;
@@ -504,12 +504,12 @@ static int audio_printCurrentAudioDriver(void *arg)
 }
 
 /* Definition of all formats, channels, and frequencies used to test audio conversions */
-static SDL_AudioFormat g_audioFormats[] = { AUDIO_S8, AUDIO_U8, AUDIO_S16LSB, AUDIO_S16MSB, AUDIO_S16SYS, AUDIO_S16,
-                                    AUDIO_S32LSB, AUDIO_S32MSB, AUDIO_S32SYS, AUDIO_S32,
-                                    AUDIO_F32LSB, AUDIO_F32MSB, AUDIO_F32SYS, AUDIO_F32 };
-static const char *g_audioFormatsVerbose[] = { "AUDIO_S8", "AUDIO_U8", "AUDIO_S16LSB", "AUDIO_S16MSB", "AUDIO_S16SYS", "AUDIO_S16",
-                                       "AUDIO_S32LSB", "AUDIO_S32MSB", "AUDIO_S32SYS", "AUDIO_S32",
-                                       "AUDIO_F32LSB", "AUDIO_F32MSB", "AUDIO_F32SYS", "AUDIO_F32" };
+static SDL_AudioFormat g_audioFormats[] = { SDL_AUDIO_S8, SDL_AUDIO_U8, SDL_AUDIO_S16LSB, SDL_AUDIO_S16MSB, SDL_AUDIO_S16SYS, SDL_AUDIO_S16,
+                                    SDL_AUDIO_S32LSB, SDL_AUDIO_S32MSB, SDL_AUDIO_S32SYS, SDL_AUDIO_S32,
+                                    SDL_AUDIO_F32LSB, SDL_AUDIO_F32MSB, SDL_AUDIO_F32SYS, SDL_AUDIO_F32 };
+static const char *g_audioFormatsVerbose[] = { "SDL_AUDIO_S8", "SDL_AUDIO_U8", "SDL_AUDIO_S16LSB", "SDL_AUDIO_S16MSB", "SDL_AUDIO_S16SYS", "SDL_AUDIO_S16",
+                                       "SDL_AUDIO_S32LSB", "SDL_AUDIO_S32MSB", "SDL_AUDIO_S32SYS", "SDL_AUDIO_S32",
+                                       "SDL_AUDIO_F32LSB", "SDL_AUDIO_F32MSB", "SDL_AUDIO_F32SYS", "SDL_AUDIO_F32" };
 static const int g_numAudioFormats = SDL_arraysize(g_audioFormats);
 static Uint8 g_audioChannels[] = { 1, 2, 4, 6 };
 static const int g_numAudioChannels = SDL_arraysize(g_audioChannels);
@@ -529,7 +529,7 @@ static int audio_buildAudioStream(void *arg)
     int i, ii, j, jj, k, kk;
 
     /* No conversion needed */
-    spec1.format = AUDIO_S16LSB;
+    spec1.format = SDL_AUDIO_S16LSB;
     spec1.channels = 2;
     spec1.freq = 22050;
     stream = SDL_CreateAudioStream(spec1.format, spec1.channels, spec1.freq,
@@ -539,10 +539,10 @@ static int audio_buildAudioStream(void *arg)
     SDL_DestroyAudioStream(stream);
 
     /* Typical conversion */
-    spec1.format = AUDIO_S8;
+    spec1.format = SDL_AUDIO_S8;
     spec1.channels = 1;
     spec1.freq = 22050;
-    spec2.format = AUDIO_S16LSB;
+    spec2.format = SDL_AUDIO_S16LSB;
     spec2.channels = 2;
     spec2.freq = 44100;
     stream = SDL_CreateAudioStream(spec1.format, spec1.channels, spec1.freq,
@@ -596,10 +596,10 @@ static int audio_buildAudioStreamNegative(void *arg)
     char message[256];
 
     /* Valid format */
-    spec1.format = AUDIO_S8;
+    spec1.format = SDL_AUDIO_S8;
     spec1.channels = 1;
     spec1.freq = 22050;
-    spec2.format = AUDIO_S16LSB;
+    spec2.format = SDL_AUDIO_S16LSB;
     spec2.channels = 2;
     spec2.freq = 44100;
 
@@ -609,10 +609,10 @@ static int audio_buildAudioStreamNegative(void *arg)
     /* Invalid conversions */
     for (i = 1; i < 64; i++) {
         /* Valid format to start with */
-        spec1.format = AUDIO_S8;
+        spec1.format = SDL_AUDIO_S8;
         spec1.channels = 1;
         spec1.freq = 22050;
-        spec2.format = AUDIO_S16LSB;
+        spec2.format = SDL_AUDIO_S16LSB;
         spec2.channels = 2;
         spec2.freq = 44100;
 
@@ -710,7 +710,7 @@ static int audio_openCloseAndGetAudioStatus(void *arg)
 
             /* Set standard desired spec */
             desired.freq = 22050;
-            desired.format = AUDIO_S16SYS;
+            desired.format = SDL_AUDIO_S16SYS;
             desired.channels = 2;
             desired.samples = 4096;
             desired.callback = audio_testCallback;
@@ -770,7 +770,7 @@ static int audio_lockUnlockOpenAudioDevice(void *arg)
 
             /* Set standard desired spec */
             desired.freq = 22050;
-            desired.format = AUDIO_S16SYS;
+            desired.format = SDL_AUDIO_S16SYS;
             desired.channels = 2;
             desired.samples = 4096;
             desired.callback = audio_testCallback;
@@ -958,7 +958,7 @@ static int audio_openCloseAudioDeviceConnected(void *arg)
 
             /* Set standard desired spec */
             desired.freq = 22050;
-            desired.format = AUDIO_S16SYS;
+            desired.format = SDL_AUDIO_S16SYS;
             desired.channels = 2;
             desired.samples = 4096;
             desired.callback = audio_testCallback;
@@ -1056,8 +1056,8 @@ static int audio_resampleLoss(void *arg)
     SDLTest_AssertPass("Test resampling of %i s %i Hz %f phase sine wave from sampling rate of %i Hz to %i Hz",
                        spec->time, spec->freq, spec->phase, spec->rate_in, spec->rate_out);
 
-    stream = SDL_CreateAudioStream(AUDIO_F32, 1, spec->rate_in, AUDIO_F32, 1, spec->rate_out);
-    SDLTest_AssertPass("Call to SDL_CreateAudioStream(AUDIO_F32, 1, %i, AUDIO_F32, 1, %i)", spec->rate_in, spec->rate_out);
+    stream = SDL_CreateAudioStream(SDL_AUDIO_F32, 1, spec->rate_in, SDL_AUDIO_F32, 1, spec->rate_out);
+    SDLTest_AssertPass("Call to SDL_CreateAudioStream(SDL_AUDIO_F32, 1, %i, SDL_AUDIO_F32, 1, %i)", spec->rate_in, spec->rate_out);
     SDLTest_AssertCheck(stream != NULL, "Expected SDL_CreateAudioStream to succeed.");
     if (stream == NULL) {
       return TEST_ABORTED;

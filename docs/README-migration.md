@@ -85,7 +85,7 @@ should be changed to:
 
 AUDIO_U16, AUDIO_U16LSB, AUDIO_U16MSB, and AUDIO_U16SYS have been removed. They were not heavily used, and one could not memset a buffer in this format to silence with a single byte value. Use a different audio format.
 
-If you need to convert U16 audio data to a still-supported format at runtime, the fastest, lossless conversion is to AUDIO_S16:
+If you need to convert U16 audio data to a still-supported format at runtime, the fastest, lossless conversion is to SDL_AUDIO_S16:
 
 ```c
     /* this converts the buffer in-place. The buffer size does not change. */
@@ -102,6 +102,9 @@ If you need to convert U16 audio data to a still-supported format at runtime, th
         return dst;
     }
 ```
+
+In SDL2, SDL_AudioStream would convert/resample audio data during input (via SDL_AudioStreamPut). In SDL3, it does this work when requesting audio (via SDL_GetAudioStreamData, which would have been SDL_AudioStreamPut in SDL2. The way you use an AudioStream is roughly the same, just be aware that the workload moved to a different phase.
+In SDL2, SDL_AudioStreamAvailable() returns 0 if passed a NULL stream. In SDL3, the equivalent SDL_GetAudioStreamAvailable() call returns -1 and sets an error string, which matches other audiostream APIs' behavior.
 
 
 The following functions have been renamed:
@@ -126,6 +129,22 @@ The following functions have been removed:
 * SDL_MixAudio()
 
 Use the SDL_AudioDevice functions instead.
+
+The following symbols have been renamed:
+* AUDIO_F32 => SDL_AUDIO_F32
+* AUDIO_F32LSB => SDL_AUDIO_F32LSB
+* AUDIO_F32MSB => SDL_AUDIO_F32MSB
+* AUDIO_F32SYS => SDL_AUDIO_F32SYS
+* AUDIO_S16 => SDL_AUDIO_S16
+* AUDIO_S16LSB => SDL_AUDIO_S16LSB
+* AUDIO_S16MSB => SDL_AUDIO_S16MSB
+* AUDIO_S16SYS => SDL_AUDIO_S16SYS
+* AUDIO_S32 => SDL_AUDIO_S32
+* AUDIO_S32LSB => SDL_AUDIO_S32LSB
+* AUDIO_S32MSB => SDL_AUDIO_S32MSB
+* AUDIO_S32SYS => SDL_AUDIO_S32SYS
+* AUDIO_S8 => SDL_AUDIO_S8
+* AUDIO_U8 => SDL_AUDIO_U8
 
 ## SDL_cpuinfo.h
 
@@ -378,6 +397,7 @@ The following hints have been removed:
 
 * Renamed hints SDL_HINT_VIDEODRIVER and SDL_HINT_AUDIODRIVER to SDL_HINT_VIDEO_DRIVER and SDL_HINT_AUDIO_DRIVER
 * Renamed environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER
+* The environment variables SDL_VIDEO_X11_WMCLASS and SDL_VIDEO_WAYLAND_WMCLASS have been removed and replaced with the unified hint SDL_HINT_APP_ID
 
 ## SDL_init.h
 
@@ -473,8 +493,12 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceType() - replaced with SDL_GetJoystickInstanceType()
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
+* SDL_JoystickNumBalls() - API has been removed, see https://github.com/libsdl-org/SDL/issues/6766
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
 * SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
+
+The following symbols have been removed:
+* SDL_JOYBALLMOTION
 
 ## SDL_keyboard.h
 
@@ -551,6 +575,26 @@ SDL_GetMouseState(), SDL_GetGlobalMouseState(), SDL_GetRelativeMouseState(), SDL
 The following functions have been renamed:
 * SDL_FreeCursor() => SDL_DestroyCursor()
 
+## SDL_mutex.h
+
+The following functions have been renamed:
+* SDL_CondBroadcast() => SDL_BroadcastCondition()
+* SDL_CondSignal() => SDL_SignalCondition()
+* SDL_CondWait() => SDL_WaitCondition()
+* SDL_CondWaitTimeout() => SDL_WaitConditionTimeout()
+* SDL_CreateCond() => SDL_CreateCondition()
+* SDL_DestroyCond() => SDL_DestroyCondition()
+* SDL_SemPost() => SDL_PostSemaphore()
+* SDL_SemTryWait() => SDL_TryWaitSemaphore()
+* SDL_SemValue() => SDL_GetSemaphoreValue()
+* SDL_SemWait() => SDL_WaitSemaphore()
+* SDL_SemWaitTimeout() => SDL_WaitSemaphoreTimeout()
+
+The following symbols have been renamed:
+* SDL_cond => SDL_Condition
+* SDL_mutex => SDL_Mutex
+* SDL_sem => SDL_Semaphore
+
 ## SDL_pixels.h
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
@@ -625,8 +669,8 @@ here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you w
 to decide for you.
 
 When a renderer is created, it will automatically set the logical size to the size of
-the window in screen coordinates. For high DPI displays, this will set up scaling from
-window coordinates to pixels. You can disable this scaling with:
+the window in points. For high DPI displays, this will set up scaling from points to
+pixels. You can disable this scaling with:
 ```c
     SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
 ```
@@ -979,6 +1023,14 @@ The structures in this file are versioned separately from the rest of SDL, allow
 This function now returns a standard int result instead of SDL_bool, returning 0 if the function succeeds or a negative error code if there was an error. You should also pass SDL_SYSWM_CURRENT_VERSION as the new third version parameter. The version member of the info structure will be filled in with the version of data that is returned, the minimum of the version you requested and the version supported by the runtime SDL library.
 
 
+## SDL_thread.h
+
+The following functions have been renamed:
+* SDL_TLSCleanup() => SDL_CleanupTLS()
+* SDL_TLSCreate() => SDL_CreateTLS()
+* SDL_TLSGet() => SDL_GetTLS()
+* SDL_TLSSet() => SDL_SetTLS()
+
 ## SDL_timer.h
 
 SDL_GetTicks() now returns a 64-bit value. Instead of using the SDL_TICKS_PASSED macro, you can directly compare tick values, e.g.
@@ -1036,22 +1088,13 @@ Rather than iterating over displays using display index, there is a new function
 }
 ```
 
-SDL_CreateWindow() has been simplified and no longer takes a window position. You can set a position for your window during window creation by creating it hidden and setting the position before showing it:
-```c
-{
-    SDL_Window *window = SDL_CreateWindow("Test", 640, 480, SDL_WINDOW_HIDDEN);
-    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-    SDL_ShowWindow(window);
-}
-```
+SDL_CreateWindow() has been simplified and no longer takes a window position. You can use SDL_CreateWindowWithPosition() if you need to set the window position when creating it.
 
 The SDL_WINDOWPOS_UNDEFINED_DISPLAY() and SDL_WINDOWPOS_CENTERED_DISPLAY() macros take a display ID instead of display index. The display ID 0 has a special meaning in this case, and is used to indicate the primary display.
 
 The SDL_WINDOW_SHOWN flag has been removed. Windows are shown by default and can be created hidden by using the SDL_WINDOW_HIDDEN flag.
 
-The SDL_WINDOW_ALLOW_HIGHDPI flag has been removed. Windows are automatically high DPI aware and their coordinates are in screen space, which may differ from physical pixels on displays using display scaling.
-
-SDL_DisplayMode now includes the pixel size, the screen size and the relationship between the two. For example, a 4K display at 200% scale could have a pixel size of 3840x2160, a screen size of 1920x1080, and a display scale of 2.0.
+SDL_DisplayMode now includes the pixel density which can be greater than 1.0 for display modes that have a higher pixel size than the mode size. You should use SDL_GetWindowSizeInPixels() to get the actual pixel size of the window back buffer.
 
 The refresh rate in SDL_DisplayMode is now a float.
 
@@ -1064,8 +1107,8 @@ Rather than iterating over display modes using an index, there is a new function
     if (modes) {
         for (i = 0; i < num_modes; ++i) {
             SDL_DisplayMode *mode = modes[i];
-            SDL_Log("Display %" SDL_PRIu32 " mode %d:  %dx%d@%gHz, %d%% scale\n",
-                    display, i, mode->pixel_w, mode->pixel_h, mode->refresh_rate, (int)(mode->display_scale * 100.0f));
+            SDL_Log("Display %" SDL_PRIu32 " mode %d: %dx%d@%gx %gHz\n",
+                    display, i, mode->w, mode->h, mode->pixel_density, mode->refresh_rate);
         }
         SDL_free(modes);
     }
@@ -1096,6 +1139,7 @@ The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported 
 
 The following functions have been renamed:
 * SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode()
+* SDL_GetDisplayOrientation() => SDL_GetCurrentDisplayOrientation()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayForRect()
 * SDL_GetWindowDisplayIndex() => SDL_GetDisplayForWindow()
@@ -1113,6 +1157,7 @@ The following functions have been removed:
 SDL_Window id type is named SDL_WindowID
 
 The following symbols have been renamed:
+* SDL_WINDOW_ALLOW_HIGHDPI => SDL_WINDOW_HIGH_PIXEL_DENSITY
 * SDL_WINDOW_INPUT_GRABBED => SDL_WINDOW_MOUSE_GRABBED
 
 ## SDL_vulkan.h

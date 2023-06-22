@@ -49,7 +49,7 @@ static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata);
 #endif
 
 /* Alphabetic scancodes for PC keyboards */
-void WIN_InitKeyboard(_THIS)
+void WIN_InitKeyboard(SDL_VideoDevice *_this)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_VideoData *data = _this->driverdata;
@@ -130,10 +130,8 @@ void WIN_UpdateKeymap(SDL_bool send_event)
         }
 
         /* If this key is one of the non-mappable keys, ignore it */
-        /* Not mapping numbers fixes the French layout, giving numeric keycodes for the number keys, which is the expected behavior */
-        if ((keymap[scancode] & SDLK_SCANCODE_MASK) ||
-            /*  scancode == SDL_SCANCODE_GRAVE || */ /* Uncomment this line to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
-            (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0)) {
+        /* Uncomment the second part re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
+        if ((keymap[scancode] & SDLK_SCANCODE_MASK) /*|| scancode == SDL_SCANCODE_GRAVE*/) {
             continue;
         }
 
@@ -153,7 +151,7 @@ void WIN_UpdateKeymap(SDL_bool send_event)
     SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
 }
 
-void WIN_QuitKeyboard(_THIS)
+void WIN_QuitKeyboard(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
 
@@ -196,7 +194,7 @@ void WIN_ResetDeadKeys()
     }
 }
 
-void WIN_StartTextInput(_THIS)
+void WIN_StartTextInput(SDL_VideoDevice *_this)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_Window *window;
@@ -216,7 +214,7 @@ void WIN_StartTextInput(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void WIN_StopTextInput(_THIS)
+void WIN_StopTextInput(SDL_VideoDevice *_this)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_Window *window;
@@ -235,7 +233,7 @@ void WIN_StopTextInput(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-int WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int WIN_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
 {
     SDL_VideoData *videodata = _this->driverdata;
     HIMC himc = 0;
@@ -275,17 +273,16 @@ int WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
 
 #ifdef SDL_DISABLE_WINDOWS_IME
 
-void WIN_ClearComposition(_THIS)
+void WIN_ClearComposition(SDL_VideoDevice *_this)
 {
 }
 
-SDL_bool WIN_IsTextInputShown(_THIS)
+SDL_bool WIN_IsTextInputShown(SDL_VideoDevice *_this)
 {
     return SDL_FALSE;
 }
 
-SDL_bool
-IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
+SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
 {
     return SDL_FALSE;
 }
@@ -996,8 +993,7 @@ static void IME_HideCandidateList(SDL_VideoData *videodata)
     IME_SendEditingEvent(videodata);
 }
 
-SDL_bool
-IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
+SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
 {
     SDL_bool trap = SDL_FALSE;
     HIMC himc = 0;
@@ -1320,9 +1316,9 @@ STDMETHODIMP IPPASink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
 
 STDMETHODIMP IPPASink_OnActivated(TSFSink *sink, DWORD dwProfileType, LANGID langid, REFCLSID clsid, REFGUID catid, REFGUID guidProfile, HKL hkl, DWORD dwFlags)
 {
-    static const GUID TF_PROFILE_DAYI = { 0x037B2C25, 0x480C, 0x4D7F, { 0xB0, 0x27, 0xD6, 0xCA, 0x6B, 0x69, 0x78, 0x8A } };
+    static const GUID SDL_TF_PROFILE_DAYI = { 0x037B2C25, 0x480C, 0x4D7F, { 0xB0, 0x27, 0xD6, 0xCA, 0x6B, 0x69, 0x78, 0x8A } };
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    videodata->ime_candlistindexbase = WIN_IsEqualGUID(&TF_PROFILE_DAYI, guidProfile) ? 0 : 1;
+    videodata->ime_candlistindexbase = WIN_IsEqualGUID(&SDL_TF_PROFILE_DAYI, guidProfile) ? 0 : 1;
     if (WIN_IsEqualIID(catid, &GUID_TFCAT_TIP_KEYBOARD) && (dwFlags & TF_IPSINK_FLAG_ACTIVE)) {
         IME_InputLangChanged((SDL_VideoData *)sink->data);
     }
@@ -1673,7 +1669,7 @@ static void IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             bottom = size.cy - listborder - listpadding - candmargin;
         }
 
-        if (i == videodata->ime_candsel) {
+        if ((DWORD)i == videodata->ime_candsel) {
             SelectObject(hdc, selpen);
             SelectObject(hdc, selbrush);
             SetTextColor(hdc, seltextcolor);
@@ -1721,13 +1717,13 @@ void IME_Present(SDL_VideoData *videodata)
     /* FIXME: Need to show the IME bitmap */
 }
 
-SDL_bool WIN_IsTextInputShown(_THIS)
+SDL_bool WIN_IsTextInputShown(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
     return IME_IsTextInputShown(videodata);
 }
 
-void WIN_ClearComposition(_THIS)
+void WIN_ClearComposition(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
     IME_ClearComposition(videodata);

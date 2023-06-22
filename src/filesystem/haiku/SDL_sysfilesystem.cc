@@ -32,8 +32,7 @@
 #include <storage/Path.h>
 
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char name[MAXPATHLEN];
 
@@ -64,8 +63,7 @@ SDL_GetBasePath(void)
 }
 
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     // !!! FIXME: is there a better way to do this?
     const char *home = SDL_getenv("HOME");
@@ -97,6 +95,55 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 
     return retval;
+}
+
+char *SDL_GetPath(SDL_Folder folder)
+{
+    const char *home = NULL;
+    char *retval;
+
+    home = SDL_getenv("HOME");
+    if (!home) {
+        SDL_SetError("No $HOME environment variable available");
+        return NULL;
+    }
+
+    switch (folder) {
+    case SDL_FOLDER_HOME:
+        retval = SDL_strdup(home);
+
+        if (!retval) {
+            SDL_OutOfMemory();
+        }
+
+        return retval;
+
+        /* TODO: Is Haiku's desktop folder always ~/Desktop/ ? */
+    case SDL_FOLDER_DESKTOP:
+        retval = (char *) SDL_malloc(SDL_strlen(home) + 10);
+
+        if (!retval) {
+            SDL_OutOfMemory();
+        }
+
+        SDL_strlcpy(retval, home, SDL_strlen(home) + 10);
+        SDL_strlcat(retval, "/Desktop/", SDL_strlen(home) + 10);
+
+        return retval;
+
+    case SDL_FOLDER_DOCUMENTS:
+    case SDL_FOLDER_DOWNLOADS:
+    case SDL_FOLDER_MUSIC:
+    case SDL_FOLDER_PICTURES:
+    case SDL_FOLDER_PUBLICSHARE:
+    case SDL_FOLDER_SAVEDGAMES:
+    case SDL_FOLDER_SCREENSHOTS:
+    case SDL_FOLDER_TEMPLATES:
+    case SDL_FOLDER_VIDEOS:
+    default:
+        SDL_SetError("Only HOME and DESKTOP available on Haiku");
+        return NULL;
+    }
 }
 
 #endif /* SDL_FILESYSTEM_HAIKU */

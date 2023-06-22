@@ -52,7 +52,10 @@ quit(int rc)
         factory->DestroyNativeWindow(native_window);
     }
     SDLTest_CommonDestroyState(state);
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)

@@ -24,7 +24,7 @@
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
-#if !defined(__WINRT__)
+#ifndef __WINRT__
 #include "../../video/windows/SDL_windowswindow.h"
 #endif
 #include "../SDL_sysrender.h"
@@ -196,8 +196,7 @@ static const GUID SDL_IID_ID3D11DeviceContext1 = { 0xbb2c6faa, 0xb5fb, 0x4082, {
 #pragma GCC diagnostic pop
 #endif
 
-Uint32
-D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
+Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
 {
     switch (dxgiFormat) {
     case DXGI_FORMAT_B8G8R8A8_UNORM:
@@ -895,7 +894,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
-#if defined(__WINRT__)
+#ifdef __WINRT__
     SDL_GetWindowSize(renderer->window, &w, &h);
 #else
     SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
@@ -1290,7 +1289,7 @@ static int D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Tex
     src = (const Uint8 *)pixels;
     dst = textureMemory.pData;
     length = w * bpp;
-    if (length == pitch && length == textureMemory.RowPitch) {
+    if (length == (UINT)pitch && length == textureMemory.RowPitch) {
         SDL_memcpy(dst, src, (size_t)length * h);
     } else {
         if (length > (UINT)pitch) {
@@ -2294,8 +2293,7 @@ static int D3D11_SetVSync(SDL_Renderer *renderer, const int vsync)
 }
 #endif
 
-SDL_Renderer *
-D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     D3D11_RenderData *data;
@@ -2402,8 +2400,7 @@ SDL_RenderDriver D3D11_RenderDriver = {
 
 #if defined(__WIN32__) || defined(__WINGDK__)
 /* This function needs to always exist on Windows, for the Dynamic API. */
-ID3D11Device *
-SDL_GetRenderD3D11Device(SDL_Renderer *renderer)
+ID3D11Device *SDL_GetRenderD3D11Device(SDL_Renderer *renderer)
 {
     ID3D11Device *device = NULL;
 

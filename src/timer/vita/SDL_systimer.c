@@ -29,14 +29,12 @@
 #include <psp2/kernel/processmgr.h>
 
 
-Uint64
-SDL_GetPerformanceCounter(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
     return sceKernelGetProcessTimeWide();
 }
 
-Uint64
-SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceFrequency(void)
 {
     return SDL_US_PER_SECOND;
 }

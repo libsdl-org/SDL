@@ -24,7 +24,7 @@
 #ifndef _INCLUDED_WINDOWS_H
 #define _INCLUDED_WINDOWS_H
 
-#if defined(__WIN32__)
+#ifdef __WIN32__
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -36,7 +36,7 @@
 #endif
 #undef WINVER
 #undef _WIN32_WINNT
-#if defined(SDL_VIDEO_RENDER_D3D12)
+#ifdef SDL_VIDEO_RENDER_D3D12
 #define _WIN32_WINNT 0xA00 /* For D3D12, 0xA00 is required */
 #elif defined(HAVE_SHELLSCALINGAPI_H)
 #define _WIN32_WINNT 0x603 /* For DPI support */
@@ -118,7 +118,7 @@ extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 /* Sets an error message based on GetLastError(). Always return -1. */
 extern int WIN_SetError(const char *prefix);
 
-#if !defined(__WINRT__)
+#ifndef __WINRT__
 /* Load a function from combase.dll */
 void *WIN_LoadComBaseFunction(const char *name);
 #endif
@@ -150,6 +150,9 @@ extern BOOL WIN_IsEqualIID(REFIID a, REFIID b);
 /* Convert between SDL_rect and RECT */
 extern void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect);
 extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
+
+/* Returns SDL_TRUE if the rect is empty */
+extern BOOL WIN_IsRectEmpty(const RECT *rect);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

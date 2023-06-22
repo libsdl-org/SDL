@@ -25,7 +25,10 @@ static void
 quit(int rc)
 {
     SDL_Quit();
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 static int SDLCALL

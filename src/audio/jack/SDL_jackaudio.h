@@ -25,13 +25,10 @@
 
 #include "../SDL_sysaudio.h"
 
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *this
-
 struct SDL_PrivateAudioData
 {
     jack_client_t *client;
-    SDL_sem *iosem;
+    SDL_Semaphore *iosem;
     float *iobuffer;
     jack_port_t **sdlports;
 };

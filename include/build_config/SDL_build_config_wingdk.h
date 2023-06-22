@@ -196,6 +196,7 @@
 
 /* Enable various threading systems */
 #define SDL_THREAD_GENERIC_COND_SUFFIX 1
+#define SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1
 #define SDL_THREAD_WINDOWS  1
 
 /* Enable various timer systems */
@@ -243,5 +244,8 @@
 
 /* Enable filesystem support */
 #define SDL_FILESYSTEM_WINDOWS  1
+
+/* Use the (inferior) GDK text input method for GDK platforms */
+/*#define SDL_GDK_TEXTINPUT 1*/
 
 #endif /* SDL_build_config_wingdk_h_ */

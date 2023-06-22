@@ -115,9 +115,7 @@ typedef struct SDL_EVDEV_PrivateData
     SDL_EVDEV_keyboard_state *kbd;
 } SDL_EVDEV_PrivateData;
 
-#undef _THIS
-#define _THIS SDL_EVDEV_PrivateData *_this
-static _THIS = NULL;
+static SDL_EVDEV_PrivateData *_this = NULL;
 
 static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode);
 static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item);
@@ -247,7 +245,7 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
 
     switch (udev_event) {
     case SDL_UDEV_DEVICEADDED:
-        if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_KEYBOARD | SDL_UDEV_DEVICE_TOUCHSCREEN | SDL_UDEV_DEVICE_TOUCHPAD))) {
+        if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_HAS_KEYS | SDL_UDEV_DEVICE_TOUCHSCREEN | SDL_UDEV_DEVICE_TOUCHPAD))) {
             return;
         }
 

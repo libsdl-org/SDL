@@ -214,6 +214,7 @@ static int hints_setHint(void *arg)
         callbackValue && SDL_strcmp(callbackValue, "original") == 0,
         "callbackValue = %s, expected \"original\"",
         callbackValue);
+    SDL_free(callbackValue);
 
     SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE), using callback after reset");
     callbackValue = NULL;

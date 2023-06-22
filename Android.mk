@@ -75,6 +75,8 @@ LOCAL_CFLAGS += \
 # Warnings we haven't fixed (yet)
 LOCAL_CFLAGS += -Wno-unused-parameter -Wno-sign-compare
 
+LOCAL_CXXFLAGS += -std=gnu++11
+
 LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
 
 LOCAL_LDFLAGS := -Wl,--no-undefined -Wl,--version-script=$(LOCAL_PATH)/src/dynapi/SDL_dynapi.sym

@@ -393,7 +393,7 @@ static SDL_bool ReadProprietaryReply(SDL_DriverSwitch_Context *ctx, ESwitchPropr
     return SDL_FALSE;
 }
 
-static void ConstructSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, Uint8 *pBuf, Uint8 ucLen, SwitchSubcommandOutputPacket_t *outPacket)
+static void ConstructSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, const Uint8 *pBuf, Uint8 ucLen, SwitchSubcommandOutputPacket_t *outPacket)
 {
     SDL_memset(outPacket, 0, sizeof(*outPacket));
 
@@ -432,7 +432,7 @@ static SDL_bool WritePacket(SDL_DriverSwitch_Context *ctx, void *pBuf, Uint8 ucL
     }
 }
 
-static SDL_bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, Uint8 *pBuf, Uint8 ucLen, SwitchSubcommandInputPacket_t **ppReply)
+static SDL_bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, const Uint8 *pBuf, Uint8 ucLen, SwitchSubcommandInputPacket_t **ppReply)
 {
     SwitchSubcommandInputPacket_t *reply = NULL;
     int nTries;
@@ -586,35 +586,30 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
 {
     SwitchSubcommandInputPacket_t *reply = NULL;
 
-    ctx->device->is_bluetooth = SDL_FALSE;
+    if (ctx->device->is_bluetooth) {
+        if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
+            // Byte 2: Controller ID (1=LJC, 2=RJC, 3=Pro)
+            ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType);
 
-    if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
-        SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
-        size_t i;
+            // Bytes 4-9: MAC address (big-endian)
+            SDL_memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof(ctx->m_rgucMACAddress));
 
-        ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
-
-        for (i = 0; i < sizeof(ctx->m_rgucMACAddress); ++i) {
-            ctx->m_rgucMACAddress[i] = status->rgucMACAddress[sizeof(ctx->m_rgucMACAddress) - i - 1];
+            return SDL_TRUE;
         }
+    } else {
+        if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
+            SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
+            size_t i;
 
-        return SDL_TRUE;
+            ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
+
+            for (i = 0; i < sizeof(ctx->m_rgucMACAddress); ++i) {
+                ctx->m_rgucMACAddress[i] = status->rgucMACAddress[sizeof(ctx->m_rgucMACAddress) - i - 1];
+            }
+
+            return SDL_TRUE;
+        }
     }
-
-    ctx->device->is_bluetooth = SDL_TRUE;
-
-    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
-        // Byte 2: Controller ID (1=LJC, 2=RJC, 3=Pro)
-        ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType);
-
-        // Bytes 4-9: MAC address (big-endian)
-        SDL_memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof(ctx->m_rgucMACAddress));
-
-        return SDL_TRUE;
-    }
-
-    ctx->device->is_bluetooth = SDL_FALSE;
-
     return SDL_FALSE;
 }
 
@@ -648,7 +643,7 @@ static SDL_bool SetVibrationEnabled(SDL_DriverSwitch_Context *ctx, Uint8 enabled
 }
 static SDL_bool SetInputMode(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
 {
-    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetInputReportMode, &input_mode, 1, NULL);
+    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetInputReportMode, &input_mode, sizeof(input_mode), NULL);
 }
 
 static SDL_bool SetHomeLED(SDL_DriverSwitch_Context *ctx, Uint8 brightness)
@@ -681,12 +676,15 @@ static void SDLCALL SDL_HomeLEDHintChanged(void *userdata, const char *name, con
 
         if (SDL_strchr(hint, '.') != NULL) {
             value = (int)(100.0f * SDL_atof(hint));
+            if (value > 255) {
+                value = 255;
+            }
         } else if (SDL_GetStringBoolean(hint, SDL_TRUE)) {
             value = 100;
         } else {
             value = 0;
         }
-        SetHomeLED(ctx, value);
+        SetHomeLED(ctx, (Uint8)value);
     }
 }
 
@@ -714,13 +712,35 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
     }
 }
 
+static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
+{
+    Uint8 input_mode;
+
+    /* Determine the desired input mode */
+    if (ctx->device->is_bluetooth) {
+        input_mode = k_eSwitchInputReportIDs_SimpleControllerState;
+    } else {
+        input_mode = k_eSwitchInputReportIDs_FullControllerState;
+    }
+
+    /* The official Nintendo Switch Pro Controller supports FullControllerState over Bluetooth
+     * just fine. We really should use that, or else the epowerlevel code in HandleFullControllerState
+     * is completely pointless. We need full state if we want battery level and we only care about
+     * battery level over Bluetooth anyway.
+     */
+    if (ctx->device->vendor_id == USB_VENDOR_NINTENDO) {
+        input_mode = k_eSwitchInputReportIDs_FullControllerState;
+    }
+    return input_mode;
+}
+
 static SDL_bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, SDL_bool enabled)
 {
     Uint8 imu_data = enabled ? 1 : 0;
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableIMU, &imu_data, sizeof(imu_data), NULL);
 }
 
-static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
+static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 {
     Uint8 *pLeftStickCal;
     Uint8 *pRightStickCal;
@@ -815,16 +835,55 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_
 
 static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 *pIMUScale;
     SwitchSubcommandInputPacket_t *reply = NULL;
-    Sint16 sAccelRawX, sAccelRawY, sAccelRawZ, sGyroRawX, sGyroRawY, sGyroRawZ;
 
     /* Read Calibration Info */
     SwitchSPIOpData_t readParams;
     readParams.unAddress = k_unSPIIMUScaleStartOffset;
     readParams.ucLength = k_unSPIIMUScaleLength;
 
-    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply)) {
+    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply)) {
+        Uint8 *pIMUScale;
+        Sint16 sAccelRawX, sAccelRawY, sAccelRawZ, sGyroRawX, sGyroRawY, sGyroRawZ;
+
+        /* IMU scale gives us multipliers for converting raw values to real world values */
+        pIMUScale = reply->spiReadData.rgucReadData;
+
+        sAccelRawX = (pIMUScale[1] << 8) | pIMUScale[0];
+        sAccelRawY = (pIMUScale[3] << 8) | pIMUScale[2];
+        sAccelRawZ = (pIMUScale[5] << 8) | pIMUScale[4];
+
+        sGyroRawX = (pIMUScale[13] << 8) | pIMUScale[12];
+        sGyroRawY = (pIMUScale[15] << 8) | pIMUScale[14];
+        sGyroRawZ = (pIMUScale[17] << 8) | pIMUScale[16];
+
+        /* Check for user calibration data. If it's present and set, it'll override the factory settings */
+        readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
+        readParams.ucLength = k_unSPIIMUUserScaleLength;
+        if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
+            pIMUScale = reply->spiReadData.rgucReadData;
+
+            sAccelRawX = (pIMUScale[3] << 8) | pIMUScale[2];
+            sAccelRawY = (pIMUScale[5] << 8) | pIMUScale[4];
+            sAccelRawZ = (pIMUScale[7] << 8) | pIMUScale[6];
+
+            sGyroRawX = (pIMUScale[15] << 8) | pIMUScale[14];
+            sGyroRawY = (pIMUScale[17] << 8) | pIMUScale[16];
+            sGyroRawZ = (pIMUScale[19] << 8) | pIMUScale[18];
+        }
+
+        /* Accelerometer scale */
+        ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
+        ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
+        ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
+
+        /* Gyro scale */
+        ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / (SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawX) * SDL_PI_F / 180.0f;
+        ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / (SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawY) * SDL_PI_F / 180.0f;
+        ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / (SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawZ) * SDL_PI_F / 180.0f;
+
+    } else {
+        /* Use default values */
         const float accelScale = SDL_STANDARD_GRAVITY / SWITCH_ACCEL_SCALE;
         const float gyroScale = SDL_PI_F / 180.0f / SWITCH_GYRO_SCALE;
 
@@ -835,46 +894,7 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
         ctx->m_IMUScaleData.fGyroScaleX = gyroScale;
         ctx->m_IMUScaleData.fGyroScaleY = gyroScale;
         ctx->m_IMUScaleData.fGyroScaleZ = gyroScale;
-
-        return SDL_FALSE;
     }
-
-    /* IMU scale gives us multipliers for converting raw values to real world values */
-    pIMUScale = reply->spiReadData.rgucReadData;
-
-    sAccelRawX = (pIMUScale[1] << 8) | pIMUScale[0];
-    sAccelRawY = (pIMUScale[3] << 8) | pIMUScale[2];
-    sAccelRawZ = (pIMUScale[5] << 8) | pIMUScale[4];
-
-    sGyroRawX = (pIMUScale[13] << 8) | pIMUScale[12];
-    sGyroRawY = (pIMUScale[15] << 8) | pIMUScale[14];
-    sGyroRawZ = (pIMUScale[17] << 8) | pIMUScale[16];
-
-    /* Check for user calibration data. If it's present and set, it'll override the factory settings */
-    readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
-    readParams.ucLength = k_unSPIIMUUserScaleLength;
-    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
-        pIMUScale = reply->spiReadData.rgucReadData;
-
-        sAccelRawX = (pIMUScale[3] << 8) | pIMUScale[2];
-        sAccelRawY = (pIMUScale[5] << 8) | pIMUScale[4];
-        sAccelRawZ = (pIMUScale[7] << 8) | pIMUScale[6];
-
-        sGyroRawX = (pIMUScale[15] << 8) | pIMUScale[14];
-        sGyroRawY = (pIMUScale[17] << 8) | pIMUScale[16];
-        sGyroRawZ = (pIMUScale[19] << 8) | pIMUScale[18];
-    }
-
-    /* Accelerometer scale */
-    ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
-    ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
-    ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / (SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
-
-    /* Gyro scale */
-    ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / (SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawX) * SDL_PI_F / 180.0f;
-    ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / (SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawY) * SDL_PI_F / 180.0f;
-    ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / (SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawZ) * SDL_PI_F / 180.0f;
-
     return SDL_TRUE;
 }
 
@@ -972,26 +992,27 @@ static ESwitchDeviceInfoControllerType ReadJoyConControllerType(SDL_HIDAPI_Devic
         ctx->m_bSyncWrite = SDL_TRUE;
         ctx->m_nMaxWriteAttempts = GetMaxWriteAttempts(device);
 
-        for (attempts = 0; attempts < MAX_ATTEMPTS; ++attempts) {
-            if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
-                SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
-
-                eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
-            } else {
+        for ( ; ; ) {
+            ++attempts;
+            if (device->is_bluetooth) {
                 SwitchSubcommandInputPacket_t *reply = NULL;
 
-                device->is_bluetooth = SDL_TRUE;
                 if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
                     eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType);
                 }
+            } else {
+                if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
+                    SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
+
+                    eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
+                }
             }
-            if (eControllerType == k_eSwitchDeviceInfoControllerType_Unknown) {
+            if (eControllerType == k_eSwitchDeviceInfoControllerType_Unknown && attempts < MAX_ATTEMPTS) {
                 /* Wait a bit and try again */
                 SDL_Delay(100);
                 continue;
-            } else {
-                break;
             }
+            break;
         }
         SDL_free(ctx);
     }
@@ -1010,6 +1031,12 @@ static SDL_bool HasHomeLED(SDL_DriverSwitch_Context *ctx)
 
     /* HORI Wireless Switch Pad */
     if (vendor_id == 0x0f0d && product_id == 0x00f6) {
+        return SDL_FALSE;
+    }
+
+    /* Third party controllers don't have a home LED and will shut off if we try to set it */
+    if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_Unknown ||
+        ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_LicProController) {
         return SDL_FALSE;
     }
 
@@ -1173,17 +1200,18 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     switch (ctx->m_eControllerType) {
     case k_eSwitchDeviceInfoControllerType_JoyConLeft:
         HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (L)");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT);
         device->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
         break;
     case k_eSwitchDeviceInfoControllerType_JoyConRight:
         HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (R)");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT);
         device->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         break;
     case k_eSwitchDeviceInfoControllerType_ProController:
+    case k_eSwitchDeviceInfoControllerType_LicProController:
         HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SWITCH_PRO);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_PRO);
         device->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
         break;
     case k_eSwitchDeviceInfoControllerType_NESLeft:
@@ -1196,19 +1224,22 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case k_eSwitchDeviceInfoControllerType_SNES:
         HIDAPI_SetDeviceName(device, "Nintendo SNES Controller");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SNES_CONTROLLER);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SNES_CONTROLLER);
         device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
         break;
     case k_eSwitchDeviceInfoControllerType_N64:
         HIDAPI_SetDeviceName(device, "Nintendo N64 Controller");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_N64_CONTROLLER);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_N64_CONTROLLER);
         device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
         break;
     case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
         HIDAPI_SetDeviceName(device, "Nintendo SEGA Genesis Controller");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER);
         device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
         break;
+    case k_eSwitchDeviceInfoControllerType_Unknown:
+        /* We couldn't read the device info for this controller, might not be fully compliant */
+        return;
     default:
         break;
     }
@@ -1247,12 +1278,11 @@ static SDL_bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     /* Find out whether or not we can send output reports */
     ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);
     if (!ctx->m_bInputOnly) {
-        if (!BReadDeviceInfo(ctx)) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "HIDAPI_DriverSwitch_InitDevice(): Couldn't read device info");
-            return SDL_FALSE;
-        }
+        /* Initialize rumble data, important for reading device info on the MOBAPAD M073  */
+        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
+        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
 
+        BReadDeviceInfo(ctx);
         UpdateDeviceIdentity(device);
     }
 
@@ -1288,7 +1318,6 @@ static void HIDAPI_DriverSwitch_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
-    Uint8 input_mode;
 
     SDL_AssertJoysticksLocked();
 
@@ -1308,54 +1337,34 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
             }
         }
 
-        /* Determine the desired input mode (needed before loading stick calibration) */
-        if (device->is_bluetooth) {
-            input_mode = k_eSwitchInputReportIDs_SimpleControllerState;
-        } else {
-            input_mode = k_eSwitchInputReportIDs_FullControllerState;
-        }
-
-        /* The official Nintendo Switch Pro Controller supports FullControllerState over bluetooth
-         * just fine. We really should use that, or else the epowerlevel code in
-         * HandleFullControllerState is completely pointless. We need full state if we want battery
-         * level and we only care about battery level over bluetooth anyway.
-         */
-        if (device->vendor_id == USB_VENDOR_NINTENDO) {
-            input_mode = k_eSwitchInputReportIDs_FullControllerState;
-        }
-
-        if (input_mode == k_eSwitchInputReportIDs_FullControllerState &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESLeft &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESRight &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SNES &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_N64 &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SEGA_Genesis) {
-            /* Use the right sensor in the combined Joy-Con pair */
-            if (!device->parent ||
-                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 200.0f);
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 200.0f);
-            }
-            if (device->parent &&
-                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_L, 200.0f);
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_L, 200.0f);
-            }
-            if (device->parent &&
-                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_R, 200.0f);
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_R, 200.0f);
-            }
-        }
-
-        if (!LoadStickCalibration(ctx, input_mode)) {
+        if (!LoadStickCalibration(ctx)) {
             SDL_SetError("Couldn't load stick calibration");
             return SDL_FALSE;
         }
 
-        if (!LoadIMUCalibration(ctx)) {
-            SDL_SetError("Couldn't load sensor calibration");
-            return SDL_FALSE;
+        if (ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESLeft &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESRight &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SNES &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_N64 &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SEGA_Genesis) {
+            if (LoadIMUCalibration(ctx)) {
+                /* Use the right sensor in the combined Joy-Con pair */
+                if (!device->parent ||
+                    ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 200.0f);
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 200.0f);
+                }
+                if (device->parent &&
+                    ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_L, 200.0f);
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_L, 200.0f);
+                }
+                if (device->parent &&
+                    ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_R, 200.0f);
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_R, 200.0f);
+                }
+            }
         }
 
         if (!SetVibrationEnabled(ctx, 1)) {
@@ -1364,7 +1373,7 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
         }
 
         /* Set desired input mode */
-        if (!SetInputMode(ctx, input_mode)) {
+        if (!SetInputMode(ctx, GetDefaultInputMode(ctx))) {
             SDL_SetError("Couldn't set input mode");
             return SDL_FALSE;
         }
@@ -1557,12 +1566,57 @@ static int HIDAPI_DriverSwitch_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joy
 
 static int HIDAPI_DriverSwitch_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+
+    if (size == sizeof(SwitchCommonOutputPacket_t)) {
+        const SwitchCommonOutputPacket_t *packet = (SwitchCommonOutputPacket_t *)data;
+
+        if (packet->ucPacketType != k_eSwitchOutputReportIDs_Rumble) {
+            return SDL_SetError("Unknown Nintendo Switch Pro effect type");
+        }
+
+        SDL_copyp(&ctx->m_RumblePacket.rumbleData[0], &packet->rumbleData[0]);
+        SDL_copyp(&ctx->m_RumblePacket.rumbleData[1], &packet->rumbleData[1]);
+        if (!WriteRumble(ctx)) {
+            return -1;
+        }
+
+        /* This overwrites any internal rumble */
+        ctx->m_bRumblePending = SDL_FALSE;
+        ctx->m_bRumbleZeroPending = SDL_FALSE;
+        return 0;
+    } else if (size >= 2 && size <= 256) {
+        const Uint8 *payload = (const Uint8 *)data;
+        ESwitchSubcommandIDs cmd = (ESwitchSubcommandIDs)payload[0];
+
+        if (cmd == k_eSwitchSubcommandIDs_SetInputReportMode && !device->is_bluetooth) {
+            /* Going into simple mode over USB disables input reports, so don't do that */
+            return 0;
+        }
+        if (cmd == k_eSwitchSubcommandIDs_SetHomeLight && !HasHomeLED(ctx)) {
+            /* Setting the home LED when it's not supported can cause the controller to reset */
+            return 0;
+        }
+
+        if (!WriteSubcommand(ctx, cmd, &payload[1], (Uint8)(size - 1), NULL)) {
+            return -1;
+        }
+        return 0;
+    }
     return SDL_Unsupported();
 }
 
 static int HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+    Uint8 input_mode;
+
+    if (enabled) {
+        input_mode = k_eSwitchInputReportIDs_FullControllerState;
+    } else {
+        input_mode = GetDefaultInputMode(ctx);
+    }
+    SetInputMode(ctx, input_mode);
 
     SetIMUEnabled(ctx, enabled);
     ctx->m_bReportSensors = enabled;
@@ -1760,8 +1814,7 @@ static void HandleSimpleControllerState(SDL_Joystick *joystick, SDL_DriverSwitch
     ctx->m_lastSimpleState = *packet;
 }
 
-static void
-SendSensorUpdate(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SDL_SensorType type, Uint64 sensor_timestamp, const Sint16 *values)
+static void SendSensorUpdate(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SDL_SensorType type, Uint64 sensor_timestamp, const Sint16 *values)
 {
     float data[3];
 

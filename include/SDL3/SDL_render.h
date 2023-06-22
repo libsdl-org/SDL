@@ -140,7 +140,6 @@ typedef enum
 typedef enum
 {
     SDL_LOGICAL_PRESENTATION_DISABLED,  /**< There is no logical size in effect */
-    SDL_LOGICAL_PRESENTATION_MATCH,     /**< The rendered content matches the window size in screen coordinates */
     SDL_LOGICAL_PRESENTATION_STRETCH,   /**< The rendered content is stretched to the output resolution */
     SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with black bars */
     SDL_LOGICAL_PRESENTATION_OVERSCAN,  /**< The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds */
@@ -235,9 +234,9 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, U
  * need a specific renderer, specify NULL and SDL will attempt to chooes the
  * best option for you, based on what is available on the user's system.
  *
- * By default the rendering size matches the window size in screen
- * coordinates, but you can call SDL_SetRenderLogicalPresentation() to enable
- * high DPI rendering or change the content size and scaling options.
+ * By default the rendering size matches the window size in pixels, but you
+ * can call SDL_SetRenderLogicalPresentation() to change the content size and
+ * scaling options.
  *
  * \param window the window where rendering is displayed
  * \param name the name of the rendering driver to initialize, or NULL to
@@ -315,24 +314,6 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetRenderWindow(SDL_Renderer *renderer);
  * \sa SDL_CreateRenderer
  */
 extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_RendererInfo *info);
-
-/**
- * Get the output size in screen coordinates of a rendering context.
- *
- * This returns the true output size in screen coordinates, ignoring any
- * render targets or logical size and presentation.
- *
- * \param renderer the rendering context
- * \param w a pointer filled in with the width in screen coordinates
- * \param h a pointer filled in with the height in screen coordinates
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetRenderer
- */
-extern DECLSPEC int SDLCALL SDL_GetRenderWindowSize(SDL_Renderer *renderer, int *w, int *h);
 
 /**
  * Get the output size in pixels of a rendering context.
@@ -840,12 +821,8 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_GetRenderTarget(SDL_Renderer *renderer)
  * render target is created at the specified size and used for rendering and
  * then copied to the output during presentation.
  *
- * When a renderer is created, the logical size is set to match the window
- * size in screen coordinates. The actual output size may be higher pixel
- * density, and can be queried with SDL_GetRenderOutputSize().
- *
  * You can disable logical coordinates by setting the mode to
- * SDL_LOGICAL_PRESENTATION_DISABLED, and in that case you get the full
+ * SDL_LOGICAL_PRESENTATION_DISABLED, and in that case you get the full pixel
  * resolution of the output window.
  *
  * You can convert coordinates in an event into rendering coordinates using

@@ -516,7 +516,7 @@ static bool ResetSteamController(SDL_hid_device *dev, bool bSuppressErrorSpew, u
     ADD_SETTING(SETTING_RIGHT_TRACKPAD_MODE, TRACKPAD_NONE);
     ADD_SETTING(SETTING_SMOOTH_ABSOLUTE_MOUSE, 0);
 #endif
-    buf[2] = nSettings * 3;
+    buf[2] = (unsigned char)(nSettings * 3);
 
     res = SetFeatureReport(dev, buf, 3 + nSettings * 3);
     if (res < 0) {
@@ -616,7 +616,7 @@ static void CloseSteamController(SDL_hid_device *dev)
     SDL_memset(buf, 0, 65);
     buf[1] = ID_SET_SETTINGS_VALUES;
     ADD_SETTING(SETTING_RIGHT_TRACKPAD_MODE, TRACKPAD_ABSOLUTE_MOUSE);
-    buf[2] = nSettings * 3;
+    buf[2] = (unsigned char)(nSettings * 3);
     SetFeatureReport(dev, buf, 3 + nSettings * 3);
 }
 
@@ -640,14 +640,14 @@ static float RemapValClamped(float val, float A, float B, float C, float D)
 //---------------------------------------------------------------------------
 static void RotatePad(int *pX, int *pY, float flAngleInRad)
 {
-    short int origX = *pX, origY = *pY;
+    int origX = *pX, origY = *pY;
 
     *pX = (int)(SDL_cosf(flAngleInRad) * origX - SDL_sinf(flAngleInRad) * origY);
     *pY = (int)(SDL_sinf(flAngleInRad) * origX + SDL_cosf(flAngleInRad) * origY);
 }
 static void RotatePadShort(short *pX, short *pY, float flAngleInRad)
 {
-    short int origX = *pX, origY = *pY;
+    int origX = *pX, origY = *pY;
 
     *pX = (short)(SDL_cosf(flAngleInRad) * origX - SDL_sinf(flAngleInRad) * origY);
     *pY = (short)(SDL_sinf(flAngleInRad) * origX + SDL_cosf(flAngleInRad) * origY);
@@ -753,8 +753,8 @@ static void FormatStatePacketUntilGyro(SteamControllerStateInternal_t *pState, V
         nPadOffset = 0;
     }
 
-    pState->sLeftPadX = clamp(nLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
-    pState->sLeftPadY = clamp(nLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    pState->sLeftPadX = (short)clamp(nLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    pState->sLeftPadY = (short)clamp(nLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
 
     nPadOffset = 0;
     if (pState->ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK) {
@@ -763,8 +763,8 @@ static void FormatStatePacketUntilGyro(SteamControllerStateInternal_t *pState, V
         nPadOffset = 0;
     }
 
-    pState->sRightPadX = clamp(nRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
-    pState->sRightPadY = clamp(nRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    pState->sRightPadX = (short)clamp(nRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    pState->sRightPadY = (short)clamp(nRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
 
     pState->sTriggerL = (unsigned short)RemapValClamped((float)((pStatePacket->ButtonTriggerData.Triggers.nLeft << 7) | pStatePacket->ButtonTriggerData.Triggers.nLeft), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16);
     pState->sTriggerR = (unsigned short)RemapValClamped((float)((pStatePacket->ButtonTriggerData.Triggers.nRight << 7) | pStatePacket->ButtonTriggerData.Triggers.nRight), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16);
@@ -815,8 +815,8 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
         }
 
         RotatePadShort(&pState->sLeftPadX, &pState->sLeftPadY, -flRotationAngle);
-        pState->sLeftPadX = clamp(pState->sLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
-        pState->sLeftPadY = clamp(pState->sLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        pState->sLeftPadX = (short)clamp(pState->sLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        pState->sLeftPadY = (short)clamp(pState->sLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
         pData += nLength;
     }
     if (ucOptionDataMask & k_EBLERightTrackpadChunk) {
@@ -832,8 +832,8 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
         }
 
         RotatePadShort(&pState->sRightPadX, &pState->sRightPadY, flRotationAngle);
-        pState->sRightPadX = clamp(pState->sRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
-        pState->sRightPadY = clamp(pState->sRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        pState->sRightPadX = (short)clamp(pState->sRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        pState->sRightPadY = (short)clamp(pState->sRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
         pData += nLength;
     }
     if (ucOptionDataMask & k_EBLEIMUAccelChunk) {
@@ -979,7 +979,7 @@ static SDL_bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
-#if defined(__WIN32__)
+#ifdef __WIN32__
     if (device->serial) {
         /* We get a garbage serial number on Windows */
         SDL_free(device->serial);
@@ -1074,7 +1074,7 @@ static int HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_J
     } else {
         ADD_SETTING(SETTING_GYRO_MODE, 0x00 /* SETTING_GYRO_MODE_OFF */);
     }
-    buf[2] = nSettings * 3;
+    buf[2] = (unsigned char)(nSettings * 3);
     if (SetFeatureReport(device->dev, buf, 3 + nSettings * 3) < 0) {
         return SDL_SetError("Couldn't write feature report");
     }

@@ -1,0 +1,196 @@
+name: Checks
+run-name: Code checks for '${{ github.ref_name }}'
+
+# General comment:
+# Coverity doesn't support merging or including reports from multible machine/platforms (at least not officially).
+# But otherwise there is no good way to keep the issues from all platforms at Coverity Scans at once.
+# This script uses undocumented (but appears to be working) hack:
+#  The build logs from one machine/platform gets moved to a next once,
+#  and "fixed" so that cov-build can append logs from the next platform.
+#  The "fix" is based on the fact, that Coverity perfectly allows appending logs from multiple builds
+#  that are done *on the same host* machine.
+
+on:
+  # On-demand run
+  workflow_dispatch:
+  # Weekly run
+  schedule:
+    - cron: '30 5 * * 0'
+
+jobs:
+  coverity-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: src
+    - name: Setup MSVC
+      uses: TheMrMilchmann/setup-msvc-dev@v2.0.0
+      with:
+        arch: x64
+    - name: Configure
+      run: |
+        cmake -B build -S src -G"NMake Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_WITH_TESTS=ON -DHIDAPI_BUILD_HIDTEST=ON
+    - name: Lookup Coverity Build Tool hash
+      id: coverity-cache-lookup
+      run: |
+        $coverity_hash=Invoke-RestMethod -Uri https://scan.coverity.com/download/cxx/win64 -Method Post -Body @{token='${{ secrets.COVERITY_SCAN_TOKEN }}';project='hidapi';md5=1}
+        echo "coverity_hash=$coverity_hash" >> $Env:GITHUB_OUTPUT
+    - name: Get cached Coverity Build Tool
+      id: cov-build-cache
+      uses: actions/cache@v3
+      with:
+        path: cov-root
+        key: cov-root-cxx-win64-${{ steps.coverity-cache-lookup.outputs.coverity_hash }}
+    - name: Get and configure Coverity
+      if: steps.cov-build-cache.outputs.cache-hit != 'true'
+      run: |
+        Invoke-WebRequest -Uri https://scan.coverity.com/download/cxx/win64 -OutFile coverity.zip -Method Post -Body @{token='${{ secrets.COVERITY_SCAN_TOKEN }}';project='hidapi'}
+        Remove-Item 'cov-root' -Recurse -Force -ErrorAction SilentlyContinue
+        Expand-Archive coverity.zip -DestinationPath cov-root
+
+        $cov_root=Get-ChildItem -Path 'cov-root'
+        $Env:PATH += ";$($cov_root.FullName)\bin"
+        cov-configure -msvc
+    - name: Make Coverity available in PATH
+      run: |
+        $cov_root=Get-ChildItem -Path 'cov-root'
+        echo "$($cov_root.FullName)\bin" >> $Env:GITHUB_PATH
+    - name: Build with Coverity
+      working-directory: build
+      run: |
+        cov-build --dir cov-int nmake
+        Rename-Item ".\cov-int\emit\$(hostname)" hostname
+    - name: Backup Coverity logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverity-logs-windows
+        path: build/cov-int
+        retention-days: 7
+
+
+  coverity-macos:
+    runs-on: macos-latest
+    needs: [coverity-windows]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: src
+    - name: Install dependencies
+      run: brew install ninja
+    - name: Configure
+      run: |
+        cmake -B build -S src -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_WITH_TESTS=ON -DHIDAPI_BUILD_HIDTEST=ON -DCMAKE_C_COMPILER=clang
+    - uses: actions/download-artifact@v3
+      with:
+        name: coverity-logs-windows
+        path: build/cov-int
+    - name: Fixup cov-int
+      run: |
+        rm -f build/cov-int/emit/hostname/emit-db.lock build/cov-int/emit/hostname/emit-db.write-lock
+        mv build/cov-int/emit/hostname build/cov-int/emit/$(hostname)
+    - name: Lookup Coverity Build Tool hash
+      id: coverity-cache-lookup
+      shell: bash
+      run: |
+        hash=$(curl https://scan.coverity.com/download/cxx/Darwin --data "token=${{ secrets.COVERITY_SCAN_TOKEN }}&project=hidapi&md5=1")
+        echo "coverity_hash=${hash}" >> $GITHUB_OUTPUT
+    - name: Get cached Coverity Build Tool
+      id: cov-build-cache
+      uses: actions/cache@v3
+      with:
+        path: cov-root
+        key: cov-root-cxx-Darwin-${{ steps.coverity-cache-lookup.outputs.coverity_hash }}
+    - name: Get and configure Coverity
+      if: steps.cov-build-cache.outputs.cache-hit != 'true'
+      run: |
+        curl https://scan.coverity.com/download/cxx/Darwin --output coverity.dmg --data "token=${{ secrets.COVERITY_SCAN_TOKEN }}&project=hidapi"
+        hdiutil attach coverity.dmg -mountroot coverity
+        export COV_DIR_NAME=$(ls -1 --color=never coverity)
+        rm -rf cov-root
+        mkdir cov-root
+        cp ./coverity/${COV_DIR_NAME}/${COV_DIR_NAME}.sh cov-root/
+        cd cov-root/
+        ./${COV_DIR_NAME}.sh
+        ./bin/cov-configure --clang
+    - name: Make Coverity available in PATH
+      run: echo "$(pwd)/cov-root/bin" >> $GITHUB_PATH
+    - name: Build with Coverity
+      working-directory: build
+      run: |
+        cov-build --dir cov-int --append-log ninja
+        mv cov-int/emit/$(hostname) cov-int/emit/hostname
+    - name: Backup Coverity logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverity-logs-windows-macos
+        path: build/cov-int
+        retention-days: 7
+
+
+  coverity-ubuntu:
+    runs-on: ubuntu-latest
+    needs: [coverity-macos]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: src
+    - name: Install dependencies
+      run: sudo apt install libudev-dev libusb-1.0-0-dev ninja-build
+    - name: Configure
+      run: |
+        cmake -B build -S src -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHIDAPI_WITH_TESTS=ON -DHIDAPI_BUILD_HIDTEST=ON -DCMAKE_C_COMPILER=gcc
+    - uses: actions/download-artifact@v3
+      with:
+        name: coverity-logs-windows-macos
+        path: build/cov-int
+    - name: Fixup cov-int
+      run: |
+        rm -f build/cov-int/emit/hostname/emit-db.lock build/cov-int/emit/hostname/emit-db.write-lock
+        mv build/cov-int/emit/hostname build/cov-int/emit/$(hostname)
+    - name: Lookup Coverity Build Tool hash
+      id: coverity-cache-lookup
+      shell: bash
+      run: |
+        hash=$(curl https://scan.coverity.com/download/cxx/linux64 --data "token=${{ secrets.COVERITY_SCAN_TOKEN }}&project=hidapi&md5=1")
+        echo "coverity_hash=${hash}" >> $GITHUB_OUTPUT
+    - name: Get cached Coverity Build Tool
+      id: cov-build-cache
+      uses: actions/cache@v3
+      with:
+        path: cov-root
+        key: cov-root-cxx-linux64-${{ steps.coverity-cache-lookup.outputs.coverity_hash }}
+    - name: Get and configure Coverity
+      if: steps.cov-build-cache.outputs.cache-hit != 'true'
+      run: |
+        curl https://scan.coverity.com/download/cxx/linux64 --output coverity.tar.gz --data "token=${{ secrets.COVERITY_SCAN_TOKEN }}&project=hidapi"
+        rm -rf cov-root
+        mkdir cov-root
+        tar -xzf coverity.tar.gz --strip 1 -C cov-root
+        ./cov-root/bin/cov-configure --gcc
+    - name: Make Coverity available in PATH
+      run: echo "$(pwd)/cov-root/bin" >> $GITHUB_PATH
+    - name: Build with Coverity
+      working-directory: build
+      run: |
+        cov-build --dir cov-int --append-log ninja
+    - name: Submit results to Coverity Scan
+      working-directory: build
+      run: |
+        tar -czf cov-int.tar.gz cov-int
+        curl --form token=${{ secrets.COVERITY_SCAN_TOKEN }} \
+          --form email=${{ secrets.COVERITY_SCAN_EMAIL }} \
+          --form file=@cov-int.tar.gz \
+          --form version="$GITHUB_SHA" \
+          --form description="Automatic HIDAPI build" \
+          https://scan.coverity.com/builds?project=hidapi
+        mv cov-int/emit/$(hostname) cov-int/emit/hostname
+    - name: Backup Coverity logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverity-logs-windows-macos-linux
+        path: build/cov-int
+        retention-days: 7

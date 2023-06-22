@@ -23,7 +23,7 @@
 #include "SDL_blit.h"
 #include "SDL_blit_copy.h"
 
-#if defined(SDL_SSE_INTRINSICS)
+#ifdef SDL_SSE_INTRINSICS
 /* This assumes 16-byte aligned src and dst */
 static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint8 *src, int len)
 {
@@ -50,7 +50,7 @@ static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint
 }
 #endif /* SDL_SSE_INTRINSICS */
 
-#if defined(SDL_MMX_INTRINSICS)
+#ifdef SDL_MMX_INTRINSICS
 #ifdef _MSC_VER
 #pragma warning(disable : 4799)
 #endif
@@ -136,7 +136,7 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
         return;
     }
 
-#if defined(SDL_SSE_INTRINSICS)
+#ifdef SDL_SSE_INTRINSICS
     if (SDL_HasSSE() &&
         !((uintptr_t)src & 15) && !(srcskip & 15) &&
         !((uintptr_t)dst & 15) && !(dstskip & 15)) {
@@ -149,7 +149,7 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
     }
 #endif
 
-#if defined(SDL_MMX_INTRINSICS)
+#ifdef SDL_MMX_INTRINSICS
     if (SDL_HasMMX() && !(srcskip & 7) && !(dstskip & 7)) {
         SDL_BlitCopyMMX(dst, src, dstskip, srcskip, w, h);
         return;

@@ -29,7 +29,7 @@
 #define HAVE_FAST_WRITE_INT8 1
 
 /* On some CPU, it's slower than combining and write a word */
-#if defined(__MIPS__)
+#ifdef __MIPS__
 #undef HAVE_FAST_WRITE_INT8
 #define HAVE_FAST_WRITE_INT8 0
 #endif
@@ -48,8 +48,7 @@ enum blit_features
 #ifdef SDL_ALTIVEC_BLITTERS
 #ifdef __MACOS__
 #include <sys/sysctl.h>
-static size_t
-GetL3CacheSize(void)
+static size_t GetL3CacheSize(void)
 {
     const char key[] = "hw.l3cachesize";
     u_int64_t result = 0;
@@ -63,8 +62,7 @@ GetL3CacheSize(void)
     return result;
 }
 #else
-static size_t
-GetL3CacheSize(void)
+static size_t GetL3CacheSize(void)
 {
     /* XXX: Just guess G4 */
     return 2097152;
@@ -167,7 +165,7 @@ static vector unsigned char calc_swizzle32(const SDL_PixelFormat *srcfmt, const 
     return (vswiz);
 }
 
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
 /* reorder bytes for PowerPC little endian */
 static vector unsigned char reorder_ppc64le_vec(vector unsigned char vpermute)
 {
@@ -618,6 +616,11 @@ static void Blit32to32KeyAltivec(SDL_BlitInfo *info)
     ((unsigned int *)(char *)&vrgbmask)[0] = rgbmask;
     vrgbmask = vec_splat(vrgbmask, 0);
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    /* reorder bytes for PowerPC little endian */
+    vpermute = reorder_ppc64le_vec(vpermute);
+#endif
+
     while (height--) {
 #define ONE_PIXEL_BLEND(condition, widthvar)                    \
     if (copy_alpha) {                                           \
@@ -667,10 +670,6 @@ static void Blit32to32KeyAltivec(SDL_BlitInfo *info)
                 /* vsel is set for items that match the key */
                 vsel = (vector unsigned char)vec_and(vs, vrgbmask);
                 vsel = (vector unsigned char)vec_cmpeq(vs, vckey);
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-                /* reorder bytes for PowerPC little endian */
-                vpermute = reorder_ppc64le_vec(vpermute);
-#endif
                 /* permute the src vec to the dest format */
                 vs = vec_perm(vs, valpha, vpermute);
                 /* load the destination vec */
@@ -718,6 +717,11 @@ static void ConvertAltivec32to32_noprefetch(SDL_BlitInfo *info)
     SDL_assert(srcfmt->BytesPerPixel == 4);
     SDL_assert(dstfmt->BytesPerPixel == 4);
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    /* reorder bytes for PowerPC little endian */
+    vpermute = reorder_ppc64le_vec(vpermute);
+#endif
+
     while (height--) {
         vector unsigned char valigner;
         vector unsigned int vbits;
@@ -749,10 +753,6 @@ static void ConvertAltivec32to32_noprefetch(SDL_BlitInfo *info)
             src += 4;
             width -= 4;
             vbits = vec_perm(vbits, voverflow, valigner); /* src is ready. */
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            /* reorder bytes for PowerPC little endian */
-            vpermute = reorder_ppc64le_vec(vpermute);
-#endif
             vbits = vec_perm(vbits, vzero, vpermute); /* swizzle it. */
             vec_st(vbits, 0, dst);                    /* store it back out. */
             dst += 4;
@@ -803,6 +803,11 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
     SDL_assert(srcfmt->BytesPerPixel == 4);
     SDL_assert(dstfmt->BytesPerPixel == 4);
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    /* reorder bytes for PowerPC little endian */
+    vpermute = reorder_ppc64le_vec(vpermute);
+#endif
+
     while (height--) {
         vector unsigned char valigner;
         vector unsigned int vbits;
@@ -842,10 +847,6 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
             src += 4;
             width -= 4;
             vbits = vec_perm(vbits, voverflow, valigner); /* src is ready. */
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            /* reorder bytes for PowerPC little endian */
-            vpermute = reorder_ppc64le_vec(vpermute);
-#endif
             vbits = vec_perm(vbits, vzero, vpermute); /* swizzle it. */
             vec_st(vbits, 0, dst);                    /* store it back out. */
             dst += 4;
@@ -904,7 +905,7 @@ static enum blit_features GetBlitFeatures(void)
 #define GetBlitFeatures() ((SDL_HasMMX() ? BLIT_FEATURE_HAS_MMX : 0) | (SDL_HasARMSIMD() ? BLIT_FEATURE_HAS_ARM_SIMD : 0))
 #endif
 
-#if defined(SDL_ARM_SIMD_BLITTERS)
+#ifdef SDL_ARM_SIMD_BLITTERS
 void Blit_BGR888_RGB888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
 
 static void Blit_BGR888_RGB888ARMSIMD(SDL_BlitInfo *info)
@@ -2117,9 +2118,7 @@ static void BlitNto1(SDL_BlitInfo *info)
                                 sR, sG, sB);
                 if ( 1 ) {
                     /* Pack RGB into 8bit pixel */
-                    *dst = ((sR>>5)<<(3+2))|
-                            ((sG>>5)<<(2)) |
-                            ((sB>>6)<<(0)) ;
+                    *dst = (Uint8)(((sR>>5)<<(3+2)) | ((sG>>5)<<(2)) | ((sB>>6)<<(0)));
                 }
                 dst++;
                 src += srcbpp;
@@ -2343,7 +2342,7 @@ static void BlitNtoN(SDL_BlitInfo *info)
                 dst[1] = src[p1];
                 dst[2] = src[p2];
                 dst[3] = src[p3];
-                dst[alpha_channel] = alpha;
+                dst[alpha_channel] = (Uint8)alpha;
                 src += 4;
                 dst += 4;
             }, width);
@@ -2397,7 +2396,7 @@ static void BlitNtoN(SDL_BlitInfo *info)
                 dst[1] = src[p1];
                 dst[2] = src[p2];
                 dst[3] = src[p3];
-                dst[alpha_channel] = alpha;
+                dst[alpha_channel] = (Uint8)alpha;
                 src += 3;
                 dst += 4;
             }, width);
@@ -2670,7 +2669,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
                     dst[1] = src[p1];
                     dst[2] = src[p2];
                     dst[3] = src[p3];
-                    dst[alpha_channel] = alpha;
+                    dst[alpha_channel] = (Uint8)alpha;
                 }
                 src += 4;
                 dst += 4;
@@ -2819,7 +2818,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
                     dst[1] = src[p1];
                     dst[2] = src[p2];
                     dst[3] = src[p3];
-                    dst[alpha_channel] = alpha;
+                    dst[alpha_channel] = (Uint8)alpha;
                 }
                 src += 3;
                 dst += 4;
@@ -3335,8 +3334,7 @@ static const struct blit_table *const normal_blit[] = {
 /* Mask matches table, or table entry is zero */
 #define MASKOK(x, y) (((x) == (y)) || ((y) == 0x00000000))
 
-SDL_BlitFunc
-SDL_CalculateBlitN(SDL_Surface *surface)
+SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
 {
     SDL_PixelFormat *srcfmt;
     SDL_PixelFormat *dstfmt;

@@ -25,11 +25,11 @@
 
 #include "SDL_cocoavideo.h"
 
-extern int Cocoa_InitMouse(_THIS);
-extern void Cocoa_HandleMouseEvent(_THIS, NSEvent *event);
+extern int Cocoa_InitMouse(SDL_VideoDevice *_this);
+extern void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event);
 extern void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event);
 extern void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y);
-extern void Cocoa_QuitMouse(_THIS);
+extern void Cocoa_QuitMouse(SDL_VideoDevice *_this);
 
 typedef struct
 {

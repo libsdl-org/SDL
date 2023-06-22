@@ -24,7 +24,7 @@
 #include "../core/windows/SDL_windows.h"
 #endif
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
 #include "../core/android/SDL_android.h"
 #endif
 
@@ -36,7 +36,7 @@ static size_t SDL_envmemlen = 0;
 
 /* Put a variable into the environment */
 /* Note: Name may not contain a '=' character. (Reference: http://www.unix.com/man-page/Linux/3/setenv/) */
-#if defined(HAVE_SETENV)
+#ifdef HAVE_SETENV
 int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     /* Input validation */
@@ -160,11 +160,10 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
 #endif
 
 /* Retrieve a variable named "name" from the environment */
-#if defined(HAVE_GETENV)
-char *
-SDL_getenv(const char *name)
+#ifdef HAVE_GETENV
+char *SDL_getenv(const char *name)
 {
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
     /* Make sure variables from the application manifest are available */
     Android_JNI_GetManifestEnvironmentVariables();
 #endif
@@ -177,8 +176,7 @@ SDL_getenv(const char *name)
     return getenv(name);
 }
 #elif defined(__WIN32__) || defined(__WINGDK__)
-char *
-SDL_getenv(const char *name)
+char *SDL_getenv(const char *name)
 {
     size_t bufferlen;
 
@@ -204,8 +202,7 @@ SDL_getenv(const char *name)
     return SDL_envmem;
 }
 #else
-char *
-SDL_getenv(const char *name)
+char *SDL_getenv(const char *name)
 {
     size_t len, i;
     char *value;

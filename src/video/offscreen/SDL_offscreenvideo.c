@@ -39,9 +39,9 @@
 #define OFFSCREENVID_DRIVER_NAME "offscreen"
 
 /* Initialization/Query functions */
-static int OFFSCREEN_VideoInit(_THIS);
-static int OFFSCREEN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-static void OFFSCREEN_VideoQuit(_THIS);
+static int OFFSCREEN_VideoInit(SDL_VideoDevice *_this);
+static int OFFSCREEN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+static void OFFSCREEN_VideoQuit(SDL_VideoDevice *_this);
 
 /* OFFSCREEN driver bootstrap functions */
 
@@ -96,15 +96,15 @@ VideoBootStrap OFFSCREEN_bootstrap = {
     OFFSCREEN_CreateDevice
 };
 
-int OFFSCREEN_VideoInit(_THIS)
+int OFFSCREEN_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
     /* Use a fake 32-bpp desktop mode */
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
-    mode.pixel_w = 1024;
-    mode.pixel_h = 768;
+    mode.w = 1024;
+    mode.h = 768;
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
@@ -113,12 +113,12 @@ int OFFSCREEN_VideoInit(_THIS)
     return 0;
 }
 
-static int OFFSCREEN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static int OFFSCREEN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
-void OFFSCREEN_VideoQuit(_THIS)
+void OFFSCREEN_VideoQuit(SDL_VideoDevice *_this)
 {
 }
 

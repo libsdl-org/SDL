@@ -27,16 +27,11 @@
 
 #include "../SDL_sysaudio.h"
 
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *this
-
 struct SDL_PrivateAudioData
 {
     char *device_name;
 
     /* pulseaudio structures */
-    pa_mainloop *mainloop;
-    pa_context *context;
     pa_stream *stream;
 
     /* Raw mixing buffer */

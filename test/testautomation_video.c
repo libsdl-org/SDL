@@ -303,14 +303,18 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
                 SDL_memcpy(&current, modes[0], sizeof(current));
 
                 /* Make call */
-                closest = SDL_GetClosestFullscreenDisplayMode(displays[i], current.pixel_w, current.pixel_h, current.refresh_rate);
+                closest = SDL_GetClosestFullscreenDisplayMode(displays[i], current.w, current.h, current.refresh_rate, SDL_FALSE);
                 SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=current)");
                 SDLTest_Assert(closest != NULL, "Verify returned value is not NULL");
 
                 /* Check that one gets the current resolution back again */
                 if (closest) {
-                    SDLTest_AssertCheck(closest->pixel_w == current.pixel_w, "Verify returned width matches current width; expected: %d, got: %d", current.pixel_w, closest->pixel_w);
-                    SDLTest_AssertCheck(closest->pixel_h == current.pixel_h, "Verify returned height matches current height; expected: %d, got: %d", current.pixel_h, closest->pixel_h);
+                    SDLTest_AssertCheck(closest->w == current.w,
+                                        "Verify returned width matches current width; expected: %d, got: %d",
+                                        current.w, closest->w);
+                    SDLTest_AssertCheck(closest->h == current.h,
+                                        "Verify returned height matches current height; expected: %d, got: %d",
+                                        current.h, closest->h);
                 }
             }
             SDL_free((void *)modes);
@@ -344,12 +348,12 @@ static int video_getClosestDisplayModeRandomResolution(void *arg)
 
                 /* Set random constraints */
                 SDL_zero(target);
-                target.pixel_w = (variation & 1) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
-                target.pixel_h = (variation & 2) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
+                target.w = (variation & 1) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
+                target.h = (variation & 2) ? SDLTest_RandomIntegerInRange(1, 4096) : 0;
                 target.refresh_rate = (variation & 8) ? (float)SDLTest_RandomIntegerInRange(25, 120) : 0.0f;
 
                 /* Make call; may or may not find anything, so don't validate any further */
-                SDL_GetClosestFullscreenDisplayMode(displays[i], target.pixel_w, target.pixel_h, target.refresh_rate);
+                SDL_GetClosestFullscreenDisplayMode(displays[i], target.w, target.h, target.refresh_rate, SDL_FALSE);
                 SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=random/variation%d)", variation);
             }
         }
@@ -1672,13 +1676,9 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 expectedX = (expectedDisplayRect.x + ((expectedDisplayRect.w - w) / 2));
                 expectedY = (expectedDisplayRect.y + ((expectedDisplayRect.h - h) / 2));
 
-                window = SDL_CreateWindow(title, w, h, SDL_WINDOW_HIDDEN);
+                window = SDL_CreateWindowWithPosition(title, x, y, w, h, 0);
                 SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
                 SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
-
-                /* Set the desired position */
-                SDL_SetWindowPosition(window, x, y);
-                SDL_ShowWindow(window);
 
                 /* Check the window is centered on the requested display */
                 currentDisplay = SDL_GetDisplayForWindow(window);

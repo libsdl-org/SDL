@@ -34,7 +34,7 @@ struct SDL_SW_YUVTexture
     Uint8 *pixels;
 
     /* These are just so we don't have to allocate them separately */
-    Uint16 pitches[3];
+    int pitches[3];
     Uint8 *planes[3];
 
     /* This is a temporary surface in case we have to stretch copy */

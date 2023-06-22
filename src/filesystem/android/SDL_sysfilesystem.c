@@ -27,16 +27,14 @@
 
 #include <unistd.h>
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     /* The current working directory is / on Android */
     SDL_Unsupported();
     return NULL;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     const char *path = SDL_AndroidGetInternalStoragePath();
     if (path) {
@@ -49,6 +47,14 @@ SDL_GetPrefPath(const char *org, const char *app)
         SDL_snprintf(fullpath, pathlen, "%s/", path);
         return fullpath;
     }
+    return NULL;
+}
+
+char *SDL_GetPath(SDL_Folder folder)
+{
+    /* TODO: see https://developer.android.com/reference/android/os/Environment#lfields
+       and https://stackoverflow.com/questions/39332085/get-path-to-pictures-directory */
+    SDL_Unsupported();
     return NULL;
 }
 

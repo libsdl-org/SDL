@@ -514,8 +514,8 @@ static int HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
 
     /* Magnitude is 1..100 so scale the 16-bit input here */
-    ctx->low_frequency_rumble = low_frequency_rumble / 655;
-    ctx->high_frequency_rumble = high_frequency_rumble / 655;
+    ctx->low_frequency_rumble = (Uint8)(low_frequency_rumble / 655);
+    ctx->high_frequency_rumble = (Uint8)(high_frequency_rumble / 655);
     ctx->rumble_pending = SDL_TRUE;
 
     return HIDAPI_DriverXboxOne_UpdateRumble(device);
@@ -530,8 +530,8 @@ static int HIDAPI_DriverXboxOne_RumbleJoystickTriggers(SDL_HIDAPI_Device *device
     }
 
     /* Magnitude is 1..100 so scale the 16-bit input here */
-    ctx->left_trigger_rumble = left_rumble / 655;
-    ctx->right_trigger_rumble = right_rumble / 655;
+    ctx->left_trigger_rumble = (Uint8)(left_rumble / 655);
+    ctx->right_trigger_rumble = (Uint8)(right_rumble / 655);
     ctx->rumble_pending = SDL_TRUE;
 
     return HIDAPI_DriverXboxOne_UpdateRumble(device);
@@ -638,7 +638,7 @@ static void HIDAPI_DriverXboxOne_HandleUnmappedStatePacket(SDL_Joystick *joystic
     }
 
     if (ctx->last_paddle_state != data[paddle_index]) {
-        int nButton = SDL_GAMEPAD_BUTTON_MISC1 + ctx->has_share_button; /* Next available button */
+        Uint8 nButton = (Uint8)(SDL_GAMEPAD_BUTTON_MISC1 + ctx->has_share_button); /* Next available button */
         SDL_SendJoystickButton(timestamp, joystick, nButton++, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, nButton++, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, nButton++, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
@@ -728,8 +728,12 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         Paddle bits:
             P3: 0x04 (A)    P1: 0x01 (B)
             P4: 0x08 (X)    P2: 0x02 (Y)
+       Xbox One Elite Series 2 5.17+ firmware report is 51 bytes, paddles in data[18], mode in data[24], mode 0 has no mapped paddles by default
+        Paddle bits:
+            P3: 0x04 (A)    P1: 0x01 (B)
+            P4: 0x08 (X)    P2: 0x02 (Y)
     */
-    if (ctx->has_paddles && !ctx->has_unmapped_state && (size == 33 || size == 38 || size == 50)) {
+    if (ctx->has_paddles && !ctx->has_unmapped_state && (size == 33 || size == 38 || size == 50 || size == 51)) {
         int paddle_index;
         int button1_bit;
         int button2_bit;
@@ -757,7 +761,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             button4_bit = 0x08;
             paddles_mapped = (data[19] != 0);
 
-        } else /* if (size == 50) */ {
+        } else if (size == 50) {
             /* XBox One Elite Series 2 */
             paddle_index = 22;
             button1_bit = 0x01;
@@ -765,6 +769,14 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             button3_bit = 0x04;
             button4_bit = 0x08;
             paddles_mapped = (data[23] != 0);
+        } else /* if (size == 51) */ {
+            /* XBox One Elite Series 2 */
+            paddle_index = 18;
+            button1_bit = 0x01;
+            button2_bit = 0x02;
+            button3_bit = 0x04;
+            button4_bit = 0x08;
+            paddles_mapped = (data[24] != 0);
         }
 #ifdef DEBUG_XBOX_PROTOCOL
         SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s\n",
@@ -781,7 +793,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         }
 
         if (ctx->last_paddle_state != data[paddle_index]) {
-            int nButton = SDL_GAMEPAD_BUTTON_MISC1 + ctx->has_share_button; /* Next available button */
+            Uint8 nButton = (Uint8)(SDL_GAMEPAD_BUTTON_MISC1 + ctx->has_share_button); /* Next available button */
             SDL_SendJoystickButton(timestamp, joystick, nButton++, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
             SDL_SendJoystickButton(timestamp, joystick, nButton++, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
             SDL_SendJoystickButton(timestamp, joystick, nButton++, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
@@ -948,7 +960,7 @@ static void HIDAPI_DriverXboxOneBluetooth_HandleButtons(Uint64 timestamp, SDL_Jo
         }
 
         if (ctx->last_paddle_state != data[paddle_index]) {
-            int nButton = SDL_GAMEPAD_BUTTON_MISC1; /* Next available button */
+            Uint8 nButton = SDL_GAMEPAD_BUTTON_MISC1; /* Next available button */
             SDL_SendJoystickButton(timestamp, joystick, nButton++, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
             SDL_SendJoystickButton(timestamp, joystick, nButton++, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
             SDL_SendJoystickButton(timestamp, joystick, nButton++, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);

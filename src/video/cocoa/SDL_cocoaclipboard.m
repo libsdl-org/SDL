@@ -25,7 +25,55 @@
 #include "SDL_cocoavideo.h"
 #include "../../events/SDL_clipboardevents_c.h"
 
-int Cocoa_SetClipboardText(_THIS, const char *text)
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 101300
+typedef NSString *NSPasteboardType; /* Defined in macOS 10.13+ */
+#endif
+
+@interface Cocoa_PasteboardDataProvider : NSObject<NSPasteboardItemDataProvider>
+{
+    SDL_ClipboardDataCallback m_callback;
+    void *m_userdata;
+}
+@end
+
+@implementation Cocoa_PasteboardDataProvider
+
+- (nullable instancetype)initWith:(SDL_ClipboardDataCallback)callback
+                         userData:(void *)userdata
+{
+    self = [super init];
+    if (!self) {
+        return self;
+    }
+    m_callback = callback;
+    m_userdata = userdata;
+    return self;
+}
+
+- (void)pasteboard:(NSPasteboard *)pasteboard
+              item:(NSPasteboardItem *)item
+provideDataForType:(NSPasteboardType)type
+{
+    @autoreleasepool {
+        size_t size = 0;
+        CFStringRef mimeType;
+        void *callbackData;
+        NSData *data;
+        mimeType = UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)type, kUTTagClassMIMEType);
+        callbackData = m_callback(&size, [(__bridge NSString *)mimeType UTF8String], m_userdata);
+        CFRelease(mimeType);
+        if (callbackData == NULL || size == 0) {
+            return;
+        }
+        data = [NSData dataWithBytes: callbackData length: size];
+        [item setData: data forType: type];
+    }
+}
+
+@end
+
+
+int Cocoa_SetClipboardText(SDL_VideoDevice *_this, const char *text)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
@@ -44,8 +92,7 @@ int Cocoa_SetClipboardText(_THIS, const char *text)
     }
 }
 
-char *
-Cocoa_GetClipboardText(_THIS)
+char *Cocoa_GetClipboardText(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         NSPasteboard *pasteboard;
@@ -74,8 +121,7 @@ Cocoa_GetClipboardText(_THIS)
     }
 }
 
-SDL_bool
-Cocoa_HasClipboardText(_THIS)
+SDL_bool Cocoa_HasClipboardText(SDL_VideoDevice *_this)
 {
     SDL_bool result = SDL_FALSE;
     char *text = Cocoa_GetClipboardText(_this);
@@ -101,6 +147,83 @@ void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data)
             data.clipboard_count = count;
         }
     }
+}
+
+void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, size_t *len, const char *mime_type)
+{
+    @autoreleasepool {
+        NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+        NSData *itemData;
+        void *data;
+        *len = 0;
+        for (NSPasteboardItem *item in [pasteboard pasteboardItems]) {
+            CFStringRef mimeType = CFStringCreateWithCString(NULL, mime_type, kCFStringEncodingUTF8);
+            CFStringRef utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
+            CFRelease(mimeType);
+            itemData = [item dataForType: (__bridge NSString *)utiType];
+            CFRelease(utiType);
+            if (itemData != nil) {
+                *len = (size_t)[itemData length];
+                data = malloc(*len);
+                [itemData getBytes: data length: *len];
+                return data;
+            }
+        }
+        return nil;
+    }
+}
+
+SDL_bool Cocoa_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
+{
+
+    SDL_bool result = SDL_FALSE;
+    @autoreleasepool {
+        NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+        CFStringRef mimeType = CFStringCreateWithCString(NULL, mime_type, kCFStringEncodingUTF8);
+        CFStringRef utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
+        CFRelease(mimeType);
+        if ([pasteboard canReadItemWithDataConformingToTypes: @[(__bridge NSString *)utiType]]) {
+            result = SDL_TRUE;
+        }
+        CFRelease(utiType);
+    }
+    return result;
+
+}
+
+int Cocoa_SetClipboardData(SDL_VideoDevice *_this, SDL_ClipboardDataCallback callback, size_t mime_count,
+                           const char **mime_types, void *userdata)
+{
+    @autoreleasepool {
+        NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+        NSPasteboardItem *newItem = [NSPasteboardItem new];
+        NSMutableArray *utiTypes = [NSMutableArray new];
+        Cocoa_PasteboardDataProvider *provider = [[Cocoa_PasteboardDataProvider alloc] initWith: callback userData: userdata];
+        BOOL itemResult = FALSE;
+        BOOL writeResult = FALSE;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+
+        for (int i = 0; i < mime_count; i++) {
+            CFStringRef mimeType = CFStringCreateWithCString(NULL, mime_types[i], kCFStringEncodingUTF8);
+            CFStringRef utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
+            CFRelease(mimeType);
+
+            [utiTypes addObject: (__bridge NSString *)utiType];
+            CFRelease(utiType);
+        }
+        itemResult = [newItem setDataProvider: provider forTypes: utiTypes];
+        if (itemResult == FALSE) {
+            return SDL_SetError("Unable to set clipboard item data");
+        }
+
+        [pasteboard clearContents];
+        writeResult = [pasteboard writeObjects: @[newItem]];
+        if (writeResult == FALSE) {
+            return SDL_SetError("Unable to set clipboard data");
+        }
+        data.clipboard_count = [pasteboard changeCount];
+    }
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */

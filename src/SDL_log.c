@@ -32,7 +32,7 @@
 #include <stdio.h>
 #endif
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
 #include <android/log.h>
 #endif
 
@@ -63,7 +63,7 @@ static SDL_LogPriority SDL_application_priority = DEFAULT_APPLICATION_PRIORITY;
 static SDL_LogPriority SDL_test_priority = DEFAULT_TEST_PRIORITY;
 static SDL_LogOutputFunction SDL_log_function = SDL_LogOutput;
 static void *SDL_log_userdata = NULL;
-static SDL_mutex *log_function_mutex = NULL;
+static SDL_Mutex *log_function_mutex = NULL;
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -160,8 +160,7 @@ void SDL_LogSetPriority(int category, SDL_LogPriority priority)
     }
 }
 
-SDL_LogPriority
-SDL_LogGetPriority(int category)
+SDL_LogPriority SDL_LogGetPriority(int category)
 {
     SDL_LogLevel *entry;
 

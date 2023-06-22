@@ -37,7 +37,8 @@
 #endif
 
 extern int
-SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
+SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MAX)],
+                           const unsigned long bitmask_ev[NBITS(EV_MAX)],
                            const unsigned long bitmask_abs[NBITS(ABS_MAX)],
                            const unsigned long bitmask_key[NBITS(KEY_MAX)],
                            const unsigned long bitmask_rel[NBITS(REL_MAX)])
@@ -57,6 +58,22 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
     int devclass = 0;
     unsigned long keyboard_mask;
 
+    /* If the kernel specifically says it's an accelerometer, believe it */
+    if (test_bit(INPUT_PROP_ACCELEROMETER, bitmask_props)) {
+        return SDL_UDEV_DEVICE_ACCELEROMETER;
+    }
+
+    /* We treat pointing sticks as indistinguishable from mice */
+    if (test_bit(INPUT_PROP_POINTING_STICK, bitmask_props)) {
+        return SDL_UDEV_DEVICE_MOUSE;
+    }
+
+    /* We treat buttonpads as equivalent to touchpads */
+    if (test_bit(INPUT_PROP_TOPBUTTONPAD, bitmask_props) ||
+        test_bit(INPUT_PROP_BUTTONPAD, bitmask_props)) {
+        return SDL_UDEV_DEVICE_TOUCHPAD;
+    }
+
     /* X, Y, Z axes but no buttons probably means an accelerometer */
     if (test_bit(EV_ABS, bitmask_ev) &&
         test_bit(ABS_X, bitmask_abs) &&
@@ -66,7 +83,8 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
         return SDL_UDEV_DEVICE_ACCELEROMETER;
     }
 
-    /* RX, RY, RZ axes but no buttons also probably means an accelerometer */
+    /* RX, RY, RZ axes but no buttons probably means a gyro or
+     * accelerometer (we don't distinguish) */
     if (test_bit(EV_ABS, bitmask_ev) &&
         test_bit(ABS_RX, bitmask_abs) &&
         test_bit(ABS_RY, bitmask_abs) &&
@@ -131,14 +149,15 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
         }
 
         if (found > 0) {
-            devclass |= SDL_UDEV_DEVICE_KEYBOARD; /* ID_INPUT_KEY */
+            devclass |= SDL_UDEV_DEVICE_HAS_KEYS; /* ID_INPUT_KEY */
         }
     }
 
-    /* the first 32 bits are ESC, numbers, and Q to D; if we have any of
-     * those, consider it a keyboard device; do not test KEY_RESERVED, though */
+    /* the first 32 bits are ESC, numbers, and Q to D, so if we have all of
+     * those, consider it to be a fully-featured keyboard;
+     * do not test KEY_RESERVED, though */
     keyboard_mask = 0xFFFFFFFE;
-    if ((bitmask_key[0] & keyboard_mask) != 0) {
+    if ((bitmask_key[0] & keyboard_mask) == keyboard_mask) {
         devclass |= SDL_UDEV_DEVICE_KEYBOARD; /* ID_INPUT_KEYBOARD */
     }
 

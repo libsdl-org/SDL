@@ -23,18 +23,16 @@
 #ifndef SDL_androidaudio_h_
 #define SDL_androidaudio_h_
 
-#include "../SDL_sysaudio.h"
-
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *this
-
-struct SDL_PrivateAudioData
-{
-    /* Resume device if it was paused automatically */
-    int resume;
-};
+#ifdef SDL_AUDIO_DRIVER_ANDROID
 
 void ANDROIDAUDIO_ResumeDevices(void);
 void ANDROIDAUDIO_PauseDevices(void);
+
+#else
+
+static void ANDROIDAUDIO_ResumeDevices(void) {}
+static void ANDROIDAUDIO_PauseDevices(void) {}
+
+#endif
 
 #endif /* SDL_androidaudio_h_ */
