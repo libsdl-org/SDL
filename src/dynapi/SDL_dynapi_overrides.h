@@ -893,3 +893,5 @@
 #define SDL_HasWindowSurface SDL_HasWindowSurface_REAL
 #define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL
 #define SDL_GetNaturalDisplayOrientation SDL_GetNaturalDisplayOrientation_REAL
+#define SDL_ShowNotification SDL_ShowNotification_REAL
+#define SDL_ShowSimpleNotification SDL_ShowSimpleNotification_REAL
