@@ -511,6 +511,8 @@ extern DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int 
  *          in the case of failure; call SDL_GetError() for more information.
  *          This struct is valid until the device is closed with
  *          SDL_hid_close().
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_get_device_info(SDL_hid_device *dev);
 
@@ -525,6 +527,8 @@ extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_get_device_info(SDL_hid_de
  * \param buf_size The size of the buffer in bytes.
  * \returns the number of bytes actually copied, or -1 on error; call
  *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_get_report_descriptor(SDL_hid_device *dev, unsigned char *buf, size_t buf_size);
 

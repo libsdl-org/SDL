@@ -758,6 +758,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream,
  * will reflect the new format, and future calls to SDL_PutAudioStreamData
  * must provide data in the new input formats.
  *
+ * \param stream The stream the format is being changed
  * \param src_format The format of the audio input
  * \param src_channels The number of channels of the audio input
  * \param src_rate The sampling rate of the audio input
