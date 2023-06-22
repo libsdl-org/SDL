@@ -603,7 +603,12 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
     } else {
         SDL_assert(buffer_size <= device->buffer_size);  // you can ask for less, but not more.
         SDL_memset(mix_buffer, device->silence_value, buffer_size);  // start with silence.
+
         for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
+            if (SDL_AtomicGet(&logdev->paused)) {
+                continue;  // paused? Skip this logical device.
+            }
+
             for (SDL_AudioStream *stream = logdev->bound_streams; stream != NULL; stream = stream->next_binding) {
                 /* this will hold a lock on `stream` while getting. We don't explicitly lock the streams
                    for iterating here because the binding linked list can only change while the device lock is held.
@@ -1164,6 +1169,41 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
 
     return retval;
 }
+
+static int SetLogicalAudioDevicePauseState(SDL_AudioDeviceID devid, int value)
+{
+    SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid);
+    if (!logdev) {
+        return -1;  // ObtainLogicalAudioDevice will have set an error.
+    }
+    SDL_AtomicSet(&logdev->paused, value);
+    SDL_UnlockMutex(logdev->physical_device->lock);
+    return 0;
+}
+
+int SDL_PauseAudioDevice(SDL_AudioDeviceID devid)
+{
+    return SetLogicalAudioDevicePauseState(devid, 1);
+}
+
+int SDLCALL SDL_UnpauseAudioDevice(SDL_AudioDeviceID devid)
+{
+    return SetLogicalAudioDevicePauseState(devid, 0);
+}
+
+SDL_bool SDL_IsAudioDevicePaused(SDL_AudioDeviceID devid)
+{
+    SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid);
+    SDL_bool retval = SDL_FALSE;
+    if (logdev) {
+        if (SDL_AtomicGet(&logdev->paused)) {
+            retval = SDL_TRUE;
+        }
+        SDL_UnlockMutex(logdev->physical_device->lock);
+    }
+    return retval;
+}
+
 
 int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int num_streams)
 {

@@ -911,3 +911,6 @@
 #define SDL_ConvertAudioSamples SDL_ConvertAudioSamples_REAL
 #define SDL_GetSilenceValueForFormat SDL_GetSilenceValueForFormat_REAL
 #define SDL_LoadWAV SDL_LoadWAV_REAL
+#define SDL_PauseAudioDevice SDL_PauseAudioDevice_REAL
+#define SDL_UnpauseAudioDevice SDL_UnpauseAudioDevice_REAL
+#define SDL_IsAudioDevicePaused SDL_IsAudioDevicePaused_REAL

@@ -885,6 +885,9 @@ SDL3_0.0.0 {
     SDL_ConvertAudioSamples;
     SDL_GetSilenceValueForFormat;
     SDL_LoadWAV;
+    SDL_PauseAudioDevice;
+    SDL_UnpauseAudioDevice;
+    SDL_IsAudioDevicePaused;
     # extra symbols go here (don't modify this line)
   local: *;
 };

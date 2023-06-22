@@ -955,3 +955,6 @@ SDL_DYNAPI_PROC(int,SDL_MixAudioFormat,(Uint8 *a, const Uint8 *b, SDL_AudioForma
 SDL_DYNAPI_PROC(int,SDL_ConvertAudioSamples,(const SDL_AudioSpec *a, const Uint8 *b, int c, const SDL_AudioSpec *d, Uint8 **e, int *f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(int,SDL_GetSilenceValueForFormat,(SDL_AudioFormat a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_LoadWAV,(const char *a, SDL_AudioSpec *b, Uint8 **c, Uint32 *d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_PauseAudioDevice,(SDL_AudioDeviceID a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_UnpauseAudioDevice,(SDL_AudioDeviceID a),(a),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_IsAudioDevicePaused,(SDL_AudioDeviceID a),(a),return)

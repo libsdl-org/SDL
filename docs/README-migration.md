@@ -144,9 +144,11 @@ Rather than iterating over audio devices using a device index, there is a new fu
 
 SDL_LockAudioDevice() and SDL_UnlockAudioDevice() have been removed, since there is no callback in another thread to protect. Internally, SDL's audio subsystem and SDL_AudioStream maintain their own locks internally, so audio streams are safe to use from any thread.
 
-SDL_PauseAudioDevice() has been removed; unbinding an audio stream from a device with SDL_UnbindAudioStream() will leave the stream still containing any unconsumed data, effectively pausing it until rebound with SDL_BindAudioStream() again. Devices act like they are "paused" after open, like SDL2, until a stream is bound to it.
+SDL_PauseAudioDevice() no longer takes a second argument; it always pauses the device. To unpause, use SDL_UnpauseAudioDevice().
 
-SDL_GetAudioDeviceStatus() has been removed; there is no more concept of "pausing" a device, just whether streams are bound, so please keep track of your audio streams!
+Audio devices, opened by SDL_OpenAudioDevice(), no longer start in a paused state, as they don't begin processing audio until a stream is bound.
+
+SDL_GetAudioDeviceStatus() has been removed; there is now SDL_IsAudioDevicePaused().
 
 SDL_QueueAudio(), SDL_DequeueAudio, and SDL_ClearQueuedAudio and SDL_GetQueuedAudioSize() have been removed; an SDL_AudioStream bound to a device provides the exact same functionality.
 
@@ -230,7 +232,6 @@ The following functions have been removed:
 * SDL_OpenAudio()
 * SDL_CloseAudio()
 * SDL_PauseAudio()
-* SDL_PauseAudioDevice
 * SDL_GetAudioStatus()
 * SDL_GetAudioDeviceStatus()
 * SDL_LockAudio()
