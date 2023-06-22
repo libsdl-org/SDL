@@ -57,6 +57,8 @@ The audio subsystem in SDL3 is dramatically different than SDL2. The primary way
 
 The SDL 1.2 audio compatibility API has also been removed, as it was a simplified version of the audio callback interface.
 
+SDL3 will not implicitly initialize the audio subsystem on your behalf if you open a device without doing so. Please explicitly call SDL_Init(SDL_INIT_AUDIO) at some point.
+
 If your app depends on the callback method, there is a similar approach you can take. But first, this is the new approach:
 
 In SDL2, you might have done something like this to play audio:
