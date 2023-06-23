@@ -70,14 +70,17 @@ const SDL_AudioFormat *SDL_ClosestAudioFormats(SDL_AudioFormat format);
 /* Must be called at least once before using converters (SDL_CreateAudioStream will call it !!! FIXME but probably shouldn't). */
 extern void SDL_ChooseAudioConverters(void);
 
-/* Audio targets should call this as devices are added to the system (such as
+/* Backends should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
 extern SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, const SDL_AudioSpec *spec, void *handle);
 
-/* Audio targets should call this if an opened audio device is lost.
+/* Backends should call this if an opened audio device is lost.
    This can happen due to i/o errors, or a device being unplugged, etc. */
 extern void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device);
+
+// Backends should call this if the system default device changes.
+extern void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device);
 
 /* Find the SDL_AudioDevice associated with the handle supplied to SDL_AddAudioDevice. NULL if not found. Locks the device! You must unlock!! */
 extern SDL_AudioDevice *SDL_ObtainPhysicalAudioDeviceByHandle(void *handle);
@@ -96,7 +99,7 @@ extern void SDL_CaptureAudioThreadShutdown(SDL_AudioDevice *device);
 
 typedef struct SDL_AudioDriverImpl
 {
-    void (*DetectDevices)(void);
+    void (*DetectDevices)(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);
     int (*OpenDevice)(SDL_AudioDevice *device);
     void (*ThreadInit)(SDL_AudioDevice *device);   /* Called by audio thread at start */
     void (*ThreadDeinit)(SDL_AudioDevice *device); /* Called by audio thread at end */
@@ -126,6 +129,8 @@ typedef struct SDL_AudioDriver
     SDL_RWLock *device_list_lock;  /* A mutex for device detection */
     SDL_AudioDevice *output_devices;  /* the list of currently-available audio output devices. */
     SDL_AudioDevice *capture_devices;  /* the list of currently-available audio capture devices. */
+    SDL_AudioDeviceID default_output_device_id;
+    SDL_AudioDeviceID default_capture_device_id;
     SDL_AtomicInt output_device_count;
     SDL_AtomicInt capture_device_count;
     SDL_AtomicInt last_device_instance_id;  /* increments on each device add to provide unique instance IDs */

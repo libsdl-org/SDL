@@ -86,9 +86,7 @@ close_audio(void)
 static void
 open_audio(void)
 {
-    SDL_AudioDeviceID *devices = SDL_GetAudioOutputDevices(NULL);
-    device = devices ? SDL_OpenAudioDevice(devices[0], &wave.spec) : 0;
-    SDL_free(devices);
+    device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &wave.spec);
     if (!device) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
         SDL_free(wave.sound);
