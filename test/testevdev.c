@@ -1837,12 +1837,12 @@ run_test(void)
 
         printf("%s...\n", t->name);
 
-        memset(&caps, '\0', sizeof(caps));
-        memcpy(caps.props, t->props, sizeof(t->props));
-        memcpy(caps.ev, t->ev, sizeof(t->ev));
-        memcpy(caps.keys, t->keys, sizeof(t->keys));
-        memcpy(caps.abs, t->abs, sizeof(t->abs));
-        memcpy(caps.rel, t->rel, sizeof(t->rel));
+        SDL_memset(&caps, '\0', sizeof(caps));
+        SDL_memcpy(caps.props, t->props, sizeof(t->props));
+        SDL_memcpy(caps.ev, t->ev, sizeof(t->ev));
+        SDL_memcpy(caps.keys, t->keys, sizeof(t->keys));
+        SDL_memcpy(caps.abs, t->abs, sizeof(t->abs));
+        SDL_memcpy(caps.rel, t->rel, sizeof(t->rel));
 
         for (j = 0; j < SDL_arraysize(caps.props); j++) {
             caps.props[j] = SwapLongLE(caps.props[j]);
