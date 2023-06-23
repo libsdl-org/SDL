@@ -708,7 +708,7 @@ static void LINUX_FallbackJoystickDetect(void)
 
             count = scandir("/dev/input", &entries, filter_entries, NULL);
             if (count > 1) {
-                qsort(entries, count, sizeof(*entries), sort_entries);
+                SDL_qsort(entries, count, sizeof(*entries), sort_entries);
             }
             for (i = 0; i < count; ++i) {
                 (void)SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
