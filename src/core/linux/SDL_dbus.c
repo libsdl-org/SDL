@@ -367,7 +367,7 @@ void SDL_DBus_ScreensaverTickle(void)
     }
 }
 
-static SDL_bool SDL_DBus_AppendDictWithKeysValues(DBusMessageIter *iterInit, const char **keys, const char **values, int count)
+static SDL_bool SDL_DBus_AppendDictWithKeysAndValues(DBusMessageIter *iterInit, const char **keys, const char **values, int count)
 {
     DBusMessageIter iterDict;
 
@@ -412,6 +412,16 @@ failed:
      * missing if libdbus is too old. Instead, we just return without cleaning up any eventual
      * open container */
     return SDL_FALSE;
+}
+
+static SDL_bool SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const char *key, const char *value)
+{
+   const char *keys[1];
+   const char *values[1];
+
+   keys[0] = key;
+   values[0] = value;
+   return SDL_DBus_AppendDictWithKeysAndValues(iterInit, keys, values, 1);
 }
 
 SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
@@ -459,15 +469,9 @@ SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
             dbus.message_iter_init_append(msg, &iterInit);
 
             /* a{sv} */
-            {
-               const char *keys[1];
-               const char *values[1];
-               keys[0] = key;
-               values[0] = reason;
-               if (!SDL_DBus_AppendDictWithKeysValues(&iterInit, keys, values, 1)) {
-                   dbus.message_unref(msg);
-                   return SDL_FALSE;
-               }
+            if (!SDL_DBus_AppendDictWithKeyValue(&iterInit, key, reason)) {
+                dbus.message_unref(msg);
+                return SDL_FALSE;
             }
 
             if (SDL_DBus_CallWithBasicReply(dbus.session_conn, msg, DBUS_TYPE_OBJECT_PATH, &reply)) {
