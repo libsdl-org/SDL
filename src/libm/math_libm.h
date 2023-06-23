@@ -43,4 +43,21 @@ double SDL_uclibc_sin(double x);
 double SDL_uclibc_sqrt(double x);
 double SDL_uclibc_tan(double x);
 
+#define Please_use_SDL_atan_instead atan
+#define Please_use_SDL_atan2_instead atan2
+#define Please_use_SDL_copysignf_instead copysignf
+#define Please_use_SDL_cos_instead cos
+#define Please_use_SDL_expo_instead exp
+#define Please_use_SDL_fabs_instead fabs
+#define Please_use_SDL_floor_instead floor
+#define Please_use_SDL_fmod_instead fmod
+#define Please_use_SDL_log_instead log
+#define Please_use_SDL_log10_instead log10
+#define Please_use_SDL_modf_instead modf
+#define Please_use_SDL_power_instead power
+#define Please_use_SDL_scalbn_instead scalbn
+#define Please_use_SDL_sin_instead sin
+#define Please_use_SDL_sqrt_instead sqrt
+#define Please_use_SDL_tan_instead tan
+
 #endif /* math_libm_h_ */
