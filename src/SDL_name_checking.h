@@ -21,6 +21,41 @@
 #ifndef SDL_name_checking_h_
 #define SDL_name_checking_h_
 
+#ifdef isalpha
+#undef isalpha
+#endif
+
+#ifdef isalnum
+#undef isalnum
+#endif
+
+#ifdef isblank
+#undef isblank
+#endif
+#ifdef iscntrl
+#undef iscntrl
+#endif
+
+#ifdef isdigit
+#undef isdigit
+#endif
+
+#ifdef isupper
+#undef isupper
+#endif
+
+#ifdef isxdigit
+#undef isxdigit
+#endif
+
+#ifdef tolower
+#undef tolower
+#endif
+
+#ifdef toupper
+#undef toupper
+#endif
+
 #define abs Please_use_SDL_abs_instead
 #define acosf Please_use_SDL_acosf_instead
 #define acos Please_use_SDL_acos_instead
