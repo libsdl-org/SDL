@@ -117,7 +117,6 @@ typedef struct
     SDL_HIDAPI_Device *device;
     Uint16 vendor_id;
     Uint16 product_id;
-    SDL_bool bluetooth;
     SDL_XboxOneInitState init_state;
     Uint64 start_time;
     Uint8 sequence;

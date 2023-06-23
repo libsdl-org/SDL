@@ -382,15 +382,12 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
 #endif
     if (size == 64) {
         /* Connected over USB */
-        device->is_bluetooth = SDL_FALSE;
         ctx->enhanced_mode = SDL_TRUE;
     } else if (size > 0 && data[0] == k_EPS5ReportIdBluetoothEffects) {
         /* Connected over Bluetooth, using enhanced reports */
-        device->is_bluetooth = SDL_TRUE;
         ctx->enhanced_mode = SDL_TRUE;
     } else {
         /* Connected over Bluetooth, using simple reports (DirectInput enabled) */
-        device->is_bluetooth = SDL_TRUE;
 
         /* Games written prior the introduction of PS5 controller support in SDL will not be aware of
            SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, but they did know SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE.

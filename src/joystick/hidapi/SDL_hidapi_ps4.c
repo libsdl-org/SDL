@@ -275,10 +275,8 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
             (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                data[6], data[5], data[4], data[3], data[2], data[1]);
         }
-        device->is_bluetooth = SDL_FALSE;
         ctx->enhanced_mode = SDL_TRUE;
     } else if (device->vendor_id == USB_VENDOR_SONY && device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
-        device->is_bluetooth = SDL_FALSE;
         ctx->enhanced_mode = SDL_TRUE;
 
     } else if (device->vendor_id == USB_VENDOR_SONY) {
@@ -287,11 +285,8 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
             (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                data[6], data[5], data[4], data[3], data[2], data[1]);
-            device->is_bluetooth = SDL_FALSE;
             ctx->enhanced_mode = SDL_TRUE;
         } else {
-            device->is_bluetooth = SDL_TRUE;
-
             /* Read a report to see if we're in enhanced mode */
             size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 16);
 #ifdef DEBUG_PS4_PROTOCOL
@@ -309,12 +304,8 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         }
     } else {
         /* Third party controllers appear to all be wired */
-        device->is_bluetooth = SDL_FALSE;
         ctx->enhanced_mode = SDL_TRUE;
     }
-#ifdef DEBUG_PS4
-    SDL_Log("PS4 dongle = %s, bluetooth = %s\n", ctx->is_dongle ? "TRUE" : "FALSE", device->is_bluetooth ? "TRUE" : "FALSE");
-#endif
 
     size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data));
     /* Get the device capabilities */
@@ -387,11 +378,6 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         /* The Razer Raiju doesn't respond to the detection protocol, but has a touchpad and vibration */
         ctx->vibration_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
-
-        if (device->product_id == USB_PRODUCT_RAZER_TOURNAMENT_EDITION_BLUETOOTH ||
-            device->product_id == USB_PRODUCT_RAZER_ULTIMATE_EDITION_BLUETOOTH) {
-            device->is_bluetooth = SDL_TRUE;
-        }
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported);
 
