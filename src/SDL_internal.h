@@ -206,4 +206,6 @@ extern DECLSPEC int SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 time
 }
 #endif
 
+#include "SDL_name_checking.h"
+
 #endif /* SDL_internal_h_ */

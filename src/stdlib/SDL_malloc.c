@@ -19,6 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#define Please_use_SDL_malloc_instead malloc
+#define Please_use_SDL_realloc_instead realloc
+#define Please_use_SDL_calloc_instead calloc
 
 /* This file contains portable memory management functions for SDL */
 

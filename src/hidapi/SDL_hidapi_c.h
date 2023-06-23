@@ -19,6 +19,20 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#define Please_use_SDL_memcpy_instead memcpy
+#define Please_use_SDL_strchr_instead strchr
+#define Please_use_SDL_strcmp_instead strcmp
+#define Please_use_SDL_wcsdup_instead wcsdup
+#define Please_use_SDL_wcscmp_instead wcscmp
+#define Please_use_SDL_strdup_instead strdup
+#define Please_use_SDL_calloc_instead calloc
+#define Please_use_SDL_strtol_instead strtol
+#define Please_use_SDL_sscanf_instead sscanf
+#define Please_use_SDL_memset_instead memset
+#define Please_use_SDL_memmove_instead memmove
+#define Please_use_SDL_strlen_instead strlen
+#define Please_use_SDL_snprintf_instead snprintf
+#define Please_use_SDL_vsnprintf_instead vsnprintf
 
 
 /* Return true if the HIDAPI should ignore a device during enumeration */

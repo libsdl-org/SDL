@@ -19,6 +19,30 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#define Please_use_SDL_memmove_instead memmove
+#define Please_use_SDL_memcmp_instead memcmp
+#define Please_use_SDL_strlen_instead strlen
+#define Please_use_SDL_wcslen_instead wcslen
+#define Please_use_SDL_wcsstr_instead wcsstr
+#define Please_use_SDL_wcscmp_instead wcscmp
+#define Please_use_SDL_wcsncmp_instead wcsncmp
+#define Please_use_SDL_wcscasecmp_instead wcscasecmp
+#define Please_use_SDL_wcsncasecmp_instead wcsncasecmp
+#define Please_use_SDL_strchr_instead strchr
+#define Please_use_SDL_strrchr_instead strrchr
+#define Please_use_SDL_strstr_instead strstr
+#define Please_use_SDL_atoi_instead atoi
+#define Please_use_SDL_atof_instead atof
+#define Please_use_SDL_strtol_instead strtol
+#define Please_use_SDL_strtoul_instead strtoul
+#define Please_use_SDL_strtoll_instead strtoll
+#define Please_use_SDL_strtod_instead strtod
+#define Please_use_SDL_strcmp_instead strcmp
+#define Please_use_SDL_strncmp_instead strncmp
+#define Please_use_SDL_strcasecmp_instead strcasecmp
+#define Please_use_SDL_strncasecmp_instead strncasecmp
+#define Please_use_SDL_vsscanf_instead vsscanf
+#define Please_use_SDL_vsnprintf_instead vsnprintf
 
 /* This file contains portable string manipulation functions for SDL */
 

@@ -18,8 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "SDL_internal.h"
+#define Please_use_SDL_memset_instead memset
+#define Please_use_SDL_memcpy_instead memcpy
+#define Please_use_SDL_strlen_instead strlen
+#define Please_use_SDL_strcmp_instead strcmp
 
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE
 
