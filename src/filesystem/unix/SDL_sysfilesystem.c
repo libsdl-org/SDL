@@ -419,7 +419,7 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
       p += 4;
       if (SDL_strncmp (p, type, SDL_strlen (type)) != 0)
         continue;
-      p += strlen (type);
+      p += SDL_strlen (type);
       if (SDL_strncmp (p, "_DIR", 4) != 0)
         continue;
       p += 4;
