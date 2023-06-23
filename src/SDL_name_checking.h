@@ -56,6 +56,34 @@
 #undef toupper
 #endif
 
+#ifdef isgraph
+#undef isgraph
+#endif
+
+#ifdef islower
+#undef islower
+#endif
+
+#ifdef isprint
+#undef isprint
+#endif
+
+#ifdef ispunct
+#undef ispunct
+#endif
+
+#ifdef isspace
+#undef isspace
+#endif
+
+
+
+
+
+
+
+
+
 #define abs Please_use_SDL_abs_instead
 #define acosf Please_use_SDL_acosf_instead
 #define acos Please_use_SDL_acos_instead
