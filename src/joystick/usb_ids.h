@@ -103,6 +103,7 @@
 #define USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO               0xd012
 #define USB_PRODUCT_TURTLE_BEACH_SERIES_X_REACT_R         0x7013
 #define USB_PRODUCT_TURTLE_BEACH_SERIES_X_RECON           0x7009
+#define USB_PRODUCT_VICTRIX_FS_PRO                        0x0203
 #define USB_PRODUCT_VICTRIX_FS_PRO_V2                     0x0207
 #define USB_PRODUCT_XBOX360_XUSB_CONTROLLER               0x02a1 /* XUSB driver software PID */
 #define USB_PRODUCT_XBOX360_WIRED_CONTROLLER              0x028e
