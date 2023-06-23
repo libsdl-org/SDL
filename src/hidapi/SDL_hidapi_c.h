@@ -33,6 +33,7 @@
 #define Please_use_SDL_strlen_instead strlen
 #define Please_use_SDL_snprintf_instead snprintf
 #define Please_use_SDL_vsnprintf_instead vsnprintf
+#define Please_use_SDL_malloc_instead malloc
 
 
 /* Return true if the HIDAPI should ignore a device during enumeration */
