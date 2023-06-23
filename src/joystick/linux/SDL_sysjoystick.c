@@ -659,7 +659,7 @@ static int filter_entries(const struct dirent *entry)
 {
     return IsJoystickDeviceNode(entry->d_name);
 }
-static int sort_entries(const void *_a, const void *_b)
+static int SDLCALL sort_entries(const void *_a, const void *_b)
 {
     const struct dirent **a = (const struct dirent **)_a;
     const struct dirent **b = (const struct dirent **)_b;
