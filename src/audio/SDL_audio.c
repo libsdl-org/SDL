@@ -966,6 +966,20 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec)
         return SDL_InvalidParamError("spec");
     }
 
+    SDL_bool is_default = SDL_FALSE;
+    if (devid == SDL_AUDIO_DEVICE_DEFAULT_OUTPUT) {
+        devid = current_audio.default_output_device_id;
+        is_default = SDL_TRUE;
+    } else if (devid == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE) {
+        devid = current_audio.default_capture_device_id;
+        is_default = SDL_TRUE;
+    }
+
+    if ((devid == 0) && is_default) {
+        return SDL_SetError("No default audio device available");
+        return 0;
+    }
+
     SDL_AudioDevice *device = ObtainPhysicalAudioDevice(devid);
     if (!device) {
         return -1;

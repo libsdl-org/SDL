@@ -321,6 +321,11 @@ extern DECLSPEC char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
  * the device's preferred format (or a reasonable default if this
  * can't be determined).
  *
+ * You may also specify SDL_AUDIO_DEVICE_DEFAULT_OUTPUT or
+ * SDL_AUDIO_DEVICE_DEFAULT_CAPTURE here, which is useful for getting
+ * a reasonable recommendation before opening the system-recommended
+ * default device.
+ *
  * \param devid the instance ID of the device to query.
  * \param spec On return, will be filled with device details.
  * \returns 0 on success or a negative error code on failure; call

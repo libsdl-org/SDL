@@ -162,6 +162,8 @@ SDL_AudioSpec has been reduced; now it only holds format, channel, and sample ra
 
 SDL_GetAudioDeviceSpec() is removed; use SDL_GetAudioDeviceFormat() instead.
 
+SDL_GetDefaultAudioInfo() is removed; SDL_GetAudioDeviceFormat() with SDL_AUDIO_DEVICE_DEFAULT_OUTPUT or SDL_AUDIO_DEVICE_DEFAULT_CAPTURE. There is no replacement for querying the default device name; the string is no longer used to open devices, and SDL3 will migrate between physical devices on the fly if the system default changes, so if you must show this to the user, a generic name like "System default" is recommended.
+
 SDL_MixAudio() has been removed, as it relied on legacy SDL 1.2 quirks; SDL_MixAudioFormat() remains and offers the same functionality.
 
 SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
@@ -241,6 +243,7 @@ The following functions have been removed:
 * SDL_PauseAudio()
 * SDL_GetAudioStatus()
 * SDL_GetAudioDeviceStatus()
+* SDL_GetDefaultAudioInfo()
 * SDL_LockAudio()
 * SDL_LockAudioDevice()
 * SDL_UnlockAudio()
