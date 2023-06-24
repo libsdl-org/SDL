@@ -23,6 +23,7 @@
 #define math_libm_h_
 
 #include "SDL_internal.h"
+#include "SDL_disable_name_checking.h"
 
 /* Math routines from uClibc: http://www.uclibc.org */
 
@@ -42,22 +43,5 @@ double SDL_uclibc_scalbn(double x, int n);
 double SDL_uclibc_sin(double x);
 double SDL_uclibc_sqrt(double x);
 double SDL_uclibc_tan(double x);
-
-#undef atan
-#undef atan2
-#undef copysignf
-#undef cos
-#undef exp
-#undef fabs
-#undef floor
-#undef fmod
-#undef log
-#undef log10
-#undef modf
-#undef power
-#undef scalbn
-#undef sin
-#undef sqrt
-#undef tan
 
 #endif /* math_libm_h_ */
