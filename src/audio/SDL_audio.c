@@ -246,6 +246,11 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool isc
     device->instance_id = assign_audio_device_instance_id(iscapture, /*islogical=*/SDL_FALSE);
 
     SDL_LockRWLockForWriting(current_audio.device_list_lock);
+
+    if (*devices) {
+        SDL_assert((*devices)->prev == NULL);
+        (*devices)->prev = device;
+    }
     device->next = *devices;
     *devices = device;
     SDL_AtomicIncRef(device_count);
