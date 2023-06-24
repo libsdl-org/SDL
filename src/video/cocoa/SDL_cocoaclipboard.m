@@ -19,6 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+/* TODO FIXME Please_use_SDL_malloc_instead */
+#define Please_use_SDL_malloc_instead malloc
+
 
 #ifdef SDL_VIDEO_DRIVER_COCOA
 
