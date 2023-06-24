@@ -15,6 +15,12 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
+// printf()
+#define Please_use_SDL_vsnprintf_instead vsnprintf
+
+
+
+
 /* Hack to avoid dynapi renaming */
 #include "../src/dynapi/SDL_dynapi.h"
 #ifdef SDL_DYNAMIC_API

@@ -21,6 +21,12 @@
 #ifndef SDL_name_checking_h_
 #define SDL_name_checking_h_
 
+
+#if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
+// nothing
+#else
+
+
 #ifdef abs
 #undef abs
 #endif
@@ -575,5 +581,7 @@
 #undef wcsstr
 #endif
 #define wcsstr Please_use_SDL_wcsstr_instead
+
+#endif
 
 #endif /* SDL_name_checking_h_ */

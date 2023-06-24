@@ -19,7 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+// TODO FIXME Please_use_SDL_strlen_instead
 #define Please_use_SDL_strstr_instead strstr
+#define Please_use_SDL_strlen_instead strlen
 
 #include <sys/stat.h>
 #include <unistd.h>
