@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#define Please_use_SDL_strlen_instead strlen
 
 #ifdef __APPLE__
 #import <Foundation/Foundation.h>

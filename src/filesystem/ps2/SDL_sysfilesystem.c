@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#define Please_use_SDL_strstr_instead strstr
 
 #include <sys/stat.h>
 #include <unistd.h>

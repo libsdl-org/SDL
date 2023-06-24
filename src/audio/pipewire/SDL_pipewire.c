@@ -22,6 +22,14 @@
 #define Please_use_SDL_memcpy_instead memcpy
 #define Please_use_SDL_strlen_instead strlen
 #define Please_use_SDL_strcmp_instead strcmp
+#define Please_use_SDL_strncmp_instead strncmp
+#define Please_use_SDL_qsort_instead qsort
+#define Please_use_SDL_realloc_instead realloc
+#define Please_use_SDL_malloc_instead malloc
+#define Please_use_SDL_strtol_instead strtol
+#define Please_use_SDL_strtoll_instead strtoll
+#define Please_use_SDL_strtod_instead strtod
+#define Please_use_SDL_vsnprintf_instead vsnprintf
 
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE
 
