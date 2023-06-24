@@ -21,6 +21,7 @@
 #include "SDL_internal.h"
 // TODO FIXME Please_use_SDL_floor_instead
 #define Please_use_SDL_floor_instead floor
+#define Please_use_SDL_strlen_instead strlen
 
 #ifdef SDL_AUDIO_DRIVER_COREAUDIO
 

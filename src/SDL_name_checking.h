@@ -22,8 +22,10 @@
 #define SDL_name_checking_h_
 
 
-#if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
-// nothing
+#ifdef __HAIKU__
+/* nothing */
+#elif defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
+/* nothing */
 #else
 
 
