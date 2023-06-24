@@ -533,6 +533,7 @@ static void PULSEAUDIO_CloseDevice(SDL_AudioDevice *device)
         PULSEAUDIO_pa_stream_disconnect(device->hidden->stream);
         PULSEAUDIO_pa_stream_unref(device->hidden->stream);
     }
+    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // in case the device thread is waiting somewhere, this will unblock it.
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
 
     SDL_free(device->hidden->mixbuf);
@@ -560,10 +561,7 @@ static void SourceDeviceNameCallback(pa_context *c, const pa_source_info *i, int
 
 static SDL_bool FindDeviceName(struct SDL_PrivateAudioData *h, const SDL_bool iscapture, void *handle)
 {
-    if (handle == NULL) { /* NULL == default device. */
-        return SDL_TRUE;
-    }
-
+    SDL_assert(handle != NULL);  // this was a thing in SDL2, but shouldn't be in SDL3.
     const uint32_t idx = ((uint32_t)((intptr_t)handle)) - 1;
 
     if (iscapture) {
