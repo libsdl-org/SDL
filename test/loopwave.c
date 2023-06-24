@@ -103,14 +103,6 @@ open_audio(void)
     SDL_SetAudioStreamGetCallback(stream, fillerup, NULL);
 }
 
-#ifndef __EMSCRIPTEN__
-static void reopen_audio(void)
-{
-    close_audio();
-    open_audio();
-}
-#endif
-
 
 static int done = 0;
 
@@ -191,8 +183,6 @@ int main(int argc, char *argv[])
 
     open_audio();
 
-    SDL_FlushEvents(SDL_EVENT_AUDIO_DEVICE_ADDED, SDL_EVENT_AUDIO_DEVICE_REMOVED);
-
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
@@ -202,10 +192,6 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event) > 0) {
             if (event.type == SDL_EVENT_QUIT) {
                 done = 1;
-            }
-            if ((event.type == SDL_EVENT_AUDIO_DEVICE_ADDED && !event.adevice.iscapture) ||
-                (event.type == SDL_EVENT_AUDIO_DEVICE_REMOVED && !event.adevice.iscapture && event.adevice.which == device)) {
-                reopen_audio();
             }
         }
 

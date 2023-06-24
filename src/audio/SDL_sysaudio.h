@@ -238,6 +238,9 @@ struct SDL_AudioDevice
     /* non-zero if we want the device to be destroyed (so audio thread knows to do it on termination). */
     SDL_AtomicInt condemned;
 
+    /* non-zero if this was a disconnected default device and we're waiting for its replacement. */
+    SDL_AtomicInt zombie;
+
     /* SDL_TRUE if this is a capture device instead of an output device */
     SDL_bool iscapture;
 

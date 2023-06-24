@@ -810,53 +810,47 @@ static void ServerInfoCallback(pa_context *c, const pa_server_info *i, void *dat
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
 
-typedef struct PulseHotplugEvent
-{
-    pa_subscription_event_type_t t;
-    uint32_t idx;
-} PulseHotplugEvent;
-
-typedef struct PulseHotplugEvents
-{
-    PulseHotplugEvent *events;
-    int num_events;
-    int allocated_events;
-    SDL_bool need_server_info_refresh;
-} PulseHotplugEvents;
-
-// This is called when PulseAudio has a device connected/removed/changed.
+// This is called when PulseAudio has a device connected/removed/changed. */
 static void HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint32_t idx, void *data)
 {
-    // We can't block in here for new ServerInfo, but we need that info to resolve first, since we can
-    // migrate default devices during a removal, as long as we know the new default. So just queue up
-    // the data and let HotplugThread handle it, where we can call WaitForPulseOperation.
-    PulseHotplugEvents *events = (PulseHotplugEvents *) data;
-    if (events->allocated_events <= events->num_events) {
-        const int new_allocation = events->num_events + 16;
-        void *ptr = SDL_realloc(events->events, new_allocation * sizeof (PulseHotplugEvent));
-        if (!ptr) {
-            return;  // oh well.
-        }
-        events->events = (PulseHotplugEvent *) ptr;
-        events->allocated_events = new_allocation;
-    }
-    events->events[events->num_events].t = t;
-    events->events[events->num_events].idx = idx;
-    events->num_events++;
-
+    const SDL_bool added = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_NEW);
+    const SDL_bool removed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_REMOVE);
     const SDL_bool changed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_CHANGE);
-    if (changed) {
-        events->need_server_info_refresh = SDL_TRUE;
+
+    if (added || removed || changed) { /* we only care about add/remove events. */
+        const SDL_bool sink = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SINK);
+        const SDL_bool source = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE);
+
+        if (changed) {
+            PULSEAUDIO_pa_operation_unref(PULSEAUDIO_pa_context_get_server_info(pulseaudio_context, ServerInfoCallback, NULL));
+        }
+
+        /* adds need sink details from the PulseAudio server. Another callback...
+           (just unref all these operations right away, because we aren't going to wait on them
+           and their callbacks will handle any work, so they can free as soon as that happens.) */
+        if ((added || changed) && sink) {
+            PULSEAUDIO_pa_operation_unref(PULSEAUDIO_pa_context_get_sink_info_by_index(pulseaudio_context, idx, SinkInfoCallback, (void *)((intptr_t)added)));
+        } else if ((added || changed) && source) {
+            PULSEAUDIO_pa_operation_unref(PULSEAUDIO_pa_context_get_source_info_by_index(pulseaudio_context, idx, SourceInfoCallback, (void *)((intptr_t)added)));
+        } else if (removed && (sink || source)) {
+            // removes we can handle just with the device index.
+            SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((intptr_t)idx + 1));
+            if (device) {
+                SDL_UnlockMutex(device->lock);  // AudioDeviceDisconnected will relock and verify it's still in the list, but in case this is destroyed, unlock now.
+                SDL_AudioDeviceDisconnected(device);
+            }
+        }
     }
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
 
-static void CheckDefaultDevice(int prev_default, int new_default)
+static void CheckDefaultDevice(uint32_t *prev_default, uint32_t new_default)
 {
-    if (prev_default != new_default) {
+    if (*prev_default != new_default) {
         SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((intptr_t)new_default + 1));
         if (device) {
             SDL_UnlockMutex(device->lock);
+            *prev_default = new_default;
             SDL_DefaultAudioDeviceChanged(device);
         }
     }
@@ -865,78 +859,25 @@ static void CheckDefaultDevice(int prev_default, int new_default)
 // this runs as a thread while the Pulse target is initialized to catch hotplug events.
 static int SDLCALL HotplugThread(void *data)
 {
-    pa_operation *op;
+    uint32_t prev_default_sink_index = default_sink_index;
+    uint32_t prev_default_source_index = default_source_index;
 
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
-
-    PulseHotplugEvents events;
-    SDL_zero(events);
-
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
-    PULSEAUDIO_pa_context_set_subscribe_callback(pulseaudio_context, HotplugCallback, &events);
-    WaitForPulseOperation(PULSEAUDIO_pa_context_subscribe(pulseaudio_context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE | PA_SUBSCRIPTION_MASK_SERVER, NULL, NULL));
+    PULSEAUDIO_pa_context_set_subscribe_callback(pulseaudio_context, HotplugCallback, NULL);
+    WaitForPulseOperation(PULSEAUDIO_pa_context_subscribe(pulseaudio_context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, NULL, NULL));
     while (SDL_AtomicGet(&pulseaudio_hotplug_thread_active)) {
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
-        if (events.need_server_info_refresh) {
-            events.need_server_info_refresh = SDL_FALSE;
-            WaitForPulseOperation(PULSEAUDIO_pa_context_get_server_info(pulseaudio_context, ServerInfoCallback, NULL));
-        } else if (events.num_events) {  // don't process events until we didn't get anything new that needs a server info update.
-            const uint32_t prev_default_sink_index = default_sink_index;
-            const uint32_t prev_default_source_index = default_source_index;
-            PulseHotplugEvents eventscpy;
-            SDL_memcpy(&eventscpy, &events, sizeof (PulseHotplugEvents));
-            SDL_zero(events);  // make sure the current array isn't touched in case new events fire.
 
-            // process adds and changes first, so we definitely have default device changes processed. Then remove devices after.
-            for (int i = 0; i < eventscpy.num_events; i++) {
-                const pa_subscription_event_type_t t = eventscpy.events[i].t;
-                const uint32_t idx = eventscpy.events[i].idx;
-                const SDL_bool added = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_NEW);
-                const SDL_bool changed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_CHANGE);
-                const SDL_bool sink = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SINK);
-                const SDL_bool source = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE);
-                if (added || changed) {
-                    if (sink) {
-                        WaitForPulseOperation(PULSEAUDIO_pa_context_get_sink_info_by_index(pulseaudio_context, idx, SinkInfoCallback, (void *)((intptr_t)added)));
-                    } else if (source) {
-                        WaitForPulseOperation(PULSEAUDIO_pa_context_get_source_info_by_index(pulseaudio_context, idx, SourceInfoCallback, (void *)((intptr_t)added)));
-                    }
-                }
-            }
-
-            // don't hold the pulse lock during this, since it could deadlock vs a playing device that we're about to lock here.
-            PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
-
-            CheckDefaultDevice(prev_default_sink_index, default_sink_index);
-            CheckDefaultDevice(prev_default_source_index, default_source_index);
-
-            // okay, default devices are sane, migrations were made if necessary...now remove lost devices.
-            for (int i = 0; i < eventscpy.num_events; i++) {
-                const pa_subscription_event_type_t t = eventscpy.events[i].t;
-                const uint32_t idx = eventscpy.events[i].idx;
-                const SDL_bool removed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_REMOVE);
-                const SDL_bool sink = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SINK);
-                const SDL_bool source = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE);
-                if (removed && (sink || source)) {
-                    SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((intptr_t)idx + 1));
-                    if (device) {
-                        SDL_UnlockMutex(device->lock);  // AudioDeviceDisconnected will relock and verify it's still in the list, but in case this is destroyed, unlock now.
-                        SDL_AudioDeviceDisconnected(device);
-                    }
-                }
-            }
-
-            PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
-
-            SDL_free(eventscpy.events);
-        }
+        // Update default devices; don't hold the pulse lock during this, since it could deadlock vs a playing device that we're about to lock here.
+        PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
+        CheckDefaultDevice(&prev_default_sink_index, default_sink_index);
+        CheckDefaultDevice(&prev_default_source_index, default_source_index);
+        PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
     }
 
     PULSEAUDIO_pa_context_set_subscribe_callback(pulseaudio_context, NULL, NULL);  // Don't fire HotplugCallback again.
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
-
-    SDL_free(events.events);  // should be NULL, but just in case.
-
     return 0;
 }
 

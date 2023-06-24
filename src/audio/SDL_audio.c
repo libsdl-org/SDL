@@ -236,6 +236,7 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool isc
 
     SDL_AtomicSet(&device->shutdown, 0);
     SDL_AtomicSet(&device->condemned, 0);
+    SDL_AtomicSet(&device->zombie, 0);
     device->iscapture = iscapture;
     SDL_memcpy(&device->spec, spec, sizeof (SDL_AudioSpec));
     SDL_memcpy(&device->default_spec, spec, sizeof (SDL_AudioSpec));
@@ -296,7 +297,25 @@ SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, 
             SDL_PushEvent(&event);
         }
     }
+
     return device;
+}
+
+// this _also_ destroys the logical device!
+static void DisconnectLogicalAudioDevice(SDL_LogicalAudioDevice *logdev)
+{
+    if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_REMOVED)) {
+        SDL_Event event;
+        SDL_zero(event);
+SDL_Log("Sending event about loss of logical device #%u", (unsigned int) logdev->instance_id);
+        event.type = SDL_EVENT_AUDIO_DEVICE_REMOVED;
+        event.common.timestamp = 0;
+        event.adevice.which = logdev->instance_id;
+        event.adevice.iscapture = logdev->physical_device->iscapture ? 1 : 0;
+        SDL_PushEvent(&event);
+    }
+
+    DestroyLogicalAudioDevice(logdev);
 }
 
 // Called when a device is removed from the system, or it fails unexpectedly, from any thread, possibly even the audio device's thread.
@@ -306,8 +325,21 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
         return;
     }
 
-    // !!! FIXME: if this was the default device, we should figure out how to migrate the appropriate logical devices instead of declaring them dead.
-    // !!! FIXME: (right now we rely on the backends to change the default device before disconnecting this one, but that's probably not practical.)
+    // if the current default device is going down, mark it as dead but keep it around until a replacement is decided upon, so we can migrate logical devices to it.
+    if ((device->instance_id == current_audio.default_output_device_id) || (device->instance_id == current_audio.default_capture_device_id)) {
+        SDL_AtomicSet(&device->zombie, 1);
+        SDL_AtomicSet(&device->shutdown, 1);  // tell audio thread to terminate, but don't mark it condemned, so the thread won't destroy the device. We'll join on the audio thread later.
+
+        // dump any logical devices that explicitly opened this device. Things that opened the system default can stay.
+        SDL_LogicalAudioDevice *next = NULL;
+        for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = next) {
+            next = logdev->next;
+            if (!logdev->is_default) {  // if opened as a default, leave it on the zombie device for later migration.
+                DisconnectLogicalAudioDevice(logdev);
+            }
+        }
+        return;  // done for now. Come back when a new default device is chosen!
+    }
 
     SDL_bool was_live = SDL_FALSE;
 
@@ -332,6 +364,9 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
         was_live = SDL_TRUE;
     }
 
+    device->next = NULL;
+    device->prev = NULL;
+
     if (was_live) {
         SDL_AtomicDecRef(device->iscapture ? &current_audio.capture_device_count : &current_audio.output_device_count);
     }
@@ -341,6 +376,13 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
     // now device is not in the list, and we own it, so no one should be able to find it again, except the audio thread, which holds a pointer!
     SDL_AtomicSet(&device->condemned, 1);
     SDL_AtomicSet(&device->shutdown, 1);  // tell audio thread to terminate.
+
+    // disconnect each attached logical device, so apps won't find their streams still bound if they get the REMOVED event before the device thread cleans up.
+    SDL_LogicalAudioDevice *next;
+    for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = next) {
+        next = logdev->next;
+        DisconnectLogicalAudioDevice(logdev);
+    }
 
     // if there's an audio thread, don't free until thread is terminating, otherwise free stuff now.
     const SDL_bool should_destroy = (device->thread == NULL);
@@ -355,16 +397,6 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
         event.adevice.which = device->instance_id;
         event.adevice.iscapture = device->iscapture ? 1 : 0;
         SDL_PushEvent(&event);
-
-        // post an event for each logical device, too.
-        for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
-            SDL_zero(event);
-            event.type = SDL_EVENT_AUDIO_DEVICE_REMOVED;
-            event.common.timestamp = 0;
-            event.adevice.which = logdev->instance_id;
-            event.adevice.iscapture = device->iscapture ? 1 : 0;
-            SDL_PushEvent(&event);
-        }
     }
 
     if (should_destroy) {
@@ -1113,6 +1145,11 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
 {
     SDL_assert(device->logical_devices == NULL);
 
+    // Just pretend to open a zombie device. It can still collect logical devices on the assumption they will all migrate when the default device is officially changed.
+    if (SDL_AtomicGet(&device->zombie)) {
+        return 0;  // Braaaaaaaaains.
+    }
+
     SDL_AudioSpec spec;
     SDL_memcpy(&spec, inspec, sizeof (SDL_AudioSpec));
     PrepareAudioFormat(&spec);
@@ -1195,28 +1232,24 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
     SDL_AudioDeviceID retval = 0;
 
     if (device) {
-        SDL_LogicalAudioDevice *logdev = (SDL_LogicalAudioDevice *) SDL_calloc(1, sizeof (SDL_LogicalAudioDevice));
-        if (!logdev) {
+        SDL_LogicalAudioDevice *logdev = NULL;
+        if (!is_default && SDL_AtomicGet(&device->zombie)) {
+            // uhoh, this device is undead, and just waiting for a new default device to be declared so it can hand off to it. Refuse explicit opens.
+            SDL_SetError("Device was already lost and can't accept new opens");
+        } else if ((logdev = (SDL_LogicalAudioDevice *) SDL_calloc(1, sizeof (SDL_LogicalAudioDevice))) == NULL) {
             SDL_OutOfMemory();
+        } else if (!device->is_opened && OpenPhysicalAudioDevice(device, spec) == -1) {  // first thing using this physical device? Open at the OS level...
+            SDL_free(logdev);
         } else {
-            if (device->logical_devices == NULL) {  // first thing using this physical device? Open at the OS level...
-                if (OpenPhysicalAudioDevice(device, spec) == -1) {
-                    SDL_free(logdev);
-                    logdev = NULL;
-                }
+            SDL_AtomicSet(&logdev->paused, 0);
+            retval = logdev->instance_id = assign_audio_device_instance_id(device->iscapture, /*islogical=*/SDL_TRUE);
+            logdev->physical_device = device;
+            logdev->is_default = is_default;
+            logdev->next = device->logical_devices;
+            if (device->logical_devices) {
+                device->logical_devices->prev = logdev;
             }
-
-            if (logdev != NULL) {
-                SDL_AtomicSet(&logdev->paused, 0);
-                retval = logdev->instance_id = assign_audio_device_instance_id(device->iscapture, /*islogical=*/SDL_TRUE);
-                logdev->physical_device = device;
-                logdev->is_default = is_default;
-                logdev->next = device->logical_devices;
-                if (device->logical_devices) {
-                    device->logical_devices->prev = logdev;
-                }
-                device->logical_devices = logdev;
-            }
+            device->logical_devices = logdev;
         }
         SDL_UnlockMutex(device->lock);
     }
@@ -1584,4 +1617,9 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
     }
 
     SDL_UnlockMutex(new_default_device->lock);
+
+    // was current device already dead and just kept around to migrate to a new default device? Now we can kill it. Aim for the brain.
+    if (current_default_device && SDL_AtomicGet(&current_default_device->zombie)) {
+        SDL_AudioDeviceDisconnected(current_default_device);  // Call again, now that we're not the default; this will remove from device list, send removal events, and destroy the SDL_AudioDevice.
+    }
 }
