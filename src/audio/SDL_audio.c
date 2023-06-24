@@ -307,7 +307,6 @@ static void DisconnectLogicalAudioDevice(SDL_LogicalAudioDevice *logdev)
     if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_REMOVED)) {
         SDL_Event event;
         SDL_zero(event);
-SDL_Log("Sending event about loss of logical device #%u", (unsigned int) logdev->instance_id);
         event.type = SDL_EVENT_AUDIO_DEVICE_REMOVED;
         event.common.timestamp = 0;
         event.adevice.which = logdev->instance_id;
