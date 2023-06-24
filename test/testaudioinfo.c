@@ -14,29 +14,30 @@
 #include <SDL3/SDL_test.h>
 
 static void
-print_devices(int iscapture)
+print_devices(SDL_bool iscapture)
 {
     SDL_AudioSpec spec;
     const char *typestr = ((iscapture) ? "capture" : "output");
-    int n = SDL_GetNumAudioDevices(iscapture);
+    int n = 0;
+    SDL_AudioDeviceID *devices = iscapture ? SDL_GetAudioCaptureDevices(&n) : SDL_GetAudioOutputDevices(&n);
 
-    SDL_Log("Found %d %s device%s:\n", n, typestr, n != 1 ? "s" : "");
-
-    if (n == -1) {
-        SDL_Log("  Driver can't detect specific %s devices.\n\n", typestr);
+    if (devices == NULL) {
+        SDL_Log("  Driver failed to report %s devices: %s\n\n", typestr, SDL_GetError());
     } else if (n == 0) {
         SDL_Log("  No %s devices found.\n\n", typestr);
     } else {
         int i;
+        SDL_Log("Found %d %s device%s:\n", n, typestr, n != 1 ? "s" : "");
         for (i = 0; i < n; i++) {
-            const char *name = SDL_GetAudioDeviceName(i, iscapture);
+            char *name = SDL_GetAudioDeviceName(devices[i]);
             if (name != NULL) {
                 SDL_Log("  %d: %s\n", i, name);
+                SDL_free(name);
             } else {
                 SDL_Log("  %d Error: %s\n", i, SDL_GetError());
             }
 
-            if (SDL_GetAudioDeviceSpec(i, iscapture, &spec) == 0) {
+            if (SDL_GetAudioDeviceFormat(devices[i], &spec) == 0) {
                 SDL_Log("     Sample Rate: %d\n", spec.freq);
                 SDL_Log("     Channels: %d\n", spec.channels);
                 SDL_Log("     SDL_AudioFormat: %X\n", spec.format);
@@ -44,11 +45,11 @@ print_devices(int iscapture)
         }
         SDL_Log("\n");
     }
+    SDL_free(devices);
 }
 
 int main(int argc, char **argv)
 {
-    char *deviceName = NULL;
     SDL_AudioSpec spec;
     int i;
     int n;
@@ -88,24 +89,22 @@ int main(int argc, char **argv)
 
     SDL_Log("Using audio driver: %s\n\n", SDL_GetCurrentAudioDriver());
 
-    print_devices(0);
-    print_devices(1);
+    print_devices(SDL_FALSE);
+    print_devices(SDL_TRUE);
 
-    if (SDL_GetDefaultAudioInfo(&deviceName, &spec, 0) < 0) {
-        SDL_Log("Error when calling SDL_GetDefaultAudioInfo: %s\n", SDL_GetError());
+    if (SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec) < 0) {
+        SDL_Log("Error when calling SDL_GetAudioDeviceFormat(default output): %s\n", SDL_GetError());
     } else {
-        SDL_Log("Default Output Name: %s\n", deviceName != NULL ? deviceName : "unknown");
-        SDL_free(deviceName);
+        SDL_Log("Default Output Device:\n");
         SDL_Log("Sample Rate: %d\n", spec.freq);
         SDL_Log("Channels: %d\n", spec.channels);
         SDL_Log("SDL_AudioFormat: %X\n", spec.format);
     }
 
-    if (SDL_GetDefaultAudioInfo(&deviceName, &spec, 1) < 0) {
-        SDL_Log("Error when calling SDL_GetDefaultAudioInfo: %s\n", SDL_GetError());
+    if (SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_CAPTURE, &spec) < 0) {
+        SDL_Log("Error when calling SDL_GetAudioDeviceFormat(default capture): %s\n", SDL_GetError());
     } else {
-        SDL_Log("Default Capture Name: %s\n", deviceName != NULL ? deviceName : "unknown");
-        SDL_free(deviceName);
+        SDL_Log("Default Capture Device:\n");
         SDL_Log("Sample Rate: %d\n", spec.freq);
         SDL_Log("Channels: %d\n", spec.channels);
         SDL_Log("SDL_AudioFormat: %X\n", spec.format);
@@ -115,3 +114,4 @@ int main(int argc, char **argv)
     SDLTest_CommonDestroyState(state);
     return 0;
 }
+
