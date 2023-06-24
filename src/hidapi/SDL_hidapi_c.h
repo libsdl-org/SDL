@@ -29,7 +29,6 @@
 #define Please_use_SDL_calloc_instead calloc
 #define Please_use_SDL_strtol_instead strtol
 #define Please_use_SDL_sscanf_instead sscanf
-#define Please_use_SDL_memset_instead memset
 #define Please_use_SDL_memmove_instead memmove
 #define Please_use_SDL_strlen_instead strlen
 #define Please_use_SDL_snprintf_instead snprintf

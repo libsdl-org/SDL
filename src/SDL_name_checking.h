@@ -291,11 +291,6 @@
 #endif
 #define memmove Please_use_SDL_memmove_instead
 
-#ifdef memset
-#undef memset
-#endif
-#define memset Please_use_SDL_memset_instead
-
 #ifdef pow
 #undef pow
 #endif

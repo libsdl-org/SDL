@@ -75,7 +75,6 @@
 #undef memcpy
 #undef memcpy4
 #undef memmove
-#undef memset
 #undef pow
 #undef powf
 #undef qsort
