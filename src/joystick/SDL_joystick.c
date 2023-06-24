@@ -221,10 +221,10 @@ static int SDL_FindFreePlayerIndex()
 
     for (player_index = 0; player_index < SDL_joystick_player_count; ++player_index) {
         if (SDL_joystick_players[player_index] == -1) {
-            return player_index;
+            break;
         }
     }
-    return -1;
+    return player_index;
 }
 
 static int SDL_GetPlayerIndexForJoystickID(SDL_JoystickID instance_id)
