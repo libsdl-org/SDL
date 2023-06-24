@@ -11,15 +11,11 @@
   freely.
 */
 
+#include <stdio.h>
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
-
-/* SDL_check_naming disable */
-#undef vsnprintf
-#undef snprintf
-
-
 
 
 
@@ -32,7 +28,7 @@
 
 #include "../src/SDL_internal.h"
 
-#include <stdio.h>
+
 #include <string.h>
 
 static int run_test(void);
