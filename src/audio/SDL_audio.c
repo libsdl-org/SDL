@@ -414,6 +414,7 @@ static void SDL_AudioThreadInit_Default(SDL_AudioDevice *device) { /* no-op. */ 
 static void SDL_AudioThreadDeinit_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioWaitDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, int buffer_size) { /* no-op. */ }
+static void SDL_AudioWaitCaptureDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioFlushCapture_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioDeinitialize_Default(void) { /* no-op. */ }
@@ -458,6 +459,7 @@ static void CompleteAudioEntryPoints(void)
     FILL_STUB(WaitDevice);
     FILL_STUB(PlayDevice);
     FILL_STUB(GetDeviceBuf);
+    FILL_STUB(WaitCaptureDevice);
     FILL_STUB(CaptureFromDevice);
     FILL_STUB(FlushCapture);
     FILL_STUB(CloseDevice);
@@ -769,6 +771,7 @@ SDL_bool SDL_CaptureAudioThreadIterate(SDL_AudioDevice *device)
     } else if (device->logical_devices == NULL) {
         current_audio.impl.FlushCapture(device); // nothing wants data, dump anything pending.
     } else {
+        // this SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitCaptureDevice!
         const int rc = current_audio.impl.CaptureFromDevice(device, device->work_buffer, device->buffer_size);
         if (rc < 0) {  // uhoh, device failed for some reason!
             retval = SDL_FALSE;
@@ -818,7 +821,11 @@ static int SDLCALL CaptureAudioThread(void *devicep)  // thread entry point
     SDL_assert(device != NULL);
     SDL_assert(device->iscapture);
     SDL_CaptureAudioThreadSetup(device);
-    while (SDL_CaptureAudioThreadIterate(device)) { /* spin, CaptureAudioThreadIterate will block if necessary. !!! FIXME: maybe this is bad. */ }
+
+    do {
+        current_audio.impl.WaitCaptureDevice(device);
+    } while (SDL_CaptureAudioThreadIterate(device));
+
     SDL_CaptureAudioThreadShutdown(device);
     return 0;
 }

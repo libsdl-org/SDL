@@ -429,62 +429,65 @@ static void ReadCallback(pa_stream *p, size_t nbytes, void *userdata)
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  /* the capture code queries what it needs, we just need to signal to end any wait */
 }
 
-static int PULSEAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+static void PULSEAUDIO_WaitCaptureDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
-    const void *data = NULL;
-    size_t nbytes = 0;
-    int retval = 0;
+
+    if (h->capturebuf != NULL) {
+        return;  // there's still data available to read.
+    }
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
     while (!SDL_AtomicGet(&device->shutdown)) {
-        if (h->capturebuf != NULL) {
-            const int cpy = SDL_min(buflen, h->capturelen);
-            SDL_memcpy(buffer, h->capturebuf, cpy);
-            /*printf("PULSEAUDIO: fed %d captured bytes\n", cpy);*/
-            h->capturebuf += cpy;
-            h->capturelen -= cpy;
-            if (h->capturelen == 0) {
-                h->capturebuf = NULL;
-                PULSEAUDIO_pa_stream_drop(h->stream); /* done with this fragment. */
-            }
-            retval = cpy; /* new data, return it. */
+        PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
+        if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
+            //printf("PULSEAUDIO DEVICE FAILURE IN WAITCAPTUREDEVICE!\n");
+            SDL_AudioDeviceDisconnected(device);
             break;
-        }
-
-        while (!SDL_AtomicGet(&device->shutdown) && (PULSEAUDIO_pa_stream_readable_size(h->stream) == 0)) {
-            PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
-            if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
-                /*printf("PULSEAUDIO DEVICE FAILURE IN CAPTUREFROMDEVICE!\n");*/
-                SDL_AudioDeviceDisconnected(device);
-                retval = -1;
+        } else if (PULSEAUDIO_pa_stream_readable_size(h->stream) > 0) {
+            // a new fragment is available!
+            const void *data = NULL;
+            size_t nbytes = 0;
+            PULSEAUDIO_pa_stream_peek(h->stream, &data, &nbytes);
+            SDL_assert(nbytes > 0);
+            if (data == NULL) {  // If NULL, then the buffer had a hole, ignore that
+                PULSEAUDIO_pa_stream_drop(h->stream);  // drop this fragment.
+            } else {
+                // store this fragment's data for use with CaptureFromDevice
+                //printf("PULSEAUDIO: captured %d new bytes\n", (int) nbytes);
+                h->capturebuf = (const Uint8 *)data;
+                h->capturelen = nbytes;
                 break;
             }
-        }
-
-        if ((retval == -1) || SDL_AtomicGet(&device->shutdown)) {  /* in case this happened while we were blocking. */
-            retval = -1;
-            break;
-        }
-
-        /* a new fragment is available! */
-        PULSEAUDIO_pa_stream_peek(h->stream, &data, &nbytes);
-        SDL_assert(nbytes > 0);
-        /* If data == NULL, then the buffer had a hole, ignore that */
-        if (data == NULL) {
-            PULSEAUDIO_pa_stream_drop(h->stream); /* drop this fragment. */
-        } else {
-            /* store this fragment's data, start feeding it to SDL. */
-            /*printf("PULSEAUDIO: captured %d new bytes\n", (int) nbytes);*/
-            h->capturebuf = (const Uint8 *)data;
-            h->capturelen = nbytes;
         }
     }
 
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
+}
 
-    return retval;
+static int PULSEAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+{
+    struct SDL_PrivateAudioData *h = device->hidden;
+
+    if (h->capturebuf != NULL) {
+        const int cpy = SDL_min(buflen, h->capturelen);
+        if (cpy > 0) {
+            //printf("PULSEAUDIO: fed %d captured bytes\n", cpy);
+            SDL_memcpy(buffer, h->capturebuf, cpy);
+            h->capturebuf += cpy;
+            h->capturelen -= cpy;
+        }
+        if (h->capturelen == 0) {
+            h->capturebuf = NULL;
+            PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);  // don't know if you _have_ to lock for this, but just in case.
+            PULSEAUDIO_pa_stream_drop(h->stream); // done with this fragment.
+            PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
+        }
+        return cpy; /* new data, return it. */
+    }
+
+    return 0;
 }
 
 static void PULSEAUDIO_FlushCapture(SDL_AudioDevice *device)
@@ -991,6 +994,7 @@ static SDL_bool PULSEAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->GetDeviceBuf = PULSEAUDIO_GetDeviceBuf;
     impl->CloseDevice = PULSEAUDIO_CloseDevice;
     impl->Deinitialize = PULSEAUDIO_Deinitialize;
+    impl->WaitCaptureDevice = PULSEAUDIO_WaitCaptureDevice;
     impl->CaptureFromDevice = PULSEAUDIO_CaptureFromDevice;
     impl->FlushCapture = PULSEAUDIO_FlushCapture;
     #if 0

@@ -109,6 +109,7 @@ typedef struct SDL_AudioDriverImpl
     void (*WaitDevice)(SDL_AudioDevice *device);
     void (*PlayDevice)(SDL_AudioDevice *device, int buffer_size);
     Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
+    void (*WaitCaptureDevice)(SDL_AudioDevice *device);
     int (*CaptureFromDevice)(SDL_AudioDevice *device, void *buffer, int buflen);
     void (*FlushCapture)(SDL_AudioDevice *device);
     void (*CloseDevice)(SDL_AudioDevice *device);

@@ -162,6 +162,7 @@ static SDL_bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)
     /* Set the function pointers */
     impl->OpenDevice = DISKAUDIO_OpenDevice;
     impl->WaitDevice = DISKAUDIO_WaitDevice;
+    impl->WaitCaptureDevice = DISKAUDIO_WaitDevice;
     impl->PlayDevice = DISKAUDIO_PlayDevice;
     impl->GetDeviceBuf = DISKAUDIO_GetDeviceBuf;
     impl->CaptureFromDevice = DISKAUDIO_CaptureFromDevice;
