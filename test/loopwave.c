@@ -37,28 +37,11 @@ static struct
 static SDL_AudioDeviceID device;
 static SDL_AudioStream *stream;
 
-static void SDLCALL
-fillerup(SDL_AudioStream *stream, int len, void *unused)
+static void fillerup(void)
 {
-    Uint8 *waveptr;
-    int waveleft;
-
-    /*SDL_Log("CALLBACK WANTS %d MORE BYTES!", len);*/
-
-    /* Set up the pointers */
-    waveptr = wave.sound + wave.soundpos;
-    waveleft = wave.soundlen - wave.soundpos;
-
-    /* Go! */
-    while (waveleft <= len) {
-        SDL_PutAudioStreamData(stream, waveptr, waveleft);
-        len -= waveleft;
-        waveptr = wave.sound;
-        waveleft = wave.soundlen;
-        wave.soundpos = 0;
+    if (SDL_GetAudioStreamAvailable(stream) < (wave.soundlen / 2)) {
+        SDL_PutAudioStreamData(stream, wave.sound, wave.soundlen);
     }
-    SDL_PutAudioStreamData(stream, waveptr, len);
-    wave.soundpos += len;
 }
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
@@ -99,8 +82,6 @@ open_audio(void)
         SDL_free(wave.sound);
         quit(2);
     }
-
-    SDL_SetAudioStreamGetCallback(stream, fillerup, NULL);
 }
 
 
@@ -111,7 +92,7 @@ static int done = 0;
 #ifdef __EMSCRIPTEN__
 static void loop(void)
 {
-    if (done || (SDL_GetAudioDeviceStatus(device) != SDL_AUDIO_PLAYING)) {
+    if (done) {
         emscripten_cancel_main_loop();
     } else {
         fillerup();
@@ -195,6 +176,7 @@ int main(int argc, char *argv[])
             }
         }
 
+        fillerup();
         SDL_Delay(100);
     }
 #endif
