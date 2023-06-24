@@ -15,8 +15,10 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-// printf()
-#define Please_use_SDL_vsnprintf_instead vsnprintf
+/* SDL_check_naming disable */
+#undef vsnprintf
+#undef snprintf
+
 
 
 
