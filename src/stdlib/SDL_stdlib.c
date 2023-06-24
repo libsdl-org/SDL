@@ -19,66 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#define Please_use_SDL_atan_instead atan
-#define Please_use_SDL_atanf_instead atanf
-#define Please_use_SDL_atan2_instead atan2
-#define Please_use_SDL_atan2f_instead atan2f
-#define Please_use_SDL_acos_instead acos
-#define Please_use_SDL_acosf_instead acosf
-#define Please_use_SDL_asin_instead asin
-#define Please_use_SDL_asinf_instead asinf
-#define Please_use_SDL_ceil_instead ceil
-#define Please_use_SDL_ceilf_instead ceilf
-#define Please_use_SDL_copysign_instead copysign
-#define Please_use_SDL_copysignf_instead copysignf
-#define Please_use_SDL_cos_instead cos
-#define Please_use_SDL_cosf_instead cosf
-#define Please_use_SDL_exp_instead exp
-#define Please_use_SDL_expf_instead expf
-#define Please_use_SDL_fabs_instead fabs
-#define Please_use_SDL_fabsf_instead fabsf
-#define Please_use_SDL_floor_instead floor
-#define Please_use_SDL_floorf_instead floorf
-#define Please_use_SDL_trunc_instead trunc
-#define Please_use_SDL_truncf_instead truncf
-#define Please_use_SDL_fmod_instead fmod
-#define Please_use_SDL_fmodf_instead fmodf
-#define Please_use_SDL_logf_instead logf
-#define Please_use_SDL_log10_instead log10
-#define Please_use_SDL_log10f_instead log10f
-#define Please_use_SDL_pow_instead pow
-#define Please_use_SDL_powf_instead powf
-#define Please_use_SDL_round_instead round
-#define Please_use_SDL_roundf_instead roundf
-#define Please_use_SDL_lround_instead lround
-#define Please_use_SDL_lroundf_instead lroundf
-#define Please_use_SDL_scalbn_instead scalbn
-#define Please_use_SDL_scalbnf_instead scalbnf
-#define Please_use_SDL_sin_instead sin
-#define Please_use_SDL_sinf_instead sinf
-#define Please_use_SDL_sqrt_instead sqrt
-#define Please_use_SDL_sqrtf_instead sqrtf
-#define Please_use_SDL_tan_instead tan
-#define Please_use_SDL_tanf_instead tanf
-#define Please_use_SDL_abs_instead abs
-#define Please_use_SDL_isalpha_instead isalpha
-#define Please_use_SDL_isalnum_instead isalnum
-#define Please_use_SDL_isdigit_instead isdigit
-#define Please_use_SDL_isxdigit_instead isxdigit
-#define Please_use_SDL_ispunct_instead ispunct
-#define Please_use_SDL_isspace_instead isspace
-#define Please_use_SDL_isupper_instead isupper
-#define Please_use_SDL_islower_instead islower
-#define Please_use_SDL_isprint_instead isprint
-#define Please_use_SDL_isgraph_instead isgraph
-#define Please_use_SDL_iscntrl_instead iscntrl
-#define Please_use_SDL_toupper_instead toupper
-#define Please_use_SDL_tolower_instead tolower
-#define Please_use_SDL_memset_instead memset
-#define Please_use_SDL_isblank_instead isblank
 
 /* This file contains portable stdlib functions for SDL */
-
+#include "SDL_disable_name_checking.h"
 #include "../libm/math_libm.h"
 
 double SDL_atan(double x)
