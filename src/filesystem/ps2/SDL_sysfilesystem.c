@@ -22,6 +22,7 @@
 // TODO FIXME Please_use_SDL_strlen_instead
 #define Please_use_SDL_strstr_instead strstr
 #define Please_use_SDL_strlen_instead strlen
+#define Please_use_SDL_snprintf_instead snprintf
 
 #include <sys/stat.h>
 #include <unistd.h>
