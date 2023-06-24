@@ -774,6 +774,10 @@ SDL_bool SDL_CaptureAudioThreadIterate(SDL_AudioDevice *device)
             retval = SDL_FALSE;
         } else if (rc > 0) {  // queue the new data to each bound stream.
             for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
+                if (SDL_AtomicGet(&logdev->paused)) {
+                    continue;  // paused? Skip this logical device.
+                }
+
                 for (SDL_AudioStream *stream = logdev->bound_streams; stream != NULL; stream = stream->next_binding) {
                     /* this will hold a lock on `stream` while putting. We don't explicitly lock the streams
                        for iterating here because the binding linked list can only change while the device lock is held.
