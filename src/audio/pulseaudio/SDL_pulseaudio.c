@@ -796,13 +796,13 @@ static void SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_la
 static void ServerInfoCallback(pa_context *c, const pa_server_info *i, void *data)
 {
     if (!default_sink_path || (SDL_strcmp(i->default_sink_name, default_sink_path) != 0)) {
-        printf("DEFAULT SINK PATH CHANGED TO '%s'\n", i->default_sink_name);
+        /*printf("DEFAULT SINK PATH CHANGED TO '%s'\n", i->default_sink_name);*/
         SDL_free(default_sink_path);
         default_sink_path = SDL_strdup(i->default_sink_name);
     }
 
     if (!default_source_path || (SDL_strcmp(i->default_source_name, default_source_path) != 0)) {
-        printf("DEFAULT SOURCE PATH CHANGED TO '%s'\n", i->default_source_name);
+        /*printf("DEFAULT SOURCE PATH CHANGED TO '%s'\n", i->default_source_name);*/
         SDL_free(default_source_path);
         default_source_path = SDL_strdup(i->default_source_name);
     }
