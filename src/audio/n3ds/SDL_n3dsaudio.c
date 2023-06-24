@@ -19,6 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+// TODO: FIXME Please_use_SDL_memcpy_instead
+#define Please_use_SDL_memcpy_instead memcpy
 
 #ifdef SDL_AUDIO_DRIVER_N3DS
 

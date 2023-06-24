@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#define Please_use_SDL_memcpy_instead memcpy
 
 /* This file contains SDL replacements for functions in the C library */
 

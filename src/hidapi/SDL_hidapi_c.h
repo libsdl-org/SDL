@@ -22,6 +22,7 @@
 #define Please_use_SDL_memcpy_instead memcpy
 #define Please_use_SDL_strchr_instead strchr
 #define Please_use_SDL_strcmp_instead strcmp
+#define Please_use_SDL_strncmp_instead strncmp
 #define Please_use_SDL_wcsdup_instead wcsdup
 #define Please_use_SDL_wcslen_instead wcslen
 #define Please_use_SDL_wcscmp_instead wcscmp

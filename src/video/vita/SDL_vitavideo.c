@@ -20,6 +20,7 @@
 */
 
 #include "SDL_internal.h"
+#define Please_use_SDL_strlen_instead strlen
 
 #ifdef SDL_VIDEO_DRIVER_VITA
 
