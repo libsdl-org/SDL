@@ -22,6 +22,7 @@
 #define Please_use_SDL_malloc_instead malloc
 #define Please_use_SDL_realloc_instead realloc
 #define Please_use_SDL_calloc_instead calloc
+#define Please_use_SDL_memcpy_instead memcpy
 
 /* This file contains portable memory management functions for SDL */
 

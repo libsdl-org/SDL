@@ -47,6 +47,9 @@ static int forward_argc;
 static char **forward_argv;
 static int exit_status;
 
+#define Please_use_SDL_malloc_instead malloc
+#define Please_use_SDL_strlen_instead strlen
+
 int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {
     int i;

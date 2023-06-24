@@ -23,6 +23,7 @@
 #define Please_use_SDL_strchr_instead strchr
 #define Please_use_SDL_strcmp_instead strcmp
 #define Please_use_SDL_wcsdup_instead wcsdup
+#define Please_use_SDL_wcslen_instead wcslen
 #define Please_use_SDL_wcscmp_instead wcscmp
 #define Please_use_SDL_strdup_instead strdup
 #define Please_use_SDL_calloc_instead calloc
