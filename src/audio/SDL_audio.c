@@ -274,15 +274,19 @@ static SDL_AudioDevice *CreateAudioOutputDevice(const char *name, const SDL_Audi
 // The audio backends call this when a new device is plugged in.
 SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, const SDL_AudioSpec *inspec, void *handle)
 {
+    const SDL_AudioFormat default_format = iscapture ? DEFAULT_AUDIO_CAPTURE_FORMAT : DEFAULT_AUDIO_OUTPUT_FORMAT;
+    const int default_channels = iscapture ? DEFAULT_AUDIO_CAPTURE_CHANNELS : DEFAULT_AUDIO_OUTPUT_CHANNELS;
+    const int default_freq = iscapture ? DEFAULT_AUDIO_CAPTURE_FREQUENCY : DEFAULT_AUDIO_OUTPUT_FREQUENCY;
+
     SDL_AudioSpec spec;
     if (!inspec) {
-        spec.format = DEFAULT_AUDIO_FORMAT;
-        spec.channels = DEFAULT_AUDIO_CHANNELS;
-        spec.freq = DEFAULT_AUDIO_FREQUENCY;
+        spec.format = default_format;
+        spec.channels = default_channels;
+        spec.freq = default_freq;
     } else {
-        spec.format = (inspec->format != 0) ? inspec->format : DEFAULT_AUDIO_FORMAT;
-        spec.channels = (inspec->channels != 0) ? inspec->channels : DEFAULT_AUDIO_CHANNELS;
-        spec.freq = (inspec->freq != 0) ? inspec->freq : DEFAULT_AUDIO_FREQUENCY;
+        spec.format = (inspec->format != 0) ? inspec->format : default_format;
+        spec.channels = (inspec->channels != 0) ? inspec->channels : default_channels;
+        spec.freq = (inspec->freq != 0) ? inspec->freq : default_freq;
     }
 
     SDL_AudioDevice *device = iscapture ? CreateAudioCaptureDevice(name, &spec, handle) : CreateAudioOutputDevice(name, &spec, handle);
@@ -1092,10 +1096,11 @@ static SDL_AudioFormat ParseAudioFormatString(const char *string)
     return 0;
 }
 
-static void PrepareAudioFormat(SDL_AudioSpec *spec)
+static void PrepareAudioFormat(SDL_bool iscapture, SDL_AudioSpec *spec)
 {
     if (spec->freq == 0) {
-        spec->freq = DEFAULT_AUDIO_FREQUENCY;
+        spec->freq = iscapture ? DEFAULT_AUDIO_CAPTURE_FREQUENCY : DEFAULT_AUDIO_OUTPUT_FREQUENCY;
+
         const char *env = SDL_getenv("SDL_AUDIO_FREQUENCY");  // !!! FIXME: should be a hint?
         if (env != NULL) {
             const int val = SDL_atoi(env);
@@ -1106,7 +1111,7 @@ static void PrepareAudioFormat(SDL_AudioSpec *spec)
     }
 
     if (spec->channels == 0) {
-        spec->channels = DEFAULT_AUDIO_CHANNELS;
+        spec->channels = iscapture ? DEFAULT_AUDIO_CAPTURE_CHANNELS : DEFAULT_AUDIO_OUTPUT_CHANNELS;;
         const char *env = SDL_getenv("SDL_AUDIO_CHANNELS");
         if (env != NULL) {
             const int val = SDL_atoi(env);
@@ -1118,7 +1123,7 @@ static void PrepareAudioFormat(SDL_AudioSpec *spec)
 
     if (spec->format == 0) {
         const SDL_AudioFormat val = ParseAudioFormatString(SDL_getenv("SDL_AUDIO_FORMAT"));
-        spec->format = (val != 0) ? val : DEFAULT_AUDIO_FORMAT;
+        spec->format = (val != 0) ? val : (iscapture ? DEFAULT_AUDIO_CAPTURE_FORMAT : DEFAULT_AUDIO_OUTPUT_FORMAT);
     }
 }
 
@@ -1142,6 +1147,7 @@ void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device)
 // this expects the device lock to be held.
 static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec *inspec)
 {
+    SDL_assert(!device->is_opened);
     SDL_assert(device->logical_devices == NULL);
 
     // Just pretend to open a zombie device. It can still collect logical devices on the assumption they will all migrate when the default device is officially changed.
@@ -1151,7 +1157,7 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
 
     SDL_AudioSpec spec;
     SDL_memcpy(&spec, inspec, sizeof (SDL_AudioSpec));
-    PrepareAudioFormat(&spec);
+    PrepareAudioFormat(device->iscapture, &spec);
 
     /* We allow the device format to change if it's better than the current settings (by various definitions of "better"). This prevents
        something low quality, like an old game using S8/8000Hz audio, from ruining a music thing playing at CD quality that tries to open later.

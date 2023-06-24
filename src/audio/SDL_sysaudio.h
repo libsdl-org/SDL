@@ -50,10 +50,13 @@ extern void (*SDL_Convert_F32_to_S32)(Sint32 *dst, const float *src, int num_sam
 #define DEFAULT_INPUT_DEVNAME  "System audio capture device"
 
 /* these are used when no better specifics are known. We default to CD audio quality. */
-#define DEFAULT_AUDIO_FORMAT SDL_AUDIO_S16
-#define DEFAULT_AUDIO_CHANNELS 2
-#define DEFAULT_AUDIO_FREQUENCY 44100
+#define DEFAULT_AUDIO_OUTPUT_FORMAT SDL_AUDIO_S16
+#define DEFAULT_AUDIO_OUTPUT_CHANNELS 2
+#define DEFAULT_AUDIO_OUTPUT_FREQUENCY 44100
 
+#define DEFAULT_AUDIO_CAPTURE_FORMAT SDL_AUDIO_S16
+#define DEFAULT_AUDIO_CAPTURE_CHANNELS 1
+#define DEFAULT_AUDIO_CAPTURE_FREQUENCY 44100
 
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 typedef struct SDL_LogicalAudioDevice SDL_LogicalAudioDevice;
