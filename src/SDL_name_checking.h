@@ -28,562 +28,452 @@
 /* nothing */
 #else
 
-
-#ifdef abs
+#pragma push_macro("abs")
 #undef abs
-#endif
 #define abs Please_use_SDL_abs_instead
 
-#ifdef acos
+#pragma push_macro("acos")
 #undef acos
-#endif
 #define acos Please_use_SDL_acos_instead
 
-#ifdef acosf
+#pragma push_macro("acosf")
 #undef acosf
-#endif
 #define acosf Please_use_SDL_acosf_instead
 
-#ifdef asin
+#pragma push_macro("asin")
 #undef asin
-#endif
 #define asin Please_use_SDL_asin_instead
 
-#ifdef asinf
+#pragma push_macro("asinf")
 #undef asinf
-#endif
 #define asinf Please_use_SDL_asinf_instead
 
-#ifdef asprintf
+#pragma push_macro("asprintf")
 #undef asprintf
-#endif
 #define asprintf Please_use_SDL_asprintf_instead
 
-#ifdef atan
+#pragma push_macro("atan")
 #undef atan
-#endif
 #define atan Please_use_SDL_atan_instead
 
-#ifdef atan2
+#pragma push_macro("atan2")
 #undef atan2
-#endif
 #define atan2 Please_use_SDL_atan2_instead
 
-#ifdef atan2f
+#pragma push_macro("atan2f")
 #undef atan2f
-#endif
 #define atan2f Please_use_SDL_atan2f_instead
 
-#ifdef atanf
+#pragma push_macro("atanf")
 #undef atanf
-#endif
 #define atanf Please_use_SDL_atanf_instead
 
-#ifdef atof
+#pragma push_macro("atof")
 #undef atof
-#endif
 #define atof Please_use_SDL_atof_instead
 
-#ifdef atoi
+#pragma push_macro("atoi")
 #undef atoi
-#endif
 #define atoi Please_use_SDL_atoi_instead
 
-#ifdef calloc
+#pragma push_macro("calloc")
 #undef calloc
-#endif
 #define calloc Please_use_SDL_calloc_instead
 
-#ifdef ceil
+#pragma push_macro("ceil")
 #undef ceil
-#endif
 #define ceil Please_use_SDL_ceil_instead
 
-#ifdef ceilf
+#pragma push_macro("ceilf")
 #undef ceilf
-#endif
 #define ceilf Please_use_SDL_ceilf_instead
 
-#ifdef copysign
+#pragma push_macro("copysign")
 #undef copysign
-#endif
 #define copysign Please_use_SDL_copysign_instead
 
-#ifdef copysignf
+#pragma push_macro("copysignf")
 #undef copysignf
-#endif
 #define copysignf Please_use_SDL_copysignf_instead
 
-#ifdef cos
+#pragma push_macro("cos")
 #undef cos
-#endif
 #define cos Please_use_SDL_cos_instead
 
-#ifdef cosf
+#pragma push_macro("cosf")
 #undef cosf
-#endif
 #define cosf Please_use_SDL_cosf_instead
 
-#ifdef crc32
+#pragma push_macro("crc32")
 #undef crc32
-#endif
 #define crc32 Please_use_SDL_crc32_instead
 
-#ifdef exp
+#pragma push_macro("exp")
 #undef exp
-#endif
 #define exp Please_use_SDL_exp_instead
 
-#ifdef expf
+#pragma push_macro("expf")
 #undef expf
-#endif
 #define expf Please_use_SDL_expf_instead
 
-#ifdef fabs
+#pragma push_macro("fabs")
 #undef fabs
-#endif
 #define fabs Please_use_SDL_fabs_instead
 
-#ifdef fabsf
+#pragma push_macro("fabsf")
 #undef fabsf
-#endif
 #define fabsf Please_use_SDL_fabsf_instead
 
-#ifdef floor
+#pragma push_macro("floor")
 #undef floor
-#endif
 #define floor Please_use_SDL_floor_instead
 
-#ifdef floorf
+#pragma push_macro("floorf")
 #undef floorf
-#endif
 #define floorf Please_use_SDL_floorf_instead
 
-#ifdef fmod
+#pragma push_macro("fmod")
 #undef fmod
-#endif
 #define fmod Please_use_SDL_fmod_instead
 
-#ifdef fmodf
+#pragma push_macro("fmodf")
 #undef fmodf
-#endif
 #define fmodf Please_use_SDL_fmodf_instead
 
-#ifdef getenv
+#pragma push_macro("getenv")
 #undef getenv
-#endif
 #define getenv Please_use_SDL_getenv_instead
 
-#ifdef isalnum
+#pragma push_macro("isalnum")
 #undef isalnum
-#endif
 #define isalnum Please_use_SDL_isalnum_instead
 
-#ifdef isalpha
+#pragma push_macro("isalpha")
 #undef isalpha
-#endif
 #define isalpha Please_use_SDL_isalpha_instead
 
-#ifdef isblank
+#pragma push_macro("isblank")
 #undef isblank
-#endif
 #define isblank Please_use_SDL_isblank_instead
 
-#ifdef iscntrl
+#pragma push_macro("iscntrl")
 #undef iscntrl
-#endif
 #define iscntrl Please_use_SDL_iscntrl_instead
 
-#ifdef isdigit
+#pragma push_macro("isdigit")
 #undef isdigit
-#endif
 #define isdigit Please_use_SDL_isdigit_instead
 
-#ifdef isgraph
+#pragma push_macro("isgraph")
 #undef isgraph
-#endif
 #define isgraph Please_use_SDL_isgraph_instead
 
-#ifdef islower
+#pragma push_macro("islower")
 #undef islower
-#endif
 #define islower Please_use_SDL_islower_instead
 
-#ifdef isprint
+#pragma push_macro("isprint")
 #undef isprint
-#endif
 #define isprint Please_use_SDL_isprint_instead
 
-#ifdef ispunct
+#pragma push_macro("ispunct")
 #undef ispunct
-#endif
 #define ispunct Please_use_SDL_ispunct_instead
 
-#ifdef isspace
+#pragma push_macro("isspace")
 #undef isspace
-#endif
 #define isspace Please_use_SDL_isspace_instead
 
-#ifdef isupper
+#pragma push_macro("isupper")
 #undef isupper
-#endif
 #define isupper Please_use_SDL_isupper_instead
 
-#ifdef isxdigit
+#pragma push_macro("isxdigit")
 #undef isxdigit
-#endif
 #define isxdigit Please_use_SDL_isxdigit_instead
 
-#ifdef itoa
+#pragma push_macro("itoa")
 #undef itoa
-#endif
 #define itoa Please_use_SDL_itoa_instead
 
-#ifdef lltoa
+#pragma push_macro("lltoa")
 #undef lltoa
-#endif
 #define lltoa Please_use_SDL_lltoa_instead
 
-#ifdef log10
+#pragma push_macro("log10")
 #undef log10
-#endif
 #define log10 Please_use_SDL_log10_instead
 
-#ifdef log10f
+#pragma push_macro("log10f")
 #undef log10f
-#endif
 #define log10f Please_use_SDL_log10f_instead
 
-#ifdef logf
+#pragma push_macro("logf")
 #undef logf
-#endif
 #define logf Please_use_SDL_logf_instead
 
-#ifdef lround
+#pragma push_macro("lround")
 #undef lround
-#endif
 #define lround Please_use_SDL_lround_instead
 
-#ifdef lroundf
+#pragma push_macro("lroundf")
 #undef lroundf
-#endif
 #define lroundf Please_use_SDL_lroundf_instead
 
-#ifdef ltoa
+#pragma push_macro("ltoa")
 #undef ltoa
-#endif
 #define ltoa Please_use_SDL_ltoa_instead
 
-#ifdef malloc
+#pragma push_macro("malloc")
 #undef malloc
-#endif
 #define malloc Please_use_SDL_malloc_instead
 
-#ifdef memcmp
+#pragma push_macro("memcmp")
 #undef memcmp
-#endif
 #define memcmp Please_use_SDL_memcmp_instead
 
-#ifdef memcpy
+#pragma push_macro("memcpy")
 #undef memcpy
-#endif
 #define memcpy Please_use_SDL_memcpy_instead
 
-#ifdef memcpy4
+#pragma push_macro("memcpy4")
 #undef memcpy4
-#endif
 #define memcpy4 Please_use_SDL_memcpy4_instead
 
-#ifdef memmove
+#pragma push_macro("memmove")
 #undef memmove
-#endif
 #define memmove Please_use_SDL_memmove_instead
 
-#ifdef pow
+#pragma push_macro("pow")
 #undef pow
-#endif
 #define pow Please_use_SDL_pow_instead
 
-#ifdef powf
+#pragma push_macro("powf")
 #undef powf
-#endif
 #define powf Please_use_SDL_powf_instead
 
-#ifdef qsort
+#pragma push_macro("qsort")
 #undef qsort
-#endif
 #define qsort Please_use_SDL_qsort_instead
 
-#ifdef realloc
+#pragma push_macro("realloc")
 #undef realloc
-#endif
 #define realloc Please_use_SDL_realloc_instead
 
-#ifdef round
+#pragma push_macro("round")
 #undef round
-#endif
 #define round Please_use_SDL_round_instead
 
-#ifdef roundf
+#pragma push_macro("roundf")
 #undef roundf
-#endif
 #define roundf Please_use_SDL_roundf_instead
 
-#ifdef scalbn
+#pragma push_macro("scalbn")
 #undef scalbn
-#endif
 #define scalbn Please_use_SDL_scalbn_instead
 
-#ifdef scalbnf
+#pragma push_macro("scalbnf")
 #undef scalbnf
-#endif
 #define scalbnf Please_use_SDL_scalbnf_instead
 
-#ifdef setenv
+#pragma push_macro("setenv")
 #undef setenv
-#endif
 #define setenv Please_use_SDL_setenv_instead
 
-#ifdef sin
+#pragma push_macro("sin")
 #undef sin
-#endif
 #define sin Please_use_SDL_sin_instead
 
-#ifdef sinf
+#pragma push_macro("sinf")
 #undef sinf
-#endif
 #define sinf Please_use_SDL_sinf_instead
 
-#ifdef snprintf
+#pragma push_macro("snprintf")
 #undef snprintf
-#endif
 #define snprintf Please_use_SDL_snprintf_instead
 
-#ifdef sqrt
+#pragma push_macro("sqrt")
 #undef sqrt
-#endif
 #define sqrt Please_use_SDL_sqrt_instead
 
-#ifdef sqrtf
+#pragma push_macro("sqrtf")
 #undef sqrtf
-#endif
 #define sqrtf Please_use_SDL_sqrtf_instead
 
-#ifdef sscanf
+#pragma push_macro("sscanf")
 #undef sscanf
-#endif
 #define sscanf Please_use_SDL_sscanf_instead
 
-#ifdef strcasecmp
+#pragma push_macro("strcasecmp")
 #undef strcasecmp
-#endif
 #define strcasecmp Please_use_SDL_strcasecmp_instead
 
-#ifdef strchr
+#pragma push_macro("strchr")
 #undef strchr
-#endif
 #define strchr Please_use_SDL_strchr_instead
 
-#ifdef strcmp
+#pragma push_macro("strcmp")
 #undef strcmp
-#endif
 #define strcmp Please_use_SDL_strcmp_instead
 
-#ifdef strdup
+#pragma push_macro("strdup")
 #undef strdup
-#endif
 #define strdup Please_use_SDL_strdup_instead
 
-#ifdef strlcat
+#pragma push_macro("strlcat")
 #undef strlcat
-#endif
 #define strlcat Please_use_SDL_strlcat_instead
 
-#ifdef strlcpy
+#pragma push_macro("strlcpy")
 #undef strlcpy
-#endif
 #define strlcpy Please_use_SDL_strlcpy_instead
 
-#ifdef strlen
+#pragma push_macro("strlen")
 #undef strlen
-#endif
 #define strlen Please_use_SDL_strlen_instead
 
-#ifdef strlwr
+#pragma push_macro("strlwr")
 #undef strlwr
-#endif
 #define strlwr Please_use_SDL_strlwr_instead
 
-#ifdef strncasecmp
+#pragma push_macro("strncasecmp")
 #undef strncasecmp
-#endif
 #define strncasecmp Please_use_SDL_strncasecmp_instead
 
-#ifdef strncmp
+#pragma push_macro("strncmp")
 #undef strncmp
-#endif
 #define strncmp Please_use_SDL_strncmp_instead
 
-#ifdef strrchr
+#pragma push_macro("strrchr")
 #undef strrchr
-#endif
 #define strrchr Please_use_SDL_strrchr_instead
 
-#ifdef strrev
+#pragma push_macro("strrev")
 #undef strrev
-#endif
 #define strrev Please_use_SDL_strrev_instead
 
-#ifdef strstr
+#pragma push_macro("strstr")
 #undef strstr
-#endif
 #define strstr Please_use_SDL_strstr_instead
 
-#ifdef strtod
+#pragma push_macro("strtod")
 #undef strtod
-#endif
 #define strtod Please_use_SDL_strtod_instead
 
-#ifdef strtokr
+#pragma push_macro("strtokr")
 #undef strtokr
-#endif
 #define strtokr Please_use_SDL_strtokr_instead
 
-#ifdef strtol
+#pragma push_macro("strtol")
 #undef strtol
-#endif
 #define strtol Please_use_SDL_strtol_instead
 
-#ifdef strtoll
+#pragma push_macro("strtoll")
 #undef strtoll
-#endif
 #define strtoll Please_use_SDL_strtoll_instead
 
-#ifdef strtoul
+#pragma push_macro("strtoul")
 #undef strtoul
-#endif
 #define strtoul Please_use_SDL_strtoul_instead
 
-#ifdef strupr
+#pragma push_macro("strupr")
 #undef strupr
-#endif
 #define strupr Please_use_SDL_strupr_instead
 
-#ifdef tan
+#pragma push_macro("tan")
 #undef tan
-#endif
 #define tan Please_use_SDL_tan_instead
 
-#ifdef tanf
+#pragma push_macro("tanf")
 #undef tanf
-#endif
 #define tanf Please_use_SDL_tanf_instead
 
-#ifdef tolower
+#pragma push_macro("tolower")
 #undef tolower
-#endif
 #define tolower Please_use_SDL_tolower_instead
 
-#ifdef toupper
+#pragma push_macro("toupper")
 #undef toupper
-#endif
 #define toupper Please_use_SDL_toupper_instead
 
-#ifdef trunc
+#pragma push_macro("trunc")
 #undef trunc
-#endif
 #define trunc Please_use_SDL_trunc_instead
 
-#ifdef truncf
+#pragma push_macro("truncf")
 #undef truncf
-#endif
 #define truncf Please_use_SDL_truncf_instead
 
-#ifdef uitoa
+#pragma push_macro("uitoa")
 #undef uitoa
-#endif
 #define uitoa Please_use_SDL_uitoa_instead
 
-#ifdef ulltoa
+#pragma push_macro("ulltoa")
 #undef ulltoa
-#endif
 #define ulltoa Please_use_SDL_ulltoa_instead
 
-#ifdef ultoa
+#pragma push_macro("ultoa")
 #undef ultoa
-#endif
 #define ultoa Please_use_SDL_ultoa_instead
 
-#ifdef utf8strlcpy
+#pragma push_macro("utf8strlcpy")
 #undef utf8strlcpy
-#endif
 #define utf8strlcpy Please_use_SDL_utf8strlcpy_instead
 
-#ifdef utf8strlen
+#pragma push_macro("utf8strlen")
 #undef utf8strlen
-#endif
 #define utf8strlen Please_use_SDL_utf8strlen_instead
 
-#ifdef vasprintf
+#pragma push_macro("vasprintf")
 #undef vasprintf
-#endif
 #define vasprintf Please_use_SDL_vasprintf_instead
 
-#ifdef vsnprintf
+#pragma push_macro("vsnprintf")
 #undef vsnprintf
-#endif
 #define vsnprintf Please_use_SDL_vsnprintf_instead
 
-#ifdef vsscanf
+#pragma push_macro("vsscanf")
 #undef vsscanf
-#endif
 #define vsscanf Please_use_SDL_vsscanf_instead
 
-#ifdef wcscasecmp
+#pragma push_macro("wcscasecmp")
 #undef wcscasecmp
-#endif
 #define wcscasecmp Please_use_SDL_wcscasecmp_instead
 
-#ifdef wcscmp
+#pragma push_macro("wcscmp")
 #undef wcscmp
-#endif
 #define wcscmp Please_use_SDL_wcscmp_instead
 
-#ifdef wcsdup
+#pragma push_macro("wcsdup")
 #undef wcsdup
-#endif
 #define wcsdup Please_use_SDL_wcsdup_instead
 
-#ifdef wcslcat
+#pragma push_macro("wcslcat")
 #undef wcslcat
-#endif
 #define wcslcat Please_use_SDL_wcslcat_instead
 
-#ifdef wcslcpy
+#pragma push_macro("wcslcpy")
 #undef wcslcpy
-#endif
 #define wcslcpy Please_use_SDL_wcslcpy_instead
 
-#ifdef wcslen
+#pragma push_macro("wcslen")
 #undef wcslen
-#endif
 #define wcslen Please_use_SDL_wcslen_instead
 
-#ifdef wcsncasecmp
+#pragma push_macro("wcsncasecmp")
 #undef wcsncasecmp
-#endif
 #define wcsncasecmp Please_use_SDL_wcsncasecmp_instead
 
-#ifdef wcsncmp
+#pragma push_macro("wcsncmp")
 #undef wcsncmp
-#endif
 #define wcsncmp Please_use_SDL_wcsncmp_instead
 
-#ifdef wcsstr
+#pragma push_macro("wcsstr")
 #undef wcsstr
-#endif
 #define wcsstr Please_use_SDL_wcsstr_instead
 
 #endif
 
 #endif /* SDL_name_checking_h_ */
+
+
