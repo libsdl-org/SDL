@@ -1156,7 +1156,7 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
     }
 
     SDL_AudioSpec spec;
-    SDL_memcpy(&spec, inspec, sizeof (SDL_AudioSpec));
+    SDL_memcpy(&spec, inspec ? inspec : &device->default_spec, sizeof (SDL_AudioSpec));
     PrepareAudioFormat(device->iscapture, &spec);
 
     /* We allow the device format to change if it's better than the current settings (by various definitions of "better"). This prevents
