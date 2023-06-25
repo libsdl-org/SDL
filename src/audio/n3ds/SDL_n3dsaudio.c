@@ -207,7 +207,7 @@ static void N3DSAUDIO_PlayDevice(SDL_AudioDevice *_this)
 
     contextUnlock(_this);
 
-    memcpy((void *)_this->hidden->waveBuf[nextbuf].data_vaddr,
+    SDL_memcpy((void *)_this->hidden->waveBuf[nextbuf].data_vaddr,
            _this->hidden->mixbuf, sampleLen);
     DSP_FlushDataCache(_this->hidden->waveBuf[nextbuf].data_vaddr, sampleLen);
 

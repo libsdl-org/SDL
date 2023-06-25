@@ -164,7 +164,7 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, size_t *len, const char *mi
             CFRelease(utiType);
             if (itemData != nil) {
                 *len = (size_t)[itemData length];
-                data = malloc(*len);
+                data = SDL_malloc(*len);
                 [itemData getBytes: data length: *len];
                 return data;
             }

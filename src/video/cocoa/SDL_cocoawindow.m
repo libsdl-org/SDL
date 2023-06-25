@@ -2201,7 +2201,7 @@ void Cocoa_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->driverdata).nswindow;
                 [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
             }
-            
+
             if (bActivate) {
                 [nswindow makeKeyAndOrderFront:nil];
             } else {
@@ -2323,7 +2323,7 @@ void Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_V
             /* Hack to fix origin on macOS 10.4
                This is no longer needed as of macOS 10.15, according to bug 4822.
              */
-            if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14) {
+            if (SDL_floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14) {
                 NSRect screenRect = [[nswindow screen] frame];
                 if (screenRect.size.height >= 1.0f) {
                     rect.origin.y += (screenRect.size.height - rect.size.height);
