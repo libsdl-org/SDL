@@ -190,7 +190,7 @@ static void build_device_list(int iscapture, addDevFn addfn, void *addfndata)
         CFRelease(cfstr);
 
         if (usable) {
-            len = strlen(ptr);
+            len = SDL_strlen(ptr);
             /* Some devices have whitespace at the end...trim it. */
             while ((len > 0) && (ptr[len - 1] == ' ')) {
                 len--;
@@ -894,7 +894,7 @@ static int prepare_audioqueue(SDL_AudioDevice *_this)
     /* Make sure we can feed the device a minimum amount of time */
     MINIMUM_AUDIO_BUFFER_TIME_MS = 15.0;
 #ifdef __IOS__
-    if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_7_1) {
+    if (SDL_floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_7_1) {
         /* Older iOS hardware, use 40 ms as a minimum time */
         MINIMUM_AUDIO_BUFFER_TIME_MS = 40.0;
     }
@@ -1213,7 +1213,7 @@ static int COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int i
 
         if (usable) {
             usable = 0;
-            len = strlen(devname);
+            len = SDL_strlen(devname);
             /* Some devices have whitespace at the end...trim it. */
             while ((len > 0) && (devname[len - 1] == ' ')) {
                 len--;
