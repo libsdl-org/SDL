@@ -31,6 +31,7 @@ typedef struct GL_Context
 static SDLTest_CommonState *state;
 static SDL_GLContext context;
 static GL_Context ctx;
+static SDL_bool suspend_when_occluded;
 
 static int LoadContext(GL_Context *data)
 {
@@ -237,12 +238,15 @@ int main(int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--accel") == 0 && i + 1 < argc) {
                 accel = SDL_atoi(argv[i + 1]);
                 consumed = 2;
+            } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
+                suspend_when_occluded = SDL_TRUE;
+                consumed = 1;
             } else {
                 consumed = -1;
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--fsaa n]", "[--accel n]", NULL };
+            static const char *options[] = { "[--fsaa n]", "[--accel n]", "[--suspend-when-occluded]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             quit(1);
         }
@@ -386,6 +390,7 @@ int main(int argc, char *argv[])
     done = 0;
     while (!done) {
         SDL_bool update_swap_interval = SDL_FALSE;
+        int active_windows = 0;
 
         /* Check for events */
         ++frames;
@@ -408,9 +413,11 @@ int main(int argc, char *argv[])
 
         for (i = 0; i < state->num_windows; ++i) {
             int w, h;
-            if (state->windows[i] == NULL) {
+            if (state->windows[i] == NULL ||
+                (suspend_when_occluded && (SDL_GetWindowFlags(state->windows[i]) & SDL_WINDOW_OCCLUDED))) {
                 continue;
             }
+            ++active_windows;
             SDL_GL_MakeCurrent(state->windows[i], context);
             if (update_swap_interval) {
                 SDL_GL_SetSwapInterval(swap_interval);
@@ -419,6 +426,11 @@ int main(int argc, char *argv[])
             ctx.glViewport(0, 0, w, h);
             Render();
             SDL_GL_SwapWindow(state->windows[i]);
+        }
+
+        /* If all windows are occluded, throttle event polling to 15hz. */
+        if (!active_windows) {
+            SDL_DelayNS(SDL_NS_PER_SECOND / 15);
         }
     }
 
