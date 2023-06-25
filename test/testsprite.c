@@ -42,6 +42,7 @@ static Uint64 next_fps_check;
 static Uint32 frames;
 static const int fps_check_delay = 5000;
 static int use_rendergeometry = 0;
+static SDL_bool suspend_when_occluded;
 
 /* Number of iterations to move sprites - used for visual tests. */
 /* -1: infinite random moves (default); >=0: enables N deterministic moves */
@@ -398,6 +399,7 @@ static void loop(void)
 {
     Uint64 now;
     int i;
+    int active_windows = 0;
     SDL_Event event;
 
     /* Check for events */
@@ -405,9 +407,11 @@ static void loop(void)
         SDLTest_CommonEvent(state, &event, &done);
     }
     for (i = 0; i < state->num_windows; ++i) {
-        if (state->windows[i] == NULL) {
+        if (state->windows[i] == NULL ||
+            (suspend_when_occluded && (SDL_GetWindowFlags(state->windows[i]) & SDL_WINDOW_OCCLUDED))) {
             continue;
         }
+        ++active_windows;
         MoveSprites(state->renderers[i], sprites[i]);
     }
 #ifdef __EMSCRIPTEN__
@@ -415,6 +419,11 @@ static void loop(void)
         emscripten_cancel_main_loop();
     }
 #endif
+
+    /* If all windows are occluded, throttle the event polling to 15hz. */
+    if (!done && !active_windows) {
+        SDL_DelayNS(SDL_NS_PER_SECOND / 15);
+    }
 
     frames++;
     now = SDL_GetTicks();
@@ -485,6 +494,9 @@ int main(int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
                 cycle_alpha = SDL_TRUE;
                 consumed = 1;
+            } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
+                suspend_when_occluded = SDL_TRUE;
+                consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--use-rendergeometry") == 0) {
                 if (argv[i + 1]) {
                     if (SDL_strcasecmp(argv[i + 1], "mode1") == 0) {
@@ -512,6 +524,7 @@ int main(int argc, char *argv[])
                 "[--blend none|blend|add|mod|mul|sub]",
                 "[--cyclecolor]",
                 "[--cyclealpha]",
+                "[--suspend-when-occluded]",
                 "[--iterations N]",
                 "[--use-rendergeometry mode1|mode2]",
                 "[num_sprites]",
