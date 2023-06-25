@@ -46,9 +46,6 @@ static SDL_AtomicInt pulseaudio_hotplug_thread_active;
 // These are the OS identifiers (i.e. ALSA strings)...
 static char *default_sink_path = NULL;
 static char *default_source_path = NULL;
-// ... and these are the descriptions we use in GetDefaultAudioInfo...
-static char *default_sink_name = NULL;
-static char *default_source_name = NULL;
 // ... and these are the PulseAudio device indices of the default devices.
 static uint32_t default_sink_index = 0;
 static uint32_t default_source_index = 0;
@@ -761,8 +758,6 @@ static void SinkInfoCallback(pa_context *c, const pa_sink_info *i, int is_last, 
         }
 
         if (default_sink_path != NULL && SDL_strcmp(i->name, default_sink_path) == 0) {
-            SDL_free(default_sink_name);
-            default_sink_name = SDL_strdup(i->description);
             default_sink_index = i->index;
         }
     }
@@ -786,8 +781,6 @@ static void SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_la
         }
 
         if (default_source_path != NULL && SDL_strcmp(i->name, default_source_path) == 0) {
-            SDL_free(default_source_name);
-            default_source_name = SDL_strdup(i->description);
             default_source_index = i->index;
         }
     }
@@ -912,39 +905,6 @@ static void PULSEAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_Audio
     SDL_DestroySemaphore(ready_sem);
 }
 
-#if 0
-static int PULSEAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
-{
-    int i;
-    int numdevices;
-
-    char *target;
-    if (iscapture) {
-        if (default_source_name == NULL) {
-            return SDL_SetError("PulseAudio could not find a default source");
-        }
-        target = default_source_name;
-    } else {
-        if (default_sink_name == NULL) {
-            return SDL_SetError("PulseAudio could not find a default sink");
-        }
-        target = default_sink_name;
-    }
-
-    numdevices = SDL_GetNumAudioDevices(iscapture);
-    for (i = 0; i < numdevices; i += 1) {
-        if (SDL_strcmp(SDL_GetAudioDeviceName(i, iscapture), target) == 0) {
-            if (name != NULL) {
-                *name = SDL_strdup(target);
-            }
-            SDL_GetAudioDeviceSpec(i, iscapture, spec);
-            return 0;
-        }
-    }
-    return SDL_SetError("Could not find default PulseAudio device");
-}
-#endif
-
 static void PULSEAUDIO_Deinitialize(void)
 {
     if (pulseaudio_hotplug_thread) {
@@ -962,10 +922,6 @@ static void PULSEAUDIO_Deinitialize(void)
     default_sink_path = NULL;
     SDL_free(default_source_path);
     default_source_path = NULL;
-    SDL_free(default_sink_name);
-    default_sink_name = NULL;
-    SDL_free(default_source_name);
-    default_source_name = NULL;
 
     default_source_index = 0;
     default_sink_index = 0;
@@ -995,9 +951,6 @@ static SDL_bool PULSEAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->WaitCaptureDevice = PULSEAUDIO_WaitCaptureDevice;
     impl->CaptureFromDevice = PULSEAUDIO_CaptureFromDevice;
     impl->FlushCapture = PULSEAUDIO_FlushCapture;
-    #if 0
-    impl->GetDefaultAudioInfo = PULSEAUDIO_GetDefaultAudioInfo;
-    #endif
 
     impl->HasCaptureSupport = SDL_TRUE;
     impl->SupportsNonPow2Samples = SDL_TRUE;
