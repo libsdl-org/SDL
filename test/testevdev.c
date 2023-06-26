@@ -22,9 +22,10 @@
 #endif
 #define SDL_DYNAMIC_API 0
 
+#include <stdio.h>
+
 #include "../src/SDL_internal.h"
 
-#include <stdio.h>
 #include <string.h>
 
 static int run_test(void);

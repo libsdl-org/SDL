@@ -18,7 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "SDL_internal_lite.h"
+/* Use of naming "length:strlen" */
+
 
 #ifdef __APPLE__
 #import <Foundation/Foundation.h>
