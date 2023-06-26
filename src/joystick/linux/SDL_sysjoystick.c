@@ -53,6 +53,10 @@
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
 /* This isn't defined in older Linux kernel headers */
+#ifndef MSC_TIMESTAMP
+#define MSC_TIMESTAMP 0x05
+#endif
+
 #ifndef SYN_DROPPED
 #define SYN_DROPPED 3
 #endif
@@ -118,6 +122,7 @@
 #define BTN_TRIGGER_HAPPY39     0x2e6
 #define BTN_TRIGGER_HAPPY40     0x2e7
 #endif
+
 
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
