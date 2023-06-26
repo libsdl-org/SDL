@@ -213,14 +213,13 @@ static SDL_bool IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version,
 }
 #endif /* SDL_JOYSTICK_HIDAPI */
 
-static int GuessIsJoystick(int fd)
+static int GuessDeviceClass(int fd)
 {
     unsigned long propbit[NBITS(INPUT_PROP_MAX)] = { 0 };
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
     unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
     unsigned long relbit[NBITS(REL_MAX)] = { 0 };
-    int devclass;
 
     if ((ioctl(fd, EVIOCGBIT(0, sizeof(evbit)), evbit) < 0) ||
         (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
@@ -233,9 +232,12 @@ static int GuessIsJoystick(int fd)
      * device just doesn't have any properties. */
     (void) ioctl(fd, EVIOCGPROP(sizeof(propbit)), propbit);
 
-    devclass = SDL_EVDEV_GuessDeviceClass(propbit, evbit, absbit, keybit, relbit);
+    return SDL_EVDEV_GuessDeviceClass(propbit, evbit, absbit, keybit, relbit);
+}
 
-    if (devclass & SDL_UDEV_DEVICE_JOYSTICK) {
+static int GuessIsJoystick(int fd)
+{
+    if (GuessDeviceClass(fd) & SDL_UDEV_DEVICE_JOYSTICK) {
         return 1;
     }
 
@@ -244,22 +246,7 @@ static int GuessIsJoystick(int fd)
 
 static int GuessIsSensor(int fd)
 {
-    unsigned long evbit[NBITS(EV_MAX)] = { 0 };
-    unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
-    unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
-    unsigned long relbit[NBITS(REL_MAX)] = { 0 };
-    int devclass;
-
-    if ((ioctl(fd, EVIOCGBIT(0, sizeof(evbit)), evbit) < 0) ||
-        (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
-        (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) < 0) ||
-        (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0)) {
-        return 0;
-    }
-
-    devclass = SDL_EVDEV_GuessDeviceClass(evbit, absbit, keybit, relbit);
-
-    if (devclass & SDL_UDEV_DEVICE_ACCELEROMETER) {
+    if (GuessDeviceClass(fd) & SDL_UDEV_DEVICE_ACCELEROMETER) {
         return 1;
     }
 
