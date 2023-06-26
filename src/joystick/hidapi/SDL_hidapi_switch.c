@@ -67,6 +67,7 @@ typedef enum
 {
     k_eSwitchInputReportIDs_SubcommandReply = 0x21,
     k_eSwitchInputReportIDs_FullControllerState = 0x30,
+    k_eSwitchInputReportIDs_FullControllerAndMcuState = 0x31,
     k_eSwitchInputReportIDs_SimpleControllerState = 0x3F,
     k_eSwitchInputReportIDs_CommandAck = 0x81,
 } ESwitchInputReportIDs;
@@ -2201,6 +2202,7 @@ static SDL_bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
                 HandleSimpleControllerState(joystick, ctx, (SwitchSimpleStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
                 break;
             case k_eSwitchInputReportIDs_FullControllerState:
+            case k_eSwitchInputReportIDs_FullControllerAndMcuState:
                 HandleFullControllerState(joystick, ctx, (SwitchStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
                 break;
             default:
