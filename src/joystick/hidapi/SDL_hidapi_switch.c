@@ -755,9 +755,8 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     readUserParams.unAddress = k_unSPIStickUserCalibrationStartOffset;
     readUserParams.ucLength = k_unSPIStickUserCalibrationLength;
 
-    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readUserParams, sizeof(readUserParams), &user_reply)) {
-        return SDL_FALSE;
-    }
+    /* This isn't readable on all controllers, so ignore failure */
+    WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readUserParams, sizeof(readUserParams), &user_reply);
 
     /* Read Factory Calibration Info */
     readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
@@ -768,13 +767,13 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     }
 
     /* Automatically select the user calibration if magic bytes are set */
-    if (user_reply->stickUserCalibration.rgucLeftMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucLeftMagic[1] == 0xA1) {
+    if (user_reply && user_reply->stickUserCalibration.rgucLeftMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucLeftMagic[1] == 0xA1) {
         pLeftStickCal = user_reply->stickUserCalibration.rgucLeftCalibration;
     } else {
         pLeftStickCal = factory_reply->stickFactoryCalibration.rgucLeftCalibration;
     }
 
-    if (user_reply->stickUserCalibration.rgucRightMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucRightMagic[1] == 0xA1) {
+    if (user_reply && user_reply->stickUserCalibration.rgucRightMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucRightMagic[1] == 0xA1) {
         pRightStickCal = user_reply->stickUserCalibration.rgucRightCalibration;
     } else {
         pRightStickCal = factory_reply->stickFactoryCalibration.rgucRightCalibration;
