@@ -1119,7 +1119,9 @@ int SDL_ClearAudioStream(SDL_AudioStream *stream)
 
     SDL_LockMutex(stream->lock);
     SDL_ClearDataQueue(stream->queue, (size_t)stream->packetlen * 2);
-    SDL_memset(stream->history_buffer, SDL_GetSilenceValueForFormat(stream->src_spec.format), stream->history_buffer_frames * stream->src_spec.channels * sizeof (float));
+    if (stream->history_buffer != NULL) {
+        SDL_memset(stream->history_buffer, SDL_GetSilenceValueForFormat(stream->src_spec.format), stream->history_buffer_frames * stream->src_spec.channels * sizeof (float));
+    }
     stream->future_buffer_filled_frames = 0;
     stream->flushed = SDL_FALSE;
     SDL_UnlockMutex(stream->lock);
