@@ -852,6 +852,10 @@ void SDL_DetectPalette(SDL_Palette *pal, SDL_bool *is_opaque, SDL_bool *has_alph
 /* Find the opaque pixel value corresponding to an RGB triple */
 Uint32 SDL_MapRGB(const SDL_PixelFormat *format, Uint8 r, Uint8 g, Uint8 b)
 {
+    if (!format) {
+        SDL_InvalidParamError("format");
+        return 0;
+    }
     if (format->palette == NULL) {
         return (r >> format->Rloss) << format->Rshift | (g >> format->Gloss) << format->Gshift | (b >> format->Bloss) << format->Bshift | format->Amask;
     } else {
@@ -862,6 +866,10 @@ Uint32 SDL_MapRGB(const SDL_PixelFormat *format, Uint8 r, Uint8 g, Uint8 b)
 /* Find the pixel value corresponding to an RGBA quadruple */
 Uint32 SDL_MapRGBA(const SDL_PixelFormat *format, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
+    if (!format) {
+        SDL_InvalidParamError("format");
+        return 0;
+    }
     if (format->palette == NULL) {
         return (r >> format->Rloss) << format->Rshift | (g >> format->Gloss) << format->Gshift | (b >> format->Bloss) << format->Bshift | ((Uint32)(a >> format->Aloss) << format->Ashift & format->Amask);
     } else {
