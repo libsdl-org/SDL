@@ -52,11 +52,15 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
     int i;
 
     /* store arguments */
+    /* Note that we need to be careful about how we allocate/free memory here.
+     * If the application calls SDL_SetMemoryFunctions(), we can't rely on
+     * SDL_free() to use the same allocator after SDL_main() returns.
+     */
     forward_main = mainFunction;
     forward_argc = argc;
-    forward_argv = (char **)malloc((argc + 1) * sizeof(char *));
+    forward_argv = (char **)malloc((argc + 1) * sizeof(char *)); /* This should NOT be SDL_malloc() */
     for (i = 0; i < argc; i++) {
-        forward_argv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char));
+        forward_argv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char)); /* This should NOT be SDL_malloc() */
         strcpy(forward_argv[i], argv[i]);
     }
     forward_argv[i] = NULL;
@@ -68,9 +72,9 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
 
     /* free the memory we used to hold copies of argc and argv */
     for (i = 0; i < forward_argc; i++) {
-        free(forward_argv[i]);
+        free(forward_argv[i]); /* This should NOT be SDL_free() */
     }
-    free(forward_argv);
+    free(forward_argv); /* This should NOT be SDL_free() */
 
     return exit_status;
 }

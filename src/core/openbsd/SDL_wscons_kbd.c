@@ -42,7 +42,7 @@
 
 #define RETIFIOCTLERR(x) \
     if ((x) == -1) {     \
-        free(input);     \
+        SDL_free(input); \
         input = NULL;    \
         return NULL;     \
     }
@@ -424,13 +424,13 @@ static SDL_WSCONS_input_data *SDL_WSCONS_Init_Keyboard(const char *dev)
     }
     input->fd = open(dev, O_RDWR | O_NONBLOCK | O_CLOEXEC);
     if (input->fd == -1) {
-        free(input);
+        SDL_free(input);
         input = NULL;
         return NULL;
     }
     input->keymap.map = SDL_calloc(sizeof(struct wscons_keymap), KS_NUMKEYCODES);
     if (input->keymap.map == NULL) {
-        free(input);
+        SDL_free(input);
         return NULL;
     }
     input->keymap.maplen = KS_NUMKEYCODES;
@@ -471,7 +471,7 @@ void SDL_WSCONS_Quit()
                 close(input->fd);
                 input->fd = -1;
             }
-            free(input);
+            SDL_free(input);
             input = NULL;
         }
         inputs[i] = NULL;

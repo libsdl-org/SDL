@@ -63,7 +63,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     } else {
         SDL_snprintf(retval, len, "%s%s/", base, app);
     }
-    free(base);
+    SDL_free(base);
 
     mkdir(retval, 0755);
     return retval;

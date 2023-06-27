@@ -270,7 +270,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
             } else {
                 okay = SDL_FALSE;
             }
-            free(buf);
+            free(buf);  /* This should NOT be SDL_free() */
 
             if (okay) {
                 break;

@@ -46,7 +46,7 @@ SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse()
     }
     mouseInputData->fd = open("/dev/wsmouse", O_RDWR | O_NONBLOCK | O_CLOEXEC);
     if (mouseInputData->fd == -1) {
-        free(mouseInputData);
+        SDL_free(mouseInputData);
         return NULL;
     }
 #ifdef WSMOUSEIO_SETMODE
@@ -129,5 +129,5 @@ void SDL_WSCONS_Quit_Mouse(SDL_WSCONS_mouse_input_data *inputData)
         return;
     }
     close(inputData->fd);
-    free(inputData);
+    SDL_free(inputData);
 }

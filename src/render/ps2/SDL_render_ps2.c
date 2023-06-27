@@ -111,7 +111,7 @@ static int PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     ps2_tex->Width = texture->w;
     ps2_tex->Height = texture->h;
     ps2_tex->PSM = PixelFormatToPS2PSM(texture->format);
-    ps2_tex->Mem = memalign(128, gsKit_texture_size_ee(ps2_tex->Width, ps2_tex->Height, ps2_tex->PSM));
+    ps2_tex->Mem = SDL_aligned_alloc(128, gsKit_texture_size_ee(ps2_tex->Width, ps2_tex->Height, ps2_tex->PSM));
 
     if (!ps2_tex->Mem) {
         SDL_free(ps2_tex);
@@ -541,7 +541,7 @@ static void PS2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     // Free from vram
     gsKit_TexManager_free(data->gsGlobal, ps2_texture);
 
-    SDL_free(ps2_texture->Mem);
+    SDL_aligned_free(ps2_texture->Mem);
     SDL_free(ps2_texture);
     texture->driverdata = NULL;
 }

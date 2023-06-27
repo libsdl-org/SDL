@@ -1066,7 +1066,7 @@ int SDL_GetSystemRAM(void)
             if (get_system_info(&info) == B_OK) {
                 /* To have an accurate amount, we also take in account the inaccessible pages (aka ignored)
                   which is a bit handier compared to the legacy system's api (i.e. used_pages).*/
-                SDL_SystemRAM = (int)round((info.max_pages + info.ignored_pages > 0 ? info.ignored_pages : 0) * B_PAGE_SIZE / 1048576.0);
+                SDL_SystemRAM = (int)SDL_round((info.max_pages + info.ignored_pages > 0 ? info.ignored_pages : 0) * B_PAGE_SIZE / 1048576.0);
             }
         }
 #endif

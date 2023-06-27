@@ -81,6 +81,7 @@ words = [
     'lroundf',
     'ltoa',
     'malloc',
+    'memalign',
     'memcmp',
     'memcpy',
     'memcpy4',
@@ -199,7 +200,7 @@ def find_symbols_in_file(file, regex):
                 if regex.match(l):
 
                     # free() allowed here
-                    if "This should NOT be SDL_free" in l:
+                    if "This should NOT be SDL_" in l:
                         continue
 
                     # double check

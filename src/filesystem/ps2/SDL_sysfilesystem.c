@@ -70,7 +70,7 @@ static void recursive_mkdir(const char *dir)
         }
     }
 
-    free(base);
+    SDL_free(base);
     mkdir(tmp, S_IRWXU);
 }
 
@@ -95,7 +95,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     } else {
         SDL_snprintf(retval, len, "%s%s/", base, app);
     }
-    free(base);
+    SDL_free(base);
 
     recursive_mkdir(retval);
 

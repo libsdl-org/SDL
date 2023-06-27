@@ -67,7 +67,7 @@ static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
             phdata->NGAGE_WsSession.RedrawReadyCancel();
         }
 
-        free(phdata->NGAGE_DrawDevice);
+        free(phdata->NGAGE_DrawDevice); /* This should NOT be SDL_free() */
 
         if (phdata->NGAGE_WsWindow.WsHandle()) {
             phdata->NGAGE_WsWindow.Close();
