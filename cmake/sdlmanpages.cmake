@@ -32,7 +32,7 @@ function(SDL_generate_manpages)
   set(BUILD_MANDIR "${ARG_BUILD_DOCDIR}/man")
 
   find_package(Perl)
-  file(GLOB HEADER_FILES "${HEADERS_DIR}/*.h")
+  file(GLOB HEADER_FILES "${ARG_HEADERS_DIR}/*.h")
 
   set(result FALSE)
 
