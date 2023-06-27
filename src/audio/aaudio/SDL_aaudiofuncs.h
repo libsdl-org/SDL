@@ -77,3 +77,6 @@ SDL_PROC_UNUSED(aaudio_content_type_t, AAudioStream_getContentType, (AAudioStrea
 SDL_PROC_UNUSED(aaudio_input_preset_t, AAudioStream_getInputPreset, (AAudioStream * stream))                    /* API 28 */
 SDL_PROC_UNUSED(aaudio_allowed_capture_policy_t, AAudioStream_getAllowedCapturePolicy, (AAudioStream * stream)) /* API 29 */
 SDL_PROC_UNUSED(bool, AAudioStream_isPrivacySensitive, (AAudioStream * stream))                                 /* API 30 */
+
+#undef SDL_PROC
+#undef SDL_PROC_UNUSED

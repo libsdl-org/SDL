@@ -25,15 +25,15 @@
 
 #ifdef SDL_AUDIO_DRIVER_AAUDIO
 
-void aaudio_ResumeDevices(void);
-void aaudio_PauseDevices(void);
-SDL_bool aaudio_DetectBrokenPlayState(void);
+void AAUDIO_ResumeDevices(void);
+void AAUDIO_PauseDevices(void);
+SDL_bool AAUDIO_DetectBrokenPlayState(void);
 
 #else
 
-static void aaudio_ResumeDevices(void) {}
-static void aaudio_PauseDevices(void) {}
-static SDL_bool aaudio_DetectBrokenPlayState(void) { return SDL_FALSE; }
+#define AAUDIO_ResumeDevices()
+#define AAUDIO_PauseDevices()
+#define AAUDIO_DetectBrokenPlayState() (SDL_FALSE)
 
 #endif
 
