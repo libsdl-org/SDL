@@ -2,7 +2,7 @@ include(CMakeParseArguments)
 include(GNUInstallDirs)
 
 function(SDL_generate_manpages)
-  cmake_parse_arguments(ARG "" "RESULT_VARIABLE;NAME;BUILD_DOCDIR;HEADERS_DIR;SOURCE_DIR;SYMBOL;OPTION_FILE" "" ${ARGN})
+  cmake_parse_arguments(ARG "" "RESULT_VARIABLE;NAME;BUILD_DOCDIR;HEADERS_DIR;SOURCE_DIR;SYMBOL;OPTION_FILE;WIKIHEADERS_PL_PATH" "" ${ARGN})
 
   if(NOT ARG_NAME)
     set(ARG_NAME "${PROJECT_NAME}")
@@ -36,17 +36,17 @@ function(SDL_generate_manpages)
 
   set(result FALSE)
 
-  if(PERL_FOUND AND EXISTS "${WIKIHEADERS_PL_PATH}")
+  if(PERL_FOUND AND EXISTS "${ARG_WIKIHEADERS_PL_PATH}")
     add_custom_command(
       OUTPUT "${BUILD_WIKIDIR}/${ARG_SYMBOL}.md"
-      COMMAND "${PERL_EXECUTABLE}" "${WIKIHEADERS_PL_PATH}" "${ARG_SOURCE_DIR}" "${BUILD_WIKIDIR}" "--options=${ARG_OPTION_FILE}" --copy-to-wiki
-      DEPENDS ${HEADER_FILES} "${WIKIHEADERS_PL_PATH}" "${ARG_OPTION_FILE}"
+      COMMAND "${PERL_EXECUTABLE}" "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_SOURCE_DIR}" "${BUILD_WIKIDIR}" "--options=${ARG_OPTION_FILE}" --copy-to-wiki
+      DEPENDS ${HEADER_FILES} "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_OPTION_FILE}"
       COMMENT "Generating ${ARG_NAME} wiki markdown files"
     )
     add_custom_command(
       OUTPUT "${BUILD_MANDIR}/man3/${ARG_SYMBOL}.3"
-      COMMAND "${PERL_EXECUTABLE}" "${WIKIHEADERS_PL_PATH}" "${ARG_SOURCE_DIR}" "${BUILD_WIKIDIR}" "--options=${ARG_OPTION_FILE}" "--manpath=${BUILD_MANDIR}" --copy-to-manpages
-      DEPENDS  "${BUILD_WIKIDIR}/${ARG_SYMBOL}.md" "${WIKIHEADERS_PL_PATH}" "${ARG_OPTION_FILE}"
+      COMMAND "${PERL_EXECUTABLE}" "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_SOURCE_DIR}" "${BUILD_WIKIDIR}" "--options=${ARG_OPTION_FILE}" "--manpath=${BUILD_MANDIR}" --copy-to-manpages
+      DEPENDS  "${BUILD_WIKIDIR}/${ARG_SYMBOL}.md" "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_OPTION_FILE}"
       COMMENT "Generating ${ARG_NAME} man pages"
     )
     add_custom_target(${ARG_NAME}-docs ALL DEPENDS "${BUILD_MANDIR}/man3/${ARG_SYMBOL}.3")

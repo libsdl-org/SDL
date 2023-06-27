@@ -3537,7 +3537,6 @@ else()
 endif()
 
 configure_file("cmake/sdlfind.cmake" "sdlfind.cmake" COPYONLY)
-configure_file("cmake/sdlmanpages.cmake" "sdlmanpages.cmake" COPYONLY)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/SDL3Config.cmake.in SDL3Config.cmake
@@ -3656,8 +3655,6 @@ if(NOT SDL_DISABLE_INSTALL)
       ${CMAKE_CURRENT_BINARY_DIR}/SDL3Config.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/SDL3ConfigVersion.cmake
       ${SDL3_SOURCE_DIR}/cmake/sdlfind.cmake
-      ${SDL3_SOURCE_DIR}/build-scripts/wikiheaders.pl
-      ${SDL3_SOURCE_DIR}/cmake/sdlmanpages.cmake
     DESTINATION "${SDL_SDL_INSTALL_REAL_CMAKEDIR}"
   )
 
@@ -3690,10 +3687,10 @@ if(NOT SDL_DISABLE_INSTALL)
     include(CPack)
   endif()
 
-  set(WIKIHEADERS_PL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build-scripts/wikiheaders.pl")
   if(NOT SDL_DISABLE_INSTALL_MAN)
     SDL_generate_manpages(
       SYMBOL "SDL_Init"
+      WIKIHEADERS_PL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build-scripts/wikiheaders.pl"
     )
   endif()
 endif()
