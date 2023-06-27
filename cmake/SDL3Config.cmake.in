@@ -93,3 +93,8 @@ set(SDL3_STATIC_LIBRARIES SDL3::SDL3-static)
 set(SDL3_STATIC_PRIVATE_LIBS)
 
 set(SDL3TEST_LIBRARY SDL3::SDL3_test)
+
+if(SDL3_FOUND)
+  set(WIKIHEADERS_PL_PATH "${CMAKE_CURRENT_LIST_DIR}/wikiheaders.pl")
+  include("${CMAKE_CURRENT_LIST_DIR}/sdlmanpages.cmake")
+endif()
