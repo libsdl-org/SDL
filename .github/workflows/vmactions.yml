@@ -59,6 +59,10 @@ jobs:
           cmake --build build/ --config Release --target package
           
           cmake --build build/ --config Release --target clean
+          rm -rf build/dist/_CPack_Packages
+          rm -rf build/CMakeFiles
+          rm -rf build/docs
+
     - uses: actions/upload-artifact@v3
       with:
         if-no-files-found: error
