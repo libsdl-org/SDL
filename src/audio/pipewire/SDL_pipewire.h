@@ -32,11 +32,12 @@ struct SDL_PrivateAudioData
     struct pw_thread_loop *loop;
     struct pw_stream *stream;
     struct pw_context *context;
-    struct SDL_DataQueue *buffer;
 
-    size_t input_buffer_packet_size;
     Sint32 stride; /* Bytes-per-frame */
     int stream_init_status;
+
+    // Set in GetDeviceBuf, filled in AudioThreadIterate, queued in PlayDevice
+    struct pw_buffer *pw_buf;
 };
 
 #endif /* SDL_pipewire_h_ */

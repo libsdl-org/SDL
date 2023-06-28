@@ -99,6 +99,7 @@ extern void SDL_OutputAudioThreadShutdown(SDL_AudioDevice *device);
 extern void SDL_CaptureAudioThreadSetup(SDL_AudioDevice *device);
 extern SDL_bool SDL_CaptureAudioThreadIterate(SDL_AudioDevice *device);
 extern void SDL_CaptureAudioThreadShutdown(SDL_AudioDevice *device);
+extern void SDL_AudioThreadFinalize(SDL_AudioDevice *device);
 
 typedef struct SDL_AudioDriverImpl
 {

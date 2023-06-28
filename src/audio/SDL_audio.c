@@ -634,7 +634,16 @@ void SDL_QuitAudio(void)
 }
 
 
-
+void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
+{
+    if (SDL_AtomicGet(&device->condemned)) {
+        if (device->thread) {
+            SDL_DetachThread(device->thread);  // no one is waiting for us, just detach ourselves.
+            device->thread = NULL;
+        }
+        DestroyPhysicalAudioDevice(device);
+    }
+}
 
 // Output device thread. This is split into chunks, so backends that need to control this directly can use the pieces they need without duplicating effort.
 
@@ -719,11 +728,7 @@ void SDL_OutputAudioThreadShutdown(SDL_AudioDevice *device)
     // Wait for the audio to drain. !!! FIXME: don't bother waiting if device is lost.
     SDL_Delay(((samples * 1000) / device->spec.freq) * 2);
     current_audio.impl.ThreadDeinit(device);
-    if (SDL_AtomicGet(&device->condemned)) {
-        SDL_DetachThread(device->thread);  // no one is waiting for us, just detach ourselves.
-        device->thread = NULL;
-        DestroyPhysicalAudioDevice(device);
-    }
+    SDL_AudioThreadFinalize(device);
 }
 
 static int SDLCALL OutputAudioThread(void *devicep)  // thread entry point
@@ -810,9 +815,7 @@ void SDL_CaptureAudioThreadShutdown(SDL_AudioDevice *device)
     SDL_assert(device->iscapture);
     current_audio.impl.FlushCapture(device);
     current_audio.impl.ThreadDeinit(device);
-    if (SDL_AtomicGet(&device->condemned)) {
-        DestroyPhysicalAudioDevice(device);
-    }
+    SDL_AudioThreadFinalize(device);
 }
 
 static int SDLCALL CaptureAudioThread(void *devicep)  // thread entry point

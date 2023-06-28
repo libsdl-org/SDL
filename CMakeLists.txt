@@ -356,7 +356,6 @@ set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_RE
 set(SDL_OSS OFF)
 set(SDL_ALSA OFF)
 set(SDL_JACK OFF)
-set(SDL_PIPEWIRE OFF)
 set(SDL_SNDIO OFF)
 
 cmake_dependent_option(SDL_SHARED "Build a shared version of the library" ${SDL_SHARED_DEFAULT} ${SDL_SHARED_AVAILABLE} OFF)
