@@ -65,14 +65,18 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
             }
             if (hint->value != value &&
                 (value == NULL || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
+                char *old_value = hint->value;
+
+                hint->value = value ? SDL_strdup(value) : NULL;
                 for (entry = hint->callbacks; entry;) {
                     /* Save the next entry in case this one is deleted */
                     SDL_HintWatch *next = entry->next;
-                    entry->callback(entry->userdata, name, hint->value, value);
+                    entry->callback(entry->userdata, name, old_value, value);
                     entry = next;
                 }
-                SDL_free(hint->value);
-                hint->value = value ? SDL_strdup(value) : NULL;
+                if (old_value) {
+                    SDL_free(old_value);
+                }
             }
             hint->priority = priority;
             return SDL_TRUE;

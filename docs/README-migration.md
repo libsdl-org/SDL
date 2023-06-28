@@ -386,6 +386,8 @@ functionality to your app and aid migration. That is located in the
 
 SDL_AddHintCallback() now returns a standard int result instead of void, returning 0 if the function succeeds or a negative error code if there was an error.
 
+Calling SDL_GetHint() with the name of the hint being changed from within a hint callback will now return the new value rather than the old value. The old value is still passed as a parameter to the hint callback.
+
 The following hints have been removed:
 * SDL_HINT_VIDEO_HIGHDPI_DISABLED - high DPI support is always enabled
 * SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver instead
