@@ -556,12 +556,13 @@ static void SourceDeviceNameCallback(pa_context *c, const pa_source_info *i, int
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
 
-static SDL_bool FindDeviceName(struct SDL_PrivateAudioData *h, const SDL_bool iscapture, void *handle)
+static SDL_bool FindDeviceName(SDL_AudioDevice *device)
 {
-    SDL_assert(handle != NULL);  // this was a thing in SDL2, but shouldn't be in SDL3.
-    const uint32_t idx = ((uint32_t)((intptr_t)handle)) - 1;
+    struct SDL_PrivateAudioData *h = device->hidden;
+    SDL_assert(device->handle != NULL);  // this was a thing in SDL2, but shouldn't be in SDL3.
+    const uint32_t idx = ((uint32_t)((intptr_t)device->handle)) - 1;
 
-    if (iscapture) {
+    if (device->iscapture) {
         WaitForPulseOperation(PULSEAUDIO_pa_context_get_source_info_by_index(pulseaudio_context, idx, SourceDeviceNameCallback, &h->device_name));
     } else {
         WaitForPulseOperation(PULSEAUDIO_pa_context_get_sink_info_by_index(pulseaudio_context, idx, SinkDeviceNameCallback, &h->device_name));
@@ -592,11 +593,10 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_assert(pulseaudio_context != NULL);
 
     /* Initialize all variables that we clean on shutdown */
-    h = device->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*device->hidden));
+    h = device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (device->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_zerop(device->hidden);
 
     /* Try for a closest match on audio format */
     closefmts = SDL_ClosestAudioFormats(device->spec.format);
@@ -663,7 +663,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
-    if (!FindDeviceName(h, iscapture, device->handle)) {
+    if (!FindDeviceName(device)) {
         retval = SDL_SetError("Requested PulseAudio sink/source missing?");
     } else {
         const char *name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
@@ -953,7 +953,6 @@ static SDL_bool PULSEAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->FlushCapture = PULSEAUDIO_FlushCapture;
 
     impl->HasCaptureSupport = SDL_TRUE;
-    impl->SupportsNonPow2Samples = SDL_TRUE;
 
     return SDL_TRUE; /* this audio target is available. */
 }
