@@ -689,12 +689,6 @@ static int IOS_JoystickInit(void)
 #ifdef SDL_JOYSTICK_MFI
         NSNotificationCenter *center;
 #endif
-#ifdef SDL_JOYSTICK_iOS_ACCELEROMETER
-        if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
-            /* Default behavior, accelerometer as joystick */
-            IOS_AddJoystickDevice(nil, SDL_TRUE);
-        }
-#endif
 
 #ifdef SDL_JOYSTICK_MFI
         /* GameController.framework was added in iOS 7. */

@@ -732,8 +732,6 @@ int main(int argc, char *argv[])
     SDL_Joystick *joystick = NULL;
     SDLTest_CommonState *state;
 
-    SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
-
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
     if (state == NULL) {

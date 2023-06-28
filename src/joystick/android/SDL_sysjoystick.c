@@ -52,8 +52,6 @@
 #define AKEYCODE_BUTTON_16 203
 #endif
 
-#define ANDROID_ACCELEROMETER_NAME      "Android Accelerometer"
-#define ANDROID_ACCELEROMETER_DEVICE_ID INT_MIN
 #define ANDROID_MAX_NBUTTONS            36
 
 static SDL_joylist_item *JoystickByDeviceId(int device_id);
@@ -459,11 +457,6 @@ static void ANDROID_JoystickDetect(void);
 static int ANDROID_JoystickInit(void)
 {
     ANDROID_JoystickDetect();
-
-    if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
-        /* Default behavior, accelerometer as joystick */
-        Android_AddJoystick(ANDROID_ACCELEROMETER_DEVICE_ID, ANDROID_ACCELEROMETER_NAME, ANDROID_ACCELEROMETER_NAME, 0, 0, SDL_TRUE, 0, 3, 0x0003, 0);
-    }
     return 0;
 }
 
