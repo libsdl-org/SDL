@@ -238,7 +238,7 @@ static void AudioConvertByteswap(void *dst, const void *src, int num_samples, in
     case b: { \
         const Uint##b *tsrc = (const Uint##b *)src; \
         Uint##b *tdst = (Uint##b *)dst; \
-        for (i = num_samples; i; i++) { \
+        for (i = 0; i < num_samples; i++) { \
             tdst[i] = SDL_Swap##b(tsrc[i]); \
         } \
         break; \
