@@ -61,6 +61,16 @@ typedef struct
 static int dbus_cursor_size;
 static char *dbus_cursor_theme;
 
+static void Wayland_FreeCursorThemes(SDL_VideoData *vdata)
+{
+    for (int i = 0; i < vdata->num_cursor_themes; i += 1) {
+        WAYLAND_wl_cursor_theme_destroy(vdata->cursor_themes[i].theme);
+    }
+    vdata->num_cursor_themes = 0;
+    SDL_free(vdata->cursor_themes);
+    vdata->cursor_themes = NULL;
+}
+
 #ifdef SDL_USE_LIBDBUS
 
 #include "../../core/linux/SDL_dbus.h"
@@ -120,6 +130,7 @@ static SDL_bool Wayland_ParseDBusReply(SDL_DBusContext *dbus, DBusMessage *reply
 static DBusHandlerResult Wayland_DBusCursorMessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
+    SDL_VideoData *vdata = (SDL_VideoData *)data;
 
     if (dbus->message_is_signal(msg, CURSOR_INTERFACE, CURSOR_SIGNAL_NAME)) {
         DBusMessageIter signal_iter, variant_iter;
@@ -179,10 +190,13 @@ static DBusHandlerResult Wayland_DBusCursorMessageFilter(DBusConnection *conn, D
                 SDL_free(dbus_cursor_theme);
                 if (new_cursor_theme) {
                     dbus_cursor_theme = SDL_strdup(new_cursor_theme);
-                    SDL_SetCursor(NULL); /* Force cursor update */
                 } else {
                     dbus_cursor_theme = NULL;
                 }
+
+                /* Purge the current cached themes and force a cursor refresh. */
+                Wayland_FreeCursorThemes(vdata);
+                SDL_SetCursor(NULL);
             }
         } else {
             goto not_our_signal;
@@ -195,7 +209,7 @@ not_our_signal:
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-static void Wayland_DBusInitCursorProperties()
+static void Wayland_DBusInitCursorProperties(SDL_VideoData *vdata)
 {
     DBusMessage *reply;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
@@ -229,7 +243,7 @@ static void Wayland_DBusInitCursorProperties()
         dbus->bus_add_match(dbus->session_conn,
                             "type='signal', interface='"CURSOR_INTERFACE"',"
                             "member='"CURSOR_SIGNAL_NAME"', arg0='"CURSOR_NAMESPACE"'", NULL);
-        dbus->connection_add_filter(dbus->session_conn, &Wayland_DBusCursorMessageFilter, NULL, NULL);
+        dbus->connection_add_filter(dbus->session_conn, &Wayland_DBusCursorMessageFilter, vdata, NULL);
         dbus->connection_flush(dbus->session_conn);
     }
 }
@@ -757,7 +771,7 @@ void Wayland_InitMouse(void)
     input->cursor_visible = SDL_TRUE;
 
 #ifdef SDL_USE_LIBDBUS
-    Wayland_DBusInitCursorProperties();
+    Wayland_DBusInitCursorProperties(d);
 #endif
 
     SDL_SetDefaultCursor(Wayland_CreateDefaultCursor());
@@ -769,13 +783,8 @@ void Wayland_InitMouse(void)
 void Wayland_FiniMouse(SDL_VideoData *data)
 {
     struct SDL_WaylandInput *input = data->input;
-    int i;
-    for (i = 0; i < data->num_cursor_themes; i += 1) {
-        WAYLAND_wl_cursor_theme_destroy(data->cursor_themes[i].theme);
-    }
-    data->num_cursor_themes = 0;
-    SDL_free(data->cursor_themes);
-    data->cursor_themes = NULL;
+
+    Wayland_FreeCursorThemes(data);
 
 #ifdef SDL_USE_LIBDBUS
     Wayland_DBusFinishCursorProperties();
