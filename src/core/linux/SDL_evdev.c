@@ -59,6 +59,16 @@
 #define REL_HWHEEL_HI_RES 0x0c
 #endif
 
+/* The field to look up in struct input_event for integer seconds */
+#ifndef input_event_sec
+#define input_event_sec time.tv_sec
+#endif
+
+/* The field to look up in struct input_event for fractional seconds */
+#ifndef input_event_usec
+#define input_event_usec time.tv_usec
+#endif
+
 typedef struct SDL_evdevlist_item
 {
     char *path;
@@ -879,9 +889,9 @@ Uint64 SDL_EVDEV_GetEventTimestamp(struct input_event *event)
 
     /* The kernel internally has nanosecond timestamps, but converts it
        to microseconds when delivering the events */
-    timestamp = event->time.tv_sec;
+    timestamp = event->input_event_sec;
     timestamp *= SDL_NS_PER_SECOND;
-    timestamp += SDL_US_TO_NS(event->time.tv_usec);
+    timestamp += SDL_US_TO_NS(event->input_event_usec);
 
     if (!timestamp_offset) {
         timestamp_offset = (now - timestamp);
