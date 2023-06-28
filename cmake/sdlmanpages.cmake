@@ -39,6 +39,7 @@ function(SDL_generate_manpages)
   if(PERL_FOUND AND EXISTS "${ARG_WIKIHEADERS_PL_PATH}")
     add_custom_command(
       OUTPUT "${BUILD_WIKIDIR}/${ARG_SYMBOL}.md"
+      COMMAND "${CMAKE_COMMAND}" -E make_directory "${BUILD_WIKIDIR}"
       COMMAND "${PERL_EXECUTABLE}" "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_SOURCE_DIR}" "${BUILD_WIKIDIR}" "--options=${ARG_OPTION_FILE}" --copy-to-wiki
       DEPENDS ${HEADER_FILES} "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_OPTION_FILE}"
       COMMENT "Generating ${ARG_NAME} wiki markdown files"
