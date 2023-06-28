@@ -91,7 +91,7 @@ typedef enum
 {
     SDL_ARRAYORDER_NONE,
     SDL_ARRAYORDER_RGB,
-    SDL_ARRAYORDER_BGR,
+    SDL_ARRAYORDER_BGR
 } SDL_ArrayOrder;
 
 /** Packed component layout. */

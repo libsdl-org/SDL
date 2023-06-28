@@ -103,7 +103,7 @@ typedef enum {
     /** SPI bus
        Specifications:
        https://www.microsoft.com/download/details.aspx?id=103325 */
-    SDL_HID_API_BUS_SPI = 0x04,
+    SDL_HID_API_BUS_SPI = 0x04
 
 } SDL_hid_bus_type;
 

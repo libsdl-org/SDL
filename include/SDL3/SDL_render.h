@@ -67,7 +67,7 @@ typedef enum
     SDL_RENDERER_SOFTWARE = 0x00000001,         /**< The renderer is a software fallback */
     SDL_RENDERER_ACCELERATED = 0x00000002,      /**< The renderer uses hardware
                                                      acceleration */
-    SDL_RENDERER_PRESENTVSYNC = 0x00000004,     /**< Present is synchronized
+    SDL_RENDERER_PRESENTVSYNC = 0x00000004      /**< Present is synchronized
                                                      with the refresh rate */
 } SDL_RendererFlags;
 
@@ -143,7 +143,7 @@ typedef enum
     SDL_LOGICAL_PRESENTATION_STRETCH,   /**< The rendered content is stretched to the output resolution */
     SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with black bars */
     SDL_LOGICAL_PRESENTATION_OVERSCAN,  /**< The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds */
-    SDL_LOGICAL_PRESENTATION_INTEGER_SCALE,  /**< The rendered content is scaled up by integer multiples to fit the output resolution */
+    SDL_LOGICAL_PRESENTATION_INTEGER_SCALE   /**< The rendered content is scaled up by integer multiples to fit the output resolution */
 } SDL_RendererLogicalPresentation;
 
 /**

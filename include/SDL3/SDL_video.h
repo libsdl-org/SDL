@@ -50,7 +50,7 @@ typedef enum
 {
     SDL_SYSTEM_THEME_UNKNOWN,   /**< Unknown system theme */
     SDL_SYSTEM_THEME_LIGHT,     /**< Light colored system theme */
-    SDL_SYSTEM_THEME_DARK,      /**< Dark colored system theme */
+    SDL_SYSTEM_THEME_DARK       /**< Dark colored system theme */
 } SDL_SystemTheme;
 
 /**
@@ -151,7 +151,7 @@ typedef enum
     SDL_WINDOW_KEYBOARD_GRABBED     = 0x00100000,   /**< window has grabbed keyboard input */
     SDL_WINDOW_VULKAN               = 0x10000000,   /**< window usable for Vulkan surface */
     SDL_WINDOW_METAL                = 0x20000000,   /**< window usable for Metal view */
-    SDL_WINDOW_TRANSPARENT          = 0x40000000,   /**< window with transparent buffer */
+    SDL_WINDOW_TRANSPARENT          = 0x40000000    /**< window with transparent buffer */
 
 } SDL_WindowFlags;
 
