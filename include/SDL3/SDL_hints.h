@@ -82,30 +82,6 @@ extern "C" {
 #define SDL_HINT_ALLOW_TOPMOST "SDL_ALLOW_TOPMOST"
 
 /**
- * \brief Android APK expansion main file version. Should be a string number like "1", "2" etc.
- *
- * Must be set together with SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION.
- *
- * If both hints were set then SDL_RWFromFile() will look into expansion files
- * after a given relative path was not found in the internal storage and assets.
- *
- * By default this hint is not set and the APK expansion files are not searched.
- */
-#define SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION"
-
-/**
- * \brief Android APK expansion patch file version. Should be a string number like "1", "2" etc.
- *
- * Must be set together with SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION.
- *
- * If both hints were set then SDL_RWFromFile() will look into expansion files
- * after a given relative path was not found in the internal storage and assets.
- *
- * By default this hint is not set and the APK expansion files are not searched.
- */
-#define SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION"
-
-/**
  * \brief A variable to control whether the event loop will block itself when the app is paused.
  *
  * The variable can be set to the following values:
@@ -329,25 +305,6 @@ extern "C" {
 #define SDL_HINT_AUDIO_DEVICE_STREAM_ROLE "SDL_AUDIO_DEVICE_STREAM_ROLE"
 
 /**
- *  \brief  A variable controlling speed/quality tradeoff of audio resampling.
- *
- *  SDL may be able to use different approaches to audio resampling, which
- *  produce different levels of quality, using more CPU.
- *
- *  If this hint isn't specified to a valid setting SDL will use the default.
- *
- *  This hint is currently only checked at audio subsystem initialization.
- *
- *  This variable can be set to the following values:
- *
- *    "0" or "default" - SDL chooses default (probably "medium").
- *    "1" or "fast"    - Use fast, lower-quality resampling, if available
- *    "2" or "medium"  - Use medium quality resampling, if available
- *    "3" or "best"    - Use high quality resampling, if available
- */
-#define SDL_HINT_AUDIO_RESAMPLING_MODE   "SDL_AUDIO_RESAMPLING_MODE"
-
-/**
  *  \brief  A variable controlling whether SDL updates joystick state when getting input events
  *
  *  This variable can be set to the following values:
@@ -452,17 +409,6 @@ extern "C" {
  *  The default value is "1". This hint must be set before text input is activated.
  */
 #define SDL_HINT_ENABLE_SCREEN_KEYBOARD "SDL_ENABLE_SCREEN_KEYBOARD"
-
-/**
- *  \brief  A variable that controls whether Steam Controllers should be exposed using the SDL joystick and game controller APIs
- *
- *  The variable can be set to the following values:
- *    "0"       - Do not scan for Steam Controllers
- *    "1"       - Scan for Steam Controllers (the default)
- *
- *  The default value is "1".  This hint must be set before initializing the joystick subsystem.
- */
-#define SDL_HINT_ENABLE_STEAM_CONTROLLERS "SDL_ENABLE_STEAM_CONTROLLERS"
 
 /**
  *  \brief  A variable controlling verbosity of the logging of SDL events pushed onto the internal queue.
