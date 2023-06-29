@@ -572,7 +572,9 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         /* GameCube driver has 12 buttons and 6 axes */
         SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3,start:b8,x:b2,y:b3,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
-               (guid.data[15] == k_eSwitchDeviceInfoControllerType_NESLeft ||
+               (guid.data[15] == k_eSwitchDeviceInfoControllerType_HVCLeft ||
+                guid.data[15] == k_eSwitchDeviceInfoControllerType_HVCRight ||
+                guid.data[15] == k_eSwitchDeviceInfoControllerType_NESLeft ||
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_NESRight ||
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_SNES ||
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_N64 ||
@@ -582,6 +584,11 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConRight)) {
         switch (guid.data[15]) {
+        case k_eSwitchDeviceInfoControllerType_HVCLeft:
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,rightshoulder:b10,start:b6,", sizeof(mapping_string));
+        case k_eSwitchDeviceInfoControllerType_HVCRight:
+            SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,rightshoulder:b10,", sizeof(mapping_string));
+            break;
         case k_eSwitchDeviceInfoControllerType_NESLeft:
         case k_eSwitchDeviceInfoControllerType_NESRight:
             SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,rightshoulder:b10,start:b6,", sizeof(mapping_string));
