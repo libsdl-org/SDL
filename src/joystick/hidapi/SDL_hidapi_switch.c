@@ -1225,11 +1225,11 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case k_eSwitchDeviceInfoControllerType_HVCLeft:
         HIDAPI_SetDeviceName(device, "Nintendo HVC Controller (1)");
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
     case k_eSwitchDeviceInfoControllerType_HVCRight:
         HIDAPI_SetDeviceName(device, "Nintendo HVC Controller (2)");
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
     case k_eSwitchDeviceInfoControllerType_NESLeft:
         HIDAPI_SetDeviceName(device, "Nintendo NES Controller (L)");
@@ -1258,7 +1258,7 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         /* We couldn't read the device info for this controller, might not be fully compliant */
         return;
     default:
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
     }
     device->guid.data[15] = ctx->m_eControllerType;
