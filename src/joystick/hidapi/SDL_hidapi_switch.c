@@ -1059,6 +1059,8 @@ static SDL_bool AlwaysUsesLabels(int vendor_id, int product_id, ESwitchDeviceInf
 {
     /* These controllers don't have a diamond button configuration, so always use labels */
     switch (eControllerType) {
+    case k_eSwitchDeviceInfoControllerType_HVCLeft:
+    case k_eSwitchDeviceInfoControllerType_HVCRight:
     case k_eSwitchDeviceInfoControllerType_NESLeft:
     case k_eSwitchDeviceInfoControllerType_NESRight:
     case k_eSwitchDeviceInfoControllerType_N64:
@@ -1105,7 +1107,8 @@ static SDL_bool HIDAPI_DriverNintendoClassic_IsSupportedDevice(SDL_HIDAPI_Device
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
-            if (SDL_strncmp(name, "NES Controller", 14) == 0) {
+            if (SDL_strncmp(name, "NES Controller", 14) == 0 ||
+                SDL_strncmp(name, "HVC Controller", 14) == 0) {
                 return SDL_TRUE;
             }
         }
@@ -1220,6 +1223,14 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_PRO);
         device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
         break;
+    case k_eSwitchDeviceInfoControllerType_HVCLeft:
+        HIDAPI_SetDeviceName(device, "Nintendo HVC Controller (1)");
+        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        break;
+    case k_eSwitchDeviceInfoControllerType_HVCRight:
+        HIDAPI_SetDeviceName(device, "Nintendo HVC Controller (2)");
+        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        break;
     case k_eSwitchDeviceInfoControllerType_NESLeft:
         HIDAPI_SetDeviceName(device, "Nintendo NES Controller (L)");
         device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
@@ -1247,6 +1258,7 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         /* We couldn't read the device info for this controller, might not be fully compliant */
         return;
     default:
+        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
         break;
     }
     device->guid.data[15] = ctx->m_eControllerType;
@@ -1348,7 +1360,9 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
             return SDL_FALSE;
         }
 
-        if (ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESLeft &&
+        if (ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_HVCLeft &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_HVCRight &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESLeft &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESRight &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SNES &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_N64 &&

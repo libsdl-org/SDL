@@ -29,6 +29,8 @@ typedef enum
     k_eSwitchDeviceInfoControllerType_JoyConRight = 2,
     k_eSwitchDeviceInfoControllerType_ProController = 3,
     k_eSwitchDeviceInfoControllerType_LicProController = 6,
+    k_eSwitchDeviceInfoControllerType_HVCLeft = 7,
+    k_eSwitchDeviceInfoControllerType_HVCRight = 8,
     k_eSwitchDeviceInfoControllerType_NESLeft = 9,
     k_eSwitchDeviceInfoControllerType_NESRight = 10,
     k_eSwitchDeviceInfoControllerType_SNES = 11,
