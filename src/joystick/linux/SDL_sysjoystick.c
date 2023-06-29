@@ -1810,6 +1810,9 @@ static void HandleInputEvents(SDL_Joystick *joystick)
 
             switch (event->type) {
             case EV_KEY:
+#ifdef DEBUG_INPUT_EVENTS
+                SDL_Log("Key 0x%.2x %s\n", code, event->value ? "PRESSED" : "RELEASED");
+#endif
                 SDL_SendJoystickButton(SDL_EVDEV_GetEventTimestamp(event), joystick,
                                           joystick->hwdata->key_map[code],
                                           event->value);
@@ -1826,11 +1829,17 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                 case ABS_HAT3Y:
                     hat_index = (code - ABS_HAT0X) / 2;
                     if (joystick->hwdata->has_hat[hat_index]) {
+#ifdef DEBUG_INPUT_EVENTS
+                        SDL_Log("Axis 0x%.2x = %d\n", code, event->value);
+#endif
                         HandleHat(SDL_EVDEV_GetEventTimestamp(event), joystick, hat_index, code % 2, event->value);
                         break;
                     }
                     SDL_FALLTHROUGH;
                 default:
+#ifdef DEBUG_INPUT_EVENTS
+                    SDL_Log("Axis 0x%.2x = %d\n", code, event->value);
+#endif
                     event->value = AxisCorrect(joystick, code, event->value);
                     SDL_SendJoystickAxis(SDL_EVDEV_GetEventTimestamp(event), joystick,
                                             joystick->hwdata->abs_map[code],
