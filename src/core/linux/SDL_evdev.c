@@ -877,7 +877,6 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
             SDL_free(item);
             return ret;
         }
-        SDL_Log("maxX: %d maxY: %d\n", item->max_x, item->max_y);
     }
 
     if (_this->last == NULL) {
