@@ -67,11 +67,12 @@ include(${SDL3_SOURCE_DIR}/cmake/CheckCPUArchitecture.cmake)
 include(${SDL3_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake)
 include(${SDL3_SOURCE_DIR}/cmake/3rdparty.cmake)
 
-# Enable large file support on 32-bit glibc, so that we can access files
-# with large inode numbers
 check_symbol_exists("__GLIBC__" "stdlib.h" LIBC_IS_GLIBC)
-if (LIBC_IS_GLIBC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
-    target_compile_definitions(sdl-build-options INTERFACE "_FILE_OFFSET_BITS=64")
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+  # Enable large file support on 32-bit glibc, so that we can access files with large inode numbers
+  target_compile_definitions(sdl-build-options INTERFACE "_FILE_OFFSET_BITS=64")
+  # Enable 64-bit time_t on 32-bit glibc, so that time stamps remain correct beyond January 2038
+  target_compile_definitions(sdl-build-options INTERFACE "_TIME_BITS=64")
 endif()
 
 if(CMAKE_VERSION VERSION_LESS "3.26")
