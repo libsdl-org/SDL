@@ -1200,7 +1200,7 @@ static int EncodeVariableInt(Uint8 *buf, Uint32 val)
     int i;
 
     for (i = 0; i < sizeof(val); i++) {
-        buf[i] = val;
+        buf[i] = (Uint8)val;
         if (val > 0x7F) {
             buf[i] |= 0x80;
         }
@@ -1341,10 +1341,10 @@ static SDL_bool HIDAPI_GIP_AcknowledgePacket(SDL_DriverXboxOne_Context *ctx, str
         SDL_zero(pkt);
         pkt.command = ack->command;
         pkt.options = GIP_OPT_INTERNAL;
-        pkt.length = SDL_SwapLE16(ack->chunk_offset + ack->packet_length);
+        pkt.length = SDL_SwapLE16((Uint16)(ack->chunk_offset + ack->packet_length));
 
         if ((ack->options & GIP_OPT_CHUNK) && ctx->chunk_buffer) {
-            pkt.remaining = SDL_SwapLE16(ctx->chunk_length - pkt.length);
+            pkt.remaining = SDL_SwapLE16((Uint16)(ctx->chunk_length - pkt.length));
         }
 
         return HIDAPI_GIP_SendPacket(ctx, &hdr, &pkt);
