@@ -60,7 +60,7 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
             _exit(128);
         }
 
-        argv[argc++] = "--icon-name";
+        argv[argc++] = "--icon";
         switch (messageboxdata->flags) {
         case SDL_MESSAGEBOX_ERROR:
             argv[argc++] = "dialog-error";
