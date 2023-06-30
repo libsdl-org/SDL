@@ -29,21 +29,43 @@ static const char *common_usage[] = {
 };
 
 static const char *video_usage[] = {
-    "[--video driver]", "[--renderer driver]", "[--gldebug]", "[--display N]",
+    "[--always-on-top]",
+    "[--auto-scale-content]",
+    "[--center | --position X,Y]",
+    "[--confine-cursor X,Y,W,H]",
+    "[--depth N]",
+    "[--display N]",
+    "[--flash-on-focus-loss]",
+    "[--fullscreen | --fullscreen-desktop | --windows N]",
+    "[--geometry WxH]",
+    "[--gldebug]",
+    "[--grab]",
+    "[--hidden]",
+    "[--high-pixel-density]",
+    "[--icon icon.bmp]",
     "[--info all|video|modes|render|event|event_motion]",
-    "[--metal-window | --opengl-window | --vulkan-window]",
-    "[--fullscreen | --fullscreen-desktop | --windows N]", "[--title title]",
-    "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
-    "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
-    "[--high-pixel-density]", "[--auto-scale-content]",
+    "[--input-focus]",
+    "[--keyboard-grab]",
     "[--logical-presentation disabled|match|stretch|letterbox|overscan|integer_scale]",
     "[--logical-scale-quality nearest|linear|best]",
-    "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
-    "[--resizable]", "[--transparent]", "[--skip-taskbar]", "[--always-on-top]",
-    "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
-    "[--hidden]", "[--input-focus]", "[--mouse-focus]",
-    "[--flash-on-focus-loss]", "[--confine-cursor X,Y,W,H]",
-    "[--usable-bounds]"
+    "[--logical WxH]",
+    "[--max-geometry WxH]",
+    "[--maximize]",
+    "[--metal-window | --opengl-window | --vulkan-window]",
+    "[--min-geometry WxH]",
+    "[--minimize]",
+    "[--mouse-focus]",
+    "[--noframe]",
+    "[--refresh R]",
+    "[--renderer driver]",
+    "[--resizable]",
+    "[--scale N]",
+    "[--title title]",
+    "[--transparent]",
+    "[--usable-bounds]",
+    "[--utility]",
+    "[--video driver]",
+    "[--vsync]"
 };
 
 /* !!! FIXME: Float32? Sint32? */
@@ -525,10 +547,6 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             state->window_flags |= SDL_WINDOW_TRANSPARENT;
             return 1;
         }
-        if (SDL_strcasecmp(argv[index], "--skip-taskbar") == 0) {
-            state->window_flags |= SDL_WINDOW_SKIP_TASKBAR;
-            return 1;
-        }
         if (SDL_strcasecmp(argv[index], "--always-on-top") == 0) {
             state->window_flags |= SDL_WINDOW_ALWAYS_ON_TOP;
             return 1;
@@ -563,6 +581,10 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
         }
         if (SDL_strcasecmp(argv[index], "--keyboard-grab") == 0) {
             state->window_flags |= SDL_WINDOW_KEYBOARD_GRABBED;
+            return 1;
+        }
+        if (SDL_strcasecmp(argv[index], "--utility") == 0) {
+            state->window_flags |= SDL_WINDOW_UTILITY;
             return 1;
         }
     }
@@ -755,9 +777,6 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
     case SDL_WINDOW_ALWAYS_ON_TOP:
         SDL_snprintfcat(text, maxlen, "ALWAYS_ON_TOP");
         break;
-    case SDL_WINDOW_SKIP_TASKBAR:
-        SDL_snprintfcat(text, maxlen, "SKIP_TASKBAR");
-        break;
     case SDL_WINDOW_UTILITY:
         SDL_snprintfcat(text, maxlen, "UTILITY");
         break;
@@ -802,7 +821,6 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
         SDL_WINDOW_HIGH_PIXEL_DENSITY,
         SDL_WINDOW_MOUSE_CAPTURE,
         SDL_WINDOW_ALWAYS_ON_TOP,
-        SDL_WINDOW_SKIP_TASKBAR,
         SDL_WINDOW_UTILITY,
         SDL_WINDOW_TOOLTIP,
         SDL_WINDOW_POPUP_MENU,

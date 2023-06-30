@@ -122,6 +122,8 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
 
     if (SDL_WINDOW_IS_POPUP(window)) {
         style = WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
+    } else if (window->flags & SDL_WINDOW_UTILITY) {
+        style = WS_EX_TOOLWINDOW;
     }
     return style;
 }
@@ -532,7 +534,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     if (SDL_WINDOW_IS_POPUP(window)) {
         parent = window->parent->driverdata->hwnd;
-    } else if (window->flags & SDL_WINDOW_SKIP_TASKBAR) {
+    } else if (window->flags & SDL_WINDOW_UTILITY) {
         parent = CreateWindow(SDL_Appname, TEXT(""), STYLE_BASIC, 0, 0, 32, 32, NULL, NULL, SDL_Instance, NULL);
     }
 

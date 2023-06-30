@@ -140,10 +140,6 @@ void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, Uint32 flags)
     if (flags & SDL_WINDOW_ALWAYS_ON_TOP) {
         atoms[count++] = _NET_WM_STATE_ABOVE;
     }
-    if (flags & SDL_WINDOW_SKIP_TASKBAR) {
-        atoms[count++] = _NET_WM_STATE_SKIP_TASKBAR;
-        atoms[count++] = _NET_WM_STATE_SKIP_PAGER;
-    }
     if (flags & SDL_WINDOW_INPUT_FOCUS) {
         atoms[count++] = _NET_WM_STATE_FOCUSED;
     }

@@ -2673,3 +2673,7 @@ typedef SDL_cond, SDL_Condition;
 - SDL_GetDisplayOrientation
 + SDL_GetDisplayCurrentOrientation
   (...)
+@@
+@@
+- SDL_WINDOW_SKIP_TASKBAR
++ SDL_WINDOW_UTILITY

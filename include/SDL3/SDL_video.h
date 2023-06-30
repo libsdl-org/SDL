@@ -144,10 +144,10 @@ typedef enum
     SDL_WINDOW_HIGH_PIXEL_DENSITY   = 0x00002000,   /**< window uses high pixel density back buffer if possible */
     SDL_WINDOW_MOUSE_CAPTURE        = 0x00004000,   /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
     SDL_WINDOW_ALWAYS_ON_TOP        = 0x00008000,   /**< window should always be above others */
-    SDL_WINDOW_SKIP_TASKBAR         = 0x00010000,   /**< window should not be added to the taskbar */
-    SDL_WINDOW_UTILITY              = 0x00020000,   /**< window should be treated as a utility window */
-    SDL_WINDOW_TOOLTIP              = 0x00040000,   /**< window should be treated as a tooltip */
-    SDL_WINDOW_POPUP_MENU           = 0x00080000,   /**< window should be treated as a popup menu */
+    /* 0x00010000 was SDL_WINDOW_SKIP_TASKBAR in SDL2, please reserve this bit for sdl-compat */
+    SDL_WINDOW_UTILITY              = 0x00020000,   /**< window should be treated as a utility window, not showing in the task bar and window list */
+    SDL_WINDOW_TOOLTIP              = 0x00040000,   /**< window should be treated as a tooltip and must be created using SDL_CreatePopupWindow() */
+    SDL_WINDOW_POPUP_MENU           = 0x00080000,   /**< window should be treated as a popup menu and must be created using SDL_CreatePopupWindow() */
     SDL_WINDOW_KEYBOARD_GRABBED     = 0x00100000,   /**< window has grabbed keyboard input */
     SDL_WINDOW_VULKAN               = 0x10000000,   /**< window usable for Vulkan surface */
     SDL_WINDOW_METAL                = 0x20000000,   /**< window usable for Metal view */
