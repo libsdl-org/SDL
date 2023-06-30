@@ -565,4 +565,54 @@ char *SDL_DBus_GetLocalMachineId(void)
 
     return NULL;
 }
+
+#define NOTIFICATION_NODE "org.freedesktop.portal.Desktop"
+#define NOTIFICATION_PATH "/org/freedesktop/portal/desktop"
+#define NOTIFICATION_IF "org.freedesktop.portal.Notification"
+
+int SDL_DBus_ShowNotification(const SDL_NotificationData *notificationdata)
+{
+    DBusConnection *conn = dbus.session_conn;
+    DBusMessage *msg = NULL;
+    DBusMessageIter iter;
+    const char *id = "SomeId";
+
+    /* Call Notification.AddNotification() */
+    msg = dbus.message_new_method_call(NOTIFICATION_NODE, NOTIFICATION_PATH, NOTIFICATION_IF, "AddNotification");
+    if (msg == NULL) {
+        goto failure;
+    }
+
+    dbus.message_iter_init_append(msg, &iter);
+    /* Id */
+    dbus.message_iter_append_basic(&iter, DBUS_TYPE_STRING, &id);
+
+    /* a{sv} */
+    {
+        const char *keys[2];
+        const char *values[2];
+        keys[0] = "title";
+        values[0] = notificationdata->title;
+        keys[1] = "body";
+        values[1] = notificationdata->message;
+        SDL_DBus_AppendDictWithKeysValues(&iter, keys, values, 2);
+    }
+
+    if (!dbus.connection_send(conn, msg, NULL)) {
+        goto failure;
+    }
+
+    dbus.connection_flush(conn);
+
+    dbus.message_unref(msg);
+
+    return 0;
+
+failure:
+    if (msg) {
+        dbus.message_unref(msg);
+    }
+    return -1;
+}
+
 #endif
