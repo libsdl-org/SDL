@@ -453,7 +453,7 @@ void SDL_EVDEV_Poll(void)
                                 SDL_SendMouseMotion(mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, item->mouse_x, item->mouse_y);
                                 item->mouse_x = item->mouse_y = 0;
                             }
-                        } else {
+                        } else if (item->range_x > 0 && item->range_y > 0) {
                             /* TODO: test with multiple display scenarios */
                             SDL_DisplayMode mode;
                             SDL_GetCurrentDisplayMode(0, &mode);
