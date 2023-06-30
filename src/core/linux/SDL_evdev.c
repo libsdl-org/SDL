@@ -105,8 +105,8 @@ typedef struct SDL_evdevlist_item
     SDL_bool relative_mouse;
     int mouse_x, mouse_y;
     int mouse_wheel, mouse_hwheel;
-    int min_x, max_x;
-    int min_y, max_y;
+    int min_x, max_x, range_x;
+    int min_y, max_y, range_y;
 
     struct SDL_evdevlist_item *next;
 } SDL_evdevlist_item;
@@ -393,14 +393,7 @@ void SDL_EVDEV_Poll(void)
                             }
                             item->touchscreen_data->slots[0].x = events[i].value;
                         } else if (!item->relative_mouse) {
-                            /* TODO: test with multiple display scenarios */
-                            if (item->max_x > 0) {
-                                SDL_DisplayMode mode;
-                                SDL_GetCurrentDisplayMode(0, &mode);
-                                item->mouse_x = events[i].value * mode.w / item->max_x;
-                            } else {
-                                item->mouse_x = events[i].value;
-                            }
+                            item->mouse_x = events[i].value;
                         }
                         break;
                     case ABS_Y:
@@ -410,14 +403,7 @@ void SDL_EVDEV_Poll(void)
                             }
                             item->touchscreen_data->slots[0].y = events[i].value;
                         } else if (!item->relative_mouse) {
-                            /* TODO: test with multiple display scenarios */
-                            if (item->max_y > 0) {
-                                SDL_DisplayMode mode;
-                                SDL_GetCurrentDisplayMode(0, &mode);
-                                item->mouse_y = events[i].value * mode.h / item->max_y;
-                            } else {
-                                item->mouse_y = events[i].value;
-                            }
+                            item->mouse_y = events[i].value;
                         }
                         break;
                     default:
@@ -462,10 +448,20 @@ void SDL_EVDEV_Poll(void)
                     switch (events[i].code) {
                     case SYN_REPORT:
                         /* Send mouse axis changes together to ensure consistency and reduce event processing overhead */
-                        if (item->mouse_x != 0 || item->mouse_y != 0) {
-                            SDL_SendMouseMotion(mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, item->mouse_x, item->mouse_y);
-                            item->mouse_x = item->mouse_y = 0;
+                        if (item->relative_mouse) { 
+                            if (item->mouse_x != 0 || item->mouse_y != 0) {
+                                SDL_SendMouseMotion(mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, item->mouse_x, item->mouse_y);
+                                item->mouse_x = item->mouse_y = 0;
+                            }
+                        } else {
+                            /* TODO: test with multiple display scenarios */
+                            SDL_DisplayMode mode;
+                            SDL_GetCurrentDisplayMode(0, &mode);
+                            SDL_SendMouseMotion(mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, 
+                                (item->mouse_x - item->min_x) * mode.w / item->range_x, 
+                                (item->mouse_y - item->min_y) * mode.h / item->range_y);
                         }
+
                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
                             SDL_SendMouseWheel(mouse->focus, (SDL_MouseID)item->fd,
                                                item->mouse_hwheel / (item->high_res_hwheel ? 120.0f : 1.0f),
@@ -668,19 +664,21 @@ static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
 
     ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
     if (ret < 0) {
-        SDL_Log("Failed to get evdev mouse limits. continuing");
+        // no absolute mode info, continue
         return 0;
     }
     item->min_x = abs_info.minimum;
     item->max_x = abs_info.maximum;
+    item->range_x = abs_info.maximum - abs_info.minimum;
 
     ret = ioctl(item->fd, EVIOCGABS(ABS_Y), &abs_info);
     if (ret < 0) {
-        SDL_Log("Failed to get evdev mouse limits. continuing");
+        // no absolute mode info, continue
         return 0;
     }
     item->min_y = abs_info.minimum;
     item->max_y = abs_info.maximum;
+    item->range_y = abs_info.maximum - abs_info.minimum;
 
     return 0;
 }
