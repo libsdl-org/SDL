@@ -130,7 +130,6 @@ typedef enum
 {
     SDL_WINDOW_FULLSCREEN           = 0x00000001,   /**< window is in fullscreen mode */
     SDL_WINDOW_OPENGL               = 0x00000002,   /**< window usable with OpenGL context */
-    /* 0x00000004 was SDL_WINDOW_SHOWN in SDL2, please reserve this bit for sdl2-compat. */
     SDL_WINDOW_HIDDEN               = 0x00000008,   /**< window is not visible */
     SDL_WINDOW_BORDERLESS           = 0x00000010,   /**< no window decoration */
     SDL_WINDOW_RESIZABLE            = 0x00000020,   /**< window can be resized */
@@ -139,12 +138,10 @@ typedef enum
     SDL_WINDOW_MOUSE_GRABBED        = 0x00000100,   /**< window has grabbed mouse input */
     SDL_WINDOW_INPUT_FOCUS          = 0x00000200,   /**< window has input focus */
     SDL_WINDOW_MOUSE_FOCUS          = 0x00000400,   /**< window has mouse focus */
-    /* 0x00001000 was SDL_WINDOW_FULLSCREEN_DESKTOP in SDL2, please reserve this bit for sdl2-compat. */
     SDL_WINDOW_FOREIGN              = 0x00000800,   /**< window not created by SDL */
     SDL_WINDOW_HIGH_PIXEL_DENSITY   = 0x00002000,   /**< window uses high pixel density back buffer if possible */
     SDL_WINDOW_MOUSE_CAPTURE        = 0x00004000,   /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
     SDL_WINDOW_ALWAYS_ON_TOP        = 0x00008000,   /**< window should always be above others */
-    /* 0x00010000 was SDL_WINDOW_SKIP_TASKBAR in SDL2, please reserve this bit for sdl-compat */
     SDL_WINDOW_UTILITY              = 0x00020000,   /**< window should be treated as a utility window, not showing in the task bar and window list */
     SDL_WINDOW_TOOLTIP              = 0x00040000,   /**< window should be treated as a tooltip and must be created using SDL_CreatePopupWindow() */
     SDL_WINDOW_POPUP_MENU           = 0x00080000,   /**< window should be treated as a popup menu and must be created using SDL_CreatePopupWindow() */
