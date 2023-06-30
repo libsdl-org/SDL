@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_X11
+#if SDL_VIDEO_DRIVER_X11
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -36,10 +36,11 @@
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
-#include "../../core/linux/SDL_system_theme.h"
 #include "../../SDL_utils_c.h"
 
-#include <SDL3/SDL_syswm.h>
+#include "SDL_hints.h"
+#include "SDL_timer.h"
+#include "SDL_syswm.h"
 
 #include <stdio.h>
 
@@ -323,7 +324,7 @@ static char *X11_URIToLocal(char *uri)
     return file;
 }
 
-#ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
+#if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
 {
     /* event is a union, so cookie == &event, but this is type safe. */
@@ -331,14 +332,14 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
     if (X11_XGetEventData(videodata->display, cookie)) {
         X11_HandleXinput2Event(videodata, cookie);
 
-        /* Send a SDL_EVENT_SYSWM if the application wants them.
+        /* Send a SDL_SYSWMEVENT if the application wants them.
          * Since event data is only available until XFreeEventData is called,
          * the *only* way for an application to access it is to register an event filter/watcher
-         * and do all the processing on the SDL_EVENT_SYSWM inside the callback. */
-        if (SDL_EventEnabled(SDL_EVENT_SYSWM)) {
+         * and do all the processing on the SDL_SYSWMEVENT inside the callback. */
+        if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
             SDL_SysWMmsg wmmsg;
 
-            wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
+            SDL_VERSION(&wmmsg.version);
             wmmsg.subsystem = SDL_SYSWM_X11;
             wmmsg.msg.x11.event = *xev;
             SDL_SendSysWMEvent(&wmmsg);
@@ -349,9 +350,9 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
 }
 #endif /* SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS */
 
-static unsigned X11_GetNumLockModifierMask(SDL_VideoDevice *_this)
+static unsigned X11_GetNumLockModifierMask(_THIS)
 {
-    SDL_VideoData *viddata = _this->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     Display *display = viddata->display;
     unsigned num_mask = 0;
     int i, j;
@@ -374,9 +375,9 @@ static unsigned X11_GetNumLockModifierMask(SDL_VideoDevice *_this)
     return num_mask;
 }
 
-static unsigned X11_GetScrollLockModifierMask(SDL_VideoDevice *_this)
+static unsigned X11_GetScrollLockModifierMask(_THIS)
 {
-    SDL_VideoData *viddata = _this->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     Display *display = viddata->display;
     unsigned num_mask = 0;
     int i, j;
@@ -399,9 +400,9 @@ static unsigned X11_GetScrollLockModifierMask(SDL_VideoDevice *_this)
     return num_mask;
 }
 
-void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
+void X11_ReconcileKeyboardState(_THIS)
 {
-    SDL_VideoData *viddata = _this->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     Display *display = viddata->display;
     char keys[32];
     int keycode;
@@ -414,9 +415,9 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
 
     /* Sync up the keyboard modifier state */
     if (X11_XQueryPointer(display, DefaultRootWindow(display), &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
-        SDL_ToggleModState(SDL_KMOD_CAPS, (mask & LockMask) ? SDL_TRUE : SDL_FALSE);
-        SDL_ToggleModState(SDL_KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) ? SDL_TRUE : SDL_FALSE);
-        SDL_ToggleModState(SDL_KMOD_SCROLL, (mask & X11_GetScrollLockModifierMask(_this)) ? SDL_TRUE : SDL_FALSE);
+        SDL_ToggleModState(KMOD_CAPS, (mask & LockMask) ? SDL_TRUE : SDL_FALSE);
+        SDL_ToggleModState(KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) ? SDL_TRUE : SDL_FALSE);
+        SDL_ToggleModState(KMOD_SCROLL, (mask & X11_GetScrollLockModifierMask(_this)) ? SDL_TRUE : SDL_FALSE);
     }
 
     keyboardState = SDL_GetKeyboardState(0);
@@ -437,18 +438,18 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             case SDLK_LGUI:
             case SDLK_RGUI:
             case SDLK_MODE:
-                SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(SDL_PRESSED, scancode);
                 break;
             default:
                 break;
             }
         } else if (!x11KeyPressed && sdlKeyPressed) {
-            SDL_SendKeyboardKey(0, SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
         }
     }
 }
 
-static void X11_DispatchFocusIn(SDL_VideoDevice *_this, SDL_WindowData *data)
+static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
     printf("window %p: Dispatching FocusIn\n", data);
@@ -468,7 +469,7 @@ static void X11_DispatchFocusIn(SDL_VideoDevice *_this, SDL_WindowData *data)
     }
 }
 
-static void X11_DispatchFocusOut(SDL_VideoDevice *_this, SDL_WindowData *data)
+static void X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
     printf("window %p: Dispatching FocusOut\n", data);
@@ -493,8 +494,8 @@ static void X11_DispatchFocusOut(SDL_VideoDevice *_this, SDL_WindowData *data)
 static void X11_DispatchMapNotify(SDL_WindowData *data)
 {
     SDL_Window *window = data->window;
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_SHOWN, 0, 0);
     if (!(window->flags & SDL_WINDOW_HIDDEN) && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         SDL_UpdateWindowGrab(window);
     }
@@ -502,13 +503,13 @@ static void X11_DispatchMapNotify(SDL_WindowData *data)
 
 static void X11_DispatchUnmapNotify(SDL_WindowData *data)
 {
-    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
-    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
+    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIDDEN, 0, 0);
+    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
 }
 
-static void InitiateWindowMove(SDL_VideoDevice *_this, const SDL_WindowData *data, const SDL_Point *point)
+static void InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
 {
-    SDL_VideoData *viddata = _this->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_Window *window = data->window;
     Display *display = viddata->display;
     XEvent evt;
@@ -531,9 +532,9 @@ static void InitiateWindowMove(SDL_VideoDevice *_this, const SDL_WindowData *dat
     X11_XSync(display, 0);
 }
 
-static void InitiateWindowResize(SDL_VideoDevice *_this, const SDL_WindowData *data, const SDL_Point *point, int direction)
+static void InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Point *point, int direction)
 {
-    SDL_VideoData *viddata = _this->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_Window *window = data->window;
     Display *display = viddata->display;
     XEvent evt;
@@ -560,7 +561,7 @@ static void InitiateWindowResize(SDL_VideoDevice *_this, const SDL_WindowData *d
     X11_XSync(display, 0);
 }
 
-static SDL_bool ProcessHitTest(SDL_VideoDevice *_this, const SDL_WindowData *data, const XEvent *xev)
+static SDL_bool ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
 {
     SDL_Window *window = data->window;
 
@@ -613,10 +614,10 @@ static void X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
     }
 }
 
-static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xevent)
+static void X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
 {
     int i;
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     Display *display = videodata->display;
 
     SDL_assert(videodata->clipboard_window != None);
@@ -628,27 +629,17 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
     {
         const XSelectionRequestEvent *req = &xevent->xselectionrequest;
         XEvent sevent;
-        int mime_formats;
+        int seln_format, mime_formats;
+        unsigned long nbytes;
+        unsigned long overflow;
         unsigned char *seln_data;
-        size_t seln_length = 0;
+        Atom supportedFormats[SDL_X11_CLIPBOARD_MIME_TYPE_MAX + 1];
         Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
-        SDLX11_ClipboardData *clipboard;
 
 #ifdef DEBUG_XEVENTS
-        char *atom_name;
-        atom_name = X11_XGetAtomName(display, req->target);
-        printf("window CLIPBOARD: SelectionRequest (requestor = %ld, target = %ld, mime_type = %s)\n",
-               req->requestor, req->target, atom_name);
-        if (atom_name) {
-            X11_XFree(atom_name);
-        }
+        printf("window CLIPBOARD: SelectionRequest (requestor = %ld, target = %ld)\n",
+               req->requestor, req->target);
 #endif
-
-        if (req->selection == XA_PRIMARY) {
-            clipboard = &videodata->primary_selection;
-        } else {
-            clipboard = &videodata->clipboard;
-        }
 
         SDL_zero(sevent);
         sevent.xany.type = SelectionNotify;
@@ -663,12 +654,10 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
            this now (or ever, really). */
 
         if (req->target == XA_TARGETS) {
-            Atom *supportedFormats;
-            supportedFormats = SDL_malloc((clipboard->mime_count + 1) * sizeof(Atom));
             supportedFormats[0] = XA_TARGETS;
             mime_formats = 1;
-            for (i = 0; i < clipboard->mime_count; ++i) {
-                supportedFormats[mime_formats++] = X11_XInternAtom(display, clipboard->mime_types[i], False);
+            for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) {
+                supportedFormats[mime_formats++] = X11_GetSDLCutBufferClipboardExternalFormat(display, i);
             }
             X11_XChangeProperty(display, req->requestor, req->property,
                                 XA_ATOM, 32, PropModeReplace,
@@ -676,25 +665,25 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
                                 mime_formats);
             sevent.xselection.property = req->property;
             sevent.xselection.target = XA_TARGETS;
-            SDL_free(supportedFormats);
         } else {
-            if (clipboard->callback) {
-                for (i = 0; i < clipboard->mime_count; ++i) {
-                    const char *mime_type = clipboard->mime_types[i];
-                    if (X11_XInternAtom(display, mime_type, False) != req->target) {
-                        continue;
-                    }
-
-                    /* FIXME: We don't support the X11 INCR protocol for large clipboards. Do we want that? */
-                    seln_data = clipboard->callback(&seln_length, mime_type, clipboard->userdata);
-                    if (seln_data != NULL) {
+            for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) {
+                if (X11_GetSDLCutBufferClipboardExternalFormat(display, i) != req->target) {
+                    continue;
+                }
+                if (X11_XGetWindowProperty(display, DefaultRootWindow(display),
+                                           X11_GetSDLCutBufferClipboardType(display, i, req->selection), 0, INT_MAX / 4, False, X11_GetSDLCutBufferClipboardInternalFormat(display, i),
+                                           &sevent.xselection.target, &seln_format, &nbytes,
+                                           &overflow, &seln_data) == Success) {
+                    if (seln_format != None) {
                         X11_XChangeProperty(display, req->requestor, req->property,
-                                            req->target, 8, PropModeReplace,
-                                            seln_data, seln_length);
+                                            sevent.xselection.target, seln_format, PropModeReplace,
+                                            seln_data, nbytes);
                         sevent.xselection.property = req->property;
-                        sevent.xselection.target = req->target;
+                        X11_XFree(seln_data);
+                        break;
+                    } else {
+                        X11_XFree(seln_data);
                     }
-                    break;
                 }
             }
         }
@@ -715,24 +704,15 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
     {
         /* !!! FIXME: cache atoms */
         Atom XA_CLIPBOARD = X11_XInternAtom(display, "CLIPBOARD", 0);
-        SDLX11_ClipboardData *clipboard = NULL;
 
 #ifdef DEBUG_XEVENTS
         printf("window CLIPBOARD: SelectionClear (requestor = %ld, target = %ld)\n",
                xevent->xselection.requestor, xevent->xselection.target);
 #endif
 
-        if (xevent->xselectionclear.selection == XA_PRIMARY) {
-            clipboard = &videodata->primary_selection;
-        } else if (XA_CLIPBOARD != None && xevent->xselectionclear.selection == XA_CLIPBOARD) {
-            clipboard = &videodata->clipboard;
-            if (clipboard->internal == SDL_FALSE) {
-                SDL_SendClipboardCancelled(clipboard->userdata);
-            }
-        }
-        if (clipboard != NULL && clipboard->internal == SDL_TRUE) {
-            SDL_free(clipboard->userdata);
-            clipboard->userdata = NULL;
+        if (xevent->xselectionclear.selection == XA_PRIMARY ||
+            (XA_CLIPBOARD != None && xevent->xselectionclear.selection == XA_CLIPBOARD)) {
+            SDL_SendClipboardUpdate();
         }
     } break;
     }
@@ -788,8 +768,9 @@ static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int
     return result;
 }
 
-void X11_GetBorderValues(SDL_WindowData *data)
+void X11_GetBorderValues(void /* SDL_WindowData */ *data_)
 {
+    SDL_WindowData *data = (SDL_WindowData *)data_;
     SDL_VideoData *videodata = data->videodata;
     Display *display = videodata->display;
 
@@ -812,9 +793,9 @@ void X11_GetBorderValues(SDL_WindowData *data)
     }
 }
 
-static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
+static void X11_DispatchEvent(_THIS, XEvent *xevent)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     Display *display;
     SDL_WindowData *data;
     int orig_event_type;
@@ -851,33 +832,33 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             videodata->filter_time = xevent->xkey.time;
 
             if (orig_event_type == KeyPress) {
-                SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(SDL_PRESSED, scancode);
             } else {
-                SDL_SendKeyboardKey(0, SDL_RELEASED, scancode);
+                SDL_SendKeyboardKey(SDL_RELEASED, scancode);
             }
 #endif
         }
         return;
     }
 
-#ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
+#if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
     if (xevent->type == GenericEvent) {
         X11_HandleGenericEvent(videodata, xevent);
         return;
     }
 #endif
 
-#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
+#if SDL_VIDEO_DRIVER_X11_XRANDR
     if (videodata->xrandr_event_base && (xevent->type == (videodata->xrandr_event_base + RRNotify))) {
         X11_HandleXRandREvent(_this, xevent);
     }
 #endif
 
-    /* Send a SDL_EVENT_SYSWM if the application wants them */
-    if (SDL_EventEnabled(SDL_EVENT_SYSWM)) {
+    /* Send a SDL_SYSWMEVENT if the application wants them */
+    if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
         SDL_SysWMmsg wmmsg;
 
-        wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
+        SDL_VERSION(&wmmsg.version);
         wmmsg.subsystem = SDL_SYSWM_X11;
         wmmsg.msg.x11.event = *xevent;
         SDL_SendSysWMEvent(&wmmsg);
@@ -937,12 +918,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                         X11_XGetWindowAttributes(display, data->xwindow, &attrib);
                         screennum = X11_XScreenNumberOfScreen(attrib.screen);
                         if (screennum == 0 && SDL_strcmp(name_of_atom, "_ICC_PROFILE") == 0) {
-                            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_ICCPROF_CHANGED, 0, 0);
+                            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
                         } else if (SDL_strncmp(name_of_atom, "_ICC_PROFILE_", sizeof("_ICC_PROFILE_") - 1) == 0 && SDL_strlen(name_of_atom) > sizeof("_ICC_PROFILE_") - 1) {
                             int iccscreennum = SDL_atoi(&name_of_atom[sizeof("_ICC_PROFILE_") - 1]);
 
                             if (screennum == iccscreennum) {
-                                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_ICCPROF_CHANGED, 0, 0);
+                                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
                             }
                         }
                     }
@@ -979,10 +960,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         mouse->last_x = xevent->xcrossing.x;
         mouse->last_y = xevent->xcrossing.y;
 
-#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+#if SDL_VIDEO_DRIVER_X11_XFIXES
         {
             /* Only create the barriers if we have input focus */
-            SDL_WindowData *windowdata = data->window->driverdata;
+            SDL_WindowData *windowdata = (SDL_WindowData *)data->window->driverdata;
             if ((data->pointer_barrier_active == SDL_TRUE) && windowdata->window->flags & SDL_WINDOW_INPUT_FOCUS) {
                 X11_ConfineCursorWithFlags(_this, windowdata->window, &windowdata->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
             }
@@ -990,7 +971,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
 
         if (!mouse->relative_mode) {
-            SDL_SendMouseMotion(0, data->window, 0, 0, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
+            SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
         }
 
         /* We ungrab in LeaveNotify, so we may need to grab again here */
@@ -1012,7 +993,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         }
 #endif
         if (!SDL_GetMouse()->relative_mode) {
-            SDL_SendMouseMotion(0, data->window, 0, 0, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
+            SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
         }
 
         if (xevent->xcrossing.mode != NotifyGrab &&
@@ -1091,7 +1072,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
         }
 
-#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+#if SDL_VIDEO_DRIVER_X11_XFIXES
         /* Disable confinement if it is activated. */
         if (data->pointer_barrier_active == SDL_TRUE) {
             X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
@@ -1136,7 +1117,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
 
 #ifdef SDL_USE_IME
-        if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+        if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
             handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
         }
 #endif
@@ -1144,7 +1125,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             if (xevent->type == KeyPress) {
                 /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
                 if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                    SDL_SendKeyboardKey(0, SDL_PRESSED, videodata->key_layout[keycode]);
+                    SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
                 }
                 if (*text) {
                     SDL_SendKeyboardText(text);
@@ -1154,7 +1135,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     /* We're about to get a repeated key down, ignore the key up */
                     break;
                 }
-                SDL_SendKeyboardKey(0, SDL_RELEASED, videodata->key_layout[keycode]);
+                SDL_SendKeyboardKey(SDL_RELEASED, videodata->key_layout[keycode]);
             }
         }
 
@@ -1178,7 +1159,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             X11_DispatchUnmapNotify(data);
         }
 
-#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+#if SDL_VIDEO_DRIVER_X11_XFIXES
         /* Disable confinement if the window gets hidden. */
         if (data->pointer_barrier_active == SDL_TRUE) {
             X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
@@ -1194,7 +1175,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
         X11_DispatchMapNotify(data);
 
-#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+#if SDL_VIDEO_DRIVER_X11_XFIXES
         /* Enable confinement if it was activated. */
         if (data->pointer_barrier_active == SDL_TRUE) {
             X11_ConfineCursorWithFlags(_this, data->window, &data->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
@@ -1226,30 +1207,18 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
         if (xevent->xconfigure.x != data->last_xconfigure.x ||
             xevent->xconfigure.y != data->last_xconfigure.y) {
-            SDL_Window *w;
-            int x = xevent->xconfigure.x;
-            int y = xevent->xconfigure.y;
-
-            SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED,
-                                x, y);
-
+            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
+                                xevent->xconfigure.x, xevent->xconfigure.y);
 #ifdef SDL_USE_IME
-            if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+            if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
                 /* Update IME candidate list position */
                 SDL_IME_UpdateTextRect(NULL);
             }
 #endif
-            for (w = data->window->first_child; w != NULL; w = w->next_sibling) {
-                /* Don't update hidden child windows, their relative position doesn't change */
-                if (!(w->flags & SDL_WINDOW_HIDDEN)) {
-                    X11_UpdateWindowPosition(w);
-                }
-            }
         }
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
             xevent->xconfigure.height != data->last_xconfigure.height) {
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
+            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED,
                                 xevent->xconfigure.width,
                                 xevent->xconfigure.height);
         }
@@ -1293,18 +1262,6 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             }
             printf("Action requested by user is : %s\n", X11_XGetAtomName(display, act));
 #endif
-            {
-                /* Drag and Drop position */
-                int root_x, root_y, window_x, window_y;
-                Window ChildReturn;
-                root_x = xevent->xclient.data.l[2] >> 16;
-                root_y = xevent->xclient.data.l[2] & 0xffff;
-                /* Translate from root to current window position */
-                X11_XTranslateCoordinates(display, DefaultRootWindow(display), data->xwindow,
-                        root_x, root_y, &window_x, &window_y, &ChildReturn);
-
-                SDL_SendDropPosition(data->window, NULL, (float)window_x, (float)window_y); /* FIXME, can we get the filename ? */
-            }
 
             /* reply with status */
             SDL_memset(&m, 0, sizeof(XClientMessageEvent));
@@ -1362,7 +1319,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: WM_DELETE_WINDOW\n", data);
 #endif
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
+            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
             break;
         } else if ((xevent->xclient.message_type == videodata->WM_PROTOCOLS) &&
                    (xevent->xclient.format == 32) &&
@@ -1371,7 +1328,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: WM_TAKE_FOCUS\n", data);
 #endif
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_TAKE_FOCUS, 0, 0);
+            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_TAKE_FOCUS, 0, 0);
             break;
         }
     } break;
@@ -1382,7 +1339,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
         printf("window %p: Expose (count = %d)\n", data, xevent->xexpose.count);
 #endif
-        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
     } break;
 
     case MotionNotify:
@@ -1393,7 +1350,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             printf("window %p: X11 motion: %d,%d\n", data, xevent->xmotion.x, xevent->xmotion.y);
 #endif
 
-            SDL_SendMouseMotion(0, data->window, 0, 0, (float)xevent->xmotion.x, (float)xevent->xmotion.y);
+            SDL_SendMouseMotion(data->window, 0, 0, xevent->xmotion.x, xevent->xmotion.y);
         }
     } break;
 
@@ -1404,13 +1361,13 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         printf("window %p: ButtonPress (X11 button = %d)\n", data, xevent->xbutton.button);
 #endif
         if (X11_IsWheelEvent(display, xevent, &xticks, &yticks)) {
-            SDL_SendMouseWheel(0, data->window, 0, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
+            SDL_SendMouseWheel(data->window, 0, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
         } else {
             SDL_bool ignore_click = SDL_FALSE;
             int button = xevent->xbutton.button;
             if (button == Button1) {
                 if (ProcessHitTest(_this, data, xevent)) {
-                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
+                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
                     break; /* don't pass this event on to app. */
                 }
             } else if (button > 7) {
@@ -1420,13 +1377,13 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             }
             if (data->last_focus_event_time) {
                 const int X11_FOCUS_CLICK_TIMEOUT = 10;
-                if (SDL_GetTicks() < (data->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
+                if (!SDL_TICKS_PASSED(SDL_GetTicks(), data->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
                     ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
                 }
                 data->last_focus_event_time = 0;
             }
             if (!ignore_click) {
-                SDL_SendMouseButton(0, data->window, 0, SDL_PRESSED, button);
+                SDL_SendMouseButton(data->window, 0, SDL_PRESSED, button);
             }
         }
         X11_UpdateUserTime(data, xevent->xbutton.time);
@@ -1445,7 +1402,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 /* see explanation at case ButtonPress */
                 button -= (8 - SDL_BUTTON_X1);
             }
-            SDL_SendMouseButton(0, data->window, 0, SDL_RELEASED, button);
+            SDL_SendMouseButton(data->window, 0, SDL_RELEASED, button);
         }
     } break;
 
@@ -1547,7 +1504,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             const Uint32 flags = X11_GetNetWMState(_this, data->window, xevent->xproperty.window);
             const Uint32 changed = flags ^ data->window->flags;
 
-            if ((changed & (SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN)) != 0) {
+            if ((changed & SDL_WINDOW_HIDDEN) || (changed & SDL_WINDOW_FULLSCREEN)) {
                 if (flags & SDL_WINDOW_HIDDEN) {
                     X11_DispatchUnmapNotify(data);
                 } else {
@@ -1557,9 +1514,9 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
             if (changed & SDL_WINDOW_MAXIMIZED) {
                 if (flags & SDL_WINDOW_MAXIMIZED) {
-                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
+                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
                 } else {
-                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESTORED, 0, 0);
                 }
             }
         } else if (xevent->xproperty.atom == videodata->XKLAVIER_STATE) {
@@ -1634,17 +1591,17 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     }
 }
 
-static void X11_HandleFocusChanges(SDL_VideoDevice *_this)
+static void X11_HandleFocusChanges(_THIS)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     int i;
 
     if (videodata && videodata->windowlist) {
         for (i = 0; i < videodata->numwindows; ++i) {
             SDL_WindowData *data = videodata->windowlist[i];
             if (data && data->pending_focus != PENDING_FOCUS_NONE) {
-                Uint64 now = SDL_GetTicks();
-                if (now >= data->pending_focus_time) {
+                Uint32 now = SDL_GetTicks();
+                if (SDL_TICKS_PASSED(now, data->pending_focus_time)) {
                     if (data->pending_focus == PENDING_FOCUS_IN) {
                         X11_DispatchFocusIn(_this, data);
                     } else {
@@ -1671,11 +1628,11 @@ static SDL_bool X11_PollEvent(Display *display, XEvent *event)
     return SDL_TRUE;
 }
 
-void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
+void X11_SendWakeupEvent(_THIS, SDL_Window *window)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     Display *req_display = data->request_display;
-    Window xwindow = window->driverdata->xwindow;
+    Window xwindow = ((SDL_WindowData *)window->driverdata)->xwindow;
     XClientMessageEvent event;
 
     SDL_memset(&event, 0, sizeof(XClientMessageEvent));
@@ -1691,9 +1648,9 @@ void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
     X11_XFlush(req_display);
 }
 
-int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
+int X11_WaitEventTimeout(_THIS, int timeout)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     Display *display;
     XEvent xevent;
     display = videodata->display;
@@ -1704,11 +1661,11 @@ int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     X11_XFlush(display);
     if (X11_PollEvent(display, &xevent)) {
         /* Fall through */
-    } else if (timeoutNS == 0) {
+    } else if (timeout == 0) {
         return 0;
     } else {
         /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
-        int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeoutNS);
+        int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
         if (err > 0) {
             if (!X11_PollEvent(display, &xevent)) {
                 /* Someone may have beat us to reading the fd. Return 1 here to
@@ -1723,7 +1680,7 @@ int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 
             if (errno == EINTR) {
                 /* If the wait was interrupted by a signal, we may have generated a
-                 * SDL_EVENT_QUIT event. Let the caller know to call SDL_PumpEvents(). */
+                 * SDL_QUIT event. Let the caller know to call SDL_PumpEvents(). */
                 return 1;
             } else {
                 return err;
@@ -1734,36 +1691,33 @@ int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     X11_DispatchEvent(_this, &xevent);
 
 #ifdef SDL_USE_IME
-    if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
         SDL_IME_PumpEvents();
     }
-#endif
-
-#ifdef SDL_USE_LIBDBUS
-    SDL_DBus_PumpEvents();
 #endif
     return 1;
 }
 
-void X11_PumpEvents(SDL_VideoDevice *_this)
+void X11_PumpEvents(_THIS)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     XEvent xevent;
     int i;
 
     if (data->last_mode_change_deadline) {
-        if (SDL_GetTicks() >= data->last_mode_change_deadline) {
+        if (SDL_TICKS_PASSED(SDL_GetTicks(), data->last_mode_change_deadline)) {
             data->last_mode_change_deadline = 0; /* assume we're done. */
         }
     }
 
     /* Update activity every 30 seconds to prevent screensaver */
     if (_this->suspend_screensaver) {
-        Uint64 now = SDL_GetTicks();
-        if (!data->screensaver_activity || now >= (data->screensaver_activity + 30000)) {
+        const Uint32 now = SDL_GetTicks();
+        if (!data->screensaver_activity ||
+            SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
             X11_XResetScreenSaver(data->display);
 
-#ifdef SDL_USE_LIBDBUS
+#if SDL_USE_LIBDBUS
             SDL_DBus_ScreensaverTickle();
 #endif
 
@@ -1779,13 +1733,9 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     }
 
 #ifdef SDL_USE_IME
-    if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
         SDL_IME_PumpEvents();
     }
-#endif
-
-#ifdef SDL_USE_LIBDBUS
-    SDL_DBus_PumpEvents();
 #endif
 
     /* FIXME: Only need to do this when there are pending focus changes */
@@ -1795,23 +1745,23 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     for (i = 0; i < data->numwindows; ++i) {
         if (data->windowlist[i] != NULL &&
             data->windowlist[i]->flash_cancel_time &&
-            SDL_GetTicks() >= data->windowlist[i]->flash_cancel_time) {
+            SDL_TICKS_PASSED(SDL_GetTicks(), data->windowlist[i]->flash_cancel_time)) {
             X11_FlashWindow(_this, data->windowlist[i]->window, SDL_FLASH_CANCEL);
         }
     }
 }
 
-int X11_SuspendScreenSaver(SDL_VideoDevice *_this)
+void X11_SuspendScreenSaver(_THIS)
 {
-#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
-    SDL_VideoData *data = _this->driverdata;
+#if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     int dummy;
     int major_version, minor_version;
 #endif /* SDL_VIDEO_DRIVER_X11_XSCRNSAVER */
 
-#ifdef SDL_USE_LIBDBUS
+#if SDL_USE_LIBDBUS
     if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
-        return 0;
+        return;
     }
 
     if (_this->suspend_screensaver) {
@@ -1819,22 +1769,22 @@ int X11_SuspendScreenSaver(SDL_VideoDevice *_this)
     }
 #endif
 
-#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
+#if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
     if (SDL_X11_HAVE_XSS) {
         /* X11_XScreenSaverSuspend was introduced in MIT-SCREEN-SAVER 1.1 */
         if (!X11_XScreenSaverQueryExtension(data->display, &dummy, &dummy) ||
             !X11_XScreenSaverQueryVersion(data->display,
                                           &major_version, &minor_version) ||
             major_version < 1 || (major_version == 1 && minor_version < 1)) {
-            return SDL_Unsupported();
+            return;
         }
 
         X11_XScreenSaverSuspend(data->display, _this->suspend_screensaver);
         X11_XResetScreenSaver(data->display);
-        return 0;
     }
 #endif
-    return SDL_Unsupported();
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
+
+/* vi: set ts=4 sw=4 expandtab: */

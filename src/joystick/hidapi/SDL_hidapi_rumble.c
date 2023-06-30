@@ -18,12 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
 /* Handle rumble on a separate thread so it doesn't block the application */
 
+#include "SDL_thread.h"
+#include "SDL_timer.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 #include "../../thread/SDL_systhread.h"
@@ -41,10 +43,10 @@ typedef struct SDL_HIDAPI_RumbleRequest
 
 typedef struct SDL_HIDAPI_RumbleContext
 {
-    SDL_AtomicInt initialized;
-    SDL_AtomicInt running;
+    SDL_atomic_t initialized;
+    SDL_atomic_t running;
     SDL_Thread *thread;
-    SDL_Semaphore *request_sem;
+    SDL_sem *request_sem;
     SDL_HIDAPI_RumbleRequest *requests_head;
     SDL_HIDAPI_RumbleRequest *requests_tail;
 } SDL_HIDAPI_RumbleContext;
@@ -52,7 +54,7 @@ typedef struct SDL_HIDAPI_RumbleContext
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
 static
 #endif
-SDL_Mutex *SDL_HIDAPI_rumble_lock;
+SDL_mutex *SDL_HIDAPI_rumble_lock;
 static SDL_HIDAPI_RumbleContext rumble_context SDL_GUARDED_BY(SDL_HIDAPI_rumble_lock);
 
 static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
@@ -64,7 +66,7 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
     while (SDL_AtomicGet(&ctx->running)) {
         SDL_HIDAPI_RumbleRequest *request = NULL;
 
-        SDL_WaitSemaphore(ctx->request_sem);
+        SDL_SemWait(ctx->request_sem);
 
         SDL_LockMutex(SDL_HIDAPI_rumble_lock);
         request = ctx->requests_tail;
@@ -107,7 +109,7 @@ static void SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
     if (ctx->thread) {
         int result;
 
-        SDL_PostSemaphore(ctx->request_sem);
+        SDL_SemPost(ctx->request_sem);
         SDL_WaitThread(ctx->thread, &result);
         ctx->thread = NULL;
     }
@@ -236,7 +238,7 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
     /* Make sure we unlock before posting the semaphore so the rumble thread can run immediately */
     SDL_HIDAPI_UnlockRumble();
 
-    SDL_PostSemaphore(ctx->request_sem);
+    SDL_SemPost(ctx->request_sem);
 
     return size;
 }
@@ -281,3 +283,5 @@ void SDL_HIDAPI_QuitRumble(void)
 }
 
 #endif /* SDL_JOYSTICK_HIDAPI */
+
+/* vi: set ts=4 sw=4 expandtab: */

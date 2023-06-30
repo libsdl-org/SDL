@@ -20,6 +20,7 @@
 */
 
 #include "SDL_rwopsromfs.h"
+#include "SDL_error.h"
 
 /* Checks if the mode is a kind of reading */
 static SDL_bool IsReadMode(const char *mode);
@@ -72,7 +73,7 @@ static FILE *TryOpenFile(const char *file, const char *mode)
     return fp;
 }
 
-FILE *TryOpenInRomfs(const char *file, const char *mode)
+static FILE *TryOpenInRomfs(const char *file, const char *mode)
 {
     FILE *fp = NULL;
     char *prefixed_filepath = NULL;
@@ -87,3 +88,5 @@ FILE *TryOpenInRomfs(const char *file, const char *mode)
     SDL_free(prefixed_filepath);
     return fp;
 }
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

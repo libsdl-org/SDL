@@ -18,16 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_UIKIT
+#if SDL_VIDEO_DRIVER_UIKIT
 
 #include "SDL_uikitvideo.h"
 #include "../../events/SDL_clipboardevents_c.h"
 
 #import <UIKit/UIPasteboard.h>
 
-int UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text)
+int UIKit_SetClipboardText(_THIS, const char *text)
 {
 #if TARGET_OS_TV
     return SDL_SetError("The clipboard is not available on tvOS");
@@ -39,7 +39,7 @@ int UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text)
 #endif
 }
 
-char *UIKit_GetClipboardText(SDL_VideoDevice *_this)
+char *UIKit_GetClipboardText(_THIS)
 {
 #if TARGET_OS_TV
     return SDL_strdup(""); // Unsupported.
@@ -57,7 +57,7 @@ char *UIKit_GetClipboardText(SDL_VideoDevice *_this)
 #endif
 }
 
-SDL_bool UIKit_HasClipboardText(SDL_VideoDevice *_this)
+SDL_bool UIKit_HasClipboardText(_THIS)
 {
     @autoreleasepool {
 #if !TARGET_OS_TV
@@ -69,29 +69,29 @@ SDL_bool UIKit_HasClipboardText(SDL_VideoDevice *_this)
     }
 }
 
-void UIKit_InitClipboard(SDL_VideoDevice *_this)
+void UIKit_InitClipboard(_THIS)
 {
 #if !TARGET_OS_TV
     @autoreleasepool {
-        SDL_UIKitVideoData *data = (__bridge SDL_UIKitVideoData *)_this->driverdata;
+        SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
         id observer = [center addObserverForName:UIPasteboardChangedNotification
-                                          object:nil
-                                           queue:nil
-                                      usingBlock:^(NSNotification *note) {
-                                        SDL_SendClipboardUpdate();
-                                      }];
+                                         object:nil
+                                          queue:nil
+                                     usingBlock:^(NSNotification *note) {
+                                         SDL_SendClipboardUpdate();
+                                     }];
 
         data.pasteboardObserver = observer;
     }
 #endif
 }
 
-void UIKit_QuitClipboard(SDL_VideoDevice *_this)
+void UIKit_QuitClipboard(_THIS)
 {
     @autoreleasepool {
-        SDL_UIKitVideoData *data = (__bridge SDL_UIKitVideoData *)_this->driverdata;
+        SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
 
         if (data.pasteboardObserver != nil) {
             [[NSNotificationCenter defaultCenter] removeObserver:data.pasteboardObserver];
@@ -102,3 +102,5 @@ void UIKit_QuitClipboard(SDL_VideoDevice *_this)
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
+
+/* vi: set ts=4 sw=4 expandtab: */

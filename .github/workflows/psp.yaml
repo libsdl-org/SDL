@@ -1,0 +1,50 @@
+name: Build (Sony Playstation Portable)
+
+on: [push, pull_request]
+
+jobs:
+  psp:
+    runs-on: ubuntu-latest
+    container: pspdev/pspdev:latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup dependencies
+      run: |
+        apk update 
+        apk add cmake gmp mpc1 mpfr4 make pkgconf
+    - name: Configure CMake
+      run: |
+        cmake -S . -B build \
+          -DCMAKE_TOOLCHAIN_FILE=$PSPDEV/psp/share/pspdev.cmake \
+          -DSDL_WERROR=ON \
+          -DSDL_TESTS=ON \
+          -DSDL_INSTALL_TESTS=ON \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=prefix
+    - name: Build
+      run: cmake --build build --config Release
+    - name: Install
+      run: |
+        echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
+        cmake --install build --config Release
+        ( cd prefix; find ) | LC_ALL=C sort -u
+    - name: Verify CMake configuration files
+      run: |
+        cmake -S cmake/test -B cmake_config_build \
+          -DCMAKE_TOOLCHAIN_FILE=$PSPDEV/psp/share/pspdev.cmake \
+          -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
+          -DTEST_SHARED=FALSE \
+          -DCMAKE_BUILD_TYPE=Release
+        cmake --build cmake_config_build --verbose
+    - name: Verify sdl2-config
+      run: |
+        export CC=psp-gcc
+        export LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
+        export PATH=${{ env.SDL2_DIR }}/bin:$PATH
+        cmake/test/test_sdlconfig.sh
+    - name: Verify sdl2.pc
+      run: |
+        export CC=psp-gcc
+        export LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
+        export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
+        cmake/test/test_pkgconfig.sh

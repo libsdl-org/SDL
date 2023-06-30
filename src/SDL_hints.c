@@ -18,8 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "./SDL_internal.h"
 
+#include "SDL_hints.h"
+#include "SDL_error.h"
 #include "SDL_hints_c.h"
 
 /* Assuming there aren't many hints set and they aren't being queried in
@@ -65,18 +67,14 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
             }
             if (hint->value != value &&
                 (value == NULL || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
-                char *old_value = hint->value;
-
-                hint->value = value ? SDL_strdup(value) : NULL;
                 for (entry = hint->callbacks; entry;) {
                     /* Save the next entry in case this one is deleted */
                     SDL_HintWatch *next = entry->next;
-                    entry->callback(entry->userdata, name, old_value, value);
+                    entry->callback(entry->userdata, name, hint->value, value);
                     entry = next;
                 }
-                if (old_value) {
-                    SDL_free(old_value);
-                }
+                SDL_free(hint->value);
+                hint->value = value ? SDL_strdup(value) : NULL;
             }
             hint->priority = priority;
             return SDL_TRUE;
@@ -175,23 +173,6 @@ const char *SDL_GetHint(const char *name)
     return env;
 }
 
-int SDL_GetStringInteger(const char *value, int default_value)
-{
-    if (value == NULL || !*value) {
-        return default_value;
-    }
-    if (*value == '0' || SDL_strcasecmp(value, "false") == 0) {
-        return 0;
-    }
-    if (*value == '1' || SDL_strcasecmp(value, "true") == 0) {
-        return 1;
-    }
-    if (*value == '-' || SDL_isdigit(*value)) {
-        return SDL_atoi(value);
-    }
-    return default_value;
-}
-
 SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value)
 {
     if (value == NULL || !*value) {
@@ -209,24 +190,27 @@ SDL_bool SDL_GetHintBoolean(const char *name, SDL_bool default_value)
     return SDL_GetStringBoolean(hint, default_value);
 }
 
-int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
+void SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
     SDL_Hint *hint;
     SDL_HintWatch *entry;
     const char *value;
 
     if (name == NULL || !*name) {
-        return SDL_InvalidParamError("name");
+        SDL_InvalidParamError("name");
+        return;
     }
     if (!callback) {
-        return SDL_InvalidParamError("callback");
+        SDL_InvalidParamError("callback");
+        return;
     }
 
     SDL_DelHintCallback(name, callback, userdata);
 
     entry = (SDL_HintWatch *)SDL_malloc(sizeof(*entry));
     if (entry == NULL) {
-        return SDL_OutOfMemory();
+        SDL_OutOfMemory();
+        return;
     }
     entry->callback = callback;
     entry->userdata = userdata;
@@ -240,14 +224,16 @@ int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userd
         /* Need to add a hint entry for this watcher */
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
         if (hint == NULL) {
+            SDL_OutOfMemory();
             SDL_free(entry);
-            return SDL_OutOfMemory();
+            return;
         }
         hint->name = SDL_strdup(name);
         if (!hint->name) {
             SDL_free(entry);
             SDL_free(hint);
-            return SDL_OutOfMemory();
+            SDL_OutOfMemory();
+            return;
         }
         hint->value = NULL;
         hint->priority = SDL_HINT_DEFAULT;
@@ -263,7 +249,6 @@ int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userd
     /* Now call it with the current value */
     value = SDL_GetHint(name);
     callback(userdata, name, value, value);
-    return 0;
 }
 
 void SDL_DelHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
@@ -310,3 +295,5 @@ void SDL_ClearHints(void)
         SDL_free(hint);
     }
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

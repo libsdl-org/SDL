@@ -19,12 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_ngagewindow_h
-#define SDL_ngagewindow_h
+#ifndef _SDL_ngagewindow_h
+#define _SDL_ngagewindow_h
 
 #include "../SDL_sysvideo.h"
-
-#include <SDL3/SDL_syswm.h>
+#include "SDL_syswm.h"
 
 #include "SDL_ngagevideo.h"
 
@@ -35,9 +34,11 @@ typedef struct
 } NGAGE_Window;
 
 extern int
-NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+NGAGE_CreateWindow(_THIS, SDL_Window *window);
 
 extern void
-NGAGE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+NGAGE_DestroyWindow(_THIS, SDL_Window *window);
 
-#endif /* SDL_ngagewindow */
+#endif /* _SDL_ngagewindow */
+
+/* vi: set ts=4 sw=4 expandtab: */

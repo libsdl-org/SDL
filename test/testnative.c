@@ -11,15 +11,12 @@
 */
 /* Simple program:  Create a native window and attach an SDL renderer */
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include <stdio.h>
+#include <stdlib.h> /* for srand() */
+#include <time.h>   /* for time() */
 
 #include "testnative.h"
 #include "testutils.h"
-
-#include <stdlib.h> /* for srand() */
-#include <time.h>   /* for time() */
 
 #define WINDOW_W    640
 #define WINDOW_H    480
@@ -36,37 +33,35 @@ static NativeWindowFactory *factories[] = {
 #ifdef TEST_NATIVE_COCOA
     &CocoaWindowFactory,
 #endif
+#ifdef TEST_NATIVE_OS2
+    &OS2WindowFactory,
+#endif
     NULL
 };
 static NativeWindowFactory *factory = NULL;
 static void *native_window;
-static SDL_FRect *positions, *velocities;
-static SDLTest_CommonState *state;
+static SDL_Rect *positions, *velocities;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
 {
-    SDL_Quit();
+    SDL_VideoQuit();
     if (native_window != NULL && factory != NULL) {
         factory->DestroyNativeWindow(native_window);
     }
-    SDLTest_CommonDestroyState(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
+    exit(rc);
 }
 
-static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
+void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
     int sprite_w, sprite_h;
     int i;
     SDL_Rect viewport;
-    SDL_FRect *position, *velocity;
+    SDL_Rect *position, *velocity;
 
     /* Query the sizes */
-    SDL_GetRenderViewport(renderer, &viewport);
+    SDL_RenderGetViewport(renderer, &viewport);
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
 
     /* Draw a gray background */
@@ -89,7 +84,7 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
         }
 
         /* Blit the sprite onto the screen */
-        SDL_RenderTexture(renderer, sprite, NULL, position);
+        SDL_RenderCopy(renderer, sprite, NULL, position);
     }
 
     /* Update the screen! */
@@ -107,21 +102,10 @@ int main(int argc, char *argv[])
     int sprite_w, sprite_h;
     SDL_Event event;
 
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
-
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    /* Parse commandline */
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return 1;
-    }
-
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_VideoInit(NULL) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video: %s\n",
                      SDL_GetError());
         exit(1);
@@ -154,7 +138,7 @@ int main(int argc, char *argv[])
     SDL_SetWindowTitle(window, "SDL Native Window Test");
 
     /* Create the renderer */
-    renderer = SDL_CreateRenderer(window, NULL, 0);
+    renderer = SDL_CreateRenderer(window, -1, 0);
     if (renderer == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         quit(5);
@@ -172,23 +156,23 @@ int main(int argc, char *argv[])
     /* Allocate memory for the sprite info */
     SDL_GetWindowSize(window, &window_w, &window_h);
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
-    positions = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*positions));
-    velocities = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*velocities));
+    positions = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
+    velocities = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
     if (positions == NULL || velocities == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }
     srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = (float)(rand() % (window_w - sprite_w));
-        positions[i].y = (float)(rand() % (window_h - sprite_h));
-        positions[i].w = (float)sprite_w;
-        positions[i].h = (float)sprite_h;
-        velocities[i].x = 0.0f;
-        velocities[i].y = 0.0f;
+        positions[i].x = rand() % (window_w - sprite_w);
+        positions[i].y = rand() % (window_h - sprite_h);
+        positions[i].w = sprite_w;
+        positions[i].h = sprite_h;
+        velocities[i].x = 0;
+        velocities[i].y = 0;
         while (!velocities[i].x && !velocities[i].y) {
-            velocities[i].x = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
-            velocities[i].y = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+            velocities[i].x = (rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED;
+            velocities[i].y = (rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED;
         }
     }
 
@@ -198,11 +182,15 @@ int main(int argc, char *argv[])
         /* Check for events */
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
-            case SDL_EVENT_WINDOW_EXPOSED:
-                SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
-                SDL_RenderClear(renderer);
+            case SDL_WINDOWEVENT:
+                switch (event.window.event) {
+                case SDL_WINDOWEVENT_EXPOSED:
+                    SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
+                    SDL_RenderClear(renderer);
+                    break;
+                }
                 break;
-            case SDL_EVENT_QUIT:
+            case SDL_QUIT:
                 done = 1;
                 break;
             default:
@@ -216,3 +204,5 @@ int main(int argc, char *argv[])
 
     return 0; /* to prevent compiler warning */
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

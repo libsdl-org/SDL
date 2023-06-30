@@ -2,7 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D69D5741-611F-4E14-8541-1FEE94F50B5A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL3", "SDL\SDL.vcxproj", "{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2", "SDL\SDL.vcxproj", "{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2main", "SDLmain\SDLmain.vcxproj", "{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "checkkeys", "tests\checkkeys\checkkeys.vcxproj", "{26828762-C95D-4637-9CB1-7F0979523813}"
 EndProject
@@ -12,15 +14,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testatomic", "tests\testato
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testautomation", "tests\testautomation\testautomation.vcxproj", "{9C7E8C03-3130-436D-A97E-E8F8ED1AC4EA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdraw", "tests\testdraw\testdraw.vcxproj", "{8682FE1E-0CF6-4EDD-9BB5-1733D8C8B4DF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdraw2", "tests\testdraw2\testdraw2.vcxproj", "{8682FE1E-0CF6-4EDD-9BB5-1733D8C8B4DF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testfile", "tests\testfile\testfile.vcxproj", "{CAE4F1D0-314F-4B10-805B-0EFD670133A0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgl", "tests\testgl\testgl.vcxproj", "{8B5CFB38-CCBA-40A8-AD7A-89C57B070884}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgesture", "tests\testgesture\testgesture.vcxproj", "{79CEE57E-1BC3-4FF6-90B3-9E39763CDAFF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgl2", "tests\testgl2\testgl2.vcxproj", "{8B5CFB38-CCBA-40A8-AD7A-89C57B070884}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testjoystick", "tests\testjoystick\testjoystick.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08304}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testoverlay", "tests\testoverlay\testoverlay.vcxproj", "{B51E0D74-F0A2-45A2-BD2A-8B7D95B8204A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testoverlay2", "tests\testoverlay2\testoverlay2.vcxproj", "{B51E0D74-F0A2-45A2-BD2A-8B7D95B8204A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testplatform", "tests\testplatform\testplatform.vcxproj", "{26932B24-EFC6-4E3A-B277-ED653DA37968}"
 EndProject
@@ -34,19 +38,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testscale", "tests\testscal
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testshape", "tests\testshape\testshape.vcxproj", "{31A3E4E1-AAE9-4EF3-9B23-18D0924BE4D2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testsprite", "tests\testsprite\testsprite.vcxproj", "{40FB7794-D3C3-4CFE-BCF4-A80C96635682}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testsprite2", "tests\testsprite2\testsprite2.vcxproj", "{40FB7794-D3C3-4CFE-BCF4-A80C96635682}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL3_test", "SDL_test\SDL_test.vcxproj", "{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2test", "SDLtest\SDLtest.vcxproj", "{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgamepad", "tests\testgamepad\testgamepad.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08305}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgamecontroller", "tests\testgamecontroller\testgamecontroller.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08305}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgles2", "tests\testgles2\testgles2.vcxproj", "{E9558DFE-1961-4DD4-B09B-DD0EEFD5C315}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gamepadmap", "tests\gamepadmap\gamepadmap.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08306}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "controllermap", "tests\controllermap\controllermap.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08306}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testvulkan", "tests\testvulkan\testvulkan.vcxproj", "{0D604DFD-AAB6-442C-9368-F91A344146AB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testwm", "tests\testwm\testwm.vcxproj", "{C4E04D18-EF76-4B42-B4C2-16A1BACDC0A5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testwm2", "tests\testwm2\testwm2.vcxproj", "{C4E04D18-EF76-4B42-B4C2-16A1BACDC0A5}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testyuv", "tests\testyuv\testyuv.vcxproj", "{40FB7794-D3C3-4CFE-BCF4-A80C97635682}"
 EndProject
@@ -70,6 +74,14 @@ Global
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|Win32.Build.0 = Release|Win32
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|x64.ActiveCfg = Release|x64
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|x64.Build.0 = Release|x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Debug|Win32.Build.0 = Debug|Win32
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Debug|x64.ActiveCfg = Debug|x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Debug|x64.Build.0 = Debug|x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Release|Win32.ActiveCfg = Release|Win32
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Release|Win32.Build.0 = Release|Win32
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Release|x64.ActiveCfg = Release|x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Release|x64.Build.0 = Release|x64
 		{26828762-C95D-4637-9CB1-7F0979523813}.Debug|Win32.ActiveCfg = Debug|Win32
 		{26828762-C95D-4637-9CB1-7F0979523813}.Debug|Win32.Build.0 = Debug|Win32
 		{26828762-C95D-4637-9CB1-7F0979523813}.Debug|x64.ActiveCfg = Debug|x64
@@ -118,6 +130,14 @@ Global
 		{CAE4F1D0-314F-4B10-805B-0EFD670133A0}.Release|Win32.Build.0 = Release|Win32
 		{CAE4F1D0-314F-4B10-805B-0EFD670133A0}.Release|x64.ActiveCfg = Release|x64
 		{CAE4F1D0-314F-4B10-805B-0EFD670133A0}.Release|x64.Build.0 = Release|x64
+		{79CEE57E-1BC3-4FF6-90B3-9E39763CDAFF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{79CEE57E-1BC3-4FF6-90B3-9E39763CDAFF}.Debug|Win32.Build.0 = Debug|Win32
+		{79CEE57E-1BC3-4FF6-90B3-9E39763CDAFF}.Debug|x64.ActiveCfg = Debug|x64
+		{79CEE57E-1BC3-4FF6-90B3-9E39763CDAFF}.Debug|x64.Build.0 = Debug|x64
+		{79CEE57E-1BC3-4FF6-90B3-9E39763CDAFF}.Release|Win32.ActiveCfg = Release|Win32
+		{79CEE57E-1BC3-4FF6-90B3-9E39763CDAFF}.Release|Win32.Build.0 = Release|Win32
+		{79CEE57E-1BC3-4FF6-90B3-9E39763CDAFF}.Release|x64.ActiveCfg = Release|x64
+		{79CEE57E-1BC3-4FF6-90B3-9E39763CDAFF}.Release|x64.Build.0 = Release|x64
 		{8B5CFB38-CCBA-40A8-AD7A-89C57B070884}.Debug|Win32.ActiveCfg = Debug|Win32
 		{8B5CFB38-CCBA-40A8-AD7A-89C57B070884}.Debug|Win32.Build.0 = Debug|Win32
 		{8B5CFB38-CCBA-40A8-AD7A-89C57B070884}.Debug|x64.ActiveCfg = Debug|x64
@@ -281,6 +301,7 @@ Global
 		{9C7E8C03-3130-436D-A97E-E8F8ED1AC4EA} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 		{8682FE1E-0CF6-4EDD-9BB5-1733D8C8B4DF} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 		{CAE4F1D0-314F-4B10-805B-0EFD670133A0} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
+		{79CEE57E-1BC3-4FF6-90B3-9E39763CDAFF} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 		{8B5CFB38-CCBA-40A8-AD7A-89C57B070884} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 		{55812185-D13C-4022-9C81-32E0F4A08304} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 		{B51E0D74-F0A2-45A2-BD2A-8B7D95B8204A} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}

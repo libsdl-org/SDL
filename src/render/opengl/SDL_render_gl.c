@@ -18,16 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_OGL) && !defined(SDL_RENDER_DISABLED)
-#include "../../video/SDL_sysvideo.h" /* For SDL_RecreateWindow */
-#include <SDL3/SDL_opengl.h>
+#if SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED
+#include "SDL_hints.h"
+#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
+#include "SDL_opengl.h"
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
 #include "../../SDL_utils_c.h"
 
-#ifdef __MACOS__
+#ifdef __MACOSX__
 #include <OpenGL/OpenGL.h>
 #endif
 
@@ -45,7 +46,7 @@
 
 /* OpenGL renderer implementation */
 
-/* Details on optimizing the texture path on macOS:
+/* Details on optimizing the texture path on Mac OS X:
    http://developer.apple.com/library/mac/#documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/opengl_texturedata/opengl_texturedata.html
 */
 
@@ -145,7 +146,8 @@ typedef struct
     GL_FBOList *fbo;
 } GL_TextureData;
 
-static const char *GL_TranslateError(GLenum error)
+SDL_FORCE_INLINE const char *
+GL_TranslateError(GLenum error)
 {
 #define GL_ERROR_TRANSLATE(e) \
     case e:                   \
@@ -165,7 +167,8 @@ static const char *GL_TranslateError(GLenum error)
 #undef GL_ERROR_TRANSLATE
 }
 
-static void GL_ClearErrors(SDL_Renderer *renderer)
+SDL_FORCE_INLINE void
+GL_ClearErrors(SDL_Renderer *renderer)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
 
@@ -190,7 +193,8 @@ static void GL_ClearErrors(SDL_Renderer *renderer)
     }
 }
 
-static int GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const char *file, int line, const char *function)
+SDL_FORCE_INLINE int
+GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const char *file, int line, const char *function)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
     int ret = 0;
@@ -239,7 +243,7 @@ static int GL_LoadFunctions(GL_RenderData *data)
     int retval = 0;
 #define SDL_PROC(ret, func, params)                                                           \
     do {                                                                                      \
-        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                                            \
+        data->func = SDL_GL_GetProcAddress(#func);                                            \
         if (!data->func) {                                                                    \
             retval = SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
         }                                                                                     \
@@ -321,11 +325,17 @@ static void GL_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
      * changed behind our backs. x/y changes might seem weird but viewport
      * resets have been observed on macOS at minimum!
      */
-    if (event->type == SDL_EVENT_WINDOW_RESIZED ||
-        event->type == SDL_EVENT_WINDOW_MOVED) {
+    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED ||
+        event->event == SDL_WINDOWEVENT_MOVED) {
         GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
         data->drawstate.viewport_dirty = SDL_TRUE;
     }
+}
+
+static int GL_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
+{
+    SDL_GL_GetDrawableSize(renderer->window, w, h);
+    return 0;
 }
 
 static GLenum GetBlendFunc(SDL_BlendFactor factor)
@@ -397,7 +407,8 @@ static SDL_bool GL_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blend
     return SDL_TRUE;
 }
 
-static SDL_bool convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
+SDL_FORCE_INLINE SDL_bool
+convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
                GLint *internalFormat, GLenum *format, GLenum *type)
 {
     switch (pixel_format) {
@@ -421,7 +432,7 @@ static SDL_bool convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
         *format = GL_LUMINANCE;
         *type = GL_UNSIGNED_BYTE;
         break;
-#ifdef __MACOS__
+#ifdef __MACOSX__
     case SDL_PIXELFORMAT_UYVY:
         *internalFormat = GL_RGB8;
         *format = GL_YCBCR_422_APPLE;
@@ -521,7 +532,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     data->format = format;
     data->formattype = type;
-    scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
+    scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
     renderdata->glEnable(textype);
     renderdata->glBindTexture(textype, data->texture);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, scaleMode);
@@ -535,7 +546,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_T,
                                     GL_CLAMP_TO_EDGE);
     }
-#ifdef __MACOS__
+#ifdef __MACOSX__
 #ifndef GL_TEXTURE_STORAGE_HINT_APPLE
 #define GL_TEXTURE_STORAGE_HINT_APPLE 0x85BC
 #endif
@@ -836,7 +847,7 @@ static void GL_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture,
     GL_RenderData *renderdata = (GL_RenderData *)renderer->driverdata;
     const GLenum textype = renderdata->textype;
     GL_TextureData *data = (GL_TextureData *)texture->driverdata;
-    GLenum glScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
+    GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
 
     renderdata->glBindTexture(textype, data->texture);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
@@ -1174,7 +1185,7 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
     data->drawstate.target = renderer->target;
     if (!data->drawstate.target) {
         int w, h;
-        SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
+        SDL_GL_GetDrawableSize(renderer->window, &w, &h);
         if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
             data->drawstate.viewport_dirty = SDL_TRUE; // if the window dimensions changed, invalidate the current viewport, etc.
             data->drawstate.cliprect_dirty = SDL_TRUE;
@@ -1183,7 +1194,7 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
         }
     }
 
-#ifdef __MACOS__
+#ifdef __MACOSX__
     // On macOS on older systems, the OpenGL view change and resize events aren't
     // necessarily synchronized, so just always reset it.
     // Workaround for: https://discourse.libsdl.org/t/sdl-2-0-22-prerelease/35306/6
@@ -1430,7 +1441,7 @@ static int GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
         return SDL_OutOfMemory();
     }
 
-    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
+    SDL_GetRendererOutputSize(renderer, &w, &h);
 
     data->glPixelStorei(GL_PACK_ALIGNMENT, 1);
     data->glPixelStorei(GL_PACK_ROW_LENGTH,
@@ -1474,7 +1485,7 @@ static int GL_RenderPresent(SDL_Renderer *renderer)
 {
     GL_ActivateRenderer(renderer);
 
-    return SDL_GL_SwapWindow(renderer->window);
+    return SDL_GL_SwapWindowWithResult(renderer->window);
 }
 
 static void GL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -1598,10 +1609,8 @@ static int GL_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *t
 static int GL_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
-    const GLenum textype = data->textype;
-#if SDL_HAVE_YUV
     GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
-#endif
+    const GLenum textype = data->textype;
 
     GL_ActivateRenderer(renderer);
 
@@ -1647,7 +1656,6 @@ static int GL_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     int retval;
-    int interval = 0;
     if (vsync) {
         retval = SDL_GL_SetSwapInterval(1);
     } else {
@@ -1656,13 +1664,7 @@ static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
     if (retval != 0) {
         return retval;
     }
-
-    retval = SDL_GL_GetSwapInterval(&interval);
-    if (retval < 0) {
-        return retval;
-    }
-
-    if (interval > 0) {
+    if (SDL_GL_GetSwapInterval() > 0) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     } else {
         renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
@@ -1741,6 +1743,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
 
     renderer->WindowEvent = GL_WindowEvent;
+    renderer->GetOutputSize = GL_GetOutputSize;
     renderer->SupportsBlendMode = GL_SupportsBlendMode;
     renderer->CreateTexture = GL_CreateTexture;
     renderer->UpdateTexture = GL_UpdateTexture;
@@ -1794,7 +1797,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
         renderer->info.flags |= SDL_RENDERER_ACCELERATED;
     }
 
-#ifdef __MACOS__
+#ifdef __MACOSX__
     /* Enable multi-threaded rendering */
     /* Disabled until Ryan finishes his VBO/PBO code...
        CGLEnable(CGLGetCurrentContext(), kCGLCEMPEngine);
@@ -1806,16 +1809,8 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
     } else {
         SDL_GL_SetSwapInterval(0);
     }
-
-    {
-        int interval = 0;
-        if (SDL_GL_GetSwapInterval(&interval) < 0) {
-            /* Error */
-        } else {
-            if (interval > 0) {
-                renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-            }
-        }
+    if (SDL_GL_GetSwapInterval() > 0) {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
 
     /* Check for debug output support */
@@ -1903,7 +1898,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
     }
 #endif
-#ifdef __MACOS__
+#ifdef __MACOSX__
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
 #endif
 
@@ -1926,13 +1921,9 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
             SDL_GL_GetProcAddress("glBindFramebufferEXT");
         data->glCheckFramebufferStatusEXT = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)
             SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
-    } else {
-        SDL_SetError("Can't create render targets, GL_EXT_framebuffer_object not available");
-        SDL_GL_DeleteContext(data->context);
-        SDL_free(renderer);
-        SDL_free(data);
-        goto error;
+        renderer->info.flags |= SDL_RENDERER_TARGETTEXTURE;
     }
+    data->framebuffers = NULL;
 
     /* Set up parameters for rendering */
     data->glMatrixMode(GL_MODELVIEW);
@@ -1967,7 +1958,7 @@ error:
 SDL_RenderDriver GL_RenderDriver = {
     GL_CreateRenderer,
     { "opengl",
-      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
       4,
       { SDL_PIXELFORMAT_ARGB8888,
         SDL_PIXELFORMAT_ABGR8888,
@@ -1978,3 +1969,5 @@ SDL_RenderDriver GL_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

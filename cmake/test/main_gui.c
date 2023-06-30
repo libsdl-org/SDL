@@ -1,21 +1,25 @@
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
+#include "SDL.h"
+#include <stdio.h>
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     SDL_Window *window = NULL;
     SDL_Surface *screenSurface = NULL;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        SDL_Log("Could not initialize SDL: %s\n", SDL_GetError());
+        fprintf(stderr, "could not initialize sdl2: %s\n", SDL_GetError());
         return 1;
     }
-    window = SDL_CreateWindow("Hello SDL", 640, 480, 0);
+    window = SDL_CreateWindow(
+            "hello_sdl2",
+            SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+            640, 480,
+            SDL_WINDOW_SHOWN
+    );
     if (window == NULL) {
-        SDL_Log("could not create window: %s\n", SDL_GetError());
+        fprintf(stderr, "could not create window: %s\n", SDL_GetError());
         return 1;
     }
     screenSurface = SDL_GetWindowSurface(window);
-    SDL_FillSurfaceRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xff, 0xff, 0xff));
+    SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xff, 0xff, 0xff));
     SDL_UpdateWindowSurface(window);
     SDL_Delay(100);
     SDL_DestroyWindow(window);

@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 /* TODO, WinRT: remove the need to compile this with C++/CX (/ZW) extensions, and if possible, without C++ at all
  */
@@ -26,6 +26,11 @@
 #ifdef __WINRT__
 
 extern "C" {
+#include "SDL_filesystem.h"
+#include "SDL_error.h"
+#include "SDL_hints.h"
+#include "SDL_stdinc.h"
+#include "SDL_system.h"
 #include "../../core/windows/SDL_windows.h"
 }
 
@@ -66,7 +71,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
         return path.c_str();
     }
 
-#if !SDL_WINAPI_FAMILY_PHONE || NTDDI_VERSION > NTDDI_WIN8
+#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
     case SDL_WINRT_PATH_ROAMING_FOLDER:
     {
         static wstring path;
@@ -232,11 +237,6 @@ SDL_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
-/* TODO */
-char *SDL_GetPath(SDL_Folder folder)
-{
-    SDL_Unsupported();
-    return NULL;
-}
-
 #endif /* __WINRT__ */
+
+/* vi: set ts=4 sw=4 expandtab: */

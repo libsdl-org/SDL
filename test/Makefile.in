@@ -1,0 +1,453 @@
+# Makefile to build the SDL tests
+
+srcdir  = @srcdir@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+libdir = @libdir@
+libexecdir = @libexecdir@
+includedir = @includedir@
+datarootdir = @datarootdir@
+datadir = @datadir@
+
+CC      = @CC@
+EXE	= @EXE@
+CFLAGS  = @CFLAGS@ -g
+LIBS	= @LIBS@
+
+TARGETS = \
+	checkkeys$(EXE) \
+	checkkeysthreads$(EXE) \
+	controllermap$(EXE) \
+	loopwave$(EXE) \
+	loopwavequeue$(EXE) \
+	testatomic$(EXE) \
+	testaudiocapture$(EXE) \
+	testaudiohotplug$(EXE) \
+	testaudioinfo$(EXE) \
+	testautomation$(EXE) \
+	testbounds$(EXE) \
+	testcustomcursor$(EXE) \
+	testdisplayinfo$(EXE) \
+	testdraw2$(EXE) \
+	testdrawchessboard$(EXE) \
+	testdropfile$(EXE) \
+	testerror$(EXE) \
+	testevdev$(EXE) \
+	testfile$(EXE) \
+	testfilesystem$(EXE) \
+	testgamecontroller$(EXE) \
+	testgeometry$(EXE) \
+	testgesture$(EXE) \
+	testhaptic$(EXE) \
+	testhittesting$(EXE) \
+	testhotplug$(EXE) \
+	testiconv$(EXE) \
+	testime$(EXE) \
+	testintersections$(EXE) \
+	testjoystick$(EXE) \
+	testkeys$(EXE) \
+	testloadso$(EXE) \
+	testlocale$(EXE) \
+	testlock$(EXE) \
+	testmessage$(EXE) \
+	testmouse$(EXE) \
+	testmultiaudio$(EXE) \
+	testnative$(EXE) \
+	testoverlay2$(EXE) \
+	testplatform$(EXE) \
+	testpower$(EXE) \
+	testqsort$(EXE) \
+	testrelative$(EXE) \
+	testrendercopyex$(EXE) \
+	testrendertarget$(EXE) \
+	testresample$(EXE) \
+	testrumble$(EXE) \
+	testscale$(EXE) \
+	testsem$(EXE) \
+	testsensor$(EXE) \
+	testshape$(EXE) \
+	testsprite2$(EXE) \
+	testspriteminimal$(EXE) \
+	teststreaming$(EXE) \
+	testsurround$(EXE) \
+	testthread$(EXE) \
+	testtimer$(EXE) \
+	testurl$(EXE) \
+	testver$(EXE) \
+	testviewport$(EXE) \
+	testvulkan$(EXE) \
+	testwm2$(EXE) \
+	testyuv$(EXE) \
+	torturethread$(EXE) \
+
+
+@OPENGL_TARGETS@ += testgl2$(EXE) testshader$(EXE)
+@OPENGLES1_TARGETS@ += testgles$(EXE)
+@OPENGLES2_TARGETS@ += testgles2$(EXE)
+
+
+all: Makefile $(TARGETS) copydatafiles generatetestmeta
+
+installedtestsdir = $(libexecdir)/installed-tests/SDL2
+installedtestsmetadir = $(datadir)/installed-tests/SDL2
+
+generatetestmeta:
+	rm -f *.test
+	set -e; for exe in $(noninteractive) $(needs_audio) $(needs_display); do \
+		sed \
+			-e 's#@installedtestsdir@#$(installedtestsdir)#g' \
+			-e "s#@exe@#$$exe#g" \
+			< $(srcdir)/template.test.in > $$exe.test; \
+	done
+
+install: all
+	install -d $(DESTDIR)$(installedtestsdir)
+	install $(TARGETS) $(DESTDIR)$(installedtestsdir)
+	install -m644 $(DATA) $(DESTDIR)$(installedtestsdir)
+	install -d $(DESTDIR)$(installedtestsmetadir)
+	install -m644 *.test $(DESTDIR)$(installedtestsmetadir)
+
+Makefile: $(srcdir)/Makefile.in
+	$(SHELL) config.status $@
+
+checkkeys$(EXE): $(srcdir)/checkkeys.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+checkkeysthreads$(EXE): $(srcdir)/checkkeysthreads.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+loopwave$(EXE): $(srcdir)/loopwave.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+loopwavequeue$(EXE): $(srcdir)/loopwavequeue.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testsurround$(EXE): $(srcdir)/testsurround.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testresample$(EXE): $(srcdir)/testresample.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testaudioinfo$(EXE): $(srcdir)/testaudioinfo.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testautomation$(EXE): $(srcdir)/testautomation.c \
+		      $(srcdir)/testautomation_audio.c \
+		      $(srcdir)/testautomation_clipboard.c \
+		      $(srcdir)/testautomation_events.c \
+		      $(srcdir)/testautomation_guid.c \
+		      $(srcdir)/testautomation_hints.c \
+		      $(srcdir)/testautomation_joystick.c \
+		      $(srcdir)/testautomation_keyboard.c \
+		      $(srcdir)/testautomation_main.c \
+		      $(srcdir)/testautomation_math.c \
+		      $(srcdir)/testautomation_mouse.c \
+		      $(srcdir)/testautomation_pixels.c \
+		      $(srcdir)/testautomation_platform.c \
+		      $(srcdir)/testautomation_rect.c \
+		      $(srcdir)/testautomation_render.c \
+		      $(srcdir)/testautomation_rwops.c \
+		      $(srcdir)/testautomation_sdltest.c \
+		      $(srcdir)/testautomation_stdlib.c \
+		      $(srcdir)/testautomation_surface.c \
+		      $(srcdir)/testautomation_syswm.c \
+		      $(srcdir)/testautomation_timer.c \
+		      $(srcdir)/testautomation_video.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
+
+testmultiaudio$(EXE): $(srcdir)/testmultiaudio.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testaudiohotplug$(EXE): $(srcdir)/testaudiohotplug.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testaudiocapture$(EXE): $(srcdir)/testaudiocapture.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testatomic$(EXE): $(srcdir)/testatomic.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testintersections$(EXE): $(srcdir)/testintersections.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testrelative$(EXE): $(srcdir)/testrelative.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testhittesting$(EXE): $(srcdir)/testhittesting.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testdraw2$(EXE): $(srcdir)/testdraw2.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testdrawchessboard$(EXE): $(srcdir)/testdrawchessboard.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testdropfile$(EXE): $(srcdir)/testdropfile.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testerror$(EXE): $(srcdir)/testerror.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testevdev$(EXE): $(srcdir)/testevdev.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testfile$(EXE): $(srcdir)/testfile.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testgamecontroller$(EXE): $(srcdir)/testgamecontroller.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testgeometry$(EXE): $(srcdir)/testgeometry.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testgesture$(EXE): $(srcdir)/testgesture.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+
+testgl2$(EXE): $(srcdir)/testgl2.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+
+testgles$(EXE): $(srcdir)/testgles.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLESLIB@ @MATHLIB@
+
+testgles2$(EXE): $(srcdir)/testgles2.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+
+testgles2_sdf$(EXE): $(srcdir)/testgles2_sdf.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+
+testhaptic$(EXE): $(srcdir)/testhaptic.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testhotplug$(EXE): $(srcdir)/testhotplug.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testrumble$(EXE): $(srcdir)/testrumble.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testthread$(EXE): $(srcdir)/testthread.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testiconv$(EXE): $(srcdir)/testiconv.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testime$(EXE): $(srcdir)/testime.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @SDL_TTF_LIB@
+
+testjoystick$(EXE): $(srcdir)/testjoystick.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testkeys$(EXE): $(srcdir)/testkeys.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testloadso$(EXE): $(srcdir)/testloadso.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testlock$(EXE): $(srcdir)/testlock.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+ifeq (@ISMACOSX@,true)
+testnative$(EXE): $(srcdir)/testnative.c \
+			$(srcdir)/testnativecocoa.m \
+			$(srcdir)/testutils.c \
+			$(srcdir)/testnativex11.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) -framework Cocoa @XLIB@
+endif
+
+ifeq (@ISWINDOWS@,true)
+testnative$(EXE): $(srcdir)/testnative.c \
+			$(srcdir)/testutils.c \
+			$(srcdir)/testnativew32.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+endif
+
+ifeq (@ISUNIX@,true)
+testnative$(EXE): $(srcdir)/testnative.c \
+			$(srcdir)/testutils.c \
+			$(srcdir)/testnativex11.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @XLIB@
+endif
+
+ifeq (@ISOS2@,true)
+testnative$(EXE): $(srcdir)/testnative.c \
+			$(srcdir)/testnativeos2.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+endif
+
+#there's probably a better way of doing this
+ifeq (@ISMACOSX@,false)
+ifeq (@ISWINDOWS@,false)
+ifeq (@ISUNIX@,false)
+ifeq (@ISOS2@,false)
+testnative$(EXE): ;
+endif
+endif
+endif
+endif
+
+testoverlay2$(EXE): $(srcdir)/testoverlay2.c $(srcdir)/testyuv_cvt.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testplatform$(EXE): $(srcdir)/testplatform.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testpower$(EXE): $(srcdir)/testpower.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testfilesystem$(EXE): $(srcdir)/testfilesystem.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testrendertarget$(EXE): $(srcdir)/testrendertarget.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testscale$(EXE): $(srcdir)/testscale.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testsem$(EXE): $(srcdir)/testsem.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testsensor$(EXE): $(srcdir)/testsensor.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testshader$(EXE): $(srcdir)/testshader.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLLIB@ @MATHLIB@
+
+testshape$(EXE): $(srcdir)/testshape.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testsprite2$(EXE): $(srcdir)/testsprite2.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testspriteminimal$(EXE): $(srcdir)/testspriteminimal.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+
+teststreaming$(EXE): $(srcdir)/teststreaming.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+
+testtimer$(EXE): $(srcdir)/testtimer.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testurl$(EXE): $(srcdir)/testurl.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testver$(EXE): $(srcdir)/testver.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testviewport$(EXE): $(srcdir)/testviewport.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testwm2$(EXE): $(srcdir)/testwm2.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testyuv$(EXE): $(srcdir)/testyuv.c $(srcdir)/testyuv_cvt.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+torturethread$(EXE): $(srcdir)/torturethread.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testrendercopyex$(EXE): $(srcdir)/testrendercopyex.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+
+testmessage$(EXE): $(srcdir)/testmessage.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testdisplayinfo$(EXE): $(srcdir)/testdisplayinfo.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testqsort$(EXE): $(srcdir)/testqsort.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testbounds$(EXE): $(srcdir)/testbounds.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testcustomcursor$(EXE): $(srcdir)/testcustomcursor.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+controllermap$(EXE): $(srcdir)/controllermap.c $(srcdir)/testutils.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testvulkan$(EXE): $(srcdir)/testvulkan.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testlocale$(EXE): $(srcdir)/testlocale.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testmouse$(EXE): $(srcdir)/testmouse.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+
+clean:
+	rm -f $(TARGETS) *.test
+
+distclean: clean
+	rm -f Makefile
+	rm -f config.status config.cache config.log
+	rm -rf $(srcdir)/autom4te*
+
+noninteractive = \
+	testatomic$(EXE) \
+	testerror$(EXE) \
+	testevdev$(EXE) \
+	testfilesystem$(EXE) \
+	testkeys$(EXE) \
+	testlocale$(EXE) \
+	testplatform$(EXE) \
+	testpower$(EXE) \
+	testqsort$(EXE) \
+	testthread$(EXE) \
+	testtimer$(EXE) \
+	testver$(EXE) \
+	$(NULL)
+
+needs_audio = \
+	testaudioinfo$(EXE) \
+	testsurround$(EXE) \
+	$(NULL)
+
+needs_display = \
+	testbounds$(EXE) \
+	testdisplayinfo$(EXE) \
+	$(NULL)
+
+TESTS = $(noninteractive) $(needs_audio) $(needs_display)
+
+check:
+	@set -e; \
+	status=0; \
+	export SDL_AUDIODRIVER=dummy; \
+	export SDL_VIDEODRIVER=dummy; \
+	for exe in $(TESTS); do \
+		echo "$$exe..."; \
+		if ./"$$exe"; then \
+			echo "$$exe: OK"; \
+		else \
+			echo "$$exe: FAILED: $$?"; \
+			status=1; \
+		fi; \
+	done; \
+	exit "$$status"
+
+DATA = \
+	axis.bmp \
+	button.bmp \
+	controllermap.bmp \
+	controllermap_back.bmp \
+	icon.bmp \
+	moose.dat \
+	sample.bmp \
+	sample.wav \
+	testgles2_sdf_img_normal.bmp \
+	testgles2_sdf_img_sdf.bmp \
+	testyuv.bmp \
+	unifont-13.0.06.hex \
+	utf8.txt \
+	$(NULL)
+
+ifneq ($(srcdir), .)
+$(DATA) : %: $(srcdir)/% Makefile
+	cp $< $@
+endif
+
+copydatafiles: $(DATA)
+.PHONY : copydatafiles

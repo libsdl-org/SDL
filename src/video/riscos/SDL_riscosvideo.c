@@ -18,10 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_RISCOS
+#if SDL_VIDEO_DRIVER_RISCOS
 
+#include "SDL_video.h"
+#include "SDL_mouse.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
@@ -36,8 +38,8 @@
 #define RISCOSVID_DRIVER_NAME "riscos"
 
 /* Initialization/Query functions */
-static int RISCOS_VideoInit(SDL_VideoDevice *_this);
-static void RISCOS_VideoQuit(SDL_VideoDevice *_this);
+static int RISCOS_VideoInit(_THIS);
+static void RISCOS_VideoQuit(_THIS);
 
 /* RISC OS driver bootstrap functions */
 
@@ -95,7 +97,7 @@ VideoBootStrap RISCOS_bootstrap = {
     RISCOS_CreateDevice
 };
 
-static int RISCOS_VideoInit(SDL_VideoDevice *_this)
+static int RISCOS_VideoInit(_THIS)
 {
     if (RISCOS_InitEvents(_this) < 0) {
         return -1;
@@ -113,9 +115,11 @@ static int RISCOS_VideoInit(SDL_VideoDevice *_this)
     return 0;
 }
 
-static void RISCOS_VideoQuit(SDL_VideoDevice *_this)
+static void RISCOS_VideoQuit(_THIS)
 {
     RISCOS_QuitEvents(_this);
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_RENDER_VITA_GXM
+#if SDL_VIDEO_RENDER_VITA_GXM
 
 #include "SDL_render_vita_gxm_memory.h"
 
@@ -175,3 +175,5 @@ void vita_mem_fragment_usse_free(SceUID uid)
 }
 
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */
+
+/* vi: set ts=4 sw=4 expandtab: */

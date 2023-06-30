@@ -19,18 +19,15 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_dbus_h_
 #define SDL_dbus_h_
 
 #ifdef HAVE_DBUS_DBUS_H
 #define SDL_USE_LIBDBUS 1
+#include "SDL_stdinc.h"
 #include <dbus/dbus.h>
-
-#ifndef DBUS_TIMEOUT_USE_DEFAULT
-#define DBUS_TIMEOUT_USE_DEFAULT -1
-#endif
 
 typedef struct SDL_DBusContext
 {
@@ -99,9 +96,10 @@ extern SDL_bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const c
 extern void SDL_DBus_ScreensaverTickle(void);
 extern SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit);
 
-extern void SDL_DBus_PumpEvents(void);
 extern char *SDL_DBus_GetLocalMachineId(void);
 
 #endif /* HAVE_DBUS_DBUS_H */
 
 #endif /* SDL_dbus_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

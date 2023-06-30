@@ -13,14 +13,14 @@
 /* Simple program:  draw as many random objects on the screen as possible */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
-#include <SDL3/SDL_test_common.h>
-#include <SDL3/SDL_main.h>
+#include "SDL_test_common.h"
 
 #define SWAP(typ, a, b) \
     do {                \
@@ -39,16 +39,17 @@ static int current_alpha = 255;
 static int current_color = 255;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 
-static float mouse_begin_x = -1.0f, mouse_begin_y = -1.0f;
+int mouse_begin_x = -1, mouse_begin_y = -1;
+int done;
 
-static void DrawPoints(SDL_Renderer *renderer)
+void DrawPoints(SDL_Renderer *renderer)
 {
     int i;
-    float x, y;
+    int x, y;
     SDL_Rect viewport;
 
     /* Query the sizes */
-    SDL_GetRenderViewport(renderer, &viewport);
+    SDL_RenderGetViewport(renderer, &viewport);
 
     for (i = 0; i < num_objects * 4; ++i) {
         /* Cycle the color and alpha, if desired */
@@ -77,16 +78,17 @@ static void DrawPoints(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
                                (Uint8)current_color, (Uint8)current_alpha);
 
-        x = (float)(rand() % viewport.w);
-        y = (float)(rand() % viewport.h);
-        SDL_RenderPoint(renderer, x, y);
+        x = rand() % viewport.w;
+        y = rand() % viewport.h;
+        SDL_RenderDrawPoint(renderer, x, y);
     }
 }
 
 #define MAX_LINES 16
-static int num_lines = 0;
-static SDL_FRect lines[MAX_LINES];
-static int add_line(float x1, float y1, float x2, float y2)
+int num_lines = 0;
+SDL_Rect lines[MAX_LINES];
+static int
+add_line(int x1, int y1, int x2, int y2)
 {
     if (num_lines >= MAX_LINES) {
         return 0;
@@ -95,7 +97,7 @@ static int add_line(float x1, float y1, float x2, float y2)
         return 0;
     }
 
-    SDL_Log("adding line (%g, %g), (%g, %g)\n", x1, y1, x2, y2);
+    SDL_Log("adding line (%d, %d), (%d, %d)\n", x1, y1, x2, y2);
     lines[num_lines].x = x1;
     lines[num_lines].y = y1;
     lines[num_lines].w = x2;
@@ -104,32 +106,33 @@ static int add_line(float x1, float y1, float x2, float y2)
     return ++num_lines;
 }
 
-static void DrawLines(SDL_Renderer *renderer)
+void DrawLines(SDL_Renderer *renderer)
 {
     int i;
     SDL_Rect viewport;
 
     /* Query the sizes */
-    SDL_GetRenderViewport(renderer, &viewport);
+    SDL_RenderGetViewport(renderer, &viewport);
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
     for (i = 0; i < num_lines; ++i) {
         if (i == -1) {
-            SDL_RenderLine(renderer, 0.0f, 0.0f, (float)(viewport.w - 1), (float)(viewport.h - 1));
-            SDL_RenderLine(renderer, 0.0f, (float)(viewport.h - 1), (float)(viewport.w - 1), 0.0f);
-            SDL_RenderLine(renderer, 0.0f, (float)(viewport.h / 2), (float)(viewport.w - 1), (float)(viewport.h / 2));
-            SDL_RenderLine(renderer, (float)(viewport.w / 2), 0.0f, (float)(viewport.w / 2), (float)(viewport.h - 1));
+            SDL_RenderDrawLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
+            SDL_RenderDrawLine(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
+            SDL_RenderDrawLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
+            SDL_RenderDrawLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
         } else {
-            SDL_RenderLine(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
+            SDL_RenderDrawLine(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
         }
     }
 }
 
 #define MAX_RECTS 16
-static int num_rects = 0;
-static SDL_FRect rects[MAX_RECTS];
-static int add_rect(float x1, float y1, float x2, float y2)
+int num_rects = 0;
+SDL_Rect rects[MAX_RECTS];
+static int
+add_rect(int x1, int y1, int x2, int y2)
 {
     if (num_rects >= MAX_RECTS) {
         return 0;
@@ -139,13 +142,13 @@ static int add_rect(float x1, float y1, float x2, float y2)
     }
 
     if (x1 > x2) {
-        SWAP(float, x1, x2);
+        SWAP(int, x1, x2);
     }
     if (y1 > y2) {
-        SWAP(float, y1, y2);
+        SWAP(int, y1, y2);
     }
 
-    SDL_Log("adding rect (%g, %g), (%g, %g) [%gx%g]\n", x1, y1, x2, y2,
+    SDL_Log("adding rect (%d, %d), (%d, %d) [%dx%d]\n", x1, y1, x2, y2,
             x2 - x1, y2 - y1);
 
     rects[num_rects].x = x1;
@@ -172,8 +175,8 @@ DrawRectLineIntersections(SDL_Renderer *renderer)
 
     for (i = 0; i < num_rects; i++) {
         for (j = 0; j < num_lines; j++) {
-            float x1, y1, x2, y2;
-            SDL_FRect r;
+            int x1, y1, x2, y2;
+            SDL_Rect r;
 
             r = rects[i];
             x1 = lines[j].x;
@@ -181,8 +184,8 @@ DrawRectLineIntersections(SDL_Renderer *renderer)
             x2 = lines[j].w;
             y2 = lines[j].h;
 
-            if (SDL_GetRectAndLineIntersectionFloat(&r, &x1, &y1, &x2, &y2)) {
-                SDL_RenderLine(renderer, x1, y1, x2, y2);
+            if (SDL_IntersectRectAndLine(&r, &x1, &y1, &x2, &y2)) {
+                SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
             }
         }
     }
@@ -197,29 +200,28 @@ DrawRectRectIntersections(SDL_Renderer *renderer)
 
     for (i = 0; i < num_rects; i++) {
         for (j = i + 1; j < num_rects; j++) {
-            SDL_FRect r;
-            if (SDL_GetRectIntersectionFloat(&rects[i], &rects[j], &r)) {
+            SDL_Rect r;
+            if (SDL_IntersectRect(&rects[i], &rects[j], &r)) {
                 SDL_RenderFillRect(renderer, &r);
             }
         }
     }
 }
 
-static void loop(void *arg)
+void loop()
 {
     int i;
     SDL_Event event;
-    int *done = (int*)arg;
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
-        SDLTest_CommonEvent(state, &event, done);
+        SDLTest_CommonEvent(state, &event, &done);
         switch (event.type) {
-        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        case SDL_MOUSEBUTTONDOWN:
             mouse_begin_x = event.button.x;
             mouse_begin_y = event.button.y;
             break;
-        case SDL_EVENT_MOUSE_BUTTON_UP:
+        case SDL_MOUSEBUTTONUP:
             if (event.button.button == 3) {
                 add_line(mouse_begin_x, mouse_begin_y, event.button.x, event.button.y);
             }
@@ -227,28 +229,22 @@ static void loop(void *arg)
                 add_rect(mouse_begin_x, mouse_begin_y, event.button.x, event.button.y);
             }
             break;
-        case SDL_EVENT_KEY_DOWN:
+        case SDL_KEYDOWN:
             switch (event.key.keysym.sym) {
             case 'l':
-                if (event.key.keysym.mod & SDL_KMOD_SHIFT) {
+                if (event.key.keysym.mod & KMOD_SHIFT) {
                     num_lines = 0;
                 } else {
-                    add_line(
-                        (float)(rand() % 640),
-                        (float)(rand() % 480),
-                        (float)(rand() % 640),
-                        (float)(rand() % 480));
+                    add_line(rand() % 640, rand() % 480, rand() % 640,
+                             rand() % 480);
                 }
                 break;
             case 'r':
-                if (event.key.keysym.mod & SDL_KMOD_SHIFT) {
+                if (event.key.keysym.mod & KMOD_SHIFT) {
                     num_rects = 0;
                 } else {
-                    add_rect(
-                        (float)(rand() % 640),
-                        (float)(rand() % 480),
-                        (float)(rand() % 640),
-                        (float)(rand() % 480));
+                    add_rect(rand() % 640, rand() % 480, rand() % 640,
+                             rand() % 480);
                 }
                 break;
             }
@@ -274,7 +270,7 @@ static void loop(void *arg)
         SDL_RenderPresent(renderer);
     }
 #ifdef __EMSCRIPTEN__
-    if (*done) {
+    if (done) {
         emscripten_cancel_main_loop();
     }
 #endif
@@ -283,22 +279,19 @@ static void loop(void *arg)
 int main(int argc, char *argv[])
 {
     int i;
-    Uint64 then, now;
-    Uint32 frames;
-    int done;
+    Uint32 then, now, frames;
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize parameters */
-    num_objects = -1;  /* -1 means not initialized */
+    num_objects = NUM_OBJECTS;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (state == NULL) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     for (i = 1; i < argc;) {
         int consumed;
 
@@ -319,9 +312,6 @@ int main(int argc, char *argv[])
                     } else if (SDL_strcasecmp(argv[i + 1], "mod") == 0) {
                         blendMode = SDL_BLENDMODE_MOD;
                         consumed = 2;
-                    } else if (SDL_strcasecmp(argv[i + 1], "mul") == 0) {
-                        blendMode = SDL_BLENDMODE_MUL;
-                        consumed = 2;
                     }
                 }
             } else if (SDL_strcasecmp(argv[i], "--cyclecolor") == 0) {
@@ -330,16 +320,13 @@ int main(int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
                 cycle_alpha = SDL_TRUE;
                 consumed = 1;
-            } else if (num_objects < 0 && SDL_isdigit(*argv[i])) {
-                char *endptr = NULL;
-                num_objects = (int)SDL_strtol(argv[i], &endptr, 0);
-                if (endptr != argv[i] && *endptr == '\0' && num_objects >= 0) {
-                    consumed = 1;
-                }
+            } else if (SDL_isdigit(*argv[i])) {
+                num_objects = SDL_atoi(argv[i]);
+                consumed = 1;
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--blend none|blend|add|mod|mul]", "[--cyclecolor]", "[--cyclealpha]", "[count]", NULL };
+            static const char *options[] = { "[--blend none|blend|add|mod]", "[--cyclecolor]", "[--cyclealpha]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             return 1;
         }
@@ -347,10 +334,6 @@ int main(int argc, char *argv[])
     }
     if (!SDLTest_CommonInit(state)) {
         return 2;
-    }
-
-    if (num_objects < 0) {
-        num_objects = NUM_OBJECTS;
     }
 
     /* Create the windows and initialize the renderers */
@@ -369,22 +352,23 @@ int main(int argc, char *argv[])
     done = 0;
 
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop_arg(loop, &done, 0, 1);
+    emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
         ++frames;
-        loop(&done);
+        loop();
     }
 #endif
 
-    /* Print out some timing information */
-    now = SDL_GetTicks();
-
     SDLTest_CommonQuit(state);
 
+    /* Print out some timing information */
+    now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
     }
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,12 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
+#include "SDL.h"
+#include "SDL_error.h"
+#include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
 
-#ifdef SDL_HAPTIC_XINPUT
+#if SDL_HAPTIC_XINPUT
 
+#include "SDL_hints.h"
+#include "SDL_timer.h"
 #include "SDL_windowshaptic_c.h"
 #include "SDL_xinputhaptic_c.h"
 #include "../../core/windows/SDL_xinput.h"
@@ -147,7 +152,7 @@ static int SDLCALL SDL_RunXInputHaptic(void *arg)
         SDL_LockMutex(hwdata->mutex);
         /* If we're currently running and need to stop... */
         if (hwdata->stopTicks) {
-            if ((hwdata->stopTicks != SDL_HAPTIC_INFINITY) && SDL_GetTicks() >= hwdata->stopTicks) {
+            if ((hwdata->stopTicks != SDL_HAPTIC_INFINITY) && SDL_TICKS_PASSED(SDL_GetTicks(), hwdata->stopTicks)) {
                 XINPUT_VIBRATION vibration = { 0, 0 };
                 hwdata->stopTicks = 0;
                 XINPUTSETSTATE(hwdata->userid, &vibration);
@@ -226,7 +231,7 @@ int SDL_XINPUT_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 int SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
     SDL_hapticlist_item *item;
-    Uint8 index = 0;
+    int index = 0;
 
     /* Since it comes from a joystick we have to try to match it with a haptic device on our haptic list. */
     for (item = SDL_hapticlist; item != NULL; item = item->next) {
@@ -287,6 +292,9 @@ int SDL_XINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
         /* do nothing. Effect runs for zero milliseconds. */
     } else {
         haptic->hwdata->stopTicks = SDL_GetTicks() + (effect->effect.leftright.length * iterations);
+        if ((haptic->hwdata->stopTicks == SDL_HAPTIC_INFINITY) || (haptic->hwdata->stopTicks == 0)) {
+            haptic->hwdata->stopTicks = 1; /* fix edge cases. */
+        }
     }
     SDL_UnlockMutex(haptic->hwdata->mutex);
     return (XINPUTSETSTATE(haptic->hwdata->userid, vib) == ERROR_SUCCESS) ? 0 : -1;
@@ -444,3 +452,5 @@ int SDL_XINPUT_HapticStopAll(SDL_Haptic *haptic)
 }
 
 #endif /* SDL_HAPTIC_XINPUT */
+
+/* vi: set ts=4 sw=4 expandtab: */

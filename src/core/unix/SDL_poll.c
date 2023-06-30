@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #include "SDL_poll.h"
 
@@ -32,7 +32,7 @@
 #endif
 #include <errno.h>
 
-int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
+int SDL_IOReady(int fd, int flags, int timeoutMS)
 {
     int result;
 
@@ -42,7 +42,6 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
     do {
 #ifdef HAVE_POLL
         struct pollfd info;
-        int timeoutMS;
 
         info.fd = fd;
         info.events = 0;
@@ -51,14 +50,6 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
         }
         if (flags & SDL_IOR_WRITE) {
             info.events |= POLLOUT;
-        }
-        /* FIXME: Add support for ppoll() for nanosecond precision */
-        if (timeoutNS > 0) {
-            timeoutMS = (int)SDL_NS_TO_MS(timeoutNS);
-        } else if (timeoutNS == 0) {
-            timeoutMS = 0;
-        } else {
-            timeoutMS = -1;
         }
         result = poll(&info, 1, timeoutMS);
 #else
@@ -80,9 +71,9 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
             wfdp = &wfdset;
         }
 
-        if (timeoutNS >= 0) {
-            tv.tv_sec = (timeoutNS / SDL_NS_PER_SECOND);
-            tv.tv_usec = SDL_NS_TO_US(timeoutNS % SDL_NS_PER_SECOND);
+        if (timeoutMS >= 0) {
+            tv.tv_sec = timeoutMS / 1000;
+            tv.tv_usec = (timeoutMS % 1000) * 1000;
             tvp = &tv;
         }
 
@@ -93,3 +84,5 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
 
     return result;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

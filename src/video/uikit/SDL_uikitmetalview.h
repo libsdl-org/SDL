@@ -1,15 +1,15 @@
 /*
  Simple DirectMedia Layer
  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
-
+ 
  This software is provided 'as-is', without any express or implied
  warranty.  In no event will the authors be held liable for any damages
  arising from the use of this software.
-
+ 
  Permission is granted to anyone to use this software for any purpose,
  including commercial applications, and to alter it and redistribute it
  freely, subject to the following restrictions:
-
+ 
  1. The origin of this software must not be misrepresented; you must not
  claim that you wrote the original software. If you use this software
  in a product, an acknowledgment in the product documentation would be
@@ -32,11 +32,12 @@
 #include "../SDL_sysvideo.h"
 #include "SDL_uikitwindow.h"
 
-#if defined(SDL_VIDEO_DRIVER_UIKIT) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL))
+#if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
 
 #import <UIKit/UIKit.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
+
 
 @interface SDL_uikitmetalview : SDL_uikitview
 
@@ -45,10 +46,13 @@
 
 @end
 
-SDL_MetalView UIKit_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window);
-void UIKit_Metal_DestroyView(SDL_VideoDevice *_this, SDL_MetalView view);
-void *UIKit_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view);
+SDL_MetalView UIKit_Metal_CreateView(_THIS, SDL_Window * window);
+void UIKit_Metal_DestroyView(_THIS, SDL_MetalView view);
+void *UIKit_Metal_GetLayer(_THIS, SDL_MetalView view);
+void UIKit_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h);
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
 
 #endif /* SDL_uikitmetalview_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

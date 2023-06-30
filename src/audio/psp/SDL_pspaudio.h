@@ -24,6 +24,9 @@
 
 #include "../SDL_sysaudio.h"
 
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
+
 #define NUM_BUFFERS 2
 
 struct SDL_PrivateAudioData
@@ -39,3 +42,5 @@ struct SDL_PrivateAudioData
 };
 
 #endif /* SDL_pspaudio_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,14 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "./SDL_internal.h"
 
 /* This file defines useful function for working with SDL logging */
 
 #ifndef SDL_log_c_h_
 #define SDL_log_c_h_
 
-extern void SDL_InitLog(void);
-extern void SDL_QuitLog(void);
+extern void SDL_LogInit(void);
+extern void SDL_LogQuit(void);
 
 #endif /* SDL_log_c_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

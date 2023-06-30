@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_JOYSTICK_VITA
+#if SDL_JOYSTICK_VITA
 
 /* This is the PSVita implementation of the SDL joystick API */
 #include <psp2/types.h>
@@ -32,6 +32,12 @@
 
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+
+#include "SDL_events.h"
+#include "SDL_error.h"
+#include "SDL_thread.h"
+#include "SDL_mutex.h"
+#include "SDL_timer.h"
 
 /* Current pad state */
 static SceCtrlData pad0 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };
@@ -224,9 +230,8 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     static unsigned char old_lt[] = { 0, 0, 0, 0 };
     static unsigned char old_rt[] = { 0, 0, 0, 0 };
     SceCtrlData *pad = NULL;
-    Uint64 timestamp = SDL_GetTicksNS();
 
-    int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
+    int index = (int)SDL_JoystickInstanceID(joystick);
 
     if (index == 0)
         pad = &pad0;
@@ -260,28 +265,28 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     // Axes
 
     if (old_lx[index] != lx) {
-        SDL_SendJoystickAxis(timestamp, joystick, 0, analog_map[lx]);
+        SDL_PrivateJoystickAxis(joystick, 0, analog_map[lx]);
         old_lx[index] = lx;
     }
     if (old_ly[index] != ly) {
-        SDL_SendJoystickAxis(timestamp, joystick, 1, analog_map[ly]);
+        SDL_PrivateJoystickAxis(joystick, 1, analog_map[ly]);
         old_ly[index] = ly;
     }
     if (old_rx[index] != rx) {
-        SDL_SendJoystickAxis(timestamp, joystick, 2, analog_map[rx]);
+        SDL_PrivateJoystickAxis(joystick, 2, analog_map[rx]);
         old_rx[index] = rx;
     }
     if (old_ry[index] != ry) {
-        SDL_SendJoystickAxis(timestamp, joystick, 3, analog_map[ry]);
+        SDL_PrivateJoystickAxis(joystick, 3, analog_map[ry]);
         old_ry[index] = ry;
     }
 
     if (old_lt[index] != lt) {
-        SDL_SendJoystickAxis(timestamp, joystick, 4, analog_map[lt]);
+        SDL_PrivateJoystickAxis(joystick, 4, analog_map[lt]);
         old_lt[index] = lt;
     }
     if (old_rt[index] != rt) {
-        SDL_SendJoystickAxis(timestamp, joystick, 5, analog_map[rt]);
+        SDL_PrivateJoystickAxis(joystick, 5, analog_map[rt]);
         old_rt[index] = rt;
     }
 
@@ -292,7 +297,7 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     if (changed) {
         for (i = 0; i < SDL_arraysize(ext_button_map); i++) {
             if (changed & ext_button_map[i]) {
-                SDL_SendJoystickButton(timestamp,
+                SDL_PrivateJoystickButton(
                     joystick, i,
                     (buttons & ext_button_map[i]) ? SDL_PRESSED : SDL_RELEASED);
             }
@@ -319,13 +324,10 @@ SDL_JoystickGUID VITA_JoystickGetDeviceGUID(int device_index)
 
 static int VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
+    int index = (int)SDL_JoystickInstanceID(joystick);
     SceCtrlActuator act;
-
-    if (index < 0 || index > 3) {
-        return -1;
-    }
     SDL_zero(act);
+
     act.small = high_frequency_rumble / 256;
     act.large = low_frequency_rumble / 256;
     if (sceCtrlSetActuator(ext_port_map[index], &act) < 0) {
@@ -347,10 +349,7 @@ static Uint32 VITA_JoystickGetCapabilities(SDL_Joystick *joystick)
 
 static int VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
-    if (index < 0 || index > 3) {
-        return -1;
-    }
+    int index = (int)SDL_JoystickInstanceID(joystick);
     if (sceCtrlSetLightBar(ext_port_map[index], red, green, blue) < 0) {
         return SDL_Unsupported();
     }
@@ -400,3 +399,5 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_VITA */
+
+/* vi: set ts=4 sw=4 expandtab: */

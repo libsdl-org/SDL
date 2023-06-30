@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_HAIKU
+#if SDL_VIDEO_DRIVER_HAIKU
 
 /* BWindow based clipboard implementation */
 
@@ -28,13 +28,14 @@
 #include <TypeConstants.h>
 
 #include "SDL_BWin.h"
+#include "SDL_timer.h"
 #include "../SDL_sysvideo.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int HAIKU_SetClipboardText(SDL_VideoDevice *_this, const char *text) {
+int HAIKU_SetClipboardText(_THIS, const char *text) {
     BMessage *clip = NULL;
     if (be_clipboard->Lock()) {
         be_clipboard->Clear();
@@ -50,9 +51,9 @@ int HAIKU_SetClipboardText(SDL_VideoDevice *_this, const char *text) {
     return 0;
 }
 
-char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
+char *HAIKU_GetClipboardText(_THIS) {
     BMessage *clip = NULL;
-    const char *text = NULL;
+    const char *text = NULL;    
     ssize_t length;
     char *result;
     if (be_clipboard->Lock()) {
@@ -62,8 +63,8 @@ char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
                 &length);
         }
         be_clipboard->Unlock();
-    }
-
+    } 
+    
     if (text == NULL) {
         result = SDL_strdup("");
     } else {
@@ -71,17 +72,17 @@ char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
         result = (char *)SDL_malloc((length + 1) * sizeof(char));
         SDL_strlcpy(result, text, length + 1);
     }
-
+    
     return result;
 }
 
-SDL_bool HAIKU_HasClipboardText(SDL_VideoDevice *_this) {
+SDL_bool HAIKU_HasClipboardText(_THIS) {
     SDL_bool result = SDL_FALSE;
     char *text = HAIKU_GetClipboardText(_this);
     if (text) {
         result = text[0] != '\0' ? SDL_TRUE : SDL_FALSE;
         SDL_free(text);
-    }
+    } 
     return result;
 }
 
@@ -90,3 +91,5 @@ SDL_bool HAIKU_HasClipboardText(SDL_VideoDevice *_this) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
+
+/* vi: set ts=4 sw=4 expandtab: */

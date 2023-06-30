@@ -18,19 +18,20 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_RISCOS
+#if SDL_VIDEO_DRIVER_RISCOS
 
+#include "SDL_version.h"
+#include "SDL_syswm.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_mouse_c.h"
 
-#include <SDL3/SDL_syswm.h>
 
 #include "SDL_riscosvideo.h"
 #include "SDL_riscoswindow.h"
 
-int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int RISCOS_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *driverdata;
 
@@ -49,9 +50,9 @@ int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
+void RISCOS_DestroyWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *driverdata = window->driverdata;
+    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
 
     if (driverdata == NULL) {
         return;
@@ -61,10 +62,18 @@ void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     window->driverdata = NULL;
 }
 
-int RISCOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info)
+SDL_bool RISCOS_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 {
-    info->subsystem = SDL_SYSWM_RISCOS;
-    return 0;
+    if (info->version.major == SDL_MAJOR_VERSION) {
+        info->subsystem = SDL_SYSWM_RISCOS;
+        return SDL_TRUE;
+    } else {
+        SDL_SetError("Application not compiled with SDL %d",
+                     SDL_MAJOR_VERSION);
+        return SDL_FALSE;
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,12 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #if defined(SDL_JOYSTICK_DUMMY) || defined(SDL_JOYSTICK_DISABLED)
 
 /* This is the dummy implementation of the SDL joystick API */
 
+#include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
@@ -148,3 +149,5 @@ SDL_JoystickDriver SDL_DUMMY_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_DUMMY || SDL_JOYSTICK_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

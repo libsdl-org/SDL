@@ -284,7 +284,6 @@ public class HIDDeviceManager {
             0x24c6, // PowerA
             0x2dc8, // 8BitDo
             0x2e24, // Hyperkin
-            0x3537, // GameSir
         };
 
         if (usbInterface.getId() == 0 &&
@@ -599,9 +598,9 @@ public class HIDDeviceManager {
         return false;
     }
 
-    public int writeReport(int deviceID, byte[] report, boolean feature) {
+    public int sendOutputReport(int deviceID, byte[] report) {
         try {
-            //Log.v(TAG, "writeReport deviceID=" + deviceID + " length=" + report.length);
+            //Log.v(TAG, "sendOutputReport deviceID=" + deviceID + " length=" + report.length);
             HIDDevice device;
             device = getDevice(deviceID);
             if (device == null) {
@@ -609,16 +608,33 @@ public class HIDDeviceManager {
                 return -1;
             }
 
-            return device.writeReport(report, feature);
+            return device.sendOutputReport(report);
         } catch (Exception e) {
             Log.e(TAG, "Got exception: " + Log.getStackTraceString(e));
         }
         return -1;
     }
 
-    public boolean readReport(int deviceID, byte[] report, boolean feature) {
+    public int sendFeatureReport(int deviceID, byte[] report) {
         try {
-            //Log.v(TAG, "readReport deviceID=" + deviceID);
+            //Log.v(TAG, "sendFeatureReport deviceID=" + deviceID + " length=" + report.length);
+            HIDDevice device;
+            device = getDevice(deviceID);
+            if (device == null) {
+                HIDDeviceDisconnected(deviceID);
+                return -1;
+            }
+
+            return device.sendFeatureReport(report);
+        } catch (Exception e) {
+            Log.e(TAG, "Got exception: " + Log.getStackTraceString(e));
+        }
+        return -1;
+    }
+
+    public boolean getFeatureReport(int deviceID, byte[] report) {
+        try {
+            //Log.v(TAG, "getFeatureReport deviceID=" + deviceID);
             HIDDevice device;
             device = getDevice(deviceID);
             if (device == null) {
@@ -626,7 +642,7 @@ public class HIDDeviceManager {
                 return false;
             }
 
-            return device.readReport(report, feature);
+            return device.getFeatureReport(report);
         } catch (Exception e) {
             Log.e(TAG, "Got exception: " + Log.getStackTraceString(e));
         }
@@ -663,5 +679,5 @@ public class HIDDeviceManager {
     native void HIDDeviceDisconnected(int deviceID);
 
     native void HIDDeviceInputReport(int deviceID, byte[] report);
-    native void HIDDeviceReportResponse(int deviceID, byte[] report);
+    native void HIDDeviceFeatureReport(int deviceID, byte[] report);
 }

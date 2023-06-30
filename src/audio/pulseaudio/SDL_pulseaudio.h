@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_pulseaudio_h_
 #define SDL_pulseaudio_h_
@@ -27,11 +27,16 @@
 
 #include "../SDL_sysaudio.h"
 
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
+
 struct SDL_PrivateAudioData
 {
     char *device_name;
 
     /* pulseaudio structures */
+    pa_mainloop *mainloop;
+    pa_context *context;
     pa_stream *stream;
 
     /* Raw mixing buffer */
@@ -45,3 +50,5 @@ struct SDL_PrivateAudioData
 };
 
 #endif /* SDL_pulseaudio_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

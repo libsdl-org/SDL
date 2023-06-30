@@ -280,3 +280,5 @@ static const SceGxmProgram *const textureVertexProgramGxp = (const SceGxmProgram
 static const SceGxmProgram *const textureFragmentProgramGxp = (const SceGxmProgram *)gxm_shader_texture_f;
 
 #endif // SDL_RENDER_VITA_GXM_SHADERS_H
+
+/* vi: set ts=4 sw=4 expandtab: */

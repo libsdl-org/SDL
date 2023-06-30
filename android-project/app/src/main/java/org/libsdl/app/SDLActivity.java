@@ -59,8 +59,8 @@ import java.util.Locale;
 */
 public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
-    private static final int SDL_MAJOR_VERSION = 3;
-    private static final int SDL_MINOR_VERSION = 0;
+    private static final int SDL_MAJOR_VERSION = 2;
+    private static final int SDL_MINOR_VERSION = 29;
     private static final int SDL_MICRO_VERSION = 0;
 /*
     // Display InputType.SOURCE/CLASS of events and devices
@@ -193,7 +193,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected static final int SDL_ORIENTATION_PORTRAIT = 3;
     protected static final int SDL_ORIENTATION_PORTRAIT_FLIPPED = 4;
 
-    protected static int mCurrentRotation;
+    protected static int mCurrentOrientation;
     protected static Locale mCurrentLocale;
 
     // Handle the state of the native layer
@@ -221,8 +221,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
     // This is what SDL runs in. It invokes SDL_main(), eventually
     protected static Thread mSDLThread;
-    protected static boolean mSDLMainFinished = false;
-    protected static boolean mActivityCreated = false;
 
     protected static SDLGenericMotionListener_API12 getMotionListener() {
         if (mMotionListener == null) {
@@ -265,17 +263,17 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL before loading the native shared libraries.
      * It can be overridden to provide names of shared libraries to be loaded.
      * The default implementation returns the defaults. It never returns null.
-     * An array returned by a new implementation must at least contain "SDL3".
+     * An array returned by a new implementation must at least contain "SDL2".
      * Also keep in mind that the order the libraries are loaded may matter.
-     * @return names of shared libraries to be loaded (e.g. "SDL3", "main").
+     * @return names of shared libraries to be loaded (e.g. "SDL2", "main").
      */
     protected String[] getLibraries() {
         return new String[] {
-            "SDL3",
-            // "SDL3_image",
-            // "SDL3_mixer",
-            // "SDL3_net",
-            // "SDL3_ttf",
+            "SDL2",
+            // "SDL2_image",
+            // "SDL2_mixer",
+            // "SDL2_net",
+            // "SDL2_ttf",
             "main"
         };
     }
@@ -313,7 +311,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mNextNativeState = NativeState.INIT;
         mCurrentNativeState = NativeState.INIT;
     }
-
+    
     protected SDLSurface createSDLSurface(Context context) {
         return new SDLSurface(context);
     }
@@ -325,24 +323,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Log.v(TAG, "Model: " + Build.MODEL);
         Log.v(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
-
-
-        /* Control activity re-creation */
-        if (mSDLMainFinished || mActivityCreated) {
-              boolean allow_recreate = SDLActivity.nativeAllowRecreateActivity();
-              if (mSDLMainFinished) {
-                  Log.v(TAG, "SDL main() finished");
-              }
-              if (allow_recreate) {
-                  Log.v(TAG, "activity re-created");
-              } else {
-                  Log.v(TAG, "activity finished");
-                  System.exit(0);
-                  return;
-              }
-        }
-
-        mActivityCreated = true;
 
         try {
             Thread.currentThread().setName("SDLActivity");
@@ -398,24 +378,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
            return;
         }
 
-
-        /* Control activity re-creation */
-        /* Robustness: check that the native code is run for the first time.
-         * (Maybe Activity was reset, but not the native code.) */
-        {
-            int run_count = SDLActivity.nativeCheckSDLThreadCounter(); /* get and increment a native counter */
-            if (run_count != 0) {
-                boolean allow_recreate = SDLActivity.nativeAllowRecreateActivity();
-                if (allow_recreate) {
-                    Log.v(TAG, "activity re-created // run_count: " + run_count);
-                } else {
-                    Log.v(TAG, "activity finished // run_count: " + run_count);
-                    System.exit(0);
-                    return;
-                }
-            }
-        }
-
         // Set up JNI
         SDL.setupJNI();
 
@@ -437,9 +399,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mLayout.addView(mSurface);
 
         // Get our current screen orientation and pass it down.
-        SDLActivity.nativeSetNaturalOrientation(SDLActivity.getNaturalOrientation());
-        mCurrentRotation = SDLActivity.getCurrentRotation();
-        SDLActivity.onNativeRotationChanged(mCurrentRotation);
+        mCurrentOrientation = SDLActivity.getCurrentOrientation();
+        // Only record current orientation
+        SDLActivity.onNativeOrientationChanged(mCurrentOrientation);
 
         try {
             if (Build.VERSION.SDK_INT < 24 /* Android 7.0 (N) */) {
@@ -448,15 +410,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 mCurrentLocale = getContext().getResources().getConfiguration().getLocales().get(0);
             }
         } catch(Exception ignored) {
-        }
-
-        switch (getContext().getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) {
-        case Configuration.UI_MODE_NIGHT_NO:
-            SDLActivity.onNativeDarkModeChanged(false);
-            break;
-        case Configuration.UI_MODE_NIGHT_YES:
-            SDLActivity.onNativeDarkModeChanged(true);
-            break;
         }
 
         setContentView(mLayout);
@@ -543,47 +496,33 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
     }
 
-    public static int getNaturalOrientation() {
+    public static int getCurrentOrientation() {
         int result = SDL_ORIENTATION_UNKNOWN;
 
         Activity activity = (Activity)getContext();
-        if (activity != null) {
-            Configuration config = activity.getResources().getConfiguration();
-            Display display = activity.getWindowManager().getDefaultDisplay();
-            int rotation = display.getRotation();
-            if (((rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) &&
-                    config.orientation == Configuration.ORIENTATION_LANDSCAPE) ||
-                ((rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) &&
-                    config.orientation == Configuration.ORIENTATION_PORTRAIT)) {
-                result = SDL_ORIENTATION_LANDSCAPE;
-            } else {
+        if (activity == null) {
+            return result;
+        }
+        Display display = activity.getWindowManager().getDefaultDisplay();
+
+        switch (display.getRotation()) {
+            case Surface.ROTATION_0:
                 result = SDL_ORIENTATION_PORTRAIT;
-            }
-        }
-        return result;
-    }
+                break;
 
-    public static int getCurrentRotation() {
-        int result = 0;
+            case Surface.ROTATION_90:
+                result = SDL_ORIENTATION_LANDSCAPE;
+                break;
 
-        Activity activity = (Activity)getContext();
-        if (activity != null) {
-            Display display = activity.getWindowManager().getDefaultDisplay();
-            switch (display.getRotation()) {
-                case Surface.ROTATION_0:
-                    result = 0;
-                    break;
-                case Surface.ROTATION_90:
-                    result = 90;
-                    break;
-                case Surface.ROTATION_180:
-                    result = 180;
-                    break;
-                case Surface.ROTATION_270:
-                    result = 270;
-                    break;
-            }
+            case Surface.ROTATION_180:
+                result = SDL_ORIENTATION_PORTRAIT_FLIPPED;
+                break;
+
+            case Surface.ROTATION_270:
+                result = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
+                break;
         }
+
         return result;
     }
 
@@ -638,15 +577,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             mCurrentLocale = newConfig.locale;
             SDLActivity.onNativeLocaleChanged();
         }
-
-        switch (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) {
-        case Configuration.UI_MODE_NIGHT_NO:
-            SDLActivity.onNativeDarkModeChanged(false);
-            break;
-        case Configuration.UI_MODE_NIGHT_YES:
-            SDLActivity.onNativeDarkModeChanged(true);
-            break;
-        }
     }
 
     @Override
@@ -672,11 +602,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
             // Wait for "SDLThread" thread to end
             try {
-                // 500ms timeout, because:
-                // C SDLmain() thread might have started (mSDLThread.start() called)
-                // while the SDL_Init() might not have been called yet,
-                // and so the previous QUIT event will be discarded by SDL_Init() and app is running, not exiting.
-                SDLActivity.mSDLThread.join(500);
+                SDLActivity.mSDLThread.join();
             } catch(Exception e) {
                 Log.v(TAG, "Problem stopping SDLThread: " + e);
             }
@@ -983,7 +909,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativeResume();
     public static native void nativeFocusChanged(boolean hasFocus);
     public static native void onNativeDropFile(String filename);
-    public static native void nativeSetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float density, float rate);
+    public static native void nativeSetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float rate);
     public static native void onNativeResize();
     public static native void onNativeKeyDown(int keycode);
     public static native void onNativeKeyUp(int keycode);
@@ -1001,14 +927,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native String nativeGetHint(String name);
     public static native boolean nativeGetHintBoolean(String name, boolean default_value);
     public static native void nativeSetenv(String name, String value);
-    public static native void nativeSetNaturalOrientation(int orientation);
-    public static native void onNativeRotationChanged(int rotation);
+    public static native void onNativeOrientationChanged(int orientation);
     public static native void nativeAddTouch(int touchId, String name);
     public static native void nativePermissionResult(int requestCode, boolean result);
     public static native void onNativeLocaleChanged();
-    public static native void onNativeDarkModeChanged(boolean enabled);
-    public static native boolean nativeAllowRecreateActivity();
-    public static native int nativeCheckSDLThreadCounter();
 
     /**
      * This method is called by SDL using JNI.
@@ -1274,6 +1196,13 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         } catch(Exception ignored) {
             return false;
         }
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static DisplayMetrics getDisplayDPI() {
+        return getContext().getResources().getDisplayMetrics();
     }
 
     /**
@@ -1961,7 +1890,6 @@ class SDLMain implements Runnable {
         if (SDLActivity.mSingleton != null && !SDLActivity.mSingleton.isFinishing()) {
             // Let's finish the Activity
             SDLActivity.mSDLThread = null;
-            SDLActivity.mSDLMainFinished = true;
             SDLActivity.mSingleton.finish();
         }  // else: Activity is already being destroyed
 

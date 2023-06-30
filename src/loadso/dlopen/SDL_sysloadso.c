@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_LOADSO_DLOPEN
 
@@ -28,7 +28,9 @@
 #include <stdio.h>
 #include <dlfcn.h>
 
-#ifdef SDL_VIDEO_DRIVER_UIKIT
+#include "SDL_loadso.h"
+
+#if SDL_VIDEO_DRIVER_UIKIT
 #include "../../video/uikit/SDL_uikitvideo.h"
 #endif
 
@@ -37,7 +39,7 @@ void *SDL_LoadObject(const char *sofile)
     void *handle;
     const char *loaderror;
 
-#ifdef SDL_VIDEO_DRIVER_UIKIT
+#if SDL_VIDEO_DRIVER_UIKIT
     if (!UIKit_IsSystemVersionAtLeast(8.0)) {
         SDL_SetError("SDL_LoadObject requires iOS 8+");
         return NULL;
@@ -52,7 +54,7 @@ void *SDL_LoadObject(const char *sofile)
     return handle;
 }
 
-SDL_FunctionPointer SDL_LoadFunction(void *handle, const char *name)
+void *SDL_LoadFunction(void *handle, const char *name)
 {
     void *symbol = dlsym(handle, name);
     if (symbol == NULL) {
@@ -80,3 +82,5 @@ void SDL_UnloadObject(void *handle)
 }
 
 #endif /* SDL_LOADSO_DLOPEN */
+
+/* vi: set ts=4 sw=4 expandtab: */

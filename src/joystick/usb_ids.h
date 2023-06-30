@@ -29,7 +29,6 @@
 #define USB_VENDOR_APPLE        0x05ac
 #define USB_VENDOR_ASTRO        0x9886
 #define USB_VENDOR_BACKBONE     0x358a
-#define USB_VENDOR_GAMESIR      0x3537
 #define USB_VENDOR_DRAGONRISE   0x0079
 #define USB_VENDOR_GOOGLE       0x18d1
 #define USB_VENDOR_HORI         0x0f0d
@@ -45,7 +44,6 @@
 #define USB_VENDOR_POWERA_ALT   0x20d6
 #define USB_VENDOR_QANBA        0x2c22
 #define USB_VENDOR_RAZER        0x1532
-#define USB_VENDOR_SAITEK       0x06a3
 #define USB_VENDOR_SHANWAN      0x2563
 #define USB_VENDOR_SHANWAN_ALT  0x20bc
 #define USB_VENDOR_SONY         0x054c
@@ -59,7 +57,6 @@
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
 #define USB_PRODUCT_BACKBONE_ONE_IOS_PS5                  0x0104
-#define USB_PRODUCT_GAMESIR_G7                            0x1001
 #define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER              0x9400
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER             0x1846
 #define USB_PRODUCT_HORI_FIGHTING_COMMANDER_OCTA_SERIES_X 0x0150
@@ -95,7 +92,6 @@
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_PS5_WIRELESS   0x100c
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_XBOX_WIRED     0x1010
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_XBOX_WIRELESS  0x1011
-#define USB_PRODUCT_SAITEK_CYBORG_V3                      0xf622
 #define USB_PRODUCT_SHANWAN_DS3                           0x0523
 #define USB_PRODUCT_SONY_DS3                              0x0268
 #define USB_PRODUCT_SONY_DS4                              0x05c4
@@ -129,7 +125,6 @@
 #define USB_PRODUCT_XBOX_SERIES_X_PDP_BLUE                0x02d9
 #define USB_PRODUCT_XBOX_SERIES_X_PDP_AFTERGLOW           0x02da
 #define USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO2      0x4001
-#define USB_PRODUCT_XBOX_SERIES_X_POWERA_MOGA_XP_ULTRA    0x890b
 #define USB_PRODUCT_XBOX_SERIES_X_POWERA_SPECTRA          0x4002
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER           0x02ff /* XBOXGIP driver software PID */
 #define USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER            0x02fe /* Made up product ID for XInput */
@@ -165,3 +160,5 @@
 #define BLUETOOTH_PRODUCT_LUNA_CONTROLLER 0x0419
 
 #endif /* usb_ids_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

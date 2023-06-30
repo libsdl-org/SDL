@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_X11) && defined(SDL_VIDEO_DRIVER_X11_XFIXES)
+#if SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_DRIVER_X11_XFIXES
 
 #include "SDL_x11video.h"
 #include "SDL_x11xfixes.h"
@@ -42,9 +42,9 @@ static SDL_bool xfixes_version_atleast(const int version, const int wantmajor, c
     return version >= ((wantmajor * 1000) + wantminor);
 }
 
-void X11_InitXfixes(SDL_VideoDevice *_this)
+void X11_InitXfixes(_THIS)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     int version = 0;
     int event, error;
@@ -64,12 +64,12 @@ void X11_InitXfixes(SDL_VideoDevice *_this)
     xfixes_initialized = 1;
 }
 
-int X11_XfixesIsInitialized(void)
+int X11_XfixesIsInitialized()
 {
     return xfixes_initialized;
 }
 
-void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
+void X11_SetWindowMouseRect(_THIS, SDL_Window *window)
 {
     if (SDL_RectEmpty(&window->mouse_rect)) {
         X11_ConfineCursorWithFlags(_this, window, NULL, 0);
@@ -78,7 +78,7 @@ void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
             X11_ConfineCursorWithFlags(_this, window, &window->mouse_rect, 0);
         } else {
             /* Save the state for when we get focus again */
-            SDL_WindowData *wdata = window->driverdata;
+            SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;
 
             SDL_memcpy(&wdata->barrier_rect, &window->mouse_rect, sizeof(wdata->barrier_rect));
 
@@ -87,13 +87,13 @@ void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rect, int flags)
+int X11_ConfineCursorWithFlags(_THIS, SDL_Window *window, const SDL_Rect *rect, int flags)
 {
     /* Yaakuro: For some reason Xfixes when confining inside a rect where the
      * edges exactly match, a rectangle the cursor 'slips' out of the barrier.
      * To prevent that the lines for the barriers will span the whole screen.
      */
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     SDL_WindowData *wdata;
 
     if (!X11_XfixesIsInitialized()) {
@@ -106,7 +106,7 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
     }
 
     SDL_assert(window != NULL);
-    wdata = window->driverdata;
+    wdata = (SDL_WindowData *)window->driverdata;
 
     /* If user did not specify an area to confine, destroy the barrier that was/is assigned to
      * this window it was assigned */
@@ -130,7 +130,7 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
         }
 
         /* Use the display bounds to ensure the barriers don't have corner gaps */
-        SDL_GetDisplayBounds(SDL_GetDisplayForWindow(window), &bounds);
+        SDL_GetDisplayBounds(SDL_GetWindowDisplayIndex(window), &bounds);
 
         /** Create the left barrier */
         wdata->barrier[0] = X11_XFixesCreatePointerBarrier(data->display, wdata->xwindow,
@@ -176,12 +176,12 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
     return 0;
 }
 
-void X11_DestroyPointerBarrier(SDL_VideoDevice *_this, SDL_Window *window)
+void X11_DestroyPointerBarrier(_THIS, SDL_Window *window)
 {
     int i;
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     if (window) {
-        SDL_WindowData *wdata = window->driverdata;
+        SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;
 
         for (i = 0; i < 4; i++) {
             if (wdata->barrier[i] > 0) {
@@ -195,3 +195,5 @@ void X11_DestroyPointerBarrier(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_DRIVER_X11_XFIXES */
+
+/* vi: set ts=4 sw=4 expandtab: */

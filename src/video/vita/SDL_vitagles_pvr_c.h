@@ -24,9 +24,11 @@
 
 #include "SDL_vitavideo.h"
 
-extern int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
-extern int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
+extern int VITA_GLES_SwapWindow(_THIS, SDL_Window *window);
+extern SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window);
+extern int VITA_GLES_LoadLibrary(_THIS, const char *path);
 
 #endif /* SDL_vitagles_pvr_c_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

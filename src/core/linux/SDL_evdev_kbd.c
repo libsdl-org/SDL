@@ -18,9 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #include "SDL_evdev_kbd.h"
+#include "SDL_hints.h"
 
 #ifdef SDL_INPUT_LINUXKD
 
@@ -159,7 +160,7 @@ static int kbd_cleanup_atexit_installed = 0;
 static struct sigaction old_sigaction[NSIG];
 
 static int fatal_signals[] = {
-    /* Handlers for SIGTERM and SIGINT are installed in SDL_InitQuit. */
+    /* Handlers for SIGTERM and SIGINT are installed in SDL_QuitInit. */
     SIGHUP, SIGQUIT, SIGILL, SIGABRT,
     SIGFPE, SIGSEGV, SIGPIPE, SIGBUS,
     SIGSYS
@@ -181,8 +182,8 @@ static void SDL_EVDEV_kbd_reraise_signal(int sig)
     (void)raise(sig);
 }
 
-static siginfo_t *SDL_EVDEV_kdb_cleanup_siginfo = NULL;
-static void *SDL_EVDEV_kdb_cleanup_ucontext = NULL;
+siginfo_t *SDL_EVDEV_kdb_cleanup_siginfo = NULL;
+void *SDL_EVDEV_kdb_cleanup_ucontext = NULL;
 
 static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontext)
 {
@@ -208,9 +209,9 @@ static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontex
     SDL_EVDEV_kbd_reraise_signal(signum);
 }
 
-static void kbd_unregister_emerg_cleanup(void)
+static void kbd_unregister_emerg_cleanup()
 {
-    int tabidx;
+    int tabidx, signum;
 
     kbd_cleanup_state = NULL;
 
@@ -222,7 +223,7 @@ static void kbd_unregister_emerg_cleanup(void)
     for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
         struct sigaction *old_action_p;
         struct sigaction cur_action;
-        int signum = fatal_signals[tabidx];
+        signum = fatal_signals[tabidx];
         old_action_p = &(old_sigaction[signum]);
 
         /* Examine current signal action */
@@ -251,7 +252,7 @@ static void kbd_cleanup_atexit(void)
 
 static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
 {
-    int tabidx;
+    int tabidx, signum;
 
     if (kbd_cleanup_state != NULL) {
         return;
@@ -275,7 +276,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
     for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
         struct sigaction *old_action_p;
         struct sigaction new_action;
-        int signum = fatal_signals[tabidx];
+        signum = fatal_signals[tabidx];
         old_action_p = &(old_sigaction[signum]);
         if (sigaction(signum, NULL, old_action_p)) {
             continue;
@@ -817,3 +818,5 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
 }
 
 #endif /* SDL_INPUT_LINUXKD */
+
+/* vi: set ts=4 sw=4 expandtab: */

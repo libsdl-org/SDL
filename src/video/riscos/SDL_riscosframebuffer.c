@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_RISCOS
+#if SDL_VIDEO_DRIVER_RISCOS
 
 #include "../SDL_sysvideo.h"
 #include "SDL_riscosframebuffer_c.h"
@@ -30,14 +30,14 @@
 #include <kernel.h>
 #include <swis.h>
 
-int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
-    SDL_WindowData *driverdata = window->driverdata;
+    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
     const char *sprite_name = "display";
     unsigned int sprite_mode;
     _kernel_oserror *error;
     _kernel_swi_regs regs;
-    const SDL_DisplayMode *mode;
+    SDL_DisplayMode mode;
     int size;
     int w, h;
 
@@ -47,10 +47,10 @@ int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, U
     RISCOS_DestroyWindowFramebuffer(_this, window);
 
     /* Create a new one */
-    mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(window));
-    if ((SDL_ISPIXELFORMAT_PACKED(mode->format) || SDL_ISPIXELFORMAT_ARRAY(mode->format))) {
-        *format = mode->format;
-        sprite_mode = (unsigned int)mode->driverdata;
+    SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(window), &mode);
+    if ((SDL_ISPIXELFORMAT_PACKED(mode.format) || SDL_ISPIXELFORMAT_ARRAY(mode.format))) {
+        *format = mode.format;
+        sprite_mode = (unsigned int)mode.driverdata;
     } else {
         *format = SDL_PIXELFORMAT_BGR888;
         sprite_mode = (1 | (90 << 1) | (90 << 14) | (6 << 27));
@@ -91,9 +91,9 @@ int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, U
     return 0;
 }
 
-int RISCOS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int RISCOS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_WindowData *driverdata = window->driverdata;
+    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
     _kernel_swi_regs regs;
     _kernel_oserror *error;
 
@@ -113,9 +113,9 @@ int RISCOS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, c
     return 0;
 }
 
-void RISCOS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
+void RISCOS_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *driverdata = window->driverdata;
+    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
 
     if (driverdata->fb_area) {
         SDL_free(driverdata->fb_area);
@@ -125,3 +125,5 @@ void RISCOS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */
+
+/* vi: set ts=4 sw=4 expandtab: */

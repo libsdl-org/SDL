@@ -18,10 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_RENDER_PSP
+#if SDL_VIDEO_RENDER_PSP
 
+#include "SDL_hints.h"
 #include "../SDL_sysrender.h"
 
 #include <pspkernel.h>
@@ -542,7 +543,7 @@ static int TextureShouldSwizzle(PSP_TextureData *psp_texture, SDL_Texture *textu
 static void TextureActivate(SDL_Texture *texture)
 {
     PSP_TextureData *psp_texture = (PSP_TextureData *)texture->driverdata;
-    int scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GU_NEAREST : GU_LINEAR;
+    int scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GU_NEAREST : GU_LINEAR;
 
     /* Swizzling is useless with small textures. */
     if (TextureShouldSwizzle(psp_texture, texture)) {
@@ -757,7 +758,7 @@ static int PSP_QueueFillRects(SDL_Renderer *renderer, SDL_RenderCommand *cmd, co
 }
 
 static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                         const SDL_FRect *srcrect, const SDL_FRect *dstrect)
+                         const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
     VertTV *verts;
     const float x = dstrect->x;
@@ -841,7 +842,7 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
 }
 
 static int PSP_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                           const SDL_FRect *srcrect, const SDL_FRect *dstrect,
+                           const SDL_Rect *srcrect, const SDL_FRect *dstrect,
                            const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
     VertTV *verts = (VertTV *)SDL_AllocateRenderVertices(renderer, 4 * sizeof(VertTV), 4, &cmd->data.draw.first);
@@ -1333,7 +1334,7 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->DestroyRenderer = PSP_DestroyRenderer;
     renderer->SetVSync = PSP_SetVSync;
     renderer->info = PSP_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
+    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
     renderer->window = window;
 
@@ -1407,7 +1408,7 @@ SDL_RenderDriver PSP_RenderDriver = {
     .CreateRenderer = PSP_CreateRenderer,
     .info = {
         .name = "PSP",
-        .flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+        .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
         .num_texture_formats = 4,
         .texture_formats = {
             [0] = SDL_PIXELFORMAT_BGR565,
@@ -1421,3 +1422,5 @@ SDL_RenderDriver PSP_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_PSP */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,41 +18,44 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_AUDIO_DRIVER_N3DS
+
+#include "SDL_audio.h"
 
 /* N3DS Audio driver */
 
 #include "../SDL_sysaudio.h"
 #include "SDL_n3dsaudio.h"
+#include "SDL_timer.h"
 
 #define N3DSAUDIO_DRIVER_NAME "n3ds"
 
 static dspHookCookie dsp_hook;
 static SDL_AudioDevice *audio_device;
 
-static void FreePrivateData(SDL_AudioDevice *_this);
-static int FindAudioFormat(SDL_AudioDevice *_this);
+static void FreePrivateData(_THIS);
+static int FindAudioFormat(_THIS);
 
-static SDL_INLINE void contextLock(SDL_AudioDevice *_this)
+static SDL_INLINE void contextLock(_THIS)
 {
-    LightLock_Lock(&_this->hidden->lock);
+    LightLock_Lock(&this->hidden->lock);
 }
 
-static SDL_INLINE void contextUnlock(SDL_AudioDevice *_this)
+static SDL_INLINE void contextUnlock(_THIS)
 {
-    LightLock_Unlock(&_this->hidden->lock);
+    LightLock_Unlock(&this->hidden->lock);
 }
 
-static void N3DSAUD_LockAudio(SDL_AudioDevice *_this)
+static void N3DSAUD_LockAudio(_THIS)
 {
-    contextLock(_this);
+    contextLock(this);
 }
 
-static void N3DSAUD_UnlockAudio(SDL_AudioDevice *_this)
+static void N3DSAUD_UnlockAudio(_THIS)
 {
-    contextUnlock(_this);
+    contextUnlock(this);
 }
 
 static void N3DSAUD_DspHook(DSP_HookType hook)
@@ -70,32 +73,32 @@ static void AudioFrameFinished(void *device)
 {
     bool shouldBroadcast = false;
     unsigned i;
-    SDL_AudioDevice *_this = (SDL_AudioDevice *)device;
+    SDL_AudioDevice *this = (SDL_AudioDevice *)device;
 
-    contextLock(_this);
+    contextLock(this);
 
     for (i = 0; i < NUM_BUFFERS; i++) {
-        if (_this->hidden->waveBuf[i].status == NDSP_WBUF_DONE) {
-            _this->hidden->waveBuf[i].status = NDSP_WBUF_FREE;
+        if (this->hidden->waveBuf[i].status == NDSP_WBUF_DONE) {
+            this->hidden->waveBuf[i].status = NDSP_WBUF_FREE;
             shouldBroadcast = SDL_TRUE;
         }
     }
 
     if (shouldBroadcast) {
-        CondVar_Broadcast(&_this->hidden->cv);
+        CondVar_Broadcast(&this->hidden->cv);
     }
 
-    contextUnlock(_this);
+    contextUnlock(this);
 }
 
-static int N3DSAUDIO_OpenDevice(SDL_AudioDevice *_this, const char *devname)
+static int N3DSAUDIO_OpenDevice(_THIS, const char *devname)
 {
     Result ndsp_init_res;
     Uint8 *data_vaddr;
     float mix[12];
-    _this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*_this->hidden));
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*this->hidden));
 
-    if (_this->hidden == NULL) {
+    if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -111,145 +114,145 @@ static int N3DSAUDIO_OpenDevice(SDL_AudioDevice *_this, const char *devname)
     }
 
     /* Initialise internal state */
-    LightLock_Init(&_this->hidden->lock);
-    CondVar_Init(&_this->hidden->cv);
+    LightLock_Init(&this->hidden->lock);
+    CondVar_Init(&this->hidden->cv);
 
-    if (_this->spec.channels > 2) {
-        _this->spec.channels = 2;
+    if (this->spec.channels > 2) {
+        this->spec.channels = 2;
     }
 
     /* Should not happen but better be safe. */
-    if (FindAudioFormat(_this) < 0) {
+    if (FindAudioFormat(this) < 0) {
         return SDL_SetError("No supported audio format found.");
     }
 
     /* Update the fragment size as size in bytes */
-    SDL_CalculateAudioSpec(&_this->spec);
+    SDL_CalculateAudioSpec(&this->spec);
 
     /* Allocate mixing buffer */
-    if (_this->spec.size >= SDL_MAX_UINT32 / 2) {
+    if (this->spec.size >= SDL_MAX_UINT32 / 2) {
         return SDL_SetError("Mixing buffer is too large.");
     }
 
-    _this->hidden->mixlen = _this->spec.size;
-    _this->hidden->mixbuf = (Uint8 *)SDL_malloc(_this->spec.size);
-    if (_this->hidden->mixbuf == NULL) {
+    this->hidden->mixlen = this->spec.size;
+    this->hidden->mixbuf = (Uint8 *)SDL_malloc(this->spec.size);
+    if (this->hidden->mixbuf == NULL) {
         return SDL_OutOfMemory();
     }
 
-    SDL_memset(_this->hidden->mixbuf, _this->spec.silence, _this->spec.size);
+    SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
 
-    data_vaddr = (Uint8 *)linearAlloc(_this->hidden->mixlen * NUM_BUFFERS);
+    data_vaddr = (Uint8 *)linearAlloc(this->hidden->mixlen * NUM_BUFFERS);
     if (data_vaddr == NULL) {
         return SDL_OutOfMemory();
     }
 
-    SDL_memset(data_vaddr, 0, _this->hidden->mixlen * NUM_BUFFERS);
-    DSP_FlushDataCache(data_vaddr, _this->hidden->mixlen * NUM_BUFFERS);
+    SDL_memset(data_vaddr, 0, this->hidden->mixlen * NUM_BUFFERS);
+    DSP_FlushDataCache(data_vaddr, this->hidden->mixlen * NUM_BUFFERS);
 
-    _this->hidden->nextbuf = 0;
-    _this->hidden->channels = _this->spec.channels;
-    _this->hidden->samplerate = _this->spec.freq;
+    this->hidden->nextbuf = 0;
+    this->hidden->channels = this->spec.channels;
+    this->hidden->samplerate = this->spec.freq;
 
     ndspChnReset(0);
 
     ndspChnSetInterp(0, NDSP_INTERP_LINEAR);
-    ndspChnSetRate(0, _this->spec.freq);
-    ndspChnSetFormat(0, _this->hidden->format);
+    ndspChnSetRate(0, this->spec.freq);
+    ndspChnSetFormat(0, this->hidden->format);
 
     SDL_memset(mix, 0, sizeof(mix));
     mix[0] = 1.0;
     mix[1] = 1.0;
     ndspChnSetMix(0, mix);
 
-    SDL_memset(_this->hidden->waveBuf, 0, sizeof(ndspWaveBuf) * NUM_BUFFERS);
+    SDL_memset(this->hidden->waveBuf, 0, sizeof(ndspWaveBuf) * NUM_BUFFERS);
 
     for (unsigned i = 0; i < NUM_BUFFERS; i++) {
-        _this->hidden->waveBuf[i].data_vaddr = data_vaddr;
-        _this->hidden->waveBuf[i].nsamples = _this->hidden->mixlen / _this->hidden->bytePerSample;
-        data_vaddr += _this->hidden->mixlen;
+        this->hidden->waveBuf[i].data_vaddr = data_vaddr;
+        this->hidden->waveBuf[i].nsamples = this->hidden->mixlen / this->hidden->bytePerSample;
+        data_vaddr += this->hidden->mixlen;
     }
 
     /* Setup callback */
-    audio_device = _this;
-    ndspSetCallback(AudioFrameFinished, _this);
+    audio_device = this;
+    ndspSetCallback(AudioFrameFinished, this);
     dspHook(&dsp_hook, N3DSAUD_DspHook);
 
     return 0;
 }
 
-static int N3DSAUDIO_CaptureFromDevice(SDL_AudioDevice *_this, void *buffer, int buflen)
+static int N3DSAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     /* Delay to make this sort of simulate real audio input. */
-    SDL_Delay((_this->spec.samples * 1000) / _this->spec.freq);
+    SDL_Delay((this->spec.samples * 1000) / this->spec.freq);
 
     /* always return a full buffer of silence. */
-    SDL_memset(buffer, _this->spec.silence, buflen);
+    SDL_memset(buffer, this->spec.silence, buflen);
     return buflen;
 }
 
-static void N3DSAUDIO_PlayDevice(SDL_AudioDevice *_this)
+static void N3DSAUDIO_PlayDevice(_THIS)
 {
     size_t nextbuf;
     size_t sampleLen;
-    contextLock(_this);
+    contextLock(this);
 
-    nextbuf = _this->hidden->nextbuf;
-    sampleLen = _this->hidden->mixlen;
+    nextbuf = this->hidden->nextbuf;
+    sampleLen = this->hidden->mixlen;
 
-    if (_this->hidden->isCancelled ||
-        _this->hidden->waveBuf[nextbuf].status != NDSP_WBUF_FREE) {
-        contextUnlock(_this);
+    if (this->hidden->isCancelled ||
+        this->hidden->waveBuf[nextbuf].status != NDSP_WBUF_FREE) {
+        contextUnlock(this);
         return;
     }
 
-    _this->hidden->nextbuf = (nextbuf + 1) % NUM_BUFFERS;
+    this->hidden->nextbuf = (nextbuf + 1) % NUM_BUFFERS;
 
-    contextUnlock(_this);
+    contextUnlock(this);
 
-    SDL_memcpy((void *)_this->hidden->waveBuf[nextbuf].data_vaddr,
-           _this->hidden->mixbuf, sampleLen);
-    DSP_FlushDataCache(_this->hidden->waveBuf[nextbuf].data_vaddr, sampleLen);
+    memcpy((void *)this->hidden->waveBuf[nextbuf].data_vaddr,
+           this->hidden->mixbuf, sampleLen);
+    DSP_FlushDataCache(this->hidden->waveBuf[nextbuf].data_vaddr, sampleLen);
 
-    ndspChnWaveBufAdd(0, &_this->hidden->waveBuf[nextbuf]);
+    ndspChnWaveBufAdd(0, &this->hidden->waveBuf[nextbuf]);
 }
 
-static void N3DSAUDIO_WaitDevice(SDL_AudioDevice *_this)
+static void N3DSAUDIO_WaitDevice(_THIS)
 {
-    contextLock(_this);
-    while (!_this->hidden->isCancelled &&
-           _this->hidden->waveBuf[_this->hidden->nextbuf].status != NDSP_WBUF_FREE) {
-        CondVar_Wait(&_this->hidden->cv, &_this->hidden->lock);
+    contextLock(this);
+    while (!this->hidden->isCancelled &&
+           this->hidden->waveBuf[this->hidden->nextbuf].status != NDSP_WBUF_FREE) {
+        CondVar_Wait(&this->hidden->cv, &this->hidden->lock);
     }
-    contextUnlock(_this);
+    contextUnlock(this);
 }
 
-static Uint8 *N3DSAUDIO_GetDeviceBuf(SDL_AudioDevice *_this)
+static Uint8 *N3DSAUDIO_GetDeviceBuf(_THIS)
 {
-    return _this->hidden->mixbuf;
+    return this->hidden->mixbuf;
 }
 
-static void N3DSAUDIO_CloseDevice(SDL_AudioDevice *_this)
+static void N3DSAUDIO_CloseDevice(_THIS)
 {
-    contextLock(_this);
+    contextLock(this);
 
     dspUnhook(&dsp_hook);
     ndspSetCallback(NULL, NULL);
 
-    if (!_this->hidden->isCancelled) {
+    if (!this->hidden->isCancelled) {
         ndspChnReset(0);
-        SDL_memset(_this->hidden->waveBuf, 0, sizeof(ndspWaveBuf) * NUM_BUFFERS);
-        CondVar_Broadcast(&_this->hidden->cv);
+        memset(this->hidden->waveBuf, 0, sizeof(ndspWaveBuf) * NUM_BUFFERS);
+        CondVar_Broadcast(&this->hidden->cv);
     }
 
-    contextUnlock(_this);
+    contextUnlock(this);
 
     ndspExit();
 
-    FreePrivateData(_this);
+    FreePrivateData(this);
 }
 
-static void N3DSAUDIO_ThreadInit(SDL_AudioDevice *_this)
+static void N3DSAUDIO_ThreadInit(_THIS)
 {
     s32 current_priority;
     svcGetThreadPriority(&current_priority, CUR_THREAD_HANDLE);
@@ -289,48 +292,56 @@ AudioBootStrap N3DSAUDIO_bootstrap = {
 /**
  * Cleans up all allocated memory, safe to call with null pointers
  */
-static void FreePrivateData(SDL_AudioDevice *_this)
+static void FreePrivateData(_THIS)
 {
-    if (!_this->hidden) {
+    if (!this->hidden) {
         return;
     }
 
-    if (_this->hidden->waveBuf[0].data_vaddr) {
-        linearFree((void *)_this->hidden->waveBuf[0].data_vaddr);
+    if (this->hidden->waveBuf[0].data_vaddr) {
+        linearFree((void *)this->hidden->waveBuf[0].data_vaddr);
     }
 
-    if (_this->hidden->mixbuf) {
-        SDL_free(_this->hidden->mixbuf);
-        _this->hidden->mixbuf = NULL;
+    if (this->hidden->mixbuf) {
+        SDL_free(this->hidden->mixbuf);
+        this->hidden->mixbuf = NULL;
     }
 
-    SDL_free(_this->hidden);
-    _this->hidden = NULL;
+    SDL_free(this->hidden);
+    this->hidden = NULL;
 }
 
-static int FindAudioFormat(SDL_AudioDevice *_this)
+static int FindAudioFormat(_THIS)
 {
-    SDL_AudioFormat test_format;
-    const SDL_AudioFormat *closefmts = SDL_ClosestAudioFormats(_this->spec.format);
-    while ((test_format = *(closefmts++)) != 0) {
-        _this->spec.format = test_format;
+    SDL_bool found_valid_format = SDL_FALSE;
+    Uint16 test_format = SDL_FirstAudioFormat(this->spec.format);
+
+    while (!found_valid_format && test_format) {
+        this->spec.format = test_format;
         switch (test_format) {
-        case SDL_AUDIO_S8:
+        case AUDIO_S8:
             /* Signed 8-bit audio supported */
-            _this->hidden->format = (_this->spec.channels == 2) ? NDSP_FORMAT_STEREO_PCM8 : NDSP_FORMAT_MONO_PCM8;
-            _this->hidden->isSigned = 1;
-            _this->hidden->bytePerSample = _this->spec.channels;
-            return 0;
-        case SDL_AUDIO_S16:
+            this->hidden->format = (this->spec.channels == 2) ? NDSP_FORMAT_STEREO_PCM8 : NDSP_FORMAT_MONO_PCM8;
+            this->hidden->isSigned = 1;
+            this->hidden->bytePerSample = this->spec.channels;
+            found_valid_format = SDL_TRUE;
+            break;
+        case AUDIO_S16:
             /* Signed 16-bit audio supported */
-            _this->hidden->format = (_this->spec.channels == 2) ? NDSP_FORMAT_STEREO_PCM16 : NDSP_FORMAT_MONO_PCM16;
-            _this->hidden->isSigned = 1;
-            _this->hidden->bytePerSample = _this->spec.channels * 2;
-            return 0;
+            this->hidden->format = (this->spec.channels == 2) ? NDSP_FORMAT_STEREO_PCM16 : NDSP_FORMAT_MONO_PCM16;
+            this->hidden->isSigned = 1;
+            this->hidden->bytePerSample = this->spec.channels * 2;
+            found_valid_format = SDL_TRUE;
+            break;
+        default:
+            test_format = SDL_NextAudioFormat();
+            break;
         }
     }
 
-    return -1;
+    return found_valid_format ? 0 : -1;
 }
 
 #endif /* SDL_AUDIO_DRIVER_N3DS */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

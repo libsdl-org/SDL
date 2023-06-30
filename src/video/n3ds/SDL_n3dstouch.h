@@ -27,3 +27,5 @@ void N3DS_QuitTouch(void);
 void N3DS_PollTouch(void);
 
 #endif /* SDL_n3dstouch_h_ */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

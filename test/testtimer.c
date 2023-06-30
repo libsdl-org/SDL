@@ -13,9 +13,11 @@
 /* Test program to check the resolution of the SDL timer on the current
    platform
 */
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "SDL.h"
 
 #define DEFAULT_RESOLUTION 1
 
@@ -37,45 +39,14 @@ callback(Uint32 interval, void *param)
 
 int main(int argc, char *argv[])
 {
-    int i;
-    int desired = -1;
+    int i, desired;
     SDL_TimerID t1, t2, t3;
+    Uint64 start64, now64;
+    Uint32 start32, now32;
     Uint64 start, now;
-    Uint64 start_perf, now_perf;
-    SDLTest_CommonState  *state;
-
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    /* Parse commandline */
-    for (i = 1; i < argc;) {
-        int consumed;
-
-        consumed = SDLTest_CommonArg(state, i);
-        if (!consumed) {
-            if (desired < 0) {
-                char *endptr;
-
-                desired = SDL_strtoul(argv[i], &endptr, 0);
-                if (desired != 0 && endptr != argv[i] && *endptr == '\0') {
-                    consumed = 1;
-                }
-            }
-        }
-        if (consumed <= 0) {
-            static const char *options[] = { "[interval]", NULL };
-            SDLTest_CommonLogUsage(state, argv[0], options);
-            return 1;
-        }
-
-        i += consumed;
-    }
 
     if (SDL_Init(SDL_INIT_TIMER) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -91,18 +62,24 @@ int main(int argc, char *argv[])
     /* Verify SDL_GetTicks* acts monotonically increasing, and not erratic. */
     SDL_Log("Sanity-checking GetTicks\n");
     for (i = 0; i < 1000; ++i) {
-        start = SDL_GetTicks();
+        start64 = SDL_GetTicks64();
+        start32 = SDL_GetTicks();
         SDL_Delay(1);
-        now = SDL_GetTicks() - start;
-        if (now > 100) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testtimer.c: Delta time erratic at iter %d. Delay 1ms = %d ms in ticks\n", i, (int)now);
+        now64 = SDL_GetTicks64() - start64;
+        now32 = SDL_GetTicks() - start32;
+        if (now32 > 100 || now64 > 100) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testtimer.c: Delta time erratic at iter %d. Delay 1ms = %d ms in ticks, %d ms in ticks64\n", i, (int)now32, (int)now64);
             SDL_Quit();
             return 1;
         }
     }
 
     /* Start the timer */
-    if (desired < 0) {
+    desired = 0;
+    if (argv[1]) {
+        desired = SDL_atoi(argv[1]);
+    }
+    if (desired == 0) {
         desired = DEFAULT_RESOLUTION;
     }
     t1 = SDL_AddTimer(desired, ticktock, NULL);
@@ -147,22 +124,25 @@ int main(int argc, char *argv[])
     SDL_RemoveTimer(t2);
     SDL_RemoveTimer(t3);
 
-    start_perf = SDL_GetPerformanceCounter();
+    start = SDL_GetPerformanceCounter();
     for (i = 0; i < 1000000; ++i) {
         ticktock(0, NULL);
     }
-    now_perf = SDL_GetPerformanceCounter();
-    SDL_Log("1 million iterations of ticktock took %f ms\n", (double)((now_perf - start_perf) * 1000) / SDL_GetPerformanceFrequency());
+    now = SDL_GetPerformanceCounter();
+    SDL_Log("1 million iterations of ticktock took %f ms\n", (double)((now - start) * 1000) / SDL_GetPerformanceFrequency());
 
     SDL_Log("Performance counter frequency: %" SDL_PRIu64 "\n", SDL_GetPerformanceFrequency());
-    start = SDL_GetTicks();
-    start_perf = SDL_GetPerformanceCounter();
+    start64 = SDL_GetTicks64();
+    start32 = SDL_GetTicks();
+    start = SDL_GetPerformanceCounter();
     SDL_Delay(1000);
-    now_perf = SDL_GetPerformanceCounter();
-    now = SDL_GetTicks();
-    SDL_Log("Delay 1 second = %d ms in ticks, %f ms according to performance counter\n", (int)(now - start), (double)((now_perf - start_perf) * 1000) / SDL_GetPerformanceFrequency());
+    now = SDL_GetPerformanceCounter();
+    now64 = SDL_GetTicks64();
+    now32 = SDL_GetTicks();
+    SDL_Log("Delay 1 second = %d ms in ticks, %d ms in ticks64, %f ms according to performance counter\n", (int)(now32 - start32), (int)(now64 - start64), (double)((now - start) * 1000) / SDL_GetPerformanceFrequency());
 
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

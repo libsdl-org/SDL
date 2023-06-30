@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_SW && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED
 
 #include "SDL_draw.h"
 #include "SDL_blendfillrect.h"
@@ -223,7 +223,7 @@ int SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect,
     /* If 'rect' == NULL, then fill the whole surface */
     if (rect) {
         /* Perform clipping */
-        if (!SDL_GetRectIntersection(rect, &dst->clip_rect, &clipped)) {
+        if (!SDL_IntersectRect(rect, &dst->clip_rect, &clipped)) {
             return 0;
         }
         rect = &clipped;
@@ -335,7 +335,7 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
 
     for (i = 0; i < count; ++i) {
         /* Perform clipping */
-        if (!SDL_GetRectIntersection(&rects[i], &dst->clip_rect, &rect)) {
+        if (!SDL_IntersectRect(&rects[i], &dst->clip_rect, &rect)) {
             continue;
         }
         status = func(dst, &rect, blendMode, r, g, b, a);
@@ -344,3 +344,5 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
 }
 
 #endif /* SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

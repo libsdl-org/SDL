@@ -11,9 +11,9 @@
 */
 
 /* Program to test surround sound audio channels */
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include "SDL_config.h"
+
+#include "SDL.h"
 
 static int total_channels;
 static int active_channel;
@@ -27,7 +27,7 @@ static int active_channel;
 #define LFE_SINE_FREQ_HZ 50
 
 /* The channel layout is defined in SDL_audio.h */
-static const char *
+const char *
 get_channel_name(int channel_index, int channel_count)
 {
     switch (channel_index) {
@@ -91,12 +91,14 @@ get_channel_name(int channel_index, int channel_count)
     return NULL;
 }
 
-static SDL_bool is_lfe_channel(int channel_index, int channel_count)
+SDL_bool
+is_lfe_channel(int channel_index, int channel_count)
 {
     return (channel_count == 3 && channel_index == 2) || (channel_count >= 6 && channel_index == 3);
 }
 
-static void SDLCALL fill_buffer(void *unused, Uint8 *stream, int len)
+void SDLCALL
+fill_buffer(void *unused, Uint8 *stream, int len)
 {
     Sint16 *buffer = (Sint16 *)stream;
     int samples = len / sizeof(Sint16);
@@ -139,21 +141,9 @@ static void SDLCALL fill_buffer(void *unused, Uint8 *stream, int len)
 int main(int argc, char *argv[])
 {
     int i;
-    SDLTest_CommonState *state;
-
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        SDLTest_CommonQuit(state);
-        return 1;
-    }
 
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -180,7 +170,7 @@ int main(int argc, char *argv[])
         }
 
         spec.freq = SAMPLE_RATE_HZ;
-        spec.format = SDL_AUDIO_S16SYS;
+        spec.format = AUDIO_S16SYS;
         spec.samples = 4096;
         spec.callback = fill_buffer;
 
@@ -196,7 +186,7 @@ int main(int argc, char *argv[])
         total_channels = spec.channels;
         active_channel = 0;
 
-        SDL_PlayAudioDevice(dev);
+        SDL_PauseAudioDevice(dev, 0);
 
         for (j = 0; j < total_channels; j++) {
             int sine_freq = is_lfe_channel(j, total_channels) ? LFE_SINE_FREQ_HZ : SINE_FREQ_HZ;
@@ -217,3 +207,4 @@ int main(int argc, char *argv[])
     SDL_Quit();
     return 0;
 }
+

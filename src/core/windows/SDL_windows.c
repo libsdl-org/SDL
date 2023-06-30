@@ -18,14 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
 
 #include "SDL_windows.h"
+#include "SDL_error.h"
+#include "SDL_system.h"
 
 #include <objbase.h> /* for CoInitialize/CoUninitialize (Win32 only) */
-#ifdef HAVE_ROAPI_H
+#if defined(HAVE_ROAPI_H)
 #include <roapi.h> /* For RoInitialize/RoUninitialize (Win32 only) */
 #else
 typedef enum RO_INIT_TYPE
@@ -334,86 +336,12 @@ BOOL WIN_IsRectEmpty(const RECT *rect)
     /* Calculating this manually because UWP and Xbox do not support Win32 IsRectEmpty. */
     return (rect->right <= rect->left) || (rect->bottom <= rect->top);
 }
-
-/* Win32-specific SDL_RunApp(), which does most of the SDL_main work,
-  based on SDL_windows_main.c, placed in the public domain by Sam Lantinga  4/13/98 */
-#ifdef __WIN32__
-
-#include <shellapi.h> /* CommandLineToArgvW() */
-
-/* Pop up an out of memory message, returns to Windows */
-static int OutOfMemory(void)
-{
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
-    return -1;
-}
-
-DECLSPEC int SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved)
-{
-
-    /* Gets the arguments with GetCommandLine, converts them to argc and argv
-       and calls SDL_main */
-
-    LPWSTR *argvw;
-    char **argv;
-    int i, argc, result;
-
-    (void)_argc; (void)_argv; (void)reserved;
-
-    argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
-    if (argvw == NULL) {
-        return OutOfMemory();
-    }
-
-    /* Note that we need to be careful about how we allocate/free memory here.
-     * If the application calls SDL_SetMemoryFunctions(), we can't rely on
-     * SDL_free() to use the same allocator after SDL_main() returns.
-     */
-
-    /* Parse it into argv and argc */
-    argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
-    if (argv == NULL) {
-        return OutOfMemory();
-    }
-    for (i = 0; i < argc; ++i) {
-        DWORD len;
-        char *arg = WIN_StringToUTF8W(argvw[i]);
-        if (arg == NULL) {
-            return OutOfMemory();
-        }
-        len = (DWORD)SDL_strlen(arg);
-        argv[i] = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, len + 1);
-        if (!argv[i]) {
-            return OutOfMemory();
-        }
-        SDL_memcpy(argv[i], arg, len);
-        SDL_free(arg);
-    }
-    argv[i] = NULL;
-    LocalFree(argvw);
-
-    SDL_SetMainReady();
-
-    /* Run the application main() code */
-    result = mainFunction(argc, argv);
-
-    /* Free argv, to avoid memory leak */
-    for (i = 0; i < argc; ++i) {
-        HeapFree(GetProcessHeap(), 0, argv[i]);
-    }
-    HeapFree(GetProcessHeap(), 0, argv);
-
-    return result;
-}
-
-#endif /* __WIN32__ */
-
 #endif /* defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__) */
 
 /*
  * Public APIs
  */
-#ifndef SDL_VIDEO_DRIVER_WINDOWS
+#if !defined(SDL_VIDEO_DRIVER_WINDOWS)
 
 #if defined(__WIN32__) || defined(__GDK__)
 int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
@@ -434,15 +362,15 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
 #endif /* __WIN32__ || __GDK__ */
 
 #if defined(__WIN32__) || defined(__WINGDK__)
-int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
+int SDL_Direct3D9GetAdapterIndex(int displayIndex)
 {
-    (void)displayID;
+    (void)displayIndex;
     return 0; /* D3DADAPTER_DEFAULT */
 }
 
-SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
+SDL_bool SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
 {
-    (void)displayID;
+    (void)displayIndex;
     if (adapterIndex) {
         *adapterIndex = -1;
     }
@@ -454,3 +382,5 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
 #endif /* __WIN32__ || __WINGDK__ */
 
 #endif /* !SDL_VIDEO_DRIVER_WINDOWS */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -19,12 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_ANDROID
+#if SDL_VIDEO_DRIVER_ANDROID
 
 #include "SDL_androidmouse.h"
 
+#include "SDL_events.h"
 #include "../../events/SDL_mouse_c.h"
 
 #include "../../core/android/SDL_android.h"
@@ -87,12 +88,12 @@ static SDL_Cursor *Android_CreateCursor(SDL_Surface *surface, int hot_x, int hot
     int custom_cursor;
     SDL_Surface *converted;
 
-    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888);
+    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
     if (converted == NULL) {
         return NULL;
     }
     custom_cursor = Android_JNI_CreateCustomCursor(converted, hot_x, hot_y);
-    SDL_DestroySurface(converted);
+    SDL_FreeSurface(converted);
     if (!custom_cursor) {
         SDL_Unsupported();
         return NULL;
@@ -118,11 +119,11 @@ static void Android_FreeCursor(SDL_Cursor *cursor)
 static SDL_Cursor *Android_CreateEmptyCursor()
 {
     if (empty_cursor == NULL) {
-        SDL_Surface *empty_surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ARGB8888);
+        SDL_Surface *empty_surface = SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, SDL_PIXELFORMAT_ARGB8888);
         if (empty_surface) {
             SDL_memset(empty_surface->pixels, 0, (size_t)empty_surface->h * empty_surface->pitch);
             empty_cursor = Android_CreateCursor(empty_surface, 0, 0);
-            SDL_DestroySurface(empty_surface);
+            SDL_FreeSurface(empty_surface);
         }
     }
     return empty_cursor;
@@ -224,25 +225,25 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
         changes = state & ~last_state;
         button = TranslateButton(changes);
         last_state = state;
-        SDL_SendMouseMotion(0, window, 0, relative, x, y);
-        SDL_SendMouseButton(0, window, 0, SDL_PRESSED, button);
+        SDL_SendMouseMotion(window, 0, relative, (int)x, (int)y);
+        SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
         break;
 
     case ACTION_UP:
         changes = last_state & ~state;
         button = TranslateButton(changes);
         last_state = state;
-        SDL_SendMouseMotion(0, window, 0, relative, x, y);
-        SDL_SendMouseButton(0, window, 0, SDL_RELEASED, button);
+        SDL_SendMouseMotion(window, 0, relative, (int)x, (int)y);
+        SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
         break;
 
     case ACTION_MOVE:
     case ACTION_HOVER_MOVE:
-        SDL_SendMouseMotion(0, window, 0, relative, x, y);
+        SDL_SendMouseMotion(window, 0, relative, (int)x, (int)y);
         break;
 
     case ACTION_SCROLL:
-        SDL_SendMouseWheel(0, window, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(window, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
         break;
 
     default:
@@ -251,3 +252,5 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,15 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND
+#if SDL_VIDEO_DRIVER_WAYLAND
 
 #define DEBUG_DYNAMIC_WAYLAND 0
 
 #include "SDL_waylanddyn.h"
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
+
+#include "SDL_name.h"
+#include "SDL_loadso.h"
 
 typedef struct
 {
@@ -150,11 +153,8 @@ int SDL_WAYLAND_LoadSymbols(void)
 #define SDL_WAYLAND_INTERFACE(iface)        WAYLAND_##iface = (struct wl_interface *)WAYLAND_GetSym(#iface, thismod, SDL_TRUE);
 #include "SDL_waylandsym.h"
 
-        if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT &&
-            SDL_WAYLAND_HAVE_WAYLAND_CURSOR &&
-            SDL_WAYLAND_HAVE_WAYLAND_EGL &&
-            SDL_WAYLAND_HAVE_WAYLAND_XKB) {
-            /* All required symbols loaded, only libdecor is optional. */
+        if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT) {
+            /* all required symbols loaded. */
             SDL_ClearError();
         } else {
             /* in case something got loaded... */
@@ -177,3 +177,5 @@ int SDL_WAYLAND_LoadSymbols(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
+
+/* vi: set ts=4 sw=4 expandtab: */

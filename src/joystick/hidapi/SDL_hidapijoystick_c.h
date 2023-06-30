@@ -18,11 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_JOYSTICK_HIDAPI_H
 #define SDL_JOYSTICK_HIDAPI_H
 
+#include "SDL_atomic.h"
+#include "SDL_hints.h"
+#include "SDL_mutex.h"
+#include "SDL_joystick.h"
+#include "SDL_gamecontroller.h"
+#include "SDL_hidapi.h"
 #include "../usb_ids.h"
 
 /* This is the full set of HIDAPI drivers available */
@@ -46,9 +52,9 @@
 #define USB_PACKET_LENGTH 64
 
 /* Forward declaration */
-struct SDL_HIDAPI_DeviceDriver;
+struct _SDL_HIDAPI_DeviceDriver;
 
-typedef struct SDL_HIDAPI_Device
+typedef struct _SDL_HIDAPI_Device
 {
     const void *magic;
     char *name;
@@ -62,17 +68,17 @@ typedef struct SDL_HIDAPI_Device
     int interface_class;
     int interface_subclass;
     int interface_protocol;
-    Uint16 usage_page; /* Available on Windows and macOS */
-    Uint16 usage;      /* Available on Windows and macOS */
+    Uint16 usage_page;      /* Available on Windows and Mac OS X */
+    Uint16 usage;           /* Available on Windows and Mac OS X */
     SDL_bool is_bluetooth;
     SDL_JoystickType joystick_type;
-    SDL_GamepadType type;
+    SDL_GameControllerType type;
 
-    struct SDL_HIDAPI_DeviceDriver *driver;
+    struct _SDL_HIDAPI_DeviceDriver *driver;
     void *context;
-    SDL_Mutex *dev_lock;
+    SDL_mutex *dev_lock;
     SDL_hid_device *dev;
-    SDL_AtomicInt rumble_pending;
+    SDL_atomic_t rumble_pending;
     int num_joysticks;
     SDL_JoystickID *joysticks;
 
@@ -82,21 +88,21 @@ typedef struct SDL_HIDAPI_Device
     /* Used to flag that the device is being updated */
     SDL_bool updating;
 
-    struct SDL_HIDAPI_Device *parent;
+    struct _SDL_HIDAPI_Device *parent;
     int num_children;
-    struct SDL_HIDAPI_Device **children;
+    struct _SDL_HIDAPI_Device **children;
 
-    struct SDL_HIDAPI_Device *next;
+    struct _SDL_HIDAPI_Device *next;
 } SDL_HIDAPI_Device;
 
-typedef struct SDL_HIDAPI_DeviceDriver
+typedef struct _SDL_HIDAPI_DeviceDriver
 {
     const char *name;
     SDL_bool enabled;
     void (*RegisterHints)(SDL_HintCallback callback, void *userdata);
     void (*UnregisterHints)(SDL_HintCallback callback, void *userdata);
     SDL_bool (*IsEnabled)(void);
-    SDL_bool (*IsSupportedDevice)(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
+    SDL_bool (*IsSupportedDevice)(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
     SDL_bool (*InitDevice)(SDL_HIDAPI_Device *device);
     int (*GetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id);
     void (*SetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index);
@@ -133,7 +139,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
 
 /* Return true if a HID device is present and supported as a joystick of the given type */
-extern SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);
+extern SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GameControllerType type);
 
 /* Return true if a HID device is present and supported as a joystick */
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
@@ -142,7 +148,7 @@ extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint
 extern SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_JoystickGUID guid);
 
 /* Return the type of a game controller if it's present and supported */
-extern SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_JoystickGUID guid);
+extern SDL_GameControllerType HIDAPI_GetGameControllerTypeFromGUID(SDL_JoystickGUID guid);
 
 extern void HIDAPI_UpdateDevices(void);
 extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);
@@ -160,3 +166,5 @@ extern SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 produc
 extern float HIDAPI_RemapVal(float val, float val_min, float val_max, float output_min, float output_max);
 
 #endif /* SDL_JOYSTICK_HIDAPI_H */
+
+/* vi: set ts=4 sw=4 expandtab: */

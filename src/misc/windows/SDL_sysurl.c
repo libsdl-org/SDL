@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
 #include "../SDL_sysurl.h"
 #include "../../core/windows/SDL_windows.h"
@@ -57,3 +56,5 @@ int SDL_SYS_OpenURL(const char *url)
     return (rc > ((HINSTANCE)32)) ? 0 : WIN_SetError("Couldn't open given URL.");
 }
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

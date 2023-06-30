@@ -29,3 +29,5 @@ extern void Android_OnMouse(SDL_Window *window, int button, int action, float x,
 extern void Android_QuitMouse(void);
 
 #endif /* SDL_androidmouse_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

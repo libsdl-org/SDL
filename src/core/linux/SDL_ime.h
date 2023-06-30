@@ -22,7 +22,10 @@
 #ifndef SDL_ime_h_
 #define SDL_ime_h_
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
+
+#include "SDL_stdinc.h"
+#include "SDL_rect.h"
 
 extern SDL_bool SDL_IME_Init(void);
 extern void SDL_IME_Quit(void);
@@ -33,3 +36,5 @@ extern void SDL_IME_UpdateTextRect(const SDL_Rect *rect);
 extern void SDL_IME_PumpEvents(void);
 
 #endif /* SDL_ime_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

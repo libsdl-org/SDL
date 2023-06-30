@@ -18,11 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #include "SDL_vulkan_internal.h"
+#include "SDL_error.h"
 
-#ifdef SDL_VIDEO_VULKAN
+#if SDL_VIDEO_VULKAN
 
 const char *SDL_Vulkan_GetResultString(VkResult result)
 {
@@ -273,7 +274,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         VkDisplayKHR display;
         VkDisplayPlanePropertiesKHR *displayPlaneProperties = NULL;
         VkExtent2D extent;
-        VkDisplayPlaneCapabilitiesKHR planeCaps = { 0 };
+        VkDisplayPlaneCapabilitiesKHR planeCaps;
 
         /* Get information about the physical displays */
         result = vkGetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, &displayPropertiesCount, NULL);
@@ -494,3 +495,5 @@ error:
 }
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

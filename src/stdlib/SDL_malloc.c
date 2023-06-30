@@ -18,9 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+
+#if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
+#define SDL_DISABLE_ANALYZE_MACROS 1
+#endif
+
+#include "../SDL_internal.h"
 
 /* This file contains portable memory management functions for SDL */
+#include "SDL_stdinc.h"
+#include "SDL_atomic.h"
+#include "SDL_error.h"
 
 #ifndef HAVE_MALLOC
 #define LACKS_SYS_TYPES_H
@@ -397,9 +405,9 @@ MALLINFO_FIELD_TYPE        default: size_t
   size_t. The value is used only if  HAVE_USR_INCLUDE_MALLOC_H is not set
 
 REALLOC_ZERO_BYTES_FREES    default: not defined
-  This should be set if a call to realloc with zero bytes should
-  be the same as a call to free. Some people think it should. Otherwise,
-  since this malloc returns a unique pointer for malloc(0), so does
+  This should be set if a call to realloc with zero bytes should 
+  be the same as a call to free. Some people think it should. Otherwise, 
+  since this malloc returns a unique pointer for malloc(0), so does 
   realloc(p, 0).
 
 LACKS_UNISTD_H, LACKS_FCNTL_H, LACKS_SYS_PARAM_H, LACKS_SYS_MMAN_H
@@ -2255,7 +2263,7 @@ static void reset_on_error(mstate m);
 
 /* -------------------------- Debugging setup ---------------------------- */
 
-#ifndef DEBUG
+#if ! DEBUG
 
 #define check_free_chunk(M,P)
 #define check_inuse_chunk(M,P)
@@ -2534,7 +2542,7 @@ static int init_mparams(void) {
       if ((fd = open("/dev/urandom", O_RDONLY)) < 0) {
         s = 0;
       } else {
-        s = read(fd, buf, sizeof(buf));
+	s = read(fd, buf, sizeof(buf));
         close(fd);
       }
       if (s == sizeof(buf))
@@ -2619,7 +2627,7 @@ static int change_mparam(int param_number, int value) {
   }
 }
 
-#ifdef DEBUG
+#if DEBUG
 /* ------------------------- Debugging Support --------------------------- */
 
 /* Check properties of any chunk, whether free, inuse, mmapped etc  */
@@ -3575,7 +3583,7 @@ static void* sys_alloc(mstate m, size_t nb) {
       m->seg.sflags = mmap_flag;
       m->magic = mparams.magic;
       init_bins(m);
-      if (is_global(m))
+      if (is_global(m)) 
         init_top(m, (mchunkptr)tbase, tsize - TOP_FOOT_SIZE);
       else {
         /* Offset top by embedded malloc_state */
@@ -3726,7 +3734,7 @@ static int sys_trim(mstate m, size_t pad) {
     }
 
     /* Unmap any unused mmapped segments */
-    if (HAVE_MMAP)
+    if (HAVE_MMAP) 
       released += release_unused_segments(m);
 
     /* On failure, disable autotrim to avoid repeated failed future calls */
@@ -3934,7 +3942,7 @@ static void* internal_memalign(mstate m, size_t alignment, size_t bytes) {
     while (a < alignment) a <<= 1;
     alignment = a;
   }
-
+  
   if (bytes >= MAX_REQUEST - alignment) {
     if (m != 0)  { /* Test isn't needed but avoids compiler warning */
       MALLOC_FAILURE_ACTION;
@@ -4117,7 +4125,7 @@ static void** ialloc(mstate m,
     }
   }
 
-#ifdef DEBUG
+#if DEBUG
   if (marray != chunks) {
     /* final element must have exactly exhausted chunk */
     if (element_size != 0) {
@@ -5179,7 +5187,7 @@ History:
     Trial version Fri Aug 28 13:14:29 1992  Doug Lea  (dl at g.oswego.edu)
       * Based loosely on libg++-1.2X malloc. (It retains some of the overall
          structure of old version,  but most details differ.)
-
+ 
 */
 
 #endif /* !HAVE_MALLOC */
@@ -5203,7 +5211,7 @@ static struct
     SDL_calloc_func calloc_func;
     SDL_realloc_func realloc_func;
     SDL_free_func free_func;
-    SDL_AtomicInt num_allocations;
+    SDL_atomic_t num_allocations;
 } s_mem = {
     real_malloc, real_calloc, real_realloc, real_free, { 0 }
 };
@@ -5331,3 +5339,5 @@ void SDL_free(void *ptr)
     s_mem.free_func(ptr);
     (void)SDL_AtomicDecRef(&s_mem.num_allocations);
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

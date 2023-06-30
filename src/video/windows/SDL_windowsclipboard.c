@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
@@ -33,20 +33,20 @@
 #endif
 
 /* Get any application owned window handle for clipboard association */
-static HWND GetWindowHandle(SDL_VideoDevice *_this)
+static HWND GetWindowHandle(_THIS)
 {
     SDL_Window *window;
 
     window = _this->windows;
     if (window) {
-        return window->driverdata->hwnd;
+        return ((SDL_WindowData *)window->driverdata)->hwnd;
     }
     return NULL;
 }
 
-int WIN_SetClipboardText(SDL_VideoDevice *_this, const char *text)
+int WIN_SetClipboardText(_THIS, const char *text)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     int result = 0;
 
     if (OpenClipboard(GetWindowHandle(_this))) {
@@ -100,7 +100,7 @@ int WIN_SetClipboardText(SDL_VideoDevice *_this, const char *text)
     return result;
 }
 
-char *WIN_GetClipboardText(SDL_VideoDevice *_this)
+char *WIN_GetClipboardText(_THIS)
 {
     char *text;
 
@@ -126,7 +126,7 @@ char *WIN_GetClipboardText(SDL_VideoDevice *_this)
     return text;
 }
 
-SDL_bool WIN_HasClipboardText(SDL_VideoDevice *_this)
+SDL_bool WIN_HasClipboardText(_THIS)
 {
     SDL_bool result = SDL_FALSE;
     char *text = WIN_GetClipboardText(_this);
@@ -149,3 +149,5 @@ void WIN_CheckClipboardUpdate(struct SDL_VideoData *data)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_N3DS
 
@@ -31,18 +31,19 @@
 
 #define N3DSVID_DRIVER_NAME "n3ds"
 
-static int AddN3DSDisplay(gfxScreen_t screen);
+SDL_FORCE_INLINE void AddN3DSDisplay(gfxScreen_t screen);
 
-static int N3DS_VideoInit(SDL_VideoDevice *_this);
-static void N3DS_VideoQuit(SDL_VideoDevice *_this);
-static int N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
-static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
-static void N3DS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static int N3DS_VideoInit(_THIS);
+static void N3DS_VideoQuit(_THIS);
+static void N3DS_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+static int N3DS_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
+static int N3DS_CreateWindow(_THIS, SDL_Window *window);
+static void N3DS_DestroyWindow(_THIS, SDL_Window *window);
 
-struct SDL_DisplayData
+typedef struct
 {
     gfxScreen_t screen;
-};
+} DisplayDriverData;
 
 /* N3DS driver bootstrap functions */
 
@@ -64,6 +65,7 @@ static SDL_VideoDevice *N3DS_CreateDevice(void)
     device->VideoInit = N3DS_VideoInit;
     device->VideoQuit = N3DS_VideoQuit;
 
+    device->GetDisplayModes = N3DS_GetDisplayModes;
     device->GetDisplayBounds = N3DS_GetDisplayBounds;
 
     device->CreateSDLWindow = N3DS_CreateWindow;
@@ -86,7 +88,7 @@ static SDL_VideoDevice *N3DS_CreateDevice(void)
 
 VideoBootStrap N3DS_bootstrap = { N3DSVID_DRIVER_NAME, "N3DS Video Driver", N3DS_CreateDevice };
 
-static int N3DS_VideoInit(SDL_VideoDevice *_this)
+static int N3DS_VideoInit(_THIS)
 {
     gfxInit(GSP_RGBA8_OES, GSP_RGBA8_OES, false);
     hidInit();
@@ -100,13 +102,15 @@ static int N3DS_VideoInit(SDL_VideoDevice *_this)
     return 0;
 }
 
-static int AddN3DSDisplay(gfxScreen_t screen)
+SDL_FORCE_INLINE void
+AddN3DSDisplay(gfxScreen_t screen)
 {
     SDL_DisplayMode mode;
     SDL_VideoDisplay display;
-    SDL_DisplayData *display_driver_data = SDL_calloc(1, sizeof(SDL_DisplayData));
+    DisplayDriverData *display_driver_data = SDL_calloc(1, sizeof(DisplayDriverData));
     if (display_driver_data == NULL) {
-        return SDL_OutOfMemory();
+        SDL_OutOfMemory();
+        return;
     }
 
     SDL_zero(mode);
@@ -116,18 +120,19 @@ static int AddN3DSDisplay(gfxScreen_t screen)
 
     mode.w = (screen == GFX_TOP) ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_BOTTOM;
     mode.h = GSP_SCREEN_WIDTH;
-    mode.refresh_rate = 60.0f;
+    mode.refresh_rate = 60;
     mode.format = FRAMEBUFFER_FORMAT;
+    mode.driverdata = NULL;
 
     display.name = (screen == GFX_TOP) ? "N3DS top screen" : "N3DS bottom screen";
     display.desktop_mode = mode;
+    display.current_mode = mode;
     display.driverdata = display_driver_data;
 
     SDL_AddVideoDisplay(&display, SDL_FALSE);
-    return 0;
 }
 
-static void N3DS_VideoQuit(SDL_VideoDevice *_this)
+static void N3DS_VideoQuit(_THIS)
 {
     N3DS_SwkbQuit();
     N3DS_QuitTouch();
@@ -136,36 +141,41 @@ static void N3DS_VideoQuit(SDL_VideoDevice *_this)
     gfxExit();
 }
 
-static int N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+static void N3DS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
-    SDL_DisplayData *driver_data = display->driverdata;
+    /* Each display only has a single mode */
+    SDL_AddDisplayMode(display, &display->current_mode);
+}
 
+static int N3DS_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+{
+    DisplayDriverData *driver_data = (DisplayDriverData *)display->driverdata;
     if (driver_data == NULL) {
         return -1;
     }
-
     rect->x = 0;
     rect->y = (driver_data->screen == GFX_TOP) ? 0 : GSP_SCREEN_WIDTH;
-    rect->w = display->current_mode->w;
-    rect->h = display->current_mode->h;
+    rect->w = display->current_mode.w;
+    rect->h = display->current_mode.h;
+
     return 0;
 }
 
-static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static int N3DS_CreateWindow(_THIS, SDL_Window *window)
 {
-    SDL_DisplayData *display_data;
+    DisplayDriverData *display_data;
     SDL_WindowData *window_data = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (window_data == NULL) {
         return SDL_OutOfMemory();
     }
-    display_data = SDL_GetDisplayDriverDataForWindow(window);
+    display_data = (DisplayDriverData *)SDL_GetDisplayDriverData(window->display_index);
     window_data->screen = display_data->screen;
     window->driverdata = window_data;
     SDL_SetKeyboardFocus(window);
     return 0;
 }
 
-static void N3DS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static void N3DS_DestroyWindow(_THIS, SDL_Window *window)
 {
     if (window == NULL) {
         return;
@@ -174,3 +184,5 @@ static void N3DS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_N3DS */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

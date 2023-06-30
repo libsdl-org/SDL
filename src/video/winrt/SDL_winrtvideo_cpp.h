@@ -26,6 +26,8 @@
 #endif
 
 /* SDL includes: */
+#include "SDL_video.h"
+#include "SDL_events.h"
 
 #if NTDDI_VERSION >= NTDDI_WINBLUE /* ApplicationView's functionality only becomes \
                                       useful for SDL in Win[Phone] 8.1 and up.     \
@@ -39,7 +41,7 @@ extern "C" {
 }
 
 /* Private display data */
-struct SDL_VideoData
+typedef struct SDL_VideoData
 {
     /* An object created by ANGLE/WinRT (OpenGL ES 2 for WinRT) that gets
      * passed to eglGetDisplay and eglCreateWindowSurface:
@@ -56,7 +58,7 @@ struct SDL_VideoData
      * It's casted to 'IUnknown *', to help with building SDL.
      */
     IUnknown *displayRequest;
-};
+} SDL_VideoData;
 
 /* The global, WinRT, SDL Window.
    For now, SDL/WinRT only supports one window (due to platform limitations of

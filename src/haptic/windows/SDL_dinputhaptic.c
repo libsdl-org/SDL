@@ -18,12 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
+#include "SDL.h"
+#include "SDL_error.h"
+#include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
 
-#ifdef SDL_HAPTIC_DINPUT
+#if SDL_HAPTIC_DINPUT
 
+#include "SDL_hints.h"
+#include "SDL_stdinc.h"
+#include "SDL_timer.h"
 #include "SDL_windowshaptic_c.h"
 #include "SDL_dinputhaptic_c.h"
 #include "../../joystick/windows/SDL_windowsjoystick_c.h"
@@ -297,9 +303,9 @@ static int SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic *haptic, LPDIRECTINPUTDEVI
     haptic->hwdata->is_joystick = is_joystick;
 
     /* !!! FIXME: opening a haptic device here first will make an attempt to
-       !!! FIXME:  SDL_OpenJoystick() that same device fail later, since we
+       !!! FIXME:  SDL_JoystickOpen() that same device fail later, since we
        !!! FIXME:  have it open in exclusive mode. But this will allow
-       !!! FIXME:  SDL_OpenJoystick() followed by SDL_HapticOpenFromJoystick()
+       !!! FIXME:  SDL_JoystickOpen() followed by SDL_HapticOpenFromJoystick()
        !!! FIXME:  to work, and that's probably the common case. Still,
        !!! FIXME:  ideally, We need to unify the opening code. */
 
@@ -463,7 +469,7 @@ int SDL_DINPUT_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 int SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
     SDL_hapticlist_item *item;
-    Uint8 index = 0;
+    int index = 0;
     HRESULT ret;
     DIDEVICEINSTANCE joy_instance;
 
@@ -1252,3 +1258,5 @@ int SDL_DINPUT_HapticStopAll(SDL_Haptic *haptic)
 }
 
 #endif /* SDL_HAPTIC_DINPUT */
+
+/* vi: set ts=4 sw=4 expandtab: */

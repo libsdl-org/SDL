@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 #include "../SDL_syslocale.h"
 
 static void normalize_locale_str(char *dst, char *str, size_t buflen)
@@ -62,7 +62,7 @@ static void normalize_locales(char *dst, char *src, size_t buflen)
     normalize_locale_str(dst, src, buflen);
 }
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     /* !!! FIXME: should we be using setlocale()? Or some D-Bus thing? */
     SDL_bool isstack;
@@ -72,7 +72,8 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     SDL_assert(buflen > 0);
     tmp = SDL_small_alloc(char, buflen, &isstack);
     if (tmp == NULL) {
-        return SDL_OutOfMemory();
+        SDL_OutOfMemory();
+        return;
     }
 
     *tmp = '\0';
@@ -99,5 +100,6 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     }
 
     SDL_small_free(tmp, isstack);
-    return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

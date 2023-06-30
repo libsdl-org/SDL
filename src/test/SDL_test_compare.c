@@ -26,7 +26,10 @@
  Rewritten for test lib by Andreas Schiffler.
 
 */
-#include <SDL3/SDL_test.h>
+
+#include "SDL_config.h"
+
+#include "SDL_test.h"
 
 #define FILENAME_SIZE 128
 
@@ -111,3 +114,5 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
 
     return ret;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,16 +18,20 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef __LINUX__
 
-#ifndef SDL_THREADS_DISABLED
+#include "SDL_error.h"
+#include "SDL_stdinc.h"
+#include "SDL_thread.h"
+
+#if !SDL_THREADS_DISABLED
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <pthread.h>
-#include <sched.h>
 #include <unistd.h>
+#include "SDL_system.h"
 
 /* RLIMIT_RTTIME requires kernel >= 2.6.25 and is in glibc >= 2.14 */
 #ifndef RLIMIT_RTTIME
@@ -40,7 +44,8 @@
 
 #include "SDL_dbus.h"
 
-#ifdef SDL_USE_LIBDBUS
+#if SDL_USE_LIBDBUS
+#include <sched.h>
 
 /* d-bus queries to org.freedesktop.RealtimeKit1. */
 #define RTKIT_DBUS_NODE      "org.freedesktop.RealtimeKit1"
@@ -74,7 +79,7 @@ static SDL_bool realtime_portal_supported(DBusConnection *conn)
                                               "RTTimeUSecMax", DBUS_TYPE_INT64, &res);
 }
 
-static void set_rtkit_interface(void)
+static void set_rtkit_interface()
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
@@ -92,7 +97,7 @@ static void set_rtkit_interface(void)
     }
 }
 
-static DBusConnection *get_rtkit_dbus_connection(void)
+static DBusConnection *get_rtkit_dbus_connection()
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
@@ -103,7 +108,7 @@ static DBusConnection *get_rtkit_dbus_connection(void)
     return NULL;
 }
 
-static void rtkit_initialize(void)
+static void rtkit_initialize()
 {
     DBusConnection *dbus_conn;
 
@@ -129,7 +134,7 @@ static void rtkit_initialize(void)
     }
 }
 
-static SDL_bool rtkit_initialize_realtime_thread(void)
+static SDL_bool rtkit_initialize_realtime_thread()
 {
     // Following is an excerpt from rtkit README that outlines the requirements
     // a thread must meet before making rtkit requests:
@@ -251,14 +256,14 @@ static SDL_bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 /* this is a public symbol, so it has to exist even if threads are disabled. */
 int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 {
-#ifdef SDL_THREADS_DISABLED
+#if SDL_THREADS_DISABLED
     return SDL_Unsupported();
 #else
     if (setpriority(PRIO_PROCESS, (id_t)threadID, priority) == 0) {
         return 0;
     }
 
-#ifdef SDL_USE_LIBDBUS
+#if SDL_USE_LIBDBUS
     /* Note that this fails you most likely:
          * Have your process's scheduler incorrectly configured.
            See the requirements at:
@@ -283,7 +288,7 @@ int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 /* this is a public symbol, so it has to exist even if threads are disabled. */
 int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
-#ifdef SDL_THREADS_DISABLED
+#if SDL_THREADS_DISABLED
     return SDL_Unsupported();
 #else
     int osPriority;
@@ -314,7 +319,7 @@ int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
         }
     }
 
-#ifdef SDL_USE_LIBDBUS
+#if SDL_USE_LIBDBUS
     /* Note that this fails you most likely:
      * Have your process's scheduler incorrectly configured.
        See the requirements at:
@@ -343,3 +348,5 @@ int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
 }
 
 #endif /* __LINUX__ */
+
+/* vi: set ts=4 sw=4 expandtab: */

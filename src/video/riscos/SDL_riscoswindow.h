@@ -18,22 +18,25 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_riscoswindow_h_
 #define SDL_riscoswindow_h_
 
 #include "SDL_riscosdefs.h"
 
-struct SDL_WindowData
+typedef struct
 {
     SDL_Window *window;
     sprite_area *fb_area;
     sprite_header *fb_sprite;
-};
+} SDL_WindowData;
 
-extern int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int RISCOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
+extern int RISCOS_CreateWindow(_THIS, SDL_Window * window);
+extern void RISCOS_DestroyWindow(_THIS, SDL_Window * window);
+extern SDL_bool RISCOS_GetWindowWMInfo(_THIS, SDL_Window * window,
+                                    struct SDL_SysWMinfo *info);
 
 #endif /* SDL_riscoswindow_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

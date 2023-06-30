@@ -49,15 +49,4 @@ int SDL_powerof2(int x)
     return value;
 }
 
-SDL_bool SDL_endswith(const char *string, const char *suffix)
-{
-    size_t string_length = string ? SDL_strlen(string) : 0;
-    size_t suffix_length = suffix ? SDL_strlen(suffix) : 0;
-
-    if (suffix_length > 0 && suffix_length <= string_length) {
-        if (SDL_memcmp(string + string_length - suffix_length, suffix, suffix_length) == 0) {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
-}
+/* vi: set ts=4 sw=4 expandtab: */

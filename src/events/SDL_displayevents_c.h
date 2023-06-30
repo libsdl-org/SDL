@@ -18,11 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #ifndef SDL_displayevents_c_h_
 #define SDL_displayevents_c_h_
 
-extern int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1);
+extern int SDL_SendDisplayEvent(SDL_VideoDisplay *display, Uint8 displayevent, int data1);
 
 #endif /* SDL_displayevents_c_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

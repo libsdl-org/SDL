@@ -9,11 +9,7 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
-
-#include "testutils.h"
+#include "SDL.h"
 
 #include <stdio.h> /* for fflush() and stdout */
 
@@ -31,12 +27,12 @@ typedef struct
 {
     SDL_AudioDeviceID dev;
     int soundpos;
-    SDL_AtomicInt done;
+    SDL_atomic_t done;
 } callback_data;
 
-static callback_data cbd[64];
+callback_data cbd[64];
 
-static void SDLCALL
+void SDLCALL
 play_through_once(void *arg, Uint8 *stream, int len)
 {
     callback_data *cbdata = (callback_data *)arg;
@@ -57,18 +53,18 @@ play_through_once(void *arg, Uint8 *stream, int len)
     }
 }
 
-#ifdef __EMSCRIPTEN__
-static void loop(void)
+void loop()
 {
     if (SDL_AtomicGet(&cbd[0].done)) {
+#ifdef __EMSCRIPTEN__
         emscripten_cancel_main_loop();
-        SDL_PauseAudioDevice(cbd[0].dev);
+#endif
+        SDL_PauseAudioDevice(cbd[0].dev, 1);
         SDL_CloseAudioDevice(cbd[0].dev);
-        SDL_free(sound);
+        SDL_FreeWAV(sound);
         SDL_Quit();
     }
 }
-#endif
 
 static void
 test_multi_audio(int devcount)
@@ -80,7 +76,7 @@ test_multi_audio(int devcount)
     SDL_Event event;
 
     /* Create a Window to get fully initialized event processing for testing pause on Android. */
-    SDL_CreateWindow("testmultiaudio", 320, 240, 0);
+    SDL_CreateWindow("testmultiaudio", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320, 240, 0);
 #endif
 
     if (devcount > 64) {
@@ -101,7 +97,7 @@ test_multi_audio(int devcount)
         if (cbd[0].dev == 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open device failed: %s\n", SDL_GetError());
         } else {
-            SDL_PlayAudioDevice(cbd[0].dev);
+            SDL_PauseAudioDevice(cbd[0].dev, 0);
 #ifdef __EMSCRIPTEN__
             emscripten_set_main_loop(loop, 0, 1);
 #else
@@ -113,7 +109,7 @@ test_multi_audio(int devcount)
 #endif
                 SDL_Delay(100);
             }
-            SDL_PauseAudioDevice(cbd[0].dev);
+            SDL_PauseAudioDevice(cbd[0].dev, 1);
 #endif
             SDL_Log("done.\n");
             SDL_CloseAudioDevice(cbd[0].dev);
@@ -134,7 +130,7 @@ test_multi_audio(int devcount)
 
     for (i = 0; i < devcount; i++) {
         if (cbd[i].dev) {
-            SDL_PlayAudioDevice(cbd[i].dev);
+            SDL_PauseAudioDevice(cbd[i].dev, 0);
         }
     }
 
@@ -157,7 +153,7 @@ test_multi_audio(int devcount)
 #ifndef __EMSCRIPTEN__
     for (i = 0; i < devcount; i++) {
         if (cbd[i].dev) {
-            SDL_PauseAudioDevice(cbd[i].dev);
+            SDL_PauseAudioDevice(cbd[i].dev, 1);
             SDL_CloseAudioDevice(cbd[i].dev);
         }
     }
@@ -169,38 +165,9 @@ test_multi_audio(int devcount)
 int main(int argc, char **argv)
 {
     int devcount = 0;
-    int i;
-    char *filename = NULL;
-    SDLTest_CommonState *state;
-
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    /* Parse commandline */
-    for (i = 1; i < argc;) {
-        int consumed;
-
-        consumed = SDLTest_CommonArg(state, i);
-        if (!consumed) {
-            if (!filename) {
-                filename = argv[i];
-                consumed = 1;
-            }
-        }
-        if (consumed <= 0) {
-            static const char *options[] = { "[sample.wav]", NULL };
-            SDLTest_CommonLogUsage(state, argv[0], options);
-            return 1;
-        }
-
-        i += consumed;
-    }
 
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -210,26 +177,24 @@ int main(int argc, char **argv)
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
-    filename = GetResourceFilename(filename, "sample.wav");
-
     devcount = SDL_GetNumAudioDevices(0);
     if (devcount < 1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio devices!\n");
     } else {
+        char *file = GetResourceFilename(argc > 1 ? argv[1] : NULL, "sample.wav");
+
         /* Load the wave file into memory */
-        if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename,
+        if (SDL_LoadWAV(file, &spec, &sound, &soundlen) == NULL) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", file,
                          SDL_GetError());
         } else {
             test_multi_audio(devcount);
-            SDL_free(sound);
+            SDL_FreeWAV(sound);
         }
+
+        SDL_free(file);
     }
 
-    SDL_free(filename);
-
     SDL_Quit();
-    SDLTest_CommonDestroyState(state);
-
     return 0;
 }

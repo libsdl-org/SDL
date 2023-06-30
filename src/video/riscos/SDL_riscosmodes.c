@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_RISCOS
+#if SDL_VIDEO_DRIVER_RISCOS
 
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_mouse_c.h"
@@ -135,11 +135,10 @@ static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool exte
         modeflags = read_mode_variable(block, 0);
     }
 
-    SDL_zerop(mode);
     mode->w = xres;
     mode->h = yres;
     mode->format = RISCOS_ModeToPixelFormat(ncolour, modeflags, log2bpp);
-    mode->refresh_rate = (float)rate;
+    mode->refresh_rate = rate;
 
     return SDL_TRUE;
 }
@@ -198,7 +197,7 @@ static void *copy_memory(const void *src, size_t size, size_t alloc)
     return dst;
 }
 
-int RISCOS_InitModes(SDL_VideoDevice *_this)
+int RISCOS_InitModes(_THIS)
 {
     SDL_DisplayMode mode;
     int *current_mode;
@@ -223,13 +222,10 @@ int RISCOS_InitModes(SDL_VideoDevice *_this)
         return SDL_OutOfMemory();
     }
 
-    if (SDL_AddBasicVideoDisplay(&mode) == 0) {
-        return -1;
-    }
-    return 0;
+    return SDL_AddBasicVideoDisplay(&mode);
 }
 
-int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+void RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     SDL_DisplayMode mode;
     _kernel_swi_regs regs;
@@ -242,12 +238,14 @@ int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     regs.r[7] = 0;
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
     if (error != NULL) {
-        return SDL_SetError("Unable to enumerate screen modes: %s (%i)", error->errmess, error->errnum);
+        SDL_SetError("Unable to enumerate screen modes: %s (%i)", error->errmess, error->errnum);
+        return;
     }
 
     block = SDL_malloc(-regs.r[7]);
     if (block == NULL) {
-        return SDL_OutOfMemory();
+        SDL_OutOfMemory();
+        return;
     }
 
     regs.r[6] = (int)block;
@@ -255,7 +253,8 @@ int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
     if (error != NULL) {
         SDL_free(block);
-        return SDL_SetError("Unable to enumerate screen modes: %s (%i)", error->errmess, error->errnum);
+        SDL_SetError("Unable to enumerate screen modes: %s (%i)", error->errmess, error->errnum);
+        return;
     }
 
     for (pos = block; pos < (void *)regs.r[6]; pos += *((int *)pos)) {
@@ -269,20 +268,19 @@ int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
         mode.driverdata = convert_mode_block(pos + 4);
         if (!mode.driverdata) {
-            SDL_free(block);
-            return SDL_OutOfMemory();
+            SDL_OutOfMemory();
+            break;
         }
 
-        if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
+        if (!SDL_AddDisplayMode(display, &mode)) {
             SDL_free(mode.driverdata);
         }
     }
 
     SDL_free(block);
-    return 0;
 }
 
-int RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     const char disable_cursor[] = { 23, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     _kernel_swi_regs regs;
@@ -308,3 +306,5 @@ int RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */
+
+/* vi: set ts=4 sw=4 expandtab: */

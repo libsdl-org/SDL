@@ -18,8 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
+#include "SDL_haptic.h"
 #include "SDL_windowshaptic_c.h"
 
 /* Set up for C function definitions, even when using C++ */
@@ -51,3 +52,5 @@ extern int SDL_XINPUT_HapticStopAll(SDL_Haptic *haptic);
 #ifdef __cplusplus
 }
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

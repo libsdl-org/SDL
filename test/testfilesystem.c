@@ -11,29 +11,16 @@
 */
 /* Simple test of filesystem functions. */
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include <stdio.h>
+#include "SDL.h"
 
 int main(int argc, char *argv[])
 {
-    SDLTest_CommonState *state;
     char *base_path;
     char *pref_path;
 
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
-
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    /* Parse commandline */
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return 1;
-    }
 
     if (SDL_Init(0) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
@@ -68,6 +55,5 @@ int main(int argc, char *argv[])
     }
 
     SDL_Quit();
-    SDLTest_CommonDestroyState(state);
     return 0;
 }

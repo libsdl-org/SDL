@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_PS2
+#if SDL_VIDEO_DRIVER_PS2
 
 /* PS2 SDL video driver implementation; this is just enough to make an
  *  SDL-based application THINK it's got a working video driver, for
@@ -37,15 +37,18 @@
  *  SDL video driver.  Renamed to "PS2" by Sam Lantinga.
  */
 
+#include "SDL_video.h"
+#include "SDL_mouse.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_ps2video.h"
+#include "SDL_hints.h"
 
 /* PS2 driver bootstrap functions */
 
-static int PS2_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static int PS2_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
@@ -55,7 +58,7 @@ static void PS2_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static int PS2_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static int PS2_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_SetKeyboardFocus(window);
 
@@ -63,28 +66,37 @@ static int PS2_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-static int PS2_VideoInit(SDL_VideoDevice *_this)
+static int PS2_VideoInit(_THIS)
 {
-    SDL_DisplayMode mode;
+    SDL_VideoDisplay display;
+    SDL_DisplayMode current_mode;
 
-    SDL_zero(mode);
-    mode.w = 640;
-    mode.h = 480;
-    mode.refresh_rate = 60.0f;
+    SDL_zero(current_mode);
+
+    current_mode.w = 640;
+    current_mode.h = 480;
+    current_mode.refresh_rate = 60;
 
     /* 32 bpp for default */
-    mode.format = SDL_PIXELFORMAT_ABGR8888;
+    current_mode.format = SDL_PIXELFORMAT_ABGR8888;
+    current_mode.driverdata = NULL;
 
-    SDL_AddBasicVideoDisplay(&mode);
+    SDL_zero(display);
+    display.desktop_mode = current_mode;
+    display.current_mode = current_mode;
+    display.driverdata = NULL;
+    SDL_AddDisplayMode(&display, &current_mode);
+
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
 
     return 1;
 }
 
-static void PS2_VideoQuit(SDL_VideoDevice *_this)
+static void PS2_VideoQuit(_THIS)
 {
 }
 
-static void PS2_PumpEvents(SDL_VideoDevice *_this)
+static void PS2_PumpEvents(_THIS)
 {
     /* do nothing. */
 }
@@ -118,3 +130,5 @@ VideoBootStrap PS2_bootstrap = {
 };
 
 #endif /* SDL_VIDEO_DRIVER_PS2 */
+
+/* vi: set ts=4 sw=4 expandtab: */

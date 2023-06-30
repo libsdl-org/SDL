@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_x11xinput2_h_
 #define SDL_x11xinput2_h_
@@ -30,13 +30,15 @@ struct XGenericEventCookie;
 typedef struct XGenericEventCookie XGenericEventCookie;
 #endif
 
-extern void X11_InitXinput2(SDL_VideoDevice *_this);
-extern void X11_InitXinput2Multitouch(SDL_VideoDevice *_this);
+extern void X11_InitXinput2(_THIS);
+extern void X11_InitXinput2Multitouch(_THIS);
 extern int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie);
 extern int X11_Xinput2IsInitialized(void);
 extern int X11_Xinput2IsMultitouchSupported(void);
-extern void X11_Xinput2SelectTouch(SDL_VideoDevice *_this, SDL_Window *window);
-extern void X11_Xinput2GrabTouch(SDL_VideoDevice *_this, SDL_Window *window);
-extern void X11_Xinput2UngrabTouch(SDL_VideoDevice *_this, SDL_Window *window);
+extern void X11_Xinput2SelectTouch(_THIS, SDL_Window *window);
+extern void X11_Xinput2GrabTouch(_THIS, SDL_Window *window);
+extern void X11_Xinput2UngrabTouch(_THIS, SDL_Window *window);
 
 #endif /* SDL_x11xinput2_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

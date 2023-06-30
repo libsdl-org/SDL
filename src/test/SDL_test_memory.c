@@ -18,7 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include <SDL3/SDL_test.h>
+#include "SDL_config.h"
+#include "SDL_assert.h"
+#include "SDL_stdinc.h"
+#include "SDL_log.h"
+#include "SDL_test_crc32.h"
+#include "SDL_test_memory.h"
 
 #ifdef HAVE_LIBUNWIND_H
 #define UNW_LOCAL_ONLY
@@ -190,7 +195,7 @@ static void SDLCALL SDLTest_TrackedFree(void *ptr)
     SDL_free_orig(ptr);
 }
 
-int SDLTest_TrackAllocations(void)
+int SDLTest_TrackAllocations()
 {
     if (SDL_malloc_orig) {
         return 0;
@@ -215,7 +220,7 @@ int SDLTest_TrackAllocations(void)
     return 0;
 }
 
-void SDLTest_LogAllocations(void)
+void SDLTest_LogAllocations()
 {
     char *message = NULL;
     size_t message_size = 0;
@@ -272,3 +277,5 @@ void SDLTest_LogAllocations(void)
 
     SDL_Log("%s", message);
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

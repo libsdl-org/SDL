@@ -24,7 +24,7 @@
 #ifndef _INCLUDED_WINDOWS_H
 #define _INCLUDED_WINDOWS_H
 
-#ifdef __WIN32__
+#if defined(__WIN32__)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -36,7 +36,7 @@
 #endif
 #undef WINVER
 #undef _WIN32_WINNT
-#ifdef SDL_VIDEO_RENDER_D3D12
+#if defined(SDL_VIDEO_RENDER_D3D12)
 #define _WIN32_WINNT 0xA00 /* For D3D12, 0xA00 is required */
 #elif defined(HAVE_SHELLSCALINGAPI_H)
 #define _WIN32_WINNT 0x603 /* For DPI support */
@@ -89,6 +89,8 @@
 #endif
 #endif
 
+#include "SDL_rect.h"
+
 /* Routines to convert from UTF8 to native Windows text */
 #define WIN_StringToUTF8W(S) SDL_iconv_string("UTF-8", "UTF-16LE", (const char *)(S), (SDL_wcslen(S) + 1) * sizeof(WCHAR))
 #define WIN_UTF8ToStringW(S) (WCHAR *)SDL_iconv_string("UTF-16LE", "UTF-8", (const char *)(S), SDL_strlen(S) + 1)
@@ -118,7 +120,7 @@ extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 /* Sets an error message based on GetLastError(). Always return -1. */
 extern int WIN_SetError(const char *prefix);
 
-#ifndef __WINRT__
+#if !defined(__WINRT__)
 /* Load a function from combase.dll */
 void *WIN_LoadComBaseFunction(const char *name);
 #endif
@@ -160,3 +162,5 @@ extern BOOL WIN_IsRectEmpty(const RECT *rect);
 #endif
 
 #endif /* _INCLUDED_WINDOWS_H */
+
+/* vi: set ts=4 sw=4 expandtab: */

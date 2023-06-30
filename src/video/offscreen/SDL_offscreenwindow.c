@@ -18,18 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_OFFSCREEN
+#if SDL_VIDEO_DRIVER_OFFSCREEN
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
 #include "SDL_offscreenwindow.h"
 
-int OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int OFFSCREEN_CreateWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *offscreen_window = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
+    OFFSCREEN_Window *offscreen_window = SDL_calloc(1, sizeof(OFFSCREEN_Window));
 
     if (offscreen_window == NULL) {
         return SDL_OutOfMemory();
@@ -47,7 +47,7 @@ int OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     offscreen_window->sdl_window = window;
 
-#ifdef SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_OPENGL_EGL
     if (window->flags & SDL_WINDOW_OPENGL) {
 
         if (!_this->egl_data) {
@@ -68,12 +68,12 @@ int OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-void OFFSCREEN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
+void OFFSCREEN_DestroyWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *offscreen_window = window->driverdata;
+    OFFSCREEN_Window *offscreen_window = window->driverdata;
 
     if (offscreen_window) {
-#ifdef SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_OPENGL_EGL
         SDL_EGL_DestroySurface(_this, offscreen_window->egl_surface);
 #endif
         SDL_free(offscreen_window);
@@ -83,3 +83,5 @@ void OFFSCREEN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_OFFSCREEN */
+
+/* vi: set ts=4 sw=4 expandtab: */

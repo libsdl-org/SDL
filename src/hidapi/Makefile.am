@@ -23,15 +23,15 @@ if OS_DARWIN
 SUBDIRS += mac
 endif
 
+if OS_IOS
+SUBDIRS += ios
+endif
+
 if OS_FREEBSD
 SUBDIRS += libusb
 endif
 
 if OS_KFREEBSD
-SUBDIRS += libusb
-endif
-
-if OS_HAIKU
 SUBDIRS += libusb
 endif
 
@@ -48,7 +48,7 @@ endif
 EXTRA_DIST = udev doxygen
 
 dist_doc_DATA = \
- README.md \
+ README.txt \
  AUTHORS.txt \
  LICENSE-bsd.txt \
  LICENSE-gpl3.txt \

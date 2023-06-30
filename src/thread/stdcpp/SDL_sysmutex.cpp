@@ -18,9 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 extern "C" {
+#include "SDL_thread.h"
 #include "SDL_systhread_c.h"
 }
 
@@ -30,12 +31,12 @@ extern "C" {
 #include <Windows.h>
 
 /* Create a mutex */
-extern "C" SDL_Mutex *
+extern "C" SDL_mutex *
 SDL_CreateMutex(void)
 {
     /* Allocate and initialize the mutex */
     try {
-        SDL_Mutex *mutex = new SDL_Mutex;
+        SDL_mutex *mutex = new SDL_mutex;
         return mutex;
     } catch (std::system_error &ex) {
         SDL_SetError("unable to create a C++ mutex: code=%d; %s", ex.code(), ex.what());
@@ -48,7 +49,7 @@ SDL_CreateMutex(void)
 
 /* Free the mutex */
 extern "C" void
-SDL_DestroyMutex(SDL_Mutex *mutex)
+SDL_DestroyMutex(SDL_mutex *mutex)
 {
     if (mutex != NULL) {
         delete mutex;
@@ -57,7 +58,7 @@ SDL_DestroyMutex(SDL_Mutex *mutex)
 
 /* Lock the mutex */
 extern "C" int
-SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
         return 0;
@@ -72,7 +73,7 @@ SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't k
 }
 
 /* TryLock the mutex */
-int SDL_TryLockMutex(SDL_Mutex *mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
     int retval = 0;
 
@@ -88,7 +89,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 
 /* Unlock the mutex */
 extern "C" int
-SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
         return 0;
@@ -98,3 +99,4 @@ SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't
     return 0;
 }
 
+/* vi: set ts=4 sw=4 expandtab: */

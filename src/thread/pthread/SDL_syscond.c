@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #include <sys/time.h>
 #include <time.h>
@@ -26,19 +26,20 @@
 #include <errno.h>
 #include <pthread.h>
 
+#include "SDL_thread.h"
 #include "SDL_sysmutex_c.h"
 
-struct SDL_Condition
+struct SDL_cond
 {
     pthread_cond_t cond;
 };
 
 /* Create a condition variable */
-SDL_Condition *SDL_CreateCondition(void)
+SDL_cond *SDL_CreateCond(void)
 {
-    SDL_Condition *cond;
+    SDL_cond *cond;
 
-    cond = (SDL_Condition *)SDL_malloc(sizeof(SDL_Condition));
+    cond = (SDL_cond *)SDL_malloc(sizeof(SDL_cond));
     if (cond) {
         if (pthread_cond_init(&cond->cond, NULL) != 0) {
             SDL_SetError("pthread_cond_init() failed");
@@ -50,7 +51,7 @@ SDL_Condition *SDL_CreateCondition(void)
 }
 
 /* Destroy a condition variable */
-void SDL_DestroyCondition(SDL_Condition *cond)
+void SDL_DestroyCond(SDL_cond *cond)
 {
     if (cond) {
         pthread_cond_destroy(&cond->cond);
@@ -59,7 +60,7 @@ void SDL_DestroyCondition(SDL_Condition *cond)
 }
 
 /* Restart one of the threads that are waiting on the condition variable */
-int SDL_SignalCondition(SDL_Condition *cond)
+int SDL_CondSignal(SDL_cond *cond)
 {
     int retval;
 
@@ -75,7 +76,7 @@ int SDL_SignalCondition(SDL_Condition *cond)
 }
 
 /* Restart all threads that are waiting on the condition variable */
-int SDL_BroadcastCondition(SDL_Condition *cond)
+int SDL_CondBroadcast(SDL_cond *cond)
 {
     int retval;
 
@@ -90,7 +91,7 @@ int SDL_BroadcastCondition(SDL_Condition *cond)
     return retval;
 }
 
-int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
 {
     int retval;
 #ifndef HAVE_CLOCK_GETTIME
@@ -102,25 +103,18 @@ int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 tim
         return SDL_InvalidParamError("cond");
     }
 
-    if (timeoutNS < 0) {
-        if (pthread_cond_wait(&cond->cond, &mutex->id) != 0) {
-            return SDL_SetError("pthread_cond_wait() failed");
-        }
-        return 0;
-    }
-
 #ifdef HAVE_CLOCK_GETTIME
     clock_gettime(CLOCK_REALTIME, &abstime);
 
-    abstime.tv_sec += (timeoutNS / SDL_NS_PER_SECOND);
-    abstime.tv_nsec += (timeoutNS % SDL_NS_PER_SECOND);
+    abstime.tv_nsec += (ms % 1000) * 1000000;
+    abstime.tv_sec += ms / 1000;
 #else
     gettimeofday(&delta, NULL);
 
-    abstime.tv_sec = delta.tv_sec + (timeoutNS / SDL_NS_PER_SECOND);
-    abstime.tv_nsec = SDL_US_TO_NS(delta.tv_usec) + (timeoutNS % SDL_NS_PER_SECOND);
+    abstime.tv_sec = delta.tv_sec + (ms / 1000);
+    abstime.tv_nsec = (long)(delta.tv_usec + (ms % 1000) * 1000) * 1000;
 #endif
-    while (abstime.tv_nsec > 1000000000) {
+    if (abstime.tv_nsec > 1000000000) {
         abstime.tv_sec += 1;
         abstime.tv_nsec -= 1000000000;
     }
@@ -141,3 +135,18 @@ tryagain:
     }
     return retval;
 }
+
+/* Wait on the condition variable, unlocking the provided mutex.
+   The mutex must be locked before entering this function!
+ */
+int SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex)
+{
+    if (cond == NULL) {
+        return SDL_InvalidParamError("cond");
+    } else if (pthread_cond_wait(&cond->cond, &mutex->id) != 0) {
+        return SDL_SetError("pthread_cond_wait() failed");
+    }
+    return 0;
+}
+
+/* vi: set ts=4 sw=4 expandtab: */

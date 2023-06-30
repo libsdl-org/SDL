@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_AUDIO_DRIVER_NETBSD
+#if SDL_AUDIO_DRIVER_NETBSD
 
 /*
  * Driver for native NetBSD audio(4).
@@ -36,6 +36,8 @@
 #include <sys/types.h>
 #include <sys/audioio.h>
 
+#include "SDL_timer.h"
+#include "SDL_audio.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_audiodev_c.h"
@@ -48,19 +50,19 @@ static void NETBSDAUDIO_DetectDevices(void)
     SDL_EnumUnixAudioDevices(0, NULL);
 }
 
-static void NETBSDAUDIO_Status(SDL_AudioDevice *_this)
+static void NETBSDAUDIO_Status(_THIS)
 {
 #ifdef DEBUG_AUDIO
     /* *INDENT-OFF* */ /* clang-format off */
     audio_info_t info;
     const struct audio_prinfo *prinfo;
 
-    if (ioctl(_this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
+    if (ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
         fprintf(stderr, "AUDIO_GETINFO failed.\n");
         return;
     }
 
-    prinfo = _this->iscapture ? &info.record : &info.play;
+    prinfo = this->iscapture ? &info.record : &info.play;
 
     fprintf(stderr, "\n"
             "[%s info]\n"
@@ -77,7 +79,7 @@ static void NETBSDAUDIO_Status(SDL_AudioDevice *_this)
             "waiting		:   %s\n"
             "active		:   %s\n"
             "",
-            _this->iscapture ? "record" : "play",
+            this->iscapture ? "record" : "play",
             prinfo->buffer_size,
             prinfo->sample_rate,
             prinfo->channels,
@@ -111,23 +113,23 @@ static void NETBSDAUDIO_Status(SDL_AudioDevice *_this)
             "format		:   0x%x\n"
             "size		:   %u\n"
             "",
-            _this->spec.format,
-            _this->spec.size);
+            this->spec.format,
+            this->spec.size);
     /* *INDENT-ON* */ /* clang-format on */
 
 #endif /* DEBUG_AUDIO */
 }
 
-static void NETBSDAUDIO_PlayDevice(SDL_AudioDevice *_this)
+static void NETBSDAUDIO_PlayDevice(_THIS)
 {
-    struct SDL_PrivateAudioData *h = _this->hidden;
+    struct SDL_PrivateAudioData *h = this->hidden;
     int written;
 
     /* Write the audio data */
     written = write(h->audio_fd, h->mixbuf, h->mixlen);
     if (written == -1) {
         /* Non recoverable error has occurred. It should be reported!!! */
-        SDL_OpenedAudioDeviceDisconnected(_this);
+        SDL_OpenedAudioDeviceDisconnected(this);
         perror("audio");
         return;
     }
@@ -137,17 +139,17 @@ static void NETBSDAUDIO_PlayDevice(SDL_AudioDevice *_this)
 #endif
 }
 
-static Uint8 *NETBSDAUDIO_GetDeviceBuf(SDL_AudioDevice *_this)
+static Uint8 *NETBSDAUDIO_GetDeviceBuf(_THIS)
 {
-    return _this->hidden->mixbuf;
+    return this->hidden->mixbuf;
 }
 
-static int NETBSDAUDIO_CaptureFromDevice(SDL_AudioDevice *_this, void *_buffer, int buflen)
+static int NETBSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
 {
     Uint8 *buffer = (Uint8 *)_buffer;
     int br;
 
-    br = read(_this->hidden->audio_fd, buffer, buflen);
+    br = read(this->hidden->audio_fd, buffer, buflen);
     if (br == -1) {
         /* Non recoverable error has occurred. It should be reported!!! */
         perror("audio");
@@ -160,20 +162,20 @@ static int NETBSDAUDIO_CaptureFromDevice(SDL_AudioDevice *_this, void *_buffer, 
     return 0;
 }
 
-static void NETBSDAUDIO_FlushCapture(SDL_AudioDevice *_this)
+static void NETBSDAUDIO_FlushCapture(_THIS)
 {
     audio_info_t info;
     size_t remain;
     Uint8 buf[512];
 
-    if (ioctl(_this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
+    if (ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
         return; /* oh well. */
     }
 
-    remain = (size_t)(info.record.samples * (SDL_AUDIO_BITSIZE(_this->spec.format) / 8));
+    remain = (size_t)(info.record.samples * (SDL_AUDIO_BITSIZE(this->spec.format) / 8));
     while (remain > 0) {
         const size_t len = SDL_min(sizeof(buf), remain);
-        const int br = read(_this->hidden->audio_fd, buf, len);
+        const int br = read(this->hidden->audio_fd, buf, len);
         if (br <= 0) {
             return; /* oh well. */
         }
@@ -181,20 +183,19 @@ static void NETBSDAUDIO_FlushCapture(SDL_AudioDevice *_this)
     }
 }
 
-static void NETBSDAUDIO_CloseDevice(SDL_AudioDevice *_this)
+static void NETBSDAUDIO_CloseDevice(_THIS)
 {
-    if (_this->hidden->audio_fd >= 0) {
-        close(_this->hidden->audio_fd);
+    if (this->hidden->audio_fd >= 0) {
+        close(this->hidden->audio_fd);
     }
-    SDL_free(_this->hidden->mixbuf);
-    SDL_free(_this->hidden);
+    SDL_free(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
-static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *_this, const char *devname)
+static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
 {
-    SDL_bool iscapture = _this->iscapture;
+    SDL_bool iscapture = this->iscapture;
     SDL_AudioFormat test_format;
-    const SDL_AudioFormat *closefmts;
     int encoding = AUDIO_ENCODING_NONE;
     audio_info_t info, hwinfo;
     struct audio_prinfo *prinfo = iscapture ? &info.record : &info.play;
@@ -209,52 +210,57 @@ static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *_this, const char *devname)
     }
 
     /* Initialize all variables that we clean on shutdown */
-    _this->hidden = (struct SDL_PrivateAudioData *) SDL_malloc(sizeof(*_this->hidden));
-    if (_this->hidden == NULL) {
+    this->hidden = (struct SDL_PrivateAudioData *) SDL_malloc(sizeof(*this->hidden));
+    if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_zerop(_this->hidden);
+    SDL_zerop(this->hidden);
 
     /* Open the audio device */
-    _this->hidden->audio_fd = open(devname, (iscapture ? O_RDONLY : O_WRONLY) | O_CLOEXEC);
-    if (_this->hidden->audio_fd < 0) {
+    this->hidden->audio_fd = open(devname, (iscapture ? O_RDONLY : O_WRONLY) | O_CLOEXEC);
+    if (this->hidden->audio_fd < 0) {
         return SDL_SetError("Couldn't open %s: %s", devname, strerror(errno));
     }
 
     AUDIO_INITINFO(&info);
 
 #ifdef AUDIO_GETFORMAT /* Introduced in NetBSD 9.0 */
-    if (ioctl(_this->hidden->audio_fd, AUDIO_GETFORMAT, &hwinfo) != -1) {
+    if (ioctl(this->hidden->audio_fd, AUDIO_GETFORMAT, &hwinfo) != -1) {
         /*
          * Use the device's native sample rate so the kernel doesn't have to
          * resample.
          */
-        _this->spec.freq = iscapture ? hwinfo.record.sample_rate : hwinfo.play.sample_rate;
+        this->spec.freq = iscapture ? hwinfo.record.sample_rate : hwinfo.play.sample_rate;
     }
 #endif
 
-    prinfo->sample_rate = _this->spec.freq;
-    prinfo->channels = _this->spec.channels;
+    prinfo->sample_rate = this->spec.freq;
+    prinfo->channels = this->spec.channels;
 
-    closefmts = SDL_ClosestAudioFormats(_this->spec.format);
-    while ((test_format = *(closefmts++)) != 0) {
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         switch (test_format) {
-        case SDL_AUDIO_U8:
+        case AUDIO_U8:
             encoding = AUDIO_ENCODING_ULINEAR;
             break;
-        case SDL_AUDIO_S8:
+        case AUDIO_S8:
             encoding = AUDIO_ENCODING_SLINEAR;
             break;
-        case SDL_AUDIO_S16LSB:
+        case AUDIO_S16LSB:
             encoding = AUDIO_ENCODING_SLINEAR_LE;
             break;
-        case SDL_AUDIO_S16MSB:
+        case AUDIO_S16MSB:
             encoding = AUDIO_ENCODING_SLINEAR_BE;
             break;
-        case SDL_AUDIO_S32LSB:
+        case AUDIO_U16LSB:
+            encoding = AUDIO_ENCODING_ULINEAR_LE;
+            break;
+        case AUDIO_U16MSB:
+            encoding = AUDIO_ENCODING_ULINEAR_BE;
+            break;
+        case AUDIO_S32LSB:
             encoding = AUDIO_ENCODING_SLINEAR_LE;
             break;
-        case SDL_AUDIO_S32MSB:
+        case AUDIO_S32MSB:
             encoding = AUDIO_ENCODING_SLINEAR_BE;
             break;
         default:
@@ -271,32 +277,32 @@ static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *_this, const char *devname)
 
     info.hiwat = 5;
     info.lowat = 3;
-    if (ioctl(_this->hidden->audio_fd, AUDIO_SETINFO, &info) < 0) {
+    if (ioctl(this->hidden->audio_fd, AUDIO_SETINFO, &info) < 0) {
         return SDL_SetError("AUDIO_SETINFO failed for %s: %s", devname, strerror(errno));
     }
 
-    if (ioctl(_this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
+    if (ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
         return SDL_SetError("AUDIO_GETINFO failed for %s: %s", devname, strerror(errno));
     }
 
     /* Final spec used for the device. */
-    _this->spec.format = test_format;
-    _this->spec.freq = prinfo->sample_rate;
-    _this->spec.channels = prinfo->channels;
+    this->spec.format = test_format;
+    this->spec.freq = prinfo->sample_rate;
+    this->spec.channels = prinfo->channels;
 
-    SDL_CalculateAudioSpec(&_this->spec);
+    SDL_CalculateAudioSpec(&this->spec);
 
     if (!iscapture) {
         /* Allocate mixing buffer */
-        _this->hidden->mixlen = _this->spec.size;
-        _this->hidden->mixbuf = (Uint8 *)SDL_malloc(_this->hidden->mixlen);
-        if (_this->hidden->mixbuf == NULL) {
+        this->hidden->mixlen = this->spec.size;
+        this->hidden->mixbuf = (Uint8 *)SDL_malloc(this->hidden->mixlen);
+        if (this->hidden->mixbuf == NULL) {
             return SDL_OutOfMemory();
         }
-        SDL_memset(_this->hidden->mixbuf, _this->spec.silence, _this->spec.size);
+        SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
     }
 
-    NETBSDAUDIO_Status(_this);
+    NETBSDAUDIO_Status(this);
 
     /* We're ready to rock and roll. :-) */
     return 0;
@@ -324,3 +330,5 @@ AudioBootStrap NETBSDAUDIO_bootstrap = {
 };
 
 #endif /* SDL_AUDIO_DRIVER_NETBSD */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,11 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifndef SDL_offscreenvideo_h
-#define SDL_offscreenvideo_h
+#ifndef _SDL_offscreenvideo_h
+#define _SDL_offscreenvideo_h
 
 #include "../SDL_sysvideo.h"
 
-#endif /* SDL_offscreenvideo_h */
+#endif /* _SDL_offscreenvideo_h */
+
+/* vi: set ts=4 sw=4 expandtab: */

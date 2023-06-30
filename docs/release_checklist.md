@@ -2,7 +2,7 @@
 
 When changing the version, run `build-scripts/update-version.sh X Y Z`,
 where `X Y Z` are the major version, minor version, and patch level. So
-`3 8 1` means "change the version to 3.8.1". This script does much of the
+`2 28 1` means "change the version to 2.28.1". This script does much of the
 mechanical work.
 
 
@@ -10,9 +10,9 @@ mechanical work.
 
 * Update `WhatsNew.txt`
 
-* Bump version number to 3.EVEN.0:
+* Bump version number to 2.EVEN.0:
 
-    * `./build-scripts/update-version.sh 3 EVEN 0`
+    * `./build-scripts/update-version.sh 2 EVEN 0`
 
 * Do the release
 
@@ -24,9 +24,9 @@ mechanical work.
 
     * If it was, do a new feature release (see above) instead
 
-* Bump version number from 3.Y.Z to 3.Y.(Z+1) (Y is even)
+* Bump version number from 2.Y.Z to 2.Y.(Z+1) (Y is even)
 
-    * `./build-scripts/update-version.sh 3 Y Z+1`
+    * `./build-scripts/update-version.sh 2 Y Z+1`
 
 * Do the release
 
@@ -34,16 +34,16 @@ mechanical work.
 
 ## After a feature release
 
-* Create a branch like `release-3.4.x`
+* Create a branch like `release-2.24.x`
 
-* Bump version number to 3.ODD.0 for next development branch
+* Bump version number to 2.ODD.0 for next development branch
 
-    * `./build-scripts/update-version.sh 3 ODD 0`
+    * `./build-scripts/update-version.sh 2 ODD 0`
 
 ## New development prerelease
 
-* Bump version number from 3.Y.Z to 3.Y.(Z+1) (Y is odd)
+* Bump version number from 2.Y.Z to 2.Y.(Z+1) (Y is odd)
 
-    * `./build-scripts/update-version.sh 3 Y Z+1`
+    * `./build-scripts/update-version.sh 2 Y Z+1`
 
 * Do the release

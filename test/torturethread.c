@@ -12,38 +12,35 @@
 
 /* Simple test of the SDL threading code */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <string.h>
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include "SDL.h"
 
 #define NUMTHREADS 10
 
-static SDL_AtomicInt time_for_threads_to_die[NUMTHREADS];
+static SDL_atomic_t time_for_threads_to_die[NUMTHREADS];
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
 {
     SDL_Quit();
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
+    exit(rc);
 }
 
-static int SDLCALL
+int SDLCALL
 SubThreadFunc(void *data)
 {
     while (!*(int volatile *)data) {
-        SDL_Delay(10);
+        ; /* SDL_Delay(10); */ /* do nothing */
     }
     return 0;
 }
 
-static int SDLCALL
+int SDLCALL
 ThreadFunc(void *data)
 {
     SDL_Thread *sub_threads[NUMTHREADS];
@@ -80,13 +77,6 @@ int main(int argc, char *argv[])
 {
     SDL_Thread *threads[NUMTHREADS];
     int i;
-    SDLTest_CommonState *state;
-
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -94,11 +84,6 @@ int main(int argc, char *argv[])
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return 1;
-    }
-
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        SDLTest_CommonDestroyState(state);
         return 1;
     }
 
@@ -123,6 +108,5 @@ int main(int argc, char *argv[])
         SDL_WaitThread(threads[i], NULL);
     }
     SDL_Quit();
-    SDLTest_CommonDestroyState(state);
     return 0;
 }

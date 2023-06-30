@@ -8,9 +8,9 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := SDL3
+LOCAL_MODULE := SDL2
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/include $(LOCAL_PATH)/src
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
@@ -56,11 +56,13 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/timer/unix/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/video/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/video/android/*.c) \
-	$(wildcard $(LOCAL_PATH)/src/video/yuv2rgb/*.c))
+	$(wildcard $(LOCAL_PATH)/src/video/yuv2rgb/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/test/*.c))
 
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES
 LOCAL_CFLAGS += \
 	-Wall -Wextra \
+	-Wdocumentation \
 	-Wmissing-prototypes \
 	-Wunreachable-code-break \
 	-Wunneeded-internal-declaration \
@@ -79,7 +81,7 @@ LOCAL_CXXFLAGS += -std=gnu++11
 
 LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
 
-LOCAL_LDFLAGS := -Wl,--no-undefined -Wl,--version-script=$(LOCAL_PATH)/src/dynapi/SDL_dynapi.sym
+LOCAL_LDFLAGS := -Wl,--no-undefined
 
 ifeq ($(NDK_DEBUG),1)
     cmd-strip :=
@@ -92,36 +94,13 @@ include $(BUILD_SHARED_LIBRARY)
 
 ###########################
 #
-# SDL_test static library
-#
-###########################
-
-LOCAL_MODULE := SDL3_test
-
-LOCAL_MODULE_FILENAME := libSDL3_test
-
-LOCAL_SRC_FILES := \
-	$(subst $(LOCAL_PATH)/,, \
-	$(wildcard $(LOCAL_PATH)/src/test/*.c))
-
-LOCAL_LDLIBS :=
-
-LOCAL_LDFLAGS :=
-
-LOCAL_EXPORT_LDLIBS :=
-
-include $(BUILD_STATIC_LIBRARY)
-
-
-###########################
-#
 # SDL static library
 #
 ###########################
 
-LOCAL_MODULE := SDL3_static
+LOCAL_MODULE := SDL2_static
 
-LOCAL_MODULE_FILENAME := libSDL3
+LOCAL_MODULE_FILENAME := libSDL2
 
 LOCAL_LDLIBS :=
 
@@ -131,5 +110,21 @@ LOCAL_EXPORT_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
 
 include $(BUILD_STATIC_LIBRARY)
 
-$(call import-module,android/cpufeatures)
 
+###########################
+#
+# SDL main static library
+#
+###########################
+
+include $(CLEAR_VARS)
+
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
+
+LOCAL_MODULE := SDL2_main
+
+LOCAL_MODULE_FILENAME := libSDL2main
+
+include $(BUILD_STATIC_LIBRARY)
+
+$(call import-module,android/cpufeatures)

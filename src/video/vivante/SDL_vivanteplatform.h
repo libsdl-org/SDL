@@ -18,16 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_vivanteplatform_h_
 #define SDL_vivanteplatform_h_
 
-#ifdef SDL_VIDEO_DRIVER_VIVANTE
+#if SDL_VIDEO_DRIVER_VIVANTE
 
 #include "SDL_vivantevideo.h"
 
-#ifdef CAVIUM
+#if defined(CAVIUM)
 #define VIVANTE_PLATFORM_CAVIUM
 #elif defined(MARVELL)
 #define VIVANTE_PLATFORM_MARVELL
@@ -35,11 +35,13 @@
 #define VIVANTE_PLATFORM_GENERIC
 #endif
 
-extern int VIVANTE_SetupPlatform(SDL_VideoDevice *_this);
-extern char *VIVANTE_GetDisplayName(SDL_VideoDevice *_this);
-extern void VIVANTE_UpdateDisplayScale(SDL_VideoDevice *_this);
-extern void VIVANTE_CleanupPlatform(SDL_VideoDevice *_this);
+extern int VIVANTE_SetupPlatform(_THIS);
+extern char *VIVANTE_GetDisplayName(_THIS);
+extern void VIVANTE_UpdateDisplayScale(_THIS);
+extern void VIVANTE_CleanupPlatform(_THIS);
 
 #endif /* SDL_VIDEO_DRIVER_VIVANTE */
 
 #endif /* SDL_vivanteplatform_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

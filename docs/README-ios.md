@@ -4,7 +4,7 @@ iOS
 Building the Simple DirectMedia Layer for iOS 9.0+
 ==============================================================================
 
-Requirements: macOS 10.9 or later and the iOS 9.0 or newer SDK.
+Requirements: Mac OS X 10.9 or later and the iOS 9.0 or newer SDK.
 
 Instructions:
 
@@ -20,11 +20,12 @@ Using the Simple DirectMedia Layer for iOS
 3. Right click the project in the main view, select "Add Files...", and add the SDL project, Xcode/SDL/SDL.xcodeproj
 4. Select the project in the main view, go to the "Info" tab and under "Custom iOS Target Properties" remove the line "Main storyboard file base name"
 5. Select the project in the main view, go to the "Build Settings" tab, select "All", and edit "Header Search Path" and drag over the SDL "Public Headers" folder from the left
-6. Select the project in the main view, go to the "Build Phases" tab, select "Link Binary With Libraries", and add SDL3.framework from "Framework-iOS"
+6. Select the project in the main view, go to the "Build Phases" tab, select "Link Binary With Libraries", and add SDL2.framework from "Framework-iOS"
 7. Select the project in the main view, go to the "General" tab, scroll down to "Frameworks, Libraries, and Embedded Content", and select "Embed & Sign" for the SDL library.
-8. Add the source files that you would normally have for an SDL program, making sure to have #include "SDL.h" at the top of the file containing your main() function.
-9. Add any assets that your application needs.
-10. Enjoy!
+8. In the main view, expand SDL -> Library Source -> main -> uikit and drag SDL_uikit_main.c into your game files
+9. Add the source files that you would normally have for an SDL program, making sure to have #include "SDL.h" at the top of the file containing your main() function.
+10. Add any assets that your application needs.
+11. Enjoy!
 
 
 TODO: Add information regarding App Store requirements such as icons, etc.
@@ -33,26 +34,30 @@ TODO: Add information regarding App Store requirements such as icons, etc.
 Notes -- Retina / High-DPI and window sizes
 ==============================================================================
 
-Window and display mode sizes in SDL are in points rather than in pixels.
-On iOS this means that a window created on an iPhone 6 will have a size in
-points of 375 x 667, rather than a size in pixels of 750 x 1334. All iOS apps
-are expected to size their content based on points rather than pixels,
+Window and display mode sizes in SDL are in "screen coordinates" (or "points",
+in Apple's terminology) rather than in pixels. On iOS this means that a window
+created on an iPhone 6 will have a size in screen coordinates of 375 x 667,
+rather than a size in pixels of 750 x 1334. All iOS apps are expected to
+size their content based on screen coordinates / points rather than pixels,
 as this allows different iOS devices to have different pixel densities
 (Retina versus non-Retina screens, etc.) without apps caring too much.
 
-SDL_GetWindowSize() and mouse coordinates are in points rather than pixels,
-but the window will have a much greater pixel density when the device supports
-it, and the SDL_GetWindowSizeInPixels() can be called to determine the size
-in pixels of the drawable screen framebuffer.
+By default SDL will not use the full pixel density of the screen on
+Retina/high-dpi capable devices. Use the SDL_WINDOW_ALLOW_HIGHDPI flag when
+creating your window to enable high-dpi support.
 
-The SDL 2D rendering API will automatically handle this for you, by default
-providing a rendering area in points, and you can call SDL_SetRenderLogicalPresentation()
-to gain access to the higher density resolution.
+When high-dpi support is enabled, SDL_GetWindowSize() and display mode sizes
+will still be in "screen coordinates" rather than pixels, but the window will
+have a much greater pixel density when the device supports it, and the
+SDL_GL_GetDrawableSize() or SDL_GetRendererOutputSize() functions (depending on
+whether raw OpenGL or the SDL_Render API is used) can be queried to determine
+the size in pixels of the drawable screen framebuffer.
 
 Some OpenGL ES functions such as glViewport expect sizes in pixels rather than
-sizes in points. When doing 2D rendering with OpenGL ES, an orthographic projection
-matrix using the size in points (SDL_GetWindowSize()) can be used in order to
-display content at the same scale no matter whether a Retina device is used or not.
+sizes in screen coordinates. When doing 2D rendering with OpenGL ES, an
+orthographic projection matrix using the size in screen coordinates
+(SDL_GetWindowSize()) can be used in order to display content at the same scale
+no matter whether a Retina device is used or not.
 
 
 Notes -- Application events
@@ -69,34 +74,34 @@ e.g.
     {
         switch (event->type)
         {
-        case SDL_EVENT_TERMINATING:
+        case SDL_APP_TERMINATING:
             /* Terminate the app.
                Shut everything down before returning from this function.
             */
             return 0;
-        case SDL_EVENT_LOW_MEMORY:
+        case SDL_APP_LOWMEMORY:
             /* You will get this when your app is paused and iOS wants more memory.
                Release as much memory as possible.
             */
             return 0;
-        case SDL_EVENT_WILL_ENTER_BACKGROUND:
+        case SDL_APP_WILLENTERBACKGROUND:
             /* Prepare your app to go into the background.  Stop loops, etc.
                This gets called when the user hits the home button, or gets a call.
             */
             return 0;
-        case SDL_EVENT_DID_ENTER_BACKGROUND:
+        case SDL_APP_DIDENTERBACKGROUND:
             /* This will get called if the user accepted whatever sent your app to the background.
-               If the user got a phone call and canceled it, you'll instead get an SDL_EVENT_DID_ENTER_FOREGROUND event and restart your loops.
+               If the user got a phone call and canceled it, you'll instead get an SDL_APP_DIDENTERFOREGROUND event and restart your loops.
                When you get this, you have 5 seconds to save all your state or the app will be terminated.
                Your app is NOT active at this point.
             */
             return 0;
-        case SDL_EVENT_WILL_ENTER_FOREGROUND:
+        case SDL_APP_WILLENTERFOREGROUND:
             /* This call happens when your app is coming back to the foreground.
                Restore all your state here.
             */
             return 0;
-        case SDL_EVENT_DID_ENTER_FOREGROUND:
+        case SDL_APP_DIDENTERFOREGROUND:
             /* Restart your loops here.
                Your app is interactive and getting CPU again.
             */
@@ -122,7 +127,7 @@ Notes -- Accelerometer as Joystick
 
 SDL for iPhone supports polling the built in accelerometer as a joystick device.  For an example on how to do this, see the accelerometer.c in the demos directory.
 
-The main thing to note when using the accelerometer with SDL is that while the iPhone natively reports accelerometer as floating point values in units of g-force, SDL_GetJoystickAxis() reports joystick values as signed integers.  Hence, in order to convert between the two, some clamping and scaling is necessary on the part of the iPhone SDL joystick driver.  To convert SDL_GetJoystickAxis() reported values BACK to units of g-force, simply multiply the values by SDL_IPHONE_MAX_GFORCE / 0x7FFF.
+The main thing to note when using the accelerometer with SDL is that while the iPhone natively reports accelerometer as floating point values in units of g-force, SDL_JoystickGetAxis() reports joystick values as signed integers.  Hence, in order to convert between the two, some clamping and scaling is necessary on the part of the iPhone SDL joystick driver.  To convert SDL_JoystickGetAxis() reported values BACK to units of g-force, simply multiply the values by SDL_IPHONE_MAX_GFORCE / 0x7FFF.
 
 
 Notes -- OpenGL ES
@@ -156,7 +161,7 @@ void SDL_StartTextInput()
 void SDL_StopTextInput()
 	-- disables text events and hides the onscreen keyboard.
 
-SDL_bool SDL_TextInputActive()
+SDL_bool SDL_IsTextInputActive()
 	-- returns whether or not text events are enabled (and the onscreen keyboard is visible)
 
 
@@ -189,17 +194,27 @@ http://developer.apple.com/library/ios/#documentation/iPhone/Conceptual/iPhoneOS
 Notes -- xcFramework
 ==============================================================================
 
-The SDL.xcodeproj file now includes a target to build SDL3.xcframework. An xcframework is a new (Xcode 11) uber-framework which can handle any combination of processor type and target OS platform.
+The SDL.xcodeproj file now includes a target to build SDL2.xcframework. An xcframework is a new (Xcode 11) uber-framework which can handle any combination of processor type and target OS platform.
 
 In the past, iOS devices were always an ARM variant processor, and the simulator was always i386 or x86_64, and thus libraries could be combined into a single framework for both simulator and device. With the introduction of the Apple Silicon ARM-based machines, regular frameworks would collide as CPU type was no longer sufficient to differentiate the platform. So Apple created the new xcframework library package.
 
-The xcframework target builds into a Products directory alongside the SDL.xcodeproj file, as SDL3.xcframework. This can be brought in to any iOS project and will function properly for both simulator and device, no matter their CPUs. Note that Intel Macs cannot cross-compile for Apple Silicon Macs. If you need AS compatibility, perform this build on an Apple Silicon Mac.
+The xcframework target builds into a Products directory alongside the SDL.xcodeproj file, as SDL2.xcframework. This can be brought in to any iOS project and will function properly for both simulator and device, no matter their CPUs. Note that Intel Macs cannot cross-compile for Apple Silicon Macs. If you need AS compatibility, perform this build on an Apple Silicon Mac.
 
 This target requires Xcode 11 or later. The target will simply fail to build if attempted on older Xcodes.
 
-In addition, on Apple platforms, main() cannot be in a dynamically loaded library.
-However, unlike in SDL2, in SDL3 SDL_main is implemented inline in SDL_main.h, so you don't need to link against a static libSDL3main.lib, and you don't need to copy a .c file from the SDL3 source either.
-This means that iOS apps which used the statically-linked libSDL3.lib and now link with the xcframwork can just `#include <SDL3/SDL_main.h>` in the source file that contains their standard `int main(int argc; char *argv[])` function to get a header-only SDL_main implementation that calls the `SDL_RunApp()` with your standard main function.
+In addition, on Apple platforms, main() cannot be in a dynamically loaded library. This means that iOS apps which used the statically-linked libSDL2.lib and now link with the xcframwork will need to define their own main() to call SDL_UIKitRunApp(), like this:
+
+#ifndef SDL_MAIN_HANDLED
+#ifdef main
+#undef main
+#endif
+
+int
+main(int argc, char *argv[])
+{
+	return SDL_UIKitRunApp(argc, argv, SDL_main);
+}
+#endif /* !SDL_MAIN_HANDLED */
 
 Using an xcFramework is similar to using a regular framework. However, issues have been seen with the build system not seeing the headers in the xcFramework. To remedy this, add the path to the xcFramework in your app's target ==> Build Settings ==> Framework Search Paths and mark it recursive (this is critical). Also critical is to remove "*.framework" from Build Settings ==> Sub-Directories to Exclude in Recursive Searches. Clean the build folder, and on your next build the build system should be able to see any of these in your code, as expected:
 
@@ -218,7 +233,7 @@ Textures:
 	The optimal texture formats on iOS are SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, and SDL_PIXELFORMAT_RGB24 pixel formats.
 
 Loading Shared Objects:
-	This is disabled by default since it seems to break the terms of the iOS SDK agreement for iOS versions prior to iOS 8. It can be re-enabled in SDL_config_ios.h.
+	This is disabled by default since it seems to break the terms of the iOS SDK agreement for iOS versions prior to iOS 8. It can be re-enabled in SDL_config_iphoneos.h.
 
 
 Notes -- CoreBluetooth.framework
@@ -258,7 +273,7 @@ e.g.
     {
         ... initialize game ...
 
-    #ifdef __IOS__
+    #if __IPHONEOS__
         // Initialize the Game Center for scoring and matchmaking
         InitGameCenter();
 

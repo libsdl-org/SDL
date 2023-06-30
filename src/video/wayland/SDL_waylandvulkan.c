@@ -24,24 +24,24 @@
  * SDL_x11vulkan.c.
  */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WAYLAND)
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_WAYLAND
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
 
+#include "SDL_loadso.h"
 #include "SDL_waylandvulkan.h"
+#include "SDL_syswm.h"
 
-#include <SDL3/SDL_syswm.h>
-
-#ifdef __OpenBSD__
+#if defined(__OpenBSD__)
 #define DEFAULT_VULKAN "libvulkan.so"
 #else
 #define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
-int Wayland_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
@@ -107,7 +107,7 @@ fail:
     return -1;
 }
 
-void Wayland_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
+void Wayland_Vulkan_UnloadLibrary(_THIS)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -115,7 +115,8 @@ void Wayland_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
+                                              SDL_Window *window,
                                               unsigned *count,
                                               const char **names)
 {
@@ -131,12 +132,12 @@ SDL_bool Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
         extensionsForWayland);
 }
 
-SDL_bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
                                       SDL_Window *window,
                                       VkInstance instance,
                                       VkSurfaceKHR *surface)
 {
-    SDL_WindowData *windowData = window->driverdata;
+    SDL_WindowData *windowData = (SDL_WindowData *)window->driverdata;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateWaylandSurfaceKHR vkCreateWaylandSurfaceKHR =
@@ -173,3 +174,5 @@ SDL_bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
 }
 
 #endif
+
+/* vim: set ts=4 sw=4 expandtab: */

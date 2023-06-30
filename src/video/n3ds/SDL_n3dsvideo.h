@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_n3dsvideo_h_
 #define SDL_n3dsvideo_h_
@@ -26,12 +26,13 @@
 #include <3ds.h>
 
 #include "../SDL_sysvideo.h"
-
-struct SDL_WindowData
+typedef struct SDL_WindowData
 {
     gfxScreen_t screen; /**< Keeps track of which N3DS screen is targetted */
-};
+} SDL_WindowData;
 
 #define FRAMEBUFFER_FORMAT SDL_PIXELFORMAT_RGBA8888
 
 #endif /* SDL_n3dsvideo_h_ */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

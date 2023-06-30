@@ -8,7 +8,7 @@ WSCONS support has been brought back, but only as an input backend. It will not 
 OpenBSD note: Note that the video backend assumes that the user has read/write permissions to the /dev/drm* devices.
 
 
-SDL WSCONS input backend features
+SDL2 WSCONS input backend features
 ===================================================
 1. It is keymap-aware; it will work properly with different keymaps.
 2. It has mouse support.

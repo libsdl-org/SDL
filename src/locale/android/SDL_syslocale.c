@@ -19,12 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 #include "../SDL_syslocale.h"
 #include "../../core/android/SDL_android.h"
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     Android_JNI_GetLocale(buf, buflen);
-    return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

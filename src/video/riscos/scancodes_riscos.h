@@ -18,6 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_scancode.h"
 
 /* RISC OS key code to SDL_Keycode mapping table
    Sources:

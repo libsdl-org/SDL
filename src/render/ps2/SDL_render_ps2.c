@@ -18,11 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_RENDER_PS2
+#if SDL_VIDEO_RENDER_PS2
 
 #include "../SDL_sysrender.h"
+#include "SDL_hints.h"
 
 #include <kernel.h>
 #include <malloc.h>
@@ -111,7 +112,7 @@ static int PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     ps2_tex->Width = texture->w;
     ps2_tex->Height = texture->h;
     ps2_tex->PSM = PixelFormatToPS2PSM(texture->format);
-    ps2_tex->Mem = SDL_aligned_alloc(128, gsKit_texture_size_ee(ps2_tex->Width, ps2_tex->Height, ps2_tex->PSM));
+    ps2_tex->Mem = memalign(128, gsKit_texture_size_ee(ps2_tex->Width, ps2_tex->Height, ps2_tex->PSM));
 
     if (!ps2_tex->Mem) {
         SDL_free(ps2_tex);
@@ -177,7 +178,7 @@ static void PS2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture
      gskit scale mode is either GS_FILTER_NEAREST (good for tile-map)
      or GS_FILTER_LINEAR (good for scaling)
      */
-    uint32_t gsKitScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST
+    uint32_t gsKitScaleMode = (scaleMode == SDL_ScaleModeNearest
                                    ? GS_FILTER_NEAREST
                                    : GS_FILTER_LINEAR);
     ps2_texture->Filter = gsKitScaleMode;
@@ -541,7 +542,7 @@ static void PS2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     // Free from vram
     gsKit_TexManager_free(data->gsGlobal, ps2_texture);
 
-    SDL_aligned_free(ps2_texture->Mem);
+    SDL_free(ps2_texture->Mem);
     SDL_free(ps2_texture);
     texture->driverdata = NULL;
 }
@@ -665,7 +666,7 @@ SDL_RenderDriver PS2_RenderDriver = {
     .CreateRenderer = PS2_CreateRenderer,
     .info = {
         .name = "PS2 gsKit",
-        .flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+        .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
         .num_texture_formats = 2,
         .texture_formats = {
             [0] = SDL_PIXELFORMAT_ABGR1555,
@@ -677,3 +678,5 @@ SDL_RenderDriver PS2_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_PS2 */
+
+/* vi: set ts=4 sw=4 expandtab: */

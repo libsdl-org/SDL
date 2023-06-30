@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
-#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED) && (defined(__XBOXONE__) || defined(__XBOXSERIES__))
+#include "../../SDL_internal.h"
+#if SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED && (defined(__XBOXONE__) || defined(__XBOXSERIES__))
 #include "SDL_render_d3d12_xbox.h"
 
 #error "This is a placeholder Xbox file, as the real one is under NDA. See README-gdk.md for more info."

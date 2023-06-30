@@ -30,3 +30,5 @@ extern void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int 
 extern void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state);
 
 #endif /* SDL_evdev_kbd_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

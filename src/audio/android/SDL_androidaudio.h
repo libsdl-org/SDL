@@ -18,21 +18,25 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_androidaudio_h_
 #define SDL_androidaudio_h_
 
-#ifdef SDL_AUDIO_DRIVER_ANDROID
+#include "../SDL_sysaudio.h"
+
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
+
+struct SDL_PrivateAudioData
+{
+    /* Resume device if it was paused automatically */
+    int resume;
+};
 
 void ANDROIDAUDIO_ResumeDevices(void);
 void ANDROIDAUDIO_PauseDevices(void);
 
-#else
-
-static void ANDROIDAUDIO_ResumeDevices(void) {}
-static void ANDROIDAUDIO_PauseDevices(void) {}
-
-#endif
-
 #endif /* SDL_androidaudio_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

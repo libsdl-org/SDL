@@ -19,15 +19,19 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_poll_h_
 #define SDL_poll_h_
 
-#define SDL_IOR_READ     0x1
-#define SDL_IOR_WRITE    0x2
-#define SDL_IOR_NO_RETRY 0x4
+#include "SDL_stdinc.h"
 
-extern int SDL_IOReady(int fd, int flags, Sint64 timeoutNS);
+#define SDL_IOR_READ           0x1
+#define SDL_IOR_WRITE          0x2
+#define SDL_IOR_NO_RETRY       0x4
+
+extern int SDL_IOReady(int fd, int flags, int timeoutMS);
 
 #endif /* SDL_poll_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

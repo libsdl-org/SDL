@@ -19,9 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_KMSDRM
+#if SDL_VIDEO_DRIVER_KMSDRM
+
+#include "SDL_log.h"
 
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmopengles.h"
@@ -34,19 +36,18 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-void KMSDRM_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor)
+void KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
 {
     /* if SDL was _also_ built with the Raspberry Pi driver (so we're
-       definitely a Pi device) or with the ROCKCHIP video driver
-       (it's a ROCKCHIP device),  default to GLES2. */
-#if defined(SDL_VIDEO_DRIVER_RPI) || defined(SDL_VIDEO_DRIVER_ROCKCHIP)
+       definitely a Pi device), default to GLES2. */
+#if SDL_VIDEO_DRIVER_RPI
     *mask = SDL_GL_CONTEXT_PROFILE_ES;
     *major = 2;
     *minor = 0;
 #endif
 }
 
-int KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+int KMSDRM_GLES_LoadLibrary(_THIS, const char *path)
 {
     /* Just pretend you do this here, but don't do it until KMSDRM_CreateWindow(),
        where we do the same library load we would normally do here.
@@ -54,13 +55,13 @@ int KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
        so gbm dev isn't yet created when this is called, AND we can't alter the
        call order in SDL_CreateWindow(). */
 #if 0
-    NativeDisplayType display = (NativeDisplayType)_this->driverdata->gbm_dev;
+    NativeDisplayType display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
     return SDL_EGL_LoadLibrary(_this, path, display, EGL_PLATFORM_GBM_MESA);
 #endif
     return 0;
 }
 
-void KMSDRM_GLES_UnloadLibrary(SDL_VideoDevice *_this)
+void KMSDRM_GLES_UnloadLibrary(_THIS)
 {
     /* As with KMSDRM_GLES_LoadLibrary(), we define our own "dummy" unloading function
        so we manually unload the library whenever we want. */
@@ -68,7 +69,7 @@ void KMSDRM_GLES_UnloadLibrary(SDL_VideoDevice *_this)
 
 SDL_EGL_CreateContext_impl(KMSDRM)
 
-    int KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
+    int KMSDRM_GLES_SetSwapInterval(_THIS, int interval)
 {
 
     if (!_this->egl_data) {
@@ -84,11 +85,11 @@ SDL_EGL_CreateContext_impl(KMSDRM)
     return 0;
 }
 
-int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *windata = window->driverdata;
-    SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
-    SDL_VideoData *viddata = _this->driverdata;
+    SDL_WindowData *windata = ((SDL_WindowData *)window->driverdata);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayForWindow(window)->driverdata;
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     KMSDRM_FBInfo *fb_info;
     int ret = 0;
 
@@ -185,7 +186,7 @@ int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
            we have waited here, there won't be a pending pageflip so the
            WaitPageflip at the beginning of this function will be a no-op.
            Just leave it here and don't worry.
-           Run your SDL program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
+           Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
            to enable this. */
         if (windata->double_buffer) {
             if (!KMSDRM_WaitPageflip(_this, windata)) {
@@ -201,3 +202,5 @@ int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 SDL_EGL_MakeCurrent_impl(KMSDRM)
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */
+
+    /* vi: set ts=4 sw=4 expandtab: */

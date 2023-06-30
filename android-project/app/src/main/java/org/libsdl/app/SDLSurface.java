@@ -114,7 +114,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         mHeight = height;
         int nDeviceWidth = width;
         int nDeviceHeight = height;
-        float density = 1.0f;
         try
         {
             if (Build.VERSION.SDK_INT >= 17 /* Android 4.2 (JELLY_BEAN_MR1) */) {
@@ -122,8 +121,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 mDisplay.getRealMetrics( realMetrics );
                 nDeviceWidth = realMetrics.widthPixels;
                 nDeviceHeight = realMetrics.heightPixels;
-                // Use densityDpi instead of density to more closely match what the UI scale is
-                density = (float)realMetrics.densityDpi / 160.0f;
             }
         } catch(Exception ignored) {
         }
@@ -135,7 +132,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         Log.v("SDL", "Window size: " + width + "x" + height);
         Log.v("SDL", "Device size: " + nDeviceWidth + "x" + nDeviceHeight);
-        SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, density, mDisplay.getRefreshRate());
+        SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, mDisplay.getRefreshRate());
         SDLActivity.onNativeResize();
 
         // Prevent a screen distortion glitch,
@@ -325,36 +322,36 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
             // Since we may have an orientation set, we won't receive onConfigurationChanged events.
             // We thus should check here.
-            int newRotation;
+            int newOrientation;
 
             float x, y;
             switch (mDisplay.getRotation()) {
-                case Surface.ROTATION_0:
-                default:
-                    x = event.values[0];
-                    y = event.values[1];
-                    newRotation = 0;
-                    break;
                 case Surface.ROTATION_90:
                     x = -event.values[1];
                     y = event.values[0];
-                    newRotation = 90;
-                    break;
-                case Surface.ROTATION_180:
-                    x = -event.values[0];
-                    y = -event.values[1];
-                    newRotation = 180;
+                    newOrientation = SDLActivity.SDL_ORIENTATION_LANDSCAPE;
                     break;
                 case Surface.ROTATION_270:
                     x = event.values[1];
                     y = -event.values[0];
-                    newRotation = 270;
+                    newOrientation = SDLActivity.SDL_ORIENTATION_LANDSCAPE_FLIPPED;
+                    break;
+                case Surface.ROTATION_180:
+                    x = -event.values[0];
+                    y = -event.values[1];
+                    newOrientation = SDLActivity.SDL_ORIENTATION_PORTRAIT_FLIPPED;
+                    break;
+                case Surface.ROTATION_0:
+                default:
+                    x = event.values[0];
+                    y = event.values[1];
+                    newOrientation = SDLActivity.SDL_ORIENTATION_PORTRAIT;
                     break;
             }
 
-            if (newRotation != SDLActivity.mCurrentRotation) {
-                SDLActivity.mCurrentRotation = newRotation;
-                SDLActivity.onNativeRotationChanged(newRotation);
+            if (newOrientation != SDLActivity.mCurrentOrientation) {
+                SDLActivity.mCurrentOrientation = newOrientation;
+                SDLActivity.onNativeOrientationChanged(newOrientation);
             }
 
             SDLActivity.onNativeAccel(-x / SensorManager.GRAVITY_EARTH,

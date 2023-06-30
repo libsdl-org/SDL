@@ -18,15 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #include <sys/stat.h>
 #include <unistd.h>
 
-#ifdef SDL_FILESYSTEM_PSP
+#if defined(SDL_FILESYSTEM_PSP)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
+
+#include "SDL_error.h"
+#include "SDL_filesystem.h"
 
 char *SDL_GetBasePath(void)
 {
@@ -63,17 +66,12 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     } else {
         SDL_snprintf(retval, len, "%s%s/", base, app);
     }
-    SDL_free(base);
+    free(base);
 
     mkdir(retval, 0755);
     return retval;
 }
 
-/* TODO */
-char *SDL_GetPath(SDL_Folder folder)
-{
-    SDL_Unsupported();
-    return NULL;
-}
-
 #endif /* SDL_FILESYSTEM_PSP */
+
+/* vi: set ts=4 sw=4 expandtab: */

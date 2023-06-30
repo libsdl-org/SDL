@@ -13,7 +13,7 @@ case "$machine" in
     *android* )
         EXEPREFIX="lib"
         EXESUFFIX=".so"
-        LDFLAGS="$EXTRA_LDFLAGS -shared"
+        LDFLAGS="$LDFLAGS -shared"
         ;;
     * )
         EXEPREFIX=""
@@ -25,9 +25,9 @@ set -e
 
 # Get the canonical path of the folder containing this script
 testdir=$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")
-SDL_CFLAGS="$( pkg-config sdl3 --cflags )"
-SDL_LDFLAGS="$( pkg-config sdl3 --libs )"
-SDL_STATIC_LDFLAGS="$( pkg-config sdl3 --libs --static )"
+SDL_CFLAGS="$( pkg-config sdl2 --cflags )"
+SDL_LDFLAGS="$( pkg-config sdl2 --libs )"
+SDL_STATIC_LDFLAGS="$( pkg-config sdl2 --libs --static )"
 
 compile_cmd="$CC -c "$testdir/main_gui.c" -o main_gui_pkgconfig.c.o $SDL_CFLAGS $CFLAGS"
 link_cmd="$CC main_gui_pkgconfig.c.o -o ${EXEPREFIX}main_gui_pkgconfig${EXESUFFIX} $SDL_LDFLAGS $LDFLAGS"

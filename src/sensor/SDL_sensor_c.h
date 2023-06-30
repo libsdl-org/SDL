@@ -18,32 +18,27 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
 #ifndef SDL_sensor_c_h_
 #define SDL_sensor_c_h_
 
-struct SDL_SensorDriver;
+#include "SDL_config.h"
+
+struct _SDL_SensorDriver;
 
 /* Useful functions and variables from SDL_sensor.c */
+#include "SDL_sensor.h"
 
 /* Function to get the next available sensor instance ID */
 extern SDL_SensorID SDL_GetNextSensorInstanceID(void);
 
 /* Initialization and shutdown functions */
-extern int SDL_InitSensors(void);
-extern void SDL_QuitSensors(void);
-
-extern void SDL_LockSensors(void);
-extern void SDL_UnlockSensors(void);
-
-/* Function to return whether there are any sensors opened by the application */
-extern SDL_bool SDL_SensorsOpened(void);
-
-/* Update an individual sensor, used by gamepad sensor fusion */
-extern void SDL_UpdateSensor(SDL_Sensor *sensor);
+extern int SDL_SensorInit(void);
+extern void SDL_SensorQuit(void);
 
 /* Internal event queueing functions */
-extern int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
+extern int SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data, int num_values);
 
 #endif /* SDL_sensor_c_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

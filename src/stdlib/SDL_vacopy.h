@@ -20,7 +20,7 @@
 */
 
 /* Do our best to make sure va_copy is working */
-#ifdef __NGAGE__
+#if defined(__NGAGE__)
 #undef va_copy
 #define va_copy(dst, src) dst = src
 
@@ -32,3 +32,5 @@
 #elif defined(__GNUC__) && (__GNUC__ < 3)
 #define va_copy(dst, src) __va_copy(dst, src)
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

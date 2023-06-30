@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../include/SDL_scancode.h"
 
 /* Linux virtual key code to SDL_Keycode mapping table
    Sources:
@@ -846,3 +846,5 @@ done
 
 
 /* *INDENT-ON* */ /* clang-format on */
+
+/* vi: set ts=4 sw=4 expandtab: */

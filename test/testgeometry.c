@@ -13,14 +13,14 @@
 /* Simple program:  draw a RGB triangle, with texture  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
-#include <SDL3/SDL_test_common.h>
-#include <SDL3/SDL_main.h>
+#include "SDL_test_common.h"
 #include "testutils.h"
 
 static SDLTest_CommonState *state;
@@ -30,7 +30,7 @@ static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 static float angle = 0.0f;
 static int sprite_w, sprite_h;
 
-static int done;
+int done;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -38,13 +38,10 @@ quit(int rc)
 {
     SDL_free(sprites);
     SDLTest_CommonQuit(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
+    exit(rc);
 }
 
-static int LoadSprite(const char *file)
+int LoadSprite(const char *file)
 {
     int i;
 
@@ -65,7 +62,7 @@ static int LoadSprite(const char *file)
     return 0;
 }
 
-static void loop(void)
+void loop()
 {
     int i;
     SDL_Event event;
@@ -73,20 +70,20 @@ static void loop(void)
     /* Check for events */
     while (SDL_PollEvent(&event)) {
 
-        if (event.type == SDL_EVENT_MOUSE_MOTION) {
+        if (event.type == SDL_MOUSEMOTION) {
             if (event.motion.state) {
-                float xrel, yrel;
+                int xrel, yrel;
                 int window_w, window_h;
                 SDL_Window *window = SDL_GetWindowFromID(event.motion.windowID);
                 SDL_GetWindowSize(window, &window_w, &window_h);
                 xrel = event.motion.xrel;
                 yrel = event.motion.yrel;
-                if (event.motion.y < (float)window_h / 2.0f) {
+                if (event.motion.y < window_h / 2) {
                     angle += xrel;
                 } else {
                     angle -= xrel;
                 }
-                if (event.motion.x < (float)window_w / 2.0f) {
+                if (event.motion.x < window_w / 2) {
                     angle -= yrel;
                 } else {
                     angle += yrel;
@@ -113,7 +110,7 @@ static void loop(void)
             int cx, cy;
 
             /* Query the sizes */
-            SDL_GetRenderViewport(renderer, &viewport);
+            SDL_RenderGetViewport(renderer, &viewport);
             SDL_zeroa(verts);
             cx = viewport.x + viewport.w / 2;
             cy = viewport.y + viewport.h / 2;
@@ -168,18 +165,16 @@ int main(int argc, char *argv[])
 {
     int i;
     const char *icon = "icon.bmp";
-    Uint64 then, now;
-    Uint32 frames;
+    Uint32 then, now, frames;
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (state == NULL) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     for (i = 1; i < argc;) {
         int consumed;
 
@@ -200,9 +195,6 @@ int main(int argc, char *argv[])
                     } else if (SDL_strcasecmp(argv[i + 1], "mod") == 0) {
                         blendMode = SDL_BLENDMODE_MOD;
                         consumed = 2;
-                    } else if (SDL_strcasecmp(argv[i + 1], "mul") == 0) {
-                        blendMode = SDL_BLENDMODE_MUL;
-                        consumed = 2;
                     }
                 }
             } else if (SDL_strcasecmp(argv[i], "--use-texture") == 0) {
@@ -211,7 +203,7 @@ int main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--blend none|blend|add|mod|mul]", "[--use-texture]", NULL };
+            static const char *options[] = { "[--blend none|blend|add|mod]", "[--use-texture]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             return 1;
         }
@@ -269,3 +261,5 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

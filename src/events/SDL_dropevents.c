@@ -18,32 +18,34 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 /* Drag and drop event handling code for SDL */
 
+#include "SDL_events.h"
 #include "SDL_events_c.h"
 #include "SDL_dropevents_c.h"
 
 #include "../video/SDL_sysvideo.h" /* for SDL_Window internals. */
 
-static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *data, float x, float y)
+static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *data)
 {
     static SDL_bool app_is_dropping = SDL_FALSE;
-    static float last_drop_x = 0;
-    static float last_drop_y = 0;
     int posted = 0;
 
     /* Post the event, if desired */
-    if (SDL_EventEnabled(evtype)) {
+    if (SDL_GetEventState(evtype) == SDL_ENABLE) {
         const SDL_bool need_begin = window ? !window->is_dropping : !app_is_dropping;
         SDL_Event event;
 
         if (need_begin) {
             SDL_zero(event);
-            event.type = SDL_EVENT_DROP_BEGIN;
-            event.common.timestamp = 0;
-            event.drop.windowID = window ? window->id : 0;
+            event.type = SDL_DROPBEGIN;
+
+            if (window) {
+                event.drop.windowID = window->id;
+            }
+
             posted = (SDL_PushEvent(&event) > 0);
             if (!posted) {
                 return 0;
@@ -57,27 +59,16 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
 
         SDL_zero(event);
         event.type = evtype;
-        event.common.timestamp = 0;
         event.drop.file = data ? SDL_strdup(data) : NULL;
         event.drop.windowID = window ? window->id : 0;
-
-        if (evtype == SDL_EVENT_DROP_POSITION) {
-            last_drop_x = x;
-            last_drop_y = y;
-        }
-        event.drop.x = last_drop_x;
-        event.drop.y = last_drop_y;
         posted = (SDL_PushEvent(&event) > 0);
 
-        if (posted && (evtype == SDL_EVENT_DROP_COMPLETE)) {
+        if (posted && (evtype == SDL_DROPCOMPLETE)) {
             if (window) {
                 window->is_dropping = SDL_FALSE;
             } else {
                 app_is_dropping = SDL_FALSE;
             }
-
-            last_drop_x = 0;
-            last_drop_y = 0;
         }
     }
     return posted;
@@ -85,21 +76,17 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
 
 int SDL_SendDropFile(SDL_Window *window, const char *file)
 {
-    return SDL_SendDrop(window, SDL_EVENT_DROP_FILE, file, 0, 0);
-}
-
-int SDL_SendDropPosition(SDL_Window *window, const char *file, float x, float y)
-{
-    /* Don't send 'file' since this is an malloc per position, which may be forgotten to be freed */
-    return SDL_SendDrop(window, SDL_EVENT_DROP_POSITION, NULL, x, y);
+    return SDL_SendDrop(window, SDL_DROPFILE, file);
 }
 
 int SDL_SendDropText(SDL_Window *window, const char *text)
 {
-    return SDL_SendDrop(window, SDL_EVENT_DROP_TEXT, text, 0, 0);
+    return SDL_SendDrop(window, SDL_DROPTEXT, text);
 }
 
 int SDL_SendDropComplete(SDL_Window *window)
 {
-    return SDL_SendDrop(window, SDL_EVENT_DROP_COMPLETE, NULL, 0, 0);
+    return SDL_SendDrop(window, SDL_DROPCOMPLETE, NULL);
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

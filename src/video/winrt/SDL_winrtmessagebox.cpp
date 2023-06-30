@@ -18,11 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_WINRT
+#if SDL_VIDEO_DRIVER_WINRT
 
 extern "C" {
+#include "SDL_messagebox.h"
 #include "../../core/windows/SDL_windows.h"
 }
 
@@ -42,7 +43,7 @@ static String ^ WINRT_UTF8ToPlatformString(const char *str) {
 
     extern "C" int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
-#if SDL_WINAPI_FAMILY_PHONE && NTDDI_VERSION == NTDDI_WIN8
+#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) && (NTDDI_VERSION == NTDDI_WIN8)
     /* Sadly, Windows Phone 8 doesn't include the MessageDialog class that
      * Windows 8.x/RT does, even though MSDN's reference documentation for
      * Windows Phone 8 mentions it.
@@ -54,7 +55,7 @@ static String ^ WINRT_UTF8ToPlatformString(const char *str) {
 #else
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-#if SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     const int maxbuttons = 2;
     const char *platform = "Windows Phone 8.1+";
 #else
@@ -105,7 +106,9 @@ static String ^ WINRT_UTF8ToPlatformString(const char *str) {
         *buttonid = messageboxdata->buttons[clicked_index].buttonid;
     }
     return 0;
-#endif /* if SDL_WINAPI_FAMILY_PHONE / else */
+#endif /* if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP / else */
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINRT */
+
+/* vi: set ts=4 sw=4 expandtab: */

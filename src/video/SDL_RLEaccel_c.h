@@ -22,7 +22,7 @@
 #ifndef SDL_RLEaccel_c_h_
 #define SDL_RLEaccel_c_h_
 
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 /* Useful functions and variables from SDL_RLEaccel.c */
 
@@ -30,3 +30,5 @@ extern int SDL_RLESurface(SDL_Surface *surface);
 extern void SDL_UnRLESurface(SDL_Surface *surface, int recode);
 
 #endif /* SDL_RLEaccel_c_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

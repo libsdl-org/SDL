@@ -18,13 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
 #if SDL_POWER_WINRT
 
-extern "C" SDL_bool
-SDL_GetPowerInfo_WinRT(SDL_PowerState *state, int *seconds, int *percent)
+#include "SDL_power.h"
+
+extern "C"
+SDL_bool SDL_GetPowerInfo_WinRT(SDL_PowerState * state, int *seconds, int *percent)
 {
     /* TODO, WinRT: Battery info is available on at least one WinRT platform (Windows Phone 8).  Implement SDL_GetPowerInfo_WinRT as appropriate. */
     /* Notes:
@@ -37,3 +39,5 @@ SDL_GetPowerInfo_WinRT(SDL_PowerState *state, int *seconds, int *percent)
 
 #endif /* SDL_POWER_WINRT */
 #endif /* SDL_POWER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

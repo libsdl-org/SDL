@@ -18,7 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
+#include "SDL_system.h"
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -29,6 +30,10 @@ extern "C" {
 
 #include <EGL/eglplatform.h>
 #include <android/native_window_jni.h>
+
+#include "SDL_audio.h"
+#include "SDL_rect.h"
+#include "SDL_video.h"
 
 /* Interface from the SDL library into the Android Java activity */
 extern void Android_JNI_SetActivityTitle(const char *title);
@@ -43,8 +48,8 @@ extern void Android_JNI_HideTextInput(void);
 extern SDL_bool Android_JNI_IsScreenKeyboardShown(void);
 extern ANativeWindow *Android_JNI_GetNativeWindow(void);
 
-extern SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void);
-extern SDL_DisplayOrientation Android_JNI_GetDisplayCurrentOrientation(void);
+extern SDL_DisplayOrientation Android_JNI_GetDisplayOrientation(void);
+extern int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi);
 
 /* Audio support */
 extern void Android_DetectDevices(void);
@@ -60,12 +65,14 @@ extern void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id);
 extern SDL_bool Android_IsDeXMode(void);
 extern SDL_bool Android_IsChromebook(void);
 
-int Android_JNI_FileOpen(SDL_RWops *ctx, const char *fileName, const char *mode);
-Sint64 Android_JNI_FileSize(SDL_RWops *ctx);
-Sint64 Android_JNI_FileSeek(SDL_RWops *ctx, Sint64 offset, int whence);
-Sint64 Android_JNI_FileRead(SDL_RWops *ctx, void *buffer, Sint64 size);
-Sint64 Android_JNI_FileWrite(SDL_RWops *ctx, const void *buffer, Sint64 size);
-int Android_JNI_FileClose(SDL_RWops *ctx);
+#include "SDL_rwops.h"
+
+int Android_JNI_FileOpen(SDL_RWops* ctx, const char* fileName, const char* mode);
+Sint64 Android_JNI_FileSize(SDL_RWops* ctx);
+Sint64 Android_JNI_FileSeek(SDL_RWops* ctx, Sint64 offset, int whence);
+size_t Android_JNI_FileRead(SDL_RWops* ctx, void* buffer, size_t size, size_t maxnum);
+size_t Android_JNI_FileWrite(SDL_RWops* ctx, const void* buffer, size_t size, size_t num);
+int Android_JNI_FileClose(SDL_RWops* ctx);
 
 /* Environment support */
 void Android_JNI_GetManifestEnvironmentVariables(void);
@@ -87,7 +94,7 @@ void Android_JNI_HapticRun(int device_id, float intensity, int length);
 void Android_JNI_HapticStop(int device_id);
 
 /* Video */
-int Android_JNI_SuspendScreenSaver(SDL_bool suspend);
+void Android_JNI_SuspendScreenSaver(SDL_bool suspend);
 
 /* Touch support */
 void Android_JNI_InitTouch(void);
@@ -107,6 +114,7 @@ int Android_JNI_SendMessage(int command, int param);
 JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv *mEnv, jclass cls);
 
 /* MessageBox */
+#include "SDL_messagebox.h"
 int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
 /* Cursor support */
@@ -144,3 +152,5 @@ void Android_ActivityMutex_Lock_Running(void);
 }
 /* *INDENT-ON* */
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

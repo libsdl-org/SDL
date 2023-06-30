@@ -8,7 +8,7 @@ These are test programs for the SDL library:
 	testaudioinfo	Lists audio device capabilities
 	testerror	Tests multi-threaded error handling
 	testfile	Tests RWops layer
-	testgl		A very simple example of using OpenGL with SDL
+	testgl2		A very simple example of using OpenGL with SDL
 	testiconv	Tests international string conversion
 	testjoystick	List joysticks and watch joystick events
 	testkeys	List the available keyboard keys
@@ -17,17 +17,17 @@ These are test programs for the SDL library:
 	testlock	Hacked up test of multi-threading and locking
 	testmouse	Tests mouse coordinates
 	testmultiaudio	Tests using several audio devices
-	testoverlay	Tests the overlay flickering/scaling during playback.
+	testoverlay2	Tests the overlay flickering/scaling during playback.
 	testplatform	Tests types, endianness and cpu capabilities
 	testsem		Tests SDL's semaphore implementation
 	testshape	Tests shaped windows
-	testsprite	Example of fast sprite movement on the screen
+	testsprite2	Example of fast sprite movement on the screen
 	testthread	Hacked up test of multi-threading
 	testtimer	Test the timer facilities
 	testver		Check the version and dynamic loading and endianness
-	testwm		Test window manager -- title, icon, events
+	testwm2		Test window manager -- title, icon, events
 	torturethread	Simple test for thread creation/destruction
-	gamepadmap   Useful to generate Game Controller API compatible maps
+	controllermap   Useful to generate Game Controller API compatible maps
 
 
 

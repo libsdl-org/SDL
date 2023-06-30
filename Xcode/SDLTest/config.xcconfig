@@ -9,6 +9,6 @@
 // Include any optional config for this build
 #include? "build.xcconfig"
 
-CONFIG_FRAMEWORK_LDFLAGS[sdk=macos*] = $(inherited) -framework SDL3 -framework AudioToolbox -framework Carbon -framework Cocoa -framework CoreAudio -framework CoreHaptics -framework CoreVideo -framework ForceFeedback -framework GameController -framework IOKit -framework Metal
-CONFIG_FRAMEWORK_LDFLAGS[sdk=iphone*] = $(inherited) -framework SDL3 -framework AVFoundation -framework AudioToolbox -framework CoreGraphics -framework CoreHaptics -framework CoreMotion -framework Foundation -framework GameController -framework Metal -framework OpenGLES -framework QuartzCore -framework UIKit
-CONFIG_FRAMEWORK_LDFLAGS[sdk=appletv*] = $(inherited) -framework SDL3 -framework AVFoundation -framework AudioToolbox -framework CoreGraphics -framework CoreHaptics -framework Foundation -framework GameController -framework Metal -framework OpenGLES -framework QuartzCore -framework UIKit
+CONFIG_FRAMEWORK_LDFLAGS[sdk=macos*] = $(inherited) -framework SDL2 -framework AudioToolbox -framework Carbon -framework Cocoa -framework CoreAudio -framework CoreHaptics -framework CoreVideo -framework ForceFeedback -framework GameController -framework IOKit -framework Metal
+CONFIG_FRAMEWORK_LDFLAGS[sdk=iphone*] = $(inherited) -framework SDL2 -framework AVFoundation -framework AudioToolbox -framework CoreGraphics -framework CoreHaptics -framework CoreMotion -framework Foundation -framework GameController -framework Metal -framework OpenGLES -framework QuartzCore -framework UIKit
+CONFIG_FRAMEWORK_LDFLAGS[sdk=appletv*] = $(inherited) -framework SDL2 -framework AVFoundation -framework AudioToolbox -framework CoreGraphics -framework CoreHaptics -framework Foundation -framework GameController -framework Metal -framework OpenGLES -framework QuartzCore -framework UIKit

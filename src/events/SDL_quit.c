@@ -18,7 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
+
+#include "SDL_hints.h"
 
 /* General quit handling code for SDL */
 
@@ -26,6 +28,7 @@
 #include <signal.h>
 #endif
 
+#include "SDL_events.h"
 #include "SDL_events_c.h"
 
 #if defined(HAVE_SIGNAL_H) || defined(HAVE_SIGACTION)
@@ -82,7 +85,7 @@ static void SDL_EventSignal_Init(const int sig)
         action.sa_handler = SDL_HandleSIG;
         sigaction(sig, &action, NULL);
     }
-#elif defined(HAVE_SIGNAL_H)
+#elif HAVE_SIGNAL_H
     void (*ohandler)(int) = signal(sig, SDL_HandleSIG);
     if (ohandler != SIG_DFL) {
         signal(sig, ohandler);
@@ -99,7 +102,7 @@ static void SDL_EventSignal_Quit(const int sig)
         action.sa_handler = SIG_DFL;
         sigaction(sig, &action, NULL);
     }
-#elif defined(HAVE_SIGNAL_H)
+#elif HAVE_SIGNAL_H
     void (*ohandler)(int) = signal(sig, SIG_DFL);
     if (ohandler != SDL_HandleSIG) {
         signal(sig, ohandler);
@@ -142,7 +145,7 @@ static void SDL_QuitQuit_Internal(void)
 }
 #endif
 
-int SDL_InitQuit(void)
+int SDL_QuitInit(void)
 {
 #ifdef HAVE_SIGNAL_SUPPORT
     if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
@@ -191,5 +194,7 @@ int SDL_SendQuit(void)
 #ifdef HAVE_SIGNAL_SUPPORT
     send_quit_pending = SDL_FALSE;
 #endif
-    return SDL_SendAppEvent(SDL_EVENT_QUIT);
+    return SDL_SendAppEvent(SDL_QUIT);
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

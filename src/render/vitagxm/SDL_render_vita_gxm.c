@@ -18,11 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_RENDER_VITA_GXM
+#if SDL_VIDEO_RENDER_VITA_GXM
 
+#include "SDL_hints.h"
 #include "../SDL_sysrender.h"
+#include "SDL_log.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -38,7 +40,7 @@
 
 /* #define DEBUG_RAZOR */
 
-#ifdef DEBUG_RAZOR
+#if DEBUG_RAZOR
 #include <psp2/sysmodule.h>
 #endif
 
@@ -102,7 +104,7 @@ SDL_RenderDriver VITA_GXM_RenderDriver = {
     .CreateRenderer = VITA_GXM_CreateRenderer,
     .info = {
         .name = "VITA gxm",
-        .flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+        .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
         .num_texture_formats = 8,
         .texture_formats = {
             [0] = SDL_PIXELFORMAT_ABGR8888,
@@ -252,7 +254,7 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->SetVSync = VITA_GXM_SetVSync;
 
     renderer->info = VITA_GXM_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
+    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
     renderer->window = window;
 
@@ -264,7 +266,7 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
         data->displayData.wait_vblank = SDL_FALSE;
     }
 
-#ifdef DEBUG_RAZOR
+#if DEBUG_RAZOR
     sceSysmoduleLoadModule(SCE_SYSMODULE_RAZOR_HUD);
     sceSysmoduleLoadModule(SCE_SYSMODULE_RAZOR_CAPTURE);
 #endif
@@ -606,7 +608,7 @@ static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *te
      or SCE_GXM_TEXTURE_FILTER_LINEAR (good for scaling)
      */
 
-    int vitaScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST
+    int vitaScaleMode = (scaleMode == SDL_ScaleModeNearest
                              ? SCE_GXM_TEXTURE_FILTER_POINT
                              : SCE_GXM_TEXTURE_FILTER_LINEAR);
     gxm_texture_set_filters(vita_texture->tex, vitaScaleMode, vitaScaleMode);
@@ -936,7 +938,7 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
     data->drawstate.target = renderer->target;
     if (!data->drawstate.target) {
         int w, h;
-        SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
+        SDL_GL_GetDrawableSize(renderer->window, &w, &h);
         if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
             data->drawstate.viewport_dirty = SDL_TRUE; // if the window dimensions changed, invalidate the current viewport, etc.
             data->drawstate.cliprect_dirty = SDL_TRUE;
@@ -1105,7 +1107,7 @@ static int VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rec
         return SDL_OutOfMemory();
     }
 
-    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
+    SDL_GetRendererOutputSize(renderer, &w, &h);
 
     read_pixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
                 rect->w, rect->h, temp_pixels);
@@ -1159,7 +1161,7 @@ static int VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 
     sceCommonDialogUpdate(&updateParam);
 
-#ifdef DEBUG_RAZOR
+#if DEBUG_RAZOR
     sceGxmPadHeartbeat(
         (const SceGxmColorSurface *)&data->displaySurface[data->backBufferIndex],
         (SceGxmSyncObject *)data->displayBufferSync[data->backBufferIndex]);
@@ -1223,3 +1225,5 @@ static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
 }
 
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */
+
+/* vi: set ts=4 sw=4 expandtab: */

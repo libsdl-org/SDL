@@ -474,3 +474,5 @@ SDL_PROC(void, glVertexPointer,
          (GLint size, GLenum type, GLsizei stride,
           const GLvoid *pointer))
 SDL_PROC(void, glViewport, (GLint x, GLint y, GLsizei width, GLsizei height))
+
+/* vi: set ts=4 sw=4 expandtab: */

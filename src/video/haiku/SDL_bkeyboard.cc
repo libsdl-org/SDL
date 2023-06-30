@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_HAIKU
+#if SDL_VIDEO_DRIVER_HAIKU
 
 #include <SupportDefs.h>
 #include <support/UTF8.h>
@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+#include "SDL_events.h"
+#include "SDL_keycode.h"
 
 #include "SDL_bkeyboard.h"
 
@@ -184,3 +186,5 @@ void HAIKU_SetKeyState(int32 bkey, int8 state) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
+
+/* vi: set ts=4 sw=4 expandtab: */

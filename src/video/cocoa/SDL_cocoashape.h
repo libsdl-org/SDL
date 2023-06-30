@@ -19,20 +19,26 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_cocoashape_h_
 #define SDL_cocoashape_h_
 
+#include "SDL_stdinc.h"
+#include "SDL_video.h"
+#include "SDL_shape.h"
 #include "../SDL_shape_internals.h"
 
 @interface SDL_ShapeData : NSObject
-@property(nonatomic) NSGraphicsContext *context;
-@property(nonatomic) SDL_bool saved;
-@property(nonatomic) SDL_ShapeTree *shape;
+    @property (nonatomic) NSGraphicsContext* context;
+    @property (nonatomic) SDL_bool saved;
+    @property (nonatomic) SDL_ShapeTree* shape;
 @end
 
-extern SDL_WindowShaper *Cocoa_CreateShaper(SDL_Window *window);
-extern int Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode);
+extern SDL_WindowShaper* Cocoa_CreateShaper(SDL_Window* window);
+extern int Cocoa_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode);
+extern int Cocoa_ResizeWindowShape(SDL_Window *window);
 
 #endif /* SDL_cocoashape_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

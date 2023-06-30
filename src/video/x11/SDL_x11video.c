@@ -18,15 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_X11
+#if SDL_VIDEO_DRIVER_X11
 
 #include <unistd.h> /* For getpid() and readlink() */
 
+#include "SDL_video.h"
+#include "SDL_mouse.h"
+#include "SDL_timer.h"
+#include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
-#include "../../core/linux/SDL_system_theme.h"
 
 #include "SDL_x11video.h"
 #include "SDL_x11framebuffer.h"
@@ -35,15 +38,56 @@
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
 
-#ifdef SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
 #endif
 
 #include "SDL_x11vulkan.h"
 
 /* Initialization/Query functions */
-static int X11_VideoInit(SDL_VideoDevice *_this);
-static void X11_VideoQuit(SDL_VideoDevice *_this);
+static int X11_VideoInit(_THIS);
+static void X11_VideoQuit(_THIS);
+
+/* Find out what class name we should use */
+static char *get_classname()
+{
+    char *spot;
+#if defined(__LINUX__) || defined(__FREEBSD__)
+    char procfile[1024];
+    char linkfile[1024];
+    int linksize;
+#endif
+
+    /* First allow environment variable override */
+    spot = SDL_getenv("SDL_VIDEO_X11_WMCLASS");
+    if (spot) {
+        return SDL_strdup(spot);
+    }
+
+    /* Next look at the application's executable name */
+#if defined(__LINUX__) || defined(__FREEBSD__)
+#if defined(__LINUX__)
+    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
+#elif defined(__FREEBSD__)
+    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file", getpid());
+#else
+#error Where can we find the executable name?
+#endif
+    linksize = readlink(procfile, linkfile, sizeof(linkfile) - 1);
+    if (linksize > 0) {
+        linkfile[linksize] = '\0';
+        spot = SDL_strrchr(linkfile, '/');
+        if (spot) {
+            return SDL_strdup(spot + 1);
+        } else {
+            return SDL_strdup(linkfile);
+        }
+    }
+#endif /* __LINUX__ || __FREEBSD__ */
+
+    /* Finally use the default we've used forever */
+    return SDL_strdup("SDL_App");
+}
 
 /* X11 driver bootstrap functions */
 
@@ -51,7 +95,7 @@ static int (*orig_x11_errhandler)(Display *, XErrorEvent *) = NULL;
 
 static void X11_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *data = device->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)device->driverdata;
     if (device->vulkan_config.loader_handle) {
         device->Vulkan_UnloadLibrary(device);
     }
@@ -85,7 +129,8 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
             int i;
             for (i = 0; i < device->num_displays; i++) {
                 SDL_VideoDisplay *display = &device->displays[i];
-                if (SDL_GetCurrentDisplayMode(display->id) != SDL_GetDesktopDisplayMode(display->id)) {
+                if (SDL_memcmp(&display->current_mode, &display->desktop_mode,
+                               sizeof(SDL_DisplayMode)) != 0) {
                     X11_SetDisplayMode(device, display, &display->desktop_mode);
                 }
             }
@@ -138,7 +183,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
     data->global_mouse_changed = SDL_TRUE;
 
-#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+#if SDL_VIDEO_DRIVER_X11_XFIXES
     data->active_cursor_confined_window = NULL;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
@@ -174,6 +219,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->GetDisplayModes = X11_GetDisplayModes;
     device->GetDisplayBounds = X11_GetDisplayBounds;
     device->GetDisplayUsableBounds = X11_GetDisplayUsableBounds;
+    device->GetDisplayDPI = X11_GetDisplayDPI;
     device->GetWindowICCProfile = X11_GetWindowICCProfile;
     device->SetDisplayMode = X11_SetDisplayMode;
     device->SuspendScreenSaver = X11_SuspendScreenSaver;
@@ -203,6 +249,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->SetWindowResizable = X11_SetWindowResizable;
     device->SetWindowAlwaysOnTop = X11_SetWindowAlwaysOnTop;
     device->SetWindowFullscreen = X11_SetWindowFullscreen;
+    device->SetWindowGammaRamp = X11_SetWindowGammaRamp;
     device->SetWindowMouseGrab = X11_SetWindowMouseGrab;
     device->SetWindowKeyboardGrab = X11_SetWindowKeyboardGrab;
     device->DestroyWindow = X11_DestroyWindow;
@@ -214,14 +261,15 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
     device->FlashWindow = X11_FlashWindow;
 
-#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+#if SDL_VIDEO_DRIVER_X11_XFIXES
     device->SetWindowMouseRect = X11_SetWindowMouseRect;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
     device->shape_driver.CreateShaper = X11_CreateShaper;
     device->shape_driver.SetWindowShape = X11_SetWindowShape;
+    device->shape_driver.ResizeWindowShape = X11_ResizeWindowShape;
 
-#ifdef SDL_VIDEO_OPENGL_GLX
+#if SDL_VIDEO_OPENGL_GLX
     device->GL_LoadLibrary = X11_GL_LoadLibrary;
     device->GL_GetProcAddress = X11_GL_GetProcAddress;
     device->GL_UnloadLibrary = X11_GL_UnloadLibrary;
@@ -231,11 +279,10 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->GL_GetSwapInterval = X11_GL_GetSwapInterval;
     device->GL_SwapWindow = X11_GL_SwapWindow;
     device->GL_DeleteContext = X11_GL_DeleteContext;
-    device->GL_GetEGLSurface = NULL;
 #endif
-#ifdef SDL_VIDEO_OPENGL_EGL
-#ifdef SDL_VIDEO_OPENGL_GLX
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
+#if SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_OPENGL_GLX
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) {
 #endif
         device->GL_LoadLibrary = X11_GLES_LoadLibrary;
         device->GL_GetProcAddress = X11_GLES_GetProcAddress;
@@ -246,19 +293,14 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         device->GL_GetSwapInterval = X11_GLES_GetSwapInterval;
         device->GL_SwapWindow = X11_GLES_SwapWindow;
         device->GL_DeleteContext = X11_GLES_DeleteContext;
-        device->GL_GetEGLSurface = X11_GLES_GetEGLSurface;
-#ifdef SDL_VIDEO_OPENGL_GLX
+#if SDL_VIDEO_OPENGL_GLX
     }
 #endif
 #endif
 
-    device->SetClipboardData = X11_SetClipboardData;
-    device->GetClipboardData = X11_GetClipboardData;
-    device->HasClipboardData = X11_HasClipboardData;
     device->SetClipboardText = X11_SetClipboardText;
     device->GetClipboardText = X11_GetClipboardText;
     device->HasClipboardText = X11_HasClipboardText;
-    device->GetClipboardUserdata = X11_GetClipboardUserdata;
     device->SetPrimarySelectionText = X11_SetPrimarySelectionText;
     device->GetPrimarySelectionText = X11_GetPrimarySelectionText;
     device->HasPrimarySelectionText = X11_HasPrimarySelectionText;
@@ -272,19 +314,12 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
     device->free = X11_DeleteDevice;
 
-#ifdef SDL_VIDEO_VULKAN
+#if SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = X11_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = X11_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = X11_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = X11_Vulkan_CreateSurface;
 #endif
-
-#ifdef SDL_USE_LIBDBUS
-    if (SDL_SystemTheme_Init())
-        device->system_theme = SDL_SystemTheme_Get();
-#endif
-
-    device->quirk_flags = VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT;
 
     return device;
 }
@@ -304,9 +339,9 @@ static int X11_CheckWindowManagerErrorHandler(Display *d, XErrorEvent *e)
     }
 }
 
-static void X11_CheckWindowManager(SDL_VideoDevice *_this)
+static void X11_CheckWindowManager(_THIS)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     Display *display = data->display;
     Atom _NET_SUPPORTING_WM_CHECK;
     int status, real_format;
@@ -364,9 +399,12 @@ static void X11_CheckWindowManager(SDL_VideoDevice *_this)
 #endif
 }
 
-int X11_VideoInit(SDL_VideoDevice *_this)
+int X11_VideoInit(_THIS)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+
+    /* Get the window class name, usually the name of the application */
+    data->classname = get_classname();
 
     /* Get the process PID to be associated to the window */
     data->pid = getpid();
@@ -426,7 +464,7 @@ int X11_VideoInit(SDL_VideoDevice *_this)
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
 #ifndef X_HAVE_UTF8_STRING
-#warning X server does not support UTF8_STRING, a feature introduced in 2000! This is likely to become a hard error in a future libSDL3.
+#warning X server does not support UTF8_STRING, a feature introduced in 2000! This is likely to become a hard error in a future libSDL2.
 #endif
 
     if (X11_InitKeyboard(_this) != 0) {
@@ -439,14 +477,15 @@ int X11_VideoInit(SDL_VideoDevice *_this)
     return 0;
 }
 
-void X11_VideoQuit(SDL_VideoDevice *_this)
+void X11_VideoQuit(_THIS)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     if (data->clipboard_window) {
         X11_XDestroyWindow(data->display, data->clipboard_window);
     }
 
+    SDL_free(data->classname);
 #ifdef X_HAVE_UTF8_STRING
     if (data->im) {
         X11_XCloseIM(data->im);
@@ -457,7 +496,6 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     X11_QuitKeyboard(_this);
     X11_QuitMouse(_this);
     X11_QuitTouch(_this);
-    X11_QuitClipboard(_this);
 }
 
 SDL_bool X11_UseDirectColorVisuals(void)
@@ -466,3 +504,5 @@ SDL_bool X11_UseDirectColorVisuals(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
+
+/* vim: set ts=4 sw=4 expandtab: */

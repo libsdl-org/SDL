@@ -20,17 +20,17 @@
 */
 #include "SDL_internal.h"
 
+
+#include "SDL_guid.h"
+
 /* convert the guid to a printable string */
-int SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID)
+void SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID)
 {
     static const char k_rgchHexToASCII[] = "0123456789abcdef";
     int i;
 
-    if (pszGUID == NULL) {
-        return SDL_InvalidParamError("pszGUID");
-    }
-    if (cbGUID <= 0) {
-        return SDL_InvalidParamError("cbGUID");
+    if ((pszGUID == NULL) || (cbGUID <= 0)) {
+        return;
     }
 
     for (i = 0; i < sizeof(guid.data) && i < (cbGUID - 1) / 2; i++) {
@@ -42,7 +42,6 @@ int SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID)
         *pszGUID++ = k_rgchHexToASCII[c & 0x0F];
     }
     *pszGUID = '\0';
-    return 0;
 }
 
 /*-----------------------------------------------------------------------------

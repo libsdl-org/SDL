@@ -18,21 +18,23 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 /* System independent thread management routines for SDL */
 
+#include "SDL_thread.h"
 #include "SDL_thread_c.h"
 #include "SDL_systhread.h"
+#include "SDL_hints.h"
 #include "../SDL_error_c.h"
 
-SDL_TLSID SDL_CreateTLS(void)
+SDL_TLSID SDL_TLSCreate()
 {
-    static SDL_AtomicInt SDL_tls_id;
+    static SDL_atomic_t SDL_tls_id;
     return SDL_AtomicIncRef(&SDL_tls_id) + 1;
 }
 
-void *SDL_GetTLS(SDL_TLSID id)
+void *SDL_TLSGet(SDL_TLSID id)
 {
     SDL_TLSData *storage;
 
@@ -43,7 +45,7 @@ void *SDL_GetTLS(SDL_TLSID id)
     return storage->array[id - 1].data;
 }
 
-int SDL_SetTLS(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *))
+int SDL_TLSSet(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *))
 {
     SDL_TLSData *storage;
 
@@ -76,7 +78,7 @@ int SDL_SetTLS(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
     return 0;
 }
 
-void SDL_CleanupTLS(void)
+void SDL_TLSCleanup()
 {
     SDL_TLSData *storage;
 
@@ -108,7 +110,7 @@ typedef struct SDL_TLSEntry
     struct SDL_TLSEntry *next;
 } SDL_TLSEntry;
 
-static SDL_Mutex *SDL_generic_TLS_mutex;
+static SDL_mutex *SDL_generic_TLS_mutex;
 static SDL_TLSEntry *SDL_generic_TLS;
 
 SDL_TLSData *SDL_Generic_GetTLSData(void)
@@ -117,12 +119,12 @@ SDL_TLSData *SDL_Generic_GetTLSData(void)
     SDL_TLSEntry *entry;
     SDL_TLSData *storage = NULL;
 
-#ifndef SDL_THREADS_DISABLED
+#if !SDL_THREADS_DISABLED
     if (SDL_generic_TLS_mutex == NULL) {
         static SDL_SpinLock tls_lock;
         SDL_AtomicLock(&tls_lock);
         if (SDL_generic_TLS_mutex == NULL) {
-            SDL_Mutex *mutex = SDL_CreateMutex();
+            SDL_mutex *mutex = SDL_CreateMutex();
             SDL_MemoryBarrierRelease();
             SDL_generic_TLS_mutex = mutex;
             if (SDL_generic_TLS_mutex == NULL) {
@@ -142,7 +144,7 @@ SDL_TLSData *SDL_Generic_GetTLSData(void)
             break;
         }
     }
-#ifndef SDL_THREADS_DISABLED
+#if !SDL_THREADS_DISABLED
     SDL_UnlockMutex(SDL_generic_TLS_mutex);
 #endif
 
@@ -191,7 +193,7 @@ int SDL_Generic_SetTLSData(SDL_TLSData *data)
 }
 
 /* Non-thread-safe global error variable */
-static SDL_error *SDL_GetStaticErrBuf(void)
+static SDL_error *SDL_GetStaticErrBuf()
 {
     static SDL_error SDL_global_error;
     static char SDL_global_error_str[128];
@@ -200,7 +202,7 @@ static SDL_error *SDL_GetStaticErrBuf(void)
     return &SDL_global_error;
 }
 
-#ifndef SDL_THREADS_DISABLED
+#if !SDL_THREADS_DISABLED
 static void SDLCALL SDL_FreeErrBuf(void *data)
 {
     SDL_error *errbuf = (SDL_error *)data;
@@ -215,7 +217,7 @@ static void SDLCALL SDL_FreeErrBuf(void *data)
 /* Routine to get the thread-specific error variable */
 SDL_error *SDL_GetErrBuf(void)
 {
-#ifdef SDL_THREADS_DISABLED
+#if SDL_THREADS_DISABLED
     return SDL_GetStaticErrBuf();
 #else
     static SDL_SpinLock tls_lock;
@@ -224,7 +226,7 @@ SDL_error *SDL_GetErrBuf(void)
     const SDL_error *ALLOCATION_IN_PROGRESS = (SDL_error *)-1;
     SDL_error *errbuf;
 
-    /* tls_being_created is there simply to prevent recursion if SDL_CreateTLS() fails.
+    /* tls_being_created is there simply to prevent recursion if SDL_TLSCreate() fails.
        It also means it's possible for another thread to also use SDL_global_errbuf,
        but that's very unlikely and hopefully won't cause issues.
      */
@@ -233,7 +235,7 @@ SDL_error *SDL_GetErrBuf(void)
         if (!tls_errbuf) {
             SDL_TLSID slot;
             tls_being_created = SDL_TRUE;
-            slot = SDL_CreateTLS();
+            slot = SDL_TLSCreate();
             tls_being_created = SDL_FALSE;
             SDL_MemoryBarrierRelease();
             tls_errbuf = slot;
@@ -245,7 +247,7 @@ SDL_error *SDL_GetErrBuf(void)
     }
 
     SDL_MemoryBarrierAcquire();
-    errbuf = (SDL_error *)SDL_GetTLS(tls_errbuf);
+    errbuf = (SDL_error *)SDL_TLSGet(tls_errbuf);
     if (errbuf == ALLOCATION_IN_PROGRESS) {
         return SDL_GetStaticErrBuf();
     }
@@ -258,16 +260,16 @@ SDL_error *SDL_GetErrBuf(void)
         SDL_GetOriginalMemoryFunctions(NULL, NULL, &realloc_func, &free_func);
 
         /* Mark that we're in the middle of allocating our buffer */
-        SDL_SetTLS(tls_errbuf, ALLOCATION_IN_PROGRESS, NULL);
+        SDL_TLSSet(tls_errbuf, ALLOCATION_IN_PROGRESS, NULL);
         errbuf = (SDL_error *)realloc_func(NULL, sizeof(*errbuf));
         if (errbuf == NULL) {
-            SDL_SetTLS(tls_errbuf, NULL, NULL);
+            SDL_TLSSet(tls_errbuf, NULL, NULL);
             return SDL_GetStaticErrBuf();
         }
         SDL_zerop(errbuf);
         errbuf->realloc_func = realloc_func;
         errbuf->free_func = free_func;
-        SDL_SetTLS(tls_errbuf, errbuf, SDL_FreeErrBuf);
+        SDL_TLSSet(tls_errbuf, errbuf, SDL_FreeErrBuf);
     }
     return errbuf;
 #endif /* SDL_THREADS_DISABLED */
@@ -290,7 +292,7 @@ void SDL_RunThread(SDL_Thread *thread)
     *statusloc = userfunc(userdata);
 
     /* Clean up thread-local storage */
-    SDL_CleanupTLS();
+    SDL_TLSCleanup();
 
     /* Mark us as ready to be joined (or detached) */
     if (!SDL_AtomicCAS(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {
@@ -470,41 +472,4 @@ void SDL_DetachThread(SDL_Thread *thread)
     }
 }
 
-int SDL_WaitSemaphore(SDL_Semaphore *sem)
-{
-    return SDL_WaitSemaphoreTimeoutNS(sem, SDL_MUTEX_MAXWAIT);
-}
-
-int SDL_TryWaitSemaphore(SDL_Semaphore *sem)
-{
-    return SDL_WaitSemaphoreTimeoutNS(sem, 0);
-}
-
-int SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sint32 timeoutMS)
-{
-    Sint64 timeoutNS;
-
-    if (timeoutMS >= 0) {
-        timeoutNS = SDL_MS_TO_NS(timeoutMS);
-    } else {
-        timeoutNS = -1;
-    }
-    return SDL_WaitSemaphoreTimeoutNS(sem, timeoutNS);
-}
-
-int SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex *mutex)
-{
-    return SDL_WaitConditionTimeoutNS(cond, mutex, SDL_MUTEX_MAXWAIT);
-}
-
-int SDL_WaitConditionTimeout(SDL_Condition *cond, SDL_Mutex *mutex, Sint32 timeoutMS)
-{
-    Sint64 timeoutNS;
-
-    if (timeoutMS >= 0) {
-        timeoutNS = SDL_MS_TO_NS(timeoutMS);
-    } else {
-        timeoutNS = -1;
-    }
-    return SDL_WaitConditionTimeoutNS(cond, mutex, timeoutNS);
-}
+/* vi: set ts=4 sw=4 expandtab: */

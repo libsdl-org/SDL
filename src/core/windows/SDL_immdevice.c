@@ -18,12 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if (defined(__WIN32__) || defined(__GDK__)) && defined(HAVE_MMDEVICEAPI_H)
+#if (defined(__WIN32__) || defined(__GDK__)) && HAVE_MMDEVICEAPI_H
 
 #include "SDL_windows.h"
 #include "SDL_immdevice.h"
+#include "SDL_timer.h"
 #include "../../audio/SDL_sysaudio.h"
 #include <objbase.h> /* For CLSIDFromString */
 
@@ -52,8 +53,8 @@ static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x
 /* *INDENT-ON* */ /* clang-format on */
 
 /* these increment as default devices change. Opened default devices pick up changes in their threads. */
-SDL_AtomicInt SDL_IMMDevice_DefaultPlaybackGeneration;
-SDL_AtomicInt SDL_IMMDevice_DefaultCaptureGeneration;
+SDL_atomic_t SDL_IMMDevice_DefaultPlaybackGeneration;
+SDL_atomic_t SDL_IMMDevice_DefaultCaptureGeneration;
 
 static void GetMMDeviceInfo(IMMDevice *device, char **utf8dev, WAVEFORMATEXTENSIBLE *fmt, GUID *guid)
 {
@@ -180,7 +181,7 @@ static void SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAV
 typedef struct SDLMMNotificationClient
 {
     const IMMNotificationClientVtbl *lpVtbl;
-    SDL_AtomicInt refcount;
+    SDL_atomic_t refcount;
     SDL_bool useguid;
 } SDLMMNotificationClient;
 
@@ -357,7 +358,7 @@ void SDL_IMMDevice_Quit(void)
 
 int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
 {
-    const Uint64 timeout = SDL_GetTicks() + 8000;  /* intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep. */
+    const Uint64 timeout = SDL_GetTicks64() + 8000;  /* intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep. */
     HRESULT ret;
 
     SDL_assert(device != NULL);
@@ -375,7 +376,7 @@ int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
         }
 
         if (ret == E_NOTFOUND) {
-            const Uint64 now = SDL_GetTicks();
+            const Uint64 now = SDL_GetTicks64();
             if (timeout > now) {
                 const Uint64 ticksleft = timeout - now;
                 SDL_Delay((Uint32)SDL_min(ticksleft, 300));   /* wait awhile and try again. */
@@ -521,22 +522,22 @@ int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int isca
 SDL_AudioFormat WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
 {
     if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
-        return SDL_AUDIO_F32SYS;
+        return AUDIO_F32SYS;
     } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
-        return SDL_AUDIO_S16SYS;
+        return AUDIO_S16SYS;
     } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
-        return SDL_AUDIO_S32SYS;
+        return AUDIO_S32SYS;
     } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
         const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *)waveformat;
         if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return SDL_AUDIO_F32SYS;
+            return AUDIO_F32SYS;
         } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
-            return SDL_AUDIO_S16SYS;
+            return AUDIO_S16SYS;
         } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return SDL_AUDIO_S32SYS;
+            return AUDIO_S32SYS;
         }
     }
     return 0;
 }
 
-#endif /* (defined(__WIN32__) || defined(__GDK__)) && defined(HAVE_MMDEVICEAPI_H) */
+#endif /* (defined(__WIN32__) || defined(__GDK__)) && HAVE_MMDEVICEAPI_H */

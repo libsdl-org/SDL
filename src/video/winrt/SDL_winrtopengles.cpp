@@ -18,15 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINRT) && defined(SDL_VIDEO_OPENGL_EGL)
+#if SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL
 
 /* EGL implementation of SDL OpenGL support */
 
 #include "SDL_winrtvideo_cpp.h"
 extern "C" {
 #include "SDL_winrtopengles.h"
+#include "SDL_loadso.h"
 #include "../SDL_egl_c.h"
 }
 
@@ -52,9 +53,9 @@ static const int ANGLE_D3D_FEATURE_LEVEL_ANY = 0;
  */
 
 extern "C" int
-WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+WINRT_GLES_LoadLibrary(_THIS, const char *path)
 {
-    SDL_VideoData *video_data = _this->driverdata;
+    SDL_VideoData *video_data = (SDL_VideoData *)_this->driverdata;
 
     if (SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0) != 0) {
         return -1;
@@ -143,7 +144,7 @@ WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
             return SDL_EGL_SetError("Could not retrieve ANGLE/WinRT display function(s)", "eglGetProcAddress");
         }
 
-#if !SDL_WINAPI_FAMILY_PHONE
+#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
         /* Try initializing EGL at D3D11 Feature Level 10_0+ (which is not
          * supported on WinPhone 8.x.
          */
@@ -184,9 +185,9 @@ WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 }
 
 extern "C" void
-WINRT_GLES_UnloadLibrary(SDL_VideoDevice *_this)
+WINRT_GLES_UnloadLibrary(_THIS)
 {
-    SDL_VideoData *video_data = _this->driverdata;
+    SDL_VideoData *video_data = (SDL_VideoData *)_this->driverdata;
 
     /* Release SDL's own COM reference to the ANGLE/WinRT IWinrtEglWindow */
     if (video_data->winrtEglWindow) {
@@ -205,3 +206,5 @@ SDL_EGL_CreateContext_impl(WINRT)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL */
+
+/* vi: set ts=4 sw=4 expandtab: */

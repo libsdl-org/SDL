@@ -457,7 +457,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         //Log.v(TAG, "onCharacteristicRead status=" + status + " uuid=" + characteristic.getUuid());
 
         if (characteristic.getUuid().equals(reportCharacteristic) && !mFrozen) {
-            mManager.HIDDeviceReportResponse(getId(), characteristic.getValue());
+            mManager.HIDDeviceFeatureReport(getId(), characteristic.getValue());
         }
 
         finishCurrentGattOperation();
@@ -575,45 +575,50 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     }
 
     @Override
-    public int writeReport(byte[] report, boolean feature) {
+    public int sendFeatureReport(byte[] report) {
         if (!isRegistered()) {
-            Log.e(TAG, "Attempted writeReport before Steam Controller is registered!");
+            Log.e(TAG, "Attempted sendFeatureReport before Steam Controller is registered!");
             if (mIsConnected) {
                 probeService(this);
             }
             return -1;
         }
 
-        if (feature) {
-            // We need to skip the first byte, as that doesn't go over the air
-            byte[] actual_report = Arrays.copyOfRange(report, 1, report.length - 1);
-            //Log.v(TAG, "writeFeatureReport " + HexDump.dumpHexString(actual_report));
-            writeCharacteristic(reportCharacteristic, actual_report);
-            return report.length;
-        } else {
-            //Log.v(TAG, "writeOutputReport " + HexDump.dumpHexString(report));
-            writeCharacteristic(reportCharacteristic, report);
-            return report.length;
-        }
+        // We need to skip the first byte, as that doesn't go over the air
+        byte[] actual_report = Arrays.copyOfRange(report, 1, report.length - 1);
+        //Log.v(TAG, "sendFeatureReport " + HexDump.dumpHexString(actual_report));
+        writeCharacteristic(reportCharacteristic, actual_report);
+        return report.length;
     }
 
     @Override
-    public boolean readReport(byte[] report, boolean feature) {
+    public int sendOutputReport(byte[] report) {
         if (!isRegistered()) {
-            Log.e(TAG, "Attempted readReport before Steam Controller is registered!");
+            Log.e(TAG, "Attempted sendOutputReport before Steam Controller is registered!");
+            if (mIsConnected) {
+                probeService(this);
+            }
+            return -1;
+        }
+
+        //Log.v(TAG, "sendFeatureReport " + HexDump.dumpHexString(report));
+        writeCharacteristic(reportCharacteristic, report);
+        return report.length;
+    }
+
+    @Override
+    public boolean getFeatureReport(byte[] report) {
+        if (!isRegistered()) {
+            Log.e(TAG, "Attempted getFeatureReport before Steam Controller is registered!");
             if (mIsConnected) {
                 probeService(this);
             }
             return false;
         }
 
-        if (feature) {
-            readCharacteristic(reportCharacteristic);
-            return true;
-        } else {
-            // Not implemented
-            return false;
-        }
+        //Log.v(TAG, "getFeatureReport");
+        readCharacteristic(reportCharacteristic);
+        return true;
     }
 
     @Override

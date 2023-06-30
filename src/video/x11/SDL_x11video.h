@@ -18,34 +18,35 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_x11video_h_
 #define SDL_x11video_h_
+
+#include "SDL_keycode.h"
 
 #include "../SDL_sysvideo.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
-#include <X11/Xresource.h>
 
-#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
+#if SDL_VIDEO_DRIVER_X11_XCURSOR
 #include <X11/Xcursor/Xcursor.h>
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11_XDBE
+#if SDL_VIDEO_DRIVER_X11_XDBE
 #include <X11/extensions/Xdbe.h>
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
+#if SDL_VIDEO_DRIVER_X11_XINPUT2
 #include <X11/extensions/XInput2.h>
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
+#if SDL_VIDEO_DRIVER_X11_XRANDR
 #include <X11/extensions/Xrandr.h>
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
+#if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
 #include <X11/extensions/scrnsaver.h>
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
+#if SDL_VIDEO_DRIVER_X11_XSHAPE
 #include <X11/extensions/shape.h>
 #endif
 
@@ -65,21 +66,20 @@
 
 /* Private display data */
 
-struct SDL_VideoData
+typedef struct SDL_VideoData
 {
     Display *display;
     Display *request_display;
+    char *classname;
     pid_t pid;
     XIM im;
-    Uint64 screensaver_activity;
+    Uint32 screensaver_activity;
     int numwindows;
     SDL_WindowData **windowlist;
     int windowlistlength;
     XID window_group;
     Window clipboard_window;
-    SDLX11_ClipboardData clipboard;
-    SDLX11_ClipboardData primary_selection;
-#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+#if SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_Window *active_cursor_confined_window;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
@@ -128,7 +128,7 @@ struct SDL_VideoData
 
     SDL_bool broken_pointer_grab; /* true if XGrabPointer seems unreliable. */
 
-    Uint64 last_mode_change_deadline;
+    Uint32 last_mode_change_deadline;
 
     SDL_bool global_mouse_changed;
     SDL_Point global_mouse_position;
@@ -138,7 +138,7 @@ struct SDL_VideoData
 
     int xrandr_event_base;
 
-#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     XkbDescPtr xkb;
 #endif
     int xkb_event;
@@ -146,7 +146,7 @@ struct SDL_VideoData
     KeyCode filter_code;
     Time filter_time;
 
-#ifdef SDL_VIDEO_VULKAN
+#if SDL_VIDEO_VULKAN
     /* Vulkan variables only valid if _this->vulkan_config.loader_handle is not NULL */
     void *vulkan_xlib_xcb_library;
     PFN_XGetXCBConnection vulkan_XGetXCBConnection;
@@ -156,8 +156,10 @@ struct SDL_VideoData
     SDL_bool is_steam_deck;
     SDL_bool steam_keyboard_open;
 
-};
+} SDL_VideoData;
 
 extern SDL_bool X11_UseDirectColorVisuals(void);
 
 #endif /* SDL_x11video_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

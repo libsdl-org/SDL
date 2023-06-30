@@ -18,23 +18,35 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifndef SDL_aaudio_h_
-#define SDL_aaudio_h_
+#ifndef _SDL_aaudio_h
+#define _SDL_aaudio_h
 
-#ifdef SDL_AUDIO_DRIVER_AAUDIO
+#include "../SDL_sysaudio.h"
+#include <stdbool.h>
+#include <aaudio/AAudio.h>
+
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
+
+struct SDL_PrivateAudioData
+{
+    AAudioStream *stream;
+
+    /* Raw mixing buffer */
+    Uint8 *mixbuf;
+    int mixlen;
+    int frame_size;
+
+    /* Resume device if it was paused automatically */
+    int resume;
+};
 
 void aaudio_ResumeDevices(void);
 void aaudio_PauseDevices(void);
 SDL_bool aaudio_DetectBrokenPlayState(void);
 
-#else
+#endif /* _SDL_aaudio_h */
 
-static void aaudio_ResumeDevices(void) {}
-static void aaudio_PauseDevices(void) {}
-static SDL_bool aaudio_DetectBrokenPlayState(void) { return SDL_FALSE; }
-
-#endif
-
-#endif /* SDL_aaudio_h_ */
+/* vi: set ts=4 sw=4 expandtab: */

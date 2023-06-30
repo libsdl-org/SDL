@@ -12,7 +12,6 @@ import android.os.Build;
 import android.util.Log;
 
 import java.util.Arrays;
-import java.util.ArrayList;
 
 public class SDLAudioManager {
     protected static final String TAG = "SDLAudio";
@@ -35,16 +34,12 @@ public class SDLAudioManager {
             mAudioDeviceCallback = new AudioDeviceCallback() {
                 @Override
                 public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
-                    for (AudioDeviceInfo deviceInfo : addedDevices) {
-                        addAudioDevice(deviceInfo.isSink(), deviceInfo.getId());
-                    }
+                    Arrays.stream(addedDevices).forEach(deviceInfo -> addAudioDevice(deviceInfo.isSink(), deviceInfo.getId()));
                 }
 
                 @Override
                 public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
-                    for (AudioDeviceInfo deviceInfo : removedDevices) {
-                        removeAudioDevice(deviceInfo.isSink(), deviceInfo.getId());
-                    }
+                    Arrays.stream(removedDevices).forEach(deviceInfo -> removeAudioDevice(deviceInfo.isSink(), deviceInfo.getId()));
                 }
             };
         }
@@ -290,25 +285,25 @@ public class SDLAudioManager {
     private static AudioDeviceInfo getInputAudioDeviceInfo(int deviceId) {
         if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-            for (AudioDeviceInfo deviceInfo : audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)) {
-                if (deviceInfo.getId() == deviceId) {
-                    return deviceInfo;
-                }
-            }
+            return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
+                    .filter(deviceInfo -> deviceInfo.getId() == deviceId)
+                    .findFirst()
+                    .orElse(null);
+        } else {
+            return null;
         }
-        return null;
     }
 
     private static AudioDeviceInfo getOutputAudioDeviceInfo(int deviceId) {
         if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-            for (AudioDeviceInfo deviceInfo : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
-                if (deviceInfo.getId() == deviceId) {
-                    return deviceInfo;
-                }
-            }
+            return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS))
+                    .filter(deviceInfo -> deviceInfo.getId() == deviceId)
+                    .findFirst()
+                    .orElse(null);
+        } else {
+            return null;
         }
-        return null;
     }
 
     private static void registerAudioDeviceCallback() {
@@ -325,30 +320,13 @@ public class SDLAudioManager {
         }
     }
 
-    private static int[] ArrayListToArray(ArrayList<Integer> integers)
-    {
-        int[] ret = new int[integers.size()];
-        for (int i=0; i < ret.length; i++) {
-            ret[i] = integers.get(i).intValue();
-        }
-        return ret;
-    }
-
     /**
      * This method is called by SDL using JNI.
      */
     public static int[] getAudioOutputDevices() {
         if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-            ArrayList<Integer> arrlist = new ArrayList<Integer>();
-            for (AudioDeviceInfo dev : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
-                /* Device cannot be opened */
-                if (dev.getType() == AudioDeviceInfo.TYPE_TELEPHONY) {
-                    continue;
-                }
-                arrlist.add(dev.getId());
-            }
-            return ArrayListToArray(arrlist);
+            return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)).mapToInt(AudioDeviceInfo::getId).toArray();
         } else {
             return NO_DEVICES;
         }
@@ -360,11 +338,7 @@ public class SDLAudioManager {
     public static int[] getAudioInputDevices() {
         if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-            ArrayList<Integer> arrlist = new ArrayList<Integer>();
-            for (AudioDeviceInfo dev : audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)) {
-                arrlist.add(dev.getId());
-            }
-            return ArrayListToArray(arrlist);
+            return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).mapToInt(AudioDeviceInfo::getId).toArray();
         } else {
             return NO_DEVICES;
         }

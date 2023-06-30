@@ -18,14 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_WINRT
+#if SDL_VIDEO_DRIVER_WINRT
 
 /* SDL includes */
 #include "SDL_winrtevents_c.h"
 #include "SDL_winrtmouse_c.h"
 #include "SDL_winrtvideo_cpp.h"
+#include "SDL_system.h"
 
 extern "C" {
 #include "../SDL_sysvideo.h"
@@ -37,7 +38,7 @@ extern "C" {
 /* File-specific globals: */
 static SDL_TouchID WINRT_TouchID = 1;
 
-void WINRT_InitTouch(SDL_VideoDevice *_this)
+void WINRT_InitTouch(_THIS)
 {
     SDL_AddTouch(WINRT_TouchID, SDL_TOUCH_DEVICE_DIRECT, "");
 }
@@ -57,7 +58,7 @@ WINRT_TransformCursorPosition(SDL_Window *window,
         return rawPosition;
     }
 
-    SDL_WindowData *windowData = window->driverdata;
+    SDL_WindowData *windowData = (SDL_WindowData *)window->driverdata;
     if (windowData->coreWindow == nullptr) {
         // For some reason, the window isn't associated with a CoreWindow.
         // This might end up being the case as XAML support is extended.
@@ -77,7 +78,7 @@ WINRT_TransformCursorPosition(SDL_Window *window,
     // Compute coordinates normalized from 0..1.
     // If the coordinates need to be sized to the SDL window,
     // we'll do that after.
-#if !SDL_WINAPI_FAMILY_PHONE || NTDDI_VERSION > NTDDI_WIN8
+#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
     outputPosition.X = rawPosition.X / nativeWindow->Bounds.Width;
     outputPosition.Y = rawPosition.Y / nativeWindow->Bounds.Height;
 #else
@@ -115,7 +116,7 @@ SDL_bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^ pt
 {
     using namespace Windows::UI::Input;
 
-#if SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     *button = SDL_BUTTON_LEFT;
     return SDL_TRUE;
 #else
@@ -196,7 +197,7 @@ SDL_bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^ pt
 
 static bool WINRT_IsTouchEvent(Windows::UI::Input::PointerPoint ^ pointerPoint)
 {
-#if SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     return true;
 #else
     using namespace Windows::Devices::Input;
@@ -220,12 +221,12 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::Po
         Uint8 button, pressed;
         WINRT_GetSDLButtonForPointerPoint(pointerPoint, &button, &pressed);
         SDL_assert(pressed == 1);
-        SDL_SendMouseButton(0, window, 0, SDL_PRESSED, button);
+        SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
     } else {
         Windows::Foundation::Point normalizedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, NormalizeZeroToOne);
         Windows::Foundation::Point windowPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, TransformToSDLWindowSize);
 
-        SDL_SendTouch(0,
+        SDL_SendTouch(
             WINRT_TouchID,
             (SDL_FingerID)pointerPoint->PointerId,
             window,
@@ -249,12 +250,12 @@ void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::Poin
         /* For some odd reason Moved events are used for multiple mouse buttons */
         Uint8 button, pressed;
         if (WINRT_GetSDLButtonForPointerPoint(pointerPoint, &button, &pressed)) {
-            SDL_SendMouseButton(0, window, 0, pressed, button);
+            SDL_SendMouseButton(window, 0, pressed, button);
         }
 
-        SDL_SendMouseMotion(0, window, 0, 0, windowPoint.X, windowPoint.Y);
+        SDL_SendMouseMotion(window, 0, 0, (int)windowPoint.X, (int)windowPoint.Y);
     } else {
-        SDL_SendTouchMotion(0,
+        SDL_SendTouchMotion(
             WINRT_TouchID,
             (SDL_FingerID)pointerPoint->PointerId,
             window,
@@ -274,11 +275,11 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
         Uint8 button, pressed;
         WINRT_GetSDLButtonForPointerPoint(pointerPoint, &button, &pressed);
         SDL_assert(pressed == 0);
-        SDL_SendMouseButton(0, window, 0, SDL_RELEASED, button);
+        SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
     } else {
         Windows::Foundation::Point normalizedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, NormalizeZeroToOne);
 
-        SDL_SendTouch(0,
+        SDL_SendTouch(
             WINRT_TouchID,
             (SDL_FingerID)pointerPoint->PointerId,
             window,
@@ -318,7 +319,7 @@ void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Inpu
     }
 
     float motion = (float)pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA;
-    SDL_SendMouseWheel(0, window, 0, 0, (float)motion, SDL_MOUSEWHEEL_NORMAL);
+    SDL_SendMouseWheel(window, 0, 0, (float)motion, SDL_MOUSEWHEEL_NORMAL);
 }
 
 void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::MouseEventArgs ^ args)
@@ -378,17 +379,19 @@ void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::M
     //
     // There may be some room for a workaround whereby OnPointerMoved's values
     // are compared to the values from OnMouseMoved in order to detect
-    // when this bug is active. A suitable transformation could then be made to
-    // OnMouseMoved's values.
+    // when this bug is active.  A suitable transformation could then be made to
+    // OnMouseMoved's values.  For now, however, the system-reported values are sent
+    // to SDL with minimal transformation: from native screen coordinates (in DIPs)
+    // to SDL window coordinates.
     //
     const Windows::Foundation::Point mouseDeltaInDIPs((float)args->MouseDelta.X, (float)args->MouseDelta.Y);
     const Windows::Foundation::Point mouseDeltaInSDLWindowCoords = WINRT_TransformCursorPosition(window, mouseDeltaInDIPs, TransformToSDLWindowSize);
-    SDL_SendMouseMotion(0,
+    SDL_SendMouseMotion(
         window,
         0,
         1,
-        mouseDeltaInSDLWindowCoords.X,
-        mouseDeltaInSDLWindowCoords.Y);
+        SDL_lroundf(mouseDeltaInSDLWindowCoords.X),
+        SDL_lroundf(mouseDeltaInSDLWindowCoords.Y));
 }
 
 #endif // SDL_VIDEO_DRIVER_WINRT

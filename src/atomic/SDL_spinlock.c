@@ -18,11 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
+
+#include "SDL_atomic.h"
+#include "SDL_mutex.h"
+#include "SDL_timer.h"
 
 #if !defined(HAVE_GCC_ATOMICS) && defined(__SOLARIS__)
 #include <atomic.h>
@@ -36,11 +40,11 @@
 #include <xmmintrin.h>
 #endif
 
-#ifdef PS2
+#if defined(PS2)
 #include <kernel.h>
 #endif
 
-#if !defined(HAVE_GCC_ATOMICS) && defined(__MACOS__)
+#if !defined(HAVE_GCC_ATOMICS) && defined(__MACOSX__)
 #include <libkern/OSAtomic.h>
 #endif
 
@@ -59,9 +63,9 @@ extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 /* This function is where all the magic happens... */
 SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
 {
-#ifdef SDL_ATOMIC_DISABLED
+#if SDL_ATOMIC_DISABLED
     /* Terrible terrible damage */
-    static SDL_Mutex *_spinlock_mutex;
+    static SDL_mutex *_spinlock_mutex;
 
     if (_spinlock_mutex == NULL) {
         /* Race condition on first lock... */
@@ -77,7 +81,7 @@ SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
         return SDL_FALSE;
     }
 
-#elif defined(HAVE_GCC_ATOMICS) || defined(HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
+#elif HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
     return __sync_lock_test_and_set(lock, 1) == 0;
 
 #elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
@@ -97,7 +101,7 @@ SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
      defined(__ARM_ARCH_5TEJ__))
     int result;
 
-#ifdef __RISCOS__
+#if defined(__RISCOS__)
     if (__cpucap_have_rex()) {
         __asm__ __volatile__(
             "ldrex %0, [%2]\nteq   %0, #0\nstrexeq %0, %1, [%2]"
@@ -133,7 +137,7 @@ SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
         : "cc", "memory");
     return result == 0;
 
-#elif defined(__MACOS__) || defined(__IOS__) || defined(__TVOS__)
+#elif defined(__MACOSX__) || defined(__IPHONEOS__)
     /* Maybe used for PowerPC, but the Intel asm or gcc atomics are favored. */
     return OSAtomicCompareAndSwap32Barrier(0, 1, lock);
 
@@ -182,7 +186,7 @@ void SDL_AtomicLock(SDL_SpinLock *lock)
 
 void SDL_AtomicUnlock(SDL_SpinLock *lock)
 {
-#if defined(HAVE_GCC_ATOMICS) || defined(HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
+#if HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
     __sync_lock_release(lock);
 
 #elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
@@ -205,3 +209,5 @@ void SDL_AtomicUnlock(SDL_SpinLock *lock)
     *lock = 0;
 #endif
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

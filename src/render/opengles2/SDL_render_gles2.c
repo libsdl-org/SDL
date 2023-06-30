@@ -18,12 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_OGL_ES2) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED
 
-#include "../../video/SDL_sysvideo.h" /* For SDL_RecreateWindow */
-#include <SDL3/SDL_opengles2.h>
+#include "SDL_hints.h"
+#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
+#include "SDL_opengles2.h"
 #include "../SDL_sysrender.h"
 #include "../../video/SDL_blit.h"
 #include "SDL_shaders_gles2.h"
@@ -33,7 +34,7 @@
    In all other cases, attempt to use client-side arrays, as they tend to
    be dramatically faster when not batching, and about the same when
    we are. */
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 #define USE_VERTEX_BUFFER_OBJECTS 1
 #else
 #define USE_VERTEX_BUFFER_OBJECTS 0
@@ -175,7 +176,8 @@ typedef struct GLES2_RenderData
 
 static const float inv255f = 1.0f / 255.0f;
 
-static const char *GL_TranslateError(GLenum error)
+SDL_FORCE_INLINE const char *
+GL_TranslateError(GLenum error)
 {
 #define GL_ERROR_TRANSLATE(e) \
     case e:                   \
@@ -192,7 +194,8 @@ static const char *GL_TranslateError(GLenum error)
 #undef GL_ERROR_TRANSLATE
 }
 
-static void GL_ClearErrors(SDL_Renderer *renderer)
+SDL_FORCE_INLINE void
+GL_ClearErrors(SDL_Renderer *renderer)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
 
@@ -204,7 +207,8 @@ static void GL_ClearErrors(SDL_Renderer *renderer)
     }
 }
 
-static int GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const char *file, int line, const char *function)
+SDL_FORCE_INLINE int
+GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const char *file, int line, const char *function)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
     int ret = 0;
@@ -240,9 +244,11 @@ static int GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const c
 
 static int GLES2_LoadFunctions(GLES2_RenderData *data)
 {
-#ifdef SDL_VIDEO_DRIVER_UIKIT
+#if SDL_VIDEO_DRIVER_UIKIT
 #define __SDL_NOGETPROCADDR__
-#elif defined(SDL_VIDEO_DRIVER_ANDROID)
+#elif SDL_VIDEO_DRIVER_ANDROID
+#define __SDL_NOGETPROCADDR__
+#elif SDL_VIDEO_DRIVER_PANDORA
 #define __SDL_NOGETPROCADDR__
 #endif
 
@@ -251,7 +257,7 @@ static int GLES2_LoadFunctions(GLES2_RenderData *data)
 #else
 #define SDL_PROC(ret, func, params)                                                            \
     do {                                                                                       \
-        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                                             \
+        data->func = SDL_GL_GetProcAddress(#func);                                             \
         if (!data->func) {                                                                     \
             return SDL_SetError("Couldn't load GLES2 function %s: %s", #func, SDL_GetError()); \
         }                                                                                      \
@@ -302,10 +308,16 @@ static void GLES2_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *eve
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
 
-    if (event->type == SDL_EVENT_WINDOW_MINIMIZED) {
+    if (event->event == SDL_WINDOWEVENT_MINIMIZED) {
         /* According to Apple documentation, we need to finish drawing NOW! */
         data->glFinish();
     }
+}
+
+static int GLES2_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
+{
+    SDL_GL_GetDrawableSize(renderer->window, w, h);
+    return 0;
 }
 
 static GLenum GetBlendFunc(SDL_BlendFactor factor)
@@ -1164,7 +1176,7 @@ static int GLES2_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     data->drawstate.target = renderer->target;
     if (!data->drawstate.target) {
         int w, h;
-        SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
+        SDL_GL_GetDrawableSize(renderer->window, &w, &h);
         if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
             data->drawstate.viewport_dirty = SDL_TRUE; // if the window dimensions changed, invalidate the current viewport, etc.
             data->drawstate.cliprect_dirty = SDL_TRUE;
@@ -1460,7 +1472,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     data->texture_u = 0;
     data->texture_v = 0;
 #endif
-    scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
+    scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
 
     /* Allocate a blob for image renderdata */
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
@@ -1576,7 +1588,7 @@ static int GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoff
     /* Reformat the texture data into a tightly packed array */
     src_pitch = (size_t)width * bpp;
     src = (Uint8 *)pixels;
-    if ((size_t)pitch != src_pitch) {
+    if (pitch != src_pitch) {
         blob = (Uint8 *)SDL_malloc(src_pitch * height);
         if (blob == NULL) {
             return SDL_OutOfMemory();
@@ -1821,7 +1833,7 @@ static void GLES2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
 {
     GLES2_RenderData *renderdata = (GLES2_RenderData *)renderer->driverdata;
     GLES2_TextureData *data = (GLES2_TextureData *)texture->driverdata;
-    GLenum glScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
+    GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
 
 #if SDL_HAVE_YUV
     if (data->yuv) {
@@ -1926,7 +1938,7 @@ static int GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
         return SDL_OutOfMemory();
     }
 
-    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
+    SDL_GetRendererOutputSize(renderer, &w, &h);
 
     data->glReadPixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
                        rect->w, rect->h, GL_RGBA, GL_UNSIGNED_BYTE, temp_pixels);
@@ -1963,13 +1975,12 @@ static int GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 static int GLES2_RenderPresent(SDL_Renderer *renderer)
 {
     /* Tell the video driver to swap buffers */
-    return SDL_GL_SwapWindow(renderer->window);
+    return SDL_GL_SwapWindowWithResult(renderer->window);
 }
 
 static int GLES2_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     int retval;
-    int interval = 0;
     if (vsync) {
         retval = SDL_GL_SetSwapInterval(1);
     } else {
@@ -1978,13 +1989,7 @@ static int GLES2_SetVSync(SDL_Renderer *renderer, const int vsync)
     if (retval != 0) {
         return retval;
     }
-
-    retval = SDL_GL_GetSwapInterval(&interval);
-    if (retval < 0) {
-        return retval;
-    }
-
-    if (interval > 0) {
+    if (SDL_GL_GetSwapInterval() > 0) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     } else {
         renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
@@ -2100,7 +2105,7 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
         goto error;
     }
     renderer->info = GLES2_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
+    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
     renderer->window = window;
 
@@ -2132,7 +2137,7 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
         goto error;
     }
 
-#ifdef __WINRT__
+#if __WINRT__
     /* DLudwig, 2013-11-29: ANGLE for WinRT doesn't seem to work unless VSync
      * is turned on.  Not doing so will freeze the screen's contents to that
      * of the first drawn frame.
@@ -2145,16 +2150,8 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     } else {
         SDL_GL_SetSwapInterval(0);
     }
-
-    {
-        int interval = 0;
-        if (SDL_GL_GetSwapInterval(&interval) < 0) {
-            /* Error */
-        } else {
-            if (interval > 0) {
-                renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-            }
-        }
+    if (SDL_GL_GetSwapInterval() > 0) {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
 
     /* Check for debug output support */
@@ -2181,6 +2178,7 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     /* Populate the function pointers for the module */
     renderer->WindowEvent = GLES2_WindowEvent;
+    renderer->GetOutputSize = GLES2_GetOutputSize;
     renderer->SupportsBlendMode = GLES2_SupportsBlendMode;
     renderer->CreateTexture = GLES2_CreateTexture;
     renderer->UpdateTexture = GLES2_UpdateTexture;
@@ -2262,7 +2260,7 @@ error:
 SDL_RenderDriver GLES2_RenderDriver = {
     GLES2_CreateRenderer,
     { "opengles2",
-      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
       4,
       { SDL_PIXELFORMAT_ARGB8888,
         SDL_PIXELFORMAT_ABGR8888,
@@ -2272,4 +2270,6 @@ SDL_RenderDriver GLES2_RenderDriver = {
       0 }
 };
 
-#endif /* SDL_VIDEO_RENDER_OGL_ES2 && !defined(SDL_RENDER_DISABLED) */
+#endif /* SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

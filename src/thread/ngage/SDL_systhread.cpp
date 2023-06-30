@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_THREAD_NGAGE
+#if SDL_THREAD_NGAGE
 
 /* N-Gage thread management routines for SDL */
 
@@ -28,6 +28,8 @@
 
 extern "C" {
 #undef NULL
+#include "SDL_error.h"
+#include "SDL_thread.h"
 #include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
 };
@@ -108,3 +110,6 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
 }
 
 #endif /* SDL_THREAD_NGAGE */
+
+/* vim: ts=4 sw=4
+ */

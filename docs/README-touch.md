@@ -17,7 +17,7 @@ Unfortunately there is no windows support as of yet. Support for Windows 7 is pl
 ===========================================================================
 Events
 ===========================================================================
-SDL_EVENT_FINGER_DOWN:
+SDL_FINGERDOWN:
 Sent when a finger (or stylus) is placed on a touch device.
 Fields:
 * event.tfinger.touchId  - the Id of the touch device.
@@ -26,17 +26,17 @@ Fields:
 * event.tfinger.y        - the y coordinate of the touch (0..1)
 * event.tfinger.pressure - the pressure of the touch (0..1)
 
-SDL_EVENT_FINGER_MOTION:
+SDL_FINGERMOTION:
 Sent when a finger (or stylus) is moved on the touch device.
 Fields:
-Same as SDL_EVENT_FINGER_DOWN but with additional:
+Same as SDL_FINGERDOWN but with additional:
 * event.tfinger.dx       - change in x coordinate during this motion event.
 * event.tfinger.dy       - change in y coordinate during this motion event.
 
-SDL_EVENT_FINGER_UP:
+SDL_FINGERUP:
 Sent when a finger (or stylus) is lifted from the touch device.
 Fields:
-Same as SDL_EVENT_FINGER_DOWN.
+Same as SDL_FINGERDOWN.
 
 
 ===========================================================================
@@ -66,7 +66,7 @@ The most common reason to access SDL_Finger is to query the fingers outside the 
 
 To get a SDL_Finger, call SDL_GetTouchFinger(SDL_TouchID touchID, int index), where touchID is a SDL_TouchID, and index is the requested finger.
 This returns a SDL_Finger *, or NULL if the finger does not exist, or has been removed.
-A SDL_Finger is guaranteed to be persistent for the duration of a touch, but it will be de-allocated as soon as the finger is removed. This occurs when the SDL_EVENT_FINGER_UP event is _added_ to the event queue, and thus _before_ the SDL_EVENT_FINGER_UP event is polled.
+A SDL_Finger is guaranteed to be persistent for the duration of a touch, but it will be de-allocated as soon as the finger is removed. This occurs when the SDL_FINGERUP event is _added_ to the event queue, and thus _before_ the SDL_FINGERUP event is polled.
 As a result, be very careful to check for NULL return values.
 
 A SDL_Finger has the following fields:
@@ -75,6 +75,11 @@ A SDL_Finger has the following fields:
 * pressure:
 	The pressure of the touch.
 
+
+===========================================================================
+Notes
+===========================================================================
+For a complete example see test/testgesture.c
 
 Please direct questions/comments to:
    jim.tla+sdl_touch@gmail.com

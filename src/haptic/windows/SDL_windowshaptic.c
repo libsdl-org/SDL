@@ -18,14 +18,20 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_HAPTIC_DINPUT) || defined(SDL_HAPTIC_XINPUT)
+#if SDL_HAPTIC_DINPUT || SDL_HAPTIC_XINPUT
 
+#include "SDL_thread.h"
+#include "SDL_mutex.h"
+#include "SDL_timer.h"
+#include "SDL_hints.h"
+#include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
-#include "../../joystick/SDL_sysjoystick.h"               /* For the real SDL_Joystick */
-#include "../../joystick/windows/SDL_windowsjoystick_c.h" /* For joystick hwdata */
-#include "../../joystick/windows/SDL_xinputjoystick_c.h"  /* For xinput rumble */
+#include "SDL_joystick.h"
+#include "../../joystick/SDL_sysjoystick.h"     /* For the real SDL_Joystick */
+#include "../../joystick/windows/SDL_windowsjoystick_c.h"      /* For joystick hwdata */
+#include "../../joystick/windows/SDL_xinputjoystick_c.h"      /* For xinput rumble */
 
 #include "SDL_windowshaptic_c.h"
 #include "SDL_dinputhaptic_c.h"
@@ -154,7 +160,7 @@ int SDL_SYS_HapticOpen(SDL_Haptic *haptic)
  */
 int SDL_SYS_HapticMouse(void)
 {
-#ifdef SDL_HAPTIC_DINPUT
+#if SDL_HAPTIC_DINPUT
     SDL_hapticlist_item *item;
     int index = 0;
 
@@ -177,12 +183,12 @@ int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
     if (joystick->driver != &SDL_WINDOWS_JoystickDriver) {
         return 0;
     }
-#ifdef SDL_HAPTIC_XINPUT
+#if SDL_HAPTIC_XINPUT
     if (joystick->hwdata->bXInputHaptic) {
         return 1;
     }
 #endif
-#ifdef SDL_HAPTIC_DINPUT
+#if SDL_HAPTIC_DINPUT
     if (joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK) {
         return 1;
     }
@@ -443,3 +449,5 @@ int SDL_SYS_HapticStopAll(SDL_Haptic *haptic)
 #endif
 
 #endif /* SDL_HAPTIC_DINPUT || SDL_HAPTIC_XINPUT */
+
+/* vi: set ts=4 sw=4 expandtab: */

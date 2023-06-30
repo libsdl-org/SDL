@@ -116,26 +116,29 @@ SDL_bool SDL_INTERSECTRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *resul
     return !SDL_RECTEMPTY(result);
 }
 
-int SDL_UNIONRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
+void SDL_UNIONRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
 
     if (A == NULL) {
-        return SDL_InvalidParamError("A");
+        SDL_InvalidParamError("A");
+        return;
     } else if (B == NULL) {
-        return SDL_InvalidParamError("B");
+        SDL_InvalidParamError("B");
+        return;
     } else if (result == NULL) {
-        return SDL_InvalidParamError("result");
+        SDL_InvalidParamError("result");
+        return;
     } else if (SDL_RECTEMPTY(A)) { /* Special cases for empty Rects */
         if (SDL_RECTEMPTY(B)) {    /* A and B empty */
             SDL_zerop(result);
         } else { /* A empty, B not empty */
             *result = *B;
         }
-        return 0;
+        return;
     } else if (SDL_RECTEMPTY(B)) { /* A not empty, B empty */
         *result = *A;
-        return 0;
+        return;
     }
 
     /* Horizontal union */
@@ -165,7 +168,6 @@ int SDL_UNIONRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
         Amax = Bmax;
     }
     result->h = Amax - Amin;
-    return 0;
 }
 
 SDL_bool SDL_ENCLOSEPOINTS(const POINTTYPE *points, int count, const RECTTYPE *clip,
@@ -434,3 +436,5 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
 #undef SDL_UNIONRECT
 #undef SDL_ENCLOSEPOINTS
 #undef SDL_INTERSECTRECTANDLINE
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,10 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
 #ifndef scancodes_xfree86_h_
 #define scancodes_xfree86_h_
+
+#include "../../include/SDL_scancode.h"
 
 /* XFree86 key code to SDL scancode mapping table
    Sources:
@@ -518,3 +519,5 @@ static const SDL_Scancode xvnc_scancode_table[] = {
 #endif /* scancodes_xfree86_h_ */
 
 /* *INDENT-ON* */ /* clang-format on */
+
+/* vi: set ts=4 sw=4 expandtab: */

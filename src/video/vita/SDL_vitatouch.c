@@ -18,13 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_VITA
+#if SDL_VIDEO_DRIVER_VITA
 
 #include <psp2/kernel/processmgr.h>
 #include <psp2/touch.h>
 
+#include "SDL_events.h"
+#include "SDL_log.h"
 #include "SDL_vitavideo.h"
 #include "SDL_vitatouch.h"
 #include "../../events/SDL_mouse_c.h"
@@ -121,7 +123,7 @@ void VITA_PollTouch(void)
                 // Skip if finger was already previously down
                 if (!finger_down) {
                     // Send an initial touch
-                    SDL_SendTouch(0, (SDL_TouchID)port,
+                    SDL_SendTouch((SDL_TouchID)port,
                                   finger_id,
                                   Vita_Window,
                                   SDL_TRUE,
@@ -131,7 +133,7 @@ void VITA_PollTouch(void)
                 }
 
                 // Always send the motion
-                SDL_SendTouchMotion(0, (SDL_TouchID)port,
+                SDL_SendTouchMotion((SDL_TouchID)port,
                                     finger_id,
                                     Vita_Window,
                                     x,
@@ -158,7 +160,7 @@ void VITA_PollTouch(void)
                     VITA_ConvertTouchXYToSDLXY(&x, &y, touch_old[port].report[i].x, touch_old[port].report[i].y, port);
                     finger_id = (SDL_FingerID)touch_old[port].report[i].id;
                     // Finger released from screen
-                    SDL_SendTouch(0, (SDL_TouchID)port,
+                    SDL_SendTouch((SDL_TouchID)port,
                                   finger_id,
                                   Vita_Window,
                                   SDL_FALSE,
@@ -187,3 +189,5 @@ void VITA_ConvertTouchXYToSDLXY(float *sdl_x, float *sdl_y, int vita_x, int vita
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
+
+/* vi: set ts=4 sw=4 expandtab: */

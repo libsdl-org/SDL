@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_THREAD_N3DS
 
@@ -26,15 +26,15 @@
 
 #include "SDL_sysmutex_c.h"
 
-struct SDL_Condition
+struct SDL_cond
 {
     CondVar cond_variable;
 };
 
 /* Create a condition variable */
-SDL_Condition *SDL_CreateCondition(void)
+SDL_cond *SDL_CreateCond(void)
 {
-    SDL_Condition *cond = (SDL_Condition *)SDL_malloc(sizeof(SDL_Condition));
+    SDL_cond *cond = (SDL_cond *)SDL_malloc(sizeof(SDL_cond));
     if (cond) {
         CondVar_Init(&cond->cond_variable);
     } else {
@@ -44,7 +44,7 @@ SDL_Condition *SDL_CreateCondition(void)
 }
 
 /* Destroy a condition variable */
-void SDL_DestroyCondition(SDL_Condition *cond)
+void SDL_DestroyCond(SDL_cond *cond)
 {
     if (cond) {
         SDL_free(cond);
@@ -52,7 +52,7 @@ void SDL_DestroyCondition(SDL_Condition *cond)
 }
 
 /* Restart one of the threads that are waiting on the condition variable */
-int SDL_SignalCondition(SDL_Condition *cond)
+int SDL_CondSignal(SDL_cond *cond)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -63,7 +63,7 @@ int SDL_SignalCondition(SDL_Condition *cond)
 }
 
 /* Restart all threads that are waiting on the condition variable */
-int SDL_BroadcastCondition(SDL_Condition *cond)
+int SDL_CondBroadcast(SDL_cond *cond)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -73,7 +73,7 @@ int SDL_BroadcastCondition(SDL_Condition *cond)
     return 0;
 }
 
-/* Wait on the condition variable for at most 'timeoutNS' nanoseconds.
+/* Wait on the condition variable for at most 'ms' milliseconds.
    The mutex must be locked before entering this function!
    The mutex is unlocked during the wait, and locked again after the wait.
 
@@ -82,7 +82,7 @@ Typical use:
 Thread A:
     SDL_LockMutex(lock);
     while ( ! condition ) {
-        SDL_WaitCondition(cond, lock);
+        SDL_CondWait(cond, lock);
     }
     SDL_UnlockMutex(lock);
 
@@ -91,10 +91,10 @@ Thread B:
     ...
     condition = true;
     ...
-    SDL_SignalCondition(cond);
+    SDL_CondSignal(cond);
     SDL_UnlockMutex(lock);
  */
-int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
 {
     Result res;
 
@@ -106,13 +106,22 @@ int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 tim
     }
 
     res = 0;
-    if (timeoutNS < 0) {
+    if (ms == SDL_MUTEX_MAXWAIT) {
         CondVar_Wait(&cond->cond_variable, &mutex->lock.lock);
     } else {
-        res = CondVar_WaitTimeout(&cond->cond_variable, &mutex->lock.lock, timeoutNS);
+        res = CondVar_WaitTimeout(&cond->cond_variable, &mutex->lock.lock,
+                                  (s64)ms * 1000000LL);
     }
 
     return R_SUCCEEDED(res) ? 0 : SDL_MUTEX_TIMEDOUT;
 }
 
+/* Wait on the condition variable forever */
+int SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex)
+{
+    return SDL_CondWaitTimeout(cond, mutex, SDL_MUTEX_MAXWAIT);
+}
+
 #endif /* SDL_THREAD_N3DS */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

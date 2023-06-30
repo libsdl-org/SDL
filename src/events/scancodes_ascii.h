@@ -19,6 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include "SDL_scancode.h"
+#include "SDL_keycode.h"
+
 /*
     This file is used to convert between characters passed in from an ASCII
     virtual keyboard in US layout and tuples of SDL_Scancode and SDL_keymods.
@@ -67,17 +70,17 @@ static ASCIIKeyInfo SDL_ASCIIKeyInfoTable[] = {
     /*  30 */ { SDL_SCANCODE_UNKNOWN, 0 },
     /*  31 */ { SDL_SCANCODE_UNKNOWN, 0 },
     /*  32 */ { SDL_SCANCODE_SPACE, 0 },
-    /*  33 */ { SDL_SCANCODE_1, SDL_KMOD_SHIFT },          /* plus shift modifier '!' */
-    /*  34 */ { SDL_SCANCODE_APOSTROPHE, SDL_KMOD_SHIFT }, /* plus shift modifier '"' */
-    /*  35 */ { SDL_SCANCODE_3, SDL_KMOD_SHIFT },          /* plus shift modifier '#' */
-    /*  36 */ { SDL_SCANCODE_4, SDL_KMOD_SHIFT },          /* plus shift modifier '$' */
-    /*  37 */ { SDL_SCANCODE_5, SDL_KMOD_SHIFT },          /* plus shift modifier '%' */
-    /*  38 */ { SDL_SCANCODE_7, SDL_KMOD_SHIFT },          /* plus shift modifier '&' */
+    /*  33 */ { SDL_SCANCODE_1, KMOD_SHIFT },          /* plus shift modifier '!' */
+    /*  34 */ { SDL_SCANCODE_APOSTROPHE, KMOD_SHIFT }, /* plus shift modifier '"' */
+    /*  35 */ { SDL_SCANCODE_3, KMOD_SHIFT },          /* plus shift modifier '#' */
+    /*  36 */ { SDL_SCANCODE_4, KMOD_SHIFT },          /* plus shift modifier '$' */
+    /*  37 */ { SDL_SCANCODE_5, KMOD_SHIFT },          /* plus shift modifier '%' */
+    /*  38 */ { SDL_SCANCODE_7, KMOD_SHIFT },          /* plus shift modifier '&' */
     /*  39 */ { SDL_SCANCODE_APOSTROPHE, 0 },          /* '''                     */
-    /*  40 */ { SDL_SCANCODE_9, SDL_KMOD_SHIFT },          /* plus shift modifier '(' */
-    /*  41 */ { SDL_SCANCODE_0, SDL_KMOD_SHIFT },          /* plus shift modifier ')' */
-    /*  42 */ { SDL_SCANCODE_8, SDL_KMOD_SHIFT },          /* '*'                     */
-    /*  43 */ { SDL_SCANCODE_EQUALS, SDL_KMOD_SHIFT },     /* plus shift modifier '+' */
+    /*  40 */ { SDL_SCANCODE_9, KMOD_SHIFT },          /* plus shift modifier '(' */
+    /*  41 */ { SDL_SCANCODE_0, KMOD_SHIFT },          /* plus shift modifier ')' */
+    /*  42 */ { SDL_SCANCODE_8, KMOD_SHIFT },          /* '*'                     */
+    /*  43 */ { SDL_SCANCODE_EQUALS, KMOD_SHIFT },     /* plus shift modifier '+' */
     /*  44 */ { SDL_SCANCODE_COMMA, 0 },               /* ','                     */
     /*  45 */ { SDL_SCANCODE_MINUS, 0 },               /* '-'                     */
     /*  46 */ { SDL_SCANCODE_PERIOD, 0 },              /* '.'                     */
@@ -92,45 +95,45 @@ static ASCIIKeyInfo SDL_ASCIIKeyInfoTable[] = {
     /*  55 */ { SDL_SCANCODE_7, 0 },
     /*  56 */ { SDL_SCANCODE_8, 0 },
     /*  57 */ { SDL_SCANCODE_9, 0 },
-    /*  58 */ { SDL_SCANCODE_SEMICOLON, SDL_KMOD_SHIFT }, /* plus shift modifier ';' */
+    /*  58 */ { SDL_SCANCODE_SEMICOLON, KMOD_SHIFT }, /* plus shift modifier ';' */
     /*  59 */ { SDL_SCANCODE_SEMICOLON, 0 },
-    /*  60 */ { SDL_SCANCODE_COMMA, SDL_KMOD_SHIFT }, /* plus shift modifier '<' */
+    /*  60 */ { SDL_SCANCODE_COMMA, KMOD_SHIFT }, /* plus shift modifier '<' */
     /*  61 */ { SDL_SCANCODE_EQUALS, 0 },
-    /*  62 */ { SDL_SCANCODE_PERIOD, SDL_KMOD_SHIFT }, /* plus shift modifier '>' */
-    /*  63 */ { SDL_SCANCODE_SLASH, SDL_KMOD_SHIFT },  /* plus shift modifier '?' */
-    /*  64 */ { SDL_SCANCODE_2, SDL_KMOD_SHIFT },      /* plus shift modifier '@' */
-    /*  65 */ { SDL_SCANCODE_A, SDL_KMOD_SHIFT },      /* all the following need shift modifiers */
-    /*  66 */ { SDL_SCANCODE_B, SDL_KMOD_SHIFT },
-    /*  67 */ { SDL_SCANCODE_C, SDL_KMOD_SHIFT },
-    /*  68 */ { SDL_SCANCODE_D, SDL_KMOD_SHIFT },
-    /*  69 */ { SDL_SCANCODE_E, SDL_KMOD_SHIFT },
-    /*  70 */ { SDL_SCANCODE_F, SDL_KMOD_SHIFT },
-    /*  71 */ { SDL_SCANCODE_G, SDL_KMOD_SHIFT },
-    /*  72 */ { SDL_SCANCODE_H, SDL_KMOD_SHIFT },
-    /*  73 */ { SDL_SCANCODE_I, SDL_KMOD_SHIFT },
-    /*  74 */ { SDL_SCANCODE_J, SDL_KMOD_SHIFT },
-    /*  75 */ { SDL_SCANCODE_K, SDL_KMOD_SHIFT },
-    /*  76 */ { SDL_SCANCODE_L, SDL_KMOD_SHIFT },
-    /*  77 */ { SDL_SCANCODE_M, SDL_KMOD_SHIFT },
-    /*  78 */ { SDL_SCANCODE_N, SDL_KMOD_SHIFT },
-    /*  79 */ { SDL_SCANCODE_O, SDL_KMOD_SHIFT },
-    /*  80 */ { SDL_SCANCODE_P, SDL_KMOD_SHIFT },
-    /*  81 */ { SDL_SCANCODE_Q, SDL_KMOD_SHIFT },
-    /*  82 */ { SDL_SCANCODE_R, SDL_KMOD_SHIFT },
-    /*  83 */ { SDL_SCANCODE_S, SDL_KMOD_SHIFT },
-    /*  84 */ { SDL_SCANCODE_T, SDL_KMOD_SHIFT },
-    /*  85 */ { SDL_SCANCODE_U, SDL_KMOD_SHIFT },
-    /*  86 */ { SDL_SCANCODE_V, SDL_KMOD_SHIFT },
-    /*  87 */ { SDL_SCANCODE_W, SDL_KMOD_SHIFT },
-    /*  88 */ { SDL_SCANCODE_X, SDL_KMOD_SHIFT },
-    /*  89 */ { SDL_SCANCODE_Y, SDL_KMOD_SHIFT },
-    /*  90 */ { SDL_SCANCODE_Z, SDL_KMOD_SHIFT },
+    /*  62 */ { SDL_SCANCODE_PERIOD, KMOD_SHIFT }, /* plus shift modifier '>' */
+    /*  63 */ { SDL_SCANCODE_SLASH, KMOD_SHIFT },  /* plus shift modifier '?' */
+    /*  64 */ { SDL_SCANCODE_2, KMOD_SHIFT },      /* plus shift modifier '@' */
+    /*  65 */ { SDL_SCANCODE_A, KMOD_SHIFT },      /* all the following need shift modifiers */
+    /*  66 */ { SDL_SCANCODE_B, KMOD_SHIFT },
+    /*  67 */ { SDL_SCANCODE_C, KMOD_SHIFT },
+    /*  68 */ { SDL_SCANCODE_D, KMOD_SHIFT },
+    /*  69 */ { SDL_SCANCODE_E, KMOD_SHIFT },
+    /*  70 */ { SDL_SCANCODE_F, KMOD_SHIFT },
+    /*  71 */ { SDL_SCANCODE_G, KMOD_SHIFT },
+    /*  72 */ { SDL_SCANCODE_H, KMOD_SHIFT },
+    /*  73 */ { SDL_SCANCODE_I, KMOD_SHIFT },
+    /*  74 */ { SDL_SCANCODE_J, KMOD_SHIFT },
+    /*  75 */ { SDL_SCANCODE_K, KMOD_SHIFT },
+    /*  76 */ { SDL_SCANCODE_L, KMOD_SHIFT },
+    /*  77 */ { SDL_SCANCODE_M, KMOD_SHIFT },
+    /*  78 */ { SDL_SCANCODE_N, KMOD_SHIFT },
+    /*  79 */ { SDL_SCANCODE_O, KMOD_SHIFT },
+    /*  80 */ { SDL_SCANCODE_P, KMOD_SHIFT },
+    /*  81 */ { SDL_SCANCODE_Q, KMOD_SHIFT },
+    /*  82 */ { SDL_SCANCODE_R, KMOD_SHIFT },
+    /*  83 */ { SDL_SCANCODE_S, KMOD_SHIFT },
+    /*  84 */ { SDL_SCANCODE_T, KMOD_SHIFT },
+    /*  85 */ { SDL_SCANCODE_U, KMOD_SHIFT },
+    /*  86 */ { SDL_SCANCODE_V, KMOD_SHIFT },
+    /*  87 */ { SDL_SCANCODE_W, KMOD_SHIFT },
+    /*  88 */ { SDL_SCANCODE_X, KMOD_SHIFT },
+    /*  89 */ { SDL_SCANCODE_Y, KMOD_SHIFT },
+    /*  90 */ { SDL_SCANCODE_Z, KMOD_SHIFT },
     /*  91 */ { SDL_SCANCODE_LEFTBRACKET, 0 },
     /*  92 */ { SDL_SCANCODE_BACKSLASH, 0 },
     /*  93 */ { SDL_SCANCODE_RIGHTBRACKET, 0 },
-    /*  94 */ { SDL_SCANCODE_6, SDL_KMOD_SHIFT },     /* plus shift modifier '^' */
-    /*  95 */ { SDL_SCANCODE_MINUS, SDL_KMOD_SHIFT }, /* plus shift modifier '_' */
-    /*  96 */ { SDL_SCANCODE_GRAVE, SDL_KMOD_SHIFT }, /* '`'                     */
+    /*  94 */ { SDL_SCANCODE_6, KMOD_SHIFT },     /* plus shift modifier '^' */
+    /*  95 */ { SDL_SCANCODE_MINUS, KMOD_SHIFT }, /* plus shift modifier '_' */
+    /*  96 */ { SDL_SCANCODE_GRAVE, KMOD_SHIFT }, /* '`'                     */
     /*  97 */ { SDL_SCANCODE_A, 0 },
     /*  98 */ { SDL_SCANCODE_B, 0 },
     /*  99 */ { SDL_SCANCODE_C, 0 },
@@ -157,9 +160,11 @@ static ASCIIKeyInfo SDL_ASCIIKeyInfoTable[] = {
     /* 120 */ { SDL_SCANCODE_X, 0 },
     /* 121 */ { SDL_SCANCODE_Y, 0 },
     /* 122 */ { SDL_SCANCODE_Z, 0 },
-    /* 123 */ { SDL_SCANCODE_LEFTBRACKET, SDL_KMOD_SHIFT },  /* plus shift modifier '{' */
-    /* 124 */ { SDL_SCANCODE_BACKSLASH, SDL_KMOD_SHIFT },    /* plus shift modifier '|' */
-    /* 125 */ { SDL_SCANCODE_RIGHTBRACKET, SDL_KMOD_SHIFT }, /* plus shift modifier '}' */
-    /* 126 */ { SDL_SCANCODE_GRAVE, SDL_KMOD_SHIFT },        /* plus shift modifier '~' */
-    /* 127 */ { SDL_SCANCODE_BACKSPACE, SDL_KMOD_SHIFT }
+    /* 123 */ { SDL_SCANCODE_LEFTBRACKET, KMOD_SHIFT },  /* plus shift modifier '{' */
+    /* 124 */ { SDL_SCANCODE_BACKSLASH, KMOD_SHIFT },    /* plus shift modifier '|' */
+    /* 125 */ { SDL_SCANCODE_RIGHTBRACKET, KMOD_SHIFT }, /* plus shift modifier '}' */
+    /* 126 */ { SDL_SCANCODE_GRAVE, KMOD_SHIFT },        /* plus shift modifier '~' */
+    /* 127 */ { SDL_SCANCODE_BACKSPACE, KMOD_SHIFT }
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

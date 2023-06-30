@@ -19,11 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-extern int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch);
-extern int SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);
-extern void SDL_NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
+extern int SDL_NGAGE_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch);
+extern int SDL_NGAGE_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects);
+extern void SDL_NGAGE_DestroyWindowFramebuffer(_THIS, SDL_Window *window);
 
 /****************************************************************************/
 /* Runtime                                                                  */
@@ -34,3 +34,5 @@ class NGAGE_Runtime
   public:
     IMPORT_C static void GetScreenInfo(TScreenInfoV01 &screenInfo2);
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

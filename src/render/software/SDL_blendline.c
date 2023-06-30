@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_SW && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED
 
 #include "SDL_draw.h"
 #include "SDL_blendline.h"
@@ -809,7 +809,7 @@ int SDL_BlendLine(SDL_Surface *dst, int x1, int y1, int x2, int y2,
 
     /* Perform clipping */
     /* FIXME: We don't actually want to clip, as it may change line slope */
-    if (!SDL_GetRectAndLineIntersection(&dst->clip_rect, &x1, &y1, &x2, &y2)) {
+    if (!SDL_IntersectRectAndLine(&dst->clip_rect, &x1, &y1, &x2, &y2)) {
         return 0;
     }
 
@@ -843,7 +843,7 @@ int SDL_BlendLines(SDL_Surface *dst, const SDL_Point *points, int count,
 
         /* Perform clipping */
         /* FIXME: We don't actually want to clip, as it may change line slope */
-        if (!SDL_GetRectAndLineIntersection(&dst->clip_rect, &x1, &y1, &x2, &y2)) {
+        if (!SDL_IntersectRectAndLine(&dst->clip_rect, &x1, &y1, &x2, &y2)) {
             continue;
         }
 
@@ -860,3 +860,5 @@ int SDL_BlendLines(SDL_Surface *dst, const SDL_Point *points, int count,
 }
 
 #endif /* SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

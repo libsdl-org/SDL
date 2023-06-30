@@ -22,7 +22,7 @@
 #ifndef SDL_shaders_gl_h_
 #define SDL_shaders_gl_h_
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 /* OpenGL shader implementation */
 
@@ -56,3 +56,5 @@ extern void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader);
 extern void GL_DestroyShaderContext(GL_ShaderContext *ctx);
 
 #endif /* SDL_shaders_gl_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

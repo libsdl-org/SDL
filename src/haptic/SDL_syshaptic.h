@@ -19,10 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #ifndef SDL_syshaptic_h_
 #define SDL_syshaptic_h_
+
+#include "SDL_haptic.h"
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -38,7 +40,7 @@ struct haptic_effect
 /*
  * The real SDL_Haptic struct.
  */
-struct SDL_Haptic
+struct _SDL_Haptic
 {
     Uint8 index; /* Stores index it is attached to */
 
@@ -53,7 +55,7 @@ struct SDL_Haptic
 
     int rumble_id;                  /* ID of rumble effect for simple rumble API. */
     SDL_HapticEffect rumble_effect; /* Rumble effect. */
-    struct SDL_Haptic *next;       /* pointer to next haptic we have allocated */
+    struct _SDL_Haptic *next;       /* pointer to next haptic we have allocated */
 };
 
 /*
@@ -211,3 +213,5 @@ extern int SDL_SYS_HapticStopAll(SDL_Haptic *haptic);
 #endif
 
 #endif /* SDL_syshaptic_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

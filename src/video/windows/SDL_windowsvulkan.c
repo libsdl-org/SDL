@@ -24,18 +24,18 @@
  * SDL_x11vulkan.c.
  */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WINDOWS)
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_WINDOWS
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
 
+#include "SDL_loadso.h"
 #include "SDL_windowsvulkan.h"
+#include "SDL_syswm.h"
 
-#include <SDL3/SDL_syswm.h>
-
-int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
@@ -102,7 +102,7 @@ fail:
     return -1;
 }
 
-void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
+void WIN_Vulkan_UnloadLibrary(_THIS)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -110,7 +110,8 @@ void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+SDL_bool WIN_Vulkan_GetInstanceExtensions(_THIS,
+                                          SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
 {
@@ -126,12 +127,12 @@ SDL_bool WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
         extensionsForWin32);
 }
 
-SDL_bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+SDL_bool WIN_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)
 {
-    SDL_WindowData *windowData = window->driverdata;
+    SDL_WindowData *windowData = (SDL_WindowData *)window->driverdata;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateWin32SurfaceKHR vkCreateWin32SurfaceKHR =
@@ -167,3 +168,5 @@ SDL_bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
 }
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

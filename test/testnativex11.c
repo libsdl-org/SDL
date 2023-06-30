@@ -14,8 +14,6 @@
 
 #ifdef TEST_NATIVE_X11
 
-#include <X11/Xlib.h>
-
 static void *CreateWindowX11(int w, int h);
 static void DestroyWindowX11(void *window);
 

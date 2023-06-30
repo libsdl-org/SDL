@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_WINRT
+#if SDL_VIDEO_DRIVER_WINRT
 
 /*
  * Windows includes:
@@ -37,6 +37,7 @@ extern "C" {
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../SDL_sysvideo.h"
+#include "SDL_events.h"
 }
 
 #include "../../core/winrt/SDL_winrtapp_direct3d.h"
@@ -176,8 +177,8 @@ static int WINRT_ShowCursor(SDL_Cursor *cursor)
         // Tech notes:
         //  - SDL's blank cursor resource uses a resource ID of 5000.
         //  - SDL's cursor resources consist of the following two files:
-        //     - src/main/winrt/SDL3-WinRTResource_BlankCursor.cur -- cursor pixel data
-        //     - src/main/winrt/SDL3-WinRTResources.rc             -- declares the cursor resource, and its ID (of 5000)
+        //     - src/main/winrt/SDL2-WinRTResource_BlankCursor.cur -- cursor pixel data
+        //     - src/main/winrt/SDL2-WinRTResources.rc             -- declares the cursor resource, and its ID (of 5000)
         //
 
         const unsigned int win32CursorResourceID = 5000;
@@ -204,7 +205,7 @@ static int WINRT_SetRelativeMouseMode(SDL_bool enabled)
     return 0;
 }
 
-void WINRT_InitMouse(SDL_VideoDevice *_this)
+void WINRT_InitMouse(_THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -214,7 +215,7 @@ void WINRT_InitMouse(SDL_VideoDevice *_this)
         - programmatically moveable cursors
     */
 
-#if !SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
     // mouse->CreateCursor = WINRT_CreateCursor;
     mouse->CreateSystemCursor = WINRT_CreateSystemCursor;
     mouse->ShowCursor = WINRT_ShowCursor;
@@ -226,8 +227,10 @@ void WINRT_InitMouse(SDL_VideoDevice *_this)
 #endif
 }
 
-void WINRT_QuitMouse(SDL_VideoDevice *_this)
+void WINRT_QuitMouse(_THIS)
 {
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINRT */
+
+/* vi: set ts=4 sw=4 expandtab: */

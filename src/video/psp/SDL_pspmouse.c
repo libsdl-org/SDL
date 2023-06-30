@@ -18,12 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_PSP
+#if SDL_VIDEO_DRIVER_PSP
 
 #include <stdio.h>
 
+#include "SDL_error.h"
+#include "SDL_mouse.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_pspmouse_c.h"
@@ -35,3 +37,5 @@ struct WMcursor
 };
 
 #endif /* SDL_VIDEO_DRIVER_PSP */
+
+/* vi: set ts=4 sw=4 expandtab: */

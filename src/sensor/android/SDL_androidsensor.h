@@ -18,4 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "SDL_config.h"
+
+/* The private structure used to keep track of a sensor */
+struct sensor_hwdata
+{
+    ASensorRef asensor;
+    ASensorEventQueue *eventqueue;
+};
+
+/* vi: set ts=4 sw=4 expandtab: */

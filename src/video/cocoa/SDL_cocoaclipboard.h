@@ -18,22 +18,19 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_cocoaclipboard_h_
 #define SDL_cocoaclipboard_h_
 
 /* Forward declaration */
-@class SDL_CocoaVideoData;
+@class SDL_VideoData;
 
-extern int Cocoa_SetClipboardText(SDL_VideoDevice *_this, const char *text);
-extern char *Cocoa_GetClipboardText(SDL_VideoDevice *_this);
-extern SDL_bool Cocoa_HasClipboardText(SDL_VideoDevice *_this);
-extern void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data);
-extern void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, size_t *len, const char *mime_type);
-extern SDL_bool Cocoa_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
-extern int Cocoa_SetClipboardData(SDL_VideoDevice *_this, SDL_ClipboardDataCallback callback, size_t mime_count,
-                                  const char **mime_types, void *userdata);
-
+extern int Cocoa_SetClipboardText(_THIS, const char *text);
+extern char *Cocoa_GetClipboardText(_THIS);
+extern SDL_bool Cocoa_HasClipboardText(_THIS);
+extern void Cocoa_CheckClipboardUpdate(SDL_VideoData * data);
 
 #endif /* SDL_cocoaclipboard_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

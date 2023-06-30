@@ -18,11 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #include "SDL_syshaptic.h"
 #include "SDL_haptic_c.h"
-#include "../joystick/SDL_joystick_c.h" /* For SDL_IsJoystickValid */
+#include "../joystick/SDL_joystick_c.h" /* For SDL_PrivateJoystickValid */
 
 /* Global for SDL_windowshaptic.c */
 #if (defined(SDL_HAPTIC_DINPUT) && SDL_HAPTIC_DINPUT) || (defined(SDL_HAPTIC_XINPUT) && SDL_HAPTIC_XINPUT)
@@ -34,7 +34,7 @@ static SDL_Haptic *SDL_haptics = NULL;
 /*
  * Initializes the Haptic devices.
  */
-int SDL_InitHaptics(void)
+int SDL_HapticInit(void)
 {
     int status;
 
@@ -132,7 +132,7 @@ SDL_Haptic *SDL_HapticOpen(int device_index)
     /* Initialize the haptic device */
     SDL_memset(haptic, 0, sizeof(*haptic));
     haptic->rumble_id = -1;
-    haptic->index = (Uint8)device_index;
+    haptic->index = device_index;
     if (SDL_SYS_HapticOpen(haptic) < 0) {
         SDL_free(haptic);
         return NULL;
@@ -233,7 +233,7 @@ int SDL_JoystickIsHaptic(SDL_Joystick *joystick)
     SDL_LockJoysticks();
     {
         /* Must be a valid joystick */
-        if (!SDL_IsJoystickValid(joystick)) {
+        if (!SDL_PrivateJoystickValid(joystick)) {
             SDL_UnlockJoysticks();
             return -1;
         }
@@ -269,7 +269,7 @@ SDL_Haptic *SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
     SDL_LockJoysticks();
     {
         /* Must be a valid joystick */
-        if (!SDL_IsJoystickValid(joystick)) {
+        if (!SDL_PrivateJoystickValid(joystick)) {
             SDL_SetError("Haptic: Joystick isn't valid.");
             SDL_UnlockJoysticks();
             return NULL;
@@ -375,7 +375,7 @@ void SDL_HapticClose(SDL_Haptic *haptic)
 /*
  * Cleans up after the subsystem.
  */
-void SDL_QuitHaptics(void)
+void SDL_HapticQuit(void)
 {
     while (SDL_haptics) {
         SDL_HapticClose(SDL_haptics);
@@ -811,3 +811,5 @@ int SDL_HapticRumbleStop(SDL_Haptic *haptic)
 
     return SDL_HapticStopEffect(haptic, haptic->rumble_id);
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

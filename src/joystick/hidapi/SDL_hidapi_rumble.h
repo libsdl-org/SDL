@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
@@ -26,7 +26,7 @@
 
 /* Advanced API */
 #ifdef SDL_THREAD_SAFETY_ANALYSIS
-extern SDL_Mutex *SDL_HIDAPI_rumble_lock;
+extern SDL_mutex *SDL_HIDAPI_rumble_lock;
 #endif
 int SDL_HIDAPI_LockRumble(void) SDL_TRY_ACQUIRE(0, SDL_HIDAPI_rumble_lock);
 SDL_bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size);
@@ -40,3 +40,5 @@ int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size
 void SDL_HIDAPI_QuitRumble(void);
 
 #endif /* SDL_JOYSTICK_HIDAPI */
+
+/* vi: set ts=4 sw=4 expandtab: */

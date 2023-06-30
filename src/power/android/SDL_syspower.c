@@ -18,11 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
-#ifdef SDL_POWER_ANDROID
+#if SDL_POWER_ANDROID
 
+#include "SDL_power.h"
 #include "../SDL_syspower.h"
 
 #include "../../core/android/SDL_android.h"
@@ -58,3 +59,5 @@ SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *state, int *seconds, int *perc
 
 #endif /* SDL_POWER_ANDROID */
 #endif /* SDL_POWER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

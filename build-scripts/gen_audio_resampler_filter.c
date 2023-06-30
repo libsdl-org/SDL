@@ -154,6 +154,10 @@ int main(void)
         printf("%s%.9ff", ((i % 5) == 4) ? ",\n    " : ", ", ResamplerFilterDifference[i+1]);
     }
     printf("\n};\n\n");
+    printf("/* vi: set ts=4 sw=4 expandtab: */\n\n");
 
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */
+

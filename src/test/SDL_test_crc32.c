@@ -25,7 +25,10 @@
  Original source code contributed by A. Schiffler for GSOC project.
 
 */
-#include <SDL3/SDL_test.h>
+
+#include "SDL_config.h"
+
+#include "SDL_test.h"
 
 int SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext)
 {
@@ -158,3 +161,5 @@ int SDLTest_Crc32Done(SDLTest_Crc32Context *crcContext)
 
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

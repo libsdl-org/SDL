@@ -92,7 +92,7 @@ SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_array_flags, (struct wl_proxy
 
 #if 0 /* TODO RECONNECT: See waylandvideo.c for more information! */
 #if SDL_WAYLAND_CHECK_VERSION(broken, on, purpose)
-SDL_WAYLAND_SYM(int, wl_display_reconnect, (struct wl_display*))
+SDL_WAYLAND_SYM(int, wl_display_reconnect, (struct wl_display*));
 #endif
 #endif /* 0 */
 
@@ -130,7 +130,7 @@ SDL_WAYLAND_SYM(int, xkb_state_key_get_syms, (struct xkb_state *, xkb_keycode_t,
 SDL_WAYLAND_SYM(int, xkb_keysym_to_utf8, (xkb_keysym_t, char *, size_t) )
 SDL_WAYLAND_SYM(struct xkb_keymap *, xkb_keymap_new_from_string, (struct xkb_context *, const char *, enum xkb_keymap_format, enum xkb_keymap_compile_flags))
 SDL_WAYLAND_SYM(struct xkb_state *, xkb_state_new, (struct xkb_keymap *) )
-SDL_WAYLAND_SYM(int, xkb_keymap_key_repeats, (struct xkb_keymap *keymap, xkb_keycode_t key) )
+SDL_WAYLAND_SYM(int, xkb_keymap_key_repeats, (struct xkb_keymap *keymap, xkb_keycode_t key) );
 SDL_WAYLAND_SYM(void, xkb_keymap_unref, (struct xkb_keymap *) )
 SDL_WAYLAND_SYM(void, xkb_state_unref, (struct xkb_state *) )
 SDL_WAYLAND_SYM(void, xkb_context_unref, (struct xkb_context *) )
@@ -206,7 +206,6 @@ SDL_WAYLAND_SYM(void, libdecor_frame_set_parent, (struct libdecor_frame *,\
                                                   struct libdecor_frame *))
 SDL_WAYLAND_SYM(struct xdg_surface *, libdecor_frame_get_xdg_surface, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(struct xdg_toplevel *, libdecor_frame_get_xdg_toplevel, (struct libdecor_frame *))
-SDL_WAYLAND_SYM(void, libdecor_frame_translate_coordinate, (struct libdecor_frame *, int, int, int *, int *))
 SDL_WAYLAND_SYM(void, libdecor_frame_map, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(struct libdecor_state *, libdecor_state_new, (int, int))
 SDL_WAYLAND_SYM(void, libdecor_state_free, (struct libdecor_state *))
@@ -218,7 +217,6 @@ SDL_WAYLAND_SYM(bool, libdecor_configuration_get_window_state, (struct libdecor_
                                                                 enum libdecor_window_state *))
 SDL_WAYLAND_SYM(int, libdecor_dispatch, (struct libdecor *, int))
 
-#if defined(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR) || defined(SDL_HAVE_LIBDECOR_GET_MIN_MAX)
 /* Only found in libdecor 0.1.1 or higher, so failure to load them is not fatal. */
 SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_min_content_size, (struct libdecor_frame *,\
                                                             int *,\
@@ -228,11 +226,11 @@ SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_max_content_size, (struct libdecor_
                                                             int *))
 #endif
 
-#endif
-
 #undef SDL_WAYLAND_MODULE
 #undef SDL_WAYLAND_SYM
 #undef SDL_WAYLAND_SYM_OPT
 #undef SDL_WAYLAND_INTERFACE
 
 /* *INDENT-ON* */ /* clang-format on */
+
+/* vi: set ts=4 sw=4 expandtab: */

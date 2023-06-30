@@ -23,24 +23,26 @@
 #include <LocaleRoster.h>
 #include <TypeConstants.h>
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 #include "../SDL_syslocale.h"
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     BLocaleRoster *roster = BLocaleRoster::Default();
     roster->Refresh();
 
     BMessage msg;
     if (roster->GetPreferredLanguages(&msg) != B_OK) {
-        return SDL_SetError("BLocaleRoster couldn't get preferred languages");
+        SDL_SetError("BLocaleRoster couldn't get preferred languages");
+        return;
     }
 
     const char *key = "language";
     type_code typ = B_ANY_TYPE;
     int32 numlangs = 0;
     if ((msg.GetInfo(key, &typ, &numlangs) != B_OK) || (typ != B_STRING_TYPE)) {
-        return SDL_SetError("BLocaleRoster message was wrong");
+        SDL_SetError("BLocaleRoster message was wrong");
+        return;
     }
 
     for (int32 i = 0; i < numlangs; i++) {
@@ -68,5 +70,7 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             buflen--;
         }
     }
-    return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */
+

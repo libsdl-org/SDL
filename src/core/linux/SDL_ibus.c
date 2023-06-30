@@ -18,21 +18,20 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef HAVE_IBUS_IBUS_H
+#include "SDL.h"
+#include "SDL_hints.h"
+#include "SDL_syswm.h"
 #include "SDL_ibus.h"
 #include "SDL_dbus.h"
-
-#ifdef SDL_USE_LIBDBUS
-
 #include "../../video/SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 
-#ifdef SDL_VIDEO_DRIVER_X11
-#include "../../video/x11/SDL_x11video.h"
+#if SDL_VIDEO_DRIVER_X11
+    #include "../../video/x11/SDL_x11video.h"
 #endif
-#include <SDL3/SDL_syswm.h>
 
 #include <sys/inotify.h>
 #include <unistd.h>
@@ -64,28 +63,28 @@ static Uint32 IBus_ModState(void)
     SDL_Keymod sdl_mods = SDL_GetModState();
 
     /* Not sure about MOD3, MOD4 and HYPER mappings */
-    if (sdl_mods & SDL_KMOD_LSHIFT) {
+    if (sdl_mods & KMOD_LSHIFT) {
         ibus_mods |= IBUS_SHIFT_MASK;
     }
-    if (sdl_mods & SDL_KMOD_CAPS) {
+    if (sdl_mods & KMOD_CAPS) {
         ibus_mods |= IBUS_LOCK_MASK;
     }
-    if (sdl_mods & SDL_KMOD_LCTRL) {
+    if (sdl_mods & KMOD_LCTRL) {
         ibus_mods |= IBUS_CONTROL_MASK;
     }
-    if (sdl_mods & SDL_KMOD_LALT) {
+    if (sdl_mods & KMOD_LALT) {
         ibus_mods |= IBUS_MOD1_MASK;
     }
-    if (sdl_mods & SDL_KMOD_NUM) {
+    if (sdl_mods & KMOD_NUM) {
         ibus_mods |= IBUS_MOD2_MASK;
     }
-    if (sdl_mods & SDL_KMOD_MODE) {
+    if (sdl_mods & KMOD_MODE) {
         ibus_mods |= IBUS_MOD5_MASK;
     }
-    if (sdl_mods & SDL_KMOD_LGUI) {
+    if (sdl_mods & KMOD_LGUI) {
         ibus_mods |= IBUS_SUPER_MASK;
     }
-    if (sdl_mods & SDL_KMOD_RGUI) {
+    if (sdl_mods & KMOD_RGUI) {
         ibus_mods |= IBUS_META_MASK;
     }
 
@@ -447,7 +446,7 @@ static void SDLCALL IBus_SetCapabilities(void *data, const char *name, const cha
 
 static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
 {
-    const char *client_name = "SDL3_Application";
+    const char *client_name = "SDL2_Application";
     const char *path = NULL;
     SDL_bool result = SDL_FALSE;
     DBusObjectPathVTable ibus_vtable;
@@ -715,20 +714,25 @@ void SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
         return;
     }
 
+    SDL_VERSION(&info.version);
+    if (!SDL_GetWindowWMInfo(focused_win, &info)) {
+        return;
+    }
+
     SDL_GetWindowPosition(focused_win, &x, &y);
 
-    if (SDL_GetWindowWMInfo(focused_win, &info, SDL_SYSWM_CURRENT_VERSION) == 0) {
-#ifdef SDL_ENABLE_SYSWM_X11
-        if (info.subsystem == SDL_SYSWM_X11) {
-            Display *x_disp = info.info.x11.display;
-            int x_screen = info.info.x11.screen;
-            Window x_win = info.info.x11.window;
-            Window unused;
+#if SDL_VIDEO_DRIVER_X11
+    if (info.subsystem == SDL_SYSWM_X11) {
+        SDL_DisplayData *displaydata = (SDL_DisplayData *) SDL_GetDisplayForWindow(focused_win)->driverdata;
 
-            X11_XTranslateCoordinates(x_disp, x_win, RootWindow(x_disp, x_screen), 0, 0, &x, &y, &unused);
-        }
-#endif
+        Display *x_disp = info.info.x11.display;
+        Window x_win = info.info.x11.window;
+        int x_screen = displaydata->screen;
+        Window unused;
+
+        X11_XTranslateCoordinates(x_disp, x_win, RootWindow(x_disp, x_screen), 0, 0, &x, &y, &unused);
     }
+#endif
 
     x += ibus_cursor_rect.x;
     y += ibus_cursor_rect.y;
@@ -754,6 +758,6 @@ void SDL_IBus_PumpEvents(void)
     }
 }
 
-#endif // SDL_USE_LIBDBUS
-
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

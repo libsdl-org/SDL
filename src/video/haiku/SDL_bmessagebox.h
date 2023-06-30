@@ -23,9 +23,9 @@
 #ifndef SDL_BMESSAGEBOX_H
 #define SDL_BMESSAGEBOX_H
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_HAIKU
+#if SDL_VIDEO_DRIVER_HAIKU
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,3 +41,5 @@ HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

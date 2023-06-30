@@ -17,7 +17,7 @@ generate_shaders()
     rm -f sdl.air sdl.metalar sdl.metallib
 }
 
-generate_shaders macos macos macosx 10.11
+generate_shaders osx osx macosx 10.11
 generate_shaders ios ios iphoneos 8.0
 generate_shaders iphonesimulator ios iphonesimulator 8.0
 generate_shaders tvos ios appletvos 9.0

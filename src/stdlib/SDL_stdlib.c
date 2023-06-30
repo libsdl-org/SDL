@@ -18,15 +18,22 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+
+#if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
+#define SDL_DISABLE_ANALYZE_MACROS 1
+#endif
+
+#include "../SDL_internal.h"
 
 /* This file contains portable stdlib functions for SDL */
 
+#include "SDL_stdinc.h"
 #include "../libm/math_libm.h"
 
-double SDL_atan(double x)
+double
+SDL_atan(double x)
 {
-#ifdef HAVE_ATAN
+#if defined(HAVE_ATAN)
     return atan(x);
 #else
     return SDL_uclibc_atan(x);
@@ -35,16 +42,17 @@ double SDL_atan(double x)
 
 float SDL_atanf(float x)
 {
-#ifdef HAVE_ATANF
+#if defined(HAVE_ATANF)
     return atanf(x);
 #else
     return (float)SDL_atan((double)x);
 #endif
 }
 
-double SDL_atan2(double y, double x)
+double
+SDL_atan2(double y, double x)
 {
-#ifdef HAVE_ATAN2
+#if defined(HAVE_ATAN2)
     return atan2(y, x);
 #else
     return SDL_uclibc_atan2(y, x);
@@ -53,25 +61,27 @@ double SDL_atan2(double y, double x)
 
 float SDL_atan2f(float y, float x)
 {
-#ifdef HAVE_ATAN2F
+#if defined(HAVE_ATAN2F)
     return atan2f(y, x);
 #else
     return (float)SDL_atan2((double)y, (double)x);
 #endif
 }
 
-double SDL_acos(double val)
+double
+SDL_acos(double val)
 {
-#ifdef HAVE_ACOS
+#if defined(HAVE_ACOS)
     return acos(val);
 #else
     double result;
     if (val == -1.0) {
-        result = SDL_PI_D;
+        result = M_PI;
     } else {
         result = SDL_atan(SDL_sqrt(1.0 - val * val) / val);
-        if (result < 0.0) {
-            result += SDL_PI_D;
+        if (result < 0.0)
+        {
+            result += M_PI;
         }
     }
     return result;
@@ -80,23 +90,24 @@ double SDL_acos(double val)
 
 float SDL_acosf(float val)
 {
-#ifdef HAVE_ACOSF
+#if defined(HAVE_ACOSF)
     return acosf(val);
 #else
     return (float)SDL_acos((double)val);
 #endif
 }
 
-double SDL_asin(double val)
+double
+SDL_asin(double val)
 {
-#ifdef HAVE_ASIN
+#if defined(HAVE_ASIN)
     return asin(val);
 #else
     double result;
     if (val == -1.0) {
-        result = -(SDL_PI_D / 2.0);
+        result = -(M_PI / 2.0);
     } else {
-        result = (SDL_PI_D / 2.0) - SDL_acos(val);
+        result = (M_PI / 2.0) - SDL_acos(val);
     }
     return result;
 #endif
@@ -104,16 +115,17 @@ double SDL_asin(double val)
 
 float SDL_asinf(float val)
 {
-#ifdef HAVE_ASINF
+#if defined(HAVE_ASINF)
     return asinf(val);
 #else
     return (float)SDL_asin((double)val);
 #endif
 }
 
-double SDL_ceil(double x)
+double
+SDL_ceil(double x)
 {
-#ifdef HAVE_CEIL
+#if defined(HAVE_CEIL)
     return ceil(x);
 #else
     double integer = SDL_floor(x);
@@ -127,16 +139,17 @@ double SDL_ceil(double x)
 
 float SDL_ceilf(float x)
 {
-#ifdef HAVE_CEILF
+#if defined(HAVE_CEILF)
     return ceilf(x);
 #else
     return (float)SDL_ceil((double)x);
 #endif
 }
 
-double SDL_copysign(double x, double y)
+double
+SDL_copysign(double x, double y)
 {
-#ifdef HAVE_COPYSIGN
+#if defined(HAVE_COPYSIGN)
     return copysign(x, y);
 #elif defined(HAVE__COPYSIGN)
     return _copysign(x, y);
@@ -153,16 +166,17 @@ double SDL_copysign(double x, double y)
 
 float SDL_copysignf(float x, float y)
 {
-#ifdef HAVE_COPYSIGNF
+#if defined(HAVE_COPYSIGNF)
     return copysignf(x, y);
 #else
     return (float)SDL_copysign((double)x, (double)y);
 #endif
 }
 
-double SDL_cos(double x)
+double
+SDL_cos(double x)
 {
-#ifdef HAVE_COS
+#if defined(HAVE_COS)
     return cos(x);
 #else
     return SDL_uclibc_cos(x);
@@ -171,16 +185,17 @@ double SDL_cos(double x)
 
 float SDL_cosf(float x)
 {
-#ifdef HAVE_COSF
+#if defined(HAVE_COSF)
     return cosf(x);
 #else
     return (float)SDL_cos((double)x);
 #endif
 }
 
-double SDL_exp(double x)
+double
+SDL_exp(double x)
 {
-#ifdef HAVE_EXP
+#if defined(HAVE_EXP)
     return exp(x);
 #else
     return SDL_uclibc_exp(x);
@@ -189,16 +204,17 @@ double SDL_exp(double x)
 
 float SDL_expf(float x)
 {
-#ifdef HAVE_EXPF
+#if defined(HAVE_EXPF)
     return expf(x);
 #else
     return (float)SDL_exp((double)x);
 #endif
 }
 
-double SDL_fabs(double x)
+double
+SDL_fabs(double x)
 {
-#ifdef HAVE_FABS
+#if defined(HAVE_FABS)
     return fabs(x);
 #else
     return SDL_uclibc_fabs(x);
@@ -207,16 +223,17 @@ double SDL_fabs(double x)
 
 float SDL_fabsf(float x)
 {
-#ifdef HAVE_FABSF
+#if defined(HAVE_FABSF)
     return fabsf(x);
 #else
     return (float)SDL_fabs((double)x);
 #endif
 }
 
-double SDL_floor(double x)
+double
+SDL_floor(double x)
 {
-#ifdef HAVE_FLOOR
+#if defined(HAVE_FLOOR)
     return floor(x);
 #else
     return SDL_uclibc_floor(x);
@@ -225,16 +242,17 @@ double SDL_floor(double x)
 
 float SDL_floorf(float x)
 {
-#ifdef HAVE_FLOORF
+#if defined(HAVE_FLOORF)
     return floorf(x);
 #else
     return (float)SDL_floor((double)x);
 #endif
 }
 
-double SDL_trunc(double x)
+double
+SDL_trunc(double x)
 {
-#ifdef HAVE_TRUNC
+#if defined(HAVE_TRUNC)
     return trunc(x);
 #else
     if (x >= 0.0f) {
@@ -247,16 +265,17 @@ double SDL_trunc(double x)
 
 float SDL_truncf(float x)
 {
-#ifdef HAVE_TRUNCF
+#if defined(HAVE_TRUNCF)
     return truncf(x);
 #else
     return (float)SDL_trunc((double)x);
 #endif
 }
 
-double SDL_fmod(double x, double y)
+double
+SDL_fmod(double x, double y)
 {
-#ifdef HAVE_FMOD
+#if defined(HAVE_FMOD)
     return fmod(x, y);
 #else
     return SDL_uclibc_fmod(x, y);
@@ -265,16 +284,17 @@ double SDL_fmod(double x, double y)
 
 float SDL_fmodf(float x, float y)
 {
-#ifdef HAVE_FMODF
+#if defined(HAVE_FMODF)
     return fmodf(x, y);
 #else
     return (float)SDL_fmod((double)x, (double)y);
 #endif
 }
 
-double SDL_log(double x)
+double
+SDL_log(double x)
 {
-#ifdef HAVE_LOG
+#if defined(HAVE_LOG)
     return log(x);
 #else
     return SDL_uclibc_log(x);
@@ -283,16 +303,17 @@ double SDL_log(double x)
 
 float SDL_logf(float x)
 {
-#ifdef HAVE_LOGF
+#if defined(HAVE_LOGF)
     return logf(x);
 #else
     return (float)SDL_log((double)x);
 #endif
 }
 
-double SDL_log10(double x)
+double
+SDL_log10(double x)
 {
-#ifdef HAVE_LOG10
+#if defined(HAVE_LOG10)
     return log10(x);
 #else
     return SDL_uclibc_log10(x);
@@ -301,37 +322,17 @@ double SDL_log10(double x)
 
 float SDL_log10f(float x)
 {
-#ifdef HAVE_LOG10F
+#if defined(HAVE_LOG10F)
     return log10f(x);
 #else
     return (float)SDL_log10((double)x);
 #endif
 }
 
-double SDL_modf(double x, double *y)
+double
+SDL_pow(double x, double y)
 {
-#ifdef HAVE_MODF
-    return modf(x, y);
-#else
-    return SDL_uclibc_modf(x, y);
-#endif
-}
-
-float SDL_modff(float x, float *y)
-{
-#ifdef HAVE_MODFF
-    return modff(x, y);
-#else
-    double double_result, double_y;
-    double_result = SDL_modf((double)x, &double_y);
-    *y = (float)double_y;
-    return (float)double_result;
-#endif
-}
-
-double SDL_pow(double x, double y)
-{
-#ifdef HAVE_POW
+#if defined(HAVE_POW)
     return pow(x, y);
 #else
     return SDL_uclibc_pow(x, y);
@@ -340,14 +341,15 @@ double SDL_pow(double x, double y)
 
 float SDL_powf(float x, float y)
 {
-#ifdef HAVE_POWF
+#if defined(HAVE_POWF)
     return powf(x, y);
 #else
     return (float)SDL_pow((double)x, (double)y);
 #endif
 }
 
-double SDL_round(double arg)
+double
+SDL_round(double arg)
 {
 #if defined HAVE_ROUND
     return round(arg);
@@ -387,9 +389,10 @@ long SDL_lroundf(float arg)
 #endif
 }
 
-double SDL_scalbn(double x, int n)
+double
+SDL_scalbn(double x, int n)
 {
-#ifdef HAVE_SCALBN
+#if defined(HAVE_SCALBN)
     return scalbn(x, n);
 #elif defined(HAVE__SCALB)
     return _scalb(x, n);
@@ -404,16 +407,17 @@ double SDL_scalbn(double x, int n)
 
 float SDL_scalbnf(float x, int n)
 {
-#ifdef HAVE_SCALBNF
+#if defined(HAVE_SCALBNF)
     return scalbnf(x, n);
 #else
     return (float)SDL_scalbn((double)x, n);
 #endif
 }
 
-double SDL_sin(double x)
+double
+SDL_sin(double x)
 {
-#ifdef HAVE_SIN
+#if defined(HAVE_SIN)
     return sin(x);
 #else
     return SDL_uclibc_sin(x);
@@ -422,16 +426,17 @@ double SDL_sin(double x)
 
 float SDL_sinf(float x)
 {
-#ifdef HAVE_SINF
+#if defined(HAVE_SINF)
     return sinf(x);
 #else
     return (float)SDL_sin((double)x);
 #endif
 }
 
-double SDL_sqrt(double x)
+double
+SDL_sqrt(double x)
 {
-#ifdef HAVE_SQRT
+#if defined(HAVE_SQRT)
     return sqrt(x);
 #else
     return SDL_uclibc_sqrt(x);
@@ -440,16 +445,17 @@ double SDL_sqrt(double x)
 
 float SDL_sqrtf(float x)
 {
-#ifdef HAVE_SQRTF
+#if defined(HAVE_SQRTF)
     return sqrtf(x);
 #else
     return (float)SDL_sqrt((double)x);
 #endif
 }
 
-double SDL_tan(double x)
+double
+SDL_tan(double x)
 {
-#ifdef HAVE_TAN
+#if defined(HAVE_TAN)
     return tan(x);
 #else
     return SDL_uclibc_tan(x);
@@ -458,7 +464,7 @@ double SDL_tan(double x)
 
 float SDL_tanf(float x)
 {
-#ifdef HAVE_TANF
+#if defined(HAVE_TANF)
     return tanf(x);
 #else
     return (float)SDL_tan((double)x);
@@ -467,14 +473,14 @@ float SDL_tanf(float x)
 
 int SDL_abs(int x)
 {
-#ifdef HAVE_ABS
+#if defined(HAVE_ABS)
     return abs(x);
 #else
     return (x < 0) ? -x : x;
 #endif
 }
 
-#ifdef HAVE_CTYPE_H
+#if defined(HAVE_CTYPE_H)
 int SDL_isalpha(int x)
 {
     return isalpha(x);
@@ -566,7 +572,7 @@ void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void 
 
 void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
 {
-#ifdef HAVE_MEMSET
+#if defined(HAVE_MEMSET)
     return memset(dst, c, len);
 #else
     size_t left;
@@ -612,45 +618,6 @@ void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
 #endif /* HAVE_MEMSET */
 }
 
-/* Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent. */
-void *SDL_memset4(void *dst, Uint32 val, size_t dwords)
-{
-#if defined(__APPLE__) && defined(HAVE_STRING_H)
-    memset_pattern4(dst, &val, dwords * 4);
-#elif defined(__GNUC__) && defined(__i386__)
-    int u0, u1, u2;
-    __asm__ __volatile__(
-        "cld \n\t"
-        "rep ; stosl \n\t"
-        : "=&D"(u0), "=&a"(u1), "=&c"(u2)
-        : "0"(dst), "1"(val), "2"(SDL_static_cast(Uint32, dwords))
-        : "memory");
-#else
-    size_t _n = (dwords + 3) / 4;
-    Uint32 *_p = SDL_static_cast(Uint32 *, dst);
-    Uint32 _val = (val);
-    if (dwords == 0) {
-        return dst;
-    }
-    switch (dwords % 4) {
-    case 0:
-        do {
-            *_p++ = _val;
-            SDL_FALLTHROUGH;
-        case 3:
-            *_p++ = _val;
-            SDL_FALLTHROUGH;
-        case 2:
-            *_p++ = _val;
-            SDL_FALLTHROUGH;
-        case 1:
-            *_p++ = _val;
-        } while (--_n);
-    }
-#endif
-    return dst;
-}
-
 #if defined(HAVE_CTYPE_H) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 int SDL_isblank(int x)
 {
@@ -663,39 +630,4 @@ int SDL_isblank(int x)
 }
 #endif
 
-void *SDL_aligned_alloc(size_t alignment, size_t size)
-{
-    size_t padding;
-    Uint8 *retval = NULL;
-
-    if (alignment < sizeof(void*)) {
-        alignment = sizeof(void*);
-    }
-    padding = (alignment - (size % alignment));
-
-    if (SDL_size_add_overflow(size, alignment, &size) == 0 &&
-        SDL_size_add_overflow(size, sizeof(void *), &size) == 0 &&
-        SDL_size_add_overflow(size, padding, &size) == 0) {
-        void *original = SDL_malloc(size);
-        if (original) {
-            /* Make sure we have enough space to store the original pointer */
-            retval = (Uint8 *)original + sizeof(original);
-
-            /* Align the pointer we're going to return */
-            retval += alignment - (((size_t)retval) % alignment);
-
-            /* Store the original pointer right before the returned value */
-            SDL_memcpy(retval - sizeof(original), &original, sizeof(original));
-        }
-    }
-    return retval;
-}
-
-void SDL_aligned_free(void *mem)
-{
-    if (mem) {
-        void *original;
-        SDL_memcpy(&original, ((Uint8 *)mem - sizeof(original)), sizeof(original));
-        SDL_free(original);
-    }
-}
+/* vi: set ts=4 sw=4 expandtab: */

@@ -12,28 +12,22 @@
 
 /* Simple test of the SDL threading code */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include "SDL.h"
 
 static SDL_TLSID tls;
 static int alive = 0;
 static int testprio = 0;
-static SDLTest_CommonState *state;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
 {
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
+    exit(rc);
 }
 
 static const char *
@@ -53,14 +47,14 @@ getprioritystr(SDL_ThreadPriority priority)
     return "???";
 }
 
-static int SDLCALL
+int SDLCALL
 ThreadFunc(void *data)
 {
     SDL_ThreadPriority prio = SDL_THREAD_PRIORITY_NORMAL;
 
-    SDL_SetTLS(tls, "baby thread", NULL);
+    SDL_TLSSet(tls, "baby thread", NULL);
     SDL_Log("Started thread %s: My thread id is %lu, thread data = %s\n",
-            (char *)data, SDL_ThreadID(), (const char *)SDL_GetTLS(tls));
+            (char *)data, SDL_ThreadID(), (const char *)SDL_TLSGet(tls));
     while (alive) {
         SDL_Log("Thread '%s' is alive!\n", (char *)data);
 
@@ -88,37 +82,11 @@ killed(int sig)
 
 int main(int argc, char *argv[])
 {
-    int i;
+    int arg = 1;
     SDL_Thread *thread;
-
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    /* Parse commandline */
-    for (i = 1; i < argc;) {
-        int consumed;
-
-        consumed = SDLTest_CommonArg(state, i);
-        if (!consumed) {
-            if (SDL_strcmp("--prio", argv[i]) == 0) {
-                testprio = 1;
-                consumed = 1;
-            }
-        }
-        if (consumed <= 0) {
-            static const char *options[] = { "[--prio]", NULL };
-            SDLTest_CommonLogUsage(state, argv[0], options);
-            exit(1);
-        }
-
-        i += consumed;
-    }
 
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
@@ -132,10 +100,17 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    tls = SDL_CreateTLS();
+    while (argv[arg] && *argv[arg] == '-') {
+        if (SDL_strcmp(argv[arg], "--prio") == 0) {
+            testprio = 1;
+        }
+        ++arg;
+    }
+
+    tls = SDL_TLSCreate();
     SDL_assert(tls);
-    SDL_SetTLS(tls, "main thread", NULL);
-    SDL_Log("Main thread data initially: %s\n", (const char *)SDL_GetTLS(tls));
+    SDL_TLSSet(tls, "main thread", NULL);
+    SDL_Log("Main thread data initially: %s\n", (const char *)SDL_TLSGet(tls));
 
     alive = 1;
     thread = SDL_CreateThread(ThreadFunc, "One", "#1");
@@ -148,7 +123,7 @@ int main(int argc, char *argv[])
     alive = 0;
     SDL_WaitThread(thread, NULL);
 
-    SDL_Log("Main thread data finally: %s\n", (const char *)SDL_GetTLS(tls));
+    SDL_Log("Main thread data finally: %s\n", (const char *)SDL_TLSGet(tls));
 
     alive = 1;
     (void)signal(SIGTERM, killed);

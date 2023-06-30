@@ -1048,3 +1048,5 @@ const char *wmtab[] = {
     "UNKNOWN (1023)",
     "WM_USER"
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

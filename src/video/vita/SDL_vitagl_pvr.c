@@ -18,15 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_VITA) && defined(SDL_VIDEO_VITA_PVR) && defined(SDL_VIDEO_VITA_PVR_OGL)
+#if SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR && SDL_VIDEO_VITA_PVR_OGL
 #include <stdlib.h>
 #include <string.h>
 #include <psp2/kernel/modulemgr.h>
 #include <gpu_es4/psp2_pvr_hint.h>
 #include <gl4esinit.h>
 
+#include "SDL_error.h"
+#include "SDL_log.h"
 #include "SDL_vitavideo.h"
 #include "../SDL_egl_c.h"
 #include "SDL_vitagl_pvr_c.h"
@@ -34,16 +36,16 @@
 #define MAX_PATH 256 // vita limits are somehow wrong
 
 /* Defaults */
-static int FB_WIDTH = 960;
-static int FB_HEIGHT = 544;
+int FB_WIDTH = 960;
+int FB_HEIGHT = 544;
 
-static void getFBSize(int *width, int *height)
+void getFBSize(int *width, int *height)
 {
     *width = FB_WIDTH;
     *height = FB_HEIGHT;
 }
 
-int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+int VITA_GL_LoadLibrary(_THIS, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
     char *override = SDL_getenv("VITA_MODULE_PATH");
@@ -80,7 +82,7 @@ int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }
 
-SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_GLContext VITA_GL_CreateContext(_THIS, SDL_Window *window)
 {
     char gl_version[3];
     SDL_GLContext context = NULL;
@@ -93,7 +95,7 @@ SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     _this->gl_config.minor_version = 0;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 
-    context = SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
+    context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);
 
     if (context != NULL) {
         FB_WIDTH = window->w;
@@ -114,9 +116,11 @@ SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     return context;
 }
 
-SDL_FunctionPointer VITA_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
+void *VITA_GL_GetProcAddress(_THIS, const char *proc)
 {
     return gl4es_GetProcAddress(proc);
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR */
+
+/* vi: set ts=4 sw=4 expandtab: */

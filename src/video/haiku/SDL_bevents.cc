@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_HAIKU
+#if SDL_VIDEO_DRIVER_HAIKU
 
 #include "SDL_bevents.h"
 
@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-void HAIKU_PumpEvents(SDL_VideoDevice *_this) {
+void HAIKU_PumpEvents(_THIS) {
     /* Since the event thread is its own thread, this isn't really necessary */
 }
 
@@ -37,3 +37,5 @@ void HAIKU_PumpEvents(SDL_VideoDevice *_this) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
+
+/* vi: set ts=4 sw=4 expandtab: */

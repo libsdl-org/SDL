@@ -1,7 +1,7 @@
 Nokia N-Gage
 ============
 
-SDL port for Symbian S60v1 and v2 with a main focus on the Nokia N-Gage
+SDL2 port for Symbian S60v1 and v2 with a main focus on the Nokia N-Gage
 (Classic and QD) by [Michael Fitzmayer](https://github.com/mupfdev).
 
 Compiling
@@ -12,7 +12,7 @@ The library is included in the
 [toolchain](https://github.com/ngagesdk/ngage-toolchain) as a
 sub-module.
 
-A complete example project based on SDL can be found in the GitHub
+A complete example project based on SDL2 can be found in the GitHub
 account of the SDK: [Wordle](https://github.com/ngagesdk/wordle).
 
 Current level of implementation

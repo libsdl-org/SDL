@@ -50,7 +50,10 @@
  ** documentation and/or software.                                    **
  ***********************************************************************
  */
-#include <SDL3/SDL_test.h>
+
+#include "SDL_config.h"
+
+#include "SDL_test.h"
 
 /* Forward declaration of static helper function */
 static void SDLTest_Md5Transform(MD5UINT4 *buf, const MD5UINT4 *in);
@@ -67,10 +70,10 @@ static unsigned char MD5PADDING[64] = {
 };
 
 /* F, G, H and I are basic MD5 functions */
-#define F(x, y, z) (((x) & (y)) | ((~(x)) & (z)))
-#define G(x, y, z) (((x) & (z)) | ((y) & (~(z))))
+#define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
+#define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
 #define H(x, y, z) ((x) ^ (y) ^ (z))
-#define I(x, y, z) ((y) ^ ((x) | (~(z))))
+#define I(x, y, z) ((y) ^ ((x) | (~z)))
 
 /* ROTATE_LEFT rotates x left n bits */
 #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
@@ -340,3 +343,5 @@ static void SDLTest_Md5Transform(MD5UINT4 *buf, const MD5UINT4 *in)
     buf[2] += c;
     buf[3] += d;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

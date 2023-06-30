@@ -13,7 +13,6 @@
 			buildPhases = (
 			);
 			dependencies = (
-				F35E56E72983133F00A43A5F /* PBXTargetDependency */,
 				DB0F490517CA5249008798C5 /* PBXTargetDependency */,
 				DB0F490717CA5249008798C5 /* PBXTargetDependency */,
 				DB166E9816A1D7CF00A1396C /* PBXTargetDependency */,
@@ -56,6 +55,7 @@
 				001799A21074403E00F5D044 /* PBXTargetDependency */,
 				DB166D7016A1CEAF00A1396C /* PBXTargetDependency */,
 				DB166D6E16A1CEAA00A1396C /* PBXTargetDependency */,
+				DB166DC316A1D32C00A1396C /* PBXTargetDependency */,
 			);
 			name = All;
 			productName = "Build All";
@@ -65,9 +65,9 @@
 /* Begin PBXBuildFile section */
 		001795901074216E00F5D044 /* testatomic.c in Sources */ = {isa = PBXBuildFile; fileRef = 0017958F1074216E00F5D044 /* testatomic.c */; };
 		001795B11074222D00F5D044 /* testaudioinfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 001795B01074222D00F5D044 /* testaudioinfo.c */; };
-		0017972810742FB900F5D044 /* testgl.c in Sources */ = {isa = PBXBuildFile; fileRef = 0017972710742FB900F5D044 /* testgl.c */; };
+		0017972810742FB900F5D044 /* testgl2.c in Sources */ = {isa = PBXBuildFile; fileRef = 0017972710742FB900F5D044 /* testgl2.c */; };
 		0017974F1074315700F5D044 /* testhaptic.c in Sources */ = {isa = PBXBuildFile; fileRef = 0017974E1074315700F5D044 /* testhaptic.c */; };
-		001797721074320D00F5D044 /* testdraw.c in Sources */ = {isa = PBXBuildFile; fileRef = 001797711074320D00F5D044 /* testdraw.c */; };
+		001797721074320D00F5D044 /* testdraw2.c in Sources */ = {isa = PBXBuildFile; fileRef = 001797711074320D00F5D044 /* testdraw2.c */; };
 		00179792107432FA00F5D044 /* testime.c in Sources */ = {isa = PBXBuildFile; fileRef = 00179791107432FA00F5D044 /* testime.c */; };
 		001797B41074339C00F5D044 /* testintersections.c in Sources */ = {isa = PBXBuildFile; fileRef = 001797B31074339C00F5D044 /* testintersections.c */; };
 		001797D41074343E00F5D044 /* testloadso.c in Sources */ = {isa = PBXBuildFile; fileRef = 001797D31074343E00F5D044 /* testloadso.c */; };
@@ -76,11 +76,11 @@
 		001798801074392D00F5D044 /* testnativecocoa.m in Sources */ = {isa = PBXBuildFile; fileRef = 0017985C107436ED00F5D044 /* testnativecocoa.m */; };
 		001798BA10743A4900F5D044 /* testpower.c in Sources */ = {isa = PBXBuildFile; fileRef = 001798B910743A4900F5D044 /* testpower.c */; };
 		001798FA10743E9200F5D044 /* testresample.c in Sources */ = {isa = PBXBuildFile; fileRef = 001798F910743E9200F5D044 /* testresample.c */; };
-		0017991A10743F5300F5D044 /* testsprite.c in Sources */ = {isa = PBXBuildFile; fileRef = 0017991910743F5300F5D044 /* testsprite.c */; };
-		0017993C10743FEF00F5D044 /* testwm.c in Sources */ = {isa = PBXBuildFile; fileRef = 0017993B10743FEF00F5D044 /* testwm.c */; };
+		0017991A10743F5300F5D044 /* testsprite2.c in Sources */ = {isa = PBXBuildFile; fileRef = 0017991910743F5300F5D044 /* testsprite2.c */; };
+		0017993C10743FEF00F5D044 /* testwm2.c in Sources */ = {isa = PBXBuildFile; fileRef = 0017993B10743FEF00F5D044 /* testwm2.c */; };
 		002F341809CA1C5B00EBEB88 /* testfile.c in Sources */ = {isa = PBXBuildFile; fileRef = 002F341709CA1C5B00EBEB88 /* testfile.c */; };
 		002F343709CA1F6F00EBEB88 /* testiconv.c in Sources */ = {isa = PBXBuildFile; fileRef = 002F343609CA1F6F00EBEB88 /* testiconv.c */; };
-		002F345409CA202000EBEB88 /* testoverlay.c in Sources */ = {isa = PBXBuildFile; fileRef = 002F345209CA201C00EBEB88 /* testoverlay.c */; };
+		002F345409CA202000EBEB88 /* testoverlay2.c in Sources */ = {isa = PBXBuildFile; fileRef = 002F345209CA201C00EBEB88 /* testoverlay2.c */; };
 		002F347009CA20A600EBEB88 /* testplatform.c in Sources */ = {isa = PBXBuildFile; fileRef = 002F346F09CA20A600EBEB88 /* testplatform.c */; };
 		00794E6609D20865003FC8A1 /* sample.wav in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6209D20839003FC8A1 /* sample.wav */; };
 		00794EF009D23739003FC8A1 /* utf8.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6309D20839003FC8A1 /* utf8.txt */; };
@@ -88,7 +88,7 @@
 		453774A5120915E3002F0F45 /* testshape.c in Sources */ = {isa = PBXBuildFile; fileRef = 453774A4120915E3002F0F45 /* testshape.c */; };
 		66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E88E8A203B778F0004D44E /* testyuv_cvt.c */; };
 		AAF02FFA1F90092700B9A9FB /* SDL_test_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */; };
-		BBFC08D0164C6876003E6A99 /* testgamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = BBFC088E164C6820003E6A99 /* testgamepad.c */; };
+		BBFC08D0164C6876003E6A99 /* testgamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = BBFC088E164C6820003E6A99 /* testgamecontroller.c */; };
 		BEC566B10761D90300A33029 /* checkkeys.c in Sources */ = {isa = PBXBuildFile; fileRef = 092D6D10FFB30A2C7F000001 /* checkkeys.c */; };
 		BEC566CB0761D90300A33029 /* loopwave.c in Sources */ = {isa = PBXBuildFile; fileRef = 083E4872006D84C97F000001 /* loopwave.c */; };
 		BEC567010761D90300A33029 /* testerror.c in Sources */ = {isa = PBXBuildFile; fileRef = 083E4878006D85357F000001 /* testerror.c */; };
@@ -109,6 +109,11 @@
 		DB166D9716A1D1A500A1396C /* SDL_test_font.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8816A1D1A500A1396C /* SDL_test_font.c */; };
 		DB166D9816A1D1A500A1396C /* SDL_test_fuzzer.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8916A1D1A500A1396C /* SDL_test_fuzzer.c */; };
 		DB166D9916A1D1A500A1396C /* SDL_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8A16A1D1A500A1396C /* SDL_test_harness.c */; };
+		DB166D9A16A1D1A500A1396C /* SDL_test_imageBlit.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8B16A1D1A500A1396C /* SDL_test_imageBlit.c */; };
+		DB166D9B16A1D1A500A1396C /* SDL_test_imageBlitBlend.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8C16A1D1A500A1396C /* SDL_test_imageBlitBlend.c */; };
+		DB166D9C16A1D1A500A1396C /* SDL_test_imageFace.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8D16A1D1A500A1396C /* SDL_test_imageFace.c */; };
+		DB166D9D16A1D1A500A1396C /* SDL_test_imagePrimitives.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8E16A1D1A500A1396C /* SDL_test_imagePrimitives.c */; };
+		DB166D9E16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8F16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c */; };
 		DB166D9F16A1D1A500A1396C /* SDL_test_log.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9016A1D1A500A1396C /* SDL_test_log.c */; };
 		DB166DA016A1D1A500A1396C /* SDL_test_md5.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9116A1D1A500A1396C /* SDL_test_md5.c */; };
 		DB166DA116A1D1A500A1396C /* SDL_test_random.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9216A1D1A500A1396C /* SDL_test_random.c */; };
@@ -119,6 +124,7 @@
 		DB166DAA16A1D27700A1396C /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		DB166DAB16A1D27C00A1396C /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		DB166DAC16A1D29000A1396C /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
+		DB166DC116A1D31E00A1396C /* testgesture.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CBB16A1C74100A1396C /* testgesture.c */; };
 		DB166DD716A1D37800A1396C /* testmessage.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CBD16A1C74100A1396C /* testmessage.c */; };
 		DB166DDB16A1D42F00A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
 		DB166DEA16A1D50C00A1396C /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
@@ -145,39 +151,16 @@
 		DB445EF418184B7000B306B0 /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		DB445EFB18184BB600B306B0 /* testdropfile.c in Sources */ = {isa = PBXBuildFile; fileRef = DB445EFA18184BB600B306B0 /* testdropfile.c */; };
 		DB89958418A19B130092407C /* testhotplug.c in Sources */ = {isa = PBXBuildFile; fileRef = DB89958318A19B130092407C /* testhotplug.c */; };
-		DBEC54EB1A1A8205005B1EAB /* gamepadmap.c in Sources */ = {isa = PBXBuildFile; fileRef = DBEC54D11A1A811D005B1EAB /* gamepadmap.c */; };
+		DBEC54EB1A1A8205005B1EAB /* controllermap.c in Sources */ = {isa = PBXBuildFile; fileRef = DBEC54D11A1A811D005B1EAB /* controllermap.c */; };
 		DBEC54ED1A1A828A005B1EAB /* axis.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D61A1A8145005B1EAB /* axis.bmp */; };
 		DBEC54EE1A1A828D005B1EAB /* button.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D71A1A8145005B1EAB /* button.bmp */; };
-		DBEC54EF1A1A828F005B1EAB /* gamepadmap.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D81A1A8145005B1EAB /* gamepadmap.bmp */; };
-		F35E56A6298312CB00A43A5F /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
-		F35E56CF2983130F00A43A5F /* testautomation_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B62983130A00A43A5F /* testautomation_main.c */; };
-		F35E56D02983130F00A43A5F /* testautomation_hints.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B72983130A00A43A5F /* testautomation_hints.c */; };
-		F35E56D12983130F00A43A5F /* testautomation_render.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B82983130A00A43A5F /* testautomation_render.c */; };
-		F35E56D22983130F00A43A5F /* testautomation_rwops.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B92983130B00A43A5F /* testautomation_rwops.c */; };
-		F35E56D32983130F00A43A5F /* testautomation_math.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56BA2983130B00A43A5F /* testautomation_math.c */; };
-		F35E56D42983130F00A43A5F /* testautomation_events.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56BB2983130B00A43A5F /* testautomation_events.c */; };
-		F35E56D52983130F00A43A5F /* testautomation_clipboard.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56BC2983130B00A43A5F /* testautomation_clipboard.c */; };
-		F35E56D62983130F00A43A5F /* testautomation_timer.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56BD2983130B00A43A5F /* testautomation_timer.c */; };
-		F35E56D72983130F00A43A5F /* testautomation_stdlib.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56BE2983130C00A43A5F /* testautomation_stdlib.c */; };
-		F35E56D82983130F00A43A5F /* testautomation_images.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56BF2983130C00A43A5F /* testautomation_images.c */; };
-		F35E56D92983130F00A43A5F /* testautomation_pixels.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56C02983130C00A43A5F /* testautomation_pixels.c */; };
-		F35E56DA2983130F00A43A5F /* testautomation_video.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56C12983130C00A43A5F /* testautomation_video.c */; };
-		F35E56DB2983130F00A43A5F /* testautomation_platform.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56C32983130D00A43A5F /* testautomation_platform.c */; };
-		F35E56DC2983130F00A43A5F /* testautomation_audio.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56C42983130D00A43A5F /* testautomation_audio.c */; };
-		F35E56DD2983130F00A43A5F /* testautomation_rect.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56C52983130D00A43A5F /* testautomation_rect.c */; };
-		F35E56DE2983130F00A43A5F /* testautomation_joystick.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56C62983130D00A43A5F /* testautomation_joystick.c */; };
-		F35E56DF2983130F00A43A5F /* testautomation_keyboard.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56C72983130E00A43A5F /* testautomation_keyboard.c */; };
-		F35E56E02983130F00A43A5F /* testautomation_sdltest.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56C82983130E00A43A5F /* testautomation_sdltest.c */; };
-		F35E56E12983130F00A43A5F /* testautomation_guid.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56C92983130E00A43A5F /* testautomation_guid.c */; };
-		F35E56E22983130F00A43A5F /* testautomation_syswm.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56CA2983130E00A43A5F /* testautomation_syswm.c */; };
-		F35E56E32983130F00A43A5F /* testautomation_surface.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56CB2983130F00A43A5F /* testautomation_surface.c */; };
-		F35E56E42983130F00A43A5F /* testautomation.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56CC2983130F00A43A5F /* testautomation.c */; };
-		F35E56E52983130F00A43A5F /* testautomation_mouse.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56CD2983130F00A43A5F /* testautomation_mouse.c */; };
+		DBEC54EF1A1A828F005B1EAB /* controllermap.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D81A1A8145005B1EAB /* controllermap.bmp */; };
 		F3C17C6B28E4022A00E1A26D /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		F3C17C7428E40AF000E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
-		F3C17C7628E40BA200E1A26D /* gamepadmap_back.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = F3C17C7528E40B6B00E1A26D /* gamepadmap_back.bmp */; };
+		F3C17C7628E40BA200E1A26D /* controllermap_back.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = F3C17C7528E40B6B00E1A26D /* controllermap_back.bmp */; };
 		F3C17C7728E40BC800E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17C7928E40C6E00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
+		F3C17C7A28E40CA600E1A26D /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		F3C17C7B28E40D4E00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17C7C28E40D7400E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17C7D28E40F9D00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
@@ -192,12 +175,58 @@
 		F3C17CEB28E4177600E1A26D /* testgeometry.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CD628E416AC00E1A26D /* testgeometry.c */; };
 		F3C17CEC28E417EB00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17CED28E417F400E1A26D /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
+		F3C17CEE28E4184700E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17CEF28E41D5800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17CFC28E41E9800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17CFD28E41EA100E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17CFE28E41EAC00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17CFF28E41EB000E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0028E41EB400E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0128E41EB800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0228E41EBC00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0328E41EC500E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0428E41EC800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0528E41ECB00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0628E41ECF00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0728E41ED300E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0828E41EDB00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0928E41EE100E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0A28E41EE700E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0B28E41EEB00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0C28E41EF000E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0D28E41EF400E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0E28E41EF900E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D0F28E41EFE00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1028E41F0200E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1128E41F0600E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1228E41F0A00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1328E41F0D00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1428E41F1100E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1528E41F1F00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1628E41F2400E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1728E41F2800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1828E41F2C00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1928E41F3100E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1A28E41F3500E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1B28E41F3800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1C28E41F3C00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1D28E41F4000E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1E28E41F4500E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D1F28E41F4800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D2028E41F4D00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D2228E41F5F00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D2328E41F6200E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D2428E41F6600E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D2528E41F6A00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D2628E41F6E00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D2728E41FD800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
+		F3C17D2828E41FDC00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
 		F3C17D3928E424B800E1A26D /* sample.wav in Resources */ = {isa = PBXBuildFile; fileRef = 00794E6209D20839003FC8A1 /* sample.wav */; };
 		F3C17D3B28E4252900E1A26D /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
 		F3C17D3C28E4277D00E1A26D /* axis.bmp in Resources */ = {isa = PBXBuildFile; fileRef = DBEC54D61A1A8145005B1EAB /* axis.bmp */; };
 		F3C17D3D28E4277D00E1A26D /* button.bmp in Resources */ = {isa = PBXBuildFile; fileRef = DBEC54D71A1A8145005B1EAB /* button.bmp */; };
-		F3C17D3E28E4277D00E1A26D /* gamepadmap_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F3C17C7528E40B6B00E1A26D /* gamepadmap_back.bmp */; };
-		F3C17D3F28E4277D00E1A26D /* gamepadmap.bmp in Resources */ = {isa = PBXBuildFile; fileRef = DBEC54D81A1A8145005B1EAB /* gamepadmap.bmp */; };
+		F3C17D3E28E4277D00E1A26D /* controllermap_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F3C17C7528E40B6B00E1A26D /* controllermap_back.bmp */; };
+		F3C17D3F28E4277D00E1A26D /* controllermap.bmp in Resources */ = {isa = PBXBuildFile; fileRef = DBEC54D81A1A8145005B1EAB /* controllermap.bmp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -234,7 +263,7 @@
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 00179756107431B300F5D044;
-			remoteInfo = testdraw;
+			remoteInfo = testdraw2;
 		};
 		0017995D1074403E00F5D044 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -255,7 +284,7 @@
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 0017970910742F3200F5D044;
-			remoteInfo = testgl;
+			remoteInfo = testgl2;
 		};
 		001799671074403E00F5D044 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -339,7 +368,7 @@
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 002F343C09CA1FB300EBEB88;
-			remoteInfo = testoverlay;
+			remoteInfo = testoverlay2;
 		};
 		001799871074403E00F5D044 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -374,7 +403,7 @@
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 001798FE10743F1000F5D044;
-			remoteInfo = testsprite;
+			remoteInfo = testsprite2;
 		};
 		001799931074403E00F5D044 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -395,7 +424,7 @@
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 0017992010743FB700F5D044;
-			remoteInfo = testwm;
+			remoteInfo = testwm2;
 		};
 		001799A11074403E00F5D044 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -444,7 +473,7 @@
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = BBFC08B7164C6862003E6A99;
-			remoteInfo = testgamepad;
+			remoteInfo = testgamecontroller;
 		};
 		DB166D6F16A1CEAF00A1396C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -452,6 +481,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 4537749112091504002F0F45;
 			remoteInfo = testshape;
+		};
+		DB166DC216A1D32C00A1396C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DB166DAD16A1D2F600A1396C;
+			remoteInfo = testgesture;
 		};
 		DB166DD816A1D38900A1396C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -523,13 +559,6 @@
 			remoteGlobalIDString = DB31407717554B71006C0E22;
 			remoteInfo = "Shared Library";
 		};
-		F35E56E62983133F00A43A5F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = F35E56A2298312CB00A43A5F;
-			remoteInfo = testautomation;
-		};
 		F3C17C5C28E3FB2900E1A26D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 003FA63A093FFD41000C53B3 /* SDL.xcodeproj */;
@@ -543,6 +572,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = A7D88D1523E24BED00DCD162;
 			remoteInfo = "Framework-tvOS";
+		};
+		F3C17C6028E3FB2900E1A26D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 003FA63A093FFD41000C53B3 /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E2D187CF28A5673500D2B4F1;
+			remoteInfo = "xcFramework-iOS";
 		};
 		F3C17C6228E3FB2900E1A26D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -686,8 +722,8 @@
 			files = (
 				DBEC54ED1A1A828A005B1EAB /* axis.bmp in CopyFiles */,
 				DBEC54EE1A1A828D005B1EAB /* button.bmp in CopyFiles */,
-				DBEC54EF1A1A828F005B1EAB /* gamepadmap.bmp in CopyFiles */,
-				F3C17C7628E40BA200E1A26D /* gamepadmap_back.bmp in CopyFiles */,
+				DBEC54EF1A1A828F005B1EAB /* controllermap.bmp in CopyFiles */,
+				F3C17C7628E40BA200E1A26D /* controllermap_back.bmp in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -698,12 +734,12 @@
 		0017958F1074216E00F5D044 /* testatomic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testatomic.c; sourceTree = "<group>"; };
 		001795AD107421BF00F5D044 /* testaudioinfo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testaudioinfo; path = testaudioinfo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		001795B01074222D00F5D044 /* testaudioinfo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testaudioinfo.c; sourceTree = "<group>"; };
-		0017972110742F3200F5D044 /* testgl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgl.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		0017972710742FB900F5D044 /* testgl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgl.c; sourceTree = "<group>"; };
+		0017972110742F3200F5D044 /* testgl2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgl2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0017972710742FB900F5D044 /* testgl2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgl2.c; sourceTree = "<group>"; };
 		00179748107430D600F5D044 /* testhaptic */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testhaptic; path = testhaptic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0017974E1074315700F5D044 /* testhaptic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testhaptic.c; sourceTree = "<group>"; };
-		0017976E107431B300F5D044 /* testdraw */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testdraw; path = testdraw.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		001797711074320D00F5D044 /* testdraw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testdraw.c; sourceTree = "<group>"; };
+		0017976E107431B300F5D044 /* testdraw2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testdraw2; path = testdraw2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		001797711074320D00F5D044 /* testdraw2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testdraw2.c; sourceTree = "<group>"; };
 		0017978E107432AE00F5D044 /* testime */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testime; path = testime.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		00179791107432FA00F5D044 /* testime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testime.c; sourceTree = "<group>"; };
 		001797AE1074334C00F5D044 /* testintersections */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testintersections; path = testintersections.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -721,16 +757,16 @@
 		001798B910743A4900F5D044 /* testpower.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testpower.c; sourceTree = "<group>"; };
 		001798F210743BEC00F5D044 /* testresample */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testresample; path = testresample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		001798F910743E9200F5D044 /* testresample.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testresample.c; sourceTree = "<group>"; };
-		0017991610743F1000F5D044 /* testsprite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testsprite; path = testsprite.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		0017991910743F5300F5D044 /* testsprite.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testsprite.c; sourceTree = "<group>"; };
-		0017993810743FB700F5D044 /* testwm */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testwm; path = testwm.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		0017993B10743FEF00F5D044 /* testwm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testwm.c; sourceTree = "<group>"; };
+		0017991610743F1000F5D044 /* testsprite2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testsprite2; path = testsprite2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0017991910743F5300F5D044 /* testsprite2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testsprite2.c; sourceTree = "<group>"; };
+		0017993810743FB700F5D044 /* testwm2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testwm2; path = testwm2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0017993B10743FEF00F5D044 /* testwm2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testwm2.c; sourceTree = "<group>"; };
 		002F341209CA1BFF00EBEB88 /* testfile */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testfile; path = testfile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		002F341709CA1C5B00EBEB88 /* testfile.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = testfile.c; sourceTree = "<group>"; };
 		002F343109CA1F0300EBEB88 /* testiconv */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testiconv; path = testiconv.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		002F343609CA1F6F00EBEB88 /* testiconv.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = testiconv.c; sourceTree = "<group>"; };
-		002F344D09CA1FB300EBEB88 /* testoverlay */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testoverlay; path = testoverlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		002F345209CA201C00EBEB88 /* testoverlay.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = testoverlay.c; sourceTree = "<group>"; };
+		002F344D09CA1FB300EBEB88 /* testoverlay2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testoverlay2; path = testoverlay2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		002F345209CA201C00EBEB88 /* testoverlay2.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = testoverlay2.c; sourceTree = "<group>"; };
 		002F346A09CA204F00EBEB88 /* testplatform */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testplatform; path = testplatform.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		002F346F09CA20A600EBEB88 /* testplatform.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = testplatform.c; sourceTree = "<group>"; };
 		003FA63A093FFD41000C53B3 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = ../SDL/SDL.xcodeproj; sourceTree = SOURCE_ROOT; };
@@ -755,8 +791,8 @@
 		453774A4120915E3002F0F45 /* testshape.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testshape.c; sourceTree = "<group>"; };
 		66E88E8A203B778F0004D44E /* testyuv_cvt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testyuv_cvt.c; sourceTree = "<group>"; };
 		AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_memory.c; sourceTree = "<group>"; };
-		BBFC088E164C6820003E6A99 /* testgamepad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgamepad.c; sourceTree = "<group>"; };
-		BBFC08CD164C6862003E6A99 /* testgamepad */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testgamepad; path = testgamepad.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBFC088E164C6820003E6A99 /* testgamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgamecontroller.c; sourceTree = "<group>"; };
+		BBFC08CD164C6862003E6A99 /* testgamecontroller */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testgamecontroller; path = testgamecontroller.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BEC566B60761D90300A33029 /* checkkeys */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = checkkeys; path = checkkeys.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BEC566D10761D90300A33029 /* loopwave */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = loopwave; path = loopwave.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BEC567060761D90400A33029 /* testerror */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testerror; path = testerror.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -772,6 +808,7 @@
 		DB0F48D817CA51D2008798C5 /* testfilesystem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testfilesystem.c; sourceTree = "<group>"; };
 		DB0F48EC17CA51E5008798C5 /* testdrawchessboard */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testdrawchessboard; path = testdrawchessboard.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB0F490117CA5212008798C5 /* testfilesystem */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testfilesystem; path = testfilesystem.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB166CBB16A1C74100A1396C /* testgesture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testgesture.c; sourceTree = "<group>"; };
 		DB166CBC16A1C74100A1396C /* testgles.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testgles.c; sourceTree = "<group>"; };
 		DB166CBD16A1C74100A1396C /* testmessage.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testmessage.c; sourceTree = "<group>"; };
 		DB166CBF16A1C74100A1396C /* testrelative.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testrelative.c; sourceTree = "<group>"; };
@@ -790,9 +827,15 @@
 		DB166D8816A1D1A500A1396C /* SDL_test_font.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_font.c; sourceTree = "<group>"; };
 		DB166D8916A1D1A500A1396C /* SDL_test_fuzzer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_fuzzer.c; sourceTree = "<group>"; };
 		DB166D8A16A1D1A500A1396C /* SDL_test_harness.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_harness.c; sourceTree = "<group>"; };
+		DB166D8B16A1D1A500A1396C /* SDL_test_imageBlit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_imageBlit.c; sourceTree = "<group>"; };
+		DB166D8C16A1D1A500A1396C /* SDL_test_imageBlitBlend.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_imageBlitBlend.c; sourceTree = "<group>"; };
+		DB166D8D16A1D1A500A1396C /* SDL_test_imageFace.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_imageFace.c; sourceTree = "<group>"; };
+		DB166D8E16A1D1A500A1396C /* SDL_test_imagePrimitives.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_imagePrimitives.c; sourceTree = "<group>"; };
+		DB166D8F16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_imagePrimitivesBlend.c; sourceTree = "<group>"; };
 		DB166D9016A1D1A500A1396C /* SDL_test_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_log.c; sourceTree = "<group>"; };
 		DB166D9116A1D1A500A1396C /* SDL_test_md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_md5.c; sourceTree = "<group>"; };
 		DB166D9216A1D1A500A1396C /* SDL_test_random.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_random.c; sourceTree = "<group>"; };
+		DB166DBF16A1D2F600A1396C /* testgesture */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testgesture; path = testgesture.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166DD516A1D36A00A1396C /* testmessage */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testmessage; path = testmessage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166DEE16A1D50C00A1396C /* testrelative */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testrelative; path = testrelative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166E0516A1D57C00A1396C /* testrendercopyex */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testrendercopyex; path = testrendercopyex.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -808,38 +851,15 @@
 		DB89957E18A19ABA0092407C /* testhotplug */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testhotplug; path = testhotplug.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB89958318A19B130092407C /* testhotplug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testhotplug.c; sourceTree = "<group>"; };
 		DBBC552C182831D700F3CA8D /* TestDropFile-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TestDropFile-Info.plist"; sourceTree = SOURCE_ROOT; };
-		DBEC54D11A1A811D005B1EAB /* gamepadmap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = gamepadmap.c; sourceTree = "<group>"; };
+		DBEC54D11A1A811D005B1EAB /* controllermap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = controllermap.c; sourceTree = "<group>"; };
 		DBEC54D61A1A8145005B1EAB /* axis.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = axis.bmp; sourceTree = "<group>"; };
 		DBEC54D71A1A8145005B1EAB /* button.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = button.bmp; sourceTree = "<group>"; };
-		DBEC54D81A1A8145005B1EAB /* gamepadmap.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = gamepadmap.bmp; sourceTree = "<group>"; };
-		DBEC54EA1A1A81C3005B1EAB /* gamepadmap */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = gamepadmap; path = gamepadmap.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F35E56AA298312CB00A43A5F /* testautomation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testautomation.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F35E56B62983130A00A43A5F /* testautomation_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_main.c; sourceTree = "<group>"; };
-		F35E56B72983130A00A43A5F /* testautomation_hints.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_hints.c; sourceTree = "<group>"; };
-		F35E56B82983130A00A43A5F /* testautomation_render.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_render.c; sourceTree = "<group>"; };
-		F35E56B92983130B00A43A5F /* testautomation_rwops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_rwops.c; sourceTree = "<group>"; };
-		F35E56BA2983130B00A43A5F /* testautomation_math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_math.c; sourceTree = "<group>"; };
-		F35E56BB2983130B00A43A5F /* testautomation_events.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_events.c; sourceTree = "<group>"; };
-		F35E56BC2983130B00A43A5F /* testautomation_clipboard.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_clipboard.c; sourceTree = "<group>"; };
-		F35E56BD2983130B00A43A5F /* testautomation_timer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_timer.c; sourceTree = "<group>"; };
-		F35E56BE2983130C00A43A5F /* testautomation_stdlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_stdlib.c; sourceTree = "<group>"; };
-		F35E56BF2983130C00A43A5F /* testautomation_images.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_images.c; sourceTree = "<group>"; };
-		F35E56C02983130C00A43A5F /* testautomation_pixels.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_pixels.c; sourceTree = "<group>"; };
-		F35E56C12983130C00A43A5F /* testautomation_video.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_video.c; sourceTree = "<group>"; };
-		F35E56C32983130D00A43A5F /* testautomation_platform.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_platform.c; sourceTree = "<group>"; };
-		F35E56C42983130D00A43A5F /* testautomation_audio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_audio.c; sourceTree = "<group>"; };
-		F35E56C52983130D00A43A5F /* testautomation_rect.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_rect.c; sourceTree = "<group>"; };
-		F35E56C62983130D00A43A5F /* testautomation_joystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_joystick.c; sourceTree = "<group>"; };
-		F35E56C72983130E00A43A5F /* testautomation_keyboard.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_keyboard.c; sourceTree = "<group>"; };
-		F35E56C82983130E00A43A5F /* testautomation_sdltest.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_sdltest.c; sourceTree = "<group>"; };
-		F35E56C92983130E00A43A5F /* testautomation_guid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_guid.c; sourceTree = "<group>"; };
-		F35E56CA2983130E00A43A5F /* testautomation_syswm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_syswm.c; sourceTree = "<group>"; };
-		F35E56CB2983130F00A43A5F /* testautomation_surface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_surface.c; sourceTree = "<group>"; };
-		F35E56CC2983130F00A43A5F /* testautomation.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation.c; sourceTree = "<group>"; };
-		F35E56CD2983130F00A43A5F /* testautomation_mouse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_mouse.c; sourceTree = "<group>"; };
+		DBEC54D81A1A8145005B1EAB /* controllermap.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = controllermap.bmp; sourceTree = "<group>"; };
+		DBEC54EA1A1A81C3005B1EAB /* controllermap */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = controllermap; path = controllermap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3C17C6A28E3FD4400E1A26D /* config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = config.xcconfig; sourceTree = "<group>"; };
 		F3C17C7328E40ADE00E1A26D /* testutils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testutils.c; sourceTree = "<group>"; };
-		F3C17C7528E40B6B00E1A26D /* gamepadmap_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = gamepadmap_back.bmp; sourceTree = "<group>"; };
+		F3C17C7528E40B6B00E1A26D /* controllermap_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = controllermap_back.bmp; sourceTree = "<group>"; };
+		F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_uikit_main.c; path = ../src/main/uikit/SDL_uikit_main.c; sourceTree = "<group>"; };
 		F3C17CD628E416AC00E1A26D /* testgeometry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgeometry.c; sourceTree = "<group>"; };
 		F3C17CDC28E416CF00E1A26D /* testgeometry.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgeometry.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -1091,6 +1111,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DB166DB016A1D2F600A1396C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3C17C7A28E40CA600E1A26D /* libSDL_test.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DB166DC716A1D36A00A1396C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1180,14 +1208,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F35E56A5298312CB00A43A5F /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F35E56A6298312CB00A43A5F /* libSDL_test.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		F3C17CD928E416CF00E1A26D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1202,16 +1222,17 @@
 		003FA63B093FFD41000C53B3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				003FA643093FFD41000C53B3 /* SDL3.framework */,
-				F3C17C5D28E3FB2900E1A26D /* SDL3.framework */,
-				F3C17C5F28E3FB2900E1A26D /* SDL3.framework */,
-				003FA645093FFD41000C53B3 /* libSDL3.a */,
-				F3C17C6328E3FB2900E1A26D /* libSDL3.a */,
-				F3C17C6528E3FB2900E1A26D /* libSDL3.a */,
-				DB1D40D717B3F30D00D74CFC /* libSDL3.dylib */,
-				F3C17C6728E3FB2900E1A26D /* libSDL3.dylib */,
-				F3C17C6928E3FB2900E1A26D /* libSDL3.dylib */,
-				003FA649093FFD41000C53B3 /* SDL3 */,
+				003FA643093FFD41000C53B3 /* SDL2.framework */,
+				F3C17C5D28E3FB2900E1A26D /* SDL2.framework */,
+				F3C17C5F28E3FB2900E1A26D /* SDL2.framework */,
+				F3C17C6128E3FB2900E1A26D /* SDL2.framework */,
+				003FA645093FFD41000C53B3 /* libSDL2.a */,
+				F3C17C6328E3FB2900E1A26D /* libSDL2.a */,
+				F3C17C6528E3FB2900E1A26D /* libSDL2.a */,
+				DB1D40D717B3F30D00D74CFC /* libSDL2.dylib */,
+				F3C17C6728E3FB2900E1A26D /* libSDL2.dylib */,
+				F3C17C6928E3FB2900E1A26D /* libSDL2.dylib */,
+				003FA649093FFD41000C53B3 /* SDL2 */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1221,8 +1242,8 @@
 			children = (
 				DBEC54D61A1A8145005B1EAB /* axis.bmp */,
 				DBEC54D71A1A8145005B1EAB /* button.bmp */,
-				F3C17C7528E40B6B00E1A26D /* gamepadmap_back.bmp */,
-				DBEC54D81A1A8145005B1EAB /* gamepadmap.bmp */,
+				F3C17C7528E40B6B00E1A26D /* controllermap_back.bmp */,
+				DBEC54D81A1A8145005B1EAB /* controllermap.bmp */,
 				00794E5D09D20839003FC8A1 /* icon.bmp */,
 				00794E5E09D20839003FC8A1 /* moose.dat */,
 				00794E5F09D20839003FC8A1 /* picture.xbm */,
@@ -1253,43 +1274,22 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */,
 				092D6D10FFB30A2C7F000001 /* checkkeys.c */,
-				DBEC54D11A1A811D005B1EAB /* gamepadmap.c */,
+				DBEC54D11A1A811D005B1EAB /* controllermap.c */,
 				083E4872006D84C97F000001 /* loopwave.c */,
 				0017958F1074216E00F5D044 /* testatomic.c */,
 				001795B01074222D00F5D044 /* testaudioinfo.c */,
-				F35E56C42983130D00A43A5F /* testautomation_audio.c */,
-				F35E56BC2983130B00A43A5F /* testautomation_clipboard.c */,
-				F35E56BB2983130B00A43A5F /* testautomation_events.c */,
-				F35E56C92983130E00A43A5F /* testautomation_guid.c */,
-				F35E56B72983130A00A43A5F /* testautomation_hints.c */,
-				F35E56BF2983130C00A43A5F /* testautomation_images.c */,
-				F35E56C62983130D00A43A5F /* testautomation_joystick.c */,
-				F35E56C72983130E00A43A5F /* testautomation_keyboard.c */,
-				F35E56B62983130A00A43A5F /* testautomation_main.c */,
-				F35E56BA2983130B00A43A5F /* testautomation_math.c */,
-				F35E56CD2983130F00A43A5F /* testautomation_mouse.c */,
-				F35E56C02983130C00A43A5F /* testautomation_pixels.c */,
-				F35E56C32983130D00A43A5F /* testautomation_platform.c */,
-				F35E56C52983130D00A43A5F /* testautomation_rect.c */,
-				F35E56B82983130A00A43A5F /* testautomation_render.c */,
-				F35E56B92983130B00A43A5F /* testautomation_rwops.c */,
-				F35E56C82983130E00A43A5F /* testautomation_sdltest.c */,
-				F35E56BE2983130C00A43A5F /* testautomation_stdlib.c */,
-				F35E56CB2983130F00A43A5F /* testautomation_surface.c */,
-				F35E56CA2983130E00A43A5F /* testautomation_syswm.c */,
-				F35E56BD2983130B00A43A5F /* testautomation_timer.c */,
-				F35E56C12983130C00A43A5F /* testautomation_video.c */,
-				F35E56CC2983130F00A43A5F /* testautomation.c */,
-				001797711074320D00F5D044 /* testdraw.c */,
+				001797711074320D00F5D044 /* testdraw2.c */,
 				DB0F48D717CA51D2008798C5 /* testdrawchessboard.c */,
 				DB445EFA18184BB600B306B0 /* testdropfile.c */,
 				083E4878006D85357F000001 /* testerror.c */,
 				002F341709CA1C5B00EBEB88 /* testfile.c */,
 				DB0F48D817CA51D2008798C5 /* testfilesystem.c */,
-				BBFC088E164C6820003E6A99 /* testgamepad.c */,
+				BBFC088E164C6820003E6A99 /* testgamecontroller.c */,
 				F3C17CD628E416AC00E1A26D /* testgeometry.c */,
-				0017972710742FB900F5D044 /* testgl.c */,
+				DB166CBB16A1C74100A1396C /* testgesture.c */,
+				0017972710742FB900F5D044 /* testgl2.c */,
 				DB166CBC16A1C74100A1396C /* testgles.c */,
 				0017974E1074315700F5D044 /* testhaptic.c */,
 				DB89958318A19B130092407C /* testhotplug.c */,
@@ -1306,7 +1306,7 @@
 				0017985B107436ED00F5D044 /* testnative.h */,
 				0017985C107436ED00F5D044 /* testnativecocoa.m */,
 				00179872107438D000F5D044 /* testnativex11.c */,
-				002F345209CA201C00EBEB88 /* testoverlay.c */,
+				002F345209CA201C00EBEB88 /* testoverlay2.c */,
 				002F346F09CA20A600EBEB88 /* testplatform.c */,
 				001798B910743A4900F5D044 /* testpower.c */,
 				DB166CBF16A1C74100A1396C /* testrelative.c */,
@@ -1318,14 +1318,14 @@
 				083E487E006D86A17F000001 /* testsem.c */,
 				DB166CC416A1C74100A1396C /* testshader.c */,
 				453774A4120915E3002F0F45 /* testshape.c */,
-				0017991910743F5300F5D044 /* testsprite.c */,
+				0017991910743F5300F5D044 /* testsprite2.c */,
 				DB166CC516A1C74100A1396C /* testspriteminimal.c */,
 				DB166CC616A1C74100A1396C /* teststreaming.c */,
 				092D6D58FFB311A97F000001 /* testthread.c */,
 				083E4880006D86A17F000001 /* testtimer.c */,
 				F3C17C7328E40ADE00E1A26D /* testutils.c */,
 				083E4882006D86A17F000001 /* testver.c */,
-				0017993B10743FEF00F5D044 /* testwm.c */,
+				0017993B10743FEF00F5D044 /* testwm2.c */,
 				66E88E8A203B778F0004D44E /* testyuv_cvt.c */,
 				083E4887006D86A17F000001 /* torturethread.c */,
 			);
@@ -1349,13 +1349,13 @@
 				BEC567F50761D90600A33029 /* torturethread */,
 				002F341209CA1BFF00EBEB88 /* testfile */,
 				002F343109CA1F0300EBEB88 /* testiconv */,
-				002F344D09CA1FB300EBEB88 /* testoverlay */,
+				002F344D09CA1FB300EBEB88 /* testoverlay2 */,
 				002F346A09CA204F00EBEB88 /* testplatform */,
 				0017958C10741F7900F5D044 /* testatomic */,
 				001795AD107421BF00F5D044 /* testaudioinfo */,
-				0017972110742F3200F5D044 /* testgl.app */,
+				0017972110742F3200F5D044 /* testgl2.app */,
 				00179748107430D600F5D044 /* testhaptic */,
-				0017976E107431B300F5D044 /* testdraw */,
+				0017976E107431B300F5D044 /* testdraw2 */,
 				0017978E107432AE00F5D044 /* testime */,
 				001797AE1074334C00F5D044 /* testintersections */,
 				001797D0107433C600F5D044 /* testloadso */,
@@ -1363,11 +1363,12 @@
 				001798941074392D00F5D044 /* testnative.app */,
 				001798B5107439DF00F5D044 /* testpower */,
 				001798F210743BEC00F5D044 /* testresample */,
-				0017991610743F1000F5D044 /* testsprite */,
-				0017993810743FB700F5D044 /* testwm */,
+				0017991610743F1000F5D044 /* testsprite2 */,
+				0017993810743FB700F5D044 /* testwm2 */,
 				4537749212091504002F0F45 /* testshape */,
-				BBFC08CD164C6862003E6A99 /* testgamepad */,
+				BBFC08CD164C6862003E6A99 /* testgamecontroller */,
 				DB166D7F16A1D12400A1396C /* libSDL_test.a */,
+				DB166DBF16A1D2F600A1396C /* testgesture */,
 				DB166DD516A1D36A00A1396C /* testmessage */,
 				DB166DEE16A1D50C00A1396C /* testrelative */,
 				DB166E0516A1D57C00A1396C /* testrendercopyex */,
@@ -1381,9 +1382,8 @@
 				DB0F490117CA5212008798C5 /* testfilesystem */,
 				DB89957E18A19ABA0092407C /* testhotplug */,
 				DB445EF818184B7000B306B0 /* testdropfile.app */,
-				DBEC54EA1A1A81C3005B1EAB /* gamepadmap */,
+				DBEC54EA1A1A81C3005B1EAB /* controllermap */,
 				F3C17CDC28E416CF00E1A26D /* testgeometry.app */,
-				F35E56AA298312CB00A43A5F /* testautomation.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1398,6 +1398,11 @@
 				DB166D8816A1D1A500A1396C /* SDL_test_font.c */,
 				DB166D8916A1D1A500A1396C /* SDL_test_fuzzer.c */,
 				DB166D8A16A1D1A500A1396C /* SDL_test_harness.c */,
+				DB166D8B16A1D1A500A1396C /* SDL_test_imageBlit.c */,
+				DB166D8C16A1D1A500A1396C /* SDL_test_imageBlitBlend.c */,
+				DB166D8D16A1D1A500A1396C /* SDL_test_imageFace.c */,
+				DB166D8E16A1D1A500A1396C /* SDL_test_imagePrimitives.c */,
+				DB166D8F16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c */,
 				DB166D9016A1D1A500A1396C /* SDL_test_log.c */,
 				DB166D9116A1D1A500A1396C /* SDL_test_md5.c */,
 				AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */,
@@ -1452,9 +1457,9 @@
 			productReference = 001795AD107421BF00F5D044 /* testaudioinfo */;
 			productType = "com.apple.product-type.application";
 		};
-		0017970910742F3200F5D044 /* testgl */ = {
+		0017970910742F3200F5D044 /* testgl2 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0017971B10742F3200F5D044 /* Build configuration list for PBXNativeTarget "testgl" */;
+			buildConfigurationList = 0017971B10742F3200F5D044 /* Build configuration list for PBXNativeTarget "testgl2" */;
 			buildPhases = (
 				0017970E10742F3200F5D044 /* Sources */,
 				0017970F10742F3200F5D044 /* Frameworks */,
@@ -1463,9 +1468,9 @@
 			);
 			dependencies = (
 			);
-			name = testgl;
+			name = testgl2;
 			productName = testalpha;
-			productReference = 0017972110742F3200F5D044 /* testgl.app */;
+			productReference = 0017972110742F3200F5D044 /* testgl2.app */;
 			productType = "com.apple.product-type.application";
 		};
 		00179730107430D600F5D044 /* testhaptic */ = {
@@ -1484,9 +1489,9 @@
 			productReference = 00179748107430D600F5D044 /* testhaptic */;
 			productType = "com.apple.product-type.application";
 		};
-		00179756107431B300F5D044 /* testdraw */ = {
+		00179756107431B300F5D044 /* testdraw2 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 00179768107431B300F5D044 /* Build configuration list for PBXNativeTarget "testdraw" */;
+			buildConfigurationList = 00179768107431B300F5D044 /* Build configuration list for PBXNativeTarget "testdraw2" */;
 			buildPhases = (
 				0017975B107431B300F5D044 /* Sources */,
 				0017975C107431B300F5D044 /* Frameworks */,
@@ -1495,9 +1500,9 @@
 			);
 			dependencies = (
 			);
-			name = testdraw;
+			name = testdraw2;
 			productName = testalpha;
-			productReference = 0017976E107431B300F5D044 /* testdraw */;
+			productReference = 0017976E107431B300F5D044 /* testdraw2 */;
 			productType = "com.apple.product-type.application";
 		};
 		00179776107432AE00F5D044 /* testime */ = {
@@ -1614,9 +1619,9 @@
 			productReference = 001798F210743BEC00F5D044 /* testresample */;
 			productType = "com.apple.product-type.application";
 		};
-		001798FE10743F1000F5D044 /* testsprite */ = {
+		001798FE10743F1000F5D044 /* testsprite2 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0017991010743F1000F5D044 /* Build configuration list for PBXNativeTarget "testsprite" */;
+			buildConfigurationList = 0017991010743F1000F5D044 /* Build configuration list for PBXNativeTarget "testsprite2" */;
 			buildPhases = (
 				0017990310743F1000F5D044 /* Sources */,
 				0017990410743F1000F5D044 /* Frameworks */,
@@ -1626,14 +1631,14 @@
 			);
 			dependencies = (
 			);
-			name = testsprite;
+			name = testsprite2;
 			productName = testalpha;
-			productReference = 0017991610743F1000F5D044 /* testsprite */;
+			productReference = 0017991610743F1000F5D044 /* testsprite2 */;
 			productType = "com.apple.product-type.application";
 		};
-		0017992010743FB700F5D044 /* testwm */ = {
+		0017992010743FB700F5D044 /* testwm2 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0017993210743FB700F5D044 /* Build configuration list for PBXNativeTarget "testwm" */;
+			buildConfigurationList = 0017993210743FB700F5D044 /* Build configuration list for PBXNativeTarget "testwm2" */;
 			buildPhases = (
 				0017992510743FB700F5D044 /* Sources */,
 				0017992610743FB700F5D044 /* Frameworks */,
@@ -1642,9 +1647,9 @@
 			);
 			dependencies = (
 			);
-			name = testwm;
+			name = testwm2;
 			productName = testalpha;
-			productReference = 0017993810743FB700F5D044 /* testwm */;
+			productReference = 0017993810743FB700F5D044 /* testwm2 */;
 			productType = "com.apple.product-type.application";
 		};
 		002F340109CA1BFF00EBEB88 /* testfile */ = {
@@ -1680,9 +1685,9 @@
 			productReference = 002F343109CA1F0300EBEB88 /* testiconv */;
 			productType = "com.apple.product-type.application";
 		};
-		002F343C09CA1FB300EBEB88 /* testoverlay */ = {
+		002F343C09CA1FB300EBEB88 /* testoverlay2 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 002F344909CA1FB300EBEB88 /* Build configuration list for PBXNativeTarget "testoverlay" */;
+			buildConfigurationList = 002F344909CA1FB300EBEB88 /* Build configuration list for PBXNativeTarget "testoverlay2" */;
 			buildPhases = (
 				002F344209CA1FB300EBEB88 /* Sources */,
 				002F344309CA1FB300EBEB88 /* Frameworks */,
@@ -1692,9 +1697,9 @@
 			);
 			dependencies = (
 			);
-			name = testoverlay;
+			name = testoverlay2;
 			productName = testalpha;
-			productReference = 002F344D09CA1FB300EBEB88 /* testoverlay */;
+			productReference = 002F344D09CA1FB300EBEB88 /* testoverlay2 */;
 			productType = "com.apple.product-type.application";
 		};
 		002F345909CA204F00EBEB88 /* testplatform */ = {
@@ -1730,9 +1735,9 @@
 			productReference = 4537749212091504002F0F45 /* testshape */;
 			productType = "com.apple.product-type.application";
 		};
-		BBFC08B7164C6862003E6A99 /* testgamepad */ = {
+		BBFC08B7164C6862003E6A99 /* testgamecontroller */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BBFC08CA164C6862003E6A99 /* Build configuration list for PBXNativeTarget "testgamepad" */;
+			buildConfigurationList = BBFC08CA164C6862003E6A99 /* Build configuration list for PBXNativeTarget "testgamecontroller" */;
 			buildPhases = (
 				BBFC08BC164C6862003E6A99 /* Sources */,
 				BBFC08BE164C6862003E6A99 /* Frameworks */,
@@ -1742,9 +1747,9 @@
 			);
 			dependencies = (
 			);
-			name = testgamepad;
+			name = testgamecontroller;
 			productName = testjoystick;
-			productReference = BBFC08CD164C6862003E6A99 /* testgamepad */;
+			productReference = BBFC08CD164C6862003E6A99 /* testgamecontroller */;
 			productType = "com.apple.product-type.application";
 		};
 		BEC566AB0761D90300A33029 /* checkkeys */ = {
@@ -1973,6 +1978,22 @@
 			productReference = DB166D7F16A1D12400A1396C /* libSDL_test.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		DB166DAD16A1D2F600A1396C /* testgesture */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DB166DBC16A1D2F600A1396C /* Build configuration list for PBXNativeTarget "testgesture" */;
+			buildPhases = (
+				DB166DAE16A1D2F600A1396C /* Sources */,
+				DB166DB016A1D2F600A1396C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testgesture;
+			productName = testalpha;
+			productReference = DB166DBF16A1D2F600A1396C /* testgesture */;
+			productType = "com.apple.product-type.application";
+		};
 		DB166DC416A1D36A00A1396C /* testmessage */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DB166DD216A1D36A00A1396C /* Build configuration list for PBXNativeTarget "testmessage" */;
@@ -2154,9 +2175,9 @@
 			productReference = DB89957E18A19ABA0092407C /* testhotplug */;
 			productType = "com.apple.product-type.application";
 		};
-		DBEC54D91A1A81C3005B1EAB /* gamepadmap */ = {
+		DBEC54D91A1A81C3005B1EAB /* controllermap */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DBEC54E71A1A81C3005B1EAB /* Build configuration list for PBXNativeTarget "gamepadmap" */;
+			buildConfigurationList = DBEC54E71A1A81C3005B1EAB /* Build configuration list for PBXNativeTarget "controllermap" */;
 			buildPhases = (
 				DBEC54DA1A1A81C3005B1EAB /* Sources */,
 				DBEC54DC1A1A81C3005B1EAB /* Frameworks */,
@@ -2166,25 +2187,9 @@
 			);
 			dependencies = (
 			);
-			name = gamepadmap;
+			name = controllermap;
 			productName = checkkeys;
-			productReference = DBEC54EA1A1A81C3005B1EAB /* gamepadmap */;
-			productType = "com.apple.product-type.application";
-		};
-		F35E56A2298312CB00A43A5F /* testautomation */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F35E56A7298312CB00A43A5F /* Build configuration list for PBXNativeTarget "testautomation" */;
-			buildPhases = (
-				F35E56A3298312CB00A43A5F /* Sources */,
-				F35E56A5298312CB00A43A5F /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = testautomation;
-			productName = testalpha;
-			productReference = F35E56AA298312CB00A43A5F /* testautomation.app */;
+			productReference = DBEC54EA1A1A81C3005B1EAB /* controllermap */;
 			productType = "com.apple.product-type.application";
 		};
 		F3C17CDB28E416CF00E1A26D /* testgeometry */ = {
@@ -2242,20 +2247,20 @@
 				BEC566920761D90300A33029 /* All */,
 				DB166D7E16A1D12400A1396C /* SDL_test */,
 				BEC566AB0761D90300A33029 /* checkkeys */,
-				DBEC54D91A1A81C3005B1EAB /* gamepadmap */,
+				DBEC54D91A1A81C3005B1EAB /* controllermap */,
 				BEC566C50761D90300A33029 /* loopwave */,
 				0017957410741F7900F5D044 /* testatomic */,
 				00179595107421BF00F5D044 /* testaudioinfo */,
-				F35E56A2298312CB00A43A5F /* testautomation */,
-				00179756107431B300F5D044 /* testdraw */,
+				00179756107431B300F5D044 /* testdraw2 */,
 				DB0F48D917CA51E5008798C5 /* testdrawchessboard */,
 				DB445EE618184B7000B306B0 /* testdropfile */,
 				BEC566FB0761D90300A33029 /* testerror */,
 				002F340109CA1BFF00EBEB88 /* testfile */,
 				DB0F48EF17CA5212008798C5 /* testfilesystem */,
-				BBFC08B7164C6862003E6A99 /* testgamepad */,
+				BBFC08B7164C6862003E6A99 /* testgamecontroller */,
 				F3C17CDB28E416CF00E1A26D /* testgeometry */,
-				0017970910742F3200F5D044 /* testgl */,
+				DB166DAD16A1D2F600A1396C /* testgesture */,
+				0017970910742F3200F5D044 /* testgl2 */,
 				00179730107430D600F5D044 /* testhaptic */,
 				DB89956D18A19ABA0092407C /* testhotplug */,
 				002F342009CA1F0300EBEB88 /* testiconv */,
@@ -2268,7 +2273,7 @@
 				DB166DC416A1D36A00A1396C /* testmessage */,
 				001797FA1074355200F5D044 /* testmultiaudio */,
 				001798781074392D00F5D044 /* testnative */,
-				002F343C09CA1FB300EBEB88 /* testoverlay */,
+				002F343C09CA1FB300EBEB88 /* testoverlay2 */,
 				002F345909CA204F00EBEB88 /* testplatform */,
 				0017989D107439DF00F5D044 /* testpower */,
 				DB166DDC16A1D50C00A1396C /* testrelative */,
@@ -2280,86 +2285,93 @@
 				BEC567720761D90500A33029 /* testsem */,
 				DB166E5716A1D6F300A1396C /* testshader */,
 				4537749112091504002F0F45 /* testshape */,
-				001798FE10743F1000F5D044 /* testsprite */,
+				001798FE10743F1000F5D044 /* testsprite2 */,
 				DB166E6D16A1D78400A1396C /* testspriteminimal */,
 				DB166E8016A1D78C00A1396C /* teststreaming */,
 				BEC567230761D90400A33029 /* testthread */,
 				BEC5678D0761D90500A33029 /* testtimer */,
 				BEC567A70761D90500A33029 /* testversion */,
-				0017992010743FB700F5D044 /* testwm */,
+				0017992010743FB700F5D044 /* testwm2 */,
 				BEC567EA0761D90600A33029 /* torturethread */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		003FA643093FFD41000C53B3 /* SDL3.framework */ = {
+		003FA643093FFD41000C53B3 /* SDL2.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL3.framework;
+			path = SDL2.framework;
 			remoteRef = 003FA642093FFD41000C53B3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		003FA645093FFD41000C53B3 /* libSDL3.a */ = {
+		003FA645093FFD41000C53B3 /* libSDL2.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSDL3.a;
+			path = libSDL2.a;
 			remoteRef = 003FA644093FFD41000C53B3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		003FA649093FFD41000C53B3 /* SDL3 */ = {
+		003FA649093FFD41000C53B3 /* SDL2 */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
-			path = SDL3;
+			path = SDL2;
 			remoteRef = 003FA648093FFD41000C53B3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		DB1D40D717B3F30D00D74CFC /* libSDL3.dylib */ = {
+		DB1D40D717B3F30D00D74CFC /* libSDL2.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libSDL3.dylib;
+			path = libSDL2.dylib;
 			remoteRef = DB1D40D617B3F30D00D74CFC /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C5D28E3FB2900E1A26D /* SDL3.framework */ = {
+		F3C17C5D28E3FB2900E1A26D /* SDL2.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL3.framework;
+			path = SDL2.framework;
 			remoteRef = F3C17C5C28E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C5F28E3FB2900E1A26D /* SDL3.framework */ = {
+		F3C17C5F28E3FB2900E1A26D /* SDL2.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL3.framework;
+			path = SDL2.framework;
 			remoteRef = F3C17C5E28E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C6328E3FB2900E1A26D /* libSDL3.a */ = {
+		F3C17C6128E3FB2900E1A26D /* SDL2.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SDL2.framework;
+			remoteRef = F3C17C6028E3FB2900E1A26D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F3C17C6328E3FB2900E1A26D /* libSDL2.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSDL3.a;
+			path = libSDL2.a;
 			remoteRef = F3C17C6228E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C6528E3FB2900E1A26D /* libSDL3.a */ = {
+		F3C17C6528E3FB2900E1A26D /* libSDL2.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSDL3.a;
+			path = libSDL2.a;
 			remoteRef = F3C17C6428E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C6728E3FB2900E1A26D /* libSDL3.dylib */ = {
+		F3C17C6728E3FB2900E1A26D /* libSDL2.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libSDL3.dylib;
+			path = libSDL2.dylib;
 			remoteRef = F3C17C6628E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C6928E3FB2900E1A26D /* libSDL3.dylib */ = {
+		F3C17C6928E3FB2900E1A26D /* libSDL2.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libSDL3.dylib;
+			path = libSDL2.dylib;
 			remoteRef = F3C17C6828E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -2372,8 +2384,8 @@
 			files = (
 				F3C17D3C28E4277D00E1A26D /* axis.bmp in Resources */,
 				F3C17D3D28E4277D00E1A26D /* button.bmp in Resources */,
-				F3C17D3E28E4277D00E1A26D /* gamepadmap_back.bmp in Resources */,
-				F3C17D3F28E4277D00E1A26D /* gamepadmap.bmp in Resources */,
+				F3C17D3E28E4277D00E1A26D /* controllermap_back.bmp in Resources */,
+				F3C17D3F28E4277D00E1A26D /* controllermap.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2400,6 +2412,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17CFF28E41EB000E1A26D /* SDL_uikit_main.c in Sources */,
 				001795901074216E00F5D044 /* testatomic.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2408,6 +2421,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0028E41EB400E1A26D /* SDL_uikit_main.c in Sources */,
 				001795B11074222D00F5D044 /* testaudioinfo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2416,7 +2430,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0017972810742FB900F5D044 /* testgl.c in Sources */,
+				F3C17D0928E41EE100E1A26D /* SDL_uikit_main.c in Sources */,
+				0017972810742FB900F5D044 /* testgl2.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2424,6 +2439,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0A28E41EE700E1A26D /* SDL_uikit_main.c in Sources */,
 				0017974F1074315700F5D044 /* testhaptic.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2432,7 +2448,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				001797721074320D00F5D044 /* testdraw.c in Sources */,
+				F3C17D0128E41EB800E1A26D /* SDL_uikit_main.c in Sources */,
+				001797721074320D00F5D044 /* testdraw2.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2440,6 +2457,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0D28E41EF400E1A26D /* SDL_uikit_main.c in Sources */,
 				00179792107432FA00F5D044 /* testime.c in Sources */,
 				F3C17C7C28E40D7400E1A26D /* testutils.c in Sources */,
 			);
@@ -2449,6 +2467,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0E28E41EF900E1A26D /* SDL_uikit_main.c in Sources */,
 				001797B41074339C00F5D044 /* testintersections.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2457,6 +2476,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1128E41F0600E1A26D /* SDL_uikit_main.c in Sources */,
 				001797D41074343E00F5D044 /* testloadso.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2465,6 +2485,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1428E41F1100E1A26D /* SDL_uikit_main.c in Sources */,
 				001798161074359B00F5D044 /* testmultiaudio.c in Sources */,
 				F3C17C7D28E40F9D00E1A26D /* testutils.c in Sources */,
 			);
@@ -2484,6 +2505,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1728E41F2800E1A26D /* SDL_uikit_main.c in Sources */,
 				001798BA10743A4900F5D044 /* testpower.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2492,6 +2514,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1B28E41F3800E1A26D /* SDL_uikit_main.c in Sources */,
 				001798FA10743E9200F5D044 /* testresample.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2500,7 +2523,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0017991A10743F5300F5D044 /* testsprite.c in Sources */,
+				F3C17CEF28E41D5800E1A26D /* SDL_uikit_main.c in Sources */,
+				0017991A10743F5300F5D044 /* testsprite2.c in Sources */,
 				F3C17C8328E4124400E1A26D /* testutils.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2509,7 +2533,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0017993C10743FEF00F5D044 /* testwm.c in Sources */,
+				F3C17D2728E41FD800E1A26D /* SDL_uikit_main.c in Sources */,
+				0017993C10743FEF00F5D044 /* testwm2.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2517,6 +2542,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0528E41ECB00E1A26D /* SDL_uikit_main.c in Sources */,
 				002F341809CA1C5B00EBEB88 /* testfile.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2525,6 +2551,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0C28E41EF000E1A26D /* SDL_uikit_main.c in Sources */,
 				002F343709CA1F6F00EBEB88 /* testiconv.c in Sources */,
 				F3C17C7B28E40D4E00E1A26D /* testutils.c in Sources */,
 			);
@@ -2534,7 +2561,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				002F345409CA202000EBEB88 /* testoverlay.c in Sources */,
+				F3C17D1528E41F1F00E1A26D /* SDL_uikit_main.c in Sources */,
+				002F345409CA202000EBEB88 /* testoverlay2.c in Sources */,
 				66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */,
 				F3C17C7F28E4101000E1A26D /* testutils.c in Sources */,
 			);
@@ -2544,6 +2572,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1628E41F2400E1A26D /* SDL_uikit_main.c in Sources */,
 				002F347009CA20A600EBEB88 /* testplatform.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2552,6 +2581,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D2028E41F4D00E1A26D /* SDL_uikit_main.c in Sources */,
 				453774A5120915E3002F0F45 /* testshape.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2560,7 +2590,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BBFC08D0164C6876003E6A99 /* testgamepad.c in Sources */,
+				F3C17D0728E41ED300E1A26D /* SDL_uikit_main.c in Sources */,
+				BBFC08D0164C6876003E6A99 /* testgamecontroller.c in Sources */,
 				F3C17C7928E40C6E00E1A26D /* testutils.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2569,6 +2600,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17CFC28E41E9800E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC566B10761D90300A33029 /* checkkeys.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2577,6 +2609,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17CFE28E41EAC00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC566CB0761D90300A33029 /* loopwave.c in Sources */,
 				F3C17C7728E40BC800E1A26D /* testutils.c in Sources */,
 			);
@@ -2586,6 +2619,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0428E41EC800E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567010761D90300A33029 /* testerror.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2594,6 +2628,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D2428E41F6600E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567290761D90400A33029 /* testthread.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2602,6 +2637,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0F28E41EFE00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567360761D90400A33029 /* testjoystick.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2610,6 +2646,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1028E41F0200E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567430761D90400A33029 /* testkeys.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2618,6 +2655,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1228E41F0A00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567500761D90400A33029 /* testlock.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2626,6 +2664,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1E28E41F4500E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567780761D90500A33029 /* testsem.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2634,6 +2673,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D2528E41F6A00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567930761D90500A33029 /* testtimer.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2642,6 +2682,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D2628E41F6E00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567AD0761D90500A33029 /* testver.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2650,6 +2691,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D2828E41FDC00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567F00761D90600A33029 /* torturethread.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2658,6 +2700,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0228E41EBC00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB0F48EE17CA51F8008798C5 /* testdrawchessboard.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2666,6 +2709,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0628E41ECF00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB0F490317CA5225008798C5 /* testfilesystem.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2681,6 +2725,11 @@
 				DB166D9716A1D1A500A1396C /* SDL_test_font.c in Sources */,
 				DB166D9816A1D1A500A1396C /* SDL_test_fuzzer.c in Sources */,
 				DB166D9916A1D1A500A1396C /* SDL_test_harness.c in Sources */,
+				DB166D9A16A1D1A500A1396C /* SDL_test_imageBlit.c in Sources */,
+				DB166D9B16A1D1A500A1396C /* SDL_test_imageBlitBlend.c in Sources */,
+				DB166D9C16A1D1A500A1396C /* SDL_test_imageFace.c in Sources */,
+				DB166D9D16A1D1A500A1396C /* SDL_test_imagePrimitives.c in Sources */,
+				DB166D9E16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c in Sources */,
 				DB166D9F16A1D1A500A1396C /* SDL_test_log.c in Sources */,
 				DB166DA016A1D1A500A1396C /* SDL_test_md5.c in Sources */,
 				AAF02FFA1F90092700B9A9FB /* SDL_test_memory.c in Sources */,
@@ -2688,10 +2737,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DB166DAE16A1D2F600A1396C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3C17D0828E41EDB00E1A26D /* SDL_uikit_main.c in Sources */,
+				DB166DC116A1D31E00A1396C /* testgesture.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DB166DC516A1D36A00A1396C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1328E41F0D00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166DD716A1D37800A1396C /* testmessage.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2700,6 +2759,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1828E41F2C00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166DF016A1D52500A1396C /* testrelative.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2708,6 +2768,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1928E41F3100E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E0716A1D59400A1396C /* testrendercopyex.c in Sources */,
 				F3C17C8028E410A400E1A26D /* testutils.c in Sources */,
 			);
@@ -2717,6 +2778,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1A28E41F3500E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E1E16A1D5C300A1396C /* testrendertarget.c in Sources */,
 				F3C17C8128E410C900E1A26D /* testutils.c in Sources */,
 			);
@@ -2726,6 +2788,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1C28E41F3C00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E3C16A1D66500A1396C /* testrumble.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2734,6 +2797,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1D28E41F4000E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E5416A1D6A300A1396C /* testscale.c in Sources */,
 				F3C17C8228E4112900E1A26D /* testutils.c in Sources */,
 			);
@@ -2743,6 +2807,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D1F28E41F4800E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E6A16A1D70C00A1396C /* testshader.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2751,6 +2816,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D2228E41F5F00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E9316A1D7BC00A1396C /* testspriteminimal.c in Sources */,
 				F3C17C8428E4126400E1A26D /* testutils.c in Sources */,
 			);
@@ -2760,6 +2826,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D2328E41F6200E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E9416A1D7C700A1396C /* teststreaming.c in Sources */,
 				F3C17C8528E4127D00E1A26D /* testutils.c in Sources */,
 			);
@@ -2769,6 +2836,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0328E41EC500E1A26D /* SDL_uikit_main.c in Sources */,
 				DB445EFB18184BB600B306B0 /* testdropfile.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2777,6 +2845,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17D0B28E41EEB00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB89958418A19B130092407C /* testhotplug.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2785,38 +2854,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DBEC54EB1A1A8205005B1EAB /* gamepadmap.c in Sources */,
+				F3C17CFD28E41EA100E1A26D /* SDL_uikit_main.c in Sources */,
+				DBEC54EB1A1A8205005B1EAB /* controllermap.c in Sources */,
 				F3C17C7428E40AF000E1A26D /* testutils.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F35E56A3298312CB00A43A5F /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F35E56D12983130F00A43A5F /* testautomation_render.c in Sources */,
-				F35E56E22983130F00A43A5F /* testautomation_syswm.c in Sources */,
-				F35E56D22983130F00A43A5F /* testautomation_rwops.c in Sources */,
-				F35E56E32983130F00A43A5F /* testautomation_surface.c in Sources */,
-				F35E56DB2983130F00A43A5F /* testautomation_platform.c in Sources */,
-				F35E56DD2983130F00A43A5F /* testautomation_rect.c in Sources */,
-				F35E56D52983130F00A43A5F /* testautomation_clipboard.c in Sources */,
-				F35E56E52983130F00A43A5F /* testautomation_mouse.c in Sources */,
-				F35E56D72983130F00A43A5F /* testautomation_stdlib.c in Sources */,
-				F35E56D92983130F00A43A5F /* testautomation_pixels.c in Sources */,
-				F35E56E42983130F00A43A5F /* testautomation.c in Sources */,
-				F35E56CF2983130F00A43A5F /* testautomation_main.c in Sources */,
-				F35E56DE2983130F00A43A5F /* testautomation_joystick.c in Sources */,
-				F35E56D82983130F00A43A5F /* testautomation_images.c in Sources */,
-				F35E56DC2983130F00A43A5F /* testautomation_audio.c in Sources */,
-				F35E56D32983130F00A43A5F /* testautomation_math.c in Sources */,
-				F35E56E02983130F00A43A5F /* testautomation_sdltest.c in Sources */,
-				F35E56D42983130F00A43A5F /* testautomation_events.c in Sources */,
-				F35E56E12983130F00A43A5F /* testautomation_guid.c in Sources */,
-				F35E56D62983130F00A43A5F /* testautomation_timer.c in Sources */,
-				F35E56DA2983130F00A43A5F /* testautomation_video.c in Sources */,
-				F35E56D02983130F00A43A5F /* testautomation_hints.c in Sources */,
-				F35E56DF2983130F00A43A5F /* testautomation_keyboard.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2824,6 +2864,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3C17CEE28E4184700E1A26D /* SDL_uikit_main.c in Sources */,
 				F3C17CEB28E4177600E1A26D /* testgeometry.c in Sources */,
 				F3C17CEC28E417EB00E1A26D /* testutils.c in Sources */,
 			);
@@ -2854,7 +2895,7 @@
 		};
 		0017995A1074403E00F5D044 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 00179756107431B300F5D044 /* testdraw */;
+			target = 00179756107431B300F5D044 /* testdraw2 */;
 			targetProxy = 001799591074403E00F5D044 /* PBXContainerItemProxy */;
 		};
 		0017995E1074403E00F5D044 /* PBXTargetDependency */ = {
@@ -2869,7 +2910,7 @@
 		};
 		001799661074403E00F5D044 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 0017970910742F3200F5D044 /* testgl */;
+			target = 0017970910742F3200F5D044 /* testgl2 */;
 			targetProxy = 001799651074403E00F5D044 /* PBXContainerItemProxy */;
 		};
 		001799681074403E00F5D044 /* PBXTargetDependency */ = {
@@ -2929,7 +2970,7 @@
 		};
 		001799841074403E00F5D044 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 002F343C09CA1FB300EBEB88 /* testoverlay */;
+			target = 002F343C09CA1FB300EBEB88 /* testoverlay2 */;
 			targetProxy = 001799831074403E00F5D044 /* PBXContainerItemProxy */;
 		};
 		001799881074403E00F5D044 /* PBXTargetDependency */ = {
@@ -2954,7 +2995,7 @@
 		};
 		001799921074403E00F5D044 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 001798FE10743F1000F5D044 /* testsprite */;
+			target = 001798FE10743F1000F5D044 /* testsprite2 */;
 			targetProxy = 001799911074403E00F5D044 /* PBXContainerItemProxy */;
 		};
 		001799941074403E00F5D044 /* PBXTargetDependency */ = {
@@ -2969,7 +3010,7 @@
 		};
 		0017999E1074403E00F5D044 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 0017992010743FB700F5D044 /* testwm */;
+			target = 0017992010743FB700F5D044 /* testwm2 */;
 			targetProxy = 0017999D1074403E00F5D044 /* PBXContainerItemProxy */;
 		};
 		001799A21074403E00F5D044 /* PBXTargetDependency */ = {
@@ -2989,13 +3030,18 @@
 		};
 		DB166D6E16A1CEAA00A1396C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = BBFC08B7164C6862003E6A99 /* testgamepad */;
+			target = BBFC08B7164C6862003E6A99 /* testgamecontroller */;
 			targetProxy = DB166D6D16A1CEAA00A1396C /* PBXContainerItemProxy */;
 		};
 		DB166D7016A1CEAF00A1396C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4537749112091504002F0F45 /* testshape */;
 			targetProxy = DB166D6F16A1CEAF00A1396C /* PBXContainerItemProxy */;
+		};
+		DB166DC316A1D32C00A1396C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DB166DAD16A1D2F600A1396C /* testgesture */;
+			targetProxy = DB166DC216A1D32C00A1396C /* PBXContainerItemProxy */;
 		};
 		DB166DD916A1D38900A1396C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -3042,11 +3088,6 @@
 			target = DB166E8016A1D78C00A1396C /* teststreaming */;
 			targetProxy = DB166E9716A1D7CF00A1396C /* PBXContainerItemProxy */;
 		};
-		F35E56E72983133F00A43A5F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = F35E56A2298312CB00A43A5F /* testautomation */;
-			targetProxy = F35E56E62983133F00A43A5F /* PBXContainerItemProxy */;
-		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -3082,7 +3123,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = HAVE_OPENGL;
-				PRODUCT_NAME = testgl;
+				PRODUCT_NAME = testgl2;
 				SUPPORTED_PLATFORMS = macosx;
 			};
 			name = Debug;
@@ -3091,7 +3132,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = HAVE_OPENGL;
-				PRODUCT_NAME = testgl;
+				PRODUCT_NAME = testgl2;
 				SUPPORTED_PLATFORMS = macosx;
 			};
 			name = Release;
@@ -3113,14 +3154,14 @@
 		0017976B107431B300F5D044 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testdraw;
+				PRODUCT_NAME = testdraw2;
 			};
 			name = Debug;
 		};
 		0017976C107431B300F5D044 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testdraw;
+				PRODUCT_NAME = testdraw2;
 			};
 			name = Release;
 		};
@@ -3227,28 +3268,28 @@
 		0017991310743F1000F5D044 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testsprite;
+				PRODUCT_NAME = testsprite2;
 			};
 			name = Debug;
 		};
 		0017991410743F1000F5D044 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testsprite;
+				PRODUCT_NAME = testsprite2;
 			};
 			name = Release;
 		};
 		0017993510743FB700F5D044 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testwm;
+				PRODUCT_NAME = testwm2;
 			};
 			name = Debug;
 		};
 		0017993610743FB700F5D044 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testwm;
+				PRODUCT_NAME = testwm2;
 			};
 			name = Release;
 		};
@@ -3346,7 +3387,7 @@
 		002A85C51073008E007319AE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testoverlay;
+				PRODUCT_NAME = testoverlay2;
 			};
 			name = Debug;
 		};
@@ -3483,7 +3524,7 @@
 		002A85E71073009D007319AE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testoverlay;
+				PRODUCT_NAME = testoverlay2;
 			};
 			name = Release;
 		};
@@ -3546,14 +3587,14 @@
 		BBFC08CB164C6862003E6A99 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testgamepad;
+				PRODUCT_NAME = testgamecontroller;
 			};
 			name = Debug;
 		};
 		BBFC08CC164C6862003E6A99 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testgamepad;
+				PRODUCT_NAME = testgamecontroller;
 			};
 			name = Release;
 		};
@@ -3604,6 +3645,20 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
+			};
+			name = Release;
+		};
+		DB166DBD16A1D2F600A1396C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = testgesture;
+			};
+			name = Debug;
+		};
+		DB166DBE16A1D2F600A1396C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = testgesture;
 			};
 			name = Release;
 		};
@@ -3766,28 +3821,14 @@
 		DBEC54E81A1A81C3005B1EAB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = gamepadmap;
+				PRODUCT_NAME = controllermap;
 			};
 			name = Debug;
 		};
 		DBEC54E91A1A81C3005B1EAB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = gamepadmap;
-			};
-			name = Release;
-		};
-		F35E56A8298312CB00A43A5F /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		F35E56A9298312CB00A43A5F /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = controllermap;
 			};
 			name = Release;
 		};
@@ -3826,7 +3867,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		0017971B10742F3200F5D044 /* Build configuration list for PBXNativeTarget "testgl" */ = {
+		0017971B10742F3200F5D044 /* Build configuration list for PBXNativeTarget "testgl2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0017971E10742F3200F5D044 /* Debug */,
@@ -3844,7 +3885,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		00179768107431B300F5D044 /* Build configuration list for PBXNativeTarget "testdraw" */ = {
+		00179768107431B300F5D044 /* Build configuration list for PBXNativeTarget "testdraw2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0017976B107431B300F5D044 /* Debug */,
@@ -3916,7 +3957,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		0017991010743F1000F5D044 /* Build configuration list for PBXNativeTarget "testsprite" */ = {
+		0017991010743F1000F5D044 /* Build configuration list for PBXNativeTarget "testsprite2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0017991310743F1000F5D044 /* Debug */,
@@ -3925,7 +3966,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		0017993210743FB700F5D044 /* Build configuration list for PBXNativeTarget "testwm" */ = {
+		0017993210743FB700F5D044 /* Build configuration list for PBXNativeTarget "testwm2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0017993510743FB700F5D044 /* Debug */,
@@ -4069,7 +4110,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		002F344909CA1FB300EBEB88 /* Build configuration list for PBXNativeTarget "testoverlay" */ = {
+		002F344909CA1FB300EBEB88 /* Build configuration list for PBXNativeTarget "testoverlay2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				002A85C51073008E007319AE /* Debug */,
@@ -4096,7 +4137,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		BBFC08CA164C6862003E6A99 /* Build configuration list for PBXNativeTarget "testgamepad" */ = {
+		BBFC08CA164C6862003E6A99 /* Build configuration list for PBXNativeTarget "testgamecontroller" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BBFC08CB164C6862003E6A99 /* Debug */,
@@ -4128,6 +4169,15 @@
 			buildConfigurations = (
 				DB166D8116A1D12400A1396C /* Debug */,
 				DB166D8216A1D12400A1396C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DB166DBC16A1D2F600A1396C /* Build configuration list for PBXNativeTarget "testgesture" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DB166DBD16A1D2F600A1396C /* Debug */,
+				DB166DBE16A1D2F600A1396C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -4231,20 +4281,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		DBEC54E71A1A81C3005B1EAB /* Build configuration list for PBXNativeTarget "gamepadmap" */ = {
+		DBEC54E71A1A81C3005B1EAB /* Build configuration list for PBXNativeTarget "controllermap" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DBEC54E81A1A81C3005B1EAB /* Debug */,
 				DBEC54E91A1A81C3005B1EAB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		F35E56A7298312CB00A43A5F /* Build configuration list for PBXNativeTarget "testautomation" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				F35E56A8298312CB00A43A5F /* Debug */,
-				F35E56A9298312CB00A43A5F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

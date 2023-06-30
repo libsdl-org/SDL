@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_windowsvideo_h_
 #define SDL_windowsvideo_h_
@@ -51,6 +51,8 @@
 #endif
 
 #include "SDL_windowswindow.h"
+#include "SDL_events.h"
+#include "SDL_loadso.h"
 
 #if WINVER < 0x0601
 /* Touch input definitions */
@@ -364,7 +366,7 @@ typedef struct tagINPUTCONTEXT2
 
 /* Private display data */
 
-struct SDL_VideoData
+typedef struct SDL_VideoData
 {
     int render;
 
@@ -399,6 +401,7 @@ struct SDL_VideoData
     /* *INDENT-ON* */ /* clang-format on */
 #endif                /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
+    SDL_bool dpi_scaling_enabled;
     SDL_bool cleared;
 
 #ifndef SDL_DISABLE_WINDOWS_IME
@@ -456,7 +459,7 @@ struct SDL_VideoData
 
     BYTE pre_hook_key_state[256];
     UINT _SDL_WAKEUP;
-};
+} SDL_VideoData;
 
 extern SDL_bool g_WindowsEnableMessageLoop;
 extern SDL_bool g_WindowsEnableMenuMnemonics;
@@ -465,7 +468,8 @@ extern SDL_bool g_WindowFrameUsableWhileCursorHidden;
 typedef struct IDirect3D9 IDirect3D9;
 extern SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface);
 
-extern SDL_SystemTheme WIN_GetSystemTheme(void);
-extern SDL_bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this);
+extern SDL_bool WIN_IsPerMonitorV2DPIAware(_THIS);
 
 #endif /* SDL_windowsvideo_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

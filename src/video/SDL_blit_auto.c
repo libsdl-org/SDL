@@ -19,12 +19,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #if SDL_HAVE_BLIT_AUTO
 
 /* *INDENT-OFF* */ /* clang-format off */
 
+#include "SDL_video.h"
 #include "SDL_blit.h"
 #include "SDL_blit_auto.h"
 
@@ -6993,3 +6994,4 @@ SDL_BlitFuncEntry SDL_GeneratedBlitFuncTable[] = {
 
 #endif /* SDL_HAVE_BLIT_AUTO */
 
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_UIKIT) && (defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2))
+#if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2)
 
 #include "SDL_uikitopengles.h"
 #import "SDL_uikitopenglview.h"
@@ -31,12 +31,13 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../power/uikit/SDL_syspower.h"
+#include "SDL_loadso.h"
 #include <dlfcn.h>
 
 @interface SDLEAGLContext : EAGLContext
 
 /* The OpenGL ES context owns a view / drawable. */
-@property(nonatomic, strong) SDL_uikitopenglview *sdlView;
+@property (nonatomic, strong) SDL_uikitopenglview *sdlView;
 
 @end
 
@@ -51,7 +52,7 @@
 
 @end
 
-SDL_FunctionPointer UIKit_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
+void *UIKit_GL_GetProcAddress(_THIS, const char *proc)
 {
     /* Look through all SO's for the proc symbol.  Here's why:
      * -Looking for the path to the OpenGL Library seems not to work in the iOS Simulator.
@@ -62,10 +63,10 @@ SDL_FunctionPointer UIKit_GL_GetProcAddress(SDL_VideoDevice *_this, const char *
 /*
   note that SDL_GL_DeleteContext makes it current without passing the window
 */
-int UIKit_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+int UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 {
     @autoreleasepool {
-        SDLEAGLContext *eaglcontext = (__bridge SDLEAGLContext *)context;
+        SDLEAGLContext *eaglcontext = (__bridge SDLEAGLContext *) context;
 
         if (![EAGLContext setCurrentContext:eaglcontext]) {
             return SDL_SetError("Could not make EAGL context current");
@@ -79,7 +80,26 @@ int UIKit_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLConte
     return 0;
 }
 
-int UIKit_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+void UIKit_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
+{
+    @autoreleasepool {
+        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        UIView *view = data.viewcontroller.view;
+        if ([view isKindOfClass:[SDL_uikitopenglview class]]) {
+            SDL_uikitopenglview *glview = (SDL_uikitopenglview *) view;
+            if (w) {
+                *w = glview.backingWidth;
+            }
+            if (h) {
+                *h = glview.backingHeight;
+            }
+        } else {
+            SDL_GetWindowSize(window, w, h);
+        }
+    }
+}
+
+int UIKit_GL_LoadLibrary(_THIS, const char *path)
 {
     /* We shouldn't pass a path to this function, since we've already loaded the
      * library. */
@@ -89,12 +109,12 @@ int UIKit_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     return 0;
 }
 
-int UIKit_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
-        SDLEAGLContext *context = (__bridge SDLEAGLContext *)SDL_GL_GetCurrentContext();
+        SDLEAGLContext *context = (__bridge SDLEAGLContext *) SDL_GL_GetCurrentContext();
 
-#ifdef SDL_POWER_UIKIT
+#if SDL_POWER_UIKIT
         /* Check once a frame to see if we should turn off the battery monitor. */
         SDL_UIKit_UpdateBatteryMonitoring();
 #endif
@@ -108,12 +128,12 @@ int UIKit_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
         SDLEAGLContext *context = nil;
         SDL_uikitopenglview *view;
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
         CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
         EAGLSharegroup *sharegroup = nil;
         CGFloat scale = 1.0;
@@ -136,11 +156,11 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         }
 
         if (_this->gl_config.share_with_current_context) {
-            EAGLContext *currContext = (__bridge EAGLContext *)SDL_GL_GetCurrentContext();
+            EAGLContext *currContext = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
             sharegroup = currContext.sharegroup;
         }
 
-        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
             /* Set the scale to the natural scale factor of the screen - the
              * backing dimensions of the OpenGL view will match the pixel
              * dimensions of the screen rather than the dimensions in points. */
@@ -174,18 +194,18 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         /* The context owns the view / drawable. */
         context.sdlView = view;
 
-        if (UIKit_GL_MakeCurrent(_this, window, (__bridge SDL_GLContext)context) < 0) {
-            UIKit_GL_DeleteContext(_this, (SDL_GLContext)CFBridgingRetain(context));
+        if (UIKit_GL_MakeCurrent(_this, window, (__bridge SDL_GLContext) context) < 0) {
+            UIKit_GL_DeleteContext(_this, (SDL_GLContext) CFBridgingRetain(context));
             return NULL;
         }
 
         /* We return a +1'd context. The window's driverdata owns the view (via
          * MakeCurrent.) */
-        return (SDL_GLContext)CFBridgingRetain(context);
+        return (SDL_GLContext) CFBridgingRetain(context);
     }
 }
 
-int UIKit_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
+void UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     @autoreleasepool {
         /* The context was retained in SDL_GL_CreateContext, so we release it
@@ -193,7 +213,6 @@ int UIKit_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
          * context is deallocated. */
         CFRelease(context);
     }
-    return 0;
 }
 
 void UIKit_GL_RestoreCurrentContext(void)
@@ -206,7 +225,7 @@ void UIKit_GL_RestoreCurrentContext(void)
          finished running its own code for the frame. If this isn't done, the
          app may crash or have other nasty symptoms when Dictation is used.
          */
-        EAGLContext *context = (__bridge EAGLContext *)SDL_GL_GetCurrentContext();
+        EAGLContext *context = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
         if (context != NULL && [EAGLContext currentContext] != context) {
             [EAGLContext setCurrentContext:context];
         }
@@ -214,3 +233,5 @@ void UIKit_GL_RestoreCurrentContext(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
+
+/* vi: set ts=4 sw=4 expandtab: */

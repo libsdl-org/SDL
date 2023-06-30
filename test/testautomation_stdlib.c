@@ -1,17 +1,19 @@
 /**
  * Standard C library routine test suite
  */
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_test.h>
-#include "testautomation_suites.h"
+
+#include <stdio.h>
+
+#include "SDL.h"
+#include "SDL_test.h"
 
 /* Test case functions */
 
 /**
- * \brief Call to SDL_strlcpy
+ * @brief Call to SDL_strlcpy
  */
 #undef SDL_strlcpy
-static int stdlib_strlcpy(void *arg)
+int stdlib_strlcpy(void *arg)
 {
     size_t result;
     char text[1024];
@@ -34,19 +36,19 @@ static int stdlib_strlcpy(void *arg)
 
 #if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
 #pragma GCC diagnostic push
-#ifdef HAVE_WFORMAT
+#if defined(HAVE_WFORMAT)
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
-#ifdef HAVE_WFORMAT_EXTRA_ARGS
+#if defined(HAVE_WFORMAT_EXTRA_ARGS)
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
 #endif
 #endif
 
 /**
- * \brief Call to SDL_snprintf
+ * @brief Call to SDL_snprintf
  */
 #undef SDL_snprintf
-static int stdlib_snprintf(void *arg)
+int stdlib_snprintf(void *arg)
 {
     int result;
     int predicted;
@@ -166,47 +168,6 @@ static int stdlib_snprintf(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
     SDLTest_AssertCheck(result == 6, "Check result value, expected: 6, got: %d", result);
 
-    {
-        static struct
-        {
-            float value;
-            const char *expected_f;
-            const char *expected_g;
-        } f_and_g_test_cases[] = {
-            { 100.0f, "100.000000", "100" },
-            { -100.0f, "-100.000000", "-100" },
-            { 100.75f, "100.750000", "100.75" },
-            { -100.75f, "-100.750000", "-100.75" },
-            { ((100 * 60 * 1000) / 1001) / 100.0f, "59.939999", "59.94" },
-            { -((100 * 60 * 1000) / 1001) / 100.0f, "-59.939999", "-59.94" },
-            { ((100 * 120 * 1000) / 1001) / 100.0f, "119.879997", "119.88" },
-            { -((100 * 120 * 1000) / 1001) / 100.0f, "-119.879997", "-119.88" },
-            { 9.9999999f, "10.000000", "10" },
-            { -9.9999999f, "-10.000000", "-10" },
-        };
-        int i;
-
-        for (i = 0; i < SDL_arraysize(f_and_g_test_cases); ++i) {
-            float value = f_and_g_test_cases[i].value;
-
-            result = SDL_snprintf(text, sizeof(text), "%f", value);
-            predicted = SDL_snprintf(NULL, 0, "%f", value);
-            expected = f_and_g_test_cases[i].expected_f;
-            SDLTest_AssertPass("Call to SDL_snprintf(\"%%f\", %g)", value);
-            SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-            SDLTest_AssertCheck(result == SDL_strlen(expected), "Check result value, expected: %d, got: %d", (int)SDL_strlen(expected), result);
-            SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-            result = SDL_snprintf(text, sizeof(text), "%g", value);
-            predicted = SDL_snprintf(NULL, 0, "%g", value);
-            expected = f_and_g_test_cases[i].expected_g;
-            SDLTest_AssertPass("Call to SDL_snprintf(\"%%g\", %g)", value);
-            SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-            SDLTest_AssertCheck(result == SDL_strlen(expected), "Check result value, expected: %d, got: %d", (int)SDL_strlen(expected), result);
-            SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-        }
-    }
-
     size = 64;
     result = SDL_snprintf(text, sizeof(text), "%zu %s", size, "test");
     expected = "64 test";
@@ -217,177 +178,14 @@ static int stdlib_snprintf(void *arg)
     return TEST_COMPLETED;
 }
 
-/**
- * \brief Call to SDL_swprintf
- */
-#undef SDL_swprintf
-static int stdlib_swprintf(void *arg)
-{
-    int result;
-    int predicted;
-    wchar_t text[1024];
-    const wchar_t *expected;
-    size_t size;
-
-    result = SDL_swprintf(text, sizeof(text), L"%s", "foo");
-    expected = L"foo";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%s\", \"foo\")");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
-
-    result = SDL_swprintf(text, 2, L"%s", "foo");
-    expected = L"f";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%s\", \"foo\") with buffer size 2");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-    SDLTest_AssertCheck(result == 3, "Check result value, expected: 3, got: %d", result);
-
-    result = SDL_swprintf(NULL, 0, L"%s", "foo");
-    SDLTest_AssertPass("Call to SDL_swprintf(NULL, 0, \"%%s\", \"foo\")");
-    SDLTest_AssertCheck(result == 3, "Check result value, expected: 3, got: %d", result);
-
-    result = SDL_swprintf(text, 2, L"%s\n", "foo");
-    expected = L"f";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%s\\n\", \"foo\") with buffer size 2");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-    SDLTest_AssertCheck(result == 4, "Check result value, expected: 4, got: %d", result);
-
-    result = SDL_swprintf(text, sizeof(text), L"%f", 0.0);
-    predicted = SDL_swprintf(NULL, 0, L"%f", 0.0);
-    expected = L"0.000000";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%f\", 0.0)");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
-    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-    result = SDL_swprintf(text, sizeof(text), L"%f", 1.0);
-    predicted = SDL_swprintf(NULL, 0, L"%f", 1.0);
-    expected = L"1.000000";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%f\", 1.0)");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
-    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-    result = SDL_swprintf(text, sizeof(text), L"%.f", 1.0);
-    predicted = SDL_swprintf(NULL, 0, L"%.f", 1.0);
-    expected = L"1";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%.f\", 1.0)");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
-    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-    result = SDL_swprintf(text, sizeof(text), L"%#.f", 1.0);
-    predicted = SDL_swprintf(NULL, 0, L"%#.f", 1.0);
-    expected = L"1.";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%#.f\", 1.0)");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
-    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-    result = SDL_swprintf(text, sizeof(text), L"%f", 1.0 + 1.0 / 3.0);
-    predicted = SDL_swprintf(NULL, 0, L"%f", 1.0 + 1.0 / 3.0);
-    expected = L"1.333333";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%f\", 1.0 + 1.0 / 3.0)");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
-    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-    result = SDL_swprintf(text, sizeof(text), L"%+f", 1.0 + 1.0 / 3.0);
-    predicted = SDL_swprintf(NULL, 0, L"%+f", 1.0 + 1.0 / 3.0);
-    expected = L"+1.333333";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%+f\", 1.0 + 1.0 / 3.0)");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
-    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-    result = SDL_swprintf(text, sizeof(text), L"%.2f", 1.0 + 1.0 / 3.0);
-    predicted = SDL_swprintf(NULL, 0, L"%.2f", 1.0 + 1.0 / 3.0);
-    expected = L"1.33";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%.2f\", 1.0 + 1.0 / 3.0)");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
-    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-    result = SDL_swprintf(text, sizeof(text), L"%6.2f", 1.0 + 1.0 / 3.0);
-    predicted = SDL_swprintf(NULL, 0, L"%6.2f", 1.0 + 1.0 / 3.0);
-    expected = L"  1.33";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%6.2f\", 1.0 + 1.0 / 3.0)");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
-    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-    result = SDL_swprintf(text, sizeof(text), L"%06.2f", 1.0 + 1.0 / 3.0);
-    predicted = SDL_swprintf(NULL, 0, L"%06.2f", 1.0 + 1.0 / 3.0);
-    expected = L"001.33";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%06.2f\", 1.0 + 1.0 / 3.0)");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
-    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-    result = SDL_swprintf(text, 5, L"%06.2f", 1.0 + 1.0 / 3.0);
-    expected = L"001.";
-    SDLTest_AssertPass("Call to SDL_swprintf(\"%%06.2f\", 1.0 + 1.0 / 3.0) with buffer size 5");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-    SDLTest_AssertCheck(result == 6, "Check result value, expected: 6, got: %d", result);
-
-    {
-        static struct
-        {
-            float value;
-            const wchar_t *expected_f;
-            const wchar_t *expected_g;
-        } f_and_g_test_cases[] = {
-            { 100.0f, L"100.000000", L"100" },
-            { -100.0f, L"-100.000000", L"-100" },
-            { 100.75f, L"100.750000", L"100.75" },
-            { -100.75f, L"-100.750000", L"-100.75" },
-            { ((100 * 60 * 1000) / 1001) / 100.0f, L"59.939999", L"59.94" },
-            { -((100 * 60 * 1000) / 1001) / 100.0f, L"-59.939999", L"-59.94" },
-            { ((100 * 120 * 1000) / 1001) / 100.0f, L"119.879997", L"119.88" },
-            { -((100 * 120 * 1000) / 1001) / 100.0f, L"-119.879997", L"-119.88" },
-            { 9.9999999f, L"10.000000", L"10" },
-            { -9.9999999f, L"-10.000000", L"-10" },
-        };
-        int i;
-
-        for (i = 0; i < SDL_arraysize(f_and_g_test_cases); ++i) {
-            float value = f_and_g_test_cases[i].value;
-
-            result = SDL_swprintf(text, sizeof(text), L"%f", value);
-            predicted = SDL_swprintf(NULL, 0, L"%f", value);
-            expected = f_and_g_test_cases[i].expected_f;
-            SDLTest_AssertPass("Call to SDL_swprintf(\"%%f\", %g)", value);
-            SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-            SDLTest_AssertCheck(result == SDL_wcslen(expected), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(expected), result);
-            SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-
-            result = SDL_swprintf(text, sizeof(text), L"%g", value);
-            predicted = SDL_swprintf(NULL, 0, L"%g", value);
-            expected = f_and_g_test_cases[i].expected_g;
-            SDLTest_AssertPass("Call to SDL_swprintf(\"%%g\", %g)", value);
-            SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-            SDLTest_AssertCheck(result == SDL_wcslen(expected), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(expected), result);
-            SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
-        }
-    }
-
-    size = 64;
-    result = SDL_swprintf(text, sizeof(text), L"%zu %s", size, "test");
-    expected = L"64 test";
-    SDLTest_AssertPass("Call to SDL_swprintf(text, sizeof(text), \"%%zu %%s\", size, \"test\")");
-    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-    SDLTest_AssertCheck(result == 7, "Check result value, expected: 7, got: %d", result);
-
-    return TEST_COMPLETED;
-}
-
 #if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
 #pragma GCC diagnostic pop
 #endif
 
 /**
- * \brief Call to SDL_getenv and SDL_setenv
+ * @brief Call to SDL_getenv and SDL_setenv
  */
-static int stdlib_getsetenv(void *arg)
+int stdlib_getsetenv(void *arg)
 {
     const int nameLen = 16;
     char name[17];
@@ -519,19 +317,19 @@ static int stdlib_getsetenv(void *arg)
 
 #if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
 #pragma GCC diagnostic push
-#ifdef HAVE_WFORMAT
+#if defined(HAVE_WFORMAT)
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
-#ifdef HAVE_WFORMAT_EXTRA_ARGS
+#if defined(HAVE_WFORMAT_EXTRA_ARGS)
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
 #endif
 #endif
 
 /**
- * \brief Call to SDL_sscanf
+ * @brief Call to SDL_sscanf
  */
 #undef SDL_sscanf
-static int stdlib_sscanf(void *arg)
+int stdlib_sscanf(void *arg)
 {
     int output;
     int result;
@@ -612,39 +410,13 @@ static int stdlib_sscanf(void *arg)
 #pragma GCC diagnostic pop
 #endif
 
-#ifdef _WIN64
+#if defined(_WIN64)
 #define SIZE_FORMAT "I64u"
 #elif defined(__WIN32__)
 #define SIZE_FORMAT "I32u"
 #else
 #define SIZE_FORMAT "zu"
 #endif
-
-/**
- * \brief Call to SDL_aligned_alloc
- */
-static int stdlib_aligned_alloc(void *arg)
-{
-    size_t i, alignment;
-    void *ptr;
-
-    for (i = 0; i < 2*sizeof(void *); ++i) {
-        SDLTest_AssertPass("Call to SDL_aligned_alloc(%"SIZE_FORMAT")", i);
-        ptr = SDL_aligned_alloc(i, 1);
-        if (i < sizeof(void *)) {
-            alignment = sizeof(void *);
-        } else {
-            alignment = i;
-        }
-        SDLTest_AssertCheck(ptr != NULL, "Check output, expected non-NULL, got: %p", ptr);
-        SDLTest_AssertCheck((((size_t)ptr) % alignment) == 0, "Check output, expected aligned pointer, actual offset: %"SIZE_FORMAT, (((size_t)ptr) % alignment));
-        SDLTest_AssertPass("Filling memory to alignment value");
-        SDL_memset(ptr, 0xAA, alignment);
-        SDL_aligned_free(ptr);
-    }
-
-    return TEST_COMPLETED;
-}
 
 typedef struct
 {
@@ -802,27 +574,19 @@ stdlib_overflow(void *arg)
 
 /* Standard C routine test cases */
 static const SDLTest_TestCaseReference stdlibTest1 = {
-    stdlib_strlcpy, "stdlib_strlcpy", "Call to SDL_strlcpy", TEST_ENABLED
+    (SDLTest_TestCaseFp)stdlib_strlcpy, "stdlib_strlcpy", "Call to SDL_strlcpy", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference stdlibTest2 = {
-    stdlib_snprintf, "stdlib_snprintf", "Call to SDL_snprintf", TEST_ENABLED
+    (SDLTest_TestCaseFp)stdlib_snprintf, "stdlib_snprintf", "Call to SDL_snprintf", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference stdlibTest3 = {
-    stdlib_swprintf, "stdlib_swprintf", "Call to SDL_swprintf", TEST_ENABLED
+    (SDLTest_TestCaseFp)stdlib_getsetenv, "stdlib_getsetenv", "Call to SDL_getenv and SDL_setenv", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference stdlibTest4 = {
-    stdlib_getsetenv, "stdlib_getsetenv", "Call to SDL_getenv and SDL_setenv", TEST_ENABLED
-};
-
-static const SDLTest_TestCaseReference stdlibTest5 = {
-    stdlib_sscanf, "stdlib_sscanf", "Call to SDL_sscanf", TEST_ENABLED
-};
-
-static const SDLTest_TestCaseReference stdlibTest6 = {
-    stdlib_aligned_alloc, "stdlib_aligned_alloc", "Call to SDL_aligned_alloc", TEST_ENABLED
+    (SDLTest_TestCaseFp)stdlib_sscanf, "stdlib_sscanf", "Call to SDL_sscanf", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference stdlibTestOverflow = {
@@ -835,8 +599,6 @@ static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest2,
     &stdlibTest3,
     &stdlibTest4,
-    &stdlibTest5,
-    &stdlibTest6,
     &stdlibTestOverflow,
     NULL
 };

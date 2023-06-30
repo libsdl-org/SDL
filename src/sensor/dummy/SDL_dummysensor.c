@@ -18,10 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
+
+#include "SDL_config.h"
 
 #if defined(SDL_SENSOR_DUMMY) || defined(SDL_SENSOR_DISABLED)
 
+#include "SDL_error.h"
+#include "SDL_sensor.h"
 #include "SDL_dummysensor.h"
 #include "../SDL_syssensor.h"
 
@@ -91,3 +95,5 @@ SDL_SensorDriver SDL_DUMMY_SensorDriver = {
 };
 
 #endif /* SDL_SENSOR_DUMMY || SDL_SENSOR_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -1,9 +1,12 @@
 /**
  * New/updated tests: aschiffler at ferzkopp dot net
  */
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_test.h>
-#include "testautomation_suites.h"
+
+#include <stdio.h>
+#include <string.h>
+
+#include "SDL.h"
+#include "SDL_test.h"
 
 /* ================= Test Case Implementation ================== */
 
@@ -12,9 +15,10 @@
 /**
  * \brief Check call to SDL_HasClipboardText
  *
- * \sa SDL_HasClipboardText
+ * \sa
+ * http://wiki.libsdl.org/SDL_HasClipboardText
  */
-static int clipboard_testHasClipboardText(void *arg)
+int clipboard_testHasClipboardText(void *arg)
 {
     SDL_HasClipboardText();
     SDLTest_AssertPass("Call to SDL_HasClipboardText succeeded");
@@ -23,24 +27,12 @@ static int clipboard_testHasClipboardText(void *arg)
 }
 
 /**
- * \brief Check call to SDL_HasClipboardData
- *
- * \sa SDL_HasClipboardData
- */
-static int clipboard_testHasClipboardData(void *arg)
-{
-    SDL_HasClipboardData("image/png");
-    SDLTest_AssertPass("Call to SDL_HasClipboardData succeeded");
-
-    return TEST_COMPLETED;
-}
-
-/**
  * \brief Check call to SDL_HasPrimarySelectionText
  *
- * \sa SDL_HasPrimarySelectionText
+ * \sa
+ * http://wiki.libsdl.org/SDL_HasPrimarySelectionText
  */
-static int clipboard_testHasPrimarySelectionText(void *arg)
+int clipboard_testHasPrimarySelectionText(void *arg)
 {
     SDL_HasPrimarySelectionText();
     SDLTest_AssertPass("Call to SDL_HasPrimarySelectionText succeeded");
@@ -51,9 +43,10 @@ static int clipboard_testHasPrimarySelectionText(void *arg)
 /**
  * \brief Check call to SDL_GetClipboardText
  *
- * \sa SDL_GetClipboardText
+ * \sa
+ * http://wiki.libsdl.org/SDL_GetClipboardText
  */
-static int clipboard_testGetClipboardText(void *arg)
+int clipboard_testGetClipboardText(void *arg)
 {
     char *charResult;
     charResult = SDL_GetClipboardText();
@@ -65,30 +58,12 @@ static int clipboard_testGetClipboardText(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetClipboardData
- *
- * \sa SDL_GetClipboardText
- */
-static int clipboard_testGetClipboardData(void *arg)
-{
-    void *buffer = NULL;
-    size_t length;
-    buffer = SDL_GetClipboardData(&length, "image/png");
-    SDLTest_AssertPass("Call to SDL_GetClipboardData succeeded");
-
-    if (buffer != NULL) {
-        SDL_free(buffer);
-    }
-
-    return TEST_COMPLETED;
-}
-
-/**
  * \brief Check call to SDL_GetPrimarySelectionText
  *
- * \sa SDL_GetPrimarySelectionText
+ * \sa
+ * http://wiki.libsdl.org/SDL_GetPrimarySelectionText
  */
-static int clipboard_testGetPrimarySelectionText(void *arg)
+int clipboard_testGetPrimarySelectionText(void *arg)
 {
     char *charResult;
     charResult = SDL_GetPrimarySelectionText();
@@ -101,9 +76,10 @@ static int clipboard_testGetPrimarySelectionText(void *arg)
 
 /**
  * \brief Check call to SDL_SetClipboardText
- * \sa SDL_SetClipboardText
+ * \sa
+ * http://wiki.libsdl.org/SDL_SetClipboardText
  */
-static int clipboard_testSetClipboardText(void *arg)
+int clipboard_testSetClipboardText(void *arg)
 {
     char *textRef = SDLTest_RandomAsciiString();
     char *text = SDL_strdup(textRef);
@@ -127,31 +103,11 @@ static int clipboard_testSetClipboardText(void *arg)
 }
 
 /**
- * \brief Check call to SDL_SetClipboardData
- * \sa SDL_SetClipboardText
- */
-static int clipboard_testSetClipboardData(void *arg)
-{
-    int result = -1;
-
-    result = SDL_SetClipboardData(NULL, 0, NULL, NULL);
-    SDLTest_AssertPass("Call to SDL_SetClipboardData succeeded");
-    SDLTest_AssertCheck(
-        result == 0,
-        "Validate SDL_SetClipboardData result, expected 0, got %i",
-        result);
-
-    SDL_GetClipboardUserdata();
-    SDLTest_AssertPass("Call to SDL_GetClipboardUserdata succeeded");
-
-    return TEST_COMPLETED;
-}
-
-/**
  * \brief Check call to SDL_SetPrimarySelectionText
- * \sa SDL_SetPrimarySelectionText
+ * \sa
+ * http://wiki.libsdl.org/SDL_SetPrimarySelectionText
  */
-static int clipboard_testSetPrimarySelectionText(void *arg)
+int clipboard_testSetPrimarySelectionText(void *arg)
 {
     char *textRef = SDLTest_RandomAsciiString();
     char *text = SDL_strdup(textRef);
@@ -176,11 +132,12 @@ static int clipboard_testSetPrimarySelectionText(void *arg)
 
 /**
  * \brief End-to-end test of SDL_xyzClipboardText functions
- * \sa SDL_HasClipboardText
- * \sa SDL_GetClipboardText
- * \sa SDL_SetClipboardText
+ * \sa
+ * http://wiki.libsdl.org/SDL_HasClipboardText
+ * http://wiki.libsdl.org/SDL_GetClipboardText
+ * http://wiki.libsdl.org/SDL_SetClipboardText
  */
-static int clipboard_testClipboardTextFunctions(void *arg)
+int clipboard_testClipboardTextFunctions(void *arg)
 {
     char *textRef = SDLTest_RandomAsciiString();
     char *text = SDL_strdup(textRef);
@@ -253,11 +210,12 @@ static int clipboard_testClipboardTextFunctions(void *arg)
 
 /**
  * \brief End-to-end test of SDL_xyzPrimarySelectionText functions
- * \sa SDL_HasPrimarySelectionText
- * \sa SDL_GetPrimarySelectionText
- * \sa SDL_SetPrimarySelectionText
+ * \sa
+ * http://wiki.libsdl.org/SDL_HasPrimarySelectionText
+ * http://wiki.libsdl.org/SDL_GetPrimarySelectionText
+ * http://wiki.libsdl.org/SDL_SetPrimarySelectionText
  */
-static int clipboard_testPrimarySelectionTextFunctions(void *arg)
+int clipboard_testPrimarySelectionTextFunctions(void *arg)
 {
     char *textRef = SDLTest_RandomAsciiString();
     char *text = SDL_strdup(textRef);
@@ -363,21 +321,9 @@ static const SDLTest_TestCaseReference clipboardTest8 = {
     (SDLTest_TestCaseFp)clipboard_testPrimarySelectionTextFunctions, "clipboard_testPrimarySelectionTextFunctions", "End-to-end test of SDL_xyzPrimarySelectionText functions", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference clipboardTest9 = {
-    (SDLTest_TestCaseFp)clipboard_testGetClipboardData, "clipboard_testGetClipboardData", "Check call to SDL_GetClipboardData", TEST_ENABLED
-};
-
-static const SDLTest_TestCaseReference clipboardTest10 = {
-    (SDLTest_TestCaseFp)clipboard_testSetClipboardData, "clipboard_testSetClipboardData", "Check call to SDL_SetClipboardData", TEST_ENABLED
-};
-
-static const SDLTest_TestCaseReference clipboardTest11 = {
-    (SDLTest_TestCaseFp)clipboard_testHasClipboardData, "clipboard_testHasClipboardData", "Check call to SDL_HasClipboardData", TEST_ENABLED
-};
-
 /* Sequence of Clipboard test cases */
 static const SDLTest_TestCaseReference *clipboardTests[] = {
-    &clipboardTest1, &clipboardTest2, &clipboardTest3, &clipboardTest4, &clipboardTest5, &clipboardTest6, &clipboardTest7, &clipboardTest8, &clipboardTest9, &clipboardTest10, &clipboardTest11, NULL
+    &clipboardTest1, &clipboardTest2, &clipboardTest3, &clipboardTest4, &clipboardTest5, &clipboardTest6, &clipboardTest7, &clipboardTest8, NULL
 };
 
 /* Clipboard test suite (global) */

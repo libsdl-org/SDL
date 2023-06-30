@@ -18,7 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 /* Stub until we implement threads on this platform */
 typedef int SYS_ThreadHandle;
+
+/* vi: set ts=4 sw=4 expandtab: */

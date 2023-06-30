@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 /* D3D12 shader implementation */
 
@@ -65,3 +65,5 @@ extern void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER
 #ifdef __cplusplus
 }
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

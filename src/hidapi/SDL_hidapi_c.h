@@ -18,13 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
-
-
-/* Return true if the HIDAPI should ignore a device during enumeration */
-extern SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(int bus_type, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage);
+#include "../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
+
 #ifdef HAVE_LIBUSB
 #define HAVE_ENABLE_GAMECUBE_ADAPTORS
 #endif
@@ -32,4 +29,7 @@ extern SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(int bus_type, Uint16 vendor_id, Ui
 #ifdef HAVE_ENABLE_GAMECUBE_ADAPTORS
 extern void SDL_EnableGameCubeAdaptors(void);
 #endif
+
 #endif /* SDL_JOYSTICK_HIDAPI */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

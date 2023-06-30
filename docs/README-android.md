@@ -6,6 +6,9 @@ http://trederia.blogspot.de/2017/03/building-sdl2-for-android-with-visual.html
 
 The rest of this README covers the Android gradle style build process.
 
+If you are using the older ant build process, it is no longer officially
+supported, but you can use the "android-project-ant" directory as a template.
+
 
 Requirements
 ================================================================================
@@ -69,7 +72,7 @@ done in the build directory for the app!
 For more complex projects, follow these instructions:
 
 1. Get the source code for SDL and copy the 'android-project' directory located at SDL/android-project to a suitable location. Also make sure to rename it to your project name (In these examples: YOURPROJECT).
-
+   
    (The 'android-project' directory can basically be seen as a sort of starting point for the android-port of your project. It contains the glue code between the Android Java 'frontend' and the SDL code 'backend'. It also contains some standard behaviour, like how events should be handled, which you will be able to change.)
 
 2. Move or [symlink](https://en.wikipedia.org/wiki/Symbolic_link) the SDL directory into the "YOURPROJECT/app/jni" directory
@@ -91,8 +94,8 @@ If you already have a project that uses CMake, the instructions change somewhat:
 2. Edit "YOURPROJECT/app/build.gradle" to comment out or remove sections containing ndk-build
    and uncomment the cmake sections. Add arguments to the CMake invocation as needed.
 3. Edit "YOURPROJECT/app/jni/CMakeLists.txt" to include your project (it defaults to
-   adding the "src" subdirectory). Note that you'll have SDL3 and SDL3-static
-   as targets in your project, so you should have "target_link_libraries(yourgame SDL3)"
+   adding the "src" subdirectory). Note that you'll have SDL2, SDL2main and SDL2-static
+   as targets in your project, so you should have "target_link_libraries(yourgame SDL2 SDL2main)"
    in your CMakeLists.txt file. Also be aware that you should use add_library() instead of
    add_executable() for the target containing your "main" function.
 
@@ -203,27 +206,20 @@ app can continue to operate as it was.
 
 However, there's a chance (on older hardware, or on systems under heavy load),
 where the GL context can not be restored. In that case you have to listen for
-a specific message (SDL_EVENT_RENDER_DEVICE_RESET) and restore your textures
+a specific message (SDL_RENDER_DEVICE_RESET) and restore your textures
 manually or quit the app.
 
 You should not use the SDL renderer API while the app going in background:
-- SDL_EVENT_WILL_ENTER_BACKGROUND:
+- SDL_APP_WILLENTERBACKGROUND:
     after you read this message, GL context gets backed-up and you should not
     use the SDL renderer API.
 
     When this event is received, you have to set the render target to NULL, if you're using it.
     (eg call SDL_SetRenderTarget(renderer, NULL))
 
-- SDL_EVENT_DID_ENTER_FOREGROUND:
+- SDL_APP_DIDENTERFOREGROUND:
    GL context is restored, and the SDL renderer API is available (unless you
-   receive SDL_EVENT_RENDER_DEVICE_RESET).
-
-Activity lifecyle
-================================================================================
-
-You can control activity re-creation (eg. onCreate()) behaviour. This allows to keep
-or re-initialize java and native static datas, see SDL_hints.h:
-- SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY
+   receive SDL_RENDER_DEVICE_RESET).
 
 Mouse / Touch events
 ================================================================================
@@ -381,7 +377,7 @@ Valgrind has support for Android out of the box, just grab code using:
 
 ... and follow the instructions in the file README.android to build it.
 
-One thing I needed to do on macOS was change the path to the toolchain,
+One thing I needed to do on Mac OS X was change the path to the toolchain,
 and add ranlib to the environment variables:
 export RANLIB=$NDKROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-ranlib
 
@@ -426,10 +422,10 @@ Graphics debugging
 ================================================================================
 
 If you are developing on a compatible Tegra-based tablet, NVidia provides
-Tegra Graphics Debugger at their website. Because SDL3 dynamically loads EGL
+Tegra Graphics Debugger at their website. Because SDL2 dynamically loads EGL
 and GLES libraries, you must follow their instructions for installing the
 interposer library on a rooted device. The non-rooted instructions are not
-compatible with applications that use SDL3 for video.
+compatible with applications that use SDL2 for video.
 
 The Tegra Graphics Debugger is available from NVidia here:
 https://developer.nvidia.com/tegra-graphics-debugger
@@ -471,12 +467,12 @@ Two legitimate ways:
 Activity by calling Activity.finish().
 
 - Android OS can decide to terminate your application by calling onDestroy()
-(see Activity life cycle). Your application will receive an SDL_EVENT_QUIT you
+(see Activity life cycle). Your application will receive a SDL_QUIT event you
 can handle to save things and quit.
 
 Don't call exit() as it stops the activity badly.
 
-NB: "Back button" can be handled as a SDL_EVENT_KEY_DOWN/UP events, with Keycode
+NB: "Back button" can be handled as a SDL_KEYDOWN/UP events, with Keycode
 SDLK_AC_BACK, for any purpose.
 
 Known issues

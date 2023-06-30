@@ -18,15 +18,19 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_HAPTIC_ANDROID
 
+#include "SDL_timer.h"
 #include "SDL_syshaptic_c.h"
 #include "../SDL_syshaptic.h"
+#include "SDL_haptic.h"
 #include "../../core/android/SDL_android.h"
-#include "../../joystick/SDL_sysjoystick.h"           /* For the real SDL_Joystick */
-#include "../../joystick/android/SDL_sysjoystick_c.h" /* For joystick hwdata */
+#include "SDL_joystick.h"
+#include "../../joystick/SDL_sysjoystick.h"     /* For the real SDL_Joystick */
+#include "../../joystick/android/SDL_sysjoystick_c.h"     /* For joystick hwdata */
+
 
 typedef struct SDL_hapticlist_item
 {
@@ -42,8 +46,15 @@ static int numhaptics = 0;
 
 int SDL_SYS_HapticInit(void)
 {
-    Android_JNI_PollHapticDevices();
-
+    /* Support for device connect/disconnect is API >= 16 only,
+     * so we poll every three seconds
+     * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
+     */
+    static Uint32 timeout = 0;
+    if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
+        timeout = SDL_GetTicks() + 3000;
+        Android_JNI_PollHapticDevices();
+    }
     return numhaptics;
 }
 
@@ -302,3 +313,5 @@ int Android_RemoveHaptic(int device_id)
 }
 
 #endif /* SDL_HAPTIC_ANDROID */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,15 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 /* An implementation of mutexes using the Symbian API. */
 
 #include <e32std.h>
 
+#include "SDL_thread.h"
 #include "SDL_systhread_c.h"
 
-struct SDL_Mutex
+struct SDL_mutex
 {
     TInt handle;
 };
@@ -39,7 +40,7 @@ static TInt NewMutex(const TDesC &aName, TAny *aPtr1, TAny *)
 }
 
 /* Create a mutex */
-SDL_Mutex *SDL_CreateMutex(void)
+SDL_mutex *SDL_CreateMutex(void)
 {
     RMutex rmutex;
 
@@ -48,13 +49,13 @@ SDL_Mutex *SDL_CreateMutex(void)
         SDL_SetError("Couldn't create mutex.");
         return NULL;
     }
-    SDL_Mutex *mutex = new /*(ELeave)*/ SDL_Mutex;
+    SDL_mutex *mutex = new /*(ELeave)*/ SDL_mutex;
     mutex->handle = rmutex.Handle();
     return mutex;
 }
 
 /* Free the mutex */
-void SDL_DestroyMutex(SDL_Mutex *mutex)
+void SDL_DestroyMutex(SDL_mutex *mutex)
 {
     if (mutex) {
         RMutex rmutex;
@@ -67,7 +68,7 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
 }
 
 /* Lock the mutex */
-int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
         return 0;
@@ -82,7 +83,7 @@ int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
 
 /* Try to lock the mutex */
 #if 0
-int SDL_TryLockMutex(SDL_Mutex *mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
     if (mutex == NULL)
     {
@@ -95,7 +96,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 #endif
 
 /* Unlock the mutex */
-int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
         return 0;
@@ -108,3 +109,4 @@ int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doe
     return 0;
 }
 
+/* vi: set ts=4 sw=4 expandtab: */

@@ -26,10 +26,10 @@
 extern "C" {
 #endif
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
+#include "SDL.h"
+#include "SDL_syswm.h"
 #include "SDL_bframebuffer.h"
-
-#include <SDL3/SDL_syswm.h>
 
 #ifdef __cplusplus
 }
@@ -39,10 +39,11 @@ extern "C" {
 #include <AppKit.h>
 #include <Cursor.h>
 #include <InterfaceKit.h>
-#ifdef SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL
 #include <opengl/GLView.h>
 #endif
-#include "../../core/haiku/SDL_BApp.h"
+#include "SDL_events.h"
+#include "../../main/haiku/SDL_BApp.h"
 
 enum WinCommands
 {
@@ -98,7 +99,7 @@ class SDL_BWin : public BWindow
         _cur_view = NULL;
         _SDL_View = NULL;
 
-#ifdef SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL
         _SDL_GLView = NULL;
         _gl_type = 0;
 #endif
@@ -122,7 +123,7 @@ class SDL_BWin : public BWindow
             _SDL_View = NULL;
         }
 
-#ifdef SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL
         if (_SDL_GLView) {
             if (SDL_Looper->GetCurrentContext() == _SDL_GLView)
                 SDL_Looper->SetCurrentContext(NULL);
@@ -188,7 +189,7 @@ class SDL_BWin : public BWindow
     }
 
     /* * * * * OpenGL functionality * * * * */
-#ifdef SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL
     BGLView *CreateGLView(Uint32 gl_flags)
     {
         Lock();
@@ -475,7 +476,7 @@ class SDL_BWin : public BWindow
     BBitmap *GetBitmap() { return _bitmap; }
     BView *GetCurView() { return _cur_view; }
     SDL_BView *GetView() { return _SDL_View; }
-#ifdef SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL
     BGLView *GetGLView()
     {
         return _SDL_GLView;
@@ -711,7 +712,7 @@ class SDL_BWin : public BWindow
 
     BView *_cur_view;
     SDL_BView *_SDL_View;
-#ifdef SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL
     BGLView *_SDL_GLView;
     Uint32 _gl_type;
 #endif
@@ -749,3 +750,5 @@ class SDL_BWin : public BWindow
  *                         buffer provided by DirectConnected() is invalidated.
  */
 #endif /* SDL_BWin_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

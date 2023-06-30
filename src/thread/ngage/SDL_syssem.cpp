@@ -18,16 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 /* An implementation of semaphores using the Symbian API. */
 
 #include <e32std.h>
 
-/* !!! FIXME: Should this be SDL_MUTEX_TIMEDOUT? */
+#include "SDL_error.h"
+#include "SDL_thread.h"
+
 #define SDL_MUTEX_TIMEOUT -2
 
-struct SDL_Semaphore
+struct SDL_semaphore
 {
     TInt handle;
     TInt count;
@@ -65,7 +67,7 @@ static TInt NewSema(const TDesC &aName, TAny *aPtr1, TAny *aPtr2)
     return ((RSemaphore *)aPtr1)->CreateGlobal(aName, value);
 }
 
-static void WaitAll(SDL_Semaphore *sem)
+static void WaitAll(SDL_sem *sem)
 {
     RSemaphore sema;
     sema.SetHandle(sem->handle);
@@ -75,20 +77,20 @@ static void WaitAll(SDL_Semaphore *sem)
     }
 }
 
-SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
+SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
     RSemaphore s;
     TInt status = CreateUnique(NewSema, &s, &initial_value);
     if (status != KErrNone) {
         SDL_SetError("Couldn't create semaphore");
     }
-    SDL_Semaphore *sem = new /*(ELeave)*/ SDL_Semaphore;
+    SDL_semaphore *sem = new /*(ELeave)*/ SDL_semaphore;
     sem->handle = s.Handle();
     sem->count = initial_value;
     return sem;
 }
 
-void SDL_DestroySemaphore(SDL_Semaphore *sem)
+void SDL_DestroySemaphore(SDL_sem *sem)
 {
     if (sem != NULL) {
         RSemaphore sema;
@@ -100,27 +102,19 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     }
 }
 
-int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
-    if (timeoutNS == 0) {
-        if (sem->count > 0) {
-            --sem->count;
-            return 0;
-        }
-        return SDL_MUTEX_TIMEOUT;
-    }
-
-    if (timeoutNS == SDL_MUTEX_MAXWAIT) {
+    if (timeout == SDL_MUTEX_MAXWAIT) {
         WaitAll(sem);
-        return 0;
+        return SDL_MUTEX_MAXWAIT;
     }
 
     RThread thread;
-    TInfo *info = new (ELeave) TInfo((TInt)SDL_NS_TO_MS(timeoutNS), sem->handle);
+    TInfo *info = new (ELeave) TInfo(timeout, sem->handle);
     TInt status = CreateUnique(NewThread, &thread, info);
 
     if (status != KErrNone) {
@@ -138,7 +132,24 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     return info->iVal;
 }
 
-Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
+int SDL_SemTryWait(SDL_sem *sem)
+{
+    if (sem == NULL) {
+        return SDL_InvalidParamError("sem");
+    }
+
+    if (sem->count > 0) {
+        sem->count--;
+    }
+    return SDL_MUTEX_TIMEOUT;
+}
+
+int SDL_SemWait(SDL_sem *sem)
+{
+    return SDL_SemWaitTimeout(sem, SDL_MUTEX_MAXWAIT);
+}
+
+Uint32 SDL_SemValue(SDL_sem *sem)
 {
     if (sem == NULL) {
         SDL_InvalidParamError("sem");
@@ -147,7 +158,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     return sem->count;
 }
 
-int SDL_PostSemaphore(SDL_Semaphore *sem)
+int SDL_SemPost(SDL_sem *sem)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
@@ -158,3 +169,5 @@ int SDL_PostSemaphore(SDL_Semaphore *sem)
     sema.Signal();
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

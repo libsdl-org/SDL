@@ -24,15 +24,18 @@
  * Thanks to @slime73 on GitHub for their gist showing how to add a CAMetalLayer
  * backed view.
  */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #import "SDL_cocoametalview.h"
 
-#if defined(SDL_VIDEO_DRIVER_COCOA) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL))
+#if SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
 
-#include <SDL3/SDL_syswm.h>
+#include "SDL_events.h"
+#include "SDL_syswm.h"
 
-static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
+
+static int SDLCALL
+SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 {
     /* Update the drawable size when SDL receives a size changed event for
      * the window that contains the metal view. It would be nice to use
@@ -41,7 +44,7 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
      * events don't always happen in the same frame (for example when a
      * resizable window exits a fullscreen Space via the user pressing the OS
      * exit-space button). */
-    if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+    if (event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
         @autoreleasepool {
             SDL_cocoametalview *view = (__bridge SDL_cocoametalview *)userdata;
             if (view.sdlWindowID == event->window.windowID) {
@@ -69,15 +72,14 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 /* When the wantsLayer property is set to YES, this method will be invoked to
  * return a layer instance.
  */
-- (CALayer *)makeBackingLayer
+- (CALayer*)makeBackingLayer
 {
     return [self.class.layerClass layer];
 }
 
 - (instancetype)initWithFrame:(NSRect)frame
                       highDPI:(BOOL)highDPI
-                     windowID:(Uint32)windowID
-                       opaque:(BOOL)opaque
+                     windowID:(Uint32)windowID;
 {
     self = [super initWithFrame:frame];
     if (self != nil) {
@@ -87,8 +89,6 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
         /* Allow resize. */
         self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-
-        self.layer.opaque = opaque;
 
         SDL_AddEventWatch(SDL_MetalViewEventWatch, (__bridge void *)(self));
 
@@ -125,58 +125,71 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
     metalLayer.drawableSize = NSSizeToCGSize(backingSize);
 }
 
-- (NSView *)hitTest:(NSPoint)point
-{
+- (NSView *)hitTest:(NSPoint)point {
     return nil;
 }
 
 @end
 
-SDL_MetalView Cocoa_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    @autoreleasepool {
-        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
-        NSView *view = data.nswindow.contentView;
-        BOOL highDPI = (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) != 0;
-        BOOL opaque = (window->flags & SDL_WINDOW_TRANSPARENT) == 0;
-        Uint32 windowID = SDL_GetWindowID(window);
-        SDL_cocoametalview *newview;
-        SDL_MetalView metalview;
+SDL_MetalView Cocoa_Metal_CreateView(_THIS, SDL_Window * window)
+{ @autoreleasepool {
+    SDL_WindowData* data = (__bridge SDL_WindowData *)window->driverdata;
+    NSView *view = data.nswindow.contentView;
+    BOOL highDPI = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+    Uint32 windowID = SDL_GetWindowID(window);
+    SDL_cocoametalview *newview;
+    SDL_MetalView metalview;
 
-        newview = [[SDL_cocoametalview alloc] initWithFrame:view.frame
-                                                    highDPI:highDPI
-                                                   windowID:windowID
-                                                     opaque:opaque];
-        if (newview == nil) {
-            SDL_OutOfMemory();
-            return NULL;
+    newview = [[SDL_cocoametalview alloc] initWithFrame:view.frame
+                                                highDPI:highDPI
+                                                windowID:windowID];
+    if (newview == nil) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    [view addSubview:newview];
+
+    /* Make sure the drawable size is up to date after attaching the view. */
+    [newview updateDrawableSize];
+
+    metalview = (SDL_MetalView)CFBridgingRetain(newview);
+
+    return metalview;
+}}
+
+void Cocoa_Metal_DestroyView(_THIS, SDL_MetalView view)
+{ @autoreleasepool {
+    SDL_cocoametalview *metalview = CFBridgingRelease(view);
+    [metalview removeFromSuperview];
+}}
+
+void *Cocoa_Metal_GetLayer(_THIS, SDL_MetalView view)
+{ @autoreleasepool {
+    SDL_cocoametalview *cocoaview = (__bridge SDL_cocoametalview *)view;
+    return (__bridge void *)cocoaview.layer;
+}}
+
+void Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
+{ @autoreleasepool {
+    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+    NSView *contentView = data.sdlContentView;
+    SDL_cocoametalview* metalview = [contentView viewWithTag:SDL_METALVIEW_TAG];
+    if (metalview) {
+        CAMetalLayer *layer = (CAMetalLayer*)metalview.layer;
+        SDL_assert(layer != NULL);
+        if (w) {
+            *w = layer.drawableSize.width;
         }
-
-        [view addSubview:newview];
-
-        /* Make sure the drawable size is up to date after attaching the view. */
-        [newview updateDrawableSize];
-
-        metalview = (SDL_MetalView)CFBridgingRetain(newview);
-
-        return metalview;
+        if (h) {
+            *h = layer.drawableSize.height;
+        }
+    } else {
+        /* Fall back to the viewport size. */
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
-}
-
-void Cocoa_Metal_DestroyView(SDL_VideoDevice *_this, SDL_MetalView view)
-{
-    @autoreleasepool {
-        SDL_cocoametalview *metalview = CFBridgingRelease(view);
-        [metalview removeFromSuperview];
-    }
-}
-
-void *Cocoa_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view)
-{
-    @autoreleasepool {
-        SDL_cocoametalview *cocoaview = (__bridge SDL_cocoametalview *)view;
-        return (__bridge void *)cocoaview.layer;
-    }
-}
+}}
 
 #endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
+
+/* vi: set ts=4 sw=4 expandtab: */

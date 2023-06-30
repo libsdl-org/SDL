@@ -75,3 +75,5 @@ extern EControllerType GuessControllerType( int nVID, int nPID );
 extern const char *GuessControllerName( int nVID, int nPID );
 
 #endif // CONTROLLER_TYPE_H
+
+/* vi: set ts=4 sw=4 noexpandtab: */

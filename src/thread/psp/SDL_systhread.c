@@ -18,15 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_THREAD_PSP
+#if SDL_THREAD_PSP
 
 /* PSP thread management routines for SDL */
 
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "SDL_error.h"
+#include "SDL_thread.h"
 #include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
 #include <pspkerneltypes.h>
@@ -105,3 +107,6 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 }
 
 #endif /* SDL_THREAD_PSP */
+
+/* vim: ts=4 sw=4
+ */

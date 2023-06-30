@@ -2,10 +2,6 @@ name: Build (Android)
 
 on: [push, pull_request]
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: true
-
 jobs:
   android:
     name: ${{ matrix.platform.name }}
@@ -16,7 +12,7 @@ jobs:
       matrix:
         platform:
           - { name: Android.mk  }
-          - { name: CMake, cmake: 1, android_abi: "arm64-v8a", android_platform: 23, arch: "aarch64", artifact: "SDL-android-arm64" }
+          - { name: CMake, cmake: 1, android_abi: "arm64-v8a", android_platform: 23, arch: "aarch64" }
 
     steps:
       - uses: actions/checkout@v3
@@ -36,17 +32,11 @@ jobs:
       - name: Configure (CMake)
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
-          cmake -S . -B build \
-            -Wdeprecated -Wdev -Werror \
+          cmake -B build \
             -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
             -DSDL_WERROR=ON \
-            -DSDL_TESTS=ON \
-            -DSDL_INSTALL_TESTS=ON \
-            -DSDL_CLANG_TIDY=ON \
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
-            -DSDL_SHARED=ON \
-            -DSDL_STATIC=ON \
             -DSDL_STATIC_PIC=ON \
             -DSDL_VENDOR_INFO="Github Workflow" \
             -DCMAKE_INSTALL_PREFIX=prefix \
@@ -60,12 +50,8 @@ jobs:
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
           cmake --install build --config Release
-          echo "SDL3_DIR=$(pwd)/prefix" >> $GITHUB_ENV
+          echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
           ( cd prefix; find ) | LC_ALL=C sort -u
-      - name: Package (CPack)
-        if: ${{ matrix.platform.name == 'CMake' }}
-        run: |
-          cmake --build build/ --config Release --target package
       - name: Verify CMake configuration files
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
@@ -74,17 +60,22 @@ jobs:
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }}
+            -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }}
           cmake --build cmake_config_build --verbose
-      - name: Verify sdl3.pc
+      - name: Verify sdl2-config
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
           export CC="${{ steps.setup_ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
-          export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
-          cmake/test/test_pkgconfig.sh
-      - uses: actions/upload-artifact@v3
+          export PATH=${{ env.SDL2_DIR }}/bin:$PATH
+          cmake/test/test_sdlconfig.sh
+      - name: Verify sdl2.pc
         if: ${{ matrix.platform.name == 'CMake' }}
-        with:
-          if-no-files-found: error
-          name: ${{ matrix.platform.artifact }}
-          path: build/dist/SDL3*
+        run: |
+          export CC="${{ steps.setup_ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
+          export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
+          cmake/test/test_pkgconfig.sh
+      - name: Verify Android.mk
+        if: ${{ matrix.platform.name == 'CMake' }}
+        run: |
+          export NDK_MODULE_PATH=${{ env.SDL2_DIR }}/share/ndk-modules
+          ndk-build -C ${{ github.workspace }}/cmake/test APP_PLATFORM=android-${{ matrix.platform.android_platform }} APP_ABI=${{ matrix.platform.android_abi }} NDK_OUT=$PWD NDK_LIBS_OUT=$PWD V=1

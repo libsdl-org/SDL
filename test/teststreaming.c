@@ -16,14 +16,13 @@
  ********************************************************************************/
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include "SDL.h"
 #include "testutils.h"
 
 #define MOOSEPIC_W 64
@@ -33,7 +32,7 @@
 #define MOOSEFRAMES_COUNT 10
 
 /* *INDENT-OFF* */ /* clang-format off */
-static SDL_Color MooseColors[84] = {
+SDL_Color MooseColors[84] = {
     {49, 49, 49, 255}, {66, 24, 0, 255}, {66, 33, 0, 255}, {66, 66, 66, 255},
     {66, 115, 49, 255}, {74, 33, 0, 255}, {74, 41, 16, 255}, {82, 33, 8, 255},
     {82, 41, 8, 255}, {82, 49, 16, 255}, {82, 82, 82, 255}, {90, 41, 8, 255},
@@ -58,25 +57,20 @@ static SDL_Color MooseColors[84] = {
 };
 /* *INDENT-ON* */ /* clang-format on */
 
-static Uint8 MooseFrames[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE];
+Uint8 MooseFrames[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE];
 
-static SDL_Renderer *renderer;
-static int frame;
-static SDL_Texture *MooseTexture;
-static SDL_bool done = SDL_FALSE;
-static SDLTest_CommonState *state;
+SDL_Renderer *renderer;
+int frame;
+SDL_Texture *MooseTexture;
+SDL_bool done = SDL_FALSE;
 
-static void quit(int rc)
+void quit(int rc)
 {
     SDL_Quit();
-    SDLTest_CommonDestroyState(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
+    exit(rc);
 }
 
-static void UpdateTexture(SDL_Texture *texture)
+void UpdateTexture(SDL_Texture *texture)
 {
     SDL_Color *color;
     Uint8 *src;
@@ -100,18 +94,18 @@ static void UpdateTexture(SDL_Texture *texture)
     SDL_UnlockTexture(texture);
 }
 
-static void loop(void)
+void loop()
 {
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_EVENT_KEY_DOWN:
+        case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE) {
                 done = SDL_TRUE;
             }
             break;
-        case SDL_EVENT_QUIT:
+        case SDL_QUIT:
             done = SDL_TRUE;
             break;
         }
@@ -121,7 +115,7 @@ static void loop(void)
     UpdateTexture(MooseTexture);
 
     SDL_RenderClear(renderer);
-    SDL_RenderTexture(renderer, MooseTexture, NULL, NULL);
+    SDL_RenderCopy(renderer, MooseTexture, NULL, NULL);
     SDL_RenderPresent(renderer);
 
 #ifdef __EMSCRIPTEN__
@@ -137,19 +131,8 @@ int main(int argc, char **argv)
     SDL_RWops *handle;
     char *filename = NULL;
 
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
-
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        SDLTest_CommonDestroyState(state);
-        return 1;
-    }
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -168,17 +151,21 @@ int main(int argc, char **argv)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
         quit(2);
     }
-    SDL_RWread(handle, MooseFrames, MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
+    SDL_RWread(handle, MooseFrames, MOOSEFRAME_SIZE, MOOSEFRAMES_COUNT);
     SDL_RWclose(handle);
 
     /* Create the window and renderer */
-    window = SDL_CreateWindow("Happy Moose", MOOSEPIC_W * 4, MOOSEPIC_H * 4, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Happy Moose",
+                              SDL_WINDOWPOS_UNDEFINED,
+                              SDL_WINDOWPOS_UNDEFINED,
+                              MOOSEPIC_W * 4, MOOSEPIC_H * 4,
+                              SDL_WINDOW_RESIZABLE);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create window: %s\n", SDL_GetError());
         quit(3);
     }
 
-    renderer = SDL_CreateRenderer(window, NULL, 0);
+    renderer = SDL_CreateRenderer(window, -1, 0);
     if (renderer == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create renderer: %s\n", SDL_GetError());
         quit(4);
@@ -206,3 +193,5 @@ int main(int argc, char **argv)
     quit(0);
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

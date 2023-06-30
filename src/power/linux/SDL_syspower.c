@@ -18,10 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
-#ifdef SDL_POWER_LINUX
+#if SDL_POWER_LINUX
 
 #include <stdio.h>
 #include <unistd.h>
@@ -31,6 +31,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
+#include "SDL_power.h"
 #include "../SDL_syspower.h"
 
 #include "../../core/linux/SDL_dbus.h"
@@ -520,7 +521,7 @@ SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, in
 }
 
 /* d-bus queries to org.freedesktop.UPower. */
-#ifdef SDL_USE_LIBDBUS
+#if SDL_USE_LIBDBUS
 #define UPOWER_DBUS_NODE             "org.freedesktop.UPower"
 #define UPOWER_DBUS_PATH             "/org/freedesktop/UPower"
 #define UPOWER_DBUS_INTERFACE        "org.freedesktop.UPower"
@@ -610,7 +611,7 @@ SDL_bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, in
 {
     SDL_bool retval = SDL_FALSE;
 
-#ifdef SDL_USE_LIBDBUS
+#if SDL_USE_LIBDBUS
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     char **paths = NULL;
     int i, numpaths = 0;
@@ -638,3 +639,5 @@ SDL_bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, in
 
 #endif /* SDL_POWER_LINUX */
 #endif /* SDL_POWER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

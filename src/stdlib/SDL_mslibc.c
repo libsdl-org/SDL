@@ -18,7 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+
+#if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
+#define SDL_DISABLE_ANALYZE_MACROS 1
+#endif
+
+#include "../SDL_internal.h"
 
 /* This file contains SDL replacements for functions in the C library */
 
@@ -26,7 +31,7 @@
 
 /* These are some C runtime intrinsics that need to be defined */
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 
 #ifndef __FLTUSED__
 #define __FLTUSED__
@@ -34,15 +39,13 @@ __declspec(selectany) int _fltused = 1;
 #endif
 
 /* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls.
-   Always provide it for the SDL3 DLL, but skip it when building static lib w/ static runtime. */
+   Always provide it for the SDL2 DLL, but skip it when building static lib w/ static runtime. */
 #if (_MSC_VER >= 1400) && (!defined(_MT) || defined(DLL_EXPORT))
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memcpy(void *dst, const void *src, size_t len);
-#ifndef __INTEL_LLVM_COMPILER
 #pragma intrinsic(memcpy)
-#endif
 
-#ifndef __clang__
+#if !defined(__clang__)
 #pragma function(memcpy)
 #endif
 /* NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) */
@@ -53,11 +56,9 @@ void *memcpy(void *dst, const void *src, size_t len)
 
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memset(void *dst, int c, size_t len);
-#ifndef __INTEL_LLVM_COMPILER
 #pragma intrinsic(memset)
-#endif
 
-#ifndef __clang__
+#if !defined(__clang__)
 #pragma function(memset)
 #endif
 /* NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) */
@@ -700,7 +701,7 @@ RETZERO:
 
 #endif /* MSC_VER */
 
-#ifdef __ICL
+#if defined(__ICL)
 /* The classic Intel compiler generates calls to _intel_fast_memcpy
  * and _intel_fast_memset when building an optimized SDL library */
 void *_intel_fast_memcpy(void *dst, const void *src, size_t len)
@@ -714,3 +715,5 @@ void *_intel_fast_memset(void *dst, int c, size_t len)
 #endif
 
 #endif /* !HAVE_LIBC && !SDL_STATIC_LIB */
+
+/* vi: set ts=4 sw=4 expandtab: */

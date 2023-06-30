@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
 #ifndef SDL_utils_h_
 #define SDL_utils_h_
@@ -28,6 +27,6 @@
 /* Return the smallest power of 2 greater than or equal to 'x' */
 extern int SDL_powerof2(int x);
 
-SDL_bool SDL_endswith(const char *string, const char *suffix);
-
 #endif /* SDL_utils_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

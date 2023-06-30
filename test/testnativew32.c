@@ -14,8 +14,6 @@
 
 #ifdef TEST_NATIVE_WINDOWS
 
-#include <windows.h>
-
 static void *CreateWindowNative(int w, int h);
 static void DestroyWindowNative(void *window);
 

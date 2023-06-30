@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "./SDL_internal.h"
 
 #if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
 #include "core/windows/SDL_windows.h"
@@ -26,13 +26,16 @@
 
 /* Simple log messages in SDL */
 
+#include "SDL_error.h"
+#include "SDL_log.h"
+#include "SDL_mutex.h"
 #include "SDL_log_c.h"
 
-#ifdef HAVE_STDIO_H
+#if HAVE_STDIO_H
 #include <stdio.h>
 #endif
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__)
 #include <android/log.h>
 #endif
 
@@ -41,7 +44,7 @@
 /* The size of the stack buffer to use for rendering log messages. */
 #define SDL_MAX_LOG_MESSAGE_STACK 256
 
-#define DEFAULT_PRIORITY             SDL_LOG_PRIORITY_ERROR
+#define DEFAULT_PRIORITY             SDL_LOG_PRIORITY_CRITICAL
 #define DEFAULT_ASSERT_PRIORITY      SDL_LOG_PRIORITY_WARN
 #define DEFAULT_APPLICATION_PRIORITY SDL_LOG_PRIORITY_INFO
 #define DEFAULT_TEST_PRIORITY        SDL_LOG_PRIORITY_VERBOSE
@@ -63,12 +66,7 @@ static SDL_LogPriority SDL_application_priority = DEFAULT_APPLICATION_PRIORITY;
 static SDL_LogPriority SDL_test_priority = DEFAULT_TEST_PRIORITY;
 static SDL_LogOutputFunction SDL_log_function = SDL_LogOutput;
 static void *SDL_log_userdata = NULL;
-static SDL_Mutex *log_function_mutex = NULL;
-
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#endif
+static SDL_mutex *log_function_mutex = NULL;
 
 static const char *SDL_priority_prefixes[SDL_NUM_LOG_PRIORITIES] = {
     NULL,
@@ -79,10 +77,6 @@ static const char *SDL_priority_prefixes[SDL_NUM_LOG_PRIORITIES] = {
     "ERROR",
     "CRITICAL"
 };
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
 
 #ifdef __ANDROID__
 static const char *SDL_category_prefixes[] = {
@@ -110,7 +104,7 @@ static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
 };
 #endif /* __ANDROID__ */
 
-void SDL_InitLog(void)
+void SDL_LogInit(void)
 {
     if (log_function_mutex == NULL) {
         /* if this fails we'll try to continue without it. */
@@ -118,7 +112,7 @@ void SDL_InitLog(void)
     }
 }
 
-void SDL_QuitLog(void)
+void SDL_LogQuit(void)
 {
     SDL_LogResetPriorities();
     if (log_function_mutex) {
@@ -483,9 +477,12 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         }
     }
 #endif
-#if defined(HAVE_STDIO_H) && \
+#if HAVE_STDIO_H && \
     !(defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
-    (void)fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
+    fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
+#if __NACL__
+    fflush(stderr);
+#endif
 #endif
 }
 
@@ -504,3 +501,5 @@ void SDL_LogSetOutputFunction(SDL_LogOutputFunction callback, void *userdata)
     SDL_log_function = callback;
     SDL_log_userdata = userdata;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

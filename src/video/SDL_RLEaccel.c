@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #if SDL_HAVE_RLE
 
@@ -87,6 +87,7 @@
  *   beginning of an opaque line.
  */
 
+#include "SDL_video.h"
 #include "SDL_sysvideo.h"
 #include "SDL_blit.h"
 #include "SDL_RLEaccel_c.h"
@@ -175,7 +176,7 @@
         Uint8 *src = from;                                       \
         Uint8 *dst = to;                                         \
         for (i = 0; i < (int)(length); i++) {                    \
-            Uint32 s = 0, d = 0;                                         \
+            Uint32 s, d;                                         \
             unsigned rs, gs, bs, rd, gd, bd;                     \
             switch (bpp) {                                       \
             case 2:                                              \
@@ -1111,20 +1112,20 @@ static int RLEAlphaSurface(SDL_Surface *surface)
         Uint8 *lastline = dst; /* end of last non-blank line */
 
         /* opaque counts are 8 or 16 bits, depending on target depth */
-#define ADD_OPAQUE_COUNTS(n, m)           \
-    if (df->BytesPerPixel == 4) {         \
-        ((Uint16 *)dst)[0] = (Uint16)n;   \
-        ((Uint16 *)dst)[1] = (Uint16)m;   \
-        dst += 4;                         \
-    } else {                              \
-        dst[0] = (Uint8)n;                \
-        dst[1] = (Uint8)m;                \
-        dst += 2;                         \
+#define ADD_OPAQUE_COUNTS(n, m)   \
+    if (df->BytesPerPixel == 4) { \
+        ((Uint16 *)dst)[0] = n;   \
+        ((Uint16 *)dst)[1] = m;   \
+        dst += 4;                 \
+    } else {                      \
+        dst[0] = n;               \
+        dst[1] = m;               \
+        dst += 2;                 \
     }
 
         /* translucent counts are always 16 bit */
 #define ADD_TRANSL_COUNTS(n, m) \
-    (((Uint16 *)dst)[0] = (Uint16)n, ((Uint16 *)dst)[1] = (Uint16)m, dst += 4)
+    (((Uint16 *)dst)[0] = n, ((Uint16 *)dst)[1] = m, dst += 4)
 
         for (y = 0; y < h; y++) {
             int runstart, skipstart;
@@ -1215,7 +1216,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
     /* Now that we have it encoded, release the original pixels */
     if (!(surface->flags & SDL_PREALLOC)) {
         if (surface->flags & SDL_SIMD_ALIGNED) {
-            SDL_aligned_free(surface->pixels);
+            SDL_SIMDFree(surface->pixels);
             surface->flags &= ~SDL_SIMD_ALIGNED;
         } else {
             SDL_free(surface->pixels);
@@ -1314,15 +1315,15 @@ static int RLEColorkeySurface(SDL_Surface *surface)
     w = surface->w;
     h = surface->h;
 
-#define ADD_COUNTS(n, m)                \
-    if (bpp == 4) {                     \
-        ((Uint16 *)dst)[0] = (Uint16)n; \
-        ((Uint16 *)dst)[1] = (Uint16)m; \
-        dst += 4;                       \
-    } else {                            \
-        dst[0] = (Uint8)n;              \
-        dst[1] = (Uint8)m;              \
-        dst += 2;                       \
+#define ADD_COUNTS(n, m)        \
+    if (bpp == 4) {             \
+        ((Uint16 *)dst)[0] = n; \
+        ((Uint16 *)dst)[1] = m; \
+        dst += 4;               \
+    } else {                    \
+        dst[0] = n;             \
+        dst[1] = m;             \
+        dst += 2;               \
     }
 
     for (y = 0; y < h; y++) {
@@ -1382,7 +1383,7 @@ static int RLEColorkeySurface(SDL_Surface *surface)
     /* Now that we have it encoded, release the original pixels */
     if (!(surface->flags & SDL_PREALLOC)) {
         if (surface->flags & SDL_SIMD_ALIGNED) {
-            SDL_aligned_free(surface->pixels);
+            SDL_SIMDFree(surface->pixels);
             surface->flags &= ~SDL_SIMD_ALIGNED;
         } else {
             SDL_free(surface->pixels);
@@ -1482,7 +1483,6 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
                          RLEDestFormat *, SDL_PixelFormat *);
     int w = surface->w;
     int bpp = df->BytesPerPixel;
-    size_t size;
 
     if (bpp == 2) {
         uncopy_opaque = uncopy_opaque_16;
@@ -1491,11 +1491,7 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
         uncopy_opaque = uncopy_transl = uncopy_32;
     }
 
-    if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
-        return SDL_FALSE;
-    }
-
-    surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
+    surface->pixels = SDL_SIMDAlloc((size_t)surface->h * surface->pitch);
     if (surface->pixels == NULL) {
         return SDL_FALSE;
     }
@@ -1559,15 +1555,9 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
         if (recode && !(surface->flags & SDL_PREALLOC)) {
             if (surface->map->info.flags & SDL_COPY_RLE_COLORKEY) {
                 SDL_Rect full;
-                size_t size;
 
                 /* re-create the original surface */
-                if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
-                    /* Memory corruption? */
-                    surface->flags |= SDL_RLEACCEL;
-                    return;
-                }
-                surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
+                surface->pixels = SDL_SIMDAlloc((size_t)surface->h * surface->pitch);
                 if (surface->pixels == NULL) {
                     /* Oh crap... */
                     surface->flags |= SDL_RLEACCEL;
@@ -1576,7 +1566,7 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
                 surface->flags |= SDL_SIMD_ALIGNED;
 
                 /* fill it with the background color */
-                SDL_FillSurfaceRect(surface, NULL, surface->map->info.colorkey);
+                SDL_FillRect(surface, NULL, surface->map->info.colorkey);
 
                 /* now render the encoded surface */
                 full.x = full.y = 0;
@@ -1600,3 +1590,5 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
 }
 
 #endif /* SDL_HAVE_RLE */
+
+/* vi: set ts=4 sw=4 expandtab: */

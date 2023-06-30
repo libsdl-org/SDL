@@ -24,7 +24,7 @@
  * Based on Jacob Lifshay's SDL_x11vulkan.c.
  */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_kmsdrm_vulkan_h_
 #define SDL_kmsdrm_vulkan_h_
@@ -32,14 +32,16 @@
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
 
-#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_KMSDRM)
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_KMSDRM
 
-int KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path);
+void KMSDRM_Vulkan_UnloadLibrary(_THIS);
+SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
+                                             SDL_Window *window,
                                              unsigned *count,
                                              const char **names);
-SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
+SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                      SDL_Window *window,
                                      VkInstance instance,
                                      VkSurfaceKHR *surface);
@@ -47,3 +49,5 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
 #endif
 
 #endif /* SDL_kmsdrm_vulkan_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

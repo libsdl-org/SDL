@@ -18,7 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
+#include "SDL_thread.h"
 #include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
 
@@ -62,3 +63,5 @@ int SDL_SYS_SetTLSData(SDL_TLSData *data)
     }
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

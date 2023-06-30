@@ -4,7 +4,7 @@
 
 root = true
 
-[*.{c,cc,cg,cpp,gradle,h,java,m,metal,pl,py,S,sh,txt}]
+[*.{c,cg,cpp,gradle,h,java,m,metal,pl,py,S,sh,txt}]
 indent_size = 4
 indent_style = space
 insert_final_newline = true
@@ -13,28 +13,41 @@ trim_trailing_whitespace = true
 [*.{html,js,json,m4,yml,yaml,vcxproj,vcxproj.filters}]
 indent_size = 2
 indent_style = space
-trim_tailing_whitespace = true
 
 [*.xml]
 indent_size = 4
 indent_style = space
 
-[{CMakeLists.txt,cmake/*.cmake}]
+[{CMakeLists.txt,sdl2-config*.cmake.in,cmake/*.cmake}]
 indent_size = 2
 indent_style = space
-insert_final_newline = true
-trim_trailing_whitespace = true
 
-[{cmake/cmake_uninstall.cmake.in,test/CMakeLists.txt,cmake/SDL3Config.cmake.in}]
+[{cmake_uninstall.cmake.in,test/CMakeLists.txt}]
 indent_size = 4
 indent_style = space
-insert_final_newline = true
-trim_trailing_whitespace = true
+
+[configure.ac]
+# Inconsistently 2-, 4- or occasionally 3-space indented, but mostly 4,
+# so let's use 4 for new code
+indent_size = 4
+indent_style = space
 
 [{Makefile.*,*.mk,*.sln,*.pbxproj,*.plist}]
 indent_size = 8
 indent_style = tab
 tab_width = 8
+
+[Makefile.os2]
+indent_size = 4
+indent_style = space
+
+[test/Makefile.os2]
+indent_size = 2
+indent_style = space
+
+[{src/core/os2/geniconv/makefile,src/core/os2/geniconv/os2cp.c}]
+indent_size = 2
+indent_style = space
 
 [src/joystick/controller_type.*]
 indent_style = tab
@@ -64,6 +77,3 @@ tab_width = 4
 
 [{*.bat,*.rc}]
 end_of_line = crlf
-
-[*.cocci]'
-insert_final_newline = true

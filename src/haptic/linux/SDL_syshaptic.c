@@ -18,13 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_HAPTIC_LINUX
 
+#include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
-#include "../../joystick/SDL_sysjoystick.h"         /* For the real SDL_Joystick */
-#include "../../joystick/linux/SDL_sysjoystick_c.h" /* For joystick hwdata */
+#include "SDL_joystick.h"
+#include "../../joystick/SDL_sysjoystick.h"     /* For the real SDL_Joystick */
+#include "../../joystick/linux/SDL_sysjoystick_c.h"     /* For joystick hwdata */
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
 
@@ -32,14 +34,19 @@
 #include <linux/input.h> /* Force feedback linux stuff. */
 #include <fcntl.h>       /* O_RDWR */
 #include <limits.h>      /* INT_MAX */
-#include <errno.h>       /* errno */
-#include <string.h>      /* strerror */
+#include <errno.h>       /* errno, strerror */
 #include <sys/stat.h>    /* stat */
 
-#define MAX_HAPTICS 32 /* It's doubtful someone has more then 32 evdev */
+/* Just in case. */
+#ifndef M_PI
+#  define M_PI     3.14159265358979323846
+#endif
+
+
+#define MAX_HAPTICS  32         /* It's doubtful someone has more then 32 evdev */
 
 static int MaybeAddDevice(const char *path);
-#ifdef SDL_USE_LIBUDEV
+#if SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path);
 static void haptic_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
 #endif /* SDL_USE_LIBUDEV */
@@ -157,7 +164,7 @@ int SDL_SYS_HapticInit(void)
         MaybeAddDevice(path);
     }
 
-#ifdef SDL_USE_LIBUDEV
+#if SDL_USE_LIBUDEV
     if (SDL_UDEV_Init() < 0) {
         return SDL_SetError("Could not initialize UDEV");
     }
@@ -196,7 +203,7 @@ static SDL_hapticlist_item *HapticByDevIndex(int device_index)
     return item;
 }
 
-#ifdef SDL_USE_LIBUDEV
+#if SDL_USE_LIBUDEV
 static void haptic_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
 {
     if (devpath == NULL || !(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
@@ -286,7 +293,7 @@ static int MaybeAddDevice(const char *path)
     return numhaptics;
 }
 
-#ifdef SDL_USE_LIBUDEV
+#if SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path)
 {
     SDL_hapticlist_item *item;
@@ -601,7 +608,7 @@ void SDL_SYS_HapticQuit(void)
         SDL_free(item);
     }
 
-#ifdef SDL_USE_LIBUDEV
+#if SDL_USE_LIBUDEV
     SDL_UDEV_DelCallback(haptic_udev_callback);
     SDL_UDEV_Quit();
 #endif /* SDL_USE_LIBUDEV */
@@ -675,18 +682,18 @@ static int SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection *src)
         } else if (!src->dir[0]) {
             *dest = (src->dir[1] >= 0 ? 0x8000 : 0);
         } else {
-            float f = SDL_atan2(src->dir[1], src->dir[0]); /* Ideally we'd use fixed point math instead of floats... */
-            /*
-              SDL_atan2 takes the parameters: Y-axis-value and X-axis-value (in that order)
-               - Y-axis-value is the second coordinate (from center to SOUTH)
-               - X-axis-value is the first coordinate (from center to EAST)
-                We add 36000, because SDL_atan2 also returns negative values. Then we practically
-                have the first spherical value. Therefore we proceed as in case
-                SDL_HAPTIC_SPHERICAL and add another 9000 to get the polar value.
-              --> add 45000 in total
-              --> finally convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
-            */
-            tmp = (((Sint32)(f * 18000.0 / SDL_PI_D)) + 45000) % 36000;
+            float f = SDL_atan2(src->dir[1], src->dir[0]);    /* Ideally we'd use fixed point math instead of floats... */
+                    /*
+                      SDL_atan2 takes the parameters: Y-axis-value and X-axis-value (in that order)
+                       - Y-axis-value is the second coordinate (from center to SOUTH)
+                       - X-axis-value is the first coordinate (from center to EAST)
+                        We add 36000, because SDL_atan2 also returns negative values. Then we practically
+                        have the first spherical value. Therefore we proceed as in case
+                        SDL_HAPTIC_SPHERICAL and add another 9000 to get the polar value.
+                      --> add 45000 in total
+                      --> finally convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
+                    */
+                tmp = (((Sint32) (f * 18000. / M_PI)) + 45000) % 36000;
             tmp = (tmp * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
             *dest = (Uint16)tmp;
         }
@@ -1120,3 +1127,5 @@ int SDL_SYS_HapticStopAll(SDL_Haptic *haptic)
 }
 
 #endif /* SDL_HAPTIC_LINUX */
+
+/* vi: set ts=4 sw=4 expandtab: */

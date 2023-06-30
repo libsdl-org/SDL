@@ -24,9 +24,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_X11) || defined(SDL_VIDEO_DRIVER_WAYLAND)
+#if SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND
 #include "imKStoUCS.h"
 
 static unsigned short const keysym_to_unicode_1a1_1ff[] = {

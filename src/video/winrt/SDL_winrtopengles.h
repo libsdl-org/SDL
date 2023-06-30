@@ -18,28 +18,28 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "SDL_config.h"
 
 #ifndef SDL_winrtopengles_h_
 #define SDL_winrtopengles_h_
 
-#if defined(SDL_VIDEO_DRIVER_WINRT) && defined(SDL_VIDEO_OPENGL_EGL)
+#if SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
 /* OpenGLES functions */
-#define WINRT_GLES_GetAttribute    SDL_EGL_GetAttribute
-#define WINRT_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
+#define WINRT_GLES_GetAttribute SDL_EGL_GetAttribute
+#define WINRT_GLES_GetProcAddress SDL_EGL_GetProcAddress
 #define WINRT_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define WINRT_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 #define WINRT_GLES_DeleteContext   SDL_EGL_DeleteContext
 
-extern int WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-extern void WINRT_GLES_UnloadLibrary(SDL_VideoDevice *_this);
-extern SDL_GLContext WINRT_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WINRT_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WINRT_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern int WINRT_GLES_LoadLibrary(_THIS, const char *path);
+extern void WINRT_GLES_UnloadLibrary(_THIS);
+extern SDL_GLContext WINRT_GLES_CreateContext(_THIS, SDL_Window *window);
+extern int WINRT_GLES_SwapWindow(_THIS, SDL_Window *window);
+extern int WINRT_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 
 #ifdef __cplusplus
 
@@ -65,3 +65,5 @@ typedef EGLDisplay(EGLAPIENTRY *eglGetPlatformDisplayEXT_Function)(EGLenum, void
 #endif /* SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL */
 
 #endif /* SDL_winrtopengles_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

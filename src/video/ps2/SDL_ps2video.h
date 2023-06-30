@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_ps2video_h_
 #define SDL_ps2video_h_
@@ -38,3 +38,5 @@
 #pragma GCC diagnostic pop
 
 #endif /* SDL_ps2video_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

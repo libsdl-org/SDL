@@ -18,38 +18,35 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_windowsmodes_h_
 #define SDL_windowsmodes_h_
 
-typedef enum
-{
-    DisplayUnchanged,
-    DisplayAdded,
-    DisplayRemoved,
-
-} WIN_DisplayState;
-
-struct SDL_DisplayData
+typedef struct
 {
     WCHAR DeviceName[32];
     HMONITOR MonitorHandle;
-    WIN_DisplayState state;
+    SDL_bool IsValid;
     SDL_Rect bounds;
-};
+} SDL_DisplayData;
 
-struct SDL_DisplayModeData
+typedef struct
 {
     DEVMODE DeviceMode;
-};
+} SDL_DisplayModeData;
 
-extern int WIN_InitModes(SDL_VideoDevice *_this);
-extern int WIN_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
-extern int WIN_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
-extern int WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-extern int WIN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-extern void WIN_RefreshDisplays(SDL_VideoDevice *_this);
-extern void WIN_QuitModes(SDL_VideoDevice *_this);
+extern int WIN_InitModes(_THIS);
+extern int WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
+extern int WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
+extern void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut);
+extern void WIN_ScreenPointToSDL(int *x, int *y);
+extern int WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
+extern void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+extern int WIN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+extern void WIN_RefreshDisplays(_THIS);
+extern void WIN_QuitModes(_THIS);
 
 #endif /* SDL_windowsmodes_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -19,10 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
-#include "../../core/haiku/SDL_BApp.h"
+#include "../../SDL_internal.h"
+#include "../../main/haiku/SDL_BApp.h"
 
-#ifdef SDL_VIDEO_DRIVER_HAIKU
+#if SDL_VIDEO_DRIVER_HAIKU
 
 #include "SDL_BWin.h"
 #include <Url.h>
@@ -57,6 +57,7 @@ static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
 static SDL_VideoDevice * HAIKU_CreateDevice(void)
 {
     SDL_VideoDevice *device;
+    /*SDL_VideoData *data;*/
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -77,6 +78,7 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     device->CreateSDLWindow = HAIKU_CreateWindow;
     device->CreateSDLWindowFrom = HAIKU_CreateWindowFrom;
     device->SetWindowTitle = HAIKU_SetWindowTitle;
+    device->SetWindowIcon = HAIKU_SetWindowIcon;
     device->SetWindowPosition = HAIKU_SetWindowPosition;
     device->SetWindowSize = HAIKU_SetWindowSize;
     device->ShowWindow = HAIKU_ShowWindow;
@@ -88,6 +90,8 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     device->SetWindowBordered = HAIKU_SetWindowBordered;
     device->SetWindowResizable = HAIKU_SetWindowResizable;
     device->SetWindowFullscreen = HAIKU_SetWindowFullscreen;
+    device->SetWindowGammaRamp = HAIKU_SetWindowGammaRamp;
+    device->GetWindowGammaRamp = HAIKU_GetWindowGammaRamp;
     device->SetWindowMouseGrab = HAIKU_SetWindowMouseGrab;
     device->SetWindowMinimumSize = HAIKU_SetWindowMinimumSize;
     device->DestroyWindow = HAIKU_DestroyWindow;
@@ -95,8 +99,12 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     device->CreateWindowFramebuffer = HAIKU_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = HAIKU_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = HAIKU_DestroyWindowFramebuffer;
+    
+    device->shape_driver.CreateShaper = NULL;
+    device->shape_driver.SetWindowShape = NULL;
+    device->shape_driver.ResizeWindowShape = NULL;
 
-#ifdef SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL
     device->GL_LoadLibrary = HAIKU_GL_LoadLibrary;
     device->GL_GetProcAddress = HAIKU_GL_GetProcAddress;
     device->GL_UnloadLibrary = HAIKU_GL_UnloadLibrary;
@@ -184,14 +192,14 @@ static SDL_Cursor * HAIKU_CreateCursor(SDL_Surface * surface, int hot_x, int hot
     SDL_Cursor *cursor;
     SDL_Surface *converted;
 
-    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888);
+    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
     if (converted == NULL) {
         return NULL;
     }
 
 	BBitmap *cursorBitmap = new BBitmap(BRect(0, 0, surface->w - 1, surface->h - 1), B_RGBA32);
 	cursorBitmap->SetBits(converted->pixels, converted->h * converted->pitch, 0, B_RGBA32);
-    SDL_DestroySurface(converted);
+    SDL_FreeSurface(converted);
 
     cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
@@ -243,7 +251,7 @@ static int HAIKU_SetRelativeMouseMode(SDL_bool enabled)
     return 0;
 }
 
-static void HAIKU_MouseInit(SDL_VideoDevice *_this)
+static void HAIKU_MouseInit(_THIS)
 {
 	SDL_Mouse *mouse = SDL_GetMouse();
 	if (mouse == NULL) {
@@ -258,13 +266,13 @@ static void HAIKU_MouseInit(SDL_VideoDevice *_this)
 	SDL_SetDefaultCursor(HAIKU_CreateDefaultCursor());
 }
 
-int HAIKU_VideoInit(SDL_VideoDevice *_this)
+int HAIKU_VideoInit(_THIS)
 {
     /* Initialize the Be Application for appserver interaction */
     if (SDL_InitBeApp() < 0) {
         return -1;
     }
-
+    
     /* Initialize video modes */
     HAIKU_InitModes(_this);
 
@@ -273,7 +281,7 @@ int HAIKU_VideoInit(SDL_VideoDevice *_this)
 
     HAIKU_MouseInit(_this);
 
-#ifdef SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL
         /* testgl application doesn't load library, just tries to load symbols */
         /* is it correct? if so we have to load library here */
     HAIKU_GL_LoadLibrary(_this, NULL);
@@ -283,7 +291,7 @@ int HAIKU_VideoInit(SDL_VideoDevice *_this)
     return 0;
 }
 
-void HAIKU_VideoQuit(SDL_VideoDevice *_this)
+void HAIKU_VideoQuit(_THIS)
 {
 
     HAIKU_QuitModes(_this);
@@ -305,3 +313,5 @@ int HAIKU_OpenURL(const char *url)
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
+
+/* vi: set ts=4 sw=4 expandtab: */

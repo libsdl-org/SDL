@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_LOADSO_WINDOWS
 
@@ -26,6 +26,8 @@
 /* System dependent library loading routines                           */
 
 #include "../../core/windows/SDL_windows.h"
+
+#include "SDL_loadso.h"
 
 void *SDL_LoadObject(const char *sofile)
 {
@@ -58,7 +60,7 @@ void *SDL_LoadObject(const char *sofile)
     return handle;
 }
 
-SDL_FunctionPointer SDL_LoadFunction(void *handle, const char *name)
+void *SDL_LoadFunction(void *handle, const char *name)
 {
     void *symbol = (void *)GetProcAddress((HMODULE)handle, name);
     if (symbol == NULL) {
@@ -78,3 +80,5 @@ void SDL_UnloadObject(void *handle)
 }
 
 #endif /* SDL_LOADSO_WINDOWS */
+
+/* vi: set ts=4 sw=4 expandtab: */

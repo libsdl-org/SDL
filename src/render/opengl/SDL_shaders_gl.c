@@ -18,11 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_OGL) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED
 
-#include <SDL3/SDL_opengl.h>
+#include "SDL_stdinc.h"
+#include "SDL_opengl.h"
+#include "SDL_video.h"
 #include "SDL_shaders_gl.h"
 
 /* OpenGL shader implementation */
@@ -576,3 +578,5 @@ void GL_DestroyShaderContext(GL_ShaderContext *ctx)
 }
 
 #endif /* SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

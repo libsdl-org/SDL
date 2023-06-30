@@ -24,29 +24,16 @@
  Used by the test framework and test cases.
 
 */
-#include <SDL3/SDL_test.h>
 
-/* Enable to have color in logs */
-#if 1
-#define COLOR_RED       "\033[0;31m"
-#define COLOR_GREEN     "\033[0;32m"
-#define COLOR_YELLOW    "\033[0;93m"
-#define COLOR_BLUE      "\033[0;94m"
-#define COLOR_END       "\033[0m"
-#else
-#define COLOR_RED       ""
-#define COLOR_GREEN     ""
-#define COLOR_BLUE      ""
-#define COLOR_YELLOW    ""
-#define COLOR_END       ""
-#endif
+#include "SDL_config.h"
+
+#include "SDL_test.h"
 
 /* Assert check message format */
 #define SDLTEST_ASSERT_CHECK_FORMAT "Assert '%s': %s"
 
 /* Assert summary message format */
-#define SDLTEST_ASSERT_SUMMARY_FORMAT    "Assert Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_RED "Failed=%d" COLOR_END
-#define SDLTEST_ASSERT_SUMMARY_FORMAT_OK "Assert Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_GREEN "Failed=%d" COLOR_END
+#define SDLTEST_ASSERT_SUMMARY_FORMAT "Assert Summary: Total=%d Passed=%d Failed=%d"
 
 /* ! \brief counts the failed asserts */
 static int SDLTest_AssertsFailed = 0;
@@ -89,10 +76,10 @@ int SDLTest_AssertCheck(int assertCondition, SDL_PRINTF_FORMAT_STRING const char
     /* Log pass or fail message */
     if (assertCondition == ASSERT_FAIL) {
         SDLTest_AssertsFailed++;
-        SDLTest_LogError(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, COLOR_RED "Failed" COLOR_END);
+        SDLTest_LogError(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Failed");
     } else {
         SDLTest_AssertsPassed++;
-        SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, COLOR_GREEN "Passed" COLOR_END);
+        SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Passed");
     }
 
     return assertCondition;
@@ -114,13 +101,13 @@ void SDLTest_AssertPass(SDL_PRINTF_FORMAT_STRING const char *assertDescription, 
 
     /* Log pass message */
     SDLTest_AssertsPassed++;
-    SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, COLOR_GREEN "Passed" COLOR_END);
+    SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Passed");
 }
 
 /*
  * Resets the assert summary counters to zero.
  */
-void SDLTest_ResetAssertSummary(void)
+void SDLTest_ResetAssertSummary()
 {
     SDLTest_AssertsPassed = 0;
     SDLTest_AssertsFailed = 0;
@@ -130,11 +117,11 @@ void SDLTest_ResetAssertSummary(void)
  * Logs summary of all assertions (total, pass, fail) since last reset
  * as INFO (failed==0) or ERROR (failed > 0).
  */
-void SDLTest_LogAssertSummary(void)
+void SDLTest_LogAssertSummary()
 {
     int totalAsserts = SDLTest_AssertsPassed + SDLTest_AssertsFailed;
     if (SDLTest_AssertsFailed == 0) {
-        SDLTest_Log(SDLTEST_ASSERT_SUMMARY_FORMAT_OK, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
+        SDLTest_Log(SDLTEST_ASSERT_SUMMARY_FORMAT, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
     } else {
         SDLTest_LogError(SDLTEST_ASSERT_SUMMARY_FORMAT, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
     }
@@ -143,7 +130,7 @@ void SDLTest_LogAssertSummary(void)
 /*
  * Converts the current assert state into a test result
  */
-int SDLTest_AssertSummaryToTestResult(void)
+int SDLTest_AssertSummaryToTestResult()
 {
     if (SDLTest_AssertsFailed > 0) {
         return TEST_RESULT_FAILED;
@@ -155,3 +142,5 @@ int SDLTest_AssertSummaryToTestResult(void)
         }
     }
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

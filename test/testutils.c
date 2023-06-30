@@ -6,7 +6,7 @@ SPDX-License-Identifier: Zlib
 
 #include "testutils.h"
 
-/**
+/*
  * Return the absolute path to def in the SDL_GetBasePath() if possible, or
  * the relative path to def on platforms that don't have a working
  * SDL_GetBasePath(). Free the result with SDL_free.
@@ -53,7 +53,7 @@ GetNearbyFilename(const char *file)
     return path;
 }
 
-/**
+/*
  * If user_specified is non-NULL, return a copy of it. Free with SDL_free.
  *
  * Otherwise, return the absolute path to def in the SDL_GetBasePath() if
@@ -78,7 +78,7 @@ GetResourceFilename(const char *user_specified, const char *def)
     }
 }
 
-/**
+/*
  * Load the .bmp file whose name is file, from the SDL_GetBasePath() if
  * possible or the current working directory if not.
  *
@@ -109,22 +109,22 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
         /* Set transparent pixel as the pixel at (0,0) */
         if (transparent) {
             if (temp->format->palette) {
-                SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint8 *)temp->pixels);
+                SDL_SetColorKey(temp, SDL_TRUE, *(Uint8 *)temp->pixels);
             } else {
                 switch (temp->format->BitsPerPixel) {
                 case 15:
-                    SDL_SetSurfaceColorKey(temp, SDL_TRUE,
+                    SDL_SetColorKey(temp, SDL_TRUE,
                                     (*(Uint16 *)temp->pixels) & 0x00007FFF);
                     break;
                 case 16:
-                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint16 *)temp->pixels);
+                    SDL_SetColorKey(temp, SDL_TRUE, *(Uint16 *)temp->pixels);
                     break;
                 case 24:
-                    SDL_SetSurfaceColorKey(temp, SDL_TRUE,
+                    SDL_SetColorKey(temp, SDL_TRUE,
                                     (*(Uint32 *)temp->pixels) & 0x00FFFFFF);
                     break;
                 case 32:
-                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint32 *)temp->pixels);
+                    SDL_SetColorKey(temp, SDL_TRUE, *(Uint32 *)temp->pixels);
                     break;
                 }
             }
@@ -143,7 +143,7 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
         }
     }
-    SDL_DestroySurface(temp);
+    SDL_FreeSurface(temp);
     if (path) {
         SDL_free(path);
     }

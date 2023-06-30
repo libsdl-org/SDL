@@ -2,10 +2,6 @@ name: Build (VM Actions)
 
 on: [push, pull_request]
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: true
-
 jobs:
   freebsd:
     runs-on: macos-12
@@ -15,12 +11,10 @@ jobs:
     - name: Build
       uses: vmactions/freebsd-vm@v0
       with:
-        mem: 8192
         usesh: true
         prepare: |
           pkg install -y \
-              cmake \
-              ninja \
+              gmake \
               pkgconf \
               libXcursor \
               libXext \
@@ -39,6 +33,7 @@ jobs:
               libinotify \
               alsa-lib \
               jackit \
+              nas \
               pipewire \
               pulseaudio \
               sndio \
@@ -49,22 +44,6 @@ jobs:
               libudev-devd
 
         run: |
-          cmake -S . -B build -GNinja \
-            -Wdeprecated -Wdev -Werror \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DSDL_HIDAPI_LIBUSB=OFF \
-            -DSDL_CHECK_REQUIRED_INCLUDES="/usr/local/include" \
-            -DSDL_CHECK_REQUIRED_LINK_OPTIONS="-L/usr/local/lib"
-          cmake --build build/ --config Release --verbose -- -j`sysctl -n hw.ncpu`
-          cmake --build build/ --config Release --target package
-          
-          cmake --build build/ --config Release --target clean
-          rm -rf build/dist/_CPack_Packages
-          rm -rf build/CMakeFiles
-          rm -rf build/docs
-
-    - uses: actions/upload-artifact@v3
-      with:
-        if-no-files-found: error
-        name: SDL-freebsd
-        path: build/dist/SDL3*
+          mkdir build_autotools
+          (cd build_autotools && CFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ../configure)
+          gmake -C build_autotools -j`sysctl -n hw.ncpu` V=1

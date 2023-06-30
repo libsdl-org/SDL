@@ -18,24 +18,25 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_X11) && defined(SDL_VIDEO_OPENGL_EGL)
+#if SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_OPENGL_EGL
 
+#include "SDL_hints.h"
 #include "SDL_x11video.h"
 #include "SDL_x11opengles.h"
 #include "SDL_x11opengl.h"
 
 /* EGL implementation of SDL OpenGL support */
 
-int X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+int X11_GLES_LoadLibrary(_THIS, const char *path)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     /* If the profile requested is not GL ES, switch over to X11_GL functions  */
     if ((_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) &&
-        !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
-#ifdef SDL_VIDEO_OPENGL_GLX
+        !SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) {
+        #if SDL_VIDEO_OPENGL_GLX
         X11_GLES_UnloadLibrary(_this);
         _this->GL_LoadLibrary = X11_GL_LoadLibrary;
         _this->GL_GetProcAddress = X11_GL_GetProcAddress;
@@ -52,10 +53,10 @@ int X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 #endif
     }
 
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
 }
 
-XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int screen, SDL_bool transparent)
+XVisualInfo *X11_GLES_GetVisual(_THIS, Display *display, int screen)
 {
 
     XVisualInfo *egl_visualinfo = NULL;
@@ -78,23 +79,6 @@ XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int sc
         egl_visualinfo = X11_XGetVisualInfo(display,
                                             VisualScreenMask,
                                             &vi_in, &out_count);
-
-        /* Return the first transparent Visual */
-        if (transparent) {
-            int i;
-            for (i = 0; i < out_count; i++) {
-                XVisualInfo *v = &egl_visualinfo[i];
-                Uint32 format = X11_GetPixelFormatFromVisualInfo(display, v);
-                if (SDL_ISPIXELFORMAT_ALPHA(format)) { /* found! */
-                    /* re-request it to have a copy that can be X11_XFree'ed later */
-                    vi_in.screen = screen;
-                    vi_in.visualid = v->visualid;
-                    X11_XFree(egl_visualinfo);
-                    egl_visualinfo = X11_XGetVisualInfo(display, VisualScreenMask | VisualIDMask, &vi_in, &out_count);
-                    return egl_visualinfo;
-                }
-            }
-        }
     } else {
         vi_in.screen = screen;
         vi_in.visualid = visual_id;
@@ -104,10 +88,10 @@ XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int sc
     return egl_visualinfo;
 }
 
-SDL_GLContext X11_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_GLContext X11_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext context;
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display = data->videodata->display;
 
     X11_XSync(display, False);
@@ -117,13 +101,9 @@ SDL_GLContext X11_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     return context;
 }
 
-SDL_EGLSurface X11_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    SDL_WindowData *data = window->driverdata;
-    return data->egl_surface;
-}
-
 SDL_EGL_SwapWindow_impl(X11)
     SDL_EGL_MakeCurrent_impl(X11)
 
 #endif /* SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_OPENGL_EGL */
+
+    /* vi: set ts=4 sw=4 expandtab: */

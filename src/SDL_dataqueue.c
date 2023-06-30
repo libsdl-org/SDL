@@ -18,8 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "./SDL_internal.h"
 
+#include "SDL.h"
 #include "./SDL_dataqueue.h"
 
 typedef struct SDL_DataQueuePacket
@@ -32,7 +33,7 @@ typedef struct SDL_DataQueuePacket
 
 struct SDL_DataQueue
 {
-    SDL_Mutex *lock;
+    SDL_mutex *lock;
     SDL_DataQueuePacket *head; /* device fed from here. */
     SDL_DataQueuePacket *tail; /* queue fills to here. */
     SDL_DataQueuePacket *pool; /* these are unused packets. */
@@ -49,7 +50,7 @@ static void SDL_FreeDataQueueList(SDL_DataQueuePacket *packet)
     }
 }
 
-SDL_DataQueue *SDL_CreateDataQueue(const size_t _packetlen, const size_t initialslack)
+SDL_DataQueue *SDL_NewDataQueue(const size_t _packetlen, const size_t initialslack)
 {
     SDL_DataQueue *queue = (SDL_DataQueue *)SDL_calloc(1, sizeof(SDL_DataQueue));
 
@@ -82,7 +83,7 @@ SDL_DataQueue *SDL_CreateDataQueue(const size_t _packetlen, const size_t initial
     return queue;
 }
 
-void SDL_DestroyDataQueue(SDL_DataQueue *queue)
+void SDL_FreeDataQueue(SDL_DataQueue *queue)
 {
     if (queue) {
         SDL_FreeDataQueueList(queue->head);
@@ -229,7 +230,8 @@ int SDL_WriteToDataQueue(SDL_DataQueue *queue, const void *_data, const size_t _
     return 0;
 }
 
-size_t SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
+size_t
+SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
 {
     size_t len = _len;
     Uint8 *buf = (Uint8 *)_buf;
@@ -257,7 +259,8 @@ size_t SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len
     return (size_t)(ptr - buf);
 }
 
-size_t SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
+size_t
+SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
 {
     size_t len = _len;
     Uint8 *buf = (Uint8 *)_buf;
@@ -300,7 +303,8 @@ size_t SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len
     return (size_t)(ptr - buf);
 }
 
-size_t SDL_GetDataQueueSize(SDL_DataQueue *queue)
+size_t
+SDL_CountDataQueue(SDL_DataQueue *queue)
 {
     size_t retval = 0;
     if (queue) {
@@ -311,8 +315,9 @@ size_t SDL_GetDataQueueSize(SDL_DataQueue *queue)
     return retval;
 }
 
-SDL_Mutex *SDL_GetDataQueueMutex(SDL_DataQueue *queue)
+SDL_mutex *SDL_GetDataQueueMutex(SDL_DataQueue *queue)
 {
     return queue ? queue->lock : NULL;
 }
 
+/* vi: set ts=4 sw=4 expandtab: */

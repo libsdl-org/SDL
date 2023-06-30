@@ -18,8 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
+#include "SDL_video.h"
 #include "SDL_sysvideo.h"
 #include "SDL_blit.h"
 #include "SDL_blit_auto.h"
@@ -99,10 +100,10 @@ static int SDLCALL SDL_SoftBlit(SDL_Surface *src, SDL_Rect *srcrect,
 
 #if SDL_HAVE_BLIT_AUTO
 
-#ifdef __MACOS__
+#ifdef __MACOSX__
 #include <sys/sysctl.h>
 
-static SDL_bool SDL_UseAltivecPrefetch(void)
+static SDL_bool SDL_UseAltivecPrefetch()
 {
     const char key[] = "hw.l3cachesize";
     u_int64_t result = 0;
@@ -115,12 +116,12 @@ static SDL_bool SDL_UseAltivecPrefetch(void)
     }
 }
 #else
-static SDL_bool SDL_UseAltivecPrefetch(void)
+static SDL_bool SDL_UseAltivecPrefetch()
 {
     /* Just guess G4 */
     return SDL_TRUE;
 }
-#endif /* __MACOS__ */
+#endif /* __MACOSX__ */
 
 static SDL_BlitFunc SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int flags,
                                        SDL_BlitFuncEntry *entries)
@@ -140,6 +141,9 @@ static SDL_BlitFunc SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int
         } else {
             if (SDL_HasMMX()) {
                 features |= SDL_CPU_MMX;
+            }
+            if (SDL_Has3DNow()) {
+                features |= SDL_CPU_3DNOW;
             }
             if (SDL_HasSSE()) {
                 features |= SDL_CPU_SSE;
@@ -281,3 +285,5 @@ int SDL_CalculateBlit(SDL_Surface *surface)
 
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

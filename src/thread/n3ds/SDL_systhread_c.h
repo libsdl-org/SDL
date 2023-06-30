@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_systhread_c_h_
 #define SDL_systhread_c_h_
@@ -28,3 +28,5 @@
 typedef Thread SYS_ThreadHandle;
 
 #endif /* SDL_systhread_c_h_ */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

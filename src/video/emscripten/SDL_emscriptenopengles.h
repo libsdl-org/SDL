@@ -18,26 +18,31 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_emscriptenopengles_h_
 #define SDL_emscriptenopengles_h_
 
-#ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
+#if SDL_VIDEO_DRIVER_EMSCRIPTEN && SDL_VIDEO_OPENGL_EGL
 
 #include "../SDL_sysvideo.h"
+#include "../SDL_egl_c.h"
 
 /* OpenGLES functions */
-extern int Emscripten_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-extern void Emscripten_GLES_UnloadLibrary(SDL_VideoDevice *_this);
-extern SDL_FunctionPointer Emscripten_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
-extern int Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern int Emscripten_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
-extern SDL_GLContext Emscripten_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Emscripten_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
-extern int Emscripten_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Emscripten_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+#define Emscripten_GLES_GetAttribute SDL_EGL_GetAttribute
+#define Emscripten_GLES_GetProcAddress SDL_EGL_GetProcAddress
+#define Emscripten_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
+#define Emscripten_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
+#define Emscripten_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
+#define Emscripten_GLES_DeleteContext SDL_EGL_DeleteContext
 
-#endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
+extern int Emscripten_GLES_LoadLibrary(_THIS, const char *path);
+extern SDL_GLContext Emscripten_GLES_CreateContext(_THIS, SDL_Window * window);
+extern int Emscripten_GLES_SwapWindow(_THIS, SDL_Window * window);
+extern int Emscripten_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+
+#endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN && SDL_VIDEO_OPENGL_EGL */
 
 #endif /* SDL_emscriptenopengles_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -9,9 +9,8 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include <stdio.h>
+#include "SDL.h"
 
 static void
 print_devices(int iscapture)
@@ -50,23 +49,10 @@ int main(int argc, char **argv)
 {
     char *deviceName = NULL;
     SDL_AudioSpec spec;
-    int i;
     int n;
-    SDLTest_CommonState *state;
-
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    /* Parse commandline */
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return 1;
-    }
 
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -79,11 +65,12 @@ int main(int argc, char **argv)
     if (n == 0) {
         SDL_Log("No built-in audio drivers\n\n");
     } else {
+        int i;
         SDL_Log("Built-in audio drivers:\n");
         for (i = 0; i < n; ++i) {
             SDL_Log("  %d: %s\n", i, SDL_GetAudioDriver(i));
         }
-        SDL_Log("Select a driver with the SDL_AUDIO_DRIVER environment variable.\n");
+        SDL_Log("Select a driver with the SDL_AUDIODRIVER environment variable.\n");
     }
 
     SDL_Log("Using audio driver: %s\n\n", SDL_GetCurrentAudioDriver());
@@ -112,6 +99,5 @@ int main(int argc, char **argv)
     }
 
     SDL_Quit();
-    SDLTest_CommonDestroyState(state);
     return 0;
 }

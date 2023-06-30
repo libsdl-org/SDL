@@ -18,16 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_OFFSCREEN
+#if SDL_VIDEO_DRIVER_OFFSCREEN
 
 #include "../SDL_sysvideo.h"
 #include "SDL_offscreenframebuffer_c.h"
 
 #define OFFSCREEN_SURFACE "_SDL_DummySurface"
 
-int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int SDL_OFFSCREEN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
     const Uint32 surface_format = SDL_PIXELFORMAT_RGB888;
@@ -38,7 +38,7 @@ int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wi
 
     /* Create a new one */
     SDL_GetWindowSizeInPixels(window, &w, &h);
-    surface = SDL_CreateSurface(w, h, surface_format);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, surface_format);
     if (surface == NULL) {
         return -1;
     }
@@ -52,7 +52,7 @@ int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wi
     return 0;
 }
 
-int SDL_OFFSCREEN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int SDL_OFFSCREEN_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     static int frame_number;
     SDL_Surface *surface;
@@ -72,12 +72,14 @@ int SDL_OFFSCREEN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wi
     return 0;
 }
 
-void SDL_OFFSCREEN_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
+void SDL_OFFSCREEN_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_Surface *surface;
 
     surface = (SDL_Surface *)SDL_SetWindowData(window, OFFSCREEN_SURFACE, NULL);
-    SDL_DestroySurface(surface);
+    SDL_FreeSurface(surface);
 }
 
 #endif /* SDL_VIDEO_DRIVER_OFFSCREEN */
+
+/* vi: set ts=4 sw=4 expandtab: */

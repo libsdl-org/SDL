@@ -18,8 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
+#include "SDL_main.h"
+#include "SDL_system.h"
 #include "SDL_winrtapp_direct3d.h"
 #include "SDL_winrtapp_xaml.h"
 
@@ -28,7 +30,7 @@
 int (*WINRT_SDLAppEntryPoint)(int, char **) = NULL;
 
 extern "C" DECLSPEC int
-SDL_RunApp(int, char**, SDL_main_func mainFunction, void * xamlBackgroundPanel)
+SDL_WinRTRunApp(SDL_main_func mainFunction, void *xamlBackgroundPanel)
 {
     if (xamlBackgroundPanel) {
         return SDL_WinRTInitXAMLApp(mainFunction, xamlBackgroundPanel);

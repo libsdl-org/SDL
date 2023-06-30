@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_ANDROID
 
@@ -32,7 +32,7 @@ extern int Android_OnPadDown(int device_id, int keycode);
 extern int Android_OnPadUp(int device_id, int keycode);
 extern int Android_OnJoy(int device_id, int axisnum, float value);
 extern int Android_OnHat(int device_id, int hat_id, int x, int y);
-extern int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, SDL_bool is_accelerometer, int button_mask, int naxes, int axis_mask, int nhats);
+extern int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, SDL_bool is_accelerometer, int button_mask, int naxes, int axis_mask, int nhats, int nballs);
 extern int Android_RemoveJoystick(int device_id);
 
 /* A linked list of available joysticks */
@@ -44,7 +44,7 @@ typedef struct SDL_joylist_item
     SDL_JoystickGUID guid;
     SDL_bool is_accelerometer;
     SDL_Joystick *joystick;
-    int nbuttons, naxes, nhats;
+    int nbuttons, naxes, nhats, nballs;
     int dpad_state;
 
     struct SDL_joylist_item *next;
@@ -55,3 +55,5 @@ typedef SDL_joylist_item joystick_hwdata;
 #endif /* SDL_sysjoystick_c_h_ */
 
 #endif /* SDL_JOYSTICK_ANDROID */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -10,9 +10,11 @@
   freely.
 */
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
 
-#include <SDL3/SDL_test_common.h>
-#include <SDL3/SDL_main.h>
+#include "SDL_test_common.h"
 
 #if defined(__ANDROID__) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
 
@@ -31,7 +33,7 @@ int main(int argc, char *argv[])
 /* SDL includes a copy for building on systems without the Vulkan SDK */
 #include "../src/video/khronos/vulkan/vulkan.h"
 #endif
-#include <SDL3/SDL_vulkan.h>
+#include "SDL_vulkan.h"
 
 #ifndef UINT64_MAX /* VS2008 */
 #define UINT64_MAX 18446744073709551615
@@ -177,8 +179,8 @@ typedef struct VulkanContext
 } VulkanContext;
 
 static SDLTest_CommonState *state;
-static VulkanContext *vulkanContexts = NULL; /* an array of state->num_windows items */
-static VulkanContext *vulkanContext = NULL;  /* for the currently-rendering window */
+static VulkanContext *vulkanContexts = NULL; // an array of state->num_windows items
+static VulkanContext *vulkanContext = NULL;  // for the currently-rendering window
 
 static void shutdownVulkan(SDL_bool doDestroySwapchain);
 
@@ -187,15 +189,12 @@ static void quit(int rc)
 {
     shutdownVulkan(SDL_TRUE);
     SDLTest_CommonQuit(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
+    exit(rc);
 }
 
 static void loadGlobalFunctions(void)
 {
-    vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr();
+    vkGetInstanceProcAddr = SDL_Vulkan_GetVkGetInstanceProcAddr();
     if (!vkGetInstanceProcAddr) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "SDL_Vulkan_GetVkGetInstanceProcAddr(): %s\n",
@@ -230,7 +229,7 @@ static void createInstance(void)
     appInfo.apiVersion = VK_API_VERSION_1_0;
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
-    if (!SDL_Vulkan_GetInstanceExtensions(&extensionCount, NULL)) {
+    if (!SDL_Vulkan_GetInstanceExtensions(NULL, &extensionCount, NULL)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "SDL_Vulkan_GetInstanceExtensions(): %s\n",
                      SDL_GetError());
@@ -241,7 +240,7 @@ static void createInstance(void)
         SDL_OutOfMemory();
         quit(2);
     }
-    if (!SDL_Vulkan_GetInstanceExtensions(&extensionCount, extensions)) {
+    if (!SDL_Vulkan_GetInstanceExtensions(NULL, &extensionCount, extensions)) {
         SDL_free((void *)extensions);
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "SDL_Vulkan_GetInstanceExtensions(): %s\n",
@@ -627,7 +626,6 @@ static SDL_bool createSwapchain(void)
     int w, h;
     VkSwapchainCreateInfoKHR createInfo = { 0 };
     VkResult result;
-    Uint32 flags;
 
     // pick an image count
     vulkanContext->swapchainDesiredImageCount = vulkanContext->surfaceCapabilities.minImageCount + 1;
@@ -653,13 +651,10 @@ static SDL_bool createSwapchain(void)
     }
 
     // get size
-    SDL_GetWindowSizeInPixels(vulkanContext->window, &w, &h);
-
-    // get flags
-    flags = SDL_GetWindowFlags(vulkanContext->window);
+    SDL_Vulkan_GetDrawableSize(vulkanContext->window, &w, &h);
 
     // Clamp the size to the allowable image extent.
-    // SDL_GetWindowSizeInPixels()'s result it not always in this range (bug #3287)
+    // SDL_Vulkan_GetDrawableSize()'s result it not always in this range (bug #3287)
     vulkanContext->swapchainSize.width = SDL_clamp((uint32_t)w,
                                                    vulkanContext->surfaceCapabilities.minImageExtent.width,
                                                    vulkanContext->surfaceCapabilities.maxImageExtent.width);
@@ -684,11 +679,7 @@ static SDL_bool createSwapchain(void)
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     createInfo.preTransform = vulkanContext->surfaceCapabilities.currentTransform;
-    if (flags & SDL_WINDOW_TRANSPARENT) {
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
-    } else {
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    }
+    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = vulkanContext->swapchain;
@@ -1046,9 +1037,9 @@ static SDL_bool render(void)
     }
     currentTime = (double)SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency();
     clearColor.float32[0] = (float)(0.5 + 0.5 * SDL_sin(currentTime));
-    clearColor.float32[1] = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 2 / 3));
-    clearColor.float32[2] = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 4 / 3));
-    clearColor.float32[3] = 0.5; // for SDL_WINDOW_TRANSPARENT, ignored with VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
+    clearColor.float32[1] = (float)(0.5 + 0.5 * SDL_sin(currentTime + M_PI * 2 / 3));
+    clearColor.float32[2] = (float)(0.5 + 0.5 * SDL_sin(currentTime + M_PI * 4 / 3));
+    clearColor.float32[3] = 1;
     rerecordCommandBuffer(frameIndex, &clearColor);
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = 1;
@@ -1081,7 +1072,7 @@ static SDL_bool render(void)
                      getVulkanResultString(result));
         quit(2);
     }
-    SDL_GetWindowSizeInPixels(vulkanContext->window, &w, &h);
+    SDL_Vulkan_GetDrawableSize(vulkanContext->window, &w, &h);
     if (w != (int)vulkanContext->swapchainSize.width || h != (int)vulkanContext->swapchainSize.height) {
         return createNewSwapchainAndSwapchainSpecificStuff();
     }
@@ -1091,20 +1082,19 @@ static SDL_bool render(void)
 int main(int argc, char **argv)
 {
     int done;
-    const SDL_DisplayMode *mode;
+    SDL_DisplayMode mode;
     SDL_Event event;
-    Uint64 then, now;
-    Uint32 frames;
+    Uint32 then, now, frames;
     int dw, dh;
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (state == NULL) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Set Vulkan parameters */
     state->window_flags |= SDL_WINDOW_VULKAN;
@@ -1115,13 +1105,11 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
-    if (mode) {
-        SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode->format));
-    }
+    SDL_GetCurrentDisplayMode(0, &mode);
+    SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
-    SDL_GetWindowSizeInPixels(state->windows[0], &dw, &dh);
+    SDL_Vulkan_GetDrawableSize(state->windows[0], &dw, &dh);
     SDL_Log("Draw Size     : %d,%d\n", dw, dh);
     SDL_Log("\n");
 
@@ -1138,7 +1126,7 @@ int main(int argc, char **argv)
             /* Need to destroy the swapchain before the window created
              * by SDL.
              */
-            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+            if (event.type == SDL_WINDOWEVENT_CLOSE) {
                 destroySwapchainAndSwapchainSpecificStuff(SDL_TRUE);
             }
             SDLTest_CommonEvent(state, &event, &done);

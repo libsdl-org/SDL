@@ -19,10 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_n3dsaudio_h
-#define SDL_n3dsaudio_h
+#ifndef _SDL_n3dsaudio_h_
+#define _SDL_n3dsaudio_h_
 
 #include <3ds.h>
+
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
 
 #define NUM_BUFFERS 2 /* -- Don't lower this! */
 
@@ -43,4 +46,5 @@ struct SDL_PrivateAudioData
     SDL_bool isCancelled;
 };
 
-#endif /* SDL_n3dsaudio_h */
+#endif /* _SDL_n3dsaudio_h_ */
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

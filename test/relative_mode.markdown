@@ -25,7 +25,7 @@ Code
         {
             switch (event.type)
             {
-                case SDL_EVENT_QUIT:
+                case SDL_QUIT:
                     return 1;
                 default:
                     break;
@@ -41,7 +41,7 @@ Code
 
         SDL_Init(SDL_INIT_VIDEO);
 
-        win = SDL_CreateWindow("Test", 800, 600, 0);
+        win = SDL_CreateWindow("Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
         SDL_SetRelativeMouseMode(SDL_TRUE);
 
         while (1)

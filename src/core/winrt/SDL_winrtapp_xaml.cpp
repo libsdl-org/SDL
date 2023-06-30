@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
 /* Windows includes */
 #include <agile.h>
@@ -29,6 +28,8 @@
 #endif
 
 /* SDL includes */
+#include "../../SDL_internal.h"
+#include "SDL.h"
 #include "../../video/winrt/SDL_winrtevents_c.h"
 #include "../../video/winrt/SDL_winrtvideo_cpp.h"
 #include "SDL_winrtapp_common.h"
@@ -87,7 +88,7 @@ static void WINRT_OnRenderViaXAML(_In_ Platform::Object ^ sender, _In_ Platform:
 
 int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void *backgroundPanelAsIInspectable)
 {
-#if SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     return SDL_SetError("XAML support is not yet available in Windows Phone.");
 #else
     // Declare C++/CX namespaces:
@@ -142,5 +143,5 @@ int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void *backgroundPane
 
     // All done, for now.
     return 0;
-#endif // SDL_WINAPI_FAMILY_PHONE
+#endif // WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP  /  else
 }

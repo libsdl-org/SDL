@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_N3DS
 
@@ -59,7 +59,7 @@ void N3DS_PollTouch(void)
 
     if (pressed != was_pressed) {
         was_pressed = pressed;
-        SDL_SendTouch(0, N3DS_TOUCH_ID,
+        SDL_SendTouch(N3DS_TOUCH_ID,
                       0,
                       NULL,
                       pressed,
@@ -67,7 +67,7 @@ void N3DS_PollTouch(void)
                       touch.py * TOUCHSCREEN_SCALE_Y,
                       pressed ? 1.0f : 0.0f);
     } else if (pressed) {
-        SDL_SendTouchMotion(0, N3DS_TOUCH_ID,
+        SDL_SendTouchMotion(N3DS_TOUCH_ID,
                             0,
                             NULL,
                             touch.px * TOUCHSCREEN_SCALE_X,
@@ -77,3 +77,5 @@ void N3DS_PollTouch(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_N3DS */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

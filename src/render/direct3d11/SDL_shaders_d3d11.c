@@ -18,9 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
+
+#include "SDL_stdinc.h"
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
@@ -56,7 +58,7 @@
 
      hexdump -v -e '6/4 "0x%08.8x, " "\n"' <FILE>
   */
-#if SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
 #define D3D11_USE_SHADER_MODEL_4_0_level_9_3
 #else
 #define D3D11_USE_SHADER_MODEL_4_0_level_9_1
@@ -77,7 +79,7 @@
        return input.color;
    }
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_Colors[] = {
     0x43425844, 0xd74c28fe, 0xa1eb8804, 0x269d512a, 0x7699723d, 0x00000001,
     0x00000240, 0x00000006, 0x00000038, 0x00000084, 0x000000c4, 0x00000140,
@@ -153,7 +155,7 @@ static const DWORD D3D11_PixelShader_Colors[] = {
         return theTexture.Sample(theSampler, input.tex) * input.color;
     }
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_Textures[] = {
     0x43425844, 0x6299b59f, 0x155258f2, 0x873ab86a, 0xfcbb6dcd, 0x00000001,
     0x00000330, 0x00000006, 0x00000038, 0x000000c0, 0x0000015c, 0x000001d8,
@@ -270,7 +272,7 @@ static const DWORD D3D11_PixelShader_Textures[] = {
     }
 
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_YUV_JPEG[] = {
     0x43425844, 0x10359e9c, 0x92c3d2c4, 0x00bf0cd5, 0x5ce8c499, 0x00000001,
     0x000005e8, 0x00000006, 0x00000038, 0x000001dc, 0x000003bc, 0x00000438,
@@ -444,7 +446,7 @@ static const DWORD D3D11_PixelShader_YUV_JPEG[] = {
     }
 
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_YUV_BT601[] = {
     0x43425844, 0x628ec838, 0xbe9cec6a, 0xc9ee10bb, 0x63283218, 0x00000001,
     0x000005e8, 0x00000006, 0x00000038, 0x000001dc, 0x000003bc, 0x00000438,
@@ -618,7 +620,7 @@ static const DWORD D3D11_PixelShader_YUV_BT601[] = {
     }
 
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_YUV_BT709[] = {
     0x43425844, 0x5045fa84, 0xc2908cce, 0x278dacc3, 0xd4276f8f, 0x00000001,
     0x000005e8, 0x00000006, 0x00000038, 0x000001dc, 0x000003bc, 0x00000438,
@@ -790,7 +792,7 @@ static const DWORD D3D11_PixelShader_YUV_BT709[] = {
     }
 
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_NV12_JPEG[] = {
     0x43425844, 0x8fb9c77a, 0xe9e39686, 0x62b0e0e9, 0xd2bf8183, 0x00000001,
     0x00000548, 0x00000006, 0x00000038, 0x000001b0, 0x00000348, 0x000003c4,
@@ -949,7 +951,7 @@ static const DWORD D3D11_PixelShader_NV12_JPEG[] = {
     }
 
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_NV12_BT601[] = {
     0x43425844, 0xd1d24a0c, 0x337c447a, 0x22b55cff, 0xb5c9c74b, 0x00000001,
     0x00000548, 0x00000006, 0x00000038, 0x000001b0, 0x00000348, 0x000003c4,
@@ -1108,7 +1110,7 @@ static const DWORD D3D11_PixelShader_NV12_BT601[] = {
     }
 
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_NV12_BT709[] = {
     0x43425844, 0x40d1b8d5, 0xaf4b78b5, 0x907fd0b5, 0xa2d23686, 0x00000001,
     0x00000548, 0x00000006, 0x00000038, 0x000001b0, 0x00000348, 0x000003c4,
@@ -1267,7 +1269,7 @@ static const DWORD D3D11_PixelShader_NV12_BT709[] = {
     }
 
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_NV21_JPEG[] = {
     0x43425844, 0x9c41f579, 0xfd1019d8, 0x7c27e3ae, 0x52e3a5ff, 0x00000001,
     0x00000554, 0x00000006, 0x00000038, 0x000001bc, 0x00000354, 0x000003d0,
@@ -1426,7 +1428,7 @@ static const DWORD D3D11_PixelShader_NV21_JPEG[] = {
     }
 
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_NV21_BT601[] = {
     0x43425844, 0x7fc6cfdc, 0xba87a4ff, 0xa72685a6, 0xa051b38c, 0x00000001,
     0x00000554, 0x00000006, 0x00000038, 0x000001bc, 0x00000354, 0x000003d0,
@@ -1585,7 +1587,7 @@ static const DWORD D3D11_PixelShader_NV21_BT601[] = {
     }
 
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_PixelShader_NV21_BT709[] = {
     0x43425844, 0x754ba6c4, 0xe321a747, 0x23680787, 0x6bb1bdcc, 0x00000001,
     0x00000554, 0x00000006, 0x00000038, 0x000001bc, 0x00000354, 0x000003d0,
@@ -1749,7 +1751,7 @@ static const DWORD D3D11_PixelShader_NV21_BT709[] = {
        return output;
    }
 */
-#ifdef D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
 static const DWORD D3D11_VertexShader[] = {
     0x43425844, 0x62dfae5f, 0x3e8bd8df, 0x9ec97127, 0x5044eefb, 0x00000001,
     0x00000598, 0x00000006, 0x00000038, 0x0000016c, 0x00000334, 0x000003b0,
@@ -1948,3 +1950,5 @@ int D3D11_CreatePixelShader(ID3D11Device1 *d3dDevice, D3D11_Shader shader, ID3D1
 }
 
 #endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

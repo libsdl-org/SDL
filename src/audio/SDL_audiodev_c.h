@@ -22,7 +22,8 @@
 #ifndef SDL_audiodev_c_h_
 #define SDL_audiodev_c_h_
 
-#include "SDL_internal.h"
+#include "SDL.h"
+#include "../SDL_internal.h"
 #include "SDL_sysaudio.h"
 
 /* Open the audio device for playback, and don't block if busy */
@@ -39,3 +40,5 @@
 extern void SDL_EnumUnixAudioDevices(const int classic, int (*test)(int));
 
 #endif /* SDL_audiodev_c_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

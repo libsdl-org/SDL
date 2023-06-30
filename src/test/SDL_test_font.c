@@ -18,7 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include <SDL3/SDL_test.h>
+#include "SDL_config.h"
+
+#include "SDL_test.h"
 
 /* ---- 8x8 font definition ---- */
 
@@ -3126,13 +3128,13 @@ struct SDLTest_CharTextureCache
 */
 static struct SDLTest_CharTextureCache *SDLTest_CharTextureCacheList;
 
-int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
+int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
 {
     const Uint32 charWidth = FONT_CHARACTER_SIZE;
     const Uint32 charHeight = FONT_CHARACTER_SIZE;
     const Uint32 charSize = FONT_CHARACTER_SIZE;
-    SDL_FRect srect;
-    SDL_FRect drect;
+    SDL_Rect srect;
+    SDL_Rect drect;
     int result;
     Uint32 ix, iy;
     const unsigned char *charpos;
@@ -3147,18 +3149,18 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
     /*
      * Setup source rectangle
      */
-    srect.x = 0.0f;
-    srect.y = 0.0f;
-    srect.w = (float)charWidth;
-    srect.h = (float)charHeight;
+    srect.x = 0;
+    srect.y = 0;
+    srect.w = charWidth;
+    srect.h = charHeight;
 
     /*
      * Setup destination rectangle
      */
     drect.x = x;
     drect.y = y;
-    drect.w = (float)charWidth;
-    drect.h = (float)charHeight;
+    drect.w = charWidth;
+    drect.h = charHeight;
 
     /* Character index in cache */
     ci = c;
@@ -3185,7 +3187,9 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
         /*
          * Redraw character into surface
          */
-        character = SDL_CreateSurface(charWidth, charHeight, SDL_PIXELFORMAT_RGBA8888);
+        character = SDL_CreateRGBSurface(SDL_SWSURFACE,
+            charWidth, charHeight, 32,
+            0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
         if (character == NULL) {
             return -1;
         }
@@ -3213,7 +3217,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
 
         /* Convert temp surface into texture */
         cache->charTextureCache[ci] = SDL_CreateTextureFromSurface(renderer, character);
-        SDL_DestroySurface(character);
+        SDL_FreeSurface(character);
 
         /*
          * Check pointer
@@ -3234,7 +3238,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
     /*
      * Draw texture onto destination
      */
-    result |= SDL_RenderTexture(renderer, cache->charTextureCache[ci], &srect, &drect);
+    result |= SDL_RenderCopy(renderer, cache->charTextureCache[ci], &srect, &drect);
 
     return result;
 }
@@ -3328,12 +3332,12 @@ static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
 
 #define UTF8_IsTrailingByte(c) ((c) >= 0x80 && (c) <= 0xBF)
 
-int SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s)
+int SDLTest_DrawString(SDL_Renderer *renderer, int x, int y, const char *s)
 {
     const Uint32 charWidth = FONT_CHARACTER_SIZE;
     int result = 0;
-    float curx = x;
-    float cury = y;
+    int curx = x;
+    int cury = y;
     size_t len = SDL_strlen(s);
 
     while (len > 0 && !result) {
@@ -3350,7 +3354,7 @@ int SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s)
     return result;
 }
 
-SDLTest_TextWindow *SDLTest_TextWindowCreate(float x, float y, float w, float h)
+SDLTest_TextWindow *SDLTest_TextWindowCreate(int x, int y, int w, int h)
 {
     SDLTest_TextWindow *textwin = (SDLTest_TextWindow *)SDL_malloc(sizeof(*textwin));
 
@@ -3363,7 +3367,7 @@ SDLTest_TextWindow *SDLTest_TextWindowCreate(float x, float y, float w, float h)
     textwin->rect.w = w;
     textwin->rect.h = h;
     textwin->current = 0;
-    textwin->numlines = (int)SDL_ceilf(h / FONT_LINE_HEIGHT);
+    textwin->numlines = (h / FONT_LINE_HEIGHT);
     textwin->lines = (char **)SDL_calloc(textwin->numlines, sizeof(*textwin->lines));
     if (!textwin->lines) {
         SDL_free(textwin);
@@ -3374,8 +3378,7 @@ SDLTest_TextWindow *SDLTest_TextWindowCreate(float x, float y, float w, float h)
 
 void SDLTest_TextWindowDisplay(SDLTest_TextWindow *textwin, SDL_Renderer *renderer)
 {
-    int i;
-    float y;
+    int i, y;
 
     for (y = textwin->rect.y, i = 0; i < textwin->numlines; ++i, y += FONT_LINE_HEIGHT) {
         if (textwin->lines[i]) {
@@ -3488,3 +3491,5 @@ void SDLTest_CleanupTextDrawing(void)
 
     SDLTest_CharTextureCacheList = NULL;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

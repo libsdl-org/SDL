@@ -22,7 +22,9 @@
 #ifndef SDL_haptic_c_h_
 #define SDL_haptic_c_h_
 
-extern int SDL_InitHaptics(void);
-extern void SDL_QuitHaptics(void);
+extern int SDL_HapticInit(void);
+extern void SDL_HapticQuit(void);
 
 #endif /* SDL_haptic_c_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

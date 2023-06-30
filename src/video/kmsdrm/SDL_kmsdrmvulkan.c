@@ -24,25 +24,26 @@
  * Based on Jacob Lifshay's SDL_x11vulkan.c.
  */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_KMSDRM)
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_KMSDRM
 
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmdyn.h"
+#include "SDL_assert.h"
+
+#include "SDL_loadso.h"
 #include "SDL_kmsdrmvulkan.h"
+#include "SDL_syswm.h"
+#include "sys/ioctl.h"
 
-#include <SDL3/SDL_syswm.h>
-
-#include <sys/ioctl.h>
-
-#ifdef __OpenBSD__
+#if defined(__OpenBSD__)
 #define DEFAULT_VULKAN "libvulkan.so"
 #else
 #define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
-int KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
@@ -122,7 +123,7 @@ fail:
     return -1;
 }
 
-void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
+void KMSDRM_Vulkan_UnloadLibrary(_THIS)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -140,7 +141,8 @@ void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 /* members of the VkInstanceCreateInfo struct passed to              */
 /* vkCreateInstance().                                               */
 /*********************************************************************/
-SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
+                                             SDL_Window *window,
                                              unsigned *count,
                                              const char **names)
 {
@@ -156,6 +158,17 @@ SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
         extensionsForKMSDRM);
 }
 
+void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
+{
+    if (w) {
+        *w = window->w;
+    }
+
+    if (h) {
+        *h = window->h;
+    }
+}
+
 /***********************************************************************/
 /* First thing to know is that we don't call vkCreateInstance() here.  */
 /* Instead, programs using SDL and Vulkan create their Vulkan instance */
@@ -164,7 +177,7 @@ SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 /* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with              */
 /* VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK. */
 /***********************************************************************/
-SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                      SDL_Window *window,
                                      VkInstance instance,
                                      VkSurfaceKHR *surface)
@@ -201,7 +214,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     SDL_bool plane_supports_display = SDL_FALSE;
 
     /* Get the display index from the display being used by the window. */
-    int display_index = SDL_GetDisplayIndex(SDL_GetDisplayForWindow(window));
+    int display_index = SDL_atoi(SDL_GetDisplayForWindow(window)->name);
     int i, j;
 
     /* Get the function pointers for the functions we will use. */
@@ -371,7 +384,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         new_mode_parameters.visibleRegion.height = window->h;
         /* SDL (and DRM, if we look at drmModeModeInfo vrefresh) uses plain integer Hz for
            display mode refresh rate, but Vulkan expects higher precision. */
-        new_mode_parameters.refreshRate = window->current_fullscreen_mode.refresh_rate * 1000;
+        new_mode_parameters.refreshRate = window->fullscreen_mode.refresh_rate * 1000;
 
         SDL_zero(display_mode_create_info);
         display_mode_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR;
@@ -511,3 +524,5 @@ clean:
 }
 
 #endif
+
+/* vim: set ts=4 sw=4 expandtab: */

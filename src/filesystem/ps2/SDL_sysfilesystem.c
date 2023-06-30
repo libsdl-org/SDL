@@ -18,15 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #include <sys/stat.h>
 #include <unistd.h>
 
-#ifdef SDL_FILESYSTEM_PS2
+#if defined(SDL_FILESYSTEM_PS2)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
+
+#include "SDL_error.h"
+#include "SDL_filesystem.h"
 
 char *SDL_GetBasePath(void)
 {
@@ -52,8 +55,8 @@ static void recursive_mkdir(const char *dir)
     char *p = NULL;
     size_t len;
 
-    SDL_snprintf(tmp, sizeof(tmp), "%s", dir);
-    len = SDL_strlen(tmp);
+    snprintf(tmp, sizeof(tmp), "%s", dir);
+    len = strlen(tmp);
     if (tmp[len - 1] == '/') {
         tmp[len - 1] = 0;
     }
@@ -62,7 +65,7 @@ static void recursive_mkdir(const char *dir)
         if (*p == '/') {
             *p = 0;
             // Just creating subfolders from current path
-            if (SDL_strstr(tmp, base) != NULL) {
+            if (strstr(tmp, base) != NULL) {
                 mkdir(tmp, S_IRWXU);
             }
 
@@ -70,7 +73,7 @@ static void recursive_mkdir(const char *dir)
         }
     }
 
-    SDL_free(base);
+    free(base);
     mkdir(tmp, S_IRWXU);
 }
 
@@ -95,18 +98,13 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     } else {
         SDL_snprintf(retval, len, "%s%s/", base, app);
     }
-    SDL_free(base);
+    free(base);
 
     recursive_mkdir(retval);
 
     return retval;
 }
 
-/* TODO */
-char *SDL_GetPath(SDL_Folder folder)
-{
-    SDL_Unsupported();
-    return NULL;
-}
-
 #endif /* SDL_FILESYSTEM_PS2 */
+
+/* vi: set ts=4 sw=4 expandtab: */

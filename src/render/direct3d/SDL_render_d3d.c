@@ -18,19 +18,23 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D) && !defined(SDL_RENDER_DISABLED)
+#include "SDL_render.h"
+#include "SDL_system.h"
+
+#if SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED
 
 #include "../../core/windows/SDL_windows.h"
 
+#include "SDL_hints.h"
+#include "SDL_loadso.h"
+#include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 #include "../../video/windows/SDL_windowsvideo.h"
 
-#include <SDL3/SDL_syswm.h>
-
-#ifdef SDL_VIDEO_RENDER_D3D
+#if SDL_VIDEO_RENDER_D3D
 #define D3D_DEBUG_INFO
 #include <d3d9.h>
 #endif
@@ -289,18 +293,17 @@ static int D3D_ActivateRenderer(SDL_Renderer *renderer)
     if (data->updateSize) {
         SDL_Window *window = renderer->window;
         int w, h;
-        const SDL_DisplayMode *fullscreen_mode = NULL;
+        Uint32 window_flags = SDL_GetWindowFlags(window);
 
         SDL_GetWindowSizeInPixels(window, &w, &h);
         data->pparams.BackBufferWidth = w;
         data->pparams.BackBufferHeight = h;
-        if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) {
-            fullscreen_mode = SDL_GetWindowFullscreenMode(window);
-        }
-        if (fullscreen_mode) {
+        if (window_flags & SDL_WINDOW_FULLSCREEN && (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+            SDL_DisplayMode fullscreen_mode;
+            SDL_GetWindowDisplayMode(window, &fullscreen_mode);
             data->pparams.Windowed = FALSE;
-            data->pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode->format);
-            data->pparams.FullScreen_RefreshRateInHz = (UINT)SDL_ceilf(fullscreen_mode->refresh_rate);
+            data->pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
+            data->pparams.FullScreen_RefreshRateInHz = fullscreen_mode.refresh_rate;
         } else {
             data->pparams.Windowed = TRUE;
             data->pparams.BackBufferFormat = D3DFMT_UNKNOWN;
@@ -332,9 +335,15 @@ static void D3D_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
 
-    if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
         data->updateSize = SDL_TRUE;
     }
+}
+
+static int D3D_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
+{
+    SDL_GetWindowSizeInPixels(renderer->window, w, h);
+    return 0;
 }
 
 static D3DBLEND GetBlendFunc(SDL_BlendFactor factor)
@@ -529,7 +538,7 @@ static int D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (texturedata == NULL) {
         return SDL_OutOfMemory();
     }
-    texturedata->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? D3DTEXF_POINT : D3DTEXF_LINEAR;
+    texturedata->scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? D3DTEXF_POINT : D3DTEXF_LINEAR;
 
     texture->driverdata = texturedata;
 
@@ -733,7 +742,7 @@ static void D3D_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture
         return;
     }
 
-    texturedata->scaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? D3DTEXF_POINT : D3DTEXF_LINEAR;
+    texturedata->scaleMode = (scaleMode == SDL_ScaleModeNearest) ? D3DTEXF_POINT : D3DTEXF_LINEAR;
 }
 
 static int D3D_SetRenderTargetInternal(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -1513,8 +1522,7 @@ static int D3D_Reset(SDL_Renderer *renderer)
     /* Let the application know that render targets were reset */
     {
         SDL_Event event;
-        event.type = SDL_EVENT_RENDER_TARGETS_RESET;
-        event.common.timestamp = 0;
+        event.type = SDL_RENDER_TARGETS_RESET;
         SDL_PushEvent(&event);
     }
 
@@ -1548,17 +1556,12 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     IDirect3DSwapChain9 *chain;
     D3DCAPS9 caps;
     DWORD device_flags;
+    Uint32 window_flags;
     int w, h;
-    SDL_DisplayID displayID;
-    const SDL_DisplayMode *fullscreen_mode = NULL;
+    SDL_DisplayMode fullscreen_mode;
+    int displayIndex;
 
-    if (SDL_GetWindowWMInfo(window, &windowinfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
-        windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
-        SDL_SetError("Couldn't get window handle");
-        return NULL;
-    }
-
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
+    renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (renderer == NULL) {
         SDL_OutOfMemory();
         return NULL;
@@ -1579,6 +1582,7 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
 
     renderer->WindowEvent = D3D_WindowEvent;
+    renderer->GetOutputSize = D3D_GetOutputSize;
     renderer->SupportsBlendMode = D3D_SupportsBlendMode;
     renderer->CreateTexture = D3D_CreateTexture;
     renderer->UpdateTexture = D3D_UpdateTexture;
@@ -1601,13 +1605,15 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->DestroyRenderer = D3D_DestroyRenderer;
     renderer->SetVSync = D3D_SetVSync;
     renderer->info = D3D_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
+    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
 
+    SDL_VERSION(&windowinfo.version);
+    SDL_GetWindowWMInfo(window, &windowinfo);
+
+    window_flags = SDL_GetWindowFlags(window);
     SDL_GetWindowSizeInPixels(window, &w, &h);
-    if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) {
-        fullscreen_mode = SDL_GetWindowFullscreenMode(window);
-    }
+    SDL_GetWindowDisplayMode(window, &fullscreen_mode);
 
     SDL_zero(pparams);
     pparams.hDeviceWindow = windowinfo.info.win.window;
@@ -1616,10 +1622,10 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     pparams.BackBufferCount = 1;
     pparams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 
-    if (fullscreen_mode) {
+    if (window_flags & SDL_WINDOW_FULLSCREEN && (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
         pparams.Windowed = FALSE;
-        pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode->format);
-        pparams.FullScreen_RefreshRateInHz = (UINT)SDL_ceilf(fullscreen_mode->refresh_rate);
+        pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
+        pparams.FullScreen_RefreshRateInHz = fullscreen_mode.refresh_rate;
     } else {
         pparams.Windowed = TRUE;
         pparams.BackBufferFormat = D3DFMT_UNKNOWN;
@@ -1632,8 +1638,8 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
 
     /* Get the adapter for the display that the window is on */
-    displayID = SDL_GetDisplayForWindow(window);
-    data->adapter = SDL_Direct3D9GetAdapterIndex(displayID);
+    displayIndex = SDL_GetWindowDisplayIndex(window);
+    data->adapter = SDL_Direct3D9GetAdapterIndex(displayIndex);
 
     IDirect3D9_GetDeviceCaps(data->d3d, data->adapter, D3DDEVTYPE_HAL, &caps);
 
@@ -1719,7 +1725,7 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
 SDL_RenderDriver D3D_RenderDriver = {
     D3D_CreateRenderer,
     { "direct3d",
-      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
       1,
       { SDL_PIXELFORMAT_ARGB8888 },
       0,
@@ -1729,11 +1735,11 @@ SDL_RenderDriver D3D_RenderDriver = {
 
 #if defined(__WIN32__) || defined(__WINGDK__)
 /* This function needs to always exist on Windows, for the Dynamic API. */
-IDirect3DDevice9 *SDL_GetRenderD3D9Device(SDL_Renderer *renderer)
+IDirect3DDevice9 *SDL_RenderGetD3D9Device(SDL_Renderer *renderer)
 {
     IDirect3DDevice9 *device = NULL;
 
-#if defined(SDL_VIDEO_RENDER_D3D) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
 
     /* Make sure that this is a D3D renderer */
@@ -1751,3 +1757,5 @@ IDirect3DDevice9 *SDL_GetRenderD3D9Device(SDL_Renderer *renderer)
     return device;
 }
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
+
+/* vi: set ts=4 sw=4 expandtab: */

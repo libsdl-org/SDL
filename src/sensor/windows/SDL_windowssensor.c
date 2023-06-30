@@ -18,10 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_SENSOR_WINDOWS
+#include "SDL_config.h"
 
+#if defined(SDL_SENSOR_WINDOWS)
+
+#include "SDL_error.h"
+#include "SDL_mutex.h"
+#include "SDL_sensor.h"
 #include "SDL_windowssensor.h"
 #include "../SDL_syssensor.h"
 #include "../../core/windows/SDL_windows.h"
@@ -143,7 +148,6 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnStateChanged(ISensorEvents 
 static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *This, ISensor *pSensor, ISensorDataReport *pNewData)
 {
     int i;
-    Uint64 timestamp = SDL_GetTicksNS();
 
     SDL_LockSensors();
     for (i = 0; i < SDL_num_sensors; ++i) {
@@ -151,23 +155,10 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
             if (SDL_sensors[i].sensor_opened) {
                 HRESULT hrX, hrY, hrZ;
                 PROPVARIANT valueX, valueY, valueZ;
-                SYSTEMTIME sensor_systemtime;
-                FILETIME sensor_filetime;
-                Uint64 sensor_timestamp;
 
 #ifdef DEBUG_SENSORS
                 SDL_Log("Sensor %s data updated\n", SDL_sensors[i].name);
 #endif
-                if (SUCCEEDED(ISensorDataReport_GetTimestamp(pNewData, &sensor_systemtime)) &&
-                    SystemTimeToFileTime(&sensor_systemtime, &sensor_filetime)) {
-                    ULARGE_INTEGER sensor_time;
-                    sensor_time.u.HighPart = sensor_filetime.dwHighDateTime;
-                    sensor_time.u.LowPart = sensor_filetime.dwLowDateTime;
-                    sensor_timestamp = sensor_time.QuadPart * 100;
-                } else {
-                    sensor_timestamp = timestamp;
-                }
-
                 switch (SDL_sensors[i].type) {
                 case SDL_SENSOR_ACCEL:
                     hrX = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_X_G, &valueX);
@@ -180,7 +171,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                         values[0] = (float)valueX.dblVal * SDL_STANDARD_GRAVITY;
                         values[1] = (float)valueY.dblVal * SDL_STANDARD_GRAVITY;
                         values[2] = (float)valueZ.dblVal * SDL_STANDARD_GRAVITY;
-                        SDL_SendSensorUpdate(timestamp, SDL_sensors[i].sensor_opened, sensor_timestamp, values, 3);
+                        SDL_PrivateSensorUpdate(SDL_sensors[i].sensor_opened, 0, values, 3);
                     }
                     break;
                 case SDL_SENSOR_GYRO:
@@ -189,13 +180,13 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                     hrZ = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, &valueZ);
                     if (SUCCEEDED(hrX) && SUCCEEDED(hrY) && SUCCEEDED(hrZ) &&
                         valueX.vt == VT_R8 && valueY.vt == VT_R8 && valueZ.vt == VT_R8) {
-                        const float DEGREES_TO_RADIANS = (SDL_PI_F / 180.0f);
+                        const float DEGREES_TO_RADIANS = (float)(M_PI / 180.0f);
                         float values[3];
 
                         values[0] = (float)valueX.dblVal * DEGREES_TO_RADIANS;
                         values[1] = (float)valueY.dblVal * DEGREES_TO_RADIANS;
                         values[2] = (float)valueZ.dblVal * DEGREES_TO_RADIANS;
-                        SDL_SendSensorUpdate(timestamp, SDL_sensors[i].sensor_opened, sensor_timestamp, values, 3);
+                        SDL_PrivateSensorUpdate(SDL_sensors[i].sensor_opened, 0, values, 3);
                     }
                     break;
                 default:
@@ -483,3 +474,5 @@ SDL_SensorDriver SDL_WINDOWS_SensorDriver = {
 };
 
 #endif /* SDL_SENSOR_WINDOWS */
+
+/* vi: set ts=4 sw=4 expandtab: */

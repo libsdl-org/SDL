@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_KMSDRM
+#if SDL_VIDEO_DRIVER_KMSDRM
 
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmmouse.h"
@@ -35,8 +35,10 @@
 static SDL_Cursor *KMSDRM_CreateDefaultCursor(void);
 static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y);
 static int KMSDRM_ShowCursor(SDL_Cursor *cursor);
-static int KMSDRM_MoveCursor(SDL_Cursor *cursor);
+static void KMSDRM_MoveCursor(SDL_Cursor *cursor);
 static void KMSDRM_FreeCursor(SDL_Cursor *cursor);
+static void KMSDRM_WarpMouse(SDL_Window *window, int x, int y);
+static int KMSDRM_WarpMouseGlobal(int x, int y);
 
 /**************************************************************************************/
 /* BEFORE CODING ANYTHING MOUSE/CURSOR RELATED, REMEMBER THIS.                        */
@@ -61,9 +63,9 @@ static SDL_Cursor *KMSDRM_CreateDefaultCursor(void)
 /* Given a display's driverdata, destroy the cursor BO for it.
    To be called from KMSDRM_DestroyWindow(), as that's where we
    destroy the driverdata for the window's display. */
-void KMSDRM_DestroyCursorBO(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+void KMSDRM_DestroyCursorBO(_THIS, SDL_VideoDisplay *display)
 {
-    SDL_DisplayData *dispdata = display->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
 
     /* Destroy the curso GBM BO. */
     if (dispdata->cursor_bo) {
@@ -76,28 +78,31 @@ void KMSDRM_DestroyCursorBO(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 /* Given a display's driverdata, create the cursor BO for it.
    To be called from KMSDRM_CreateWindow(), as that's where we
    build a window and assign a display to it. */
-int KMSDRM_CreateCursorBO(SDL_VideoDisplay *display)
+void KMSDRM_CreateCursorBO(SDL_VideoDisplay *display)
 {
 
     SDL_VideoDevice *dev = SDL_GetVideoDevice();
-    SDL_VideoData *viddata = dev->driverdata;
-    SDL_DisplayData *dispdata = display->driverdata;
+    SDL_VideoData *viddata = ((SDL_VideoData *)dev->driverdata);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
 
     if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev,
                                                GBM_FORMAT_ARGB8888,
                                                GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE)) {
-        return SDL_SetError("Unsupported pixel format for cursor");
+        SDL_SetError("Unsupported pixel format for cursor");
+        return;
     }
 
     if (KMSDRM_drmGetCap(viddata->drm_fd,
                          DRM_CAP_CURSOR_WIDTH, &dispdata->cursor_w) ||
         KMSDRM_drmGetCap(viddata->drm_fd, DRM_CAP_CURSOR_HEIGHT,
                          &dispdata->cursor_h)) {
-        return SDL_SetError("Could not get the recommended GBM cursor size");
+        SDL_SetError("Could not get the recommended GBM cursor size");
+        return;
     }
 
     if (dispdata->cursor_w == 0 || dispdata->cursor_h == 0) {
-        return SDL_SetError("Could not get an usable GBM cursor size");
+        SDL_SetError("Could not get an usable GBM cursor size");
+        return;
     }
 
     dispdata->cursor_bo = KMSDRM_gbm_bo_create(viddata->gbm_dev,
@@ -105,20 +110,20 @@ int KMSDRM_CreateCursorBO(SDL_VideoDisplay *display)
                                                GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE | GBM_BO_USE_LINEAR);
 
     if (!dispdata->cursor_bo) {
-        return SDL_SetError("Could not create GBM cursor BO");
+        SDL_SetError("Could not create GBM cursor BO");
+        return;
     }
 
     dispdata->cursor_bo_drm_fd = viddata->drm_fd;
-    return 0;
 }
 
 /* Remove a cursor buffer from a display's DRM cursor BO. */
 static int KMSDRM_RemoveCursorFromBO(SDL_VideoDisplay *display)
 {
     int ret = 0;
-    SDL_DisplayData *dispdata = display->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
     SDL_VideoDevice *video_device = SDL_GetVideoDevice();
-    SDL_VideoData *viddata = video_device->driverdata;
+    SDL_VideoData *viddata = ((SDL_VideoData *)video_device->driverdata);
 
     ret = KMSDRM_drmModeSetCursor(viddata->drm_fd,
                                   dispdata->crtc->crtc_id, 0, 0, 0);
@@ -133,10 +138,10 @@ static int KMSDRM_RemoveCursorFromBO(SDL_VideoDisplay *display)
 /* Dump a cursor buffer to a display's DRM cursor BO.  */
 static int KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
 {
-    SDL_DisplayData *dispdata = display->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
     KMSDRM_CursorData *curdata = (KMSDRM_CursorData *)cursor->driverdata;
     SDL_VideoDevice *video_device = SDL_GetVideoDevice();
-    SDL_VideoData *viddata = video_device->driverdata;
+    SDL_VideoData *viddata = ((SDL_VideoData *)video_device->driverdata);
 
     uint32_t bo_handle;
     size_t bo_stride;
@@ -299,7 +304,7 @@ static int KMSDRM_ShowCursor(SDL_Cursor *cursor)
     SDL_Window *window;
     SDL_Mouse *mouse;
 
-    int i;
+    int num_displays, i;
     int ret = 0;
 
     /* Get the mouse focused window, if any. */
@@ -312,28 +317,33 @@ static int KMSDRM_ShowCursor(SDL_Cursor *cursor)
     window = mouse->focus;
 
     if (window == NULL || cursor == NULL) {
+
         /* If no window is focused by mouse or cursor is NULL,
            since we have no window (no mouse->focus) and hence
            we have no display, we simply hide mouse on all displays.
            This happens on video quit, where we get here after
            the mouse focus has been unset, yet SDL wants to
            restore the system default cursor (makes no sense here). */
-        SDL_DisplayID *displays = SDL_GetDisplays(NULL);
-        if (displays) {
-            /* Iterate on the displays, hiding the cursor. */
-            for (i = 0; i < displays[i]; i++) {
-                display = SDL_GetVideoDisplay(displays[i]);
-                ret = KMSDRM_RemoveCursorFromBO(display);
-            }
-            SDL_free(displays);
+
+        num_displays = SDL_GetNumVideoDisplays();
+
+        /* Iterate on the displays hidding the cursor. */
+        for (i = 0; i < num_displays; i++) {
+            display = SDL_GetDisplay(i);
+            ret = KMSDRM_RemoveCursorFromBO(display);
         }
+
     } else {
-        display = SDL_GetVideoDisplayForWindow(window);
+
+        display = SDL_GetDisplayForWindow(window);
+
         if (display) {
+
             if (cursor) {
                 /* Dump the cursor to the display DRM cursor BO so it becomes visible
                    on that display. */
                 ret = KMSDRM_DumpCursorToBO(display, cursor);
+
             } else {
                 /* Hide the cursor on that display. */
                 ret = KMSDRM_RemoveCursorFromBO(display);
@@ -344,23 +354,31 @@ static int KMSDRM_ShowCursor(SDL_Cursor *cursor)
     return ret;
 }
 
-static int KMSDRM_WarpMouseGlobal(float x, float y)
+/* Warp the mouse to (x,y) */
+static void KMSDRM_WarpMouse(SDL_Window *window, int x, int y)
+{
+    /* Only one global/fullscreen window is supported */
+    KMSDRM_WarpMouseGlobal(x, y);
+}
+
+/* Warp the mouse to (x,y) */
+static int KMSDRM_WarpMouseGlobal(int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
     if (mouse && mouse->cur_cursor && mouse->focus) {
 
         SDL_Window *window = mouse->focus;
-        SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
+        SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayForWindow(window)->driverdata;
 
         /* Update internal mouse position. */
-        SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 0, x, y);
+        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 0, x, y);
 
         /* And now update the cursor graphic position on screen. */
         if (dispdata->cursor_bo) {
             int ret = 0;
 
-            ret = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, (int)x, (int)y);
+            ret = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, x, y);
 
             if (ret) {
                 SDL_SetError("drmModeMoveCursor() failed.");
@@ -377,16 +395,10 @@ static int KMSDRM_WarpMouseGlobal(float x, float y)
     }
 }
 
-static int KMSDRM_WarpMouse(SDL_Window *window, float x, float y)
-{
-    /* Only one global/fullscreen window is supported */
-    return KMSDRM_WarpMouseGlobal(x, y);
-}
-
-void KMSDRM_InitMouse(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+void KMSDRM_InitMouse(_THIS, SDL_VideoDisplay *display)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_DisplayData *dispdata = display->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
 
     mouse->CreateCursor = KMSDRM_CreateCursor;
     mouse->ShowCursor = KMSDRM_ShowCursor;
@@ -403,13 +415,13 @@ void KMSDRM_InitMouse(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     }
 }
 
-void KMSDRM_QuitMouse(SDL_VideoDevice *_this)
+void KMSDRM_QuitMouse(_THIS)
 {
     /* TODO: ? */
 }
 
 /* This is called when a mouse motion event occurs */
-static int KMSDRM_MoveCursor(SDL_Cursor *cursor)
+static void KMSDRM_MoveCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int ret = 0;
@@ -419,19 +431,21 @@ static int KMSDRM_MoveCursor(SDL_Cursor *cursor)
     if (mouse && mouse->cur_cursor && mouse->focus) {
 
         SDL_Window *window = mouse->focus;
-        SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
+        SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayForWindow(window)->driverdata;
 
         if (!dispdata->cursor_bo) {
-            return SDL_SetError("Cursor not initialized properly.");
+            SDL_SetError("Cursor not initialized properly.");
+            return;
         }
 
         ret = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, mouse->x, mouse->y);
 
         if (ret) {
-            return SDL_SetError("drmModeMoveCursor() failed.");
+            SDL_SetError("drmModeMoveCursor() failed.");
         }
     }
-    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */
+
+/* vi: set ts=4 sw=4 expandtab: */

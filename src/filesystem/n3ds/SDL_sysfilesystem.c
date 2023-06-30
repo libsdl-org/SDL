@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_FILESYSTEM_N3DS
 
@@ -29,8 +29,11 @@
 #include <dirent.h>
 #include <errno.h>
 
-static char *MakePrefPath(const char *app);
-static int CreatePrefPathDir(const char *pref);
+#include "SDL_error.h"
+#include "SDL_filesystem.h"
+
+SDL_FORCE_INLINE char *MakePrefPath(const char *app);
+SDL_FORCE_INLINE int CreatePrefPathDir(const char *pref);
 
 char *SDL_GetBasePath(void)
 {
@@ -59,14 +62,8 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return pref_path;
 }
 
-/* TODO */
-char *SDL_GetPath(SDL_Folder folder)
-{
-    SDL_Unsupported();
-    return NULL;
-}
-
-static char *MakePrefPath(const char *app)
+SDL_FORCE_INLINE char *
+MakePrefPath(const char *app)
 {
     char *pref_path;
     if (SDL_asprintf(&pref_path, "sdmc:/3ds/%s/", app) < 0) {
@@ -76,7 +73,8 @@ static char *MakePrefPath(const char *app)
     return pref_path;
 }
 
-static int CreatePrefPathDir(const char *pref)
+SDL_FORCE_INLINE int
+CreatePrefPathDir(const char *pref)
 {
     int result = mkdir(pref, 0666);
 
@@ -87,3 +85,5 @@ static int CreatePrefPathDir(const char *pref)
 }
 
 #endif /* SDL_FILESYSTEM_N3DS */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

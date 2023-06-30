@@ -17,7 +17,7 @@ Thanks to everyone who made this possible, including:
 
 * Alfred Reynolds for the game controller API and general (in)sanity
 
-* Jørgen Tjernø for numerous magical macOS fixes.
+* Jørgen Tjernø for numerous magical Mac OS X fixes.
 
 * Pierre-Loup Griffais for his deep knowledge of OpenGL drivers.
  

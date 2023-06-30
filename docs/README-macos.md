@@ -1,6 +1,7 @@
-# macOS
+# Mac OS X (aka macOS).
 
-These instructions are for people using Apple's macOS.
+These instructions are for people using Apple's Mac OS X (pronounced
+"ten"), which in newer versions is just referred to as "macOS".
 
 From the developer's point of view, macOS is a sort of hybrid Mac and
 Unix system, and you have the option of using either traditional
@@ -8,27 +9,43 @@ command line tools or Apple's IDE Xcode.
 
 # Command Line Build
 
-To build SDL using the command line, use the CMake build script:
+To build SDL using the command line, use the standard configure and make
+process:
 
 ```bash
 mkdir build
 cd build
-cmake ..
-cmake --build .
-sudo cmake --install .
+../configure
+make
+sudo make install
+```
+
+CMake is also known to work, although it continues to be a work in progress:
+
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+sudo make install
 ```
 
 
 You can also build SDL as a Universal library (a single binary for both
-64-bit Intel and ARM architectures):
+64-bit Intel and ARM architectures), by using the build-scripts/clang-fat.sh
+script.
 
 ```bash
 mkdir build
 cd build
-cmake .. "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
-cmake --build .
-sudo cmake --install .
+CC=$PWD/../build-scripts/clang-fat.sh ../configure
+make
+sudo make install
 ```
+
+This script builds SDL with 10.9 ABI compatibility on 64-bit Intel and 11.0
+ABI compatibility on ARM64 architectures.  For best compatibility you
+should compile your application the same way.
 
 Please note that building SDL requires at least Xcode 6 and the 10.9 SDK.
 PowerPC support for macOS has been officially dropped as of SDL 2.0.2.
@@ -39,12 +56,12 @@ To use the library once it's built, you essential have two possibilities:
 use the traditional autoconf/automake/make method, or use Xcode.
 
 
-# Caveats for using SDL with macOS
+# Caveats for using SDL with Mac OS X
 
 If you register your own NSApplicationDelegate (using [NSApp setDelegate:]),
 SDL will not register its own. This means that SDL will not terminate using
 SDL_Quit if it receives a termination request, it will terminate like a
-normal app, and it will not send a SDL_EVENT_DROP_FILE when you request to open a
+normal app, and it will not send a SDL_DROPFILE when you request to open a
 file with the app. To solve these issues, put the following code in your
 NSApplicationDelegate implementation:
 
@@ -52,9 +69,9 @@ NSApplicationDelegate implementation:
 ```objc
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    if (SDL_GetEventState(SDL_EVENT_QUIT) == SDL_ENABLE) {
+    if (SDL_GetEventState(SDL_QUIT) == SDL_ENABLE) {
         SDL_Event event;
-        event.type = SDL_EVENT_QUIT;
+        event.type = SDL_QUIT;
         SDL_PushEvent(&event);
     }
 
@@ -63,9 +80,9 @@ NSApplicationDelegate implementation:
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
 {
-    if (SDL_GetEventState(SDL_EVENT_DROP_FILE) == SDL_ENABLE) {
+    if (SDL_GetEventState(SDL_DROPFILE) == SDL_ENABLE) {
         SDL_Event event;
-        event.type = SDL_EVENT_DROP_FILE;
+        event.type = SDL_DROPFILE;
         event.drop.file = SDL_strdup([filename UTF8String]);
         return (SDL_PushEvent(&event) > 0);
     }
@@ -76,11 +93,11 @@ NSApplicationDelegate implementation:
 
 # Using the Simple DirectMedia Layer with a traditional Makefile
 
-An existing build system for your SDL app has good chances to work almost
-unchanged on macOS, as long as you link with the SDL framework. However,
-to produce a "real" Mac binary that you can distribute to users, you need
-to put the generated binary into a so called "bundle", which is basically
-a fancy folder with a name like "MyCoolGame.app".
+An existing autoconf/automake build system for your SDL app has good chances
+to work almost unchanged on macOS. However, to produce a "real" Mac binary
+that you can distribute to users, you need to put the generated binary into a
+so called "bundle", which is basically a fancy folder with a name like
+"MyCoolGame.app".
 
 To get this build automatically, add something like the following rule to
 your Makefile.am:
@@ -123,8 +140,24 @@ But beware! That is only part of the story! With the above, you end up with
 a barebones .app bundle, which is double-clickable from the Finder. But
 there are some more things you should do before shipping your product...
 
-1. You'll need to copy the SDL framework into the Contents/Frameworks
-   folder in your bundle, so it is included along with your application.
+1. The bundle right now probably is dynamically linked against SDL. That
+   means that when you copy it to another computer, *it will not run*,
+   unless you also install SDL on that other computer. A good solution
+   for this dilemma is to static link against SDL. On OS X, you can
+   achieve that by linking against the libraries listed by
+
+   ```bash
+   sdl-config --static-libs
+   ```
+
+   instead of those listed by
+
+   ```bash
+   sdl-config --libs
+   ```
+
+   Depending on how exactly SDL is integrated into your build systems, the
+   way to achieve that varies, so I won't describe it here in detail
 
 2. Add an 'Info.plist' to your application. That is a special XML file which
    contains some meta-information about your application (like some copyright

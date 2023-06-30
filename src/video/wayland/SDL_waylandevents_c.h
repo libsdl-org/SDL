@@ -19,12 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_waylandevents_h_
 #define SDL_waylandevents_h_
-
-#include "../../events/SDL_mouse_c.h"
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
@@ -56,7 +54,6 @@ struct SDL_WaylandTabletInput
 
     SDL_WindowData *tool_focus;
     uint32_t tool_prox_serial;
-    uint32_t press_serial;
 
     /* Last motion location */
     wl_fixed_t sx_w;
@@ -71,15 +68,16 @@ struct SDL_WaylandTabletInput
 
 typedef struct
 {
-    int32_t repeat_rate;      /* Repeat rate in range of [1, 1000] character(s) per second */
-    int32_t repeat_delay_ms;  /* Time to first repeat event in milliseconds */
+    // repeat_rate in range of [1, 1000]
+    int32_t repeat_rate;
+    int32_t repeat_delay;
     SDL_bool is_initialized;
 
     SDL_bool is_key_down;
     uint32_t key;
-    Uint64 wl_press_time_ns;   /* Key press time as reported by the Wayland API */
-    Uint64 sdl_press_time_ns;  /* Key press time expressed in SDL ticks */
-    Uint64 next_repeat_ns;     /* Next repeat event in nanoseconds */
+    uint32_t wl_press_time;  // Key press time as reported by the Wayland API
+    uint32_t sdl_press_time; // Key press time expressed in SDL ticks
+    uint32_t next_repeat_ms;
     uint32_t scancode;
     char text[8];
 } SDL_WaylandKeyboardRepeat;
@@ -95,17 +93,9 @@ struct SDL_WaylandInput
     SDL_WaylandPrimarySelectionDevice *primary_selection_device;
     SDL_WaylandTextInput *text_input;
     struct zwp_relative_pointer_v1 *relative_pointer;
-    struct zwp_input_timestamps_v1 *keyboard_timestamps;
-    struct zwp_input_timestamps_v1 *pointer_timestamps;
-    struct zwp_input_timestamps_v1 *touch_timestamps;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
     uint32_t pointer_enter_serial;
-
-    /* High-resolution event timestamps */
-    Uint64 keyboard_timestamp_ns;
-    Uint64 pointer_timestamp_ns;
-    Uint64 touch_timestamp_ns;
 
     /* Last motion location */
     wl_fixed_t sx_w;
@@ -113,10 +103,8 @@ struct SDL_WaylandInput
 
     uint32_t buttons_pressed;
 
-    /* Implicit grab serial events */
-    Uint32 key_serial;
-    Uint32 button_press_serial;
-    Uint32 touch_down_serial;
+    double dx_frac;
+    double dy_frac;
 
     struct
     {
@@ -133,13 +121,8 @@ struct SDL_WaylandInput
         uint32_t idx_ctrl;
         uint32_t idx_alt;
         uint32_t idx_gui;
-        uint32_t idx_mode;
         uint32_t idx_num;
         uint32_t idx_caps;
-
-        /* Current system modifier flags */
-        uint32_t wl_pressed_modifiers;
-        uint32_t wl_locked_modifiers;
     } xkb;
 
     /* information about axis events on current frame */
@@ -150,10 +133,6 @@ struct SDL_WaylandInput
 
         enum SDL_WaylandAxisEvent y_axis_type;
         float y;
-
-        /* Event timestamp in nanoseconds */
-        Uint64 timestamp_ns;
-        SDL_MouseWheelDirection direction;
     } pointer_curr_axis_info;
 
     SDL_WaylandKeyboardRepeat keyboard_repeat;
@@ -165,17 +144,11 @@ struct SDL_WaylandInput
     SDL_bool relative_mode_override;
     SDL_bool warp_emulation_prohibited;
     SDL_bool keyboard_is_virtual;
-
-    /* Current SDL modifier flags */
-    SDL_Keymod pressed_modifiers;
-    SDL_Keymod locked_modifiers;
 };
 
-extern Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms);
-
-extern void Wayland_PumpEvents(SDL_VideoDevice *_this);
-extern void Wayland_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
+extern void Wayland_PumpEvents(_THIS);
+extern void Wayland_SendWakeupEvent(_THIS, SDL_Window *window);
+extern int Wayland_WaitEventTimeout(_THIS, int timeout);
 
 extern void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
 extern void Wayland_add_primary_selection_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
@@ -202,8 +175,6 @@ extern int Wayland_input_ungrab_keyboard(SDL_Window *window);
 extern void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_WaylandTabletManager *tablet_manager);
 extern void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input);
 
-extern void Wayland_RegisterTimestampListeners(struct SDL_WaylandInput *input);
-
-extern Uint32 Wayland_GetLastImplicitGrabSerial(struct SDL_WaylandInput *input);
-
 #endif /* SDL_waylandevents_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

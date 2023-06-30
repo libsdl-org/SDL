@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_X11
+#if SDL_VIDEO_DRIVER_X11
 
 #define DEBUG_DYNAMIC_X11 0
 
@@ -31,6 +31,9 @@
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
+
+#include "SDL_name.h"
+#include "SDL_loadso.h"
 
 typedef struct
 {
@@ -199,3 +202,5 @@ int SDL_X11_LoadSymbols(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
+
+/* vi: set ts=4 sw=4 expandtab: */

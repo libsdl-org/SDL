@@ -18,10 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #if SDL_HAVE_BLIT_0
 
+#include "SDL_video.h"
 #include "SDL_blit.h"
 
 /* Functions to blit from bitmaps to other surfaces */
@@ -752,7 +753,7 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
     int which;
 
     /* 4bits to 32bits */
-    if (surface->format->format == SDL_PIXELFORMAT_INDEX4MSB) {
+    if (surface->format->BitsPerPixel == 4) {
         if (surface->map->dst->format->BytesPerPixel == 4) {
             switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
             case 0:
@@ -762,32 +763,35 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
                 return Blit4bto4Key;
             }
         }
+        /* We don't fully support 4-bit packed pixel modes */
         return NULL;
     }
 
-    if (surface->format->format == SDL_PIXELFORMAT_INDEX1MSB) {
-        if (surface->map->dst->format->BitsPerPixel < 8) {
-            which = 0;
-        } else {
-            which = surface->map->dst->format->BytesPerPixel;
-        }
-        switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
-        case 0:
-            return bitmap_blit[which];
-
-        case SDL_COPY_COLORKEY:
-            return colorkey_blit[which];
-
-        case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
-            return which >= 2 ? BlitBtoNAlpha : (SDL_BlitFunc)NULL;
-
-        case SDL_COPY_COLORKEY | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
-            return which >= 2 ? BlitBtoNAlphaKey : (SDL_BlitFunc)NULL;
-        }
-        return NULL;
+    if (surface->format->BitsPerPixel != 1) {
+        /* We don't support sub 8-bit packed pixel modes */
+        return (SDL_BlitFunc) NULL;
     }
+    if (surface->map->dst->format->BitsPerPixel < 8) {
+        which = 0;
+    } else {
+        which = surface->map->dst->format->BytesPerPixel;
+    }
+    switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+    case 0:
+        return bitmap_blit[which];
 
-    return NULL;
+    case SDL_COPY_COLORKEY:
+        return colorkey_blit[which];
+
+    case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
+        return which >= 2 ? BlitBtoNAlpha : (SDL_BlitFunc) NULL;
+
+    case SDL_COPY_COLORKEY | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
+        return which >= 2 ? BlitBtoNAlphaKey : (SDL_BlitFunc) NULL;
+    }
+    return (SDL_BlitFunc) NULL;
 }
 
 #endif /* SDL_HAVE_BLIT_0 */
+
+/* vi: set ts=4 sw=4 expandtab: */

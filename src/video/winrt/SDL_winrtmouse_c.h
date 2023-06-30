@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "SDL_config.h"
 
 #ifndef SDL_winrtmouse_h_
 #define SDL_winrtmouse_h_
@@ -27,8 +27,8 @@
 extern "C" {
 #endif
 
-extern void WINRT_InitMouse(SDL_VideoDevice *_this);
-extern void WINRT_QuitMouse(SDL_VideoDevice *_this);
+extern void WINRT_InitMouse(_THIS);
+extern void WINRT_QuitMouse(_THIS);
 extern SDL_bool WINRT_UsingRelativeMouseMode;
 
 #ifdef __cplusplus
@@ -36,3 +36,5 @@ extern SDL_bool WINRT_UsingRelativeMouseMode;
 #endif
 
 #endif /* SDL_winrtmouse_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

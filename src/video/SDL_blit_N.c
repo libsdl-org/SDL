@@ -18,10 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #if SDL_HAVE_BLIT_N
 
+#include "SDL_video.h"
+#include "SDL_endian.h"
+#include "SDL_cpuinfo.h"
 #include "SDL_blit.h"
 #include "SDL_blit_copy.h"
 
@@ -29,7 +32,7 @@
 #define HAVE_FAST_WRITE_INT8 1
 
 /* On some CPU, it's slower than combining and write a word */
-#ifdef __MIPS__
+#if defined(__MIPS__)
 #undef HAVE_FAST_WRITE_INT8
 #define HAVE_FAST_WRITE_INT8 0
 #endif
@@ -45,8 +48,11 @@ enum blit_features
     BLIT_FEATURE_HAS_ARM_SIMD = 8
 };
 
-#ifdef SDL_ALTIVEC_BLITTERS
-#ifdef __MACOS__
+#if SDL_ALTIVEC_BLITTERS
+#ifdef HAVE_ALTIVEC_H
+#include <altivec.h>
+#endif
+#ifdef __MACOSX__
 #include <sys/sysctl.h>
 static size_t GetL3CacheSize(void)
 {
@@ -67,13 +73,13 @@ static size_t GetL3CacheSize(void)
     /* XXX: Just guess G4 */
     return 2097152;
 }
-#endif /* __MACOS__ */
+#endif /* __MACOSX__ */
 
-#if (defined(__MACOS__) && (__GNUC__ < 4))
-#define VECUINT8_LITERAL(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
-    (vector unsigned char)(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)
-#define VECUINT16_LITERAL(a, b, c, d, e, f, g, h) \
-    (vector unsigned short)(a, b, c, d, e, f, g, h)
+#if (defined(__MACOSX__) && (__GNUC__ < 4))
+#define VECUINT8_LITERAL(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) \
+        (vector unsigned char) ( a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p )
+#define VECUINT16_LITERAL(a,b,c,d,e,f,g,h) \
+        (vector unsigned short) ( a,b,c,d,e,f,g,h )
 #else
 #define VECUINT8_LITERAL(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
     (vector unsigned char)                                               \
@@ -897,7 +903,7 @@ static enum blit_features GetBlitFeatures(void)
     return features;
 }
 
-#ifdef __MWERKS__
+#if __MWERKS__
 #pragma altivec_model off
 #endif
 #else
@@ -905,7 +911,7 @@ static enum blit_features GetBlitFeatures(void)
 #define GetBlitFeatures() ((SDL_HasMMX() ? BLIT_FEATURE_HAS_MMX : 0) | (SDL_HasARMSIMD() ? BLIT_FEATURE_HAS_ARM_SIMD : 0))
 #endif
 
-#ifdef SDL_ARM_SIMD_BLITTERS
+#if SDL_ARM_SIMD_BLITTERS
 void Blit_BGR888_RGB888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
 
 static void Blit_BGR888_RGB888ARMSIMD(SDL_BlitInfo *info)
@@ -2118,7 +2124,9 @@ static void BlitNto1(SDL_BlitInfo *info)
                                 sR, sG, sB);
                 if ( 1 ) {
                     /* Pack RGB into 8bit pixel */
-                    *dst = (Uint8)(((sR>>5)<<(3+2)) | ((sG>>5)<<(2)) | ((sB>>6)<<(0)));
+                    *dst = ((sR>>5)<<(3+2))|
+                            ((sG>>5)<<(2)) |
+                            ((sB>>6)<<(0)) ;
                 }
                 dst++;
                 src += srcbpp;
@@ -2342,7 +2350,7 @@ static void BlitNtoN(SDL_BlitInfo *info)
                 dst[1] = src[p1];
                 dst[2] = src[p2];
                 dst[3] = src[p3];
-                dst[alpha_channel] = (Uint8)alpha;
+                dst[alpha_channel] = alpha;
                 src += 4;
                 dst += 4;
             }, width);
@@ -2396,7 +2404,7 @@ static void BlitNtoN(SDL_BlitInfo *info)
                 dst[1] = src[p1];
                 dst[2] = src[p2];
                 dst[3] = src[p3];
-                dst[alpha_channel] = (Uint8)alpha;
+                dst[alpha_channel] = alpha;
                 src += 3;
                 dst += 4;
             }, width);
@@ -2669,7 +2677,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
                     dst[1] = src[p1];
                     dst[2] = src[p2];
                     dst[3] = src[p3];
-                    dst[alpha_channel] = (Uint8)alpha;
+                    dst[alpha_channel] = alpha;
                 }
                 src += 4;
                 dst += 4;
@@ -2818,7 +2826,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
                     dst[1] = src[p1];
                     dst[2] = src[p2];
                     dst[3] = src[p3];
-                    dst[alpha_channel] = (Uint8)alpha;
+                    dst[alpha_channel] = alpha;
                 }
                 src += 3;
                 dst += 4;
@@ -3213,14 +3221,14 @@ static const struct blit_table normal_blit_1[] = {
 };
 
 static const struct blit_table normal_blit_2[] = {
-#ifdef SDL_ALTIVEC_BLITTERS
+#if SDL_ALTIVEC_BLITTERS
     /* has-altivec */
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x00000000, 0x00000000, 0x00000000,
       BLIT_FEATURE_HAS_ALTIVEC, Blit_RGB565_32Altivec, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
     { 0x00007C00, 0x000003E0, 0x0000001F, 4, 0x00000000, 0x00000000, 0x00000000,
       BLIT_FEATURE_HAS_ALTIVEC, Blit_RGB555_32Altivec, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
 #endif
-#ifdef SDL_ARM_SIMD_BLITTERS
+#if SDL_ARM_SIMD_BLITTERS
     { 0x00000F00, 0x000000F0, 0x0000000F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
       BLIT_FEATURE_HAS_ARM_SIMD, Blit_RGB444_RGB888ARMSIMD, NO_ALPHA | COPY_ALPHA },
 #endif
@@ -3280,7 +3288,7 @@ static const struct blit_table normal_blit_3[] = {
 };
 
 static const struct blit_table normal_blit_4[] = {
-#ifdef SDL_ALTIVEC_BLITTERS
+#if SDL_ALTIVEC_BLITTERS
     /* has-altivec | dont-use-prefetch */
     { 0x00000000, 0x00000000, 0x00000000, 4, 0x00000000, 0x00000000, 0x00000000,
       BLIT_FEATURE_HAS_ALTIVEC | BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH, ConvertAltivec32to32_noprefetch, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
@@ -3291,7 +3299,7 @@ static const struct blit_table normal_blit_4[] = {
     { 0x00000000, 0x00000000, 0x00000000, 2, 0x0000F800, 0x000007E0, 0x0000001F,
       BLIT_FEATURE_HAS_ALTIVEC, Blit_RGB888_RGB565Altivec, NO_ALPHA },
 #endif
-#ifdef SDL_ARM_SIMD_BLITTERS
+#if SDL_ARM_SIMD_BLITTERS
     { 0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
       BLIT_FEATURE_HAS_ARM_SIMD, Blit_BGR888_RGB888ARMSIMD, NO_ALPHA | COPY_ALPHA },
 #endif
@@ -3429,7 +3437,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
         } else if (dstfmt->BytesPerPixel == 1) {
             return BlitNto1Key;
         } else {
-#ifdef SDL_ALTIVEC_BLITTERS
+#if SDL_ALTIVEC_BLITTERS
             if ((srcfmt->BytesPerPixel == 4) && (dstfmt->BytesPerPixel == 4) && SDL_HasAltiVec()) {
                 return Blit32to32KeyAltivec;
             } else
@@ -3446,3 +3454,5 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
 }
 
 #endif /* SDL_HAVE_BLIT_N */
+
+/* vi: set ts=4 sw=4 expandtab: */

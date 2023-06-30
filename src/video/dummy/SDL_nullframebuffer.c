@@ -18,16 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_DUMMY
+#if SDL_VIDEO_DRIVER_DUMMY
 
 #include "../SDL_sysvideo.h"
 #include "SDL_nullframebuffer_c.h"
 
 #define DUMMY_SURFACE "_SDL_DummySurface"
 
-int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int SDL_DUMMY_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
     const Uint32 surface_format = SDL_PIXELFORMAT_RGB888;
@@ -38,7 +38,7 @@ int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
 
     /* Create a new one */
     SDL_GetWindowSizeInPixels(window, &w, &h);
-    surface = SDL_CreateSurface(w, h, surface_format);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, surface_format);
     if (surface == NULL) {
         return -1;
     }
@@ -51,7 +51,7 @@ int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     return 0;
 }
 
-int SDL_DUMMY_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int SDL_DUMMY_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     static int frame_number;
     SDL_Surface *surface;
@@ -71,12 +71,14 @@ int SDL_DUMMY_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     return 0;
 }
 
-void SDL_DUMMY_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
+void SDL_DUMMY_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_Surface *surface;
 
     surface = (SDL_Surface *)SDL_SetWindowData(window, DUMMY_SURFACE, NULL);
-    SDL_DestroySurface(surface);
+    SDL_FreeSurface(surface);
 }
 
 #endif /* SDL_VIDEO_DRIVER_DUMMY */
+
+/* vi: set ts=4 sw=4 expandtab: */

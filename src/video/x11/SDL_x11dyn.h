@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_x11dyn_h_
 #define SDL_x11dyn_h_
@@ -26,9 +26,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
-#include <X11/Xresource.h>
 
-#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
 #include <X11/XKBlib.h>
 #endif
 
@@ -47,25 +46,25 @@
 #include <X11/extensions/XShm.h>
 #endif
 
-#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
+#if SDL_VIDEO_DRIVER_X11_XCURSOR
 #include <X11/Xcursor/Xcursor.h>
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11_XDBE
+#if SDL_VIDEO_DRIVER_X11_XDBE
 #include <X11/extensions/Xdbe.h>
 #endif
-#if defined(SDL_VIDEO_DRIVER_X11_XINPUT2) || defined(SDL_VIDEO_DRIVER_X11_XFIXES)
+#if SDL_VIDEO_DRIVER_X11_XINPUT2 || SDL_VIDEO_DRIVER_X11_XFIXES
 #include <X11/extensions/XInput2.h>
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+#if SDL_VIDEO_DRIVER_X11_XFIXES
 #include <X11/extensions/Xfixes.h>
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
+#if SDL_VIDEO_DRIVER_X11_XRANDR
 #include <X11/extensions/Xrandr.h>
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
+#if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
 #include <X11/extensions/scrnsaver.h>
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
+#if SDL_VIDEO_DRIVER_X11_XSHAPE
 #include <X11/extensions/shape.h>
 #endif
 
@@ -104,3 +103,4 @@ extern SDL_DYNX11FN_XGetICValues X11_XGetICValues;
 #endif
 
 #endif /* !defined SDL_x11dyn_h_ */
+/* vi: set ts=4 sw=4 expandtab: */

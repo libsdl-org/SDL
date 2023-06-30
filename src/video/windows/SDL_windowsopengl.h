@@ -18,14 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_windowsopengl_h_
 #define SDL_windowsopengl_h_
 
-#ifdef SDL_VIDEO_OPENGL_WGL
+#if SDL_VIDEO_OPENGL_WGL
 
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if __XBOXONE__ || __XBOXSERIES__
 typedef struct tagPIXELFORMATDESCRIPTOR
 {
     WORD nSize;
@@ -76,7 +76,7 @@ struct SDL_GLDriverData
     } es_profile_max_supported_version;
 
     /* *INDENT-OFF* */ /* clang-format off */
-    PROC (WINAPI *wglGetProcAddress)(const char *proc);
+    void *(WINAPI *wglGetProcAddress)(const char *proc);
     HGLRC (WINAPI *wglCreateContext)(HDC hdc);
     BOOL (WINAPI *wglDeleteContext)(HGLRC hglrc);
     BOOL (WINAPI *wglMakeCurrent)(HDC hdc, HGLRC hglrc);
@@ -85,7 +85,7 @@ struct SDL_GLDriverData
     BOOL (WINAPI *wglGetPixelFormatAttribivARB)(HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, int *piValues);
     BOOL (WINAPI *wglSwapIntervalEXT)(int interval);
     int (WINAPI *wglGetSwapIntervalEXT)(void);
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if __XBOXONE__ || __XBOXSERIES__
     BOOL (WINAPI *wglSwapBuffers)(HDC hdc);
     int (WINAPI *wglDescribePixelFormat)(HDC hdc,
                                          int iPixelFormat,
@@ -102,20 +102,20 @@ struct SDL_GLDriverData
 };
 
 /* OpenGL functions */
-extern int WIN_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-extern SDL_FunctionPointer WIN_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
-extern void WIN_GL_UnloadLibrary(SDL_VideoDevice *_this);
-extern SDL_bool WIN_GL_UseEGL(SDL_VideoDevice *_this);
-extern int WIN_GL_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern SDL_GLContext WIN_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WIN_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
+extern int WIN_GL_LoadLibrary(_THIS, const char *path);
+extern void *WIN_GL_GetProcAddress(_THIS, const char *proc);
+extern void WIN_GL_UnloadLibrary(_THIS);
+extern SDL_bool WIN_GL_UseEGL(_THIS);
+extern int WIN_GL_SetupWindow(_THIS, SDL_Window *window);
+extern SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window *window);
+extern int WIN_GL_MakeCurrent(_THIS, SDL_Window *window,
                               SDL_GLContext context);
-extern int WIN_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern int WIN_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
-extern int WIN_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WIN_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
-extern void WIN_GL_InitExtensions(SDL_VideoDevice *_this);
-extern SDL_bool WIN_GL_SetPixelFormatFrom(SDL_VideoDevice *_this, SDL_Window *fromWindow, SDL_Window *toWindow);
+extern int WIN_GL_SetSwapInterval(_THIS, int interval);
+extern int WIN_GL_GetSwapInterval(_THIS);
+extern int WIN_GL_SwapWindow(_THIS, SDL_Window *window);
+extern void WIN_GL_DeleteContext(_THIS, SDL_GLContext context);
+extern void WIN_GL_InitExtensions(_THIS);
+extern SDL_bool WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window *fromWindow, SDL_Window *toWindow);
 
 #ifndef WGL_ARB_pixel_format
 #define WGL_NUMBER_PIXEL_FORMATS_ARB    0x2000
@@ -177,3 +177,5 @@ extern SDL_bool WIN_GL_SetPixelFormatFrom(SDL_VideoDevice *_this, SDL_Window *fr
 #endif /* SDL_VIDEO_OPENGL_WGL */
 
 #endif /* SDL_windowsopengl_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

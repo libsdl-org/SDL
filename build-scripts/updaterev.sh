@@ -5,7 +5,7 @@
 outdir=`pwd`
 cd `dirname $0`
 srcdir=..
-header=$outdir/include/SDL3/SDL_revision.h
+header=$outdir/include/SDL_revision.h
 dist=
 vendor=
 

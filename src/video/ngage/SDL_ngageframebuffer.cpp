@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_NGAGE
+#if SDL_VIDEO_DRIVER_NGAGE
 
 #include <SDL.h>
 
@@ -39,14 +39,14 @@
 static TUint32 NGAGE_HWPalette_256_to_Screen[256];
 
 int GetBpp(TDisplayMode displaymode);
-void DirectUpdate(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects);
-void DrawBackground(SDL_VideoDevice *_this);
-void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *screenBuffer);
-void RedrawWindowL(SDL_VideoDevice *_this);
+void DirectUpdate(_THIS, int numrects, SDL_Rect *rects);
+void DrawBackground(_THIS);
+void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer);
+void RedrawWindowL(_THIS);
 
-int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int SDL_NGAGE_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     SDL_Surface *surface;
     const Uint32 surface_format = SDL_PIXELFORMAT_RGB444;
     int w, h;
@@ -56,7 +56,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
 
     /* Create a new one */
     SDL_GetWindowSizeInPixels(window, &w, &h);
-    surface = SDL_CreateSurface(w, h, surface_format);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, surface_format);
     if (surface == NULL) {
         return -1;
     }
@@ -143,7 +143,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     return 0;
 }
 
-int SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int SDL_NGAGE_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     static int frame_number;
     SDL_Surface *surface;
@@ -166,12 +166,12 @@ int SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     return 0;
 }
 
-void SDL_NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
+void SDL_NGAGE_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_Surface *surface;
 
     surface = (SDL_Surface *)SDL_SetWindowData(window, NGAGE_SURFACE, NULL);
-    SDL_DestroySurface(surface);
+    SDL_FreeSurface(surface);
 }
 
 /*****************************************************************************/
@@ -197,18 +197,18 @@ int GetBpp(TDisplayMode displaymode)
     return TDisplayModeUtils::NumDisplayModeBitsPerPixel(displaymode);
 }
 
-void DrawBackground(SDL_VideoDevice *_this)
+void DrawBackground(_THIS)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     /* Draw background */
     TUint16 *screenBuffer = (TUint16 *)phdata->NGAGE_FrameBuffer;
     /* Draw black background */
     Mem::FillZ(screenBuffer, phdata->NGAGE_BytesPerScreen);
 }
 
-void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
+void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     SDL_Surface *screen = (SDL_Surface *)SDL_GetWindowData(_this->windows, NGAGE_SURFACE);
 
     TInt i;
@@ -331,9 +331,9 @@ void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *
     }
 }
 
-void DirectUpdate(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects)
+void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
 
     if (!phdata->NGAGE_IsWindowFocused) {
         SDL_PauseAudio(1);
@@ -366,9 +366,9 @@ void DirectUpdate(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects)
     }
 }
 
-void RedrawWindowL(SDL_VideoDevice *_this)
+void RedrawWindowL(_THIS)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     SDL_Surface *screen = (SDL_Surface *)SDL_GetWindowData(_this->windows, NGAGE_SURFACE);
 
     int w = screen->w;
@@ -395,3 +395,5 @@ void RedrawWindowL(SDL_VideoDevice *_this)
 }
 
 #endif /* SDL_VIDEO_DRIVER_NGAGE */
+
+/* vi: set ts=4 sw=4 expandtab: */

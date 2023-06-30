@@ -34,3 +34,5 @@ void SDL_ListRemove(SDL_ListNode **head, void *ent);
 void SDL_ListClear(SDL_ListNode **head);
 
 #endif /* SDL_list_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

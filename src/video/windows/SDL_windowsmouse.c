@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #include "SDL_windowsvideo.h"
 
@@ -170,10 +170,10 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 static SDL_Cursor *WIN_CreateBlankCursor()
 {
     SDL_Cursor *cursor = NULL;
-    SDL_Surface *surface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_ARGB8888);
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 32, SDL_PIXELFORMAT_ARGB8888);
     if (surface) {
         cursor = WIN_CreateCursor(surface, 0, 0);
-        SDL_DestroySurface(surface);
+        SDL_FreeSurface(surface);
     }
     return cursor;
 }
@@ -277,33 +277,34 @@ void WIN_SetCursorPos(int x, int y)
     }
 }
 
-static int WIN_WarpMouse(SDL_Window *window, float x, float y)
+static void WIN_WarpMouse(SDL_Window *window, int x, int y)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
     POINT pt;
 
     /* Don't warp the mouse while we're doing a modal interaction */
     if (data->in_title_click || data->focus_click_pending) {
-        return 0;
+        return;
     }
 
-    pt.x = (int)SDL_roundf(x);
-    pt.y = (int)SDL_roundf(y);
+    WIN_ClientPointFromSDL(window, &x, &y);
+    pt.x = x;
+    pt.y = y;
     ClientToScreen(hwnd, &pt);
     WIN_SetCursorPos(pt.x, pt.y);
 
     /* Send the exact mouse motion associated with this warp */
-    SDL_SendMouseMotion(0, window, SDL_GetMouse()->mouseID, 0, x, y);
-    return 0;
+    SDL_SendMouseMotion(window, SDL_GetMouse()->mouseID, 0, x, y);
 }
 
-static int WIN_WarpMouseGlobal(float x, float y)
+static int WIN_WarpMouseGlobal(int x, int y)
 {
     POINT pt;
 
-    pt.x = (int)SDL_roundf(x);
-    pt.y = (int)SDL_roundf(y);
+    WIN_ScreenPointFromSDL(&x, &y, NULL);
+    pt.x = x;
+    pt.y = y;
     SetCursorPos(pt.x, pt.y);
     return 0;
 }
@@ -316,13 +317,13 @@ static int WIN_SetRelativeMouseMode(SDL_bool enabled)
 static int WIN_CaptureMouse(SDL_Window *window)
 {
     if (window) {
-        SDL_WindowData *data = window->driverdata;
+        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
         SetCapture(data->hwnd);
     } else {
         SDL_Window *focus_window = SDL_GetMouseFocus();
 
         if (focus_window) {
-            SDL_WindowData *data = focus_window->driverdata;
+            SDL_WindowData *data = (SDL_WindowData *)focus_window->driverdata;
             if (!data->mouse_tracked) {
                 SDL_SetMouseFocus(NULL);
             }
@@ -333,15 +334,16 @@ static int WIN_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 WIN_GetGlobalMouseState(float *x, float *y)
+static Uint32 WIN_GetGlobalMouseState(int *x, int *y)
 {
     Uint32 retval = 0;
     POINT pt = { 0, 0 };
     SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
 
     GetCursorPos(&pt);
-    *x = (float)pt.x;
-    *y = (float)pt.y;
+    *x = (int)pt.x;
+    *y = (int)pt.y;
+    WIN_ScreenPointToSDL(x, y);
 
     retval |= GetAsyncKeyState(!swapButtons ? VK_LBUTTON : VK_RBUTTON) & 0x8000 ? SDL_BUTTON_LMASK : 0;
     retval |= GetAsyncKeyState(!swapButtons ? VK_RBUTTON : VK_LBUTTON) & 0x8000 ? SDL_BUTTON_RMASK : 0;
@@ -352,7 +354,7 @@ static Uint32 WIN_GetGlobalMouseState(float *x, float *y)
     return retval;
 }
 
-void WIN_InitMouse(SDL_VideoDevice *_this)
+void WIN_InitMouse(_THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -373,7 +375,7 @@ void WIN_InitMouse(SDL_VideoDevice *_this)
     WIN_UpdateMouseSystemScale();
 }
 
-void WIN_QuitMouse(SDL_VideoDevice *_this)
+void WIN_QuitMouse(_THIS)
 {
     if (rawInputEnableCount) { /* force RAWINPUT off here. */
         rawInputEnableCount = 1;
@@ -486,3 +488,5 @@ void WIN_UpdateMouseSystemScale()
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
+
+/* vi: set ts=4 sw=4 expandtab: */

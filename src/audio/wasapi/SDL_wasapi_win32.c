@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 /* This is code that Windows uses to talk to WASAPI-related system APIs.
    This is for non-WinRT desktop apps. The C++/CX implementation of these
@@ -26,10 +26,12 @@
    The code in SDL_wasapi.c is used by both standard Windows and WinRT builds
    to deal with audio and calls into these functions. */
 
-#if defined(SDL_AUDIO_DRIVER_WASAPI) && !defined(__WINRT__)
+#if SDL_AUDIO_DRIVER_WASAPI && !defined(__WINRT__)
 
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_immdevice.h"
+#include "SDL_audio.h"
+#include "SDL_timer.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 
@@ -75,55 +77,55 @@ void WASAPI_PlatformDeinit(void)
     SDL_IMMDevice_Quit();
 }
 
-void WASAPI_PlatformThreadInit(SDL_AudioDevice *_this)
+void WASAPI_PlatformThreadInit(_THIS)
 {
     /* this thread uses COM. */
     if (SUCCEEDED(WIN_CoInitialize())) { /* can't report errors, hope it worked! */
-        _this->hidden->coinitialized = SDL_TRUE;
+        this->hidden->coinitialized = SDL_TRUE;
     }
 
     /* Set this thread to very high "Pro Audio" priority. */
     if (pAvSetMmThreadCharacteristicsW) {
         DWORD idx = 0;
-        _this->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
+        this->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
     }
 }
 
-void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *_this)
+void WASAPI_PlatformThreadDeinit(_THIS)
 {
     /* Set this thread back to normal priority. */
-    if (_this->hidden->task && pAvRevertMmThreadCharacteristics) {
-        pAvRevertMmThreadCharacteristics(_this->hidden->task);
-        _this->hidden->task = NULL;
+    if (this->hidden->task && pAvRevertMmThreadCharacteristics) {
+        pAvRevertMmThreadCharacteristics(this->hidden->task);
+        this->hidden->task = NULL;
     }
 
-    if (_this->hidden->coinitialized) {
+    if (this->hidden->coinitialized) {
         WIN_CoUninitialize();
-        _this->hidden->coinitialized = SDL_FALSE;
+        this->hidden->coinitialized = SDL_FALSE;
     }
 }
 
-int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery)
+int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
 {
     IMMDevice *device = NULL;
     HRESULT ret;
 
-    if (SDL_IMMDevice_Get(_this->hidden->devid, &device, _this->iscapture) < 0) {
-        _this->hidden->client = NULL;
+    if (SDL_IMMDevice_Get(this->hidden->devid, &device, this->iscapture) < 0) {
+        this->hidden->client = NULL;
         return -1; /* This is already set by SDL_IMMDevice_Get */
     }
 
     /* this is not async in standard win32, yay! */
-    ret = IMMDevice_Activate(device, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&_this->hidden->client);
+    ret = IMMDevice_Activate(device, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&this->hidden->client);
     IMMDevice_Release(device);
 
     if (FAILED(ret)) {
-        SDL_assert(_this->hidden->client == NULL);
+        SDL_assert(this->hidden->client == NULL);
         return WIN_SetErrorFromHRESULT("WASAPI can't activate audio endpoint", ret);
     }
 
-    SDL_assert(_this->hidden->client != NULL);
-    if (WASAPI_PrepDevice(_this, isrecovery) == -1) { /* not async, fire it right away. */
+    SDL_assert(this->hidden->client != NULL);
+    if (WASAPI_PrepDevice(this, isrecovery) == -1) { /* not async, fire it right away. */
         return -1;
     }
 
@@ -147,3 +149,5 @@ void WASAPI_PlatformDeleteActivationHandler(void *handler)
 }
 
 #endif /* SDL_AUDIO_DRIVER_WASAPI && !defined(__WINRT__) */
+
+/* vi: set ts=4 sw=4 expandtab: */

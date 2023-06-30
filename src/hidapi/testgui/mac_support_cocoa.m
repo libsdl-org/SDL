@@ -8,19 +8,10 @@
 #include <fx.h>
 #import <Cocoa/Cocoa.h>
 
-#ifndef MAC_OS_X_VERSION_10_12
-#define MAC_OS_X_VERSION_10_12 101200
-#endif
-
-// macOS 10.12 deprecated NSAnyEventMask in favor of NSEventMaskAny
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_12
-#define NSEventMaskAny NSAnyEventMask
-#endif
-
 extern FXMainWindow *g_main_window;
 
 
-@interface MyAppDelegate : NSObject<NSApplicationDelegate>
+@interface MyAppDelegate : NSObject
 {
 } 
 @end
@@ -86,7 +77,7 @@ check_apple_events()
 
 	NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	while (1) {
-		NSEvent* event = [NSApp nextEventMatchingMask:NSEventMaskAny
+		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
 		                        untilDate:nil
                                         inMode:NSDefaultRunLoopMode
                                         dequeue:YES];

@@ -18,10 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 /* Clipboard event handling code for SDL */
 
+#include "SDL_events.h"
 #include "SDL_events_c.h"
 #include "SDL_clipboardevents_c.h"
 
@@ -31,28 +32,13 @@ int SDL_SendClipboardUpdate(void)
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_EventEnabled(SDL_EVENT_CLIPBOARD_UPDATE)) {
+    if (SDL_GetEventState(SDL_CLIPBOARDUPDATE) == SDL_ENABLE) {
         SDL_Event event;
-        event.type = SDL_EVENT_CLIPBOARD_UPDATE;
-        event.clipboard.timestamp = 0;
-        event.clipboard.userdata = NULL;
+        event.type = SDL_CLIPBOARDUPDATE;
+
         posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;
 }
 
-int SDL_SendClipboardCancelled(void *userdata)
-{
-    int posted;
-
-    /* Post the event, if desired */
-    posted = 0;
-    if (SDL_EventEnabled(SDL_EVENT_CLIPBOARD_CANCELLED)) {
-        SDL_Event event;
-        event.type = SDL_EVENT_CLIPBOARD_CANCELLED;
-        event.clipboard.timestamp = 0;
-        event.clipboard.userdata = userdata;
-        posted = (SDL_PushEvent(&event) > 0);
-    }
-    return posted;
-}
+/* vi: set ts=4 sw=4 expandtab: */

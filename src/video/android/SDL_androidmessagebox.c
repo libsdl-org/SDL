@@ -18,10 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_ANDROID
+#if SDL_VIDEO_DRIVER_ANDROID
 
+#include "SDL_messagebox.h"
 #include "SDL_androidmessagebox.h"
 #include "../../core/android/SDL_android.h"
 
@@ -31,3 +32,5 @@ int Android_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
+
+/* vi: set ts=4 sw=4 expandtab: */

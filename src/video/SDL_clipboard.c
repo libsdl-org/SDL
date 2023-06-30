@@ -18,24 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
+#include "SDL_clipboard.h"
 #include "SDL_sysvideo.h"
-
-int SDL_SetClipboardData(SDL_ClipboardDataCallback callback, size_t mime_count, const char **mime_types, void *userdata)
-{
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-
-    if (_this == NULL) {
-        return SDL_SetError("Video subsystem must be initialized to set clipboard text");
-    }
-
-    if (_this->SetClipboardData) {
-        return _this->SetClipboardData(_this, callback, mime_count, mime_types, userdata);
-    } else {
-        return SDL_Unsupported();
-    }
-}
 
 int SDL_SetClipboardText(const char *text)
 {
@@ -74,21 +60,6 @@ int SDL_SetPrimarySelectionText(const char *text)
         SDL_free(_this->primary_selection_text);
         _this->primary_selection_text = SDL_strdup(text);
         return 0;
-    }
-}
-
-void *SDL_GetClipboardData(size_t *length, const char *mime_type)
-{
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (_this == NULL) {
-        SDL_SetError("Video subsystem must be initialized to get clipboard data");
-        return NULL;
-    }
-
-    if (_this->GetClipboardData) {
-        return _this->GetClipboardData(_this, length, mime_type);
-    } else {
-        return NULL;
     }
 }
 
@@ -132,20 +103,6 @@ char *SDL_GetPrimarySelectionText(void)
     }
 }
 
-SDL_bool SDL_HasClipboardData(const char *mime_type)
-{
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (_this == NULL) {
-        SDL_SetError("Video subsystem must be initialized to check clipboard data");
-        return SDL_FALSE;
-    }
-
-    if (_this->HasClipboardData) {
-        return _this->HasClipboardData(_this, mime_type);
-    }
-    return SDL_FALSE;
-}
-
 SDL_bool SDL_HasClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -186,17 +143,4 @@ SDL_bool SDL_HasPrimarySelectionText(void)
     return SDL_FALSE;
 }
 
-void *SDL_GetClipboardUserdata(void)
-{
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-
-    if (_this == NULL) {
-        SDL_SetError("Video subsystem must be initialized to check clipboard userdata");
-        return NULL;
-    }
-
-    if (_this->GetClipboardUserdata) {
-        return _this->GetClipboardUserdata(_this);
-    }
-    return NULL;
-}
+/* vi: set ts=4 sw=4 expandtab: */

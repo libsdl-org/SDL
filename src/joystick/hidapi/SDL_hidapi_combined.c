@@ -19,10 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 /* This driver supports the Nintendo Switch Joy-Cons pair controllers */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
+#include "SDL_joystick.h"
+#include "SDL_gamecontroller.h"
 #include "SDL_hidapijoystick_c.h"
 #include "../SDL_sysjoystick.h"
 
@@ -39,7 +41,7 @@ static SDL_bool HIDAPI_DriverCombined_IsEnabled(void)
     return SDL_TRUE;
 }
 
-static SDL_bool HIDAPI_DriverCombined_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static SDL_bool HIDAPI_DriverCombined_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     /* This is always explicitly created for combined devices */
     return SDL_FALSE;
@@ -232,3 +234,5 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverCombined = {
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI */
+
+/* vi: set ts=4 sw=4 expandtab: */

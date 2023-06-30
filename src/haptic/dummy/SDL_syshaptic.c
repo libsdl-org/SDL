@@ -18,10 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #if defined(SDL_HAPTIC_DUMMY) || defined(SDL_HAPTIC_DISABLED)
 
+#include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
 
 static int SDL_SYS_LogicError(void)
@@ -142,3 +143,5 @@ int SDL_SYS_HapticStopAll(SDL_Haptic *haptic)
 }
 
 #endif /* SDL_HAPTIC_DUMMY || SDL_HAPTIC_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

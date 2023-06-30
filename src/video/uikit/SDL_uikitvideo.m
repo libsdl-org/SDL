@@ -18,12 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_UIKIT
+#if SDL_VIDEO_DRIVER_UIKIT
 
 #import <UIKit/UIKit.h>
 
+#include "SDL_video.h"
+#include "SDL_mouse.h"
+#include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
@@ -39,17 +42,17 @@
 
 #define UIKITVID_DRIVER_NAME "uikit"
 
-@implementation SDL_UIKitVideoData
+@implementation SDL_VideoData
 
 @end
 
 /* Initialization/Query functions */
-static int UIKit_VideoInit(SDL_VideoDevice *_this);
-static void UIKit_VideoQuit(SDL_VideoDevice *_this);
+static int UIKit_VideoInit(_THIS);
+static void UIKit_VideoQuit(_THIS);
 
 /* DUMMY driver bootstrap functions */
 
-static void UIKit_DeleteDevice(SDL_VideoDevice *device)
+static void UIKit_DeleteDevice(SDL_VideoDevice * device)
 {
     @autoreleasepool {
         CFRelease(device->driverdata);
@@ -61,20 +64,19 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
 {
     @autoreleasepool {
         SDL_VideoDevice *device;
-        SDL_UIKitVideoData *data;
+        SDL_VideoData *data;
 
         /* Initialize all variables that we clean on shutdown */
-        device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
+        device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
         if (device) {
-            data = [SDL_UIKitVideoData new];
+            data = [SDL_VideoData new];
         } else {
             SDL_free(device);
             SDL_OutOfMemory();
             return (0);
         }
 
-        device->driverdata = (SDL_VideoData *)CFBridgingRetain(data);
-        device->system_theme = UIKit_GetSystemTheme();
+        device->driverdata = (void *) CFBridgingRetain(data);
 
         /* Set the function pointers */
         device->VideoInit = UIKit_VideoInit;
@@ -94,9 +96,10 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->DestroyWindow = UIKit_DestroyWindow;
         device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
         device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;
+        device->GetDisplayDPI = UIKit_GetDisplayDPI;
         device->GetWindowSizeInPixels = UIKit_GetWindowSizeInPixels;
 
-#ifdef SDL_IPHONE_KEYBOARD
+#if SDL_IPHONE_KEYBOARD
         device->HasScreenKeyboardSupport = UIKit_HasScreenKeyboardSupport;
         device->ShowScreenKeyboard = UIKit_ShowScreenKeyboard;
         device->HideScreenKeyboard = UIKit_HideScreenKeyboard;
@@ -109,27 +112,31 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->HasClipboardText = UIKit_HasClipboardText;
 
         /* OpenGL (ES) functions */
-#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
-        device->GL_MakeCurrent = UIKit_GL_MakeCurrent;
-        device->GL_SwapWindow = UIKit_GL_SwapWindow;
-        device->GL_CreateContext = UIKit_GL_CreateContext;
-        device->GL_DeleteContext = UIKit_GL_DeleteContext;
-        device->GL_GetProcAddress = UIKit_GL_GetProcAddress;
-        device->GL_LoadLibrary = UIKit_GL_LoadLibrary;
+#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+        device->GL_MakeCurrent      = UIKit_GL_MakeCurrent;
+        device->GL_GetDrawableSize  = UIKit_GL_GetDrawableSize;
+        device->GL_SwapWindow       = UIKit_GL_SwapWindow;
+        device->GL_CreateContext    = UIKit_GL_CreateContext;
+        device->GL_DeleteContext    = UIKit_GL_DeleteContext;
+        device->GL_GetProcAddress   = UIKit_GL_GetProcAddress;
+        device->GL_LoadLibrary      = UIKit_GL_LoadLibrary;
 #endif
         device->free = UIKit_DeleteDevice;
 
-#ifdef SDL_VIDEO_VULKAN
+#if SDL_VIDEO_VULKAN
         device->Vulkan_LoadLibrary = UIKit_Vulkan_LoadLibrary;
         device->Vulkan_UnloadLibrary = UIKit_Vulkan_UnloadLibrary;
-        device->Vulkan_GetInstanceExtensions = UIKit_Vulkan_GetInstanceExtensions;
+        device->Vulkan_GetInstanceExtensions
+                                     = UIKit_Vulkan_GetInstanceExtensions;
         device->Vulkan_CreateSurface = UIKit_Vulkan_CreateSurface;
+        device->Vulkan_GetDrawableSize = UIKit_Vulkan_GetDrawableSize;
 #endif
 
-#ifdef SDL_VIDEO_METAL
+#if SDL_VIDEO_METAL
         device->Metal_CreateView = UIKit_Metal_CreateView;
         device->Metal_DestroyView = UIKit_Metal_DestroyView;
         device->Metal_GetLayer = UIKit_Metal_GetLayer;
+        device->Metal_GetDrawableSize = UIKit_Metal_GetDrawableSize;
 #endif
 
         device->gl_config.accelerated = 1;
@@ -143,7 +150,8 @@ VideoBootStrap UIKIT_bootstrap = {
     UIKit_CreateDevice
 };
 
-int UIKit_VideoInit(SDL_VideoDevice *_this)
+
+int UIKit_VideoInit(_THIS)
 {
     _this->gl_config.driver_loaded = 1;
 
@@ -157,7 +165,7 @@ int UIKit_VideoInit(SDL_VideoDevice *_this)
     return 0;
 }
 
-void UIKit_VideoQuit(SDL_VideoDevice *_this)
+void UIKit_VideoQuit(_THIS)
 {
     SDL_QuitGCKeyboard();
     SDL_QuitGCMouse();
@@ -165,15 +173,18 @@ void UIKit_VideoQuit(SDL_VideoDevice *_this)
     UIKit_QuitModes(_this);
 }
 
-int UIKit_SuspendScreenSaver(SDL_VideoDevice *_this)
+void UIKit_SuspendScreenSaver(_THIS)
 {
     @autoreleasepool {
-        UIApplication *app = [UIApplication sharedApplication];
+        /* Ignore ScreenSaver API calls if the idle timer hint has been set. */
+        /* FIXME: The idle timer hint should be deprecated for SDL 2.1. */
+        if (!SDL_GetHintBoolean(SDL_HINT_IDLE_TIMER_DISABLED, SDL_FALSE)) {
+            UIApplication *app = [UIApplication sharedApplication];
 
-        /* Prevent the display from dimming and going to sleep. */
-        app.idleTimerDisabled = (_this->suspend_screensaver != SDL_FALSE);
+            /* Prevent the display from dimming and going to sleep. */
+            app.idleTimerDisabled = (_this->suspend_screensaver != SDL_FALSE);
+        }
     }
-    return 0;
 }
 
 SDL_bool UIKit_IsSystemVersionAtLeast(double version)
@@ -181,24 +192,9 @@ SDL_bool UIKit_IsSystemVersionAtLeast(double version)
     return [[UIDevice currentDevice].systemVersion doubleValue] >= version;
 }
 
-SDL_SystemTheme UIKit_GetSystemTheme(void)
-{
-    if (@available(iOS 12.0, tvOS 10.0, *)) {
-        switch ([UIScreen mainScreen].traitCollection.userInterfaceStyle) {
-        case UIUserInterfaceStyleDark:
-            return SDL_SYSTEM_THEME_DARK;
-        case UIUserInterfaceStyleLight:
-            return SDL_SYSTEM_THEME_LIGHT;
-        default:
-            break;
-        }
-    }
-    return SDL_SYSTEM_THEME_UNKNOWN;
-}
-
 CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
-    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+    SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
     CGRect frame = screen.bounds;
 
     /* Use the UIWindow bounds instead of the UIScreen bounds, when possible.
@@ -234,13 +230,13 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
     return frame;
 }
 
-void UIKit_ForceUpdateHomeIndicator(void)
+void UIKit_ForceUpdateHomeIndicator()
 {
 #if !TARGET_OS_TV
     /* Force the main SDL window to re-evaluate home indicator state */
     SDL_Window *focus = SDL_GetFocusWindow();
     if (focus) {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)focus->driverdata;
+        SDL_WindowData *data = (__bridge SDL_WindowData *) focus->driverdata;
         if (data != nil) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability-new"
@@ -265,7 +261,7 @@ void UIKit_ForceUpdateHomeIndicator(void)
  *  identical!
  */
 
-#ifndef SDL_VIDEO_DRIVER_COCOA
+#if !defined(SDL_VIDEO_DRIVER_COCOA)
 void SDL_NSLog(const char *prefix, const char *text)
 {
     @autoreleasepool {
@@ -292,3 +288,5 @@ SDL_bool SDL_IsIPad(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
+
+/* vi: set ts=4 sw=4 expandtab: */

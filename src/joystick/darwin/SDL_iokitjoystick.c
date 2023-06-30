@@ -18,10 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_IOKIT
 
+#include "SDL_events.h"
+#include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "SDL_iokitjoystick_c.h"
@@ -235,7 +237,7 @@ static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *s
         device->ffdevice = NULL;
         device->ff_initialized = SDL_FALSE;
     }
-#ifdef SDL_HAPTIC_IOKIT
+#if SDL_HAPTIC_IOKIT
     MacHaptic_MaybeRemoveDevice(device->ffservice);
 #endif
 
@@ -499,7 +501,7 @@ static SDL_bool JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 {
     recDevice *i;
 
-#ifdef SDL_JOYSTICK_MFI
+#if defined(SDL_JOYSTICK_MFI)
     extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
     if (IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
         return SDL_TRUE;
@@ -555,7 +557,7 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     ioservice = IOHIDDeviceGetService(ioHIDDeviceObject);
     if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK)) {
         device->ffservice = ioservice;
-#ifdef SDL_HAPTIC_IOKIT
+#if SDL_HAPTIC_IOKIT
         MacHaptic_MaybeAddDevice(ioservice);
 #endif
     }
@@ -748,6 +750,7 @@ static int DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     joystick->naxes = device->axes;
     joystick->nhats = device->hats;
+    joystick->nballs = 0;
     joystick->nbuttons = device->buttons;
     return 0;
 }
@@ -924,7 +927,6 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     recElement *element;
     SInt32 value, range;
     int i, goodRead = SDL_FALSE;
-    Uint64 timestamp = SDL_GetTicksNS();
 
     if (device == NULL) {
         return;
@@ -943,7 +945,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     while (element) {
         goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
         if (goodRead) {
-            SDL_SendJoystickAxis(timestamp, joystick, i, value);
+            SDL_PrivateJoystickAxis(joystick, i, value);
         }
 
         element = element->pNext;
@@ -958,7 +960,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
             if (value > 1) { /* handle pressure-sensitive buttons */
                 value = 1;
             }
-            SDL_SendJoystickButton(timestamp, joystick, i, value);
+            SDL_PrivateJoystickButton(joystick, i, value);
         }
 
         element = element->pNext;
@@ -1014,7 +1016,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
                 break;
             }
 
-            SDL_SendJoystickHat(timestamp, joystick, i, pos);
+            SDL_PrivateJoystickHat(joystick, i, pos);
         }
 
         element = element->pNext;
@@ -1073,3 +1075,5 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_IOKIT */
+
+/* vi: set ts=4 sw=4 expandtab: */

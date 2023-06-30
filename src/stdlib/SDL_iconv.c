@@ -18,9 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+
+#if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
+#define SDL_DISABLE_ANALYZE_MACROS 1
+#endif
+
+#include "../SDL_internal.h"
 
 /* This file contains portable iconv functions for SDL */
+
+#include "SDL_stdinc.h"
+#include "SDL_endian.h"
 
 #if defined(HAVE_ICONV) && defined(HAVE_ICONV_H)
 #ifdef __FreeBSD__
@@ -104,7 +112,7 @@ enum
 #define ENCODING_UCS4NATIVE  ENCODING_UCS4LE
 #endif
 
-struct SDL_iconv_data_t
+struct _SDL_iconv_t
 {
     int src_fmt;
     int dst_fmt;
@@ -225,7 +233,8 @@ SDL_iconv_t SDL_iconv_open(const char *tocode, const char *fromcode)
     return (SDL_iconv_t)-1;
 }
 
-size_t SDL_iconv(SDL_iconv_t cd,
+size_t
+SDL_iconv(SDL_iconv_t cd,
           const char **inbuf, size_t *inbytesleft,
           char **outbuf, size_t *outbytesleft)
 {
@@ -851,3 +860,5 @@ char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inb
 
     return string;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

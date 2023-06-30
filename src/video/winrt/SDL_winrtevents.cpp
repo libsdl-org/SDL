@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_WINRT
+#if SDL_VIDEO_DRIVER_WINRT
 
 /*
  * Windows includes:
@@ -36,6 +36,7 @@ using Windows::UI::Core::CoreCursor;
 #include "../../core/winrt/SDL_winrtapp_common.h"
 #include "../../core/winrt/SDL_winrtapp_direct3d.h"
 #include "../../core/winrt/SDL_winrtapp_xaml.h"
+#include "SDL_system.h"
 
 extern "C" {
 #include "../../thread/SDL_systhread.h"
@@ -48,7 +49,7 @@ static void WINRT_YieldXAMLThread();
 
 /* Global event management */
 
-void WINRT_PumpEvents(SDL_VideoDevice *_this)
+void WINRT_PumpEvents(_THIS)
 {
     if (SDL_WinRTGlobalApp) {
         SDL_WinRTGlobalApp->PumpEvents();
@@ -68,8 +69,8 @@ enum SDL_XAMLAppThreadState
 
 static SDL_XAMLAppThreadState _threadState = ThreadState_NotLaunched;
 static SDL_Thread *_XAMLThread = nullptr;
-static SDL_Mutex *_mutex = nullptr;
-static SDL_Condition *_cond = nullptr;
+static SDL_mutex *_mutex = nullptr;
+static SDL_cond *_cond = nullptr;
 
 static void WINRT_YieldXAMLThread()
 {
@@ -78,11 +79,11 @@ static void WINRT_YieldXAMLThread()
     _threadState = ThreadState_Yielding;
     SDL_UnlockMutex(_mutex);
 
-    SDL_SignalCondition(_cond);
+    SDL_CondSignal(_cond);
 
     SDL_LockMutex(_mutex);
     while (_threadState != ThreadState_Running) {
-        SDL_WaitCondition(_cond, _mutex);
+        SDL_CondWait(_cond, _mutex);
     }
     SDL_UnlockMutex(_mutex);
 }
@@ -101,7 +102,7 @@ void WINRT_CycleXAMLThread(void)
     switch (_threadState) {
     case ThreadState_NotLaunched:
     {
-        _cond = SDL_CreateCondition();
+        _cond = SDL_CreateCond();
 
         _mutex = SDL_CreateMutex();
         _threadState = ThreadState_Running;
@@ -109,7 +110,7 @@ void WINRT_CycleXAMLThread(void)
 
         SDL_LockMutex(_mutex);
         while (_threadState != ThreadState_Yielding) {
-            SDL_WaitCondition(_cond, _mutex);
+            SDL_CondWait(_cond, _mutex);
         }
         SDL_UnlockMutex(_mutex);
 
@@ -129,11 +130,11 @@ void WINRT_CycleXAMLThread(void)
         _threadState = ThreadState_Running;
         SDL_UnlockMutex(_mutex);
 
-        SDL_SignalCondition(_cond);
+        SDL_CondSignal(_cond);
 
         SDL_LockMutex(_mutex);
         while (_threadState != ThreadState_Yielding) {
-            SDL_WaitCondition(_cond, _mutex);
+            SDL_CondWait(_cond, _mutex);
         }
         SDL_UnlockMutex(_mutex);
     }
@@ -141,3 +142,5 @@ void WINRT_CycleXAMLThread(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINRT */
+
+/* vi: set ts=4 sw=4 expandtab: */

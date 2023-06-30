@@ -18,13 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_X11)
+#include "../SDL_internal.h"
+
+#if SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_X11
 
 #include "SDL_keyboard_c.h"
 #include "SDL_scancode_tables_c.h"
-#include "SDL_keysym_to_scancode_c.h"
 
 /* *INDENT-OFF* */ /* clang-format off */
 static const struct {
@@ -436,3 +436,5 @@ SDL_Scancode SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
+
+/* vi: set ts=4 sw=4 expandtab: */

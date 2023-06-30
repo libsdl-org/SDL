@@ -18,14 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
+#include "SDL_video.h"
 #include "SDL_blit.h"
 #include "SDL_blit_copy.h"
 
-#ifdef SDL_SSE_INTRINSICS
+#ifdef __SSE__
 /* This assumes 16-byte aligned src and dst */
-static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint8 *src, int len)
+static SDL_INLINE void SDL_memcpySSE(Uint8 *dst, const Uint8 *src, int len)
 {
     int i;
 
@@ -48,13 +49,13 @@ static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint
         SDL_memcpy(dst, src, len & 63);
     }
 }
-#endif /* SDL_SSE_INTRINSICS */
+#endif /* __SSE__ */
 
-#ifdef SDL_MMX_INTRINSICS
+#ifdef __MMX__
 #ifdef _MSC_VER
 #pragma warning(disable : 4799)
 #endif
-static SDL_INLINE void SDL_TARGETING("mmx") SDL_memcpyMMX(Uint8 *dst, const Uint8 *src, int len)
+static SDL_INLINE void SDL_memcpyMMX(Uint8 *dst, const Uint8 *src, int len)
 {
     int remain = len & 63;
     int i;
@@ -85,17 +86,7 @@ static SDL_INLINE void SDL_TARGETING("mmx") SDL_memcpyMMX(Uint8 *dst, const Uint
         }
     }
 }
-
-static SDL_INLINE void SDL_TARGETING("mmx") SDL_BlitCopyMMX(Uint8 *dst, const Uint8 *src, const int dstskip, const int srcskip, const int w, int h)
-{
-    while (h--) {
-        SDL_memcpyMMX(dst, src, w);
-        src += srcskip;
-        dst += dstskip;
-    }
-    _mm_empty();
-}
-#endif /* SDL_MMX_INTRINSICS */
+#endif /* __MMX__ */
 
 void SDL_BlitCopy(SDL_BlitInfo *info)
 {
@@ -136,7 +127,7 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
         return;
     }
 
-#ifdef SDL_SSE_INTRINSICS
+#ifdef __SSE__
     if (SDL_HasSSE() &&
         !((uintptr_t)src & 15) && !(srcskip & 15) &&
         !((uintptr_t)dst & 15) && !(dstskip & 15)) {
@@ -149,9 +140,14 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
     }
 #endif
 
-#ifdef SDL_MMX_INTRINSICS
+#ifdef __MMX__
     if (SDL_HasMMX() && !(srcskip & 7) && !(dstskip & 7)) {
-        SDL_BlitCopyMMX(dst, src, dstskip, srcskip, w, h);
+        while (h--) {
+            SDL_memcpyMMX(dst, src, w);
+            src += srcskip;
+            dst += dstskip;
+        }
+        _mm_empty();
         return;
     }
 #endif
@@ -162,3 +158,5 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
         dst += dstskip;
     }
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -18,13 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #ifndef SDL_keyboard_c_h_
 #define SDL_keyboard_c_h_
 
+#include "SDL_keycode.h"
+#include "SDL_events.h"
+
 /* Initialize the keyboard subsystem */
-extern int SDL_InitKeyboard(void);
+extern int SDL_KeyboardInit(void);
 
 /* Get the default keymap */
 extern void SDL_GetDefaultKeymap(SDL_Keycode *keymap);
@@ -42,21 +45,20 @@ extern void SDL_SetKeymap(int start, const SDL_Keycode *keys, int length, SDL_bo
 extern void SDL_SetScancodeName(SDL_Scancode scancode, const char *name);
 
 /* Set the keyboard focus window */
-extern int SDL_SetKeyboardFocus(SDL_Window *window);
+extern void SDL_SetKeyboardFocus(SDL_Window *window);
 
 /* Send a character from an on-screen keyboard as scancode and modifier key events,
    currently assuming ASCII characters on a US keyboard layout
  */
-extern int SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch);
+extern int SDL_SendKeyboardUnicodeKey(Uint32 ch);
 
 /* Send a keyboard key event */
-extern int SDL_SendKeyboardKey(Uint64 timestamp, Uint8 state, SDL_Scancode scancode);
-extern int SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode);
-extern int SDL_SendKeyboardKeyIgnoreModifiers(Uint64 timestamp, Uint8 state, SDL_Scancode scancode);
+extern int SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode);
+extern int SDL_SendKeyboardKeyAutoRelease(SDL_Scancode scancode);
 
 /* This is for platforms that don't know the keymap but can report scancode and keycode directly.
    Most platforms should prefer to optionally call SDL_SetKeymap and then use SDL_SendKeyboardKey. */
-extern int SDL_SendKeyboardKeyAndKeycode(Uint64 timestamp, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode);
+extern int SDL_SendKeyboardKeyAndKeycode(Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode);
 
 /* Release all the autorelease keys */
 extern void SDL_ReleaseAutoReleaseKeys(void);
@@ -71,7 +73,7 @@ extern int SDL_SendKeyboardText(const char *text);
 extern int SDL_SendEditingText(const char *text, int start, int length);
 
 /* Shutdown the keyboard subsystem */
-extern void SDL_QuitKeyboard(void);
+extern void SDL_KeyboardQuit(void);
 
 /* Convert to UTF-8 */
 extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);
@@ -80,3 +82,5 @@ extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);
 extern void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle);
 
 #endif /* SDL_keyboard_c_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

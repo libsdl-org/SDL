@@ -157,3 +157,5 @@ static const SDL_Scancode darwin_scancode_table[] = {
     /* 127 */   SDL_SCANCODE_POWER
 };
 /* *INDENT-ON* */ /* clang-format on */
+
+/* vi: set ts=4 sw=4 expandtab: */

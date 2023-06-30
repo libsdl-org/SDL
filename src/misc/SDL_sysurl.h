@@ -18,7 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+
+#include "../SDL_internal.h"
+#include "SDL_misc.h"
+#include "SDL_error.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,3 +32,5 @@ extern int SDL_SYS_OpenURL(const char *url);
 #ifdef __cplusplus
 }
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

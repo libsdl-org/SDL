@@ -19,11 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
-#ifdef SDL_POWER_PSP
+#if SDL_POWER_PSP
 
+#include "SDL_power.h"
 #include <psppower.h>
 
 SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *state, int *seconds, int *percent)
@@ -59,3 +60,5 @@ SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *state, int *seconds, int *percent)
 
 #endif /* SDL_POWER_PSP */
 #endif /* SDL_POWER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

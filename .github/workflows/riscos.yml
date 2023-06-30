@@ -2,10 +2,6 @@ name: Build (RISC OS)
 
 on: [push, pull_request]
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: true
-
 jobs:
   Build:
     name: ${{ matrix.platform.name }}
@@ -16,19 +12,37 @@ jobs:
       fail-fast: false
       matrix:
         platform:
+          - { name: autotools, test_args: '-DTEST_SHARED=FALSE' } # FIXME: autotools should build and install shared libraries
           - { name: CMake }
 
     steps:
     - name: Setup dependencies
       run: apt-get update && apt-get install -y cmake ninja-build
     - uses: actions/checkout@v3
+    - name: Configure (autotools)
+      if: ${{ contains(matrix.platform.name, 'autotools') }}
+      run: |
+        mkdir build_autotools
+        cd build_autotools
+        ../configure \
+          --host=arm-unknown-riscos \
+          --disable-gcc-atomics \
+          --prefix=${{ github.workspace }}/prefix_autotools
+    - name: Build (autotools)
+      if: ${{ contains(matrix.platform.name, 'autotools') }}
+      run: make -C build_autotools -j`nproc` V=1
+    - name: Install (autotools)
+      if: ${{ contains(matrix.platform.name, 'autotools') }}
+      run: |
+        echo "SDL2_DIR=${{ github.workspace }}/prefix_autotools" >> $GITHUB_ENV
+        make -C build_autotools install
+        ( cd ${{ github.workspace }}/prefix_autotools; find ) | LC_ALL=C sort -u
     - name: Configure (CMake)
       if: ${{ contains(matrix.platform.name, 'CMake') }}
       run: |
         cmake -S . -B build -G Ninja \
-          -Wdeprecated -Wdev -Werror \
           -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake \
-          -DRISCOS:BOOL=ON \
+          -DRISCOS=ON \
           -DSDL_GCC_ATOMICS=OFF \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
@@ -41,23 +55,14 @@ jobs:
     - name: Install (CMake)
       if: ${{ contains(matrix.platform.name, 'CMake') }}
       run: |
-        echo "SDL3_DIR=${{ github.workspace }}/prefix_cmake" >> $GITHUB_ENV
+        echo "SDL2_DIR=${{ github.workspace }}/prefix_cmake" >> $GITHUB_ENV
         cmake --install build/
         ( cd ${{ github.workspace }}/prefix_cmake; find ) | LC_ALL=C sort -u
-    - name: Package (CPack)
-      run: |
-        cmake --build build/ --config Release --target package
     - name: Verify CMake configuration files
       run: |
         cmake -S cmake/test -B cmake_config_build -G Ninja \
-          -DTEST_SHARED=OFF \
           -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake \
-          -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
+          -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
           -DCMAKE_BUILD_TYPE=Release \
           ${{ matrix.platform.test_args }}
         cmake --build cmake_config_build --verbose
-    - uses: actions/upload-artifact@v3
-      with:
-        if-no-files-found: error
-        name: SDL-riscos
-        path: build/dist/SDL3*

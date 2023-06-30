@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_SENSOR_N3DS
 
@@ -38,11 +38,12 @@ typedef struct
 
 static SDL_N3DSSensor N3DS_sensors[N3DS_SENSOR_COUNT];
 
-static int InitN3DSServices(void);
-static void UpdateN3DSAccelerometer(SDL_Sensor *sensor);
-static void UpdateN3DSGyroscope(SDL_Sensor *sensor);
+SDL_FORCE_INLINE int InitN3DSServices(void);
+SDL_FORCE_INLINE void UpdateN3DSAccelerometer(SDL_Sensor *sensor);
+SDL_FORCE_INLINE void UpdateN3DSGyroscope(SDL_Sensor *sensor);
 
-static SDL_bool IsDeviceIndexValid(int device_index)
+SDL_FORCE_INLINE SDL_bool
+IsDeviceIndexValid(int device_index)
 {
     return device_index >= 0 && device_index < N3DS_SENSOR_COUNT;
 }
@@ -60,7 +61,8 @@ static int N3DS_SensorInit(void)
     return 0;
 }
 
-static int InitN3DSServices(void)
+SDL_FORCE_INLINE int
+InitN3DSServices(void)
 {
     if (R_FAILED(hidInit())) {
         return -1;
@@ -141,12 +143,12 @@ static void N3DS_SensorUpdate(SDL_Sensor *sensor)
     }
 }
 
-static void UpdateN3DSAccelerometer(SDL_Sensor *sensor)
+SDL_FORCE_INLINE void
+UpdateN3DSAccelerometer(SDL_Sensor *sensor)
 {
     static accelVector previous_state = { 0, 0, 0 };
     accelVector current_state;
     float data[3];
-    Uint64 timestamp = SDL_GetTicksNS();
 
     hidAccelRead(&current_state);
     if (SDL_memcmp(&previous_state, &current_state, sizeof(accelVector)) != 0) {
@@ -154,16 +156,16 @@ static void UpdateN3DSAccelerometer(SDL_Sensor *sensor)
         data[0] = (float)current_state.x * SDL_STANDARD_GRAVITY;
         data[1] = (float)current_state.y * SDL_STANDARD_GRAVITY;
         data[2] = (float)current_state.z * SDL_STANDARD_GRAVITY;
-        SDL_SendSensorUpdate(timestamp, sensor, timestamp, data, sizeof(data));
+        SDL_PrivateSensorUpdate(sensor, 0, data, sizeof(data));
     }
 }
 
-static void UpdateN3DSGyroscope(SDL_Sensor *sensor)
+SDL_FORCE_INLINE void
+UpdateN3DSGyroscope(SDL_Sensor *sensor)
 {
     static angularRate previous_state = { 0, 0, 0 };
     angularRate current_state;
     float data[3];
-    Uint64 timestamp = SDL_GetTicksNS();
 
     hidGyroRead(&current_state);
     if (SDL_memcmp(&previous_state, &current_state, sizeof(angularRate)) != 0) {
@@ -171,7 +173,7 @@ static void UpdateN3DSGyroscope(SDL_Sensor *sensor)
         data[0] = (float)current_state.x;
         data[1] = (float)current_state.y;
         data[2] = (float)current_state.z;
-        SDL_SendSensorUpdate(timestamp, sensor, timestamp, data, sizeof(data));
+        SDL_PrivateSensorUpdate(sensor, 0, data, sizeof(data));
     }
 }
 
@@ -201,3 +203,5 @@ SDL_SensorDriver SDL_N3DS_SensorDriver = {
 };
 
 #endif /* SDL_SENSOR_N3DS */
+
+/* vi: set ts=4 sw=4 expandtab: */

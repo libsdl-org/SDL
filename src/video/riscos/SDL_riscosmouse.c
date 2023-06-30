@@ -18,12 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_RISCOS
+#if SDL_VIDEO_DRIVER_RISCOS
 
-#include "SDL_riscosvideo.h"
-#include "SDL_riscosmouse.h"
 #include "../../events/SDL_mouse_c.h"
 
 #include <kernel.h>
@@ -61,7 +59,7 @@ static int RISCOS_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-int RISCOS_InitMouse(SDL_VideoDevice *_this)
+int RISCOS_InitMouse(_THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -81,3 +79,5 @@ int RISCOS_InitMouse(SDL_VideoDevice *_this)
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_RPI
+#if SDL_VIDEO_DRIVER_RPI
 
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -33,7 +33,7 @@
 #include "../../core/linux/SDL_evdev.h"
 #endif
 
-void RPI_PumpEvents(SDL_VideoDevice *_this)
+void RPI_PumpEvents(_THIS)
 {
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Poll();

@@ -22,9 +22,11 @@
 #ifndef SDL_drawline_h_
 #define SDL_drawline_h_
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 extern int SDL_DrawLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color);
 extern int SDL_DrawLines(SDL_Surface *dst, const SDL_Point *points, int count, Uint32 color);
 
 #endif /* SDL_drawline_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

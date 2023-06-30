@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_ALSA_audio_h_
 #define SDL_ALSA_audio_h_
@@ -26,6 +26,9 @@
 #include <alsa/asoundlib.h>
 
 #include "../SDL_sysaudio.h"
+
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
 
 struct SDL_PrivateAudioData
 {
@@ -37,7 +40,9 @@ struct SDL_PrivateAudioData
     int mixlen;
 
     /* swizzle function */
-    void (*swizzle_func)(SDL_AudioDevice *_this, void *buffer, Uint32 bufferlen);
+    void (*swizzle_func)(_THIS, void *buffer, Uint32 bufferlen);
 };
 
 #endif /* SDL_ALSA_audio_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

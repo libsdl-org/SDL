@@ -18,29 +18,31 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_X11
+#if SDL_VIDEO_DRIVER_X11
 
 #include "SDL_x11video.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
 #include "../../events/SDL_touch_c.h"
 
-void X11_InitTouch(SDL_VideoDevice *_this)
+void X11_InitTouch(_THIS)
 {
     X11_InitXinput2Multitouch(_this);
 }
 
-void X11_QuitTouch(SDL_VideoDevice *_this)
+void X11_QuitTouch(_THIS)
 {
-    SDL_QuitTouch();
+    SDL_TouchQuit();
 }
 
-void X11_ResetTouch(SDL_VideoDevice *_this)
+void X11_ResetTouch(_THIS)
 {
     X11_QuitTouch(_this);
     X11_InitTouch(_this);
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -21,7 +21,7 @@
 #ifndef SDL_waylanddyn_h_
 #define SDL_waylanddyn_h_
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 /* We can't include wayland-client.h here
  * but we need some structs from it
@@ -160,7 +160,6 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define libdecor_frame_set_parent               (*WAYLAND_libdecor_frame_set_parent)
 #define libdecor_frame_get_xdg_surface          (*WAYLAND_libdecor_frame_get_xdg_surface)
 #define libdecor_frame_get_xdg_toplevel         (*WAYLAND_libdecor_frame_get_xdg_toplevel)
-#define libdecor_frame_translate_coordinate     (*WAYLAND_libdecor_frame_translate_coordinate)
 #define libdecor_frame_map                      (*WAYLAND_libdecor_frame_map)
 #define libdecor_state_new                      (*WAYLAND_libdecor_state_new)
 #define libdecor_state_free                     (*WAYLAND_libdecor_state_free)
@@ -185,3 +184,5 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
 
 #endif /* SDL_waylanddyn_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

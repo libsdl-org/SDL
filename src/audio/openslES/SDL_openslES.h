@@ -18,21 +18,29 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifndef SDL_openslesaudio_h_
-#define SDL_openslesaudio_h_
+#ifndef _SDL_openslesaudio_h
+#define _SDL_openslesaudio_h
 
-#ifdef SDL_AUDIO_DRIVER_OPENSLES
+#include "../SDL_sysaudio.h"
+
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
+
+#define NUM_BUFFERS 2 /* -- Don't lower this! */
+
+struct SDL_PrivateAudioData
+{
+    Uint8 *mixbuff;
+    int next_buffer;
+    Uint8 *pmixbuff[NUM_BUFFERS];
+    SDL_sem *playsem;
+};
 
 void openslES_ResumeDevices(void);
 void openslES_PauseDevices(void);
 
-#else
+#endif /* _SDL_openslesaudio_h */
 
-static void openslES_ResumeDevices(void) {}
-static void openslES_PauseDevices(void) {}
-
-#endif
-
-#endif /* SDL_openslesaudio_h_ */
+/* vi: set ts=4 sw=4 expandtab: */

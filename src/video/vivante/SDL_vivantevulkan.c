@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
 /*
  * @author Wladimir J. van der Laan. Based on Jacob Lifshay's
@@ -26,14 +25,17 @@
  * the FSL demo framework.
  */
 
-#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_VIVANTE)
+#include "../../SDL_internal.h"
+
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_VIVANTE
 
 #include "SDL_vivantevideo.h"
 
+#include "SDL_loadso.h"
 #include "SDL_vivantevulkan.h"
-#include <SDL3/SDL_syswm.h>
+#include "SDL_syswm.h"
 
-int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
@@ -108,7 +110,7 @@ fail:
     return -1;
 }
 
-void VIVANTE_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
+void VIVANTE_Vulkan_UnloadLibrary(_THIS)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -116,7 +118,8 @@ void VIVANTE_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
+                                              SDL_Window *window,
                                               unsigned *count,
                                               const char **names)
 {
@@ -132,7 +135,7 @@ SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
         extensionsForVivante);
 }
 
-SDL_bool VIVANTE_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+SDL_bool VIVANTE_Vulkan_CreateSurface(_THIS,
                                       SDL_Window *window,
                                       VkInstance instance,
                                       VkSurfaceKHR *surface)
@@ -145,3 +148,5 @@ SDL_bool VIVANTE_Vulkan_CreateSurface(SDL_VideoDevice *_this,
 }
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

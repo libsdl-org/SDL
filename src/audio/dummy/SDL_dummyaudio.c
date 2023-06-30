@@ -18,21 +18,23 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 /* Output audio to nowhere... */
 
+#include "SDL_timer.h"
+#include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "SDL_dummyaudio.h"
 
-static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *_this, const char *devname)
+static int DUMMYAUDIO_OpenDevice(_THIS, const char *devname)
 {
     _this->hidden = (void *)0x1; /* just something non-NULL */
 
     return 0; /* always succeeds. */
 }
 
-static int DUMMYAUDIO_CaptureFromDevice(SDL_AudioDevice *_this, void *buffer, int buflen)
+static int DUMMYAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     /* Delay to make this sort of simulate real audio input. */
     SDL_Delay((_this->spec.samples * 1000) / _this->spec.freq);
@@ -58,3 +60,5 @@ static SDL_bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
 AudioBootStrap DUMMYAUDIO_bootstrap = {
     "dummy", "SDL dummy audio driver", DUMMYAUDIO_Init, SDL_TRUE
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

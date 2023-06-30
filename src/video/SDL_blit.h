@@ -18,10 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #ifndef SDL_blit_h_
 #define SDL_blit_h_
+
+#include "SDL_cpuinfo.h"
+#include "SDL_endian.h"
+#include "SDL_surface.h"
 
 /* pixman ARM blitters are 32 bit only : */
 #if defined(__aarch64__) || defined(_M_ARM64)
@@ -49,10 +53,11 @@ extern Uint8 *SDL_expand_byte[9];
 /* SDL blit CPU flags */
 #define SDL_CPU_ANY                0x00000000
 #define SDL_CPU_MMX                0x00000001
-#define SDL_CPU_SSE                0x00000002
-#define SDL_CPU_SSE2               0x00000004
-#define SDL_CPU_ALTIVEC_PREFETCH   0x00000008
-#define SDL_CPU_ALTIVEC_NOPREFETCH 0x00000010
+#define SDL_CPU_3DNOW              0x00000002
+#define SDL_CPU_SSE                0x00000004
+#define SDL_CPU_SSE2               0x00000008
+#define SDL_CPU_ALTIVEC_PREFETCH   0x00000010
+#define SDL_CPU_ALTIVEC_NOPREFETCH 0x00000020
 
 typedef struct
 {
@@ -112,7 +117,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
  * Useful macros for blitting routines
  */
 
-#ifdef __GNUC__
+#if defined(__GNUC__)
 #define DECLARE_ALIGNED(t, v, a) t __attribute__((aligned(a))) v
 #elif defined(_MSC_VER)
 #define DECLARE_ALIGNED(t, v, a) __declspec(align(a)) t v
@@ -226,11 +231,11 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
     }
 #define RGB565_FROM_RGB(Pixel, r, g, b)                        \
     {                                                          \
-        Pixel = (Uint16)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)); \
+        Pixel = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3); \
     }
 #define RGB555_FROM_RGB(Pixel, r, g, b)                        \
     {                                                          \
-        Pixel = (Uint16)(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)); \
+        Pixel = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3); \
     }
 #define RGB888_FROM_RGB(Pixel, r, g, b)   \
     {                                     \
@@ -574,8 +579,11 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 
 #endif /* USE_DUFFS_LOOP */
 
+/* Prevent Visual C++ 6.0 from printing out stupid warnings */
 #if defined(_MSC_VER) && (_MSC_VER >= 600)
-#pragma warning(disable : 4244) /* '=': conversion from 'X' to 'Y', possible loss of data */
+#pragma warning(disable : 4550)
 #endif
 
 #endif /* SDL_blit_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

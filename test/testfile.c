@@ -23,15 +23,13 @@
 #include <unistd.h>
 #endif
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include "SDL.h"
 
 /* WARNING ! those 2 files will be destroyed by this test program */
 
-#ifdef __IOS__
-#define FBASENAME1 "../Documents/sdldata1" /* this file will be created during tests */
-#define FBASENAME2 "../Documents/sdldata2" /* this file should not exist before starting test */
+#ifdef __IPHONEOS__
+#define FBASENAME1  "../Documents/sdldata1" /* this file will be created during tests */
+#define FBASENAME2  "../Documents/sdldata2"     /* this file should not exist before starting test */
 #else
 #define FBASENAME1 "sdldata1" /* this file will be created during tests */
 #define FBASENAME2 "sdldata2" /* this file should not exist before starting test */
@@ -40,8 +38,6 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-
-static SDLTest_CommonState *state;
 
 static void
 cleanup(void)
@@ -55,10 +51,9 @@ rwops_error_quit(unsigned line, SDL_RWops *rwops)
 {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testfile.c(%d): failed\n", line);
     if (rwops) {
-        rwops->close(rwops); /* This calls SDL_DestroyRW(rwops); */
+        rwops->close(rwops); /* This calls SDL_FreeRW(rwops); */
     }
     cleanup();
-    SDLTest_CommonDestroyState(state);
     exit(1); /* quit with rwops error (test failed) */
 }
 
@@ -69,19 +64,8 @@ int main(int argc, char *argv[])
     SDL_RWops *rwops = NULL;
     char test_buf[30];
 
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
-
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    /* Parse commandline */
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return 1;
-    }
 
     cleanup();
 
@@ -155,56 +139,56 @@ int main(int argc, char *argv[])
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (10 != rwops->write(rwops, "1234567890", 10)) {
+    if (1 != rwops->write(rwops, "1234567890", 10, 1)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (10 != rwops->write(rwops, "1234567890", 10)) {
+    if (10 != rwops->write(rwops, "1234567890", 1, 10)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (7 != rwops->write(rwops, "1234567", 7)) {
+    if (7 != rwops->write(rwops, "1234567", 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (-1 != rwops->read(rwops, test_buf, 1)) {
+    if (0 != rwops->read(rwops, test_buf, 1, 1)) {
         RWOP_ERR_QUIT(rwops); /* we are in write only mode */
     }
 
     rwops->close(rwops);
 
-    rwops = SDL_RWFromFile(FBASENAME1, "rb"); /* read mode, file must exist */
+    rwops = SDL_RWFromFile(FBASENAME1, "rb"); /* read mode, file must exists */
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (20 != rwops->seek(rwops, -7, SDL_RW_SEEK_END)) {
+    if (20 != rwops->seek(rwops, -7, RW_SEEK_END)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (7 != rwops->read(rwops, test_buf, 7)) {
+    if (7 != rwops->read(rwops, test_buf, 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "1234567", 7) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->read(rwops, test_buf, 1)) {
+    if (0 != rwops->read(rwops, test_buf, 1, 1)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->read(rwops, test_buf, 1000)) {
+    if (0 != rwops->read(rwops, test_buf, 10, 100)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
+    if (0 != rwops->seek(rwops, -27, RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (27 != rwops->read(rwops, test_buf, 30)) {
+    if (2 != rwops->read(rwops, test_buf, 10, 3)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (-1 != rwops->write(rwops, test_buf, 1)) {
+    if (0 != rwops->write(rwops, test_buf, 1, 1)) {
         RWOP_ERR_QUIT(rwops); /* readonly mode */
     }
 
@@ -215,44 +199,44 @@ int main(int argc, char *argv[])
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (10 != rwops->write(rwops, "1234567890", 10)) {
+    if (1 != rwops->write(rwops, "1234567890", 10, 1)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (10 != rwops->write(rwops, "1234567890", 10)) {
+    if (10 != rwops->write(rwops, "1234567890", 1, 10)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (7 != rwops->write(rwops, "1234567", 7)) {
+    if (7 != rwops->write(rwops, "1234567", 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (1 != rwops->read(rwops, test_buf, 1)) {
+    if (1 != rwops->read(rwops, test_buf, 1, 1)) {
         RWOP_ERR_QUIT(rwops); /* we are in read/write mode */
     }
 
-    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (20 != rwops->seek(rwops, -7, SDL_RW_SEEK_END)) {
+    if (20 != rwops->seek(rwops, -7, RW_SEEK_END)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (7 != rwops->read(rwops, test_buf, 7)) {
+    if (7 != rwops->read(rwops, test_buf, 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "1234567", 7) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->read(rwops, test_buf, 1)) {
+    if (0 != rwops->read(rwops, test_buf, 1, 1)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->read(rwops, test_buf, 1000)) {
+    if (0 != rwops->read(rwops, test_buf, 10, 100)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
+    if (0 != rwops->seek(rwops, -27, RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (27 != rwops->read(rwops, test_buf, 30)) {
+    if (2 != rwops->read(rwops, test_buf, 10, 3)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
@@ -266,44 +250,44 @@ int main(int argc, char *argv[])
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (10 != rwops->write(rwops, "1234567890", 10)) {
+    if (1 != rwops->write(rwops, "1234567890", 10, 1)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (10 != rwops->write(rwops, "1234567890", 10)) {
+    if (10 != rwops->write(rwops, "1234567890", 1, 10)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (7 != rwops->write(rwops, "1234567", 7)) {
+    if (7 != rwops->write(rwops, "1234567", 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (1 != rwops->read(rwops, test_buf, 1)) {
+    if (1 != rwops->read(rwops, test_buf, 1, 1)) {
         RWOP_ERR_QUIT(rwops); /* we are in read/write mode */
     }
 
-    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (20 != rwops->seek(rwops, -7, SDL_RW_SEEK_END)) {
+    if (20 != rwops->seek(rwops, -7, RW_SEEK_END)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (7 != rwops->read(rwops, test_buf, 7)) {
+    if (7 != rwops->read(rwops, test_buf, 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "1234567", 7) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->read(rwops, test_buf, 1)) {
+    if (0 != rwops->read(rwops, test_buf, 1, 1)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->read(rwops, test_buf, 1000)) {
+    if (0 != rwops->read(rwops, test_buf, 10, 100)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
+    if (0 != rwops->seek(rwops, -27, RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (27 != rwops->read(rwops, test_buf, 30)) {
+    if (2 != rwops->read(rwops, test_buf, 10, 3)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
@@ -317,50 +301,50 @@ int main(int argc, char *argv[])
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (10 != rwops->write(rwops, "1234567890", 10)) {
+    if (1 != rwops->write(rwops, "1234567890", 10, 1)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (10 != rwops->write(rwops, "1234567890", 10)) {
+    if (10 != rwops->write(rwops, "1234567890", 1, 10)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (7 != rwops->write(rwops, "1234567", 7)) {
+    if (7 != rwops->write(rwops, "1234567", 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
-        RWOP_ERR_QUIT(rwops);
-    }
-
-    if (1 != rwops->read(rwops, test_buf, 1)) {
-        RWOP_ERR_QUIT(rwops);
-    }
-    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
+    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
 
-    if (20 + 27 != rwops->seek(rwops, -7, SDL_RW_SEEK_END)) {
+    if (1 != rwops->read(rwops, test_buf, 1, 1)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (7 != rwops->read(rwops, test_buf, 7)) {
+    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+        RWOP_ERR_QUIT(rwops);
+    }
+
+    if (20 + 27 != rwops->seek(rwops, -7, RW_SEEK_END)) {
+        RWOP_ERR_QUIT(rwops);
+    }
+    if (7 != rwops->read(rwops, test_buf, 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "1234567", 7) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->read(rwops, test_buf, 1)) {
+    if (0 != rwops->read(rwops, test_buf, 1, 1)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (0 != rwops->read(rwops, test_buf, 1000)) {
-        RWOP_ERR_QUIT(rwops);
-    }
-
-    if (27 != rwops->seek(rwops, -27, SDL_RW_SEEK_CUR)) {
+    if (0 != rwops->read(rwops, test_buf, 10, 100)) {
         RWOP_ERR_QUIT(rwops);
     }
 
-    if (0 != rwops->seek(rwops, 0L, SDL_RW_SEEK_SET)) {
+    if (27 != rwops->seek(rwops, -27, RW_SEEK_CUR)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (30 != rwops->read(rwops, test_buf, 30)) {
+
+    if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
+        RWOP_ERR_QUIT(rwops);
+    }
+    if (3 != rwops->read(rwops, test_buf, 10, 3)) {
         RWOP_ERR_QUIT(rwops);
     }
     if (SDL_memcmp(test_buf, "123456789012345678901234567123", 30) != 0) {
@@ -369,6 +353,5 @@ int main(int argc, char *argv[])
     rwops->close(rwops);
     SDL_Log("test5 OK\n");
     cleanup();
-    SDLTest_CommonDestroyState(state);
     return 0; /* all ok */
 }

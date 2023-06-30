@@ -18,37 +18,107 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_TIMER_WINDOWS
 
 #include "../../core/windows/SDL_windows.h"
+#include <mmsystem.h>
+
+#include "SDL_timer.h"
+#include "SDL_hints.h"
 
 
-#ifdef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
-static void SDL_CleanupWaitableTimer(void *timer)
+/* The first (low-resolution) ticks value of the application */
+static DWORD start = 0;
+static BOOL ticks_started = FALSE;
+
+/* The first high-resolution ticks value of the application */
+static LARGE_INTEGER start_ticks;
+/* The number of ticks per second of the high-resolution performance counter */
+static LARGE_INTEGER ticks_per_second;
+
+static void SDL_SetSystemTimerResolution(const UINT uPeriod)
 {
-    CloseHandle(timer);
-}
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+    static UINT timer_period = 0;
 
-HANDLE SDL_GetWaitableTimer()
-{
-    static SDL_TLSID TLS_timer_handle;
-    HANDLE timer;
+    if (uPeriod != timer_period) {
+        if (timer_period) {
+            timeEndPeriod(timer_period);
+        }
 
-    if (!TLS_timer_handle) {
-        TLS_timer_handle = SDL_CreateTLS();
-    }
-    timer = SDL_GetTLS(TLS_timer_handle);
-    if (!timer) {
-        timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
-        if (timer) {
-            SDL_SetTLS(TLS_timer_handle, timer, SDL_CleanupWaitableTimer);
+        timer_period = uPeriod;
+
+        if (timer_period) {
+            timeBeginPeriod(timer_period);
         }
     }
-    return timer;
+#endif
 }
-#endif /* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION */
+
+static void SDLCALL SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    UINT uPeriod;
+
+    /* Unless the hint says otherwise, let's have good sleep precision */
+    if (hint && *hint) {
+        uPeriod = SDL_atoi(hint);
+    } else {
+        uPeriod = 1;
+    }
+    if (uPeriod || oldValue != hint) {
+        SDL_SetSystemTimerResolution(uPeriod);
+    }
+}
+
+void SDL_TicksInit(void)
+{
+    BOOL rc;
+
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = SDL_TRUE;
+
+    /* if we didn't set a precision, set it high. This affects lots of things
+       on Windows besides the SDL timers, like audio callbacks, etc. */
+    SDL_AddHintCallback(SDL_HINT_TIMER_RESOLUTION,
+                        SDL_TimerResolutionChanged, NULL);
+
+    /* Set first ticks value */
+    /* QueryPerformanceCounter allegedly is always available and reliable as of WinXP,
+       so we'll rely on it here.
+     */
+    rc = QueryPerformanceFrequency(&ticks_per_second);
+    SDL_assert(rc != 0); /* this should _never_ fail if you're on XP or later. */
+    QueryPerformanceCounter(&start_ticks);
+}
+
+void SDL_TicksQuit(void)
+{
+    SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
+                        SDL_TimerResolutionChanged, NULL);
+
+    SDL_SetSystemTimerResolution(0); /* always release our timer resolution request. */
+
+    start = 0;
+    ticks_started = SDL_FALSE;
+}
+
+Uint64 SDL_GetTicks64(void)
+{
+    LARGE_INTEGER now;
+    BOOL rc;
+
+    if (!ticks_started) {
+        SDL_TicksInit();
+    }
+
+    rc = QueryPerformanceCounter(&now);
+    SDL_assert(rc != 0); /* this should _never_ fail if you're on XP or later. */
+    return (Uint64)(((now.QuadPart - start_ticks.QuadPart) * 1000) / ticks_per_second.QuadPart);
+}
 
 Uint64 SDL_GetPerformanceCounter(void)
 {
@@ -66,11 +136,9 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return (Uint64)frequency.QuadPart;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_Delay(Uint32 ms)
 {
-    /* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag was added in Windows 10 version 1803.
-     *
-     * Sleep() is not publicly available to apps in early versions of WinRT.
+    /* Sleep() is not publicly available to apps in early versions of WinRT.
      *
      * Visual C++ 2013 Update 4 re-introduced Sleep() for Windows 8.1 and
      * Windows Phone 8.1.
@@ -82,34 +150,21 @@ void SDL_DelayNS(Uint64 ns)
      *    Windows Phone 8.0, uses the Visual C++ 2012 compiler to build
      *    apps and libraries.
      */
-#ifdef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
-    HANDLE timer = SDL_GetWaitableTimer();
-    if (timer) {
-        LARGE_INTEGER due_time;
-        due_time.QuadPart = -((LONGLONG)ns / 100);
-        if (SetWaitableTimerEx(timer, &due_time, 0, NULL, NULL, NULL, 0)) {
-            WaitForSingleObject(timer, INFINITE);
-        }
-        return;
-    }
-#endif
-
-    {
-        const Uint64 max_delay = 0xffffffffLL * SDL_NS_PER_MS;
-        if (ns > max_delay) {
-            ns = max_delay;
-        }
-
 #if defined(__WINRT__) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER <= 180030723)
-        static HANDLE mutex = 0;
-        if (!mutex) {
-            mutex = CreateEventEx(0, 0, 0, EVENT_ALL_ACCESS);
-        }
-        WaitForSingleObjectEx(mutex, (DWORD)SDL_NS_TO_MS(ns), FALSE);
-#else
-        Sleep((DWORD)SDL_NS_TO_MS(ns));
-#endif
+    static HANDLE mutex = 0;
+    if (!mutex) {
+        mutex = CreateEventEx(0, 0, 0, EVENT_ALL_ACCESS);
     }
+    WaitForSingleObjectEx(mutex, ms, FALSE);
+#else
+    if (!ticks_started) {
+        SDL_TicksInit();
+    }
+
+    Sleep(ms);
+#endif
 }
 
 #endif /* SDL_TIMER_WINDOWS */
+
+/* vi: set ts=4 sw=4 expandtab: */

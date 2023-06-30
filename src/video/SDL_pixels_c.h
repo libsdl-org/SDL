@@ -22,7 +22,7 @@
 #ifndef SDL_pixels_c_h_
 #define SDL_pixels_c_h_
 
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 /* Useful functions and variables from SDL_pixel.c */
 
@@ -30,7 +30,6 @@
 
 /* Pixel format functions */
 extern int SDL_InitFormat(SDL_PixelFormat *format, Uint32 pixel_format);
-extern int SDL_CalculateSize(Uint32 format, int width, int height, size_t *size, size_t *pitch, SDL_bool minimalPitch);
 
 /* Blit mapping functions */
 extern SDL_BlitMap *SDL_AllocBlitMap(void);
@@ -46,3 +45,5 @@ extern Uint8 SDL_FindColor(SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 extern void SDL_DetectPalette(SDL_Palette *pal, SDL_bool *is_opaque, SDL_bool *has_alpha_channel);
 
 #endif /* SDL_pixels_c_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

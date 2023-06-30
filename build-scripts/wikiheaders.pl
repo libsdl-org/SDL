@@ -2,7 +2,6 @@
 
 use warnings;
 use strict;
-use File::Path;
 use Text::Wrap;
 
 $Text::Wrap::huge = 'overflow';
@@ -30,7 +29,6 @@ my $copy_direction = 0;
 my $optionsfname = undef;
 my $wikipreamble = undef;
 my $changeformat = undef;
-my $manpath = undef;
 
 foreach (@ARGV) {
     $warn_about_missing = 1, next if $_ eq '--warn-about-missing';
@@ -43,9 +41,6 @@ foreach (@ARGV) {
         next;
     } elsif (/\A--changeformat=(.*)\Z/) {
         $changeformat = $1;
-        next;
-    } elsif (/\A--manpath=(.*)\Z/) {
-        $manpath = $1;
         next;
     }
     $srcpath = $_, next if not defined $srcpath;
@@ -382,8 +377,8 @@ sub dewikify_chunk {
             # <code></code> is also popular.  :/
             $str =~ s/\s*\<code>(.*?)<\/code>\s*/\n.BR $1\n/gms;
 
-            # bold+italic (this looks bad, just make it bold).
-            $str =~ s/\s*'''''(.*?)'''''\s*/\n.B $1\n/gms;
+            # bold+italic
+            $str =~ s/\s*'''''(.*?)'''''\s*/\n.BI $1\n/gms;
 
             # bold
             $str =~ s/\s*'''(.*?)'''\s*/\n.B $1\n/gms;
@@ -405,8 +400,8 @@ sub dewikify_chunk {
             # <code></code> is also popular.  :/
             $str =~ s/\s*\`(.*?)\`\s*/\n.BR $1\n/gms;
 
-            # bold+italic (this looks bad, just make it bold).
-            $str =~ s/\s*\*\*\*(.*?)\*\*\*\s*/\n.B $1\n/gms;
+            # bold+italic
+            $str =~ s/\s*\*\*\*(.*?)\*\*\*\s*/\n.BI $1\n/gms;
 
             # bold
             $str =~ s/\s*\*\*(.*?)\*\*\s*/\n.B $1\n/gms;
@@ -479,16 +474,12 @@ sub filecopy {
 }
 
 sub usage {
-    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki|--copy-to-manpages] [--warn-about-missing] [--manpath=<man path>]\n\n");
+    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki|--copy-to-manpages] [--warn-about-missing]\n\n");
 }
 
 usage() if not defined $srcpath;
 usage() if not defined $wikipath;
 #usage() if $copy_direction == 0;
-
-if (not defined $manpath) {
-    $manpath = "$srcpath/man";
-}
 
 my @standard_wiki_sections = (
     'Draft',
@@ -1421,8 +1412,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
 } elsif ($copy_direction == -2) { # --copy-to-manpages
     # This only takes from the wiki data, since it has sections we omit from the headers, like code examples.
 
+    my $manpath = "$srcpath/man";
+    mkdir($manpath);
     $manpath .= "/man3";
-    File::Path::make_path($manpath);
+    mkdir($manpath);
 
     $dewikify_mode = 'manpage';
     $wordwrap_mode = 'manpage';

@@ -18,9 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED)
+#include "SDL_render.h"
+#include "SDL_system.h"
+
+#if SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED
 
 #define SDL_D3D12_NUM_BUFFERS        2
 #define SDL_D3D12_NUM_VERTEX_BUFFERS 256
@@ -29,10 +32,11 @@
 
 #include "../../core/windows/SDL_windows.h"
 #include "../../video/windows/SDL_windowswindow.h"
+#include "SDL_hints.h"
+#include "SDL_loadso.h"
+#include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
-
-#include <SDL3/SDL_syswm.h>
 
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
 #include "SDL_render_d3d12_xbox.h"
@@ -499,6 +503,12 @@ static void D3D12_DestroyRenderer(SDL_Renderer *renderer)
         SDL_free(data);
     }
     SDL_free(renderer);
+}
+
+static int D3D12_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
+{
+    SDL_GetWindowSizeInPixels(renderer->window, w, h);
+    return 0;
 }
 
 static D3D12_BLEND GetBlendFunc(SDL_BlendFactor factor)
@@ -1131,7 +1141,7 @@ static int D3D12_GetViewportAlignedD3DRect(SDL_Renderer *renderer, const SDL_Rec
 static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
-    IDXGISwapChain1 *swapChain = NULL;
+    IDXGISwapChain1* swapChain;
     HRESULT result = S_OK;
     SDL_SysWMinfo windowinfo;
 
@@ -1155,12 +1165,8 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | /* To support SetMaximumFrameLatency */
                           DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;                  /* To support presenting with allow tearing on */
 
-    if (SDL_GetWindowWMInfo(renderer->window, &windowinfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
-        windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
-        SDL_SetError("Couldn't get window handle");
-        result = E_FAIL;
-        goto done;
-    }
+    SDL_VERSION(&windowinfo.version);
+    SDL_GetWindowWMInfo(renderer->window, &windowinfo);
 
     result = D3D_CALL(data->dxgiFactory, CreateSwapChainForHwnd,
                       (IUnknown *)data->commandQueue,
@@ -1224,8 +1230,7 @@ D3D12_HandleDeviceLost(SDL_Renderer *renderer)
     /* Let the application know that the device has been reset */
     {
         SDL_Event event;
-        event.type = SDL_EVENT_RENDER_DEVICE_RESET;
-        event.common.timestamp = 0;
+        event.type = SDL_RENDER_DEVICE_RESET;
         SDL_PushEvent(&event);
     }
 
@@ -1369,7 +1374,7 @@ static HRESULT D3D12_UpdateForWindowSizeChange(SDL_Renderer *renderer)
 
 static void D3D12_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
-    if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
         D3D12_UpdateForWindowSizeChange(renderer);
     }
 }
@@ -1431,7 +1436,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         SDL_OutOfMemory();
         return -1;
     }
-    textureData->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? D3D12_FILTER_MIN_MAG_MIP_POINT : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? D3D12_FILTER_MIN_MAG_MIP_POINT : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 
     texture->driverdata = textureData;
     textureData->mainTextureFormat = textureFormat;
@@ -1722,7 +1727,7 @@ static int D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Res
     src = (const Uint8 *)pixels;
     dst = textureMemory;
     length = w * bpp;
-    if (length == (UINT)pitch && length == pitchedDesc.RowPitch) {
+    if (length == pitch && length == pitchedDesc.RowPitch) {
         SDL_memcpy(dst, src, (size_t)length * h);
     } else {
         if (length > (UINT)pitch) {
@@ -2075,7 +2080,7 @@ static void D3D12_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
         return;
     }
 
-    textureData->scaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? D3D12_FILTER_MIN_MAG_MIP_POINT : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (scaleMode == SDL_ScaleModeNearest) ? D3D12_FILTER_MIN_MAG_MIP_POINT : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 }
 
 static int D3D12_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -2269,20 +2274,20 @@ static int D3D12_UpdateViewport(SDL_Renderer *renderer)
      * direction of the DXGI_MODE_ROTATION enumeration.
      */
     switch (rotation) {
-    case DXGI_MODE_ROTATION_IDENTITY:
-        projection = MatrixIdentity();
-        break;
-    case DXGI_MODE_ROTATION_ROTATE270:
-        projection = MatrixRotationZ(SDL_PI_F * 0.5f);
-        break;
-    case DXGI_MODE_ROTATION_ROTATE180:
-        projection = MatrixRotationZ(SDL_PI_F);
-        break;
-    case DXGI_MODE_ROTATION_ROTATE90:
-        projection = MatrixRotationZ(-SDL_PI_F * 0.5f);
-        break;
-    default:
-        return SDL_SetError("An unknown DisplayOrientation is being used");
+        case DXGI_MODE_ROTATION_IDENTITY:
+            projection = MatrixIdentity();
+            break;
+        case DXGI_MODE_ROTATION_ROTATE270:
+            projection = MatrixRotationZ(SDL_static_cast(float, M_PI * 0.5f));
+            break;
+        case DXGI_MODE_ROTATION_ROTATE180:
+            projection = MatrixRotationZ(SDL_static_cast(float, M_PI));
+            break;
+        case DXGI_MODE_ROTATION_ROTATE90:
+            projection = MatrixRotationZ(SDL_static_cast(float, -M_PI * 0.5f));
+            break;
+        default:
+            return SDL_SetError("An unknown DisplayOrientation is being used");
     }
 
     /* Update the view matrix */
@@ -2964,6 +2969,7 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
     data->identity = MatrixIdentity();
 
     renderer->WindowEvent = D3D12_WindowEvent;
+    renderer->GetOutputSize = D3D12_GetOutputSize;
     renderer->SupportsBlendMode = D3D12_SupportsBlendMode;
     renderer->CreateTexture = D3D12_CreateTexture;
     renderer->UpdateTexture = D3D12_UpdateTexture;
@@ -2986,7 +2992,7 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->DestroyTexture = D3D12_DestroyTexture;
     renderer->DestroyRenderer = D3D12_DestroyRenderer;
     renderer->info = D3D12_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
+    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
 
     if (flags & SDL_RENDERER_PRESENTVSYNC) {
@@ -3016,10 +3022,12 @@ SDL_RenderDriver D3D12_RenderDriver = {
     D3D12_CreateRenderer,
     {
         "direct3d12",
-        (SDL_RENDERER_ACCELERATED |
-         SDL_RENDERER_PRESENTVSYNC), /* flags.  see SDL_RendererFlags */
-        6,                           /* num_texture_formats */
-        {                            /* texture_formats */
+        (
+            SDL_RENDERER_ACCELERATED |
+            SDL_RENDERER_PRESENTVSYNC |
+            SDL_RENDERER_TARGETTEXTURE), /* flags.  see SDL_RendererFlags */
+        6,                               /* num_texture_formats */
+        {                                /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_RGB888,
           SDL_PIXELFORMAT_YV12,
@@ -3048,7 +3056,7 @@ extern "C"
 {
     ID3D12Device *device = NULL;
 
-#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
 
     /* Make sure that this is a D3D renderer */
@@ -3066,3 +3074,5 @@ extern "C"
     return device;
 }
 #endif /* defined(__WIN32__) || defined(__GDK__) */
+
+/* vi: set ts=4 sw=4 expandtab: */

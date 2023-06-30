@@ -18,24 +18,52 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #if defined(SDL_TIMER_DUMMY) || defined(SDL_TIMERS_DISABLED)
 
-Uint64 SDL_GetPerformanceCounter(void)
+#include "SDL_timer.h"
+
+static SDL_bool ticks_started = SDL_FALSE;
+
+void SDL_TicksInit(void)
 {
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = SDL_TRUE;
+}
+
+void SDL_TicksQuit(void)
+{
+    ticks_started = SDL_FALSE;
+}
+
+Uint64 SDL_GetTicks64(void)
+{
+    if (!ticks_started) {
+        SDL_TicksInit();
+    }
+
     SDL_Unsupported();
     return 0;
 }
 
-Uint64 SDL_GetPerformanceFrequency(void)
+Uint64 SDL_GetPerformanceCounter(void)
 {
-    return 1;
+    return SDL_GetTicks();
 }
 
-void SDL_DelayNS(Uint64 ns)
+Uint64 SDL_GetPerformanceFrequency(void)
+{
+    return 1000;
+}
+
+void SDL_Delay(Uint32 ms)
 {
     SDL_Unsupported();
 }
 
 #endif /* SDL_TIMER_DUMMY || SDL_TIMERS_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

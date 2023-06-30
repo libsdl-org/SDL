@@ -18,10 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_WGI
 
+#include "SDL_assert.h"
+#include "SDL_atomic.h"
+#include "SDL_endian.h"
+#include "SDL_events.h"
 #include "../SDL_sysjoystick.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
@@ -210,7 +214,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 typedef struct RawGameControllerDelegate
 {
     __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController iface;
-    SDL_AtomicInt refcount;
+    SDL_atomic_t refcount;
 } RawGameControllerDelegate;
 
 static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInterface(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, REFIID riid, void **ppvObject)
@@ -318,7 +322,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             boolean wireless;
 
             if (wgi.gamepad_statics2 && SUCCEEDED(__x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2_FromGameController(wgi.gamepad_statics2, gamecontroller, &gamepad)) && gamepad) {
-                type = SDL_JOYSTICK_TYPE_GAMEPAD;
+                type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
                 __x_ABI_CWindows_CGaming_CInput_CIGamepad_Release(gamepad);
             } else if (wgi.arcade_stick_statics2 && SUCCEEDED(__x_ABI_CWindows_CGaming_CInput_CIArcadeStickStatics2_FromGameController(wgi.arcade_stick_statics2, gamecontroller, &arcade_stick)) && arcade_stick) {
                 type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
@@ -837,8 +841,6 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
         UINT32 i;
         SDL_bool all_zero = SDL_FALSE;
 
-        hwdata->timestamp = timestamp;
-
         /* The axes are all zero when the application loses focus */
         if (naxes > 0) {
             all_zero = SDL_TRUE;
@@ -852,18 +854,17 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
         if (all_zero) {
             SDL_PrivateJoystickForceRecentering(joystick);
         } else {
-            /* FIXME: What units are the timestamp we get from GetCurrentReading()? */
-            timestamp = SDL_GetTicksNS();
             for (i = 0; i < nbuttons; ++i) {
-                SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, buttons[i]);
+                SDL_PrivateJoystickButton(joystick, (Uint8)i, buttons[i]);
             }
             for (i = 0; i < nhats; ++i) {
-                SDL_SendJoystickHat(timestamp, joystick, (Uint8)i, ConvertHatValue(hats[i]));
+                SDL_PrivateJoystickHat(joystick, (Uint8)i, ConvertHatValue(hats[i]));
             }
             for (i = 0; i < naxes; ++i) {
-                SDL_SendJoystickAxis(timestamp, joystick, (Uint8)i, (Sint16)((int)(axes[i] * 65535) - 32768));
+                SDL_PrivateJoystickAxis(joystick, (Uint8)i, (Sint16)((int)(axes[i] * 65535) - 32768));
             }
         }
+        hwdata->timestamp = timestamp;
     }
 
     SDL_stack_free(buttons);
@@ -966,3 +967,5 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver = {
 };
 
 #endif /* SDL_JOYSTICK_WGI */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -13,39 +13,38 @@
 /* Simple program:  Test relative mouse motion */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 
-#include <SDL3/SDL_test_common.h>
-#include <SDL3/SDL_main.h>
+#include "SDL_test_common.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
 static SDLTest_CommonState *state;
-static int i, done;
-static float mouseX, mouseY;
-static SDL_FRect rect;
-static SDL_Event event;
+int i, done;
+SDL_Rect rect;
+SDL_Event event;
 
-static void DrawRects(SDL_Renderer *renderer)
+static void
+DrawRects(SDL_Renderer *renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    rect.x = mouseX;
-    rect.y = mouseY;
     SDL_RenderFillRect(renderer, &rect);
 }
 
-static void loop(void)
+static void
+loop()
 {
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
         switch (event.type) {
-        case SDL_EVENT_MOUSE_MOTION:
+        case SDL_MOUSEMOTION:
         {
-            mouseX += event.motion.xrel;
-            mouseY += event.motion.yrel;
+            rect.x += event.motion.xrel;
+            rect.y += event.motion.yrel;
         } break;
         }
     }
@@ -59,7 +58,7 @@ static void loop(void)
         SDL_RenderClear(renderer);
 
         /* Wrap the cursor rectangle at the screen edges to keep it visible */
-        SDL_GetRenderViewport(renderer, &viewport);
+        SDL_RenderGetViewport(renderer, &viewport);
         if (rect.x < viewport.x) {
             rect.x += viewport.w;
         }
@@ -95,12 +94,9 @@ int main(int argc, char *argv[])
     if (state == NULL) {
         return 1;
     }
-
-    /* Parse commandline */
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return 1;
+    for (i = 1; i < argc; ++i) {
+        SDLTest_CommonArg(state, i);
     }
-
     if (!SDLTest_CommonInit(state)) {
         return 2;
     }
@@ -134,3 +130,5 @@ int main(int argc, char *argv[])
     SDLTest_CommonQuit(state);
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -26,11 +26,6 @@
 #define _GNU_SOURCE
 #endif
 
-/* Need this so Linux systems define fseek64o, ftell64o and off64_t */
-#ifndef _LARGEFILE64_SOURCE
-#define _LARGEFILE64_SOURCE 1
-#endif
-
 /* This is for a variable-length array at the end of a struct:
     struct x { int y; char z[SDL_VARIABLE_LENGTH_ARRAY]; };
    Use this because GCC 2 needs different magic than other compilers. */
@@ -49,76 +44,23 @@
         SDL_free(ptr);               \
     }
 
-#include "build_config/SDL_build_config.h"
-
 #include "dynapi/SDL_dynapi.h"
 
 #if SDL_DYNAMIC_API
 #include "dynapi/SDL_dynapi_overrides.h"
 /* force DECLSPEC off...it's all internal symbols now.
    These will have actual #defines during SDL_dynapi.c only */
-#ifdef DECLSPEC
-#undef DECLSPEC
-#endif
 #define DECLSPEC
 #endif
 
-#ifdef __APPLE__
-#ifndef _DARWIN_C_SOURCE
-#define _DARWIN_C_SOURCE 1 /* for memset_pattern4() */
-#endif
-#endif
-
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#ifdef HAVE_STDIO_H
-#include <stdio.h>
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#elif defined(HAVE_MALLOC_H)
-#include <malloc.h>
-#endif
-#ifdef HAVE_STDDEF_H
-#include <stddef.h>
-#endif
-#ifdef HAVE_STDARG_H
-#include <stdarg.h>
-#endif
-#ifdef HAVE_STRING_H
-#ifdef HAVE_MEMORY_H
-#include <memory.h>
-#endif
-#include <string.h>
-#endif
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#ifdef HAVE_WCHAR_H
-#include <wchar.h>
-#endif
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#elif defined(HAVE_STDINT_H)
-#include <stdint.h>
-#endif
-#ifdef HAVE_CTYPE_H
-#include <ctype.h>
-#endif
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-#ifdef HAVE_FLOAT_H
-#include <float.h>
-#endif
+#include "SDL_config.h"
 
 /* If you run into a warning that O_CLOEXEC is redefined, update the SDL configuration header for your platform to add HAVE_O_CLOEXEC */
 #ifndef HAVE_O_CLOEXEC
 #define O_CLOEXEC 0
 #endif
 
-/* A few #defines to reduce SDL footprint.
+/* A few #defines to reduce SDL2 footprint.
    Only effective when library is statically linked.
    You have to manually edit this file. */
 #ifndef SDL_LEAN_AND_MEAN
@@ -163,7 +105,7 @@
 #endif
 
 /* Run-Length-Encoding
-   - SDL_SetSurfaceColorKey() called with SDL_RLEACCEL flag */
+   - SDL_SetColorKey() called with SDL_RLEACCEL flag */
 #ifndef SDL_HAVE_RLE
 #define SDL_HAVE_RLE !SDL_LEAN_AND_MEAN
 #endif
@@ -183,27 +125,9 @@
 #define SDL_HAVE_YUV !SDL_LEAN_AND_MEAN
 #endif
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_intrin.h>
-
-#define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
-#include <SDL3/SDL_main.h>
-
-/* The internal implementations of these functions have up to nanosecond precision.
-   We can expose these functions as part of the API if we want to later.
-*/
-/* Set up for C function definitions, even when using C++ */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern DECLSPEC int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
-extern DECLSPEC int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
-extern DECLSPEC int SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
-
-/* Ends C function definitions when using C++ */
-#ifdef __cplusplus
-}
-#endif
+#include "SDL_assert.h"
+#include "SDL_log.h"
 
 #endif /* SDL_internal_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

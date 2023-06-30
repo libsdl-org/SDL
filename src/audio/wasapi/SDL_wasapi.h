@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_wasapi_h_
 #define SDL_wasapi_h_
@@ -29,9 +29,16 @@ extern "C" {
 
 #include "../SDL_sysaudio.h"
 
+/* Hidden "this" pointer for the audio functions */
+#ifdef __cplusplus
+#define _THIS SDL_AudioDevice *_this
+#else
+#define _THIS SDL_AudioDevice *this
+#endif
+
 struct SDL_PrivateAudioData
 {
-    SDL_AtomicInt refcount;
+    SDL_atomic_t refcount;
     WCHAR *devid;
     WAVEFORMATEX *waveformat;
     IAudioClient *client;
@@ -40,27 +47,28 @@ struct SDL_PrivateAudioData
     SDL_AudioStream *capturestream;
     HANDLE event;
     HANDLE task;
+    SDL_threadID open_threadid;
     SDL_bool coinitialized;
     int framesize;
     int default_device_generation;
     SDL_bool device_lost;
     void *activation_handler;
-    SDL_AtomicInt just_activated;
+    SDL_atomic_t just_activated;
 };
 
 /* win32 and winrt implementations call into these. */
-int WASAPI_PrepDevice(SDL_AudioDevice *_this, const SDL_bool updatestream);
-void WASAPI_RefDevice(SDL_AudioDevice *_this);
-void WASAPI_UnrefDevice(SDL_AudioDevice *_this);
+int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream);
+void WASAPI_RefDevice(_THIS);
+void WASAPI_UnrefDevice(_THIS);
 
 /* These are functions that are implemented differently for Windows vs WinRT. */
 int WASAPI_PlatformInit(void);
 void WASAPI_PlatformDeinit(void);
 void WASAPI_EnumerateEndpoints(void);
 int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture);
-int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery);
-void WASAPI_PlatformThreadInit(SDL_AudioDevice *_this);
-void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *_this);
+int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery);
+void WASAPI_PlatformThreadInit(_THIS);
+void WASAPI_PlatformThreadDeinit(_THIS);
 void WASAPI_PlatformDeleteActivationHandler(void *handler);
 
 #ifdef __cplusplus
@@ -68,3 +76,5 @@ void WASAPI_PlatformDeleteActivationHandler(void *handler);
 #endif
 
 #endif /* SDL_wasapi_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

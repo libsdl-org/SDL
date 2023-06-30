@@ -19,10 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_X11
+#if SDL_VIDEO_DRIVER_X11
 
+#include "SDL.h"
 #include "SDL_x11video.h"
 #include "SDL_x11dyn.h"
 #include "SDL_x11messagebox.h"
@@ -83,7 +84,7 @@ typedef struct SDL_MessageBoxDataX11
     Display *display;
     int screen;
     Window window;
-#ifdef SDL_VIDEO_DRIVER_X11_XDBE
+#if SDL_VIDEO_DRIVER_X11_XDBE
     XdbeBackBuffer buf;
     SDL_bool xdbe; /* Whether Xdbe is present or not */
 #endif
@@ -371,7 +372,7 @@ static void X11_MessageBoxShutdown(SDL_MessageBoxDataX11 *data)
         data->font_struct = NULL;
     }
 
-#ifdef SDL_VIDEO_DRIVER_X11_XDBE
+#if SDL_VIDEO_DRIVER_X11_XDBE
     if (SDL_X11_HAVE_XDBE && data->xdbe) {
         X11_XdbeDeallocateBackBufferName(data->display, data->buf);
     }
@@ -403,8 +404,9 @@ static int X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
     const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
 
     if (messageboxdata->window) {
-        SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(messageboxdata->window);
-        windowdata = messageboxdata->window->driverdata;
+        SDL_DisplayData *displaydata =
+            (SDL_DisplayData *)SDL_GetDisplayForWindow(messageboxdata->window)->driverdata;
+        windowdata = (SDL_WindowData *)messageboxdata->window->driverdata;
         data->screen = displaydata->screen;
     } else {
         data->screen = DefaultScreen(display);
@@ -469,9 +471,9 @@ static int X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
         const SDL_VideoDevice *dev = SDL_GetVideoDevice();
         if ((dev) && (dev->displays) && (dev->num_displays > 0)) {
             const SDL_VideoDisplay *dpy = &dev->displays[0];
-            const SDL_DisplayData *dpydata = dpy->driverdata;
-            x = dpydata->x + ((dpy->current_mode->w - data->dialog_width) / 2);
-            y = dpydata->y + ((dpy->current_mode->h - data->dialog_height) / 3);
+            const SDL_DisplayData *dpydata = (SDL_DisplayData *)dpy->driverdata;
+            x = dpydata->x + ((dpy->current_mode.w - data->dialog_width) / 2);
+            y = dpydata->y + ((dpy->current_mode.h - data->dialog_height) / 3);
         } else { /* oh well. This will misposition on a multi-head setup. Init first next time. */
             x = (DisplayWidth(display, data->screen) - data->dialog_width) / 2;
             y = (DisplayHeight(display, data->screen) - data->dialog_height) / 3;
@@ -497,7 +499,7 @@ static int X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
 
     X11_XMapRaised(display, data->window);
 
-#ifdef SDL_VIDEO_DRIVER_X11_XDBE
+#if SDL_VIDEO_DRIVER_X11_XDBE
     /* Initialise a back buffer for double buffering */
     if (SDL_X11_HAVE_XDBE) {
         int xdbe_major, xdbe_minor;
@@ -520,7 +522,7 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx)
     Drawable window = data->window;
     Display *display = data->display;
 
-#ifdef SDL_VIDEO_DRIVER_X11_XDBE
+#if SDL_VIDEO_DRIVER_X11_XDBE
     if (SDL_X11_HAVE_XDBE && data->xdbe) {
         window = data->buf;
         X11_XdbeBeginIdiom(data->display);
@@ -575,7 +577,7 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx)
         }
     }
 
-#ifdef SDL_VIDEO_DRIVER_X11_XDBE
+#if SDL_VIDEO_DRIVER_X11_XDBE
     if (SDL_X11_HAVE_XDBE && data->xdbe) {
         XdbeSwapInfo swap_info;
         swap_info.swap_window = data->window;
@@ -853,3 +855,5 @@ int X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 #endif
 }
 #endif /* SDL_VIDEO_DRIVER_X11 */
+
+/* vi: set ts=4 sw=4 expandtab: */

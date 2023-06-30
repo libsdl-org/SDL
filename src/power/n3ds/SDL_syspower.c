@@ -19,15 +19,18 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #if !defined(SDL_POWER_DISABLED) && defined(SDL_POWER_N3DS)
 
 #include <3ds.h>
 
-static SDL_PowerState GetPowerState(void);
-static int ReadStateFromPTMU(bool *is_plugged, u8 *is_charging);
-static int GetBatteryPercentage(void);
+#include "SDL_error.h"
+#include "SDL_power.h"
+
+SDL_FORCE_INLINE SDL_PowerState GetPowerState(void);
+SDL_FORCE_INLINE int ReadStateFromPTMU(bool *is_plugged, u8 *is_charging);
+SDL_FORCE_INLINE int GetBatteryPercentage(void);
 
 #define BATTERY_PERCENT_REG      0xB
 #define BATTERY_PERCENT_REG_SIZE 2
@@ -81,7 +84,8 @@ static int ReadStateFromPTMU(bool *is_plugged, u8 *is_charging)
     return 0;
 }
 
-static int GetBatteryPercentage(void)
+SDL_FORCE_INLINE int
+GetBatteryPercentage(void)
 {
     u8 data[BATTERY_PERCENT_REG_SIZE];
 
@@ -100,3 +104,5 @@ static int GetBatteryPercentage(void)
 }
 
 #endif /* !SDL_POWER_DISABLED && SDL_POWER_N3DS */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

@@ -18,12 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
-#ifdef SDL_POWER_EMSCRIPTEN
+#if SDL_POWER_EMSCRIPTEN
 
 #include <emscripten/html5.h>
+
+#include "SDL_power.h"
 
 SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *percent)
 {
@@ -56,3 +58,5 @@ SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *p
 
 #endif /* SDL_POWER_EMSCRIPTEN */
 #endif /* SDL_POWER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -19,15 +19,18 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_KMSDRM
+#if SDL_VIDEO_DRIVER_KMSDRM
 
 #define DEBUG_DYNAMIC_KMSDRM 0
 
 #include "SDL_kmsdrmdyn.h"
 
 #ifdef SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC
+
+#include "SDL_name.h"
+#include "SDL_loadso.h"
 
 typedef struct
 {
@@ -155,3 +158,5 @@ int SDL_KMSDRM_LoadSymbols(void)
 }
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */
+
+/* vi: set ts=4 sw=4 expandtab: */

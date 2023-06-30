@@ -18,15 +18,20 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
+#include "SDL.h"
+#include "SDL_video.h"
 #include "SDL_sysvideo.h"
+#include "SDL_pixels.h"
+#include "SDL_surface.h"
+#include "SDL_shape.h"
 #include "SDL_shape_internals.h"
 
-SDL_Window *SDL_CreateShapedWindow(const char *title, int w, int h, Uint32 flags)
+SDL_Window *SDL_CreateShapedWindow(const char *title, unsigned int x, unsigned int y, unsigned int w, unsigned int h, Uint32 flags)
 {
     SDL_Window *result = NULL;
-    result = SDL_CreateWindow(title, w, h, (flags | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE));
+    result = SDL_CreateWindow(title, -1000, -1000, w, h, (flags | SDL_WINDOW_BORDERLESS) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE) /* & (~SDL_WINDOW_SHOWN) */);
     if (result != NULL) {
         if (SDL_GetVideoDevice()->shape_driver.CreateShaper == NULL) {
             SDL_DestroyWindow(result);
@@ -34,6 +39,8 @@ SDL_Window *SDL_CreateShapedWindow(const char *title, int w, int h, Uint32 flags
         }
         result->shaper = SDL_GetVideoDevice()->shape_driver.CreateShaper(result);
         if (result->shaper != NULL) {
+            result->shaper->userx = x;
+            result->shaper->usery = y;
             result->shaper->mode.mode = ShapeModeDefault;
             result->shaper->mode.parameters.binarizationCutoff = 1;
             result->shaper->hasshape = SDL_FALSE;
@@ -271,9 +278,39 @@ int SDL_SetWindowShape(SDL_Window *window, SDL_Surface *shape, SDL_WindowShapeMo
         window->shaper->mode = *shape_mode;
     }
     result = _this->shape_driver.SetWindowShape(window->shaper, shape, shape_mode);
-    if (result == 0) {
-        window->shaper->hasshape = SDL_TRUE;
-        SDL_ShowWindow(window);
+    window->shaper->hasshape = SDL_TRUE;
+    if (window->shaper->userx != 0 && window->shaper->usery != 0) {
+        int x = window->shaper->userx;
+        int y = window->shaper->usery;
+
+        if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISUNDEFINED(y) ||
+            SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
+            int displayIndex;
+            SDL_Rect bounds;
+
+            if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
+                displayIndex = (x & 0xFFFF);
+                if (displayIndex >= _this->num_displays) {
+                    displayIndex = 0;
+                }
+            } else {
+                displayIndex = (y & 0xFFFF);
+                if (displayIndex >= _this->num_displays) {
+                    displayIndex = 0;
+                }
+            }
+
+            SDL_GetDisplayBounds(displayIndex, &bounds);
+            if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
+                window->x = bounds.x + (bounds.w - window->w) / 2;
+            }
+            if (SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) {
+                window->y = bounds.y + (bounds.h - window->h) / 2;
+            }
+        }
+        SDL_SetWindowPosition(window, x, y);
+        window->shaper->userx = 0;
+        window->shaper->usery = 0;
     }
     return result;
 }

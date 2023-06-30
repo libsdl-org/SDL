@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_ANDROID
+#if SDL_VIDEO_DRIVER_ANDROID
 
 #include <android/log.h>
 
@@ -328,40 +328,47 @@ static SDL_Scancode TranslateKeycode(int keycode)
 
 int Android_OnKeyDown(int keycode)
 {
-    return SDL_SendKeyboardKey(0, SDL_PRESSED, TranslateKeycode(keycode));
+    return SDL_SendKeyboardKey(SDL_PRESSED, TranslateKeycode(keycode));
 }
 
 int Android_OnKeyUp(int keycode)
 {
-    return SDL_SendKeyboardKey(0, SDL_RELEASED, TranslateKeycode(keycode));
+    return SDL_SendKeyboardKey(SDL_RELEASED, TranslateKeycode(keycode));
 }
 
-SDL_bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+SDL_bool Android_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
 }
 
-SDL_bool Android_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_bool Android_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     return Android_JNI_IsScreenKeyboardShown();
 }
 
-void Android_StartTextInput(SDL_VideoDevice *_this)
+void Android_StartTextInput(_THIS)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     Android_JNI_ShowTextInput(&videodata->textRect);
 }
 
-void Android_StopTextInput(SDL_VideoDevice *_this)
+void Android_StopTextInput(_THIS)
 {
     Android_JNI_HideTextInput();
 }
 
-int Android_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
+void Android_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+
+    if (rect == NULL) {
+        SDL_InvalidParamError("rect");
+        return;
+    }
+
     videodata->textRect = *rect;
-    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
+
+/* vi: set ts=4 sw=4 expandtab: */

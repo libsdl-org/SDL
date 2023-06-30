@@ -4,13 +4,15 @@ VisualStudioVersion = 17.1.32414.318
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D69D5741-611F-4E14-8541-1FEE94F50B5A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL3", "SDL\SDL.vcxproj", "{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2", "SDL\SDL.vcxproj", "{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testsprite", "tests\testsprite\testsprite.vcxproj", "{40FB7794-D3C3-4CFE-BCF4-A80C96635682}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2main", "SDLmain\SDLmain.vcxproj", "{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL3_test", "SDL_test\SDL_test.vcxproj", "{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testsprite2", "tests\testsprite2\testsprite2.vcxproj", "{40FB7794-D3C3-4CFE-BCF4-A80C96635682}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgamepad", "tests\testgamepad\testgamepad.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08305}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2test", "SDLtest\SDLtest.vcxproj", "{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgamecontroller", "tests\testgamecontroller\testgamecontroller.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08305}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgdk", "tests\testgdk\testgdk.vcxproj", "{1C9A3F71-35A5-4C56-B292-F4375B3C3649}"
 EndProject
@@ -36,6 +38,18 @@ Global
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|Gaming.Xbox.Scarlett.x64.Build.0 = Release|Gaming.Xbox.Scarlett.x64
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|Gaming.Xbox.XboxOne.x64.ActiveCfg = Release|Gaming.Xbox.XboxOne.x64
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|Gaming.Xbox.XboxOne.x64.Build.0 = Release|Gaming.Xbox.XboxOne.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Debug|Gaming.Desktop.x64.ActiveCfg = Debug|Gaming.Desktop.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Debug|Gaming.Desktop.x64.Build.0 = Debug|Gaming.Desktop.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Debug|Gaming.Xbox.Scarlett.x64.ActiveCfg = Debug|Gaming.Xbox.Scarlett.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Debug|Gaming.Xbox.Scarlett.x64.Build.0 = Debug|Gaming.Xbox.Scarlett.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Debug|Gaming.Xbox.XboxOne.x64.ActiveCfg = Debug|Gaming.Xbox.XboxOne.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Debug|Gaming.Xbox.XboxOne.x64.Build.0 = Debug|Gaming.Xbox.XboxOne.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Release|Gaming.Desktop.x64.ActiveCfg = Release|Gaming.Desktop.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Release|Gaming.Desktop.x64.Build.0 = Release|Gaming.Desktop.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Release|Gaming.Xbox.Scarlett.x64.ActiveCfg = Release|Gaming.Xbox.Scarlett.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Release|Gaming.Xbox.Scarlett.x64.Build.0 = Release|Gaming.Xbox.Scarlett.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Release|Gaming.Xbox.XboxOne.x64.ActiveCfg = Release|Gaming.Xbox.XboxOne.x64
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}.Release|Gaming.Xbox.XboxOne.x64.Build.0 = Release|Gaming.Xbox.XboxOne.x64
 		{40FB7794-D3C3-4CFE-BCF4-A80C96635682}.Debug|Gaming.Desktop.x64.ActiveCfg = Debug|Gaming.Desktop.x64
 		{40FB7794-D3C3-4CFE-BCF4-A80C96635682}.Debug|Gaming.Desktop.x64.Build.0 = Debug|Gaming.Desktop.x64
 		{40FB7794-D3C3-4CFE-BCF4-A80C96635682}.Debug|Gaming.Desktop.x64.Deploy.0 = Debug|Gaming.Desktop.x64

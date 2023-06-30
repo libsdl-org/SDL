@@ -24,7 +24,8 @@
  * SDL_x11vulkan.h.
  */
 
-#include "SDL_internal.h"
+
+#include "../../SDL_internal.h"
 
 #ifndef SDL_cocoavulkan_h_
 #define SDL_cocoavulkan_h_
@@ -32,18 +33,23 @@
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
 
-#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_COCOA)
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_COCOA
 
-int Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-void Cocoa_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-SDL_bool Cocoa_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                            unsigned *count,
-                                            const char **names);
-SDL_bool Cocoa_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                    SDL_Window *window,
-                                    VkInstance instance,
-                                    VkSurfaceKHR *surface);
+int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path);
+void Cocoa_Vulkan_UnloadLibrary(_THIS);
+SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
+                                          SDL_Window *window,
+                                          unsigned *count,
+                                          const char **names);
+SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
+                                  SDL_Window *window,
+                                  VkInstance instance,
+                                  VkSurfaceKHR *surface);
+
+void Cocoa_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
 
 #endif
 
 #endif /* SDL_cocoavulkan_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

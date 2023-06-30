@@ -1,9 +1,21 @@
-build/
-build-*/
-!build-scripts/
-buildbot/
+aclocal.m4
+autom4te*
+config.cache
+config.log
+config.status
+libtool
+Makefile
+Makefile.rules
+sdl2-config
+sdl2-config.cmake
+sdl2-config-version.cmake
+sdl2.pc
+SDL2.spec
+build
+gen
+Build
+buildbot
 /VERSION.txt
-__pycache__
 
 *.so
 *.so.*
@@ -33,7 +45,7 @@ CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 cmake_uninstall.cmake
-SDL3ConfigVersion.cmake
+SDL2ConfigVersion.cmake
 .ninja_*
 *.ninja
 
@@ -50,6 +62,11 @@ cmake-build-*
 xcuserdata
 *.xcworkspace
 
+# for QtCreator
+CMakeLists.txt.user
+build*/
+*.pro.user*
+
 # for Visual C++
 .vs
 Debug
@@ -58,24 +75,33 @@ Release
 *.ncb
 *.suo
 *.sdf
-VisualC/tests/gamepadmap/axis.bmp
-VisualC/tests/gamepadmap/button.bmp
-VisualC/tests/gamepadmap/gamepadmap.bmp
-VisualC/tests/gamepadmap/gamepadmap_back.bmp
+VisualC/tests/controllermap/axis.bmp
+VisualC/tests/controllermap/button.bmp
+VisualC/tests/controllermap/controllermap.bmp
+VisualC/tests/controllermap/controllermap_back.bmp
 VisualC/tests/loopwave/sample.wav
 VisualC/tests/testautomation/CompareSurfaces0001_Reference.bmp
 VisualC/tests/testautomation/CompareSurfaces0001_TestOutput.bmp
-VisualC/tests/testgamepad/axis.bmp
-VisualC/tests/testgamepad/button.bmp
-VisualC/tests/testgamepad/gamepadmap.bmp
-VisualC/tests/testgamepad/gamepadmap_back.bmp
-VisualC/tests/testoverlay/moose.dat
+VisualC/tests/testgamecontroller/axis.bmp
+VisualC/tests/testgamecontroller/button.bmp
+VisualC/tests/testgamecontroller/controllermap.bmp
+VisualC/tests/testgamecontroller/controllermap_back.bmp
+VisualC/tests/testoverlay2/moose.dat
 VisualC/tests/testrendertarget/icon.bmp
 VisualC/tests/testrendertarget/sample.bmp
 VisualC/tests/testscale/icon.bmp
 VisualC/tests/testscale/sample.bmp
-VisualC/tests/testsprite/icon.bmp
+VisualC/tests/testsprite2/icon.bmp
 VisualC/tests/testyuv/testyuv.bmp
+VisualC/visualtest/icon.bmp
+VisualC/visualtest/testquit.actions
+VisualC/visualtest/testquit.config
+VisualC/visualtest/testquit.exe
+VisualC/visualtest/testquit.parameters
+VisualC/visualtest/testsprite2.exe
+VisualC/visualtest/testsprite2_sample.actions
+VisualC/visualtest/testsprite2_sample.config
+VisualC/visualtest/testsprite2_sample.parameters
 VisualC-GDK/**/Layout
 
 # for Android
@@ -84,7 +110,7 @@ android-project/.gradle/
 
 test/checkkeys
 test/checkkeysthreads
-test/gamepadmap
+test/controllermap
 test/loopwave
 test/loopwavequeue
 test/testatomic
@@ -95,17 +121,17 @@ test/testautomation
 test/testbounds
 test/testcustomcursor
 test/testdisplayinfo
-test/testdraw
+test/testdraw2
 test/testdrawchessboard
 test/testdropfile
 test/testerror
 test/testevdev
 test/testfile
 test/testfilesystem
-test/testgamepad
+test/testgamecontroller
 test/testgeometry
 test/testgesture
-test/testgl
+test/testgl2
 test/testgles
 test/testgles2
 test/testhaptic
@@ -123,7 +149,7 @@ test/testmessage
 test/testmouse
 test/testmultiaudio
 test/testnative
-test/testoverlay
+test/testoverlay2
 test/testplatform
 test/testpower
 test/testqsort
@@ -137,7 +163,7 @@ test/testsem
 test/testsensor
 test/testshader
 test/testshape
-test/testsprite
+test/testsprite2
 test/testspriteminimal
 test/teststreaming
 test/testsurround
@@ -147,11 +173,17 @@ test/testurl
 test/testver
 test/testviewport
 test/testvulkan
-test/testwm
+test/testwm2
 test/testyuv
 test/torturethread
 
-# for Doxygen
-docs/output
-SDL.tag
-doxygen_warn.txt
+builddir/
+!build-scripts/
+debian/*.debhelper.log
+debian/*.substvars
+debian/*.tar.gz
+debian/.debhelper/
+debian/files
+debian/libsdl*/
+debian/tmp/
+include/SDL_revision.h

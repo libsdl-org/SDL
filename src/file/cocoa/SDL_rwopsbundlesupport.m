@@ -18,14 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef __APPLE__
 #import <Foundation/Foundation.h>
 
 #include "SDL_rwopsbundlesupport.h"
 
-/* For proper macOS applications, the resources are contained inside the application bundle.
+/* For proper OS X applications, the resources are contained inside the application bundle.
  So the strategy is to first check the application bundle for the file, then fallback to the current working directory.
  Note: One additional corner-case is if the resource is in a framework's resource bundle instead of the app.
  We might want to use bundle identifiers, e.g. org.libsdl.sdl to get the bundle for the framework,
@@ -63,3 +63,5 @@ FILE *SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
 }
 
 #endif /* __APPLE__ */
+
+/* vi: set ts=4 sw=4 expandtab: */

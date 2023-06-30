@@ -18,38 +18,69 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_TIMER_NGAGE
+#if defined(SDL_TIMER_NGAGE)
 
 #include <e32std.h>
 #include <e32hal.h>
 
-static TUint start_tick = 0;
+#include "SDL_timer.h"
+
+static SDL_bool ticks_started = SDL_FALSE;
+static TUint start = 0;
+static TInt tickPeriodMilliSeconds;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+void SDL_TicksInit(void)
+{
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = SDL_TRUE;
+    start = User::TickCount();
+
+    TTimeIntervalMicroSeconds32 period;
+    TInt tmp = UserHal::TickPeriod(period);
+
+    (void)tmp; /* Suppress redundant warning. */
+
+    tickPeriodMilliSeconds = period.Int() / 1000;
+}
+
+void SDL_TicksQuit(void)
+{
+    ticks_started = SDL_FALSE;
+}
+
+Uint64 SDL_GetTicks64(void)
+{
+    if (!ticks_started) {
+        SDL_TicksInit();
+    }
+
+    TUint deltaTics = User::TickCount() - start;
+
+    // Overlaps early, but should do the trick for now.
+    return (Uint64)(deltaTics * tickPeriodMilliSeconds);
+}
 
 Uint64 SDL_GetPerformanceCounter(void)
 {
-    /* FIXME: Need to account for 32-bit wrapping */
     return (Uint64)User::TickCount();
 }
 
 Uint64 SDL_GetPerformanceFrequency(void)
 {
-    return SDL_US_PER_SECOND;
+    return 1000000;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_Delay(Uint32 ms)
 {
-    const Uint64 max_delay = 0x7fffffffLL * SDL_NS_PER_US;
-    if (ns > max_delay) {
-        ns = max_delay;
-    }
-    User::After(TTimeIntervalMicroSeconds32((TInt)SDL_NS_TO_US(ns)));
+    User::After(TTimeIntervalMicroSeconds32(ms * 1000));
 }
 
 #ifdef __cplusplus
@@ -57,3 +88,5 @@ void SDL_DelayNS(Uint64 ns)
 #endif
 
 #endif /* SDL_TIMER_NGAGE */
+
+/* vi: set ts=4 sw=4 expandtab: */

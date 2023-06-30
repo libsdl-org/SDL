@@ -18,12 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "SDL_config.h"
 
 /* The private structure used to keep track of a sensor */
 struct sensor_hwdata
 {
     Uint32 counter;
-    unsigned int last_tick;
-    Uint64 sensor_timestamp;
+    unsigned int last_timestamp;
+    Uint64 timestamp_us;
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

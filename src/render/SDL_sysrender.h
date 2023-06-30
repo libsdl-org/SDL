@@ -18,11 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #ifndef SDL_sysrender_h_
 #define SDL_sysrender_h_
 
+#include "SDL_render.h"
+#include "SDL_events.h"
+#include "SDL_mutex.h"
 #include "SDL_yuv_sw_c.h"
 
 /* Set up for C function definitions, even when using C++ */
@@ -45,31 +48,18 @@ typedef struct SDL_DRect
 
 typedef struct SDL_RenderDriver SDL_RenderDriver;
 
-/* Rendering view state */
-typedef struct SDL_RenderViewState
-{
-    int pixel_w;
-    int pixel_h;
-    SDL_Rect viewport;
-    SDL_Rect clip_rect;
-    SDL_bool clipping_enabled;
-    SDL_FPoint scale;
-
-} SDL_RenderViewState;
-
 /* Define the SDL texture structure */
 struct SDL_Texture
 {
     const void *magic;
-    Uint32 format;              /**< The pixel format of the texture */
-    int access;                 /**< SDL_TextureAccess */
-    int w;                      /**< The width of the texture */
-    int h;                      /**< The height of the texture */
-    int modMode;                /**< The texture modulation mode */
-    SDL_BlendMode blendMode;    /**< The texture blend mode */
-    SDL_ScaleMode scaleMode;    /**< The texture scale mode */
-    SDL_Color color;            /**< Texture modulation values */
-    SDL_RenderViewState view;   /**< Target texture view state */
+    Uint32 format;           /**< The pixel format of the texture */
+    int access;              /**< SDL_TextureAccess */
+    int w;                   /**< The width of the texture */
+    int h;                   /**< The height of the texture */
+    int modMode;             /**< The texture modulation mode */
+    SDL_BlendMode blendMode; /**< The texture blend mode */
+    SDL_ScaleMode scaleMode; /**< The texture scale mode */
+    SDL_Color color;         /**< Texture modulation values */
 
     SDL_Renderer *renderer;
 
@@ -168,9 +158,9 @@ struct SDL_Renderer
     int (*QueueFillRects)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FRect *rects,
                           int count);
     int (*QueueCopy)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                     const SDL_FRect *srcrect, const SDL_FRect *dstrect);
+                     const SDL_Rect *srcrect, const SDL_FRect *dstrect);
     int (*QueueCopyEx)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                       const SDL_FRect *srcquad, const SDL_FRect *dstrect,
+                       const SDL_Rect *srcquad, const SDL_FRect *dstrect,
                        const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y);
     int (*QueueGeometry)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                          const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
@@ -222,21 +212,39 @@ struct SDL_Renderer
     /* Whether we should simulate vsync */
     SDL_bool wanted_vsync;
     SDL_bool simulate_vsync;
-    Uint64 simulate_vsync_interval_ns;
-    Uint64 last_present;
+    Uint32 simulate_vsync_interval;
+    Uint32 last_present;
 
-    /* Support for logical output coordinates */
-    SDL_Texture *logical_target;
-    SDL_RendererLogicalPresentation logical_presentation_mode;
-    SDL_ScaleMode logical_scale_mode;
-    SDL_FRect logical_src_rect;
-    SDL_FRect logical_dst_rect;
+    /* The logical resolution for rendering */
+    int logical_w;
+    int logical_h;
+    int logical_w_backup;
+    int logical_h_backup;
 
-    SDL_RenderViewState *view;
-    SDL_RenderViewState main_view;
+    /* Whether or not to force the viewport to even integer intervals */
+    SDL_bool integer_scale;
 
-    /* The window pixel to point coordinate scale */
+    /* The drawable area within the window */
+    SDL_DRect viewport;
+    SDL_DRect viewport_backup;
+
+    /* The clip rectangle within the window */
+    SDL_DRect clip_rect;
+    SDL_DRect clip_rect_backup;
+
+    /* Whether or not the clipping rectangle is used. */
+    SDL_bool clipping_enabled;
+    SDL_bool clipping_enabled_backup;
+
+    /* The render output coordinate scale */
+    SDL_FPoint scale;
+    SDL_FPoint scale_backup;
+
+    /* The pixel to point coordinate scale */
     SDL_FPoint dpi_scale;
+
+    /* Whether or not to scale relative mouse motion */
+    SDL_bool relative_scaling;
 
     /* The method of drawing lines */
     SDL_RenderLineMethod line_method;
@@ -244,10 +252,14 @@ struct SDL_Renderer
     /* List of triangle indices to draw rects */
     int rect_index_order[6];
 
+    /* Remainder from scaled relative motion */
+    float xrel;
+    float yrel;
+
     /* The list of textures */
     SDL_Texture *textures;
     SDL_Texture *target;
-    SDL_Mutex *target_mutex;
+    SDL_mutex *target_mutex;
 
     SDL_Color color;         /**< Color for drawing operations values */
     SDL_BlendMode blendMode; /**< The drawing blend mode */
@@ -259,8 +271,8 @@ struct SDL_Renderer
     SDL_RenderCommand *render_commands_pool;
     Uint32 render_command_generation;
     Uint32 last_queued_color;
-    SDL_Rect last_queued_viewport;
-    SDL_Rect last_queued_cliprect;
+    SDL_DRect last_queued_viewport;
+    SDL_DRect last_queued_cliprect;
     SDL_bool last_queued_cliprect_enabled;
     SDL_bool color_queued;
     SDL_bool viewport_queued;
@@ -288,6 +300,8 @@ extern SDL_RenderDriver D3D11_RenderDriver;
 extern SDL_RenderDriver D3D12_RenderDriver;
 extern SDL_RenderDriver GL_RenderDriver;
 extern SDL_RenderDriver GLES2_RenderDriver;
+extern SDL_RenderDriver GLES_RenderDriver;
+extern SDL_RenderDriver DirectFB_RenderDriver;
 extern SDL_RenderDriver METAL_RenderDriver;
 extern SDL_RenderDriver PS2_RenderDriver;
 extern SDL_RenderDriver PSP_RenderDriver;
@@ -307,8 +321,8 @@ extern SDL_BlendOperation SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode
    the next call, because it might be in an array that gets realloc()'d. */
 extern void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const size_t alignment, size_t *offset);
 
-extern int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
-extern int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
+extern int SDL_PrivateLowerBlitScaled(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
+extern int SDL_PrivateUpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
@@ -316,3 +330,5 @@ extern int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrec
 #endif
 
 #endif /* SDL_sysrender_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

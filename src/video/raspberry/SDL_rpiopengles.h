@@ -18,30 +18,32 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_rpiopengles_h_
 #define SDL_rpiopengles_h_
 
-#if defined(SDL_VIDEO_DRIVER_RPI) && defined(SDL_VIDEO_OPENGL_EGL)
+#if SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
 /* OpenGLES functions */
-#define RPI_GLES_GetAttribute    SDL_EGL_GetAttribute
-#define RPI_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
-#define RPI_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
+#define RPI_GLES_GetAttribute SDL_EGL_GetAttribute
+#define RPI_GLES_GetProcAddress SDL_EGL_GetProcAddress
+#define RPI_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
 #define RPI_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define RPI_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 #define RPI_GLES_DeleteContext   SDL_EGL_DeleteContext
 
-extern int RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-extern SDL_GLContext RPI_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int RPI_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
-extern void RPI_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor);
+extern int RPI_GLES_LoadLibrary(_THIS, const char *path);
+extern SDL_GLContext RPI_GLES_CreateContext(_THIS, SDL_Window *window);
+extern int RPI_GLES_SwapWindow(_THIS, SDL_Window *window);
+extern int RPI_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
+extern void RPI_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor);
 
 #endif /* SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL */
 
 #endif /* SDL_rpiopengles_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

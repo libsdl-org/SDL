@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_COCOA
+#if SDL_VIDEO_DRIVER_COCOA
 
 #include "SDL_cocoavideo.h"
 
@@ -33,12 +33,11 @@
 /*#define DEBUG_IME NSLog */
 #define DEBUG_IME(...)
 
-@interface SDLTranslatorResponder : NSView <NSTextInputClient>
-{
+@interface SDLTranslatorResponder : NSView <NSTextInputClient> {
     NSString *_markedText;
-    NSRange _markedRange;
-    NSRange _selectedRange;
-    SDL_Rect _inputRect;
+    NSRange   _markedRange;
+    NSRange   _selectedRange;
+    SDL_Rect  _inputRect;
 }
 - (void)doCommandBySelector:(SEL)myselector;
 - (void)setInputRect:(const SDL_Rect *)rect;
@@ -61,7 +60,7 @@
 
     /* Could be NSString or NSAttributedString, so we have
      * to test and convert it before return as SDL event */
-    if ([aString isKindOfClass:[NSAttributedString class]]) {
+    if ([aString isKindOfClass: [NSAttributedString class]]) {
         str = [[aString string] UTF8String];
     } else {
         str = [aString UTF8String];
@@ -117,10 +116,10 @@
     _markedRange = NSMakeRange(0, [aString length]);
 
     SDL_SendEditingText([aString UTF8String],
-                        (int)selectedRange.location, (int)selectedRange.length);
+                        (int) selectedRange.location, (int) selectedRange.length);
 
     DEBUG_IME(@"setMarkedText: %@, (%d, %d)", _markedText,
-              selectedRange.location, selectedRange.length);
+          selectedRange.location, selectedRange.length);
 }
 
 - (void)unmarkText
@@ -143,8 +142,8 @@
     }
 
     DEBUG_IME(@"firstRectForCharacterRange: (%d, %d): windowHeight = %g, rect = %@",
-              aRange.location, aRange.length, windowHeight,
-              NSStringFromRect(rect));
+            aRange.location, aRange.length, windowHeight,
+            NSStringFromRect(rect));
 
     rect = [window convertRectToScreen:rect];
 
@@ -159,7 +158,7 @@
 
 - (NSInteger)conversationIdentifier
 {
-    return (NSInteger)self;
+    return (NSInteger) self;
 }
 
 /* This method returns the index for character that is
@@ -198,7 +197,7 @@ static bool IsModifierKeyPressed(unsigned int flags,
     return target_pressed;
 }
 
-static void HandleModifiers(SDL_VideoDevice *_this, SDL_Scancode code, unsigned int modifierFlags)
+static void HandleModifiers(_THIS, SDL_Scancode code, unsigned int modifierFlags)
 {
     bool pressed = false;
 
@@ -231,13 +230,13 @@ static void HandleModifiers(SDL_VideoDevice *_this, SDL_Scancode code, unsigned 
     }
 
     if (pressed) {
-        SDL_SendKeyboardKey(0, SDL_PRESSED, code);
+        SDL_SendKeyboardKey(SDL_PRESSED, code);
     } else {
-        SDL_SendKeyboardKey(0, SDL_RELEASED, code);
+        SDL_SendKeyboardKey(SDL_RELEASED, code);
     }
 }
 
-static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
+static void UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
 {
     TISInputSourceRef key_layout;
     const void *chr_data;
@@ -279,7 +278,7 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
                 continue;
             }
 
-            /* 
+            /*
              * Swap the scancode for these two wrongly translated keys
              * UCKeyTranslate() function does not do its job properly for ISO layout keyboards, where the key '@',
              * which is located in the top left corner of the keyboard right under the Escape key, and the additional
@@ -291,11 +290,11 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
             }
 
             dead_key_state = 0;
-            err = UCKeyTranslate((UCKeyboardLayout *)chr_data,
-                                 i, kUCKeyActionDown,
-                                 0, keyboard_type,
-                                 kUCKeyTranslateNoDeadKeysMask,
-                                 &dead_key_state, 8, &len, s);
+            err = UCKeyTranslate ((UCKeyboardLayout *) chr_data,
+                                  i, kUCKeyActionDown,
+                                  0, keyboard_type,
+                                  kUCKeyTranslateNoDeadKeysMask,
+                                  &dead_key_state, 8, &len, s);
             if (err != noErr) {
                 continue;
             }
@@ -312,9 +311,9 @@ cleanup:
     CFRelease(key_layout);
 }
 
-void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
+void Cocoa_InitKeyboard(_THIS)
 {
-    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+    SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
 
     UpdateKeymap(data, SDL_FALSE);
 
@@ -327,67 +326,70 @@ void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
     SDL_SetScancodeName(SDL_SCANCODE_RGUI, "Right Command");
 
     data.modifierFlags = (unsigned int)[NSEvent modifierFlags];
-    SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE);
+    SDL_ToggleModState(KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE);
 }
 
-void Cocoa_StartTextInput(SDL_VideoDevice *_this)
+void Cocoa_StartTextInput(_THIS)
+{ @autoreleasepool
 {
-    @autoreleasepool {
-        NSView *parentView;
-        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
-        SDL_Window *window = SDL_GetKeyboardFocus();
-        NSWindow *nswindow = nil;
-        if (window) {
-            nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
-        }
-
-        parentView = [nswindow contentView];
-
-        /* We only keep one field editor per process, since only the front most
-         * window can receive text input events, so it make no sense to keep more
-         * than one copy. When we switched to another window and requesting for
-         * text input, simply remove the field editor from its superview then add
-         * it to the front most window's content view */
-        if (!data.fieldEdit) {
-            data.fieldEdit =
-                [[SDLTranslatorResponder alloc] initWithFrame:NSMakeRect(0.0, 0.0, 0.0, 0.0)];
-        }
-
-        if (![[data.fieldEdit superview] isEqual:parentView]) {
-            /* DEBUG_IME(@"add fieldEdit to window contentView"); */
-            [data.fieldEdit removeFromSuperview];
-            [parentView addSubview:data.fieldEdit];
-            [nswindow makeFirstResponder:data.fieldEdit];
-        }
+    NSView *parentView;
+    SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
+    SDL_Window *window = SDL_GetKeyboardFocus();
+    NSWindow *nswindow = nil;
+    if (window) {
+        nswindow = ((__bridge SDL_WindowData*)window->driverdata).nswindow;
     }
-}
 
-void Cocoa_StopTextInput(SDL_VideoDevice *_this)
-{
-    @autoreleasepool {
-        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+    parentView = [nswindow contentView];
 
-        if (data && data.fieldEdit) {
-            [data.fieldEdit removeFromSuperview];
-            data.fieldEdit = nil;
-        }
+    /* We only keep one field editor per process, since only the front most
+     * window can receive text input events, so it make no sense to keep more
+     * than one copy. When we switched to another window and requesting for
+     * text input, simply remove the field editor from its superview then add
+     * it to the front most window's content view */
+    if (!data.fieldEdit) {
+        data.fieldEdit =
+            [[SDLTranslatorResponder alloc] initWithFrame: NSMakeRect(0.0, 0.0, 0.0, 0.0)];
     }
-}
 
-int Cocoa_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
+    if (![[data.fieldEdit superview] isEqual:parentView]) {
+        /* DEBUG_IME(@"add fieldEdit to window contentView"); */
+        [data.fieldEdit removeFromSuperview];
+        [parentView addSubview: data.fieldEdit];
+        [nswindow makeFirstResponder: data.fieldEdit];
+    }
+}}
+
+void Cocoa_StopTextInput(_THIS)
+{ @autoreleasepool
 {
-    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+    SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
+
+    if (data && data.fieldEdit) {
+        [data.fieldEdit removeFromSuperview];
+        data.fieldEdit = nil;
+    }
+}}
+
+void Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
+{
+    SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
+
+    if (!rect) {
+        SDL_InvalidParamError("rect");
+        return;
+    }
+
     [data.fieldEdit setInputRect:rect];
-    return 0;
 }
 
-void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
+void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 {
     unsigned short scancode;
     SDL_Scancode code;
-    SDL_CocoaVideoData *data = _this ? ((__bridge SDL_CocoaVideoData *)_this->driverdata) : nil;
+    SDL_VideoData *data = _this ? ((__bridge SDL_VideoData *) _this->driverdata) : nil;
     if (!data) {
-        return; /* can happen when returning from fullscreen Space on shutdown */
+        return;  /* can happen when returning from fullscreen Space on shutdown */
     }
 
     scancode = [event keyCode];
@@ -414,13 +416,13 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
             UpdateKeymap(data, SDL_TRUE);
         }
 
-        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_PRESSED, code);
+        SDL_SendKeyboardKey(SDL_PRESSED, code);
 #ifdef DEBUG_SCANCODES
         if (code == SDL_SCANCODE_UNKNOWN) {
             SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
         }
 #endif
-        if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+        if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
             /* FIXME CW 2007-08-16: only send those events to the field editor for which we actually want text events, not e.g. esc or function keys. Arrow keys in particular seem to produce crashes sometimes. */
             [data.fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
 #if 0
@@ -433,7 +435,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
         }
         break;
     case NSEventTypeKeyUp:
-        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_RELEASED, code);
+        SDL_SendKeyboardKey(SDL_RELEASED, code);
         break;
     case NSEventTypeFlagsChanged:
         HandleModifiers(_this, code, (unsigned int)[event modifierFlags]);
@@ -443,13 +445,12 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
     }
 }
 
-void Cocoa_QuitKeyboard(SDL_VideoDevice *_this)
+void Cocoa_QuitKeyboard(_THIS)
 {
 }
 
 typedef int CGSConnection;
-typedef enum
-{
+typedef enum {
     CGSGlobalHotKeyEnable = 0,
     CGSGlobalHotKeyDisable = 1,
 } CGSGlobalHotKeyOperatingMode;
@@ -457,11 +458,13 @@ typedef enum
 extern CGSConnection _CGSDefaultConnection(void);
 extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
 
-void Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+void Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
-#ifdef SDL_MAC_NO_SANDBOX
+#if SDL_MAC_NO_SANDBOX
     CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);
 #endif
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
+
+/* vi: set ts=4 sw=4 expandtab: */

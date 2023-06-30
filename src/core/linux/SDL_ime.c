@@ -18,29 +18,29 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #include "SDL_ime.h"
 #include "SDL_ibus.h"
 #include "SDL_fcitx.h"
 
-typedef SDL_bool (*SDL_IME_Init_t)(void);
-typedef void (*SDL_IME_Quit_t)(void);
-typedef void (*SDL_IME_SetFocus_t)(SDL_bool);
-typedef void (*SDL_IME_Reset_t)(void);
-typedef SDL_bool (*SDL_IME_ProcessKeyEvent_t)(Uint32, Uint32, Uint8 state);
-typedef void (*SDL_IME_UpdateTextRect_t)(const SDL_Rect *);
-typedef void (*SDL_IME_PumpEvents_t)(void);
+typedef SDL_bool (*_SDL_IME_Init)(void);
+typedef void (*_SDL_IME_Quit)(void);
+typedef void (*_SDL_IME_SetFocus)(SDL_bool);
+typedef void (*_SDL_IME_Reset)(void);
+typedef SDL_bool (*_SDL_IME_ProcessKeyEvent)(Uint32, Uint32, Uint8 state);
+typedef void (*_SDL_IME_UpdateTextRect)(const SDL_Rect *);
+typedef void (*_SDL_IME_PumpEvents)(void);
 
-static SDL_IME_Init_t SDL_IME_Init_Real = NULL;
-static SDL_IME_Quit_t SDL_IME_Quit_Real = NULL;
-static SDL_IME_SetFocus_t SDL_IME_SetFocus_Real = NULL;
-static SDL_IME_Reset_t SDL_IME_Reset_Real = NULL;
-static SDL_IME_ProcessKeyEvent_t SDL_IME_ProcessKeyEvent_Real = NULL;
-static SDL_IME_UpdateTextRect_t SDL_IME_UpdateTextRect_Real = NULL;
-static SDL_IME_PumpEvents_t SDL_IME_PumpEvents_Real = NULL;
+static _SDL_IME_Init SDL_IME_Init_Real = NULL;
+static _SDL_IME_Quit SDL_IME_Quit_Real = NULL;
+static _SDL_IME_SetFocus SDL_IME_SetFocus_Real = NULL;
+static _SDL_IME_Reset SDL_IME_Reset_Real = NULL;
+static _SDL_IME_ProcessKeyEvent SDL_IME_ProcessKeyEvent_Real = NULL;
+static _SDL_IME_UpdateTextRect SDL_IME_UpdateTextRect_Real = NULL;
+static _SDL_IME_PumpEvents SDL_IME_PumpEvents_Real = NULL;
 
-static void InitIME(void)
+static void InitIME()
 {
     static SDL_bool inited = SDL_FALSE;
 #ifdef HAVE_FCITX
@@ -142,9 +142,11 @@ void SDL_IME_UpdateTextRect(const SDL_Rect *rect)
     }
 }
 
-void SDL_IME_PumpEvents(void)
+void SDL_IME_PumpEvents()
 {
     if (SDL_IME_PumpEvents_Real) {
         SDL_IME_PumpEvents_Real();
     }
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

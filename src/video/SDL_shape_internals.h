@@ -18,10 +18,22 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
 #ifndef SDL_shape_internals_h_
 #define SDL_shape_internals_h_
+
+#include "SDL_rect.h"
+#include "SDL_shape.h"
+#include "SDL_surface.h"
+
+#include "begin_code.h"
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+extern "C" {
+/* *INDENT-ON* */
+#endif
 
 struct SDL_ShapeTree;
 
@@ -56,4 +68,12 @@ extern SDL_ShapeTree *SDL_CalculateShapeTree(SDL_WindowShapeMode mode, SDL_Surfa
 extern void SDL_TraverseShapeTree(SDL_ShapeTree *tree, SDL_TraversalFunction function, void *closure);
 extern void SDL_FreeShapeTree(SDL_ShapeTree **shape_tree);
 
-#endif /* SDL_shape_internals_h_ */
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+}
+/* *INDENT-ON* */
+#endif
+#include "close_code.h"
+
+#endif

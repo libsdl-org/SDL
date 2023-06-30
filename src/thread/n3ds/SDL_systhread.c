@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifdef SDL_THREAD_N3DS
 
@@ -137,3 +137,5 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
 }
 
 #endif /* SDL_THREAD_N3DS */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

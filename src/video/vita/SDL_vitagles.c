@@ -18,12 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_VITA) && defined(SDL_VIDEO_VITA_PIB)
+#if SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PIB
 #include <stdlib.h>
 #include <string.h>
 
+#include "SDL_error.h"
+#include "SDL_log.h"
 #include "SDL_vitavideo.h"
 #include "SDL_vitagles_c.h"
 
@@ -58,18 +60,18 @@ void VITA_GLES_KeyboardCallback(ScePigletPreSwapData *data)
     sceCommonDialogUpdate(&commonDialogParam);
 }
 
-int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+int VITA_GLES_LoadLibrary(_THIS, const char *path)
 {
     pibInit(PIB_SHACCCG | PIB_GET_PROC_ADDR_CORE);
     return 0;
 }
 
-SDL_FunctionPointer VITA_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
+void *VITA_GLES_GetProcAddress(_THIS, const char *proc)
 {
     return eglGetProcAddress(proc);
 }
 
-void VITA_GLES_UnloadLibrary(SDL_VideoDevice *_this)
+void VITA_GLES_UnloadLibrary(_THIS)
 {
     eglTerminate(_this->gl_data->display);
 }
@@ -77,10 +79,10 @@ void VITA_GLES_UnloadLibrary(SDL_VideoDevice *_this)
 static EGLint width = 960;
 static EGLint height = 544;
 
-SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window)
 {
 
-    SDL_WindowData *wdata = window->driverdata;
+    SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;
 
     EGLint attribs[32];
     EGLDisplay display;
@@ -155,7 +157,7 @@ SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window
     return context;
 }
 
-int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     if (!eglMakeCurrent(_this->gl_data->display, _this->gl_data->surface,
                         _this->gl_data->surface, _this->gl_data->context)) {
@@ -164,7 +166,7 @@ int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLCont
     return 0;
 }
 
-int VITA_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
+int VITA_GLES_SetSwapInterval(_THIS, int interval)
 {
     EGLBoolean status;
     status = eglSwapInterval(_this->gl_data->display, interval);
@@ -177,13 +179,12 @@ int VITA_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
     return SDL_SetError("Unable to set the EGL swap interval");
 }
 
-int VITA_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
+int VITA_GLES_GetSwapInterval(_THIS)
 {
-    *interval = _this->gl_data->swapinterval;
-    return 0;
+    return _this->gl_data->swapinterval;
 }
 
-int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int VITA_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
     if (!eglSwapBuffers(_this->gl_data->display, _this->gl_data->surface)) {
         return SDL_SetError("eglSwapBuffers() failed");
@@ -191,13 +192,14 @@ int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-int VITA_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
+void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     EGLBoolean status;
 
     if (phdata->egl_initialized != SDL_TRUE) {
-        return SDL_SetError("VITA: GLES initialization failed, no OpenGL ES support");
+        SDL_SetError("VITA: GLES initialization failed, no OpenGL ES support");
+        return;
     }
 
     /* Check if OpenGL ES connection has been initialized */
@@ -206,12 +208,15 @@ int VITA_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
             status = eglDestroyContext(_this->gl_data->display, context);
             if (status != EGL_TRUE) {
                 /* Error during OpenGL ES context destroying */
-                return SDL_SetError("VITA: OpenGL ES context destroy error");
+                SDL_SetError("VITA: OpenGL ES context destroy error");
+                return;
             }
         }
     }
 
-    return 0;
+    return;
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
+
+/* vi: set ts=4 sw=4 expandtab: */

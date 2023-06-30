@@ -18,11 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #include "SDL_windowsvideo.h"
+#include "SDL_hints.h"
 
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/scancodes_windows.h"
@@ -31,7 +32,7 @@
 #include <oleauto.h>
 
 #ifndef SDL_DISABLE_WINDOWS_IME
-static int IME_Init(SDL_VideoData *videodata, HWND hwnd);
+static void IME_Init(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Quit(SDL_VideoData *videodata);
@@ -49,10 +50,10 @@ static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata);
 #endif
 
 /* Alphabetic scancodes for PC keyboards */
-void WIN_InitKeyboard(SDL_VideoDevice *_this)
+void WIN_InitKeyboard(_THIS)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     data->ime_com_initialized = SDL_FALSE;
     data->ime_threadmgr = 0;
@@ -108,9 +109,9 @@ void WIN_InitKeyboard(SDL_VideoDevice *_this)
     SDL_SetScancodeName(SDL_SCANCODE_RGUI, "Right Windows");
 
     /* Are system caps/num/scroll lock active? Set our state to match. */
-    SDL_ToggleModState(SDL_KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) ? SDL_TRUE : SDL_FALSE);
-    SDL_ToggleModState(SDL_KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) ? SDL_TRUE : SDL_FALSE);
-    SDL_ToggleModState(SDL_KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) ? SDL_TRUE : SDL_FALSE);
+    SDL_ToggleModState(KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) ? SDL_TRUE : SDL_FALSE);
+    SDL_ToggleModState(KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) ? SDL_TRUE : SDL_FALSE);
+    SDL_ToggleModState(KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) ? SDL_TRUE : SDL_FALSE);
 }
 
 void WIN_UpdateKeymap(SDL_bool send_event)
@@ -151,9 +152,9 @@ void WIN_UpdateKeymap(SDL_bool send_event)
     SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
 }
 
-void WIN_QuitKeyboard(SDL_VideoDevice *_this)
+void WIN_QuitKeyboard(_THIS)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     IME_Quit(data);
@@ -194,7 +195,7 @@ void WIN_ResetDeadKeys()
     }
 }
 
-void WIN_StartTextInput(SDL_VideoDevice *_this)
+void WIN_StartTextInput(_THIS)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_Window *window;
@@ -205,8 +206,8 @@ void WIN_StartTextInput(SDL_VideoDevice *_this)
 #ifndef SDL_DISABLE_WINDOWS_IME
     window = SDL_GetKeyboardFocus();
     if (window) {
-        HWND hwnd = window->driverdata->hwnd;
-        SDL_VideoData *videodata = _this->driverdata;
+        HWND hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
+        SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
         SDL_GetWindowSize(window, &videodata->ime_winwidth, &videodata->ime_winheight);
         IME_Init(videodata, hwnd);
         IME_Enable(videodata, hwnd);
@@ -214,7 +215,7 @@ void WIN_StartTextInput(SDL_VideoDevice *_this)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void WIN_StopTextInput(SDL_VideoDevice *_this)
+void WIN_StopTextInput(_THIS)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_Window *window;
@@ -225,18 +226,23 @@ void WIN_StopTextInput(SDL_VideoDevice *_this)
 #ifndef SDL_DISABLE_WINDOWS_IME
     window = SDL_GetKeyboardFocus();
     if (window) {
-        HWND hwnd = window->driverdata->hwnd;
-        SDL_VideoData *videodata = _this->driverdata;
+        HWND hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
+        SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
         IME_Init(videodata, hwnd);
         IME_Disable(videodata, hwnd);
     }
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-int WIN_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
+void WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     HIMC himc = 0;
+
+    if (rect == NULL) {
+        SDL_InvalidParamError("rect");
+        return;
+    }
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     videodata->ime_rect = *rect;
@@ -268,16 +274,15 @@ int WIN_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
     }
 #endif /* !SDL_DISABLE_WINDOWS_IME */
-    return 0;
 }
 
 #ifdef SDL_DISABLE_WINDOWS_IME
 
-void WIN_ClearComposition(SDL_VideoDevice *_this)
+void WIN_ClearComposition(_THIS)
 {
 }
 
-SDL_bool WIN_IsTextInputShown(SDL_VideoDevice *_this)
+SDL_bool WIN_IsTextInputShown(_THIS)
 {
     return SDL_FALSE;
 }
@@ -367,12 +372,12 @@ static SDL_bool WIN_ShouldShowNativeUI()
     return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
 }
 
-static int IME_Init(SDL_VideoData *videodata, HWND hwnd)
+static void IME_Init(SDL_VideoData *videodata, HWND hwnd)
 {
     HRESULT hResult = S_OK;
 
     if (videodata->ime_initialized) {
-        return 0;
+        return;
     }
 
     videodata->ime_hwnd_main = hwnd;
@@ -381,7 +386,8 @@ static int IME_Init(SDL_VideoData *videodata, HWND hwnd)
         hResult = CoCreateInstance(&CLSID_TF_ThreadMgr, NULL, CLSCTX_INPROC_SERVER, &IID_ITfThreadMgr, (LPVOID *)&videodata->ime_threadmgr);
         if (hResult != S_OK) {
             videodata->ime_available = SDL_FALSE;
-            return SDL_SetError("CoCreateInstance() failed, HRESULT is %08X", (unsigned int)hResult);
+            SDL_SetError("CoCreateInstance() failed, HRESULT is %08X", (unsigned int)hResult);
+            return;
         }
     }
     videodata->ime_initialized = SDL_TRUE;
@@ -389,7 +395,7 @@ static int IME_Init(SDL_VideoData *videodata, HWND hwnd)
     if (!videodata->ime_himm32) {
         videodata->ime_available = SDL_FALSE;
         SDL_ClearError();
-        return 0;
+        return;
     }
     /* *INDENT-OFF* */ /* clang-format off */
     videodata->ImmLockIMC = (LPINPUTCONTEXT2 (WINAPI *)(HIMC))SDL_LoadFunction(videodata->ime_himm32, "ImmLockIMC");
@@ -404,7 +410,7 @@ static int IME_Init(SDL_VideoData *videodata, HWND hwnd)
     if (!videodata->ime_himc) {
         videodata->ime_available = SDL_FALSE;
         IME_Disable(videodata, hwnd);
-        return 0;
+        return;
     }
     videodata->ime_available = SDL_TRUE;
     IME_UpdateInputLocale(videodata);
@@ -416,7 +422,6 @@ static int IME_Init(SDL_VideoData *videodata, HWND hwnd)
     }
     IME_UpdateInputLocale(videodata);
     IME_Disable(videodata, hwnd);
-    return 0;
 }
 
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd)
@@ -1316,9 +1321,9 @@ STDMETHODIMP IPPASink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
 
 STDMETHODIMP IPPASink_OnActivated(TSFSink *sink, DWORD dwProfileType, LANGID langid, REFCLSID clsid, REFGUID catid, REFGUID guidProfile, HKL hkl, DWORD dwFlags)
 {
-    static const GUID SDL_TF_PROFILE_DAYI = { 0x037B2C25, 0x480C, 0x4D7F, { 0xB0, 0x27, 0xD6, 0xCA, 0x6B, 0x69, 0x78, 0x8A } };
+    static const GUID TF_PROFILE_DAYI = { 0x037B2C25, 0x480C, 0x4D7F, { 0xB0, 0x27, 0xD6, 0xCA, 0x6B, 0x69, 0x78, 0x8A } };
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    videodata->ime_candlistindexbase = WIN_IsEqualGUID(&SDL_TF_PROFILE_DAYI, guidProfile) ? 0 : 1;
+    videodata->ime_candlistindexbase = WIN_IsEqualGUID(&TF_PROFILE_DAYI, guidProfile) ? 0 : 1;
     if (WIN_IsEqualIID(catid, &GUID_TFCAT_TIP_KEYBOARD) && (dwFlags & TF_IPSINK_FLAG_ACTIVE)) {
         IME_InputLangChanged((SDL_VideoData *)sink->data);
     }
@@ -1669,7 +1674,7 @@ static void IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             bottom = size.cy - listborder - listpadding - candmargin;
         }
 
-        if ((DWORD)i == videodata->ime_candsel) {
+        if (i == videodata->ime_candsel) {
             SelectObject(hdc, selpen);
             SelectObject(hdc, selbrush);
             SetTextColor(hdc, seltextcolor);
@@ -1717,18 +1722,20 @@ void IME_Present(SDL_VideoData *videodata)
     /* FIXME: Need to show the IME bitmap */
 }
 
-SDL_bool WIN_IsTextInputShown(SDL_VideoDevice *_this)
+SDL_bool WIN_IsTextInputShown(_THIS)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     return IME_IsTextInputShown(videodata);
 }
 
-void WIN_ClearComposition(SDL_VideoDevice *_this)
+void WIN_ClearComposition(_THIS)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     IME_ClearComposition(videodata);
 }
 
 #endif /* SDL_DISABLE_WINDOWS_IME */
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
+
+/* vi: set ts=4 sw=4 expandtab: */

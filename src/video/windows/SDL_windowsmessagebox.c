@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
@@ -414,8 +414,8 @@ static void Vec2ToDLU(short *x, short *y)
 {
     SDL_assert(s_BaseUnitsX != 0); /* we init in WIN_ShowMessageBox(), which is the only public function... */
 
-    *x = (short)MulDiv(*x, 4, s_BaseUnitsX);
-    *y = (short)MulDiv(*y, 8, s_BaseUnitsY);
+    *x = MulDiv(*x, 4, s_BaseUnitsX);
+    *y = MulDiv(*y, 8, s_BaseUnitsY);
 }
 
 static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style, DWORD exStyle, int x, int y, int w, int h, int id, const char *caption, WORD ordinal)
@@ -427,10 +427,10 @@ static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style,
     SDL_zero(item);
     item.style = style;
     item.exStyle = exStyle;
-    item.x = (short)x;
-    item.y = (short)y;
-    item.cx = (short)w;
-    item.cy = (short)h;
+    item.x = x;
+    item.y = y;
+    item.cx = w;
+    item.cy = h;
     item.id = id;
 
     Vec2ToDLU(&item.x, &item.y);
@@ -516,8 +516,8 @@ static WIN_DialogData *CreateDialogData(int w, int h, const char *caption)
     dialogTemplate.style = (WS_CAPTION | DS_CENTER | DS_SHELLFONT);
     dialogTemplate.x = 0;
     dialogTemplate.y = 0;
-    dialogTemplate.cx = (short)w;
-    dialogTemplate.cy = (short)h;
+    dialogTemplate.cx = w;
+    dialogTemplate.cy = h;
     Vec2ToDLU(&dialogTemplate.cx, &dialogTemplate.cy);
 
     dialog = (WIN_DialogData *)SDL_calloc(1, sizeof(*dialog));
@@ -871,7 +871,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
     /* If we have a parent window, get the Instance and HWND for them
      * so that our little dialog gets exclusive focus at all times. */
     if (messageboxdata->window) {
-        ParentWindow = messageboxdata->window->driverdata->hwnd;
+        ParentWindow = ((SDL_WindowData *)messageboxdata->window->driverdata)->hwnd;
     }
 
     result = DialogBoxIndirectParam(NULL, (DLGTEMPLATE *)dialog->lpDialog, ParentWindow, MessageBoxDialogProc, (LPARAM)messageboxdata);
@@ -952,7 +952,7 @@ int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     /* If we have a parent window, get the Instance and HWND for them
        so that our little dialog gets exclusive focus at all times. */
     if (messageboxdata->window) {
-        ParentWindow = messageboxdata->window->driverdata->hwnd;
+        ParentWindow = ((SDL_WindowData *)messageboxdata->window->driverdata)->hwnd;
     }
 
     wmessage = WIN_UTF8ToStringW(messageboxdata->message);
@@ -1041,3 +1041,5 @@ int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
+
+/* vi: set ts=4 sw=4 expandtab: */

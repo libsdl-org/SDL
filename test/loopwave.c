@@ -15,15 +15,16 @@
 /* loopwaves.c is much more robust in handling WAVE files --
     This is only for simple WAVEs
 */
+#include "SDL_config.h"
+
+#include <stdio.h>
 #include <stdlib.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include "SDL.h"
 #include "testutils.h"
 
 static struct
@@ -41,14 +42,11 @@ static void
 quit(int rc)
 {
     SDL_Quit();
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
+    exit(rc);
 }
 
 static void
-close_audio(void)
+close_audio()
 {
     if (device != 0) {
         SDL_CloseAudioDevice(device);
@@ -57,29 +55,29 @@ close_audio(void)
 }
 
 static void
-open_audio(void)
+open_audio()
 {
     /* Initialize fillerup() variables */
     device = SDL_OpenAudioDevice(NULL, SDL_FALSE, &wave.spec, NULL, 0);
     if (!device) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
-        SDL_free(wave.sound);
+        SDL_FreeWAV(wave.sound);
         quit(2);
     }
 
     /* Let the audio run */
-    SDL_PlayAudioDevice(device);
+    SDL_PauseAudioDevice(device, SDL_FALSE);
 }
 
 #ifndef __EMSCRIPTEN__
-static void reopen_audio(void)
+static void reopen_audio()
 {
     close_audio();
     open_audio();
 }
 #endif
 
-static void SDLCALL
+void SDLCALL
 fillerup(void *unused, Uint8 *stream, int len)
 {
     Uint8 *waveptr;
@@ -105,7 +103,7 @@ fillerup(void *unused, Uint8 *stream, int len)
 static int done = 0;
 
 #ifdef __EMSCRIPTEN__
-static void loop(void)
+void loop()
 {
     if (done || (SDL_GetAudioDeviceStatus(device) != SDL_AUDIO_PLAYING)) {
         emscripten_cancel_main_loop();
@@ -117,36 +115,9 @@ int main(int argc, char *argv[])
 {
     int i;
     char *filename = NULL;
-    SDLTest_CommonState *state;
-
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    /* Parse commandline */
-    for (i = 1; i < argc;) {
-        int consumed;
-
-        consumed = SDLTest_CommonArg(state, i);
-        if (!consumed) {
-            if (!filename) {
-                filename = argv[i];
-                consumed = 1;
-            }
-        }
-        if (consumed <= 0) {
-            static const char *options[] = { "[sample.wav]", NULL };
-            SDLTest_CommonLogUsage(state, argv[0], options);
-            exit(1);
-        }
-
-        i += consumed;
-    }
 
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_EVENTS) < 0) {
@@ -154,7 +125,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    filename = GetResourceFilename(filename, "sample.wav");
+    filename = GetResourceFilename(argc > 1 ? argv[1] : NULL, "sample.wav");
 
     if (filename == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -179,7 +150,7 @@ int main(int argc, char *argv[])
 
     open_audio();
 
-    SDL_FlushEvents(SDL_EVENT_AUDIO_DEVICE_ADDED, SDL_EVENT_AUDIO_DEVICE_REMOVED);
+    SDL_FlushEvents(SDL_AUDIODEVICEADDED, SDL_AUDIODEVICEREMOVED);
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
@@ -188,11 +159,11 @@ int main(int argc, char *argv[])
         SDL_Event event;
 
         while (SDL_PollEvent(&event) > 0) {
-            if (event.type == SDL_EVENT_QUIT) {
+            if (event.type == SDL_QUIT) {
                 done = 1;
             }
-            if ((event.type == SDL_EVENT_AUDIO_DEVICE_ADDED && !event.adevice.iscapture) ||
-                (event.type == SDL_EVENT_AUDIO_DEVICE_REMOVED && !event.adevice.iscapture && event.adevice.which == device)) {
+            if ((event.type == SDL_AUDIODEVICEADDED && !event.adevice.iscapture) ||
+                (event.type == SDL_AUDIODEVICEREMOVED && !event.adevice.iscapture && event.adevice.which == device)) {
                 reopen_audio();
             }
         }
@@ -202,9 +173,10 @@ int main(int argc, char *argv[])
 
     /* Clean up on signal */
     close_audio();
-    SDL_free(wave.sound);
+    SDL_FreeWAV(wave.sound);
     SDL_free(filename);
     SDL_Quit();
-    SDLTest_CommonDestroyState(state);
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

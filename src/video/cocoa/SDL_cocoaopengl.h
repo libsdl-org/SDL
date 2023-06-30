@@ -18,13 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_cocoaopengl_h_
 #define SDL_cocoaopengl_h_
 
-#ifdef SDL_VIDEO_OPENGL_CGL
+#if SDL_VIDEO_OPENGL_CGL
 
+#include "SDL_atomic.h"
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CVDisplayLink.h>
 
@@ -39,19 +40,14 @@ struct SDL_GLDriverData
     int initialized;
 };
 
-@interface SDLOpenGLContext : NSOpenGLContext
-{
-    SDL_AtomicInt dirty;
+@interface SDLOpenGLContext : NSOpenGLContext {
+    SDL_atomic_t dirty;
     SDL_Window *window;
     CVDisplayLinkRef displayLink;
-  @public
-    SDL_Mutex *swapIntervalMutex;
-  @public
-    SDL_Condition *swapIntervalCond;
-  @public
-    SDL_AtomicInt swapIntervalSetting;
-  @public
-    SDL_AtomicInt swapIntervalsPassed;
+    @public SDL_mutex *swapIntervalMutex;
+    @public SDL_cond *swapIntervalCond;
+    @public SDL_atomic_t swapIntervalSetting;
+    @public SDL_atomic_t swapIntervalsPassed;
 }
 
 - (id)initWithFormat:(NSOpenGLPixelFormat *)format
@@ -60,25 +56,25 @@ struct SDL_GLDriverData
 - (void)updateIfNeeded;
 - (void)movedToNewScreen;
 - (void)setWindow:(SDL_Window *)window;
-- (SDL_Window *)window;
+- (SDL_Window*)window;
 - (void)explicitUpdate;
 - (void)cleanup;
 
-@property(retain, nonatomic) NSOpenGLPixelFormat *openglPixelFormat; // macOS 10.10 has -[NSOpenGLContext pixelFormat] but this handles older OS releases.
+@property (retain, nonatomic) NSOpenGLPixelFormat* openglPixelFormat;  // macOS 10.10 has -[NSOpenGLContext pixelFormat] but this handles older OS releases.
 
 @end
 
 /* OpenGL functions */
-extern int Cocoa_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-extern SDL_FunctionPointer Cocoa_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
-extern void Cocoa_GL_UnloadLibrary(SDL_VideoDevice *_this);
-extern SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Cocoa_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
+extern int Cocoa_GL_LoadLibrary(_THIS, const char *path);
+extern void *Cocoa_GL_GetProcAddress(_THIS, const char *proc);
+extern void Cocoa_GL_UnloadLibrary(_THIS);
+extern SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window * window);
+extern int Cocoa_GL_MakeCurrent(_THIS, SDL_Window * window,
                                 SDL_GLContext context);
-extern int Cocoa_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern int Cocoa_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
-extern int Cocoa_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Cocoa_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern int Cocoa_GL_SetSwapInterval(_THIS, int interval);
+extern int Cocoa_GL_GetSwapInterval(_THIS);
+extern int Cocoa_GL_SwapWindow(_THIS, SDL_Window * window);
+extern void Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -87,3 +83,5 @@ extern int Cocoa_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 #endif /* SDL_VIDEO_OPENGL_CGL */
 
 #endif /* SDL_cocoaopengl_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

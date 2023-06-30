@@ -18,10 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 extern "C" {
+#include "SDL_system.h"
 #include "../windows/SDL_windows.h"
+#include "SDL_messagebox.h"
+#include "SDL_main.h"
+#include "SDL_events.h"
 #include "../../events/SDL_events_c.h"
 }
 #include <XGameRuntime.h>
@@ -84,7 +88,7 @@ OutOfMemory(void)
 /* Gets the arguments with GetCommandLine, converts them to argc and argv
    and calls SDL_main */
 extern "C" DECLSPEC int
-SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
+SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
 {
     LPWSTR *argvw;
     char **argv;
@@ -157,7 +161,7 @@ SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppStateChangeNotification handler");
             if (quiesced) {
                 ResetEvent(plmSuspendComplete);
-                SDL_SendAppEvent(SDL_EVENT_DID_ENTER_BACKGROUND);
+                SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
 
                 // To defer suspension, we must wait to exit this callback.
                 // IMPORTANT: The app must call SDL_GDKSuspendComplete() to release this lock.
@@ -165,7 +169,7 @@ SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
 
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppStateChangeNotification handler: plmSuspendComplete event signaled.");
             } else {
-                SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_FOREGROUND);
+                SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
             }
         };
         if (RegisterAppStateChangeNotification(rascn, NULL, &hPLM)) {

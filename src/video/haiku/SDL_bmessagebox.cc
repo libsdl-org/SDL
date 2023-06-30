@@ -20,13 +20,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_HAIKU
+#if SDL_VIDEO_DRIVER_HAIKU
 
+#include "SDL_messagebox.h"
 
 /* For application signature. */
-#include "../../core/haiku/SDL_BeApp.h"
+#include "../../main/haiku/SDL_BeApp.h"
 
 #include <Alert.h>
 #include <Application.h>
@@ -45,7 +46,6 @@
 #include <new>
 #include <vector>
 #include <algorithm>
-#include <memory>
 
 enum
 {
@@ -294,7 +294,7 @@ public:
 		  fComputedMessageBoxWidth(0.0f),
 		  fCloseButton(G_CLOSE_BUTTON_ID), fDefaultButton(G_DEFAULT_BUTTON_ID),
 		  fCustomColorScheme(false), fThereIsLongLine(false),
-		  HAIKU_SDL_DefTitle("SDL MessageBox"),
+		  HAIKU_SDL_DefTitle("SDL2 MessageBox"),
 		  HAIKU_SDL_DefMessage("Some information has been lost."),
 		  HAIKU_SDL_DefButton("OK")
 	{
@@ -355,9 +355,9 @@ int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid
 	// because it is possible to create a MessageBox from another thread. This fixes the following errors:
 	// "You need a valid BApplication object before interacting with the app_server."
 	// "2 BApplication objects were created. Only one is allowed."
-	std::unique_ptr<BApplication> application;
+	BApplication *application = NULL;
 	if (be_app == NULL) {
-		application = std::unique_ptr<BApplication>(new(std::nothrow) BApplication(SDL_signature));
+		application = new(std::nothrow) BApplication(SDL_signature);
 		if (application == NULL) {
 			return SDL_SetError("Cannot create the BApplication object. Lack of memory?");
 		}
@@ -381,6 +381,10 @@ int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid
 		delete messageBox;
 	}
 	*/
+	if (application != NULL) {
+		delete application;
+	}
+
 	// Initialize button by real pushed value then.
 	*buttonid = pushedButton;
 
@@ -392,3 +396,5 @@ int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
+
+/* vi: set ts=4 sw=4 expandtab: */

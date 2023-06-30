@@ -18,15 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #include "SDL_windowsvideo.h"
 
-int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_bool isstack;
     size_t size;
     LPBITMAPINFO info;
@@ -66,7 +66,7 @@ int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint
 
         bpp = info->bmiHeader.biPlanes * info->bmiHeader.biBitCount;
         masks = (Uint32 *)((Uint8 *)info + info->bmiHeader.biSize);
-        *format = SDL_GetPixelFormatEnumForMasks(bpp, masks[0], masks[1], masks[2], 0);
+        *format = SDL_MasksToPixelFormatEnum(bpp, masks[0], masks[1], masks[2], 0);
     }
     if (*format == SDL_PIXELFORMAT_UNKNOWN) {
         /* We'll use RGB format for now */
@@ -98,9 +98,9 @@ int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint
     return 0;
 }
 
-int WIN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     int i;
 
     for (i = 0; i < numrects; ++i) {
@@ -110,9 +110,9 @@ int WIN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, cons
     return 0;
 }
 
-void WIN_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
+void WIN_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
     if (data == NULL) {
         /* The window wasn't fully initialized */
@@ -130,3 +130,5 @@ void WIN_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
+
+/* vi: set ts=4 sw=4 expandtab: */

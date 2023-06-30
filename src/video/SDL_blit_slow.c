@@ -18,17 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../SDL_internal.h"
 
+#include "SDL_video.h"
 #include "SDL_blit.h"
 #include "SDL_blit_slow.h"
 
 #define FORMAT_ALPHA                0
-#define FORMAT_NO_ALPHA             (-1)
+#define FORMAT_NO_ALPHA             -1
 #define FORMAT_2101010              1
 #define FORMAT_HAS_ALPHA(format)    format == 0
 #define FORMAT_HAS_NO_ALPHA(format) format < 0
-static int detect_format(SDL_PixelFormat *pf)
+static int SDL_INLINE detect_format(SDL_PixelFormat *pf)
 {
     if (pf->format == SDL_PIXELFORMAT_ARGB2101010) {
         return FORMAT_2101010;
@@ -196,3 +197,5 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
         info->dst += info->dst_pitch;
     }
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

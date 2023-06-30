@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\hidapi;."
+				AdditionalIncludeDirectories="..\hidapi"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -84,7 +84,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copying hidapi.dll to the local directory."
+				Description="Copying hidapi.dll to the local direcotry."
 				CommandLine=""
 			/>
 		</Configuration>
@@ -115,7 +115,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\hidapi;."
+				AdditionalIncludeDirectories="..\hidapi"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
@@ -160,7 +160,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copying hidapi.dll to the local directory."
+				Description="Copying hidapi.dll to the local direcotry."
 				CommandLine=""
 			/>
 		</Configuration>
@@ -174,7 +174,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\hidtest\test.c"
+				RelativePath="..\hidtest\hidtest.cpp"
 				>
 			</File>
 		</Filter>

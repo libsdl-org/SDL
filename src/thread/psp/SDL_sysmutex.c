@@ -18,12 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_THREAD_PSP
+#if SDL_THREAD_PSP
 
 /* An implementation of mutexes using semaphores */
 
+#include "SDL_thread.h"
 #include "SDL_systhread_c.h"
 
 #include <pspthreadman.h>
@@ -31,19 +32,19 @@
 
 #define SCE_KERNEL_MUTEX_ATTR_RECURSIVE 0x0200U
 
-struct SDL_Mutex
+struct SDL_mutex
 {
     SceLwMutexWorkarea lock;
 };
 
 /* Create a mutex */
-SDL_Mutex *SDL_CreateMutex(void)
+SDL_mutex *SDL_CreateMutex(void)
 {
-    SDL_Mutex *mutex = NULL;
+    SDL_mutex *mutex = NULL;
     SceInt32 res = 0;
 
     /* Allocate mutex memory */
-    mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
+    mutex = (SDL_mutex *)SDL_malloc(sizeof(*mutex));
     if (mutex) {
 
         res = sceKernelCreateLwMutex(
@@ -63,7 +64,7 @@ SDL_Mutex *SDL_CreateMutex(void)
 }
 
 /* Free the mutex */
-void SDL_DestroyMutex(SDL_Mutex *mutex)
+void SDL_DestroyMutex(SDL_mutex *mutex)
 {
     if (mutex) {
         sceKernelDeleteLwMutex(&mutex->lock);
@@ -72,9 +73,9 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
 }
 
 /* Lock the mutex */
-int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
-#ifdef SDL_THREADS_DISABLED
+#if SDL_THREADS_DISABLED
     return 0;
 #else
     SceInt32 res = 0;
@@ -93,9 +94,9 @@ int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
 }
 
 /* Try to lock the mutex */
-int SDL_TryLockMutex(SDL_Mutex *mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
-#ifdef SDL_THREADS_DISABLED
+#if SDL_THREADS_DISABLED
     return 0;
 #else
     SceInt32 res = 0;
@@ -122,9 +123,9 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 }
 
 /* Unlock the mutex */
-int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
-#ifdef SDL_THREADS_DISABLED
+#if SDL_THREADS_DISABLED
     return 0;
 #else
     SceInt32 res = 0;
@@ -143,3 +144,5 @@ int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doe
 }
 
 #endif /* SDL_THREAD_PSP */
+
+/* vi: set ts=4 sw=4 expandtab: */

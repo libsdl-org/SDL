@@ -18,37 +18,30 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifndef SDL_HIDAPI_DISABLED
+#if !SDL_HIDAPI_DISABLED
 
-#include "../SDL_hidapi_c.h"
+#include "SDL_hints.h"
 
-#define hid_close                    PLATFORM_hid_close
-#define hid_device                   PLATFORM_hid_device
-#define hid_device_                  PLATFORM_hid_device_
-#define hid_enumerate                PLATFORM_hid_enumerate
-#define hid_error                    PLATFORM_hid_error
-#define hid_exit                     PLATFORM_hid_exit
-#define hid_free_enumeration         PLATFORM_hid_free_enumeration
-#define hid_get_device_info          PLATFORM_hid_get_device_info
-#define hid_get_feature_report       PLATFORM_hid_get_feature_report
-#define hid_get_indexed_string       PLATFORM_hid_get_indexed_string
-#define hid_get_input_report         PLATFORM_hid_get_input_report
-#define hid_get_manufacturer_string  PLATFORM_hid_get_manufacturer_string
-#define hid_get_product_string       PLATFORM_hid_get_product_string
-#define hid_get_report_descriptor    PLATFORM_hid_get_report_descriptor
-#define hid_get_serial_number_string PLATFORM_hid_get_serial_number_string
-#define hid_init                     PLATFORM_hid_init
-#define hid_open_path                PLATFORM_hid_open_path
-#define hid_open                     PLATFORM_hid_open
-#define hid_read                     PLATFORM_hid_read
-#define hid_read_timeout             PLATFORM_hid_read_timeout
-#define hid_send_feature_report      PLATFORM_hid_send_feature_report
-#define hid_set_nonblocking          PLATFORM_hid_set_nonblocking
-#define hid_version                  PLATFORM_hid_version
-#define hid_version_str              PLATFORM_hid_version_str
-#define hid_write                    PLATFORM_hid_write
+#define hid_init                        PLATFORM_hid_init
+#define hid_exit                        PLATFORM_hid_exit
+#define hid_enumerate                   PLATFORM_hid_enumerate
+#define hid_free_enumeration            PLATFORM_hid_free_enumeration
+#define hid_open                        PLATFORM_hid_open
+#define hid_open_path                   PLATFORM_hid_open_path
+#define hid_write                       PLATFORM_hid_write
+#define hid_read_timeout                PLATFORM_hid_read_timeout
+#define hid_read                        PLATFORM_hid_read
+#define hid_set_nonblocking             PLATFORM_hid_set_nonblocking
+#define hid_send_feature_report         PLATFORM_hid_send_feature_report
+#define hid_get_feature_report          PLATFORM_hid_get_feature_report
+#define hid_close                       PLATFORM_hid_close
+#define hid_get_manufacturer_string     PLATFORM_hid_get_manufacturer_string
+#define hid_get_product_string          PLATFORM_hid_get_product_string
+#define hid_get_serial_number_string    PLATFORM_hid_get_serial_number_string
+#define hid_get_indexed_string          PLATFORM_hid_get_indexed_string
+#define hid_error                       PLATFORM_hid_error
 
 #include <CoreBluetooth/CoreBluetooth.h>
 #include <QuartzCore/QuartzCore.h>
@@ -138,7 +131,7 @@ static void RingBuffer_init( RingBuffer *this )
     this->_last = 0;
     pthread_mutex_init( &this->accessLock, 0 );
 }
-
+	
 static bool RingBuffer_write( RingBuffer *this, const uint8_t *src )
 {
     pthread_mutex_lock( &this->accessLock );
@@ -297,7 +290,7 @@ typedef enum
 {
 	static uint64_t s_unLastUpdateTick = 0;
 	static mach_timebase_info_data_t s_timebase_info;
-
+	
 	if ( self.centralManager == nil )
     {
 		return 0;
@@ -307,11 +300,11 @@ typedef enum
 	{
 		mach_timebase_info( &s_timebase_info );
 	}
-
+	
 	uint64_t ticksNow = mach_approximate_time();
 	if ( !bForce && ( ( (ticksNow - s_unLastUpdateTick) * s_timebase_info.numer ) / s_timebase_info.denom ) < (5ull * NSEC_PER_SEC) )
 		return (int)self.deviceMap.count;
-
+	
 	// we can see previously connected BLE peripherals but can't connect until the CBCentralManager
 	// is fully powered up - only do work when we are in that state
 	if ( self.centralManager.state != CBManagerStatePoweredOn )
@@ -319,7 +312,7 @@ typedef enum
 
 	// only update our last-check-time if we actually did work, otherwise there can be a long delay during initial power-up
 	s_unLastUpdateTick = mach_approximate_time();
-
+	
 	// if a pair is in-flight, the central manager may still give it back via retrieveConnected... and
 	// cause the SDL layer to attempt to initialize it while some of its endpoints haven't yet been established
 	if ( self.nPendingPairs > 0 )
@@ -331,7 +324,7 @@ typedef enum
 		// we already know this peripheral
 		if ( [self.deviceMap objectForKey: peripheral] != nil )
 			continue;
-
+		
 		NSLog( @"connected peripheral: %@", peripheral );
 		if ( [peripheral.name isEqualToString:@"SteamController"] )
 		{
@@ -399,7 +392,7 @@ typedef enum
 		case CBCentralManagerStatePoweredOn:
 		{
 			NSLog( @"CoreBluetooth BLE hardware is powered on and ready" );
-
+			
 			// at startup, if we have no already attached peripherals, do a 20s scan for new unpaired devices,
 			// otherwise callers should occaisionally do additional scans. we don't want to continuously be
 			// scanning because it drains battery, causes other nearby people to have a hard time pairing their
@@ -415,23 +408,23 @@ typedef enum
 			}
 			break;
 		}
-
+			
 		case CBCentralManagerStatePoweredOff:
 			NSLog( @"CoreBluetooth BLE hardware is powered off" );
 			break;
-
+			
 		case CBCentralManagerStateUnauthorized:
 			NSLog( @"CoreBluetooth BLE state is unauthorized" );
 			break;
-
+			
 		case CBCentralManagerStateUnknown:
 			NSLog( @"CoreBluetooth BLE state is unknown" );
 			break;
-
+			
 		case CBCentralManagerStateUnsupported:
 			NSLog( @"CoreBluetooth BLE hardware is unsupported on this platform" );
 			break;
-
+		
 		case CBCentralManagerStateResetting:
 			NSLog( @"CoreBluetooth BLE manager is resetting" );
 			break;
@@ -456,7 +449,7 @@ typedef enum
 {
 	NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
 	NSString *log = [NSString stringWithFormat:@"Found '%@'", localName];
-
+	
 	if ( [localName isEqualToString:@"SteamController"] )
 	{
 		NSLog( @"%@ : %@ - %@", log, peripheral, advertisementData );
@@ -482,7 +475,7 @@ typedef enum
 
 
 // Core Bluetooth devices calling back on event boundaries of their run-loops. so annoying.
-static void process_pending_events(void)
+static void process_pending_events()
 {
 	CFRunLoopRunResult res;
 	do
@@ -559,7 +552,7 @@ static void process_pending_events(void)
 {
 #if FEATURE_REPORT_LOGGING
 	uint8_t *reportBytes = (uint8_t *)report;
-
+	
 	NSLog( @"HIDBLE:send_feature_report (%02zu/19) [%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x]", GetBluetoothSegmentSize( report->segment ),
 		  reportBytes[1], reportBytes[2], reportBytes[3], reportBytes[4], reportBytes[5], reportBytes[6],
 		  reportBytes[7], reportBytes[8], reportBytes[9], reportBytes[10], reportBytes[11], reportBytes[12],
@@ -575,7 +568,7 @@ static void process_pending_events(void)
 	// fire-and-forget - we are going to not wait for the response here because all Steam Controller BLE send_feature_report's are ignored,
 	//  except errors.
 	[_bleSteamController writeValue:[NSData dataWithBytes:&report->segment length:sendSize] forCharacteristic:_bleCharacteristicReport type:CBCharacteristicWriteWithResponse];
-
+	
 	// pretend we received a result anybody cares about
 	return 19;
 
@@ -585,18 +578,18 @@ static void process_pending_events(void)
 	_waitStateForWriteFeatureReport = BLEDeviceWaitState_Waiting;
 	[_bleSteamController writeValue:[NSData dataWithBytes:&report->segment length:sendSize
 									 ] forCharacteristic:_bleCharacteristicReport type:CBCharacteristicWriteWithResponse];
-
+	
 	while ( _waitStateForWriteFeatureReport == BLEDeviceWaitState_Waiting )
 	{
 		process_pending_events();
 	}
-
+	
 	if ( _waitStateForWriteFeatureReport == BLEDeviceWaitState_Error )
 	{
 		_waitStateForWriteFeatureReport = BLEDeviceWaitState_None;
 		return -1;
 	}
-
+	
 	_waitStateForWriteFeatureReport = BLEDeviceWaitState_None;
 	return 19;
 #endif
@@ -606,20 +599,20 @@ static void process_pending_events(void)
 {
 	_waitStateForReadFeatureReport = BLEDeviceWaitState_Waiting;
 	[_bleSteamController readValueForCharacteristic:_bleCharacteristicReport];
-
+	
 	while ( _waitStateForReadFeatureReport == BLEDeviceWaitState_Waiting )
 		process_pending_events();
-
+	
 	if ( _waitStateForReadFeatureReport == BLEDeviceWaitState_Error )
 	{
 		_waitStateForReadFeatureReport = BLEDeviceWaitState_None;
 		return -1;
 	}
-
+	
 	memcpy( buffer, _featureReport, sizeof(_featureReport) );
-
+	
 	_waitStateForReadFeatureReport = BLEDeviceWaitState_None;
-
+	
 #if FEATURE_REPORT_LOGGING
 	NSLog( @"HIDBLE:get_feature_report (19) [%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x]",
 		  buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6],
@@ -664,7 +657,7 @@ static void process_pending_events(void)
 		for (CBCharacteristic *aChar in service.characteristics)
 		{
 			NSLog( @"Found Characteristic %@", aChar );
-
+			
 			if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_INPUT_CHAR]] )
 			{
 				self.bleCharacteristicInput = aChar;
@@ -711,7 +704,7 @@ static void process_pending_events(void)
 	else if ( [characteristic.UUID isEqual:_bleCharacteristicReport.UUID] )
 	{
 		memset( _featureReport, 0, sizeof(_featureReport) );
-
+		
 		if ( error != nil )
 		{
 			NSLog( @"HIDBLE: get_feature_report error: %@", error );
@@ -759,7 +752,6 @@ static void process_pending_events(void)
 struct hid_device_ {
 	void *device_handle;
 	int blocking;
-	struct hid_device_info* device_info;
 	hid_device *next;
 };
 
@@ -791,19 +783,19 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
 	return NULL;
 }
 
-HID_API_EXPORT hid_device * HID_API_CALL hid_open_path( const char *path )
+HID_API_EXPORT hid_device * HID_API_CALL hid_open_path( const char *path, int bExclusive /* = false */ )
 {
 	hid_device *result = NULL;
 	NSString *nssPath = [NSString stringWithUTF8String:path];
 	HIDBLEManager *bleManager = HIDBLEManager.sharedInstance;
 	NSEnumerator<HIDBLEDevice *> *devices = [bleManager.deviceMap objectEnumerator];
-
+	
 	for ( HIDBLEDevice *device in devices )
 	{
 		// we have the device but it hasn't found its service or characteristics until it is connected
 		if ( !device.ready || !device.connected || !device.bleCharacteristicInput )
 			continue;
-
+		
 		if ( [device.bleSteamController.identifier.UUIDString isEqualToString:nssPath] )
 		{
 			result = (hid_device *)malloc( sizeof( hid_device ) );
@@ -837,30 +829,23 @@ int HID_API_EXPORT hid_set_nonblocking(hid_device *dev, int nonblock)
 {
 	/* All Nonblocking operation is handled by the library. */
 	dev->blocking = !nonblock;
-
+	
 	return 0;
-}
-
-static struct hid_device_info *create_device_info_for_hid_device(HIDBLEDevice *device)
-{
-    // We currently only support the Steam Controller
-    struct hid_device_info *device_info = (struct hid_device_info *)malloc( sizeof(struct hid_device_info) );
-    memset( device_info, 0, sizeof(struct hid_device_info) );
-    device_info->path = strdup( device.bleSteamController.identifier.UUIDString.UTF8String );
-    device_info->vendor_id = VALVE_USB_VID;
-    device_info->product_id = D0G_BLE2_PID;
-    device_info->product_string = wcsdup( L"Steam Controller" );
-    device_info->manufacturer_string = wcsdup( L"Valve Corporation" );
-    return device_info;
 }
 
 struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 { @autoreleasepool {
 	struct hid_device_info *root = NULL;
+	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
 
 	/* See if there are any devices we should skip in enumeration */
-	if (SDL_HIDAPI_ShouldIgnoreDevice(HID_API_BUS_BLUETOOTH, VALVE_USB_VID, D0G_BLE2_PID, 0, 0)) {
-		return NULL;
+	if (hint) {
+		char vendor_match[16], product_match[16];
+		SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", VALVE_USB_VID);
+		SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", VALVE_USB_VID, D0G_BLE2_PID);
+		if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
+			return NULL;
+		}
 	}
 
 	if ( ( vendor_id == 0 || vendor_id == VALVE_USB_VID ) &&
@@ -888,9 +873,15 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 				}
 				continue;
 			}
-			struct hid_device_info *device_info = create_device_info_for_hid_device(device);
+			struct hid_device_info *device_info = (struct hid_device_info *)malloc( sizeof(struct hid_device_info) );
+			memset( device_info, 0, sizeof(struct hid_device_info) );
 			device_info->next = root;
 			root = device_info;
+			device_info->path = strdup( device.bleSteamController.identifier.UUIDString.UTF8String );
+			device_info->vendor_id = VALVE_USB_VID;
+			device_info->product_id = D0G_BLE2_PID;
+			device_info->product_string = wcsdup( L"Steam Controller" );
+			device_info->manufacturer_string = wcsdup( L"Valve Corporation" );
 		}
 	}
 	return root;
@@ -922,25 +913,6 @@ int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *dev, int string_index
 	return -1;
 }
 
-struct hid_device_info *hid_get_device_info(hid_device *dev)
-{
-    HIDBLEDevice *device_handle = (__bridge HIDBLEDevice *)dev->device_handle;
-
-	if (!dev->device_info) {
-		// Lazy initialize device_info
-		dev->device_info = create_device_info_for_hid_device(device_handle);
-	}
-
-	// create_device_info_for_hid_device will set an error if needed
-	return dev->device_info;
-}
-
-int hid_get_report_descriptor(hid_device *device, unsigned char *buf, size_t buf_size)
-{
-    // Not implemented
-    return -1;
-}
-
 int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t length)
 {
     HIDBLEDevice *device_handle = (__bridge HIDBLEDevice *)dev->device_handle;
@@ -959,8 +931,6 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 	if ( device_handle.connected ) {
 		[device_handle.bleSteamController setNotifyValue:NO forCharacteristic:device_handle.bleCharacteristicInput];
 	}
-
-    hid_free_enumeration(dev->device_info);
 
 	free( dev );
 }
@@ -983,14 +953,8 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 		return -1;
 
 	size_t written = [device_handle get_feature_report:data[0] into:data];
-
+	
 	return written == length-1 ? (int)length : (int)written;
-}
-
-int HID_API_EXPORT hid_get_input_report(hid_device *dev, unsigned char *data, size_t length)
-{
-    // Not supported
-    return -1;
 }
 
 int HID_API_EXPORT hid_read(hid_device *dev, unsigned char *data, size_t length)
@@ -1009,7 +973,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 
 	if ( !device_handle.connected )
 		return -1;
-
+	
 	if ( milliseconds != 0 )
 	{
 		NSLog( @"hid_read_timeout with non-zero wait" );

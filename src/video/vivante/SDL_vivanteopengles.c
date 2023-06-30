@@ -18,18 +18,20 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_VIVANTE) && defined(SDL_VIDEO_OPENGL_EGL)
+#if SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL
 
 #include "SDL_vivanteopengles.h"
 #include "SDL_vivantevideo.h"
 
 /* EGL implementation of SDL OpenGL support */
 
-int VIVANTE_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+int VIVANTE_GLES_LoadLibrary(_THIS, const char *path)
 {
-    SDL_DisplayData *displaydata = SDL_GetDisplayDriverData(SDL_GetPrimaryDisplay());
+    SDL_DisplayData *displaydata;
+
+    displaydata = SDL_GetDisplayDriverData(0);
 
     return SDL_EGL_LoadLibrary(_this, path, displaydata->native_display, 0);
 }
@@ -39,3 +41,5 @@ SDL_EGL_CreateContext_impl(VIVANTE)
         SDL_EGL_MakeCurrent_impl(VIVANTE)
 
 #endif /* SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL */
+
+    /* vi: set ts=4 sw=4 expandtab: */

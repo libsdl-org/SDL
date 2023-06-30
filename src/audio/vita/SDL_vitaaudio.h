@@ -19,10 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_vitaaudio_h
-#define SDL_vitaaudio_h
+#ifndef _SDL_vitaaudio_h
+#define _SDL_vitaaudio_h
 
 #include "../SDL_sysaudio.h"
+
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
 
 #define NUM_BUFFERS 2
 
@@ -38,4 +41,6 @@ struct SDL_PrivateAudioData
     int next_buffer;
 };
 
-#endif /* SDL_vitaaudio_h */
+#endif /* _SDL_vitaaudio_h */
+
+/* vi: set ts=4 sw=4 expandtab: */

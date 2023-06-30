@@ -18,19 +18,23 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
+#include "SDL_render.h"
+#include "SDL_system.h"
+
+#if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
-#ifndef __WINRT__
+#if !defined(__WINRT__)
 #include "../../video/windows/SDL_windowswindow.h"
 #endif
+#include "SDL_hints.h"
+#include "SDL_loadso.h"
+#include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
-
-#include <SDL3/SDL_syswm.h>
 
 #include <d3d11_1.h>
 
@@ -754,7 +758,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapChainDesc.SampleDesc.Quality = 0;
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swapChainDesc.BufferCount = 2; /* Use double-buffering to minimize latency. */
-#if SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     swapChainDesc.Scaling = DXGI_SCALING_STRETCH;        /* On phone, only stretch and aspect-ratio stretch scaling are allowed. */
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; /* On phone, no swap effects are supported. */
     /* TODO, WinRT: see if Win 8.x DXGI_SWAP_CHAIN_DESC1 settings are available on Windows Phone 8.1, and if there's any advantage to having them on */
@@ -808,13 +812,8 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     } else {
 #if defined(__WIN32__) || defined(__WINGDK__)
         SDL_SysWMinfo windowinfo;
-
-        if (SDL_GetWindowWMInfo(renderer->window, &windowinfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
-            windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
-            SDL_SetError("Couldn't get window handle");
-            result = E_FAIL;
-            goto done;
-        }
+        SDL_VERSION(&windowinfo.version);
+        SDL_GetWindowWMInfo(renderer->window, &windowinfo);
 
         result = IDXGIFactory2_CreateSwapChainForHwnd(data->dxgiFactory,
                                                       (IUnknown *)data->d3dDevice,
@@ -872,8 +871,7 @@ D3D11_HandleDeviceLost(SDL_Renderer *renderer)
     /* Let the application know that the device has been reset */
     {
         SDL_Event event;
-        event.type = SDL_EVENT_RENDER_DEVICE_RESET;
-        event.common.timestamp = 0;
+        event.type = SDL_RENDER_DEVICE_RESET;
         SDL_PushEvent(&event);
     }
 
@@ -894,7 +892,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
-#ifdef __WINRT__
+#if defined(__WINRT__)
     SDL_GetWindowSize(renderer->window, &w, &h);
 #else
     SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
@@ -909,7 +907,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 
     if (data->swapChain) {
         /* IDXGISwapChain::ResizeBuffers is not available on Windows Phone 8. */
-#if !defined(__WINRT__) || !SDL_WINAPI_FAMILY_PHONE
+#if !defined(__WINRT__) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
         /* If the swap chain already exists, resize it. */
         result = IDXGISwapChain_ResizeBuffers(data->swapChain,
                                               0,
@@ -936,7 +934,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
         }
     }
 
-#if !SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
     /* Set the proper rotation for the swap chain.
      *
      * To note, the call for this, IDXGISwapChain1::SetRotation, is not necessary
@@ -1027,10 +1025,18 @@ void D3D11_Trim(SDL_Renderer *renderer)
 
 static void D3D11_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
-    if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
         D3D11_UpdateForWindowSizeChange(renderer);
     }
 }
+
+#if !defined(__WINRT__)
+static int D3D11_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
+{
+    SDL_GetWindowSizeInPixels(renderer->window, w, h);
+    return 0;
+}
+#endif
 
 static SDL_bool D3D11_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
@@ -1069,7 +1075,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         SDL_OutOfMemory();
         return -1;
     }
-    textureData->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 
     texture->driverdata = textureData;
 
@@ -1289,7 +1295,7 @@ static int D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Tex
     src = (const Uint8 *)pixels;
     dst = textureMemory.pData;
     length = w * bpp;
-    if (length == (UINT)pitch && length == textureMemory.RowPitch) {
+    if (length == pitch && length == textureMemory.RowPitch) {
         SDL_memcpy(dst, src, (size_t)length * h);
     } else {
         if (length > (UINT)pitch) {
@@ -1545,7 +1551,7 @@ static void D3D11_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
         return;
     }
 
-    textureData->scaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (scaleMode == SDL_ScaleModeNearest) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 }
 
 static int D3D11_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -1746,20 +1752,20 @@ static int D3D11_UpdateViewport(SDL_Renderer *renderer)
      * direction of the DXGI_MODE_ROTATION enumeration.
      */
     switch (rotation) {
-    case DXGI_MODE_ROTATION_IDENTITY:
-        projection = MatrixIdentity();
-        break;
-    case DXGI_MODE_ROTATION_ROTATE270:
-        projection = MatrixRotationZ(SDL_PI_F * 0.5f);
-        break;
-    case DXGI_MODE_ROTATION_ROTATE180:
-        projection = MatrixRotationZ(SDL_PI_F);
-        break;
-    case DXGI_MODE_ROTATION_ROTATE90:
-        projection = MatrixRotationZ(-SDL_PI_F * 0.5f);
-        break;
-    default:
-        return SDL_SetError("An unknown DisplayOrientation is being used");
+        case DXGI_MODE_ROTATION_IDENTITY:
+            projection = MatrixIdentity();
+            break;
+        case DXGI_MODE_ROTATION_ROTATE270:
+            projection = MatrixRotationZ(SDL_static_cast(float, M_PI * 0.5f));
+            break;
+        case DXGI_MODE_ROTATION_ROTATE180:
+            projection = MatrixRotationZ(SDL_static_cast(float, M_PI));
+            break;
+        case DXGI_MODE_ROTATION_ROTATE90:
+            projection = MatrixRotationZ(SDL_static_cast(float, -M_PI * 0.5f));
+            break;
+        default:
+            return SDL_SetError("An unknown DisplayOrientation is being used");
     }
 
     /* Update the view matrix */
@@ -2231,7 +2237,7 @@ static int D3D11_RenderPresent(SDL_Renderer *renderer)
 
     SDL_zero(parameters);
 
-#if SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     syncInterval = 1;
     presentFlags = 0;
     result = IDXGISwapChain_Present(data->swapChain, syncInterval, presentFlags);
@@ -2279,7 +2285,7 @@ static int D3D11_RenderPresent(SDL_Renderer *renderer)
     return 0;
 }
 
-#if SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
 /* no-op. */
 #else
 static int D3D11_SetVSync(SDL_Renderer *renderer, const int vsync)
@@ -2314,6 +2320,9 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
     data->identity = MatrixIdentity();
 
     renderer->WindowEvent = D3D11_WindowEvent;
+#if !defined(__WINRT__)
+    renderer->GetOutputSize = D3D11_GetOutputSize;
+#endif
     renderer->SupportsBlendMode = D3D11_SupportsBlendMode;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
@@ -2336,10 +2345,10 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->DestroyTexture = D3D11_DestroyTexture;
     renderer->DestroyRenderer = D3D11_DestroyRenderer;
     renderer->info = D3D11_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
+    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
 
-#if SDL_WINAPI_FAMILY_PHONE
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     /* VSync is required in Windows Phone, at least for Win Phone 8.0 and 8.1.
      * Failure to use it seems to either result in:
      *
@@ -2381,10 +2390,12 @@ SDL_RenderDriver D3D11_RenderDriver = {
     D3D11_CreateRenderer,
     {
         "direct3d11",
-        (SDL_RENDERER_ACCELERATED |
-         SDL_RENDERER_PRESENTVSYNC), /* flags.  see SDL_RendererFlags */
-        6,                           /* num_texture_formats */
-        {                            /* texture_formats */
+        (
+            SDL_RENDERER_ACCELERATED |
+            SDL_RENDERER_PRESENTVSYNC |
+            SDL_RENDERER_TARGETTEXTURE), /* flags.  see SDL_RendererFlags */
+        6,                               /* num_texture_formats */
+        {                                /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_RGB888,
           SDL_PIXELFORMAT_YV12,
@@ -2400,11 +2411,11 @@ SDL_RenderDriver D3D11_RenderDriver = {
 
 #if defined(__WIN32__) || defined(__WINGDK__)
 /* This function needs to always exist on Windows, for the Dynamic API. */
-ID3D11Device *SDL_GetRenderD3D11Device(SDL_Renderer *renderer)
+ID3D11Device *SDL_RenderGetD3D11Device(SDL_Renderer *renderer)
 {
     ID3D11Device *device = NULL;
 
-#if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
 
     /* Make sure that this is a D3D renderer */
@@ -2422,3 +2433,5 @@ ID3D11Device *SDL_GetRenderD3D11Device(SDL_Renderer *renderer)
     return device;
 }
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
+
+/* vi: set ts=4 sw=4 expandtab: */

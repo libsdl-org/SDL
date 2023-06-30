@@ -12,9 +12,7 @@
 
 /* Simple test of the SDL sensor code */
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
+#include "SDL.h"
 
 static const char *GetSensorTypeString(SDL_SensorType type)
 {
@@ -37,13 +35,13 @@ static const char *GetSensorTypeString(SDL_SensorType type)
 
 static void HandleSensorEvent(SDL_SensorEvent *event)
 {
-    SDL_Sensor *sensor = SDL_GetSensorFromInstanceID(event->which);
+    SDL_Sensor *sensor = SDL_SensorFromInstanceID(event->which);
     if (sensor == NULL) {
         SDL_Log("Couldn't get sensor for sensor event\n");
         return;
     }
 
-    switch (SDL_GetSensorType(sensor)) {
+    switch (SDL_SensorGetType(sensor)) {
     case SDL_SENSOR_ACCEL:
         SDL_Log("Accelerometer update: %.2f, %.2f, %.2f\n", event->data[0], event->data[1], event->data[2]);
         break;
@@ -51,60 +49,41 @@ static void HandleSensorEvent(SDL_SensorEvent *event)
         SDL_Log("Gyro update: %.2f, %.2f, %.2f\n", event->data[0], event->data[1], event->data[2]);
         break;
     default:
-        SDL_Log("Sensor update for sensor type %s\n", GetSensorTypeString(SDL_GetSensorType(sensor)));
+        SDL_Log("Sensor update for sensor type %s\n", GetSensorTypeString(SDL_SensorGetType(sensor)));
         break;
     }
 }
 
 int main(int argc, char **argv)
 {
-    SDL_SensorID *sensors;
-    int i, num_sensors, num_opened;
-    SDLTest_CommonState *state;
-
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        SDLTest_CommonDestroyState(state);
-        return 1;
-    }
+    int i;
+    int num_sensors, num_opened;
 
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_SENSOR) < 0) {
         SDL_Log("Couldn't initialize SDL: %s\n", SDL_GetError());
-        SDLTest_CommonDestroyState(state);
         return 1;
     }
 
-    sensors = SDL_GetSensors(&num_sensors);
+    num_sensors = SDL_NumSensors();
     num_opened = 0;
 
     SDL_Log("There are %d sensors available\n", num_sensors);
-    if (sensors) {
-        for (i = 0; i < num_sensors; ++i) {
-            SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %s, platform type %d\n",
-                    sensors[i],
-                    SDL_GetSensorInstanceName(sensors[i]),
-                    GetSensorTypeString(SDL_GetSensorInstanceType(sensors[i])),
-                    SDL_GetSensorInstanceNonPortableType(sensors[i]));
+    for (i = 0; i < num_sensors; ++i) {
+        SDL_Log("Sensor %" SDL_PRIs32 ": %s, type %s, platform type %d\n",
+                SDL_SensorGetDeviceInstanceID(i),
+                SDL_SensorGetDeviceName(i),
+                GetSensorTypeString(SDL_SensorGetDeviceType(i)),
+                SDL_SensorGetDeviceNonPortableType(i));
 
-            if (SDL_GetSensorInstanceType(sensors[i]) != SDL_SENSOR_UNKNOWN) {
-                SDL_Sensor *sensor = SDL_OpenSensor(sensors[i]);
-                if (sensor == NULL) {
-                    SDL_Log("Couldn't open sensor %" SDL_PRIu32 ": %s\n", sensors[i], SDL_GetError());
-                } else {
-                    ++num_opened;
-                }
+        if (SDL_SensorGetDeviceType(i) != SDL_SENSOR_UNKNOWN) {
+            SDL_Sensor *sensor = SDL_SensorOpen(i);
+            if (sensor == NULL) {
+                SDL_Log("Couldn't open sensor %" SDL_PRIs32 ": %s\n", SDL_SensorGetDeviceInstanceID(i), SDL_GetError());
+            } else {
+                ++num_opened;
             }
         }
-        SDL_free(sensors);
     }
     SDL_Log("Opened %d sensors\n", num_opened);
 
@@ -112,20 +91,20 @@ int main(int argc, char **argv)
         SDL_bool done = SDL_FALSE;
         SDL_Event event;
 
-        SDL_CreateWindow("Sensor Test", 0, 0, SDL_WINDOW_FULLSCREEN);
+        SDL_CreateWindow("Sensor Test", 0, 0, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);
         while (!done) {
             /* Update to get the current event state */
             SDL_PumpEvents();
 
             /* Process all currently pending events */
-            while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) == 1) {
+            while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1) {
                 switch (event.type) {
-                case SDL_EVENT_SENSOR_UPDATE:
+                case SDL_SENSORUPDATE:
                     HandleSensorEvent(&event.sensor);
                     break;
-                case SDL_EVENT_MOUSE_BUTTON_UP:
-                case SDL_EVENT_KEY_UP:
-                case SDL_EVENT_QUIT:
+                case SDL_MOUSEBUTTONUP:
+                case SDL_KEYUP:
+                case SDL_QUIT:
                     done = SDL_TRUE;
                     break;
                 default:
@@ -136,6 +115,5 @@ int main(int argc, char **argv)
     }
 
     SDL_Quit();
-    SDLTest_CommonDestroyState(state);
     return 0;
 }

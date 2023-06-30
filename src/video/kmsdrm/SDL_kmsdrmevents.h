@@ -19,13 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_kmsdrmevents_h_
 #define SDL_kmsdrmevents_h_
 
-extern void KMSDRM_PumpEvents(SDL_VideoDevice *_this);
-extern void KMSDRM_EventInit(SDL_VideoDevice *_this);
-extern void KMSDRM_EventQuit(SDL_VideoDevice *_this);
+extern void KMSDRM_PumpEvents(_THIS);
+extern void KMSDRM_EventInit(_THIS);
+extern void KMSDRM_EventQuit(_THIS);
 
 #endif /* SDL_kmsdrmevents_h_ */

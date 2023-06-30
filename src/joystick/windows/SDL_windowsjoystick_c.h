@@ -18,8 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
+#include "SDL_events.h"
 #include "../SDL_sysjoystick.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_directx.h"
@@ -71,7 +72,7 @@ struct joystick_hwdata
 {
     SDL_JoystickGUID guid;
 
-#ifdef SDL_JOYSTICK_DINPUT
+#if SDL_JOYSTICK_DINPUT
     LPDIRECTINPUTDEVICE8 InputDevice;
     DIDEVCAPS Capabilities;
     SDL_bool buffered;
@@ -89,7 +90,7 @@ struct joystick_hwdata
     DWORD dwPacketNumber;
 };
 
-#ifdef SDL_JOYSTICK_DINPUT
+#if SDL_JOYSTICK_DINPUT
 extern const DIDATAFORMAT SDL_c_dfDIJoystick2;
 #endif
 
@@ -99,3 +100,5 @@ extern void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device);
 #ifdef __cplusplus
 }
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

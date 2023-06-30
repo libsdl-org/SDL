@@ -11,9 +11,9 @@
 */
 
 #include <stdlib.h>
+#include <stdio.h>
 
-#include <SDL3/SDL_test_common.h>
-#include <SDL3/SDL_main.h>
+#include "SDL_test_common.h"
 
 static SDLTest_CommonState *state;
 
@@ -22,19 +22,16 @@ static void
 quit(int rc)
 {
     SDLTest_CommonQuit(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
+    exit(rc);
 }
 
 int main(int argc, char *argv[])
 {
     int i, done;
     SDL_Event event;
-    SDL_bool is_hover = SDL_FALSE;
-    float x = 0.0f, y = 0.0f;
-    unsigned int windowID = 0;
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
@@ -42,15 +39,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     for (i = 1; i < argc;) {
         int consumed;
 
         consumed = SDLTest_CommonArg(state, i);
-        /* needed voodoo to allow app to launch via macOS Finder */
-        if (SDL_strncmp(argv[i], "-psn", 4) == 0) {
+        /* needed voodoo to allow app to launch via OS X Finder */
+        if (SDL_strncmp(argv[i], "-psn", 4)==0) {
             consumed = 1;
         }
         if (consumed == 0) {
@@ -66,55 +60,39 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
+    for (i = 0; i < state->num_windows; ++i) {
+        SDL_Renderer *renderer = state->renderers[i];
+        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
+        SDL_RenderClear(renderer);
+        SDL_RenderPresent(renderer);
+    }
 
-    SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
+    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
     /* Main render loop */
     done = 0;
     while (!done) {
         /* Check for events */
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_DROP_BEGIN) {
-                SDL_Log("Drop beginning on window %u at (%f, %f)", (unsigned int)event.drop.windowID, event.drop.x, event.drop.y);
-            } else if (event.type == SDL_EVENT_DROP_COMPLETE) {
-                is_hover = SDL_FALSE;
-                SDL_Log("Drop complete on window %u at (%f, %f)", (unsigned int)event.drop.windowID, event.drop.x, event.drop.y);
-            } else if ((event.type == SDL_EVENT_DROP_FILE) || (event.type == SDL_EVENT_DROP_TEXT)) {
-                const char *typestr = (event.type == SDL_EVENT_DROP_FILE) ? "File" : "Text";
+            if (event.type == SDL_DROPBEGIN) {
+                SDL_Log("Drop beginning on window %u", (unsigned int)event.drop.windowID);
+            } else if (event.type == SDL_DROPCOMPLETE) {
+                SDL_Log("Drop complete on window %u", (unsigned int)event.drop.windowID);
+            } else if ((event.type == SDL_DROPFILE) || (event.type == SDL_DROPTEXT)) {
+                const char *typestr = (event.type == SDL_DROPFILE) ? "File" : "Text";
                 char *dropped_filedir = event.drop.file;
-                SDL_Log("%s dropped on window %u: %s at (%f, %f)", typestr, (unsigned int)event.drop.windowID, dropped_filedir, event.drop.x, event.drop.y);
+                SDL_Log("%s dropped on window %u: %s", typestr, (unsigned int)event.drop.windowID, dropped_filedir);
                 /* Normally you'd have to do this, but this is freed in SDLTest_CommonEvent() */
                 /*SDL_free(dropped_filedir);*/
-            } else if (event.type == SDL_EVENT_DROP_POSITION) {
-                is_hover = SDL_TRUE;
-                x = event.drop.x;
-                y = event.drop.y;
-                windowID = event.drop.windowID;
-                SDL_Log("Drop position on window %u at (%f, %f) file = %s", (unsigned int)event.drop.windowID, event.drop.x, event.drop.y, event.drop.file);
             }
 
             SDLTest_CommonEvent(state, &event, &done);
         }
-
-        for (i = 0; i < state->num_windows; ++i) {
-            SDL_Renderer *renderer = state->renderers[i];
-            SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
-            SDL_RenderClear(renderer);
-            if (is_hover) {
-                if (windowID == SDL_GetWindowID(SDL_GetRenderWindow(renderer))) {
-                    int len = 2000;
-                    SDL_SetRenderDrawColor(renderer, 0x0A, 0x0A, 0x0A, 0xFF);
-                    SDL_RenderLine(renderer, x, y - len, x, y + len);
-                    SDL_RenderLine(renderer, x - len, y, x + len, y);
-                }
-            }
-            SDL_RenderPresent(renderer);
-        }
-
-        SDL_Delay(16);
     }
 
     quit(0);
     /* keep the compiler happy ... */
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

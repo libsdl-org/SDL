@@ -22,7 +22,7 @@
 #ifndef SDL_BOPENGL_H
 #define SDL_BOPENGL_H
 
-#if defined(SDL_VIDEO_DRIVER_HAIKU) && defined(SDL_VIDEO_OPENGL)
+#if SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,18 +30,18 @@ extern "C" {
 
 #include "../SDL_sysvideo.h"
 
-extern int HAIKU_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);      /* FIXME */
-extern SDL_FunctionPointer HAIKU_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc); /* FIXME */
-extern void HAIKU_GL_UnloadLibrary(SDL_VideoDevice *_this);                     /* TODO */
-extern int HAIKU_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
+extern int HAIKU_GL_LoadLibrary(_THIS, const char *path);      /* FIXME */
+extern void *HAIKU_GL_GetProcAddress(_THIS, const char *proc); /* FIXME */
+extern void HAIKU_GL_UnloadLibrary(_THIS);                     /* TODO */
+extern int HAIKU_GL_MakeCurrent(_THIS, SDL_Window *window,
                                 SDL_GLContext context);
-extern int HAIKU_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval); /* TODO */
-extern int HAIKU_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval); /* TODO */
-extern int HAIKU_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern SDL_GLContext HAIKU_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int HAIKU_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern int HAIKU_GL_SetSwapInterval(_THIS, int interval); /* TODO */
+extern int HAIKU_GL_GetSwapInterval(_THIS);               /* TODO */
+extern int HAIKU_GL_SwapWindow(_THIS, SDL_Window *window);
+extern SDL_GLContext HAIKU_GL_CreateContext(_THIS, SDL_Window *window);
+extern void HAIKU_GL_DeleteContext(_THIS, SDL_GLContext context);
 
-extern void HAIKU_GL_RebootContexts(SDL_VideoDevice *_this);
+extern void HAIKU_GL_RebootContexts(_THIS);
 
 #ifdef __cplusplus
 }
@@ -50,3 +50,5 @@ extern void HAIKU_GL_RebootContexts(SDL_VideoDevice *_this);
 #endif /* SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL */
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

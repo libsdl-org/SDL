@@ -7,7 +7,7 @@ SPDX-License-Identifier: Zlib
 #ifndef TESTUTILS_H
 #define TESTUTILS_H
 
-#include <SDL3/SDL.h>
+#include "SDL.h"
 
 SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
                          int *width_out, int *height_out);

@@ -19,21 +19,23 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_x11xfixes_h_
 #define SDL_x11xfixes_h_
 
-#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+#if SDL_VIDEO_DRIVER_X11_XFIXES
 
 #define X11_BARRIER_HANDLED_BY_EVENT 1
 
-extern void X11_InitXfixes(SDL_VideoDevice *_this);
+extern void X11_InitXfixes(_THIS);
 extern int X11_XfixesIsInitialized(void);
-extern void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);
-extern int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rect, int flags);
-extern void X11_DestroyPointerBarrier(SDL_VideoDevice *_this, SDL_Window *window);
+extern void X11_SetWindowMouseRect(_THIS, SDL_Window *window);
+extern int X11_ConfineCursorWithFlags(_THIS, SDL_Window *window, const SDL_Rect *rect, int flags);
+extern void X11_DestroyPointerBarrier(_THIS, SDL_Window *window);
 
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
 #endif /* SDL_x11xfixes_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

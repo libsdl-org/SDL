@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#if defined(SDL_JOYSTICK_DINPUT) || SDL_JOYSTICK_XINPUT
+#if SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT
 
 /* DirectInput joystick driver; written by Glenn Maynard, based on Andrei de
  * A. Formiga's WINMM driver.
@@ -32,6 +32,12 @@
  * with polled devices, and it's fine to call IDirectInputDevice8_GetDeviceData and
  * let it return 0 events. */
 
+#include "SDL_error.h"
+#include "SDL_events.h"
+#include "SDL_hints.h"
+#include "SDL_timer.h"
+#include "SDL_mutex.h"
+#include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../../thread/SDL_systhread.h"
 #include "../../core/windows/SDL_windows.h"
@@ -145,8 +151,8 @@ typedef DWORD(WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyCont
 /* local variables */
 static SDL_bool s_bJoystickThread = SDL_FALSE;
 static SDL_bool s_bWindowsDeviceChanged = SDL_FALSE;
-static SDL_Condition *s_condJoystickThread = NULL;
-static SDL_Mutex *s_mutexJoyStickEnum = NULL;
+static SDL_cond *s_condJoystickThread = NULL;
+static SDL_mutex *s_mutexJoyStickEnum = NULL;
 static SDL_Thread *s_joystickThread = NULL;
 static SDL_bool s_bJoystickThreadQuit = SDL_FALSE;
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
@@ -246,7 +252,7 @@ static LRESULT CALLBACK SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARA
         break;
     }
 
-#ifdef SDL_JOYSTICK_RAWINPUT
+#if SDL_JOYSTICK_RAWINPUT
     return CallWindowProc(RAWINPUT_WindowProc, hwnd, msg, wParam, lParam);
 #else
     return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
@@ -255,7 +261,7 @@ static LRESULT CALLBACK SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARA
 
 static void SDL_CleanupDeviceNotification(SDL_DeviceNotificationData *data)
 {
-#ifdef SDL_JOYSTICK_RAWINPUT
+#if SDL_JOYSTICK_RAWINPUT
     RAWINPUT_UnregisterNotifications();
 #endif
 
@@ -312,13 +318,13 @@ static int SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
         return -1;
     }
 
-#ifdef SDL_JOYSTICK_RAWINPUT
+#if SDL_JOYSTICK_RAWINPUT
     RAWINPUT_RegisterNotifications(data->messageWindow);
 #endif
     return 0;
 }
 
-static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_Mutex *mutex)
+static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex)
 {
     MSG msg;
     int lastret = 1;
@@ -341,7 +347,7 @@ static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, 
 
 #endif /* !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
 
-#ifndef __WINRT__
+#if !defined(__WINRT__)
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static SDL_DeviceNotificationData s_notification_data;
@@ -350,7 +356,7 @@ static SDL_DeviceNotificationData s_notification_data;
 /* Function/thread to scan the system for joysticks. */
 static int SDLCALL SDL_JoystickThread(void *_data)
 {
-#ifdef SDL_JOYSTICK_XINPUT
+#if SDL_JOYSTICK_XINPUT
     SDL_bool bOpenedXInputDevices[XUSER_MAX_COUNT];
     SDL_zeroa(bOpenedXInputDevices);
 #endif
@@ -368,9 +374,9 @@ static int SDLCALL SDL_JoystickThread(void *_data)
 #else
         {
 #endif
-#ifdef SDL_JOYSTICK_XINPUT
+#if SDL_JOYSTICK_XINPUT
             /* WM_DEVICECHANGE not working, poll for new XINPUT controllers */
-            SDL_WaitConditionTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
+            SDL_CondWaitTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
             if (SDL_XINPUT_Enabled() && XINPUTGETCAPABILITIES) {
                 /* scan for any change in XInput devices */
                 Uint8 userId;
@@ -408,7 +414,7 @@ static int SDL_StartJoystickThread(void)
         return -1;
     }
 
-    s_condJoystickThread = SDL_CreateCondition();
+    s_condJoystickThread = SDL_CreateCond();
     if (s_condJoystickThread == NULL) {
         return -1;
     }
@@ -429,7 +435,7 @@ static void SDL_StopJoystickThread(void)
 
     SDL_LockMutex(s_mutexJoyStickEnum);
     s_bJoystickThreadQuit = SDL_TRUE;
-    SDL_BroadcastCondition(s_condJoystickThread); /* signal the joystick thread to quit */
+    SDL_CondBroadcast(s_condJoystickThread); /* signal the joystick thread to quit */
     SDL_UnlockMutex(s_mutexJoyStickEnum);
     PostThreadMessage(SDL_GetThreadID(s_joystickThread), WM_QUIT, 0, 0);
 
@@ -439,7 +445,7 @@ static void SDL_StopJoystickThread(void)
     SDL_WaitThread(s_joystickThread, NULL); /* wait for it to bugger off */
     SDL_LockJoysticks();
 
-    SDL_DestroyCondition(s_condJoystickThread);
+    SDL_DestroyCond(s_condJoystickThread);
     s_condJoystickThread = NULL;
 
     SDL_DestroyMutex(s_mutexJoyStickEnum);
@@ -552,11 +558,11 @@ void WINDOWS_JoystickDetect(void)
         JoyStick_DeviceData *pListNext = NULL;
 
         if (pCurList->bXInputDevice) {
-#ifdef SDL_HAPTIC_XINPUT
+#if SDL_HAPTIC_XINPUT
             SDL_XINPUT_HapticMaybeRemoveDevice(pCurList->XInputUserId);
 #endif
         } else {
-#ifdef SDL_HAPTIC_DINPUT
+#if SDL_HAPTIC_DINPUT
             SDL_DINPUT_HapticMaybeRemoveDevice(&pCurList->dxdevice);
 #endif
         }
@@ -572,11 +578,11 @@ void WINDOWS_JoystickDetect(void)
     for (pCurList = SYS_Joystick; pCurList; pCurList = pCurList->pNext) {
         if (pCurList->send_add_event) {
             if (pCurList->bXInputDevice) {
-#ifdef SDL_HAPTIC_XINPUT
+#if SDL_HAPTIC_XINPUT
                 SDL_XINPUT_HapticMaybeAddDevice(pCurList->XInputUserId);
 #endif
             } else {
-#ifdef SDL_HAPTIC_DINPUT
+#if SDL_HAPTIC_DINPUT
                 SDL_DINPUT_HapticMaybeAddDevice(&pCurList->dxdevice);
 #endif
             }
@@ -818,9 +824,11 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver = {
 
 #else
 
-#ifdef SDL_JOYSTICK_RAWINPUT
+#if SDL_JOYSTICK_RAWINPUT
 /* The RAWINPUT driver needs the device notification setup above */
 #error SDL_JOYSTICK_RAWINPUT requires SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT
 #endif
 
 #endif /* SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT */
+
+/* vi: set ts=4 sw=4 expandtab: */

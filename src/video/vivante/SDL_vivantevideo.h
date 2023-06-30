@@ -18,25 +18,24 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
 #ifndef SDL_vivantevideo_h_
 #define SDL_vivantevideo_h_
 
+#include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
-/* Set up definitions for Vivante EGL */
-#include <SDL3/SDL_egl.h>
+#include "SDL_egl.h"
 
-#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
+#if SDL_VIDEO_DRIVER_VIVANTE_VDK
 #include <gc_vdk.h>
 #else
 #include <EGL/egl.h>
 #endif
 
-struct SDL_VideoData
+typedef struct SDL_VideoData
 {
-#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
+#if SDL_VIDEO_DRIVER_VIVANTE_VDK
     vdkPrivate vdk_private;
 #else
     void *egl_handle; /* EGL shared library handle */
@@ -50,40 +49,43 @@ struct SDL_VideoData
     void(EGLAPIENTRY *fbGetWindowInfo)(EGLNativeWindowType Window, int *X, int *Y, int *Width, int *Height, int *BitsPerPixel, unsigned int *Offset);
     void(EGLAPIENTRY *fbDestroyWindow)(EGLNativeWindowType Window);
 #endif
-};
+} SDL_VideoData;
 
-struct SDL_DisplayData
+typedef struct SDL_DisplayData
 {
     EGLNativeDisplayType native_display;
-};
+} SDL_DisplayData;
 
-struct SDL_WindowData
+typedef struct SDL_WindowData
 {
     EGLNativeWindowType native_window;
     EGLSurface egl_surface;
-};
+} SDL_WindowData;
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
 /****************************************************************************/
 
 /* Display and window functions */
-int VIVANTE_VideoInit(SDL_VideoDevice *_this);
-void VIVANTE_VideoQuit(SDL_VideoDevice *_this);
-int VIVANTE_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-int VIVANTE_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void VIVANTE_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
-int VIVANTE_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
-void VIVANTE_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
-void VIVANTE_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void VIVANTE_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void VIVANTE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+int VIVANTE_VideoInit(_THIS);
+void VIVANTE_VideoQuit(_THIS);
+void VIVANTE_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+int VIVANTE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+int VIVANTE_CreateWindow(_THIS, SDL_Window *window);
+void VIVANTE_SetWindowTitle(_THIS, SDL_Window *window);
+void VIVANTE_SetWindowPosition(_THIS, SDL_Window *window);
+void VIVANTE_SetWindowSize(_THIS, SDL_Window *window);
+void VIVANTE_ShowWindow(_THIS, SDL_Window *window);
+void VIVANTE_HideWindow(_THIS, SDL_Window *window);
+void VIVANTE_DestroyWindow(_THIS, SDL_Window *window);
 
 /* Window manager function */
-int VIVANTE_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
+SDL_bool VIVANTE_GetWindowWMInfo(_THIS, SDL_Window * window,
+                             struct SDL_SysWMinfo *info);
 
 /* Event functions */
-void VIVANTE_PumpEvents(SDL_VideoDevice *_this);
+void VIVANTE_PumpEvents(_THIS);
 
 #endif /* SDL_vivantevideo_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

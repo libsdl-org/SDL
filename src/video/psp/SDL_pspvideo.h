@@ -24,59 +24,71 @@
 
 #include <GLES/egl.h>
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
-struct SDL_VideoData
+typedef struct SDL_VideoData
 {
     SDL_bool egl_initialized; /* OpenGL ES device initialization status */
     uint32_t egl_refcount;    /* OpenGL ES reference count              */
 
-};
+} SDL_VideoData;
 
-struct SDL_WindowData
+typedef struct SDL_DisplayData
+{
+
+} SDL_DisplayData;
+
+typedef struct SDL_WindowData
 {
     SDL_bool uses_gles; /* if true window must support OpenGL ES */
 
-};
+} SDL_WindowData;
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
 /****************************************************************************/
 
 /* Display and window functions */
-int PSP_VideoInit(SDL_VideoDevice *_this);
-void PSP_VideoQuit(SDL_VideoDevice *_this);
-int PSP_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-int PSP_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
-int PSP_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data);
-void PSP_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
-int PSP_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
-void PSP_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
-void PSP_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void PSP_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void PSP_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void PSP_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void PSP_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void PSP_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void PSP_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+int PSP_VideoInit(_THIS);
+void PSP_VideoQuit(_THIS);
+void PSP_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+int PSP_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+int PSP_CreateWindow(_THIS, SDL_Window *window);
+int PSP_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
+void PSP_SetWindowTitle(_THIS, SDL_Window *window);
+void PSP_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon);
+void PSP_SetWindowPosition(_THIS, SDL_Window *window);
+void PSP_SetWindowSize(_THIS, SDL_Window *window);
+void PSP_ShowWindow(_THIS, SDL_Window *window);
+void PSP_HideWindow(_THIS, SDL_Window *window);
+void PSP_RaiseWindow(_THIS, SDL_Window *window);
+void PSP_MaximizeWindow(_THIS, SDL_Window *window);
+void PSP_MinimizeWindow(_THIS, SDL_Window *window);
+void PSP_RestoreWindow(_THIS, SDL_Window *window);
+void PSP_DestroyWindow(_THIS, SDL_Window *window);
+
+/* Window manager function */
+SDL_bool PSP_GetWindowWMInfo(_THIS, SDL_Window * window,
+                             struct SDL_SysWMinfo *info);
 
 /* OpenGL/OpenGL ES functions */
-int PSP_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-SDL_FunctionPointer PSP_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
-void PSP_GL_UnloadLibrary(SDL_VideoDevice *_this);
-SDL_GLContext PSP_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-int PSP_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
-int PSP_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-int PSP_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
-int PSP_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-int PSP_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+int PSP_GL_LoadLibrary(_THIS, const char *path);
+void *PSP_GL_GetProcAddress(_THIS, const char *proc);
+void PSP_GL_UnloadLibrary(_THIS);
+SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window *window);
+int PSP_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
+int PSP_GL_SetSwapInterval(_THIS, int interval);
+int PSP_GL_GetSwapInterval(_THIS);
+int PSP_GL_SwapWindow(_THIS, SDL_Window *window);
+void PSP_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 /* PSP on screen keyboard */
-SDL_bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
-void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-void PSP_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-SDL_bool PSP_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
+SDL_bool PSP_HasScreenKeyboardSupport(_THIS);
+void PSP_ShowScreenKeyboard(_THIS, SDL_Window *window);
+void PSP_HideScreenKeyboard(_THIS, SDL_Window *window);
+SDL_bool PSP_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 
 #endif /* SDL_pspvideo_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

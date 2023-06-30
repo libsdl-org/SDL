@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
 #ifndef SDL_KMSDRM_mouse_h_
 #define SDL_KMSDRM_mouse_h_
@@ -29,7 +29,7 @@
 #define MAX_CURSOR_W 512
 #define MAX_CURSOR_H 512
 
-typedef struct KMSDRM_CursorData
+typedef struct _KMSDRM_CursorData
 {
     int hot_x, hot_y;
     int w, h;
@@ -43,11 +43,13 @@ typedef struct KMSDRM_CursorData
 
 } KMSDRM_CursorData;
 
-extern void KMSDRM_InitMouse(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-extern void KMSDRM_QuitMouse(SDL_VideoDevice *_this);
+extern void KMSDRM_InitMouse(_THIS, SDL_VideoDisplay *display);
+extern void KMSDRM_QuitMouse(_THIS);
 
-extern int KMSDRM_CreateCursorBO(SDL_VideoDisplay *display);
-extern void KMSDRM_DestroyCursorBO(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern void KMSDRM_CreateCursorBO(SDL_VideoDisplay *display);
+extern void KMSDRM_DestroyCursorBO(_THIS, SDL_VideoDisplay *display);
 extern void KMSDRM_InitCursor(void);
 
 #endif /* SDL_KMSDRM_mouse_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

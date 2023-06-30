@@ -18,15 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
+#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_WINRT
+#if SDL_VIDEO_DRIVER_WINRT
 
 /* Windows-specific includes */
 #include <Windows.h>
 #include <agile.h>
 
 /* SDL-specific includes */
+#include "SDL.h"
 #include "SDL_winrtevents_c.h"
 
 extern "C" {
@@ -351,7 +352,7 @@ void WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^ args)
         SDL_GetKeyName(keycode));
     //args->Handled = true;
 #endif
-    SDL_SendKeyboardKey(0, SDL_PRESSED, sdlScancode);
+    SDL_SendKeyboardKey(SDL_PRESSED, sdlScancode);
 }
 
 void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^ args)
@@ -376,7 +377,7 @@ void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^ args)
         SDL_GetKeyName(keycode));
     //args->Handled = true;
 #endif
-    SDL_SendKeyboardKey(0, SDL_RELEASED, sdlScancode);
+    SDL_SendKeyboardKey(SDL_RELEASED, sdlScancode);
 }
 
 void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArgs ^ args)
@@ -389,7 +390,7 @@ void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEve
     src_ucs2[0] = args->KeyCode;
     src_ucs2[1] = L'\0';
 
-    /* Convert the text, then send an SDL_EVENT_TEXT_INPUT event. */
+    /* Convert the text, then send an SDL_TEXTINPUT event. */
     result = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)&src_ucs2, -1, (LPSTR)dest_utf8, sizeof(dest_utf8), NULL, NULL);
     if (result > 0) {
         SDL_SendKeyboardText(dest_utf8);
@@ -410,7 +411,7 @@ void WINTRT_OnInputPaneHiding(Windows::UI::ViewManagement::InputPane ^ sender, W
     WINRT_InputPaneVisible = false;
 }
 
-void WINTRT_InitialiseInputPaneEvents(SDL_VideoDevice *_this)
+void WINTRT_InitialiseInputPaneEvents(_THIS)
 {
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();
@@ -422,12 +423,12 @@ void WINTRT_InitialiseInputPaneEvents(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool WINRT_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+SDL_bool WINRT_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
 }
 
-void WINRT_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+void WINRT_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();
@@ -436,7 +437,7 @@ void WINRT_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-void WINRT_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+void WINRT_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();
@@ -445,7 +446,7 @@ void WINRT_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-SDL_bool WINRT_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();

@@ -18,10 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
+#if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
+#define SDL_DISABLE_ANALYZE_MACROS 1
+#endif
 
-#ifdef HAVE_QSORT
+#include "../SDL_internal.h"
+
+#include "SDL_stdinc.h"
+
+#if defined(HAVE_QSORT)
 void SDL_qsort(void *base, size_t nmemb, size_t size, int (*compare) (const void *, const void *))
 {
     qsort(base, nmemb, size, compare);
@@ -529,7 +535,7 @@ extern void qsortG(void *base, size_t nmemb, size_t size,
 
 void *SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (*compare)(const void *, const void *))
 {
-#ifdef HAVE_BSEARCH
+#if defined(HAVE_BSEARCH)
     return bsearch(key, base, nmemb, size, compare);
 #else
 /* SDL's replacement:  Taken from the Public Domain C Library (PDCLib):
@@ -558,3 +564,6 @@ void *SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, 
     return NULL;
 #endif /* HAVE_BSEARCH */
 }
+
+/* vi: set ts=4 sw=4 expandtab: */
+
