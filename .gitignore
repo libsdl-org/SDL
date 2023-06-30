@@ -186,3 +186,4 @@ debian/.debhelper/
 debian/files
 debian/libsdl*/
 debian/tmp/
+include/SDL_revision.h
