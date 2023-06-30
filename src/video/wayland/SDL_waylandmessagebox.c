@@ -34,7 +34,10 @@
 
 #define MAX_BUTTONS 8 /* Maximum number of buttons supported */
 
-int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+/* --icon-name is deprecated and replaced by --icon */
+static const char *const icon_name_options[] = { "--icon", "--icon-name" };
+
+int run_zenity(const char *const icon_name_arg, const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     int fd_pipe[2]; /* fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe */
     pid_t pid1;
@@ -60,7 +63,7 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
             _exit(128);
         }
 
-        argv[argc++] = "--icon-name";
+        argv[argc++] = icon_name_arg;
         switch (messageboxdata->flags) {
         case SDL_MESSAGEBOX_ERROR:
             argv[argc++] = "dialog-error";
@@ -186,6 +189,18 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
             return SDL_SetError("Waiting on zenity failed: %s", strerror(errno));
         }
     }
+}
+
+int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+{
+    int i, err;
+
+    for (i = 0; i < sizeof(icon_name_options) / sizeof(*icon_name_options); ++i) {
+        err = run_zenity(icon_name_options[i], messageboxdata, buttonid);
+        if (err == 0) break;
+    }
+
+    return err;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
