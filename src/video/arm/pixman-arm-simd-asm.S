@@ -465,7 +465,7 @@ generate_composite_function \
 .endm
 
 generate_composite_function \
-    Blit_BGR888_RGB888ARMSIMDAsm, 32, 0, 32, \
+    Blit_XBGR8888_XRGB8888ARMSIMDAsm, 32, 0, 32, \
     FLAG_DST_WRITEONLY | FLAG_COND_EXEC | FLAG_PROCESS_PRESERVES_SCRATCH, \
     2, /* prefetch distance */ \
     nop_macro, /* init */ \
@@ -522,7 +522,7 @@ generate_composite_function \
 .endm
 
 generate_composite_function \
-    Blit_RGB444_RGB888ARMSIMDAsm, 16, 0, 32, \
+    Blit_RGB444_XRGB8888ARMSIMDAsm, 16, 0, 32, \
     FLAG_DST_WRITEONLY | FLAG_BRANCH_OVER, \
     2, /* prefetch distance */ \
     RGB444toRGB888_init, \

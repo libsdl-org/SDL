@@ -511,7 +511,7 @@ static void display_handle_done(void *data,
 
     /* The native display resolution */
     SDL_zero(native_mode);
-    native_mode.format = SDL_PIXELFORMAT_RGB888;
+    native_mode.format = SDL_PIXELFORMAT_XRGB8888;
 
     /* Transform the pixel values, if necessary. */
     if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
@@ -552,7 +552,7 @@ static void display_handle_done(void *data,
 
     /* The scaled desktop mode */
     SDL_zero(desktop_mode);
-    desktop_mode.format = SDL_PIXELFORMAT_RGB888;
+    desktop_mode.format = SDL_PIXELFORMAT_XRGB8888;
 
     desktop_mode.w = driverdata->screen_width;
     desktop_mode.h = driverdata->screen_height;

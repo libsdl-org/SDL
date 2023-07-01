@@ -139,7 +139,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         g = SDL_expand_byte[3][((Pixel & 0x03E0) >> 5)];  \
         b = SDL_expand_byte[3][(Pixel & 0x001F)];         \
     }
-#define RGB_FROM_RGB888(Pixel, r, g, b) \
+#define RGB_FROM_XRGB8888(Pixel, r, g, b) \
     {                                   \
         r = ((Pixel & 0xFF0000) >> 16); \
         g = ((Pixel & 0xFF00) >> 8);    \
@@ -232,7 +232,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
     {                                                          \
         Pixel = (Uint16)(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)); \
     }
-#define RGB888_FROM_RGB(Pixel, r, g, b)   \
+#define XRGB8888_FROM_RGB(Pixel, r, g, b)   \
     {                                     \
         Pixel = (r << 16) | (g << 8) | b; \
     }

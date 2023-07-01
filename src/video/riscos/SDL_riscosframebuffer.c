@@ -52,7 +52,7 @@ int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, U
         *format = mode->format;
         sprite_mode = (unsigned int)mode->driverdata;
     } else {
-        *format = SDL_PIXELFORMAT_BGR888;
+        *format = SDL_PIXELFORMAT_XBGR8888;
         sprite_mode = (1 | (90 << 1) | (90 << 14) | (6 << 27));
     }
 

@@ -938,11 +938,11 @@ static void SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
     case SDL_PIXELFORMAT_BGR24:
         SDL_snprintfcat(text, maxlen, "BGR24");
         break;
-    case SDL_PIXELFORMAT_RGB888:
-        SDL_snprintfcat(text, maxlen, "RGB888");
+    case SDL_PIXELFORMAT_XRGB8888:
+        SDL_snprintfcat(text, maxlen, "XRGB8888");
         break;
-    case SDL_PIXELFORMAT_BGR888:
-        SDL_snprintfcat(text, maxlen, "BGR888");
+    case SDL_PIXELFORMAT_XBGR8888:
+        SDL_snprintfcat(text, maxlen, "XBGR8888");
         break;
     case SDL_PIXELFORMAT_ARGB8888:
         SDL_snprintfcat(text, maxlen, "ARGB8888");

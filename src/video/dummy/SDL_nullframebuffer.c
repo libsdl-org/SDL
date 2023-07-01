@@ -30,7 +30,7 @@
 int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
-    const Uint32 surface_format = SDL_PIXELFORMAT_RGB888;
+    const Uint32 surface_format = SDL_PIXELFORMAT_XRGB8888;
     int w, h;
 
     /* Free the old framebuffer surface */

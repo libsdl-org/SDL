@@ -58,10 +58,10 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
         if (bmi->bmiHeader.biCompression == BI_BITFIELDS) {
             switch (*(Uint32 *)bmi->bmiColors) {
             case 0x00FF0000:
-                mode->format = SDL_PIXELFORMAT_RGB888;
+                mode->format = SDL_PIXELFORMAT_XRGB8888;
                 break;
             case 0x000000FF:
-                mode->format = SDL_PIXELFORMAT_BGR888;
+                mode->format = SDL_PIXELFORMAT_XBGR8888;
                 break;
             case 0xF800:
                 mode->format = SDL_PIXELFORMAT_RGB565;
@@ -80,7 +80,7 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
         if ((data->DeviceMode.dmFields & DM_BITSPERPEL) == DM_BITSPERPEL) {
             switch (data->DeviceMode.dmBitsPerPel) {
             case 32:
-                mode->format = SDL_PIXELFORMAT_RGB888;
+                mode->format = SDL_PIXELFORMAT_XRGB8888;
                 break;
             case 24:
                 mode->format = SDL_PIXELFORMAT_RGB24;

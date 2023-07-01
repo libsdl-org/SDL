@@ -402,13 +402,13 @@ static SDL_bool convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
 {
     switch (pixel_format) {
     case SDL_PIXELFORMAT_ARGB8888:
-    case SDL_PIXELFORMAT_RGB888:
+    case SDL_PIXELFORMAT_XRGB8888:
         *internalFormat = GL_RGBA8;
         *format = GL_BGRA;
         *type = GL_UNSIGNED_INT_8_8_8_8_REV;
         break;
     case SDL_PIXELFORMAT_ABGR8888:
-    case SDL_PIXELFORMAT_BGR888:
+    case SDL_PIXELFORMAT_XBGR8888:
         *internalFormat = GL_RGBA8;
         *format = GL_RGBA;
         *type = GL_UNSIGNED_INT_8_8_8_8_REV;
@@ -1971,8 +1971,8 @@ SDL_RenderDriver GL_RenderDriver = {
       4,
       { SDL_PIXELFORMAT_ARGB8888,
         SDL_PIXELFORMAT_ABGR8888,
-        SDL_PIXELFORMAT_RGB888,
-        SDL_PIXELFORMAT_BGR888 },
+        SDL_PIXELFORMAT_XRGB8888,
+        SDL_PIXELFORMAT_XBGR8888 },
       0,
       0 }
 };

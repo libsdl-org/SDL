@@ -191,39 +191,39 @@
  * Define draw operators for RGB888
  */
 
-#define DRAW_SETPIXEL_RGB888 \
-    DRAW_SETPIXEL(RGB888_FROM_RGB(*pixel, sr, sg, sb))
+#define DRAW_SETPIXEL_XRGB8888 \
+    DRAW_SETPIXEL(XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
-#define DRAW_SETPIXEL_BLEND_RGB888                           \
-    DRAW_SETPIXEL_BLEND(RGB_FROM_RGB888(*pixel, sr, sg, sb), \
-                        RGB888_FROM_RGB(*pixel, sr, sg, sb))
+#define DRAW_SETPIXEL_BLEND_XRGB8888                           \
+    DRAW_SETPIXEL_BLEND(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
+                        XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
-#define DRAW_SETPIXEL_ADD_RGB888                           \
-    DRAW_SETPIXEL_ADD(RGB_FROM_RGB888(*pixel, sr, sg, sb), \
-                      RGB888_FROM_RGB(*pixel, sr, sg, sb))
+#define DRAW_SETPIXEL_ADD_XRGB8888                           \
+    DRAW_SETPIXEL_ADD(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
+                      XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MOD_RGB888                           \
-    DRAW_SETPIXEL_MOD(RGB_FROM_RGB888(*pixel, sr, sg, sb), \
-                      RGB888_FROM_RGB(*pixel, sr, sg, sb))
+#define DRAW_SETPIXEL_MOD_XRGB8888                           \
+    DRAW_SETPIXEL_MOD(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
+                      XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MUL_RGB888                           \
-    DRAW_SETPIXEL_MUL(RGB_FROM_RGB888(*pixel, sr, sg, sb), \
-                      RGB888_FROM_RGB(*pixel, sr, sg, sb))
+#define DRAW_SETPIXEL_MUL_XRGB8888                           \
+    DRAW_SETPIXEL_MUL(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
+                      XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
-#define DRAW_SETPIXELXY_RGB888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_RGB888)
+#define DRAW_SETPIXELXY_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_XRGB8888)
 
-#define DRAW_SETPIXELXY_BLEND_RGB888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_RGB888)
+#define DRAW_SETPIXELXY_BLEND_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_XRGB8888)
 
-#define DRAW_SETPIXELXY_ADD_RGB888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_RGB888)
+#define DRAW_SETPIXELXY_ADD_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_XRGB8888)
 
-#define DRAW_SETPIXELXY_MOD_RGB888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MOD_RGB888)
+#define DRAW_SETPIXELXY_MOD_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MOD_XRGB8888)
 
-#define DRAW_SETPIXELXY_MUL_RGB888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MUL_RGB888)
+#define DRAW_SETPIXELXY_MUL_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MUL_XRGB8888)
 
 /*
  * Define draw operators for ARGB8888
