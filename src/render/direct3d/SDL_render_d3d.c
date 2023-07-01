@@ -193,7 +193,7 @@ static D3DFORMAT PixelFormatToD3DFMT(Uint32 format)
     switch (format) {
     case SDL_PIXELFORMAT_RGB565:
         return D3DFMT_R5G6B5;
-    case SDL_PIXELFORMAT_RGB888:
+    case SDL_PIXELFORMAT_XRGB8888:
         return D3DFMT_X8R8G8B8;
     case SDL_PIXELFORMAT_ARGB8888:
         return D3DFMT_A8R8G8B8;
@@ -213,7 +213,7 @@ static Uint32 D3DFMTToPixelFormat(D3DFORMAT format)
     case D3DFMT_R5G6B5:
         return SDL_PIXELFORMAT_RGB565;
     case D3DFMT_X8R8G8B8:
-        return SDL_PIXELFORMAT_RGB888;
+        return SDL_PIXELFORMAT_XRGB8888;
     case D3DFMT_A8R8G8B8:
         return SDL_PIXELFORMAT_ARGB8888;
     default:

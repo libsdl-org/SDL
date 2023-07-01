@@ -102,7 +102,7 @@ int OFFSCREEN_VideoInit(SDL_VideoDevice *_this)
 
     /* Use a fake 32-bpp desktop mode */
     SDL_zero(mode);
-    mode.format = SDL_PIXELFORMAT_RGB888;
+    mode.format = SDL_PIXELFORMAT_XRGB8888;
     mode.w = 1024;
     mode.h = 768;
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {

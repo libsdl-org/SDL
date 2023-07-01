@@ -75,26 +75,26 @@ static int SDL_BlendFillRect_RGB565(SDL_Surface *dst, const SDL_Rect *rect,
     return 0;
 }
 
-static int SDL_BlendFillRect_RGB888(SDL_Surface *dst, const SDL_Rect *rect,
+static int SDL_BlendFillRect_XRGB8888(SDL_Surface *dst, const SDL_Rect *rect,
                                     SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
 
     switch (blendMode) {
     case SDL_BLENDMODE_BLEND:
-        FILLRECT(Uint32, DRAW_SETPIXEL_BLEND_RGB888);
+        FILLRECT(Uint32, DRAW_SETPIXEL_BLEND_XRGB8888);
         break;
     case SDL_BLENDMODE_ADD:
-        FILLRECT(Uint32, DRAW_SETPIXEL_ADD_RGB888);
+        FILLRECT(Uint32, DRAW_SETPIXEL_ADD_XRGB8888);
         break;
     case SDL_BLENDMODE_MOD:
-        FILLRECT(Uint32, DRAW_SETPIXEL_MOD_RGB888);
+        FILLRECT(Uint32, DRAW_SETPIXEL_MOD_XRGB8888);
         break;
     case SDL_BLENDMODE_MUL:
-        FILLRECT(Uint32, DRAW_SETPIXEL_MUL_RGB888);
+        FILLRECT(Uint32, DRAW_SETPIXEL_MUL_XRGB8888);
         break;
     default:
-        FILLRECT(Uint32, DRAW_SETPIXEL_RGB888);
+        FILLRECT(Uint32, DRAW_SETPIXEL_XRGB8888);
         break;
     }
     return 0;
@@ -254,7 +254,7 @@ int SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect,
         switch (dst->format->Rmask) {
         case 0x00FF0000:
             if (!dst->format->Amask) {
-                return SDL_BlendFillRect_RGB888(dst, rect, blendMode, r, g, b, a);
+                return SDL_BlendFillRect_XRGB8888(dst, rect, blendMode, r, g, b, a);
             } else {
                 return SDL_BlendFillRect_ARGB8888(dst, rect, blendMode, r, g, b, a);
             }
@@ -314,7 +314,7 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         switch (dst->format->Rmask) {
         case 0x00FF0000:
             if (!dst->format->Amask) {
-                func = SDL_BlendFillRect_RGB888;
+                func = SDL_BlendFillRect_XRGB8888;
             } else {
                 func = SDL_BlendFillRect_ARGB8888;
             }

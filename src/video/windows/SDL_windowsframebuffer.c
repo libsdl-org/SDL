@@ -70,7 +70,7 @@ int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint
     }
     if (*format == SDL_PIXELFORMAT_UNKNOWN) {
         /* We'll use RGB format for now */
-        *format = SDL_PIXELFORMAT_RGB888;
+        *format = SDL_PIXELFORMAT_XRGB8888;
 
         /* Create a new one */
         SDL_memset(info, 0, size);

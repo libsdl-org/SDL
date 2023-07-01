@@ -170,7 +170,7 @@ static int createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, 
         return -1;
     }
 
-    *format = SDL_PIXELFORMAT_RGB888;
+    *format = SDL_PIXELFORMAT_XRGB8888;
     return 0;
 }
 

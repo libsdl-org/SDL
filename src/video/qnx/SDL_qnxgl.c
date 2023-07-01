@@ -42,7 +42,7 @@ static int chooseFormat(EGLConfig egl_conf)
         case 32:
             return SCREEN_FORMAT_RGBX8888;
         case 24:
-            return SCREEN_FORMAT_RGB888;
+            return SDL_PIXELFORMAT_RGB24;
         case 16:
             switch (alpha_bit_depth) {
                 case 4:

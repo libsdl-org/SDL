@@ -193,8 +193,8 @@ static vector unsigned char reorder_ppc64le_vec(vector unsigned char vpermute)
 }
 #endif
 
-static void Blit_RGB888_RGB565(SDL_BlitInfo *info);
-static void Blit_RGB888_RGB565Altivec(SDL_BlitInfo *info)
+static void Blit_XRGB8888_RGB565(SDL_BlitInfo *info);
+static void Blit_XRGB8888_RGB565Altivec(SDL_BlitInfo *info)
 {
     int height = info->dst_h;
     Uint8 *src = (Uint8 *)info->src;
@@ -906,9 +906,9 @@ static enum blit_features GetBlitFeatures(void)
 #endif
 
 #ifdef SDL_ARM_SIMD_BLITTERS
-void Blit_BGR888_RGB888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
+void Blit_XBGR8888_XRGB8888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
 
-static void Blit_BGR888_RGB888ARMSIMD(SDL_BlitInfo *info)
+static void Blit_XBGR8888_XRGB8888ARMSIMD(SDL_BlitInfo *info)
 {
     int32_t width = info->dst_w;
     int32_t height = info->dst_h;
@@ -917,12 +917,12 @@ static void Blit_BGR888_RGB888ARMSIMD(SDL_BlitInfo *info)
     uint32_t *srcp = (uint32_t *)info->src;
     int32_t srcstride = width + (info->src_skip >> 2);
 
-    Blit_BGR888_RGB888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
+    Blit_XBGR8888_XRGB8888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
 }
 
-void Blit_RGB444_RGB888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint16_t *src, int32_t src_stride);
+void Blit_RGB444_XRGB8888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint16_t *src, int32_t src_stride);
 
-static void Blit_RGB444_RGB888ARMSIMD(SDL_BlitInfo *info)
+static void Blit_RGB444_XRGB8888ARMSIMD(SDL_BlitInfo *info)
 {
     int32_t width = info->dst_w;
     int32_t height = info->dst_h;
@@ -931,7 +931,7 @@ static void Blit_RGB444_RGB888ARMSIMD(SDL_BlitInfo *info)
     uint16_t *srcp = (uint16_t *)info->src;
     int32_t srcstride = width + (info->src_skip >> 1);
 
-    Blit_RGB444_RGB888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
+    Blit_RGB444_XRGB8888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
 }
 #endif
 
@@ -951,7 +951,7 @@ static void Blit_RGB444_RGB888ARMSIMD(SDL_BlitInfo *info)
                       (((src)&0x0000E000) >> 11) | \
                       (((src)&0x000000C0) >> 6));  \
     }
-static void Blit_RGB888_index8(SDL_BlitInfo *info)
+static void Blit_XRGB8888_index8(SDL_BlitInfo *info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -1191,7 +1191,7 @@ static void Blit_RGB101010_index8(SDL_BlitInfo *info)
                            (((src[LO]) & 0x000000F8) >> 3);    \
     }
 #endif
-static void Blit_RGB888_RGB555(SDL_BlitInfo *info)
+static void Blit_XRGB8888_RGB555(SDL_BlitInfo *info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -1321,7 +1321,7 @@ static void Blit_RGB888_RGB555(SDL_BlitInfo *info)
                            (((src[LO]) & 0x000000F8) >> 3);    \
     }
 #endif
-static void Blit_RGB888_RGB565(SDL_BlitInfo *info)
+static void Blit_XRGB8888_RGB565(SDL_BlitInfo *info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -3222,7 +3222,7 @@ static const struct blit_table normal_blit_2[] = {
 #endif
 #ifdef SDL_ARM_SIMD_BLITTERS
     { 0x00000F00, 0x000000F0, 0x0000000F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
-      BLIT_FEATURE_HAS_ARM_SIMD, Blit_RGB444_RGB888ARMSIMD, NO_ALPHA | COPY_ALPHA },
+      BLIT_FEATURE_HAS_ARM_SIMD, Blit_RGB444_XRGB8888ARMSIMD, NO_ALPHA | COPY_ALPHA },
 #endif
 #if SDL_HAVE_BLIT_N_RGB565
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
@@ -3289,11 +3289,11 @@ static const struct blit_table normal_blit_4[] = {
       BLIT_FEATURE_HAS_ALTIVEC, ConvertAltivec32to32_prefetch, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
     /* has-altivec */
     { 0x00000000, 0x00000000, 0x00000000, 2, 0x0000F800, 0x000007E0, 0x0000001F,
-      BLIT_FEATURE_HAS_ALTIVEC, Blit_RGB888_RGB565Altivec, NO_ALPHA },
+      BLIT_FEATURE_HAS_ALTIVEC, Blit_XRGB8888_RGB565Altivec, NO_ALPHA },
 #endif
 #ifdef SDL_ARM_SIMD_BLITTERS
     { 0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
-      BLIT_FEATURE_HAS_ARM_SIMD, Blit_BGR888_RGB888ARMSIMD, NO_ALPHA | COPY_ALPHA },
+      BLIT_FEATURE_HAS_ARM_SIMD, Blit_XBGR8888_XRGB8888ARMSIMD, NO_ALPHA | COPY_ALPHA },
 #endif
     /* 4->3 with same rgb triplet */
     { 0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
@@ -3320,9 +3320,9 @@ static const struct blit_table normal_blit_4[] = {
           SET_ALPHA | COPY_ALPHA },
     /* RGB 888 and RGB 565 */
     { 0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x0000F800, 0x000007E0, 0x0000001F,
-      0, Blit_RGB888_RGB565, NO_ALPHA },
+      0, Blit_XRGB8888_RGB565, NO_ALPHA },
     { 0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x00007C00, 0x000003E0, 0x0000001F,
-      0, Blit_RGB888_RGB555, NO_ALPHA },
+      0, Blit_XRGB8888_RGB555, NO_ALPHA },
     /* Default for 32-bit RGB source, used if no other blitter matches */
     { 0, 0, 0, 0, 0, 0, 0, 0, BlitNtoN, 0 }
 };
@@ -3359,7 +3359,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
                 (srcfmt->Rmask == 0x00FF0000) &&
                 (srcfmt->Gmask == 0x0000FF00) &&
                 (srcfmt->Bmask == 0x000000FF)) {
-                blitfun = Blit_RGB888_index8;
+                blitfun = Blit_XRGB8888_index8;
             } else if ((srcfmt->BytesPerPixel == 4) &&
                        (srcfmt->Rmask == 0x3FF00000) &&
                        (srcfmt->Gmask == 0x000FFC00) &&

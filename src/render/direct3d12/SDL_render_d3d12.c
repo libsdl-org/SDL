@@ -278,7 +278,7 @@ Uint32 D3D12_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
     case DXGI_FORMAT_B8G8R8A8_UNORM:
         return SDL_PIXELFORMAT_ARGB8888;
     case DXGI_FORMAT_B8G8R8X8_UNORM:
-        return SDL_PIXELFORMAT_RGB888;
+        return SDL_PIXELFORMAT_XRGB8888;
     default:
         return SDL_PIXELFORMAT_UNKNOWN;
     }
@@ -289,7 +289,7 @@ static DXGI_FORMAT SDLPixelFormatToDXGIFormat(Uint32 sdlFormat)
     switch (sdlFormat) {
     case SDL_PIXELFORMAT_ARGB8888:
         return DXGI_FORMAT_B8G8R8A8_UNORM;
-    case SDL_PIXELFORMAT_RGB888:
+    case SDL_PIXELFORMAT_XRGB8888:
         return DXGI_FORMAT_B8G8R8X8_UNORM;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
@@ -3021,7 +3021,7 @@ SDL_RenderDriver D3D12_RenderDriver = {
         6,                           /* num_texture_formats */
         {                            /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,
-          SDL_PIXELFORMAT_RGB888,
+          SDL_PIXELFORMAT_XRGB8888,
           SDL_PIXELFORMAT_YV12,
           SDL_PIXELFORMAT_IYUV,
           SDL_PIXELFORMAT_NV12,
