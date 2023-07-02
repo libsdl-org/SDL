@@ -169,6 +169,7 @@ add_sdl_test_executable(testhittesting SOURCES testhittesting.c)
 add_sdl_test_executable(testdraw SOURCES testdraw.c)
 add_sdl_test_executable(testdrawchessboard SOURCES testdrawchessboard.c)
 add_sdl_test_executable(testdropfile SOURCES testdropfile.c)
+add_sdl_test_executable(testlocation SOURCES testlocation.c)
 add_sdl_test_executable(testerror NONINTERACTIVE SOURCES testerror.c)
 
 if(SDL3_TESTS_SUBPROJECT)

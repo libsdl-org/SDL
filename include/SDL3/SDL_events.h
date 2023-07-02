@@ -195,6 +195,9 @@ typedef enum
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
     SDL_EVENT_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
 
+    /* Location events */
+    SDL_EVENT_LOCATION = 0x3000, /* Location datas */
+
     /* Internal events */
     SDL_EVENT_POLL_SENTINEL = 0x7F00, /**< Signals the end of an event poll cycle */
 
@@ -560,6 +563,18 @@ typedef struct SDL_SensorEvent
 } SDL_SensorEvent;
 
 /**
+ *  \brief Location event structure (event.location.*)
+ */
+typedef struct SDL_LocationEvent
+{
+    Uint32 type;        /**< ::SDL_EVENT_LOCATION */
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    double latitude;    /**< Latitude in degrees */
+    double longitude;   /**< Longitude in degrees */
+    double altitude;    /**< Altitude in meters */
+} SDL_LocationEvent;
+
+/**
  *  \brief The "quit requested" event
  */
 typedef struct SDL_QuitEvent
@@ -640,7 +655,8 @@ typedef union SDL_Event
     SDL_SysWMEvent syswm;                   /**< System dependent window event data */
     SDL_TouchFingerEvent tfinger;           /**< Touch finger event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
-    SDL_ClipboardEvent clipboard;       /**< Clipboard cancelled event data */
+    SDL_ClipboardEvent clipboard;           /**< Clipboard cancelled event data */
+    SDL_LocationEvent location;             /**< Location event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of
