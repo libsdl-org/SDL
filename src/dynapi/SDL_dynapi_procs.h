@@ -938,3 +938,5 @@ SDL_DYNAPI_PROC(int,SDL_hid_get_report_descriptor,(SDL_hid_device *a, unsigned c
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasWindowSurface,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_DestroyWindowSurface,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(SDL_DisplayOrientation,SDL_GetNaturalDisplayOrientation,(SDL_DisplayID a),(a),return)
+SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadBMP,(const char *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_SaveBMP,(SDL_Surface *a, const char *b),(a,b),return)

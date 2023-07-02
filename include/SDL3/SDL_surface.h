@@ -227,10 +227,6 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
  *
- * src is an open SDL_RWops buffer, typically loaded with SDL_RWFromFile.
- * Alternitavely, you might also use the macro SDL_LoadBMP to load a bitmap
- * from a file, convert it to an SDL_Surface and then close the file.
- *
  * \param src the data stream for the surface
  * \param freesrc non-zero to close the stream after being read
  * \returns a pointer to a new SDL_Surface structure or NULL if there was an
@@ -239,19 +235,28 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroySurface
- * \sa SDL_RWFromFile
  * \sa SDL_LoadBMP
  * \sa SDL_SaveBMP_RW
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops *src,
-                                                    int freesrc);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops *src, int freesrc);
 
 /**
- * Load a surface from a file.
+ * Load a BMP image from a file.
  *
- * Convenience macro.
+ * The new surface should be freed with SDL_DestroySurface(). Not doing so
+ * will result in a memory leak.
+ *
+ * \param file the BMP file to load
+ * \returns a pointer to a new SDL_Surface structure or NULL if there was an
+ *          error; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_DestroySurface
+ * \sa SDL_LoadBMP_RW
+ * \sa SDL_SaveBMP
  */
-#define SDL_LoadBMP(file)   SDL_LoadBMP_RW(SDL_RWFromFile(file, "rb"), 1)
+extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP(const char *file);
 
 /**
  * Save a surface to a seekable SDL data stream in BMP format.
@@ -273,16 +278,28 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops *src,
  * \sa SDL_LoadBMP_RW
  * \sa SDL_SaveBMP
  */
-extern DECLSPEC int SDLCALL SDL_SaveBMP_RW
-    (SDL_Surface *surface, SDL_RWops *dst, int freedst);
+extern DECLSPEC int SDLCALL SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst);
 
 /**
- *  Save a surface to a file.
+ * Save a surface to a file.
  *
- *  Convenience macro.
+ * Surfaces with a 24-bit, 32-bit and paletted 8-bit format get saved in the
+ * BMP directly. Other RGB formats with 8-bit or higher get converted to a
+ * 24-bit surface or, if they have an alpha mask or a colorkey, to a 32-bit
+ * surface before they are saved. YUV and paletted 1-bit and 4-bit formats are
+ * not supported.
+ *
+ * \param surface the SDL_Surface structure containing the image to be saved
+ * \param file a file to save to
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_LoadBMP
+ * \sa SDL_SaveBMP_RW
  */
-#define SDL_SaveBMP(surface, file) \
-        SDL_SaveBMP_RW(surface, SDL_RWFromFile(file, "wb"), 1)
+extern DECLSPEC int SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *file);
 
 /**
  * Set the RLE acceleration hint for a surface.

@@ -893,3 +893,5 @@
 #define SDL_HasWindowSurface SDL_HasWindowSurface_REAL
 #define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL
 #define SDL_GetNaturalDisplayOrientation SDL_GetNaturalDisplayOrientation_REAL
+#define SDL_LoadBMP SDL_LoadBMP_REAL
+#define SDL_SaveBMP SDL_SaveBMP_REAL

@@ -624,6 +624,11 @@ done:
     return surface;
 }
 
+SDL_Surface *SDL_LoadBMP(const char *file)
+{
+    return SDL_LoadBMP_RW(SDL_RWFromFile(file, "rb"), 1);
+}
+
 int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
 {
     /* !!! FIXME: this calls SDL_ClearError() and then checks if an error happened during this function to
@@ -868,4 +873,9 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
         SDL_RWclose(dst);
     }
     return (SDL_strcmp(SDL_GetError(), "") == 0) ? 0 : -1;
+}
+
+int SDL_SaveBMP(SDL_Surface *surface, const char *file)
+{
+    return SDL_SaveBMP_RW(surface, SDL_RWFromFile(file, "wb"), 1);
 }
