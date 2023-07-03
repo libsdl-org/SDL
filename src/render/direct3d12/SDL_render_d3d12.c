@@ -2364,7 +2364,7 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
            NOTE: Although it may seem inefficient to linearly search through ~450 pipelines
            to find the correct one, in profiling this doesn't come up at all.
            It's unlikely that using a hash table would affect performance a measurable amount unless
-           it's a degenerate case that's chaning the pipline state dozens of times per frame.
+           it's a degenerate case that's changing the pipeline state dozens of times per frame.
         */
         rendererData->currentPipelineState = NULL;
         for (i = 0; i < rendererData->pipelineStateCount; ++i) {

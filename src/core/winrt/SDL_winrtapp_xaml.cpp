@@ -134,7 +134,7 @@ int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void *backgroundPane
     // CoreWindow.  WinRT will not allow the app's CoreWindow to be accessed via the
     // SDL/WinRT thread.
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
-        // SDL_InitSubSystem will, on error, set the SDL error.  Let that propogate to
+        // SDL_InitSubSystem will, on error, set the SDL error.  Let that propagate to
         // the caller to here:
         WINRT_XAMLWasEnabled = oldXAMLWasEnabledValue;
         return -1;

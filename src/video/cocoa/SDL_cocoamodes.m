@@ -169,7 +169,7 @@ static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode,
     /* If a list of possible display modes is passed in, use it to filter out
      * modes that have duplicate sizes. We don't just rely on SDL's higher level
      * duplicate filtering because this code can choose what properties are
-     * prefered, and it can add CGDisplayModes to the DisplayModeData's list of
+     * preferred, and it can add CGDisplayModes to the DisplayModeData's list of
      * modes to try (see comment below for why that's necessary). */
     pixelW = CGDisplayModeGetPixelWidth(vidmode);
     pixelH = CGDisplayModeGetPixelHeight(vidmode);

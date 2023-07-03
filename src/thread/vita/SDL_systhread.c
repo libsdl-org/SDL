@@ -74,7 +74,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
         ThreadEntry, // function to run
         0,           // priority. 0 means priority of calling thread
         stack_size,  // stack size
-        0,           // attibutes. always 0
+        0,           // attributes. always 0
         0,           // cpu affinity mask. 0 = all CPUs
         NULL         // opt. always NULL
     );

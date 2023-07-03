@@ -173,7 +173,7 @@ static void PS2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture
     GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->driverdata;
     /*
      set texture filtering according to scaleMode
-     suported hint values are nearest (0, default) or linear (1)
+     supported hint values are nearest (0, default) or linear (1)
      gskit scale mode is either GS_FILTER_NEAREST (good for tile-map)
      or GS_FILTER_LINEAR (good for scaling)
      */

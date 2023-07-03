@@ -1371,7 +1371,7 @@ static int PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item,
         if (fd < 0) {
             return SDL_SetError("Unable to open %s", item->path);
         }
-        /* If openning sensor fail, continue with buttons and axes only */
+        /* If opening sensor fail, continue with buttons and axes only */
         if (item_sensor != NULL) {
             fd_sensor = open(item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
         }

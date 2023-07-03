@@ -1052,16 +1052,16 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     /**********************************************/
     /*KMSDRM_WaitPageflip(_this, windata);*/
 
-    /***********************************************************************/
-    /* Restore the original CRTC configuration: configue the crtc with the */
-    /* original video mode and make it point to the original TTY buffer.   */
-    /***********************************************************************/
+    /************************************************************************/
+    /* Restore the original CRTC configuration: configure the crtc with the */
+    /* original video mode and make it point to the original TTY buffer.    */
+    /************************************************************************/
 
     ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
                                 dispdata->crtc->buffer_id, 0, 0, &dispdata->connector->connector_id, 1,
                                 &dispdata->original_mode);
 
-    /* If we failed to set the original mode, try to set the connector prefered mode. */
+    /* If we failed to set the original mode, try to set the connector preferred mode. */
     if (ret && (dispdata->crtc->mode_valid == 0)) {
         ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
                                     dispdata->crtc->buffer_id, 0, 0, &dispdata->connector->connector_id, 1,
@@ -1363,7 +1363,7 @@ void KMSDRM_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         KMSDRM_DestroySurfaces(_this, window);
 
         /* Unload library and deinit GBM, but only if this is the last window.
-           Note that this is the right comparision because num_windows could be 1
+           Note that this is the right comparison because num_windows could be 1
            if there is a complete window, or 0 if we got here from SDL_CreateWindow()
            because KMSDRM_CreateWindow() returned an error so the window wasn't
            added to the windows list. */

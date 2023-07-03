@@ -601,7 +601,7 @@ static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *te
 
     /*
      set texture filtering according to scaleMode
-     suported hint values are nearest (0, default) or linear (1)
+     supported hint values are nearest (0, default) or linear (1)
      vitaScaleMode is either SCE_GXM_TEXTURE_FILTER_POINT (good for tile-map)
      or SCE_GXM_TEXTURE_FILTER_LINEAR (good for scaling)
      */

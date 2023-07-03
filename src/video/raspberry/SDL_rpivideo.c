@@ -293,7 +293,7 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         return SDL_SetError("Could not create GLES window surface");
     }
 
-    /* Start generating vsync callbacks if necesary */
+    /* Start generating vsync callbacks if necessary */
     wdata->double_buffer = SDL_FALSE;
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
         wdata->vsync_cond = SDL_CreateCondition();

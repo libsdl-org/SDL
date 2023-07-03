@@ -26,7 +26,7 @@
 #define SDL_ALSA_NON_BLOCKING 0
 #endif
 
-/* without the thread, you will detect devices on startup, but will not get futher hotplug events. But that might be okay. */
+/* without the thread, you will detect devices on startup, but will not get further hotplug events. But that might be okay. */
 #ifndef SDL_ALSA_HOTPLUG_THREAD
 #define SDL_ALSA_HOTPLUG_THREAD 1
 #endif

@@ -230,7 +230,7 @@ static void kbd_unregister_emerg_cleanup(void)
             continue;
         }
 
-        /* Check if action installed and not modifed */
+        /* Check if action installed and not modified */
         if (!(cur_action.sa_flags & SA_SIGINFO) || cur_action.sa_sigaction != &kbd_cleanup_signal_action) {
             continue;
         }

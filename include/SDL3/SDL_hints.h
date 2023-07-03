@@ -155,7 +155,7 @@ extern "C" {
  *            (A-Z, a-z, 0-9) plus underscore (‘_’) and hyphen (‘-’) and must not start
  *            with a digit. Note that hyphens, while technically allowed, should not be
  *            used if possible, as they are not supported by all components that use the ID,
- *            such as D-Bus. For maximum compatability, replace hyphens with an underscore.
+ *            such as D-Bus. For maximum compatibility, replace hyphens with an underscore.
  *
  *          - The empty string is not a valid element (ie: your application ID may not
  *            start or end with a period and it is not valid to have two periods in a row).
@@ -1681,7 +1681,7 @@ extern "C" {
  * By default SDL will manage OpenGL contexts in certain situations. For example, on Android the
  * context will be automatically saved and restored when pausing the application. Additionally, some
  * platforms will assume usage of OpenGL if Vulkan isn't used. Setting this to "1" will prevent this
- * behavior, which is desireable when the application manages the graphics context, such as
+ * behavior, which is desirable when the application manages the graphics context, such as
  * an externally managed OpenGL context or attaching a Vulkan surface to the window.
  */
 #define SDL_HINT_VIDEO_EXTERNAL_CONTEXT    "SDL_VIDEO_EXTERNAL_CONTEXT"
@@ -2018,7 +2018,7 @@ extern "C" {
 /**
  * \brief Force SDL to use Critical Sections for mutexes on Windows.
  *        On Windows 7 and newer, Slim Reader/Writer Locks are available.
- *        They offer better performance, allocate no kernel ressources and
+ *        They offer better performance, allocate no kernel resources and
  *        use less memory. SDL will fall back to Critical Sections on older
  *        OS versions or if forced to by this hint.
  *
@@ -2315,7 +2315,7 @@ extern "C" {
  *  This functionality has existed since SDL 2.0.0 (indeed, before that)
  *  but before 2.0.22 this was an environment variable only. In 2.0.22,
  *  it was upgraded to a full SDL hint, so you can set the environment
- *  variable as usual or programatically set the hint with SDL_SetHint,
+ *  variable as usual or programmatically set the hint with SDL_SetHint,
  *  which won't propagate to child processes.
  *
  *  The default value is unset, in which case SDL will try to figure out
@@ -2338,7 +2338,7 @@ extern "C" {
  *  This functionality has existed since SDL 2.0.0 (indeed, before that)
  *  but before 2.0.22 this was an environment variable only. In 2.0.22,
  *  it was upgraded to a full SDL hint, so you can set the environment
- *  variable as usual or programatically set the hint with SDL_SetHint,
+ *  variable as usual or programmatically set the hint with SDL_SetHint,
  *  which won't propagate to child processes.
  *
  *  The default value is unset, in which case SDL will try to figure out

@@ -632,7 +632,7 @@ int SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
  * accelerated blitting function.
  *
  * These parts are separated out and each used internally by this
- * library in the optimimum places.  They are exported so that if
+ * library in the optimum places.  They are exported so that if
  * you know exactly what you are doing, you can optimize your code
  * by calling the one(s) you need.
  */
@@ -1299,7 +1299,7 @@ SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *for
 
             tmp->map->info.flags &= ~SDL_COPY_COLORKEY;
 
-            /* Convertion of the colorkey */
+            /* Conversion of the colorkey */
             tmp2 = SDL_ConvertSurface(tmp, format);
             if (tmp2 == NULL) {
                 SDL_DestroySurface(tmp);

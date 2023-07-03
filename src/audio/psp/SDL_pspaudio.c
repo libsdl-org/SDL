@@ -57,7 +57,7 @@ static int PSPAUDIO_OpenDevice(SDL_AudioDevice *_this, const char *devname)
     _this->spec.format = SDL_AUDIO_S16LSB;
 
     /*  PSP has some limitations with the Audio. It fully supports 44.1KHz (Mono & Stereo),
-        however with frequencies differents than 44.1KHz, it just supports Stereo,
+        however with frequencies different than 44.1KHz, it just supports Stereo,
         so a resampler must be done for these scenarios */
     if (isBasicAudioConfig(&_this->spec)) {
         /* The sample count must be a multiple of 64. */

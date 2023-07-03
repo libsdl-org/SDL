@@ -258,7 +258,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
     /* Set timeout timer */
     timer = SDLTest_SetTestTimeout(SDLTest_TestCaseTimeout, SDLTest_BailOut);
 
-    /* Maybe run suite initalizer function */
+    /* Maybe run suite initializer function */
     if (testSuite->testSetUp) {
         testSuite->testSetUp(0x0);
         if (SDLTest_AssertSummaryToTestResult() == TEST_RESULT_FAILED) {
@@ -272,7 +272,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
 
     /* Convert test execution result into harness result */
     if (testCaseResult == TEST_SKIPPED) {
-        /* Test was programatically skipped */
+        /* Test was programmatically skipped */
         testResult = TEST_RESULT_SKIPPED;
     } else if (testCaseResult == TEST_STARTED) {
         /* Test did not return a TEST_COMPLETED value; assume it failed */
@@ -303,7 +303,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
 
     /* Final log based on test execution result */
     if (testCaseResult == TEST_SKIPPED) {
-        /* Test was programatically skipped */
+        /* Test was programmatically skipped */
         SDLTest_Log(SDLTEST_FINAL_RESULT_FORMAT, "Test", testCase->name, COLOR_BLUE "Skipped (Programmatically)" COLOR_END);
     } else if (testCaseResult == TEST_STARTED) {
         /* Test did not return a TEST_COMPLETED value; assume it failed */

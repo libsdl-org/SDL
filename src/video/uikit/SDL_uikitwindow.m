@@ -143,7 +143,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow 
     view = [[SDL_uikitview alloc] initWithFrame:frame];
 
     /* Sets this view as the controller's view, and adds the view to the window
-     * heirarchy. */
+     * hierarchy. */
     [view setSDLWindow:window];
 
     return 0;
