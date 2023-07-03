@@ -40,6 +40,7 @@
 #endif
 
 #include <SDL3/SDL_syswm.h>
+#include "SDL_x11xsync.h"
 
 #define _NET_WM_STATE_REMOVE 0l
 #define _NET_WM_STATE_ADD    1l
@@ -420,6 +421,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_VideoData *data = _this->driverdata;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     const SDL_bool force_override_redirect = SDL_GetHintBoolean(SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT, SDL_FALSE);
+    const SDL_bool use_resize_sync = (window->flags & SDL_WINDOW_VULKAN) ? SDL_FALSE : SDL_TRUE; /* doesn't work well with Vulkan */
     SDL_WindowData *windowdata;
     Display *display = data->display;
     int screen = displaydata->screen;
@@ -677,7 +679,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     {
-        Atom protocols[3];
+        Atom protocols[4];
         int proto_count = 0;
 
         protocols[proto_count++] = data->WM_DELETE_WINDOW; /* Allow window to be deleted by the WM */
@@ -687,6 +689,12 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_NET_WM_PING, SDL_TRUE)) {
             protocols[proto_count++] = data->_NET_WM_PING; /* Respond so WM knows we're alive */
         }
+
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+        if (use_resize_sync) {
+            protocols[proto_count++] = data->_NET_WM_SYNC_REQUEST; /* Respond after completing resize */
+        }
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
 
         SDL_assert(proto_count <= sizeof(protocols) / sizeof(protocols[0]));
 
@@ -698,6 +706,12 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         return -1;
     }
     windowdata = window->driverdata;
+
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+    if (use_resize_sync) {
+        X11_InitResizeSync(window);
+    }
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
 
 #if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2) || defined(SDL_VIDEO_OPENGL_EGL)
     if ((window->flags & SDL_WINDOW_OPENGL) &&
@@ -1826,6 +1840,11 @@ void X11_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             X11_XDestroyIC(data->ic);
         }
 #endif
+
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+        X11_TermResizeSync(window);
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
+
         if (data->created) {
             X11_XDestroyWindow(display, data->xwindow);
             X11_XFlush(display);

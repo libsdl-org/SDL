@@ -32,6 +32,7 @@
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
+#include "SDL_x11xsync.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -1247,6 +1248,11 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 }
             }
         }
+
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+        X11_HandleConfigure(data->window, &xevent->xconfigure);
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
+
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
             xevent->xconfigure.height != data->last_xconfigure.height) {
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
@@ -1372,6 +1378,17 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             printf("window %p: WM_TAKE_FOCUS\n", data);
 #endif
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_TAKE_FOCUS, 0, 0);
+            break;
+        } else if ((xevent->xclient.message_type == videodata->WM_PROTOCOLS) &&
+                   (xevent->xclient.format == 32) &&
+                   (xevent->xclient.data.l[0] == videodata->_NET_WM_SYNC_REQUEST)) {
+
+#ifdef DEBUG_XEVENTS
+            printf("window %p: _NET_WM_SYNC_REQUEST\n", data);
+#endif
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+            X11_HandleSyncRequest(data->window, &xevent->xclient);
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
             break;
         }
     } break;
