@@ -579,7 +579,13 @@ int SDL_InitAudio(const char *driver_name)
         current_audio.default_capture_device_id = default_capture->instance_id;
     }
 
-    // !!! FIXME: if a default is zero but there are devices available, should we just pick the first one?
+    // If no default was _ever_ specified, just take the first device we see, if any.
+    if (!current_audio.default_output_device_id && (current_audio.output_devices != NULL)) {
+        current_audio.default_output_device_id = current_audio.output_devices->instance_id;
+    }
+    if (!current_audio.default_capture_device_id && (current_audio.capture_devices != NULL)) {
+        current_audio.default_capture_device_id = current_audio.capture_devices->instance_id;
+    }
 
     return 0;
 }
