@@ -388,7 +388,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
     }
 
     // if there's an audio thread, don't free until thread is terminating, otherwise free stuff now.
-    const SDL_bool should_destroy = (device->thread == NULL);
+    const SDL_bool should_destroy = SDL_AtomicGet(&device->thread_alive) ? SDL_FALSE : SDL_TRUE;
     SDL_UnlockMutex(device->lock);
 
     // Post the event, if we haven't tried to before and if it's desired
@@ -641,6 +641,7 @@ void SDL_QuitAudio(void)
 
 void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
 {
+    SDL_assert(SDL_AtomicGet(&device->thread_alive));
     if (SDL_AtomicGet(&device->condemned)) {
         if (device->thread) {
             SDL_DetachThread(device->thread);  // no one is waiting for us, just detach ourselves.
@@ -648,6 +649,7 @@ void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
         }
         DestroyPhysicalAudioDevice(device);
     }
+    SDL_AtomicSet(&device->thread_alive, 0);
 }
 
 // Output device thread. This is split into chunks, so backends that need to control this directly can use the pieces they need without duplicating effort.
@@ -1053,15 +1055,18 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec)
 // this expects the device lock to be held.
 static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
 {
-    if (device->thread != NULL) {
+    SDL_assert(current_audio.impl.ProvidesOwnCallbackThread || ((device->thread == NULL) == (SDL_AtomicGet(&device->thread_alive) == 0)));
+
+    if (SDL_AtomicGet(&device->thread_alive)) {
         SDL_AtomicSet(&device->shutdown, 1);
-        SDL_WaitThread(device->thread, NULL);
-        device->thread = NULL;
-        SDL_AtomicSet(&device->shutdown, 0);
+        if (device->thread != NULL) {
+            SDL_WaitThread(device->thread, NULL);
+            device->thread = NULL;
+        }
     }
 
     if (device->is_opened) {
-        current_audio.impl.CloseDevice(device);
+        current_audio.impl.CloseDevice(device);  // if ProvidesOwnCallbackThread, this must join on any existing device thread before returning!
         device->is_opened = SDL_FALSE;
     }
 
@@ -1073,6 +1078,7 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
     SDL_memcpy(&device->spec, &device->default_spec, sizeof (SDL_AudioSpec));
     device->sample_frames = 0;
     device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
+    SDL_AtomicSet(&device->shutdown, 0);  // ready to go again.
 }
 
 void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
@@ -1204,6 +1210,7 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
     }
 
     // Start the audio thread if necessary
+    SDL_AtomicSet(&device->thread_alive, 1);
     if (!current_audio.impl.ProvidesOwnCallbackThread) {
         const size_t stacksize = 0;  // just take the system default, since audio streams might have callbacks.
         char threadname[64];
@@ -1211,6 +1218,7 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
         device->thread = SDL_CreateThreadInternal(device->iscapture ? CaptureAudioThread : OutputAudioThread, threadname, stacksize, device);
 
         if (device->thread == NULL) {
+            SDL_AtomicSet(&device->thread_alive, 0);
             ClosePhysicalAudioDevice(device);
             return SDL_SetError("Couldn't create audio thread");
         }

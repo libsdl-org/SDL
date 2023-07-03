@@ -118,7 +118,7 @@ typedef struct SDL_AudioDriverImpl
     void (*Deinitialize)(void);
 
     /* Some flags to push duplicate code into the core and reduce #ifdefs. */
-    SDL_bool ProvidesOwnCallbackThread;
+    SDL_bool ProvidesOwnCallbackThread;  // !!! FIXME: rename this, it's not a callback thread anymore.
     SDL_bool HasCaptureSupport;
     SDL_bool OnlyHasDefaultOutputDevice;
     SDL_bool OnlyHasDefaultCaptureDevice;
@@ -245,6 +245,9 @@ struct SDL_AudioDevice
 
     /* non-zero if this was a disconnected default device and we're waiting for its replacement. */
     SDL_AtomicInt zombie;
+
+    /* non-zero if this has a thread running (which might be `thread` or something provided by the backend!) */
+    SDL_AtomicInt thread_alive;
 
     /* SDL_TRUE if this is a capture device instead of an output device */
     SDL_bool iscapture;
