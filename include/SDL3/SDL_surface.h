@@ -773,8 +773,8 @@ extern DECLSPEC int SDLCALL SDL_FillSurfaceRects
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied, or NULL to copy the entire surface
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the target rectangle
- *                in the destination surface, filled with the actual rectangle
+ * \param dstrect the SDL_Rect structure representing the target rectangle in
+ *                the destination surface, filled with the actual rectangle
  *                used after clipping
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -797,8 +797,8 @@ extern DECLSPEC int SDLCALL SDL_BlitSurface
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied, or NULL to copy the entire surface
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the target rectangle
- *                in the destination surface
+ * \param dstrect the SDL_Rect structure representing the target rectangle in
+ *                the destination surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -821,8 +821,8 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the target rectangle
- *                in the destination surface
+ * \param dstrect the SDL_Rect structure representing the target rectangle in
+ *                the destination surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -840,8 +840,8 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src,
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the target rectangle
- *                in the destination surface
+ * \param dstrect the SDL_Rect structure representing the target rectangle in
+ *                the destination surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -860,8 +860,8 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the target rectangle
- *                in the destination surface, filled with the actual rectangle
+ * \param dstrect the SDL_Rect structure representing the target rectangle in
+ *                the destination surface, filled with the actual rectangle
  *                used after clipping
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -882,8 +882,8 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the target rectangle
- *                in the destination surface
+ * \param dstrect the SDL_Rect structure representing the target rectangle in
+ *                the destination surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
