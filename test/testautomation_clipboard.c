@@ -108,7 +108,7 @@ static int clipboard_testSetClipboardText(void *arg)
     char *textRef = SDLTest_RandomAsciiString();
     char *text = SDL_strdup(textRef);
     int result;
-    result = SDL_SetClipboardText((const char *)text);
+    result = SDL_SetClipboardText(text);
     SDLTest_AssertPass("Call to SDL_SetClipboardText succeeded");
     SDLTest_AssertCheck(
         result == 0,
@@ -156,7 +156,7 @@ static int clipboard_testSetPrimarySelectionText(void *arg)
     char *textRef = SDLTest_RandomAsciiString();
     char *text = SDL_strdup(textRef);
     int result;
-    result = SDL_SetPrimarySelectionText((const char *)text);
+    result = SDL_SetPrimarySelectionText(text);
     SDLTest_AssertPass("Call to SDL_SetPrimarySelectionText succeeded");
     SDLTest_AssertCheck(
         result == 0,
@@ -192,7 +192,7 @@ static int clipboard_testClipboardTextFunctions(void *arg)
     boolResult = SDL_HasClipboardText();
     SDLTest_AssertPass("Call to SDL_HasClipboardText succeeded");
     if (boolResult == SDL_TRUE) {
-        intResult = SDL_SetClipboardText((const char *)NULL);
+        intResult = SDL_SetClipboardText(NULL);
         SDLTest_AssertPass("Call to SDL_SetClipboardText(NULL) succeeded");
         SDLTest_AssertCheck(
             intResult == 0,
@@ -219,7 +219,7 @@ static int clipboard_testClipboardTextFunctions(void *arg)
         charResult[0] == '\0', /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
         "Verify SDL_GetClipboardText returned string with length 0, got length %i",
         (int)SDL_strlen(charResult));
-    intResult = SDL_SetClipboardText((const char *)text);
+    intResult = SDL_SetClipboardText(text);
     SDLTest_AssertPass("Call to SDL_SetClipboardText succeeded");
     SDLTest_AssertCheck(
         intResult == 0,
@@ -269,7 +269,7 @@ static int clipboard_testPrimarySelectionTextFunctions(void *arg)
     boolResult = SDL_HasPrimarySelectionText();
     SDLTest_AssertPass("Call to SDL_HasPrimarySelectionText succeeded");
     if (boolResult == SDL_TRUE) {
-        intResult = SDL_SetPrimarySelectionText((const char *)NULL);
+        intResult = SDL_SetPrimarySelectionText(NULL);
         SDLTest_AssertPass("Call to SDL_SetPrimarySelectionText(NULL) succeeded");
         SDLTest_AssertCheck(
             intResult == 0,
@@ -296,7 +296,7 @@ static int clipboard_testPrimarySelectionTextFunctions(void *arg)
         charResult[0] == '\0', /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
         "Verify SDL_GetPrimarySelectionText returned string with length 0, got length %i",
         (int)SDL_strlen(charResult));
-    intResult = SDL_SetPrimarySelectionText((const char *)text);
+    intResult = SDL_SetPrimarySelectionText(text);
     SDLTest_AssertPass("Call to SDL_SetPrimarySelectionText succeeded");
     SDLTest_AssertCheck(
         intResult == 0,
