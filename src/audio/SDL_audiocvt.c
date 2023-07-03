@@ -872,9 +872,18 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     input_frames = len / dst_sample_frame_size;  // total sample frames caller wants
     if (dst_rate != src_rate) {
         // calculate requested sample frames needed before resampling. Use a Uint64 so the multiplication doesn't overflow.
-        input_frames = (int) ((((Uint64) input_frames) * src_rate) / dst_rate);
-        if (input_frames == 0) {
-            return 0;  // if they are upsampling and we end up needing less than a frame of input, we reject it because it would cause artifacts on future reads to eat a full input frame.
+        const int resampled_input_frames = (int) ((((Uint64) input_frames) * src_rate) / dst_rate);
+        if (resampled_input_frames > 0) {
+            input_frames = resampled_input_frames;
+        } else {  // uhoh, not enough input frames!
+            // if they are upsampling and we end up needing less than a frame of input, we reject it because it would cause artifacts on future reads to eat a full input frame.
+            //  however, if the stream is flushed, we would just be padding any remaining input with silence anyhow, so use it up.
+            if (stream->flushed) {
+                SDL_assert(((input_frames * src_sample_frame_size) + future_buffer_filled_frames) <= stream->future_buffer_allocation);
+                // leave input_frames alone; this will just shuffle what's available from the future buffer and pad with silence as appropriate, below.
+            } else {
+                return 0;
+            }
         }
     }
 
