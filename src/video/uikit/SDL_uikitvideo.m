@@ -257,7 +257,7 @@ void UIKit_ForceUpdateHomeIndicator(void)
 /*
  * iOS log support.
  *
- * This doesn't really have aything to do with the interfaces of the SDL video
+ * This doesn't really have anything to do with the interfaces of the SDL video
  *  subsystem, but we need to stuff this into an Objective-C source code file.
  *
  * NOTE: This is copypasted from src/video/cocoa/SDL_cocoavideo.m! Thus, if
@@ -283,7 +283,7 @@ void SDL_NSLog(const char *prefix, const char *text)
 /*
  * iOS Tablet detection
  *
- * This doesn't really have aything to do with the interfaces of the SDL video
+ * This doesn't really have anything to do with the interfaces of the SDL video
  * subsystem, but we need to stuff this into an Objective-C source code file.
  */
 SDL_bool SDL_IsIPad(void)

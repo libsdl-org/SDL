@@ -27,7 +27,7 @@
 #include "../../video/SDL_blit.h"
 
 /* fixed points bits precision
- * Set to 1, so that it can start rendering wth middle of a pixel precision.
+ * Set to 1, so that it can start rendering with middle of a pixel precision.
  * It doesn't need to be increased.
  * But, if increased too much, it overflows (srcx, srcy) coordinates used for filling with texture.
  * (which could be turned to int64).

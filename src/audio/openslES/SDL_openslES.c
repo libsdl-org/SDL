@@ -655,7 +655,7 @@ static void openslES_PlayDevice(SDL_AudioDevice *_this)
     }
 
     /* If Enqueue fails, callback won't be called.
-     * Post the semphore, not to run out of buffer */
+     * Post the semaphore, not to run out of buffer */
     if (SL_RESULT_SUCCESS != result) {
         SDL_PostSemaphore(audiodata->playsem);
     }

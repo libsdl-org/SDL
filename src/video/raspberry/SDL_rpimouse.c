@@ -261,7 +261,7 @@ static int RPI_WarpMouseGlobalGraphically(float x, float y)
         return SDL_SetError("vc_dispmanx_element_change_attributes() failed");
     }
 
-    /* Submit asynchronously, otherwise the peformance suffers a lot */
+    /* Submit asynchronously, otherwise the performance suffers a lot */
     ret = vc_dispmanx_update_submit(update, 0, NULL);
     if (ret != DISPMANX_SUCCESS) {
         return SDL_SetError("vc_dispmanx_update_submit() failed");

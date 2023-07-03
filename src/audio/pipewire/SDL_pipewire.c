@@ -30,7 +30,7 @@
 #include <spa/utils/json.h>
 
 /*
- * The following keys are defined for compatability when building against older versions of Pipewire
+ * The following keys are defined for compatibility when building against older versions of Pipewire
  * prior to their introduction and can be removed if the minimum required Pipewire build version is
  * increased to or beyond their point of introduction.
  */

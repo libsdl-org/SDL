@@ -119,13 +119,13 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0609 ), k_eControllerType_XInputPS4Controller, NULL },	// NACON Wireless Controller for PS4
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d01 ), k_eControllerType_PS4Controller, NULL },	// Nacon Revolution Pro Controller - has gyro
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d02 ), k_eControllerType_PS4Controller, NULL },	// Nacon Revolution Pro Controller v2 - has gyro
-	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d06 ), k_eControllerType_PS4Controller, NULL },	// NACON Asymetrical Controller Wireless Dongle -- show up as ps4 until you connect controller to it then it reboots into Xbox controller with different vvid/pid
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d06 ), k_eControllerType_PS4Controller, NULL },	// NACON Asymmetric Controller Wireless Dongle -- show up as ps4 until you connect controller to it then it reboots into Xbox controller with different vvid/pid
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d08 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution Unlimited Wireless Dongle
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d09 ), k_eControllerType_PS4Controller, NULL },	// NACON Daija Fight Stick - touchpad but no gyro/rumble
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d10 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution Infinite - has gyro
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d10 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution Unlimited
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d13 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution Pro Controller 3
-	{ MAKE_CONTROLLER_ID( 0x146b, 0x1103 ), k_eControllerType_PS4Controller, NULL },	// NACON Asymetrical Controller -- on windows this doesn't enumerate
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x1103 ), k_eControllerType_PS4Controller, NULL },	// NACON Asymmetric Controller -- on windows this doesn't enumerate
 	{ MAKE_CONTROLLER_ID( 0x1532, 0X0401 ), k_eControllerType_PS4Controller, NULL },	// Razer Panthera PS4 Controller
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1000 ), k_eControllerType_PS4Controller, NULL },	// Razer Raiju PS4 Controller
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1004 ), k_eControllerType_PS4Controller, NULL },	// Razer Raiju 2 Ultimate USB

@@ -1311,7 +1311,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
             direct_update = SDL_TRUE;
         }
     } else {
-        /* Surface and Renderer formats are differents, it needs an intermediate conversion. */
+        /* Surface and Renderer formats are different, it needs an intermediate conversion. */
         direct_update = SDL_FALSE;
     }
 

@@ -173,7 +173,7 @@ def main():
             func_ret = func_ret.replace('extern', ' ')
             func_ret = func_ret.replace('SDLCALL', ' ')
             func_ret = func_ret.replace('DECLSPEC', ' ')
-            # Remove trailling spaces in front of '*'
+            # Remove trailing spaces in front of '*'
             tmp = ""
             while func_ret != tmp:
                 tmp = func_ret
@@ -239,7 +239,7 @@ def main():
                     if param_name == "":
                         param_name = "param_name_not_specified"
 
-                    # recontruct a callback name for future parsing
+                    # reconstruct a callback name for future parsing
                     func_param_type.append(a + " (" + param_type.strip() + " *REWRITE_NAME)" + c)
                     func_param_name.append(param_name.strip())
 
@@ -265,13 +265,13 @@ def main():
 
                     val = param_type.strip() + "*REWRITE_NAME"
 
-                    # Remove trailling spaces in front of '*'
+                    # Remove trailing spaces in front of '*'
                     tmp = ""
                     while val != tmp:
                         tmp = val
                         val = val.replace('  ', ' ')
                     val = val.replace(' *', '*')
-                    # first occurence
+                    # first occurrence
                     val = val.replace('*', ' *', 1)
                     val = val.strip()
 
@@ -324,7 +324,7 @@ def main():
     # Dump API into a json file
     full_API_json()
 
-    # Check commment formating
+    # Check comment formatting
     check_comment();
 
 # Dump API into a json file
@@ -338,7 +338,7 @@ def full_API_json():
 # Dump API into a json file
 def check_comment():
     if args.check_comment:
-        print("check comment formating");
+        print("check comment formatting");
 
 
         # Check \param
@@ -356,7 +356,7 @@ def check_comment():
             if count != expected:
                 # skip SDL_stdinc.h
                 if header != 'SDL_stdinc.h':
-                    # Warning missmatch \param and function prototype
+                    # Warning mismatch \param and function prototype
                     print("%s: %s()  %d '\\param'' but expected %d" % (header, name, count, expected));
 
 
@@ -375,7 +375,7 @@ def check_comment():
             if count != expected:
                 # skip SDL_stdinc.h
                 if header != 'SDL_stdinc.h':
-                    # Warning missmatch \param and function prototype
+                    # Warning mismatch \param and function prototype
                     print("%s: %s()  %d '\\returns'' but expected %d" % (header, name, count, expected));
 
         # Check \since
@@ -390,7 +390,7 @@ def check_comment():
             if count != expected:
                 # skip SDL_stdinc.h
                 if header != 'SDL_stdinc.h':
-                    # Warning missmatch \param and function prototype
+                    # Warning mismatch \param and function prototype
                     print("%s: %s()  %d '\\since'' but expected %d" % (header, name, count, expected));
 
 
@@ -529,7 +529,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--dump', help='output all SDL API into a .json file', action='store_true')
-    parser.add_argument('--check-comment', help='check comment formating', action='store_true')
+    parser.add_argument('--check-comment', help='check comment formatting', action='store_true')
     parser.add_argument('--debug', help='add debug traces', action='store_true')
     args = parser.parse_args()
 

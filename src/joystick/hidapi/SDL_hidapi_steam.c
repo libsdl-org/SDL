@@ -677,7 +677,7 @@ static void FormatStatePacketUntilGyro(SteamControllerStateInternal_t *pState, V
     SDL_memcpy(&pState->ulButtons, &pStatePacket->ButtonTriggerData.ulButtons, 8);
     pState->ulButtons &= ~0xFFFF000000LL;
 
-    // The firmware uses this bit to tell us what kind of data is packed into the left two axises
+    // The firmware uses this bit to tell us what kind of data is packed into the left two axes
     if (pStatePacket->ButtonTriggerData.ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK) {
         // Finger-down bit not set; "left pad" is actually trackpad
         pState->sLeftPadX = pState->sPrevLeftPad[0] = pStatePacket->sLeftPadX;
@@ -695,7 +695,7 @@ static void FormatStatePacketUntilGyro(SteamControllerStateInternal_t *pState, V
     } else {
         // Finger-down bit not set; "left pad" is actually joystick
 
-        // XXX there's a firmware bug where sometimes padX is 0 and padY is a large number (acutally the battery voltage)
+        // XXX there's a firmware bug where sometimes padX is 0 and padY is a large number (actually the battery voltage)
         // If that happens skip this packet and report last frames stick
         /*
                 if ( m_eControllerType == k_eControllerType_SteamControllerV2 && pStatePacket->sLeftPadY > 900 ) {

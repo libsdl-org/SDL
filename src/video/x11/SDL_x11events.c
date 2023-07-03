@@ -835,7 +835,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         orig_keycode = 0;
     }
 
-    /* filter events catchs XIM events and sends them to the correct handler */
+    /* filter events catches XIM events and sends them to the correct handler */
     if (X11_XFilterEvent(xevent, None) == True) {
 #if 0
         printf("Filtered event type = %d display = %d window = %d\n",
@@ -1215,7 +1215,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             unsigned int NumChildren;
             Window ChildReturn, Root, Parent;
             Window *Children;
-            /* Translate these coodinates back to relative to root */
+            /* Translate these coordinates back to relative to root */
             X11_XQueryTree(data->videodata->display, xevent->xconfigure.window, &Root, &Parent, &Children, &NumChildren);
             X11_XTranslateCoordinates(xevent->xconfigure.display,
                                       Parent, DefaultRootWindow(xevent->xconfigure.display),

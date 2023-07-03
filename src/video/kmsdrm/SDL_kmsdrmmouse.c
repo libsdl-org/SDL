@@ -49,8 +49,8 @@ static void KMSDRM_FreeCursor(SDL_Cursor *cursor);
 /*  and shows it on screen with KMSDRM_ShowCursor().                                  */
 /*  KMSDRM_ShowCursor() simply shows or hides the cursor it receives: it does NOT     */
 /*  mind if it's mouse->cur_cursor, etc.                                              */
-/* -If KMSDRM_ShowCursor() returns succesfully, that cursor becomes mouse->cur_cursor */
-/*  and mouse->cursor_shown is 1.                                                     */
+/* -If KMSDRM_ShowCursor() returns successfully, that cursor becomes                  */
+/*  mouse->cur_cursor and mouse->cursor_shown is 1.                                   */
 /**************************************************************************************/
 
 static SDL_Cursor *KMSDRM_CreateDefaultCursor(void)

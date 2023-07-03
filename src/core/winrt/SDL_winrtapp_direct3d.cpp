@@ -504,7 +504,7 @@ void SDL_WinRTApp::OnVisibilityChanged(CoreWindow ^ sender, VisibilityChangedEve
         }
 
         // HACK: Prevent SDL's window-hide handling code, which currently
-        // triggers a fake window resize (possibly erronously), from
+        // triggers a fake window resize (possibly erroneously), from
         // marking the SDL window's surface as invalid.
         //
         // A better solution to this probably involves figuring out if the

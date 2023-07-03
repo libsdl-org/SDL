@@ -1179,7 +1179,7 @@ static SDL_bool HIDAPI_DriverSwitch_IsSupportedDevice(SDL_HIDAPI_Device *device,
     /* The HORI Wireless Switch Pad enumerates as a HID device when connected via USB
        with the same VID/PID as when connected over Bluetooth but doesn't actually
        support communication over USB. The most reliable way to block this without allowing the
-       controller to continually attempt to reconnect is to filter it out by manufactuer/product string.
+       controller to continually attempt to reconnect is to filter it out by manufacturer/product string.
        Note that the controller does have a different product string when connected over Bluetooth.
      */
     if (SDL_strcmp(name, "HORI Wireless Switch Pad") == 0) {

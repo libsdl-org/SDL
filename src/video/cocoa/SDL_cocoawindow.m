@@ -386,7 +386,7 @@ static NSUInteger GetWindowWindowedStyle(SDL_Window *window)
     /* IF YOU CHANGE ANY FLAGS IN HERE, PLEASE READ
        the NSWindowStyleMaskBorderless comments in SetupWindowData()! */
 
-    /* always allow miniaturization, otherwise you can't programatically
+    /* always allow miniaturization, otherwise you can't programmatically
        minimize the window, whether there's a title bar or not */
     NSUInteger style = NSWindowStyleMaskMiniaturizable;
 

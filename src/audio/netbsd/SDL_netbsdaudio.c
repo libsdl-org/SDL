@@ -73,7 +73,7 @@ static void NETBSDAUDIO_Status(SDL_AudioDevice *_this)
             "sample count	:   %i\n"
             "EOF count	:   %i\n"
             "paused		:   %s\n"
-            "error occured	:   %s\n"
+            "error occurred	:   %s\n"
             "waiting		:   %s\n"
             "active		:   %s\n"
             "",

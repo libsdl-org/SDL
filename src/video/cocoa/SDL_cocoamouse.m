@@ -401,7 +401,7 @@ static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
     NSWindow *nswindow = [event window];
 
     /* You might land in this function before SDL_Init if showing a message box.
-       Don't derefence a NULL pointer if that happens. */
+       Don't dereference a NULL pointer if that happens. */
     if (_this == NULL) {
         return;
     }

@@ -615,7 +615,7 @@ static WIN_DialogData *CreateDialogData(int w, int h, const char *caption)
  * function returns NULL and, on success, returns a pointer to the escaped
  * sequence as a read-only string that is valid until the next call or until the
  * work buffer is freed. Once all strings have been processed, it's the caller's
- * responsibilty to free the work buffer with SDL_free, even on errors.
+ * responsibility to free the work buffer with SDL_free, even on errors.
  */
 static const char *EscapeAmpersands(char **dst, size_t *dstlen, const char *src)
 {
@@ -699,7 +699,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
     const int IconMargin = 20;
 
     if (messageboxdata->numbuttons > MAX_BUTTONS) {
-        return SDL_SetError("Number of butons exceeds limit of %d", MAX_BUTTONS);
+        return SDL_SetError("Number of buttons exceeds limit of %d", MAX_BUTTONS);
     }
 
     switch (messageboxdata->flags) {

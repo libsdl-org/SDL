@@ -285,7 +285,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #if defined(__WIN32__) || defined(__GDK__) || defined(__IOS__) || defined(__TVOS__) \
     || defined(__3DS__) || defined(__NGAGE__) || defined(__PS2__) || defined(__PSP__)
 
-/* platforms whichs main (-equivalent) can be implemented in plain C */
+/* platforms which main (-equivalent) can be implemented in plain C */
 #include <SDL3/SDL_main_impl.h>
 
 #elif defined(__WINRT__) /* C++ platforms */

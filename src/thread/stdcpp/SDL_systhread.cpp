@@ -69,7 +69,7 @@ SDL_ThreadID(void)
 #ifdef __WINRT__
     return GetCurrentThreadId();
 #else
-    // HACK: Mimick a thread ID, if one isn't otherwise available.
+    // HACK: Mimic a thread ID, if one isn't otherwise available.
     static thread_local SDL_threadID current_thread_id = 0;
     static SDL_threadID next_thread_id = 1;
     static std::mutex next_thread_id_mutex;

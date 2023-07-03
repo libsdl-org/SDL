@@ -149,7 +149,7 @@ Sint32 SDLTest_RandomIntegerInRange(Sint32 pMin, Sint32 pMax)
     }
 
     number = SDLTest_RandomUint32();
-    /* invocation count increment in preceeding call */
+    /* invocation count increment in preceding call */
 
     return (Sint32)((number % ((max + 1) - min)) + min);
 }

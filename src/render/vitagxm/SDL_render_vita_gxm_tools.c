@@ -526,7 +526,7 @@ int gxm_init(SDL_Renderer *renderer)
     // set the stencil test reference (this is currently assumed to always remain 1 after here for region clipping)
     sceGxmSetFrontStencilRef(data->gxm_context, 1);
 
-    // set the stencil function (this wouldn't actually be needed, as the set clip rectangle function has to call this at the begginning of every scene)
+    // set the stencil function (this wouldn't actually be needed, as the set clip rectangle function has to call this at the beginning of every scene)
     sceGxmSetFrontStencilFunc(
         data->gxm_context,
         SCE_GXM_STENCIL_FUNC_ALWAYS,

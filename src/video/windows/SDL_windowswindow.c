@@ -809,7 +809,7 @@ int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *to
     rcWindow.bottom = ptDiff.y;
     rcWindow.right = ptDiff.x;
 
-    /* Now that both the inner and outer rects use the same coordinate system we can substract them to get the border size.
+    /* Now that both the inner and outer rects use the same coordinate system we can subtract them to get the border size.
      * Keep in mind that the top/left coordinates of rcWindow are negative because the border lies slightly before {0,0},
      * so switch them around because SDL3 wants them in positive. */
     *top = rcClient.top - rcWindow.top;

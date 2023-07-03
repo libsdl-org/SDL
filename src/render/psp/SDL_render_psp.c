@@ -1027,7 +1027,7 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
     Uint8 *gpumem = NULL;
     StartDrawing(renderer);
 
-    /* note that before the renderer interface change, this would do extrememly small
+    /* note that before the renderer interface change, this would do extremely small
        batches with sceGuGetMemory()--a few vertices at a time--and it's not clear that
        this won't fail if you try to push 100,000 draw calls in a single batch.
        I don't know what the limits on PSP hardware are. It might be useful to have

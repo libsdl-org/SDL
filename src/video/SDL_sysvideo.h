@@ -87,7 +87,7 @@ struct SDL_Window
     /* Stored position and size for windowed mode */
     SDL_Rect windowed;
 
-    /* Whether or not the intial position was defined */
+    /* Whether or not the initial position was defined */
     SDL_bool undefined_x;
     SDL_bool undefined_y;
 

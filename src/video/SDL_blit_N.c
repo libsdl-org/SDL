@@ -173,7 +173,7 @@ static vector unsigned char reorder_ppc64le_vec(vector unsigned char vpermute)
        The LE transformation for vec_perm has an implicit assumption
        that the permutation is being used to reorder vector elements,
        not to reorder bytes within those elements.
-       Unfortunatly the result order is not the expected one for powerpc
+       Unfortunately the result order is not the expected one for powerpc
        little endian when the two first vector parameters of vec_perm are
        not of type 'vector char'. This is because the numbering from the
        left for BE, and numbering from the right for LE, produces a

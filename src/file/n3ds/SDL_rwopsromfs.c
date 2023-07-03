@@ -33,7 +33,7 @@ static FILE *TryOpenInRomfs(const char *file, const char *mode);
 /* Nintendo 3DS applications may embed resources in the executable. The
   resources are stored in a special read-only partition prefixed with
   'romfs:/'. As such, when opening a file, we should first try the romfs
-  unless sdmc is specifically mentionned.
+  unless sdmc is specifically mentioned.
 */
 FILE *N3DS_FileOpen(const char *file, const char *mode)
 {

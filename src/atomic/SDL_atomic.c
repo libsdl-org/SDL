@@ -85,7 +85,7 @@ extern __inline int _SDL_xadd_watcom(volatile int *a, int v);
   of the function.
 
   To generate the index of the lock we first shift by 3 bits to get
-  rid on the zero bits that result from 32 and 64 bit allignment of
+  rid on the zero bits that result from 32 and 64 bit alignment of
   data. We then mask off all but 5 bits and use those 5 bits as an
   index into the table.
 
