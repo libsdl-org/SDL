@@ -468,6 +468,19 @@ static void CompleteAudioEntryPoints(void)
     #undef FILL_STUB
 }
 
+static SDL_AudioDeviceID GetFirstAddedAudioDeviceID(const SDL_bool iscapture)
+{
+    // (these are pushed to the front of the linked list as added, so the first device added is last in the list.)
+    SDL_LockRWLockForReading(current_audio.device_list_lock);
+    SDL_AudioDevice *last = NULL;
+    for (SDL_AudioDevice *i = current_audio.output_devices; i != NULL; i = i->next) {
+        last = i;
+    }
+    const SDL_AudioDeviceID retval = last ? last->instance_id : 0;
+    SDL_UnlockRWLock(current_audio.device_list_lock);
+    return retval;
+}
+
 // !!! FIXME: the video subsystem does SDL_VideoInit, not SDL_InitVideo. Make this match.
 int SDL_InitAudio(const char *driver_name)
 {
@@ -580,11 +593,11 @@ int SDL_InitAudio(const char *driver_name)
     }
 
     // If no default was _ever_ specified, just take the first device we see, if any.
-    if (!current_audio.default_output_device_id && (current_audio.output_devices != NULL)) {
-        current_audio.default_output_device_id = current_audio.output_devices->instance_id;
+    if (!current_audio.default_output_device_id) {
+        current_audio.default_output_device_id = GetFirstAddedAudioDeviceID(/*iscapture=*/SDL_FALSE);
     }
     if (!current_audio.default_capture_device_id && (current_audio.capture_devices != NULL)) {
-        current_audio.default_capture_device_id = current_audio.capture_devices->instance_id;
+        current_audio.default_output_device_id = GetFirstAddedAudioDeviceID(/*iscapture=*/SDL_TRUE);
     }
 
     return 0;
