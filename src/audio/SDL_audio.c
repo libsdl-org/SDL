@@ -574,6 +574,7 @@ int SDL_InitAudio(const char *driver_name)
 
         SDL_zero(current_audio);
         SDL_DestroyRWLock(device_list_lock);
+        current_audio.device_list_lock = NULL;
         return -1;  // No driver was available, so fail.
     }
 
