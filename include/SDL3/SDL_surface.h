@@ -99,8 +99,8 @@ typedef struct SDL_Surface
 /**
  * \brief The type of function used for surface blitting functions.
  */
-typedef int (SDLCALL *SDL_blit) (struct SDL_Surface *src, SDL_Rect *srcrect,
-                                 struct SDL_Surface *dst, SDL_Rect *dstrect);
+typedef int (SDLCALL *SDL_blit) (struct SDL_Surface *src, const SDL_Rect *srcrect,
+                                 struct SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
  * \brief The formula used for converting between YUV and RGB
@@ -773,8 +773,9 @@ extern DECLSPEC int SDLCALL SDL_FillSurfaceRects
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied, or NULL to copy the entire surface
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the rectangle that is
- *                copied into
+ * \param dstrect the SDL_Rect structure representing the target rectangle
+ *                in the destination surface, filled with the actual rectangle
+ *                used after clipping
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -796,8 +797,8 @@ extern DECLSPEC int SDLCALL SDL_BlitSurface
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied, or NULL to copy the entire surface
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the rectangle that is
- *                copied into
+ * \param dstrect the SDL_Rect structure representing the target rectangle
+ *                in the destination surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -806,8 +807,8 @@ extern DECLSPEC int SDLCALL SDL_BlitSurface
  * \sa SDL_BlitSurface
  */
 extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
-    (SDL_Surface *src, SDL_Rect *srcrect,
-     SDL_Surface *dst, SDL_Rect *dstrect);
+    (SDL_Surface *src, const SDL_Rect *srcrect,
+     SDL_Surface *dst, const SDL_Rect *dstrect);
 
 
 /**
@@ -820,8 +821,8 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the rectangle that is
- *                copied into
+ * \param dstrect the SDL_Rect structure representing the target rectangle
+ *                in the destination surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -839,8 +840,8 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src,
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the rectangle that is
- *                copied into
+ * \param dstrect the SDL_Rect structure representing the target rectangle
+ *                in the destination surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -859,8 +860,9 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the rectangle that is
- *                copied into
+ * \param dstrect the SDL_Rect structure representing the target rectangle
+ *                in the destination surface, filled with the actual rectangle
+ *                used after clipping
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -868,7 +870,7 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
  */
 extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
     (SDL_Surface *src, const SDL_Rect *srcrect,
-    SDL_Surface *dst, SDL_Rect *dstrect);
+     SDL_Surface *dst, SDL_Rect *dstrect);
 
 /**
  * Perform low-level surface scaled blitting only.
@@ -880,8 +882,8 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the rectangle that is
- *                copied into
+ * \param dstrect the SDL_Rect structure representing the target rectangle
+ *                in the destination surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -890,8 +892,8 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
  * \sa SDL_BlitSurfaceScaled
  */
 extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled
-    (SDL_Surface *src, SDL_Rect *srcrect,
-    SDL_Surface *dst, SDL_Rect *dstrect);
+    (SDL_Surface *src, const SDL_Rect *srcrect,
+     SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
  * Set the YUV conversion mode

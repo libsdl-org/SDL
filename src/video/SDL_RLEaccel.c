@@ -432,7 +432,7 @@
     } while (0)
 
 static void RLEClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
-                        Uint8 *dstbuf, SDL_Rect *srcrect, unsigned alpha)
+                        Uint8 *dstbuf, const SDL_Rect *srcrect, unsigned alpha)
 {
     SDL_PixelFormat *fmt = surf_dst->format;
 
@@ -442,8 +442,8 @@ static void RLEClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
 #undef RLECLIPBLIT
 
 /* blit a colorkeyed RLE surface */
-static int SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, SDL_Rect *srcrect,
-                               SDL_Surface *surf_dst, SDL_Rect *dstrect)
+static int SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
+                               SDL_Surface *surf_dst, const SDL_Rect *dstrect)
 {
     Uint8 *dstbuf;
     Uint8 *srcbuf;
@@ -626,7 +626,7 @@ typedef struct
 
 /* blit a pixel-alpha RLE surface clipped at the right and/or left edges */
 static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
-                             Uint8 *dstbuf, SDL_Rect *srcrect)
+                             Uint8 *dstbuf, const SDL_Rect *srcrect)
 {
     SDL_PixelFormat *df = surf_dst->format;
     /*
@@ -717,8 +717,8 @@ static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
 }
 
 /* blit a pixel-alpha RLE surface */
-static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, SDL_Rect *srcrect,
-                                    SDL_Surface *surf_dst, SDL_Rect *dstrect)
+static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
+                                    SDL_Surface *surf_dst, const SDL_Rect *dstrect)
 {
     int x, y;
     int w = surf_src->w;

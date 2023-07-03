@@ -29,8 +29,8 @@
 #include "SDL_pixels_c.h"
 
 /* The general purpose software blit routine */
-static int SDLCALL SDL_SoftBlit(SDL_Surface *src, SDL_Rect *srcrect,
-                                SDL_Surface *dst, SDL_Rect *dstrect)
+static int SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
+                                SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     int okay;
     int src_locked;
