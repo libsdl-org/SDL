@@ -814,7 +814,7 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
  * Perform a fast, low quality, stretch blit between two surfaces of the same
  * format.
  *
- * **WARNING**: Please use SDL_BlitScaled() instead.
+ * **WARNING**: Please use SDL_BlitSurfaceScaled() instead.
  *
  * \param src the SDL_Surface structure to be copied from
  * \param srcrect the SDL_Rect structure representing the rectangle to be
