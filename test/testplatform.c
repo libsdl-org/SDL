@@ -381,7 +381,7 @@ static int Test64Bit(SDL_bool verbose)
         }
     }
     if (verbose && (failed == 0)) {
-        SDL_Log("All 64bit instrinsic tests passed\n");
+        SDL_Log("All 64bit intrinsic tests passed\n");
     }
     return failed ? 1 : 0;
 }

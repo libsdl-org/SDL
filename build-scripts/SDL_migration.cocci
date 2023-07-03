@@ -14,7 +14,7 @@
 //
 // A few options:
 //   --c++=11            to parse cpp file
-//   --max-width 200     to increase line witdth of generated source
+//   --max-width 200     to increase line width of generated source
 //
 // Apply the patch to your project:
 //	patch -p1 <patch.txt
@@ -28,7 +28,7 @@
 // @@
 // rule / transformation
 //
-// So this file is a set of many semantic patches, mostly independant.
+// So this file is a set of many semantic patches, mostly independent.
 
 
 @ rule_audio_open @

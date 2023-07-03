@@ -697,9 +697,9 @@ static int rect_testIntersectRectParam(void *arg)
     intersection = SDL_GetRectIntersection((SDL_Rect *)NULL, &rectB, &result);
     SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
     intersection = SDL_GetRectIntersection(&rectA, (SDL_Rect *)NULL, &result);
-    SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 2st parameter is NULL");
+    SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 2nd parameter is NULL");
     intersection = SDL_GetRectIntersection(&rectA, &rectB, (SDL_Rect *)NULL);
-    SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 3st parameter is NULL");
+    SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 3rd parameter is NULL");
     intersection = SDL_GetRectIntersection((SDL_Rect *)NULL, (SDL_Rect *)NULL, &result);
     SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 1st and 2nd parameters are NULL");
     intersection = SDL_GetRectIntersection((SDL_Rect *)NULL, &rectB, (SDL_Rect *)NULL);
@@ -945,7 +945,7 @@ static int rect_testHasIntersectionParam(void *arg)
     intersection = SDL_HasRectIntersection((SDL_Rect *)NULL, &rectB);
     SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
     intersection = SDL_HasRectIntersection(&rectA, (SDL_Rect *)NULL);
-    SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 2st parameter is NULL");
+    SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 2nd parameter is NULL");
     intersection = SDL_HasRectIntersection((SDL_Rect *)NULL, (SDL_Rect *)NULL);
     SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when all parameters are NULL");
 

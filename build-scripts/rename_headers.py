@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# This script renames SDL headers in the specfied paths
+# This script renames SDL headers in the specified paths
 
 import argparse
 import pathlib

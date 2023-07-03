@@ -1625,7 +1625,7 @@ cleanup:
 /**
  * \brief Tests the functionality of the SDL_WINDOWPOS_CENTERED_DISPLAY along with SDL_WINDOW_FULLSCREEN.
  *
- * Espeically useful when run on a multi-monitor system with different DPI scales per monitor,
+ * Especially useful when run on a multi-monitor system with different DPI scales per monitor,
  * to test that the window size is maintained when moving between monitors.
  */
 static int video_setWindowCenteredOnDisplay(void *arg)
