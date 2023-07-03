@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# This script renames symbols in the specfied paths
+# This script renames symbols in the specified paths
 
 import argparse
 import os

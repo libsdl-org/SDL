@@ -10,7 +10,7 @@
   freely.
 */
 
-/* sanity tests on SDL_rwops.c (usefull for alternative implementations of stdio rwops) */
+/* sanity tests on SDL_rwops.c (useful for alternative implementations of stdio rwops) */
 
 /* quiet windows compiler warnings */
 #if defined(_MSC_VER) && !defined(_CRT_NONSTDC_NO_WARNINGS)

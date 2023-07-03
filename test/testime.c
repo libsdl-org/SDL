@@ -771,9 +771,9 @@ int main(int argc, char *argv[])
                     SDL_strlcat(text, event.text.text, sizeof(text));
                 }
 
-                SDL_Log("text inputed: %s\n", text);
+                SDL_Log("text inputted: %s\n", text);
 
-                /* After text inputed, we can clear up markedText because it */
+                /* After text inputted, we can clear up markedText because it */
                 /* is committed */
                 markedText[0] = 0;
                 Redraw();

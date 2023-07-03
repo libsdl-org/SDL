@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
                     SDL_CloseJoystick(joystick);
                     joystick = NULL;
                 } else {
-                    SDL_Log("Unknown joystick diconnected\n");
+                    SDL_Log("Unknown joystick disconnected\n");
                 }
                 break;
             case SDL_EVENT_JOYSTICK_AXIS_MOTION:

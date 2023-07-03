@@ -3,7 +3,7 @@
  * Adapted/rewritten for test lib by Andreas Schiffler
  */
 
-/* Supress C4996 VS compiler warnings for unlink() */
+/* Suppress C4996 VS compiler warnings for unlink() */
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
