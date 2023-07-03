@@ -1591,7 +1591,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 char *saveptr = NULL;
                 char *name = X11_XGetAtomName(display, target);
                 if (name) {
-                    char *token = SDL_strtokr((char *)p.data, "\r\n", &saveptr);
+                    char *token = SDL_strtok_r((char *)p.data, "\r\n", &saveptr);
                     while (token != NULL) {
                         if (SDL_strcmp("text/plain", name) == 0) {
                             SDL_SendDropText(data->window, token);
@@ -1601,7 +1601,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                                 SDL_SendDropFile(data->window, fn);
                             }
                         }
-                        token = SDL_strtokr(NULL, "\r\n", &saveptr);
+                        token = SDL_strtok_r(NULL, "\r\n", &saveptr);
                     }
                     X11_XFree(name);
                 }

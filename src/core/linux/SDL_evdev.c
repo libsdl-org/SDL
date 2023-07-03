@@ -192,7 +192,7 @@ int SDL_EVDEV_Init(void)
                    ROM. */
                 char *rest = (char *)devices;
                 char *spec;
-                while ((spec = SDL_strtokr(rest, ",", &rest))) {
+                while ((spec = SDL_strtok_r(rest, ",", &rest))) {
                     char *endofcls = 0;
                     long cls = SDL_strtol(spec, &endofcls, 0);
                     if (endofcls) {

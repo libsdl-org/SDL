@@ -860,7 +860,7 @@
 #define SDL_strrev SDL_strrev_REAL
 #define SDL_strstr SDL_strstr_REAL
 #define SDL_strtod SDL_strtod_REAL
-#define SDL_strtokr SDL_strtokr_REAL
+#define SDL_strtok_r SDL_strtok_r_REAL
 #define SDL_strtol SDL_strtol_REAL
 #define SDL_strtoll SDL_strtoll_REAL
 #define SDL_strtoul SDL_strtoul_REAL

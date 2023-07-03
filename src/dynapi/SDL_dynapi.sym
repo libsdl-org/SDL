@@ -836,7 +836,7 @@ SDL3_0.0.0 {
     SDL_strrev;
     SDL_strstr;
     SDL_strtod;
-    SDL_strtokr;
+    SDL_strtok_r;
     SDL_strtol;
     SDL_strtoll;
     SDL_strtoul;

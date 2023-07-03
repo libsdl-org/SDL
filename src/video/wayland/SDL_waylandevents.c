@@ -1876,7 +1876,7 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
                 &length, FILE_MIME, SDL_TRUE);
         if (buffer) {
             char *saveptr = NULL;
-            char *token = SDL_strtokr((char *)buffer, "\r\n", &saveptr);
+            char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
             while (token != NULL) {
                 char *fn = Wayland_URIToLocal(token);
                 if (fn) {
@@ -1886,7 +1886,7 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
                     dy = wl_fixed_to_double(y);
                     SDL_SendDropPosition(data_device->dnd_window, fn, (float)dx, (float)dy);
                 }
-                token = SDL_strtokr(NULL, "\r\n", &saveptr);
+                token = SDL_strtok_r(NULL, "\r\n", &saveptr);
             }
             SDL_free(buffer);
         }
@@ -2025,13 +2025,13 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                                                   &length, FILE_MIME, SDL_TRUE);
         if (buffer) {
             char *saveptr = NULL;
-            char *token = SDL_strtokr((char *)buffer, "\r\n", &saveptr);
+            char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
             while (token != NULL) {
                 char *fn = Wayland_URIToLocal(token);
                 if (fn) {
                     SDL_SendDropFile(data_device->dnd_window, fn);
                 }
-                token = SDL_strtokr(NULL, "\r\n", &saveptr);
+                token = SDL_strtok_r(NULL, "\r\n", &saveptr);
             }
             SDL_SendDropComplete(data_device->dnd_window);
             SDL_free(buffer);

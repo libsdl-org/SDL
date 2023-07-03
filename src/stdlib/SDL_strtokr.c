@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 
 
-char *SDL_strtokr(char *s1, const char *s2, char **ptr)
+char *SDL_strtok_r(char *s1, const char *s2, char **ptr)
 {
 #ifdef HAVE_STRTOK_R
     return strtok_r(s1, s2, ptr);

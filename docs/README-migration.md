@@ -949,6 +949,9 @@ The standard C headers like stdio.h and stdlib.h are no longer included, you sho
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
 
 
+The following functions have been renamed:
+* SDL_strtokr() => SDL_strtok_r()
+
 ## SDL_surface.h
 
 Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat.

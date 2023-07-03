@@ -438,6 +438,9 @@
 #define SDL_SensorOpen SDL_OpenSensor
 #define SDL_SensorUpdate SDL_UpdateSensors
 
+/* ##SDL_stdinc.h */
+#define SDL_strtokr SDL_strtok_r
+
 /* ##SDL_surface.h */
 #define SDL_FillRect SDL_FillSurfaceRect
 #define SDL_FillRects SDL_FillSurfaceRects
@@ -877,6 +880,9 @@
 #define SDL_SensorGetType SDL_SensorGetType_renamed_SDL_GetSensorType
 #define SDL_SensorOpen SDL_SensorOpen_renamed_SDL_OpenSensor
 #define SDL_SensorUpdate SDL_SensorUpdate_renamed_SDL_UpdateSensors
+
+/* ##SDL_stdinc.h */
+#define SDL_strtokr SDL_strtokr_renamed_SDL_strtok_r
 
 /* ##SDL_surface.h */
 #define SDL_FillRect SDL_FillRect_renamed_SDL_FillSurfaceRect

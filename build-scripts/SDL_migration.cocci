@@ -2685,3 +2685,8 @@ typedef SDL_cond, SDL_Condition;
 @@
 - SDL_PIXELFORMAT_BGR888
 + SDL_PIXELFORMAT_XBGR8888
+@@
+@@
+- SDL_strtokr
++ SDL_strtok_r
+  (...)
