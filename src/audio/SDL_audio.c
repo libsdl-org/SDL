@@ -571,8 +571,13 @@ int SDL_InitAudio(const char *driver_name)
     SDL_AudioDevice *default_capture = NULL;
     current_audio.impl.DetectDevices(&default_output, &default_capture);
 
-    current_audio.default_output_device_id = default_output ? default_output->instance_id : 0;
-    current_audio.default_capture_device_id = default_capture ? default_capture->instance_id : 0;
+    // these are only set if default_* is non-NULL, in case the backend just called SDL_DefaultAudioDeviceChanged directly during DetectDevices.
+    if (default_output) {
+        current_audio.default_output_device_id = default_output->instance_id;
+    }
+    if (default_capture) {
+        current_audio.default_capture_device_id = default_capture->instance_id;
+    }
 
     // !!! FIXME: if a default is zero but there are devices available, should we just pick the first one?
 

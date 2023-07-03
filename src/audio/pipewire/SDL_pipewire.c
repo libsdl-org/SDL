@@ -341,31 +341,6 @@ static void io_list_remove(Uint32 id)
     }
 }
 
-static void io_list_sort(void)
-{
-    struct io_node *default_sink = NULL, *default_source = NULL;
-    struct io_node *n, *temp;
-
-    /* Find and move the default nodes to the beginning of the list */
-    spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
-        if (pipewire_default_sink_id != NULL && SDL_strcmp(n->path, pipewire_default_sink_id) == 0) {
-            default_sink = n;
-            spa_list_remove(&n->link);
-        } else if (pipewire_default_source_id != NULL && SDL_strcmp(n->path, pipewire_default_source_id) == 0) {
-            default_source = n;
-            spa_list_remove(&n->link);
-        }
-    }
-
-    if (default_source) {
-        spa_list_prepend(&hotplug_io_list, &default_source->link);
-    }
-
-    if (default_sink) {
-        spa_list_prepend(&hotplug_io_list, &default_sink->link);
-    }
-}
-
 static void io_list_clear(void)
 {
     struct io_node *n, *temp;
@@ -386,19 +361,6 @@ static struct io_node *io_list_get_by_id(Uint32 id)
     }
     return NULL;
 }
-
-#if 0
-static struct io_node *io_list_get_by_path(char *path)
-{
-    struct io_node *n, *temp;
-    spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
-        if (SDL_strcmp(n->path, path) == 0) {
-            return n;
-        }
-    }
-    return NULL;
-}
-#endif
 
 static void node_object_destroy(struct node_object *node)
 {
@@ -646,6 +608,23 @@ static char *get_name_from_json(const char *json)
     return SDL_strdup(value);
 }
 
+static void change_default_device(const char *path)
+{
+    if (hotplug_events_enabled) {
+        struct io_node *n, *temp;
+        spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
+            if (SDL_strcmp(n->path, path) == 0) {
+                SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle(PW_ID_TO_HANDLE(n->id));
+                if (device) {
+                    SDL_UnlockMutex(device->lock);
+                    SDL_DefaultAudioDeviceChanged(device);
+                }
+                return; // found it, we're done.
+            }
+        }
+    }
+}
+
 /* Metadata node callback */
 static int metadata_property(void *object, Uint32 subject, const char *key, const char *type, const char *value)
 {
@@ -658,12 +637,14 @@ static int metadata_property(void *object, Uint32 subject, const char *key, cons
             }
             pipewire_default_sink_id = get_name_from_json(value);
             node->persist = SDL_TRUE;
+            change_default_device(pipewire_default_sink_id);
         } else if (!SDL_strcmp(key, "default.audio.source")) {
             if (pipewire_default_source_id != NULL) {
                 SDL_free(pipewire_default_source_id);
             }
             pipewire_default_source_id = get_name_from_json(value);
             node->persist = SDL_TRUE;
+            change_default_device(pipewire_default_source_id);
         }
     }
 
@@ -850,14 +831,15 @@ static void PIPEWIRE_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDe
         PIPEWIRE_pw_thread_loop_wait(hotplug_loop);
     }
 
-    /* Sort the I/O list so the default source/sink are listed first */
-    io_list_sort();
-
     spa_list_for_each (io, &hotplug_io_list, link) {
         SDL_AudioDevice *device = SDL_AddAudioDevice(io->is_capture, io->name, &io->spec, PW_ID_TO_HANDLE(io->id));
-// !!! FIXME: obviously no
-if (!io->is_capture && !*default_output) { *default_output = device; }
-if (io->is_capture && !*default_capture) { *default_capture = device; }
+        if (pipewire_default_sink_id != NULL && SDL_strcmp(io->path, pipewire_default_sink_id) == 0) {
+            SDL_assert(!io->is_capture);
+            *default_output = device;
+        } else if (pipewire_default_source_id != NULL && SDL_strcmp(io->path, pipewire_default_source_id) == 0) {
+            SDL_assert(io->is_capture);
+            *default_capture = device;
+        }
     }
 
     hotplug_events_enabled = SDL_TRUE;
@@ -1174,6 +1156,7 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_LATENCY, "%u/%i", device->sample_frames, device->spec.freq);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", device->spec.freq);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
+    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DONT_RECONNECT, "true");  // Requesting a specific device, don't migrate to new default hardware.
 
     /*
      * Pipewire 0.3.44 introduced PW_KEY_TARGET_OBJECT that takes either a path
@@ -1257,46 +1240,6 @@ static void PIPEWIRE_CloseDevice(SDL_AudioDevice *device)
     SDL_AudioThreadFinalize(device);
 }
 
-#if 0
-static int PIPEWIRE_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
-{
-    struct io_node *node;
-    char *target;
-    int ret = 0;
-
-    PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
-
-    if (iscapture) {
-        if (pipewire_default_source_id == NULL) {
-            ret = SDL_SetError("PipeWire could not find a default source");
-            goto failed;
-        }
-        target = pipewire_default_source_id;
-    } else {
-        if (pipewire_default_sink_id == NULL) {
-            ret = SDL_SetError("PipeWire could not find a default sink");
-            goto failed;
-        }
-        target = pipewire_default_sink_id;
-    }
-
-    node = io_list_get_by_path(target);
-    if (node == NULL) {
-        ret = SDL_SetError("PipeWire device list is out of sync with defaults");
-        goto failed;
-    }
-
-    if (name != NULL) {
-        *name = SDL_strdup(node->name);
-    }
-    SDL_copyp(spec, &node->spec);
-
-failed:
-    PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
-    return ret;
-}
-#endif
-
 static void PIPEWIRE_Deinitialize(void)
 {
     if (pipewire_initialized) {
@@ -1325,7 +1268,6 @@ static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
     impl->DetectDevices = PIPEWIRE_DetectDevices;
     impl->OpenDevice = PIPEWIRE_OpenDevice;
     impl->Deinitialize = PIPEWIRE_Deinitialize;
-    //impl->GetDefaultAudioInfo = PIPEWIRE_GetDefaultAudioInfo;
     impl->PlayDevice = PIPEWIRE_PlayDevice;
     impl->GetDeviceBuf = PIPEWIRE_GetDeviceBuf;
     impl->CaptureFromDevice = PIPEWIRE_CaptureFromDevice;
