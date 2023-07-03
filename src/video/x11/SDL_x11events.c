@@ -1215,7 +1215,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             unsigned int NumChildren;
             Window ChildReturn, Root, Parent;
             Window *Children;
-            /* Translate these cooedinates back to relative to root */
+            /* Translate these coordinates back to relative to root */
             X11_XQueryTree(data->videodata->display, xevent->xconfigure.window, &Root, &Parent, &Children, &NumChildren);
             X11_XTranslateCoordinates(xevent->xconfigure.display,
                                       Parent, DefaultRootWindow(xevent->xconfigure.display),
