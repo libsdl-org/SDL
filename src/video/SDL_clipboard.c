@@ -35,8 +35,6 @@ void SDL_CancelClipboardData(Uint32 sequence)
         return;
     }
 
-    SDL_SendClipboardCancelled(_this->clipboard_userdata);
-
     if (_this->clipboard_cleanup) {
         _this->clipboard_cleanup(_this->clipboard_userdata);
     }

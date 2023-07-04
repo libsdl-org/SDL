@@ -175,7 +175,6 @@ typedef enum
 
     /* Clipboard events */
     SDL_EVENT_CLIPBOARD_UPDATE = 0x900, /**< The clipboard or primary selection changed */
-    SDL_EVENT_CLIPBOARD_CANCELLED,      /**< The clipboard or primary selection cancelled */
 
     /* Drag and drop events */
     SDL_EVENT_DROP_FILE        = 0x1000, /**< The system requests a file open */
@@ -535,16 +534,12 @@ typedef struct SDL_DropEvent
 } SDL_DropEvent;
 
 /**
- * \brief An event triggered when the applications active clipboard content is cancelled by new clipboard content
- * \note Primary use for this event is to free any userdata you may have provided when setting the clipboard data.
- *
- * \sa SDL_SetClipboardData
+ * \brief An event triggered when the clipboard contents have changed (event.clipboard.*)
  */
 typedef struct SDL_ClipboardEvent
 {
-    Uint32 type;        /**< ::SDL_EVENT_CLIPBOARD_UPDATE or ::SDL_EVENT_CLIPBOARD_CANCELLED */
+    Uint32 type;        /**< ::SDL_EVENT_CLIPBOARD_UPDATE */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    void *userdata;     /**< User data if any has been set. NULL for ::SDL_EVENT_CLIPBOARD_UPDATE */
 } SDL_ClipboardEvent;
 
 /**

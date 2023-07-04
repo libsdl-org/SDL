@@ -210,8 +210,6 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
         SDL_EVENT_CASE(SDL_EVENT_CLIPBOARD_UPDATE)
         break;
-        SDL_EVENT_CASE(SDL_EVENT_CLIPBOARD_CANCELLED)
-        break;
         SDL_EVENT_CASE(SDL_EVENT_RENDER_TARGETS_RESET)
         break;
         SDL_EVENT_CASE(SDL_EVENT_RENDER_DEVICE_RESET)
