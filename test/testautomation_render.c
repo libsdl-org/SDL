@@ -845,7 +845,6 @@ static int render_testLogicalSize(void *arg)
     rect.w = (float)viewport.w / factor;
     rect.h = (float)viewport.h / factor;
     CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
-    (void)SDL_RenderPresent(renderer);
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
                                            SDL_LOGICAL_PRESENTATION_DISABLED,
                                            SDL_SCALEMODE_NEAREST))
@@ -869,7 +868,6 @@ static int render_testLogicalSize(void *arg)
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
     CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
     CHECK_FUNC(SDL_SetRenderViewport, (renderer, NULL))
-    (void)SDL_RenderPresent(renderer);
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
                                            SDL_LOGICAL_PRESENTATION_DISABLED,
                                            SDL_SCALEMODE_NEAREST))
@@ -902,7 +900,6 @@ static int render_testLogicalSize(void *arg)
                                            SDL_SCALEMODE_LINEAR))
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
     CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
-    (void)SDL_RenderPresent(renderer);
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
                                            SDL_LOGICAL_PRESENTATION_DISABLED,
                                            SDL_SCALEMODE_NEAREST))
