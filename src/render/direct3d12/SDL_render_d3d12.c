@@ -2609,6 +2609,7 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         case SDL_RENDERCMD_SETCLIPRECT:
         {
             const SDL_Rect *rect = &cmd->data.cliprect.rect;
+            SDL_Rect viewport_cliprect;
             if (rendererData->currentCliprectEnabled != cmd->data.cliprect.enabled) {
                 rendererData->currentCliprectEnabled = cmd->data.cliprect.enabled;
                 rendererData->cliprectDirty = SDL_TRUE;
@@ -2616,7 +2617,11 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             if (!rendererData->currentCliprectEnabled) {
                 /* If the clip rect is disabled, then the scissor rect should be the whole viewport,
                    since direct3d12 doesn't allow disabling the scissor rectangle */
-                rect = &rendererData->currentViewport;
+                viewport_cliprect.x = 0;
+                viewport_cliprect.y = 0;
+                viewport_cliprect.w = rendererData->currentViewport.w;
+                viewport_cliprect.h = rendererData->currentViewport.h;
+                rect = &viewport_cliprect;
             }
             if (SDL_memcmp(&rendererData->currentCliprect, rect, sizeof(*rect)) != 0) {
                 SDL_copyp(&rendererData->currentCliprect, rect);
