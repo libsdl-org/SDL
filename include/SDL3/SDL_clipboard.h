@@ -133,9 +133,12 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
  * Callback function that will be called when data for the specified mime-type
  * is requested by the OS.
  *
- * \param size      The length of the returned data
- * \param mime_type The requested mime-type
+ * The callback function is called with NULL as the mime_type when the clipboard
+ * is cleared or new data is set. The clipboard is automatically cleared in SDL_Quit().
+ *
  * \param userdata  A pointer to provided user data
+ * \param mime_type The requested mime-type
+ * \param size      A pointer filled in with the length of the returned data
  * \returns a pointer to the data for the provided mime-type. Returning NULL or
  *          setting length to 0 will cause no data to be sent to the "receiver". It is
  *          up to the receiver to handle this. Essentially returning no data is more or
@@ -147,7 +150,18 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
  *
  * \sa SDL_SetClipboardData
  */
-typedef void *(SDLCALL *SDL_ClipboardDataCallback)(size_t *size, const char *mime_type, void *userdata);
+typedef const void *(SDLCALL *SDL_ClipboardDataCallback)(void *userdata, const char *mime_type, size_t *size);
+
+/**
+ * Callback function that will be called when the clipboard is cleared, or new data is set.
+ *
+ * \param userdata A pointer to provided user data
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetClipboardData
+ */
+typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
 
 /**
  * Offer clipboard data to the OS
@@ -157,46 +171,39 @@ typedef void *(SDLCALL *SDL_ClipboardDataCallback)(size_t *size, const char *mim
  * data the callback function will be called allowing it to generate and
  * respond with the data for the requested mime-type.
  *
- * The userdata submitted to this function needs to be freed manually. The
- * following scenarios need to be handled:
- *
- * - When the programs clipboard is replaced (cancelled)
- *   SDL_EVENT_CLIPBOARD_CANCELLED
- * - Before calling SDL_Quit()
- *
  * \param callback A function pointer to the function that provides the
  *                 clipboard data
- * \param mime_count The number of mime-types in the mime_types list
+ * \param cleanup A function pointer to the function that cleans up the
+ *                 clipboard data
+ * \param userdata An opaque pointer that will be forwarded to the callbacks
  * \param mime_types A list of mime-types that are being offered
- * \param userdata An opaque pointer that will be forwarded to the callback
+ * \param num_mime_types The number of mime-types in the mime_types list
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ClipboardDataCallback
- * \sa SDL_GetClipboardUserdata
  * \sa SDL_SetClipboardData
  * \sa SDL_GetClipboardData
  * \sa SDL_HasClipboardData
  */
-extern DECLSPEC int SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callback, size_t mime_count,
-                                                 const char **mime_types, void *userdata);
+extern DECLSPEC int SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types);
 
 /**
- * Retrieve previously set userdata if any.
- *
- * \returns a pointer to the data or NULL if no data exists
+ * Clear the clipboard data
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetClipboardData
  */
-extern DECLSPEC void *SDLCALL SDL_GetClipboardUserdata(void);
+extern DECLSPEC int SDLCALL SDL_ClearClipboardData();
 
 /**
  * Get the data from clipboard for a given mime type
  *
- * \param length Length of the data
  * \param mime_type The mime type to read from the clipboard
+ * \param size      A pointer filled in with the length of the returned data
  * \returns the retrieved data buffer or NULL on failure; call SDL_GetError()
  *          for more information. Caller must call SDL_free() on the returned
  *          pointer when done with it.
@@ -205,7 +212,7 @@ extern DECLSPEC void *SDLCALL SDL_GetClipboardUserdata(void);
  *
  * \sa SDL_SetClipboardData
  */
-extern DECLSPEC void *SDLCALL SDL_GetClipboardData(size_t *length, const char *mime_type);
+extern DECLSPEC void *SDLCALL SDL_GetClipboardData(const char *mime_type, size_t *size);
 
 /**
  * Query whether there is data in the clipboard for the provided mime type

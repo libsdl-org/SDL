@@ -40,7 +40,7 @@ typedef struct
 
 typedef struct SDL_WaylandUserdata
 {
-    SDL_bool internal;
+    Uint32 sequence;
     void *data;
 } SDL_WaylandUserdata;
 
@@ -111,29 +111,29 @@ extern ssize_t Wayland_primary_selection_source_send(SDL_WaylandPrimarySelection
 extern void Wayland_data_source_set_callback(SDL_WaylandDataSource *source,
                                             SDL_ClipboardDataCallback callback,
                                             void *userdata,
-                                            SDL_bool internal);
+                                            Uint32 sequence);
 extern int Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSource *source,
                                                          SDL_ClipboardDataCallback callback,
                                                          void *userdata);
 extern void *Wayland_data_source_get_data(SDL_WaylandDataSource *source,
-                                          size_t *length,
                                           const char *mime_type,
+                                          size_t *length,
                                           SDL_bool null_terminate);
 extern void *Wayland_primary_selection_source_get_data(SDL_WaylandPrimarySelectionSource *source,
-                                                       size_t *length,
                                                        const char *mime_type,
+                                                       size_t *length,
                                                        SDL_bool null_terminate);
 extern void Wayland_data_source_destroy(SDL_WaylandDataSource *source);
 extern void Wayland_primary_selection_source_destroy(SDL_WaylandPrimarySelectionSource *source);
 
 /* Wayland Data / Primary Selection Offer - (Receiving) */
 extern void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
-                                        size_t *length,
                                         const char *mime_type,
+                                        size_t *length,
                                         SDL_bool null_terminate);
 extern void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
-                                                     size_t *length,
                                                      const char *mime_type,
+                                                     size_t *length,
                                                      SDL_bool null_terminate);
 extern SDL_bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
                                             const char *mime_type);
@@ -151,12 +151,12 @@ extern int Wayland_data_device_clear_selection(SDL_WaylandDataDevice *device);
 extern int Wayland_primary_selection_device_clear_selection(SDL_WaylandPrimarySelectionDevice *device);
 extern int Wayland_data_device_set_selection(SDL_WaylandDataDevice *device,
                                              SDL_WaylandDataSource *source,
-                                             size_t mime_count,
-                                             const char **mime_types);
+                                             const char **mime_types,
+                                             size_t mime_count);
 extern int Wayland_primary_selection_device_set_selection(SDL_WaylandPrimarySelectionDevice *device,
                                                           SDL_WaylandPrimarySelectionSource *source,
-                                                          size_t mime_count,
-                                                          const char **mime_types);
+                                                          const char **mime_types,
+                                                          size_t mime_count);
 extern int Wayland_data_device_set_serial(SDL_WaylandDataDevice *device,
                                           uint32_t serial);
 extern int Wayland_primary_selection_device_set_serial(SDL_WaylandPrimarySelectionDevice *device,

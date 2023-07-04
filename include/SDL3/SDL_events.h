@@ -540,9 +540,9 @@ typedef struct SDL_DropEvent
  *
  * \sa SDL_SetClipboardData
  */
-typedef struct SDL_ClipboardCancelled
+typedef struct SDL_ClipboardEvent
 {
-    Uint32 type;        /**< ::SDL_EVENT_CLIPBOARD_CANCELLED or ::SDL_EVENT_CLIPBOARD_UPDATE */
+    Uint32 type;        /**< ::SDL_EVENT_CLIPBOARD_UPDATE or ::SDL_EVENT_CLIPBOARD_CANCELLED */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     void *userdata;     /**< User data if any has been set. NULL for ::SDL_EVENT_CLIPBOARD_UPDATE */
 } SDL_ClipboardEvent;

@@ -175,9 +175,9 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->GetClipboardText = Cocoa_GetClipboardText;
         device->HasClipboardText = Cocoa_HasClipboardText;
 
+        device->SetClipboardData = Cocoa_SetClipboardData;
         device->GetClipboardData = Cocoa_GetClipboardData;
         device->HasClipboardData = Cocoa_HasClipboardData;
-        device->SetClipboardData = Cocoa_SetClipboardData;
 
         device->free = Cocoa_DeleteDevice;
 

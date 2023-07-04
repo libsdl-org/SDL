@@ -338,11 +338,9 @@ struct SDL_VideoDevice
     int (*SetPrimarySelectionText)(SDL_VideoDevice *_this, const char *text);
     char *(*GetPrimarySelectionText)(SDL_VideoDevice *_this);
     SDL_bool (*HasPrimarySelectionText)(SDL_VideoDevice *_this);
-    int (*SetClipboardData)(SDL_VideoDevice *_this, SDL_ClipboardDataCallback callback, size_t mime_count,
-                            const char **mime_types, void *userdata);
-    void *(*GetClipboardData)(SDL_VideoDevice *_this, size_t *len, const char *mime_type);
+    int (*SetClipboardData)(SDL_VideoDevice *_this);
+    void *(*GetClipboardData)(SDL_VideoDevice *_this, const char *mime_type, size_t *size);
     SDL_bool (*HasClipboardData)(SDL_VideoDevice *_this, const char *mime_type);
-    void *(*GetClipboardUserdata)(SDL_VideoDevice *_this);
 
     /* MessageBox */
     int (*ShowMessageBox)(SDL_VideoDevice *_this, const SDL_MessageBoxData *messageboxdata, int *buttonid);
@@ -367,6 +365,12 @@ struct SDL_VideoDevice
     SDL_Window *grabbed_window;
     Uint8 window_magic;
     SDL_WindowID next_object_id;
+    Uint32 clipboard_sequence;
+    SDL_ClipboardDataCallback clipboard_callback;
+    SDL_ClipboardCleanupCallback clipboard_cleanup;
+    void *clipboard_userdata;
+    char **clipboard_mime_types;
+    size_t num_clipboard_mime_types;
     char *clipboard_text;
     char *primary_selection_text;
     SDL_bool setting_display_mode;
