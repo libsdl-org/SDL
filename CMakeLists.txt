@@ -3334,6 +3334,7 @@ if(SDL_SHARED)
   # alias target for in-tree builds
   add_library(SDL2::SDL2 ALIAS SDL2)
   set_target_properties(SDL2 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+  set_target_properties(SDL2 PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS FALSE)
   if(NOT SDL_LIBC)
     if(SDL_CPU_X86)
       # FIXME: should be added for all architectures (missing symbols for ARM)
