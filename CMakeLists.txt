@@ -353,7 +353,6 @@ set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
 
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
-set(SDL_OSS OFF)
 set(SDL_JACK OFF)
 set(SDL_SNDIO OFF)
 
