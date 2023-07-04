@@ -149,9 +149,9 @@ static int SetDSerror(const char *function, int code)
     return SDL_SetError("%s: %s (0x%x)", function, error, code);
 }
 
-static void DSOUND_FreeDeviceHandle(void *handle)
+static void DSOUND_FreeDeviceHandle(SDL_AudioDevice *device)
 {
-    SDL_free(handle);
+    SDL_free(device->handle);
 }
 
 static int DSOUND_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)

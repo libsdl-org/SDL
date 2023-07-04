@@ -198,7 +198,7 @@ static void DestroyPhysicalAudioDevice(SDL_AudioDevice *device)
     // it's safe to not hold the lock for this (we can't anyhow, or the audio thread won't quit), because we shouldn't be in the device list at this point.
     ClosePhysicalAudioDevice(device);
 
-    current_audio.impl.FreeDeviceHandle(device->handle);
+    current_audio.impl.FreeDeviceHandle(device);
 
     SDL_DestroyMutex(device->lock);
     SDL_free(device->work_buffer);
@@ -418,7 +418,7 @@ static void SDL_AudioWaitCaptureDevice_Default(SDL_AudioDevice *device) { /* no-
 static void SDL_AudioFlushCapture_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioDeinitialize_Default(void) { /* no-op. */ }
-static void SDL_AudioFreeDeviceHandle_Default(void *handle) { /* no-op. */ }
+static void SDL_AudioFreeDeviceHandle_Default(SDL_AudioDevice *device) { /* no-op. */ }
 
 static void SDL_AudioDetectDevices_Default(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
 {

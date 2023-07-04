@@ -114,7 +114,7 @@ typedef struct SDL_AudioDriverImpl
     int (*CaptureFromDevice)(SDL_AudioDevice *device, void *buffer, int buflen);
     void (*FlushCapture)(SDL_AudioDevice *device);
     void (*CloseDevice)(SDL_AudioDevice *device);
-    void (*FreeDeviceHandle)(void *handle); /**< SDL is done with handle from SDL_AddAudioDevice() */
+    void (*FreeDeviceHandle)(SDL_AudioDevice *handle); // SDL is done with this device; free the handle from SDL_AddAudioDevice()
     void (*Deinitialize)(void);
 
     /* Some flags to push duplicate code into the core and reduce #ifdefs. */
