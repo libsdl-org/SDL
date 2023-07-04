@@ -405,7 +405,6 @@ static int ALSA_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buf
                            device->spec.channels;
     const int total_frames = buflen / frame_size;
     snd_pcm_uframes_t frames_left = total_frames;
-    snd_pcm_uframes_t wait_time = frame_size / 2;
 
     SDL_assert((buflen % frame_size) == 0);
 
@@ -414,8 +413,7 @@ static int ALSA_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buf
                                         sample_buf, frames_left);
 
         if (status == -EAGAIN) {
-            ALSA_snd_pcm_wait(device->hidden->pcm_handle, wait_time);
-            status = 0;
+            break;  // Can this even happen? Go back to WaitCaptureDevice, where the device lock isn't held.
         } else if (status < 0) {
             /*printf("ALSA: capture error %d\n", status);*/
             status = ALSA_snd_pcm_recover(device->hidden->pcm_handle, status, 0);
@@ -426,7 +424,7 @@ static int ALSA_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buf
                              ALSA_snd_strerror(status));
                 return -1;
             }
-            continue;
+            break;  // Go back to WaitCaptureDevice, where the device lock isn't held.
         }
 
         /*printf("ALSA: captured %d bytes\n", status * frame_size);*/
