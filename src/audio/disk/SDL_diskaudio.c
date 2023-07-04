@@ -41,11 +41,9 @@ static void DISKAUDIO_WaitDevice(SDL_AudioDevice *device)
     SDL_Delay(device->hidden->io_delay);
 }
 
-static void DISKAUDIO_PlayDevice(SDL_AudioDevice *device, int buffer_size)
+static void DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
-    const Sint64 written = SDL_RWwrite(device->hidden->io,
-                                       device->hidden->mixbuf,
-                                       buffer_size);
+    const Sint64 written = SDL_RWwrite(device->hidden->io, buffer, buffer_size);
 
     /* If we couldn't write, assume fatal error for now */
     if (written != buffer_size) {

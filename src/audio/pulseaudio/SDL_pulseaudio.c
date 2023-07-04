@@ -388,18 +388,16 @@ static void PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
 }
 
-static void PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, int buffer_size)
+static void PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
-    const int available = buffer_size;
-    int rc;
 
     /*printf("PULSEAUDIO PLAYDEVICE START! mixlen=%d\n", available);*/
 
-    SDL_assert(h->bytes_requested >= available);
+    SDL_assert(h->bytes_requested >= buffer_size);
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
-    rc = PULSEAUDIO_pa_stream_write(h->stream, h->mixbuf, available, NULL, 0LL, PA_SEEK_RELATIVE);
+    const int rc = PULSEAUDIO_pa_stream_write(h->stream, buffer, buffer_size, NULL, 0LL, PA_SEEK_RELATIVE);
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
 
     if (rc < 0) {
@@ -407,8 +405,8 @@ static void PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, int buffer_size)
         return;
     }
 
-    /*printf("PULSEAUDIO FEED! nbytes=%u\n", (unsigned int) available);*/
-    h->bytes_requested -= available;
+    /*printf("PULSEAUDIO FEED! nbytes=%d\n", buffer_size);*/
+    h->bytes_requested -= buffer_size;
 
     /*printf("PULSEAUDIO PLAYDEVICE END! written=%d\n", written);*/
 }
