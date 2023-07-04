@@ -53,15 +53,12 @@ struct SDL_PrivateAudioData
     AudioQueueRef audioQueue;
     int numAudioBuffers;
     AudioQueueBufferRef *audioBuffer;
-    void *buffer;
-    UInt32 bufferOffset;
-    UInt32 bufferSize;
+    AudioQueueBufferRef current_buffer;
     AudioStreamBasicDescription strdesc;
     SDL_Semaphore *ready_semaphore;
     char *thread_error;
 #ifdef MACOSX_COREAUDIO
     AudioDeviceID deviceID;
-    SDL_AtomicInt device_change_flag;
 #else
     SDL_bool interrupted;
     CFTypeRef interruption_listener;
