@@ -257,6 +257,9 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->ClearComposition = WIN_ClearComposition;
     device->IsTextInputShown = WIN_IsTextInputShown;
 
+    device->SetClipboardData = WIN_SetClipboardData;
+    device->GetClipboardData = WIN_GetClipboardData;
+    device->HasClipboardData = WIN_HasClipboardData;
     device->SetClipboardText = WIN_SetClipboardText;
     device->GetClipboardText = WIN_GetClipboardText;
     device->HasClipboardText = WIN_HasClipboardText;
