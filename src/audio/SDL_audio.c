@@ -668,6 +668,7 @@ void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
         if (device->thread) {
             SDL_DetachThread(device->thread);  // no one is waiting for us, just detach ourselves.
             device->thread = NULL;
+            SDL_AtomicSet(&device->thread_alive, 0);
         }
         DestroyPhysicalAudioDevice(device);
     }
@@ -1085,6 +1086,7 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
             SDL_WaitThread(device->thread, NULL);
             device->thread = NULL;
         }
+        SDL_AtomicSet(&device->thread_alive, 0);
     }
 
     if (device->is_opened) {
