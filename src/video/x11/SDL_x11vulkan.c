@@ -99,12 +99,7 @@ int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     }
-    if (hasXlibSurfaceExtension) {
-        videoData->vulkan_xlib_xcb_library = NULL;
-    } else if (!hasXCBSurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement either the " VK_KHR_XCB_SURFACE_EXTENSION_NAME "extension or the " VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension");
-        goto fail;
-    } else {
+    if (hasXCBSurfaceExtension) {
         const char *libX11XCBLibraryName = SDL_getenv("SDL_X11_XCB_LIBRARY");
         if (libX11XCBLibraryName == NULL) {
             libX11XCBLibraryName = "libX11-xcb.so";
@@ -119,6 +114,11 @@ int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
             SDL_UnloadObject(videoData->vulkan_xlib_xcb_library);
             goto fail;
         }
+    } else if (!hasXlibSurfaceExtension) {
+        SDL_SetError("Installed Vulkan doesn't implement either the " VK_KHR_XCB_SURFACE_EXTENSION_NAME "extension or the " VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension");
+        goto fail;
+    } else {
+        videoData->vulkan_xlib_xcb_library = NULL;
     }
     return 0;
 
