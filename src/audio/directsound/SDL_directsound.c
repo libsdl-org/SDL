@@ -644,7 +644,6 @@ static SDL_bool DSOUND_Init(SDL_AudioDriverImpl *impl)
     impl->GetDefaultAudioInfo = DSOUND_GetDefaultAudioInfo;
 
     impl->HasCaptureSupport = SDL_TRUE;
-    impl->SupportsNonPow2Samples = SDL_TRUE;
 
     return SDL_TRUE; /* this audio target is available. */
 }
