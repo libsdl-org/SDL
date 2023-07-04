@@ -1178,13 +1178,7 @@ static void PrepareAudioFormat(SDL_bool iscapture, SDL_AudioSpec *spec)
 
 static int GetDefaultSampleFramesFromFreq(int freq)
 {
-    // Pick the closest power-of-two to ~46 ms at desired frequency
-    const int max_sample = ((freq / 1000) * 46);
-    int current_sample = 1;
-    while (current_sample < max_sample) {
-        current_sample *= 2;
-    }
-    return current_sample;
+    return SDL_powerof2((freq / 1000) * 46);  // Pick the closest power-of-two to ~46 ms at desired frequency
 }
 
 void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device)
