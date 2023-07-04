@@ -30,14 +30,12 @@ typedef struct X11_ClipboardData {
     void *userdata;
     const char **mime_types;
     size_t mime_count;
-    SDL_bool internal;
+    Uint32 sequence;
 } SDLX11_ClipboardData;
 
-extern int X11_SetClipboardData(SDL_VideoDevice *_this, SDL_ClipboardDataCallback callback, size_t mime_count,
-                                const char **mime_types, void *userdata);
-extern void *X11_GetClipboardData(SDL_VideoDevice *_this, size_t *length, const char *mime_type);
+extern int X11_SetClipboardData(SDL_VideoDevice *_this);
+extern void *X11_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length);
 extern SDL_bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
-extern void *X11_GetClipboardUserdata(SDL_VideoDevice *_this);
 extern int X11_SetClipboardText(SDL_VideoDevice *_this, const char *text);
 extern char *X11_GetClipboardText(SDL_VideoDevice *_this);
 extern SDL_bool X11_HasClipboardText(SDL_VideoDevice *_this);

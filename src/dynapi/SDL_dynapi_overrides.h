@@ -186,7 +186,6 @@
 #define SDL_GetCPUCount SDL_GetCPUCount_REAL
 #define SDL_GetClipboardData SDL_GetClipboardData_REAL
 #define SDL_GetClipboardText SDL_GetClipboardText_REAL
-#define SDL_GetClipboardUserdata SDL_GetClipboardUserdata_REAL
 #define SDL_GetClosestFullscreenDisplayMode SDL_GetClosestFullscreenDisplayMode_REAL
 #define SDL_GetCurrentAudioDriver SDL_GetCurrentAudioDriver_REAL
 #define SDL_GetCurrentDisplayMode SDL_GetCurrentDisplayMode_REAL
@@ -895,3 +894,4 @@
 #define SDL_wcstol SDL_wcstol_REAL
 
 /* New API symbols are added at the end */
+#define SDL_ClearClipboardData SDL_ClearClipboardData_REAL

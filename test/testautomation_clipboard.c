@@ -73,7 +73,7 @@ static int clipboard_testGetClipboardData(void *arg)
 {
     void *buffer = NULL;
     size_t length;
-    buffer = SDL_GetClipboardData(&length, "image/png");
+    buffer = SDL_GetClipboardData("image/png", &length);
     SDLTest_AssertPass("Call to SDL_GetClipboardData succeeded");
 
     if (buffer != NULL) {
@@ -134,15 +134,12 @@ static int clipboard_testSetClipboardData(void *arg)
 {
     int result = -1;
 
-    result = SDL_SetClipboardData(NULL, 0, NULL, NULL);
+    result = SDL_SetClipboardData(NULL, NULL, NULL, NULL, 0);
     SDLTest_AssertPass("Call to SDL_SetClipboardData succeeded");
     SDLTest_AssertCheck(
         result == 0,
         "Validate SDL_SetClipboardData result, expected 0, got %i",
         result);
-
-    SDL_GetClipboardUserdata();
-    SDLTest_AssertPass("Call to SDL_GetClipboardUserdata succeeded");
 
     return TEST_COMPLETED;
 }

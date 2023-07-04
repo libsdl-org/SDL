@@ -30,6 +30,7 @@
 
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_clipboard_c.h"
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylanddatamanager.h"
@@ -218,7 +219,7 @@ static void mime_data_list_free(struct wl_list *list)
     }
 }
 
-static size_t Wayland_send_data(void *data, size_t length, int fd)
+static size_t Wayland_send_data(const void *data, size_t length, int fd)
 {
     size_t result = 0;
 
@@ -234,11 +235,11 @@ static size_t Wayland_send_data(void *data, size_t length, int fd)
 
 ssize_t Wayland_data_source_send(SDL_WaylandDataSource *source, const char *mime_type, int fd)
 {
-    void *data = NULL;
+    const void *data = NULL;
     size_t length = 0;
 
     if (source->callback) {
-        data = source->callback(&length, mime_type, source->userdata.data);
+        data = source->callback(source->userdata.data, mime_type, &length);
     }
 
     return Wayland_send_data(data, length, fd);
@@ -246,11 +247,11 @@ ssize_t Wayland_data_source_send(SDL_WaylandDataSource *source, const char *mime
 
 ssize_t Wayland_primary_selection_source_send(SDL_WaylandPrimarySelectionSource *source, const char *mime_type, int fd)
 {
-    void *data = NULL;
+    const void *data = NULL;
     size_t length = 0;
 
     if (source->callback) {
-        data = source->callback(&length, mime_type, source->userdata.data);
+        data = source->callback(source->userdata.data, mime_type, &length);
     }
 
     return Wayland_send_data(data, length, fd);
@@ -259,12 +260,12 @@ ssize_t Wayland_primary_selection_source_send(SDL_WaylandPrimarySelectionSource 
 void Wayland_data_source_set_callback(SDL_WaylandDataSource *source,
                                       SDL_ClipboardDataCallback callback,
                                       void *userdata,
-                                      SDL_bool internal)
+                                      Uint32 sequence)
 {
     if (source != NULL) {
-    source->callback = callback;
-    source->userdata.internal = internal;
-    source->userdata.data = userdata;
+        source->callback = callback;
+        source->userdata.sequence = sequence;
+        source->userdata.data = userdata;
     }
 }
 
@@ -276,12 +277,12 @@ int Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSou
         return SDL_InvalidParamError("source");
     }
     source->callback = callback;
-    source->userdata.internal = SDL_TRUE;
+    source->userdata.sequence = 0;
     source->userdata.data = userdata;
     return 0;
 }
 
-static void *Wayland_clone_data_buffer(void *buffer, size_t *len, SDL_bool null_terminate)
+static void *Wayland_clone_data_buffer(const void *buffer, size_t *len, SDL_bool null_terminate)
 {
     void *clone = NULL;
     if (*len > 0 && buffer != NULL) {
@@ -307,17 +308,17 @@ static void *Wayland_clone_data_buffer(void *buffer, size_t *len, SDL_bool null_
 }
 
 void *Wayland_data_source_get_data(SDL_WaylandDataSource *source,
-                                   size_t *length, const char *mime_type,
+                                   const char *mime_type, size_t *length,
                                    SDL_bool null_terminate)
 {
     void *buffer = NULL;
-    void *internal_buffer;
+    const void *internal_buffer;
     *length = 0;
 
     if (source == NULL) {
         SDL_SetError("Invalid data source");
     } else if (source->callback != NULL) {
-        internal_buffer = source->callback(length, mime_type, source->userdata.data);
+        internal_buffer = source->callback(source->userdata.data, mime_type, length);
         buffer = Wayland_clone_data_buffer(internal_buffer, length, null_terminate);
     }
 
@@ -325,17 +326,17 @@ void *Wayland_data_source_get_data(SDL_WaylandDataSource *source,
 }
 
 void *Wayland_primary_selection_source_get_data(SDL_WaylandPrimarySelectionSource *source,
-                                                size_t *length, const char *mime_type,
+                                                const char *mime_type, size_t *length,
                                                 SDL_bool null_terminate)
 {
     void *buffer = NULL;
-    void *internal_buffer;
+    const void *internal_buffer;
     *length = 0;
 
     if (source == NULL) {
         SDL_SetError("Invalid primary selection source");
     } else if (source->callback) {
-        internal_buffer = source->callback(length, mime_type, source->userdata.data);
+        internal_buffer = source->callback(source->userdata.data, mime_type, length);
         buffer = Wayland_clone_data_buffer(internal_buffer, length, null_terminate);
     }
 
@@ -350,10 +351,10 @@ void Wayland_data_source_destroy(SDL_WaylandDataSource *source)
             data_device->selection_source = NULL;
         }
         wl_data_source_destroy(source->source);
-        if (source->userdata.internal == SDL_TRUE) {
-            SDL_free(source->userdata.data);
+        if (source->userdata.sequence) {
+            SDL_CancelClipboardData(source->userdata.sequence);
         } else {
-            SDL_SendClipboardCancelled(source->userdata.data);
+            SDL_free(source->userdata.data);
         }
         SDL_free(source);
     }
@@ -367,7 +368,7 @@ void Wayland_primary_selection_source_destroy(SDL_WaylandPrimarySelectionSource 
             primary_selection_device->selection_source = NULL;
         }
         zwp_primary_selection_source_v1_destroy(source->source);
-        if (source->userdata.internal == SDL_TRUE) {
+        if (source->userdata.sequence == 0) {
             SDL_free(source->userdata.data);
         }
         SDL_free(source);
@@ -375,7 +376,7 @@ void Wayland_primary_selection_source_destroy(SDL_WaylandPrimarySelectionSource 
 }
 
 void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
-                                 size_t *length, const char *mime_type,
+                                 const char *mime_type, size_t *length,
                                  SDL_bool null_terminate)
 {
     SDL_WaylandDataDevice *data_device = NULL;
@@ -409,7 +410,7 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
 }
 
 void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
-                                              size_t *length, const char *mime_type,
+                                              const char *mime_type, size_t *length,
                                               SDL_bool null_terminate)
 {
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
@@ -525,8 +526,8 @@ int Wayland_primary_selection_device_clear_selection(SDL_WaylandPrimarySelection
 
 int Wayland_data_device_set_selection(SDL_WaylandDataDevice *data_device,
                                       SDL_WaylandDataSource *source,
-                                      size_t mime_count,
-                                      const char **mime_types)
+                                      const char **mime_types,
+                                      size_t mime_count)
 {
     int status = 0;
 
@@ -567,8 +568,8 @@ int Wayland_data_device_set_selection(SDL_WaylandDataDevice *data_device,
 
 int Wayland_primary_selection_device_set_selection(SDL_WaylandPrimarySelectionDevice *primary_selection_device,
                                                    SDL_WaylandPrimarySelectionSource *source,
-                                                   size_t mime_count,
-                                                   const char **mime_types)
+                                                   const char **mime_types,
+                                                   size_t mime_count)
 {
     int status = 0;
 

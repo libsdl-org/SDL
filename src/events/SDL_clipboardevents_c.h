@@ -24,7 +24,6 @@
 #define SDL_clipboardevents_c_h_
 
 extern int SDL_SendClipboardUpdate(void);
-
 extern int SDL_SendClipboardCancelled(void *userdata);
 
 #endif /* SDL_clipboardevents_c_h_ */

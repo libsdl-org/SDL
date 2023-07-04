@@ -1873,7 +1873,7 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
         /* TODO: SDL Support more mime types */
         size_t length;
         void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
-                &length, FILE_MIME, SDL_TRUE);
+                                                  FILE_MIME, &length, SDL_TRUE);
         if (buffer) {
             char *saveptr = NULL;
             char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
@@ -2022,7 +2022,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
         /* TODO: SDL Support more mime types */
         size_t length;
         void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
-                                                  &length, FILE_MIME, SDL_TRUE);
+                                                  FILE_MIME, &length, SDL_TRUE);
         if (buffer) {
             char *saveptr = NULL;
             char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
