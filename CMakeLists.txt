@@ -1023,9 +1023,6 @@ if(SDL_LIBC)
         sys/types.h
         wchar.h
     )
-    if(NOT EMSCRIPTEN)
-      list(APPEND headers_to_check libunwind.h)
-    endif()
     foreach(_HEADER ${headers_to_check})
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REGEX REPLACE "[./]" "_" _HAVE_H ${_UPPER})
@@ -1405,10 +1402,7 @@ elseif(EMSCRIPTEN)
   endif()
 
   CheckPTHREAD()
-
-  if(HAVE_LIBUNWIND_H)
-    list(APPEND EXTRA_TEST_LIBS unwind)
-  endif()
+  CheckLibUnwind()
 
 elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
   if(SDL_AUDIO)
@@ -1572,15 +1566,8 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
         endif()
       endif()
 
-      if(HAVE_LIBUNWIND_H)
-        # We've already found the header, so link the lib if present.
-        # NB: This .pc file is not present on FreeBSD where the implicitly
-        # linked base system libgcc_s includes all libunwind ABI.
-        pkg_search_module(UNWIND libunwind)
-        pkg_search_module(UNWIND_GENERIC libunwind-generic)
-        list(APPEND EXTRA_TEST_LIBS ${UNWIND_LIBRARIES} ${UNWIND_GENERIC_LIBRARIES})
-      endif()
     endif()
+    CheckLibUnwind()
 
     if(HAVE_DBUS_DBUS_H)
       list(APPEND SOURCE_FILES "${SDL2_SOURCE_DIR}/src/core/linux/SDL_dbus.c")
@@ -3452,6 +3439,7 @@ if(SDL_TEST)
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
   target_link_libraries(SDL2_test PRIVATE ${EXTRA_TEST_LIBS})
+  target_include_directories(SDL2_test PRIVATE ${EXTRA_TEST_INCLUDES})
   set_property(TARGET SDL2_test APPEND PROPERTY COMPATIBLE_INTERFACE_STRING "SDL_VERSION")
   set_property(TARGET SDL2_test PROPERTY INTERFACE_SDL_VERSION "SDL2")
 endif()
