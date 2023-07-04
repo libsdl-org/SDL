@@ -475,7 +475,7 @@ static SDL_AudioDeviceID GetFirstAddedAudioDeviceID(const SDL_bool iscapture)
     // (these are pushed to the front of the linked list as added, so the first device added is last in the list.)
     SDL_LockRWLockForReading(current_audio.device_list_lock);
     SDL_AudioDevice *last = NULL;
-    for (SDL_AudioDevice *i = current_audio.output_devices; i != NULL; i = i->next) {
+    for (SDL_AudioDevice *i = iscapture ? current_audio.capture_devices : current_audio.output_devices; i != NULL; i = i->next) {
         last = i;
     }
     const SDL_AudioDeviceID retval = last ? last->instance_id : 0;
@@ -599,8 +599,8 @@ int SDL_InitAudio(const char *driver_name)
     if (!current_audio.default_output_device_id) {
         current_audio.default_output_device_id = GetFirstAddedAudioDeviceID(/*iscapture=*/SDL_FALSE);
     }
-    if (!current_audio.default_capture_device_id && (current_audio.capture_devices != NULL)) {
-        current_audio.default_output_device_id = GetFirstAddedAudioDeviceID(/*iscapture=*/SDL_TRUE);
+    if (!current_audio.default_capture_device_id) {
+        current_audio.default_capture_device_id = GetFirstAddedAudioDeviceID(/*iscapture=*/SDL_TRUE);
     }
 
     return 0;
