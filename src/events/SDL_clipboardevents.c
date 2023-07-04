@@ -35,23 +35,6 @@ int SDL_SendClipboardUpdate(void)
         SDL_Event event;
         event.type = SDL_EVENT_CLIPBOARD_UPDATE;
         event.clipboard.timestamp = 0;
-        event.clipboard.userdata = NULL;
-        posted = (SDL_PushEvent(&event) > 0);
-    }
-    return posted;
-}
-
-int SDL_SendClipboardCancelled(void *userdata)
-{
-    int posted;
-
-    /* Post the event, if desired */
-    posted = 0;
-    if (SDL_EventEnabled(SDL_EVENT_CLIPBOARD_CANCELLED)) {
-        SDL_Event event;
-        event.type = SDL_EVENT_CLIPBOARD_CANCELLED;
-        event.clipboard.timestamp = 0;
-        event.clipboard.userdata = userdata;
         posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;

@@ -1757,9 +1757,6 @@ static void SDLTest_PrintEvent(SDL_Event *event)
     case SDL_EVENT_CLIPBOARD_UPDATE:
         SDL_Log("SDL EVENT: Clipboard updated");
         break;
-    case SDL_EVENT_CLIPBOARD_CANCELLED:
-        SDL_Log("SDL EVENT: Clipboard ownership canceled");
-        break;
 
     case SDL_EVENT_FINGER_MOTION:
         SDL_Log("SDL EVENT: Finger: motion touch=%ld, finger=%ld, x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
