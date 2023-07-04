@@ -214,10 +214,8 @@ static void DSP_WaitDevice(SDL_AudioDevice *device)
             SDL_AudioDeviceDisconnected(device);
             return;
         } else if (info.bytes < device->buffer_size) {
-//SDL_Log("DSP NEED=%d HAVE=%d", (int) device->buffer_size, (int) info.bytes);
             SDL_Delay(10);
         } else {
-//SDL_Log("DSP NEED=%d HAVE=%d", (int) device->buffer_size, (int) info.bytes);
             break; /* ready to go! */
         }
     }
