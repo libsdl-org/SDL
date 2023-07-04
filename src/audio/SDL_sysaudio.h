@@ -91,6 +91,9 @@ extern SDL_AudioDevice *SDL_ObtainPhysicalAudioDeviceByHandle(void *handle);
 /* Backends should call this if they change the device format, channels, freq, or sample_frames to keep other state correct. */
 extern void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device);
 
+// Backends can call this to get a standardized name for a thread to power a specific audio device.
+char *SDL_GetAudioThreadName(SDL_AudioDevice *device, char *buf, size_t buflen);
+
 
 /* These functions are the heart of the audio threads. Backends can call them directly if they aren't using the SDL-provided thread. */
 extern void SDL_OutputAudioThreadSetup(SDL_AudioDevice *device);

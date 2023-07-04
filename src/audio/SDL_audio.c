@@ -1191,6 +1191,13 @@ void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device)
     device->buffer_size = device->sample_frames * (SDL_AUDIO_BITSIZE(device->spec.format) / 8) * device->spec.channels;
 }
 
+char *SDL_GetAudioThreadName(SDL_AudioDevice *device, char *buf, size_t buflen)
+{
+    (void)SDL_snprintf(buf, buflen, "SDLAudio%c%d", (device->iscapture) ? 'C' : 'P', (int) device->instance_id);
+    return buf;
+}
+
+
 // this expects the device lock to be held.
 static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec *inspec)
 {
@@ -1236,7 +1243,7 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
     if (!current_audio.impl.ProvidesOwnCallbackThread) {
         const size_t stacksize = 0;  // just take the system default, since audio streams might have callbacks.
         char threadname[64];
-        (void)SDL_snprintf(threadname, sizeof(threadname), "SDLAudio%c%d", (device->iscapture) ? 'C' : 'P', (int) device->instance_id);
+        SDL_GetAudioThreadName(device, threadname, sizeof (threadname));
         device->thread = SDL_CreateThreadInternal(device->iscapture ? CaptureAudioThread : OutputAudioThread, threadname, stacksize, device);
 
         if (device->thread == NULL) {
