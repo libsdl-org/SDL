@@ -330,6 +330,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 
     // if the current default device is going down, mark it as dead but keep it around until a replacement is decided upon, so we can migrate logical devices to it.
     if ((device->instance_id == current_audio.default_output_device_id) || (device->instance_id == current_audio.default_capture_device_id)) {
+        SDL_LockMutex(device->lock);  // make sure nothing else is messing with the device before continuing.
         SDL_AtomicSet(&device->zombie, 1);
         SDL_AtomicSet(&device->shutdown, 1);  // tell audio thread to terminate, but don't mark it condemned, so the thread won't destroy the device. We'll join on the audio thread later.
 
@@ -341,6 +342,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
                 DisconnectLogicalAudioDevice(logdev);
             }
         }
+        SDL_UnlockMutex(device->lock);  // make sure nothing else is messing with the device before continuing.
         return;  // done for now. Come back when a new default device is chosen!
     }
 
