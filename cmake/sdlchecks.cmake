@@ -18,6 +18,7 @@ macro(FindLibraryAndSONAME _LIB)
     # reduce the library name for shared linking
 
     get_filename_component(_LIB_REALPATH ${${_LNAME}_LIB} REALPATH)  # resolves symlinks
+    get_filename_component(_LIB_DIRECTORY ${_LIB_REALPATH} DIRECTORY)
     get_filename_component(_LIB_JUSTNAME ${_LIB_REALPATH} NAME)
 
     if(APPLE)
@@ -25,6 +26,11 @@ macro(FindLibraryAndSONAME _LIB)
     else()
       string(REGEX REPLACE "(\\.[0-9]*)\\.[0-9\\.]*$" "\\1" _LIB_REGEXD "${_LIB_JUSTNAME}")
     endif()
+
+    if(NOT EXISTS "${_LIB_DIRECTORY}/${_LIB_REGEXD}")
+      set(_LIB_REGEXD "${_LIB_JUSTNAME}")
+    endif()
+    set(${_LNAME}_LIBDIR "${_LIB_LIBDIR}")
 
     SET(_DEBUG_FindSONAME FALSE)
     if(_DEBUG_FindSONAME)
