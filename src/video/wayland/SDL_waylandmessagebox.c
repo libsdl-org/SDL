@@ -195,7 +195,7 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
 {
     int i, err;
 
-    for (i = 0; i < sizeof(icon_name_options) / sizeof(*icon_name_options); ++i) {
+    for (i = 0; i < SDL_arraysize(icon_name_options); ++i) {
         err = run_zenity(icon_name_options[i], messageboxdata, buttonid);
         if (err == 0) break;
     }
