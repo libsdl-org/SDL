@@ -136,7 +136,7 @@ static int load_jack_syms(void)
 static void jackShutdownCallback(void *arg) /* JACK went away; device is lost. */
 {
     SDL_AudioDevice *_this = (SDL_AudioDevice *)arg;
-    SDL_OpenedAudioDeviceDisconnected(_this);
+    SDL_AudioDeviceDisconnected(_this);
     SDL_PostSemaphore(_this->hidden->iosem); /* unblock the SDL thread. */
 }
 
@@ -149,12 +149,12 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
     SDL_AudioDevice *_this = (SDL_AudioDevice *)arg;
     jack_port_t **ports = _this->hidden->sdlports;
     const int total_channels = _this->spec.channels;
-    const int total_frames = _this->spec.samples;
+    const int total_frames = _this->sample_frames;
     int channelsi;
 
-    if (!SDL_AtomicGet(&_this->enabled)) {
+    if (SDL_AtomicGet(&_this->shutdown)) {
         /* silence the buffer to avoid repeats and corruption. */
-        SDL_memset(_this->hidden->iobuffer, '\0', _this->spec.size);
+        SDL_memset(_this->hidden->iobuffer, _this->silence_value, _this->buffer_size);
     }
 
     for (channelsi = 0; channelsi < total_channels; channelsi++) {
@@ -176,14 +176,14 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
 /* This function waits until it is possible to write a full sound buffer */
 static void JACK_WaitDevice(SDL_AudioDevice *_this)
 {
-    if (SDL_AtomicGet(&_this->enabled)) {
+    if (!SDL_AtomicGet(&_this->shutdown)) {
         if (SDL_WaitSemaphore(_this->hidden->iosem) == -1) {
-            SDL_OpenedAudioDeviceDisconnected(_this);
+            SDL_AudioDeviceDisconnected(_this);
         }
     }
 }
 
-static Uint8 *JACK_GetDeviceBuf(SDL_AudioDevice *_this)
+static Uint8 *JACK_GetDeviceBuf(SDL_AudioDevice *_this, int *buffer_size)
 {
     return (Uint8 *)_this->hidden->iobuffer;
 }
@@ -191,10 +191,10 @@ static Uint8 *JACK_GetDeviceBuf(SDL_AudioDevice *_this)
 static int jackProcessCaptureCallback(jack_nframes_t nframes, void *arg)
 {
     SDL_AudioDevice *_this = (SDL_AudioDevice *)arg;
-    if (SDL_AtomicGet(&_this->enabled)) {
+    if (!SDL_AtomicGet(&_this->shutdown)) {
         jack_port_t **ports = _this->hidden->sdlports;
         const int total_channels = _this->spec.channels;
-        const int total_frames = _this->spec.samples;
+        const int total_frames = _this->sample_frames;
         int channelsi;
 
         for (channelsi = 0; channelsi < total_channels; channelsi++) {
@@ -216,7 +216,7 @@ static int jackProcessCaptureCallback(jack_nframes_t nframes, void *arg)
 
 static int JACK_CaptureFromDevice(SDL_AudioDevice *_this, void *buffer, int buflen)
 {
-    SDL_assert(buflen == _this->spec.size); /* we always fill a full buffer. */
+    SDL_assert(buflen == _this->buffer_size); /* we always fill a full buffer. */
 
     /* Wait for JACK to fill the iobuffer */
     if (SDL_WaitSemaphore(_this->hidden->iosem) == -1) {
@@ -234,30 +234,46 @@ static void JACK_FlushCapture(SDL_AudioDevice *_this)
 
 static void JACK_CloseDevice(SDL_AudioDevice *_this)
 {
-    if (_this->hidden->client) {
-        JACK_jack_deactivate(_this->hidden->client);
+    if (_this->hidden) {
+        if (_this->hidden->client) {
+            JACK_jack_deactivate(_this->hidden->client);
 
-        if (_this->hidden->sdlports) {
-            const int channels = _this->spec.channels;
-            int i;
-            for (i = 0; i < channels; i++) {
-                JACK_jack_port_unregister(_this->hidden->client, _this->hidden->sdlports[i]);
+            if (_this->hidden->sdlports) {
+                const int channels = _this->spec.channels;
+                int i;
+                for (i = 0; i < channels; i++) {
+                    JACK_jack_port_unregister(_this->hidden->client, _this->hidden->sdlports[i]);
+                }
+                SDL_free(_this->hidden->sdlports);
             }
-            SDL_free(_this->hidden->sdlports);
+
+            JACK_jack_client_close(_this->hidden->client);
         }
 
-        JACK_jack_client_close(_this->hidden->client);
-    }
+        if (_this->hidden->iosem) {
+            SDL_DestroySemaphore(_this->hidden->iosem);
+        }
 
-    if (_this->hidden->iosem) {
-        SDL_DestroySemaphore(_this->hidden->iosem);
+        SDL_free(_this->hidden->iobuffer);
+        SDL_free(_this->hidden);
     }
-
-    SDL_free(_this->hidden->iobuffer);
-    SDL_free(_this->hidden);
 }
 
-static int JACK_OpenDevice(SDL_AudioDevice *_this, const char *devname)
+// !!! FIXME: unify this (PulseAudio has a getAppName, Pipewire has a thing, etc
+static const char *GetJackAppName(void)
+{
+    const char *retval = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME);
+    if (retval && *retval) {
+        return retval;
+    }
+    retval = SDL_GetHint(SDL_HINT_APP_NAME);
+    if (retval && *retval) {
+        return retval;
+    }
+    return "SDL Application";
+}
+
+static int JACK_OpenDevice(SDL_AudioDevice *_this)
 {
     /* Note that JACK uses "output" for capture devices (they output audio
         data to us) and "input" for playback (we input audio data to them).
@@ -282,8 +298,7 @@ static int JACK_OpenDevice(SDL_AudioDevice *_this, const char *devname)
         return SDL_OutOfMemory();
     }
 
-    /* !!! FIXME: we _still_ need an API to specify an app name */
-    client = JACK_jack_client_open("SDL", JackNoStartServer, &status, NULL);
+    client = JACK_jack_client_open(GetJackAppName(), JackNoStartServer, &status, NULL);
     _this->hidden->client = client;
     if (client == NULL) {
         return SDL_SetError("Can't open JACK client");
@@ -320,9 +335,9 @@ static int JACK_OpenDevice(SDL_AudioDevice *_this, const char *devname)
     _this->spec.format = SDL_AUDIO_F32SYS;
     _this->spec.freq = JACK_jack_get_sample_rate(client);
     _this->spec.channels = channels;
-    _this->spec.samples = JACK_jack_get_buffer_size(client);
+    _this->sample_frames = JACK_jack_get_buffer_size(client);
 
-    SDL_CalculateAudioSpec(&_this->spec);
+    SDL_UpdatedAudioDeviceFormat(_this);
 
     _this->hidden->iosem = SDL_CreateSemaphore(0);
     if (!_this->hidden->iosem) {
@@ -330,7 +345,7 @@ static int JACK_OpenDevice(SDL_AudioDevice *_this, const char *devname)
         return -1; /* error was set by SDL_CreateSemaphore */
     }
 
-    _this->hidden->iobuffer = (float *)SDL_calloc(1, _this->spec.size);
+    _this->hidden->iobuffer = (float *)SDL_calloc(1, _this->buffer_size);
     if (!_this->hidden->iobuffer) {
         SDL_free(audio_ports);
         return SDL_OutOfMemory();
