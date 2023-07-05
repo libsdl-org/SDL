@@ -3722,8 +3722,10 @@ void SDL_VideoQuit(void)
         _this->displays = NULL;
         _this->num_displays = 0;
     }
-    SDL_free(_this->clipboard_text);
-    _this->clipboard_text = NULL;
+    if (_this->primary_selection_text) {
+        SDL_free(_this->primary_selection_text);
+        _this->primary_selection_text = NULL;
+    }
     _this->free(_this);
     _this = NULL;
 }

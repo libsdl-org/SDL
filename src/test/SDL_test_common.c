@@ -1848,7 +1848,15 @@ static const void *SDLTest_ScreenShotClipboardProvider(void *context, const char
 {
     SDLTest_ClipboardData *data = (SDLTest_ClipboardData *)context;
 
-    SDL_Log("Providing screenshot image data to clipboard!\n");
+    if (SDL_strncmp(mime_type, "text", 4) == 0) {
+        SDL_Log("Providing screenshot title to clipboard!\n");
+
+        /* Return "Test screenshot" */
+        *size = 15;
+        return "Test screenshot (but this isn't part of it)";
+    }
+
+    SDL_Log("Providing screenshot image to clipboard!\n");
 
     if (!data->image) {
         SDL_RWops *file;
@@ -1884,6 +1892,7 @@ static void SDLTest_CopyScreenShot(SDL_Renderer *renderer)
     SDL_Rect viewport;
     SDL_Surface *surface;
     const char *image_formats[] = {
+        "text/plain;charset=utf-8",
         "image/bmp"
     };
     SDLTest_ClipboardData *clipboard_data;

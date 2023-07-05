@@ -87,7 +87,7 @@ static ssize_t write_pipe(int fd, const void *buffer, size_t total_length, size_
     return bytes_written;
 }
 
-static ssize_t read_pipe(int fd, void **buffer, size_t *total_length, SDL_bool null_terminate)
+static ssize_t read_pipe(int fd, void **buffer, size_t *total_length)
 {
     int ready = 0;
     void *output_buffer = NULL;
@@ -110,11 +110,7 @@ static ssize_t read_pipe(int fd, void **buffer, size_t *total_length, SDL_bool n
         pos = *total_length;
         *total_length += bytes_read;
 
-        if (null_terminate == SDL_TRUE) {
-            new_buffer_length = *total_length + 1;
-        } else {
-            new_buffer_length = *total_length;
-        }
+        new_buffer_length = *total_length + sizeof(Uint32);
 
         if (*buffer == NULL) {
             output_buffer = SDL_malloc(new_buffer_length);
@@ -126,10 +122,7 @@ static ssize_t read_pipe(int fd, void **buffer, size_t *total_length, SDL_bool n
             bytes_read = SDL_OutOfMemory();
         } else {
             SDL_memcpy((Uint8 *)output_buffer + pos, temp, bytes_read);
-
-            if (null_terminate == SDL_TRUE) {
-                SDL_memset((Uint8 *)output_buffer + (new_buffer_length - 1), 0, 1);
-            }
+            SDL_memset((Uint8 *)output_buffer + (new_buffer_length - sizeof(Uint32)), 0, sizeof(Uint32));
 
             *buffer = output_buffer;
         }
@@ -262,54 +255,41 @@ void Wayland_data_source_set_callback(SDL_WaylandDataSource *source,
                                       void *userdata,
                                       Uint32 sequence)
 {
-    if (source != NULL) {
+    if (source) {
         source->callback = callback;
         source->userdata.sequence = sequence;
         source->userdata.data = userdata;
     }
 }
 
-int Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSource *source,
+void Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSource *source,
                                                   SDL_ClipboardDataCallback callback,
                                                   void *userdata)
 {
-    if (source == NULL) {
-        return SDL_InvalidParamError("source");
+    if (source) {
+        source->callback = callback;
+        source->userdata.sequence = 0;
+        source->userdata.data = userdata;
     }
-    source->callback = callback;
-    source->userdata.sequence = 0;
-    source->userdata.data = userdata;
-    return 0;
 }
 
-static void *Wayland_clone_data_buffer(const void *buffer, size_t *len, SDL_bool null_terminate)
+static void *Wayland_clone_data_buffer(const void *buffer, size_t *len)
 {
     void *clone = NULL;
     if (*len > 0 && buffer != NULL) {
-        if (null_terminate == SDL_TRUE) {
-            clone = SDL_malloc((*len)+1);
-            if (clone == NULL) {
-                SDL_OutOfMemory();
-            } else {
-                SDL_memcpy(clone, buffer, *len);
-                ((char *) clone)[*len] = '\0';
-                *len += 1;
-            }
+        clone = SDL_malloc((*len)+sizeof(Uint32));
+        if (clone == NULL) {
+            SDL_OutOfMemory();
         } else {
-            clone = SDL_malloc(*len);
-            if (clone == NULL) {
-                SDL_OutOfMemory();
-            } else {
-                SDL_memcpy(clone, buffer, *len);
-            }
+            SDL_memcpy(clone, buffer, *len);
+            SDL_memset((Uint8 *)clone + *len, 0, sizeof(Uint32));
         }
     }
     return clone;
 }
 
 void *Wayland_data_source_get_data(SDL_WaylandDataSource *source,
-                                   const char *mime_type, size_t *length,
-                                   SDL_bool null_terminate)
+                                   const char *mime_type, size_t *length)
 {
     void *buffer = NULL;
     const void *internal_buffer;
@@ -319,15 +299,14 @@ void *Wayland_data_source_get_data(SDL_WaylandDataSource *source,
         SDL_SetError("Invalid data source");
     } else if (source->callback != NULL) {
         internal_buffer = source->callback(source->userdata.data, mime_type, length);
-        buffer = Wayland_clone_data_buffer(internal_buffer, length, null_terminate);
+        buffer = Wayland_clone_data_buffer(internal_buffer, length);
     }
 
     return buffer;
 }
 
 void *Wayland_primary_selection_source_get_data(SDL_WaylandPrimarySelectionSource *source,
-                                                const char *mime_type, size_t *length,
-                                                SDL_bool null_terminate)
+                                                const char *mime_type, size_t *length)
 {
     void *buffer = NULL;
     const void *internal_buffer;
@@ -337,7 +316,7 @@ void *Wayland_primary_selection_source_get_data(SDL_WaylandPrimarySelectionSourc
         SDL_SetError("Invalid primary selection source");
     } else if (source->callback) {
         internal_buffer = source->callback(source->userdata.data, mime_type, length);
-        buffer = Wayland_clone_data_buffer(internal_buffer, length, null_terminate);
+        buffer = Wayland_clone_data_buffer(internal_buffer, length);
     }
 
     return buffer;
@@ -376,8 +355,7 @@ void Wayland_primary_selection_source_destroy(SDL_WaylandPrimarySelectionSource 
 }
 
 void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
-                                 const char *mime_type, size_t *length,
-                                 SDL_bool null_terminate)
+                                 const char *mime_type, size_t *length)
 {
     SDL_WaylandDataDevice *data_device = NULL;
 
@@ -402,7 +380,7 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
 
         close(pipefd[1]);
 
-        while (read_pipe(pipefd[0], &buffer, length, null_terminate) > 0) {
+        while (read_pipe(pipefd[0], &buffer, length) > 0) {
         }
         close(pipefd[0]);
     }
@@ -410,8 +388,7 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
 }
 
 void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
-                                              const char *mime_type, size_t *length,
-                                              SDL_bool null_terminate)
+                                              const char *mime_type, size_t *length)
 {
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
 
@@ -436,7 +413,7 @@ void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *
 
         close(pipefd[1]);
 
-        while (read_pipe(pipefd[0], &buffer, length, null_terminate) > 0) {
+        while (read_pipe(pipefd[0], &buffer, length) > 0) {
         }
         close(pipefd[0]);
     }
