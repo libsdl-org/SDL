@@ -171,6 +171,8 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * data the callback function will be called allowing it to generate and
  * respond with the data for the requested mime-type.
  *
+ * The size of text data does not include any terminator, and the text does not need to be null terminated (e.g. you can directly copy a portion of a document)
+ *
  * \param callback A function pointer to the function that provides the
  *                 clipboard data
  * \param cleanup A function pointer to the function that cleans up the
@@ -201,6 +203,8 @@ extern DECLSPEC int SDLCALL SDL_ClearClipboardData();
 
 /**
  * Get the data from clipboard for a given mime type
+ *
+ * The size of text data does not include the terminator, but the text is guaranteed to be null terminated.
  *
  * \param mime_type The mime type to read from the clipboard
  * \param size      A pointer filled in with the length of the returned data

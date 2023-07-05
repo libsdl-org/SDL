@@ -112,29 +112,25 @@ extern void Wayland_data_source_set_callback(SDL_WaylandDataSource *source,
                                             SDL_ClipboardDataCallback callback,
                                             void *userdata,
                                             Uint32 sequence);
-extern int Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSource *source,
-                                                         SDL_ClipboardDataCallback callback,
-                                                         void *userdata);
+extern void Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSource *source,
+                                                          SDL_ClipboardDataCallback callback,
+                                                          void *userdata);
 extern void *Wayland_data_source_get_data(SDL_WaylandDataSource *source,
                                           const char *mime_type,
-                                          size_t *length,
-                                          SDL_bool null_terminate);
+                                          size_t *length);
 extern void *Wayland_primary_selection_source_get_data(SDL_WaylandPrimarySelectionSource *source,
                                                        const char *mime_type,
-                                                       size_t *length,
-                                                       SDL_bool null_terminate);
+                                                       size_t *length);
 extern void Wayland_data_source_destroy(SDL_WaylandDataSource *source);
 extern void Wayland_primary_selection_source_destroy(SDL_WaylandPrimarySelectionSource *source);
 
 /* Wayland Data / Primary Selection Offer - (Receiving) */
 extern void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
                                         const char *mime_type,
-                                        size_t *length,
-                                        SDL_bool null_terminate);
+                                        size_t *length);
 extern void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
                                                      const char *mime_type,
-                                                     size_t *length,
-                                                     SDL_bool null_terminate);
+                                                     size_t *length);
 extern SDL_bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
                                             const char *mime_type);
 extern SDL_bool Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *offer,

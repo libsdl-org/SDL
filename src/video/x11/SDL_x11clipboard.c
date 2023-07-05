@@ -26,37 +26,16 @@
 
 #include "SDL_x11video.h"
 #include "SDL_x11clipboard.h"
+#include "../SDL_clipboard_c.h"
 #include "../../events/SDL_events_c.h"
 
-#define TEXT_MIME_TYPES_LEN 5
-static const char *text_mime_types[TEXT_MIME_TYPES_LEN] = {
+static const char *text_mime_types[] = {
     "text/plain;charset=utf-8",
     "text/plain",
     "TEXT",
     "UTF8_STRING",
-    "STRING",
+    "STRING"
 };
-
-static const void *X11_ClipboardTextCallback(void *userdata, const char *mime_type, size_t *length)
-{
-    const void *data = NULL;
-
-    *length = 0;
-
-    if (userdata) {
-        size_t i;
-
-        for (i = 0; i < TEXT_MIME_TYPES_LEN; ++i) {
-            if (SDL_strcmp(mime_type, text_mime_types[i]) == 0) {
-                char *text = userdata;
-                *length = SDL_strlen(text);
-                data = userdata;
-                break;
-            }
-        }
-    }
-    return data;
-}
 
 /* Get any application owned window handle for clipboard association */
 static Window GetWindow(SDL_VideoDevice *_this)
@@ -119,33 +98,23 @@ static int SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_Clipboar
     return 0;
 }
 
-static void *CloneDataBuffer(const void *buffer, size_t *len, SDL_bool nullterminate)
+static void *CloneDataBuffer(const void *buffer, size_t *len)
 {
     void *clone = NULL;
     if (*len > 0 && buffer != NULL) {
-        if (nullterminate == SDL_TRUE) {
-            clone = SDL_malloc((*len)+1);
-            if (clone == NULL) {
-                SDL_OutOfMemory();
-            } else {
-                SDL_memcpy(clone, buffer, *len);
-                ((char *) clone)[*len] = '\0';
-                *len += 1;
-            }
+        clone = SDL_malloc((*len)+sizeof(Uint32));
+        if (clone == NULL) {
+            SDL_OutOfMemory();
         } else {
-            clone = SDL_malloc(*len);
-            if (clone == NULL) {
-                SDL_OutOfMemory();
-            } else {
-                SDL_memcpy(clone, buffer, *len);
-            }
+            SDL_memcpy(clone, buffer, *len);
+            SDL_memset((Uint8 *)clone + *len, 0, sizeof(Uint32));
         }
     }
     return clone;
 }
 
 static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
-                              const char *mime_type, size_t *length, SDL_bool nullterminate)
+                              const char *mime_type, size_t *length)
 {
     SDL_VideoData *videodata = _this->driverdata;
     Display *display = videodata->display;
@@ -183,7 +152,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
 
         if (clipboard->callback) {
             const void *clipboard_data = clipboard->callback(clipboard->userdata, mime_type, length);
-            data = CloneDataBuffer(clipboard_data, length, nullterminate);
+            data = CloneDataBuffer(clipboard_data, length);
         }
     } else {
         /* Request that the selection owner copy the data to our window */
@@ -206,8 +175,8 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
                 SDL_SetError("Selection timeout");
                 /* We need to set the selection text so that next time we won't
                    timeout, otherwise we will hang on every call to this function. */
-                SetSelectionData(_this, selection_type, X11_ClipboardTextCallback, NULL,
-                                 text_mime_types, TEXT_MIME_TYPES_LEN, 0);
+                SetSelectionData(_this, selection_type, SDL_ClipboardTextCallback, NULL,
+                                 text_mime_types, SDL_arraysize(text_mime_types), 0);
                 data = NULL;
                 *length = 0;
             }
@@ -217,7 +186,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
                                    XA_MIME, &seln_type, &seln_format, &count, &overflow, &src) == Success) {
             if (seln_type == XA_MIME) {
                 *length = (size_t)count;
-                data = CloneDataBuffer(src, length, nullterminate);
+                data = CloneDataBuffer(src, length);
             } else if (seln_type == XA_INCR) {
                 /* FIXME: Need to implement the X11 INCR protocol */
                 /*SDL_Log("Need to implement the X11 INCR protocol");*/
@@ -225,12 +194,13 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
             X11_XFree(src);
         }
     }
-
-    if (nullterminate && data == NULL) {
-        data = SDL_strdup("");
-    }
-
     return data;
+}
+
+const char **X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types)
+{
+    *num_mime_types = SDL_arraysize(text_mime_types);
+    return text_mime_types;
 }
 
 int X11_SetClipboardData(SDL_VideoDevice *_this)
@@ -252,7 +222,7 @@ void *X11_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t
         *length = 0;
         return NULL;
     }
-    return GetSelectionData(_this, XA_CLIPBOARD, mime_type, length, SDL_FALSE);
+    return GetSelectionData(_this, XA_CLIPBOARD, mime_type, length);
 }
 
 SDL_bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
@@ -266,49 +236,19 @@ SDL_bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     return length > 0;
 }
 
-int X11_SetClipboardText(SDL_VideoDevice *_this, const char *text)
-{
-    SDL_VideoData *videodata = _this->driverdata;
-    Atom XA_CLIPBOARD = X11_XInternAtom(videodata->display, "CLIPBOARD", 0);
-    if (XA_CLIPBOARD == None) {
-        return SDL_SetError("Couldn't access X clipboard");
-    }
-    return SetSelectionData(_this, XA_CLIPBOARD, X11_ClipboardTextCallback, SDL_strdup(text), text_mime_types, TEXT_MIME_TYPES_LEN, 0);
-}
-
 int X11_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
 {
-    return SetSelectionData(_this, XA_PRIMARY, X11_ClipboardTextCallback, SDL_strdup(text), text_mime_types, TEXT_MIME_TYPES_LEN, 0);
-}
-
-char *X11_GetClipboardText(SDL_VideoDevice *_this)
-{
-    size_t length;
-    SDL_VideoData *videodata = _this->driverdata;
-    Atom XA_CLIPBOARD = X11_XInternAtom(videodata->display, "CLIPBOARD", 0);
-    if (XA_CLIPBOARD == None) {
-        SDL_SetError("Couldn't access X clipboard");
-        return SDL_strdup("");
-    }
-
-    return GetSelectionData(_this, XA_CLIPBOARD, text_mime_types[0], &length, SDL_TRUE);
+    return SetSelectionData(_this, XA_PRIMARY, SDL_ClipboardTextCallback, SDL_strdup(text), text_mime_types, SDL_arraysize(text_mime_types), 0);
 }
 
 char *X11_GetPrimarySelectionText(SDL_VideoDevice *_this)
 {
     size_t length;
-    return GetSelectionData(_this, XA_PRIMARY, text_mime_types[0], &length, SDL_TRUE);
-}
-
-SDL_bool X11_HasClipboardText(SDL_VideoDevice *_this)
-{
-    SDL_bool result = SDL_FALSE;
-    char *text = X11_GetClipboardText(_this);
-    if (text) {
-        result = text[0] != '\0' ? SDL_TRUE : SDL_FALSE;
-        SDL_free(text);
+    char *text = GetSelectionData(_this, XA_PRIMARY, text_mime_types[0], &length);
+    if (!text) {
+        text = SDL_strdup("");
     }
-    return result;
+    return text;
 }
 
 SDL_bool X11_HasPrimarySelectionText(SDL_VideoDevice *_this)
@@ -316,7 +256,9 @@ SDL_bool X11_HasPrimarySelectionText(SDL_VideoDevice *_this)
     SDL_bool result = SDL_FALSE;
     char *text = X11_GetPrimarySelectionText(_this);
     if (text) {
-        result = text[0] != '\0' ? SDL_TRUE : SDL_FALSE;
+        if (text[0] != '\0') {
+            result = SDL_TRUE;
+        }
         SDL_free(text);
     }
     return result;

@@ -26,12 +26,9 @@
 /* Forward declaration */
 struct SDL_VideoData;
 
-int WIN_SetClipboardData(SDL_VideoDevice *_this);
-void *WIN_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *size);
-SDL_bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
-extern int WIN_SetClipboardText(SDL_VideoDevice *_this, const char *text);
-extern char *WIN_GetClipboardText(SDL_VideoDevice *_this);
-extern SDL_bool WIN_HasClipboardText(SDL_VideoDevice *_this);
+extern int WIN_SetClipboardData(SDL_VideoDevice *_this);
+extern void *WIN_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *size);
+extern SDL_bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
 extern void WIN_CheckClipboardUpdate(struct SDL_VideoData *data);
 
 #endif /* SDL_windowsclipboard_h_ */

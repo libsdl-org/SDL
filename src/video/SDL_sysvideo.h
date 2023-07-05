@@ -332,15 +332,18 @@ struct SDL_VideoDevice
     SDL_bool (*IsScreenKeyboardShown)(SDL_VideoDevice *_this, SDL_Window *window);
 
     /* Clipboard */
-    int (*SetClipboardText)(SDL_VideoDevice *_this, const char *text);
-    char *(*GetClipboardText)(SDL_VideoDevice *_this);
-    SDL_bool (*HasClipboardText)(SDL_VideoDevice *_this);
-    int (*SetPrimarySelectionText)(SDL_VideoDevice *_this, const char *text);
-    char *(*GetPrimarySelectionText)(SDL_VideoDevice *_this);
-    SDL_bool (*HasPrimarySelectionText)(SDL_VideoDevice *_this);
+    const char **(*GetTextMimeTypes)(SDL_VideoDevice *_this, size_t *num_mime_types);
     int (*SetClipboardData)(SDL_VideoDevice *_this);
     void *(*GetClipboardData)(SDL_VideoDevice *_this, const char *mime_type, size_t *size);
     SDL_bool (*HasClipboardData)(SDL_VideoDevice *_this, const char *mime_type);
+    /* If you implement *ClipboardData, you don't need to implement *ClipboardText */
+    int (*SetClipboardText)(SDL_VideoDevice *_this, const char *text);
+    char *(*GetClipboardText)(SDL_VideoDevice *_this);
+    SDL_bool (*HasClipboardText)(SDL_VideoDevice *_this);
+    /* These functions are only needed if the platform has a separate primary selection buffer */
+    int (*SetPrimarySelectionText)(SDL_VideoDevice *_this, const char *text);
+    char *(*GetPrimarySelectionText)(SDL_VideoDevice *_this);
+    SDL_bool (*HasPrimarySelectionText)(SDL_VideoDevice *_this);
 
     /* MessageBox */
     int (*ShowMessageBox)(SDL_VideoDevice *_this, const SDL_MessageBoxData *messageboxdata, int *buttonid);
@@ -371,7 +374,6 @@ struct SDL_VideoDevice
     void *clipboard_userdata;
     char **clipboard_mime_types;
     size_t num_clipboard_mime_types;
-    char *clipboard_text;
     char *primary_selection_text;
     SDL_bool setting_display_mode;
     Uint32 quirk_flags;

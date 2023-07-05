@@ -260,9 +260,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->SetClipboardData = WIN_SetClipboardData;
     device->GetClipboardData = WIN_GetClipboardData;
     device->HasClipboardData = WIN_HasClipboardData;
-    device->SetClipboardText = WIN_SetClipboardText;
-    device->GetClipboardText = WIN_GetClipboardText;
-    device->HasClipboardText = WIN_HasClipboardText;
 #endif
 
 #ifdef SDL_GDK_TEXTINPUT
