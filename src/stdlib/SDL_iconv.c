@@ -810,15 +810,15 @@ char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inb
         return NULL;
     }
 
-    stringsize = inbytesleft > 4 ? inbytesleft : 4;
-    string = (char *)SDL_malloc(stringsize + 1);
+    stringsize = inbytesleft;
+    string = (char *)SDL_malloc(stringsize + sizeof(Uint32));
     if (string == NULL) {
         SDL_iconv_close(cd);
         return NULL;
     }
     outbuf = string;
     outbytesleft = stringsize;
-    SDL_memset(outbuf, 0, 4);
+    SDL_memset(outbuf, 0, sizeof(Uint32));
 
     while (inbytesleft > 0) {
         const size_t oldinbytesleft = inbytesleft;
@@ -828,7 +828,7 @@ char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inb
         {
             char *oldstring = string;
             stringsize *= 2;
-            string = (char *)SDL_realloc(string, stringsize + 1);
+            string = (char *)SDL_realloc(string, stringsize + sizeof(Uint32));
             if (string == NULL) {
                 SDL_free(oldstring);
                 SDL_iconv_close(cd);
@@ -836,7 +836,7 @@ char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inb
             }
             outbuf = string + (outbuf - oldstring);
             outbytesleft = stringsize - (outbuf - string);
-            SDL_memset(outbuf, 0, 4);
+            SDL_memset(outbuf, 0, sizeof(Uint32));
             continue;
         }
         case SDL_ICONV_EILSEQ:
@@ -855,7 +855,7 @@ char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inb
             break;
         }
     }
-    *outbuf = '\0';
+    SDL_memset(outbuf, 0, sizeof(Uint32));
     SDL_iconv_close(cd);
 
     return string;
