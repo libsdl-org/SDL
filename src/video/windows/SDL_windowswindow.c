@@ -1273,6 +1273,13 @@ void WIN_OnWindowEnter(_THIS, SDL_Window *window)
     }
 }
 
+static BOOL GetClientScreenRect(HWND hwnd, RECT *rect)
+{
+    return GetClientRect(hwnd, rect) &&             /* RECT( left , top , right , bottom )   */
+           ClientToScreen(hwnd, (LPPOINT)rect) &&   /* POINT( left , top )                    */
+           ClientToScreen(hwnd, (LPPOINT)rect + 1); /*             POINT( right , bottom )   */
+}
+
 void WIN_UpdateClipCursor(SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
@@ -1293,9 +1300,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
          (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         if (mouse->relative_mode && !mouse->relative_mode_warp && data->mouse_relative_mode_center) {
-            if (GetClientRect(data->hwnd, &rect)) {             /*    RECT( left , top , right , bottom )   */
-                ClientToScreen(data->hwnd, (LPPOINT)&rect);     /*   POINT( left , top )                    */
-                ClientToScreen(data->hwnd, (LPPOINT)&rect + 1); /*                POINT( right , bottom )   */
+            if (GetClientScreenRect(data->hwnd, &rect)) {
                 /* WIN_WarpCursor() jitters by +1, and remote desktop warp wobble is +/- 1 */
                 LONG remote_desktop_adjustment = GetSystemMetrics(SM_REMOTESESSION) ? 2 : 0;
                 LONG cx, cy;
@@ -1316,9 +1321,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
                 }
             }
         } else {
-            if (GetClientRect(data->hwnd, &rect)) {
-                ClientToScreen(data->hwnd, (LPPOINT)&rect);
-                ClientToScreen(data->hwnd, (LPPOINT)&rect + 1);
+            if (GetClientScreenRect(data->hwnd, &rect)) {
                 if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
                     SDL_Rect mouse_rect_win_client;
                     RECT mouse_rect, intersection;
