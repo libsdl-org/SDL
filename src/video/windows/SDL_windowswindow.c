@@ -1293,7 +1293,9 @@ void WIN_UpdateClipCursor(SDL_Window *window)
          (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         if (mouse->relative_mode && !mouse->relative_mode_warp && data->mouse_relative_mode_center) {
-            if (GetWindowRect(data->hwnd, &rect)) {
+            if (GetClientRect(data->hwnd, &rect)) {             /*    RECT( left , top , right , bottom )   */
+                ClientToScreen(data->hwnd, (LPPOINT)&rect);     /*   POINT( left , top )                    */
+                ClientToScreen(data->hwnd, (LPPOINT)&rect + 1); /*                POINT( right , bottom )   */
                 /* WIN_WarpCursor() jitters by +1, and remote desktop warp wobble is +/- 1 */
                 LONG remote_desktop_adjustment = GetSystemMetrics(SM_REMOTESESSION) ? 2 : 0;
                 LONG cx, cy;
