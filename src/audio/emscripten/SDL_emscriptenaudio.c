@@ -99,6 +99,10 @@ static void HandleCaptureProcess(SDL_AudioDevice *device)  // this fires when th
 
 static void EMSCRIPTENAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
+    if (!device->hidden) {
+        return;
+    }
+
     MAIN_THREAD_EM_ASM({
         var SDL3 = Module['SDL3'];
         if ($0) {
@@ -138,11 +142,11 @@ static void EMSCRIPTENAUDIO_CloseDevice(SDL_AudioDevice *device)
         }
     }, device->iscapture);
 
-    if (!device->hidden) {
-        SDL_free(device->hidden->mixbuf);
-        SDL_free(device->hidden);
-        device->hidden = NULL;
-    }
+    SDL_free(device->hidden->mixbuf);
+    SDL_free(device->hidden);
+    device->hidden = NULL;
+
+    SDL_AudioThreadFinalize(device);
 }
 
 EM_JS_DEPS(sdlaudio, "$autoResumeAudioContext,$dynCall");
