@@ -1091,6 +1091,7 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
     if (device->is_opened) {
         current_audio.impl.CloseDevice(device);  // if ProvidesOwnCallbackThread, this must join on any existing device thread before returning!
         device->is_opened = SDL_FALSE;
+        device->hidden = NULL;  // just in case.
     }
 
     if (device->work_buffer) {
