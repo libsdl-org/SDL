@@ -1667,8 +1667,6 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
 
     if (format->channels == 0) {
         return SDL_SetError("Invalid number of channels");
-    } else if (format->channels > INT_MAX) {
-        return SDL_SetError("Number of channels exceeds limit of %d", INT_MAX);
     }
 
     if (format->frequency == 0) {
