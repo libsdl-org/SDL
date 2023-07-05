@@ -2188,7 +2188,12 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
             }
             break;
         case SDLK_c:
-            if (withControl) {
+            if (withAlt) {
+                /* Alt-C copy awesome text to the primary selection! */
+                SDL_SetPrimarySelectionText("SDL rocks!\nYou know it!");
+                SDL_Log("Copied text to primary selection\n");
+
+            } else if (withControl) {
                 if (withShift) {
                     /* Ctrl-Shift-C copy screenshot! */
                     SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
@@ -2206,37 +2211,19 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                 }
                 break;
             }
-            if (withAlt) {
-                /* Alt-C toggle a render clip rectangle */
-                for (i = 0; i < state->num_windows; ++i) {
-                    int w, h;
-                    if (state->renderers[i]) {
-                        SDL_Rect clip;
-                        SDL_GetWindowSize(state->windows[i], &w, &h);
-                        SDL_GetRenderClipRect(state->renderers[i], &clip);
-                        if (SDL_RectEmpty(&clip)) {
-                            clip.x = w / 4;
-                            clip.y = h / 4;
-                            clip.w = w / 2;
-                            clip.h = h / 2;
-                            SDL_SetRenderClipRect(state->renderers[i], &clip);
-                        } else {
-                            SDL_SetRenderClipRect(state->renderers[i], NULL);
-                        }
-                    }
-                }
-            }
-            if (withShift) {
-                SDL_Window *current_win = SDL_GetKeyboardFocus();
-                if (current_win) {
-                    const SDL_bool shouldCapture = !(SDL_GetWindowFlags(current_win) & SDL_WINDOW_MOUSE_CAPTURE);
-                    const int rc = SDL_CaptureMouse(shouldCapture);
-                    SDL_Log("%sapturing mouse %s!\n", shouldCapture ? "C" : "Unc", (rc == 0) ? "succeeded" : "failed");
-                }
-            }
             break;
         case SDLK_v:
-            if (withControl) {
+            if (withAlt) {
+                /* Alt-V paste awesome text from the primary selection! */
+                char *text = SDL_GetPrimarySelectionText();
+                if (*text) {
+                    SDL_Log("Primary selection: %s\n", text);
+                } else {
+                    SDL_Log("Primary selection is empty\n");
+                }
+                SDL_free(text);
+
+            } else if (withControl) {
                 if (withShift) {
                     /* Ctrl-Shift-V paste screenshot! */
                     SDLTest_PasteScreenShot();
@@ -2290,6 +2277,14 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
                     } else {
                         SDL_MaximizeWindow(window);
                     }
+                }
+            }
+            if (withShift) {
+                SDL_Window *current_win = SDL_GetKeyboardFocus();
+                if (current_win) {
+                    const SDL_bool shouldCapture = !(SDL_GetWindowFlags(current_win) & SDL_WINDOW_MOUSE_CAPTURE);
+                    const int rc = SDL_CaptureMouse(shouldCapture);
+                    SDL_Log("%sapturing mouse %s!\n", shouldCapture ? "C" : "Unc", (rc == 0) ? "succeeded" : "failed");
                 }
             }
             break;
