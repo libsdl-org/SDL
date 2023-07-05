@@ -38,7 +38,7 @@ for some Javascript code to steal for this approach.
 
 ## Building SDL/emscripten
 
-SDL currently requires at least Emscripten 2.0.32 to build. Newer versions
+SDL currently requires at least Emscripten 3.1.35 to build. Newer versions
 are likely to work, as well.
 
 

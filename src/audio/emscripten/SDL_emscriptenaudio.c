@@ -196,6 +196,9 @@ static void EMSCRIPTENAUDIO_CloseDevice(SDL_AudioDevice *_this)
 #endif
 }
 
+
+EM_JS_DEPS(sdlaudio, "$autoResumeAudioContext,$dynCall");
+
 static int EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *_this, const char *devname)
 {
     SDL_AudioFormat test_format;

@@ -24,12 +24,10 @@
 
 #include <emscripten/emscripten.h>
 
+EM_JS_DEPS(sdlsysurl, "$UTF8ToString");
+
 int SDL_SYS_OpenURL(const char *url)
 {
-    EM_ASM({
-        window.open(UTF8ToString($0), "_blank");
-    },
-           url);
-
+    EM_ASM(window.open(UTF8ToString($0), "_blank"), url);
     return 0;
 }
