@@ -640,8 +640,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     /* Allocate mixing buffer */
     if (!iscapture) {
-        h->mixlen = device->buffer_size;
-        h->mixbuf = (Uint8 *)SDL_malloc(h->mixlen);
+        h->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
         if (h->mixbuf == NULL) {
             return SDL_OutOfMemory();
         }
@@ -653,7 +652,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     /* Reduced prebuffering compared to the defaults. */
     paattr.fragsize = device->buffer_size;
-    paattr.tlength = h->mixlen;
+    paattr.tlength = device->buffer_size;
     paattr.prebuf = -1;
     paattr.maxlength = -1;
     paattr.minreq = -1;
