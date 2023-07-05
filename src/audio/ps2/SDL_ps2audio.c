@@ -27,19 +27,19 @@
 #include <audsrv.h>
 #include <ps2_audio_driver.h>
 
-static int PS2AUDIO_OpenDevice(SDL_AudioDevice *_this)
+static int PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     int i, mixlen;
     struct audsrv_fmt_t format;
 
-    _this->hidden = (struct SDL_PrivateAudioData *)
-        SDL_calloc(1, sizeof(*_this->hidden));
-    if (_this->hidden == NULL) {
+    device->hidden = (struct SDL_PrivateAudioData *)
+        SDL_calloc(1, sizeof(*device->hidden));
+    if (device->hidden == NULL) {
         return SDL_OutOfMemory();
     }
 
     /* These are the native supported audio PS2 configs  */
-    switch (_this->spec.freq) {
+    switch (device->spec.freq) {
     case 11025:
     case 12000:
     case 22050:
@@ -49,19 +49,19 @@ static int PS2AUDIO_OpenDevice(SDL_AudioDevice *_this)
     case 48000:
         break;  // acceptable value, keep it
     default:
-        _this->spec.freq = 48000;
+        device->spec.freq = 48000;
         break;
     }
 
-    _this->sample_frames = 512;
-    _this->spec.channels = _this->spec.channels == 1 ? 1 : 2;
-    _this->spec.format = _this->spec.format == SDL_AUDIO_S8 ? SDL_AUDIO_S8 : SDL_AUDIO_S16;
+    device->sample_frames = 512;
+    device->spec.channels = device->spec.channels == 1 ? 1 : 2;
+    device->spec.format = device->spec.format == SDL_AUDIO_S8 ? SDL_AUDIO_S8 : SDL_AUDIO_S16;
 
-    format.bits = _this->spec.format == SDL_AUDIO_S8 ? 8 : 16;
-    format.freq = _this->spec.freq;
-    format.channels = _this->spec.channels;
+    format.bits = device->spec.format == SDL_AUDIO_S8 ? 8 : 16;
+    format.freq = device->spec.freq;
+    format.channels = device->spec.channels;
 
-    _this->hidden->channel = audsrv_set_format(&format);
+    device->hidden->channel = audsrv_set_format(&format);
     audsrv_set_volume(MAX_VOLUME);
 
     if (_this->hidden->channel < 0) {
@@ -71,62 +71,62 @@ static int PS2AUDIO_OpenDevice(SDL_AudioDevice *_this)
     }
 
     /* Update the fragment size as size in bytes. */
-    SDL_UpdatedAudioDeviceFormat(_this);
+    SDL_UpdatedAudioDeviceFormat(device);
 
     /* Allocate the mixing buffer.  Its size and starting address must
        be a multiple of 64 bytes.  Our sample count is already a multiple of
        64, so spec->size should be a multiple of 64 as well. */
-    mixlen = _this->buffer_size * NUM_BUFFERS;
-    _this->hidden->rawbuf = (Uint8 *)SDL_aligned_alloc(64, mixlen);
-    if (_this->hidden->rawbuf == NULL) {
+    mixlen = device->buffer_size * NUM_BUFFERS;
+    device->hidden->rawbuf = (Uint8 *)SDL_aligned_alloc(64, mixlen);
+    if (device->hidden->rawbuf == NULL) {
         return SDL_SetError("Couldn't allocate mixing buffer");
     }
 
-    SDL_memset(_this->hidden->rawbuf, 0, mixlen);
+    SDL_memset(device->hidden->rawbuf, 0, mixlen);
     for (i = 0; i < NUM_BUFFERS; i++) {
-        _this->hidden->mixbufs[i] = &_this->hidden->rawbuf[i * _this->buffer_size];
+        device->hidden->mixbufs[i] = &device->hidden->rawbuf[i * device->buffer_size];
     }
 
-    _this->hidden->next_buffer = 0;
+    device->hidden->next_buffer = 0;
     return 0;
 }
 
-static void PS2AUDIO_PlayDevice(SDL_AudioDevice *_this, const Uint8 *buffer, int buflen)
+static void PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     audsrv_play_audio((char *)buffer, buflen);
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void PS2AUDIO_WaitDevice(SDL_AudioDevice *_this)
+static void PS2AUDIO_WaitDevice(SDL_AudioDevice *device)
 {
-    audsrv_wait_audio(_this->buffer_size);
+    audsrv_wait_audio(device->buffer_size);
 }
 
-static Uint8 *PS2AUDIO_GetDeviceBuf(SDL_AudioDevice *_this, int *buffer_size)
+static Uint8 *PS2AUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    Uint8 *buffer = _this->hidden->mixbufs[_this->hidden->next_buffer];
-    _this->hidden->next_buffer = (_this->hidden->next_buffer + 1) % NUM_BUFFERS;
+    Uint8 *buffer = device->hidden->mixbufs[device->hidden->next_buffer];
+    device->hidden->next_buffer = (device->hidden->next_buffer + 1) % NUM_BUFFERS;
     return buffer;;
 }
 
-static void PS2AUDIO_CloseDevice(SDL_AudioDevice *_this)
+static void PS2AUDIO_CloseDevice(SDL_AudioDevice *device)
 {
-    if (_this->hidden) {
-        if (_this->hidden->channel >= 0) {
+    if (device->hidden) {
+        if (device->hidden->channel >= 0) {
             audsrv_stop_audio();
-            _this->hidden->channel = -1;
+            device->hidden->channel = -1;
         }
 
         if (_this->hidden->rawbuf != NULL) {
             SDL_aligned_free(_this->hidden->rawbuf);
             _this->hidden->rawbuf = NULL;
         }
-        SDL_free(_this->hidden);
-        _this->hidden = NULL;
+        SDL_free(device->hidden);
+        device->hidden = NULL;
     }
 }
 
-static void PS2AUDIO_ThreadInit(SDL_AudioDevice *_this)
+static void PS2AUDIO_ThreadInit(SDL_AudioDevice *device)
 {
     /* Increase the priority of this audio thread by 1 to put it
        ahead of other SDL threads. */
