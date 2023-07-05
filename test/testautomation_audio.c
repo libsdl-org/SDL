@@ -38,6 +38,7 @@ static void audioTearDown(void *arg)
     SDLTest_AssertPass("Cleanup of test files completed");
 }
 
+#if 0  /* !!! FIXME: maybe update this? */
 /* Global counter for callback invocation */
 static int g_audio_testCallbackCounter;
 
@@ -51,6 +52,7 @@ static void SDLCALL audio_testCallback(void *userdata, Uint8 *stream, int len)
     g_audio_testCallbackCounter++;
     g_audio_testCallbackLength += len;
 }
+#endif
 
 static SDL_AudioDeviceID g_audio_id = -1;
 
@@ -225,10 +227,6 @@ static int audio_initOpenCloseQuitAudio(void *arg)
 static int audio_pauseUnpauseAudio(void *arg)
 {
     int result;
-    int i, iMax, j, k, l;
-    int totalDelay;
-    int pause_on;
-    int originalCounter;
     const char *audioDriver;
     SDL_AudioSpec desired;
 
@@ -237,17 +235,17 @@ static int audio_pauseUnpauseAudio(void *arg)
     SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_AUDIO)");
 
     /* Loop over all available audio drivers */
-    iMax = SDL_GetNumAudioDrivers();
+    const int iMax = SDL_GetNumAudioDrivers();
     SDLTest_AssertPass("Call to SDL_GetNumAudioDrivers()");
     SDLTest_AssertCheck(iMax > 0, "Validate number of audio drivers; expected: >0 got: %d", iMax);
-    for (i = 0; i < iMax; i++) {
+    for (int i = 0; i < iMax; i++) {
         audioDriver = SDL_GetAudioDriver(i);
         SDLTest_AssertPass("Call to SDL_GetAudioDriver(%d)", i);
         SDLTest_Assert(audioDriver != NULL, "Audio driver name is not NULL");
         SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver); /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
 
         /* Change specs */
-        for (j = 0; j < 2; j++) {
+        for (int j = 0; j < 2; j++) {
 
             /* Call Init */
             SDL_SetHint("SDL_AUDIO_DRIVER", audioDriver);
@@ -281,7 +279,7 @@ static int audio_pauseUnpauseAudio(void *arg)
 
 #if 0  /* !!! FIXME: maybe update this? */
             /* Start and stop audio multiple times */
-            for (l = 0; l < 3; l++) {
+            for (int l = 0; l < 3; l++) {
                 SDLTest_Log("Pause/Unpause iteration: %d", l + 1);
 
                 /* Reset callback counters */
@@ -289,14 +287,13 @@ static int audio_pauseUnpauseAudio(void *arg)
                 g_audio_testCallbackLength = 0;
 
                 /* Un-pause audio to start playing (maybe multiple times) */
-                pause_on = 0;
                 for (k = 0; k <= j; k++) {
                     SDL_PlayAudioDevice(g_audio_id);
                     SDLTest_AssertPass("Call to SDL_PlayAudioDevice(g_audio_id), call %d", k + 1);
                 }
 
                 /* Wait for callback */
-                totalDelay = 0;
+                int totalDelay = 0;
                 do {
                     SDL_Delay(10);
                     totalDelay += 10;
@@ -305,8 +302,8 @@ static int audio_pauseUnpauseAudio(void *arg)
                 SDLTest_AssertCheck(g_audio_testCallbackLength > 0, "Verify callback length; expected: >0 got: %d", g_audio_testCallbackLength);
 
                 /* Pause audio to stop playing (maybe multiple times) */
-                for (k = 0; k <= j; k++) {
-                    pause_on = (k == 0) ? 1 : SDLTest_RandomIntegerInRange(99, 9999);
+                for (int k = 0; k <= j; k++) {
+                    const int pause_on = (k == 0) ? 1 : SDLTest_RandomIntegerInRange(99, 9999);
                     if (pause_on) {
                         SDL_PauseAudioDevice(g_audio_id);
                         SDLTest_AssertPass("Call to SDL_PauseAudioDevice(g_audio_id), call %d", k + 1);
@@ -317,7 +314,7 @@ static int audio_pauseUnpauseAudio(void *arg)
                 }
 
                 /* Ensure callback is not called again */
-                originalCounter = g_audio_testCallbackCounter;
+                const int originalCounter = g_audio_testCallbackCounter;
                 SDL_Delay(totalDelay + 10);
                 SDLTest_AssertCheck(originalCounter == g_audio_testCallbackCounter, "Verify callback counter; expected: %d, got: %d", originalCounter, g_audio_testCallbackCounter);
             }
@@ -348,9 +345,9 @@ static int audio_pauseUnpauseAudio(void *arg)
  */
 static int audio_enumerateAndNameAudioDevices(void *arg)
 {
-    int t, tt;
-    int i, n, nn;
-    char *name, *nameAgain;
+    int t;
+    int i, n;
+    char *name;
     SDL_AudioDeviceID *devices = NULL;
 
     /* Iterate over types: t=0 output device, t=1 input/capture device */
