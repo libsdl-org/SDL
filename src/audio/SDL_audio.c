@@ -663,7 +663,6 @@ void SDL_QuitAudio(void)
 
 void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
 {
-    SDL_assert(SDL_AtomicGet(&device->thread_alive));
     if (SDL_AtomicGet(&device->condemned)) {
         if (device->thread) {
             SDL_DetachThread(device->thread);  // no one is waiting for us, just detach ourselves.
