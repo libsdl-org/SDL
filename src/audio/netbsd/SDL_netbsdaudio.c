@@ -22,10 +22,7 @@
 
 #ifdef SDL_AUDIO_DRIVER_NETBSD
 
-/*
- * Driver for native NetBSD audio(4).
- * nia@NetBSD.org
- */
+// Driver for native NetBSD audio(4).
 
 #include <errno.h>
 #include <unistd.h>
