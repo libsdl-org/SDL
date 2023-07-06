@@ -220,6 +220,11 @@ int WIN_SetClipboardData(SDL_VideoDevice *_this)
     size_t i;
     int result = 0;
 
+    /* I investigated delayed clipboard rendering, and at least with text and image
+     * formats you have to use an output window, not SDL_HelperWindow, and the system
+     * requests them being rendered immediately, so there isn't any benefit.
+     */
+
     if (WIN_OpenClipboard(_this)) {
         EmptyClipboard();
 
