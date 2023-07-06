@@ -209,14 +209,18 @@ static void DSP_WaitDevice(SDL_AudioDevice *device)
     while (!SDL_AtomicGet(&device->shutdown)) {
         audio_buf_info info;
         const int rc = ioctl(h->audio_fd, ioctlreq, &info);
-        if ((rc < 0) && (errno != EAGAIN)) { // Hmm, not much we can do - abort
+        if (rc < 0) {
+            if (errno == EAGAIN) {
+                continue;
+            }
+            // Hmm, not much we can do - abort
             fprintf(stderr, "dsp WaitDevice ioctl failed (unrecoverable): %s\n", strerror(errno));
             SDL_AudioDeviceDisconnected(device);
             return;
         } else if (info.bytes < device->buffer_size) {
             SDL_Delay(10);
         } else {
-            break; /* ready to go! */
+            break; // ready to go!
         }
     }
 }
@@ -227,6 +231,7 @@ static void DSP_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
     if (write(h->audio_fd, buffer, buflen) == -1) {
         perror("Audio write");
         SDL_AudioDeviceDisconnected(device);
+        return;
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", h->mixlen);
