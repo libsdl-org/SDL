@@ -201,7 +201,7 @@ extern DECLSPEC int SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callb
  *
  * \sa SDL_SetClipboardData
  */
-extern DECLSPEC int SDLCALL SDL_ClearClipboardData();
+extern DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
 
 /**
  * Get the data from clipboard for a given mime type
