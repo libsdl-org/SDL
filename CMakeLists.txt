@@ -353,8 +353,6 @@ set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
 
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
-set(SDL_SNDIO OFF)
-
 cmake_dependent_option(SDL_SHARED "Build a shared version of the library" ${SDL_SHARED_DEFAULT} ${SDL_SHARED_AVAILABLE} OFF)
 option(SDL_STATIC "Build a static version of the library" ${SDL_STATIC_DEFAULT})
 option(SDL_TEST_LIBRARY   "Build the SDL3_test library" ON)
