@@ -675,11 +675,8 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
         }
 
         if (state) {
-            input->button_press_serial = serial;
+            Wayland_UpdateImplicitGrabSerial(input, serial);
         }
-
-        Wayland_data_device_set_serial(input->data_device, serial);
-        Wayland_primary_selection_device_set_serial(input->primary_selection_device, serial);
 
         SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, 0,
                             state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
@@ -926,7 +923,7 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
     }
 
     touch_add(id, fx, fy, surface);
-    input->touch_down_serial = serial;
+    Wayland_UpdateImplicitGrabSerial(input, serial);
     window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
 
     if (window_data) {
@@ -1486,7 +1483,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     SDL_bool handled_by_ime = SDL_FALSE;
     const Uint64 timestamp_raw_ns = Wayland_GetKeyboardTimestampRaw(input, time);
 
-    input->key_serial = serial;
+    Wayland_UpdateImplicitGrabSerial(input, serial);
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         has_text = keyboard_input_get_text(text, input, key, SDL_PRESSED, &handled_by_ime);
@@ -1508,9 +1505,6 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
         Wayland_HandleModifierKeys(input, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
         SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetKeyboardTimestamp(input, time), state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
     }
-
-    Wayland_data_device_set_serial(input->data_device, serial);
-    Wayland_primary_selection_device_set_serial(input->primary_selection_device, serial);
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         if (has_text && !(SDL_GetModState() & SDL_KMOD_CTRL)) {
@@ -2397,7 +2391,7 @@ static void tablet_tool_handle_down(void *data, struct zwp_tablet_tool_v2 *tool,
     struct SDL_WaylandTabletInput *input = data;
     SDL_WindowData *window = input->tool_focus;
     input->is_down = SDL_TRUE;
-    input->press_serial = serial;
+    Wayland_UpdateImplicitGrabSerial(input->sdlWaylandInput, serial);
     if (window == NULL) {
         /* tablet_tool_handle_proximity_out gets called when moving over the libdecoration csd.
          * that sets input->tool_focus (window) to NULL, but handle_{down,up} events are still
@@ -2458,14 +2452,14 @@ static void tablet_tool_handle_tilt(void *data, struct zwp_tablet_tool_v2 *tool,
 
 static void tablet_tool_handle_button(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t serial, uint32_t button, uint32_t state)
 {
-    struct SDL_WaylandTabletInput *input = data;
+    struct SDL_WaylandTabletInput *input = (struct SDL_WaylandTabletInput*)data;
 
     if (input->is_down) {
         tablet_tool_handle_up(data, tool);
         input->is_down = SDL_TRUE;
     }
 
-    input->press_serial = serial;
+    Wayland_UpdateImplicitGrabSerial(input->sdlWaylandInput, serial);
 
     switch (button) {
     /* see %{_includedir}/linux/input-event-codes.h */
@@ -2613,7 +2607,8 @@ void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_Wayland
 
     input->tablet = tablet_input;
 
-    tablet_input->seat = (struct SDL_WaylandTabletSeat *)zwp_tablet_manager_v2_get_tablet_seat((struct zwp_tablet_manager_v2 *)tablet_manager, input->seat);
+    tablet_input->sdlWaylandInput = input;
+    tablet_input->seat = zwp_tablet_manager_v2_get_tablet_seat((struct zwp_tablet_manager_v2 *)tablet_manager, input->seat);
 
     tablet_input->tablets = tablet_object_list_new_node(NULL);
     tablet_input->tools = tablet_object_list_new_node(NULL);
@@ -2629,7 +2624,7 @@ void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input)
     tablet_object_list_destroy(input->tablet->tools, TABLET_OBJECT_LIST_DELETER(zwp_tablet_tool_v2_destroy));
     tablet_object_list_destroy(input->tablet->tablets, TABLET_OBJECT_LIST_DELETER(zwp_tablet_v2_destroy));
 
-    zwp_tablet_seat_v2_destroy((struct zwp_tablet_seat_v2 *)input->tablet->seat);
+    zwp_tablet_seat_v2_destroy(input->tablet->seat);
 
     SDL_free(input->tablet);
     input->tablet = NULL;
@@ -3084,21 +3079,13 @@ int Wayland_input_ungrab_keyboard(SDL_Window *window)
     return 0;
 }
 
-Uint32 Wayland_GetLastImplicitGrabSerial(struct SDL_WaylandInput *input)
+void Wayland_UpdateImplicitGrabSerial(struct SDL_WaylandInput *input, Uint32 serial)
 {
-    Uint32 serial = input->key_serial;
-
-    if (serial < input->button_press_serial) {
-        serial = input->button_press_serial;
+    if (serial > input->last_implicit_grab_serial) {
+        input->last_implicit_grab_serial = serial;
+        Wayland_data_device_set_serial(input->data_device, serial);
+        Wayland_primary_selection_device_set_serial(input->primary_selection_device, serial);
     }
-    if (serial < input->touch_down_serial) {
-        serial = input->touch_down_serial;
-    }
-    if (input->tablet && serial < input->tablet->press_serial) {
-        serial = input->tablet->press_serial;
-    }
-
-    return serial;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
