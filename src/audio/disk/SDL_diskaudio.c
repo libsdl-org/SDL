@@ -22,20 +22,19 @@
 
 #ifdef SDL_AUDIO_DRIVER_DISK
 
-/* Output raw audio data to a file. */
+// Output raw audio data to a file.
 
 #include "../SDL_audio_c.h"
 #include "SDL_diskaudio.h"
 
-/* !!! FIXME: these should be SDL hints, not environment variables. */
-/* environment variables and defaults. */
+// !!! FIXME: these should be SDL hints, not environment variables.
+// environment variables and defaults.
 #define DISKENVR_OUTFILE    "SDL_DISKAUDIOFILE"
 #define DISKDEFAULT_OUTFILE "sdlaudio.raw"
 #define DISKENVR_INFILE     "SDL_DISKAUDIOFILEIN"
 #define DISKDEFAULT_INFILE  "sdlaudio-in.raw"
 #define DISKENVR_IODELAY    "SDL_DISKAUDIODELAY"
 
-/* This function waits until it is possible to write a full sound buffer */
 static void DISKAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     SDL_Delay(device->hidden->io_delay);
@@ -44,9 +43,7 @@ static void DISKAUDIO_WaitDevice(SDL_AudioDevice *device)
 static void DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     const Sint64 written = SDL_RWwrite(device->hidden->io, buffer, buffer_size);
-
-    /* If we couldn't write, assume fatal error for now */
-    if (written != buffer_size) {
+    if (written != buffer_size) { // If we couldn't write, assume fatal error for now
         SDL_AudioDeviceDisconnected(device);
     }
 #ifdef DEBUG_AUDIO
@@ -64,19 +61,17 @@ static int DISKAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, in
     struct SDL_PrivateAudioData *h = device->hidden;
     const int origbuflen = buflen;
 
-    SDL_Delay(h->io_delay);
-
     if (h->io) {
         const int br = (int) SDL_RWread(h->io, buffer, (Sint64) buflen);
         buflen -= br;
         buffer = ((Uint8 *)buffer) + br;
-        if (buflen > 0) { /* EOF (or error, but whatever). */
+        if (buflen > 0) { // EOF (or error, but whatever).
             SDL_RWclose(h->io);
             h->io = NULL;
         }
     }
 
-    /* if we ran out of file, just write silence. */
+    // if we ran out of file, just write silence.
     SDL_memset(buffer, device->silence_value, buflen);
 
     return origbuflen;
@@ -84,16 +79,19 @@ static int DISKAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, in
 
 static void DISKAUDIO_FlushCapture(SDL_AudioDevice *device)
 {
-    /* no op...we don't advance the file pointer or anything. */
+    // no op...we don't advance the file pointer or anything.
 }
 
 static void DISKAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
-    if (device->hidden->io != NULL) {
-        SDL_RWclose(device->hidden->io);
+    if (device->hidden) {
+        if (device->hidden->io != NULL) {
+            SDL_RWclose(device->hidden->io);
+        }
+        SDL_free(device->hidden->mixbuf);
+        SDL_free(device->hidden);
+        device->hidden = NULL;
     }
-    SDL_free(device->hidden->mixbuf);
-    SDL_free(device->hidden);
 }
 
 static const char *get_filename(const SDL_bool iscapture)
@@ -111,12 +109,10 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     const char *fname = get_filename(iscapture);
     const char *envr = SDL_getenv(DISKENVR_IODELAY);
 
-    device->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc(sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (device->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_zerop(device->hidden);
 
     if (envr != NULL) {
         device->hidden->io_delay = SDL_atoi(envr);
@@ -124,13 +120,13 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
         device->hidden->io_delay = ((device->sample_frames * 1000) / device->spec.freq);
     }
 
-    /* Open the "audio device" */
+    // Open the "audio device"
     device->hidden->io = SDL_RWFromFile(fname, iscapture ? "rb" : "wb");
     if (device->hidden->io == NULL) {
         return -1;
     }
 
-    /* Allocate mixing buffer */
+    // Allocate mixing buffer
     if (!iscapture) {
         device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
         if (device->hidden->mixbuf == NULL) {
@@ -139,14 +135,10 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
         SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
     }
 
-    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO,
-                    "You are using the SDL disk i/o audio driver!\n");
-    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO,
-                    " %s file [%s].\n", iscapture ? "Reading from" : "Writing to",
-                    fname);
+    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, "You are using the SDL disk i/o audio driver!");
+    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, " %s file [%s].\n", iscapture ? "Reading from" : "Writing to", fname);
 
-    /* We're ready to rock and roll. :-) */
-    return 0;
+    return 0;  // We're ready to rock and roll. :-)
 }
 
 static void DISKAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
@@ -157,7 +149,6 @@ static void DISKAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioD
 
 static SDL_bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    /* Set the function pointers */
     impl->OpenDevice = DISKAUDIO_OpenDevice;
     impl->WaitDevice = DISKAUDIO_WaitDevice;
     impl->WaitCaptureDevice = DISKAUDIO_WaitDevice;
@@ -165,18 +156,17 @@ static SDL_bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->GetDeviceBuf = DISKAUDIO_GetDeviceBuf;
     impl->CaptureFromDevice = DISKAUDIO_CaptureFromDevice;
     impl->FlushCapture = DISKAUDIO_FlushCapture;
-
     impl->CloseDevice = DISKAUDIO_CloseDevice;
     impl->DetectDevices = DISKAUDIO_DetectDevices;
 
     impl->AllowsArbitraryDeviceNames = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return SDL_TRUE; /* this audio target is available. */
+    return SDL_TRUE;
 }
 
 AudioBootStrap DISKAUDIO_bootstrap = {
     "disk", "direct-to-disk audio", DISKAUDIO_Init, SDL_TRUE
 };
 
-#endif /* SDL_AUDIO_DRIVER_DISK */
+#endif // SDL_AUDIO_DRIVER_DISK
