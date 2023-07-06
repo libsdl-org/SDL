@@ -1233,10 +1233,11 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
         SDL_SendKeyboardKey(state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
     }
 
+    Wayland_data_device_set_serial(input->data_device, serial);
+    Wayland_primary_selection_device_set_serial(input->primary_selection_device, serial);
+
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         if (has_text && !(SDL_GetModState() & KMOD_CTRL)) {
-            Wayland_data_device_set_serial(input->data_device, serial);
-            Wayland_primary_selection_device_set_serial(input->primary_selection_device, serial);
             if (!handled_by_ime) {
                 SDL_SendKeyboardText(text);
             }
