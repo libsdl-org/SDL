@@ -135,15 +135,16 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
                                       UIScreen *uiscreen, UIScreenMode *uiscreenmode)
 {
     SDL_DisplayMode mode;
+    float scale = uiscreen.nativeScale;
 
     SDL_zero(mode);
     if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
     }
 
-    mode.w = w;
-    mode.h = h;
-    mode.pixel_density = uiscreen.nativeScale;
+    mode.w = w / scale;
+    mode.h = h / scale;
+    mode.pixel_density = scale;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
@@ -172,24 +173,25 @@ static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h,
     return 0;
 }
 
-static CGSize GetUIScreenModePixelSize(UIScreen *uiscreen, UIScreenMode *mode)
+static CGSize GetUIScreenModeSize(UIScreen *uiscreen, UIScreenMode *mode)
 {
     /* For devices such as iPhone 6/7/8 Plus, the UIScreenMode reported by iOS
      * isn't the physical pixels of the display, but rather the point size times
      * the scale. For example, on iOS 12.2 on iPhone 8 Plus the physical pixel
      * resolution is 1080x1920, the size reported by mode.size is 1242x2208,
      * the size in points is 414x736, the scale property is 3.0, and the
-     * nativeScale property is ~2.6087 (ie 1920.0 / 736.0). So we need a bit of
-     * math to convert from retina pixels (point size multiplied by scale) to
-     * real pixels.
+     * nativeScale property is ~2.6087 (ie 1920.0 / 736.0).
+     *
+     * What we want for the mode size is the point size, and the pixel density
+     * is the native scale.
+     *
      * Note that the iOS Simulator doesn't have this behavior for those devices.
      * https://github.com/libsdl-org/SDL/issues/3220
      */
     CGSize size = mode.size;
-    CGFloat scale = uiscreen.nativeScale / uiscreen.scale;
-
-    size.width = SDL_round(size.width * scale);
-    size.height = SDL_round(size.height * scale);
+    
+    size.width = SDL_round(size.width / uiscreen.scale);
+    size.height = SDL_round(size.height / uiscreen.scale);
 
     return size;
 }
@@ -197,7 +199,7 @@ static CGSize GetUIScreenModePixelSize(UIScreen *uiscreen, UIScreenMode *mode)
 int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 {
     UIScreenMode *uiscreenmode = uiscreen.currentMode;
-    CGSize size = GetUIScreenModePixelSize(uiscreen, uiscreenmode);
+    CGSize size = GetUIScreenModeSize(uiscreen, uiscreenmode);
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
 
@@ -316,7 +318,7 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 #endif
 
         for (UIScreenMode *uimode in availableModes) {
-            CGSize size = GetUIScreenModePixelSize(data.uiscreen, uimode);
+            CGSize size = GetUIScreenModeSize(data.uiscreen, uimode);
             int w = size.width;
             int h = size.height;
 
