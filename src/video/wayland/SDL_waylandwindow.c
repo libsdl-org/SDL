@@ -1252,7 +1252,6 @@ static void handle_preferred_fractional_scale(void *data, struct wp_fractional_s
 {
     const float factor = scale / 120.; /* 120 is a magic number defined in the spec as a common denominator */
     Wayland_HandlePreferredScaleChanged(data, factor);
-    SDL_Log("Scale reported");
 }
 
 static const struct wp_fractional_scale_v1_listener fractional_scale_listener = {
