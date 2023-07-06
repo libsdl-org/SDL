@@ -755,9 +755,13 @@ int main(int argc, char *argv[])
             }
         }
         if (consumed <= 0) {
-            static const char *options[] = { "[--bind-touchpad]", NULL };
-            SDLTest_CommonLogUsage(state, argv[0], options);
-            exit(1);
+            if (argv[i][0] == '-') {
+                static const char *options[] = { "[--bind-touchpad]", NULL };
+                SDLTest_CommonLogUsage(state, argv[0], options);
+                exit(1);
+            } else {
+                break;
+            }
         }
 
         i += consumed;
