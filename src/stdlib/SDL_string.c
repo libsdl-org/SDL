@@ -1810,6 +1810,7 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *f
                 case 'p':
                     info.force_case = SDL_CASE_LOWER;
                     length += SDL_PrintPointer(TEXT_AND_LEN_ARGS, &info, va_arg(ap, void *));
+                    done = SDL_TRUE;
                     break;
                 case 'x':
                     info.force_case = SDL_CASE_LOWER;
@@ -1820,9 +1821,6 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *f
                     }
                     if (info.radix == 10) {
                         info.radix = 16;
-                    }
-                    if (*fmt == 'p') {
-                        inttype = DO_LONG;
                     }
                     SDL_FALLTHROUGH;
                 case 'o':
