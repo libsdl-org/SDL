@@ -48,7 +48,8 @@ struct SDL_WaylandTabletObjectListNode
 
 struct SDL_WaylandTabletInput
 {
-    struct SDL_WaylandTabletSeat *seat;
+    struct SDL_WaylandInput *sdlWaylandInput;
+    struct zwp_tablet_seat_v2 *seat;
 
     struct SDL_WaylandTabletObjectListNode *tablets;
     struct SDL_WaylandTabletObjectListNode *tools;
@@ -56,7 +57,6 @@ struct SDL_WaylandTabletInput
 
     SDL_WindowData *tool_focus;
     uint32_t tool_prox_serial;
-    uint32_t press_serial;
 
     /* Last motion location */
     wl_fixed_t sx_w;
@@ -113,10 +113,8 @@ struct SDL_WaylandInput
 
     uint32_t buttons_pressed;
 
-    /* Implicit grab serial events */
-    Uint32 key_serial;
-    Uint32 button_press_serial;
-    Uint32 touch_down_serial;
+    /* The serial of the last implicit grab event for window activation and selection data. */
+    Uint32 last_implicit_grab_serial;
 
     struct
     {
@@ -204,6 +202,13 @@ extern void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input);
 
 extern void Wayland_RegisterTimestampListeners(struct SDL_WaylandInput *input);
 
-extern Uint32 Wayland_GetLastImplicitGrabSerial(struct SDL_WaylandInput *input);
+/* The implicit grab serial needs to be updated on:
+ * - Keyboard key down/up
+ * - Mouse button down
+ * - Touch event down
+ * - Tablet tool down
+ * - Tablet tool button down/up
+ */
+extern void Wayland_UpdateImplicitGrabSerial(struct SDL_WaylandInput *input, Uint32 serial);
 
 #endif /* SDL_waylandevents_h_ */
