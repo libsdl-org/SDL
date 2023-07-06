@@ -276,18 +276,13 @@ int SDL_SetClipboardText(const char *text)
         return SDL_SetError("Video subsystem must be initialized to set clipboard text");
     }
 
-    if (SDL_ClearClipboardData() < 0) {
-        return -1;
+    if (text && *text) {
+        text_mime_types = SDL_GetTextMimeTypes(_this, &num_mime_types);
+
+        return SDL_SetClipboardData(SDL_ClipboardTextCallback, SDL_free, SDL_strdup(text), text_mime_types, num_mime_types);
+    } else {
+        return SDL_ClearClipboardData();
     }
-
-    if (!text || !*text) {
-        /* All done! */
-        return 0;
-    }
-
-    text_mime_types = SDL_GetTextMimeTypes(_this, &num_mime_types);
-
-    return SDL_SetClipboardData(SDL_ClipboardTextCallback, SDL_free, SDL_strdup(text), text_mime_types, num_mime_types);
 }
 
 char *SDL_GetClipboardText(void)
