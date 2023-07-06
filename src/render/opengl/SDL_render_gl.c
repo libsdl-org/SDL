@@ -868,6 +868,7 @@ static int GL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
     GL_TextureData *texturedata;
     GLenum status;
+    GLenum err;
 
     GL_ActivateRenderer(renderer);
 
@@ -889,7 +890,16 @@ static int GL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     /* Check FBO status */
     status = data->glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
     if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
-        return SDL_SetError("glFramebufferTexture2DEXT() failed");
+        if ((err = data->glGetError()) != GL_NO_ERROR) {
+            switch (err) {
+            case GL_INVALID_ENUM:
+                return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_INVALID_EMUM");
+            case GL_INVALID_OPERATION:
+                return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_INVALID_OPERATION");
+            }
+
+            return SDL_SetError("glFramebufferTexture2DEXT() failed with (err, status) = (%d, %d)", err, status);
+        }
     }
     return 0;
 }
