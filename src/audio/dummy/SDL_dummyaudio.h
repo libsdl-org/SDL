@@ -25,15 +25,11 @@
 
 #include "../SDL_sysaudio.h"
 
-/* !!! FIXME: none of this is actually used. Dump this whole file. */
-
 struct SDL_PrivateAudioData
 {
     /* The file descriptor for the audio device */
     Uint8 *mixbuf;
-    Uint32 mixlen;
-    Uint32 write_delay;
-    Uint32 initial_calls;
+    Uint32 io_delay;
 };
 
 #endif /* SDL_dummyaudio_h_ */

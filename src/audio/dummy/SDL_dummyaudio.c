@@ -25,33 +25,51 @@
 #include "../SDL_audio_c.h"
 #include "SDL_dummyaudio.h"
 
-/* !!! FIXME: add a dummy WaitDevice to simulate real audio better? */
+/* !!! FIXME: this should be an SDL hint, not an environment variable. */
+#define DUMMYENVR_IODELAY "SDL_DUMMYAUDIODELAY"
+
+static void DUMMYAUDIO_WaitDevice(SDL_AudioDevice *device)
+{
+    SDL_Delay(device->hidden->io_delay);
+}
 
 static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    device->hidden = (struct SDL_PrivateAudioData *) SDL_malloc(device->buffer_size);
+    const char *envr = SDL_getenv(DUMMYENVR_IODELAY);
+
+    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return SDL_OutOfMemory();
     }
-    return 0; /* don't change reported device format. */
+
+    if (!device->iscapture) {
+        device->hidden->mixbuf = (Uint8 *) SDL_malloc(device->buffer_size);
+        if (!device->hidden->mixbuf) {
+            return SDL_OutOfMemory();
+        }
+    }
+
+    device->hidden->io_delay = envr ? SDL_atoi(envr) : ((device->sample_frames * 1000) / device->spec.freq);
+
+    return 0; /* we're good; don't change reported device format. */
 }
 
 static void DUMMYAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
-    SDL_free(device->hidden);
-    device->hidden = NULL;
+    if (device->hidden) {
+        SDL_free(device->hidden->mixbuf);
+        SDL_free(device->hidden);
+        device->hidden = NULL;
+    }
 }
 
 static Uint8 *DUMMYAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    return (Uint8 *) device->hidden;
+    return device->hidden->mixbuf;
 }
 
 static int DUMMYAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
-    /* Delay to make this sort of simulate real audio input. */
-    SDL_Delay((device->sample_frames * 1000) / device->spec.freq);
-
     /* always return a full buffer of silence. */
     SDL_memset(buffer, device->silence_value, buflen);
     return buflen;
@@ -59,17 +77,18 @@ static int DUMMYAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, i
 
 static SDL_bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    /* Set the function pointers */
     impl->OpenDevice = DUMMYAUDIO_OpenDevice;
     impl->CloseDevice = DUMMYAUDIO_CloseDevice;
+    impl->WaitDevice = DUMMYAUDIO_WaitDevice;
     impl->GetDeviceBuf = DUMMYAUDIO_GetDeviceBuf;
+    impl->WaitCaptureDevice = DUMMYAUDIO_WaitDevice;
     impl->CaptureFromDevice = DUMMYAUDIO_CaptureFromDevice;
 
     impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
     impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return SDL_TRUE; /* this audio target is available. */
+    return SDL_TRUE;
 }
 
 AudioBootStrap DUMMYAUDIO_bootstrap = {
