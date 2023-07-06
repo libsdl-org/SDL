@@ -20,12 +20,12 @@
 */
 #include "SDL_internal.h"
 
-/* Output audio to nowhere... */
+// Output audio to nowhere...
 
 #include "../SDL_audio_c.h"
 #include "SDL_dummyaudio.h"
 
-/* !!! FIXME: this should be an SDL hint, not an environment variable. */
+// !!! FIXME: this should be an SDL hint, not an environment variable.
 #define DUMMYENVR_IODELAY "SDL_DUMMYAUDIODELAY"
 
 static void DUMMYAUDIO_WaitDevice(SDL_AudioDevice *device)
@@ -49,9 +49,9 @@ static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
         }
     }
 
-    device->hidden->io_delay = envr ? SDL_atoi(envr) : ((device->sample_frames * 1000) / device->spec.freq);
+    device->hidden->io_delay = (Uint32) (envr ? SDL_atoi(envr) : ((device->sample_frames * 1000) / device->spec.freq));
 
-    return 0; /* we're good; don't change reported device format. */
+    return 0; // we're good; don't change reported device format.
 }
 
 static void DUMMYAUDIO_CloseDevice(SDL_AudioDevice *device)
@@ -70,7 +70,7 @@ static Uint8 *DUMMYAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 
 static int DUMMYAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
-    /* always return a full buffer of silence. */
+    // always return a full buffer of silence.
     SDL_memset(buffer, device->silence_value, buflen);
     return buflen;
 }
