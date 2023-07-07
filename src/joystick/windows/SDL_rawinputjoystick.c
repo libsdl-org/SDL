@@ -1281,20 +1281,8 @@ static int RAWINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_
 #endif
     SDL_bool rumbled = SDL_FALSE;
 
-#ifdef SDL_JOYSTICK_RAWINPUT_WGI
-    if (!rumbled && ctx->wgi_correlated) {
-        WindowsGamingInputGamepadState *gamepad_state = ctx->wgi_slot;
-        HRESULT hr;
-        gamepad_state->vibration.LeftMotor = (DOUBLE)low_frequency_rumble / SDL_MAX_UINT16;
-        gamepad_state->vibration.RightMotor = (DOUBLE)high_frequency_rumble / SDL_MAX_UINT16;
-        hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(gamepad_state->gamepad, gamepad_state->vibration);
-        if (SUCCEEDED(hr)) {
-            rumbled = SDL_TRUE;
-        }
-    }
-#endif
-
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
+    /* Prefer XInput over WGI because it allows rumble in the background */
     if (!rumbled && ctx->xinput_correlated) {
         XINPUT_VIBRATION XVibration;
 
@@ -1311,6 +1299,19 @@ static int RAWINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_
         }
     }
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */
+
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
+    if (!rumbled && ctx->wgi_correlated) {
+        WindowsGamingInputGamepadState *gamepad_state = ctx->wgi_slot;
+        HRESULT hr;
+        gamepad_state->vibration.LeftMotor = (DOUBLE)low_frequency_rumble / SDL_MAX_UINT16;
+        gamepad_state->vibration.RightMotor = (DOUBLE)high_frequency_rumble / SDL_MAX_UINT16;
+        hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(gamepad_state->gamepad, gamepad_state->vibration);
+        if (SUCCEEDED(hr)) {
+            rumbled = SDL_TRUE;
+        }
+    }
+#endif
 
     if (!rumbled) {
 #if defined(SDL_JOYSTICK_RAWINPUT_WGI) || defined(SDL_JOYSTICK_RAWINPUT_XINPUT)
