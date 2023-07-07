@@ -122,7 +122,7 @@ static int get_zenity_version(int *major, int *minor) {
 
 int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid) {
     int fd_pipe[2]; /* fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe */
-    int zenity_major, zenity_minor, output_len = 0;
+    int zenity_major = 0, zenity_minor = 0, output_len = 0;
     int argc = 5, i;
     const char *argv[5 + 2 /* icon name */ + 2 /* title */ + 2 /* message */ + 2 * MAX_BUTTONS + 1 /* NULL */] = {
         "zenity", "--question", "--switch", "--no-wrap", "--no-markup"
