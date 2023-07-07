@@ -145,7 +145,7 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
      * This commit removed --icon-name without adding a deprecation notice.
      * We need to handle it gracefully, otherwise no message box will be shown.
      */
-    argv[argc++] = zenity_major >= 3 && zenity_minor >= 90 ? "--icon" : "--icon-name";
+    argv[argc++] = zenity_major > 3 || (zenity_major == 3 && zenity_minor >= 90) ? "--icon" : "--icon-name";
     switch (messageboxdata->flags) {
     case SDL_MESSAGEBOX_ERROR:
         argv[argc++] = "dialog-error";
