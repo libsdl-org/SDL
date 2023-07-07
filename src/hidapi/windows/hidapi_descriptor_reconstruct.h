@@ -118,9 +118,9 @@ typedef struct hid_pp_link_collection_node_ {
 	USHORT NumberOfChildren;
 	USHORT NextSibling;
 	USHORT FirstChild;
-	ULONG  CollectionType : 8;
-	ULONG  IsAlias : 1;
-	ULONG  Reserved : 23;
+	UINT   CollectionType : 8;
+	UINT   IsAlias : 1;
+	UINT   Reserved : 23;
 	// Same as the public API structure HIDP_LINK_COLLECTION_NODE, but without PVOID UserContext at the end
 } hid_pp_link_collection_node, *phid_pp_link_collection_node;
 
@@ -145,17 +145,17 @@ typedef struct hid_pp_cap_ {
 	USAGE   LinkUsage;
 
 	// Start of 8 Flags in one byte
-	BOOLEAN IsMultipleItemsForArray:1;
+	UINT    IsMultipleItemsForArray:1;
 
-	BOOLEAN IsPadding:1;
-	BOOLEAN IsButtonCap:1;
-	BOOLEAN IsAbsolute:1;
-	BOOLEAN IsRange:1;
-	BOOLEAN IsAlias:1; // IsAlias is set to TRUE in the first n-1 capability structures added to the capability array. IsAlias set to FALSE in the nth capability structure.
-	BOOLEAN IsStringRange:1;
-	BOOLEAN IsDesignatorRange:1;
+	UINT    IsPadding:1;
+	UINT    IsButtonCap:1;
+	UINT    IsAbsolute:1;
+	UINT    IsRange:1;
+	UINT    IsAlias:1; // IsAlias is set to TRUE in the first n-1 capability structures added to the capability array. IsAlias set to FALSE in the nth capability structure.
+	UINT    IsStringRange:1;
+	UINT    IsDesignatorRange:1;
 	// End of 8 Flags in one byte
-	BOOLEAN Reserved1[3];
+	//BOOLEAN Reserved1[3];
 
 	hidp_unknown_token UnknownTokens[4]; // 4 x 8 Byte
 
