@@ -1688,20 +1688,22 @@ static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
  *
  * -flibit
  */
-static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *wind,
-                                    struct wl_surface *surface,
-                                    uint32_t serial, struct wl_seat *seat)
+static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *target_wind, SDL_bool set_serial)
 {
+    struct SDL_WaylandInput * input = data->input;
+    SDL_Window *focus = SDL_GetKeyboardFocus();
+    struct wl_surface *requesting_surface = focus ? focus->driverdata->surface : NULL;
+
     if (data->activation_manager) {
-        if (wind->activation_token != NULL) {
+        if (target_wind->activation_token != NULL) {
             /* We're about to overwrite this with a new request */
-            xdg_activation_token_v1_destroy(wind->activation_token);
+            xdg_activation_token_v1_destroy(target_wind->activation_token);
         }
 
-        wind->activation_token = xdg_activation_v1_get_activation_token(data->activation_manager);
-        xdg_activation_token_v1_add_listener(wind->activation_token,
+        target_wind->activation_token = xdg_activation_v1_get_activation_token(data->activation_manager);
+        xdg_activation_token_v1_add_listener(target_wind->activation_token,
                                              &activation_listener_xdg,
-                                             wind);
+                                             target_wind);
 
         /* Note that we are not setting the app_id here.
          *
@@ -1710,47 +1712,28 @@ static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *wind,
          *
          * -flibit
          */
-        if (surface != NULL) {
-            xdg_activation_token_v1_set_surface(wind->activation_token, surface);
+        if (requesting_surface != NULL) {
+            /* This specifies the surface from which the activation request is originating, not the activation target surface. */
+            xdg_activation_token_v1_set_surface(target_wind->activation_token, requesting_surface);
         }
-        if (seat != NULL) {
-            xdg_activation_token_v1_set_serial(wind->activation_token, serial, seat);
+        if (set_serial && input && input->seat) {
+            xdg_activation_token_v1_set_serial(target_wind->activation_token, input->last_implicit_grab_serial, input->seat);
         }
-        xdg_activation_token_v1_commit(wind->activation_token);
+        xdg_activation_token_v1_commit(target_wind->activation_token);
     }
 }
 
 void Wayland_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *wind = window->driverdata;
-    struct SDL_WaylandInput * input = _this->driverdata->input;
-    struct wl_seat *seat = NULL;
-    Uint32 serial = 0;
-
-    /* Pass the seat and last serial from a key event, mouse button press,
-     * touch down event, or tablet tool event to the activation token in order
-     * to increases the chances of the window being activated, as compositors
-     * may require an activation to be in response to an event.
-     */
-    if (input) {
-        seat = input->seat;
-        serial = input->last_implicit_grab_serial;
-    }
-
-    Wayland_activate_window(_this->driverdata,
-                            wind,
-                            wind->surface,
-                            serial,
-                            seat);
+    Wayland_activate_window(_this->driverdata, window->driverdata, SDL_TRUE);
 }
 
 int Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation)
 {
-    Wayland_activate_window(_this->driverdata,
-                            window->driverdata,
-                            NULL,
-                            0,
-                            NULL);
+    /* Not setting the serial will specify 'urgency' without switching focus as per
+     * https://gitlab.freedesktop.org/wayland/wayland-protocols/-/merge_requests/9#note_854977
+     */
+    Wayland_activate_window(_this->driverdata, window->driverdata, SDL_FALSE);
     return 0;
 }
 
