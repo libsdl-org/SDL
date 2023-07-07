@@ -859,10 +859,11 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
     if (style & WS_EX_NOACTIVATE) {
         nCmdShow = SW_SHOWNOACTIVATE;
+        bActivate = SDL_FALSE;
     }
     ShowWindow(hwnd, nCmdShow);
 
-    if (window->flags & SDL_WINDOW_POPUP_MENU) {
+    if (window->flags & SDL_WINDOW_POPUP_MENU && bActivate) {
         if (window->parent == SDL_GetKeyboardFocus()) {
             WIN_SetKeyboardFocus(window);
         }
@@ -922,6 +923,11 @@ void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
     if (bActivate) {
         SetForegroundWindow(hwnd);
+        if (window->flags & SDL_WINDOW_POPUP_MENU) {
+            if (window->parent == SDL_GetKeyboardFocus()) {
+                WIN_SetKeyboardFocus(window);
+            }
+        }
     } else {
         SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, data->copybits_flag | SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
     }
