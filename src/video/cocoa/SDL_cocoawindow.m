@@ -2196,13 +2196,13 @@ void Cocoa_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
          */
         [windowData.listener pauseVisibleObservation];
         if (![nswindow isMiniaturized] && [nswindow isVisible]) {
-            [NSApp activateIgnoringOtherApps:YES];
             if (SDL_WINDOW_IS_POPUP(window)) {
                 NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->driverdata).nswindow;
                 [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
             }
 
             if (bActivate) {
+                [NSApp activateIgnoringOtherApps:YES];
                 [nswindow makeKeyAndOrderFront:nil];
             } else {
                 [nswindow orderFront:nil];
