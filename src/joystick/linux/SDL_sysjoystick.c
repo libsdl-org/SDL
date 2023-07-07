@@ -46,6 +46,7 @@
 #include "../../core/linux/SDL_evdev.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+#include "../usb_ids.h"
 #include "../steam/SDL_steamcontroller.h"
 #include "SDL_sysjoystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
@@ -317,43 +318,17 @@ static int IsJoystick(const char *path, int fd, char **name_return, SDL_Joystick
 static int IsSensor(const char *path, int fd)
 {
     struct input_id inpid;
-    char *name;
-    char product_string[128];
 
     if (ioctl(fd, EVIOCGID, &inpid) < 0) {
         return 0;
     }
 
-    if (ioctl(fd, EVIOCGNAME(sizeof(product_string)), product_string) < 0) {
-        return 0;
-    }
-
-    name = SDL_CreateJoystickName(inpid.vendor, inpid.product, NULL, product_string);
-    if (name == NULL) {
-        return 0;
-    }
-
-    if (SDL_endswith(name, " Motion Sensors")) {
-        /* PS3 and PS4 motion controls */
-        SDL_free(name);
-        return 1;
-    }
-    if (SDL_strncmp(name, "Nintendo ", 9) == 0 && SDL_strstr(name, " IMU") != NULL) {
-        /* Nintendo Switch Joy-Con and Pro Controller IMU */
-        SDL_free(name);
-        return 1;
-    }
-    if (SDL_endswith(name, " Accelerometer") ||
-        SDL_endswith(name, " IR") ||
-        SDL_endswith(name, " Motion Plus") ||
-        SDL_endswith(name, " Nunchuk")) {
+    if (inpid.vendor == USB_VENDOR_NINTENDO && inpid.product == USB_PRODUCT_NINTENDO_WII_REMOTE) {
         /* Wii extension controls */
         /* These may create 3 sensor devices but we only support reading from 1: ignore them */
-        SDL_free(name);
         return 0;
     }
 
-    SDL_free(name);
     return GuessIsSensor(fd);
 }
 
