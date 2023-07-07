@@ -47,7 +47,7 @@
    raw input will turn off the Xbox Series X controller when it is connected via the
    Xbox One Wireless Adapter.
  */
-#if 0 /*def HAVE_XINPUT_H*/
+#ifdef HAVE_XINPUT_H
 #define SDL_JOYSTICK_RAWINPUT_XINPUT
 #endif
 #ifdef HAVE_WINDOWS_GAMING_INPUT_H
