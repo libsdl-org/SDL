@@ -567,6 +567,11 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 
     if (window->flags & SDL_WINDOW_MINIMIZED) {
+        /* TODO: We have to clear SDL_WINDOW_HIDDEN here to ensure the window flags match the window state. The
+           window is already shown after this and windows with WS_MINIMIZE do not generate a WM_SHOWWINDOW. This
+           means you can't currently create a window that is initially hidden and is minimized when shown.
+        */
+        window->flags &= ~SDL_WINDOW_HIDDEN;
         ShowWindow(hwnd, SW_SHOWMINNOACTIVE);
     }
 
