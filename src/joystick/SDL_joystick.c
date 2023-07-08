@@ -585,6 +585,7 @@ static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, SDL_bool *inve
         SDL_JoystickGUID guid;
         Uint16 vendor, product;
         SDL_bool enabled;
+        SDL_zero(gamepads);
 
         /* See if the gamepad is in our list of devices to enable */
         guid = SDL_GetJoystickGUID(joystick);
