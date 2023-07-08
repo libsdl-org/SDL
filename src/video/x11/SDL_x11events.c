@@ -869,6 +869,27 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
            xevent->type, xevent->xany.display, xevent->xany.window);
 #endif
 
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+    if (SDL_X11_HAVE_XFIXES &&
+            xevent->type == X11_GetXFixesSelectionNotifyEvent()) {
+        XFixesSelectionNotifyEvent *ev = (XFixesSelectionNotifyEvent *) xevent;
+
+        /* !!! FIXME: cache atoms */
+        Atom XA_CLIPBOARD = X11_XInternAtom(display, "CLIPBOARD", 0);
+
+#ifdef DEBUG_XEVENTS
+        printf("window CLIPBOARD: XFixesSelectionNotify (selection = %s)\n",
+                X11_XGetAtomName(display, ev->selection));
+#endif
+
+        if (ev->selection == XA_PRIMARY ||
+                (XA_CLIPBOARD != None && ev->selection == XA_CLIPBOARD)) {
+            SDL_SendClipboardUpdate();
+            return;
+        }
+    }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+
     if ((videodata->clipboard_window != None) &&
         (videodata->clipboard_window == xevent->xany.window)) {
         X11_HandleClipboardEvent(_this, xevent);
