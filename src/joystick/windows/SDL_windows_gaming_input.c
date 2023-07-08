@@ -567,6 +567,8 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
     return S_OK;
 }
 
+#pragma warning(disable : 4028) /* formal parameter 3 different from declaration, when using older buggy WGI headers */
+
 static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameControllerVtbl controller_added_vtbl = {
     IEventHandler_CRawGameControllerVtbl_QueryInterface,
     IEventHandler_CRawGameControllerVtbl_AddRef,

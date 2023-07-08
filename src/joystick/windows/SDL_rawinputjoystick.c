@@ -499,6 +499,8 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_InvokeRemoved(__FIEv
     return S_OK;
 }
 
+#pragma warning(disable : 4028) /* formal parameter 3 different from declaration, when using older buggy WGI headers */
+
 static __FIEventHandler_1_Windows__CGaming__CInput__CGamepadVtbl gamepad_added_vtbl = {
     IEventHandler_CGamepadVtbl_QueryInterface,
     IEventHandler_CGamepadVtbl_AddRef,
