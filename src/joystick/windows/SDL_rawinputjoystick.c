@@ -441,7 +441,85 @@ static struct
     SDL_bool need_device_list_update;
     int ref_count;
     __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics *gamepad_statics;
+    EventRegistrationToken gamepad_added_token;
+    EventRegistrationToken gamepad_removed_token;
 } wgi_state;
+
+typedef struct GamepadDelegate
+{
+    __FIEventHandler_1_Windows__CGaming__CInput__CGamepad iface;
+    SDL_AtomicInt refcount;
+} GamepadDelegate;
+
+static const IID IID_IEventHandler_Gamepad = { 0x8a7639ee, 0x624a, 0x501a, { 0xbb, 0x53, 0x56, 0x2d, 0x1e, 0xc1, 0x1b, 0x52 } };
+
+static HRESULT STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_QueryInterface(__FIEventHandler_1_Windows__CGaming__CInput__CGamepad *This, REFIID riid, void **ppvObject)
+{
+    if (ppvObject == NULL) {
+        return E_INVALIDARG;
+    }
+
+    *ppvObject = NULL;
+    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_IAgileObject) || WIN_IsEqualIID(riid, &IID_IEventHandler_Gamepad)) {
+        *ppvObject = This;
+        __FIEventHandler_1_Windows__CGaming__CInput__CGamepad_AddRef(This);
+        return S_OK;
+    } else if (WIN_IsEqualIID(riid, &IID_IMarshal)) {
+        /* This seems complicated. Let's hope it doesn't happen. */
+        return E_OUTOFMEMORY;
+    } else {
+        return E_NOINTERFACE;
+    }
+}
+
+static ULONG STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CGamepad *This)
+{
+    GamepadDelegate *self = (GamepadDelegate *)This;
+    return SDL_AtomicAdd(&self->refcount, 1) + 1UL;
+}
+
+static ULONG STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CGamepad *This)
+{
+    GamepadDelegate *self = (GamepadDelegate *)This;
+    int rc = SDL_AtomicAdd(&self->refcount, -1) - 1;
+    /* Should never free the static delegate objects */
+    SDL_assert(rc > 0);
+    return rc;
+}
+
+static HRESULT STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CGamepad *This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIGamepad *e)
+{
+    wgi_state.need_device_list_update = SDL_TRUE;
+    return S_OK;
+}
+
+static HRESULT STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CGamepad *This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIGamepad *e)
+{
+    wgi_state.need_device_list_update = SDL_TRUE;
+    return S_OK;
+}
+
+static __FIEventHandler_1_Windows__CGaming__CInput__CGamepadVtbl gamepad_added_vtbl = {
+    IEventHandler_CGamepadVtbl_QueryInterface,
+    IEventHandler_CGamepadVtbl_AddRef,
+    IEventHandler_CGamepadVtbl_Release,
+    IEventHandler_CGamepadVtbl_InvokeAdded
+};
+static GamepadDelegate gamepad_added = {
+    { &gamepad_added_vtbl },
+    { 1 }
+};
+
+static __FIEventHandler_1_Windows__CGaming__CInput__CGamepadVtbl gamepad_removed_vtbl = {
+    IEventHandler_CGamepadVtbl_QueryInterface,
+    IEventHandler_CGamepadVtbl_AddRef,
+    IEventHandler_CGamepadVtbl_Release,
+    IEventHandler_CGamepadVtbl_InvokeRemoved
+};
+static GamepadDelegate gamepad_removed = {
+    { &gamepad_removed_vtbl },
+    { 1 }
+};
 
 static void RAWINPUT_MarkWindowsGamingInputSlotUsed(WindowsGamingInputGamepadState *wgi_slot, RAWINPUT_DeviceContext *ctx)
 {
@@ -563,7 +641,6 @@ static void RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
         return;
     }
 
-    wgi_state.need_device_list_update = SDL_TRUE;
     wgi_state.ref_count++;
     if (!wgi_state.initialized) {
         static const IID SDL_IID_IGamepadStatics = { 0x8BBCE529, 0xD49C, 0x39E9, { 0x95, 0x60, 0xE4, 0x7D, 0xDE, 0x96, 0xB7, 0xC8 } };
@@ -594,6 +671,20 @@ static void RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
                 hr = WindowsCreateStringReferenceFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceStringHeader, &hNamespaceString);
                 if (SUCCEEDED(hr)) {
                     RoGetActivationFactoryFunc(hNamespaceString, &SDL_IID_IGamepadStatics, (void **)&wgi_state.gamepad_statics);
+                }
+
+                if (wgi_state.gamepad_statics) {
+                    wgi_state.need_device_list_update = SDL_TRUE;
+
+                    hr = __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_add_GamepadAdded(wgi_state.gamepad_statics, &gamepad_added.iface, &wgi_state.gamepad_added_token);
+                    if (!SUCCEEDED(hr)) {
+                        SDL_SetError("add_GamepadAdded() failed: 0x%lx\n", hr);
+                    }
+
+                    hr = __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_add_GamepadRemoved(wgi_state.gamepad_statics, &gamepad_removed.iface, &wgi_state.gamepad_removed_token);
+                    if (!SUCCEEDED(hr)) {
+                        SDL_SetError("add_GamepadRemoved() failed: 0x%lx\n", hr);
+                    }
                 }
             }
         }
@@ -642,7 +733,6 @@ static SDL_bool RAWINPUT_GuessWindowsGamingInputSlot(const WindowsMatchState *st
 
 static void RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
 {
-    wgi_state.need_device_list_update = SDL_TRUE;
     --wgi_state.ref_count;
     if (!wgi_state.ref_count && wgi_state.initialized) {
         int ii;
@@ -655,6 +745,8 @@ static void RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
         }
         wgi_state.per_gamepad_count = 0;
         if (wgi_state.gamepad_statics) {
+            __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_remove_GamepadAdded(wgi_state.gamepad_statics, wgi_state.gamepad_added_token);
+            __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_remove_GamepadRemoved(wgi_state.gamepad_statics, wgi_state.gamepad_removed_token);
             __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_Release(wgi_state.gamepad_statics);
             wgi_state.gamepad_statics = NULL;
         }
@@ -915,9 +1007,6 @@ SDL_bool RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 ve
     /* If we're being asked about a device, that means another API just detected one, so rescan */
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
     xinput_device_change = SDL_TRUE;
-#endif
-#ifdef SDL_JOYSTICK_RAWINPUT_WGI
-    wgi_state.need_device_list_update = SDL_TRUE;
 #endif
 
     device = SDL_RAWINPUT_devices;

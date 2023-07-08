@@ -210,46 +210,6 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     return SDL_FALSE;
 }
 
-typedef struct RawGameControllerDelegate
-{
-    __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController iface;
-    SDL_AtomicInt refcount;
-} RawGameControllerDelegate;
-
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInterface(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, REFIID riid, void **ppvObject)
-{
-    if (ppvObject == NULL) {
-        return E_INVALIDARG;
-    }
-
-    *ppvObject = NULL;
-    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_IAgileObject) || WIN_IsEqualIID(riid, &IID_IEventHandler_RawGameController)) {
-        *ppvObject = This;
-        __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_AddRef(This);
-        return S_OK;
-    } else if (WIN_IsEqualIID(riid, &IID_IMarshal)) {
-        /* This seems complicated. Let's hope it doesn't happen. */
-        return E_OUTOFMEMORY;
-    } else {
-        return E_NOINTERFACE;
-    }
-}
-
-static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This)
-{
-    RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
-    return SDL_AtomicAdd(&self->refcount, 1) + 1UL;
-}
-
-static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This)
-{
-    RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
-    int rc = SDL_AtomicAdd(&self->refcount, -1) - 1;
-    /* Should never free the static delegate objects */
-    SDL_assert(rc > 0);
-    return rc;
-}
-
 static void WGI_LoadRawGameControllerStatics()
 {
     WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = NULL;
@@ -378,6 +338,46 @@ static SDL_JoystickType GetGameControllerType(__x_ABI_CWindows_CGaming_CInput_CI
     }
 
     return SDL_JOYSTICK_TYPE_UNKNOWN;
+}
+
+typedef struct RawGameControllerDelegate
+{
+    __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController iface;
+    SDL_AtomicInt refcount;
+} RawGameControllerDelegate;
+
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInterface(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, REFIID riid, void **ppvObject)
+{
+    if (ppvObject == NULL) {
+        return E_INVALIDARG;
+    }
+
+    *ppvObject = NULL;
+    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_IAgileObject) || WIN_IsEqualIID(riid, &IID_IEventHandler_RawGameController)) {
+        *ppvObject = This;
+        __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController_AddRef(This);
+        return S_OK;
+    } else if (WIN_IsEqualIID(riid, &IID_IMarshal)) {
+        /* This seems complicated. Let's hope it doesn't happen. */
+        return E_OUTOFMEMORY;
+    } else {
+        return E_NOINTERFACE;
+    }
+}
+
+static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This)
+{
+    RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
+    return SDL_AtomicAdd(&self->refcount, 1) + 1UL;
+}
+
+static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This)
+{
+    RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
+    int rc = SDL_AtomicAdd(&self->refcount, -1) - 1;
+    /* Should never free the static delegate objects */
+    SDL_assert(rc > 0);
+    return rc;
 }
 
 static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
