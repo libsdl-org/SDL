@@ -499,7 +499,10 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_InvokeRemoved(__FIEv
     return S_OK;
 }
 
+#ifdef _MSC_VER
+#pragma warning(push)
 #pragma warning(disable : 4028) /* formal parameter 3 different from declaration, when using older buggy WGI headers */
+#endif
 
 static __FIEventHandler_1_Windows__CGaming__CInput__CGamepadVtbl gamepad_added_vtbl = {
     IEventHandler_CGamepadVtbl_QueryInterface,
@@ -522,6 +525,10 @@ static GamepadDelegate gamepad_removed = {
     { &gamepad_removed_vtbl },
     { 1 }
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 static void RAWINPUT_MarkWindowsGamingInputSlotUsed(WindowsGamingInputGamepadState *wgi_slot, RAWINPUT_DeviceContext *ctx)
 {

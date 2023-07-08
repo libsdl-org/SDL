@@ -567,7 +567,10 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
     return S_OK;
 }
 
+#ifdef _MSC_VER
+#pragma warning(push)
 #pragma warning(disable : 4028) /* formal parameter 3 different from declaration, when using older buggy WGI headers */
+#endif
 
 static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameControllerVtbl controller_added_vtbl = {
     IEventHandler_CRawGameControllerVtbl_QueryInterface,
@@ -590,6 +593,10 @@ static RawGameControllerDelegate controller_removed = {
     { &controller_removed_vtbl },
     { 1 }
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 static int WGI_JoystickInit(void)
 {
