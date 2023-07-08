@@ -396,7 +396,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(e, &IID_IRawGameController, (void **)&controller);
     if (SUCCEEDED(hr)) {
         char *name = NULL;
-        SDL_JoystickGUID guid;
+        SDL_JoystickGUID guid = { 0 };
         Uint16 bus = SDL_HARDWARE_BUS_USB;
         Uint16 vendor = 0;
         Uint16 product = 0;
