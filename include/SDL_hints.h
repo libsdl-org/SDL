@@ -1008,6 +1008,15 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_THREAD "SDL_JOYSTICK_THREAD"
 
 /**
+  *  \brief  A variable controlling whether Windows.Gaming.Input should be used for controller handling.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - WGI is not used
+  *    "1"       - WGI is used (the default)
+  */
+#define SDL_HINT_JOYSTICK_WGI "SDL_JOYSTICK_WGI"
+
+/**
  * \brief Determines whether SDL enforces that DRM master is required in order
  *        to initialize the KMSDRM video backend.
  *

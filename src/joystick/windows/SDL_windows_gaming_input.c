@@ -483,6 +483,10 @@ static int WGI_JoystickInit(void)
     RoGetActivationFactory_t RoGetActivationFactoryFunc = NULL;
     HRESULT hr;
 
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, SDL_TRUE)) {
+        return 0;
+    }
+
     if (FAILED(WIN_RoInitialize())) {
         return SDL_SetError("RoInitialize() failed");
     }

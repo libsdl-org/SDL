@@ -564,6 +564,10 @@ static void RAWINPUT_UpdateWindowsGamingInput()
 }
 static void RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
 {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, SDL_TRUE)) {
+        return;
+    }
+
     wgi_state.need_device_list_update = SDL_TRUE;
     wgi_state.ref_count++;
     if (!wgi_state.initialized) {
@@ -879,12 +883,12 @@ static int RAWINPUT_JoystickInit(void)
 {
     SDL_assert(!SDL_RAWINPUT_inited);
 
-    if (!WIN_IsWindowsVistaOrGreater()) {
-        /* According to bug 6400, this doesn't work on Windows XP */
-        return -1;
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE)) {
+        return 0;
     }
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE)) {
+    if (!WIN_IsWindowsVistaOrGreater()) {
+        /* According to bug 6400, this doesn't work on Windows XP */
         return -1;
     }
 
