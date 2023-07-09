@@ -640,7 +640,8 @@ extern DECLSPEC int SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
  * ```
  *
  * \param src The data source for the WAVE data
- * \param freesrc if SDL_TRUE, calls SDL_RWclose() on `src` before returning, even in the case of an error
+ * \param freesrc if SDL_TRUE, calls SDL_RWclose() on `src` before returning,
+ *                even in the case of an error
  * \param spec An SDL_AudioSpec that will be filled in with the wave file's
  *             format details
  * \param audio_buf A pointer filled with the audio data, allocated by the
