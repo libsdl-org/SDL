@@ -631,7 +631,7 @@ SDL_bool SDL_IsTablet(void)
 #if defined(__WIN32__)
 
 #if (!defined(HAVE_LIBC) || defined(__WATCOMC__)) && !defined(SDL_STATIC_LIB)
-/* Need to include DllMain() on Watcom C for some reason.. */
+/* FIXME: Still need to include DllMain() on Watcom C ? */
 
 BOOL APIENTRY MINGW32_FORCEALIGN _DllMainCRTStartup(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
