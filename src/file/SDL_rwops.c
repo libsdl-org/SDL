@@ -593,7 +593,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     return rwops;
 }
 
-SDL_RWops *SDL_RWFromMem(void *mem, int size)
+SDL_RWops *SDL_RWFromMem(void *mem, size_t size)
 {
     SDL_RWops *rwops = NULL;
     if (mem == NULL) {
@@ -620,7 +620,7 @@ SDL_RWops *SDL_RWFromMem(void *mem, int size)
     return rwops;
 }
 
-SDL_RWops *SDL_RWFromConstMem(const void *mem, int size)
+SDL_RWops *SDL_RWFromConstMem(const void *mem, size_t size)
 {
     SDL_RWops *rwops = NULL;
     if (mem == NULL) {

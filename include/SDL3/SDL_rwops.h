@@ -108,6 +108,7 @@ typedef struct SDL_RWops
         {
             void *asset;
         } androidio;
+
 #elif defined(__WIN32__) || defined(__GDK__)
         struct
         {
@@ -134,6 +135,7 @@ typedef struct SDL_RWops
             Uint8 *here;
             Uint8 *stop;
         } mem;
+
         struct
         {
             void *data1;
@@ -244,7 +246,7 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromFile(const char *file,
  * \sa SDL_RWtell
  * \sa SDL_RWwrite
  */
-extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromMem(void *mem, int size);
+extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromMem(void *mem, size_t size);
 
 /**
  * Use this function to prepare a read-only memory buffer for use with RWops.
@@ -278,7 +280,7 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromMem(void *mem, int size);
  * \sa SDL_RWtell
  */
 extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromConstMem(const void *mem,
-                                                      int size);
+                                                      size_t size);
 
 /* @} *//* RWFrom functions */
 
