@@ -2026,7 +2026,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 #endif
     }
 
-    if (!(mapped & MAPPED_TRIGGER_LEFT) && joystick->hwdata->has_key[BTN_TR2]) {
+    if (!(mapped & MAPPED_TRIGGER_RIGHT) && joystick->hwdata->has_key[BTN_TR2]) {
         out->righttrigger.kind = EMappingKind_Button;
         out->righttrigger.target = joystick->hwdata->key_map[BTN_TR2];
         mapped |= MAPPED_TRIGGER_RIGHT;
