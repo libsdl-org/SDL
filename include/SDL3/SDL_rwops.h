@@ -530,14 +530,14 @@ extern DECLSPEC int SDLCALL SDL_RWclose(SDL_RWops *context);
  *
  * \param src the SDL_RWops to read all available data from
  * \param datasize if not NULL, will store the number of bytes read
- * \param freesrc if non-zero, calls SDL_RWclose() on `src` before returning
+ * \param freesrc if SDL_TRUE, calls SDL_RWclose() on `src` before returning, even in the case of an error
  * \returns the data, or NULL if there was an error.
  *
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void *SDLCALL SDL_LoadFile_RW(SDL_RWops *src,
                                               size_t *datasize,
-                                              int freesrc);
+                                              SDL_bool freesrc);
 
 /**
  * Load all the data from a file path.

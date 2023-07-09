@@ -2075,9 +2075,9 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     return 0;
 }
 
-SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, SDL_bool freesrc, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
 {
-    int result;
+    int result = -1;
     WaveFile file;
 
     SDL_zero(file);
@@ -2085,16 +2085,16 @@ SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, 
     /* Make sure we are passed a valid data source */
     if (src == NULL) {
         /* Error may come from RWops. */
-        return NULL;
+        goto done;
     } else if (spec == NULL) {
         SDL_InvalidParamError("spec");
-        return NULL;
+        goto done;
     } else if (audio_buf == NULL) {
         SDL_InvalidParamError("audio_buf");
-        return NULL;
+        goto done;
     } else if (audio_len == NULL) {
         SDL_InvalidParamError("audio_len");
-        return NULL;
+        goto done;
     }
 
     *audio_buf = NULL;
@@ -2113,13 +2113,19 @@ SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, 
     }
 
     /* Cleanup */
-    if (freesrc) {
-        SDL_RWclose(src);
-    } else {
+    if (!freesrc) {
         SDL_RWseek(src, file.chunk.position, SDL_RW_SEEK_SET);
     }
     WaveFreeChunkData(&file.chunk);
     SDL_free(file.decoderdata);
 
-    return spec;
+done:
+    if (freesrc && src) {
+        SDL_RWclose(src);
+    }
+    if (result == 0) {
+        return spec;
+    } else {
+        return NULL;
+    }
 }

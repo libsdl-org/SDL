@@ -228,7 +228,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * will result in a memory leak.
  *
  * \param src the data stream for the surface
- * \param freesrc non-zero to close the stream after being read
+ * \param freesrc if SDL_TRUE, calls SDL_RWclose() on `src` before returning, even in the case of an error
  * \returns a pointer to a new SDL_Surface structure or NULL if there was an
  *          error; call SDL_GetError() for more information.
  *
@@ -238,7 +238,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * \sa SDL_LoadBMP
  * \sa SDL_SaveBMP_RW
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops *src, int freesrc);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc);
 
 /**
  * Load a BMP image from a file.
