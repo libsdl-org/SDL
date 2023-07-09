@@ -55,18 +55,12 @@ static DWORD RunThread(void *data)
     return 0;
 }
 
-#if defined(__GNUC__) && defined(__i686__)
-__attribute__((force_align_arg_pointer))
-#endif
-static DWORD WINAPI RunThreadViaCreateThread(LPVOID data)
+static DWORD WINAPI MINGW32_FORCEALIGN RunThreadViaCreateThread(LPVOID data)
 {
     return RunThread(data);
 }
 
-#if defined(__GNUC__) && defined(__i686__)
-__attribute__((force_align_arg_pointer))
-#endif
-static unsigned __stdcall RunThreadViaBeginThreadEx(void *data)
+static unsigned __stdcall MINGW32_FORCEALIGN RunThreadViaBeginThreadEx(void *data)
 {
     return (unsigned)RunThread(data);
 }
