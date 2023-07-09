@@ -1926,7 +1926,7 @@ elseif(WINDOWS)
 
   # Libraries for Win32 native and MinGW
   if(NOT WINDOWS_STORE)
-    list(APPEND EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32)
+    list(APPEND EXTRA_LIBS kernel32 user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32)
   endif()
 
   if(WINDOWS_STORE)
