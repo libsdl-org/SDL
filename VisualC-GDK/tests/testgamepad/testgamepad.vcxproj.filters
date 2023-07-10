@@ -3,12 +3,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\test\testgamepad.c" />
     <ClCompile Include="..\..\..\test\testutils.c" />
+    <ClCompile Include="..\..\..\test\gamepadutils.c" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="..\..\..\test\gamepadmap_back.bmp" />
-    <CopyFileToFolders Include="..\..\..\test\axis.bmp" />
-    <CopyFileToFolders Include="..\..\..\test\button.bmp" />
-    <CopyFileToFolders Include="..\..\..\test\gamepadmap.bmp" />
     <CopyFileToFolders Include="..\..\logos\Logo44x44.png">
       <Filter>logos</Filter>
     </CopyFileToFolders>

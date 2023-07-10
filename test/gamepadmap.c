@@ -13,25 +13,18 @@
 /* Gamepad mapping generator */
 /* Gabriel Jacobo <gabomdq@gmail.com> */
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
 #include "testutils.h"
+#include "gamepadutils.h"
 
 /* Define this for verbose output while mapping gamepads */
 #define DEBUG_GAMEPADMAP
 
 #define SCREEN_WIDTH  512
 #define SCREEN_HEIGHT 320
-
-enum marker_type
-{
-    MARKER_BUTTON,
-    MARKER_AXIS,
-};
 
 enum
 {
@@ -49,47 +42,6 @@ enum
 };
 
 #define BINDING_COUNT (SDL_GAMEPAD_BUTTON_MAX + SDL_GAMEPAD_BINDING_AXIS_MAX)
-
-static struct
-{
-    int x, y;
-    double angle;
-    enum marker_type marker;
-
-} s_arrBindingDisplay[] = {
-    { 387, 167, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_A */
-    { 431, 132, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_B */
-    { 342, 132, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_X */
-    { 389, 101, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_Y */
-    { 174, 132, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_BACK */
-    { 232, 128, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_GUIDE */
-    { 289, 132, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_START */
-    { 75, 154, 0.0, MARKER_BUTTON },  /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
-    { 305, 230, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
-    { 77, 40, 0.0, MARKER_BUTTON },   /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
-    { 396, 36, 0.0, MARKER_BUTTON },  /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
-    { 154, 188, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_DPAD_UP */
-    { 154, 249, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_DPAD_DOWN */
-    { 116, 217, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
-    { 186, 217, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
-    { 232, 174, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_MISC1 */
-    { 132, 135, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_PADDLE1 */
-    { 330, 135, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_PADDLE2 */
-    { 132, 175, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_PADDLE3 */
-    { 330, 175, 0.0, MARKER_BUTTON }, /* SDL_GAMEPAD_BUTTON_PADDLE4 */
-    { 0, 0, 0.0, MARKER_BUTTON },     /* SDL_GAMEPAD_BUTTON_TOUCHPAD */
-    { 74, 153, 270.0, MARKER_AXIS },  /* SDL_GAMEPAD_BINDING_AXIS_LEFTX_NEGATIVE */
-    { 74, 153, 90.0, MARKER_AXIS },   /* SDL_GAMEPAD_BINDING_AXIS_LEFTX_POSITIVE */
-    { 74, 153, 0.0, MARKER_AXIS },    /* SDL_GAMEPAD_BINDING_AXIS_LEFTY_NEGATIVE */
-    { 74, 153, 180.0, MARKER_AXIS },  /* SDL_GAMEPAD_BINDING_AXIS_LEFTY_POSITIVE */
-    { 306, 231, 270.0, MARKER_AXIS }, /* SDL_GAMEPAD_BINDING_AXIS_RIGHTX_NEGATIVE */
-    { 306, 231, 90.0, MARKER_AXIS },  /* SDL_GAMEPAD_BINDING_AXIS_RIGHTX_POSITIVE */
-    { 306, 231, 0.0, MARKER_AXIS },   /* SDL_GAMEPAD_BINDING_AXIS_RIGHTY_NEGATIVE */
-    { 306, 231, 180.0, MARKER_AXIS }, /* SDL_GAMEPAD_BINDING_AXIS_RIGHTY_POSITIVE */
-    { 91, -20, 180.0, MARKER_AXIS },  /* SDL_GAMEPAD_BINDING_AXIS_TRIGGERLEFT */
-    { 375, -20, 180.0, MARKER_AXIS }, /* SDL_GAMEPAD_BINDING_AXIS_TRIGGERRIGHT */
-};
-SDL_COMPILE_TIME_ASSERT(s_arrBindingDisplay, SDL_arraysize(s_arrBindingDisplay) == BINDING_COUNT);
 
 static int s_arrBindingOrder[] = {
     SDL_GAMEPAD_BUTTON_A,
@@ -171,6 +123,7 @@ static SDL_bool s_bBindingComplete;
 
 static SDL_Window *window;
 static SDL_Renderer *screen;
+static GamepadImage *image;
 static SDL_bool done = SDL_FALSE;
 static SDL_bool bind_touchpad = SDL_FALSE;
 
@@ -189,8 +142,9 @@ StandardizeAxisValue(int nValue)
 static void
 SetCurrentBinding(int iBinding)
 {
-    int iIndex;
+    int iIndex, iElement;
     SDL_GameControllerExtendedBind *pBinding;
+    SDL_bool on_front;
 
     if (iBinding < 0) {
         return;
@@ -219,6 +173,53 @@ SetCurrentBinding(int iBinding)
 
     for (iIndex = 0; iIndex < s_nNumAxes; ++iIndex) {
         s_arrAxisState[iIndex].m_nFarthestValue = s_arrAxisState[iIndex].m_nStartingValue;
+    }
+
+    iElement = s_arrBindingOrder[iBinding];
+    on_front = SDL_TRUE;
+    if (iElement >= SDL_GAMEPAD_BUTTON_PADDLE1 &&
+        iElement <= SDL_GAMEPAD_BUTTON_PADDLE4) {
+        on_front = SDL_FALSE;
+    }
+    SetGamepadImageShowingFront(image, on_front);
+
+    ClearGamepadImage(image);
+    if (iElement < SDL_GAMEPAD_BUTTON_MAX) {
+        SDL_GamepadButton eButton = (SDL_GamepadButton)iElement;
+        SetGamepadImageButton(image, eButton, SDL_TRUE);
+    } else {
+        switch (iElement - SDL_GAMEPAD_BUTTON_MAX) {
+        case SDL_GAMEPAD_BINDING_AXIS_LEFTX_NEGATIVE:
+            SetGamepadImageAxis(image, SDL_GAMEPAD_AXIS_LEFTX, -1);
+            break;
+        case SDL_GAMEPAD_BINDING_AXIS_LEFTX_POSITIVE:
+            SetGamepadImageAxis(image, SDL_GAMEPAD_AXIS_LEFTX, 1);
+            break;
+        case SDL_GAMEPAD_BINDING_AXIS_LEFTY_NEGATIVE:
+            SetGamepadImageAxis(image, SDL_GAMEPAD_AXIS_LEFTY, -1);
+            break;
+        case SDL_GAMEPAD_BINDING_AXIS_LEFTY_POSITIVE:
+            SetGamepadImageAxis(image, SDL_GAMEPAD_AXIS_LEFTY, 1);
+            break;
+        case SDL_GAMEPAD_BINDING_AXIS_RIGHTX_NEGATIVE:
+            SetGamepadImageAxis(image, SDL_GAMEPAD_AXIS_RIGHTX, -1);
+            break;
+        case SDL_GAMEPAD_BINDING_AXIS_RIGHTX_POSITIVE:
+            SetGamepadImageAxis(image, SDL_GAMEPAD_AXIS_RIGHTX, 1);
+            break;
+        case SDL_GAMEPAD_BINDING_AXIS_RIGHTY_NEGATIVE:
+            SetGamepadImageAxis(image, SDL_GAMEPAD_AXIS_RIGHTY, -1);
+            break;
+        case SDL_GAMEPAD_BINDING_AXIS_RIGHTY_POSITIVE:
+            SetGamepadImageAxis(image, SDL_GAMEPAD_AXIS_RIGHTY, 1);
+            break;
+        case SDL_GAMEPAD_BINDING_AXIS_TRIGGERLEFT:
+            SetGamepadImageAxis(image, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, 1);
+            break;
+        case SDL_GAMEPAD_BINDING_AXIS_TRIGGERRIGHT:
+            SetGamepadImageAxis(image, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, 1);
+            break;
+        }
     }
 
     s_unPendingAdvanceTime = 0;
@@ -351,19 +352,12 @@ BMergeAxisBindings(int iIndex)
 static void
 WatchJoystick(SDL_Joystick *joystick)
 {
-    SDL_Texture *background_front, *background_back, *button, *axis, *marker = NULL;
     const char *name = NULL;
     SDL_Event event;
-    SDL_FRect dst;
-    int texture_w, texture_h;
-    Uint8 alpha = 200, alpha_step = -1;
-    Uint64 alpha_ticks = 0;
     SDL_JoystickID nJoystickID;
 
-    background_front = LoadTexture(screen, "gamepadmap.bmp", SDL_FALSE, NULL, NULL);
-    background_back = LoadTexture(screen, "gamepadmap_back.bmp", SDL_FALSE, NULL, NULL);
-    button = LoadTexture(screen, "button.bmp", SDL_TRUE, NULL, NULL);
-    axis = LoadTexture(screen, "axis.bmp", SDL_TRUE, NULL, NULL);
+    image = CreateGamepadImage(screen);
+
     SDL_RaiseWindow(window);
 
     /* scale for platforms that don't give you the window size you asked for. */
@@ -396,47 +390,13 @@ WatchJoystick(SDL_Joystick *joystick)
     while (SDL_PollEvent(&event) > 0) {
     }
 
+    SetCurrentBinding(0);
+
     /* Loop, getting joystick events! */
     while (!done && !s_bBindingComplete) {
-        int iElement = s_arrBindingOrder[s_iCurrentBinding];
-
-        switch (s_arrBindingDisplay[iElement].marker) {
-        case MARKER_AXIS:
-            marker = axis;
-            break;
-        case MARKER_BUTTON:
-            marker = button;
-            break;
-        }
-
-        SDL_QueryTexture(marker, NULL, NULL, &texture_w, &texture_h);
-        dst.x = (float)s_arrBindingDisplay[iElement].x;
-        dst.y = (float)s_arrBindingDisplay[iElement].y;
-        dst.w = (float)texture_w;
-        dst.h = (float)texture_h;
-
-        if (SDL_GetTicks() >= (alpha_ticks + 5)) {
-            alpha_ticks = SDL_GetTicks();
-            alpha += alpha_step;
-            if (alpha == 255) {
-                alpha_step = -1;
-            }
-            if (alpha < 128) {
-                alpha_step = 1;
-            }
-        }
-
         SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(screen);
-        if (s_arrBindingOrder[s_iCurrentBinding] >= SDL_GAMEPAD_BUTTON_PADDLE1 &&
-            s_arrBindingOrder[s_iCurrentBinding] <= SDL_GAMEPAD_BUTTON_PADDLE4) {
-            SDL_RenderTexture(screen, background_back, NULL, NULL);
-        } else {
-            SDL_RenderTexture(screen, background_front, NULL, NULL);
-        }
-        SDL_SetTextureAlphaMod(marker, alpha);
-        SDL_SetTextureColorMod(marker, 10, 255, 21);
-        SDL_RenderTextureRotated(screen, marker, NULL, &dst, s_arrBindingDisplay[iElement].angle, NULL, SDL_FLIP_NONE);
+        RenderGamepadImage(image);
         SDL_RenderPresent(screen);
 
         while (SDL_PollEvent(&event) > 0) {
@@ -696,8 +656,6 @@ WatchJoystick(SDL_Joystick *joystick)
         }
 
         SDL_Log("Mapping:\n\n%s\n\n", mapping);
-        /* Print to stdout as well so the user can cat the output somewhere */
-        printf("%s\n", mapping);
     }
 
     SDL_free(s_arrAxisState);

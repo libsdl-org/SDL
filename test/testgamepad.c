@@ -15,6 +15,8 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#include "gamepadutils.h"
 #include "testutils.h"
 
 #ifdef __EMSCRIPTEN__
@@ -23,55 +25,6 @@
 
 #define SCREEN_WIDTH  512
 #define SCREEN_HEIGHT 320
-
-#define BUTTON_SIZE 50
-#define AXIS_SIZE   50
-
-/* This is indexed by SDL_GamepadButton. */
-static const struct
-{
-    int x;
-    int y;
-} button_positions[] = {
-    { 387, 167 }, /* SDL_GAMEPAD_BUTTON_A */
-    { 431, 132 }, /* SDL_GAMEPAD_BUTTON_B */
-    { 342, 132 }, /* SDL_GAMEPAD_BUTTON_X */
-    { 389, 101 }, /* SDL_GAMEPAD_BUTTON_Y */
-    { 174, 132 }, /* SDL_GAMEPAD_BUTTON_BACK */
-    { 232, 128 }, /* SDL_GAMEPAD_BUTTON_GUIDE */
-    { 289, 132 }, /* SDL_GAMEPAD_BUTTON_START */
-    { 75, 154 },  /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
-    { 305, 230 }, /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
-    { 77, 40 },   /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
-    { 396, 36 },  /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
-    { 154, 188 }, /* SDL_GAMEPAD_BUTTON_DPAD_UP */
-    { 154, 249 }, /* SDL_GAMEPAD_BUTTON_DPAD_DOWN */
-    { 116, 217 }, /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
-    { 186, 217 }, /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
-    { 232, 174 }, /* SDL_GAMEPAD_BUTTON_MISC1 */
-    { 132, 135 }, /* SDL_GAMEPAD_BUTTON_PADDLE1 */
-    { 330, 135 }, /* SDL_GAMEPAD_BUTTON_PADDLE2 */
-    { 132, 175 }, /* SDL_GAMEPAD_BUTTON_PADDLE3 */
-    { 330, 175 }, /* SDL_GAMEPAD_BUTTON_PADDLE4 */
-    { 0, 0 },     /* SDL_GAMEPAD_BUTTON_TOUCHPAD */
-};
-SDL_COMPILE_TIME_ASSERT(button_positions, SDL_arraysize(button_positions) == SDL_GAMEPAD_BUTTON_MAX);
-
-/* This is indexed by SDL_GamepadAxis. */
-static const struct
-{
-    int x;
-    int y;
-    double angle;
-} axis_positions[] = {
-    { 74, 153, 270.0 },  /* LEFTX */
-    { 74, 153, 0.0 },    /* LEFTY */
-    { 306, 231, 270.0 }, /* RIGHTX */
-    { 306, 231, 0.0 },   /* RIGHTY */
-    { 91, -20, 0.0 },    /* TRIGGERLEFT */
-    { 375, -20, 0.0 },   /* TRIGGERRIGHT */
-};
-SDL_COMPILE_TIME_ASSERT(axis_positions, SDL_arraysize(axis_positions) == SDL_GAMEPAD_AXIS_MAX);
 
 /* This is indexed by SDL_JoystickPowerLevel + 1. */
 static const char *power_level_strings[] = {
@@ -86,11 +39,11 @@ SDL_COMPILE_TIME_ASSERT(power_level_strings, SDL_arraysize(power_level_strings) 
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *screen = NULL;
+static GamepadImage *image = NULL;
 static SDL_bool retval = SDL_FALSE;
 static SDL_bool done = SDL_FALSE;
 static SDL_bool set_LED = SDL_FALSE;
 static int trigger_effect = 0;
-static SDL_Texture *background_front, *background_back, *button_texture, *axis_texture;
 static SDL_Gamepad *gamepad;
 static SDL_Gamepad **gamepads;
 static int num_gamepads = 0;
@@ -494,49 +447,12 @@ static void CloseVirtualGamepad(void)
 
 static SDL_GamepadButton FindButtonAtPosition(float x, float y)
 {
-    SDL_FPoint point;
-    int i;
-    SDL_bool showing_front = ShowingFront();
-
-    point.x = x;
-    point.y = y;
-    for (i = 0; i < SDL_GAMEPAD_BUTTON_TOUCHPAD; ++i) {
-        SDL_bool on_front = (i < SDL_GAMEPAD_BUTTON_PADDLE1 || i > SDL_GAMEPAD_BUTTON_PADDLE4);
-        if (on_front == showing_front) {
-            SDL_FRect rect;
-            rect.x = (float)button_positions[i].x;
-            rect.y = (float)button_positions[i].y;
-            rect.w = (float)BUTTON_SIZE;
-            rect.h = (float)BUTTON_SIZE;
-            if (SDL_PointInRectFloat(&point, &rect)) {
-                return (SDL_GamepadButton)i;
-            }
-        }
-    }
-    return SDL_GAMEPAD_BUTTON_INVALID;
+    return GetGamepadImageButtonAt(image, x, y);
 }
 
 static SDL_GamepadAxis FindAxisAtPosition(float x, float y)
 {
-    SDL_FPoint point;
-    int i;
-    SDL_bool showing_front = ShowingFront();
-
-    point.x = x;
-    point.y = y;
-    for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
-        if (showing_front) {
-            SDL_FRect rect;
-            rect.x = (float)axis_positions[i].x;
-            rect.y = (float)axis_positions[i].y;
-            rect.w = (float)AXIS_SIZE;
-            rect.h = (float)AXIS_SIZE;
-            if (SDL_PointInRectFloat(&point, &rect)) {
-                return (SDL_GamepadAxis)i;
-            }
-        }
-    }
-    return SDL_GAMEPAD_AXIS_INVALID;
+    return GetGamepadImageAxisAt(image, x, y);
 }
 
 static void VirtualGamepadMouseMotion(float x, float y)
@@ -556,12 +472,12 @@ static void VirtualGamepadMouseMotion(float x, float y)
         if (virtual_axis_active == SDL_GAMEPAD_AXIS_LEFT_TRIGGER ||
             virtual_axis_active == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
             int range = (SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN);
-            float distance = SDL_clamp((y - virtual_axis_start_y) / AXIS_SIZE, 0.0f, 1.0f);
+            float distance = SDL_clamp((y - virtual_axis_start_y) / GetGamepadImageAxisHeight(image), 0.0f, 1.0f);
             Sint16 value = (Sint16)(SDL_JOYSTICK_AXIS_MIN + (distance * range));
             SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active, value);
         } else {
-            float distanceX = SDL_clamp((x - virtual_axis_start_x) / AXIS_SIZE, -1.0f, 1.0f);
-            float distanceY = SDL_clamp((y - virtual_axis_start_y) / AXIS_SIZE, -1.0f, 1.0f);
+            float distanceX = SDL_clamp((x - virtual_axis_start_x) / GetGamepadImageAxisWidth(image), -1.0f, 1.0f);
+            float distanceY = SDL_clamp((y - virtual_axis_start_y) / GetGamepadImageAxisHeight(image), -1.0f, 1.0f);
             Sint16 valueX, valueY;
 
             if (distanceX >= 0) {
@@ -621,8 +537,6 @@ static void VirtualGamepadMouseUp(float x, float y)
 static void loop(void *arg)
 {
     SDL_Event event;
-    int i;
-    SDL_bool showing_front;
 
     /* Update to get the current event state */
     SDL_PumpEvents();
@@ -754,52 +668,14 @@ static void loop(void *arg)
         }
     }
 
-    showing_front = ShowingFront();
-
     /* blank screen, set up for drawing this frame. */
     SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(screen);
-    SDL_RenderTexture(screen, showing_front ? background_front : background_back, NULL, NULL);
 
     if (gamepad) {
-        /* Update visual gamepad state */
-        for (i = 0; i < SDL_GAMEPAD_BUTTON_TOUCHPAD; ++i) {
-            if (SDL_GetGamepadButton(gamepad, (SDL_GamepadButton)i) == SDL_PRESSED) {
-                SDL_bool on_front = (i < SDL_GAMEPAD_BUTTON_PADDLE1 || i > SDL_GAMEPAD_BUTTON_PADDLE4);
-                if (on_front == showing_front) {
-                    SDL_FRect dst;
-                    dst.x = (float)button_positions[i].x;
-                    dst.y = (float)button_positions[i].y;
-                    dst.w = (float)BUTTON_SIZE;
-                    dst.h = (float)BUTTON_SIZE;
-                    SDL_RenderTextureRotated(screen, button_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
-                }
-            }
-        }
-
-        if (showing_front) {
-            for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
-                const Sint16 deadzone = 8000; /* !!! FIXME: real deadzone */
-                const Sint16 value = SDL_GetGamepadAxis(gamepad, (SDL_GamepadAxis)(i));
-                if (value < -deadzone) {
-                    const double angle = axis_positions[i].angle;
-                    SDL_FRect dst;
-                    dst.x = (float)axis_positions[i].x;
-                    dst.y = (float)axis_positions[i].y;
-                    dst.w = (float)AXIS_SIZE;
-                    dst.h = (float)AXIS_SIZE;
-                    SDL_RenderTextureRotated(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
-                } else if (value > deadzone) {
-                    const double angle = axis_positions[i].angle + 180.0;
-                    SDL_FRect dst;
-                    dst.x = (float)axis_positions[i].x;
-                    dst.y = (float)axis_positions[i].y;
-                    dst.w = (float)AXIS_SIZE;
-                    dst.h = (float)AXIS_SIZE;
-                    SDL_RenderTextureRotated(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
-                }
-            }
-        }
+        SetGamepadImageShowingFront(image, ShowingFront());
+        UpdateGamepadImageFromGamepad(image, gamepad);
+        RenderGamepadImage(image);
 
         /* Update LED based on left thumbstick position */
         {
@@ -955,18 +831,12 @@ int main(int argc, char *argv[])
                                      SDL_LOGICAL_PRESENTATION_LETTERBOX,
                                      SDL_SCALEMODE_LINEAR);
 
-    background_front = LoadTexture(screen, "gamepadmap.bmp", SDL_FALSE, NULL, NULL);
-    background_back = LoadTexture(screen, "gamepadmap_back.bmp", SDL_FALSE, NULL, NULL);
-    button_texture = LoadTexture(screen, "button.bmp", SDL_TRUE, NULL, NULL);
-    axis_texture = LoadTexture(screen, "axis.bmp", SDL_TRUE, NULL, NULL);
-
-    if (background_front == NULL || background_back == NULL || button_texture == NULL || axis_texture == NULL) {
+    image = CreateGamepadImage(screen);
+    if (image == NULL) {
         SDL_DestroyRenderer(screen);
         SDL_DestroyWindow(window);
         return 2;
     }
-    SDL_SetTextureColorMod(button_texture, 10, 255, 21);
-    SDL_SetTextureColorMod(axis_texture, 10, 255, 21);
 
     /* Process the initial gamepad list */
     loop(NULL);
@@ -994,6 +864,7 @@ int main(int argc, char *argv[])
     }
 
     CloseVirtualGamepad();
+    DestroyGamepadImage(image);
     SDL_DestroyRenderer(screen);
     SDL_DestroyWindow(window);
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD);
