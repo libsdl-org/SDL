@@ -716,7 +716,7 @@ int main(int argc, char *argv[])
             if (argv[i][0] == '-') {
                 static const char *options[] = { "[--bind-touchpad]", NULL };
                 SDLTest_CommonLogUsage(state, argv[0], options);
-                exit(1);
+                return 1;
             } else {
                 break;
             }
@@ -728,7 +728,7 @@ int main(int argc, char *argv[])
     /* Initialize SDL (Note: video is required to start event loop) */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        exit(1);
+        return 1;
     }
 
     /* Create a window to display joystick axis position */
