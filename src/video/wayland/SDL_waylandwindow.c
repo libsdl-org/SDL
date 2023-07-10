@@ -59,12 +59,13 @@ SDL_FORCE_INLINE SDL_bool FloatEqual(float a, float b)
 static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height, int *drawable_width, int *drawable_height)
 {
     SDL_WindowData *wind = (SDL_WindowData *)window->driverdata;
-    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    SDL_WaylandOutputData *output = display ? (SDL_WaylandOutputData *)display->driverdata : NULL;
 
     int fs_width, fs_height;
     int buf_width, buf_height;
-    const int output_width = wind->fs_output_width ? wind->fs_output_width : output->width;
-    const int output_height = wind->fs_output_height ? wind->fs_output_height : output->height;
+    const int output_width = wind->fs_output_width ? wind->fs_output_width : (output ? output->width : wind->window_width);
+    const int output_height = wind->fs_output_height ? wind->fs_output_height : (output ? output->height : wind->window_height);
 
     /*
      * Fullscreen desktop mandates a desktop sized window, so that's what applications will get.
@@ -133,7 +134,10 @@ static SDL_bool NeedViewport(SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *video = wind->waylandData;
-    SDL_WaylandOutputData *output = ((SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata);
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    SDL_WaylandOutputData *output = display ? ((SDL_WaylandOutputData *)display->driverdata) : NULL;
+    const int output_width = wind->fs_output_width ? wind->fs_output_width : (output ? output->width : wind->window_width);
+    const int output_height = wind->fs_output_height ? wind->fs_output_height : (output ? output->height : wind->window_height);
     int fs_width, fs_height;
 
     /*
@@ -144,7 +148,7 @@ static SDL_bool NeedViewport(SDL_Window *window)
     if (video->viewporter != NULL) {
         if (FullscreenModeEmulation(window)) {
             GetFullScreenDimensions(window, &fs_width, &fs_height, NULL, NULL);
-            if (fs_width != output->width || fs_height != output->height) {
+            if (fs_width != output_width || fs_height != output_height) {
                 return SDL_TRUE;
             }
         } else if (SurfaceScaleIsFractional(window) && (window->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
@@ -217,7 +221,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     SDL_VideoData *viddata = data->waylandData;
-    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    SDL_WaylandOutputData *output = display ? (SDL_WaylandOutputData *)display->driverdata : NULL;
     struct wl_region *region;
     const int old_dw = data->drawable_width;
     const int old_dh = data->drawable_height;
@@ -237,8 +242,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 
     if (FullscreenModeEmulation(window) && NeedViewport(window)) {
         int fs_width, fs_height;
-        const int output_width = data->fs_output_width ? data->fs_output_width : output->width;
-        const int output_height = data->fs_output_height ? data->fs_output_height : output->height;
+        const int output_width = data->fs_output_width ? data->fs_output_width : (output ? output->width : data->window_width);
+        const int output_height = data->fs_output_height ? data->fs_output_height : (output ? output->height : data->window_height);
 
         window_size_changed = data->window_width != output_width || data->window_height != output_height;
 
@@ -559,7 +564,6 @@ static void handle_configure_xdg_toplevel(void *data,
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
-    SDL_WaylandOutputData *driverdata;
 
     enum xdg_toplevel_state *state;
     SDL_bool fullscreen = SDL_FALSE;
@@ -585,8 +589,6 @@ static void handle_configure_xdg_toplevel(void *data,
             break;
         }
     }
-
-    driverdata = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
 
     UpdateWindowFullscreen(window, fullscreen);
 
@@ -662,12 +664,6 @@ static void handle_configure_xdg_toplevel(void *data,
         if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
             window->w = width;
             window->h = height;
-            wind->needs_resize_event = SDL_TRUE;
-        }
-
-        /* This part is good though. */
-        if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) && !FloatEqual(wind->scale_factor, driverdata->scale_factor)) {
-            wind->scale_factor = driverdata->scale_factor;
             wind->needs_resize_event = SDL_TRUE;
         }
     }
@@ -819,12 +815,10 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
 {
     SDL_WindowData *wind = (SDL_WindowData *)user_data;
     SDL_Window *window = wind->sdlwindow;
-    SDL_WaylandOutputData *driverdata;
     struct libdecor_state *state;
 
     enum libdecor_window_state window_state;
     int width, height;
-    float scale_factor = wind->scale_factor;
 
     SDL_bool focused = SDL_FALSE;
     SDL_bool fullscreen = SDL_FALSE;
@@ -843,8 +837,6 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
         tiled = (window_state & tiled_states) != 0;
     }
     floating = !(fullscreen || maximized || tiled);
-
-    driverdata = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
 
     UpdateWindowFullscreen(window, fullscreen);
 
@@ -886,11 +878,6 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
 
         if (FullscreenModeEmulation(window)) {
             GetFullScreenDimensions(window, &width, &height, NULL, NULL);
-        }
-
-        /* This part is good though. */
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-            scale_factor = driverdata->scale_factor;
         }
     } else if (!(window->flags & SDL_WINDOW_RESIZABLE) || (floating && wind->floating_resize_pending)) {
         width = window->windowed.w;
@@ -936,7 +923,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     wind->was_floating = floating;
 
     /* Do the resize on the SDL side (this will set window->w/h)... */
-    Wayland_HandleResize(window, width, height, scale_factor);
+    Wayland_HandleResize(window, width, height, wind->scale_factor);
 
     /* ... then commit the changes on the libdecor side. */
     state = libdecor_state_new(wind->window_width, wind->window_height);
@@ -1003,7 +990,7 @@ static const struct qt_extended_surface_listener extended_surface_listener = {
 
 static void update_scale_factor(SDL_WindowData *window)
 {
-    float old_factor = window->scale_factor;
+    const float old_factor = window->scale_factor;
     float new_factor;
     int i;
 
@@ -1012,14 +999,18 @@ static void update_scale_factor(SDL_WindowData *window)
         return;
     }
 
-    if (FULLSCREEN_VISIBLE(window->sdlwindow)) {
+    if (window->num_outputs == 0) {
+        /* No display connected, just fall back. */
+        new_factor = old_factor;
+    } else if (FULLSCREEN_VISIBLE(window->sdlwindow)) {
         /* For fullscreen, use the active display's scale factor */
         SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window->sdlwindow);
-        SDL_WaylandOutputData *driverdata = display->driverdata;
-        new_factor = driverdata->scale_factor;
-    } else if (window->num_outputs == 0) {
-        /* No monitor (somehow)? Just fall back. */
-        new_factor = old_factor;
+        if (display) {
+            SDL_WaylandOutputData *driverdata = display->driverdata;
+            new_factor = driverdata->scale_factor;
+        } else {
+            new_factor = old_factor;
+        }
     } else {
         /* Check every display's factor, use the highest */
         new_factor = 0.0f;
