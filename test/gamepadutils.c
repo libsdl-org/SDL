@@ -14,6 +14,7 @@
 #include "gamepadutils.h"
 #include "gamepad_front.h"
 #include "gamepad_back.h"
+#include "gamepad_touchpad.h"
 #include "gamepad_button.h"
 #include "gamepad_axis.h"
 
@@ -60,15 +61,30 @@ static const struct
     { 400, 5, 0.0 },   /* TRIGGERRIGHT */
 };
 
+static SDL_Rect touchpad_area = {
+    148, 20, 216, 118
+};
+
+typedef struct
+{
+    Uint8 state;
+    float x;
+    float y;
+    float pressure;
+} GamepadTouchpadFinger;
+
 struct GamepadImage
 {
     SDL_Renderer *renderer;
     SDL_Texture *front_texture;
     SDL_Texture *back_texture;
+    SDL_Texture *touchpad_texture;
     SDL_Texture *button_texture;
     SDL_Texture *axis_texture;
     int gamepad_width;
     int gamepad_height;
+    int touchpad_width;
+    int touchpad_height;
     int button_width;
     int button_height;
     int axis_width;
@@ -77,9 +93,13 @@ struct GamepadImage
     int x;
     int y;
     SDL_bool showing_front;
+    SDL_bool showing_touchpad;
 
     SDL_bool buttons[SDL_GAMEPAD_BUTTON_MAX];
     int axes[SDL_GAMEPAD_AXIS_MAX];
+
+    int num_fingers;
+    GamepadTouchpadFinger *fingers;
 };
 
 static SDL_Texture *CreateTexture(SDL_Renderer *renderer, unsigned char *data, unsigned int len)
@@ -126,6 +146,9 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
         ctx->back_texture = CreateTexture(renderer, gamepad_back_bmp, gamepad_back_bmp_len);
         SDL_QueryTexture(ctx->front_texture, NULL, NULL, &ctx->gamepad_width, &ctx->gamepad_height);
 
+        ctx->touchpad_texture = CreateTexture(renderer, gamepad_touchpad_bmp, gamepad_touchpad_bmp_len);
+        SDL_QueryTexture(ctx->touchpad_texture, NULL, NULL, &ctx->touchpad_width, &ctx->touchpad_height);
+
         ctx->button_texture = CreateTexture(renderer, gamepad_button_bmp, gamepad_button_bmp_len);
         SDL_QueryTexture(ctx->button_texture, NULL, NULL, &ctx->button_width, &ctx->button_height);
         SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
@@ -158,6 +181,15 @@ void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front)
     ctx->showing_front = showing_front;
 }
 
+void SetGamepadImageShowingTouchpad(GamepadImage *ctx, SDL_bool showing_touchpad)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->showing_touchpad = showing_touchpad;
+}
+
 void GetGamepadImageArea(GamepadImage *ctx, int *x, int *y, int *width, int *height)
 {
     if (!ctx) {
@@ -187,6 +219,9 @@ void GetGamepadImageArea(GamepadImage *ctx, int *x, int *y, int *width, int *hei
     }
     if (height) {
         *height = ctx->gamepad_height;
+        if (ctx->showing_touchpad) {
+            *height += ctx->touchpad_height;
+        }
     }
 }
 
@@ -341,6 +376,24 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
             SetGamepadImageAxis(ctx, axis, 0);
         }
     }
+
+    if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
+        int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, 0);
+        if (num_fingers != ctx->num_fingers) {
+            GamepadTouchpadFinger *fingers = (GamepadTouchpadFinger *)SDL_realloc(ctx->fingers, num_fingers * sizeof(*fingers));
+            if (fingers) {
+                ctx->fingers = fingers;
+                ctx->num_fingers = num_fingers;
+            } else {
+                num_fingers = SDL_min(ctx->num_fingers, num_fingers);
+            }
+        }
+        for (i = 0; i < num_fingers; ++i) {
+            GamepadTouchpadFinger *finger = &ctx->fingers[i];
+
+            SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &finger->state, &finger->x, &finger->y, &finger->pressure);
+        }
+    }
 }
 
 void RenderGamepadImage(GamepadImage *ctx)
@@ -396,6 +449,32 @@ void RenderGamepadImage(GamepadImage *ctx)
                 dst.w = (float)ctx->axis_width;
                 dst.h = (float)ctx->axis_height;
                 SDL_RenderTextureRotated(ctx->renderer, ctx->axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+            }
+        }
+    }
+
+    if (ctx->showing_touchpad) {
+        dst.x = (float)ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2;
+        dst.y = (float)ctx->y + ctx->gamepad_height;
+        dst.w = (float)ctx->touchpad_width;
+        dst.h = (float)ctx->touchpad_height;
+        SDL_RenderTexture(ctx->renderer, ctx->touchpad_texture, NULL, &dst);
+
+        for (i = 0; i < ctx->num_fingers; ++i) {
+            GamepadTouchpadFinger *finger = &ctx->fingers[i];
+
+            if (finger->state) {
+                dst.x = (float)ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2;
+                dst.x += touchpad_area.x + finger->x * touchpad_area.w;
+                dst.x -= ctx->button_width / 2;
+                dst.y = (float)ctx->y + ctx->gamepad_height;
+                dst.y += touchpad_area.y + finger->y * touchpad_area.h;
+                dst.y -= ctx->button_height / 2;
+                dst.w = (float)ctx->button_width;
+                dst.h = (float)ctx->button_height;
+                SDL_SetTextureAlphaMod(ctx->button_texture, (Uint8)(finger->pressure * SDL_ALPHA_OPAQUE));
+                SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+                SDL_SetTextureAlphaMod(ctx->button_texture, SDL_ALPHA_OPAQUE);
             }
         }
     }

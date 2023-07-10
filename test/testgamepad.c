@@ -24,7 +24,7 @@
 #endif
 
 #define SCREEN_WIDTH  512
-#define SCREEN_HEIGHT 320
+#define SCREEN_HEIGHT 480
 
 /* This is indexed by SDL_JoystickPowerLevel + 1. */
 static const char *power_level_strings[] = {
@@ -148,6 +148,12 @@ static void UpdateWindowTitle(void)
             }
             SDL_SetWindowTitle(window, title);
             SDL_free(title);
+        }
+
+        if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
+            SetGamepadImageShowingTouchpad(image, SDL_TRUE);
+        } else {
+            SetGamepadImageShowingTouchpad(image, SDL_FALSE);
         }
     } else {
         SDL_SetWindowTitle(window, "Waiting for gamepad...");
