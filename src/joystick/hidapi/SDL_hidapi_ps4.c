@@ -230,6 +230,20 @@ static void SetLedsForPlayerIndex(DS4EffectsState_t *effects, int player_index)
     effects->ucLedBlue = colors[player_index][2];
 }
 
+static SDL_bool ReadWiredSerial(SDL_HIDAPI_Device *device, char *serial, size_t serial_size)
+{
+    Uint8 data[USB_PACKET_LENGTH];
+    int size;
+
+    size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
+    if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
+        (void)SDL_snprintf(serial, serial_size, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                           data[6], data[5], data[4], data[3], data[2], data[1]);
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS4_Context *ctx;
@@ -270,23 +284,13 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     /* Check for type of connection */
     ctx->is_dongle = (device->vendor_id == USB_VENDOR_SONY && device->product_id == USB_PRODUCT_SONY_DS4_DONGLE);
     if (ctx->is_dongle) {
-        size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
-        if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-            (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-                               data[6], data[5], data[4], data[3], data[2], data[1]);
-        }
+        ReadWiredSerial(device, serial, sizeof(serial));
         ctx->enhanced_mode = SDL_TRUE;
     } else if (device->vendor_id == USB_VENDOR_SONY && device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
         ctx->enhanced_mode = SDL_TRUE;
 
     } else if (device->vendor_id == USB_VENDOR_SONY) {
-        /* This will fail if we're on Bluetooth */
-        size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
-        if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-            (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-                               data[6], data[5], data[4], data[3], data[2], data[1]);
-            ctx->enhanced_mode = SDL_TRUE;
-        } else {
+        if (device->is_bluetooth) {
             /* Read a report to see if we're in enhanced mode */
             size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 16);
 #ifdef DEBUG_PS4_PROTOCOL
@@ -301,6 +305,9 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
                 data[0] <= k_EPS4ReportIdBluetoothState9) {
                 ctx->enhanced_mode = SDL_TRUE;
             }
+        } else {
+            ReadWiredSerial(device, serial, sizeof(serial));
+            ctx->enhanced_mode = SDL_TRUE;
         }
     } else {
         /* Third party controllers appear to all be wired */
