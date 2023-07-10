@@ -1558,26 +1558,6 @@ CheckNoStrictAliasing()
     fi
 }
 
-dnl See if GCC's -mpreferred-stack-boundary is supported.
-dnl  Reference: http://bugzilla.libsdl.org/show_bug.cgi?id=1296
-CheckStackBoundary()
-{
-    AC_MSG_CHECKING(for GCC -mpreferred-stack-boundary option)
-    have_gcc_preferred_stack_boundary=no
-
-    save_CFLAGS="$CFLAGS"
-    CFLAGS="$save_CFLAGS -mpreferred-stack-boundary=2"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-    int x = 0;
-    ]],[])], [have_gcc_preferred_stack_boundary=yes],[])
-    AC_MSG_RESULT($have_gcc_preferred_stack_boundary)
-    CFLAGS="$save_CFLAGS"
-
-    if test x$have_gcc_preferred_stack_boundary = xyes; then
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -mpreferred-stack-boundary=2"
-    fi
-}
-
 dnl See if GCC's -Werror is supported.
 CheckWerror()
 {
@@ -3305,9 +3285,6 @@ CheckWINDOWS()
        ])
     ],[])
     AC_MSG_RESULT($have_wince)
-
-    # This fixes Windows stack alignment with newer GCC
-    CheckStackBoundary
 
     # headers needed elsewhere
     AC_CHECK_HEADER(tpcshrd.h,have_tpcshrd_h=yes)

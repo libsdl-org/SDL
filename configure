@@ -23026,41 +23026,6 @@ printf "%s\n" "$have_gcc_no_strict_aliasing" >&6; }
     fi
 }
 
-CheckStackBoundary()
-{
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -mpreferred-stack-boundary option" >&5
-printf %s "checking for GCC -mpreferred-stack-boundary option... " >&6; }
-    have_gcc_preferred_stack_boundary=no
-
-    save_CFLAGS="$CFLAGS"
-    CFLAGS="$save_CFLAGS -mpreferred-stack-boundary=2"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-    int x = 0;
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  have_gcc_preferred_stack_boundary=yes
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_preferred_stack_boundary" >&5
-printf "%s\n" "$have_gcc_preferred_stack_boundary" >&6; }
-    CFLAGS="$save_CFLAGS"
-
-    if test x$have_gcc_preferred_stack_boundary = xyes; then
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -mpreferred-stack-boundary=2"
-    fi
-}
-
 CheckWerror()
 {
     # Check whether --enable-werror was given.
@@ -27473,9 +27438,6 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_wince" >&5
 printf "%s\n" "$have_wince" >&6; }
-
-    # This fixes Windows stack alignment with newer GCC
-    CheckStackBoundary
 
     # headers needed elsewhere
     ac_fn_c_check_header_compile "$LINENO" "tpcshrd.h" "ac_cv_header_tpcshrd_h" "$ac_includes_default"
