@@ -872,9 +872,8 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
 
     /* For now, we just treat a touchpad like a touchscreen */
     if (udev_class & (SDL_UDEV_DEVICE_TOUCHSCREEN | SDL_UDEV_DEVICE_TOUCHPAD)) {
-        int ret;
         item->is_touchscreen = SDL_TRUE;
-        ret = SDL_EVDEV_init_touchscreen(item, udev_class);
+        int ret = SDL_EVDEV_init_touchscreen(item, udev_class);
         if (ret < 0) {
             close(item->fd);
             SDL_free(item->path);
