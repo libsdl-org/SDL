@@ -543,6 +543,8 @@ static void loop(void *arg)
 
     /* Process all currently pending events */
     while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) == 1) {
+        SDL_ConvertEventToRenderCoordinates(screen, &event);
+
         switch (event.type) {
         case SDL_EVENT_JOYSTICK_ADDED:
             PrintJoystickInfo(event.jdevice.which);
@@ -739,6 +741,8 @@ static void loop(void *arg)
 int main(int argc, char *argv[])
 {
     int i;
+    float content_scale;
+    int screen_width, screen_height;
     int gamepad_index = -1;
     SDLTest_CommonState *state;
 
@@ -809,7 +813,13 @@ int main(int argc, char *argv[])
     SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
 
     /* Create a window to display gamepad state */
-    window = SDL_CreateWindow("Gamepad Test", SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+    content_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+    if (content_scale == 0.0f) {
+        content_scale = 1.0f;
+    }
+    screen_width = (int)SDL_ceilf(SCREEN_WIDTH * content_scale);
+    screen_height = (int)SDL_ceilf(SCREEN_HEIGHT * content_scale);
+    window = SDL_CreateWindow("Gamepad Test", screen_width, screen_height, 0);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return 2;
