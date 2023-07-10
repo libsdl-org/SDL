@@ -448,7 +448,7 @@ void SDL_EVDEV_Poll(void)
                     switch (events[i].code) {
                     case SYN_REPORT:
                         /* Send mouse axis changes together to ensure consistency and reduce event processing overhead */
-                        if (item->relative_mouse) { 
+                        if (item->relative_mouse) {
                             if (item->mouse_x != 0 || item->mouse_y != 0) {
                                 SDL_SendMouseMotion(mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, item->mouse_x, item->mouse_y);
                                 item->mouse_x = item->mouse_y = 0;
@@ -457,8 +457,8 @@ void SDL_EVDEV_Poll(void)
                             /* TODO: test with multiple display scenarios */
                             SDL_DisplayMode mode;
                             SDL_GetCurrentDisplayMode(0, &mode);
-                            SDL_SendMouseMotion(mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, 
-                                (item->mouse_x - item->min_x) * mode.w / item->range_x, 
+                            SDL_SendMouseMotion(mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse,
+                                (item->mouse_x - item->min_x) * mode.w / item->range_x,
                                 (item->mouse_y - item->min_y) * mode.h / item->range_y);
                         }
 
@@ -550,6 +550,32 @@ static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode)
 #endif /* DEBUG_SCANCODES */
 
     return scancode;
+}
+
+static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
+{
+    int ret;
+    struct input_absinfo abs_info;
+
+    ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
+    if (ret < 0) {
+        // no absolute mode info, continue
+        return 0;
+    }
+    item->min_x = abs_info.minimum;
+    item->max_x = abs_info.maximum;
+    item->range_x = abs_info.maximum - abs_info.minimum;
+
+    ret = ioctl(item->fd, EVIOCGABS(ABS_Y), &abs_info);
+    if (ret < 0) {
+        // no absolute mode info, continue
+        return 0;
+    }
+    item->min_y = abs_info.minimum;
+    item->max_y = abs_info.maximum;
+    item->range_y = abs_info.maximum - abs_info.minimum;
+
+    return 0;
 }
 
 static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
@@ -649,36 +675,6 @@ static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
         SDL_free(item->touchscreen_data);
         return ret;
     }
-
-    return 0;
-}
-
-static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
-{
-    int ret;
-    struct input_absinfo abs_info;
-
-    if (item->is_touchscreen) {
-        return 0;
-    }
-
-    ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
-    if (ret < 0) {
-        // no absolute mode info, continue
-        return 0;
-    }
-    item->min_x = abs_info.minimum;
-    item->max_x = abs_info.maximum;
-    item->range_x = abs_info.maximum - abs_info.minimum;
-
-    ret = ioctl(item->fd, EVIOCGABS(ABS_Y), &abs_info);
-    if (ret < 0) {
-        // no absolute mode info, continue
-        return 0;
-    }
-    item->min_y = abs_info.minimum;
-    item->max_y = abs_info.maximum;
-    item->range_y = abs_info.maximum - abs_info.minimum;
 
     return 0;
 }
