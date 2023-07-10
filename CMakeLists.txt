@@ -620,11 +620,6 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC)
     endif()
   endif()
 
-  set(CMAKE_REQUIRED_FLAGS "-mpreferred-stack-boundary=2")
-  check_c_source_compiles("int x = 0; int main(int argc, char **argv) { return 0; }"
-    HAVE_GCC_PREFERRED_STACK_BOUNDARY)
-  set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
-
   set(CMAKE_REQUIRED_FLAGS "-fvisibility=hidden -Werror")
   check_c_source_compiles("
       #if !defined(__GNUC__) || __GNUC__ < 4

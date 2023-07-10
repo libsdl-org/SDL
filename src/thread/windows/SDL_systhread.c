@@ -55,12 +55,12 @@ static DWORD RunThread(void *data)
     return 0;
 }
 
-static DWORD WINAPI RunThreadViaCreateThread(LPVOID data)
+static DWORD WINAPI MINGW32_FORCEALIGN RunThreadViaCreateThread(LPVOID data)
 {
     return RunThread(data);
 }
 
-static unsigned __stdcall RunThreadViaBeginThreadEx(void *data)
+static unsigned __stdcall MINGW32_FORCEALIGN RunThreadViaBeginThreadEx(void *data)
 {
     return (unsigned)RunThread(data);
 }
