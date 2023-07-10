@@ -882,7 +882,7 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
             return ret;
         }
     } else if (udev_class & SDL_UDEV_DEVICE_MOUSE) {
-        ret = SDL_EVDEV_init_mouse(item, udev_class);
+        int ret = SDL_EVDEV_init_mouse(item, udev_class);
         if (ret < 0) {
             close(item->fd);
             SDL_free(item->path);
