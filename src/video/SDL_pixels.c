@@ -309,14 +309,13 @@ Uint32 SDL_GetPixelFormatEnumForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint3
         /* SDL defaults to MSB ordering */
         return SDL_PIXELFORMAT_INDEX4MSB;
     case 8:
-        if (Rmask == 0) {
-            return SDL_PIXELFORMAT_INDEX8;
-        }
         if (Rmask == 0xE0 &&
             Gmask == 0x1C &&
             Bmask == 0x03 &&
             Amask == 0x00) {
             return SDL_PIXELFORMAT_RGB332;
+        } else {
+            return SDL_PIXELFORMAT_INDEX8;
         }
         break;
     case 12:
