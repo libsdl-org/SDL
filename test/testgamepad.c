@@ -15,6 +15,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+#include <SDL3/SDL_test_font.h>
 
 #include "gamepadutils.h"
 #include "testutils.h"
@@ -23,7 +24,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#define TITLE_HEIGHT 32
+#define TITLE_HEIGHT 48
 #define PANEL_SPACING 25
 #define PANEL_WIDTH 250
 #define GAMEPAD_WIDTH 512
@@ -548,6 +549,51 @@ static void VirtualGamepadMouseUp(float x, float y)
     }
 }
 
+static void DrawGamepadWaiting(SDL_Renderer *renderer)
+{
+    const char *text = "Waiting for gamepad, press A to add a virtual controller";
+    float x, y;
+
+    x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
+    y = (float)TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2;
+    SDLTest_DrawString(renderer, x, y, text);
+}
+
+static void DrawGamepadInfo(SDL_Renderer *renderer, SDL_Gamepad *gamepad)
+{
+    const char *name;
+    const char *serial;
+    char text[128];
+    float x, y;
+
+    name = SDL_GetGamepadName(gamepad);
+    if (name && *name) {
+        x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(name)) / 2;
+        y = (float)TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2;
+        SDLTest_DrawString(renderer, x, y, name);
+    }
+
+    if (SDL_IsJoystickVirtual(SDL_GetGamepadInstanceID(gamepad))) {
+        SDL_strlcpy(text, "Click on the gamepad image below to generate input", sizeof(text));
+        x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
+        y = (float)TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2 + FONT_LINE_HEIGHT + 2.0f;
+        SDLTest_DrawString(renderer, x, y, text);
+    }
+
+    SDL_snprintf(text, SDL_arraysize(text), "VID: 0x%.4x PID: 0x%.4x", SDL_GetGamepadVendor(gamepad), SDL_GetGamepadProduct(gamepad));
+    y = (float)SCREEN_HEIGHT - 8.0f - FONT_LINE_HEIGHT;
+    x = (float)SCREEN_WIDTH - 8.0f - (FONT_CHARACTER_SIZE * SDL_strlen(text));
+    SDLTest_DrawString(renderer, x, y, text);
+
+    serial = SDL_GetGamepadSerial(gamepad);
+    if (serial && *serial) {
+        SDL_snprintf(text, SDL_arraysize(text), "Serial: %s", serial);
+        x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
+        y = (float)SCREEN_HEIGHT - 8.0f - FONT_LINE_HEIGHT;
+        SDLTest_DrawString(renderer, x, y, text);
+    }
+}
+
 static void loop(void *arg)
 {
     SDL_Event event;
@@ -687,15 +733,17 @@ static void loop(void *arg)
     /* blank screen, set up for drawing this frame. */
     SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(screen);
+    SDL_SetRenderDrawColor(screen, 0x10, 0x10, 0x10, SDL_ALPHA_OPAQUE);
 
     if (gamepad) {
         SetGamepadImageShowingFront(image, ShowingFront());
         UpdateGamepadImageFromGamepad(image, gamepad);
         RenderGamepadImage(image);
 
-        SDL_SetRenderDrawColor(screen, 0x10, 0x10, 0x10, SDL_ALPHA_OPAQUE);
         RenderGamepadDisplay(gamepad_elements, gamepad);
         RenderJoystickDisplay(joystick_elements, SDL_GetGamepadJoystick(gamepad));
+
+        DrawGamepadInfo(screen, gamepad);
 
         /* Update LED based on left thumbstick position */
         {
@@ -745,6 +793,8 @@ static void loop(void *arg)
                 SDL_RumbleGamepadTriggers(gamepad, left_rumble, right_rumble, 250);
             }
         }
+    } else {
+        DrawGamepadWaiting(screen);
     }
     SDL_Delay(16);
     SDL_RenderPresent(screen);
