@@ -27,9 +27,10 @@
 
 #include "../SDL_sysaudio.h"
 
-/* The DirectSound objects */
+// The DirectSound objects
 struct SDL_PrivateAudioData
 {
+    // !!! FIXME: make this a union with capture/playback sections?
     LPDIRECTSOUND sound;
     LPDIRECTSOUNDBUFFER mixbuf;
     LPDIRECTSOUNDCAPTURE capture;
@@ -39,4 +40,4 @@ struct SDL_PrivateAudioData
     Uint8 *locked_buf;
 };
 
-#endif /* SDL_directsound_h_ */
+#endif // SDL_directsound_h_
