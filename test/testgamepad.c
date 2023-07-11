@@ -46,6 +46,14 @@ static const char *power_level_strings[] = {
 };
 SDL_COMPILE_TIME_ASSERT(power_level_strings, SDL_arraysize(power_level_strings) == SDL_JOYSTICK_POWER_MAX + 1);
 
+typedef struct 
+{
+    SDL_JoystickID id;
+    SDL_Joystick *joystick;
+    SDL_Gamepad *gamepad;
+    int trigger_effect;
+} Controller;
+
 static SDL_Window *window = NULL;
 static SDL_Renderer *screen = NULL;
 static GamepadImage *image = NULL;
@@ -55,10 +63,9 @@ static GamepadButton *copy_button = NULL;
 static SDL_bool retval = SDL_FALSE;
 static SDL_bool done = SDL_FALSE;
 static SDL_bool set_LED = SDL_FALSE;
-static int trigger_effect = 0;
-static SDL_Gamepad *gamepad;
-static SDL_Gamepad **gamepads;
-static int num_gamepads = 0;
+static int num_controllers = 0;
+static Controller *controllers;
+static Controller *controller;
 static SDL_Joystick *virtual_joystick = NULL;
 static SDL_GamepadAxis virtual_axis_active = SDL_GAMEPAD_AXIS_INVALID;
 static float virtual_axis_start_x;
@@ -132,46 +139,6 @@ static void PrintJoystickInfo(SDL_JoystickID instance_id)
     }
 }
 
-static void UpdateWindowTitle(void)
-{
-    if (window == NULL) {
-        return;
-    }
-
-    if (gamepad) {
-        const char *name = SDL_GetGamepadName(gamepad);
-        const char *serial = SDL_GetGamepadSerial(gamepad);
-        const char *basetitle = "Gamepad Test: ";
-        const size_t titlelen = SDL_strlen(basetitle) + (name ? SDL_strlen(name) : 0) + (serial ? 3 + SDL_strlen(serial) : 0) + 1;
-        char *title = (char *)SDL_malloc(titlelen);
-
-        retval = SDL_FALSE;
-        done = SDL_FALSE;
-
-        if (title) {
-            SDL_strlcpy(title, basetitle, titlelen);
-            if (name) {
-                SDL_strlcat(title, name, titlelen);
-            }
-            if (serial) {
-                SDL_strlcat(title, " (", titlelen);
-                SDL_strlcat(title, serial, titlelen);
-                SDL_strlcat(title, ")", titlelen);
-            }
-            SDL_SetWindowTitle(window, title);
-            SDL_free(title);
-        }
-
-        if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
-            SetGamepadImageShowingTouchpad(image, SDL_TRUE);
-        } else {
-            SetGamepadImageShowingTouchpad(image, SDL_FALSE);
-        }
-    } else {
-        SDL_SetWindowTitle(window, "Waiting for gamepad...");
-    }
-}
-
 static const char *GetSensorName(SDL_SensorType sensor)
 {
     switch (sensor) {
@@ -189,138 +156,6 @@ static const char *GetSensorName(SDL_SensorType sensor)
         return "gyro (R)";
     default:
         return "UNKNOWN";
-    }
-}
-
-static int FindGamepad(SDL_JoystickID gamepad_id)
-{
-    int i;
-
-    for (i = 0; i < num_gamepads; ++i) {
-        if (gamepad_id == SDL_GetJoystickInstanceID(SDL_GetGamepadJoystick(gamepads[i]))) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-static void AddGamepad(SDL_JoystickID gamepad_id, SDL_bool verbose)
-{
-    SDL_Gamepad **new_gamepads;
-    SDL_Gamepad *new_gamepad;
-    Uint16 firmware_version;
-    SDL_SensorType sensors[] = {
-        SDL_SENSOR_ACCEL,
-        SDL_SENSOR_GYRO,
-        SDL_SENSOR_ACCEL_L,
-        SDL_SENSOR_GYRO_L,
-        SDL_SENSOR_ACCEL_R,
-        SDL_SENSOR_GYRO_R
-    };
-    unsigned int i;
-
-    if (FindGamepad(gamepad_id) >= 0) {
-        /* We already have this gamepad */
-        return;
-    }
-
-    new_gamepad = SDL_OpenGamepad(gamepad_id);
-    if (new_gamepad == NULL) {
-        SDL_Log("Couldn't open gamepad: %s\n", SDL_GetError());
-        return;
-    }
-
-    new_gamepads = (SDL_Gamepad **)SDL_realloc(gamepads, (num_gamepads + 1) * sizeof(*gamepads));
-    if (new_gamepads == NULL) {
-        SDL_CloseGamepad(gamepad);
-        return;
-    }
-
-    new_gamepads[num_gamepads++] = new_gamepad;
-    gamepads = new_gamepads;
-    gamepad = new_gamepad;
-    trigger_effect = 0;
-
-    if (verbose) {
-        const char *name = SDL_GetGamepadName(gamepad);
-        const char *path = SDL_GetGamepadPath(gamepad);
-        SDL_Log("Opened gamepad %s%s%s\n", name, path ? ", " : "", path ? path : "");
-    }
-
-    firmware_version = SDL_GetGamepadFirmwareVersion(gamepad);
-    if (firmware_version) {
-        if (verbose) {
-            SDL_Log("Firmware version: 0x%x (%d)\n", firmware_version, firmware_version);
-        }
-    }
-
-    for (i = 0; i < SDL_arraysize(sensors); ++i) {
-        SDL_SensorType sensor = sensors[i];
-
-        if (SDL_GamepadHasSensor(gamepad, sensor)) {
-            if (verbose) {
-                SDL_Log("Enabling %s at %.2f Hz\n", GetSensorName(sensor), SDL_GetGamepadSensorDataRate(gamepad, sensor));
-            }
-            SDL_SetGamepadSensorEnabled(gamepad, sensor, SDL_TRUE);
-        }
-    }
-
-    if (SDL_GamepadHasRumble(gamepad)) {
-        SDL_Log("Rumble supported");
-    }
-
-    if (SDL_GamepadHasRumbleTriggers(gamepad)) {
-        SDL_Log("Trigger rumble supported");
-    }
-
-    UpdateWindowTitle();
-}
-
-static void SetGamepad(SDL_JoystickID gamepad_id)
-{
-    int i = FindGamepad(gamepad_id);
-
-    if (i < 0) {
-        return;
-    }
-
-    if (gamepad != gamepads[i]) {
-        gamepad = gamepads[i];
-        UpdateWindowTitle();
-    }
-}
-
-static void DelGamepad(SDL_JoystickID gamepad_id)
-{
-    int i = FindGamepad(gamepad_id);
-
-    if (i < 0) {
-        return;
-    }
-
-    SDL_CloseGamepad(gamepads[i]);
-
-    --num_gamepads;
-    if (i < num_gamepads) {
-        SDL_memcpy(&gamepads[i], &gamepads[i + 1], (num_gamepads - i) * sizeof(*gamepads));
-    }
-
-    if (num_gamepads > 0) {
-        gamepad = gamepads[0];
-    } else {
-        gamepad = NULL;
-    }
-    UpdateWindowTitle();
-}
-
-static Uint16 ConvertAxisToRumble(Sint16 axisval)
-{
-    /* Only start rumbling if the axis is past the halfway point */
-    const Sint16 half_axis = (Sint16)SDL_ceil(SDL_JOYSTICK_AXIS_MAX / 2.0f);
-    if (axisval > half_axis) {
-        return (Uint16)(axisval - half_axis) * 4;
-    } else {
-        return 0;
     }
 }
 
@@ -352,7 +187,7 @@ typedef struct
     Uint8 ucLedBlue;                  /* 46 */
 } DS5EffectsState_t;
 
-static void CyclePS5TriggerEffect(void)
+static void CyclePS5TriggerEffect(Controller *device)
 {
     DS5EffectsState_t state;
 
@@ -365,13 +200,169 @@ static void CyclePS5TriggerEffect(void)
         { 0x06, 15, 63, 128, 0, 0, 0, 0, 0, 0, 0 },
     };
 
-    trigger_effect = (trigger_effect + 1) % SDL_arraysize(effects);
+    device->trigger_effect = (device->trigger_effect + 1) % SDL_arraysize(effects);
 
     SDL_zero(state);
     state.ucEnableBits1 |= (0x04 | 0x08); /* Modify right and left trigger effect respectively */
-    SDL_memcpy(state.rgucRightTriggerEffect, effects[trigger_effect], sizeof(effects[trigger_effect]));
-    SDL_memcpy(state.rgucLeftTriggerEffect, effects[trigger_effect], sizeof(effects[trigger_effect]));
-    SDL_SendGamepadEffect(gamepad, &state, sizeof(state));
+    SDL_memcpy(state.rgucRightTriggerEffect, effects[device->trigger_effect], sizeof(effects[0]));
+    SDL_memcpy(state.rgucLeftTriggerEffect, effects[device->trigger_effect], sizeof(effects[0]));
+    SDL_SendGamepadEffect(device->gamepad, &state, sizeof(state));
+}
+
+static int FindController(SDL_JoystickID id)
+{
+    int i;
+
+    for (i = 0; i < num_controllers; ++i) {
+        if (id == controllers[i].id) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void SetController(SDL_JoystickID id)
+{
+    int i = FindController(id);
+
+    if (i < 0 && num_controllers > 0) {
+        i = 0;
+    }
+
+    if (i >= 0) {
+        controller = &controllers[i];
+
+        if (controller->gamepad) {
+            SetGamepadImageShowingBattery(image, SDL_TRUE);
+        } else {
+            SetGamepadImageShowingBattery(image, SDL_FALSE);
+        }
+        if (SDL_GetNumGamepadTouchpads(controller->gamepad) > 0) {
+            SetGamepadImageShowingTouchpad(image, SDL_TRUE);
+        } else {
+            SetGamepadImageShowingTouchpad(image, SDL_FALSE);
+        }
+    } else {
+        controller = NULL;
+
+        SetGamepadImageShowingBattery(image, SDL_FALSE);
+        SetGamepadImageShowingTouchpad(image, SDL_FALSE);
+    }
+}
+
+static void AddController(SDL_JoystickID id, SDL_bool verbose)
+{
+    Controller *new_controllers;
+    Controller *new_controller;
+    Uint16 firmware_version;
+    SDL_SensorType sensors[] = {
+        SDL_SENSOR_ACCEL,
+        SDL_SENSOR_GYRO,
+        SDL_SENSOR_ACCEL_L,
+        SDL_SENSOR_GYRO_L,
+        SDL_SENSOR_ACCEL_R,
+        SDL_SENSOR_GYRO_R
+    };
+    unsigned int i;
+
+    if (FindController(id) >= 0) {
+        /* We already have this controller */
+        return;
+    }
+
+    new_controllers = (Controller *)SDL_realloc(controllers, (num_controllers + 1) * sizeof(*controllers));
+    if (new_controllers == NULL) {
+        return;
+    }
+
+    controllers = new_controllers;
+    new_controller = &new_controllers[num_controllers++];
+    SDL_zerop(new_controller);
+    new_controller->id = id;
+    new_controller->joystick = SDL_OpenJoystick(id);
+    new_controller->gamepad = SDL_OpenGamepad(id);
+
+    if (new_controller->gamepad) {
+        SDL_Gamepad *gamepad = new_controller->gamepad;
+
+        if (verbose) {
+            const char *name = SDL_GetGamepadName(gamepad);
+            const char *path = SDL_GetGamepadPath(gamepad);
+            SDL_Log("Opened gamepad %s%s%s\n", name, path ? ", " : "", path ? path : "");
+
+            firmware_version = SDL_GetGamepadFirmwareVersion(gamepad);
+            if (firmware_version) {
+                SDL_Log("Firmware version: 0x%x (%d)\n", firmware_version, firmware_version);
+            }
+
+            if (SDL_GamepadHasRumble(gamepad)) {
+                SDL_Log("Rumble supported");
+            }
+
+            if (SDL_GamepadHasRumbleTriggers(gamepad)) {
+                SDL_Log("Trigger rumble supported");
+            }
+        }
+
+        for (i = 0; i < SDL_arraysize(sensors); ++i) {
+            SDL_SensorType sensor = sensors[i];
+
+            if (SDL_GamepadHasSensor(gamepad, sensor)) {
+                if (verbose) {
+                    SDL_Log("Enabling %s at %.2f Hz\n", GetSensorName(sensor), SDL_GetGamepadSensorDataRate(gamepad, sensor));
+                }
+                SDL_SetGamepadSensorEnabled(gamepad, sensor, SDL_TRUE);
+            }
+        }
+    } else {
+        SDL_Joystick *joystick = new_controller->joystick;
+
+        if (verbose) {
+            const char *name = SDL_GetJoystickName(joystick);
+            const char *path = SDL_GetJoystickPath(joystick);
+            SDL_Log("Opened joystick %s%s%s\n", name, path ? ", " : "", path ? path : "");
+        }
+    }
+
+    SetController(id);
+}
+
+static void DelController(SDL_JoystickID id)
+{
+    int i = FindController(id);
+
+    if (i < 0) {
+        return;
+    }
+
+    /* Reset trigger state */
+    if (controllers[i].trigger_effect != 0) {
+        controllers[i].trigger_effect = -1;
+        CyclePS5TriggerEffect(&controllers[i]);
+    }
+    if (controllers[i].gamepad) {
+        SDL_CloseGamepad(controllers[i].gamepad);
+    }
+    if (controllers[i].joystick) {
+        SDL_CloseJoystick(controllers[i].joystick);
+    }
+
+    --num_controllers;
+    if (i < num_controllers) {
+        SDL_memcpy(&controllers[i], &controllers[i + 1], (num_controllers - i) * sizeof(*controllers));
+    }
+    SetController(0);
+}
+
+static Uint16 ConvertAxisToRumble(Sint16 axisval)
+{
+    /* Only start rumbling if the axis is past the halfway point */
+    const Sint16 half_axis = (Sint16)SDL_ceil(SDL_JOYSTICK_AXIS_MAX / 2.0f);
+    if (axisval > half_axis) {
+        return (Uint16)(axisval - half_axis) * 4;
+    } else {
+        return 0;
+    }
 }
 
 static SDL_bool ShowingFront(void)
@@ -379,10 +370,10 @@ static SDL_bool ShowingFront(void)
     SDL_bool showing_front = SDL_TRUE;
     int i;
 
-    if (gamepad) {
+    if (controller->gamepad) {
         /* Show the back of the gamepad if the paddles are being held */
         for (i = SDL_GAMEPAD_BUTTON_PADDLE1; i <= SDL_GAMEPAD_BUTTON_PADDLE4; ++i) {
-            if (SDL_GetGamepadButton(gamepad, (SDL_GamepadButton)i) == SDL_PRESSED) {
+            if (SDL_GetGamepadButton(controller->gamepad, (SDL_GamepadButton)i) == SDL_PRESSED) {
                 showing_front = SDL_FALSE;
                 break;
             }
@@ -569,26 +560,32 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     char text[128];
     float x, y;
 
-    name = SDL_GetGamepadName(gamepad);
+    if (controller->gamepad) {
+        name = SDL_GetGamepadName(controller->gamepad);
+    } else {
+        name = SDL_GetJoystickName(controller->joystick);
+    }
     if (name && *name) {
         x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(name)) / 2;
         y = (float)TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2;
         SDLTest_DrawString(renderer, x, y, name);
     }
 
-    if (SDL_IsJoystickVirtual(SDL_GetGamepadInstanceID(gamepad))) {
+    if (SDL_IsJoystickVirtual(controller->id)) {
         SDL_strlcpy(text, "Click on the gamepad image below to generate input", sizeof(text));
         x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
         y = (float)TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2 + FONT_LINE_HEIGHT + 2.0f;
         SDLTest_DrawString(renderer, x, y, text);
     }
 
-    SDL_snprintf(text, SDL_arraysize(text), "VID: 0x%.4x PID: 0x%.4x", SDL_GetGamepadVendor(gamepad), SDL_GetGamepadProduct(gamepad));
+    SDL_snprintf(text, SDL_arraysize(text), "VID: 0x%.4x PID: 0x%.4x",
+        SDL_GetJoystickVendor(controller->joystick),
+        SDL_GetJoystickProduct(controller->joystick));
     y = (float)SCREEN_HEIGHT - 8.0f - FONT_LINE_HEIGHT;
     x = (float)SCREEN_WIDTH - 8.0f - (FONT_CHARACTER_SIZE * SDL_strlen(text));
     SDLTest_DrawString(renderer, x, y, text);
 
-    serial = SDL_GetGamepadSerial(gamepad);
+    serial = SDL_GetJoystickSerial(controller->joystick);
     if (serial && *serial) {
         SDL_snprintf(text, SDL_arraysize(text), "Serial: %s", serial);
         x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
@@ -599,28 +596,30 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
 
 static void CopyMappingToClipboard()
 {
-    char *mapping = SDL_GetGamepadMapping(gamepad);
-    if (mapping) {
-        const char *name = SDL_GetGamepadName(gamepad);
-        char *wildcard = SDL_strchr(mapping, '*');
-        if (wildcard && name && *name) {
-            char *text;
-            size_t size;
+    if (controller && controller->gamepad) {
+        char *mapping = SDL_GetGamepadMapping(controller->gamepad);
+        if (mapping) {
+            const char *name = SDL_GetGamepadName(controller->gamepad);
+            char *wildcard = SDL_strchr(mapping, '*');
+            if (wildcard && name && *name) {
+                char *text;
+                size_t size;
 
-            /* Personalize the mapping for this controller */
-            *wildcard++ = '\0';
-            size = SDL_strlen(mapping) + SDL_strlen(name) + SDL_strlen(wildcard) + 1;
-            text = SDL_malloc(size);
-            if (!text) {
-                return;
+                /* Personalize the mapping for this controller */
+                *wildcard++ = '\0';
+                size = SDL_strlen(mapping) + SDL_strlen(name) + SDL_strlen(wildcard) + 1;
+                text = SDL_malloc(size);
+                if (!text) {
+                    return;
+                }
+                SDL_snprintf(text, size, "%s%s%s", mapping, name, wildcard);
+                SDL_SetClipboardText(text);
+                SDL_free(text);
+            } else {
+                SDL_SetClipboardText(mapping);
             }
-            SDL_snprintf(text, size, "%s%s%s", mapping, name, wildcard);
-            SDL_SetClipboardText(text);
-            SDL_free(text);
-        } else {
-            SDL_SetClipboardText(mapping);
+            SDL_free(mapping);
         }
-        SDL_free(mapping);
     }
 }
 
@@ -637,19 +636,21 @@ static void loop(void *arg)
 
         switch (event.type) {
         case SDL_EVENT_JOYSTICK_ADDED:
-            PrintJoystickInfo(event.jdevice.which);
+            AddController(event.jdevice.which, SDL_TRUE);
             break;
 
-        case SDL_EVENT_GAMEPAD_ADDED:
-            SDL_Log("Gamepad device %" SDL_PRIu32 " added.\n",
-                    event.gdevice.which);
-            AddGamepad(event.gdevice.which, SDL_TRUE);
+        case SDL_EVENT_JOYSTICK_REMOVED:
+            DelController(event.jdevice.which);
             break;
 
-        case SDL_EVENT_GAMEPAD_REMOVED:
-            SDL_Log("Gamepad device %" SDL_PRIu32 " removed.\n",
-                    event.gdevice.which);
-            DelGamepad(event.gdevice.which);
+        case SDL_EVENT_JOYSTICK_AXIS_MOTION:
+            if (event.jaxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.jaxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
+                SetController(event.jaxis.which);
+            }
+            break;
+
+        case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+            SetController(event.jbutton.which);
             break;
 
         case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
@@ -682,7 +683,7 @@ static void loop(void *arg)
 #ifdef VERBOSE_AXES
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
             if (event.gaxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.gaxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
-                SetGamepad(event.gaxis.which);
+                SetController(event.gaxis.which);
             }
             SDL_Log("Gamepad %" SDL_PRIu32 " axis %s changed to %d\n",
                     event.gaxis.which,
@@ -694,7 +695,7 @@ static void loop(void *arg)
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
         case SDL_EVENT_GAMEPAD_BUTTON_UP:
             if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
-                SetGamepad(event.gbutton.which);
+                SetController(event.gbutton.which);
             }
             SDL_Log("Gamepad %" SDL_PRIu32 " button %s %s\n",
                     event.gbutton.which,
@@ -703,9 +704,9 @@ static void loop(void *arg)
 
             /* Cycle PS5 trigger effects when the microphone button is pressed */
             if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN &&
-                event.gbutton.button == SDL_GAMEPAD_BUTTON_MISC1 &&
-                SDL_GetGamepadType(gamepad) == SDL_GAMEPAD_TYPE_PS5) {
-                CyclePS5TriggerEffect();
+                controller && SDL_GetGamepadType(controller->gamepad) == SDL_GAMEPAD_TYPE_PS5 &&
+                event.gbutton.button == SDL_GAMEPAD_BUTTON_MISC1) {
+                CyclePS5TriggerEffect(controller);
             }
             break;
 
@@ -739,10 +740,10 @@ static void loop(void *arg)
 
         case SDL_EVENT_KEY_DOWN:
             if (event.key.keysym.sym >= SDLK_0 && event.key.keysym.sym <= SDLK_9) {
-                if (gamepad) {
+                if (controller && controller->gamepad) {
                     int player_index = (event.key.keysym.sym - SDLK_0);
 
-                    SDL_SetGamepadPlayerIndex(gamepad, player_index);
+                    SDL_SetGamepadPlayerIndex(controller->gamepad, player_index);
                 }
                 break;
             }
@@ -754,10 +755,10 @@ static void loop(void *arg)
                 CloseVirtualGamepad();
                 break;
             }
-            if (event.key.keysym.sym != SDLK_ESCAPE) {
-                break;
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                done = SDL_TRUE;
             }
-            SDL_FALLTHROUGH;
+            break;
         case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
@@ -771,64 +772,68 @@ static void loop(void *arg)
     SDL_RenderClear(screen);
     SDL_SetRenderDrawColor(screen, 0x10, 0x10, 0x10, SDL_ALPHA_OPAQUE);
 
-    if (gamepad) {
+    if (controller) {
         SetGamepadImageShowingFront(image, ShowingFront());
-        UpdateGamepadImageFromGamepad(image, gamepad);
+        UpdateGamepadImageFromGamepad(image, controller->gamepad);
         RenderGamepadImage(image);
 
-        RenderGamepadDisplay(gamepad_elements, gamepad);
-        RenderJoystickDisplay(joystick_elements, SDL_GetGamepadJoystick(gamepad));
+        RenderGamepadDisplay(gamepad_elements, controller->gamepad);
+        RenderJoystickDisplay(joystick_elements, controller->joystick);
 
-        RenderGamepadButton(copy_button);
+        if (controller->gamepad) {
+            RenderGamepadButton(copy_button);
+        }
 
         DrawGamepadInfo(screen);
 
-        /* Update LED based on left thumbstick position */
-        {
-            Sint16 x = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTX);
-            Sint16 y = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTY);
-
-            if (!set_LED) {
-                set_LED = (x < -8000 || x > 8000 || y > 8000);
-            }
-            if (set_LED) {
-                Uint8 r, g, b;
-
-                if (x < 0) {
-                    r = (Uint8)(((~x) * 255) / 32767);
-                    b = 0;
-                } else {
-                    r = 0;
-                    b = (Uint8)(((int)(x)*255) / 32767);
-                }
-                if (y > 0) {
-                    g = (Uint8)(((int)(y)*255) / 32767);
-                } else {
-                    g = 0;
-                }
-
-                SDL_SetGamepadLED(gamepad, r, g, b);
-            }
-        }
-
-        if (trigger_effect == 0) {
-            /* Update rumble based on trigger state */
+        if (controller->gamepad) {
+            /* Update LED based on left thumbstick position */
             {
-                Sint16 left = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER);
-                Sint16 right = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
-                Uint16 low_frequency_rumble = ConvertAxisToRumble(left);
-                Uint16 high_frequency_rumble = ConvertAxisToRumble(right);
-                SDL_RumbleGamepad(gamepad, low_frequency_rumble, high_frequency_rumble, 250);
+                Sint16 x = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFTX);
+                Sint16 y = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFTY);
+
+                if (!set_LED) {
+                    set_LED = (x < -8000 || x > 8000 || y > 8000);
+                }
+                if (set_LED) {
+                    Uint8 r, g, b;
+
+                    if (x < 0) {
+                        r = (Uint8)(((~x) * 255) / 32767);
+                        b = 0;
+                    } else {
+                        r = 0;
+                        b = (Uint8)(((int)(x)*255) / 32767);
+                    }
+                    if (y > 0) {
+                        g = (Uint8)(((int)(y)*255) / 32767);
+                    } else {
+                        g = 0;
+                    }
+
+                    SDL_SetGamepadLED(controller->gamepad, r, g, b);
+                }
             }
 
-            /* Update trigger rumble based on thumbstick state */
-            {
-                Sint16 left = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTY);
-                Sint16 right = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHTY);
-                Uint16 left_rumble = ConvertAxisToRumble(~left);
-                Uint16 right_rumble = ConvertAxisToRumble(~right);
+            if (controller->trigger_effect == 0) {
+                /* Update rumble based on trigger state */
+                {
+                    Sint16 left = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER);
+                    Sint16 right = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
+                    Uint16 low_frequency_rumble = ConvertAxisToRumble(left);
+                    Uint16 high_frequency_rumble = ConvertAxisToRumble(right);
+                    SDL_RumbleGamepad(controller->gamepad, low_frequency_rumble, high_frequency_rumble, 250);
+                }
 
-                SDL_RumbleGamepadTriggers(gamepad, left_rumble, right_rumble, 250);
+                /* Update trigger rumble based on thumbstick state */
+                {
+                    Sint16 left = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFTY);
+                    Sint16 right = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_RIGHTY);
+                    Uint16 left_rumble = ConvertAxisToRumble(~left);
+                    Uint16 right_rumble = ConvertAxisToRumble(~right);
+
+                    SDL_RumbleGamepadTriggers(controller->gamepad, left_rumble, right_rumble, 250);
+                }
             }
         }
     } else {
@@ -971,12 +976,11 @@ int main(int argc, char *argv[])
     /* Process the initial gamepad list */
     loop(NULL);
 
-    if (gamepad_index < num_gamepads) {
-        gamepad = gamepads[gamepad_index];
-    } else {
-        gamepad = NULL;
+    if (gamepad_index < num_controllers) {
+        SetController(controllers[gamepad_index].id);
+    } else if (num_controllers > 0) {
+        SetController(controllers[0].id);
     }
-    UpdateWindowTitle();
 
     /* Loop, getting gamepad events! */
 #ifdef __EMSCRIPTEN__
@@ -987,13 +991,10 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    /* Reset trigger state */
-    if (trigger_effect != 0) {
-        trigger_effect = -1;
-        CyclePS5TriggerEffect();
-    }
-
     CloseVirtualGamepad();
+    while (num_controllers > 0) {
+        DelController(controllers[0].id);
+    }
     DestroyGamepadImage(image);
     DestroyGamepadDisplay(gamepad_elements);
     DestroyJoystickDisplay(joystick_elements);
