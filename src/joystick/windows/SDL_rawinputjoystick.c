@@ -1105,8 +1105,13 @@ static void RAWINPUT_PostUpdate(void)
 
 static void RAWINPUT_JoystickDetect(void)
 {
-    SDL_bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? SDL_TRUE : SDL_FALSE;
+    SDL_bool remote_desktop;
 
+    if (!SDL_RAWINPUT_inited) {
+        return;
+    }
+
+    remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? SDL_TRUE : SDL_FALSE;
     if (remote_desktop != SDL_RAWINPUT_remote_desktop) {
         SDL_RAWINPUT_remote_desktop = remote_desktop;
 
@@ -2028,8 +2033,12 @@ static void RAWINPUT_JoystickClose(SDL_Joystick *joystick)
 
 SDL_bool RAWINPUT_RegisterNotifications(HWND hWnd)
 {
-    RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];
     int i;
+    RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];
+
+    if (!SDL_RAWINPUT_inited) {
+        return SDL_TRUE;
+    }
 
     for (i = 0; i < SDL_arraysize(subscribed_devices); i++) {
         rid[i].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
@@ -2049,6 +2058,10 @@ int RAWINPUT_UnregisterNotifications()
 {
     int i;
     RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];
+
+    if (!SDL_RAWINPUT_inited) {
+        return SDL_TRUE;
+    }
 
     for (i = 0; i < SDL_arraysize(subscribed_devices); i++) {
         rid[i].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
