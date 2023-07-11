@@ -26,6 +26,7 @@
 #include "gamepad_button_small.h"
 #include "gamepad_axis.h"
 #include "gamepad_axis_arrow.h"
+#include "gamepad_button_background.h"
 
 /* This is indexed by SDL_GamepadButton. */
 static const struct
@@ -612,6 +613,10 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     SDL_bool has_accel;
     SDL_bool has_gyro;
 
+    if (!ctx) {
+        return;
+    }
+
     SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
 
     x = ctx->area.x + margin;
@@ -776,6 +781,12 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
 void DestroyGamepadDisplay(GamepadDisplay *ctx)
 {
+    if (!ctx) {
+        return;
+    }
+
+    SDL_DestroyTexture(ctx->button_texture);
+    SDL_DestroyTexture(ctx->arrow_texture);
     SDL_free(ctx);
 }
 
@@ -833,6 +844,10 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
     const float arrow_extent = 48.0f;
     SDL_FRect dst, rect;
     Uint8 r, g, b, a;
+
+    if (!ctx) {
+        return;
+    }
 
     SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
 
@@ -993,6 +1008,195 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
 void DestroyJoystickDisplay(JoystickDisplay *ctx)
 {
+    if (!ctx) {
+        return;
+    }
+
+    SDL_DestroyTexture(ctx->button_texture);
+    SDL_DestroyTexture(ctx->arrow_texture);
     SDL_free(ctx);
 }
 
+
+struct GamepadButton
+{
+    SDL_Renderer *renderer;
+    SDL_Texture *background;
+    int background_width;
+    int background_height;
+
+    SDL_FRect area;
+
+    char *label;
+    int label_width;
+    int label_height;
+
+    SDL_bool highlight;
+};
+
+GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label)
+{
+    GamepadButton *ctx = SDL_calloc(1, sizeof(*ctx));
+    if (ctx) {
+        ctx->renderer = renderer;
+
+        ctx->background = CreateTexture(renderer, gamepad_button_background_bmp, gamepad_button_background_bmp_len);
+        SDL_QueryTexture(ctx->background, NULL, NULL, &ctx->background_width, &ctx->background_height);
+
+        ctx->label = SDL_strdup(label);
+        ctx->label_width = (int)(FONT_CHARACTER_SIZE * SDL_strlen(label));
+        ctx->label_height = FONT_CHARACTER_SIZE;
+    }
+    return ctx;
+}
+
+void SetGamepadButtonArea(GamepadButton *ctx, int x, int y, int w, int h)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->area.x = (float)x;
+    ctx->area.y = (float)y;
+    ctx->area.w = (float)w;
+    ctx->area.h = (float)h;
+}
+
+void SetGamepadButtonHighlight(GamepadButton *ctx, SDL_bool highlight)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->highlight = highlight;
+}
+
+int GetGamepadButtonLabelWidth(GamepadButton *ctx)
+{
+    if (!ctx) {
+        return 0;
+    }
+
+    return ctx->label_width;
+}
+
+int GetGamepadButtonLabelHeight(GamepadButton *ctx)
+{
+    if (!ctx) {
+        return 0;
+    }
+
+    return ctx->label_height;
+}
+
+SDL_bool GamepadButtonContains(GamepadButton *ctx, float x, float y)
+{
+    SDL_FPoint point;
+
+    if (!ctx) {
+        return SDL_FALSE;
+    }
+
+    point.x = x;
+    point.y = y;
+    return SDL_PointInRectFloat(&point, &ctx->area);
+}
+
+void RenderGamepadButton(GamepadButton *ctx)
+{
+    SDL_FRect src, dst;
+    float one_third_src_width;
+    float one_third_src_height;
+
+    if (!ctx) {
+        return;
+    }
+
+    one_third_src_width = (float)ctx->background_width / 3;
+    one_third_src_height = (float)ctx->background_height / 3;
+
+    if (ctx->highlight) {
+        SDL_SetTextureColorMod(ctx->background, 10, 255, 21);
+    } else {
+        SDL_SetTextureColorMod(ctx->background, 255, 255, 255);
+    }
+
+    /* Top left */
+    src.x = 0.0f;
+    src.y = 0.0f;
+    src.w = one_third_src_width;
+    src.h = one_third_src_height;
+    dst.x = ctx->area.x;
+    dst.y = ctx->area.y;
+    dst.w = src.w;
+    dst.h = src.h;
+    SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
+
+    /* Bottom left */
+    src.y = (float)ctx->background_height - src.h;
+    dst.y = ctx->area.y + ctx->area.h - dst.h;
+    SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
+
+    /* Bottom right */
+    src.x = (float)ctx->background_width - src.w;
+    dst.x = ctx->area.x + ctx->area.w - dst.w;
+    SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
+
+    /* Top right */
+    src.y = 0.0f;
+    dst.y = ctx->area.y;
+    SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
+
+    /* Left */
+    src.x = 0.0f;
+    src.y = one_third_src_height;
+    dst.x = ctx->area.x;
+    dst.y = ctx->area.y + one_third_src_height;
+    dst.w = one_third_src_width;
+    dst.h = (float)ctx->area.h - 2 * one_third_src_height;
+    SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
+
+    /* Right */
+    src.x = (float)ctx->background_width - one_third_src_width;
+    dst.x = ctx->area.x + ctx->area.w - one_third_src_width;
+    SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
+
+    /* Top */
+    src.x = one_third_src_width;
+    src.y = 0.0f;
+    dst.x = ctx->area.x + one_third_src_width;
+    dst.y = ctx->area.y;
+    dst.w = ctx->area.w - 2 * one_third_src_width;
+    dst.h = one_third_src_height;
+    SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
+
+    /* Bottom */
+    src.y = (float)ctx->background_height - src.h;
+    dst.y = ctx->area.y + ctx->area.h - one_third_src_height;
+    SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
+
+    /* Center */
+    src.x = one_third_src_width;
+    src.y = one_third_src_height;
+    dst.x = ctx->area.x + one_third_src_width;
+    dst.y = ctx->area.y + one_third_src_height;
+    dst.w = ctx->area.w - 2 * one_third_src_width;
+    dst.h = (float)ctx->area.h - 2 * one_third_src_height;
+    SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
+
+    /* Label */
+    dst.x = ctx->area.x + ctx->area.w / 2 - ctx->label_width / 2;
+    dst.y = ctx->area.y + ctx->area.h / 2 - ctx->label_height / 2;
+    SDLTest_DrawString(ctx->renderer, dst.x, dst.y, ctx->label);
+}
+
+void DestroyGamepadButton(GamepadButton *ctx)
+{
+    if (!ctx) {
+        return;
+    }
+
+    SDL_DestroyTexture(ctx->background);
+    SDL_free(ctx->label);
+    SDL_free(ctx);
+}
