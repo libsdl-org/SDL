@@ -15,6 +15,12 @@
 #include "gamepadutils.h"
 #include "gamepad_front.h"
 #include "gamepad_back.h"
+#include "gamepad_battery_unknown.h"
+#include "gamepad_battery_empty.h"
+#include "gamepad_battery_low.h"
+#include "gamepad_battery_medium.h"
+#include "gamepad_battery_full.h"
+#include "gamepad_battery_wired.h"
 #include "gamepad_touchpad.h"
 #include "gamepad_button.h"
 #include "gamepad_button_small.h"
@@ -81,11 +87,14 @@ struct GamepadImage
     SDL_Renderer *renderer;
     SDL_Texture *front_texture;
     SDL_Texture *back_texture;
+    SDL_Texture *battery_texture[SDL_JOYSTICK_POWER_MAX];
     SDL_Texture *touchpad_texture;
     SDL_Texture *button_texture;
     SDL_Texture *axis_texture;
     int gamepad_width;
     int gamepad_height;
+    int battery_width;
+    int battery_height;
     int touchpad_width;
     int touchpad_height;
     int button_width;
@@ -96,10 +105,13 @@ struct GamepadImage
     int x;
     int y;
     SDL_bool showing_front;
+    SDL_bool showing_battery;
     SDL_bool showing_touchpad;
 
     SDL_bool buttons[SDL_GAMEPAD_BUTTON_MAX];
     int axes[SDL_GAMEPAD_AXIS_MAX];
+
+    SDL_JoystickPowerLevel battery_level;
 
     int num_fingers;
     GamepadTouchpadFinger *fingers;
@@ -128,6 +140,14 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
         ctx->front_texture = CreateTexture(renderer, gamepad_front_bmp, gamepad_front_bmp_len);
         ctx->back_texture = CreateTexture(renderer, gamepad_back_bmp, gamepad_back_bmp_len);
         SDL_QueryTexture(ctx->front_texture, NULL, NULL, &ctx->gamepad_width, &ctx->gamepad_height);
+
+        ctx->battery_texture[SDL_JOYSTICK_POWER_UNKNOWN] = CreateTexture(renderer, gamepad_battery_unknown_bmp, gamepad_battery_unknown_bmp_len);
+        ctx->battery_texture[SDL_JOYSTICK_POWER_EMPTY] = CreateTexture(renderer, gamepad_battery_empty_bmp, gamepad_battery_empty_bmp_len);
+        ctx->battery_texture[SDL_JOYSTICK_POWER_LOW] = CreateTexture(renderer, gamepad_battery_low_bmp, gamepad_battery_low_bmp_len);
+        ctx->battery_texture[SDL_JOYSTICK_POWER_MEDIUM] = CreateTexture(renderer, gamepad_battery_medium_bmp, gamepad_battery_medium_bmp_len);
+        ctx->battery_texture[SDL_JOYSTICK_POWER_FULL] = CreateTexture(renderer, gamepad_battery_full_bmp, gamepad_battery_full_bmp_len);
+        ctx->battery_texture[SDL_JOYSTICK_POWER_WIRED] = CreateTexture(renderer, gamepad_battery_wired_bmp, gamepad_battery_wired_bmp_len);
+        SDL_QueryTexture(ctx->battery_texture[SDL_JOYSTICK_POWER_UNKNOWN], NULL, NULL, &ctx->battery_width, &ctx->battery_height);
 
         ctx->touchpad_texture = CreateTexture(renderer, gamepad_touchpad_bmp, gamepad_touchpad_bmp_len);
         SDL_QueryTexture(ctx->touchpad_texture, NULL, NULL, &ctx->touchpad_width, &ctx->touchpad_height);
@@ -162,6 +182,15 @@ void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front)
     }
 
     ctx->showing_front = showing_front;
+}
+
+void SetGamepadImageShowingBattery(GamepadImage *ctx, SDL_bool showing_battery)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->showing_battery = showing_battery;
 }
 
 void SetGamepadImageShowingTouchpad(GamepadImage *ctx, SDL_bool showing_touchpad)
@@ -360,6 +389,8 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
         }
     }
 
+    ctx->battery_level = SDL_GetJoystickPowerLevel(SDL_GetGamepadJoystick(gamepad));
+
     if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
         int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, 0);
         if (num_fingers != ctx->num_fingers) {
@@ -436,6 +467,14 @@ void RenderGamepadImage(GamepadImage *ctx)
         }
     }
 
+    if (ctx->showing_battery) {
+        dst.x = (float)ctx->x + ctx->gamepad_width - ctx->battery_width;
+        dst.y = (float)ctx->y;
+        dst.w = (float)ctx->battery_width;
+        dst.h = (float)ctx->battery_height;
+        SDL_RenderTexture(ctx->renderer, ctx->battery_texture[ctx->battery_level], NULL, &dst);
+    }
+
     if (ctx->showing_touchpad) {
         dst.x = (float)ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2;
         dst.y = (float)ctx->y + ctx->gamepad_height;
@@ -466,8 +505,14 @@ void RenderGamepadImage(GamepadImage *ctx)
 void DestroyGamepadImage(GamepadImage *ctx)
 {
     if (ctx) {
+        int i;
+
         SDL_DestroyTexture(ctx->front_texture);
         SDL_DestroyTexture(ctx->back_texture);
+        for (i = 0; i < SDL_arraysize(ctx->battery_texture); ++i) {
+            SDL_DestroyTexture(ctx->battery_texture[i]);
+        }
+        SDL_DestroyTexture(ctx->touchpad_texture);
         SDL_DestroyTexture(ctx->button_texture);
         SDL_DestroyTexture(ctx->axis_texture);
         SDL_free(ctx);

@@ -916,6 +916,7 @@ int main(int argc, char *argv[])
         return 2;
     }
     SetGamepadImagePosition(image, PANEL_WIDTH + PANEL_SPACING, TITLE_HEIGHT);
+    SetGamepadImageShowingBattery(image, SDL_TRUE);
 
     gamepad_elements = CreateGamepadDisplay(screen);
     SetGamepadDisplayArea(gamepad_elements, 0, TITLE_HEIGHT, PANEL_WIDTH, GAMEPAD_HEIGHT);

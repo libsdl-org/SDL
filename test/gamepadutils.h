@@ -17,6 +17,7 @@ typedef struct GamepadImage GamepadImage;
 extern GamepadImage *CreateGamepadImage(SDL_Renderer *renderer);
 extern void SetGamepadImagePosition(GamepadImage *ctx, int x, int y);
 extern void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front);
+extern void SetGamepadImageShowingBattery(GamepadImage *ctx, SDL_bool showing_battery);
 extern void SetGamepadImageShowingTouchpad(GamepadImage *ctx, SDL_bool showing_touchpad);
 extern void GetGamepadImageArea(GamepadImage *ctx, int *x, int *y, int *width, int *height);
 extern int GetGamepadImageButtonWidth(GamepadImage *ctx);
