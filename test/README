@@ -10,7 +10,6 @@ These are test programs for the SDL library:
 	testfile	Tests RWops layer
 	testgl		A very simple example of using OpenGL with SDL
 	testiconv	Tests international string conversion
-	testjoystick	List joysticks and watch joystick events
 	testkeys	List the available keyboard keys
 	testloadso	Tests the loadable library layer
 	testlocale  Test Locale API
