@@ -408,6 +408,12 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
 
             SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &finger->state, &finger->x, &finger->y, &finger->pressure);
         }
+    } else {
+        if (ctx->fingers) {
+            SDL_free(ctx->fingers);
+            ctx->fingers = NULL;
+            ctx->num_fingers = 0;
+        }
     }
 }
 
@@ -613,7 +619,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     SDL_bool has_accel;
     SDL_bool has_gyro;
 
-    if (!ctx) {
+    if (!ctx || !gamepad) {
         return;
     }
 
