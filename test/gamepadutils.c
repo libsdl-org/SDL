@@ -389,7 +389,7 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
         }
     }
 
-    ctx->battery_level = SDL_GetJoystickPowerLevel(SDL_GetGamepadJoystick(gamepad));
+    ctx->battery_level = SDL_GetGamepadPowerLevel(gamepad);
 
     if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
         int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, 0);
