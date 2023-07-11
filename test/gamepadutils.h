@@ -10,24 +10,6 @@
   freely.
 */
 
-/* Joystick element display */
-
-typedef struct JoystickDisplay JoystickDisplay;
-
-extern JoystickDisplay *CreateJoystickDisplay(SDL_Renderer *renderer);
-extern void SetJoystickDisplayArea(JoystickDisplay *ctx, int x, int y, int w, int h);
-extern void UpdateJoystickDisplayFromJoystick(JoystickDisplay *ctx, SDL_Joystick *joystick);
-extern void RenderJoystickDisplay(JoystickDisplay *ctx);
-
-/* Gamepad element display */
-
-typedef struct GamepadDisplay GamepadDisplay;
-
-extern GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer);
-extern void SetGamepadDisplayArea(GamepadDisplay *ctx, int x, int y, int w, int h);
-extern void UpdateGamepadDisplayFromGamepad(GamepadDisplay *ctx, SDL_Gamepad *joystick);
-extern void RenderGamepadDisplay(GamepadDisplay *ctx);
-
 /* Gamepad image */
 
 typedef struct GamepadImage GamepadImage;
@@ -52,4 +34,22 @@ extern void SetGamepadImageAxis(GamepadImage *ctx, SDL_GamepadAxis axis, int dir
 extern void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad);
 extern void RenderGamepadImage(GamepadImage *ctx);
 extern void DestroyGamepadImage(GamepadImage *ctx);
+
+/* Gamepad element display */
+
+typedef struct GamepadDisplay GamepadDisplay;
+
+extern GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer);
+extern void SetGamepadDisplayArea(GamepadDisplay *ctx, int x, int y, int w, int h);
+extern void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad);
+extern void DestroyGamepadDisplay(GamepadDisplay *ctx);
+
+/* Joystick element display */
+
+typedef struct JoystickDisplay JoystickDisplay;
+
+extern JoystickDisplay *CreateJoystickDisplay(SDL_Renderer *renderer);
+extern void SetJoystickDisplayArea(JoystickDisplay *ctx, int x, int y, int w, int h);
+extern void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick);
+extern void DestroyJoystickDisplay(JoystickDisplay *ctx);
 

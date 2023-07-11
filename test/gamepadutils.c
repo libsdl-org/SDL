@@ -10,13 +10,16 @@
   freely.
 */
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_test_font.h>
 
 #include "gamepadutils.h"
 #include "gamepad_front.h"
 #include "gamepad_back.h"
 #include "gamepad_touchpad.h"
 #include "gamepad_button.h"
+#include "gamepad_button_small.h"
 #include "gamepad_axis.h"
+#include "gamepad_axis_arrow.h"
 
 /* This is indexed by SDL_GamepadButton. */
 static const struct
@@ -110,26 +113,6 @@ static SDL_Texture *CreateTexture(SDL_Renderer *renderer, unsigned char *data, u
     if (src) {
         surface = SDL_LoadBMP_RW(src, SDL_TRUE);
         if (surface) {
-            if (surface->format->palette) {
-                SDL_SetSurfaceColorKey(surface, SDL_TRUE, *(Uint8 *)surface->pixels);
-            } else {
-                switch (surface->format->BitsPerPixel) {
-                case 15:
-                    SDL_SetSurfaceColorKey(surface, SDL_TRUE,
-                                    (*(Uint16 *)surface->pixels) & 0x00007FFF);
-                    break;
-                case 16:
-                    SDL_SetSurfaceColorKey(surface, SDL_TRUE, *(Uint16 *)surface->pixels);
-                    break;
-                case 24:
-                    SDL_SetSurfaceColorKey(surface, SDL_TRUE,
-                                    (*(Uint32 *)surface->pixels) & 0x00FFFFFF);
-                    break;
-                case 32:
-                    SDL_SetSurfaceColorKey(surface, SDL_TRUE, *(Uint32 *)surface->pixels);
-                    break;
-                }
-            }
             texture = SDL_CreateTextureFromSurface(renderer, surface);
             SDL_DestroySurface(surface);
         }
@@ -490,3 +473,406 @@ void DestroyGamepadImage(GamepadImage *ctx)
         SDL_free(ctx);
     }
 }
+
+
+static const char *gamepad_button_names[] = {
+    "A",
+    "B",
+    "X",
+    "Y",
+    "Back",
+    "Guide",
+    "Start",
+    "Left Stick",
+    "Right Stick",
+    "Left Shoulder",
+    "Right Shoulder",
+    "DPAD Up",
+    "DPAD Down",
+    "DPAD Left",
+    "DPAD Right",
+    "Misc1",
+    "Paddle1",
+    "Paddle2",
+    "Paddle3",
+    "Paddle4",
+    "Touchpad",
+};
+SDL_COMPILE_TIME_ASSERT(gamepad_button_names, SDL_arraysize(gamepad_button_names) == SDL_GAMEPAD_BUTTON_MAX);
+
+static const char *gamepad_axis_names[] = {
+    "LeftX",
+    "RightX",
+    "RightX",
+    "RightY",
+    "Left Trigger",
+    "Right Trigger",
+};
+SDL_COMPILE_TIME_ASSERT(gamepad_axis_names, SDL_arraysize(gamepad_axis_names) == SDL_GAMEPAD_AXIS_MAX);
+
+struct GamepadDisplay
+{
+    SDL_Renderer *renderer;
+    SDL_Texture *button_texture;
+    SDL_Texture *arrow_texture;
+    int button_width;
+    int button_height;
+    int arrow_width;
+    int arrow_height;
+
+    SDL_Rect area;
+};
+
+GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer)
+{
+    GamepadDisplay *ctx = SDL_calloc(1, sizeof(*ctx));
+    if (ctx) {
+        ctx->renderer = renderer;
+
+        ctx->button_texture = CreateTexture(renderer, gamepad_button_small_bmp, gamepad_button_small_bmp_len);
+        SDL_QueryTexture(ctx->button_texture, NULL, NULL, &ctx->button_width, &ctx->button_height);
+
+        ctx->arrow_texture = CreateTexture(renderer, gamepad_axis_arrow_bmp, gamepad_axis_arrow_bmp_len);
+        SDL_QueryTexture(ctx->arrow_texture, NULL, NULL, &ctx->arrow_width, &ctx->arrow_height);
+    }
+    return ctx;
+}
+
+void SetGamepadDisplayArea(GamepadDisplay *ctx, int x, int y, int w, int h)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->area.x = x;
+    ctx->area.y = y;
+    ctx->area.w = w;
+    ctx->area.h = h;
+}
+
+void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
+{
+    float x, y;
+    int i;
+    char text[32];
+    const float margin = 8.0f;
+    const float center = ctx->area.w / 2.0f;
+    const float arrow_extent = 48.0f;
+    SDL_FRect dst, rect;
+    Uint8 r, g, b, a;
+
+    SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
+
+    x = ctx->area.x + margin;
+    y = ctx->area.y + margin;
+
+    for (i = 0; i < SDL_GAMEPAD_BUTTON_MAX; ++i) {
+        if (SDL_GamepadHasButton(gamepad, (SDL_GamepadButton)i)) {
+            SDL_snprintf(text, sizeof(text), "%s:", gamepad_button_names[i]);
+            SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
+
+            if (SDL_GetGamepadButton(gamepad, (SDL_GamepadButton)i)) {
+                SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
+            }
+
+            dst.x = x + center + 2.0f;
+            dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+            dst.w = (float)ctx->button_width;
+            dst.h = (float)ctx->button_height;
+            SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+
+            y += ctx->button_height + 2.0f;
+        }
+    }
+
+    for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
+        if (SDL_GamepadHasAxis(gamepad, (SDL_GamepadAxis)i)) {
+            SDL_bool has_negative = (i != SDL_GAMEPAD_AXIS_LEFT_TRIGGER && i != SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
+            Sint16 value = SDL_GetGamepadAxis(gamepad, (SDL_GamepadAxis)i);
+
+            SDL_snprintf(text, sizeof(text), "%s:", gamepad_axis_names[i]);
+            SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
+            dst.x = x + center + 2.0f;
+            dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->arrow_height / 2;
+            dst.w = (float)ctx->arrow_width;
+            dst.h = (float)ctx->arrow_height;
+
+            if (has_negative) {
+                if (value == SDL_MIN_SINT16) {
+                    SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
+                } else {
+                    SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);
+                }
+                SDL_RenderTextureRotated(ctx->renderer, ctx->arrow_texture, NULL, &dst, 0.0f, NULL, SDL_FLIP_HORIZONTAL);
+            }
+
+            dst.x += (float)ctx->arrow_width;
+
+            SDL_SetRenderDrawColor(ctx->renderer, 200, 200, 200, SDL_ALPHA_OPAQUE);
+            rect.x = dst.x + arrow_extent - 2.0f;
+            rect.y = dst.y;
+            rect.w = 4.0f;
+            rect.h = (float)ctx->arrow_height;
+            SDL_RenderFillRect(ctx->renderer, &rect);
+            SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+
+            if (value < 0) {
+                SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
+                rect.w = ((float)value / SDL_MIN_SINT16) * arrow_extent;
+                rect.x = dst.x + arrow_extent - rect.w;
+                rect.y = dst.y + ctx->arrow_height * 0.25f;
+                rect.h = ctx->arrow_height / 2.0f;
+                SDL_RenderFillRect(ctx->renderer, &rect);
+            }
+
+            dst.x += arrow_extent;
+
+            if (value > 0) {
+                SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
+                rect.w = ((float)value / SDL_MAX_SINT16) * arrow_extent;
+                rect.x = dst.x;
+                rect.y = dst.y + ctx->arrow_height * 0.25f;
+                rect.h = ctx->arrow_height / 2.0f;
+                SDL_RenderFillRect(ctx->renderer, &rect);
+            }
+
+            dst.x += arrow_extent;
+
+            if (value == SDL_MAX_SINT16) {
+                SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);
+            }
+            SDL_RenderTexture(ctx->renderer, ctx->arrow_texture, NULL, &dst);
+
+            SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+
+            y += ctx->button_height + 2;
+        }
+    }
+}
+
+void DestroyGamepadDisplay(GamepadDisplay *ctx)
+{
+    SDL_free(ctx);
+}
+
+
+struct JoystickDisplay
+{
+    SDL_Renderer *renderer;
+    SDL_Texture *button_texture;
+    SDL_Texture *arrow_texture;
+    int button_width;
+    int button_height;
+    int arrow_width;
+    int arrow_height;
+
+    SDL_Rect area;
+};
+
+JoystickDisplay *CreateJoystickDisplay(SDL_Renderer *renderer)
+{
+    JoystickDisplay *ctx = SDL_calloc(1, sizeof(*ctx));
+    if (ctx) {
+        ctx->renderer = renderer;
+
+        ctx->button_texture = CreateTexture(renderer, gamepad_button_small_bmp, gamepad_button_small_bmp_len);
+        SDL_QueryTexture(ctx->button_texture, NULL, NULL, &ctx->button_width, &ctx->button_height);
+
+        ctx->arrow_texture = CreateTexture(renderer, gamepad_axis_arrow_bmp, gamepad_axis_arrow_bmp_len);
+        SDL_QueryTexture(ctx->arrow_texture, NULL, NULL, &ctx->arrow_width, &ctx->arrow_height);
+    }
+    return ctx;
+}
+
+void SetJoystickDisplayArea(JoystickDisplay *ctx, int x, int y, int w, int h)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->area.x = x;
+    ctx->area.y = y;
+    ctx->area.w = w;
+    ctx->area.h = h;
+}
+
+void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
+{
+    float x, y;
+    int i;
+    int nbuttons = SDL_GetNumJoystickButtons(joystick);
+    int naxes = SDL_GetNumJoystickAxes(joystick);
+    int nhats = SDL_GetNumJoystickHats(joystick);
+    char text[32];
+    const float margin = 8.0f;
+    const float center = 80.0f;
+    const float arrow_extent = 48.0f;
+    SDL_FRect dst, rect;
+    Uint8 r, g, b, a;
+
+    SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
+
+    x = (float)ctx->area.x + margin;
+    y = (float)ctx->area.y + margin;
+
+    if (nbuttons > 0) {
+        SDLTest_DrawString(ctx->renderer, x, y, "BUTTONS");
+        y += FONT_LINE_HEIGHT + 2;
+
+        for (i = 0; i < nbuttons; ++i) {
+            SDL_snprintf(text, sizeof(text), "%2.d:", i);
+            SDLTest_DrawString(ctx->renderer, x, y, text);
+
+            if (SDL_GetJoystickButton(joystick, (Uint8)i)) {
+                SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
+            }
+
+            dst.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2;
+            dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+            dst.w = (float)ctx->button_width;
+            dst.h = (float)ctx->button_height;
+            SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+
+            y += ctx->button_height + 2;
+        }
+    }
+
+    x = (float)ctx->area.x + margin + center + margin;
+    y = (float)ctx->area.y + margin;
+
+    if (naxes > 0) {
+        SDLTest_DrawString(ctx->renderer, x, y, "AXES");
+        y += FONT_LINE_HEIGHT + 2;
+
+        for (i = 0; i < naxes; ++i) {
+            Sint16 value = SDL_GetJoystickAxis(joystick, i);
+
+            SDL_snprintf(text, sizeof(text), "%d:", i);
+            SDLTest_DrawString(ctx->renderer, x, y, text);
+
+            dst.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
+            dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->arrow_height / 2;
+            dst.w = (float)ctx->arrow_width;
+            dst.h = (float)ctx->arrow_height;
+
+            if (value == SDL_MIN_SINT16) {
+                SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);
+            }
+            SDL_RenderTextureRotated(ctx->renderer, ctx->arrow_texture, NULL, &dst, 0.0f, NULL, SDL_FLIP_HORIZONTAL);
+
+            dst.x += (float)ctx->arrow_width;
+
+            SDL_SetRenderDrawColor(ctx->renderer, 200, 200, 200, SDL_ALPHA_OPAQUE);
+            rect.x = dst.x + arrow_extent - 2.0f;
+            rect.y = dst.y;
+            rect.w = 4.0f;
+            rect.h = (float)ctx->arrow_height;
+            SDL_RenderFillRect(ctx->renderer, &rect);
+            SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+
+            if (value < 0) {
+                SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
+                rect.w = ((float)value / SDL_MIN_SINT16) * arrow_extent;
+                rect.x = dst.x + arrow_extent - rect.w;
+                rect.y = dst.y + ctx->arrow_height * 0.25f;
+                rect.h = ctx->arrow_height / 2.0f;
+                SDL_RenderFillRect(ctx->renderer, &rect);
+            }
+
+            dst.x += arrow_extent;
+
+            if (value > 0) {
+                SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
+                rect.w = ((float)value / SDL_MAX_SINT16) * arrow_extent;
+                rect.x = dst.x;
+                rect.y = dst.y + ctx->arrow_height * 0.25f;
+                rect.h = ctx->arrow_height / 2.0f;
+                SDL_RenderFillRect(ctx->renderer, &rect);
+            }
+
+            dst.x += arrow_extent;
+
+            if (value == SDL_MAX_SINT16) {
+                SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);
+            }
+            SDL_RenderTexture(ctx->renderer, ctx->arrow_texture, NULL, &dst);
+
+            SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+
+            y += ctx->button_height + 2;
+        }
+    }
+
+    y += FONT_LINE_HEIGHT + 2;
+
+    if (nhats > 0) {
+        SDLTest_DrawString(ctx->renderer, x, y, "HATS");
+        y += FONT_LINE_HEIGHT + 2 + 1.5f * ctx->button_height - FONT_CHARACTER_SIZE / 2;
+
+        for (i = 0; i < nhats; ++i) {
+            Uint8 value = SDL_GetJoystickHat(joystick, i);
+
+            SDL_snprintf(text, sizeof(text), "%d:", i);
+            SDLTest_DrawString(ctx->renderer, x, y, text);
+
+            if (value & SDL_HAT_LEFT) {
+                SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
+            }
+
+            dst.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2;
+            dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+            dst.w = (float)ctx->button_width;
+            dst.h = (float)ctx->button_height;
+            SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+
+            if (value & SDL_HAT_UP) {
+                SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
+            }
+
+            dst.x += (float)ctx->button_width;
+            dst.y -= (float)ctx->button_height;
+            SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+
+            if (value & SDL_HAT_DOWN) {
+                SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
+            }
+
+            dst.y += (float)ctx->button_height * 2;
+            SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+
+            if (value & SDL_HAT_RIGHT) {
+                SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
+            }
+
+            dst.x += (float)ctx->button_width;
+            dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+            SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+
+            y += 3 * ctx->button_height + 2;
+        }
+    }
+}
+
+void DestroyJoystickDisplay(JoystickDisplay *ctx)
+{
+    SDL_free(ctx);
+}
+

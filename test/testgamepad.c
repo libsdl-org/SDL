@@ -23,8 +23,14 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#define SCREEN_WIDTH  512
-#define SCREEN_HEIGHT 480
+#define TITLE_HEIGHT 32
+#define PANEL_SPACING 25
+#define PANEL_WIDTH 250
+#define GAMEPAD_WIDTH 512
+#define GAMEPAD_HEIGHT 480
+
+#define SCREEN_WIDTH  (PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING + PANEL_WIDTH)
+#define SCREEN_HEIGHT (TITLE_HEIGHT + GAMEPAD_HEIGHT)
 
 /* This is indexed by SDL_JoystickPowerLevel + 1. */
 static const char *power_level_strings[] = {
@@ -40,6 +46,8 @@ SDL_COMPILE_TIME_ASSERT(power_level_strings, SDL_arraysize(power_level_strings) 
 static SDL_Window *window = NULL;
 static SDL_Renderer *screen = NULL;
 static GamepadImage *image = NULL;
+static GamepadDisplay *gamepad_elements = NULL;
+static JoystickDisplay *joystick_elements = NULL;
 static SDL_bool retval = SDL_FALSE;
 static SDL_bool done = SDL_FALSE;
 static SDL_bool set_LED = SDL_FALSE;
@@ -685,6 +693,10 @@ static void loop(void *arg)
         UpdateGamepadImageFromGamepad(image, gamepad);
         RenderGamepadImage(image);
 
+        SDL_SetRenderDrawColor(screen, 0x10, 0x10, 0x10, SDL_ALPHA_OPAQUE);
+        RenderGamepadDisplay(gamepad_elements, gamepad);
+        RenderJoystickDisplay(joystick_elements, SDL_GetGamepadJoystick(gamepad));
+
         /* Update LED based on left thumbstick position */
         {
             Sint16 x = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTX);
@@ -853,6 +865,13 @@ int main(int argc, char *argv[])
         SDL_DestroyWindow(window);
         return 2;
     }
+    SetGamepadImagePosition(image, PANEL_WIDTH + PANEL_SPACING, TITLE_HEIGHT);
+
+    gamepad_elements = CreateGamepadDisplay(screen);
+    SetGamepadDisplayArea(gamepad_elements, 0, TITLE_HEIGHT, PANEL_WIDTH, GAMEPAD_HEIGHT);
+
+    joystick_elements = CreateJoystickDisplay(screen);
+    SetJoystickDisplayArea(joystick_elements, PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING, TITLE_HEIGHT, PANEL_WIDTH, GAMEPAD_HEIGHT);
 
     /* Process the initial gamepad list */
     loop(NULL);
@@ -881,6 +900,8 @@ int main(int argc, char *argv[])
 
     CloseVirtualGamepad();
     DestroyGamepadImage(image);
+    DestroyGamepadDisplay(gamepad_elements);
+    DestroyJoystickDisplay(joystick_elements);
     SDL_DestroyRenderer(screen);
     SDL_DestroyWindow(window);
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD);
