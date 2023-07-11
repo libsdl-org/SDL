@@ -477,6 +477,20 @@ extern DECLSPEC SDL_Gamepad *SDLCALL SDL_GetGamepadFromInstanceID(SDL_JoystickID
 extern DECLSPEC SDL_Gamepad *SDLCALL SDL_GetGamepadFromPlayerIndex(int player_index);
 
 /**
+ * Get the instance ID of an opened gamepad.
+ *
+ * \param gamepad a gamepad identifier previously returned by
+ *                SDL_OpenGamepad()
+ * \returns the instance ID of the specified gamepad on success or 0 on
+ *          failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_OpenGamepad
+ */
+extern DECLSPEC SDL_JoystickID SDLCALL SDL_GetGamepadInstanceID(SDL_Gamepad *gamepad);
+
+/**
  * Get the implementation-dependent name for an opened gamepad.
  *
  * This is the same name as returned by SDL_GetGamepadNameForIndex(), but it

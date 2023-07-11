@@ -940,3 +940,4 @@ SDL_DYNAPI_PROC(long,SDL_wcstol,(const wchar_t *a, wchar_t **b, int c),(a,b,c),r
 
 /* New API symbols are added at the end */
 SDL_DYNAPI_PROC(int,SDL_ClearClipboardData,(void),(),return)
+SDL_DYNAPI_PROC(SDL_JoystickID,SDL_GetGamepadInstanceID,(SDL_Gamepad *a),(a),return)
