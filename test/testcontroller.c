@@ -10,7 +10,7 @@
   freely.
 */
 
-/* Simple program to test the SDL gamepad routines */
+/* Simple program to test the SDL controller routines */
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -46,7 +46,7 @@ static const char *power_level_strings[] = {
 };
 SDL_COMPILE_TIME_ASSERT(power_level_strings, SDL_arraysize(power_level_strings) == SDL_JOYSTICK_POWER_MAX + 1);
 
-typedef struct 
+typedef struct
 {
     SDL_JoystickID id;
     SDL_Joystick *joystick;
@@ -931,7 +931,7 @@ int main(int argc, char *argv[])
     }
     screen_width = (int)SDL_ceilf(SCREEN_WIDTH * content_scale);
     screen_height = (int)SDL_ceilf(SCREEN_HEIGHT * content_scale);
-    window = SDL_CreateWindow("Gamepad Test", screen_width, screen_height, 0);
+    window = SDL_CreateWindow("SDL Controller Test", screen_width, screen_height, 0);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return 2;

@@ -209,7 +209,7 @@ if(SDL3_TESTS_SUBPROJECT)
 endif()
 
 add_sdl_test_executable(testfile NONINTERACTIVE SOURCES testfile.c)
-add_sdl_test_executable(testgamepad TESTUTILS SOURCES testgamepad.c gamepadutils.c)
+add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c)
 add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
 add_sdl_test_executable(testgl SOURCES testgl.c)
 add_sdl_test_executable(testgles SOURCES testgles.c)
