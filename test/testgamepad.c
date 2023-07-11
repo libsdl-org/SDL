@@ -52,7 +52,6 @@ static GamepadImage *image = NULL;
 static GamepadDisplay *gamepad_elements = NULL;
 static JoystickDisplay *joystick_elements = NULL;
 static GamepadButton *copy_button = NULL;
-static SDL_bool in_copy_button = SDL_FALSE;
 static SDL_bool retval = SDL_FALSE;
 static SDL_bool done = SDL_FALSE;
 static SDL_bool set_LED = SDL_FALSE;
