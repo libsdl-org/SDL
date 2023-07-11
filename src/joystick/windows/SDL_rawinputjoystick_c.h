@@ -28,8 +28,8 @@ extern SDL_bool RAWINPUT_IsEnabled();
 extern SDL_bool RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
 /* Registers for input events */
-extern SDL_bool RAWINPUT_RegisterNotifications(HWND hWnd);
-extern void RAWINPUT_UnregisterNotifications();
+extern int RAWINPUT_RegisterNotifications(HWND hWnd);
+extern int RAWINPUT_UnregisterNotifications();
 
 /* Returns 0 if message was handled */
 extern LRESULT CALLBACK RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
