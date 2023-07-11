@@ -27,6 +27,8 @@
 #define TITLE_HEIGHT 48
 #define PANEL_SPACING 25
 #define PANEL_WIDTH 250
+#define BUTTON_MARGIN 8
+#define BUTTON_PADDING 12
 #define GAMEPAD_WIDTH 512
 #define GAMEPAD_HEIGHT 480
 
@@ -49,6 +51,8 @@ static SDL_Renderer *screen = NULL;
 static GamepadImage *image = NULL;
 static GamepadDisplay *gamepad_elements = NULL;
 static JoystickDisplay *joystick_elements = NULL;
+static GamepadButton *copy_button = NULL;
+static SDL_bool in_copy_button = SDL_FALSE;
 static SDL_bool retval = SDL_FALSE;
 static SDL_bool done = SDL_FALSE;
 static SDL_bool set_LED = SDL_FALSE;
@@ -594,6 +598,33 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     }
 }
 
+static void CopyMappingToClipboard()
+{
+    char *mapping = SDL_GetGamepadMapping(gamepad);
+    if (mapping) {
+        const char *name = SDL_GetGamepadName(gamepad);
+        char *wildcard = SDL_strchr(mapping, '*');
+        if (wildcard && name && *name) {
+            char *text;
+            size_t size;
+
+            /* Personalize the mapping for this controller */
+            *wildcard++ = '\0';
+            size = SDL_strlen(mapping) + SDL_strlen(name) + SDL_strlen(wildcard) + 1;
+            text = SDL_malloc(size);
+            if (!text) {
+                return;
+            }
+            SDL_snprintf(text, size, "%s%s%s", mapping, name, wildcard);
+            SDL_SetClipboardText(text);
+            SDL_free(text);
+        } else {
+            SDL_SetClipboardText(mapping);
+        }
+        SDL_free(mapping);
+    }
+}
+
 static void loop(void *arg)
 {
     SDL_Event event;
@@ -687,18 +718,24 @@ static void loop(void *arg)
             if (virtual_joystick) {
                 VirtualGamepadMouseDown(event.button.x, event.button.y);
             }
+            SetGamepadButtonHighlight(copy_button, GamepadButtonContains(copy_button, event.button.x, event.button.y));
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_UP:
             if (virtual_joystick) {
                 VirtualGamepadMouseUp(event.button.x, event.button.y);
             }
+            if (GamepadButtonContains(copy_button, event.button.x, event.button.y)) {
+                CopyMappingToClipboard();
+            }
+            SetGamepadButtonHighlight(copy_button, SDL_FALSE);
             break;
 
         case SDL_EVENT_MOUSE_MOTION:
             if (virtual_joystick) {
                 VirtualGamepadMouseMotion(event.motion.x, event.motion.y);
             }
+            SetGamepadButtonHighlight(copy_button, event.motion.state && GamepadButtonContains(copy_button, event.motion.x, event.motion.y));
             break;
 
         case SDL_EVENT_KEY_DOWN:
@@ -742,6 +779,8 @@ static void loop(void *arg)
 
         RenderGamepadDisplay(gamepad_elements, gamepad);
         RenderJoystickDisplay(joystick_elements, SDL_GetGamepadJoystick(gamepad));
+
+        RenderGamepadButton(copy_button);
 
         DrawGamepadInfo(screen);
 
@@ -811,6 +850,7 @@ int main(int argc, char *argv[])
     int i;
     float content_scale;
     int screen_width, screen_height;
+    int button_width, button_height;
     int gamepad_index = -1;
     SDLTest_CommonState *state;
 
@@ -924,6 +964,11 @@ int main(int argc, char *argv[])
     joystick_elements = CreateJoystickDisplay(screen);
     SetJoystickDisplayArea(joystick_elements, PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING, TITLE_HEIGHT, PANEL_WIDTH, GAMEPAD_HEIGHT);
 
+    copy_button = CreateGamepadButton(screen, "Copy to Clipboard");
+    button_width = GetGamepadButtonLabelWidth(copy_button) + 2 * BUTTON_PADDING;
+    button_height = GetGamepadButtonLabelHeight(copy_button) + 2 * BUTTON_PADDING;
+    SetGamepadButtonArea(copy_button, BUTTON_MARGIN, SCREEN_HEIGHT - BUTTON_MARGIN - button_height, button_width, button_height);
+
     /* Process the initial gamepad list */
     loop(NULL);
 
@@ -953,6 +998,7 @@ int main(int argc, char *argv[])
     DestroyGamepadImage(image);
     DestroyGamepadDisplay(gamepad_elements);
     DestroyJoystickDisplay(joystick_elements);
+    DestroyGamepadButton(copy_button);
     SDL_DestroyRenderer(screen);
     SDL_DestroyWindow(window);
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD);
