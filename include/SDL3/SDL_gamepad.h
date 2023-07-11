@@ -624,6 +624,18 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetGamepadFirmwareVersion(SDL_Gamepad *gamepa
 extern DECLSPEC const char * SDLCALL SDL_GetGamepadSerial(SDL_Gamepad *gamepad);
 
 /**
+ * Get the battery level of a gamepad, if available.
+ *
+ * \param gamepad a gamepad identifier previously returned by
+ *                SDL_OpenGamepad()
+ * \returns the current battery level as SDL_JoystickPowerLevel on success or
+ *          `SDL_JOYSTICK_POWER_UNKNOWN` if it is unknown
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_JoystickPowerLevel SDLCALL SDL_GetGamepadPowerLevel(SDL_Gamepad *gamepad);
+
+/**
  * Check if a gamepad has been opened and is currently connected.
  *
  * \param gamepad a gamepad identifier previously returned by

@@ -2778,6 +2778,16 @@ const char * SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
     return SDL_GetJoystickSerial(joystick);
 }
 
+SDL_JoystickPowerLevel SDL_GetGamepadPowerLevel(SDL_Gamepad *gamepad)
+{
+    SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
+
+    if (joystick == NULL) {
+        return SDL_JOYSTICK_POWER_UNKNOWN;
+    }
+    return SDL_GetJoystickPowerLevel(joystick);
+}
+
 /*
  * Return if the gamepad in question is currently attached to the system,
  *  \return 0 if not plugged in, 1 if still present.

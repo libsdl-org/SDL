@@ -870,6 +870,7 @@ SDL3_0.0.0 {
     SDL_wcstol;
     SDL_ClearClipboardData;
     SDL_GetGamepadInstanceID;
+    SDL_GetGamepadPowerLevel;
     # extra symbols go here (don't modify this line)
   local: *;
 };
