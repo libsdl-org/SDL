@@ -2013,7 +2013,6 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
 void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done)
 {
     int i;
-    static SDL_MouseMotionEvent lastEvent;
 
     if (state->verbose & VERBOSE_EVENT) {
         if (((event->type != SDL_EVENT_MOUSE_MOTION) &&
@@ -2390,16 +2389,6 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
         case SDLK_ESCAPE:
             *done = 1;
             break;
-        case SDLK_SPACE:
-        {
-            char message[256];
-            SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
-
-            (void)SDL_snprintf(message, sizeof(message), "(%g, %g), rel (%g, %g)\n",
-                               lastEvent.x, lastEvent.y, lastEvent.xrel, lastEvent.yrel);
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Last mouse position", message, window);
-            break;
-        }
         default:
             break;
         }
@@ -2407,9 +2396,6 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
     }
     case SDL_EVENT_QUIT:
         *done = 1;
-        break;
-    case SDL_EVENT_MOUSE_MOTION:
-        lastEvent = event->motion;
         break;
 
     case SDL_EVENT_DROP_FILE:
