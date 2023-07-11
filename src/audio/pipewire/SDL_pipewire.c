@@ -327,11 +327,7 @@ static void io_list_remove(Uint32 id)
             spa_list_remove(&n->link);
 
             if (hotplug_events_enabled) {
-                SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle(PW_ID_TO_HANDLE(id));
-                if (device) {
-                    SDL_UnlockMutex(device->lock);  // AudioDeviceDisconnected will relock and verify it's still in the list, but in case this is destroyed, unlock now.
-                    SDL_AudioDeviceDisconnected(device);
-                }
+                SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(PW_ID_TO_HANDLE(id)));
             }
 
             SDL_free(n);
@@ -614,11 +610,7 @@ static void change_default_device(const char *path)
         struct io_node *n, *temp;
         spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
             if (SDL_strcmp(n->path, path) == 0) {
-                SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle(PW_ID_TO_HANDLE(n->id));
-                if (device) {
-                    SDL_UnlockMutex(device->lock);
-                    SDL_DefaultAudioDeviceChanged(device);
-                }
+                SDL_DefaultAudioDeviceChanged(SDL_FindPhysicalAudioDeviceByHandle(PW_ID_TO_HANDLE(n->id)));
                 return; // found it, we're done.
             }
         }

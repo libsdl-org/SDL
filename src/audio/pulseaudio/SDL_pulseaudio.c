@@ -825,11 +825,7 @@ static void HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint3
             PULSEAUDIO_pa_operation_unref(PULSEAUDIO_pa_context_get_source_info_by_index(pulseaudio_context, idx, SourceInfoCallback, (void *)((intptr_t)added)));
         } else if (removed && (sink || source)) {
             // removes we can handle just with the device index.
-            SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((intptr_t)idx + 1));
-            if (device) {
-                SDL_UnlockMutex(device->lock);  // AudioDeviceDisconnected will relock and verify it's still in the list, but in case this is destroyed, unlock now.
-                SDL_AudioDeviceDisconnected(device);
-            }
+            SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle((void *)((intptr_t)idx + 1)));
         }
     }
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
@@ -838,9 +834,8 @@ static void HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint3
 static void CheckDefaultDevice(uint32_t *prev_default, uint32_t new_default)
 {
     if (*prev_default != new_default) {
-        SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((intptr_t)new_default + 1));
+        SDL_AudioDevice *device = SDL_FindPhysicalAudioDeviceByHandle((void *)((intptr_t)new_default + 1));
         if (device) {
-            SDL_UnlockMutex(device->lock);
             *prev_default = new_default;
             SDL_DefaultAudioDeviceChanged(device);
         }
@@ -883,15 +878,13 @@ static void PULSEAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_Audio
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
 
     SDL_AudioDevice *device;
-    device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((intptr_t)default_sink_index + 1));
+    device = SDL_FindPhysicalAudioDeviceByHandle((void *)((intptr_t)default_sink_index + 1));
     if (device) {
-        SDL_UnlockMutex(device->lock);
         *default_output = device;
     }
 
-    device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((intptr_t)default_source_index + 1));
+    device = SDL_FindPhysicalAudioDeviceByHandle((void *)((intptr_t)default_source_index + 1));
     if (device) {
-        SDL_UnlockMutex(device->lock);
         *default_capture = device;
     }
 

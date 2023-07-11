@@ -988,7 +988,7 @@ static SDL_AudioDevice *ObtainPhysicalAudioDevice(SDL_AudioDeviceID devid)
     return dev;
 }
 
-SDL_AudioDevice *SDL_ObtainPhysicalAudioDeviceByHandle(void *handle)
+SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
 {
     if (!SDL_GetCurrentAudioDriver()) {
         SDL_SetError("Audio subsystem is not initialized");
@@ -1000,8 +1000,6 @@ SDL_AudioDevice *SDL_ObtainPhysicalAudioDeviceByHandle(void *handle)
     SDL_AudioDevice *dev = NULL;
     for (dev = current_audio.output_devices; dev != NULL; dev = dev->next) {
         if (dev->handle == handle) {  // found it?
-            SDL_LockMutex(dev->lock);  // caller must unlock.
-            SDL_assert(!SDL_AtomicGet(&dev->condemned));  // shouldn't be in the list if pending deletion.
             break;
         }
     }
@@ -1010,8 +1008,6 @@ SDL_AudioDevice *SDL_ObtainPhysicalAudioDeviceByHandle(void *handle)
         // !!! FIXME: code duplication, from above.
         for (dev = current_audio.capture_devices; dev != NULL; dev = dev->next) {
             if (dev->handle == handle) {  // found it?
-                SDL_LockMutex(dev->lock);  // caller must unlock.
-                SDL_assert(!SDL_AtomicGet(&dev->condemned));  // shouldn't be in the list if pending deletion.
                 break;
             }
         }
@@ -1022,6 +1018,8 @@ SDL_AudioDevice *SDL_ObtainPhysicalAudioDeviceByHandle(void *handle)
     if (!dev) {
         SDL_SetError("Device handle not found");
     }
+
+    SDL_assert(!SDL_AtomicGet(&dev->condemned));  // shouldn't be in the list if pending deletion.
 
     return dev;
 }

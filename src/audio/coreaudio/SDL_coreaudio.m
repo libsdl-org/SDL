@@ -118,9 +118,8 @@ static void RefreshPhysicalDevices(void)
 
     const UInt32 total_devices = (UInt32) (size / sizeof(AudioDeviceID));
     for (UInt32 i = 0; i < total_devices; i++) {
-        SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((size_t)devs[i]));
+        SDL_AudioDevice *device = SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)devs[i]));
         if (device) {
-            SDL_UnlockMutex(device->lock);
             devs[i] = 0;  // The system and SDL both agree it's already here, don't check it again.
         }
     }
@@ -235,11 +234,7 @@ static OSStatus DefaultAudioDeviceChangedNotification(AudioObjectID inObjectID, 
     AudioDeviceID devid;
     Uint32 size = sizeof(devid);
     if (AudioObjectGetPropertyData(inObjectID, addr, 0, NULL, &size, &devid) == noErr) {
-        SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((size_t)devid));
-        if (device) {
-            SDL_UnlockMutex(device->lock);
-            SDL_DefaultAudioDeviceChanged(device);
-        }
+        SDL_DefaultAudioDeviceChanged(SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)devid)));
     }
     return noErr;
 }
@@ -274,9 +269,8 @@ static void COREAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioD
 
     size = sizeof(AudioDeviceID);
     if (AudioObjectGetPropertyData(kAudioObjectSystemObject, &default_output_device_address, 0, NULL, &size, &devid) == noErr) {
-        SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((size_t)devid));
+        SDL_AudioDevice *device = SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)devid));
         if (device) {
-            SDL_UnlockMutex(device->lock);
             *default_output = device;
         }
     }
@@ -284,9 +278,8 @@ static void COREAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioD
 
     size = sizeof(AudioDeviceID);
     if (AudioObjectGetPropertyData(kAudioObjectSystemObject, &default_input_device_address, 0, NULL, &size, &devid) == noErr) {
-        SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle((void *)((size_t)devid));
+        SDL_AudioDevice *device = SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)devid));
         if (device) {
-            SDL_UnlockMutex(device->lock);
             *default_capture = device;
         }
     }

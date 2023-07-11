@@ -880,13 +880,7 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
         for (ALSA_Device *dev = unseen; dev; dev = next) {
             /*printf("ALSA: removing usb %s device '%s'\n", dev->iscapture ? "capture" : "output", dev->name);*/
             next = dev->next;
-
-            SDL_AudioDevice *device = SDL_ObtainPhysicalAudioDeviceByHandle(dev->name);
-            if (device) {
-                SDL_UnlockMutex(device->lock);  // AudioDeviceDisconnected will relock and verify it's still in the list, but in case this is destroyed, unlock now.
-                SDL_AudioDeviceDisconnected(device);
-            }
-
+            SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(dev->name));
             SDL_free(dev->name);
             SDL_free(dev);
         }
