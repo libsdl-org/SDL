@@ -559,7 +559,7 @@ static void DrawGamepadWaiting(SDL_Renderer *renderer)
     SDLTest_DrawString(renderer, x, y, text);
 }
 
-static void DrawGamepadInfo(SDL_Renderer *renderer, SDL_Gamepad *gamepad)
+static void DrawGamepadInfo(SDL_Renderer *renderer)
 {
     const char *name;
     const char *serial;
@@ -743,7 +743,7 @@ static void loop(void *arg)
         RenderGamepadDisplay(gamepad_elements, gamepad);
         RenderJoystickDisplay(joystick_elements, SDL_GetGamepadJoystick(gamepad));
 
-        DrawGamepadInfo(screen, gamepad);
+        DrawGamepadInfo(screen);
 
         /* Update LED based on left thumbstick position */
         {
