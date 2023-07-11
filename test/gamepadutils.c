@@ -520,6 +520,10 @@ struct GamepadDisplay
     int arrow_width;
     int arrow_height;
 
+    float accel_data[3];
+    float gyro_data[3];
+    Uint64 last_sensor_update;
+
     SDL_Rect area;
 };
 
@@ -554,12 +558,14 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 {
     float x, y;
     int i;
-    char text[32];
+    char text[128];
     const float margin = 8.0f;
     const float center = ctx->area.w / 2.0f;
     const float arrow_extent = 48.0f;
     SDL_FRect dst, rect;
     Uint8 r, g, b, a;
+    SDL_bool has_accel;
+    SDL_bool has_gyro;
 
     SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
 
@@ -650,6 +656,75 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
 
             y += ctx->button_height + 2;
+        }
+    }
+
+    if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
+        int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, 0);
+        for (i = 0; i < num_fingers; ++i) {
+            Uint8 state;
+            float finger_x, finger_y, finger_pressure;
+
+            if (SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &state, &finger_x, &finger_y, &finger_pressure) < 0) {
+                continue;
+            }
+
+            SDL_snprintf(text, sizeof(text), "Touch finger %d:", i);
+            SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
+
+            if (state) {
+                SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
+            }
+
+            dst.x = x + center + 2.0f;
+            dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+            dst.w = (float)ctx->button_width;
+            dst.h = (float)ctx->button_height;
+            SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+
+            if (state) {
+                SDL_snprintf(text, sizeof(text), "(%.2f,%.2f)", finger_x, finger_y);
+                SDLTest_DrawString(ctx->renderer, x + center + ctx->button_width + 4.0f, y, text);
+            }
+
+            y += ctx->button_height + 2.0f;
+        }
+    }
+
+    has_accel = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL);
+    has_gyro = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO);
+    if (has_accel || has_gyro) {
+        const int SENSOR_UPDATE_INTERVAL_MS = 100;
+        Uint64 now = SDL_GetTicks();
+
+        if (now >= ctx->last_sensor_update + SENSOR_UPDATE_INTERVAL_MS) {
+            if (has_accel) {
+                SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_ACCEL, ctx->accel_data, SDL_arraysize(ctx->accel_data));
+            }
+            if (has_gyro) {
+                SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_GYRO, ctx->gyro_data, SDL_arraysize(ctx->gyro_data));
+            }
+            ctx->last_sensor_update = now;
+        }
+
+        if (has_accel) {
+            SDL_strlcpy(text, "Accelerometer:", sizeof(text));
+            SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
+            SDL_snprintf(text, sizeof(text), "(%.2f,%.2f,%.2f)", ctx->accel_data[0], ctx->accel_data[1], ctx->accel_data[2]);
+            SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
+
+            y += ctx->button_height + 2.0f;
+        }
+
+        if (has_gyro) {
+            SDL_strlcpy(text, "Gyro:", sizeof(text));
+            SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
+            SDL_snprintf(text, sizeof(text), "(%.2f,%.2f,%.2f)", ctx->gyro_data[0], ctx->gyro_data[1], ctx->gyro_data[2]);
+            SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
+
+            y += ctx->button_height + 2.0f;
         }
     }
 }
