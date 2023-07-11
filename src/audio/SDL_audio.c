@@ -988,7 +988,7 @@ static SDL_AudioDevice *ObtainPhysicalAudioDevice(SDL_AudioDeviceID devid)
     return dev;
 }
 
-SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
+SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(SDL_bool (*callback)(SDL_AudioDevice *device, void *userdata), void *userdata)
 {
     if (!SDL_GetCurrentAudioDriver()) {
         SDL_SetError("Audio subsystem is not initialized");
@@ -999,7 +999,7 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
 
     SDL_AudioDevice *dev = NULL;
     for (dev = current_audio.output_devices; dev != NULL; dev = dev->next) {
-        if (dev->handle == handle) {  // found it?
+        if (callback(dev, userdata)) {  // found it?
             break;
         }
     }
@@ -1007,7 +1007,7 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
     if (!dev) {
         // !!! FIXME: code duplication, from above.
         for (dev = current_audio.capture_devices; dev != NULL; dev = dev->next) {
-            if (dev->handle == handle) {  // found it?
+            if (callback(dev, userdata)) {  // found it?
                 break;
             }
         }
@@ -1016,12 +1016,22 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
     SDL_UnlockRWLock(current_audio.device_list_lock);
 
     if (!dev) {
-        SDL_SetError("Device handle not found");
+        SDL_SetError("Device not found");
     }
 
     SDL_assert(!SDL_AtomicGet(&dev->condemned));  // shouldn't be in the list if pending deletion.
 
     return dev;
+}
+
+static SDL_bool TestDeviceHandleCallback(SDL_AudioDevice *device, void *handle)
+{
+    return device->handle == handle;
+}
+
+SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
+{
+    return SDL_FindPhysicalAudioDeviceByCallback(TestDeviceHandleCallback, handle);
 }
 
 char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
