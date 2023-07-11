@@ -79,7 +79,9 @@ typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
 #endif
 #endif
 
-/*#define DEBUG_RAWINPUT*/
+#if 0
+#define DEBUG_RAWINPUT
+#endif
 
 #ifndef RIDEV_EXINPUTSINK
 #define RIDEV_EXINPUTSINK 0x00001000
@@ -402,6 +404,21 @@ static SDL_bool RAWINPUT_GuessXInputSlot(const WindowsMatchState *state, Uint8 *
     int user_index;
     int match_count;
 
+    /* If there is only one available slot, let's use that
+     * That will be right most of the time, and uncorrelation will fix any bad guesses
+     */
+    match_count = 0;
+    for (user_index = 0; user_index < XUSER_MAX_COUNT; ++user_index) {
+        if (xinput_state[user_index].connected && !xinput_state[user_index].used) {
+            *slot_idx = user_index;
+            ++match_count;
+        }
+    }
+    if (match_count == 1) {
+        *correlation_id = ++xinput_state[*slot_idx].correlation_id;
+        return SDL_TRUE;
+    }
+
     *slot_idx = 0;
 
     match_count = 0;
@@ -717,10 +734,27 @@ static SDL_bool RAWINPUT_WindowsGamingInputSlotMatches(const WindowsMatchState *
 static SDL_bool RAWINPUT_GuessWindowsGamingInputSlot(const WindowsMatchState *state, Uint8 *correlation_id, WindowsGamingInputGamepadState **slot, SDL_bool xinput_correlated)
 {
     int match_count, user_index;
+    WindowsGamingInputGamepadState *gamepad_state = NULL;
+
+    /* If there is only one available slot, let's use that
+     * That will be right most of the time, and uncorrelation will fix any bad guesses
+     */
+    match_count = 0;
+    for (user_index = 0; user_index < wgi_state.per_gamepad_count; ++user_index) {
+        gamepad_state = wgi_state.per_gamepad[user_index];
+        if (gamepad_state->connected && !gamepad_state->used) {
+            *slot = gamepad_state;
+            ++match_count;
+        }
+    }
+    if (match_count == 1) {
+        *correlation_id = ++gamepad_state->correlation_id;
+        return SDL_TRUE;
+    }
 
     match_count = 0;
     for (user_index = 0; user_index < wgi_state.per_gamepad_count; ++user_index) {
-        WindowsGamingInputGamepadState *gamepad_state = wgi_state.per_gamepad[user_index];
+        gamepad_state = wgi_state.per_gamepad[user_index];
         if (RAWINPUT_WindowsGamingInputSlotMatches(state, gamepad_state, xinput_correlated)) {
             ++match_count;
             *slot = gamepad_state;
