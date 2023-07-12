@@ -231,7 +231,7 @@ struct SDL_AudioDevice
 
     // The device's current audio specification
     SDL_AudioSpec spec;
-    Uint32 buffer_size;
+    int buffer_size;
 
     // The device's default audio specification
     SDL_AudioSpec default_spec;
