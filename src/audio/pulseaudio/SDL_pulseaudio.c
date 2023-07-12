@@ -855,7 +855,10 @@ static int SDLCALL HotplugThread(void *data)
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
     PULSEAUDIO_pa_context_set_subscribe_callback(pulseaudio_context, HotplugCallback, NULL);
-    WaitForPulseOperation(PULSEAUDIO_pa_context_subscribe(pulseaudio_context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, NULL, NULL));
+
+    /* don't WaitForPulseOperation on the subscription; when it's done we'll be able to get hotplug events, but waiting doesn't changing anything. */
+    PULSEAUDIO_pa_operation_unref(PULSEAUDIO_pa_context_subscribe(pulseaudio_context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, NULL, NULL));
+
     while (SDL_AtomicGet(&pulseaudio_hotplug_thread_active)) {
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
     }
