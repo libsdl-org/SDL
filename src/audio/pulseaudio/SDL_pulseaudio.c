@@ -31,7 +31,6 @@
 #endif
 #include <unistd.h>
 #include <sys/types.h>
-#include <pulse/pulseaudio.h>
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
