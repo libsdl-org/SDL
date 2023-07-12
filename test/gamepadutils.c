@@ -34,10 +34,10 @@ static const struct
     int x;
     int y;
 } button_positions[] = {
-    { 412, 192 }, /* SDL_GAMEPAD_BUTTON_A */
-    { 456, 157 }, /* SDL_GAMEPAD_BUTTON_B */
-    { 367, 157 }, /* SDL_GAMEPAD_BUTTON_X */
-    { 414, 126 }, /* SDL_GAMEPAD_BUTTON_Y */
+    { 413, 193 }, /* SDL_GAMEPAD_BUTTON_A */
+    { 456, 156 }, /* SDL_GAMEPAD_BUTTON_B */
+    { 372, 159 }, /* SDL_GAMEPAD_BUTTON_X */
+    { 416, 125 }, /* SDL_GAMEPAD_BUTTON_Y */
     { 199, 157 }, /* SDL_GAMEPAD_BUTTON_BACK */
     { 257, 153 }, /* SDL_GAMEPAD_BUTTON_GUIDE */
     { 314, 157 }, /* SDL_GAMEPAD_BUTTON_START */
@@ -106,6 +106,7 @@ struct GamepadImage
     int x;
     int y;
     SDL_bool showing_front;
+    SDL_bool reverse_diamond;
     SDL_bool showing_battery;
     SDL_bool showing_touchpad;
 
@@ -131,6 +132,29 @@ static SDL_Texture *CreateTexture(SDL_Renderer *renderer, unsigned char *data, u
         }
     }
     return texture;
+}
+
+static SDL_GamepadButton GetRemappedButton(SDL_bool reverse_diamond, SDL_GamepadButton button)
+{
+    if (reverse_diamond) {
+        switch (button) {
+        case SDL_GAMEPAD_BUTTON_A:
+            button = SDL_GAMEPAD_BUTTON_B;
+            break;
+        case SDL_GAMEPAD_BUTTON_B:
+            button = SDL_GAMEPAD_BUTTON_A;
+            break;
+        case SDL_GAMEPAD_BUTTON_X:
+            button = SDL_GAMEPAD_BUTTON_Y;
+            break;
+        case SDL_GAMEPAD_BUTTON_Y:
+            button = SDL_GAMEPAD_BUTTON_X;
+            break;
+        default:
+            break;
+        }
+    }
+    return button;
 }
 
 GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
@@ -183,6 +207,15 @@ void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front)
     }
 
     ctx->showing_front = showing_front;
+}
+
+void SetGamepadImageReverseDiamond(GamepadImage *ctx, SDL_bool reverse_diamond)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->reverse_diamond = reverse_diamond;
 }
 
 void SetGamepadImageShowingBattery(GamepadImage *ctx, SDL_bool showing_battery)
@@ -298,7 +331,7 @@ SDL_GamepadButton GetGamepadImageButtonAt(GamepadImage *ctx, float x, float y)
             rect.w = (float)ctx->button_width;
             rect.h = (float)ctx->button_height;
             if (SDL_PointInRectFloat(&point, &rect)) {
-                return (SDL_GamepadButton)i;
+                return GetRemappedButton(ctx->reverse_diamond, (SDL_GamepadButton)i);
             }
         }
     }
@@ -367,6 +400,23 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
         return;
     }
 
+    if (gamepad) {
+        char *mapping = SDL_GetGamepadMapping(gamepad);
+        if (mapping) {
+            SDL_GamepadType gamepad_type = SDL_GetGamepadType(gamepad);
+            if (gamepad_type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO ||
+                gamepad_type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT ||
+                gamepad_type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT ||
+                gamepad_type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR ||
+                SDL_strstr(mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS")) {
+                ctx->reverse_diamond = SDL_TRUE;
+            } else {
+                ctx->reverse_diamond = SDL_FALSE;
+            }
+            SDL_free(mapping);
+        }
+    }
+
     for (i = 0; i < SDL_GAMEPAD_BUTTON_TOUCHPAD; ++i) {
         const SDL_GamepadButton button = (SDL_GamepadButton)i;
 
@@ -421,10 +471,15 @@ void RenderGamepadImage(GamepadImage *ctx)
 {
     SDL_FRect dst;
     int i;
+    Uint8 r, g, b, a;
+    char label[32];
+    SDL_bool invert_color = SDL_FALSE;
 
     if (!ctx) {
         return;
     }
+
+    SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
 
     dst.x = (float)ctx->x;
     dst.y = (float)ctx->y;
@@ -438,6 +493,40 @@ void RenderGamepadImage(GamepadImage *ctx)
     }
 
     for (i = 0; i < SDL_arraysize(button_positions); ++i) {
+        SDL_GamepadButton button_position = GetRemappedButton(ctx->reverse_diamond, (SDL_GamepadButton)i);
+
+        switch (i) {
+        case SDL_GAMEPAD_BUTTON_A:
+            SDL_strlcpy(label, "A", sizeof(label));
+            break;
+        case SDL_GAMEPAD_BUTTON_B:
+            SDL_strlcpy(label, "B", sizeof(label));
+            break;
+        case SDL_GAMEPAD_BUTTON_X:
+            SDL_strlcpy(label, "X", sizeof(label));
+            break;
+        case SDL_GAMEPAD_BUTTON_Y:
+            SDL_strlcpy(label, "Y", sizeof(label));
+            break;
+        default:
+            *label = '\0';
+            break;
+        }
+        if (*label != '\0') {
+            dst.x = (float)ctx->x + button_positions[button_position].x - (float)(FONT_CHARACTER_SIZE * SDL_strlen(label)) / 2;
+            dst.y = (float)ctx->y + button_positions[button_position].y - (float)FONT_CHARACTER_SIZE / 2;
+            dst.w = (float)FONT_CHARACTER_SIZE;
+            dst.h = (float)FONT_CHARACTER_SIZE;
+
+            if (button_position == SDL_GAMEPAD_BUTTON_B || button_position == SDL_GAMEPAD_BUTTON_X) {
+                SDL_SetRenderDrawColor(ctx->renderer, ~r, ~g, ~b, a);
+                SDLTest_DrawString(ctx->renderer, dst.x, dst.y, label);
+                SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+            } else {
+                SDLTest_DrawString(ctx->renderer, dst.x, dst.y, label);
+            }
+        }
+
         if (ctx->buttons[i]) {
             SDL_bool on_front = SDL_TRUE;
 
@@ -445,8 +534,8 @@ void RenderGamepadImage(GamepadImage *ctx)
                 on_front = SDL_FALSE;
             }
             if (on_front == ctx->showing_front) {
-                dst.x = (float)ctx->x + button_positions[i].x - ctx->button_width / 2;
-                dst.y = (float)ctx->y + button_positions[i].y - ctx->button_height / 2;
+                dst.x = (float)ctx->x + button_positions[button_position].x - ctx->button_width / 2;
+                dst.y = (float)ctx->y + button_positions[button_position].y - ctx->button_height / 2;
                 dst.w = (float)ctx->button_width;
                 dst.h = (float)ctx->button_height;
                 SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
