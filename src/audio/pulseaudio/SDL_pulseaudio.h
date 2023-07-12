@@ -23,7 +23,7 @@
 #ifndef SDL_pulseaudio_h_
 #define SDL_pulseaudio_h_
 
-#include <pulse/simple.h>
+#include <pulse/pulseaudio.h>
 
 #include "../SDL_sysaudio.h"
 

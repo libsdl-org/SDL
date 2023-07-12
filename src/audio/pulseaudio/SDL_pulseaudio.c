@@ -30,7 +30,6 @@
 #endif
 #include <unistd.h>
 #include <sys/types.h>
-#include <pulse/pulseaudio.h>
 
 #include "../SDL_audio_c.h"
 #include "SDL_pulseaudio.h"
