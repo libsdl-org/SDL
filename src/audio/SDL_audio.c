@@ -1019,7 +1019,7 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(SDL_bool (*callback)(SDL_
         SDL_SetError("Device not found");
     }
 
-    SDL_assert(!SDL_AtomicGet(&dev->condemned));  // shouldn't be in the list if pending deletion.
+    SDL_assert(!dev || !SDL_AtomicGet(&dev->condemned));  // shouldn't be in the list if pending deletion.
 
     return dev;
 }
