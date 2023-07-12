@@ -1122,13 +1122,13 @@ CheckPulseAudio()
 [AS_HELP_STRING([--enable-pulseaudio], [use PulseAudio [default=yes]])],
                   , enable_pulseaudio=yes)
     if test x$enable_audio = xyes -a x$enable_pulseaudio = xyes; then
-        PKG_CHECK_MODULES([PULSEAUDIO], [libpulse-simple >= 0.9.15], audio_pulseaudio=yes, audio_pulseaudio=no)
+        PKG_CHECK_MODULES([PULSEAUDIO], [libpulse >= 0.9.15], audio_pulseaudio=yes, audio_pulseaudio=no)
 
         if test x$audio_pulseaudio = xyes; then
             AC_ARG_ENABLE(pulseaudio-shared,
 [AS_HELP_STRING([--enable-pulseaudio-shared], [dynamically load PulseAudio support [default=yes]])],
                           , enable_pulseaudio_shared=yes)
-            pulseaudio_lib=[`find_lib "libpulse-simple.so.*" "$PULSEAUDIO_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+            pulseaudio_lib=[`find_lib "libpulse.so.*" "$PULSEAUDIO_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
 
             AC_DEFINE(SDL_AUDIO_DRIVER_PULSEAUDIO, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/audio/pulseaudio/*.c"
@@ -1139,7 +1139,7 @@ CheckPulseAudio()
             fi
             if test x$have_loadso = xyes && \
                test x$enable_pulseaudio_shared = xyes && test x$pulseaudio_lib != x; then
-                echo "-- dynamic libpulse-simple -> $pulseaudio_lib"
+                echo "-- dynamic libpulse -> $pulseaudio_lib"
                 AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC, "$pulseaudio_lib", [ ])
                 SUMMARY_audio="${SUMMARY_audio} pulse(dynamic)"
 

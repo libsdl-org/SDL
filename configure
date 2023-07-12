@@ -22083,19 +22083,19 @@ fi
     if test x$enable_audio = xyes -a x$enable_pulseaudio = xyes; then
 
 pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libpulse-simple >= 0.9.15" >&5
-printf %s "checking for libpulse-simple >= 0.9.15... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libpulse >= 0.9.15" >&5
+printf %s "checking for libpulse >= 0.9.15... " >&6; }
 
 if test -n "$PULSEAUDIO_CFLAGS"; then
     pkg_cv_PULSEAUDIO_CFLAGS="$PULSEAUDIO_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpulse-simple >= 0.9.15\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libpulse-simple >= 0.9.15") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpulse >= 0.9.15\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpulse >= 0.9.15") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_PULSEAUDIO_CFLAGS=`$PKG_CONFIG --cflags "libpulse-simple >= 0.9.15" 2>/dev/null`
+  pkg_cv_PULSEAUDIO_CFLAGS=`$PKG_CONFIG --cflags "libpulse >= 0.9.15" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -22107,12 +22107,12 @@ if test -n "$PULSEAUDIO_LIBS"; then
     pkg_cv_PULSEAUDIO_LIBS="$PULSEAUDIO_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpulse-simple >= 0.9.15\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libpulse-simple >= 0.9.15") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpulse >= 0.9.15\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpulse >= 0.9.15") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_PULSEAUDIO_LIBS=`$PKG_CONFIG --libs "libpulse-simple >= 0.9.15" 2>/dev/null`
+  pkg_cv_PULSEAUDIO_LIBS=`$PKG_CONFIG --libs "libpulse >= 0.9.15" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -22133,9 +22133,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        PULSEAUDIO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpulse-simple >= 0.9.15" 2>&1`
+	        PULSEAUDIO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpulse >= 0.9.15" 2>&1`
         else
-	        PULSEAUDIO_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpulse-simple >= 0.9.15" 2>&1`
+	        PULSEAUDIO_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpulse >= 0.9.15" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$PULSEAUDIO_PKG_ERRORS" >&5
@@ -22162,7 +22162,7 @@ else $as_nop
   enable_pulseaudio_shared=yes
 fi
 
-            pulseaudio_lib=`find_lib "libpulse-simple.so.*" "$PULSEAUDIO_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+            pulseaudio_lib=`find_lib "libpulse.so.*" "$PULSEAUDIO_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
 
 
 printf "%s\n" "#define SDL_AUDIO_DRIVER_PULSEAUDIO 1" >>confdefs.h
@@ -22176,7 +22176,7 @@ printf "%s\n" "$as_me: WARNING: You must have SDL_LoadObject() support for dynam
             fi
             if test x$have_loadso = xyes && \
                test x$enable_pulseaudio_shared = xyes && test x$pulseaudio_lib != x; then
-                echo "-- dynamic libpulse-simple -> $pulseaudio_lib"
+                echo "-- dynamic libpulse -> $pulseaudio_lib"
 
 printf "%s\n" "#define SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC \"$pulseaudio_lib\"" >>confdefs.h
 
