@@ -15,6 +15,9 @@
 #include "gamepadutils.h"
 #include "gamepad_front.h"
 #include "gamepad_back.h"
+#include "gamepad_face_abxy.h"
+#include "gamepad_face_bayx.h"
+#include "gamepad_face_sony.h"
 #include "gamepad_battery_unknown.h"
 #include "gamepad_battery_empty.h"
 #include "gamepad_battery_low.h"
@@ -88,12 +91,17 @@ struct GamepadImage
     SDL_Renderer *renderer;
     SDL_Texture *front_texture;
     SDL_Texture *back_texture;
+    SDL_Texture *face_abxy_texture;
+    SDL_Texture *face_bayx_texture;
+    SDL_Texture *face_sony_texture;
     SDL_Texture *battery_texture[1 + SDL_JOYSTICK_POWER_MAX];
     SDL_Texture *touchpad_texture;
     SDL_Texture *button_texture;
     SDL_Texture *axis_texture;
     int gamepad_width;
     int gamepad_height;
+    int face_width;
+    int face_height;
     int battery_width;
     int battery_height;
     int touchpad_width;
@@ -106,9 +114,9 @@ struct GamepadImage
     int x;
     int y;
     SDL_bool showing_front;
-    SDL_bool reverse_diamond;
     SDL_bool showing_battery;
     SDL_bool showing_touchpad;
+    GamepadImageFaceStyle face_style;
 
     SDL_bool buttons[SDL_GAMEPAD_BUTTON_MAX];
     int axes[SDL_GAMEPAD_AXIS_MAX];
@@ -134,9 +142,9 @@ static SDL_Texture *CreateTexture(SDL_Renderer *renderer, unsigned char *data, u
     return texture;
 }
 
-static SDL_GamepadButton GetRemappedButton(SDL_bool reverse_diamond, SDL_GamepadButton button)
+static SDL_GamepadButton GetRemappedButton(GamepadImageFaceStyle face_style, SDL_GamepadButton button)
 {
-    if (reverse_diamond) {
+    if (face_style == GAMEPAD_IMAGE_FACE_BAYX) {
         switch (button) {
         case SDL_GAMEPAD_BUTTON_A:
             button = SDL_GAMEPAD_BUTTON_B;
@@ -165,6 +173,11 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
         ctx->front_texture = CreateTexture(renderer, gamepad_front_bmp, gamepad_front_bmp_len);
         ctx->back_texture = CreateTexture(renderer, gamepad_back_bmp, gamepad_back_bmp_len);
         SDL_QueryTexture(ctx->front_texture, NULL, NULL, &ctx->gamepad_width, &ctx->gamepad_height);
+
+        ctx->face_abxy_texture = CreateTexture(renderer, gamepad_face_abxy_bmp, gamepad_face_abxy_bmp_len);
+        ctx->face_bayx_texture = CreateTexture(renderer, gamepad_face_bayx_bmp, gamepad_face_bayx_bmp_len);
+        ctx->face_sony_texture = CreateTexture(renderer, gamepad_face_sony_bmp, gamepad_face_sony_bmp_len);
+        SDL_QueryTexture(ctx->face_abxy_texture, NULL, NULL, &ctx->face_width, &ctx->face_height);
 
         ctx->battery_texture[1 + SDL_JOYSTICK_POWER_UNKNOWN] = CreateTexture(renderer, gamepad_battery_unknown_bmp, gamepad_battery_unknown_bmp_len);
         ctx->battery_texture[1 + SDL_JOYSTICK_POWER_EMPTY] = CreateTexture(renderer, gamepad_battery_empty_bmp, gamepad_battery_empty_bmp_len);
@@ -209,13 +222,13 @@ void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front)
     ctx->showing_front = showing_front;
 }
 
-void SetGamepadImageReverseDiamond(GamepadImage *ctx, SDL_bool reverse_diamond)
+void SetGamepadImageFaceStyle(GamepadImage *ctx, GamepadImageFaceStyle face_style)
 {
     if (!ctx) {
         return;
     }
 
-    ctx->reverse_diamond = reverse_diamond;
+    ctx->face_style = face_style;
 }
 
 void SetGamepadImageShowingBattery(GamepadImage *ctx, SDL_bool showing_battery)
@@ -331,7 +344,7 @@ SDL_GamepadButton GetGamepadImageButtonAt(GamepadImage *ctx, float x, float y)
             rect.w = (float)ctx->button_width;
             rect.h = (float)ctx->button_height;
             if (SDL_PointInRectFloat(&point, &rect)) {
-                return GetRemappedButton(ctx->reverse_diamond, (SDL_GamepadButton)i);
+                return GetRemappedButton(ctx->face_style, (SDL_GamepadButton)i);
             }
         }
     }
@@ -404,14 +417,25 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
         char *mapping = SDL_GetGamepadMapping(gamepad);
         if (mapping) {
             SDL_GamepadType gamepad_type = SDL_GetGamepadType(gamepad);
-            if (gamepad_type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO ||
-                gamepad_type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT ||
-                gamepad_type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT ||
-                gamepad_type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR ||
-                SDL_strstr(mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS")) {
-                ctx->reverse_diamond = SDL_TRUE;
-            } else {
-                ctx->reverse_diamond = SDL_FALSE;
+            switch (gamepad_type) {
+            case SDL_GAMEPAD_TYPE_PS3:
+            case SDL_GAMEPAD_TYPE_PS4:
+            case SDL_GAMEPAD_TYPE_PS5:
+                ctx->face_style = GAMEPAD_IMAGE_FACE_SONY;
+                break;
+            case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+            case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+            case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+            case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+                ctx->face_style = GAMEPAD_IMAGE_FACE_BAYX;
+                break;
+            default:
+                if (SDL_strstr(mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS")) {
+                    ctx->face_style = GAMEPAD_IMAGE_FACE_BAYX;
+                } else {
+                    ctx->face_style = GAMEPAD_IMAGE_FACE_ABXY;
+                }
+                break;
             }
             SDL_free(mapping);
         }
@@ -471,15 +495,10 @@ void RenderGamepadImage(GamepadImage *ctx)
 {
     SDL_FRect dst;
     int i;
-    Uint8 r, g, b, a;
-    char label[32];
-    SDL_bool invert_color = SDL_FALSE;
 
     if (!ctx) {
         return;
     }
-
-    SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
 
     dst.x = (float)ctx->x;
     dst.y = (float)ctx->y;
@@ -488,46 +507,32 @@ void RenderGamepadImage(GamepadImage *ctx)
 
     if (ctx->showing_front) {
         SDL_RenderTexture(ctx->renderer, ctx->front_texture, NULL, &dst);
+
+        dst.x = (float)ctx->x + 363;
+        dst.y = (float)ctx->y + 116;
+        dst.w = (float)ctx->face_width;
+        dst.h = (float)ctx->face_height;
+
+        switch (ctx->face_style) {
+        case GAMEPAD_IMAGE_FACE_ABXY:
+            SDL_RenderTexture(ctx->renderer, ctx->face_abxy_texture, NULL, &dst);
+            break;
+        case GAMEPAD_IMAGE_FACE_BAYX:
+            SDL_RenderTexture(ctx->renderer, ctx->face_bayx_texture, NULL, &dst);
+            break;
+        case GAMEPAD_IMAGE_FACE_SONY:
+            SDL_RenderTexture(ctx->renderer, ctx->face_sony_texture, NULL, &dst);
+            break;
+        default:
+            break;
+        }
     } else {
         SDL_RenderTexture(ctx->renderer, ctx->back_texture, NULL, &dst);
     }
 
     for (i = 0; i < SDL_arraysize(button_positions); ++i) {
-        SDL_GamepadButton button_position = GetRemappedButton(ctx->reverse_diamond, (SDL_GamepadButton)i);
-
-        switch (i) {
-        case SDL_GAMEPAD_BUTTON_A:
-            SDL_strlcpy(label, "A", sizeof(label));
-            break;
-        case SDL_GAMEPAD_BUTTON_B:
-            SDL_strlcpy(label, "B", sizeof(label));
-            break;
-        case SDL_GAMEPAD_BUTTON_X:
-            SDL_strlcpy(label, "X", sizeof(label));
-            break;
-        case SDL_GAMEPAD_BUTTON_Y:
-            SDL_strlcpy(label, "Y", sizeof(label));
-            break;
-        default:
-            *label = '\0';
-            break;
-        }
-        if (*label != '\0') {
-            dst.x = (float)ctx->x + button_positions[button_position].x - (float)(FONT_CHARACTER_SIZE * SDL_strlen(label)) / 2;
-            dst.y = (float)ctx->y + button_positions[button_position].y - (float)FONT_CHARACTER_SIZE / 2;
-            dst.w = (float)FONT_CHARACTER_SIZE;
-            dst.h = (float)FONT_CHARACTER_SIZE;
-
-            if (button_position == SDL_GAMEPAD_BUTTON_B || button_position == SDL_GAMEPAD_BUTTON_X) {
-                SDL_SetRenderDrawColor(ctx->renderer, ~r, ~g, ~b, a);
-                SDLTest_DrawString(ctx->renderer, dst.x, dst.y, label);
-                SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-            } else {
-                SDLTest_DrawString(ctx->renderer, dst.x, dst.y, label);
-            }
-        }
-
         if (ctx->buttons[i]) {
+            SDL_GamepadButton button_position = GetRemappedButton(ctx->face_style, (SDL_GamepadButton)i);
             SDL_bool on_front = SDL_TRUE;
 
             if (i >= SDL_GAMEPAD_BUTTON_PADDLE1 && i <= SDL_GAMEPAD_BUTTON_PADDLE4) {
@@ -605,6 +610,9 @@ void DestroyGamepadImage(GamepadImage *ctx)
 
         SDL_DestroyTexture(ctx->front_texture);
         SDL_DestroyTexture(ctx->back_texture);
+        SDL_DestroyTexture(ctx->face_abxy_texture);
+        SDL_DestroyTexture(ctx->face_bayx_texture);
+        SDL_DestroyTexture(ctx->face_sony_texture);
         for (i = 0; i < SDL_arraysize(ctx->battery_texture); ++i) {
             SDL_DestroyTexture(ctx->battery_texture[i]);
         }

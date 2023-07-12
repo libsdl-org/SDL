@@ -14,10 +14,18 @@
 
 typedef struct GamepadImage GamepadImage;
 
+typedef enum
+{
+    GAMEPAD_IMAGE_FACE_BLANK,
+    GAMEPAD_IMAGE_FACE_ABXY,
+    GAMEPAD_IMAGE_FACE_BAYX,
+    GAMEPAD_IMAGE_FACE_SONY,
+} GamepadImageFaceStyle;
+
 extern GamepadImage *CreateGamepadImage(SDL_Renderer *renderer);
 extern void SetGamepadImagePosition(GamepadImage *ctx, int x, int y);
 extern void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front);
-extern void SetGamepadImageReverseDiamond(GamepadImage *ctx, SDL_bool reverse_diamond);
+extern void SetGamepadImageFaceStyle(GamepadImage *ctx, GamepadImageFaceStyle face_style);
 extern void SetGamepadImageShowingBattery(GamepadImage *ctx, SDL_bool showing_battery);
 extern void SetGamepadImageShowingTouchpad(GamepadImage *ctx, SDL_bool showing_touchpad);
 extern void GetGamepadImageArea(GamepadImage *ctx, int *x, int *y, int *width, int *height);
