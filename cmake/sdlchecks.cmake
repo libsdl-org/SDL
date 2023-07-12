@@ -166,7 +166,7 @@ endmacro()
 # - HAVE_SDL_LOADSO opt
 macro(CheckPulseAudio)
   if(SDL_PULSEAUDIO)
-    pkg_check_modules(PKG_PULSEAUDIO libpulse-simple)
+    pkg_check_modules(PKG_PULSEAUDIO libpulse-simple>=0.9.15)
     if(PKG_PULSEAUDIO_FOUND)
       set(HAVE_PULSEAUDIO TRUE)
       file(GLOB PULSEAUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/pulseaudio/*.c)

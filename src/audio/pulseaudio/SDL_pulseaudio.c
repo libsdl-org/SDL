@@ -56,20 +56,6 @@ static char *default_sink_name = NULL;
 static char *default_source_name = NULL;
 
 
-
-#if (PA_API_VERSION < 12)
-/** Return non-zero if the passed state is one of the connected states */
-static SDL_INLINE int PA_CONTEXT_IS_GOOD(pa_context_state_t x)
-{
-    return x == PA_CONTEXT_CONNECTING || x == PA_CONTEXT_AUTHORIZING || x == PA_CONTEXT_SETTING_NAME || x == PA_CONTEXT_READY;
-}
-/** Return non-zero if the passed state is one of the connected states */
-static SDL_INLINE int PA_STREAM_IS_GOOD(pa_stream_state_t x)
-{
-    return x == PA_STREAM_CREATING || x == PA_STREAM_READY;
-}
-#endif /* pulseaudio <= 0.9.10 */
-
 static const char *(*PULSEAUDIO_pa_get_library_version)(void);
 static pa_channel_map *(*PULSEAUDIO_pa_channel_map_init_auto)(
     pa_channel_map *, unsigned, pa_channel_map_def_t);
@@ -199,7 +185,6 @@ static int load_pulseaudio_syms(void)
 {
     SDL_PULSEAUDIO_SYM(pa_get_library_version);
     SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_new);
-    SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_set_name);
     SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_get_api);
     SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_start);
     SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_stop);
@@ -242,6 +227,16 @@ static int load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_stream_set_write_callback);
     SDL_PULSEAUDIO_SYM(pa_stream_set_read_callback);
     SDL_PULSEAUDIO_SYM(pa_context_get_server_info);
+
+    /* optional */
+#ifdef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
+    load_pulseaudio_sym("pa_threaded_mainloop_set_name", (void **)(char *)&PULSEAUDIO_pa_threaded_mainloop_set_name);
+#elif (PA_PROTOCOL_VERSION >= 29)
+    PULSEAUDIO_pa_threaded_mainloop_set_name = pa_threaded_mainloop_set_name;
+#else
+    PULSEAUDIO_pa_threaded_mainloop_set_name = NULL;
+#endif
+
     return 0;
 }
 
@@ -322,7 +317,9 @@ static int ConnectToPulseServer(void)
         return SDL_SetError("pa_threaded_mainloop_new() failed");
     }
 
-    PULSEAUDIO_pa_threaded_mainloop_set_name(pulseaudio_threaded_mainloop, "PulseMainloop");
+    if (PULSEAUDIO_pa_threaded_mainloop_set_name) {
+        PULSEAUDIO_pa_threaded_mainloop_set_name(pulseaudio_threaded_mainloop, "PulseMainloop");
+    }
 
     if (PULSEAUDIO_pa_threaded_mainloop_start(pulseaudio_threaded_mainloop) < 0) {
         PULSEAUDIO_pa_threaded_mainloop_free(pulseaudio_threaded_mainloop);

@@ -1122,7 +1122,7 @@ CheckPulseAudio()
 [AS_HELP_STRING([--enable-pulseaudio], [use PulseAudio [default=yes]])],
                   , enable_pulseaudio=yes)
     if test x$enable_audio = xyes -a x$enable_pulseaudio = xyes; then
-        PKG_CHECK_MODULES([PULSEAUDIO], [libpulse-simple >= 0.9], audio_pulseaudio=yes, audio_pulseaudio=no)
+        PKG_CHECK_MODULES([PULSEAUDIO], [libpulse-simple >= 0.9.15], audio_pulseaudio=yes, audio_pulseaudio=no)
 
         if test x$audio_pulseaudio = xyes; then
             AC_ARG_ENABLE(pulseaudio-shared,
