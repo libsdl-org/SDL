@@ -70,6 +70,7 @@ static void (*PULSEAUDIO_pa_threaded_mainloop_free)(pa_threaded_mainloop *);
 
 static pa_operation_state_t (*PULSEAUDIO_pa_operation_get_state)(
     const pa_operation *);
+static void (*PULSEAUDIO_pa_operation_set_state_callback)(pa_operation *, pa_operation_notify_cb_t, void *);
 static void (*PULSEAUDIO_pa_operation_cancel)(pa_operation *);
 static void (*PULSEAUDIO_pa_operation_unref)(pa_operation *);
 
@@ -191,6 +192,7 @@ static int load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_free);
     SDL_PULSEAUDIO_SYM(pa_operation_get_state);
     SDL_PULSEAUDIO_SYM(pa_operation_cancel);
+    SDL_PULSEAUDIO_SYM(pa_operation_set_state_callback);
     SDL_PULSEAUDIO_SYM(pa_operation_unref);
     SDL_PULSEAUDIO_SYM(pa_context_new);
     SDL_PULSEAUDIO_SYM(pa_context_set_state_callback);
@@ -266,14 +268,19 @@ static const char *getAppName(void)
     return retval;
 }
 
-/* This function assume you are holding `mainloop`'s lock and that `o` has a callback that will signal pulseaudio_threaded_mainloop.
-   The caller may optionally call pa_threaded_mainloop_accept() if the signal is blocking. The operation is
-   unref'd in here, assuming you did the work in the callback and just want to know it's done, though. */
+static void OperationStateChangeCallback(pa_operation *o, void *userdata)
+{
+    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // just signal any waiting code, it can look up the details.
+}
+
+/* This function assume you are holding `mainloop`'s lock. The operation is unref'd in here, assuming
+   you did the work in the callback and just want to know it's done, though. */
 static void WaitForPulseOperation(pa_operation *o)
 {
     /* This checks for NO errors currently. Either fix that, check results elsewhere, or do things you don't care about. */
     SDL_assert(pulseaudio_threaded_mainloop != NULL);
     if (o) {
+        PULSEAUDIO_pa_operation_set_state_callback(o, OperationStateChangeCallback, NULL);
         while (PULSEAUDIO_pa_operation_get_state(o) == PA_OPERATION_RUNNING) {
             PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);  /* this releases the lock and blocks on an internal condition variable. */
         }
