@@ -855,16 +855,29 @@ static void HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint3
 /* this runs as a thread while the Pulse target is initialized to catch hotplug events. */
 static int SDLCALL HotplugThread(void *data)
 {
+    pa_operation *op;
+
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
     PULSEAUDIO_pa_context_set_subscribe_callback(pulseaudio_context, HotplugCallback, NULL);
 
     /* don't WaitForPulseOperation on the subscription; when it's done we'll be able to get hotplug events, but waiting doesn't changing anything. */
-    PULSEAUDIO_pa_operation_unref(PULSEAUDIO_pa_context_subscribe(pulseaudio_context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, NULL, NULL));
+    op = PULSEAUDIO_pa_context_subscribe(pulseaudio_context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, NULL, NULL);
+
+    SDL_SemPost(data);
 
     while (SDL_AtomicGet(&pulseaudio_hotplug_thread_active)) {
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
+        if (op && PULSEAUDIO_pa_operation_get_state(op) != PA_OPERATION_RUNNING) {
+            PULSEAUDIO_pa_operation_unref(op);
+            op = NULL;
+        }
     }
+
+    if (op) {
+        PULSEAUDIO_pa_operation_unref(op);
+    }
+
     PULSEAUDIO_pa_context_set_subscribe_callback(pulseaudio_context, NULL, NULL);
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
     return 0;
@@ -872,6 +885,8 @@ static int SDLCALL HotplugThread(void *data)
 
 static void PULSEAUDIO_DetectDevices()
 {
+    SDL_sem *ready_sem = SDL_CreateSemaphore(0);
+
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
     WaitForPulseOperation(PULSEAUDIO_pa_context_get_server_info(pulseaudio_context, ServerInfoCallback, NULL));
     WaitForPulseOperation(PULSEAUDIO_pa_context_get_sink_info_list(pulseaudio_context, SinkInfoCallback, (void *)((intptr_t)SDL_TRUE)));
@@ -880,7 +895,9 @@ static void PULSEAUDIO_DetectDevices()
 
     /* ok, we have a sane list, let's set up hotplug notifications now... */
     SDL_AtomicSet(&pulseaudio_hotplug_thread_active, 1);
-    pulseaudio_hotplug_thread = SDL_CreateThreadInternal(HotplugThread, "PulseHotplug", 256 * 1024, NULL);  /* !!! FIXME: this can probably survive in significantly less stack space. */
+    pulseaudio_hotplug_thread = SDL_CreateThreadInternal(HotplugThread, "PulseHotplug", 256 * 1024, ready_sem);  /* !!! FIXME: this can probably survive in significantly less stack space. */
+    SDL_SemWait(ready_sem);
+    SDL_DestroySemaphore(ready_sem);
 }
 
 static int PULSEAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
