@@ -80,9 +80,10 @@ typedef enum
  */
 typedef enum
 {
-    SDL_FLIP_NONE,          /**< Do not flip */
-    SDL_FLIP_HORIZONTAL,    /**< flip horizontally */
-    SDL_FLIP_VERTICAL       /**< flip vertically */
+    SDL_FLIP_NONE       = 0x00,     /**< Do not flip */
+    SDL_FLIP_HORIZONTAL = 0x01,     /**< flip horizontally */
+    SDL_FLIP_VERTICAL   = 0x02,     /**< flip vertically */
+    SDL_FLIP_DIAGONAL   = 0x03,     /**< flip diagonally (both horizontally and vertically) */
 } SDL_FlipMode;
 
 /**
