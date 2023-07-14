@@ -114,9 +114,9 @@ struct GamepadImage
     int x;
     int y;
     SDL_bool showing_front;
-    SDL_bool showing_battery;
     SDL_bool showing_touchpad;
     GamepadImageFaceStyle face_style;
+    ControllerDisplayMode display_mode;
 
     SDL_bool buttons[SDL_GAMEPAD_BUTTON_MAX];
     int axes[SDL_GAMEPAD_AXIS_MAX];
@@ -231,57 +231,13 @@ void SetGamepadImageFaceStyle(GamepadImage *ctx, GamepadImageFaceStyle face_styl
     ctx->face_style = face_style;
 }
 
-void SetGamepadImageShowingBattery(GamepadImage *ctx, SDL_bool showing_battery)
+void SetGamepadImageDisplayMode(GamepadImage *ctx, ControllerDisplayMode display_mode)
 {
     if (!ctx) {
         return;
     }
 
-    ctx->showing_battery = showing_battery;
-}
-
-void SetGamepadImageShowingTouchpad(GamepadImage *ctx, SDL_bool showing_touchpad)
-{
-    if (!ctx) {
-        return;
-    }
-
-    ctx->showing_touchpad = showing_touchpad;
-}
-
-void GetGamepadImageArea(GamepadImage *ctx, int *x, int *y, int *width, int *height)
-{
-    if (!ctx) {
-        if (x) {
-            *x = 0;
-        }
-        if (y) {
-            *y = 0;
-        }
-        if (width) {
-            *width = 0;
-        }
-        if (height) {
-            *height = 0;
-        }
-        return;
-    }
-
-    if (x) {
-        *x = ctx->x;
-    }
-    if (y) {
-        *y = ctx->y;
-    }
-    if (width) {
-        *width = ctx->gamepad_width;
-    }
-    if (height) {
-        *height = ctx->gamepad_height;
-        if (ctx->showing_touchpad) {
-            *height += ctx->touchpad_height;
-        }
-    }
+    ctx->display_mode = display_mode;
 }
 
 int GetGamepadImageButtonWidth(GamepadImage *ctx)
@@ -482,12 +438,14 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
 
             SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &finger->state, &finger->x, &finger->y, &finger->pressure);
         }
+        ctx->showing_touchpad = SDL_TRUE;
     } else {
         if (ctx->fingers) {
             SDL_free(ctx->fingers);
             ctx->fingers = NULL;
             ctx->num_fingers = 0;
         }
+        ctx->showing_touchpad = SDL_FALSE;
     }
 }
 
@@ -568,7 +526,7 @@ void RenderGamepadImage(GamepadImage *ctx)
         }
     }
 
-    if (ctx->showing_battery) {
+    if (ctx->display_mode == CONTROLLER_MODE_TESTING && ctx->battery_level != SDL_JOYSTICK_POWER_UNKNOWN) {
         dst.x = (float)ctx->x + ctx->gamepad_width - ctx->battery_width;
         dst.y = (float)ctx->y;
         dst.w = (float)ctx->battery_width;
@@ -576,7 +534,7 @@ void RenderGamepadImage(GamepadImage *ctx)
         SDL_RenderTexture(ctx->renderer, ctx->battery_texture[1 + ctx->battery_level], NULL, &dst);
     }
 
-    if (ctx->showing_touchpad) {
+    if (ctx->display_mode == CONTROLLER_MODE_TESTING && ctx->showing_touchpad) {
         dst.x = (float)ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2;
         dst.y = (float)ctx->y + ctx->gamepad_height;
         dst.w = (float)ctx->touchpad_width;
@@ -673,6 +631,8 @@ struct GamepadDisplay
     float gyro_data[3];
     Uint64 last_sensor_update;
 
+    ControllerDisplayMode display_mode;
+
     SDL_Rect area;
 };
 
@@ -691,16 +651,22 @@ GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer)
     return ctx;
 }
 
-void SetGamepadDisplayArea(GamepadDisplay *ctx, int x, int y, int w, int h)
+void SetGamepadDisplayDisplayMode(GamepadDisplay *ctx, ControllerDisplayMode display_mode)
 {
     if (!ctx) {
         return;
     }
 
-    ctx->area.x = x;
-    ctx->area.y = y;
-    ctx->area.w = w;
-    ctx->area.h = h;
+    ctx->display_mode = display_mode;
+}
+
+void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_Rect *area)
+{
+    if (!ctx) {
+        return;
+    }
+
+    SDL_copyp(&ctx->area, area);
 }
 
 static SDL_bool GetBindingString(const char *label, char *mapping, char *text, size_t size)
@@ -794,7 +760,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     const float arrow_extent = 48.0f;
     SDL_FRect dst, rect;
     Uint8 r, g, b, a;
-    char *mapping;
+    char *mapping = NULL;
     SDL_bool has_accel;
     SDL_bool has_gyro;
 
@@ -812,6 +778,11 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     for (i = 0; i < SDL_GAMEPAD_BUTTON_MAX; ++i) {
         SDL_GamepadButton button = (SDL_GamepadButton)i;
 
+        if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
+            !SDL_GamepadHasButton(gamepad, button)) {
+            continue;
+        }
+
         SDL_snprintf(text, sizeof(text), "%s:", gamepad_button_names[i]);
         SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
 
@@ -827,9 +798,11 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         dst.h = (float)ctx->button_height;
         SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
-        if (GetButtonBindingString(button, mapping, binding, sizeof(binding))) {
-            dst.x += dst.w + 2 * margin;
-            SDLTest_DrawString(ctx->renderer, dst.x, y, binding);
+        if (ctx->display_mode == CONTROLLER_MODE_BINDING) {
+            if (GetButtonBindingString(button, mapping, binding, sizeof(binding))) {
+                dst.x += dst.w + 2 * margin;
+                SDLTest_DrawString(ctx->renderer, dst.x, y, binding);
+            }
         }
 
         y += ctx->button_height + 2.0f;
@@ -838,7 +811,14 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
         SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
         SDL_bool has_negative = (axis != SDL_GAMEPAD_AXIS_LEFT_TRIGGER && axis != SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
-        Sint16 value = SDL_GetGamepadAxis(gamepad, axis);
+        Sint16 value;
+
+        if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
+            !SDL_GamepadHasAxis(gamepad, axis)) {
+            continue;
+        }
+
+        value = SDL_GetGamepadAxis(gamepad, axis);
 
         SDL_snprintf(text, sizeof(text), "%s:", gamepad_axis_names[i]);
         SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
@@ -875,12 +855,14 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             SDL_RenderFillRect(ctx->renderer, &rect);
         }
 
-        if (has_negative && GetAxisBindingString(axis, -1, mapping, binding, sizeof(binding))) {
-            float text_x;
+        if (ctx->display_mode == CONTROLLER_MODE_BINDING && has_negative) {
+            if (GetAxisBindingString(axis, -1, mapping, binding, sizeof(binding))) {
+                float text_x;
 
-            SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-            text_x = dst.x + arrow_extent / 2 - ((float)FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
-            SDLTest_DrawString(ctx->renderer, text_x, y, binding);
+                SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+                text_x = dst.x + arrow_extent / 2 - ((float)FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
+                SDLTest_DrawString(ctx->renderer, text_x, y, binding);
+            }
         }
 
         dst.x += arrow_extent;
@@ -894,12 +876,14 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             SDL_RenderFillRect(ctx->renderer, &rect);
         }
 
-        if (GetAxisBindingString(axis, 1, mapping, binding, sizeof(binding))) {
-            float text_x;
+        if (ctx->display_mode == CONTROLLER_MODE_BINDING) {
+            if (GetAxisBindingString(axis, 1, mapping, binding, sizeof(binding))) {
+                float text_x;
 
-            SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-            text_x = dst.x + arrow_extent / 2 - ((float)FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
-            SDLTest_DrawString(ctx->renderer, text_x, y, binding);
+                SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+                text_x = dst.x + arrow_extent / 2 - ((float)FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
+                SDLTest_DrawString(ctx->renderer, text_x, y, binding);
+            }
         }
 
         dst.x += arrow_extent;
@@ -916,72 +900,74 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         y += ctx->button_height + 2;
     }
 
-    if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
-        int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, 0);
-        for (i = 0; i < num_fingers; ++i) {
-            Uint8 state;
-            float finger_x, finger_y, finger_pressure;
+    if (ctx->display_mode == CONTROLLER_MODE_TESTING) {
+        if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
+            int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, 0);
+            for (i = 0; i < num_fingers; ++i) {
+                Uint8 state;
+                float finger_x, finger_y, finger_pressure;
 
-            if (SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &state, &finger_x, &finger_y, &finger_pressure) < 0) {
-                continue;
+                if (SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &state, &finger_x, &finger_y, &finger_pressure) < 0) {
+                    continue;
+                }
+
+                SDL_snprintf(text, sizeof(text), "Touch finger %d:", i);
+                SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
+
+                if (state) {
+                    SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
+                } else {
+                    SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
+                }
+
+                dst.x = x + center + 2.0f;
+                dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+                dst.w = (float)ctx->button_width;
+                dst.h = (float)ctx->button_height;
+                SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+
+                if (state) {
+                    SDL_snprintf(text, sizeof(text), "(%.2f,%.2f)", finger_x, finger_y);
+                    SDLTest_DrawString(ctx->renderer, x + center + ctx->button_width + 4.0f, y, text);
+                }
+
+                y += ctx->button_height + 2.0f;
             }
-
-            SDL_snprintf(text, sizeof(text), "Touch finger %d:", i);
-            SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
-
-            if (state) {
-                SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
-            } else {
-                SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
-            }
-
-            dst.x = x + center + 2.0f;
-            dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-            dst.w = (float)ctx->button_width;
-            dst.h = (float)ctx->button_height;
-            SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
-
-            if (state) {
-                SDL_snprintf(text, sizeof(text), "(%.2f,%.2f)", finger_x, finger_y);
-                SDLTest_DrawString(ctx->renderer, x + center + ctx->button_width + 4.0f, y, text);
-            }
-
-            y += ctx->button_height + 2.0f;
         }
-    }
 
-    has_accel = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL);
-    has_gyro = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO);
-    if (has_accel || has_gyro) {
-        const int SENSOR_UPDATE_INTERVAL_MS = 100;
-        Uint64 now = SDL_GetTicks();
+        has_accel = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL);
+        has_gyro = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO);
+        if (has_accel || has_gyro) {
+            const int SENSOR_UPDATE_INTERVAL_MS = 100;
+            Uint64 now = SDL_GetTicks();
 
-        if (now >= ctx->last_sensor_update + SENSOR_UPDATE_INTERVAL_MS) {
+            if (now >= ctx->last_sensor_update + SENSOR_UPDATE_INTERVAL_MS) {
+                if (has_accel) {
+                    SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_ACCEL, ctx->accel_data, SDL_arraysize(ctx->accel_data));
+                }
+                if (has_gyro) {
+                    SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_GYRO, ctx->gyro_data, SDL_arraysize(ctx->gyro_data));
+                }
+                ctx->last_sensor_update = now;
+            }
+
             if (has_accel) {
-                SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_ACCEL, ctx->accel_data, SDL_arraysize(ctx->accel_data));
+                SDL_strlcpy(text, "Accelerometer:", sizeof(text));
+                SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
+                SDL_snprintf(text, sizeof(text), "(%.2f,%.2f,%.2f)", ctx->accel_data[0], ctx->accel_data[1], ctx->accel_data[2]);
+                SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
+
+                y += ctx->button_height + 2.0f;
             }
+
             if (has_gyro) {
-                SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_GYRO, ctx->gyro_data, SDL_arraysize(ctx->gyro_data));
+                SDL_strlcpy(text, "Gyro:", sizeof(text));
+                SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
+                SDL_snprintf(text, sizeof(text), "(%.2f,%.2f,%.2f)", ctx->gyro_data[0], ctx->gyro_data[1], ctx->gyro_data[2]);
+                SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
+
+                y += ctx->button_height + 2.0f;
             }
-            ctx->last_sensor_update = now;
-        }
-
-        if (has_accel) {
-            SDL_strlcpy(text, "Accelerometer:", sizeof(text));
-            SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
-            SDL_snprintf(text, sizeof(text), "(%.2f,%.2f,%.2f)", ctx->accel_data[0], ctx->accel_data[1], ctx->accel_data[2]);
-            SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
-
-            y += ctx->button_height + 2.0f;
-        }
-
-        if (has_gyro) {
-            SDL_strlcpy(text, "Gyro:", sizeof(text));
-            SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
-            SDL_snprintf(text, sizeof(text), "(%.2f,%.2f,%.2f)", ctx->gyro_data[0], ctx->gyro_data[1], ctx->gyro_data[2]);
-            SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
-
-            y += ctx->button_height + 2.0f;
         }
     }
 
@@ -1028,16 +1014,13 @@ JoystickDisplay *CreateJoystickDisplay(SDL_Renderer *renderer)
     return ctx;
 }
 
-void SetJoystickDisplayArea(JoystickDisplay *ctx, int x, int y, int w, int h)
+void SetJoystickDisplayArea(JoystickDisplay *ctx, const SDL_Rect *area)
 {
     if (!ctx) {
         return;
     }
 
-    ctx->area.x = x;
-    ctx->area.y = y;
-    ctx->area.w = w;
-    ctx->area.h = h;
+    SDL_copyp(&ctx->area, area);
 }
 
 void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
@@ -1259,16 +1242,16 @@ GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label)
     return ctx;
 }
 
-void SetGamepadButtonArea(GamepadButton *ctx, int x, int y, int w, int h)
+void SetGamepadButtonArea(GamepadButton *ctx, const SDL_Rect *area)
 {
     if (!ctx) {
         return;
     }
 
-    ctx->area.x = (float)x;
-    ctx->area.y = (float)y;
-    ctx->area.w = (float)w;
-    ctx->area.h = (float)h;
+    ctx->area.x = (float)area->x;
+    ctx->area.y = (float)area->y;
+    ctx->area.w = (float)area->w;
+    ctx->area.h = (float)area->h;
 }
 
 void SetGamepadButtonHighlight(GamepadButton *ctx, SDL_bool highlight)
