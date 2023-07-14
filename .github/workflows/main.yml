@@ -108,8 +108,8 @@ jobs:
         cmake --build build/ --config Release --verbose --parallel
     - name: Run build-time tests (CMake)
       run: |
-        set -eu
         ${{ matrix.platform.source_cmd }}
+        set -eu
         export SDL_TESTS_QUICK=1
         ctest -VV --test-dir build/
         if test "${{ runner.os }}" = "Linux"; then
@@ -118,8 +118,8 @@ jobs:
         fi
     - name: Install (CMake)
       run: |
-        set -eu
         ${{ matrix.platform.source_cmd }}
+        set -eu
         cmake --install build/ --config Release
         ( cd cmake_prefix; find . ) | LC_ALL=C sort -u
     - name: Package (CPack)
