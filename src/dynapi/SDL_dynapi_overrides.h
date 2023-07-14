@@ -895,3 +895,4 @@
 #define SDL_ClearClipboardData SDL_ClearClipboardData_REAL
 #define SDL_GetGamepadInstanceID SDL_GetGamepadInstanceID_REAL
 #define SDL_GetGamepadPowerLevel SDL_GetGamepadPowerLevel_REAL
+#define SDL_SetGamepadMapping SDL_SetGamepadMapping_REAL

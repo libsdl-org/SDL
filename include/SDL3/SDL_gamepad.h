@@ -149,7 +149,7 @@ typedef enum
  * "341a3608000000000000504944564944,Afterglow PS3 Controller,a:b1,b:b2,y:b3,x:b0,start:b9,guide:b12,back:b8,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftshoulder:b4,rightshoulder:b5,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7"
  * ```
  *
- * \param mappingString the mapping string
+ * \param mapping the mapping string
  * \returns 1 if a new mapping is added, 0 if an existing mapping is updated,
  *          -1 on error; call SDL_GetError() for more information.
  *
@@ -158,7 +158,7 @@ typedef enum
  * \sa SDL_GetGamepadMapping
  * \sa SDL_GetGamepadMappingForGUID
  */
-extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mappingString);
+extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
 
 /**
  * Load a set of gamepad mappings from a seekable SDL data stream.
@@ -248,8 +248,26 @@ extern DECLSPEC char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID gui
  *
  * \sa SDL_AddGamepadMapping
  * \sa SDL_GetGamepadMappingForGUID
+ * \sa SDL_SetGamepadMapping
  */
 extern DECLSPEC char * SDLCALL SDL_GetGamepadMapping(SDL_Gamepad *gamepad);
+
+/**
+ * Set the current mapping of a joystick or gamepad.
+ *
+ * Details about mappings are discussed with SDL_AddGamepadMapping().
+ *
+ * \param instance_id the joystick instance ID
+ * \param mapping the mapping to use for this device, or NULL to clear the mapping
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AddGamepadMapping
+ * \sa SDL_GetGamepadMapping
+ */
+extern DECLSPEC int SDLCALL SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping);
 
 /**
  * Get a list of currently connected gamepads.

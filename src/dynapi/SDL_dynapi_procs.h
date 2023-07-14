@@ -940,3 +940,4 @@ SDL_DYNAPI_PROC(long,SDL_wcstol,(const wchar_t *a, wchar_t **b, int c),(a,b,c),r
 SDL_DYNAPI_PROC(int,SDL_ClearClipboardData,(void),(),return)
 SDL_DYNAPI_PROC(SDL_JoystickID,SDL_GetGamepadInstanceID,(SDL_Gamepad *a),(a),return)
 SDL_DYNAPI_PROC(SDL_JoystickPowerLevel,SDL_GetGamepadPowerLevel,(SDL_Gamepad *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_SetGamepadMapping,(SDL_JoystickID a, const char *b),(a,b),return)
