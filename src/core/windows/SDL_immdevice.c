@@ -147,7 +147,7 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const SDL_bool iscapture, const char *
         SDL_zero(spec);
         spec.channels = (Uint8)fmt->Format.nChannels;
         spec.freq = fmt->Format.nSamplesPerSec;
-        spec.format = WaveFormatToSDLFormat((WAVEFORMATEX *)fmt);
+        spec.format = SDL_WaveFormatExToSDLFormat((WAVEFORMATEX *)fmt);
 
         device = SDL_AddAudioDevice(iscapture, devname, &spec, handle);
     }
@@ -164,7 +164,6 @@ typedef struct SDLMMNotificationClient
 {
     const IMMNotificationClientVtbl *lpVtbl;
     SDL_AtomicInt refcount;
-    SDL_bool useguid;
 } SDLMMNotificationClient;
 
 static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_QueryInterface(IMMNotificationClient *client, REFIID iid, void **ppv)
@@ -370,7 +369,7 @@ static void EnumerateEndpointsForFlow(const SDL_bool iscapture, SDL_AudioDevice 
                 GetMMDeviceInfo(immdevice, &devname, &fmt, &dsoundguid);
                 if (devname) {
                     SDL_AudioDevice *sdldevice = SDL_IMMDevice_Add(iscapture, devname, &fmt, devid, &dsoundguid);
-                    if (default_device && default_devid && SDL_wcscmp(default_devid, devid)) {
+                    if (default_device && default_devid && SDL_wcscmp(default_devid, devid) == 0) {
                         *default_device = sdldevice;
                     }
                     SDL_free(devname);
@@ -395,7 +394,7 @@ void SDL_IMMDevice_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_Audi
     IMMDeviceEnumerator_RegisterEndpointNotificationCallback(enumerator, (IMMNotificationClient *)&notification_client);
 }
 
-SDL_AudioFormat WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
+SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat)
 {
     if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
         return SDL_AUDIO_F32SYS;

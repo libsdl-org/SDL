@@ -85,6 +85,12 @@ extern void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device);
 // Backends should call this if the system default device changes.
 extern void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device);
 
+// Backends should call this if a device's format is changing (opened or not); SDL will update state and carry on with the new format.
+extern int SDL_AudioDeviceFormatChanged(SDL_AudioDevice *device, const SDL_AudioSpec *newspec, int new_sample_frames);
+
+// Same as above, but assume the device is already locked.
+extern int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL_AudioSpec *newspec, int new_sample_frames);
+
 // Find the SDL_AudioDevice associated with the handle supplied to SDL_AddAudioDevice. NULL if not found. DOES NOT LOCK THE DEVICE.
 extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle);
 

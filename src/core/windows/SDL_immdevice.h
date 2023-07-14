@@ -35,6 +35,6 @@ void SDL_IMMDevice_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_Audi
 LPGUID SDL_IMMDevice_GetDirectSoundGUID(SDL_AudioDevice *device);
 LPCWSTR SDL_IMMDevice_GetDevID(SDL_AudioDevice *device);
 void SDL_IMMDevice_FreeDeviceHandle(SDL_AudioDevice *device);
-SDL_AudioFormat WaveFormatToSDLFormat(WAVEFORMATEX *waveformat);
+SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);
 
 #endif /* SDL_IMMDEVICE_H */

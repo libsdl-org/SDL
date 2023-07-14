@@ -1082,7 +1082,7 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec)
     return 0;
 }
 
-// this expects the device lock to be held.
+// this expects the device lock to be held.  !!! FIXME: no it doesn't...?
 static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
 {
     SDL_assert(current_audio.impl.ProvidesOwnCallbackThread || ((device->thread == NULL) == (SDL_AtomicGet(&device->thread_alive) == 0)));
@@ -1688,3 +1688,45 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
         SDL_AudioDeviceDisconnected(current_default_device);  // Call again, now that we're not the default; this will remove from device list, send removal events, and destroy the SDL_AudioDevice.
     }
 }
+
+int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL_AudioSpec *newspec, int new_sample_frames)
+{
+    SDL_bool kill_device = SDL_FALSE;
+
+    const int orig_buffer_size = device->buffer_size;
+    const SDL_bool iscapture = device->iscapture;
+
+    if ((device->spec.format != newspec->format) || (device->spec.channels != newspec->channels) || (device->spec.freq != newspec->freq)) {
+        SDL_memcpy(&device->spec, newspec, sizeof (newspec));
+        for (SDL_LogicalAudioDevice *logdev = device->logical_devices; !kill_device && (logdev != NULL); logdev = logdev->next) {
+            for (SDL_AudioStream *stream = logdev->bound_streams; !kill_device && (stream != NULL); stream = stream->next_binding) {
+                if (SDL_SetAudioStreamFormat(stream, iscapture ? &device->spec : NULL, iscapture ? NULL : &device->spec) == -1) {
+                    kill_device = SDL_TRUE;
+                }
+            }
+        }
+    }
+
+    if (!kill_device) {
+        device->sample_frames = new_sample_frames;
+        SDL_UpdatedAudioDeviceFormat(device);
+        if (device->work_buffer && (device->buffer_size > orig_buffer_size)) {
+            SDL_aligned_free(device->work_buffer);
+            device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->buffer_size);
+            if (!device->work_buffer) {
+                kill_device = SDL_TRUE;
+            }
+        }
+    }
+
+    return kill_device ? -1 : 0;
+}
+
+int SDL_AudioDeviceFormatChanged(SDL_AudioDevice *device, const SDL_AudioSpec *newspec, int new_sample_frames)
+{
+    SDL_LockMutex(device->lock);
+    const int retval = SDL_AudioDeviceFormatChangedAlreadyLocked(device, newspec, new_sample_frames);
+    SDL_UnlockMutex(device->lock);
+    return retval;
+}
+

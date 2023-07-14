@@ -31,37 +31,38 @@ extern "C" {
 
 struct SDL_PrivateAudioData
 {
-    SDL_AtomicInt refcount;
     WCHAR *devid;
     WAVEFORMATEX *waveformat;
     IAudioClient *client;
     IAudioRenderClient *render;
     IAudioCaptureClient *capture;
-    SDL_AudioStream *capturestream;
     HANDLE event;
     HANDLE task;
     SDL_bool coinitialized;
     int framesize;
-    int default_device_generation;
     SDL_bool device_lost;
     void *activation_handler;
-    SDL_AtomicInt just_activated;
 };
 
 /* win32 and winrt implementations call into these. */
-int WASAPI_PrepDevice(SDL_AudioDevice *_this, const SDL_bool updatestream);
-void WASAPI_RefDevice(SDL_AudioDevice *_this);
-void WASAPI_UnrefDevice(SDL_AudioDevice *_this);
+int WASAPI_PrepDevice(SDL_AudioDevice *device);
+void WASAPI_DisconnectDevice(SDL_AudioDevice *device);
+
+
+// BE CAREFUL: if you are holding the device lock and proxy to the management thread with wait_until_complete, and grab the lock again, you will deadlock.
+typedef int (*ManagementThreadTask)(void *userdata);
+int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, int *wait_until_complete);
 
 /* These are functions that are implemented differently for Windows vs WinRT. */
+// UNLESS OTHERWISE NOTED THESE ALL HAPPEN ON THE MANAGEMENT THREAD.
 int WASAPI_PlatformInit(void);
 void WASAPI_PlatformDeinit(void);
-void WASAPI_EnumerateEndpoints(void);
-int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture);
-int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery);
-void WASAPI_PlatformThreadInit(SDL_AudioDevice *_this);
-void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *_this);
+void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);
+int WASAPI_ActivateDevice(SDL_AudioDevice *device);
+void WASAPI_PlatformThreadInit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
+void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
 void WASAPI_PlatformDeleteActivationHandler(void *handler);
+void WASAPI_PlatformFreeDeviceHandle(SDL_AudioDevice *device);
 
 #ifdef __cplusplus
 }

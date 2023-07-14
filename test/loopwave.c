@@ -39,7 +39,7 @@ static SDL_AudioStream *stream;
 
 static void fillerup(void)
 {
-    if (SDL_GetAudioStreamAvailable(stream) < (wave.soundlen / 2)) {
+    if (SDL_GetAudioStreamAvailable(stream) < (int) ((wave.soundlen / 2))) {
         SDL_PutAudioStreamData(stream, wave.sound, wave.soundlen);
     }
 }
