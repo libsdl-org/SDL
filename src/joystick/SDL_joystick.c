@@ -1906,7 +1906,7 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
         if (crc16) {
             *crc16 = SDL_SwapLE16(guid16[1]);
         }
-    } else if (bus < ' ') {
+    } else if (bus < ' ' || bus == SDL_HARDWARE_BUS_VIRTUAL) {
         /* This GUID fits the unknown VID/PID form:
          * 16-bit bus
          * 16-bit CRC16 of the joystick name (can be zero)
