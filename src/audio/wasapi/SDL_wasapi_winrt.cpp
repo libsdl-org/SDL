@@ -159,12 +159,12 @@ void SDL_WasapiDeviceEventHandler::OnDeviceAdded(DeviceWatcher ^ sender, DeviceI
             WAVEFORMATEXTENSIBLE fmt;
             SDL_zero(fmt);
             SDL_memcpy(&fmt, data->Data, SDL_min(data->Length, sizeof(WAVEFORMATEXTENSIBLE)));
-            spec.channels = (Uint8)fmt->Format.nChannels;
-            spec.freq = fmt->Format.nSamplesPerSec;
-            spec.format = SDL_WaveFormatExToSDLFormat((WAVEFORMATEX *)fmt);
+            spec.channels = (Uint8)fmt.Format.nChannels;
+            spec.freq = fmt.Format.nSamplesPerSec;
+            spec.format = SDL_WaveFormatExToSDLFormat((WAVEFORMATEX *)&fmt);
         }
 
-        LPWSTR devid = SDL_wcsdup(devid);
+        LPWSTR devid = SDL_wcsdup(info->Id->Data());
         if (devid) {
             SDL_AddAudioDevice(this->iscapture, utf8dev, spec.channels ? &spec : NULL, devid);
         }
@@ -244,7 +244,7 @@ void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice
 
     capture_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_TRUE);
     capture_device_event_handler->WaitForCompletion();
-    defdevid = MediaDevice::GetDefaultAudioCaptureId(AudioDeviceRole::Default)
+    defdevid = MediaDevice::GetDefaultAudioCaptureId(AudioDeviceRole::Default);
     if (defdevid) {
         *default_capture = FindWinRTAudioDevice(defdevid->Data());
     }
@@ -307,7 +307,7 @@ int WASAPI_ActivateDevice(SDL_AudioDevice *device)
     }
 
     // !!! FIXME: the problems in SDL2 that needed this to be synchronous are _probably_ solved by SDL3, and this can block indefinitely if a user prompt is shown to get permission to use a microphone.
-    handler.WaitForCompletion();  // block here until we have an answer, so this is synchronous to us after all.
+    handler.Get()->WaitForCompletion();  // block here until we have an answer, so this is synchronous to us after all.
 
     HRESULT activateRes = S_OK;
     IUnknown *iunknown = nullptr;

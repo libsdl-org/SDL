@@ -53,8 +53,6 @@ static const IID SDL_IID_IMMEndpoint = { 0x1be09788, 0x6894, 0x4089,{ 0x85, 0x86
 static const PROPERTYKEY SDL_PKEY_Device_FriendlyName = { { 0xa45c254e, 0xdf1c, 0x4efd,{ 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0, } }, 14 };
 static const PROPERTYKEY SDL_PKEY_AudioEngine_DeviceFormat = { { 0xf19f064d, 0x82c, 0x4e27,{ 0xbc, 0x73, 0x68, 0x82, 0xa1, 0xbb, 0x8e, 0x4c, } }, 0 };
 static const PROPERTYKEY SDL_PKEY_AudioEndpoint_GUID = { { 0x1da5d803, 0xd492, 0x4edd,{ 0x8c, 0x23, 0xe0, 0xc0, 0xff, 0xee, 0x7f, 0x0e, } }, 4 };
-static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
-static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 /* *INDENT-ON* */ /* clang-format on */
 
 static SDL_bool FindByDevIDCallback(SDL_AudioDevice *device, void *userdata)
@@ -392,27 +390,6 @@ void SDL_IMMDevice_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_Audi
 
     /* if this fails, we just won't get hotplug events. Carry on anyhow. */
     IMMDeviceEnumerator_RegisterEndpointNotificationCallback(enumerator, (IMMNotificationClient *)&notification_client);
-}
-
-SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat)
-{
-    if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
-        return SDL_AUDIO_F32SYS;
-    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
-        return SDL_AUDIO_S16SYS;
-    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
-        return SDL_AUDIO_S32SYS;
-    } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
-        const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *)waveformat;
-        if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return SDL_AUDIO_F32SYS;
-        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
-            return SDL_AUDIO_S16SYS;
-        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return SDL_AUDIO_S32SYS;
-        }
-    }
-    return 0;
 }
 
 #endif /* (defined(__WIN32__) || defined(__GDK__)) && defined(HAVE_MMDEVICEAPI_H) */
