@@ -896,3 +896,4 @@
 #define SDL_GetGamepadInstanceID SDL_GetGamepadInstanceID_REAL
 #define SDL_GetGamepadPowerLevel SDL_GetGamepadPowerLevel_REAL
 #define SDL_SetGamepadMapping SDL_SetGamepadMapping_REAL
+#define SDL_strndup SDL_strndup_REAL
