@@ -111,6 +111,15 @@ extern SDL_bool SDL_IsJoystickNintendoSwitchJoyConRight(Uint16 vendor_id, Uint16
 extern SDL_bool SDL_IsJoystickNintendoSwitchJoyConGrip(Uint16 vendor_id, Uint16 product_id);
 extern SDL_bool SDL_IsJoystickNintendoSwitchJoyConPair(Uint16 vendor_id, Uint16 product_id);
 
+/* Function to return whether a joystick is an Amazon Luna controller */
+extern SDL_bool SDL_IsJoystickAmazonLunaController(Uint16 vendor_id, Uint16 product_id);
+
+/* Function to return whether a joystick is a Google Stadia controller */
+extern SDL_bool SDL_IsJoystickGoogleStadiaController(Uint16 vendor_id, Uint16 product_id);
+
+/* Function to return whether a joystick is an NVIDIA SHIELD controller */
+extern SDL_bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_id);
+
 /* Function to return whether a joystick is a Steam Controller */
 extern SDL_bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id);
 

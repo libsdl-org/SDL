@@ -106,7 +106,7 @@ static SDL_bool HIDAPI_DriverShield_IsEnabled(void)
 
 static SDL_bool HIDAPI_DriverShield_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return (type == SDL_GAMEPAD_TYPE_NVIDIA_SHIELD) ? SDL_TRUE : SDL_FALSE;
+    return SDL_IsJoystickNVIDIASHIELDController(vendor_id, product_id);
 }
 
 static SDL_bool HIDAPI_DriverShield_InitDevice(SDL_HIDAPI_Device *device)
@@ -120,7 +120,6 @@ static SDL_bool HIDAPI_DriverShield_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
-    device->type = SDL_GAMEPAD_TYPE_NVIDIA_SHIELD;
     HIDAPI_SetDeviceName(device, "NVIDIA SHIELD Controller");
 
     return HIDAPI_JoystickConnected(device, NULL);

@@ -1176,7 +1176,7 @@ static SDL_bool HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id,
     if (vendor_id == USB_VENDOR_NVIDIA) {
         /* If we're looking for the NVIDIA SHIELD controller Xbox interface, match it against any NVIDIA SHIELD controller */
         if (product_id == 0xb400 &&
-            device->type == SDL_GAMEPAD_TYPE_NVIDIA_SHIELD) {
+            SDL_IsJoystickNVIDIASHIELDController(vendor_id, product_id)) {
             return SDL_TRUE;
         }
     }

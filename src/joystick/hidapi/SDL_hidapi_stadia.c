@@ -61,7 +61,7 @@ static SDL_bool HIDAPI_DriverStadia_IsEnabled(void)
 
 static SDL_bool HIDAPI_DriverStadia_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return (type == SDL_GAMEPAD_TYPE_GOOGLE_STADIA) ? SDL_TRUE : SDL_FALSE;
+    return SDL_IsJoystickGoogleStadiaController(vendor_id, product_id);
 }
 
 static SDL_bool HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
@@ -84,7 +84,6 @@ static SDL_bool HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    device->type = SDL_GAMEPAD_TYPE_GOOGLE_STADIA;
     HIDAPI_SetDeviceName(device, "Google Stadia Controller");
 
     return HIDAPI_JoystickConnected(device, NULL);
