@@ -24,6 +24,10 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#if 0
+#define DEBUG_AXIS_MAPPING
+#endif
+
 #define TITLE_HEIGHT 48
 #define PANEL_SPACING 25
 #define PANEL_WIDTH 250
@@ -49,9 +53,24 @@ SDL_COMPILE_TIME_ASSERT(power_level_strings, SDL_arraysize(power_level_strings) 
 
 typedef struct
 {
+    SDL_bool m_bMoving;
+    int m_nLastValue;
+    int m_nStartingValue;
+    int m_nFarthestValue;
+} AxisState;
+
+typedef struct
+{
     SDL_JoystickID id;
+
     SDL_Joystick *joystick;
+    int num_axes;
+    AxisState *axis_state;
+
     SDL_Gamepad *gamepad;
+    char *mapping;
+    SDL_bool has_bindings;
+
     int trigger_effect;
 } Controller;
 
@@ -62,81 +81,26 @@ static GamepadImage *image = NULL;
 static GamepadDisplay *gamepad_elements = NULL;
 static JoystickDisplay *joystick_elements = NULL;
 static GamepadButton *setup_mapping_button = NULL;
-static GamepadButton *test_mapping_button = NULL;
+static GamepadButton *done_mapping_button = NULL;
 static GamepadButton *cancel_button = NULL;
 static GamepadButton *clear_button = NULL;
 static GamepadButton *copy_button = NULL;
 static GamepadButton *paste_button = NULL;
 static char *backup_mapping = NULL;
-static SDL_bool retval = SDL_FALSE;
 static SDL_bool done = SDL_FALSE;
 static SDL_bool set_LED = SDL_FALSE;
 static int num_controllers = 0;
 static Controller *controllers;
 static Controller *controller;
+static SDL_JoystickID mapping_controller = 0;
+static int binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
+static Uint64 binding_advance_time = 0;
 static SDL_Joystick *virtual_joystick = NULL;
 static SDL_GamepadAxis virtual_axis_active = SDL_GAMEPAD_AXIS_INVALID;
 static float virtual_axis_start_x;
 static float virtual_axis_start_y;
 static SDL_GamepadButton virtual_button_active = SDL_GAMEPAD_BUTTON_INVALID;
 
-
-static void PrintJoystickInfo(SDL_JoystickID instance_id)
-{
-    char guid[64];
-    const char *name;
-    const char *path;
-    const char *description;
-    const char *mapping = NULL;
-
-    SDL_GetJoystickGUIDString(SDL_GetJoystickInstanceGUID(instance_id), guid, sizeof(guid));
-
-    if (SDL_IsGamepad(instance_id)) {
-        name = SDL_GetGamepadInstanceName(instance_id);
-        path = SDL_GetGamepadInstancePath(instance_id);
-        switch (SDL_GetGamepadInstanceType(instance_id)) {
-        case SDL_GAMEPAD_TYPE_XBOX360:
-            description = "XBox 360 Controller";
-            break;
-        case SDL_GAMEPAD_TYPE_XBOXONE:
-            description = "XBox One Controller";
-            break;
-        case SDL_GAMEPAD_TYPE_PS3:
-            description = "PS3 Controller";
-            break;
-        case SDL_GAMEPAD_TYPE_PS4:
-            description = "PS4 Controller";
-            break;
-        case SDL_GAMEPAD_TYPE_PS5:
-            description = "DualSense Wireless Controller";
-            break;
-        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
-            description = "Nintendo Switch Pro Controller";
-            break;
-        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
-        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
-        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
-            description = "Nintendo Switch Joy-Con";
-            break;
-        default:
-            description = "Gamepad";
-            break;
-        }
-        mapping = SDL_GetGamepadInstanceMapping(instance_id);
-    } else {
-        name = SDL_GetJoystickInstanceName(instance_id);
-        path = SDL_GetJoystickInstancePath(instance_id);
-        description = "Joystick";
-    }
-    SDL_Log("%s: %s%s%s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)\n",
-            description, name ? name : "Unknown", path ? ", " : "", path ? path : "", guid,
-            SDL_GetJoystickInstanceVendor(instance_id),
-            SDL_GetJoystickInstanceProduct(instance_id),
-            SDL_GetJoystickInstancePlayerIndex(instance_id));
-    if (mapping) {
-        SDL_Log("Mapping: %s\n", mapping);
-    }
-}
 
 static const char *GetSensorName(SDL_SensorType sensor)
 {
@@ -210,52 +174,256 @@ static void CyclePS5TriggerEffect(Controller *device)
 
 static void ClearButtonHighlights()
 {
-    SetGamepadButtonHighlight(setup_mapping_button, SDL_FALSE);
-    SetGamepadButtonHighlight(test_mapping_button, SDL_FALSE);
-    SetGamepadButtonHighlight(cancel_button, SDL_FALSE);
-    SetGamepadButtonHighlight(clear_button, SDL_FALSE);
-    SetGamepadButtonHighlight(copy_button, SDL_FALSE);
-    SetGamepadButtonHighlight(paste_button, SDL_FALSE);
+    ClearGamepadImage(image);
+    SetGamepadDisplayHighlight(gamepad_elements, SDL_GAMEPAD_ELEMENT_INVALID, SDL_FALSE);
+    SetGamepadButtonHighlight(setup_mapping_button, SDL_FALSE, SDL_FALSE);
+    SetGamepadButtonHighlight(done_mapping_button, SDL_FALSE, SDL_FALSE);
+    SetGamepadButtonHighlight(cancel_button, SDL_FALSE, SDL_FALSE);
+    SetGamepadButtonHighlight(clear_button, SDL_FALSE, SDL_FALSE);
+    SetGamepadButtonHighlight(copy_button, SDL_FALSE, SDL_FALSE);
+    SetGamepadButtonHighlight(paste_button, SDL_FALSE, SDL_FALSE);
 }
 
-static void UpdateButtonHighlights(float x, float y)
+static void UpdateButtonHighlights(float x, float y, SDL_bool button_down)
 {
     ClearButtonHighlights();
 
     if (display_mode == CONTROLLER_MODE_TESTING) {
-        SetGamepadButtonHighlight(setup_mapping_button, GamepadButtonContains(setup_mapping_button, x, y));
+        SetGamepadButtonHighlight(setup_mapping_button, GamepadButtonContains(setup_mapping_button, x, y), button_down);
     } else if (display_mode == CONTROLLER_MODE_BINDING) {
-        SetGamepadButtonHighlight(test_mapping_button, GamepadButtonContains(test_mapping_button, x, y));
-        SetGamepadButtonHighlight(cancel_button, GamepadButtonContains(cancel_button, x, y));
-        SetGamepadButtonHighlight(clear_button, GamepadButtonContains(clear_button, x, y));
-        SetGamepadButtonHighlight(copy_button, GamepadButtonContains(copy_button, x, y));
-        SetGamepadButtonHighlight(paste_button, GamepadButtonContains(paste_button, x, y));
+        int gamepad_highlight_element;
+        char *joystick_highlight_element;
+
+        gamepad_highlight_element = GetGamepadDisplayElementAt(gamepad_elements, controller->gamepad, x, y);
+        SetGamepadDisplayHighlight(gamepad_elements, gamepad_highlight_element, button_down);
+
+        joystick_highlight_element = GetJoystickDisplayElementAt(joystick_elements, controller->joystick, x, y);
+        SetJoystickDisplayHighlight(joystick_elements, joystick_highlight_element, button_down);
+        SDL_free(joystick_highlight_element);
+
+        SetGamepadButtonHighlight(done_mapping_button, GamepadButtonContains(done_mapping_button, x, y), button_down);
+        SetGamepadButtonHighlight(cancel_button, GamepadButtonContains(cancel_button, x, y), button_down);
+        SetGamepadButtonHighlight(clear_button, GamepadButtonContains(clear_button, x, y), button_down);
+        SetGamepadButtonHighlight(copy_button, GamepadButtonContains(copy_button, x, y), button_down);
+        SetGamepadButtonHighlight(paste_button, GamepadButtonContains(paste_button, x, y), button_down);
     }
+}
+
+static int StandardizeAxisValue(int nValue)
+{
+    if (nValue > SDL_JOYSTICK_AXIS_MAX / 2) {
+        return SDL_JOYSTICK_AXIS_MAX;
+    } else if (nValue < SDL_JOYSTICK_AXIS_MIN / 2) {
+        return SDL_JOYSTICK_AXIS_MIN;
+    } else {
+        return 0;
+    }
+}
+
+static void SetGamepadMapping(char *mapping)
+{
+    /* Make sure the mapping has a valid name */
+    if (!MappingHasName(mapping)) {
+        SetMappingName(mapping, SDL_GetJoystickName(controller->joystick));
+    }
+
+    SDL_free(controller->mapping);
+    controller->mapping = mapping;
+    controller->has_bindings = MappingHasBindings(mapping);
+
+    SDL_SetGamepadMapping(controller->id, mapping);
+}
+
+static void SetCurrentBindingElement(int element)
+{
+    int i;
+
+    binding_element = element;
+    binding_advance_time = 0;
+
+    for (i = 0; i < controller->num_axes; ++i) {
+        controller->axis_state[i].m_nFarthestValue = controller->axis_state[i].m_nStartingValue;
+    }
+
+    SetGamepadDisplaySelected(gamepad_elements, element);
+}
+
+static void SetNextBindingElement()
+{
+    static int s_arrBindingOrder[] = {
+        /* Standard sequence */
+        SDL_GAMEPAD_BUTTON_A,
+        SDL_GAMEPAD_BUTTON_B,
+        SDL_GAMEPAD_BUTTON_Y,
+        SDL_GAMEPAD_BUTTON_X,
+        SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_NEGATIVE,
+        SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_POSITIVE,
+        SDL_GAMEPAD_ELEMENT_AXIS_LEFTY_NEGATIVE,
+        SDL_GAMEPAD_ELEMENT_AXIS_LEFTY_POSITIVE,
+        SDL_GAMEPAD_BUTTON_LEFT_STICK,
+        SDL_GAMEPAD_ELEMENT_AXIS_RIGHTX_NEGATIVE,
+        SDL_GAMEPAD_ELEMENT_AXIS_RIGHTX_POSITIVE,
+        SDL_GAMEPAD_ELEMENT_AXIS_RIGHTY_NEGATIVE,
+        SDL_GAMEPAD_ELEMENT_AXIS_RIGHTY_POSITIVE,
+        SDL_GAMEPAD_BUTTON_RIGHT_STICK,
+        SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
+        SDL_GAMEPAD_ELEMENT_AXIS_LEFT_TRIGGER,
+        SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+        SDL_GAMEPAD_ELEMENT_AXIS_RIGHT_TRIGGER,
+        SDL_GAMEPAD_BUTTON_DPAD_UP,
+        SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
+        SDL_GAMEPAD_BUTTON_DPAD_DOWN,
+        SDL_GAMEPAD_BUTTON_DPAD_LEFT,
+        SDL_GAMEPAD_BUTTON_BACK,
+        SDL_GAMEPAD_BUTTON_GUIDE,
+        SDL_GAMEPAD_BUTTON_START,
+        SDL_GAMEPAD_BUTTON_MISC1,
+        SDL_GAMEPAD_ELEMENT_INVALID,
+
+        /* Paddle sequence */
+        SDL_GAMEPAD_BUTTON_PADDLE1,
+        SDL_GAMEPAD_BUTTON_PADDLE2,
+        SDL_GAMEPAD_BUTTON_PADDLE3,
+        SDL_GAMEPAD_BUTTON_PADDLE4,
+        SDL_GAMEPAD_ELEMENT_INVALID,
+    };
+    int i;
+
+    if (binding_element == SDL_GAMEPAD_ELEMENT_INVALID) {
+        return;
+    }
+
+    for (i = 0; i < SDL_arraysize(s_arrBindingOrder); ++i) {
+        if (binding_element == s_arrBindingOrder[i]) {
+            SetCurrentBindingElement(s_arrBindingOrder[i + 1]);
+            return;
+        }
+    }
+    SetCurrentBindingElement(SDL_GAMEPAD_ELEMENT_INVALID);
+}
+
+static void CancelBinding(void)
+{
+    SetCurrentBindingElement(SDL_GAMEPAD_ELEMENT_INVALID);
+}
+
+static void CommitBindingElement(const char *binding, SDL_bool force)
+{
+    char *mapping;
+
+    if (binding_element == SDL_GAMEPAD_ELEMENT_INVALID) {
+        return;
+    }
+
+    mapping = controller->mapping;
+
+    /* If the controller generates multiple events for a single element, pick the best one */
+    if (!force && binding_advance_time) {
+        SDL_bool ignore_binding = SDL_FALSE;
+        char *current = GetElementBinding(mapping, binding_element);
+        SDL_bool native_button = (binding_element < SDL_GAMEPAD_BUTTON_MAX);
+        SDL_bool native_axis = (binding_element >= SDL_GAMEPAD_BUTTON_MAX &&
+                                binding_element <= SDL_GAMEPAD_ELEMENT_AXIS_MAX);
+        SDL_bool native_trigger = (binding_element == SDL_GAMEPAD_ELEMENT_AXIS_LEFT_TRIGGER ||
+                                   binding_element == SDL_GAMEPAD_ELEMENT_AXIS_RIGHT_TRIGGER);
+        SDL_bool native_dpad = (binding_element == SDL_GAMEPAD_BUTTON_DPAD_UP ||
+                                binding_element == SDL_GAMEPAD_BUTTON_DPAD_DOWN ||
+                                binding_element == SDL_GAMEPAD_BUTTON_DPAD_LEFT ||
+                                binding_element == SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
+
+        if (native_button) {
+            SDL_bool current_button = (current && *current == 'b');
+            SDL_bool proposed_button = (binding && *binding == 'b');
+            if (current_button && !proposed_button) {
+                ignore_binding = SDL_TRUE;
+            }
+        }
+        if (native_axis) {
+            SDL_bool current_axis = (current && (*current == '-' || *current == '+' || *current == 'a'));
+            if (current_axis) {
+                /* Ignore this unless the proposed binding extends the existing axis */
+                ignore_binding = SDL_TRUE;
+
+                if (native_trigger &&
+                    ((*current == '-' && *binding == '+' &&
+                      SDL_strcmp(current + 1, binding + 1) == 0) ||
+                     (*current == '+' && *binding == '-' &&
+                      SDL_strcmp(current + 1, binding + 1) == 0))) {
+                    /* Merge two half axes into a whole axis for a trigger */
+                    ++binding;
+                    ignore_binding = SDL_FALSE;
+                }
+            }
+        }
+        if (native_dpad) {
+            SDL_bool current_dpad = (current && *current == 'h');
+            SDL_bool proposed_dpad = (binding && *binding == 'h');
+            if (current_dpad && !proposed_dpad) {
+                ignore_binding = SDL_TRUE;
+            }
+        }
+        SDL_free(current);
+
+        if (ignore_binding) {
+            return;
+        }
+    }
+
+    mapping = ClearMappingBinding(mapping, binding);
+    mapping = SetElementBinding(mapping, binding_element, binding);
+    SetGamepadMapping(mapping);
+
+    if (force) {
+        SetNextBindingElement();
+    } else {
+        /* Wait to see if any more bindings come in */
+        binding_advance_time = SDL_GetTicks() + 30;
+    }
+}
+
+static void ClearBinding(void)
+{
+    CommitBindingElement(NULL, SDL_TRUE);
 }
 
 static void SetDisplayMode(ControllerDisplayMode mode)
 {
     float x, y;
+    Uint32 button_state;
 
     if (mode == CONTROLLER_MODE_BINDING) {
         /* Make a backup of the current mapping */
-        backup_mapping = SDL_GetGamepadMapping(controller->gamepad);
+        if (controller->mapping) {
+            backup_mapping = SDL_strdup(controller->mapping);
+        }
+        mapping_controller = controller->id;
+        if (MappingHasBindings(backup_mapping)) {
+            SetCurrentBindingElement(SDL_GAMEPAD_ELEMENT_INVALID);
+        } else {
+            SetCurrentBindingElement(SDL_GAMEPAD_BUTTON_A);
+        }
+    } else {
+        if (backup_mapping) {
+            SDL_free(backup_mapping);
+            backup_mapping = NULL;
+        }
+        mapping_controller = 0;
+        CancelBinding();
     }
 
     display_mode = mode;
     SetGamepadImageDisplayMode(image, mode);
     SetGamepadDisplayDisplayMode(gamepad_elements, mode);
 
-    SDL_GetMouseState(&x, &y);
+    button_state = SDL_GetMouseState(&x, &y);
     SDL_RenderCoordinatesFromWindow(screen, x, y, &x, &y);
-    UpdateButtonHighlights(x, y);
+    UpdateButtonHighlights(x, y, button_state ? SDL_TRUE : SDL_FALSE);
 }
 
 static void CancelMapping(void)
 {
     if (backup_mapping) {
-        SDL_SetGamepadMapping(controller->id, backup_mapping);
-        SDL_free(backup_mapping);
+        SetGamepadMapping(backup_mapping);
         backup_mapping = NULL;
     }
     SetDisplayMode(CONTROLLER_MODE_TESTING);
@@ -263,34 +431,33 @@ static void CancelMapping(void)
 
 static void ClearMapping(void)
 {
-    SDL_SetGamepadMapping(controller->id, NULL);
+    SetGamepadMapping(NULL);
+    SetCurrentBindingElement(SDL_GAMEPAD_ELEMENT_INVALID);
 }
 
 static void CopyMapping(void)
 {
-    if (controller && controller->gamepad) {
-        char *mapping = SDL_GetGamepadMapping(controller->gamepad);
-        if (mapping) {
-            const char *name = SDL_GetGamepadName(controller->gamepad);
-            char *wildcard = SDL_strchr(mapping, '*');
-            if (wildcard && name && *name) {
-                char *text;
-                size_t size;
+    if (controller && controller->mapping) {
+        char *mapping = controller->mapping;
+        char *wildcard = SDL_strchr(mapping, '*');
+        const char *name = SDL_GetGamepadName(controller->gamepad);
+        if (wildcard && name && *name) {
+            char *text;
+            size_t size;
 
-                /* Personalize the mapping for this controller */
-                *wildcard++ = '\0';
-                size = SDL_strlen(mapping) + SDL_strlen(name) + SDL_strlen(wildcard) + 1;
-                text = SDL_malloc(size);
-                if (!text) {
-                    return;
-                }
-                SDL_snprintf(text, size, "%s%s%s", mapping, name, wildcard);
-                SDL_SetClipboardText(text);
-                SDL_free(text);
-            } else {
-                SDL_SetClipboardText(mapping);
+            /* Personalize the mapping for this controller */
+            *wildcard++ = '\0';
+            size = SDL_strlen(mapping) + SDL_strlen(name) + SDL_strlen(wildcard) + 1;
+            text = SDL_malloc(size);
+            if (!text) {
+                return;
             }
-            SDL_free(mapping);
+            SDL_snprintf(text, size, "%s%s%s", mapping, name, wildcard);
+            SDL_SetClipboardText(text);
+            SDL_free(text);
+            *wildcard = '*';
+        } else {
+            SDL_SetClipboardText(mapping);
         }
     }
 }
@@ -299,10 +466,105 @@ static void PasteMapping(void)
 {
     if (controller) {
         char *mapping = SDL_GetClipboardText();
-        if (*mapping) {
-            SDL_SetGamepadMapping(controller->id, mapping);
+        if (MappingHasBindings(mapping)) {
+            CancelBinding();
+            SetGamepadMapping(mapping);
+        } else {
+            /* Not a valid mapping, ignore it */
+            SDL_free(mapping);
         }
-        SDL_free(mapping);
+    }
+}
+
+static const char *GetBindingInstruction(void)
+{
+    switch (binding_element) {
+    case SDL_GAMEPAD_ELEMENT_INVALID:
+        return "Select an element to bind from the list on the left";
+    case SDL_GAMEPAD_BUTTON_A:
+        if (GetGamepadImageFaceStyle(image) == GAMEPAD_IMAGE_FACE_SONY) {
+            return "Press the Cross (X) button";
+        } else {
+            return "Press the A button";
+        }
+    case SDL_GAMEPAD_BUTTON_B:
+        if (GetGamepadImageFaceStyle(image) == GAMEPAD_IMAGE_FACE_SONY) {
+            return "Press the Circle button";
+        } else {
+            return "Press the B button";
+        }
+    case SDL_GAMEPAD_BUTTON_X:
+        if (GetGamepadImageFaceStyle(image) == GAMEPAD_IMAGE_FACE_SONY) {
+            return "Press the Square button";
+        } else {
+            return "Press the X button";
+        }
+    case SDL_GAMEPAD_BUTTON_Y:
+        if (GetGamepadImageFaceStyle(image) == GAMEPAD_IMAGE_FACE_SONY) {
+            return "Press the Triangle button";
+        } else {
+            return "Press the Y button";
+        }
+    case SDL_GAMEPAD_BUTTON_BACK:
+        return "Press the left center button (Back/View/Share)";
+    case SDL_GAMEPAD_BUTTON_GUIDE:
+        return "Press the center button (Home/Guide)";
+    case SDL_GAMEPAD_BUTTON_START:
+        return "Press the right center button (Start/Menu/Options)";
+    case SDL_GAMEPAD_BUTTON_LEFT_STICK:
+        return "Press the left thumbstick button (LSB/L3)";
+    case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
+        return "Press the right thumbstick button (RSB/R3)";
+    case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+        return "Press the left shoulder button (LB/L1)";
+    case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+        return "Press the right shoulder button (RB/R1)";
+    case SDL_GAMEPAD_BUTTON_DPAD_UP:
+        return "Press the D-Pad up";
+    case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+        return "Press the D-Pad down";
+    case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+        return "Press the D-Pad left";
+    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+        return "Press the D-Pad right";
+    case SDL_GAMEPAD_BUTTON_MISC1:
+        return "Press the bottom center button (Share/Capture)";
+    case SDL_GAMEPAD_BUTTON_PADDLE1:
+        return "Press the upper paddle under your right hand";
+    case SDL_GAMEPAD_BUTTON_PADDLE2:
+        return "Press the upper paddle under your left hand";
+    case SDL_GAMEPAD_BUTTON_PADDLE3:
+        return "Press the lower paddle under your right hand";
+    case SDL_GAMEPAD_BUTTON_PADDLE4:
+        return "Press the lower paddle under your left hand";
+    case SDL_GAMEPAD_BUTTON_TOUCHPAD:
+        return "Press down on the touchpad";
+    case SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_NEGATIVE:
+        return "Move the left thumbstick to the left";
+    case SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_POSITIVE:
+        return "Move the left thumbstick to the right";
+    case SDL_GAMEPAD_ELEMENT_AXIS_LEFTY_NEGATIVE:
+        return "Move the left thumbstick up";
+    case SDL_GAMEPAD_ELEMENT_AXIS_LEFTY_POSITIVE:
+        return "Move the left thumbstick down";
+    case SDL_GAMEPAD_ELEMENT_AXIS_RIGHTX_NEGATIVE:
+        return "Move the right thumbstick to the left";
+    case SDL_GAMEPAD_ELEMENT_AXIS_RIGHTX_POSITIVE:
+        return "Move the right thumbstick to the right";
+    case SDL_GAMEPAD_ELEMENT_AXIS_RIGHTY_NEGATIVE:
+        return "Move the right thumbstick up";
+    case SDL_GAMEPAD_ELEMENT_AXIS_RIGHTY_POSITIVE:
+        return "Move the right thumbstick down";
+    case SDL_GAMEPAD_ELEMENT_AXIS_LEFT_TRIGGER:
+        return "Pull the left trigger (LT/L2)";
+    case SDL_GAMEPAD_ELEMENT_AXIS_RIGHT_TRIGGER:
+        return "Pull the right trigger (RT/R2)";
+    case SDL_GAMEPAD_ELEMENT_NAME:
+        return "Type the name of your controller";
+    case SDL_GAMEPAD_ELEMENT_TYPE:
+        return "Select the type of your controller";
+    default:
+        return "";
     }
 }
 
@@ -322,11 +584,6 @@ static void SetController(SDL_JoystickID id)
 {
     int i = FindController(id);
 
-    if (i >= 0 && display_mode == CONTROLLER_MODE_BINDING) {
-        /* Don't change controllers while binding */
-        return;
-    }
-
     if (i < 0 && num_controllers > 0) {
         i = 0;
     }
@@ -336,7 +593,6 @@ static void SetController(SDL_JoystickID id)
     } else {
         controller = NULL;
     }
-    SetDisplayMode(CONTROLLER_MODE_TESTING);
 }
 
 static void AddController(SDL_JoystickID id, SDL_bool verbose)
@@ -364,12 +620,19 @@ static void AddController(SDL_JoystickID id, SDL_bool verbose)
         return;
     }
 
+    controller = NULL;
     controllers = new_controllers;
     new_controller = &new_controllers[num_controllers++];
     SDL_zerop(new_controller);
     new_controller->id = id;
+
     new_controller->joystick = SDL_OpenJoystick(id);
+    new_controller->num_axes = SDL_GetNumJoystickAxes(new_controller->joystick);
+    new_controller->axis_state = (AxisState *)SDL_calloc(new_controller->num_axes, sizeof(*new_controller->axis_state));
+
     new_controller->gamepad = SDL_OpenGamepad(id);
+    new_controller->mapping = SDL_GetGamepadMapping(new_controller->gamepad);
+    new_controller->has_bindings = MappingHasBindings(new_controller->mapping);
 
     if (new_controller->gamepad) {
         SDL_Gamepad *gamepad = new_controller->gamepad;
@@ -413,7 +676,11 @@ static void AddController(SDL_JoystickID id, SDL_bool verbose)
         }
     }
 
-    SetController(id);
+    if (mapping_controller) {
+        SetController(mapping_controller);
+    } else {
+        SetController(id);
+    }
 }
 
 static void DelController(SDL_JoystickID id)
@@ -424,13 +691,23 @@ static void DelController(SDL_JoystickID id)
         return;
     }
 
+    if (display_mode == CONTROLLER_MODE_BINDING && id == controller->id) {
+        SetDisplayMode(CONTROLLER_MODE_TESTING);
+    }
+
     /* Reset trigger state */
     if (controllers[i].trigger_effect != 0) {
         controllers[i].trigger_effect = -1;
         CyclePS5TriggerEffect(&controllers[i]);
     }
+    if (controllers[i].mapping) {
+        SDL_free(controllers[i].mapping);
+    }
     if (controllers[i].gamepad) {
         SDL_CloseGamepad(controllers[i].gamepad);
+    }
+    if (controllers[i].axis_state) {
+        SDL_free(controllers[i].axis_state);
     }
     if (controllers[i].joystick) {
         SDL_CloseJoystick(controllers[i].joystick);
@@ -440,7 +717,12 @@ static void DelController(SDL_JoystickID id)
     if (i < num_controllers) {
         SDL_memcpy(&controllers[i], &controllers[i + 1], (num_controllers - i) * sizeof(*controllers));
     }
-    SetController(0);
+
+    if (mapping_controller) {
+        SetController(mapping_controller);
+    } else {
+        SetController(id);
+    }
 }
 
 static void HandleGamepadRemapped(SDL_JoystickID id)
@@ -454,6 +736,10 @@ static void HandleGamepadRemapped(SDL_JoystickID id)
     if (!controllers[i].gamepad) {
         controllers[i].gamepad = SDL_OpenGamepad(id);
     }
+    if (controllers[i].mapping) {
+        SDL_free(controllers[i].mapping);
+    }
+    controllers[i].mapping = SDL_GetGamepadMapping(controllers[i].gamepad);
 }
 
 static Uint16 ConvertAxisToRumble(Sint16 axisval)
@@ -472,13 +758,12 @@ static SDL_bool ShowingFront(void)
     SDL_bool showing_front = SDL_TRUE;
     int i;
 
-    if (controller->gamepad) {
-        /* Show the back of the gamepad if the paddles are being held */
-        for (i = SDL_GAMEPAD_BUTTON_PADDLE1; i <= SDL_GAMEPAD_BUTTON_PADDLE4; ++i) {
-            if (SDL_GetGamepadButton(controller->gamepad, (SDL_GamepadButton)i) == SDL_PRESSED) {
-                showing_front = SDL_FALSE;
-                break;
-            }
+    /* Show the back of the gamepad if the paddles are being held or bound */
+    for (i = SDL_GAMEPAD_BUTTON_PADDLE1; i <= SDL_GAMEPAD_BUTTON_PADDLE4; ++i) {
+        if (SDL_GetGamepadButton(controller->gamepad, (SDL_GamepadButton)i) == SDL_PRESSED ||
+            binding_element == i) {
+            showing_front = SDL_FALSE;
+            break;
         }
     }
     if (SDL_GetModState() & SDL_KMOD_SHIFT) {
@@ -560,16 +845,6 @@ static void CloseVirtualGamepad(void)
     }
 }
 
-static SDL_GamepadButton FindButtonAtPosition(float x, float y)
-{
-    return GetGamepadImageButtonAt(image, x, y);
-}
-
-static SDL_GamepadAxis FindAxisAtPosition(float x, float y)
-{
-    return GetGamepadImageAxisAt(image, x, y);
-}
-
 static void VirtualGamepadMouseMotion(float x, float y)
 {
     if (virtual_button_active != SDL_GAMEPAD_BUTTON_INVALID) {
@@ -613,18 +888,36 @@ static void VirtualGamepadMouseMotion(float x, float y)
 
 static void VirtualGamepadMouseDown(float x, float y)
 {
-    SDL_GamepadButton button;
-    SDL_GamepadAxis axis;
+    int element = GetGamepadImageElementAt(image, x, y);
 
-    button = FindButtonAtPosition(x, y);
-    if (button != SDL_GAMEPAD_BUTTON_INVALID) {
-        virtual_button_active = button;
-        SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_PRESSED);
+    if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
+        return;
     }
 
-    axis = FindAxisAtPosition(x, y);
-    if (axis != SDL_GAMEPAD_AXIS_INVALID) {
-        virtual_axis_active = axis;
+    if (element < SDL_GAMEPAD_BUTTON_MAX) {
+        virtual_button_active = (SDL_GamepadButton)element;
+        SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_PRESSED);
+    } else {
+        switch (element) {
+        case SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_NEGATIVE:
+        case SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_POSITIVE:
+        case SDL_GAMEPAD_ELEMENT_AXIS_LEFTY_NEGATIVE:
+        case SDL_GAMEPAD_ELEMENT_AXIS_LEFTY_POSITIVE:
+            virtual_axis_active = SDL_GAMEPAD_AXIS_LEFTX;
+            break;
+        case SDL_GAMEPAD_ELEMENT_AXIS_RIGHTX_NEGATIVE:
+        case SDL_GAMEPAD_ELEMENT_AXIS_RIGHTX_POSITIVE:
+        case SDL_GAMEPAD_ELEMENT_AXIS_RIGHTY_NEGATIVE:
+        case SDL_GAMEPAD_ELEMENT_AXIS_RIGHTY_POSITIVE:
+            virtual_axis_active = SDL_GAMEPAD_AXIS_RIGHTX;
+            break;
+        case SDL_GAMEPAD_ELEMENT_AXIS_LEFT_TRIGGER:
+            virtual_axis_active = SDL_GAMEPAD_AXIS_LEFT_TRIGGER;
+            break;
+        case SDL_GAMEPAD_ELEMENT_AXIS_RIGHT_TRIGGER:
+            virtual_axis_active = SDL_GAMEPAD_AXIS_RIGHT_TRIGGER;
+            break;
+        }
         virtual_axis_start_x = x;
         virtual_axis_start_y = y;
     }
@@ -699,6 +992,45 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
             y = (float)SCREEN_HEIGHT - 8.0f - FONT_LINE_HEIGHT;
             SDLTest_DrawString(renderer, x, y, text);
         }
+    }
+}
+
+static void DrawBindingTips(SDL_Renderer *renderer)
+{
+    const char *text;
+    SDL_Rect image_area, button_area;
+    int x, y;
+
+    GetGamepadImageArea(image, &image_area);
+    GetGamepadButtonArea(done_mapping_button, &button_area);
+    x = image_area.x + image_area.w / 2;
+    y = image_area.y + image_area.h;
+    y += (button_area.y - y - FONT_CHARACTER_SIZE) / 2;
+
+    text = GetBindingInstruction();
+
+    if (binding_element == SDL_GAMEPAD_ELEMENT_INVALID) {
+        SDLTest_DrawString(renderer, (float)x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, (float)y, text);
+    } else {
+        Uint8 r, g, b, a;
+        SDL_FRect rect;
+
+        y -= (FONT_CHARACTER_SIZE + BUTTON_MARGIN) / 2;
+
+        rect.w = 2.0f + (FONT_CHARACTER_SIZE * SDL_strlen(text)) + 2.0f;
+        rect.h = 2.0f + FONT_CHARACTER_SIZE + 2.0f;
+        rect.x = (float)x - rect.w / 2;
+        rect.y = (float)y - 2.0f;
+
+        SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+        SDL_SetRenderDrawColor(renderer, SELECTED_COLOR);
+        SDL_RenderFillRect(renderer, &rect);
+        SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        SDLTest_DrawString(renderer, (float)x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, (float)y, text);
+
+        y += (FONT_CHARACTER_SIZE + BUTTON_MARGIN);
+        text = "(press SPACE to clear binding and ESC to cancel)";
+        SDLTest_DrawString(renderer, (float)x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, (float)y, text);
     }
 }
 
@@ -779,13 +1111,93 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_JOYSTICK_AXIS_MOTION:
-            if (event.jaxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.jaxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
-                SetController(event.jaxis.which);
+            if (display_mode == CONTROLLER_MODE_TESTING) {
+                if (event.jaxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.jaxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
+                    SetController(event.jaxis.which);
+                }
+            } else if (display_mode == CONTROLLER_MODE_BINDING &&
+                       event.jaxis.which == controller->id &&
+                       event.jaxis.axis < controller->num_axes &&
+                       binding_element != SDL_GAMEPAD_ELEMENT_INVALID) {
+                const int MAX_ALLOWED_JITTER = SDL_JOYSTICK_AXIS_MAX / 80; /* ShanWan PS3 gamepad needed 96 */
+                AxisState *pAxisState = &controller->axis_state[event.jaxis.axis];
+                int nValue = event.jaxis.value;
+                int nCurrentDistance, nFarthestDistance;
+                if (!pAxisState->m_bMoving) {
+                    Sint16 nInitialValue;
+                    pAxisState->m_bMoving = SDL_GetJoystickAxisInitialState(controller->joystick, event.jaxis.axis, &nInitialValue);
+                    pAxisState->m_nLastValue = nValue;
+                    pAxisState->m_nStartingValue = nInitialValue;
+                    pAxisState->m_nFarthestValue = nInitialValue;
+                } else if (SDL_abs(nValue - pAxisState->m_nLastValue) <= MAX_ALLOWED_JITTER) {
+                    break;
+                } else {
+                    pAxisState->m_nLastValue = nValue;
+                }
+                nCurrentDistance = SDL_abs(nValue - pAxisState->m_nStartingValue);
+                nFarthestDistance = SDL_abs(pAxisState->m_nFarthestValue - pAxisState->m_nStartingValue);
+                if (nCurrentDistance > nFarthestDistance) {
+                    pAxisState->m_nFarthestValue = nValue;
+                    nFarthestDistance = SDL_abs(pAxisState->m_nFarthestValue - pAxisState->m_nStartingValue);
+                }
+
+#ifdef DEBUG_AXIS_MAPPING
+                SDL_Log("AXIS %d nValue %d nCurrentDistance %d nFarthestDistance %d\n", event.jaxis.axis, nValue, nCurrentDistance, nFarthestDistance);
+#endif
+                /* If we've gone out far enough and started to come back, let's bind this axis */
+                if (nFarthestDistance >= 16000 && nCurrentDistance <= 10000) {
+                    char binding[12];
+                    int axis_min = StandardizeAxisValue(pAxisState->m_nStartingValue);
+                    int axis_max = StandardizeAxisValue(pAxisState->m_nFarthestValue);
+
+                    if (axis_min == 0 && axis_max == SDL_JOYSTICK_AXIS_MIN) {
+                        /* The negative half axis */
+                        (void)SDL_snprintf(binding, sizeof(binding), "-a%d", event.jaxis.axis);
+                    } else if (axis_min == 0 && axis_max == SDL_JOYSTICK_AXIS_MAX) {
+                        /* The positive half axis */
+                        (void)SDL_snprintf(binding, sizeof(binding), "+a%d", event.jaxis.axis);
+                    } else {
+                        (void)SDL_snprintf(binding, sizeof(binding), "a%d", event.jaxis.axis);
+                        if (axis_min > axis_max) {
+                            /* Invert the axis */
+                            SDL_strlcat(binding, "~", SDL_arraysize(binding));
+                        }
+                    }
+#ifdef DEBUG_AXIS_MAPPING
+                    SDL_Log("AXIS %d axis_min = %d, axis_max = %d, binding = %s\n", event.jaxis.axis, axis_min, axis_max, binding);
+#endif
+                    CommitBindingElement(binding, SDL_FALSE);
+                }
             }
             break;
 
         case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
-            SetController(event.jbutton.which);
+            if (display_mode == CONTROLLER_MODE_TESTING) {
+                SetController(event.jbutton.which);
+            }
+            break;
+
+        case SDL_EVENT_JOYSTICK_BUTTON_UP:
+            if (display_mode == CONTROLLER_MODE_BINDING &&
+                event.jbutton.which == controller->id &&
+                binding_element != SDL_GAMEPAD_ELEMENT_INVALID) {
+                char binding[12];
+
+                SDL_snprintf(binding, sizeof(binding), "b%d", event.jbutton.button);
+                CommitBindingElement(binding, SDL_FALSE);
+            }
+            break;
+
+        case SDL_EVENT_JOYSTICK_HAT_MOTION:
+            if (display_mode == CONTROLLER_MODE_BINDING &&
+                event.jhat.which == controller->id &&
+                event.jhat.value != SDL_HAT_CENTERED &&
+                binding_element != SDL_GAMEPAD_ELEMENT_INVALID) {
+                char binding[12];
+
+                SDL_snprintf(binding, sizeof(binding), "h%d.%d", event.jhat.hat, event.jhat.value);
+                CommitBindingElement(binding, SDL_FALSE);
+            }
             break;
 
         case SDL_EVENT_GAMEPAD_REMAPPED:
@@ -821,8 +1233,10 @@ static void loop(void *arg)
 #define VERBOSE_AXES
 #ifdef VERBOSE_AXES
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-            if (event.gaxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.gaxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
-                SetController(event.gaxis.which);
+            if (display_mode == CONTROLLER_MODE_TESTING) {
+                if (event.gaxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.gaxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
+                    SetController(event.gaxis.which);
+                }
             }
             SDL_Log("Gamepad %" SDL_PRIu32 " axis %s changed to %d\n",
                     event.gaxis.which,
@@ -833,8 +1247,10 @@ static void loop(void *arg)
 
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
         case SDL_EVENT_GAMEPAD_BUTTON_UP:
-            if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
-                SetController(event.gbutton.which);
+            if (display_mode == CONTROLLER_MODE_TESTING) {
+                if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+                    SetController(event.gbutton.which);
+                }
             }
             SDL_Log("Gamepad %" SDL_PRIu32 " button %s %s\n",
                     event.gbutton.which,
@@ -856,43 +1272,61 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            if (virtual_joystick && controller->joystick == virtual_joystick) {
+            if (virtual_joystick && controller && controller->joystick == virtual_joystick) {
                 VirtualGamepadMouseDown(event.button.x, event.button.y);
             }
-            UpdateButtonHighlights(event.button.x, event.button.y);
+            UpdateButtonHighlights(event.button.x, event.button.y, event.button.state ? SDL_TRUE : SDL_FALSE);
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_UP:
-            if (virtual_joystick && controller->joystick == virtual_joystick) {
+            if (virtual_joystick && controller && controller->joystick == virtual_joystick) {
                 VirtualGamepadMouseUp(event.button.x, event.button.y);
             }
-
-            ClearButtonHighlights();
 
             if (display_mode == CONTROLLER_MODE_TESTING) {
                 if (GamepadButtonContains(setup_mapping_button, event.button.x, event.button.y)) {
                     SetDisplayMode(CONTROLLER_MODE_BINDING);
                 }
             } else if (display_mode == CONTROLLER_MODE_BINDING) {
-                if (GamepadButtonContains(test_mapping_button, event.button.x, event.button.y)) {
+                if (GamepadButtonContains(done_mapping_button, event.button.x, event.button.y)) {
+                    if (controller->mapping) {
+                        SDL_Log("Mapping complete:\n");
+                        SDL_Log("%s\n", controller->mapping);
+                    }
                     SetDisplayMode(CONTROLLER_MODE_TESTING);
                 } else if (GamepadButtonContains(cancel_button, event.button.x, event.button.y)) {
                     CancelMapping();
                 } else if (GamepadButtonContains(clear_button, event.button.x, event.button.y)) {
                     ClearMapping();
-                } else if (GamepadButtonContains(copy_button, event.button.x, event.button.y)) {
+                } else if (controller->has_bindings &&
+                           GamepadButtonContains(copy_button, event.button.x, event.button.y)) {
                     CopyMapping();
                 } else if (GamepadButtonContains(paste_button, event.button.x, event.button.y)) {
                     PasteMapping();
+                } else {
+                    int gamepad_element;
+                    char *joystick_element;
+
+                    gamepad_element = GetGamepadDisplayElementAt(gamepad_elements, controller->gamepad, event.button.x, event.button.y);
+                    if (gamepad_element != SDL_GAMEPAD_ELEMENT_INVALID) {
+                        SetCurrentBindingElement(gamepad_element);
+                    }
+
+                    joystick_element = GetJoystickDisplayElementAt(joystick_elements, controller->joystick, event.button.x, event.button.y);
+                    if (joystick_element) {
+                        CommitBindingElement(joystick_element, SDL_TRUE);
+                        SDL_free(joystick_element);
+                    }
                 }
             }
+            UpdateButtonHighlights(event.button.x, event.button.y, event.button.state ? SDL_TRUE : SDL_FALSE);
             break;
 
         case SDL_EVENT_MOUSE_MOTION:
-            if (virtual_joystick && controller->joystick == virtual_joystick) {
+            if (virtual_joystick && controller && controller->joystick == virtual_joystick) {
                 VirtualGamepadMouseMotion(event.motion.x, event.motion.y);
             }
-            UpdateButtonHighlights(event.motion.x, event.motion.y);
+            UpdateButtonHighlights(event.motion.x, event.motion.y, event.motion.state ? SDL_TRUE : SDL_FALSE);
             break;
 
         case SDL_EVENT_KEY_DOWN:
@@ -919,8 +1353,14 @@ static void loop(void *arg)
                 } else if (event.key.keysym.sym == SDLK_x && (event.key.keysym.mod & SDL_KMOD_CTRL)) {
                     CopyMapping();
                     ClearMapping();
+                } else if (event.key.keysym.sym == SDLK_SPACE) {
+                    ClearBinding();
                 } else if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    CancelMapping();
+                    if (binding_element != SDL_GAMEPAD_ELEMENT_INVALID) {
+                        CancelBinding();
+                    } else {
+                        CancelMapping();
+                    }
                 }
             }
             break;
@@ -932,6 +1372,13 @@ static void loop(void *arg)
         }
     }
 
+    /* Wait 30 ms for joystick events to stop coming in,
+       in case a gamepad sends multiple events for a single control (e.g. axis and button for trigger)
+    */
+    if (binding_advance_time && SDL_GetTicks() > (binding_advance_time + 30)) {
+        SetNextBindingElement();
+    }
+
     /* blank screen, set up for drawing this frame. */
     SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(screen);
@@ -940,6 +1387,10 @@ static void loop(void *arg)
     if (controller) {
         SetGamepadImageShowingFront(image, ShowingFront());
         UpdateGamepadImageFromGamepad(image, controller->gamepad);
+        if (display_mode == CONTROLLER_MODE_BINDING &&
+            binding_element != SDL_GAMEPAD_ELEMENT_INVALID) {
+            SetGamepadImageElement(image, binding_element, SDL_TRUE);
+        }
         RenderGamepadImage(image);
 
         RenderGamepadDisplay(gamepad_elements, controller->gamepad);
@@ -948,10 +1399,11 @@ static void loop(void *arg)
         if (display_mode == CONTROLLER_MODE_TESTING) {
             RenderGamepadButton(setup_mapping_button);
         } else if (display_mode == CONTROLLER_MODE_BINDING) {
-            RenderGamepadButton(test_mapping_button);
+            DrawBindingTips(screen);
+            RenderGamepadButton(done_mapping_button);
             RenderGamepadButton(cancel_button);
             RenderGamepadButton(clear_button);
-            if (controller->gamepad) {
+            if (controller->has_bindings) {
                 RenderGamepadButton(copy_button);
             }
             RenderGamepadButton(paste_button);
@@ -1134,12 +1586,12 @@ int main(int argc, char *argv[])
     area.y = SCREEN_HEIGHT - BUTTON_MARGIN - area.h;
     SetGamepadButtonArea(paste_button, &area);
 
-    test_mapping_button = CreateGamepadButton(screen, "Done");
-    area.w = SDL_max(MINIMUM_BUTTON_WIDTH, GetGamepadButtonLabelWidth(test_mapping_button) + 2 * BUTTON_PADDING);
-    area.h = GetGamepadButtonLabelHeight(test_mapping_button) + 2 * BUTTON_PADDING;
+    done_mapping_button = CreateGamepadButton(screen, "Done");
+    area.w = SDL_max(MINIMUM_BUTTON_WIDTH, GetGamepadButtonLabelWidth(done_mapping_button) + 2 * BUTTON_PADDING);
+    area.h = GetGamepadButtonLabelHeight(done_mapping_button) + 2 * BUTTON_PADDING;
     area.x = SCREEN_WIDTH / 2 - area.w / 2;
     area.y = SCREEN_HEIGHT - BUTTON_MARGIN - area.h;
-    SetGamepadButtonArea(test_mapping_button, &area);
+    SetGamepadButtonArea(done_mapping_button, &area);
 
     /* Process the initial gamepad list */
     loop(NULL);
