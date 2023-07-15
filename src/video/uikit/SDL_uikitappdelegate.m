@@ -135,13 +135,16 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
+    NSString *screenname;
+    NSBundle *bundle;
+    BOOL atleastiOS8;
     if (!(self = [super initWithNibName:nil bundle:nil])) {
         return nil;
     }
 
-    NSString *screenname = nibNameOrNil;
-    NSBundle *bundle = nibBundleOrNil;
-    BOOL atleastiOS8 = UIKit_IsSystemVersionAtLeast(8.0);
+    screenname = nibNameOrNil;
+    bundle = nibBundleOrNil;
+    atleastiOS8 = UIKit_IsSystemVersionAtLeast(8.0);
 
     /* Launch screens were added in iOS 8. Otherwise we use launch images. */
     if (screenname && atleastiOS8) {
@@ -179,7 +182,10 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
             for (NSDictionary *dict in launchimages) {
                 NSString *minversion = dict[@"UILaunchImageMinimumOSVersion"];
                 NSString *sizestring = dict[@"UILaunchImageSize"];
-
+#if !TARGET_OS_TV
+                UIInterfaceOrientationMask orientmask;
+                NSString *orientstring;
+#endif
                 /* Ignore this image if the current version is too low. */
                 if (minversion && !UIKit_IsSystemVersionAtLeast(minversion.doubleValue)) {
                     continue;
@@ -194,8 +200,8 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                 }
 
 #if !TARGET_OS_TV
-                UIInterfaceOrientationMask orientmask = UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
-                NSString *orientstring = dict[@"UILaunchImageOrientation"];
+                orientmask = UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
+                orientstring = dict[@"UILaunchImageOrientation"];
 
                 if (orientstring) {
                     if ([orientstring isEqualToString:@"PortraitUpsideDown"]) {

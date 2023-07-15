@@ -64,6 +64,7 @@ SDL_GetPowerInfo_UIKit(SDL_PowerState * state, int *seconds, int *percent)
 #else /* TARGET_OS_TV */
     @autoreleasepool {
         UIDevice *uidev = [UIDevice currentDevice];
+        const float level = uidev.batteryLevel;
 
         if (!SDL_UIKitLastPowerInfoQuery) {
             SDL_assert(uidev.isBatteryMonitoringEnabled == NO);
@@ -98,7 +99,6 @@ SDL_GetPowerInfo_UIKit(SDL_PowerState * state, int *seconds, int *percent)
             break;
         }
 
-        const float level = uidev.batteryLevel;
         *percent = ( (level < 0.0f) ? -1 : ((int) ((level * 100) + 0.5f)) );
     }
 #endif /* TARGET_OS_TV */

@@ -59,12 +59,12 @@ UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, in
     int __block clickedindex = messageboxdata->numbuttons;
     UIWindow *window = nil;
     UIWindow *alertwindow = nil;
+    UIAlertController *alert;
 
     if (![UIAlertController class]) {
         return NO;
     }
 
-    UIAlertController *alert;
     alert = [UIAlertController alertControllerWithTitle:@(messageboxdata->title)
                                                 message:@(messageboxdata->message)
                                          preferredStyle:UIAlertControllerStyleAlert];

@@ -74,6 +74,7 @@
         const BOOL useStencilBuffer = (stencilBits != 0);
         const BOOL useDepthBuffer = (depthBits != 0);
         NSString *colorFormat = nil;
+        CAEAGLLayer *eaglLayer;
 
         context = glcontext;
         samples = multisamples;
@@ -111,7 +112,7 @@
             colorBufferFormat = GL_RGB565;
         }
 
-        CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+        eaglLayer = (CAEAGLLayer *)self.layer;
 
         eaglLayer.opaque = YES;
         eaglLayer.drawableProperties = @{
@@ -321,10 +322,11 @@
 
 - (void)layoutSubviews
 {
+    int width, height;
     [super layoutSubviews];
 
-    int width  = (int) (self.bounds.size.width * self.contentScaleFactor);
-    int height = (int) (self.bounds.size.height * self.contentScaleFactor);
+    width  = (int) (self.bounds.size.width * self.contentScaleFactor);
+    height = (int) (self.bounds.size.height * self.contentScaleFactor);
 
     /* Update the color and depth buffer storage if the layer size has changed. */
     if (width != backingWidth || height != backingHeight) {

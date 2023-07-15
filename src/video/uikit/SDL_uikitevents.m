@@ -50,6 +50,8 @@ SDL_iPhoneSetEventPump(SDL_bool enabled)
 void
 UIKit_PumpEvents(_THIS)
 {
+    const CFTimeInterval seconds = 0.000002;
+    SInt32 result;
     if (!UIKit_EventPumpEnabled) {
         return;
     }
@@ -60,10 +62,8 @@ UIKit_PumpEvents(_THIS)
        to touch input), but not long enough to introduce a significant
        delay in the rest of the app.
     */
-    const CFTimeInterval seconds = 0.000002;
 
     /* Pump most event types. */
-    SInt32 result;
     do {
         result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, seconds, TRUE);
     } while (result == kCFRunLoopRunHandledSource);
@@ -87,13 +87,14 @@ static id keyboard_disconnect_observer = nil;
 
 static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
 {
+    dispatch_queue_t queue;
     keyboard_connected = SDL_TRUE;
     keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed)
     {
         SDL_SendKeyboardKey(pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
     };
 
-    dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL );
+    queue = dispatch_queue_create( "org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL );
     dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
     keyboard.handlerQueue = queue;
 }
@@ -211,6 +212,8 @@ static void OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button, BOOL press
 static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
 {
     SDL_MouseID mouseID = mice_connected;
+    int auxiliary_button;
+    dispatch_queue_t queue;
 
     mouse.mouseInput.leftButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed)
     {
@@ -225,7 +228,7 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
         OnGCMouseButtonChanged(mouseID, SDL_BUTTON_RIGHT, pressed);
     };
 
-    int auxiliary_button = SDL_BUTTON_X1;
+    auxiliary_button = SDL_BUTTON_X1;
     for (GCControllerButtonInput *btn in mouse.mouseInput.auxiliaryButtons) {
         btn.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed)
         {
@@ -241,7 +244,7 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
         }
     };
 
-    dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL );
+    queue = dispatch_queue_create( "org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL );
     dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
     mouse.handlerQueue = queue;
 
