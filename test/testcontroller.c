@@ -40,17 +40,6 @@
 #define SCREEN_WIDTH  (PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING + PANEL_WIDTH)
 #define SCREEN_HEIGHT (TITLE_HEIGHT + GAMEPAD_HEIGHT)
 
-/* This is indexed by SDL_JoystickPowerLevel + 1. */
-static const char *power_level_strings[] = {
-    "unknown", /* SDL_JOYSTICK_POWER_UNKNOWN */
-    "empty",   /* SDL_JOYSTICK_POWER_EMPTY */
-    "low",     /* SDL_JOYSTICK_POWER_LOW */
-    "medium",  /* SDL_JOYSTICK_POWER_MEDIUM */
-    "full",    /* SDL_JOYSTICK_POWER_FULL */
-    "wired",   /* SDL_JOYSTICK_POWER_WIRED */
-};
-SDL_COMPILE_TIME_ASSERT(power_level_strings, SDL_arraysize(power_level_strings) == SDL_JOYSTICK_POWER_MAX + 1);
-
 typedef struct
 {
     SDL_bool m_bMoving;
@@ -1204,6 +1193,7 @@ static void loop(void *arg)
             HandleGamepadRemapped(event.gdevice.which);
             break;
 
+#ifdef VERBOSE_TOUCHPAD
         case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
         case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
         case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
@@ -1216,8 +1206,8 @@ static void loop(void *arg)
                     event.gtouchpad.y,
                     event.gtouchpad.pressure);
             break;
+#endif /* VERBOSE_TOUCHPAD */
 
-#define VERBOSE_SENSORS
 #ifdef VERBOSE_SENSORS
         case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
             SDL_Log("Gamepad %" SDL_PRIu32 " sensor %s: %.2f, %.2f, %.2f (%" SDL_PRIu64 ")\n",
@@ -1230,7 +1220,6 @@ static void loop(void *arg)
             break;
 #endif /* VERBOSE_SENSORS */
 
-#define VERBOSE_AXES
 #ifdef VERBOSE_AXES
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
             if (display_mode == CONTROLLER_MODE_TESTING) {
@@ -1252,10 +1241,12 @@ static void loop(void *arg)
                     SetController(event.gbutton.which);
                 }
             }
+#ifdef VERBOSE_BUTTONS
             SDL_Log("Gamepad %" SDL_PRIu32 " button %s %s\n",
                     event.gbutton.which,
                     SDL_GetGamepadStringForButton((SDL_GamepadButton) event.gbutton.button),
                     event.gbutton.state ? "pressed" : "released");
+#endif /* VERBOSE_BUTTONS */
 
             if (display_mode == CONTROLLER_MODE_TESTING) {
                 /* Cycle PS5 trigger effects when the microphone button is pressed */
@@ -1265,10 +1256,6 @@ static void loop(void *arg)
                     CyclePS5TriggerEffect(controller);
                 }
             }
-            break;
-
-        case SDL_EVENT_JOYSTICK_BATTERY_UPDATED:
-            SDL_Log("Gamepad %" SDL_PRIu32 " battery state changed to %s\n", event.jbattery.which, power_level_strings[event.jbattery.level + 1]);
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
