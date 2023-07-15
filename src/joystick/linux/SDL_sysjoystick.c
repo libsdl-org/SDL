@@ -2537,6 +2537,32 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
             SDL_Log("Mapped MISC1 to button %d (KEY_RECORD)", out->misc1.target);
 #endif
         }
+    } else {
+        /* Steam Decks paddles are reported as BTN_TRIGGER_HAPPY1 - BTN_TRIGGER_HAPPY4
+         * by the Linux driver. Keep it generic to work for other controller
+         * drivers with this mapping as well. */
+        if (joystick->hwdata->has_key[BTN_TRIGGER_HAPPY1] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY2]) {
+            out->paddle1.kind = EMappingKind_Button;
+            out->paddle1.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY1];
+            out->paddle2.kind = EMappingKind_Button;
+            out->paddle2.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY2];
+#ifdef DEBUG_GAMEPAD_MAPPING
+            SDL_Log("Mapped PADDLE1 to button %d (BTN_TRIGGER_HAPPY1)", out->paddle1.target);
+            SDL_Log("Mapped PADDLE2 to button %d (BTN_TRIGGER_HAPPY2)", out->paddle2.target);
+#endif
+        }
+        if (joystick->hwdata->has_key[BTN_TRIGGER_HAPPY3] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY4]) {
+            out->paddle3.kind = EMappingKind_Button;
+            out->paddle3.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY3];
+            out->paddle4.kind = EMappingKind_Button;
+            out->paddle4.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY4];
+#ifdef DEBUG_GAMEPAD_MAPPING
+            SDL_Log("Mapped PADDLE3 to button %d (BTN_TRIGGER_HAPPY3)", out->paddle3.target);
+            SDL_Log("Mapped PADDLE4 to button %d (BTN_TRIGGER_HAPPY4)", out->paddle4.target);
+#endif
+        }
     }
 
     LINUX_JoystickClose(joystick);
