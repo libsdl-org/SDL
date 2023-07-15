@@ -700,6 +700,17 @@ char *SDL_strdup(const char *string)
     return newstr;
 }
 
+char *SDL_strndup(const char *string, size_t maxlen)
+{
+    size_t len = SDL_min(SDL_strlen(string), maxlen) + 1;
+    char *newstr = (char *)SDL_malloc(len);
+    if (newstr) {
+        SDL_memcpy(newstr, string, len);
+        newstr[len - 1] = '\0';
+    }
+    return newstr;
+}
+
 char *SDL_strrev(char *string)
 {
 #ifdef HAVE__STRREV
