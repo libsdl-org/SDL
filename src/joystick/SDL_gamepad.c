@@ -670,6 +670,20 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
         } else if (SDL_IsJoystickNintendoSwitchJoyConPair(vendor, product)) {
             /* The Nintendo Switch Joy-Con combined controllers has a share button and paddles */
             SDL_strlcat(mapping_string, "misc1:b15,paddle1:b16,paddle2:b17,paddle3:b18,paddle4:b19,", sizeof(mapping_string));
+        } else if (SDL_IsJoystickAmazonLunaController(vendor, product)) {
+            /* Amazon Luna Controller has a mic button under the guide button */
+            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+        } else if (SDL_IsJoystickGoogleStadiaController(vendor, product)) {
+            /* The Google Stadia controller has a share button and a Google Assistant button */
+            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+        } else if (SDL_IsJoystickNVIDIASHIELDController(vendor, product)) {
+            /* The NVIDIA SHIELD controller has a share button between back and start buttons */
+            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+
+            if (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
+                /* The original SHIELD controller has a touchpad as well */
+                SDL_strlcat(mapping_string, "touchpad:b16,", sizeof(mapping_string));
+            }
         } else {
             switch (SDL_GetGamepadTypeFromGUID(guid, NULL)) {
             case SDL_GAMEPAD_TYPE_PS4:
@@ -687,23 +701,6 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
             case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
                 /* Nintendo Switch Pro controllers have a screenshot button */
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-                break;
-            case SDL_GAMEPAD_TYPE_AMAZON_LUNA:
-                /* Amazon Luna Controller has a mic button under the guide button */
-                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-                break;
-            case SDL_GAMEPAD_TYPE_GOOGLE_STADIA:
-                /* The Google Stadia controller has a share button and a Google Assistant button */
-                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-                break;
-            case SDL_GAMEPAD_TYPE_NVIDIA_SHIELD:
-                /* The NVIDIA SHIELD controller has a share button between back and start buttons */
-                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-
-                if (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
-                    /* The original SHIELD controller has a touchpad as well */
-                    SDL_strlcat(mapping_string, "touchpad:b16,", sizeof(mapping_string));
-                }
                 break;
             default:
                 if (vendor == 0 && product == 0) {

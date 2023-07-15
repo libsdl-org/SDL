@@ -95,19 +95,11 @@ static void PrintJoystickInfo(SDL_JoystickID instance_id)
         name = SDL_GetGamepadInstanceName(instance_id);
         path = SDL_GetGamepadInstancePath(instance_id);
         switch (SDL_GetGamepadInstanceType(instance_id)) {
-        case SDL_GAMEPAD_TYPE_AMAZON_LUNA:
-            description = "Amazon Luna Controller";
+        case SDL_GAMEPAD_TYPE_XBOX360:
+            description = "XBox 360 Controller";
             break;
-        case SDL_GAMEPAD_TYPE_GOOGLE_STADIA:
-            description = "Google Stadia Controller";
-            break;
-        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
-        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
-        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
-            description = "Nintendo Switch Joy-Con";
-            break;
-        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
-            description = "Nintendo Switch Pro Controller";
+        case SDL_GAMEPAD_TYPE_XBOXONE:
+            description = "XBox One Controller";
             break;
         case SDL_GAMEPAD_TYPE_PS3:
             description = "PS3 Controller";
@@ -116,16 +108,15 @@ static void PrintJoystickInfo(SDL_JoystickID instance_id)
             description = "PS4 Controller";
             break;
         case SDL_GAMEPAD_TYPE_PS5:
-            description = "PS5 Controller";
+            description = "DualSense Wireless Controller";
             break;
-        case SDL_GAMEPAD_TYPE_XBOX360:
-            description = "XBox 360 Controller";
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+            description = "Nintendo Switch Pro Controller";
             break;
-        case SDL_GAMEPAD_TYPE_XBOXONE:
-            description = "XBox One Controller";
-            break;
-        case SDL_GAMEPAD_TYPE_VIRTUAL:
-            description = "Virtual Gamepad";
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+            description = "Nintendo Switch Joy-Con";
             break;
         default:
             description = "Gamepad";

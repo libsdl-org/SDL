@@ -64,7 +64,7 @@ static SDL_bool HIDAPI_DriverLuna_IsEnabled(void)
 
 static SDL_bool HIDAPI_DriverLuna_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return (type == SDL_GAMEPAD_TYPE_AMAZON_LUNA) ? SDL_TRUE : SDL_FALSE;
+    return SDL_IsJoystickAmazonLunaController(vendor_id, product_id);
 }
 
 static SDL_bool HIDAPI_DriverLuna_InitDevice(SDL_HIDAPI_Device *device)
@@ -78,7 +78,6 @@ static SDL_bool HIDAPI_DriverLuna_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
-    device->type = SDL_GAMEPAD_TYPE_AMAZON_LUNA;
     HIDAPI_SetDeviceName(device, "Amazon Luna Controller");
 
     return HIDAPI_JoystickConnected(device, NULL);

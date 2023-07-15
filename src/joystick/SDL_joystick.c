@@ -2289,13 +2289,6 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
     } else if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER) {
         type = SDL_GAMEPAD_TYPE_XBOXONE;
 
-    } else if ((vendor == USB_VENDOR_AMAZON && product == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
-               (vendor == BLUETOOTH_VENDOR_AMAZON && product == BLUETOOTH_PRODUCT_LUNA_CONTROLLER)) {
-        type = SDL_GAMEPAD_TYPE_AMAZON_LUNA;
-
-    } else if (vendor == USB_VENDOR_GOOGLE && product == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER) {
-        type = SDL_GAMEPAD_TYPE_GOOGLE_STADIA;
-
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT) {
         type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
 
@@ -2316,11 +2309,6 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
 
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR) {
         type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
-
-    } else if (vendor == USB_VENDOR_NVIDIA &&
-               (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103 ||
-                product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104)) {
-        type = SDL_GAMEPAD_TYPE_NVIDIA_SHIELD;
 
     } else {
         switch (GuessControllerType(vendor, product)) {
@@ -2375,9 +2363,6 @@ SDL_GamepadType SDL_GetGamepadTypeFromGUID(SDL_JoystickGUID guid, const char *na
         if (SDL_IsJoystickXInput(guid)) {
             /* This is probably an Xbox One controller */
             return SDL_GAMEPAD_TYPE_XBOXONE;
-        }
-        if (SDL_IsJoystickVIRTUAL(guid)) {
-            return SDL_GAMEPAD_TYPE_VIRTUAL;
         }
 #ifdef SDL_JOYSTICK_HIDAPI
         if (SDL_IsJoystickHIDAPI(guid)) {
@@ -2543,6 +2528,24 @@ SDL_bool SDL_IsJoystickNintendoSwitchJoyConGrip(Uint16 vendor_id, Uint16 product
 SDL_bool SDL_IsJoystickNintendoSwitchJoyConPair(Uint16 vendor_id, Uint16 product_id)
 {
     return vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
+}
+
+SDL_bool SDL_IsJoystickAmazonLunaController(Uint16 vendor_id, Uint16 product_id)
+{
+    return ((vendor_id == USB_VENDOR_AMAZON && product_id == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
+            (vendor_id == BLUETOOTH_VENDOR_AMAZON && product_id == BLUETOOTH_PRODUCT_LUNA_CONTROLLER));
+}
+
+SDL_bool SDL_IsJoystickGoogleStadiaController(Uint16 vendor_id, Uint16 product_id)
+{
+    return vendor_id == USB_VENDOR_GOOGLE && product_id == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER;
+}
+
+SDL_bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_id)
+{
+    return (vendor_id == USB_VENDOR_NVIDIA &&
+            (product_id == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103 ||
+             product_id == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104));
 }
 
 SDL_bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id)
