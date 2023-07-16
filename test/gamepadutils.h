@@ -134,14 +134,20 @@ extern char *SetMappingName(char *mapping, const char *name);
 /* Return the type from a mapping, which should be freed using SDL_free(), or NULL if there is no type specified */
 extern char *GetMappingType(const char *mapping);
 
-/* Set the name in a mapping, freeing the mapping passed in and returning a new mapping */
+/* Set the type in a mapping, freeing the mapping passed in and returning a new mapping */
 extern char *SetMappingType(char *mapping, const char *type);
+
+/* Return true if a mapping has this element bound */
+extern SDL_bool MappingHasElement(const char *mapping, int element);
 
 /* Get the binding for an element, which should be freed using SDL_free(), or NULL if the element isn't bound */
 extern char *GetElementBinding(const char *mapping, int element);
 
-/* Set the binding for an element, or NULL to clear it */
+/* Set the binding for an element, or NULL to clear it, freeing the mapping passed in and returning a new mapping */
 extern char *SetElementBinding(char *mapping, int element, const char *binding);
+
+/* Get the element for a binding, or SDL_GAMEPAD_ELEMENT_INVALID if that binding isn't used */
+extern int GetElementForBinding(char *mapping, const char *binding);
 
 /* Return true if a mapping contains this binding */
 extern SDL_bool MappingHasBinding(const char *mapping, const char *binding);
