@@ -220,10 +220,15 @@ static void UpdateButtonHighlights(float x, float y, SDL_bool button_down)
     if (display_mode == CONTROLLER_MODE_TESTING) {
         SetGamepadButtonHighlight(setup_mapping_button, GamepadButtonContains(setup_mapping_button, x, y), button_down);
     } else if (display_mode == CONTROLLER_MODE_BINDING) {
-        int gamepad_highlight_element;
+        int gamepad_highlight_element = SDL_GAMEPAD_ELEMENT_INVALID;
         char *joystick_highlight_element;
 
-        gamepad_highlight_element = GetGamepadDisplayElementAt(gamepad_elements, controller->gamepad, x, y);
+        if (controller->joystick != virtual_joystick) {
+            gamepad_highlight_element = GetGamepadImageElementAt(image, x, y);
+        }
+        if (gamepad_highlight_element == SDL_GAMEPAD_ELEMENT_INVALID) {
+            gamepad_highlight_element = GetGamepadDisplayElementAt(gamepad_elements, controller->gamepad, x, y);
+        }
         SetGamepadDisplayHighlight(gamepad_elements, gamepad_highlight_element, button_down);
 
         joystick_highlight_element = GetJoystickDisplayElementAt(joystick_elements, controller->joystick, x, y);
@@ -1353,10 +1358,15 @@ static void loop(void *arg)
                 } else if (GamepadButtonContains(paste_button, event.button.x, event.button.y)) {
                     PasteMapping();
                 } else {
-                    int gamepad_element;
+                    int gamepad_element = SDL_GAMEPAD_ELEMENT_INVALID;
                     char *joystick_element;
 
-                    gamepad_element = GetGamepadDisplayElementAt(gamepad_elements, controller->gamepad, event.button.x, event.button.y);
+                    if (controller->joystick != virtual_joystick) {
+                        gamepad_element = GetGamepadImageElementAt(image, event.button.x, event.button.y);
+                    }
+                    if (gamepad_element == SDL_GAMEPAD_ELEMENT_INVALID) {
+                        gamepad_element = GetGamepadDisplayElementAt(gamepad_elements, controller->gamepad, event.button.x, event.button.y);
+                    }
                     if (gamepad_element != SDL_GAMEPAD_ELEMENT_INVALID) {
                         /* Set this to SDL_FALSE if you don't want to start the binding flow at this point */
                         const SDL_bool should_start_flow = SDL_TRUE;
