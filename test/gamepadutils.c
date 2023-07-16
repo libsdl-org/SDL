@@ -38,10 +38,10 @@ static const struct
     int x;
     int y;
 } button_positions[] = {
-    { 413, 193 }, /* SDL_GAMEPAD_BUTTON_A */
+    { 413, 190 }, /* SDL_GAMEPAD_BUTTON_A */
     { 456, 156 }, /* SDL_GAMEPAD_BUTTON_B */
     { 372, 159 }, /* SDL_GAMEPAD_BUTTON_X */
-    { 416, 125 }, /* SDL_GAMEPAD_BUTTON_Y */
+    { 415, 127 }, /* SDL_GAMEPAD_BUTTON_Y */
     { 199, 157 }, /* SDL_GAMEPAD_BUTTON_BACK */
     { 257, 153 }, /* SDL_GAMEPAD_BUTTON_GUIDE */
     { 314, 157 }, /* SDL_GAMEPAD_BUTTON_START */
@@ -575,7 +575,7 @@ void RenderGamepadImage(GamepadImage *ctx)
 
     if (ctx->showing_front) {
         dst.x = (float)ctx->x + 363;
-        dst.y = (float)ctx->y + 116;
+        dst.y = (float)ctx->y + 118;
         dst.w = (float)ctx->face_width;
         dst.h = (float)ctx->face_height;
 
