@@ -269,6 +269,7 @@ static void HandleJoystickButton(Uint64 timestamp, SDL_Gamepad *gamepad, int but
             } else {
                 SDL_SendGamepadButton(timestamp, gamepad, binding->output.button, state);
             }
+            break;
         }
     }
 }
@@ -2423,28 +2424,24 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
                     int threshold = binding->input.axis.axis_min + (binding->input.axis.axis_max - binding->input.axis.axis_min) / 2;
                     if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
                         valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
-                        if (valid_input_range && value >= threshold) {
-                            retval = SDL_PRESSED;
+                        if (valid_input_range) {
+                            retval = (value >= threshold) ? SDL_PRESSED : SDL_RELEASED;
                             break;
                         }
                     } else {
                         valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
-                        if (valid_input_range && value <= threshold) {
-                            retval = SDL_PRESSED;
+                        if (valid_input_range) {
+                            retval = (value <= threshold) ? SDL_PRESSED : SDL_RELEASED;
                             break;
                         }
                     }
                 } else if (binding->inputType == SDL_GAMEPAD_BINDTYPE_BUTTON) {
-                    if (SDL_GetJoystickButton(gamepad->joystick, binding->input.button)) {
-                        retval = SDL_TRUE;
-                        break;
-                    }
+                    retval = SDL_GetJoystickButton(gamepad->joystick, binding->input.button);
+                    break;
                 } else if (binding->inputType == SDL_GAMEPAD_BINDTYPE_HAT) {
                     int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
-                    if (hat_mask & binding->input.hat.hat_mask) {
-                        retval = SDL_TRUE;
-                        break;
-                    }
+                    retval = (hat_mask & binding->input.hat.hat_mask) ? SDL_PRESSED : SDL_RELEASED;
+                    break;
                 }
             }
         }
