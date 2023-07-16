@@ -2179,6 +2179,18 @@ static void FreeMappingParts(MappingParts *parts)
     SDL_zerop(parts);
 }
 
+/* Create a new mapping from the parts and free the old mapping and parts */
+static char *RecreateMapping(MappingParts *parts, char *mapping)
+{
+    char *new_mapping = JoinMapping(parts);
+    if (new_mapping) {
+        SDL_free(mapping);
+        mapping = new_mapping;
+    }
+    FreeMappingParts(parts);
+    return mapping;
+}
+
 static char *GetMappingValue(const char *mapping, const char *key)
 {
     int i;
@@ -2200,7 +2212,6 @@ static char *SetMappingValue(char *mapping, const char *key, const char *value)
 {
     MappingParts parts;
     int i;
-    char *new_mapping;
     char *new_key = NULL;
     char *new_value = NULL;
     char **new_keys = NULL;
@@ -2240,11 +2251,7 @@ static char *SetMappingValue(char *mapping, const char *key, const char *value)
     }
 
     if (result) {
-        new_mapping = JoinMapping(&parts);
-        if (new_mapping) {
-            SDL_free(mapping);
-            mapping = new_mapping;
-        }
+        mapping = RecreateMapping(&parts, mapping);
     } else {
         SDL_free(new_key);
         SDL_free(new_value);
@@ -2264,7 +2271,7 @@ static char *RemoveMappingKey(char *mapping, const char *key)
     if (i >= 0) {
         RemoveMappingValueAt(&parts, i);
     }
-    return JoinMapping(&parts);
+    return RecreateMapping(&parts, mapping);
 }
 
 SDL_bool MappingHasBindings(const char *mapping)
@@ -2323,20 +2330,48 @@ char *GetMappingName(const char *mapping)
 char *SetMappingName(char *mapping, const char *name)
 {
     MappingParts parts;
-    char *new_name;
-    char *new_mapping;
+    char *new_name, *spot;
+    size_t length;
+
+    if (!name) {
+        return mapping;
+    }
+
+    /* Remove any leading whitespace */
+    while (*name && SDL_isspace(*name)) {
+        ++name;
+    }
 
     new_name = SDL_strdup(name);
     if (!new_name) {
         return mapping;
     }
 
+    /* Remove any commas, which are field separators in the mapping */
+    length = SDL_strlen(new_name);
+    while ((spot = SDL_strchr(new_name, ',')) != NULL) {
+        SDL_memmove(spot, spot + 1, length - (spot - new_name) - 1);
+        --length;
+    }
+
+    /* Remove any trailing whitespace */
+    while (length > 0 && SDL_isspace(new_name[length - 1])) {
+        --length;
+    }
+
+    /* See if we have anything left */
+    if (length == 0) {
+        SDL_free(new_name);
+        return mapping;
+    }
+
+    /* null terminate to cut off anything we've trimmed */
+    new_name[length] = '\0';
+
     SplitMapping(mapping, &parts);
     SDL_free(parts.name);
     parts.name = new_name;
-    new_mapping = JoinMapping(&parts);
-    FreeMappingParts(&parts);
-    return new_mapping;
+    return RecreateMapping(&parts, mapping);
 }
 
 char *GetMappingType(const char *mapping)
@@ -2449,5 +2484,5 @@ char *ClearMappingBinding(char *mapping, const char *binding)
             RemoveMappingValueAt(&parts, i);
         }
     }
-    return JoinMapping(&parts);
+    return RecreateMapping(&parts, mapping);
 }

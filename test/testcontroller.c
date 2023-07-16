@@ -209,18 +209,10 @@ static int StandardizeAxisValue(int nValue)
     }
 }
 
-static void SetGamepadMapping(char *mapping)
+static void SetAndFreeGamepadMapping(char *mapping)
 {
-    /* Make sure the mapping has a valid name */
-    if (!MappingHasName(mapping)) {
-        SetMappingName(mapping, SDL_GetJoystickName(controller->joystick));
-    }
-
-    SDL_free(controller->mapping);
-    controller->mapping = mapping;
-    controller->has_bindings = MappingHasBindings(mapping);
-
     SDL_SetGamepadMapping(controller->id, mapping);
+    SDL_free(mapping);
 }
 
 static void SetCurrentBindingElement(int element)
@@ -264,8 +256,8 @@ static void SetNextBindingElement()
         SDL_GAMEPAD_BUTTON_DPAD_DOWN,
         SDL_GAMEPAD_BUTTON_DPAD_LEFT,
         SDL_GAMEPAD_BUTTON_BACK,
-        SDL_GAMEPAD_BUTTON_GUIDE,
         SDL_GAMEPAD_BUTTON_START,
+        SDL_GAMEPAD_BUTTON_GUIDE,
         SDL_GAMEPAD_BUTTON_MISC1,
         SDL_GAMEPAD_ELEMENT_INVALID,
 
@@ -304,7 +296,11 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
         return;
     }
 
-    mapping = controller->mapping;
+    if (controller->mapping) {
+        mapping = SDL_strdup(controller->mapping);
+    } else {
+        mapping = NULL;
+    }
 
     /* If the controller generates multiple events for a single element, pick the best one */
     if (!force && binding_advance_time) {
@@ -360,7 +356,7 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
 
     mapping = ClearMappingBinding(mapping, binding);
     mapping = SetElementBinding(mapping, binding_element, binding);
-    SetGamepadMapping(mapping);
+    SetAndFreeGamepadMapping(mapping);
 
     if (force) {
         SetNextBindingElement();
@@ -411,43 +407,22 @@ static void SetDisplayMode(ControllerDisplayMode mode)
 
 static void CancelMapping(void)
 {
-    if (backup_mapping) {
-        SetGamepadMapping(backup_mapping);
-        backup_mapping = NULL;
-    }
+    SetAndFreeGamepadMapping(backup_mapping);
+    backup_mapping = NULL;
+
     SetDisplayMode(CONTROLLER_MODE_TESTING);
 }
 
 static void ClearMapping(void)
 {
-    SetGamepadMapping(NULL);
+    SetAndFreeGamepadMapping(NULL);
     SetCurrentBindingElement(SDL_GAMEPAD_ELEMENT_INVALID);
 }
 
 static void CopyMapping(void)
 {
     if (controller && controller->mapping) {
-        char *mapping = controller->mapping;
-        char *wildcard = SDL_strchr(mapping, '*');
-        const char *name = SDL_GetGamepadName(controller->gamepad);
-        if (wildcard && name && *name) {
-            char *text;
-            size_t size;
-
-            /* Personalize the mapping for this controller */
-            *wildcard++ = '\0';
-            size = SDL_strlen(mapping) + SDL_strlen(name) + SDL_strlen(wildcard) + 1;
-            text = SDL_malloc(size);
-            if (!text) {
-                return;
-            }
-            SDL_snprintf(text, size, "%s%s%s", mapping, name, wildcard);
-            SDL_SetClipboardText(text);
-            SDL_free(text);
-            *wildcard = '*';
-        } else {
-            SDL_SetClipboardText(mapping);
-        }
+        SDL_SetClipboardText(controller->mapping);
     }
 }
 
@@ -457,7 +432,7 @@ static void PasteMapping(void)
         char *mapping = SDL_GetClipboardText();
         if (MappingHasBindings(mapping)) {
             CancelBinding();
-            SetGamepadMapping(mapping);
+            SetAndFreeGamepadMapping(mapping);
         } else {
             /* Not a valid mapping, ignore it */
             SDL_free(mapping);
@@ -584,6 +559,32 @@ static void SetController(SDL_JoystickID id)
     }
 }
 
+static void HandleGamepadRemapped(SDL_JoystickID id)
+{
+    char *mapping;
+    int i = FindController(id);
+
+    if (i < 0) {
+        return;
+    }
+
+    if (!controllers[i].gamepad) {
+        controllers[i].gamepad = SDL_OpenGamepad(id);
+    }
+
+    /* Get the current mapping */
+    mapping = SDL_GetGamepadMapping(controllers[i].gamepad);
+
+    /* Make sure the mapping has a valid name */
+    if (mapping && !MappingHasName(mapping)) {
+        mapping = SetMappingName(mapping, SDL_GetJoystickName(controllers[i].joystick));
+    }
+
+    SDL_free(controllers[i].mapping);
+    controllers[i].mapping = mapping;
+    controllers[i].has_bindings = MappingHasBindings(mapping);
+}
+
 static void AddController(SDL_JoystickID id, SDL_bool verbose)
 {
     Controller *new_controllers;
@@ -620,8 +621,6 @@ static void AddController(SDL_JoystickID id, SDL_bool verbose)
     new_controller->axis_state = (AxisState *)SDL_calloc(new_controller->num_axes, sizeof(*new_controller->axis_state));
 
     new_controller->gamepad = SDL_OpenGamepad(id);
-    new_controller->mapping = SDL_GetGamepadMapping(new_controller->gamepad);
-    new_controller->has_bindings = MappingHasBindings(new_controller->mapping);
 
     if (new_controller->gamepad) {
         SDL_Gamepad *gamepad = new_controller->gamepad;
@@ -670,6 +669,9 @@ static void AddController(SDL_JoystickID id, SDL_bool verbose)
     } else {
         SetController(id);
     }
+
+    /* Update the binding state */
+    HandleGamepadRemapped(id);
 }
 
 static void DelController(SDL_JoystickID id)
@@ -712,23 +714,6 @@ static void DelController(SDL_JoystickID id)
     } else {
         SetController(id);
     }
-}
-
-static void HandleGamepadRemapped(SDL_JoystickID id)
-{
-    int i = FindController(id);
-
-    if (i < 0) {
-        return;
-    }
-
-    if (!controllers[i].gamepad) {
-        controllers[i].gamepad = SDL_OpenGamepad(id);
-    }
-    if (controllers[i].mapping) {
-        SDL_free(controllers[i].mapping);
-    }
-    controllers[i].mapping = SDL_GetGamepadMapping(controllers[i].gamepad);
 }
 
 static Uint16 ConvertAxisToRumble(Sint16 axisval)
