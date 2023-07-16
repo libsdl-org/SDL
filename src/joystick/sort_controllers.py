@@ -71,6 +71,10 @@ def save_controller(line):
             print("Controller '%s' not unique, skipping" % name)
             return
 
+    pos = find_element("platform", bindings)
+    if pos >= 0:
+        bindings.insert(0, bindings.pop(pos))
+
     pos = find_element("sdk", bindings)
     if pos >= 0:
         bindings.append(bindings.pop(pos))

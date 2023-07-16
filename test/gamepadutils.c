@@ -2120,6 +2120,43 @@ static SDL_bool CombineMappingAxes(MappingParts *parts)
     return SDL_TRUE;
 }
 
+typedef struct
+{
+    MappingParts *parts;
+    int index;
+} MappingSortEntry;
+
+static int SDLCALL SortMapping(const void *a, const void *b)
+{
+    MappingSortEntry *A = (MappingSortEntry *)a;
+    MappingSortEntry *B = (MappingSortEntry *)b;
+    const char *keyA = A->parts->keys[A->index];
+    const char *keyB = B->parts->keys[B->index];
+
+    return SDL_strcmp(keyA, keyB);
+}
+
+static void MoveSortedEntry(const char *key, MappingSortEntry *sort_order, int num_elements, SDL_bool front)
+{
+    int i;
+
+    for (i = 0; i < num_elements; ++i) {
+        MappingSortEntry *entry = &sort_order[i];
+        if (SDL_strcmp(key, entry->parts->keys[entry->index]) == 0) {
+            if (front && i != 0) {
+                MappingSortEntry tmp = sort_order[i];
+                SDL_memmove(&sort_order[1], &sort_order[0], sizeof(*sort_order)*i);
+                sort_order[0] = tmp;
+            } else if (!front && i != (num_elements - 1)) {
+                MappingSortEntry tmp = sort_order[i];
+                SDL_memmove(&sort_order[i], &sort_order[i + 1], sizeof(*sort_order)*(num_elements - i - 1));
+                sort_order[num_elements - 1] = tmp;
+            }
+            break;
+        }
+    }
+}
+
 static char *JoinMapping(MappingParts *parts)
 {
     int i;
@@ -2127,6 +2164,7 @@ static char *JoinMapping(MappingParts *parts)
     char *mapping;
     const char *guid;
     const char *name;
+    MappingSortEntry *sort_order;
 
     CombineMappingAxes(parts);
 
@@ -2147,6 +2185,21 @@ static char *JoinMapping(MappingParts *parts)
     }
     length += 1;
 
+    /* The sort order is: crc, platform, *, sdk, hint */
+    sort_order = SDL_stack_alloc(MappingSortEntry, parts->num_elements);
+    for (i = 0; i < parts->num_elements; ++i) {
+        sort_order[i].parts = parts;
+        sort_order[i].index = i;
+    }
+    SDL_qsort(sort_order, parts->num_elements, sizeof(*sort_order), SortMapping);
+    MoveSortedEntry("platform", sort_order, parts->num_elements, SDL_TRUE);
+    MoveSortedEntry("crc", sort_order, parts->num_elements, SDL_TRUE);
+    MoveSortedEntry("sdk>=", sort_order, parts->num_elements, SDL_FALSE);
+    MoveSortedEntry("sdk<=", sort_order, parts->num_elements, SDL_FALSE);
+    MoveSortedEntry("hint", sort_order, parts->num_elements, SDL_FALSE);
+
+    /* Move platform to the front */
+
     mapping = (char *)SDL_malloc(length);
     if (mapping) {
         *mapping = '\0';
@@ -2155,12 +2208,16 @@ static char *JoinMapping(MappingParts *parts)
         SDL_strlcat(mapping, name, length);
         SDL_strlcat(mapping, ",", length);
         for (i = 0; i < parts->num_elements; ++i) {
-            SDL_strlcat(mapping, parts->keys[i], length);
+            int next = sort_order[i].index;
+            SDL_strlcat(mapping, parts->keys[next], length);
             SDL_strlcat(mapping, ":", length);
-            SDL_strlcat(mapping, parts->values[i], length);
+            SDL_strlcat(mapping, parts->values[next], length);
             SDL_strlcat(mapping, ",", length);
         }
     }
+
+    SDL_stack_free(sort_order);
+
     return mapping;
 }
 
