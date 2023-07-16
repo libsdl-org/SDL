@@ -1,43 +1,16 @@
-cmake_minimum_required(VERSION 3.0)
-project(SDL3_test)
-
-enable_testing()
-
-include("${CMAKE_CURRENT_LIST_DIR}/../cmake/sdlplatform.cmake")
-SDL_DetectCMakePlatform()
-
-include(CheckCCompilerFlag)
-include(CheckIncludeFile)
-include(CMakeParseArguments)
-include(CMakePushCheckState)
-include(GNUInstallDirs)
-
-set(SDL_TESTS_LINK_SHARED_DEFAULT ON)
-if(EMSCRIPTEN OR N3DS OR PS2 OR PSP OR RISCOS OR VITA)
-    set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
-endif()
-
-option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" ${SDL_TESTS_LINK_SHARED_DEFAULT})
-set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
+#
+# CMake script for building the SDL tests
+#
 
 if(SDL_TESTS_LINK_SHARED)
     set(sdl_name_component SDL3-shared)
 else()
     set(sdl_name_component SDL3-static)
 endif()
-
-if(NOT TARGET SDL3::${sdl_name_component})
-    find_package(SDL3 3.0.0 REQUIRED CONFIG COMPONENTS ${sdl_name_component} SDL3_test)
-endif()
-
-if(TARGET sdl-build-options)
-    set(SDL3_TESTS_SUBPROJECT ON)
-else()
-    set(SDL3_TESTS_SUBPROJECT OFF)
-endif()
+set(HAVE_TESTS_LINK_SHARED "${SDL_TESTS_LINK_SHARED}")
 
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
-if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
+if(NOT (MSVC AND SDL_CPU_ARM64))
     # Prefer GLVND, if present
     set(OpenGL_GL_PREFERENCE GLVND)
     find_package(OpenGL)
@@ -63,7 +36,7 @@ define_property(TARGET PROPERTY SDL_NONINTERACTIVE_ARGUMENTS BRIEF_DOCS "Argumen
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_TIMEOUT BRIEF_DOCS "Timeout for noninteractive executable." FULL_DOCS "Timeout for noninteractive executable.")
 
 macro(add_sdl_test_executable TARGET)
-    cmake_parse_arguments(AST "NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;NO_C90" "" "NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;SOURCES" ${ARGN})
+    cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;NO_C90" "" "NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;SOURCES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unknown argument(s): ${AST_UNPARSED_ARGUMENTS}")
     endif()
@@ -112,6 +85,10 @@ macro(add_sdl_test_executable TARGET)
         endif()
         set_property(TARGET ${TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:${TARGET}>/$<JOIN:${RESOURCE_FILE_NAMES},$<SEMICOLON>$<TARGET_FILE_DIR:${TARGET}>/>")
     endif()
+    if(AST_BUILD_DEPENDENT)
+        target_include_directories(${TARGET} BEFORE PRIVATE $<TARGET_PROPERTY:sdl-build-options,INTERFACE_INCLUDE_DIRECTORIES>)
+        target_include_directories(${TARGET} BEFORE PRIVATE ${SDL3_SOURCE_DIR}/src)
+    endif()
 
     if(WINDOWS)
         # CET support was added in VS 16.7
@@ -130,12 +107,7 @@ macro(add_sdl_test_executable TARGET)
         target_link_libraries(${TARGET} PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
     endif()
 
-    if(SDL3_TESTS_SUBPROJECT)
-        # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
-        target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
-    else()
-        target_include_directories(${TARGET} PRIVATE "../include")
-    endif()
+    target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
 endmacro()
 
 check_include_file(signal.h HAVE_SIGNAL_H)
@@ -171,41 +143,30 @@ add_sdl_test_executable(testdrawchessboard SOURCES testdrawchessboard.c)
 add_sdl_test_executable(testdropfile SOURCES testdropfile.c)
 add_sdl_test_executable(testerror NONINTERACTIVE SOURCES testerror.c)
 
-if(SDL3_TESTS_SUBPROJECT)
-    set(build_options_dependent_tests )
+set(build_options_dependent_tests )
 
-    add_sdl_test_executable(testevdev NONINTERACTIVE SOURCES testevdev.c)
-    list(APPEND build_options_dependent_tests testevdev)
+add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevdev.c)
 
-    if(APPLE)
-        add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS
-            SOURCES
-                testnative.c
-                testnativecocoa.m
-                testnativex11.c
-        )
+if(APPLE)
+    add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS
+        SOURCES
+            testnative.c
+            testnativecocoa.m
+            testnativex11.c
+    )
 
-        cmake_push_check_state()
-        check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
-        cmake_pop_check_state()
-        target_link_libraries(testnative PRIVATE "-Wl,-framework,Cocoa")
-        if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
-            set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
-        endif()
-        list(APPEND build_options_dependent_tests testnative)
-    elseif(WINDOWS)
-        add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
-        list(APPEND build_options_dependent_tests testnative)
-    elseif(HAVE_X11)
-        add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativex11.c)
-        target_link_libraries(testnative PRIVATE X11)
-        list(APPEND build_options_dependent_tests testnative)
+    cmake_push_check_state()
+    check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+    cmake_pop_check_state()
+    target_link_libraries(testnative PRIVATE "-Wl,-framework,Cocoa")
+    if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+        set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
     endif()
-
-    foreach(t ${build_options_dependent_tests})
-        target_include_directories(${t} BEFORE PRIVATE $<TARGET_PROPERTY:sdl-build-options,INTERFACE_INCLUDE_DIRECTORIES>)
-        target_include_directories(${t} BEFORE PRIVATE ${SDL3_SOURCE_DIR}/src)
-    endforeach()
+elseif(WINDOWS)
+    add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
+elseif(HAVE_X11)
+    add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativex11.c)
+    target_link_libraries(testnative PRIVATE X11)
 endif()
 
 set(gamepad_images
