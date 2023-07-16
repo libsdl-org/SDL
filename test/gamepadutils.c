@@ -2423,7 +2423,7 @@ char *SetMappingName(char *mapping, const char *name)
     /* Remove any commas, which are field separators in the mapping */
     length = SDL_strlen(new_name);
     while ((spot = SDL_strchr(new_name, ',')) != NULL) {
-        SDL_memmove(spot, spot + 1, length - (spot - new_name) - 1);
+        SDL_memmove(spot, spot + 1, length - (spot - new_name) + 1);
         --length;
     }
 
