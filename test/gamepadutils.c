@@ -2248,6 +2248,22 @@ static char *RecreateMapping(MappingParts *parts, char *mapping)
     return mapping;
 }
 
+static SDL_bool MappingHasKey(const char *mapping, const char *key)
+{
+    int i;
+    MappingParts parts;
+    SDL_bool result = SDL_FALSE;
+
+    SplitMapping(mapping, &parts);
+    i = FindMappingKey(&parts, key);
+    if (i >= 0) {
+        result = SDL_TRUE;
+    }
+    FreeMappingParts(&parts);
+
+    return result;
+}
+
 static char *GetMappingValue(const char *mapping, const char *key)
 {
     int i;
@@ -2484,6 +2500,17 @@ static const char *GetElementKey(int element)
     }
 }
 
+SDL_bool MappingHasElement(const char *mapping, int element)
+{
+    const char *key;
+
+    key = GetElementKey(element);
+    if (!key) {
+        return SDL_FALSE;
+    }
+    return MappingHasKey(mapping, key);
+}
+
 char *GetElementBinding(const char *mapping, int element)
 {
     const char *key;
@@ -2504,6 +2531,34 @@ char *SetElementBinding(char *mapping, int element, const char *binding)
     }
 }
 
+int GetElementForBinding(char *mapping, const char *binding)
+{
+    MappingParts parts;
+    int i, element;
+    int result = SDL_GAMEPAD_ELEMENT_INVALID;
+
+    if (!binding) {
+        return SDL_GAMEPAD_ELEMENT_INVALID;
+    }
+
+    SplitMapping(mapping, &parts);
+    for (i = 0; i < parts.num_elements; ++i) {
+        if (SDL_strcmp(binding, parts.values[i]) == 0) {
+            for (element = 0; element < SDL_GAMEPAD_ELEMENT_MAX; ++element) {
+                const char *key = GetElementKey(element);
+                if (key && SDL_strcmp(key, parts.keys[i]) == 0) {
+                    result = element;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    FreeMappingParts(&parts);
+
+    return result;
+}
+
 SDL_bool MappingHasBinding(const char *mapping, const char *binding)
 {
     MappingParts parts;
@@ -2515,7 +2570,7 @@ SDL_bool MappingHasBinding(const char *mapping, const char *binding)
     }
 
     SplitMapping(mapping, &parts);
-    for (i = parts.num_elements - 1; i >= 0; --i) {
+    for (i = 0; i < parts.num_elements; ++i) {
         if (SDL_strcmp(binding, parts.values[i]) == 0) {
             result = SDL_TRUE;
             break;
@@ -2530,6 +2585,7 @@ char *ClearMappingBinding(char *mapping, const char *binding)
 {
     MappingParts parts;
     int i;
+    SDL_bool modified = SDL_FALSE;
 
     if (!binding) {
         return mapping;
@@ -2539,7 +2595,13 @@ char *ClearMappingBinding(char *mapping, const char *binding)
     for (i = parts.num_elements - 1; i >= 0; --i) {
         if (SDL_strcmp(binding, parts.values[i]) == 0) {
             RemoveMappingValueAt(&parts, i);
+            modified = SDL_TRUE;
         }
     }
-    return RecreateMapping(&parts, mapping);
+    if (modified) {
+        return RecreateMapping(&parts, mapping);
+    } else {
+        FreeMappingParts(&parts);
+        return mapping;
+    }
 }
