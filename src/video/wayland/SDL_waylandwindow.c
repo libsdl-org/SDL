@@ -109,20 +109,17 @@ static SDL_bool WindowNeedsViewport(SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *video = wind->waylandData;
-    SDL_DisplayData *output = SDL_GetDisplayDriverDataForWindow(window);
-    const int output_width = wind->requested_window_width ? wind->requested_window_width : output->screen_width;
-    const int output_height = wind->requested_window_height ? wind->requested_window_height : output->screen_height;
 
     /*
      * A viewport is only required when scaling is enabled and:
      *  - The surface scale is fractional.
-     *  - A fullscreen mode is being emulated and the mode does not match the logical desktop dimensions.
+     *  - An exclusive fullscreen mode is being emulated and the mode does not match the requested output size.
      */
     if (video->viewporter != NULL) {
         if (SurfaceScaleIsFractional(window)) {
             return SDL_TRUE;
         } else if (window->fullscreen_exclusive) {
-            if (window->current_fullscreen_mode.w != output_width || window->current_fullscreen_mode.h != output_height) {
+            if (window->current_fullscreen_mode.w != wind->requested_window_width || window->current_fullscreen_mode.h != wind->requested_window_height) {
                 return SDL_TRUE;
             }
         }
@@ -238,7 +235,6 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     SDL_VideoData *viddata = data->waylandData;
-    SDL_DisplayData *output = SDL_GetDisplayDriverDataForWindow(window);
     const int old_dw = data->drawable_width;
     const int old_dh = data->drawable_height;
     int window_width, window_height;
@@ -257,9 +253,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
     }
 
     if (data->is_fullscreen && window->fullscreen_exclusive) {
-        /* If the compositor supplied fullscreen dimensions, use them, otherwise fall back to the display dimensions. */
-        int output_width = data->requested_window_width ? data->requested_window_width : output->screen_width;
-        int output_height = data->requested_window_height ? data->requested_window_height : output->screen_height;
+        int output_width = data->requested_window_width;
+        int output_height = data->requested_window_height;
         window_width = window->current_fullscreen_mode.w;
         window_height = window->current_fullscreen_mode.h;
 
@@ -737,6 +732,11 @@ static void handle_configure_xdg_toplevel(void *data,
                 xdg_toplevel_set_fullscreen(xdg_toplevel, disp->driverdata->output);
             }
         }
+
+        if (width == 0 || height == 0) {
+            width = wind->requested_window_width;
+            height = wind->requested_window_height;
+        }
     }
 
     /* Similar to maximized/restore events above, send focus events too! */
@@ -982,8 +982,8 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
          * told to do this.
          */
         if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
-            width = 0;
-            height = 0;
+            width = wind->requested_window_width;
+            height = wind->requested_window_height;
         }
     } else {
         if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
