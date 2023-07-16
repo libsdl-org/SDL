@@ -254,7 +254,8 @@ extern DECLSPEC char * SDLCALL SDL_GetGamepadMapping(SDL_Gamepad *gamepad);
  * Details about mappings are discussed with SDL_AddGamepadMapping().
  *
  * \param instance_id the joystick instance ID
- * \param mapping the mapping to use for this device, or NULL to clear the mapping
+ * \param mapping the mapping to use for this device, or NULL to clear the
+ *                mapping
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
