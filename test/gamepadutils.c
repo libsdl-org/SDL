@@ -551,25 +551,6 @@ void RenderGamepadImage(GamepadImage *ctx)
 
     if (ctx->showing_front) {
         SDL_RenderTexture(ctx->renderer, ctx->front_texture, NULL, &dst);
-
-        dst.x = (float)ctx->x + 363;
-        dst.y = (float)ctx->y + 116;
-        dst.w = (float)ctx->face_width;
-        dst.h = (float)ctx->face_height;
-
-        switch (ctx->face_style) {
-        case GAMEPAD_IMAGE_FACE_ABXY:
-            SDL_RenderTexture(ctx->renderer, ctx->face_abxy_texture, NULL, &dst);
-            break;
-        case GAMEPAD_IMAGE_FACE_BAYX:
-            SDL_RenderTexture(ctx->renderer, ctx->face_bayx_texture, NULL, &dst);
-            break;
-        case GAMEPAD_IMAGE_FACE_SONY:
-            SDL_RenderTexture(ctx->renderer, ctx->face_sony_texture, NULL, &dst);
-            break;
-        default:
-            break;
-        }
     } else {
         SDL_RenderTexture(ctx->renderer, ctx->back_texture, NULL, &dst);
     }
@@ -589,6 +570,27 @@ void RenderGamepadImage(GamepadImage *ctx)
                 dst.y = (float)ctx->y + button_positions[button_position].y - dst.h / 2;
                 SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
             }
+        }
+    }
+
+    if (ctx->showing_front) {
+        dst.x = (float)ctx->x + 363;
+        dst.y = (float)ctx->y + 116;
+        dst.w = (float)ctx->face_width;
+        dst.h = (float)ctx->face_height;
+
+        switch (ctx->face_style) {
+        case GAMEPAD_IMAGE_FACE_ABXY:
+            SDL_RenderTexture(ctx->renderer, ctx->face_abxy_texture, NULL, &dst);
+            break;
+        case GAMEPAD_IMAGE_FACE_BAYX:
+            SDL_RenderTexture(ctx->renderer, ctx->face_bayx_texture, NULL, &dst);
+            break;
+        case GAMEPAD_IMAGE_FACE_SONY:
+            SDL_RenderTexture(ctx->renderer, ctx->face_sony_texture, NULL, &dst);
+            break;
+        default:
+            break;
         }
     }
 
