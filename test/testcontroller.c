@@ -86,6 +86,10 @@ static int binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
 static int last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
 static SDL_bool binding_flow = SDL_FALSE;
 static Uint64 binding_advance_time = 0;
+static SDL_FRect title_area;
+static SDL_bool title_highlighted;
+static SDL_bool title_pressed;
+static char *controller_name;
 static SDL_Joystick *virtual_joystick = NULL;
 static SDL_GamepadAxis virtual_axis_active = SDL_GAMEPAD_AXIS_INVALID;
 static float virtual_axis_start_x;
@@ -203,6 +207,9 @@ static void CyclePS5TriggerEffect(Controller *device)
 
 static void ClearButtonHighlights(void)
 {
+    title_highlighted = SDL_FALSE;
+    title_pressed = SDL_FALSE;
+
     ClearGamepadImage(image);
     SetGamepadDisplayHighlight(gamepad_elements, SDL_GAMEPAD_ELEMENT_INVALID, SDL_FALSE);
     SetGamepadButtonHighlight(setup_mapping_button, SDL_FALSE, SDL_FALSE);
@@ -220,8 +227,19 @@ static void UpdateButtonHighlights(float x, float y, SDL_bool button_down)
     if (display_mode == CONTROLLER_MODE_TESTING) {
         SetGamepadButtonHighlight(setup_mapping_button, GamepadButtonContains(setup_mapping_button, x, y), button_down);
     } else if (display_mode == CONTROLLER_MODE_BINDING) {
+        SDL_FPoint point;
         int gamepad_highlight_element = SDL_GAMEPAD_ELEMENT_INVALID;
         char *joystick_highlight_element;
+
+        point.x = x;
+        point.y = y;
+        if (SDL_PointInRectFloat(&point, &title_area)) {
+            title_highlighted = SDL_TRUE;
+            title_pressed = button_down;
+        } else {
+            title_highlighted = SDL_FALSE;
+            title_pressed = SDL_FALSE;
+        }
 
         if (controller->joystick != virtual_joystick) {
             gamepad_highlight_element = GetGamepadImageElementAt(image, x, y);
@@ -254,6 +272,20 @@ static int StandardizeAxisValue(int nValue)
     }
 }
 
+static void RefreshControllerName(void)
+{
+    SDL_free(controller_name);
+    controller_name = NULL;
+
+    if (controller) {
+        if (controller->gamepad) {
+            controller_name = SDL_strdup(SDL_GetGamepadName(controller->gamepad));
+        } else {
+            controller_name = SDL_strdup(SDL_GetJoystickName(controller->joystick));
+        }
+    }
+}
+
 static void SetAndFreeGamepadMapping(char *mapping)
 {
     SDL_SetGamepadMapping(controller->id, mapping);
@@ -263,6 +295,10 @@ static void SetAndFreeGamepadMapping(char *mapping)
 static void SetCurrentBindingElement(int element, SDL_bool flow)
 {
     int i;
+
+    if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
+        RefreshControllerName();
+    }
 
     if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
         last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
@@ -507,11 +543,67 @@ static void PasteMapping(void)
         if (MappingHasBindings(mapping)) {
             StopBinding();
             SetAndFreeGamepadMapping(mapping);
+            RefreshControllerName();
         } else {
             /* Not a valid mapping, ignore it */
             SDL_free(mapping);
         }
     }
+}
+
+static void CommitControllerName(void)
+{
+    char *mapping = NULL;
+
+    if (controller->mapping) {
+        mapping = SDL_strdup(controller->mapping);
+    } else {
+        mapping = NULL;
+    }
+    mapping = SetMappingName(mapping, controller_name);
+    SetAndFreeGamepadMapping(mapping);
+}
+
+static void AddControllerNameText(const char *text)
+{
+    size_t current_length = (controller_name ? SDL_strlen(controller_name) : 0);
+    size_t text_length = SDL_strlen(text);
+    size_t size = current_length + text_length + 1;
+    char *name = (char *)SDL_realloc(controller_name, size);
+    if (name) {
+        SDL_memcpy(&name[current_length], text, text_length + 1);
+        controller_name = name;
+    }
+    CommitControllerName();
+}
+
+static void BackspaceControllerName(void)
+{
+    size_t length = (controller_name ? SDL_strlen(controller_name) : 0);
+    if (length > 0) {
+        controller_name[length - 1] = '\0';
+    }
+    CommitControllerName();
+}
+
+static void ClearControllerName(void)
+{
+    if (controller_name) {
+        *controller_name = '\0';
+    }
+    CommitControllerName();
+}
+
+static void CopyControllerName(void)
+{
+    SDL_SetClipboardText(controller_name);
+}
+
+static void PasteControllerName(void)
+{
+    SDL_free(controller_name);
+    controller_name = SDL_GetClipboardText();
+    CommitControllerName();
 }
 
 static const char *GetBindingInstruction(void)
@@ -631,6 +723,8 @@ static void SetController(SDL_JoystickID id)
     } else {
         controller = NULL;
     }
+
+    RefreshControllerName();
 }
 
 static void HandleGamepadRemapped(SDL_JoystickID id)
@@ -644,6 +738,7 @@ static void HandleGamepadRemapped(SDL_JoystickID id)
 
     if (!controllers[i].gamepad) {
         controllers[i].gamepad = SDL_OpenGamepad(id);
+        RefreshControllerName();
     }
 
     /* Get the current mapping */
@@ -814,7 +909,7 @@ static SDL_bool ShowingFront(void)
             break;
         }
     }
-    if (SDL_GetModState() & SDL_KMOD_SHIFT) {
+    if ((SDL_GetModState() & SDL_KMOD_SHIFT) && binding_element != SDL_GAMEPAD_ELEMENT_NAME) {
         showing_front = SDL_FALSE;
     }
     return showing_front;
@@ -1002,20 +1097,29 @@ static void DrawGamepadWaiting(SDL_Renderer *renderer)
 
 static void DrawGamepadInfo(SDL_Renderer *renderer)
 {
-    const char *name;
     const char *serial;
     char text[128];
     float x, y;
 
-    if (controller->gamepad) {
-        name = SDL_GetGamepadName(controller->gamepad);
-    } else {
-        name = SDL_GetJoystickName(controller->joystick);
+    if (title_highlighted) {
+        Uint8 r, g, b, a;
+
+        SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+
+        if (title_pressed) {
+            SDL_SetRenderDrawColor(renderer, PRESSED_COLOR);
+        } else {
+            SDL_SetRenderDrawColor(renderer, HIGHLIGHT_COLOR);
+        }
+        SDL_RenderFillRect(renderer, &title_area);
+
+        SDL_SetRenderDrawColor(renderer, r, g, b, a);
     }
-    if (name && *name) {
-        x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(name)) / 2;
+
+    if (controller_name && *controller_name) {
+        x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(controller_name)) / 2;
         y = (float)TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2;
-        SDLTest_DrawString(renderer, x, y, name);
+        SDLTest_DrawString(renderer, x, y, controller_name);
     }
 
     if (SDL_IsJoystickVirtual(controller->id)) {
@@ -1079,12 +1183,16 @@ static void DrawBindingTips(SDL_Renderer *renderer)
 
         y += (FONT_CHARACTER_SIZE + BUTTON_MARGIN);
 
-        bound_A = MappingHasElement(controller->mapping, SDL_GAMEPAD_BUTTON_A);
-        bound_B = MappingHasElement(controller->mapping, SDL_GAMEPAD_BUTTON_B);
-        if (binding_flow && bound_A && bound_B) {
-            text = "(press A to skip, B to go back, and ESC to cancel)";
+        if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
+            text = "(press RETURN to complete)";
         } else {
-            text = "(press SPACE to clear binding and ESC to cancel)";
+            bound_A = MappingHasElement(controller->mapping, SDL_GAMEPAD_BUTTON_A);
+            bound_B = MappingHasElement(controller->mapping, SDL_GAMEPAD_BUTTON_B);
+            if (binding_flow && bound_A && bound_B) {
+                text = "(press A to skip, B to go back, and ESC to cancel)";
+            } else {
+                text = "(press SPACE to clear binding and ESC to cancel)";
+            }
         }
         SDLTest_DrawString(renderer, (float)x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, (float)y, text);
     }
@@ -1357,6 +1465,8 @@ static void loop(void *arg)
                     CopyMapping();
                 } else if (GamepadButtonContains(paste_button, event.button.x, event.button.y)) {
                     PasteMapping();
+                } else if (title_pressed) {
+                    SetCurrentBindingElement(SDL_GAMEPAD_ELEMENT_NAME, SDL_FALSE);
                 } else {
                     int gamepad_element = SDL_GAMEPAD_ELEMENT_INVALID;
                     char *joystick_element;
@@ -1408,20 +1518,51 @@ static void loop(void *arg)
                 }
             } else if (display_mode == CONTROLLER_MODE_BINDING) {
                 if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & SDL_KMOD_CTRL)) {
-                    CopyMapping();
+                    if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
+                        CopyControllerName();
+                    } else {
+                        CopyMapping();
+                    }
                 } else if (event.key.keysym.sym == SDLK_v && (event.key.keysym.mod & SDL_KMOD_CTRL)) {
-                    PasteMapping();
+                    if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
+                        ClearControllerName();
+                        PasteControllerName();
+                    } else {
+                        PasteMapping();
+                    }
                 } else if (event.key.keysym.sym == SDLK_x && (event.key.keysym.mod & SDL_KMOD_CTRL)) {
-                    CopyMapping();
-                    ClearMapping();
+                    if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
+                        CopyControllerName();
+                        ClearControllerName();
+                    } else {
+                        CopyMapping();
+                        ClearMapping();
+                    }
                 } else if (event.key.keysym.sym == SDLK_SPACE) {
-                    ClearBinding();
+                    if (binding_element != SDL_GAMEPAD_ELEMENT_NAME) {
+                        ClearBinding();
+                    }
+                } else if (event.key.keysym.sym == SDLK_BACKSPACE) {
+                    if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
+                        BackspaceControllerName();
+                    }
+                } else if (event.key.keysym.sym == SDLK_RETURN) {
+                    if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
+                        StopBinding();
+                    }
                 } else if (event.key.keysym.sym == SDLK_ESCAPE) {
                     if (binding_element != SDL_GAMEPAD_ELEMENT_INVALID) {
                         StopBinding();
                     } else {
                         CancelMapping();
                     }
+                }
+            }
+            break;
+        case SDL_EVENT_TEXT_INPUT:
+            if (display_mode == CONTROLLER_MODE_BINDING) {
+                if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
+                    AddControllerNameText(event.text.text);
                 }
             }
             break;
@@ -1593,6 +1734,12 @@ int main(int argc, char *argv[])
     SDL_SetRenderLogicalPresentation(screen, SCREEN_WIDTH, SCREEN_HEIGHT,
                                      SDL_LOGICAL_PRESENTATION_LETTERBOX,
                                      SDL_SCALEMODE_LINEAR);
+
+
+    title_area.w = (float)GAMEPAD_WIDTH;
+    title_area.h = (float)FONT_CHARACTER_SIZE + 2 * BUTTON_MARGIN;
+    title_area.x = (float)PANEL_WIDTH + PANEL_SPACING;
+    title_area.y = (float)TITLE_HEIGHT / 2 - title_area.h / 2;
 
     image = CreateGamepadImage(screen);
     if (image == NULL) {
