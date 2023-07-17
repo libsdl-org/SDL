@@ -369,6 +369,7 @@ endforeach()
 set_option(SDL_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
 cmake_dependent_option(SDL_DISABLE_INSTALL_CPACK "Create binary SDL3 archive using CPack" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL" ON)
 cmake_dependent_option(SDL_DISABLE_INSTALL_MAN "Install man pages for SDL3" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" ON)
+cmake_dependent_option(SDL_DISABLE_INSTALL_ANDROID_PROJECT "Install Android project for SDL3" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL" ON)
 set_option(SDL_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
 
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
@@ -3700,6 +3701,10 @@ if(NOT SDL_DISABLE_INSTALL)
       SYMBOL "SDL_Init"
       WIKIHEADERS_PL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build-scripts/wikiheaders.pl"
     )
+  endif()
+
+  if(NOT SDL_DISABLE_INSTALL_ANDROID_PROJECT AND ANDROID)
+    install(DIRECTORY android-project DESTINATION "${CMAKE_INSTALL_LIBDIR}")
   endif()
 endif()
 
