@@ -139,7 +139,7 @@ SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
     /* If we already know the controller is a different type, don't try to detect it.
      * This fixes a hang with the HORIPAD for Nintendo Switch (0x0f0d/0x00c1)
      */
-    if (SDL_GetGamepadTypeFromVIDPID(vendor, product, NULL, SDL_FALSE) != SDL_GAMEPAD_TYPE_UNKNOWN) {
+    if (SDL_GetGamepadTypeFromVIDPID(vendor, product, NULL, SDL_FALSE) != SDL_GAMEPAD_TYPE_STANDARD) {
         return SDL_FALSE;
     }
 
@@ -208,7 +208,7 @@ static SDL_GamepadType SDL_GetJoystickGameControllerProtocol(const char *name, U
     static const int XBONE_IFACE_SUBCLASS = 71;
     static const int XBONE_IFACE_PROTOCOL = 208;
 
-    SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
+    SDL_GamepadType type = SDL_GAMEPAD_TYPE_STANDARD;
 
     /* This code should match the checks in libusb/hid.c and HIDDeviceManager.java */
     if (interface_class == LIBUSB_CLASS_VENDOR_SPEC &&
@@ -283,7 +283,7 @@ static SDL_GamepadType SDL_GetJoystickGameControllerProtocol(const char *name, U
         }
     }
 
-    if (type == SDL_GAMEPAD_TYPE_UNKNOWN) {
+    if (type == SDL_GAMEPAD_TYPE_STANDARD) {
         type = SDL_GetGamepadTypeFromVIDPID(vendor, product, name, SDL_FALSE);
     }
     return type;
@@ -1284,7 +1284,7 @@ SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_JoystickGUID guid)
 SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_JoystickGUID guid)
 {
     SDL_HIDAPI_Device *device;
-    SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
+    SDL_GamepadType type = SDL_GAMEPAD_TYPE_STANDARD;
 
     SDL_LockJoysticks();
     for (device = SDL_HIDAPI_devices; device; device = device->next) {

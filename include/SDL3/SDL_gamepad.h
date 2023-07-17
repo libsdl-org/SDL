@@ -61,6 +61,7 @@ typedef struct SDL_Gamepad SDL_Gamepad;
 typedef enum
 {
     SDL_GAMEPAD_TYPE_UNKNOWN = 0,
+    SDL_GAMEPAD_TYPE_STANDARD,
     SDL_GAMEPAD_TYPE_XBOX360,
     SDL_GAMEPAD_TYPE_XBOXONE,
     SDL_GAMEPAD_TYPE_PS3,
@@ -70,6 +71,7 @@ typedef enum
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
+    SDL_GAMEPAD_TYPE_MAX
 } SDL_GamepadType;
 
 /**
@@ -412,6 +414,18 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetGamepadInstanceProductVersion(SDL_Joystick
 extern DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadInstanceType(SDL_JoystickID instance_id);
 
 /**
+ * Get the type of a gamepad, ignoring any mapping override.
+ *
+ * This can be called before any gamepads are opened.
+ *
+ * \param instance_id the joystick instance ID
+ * \returns the gamepad type.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_GamepadType SDLCALL SDL_GetRealGamepadInstanceType(SDL_JoystickID instance_id);
+
+/**
  * Get the mapping of a gamepad.
  *
  * This can be called before any gamepads are opened.
@@ -481,9 +495,6 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_GetGamepadInstanceID(SDL_Gamepad *gam
 /**
  * Get the implementation-dependent name for an opened gamepad.
  *
- * This is the same name as returned by SDL_GetGamepadNameForIndex(), but it
- * takes a gamepad identifier instead of the (unstable) device index.
- *
  * \param gamepad a gamepad identifier previously returned by
  *                SDL_OpenGamepad()
  * \returns the implementation dependent name for the gamepad, or NULL if
@@ -499,9 +510,6 @@ extern DECLSPEC const char *SDLCALL SDL_GetGamepadName(SDL_Gamepad *gamepad);
 /**
  * Get the implementation-dependent path for an opened gamepad.
  *
- * This is the same path as returned by SDL_GetGamepadNameForIndex(), but it
- * takes a gamepad identifier instead of the (unstable) device index.
- *
  * \param gamepad a gamepad identifier previously returned by
  *                SDL_OpenGamepad()
  * \returns the implementation dependent path for the gamepad, or NULL if
@@ -514,17 +522,28 @@ extern DECLSPEC const char *SDLCALL SDL_GetGamepadName(SDL_Gamepad *gamepad);
 extern DECLSPEC const char *SDLCALL SDL_GetGamepadPath(SDL_Gamepad *gamepad);
 
 /**
- * Get the type of this currently opened gamepad
- *
- * This is the same name as returned by SDL_GetGamepadInstanceType(), but it
- * takes a gamepad identifier instead of the (unstable) device index.
+ * Get the type of an opened gamepad.
  *
  * \param gamepad the gamepad object to query.
- * \returns the gamepad type.
+ * \returns the gamepad type, or SDL_GAMEPAD_TYPE_INVALID if it's not available.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetGamepadInstanceType
  */
 extern DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadType(SDL_Gamepad *gamepad);
+
+/**
+ * Get the type of an opened gamepad, ignoring any mapping override.
+ *
+ * \param gamepad the gamepad object to query.
+ * \returns the gamepad type, or SDL_GAMEPAD_TYPE_INVALID if it's not available.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetRealGamepadInstanceType
+ */
+extern DECLSPEC SDL_GamepadType SDLCALL SDL_GetRealGamepadType(SDL_Gamepad *gamepad);
 
 /**
  * Get the player index of an opened gamepad.
@@ -697,6 +716,39 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
  */
 extern DECLSPEC void SDLCALL SDL_UpdateGamepads(void);
 
+/**
+ * Convert a string into SDL_GamepadType enum.
+ *
+ * This function is called internally to translate SDL_Gamepad mapping strings
+ * for the underlying joystick device into the consistent SDL_Gamepad mapping.
+ * You do not normally need to call this function unless you are parsing
+ * SDL_Gamepad mappings in your own code.
+ *
+ * \param str string representing a SDL_GamepadType type
+ * \returns the SDL_GamepadType enum corresponding to the input string, or
+ *          `SDL_GAMEPAD_TYPE_INVALID` if no match was found.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetGamepadStringForType
+ */
+extern DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadTypeFromString(const char *str);
+
+/**
+ * Convert from an SDL_GamepadType enum to a string.
+ *
+ * The caller should not SDL_free() the returned string.
+ *
+ * \param type an enum value for a given SDL_GamepadType
+ * \returns a string for the given type, or NULL if an invalid type is
+ *          specified. The string returned is of the format used by
+ *          SDL_Gamepad mapping strings.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetGamepadTypeFromString
+ */
+extern DECLSPEC const char *SDLCALL SDL_GetGamepadStringForType(SDL_GamepadType type);
 
 /**
  * Convert a string into SDL_GamepadAxis enum.

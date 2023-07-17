@@ -942,3 +942,7 @@ SDL_DYNAPI_PROC(SDL_JoystickID,SDL_GetGamepadInstanceID,(SDL_Gamepad *a),(a),ret
 SDL_DYNAPI_PROC(SDL_JoystickPowerLevel,SDL_GetGamepadPowerLevel,(SDL_Gamepad *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SetGamepadMapping,(SDL_JoystickID a, const char *b),(a,b),return)
 SDL_DYNAPI_PROC(char*,SDL_strndup,(const char *a, size_t b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_GamepadType,SDL_GetGamepadTypeFromString,(const char *a),(a),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetGamepadStringForType,(SDL_GamepadType a),(a),return)
+SDL_DYNAPI_PROC(SDL_GamepadType,SDL_GetRealGamepadInstanceType,(SDL_JoystickID a),(a),return)
+SDL_DYNAPI_PROC(SDL_GamepadType,SDL_GetRealGamepadType,(SDL_Gamepad *a),(a),return)

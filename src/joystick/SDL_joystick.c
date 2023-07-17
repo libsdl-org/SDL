@@ -2271,7 +2271,7 @@ void SDL_SetJoystickGUIDCRC(SDL_JoystickGUID *guid, Uint16 crc)
 
 SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, SDL_bool forUI)
 {
-    SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
+    SDL_GamepadType type = SDL_GAMEPAD_TYPE_STANDARD;
 
     if (vendor == 0x0000 && product == 0x0000) {
         /* Some devices are only identifiable by their name */
@@ -2284,7 +2284,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
         }
 
     } else if (vendor == 0x0001 && product == 0x0001) {
-        type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        type = SDL_GAMEPAD_TYPE_STANDARD;
 
     } else if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER) {
         type = SDL_GAMEPAD_TYPE_XBOXONE;
@@ -2295,7 +2295,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
         if (name && SDL_strstr(name, "NES Controller") != NULL) {
             /* We don't have a type for the Nintendo Online NES Controller */
-            type = SDL_GAMEPAD_TYPE_UNKNOWN;
+            type = SDL_GAMEPAD_TYPE_STANDARD;
         } else {
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         }
@@ -2331,7 +2331,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
             if (forUI) {
                 type = SDL_GAMEPAD_TYPE_PS4;
             } else {
-                type = SDL_GAMEPAD_TYPE_UNKNOWN;
+                type = SDL_GAMEPAD_TYPE_STANDARD;
             }
             break;
         case k_eControllerType_SwitchProController:
@@ -2342,7 +2342,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
             if (forUI) {
                 type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
             } else {
-                type = SDL_GAMEPAD_TYPE_UNKNOWN;
+                type = SDL_GAMEPAD_TYPE_STANDARD;
             }
             break;
         default:
@@ -2359,7 +2359,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromGUID(SDL_JoystickGUID guid, const char *na
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
     type = SDL_GetGamepadTypeFromVIDPID(vendor, product, name, SDL_TRUE);
-    if (type == SDL_GAMEPAD_TYPE_UNKNOWN) {
+    if (type == SDL_GAMEPAD_TYPE_STANDARD) {
         if (SDL_IsJoystickXInput(guid)) {
             /* This is probably an Xbox One controller */
             return SDL_GAMEPAD_TYPE_XBOXONE;

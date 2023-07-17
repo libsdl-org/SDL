@@ -68,6 +68,7 @@ static SDL_Renderer *screen = NULL;
 static ControllerDisplayMode display_mode = CONTROLLER_MODE_TESTING;
 static GamepadImage *image = NULL;
 static GamepadDisplay *gamepad_elements = NULL;
+static GamepadTypeDisplay *gamepad_type = NULL;
 static JoystickDisplay *joystick_elements = NULL;
 static GamepadButton *setup_mapping_button = NULL;
 static GamepadButton *done_mapping_button = NULL;
@@ -89,6 +90,9 @@ static Uint64 binding_advance_time = 0;
 static SDL_FRect title_area;
 static SDL_bool title_highlighted;
 static SDL_bool title_pressed;
+static SDL_FRect type_area;
+static SDL_bool type_highlighted;
+static SDL_bool type_pressed;
 static char *controller_name;
 static SDL_Joystick *virtual_joystick = NULL;
 static SDL_GamepadAxis virtual_axis_active = SDL_GAMEPAD_AXIS_INVALID;
@@ -210,8 +214,12 @@ static void ClearButtonHighlights(void)
     title_highlighted = SDL_FALSE;
     title_pressed = SDL_FALSE;
 
+    type_highlighted = SDL_FALSE;
+    type_pressed = SDL_FALSE;
+
     ClearGamepadImage(image);
     SetGamepadDisplayHighlight(gamepad_elements, SDL_GAMEPAD_ELEMENT_INVALID, SDL_FALSE);
+    SetGamepadTypeDisplayHighlight(gamepad_type, SDL_GAMEPAD_TYPE_UNSELECTED, SDL_FALSE);
     SetGamepadButtonHighlight(setup_mapping_button, SDL_FALSE, SDL_FALSE);
     SetGamepadButtonHighlight(done_mapping_button, SDL_FALSE, SDL_FALSE);
     SetGamepadButtonHighlight(cancel_button, SDL_FALSE, SDL_FALSE);
@@ -241,6 +249,14 @@ static void UpdateButtonHighlights(float x, float y, SDL_bool button_down)
             title_pressed = SDL_FALSE;
         }
 
+        if (SDL_PointInRectFloat(&point, &type_area)) {
+            type_highlighted = SDL_TRUE;
+            type_pressed = button_down;
+        } else {
+            type_highlighted = SDL_FALSE;
+            type_pressed = SDL_FALSE;
+        }
+
         if (controller->joystick != virtual_joystick) {
             gamepad_highlight_element = GetGamepadImageElementAt(image, x, y);
         }
@@ -248,6 +264,11 @@ static void UpdateButtonHighlights(float x, float y, SDL_bool button_down)
             gamepad_highlight_element = GetGamepadDisplayElementAt(gamepad_elements, controller->gamepad, x, y);
         }
         SetGamepadDisplayHighlight(gamepad_elements, gamepad_highlight_element, button_down);
+
+        if (binding_element == SDL_GAMEPAD_ELEMENT_TYPE) {
+            int gamepad_highlight_type = GetGamepadTypeDisplayAt(gamepad_type, x, y);
+            SetGamepadTypeDisplayHighlight(gamepad_type, gamepad_highlight_type, button_down);
+        }
 
         joystick_highlight_element = GetJoystickDisplayElementAt(joystick_elements, controller->joystick, x, y);
         SetJoystickDisplayHighlight(joystick_elements, joystick_highlight_element, button_down);
@@ -604,6 +625,19 @@ static void PasteControllerName(void)
     SDL_free(controller_name);
     controller_name = SDL_GetClipboardText();
     CommitControllerName();
+}
+
+static void CommitGamepadType(SDL_GamepadType type)
+{
+    char *mapping = NULL;
+
+    if (controller->mapping) {
+        mapping = SDL_strdup(controller->mapping);
+    } else {
+        mapping = NULL;
+    }
+    mapping = SetMappingType(mapping, type);
+    SetAndFreeGamepadMapping(mapping);
 }
 
 static const char *GetBindingInstruction(void)
@@ -1097,6 +1131,7 @@ static void DrawGamepadWaiting(SDL_Renderer *renderer)
 
 static void DrawGamepadInfo(SDL_Renderer *renderer)
 {
+    const char *type;
     const char *serial;
     char text[128];
     float x, y;
@@ -1116,9 +1151,24 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, r, g, b, a);
     }
 
+    if (type_highlighted) {
+        Uint8 r, g, b, a;
+
+        SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+
+        if (type_pressed) {
+            SDL_SetRenderDrawColor(renderer, PRESSED_COLOR);
+        } else {
+            SDL_SetRenderDrawColor(renderer, HIGHLIGHT_COLOR);
+        }
+        SDL_RenderFillRect(renderer, &type_area);
+
+        SDL_SetRenderDrawColor(renderer, r, g, b, a);
+    }
+
     if (controller_name && *controller_name) {
-        x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(controller_name)) / 2;
-        y = (float)TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2;
+        x = title_area.x + title_area.w / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(controller_name)) / 2;
+        y = title_area.y + title_area.h / 2 - FONT_CHARACTER_SIZE / 2;
         SDLTest_DrawString(renderer, x, y, controller_name);
     }
 
@@ -1128,6 +1178,11 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
         y = (float)TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2 + FONT_LINE_HEIGHT + 2.0f;
         SDLTest_DrawString(renderer, x, y, text);
     }
+
+    type = GetGamepadTypeString(SDL_GetGamepadType(controller->gamepad));
+    x = type_area.x + type_area.w / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(type)) / 2;
+    y = type_area.y + type_area.h / 2 - FONT_CHARACTER_SIZE / 2;
+    SDLTest_DrawString(renderer, x, y, type);
 
     if (display_mode == CONTROLLER_MODE_TESTING) {
         SDL_snprintf(text, SDL_arraysize(text), "VID: 0x%.4x PID: 0x%.4x",
@@ -1185,6 +1240,8 @@ static void DrawBindingTips(SDL_Renderer *renderer)
 
         if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
             text = "(press RETURN to complete)";
+        } else if (binding_element == SDL_GAMEPAD_ELEMENT_TYPE) {
+            text = "(press ESC to cancel)";
         } else {
             bound_A = MappingHasElement(controller->mapping, SDL_GAMEPAD_BUTTON_A);
             bound_B = MappingHasElement(controller->mapping, SDL_GAMEPAD_BUTTON_B);
@@ -1467,6 +1524,14 @@ static void loop(void *arg)
                     PasteMapping();
                 } else if (title_pressed) {
                     SetCurrentBindingElement(SDL_GAMEPAD_ELEMENT_NAME, SDL_FALSE);
+                } else if (type_pressed) {
+                    SetCurrentBindingElement(SDL_GAMEPAD_ELEMENT_TYPE, SDL_FALSE);
+                } else if (binding_element == SDL_GAMEPAD_ELEMENT_TYPE) {
+                    int type = GetGamepadTypeDisplayAt(gamepad_type, event.button.x, event.button.y);
+                    if (type != SDL_GAMEPAD_TYPE_UNSELECTED) {
+                        CommitGamepadType((SDL_GamepadType)type);
+                        StopBinding();
+                    }
                 } else {
                     int gamepad_element = SDL_GAMEPAD_ELEMENT_INVALID;
                     char *joystick_element;
@@ -1599,7 +1664,12 @@ static void loop(void *arg)
         }
         RenderGamepadImage(image);
 
-        RenderGamepadDisplay(gamepad_elements, controller->gamepad);
+        if (binding_element == SDL_GAMEPAD_ELEMENT_TYPE) {
+            SetGamepadTypeDisplayRealType(gamepad_type, SDL_GetRealGamepadType(controller->gamepad));
+            RenderGamepadTypeDisplay(gamepad_type);
+        } else {
+            RenderGamepadDisplay(gamepad_elements, controller->gamepad);
+        }
         RenderJoystickDisplay(joystick_elements, controller->joystick);
 
         if (display_mode == CONTROLLER_MODE_TESTING) {
@@ -1741,6 +1811,11 @@ int main(int argc, char *argv[])
     title_area.x = (float)PANEL_WIDTH + PANEL_SPACING;
     title_area.y = (float)TITLE_HEIGHT / 2 - title_area.h / 2;
 
+    type_area.w = (float)PANEL_WIDTH - 2 * BUTTON_MARGIN;
+    type_area.h = (float)FONT_CHARACTER_SIZE + 2 * BUTTON_MARGIN;
+    type_area.x = (float)BUTTON_MARGIN;
+    type_area.y = (float)TITLE_HEIGHT / 2 - type_area.h / 2;
+
     image = CreateGamepadImage(screen);
     if (image == NULL) {
         SDL_DestroyRenderer(screen);
@@ -1755,6 +1830,13 @@ int main(int argc, char *argv[])
     area.w = PANEL_WIDTH;
     area.h = GAMEPAD_HEIGHT;
     SetGamepadDisplayArea(gamepad_elements, &area);
+
+    gamepad_type = CreateGamepadTypeDisplay(screen);
+    area.x = 0;
+    area.y = TITLE_HEIGHT;
+    area.w = PANEL_WIDTH;
+    area.h = GAMEPAD_HEIGHT;
+    SetGamepadTypeDisplayArea(gamepad_type, &area);
 
     joystick_elements = CreateJoystickDisplay(screen);
     area.x = PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING;
@@ -1829,6 +1911,7 @@ int main(int argc, char *argv[])
     }
     DestroyGamepadImage(image);
     DestroyGamepadDisplay(gamepad_elements);
+    DestroyGamepadTypeDisplay(gamepad_type);
     DestroyJoystickDisplay(joystick_elements);
     DestroyGamepadButton(copy_button);
     SDL_DestroyRenderer(screen);

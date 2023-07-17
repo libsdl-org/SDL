@@ -43,6 +43,8 @@
 
 #define SDL_GAMEPAD_CRC_FIELD           "crc:"
 #define SDL_GAMEPAD_CRC_FIELD_SIZE      4 /* hard-coded for speed */
+#define SDL_GAMEPAD_TYPE_FIELD          "type:"
+#define SDL_GAMEPAD_TYPE_FIELD_SIZE     SDL_strlen(SDL_GAMEPAD_TYPE_FIELD)
 #define SDL_GAMEPAD_PLATFORM_FIELD      "platform:"
 #define SDL_GAMEPAD_PLATFORM_FIELD_SIZE SDL_strlen(SDL_GAMEPAD_PLATFORM_FIELD)
 #define SDL_GAMEPAD_HINT_FIELD          "hint:"
@@ -864,22 +866,71 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_JoystickGUID gu
     return mapping;
 }
 
+static const char *map_StringForGamepadType[] = {
+    "unknown",
+    "standard",
+    "xbox360",
+    "xboxone",
+    "ps3",
+    "ps4",
+    "ps5",
+    "switchpro",
+    "joyconleft",
+    "joyconright",
+    "joyconpair"
+};
+SDL_COMPILE_TIME_ASSERT(map_StringForGamepadType, SDL_arraysize(map_StringForGamepadType) == SDL_GAMEPAD_TYPE_MAX);
+
+/*
+ * convert a string to its enum equivalent
+ */
+SDL_GamepadType SDL_GetGamepadTypeFromString(const char *str)
+{
+    int i;
+
+    if (str == NULL || str[0] == '\0') {
+        return SDL_GAMEPAD_TYPE_UNKNOWN;
+    }
+
+    if (*str == '+' || *str == '-') {
+        ++str;
+    }
+
+    for (i = 0; i < SDL_arraysize(map_StringForGamepadType); ++i) {
+        if (SDL_strcasecmp(str, map_StringForGamepadType[i]) == 0) {
+            return (SDL_GamepadType)i;
+        }
+    }
+    return SDL_GAMEPAD_TYPE_UNKNOWN;
+}
+
+/*
+ * convert an enum to its string equivalent
+ */
+const char *SDL_GetGamepadStringForType(SDL_GamepadType type)
+{
+    if (type >= SDL_GAMEPAD_TYPE_STANDARD && type < SDL_GAMEPAD_TYPE_MAX) {
+        return map_StringForGamepadType[type];
+    }
+    return NULL;
+}
+
 static const char *map_StringForGamepadAxis[] = {
     "leftx",
     "lefty",
     "rightx",
     "righty",
     "lefttrigger",
-    "righttrigger",
-    NULL
+    "righttrigger"
 };
+SDL_COMPILE_TIME_ASSERT(map_StringForGamepadAxis, SDL_arraysize(map_StringForGamepadAxis) == SDL_GAMEPAD_AXIS_MAX);
 
 /*
  * convert a string to its enum equivalent
  */
 SDL_GamepadAxis SDL_GetGamepadAxisFromString(const char *str)
 {
-    int entry;
+    int i;
 
     if (str == NULL || str[0] == '\0') {
         return SDL_GAMEPAD_AXIS_INVALID;
@@ -889,9 +940,9 @@ SDL_GamepadAxis SDL_GetGamepadAxisFromString(const char *str)
         ++str;
     }
 
-    for (entry = 0; map_StringForGamepadAxis[entry]; ++entry) {
-        if (SDL_strcasecmp(str, map_StringForGamepadAxis[entry]) == 0) {
-            return (SDL_GamepadAxis)entry;
+    for (i = 0; i < SDL_arraysize(map_StringForGamepadAxis); ++i) {
+        if (SDL_strcasecmp(str, map_StringForGamepadAxis[i]) == 0) {
+            return (SDL_GamepadAxis)i;
         }
     }
     return SDL_GAMEPAD_AXIS_INVALID;
@@ -929,23 +980,24 @@ static const char *map_StringForGamepadButton[] = {
     "paddle2",
     "paddle3",
     "paddle4",
-    "touchpad",
-    NULL
+    "touchpad"
 };
+SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButton, SDL_arraysize(map_StringForGamepadButton) == SDL_GAMEPAD_BUTTON_MAX);
 
 /*
  * convert a string to its enum equivalent
  */
 SDL_GamepadButton SDL_GetGamepadButtonFromString(const char *str)
 {
-    int entry;
+    int i;
+
     if (str == NULL || str[0] == '\0') {
         return SDL_GAMEPAD_BUTTON_INVALID;
     }
 
-    for (entry = 0; map_StringForGamepadButton[entry]; ++entry) {
-        if (SDL_strcasecmp(str, map_StringForGamepadButton[entry]) == 0) {
-            return (SDL_GamepadButton)entry;
+    for (i = 0; i < SDL_arraysize(map_StringForGamepadButton); ++i) {
+        if (SDL_strcasecmp(str, map_StringForGamepadButton[i]) == 0) {
+            return (SDL_GamepadButton)i;
         }
     }
     return SDL_GAMEPAD_BUTTON_INVALID;
@@ -2049,6 +2101,37 @@ Uint16 SDL_GetGamepadInstanceProductVersion(SDL_JoystickID instance_id)
 
 SDL_GamepadType SDL_GetGamepadInstanceType(SDL_JoystickID instance_id)
 {
+    SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
+
+    SDL_LockJoysticks();
+    {
+        GamepadMapping_t *mapping = SDL_PrivateGetGamepadMapping(instance_id);
+        if (mapping != NULL) {
+            char *type_string, *comma;
+
+            type_string = SDL_strstr(mapping->mapping, SDL_GAMEPAD_TYPE_FIELD);
+            if (type_string != NULL) {
+                type_string += SDL_GAMEPAD_TYPE_FIELD_SIZE;
+                comma = SDL_strchr(type_string, ',');
+                if (comma != NULL) {
+                    *comma = '\0';
+                    type = SDL_GetGamepadTypeFromString(type_string);
+                    *comma = ',';
+                }
+            }
+
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    if (type != SDL_GAMEPAD_TYPE_UNKNOWN) {
+        return type;
+    }
+    return SDL_GetRealGamepadInstanceType(instance_id);
+}
+
+SDL_GamepadType SDL_GetRealGamepadInstanceType(SDL_JoystickID instance_id)
+{
     return SDL_GetGamepadTypeFromGUID(SDL_GetJoystickInstanceGUID(instance_id), SDL_GetJoystickInstanceName(instance_id));
 }
 
@@ -2753,6 +2836,21 @@ const char *SDL_GetGamepadPath(SDL_Gamepad *gamepad)
 }
 
 SDL_GamepadType SDL_GetGamepadType(SDL_Gamepad *gamepad)
+{
+    SDL_JoystickID instance_id = 0;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_GAMEPAD_MAGIC(gamepad, SDL_GAMEPAD_TYPE_UNKNOWN);
+
+        instance_id = gamepad->joystick->instance_id;
+    }
+    SDL_UnlockJoysticks();
+
+    return SDL_GetGamepadInstanceType(instance_id);
+}
+
+SDL_GamepadType SDL_GetRealGamepadType(SDL_Gamepad *gamepad)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 

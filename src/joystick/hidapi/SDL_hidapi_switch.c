@@ -1219,40 +1219,40 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case k_eSwitchDeviceInfoControllerType_HVCLeft:
         HIDAPI_SetDeviceName(device, "Nintendo HVC Controller (1)");
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_GAMEPAD_TYPE_STANDARD;
         break;
     case k_eSwitchDeviceInfoControllerType_HVCRight:
         HIDAPI_SetDeviceName(device, "Nintendo HVC Controller (2)");
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_GAMEPAD_TYPE_STANDARD;
         break;
     case k_eSwitchDeviceInfoControllerType_NESLeft:
         HIDAPI_SetDeviceName(device, "Nintendo NES Controller (L)");
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_GAMEPAD_TYPE_STANDARD;
         break;
     case k_eSwitchDeviceInfoControllerType_NESRight:
         HIDAPI_SetDeviceName(device, "Nintendo NES Controller (R)");
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_GAMEPAD_TYPE_STANDARD;
         break;
     case k_eSwitchDeviceInfoControllerType_SNES:
         HIDAPI_SetDeviceName(device, "Nintendo SNES Controller");
         HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SNES_CONTROLLER);
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_GAMEPAD_TYPE_STANDARD;
         break;
     case k_eSwitchDeviceInfoControllerType_N64:
         HIDAPI_SetDeviceName(device, "Nintendo N64 Controller");
         HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_N64_CONTROLLER);
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_GAMEPAD_TYPE_STANDARD;
         break;
     case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
         HIDAPI_SetDeviceName(device, "Nintendo SEGA Genesis Controller");
         HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER);
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_GAMEPAD_TYPE_STANDARD;
         break;
     case k_eSwitchDeviceInfoControllerType_Unknown:
         /* We couldn't read the device info for this controller, might not be fully compliant */
         return;
     default:
-        device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+        device->type = SDL_GAMEPAD_TYPE_STANDARD;
         break;
     }
     device->guid.data[15] = ctx->m_eControllerType;
