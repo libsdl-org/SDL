@@ -525,7 +525,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetGamepadPath(SDL_Gamepad *gamepad);
  * Get the type of an opened gamepad.
  *
  * \param gamepad the gamepad object to query.
- * \returns the gamepad type, or SDL_GAMEPAD_TYPE_INVALID if it's not available.
+ * \returns the gamepad type, or SDL_GAMEPAD_TYPE_INVALID if it's not
+ *          available.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -537,7 +538,8 @@ extern DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadType(SDL_Gamepad *gamepad)
  * Get the type of an opened gamepad, ignoring any mapping override.
  *
  * \param gamepad the gamepad object to query.
- * \returns the gamepad type, or SDL_GAMEPAD_TYPE_INVALID if it's not available.
+ * \returns the gamepad type, or SDL_GAMEPAD_TYPE_INVALID if it's not
+ *          available.
  *
  * \since This function is available since SDL 3.0.0.
  *
