@@ -897,3 +897,7 @@
 #define SDL_GetGamepadPowerLevel SDL_GetGamepadPowerLevel_REAL
 #define SDL_SetGamepadMapping SDL_SetGamepadMapping_REAL
 #define SDL_strndup SDL_strndup_REAL
+#define SDL_GetGamepadTypeFromString SDL_GetGamepadTypeFromString_REAL
+#define SDL_GetGamepadStringForType SDL_GetGamepadStringForType_REAL
+#define SDL_GetRealGamepadInstanceType SDL_GetRealGamepadInstanceType_REAL
+#define SDL_GetRealGamepadType SDL_GetRealGamepadType_REAL
