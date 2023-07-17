@@ -414,7 +414,6 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data));
     /* Get the device capabilities */
     if (device->vendor_id == USB_VENDOR_SONY) {
         ctx->sensors_supported = SDL_TRUE;
@@ -422,61 +421,65 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         ctx->vibration_supported = SDL_TRUE;
         ctx->playerled_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
-    } else if (size == 48 && data[2] == 0x28) {
-        Uint8 capabilities = data[4];
-        Uint8 capabilities2 = data[20];
-        Uint8 device_type = data[5];
+    } else {
+        /* Third party controller capability request */
+        size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data));
+        if (size == 48 && data[2] == 0x28) {
+            Uint8 capabilities = data[4];
+            Uint8 capabilities2 = data[20];
+            Uint8 device_type = data[5];
 
 #ifdef DEBUG_PS5_PROTOCOL
-        HIDAPI_DumpPacket("PS5 capabilities: size = %d", data, size);
+            HIDAPI_DumpPacket("PS5 capabilities: size = %d", data, size);
 #endif
-        if (capabilities & 0x02) {
+            if (capabilities & 0x02) {
+                ctx->sensors_supported = SDL_TRUE;
+            }
+            if (capabilities & 0x04) {
+                ctx->lightbar_supported = SDL_TRUE;
+            }
+            if (capabilities & 0x08) {
+                ctx->vibration_supported = SDL_TRUE;
+            }
+            if (capabilities & 0x40) {
+                ctx->touchpad_supported = SDL_TRUE;
+            }
+            if (capabilities2 & 0x80) {
+                ctx->playerled_supported = SDL_TRUE;
+            }
+
+            switch (device_type) {
+            case 0x00:
+                joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
+                break;
+            case 0x01:
+                joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                break;
+            case 0x02:
+                joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                break;
+            case 0x06:
+                joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
+                break;
+            case 0x07:
+                joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
+                break;
+            case 0x08:
+                joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+                break;
+            default:
+                joystick_type = SDL_JOYSTICK_TYPE_UNKNOWN;
+                break;
+            }
+
+            ctx->use_alternate_report = SDL_TRUE;
+        } else if (device->vendor_id == USB_VENDOR_RAZER &&
+                   (device->product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_PS5_WIRED ||
+                    device->product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_PS5_WIRELESS)) {
+            /* The Razer Wolverine V2 Pro doesn't respond to the detection protocol, but has a touchpad and sensors, but no vibration */
             ctx->sensors_supported = SDL_TRUE;
-        }
-        if (capabilities & 0x04) {
-            ctx->lightbar_supported = SDL_TRUE;
-        }
-        if (capabilities & 0x08) {
-            ctx->vibration_supported = SDL_TRUE;
-        }
-        if (capabilities & 0x40) {
             ctx->touchpad_supported = SDL_TRUE;
         }
-        if (capabilities2 & 0x80) {
-            ctx->playerled_supported = SDL_TRUE;
-        }
-
-        switch (device_type) {
-        case 0x00:
-            joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
-            break;
-        case 0x01:
-            joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
-            break;
-        case 0x02:
-            joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
-            break;
-        case 0x06:
-            joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
-            break;
-        case 0x07:
-            joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
-            break;
-        case 0x08:
-            joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
-            break;
-        default:
-            joystick_type = SDL_JOYSTICK_TYPE_UNKNOWN;
-            break;
-        }
-
-        ctx->use_alternate_report = SDL_TRUE;
-    } else if (device->vendor_id == USB_VENDOR_RAZER &&
-               (device->product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_PS5_WIRED ||
-                device->product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_PS5_WIRELESS)) {
-        /* The Razer Wolverine V2 Pro doesn't respond to the detection protocol, but has a touchpad and sensors, but no vibration */
-        ctx->sensors_supported = SDL_TRUE;
-        ctx->touchpad_supported = SDL_TRUE;
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported || ctx->playerled_supported);
 
