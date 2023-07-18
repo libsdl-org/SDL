@@ -1501,12 +1501,20 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
 void SDL_QuitJoysticks(void)
 {
     int i;
+    SDL_JoystickID *joysticks;
 
     SDL_LockJoysticks();
 
     SDL_joysticks_quitting = SDL_TRUE;
 
-    /* Stop the event polling */
+    joysticks = SDL_GetJoysticks(NULL);
+    if (joysticks) {
+        for (i = 0; joysticks[i]; ++i) {
+            SDL_PrivateJoystickRemoved(joysticks[i]);
+        }
+        SDL_free(joysticks);
+    }
+
     while (SDL_joysticks) {
         SDL_joysticks->ref_count = 1;
         SDL_CloseJoystick(SDL_joysticks);

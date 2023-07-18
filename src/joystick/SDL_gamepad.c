@@ -178,6 +178,26 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, co
 static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadAxis axis, Sint16 value);
 static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, Uint8 state);
 
+static void SDL_PrivateGamepadAdded(SDL_JoystickID instance_id)
+{
+    SDL_Event event;
+
+    event.type = SDL_EVENT_GAMEPAD_ADDED;
+    event.common.timestamp = 0;
+    event.gdevice.which = instance_id;
+    SDL_PushEvent(&event);
+}
+
+static void SDL_PrivateGamepadRemoved(SDL_JoystickID instance_id)
+{
+    SDL_Event event;
+
+    event.type = SDL_EVENT_GAMEPAD_REMOVED;
+    event.common.timestamp = 0;
+    event.gdevice.which = instance_id;
+    SDL_PushEvent(&event);
+}
+
 static SDL_bool HasSameOutput(SDL_GamepadBinding *a, SDL_GamepadBinding *b)
 {
     if (a->outputType != b->outputType) {
@@ -374,12 +394,7 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
     case SDL_EVENT_JOYSTICK_ADDED:
     {
         if (SDL_IsGamepad(event->jdevice.which)) {
-            SDL_Event deviceevent;
-
-            deviceevent.type = SDL_EVENT_GAMEPAD_ADDED;
-            deviceevent.common.timestamp = 0;
-            deviceevent.gdevice.which = event->jdevice.which;
-            SDL_PushEvent(&deviceevent);
+            SDL_PrivateGamepadAdded(event->jdevice.which);
         }
     } break;
     case SDL_EVENT_JOYSTICK_REMOVED:
@@ -393,14 +408,8 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
             }
         }
 
-        /* We don't know if this was a gamepad, so go ahead and send an event */
-        {
-            SDL_Event deviceevent;
-
-            deviceevent.type = SDL_EVENT_GAMEPAD_REMOVED;
-            deviceevent.common.timestamp = 0;
-            deviceevent.gdevice.which = event->jdevice.which;
-            SDL_PushEvent(&deviceevent);
+        if (SDL_IsGamepad(event->jdevice.which)) {
+            SDL_PrivateGamepadRemoved(event->jdevice.which);
         }
     } break;
     case SDL_EVENT_JOYSTICK_UPDATE_COMPLETE:
@@ -3135,10 +3144,15 @@ void SDL_CloseGamepad(SDL_Gamepad *gamepad)
 void SDL_QuitGamepads(void)
 {
     SDL_LockJoysticks();
+
+    SDL_DelEventWatch(SDL_GamepadEventWatcher, NULL);
+
     while (SDL_gamepads) {
+        SDL_PrivateGamepadRemoved(SDL_gamepads->joystick->instance_id);
         SDL_gamepads->ref_count = 1;
         SDL_CloseGamepad(SDL_gamepads);
     }
+
     SDL_UnlockJoysticks();
 }
 
@@ -3155,8 +3169,6 @@ void SDL_QuitGamepadMappings(void)
         SDL_free(pGamepadMap->mapping);
         SDL_free(pGamepadMap);
     }
-
-    SDL_DelEventWatch(SDL_GamepadEventWatcher, NULL);
 
     SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES,
                         SDL_GamepadIgnoreDevicesChanged, NULL);
