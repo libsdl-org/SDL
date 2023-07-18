@@ -1401,6 +1401,8 @@ static char *SDL_PrivateGetGamepadNameFromMappingString(const char *pMapping)
 static char *SDL_PrivateGetGamepadMappingFromMappingString(const char *pMapping)
 {
     const char *pFirstComma, *pSecondComma;
+    char *result;
+    size_t length;
 
     pFirstComma = SDL_strchr(pMapping, ',');
     if (pFirstComma == NULL) {
@@ -1412,7 +1414,24 @@ static char *SDL_PrivateGetGamepadMappingFromMappingString(const char *pMapping)
         return NULL;
     }
 
-    return SDL_strdup(pSecondComma + 1); /* mapping is everything after the 3rd comma */
+    /* Skip whitespace */
+    while (SDL_isspace(pSecondComma[1])) {
+        ++pSecondComma;
+    }
+    if (pSecondComma[1] == '\0') {
+        return NULL;
+    }
+
+    result = SDL_strdup(pSecondComma + 1); /* mapping is everything after the 3rd comma */
+
+    /* Trim whitespace */
+    length = SDL_strlen(result);
+    while (SDL_isspace(result[length - 1])) {
+        --length;
+    }
+    result[length] = '\0';
+
+    return result;
 }
 
 /*
