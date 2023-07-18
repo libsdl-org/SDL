@@ -390,6 +390,19 @@ size_t SDL_strlen(const char *string)
 #endif /* HAVE_STRLEN */
 }
 
+size_t SDL_strnlen(const char *string, size_t maxlen)
+{
+#ifdef HAVE_STRNLEN
+    return strnlen(string, maxlen);
+#else
+    size_t len = 0;
+    while (len < maxlen && *string++) {
+        ++len;
+    }
+    return len;
+#endif /* HAVE_STRNLEN */
+}
+
 size_t SDL_wcslen(const wchar_t *string)
 {
 #ifdef HAVE_WCSLEN
@@ -401,6 +414,19 @@ size_t SDL_wcslen(const wchar_t *string)
     }
     return len;
 #endif /* HAVE_WCSLEN */
+}
+
+size_t SDL_wcsnlen(const wchar_t *string, size_t maxlen)
+{
+#ifdef HAVE_WCSNLEN
+    return wcsnlen(string, maxlen);
+#else
+    size_t len = 0;
+    while (len < maxlen && *string++) {
+        ++len;
+    }
+    return len;
+#endif /* HAVE_WCSNLEN */
 }
 
 size_t SDL_wcslcpy(SDL_OUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen)
@@ -702,11 +728,11 @@ char *SDL_strdup(const char *string)
 
 char *SDL_strndup(const char *string, size_t maxlen)
 {
-    size_t len = SDL_min(SDL_strlen(string), maxlen) + 1;
-    char *newstr = (char *)SDL_malloc(len);
+    size_t len = SDL_strnlen(string, maxlen);
+    char *newstr = (char *)SDL_malloc(len + 1);
     if (newstr) {
         SDL_memcpy(newstr, string, len);
-        newstr[len - 1] = '\0';
+        newstr[len] = '\0';
     }
     return newstr;
 }
