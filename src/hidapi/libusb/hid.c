@@ -624,7 +624,7 @@ static int hid_get_report_descriptor_libusb(libusb_device_handle *handle, int in
 		expected_report_descriptor_size = HID_API_MAX_REPORT_DESCRIPTOR_SIZE;
 
 	/* Get the HID Report Descriptor.
-	   See USB HID Specificatin, sectin 7.1.1
+	   See USB HID Specification, section 7.1.1
 	*/
 	int res = libusb_control_transfer(handle, LIBUSB_ENDPOINT_IN|LIBUSB_RECIPIENT_INTERFACE, LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_REPORT << 8), interface_num, tmp, expected_report_descriptor_size, 5000);
 	if (res >= 0) {

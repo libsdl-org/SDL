@@ -814,7 +814,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		}
 		cur_dev = tmp;
 
-		/* move the pointer to the tail of returnd list */
+		/* move the pointer to the tail of returned list */
 		while (cur_dev->next != NULL) {
 			cur_dev = cur_dev->next;
 		}

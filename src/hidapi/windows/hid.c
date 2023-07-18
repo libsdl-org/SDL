@@ -233,7 +233,7 @@ static hid_device *new_hid_device()
 	memset(&dev->ol, 0, sizeof(dev->ol));
 	dev->ol.hEvent = CreateEvent(NULL, FALSE, FALSE /*initial state f=nonsignaled*/, NULL);
 	memset(&dev->write_ol, 0, sizeof(dev->write_ol));
-	dev->write_ol.hEvent = CreateEvent(NULL, FALSE, FALSE /*inital state f=nonsignaled*/, NULL);
+	dev->write_ol.hEvent = CreateEvent(NULL, FALSE, FALSE /*initial state f=nonsignaled*/, NULL);
 	dev->device_info = NULL;
 
 	return dev;

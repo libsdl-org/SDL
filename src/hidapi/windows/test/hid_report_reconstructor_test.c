@@ -129,7 +129,7 @@ static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 				pp_data->caps_info[rt_idx].ReportByteLength = temp_ushort;
 				continue;
 			}
-			fprintf(stderr, "Ignorring unimplemented caps_info field: %s", line);
+			fprintf(stderr, "Ignoring unimplemented caps_info field: %s", line);
 			continue;
 		}
 
@@ -259,7 +259,7 @@ static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 					pp_data->caps[caps_idx].UnknownTokens[token_idx].BitField = temp_ulong;
 					continue;
 				}
-				fprintf(stderr, "Ignorring unimplemented pp_data->cap[]->pp_cap->UnknownTokens field: %s", line);
+				fprintf(stderr, "Ignoring unimplemented pp_data->cap[]->pp_cap->UnknownTokens field: %s", line);
 				continue;
 			}
 
@@ -383,7 +383,7 @@ static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 				pp_data->caps[caps_idx].Reserved1[2] = temp_uchar[2];
 				continue;
 			}
-			fprintf(stderr, "Ignorring unimplemented cap field: %s", line);
+			fprintf(stderr, "Ignoring unimplemented cap field: %s", line);
 			continue;
 		}
 
@@ -433,7 +433,7 @@ static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 				pcoll[coll_idx].Reserved = temp_ulong;
 				continue;
 			}
-			fprintf(stderr, "Ignorring unimplemented LinkCollectionArray field: %s", line);
+			fprintf(stderr, "Ignoring unimplemented LinkCollectionArray field: %s", line);
 			continue;
 		}
 	}

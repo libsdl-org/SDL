@@ -365,7 +365,7 @@ static int get_next_hid_usage(__u8 *report_descriptor, __u32 size, unsigned int 
 
 /*
  * Retrieves the hidraw report descriptor from a file.
- * When using this form, <sysfs_path>/device/report_descriptor, elevated priviledges are not required.
+ * When using this form, <sysfs_path>/device/report_descriptor, elevated privileges are not required.
  */
 static int get_hid_report_descriptor(const char *rpt_path, struct hidraw_report_descriptor *rpt_desc)
 {
@@ -1003,7 +1003,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			}
 			cur_dev = tmp;
 
-			/* move the pointer to the tail of returnd list */
+			/* move the pointer to the tail of returned list */
 			while (cur_dev->next != NULL) {
 				cur_dev = cur_dev->next;
 			}
