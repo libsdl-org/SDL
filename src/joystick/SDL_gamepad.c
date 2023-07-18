@@ -1661,7 +1661,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id
 /*
  * Add or update an entry into the Mappings Database
  */
-int SDL_AddGamepadMappingsFromRW(SDL_RWops *rw, int freerw)
+int SDL_AddGamepadMappingsFromRW(SDL_RWops *src, int freesrc)
 {
     const char *platform = SDL_GetPlatform();
     int gamepads = 0;
@@ -1669,29 +1669,29 @@ int SDL_AddGamepadMappingsFromRW(SDL_RWops *rw, int freerw)
     Sint64 db_size;
     size_t platform_len;
 
-    if (rw == NULL) {
-        return SDL_SetError("Invalid RWops");
+    if (src == NULL) {
+        return SDL_InvalidParamError("src");
     }
-    db_size = SDL_RWsize(rw);
+    db_size = SDL_RWsize(src);
 
     buf = (char *)SDL_malloc((size_t)db_size + 1);
     if (buf == NULL) {
-        if (freerw) {
-            SDL_RWclose(rw);
+        if (freesrc) {
+            SDL_RWclose(src);
         }
         return SDL_SetError("Could not allocate space to read DB into memory");
     }
 
-    if (SDL_RWread(rw, buf, db_size) != db_size) {
-        if (freerw) {
-            SDL_RWclose(rw);
+    if (SDL_RWread(src, buf, db_size) != db_size) {
+        if (freesrc) {
+            SDL_RWclose(src);
         }
         SDL_free(buf);
         return SDL_SetError("Could not read DB");
     }
 
-    if (freerw) {
-        SDL_RWclose(rw);
+    if (freesrc) {
+        SDL_RWclose(src);
     }
 
     buf[db_size] = '\0';
@@ -1731,6 +1731,11 @@ int SDL_AddGamepadMappingsFromRW(SDL_RWops *rw, int freerw)
 
     SDL_free(buf);
     return gamepads;
+}
+
+int SDL_AddGamepadMappingsFromFile(const char *file)
+{
+    return SDL_AddGamepadMappingsFromRW(SDL_RWFromFile(file, "rb"), 1);
 }
 
 /*

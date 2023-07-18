@@ -175,8 +175,8 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * processing it, so take this into consideration if you are in a memory
  * constrained environment.
  *
- * \param rw the data stream for the mappings to be added
- * \param freerw non-zero to close the stream after being read
+ * \param src the data stream for the mappings to be added
+ * \param freesrc non-zero to close the stream after being read
  * \returns the number of mappings added or -1 on error; call SDL_GetError()
  *          for more information.
  *
@@ -186,14 +186,32 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * \sa SDL_AddGamepadMappingsFromFile
  * \sa SDL_GetGamepadMappingForGUID
  */
-extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromRW(SDL_RWops *rw, int freerw);
+extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromRW(SDL_RWops *src, int freesrc);
 
 /**
- *  Load a set of mappings from a file, filtered by the current SDL_GetPlatform()
+ * Load a set of gamepad mappings from a file.
  *
- *  Convenience macro.
+ * You can call this function several times, if needed, to load different
+ * database files.
+ *
+ * If a new mapping is loaded for an already known gamepad GUID, the later
+ * version will overwrite the one currently loaded.
+ *
+ * Mappings not belonging to the current platform or with no platform field
+ * specified will be ignored (i.e. mappings for Linux will be ignored in
+ * Windows, etc).
+ *
+ * \param file the mappings file to load
+ * \returns the number of mappings added or -1 on error; call SDL_GetError()
+ *          for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AddGamepadMapping
+ * \sa SDL_AddGamepadMappingsFromRW
+ * \sa SDL_GetGamepadMappingForGUID
  */
-#define SDL_AddGamepadMappingsFromFile(file)   SDL_AddGamepadMappingsFromRW(SDL_RWFromFile(file, "rb"), 1)
+extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromFile(const char *file);
 
 /**
  * Get the number of mappings installed.
