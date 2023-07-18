@@ -56,6 +56,7 @@ int main(int argc, char **argv)
             if (SDL_strcmp(argv[1], "--listen") == 0) {
                 listen = 1;
                 consumed = 1;
+                state->flags |= SDL_INIT_VIDEO;
             }
         }
         if (consumed <= 0) {
