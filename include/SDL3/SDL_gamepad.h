@@ -214,6 +214,18 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromRW(SDL_RWops *src, int fre
 extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromFile(const char *file);
 
 /**
+ * Reinitialize the SDL mapping database to its initial state.
+ *
+ * This will generate gamepad events as needed if device mappings change.
+ *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_ReloadGamepadMappings(void);
+
+/**
  * Get the number of mappings installed.
  *
  * \returns the number of mappings.

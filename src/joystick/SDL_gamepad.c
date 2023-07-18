@@ -139,7 +139,7 @@ static SDL_JoystickGUID s_zeroGUID;
 static GamepadMapping_t *s_pSupportedGamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static GamepadMapping_t *s_pDefaultMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static GamepadMapping_t *s_pXInputMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static MappingChangeTracker s_mappingChangeTracker;
+static MappingChangeTracker *s_mappingChangeTracker SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static char gamepad_magic;
 
 #define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
@@ -506,52 +506,61 @@ void SDL_GamepadSensorWatcher(Uint64 timestamp, SDL_SensorID sensor, Uint64 sens
 
 static void PushMappingChangeTracking(void)
 {
+    MappingChangeTracker *tracker;
     int i, num_joysticks;
 
     SDL_AssertJoysticksLocked();
 
-    ++s_mappingChangeTracker.refcount;
-    if (s_mappingChangeTracker.refcount > 1) {
+    if (s_mappingChangeTracker) {
+        ++s_mappingChangeTracker->refcount;
         return;
     }
+    s_mappingChangeTracker = (MappingChangeTracker *)SDL_calloc(1, sizeof(*tracker));
+    s_mappingChangeTracker->refcount = 1;
 
     /* Save the list of joysticks and associated mappings */
-    s_mappingChangeTracker.joysticks = SDL_GetJoysticks(&num_joysticks);
-    if (!s_mappingChangeTracker.joysticks) {
+    tracker = s_mappingChangeTracker;
+    tracker->joysticks = SDL_GetJoysticks(&num_joysticks);
+    if (!tracker->joysticks) {
         return;
     }
     if (num_joysticks == 0) {
         return;
     }
-    s_mappingChangeTracker.joystick_mappings = (GamepadMapping_t **)SDL_malloc(num_joysticks * sizeof(*s_mappingChangeTracker.joystick_mappings));
-    if (!s_mappingChangeTracker.joystick_mappings) {
+    tracker->joystick_mappings = (GamepadMapping_t **)SDL_malloc(num_joysticks * sizeof(*tracker->joystick_mappings));
+    if (!tracker->joystick_mappings) {
         return;
     }
     for (i = 0; i < num_joysticks; ++i) {
-        s_mappingChangeTracker.joystick_mappings[i] = SDL_PrivateGetGamepadMapping(s_mappingChangeTracker.joysticks[i]);
+        tracker->joystick_mappings[i] = SDL_PrivateGetGamepadMapping(tracker->joysticks[i]);
     }
 }
 
 static void AddMappingChangeTracking(GamepadMapping_t *mapping)
 {
+    MappingChangeTracker *tracker;
     int num_mappings;
     GamepadMapping_t **new_mappings;
 
-    num_mappings = s_mappingChangeTracker.num_changed_mappings;
-    new_mappings = (GamepadMapping_t **)SDL_realloc(s_mappingChangeTracker.changed_mappings, (num_mappings + 1) * sizeof(*new_mappings));
+    SDL_AssertJoysticksLocked();
+
+    SDL_assert(s_mappingChangeTracker != NULL);
+    tracker = s_mappingChangeTracker;
+    num_mappings = tracker->num_changed_mappings;
+    new_mappings = (GamepadMapping_t **)SDL_realloc(tracker->changed_mappings, (num_mappings + 1) * sizeof(*new_mappings));
     if (new_mappings) {
-        s_mappingChangeTracker.changed_mappings = new_mappings;
-        s_mappingChangeTracker.changed_mappings[num_mappings] = mapping;
-        s_mappingChangeTracker.num_changed_mappings = (num_mappings + 1);
+        tracker->changed_mappings = new_mappings;
+        tracker->changed_mappings[num_mappings] = mapping;
+        tracker->num_changed_mappings = (num_mappings + 1);
     }
 }
 
-static SDL_bool HasMappingChangeTracking(GamepadMapping_t *mapping)
+static SDL_bool HasMappingChangeTracking(MappingChangeTracker *tracker, GamepadMapping_t *mapping)
 {
     int i;
 
-    for (i = 0; i < s_mappingChangeTracker.num_changed_mappings; ++i) {
-        if (s_mappingChangeTracker.changed_mappings[i] == mapping) {
+    for (i = 0; i < tracker->num_changed_mappings; ++i) {
+        if (tracker->changed_mappings[i] == mapping) {
             return SDL_TRUE;
         }
     }
@@ -561,26 +570,32 @@ static SDL_bool HasMappingChangeTracking(GamepadMapping_t *mapping)
 static void PopMappingChangeTracking(void)
 {
     int i;
+    MappingChangeTracker *tracker;
 
-    SDL_assert(s_mappingChangeTracker.refcount > 0);
-    --s_mappingChangeTracker.refcount;
-    if (s_mappingChangeTracker.refcount > 0) {
+    SDL_AssertJoysticksLocked();
+
+    SDL_assert(s_mappingChangeTracker != NULL);
+    tracker = s_mappingChangeTracker;
+    --tracker->refcount;
+    if (tracker->refcount > 0) {
         return;
     }
+    s_mappingChangeTracker = NULL;
 
     /* Now check to see what gamepads changed because of the mapping changes */
-    if (s_mappingChangeTracker.joysticks && s_mappingChangeTracker.joystick_mappings) {
-        for (i = 0; s_mappingChangeTracker.joysticks[i]; ++i) {
-            SDL_JoystickID joystick = s_mappingChangeTracker.joysticks[i];
-            GamepadMapping_t *old_mapping = s_mappingChangeTracker.joystick_mappings[i];
-            GamepadMapping_t *new_mapping = SDL_PrivateGetGamepadMapping(joystick);
+    if (tracker->joysticks && tracker->joystick_mappings) {
+        for (i = 0; tracker->joysticks[i]; ++i) {
+            /* Looking up the new mapping might create one and associate it with the gamepad (and generate events) */
+            SDL_JoystickID joystick = tracker->joysticks[i];
             SDL_Gamepad *gamepad = SDL_GetGamepadFromInstanceID(joystick);
+            GamepadMapping_t *new_mapping = SDL_PrivateGetGamepadMapping(joystick);
+            GamepadMapping_t *old_mapping = gamepad ? gamepad->mapping : tracker->joystick_mappings[i];
 
             if (new_mapping && !old_mapping) {
                 SDL_PrivateGamepadAdded(joystick);
             } else if (old_mapping && !new_mapping) {
                 SDL_PrivateGamepadRemoved(joystick);
-            } else if (old_mapping != new_mapping || HasMappingChangeTracking(new_mapping)) {
+            } else if (old_mapping != new_mapping || HasMappingChangeTracking(tracker, new_mapping)) {
                 if (gamepad) {
                     SDL_PrivateLoadButtonMapping(gamepad, new_mapping);
                 }
@@ -589,19 +604,10 @@ static void PopMappingChangeTracking(void)
         }
     }
 
-    if (s_mappingChangeTracker.joysticks) {
-        SDL_free(s_mappingChangeTracker.joysticks);
-        s_mappingChangeTracker.joysticks = NULL;
-    }
-    if (s_mappingChangeTracker.joystick_mappings) {
-        SDL_free(s_mappingChangeTracker.joystick_mappings);
-        s_mappingChangeTracker.joystick_mappings = NULL;
-    }
-    if (s_mappingChangeTracker.changed_mappings) {
-        SDL_free(s_mappingChangeTracker.changed_mappings);
-        s_mappingChangeTracker.changed_mappings = NULL;
-    }
-    s_mappingChangeTracker.num_changed_mappings = 0;
+    SDL_free(tracker->joysticks);
+    SDL_free(tracker->joystick_mappings);
+    SDL_free(tracker->changed_mappings);
+    SDL_free(tracker);
 }
 
 #ifdef __ANDROID__
@@ -1736,6 +1742,28 @@ int SDL_AddGamepadMappingsFromRW(SDL_RWops *src, int freesrc)
 int SDL_AddGamepadMappingsFromFile(const char *file)
 {
     return SDL_AddGamepadMappingsFromRW(SDL_RWFromFile(file, "rb"), 1);
+}
+
+int SDL_ReloadGamepadMappings(void)
+{
+    SDL_Gamepad *gamepad;
+
+    SDL_LockJoysticks();
+
+    PushMappingChangeTracking();
+
+    for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
+        AddMappingChangeTracking(gamepad->mapping);
+    }
+
+    SDL_QuitGamepadMappings();
+    SDL_InitGamepadMappings();
+
+    PopMappingChangeTracking();
+
+    SDL_UnlockJoysticks();
+
+    return 0;
 }
 
 /*

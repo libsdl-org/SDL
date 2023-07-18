@@ -949,3 +949,4 @@ SDL_DYNAPI_PROC(SDL_GamepadType,SDL_GetRealGamepadType,(SDL_Gamepad *a),(a),retu
 SDL_DYNAPI_PROC(size_t,SDL_wcsnlen,(const wchar_t *a, size_t b),(a,b),return)
 SDL_DYNAPI_PROC(size_t,SDL_strnlen,(const char *a, size_t b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_AddGamepadMappingsFromFile,(const char *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_ReloadGamepadMappings,(void),(),return)

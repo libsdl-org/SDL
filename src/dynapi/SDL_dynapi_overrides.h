@@ -904,3 +904,4 @@
 #define SDL_wcsnlen SDL_wcsnlen_REAL
 #define SDL_strnlen SDL_strnlen_REAL
 #define SDL_AddGamepadMappingsFromFile SDL_AddGamepadMappingsFromFile_REAL
+#define SDL_ReloadGamepadMappings SDL_ReloadGamepadMappings_REAL

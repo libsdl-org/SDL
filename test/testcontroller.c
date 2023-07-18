@@ -1627,6 +1627,8 @@ static void loop(void *arg)
                     OpenVirtualGamepad();
                 } else if (event.key.keysym.sym == SDLK_d) {
                     CloseVirtualGamepad();
+                } else if (event.key.keysym.sym == SDLK_r && (event.key.keysym.mod & SDL_KMOD_CTRL)) {
+                    SDL_ReloadGamepadMappings();
                 } else if (event.key.keysym.sym == SDLK_ESCAPE) {
                     done = SDL_TRUE;
                 }
