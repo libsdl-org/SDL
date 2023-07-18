@@ -30,10 +30,14 @@
 #ifdef SDL_JOYSTICK_HIDAPI_PS5
 
 /* Define this if you want to log all packets from the controller */
-/*#define DEBUG_PS5_PROTOCOL*/
+#if 0
+#define DEBUG_PS5_PROTOCOL
+#endif
 
 /* Define this if you want to log calibration data */
-/*#define DEBUG_PS5_CALIBRATION*/
+#if 0
+#define DEBUG_PS5_CALIBRATION
+#endif
 
 #define GYRO_RES_PER_DEGREE             1024.0f
 #define ACCEL_RES_PER_G                 8192.0f
@@ -219,8 +223,10 @@ typedef struct
     SDL_bool touchpad_supported;
     SDL_bool effects_supported;
     SDL_bool enhanced_mode;
+    SDL_bool enhanced_mode_available;
     SDL_bool report_sensors;
     SDL_bool report_touchpad;
+    SDL_bool report_battery;
     SDL_bool hardware_calibration;
     IMUCalibrationData calibration[6];
     Uint16 firmware_version;
@@ -388,13 +394,17 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         ctx->enhanced_mode = SDL_TRUE;
     } else {
         /* Connected over Bluetooth, using simple reports (DirectInput enabled) */
-
-        /* Games written prior the introduction of PS5 controller support in SDL will not be aware of
-           SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, but they did know SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE.
-           To support apps that only knew about the PS4 hint, we'll use the PS4 hint as the default.
-        */
-        ctx->enhanced_mode = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
-                                                SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, SDL_FALSE));
+        const char *hint = SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE);
+        if (!hint) {
+            /* Games written prior the introduction of PS5 controller support in SDL will not be aware of
+               SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, but they did know SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE.
+               To support apps that only knew about the PS4 hint, we'll use the PS4 hint as the default.
+            */
+            hint = SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE);
+        }
+        if (hint && SDL_strcasecmp(hint, "auto") != 0) {
+            ctx->enhanced_mode = SDL_GetStringBoolean(hint, SDL_FALSE);
+        }
     }
 
     if (ctx->enhanced_mode) {
@@ -630,20 +640,16 @@ static int HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     DS5EffectsState_t effects;
 
-    if (!ctx->enhanced_mode || !ctx->effects_supported) {
-        return SDL_Unsupported();
-    }
-
-    SDL_zero(effects);
-
     /* Make sure the Bluetooth connection sequence has completed before sending LED color change */
-    if (device->is_bluetooth &&
+    if (device->is_bluetooth && ctx->enhanced_mode &&
         (effect_mask & (k_EDS5EffectLED | k_EDS5EffectPadLights)) != 0) {
         if (ctx->led_reset_state != k_EDS5LEDResetStateComplete) {
             ctx->led_reset_state = k_EDS5LEDResetStatePending;
             return 0;
         }
     }
+
+    SDL_zero(effects);
 
     if (ctx->vibration_supported) {
         if (ctx->rumble_left || ctx->rumble_right) {
@@ -763,33 +769,52 @@ static void HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
     }
 }
 
-static void HIDAPI_DriverPS5_SetEnhancedMode(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx)
 {
-    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+    if (!ctx->effects_supported) {
+        /* We shouldn't be sending any packets to the controller */
+        return;
+    }
 
-    if (!ctx->enhanced_mode) {
+    ctx->enhanced_mode_available = SDL_TRUE;
+
+    if (ctx->touchpad_supported) {
+        SDL_PrivateJoystickAddTouchpad(ctx->joystick, 2);
+    }
+    if (ctx->sensors_supported) {
+        if (ctx->device->is_bluetooth) {
+            /* Bluetooth sensor update rate appears to be 1000 Hz */
+            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 1000.0f);
+            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 1000.0f);
+        } else {
+            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 250.0f);
+            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 250.0f);
+        }
+    }
+}
+
+static void HIDAPI_DriverPS5_SetEnhancedMode(SDL_DriverPS5_Context *ctx)
+{
+    if (!ctx->enhanced_mode_available) {
+        HIDAPI_DriverPS5_SetEnhancedModeAvailable(ctx);
+    }
+
+    if (!ctx->enhanced_mode && ctx->enhanced_mode_available) {
         ctx->enhanced_mode = SDL_TRUE;
 
         if (ctx->touchpad_supported) {
-            SDL_PrivateJoystickAddTouchpad(joystick, 2);
             ctx->report_touchpad = SDL_TRUE;
         }
-        if (ctx->sensors_supported) {
-            if (device->is_bluetooth) {
-                /* Bluetooth sensor update rate appears to be 1000 Hz */
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 1000.0f);
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 1000.0f);
-            } else {
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
-            }
+
+        if (ctx->device->is_bluetooth) {
+            ctx->report_battery = SDL_TRUE;
         }
 
         /* Switch into enhanced report mode */
-        HIDAPI_DriverPS5_UpdateEffects(device, 0);
+        HIDAPI_DriverPS5_UpdateEffects(ctx->device, 0);
 
         /* Update the light effects */
-        HIDAPI_DriverPS5_UpdateEffects(device, (k_EDS5EffectLED | k_EDS5EffectPadLights));
+        HIDAPI_DriverPS5_UpdateEffects(ctx->device, (k_EDS5EffectLED | k_EDS5EffectPadLights));
     }
 }
 
@@ -797,9 +822,12 @@ static void SDLCALL SDL_PS5RumbleHintChanged(void *userdata, const char *name, c
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)userdata;
 
-    /* This is a one-way trip, you can't switch the controller back to simple report mode */
-    if (SDL_GetStringBoolean(hint, SDL_FALSE)) {
-        HIDAPI_DriverPS5_SetEnhancedMode(ctx->device, ctx->joystick);
+    if (SDL_strcasecmp(hint, "auto") == 0) {
+        /* Mark the controller as enhanced mode capable, but wait for API calls to enable it */
+        HIDAPI_DriverPS5_SetEnhancedModeAvailable(ctx);
+    } else if (SDL_GetStringBoolean(hint, SDL_FALSE)) {
+        /* This is a one-way trip, you can't switch the controller back to simple report mode */
+        HIDAPI_DriverPS5_SetEnhancedMode(ctx);
     }
 }
 
@@ -858,13 +886,18 @@ static SDL_bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         joystick->nbuttons = 15;
     }
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
-    joystick->epowerlevel = device->is_bluetooth ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
+    if (device->is_bluetooth) {
+        /* We'll update this once we're in enhanced mode */
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
+    } else {
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+    }
     joystick->firmware_version = ctx->firmware_version;
 
     if (ctx->enhanced_mode) {
         /* Force initialization when opening the joystick */
         ctx->enhanced_mode = SDL_FALSE;
-        HIDAPI_DriverPS5_SetEnhancedMode(device, joystick);
+        HIDAPI_DriverPS5_SetEnhancedMode(ctx);
     } else {
         SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
                             SDL_PS5RumbleHintChanged, ctx);
@@ -903,7 +936,7 @@ static Uint32 HIDAPI_DriverPS5_GetJoystickCapabilities(SDL_HIDAPI_Device *device
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     Uint32 result = 0;
 
-    if (ctx->enhanced_mode) {
+    if (ctx->enhanced_mode_available) {
         if (ctx->lightbar_supported) {
             result |= SDL_JOYCAP_LED;
         }
@@ -940,12 +973,12 @@ static int HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Jo
     int *pending_size;
     int maximum_size;
 
-    if (!ctx->effects_supported) {
+    if (!ctx->enhanced_mode_available) {
         return SDL_Unsupported();
     }
 
     if (!ctx->enhanced_mode) {
-        HIDAPI_DriverPS5_SetEnhancedMode(device, joystick);
+        HIDAPI_DriverPS5_SetEnhancedMode(ctx);
     }
 
     SDL_zeroa(data);
@@ -1003,11 +1036,12 @@ static int HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device,
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
-    if (!ctx->enhanced_mode) {
+    if (!ctx->enhanced_mode_available) {
         return SDL_Unsupported();
     }
 
     if (enabled) {
+        HIDAPI_DriverPS5_SetEnhancedMode(ctx);
         HIDAPI_DriverPS5_LoadCalibrationData(device);
     }
     ctx->report_sensors = enabled;
@@ -1274,13 +1308,7 @@ static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
     }
 
-    /* A check of packet->ucBatteryLevel & 0x10 should work as a check for BT vs USB but doesn't
-     * seem to always work. Possibly related to being 100% charged?
-     */
-    if (!ctx->device->is_bluetooth) {
-        /* 0x20 set means fully charged */
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
-    } else {
+    if (ctx->report_battery) {
         /* Battery level ranges from 0 to 10 */
         int level = (packet->ucBatteryLevel & 0xF);
         if (level == 0) {
@@ -1396,7 +1424,7 @@ static SDL_bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         case k_EPS5ReportIdBluetoothState:
             if (!ctx->enhanced_mode) {
                 /* This is the extended report, we can enable effects now */
-                HIDAPI_DriverPS5_SetEnhancedMode(device, joystick);
+                HIDAPI_DriverPS5_SetEnhancedMode(ctx);
             }
             HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, device->dev, ctx, (PS5StatePacketCommon_t *)&data[2]);
             if (ctx->use_alternate_report) {
