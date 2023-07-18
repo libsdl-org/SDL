@@ -32,6 +32,8 @@ extern void SDL_QuitGamepadMappings(void);
 extern int SDL_InitGamepads(void);
 extern void SDL_QuitGamepads(void);
 
+extern void SDL_PrivateGamepadAdded(SDL_JoystickID instance_id);
+extern void SDL_PrivateGamepadRemoved(SDL_JoystickID instance_id);
 
 /* Function to return whether a joystick name and GUID is a gamepad  */
 extern SDL_bool SDL_IsGamepadNameAndGUID(const char *name, SDL_JoystickGUID guid);

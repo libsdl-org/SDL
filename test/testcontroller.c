@@ -770,47 +770,11 @@ static void SetController(SDL_JoystickID id)
     RefreshControllerName();
 }
 
-static void HandleGamepadRemapped(SDL_JoystickID id)
-{
-    char *mapping;
-    int i = FindController(id);
-
-    if (i < 0) {
-        return;
-    }
-
-    if (!controllers[i].gamepad) {
-        controllers[i].gamepad = SDL_OpenGamepad(id);
-        RefreshControllerName();
-    }
-
-    /* Get the current mapping */
-    mapping = SDL_GetGamepadMapping(controllers[i].gamepad);
-
-    /* Make sure the mapping has a valid name */
-    if (mapping && !MappingHasName(mapping)) {
-        mapping = SetMappingName(mapping, SDL_GetJoystickName(controllers[i].joystick));
-    }
-
-    SDL_free(controllers[i].mapping);
-    controllers[i].mapping = mapping;
-    controllers[i].has_bindings = MappingHasBindings(mapping);
-}
-
 static void AddController(SDL_JoystickID id, SDL_bool verbose)
 {
     Controller *new_controllers;
     Controller *new_controller;
-    Uint16 firmware_version;
-    SDL_SensorType sensors[] = {
-        SDL_SENSOR_ACCEL,
-        SDL_SENSOR_GYRO,
-        SDL_SENSOR_ACCEL_L,
-        SDL_SENSOR_GYRO_L,
-        SDL_SENSOR_ACCEL_R,
-        SDL_SENSOR_GYRO_R
-    };
-    unsigned int i;
+    SDL_Joystick *joystick;
 
     if (FindController(id) >= 0) {
         /* We already have this controller */
@@ -832,11 +796,115 @@ static void AddController(SDL_JoystickID id, SDL_bool verbose)
     new_controller->num_axes = SDL_GetNumJoystickAxes(new_controller->joystick);
     new_controller->axis_state = (AxisState *)SDL_calloc(new_controller->num_axes, sizeof(*new_controller->axis_state));
 
-    new_controller->gamepad = SDL_OpenGamepad(id);
+    joystick = new_controller->joystick;
+    if (joystick) {
+        if (verbose && !SDL_IsGamepad(id)) {
+            const char *name = SDL_GetJoystickName(new_controller->joystick);
+            const char *path = SDL_GetJoystickPath(new_controller->joystick);
+            SDL_Log("Opened joystick %s%s%s\n", name, path ? ", " : "", path ? path : "");
+        }
+    } else {
+        SDL_Log("Couldn't open joystick: %s", SDL_GetError());
+    }
 
-    if (new_controller->gamepad) {
-        SDL_Gamepad *gamepad = new_controller->gamepad;
+    if (mapping_controller) {
+        SetController(mapping_controller);
+    } else {
+        SetController(id);
+    }
+}
 
+static void DelController(SDL_JoystickID id)
+{
+    int i = FindController(id);
+
+    if (i < 0) {
+        return;
+    }
+
+    if (display_mode == CONTROLLER_MODE_BINDING && id == controller->id) {
+        SetDisplayMode(CONTROLLER_MODE_TESTING);
+    }
+
+    /* Reset trigger state */
+    if (controllers[i].trigger_effect != 0) {
+        controllers[i].trigger_effect = -1;
+        CyclePS5TriggerEffect(&controllers[i]);
+    }
+    SDL_assert(controllers[i].gamepad == NULL);
+    if (controllers[i].axis_state) {
+        SDL_free(controllers[i].axis_state);
+    }
+    if (controllers[i].joystick) {
+        SDL_CloseJoystick(controllers[i].joystick);
+    }
+
+    --num_controllers;
+    if (i < num_controllers) {
+        SDL_memcpy(&controllers[i], &controllers[i + 1], (num_controllers - i) * sizeof(*controllers));
+    }
+
+    if (mapping_controller) {
+        SetController(mapping_controller);
+    } else {
+        SetController(id);
+    }
+}
+
+static void HandleGamepadRemapped(SDL_JoystickID id)
+{
+    char *mapping;
+    int i = FindController(id);
+
+    SDL_assert(i >= 0);
+    if (i < 0) {
+        return;
+    }
+
+    if (!controllers[i].gamepad) {
+        /* Failed to open this controller */
+        return;
+    }
+
+    /* Get the current mapping */
+    mapping = SDL_GetGamepadMapping(controllers[i].gamepad);
+
+    /* Make sure the mapping has a valid name */
+    if (mapping && !MappingHasName(mapping)) {
+        mapping = SetMappingName(mapping, SDL_GetJoystickName(controllers[i].joystick));
+    }
+
+    SDL_free(controllers[i].mapping);
+    controllers[i].mapping = mapping;
+    controllers[i].has_bindings = MappingHasBindings(mapping);
+}
+
+static void HandleGamepadAdded(SDL_JoystickID id, SDL_bool verbose)
+{
+    SDL_Gamepad *gamepad;
+    Uint16 firmware_version;
+    SDL_SensorType sensors[] = {
+        SDL_SENSOR_ACCEL,
+        SDL_SENSOR_GYRO,
+        SDL_SENSOR_ACCEL_L,
+        SDL_SENSOR_GYRO_L,
+        SDL_SENSOR_ACCEL_R,
+        SDL_SENSOR_GYRO_R
+    };
+    int i;
+
+    i = FindController(id);
+
+    SDL_assert(i >= 0);
+    if (i < 0) {
+        return;
+    }
+
+    SDL_assert(!controllers[i].gamepad);
+    controllers[i].gamepad = SDL_OpenGamepad(id);
+
+    gamepad = controllers[i].gamepad;
+    if (gamepad) {
         if (verbose) {
             const char *name = SDL_GetGamepadName(gamepad);
             const char *path = SDL_GetGamepadPath(gamepad);
@@ -867,64 +935,28 @@ static void AddController(SDL_JoystickID id, SDL_bool verbose)
             }
         }
     } else {
-        SDL_Joystick *joystick = new_controller->joystick;
-
-        if (verbose) {
-            const char *name = SDL_GetJoystickName(joystick);
-            const char *path = SDL_GetJoystickPath(joystick);
-            SDL_Log("Opened joystick %s%s%s\n", name, path ? ", " : "", path ? path : "");
-        }
+        SDL_Log("Couldn't open gamepad: %s", SDL_GetError());
     }
 
-    if (mapping_controller) {
-        SetController(mapping_controller);
-    } else {
-        SetController(id);
-    }
-
-    /* Update the binding state */
     HandleGamepadRemapped(id);
 }
 
-static void DelController(SDL_JoystickID id)
+static void HandleGamepadRemoved(SDL_JoystickID id)
 {
     int i = FindController(id);
 
+    SDL_assert(i >= 0);
     if (i < 0) {
         return;
     }
 
-    if (display_mode == CONTROLLER_MODE_BINDING && id == controller->id) {
-        SetDisplayMode(CONTROLLER_MODE_TESTING);
-    }
-
-    /* Reset trigger state */
-    if (controllers[i].trigger_effect != 0) {
-        controllers[i].trigger_effect = -1;
-        CyclePS5TriggerEffect(&controllers[i]);
-    }
     if (controllers[i].mapping) {
         SDL_free(controllers[i].mapping);
+        controllers[i].mapping = NULL;
     }
     if (controllers[i].gamepad) {
         SDL_CloseGamepad(controllers[i].gamepad);
-    }
-    if (controllers[i].axis_state) {
-        SDL_free(controllers[i].axis_state);
-    }
-    if (controllers[i].joystick) {
-        SDL_CloseJoystick(controllers[i].joystick);
-    }
-
-    --num_controllers;
-    if (i < num_controllers) {
-        SDL_memcpy(&controllers[i], &controllers[i + 1], (num_controllers - i) * sizeof(*controllers));
-    }
-
-    if (mapping_controller) {
-        SetController(mapping_controller);
-    } else {
-        SetController(id);
+        controllers[i].gamepad = NULL;
     }
 }
 
@@ -1430,6 +1462,14 @@ static void loop(void *arg)
             }
             break;
 
+        case SDL_EVENT_GAMEPAD_ADDED:
+            HandleGamepadAdded(event.gdevice.which, SDL_TRUE);
+            break;
+
+        case SDL_EVENT_GAMEPAD_REMOVED:
+            HandleGamepadRemoved(event.gdevice.which);
+            break;
+
         case SDL_EVENT_GAMEPAD_REMAPPED:
             HandleGamepadRemapped(event.gdevice.which);
             break;
@@ -1916,6 +1956,7 @@ int main(int argc, char *argv[])
 
     CloseVirtualGamepad();
     while (num_controllers > 0) {
+        HandleGamepadRemoved(controllers[0].id);
         DelController(controllers[0].id);
     }
     DestroyGamepadImage(image);
