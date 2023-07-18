@@ -295,15 +295,24 @@ static int StandardizeAxisValue(int nValue)
 
 static void RefreshControllerName(void)
 {
+    const char *name = NULL;
+
     SDL_free(controller_name);
     controller_name = NULL;
 
     if (controller) {
         if (controller->gamepad) {
-            controller_name = SDL_strdup(SDL_GetGamepadName(controller->gamepad));
+            name = SDL_GetGamepadName(controller->gamepad);
         } else {
-            controller_name = SDL_strdup(SDL_GetJoystickName(controller->joystick));
+            name = SDL_GetJoystickName(controller->joystick);
         }
+    }
+
+    SDL_free(controller_name);
+    if (name) {
+        controller_name = SDL_strdup(name);
+    } else {
+        controller_name = SDL_strdup("");
     }
 }
 
