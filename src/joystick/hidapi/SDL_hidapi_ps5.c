@@ -729,7 +729,7 @@ static void HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
                                   packet->rgucSensorTimestamp[1],
                                   packet->rgucSensorTimestamp[2],
                                   packet->rgucSensorTimestamp[3]);
-        if (SDL_TICKS_PASSED(timestamp, connection_complete)) {
+        if (timestamp >= connection_complete) {
             led_reset_complete = SDL_TRUE;
         }
     } else {
@@ -1407,14 +1407,14 @@ static SDL_bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
                 /* This is the extended report, we can enable effects now */
                 HIDAPI_DriverPS5_SetEnhancedMode(device, joystick);
             }
-            if (ctx->led_reset_state == k_EDS5LEDResetStatePending) {
-                HIDAPI_DriverPS5_CheckPendingLEDReset(device);
-            }
             HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, device->dev, ctx, (PS5StatePacketCommon_t *)&data[2]);
             if (ctx->use_alternate_report) {
                 HIDAPI_DriverPS5_HandleStatePacketAlt(joystick, device->dev, ctx, (PS5StatePacketAlt_t *)&data[2]);
             } else {
                 HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[2]);
+            }
+            if (ctx->led_reset_state == k_EDS5LEDResetStatePending) {
+                HIDAPI_DriverPS5_CheckPendingLEDReset(device);
             }
             break;
         default:
