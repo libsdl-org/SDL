@@ -1096,7 +1096,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
 		return NULL;
 	}
 
-    const int MAX_ATTEMPTS = 10;
+    const int MAX_ATTEMPTS = 50;
     int attempt;
     for (attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
         dev->device_handle = open(path, O_RDWR | O_CLOEXEC);
