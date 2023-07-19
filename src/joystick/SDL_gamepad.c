@@ -1418,9 +1418,6 @@ static char *SDL_PrivateGetGamepadMappingFromMappingString(const char *pMapping)
     while (SDL_isspace(pSecondComma[1])) {
         ++pSecondComma;
     }
-    if (pSecondComma[1] == '\0') {
-        return NULL;
-    }
 
     result = SDL_strdup(pSecondComma + 1); /* mapping is everything after the 3rd comma */
 
