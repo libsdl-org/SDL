@@ -385,6 +385,36 @@ static void StopBinding(void)
     SetCurrentBindingElement(SDL_GAMEPAD_ELEMENT_INVALID, SDL_FALSE);
 }
 
+typedef struct
+{
+    int axis;
+    int direction;
+} AxisInfo;
+
+static SDL_bool ParseAxisInfo(const char *description, AxisInfo *info)
+{
+    if (!description) {
+        return SDL_FALSE;
+    }
+
+    if (*description == '-') {
+        info->direction = -1;
+        ++description;
+    } else if (*description == '+') {
+        info->direction = 1;
+        ++description;
+    } else {
+        info->direction = 0;
+    }
+
+    if (description[0] == 'a' && SDL_isdigit(description[1])) {
+        ++description;
+        info->axis = SDL_atoi(description);
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 static void CommitBindingElement(const char *binding, SDL_bool force)
 {
     char *mapping;
@@ -420,9 +450,17 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
             if (current_button && !proposed_button) {
                 ignore_binding = SDL_TRUE;
             }
+            /* Use the lower index button (we map from lower to higher button index) */
+            if (current_button && proposed_button && current[1] < binding[1]) {
+                ignore_binding = SDL_TRUE;
+            }
         }
         if (native_axis) {
-            SDL_bool current_axis = (current && (*current == '-' || *current == '+' || *current == 'a'));
+            AxisInfo current_axis_info;
+            AxisInfo proposed_axis_info;
+            SDL_bool current_axis = ParseAxisInfo(current, &current_axis_info);
+            SDL_bool proposed_axis = ParseAxisInfo(binding, &proposed_axis_info);
+
             if (current_axis) {
                 /* Ignore this unless the proposed binding extends the existing axis */
                 ignore_binding = SDL_TRUE;
@@ -436,12 +474,21 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
                     ++binding;
                     ignore_binding = SDL_FALSE;
                 }
+
+                /* Use the lower index axis (we map from lower to higher axis index) */
+                if (proposed_axis && proposed_axis_info.axis < current_axis_info.axis) {
+                    ignore_binding = SDL_FALSE;
+                }
             }
         }
         if (native_dpad) {
-            SDL_bool current_dpad = (current && *current == 'h');
-            SDL_bool proposed_dpad = (binding && *binding == 'h');
-            if (current_dpad && !proposed_dpad) {
+            SDL_bool current_hat = (current && *current == 'h');
+            SDL_bool proposed_hat = (binding && *binding == 'h');
+            if (current_hat && !proposed_hat) {
+                ignore_binding = SDL_TRUE;
+            }
+            /* Use the lower index hat (we map from lower to higher hat index) */
+            if (current_hat && proposed_hat && current[1] < binding[1]) {
                 ignore_binding = SDL_TRUE;
             }
         }
