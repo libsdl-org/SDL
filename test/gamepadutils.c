@@ -2463,6 +2463,10 @@ static char *SetMappingValue(char *mapping, const char *key, const char *value)
     char **new_values = NULL;
     SDL_bool result = SDL_FALSE;
 
+    if (!key) {
+        return mapping;
+    }
+
     SplitMapping(mapping, &parts);
     i = FindMappingKey(&parts, key);
     if (i >= 0) {
