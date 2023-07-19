@@ -1464,6 +1464,7 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, co
     if (crc) {
         /* Make sure the mapping has the CRC */
         char *new_mapping;
+        const char *optional_comma;
         char *crc_end = "";
         char *crc_string = SDL_strstr(pchMapping, SDL_GAMEPAD_CRC_FIELD);
         if (crc_string) {
@@ -1476,7 +1477,14 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, co
             *crc_string = '\0';
         }
 
-        if (SDL_asprintf(&new_mapping, "%s%s%.4x,%s", pchMapping, SDL_GAMEPAD_CRC_FIELD, crc, crc_end) >= 0) {
+        /* Make sure there's a comma before the CRC */
+        if (pchMapping[SDL_strlen(pchMapping) - 1] == ',') {
+            optional_comma = "";
+        } else {
+            optional_comma = ",";
+        }
+
+        if (SDL_asprintf(&new_mapping, "%s%s%s%.4x,%s", pchMapping, optional_comma, SDL_GAMEPAD_CRC_FIELD, crc, crc_end) >= 0) {
             SDL_free(pchMapping);
             pchMapping = new_mapping;
         }
@@ -1941,7 +1949,8 @@ static char *CreateMappingString(GamepadMapping_t *mapping, SDL_JoystickGUID gui
     char *pMappingString, *pPlatformString;
     char pchGUID[33];
     size_t needed;
-    const char *platform = SDL_GetPlatform();
+    SDL_bool need_platform = SDL_FALSE;
+    const char *platform = NULL;
 
     SDL_AssertJoysticksLocked();
 
@@ -1952,10 +1961,12 @@ static char *CreateMappingString(GamepadMapping_t *mapping, SDL_JoystickGUID gui
 
     if (!SDL_strstr(mapping->mapping, SDL_GAMEPAD_PLATFORM_FIELD)) {
         /* add memory for ',' + platform:PLATFORM */
+        need_platform = SDL_TRUE;
         if (mapping->mapping[SDL_strlen(mapping->mapping) - 1] != ',') {
             needed += 1;
         }
-        needed += SDL_GAMEPAD_PLATFORM_FIELD_SIZE + SDL_strlen(platform);
+        platform = SDL_GetPlatform();
+        needed += SDL_GAMEPAD_PLATFORM_FIELD_SIZE + SDL_strlen(platform) + 1;
     }
 
     pMappingString = SDL_malloc(needed);
@@ -1966,12 +1977,13 @@ static char *CreateMappingString(GamepadMapping_t *mapping, SDL_JoystickGUID gui
 
     (void)SDL_snprintf(pMappingString, needed, "%s,%s,%s", pchGUID, mapping->name, mapping->mapping);
 
-    if (!SDL_strstr(mapping->mapping, SDL_GAMEPAD_PLATFORM_FIELD)) {
+    if (need_platform) {
         if (mapping->mapping[SDL_strlen(mapping->mapping) - 1] != ',') {
             SDL_strlcat(pMappingString, ",", needed);
         }
         SDL_strlcat(pMappingString, SDL_GAMEPAD_PLATFORM_FIELD, needed);
         SDL_strlcat(pMappingString, platform, needed);
+        SDL_strlcat(pMappingString, ",", needed);
     }
 
     /* Make sure multiple platform strings haven't made their way into the mapping */
