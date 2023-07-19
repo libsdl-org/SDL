@@ -1465,6 +1465,7 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, co
         /* Make sure the mapping has the CRC */
         char *new_mapping;
         const char *optional_comma;
+        size_t mapping_length;
         char *crc_end = "";
         char *crc_string = SDL_strstr(pchMapping, SDL_GAMEPAD_CRC_FIELD);
         if (crc_string) {
@@ -1478,7 +1479,8 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, co
         }
 
         /* Make sure there's a comma before the CRC */
-        if (pchMapping[SDL_strlen(pchMapping) - 1] == ',') {
+        mapping_length = SDL_strlen(pchMapping);
+        if (mapping_length == 0 || pchMapping[mapping_length - 1] == ',') {
             optional_comma = "";
         } else {
             optional_comma = ",";
