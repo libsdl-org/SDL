@@ -491,7 +491,7 @@ Building the SDL tests
 SDL's CMake build system can create APK's for the tests.
 It can build all tests with a single command without a dependency on gradle or Android Studio.
 The APK's are signed with a debug certificate.
-The only caveat is that the APK's support a single architecture. 
+The only caveat is that the APK's support a single architecture.
 
 ### Requirements
 - SDL source tree
@@ -560,4 +560,4 @@ There is also a convenience target which will build, install and start a test:
 cmake --build . --target build-install-start-testsprite
 ```
 
-Not all tests provide a GUI. For those, you can use `adb logcat` to read the output of stdout.  
+Not all tests provide a GUI. For those, you can use `adb logcat` to read the output of stdout.
