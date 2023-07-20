@@ -401,7 +401,6 @@ void SDL_Fcitx_SetFocus(SDL_bool focused)
 void SDL_Fcitx_Reset(void)
 {
     FcitxClientICCallMethod(&fcitx_client, "Reset");
-    FcitxClientICCallMethod(&fcitx_client, "CloseIC");
 }
 
 SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
