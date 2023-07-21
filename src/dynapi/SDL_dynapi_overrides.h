@@ -66,7 +66,6 @@
 #define SDL_CloseJoystick SDL_CloseJoystick_REAL
 #define SDL_CloseSensor SDL_CloseSensor_REAL
 #define SDL_ComposeCustomBlendMode SDL_ComposeCustomBlendMode_REAL
-#define SDL_ConvertAudioSamples SDL_ConvertAudioSamples_REAL
 #define SDL_ConvertEventToRenderCoordinates SDL_ConvertEventToRenderCoordinates_REAL
 #define SDL_ConvertPixels SDL_ConvertPixels_REAL
 #define SDL_ConvertSurface SDL_ConvertSurface_REAL
@@ -511,7 +510,6 @@
 #define SDL_OpenSensor SDL_OpenSensor_REAL
 #define SDL_OpenURL SDL_OpenURL_REAL
 #define SDL_PeepEvents SDL_PeepEvents_REAL
-#define SDL_PlayAudioDevice SDL_PlayAudioDevice_REAL
 #define SDL_PollEvent SDL_PollEvent_REAL
 #define SDL_PostSemaphore SDL_PostSemaphore_REAL
 #define SDL_PremultiplyAlpha SDL_PremultiplyAlpha_REAL
@@ -579,7 +577,6 @@
 #define SDL_SendGamepadEffect SDL_SendGamepadEffect_REAL
 #define SDL_SendJoystickEffect SDL_SendJoystickEffect_REAL
 #define SDL_SetAssertionHandler SDL_SetAssertionHandler_REAL
-#define SDL_SetAudioStreamFormat SDL_SetAudioStreamFormat_REAL
 #define SDL_SetClipboardData SDL_SetClipboardData_REAL
 #define SDL_SetClipboardText SDL_SetClipboardText_REAL
 #define SDL_SetCursor SDL_SetCursor_REAL
