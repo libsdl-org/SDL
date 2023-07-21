@@ -148,25 +148,29 @@ static void VITAAUD_WaitDevice(SDL_AudioDevice *device)
     }
 }
 
-static Uint8 *VITAAUD_GetDeviceBuf(SDL_AudioDevice *device)
+static Uint8 *VITAAUD_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     return device->hidden->mixbufs[device->hidden->next_buffer];
 }
 
 static void VITAAUD_CloseDevice(SDL_AudioDevice *device)
 {
-    if (device->hidden->port >= 0) {
-        if (device->iscapture) {
-            sceAudioInReleasePort(device->hidden->port);
-        } else {
-            sceAudioOutReleasePort(device->hidden->port);
+    if (device->hidden) {
+        if (device->hidden->port >= 0) {
+            if (device->iscapture) {
+                sceAudioInReleasePort(device->hidden->port);
+            } else {
+                sceAudioOutReleasePort(device->hidden->port);
+            }
+            device->hidden->port = -1;
         }
-        device->hidden->port = -1;
-    }
 
-    if (!device->iscapture && device->hidden->rawbuf != NULL) {
-        SDL_aligned_free(device->hidden->rawbuf);
-        device->hidden->rawbuf = NULL;
+        if (!device->iscapture && device->hidden->rawbuf != NULL) {
+            SDL_aligned_free(device->hidden->rawbuf); // this uses memalign(), not SDL_malloc().
+            device->hidden->rawbuf = NULL;
+        }
+        SDL_free(device->hidden);
+        device->hidden = NULL;
     }
 }
 
