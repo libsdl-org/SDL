@@ -204,6 +204,7 @@ static void NETBSDAUDIO_CloseDevice(SDL_AudioDevice *device)
         }
         SDL_free(device->hidden->mixbuf);
         SDL_free(device->hidden);
+        device->hidden = NULL;
     }
 }
 
