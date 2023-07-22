@@ -290,32 +290,30 @@ static void COREAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioD
 
 static SDL_bool session_active = SDL_FALSE;
 
-static void PauseAudioDevices(void)  // !!! FIXME: this needs to be updated, and we need a method to access SDL_audio.c's device lists.
+static SDL_bool PauseOneAudioDevice(SDL_AudioDevice *device, void *userdata)
 {
-    if (!open_devices) {
-        return;
+    if (device->hidden && device->hidden->audioQueue && !device->hidden->interrupted) {
+        AudioQueuePause(device->hidden->audioQueue);
     }
-
-    for (int i = 0; i < num_open_devices; ++i) {
-        SDL_AudioDevice *device = open_devices[i];
-        if (device->hidden->audioQueue && !device->hidden->interrupted) {
-            AudioQueuePause(device->hidden->audioQueue);
-        }
-    }
+    return SDL_FALSE;  // keep enumerating devices until we've paused them all.
 }
 
-static void ResumeAudioDevices(void)  // !!! FIXME: this needs to be updated, and we need a method to access SDL_audio.c's device lists.
+static void PauseAudioDevices(void)
 {
-    if (!open_devices) {
-        return;
-    }
+    (void) SDL_FindPhysicalAudioDeviceByCallback(PauseOneAudioDevice, NULL);
+}
 
-    for (int i = 0; i < num_open_devices; ++i) {
-        SDL_AudioDevice *device = open_devices[i];
-        if (device->hidden->audioQueue && !device->hidden->interrupted) {
-            AudioQueueStart(device->hidden->audioQueue, NULL);
-        }
+static SDL_bool ResumeOneAudioDevice(SDL_AudioDevice *device, void *userdata)
+{
+    if (device->hidden && device->hidden->audioQueue && !device->hidden->interrupted) {
+        AudioQueueStart(device->hidden->audioQueue, NULL);
     }
+    return SDL_FALSE;  // keep enumerating devices until we've resumed them all.
+}
+
+static void ResumeAudioDevices(void)
+{
+    (void) SDL_FindPhysicalAudioDeviceByCallback(ResumeOneAudioDevice, NULL);
 }
 
 static void InterruptionBegin(SDL_AudioDevice *device)
@@ -362,6 +360,25 @@ static void InterruptionEnd(SDL_AudioDevice *device)
 
 @end
 
+typedef struct
+{
+    int output;
+    int capture;
+} CountOpenAudioDevicesData;
+
+static SDL_bool CountOpenAudioDevices(SDL_AudioDevice *device, void *userdata)
+{
+    CountOpenAudioDevicesData *data = (CountOpenAudioDevicesData *) userdata;
+    if (device->hidden != NULL) {  // assume it's open if hidden != NULL
+        if (device->iscapture) {
+            data->capture++;
+        } else {
+            data->output++;
+        }
+    }
+    return SDL_FALSE;  // keep enumerating until all devices have been checked.
+}
+
 static SDL_bool UpdateAudioSession(SDL_AudioDevice *device, SDL_bool open, SDL_bool allow_playandrecord)
 {
     @autoreleasepool {
@@ -373,6 +390,10 @@ static SDL_bool UpdateAudioSession(SDL_AudioDevice *device, SDL_bool open, SDL_b
         NSUInteger options = AVAudioSessionCategoryOptionMixWithOthers;
         NSError *err = nil;
         const char *hint;
+
+        CountOpenAudioDevicesData data;
+        SDL_zero(data);
+        (void) SDL_FindPhysicalAudioDeviceByCallback(CountOpenAudioDevices, &data);
 
         hint = SDL_GetHint(SDL_HINT_AUDIO_CATEGORY);
         if (hint) {
@@ -391,9 +412,9 @@ static SDL_bool UpdateAudioSession(SDL_AudioDevice *device, SDL_bool open, SDL_b
                     category = AVAudioSessionCategoryPlayAndRecord;
                 }
             }
-        } else if (open_playback_devices && open_capture_devices) {
+        } else if (data.output && data.capture) {
             category = AVAudioSessionCategoryPlayAndRecord;
-        } else if (open_capture_devices) {
+        } else if (data.capture) {
             category = AVAudioSessionCategoryRecord;
         }
 
@@ -446,7 +467,7 @@ static SDL_bool UpdateAudioSession(SDL_AudioDevice *device, SDL_bool open, SDL_b
             }
         }
 
-        if ((open_playback_devices || open_capture_devices) && !session_active) {
+        if ((data.output || data.capture) && !session_active) {
             if (![session setActive:YES error:&err]) {
                 if ([err code] == AVAudioSessionErrorCodeResourceNotAvailable &&
                     category == AVAudioSessionCategoryPlayAndRecord) {
@@ -459,7 +480,7 @@ static SDL_bool UpdateAudioSession(SDL_AudioDevice *device, SDL_bool open, SDL_b
             }
             session_active = SDL_TRUE;
             ResumeAudioDevices();
-        } else if (!open_playback_devices && !open_capture_devices && session_active) {
+        } else if (!data.output && !data.capture && session_active) {
             PauseAudioDevices();
             [session setActive:NO error:nil];
             session_active = SDL_FALSE;
