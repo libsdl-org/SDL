@@ -61,7 +61,7 @@ static int PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
     device->hidden->channel = audsrv_set_format(&format);
     audsrv_set_volume(MAX_VOLUME);
 
-    if (_this->hidden->channel < 0) {
+    if (device->hidden->channel < 0) {
         return SDL_SetError("Couldn't reserve hardware channel");
     }
 
@@ -110,9 +110,9 @@ static void PS2AUDIO_CloseDevice(SDL_AudioDevice *device)
             device->hidden->channel = -1;
         }
 
-        if (_this->hidden->rawbuf != NULL) {
-            SDL_aligned_free(_this->hidden->rawbuf);
-            _this->hidden->rawbuf = NULL;
+        if (device->hidden->rawbuf != NULL) {
+            SDL_aligned_free(device->hidden->rawbuf);
+            device->hidden->rawbuf =2 NULL;
         }
         SDL_free(device->hidden);
         device->hidden = NULL;
