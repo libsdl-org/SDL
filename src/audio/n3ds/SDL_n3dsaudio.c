@@ -42,32 +42,22 @@ static SDL_INLINE void contextUnlock(SDL_AudioDevice *device)
     LightLock_Unlock(&device->hidden->lock);
 }
 
-static void N3DSAUD_LockAudio(SDL_AudioDevice *device)
-{
-    contextLock(device);
-}
-
-static void N3DSAUD_UnlockAudio(SDL_AudioDevice *device)
-{
-    contextUnlock(device);
-}
-
 static void N3DSAUD_DspHook(DSP_HookType hook)
 {
     if (hook == DSPHOOK_ONCANCEL) {
         contextLock(audio_device);
         audio_device->hidden->isCancelled = SDL_TRUE;
-        SDL_AtomicSet(&audio_device->enabled, SDL_FALSE);
+        SDL_AudioDeviceDisconnected(audio_device);
         CondVar_Broadcast(&audio_device->hidden->cv);
         contextUnlock(audio_device);
     }
 }
 
-static void AudioFrameFinished(void *device)
+static void AudioFrameFinished(void *vdevice)
 {
     bool shouldBroadcast = false;
     unsigned i;
-    SDL_AudioDevice *device = (SDL_AudioDevice *)device;
+    SDL_AudioDevice *device = (SDL_AudioDevice *)vdevice;
 
     contextLock(device);
 
@@ -163,7 +153,7 @@ static int N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     ndspChnSetInterp(0, NDSP_INTERP_LINEAR);
     ndspChnSetRate(0, device->spec.freq);
-    ndspChnSetFormat(0, device->hidden->format);
+    ndspChnSetFormat(0, format);
 
     SDL_zeroa(mix);
     mix[0] = mix[1] = 1.0f;
@@ -203,7 +193,7 @@ static void N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
     contextUnlock(device);
 
     SDL_memcpy((void *)device->hidden->waveBuf[nextbuf].data_vaddr, buffer, buflen);
-    DSP_FlushDataCache(device->hidden->waveBuf[nextbuf].data_vaddr, sampleLen);
+    DSP_FlushDataCache(device->hidden->waveBuf[nextbuf].data_vaddr, buflen);
 
     ndspChnWaveBufAdd(0, &device->hidden->waveBuf[nextbuf]);
 }
@@ -275,8 +265,6 @@ static SDL_bool N3DSAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->GetDeviceBuf = N3DSAUDIO_GetDeviceBuf;
     impl->CloseDevice = N3DSAUDIO_CloseDevice;
     impl->ThreadInit = N3DSAUDIO_ThreadInit;
-    impl->LockDevice = N3DSAUD_LockAudio;
-    impl->UnlockDevice = N3DSAUD_UnlockAudio;
     impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
 
     // Should be possible, but micInit would fail
