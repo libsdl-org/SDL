@@ -125,7 +125,7 @@ int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, in
 
     // add to end of task list.
     ManagementThreadPendingTask *prev = NULL;
-    for (ManagementThreadPendingTask *i = SDL_AtomicGetPtr(&ManagementThreadPendingTasks); i != NULL; i = i->next) {
+    for (ManagementThreadPendingTask *i = SDL_AtomicGetPtr((void **) &ManagementThreadPendingTasks); i != NULL; i = i->next) {
         prev = i;
     }
 
@@ -658,7 +658,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
 // This is called once a device is activated, possibly asynchronously.
 int WASAPI_PrepDevice(SDL_AudioDevice *device)
 {
-    int rc;
+    int rc = 0;
     return (WASAPI_ProxyToManagementThread(mgmtthrtask_PrepDevice, device, &rc) < 0) ? -1 : rc;
 }
 
