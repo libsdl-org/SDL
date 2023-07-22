@@ -28,6 +28,7 @@ jobs:
         cmake -S . -B build -G Ninja \
           -Wdeprecated -Wdev -Werror \
           -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake \
+          -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
           -DRISCOS:BOOL=ON \
           -DSDL_GCC_ATOMICS=OFF \
           -DSDL_TESTS=ON \
