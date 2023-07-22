@@ -112,7 +112,7 @@ static void PS2AUDIO_CloseDevice(SDL_AudioDevice *device)
 
         if (device->hidden->rawbuf != NULL) {
             SDL_aligned_free(device->hidden->rawbuf);
-            device->hidden->rawbuf =2 NULL;
+            device->hidden->rawbuf = NULL;
         }
         SDL_free(device->hidden);
         device->hidden = NULL;
