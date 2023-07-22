@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         }
 
         /* keep it looping. */
-        if (SDL_GetAudioStreamAvailable(stream) < (audio_len / 2)) {
+        if (SDL_GetAudioStreamAvailable(stream) < ((int) (audio_len / 2))) {
             SDL_PutAudioStreamData(stream, audio_buf, audio_len);
         }
 
