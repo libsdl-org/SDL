@@ -226,6 +226,8 @@ static int audio_initOpenCloseQuitAudio(void *arg)
  */
 static int audio_pauseUnpauseAudio(void *arg)
 {
+    int iMax;
+    int i, k, j;
     int result;
     const char *audioDriver;
     SDL_AudioSpec desired;
@@ -235,17 +237,17 @@ static int audio_pauseUnpauseAudio(void *arg)
     SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_AUDIO)");
 
     /* Loop over all available audio drivers */
-    const int iMax = SDL_GetNumAudioDrivers();
+    iMax = SDL_GetNumAudioDrivers();
     SDLTest_AssertPass("Call to SDL_GetNumAudioDrivers()");
     SDLTest_AssertCheck(iMax > 0, "Validate number of audio drivers; expected: >0 got: %d", iMax);
-    for (int i = 0; i < iMax; i++) {
+    for (i = 0; i < iMax; i++) {
         audioDriver = SDL_GetAudioDriver(i);
         SDLTest_AssertPass("Call to SDL_GetAudioDriver(%d)", i);
         SDLTest_Assert(audioDriver != NULL, "Audio driver name is not NULL");
         SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver); /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
 
         /* Change specs */
-        for (int j = 0; j < 2; j++) {
+        for (j = 0; j < 2; j++) {
 
             /* Call Init */
             SDL_SetHint("SDL_AUDIO_DRIVER", audioDriver);
@@ -302,7 +304,7 @@ static int audio_pauseUnpauseAudio(void *arg)
                 SDLTest_AssertCheck(g_audio_testCallbackLength > 0, "Verify callback length; expected: >0 got: %d", g_audio_testCallbackLength);
 
                 /* Pause audio to stop playing (maybe multiple times) */
-                for (int k = 0; k <= j; k++) {
+                for (k = 0; k <= j; k++) {
                     const int pause_on = (k == 0) ? 1 : SDLTest_RandomIntegerInRange(99, 9999);
                     if (pause_on) {
                         SDL_PauseAudioDevice(g_audio_id);
