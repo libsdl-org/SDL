@@ -254,7 +254,7 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool isc
     }
     device->next = *devices;
     *devices = device;
-    SDL_AtomicIncRef(device_count);
+    SDL_AtomicAdd(device_count, 1);
     SDL_UnlockRWLock(current_audio.device_list_lock);
 
     return device;
@@ -373,7 +373,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
     device->prev = NULL;
 
     if (was_live) {
-        SDL_AtomicDecRef(device->iscapture ? &current_audio.capture_device_count : &current_audio.output_device_count);
+        SDL_AtomicAdd(device->iscapture ? &current_audio.capture_device_count : &current_audio.output_device_count, -1);
     }
 
     SDL_UnlockRWLock(current_audio.device_list_lock);
