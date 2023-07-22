@@ -55,7 +55,7 @@ static int VITAAUD_OpenCaptureDevice(SDL_AudioDevice *device)
     return 0;
 }
 
-static int VITAAUD_OpenDevice(SDL_AudioDevice *device, const char *devname)
+static int VITAAUD_OpenDevice(SDL_AudioDevice *device)
 {
     int format, mixlen, i, port = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
     int vols[2] = { SCE_AUDIO_MAX_VOLUME, SCE_AUDIO_MAX_VOLUME };
@@ -130,13 +130,9 @@ static int VITAAUD_OpenDevice(SDL_AudioDevice *device, const char *devname)
     return 0;
 }
 
-static void VITAAUD_PlayDevice(SDL_AudioDevice *device)
+static void VITAAUD_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
-    Uint8 *mixbuf = device->hidden->mixbufs[device->hidden->next_buffer];
-
-    sceAudioOutOutput(device->hidden->port, mixbuf);
-
-    device->hidden->next_buffer = (device->hidden->next_buffer + 1) % NUM_BUFFERS;
+    sceAudioOutOutput(device->hidden->port, buffer);
 }
 
 // This function waits until it is possible to write a full sound buffer
@@ -150,7 +146,9 @@ static void VITAAUD_WaitDevice(SDL_AudioDevice *device)
 
 static Uint8 *VITAAUD_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    return device->hidden->mixbufs[device->hidden->next_buffer];
+    Uint8 *retval = device->hidden->mixbufs[device->hidden->next_buffer];
+    device->hidden->next_buffer = (device->hidden->next_buffer + 1) % NUM_BUFFERS;
+    return retval;
 }
 
 static void VITAAUD_CloseDevice(SDL_AudioDevice *device)
@@ -195,7 +193,7 @@ static int VITAAUD_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int 
     return device->buffer_size;
 }
 
-static void PULSEAUDIO_FlushCapture(SDL_AudioDevice *device)
+static void VITAAUD_FlushCapture(SDL_AudioDevice *device)
 {
     // just grab the latest and dump it.
     sceAudioInInput(device->hidden->port, device->work_buffer);
