@@ -227,7 +227,7 @@ static int audio_initOpenCloseQuitAudio(void *arg)
 static int audio_pauseUnpauseAudio(void *arg)
 {
     int iMax;
-    int i, k, j;
+    int i, j /*, k, l*/;
     int result;
     const char *audioDriver;
     SDL_AudioSpec desired;
@@ -281,7 +281,7 @@ static int audio_pauseUnpauseAudio(void *arg)
 
 #if 0  /* !!! FIXME: maybe update this? */
             /* Start and stop audio multiple times */
-            for (int l = 0; l < 3; l++) {
+            for (l = 0; l < 3; l++) {
                 SDLTest_Log("Pause/Unpause iteration: %d", l + 1);
 
                 /* Reset callback counters */
