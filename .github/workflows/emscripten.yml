@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: mymindstorm/setup-emsdk@v10
+      - uses: mymindstorm/setup-emsdk@v12
         with:
           version: 3.1.35
       - name: Install ninja
