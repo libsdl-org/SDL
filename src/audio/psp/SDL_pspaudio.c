@@ -82,7 +82,7 @@ static int PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
         device->hidden->channel = sceAudioSRCChReserve(device->sample_frames, device->spec.freq, 2);
     }
 
-    if (_this->hidden->channel < 0) {
+    if (device->hidden->channel < 0) {
         return SDL_SetError("Couldn't reserve hardware channel");
     }
 
