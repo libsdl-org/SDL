@@ -58,7 +58,7 @@ static int PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
         // The number of channels (1 or 2).
         device->spec.channels = device->spec.channels == 1 ? 1 : 2;
         const int format = (device->spec.channels == 1) ? PSP_AUDIO_FORMAT_MONO : PSP_AUDIO_FORMAT_STEREO;
-        device->hidden->channel = sceAudioChReserve(PSP_AUDIO_NEXT_CHANNEL, device->samples_frames, format);
+        device->hidden->channel = sceAudioChReserve(PSP_AUDIO_NEXT_CHANNEL, device->sample_frames, format);
     } else {
         // 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11050, 8000
         switch (device->spec.freq) {
