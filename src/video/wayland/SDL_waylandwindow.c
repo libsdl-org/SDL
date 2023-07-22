@@ -191,8 +191,8 @@ static void SetMinMaxDimensions(SDL_Window *window)
     } else if (window->flags & SDL_WINDOW_RESIZABLE) {
         min_width = SDL_max(window->min_w, wind->system_min_required_width);
         min_height = SDL_max(window->min_h, wind->system_min_required_height);
-        max_width = SDL_max(window->max_w, wind->system_min_required_width);
-        max_height = SDL_max(window->max_h, wind->system_min_required_height);
+        max_width = window->max_w ? SDL_max(window->max_w, wind->system_min_required_width) : 0;
+        max_height = window->max_h ? SDL_max(window->max_h, wind->system_min_required_height) : 0;
     } else {
         min_width = wind->wl_window_width;
         min_height = wind->wl_window_height;
