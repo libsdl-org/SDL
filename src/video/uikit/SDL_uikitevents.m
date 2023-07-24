@@ -57,7 +57,7 @@ static BOOL UIKit_EventPumpEnabled = YES;
         [notificationCenter addObserver:self selector:@selector(applicationWillEnterForeground) name:UIApplicationWillEnterForegroundNotification object:nil];
         [notificationCenter addObserver:self selector:@selector(applicationWillTerminate) name:UIApplicationWillTerminateNotification object:nil];
         [notificationCenter addObserver:self selector:@selector(applicationDidReceiveMemoryWarning) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
-#if !TARGET_OS_TV
+#if !TARGET_OS_TV && !TARGET_OS_XR
         [notificationCenter addObserver:self
                                selector:@selector(applicationDidChangeStatusBarOrientation)
                                    name:UIApplicationDidChangeStatusBarOrientationNotification
@@ -99,7 +99,7 @@ static BOOL UIKit_EventPumpEnabled = YES;
     SDL_OnApplicationDidReceiveMemoryWarning();
 }
 
-#if !TARGET_OS_TV
+#if !TARGET_OS_TV && !TARGET_OS_XR
 - (void)applicationDidChangeStatusBarOrientation
 {
     SDL_OnApplicationDidChangeStatusBarOrientation();

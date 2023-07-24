@@ -30,6 +30,7 @@
 
 @implementation SDL_UIKitDisplayData
 
+#if !TARGET_OS_XR
 - (instancetype)initWithScreen:(UIScreen *)screen
 {
     if (self = [super init]) {
@@ -37,20 +38,23 @@
     }
     return self;
 }
-
 @synthesize uiscreen;
+#endif
 
 @end
 
 @implementation SDL_UIKitDisplayModeData
 
+#if !TARGET_OS_XR
 @synthesize uiscreenmode;
+#endif
 
 @end
 
 @interface SDL_DisplayWatch : NSObject
 @end
 
+#if !TARGET_OS_XR
 @implementation SDL_DisplayWatch
 
 + (void)start
@@ -92,7 +96,9 @@
 }
 
 @end
+#endif
 
+#if !TARGET_OS_XR
 static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
                                          UIScreenMode *uiscreenmode)
 {
@@ -112,6 +118,7 @@ static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
 
     return 0;
 }
+#endif
 
 static void UIKit_FreeDisplayModeData(SDL_DisplayMode *mode)
 {
@@ -121,6 +128,7 @@ static void UIKit_FreeDisplayModeData(SDL_DisplayMode *mode)
     }
 }
 
+#if !TARGET_OS_XR
 static float UIKit_GetDisplayModeRefreshRate(UIScreen *uiscreen)
 {
 #ifdef __IPHONE_10_3
@@ -235,7 +243,11 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     display.desktop_mode = mode;
 
     /* Allocate the display data */
+#if TARGET_OS_XR
+    SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
+#else
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] initWithScreen:uiscreen];
+#endif
     if (!data) {
         UIKit_FreeDisplayModeData(&display.desktop_mode);
         return SDL_OutOfMemory();
@@ -247,6 +259,41 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
     return 0;
 }
+#endif
+
+#if TARGET_OS_XR
+int UIKit_AddDisplay(SDL_bool send_event){
+    CGSize size = CGSizeMake(SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
+    SDL_VideoDisplay display;
+    SDL_DisplayMode mode;
+
+    SDL_zero(mode);
+    mode.w = (int)size.width;
+    mode.h = (int)size.height;
+    mode.pixel_density = 1;
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
+    mode.refresh_rate = 60;
+    
+    display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
+
+    display.desktop_mode = mode;
+    
+    SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
+    
+    if (!data) {
+        UIKit_FreeDisplayModeData(&display.desktop_mode);
+        return SDL_OutOfMemory();
+    }
+
+    display.driverdata = (SDL_DisplayData *)CFBridgingRetain(data);
+    if (SDL_AddVideoDisplay(&display, send_event) == 0) {
+        return -1;
+    }
+    return 0;
+}
+#endif
+
+#if !TARGET_OS_XR
 
 void UIKit_DelDisplay(UIScreen *uiscreen)
 {
@@ -281,20 +328,27 @@ SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen)
         return (size.width > size.height);
     }
 }
-
+#endif
 int UIKit_InitModes(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
+#if TARGET_OS_XR
+        UIKit_AddDisplay(SDL_FALSE);
+#else
         for (UIScreen *uiscreen in [UIScreen screens]) {
             if (UIKit_AddDisplay(uiscreen, SDL_FALSE) < 0) {
                 return -1;
             }
         }
-#if !TARGET_OS_TV
+#endif
+        
+#if !TARGET_OS_TV && !TARGET_OS_XR
         SDL_OnApplicationDidChangeStatusBarOrientation();
 #endif
 
+#if !TARGET_OS_XR
         [SDL_DisplayWatch start];
+#endif
     }
 
     return 0;
@@ -302,6 +356,7 @@ int UIKit_InitModes(SDL_VideoDevice *_this)
 
 int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
+#if !TARGET_OS_XR
     @autoreleasepool {
         SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
 
@@ -331,11 +386,13 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
             UIKit_AddDisplayMode(display, w, h, data.uiscreen, uimode, addRotation);
         }
     }
+#endif
     return 0;
 }
 
 int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
+#if !TARGET_OS_XR
     @autoreleasepool {
         SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
 
@@ -359,7 +416,7 @@ int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
             }
         }
     }
-
+#endif
     return 0;
 }
 
@@ -367,7 +424,11 @@ int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
 {
     @autoreleasepool {
         SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+#if TARGET_OS_XR
+        CGRect frame = CGRectMake(0, 0, SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
+#else
         CGRect frame = data.uiscreen.bounds;
+#endif
 
         /* the default function iterates displays to make a fake offset,
          as if all the displays were side-by-side, which is fine for iOS. */
@@ -386,7 +447,9 @@ int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
 
 void UIKit_QuitModes(SDL_VideoDevice *_this)
 {
+#if !TARGET_OS_XR
     [SDL_DisplayWatch stop];
+#endif
 
     /* Release Objective-C objects, so higher level doesn't free() them. */
     int i, j;
@@ -408,7 +471,7 @@ void UIKit_QuitModes(SDL_VideoDevice *_this)
     }
 }
 
-#if !TARGET_OS_TV
+#if !TARGET_OS_TV && !TARGET_OS_XR
 void SDL_OnApplicationDidChangeStatusBarOrientation(void)
 {
     BOOL isLandscape = UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);

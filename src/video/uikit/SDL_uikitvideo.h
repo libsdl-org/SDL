@@ -33,7 +33,11 @@
 
 @end
 
+#if TARGET_OS_XR
+CGRect UIKit_ComputeViewFrame(SDL_Window *window);
+#else
 CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
+#endif
 
 #endif /* __OBJC__ */
 

@@ -160,7 +160,9 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 {
     displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
 
-#ifdef __IPHONE_10_3
+#if TARGET_OS_XR
+    displayLink.preferredFramesPerSecond = 90 / animationInterval;      //TODO: Get frame max frame rate on visionOS
+#elif defined(__IPHONE_10_3)
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
 
     if ([displayLink respondsToSelector:@selector(preferredFramesPerSecond)] && data != nil && data.uiwindow != nil && [data.uiwindow.screen respondsToSelector:@selector(maximumFramesPerSecond)]) {
@@ -451,7 +453,11 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 {
     CGAffineTransform t = self.view.transform;
     CGPoint offset = CGPointMake(0.0, 0.0);
+#if TARGET_OS_XR
+    CGRect frame = UIKit_ComputeViewFrame(window);
+#else
     CGRect frame = UIKit_ComputeViewFrame(window, self.view.window.screen);
+#endif
 
     if (self.keyboardHeight) {
         int rectbottom = self.textInputRect.y + self.textInputRect.h;
