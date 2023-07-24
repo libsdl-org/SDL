@@ -81,6 +81,7 @@ SDL_MetalView UIKit_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
         CGFloat scale = 1.0;
         SDL_uikitmetalview *metalview;
 
+#if !TARGET_OS_XR
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             /* Set the scale to the natural scale factor of the screen - then
              * the backing dimensions of the Metal view will match the pixel
@@ -89,6 +90,7 @@ SDL_MetalView UIKit_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
              */
             scale = data.uiwindow.screen.nativeScale;
         }
+#endif
 
         metalview = [[SDL_uikitmetalview alloc] initWithFrame:data.uiwindow.bounds
                                                         scale:scale];

@@ -52,7 +52,9 @@ static void UIKit_VideoQuit(SDL_VideoDevice *_this);
 static void UIKit_DeleteDevice(SDL_VideoDevice *device)
 {
     @autoreleasepool {
-        CFRelease(device->driverdata);
+        if (device->driverdata){
+            CFRelease(device->driverdata);
+        }
         SDL_free(device);
     }
 }
@@ -183,6 +185,7 @@ SDL_bool UIKit_IsSystemVersionAtLeast(double version)
 
 SDL_SystemTheme UIKit_GetSystemTheme(void)
 {
+#if !TARGET_OS_XR
     if (@available(iOS 12.0, tvOS 10.0, *)) {
         switch ([UIScreen mainScreen].traitCollection.userInterfaceStyle) {
         case UIUserInterfaceStyleDark:
@@ -193,9 +196,15 @@ SDL_SystemTheme UIKit_GetSystemTheme(void)
             break;
         }
     }
+#endif
     return SDL_SYSTEM_THEME_UNKNOWN;
 }
 
+#if TARGET_OS_XR
+CGRect UIKit_ComputeViewFrame(SDL_Window *window){
+    return CGRectMake(window->x, window->y, window->w, window->h);
+}
+#else
 CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
@@ -233,6 +242,8 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 
     return frame;
 }
+
+#endif
 
 void UIKit_ForceUpdateHomeIndicator(void)
 {
