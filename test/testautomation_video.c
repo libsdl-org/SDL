@@ -429,6 +429,7 @@ static int video_getWindowDisplayModeNegative(void *arg)
 static void setAndCheckWindowMouseGrabState(SDL_Window *window, SDL_bool desiredState)
 {
     SDL_bool currentState;
+    const SDL_bool is_dummy_video_driver = SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0;
 
     /* Set state */
     SDL_SetWindowMouseGrab(window, desiredState);
@@ -437,22 +438,28 @@ static void setAndCheckWindowMouseGrabState(SDL_Window *window, SDL_bool desired
     /* Get and check state */
     currentState = SDL_GetWindowMouseGrab(window);
     SDLTest_AssertPass("Call to SDL_GetWindowMouseGrab()");
-    SDLTest_AssertCheck(
-        currentState == desiredState,
-        "Validate returned state; expected: %s, got: %s",
-        (desiredState == SDL_FALSE) ? "SDL_FALSE" : "SDL_TRUE",
-        (currentState == SDL_FALSE) ? "SDL_FALSE" : "SDL_TRUE");
+    if (!desiredState || (desiredState && !is_dummy_video_driver)) {
+        SDLTest_AssertCheck(
+            currentState == desiredState,
+            "Validate returned state; expected: %s, got: %s",
+            (desiredState == SDL_FALSE) ? "SDL_FALSE" : "SDL_TRUE",
+            (currentState == SDL_FALSE) ? "SDL_FALSE" : "SDL_TRUE");
+    } else {
+        SDLTest_Log("Skipping SDL_SetWindowMouseGrab(SDL_TRUE) validation: no window exists with dummy video driver");
+    }
 
     if (desiredState) {
-        SDLTest_AssertCheck(
-            SDL_GetGrabbedWindow() == window,
-            "Grabbed window should be to our window");
-        SDLTest_AssertCheck(
-            SDL_GetWindowGrab(window),
-            "SDL_GetWindowGrab() should return SDL_TRUE");
-        SDLTest_AssertCheck(
-            SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_GRABBED,
-            "SDL_WINDOW_MOUSE_GRABBED should be set");
+        if (!is_dummy_video_driver) {
+            SDLTest_AssertCheck(
+                SDL_GetGrabbedWindow() == window,
+                "Grabbed window should be to our window");
+            SDLTest_AssertCheck(
+                SDL_GetWindowGrab(window),
+                "SDL_GetWindowGrab() should return SDL_TRUE");
+            SDLTest_AssertCheck(
+                SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_GRABBED,
+                "SDL_WINDOW_MOUSE_GRABBED should be set");
+        }
     } else {
         SDLTest_AssertCheck(
             !(SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_GRABBED),
@@ -464,6 +471,7 @@ static void setAndCheckWindowMouseGrabState(SDL_Window *window, SDL_bool desired
 static void setAndCheckWindowKeyboardGrabState(SDL_Window *window, SDL_bool desiredState)
 {
     SDL_bool currentState;
+    const SDL_bool is_dummy_video_driver = SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0;
 
     /* Set state */
     SDL_SetWindowKeyboardGrab(window, desiredState);
@@ -472,22 +480,28 @@ static void setAndCheckWindowKeyboardGrabState(SDL_Window *window, SDL_bool desi
     /* Get and check state */
     currentState = SDL_GetWindowKeyboardGrab(window);
     SDLTest_AssertPass("Call to SDL_GetWindowKeyboardGrab()");
-    SDLTest_AssertCheck(
-        currentState == desiredState,
-        "Validate returned state; expected: %s, got: %s",
-        (desiredState == SDL_FALSE) ? "SDL_FALSE" : "SDL_TRUE",
-        (currentState == SDL_FALSE) ? "SDL_FALSE" : "SDL_TRUE");
+    if (!desiredState || (desiredState && !is_dummy_video_driver)) {
+        SDLTest_AssertCheck(
+            currentState == desiredState,
+            "Validate returned state; expected: %s, got: %s",
+            (desiredState == SDL_FALSE) ? "SDL_FALSE" : "SDL_TRUE",
+            (currentState == SDL_FALSE) ? "SDL_FALSE" : "SDL_TRUE");
+    } else {
+        SDLTest_Log("Skipping SDL_SetWindowKeyboardGrab(SDL_TRUE) validation: no window exists to grab the keyboard with the dummy video driver");
+    }
 
     if (desiredState) {
-        SDLTest_AssertCheck(
-            SDL_GetGrabbedWindow() == window,
-            "Grabbed window should be set to our window");
-        SDLTest_AssertCheck(
-            SDL_GetWindowGrab(window),
-            "SDL_GetWindowGrab() should return SDL_TRUE");
-        SDLTest_AssertCheck(
-            SDL_GetWindowFlags(window) & SDL_WINDOW_KEYBOARD_GRABBED,
-            "SDL_WINDOW_KEYBOARD_GRABBED should be set");
+        if (!is_dummy_video_driver) {
+            SDLTest_AssertCheck(
+                SDL_GetGrabbedWindow() == window,
+                "Grabbed window should be set to our window");
+            SDLTest_AssertCheck(
+                SDL_GetWindowGrab(window),
+                "SDL_GetWindowGrab() should return SDL_TRUE");
+            SDLTest_AssertCheck(
+                SDL_GetWindowFlags(window) & SDL_WINDOW_KEYBOARD_GRABBED,
+                "SDL_WINDOW_KEYBOARD_GRABBED should be set");
+        }
     } else {
         SDLTest_AssertCheck(
             !(SDL_GetWindowFlags(window) & SDL_WINDOW_KEYBOARD_GRABBED),
@@ -500,6 +514,9 @@ static void setAndCheckWindowKeyboardGrabState(SDL_Window *window, SDL_bool desi
  *
  * \sa SDL_GetWindowGrab
  * \sa SDL_SetWindowGrab
+ *
+ * Some grab tests require that an actual window be present on the desktop to take keyboard and mouse focus,
+ * so they must be skipped when using the 'dummy' video driver as they will always fail.
  */
 static int video_getSetWindowGrab(void *arg)
 {
@@ -507,6 +524,7 @@ static int video_getSetWindowGrab(void *arg)
     SDL_Window *window;
     SDL_bool originalMouseState, originalKeyboardState;
     SDL_bool hasFocusGained = SDL_FALSE;
+    const SDL_bool is_dummy_video_driver = SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0;
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
@@ -529,7 +547,11 @@ static int video_getSetWindowGrab(void *arg)
         }
     }
 
-    SDLTest_AssertCheck(hasFocusGained == SDL_TRUE, "Expectded window with focus");
+    if (!is_dummy_video_driver) {
+        SDLTest_AssertCheck(hasFocusGained == SDL_TRUE, "Expected window with focus");
+    } else {
+        SDLTest_Log("Skipping focus validation: no window exists to take focus with the dummy video driver");
+    }
 
     /* Get state */
     originalMouseState = SDL_GetWindowMouseGrab(window);
@@ -554,28 +576,44 @@ static int video_getSetWindowGrab(void *arg)
     /* F --> T */
     setAndCheckWindowMouseGrabState(window, SDL_TRUE);
     setAndCheckWindowKeyboardGrabState(window, SDL_TRUE);
-    SDLTest_AssertCheck(SDL_GetWindowGrab(window),
-                        "SDL_GetWindowGrab() should return SDL_TRUE");
+    if (!is_dummy_video_driver) {
+        SDLTest_AssertCheck(SDL_GetWindowGrab(window),
+                            "SDL_GetWindowGrab() should return SDL_TRUE");
+    } else {
+        SDLTest_Log("Skipping SDL_GetWindowGrab() validation: no window exists to take focus with the dummy video driver");
+    }
 
     /* T --> T */
     setAndCheckWindowKeyboardGrabState(window, SDL_TRUE);
     setAndCheckWindowMouseGrabState(window, SDL_TRUE);
-    SDLTest_AssertCheck(SDL_GetWindowGrab(window),
-                        "SDL_GetWindowGrab() should return SDL_TRUE");
+    if (!is_dummy_video_driver) {
+        SDLTest_AssertCheck(SDL_GetWindowGrab(window),
+                            "SDL_GetWindowGrab() should return SDL_TRUE");
+    } else {
+        SDLTest_Log("Skipping SDL_GetWindowGrab() validation: no window exists to take focus with the dummy video driver");
+    }
 
     /* M: T --> F */
     /* K: T --> T */
     setAndCheckWindowKeyboardGrabState(window, SDL_TRUE);
     setAndCheckWindowMouseGrabState(window, SDL_FALSE);
-    SDLTest_AssertCheck(SDL_GetWindowGrab(window),
-                        "SDL_GetWindowGrab() should return SDL_TRUE");
+    if (!is_dummy_video_driver) {
+        SDLTest_AssertCheck(SDL_GetWindowGrab(window),
+                            "SDL_GetWindowGrab() should return SDL_TRUE");
+    } else {
+        SDLTest_Log("Skipping SDL_GetWindowGrab() validation: no window exists to take focus with the dummy video driver");
+    }
 
     /* M: F --> T */
     /* K: T --> F */
     setAndCheckWindowMouseGrabState(window, SDL_TRUE);
     setAndCheckWindowKeyboardGrabState(window, SDL_FALSE);
-    SDLTest_AssertCheck(SDL_GetWindowGrab(window),
-                        "SDL_GetWindowGrab() should return SDL_TRUE");
+    if (!is_dummy_video_driver) {
+        SDLTest_AssertCheck(SDL_GetWindowGrab(window),
+                            "SDL_GetWindowGrab() should return SDL_TRUE");
+    } else {
+        SDLTest_Log("Skipping SDL_GetWindowGrab() validation: no window exists to take focus with the dummy video driver");
+    }
 
     /* M: T --> F */
     /* K: F --> F */
@@ -589,10 +627,14 @@ static int video_getSetWindowGrab(void *arg)
     /* Using the older SDL_SetWindowGrab API should only grab mouse by default */
     SDL_SetWindowGrab(window, SDL_TRUE);
     SDLTest_AssertPass("Call to SDL_SetWindowGrab(SDL_TRUE)");
-    SDLTest_AssertCheck(SDL_GetWindowGrab(window),
-                        "SDL_GetWindowGrab() should return SDL_TRUE");
-    SDLTest_AssertCheck(SDL_GetWindowMouseGrab(window),
-                        "SDL_GetWindowMouseGrab() should return SDL_TRUE");
+    if (!is_dummy_video_driver) {
+        SDLTest_AssertCheck(SDL_GetWindowGrab(window),
+                            "SDL_GetWindowGrab() should return SDL_TRUE");
+        SDLTest_AssertCheck(SDL_GetWindowMouseGrab(window),
+                            "SDL_GetWindowMouseGrab() should return SDL_TRUE");
+    } else {
+        SDLTest_Log("Skipping SDL_SetWindowGrab(SDL_TRUE) validation: no window exists to take focus with the dummy video driver");
+    }
     SDLTest_AssertCheck(!SDL_GetWindowKeyboardGrab(window),
                         "SDL_GetWindowKeyboardGrab() should return SDL_FALSE");
     SDL_SetWindowGrab(window, SDL_FALSE);
@@ -607,12 +649,16 @@ static int video_getSetWindowGrab(void *arg)
     SDL_SetHint(SDL_HINT_GRAB_KEYBOARD, "1");
     SDL_SetWindowGrab(window, SDL_TRUE);
     SDLTest_AssertPass("Call to SDL_SetWindowGrab(SDL_TRUE)");
-    SDLTest_AssertCheck(SDL_GetWindowGrab(window),
-                        "SDL_GetWindowGrab() should return SDL_TRUE");
-    SDLTest_AssertCheck(SDL_GetWindowMouseGrab(window),
-                        "SDL_GetWindowMouseGrab() should return SDL_TRUE");
-    SDLTest_AssertCheck(SDL_GetWindowKeyboardGrab(window),
-                        "SDL_GetWindowKeyboardGrab() should return SDL_TRUE");
+    if (!is_dummy_video_driver) {
+        SDLTest_AssertCheck(SDL_GetWindowGrab(window),
+                            "SDL_GetWindowGrab() should return SDL_TRUE");
+        SDLTest_AssertCheck(SDL_GetWindowMouseGrab(window),
+                            "SDL_GetWindowMouseGrab() should return SDL_TRUE");
+        SDLTest_AssertCheck(SDL_GetWindowKeyboardGrab(window),
+                            "SDL_GetWindowKeyboardGrab() should return SDL_TRUE");
+    } else {
+        SDLTest_Log("Skipping SDL_SetWindowGrab(SDL_TRUE) validation: no window exists to take focus with the dummy video driver");
+    }
     SDL_SetWindowGrab(window, SDL_FALSE);
     SDLTest_AssertCheck(!SDL_GetWindowGrab(window),
                         "SDL_GetWindowGrab() should return SDL_FALSE");
