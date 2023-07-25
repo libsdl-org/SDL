@@ -134,6 +134,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             return -1;
         }
         state->videodriver = argv[index];
+        SDL_SetHint(SDL_HINT_VIDEODRIVER, state->videodriver);
         return 2;
     }
     if (SDL_strcasecmp(argv[index], "--renderer") == 0) {
