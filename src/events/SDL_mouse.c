@@ -204,6 +204,14 @@ int SDL_InitMouse(void)
 
     mouse->cursor_shown = SDL_TRUE;
 
+    if (!mouse->CreateCursor) {
+        SDL_Surface *surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ARGB8888);
+        if (surface) {
+            SDL_memset(surface->pixels, 0, (size_t)surface->h * surface->pitch);
+            SDL_SetDefaultCursor(SDL_CreateColorCursor(surface, 0, 0));
+            SDL_DestroySurface(surface);
+        }
+    }
     return 0;
 }
 
@@ -846,8 +854,12 @@ void SDL_QuitMouse(void)
     mouse->cursors = NULL;
     mouse->cur_cursor = NULL;
 
-    if (mouse->def_cursor && mouse->FreeCursor) {
-        mouse->FreeCursor(mouse->def_cursor);
+    if (mouse->def_cursor) {
+        if (mouse->FreeCursor) {
+            mouse->FreeCursor(mouse->def_cursor);
+        } else {
+            SDL_free(mouse->def_cursor);
+        }
         mouse->def_cursor = NULL;
     }
 
@@ -1220,11 +1232,6 @@ SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
         return NULL;
     }
 
-    if (!mouse->CreateCursor) {
-        SDL_SetError("Cursors are not currently supported");
-        return NULL;
-    }
-
     /* Sanity check the hot spot */
     if ((hot_x < 0) || (hot_y < 0) ||
         (hot_x >= surface->w) || (hot_y >= surface->h)) {
@@ -1240,7 +1247,14 @@ SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
         surface = temp;
     }
 
-    cursor = mouse->CreateCursor(surface, hot_x, hot_y);
+    if (mouse->CreateCursor) {
+        cursor = mouse->CreateCursor(surface, hot_x, hot_y);
+    } else {
+        cursor = SDL_calloc(1, sizeof(*cursor));
+        if (!cursor) {
+            SDL_OutOfMemory();
+        }
+    }
     if (cursor) {
         cursor->next = mouse->cursors;
         mouse->cursors = cursor;
@@ -1365,6 +1379,8 @@ void SDL_DestroyCursor(SDL_Cursor *cursor)
 
             if (mouse->FreeCursor) {
                 mouse->FreeCursor(curr);
+            } else {
+                SDL_free(curr);
             }
             return;
         }

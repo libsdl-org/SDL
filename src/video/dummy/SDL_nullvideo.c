@@ -53,7 +53,6 @@
 
 /* Initialization/Query functions */
 static int DUMMY_VideoInit(SDL_VideoDevice *_this);
-static int DUMMY_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void DUMMY_VideoQuit(SDL_VideoDevice *_this);
 
 /* DUMMY driver bootstrap functions */
@@ -93,7 +92,6 @@ static SDL_VideoDevice *DUMMY_InternalCreateDevice(const char *enable_hint)
     /* Set the function pointers */
     device->VideoInit = DUMMY_VideoInit;
     device->VideoQuit = DUMMY_VideoQuit;
-    device->SetDisplayMode = DUMMY_SetDisplayMode;
     device->PumpEvents = DUMMY_PumpEvents;
     device->CreateWindowFramebuffer = SDL_DUMMY_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = SDL_DUMMY_UpdateWindowFramebuffer;
@@ -155,11 +153,6 @@ int DUMMY_VideoInit(SDL_VideoDevice *_this)
 #endif
 
     /* We're done! */
-    return 0;
-}
-
-static int DUMMY_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
-{
     return 0;
 }
 

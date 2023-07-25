@@ -1607,9 +1607,18 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
         }
         if (_this->SetWindowFullscreen) {
             _this->SetWindowFullscreen(_this, window, display, SDL_TRUE);
+        } else {
+            resized = SDL_TRUE;
         }
         display->fullscreen_window = window;
 
+        if (mode) {
+            mode_w = mode->w;
+            mode_h = mode->h;
+        } else {
+            mode_w = display->desktop_mode.w;
+            mode_h = display->desktop_mode.h;
+        }
 #ifdef __ANDROID__
         /* Android may not resize the window to exactly what our fullscreen mode is,
          * especially on windowed Android environments like the Chromebook or Samsung DeX.
@@ -1621,13 +1630,6 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
          * WM_WINDOWPOSCHANGED will send SDL_EVENT_WINDOW_RESIZED).
          */
 #else
-        if (mode) {
-            mode_w = mode->w;
-            mode_h = mode->h;
-        } else {
-            mode_w = display->desktop_mode.w;
-            mode_h = display->desktop_mode.h;
-        }
         if (window->w != mode_w || window->h != mode_h) {
             resized = SDL_TRUE;
         }
@@ -1642,14 +1644,22 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
         SDL_RestoreMousePosition(window);
 
     } else {
+        SDL_bool resized = SDL_FALSE;
+
         /* Restore the desktop mode */
         SDL_SetDisplayModeForDisplay(display, NULL);
         if (_this->SetWindowFullscreen) {
             _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
+        } else {
+            resized = SDL_TRUE;
         }
         display->fullscreen_window = NULL;
 
-        SDL_OnWindowResized(window);
+        if (resized) {
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->windowed.w, window->windowed.h);
+        } else {
+            SDL_OnWindowResized(window);
+        }
 
         /* Restore the cursor position */
         SDL_RestoreMousePosition(window);
@@ -2804,6 +2814,9 @@ int SDL_ShowWindow(SDL_Window *window)
 
     if (_this->ShowWindow) {
         _this->ShowWindow(_this, window);
+    } else {
+        SDL_SetMouseFocus(window);
+        SDL_SetKeyboardFocus(window);
     }
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
 
@@ -2847,6 +2860,9 @@ int SDL_HideWindow(SDL_Window *window)
     window->is_hiding = SDL_TRUE;
     if (_this->HideWindow) {
         _this->HideWindow(_this, window);
+    } else {
+        SDL_SetMouseFocus(NULL);
+        SDL_SetKeyboardFocus(NULL);
     }
     window->is_hiding = SDL_FALSE;
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
