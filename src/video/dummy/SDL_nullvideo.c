@@ -40,6 +40,9 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
+#ifdef SDL_INPUT_LINUXEV
+#include "../../core/linux/SDL_evdev.h"
+#endif
 
 #include "SDL_nullvideo.h"
 #include "SDL_nullevents_c.h"
@@ -53,26 +56,15 @@ static int DUMMY_VideoInit(SDL_VideoDevice *_this);
 static int DUMMY_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void DUMMY_VideoQuit(SDL_VideoDevice *_this);
 
-#ifdef SDL_INPUT_LINUXEV
-static int evdev = 0;
-static void DUMMY_EVDEV_Poll(SDL_VideoDevice *_this);
-#endif
-
 /* DUMMY driver bootstrap functions */
 
-static int DUMMY_Available(void)
+static int DUMMY_Available(const char *enable_hint)
 {
-    const char *envr = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
-    if (envr) {
-        if (SDL_strcmp(envr, DUMMYVID_DRIVER_NAME) == 0) {
+    const char *hint = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
+    if (hint) {
+        if (SDL_strcmp(hint, enable_hint) == 0) {
             return 1;
         }
-#ifdef SDL_INPUT_LINUXEV
-        if (SDL_strcmp(envr, DUMMYVID_DRIVER_EVDEV_NAME) == 0) {
-            evdev = 1;
-            return 1;
-        }
-#endif
     }
     return 0;
 }
@@ -82,11 +74,11 @@ static void DUMMY_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static SDL_VideoDevice *DUMMY_CreateDevice(void)
+static SDL_VideoDevice *DUMMY_InternalCreateDevice(const char *enable_hint)
 {
     SDL_VideoDevice *device;
 
-    if (!DUMMY_Available()) {
+    if (!DUMMY_Available(enable_hint)) {
         return 0;
     }
 
@@ -103,18 +95,17 @@ static SDL_VideoDevice *DUMMY_CreateDevice(void)
     device->VideoQuit = DUMMY_VideoQuit;
     device->SetDisplayMode = DUMMY_SetDisplayMode;
     device->PumpEvents = DUMMY_PumpEvents;
-#ifdef SDL_INPUT_LINUXEV
-    if (evdev) {
-        device->PumpEvents = DUMMY_EVDEV_Poll;
-    }
-#endif
     device->CreateWindowFramebuffer = SDL_DUMMY_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = SDL_DUMMY_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = SDL_DUMMY_DestroyWindowFramebuffer;
-
     device->free = DUMMY_DeleteDevice;
 
     return device;
+}
+
+static SDL_VideoDevice *DUMMY_CreateDevice(void)
+{
+    return DUMMY_InternalCreateDevice(DUMMYVID_DRIVER_NAME);
 }
 
 VideoBootStrap DUMMY_bootstrap = {
@@ -123,19 +114,28 @@ VideoBootStrap DUMMY_bootstrap = {
 };
 
 #ifdef SDL_INPUT_LINUXEV
-VideoBootStrap DUMMY_evdev_bootstrap = {
-    DUMMYVID_DRIVER_EVDEV_NAME, "SDL dummy video driver with evdev",
-    DUMMY_CreateDevice
-};
-void SDL_EVDEV_Init(void);
-void SDL_EVDEV_Poll(void);
-void SDL_EVDEV_Quit(void);
+
 static void DUMMY_EVDEV_Poll(SDL_VideoDevice *_this)
 {
     (void)_this;
     SDL_EVDEV_Poll();
 }
-#endif
+
+static SDL_VideoDevice *DUMMY_EVDEV_CreateDevice(void)
+{
+    SDL_VideoDevice *device = DUMMY_InternalCreateDevice(DUMMYVID_DRIVER_EVDEV_NAME);
+    if (device) {
+        device->PumpEvents = DUMMY_EVDEV_Poll;
+    }
+    return device;
+}
+
+VideoBootStrap DUMMY_evdev_bootstrap = {
+    DUMMYVID_DRIVER_EVDEV_NAME, "SDL dummy video driver with evdev",
+    DUMMY_EVDEV_CreateDevice
+};
+
+#endif /* SDL_INPUT_LINUXEV */
 
 int DUMMY_VideoInit(SDL_VideoDevice *_this)
 {
