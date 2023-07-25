@@ -356,6 +356,8 @@ void VIVANTE_HideWindow(_THIS, SDL_Window *window)
     SDL_WindowData *data = window->driverdata;
     vdkHideWindow(data->native_window);
 #endif
+    SDL_SetMouseFocus(NULL);
+    SDL_SetKeyboardFocus(NULL);
 }
 
 /*****************************************************************************/
