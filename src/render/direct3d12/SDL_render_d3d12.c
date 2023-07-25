@@ -1141,7 +1141,7 @@ static int D3D12_GetViewportAlignedD3DRect(SDL_Renderer *renderer, const SDL_Rec
 static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
-    IDXGISwapChain1* swapChain;
+    IDXGISwapChain1* swapChain = NULL;
     HRESULT result = S_OK;
     SDL_SysWMinfo windowinfo;
 
@@ -1166,7 +1166,13 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
                           DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;                  /* To support presenting with allow tearing on */
 
     SDL_VERSION(&windowinfo.version);
-    SDL_GetWindowWMInfo(renderer->window, &windowinfo);
+    if (!SDL_GetWindowWMInfo(renderer->window, &windowinfo) ||
+        windowinfo.subsystem != SDL_SYSWM_WINDOWS)
+    {
+        SDL_SetError("Couldn't get window handle");
+        result = E_FAIL;
+        goto done;
+    }
 
     result = D3D_CALL(data->dxgiFactory, CreateSwapChainForHwnd,
                       (IUnknown *)data->commandQueue,
