@@ -613,7 +613,8 @@ static void InitializeExtension(SDL_DriverWii_Context *ctx)
 static void SDLCALL SDL_GameControllerButtonReportingHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
-    ctx->m_bUseButtonLabels = SDL_GetStringBoolean(hint, SDL_TRUE);
+    /* Classic Controller and Wii U Pro Controller have a diamond button configuration, the others don't depend on this */
+    ctx->m_bUseButtonLabels = SDL_GetStringBoolean(hint, SDL_FALSE);
 }
 
 static void UpdateSlotLED(SDL_DriverWii_Context *ctx)

@@ -148,7 +148,8 @@ static SDL_Texture *CreateTexture(SDL_Renderer *renderer, unsigned char *data, u
 
 static SDL_GamepadButton GetRemappedButton(GamepadImageFaceStyle face_style, SDL_GamepadButton button)
 {
-    if (face_style == GAMEPAD_IMAGE_FACE_BAYX) {
+    /* TODO: The default isn't necessarily SDL_FALSE, it's simply the default used on the mappings here. */
+    if (face_style == GAMEPAD_IMAGE_FACE_BAYX && SDL_GetHintBoolean("SDL_GAMECONTROLLER_USE_BUTTON_LABELS", SDL_FALSE)) {
         switch (button) {
         case SDL_GAMEPAD_BUTTON_A:
             button = SDL_GAMEPAD_BUTTON_B;

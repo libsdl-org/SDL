@@ -252,6 +252,8 @@ The functions SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadIns
 
 The gamepad binding structure has been removed in favor of exchanging bindings in text format.
 
+Controllers with a diamond button configuration by default will their buttons mapped according to position, instead of by label (affects for instance Nintendo controllers). As before, this can be adjusted using the SDL_GAMECONTROLLER_USE_BUTTON_LABELS hint.
+
 SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_EVENT_GAMEPAD_SENSOR_UPDATE events.
 
 SDL_CONTROLLER_TYPE_VIRTUAL has been removed, so virtual controllers can emulate other gamepad types. If you need to know whether a controller is virtual, you can use SDL_IsJoystickVirtual().
