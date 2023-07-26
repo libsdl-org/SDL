@@ -131,8 +131,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface
     (int width, int height, Uint32 format);
 
 /**
- * Allocate a new RGB surface with with a specific pixel format and existing
- * pixel data.
+ * Allocate a new RGB surface with a specific pixel format and existing pixel
+ * data.
  *
  * No copy is made of the pixel data. Pixel data is not managed automatically;
  * you must free the surface before you free the pixel data.
