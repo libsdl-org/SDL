@@ -334,6 +334,7 @@ int WASAPI_ActivateDevice(SDL_AudioDevice *device)
 void WASAPI_PlatformThreadInit(SDL_AudioDevice *device)
 {
     // !!! FIXME: set this thread to "Pro Audio" priority.
+    SDL_SetThreadPriority(device->iscapture ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
 }
 
 void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device)

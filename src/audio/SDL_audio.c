@@ -25,8 +25,6 @@
 #include "../thread/SDL_systhread.h"
 #include "../SDL_utils_c.h"
 
-extern void Android_JNI_AudioSetThreadPriority(int, int);  // we need this on Android in the audio device threads.
-
 // Available audio drivers
 static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO
@@ -412,7 +410,6 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 
 // stubs for audio drivers that don't need a specific entry point...
 
-static void SDL_AudioThreadInit_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioThreadDeinit_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioWaitDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size) { /* no-op. */ }
@@ -421,6 +418,11 @@ static void SDL_AudioFlushCapture_Default(SDL_AudioDevice *device) { /* no-op. *
 static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioDeinitialize_Default(void) { /* no-op. */ }
 static void SDL_AudioFreeDeviceHandle_Default(SDL_AudioDevice *device) { /* no-op. */ }
+
+static void SDL_AudioThreadInit_Default(SDL_AudioDevice *device)
+{
+    SDL_SetThreadPriority(device->iscapture ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
+}
 
 static void SDL_AudioDetectDevices_Default(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
 {
@@ -679,15 +681,6 @@ void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
 void SDL_OutputAudioThreadSetup(SDL_AudioDevice *device)
 {
     SDL_assert(!device->iscapture);
-
-    // The audio mixing is always a high priority thread
-#ifdef SDL_AUDIO_DRIVER_ANDROID
-    Android_JNI_AudioSetThreadPriority(SDL_FALSE, device->id);
-#else
-    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_TIME_CRITICAL);
-#endif
-
-    // Perform any thread setup
     current_audio.impl.ThreadInit(device);
 }
 
@@ -781,14 +774,6 @@ static int SDLCALL OutputAudioThread(void *devicep)  // thread entry point
 void SDL_CaptureAudioThreadSetup(SDL_AudioDevice *device)
 {
     SDL_assert(device->iscapture);
-
-    // Audio capture is always a high priority thread (!!! FIXME: _should_ it be?)
-#ifdef SDL_AUDIO_DRIVER_ANDROID
-    Android_JNI_AudioSetThreadPriority(SDL_TRUE, device->id);
-#else
-    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
-#endif
-
     current_audio.impl.ThreadInit(device);
 }
 
@@ -1068,7 +1053,6 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec)
 
     if ((devid == 0) && is_default) {
         return SDL_SetError("No default audio device available");
-        return 0;
     }
 
     SDL_AudioDevice *device = ObtainPhysicalAudioDevice(devid);
