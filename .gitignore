@@ -50,6 +50,9 @@ cmake-build-*
 xcuserdata
 *.xcworkspace
 
+# for Visual Studio Code
+.vscode/
+
 # for Visual C++
 .vs
 Debug
