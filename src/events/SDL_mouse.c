@@ -162,7 +162,7 @@ static void SDLCALL SDL_MouseRelativeWarpMotionChanged(void *userdata, const cha
 }
 
 /* Public functions */
-int SDL_InitMouse(void)
+int SDL_PreInitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -203,7 +203,16 @@ int SDL_InitMouse(void)
     mouse->was_touch_mouse_events = SDL_FALSE; /* no touch to mouse movement event pending */
 
     mouse->cursor_shown = SDL_TRUE;
+    return 0;
+}
 
+void SDL_PostInitMouse(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    /* Create a dummy mouse cursor for video backends that don't support true cursors,
+     * so that mouse grab and focus functionality will work.
+     */
     if (!mouse->CreateCursor) {
         SDL_Surface *surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ARGB8888);
         if (surface) {
@@ -212,7 +221,6 @@ int SDL_InitMouse(void)
             SDL_DestroySurface(surface);
         }
     }
-    return 0;
 }
 
 void SDL_SetDefaultCursor(SDL_Cursor *cursor)
