@@ -462,7 +462,7 @@ int SDL_VideoInit(const char *driver_name)
         goto pre_driver_error;
     }
     init_keyboard = SDL_TRUE;
-    if (SDL_InitMouse() < 0) {
+    if (SDL_PreInitMouse() < 0) {
         goto pre_driver_error;
     }
     init_mouse = SDL_TRUE;
@@ -557,6 +557,8 @@ int SDL_VideoInit(const char *driver_name)
     if (!SDL_HasScreenKeyboardSupport()) {
         SDL_StartTextInput();
     }
+
+    SDL_PostInitMouse();
 
     /* We're ready to go! */
     return 0;

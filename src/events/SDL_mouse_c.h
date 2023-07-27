@@ -122,8 +122,11 @@ typedef struct
     void *driverdata;
 } SDL_Mouse;
 
-/* Initialize the mouse subsystem */
-extern int SDL_InitMouse(void);
+/* Initialize the mouse subsystem, called before the main video driver is initialized */
+extern int SDL_PreInitMouse(void);
+
+/* Finish initializing the mouse subsystem, called after the main video driver was initialized */
+extern void SDL_PostInitMouse(void);
 
 /* Get the mouse state structure */
 SDL_Mouse *SDL_GetMouse(void);
