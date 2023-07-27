@@ -493,7 +493,7 @@ typedef struct SDL_AudioDeviceEvent
 {
     Uint32 type;        /**< ::SDL_EVENT_AUDIO_DEVICE_ADDED, or ::SDL_EVENT_AUDIO_DEVICE_REMOVED */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_AudioDeviceID which;       /**< The audio device index for the ADDED event (valid until next SDL_GetNumAudioDevices() call), SDL_AudioDeviceID for the REMOVED event */
+    SDL_AudioDeviceID which;       /**< SDL_AudioDeviceID for the device being added or removed */
     Uint8 iscapture;    /**< zero if an output device, non-zero if a capture device. */
     Uint8 padding1;
     Uint8 padding2;
