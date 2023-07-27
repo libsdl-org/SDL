@@ -30,6 +30,10 @@
 #include <stdbool.h>
 #include <aaudio/AAudio.h>
 
+#if __ANDROID_API__ < 31
+#define AAUDIO_FORMAT_PCM_I32 4
+#endif
+
 struct SDL_PrivateAudioData
 {
     AAudioStream *stream;
@@ -119,7 +123,7 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
     const aaudio_direction_t direction = (iscapture ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
     ctx.AAudioStreamBuilder_setDirection(builder, direction);
     aaudio_format_t format;
-    if (device->spec.format == SDL_AUDIO_S32SYS) {
+    if ((device->spec.format == SDL_AUDIO_S32SYS) && (SDL_GetAndroidSDKVersion() >= 31)) {
         format = AAUDIO_FORMAT_PCM_I32;
     } else if (device->spec.format == SDL_AUDIO_F32SYS) {
         format = AAUDIO_FORMAT_PCM_FLOAT;
