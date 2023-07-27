@@ -39,7 +39,7 @@ This will install SDL to /usr/local.
 
 You can build the SDL test programs by adding `-DSDL_TESTS=ON` to the first cmake command above:
 ```sh
-cmake -S ~/sdl -B ~/build -DSDL_TEST=ON -DSDL_TESTS=ON
+cmake -S ~/sdl -B ~/build -DSDL_TEST_LIBRARY=ON -DSDL_TESTS=ON
 ```
 and then building normally. In this example, the test programs will be built and can be run from `~/build/tests/`.
 
@@ -215,8 +215,8 @@ At the end of SDL CMake configuration, a table shows all CMake options along wit
 |-------------------------------|--------------|-----------------------------------------------------------------------------------------------------|
 | `-DSDL_SHARED=`               | `ON`/`OFF`   | Build SDL shared library (not all platforms support this) (`libSDL3.so`/`libSDL3.dylib`/`SDL3.dll`) |
 | `-DSDL_STATIC=`               | `ON`/`OFF`   | Build SDL static library (`libSDL3.a`/`SDL3-static.lib`)                                            |
-| `-DSDL_TEST=`                 | `ON`/`OFF`   | Build SDL test library (`libSDL3_test.a`/`SDL3_test.lib`)                                           |
-| `-DSDL_TESTS=`                | `ON`/`OFF`   | Build SDL test programs (**requires `-DSDL_TEST=ON`**)                                              |
+| `-DSDL_TEST_LIBRARY=`         | `ON`/`OFF`   | Build SDL test library (`libSDL3_test.a`/`SDL3_test.lib`)                                           |
+| `-DSDL_TESTS=`                | `ON`/`OFF`   | Build SDL test programs (**requires `-DSDL_TEST_LIBRARY=ON`**)                                      |
 | `-DSDL_DISABLE_INSTALL=`      | `ON`/`OFF`   | Don't create a SDL install target                                                                   |
 | `-DSDL_DISABLE_INSTALL_DOCS=` | `ON`/`OFF`   | Don't install the SDL documentation                                                                 |
 | `-DSDL_INSTALL_TESTS=`        | `ON`/`OFF`   | Install the SDL test programs                                                                       |

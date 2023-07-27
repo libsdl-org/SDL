@@ -355,13 +355,13 @@ set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_RE
 
 cmake_dependent_option(SDL_SHARED "Build a shared version of the library" ${SDL_SHARED_DEFAULT} ${SDL_SHARED_AVAILABLE} OFF)
 option(SDL_STATIC "Build a static version of the library" ${SDL_STATIC_DEFAULT})
-option(SDL_TEST   "Build the SDL3_test library" ON)
+option(SDL_TEST_LIBRARY   "Build the SDL3_test library" ON)
 
 # Apple Frameworks NEED a (shared) SDL3.framework for `#include <SDL3/xxx.h>` to work
 cmake_dependent_option(SDL_FRAMEWORK "Build SDL libraries as Apple Framework" OFF "SDL_SHARED;APPLE" OFF)
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" "${CMAKE_POSITION_INDEPENDENT_CODE}" "SDL_STATIC" OFF)
-dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST OFF)
+dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST_LIBRARY OFF)
 dep_option(SDL_INSTALL_TESTS   "Install test-cases" OFF "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" OFF)
 dep_option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" "${SDL_SHARED}" "SDL_SHARED;SDL_STATIC" "${SDL_SHARED}")
 set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
@@ -391,7 +391,7 @@ if(SDL_STATIC)
   target_compile_features(SDL3-static PRIVATE c_std_99)
 endif()
 
-if(SDL_TEST)
+if(SDL_TEST_LIBRARY)
   add_library(SDL3_test STATIC)
   add_library(SDL3::SDL3_test ALIAS SDL3_test)
   SDL_AddCommonCompilerFlags(SDL3_test)
@@ -3135,7 +3135,7 @@ sdl_compile_definitions(
 
 ##### Tests #####
 
-if(SDL_TEST)
+if(SDL_TEST_LIBRARY)
   file(GLOB TEST_SOURCES "${SDL3_SOURCE_DIR}/src/test/*.c")
   target_sources(SDL3_test PRIVATE ${TEST_SOURCES})
   if(APPLE)
@@ -3227,7 +3227,7 @@ if(SDL_STATIC)
   export(TARGETS SDL3-static NAMESPACE "SDL3::" FILE "SDL3staticTargets.cmake")
 endif()
 
-if(SDL_TEST)
+if(SDL_TEST_LIBRARY)
   export(TARGETS SDL3_test NAMESPACE "SDL3::" FILE "SDL3testTargets.cmake")
 endif()
 
@@ -3285,7 +3285,7 @@ if(NOT SDL_DISABLE_INSTALL)
     )
   endif()
 
-  if(SDL_TEST)
+  if(SDL_TEST_LIBRARY)
     install(TARGETS SDL3_test EXPORT SDL3testTargets
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       FRAMEWORK DESTINATION "."
@@ -3317,7 +3317,7 @@ if(NOT SDL_DISABLE_INSTALL)
     )
   endif()
 
-  if(SDL_TEST)
+  if(SDL_TEST_LIBRARY)
     install(EXPORT SDL3testTargets
       FILE "${SDL_SDLtest_INSTALL_CMAKEFILENAME}"
       NAMESPACE SDL3::
@@ -3336,7 +3336,7 @@ if(NOT SDL_DISABLE_INSTALL)
     install(FILES ${SDL3_INCLUDE_FILES}
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SDL3"
     )
-    if(SDL_TEST)
+    if(SDL_TEST_LIBRARY)
       install(FILES ${SDL3_TEST_INCLUDE_FILES}
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SDL3"
       )
