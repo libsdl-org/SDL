@@ -218,7 +218,7 @@ At the end of SDL CMake configuration, a table shows all CMake options along wit
 | `-DSDL_TEST=`                 | `ON`/`OFF`   | Build SDL test library (`libSDL3_test.a`/`SDL3_test.lib`)                                           |
 | `-DSDL_TESTS=`                | `ON`/`OFF`   | Build SDL test programs (**requires `-DSDL_TEST=ON`**)                                              |
 | `-DSDL_DISABLE_INSTALL=`      | `ON`/`OFF`   | Don't create a SDL install target                                                                   |
-| `-DSDL_DISABLE_INSTALL_DOCS=` | `ON`/`OFF`   | Don't install the SDL documentation                                                                 |                                                                 
+| `-DSDL_DISABLE_INSTALL_DOCS=` | `ON`/`OFF`   | Don't install the SDL documentation                                                                 |
 | `-DSDL_INSTALL_TESTS=`        | `ON`/`OFF`   | Install the SDL test programs                                                                       |
 
 ## Help, it doesn't work!
