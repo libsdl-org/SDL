@@ -1563,14 +1563,14 @@ void Android_StartAudioHotplug(SDL_AudioDevice **default_output, SDL_AudioDevice
 {
     JNIEnv *env = Android_JNI_GetEnv();
     // this will fire the callback for each existing device right away (which will eventually SDL_AddAudioDevice), and again later when things change.
-    (void) (*env)->CallStaticObjectMethod(env, mAudioManagerClass, midRegisterAudioDeviceCallback);
+    (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midRegisterAudioDeviceCallback);
     *default_output = *default_capture = NULL;  // !!! FIXME: how do you decide the default device id?
 }
 
 void Android_StopAudioHotplug(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-    (void) (*env)->CallStaticObjectMethod(env, mAudioManagerClass, midUnregisterAudioDeviceCallback);
+    (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midUnregisterAudioDeviceCallback);
 }
 
 int Android_JNI_OpenAudioDevice(SDL_AudioDevice *device)
