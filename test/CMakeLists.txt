@@ -160,6 +160,8 @@ elseif(WINDOWS)
 elseif(HAVE_X11)
     add_sdl_test_executable(testnative NEEDS_RESOURCES testnative.c testnativex11.c testutils.c)
     target_link_libraries(testnative X11)
+elseif(OS2)
+    add_sdl_test_executable(testnative NEEDS_RESOURCES testnative.c testnativeos2.c testutils.c)
 endif()
 
 add_sdl_test_executable(testoverlay2 NEEDS_RESOURCES testoverlay2.c testyuv_cvt.c testutils.c)
