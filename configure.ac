@@ -3614,7 +3614,7 @@ CheckHIDAPI()
                 enable_hidapi_libusb=yes
                 require_hidapi_libusb=yes
                 ;;
-           *-*-os2* )
+            *-*-os2* )
                 enable_hidapi_libusb=yes
                 ;;
         esac

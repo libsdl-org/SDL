@@ -702,10 +702,14 @@ static int joyGetEnv(struct _joycfg * joydata)
 	char tempnumber[5];		/* Temporary place to put numeric texts */
 
 	joyenv = SDL_getenv("SDL_OS2_JOYSTICK");
-	if (joyenv == NULL) return 0;
+	if (joyenv == NULL) {
+		return 0;
+	}
 
 	/* Joystick Environment is defined! */
-	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */
+	while (*joyenv == ' ' && *joyenv != 0) {
+		joyenv++; /* jump spaces... */
+	}
 
 	/* If the string name starts with '... get if fully */
 	if (*joyenv == '\'') {
