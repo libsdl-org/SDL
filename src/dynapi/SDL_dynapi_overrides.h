@@ -304,7 +304,7 @@
 #define SDL_GetNumTouchFingers SDL_GetNumTouchFingers_REAL
 #define SDL_GetNumVideoDrivers SDL_GetNumVideoDrivers_REAL
 #define SDL_GetOriginalMemoryFunctions SDL_GetOriginalMemoryFunctions_REAL
-#define SDL_GetPath SDL_GetPath_REAL
+#define SDL_GetUserFolder SDL_GetUserFolder_REAL
 #define SDL_GetPerformanceCounter SDL_GetPerformanceCounter_REAL
 #define SDL_GetPerformanceFrequency SDL_GetPerformanceFrequency_REAL
 #define SDL_GetPixelFormatEnumForMasks SDL_GetPixelFormatEnumForMasks_REAL

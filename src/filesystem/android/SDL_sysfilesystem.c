@@ -50,7 +50,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return NULL;
 }
 
-char *SDL_GetPath(SDL_Folder folder)
+char *SDL_GetUserFolder(SDL_Folder folder)
 {
     /* TODO: see https://developer.android.com/reference/android/os/Environment#lfields
        and https://stackoverflow.com/questions/39332085/get-path-to-pictures-directory */
