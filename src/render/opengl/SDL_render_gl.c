@@ -910,8 +910,8 @@ static int GL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
             return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_UNSUPPORTED");
         case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
             return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
-        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-            return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+            return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
         default:
             /* check additoinal errors */
             switch (glErr) {
