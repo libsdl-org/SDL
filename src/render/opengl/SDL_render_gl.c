@@ -868,7 +868,7 @@ static int GL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
     GL_TextureData *texturedata;
     GLenum status;
-    GLenum err;
+    GLenum glErr;
 
     GL_ActivateRenderer(renderer);
 
@@ -885,20 +885,42 @@ static int GL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
     texturedata = (GL_TextureData *)texture->driverdata;
     data->glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, texturedata->fbo->FBO);
-    /* TODO: check if texture pixel format allows this operation */
     data->glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, data->textype, texturedata->texture, 0);
+
     /* Check FBO status */
+    /* cf. https://registry.khronos.org/OpenGL-Refpages/gl4/html/glCheckFramebufferStatus.xhtml */
     status = data->glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
     if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
-        if ((err = data->glGetError()) != GL_NO_ERROR) {
-            switch (err) {
+        if ((glErr = data->glGetError()) == GL_NO_ERROR) {
+            return 0;
+        }
+
+        switch (status) {
+        case GL_FRAMEBUFFER_UNDEFINED:
+            return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_UNDEFINED");
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+            return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+            return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+            return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+            return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+        case GL_FRAMEBUFFER_UNSUPPORTED:
+            return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_UNSUPPORTED");
+        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+            return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+            return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+        default:
+            /* check additoinal errors */
+            switch (glErr) {
             case GL_INVALID_ENUM:
-                return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_INVALID_EMUM");
+                return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_INVALID_ENUM");
             case GL_INVALID_OPERATION:
                 return SDL_SetError("glFramebufferTexture2DEXT() failed because of GL_INVALID_OPERATION");
             }
-
-            return SDL_SetError("glFramebufferTexture2DEXT() failed with (err, status) = (%d, %d)", err, status);
+            /* never reach here */
         }
     }
     return 0;
