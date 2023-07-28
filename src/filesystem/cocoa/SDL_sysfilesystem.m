@@ -130,7 +130,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     }
 }
 
-char *SDL_GetPath(SDL_Folder folder)
+char *SDL_GetUserFolder(SDL_Folder folder)
 {
     @autoreleasepool {
 #if TARGET_OS_TV

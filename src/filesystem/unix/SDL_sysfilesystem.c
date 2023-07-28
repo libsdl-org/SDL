@@ -517,7 +517,7 @@ static char *xdg_user_dir_lookup (const char *type)
     return NULL;
 }
 
-char *SDL_GetPath(SDL_Folder folder)
+char *SDL_GetUserFolder(SDL_Folder folder)
 {
     const char *param = NULL;
     char *retval;
