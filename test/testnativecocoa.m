@@ -8,7 +8,7 @@
 
 #ifndef MAC_OS_X_VERSION_10_12
 static const unsigned int NSWindowStyleMaskTitled = NSTitledWindowMask;
-static const unsigned int NSWindowStyleMiniaturizableMask = NSMiniaturizableWindowMask;
+static const unsigned int NSWindowStyleMaskMiniaturizable = NSMiniaturizableWindowMask;
 static const unsigned int NSWindowStyleMaskClosable = NSClosableWindowMask;
 #endif
 
@@ -36,7 +36,7 @@ static void *CreateWindowCocoa(int w, int h)
     rect.size.height = h;
     rect.origin.y = CGDisplayPixelsHigh(kCGDirectMainDisplay) - rect.origin.y - rect.size.height;
 
-    style = (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMiniaturizableMask);
+    style = (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable);
 
     nswindow = [[NSWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:FALSE];
     [nswindow makeKeyAndOrderFront:nil];
