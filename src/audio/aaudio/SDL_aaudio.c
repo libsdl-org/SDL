@@ -37,10 +37,8 @@
 struct SDL_PrivateAudioData
 {
     AAudioStream *stream;
-
     Uint8 *mixbuf;    // Raw mixing buffer
-    int frame_size;
-
+    SDL_Semaphore *semaphore;
     int resume;  // Resume device if it was paused automatically
 };
 
@@ -75,7 +73,12 @@ static int AAUDIO_LoadFunctions(AAUDIO_Data *data)
 static void AAUDIO_errorCallback(AAudioStream *stream, void *userData, aaudio_result_t error)
 {
     LOGI("SDL AAUDIO_errorCallback: %d - %s", error, ctx.AAudio_convertResultToText(error));
+    // !!! FIXME: you MUST NOT close the audio stream from this callback, so we cannot call SDL_AudioDeviceDisconnected here.
+    // !!! FIXME: but we should flag the device and kill it in WaitDevice/PlayDevice.
 }
+
+static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames);
+
 
 #define LIB_AAUDIO_SO "libaaudio.so"
 
@@ -132,20 +135,38 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     ctx.AAudioStreamBuilder_setFormat(builder, format);
-
-    ctx.AAudioStreamBuilder_setErrorCallback(builder, AAUDIO_errorCallback, hidden);
+    ctx.AAudioStreamBuilder_setErrorCallback(builder, AAUDIO_errorCallback, device);
+    ctx.AAudioStreamBuilder_setDataCallback(builder, AAUDIO_dataCallback, device);
+    ctx.AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
 
     LOGI("AAudio Try to open %u hz %u bit chan %u %s samples %u",
          device->spec.freq, SDL_AUDIO_BITSIZE(device->spec.format),
-         device->spec.channels, (device->spec.format & 0x1000) ? "BE" : "LE", device->sample_frames);
+         device->spec.channels, SDL_AUDIO_ISBIGENDIAN(device->spec.format) ? "BE" : "LE", device->sample_frames);
 
     res = ctx.AAudioStreamBuilder_openStream(builder, &hidden->stream);
-    ctx.AAudioStreamBuilder_delete(builder);
 
     if (res != AAUDIO_OK) {
         LOGI("SDL Failed AAudioStreamBuilder_openStream %d", res);
+        ctx.AAudioStreamBuilder_delete(builder);
         return SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
     }
+
+    device->sample_frames = (int) ctx.AAudioStream_getFramesPerDataCallback(hidden->stream);
+    if (device->sample_frames == AAUDIO_UNSPECIFIED) {
+        // if this happens, figure out a reasonable sample frame count, tear down this stream and force it in a new stream.
+        device->sample_frames = (int) (ctx.AAudioStream_getBufferCapacityInFrames(hidden->stream) / 4);
+        LOGI("AAUDIO: Got a stream with unspecified sample frames per data callback! Retrying with %d frames...", device->sample_frames);
+        ctx.AAudioStream_close(hidden->stream);
+        ctx.AAudioStreamBuilder_setFramesPerDataCallback(builder, device->sample_frames);
+        res = ctx.AAudioStreamBuilder_openStream(builder, &hidden->stream);
+        if (res != AAUDIO_OK) {  // oh well, we tried.
+            LOGI("SDL Failed AAudioStreamBuilder_openStream %d", res);
+            ctx.AAudioStreamBuilder_delete(builder);
+            return SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+        }
+    }
+
+    ctx.AAudioStreamBuilder_delete(builder);
 
     device->spec.freq = ctx.AAudioStream_getSampleRate(hidden->stream);
     device->spec.channels = ctx.AAudioStream_getChannelCount(hidden->stream);
@@ -161,9 +182,7 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("Got unexpected audio format %d from AAudioStream_getFormat", (int) format);
     }
 
-    device->sample_frames = ctx.AAudioStream_getBufferCapacityInFrames(hidden->stream) / 2;
-
-    LOGI("AAudio Try to open %u hz %u bit chan %u %s samples %u",
+    LOGI("AAudio Actually opened %u hz %u bit chan %u %s samples %u",
          device->spec.freq, SDL_AUDIO_BITSIZE(device->spec.format),
          device->spec.channels, SDL_AUDIO_ISBIGENDIAN(device->spec.format) ? "BE" : "LE", device->sample_frames);
 
@@ -178,7 +197,11 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
         SDL_memset(hidden->mixbuf, device->silence_value, device->buffer_size);
     }
 
-    hidden->frame_size = device->spec.channels * (SDL_AUDIO_BITSIZE(device->spec.format) / 8);
+    hidden->semaphore = SDL_CreateSemaphore(0);
+    if (!hidden->semaphore) {
+        LOGI("SDL Failed SDL_CreateSemaphore %s iscapture:%d", SDL_GetError(), iscapture);
+        return -1;
+    }
 
     res = ctx.AAudioStream_requestStart(hidden->stream);
     if (res != AAUDIO_OK) {
@@ -193,18 +216,40 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
 static void AAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
-    if (hidden) {
-        LOGI(__func__);
+    LOGI(__func__);
 
+    if (hidden) {
         if (hidden->stream) {
             ctx.AAudioStream_requestStop(hidden->stream);
+            // !!! FIXME: do we have to wait for the state to change to make sure all buffered audio has played, or will close do this (or will the system do this after the close)?
+            // !!! FIXME: also, will this definitely wait for a running data callback to finish, and then stop the callback from firing again?
             ctx.AAudioStream_close(hidden->stream);
+        }
+
+        if (hidden->semaphore) {
+            SDL_DestroySemaphore(hidden->semaphore);
         }
 
         SDL_free(hidden->mixbuf);
         SDL_free(hidden);
         device->hidden = NULL;
     }
+}
+
+// due to the way the aaudio data callback works, PlayDevice is a no-op. The callback collects audio while SDL camps in WaitDevice and
+//  fires a semaphore that will unblock WaitDevice and start a new iteration, so when the callback runs again, WaitDevice is ready
+//  to hand it more data.
+static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames)
+{
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userData;
+    SDL_assert(numFrames == device->sample_frames);
+    if (device->iscapture) {
+        SDL_memcpy(device->hidden->mixbuf, audioData, device->buffer_size);
+    } else {
+        SDL_memcpy(audioData, device->hidden->mixbuf, device->buffer_size);
+    }
+    SDL_PostSemaphore(device->hidden->semaphore);
+    return AAUDIO_CALLBACK_RESULT_CONTINUE;
 }
 
 static Uint8 *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
@@ -214,44 +259,20 @@ static Uint8 *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
 
 static void AAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
-    AAudioStream *stream = device->hidden->stream;
-    while (!SDL_AtomicGet(&device->shutdown) && ((int) ctx.AAudioStream_getBufferSizeInFrames(stream)) < device->sample_frames) {
-        SDL_Delay(1);
-    }
+    SDL_WaitSemaphore(device->hidden->semaphore);
 }
 
 static void AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
-    AAudioStream *stream = device->hidden->stream;
-    const aaudio_result_t res = ctx.AAudioStream_write(stream, buffer, device->sample_frames, 0);
-    if (res < 0) {
-        LOGI("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
-    } else {
-        LOGI("SDL AAudio play: %d frames, wanted:%d frames", (int)res, sample_frames);
-    }
-
-#if 0
-    // Log under-run count
-    {
-        static int prev = 0;
-        int32_t cnt = ctx.AAudioStream_getXRunCount(hidden->stream);
-        if (cnt != prev) {
-            SDL_Log("AAudio underrun: %d - total: %d", cnt - prev, cnt);
-            prev = cnt;
-        }
-    }
-#endif
+    // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice.
 }
 
+// no need for a FlushCapture implementation, just don't read mixbuf until the next iteration.
 static int AAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
-    const aaudio_result_t res = ctx.AAudioStream_read(device->hidden->stream, buffer, device->sample_frames, 0);
-    if (res < 0) {
-        LOGI("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
-        return -1;
-    }
-    LOGI("SDL AAudio capture:%d frames, wanted:%d frames", (int)res, buflen / device->hidden->frame_size);
-    return res * device->hidden->frame_size;
+    const int cpy = SDL_min(buflen, device->buffer_size);
+    SDL_memcpy(buffer, device->hidden->mixbuf, cpy);
+    return cpy;
 }
 
 static void AAUDIO_Deinitialize(void)
@@ -377,6 +398,7 @@ void AAUDIO_ResumeDevices(void)
     }
 }
 
+// !!! FIXME: do we need this now that we use the callback?
 /*
  We can sometimes get into a state where AAudioStream_write() will just block forever until we pause and unpause.
  None of the standard state queries indicate any problem in my testing. And the error callback doesn't actually get called.
