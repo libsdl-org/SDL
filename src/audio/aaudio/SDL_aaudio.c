@@ -39,6 +39,7 @@ struct SDL_PrivateAudioData
     AAudioStream *stream;
     Uint8 *mixbuf;    // Raw mixing buffer
     SDL_Semaphore *semaphore;
+    SDL_AtomicInt error_callback_triggered;
     int resume;  // Resume device if it was paused automatically
 };
 
@@ -73,8 +74,12 @@ static int AAUDIO_LoadFunctions(AAUDIO_Data *data)
 static void AAUDIO_errorCallback(AAudioStream *stream, void *userData, aaudio_result_t error)
 {
     LOGI("SDL AAUDIO_errorCallback: %d - %s", error, ctx.AAudio_convertResultToText(error));
-    // !!! FIXME: you MUST NOT close the audio stream from this callback, so we cannot call SDL_AudioDeviceDisconnected here.
-    // !!! FIXME: but we should flag the device and kill it in WaitDevice/PlayDevice.
+
+    // You MUST NOT close the audio stream from this callback, so we cannot call SDL_AudioDeviceDisconnected here.
+    // Just flag the device so we can kill it in WaitDevice/PlayDevice instead.
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userData;
+    SDL_AtomicSet(&device->hidden->error_callback_triggered, 1);
+    SDL_PostSemaphore(device->hidden->semaphore);  // in case we're blocking in WaitDevice.
 }
 
 static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames);
@@ -103,6 +108,8 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
     if (hidden == NULL) {
         return SDL_OutOfMemory();
     }
+
+    SDL_AtomicSet(&hidden->error_callback_triggered, 0);
 
     AAudioStreamBuilder *builder = NULL;
     res = ctx.AAudio_createStreamBuilder(&builder);
@@ -264,7 +271,11 @@ static void AAUDIO_WaitDevice(SDL_AudioDevice *device)
 
 static void AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
-    // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice.
+    // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice. But make sure we didn't fail here.
+    if (SDL_AtomicGet(&device->hidden->error_callback_triggered)) {
+        SDL_AtomicSet(&device->hidden->error_callback_triggered, 0);
+        SDL_AudioDeviceDisconnected(device);
+    }
 }
 
 // no need for a FlushCapture implementation, just don't read mixbuf until the next iteration.
