@@ -2796,19 +2796,22 @@ foreach(_hdr IN LISTS SDL3_INCLUDE_FILES)
   endif()
 endforeach()
 
-set(SDL_REVISION_SUFFIX "" CACHE STRING "Suffix for the SDL revision")
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt")
-  # If VERSION exists, it contains the SDL version
-  file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt" SDL_REVISION_CENTER)
-  string(STRIP "${SDL_REVISION_CENTER}" SDL_REVISION_CENTER)
-else()
-  # If VERSION does not exist, use git to calculate a version
-  git_describe(SDL_REVISION_CENTER)
-  if(NOT SDL_REVISION_CENTER)
-    set(SDL_REVISION_CENTER "${SDL3_VERSION}-no-vcs")
+set(SDL_REVISION "" CACHE STRING "Custom SDL revision (overrides SDL_REVISION_SUFFIX)")
+if(NOT SDL_REVISION)
+  set(SDL_REVISION_SUFFIX "" CACHE STRING "Suffix for the SDL revision")
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt")
+    # If VERSION exists, it contains the SDL version
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt" SDL_REVISION_CENTER)
+    string(STRIP "${SDL_REVISION_CENTER}" SDL_REVISION_CENTER)
+  else()
+    # If VERSION does not exist, use git to calculate a version
+    git_describe(SDL_REVISION_CENTER)
+    if(NOT SDL_REVISION_CENTER)
+      set(SDL_REVISION_CENTER "${SDL3_VERSION}-no-vcs")
+    endif()
   endif()
+  set(SDL_REVISION "SDL-${SDL_REVISION_CENTER}${SDL_REVISION_SUFFIX}")
 endif()
-set(SDL_REVISION "SDL-${SDL_REVISION_CENTER}${SDL_REVISION_SUFFIX}")
 
 execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${SDL3_BINARY_DIR}/include/SDL3")
 configure_file(include/build_config/SDL_revision.h.cmake include/SDL3/SDL_revision.h @ONLY)
