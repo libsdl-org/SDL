@@ -50,6 +50,8 @@ struct SDL_PrivateAudioData
 #define LOGI(...)
 #endif
 
+#define LIB_AAUDIO_SO "libaaudio.so"
+
 typedef struct AAUDIO_Data
 {
     void *handle;
@@ -71,6 +73,7 @@ static int AAUDIO_LoadFunctions(AAUDIO_Data *data)
     return 0;
 }
 
+
 static void AAUDIO_errorCallback(AAudioStream *stream, void *userData, aaudio_result_t error)
 {
     LOGI("SDL AAUDIO_errorCallback: %d - %s", error, ctx.AAudio_convertResultToText(error));
@@ -82,10 +85,71 @@ static void AAUDIO_errorCallback(AAudioStream *stream, void *userData, aaudio_re
     SDL_PostSemaphore(device->hidden->semaphore);  // in case we're blocking in WaitDevice.
 }
 
-static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames);
+// due to the way the aaudio data callback works, PlayDevice is a no-op. The callback collects audio while SDL camps in WaitDevice and
+//  fires a semaphore that will unblock WaitDevice and start a new iteration, so when the callback runs again, WaitDevice is ready
+//  to hand it more data.
+static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames)
+{
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userData;
+    SDL_assert(numFrames == device->sample_frames);
+    if (device->iscapture) {
+        SDL_memcpy(device->hidden->mixbuf, audioData, device->buffer_size);
+    } else {
+        SDL_memcpy(audioData, device->hidden->mixbuf, device->buffer_size);
+    }
+    SDL_PostSemaphore(device->hidden->semaphore);
+    return AAUDIO_CALLBACK_RESULT_CONTINUE;
+}
 
+static Uint8 *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
+{
+    return device->hidden->mixbuf;
+}
 
-#define LIB_AAUDIO_SO "libaaudio.so"
+static void AAUDIO_WaitDevice(SDL_AudioDevice *device)
+{
+    SDL_WaitSemaphore(device->hidden->semaphore);
+}
+
+static void AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+{
+    // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice. But make sure we didn't fail here.
+    if (SDL_AtomicGet(&device->hidden->error_callback_triggered)) {
+        SDL_AtomicSet(&device->hidden->error_callback_triggered, 0);
+        SDL_AudioDeviceDisconnected(device);
+    }
+}
+
+// no need for a FlushCapture implementation, just don't read mixbuf until the next iteration.
+static int AAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+{
+    const int cpy = SDL_min(buflen, device->buffer_size);
+    SDL_memcpy(buffer, device->hidden->mixbuf, cpy);
+    return cpy;
+}
+
+static void AAUDIO_CloseDevice(SDL_AudioDevice *device)
+{
+    struct SDL_PrivateAudioData *hidden = device->hidden;
+    LOGI(__func__);
+
+    if (hidden) {
+        if (hidden->stream) {
+            ctx.AAudioStream_requestStop(hidden->stream);
+            // !!! FIXME: do we have to wait for the state to change to make sure all buffered audio has played, or will close do this (or will the system do this after the close)?
+            // !!! FIXME: also, will this definitely wait for a running data callback to finish, and then stop the callback from firing again?
+            ctx.AAudioStream_close(hidden->stream);
+        }
+
+        if (hidden->semaphore) {
+            SDL_DestroySemaphore(hidden->semaphore);
+        }
+
+        SDL_free(hidden->mixbuf);
+        SDL_free(hidden);
+        device->hidden = NULL;
+    }
+}
 
 static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
@@ -220,133 +284,6 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
     return 0;
 }
 
-static void AAUDIO_CloseDevice(SDL_AudioDevice *device)
-{
-    struct SDL_PrivateAudioData *hidden = device->hidden;
-    LOGI(__func__);
-
-    if (hidden) {
-        if (hidden->stream) {
-            ctx.AAudioStream_requestStop(hidden->stream);
-            // !!! FIXME: do we have to wait for the state to change to make sure all buffered audio has played, or will close do this (or will the system do this after the close)?
-            // !!! FIXME: also, will this definitely wait for a running data callback to finish, and then stop the callback from firing again?
-            ctx.AAudioStream_close(hidden->stream);
-        }
-
-        if (hidden->semaphore) {
-            SDL_DestroySemaphore(hidden->semaphore);
-        }
-
-        SDL_free(hidden->mixbuf);
-        SDL_free(hidden);
-        device->hidden = NULL;
-    }
-}
-
-// due to the way the aaudio data callback works, PlayDevice is a no-op. The callback collects audio while SDL camps in WaitDevice and
-//  fires a semaphore that will unblock WaitDevice and start a new iteration, so when the callback runs again, WaitDevice is ready
-//  to hand it more data.
-static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames)
-{
-    SDL_AudioDevice *device = (SDL_AudioDevice *) userData;
-    SDL_assert(numFrames == device->sample_frames);
-    if (device->iscapture) {
-        SDL_memcpy(device->hidden->mixbuf, audioData, device->buffer_size);
-    } else {
-        SDL_memcpy(audioData, device->hidden->mixbuf, device->buffer_size);
-    }
-    SDL_PostSemaphore(device->hidden->semaphore);
-    return AAUDIO_CALLBACK_RESULT_CONTINUE;
-}
-
-static Uint8 *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
-{
-    return device->hidden->mixbuf;
-}
-
-static void AAUDIO_WaitDevice(SDL_AudioDevice *device)
-{
-    SDL_WaitSemaphore(device->hidden->semaphore);
-}
-
-static void AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
-{
-    // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice. But make sure we didn't fail here.
-    if (SDL_AtomicGet(&device->hidden->error_callback_triggered)) {
-        SDL_AtomicSet(&device->hidden->error_callback_triggered, 0);
-        SDL_AudioDeviceDisconnected(device);
-    }
-}
-
-// no need for a FlushCapture implementation, just don't read mixbuf until the next iteration.
-static int AAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
-{
-    const int cpy = SDL_min(buflen, device->buffer_size);
-    SDL_memcpy(buffer, device->hidden->mixbuf, cpy);
-    return cpy;
-}
-
-static void AAUDIO_Deinitialize(void)
-{
-    Android_StopAudioHotplug();
-
-    LOGI(__func__);
-    if (ctx.handle) {
-        SDL_UnloadObject(ctx.handle);
-    }
-    SDL_zero(ctx);
-    LOGI("End AAUDIO %s", SDL_GetError());
-}
-
-static SDL_bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
-{
-    LOGI(__func__);
-
-    /* AAudio was introduced in Android 8.0, but has reference counting crash issues in that release,
-     * so don't use it until 8.1.
-     *
-     * See https://github.com/google/oboe/issues/40 for more information.
-     */
-    if (SDL_GetAndroidSDKVersion() < 27) {
-        return SDL_FALSE;
-    }
-
-    SDL_zero(ctx);
-
-    ctx.handle = SDL_LoadObject(LIB_AAUDIO_SO);
-    if (ctx.handle == NULL) {
-        LOGI("SDL couldn't find " LIB_AAUDIO_SO);
-        return SDL_FALSE;
-    }
-
-    if (AAUDIO_LoadFunctions(&ctx) < 0) {
-        SDL_UnloadObject(ctx.handle);
-        SDL_zero(ctx);
-        return SDL_FALSE;
-    }
-
-    impl->ThreadInit = Android_AudioThreadInit;
-    impl->DetectDevices = Android_StartAudioHotplug;
-    impl->Deinitialize = AAUDIO_Deinitialize;
-    impl->OpenDevice = AAUDIO_OpenDevice;
-    impl->CloseDevice = AAUDIO_CloseDevice;
-    impl->WaitDevice = AAUDIO_WaitDevice;
-    impl->PlayDevice = AAUDIO_PlayDevice;
-    impl->GetDeviceBuf = AAUDIO_GetDeviceBuf;
-    impl->WaitCaptureDevice = AAUDIO_WaitDevice;
-    impl->CaptureFromDevice = AAUDIO_CaptureFromDevice;
-
-    impl->HasCaptureSupport = SDL_TRUE;
-
-    LOGI("SDL AAUDIO_Init OK");
-    return SDL_TRUE;
-}
-
-AudioBootStrap AAUDIO_bootstrap = {
-    "AAudio", "AAudio audio driver", AAUDIO_Init, SDL_FALSE
-};
-
-
 static SDL_bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
 {
     struct SDL_PrivateAudioData *hidden = (struct SDL_PrivateAudioData *)device->hidden;
@@ -439,5 +376,66 @@ SDL_bool AAUDIO_DetectBrokenPlayState(void)
 {
     return (ctx.handle && SDL_FindPhysicalAudioDeviceByCallback(DetectBrokenPlayStatePerDevice, NULL) != NULL) ? SDL_TRUE : SDL_FALSE;
 }
+
+static void AAUDIO_Deinitialize(void)
+{
+    Android_StopAudioHotplug();
+
+    LOGI(__func__);
+    if (ctx.handle) {
+        SDL_UnloadObject(ctx.handle);
+    }
+    SDL_zero(ctx);
+    LOGI("End AAUDIO %s", SDL_GetError());
+}
+
+
+static SDL_bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
+{
+    LOGI(__func__);
+
+    /* AAudio was introduced in Android 8.0, but has reference counting crash issues in that release,
+     * so don't use it until 8.1.
+     *
+     * See https://github.com/google/oboe/issues/40 for more information.
+     */
+    if (SDL_GetAndroidSDKVersion() < 27) {
+        return SDL_FALSE;
+    }
+
+    SDL_zero(ctx);
+
+    ctx.handle = SDL_LoadObject(LIB_AAUDIO_SO);
+    if (ctx.handle == NULL) {
+        LOGI("SDL couldn't find " LIB_AAUDIO_SO);
+        return SDL_FALSE;
+    }
+
+    if (AAUDIO_LoadFunctions(&ctx) < 0) {
+        SDL_UnloadObject(ctx.handle);
+        SDL_zero(ctx);
+        return SDL_FALSE;
+    }
+
+    impl->ThreadInit = Android_AudioThreadInit;
+    impl->DetectDevices = Android_StartAudioHotplug;
+    impl->Deinitialize = AAUDIO_Deinitialize;
+    impl->OpenDevice = AAUDIO_OpenDevice;
+    impl->CloseDevice = AAUDIO_CloseDevice;
+    impl->WaitDevice = AAUDIO_WaitDevice;
+    impl->PlayDevice = AAUDIO_PlayDevice;
+    impl->GetDeviceBuf = AAUDIO_GetDeviceBuf;
+    impl->WaitCaptureDevice = AAUDIO_WaitDevice;
+    impl->CaptureFromDevice = AAUDIO_CaptureFromDevice;
+
+    impl->HasCaptureSupport = SDL_TRUE;
+
+    LOGI("SDL AAUDIO_Init OK");
+    return SDL_TRUE;
+}
+
+AudioBootStrap AAUDIO_bootstrap = {
+    "AAudio", "AAudio audio driver", AAUDIO_Init, SDL_FALSE
+};
 
 #endif // SDL_AUDIO_DRIVER_AAUDIO
