@@ -309,6 +309,16 @@ public class SDLAudioManager {
     public static void registerAudioDeviceCallback() {
         if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+            // get an initial list now, before hotplug callbacks fire.
+            for (AudioDeviceInfo dev : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
+                if (dev.getType() == AudioDeviceInfo.TYPE_TELEPHONY) {
+                    continue;  // Device cannot be opened
+                }
+                addAudioDevice(dev.isSink(), dev.getProductName().toString(), dev.getId());
+            }
+            for (AudioDeviceInfo dev : audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)) {
+                addAudioDevice(dev.isSink(), dev.getProductName().toString(), dev.getId());
+            }
             audioManager.registerAudioDeviceCallback(mAudioDeviceCallback, null);
         }
     }

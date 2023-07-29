@@ -1006,10 +1006,14 @@ JNIEXPORT void JNICALL
 SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_capture,
                                          jstring name, jint device_id)
 {
-    SDL_assert(SDL_GetCurrentAudioDriver() != NULL);  // should have been started by Android_StartAudioHotplug inside an audio driver.
-    const char *utf8name = (*env)->GetStringUTFChars(env, name, NULL);
-    SDL_AddAudioDevice(is_capture ? SDL_TRUE : SDL_FALSE, SDL_strdup(utf8name), NULL, (void *)((size_t)device_id));
-    (*env)->ReleaseStringUTFChars(env, name, utf8name);
+    if (SDL_GetCurrentAudioDriver() != NULL) {
+        void *handle = (void *)((size_t)device_id);
+        if (!SDL_FindPhysicalAudioDeviceByHandle(handle)) {
+            const char *utf8name = (*env)->GetStringUTFChars(env, name, NULL);
+            SDL_AddAudioDevice(is_capture ? SDL_TRUE : SDL_FALSE, SDL_strdup(utf8name), NULL, handle);
+            (*env)->ReleaseStringUTFChars(env, name, utf8name);
+        }
+    }
 }
 
 JNIEXPORT void JNICALL
