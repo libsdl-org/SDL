@@ -1036,7 +1036,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
         int approx_request = len / stream->dst_sample_frame_size;  // start with sample frames desired
         if (stream->src_spec.freq != stream->dst_spec.freq) {
             // calculate difference in dataset size after resampling. Use a Uint64 so the multiplication doesn't overflow.
-            approx_request = (size_t) ((((Uint64) approx_request) * stream->src_spec.freq) / stream->dst_spec.freq);
+            approx_request = (int) (size_t) ((((Uint64) approx_request) * stream->src_spec.freq) / stream->dst_spec.freq);
             if (!stream->flushed) {  // do we need to fill the future buffer to accomodate this, too?
                 approx_request += stream->future_buffer_filled_frames - stream->resampler_padding_frames;
             }
