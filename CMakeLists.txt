@@ -2796,6 +2796,7 @@ foreach(_hdr IN LISTS SDL3_INCLUDE_FILES)
   endif()
 endforeach()
 
+set(SDL_REVISION "" CACHE STRING "Custom SDL revision (overrides SDL_REVISION_SUFFIX)")
 if(NOT SDL_REVISION)
   set(SDL_REVISION_SUFFIX "" CACHE STRING "Suffix for the SDL revision")
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt")
