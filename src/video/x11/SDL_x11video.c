@@ -213,6 +213,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->SetWindowHitTest = X11_SetWindowHitTest;
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
     device->FlashWindow = X11_FlashWindow;
+    device->ShowWindowSystemMenu = X11_ShowWindowSystemMenu;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     device->SetWindowMouseRect = X11_SetWindowMouseRect;

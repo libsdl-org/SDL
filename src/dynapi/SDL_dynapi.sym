@@ -887,6 +887,7 @@ SDL3_0.0.0 {
     SDL_UnpauseAudioDevice;
     SDL_IsAudioDevicePaused;
     SDL_GetAudioStreamBinding;
+    SDL_ShowWindowSystemMenu;
     # extra symbols go here (don't modify this line)
   local: *;
 };

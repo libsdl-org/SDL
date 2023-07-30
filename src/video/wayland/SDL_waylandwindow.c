@@ -2357,6 +2357,23 @@ void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
     WAYLAND_wl_display_flush(viddata->display);
 }
 
+void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
+{
+    SDL_WindowData *wind = window->driverdata;
+#ifdef HAVE_LIBDECOR_H
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
+        if (wind->shell_surface.libdecor.frame) {
+            libdecor_frame_show_window_menu(wind->shell_surface.libdecor.frame, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
+        }
+    } else
+#endif
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
+        if (wind->shell_surface.xdg.roleobj.toplevel) {
+            xdg_toplevel_show_window_menu(wind->shell_surface.xdg.roleobj.toplevel, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
+        }
+    }
+}
+
 int Wayland_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;

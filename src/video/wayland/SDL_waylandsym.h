@@ -204,6 +204,7 @@ SDL_WAYLAND_SYM(bool, libdecor_frame_is_visible, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(bool, libdecor_frame_is_floating, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(void, libdecor_frame_set_parent, (struct libdecor_frame *,\
                                                   struct libdecor_frame *))
+SDL_WAYLAND_SYM(void, libdecor_frame_show_window_menu, (struct libdecor_frame *, struct wl_seat *, uint32_t, int, int))
 SDL_WAYLAND_SYM(struct xdg_surface *, libdecor_frame_get_xdg_surface, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(struct xdg_toplevel *, libdecor_frame_get_xdg_toplevel, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(void, libdecor_frame_translate_coordinate, (struct libdecor_frame *, int, int, int *, int *))
