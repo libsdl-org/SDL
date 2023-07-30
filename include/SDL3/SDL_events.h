@@ -573,6 +573,9 @@ typedef struct SDL_OSEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
 } SDL_OSEvent;
 
+union SDL_Event;
+typedef union SDL_Event SDL_Event;
+
 /**
  *  \brief A user-defined event type (event.user.*)
  */
@@ -584,6 +587,8 @@ typedef struct SDL_UserEvent
     Sint32 code;        /**< User defined event code */
     void *data1;        /**< User defined data pointer */
     void *data2;        /**< User defined data pointer */
+    void (SDLCALL *free)(SDL_Event *); /**< User specified function for freeing user defined 
+                                        data (data1, data2) as required. Set to NULL if not required. */
 } SDL_UserEvent;
 
 
@@ -602,6 +607,7 @@ typedef struct SDL_SysWMEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_SysWMmsg *msg;  /**< driver dependent data, defined in SDL_syswm.h */
 } SDL_SysWMEvent;
+
 
 /**
  *  \brief General event structure
@@ -863,6 +869,16 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  * \sa SDL_WaitEventTimeout
  */
 extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
+
+/**
+ * Handles SDL events that require cleanup. Users should call this
+ * function at the end of the event loop.
+ * 
+ * \param event the SDL_Event structure to be cleaned up
+ * 
+ * \since This function is available since SDL 3.0.0.
+*/
+extern DECLSPEC void SDLCALL SDL_FreeEvent(SDL_Event * event);
 
 /**
  * Wait indefinitely for the next available event.

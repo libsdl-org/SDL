@@ -537,6 +537,7 @@
 #define SDL_PeepEvents SDL_PeepEvents_REAL
 #define SDL_PlayAudioDevice SDL_PlayAudioDevice_REAL
 #define SDL_PollEvent SDL_PollEvent_REAL
+#define SDL_FreeEvent SDL_FreeEvent_REAL
 #define SDL_PostSemaphore SDL_PostSemaphore_REAL
 #define SDL_PremultiplyAlpha SDL_PremultiplyAlpha_REAL
 #define SDL_PumpEvents SDL_PumpEvents_REAL

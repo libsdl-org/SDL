@@ -513,6 +513,7 @@ SDL3_0.0.0 {
     SDL_PeepEvents;
     SDL_PlayAudioDevice;
     SDL_PollEvent;
+    SDL_FreeEvent;
     SDL_PostSemaphore;
     SDL_PremultiplyAlpha;
     SDL_PumpEvents;

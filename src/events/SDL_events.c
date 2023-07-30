@@ -813,10 +813,7 @@ void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 {
     SDL_EventEntry *entry, *next;
     Uint32 type;
-    /* !!! FIXME: we need to manually SDL_free() the strings in TEXTINPUT and
-       drag'n'drop events if we're flushing them without passing them to the
-       app, but I don't know if this is the right place to do that. */
-
+    
     /* Make sure the events are current */
 #if 0
     /* Actually, we can't do this since we might be flushing while processing
@@ -837,6 +834,8 @@ void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
             next = entry->next;
             type = entry->event.type;
             if (minType <= type && type <= maxType) {
+                /* Free heap memory for text input, drag'n'drop and relevant user defined events */
+                SDL_FreeEvent(&(entry->event));
                 SDL_CutEvent(entry);
             }
         }
@@ -897,6 +896,28 @@ void SDL_PumpEvents(void)
 int SDL_PollEvent(SDL_Event *event)
 {
     return SDL_WaitEventTimeoutNS(event, 0);
+}
+
+void
+SDL_FreeEvent(SDL_Event * event)
+{
+    if (event->type == SDL_EVENT_DROP_FILE)
+    {
+        if (event->drop.file)
+            SDL_free(event->drop.file);
+    }
+    else if (event->type == SDL_EVENT_TEXT_EDITING_EXT)
+    {
+        if (event->editExt.text)
+            SDL_free(event->editExt.text);
+    }
+    else if (SDL_EVENT_USER <= event->type && event->type < SDL_userevents)
+    {
+        /* If the event is in the range of registered user events we'll want to execute
+        the custom cleanup function (if one has been provided)*/
+        if (event->user.free)
+            event->user.free(event);
+    }
 }
 
 static SDL_bool SDL_events_need_periodic_poll(void)
