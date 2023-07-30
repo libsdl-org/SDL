@@ -183,6 +183,11 @@ int main(int argc, char *argv[])
         devcount = 0;
     }
 
+    SDL_Log("Available audio devices:");
+    for (i = 0; i < devcount; i++) {
+        SDL_Log("%s", SDL_GetAudioDeviceName(devices[i]));
+    }
+
     for (i = 0; i < devcount; i++) {
         SDL_AudioStream *stream = NULL;
         char *devname = SDL_GetAudioDeviceName(devices[i]);
